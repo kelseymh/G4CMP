@@ -1,0 +1,7 @@
+/score/create/boxMesh mesh3
+/score/mesh/boxSize 0.1 0.1 0.1 m
+/score/mesh/nBin 30 30 30 
+/score/quantity/flatSurfaceCurrent current
+#/score/quantity/energyDeposit eDep keV
+/score/close
+#/score/drawProjection mesh1 eDep
