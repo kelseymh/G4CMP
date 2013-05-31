@@ -1,0 +1,28 @@
+/vis/open OGLSX
+/vis/viewer/reset
+/vis/scene/create
+/vis/drawVolume
+
+/vis/viewer/set/viewpointThetaPhi 35. 20. deg
+/vis/scene/add/trajectories rich
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/setRGBA LPhonon 0.5 0.5 0 0
+/vis/modeling/trajectories/drawByParticleID-0/set TPhononSlow Red
+/vis/modeling/trajectories/drawByParticleID-0/set TPhononFast Yellow
+/vis/modeling/trajectories/drawByParticleID-0/set DriftingElectron Green
+/vis/modeling/trajectories/drawByParticleID-0/set DriftingHole Red
+#/vis/scene/add/hits
+
+/vis/ogl/set/printMode pixmap
+/vis/ogl/set/printSize 600 600
+
+/vis/modeling/trajectories/drawByParticleID-0/default/setTimeSliceInterval 0.00003 ms
+/vis/ogl/set/startTime 0.00060 ms 0.00006 ms
+/vis/ogl/set/fade 1
+/vis/ogl/set/displayLightFront false
+/vis/ogl/set/displayHeadTime true
+/control/alias timeRange 0.01
+
+
+
+

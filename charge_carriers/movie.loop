@@ -1,0 +1,3 @@
+/vis/viewer/set/viewpointThetaPhi {theta} {phi}
+/vis/viewer/zoom 1.005
+/vis/viewer/refresh

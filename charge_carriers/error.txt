@@ -1,0 +1,76 @@
+
+*************************************************************
+ Geant4 version Name: geant4-09-03-patch-01    (9-April-2010)
+                      Copyright : Geant4 Collaboration
+                      Reference : NIM A 506 (2003), 250-303
+                            WWW : http://cern.ch/geant4
+*************************************************************
+
+
+
+Tst1PhysicsList::constructor: running
+
+
+Tst1PrimaryGeneratorAction::Constructor: running
+Visualization Manager instantiating...
+Visualization Manager initialising...
+Registering graphics systems...
+
+You have successfully registered the following graphics systems.
+Current available graphics systems are:
+  ASCIITree (ATree)
+  DAWNFILE (DAWNFILE)
+  G4HepRep (HepRepXML)
+  G4HepRepFile (HepRepFile)
+  RayTracer (RayTracer)
+  VRML1FILE (VRML1FILE)
+  VRML2FILE (VRML2FILE)
+  gMocrenFile (gMocrenFile)
+  FukuiRenderer (DAWN)
+  OpenGLImmediateX (OGLIX)
+  OpenGLStoredX (OGLSX)
+  RayTracerX (RayTracerX)
+
+Registering model factories...
+
+You have successfully registered the following model factories.
+Registered model factories:
+  generic
+  drawByCharge
+  drawByParticleID
+  drawByOriginVolume
+  drawByAttribute
+
+Registered filter factories:
+  chargeFilter
+  particleFilter
+  originVolumeFilter
+  attributeFilter
+
+
+
+LogicalLattice::load_NMap() sucessful
+
+
+LogicalLattice::load_NMap() sucessful
+
+
+LogicalLattice::load_NMap() sucessful
+
+Tst1DetectorConstruction::Loaded all three maps
+LogicalLattice::loadMap() sucessful (Vg scalars).
+
+LogicalLattice::loadMap() sucessful (Vg scalars).
+
+LogicalLattice::loadMap() sucessful (Vg scalars).
+
+Tst1DetectorConstruction::Loaded all three velocity maps
+LatticeManager2::registerLattice: Registering Lattice. Total number of lattices:1
+
+*** G4Exception : No process manager
+      issued by : G4VUserPhysicsList::AddTransportation
+e-
+*** Fatal Exception *** core dump ***
+
+*** G4Exception: Aborting execution ***
+Abort

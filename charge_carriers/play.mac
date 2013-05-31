@@ -1,0 +1,2 @@
+/vis/ogl/set/startTime 0.006 ms 0.003 ms
+/control/loop loop.mac startTime -{timeRange} 0.04 0.00025

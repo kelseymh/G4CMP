@@ -1,0 +1,5 @@
+/vis/ogl/set/startTime {startTime} ms 0.00003 ms
+/control/multiply phi {startTime} 0
+/control/multiply theta {startTime} 400
+/vis/viewer/set/viewpointThetaPhi {theta} {phi} deg
+#/vis/ogl/printEPS

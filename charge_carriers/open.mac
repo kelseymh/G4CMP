@@ -1,0 +1,7 @@
+/control/getEnv OPEN
+/control/getEnv STYLE
+/control/getEnv EVTS
+
+/control/execute {OPEN}
+/control/execute {STYLE}
+/run/beamOn {EVTS}
