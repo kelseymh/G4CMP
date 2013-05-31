@@ -21,14 +21,14 @@
 // * any work based  on the software)  you  agree  to acknowledge its *
 // * use  in  resulting  scientific  publications,  and indicate your *
 // * acceptance of all terms of the Geant4 Software license.          *
-// *********************************************************** *********
+// ********************************************************************
 //
 /// \file exoticphysics/phonon/src/XPhononScatteringProcess.cc
 /// \brief Implementation of the XPhononScatteringProcess class
 //
 // $Id$
 //
-//
+
 #include "XPhononScatteringProcess.hh"
 
 #include "G4Step.hh"
