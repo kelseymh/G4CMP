@@ -1,0 +1,41 @@
+channels = 4; // number of fet channels
+quad = {1};
+
+
+template = 1;
+decayTime = 40e-6; //[sec]
+
+radIn = {0, 0.03048, 0, 0.03048};
+radOut = {0.03048, 0.0381, 0.03048, 0.0381};
+Z = {25.4e-3, 25.4e-3, 0, 0};
+channelNames = {"qiu", "qou", "qid", "qod"};
+
+
+/*fet.deltaZ is included to avoid a direct equality comparison in the Z
+dimension, which may be subject to numerical errors, instead allowing for
+ >= and <= comparisons.   
+*/
+deltaZ = 0.0001;
+
+ramoModel = 2;
+//1 = readout only charges that terminate in ionization channel
+//2 = use FEM electric potential model
+
+
+/*for fet.ramoModel = 1
+ xtal.Rad =  3/2 * 25.4e-3;
+ fet.radIn = [0 0.8] * xtal.Rad;
+ fet.radOut = [fet.radIn(2:length(fet.radIn)),  xtal.Rad] ;
+*/
+
+
+
+
+dt = 800e-9; //[sec]
+//preTrig = 512 * fet.dt; %[sec]
+preTrig = 0.0004096;//[sec]
+timeBins = 4096;
+
+templateEnergy = 100e3;
+
+templateFile = "FETTemplate";
