@@ -64,7 +64,6 @@ private:
   ifstream fMapFile;
   int fThetaRes, fPhiRes;
 
-
 public:
 
 
@@ -78,7 +77,9 @@ public:
   void SetLDOS(double);
   void SetSTDOS(double);
   void SetFTDOS(double);
-  
+
+    
+    
   double GetBeta();
   double GetGamma();
   double GetLambda();
@@ -88,14 +89,13 @@ public:
   double GetLDOS();
   double GetSTDOS();
   double GetFTDOS();
-  
+
+    
   bool LoadMap(int, int, int, string);
   bool Load_NMap(int, int, int, string);
   double MapKtoV(int, G4ThreeVector);   //Get full group velocity vector
-  double BilinearInterpolateVDir(double, double, double, double, int, int); //interpolates group velocity direction
   G4ThreeVector MapKtoVDir(int, G4ThreeVector);//Get normalized group velocity direction so that normalisatioon does not have to be done at run time
 
 };
-
 
 #endif

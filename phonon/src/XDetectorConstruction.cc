@@ -130,6 +130,7 @@ void XDetectorConstruction::SetupGeometry()
     if(GeLogical->Load_NMap(161, 321, 1,fsCrystalMapsDir + "/STVec.ssv")){
       if(GeLogical->Load_NMap(161, 321, 2,fsCrystalMapsDir + "/FTVec.ssv")){
         G4cout<<"\nXDetectorConstruction::Loaded all three maps";}}}
+  else{G4cout<<"\n\n\nXDetectorConstruction::Failed to load direction maps; have you checked the path to the crystal maps?  See README for instructions.\n\n\n";}
 
   //Load maps for mapping phonon momentum direction onto velocity
   //Convention for polarization state: 0=LON, 1=ST, 2=FT
@@ -137,6 +138,7 @@ void XDetectorConstruction::SetupGeometry()
     if(GeLogical->LoadMap(161, 321, 1, fsCrystalMapsDir +"/ST.ssv")){
       if(GeLogical->LoadMap(161, 321, 2, fsCrystalMapsDir +"/FT.ssv")){
         G4cout<<"\nXDetectorConstruction::Loaded all three velocity maps";}}}
+  else{G4cout<<"\n\n\nXDetectorConstruction::Failed to load velocity maps; have you checked the path to the crystal maps?  See README for instructions.\n\n\n";}
   
   //Set Ge lattice dynamical information
   GeLogical->SetDynamicalConstants(-0.732, -0.708, 0.376, 0.561);
