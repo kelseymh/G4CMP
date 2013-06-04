@@ -49,12 +49,12 @@ public:
     
     //virtual function to compute value starting from the point in the xtal reference frame and the physical volume of the xtal
     virtual G4ThreeVector ComputeValue(G4ThreeVector,XPhysicalLattice*) = 0;
-    virtual G4double ComputePositionInUnitCell(G4double,G4double&);
+    virtual G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);
     
     virtual G4double ComputeTFScreeningRadius(XPhysicalLattice*);
     
-    virtual G4double GetMaximum(XPhysicalLattice*);
-    virtual G4double GetMinimum(XPhysicalLattice*);
+    virtual G4ThreeVector GetMaximum(XPhysicalLattice*);
+    virtual G4ThreeVector GetMinimum(XPhysicalLattice*);
     
     //Contructors
     XVCrystalCharacteristic();

@@ -53,7 +53,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     
     fParticleGun->SetParticleDefinition(vParticle);
     
-    G4ThreeVector vParticlePosition = G4ThreeVector(-60.*cm,0.,0.);
+    G4ThreeVector vParticlePosition = G4ThreeVector(0.,-60.*cm,0.);
 
     fParticleGun->SetParticleEnergy(400.*GeV);
 
@@ -75,9 +75,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     // Function called at the beginning of an event
     //--------------------------------------
     
-    G4double vBeamDivergence = 10.E-6 * radian;
+    G4double vBeamDivergence = 20.E-6 * radian;
+    
     G4double vRotation = (G4UniformRand() - 0.5 ) * vBeamDivergence;
-    G4ThreeVector vParticleMomentumDirection = G4ThreeVector(1.,0.,0.).rotate(G4ThreeVector(0,0,1),vRotation).unit();
+    
+    G4ThreeVector vParticleMomentumDirection = G4ThreeVector(0.,1.,0.).rotate(G4ThreeVector(0,0,1),vRotation).unit();
     
     fParticleGun->SetParticleMomentumDirection(vParticleMomentumDirection);
     

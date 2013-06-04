@@ -90,20 +90,20 @@ G4double XVCrystalCharacteristic::ComputeTFScreeningRadius(XPhysicalLattice* vLa
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double ComputePositionInUnitCell{
-    return -1.;
+G4ThreeVector XVCrystalCharacteristic::ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*){
+    return G4ThreeVector(-1.,-1.,-1.);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double GetMaximum(){
-    return (DBL_MAX);
+G4ThreeVector XVCrystalCharacteristic::GetMaximum(XPhysicalLattice*){
+    return G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double GetMinimum(){
-    return (-DBL_MAX);
+G4ThreeVector XVCrystalCharacteristic::GetMinimum(XPhysicalLattice*){
+    return G4ThreeVector(-DBL_MAX,-DBL_MAX,-DBL_MAX);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

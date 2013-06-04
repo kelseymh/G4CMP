@@ -51,7 +51,7 @@ XCrystalPlanarMoliereTempPotential::~XCrystalPlanarMoliereTempPotential(){
 G4double XCrystalPlanarMoliereTempPotential::ComputeValueForSinglePlane(G4double vX,XPhysicalLattice* vLattice){
     
     G4VPhysicalVolume* vVolume = vLattice->GetVolume();
-    G4Element* vElement = GetXUnitCell(vVolume)->GetBase(0)->GetElement();
+
     G4double aTF = ComputeTFScreeningRadius(vLattice);
     G4double vTVA = GetThermalVibrationAmplitude();
     
@@ -81,23 +81,22 @@ G4double XCrystalPlanarMoliereTempPotential::ComputeValueForSinglePlane(G4double
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XCrystalPlanarMoliereTempPotential::GetMaximum(XPhysicalLattice* vLattice){
+G4ThreeVector XCrystalPlanarMoliereTempPotential::GetMaximum(XPhysicalLattice* vLattice){
     G4VPhysicalVolume* vVolume = vLattice->GetVolume();
-    G4double vInterplanarDistance = GetXUnitCell(vVolume)->ComputeDirectPeriod(GetXPhysicalLattice(vVolume)->GetMiller(0),GetXPhysicalLattice(vVolume)->GetMiller(1),GetXPhysicalLattice(vVolume)->GetMiller(2));
 
-    G4double vMaximum = ComputeValue(G4ThreeVector(0.,0.,0.),vLattice).y();
+    G4double vMaximum = ComputeValue(G4ThreeVector(0.,0.,0.),vLattice).x();
     
-    return vMaximum;
+    return G4ThreeVector(vMaximum,0.,0.);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XCrystalPlanarMoliereTempPotential::GetMinimum(XPhysicalLattice* vLattice){
+G4ThreeVector XCrystalPlanarMoliereTempPotential::GetMinimum(XPhysicalLattice* vLattice){
     G4VPhysicalVolume* vVolume = vLattice->GetVolume();
     G4double vInterplanarDistance = GetXUnitCell(vVolume)->ComputeDirectPeriod(GetXPhysicalLattice(vVolume)->GetMiller(0),GetXPhysicalLattice(vVolume)->GetMiller(1),GetXPhysicalLattice(vVolume)->GetMiller(2));
     
     G4double vMinimum = ComputeValue(G4ThreeVector(0.,vInterplanarDistance/2.,0.),vLattice).y();
     
-    return vMinimum;
+    return G4ThreeVector(vMinimum,0.,0.);
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

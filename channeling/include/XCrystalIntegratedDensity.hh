@@ -34,32 +34,51 @@
 class XCrystalIntegratedDensity {
 
 public:
-    inline void SetNumberOfPoints(unsigned int);
-    inline unsigned int GetNumberOfPoints();
-    
-    inline void SetNucleeiDensity(XVCrystalCharacteristic*);
-    inline XVCrystalCharacteristic* GetNucleiDensity();
-    
-    inline void SetElectronDensity(XVCrystalCharacteristic*);
-    inline XVCrystalCharacteristic* GetElectronDensity();
-    
+    void SetIntegrationPoints(unsigned int,unsigned int);
+    unsigned int GetIntegrationPoints(unsigned int);
+    unsigned int GetIntegrationPoints();
 
-    void InitializeTable(XPhysicalLattice*);
-    unsigned int FindIndex(G4ThreeVector);
+    void SetNumberOfPoints(unsigned int,unsigned int);
+    unsigned int GetNumberOfPoints(unsigned int);
+    unsigned int GetNumberOfPoints();
+
+    void SetNucleiDensity(XVCrystalCharacteristic*);
+    XVCrystalCharacteristic* GetNucleiDensity();
     
-    G4double GetValue(G4ThreeVector);
+    void SetElectronDensity(XVCrystalCharacteristic*);
+    XVCrystalCharacteristic* GetElectronDensity();
+
+    void SetPotential(XVCrystalCharacteristic*);
+    XVCrystalCharacteristic* GetPotential();
+
+    void SetXPhysicalLattice(XPhysicalLattice*);
+    XPhysicalLattice* GetXPhysicalLattice();
+    
+    G4double GetValue(G4double);
+    
+    void InitializeTable();
+    G4bool HasBeenInitialized();
+    //now it checks only of the table is initialized, it does not check if the particular crystal is initialized. To be changed in the future!
     
 protected:
-    G4double ComputeValue(G4ThreeVector,XPhysicalLattice*);
+    G4double ComputeValue(G4double);
 
 private:
+    XPhysicalLattice* fLattice;
     XVCrystalCharacteristic* fElectronDensity;
     XVCrystalCharacteristic* fNucleiDensity;
+    XVCrystalCharacteristic* fPotential;
+
+    G4double fPotentialMinimum;
+    G4double fPotentialRange;
+    
     std::vector<G4double> fTable;
-    unsigned int fNumberOfPoints;
+    unsigned int fNumberOfPoints[3];
+    unsigned int fIntegrationPoints[3];
+    
 
 public:   //Contructors
-    XCrystalIntegratedDensity();
+    XCrystalIntegratedDensity(XVCrystalCharacteristic*,XVCrystalCharacteristic*,XVCrystalCharacteristic*);
     ~XCrystalIntegratedDensity();
 };
 

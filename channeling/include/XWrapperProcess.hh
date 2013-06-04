@@ -24,48 +24,67 @@
 // ********************************************************************
 //
 //
-// $Id$
-//
-#ifndef XLogicalAtomicLattice_h
-#define XLogicalAtomicLattice_h
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include "G4ThreeVector.hh"
+#ifndef XWrapperProcess_h
+#define XWrapperProcess_h 1
 
-#ifndef MAXLATTICEATOMS
-#define MAXLATTICEATOMS 64
-#endif
+#include "G4ios.hh"
+#include "globals.hh"
+#include "G4VDiscreteProcess.hh"
+#include "ChannelingParticleUserInfo.hh"
 
-using namespace std;
+class G4Material;
 
-class XLogicalAtomicLattice{
+class XWrapperProcess : public G4VDiscreteProcess 
+{
+  public:
 
-private:
-    // position of the atoms are saved in unit cell system, i.e MIN 0. & MAX 1.
-    G4ThreeVector fLatticeAtomPosition[MAXLATTICEATOMS];
-    G4int fLatticeAtomNumber;
-    
-public:    
-    void InitializeXLogicalAtomicLattice();
+  XWrapperProcess(const G4String& processName ="XWrapperProcess" );
+  XWrapperProcess(const G4String& processName, G4VDiscreteProcess*);
 
-    // Get methods
-    G4ThreeVector GetAtomPosition(G4int i);
-    G4int GetLatticeNumberOfAtoms();
-    
-    // Set methods
-    void AddAtom(G4ThreeVector);
-    void DeleteAtom(G4ThreeVector);
-    
+  virtual ~XWrapperProcess();
 
-    // Calculation methods
-    // ints == Miller indexes
-    G4complex ComputeGeometricalStructureFactorSingleKind(G4int,G4int,G4int);
+  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
+  virtual G4bool IsApplicable(const G4ParticleDefinition&);
+  virtual void BuildPhysicsTable(const G4ParticleDefinition&);
 
-    // Definition methods
-    XLogicalAtomicLattice();
-    ~XLogicalAtomicLattice();
+  virtual G4double PostStepGetPhysicalInteractionLength (const G4Track &track, 
+							 G4double previousStepSize, 
+							 G4ForceCondition *condition);
+
+  void registerProcess(G4VDiscreteProcess* toRegister);  
+  //  void ResetNumberOfInteractionLengthLeft();
+  void StartTracking(G4Track* aTrack);
+  //  void SubtractNumberOfInteractionLengthLeft(G4double previousStepSize);
+
+  G4double channelingFactor;
+                           
+  protected:
+
+ 
+  virtual G4double GetMeanFreePath(
+                const G4Track&, G4double, G4ForceCondition* );
+ 
+
+  private: 
+  
+  // hide assignment operator as private 
+  XWrapperProcess(XWrapperProcess&);
+  XWrapperProcess& operator=(const XWrapperProcess& right);
+
+  //private data members
+  G4VDiscreteProcess* registeredProcess;
+  
 };
 
 #endif
+
+
+
+
+
+
+
+
+
+

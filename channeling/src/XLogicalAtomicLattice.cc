@@ -47,7 +47,7 @@ void XLogicalAtomicLattice::InitializeXLogicalAtomicLattice(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector& XLogicalAtomicLattice::GetAtomPosition(G4int i){
+G4ThreeVector XLogicalAtomicLattice::GetAtomPosition(G4int i){
     if(i<fLatticeAtomNumber){
         return fLatticeAtomPosition[i];
     }
