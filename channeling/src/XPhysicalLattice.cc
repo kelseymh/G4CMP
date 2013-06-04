@@ -271,7 +271,7 @@ G4ThreeVector XPhysicalLattice::ProjectVectorFromLatticeToWorld(G4ThreeVector vV
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4ThreeVector XPhysicalLattice::GetLatticeDirection(){
-    return G4ThreeVector(1.,0.,0.).rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
+    return G4ThreeVector(0.,1.,0.).rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 

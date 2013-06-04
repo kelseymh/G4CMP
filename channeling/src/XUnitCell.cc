@@ -30,7 +30,9 @@
 #include <cmath>
 
 XUnitCell::XUnitCell(){
-    InitializeXUnitCell();
+    fSize = G4ThreeVector(0. * angstrom,0. * angstrom,0. * angstrom);
+    fAngle = G4ThreeVector(0.5 * M_PI * radian,0.5 * M_PI * radian,0.5 * M_PI * radian);
+    fNumberOfBases = 0.;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -40,22 +42,13 @@ XUnitCell::~XUnitCell(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XUnitCell::InitializeXUnitCell(){
-    //for(G4int i=0;i<MAXATOMNUMBER;i++) fLatticeAtomPosition[i] = G4ThreeVector(0.,0.,0.);
-    fSize = G4ThreeVector(1. * angstrom,1. * angstrom,1. * angstrom);
-    fAngle = G4ThreeVector(0.5 * M_PI * radian,0.5 * M_PI * radian,0.5 * M_PI * radian);
-    fNumberOfBases = 0.;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-G4ThreeVector& XUnitCell::GetSize(){
+G4ThreeVector XUnitCell::GetSize(){
     return fSize;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector& XUnitCell::GetAngle(){
+G4ThreeVector XUnitCell::GetAngle(){
     return fAngle;
 }
 

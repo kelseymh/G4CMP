@@ -51,11 +51,10 @@ private:
     G4ThreeVector fSize;
     G4ThreeVector fAngle;
     
-    void InitializeXUnitCell();
 public:
     //Retrieval methods
-    inline G4ThreeVector& GetSize();
-    inline G4ThreeVector& GetAngle();
+    G4ThreeVector GetSize();
+    G4ThreeVector GetAngle();
     XLogicalBase* GetBase(G4int);
     
     

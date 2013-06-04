@@ -60,20 +60,20 @@ private:
     void AddCrystalTarget();    
 
 private:        
-    G4double fWorldSizeX;
-    G4double fWorldSizeYZ;
+    G4double fWorldSizeXZ;
+    G4double fWorldSizeY;
     G4Box* fWorldSolid;
     G4LogicalVolume* fWorldLogic;
     G4VPhysicalVolume* fWorldPhysical;
     
-    G4double fSSDSizeX;
-    G4double fSSDSizeYZ;
+    G4double fSSDSizeXZ;
+    G4double fSSDSizeY;
     G4Box* fSSDSolid;
     G4LogicalVolume* fSSDLogic;
     G4VPhysicalVolume* fSSDPhysical;
 
-    G4double fXtalSizeX;
-    G4double fXtalSizeYZ;
+    G4double fXtalSizeXZ;
+    G4double fXtalSizeY;
     G4Box* fXtalSolid;
     G4LogicalVolume* fXtalLogic;
     G4VPhysicalVolume* fXtalPhysical;

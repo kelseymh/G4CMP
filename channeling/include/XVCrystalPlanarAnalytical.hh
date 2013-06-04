@@ -47,10 +47,10 @@ public:
     
     //virtual function of XVCrystalCharacteristic
     G4ThreeVector ComputeValue(G4ThreeVector,XPhysicalLattice*);
-    G4double ComputePositionInUnitCell(G4double,G4double&);//G4double = position in the channel; G4double& = interplanar distance
+    G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);//G4double = position in the channel; G4double& = interplanar distance
     
-    virtual G4double GetMaximum(XPhysicalLattice*);
-    virtual G4double GetMinimum(XPhysicalLattice*);
+    virtual G4ThreeVector GetMaximum(XPhysicalLattice*);
+    virtual G4ThreeVector GetMinimum(XPhysicalLattice*);
 
     //Contructors
     XVCrystalPlanarAnalytical();

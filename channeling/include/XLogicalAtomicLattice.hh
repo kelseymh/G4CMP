@@ -51,7 +51,7 @@ public:
     void InitializeXLogicalAtomicLattice();
 
     // Get methods
-    G4ThreeVector& GetAtomPosition(G4int i);
+    G4ThreeVector GetAtomPosition(G4int i);
     G4int GetLatticeNumberOfAtoms();
     
     // Set methods

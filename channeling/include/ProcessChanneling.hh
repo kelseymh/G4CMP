@@ -34,6 +34,7 @@
 
 #include "XLatticeManager3.hh"
 #include "XVCrystalCharacteristic.hh"
+#include "XCrystalIntegratedDensity.hh"
 
 class ProcessChanneling : public G4VDiscreteProcess
 {
@@ -53,17 +54,21 @@ protected:
     virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* );
     
 public:
-    void SetPotential(XVCrystalCharacteristic*);
-    void SetNucleiDensity(XVCrystalCharacteristic*);
-    void SetElectronDensity(XVCrystalCharacteristic*);
-    void SetElectricField(XVCrystalCharacteristic*);
-
-private:
     XVCrystalCharacteristic* GetPotential();
-    XVCrystalCharacteristic* GetNucleiDensity();
-    XVCrystalCharacteristic* GetElectronDensity();
-    XVCrystalCharacteristic* GetElectricField();
+    void SetPotential(XVCrystalCharacteristic*);
 
+    XVCrystalCharacteristic* GetNucleiDensity();
+    void SetNucleiDensity(XVCrystalCharacteristic*);
+    
+    XVCrystalCharacteristic* GetElectronDensity();
+    void SetElectronDensity(XVCrystalCharacteristic*);
+
+    XVCrystalCharacteristic* GetElectricField();
+    void SetElectricField(XVCrystalCharacteristic*);
+    
+    XCrystalIntegratedDensity* GetIntegratedDensity();
+    void SetIntegratedDensity(XCrystalIntegratedDensity*);
+    
 private:
     G4double GetChannelingMeanFreePath(const G4Track& aTrack);
     
@@ -84,16 +89,22 @@ private:
     
 private:
     XLatticeManager3* fLatticeManager;
+    
     G4ThreeVector fMomentum;
     G4ThreeVector fPosition;
-    
+    G4double fDensity;
     G4bool fHasBeenInChanneling;
+    
     G4bool fCompute;
   
     XVCrystalCharacteristic* fPotentialEnergy;
     XVCrystalCharacteristic* fNucleiDensity;
     XVCrystalCharacteristic* fElectronDensity;
     XVCrystalCharacteristic* fElectricField;
+    
+    XCrystalIntegratedDensity* fIntegratedDensity;
+    
+    std::ofstream fFileOut;
 };
 
 #endif

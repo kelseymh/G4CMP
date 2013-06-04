@@ -87,10 +87,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 void DetectorConstruction::AddWorld(){
     G4Material* Vacuum = G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
     
-    fWorldSizeX = 1.4 * m;
-    fWorldSizeYZ = 10 * cm;
+    fWorldSizeY = 1.4 * m;
+    fWorldSizeXZ = 10 * cm;
     
-    fWorldSolid = new G4Box("World", fWorldSizeX/2.,fWorldSizeYZ/2.,fWorldSizeYZ/2.);
+    fWorldSolid = new G4Box("World", fWorldSizeXZ/2.,fWorldSizeY/2.,fWorldSizeXZ/2.);
     fWorldLogic = new G4LogicalVolume(fWorldSolid,Vacuum,"World");
     fWorldPhysical = new G4PVPlacement(0,G4ThreeVector(0,0,0),fWorldLogic,"World",0,false,0);
 }
@@ -100,16 +100,16 @@ void DetectorConstruction::AddWorld(){
 void DetectorConstruction::AddSiliconStripDetector(){
     G4Material* Si = G4NistManager::Instance()->FindOrBuildMaterial("G4_Si");
     
-    fSSDSizeYZ = 1.92 * cm;
-    fSSDSizeX = 0.6 * mm;
+    fSSDSizeXZ = 1.92 * cm;
+    fSSDSizeY = 0.6 * mm;
     
-    fSSDSolid = new G4Box("SiSD", fSSDSizeX/2.,fSSDSizeYZ/2.,fSSDSizeYZ/2.);
+    fSSDSolid = new G4Box("SiSD", fSSDSizeXZ/2.,fSSDSizeY/2.,fSSDSizeXZ/2.);
     fSSDLogic = new G4LogicalVolume(fSSDSolid,Si,"SiSD");
     
     for(int j1=0;j1<3;j1++)
     {
-        G4double vDetDistX = double(j1 - 1) * 50. * cm + fSSDSizeX/2. - 10. * fXtalSizeX/2.;;
-        fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(vDetDistX,0.,0.),fSSDLogic,"SiSD",fWorldLogic,false,j1);
+        G4double vDetDistY = double(j1 - 1) * 50. * cm + fSSDSizeY/2. - 10. * fXtalSizeY/2.;;
+        fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.,vDetDistY,0.),fSSDLogic,"SiSD",fWorldLogic,false,j1);
     }
     
     G4String SDname;
@@ -124,10 +124,10 @@ void DetectorConstruction::AddSiliconStripDetector(){
 void DetectorConstruction::AddCrystalTarget(){
     G4Material* Si = G4NistManager::Instance()->FindOrBuildMaterial("G4_Si");
 
-    fXtalSizeX = 2. * mm;
-    fXtalSizeYZ = 6. * cm;
+    fXtalSizeY = 2. * mm;
+    fXtalSizeXZ = 6. * cm;
     
-    fXtalSolid = new G4Box("Target", fXtalSizeX/2.,fXtalSizeYZ/2.,fXtalSizeYZ/2.);
+    fXtalSolid = new G4Box("Target", fXtalSizeXZ/2.,fXtalSizeY/2.,fXtalSizeXZ/2.);
     fXtalLogic = new G4LogicalVolume(fXtalSolid, Si,"Target");
     fXtalPhysical = new G4PVPlacement(0,G4ThreeVector(),fXtalLogic,"Target",fWorldLogic,false,0);
     
