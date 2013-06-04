@@ -72,13 +72,7 @@ XWrapperProcess::~XWrapperProcess()
 XWrapperProcess::XWrapperProcess(XWrapperProcess& right)
 : G4VDiscreteProcess(right)
 {;}
-/*
-void XWrapperProcess::ResetNumberOfInteractionLengthLeft()
-{H  registeredProcess->ResetNumberOfInteractionLengthLeft();
-  theNumberOfInteractionLengthLeft = registeredProcess->GetNumberOfInteractionLengthLeft();
-  theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft;
-}
-*/
+
 void XWrapperProcess::StartTracking(G4Track* aTrack)
 {
   registeredProcess->StartTracking(aTrack);
@@ -86,13 +80,7 @@ void XWrapperProcess::StartTracking(G4Track* aTrack)
   theNumberOfInteractionLengthLeft = -1.0;
   theInitialNumberOfInteractionLength=-1.0;  
 }
-/*
-void XWrapperProcess::SubtractNumberOfInteractionLengthLeft(G4double previousStepSize)
-{
-  registeredProcess->SubtractNumberOfInteractionLengthLeft(previousStepSize);
-  theNumberOfInteractionLengthLeft = registeredProcess->GetNumberOfInteractionLengthLeft();
-}
-*/
+
 void XWrapperProcess::registerProcess(G4VDiscreteProcess* toRegister){
   registeredProcess = toRegister;
 }
@@ -103,7 +91,6 @@ XWrapperProcess::GetMeanFreePath(
 			    G4double prevStepSize, 
 			    G4ForceCondition* condition  )
 {
-
 
   return DBL_MAX;
 }
@@ -127,9 +114,14 @@ G4double XWrapperProcess::PostStepGetPhysicalInteractionLength (const G4Track &a
     //  DO NOTHING
   }
 
-  //obtain PIL from registered process
-  G4double PIL = 1.0;
-  channelingFactor = 20.0;
+  //determine factor by which to change mfp
+  ChannelingParticleUserInfo* chanInfo = (ChannelingParticleUserInfo*) aTrack.GetUserInformation();
+  channelingFactor = chanInfo->GetChannelingFactor();
+  ///////////////////////////
+  //for debug purposes only: set channeling factor by hand
+  ///////////////////////////
+  channelingFactor = 1.0;  // <--REMOVE THIS AFTER DEBUGGING!!!!!
+  ///////////////////////////
 
   G4double regIntLength = registeredProcess->PostStepGetPhysicalInteractionLength(aTrack, previousStepSize/channelingFactor, condition);
   G4double regIntNumber = registeredProcess->GetNumberOfInteractionLengthLeft();

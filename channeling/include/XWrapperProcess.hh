@@ -31,6 +31,7 @@
 #include "G4ios.hh"
 #include "globals.hh"
 #include "G4VDiscreteProcess.hh"
+#include "ChannelingParticleUserInfo.hh"
 
 class G4Material;
 
