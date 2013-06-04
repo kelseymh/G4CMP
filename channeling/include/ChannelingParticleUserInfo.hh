@@ -17,10 +17,12 @@ public:
 
   void SetChannelingFactor(G4double);
   G4double GetChannelingFactor();
+  G4double GetPreStepChannelingFactor();
 
 private:
 
   G4double channelingFactor;
+  G4double preStepChannelingFactor;
   bool channelingFlag;
 
 };

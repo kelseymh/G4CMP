@@ -117,13 +117,14 @@ G4double XWrapperProcess::PostStepGetPhysicalInteractionLength (const G4Track &a
   //determine factor by which to change mfp
   ChannelingParticleUserInfo* chanInfo = (ChannelingParticleUserInfo*) aTrack.GetUserInformation();
   channelingFactor = chanInfo->GetChannelingFactor();
+  G4double preStepChannelingFactor = chanInfo->GetPreStepChannelingFactor();
   ///////////////////////////
   //for debug purposes only: set channeling factor by hand
   ///////////////////////////
   channelingFactor = 1.0;  // <--REMOVE THIS AFTER DEBUGGING!!!!!
   ///////////////////////////
 
-  G4double regIntLength = registeredProcess->PostStepGetPhysicalInteractionLength(aTrack, previousStepSize/channelingFactor, condition);
+  G4double regIntLength = registeredProcess->PostStepGetPhysicalInteractionLength(aTrack, previousStepSize/preStepChannelingFactor, condition);
   G4double regIntNumber = registeredProcess->GetNumberOfInteractionLengthLeft();
   currentInteractionLength = regIntLength / regIntNumber;
   theNumberOfInteractionLengthLeft = regIntNumber;
