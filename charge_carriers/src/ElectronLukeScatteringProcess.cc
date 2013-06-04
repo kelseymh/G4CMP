@@ -144,7 +144,7 @@ postStepPoint->GetVelocity()*postStepPoint->GetMass()/c_squared/hbar_Planck*
 
   G4double tau =  1 / (
 		       velLong / (3*l0Hole)
-		       * (kmag / ksound_Hole)
+		       * (kmag / ksound_Hole)*(kmag/ksound_Hole)
 		       * ((1- ksound_Hole /kmag))
 		       * ((1- ksound_Hole /kmag))
 		       * ((1- ksound_Hole /kmag))

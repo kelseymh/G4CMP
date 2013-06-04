@@ -58,13 +58,13 @@ public:
     EqValley3 = new EqEMFieldXtal(detectorField);
     EqValley4 = new EqEMFieldXtal(detectorField);
 
-    EqValley1->SetValleyTransform(G4AffineTransform(G4RotationMatrix(0, 
+    EqValley1->SetValleyTransform(G4AffineTransform(G4RotationMatrix(PI/4, 
 -PI/4, PI/4)));
-    EqValley2->SetValleyTransform(G4AffineTransform(G4RotationMatrix(PI/2, 
+    EqValley2->SetValleyTransform(G4AffineTransform(G4RotationMatrix(PI/4, 
 -PI/4, -PI/4)));
-    EqValley3->SetValleyTransform(G4AffineTransform(G4RotationMatrix(PI/2, 
+    EqValley3->SetValleyTransform(G4AffineTransform(G4RotationMatrix(-PI/4, 
 PI/4, PI/4)));
-    EqValley4->SetValleyTransform(G4AffineTransform(G4RotationMatrix(0, 
+    EqValley4->SetValleyTransform(G4AffineTransform(G4RotationMatrix(PI/4, 
 PI/4, -PI/4)));
     
     normalStepper = new G4ClassicalRK4(EqNormal, 8);
