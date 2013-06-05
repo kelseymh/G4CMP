@@ -56,7 +56,7 @@ G4VParticleChange* DriftingCarrierBoundaryProcess::PostStepDoIt( const G4Track& 
   std::ofstream file;
   file.open("epositions.txt",std::ios::app);
   file << aTrack.GetPosition().getX()/m <<  " " <<  aTrack.GetPosition().getY()/m 
-	<< G4endl;
+  	<< G4endl;
   file.close();
   return &aParticleChange;
 }

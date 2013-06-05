@@ -58,7 +58,7 @@ public:
     EqValley3 = new EqEMFieldXtal(detectorField);
     EqValley4 = new EqEMFieldXtal(detectorField);
 
-    EqValley1->SetValleyTransform(G4AffineTransform(G4RotationMatrix(PI/4, 
+    EqValley1->SetValleyTransform(G4AffineTransform(G4RotationMatrix(-PI/4, 
 -PI/4, PI/4)));
     EqValley2->SetValleyTransform(G4AffineTransform(G4RotationMatrix(PI/4, 
 -PI/4, -PI/4)));

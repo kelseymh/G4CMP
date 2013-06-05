@@ -38,7 +38,8 @@ ElectronLukeScatteringProcess::ElectronLukeScatteringProcess()
   massFreeElectron=9.1e-31*kg;
   massHole=3/(1/1.58+2/.081)*massFreeElectron;
   hbar= 6.5821e-16*eV*s;
-  ksound_Hole=5512124.0235/m; //velLong*massHole / hbar;//1.6306e7/m;
+  //ksound_Hole=5512124.0235/m; //velLong*massHole / hbar;//1.6306e7/m;
+  ksound_Hole = velLong*massHole/hbar_Planck;
   G4cout<<"\nElectronLukeScatteringProcess::Constructor:ksound_Hole = "
 	<<ksound_Hole*m<<" /m"<<G4endl;
 
@@ -80,16 +81,16 @@ G4double ElectronLukeScatteringProcess::GetMeanFreePath(const G4Track& aTrack, G
   int valley = ((DriftingElectronTrackInformation*) aTrack.GetUserInformation())->getValley();
   switch(valley){
       case 1:
-          trix = G4RotationMatrix(0, -PI/4, PI/4);
+          trix = G4RotationMatrix(-PI/4, -PI/4, PI/4);
           break;
       case 2:
-          trix = G4RotationMatrix(PI/2, -PI/4, -PI/4);
+          trix = G4RotationMatrix(PI/4, -PI/4, -PI/4);
           break;
       case 3:
-          trix = G4RotationMatrix(PI/2, PI/4, PI/4);
+          trix = G4RotationMatrix(-PI/4, PI/4, PI/4);
           break;
       case 4:
-          trix = G4RotationMatrix(0, PI/4, -PI/4);
+          trix = G4RotationMatrix(PI/4, PI/4, -PI/4);
           break;
   }
   //trix = G4RotationMatrix(G4ThreeVector(0   ,   0.8165   ,   0.57735),
@@ -269,16 +270,16 @@ G4cout <<  E_new <<  G4endl;
   int valley = ((DriftingElectronTrackInformation*) aTrack.GetUserInformation())->getValley();
   switch(valley){
       case 1:
-          trix = G4RotationMatrix(0, -PI/4, PI/4);
+          trix = G4RotationMatrix(-PI/4, -PI/4, PI/4);
           break;
       case 2:
-          trix = G4RotationMatrix(PI/2, -PI/4, -PI/4);
+          trix = G4RotationMatrix(PI/4, -PI/4, -PI/4);
           break;
       case 3:
-          trix = G4RotationMatrix(PI/2, PI/4, PI/4);
+          trix = G4RotationMatrix(-PI/4, PI/4, PI/4);
           break;
       case 4:
-          trix = G4RotationMatrix(0, PI/4, -PI/4);
+          trix = G4RotationMatrix(PI/4, PI/4, -PI/4);
           break;
   }
   //trix = G4RotationMatrix(G4ThreeVector(0   ,   0.8165   ,   0.57735),

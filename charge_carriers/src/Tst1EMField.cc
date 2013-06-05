@@ -31,7 +31,7 @@ Tst1EMField::Tst1EMField(G4LogicalVolume* logVol){
   //G4double em= 1*volt/m;
 
   fEMfield = new G4UniformElectricField(
-                 G4ThreeVector(0.0,0.0, 40*volt/m));
+                 G4ThreeVector(0.0,0.0, 40.0*volt/m));
 
   // Create an equation of motion for this field
   fEquation = new EqEMFieldXtal(fEMfield);
