@@ -35,7 +35,9 @@
 #include "DetectorConstruction.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "PhysicsList.hh"
+#include "TrackingAction.hh"
 #include "QGSP_BERT.hh"
+#include "TrackingAction.hh"
 
 #include "A01EventAction.hh"
 
@@ -60,16 +62,19 @@ int main(int argc,char** argv)
     runManager->SetUserInitialization(new DetectorConstruction);
     
     //G4VUserPhysicsList* physics = new QGSP_BERT();
+
+
     PhysicsList* physics = new PhysicsList();
-    runManager->SetUserInitialization(physics);
     
+    runManager->SetUserInitialization(physics);
+
     runManager->SetUserAction(new PrimaryGeneratorAction);
     
     runManager->SetUserAction(new A01EventAction);
 
+    runManager->SetUserAction(new TrackingAction());
+
     runManager->Initialize();
-    
-    
     
     
 #ifdef G4VIS_USE

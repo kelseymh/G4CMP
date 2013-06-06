@@ -69,7 +69,6 @@ G4double XCrystalPlanarMolierePotential::ComputeValueForSinglePlane(G4double vXp
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4ThreeVector XCrystalPlanarMolierePotential::GetMaximum(XPhysicalLattice* vLattice){
-    G4VPhysicalVolume* vVolume = vLattice->GetVolume();
 
     G4double vMaximum = ComputeValue(G4ThreeVector(0.,0.,0.),vLattice).y();
     

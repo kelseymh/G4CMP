@@ -54,6 +54,7 @@ G4ThreeVector XLogicalAtomicLattice::GetAtomPosition(G4int i){
     else{
         G4cout << "XLogicalAtomicLattice::GetAtomPosition - atom " << i << " does not exist!!" <<std::endl;
     }
+    return G4ThreeVector(-1.,-1.,-1.);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

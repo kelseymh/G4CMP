@@ -42,6 +42,7 @@
 #include "G4ParticleDefinition.hh"
 #include "Randomize.hh"
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
@@ -75,6 +76,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     // Function called at the beginning of an event
     //--------------------------------------
     
+
     G4double vBeamDivergence = 20.E-6 * radian;
     
     G4double vRotation = (G4UniformRand() - 0.5 ) * vBeamDivergence;

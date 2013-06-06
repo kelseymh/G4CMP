@@ -25,30 +25,28 @@
 //
 //
 
-#include "XThomasFermiScreeningRadius.hh"
+#ifndef TrackingAction_h
+#define TrackingAction_h 1
 
-XThomasFermiScreeningRadius::XThomasFermiScreeningRadius(){
-}
+#include "G4UserTrackingAction.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-XThomasFermiScreeningRadius::~XThomasFermiScreeningRadius(){
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-G4double XThomasFermiScreeningRadius::ComputeTFScreeningRadius(const G4Track& aTrack){
-        
-    G4double vTFSR = Bohr_radius * 0.88534;
+class TrackingAction : public G4UserTrackingAction{
     
-    if(aTrack.GetParticleDefinition()->GetParticleName() == "proton"){
-        vTFSR /= (std::pow(aTrack.GetMaterial()->GetZ(),0.333333333));
-    }
-    else{
-        vTFSR /= (std::pow(aTrack.GetMaterial()->GetZ(),0.23) + std::pow(aTrack.GetParticleDefinition()->GetPDGCharge(),0.23));
-    }
+public:
     
-    return vTFSR;
-}
+    void PreUserTrackingAction(const G4Track*);
+   
+    void PostUserTrackingAction(const G4Track*);
+};
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+#endif
+
+
+
+
+
+
+
+
+
+

@@ -49,8 +49,8 @@ public:
     G4ThreeVector ComputeValue(G4ThreeVector,XPhysicalLattice*);
     G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);//G4double = position in the channel; G4double& = interplanar distance
     
-    virtual G4ThreeVector GetMaximum(XPhysicalLattice*);
-    virtual G4ThreeVector GetMinimum(XPhysicalLattice*);
+    virtual G4ThreeVector ComputeMaximum(XPhysicalLattice*);
+    virtual G4ThreeVector ComputeMinimum(XPhysicalLattice*);
 
     //Contructors
     XVCrystalPlanarAnalytical();

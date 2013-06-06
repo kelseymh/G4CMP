@@ -83,10 +83,10 @@ PhysicsList::~PhysicsList(){
 
 void PhysicsList::ConstructProcess(){
     AddTransportation();
-    AddDecay();
+    //AddDecay();
     AddStepMax();
     AddChanneling();
-    AddStandardSS();
+    //AddStandardSS();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

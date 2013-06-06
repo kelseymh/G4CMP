@@ -36,8 +36,12 @@ class XVCrystalCharacteristic {
 
 private:
     XLatticeManager3* fLatticeManager;
-    G4double fThermalVibrationAmplitude;
 
+protected:
+    G4double fThermalVibrationAmplitude; // TO BE MOVED TO XLogicalLattice
+    G4ThreeVector fMaximum;
+    G4ThreeVector fMinimum;
+    
 public:
     //retrieval functions
     XPhysicalLattice* GetXPhysicalLattice(G4VPhysicalVolume*);
@@ -55,7 +59,10 @@ public:
     
     virtual G4ThreeVector GetMaximum(XPhysicalLattice*);
     virtual G4ThreeVector GetMinimum(XPhysicalLattice*);
-    
+
+    virtual G4ThreeVector ComputeMaximum(XPhysicalLattice*);
+    virtual G4ThreeVector ComputeMinimum(XPhysicalLattice*);
+
     //Contructors
     XVCrystalCharacteristic();
     ~XVCrystalCharacteristic();

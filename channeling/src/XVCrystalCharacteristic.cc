@@ -96,13 +96,31 @@ G4ThreeVector XVCrystalCharacteristic::ComputePositionInUnitCell(G4ThreeVector,X
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XVCrystalCharacteristic::GetMaximum(XPhysicalLattice*){
+G4ThreeVector XVCrystalCharacteristic::GetMaximum(XPhysicalLattice* vLattice){
+    if(fMaximum == G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX)){
+        fMaximum = ComputeMaximum(vLattice);
+    }
+    return fMaximum;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4ThreeVector XVCrystalCharacteristic::GetMinimum(XPhysicalLattice* vLattice){
+    if(fMinimum == G4ThreeVector(-DBL_MAX,-DBL_MAX,-DBL_MAX)){
+        fMinimum = ComputeMinimum(vLattice);
+    }
+    return fMinimum;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4ThreeVector XVCrystalCharacteristic::ComputeMaximum(XPhysicalLattice*){
     return G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XVCrystalCharacteristic::GetMinimum(XPhysicalLattice*){
+G4ThreeVector XVCrystalCharacteristic::ComputeMinimum(XPhysicalLattice*){
     return G4ThreeVector(-DBL_MAX,-DBL_MAX,-DBL_MAX);
 }
 

@@ -33,6 +33,8 @@
 #include "A01EventAction.hh"
 #include "A01EventActionMessenger.hh"
 
+#include "G4RunManager.hh"
+
 #include "G4Event.hh"
 #include "G4EventManager.hh"
 #include "G4HCofThisEvent.hh"
@@ -47,6 +49,9 @@
 
 #include "A01DriftChamberHit.hh"
 
+#include "TrackingAction.hh"
+
+
 A01EventAction::A01EventAction()
 {
     fDHC_ID = -1;
@@ -60,8 +65,7 @@ A01EventAction::~A01EventAction()
     delete fMessenger;
 }
 
-void A01EventAction::BeginOfEventAction(const G4Event*)
-{
+void A01EventAction::BeginOfEventAction(const G4Event* evt){
 }
 
 void A01EventAction::EndOfEventAction(const G4Event* evt)

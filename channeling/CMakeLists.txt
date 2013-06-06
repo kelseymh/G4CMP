@@ -9,6 +9,9 @@ project(Channelling)
 # You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
 # to build a batch mode only executable
 #
+find_package(X11)
+find_package(OpenGL)
+
 option(WITH_GEANT4_UIVIS "Build example with Geant4 UI and Vis drivers" ON)
 if(WITH_GEANT4_UIVIS)
   find_package(Geant4 REQUIRED ui_all vis_all)
@@ -33,19 +36,19 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(channelling channelling.cc ${sources} ${headers})
-target_link_libraries(channelling ${Geant4_LIBRARIES})
+add_executable(channeling channeling.cc ${sources} ${headers})
+target_link_libraries(channeling ${Geant4_LIBRARIES})
 
 
 #----------------------------------------------------------------------------
 # For internal Geant4 use - but has no effect if you build this
 # example standalone
 #
-add_custom_target(Channelling DEPENDS channelling)
+add_custom_target(Channeling DEPENDS channeling)
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS channelling DESTINATION bin)
+install(TARGETS channeling DESTINATION bin)
 
 

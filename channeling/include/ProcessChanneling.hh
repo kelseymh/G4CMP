@@ -70,17 +70,18 @@ public:
     void SetIntegratedDensity(XCrystalIntegratedDensity*);
     
 private:
-    G4double GetChannelingMeanFreePath(const G4Track& aTrack);
+    G4double GetChannelingMeanFreePath(const G4Track&);
     
-    G4bool IsInChanneling(const G4Track& aTrack);
+    G4bool IsInChanneling(const G4Track&);
 
-    void UpdatePositionMomentumDensity(const G4Track& aTrack);
+    void UpdatePositionMomentumDensity(const G4Track&);
     
-    G4double ComputeChannelingCriticalEnergy(const G4Track& aTrack);
-    G4ThreeVector ComputeTransverseEnergy(const G4Track& aTrack);
+    G4double ComputeChannelingCriticalEnergy(const G4Track&);
+    G4ThreeVector ComputeTransverseEnergy(const G4Track&);
+    G4ThreeVector ComputeChannelingOutgoingMomentum(const G4Track&);
     
     void InitializeCrystalCharacteristics();
-    void ComputeCrystalCharacteristicForChanneling(const G4Track& aTrack);
+    void ComputeCrystalCharacteristicForChanneling(const G4Track&);
 
 private:
     // hide assignment operator as private
@@ -89,11 +90,6 @@ private:
     
 private:
     XLatticeManager3* fLatticeManager;
-    
-    G4ThreeVector fMomentum;
-    G4ThreeVector fPosition;
-    G4double fDensity;
-    G4bool fHasBeenInChanneling;
     
     G4bool fCompute;
   

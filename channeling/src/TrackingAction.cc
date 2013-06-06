@@ -24,24 +24,33 @@
 // ********************************************************************
 //
 //
-// $Id$
-//
-#ifndef XThomasFermiScreeningRadius_h
-#define XThomasFermiScreeningRadius_h
 
+#include "TrackingAction.hh"
+
+#include "G4TrackingManager.hh"
 #include "G4Track.hh"
+#include "G4TrackVector.hh"
 
-class XThomasFermiScreeningRadius {
+#include "ChannelingParticleUserInfo.hh"
 
-private:
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void TrackingAction::PreUserTrackingAction(const G4Track* aTrack){
+    ChannelingParticleUserInfo *  trackInfo( static_cast< ChannelingParticleUserInfo * >(aTrack->GetUserInformation() ) );
     
-public:
-    //Compute methods
-    G4double ComputeTFScreeningRadius(const G4Track& aTrack);
+    if ( trackInfo ){
+        return;
+    }
+    else{
+        G4Track *  theTrack( const_cast< G4Track * >( aTrack ) );
+        trackInfo = new ChannelingParticleUserInfo();
+        theTrack->SetUserInformation( trackInfo );
+    }
+}
 
-    //Contructors
-    XThomasFermiScreeningRadius();
-    ~XThomasFermiScreeningRadius();
-};
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-#endif
+void TrackingAction::PostUserTrackingAction(const G4Track* aTrack){
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
