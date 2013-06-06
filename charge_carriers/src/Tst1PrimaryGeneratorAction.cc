@@ -43,7 +43,7 @@ Tst1PrimaryGeneratorAction::~Tst1PrimaryGeneratorAction()
 void Tst1PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
 
-  for(int i=0;i<100;i++)
+  for(int i=0;i<1;i++)
   { 
     //particleGun->SetParticleDefinition(DriftingHole::Definition()); 
     //particleGun->SetParticleDefinition(LPhonon::Definition());
