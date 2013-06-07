@@ -70,7 +70,7 @@ ProcessChanneling::ProcessChanneling(const G4String& aName):G4VDiscreteProcess(a
     fCompute = true;
     
     fFileOut.open("channeling.txt");
-    fFileOut << "index,depth,pos,ang,dens,tr_en" << std::endl;
+    fFileOut << "index,posin,angin,depth,pos,ang,dens,tr_en" << std::endl;
 
     InitializeCrystalCharacteristics();
 }
@@ -184,6 +184,13 @@ void ProcessChanneling::UpdatePositionMomentumDensity(const G4Track& aTrack){
         chanInfo->SetMomentumChanneled(vMomentum);
         chanInfo->SetChannelingFactor(fIntegratedDensity->GetValue(ComputeTransverseEnergy(aTrack).x()));
     }
+    
+    if(chanInfo->GetMomentumChanneledFirst().x() == DBL_MAX){
+        chanInfo->SetMomentumChanneledFirst(chanInfo->GetMomentumChanneled());
+    }
+    if(chanInfo->GetPositionChanneledFirst().x() == DBL_MAX){
+        chanInfo->SetPositionChanneledFirst(chanInfo->GetPositionChanneled());
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -251,7 +258,14 @@ G4ThreeVector ProcessChanneling::ComputeTransverseEnergy(const G4Track& aTrack){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4ThreeVector ProcessChanneling::ComputeChannelingOutgoingMomentum(const G4Track& aTrack){
-    return G4ThreeVector(0.,0.,0.);
+    
+    ChannelingParticleUserInfo* chanInfo = (ChannelingParticleUserInfo*) aTrack.GetUserInformation();
+
+    G4double vTotalEnergy = aTrack.GetStep()->GetPostStepPoint()->GetTotalEnergy();
+    
+    G4ThreeVector vAngle = G4ThreeVector(G4UniformRand() * chanInfo->GetMomentumChanneled().x()/vTotalEnergy,0.,G4UniformRand() * chanInfo->GetMomentumChanneled().z()/vTotalEnergy);
+    
+    return vAngle;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -332,6 +346,10 @@ G4VParticleChange* ProcessChanneling::PostStepDoIt(const G4Track& aTrack, const 
     {
         bIsInChanneling = IsInChanneling(aTrack);
         if(bIsInChanneling){
+            if(fCompute){
+                ComputeCrystalCharacteristicForChanneling(aTrack);
+                fCompute = false;
+            }
             aParticleChange.ProposeMomentumDirection(fLatticeManager->GetXPhysicalLattice(vVolume)->GetLatticeDirection().unit());
         }
     }
@@ -340,9 +358,14 @@ G4VParticleChange* ProcessChanneling::PostStepDoIt(const G4Track& aTrack, const 
     {
         if(chanInfo->GetChanneling()){
             G4ThreeVector vNewMomentum = fLatticeManager->GetXPhysicalLattice(vVolume)->GetLatticeDirection().unit();
-            vNewMomentum += ComputeChannelingOutgoingMomentum(aTrack);
+            
+            vNewMomentum += fLatticeManager->GetXPhysicalLattice(vVolume)->ProjectVectorFromLatticeToWorld(ComputeChannelingOutgoingMomentum(aTrack));
+            
+            vNewMomentum = vNewMomentum.unit();
+            
             aParticleChange.ProposeMomentumDirection(vNewMomentum);
-            fFileOut << G4double(aTrack.GetTrackID()) << "," << aTrack.GetStep()->GetPostStepPoint()->GetPosition().y()/micrometer << "," << chanInfo->GetPositionChanneled().x()/angstrom << "," << chanInfo->GetMomentumChanneled().x()/aTrack.GetStep()->GetPostStepPoint()->GetTotalEnergy()*1.E6 << "," << chanInfo->GetChannelingFactor() << "," <<  ComputeTransverseEnergy(aTrack).x()/eV << std::endl;
+            
+            fFileOut << G4int(aTrack.GetTrackID()) << "," << chanInfo->GetPositionChanneledFirst().x()/angstrom << "," << chanInfo->GetMomentumChanneledFirst().x()/aTrack.GetStep()->GetPostStepPoint()->GetTotalEnergy()*1.E6   << "," << aTrack.GetStep()->GetPostStepPoint()->GetPosition().y()/micrometer << "," << chanInfo->GetPositionChanneled().x()/angstrom << "," << chanInfo->GetMomentumChanneled().x()/aTrack.GetStep()->GetPostStepPoint()->GetTotalEnergy()*1.E6 << "," << chanInfo->GetChannelingFactor() << "," <<  ComputeTransverseEnergy(aTrack).x()/eV << std::endl;
         }
         chanInfo->SetChanneling(false);
     }
@@ -385,12 +408,17 @@ void ProcessChanneling::ComputeCrystalCharacteristicForChanneling(const G4Track&
     G4double vXposition = 0.;
     G4double vXpositionConstant = 1. * vXtalPhysLattice->ComputeInterplanarPeriod();
     
+    vFileOutPot << "pos,pot" << std::endl;
+    vFileOutEfx << "pos,efx" << std::endl;
+    vFileOutNud << "pos,nud" << std::endl;
+    vFileOutEld << "pos,eld" << std::endl;
+
     for(G4int i = 0;i<imax;i++){
         vXposition = double(i) / double(imax) * vXpositionConstant;
-        vFileOutPot << vXposition / angstrom << " " << (fPotentialEnergy->ComputeValue(G4ThreeVector(vXposition,0.,0.),vXtalPhysLattice)).x() / eV << std::endl;
-        vFileOutEfx << vXposition / angstrom << " " << (fElectricField->ComputeValue(G4ThreeVector(vXposition,0.,0.),vXtalPhysLattice)).x() / eV * angstrom << std::endl;
-        vFileOutNud << vXposition / angstrom << " " << (fNucleiDensity->ComputeValue(G4ThreeVector(vXposition,0.,0.),vXtalPhysLattice)).x() * angstrom << std::endl;
-        vFileOutEld << vXposition / angstrom << " " << (fElectronDensity->ComputeValue(G4ThreeVector(vXposition,0.,0.),vXtalPhysLattice)).x() * angstrom << std::endl;
+        vFileOutPot << vXposition / angstrom << "," << (fPotentialEnergy->ComputeValue(G4ThreeVector(vXposition,0.,0.),vXtalPhysLattice)).x() / eV << std::endl;
+        vFileOutEfx << vXposition / angstrom << "," << (fElectricField->ComputeValue(G4ThreeVector(vXposition,0.,0.),vXtalPhysLattice)).x() / eV * angstrom << std::endl;
+        vFileOutNud << vXposition / angstrom << "," << (fNucleiDensity->ComputeValue(G4ThreeVector(vXposition,0.,0.),vXtalPhysLattice)).x() * angstrom << std::endl;
+        vFileOutEld << vXposition / angstrom << "," << (fElectronDensity->ComputeValue(G4ThreeVector(vXposition,0.,0.),vXtalPhysLattice)).x() * angstrom << std::endl;
     }
     
     vFileOutPot.close();

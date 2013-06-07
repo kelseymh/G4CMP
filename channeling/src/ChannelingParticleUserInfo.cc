@@ -36,6 +36,10 @@ ChannelingParticleUserInfo::ChannelingParticleUserInfo()
     channelingFlag = false;
     channelingFactor = 1.0;
     preStepChannelingFactor = 1.0;
+    momentumChanneled = G4ThreeVector(0.,0.,0.);
+    positionChanneled = G4ThreeVector(0.,0.,0.);
+    momentumChanneledFirst = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+    positionChanneledFirst = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -104,6 +108,30 @@ G4ThreeVector ChannelingParticleUserInfo::GetPositionChanneled(){
 
 void ChannelingParticleUserInfo::SetPositionChanneled(G4ThreeVector position){
     positionChanneled = position;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4ThreeVector ChannelingParticleUserInfo::GetMomentumChanneledFirst(){
+    return momentumChanneledFirst;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ChannelingParticleUserInfo::SetMomentumChanneledFirst(G4ThreeVector momentum){
+    momentumChanneledFirst = momentum;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4ThreeVector ChannelingParticleUserInfo::GetPositionChanneledFirst(){
+    return positionChanneledFirst;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ChannelingParticleUserInfo::SetPositionChanneledFirst(G4ThreeVector position){
+    positionChanneledFirst = position;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -86,7 +86,7 @@ void PhysicsList::ConstructProcess(){
     //AddDecay();
     AddStepMax();
     AddChanneling();
-    //AddStandardSS();
+    AddStandardSS();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

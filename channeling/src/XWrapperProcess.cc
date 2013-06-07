@@ -121,7 +121,7 @@ G4double XWrapperProcess::PostStepGetPhysicalInteractionLength (const G4Track &a
   ///////////////////////////
   //for debug purposes only: set channeling factor by hand
   ///////////////////////////
-  channelingFactor = 1.0;  // <--REMOVE THIS AFTER DEBUGGING!!!!!
+  channelingFactor = 0.5;  // <--REMOVE THIS AFTER DEBUGGING!!!!!
   ///////////////////////////
 
   G4double regIntLength = registeredProcess->PostStepGetPhysicalInteractionLength(aTrack, previousStepSize/preStepChannelingFactor, condition);

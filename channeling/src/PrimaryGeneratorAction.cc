@@ -77,9 +77,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     //--------------------------------------
     
 
-    G4double vBeamDivergence = 20.E-6 * radian;
+    G4double vBeamDivergence = 10.0E-6 * radian;
     
-    G4double vRotation = (G4UniformRand() - 0.5 ) * vBeamDivergence;
+    G4double vRotation = (G4UniformRand() - 0.5 ) * 2. * vBeamDivergence;
     
     G4ThreeVector vParticleMomentumDirection = G4ThreeVector(0.,1.,0.).rotate(G4ThreeVector(0,0,1),vRotation).unit();
     

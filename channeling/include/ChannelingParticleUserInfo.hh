@@ -56,7 +56,13 @@ public:
     
     G4ThreeVector GetPositionChanneled();
     void SetPositionChanneled(G4ThreeVector);
-        
+
+    G4ThreeVector GetMomentumChanneledFirst();
+    void SetMomentumChanneledFirst(G4ThreeVector);
+    
+    G4ThreeVector GetPositionChanneledFirst();
+    void SetPositionChanneledFirst(G4ThreeVector);
+
 private:
     
     G4double preStepChannelingFactor;
@@ -65,6 +71,9 @@ private:
     G4ThreeVector momentumChanneled; //Last position of the particle in the channel
     G4ThreeVector positionChanneled; //Last projection fof the particle momentum in the crystal reference system
     G4double channelingFactor; //Last value of density seen by channeled particle
+
+    G4ThreeVector momentumChanneledFirst; //Last position of the particle in the channel
+    G4ThreeVector positionChanneledFirst; //Last projection fof the particle momentum in the crystal reference system
 
 };
 
