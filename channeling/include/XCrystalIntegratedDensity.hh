@@ -42,6 +42,8 @@ public:
     unsigned int GetNumberOfPoints(unsigned int);
     unsigned int GetNumberOfPoints();
 
+    G4double GetStep(unsigned int);
+
     void SetNucleiDensity(XVCrystalCharacteristic*);
     XVCrystalCharacteristic* GetNucleiDensity();
     
@@ -59,6 +61,8 @@ public:
     void InitializeTable();
     G4bool HasBeenInitialized();
     //now it checks only of the table is initialized, it does not check if the particular crystal is initialized. To be changed in the future!
+    
+    void PrintOnFile(char*);
     
 protected:
     G4double ComputeValue(G4double);

@@ -106,7 +106,7 @@ G4ThreeVector XVCrystalCharacteristic::GetMaximum(XPhysicalLattice* vLattice){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4ThreeVector XVCrystalCharacteristic::GetMinimum(XPhysicalLattice* vLattice){
-    if(fMinimum == G4ThreeVector(-DBL_MAX,-DBL_MAX,-DBL_MAX)){
+    if(fMinimum == G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX)){
         fMinimum = ComputeMinimum(vLattice);
     }
     return fMinimum;
@@ -121,7 +121,8 @@ G4ThreeVector XVCrystalCharacteristic::ComputeMaximum(XPhysicalLattice*){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4ThreeVector XVCrystalCharacteristic::ComputeMinimum(XPhysicalLattice*){
-    return G4ThreeVector(-DBL_MAX,-DBL_MAX,-DBL_MAX);
+    return G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+

@@ -157,9 +157,21 @@ void XCrystalIntegratedDensity::InitializeTable(){
     fPotentialMinimum = fPotential->GetMinimum(fLattice).x();
     fPotentialRange = fPotential->GetMaximum(fLattice).x() - fPotentialMinimum;
     
+    G4cout << "XCrystalIntegratedDensity::InitializeTable()::Potential Range =  " << fPotentialRange/eV << std::endl;
+    
     for(unsigned int i=0;i<GetNumberOfPoints();i++){
         fTable.push_back(ComputeValue(fPotentialMinimum + fPotentialRange * G4double(i+1) / G4double(fNumberOfPoints[0])));
     }
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4double XCrystalIntegratedDensity::GetStep(unsigned int vIndex){
+    if(vIndex<3) {
+        return fPotentialRange / fNumberOfPoints[vIndex];
+    }
+    else return -1;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -170,8 +182,6 @@ G4double XCrystalIntegratedDensity::GetValue(G4double vPotential){
     else if(vPotential <= fPotentialMinimum) return 0.;
     else{
         unsigned int vIndex = int(((vPotential - fPotentialMinimum) / fPotentialRange ) * fNumberOfPoints[0]);
-        vPotential -= fPotentialMinimum;
-        vPotential /= fPotentialRange;
         return fTable.at(vIndex);
     }
     return 0.;
@@ -202,11 +212,25 @@ G4double XCrystalIntegratedDensity::ComputeValue(G4double vPotentialInitial){
         }
         i1++;
     };
+    
     vDensity *= vInterplanarPeriod;
     vDensity /= fIntegrationPoints[0];
     vDensity /= 2.;
-    
+
     return vDensity;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void XCrystalIntegratedDensity::PrintOnFile(char* filename){
+    std::ofstream vFileOut;
+    vFileOut.open(filename);
+    G4double vStep = GetStep(0) / eV;
+    vFileOut << "energy,dens" << std::endl;
+    for(unsigned int i = 0;i<fNumberOfPoints[0];i++){
+        vFileOut << i * vStep << "," << fTable[i] << std::endl;
+    }
+    vFileOut.close();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

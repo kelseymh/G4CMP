@@ -78,7 +78,7 @@ DetectorConstruction::~DetectorConstruction(){
 G4VPhysicalVolume* DetectorConstruction::Construct(){
     AddWorld();
     AddCrystalTarget();
-    AddSiliconStripDetector();
+    //AddSiliconStripDetector();
     return fWorldPhysical;
 }
 

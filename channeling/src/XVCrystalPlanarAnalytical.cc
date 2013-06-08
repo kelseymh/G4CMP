@@ -94,7 +94,7 @@ G4ThreeVector XVCrystalPlanarAnalytical::ComputeMaximum(XPhysicalLattice* vLatti
     G4double vValue;
     
     for(unsigned int i=0;i<vPrecision;i++){
-        if( (vValue = ComputeValue(G4ThreeVector(vStep * i,0.,0.),vLattice).x() )>vMaximum) vMaximum = vValue;
+        if( (vValue = ComputeValue(G4ThreeVector(vStep * i,0.,0.),vLattice).x() ) > vMaximum) vMaximum = vValue;
     }
     return G4ThreeVector(vMaximum,0.,0.);
 }
@@ -110,9 +110,29 @@ G4ThreeVector XVCrystalPlanarAnalytical::ComputeMinimum(XPhysicalLattice* vLatti
     G4double vValue;
     
     for(unsigned int i=0;i<vPrecision;i++){
-        if( (vValue = ComputeValue(G4ThreeVector(vStep * i,0.,0.),vLattice).x() )<vMinimum) vMinimum = vValue;
+        if( (vValue = ComputeValue(G4ThreeVector(vStep * i,0.,0.),vLattice).x() ) < vMinimum) vMinimum = vValue;
     }
     return G4ThreeVector(vMinimum,0.,0.);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void XVCrystalPlanarAnalytical::PrintOnFile(char* filename,XPhysicalLattice* vLattice,G4double vUnit){
+    std::ofstream vFileOut;
+    vFileOut.open(filename);
+    
+    G4int imax = 8192;
+    G4double vXposition = 0.;
+    G4double vInterplanarPeriod = vLattice->ComputeInterplanarPeriod();
+    
+    vFileOut << "pos,val" << std::endl;
+    
+    for(G4int i = 0;i<imax;i++){
+        vXposition = double(i) / double(imax) * vInterplanarPeriod;
+        vFileOut << vXposition / angstrom << "," << ComputeValue(G4ThreeVector(vXposition,0.,0.),vLattice).x() / vUnit << std::endl;
+    }
+    
+    vFileOut.close();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

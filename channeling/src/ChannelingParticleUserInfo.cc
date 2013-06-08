@@ -31,11 +31,11 @@
 
 #include "ChannelingParticleUserInfo.hh"
 
-ChannelingParticleUserInfo::ChannelingParticleUserInfo()
-{
+ChannelingParticleUserInfo::ChannelingParticleUserInfo(){
     channelingFlag = false;
     channelingFactor = 1.0;
     preStepChannelingFactor = 1.0;
+    fNumberOfDechanneling = 0;
     momentumChanneled = G4ThreeVector(0.,0.,0.);
     positionChanneled = G4ThreeVector(0.,0.,0.);
     momentumChanneledFirst = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
@@ -44,46 +44,45 @@ ChannelingParticleUserInfo::ChannelingParticleUserInfo()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ChannelingParticleUserInfo::~ChannelingParticleUserInfo()
-{
+ChannelingParticleUserInfo::~ChannelingParticleUserInfo(){
     channelingFlag = false;
     channelingFactor = 1.0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ChannelingParticleUserInfo::SetChanneling(bool flag)
-{
+void ChannelingParticleUserInfo::SetChanneling(bool flag){
     channelingFlag = flag;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-bool ChannelingParticleUserInfo::GetChanneling()
-{
+bool ChannelingParticleUserInfo::GetChanneling(){
     return channelingFlag;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ChannelingParticleUserInfo::SetChannelingFactor(G4double factor)
-{
-    preStepChannelingFactor = channelingFactor;
+void ChannelingParticleUserInfo::SetChannelingFactor(G4double factor){
     channelingFactor = factor;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4double ChannelingParticleUserInfo::GetChannelingFactor()
-{
+G4double ChannelingParticleUserInfo::GetChannelingFactor(){
     return channelingFactor;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4double ChannelingParticleUserInfo::GetPreStepChannelingFactor()
-{
+G4double ChannelingParticleUserInfo::GetPreStepChannelingFactor(){
     return preStepChannelingFactor;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ChannelingParticleUserInfo::SetPreStepChannelingFactor(G4double factor){
+    preStepChannelingFactor = factor;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -132,6 +131,18 @@ G4ThreeVector ChannelingParticleUserInfo::GetPositionChanneledFirst(){
 
 void ChannelingParticleUserInfo::SetPositionChanneledFirst(G4ThreeVector position){
     positionChanneledFirst = position;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4int ChannelingParticleUserInfo::GetNumberOfDechanneling(){
+    return fNumberOfDechanneling;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ChannelingParticleUserInfo::IncreaseNumberOfDechanneling(){
+    fNumberOfDechanneling++;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -63,6 +63,7 @@ public:
     virtual G4ThreeVector ComputeMaximum(XPhysicalLattice*);
     virtual G4ThreeVector ComputeMinimum(XPhysicalLattice*);
 
+    virtual void PrintOnFile(char*,XPhysicalLattice*,G4double = 1) = 0;
     //Contructors
     XVCrystalCharacteristic();
     ~XVCrystalCharacteristic();

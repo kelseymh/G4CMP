@@ -94,7 +94,7 @@ G4ThreeVector XCrystalPlanarMoliereTempPotential::GetMinimum(XPhysicalLattice* v
     G4VPhysicalVolume* vVolume = vLattice->GetVolume();
     G4double vInterplanarDistance = GetXUnitCell(vVolume)->ComputeDirectPeriod(GetXPhysicalLattice(vVolume)->GetMiller(0),GetXPhysicalLattice(vVolume)->GetMiller(1),GetXPhysicalLattice(vVolume)->GetMiller(2));
     
-    G4double vMinimum = ComputeValue(G4ThreeVector(0.,vInterplanarDistance/2.,0.),vLattice).y();
+    G4double vMinimum = ComputeValue(G4ThreeVector(vInterplanarDistance/2.,0.,0.),vLattice).x();
     
     return G4ThreeVector(vMinimum,0.,0.);
 }

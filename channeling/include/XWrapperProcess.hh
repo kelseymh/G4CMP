@@ -57,9 +57,17 @@ class XWrapperProcess : public G4VDiscreteProcess
   void StartTracking(G4Track* aTrack);
   //  void SubtractNumberOfInteractionLengthLeft(G4double previousStepSize);
 
-  G4double channelingFactor;
-                           
-  protected:
+    
+  //ADDED BY ENRICO
+    virtual void PreparePhysicsTable(const G4ParticleDefinition&);
+    virtual G4bool StorePhysicsTable(const G4ParticleDefinition* ,const G4String&, G4bool);
+    virtual G4bool RetrievePhysicsTable( const G4ParticleDefinition* ,const G4String&, G4bool);
+    
+    void SetChannelingFactor(G4double);
+    G4double GetChannelingFactor();
+
+protected:
+    G4double channelingFactor;
 
  
   virtual G4double GetMeanFreePath(

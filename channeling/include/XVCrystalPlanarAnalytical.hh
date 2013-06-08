@@ -52,6 +52,8 @@ public:
     virtual G4ThreeVector ComputeMaximum(XPhysicalLattice*);
     virtual G4ThreeVector ComputeMinimum(XPhysicalLattice*);
 
+    virtual void PrintOnFile(char*,XPhysicalLattice*,G4double);
+    
     //Contructors
     XVCrystalPlanarAnalytical();
     ~XVCrystalPlanarAnalytical();

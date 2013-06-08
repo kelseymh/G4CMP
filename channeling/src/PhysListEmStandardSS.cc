@@ -124,12 +124,11 @@ void PhysListEmStandardSS::ConstructProcess()
         } else if (particleName == "proton" ) {
             G4CoulombScattering* cs = new G4CoulombScattering();
             cs->SetBuildTableFlag(false);
-            
-            pmanager->AddDiscreteProcess(cs);
+            //pmanager->AddDiscreteProcess(cs);
 
             XWrapperProcess *cs_wrapper = new XWrapperProcess();
             cs_wrapper->registerProcess(cs);
-            //pmanager->AddDiscreteProcess(cs_wrapper);
+            pmanager->AddDiscreteProcess(cs_wrapper);
             G4cout << "PhysListEmStandardSS::ConstructProcess()::XWrapperProcess Initialized" << std::endl;
 
         } else if ((!particle->IsShortLived()) &&

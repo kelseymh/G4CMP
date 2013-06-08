@@ -36,6 +36,10 @@
 #include "XVCrystalCharacteristic.hh"
 #include "XCrystalIntegratedDensity.hh"
 
+#include "G4VPhysicalVolume.hh"
+#include "XPhysicalLattice.hh"
+#include "ChannelingParticleUserInfo.hh"
+
 class ProcessChanneling : public G4VDiscreteProcess
 {
 public:
@@ -76,12 +80,23 @@ private:
 
     void UpdatePositionMomentumDensity(const G4Track&);
     
-    G4double ComputeChannelingCriticalEnergy(const G4Track&);
     G4ThreeVector ComputeTransverseEnergy(const G4Track&);
     G4ThreeVector ComputeChannelingOutgoingMomentum(const G4Track&);
+    G4ThreeVector ComputeNewPosition(const G4Track&);
     
     void InitializeCrystalCharacteristics();
     void ComputeCrystalCharacteristicForChanneling(const G4Track&);
+    void PrintCrystalCharacteristicsOnFiles(const G4Track&);
+    
+    G4double ComputeChannelingCriticalEnergy(const G4Track&);
+    G4double ComputeChannelingCriticalAngle(const G4Track&);
+    G4double ComputeOscillationPeriod(const G4Track&);
+    
+private:
+    //binding methods
+    XPhysicalLattice* GetXPhysicalLattice(const G4Track&);
+    G4VPhysicalVolume* GetVolume(const G4Track&);
+    ChannelingParticleUserInfo* GetInfo(const G4Track&);
 
 private:
     // hide assignment operator as private
@@ -90,9 +105,7 @@ private:
     
 private:
     XLatticeManager3* fLatticeManager;
-    
-    G4bool fCompute;
-  
+      
     XVCrystalCharacteristic* fPotentialEnergy;
     XVCrystalCharacteristic* fNucleiDensity;
     XVCrystalCharacteristic* fElectronDensity;
