@@ -56,7 +56,8 @@ public:
 
 private:
     void AddWorld();
-    void AddSiliconStripDetector();
+    void AddSiliconStripDetectors();
+    void AddScintillators();
     void AddCrystalTarget();    
 
 private:        
@@ -71,6 +72,12 @@ private:
     G4Box* fSSDSolid;
     G4LogicalVolume* fSSDLogic;
     G4VPhysicalVolume* fSSDPhysical;
+
+    G4double fSCISizeXZ;
+    G4double fSCISizeY;
+    G4Box* fSCISolid;
+    G4LogicalVolume* fSCILogic;
+    G4VPhysicalVolume* fSCIPhysical;
 
     G4double fXtalSizeXZ;
     G4double fXtalSizeY;

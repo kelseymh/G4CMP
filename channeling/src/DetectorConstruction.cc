@@ -78,7 +78,8 @@ DetectorConstruction::~DetectorConstruction(){
 G4VPhysicalVolume* DetectorConstruction::Construct(){
     AddWorld();
     AddCrystalTarget();
-    //AddSiliconStripDetector();
+    //AddScintillators();
+    //AddSiliconStripDetectors();
     return fWorldPhysical;
 }
 
@@ -87,8 +88,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 void DetectorConstruction::AddWorld(){
     G4Material* Vacuum = G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
     
-    fWorldSizeY = 1.4 * m;
-    fWorldSizeXZ = 10 * cm;
+    fWorldSizeY = 2.4 * m;
+    fWorldSizeXZ = 1. * m;
     
     fWorldSolid = new G4Box("World", fWorldSizeXZ/2.,fWorldSizeY/2.,fWorldSizeXZ/2.);
     fWorldLogic = new G4LogicalVolume(fWorldSolid,Vacuum,"World");
@@ -97,18 +98,48 @@ void DetectorConstruction::AddWorld(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void DetectorConstruction::AddSiliconStripDetector(){
+void DetectorConstruction::AddScintillators(){
+    G4Material* Si = G4NistManager::Instance()->FindOrBuildMaterial("G4_SODIUM_IODIDE");
+    
+    fSCISizeXZ = 100. * mm;
+    fSCISizeY = 1. * cm;
+    
+    G4double vSCI_CryDistance = 60. * cm;
+    G4double vSCIXDistance = 10. * mm;
+
+    fSCISolid = new G4Box("NaISCI", fSCISizeXZ/2.,fSCISizeY/2.,fSCISizeXZ/2.);
+    fSCILogic = new G4LogicalVolume(fSCISolid,Si,"NaISCI");
+    
+    for(int j1=0;j1<2;j1++)
+    {
+        G4double vDetDistX = double(j1 - 1) * (vSCIXDistance + fSCISizeXZ/2.*2.);
+        vDetDistX += (vSCIXDistance / 2. + fSCISizeXZ / 2.);
+        fSCIPhysical = new G4PVPlacement(0,G4ThreeVector(vDetDistX,vSCI_CryDistance,0.),fSCILogic,"NaISCI",fWorldLogic,false,j1);
+    }
+    
+    G4String SDname;
+    G4VSensitiveDetector* telescope = new A01DriftChamber(SDname="/scintillator");
+    G4SDManager::GetSDMpointer()->AddNewDetector(telescope);
+    fSCILogic->SetSensitiveDetector(telescope);
+    
+}
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::AddSiliconStripDetectors(){
     G4Material* Si = G4NistManager::Instance()->FindOrBuildMaterial("G4_Si");
     
     fSSDSizeXZ = 1.92 * cm;
     fSSDSizeY = 0.6 * mm;
     
+    G4double vSD_CryDistance = 1. * cm;
+    G4double vSDXDistance = 50. * cm;
+
     fSSDSolid = new G4Box("SiSD", fSSDSizeXZ/2.,fSSDSizeY/2.,fSSDSizeXZ/2.);
     fSSDLogic = new G4LogicalVolume(fSSDSolid,Si,"SiSD");
     
     for(int j1=0;j1<3;j1++)
     {
-        G4double vDetDistY = double(j1 - 1) * 50. * cm + fSSDSizeY/2. - 10. * fXtalSizeY/2.;;
+        G4double vDetDistY = double(j1 - 1) * vSDXDistance + fSSDSizeY/2. - (vSD_CryDistance + fXtalSizeY/2.);;
         fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.,vDetDistY,0.),fSSDLogic,"SiSD",fWorldLogic,false,j1);
     }
     

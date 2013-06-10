@@ -35,6 +35,8 @@
 
 #include "G4UserEventAction.hh"
 #include "globals.hh"
+#include <iostream>
+#include <fstream>
 
 
 class A01EventActionMessenger;
@@ -49,8 +51,10 @@ class A01EventAction : public G4UserEventAction
     virtual void EndOfEventAction(const G4Event*);
 
   private:
-    G4int fDHC_ID;
+    G4int fSD_ID;
+    G4int fSCI_ID;
 
+    std::ofstream fFileOutSCI;
     
     A01EventActionMessenger* fMessenger;
     G4int fVerboseLevel;

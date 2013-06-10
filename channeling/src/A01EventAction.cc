@@ -54,14 +54,16 @@
 
 A01EventAction::A01EventAction()
 {
-    fDHC_ID = -1;
-
+    fSD_ID = -1;
+    fSCI_ID = -1;
+    fFileOutSCI.open("scintillator.txt");
     fVerboseLevel = 0;
     fMessenger = new A01EventActionMessenger(this);
 }
 
 A01EventAction::~A01EventAction()
 {
+    fFileOutSCI.close();
     delete fMessenger;
 }
 
@@ -71,48 +73,59 @@ void A01EventAction::BeginOfEventAction(const G4Event* evt){
 void A01EventAction::EndOfEventAction(const G4Event* evt)
 {
     
-//    if(fDHC_ID==-1) {
-//        G4String colName;
-//        G4SDManager* SDman = G4SDManager::GetSDMpointer();
-//        fDHC_ID = SDman->GetCollectionID(colName="telescope/telescopeColl");
-//    }
-//    
-//    G4HCofThisEvent * HCE = evt->GetHCofThisEvent();
-//    A01DriftChamberHitsCollection* fDHC = 0;
-//    
-//    if(HCE)
-//    {
-//        G4VHitsCollection* aHC = HCE->GetHC(fDHC_ID);
-//        //fDHC = dynamic_cast<A01DriftChamberHitsCollection*>(aHC);
-//        fDHC = (A01DriftChamberHitsCollection*)(aHC);
-//    }
-//    
-//    // Diagnostics
-//    
-//    if (fVerboseLevel==0 || evt->GetEventID() % fVerboseLevel != 0) return;
-//    
-//    G4PrimaryParticle* primary = evt->GetPrimaryVertex(0)->GetPrimary(0);
-//    G4cout << G4endl
-//    << ">>> Event " << evt->GetEventID() << " >>> Simulation truth : "
-//    << primary->GetG4code()->GetParticleName()
-//    << " " << primary->GetMomentum() << G4endl;
-//    
-//    
-//    {
-//        if(fDHC)
-//        {
-//            int n_hit = fDHC->entries();
-//            G4cout << "Drift Chamber has " << n_hit << " hits." << G4endl;
-//            for(int i2=0;i2<5;i2++)
-//            {
-//                for(int i1=0;i1<n_hit;i1++)
-//                {
-//                    A01DriftChamberHit* aHit = (*fDHC)[i1];
-//                    if(aHit->GetLayerID()==i2) aHit->Print();
-//                }
-//            }
-//        }
-//    }
+    if(fSD_ID==-1) {
+        G4String sdName;
+        G4SDManager* SDman = G4SDManager::GetSDMpointer();
+        fSD_ID = SDman->GetCollectionID(sdName="telescope/collection");
+    }
+
+    if(fSCI_ID==-1) {
+        G4String sciName;
+        G4SDManager* SDman = G4SDManager::GetSDMpointer();
+        fSCI_ID = SDman->GetCollectionID(sciName="scintillator/collection");
+    }
+
+    A01DriftChamberHitsCollection* fSD = 0;
+    A01DriftChamberHitsCollection* fSCI = 0;
+
+    G4HCofThisEvent * HCE = evt->GetHCofThisEvent();
+    
+    if(HCE)
+    {
+        G4VHitsCollection* aHCSD = HCE->GetHC(fSD_ID);
+        G4VHitsCollection* aHCSCI = HCE->GetHC(fSCI_ID);
+        //fSD = dynamic_cast<A01DriftChamberHitsCollection*>(aHC);
+        fSD = (A01DriftChamberHitsCollection*)(aHCSD);
+        fSCI = (A01DriftChamberHitsCollection*)(aHCSCI);
+    }
+    
+    // Diagnostics
+    
+    if (fVerboseLevel==0 || evt->GetEventID() % fVerboseLevel != 0) return;
+    
+    G4PrimaryParticle* primary = evt->GetPrimaryVertex(0)->GetPrimary(0);
+    G4cout << G4endl
+    << ">>> Event " << evt->GetEventID() << " >>> Simulation truth : "
+    << primary->GetG4code()->GetParticleName()
+    << " " << primary->GetMomentum() << G4endl;
+    
+    
+    {
+        if(fSCI)
+        {
+            int n_hit = fSCI->entries();
+            G4cout << "Drift Chamber has " << n_hit << " hits." << G4endl;
+            for(int i2=0;i2<2;i2++)
+            {
+                for(int i1=0;i1<n_hit;i1++)
+                {
+                    A01DriftChamberHit* aHit = (*fSCI)[i1];
+                    if(aHit->GetLayerID()==i2) aHit->Print();
+                    fFileOutSCI << i1 << "," << i2 << "," << aHit->GetWorldPos().x() << std::endl;
+                }
+            }
+        }
+    }
 }
 
 
