@@ -188,7 +188,7 @@ void DetectorConstruction::AddCrystalTarget(){
     XPhysicalLattice* physicalLattice = new XPhysicalLattice(fXtalPhysical, logicalLattice);
     physicalLattice->SetUnitCell(myCell);
     physicalLattice->SetMillerOrientation(2,2,0);
-    physicalLattice->SetLatticeOrientation(0.,100.E-6);
+    physicalLattice->SetLatticeOrientation(0.,0.E-6 * radian);
 
     //----------------------------------------
     // Register XPhysicalLattice

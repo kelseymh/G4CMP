@@ -56,8 +56,8 @@ A01EventAction::A01EventAction()
 {
     fSD_ID = -1;
     fSCI_ID = -1;
-    fFileOutSCI.open("scintillator.txt");
-    fFileOutSD.open("detector.txt");
+    fFileOutSCI.open("scintillator_20T.txt");
+    fFileOutSD.open("detector_20T.txt");
     
     fFileOutSCI << "hit,det,posx,posy,posz" << std::endl;
     fFileOutSD << "hit,det,posx,posy,posz" << std::endl;
@@ -119,20 +119,21 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
     
     if(fSCI)
     {
-        int n_hit = fSCI->entries();
-        for(int i2=0;i2<2;i2++)
+        int n_hit_sci = fSCI->entries();
+        for(int i1=0;i1<n_hit_sci;i1++)
         {
             A01DriftChamberHit* aHit = (*fSCI)[i1];
-            fFileOutSCI << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() "," << aHit->GetWorldPos().y() "," << aHit->GetWorldPos().z()<< std::endl;
+            fFileOutSCI << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z() << std::endl;
         }
     }
     
     if(fSD)
     {
-        int n_hit = fSD->entries();
-        for(int i1=0;i1<n_hit;i1++)
+        int n_hit_sd = fSD->entries();
+        for(int i1=0;i1<n_hit_sd;i1++)
         {
-            fFileOutSD << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() "," << aHit->GetWorldPos().y() "," << aHit->GetWorldPos().z()<< std::endl;
+            A01DriftChamberHit* aHit = (*fSD)[i1];
+            fFileOutSD << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z()<< std::endl;
         }
     }
     

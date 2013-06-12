@@ -67,7 +67,7 @@ ProcessChanneling::ProcessChanneling(const G4String& aName):G4VDiscreteProcess(a
         G4cout << GetProcessName() << " is created "<< G4endl;
     }
         
-    fFileOut.open("channeling_NA.txt");
+    fFileOut.open("channeling_20T.txt");
     fFileOut << "index,posin,angin,depth,pos,ang,dens,tr_en,ndch" << std::endl;
 
     InitializeCrystalCharacteristics();

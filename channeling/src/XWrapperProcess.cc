@@ -98,17 +98,6 @@ G4double XWrapperProcess::PostStepGetPhysicalInteractionLength (const G4Track &a
                                                                 G4double previousStepSize,
                                                                 G4ForceCondition *condition){
     
-    if ( (previousStepSize < 0.0) || (theNumberOfInteractionLengthLeft<=0.0)) {
-        // beginning of tracking (or just after DoIt of this process)
-        ResetNumberOfInteractionLengthLeft();
-    } else if ( previousStepSize > 0.0) {
-        // subtract NumberOfInteractionLengthLeft
-        SubtractNumberOfInteractionLengthLeft(previousStepSize);
-    } else {
-        // zero step
-        //  DO NOTHING
-    }
-    
     //determine factor by which to change mfp
     ChannelingParticleUserInfo* chanInfo = (ChannelingParticleUserInfo*) aTrack.GetUserInformation();
     channelingFactor = chanInfo->GetChannelingFactor();
@@ -121,9 +110,21 @@ G4double XWrapperProcess::PostStepGetPhysicalInteractionLength (const G4Track &a
     //for debug purposes only: set channeling factor by hand
     ///////////////////////////
     //channelingFactor = 1.;  // <--REMOVE THIS AFTER DEBUGGING!!!!!
+    //preStepChannelingFactor = 1.;
     ///////////////////////////
-    
-    G4double regIntLength = registeredProcess->PostStepGetPhysicalInteractionLength(aTrack, previousStepSize/preStepChannelingFactor, condition);
+
+    if ( (previousStepSize < 0.0) || (theNumberOfInteractionLengthLeft<=0.0)) {
+        // beginning of tracking (or just after DoIt of this process)
+        ResetNumberOfInteractionLengthLeft();
+    } else if ( previousStepSize > 0.0) {
+        // subtract NumberOfInteractionLengthLeft
+        SubtractNumberOfInteractionLengthLeft(previousStepSize * preStepChannelingFactor);
+    } else {
+        // zero step
+        // DO NOTHING
+    }
+        
+    G4double regIntLength = registeredProcess->PostStepGetPhysicalInteractionLength(aTrack, previousStepSize *preStepChannelingFactor, condition);
     G4double regIntNumber = registeredProcess->GetNumberOfInteractionLengthLeft();
     currentInteractionLength = regIntLength / regIntNumber;
     theNumberOfInteractionLengthLeft = regIntNumber;
