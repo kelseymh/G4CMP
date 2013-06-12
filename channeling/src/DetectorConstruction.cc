@@ -78,8 +78,8 @@ DetectorConstruction::~DetectorConstruction(){
 G4VPhysicalVolume* DetectorConstruction::Construct(){
     AddWorld();
     AddCrystalTarget();
-    //AddScintillators();
-    //AddSiliconStripDetectors();
+    AddScintillators();
+    AddSiliconStripDetectors();
     return fWorldPhysical;
 }
 
@@ -102,7 +102,7 @@ void DetectorConstruction::AddScintillators(){
     G4Material* Si = G4NistManager::Instance()->FindOrBuildMaterial("G4_SODIUM_IODIDE");
     
     fSCISizeXZ = 100. * mm;
-    fSCISizeY = 1. * cm;
+    fSCISizeY = 0.001 * mm;
     
     G4double vSCI_CryDistance = 60. * cm;
     G4double vSCIXDistance = 10. * mm;
@@ -132,7 +132,7 @@ void DetectorConstruction::AddSiliconStripDetectors(){
     fSSDSizeY = 0.6 * mm;
     
     G4double vSD_CryDistance = 1. * cm;
-    G4double vSDXDistance = 50. * cm;
+    G4double vSDXDistance = 70. * cm;
 
     fSSDSolid = new G4Box("SiSD", fSSDSizeXZ/2.,fSSDSizeY/2.,fSSDSizeXZ/2.);
     fSSDLogic = new G4LogicalVolume(fSSDSolid,Si,"SiSD");
@@ -188,7 +188,7 @@ void DetectorConstruction::AddCrystalTarget(){
     XPhysicalLattice* physicalLattice = new XPhysicalLattice(fXtalPhysical, logicalLattice);
     physicalLattice->SetUnitCell(myCell);
     physicalLattice->SetMillerOrientation(2,2,0);
-    physicalLattice->SetLatticeOrientation(0.,0.);
+    physicalLattice->SetLatticeOrientation(0.,100.E-6);
 
     //----------------------------------------
     // Register XPhysicalLattice

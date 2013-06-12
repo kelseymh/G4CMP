@@ -57,6 +57,11 @@ A01EventAction::A01EventAction()
     fSD_ID = -1;
     fSCI_ID = -1;
     fFileOutSCI.open("scintillator.txt");
+    fFileOutSD.open("detector.txt");
+    
+    fFileOutSCI << "hit,det,posx,posy,posz" << std::endl;
+    fFileOutSD << "hit,det,posx,posy,posz" << std::endl;
+    
     fVerboseLevel = 0;
     fMessenger = new A01EventActionMessenger(this);
 }
@@ -64,6 +69,7 @@ A01EventAction::A01EventAction()
 A01EventAction::~A01EventAction()
 {
     fFileOutSCI.close();
+    fFileOutSD.close();
     delete fMessenger;
 }
 
@@ -78,16 +84,16 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
         G4SDManager* SDman = G4SDManager::GetSDMpointer();
         fSD_ID = SDman->GetCollectionID(sdName="telescope/collection");
     }
-
+    
     if(fSCI_ID==-1) {
         G4String sciName;
         G4SDManager* SDman = G4SDManager::GetSDMpointer();
         fSCI_ID = SDman->GetCollectionID(sciName="scintillator/collection");
     }
-
+    
     A01DriftChamberHitsCollection* fSD = 0;
     A01DriftChamberHitsCollection* fSCI = 0;
-
+    
     G4HCofThisEvent * HCE = evt->GetHCofThisEvent();
     
     if(HCE)
@@ -101,31 +107,35 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
     
     // Diagnostics
     
-    if (fVerboseLevel==0 || evt->GetEventID() % fVerboseLevel != 0) return;
+    //if (fVerboseLevel==0 || evt->GetEventID() % fVerboseLevel != 0) return;
     
     G4PrimaryParticle* primary = evt->GetPrimaryVertex(0)->GetPrimary(0);
     G4cout << G4endl
     << ">>> Event " << evt->GetEventID() << " >>> Simulation truth : "
     << primary->GetG4code()->GetParticleName()
-    << " " << primary->GetMomentum() << G4endl;
+    << " " << primary->GetMomentumDirection() << G4endl;
     
     
+    
+    if(fSCI)
     {
-        if(fSCI)
+        int n_hit = fSCI->entries();
+        for(int i2=0;i2<2;i2++)
         {
-            int n_hit = fSCI->entries();
-            G4cout << "Drift Chamber has " << n_hit << " hits." << G4endl;
-            for(int i2=0;i2<2;i2++)
-            {
-                for(int i1=0;i1<n_hit;i1++)
-                {
-                    A01DriftChamberHit* aHit = (*fSCI)[i1];
-                    if(aHit->GetLayerID()==i2) aHit->Print();
-                    fFileOutSCI << i1 << "," << i2 << "," << aHit->GetWorldPos().x() << std::endl;
-                }
-            }
+            A01DriftChamberHit* aHit = (*fSCI)[i1];
+            fFileOutSCI << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() "," << aHit->GetWorldPos().y() "," << aHit->GetWorldPos().z()<< std::endl;
         }
     }
+    
+    if(fSD)
+    {
+        int n_hit = fSD->entries();
+        for(int i1=0;i1<n_hit;i1++)
+        {
+            fFileOutSD << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() "," << aHit->GetWorldPos().y() "," << aHit->GetWorldPos().z()<< std::endl;
+        }
+    }
+    
 }
 
 

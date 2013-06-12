@@ -28,48 +28,80 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-// General
 #include "PhysicsList.hh"
+
+// General
 #include "globals.hh"
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ProcessManager.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4ParticleWithCuts.hh"
+#include "G4ProcessVector.hh"
+
+// Particle
+#include "G4ParticleTypes.hh"
+#include "G4ParticleTable.hh"
+#include "G4BosonConstructor.hh"
+#include "G4LeptonConstructor.hh"
+#include "G4MesonConstructor.hh"
+#include "G4BaryonConstructor.hh"
+#include "G4IonConstructor.hh"
+#include "G4ShortLivedConstructor.hh"
 
 // Single Scattering EM model
-#include "PhysListEmStandardSS.hh"
+#include "G4CoulombScattering.hh"
 
 // Decay
 #include "G4Decay.hh"
 #include "StepMax.hh"
 
-
-// Particle
-#include "G4ParticleDefinition.hh"
-
-// Bosons
-#include "G4ChargedGeantino.hh"
-#include "G4Geantino.hh"
-#include "G4Gamma.hh"
-#include "G4OpticalPhoton.hh"
-
-// Leptons
-#include "G4MuonPlus.hh"
-#include "G4MuonMinus.hh"
-#include "G4NeutrinoMu.hh"
-#include "G4AntiNeutrinoMu.hh"
-
-#include "G4Electron.hh"
-#include "G4Positron.hh"
-#include "G4NeutrinoE.hh"
-#include "G4AntiNeutrinoE.hh"
-
-// Hadrons
-#include "G4MesonConstructor.hh"
-#include "G4BaryonConstructor.hh"
-#include "G4IonConstructor.hh"
-
 // Channeling
 #include "ProcessChanneling.hh"
+
+// Proton hadronic
+#include "G4HadronElasticProcess.hh"
+#include "G4HadronFissionProcess.hh"
+#include "G4HadronCaptureProcess.hh"
+#include "G4ProtonInelasticProcess.hh"
+
+#include "G4LElastic.hh"
+#include "G4LFission.hh"
+#include "G4LCapture.hh"
+
+#include "G4TheoFSGenerator.hh"
+#include "G4ExcitationHandler.hh"
+#include "G4Evaporation.hh"
+#include "G4CompetitiveFission.hh"
+#include "G4FermiBreakUp.hh"
+#include "G4StatMF.hh"
+#include "G4GeneratorPrecompoundInterface.hh"
+#include "G4Fancy3DNucleus.hh"
+#include "G4LEProtonInelastic.hh"
+#include "G4StringModel.hh"
+#include "G4PreCompoundModel.hh"
+#include "G4FTFModel.hh"
+#include "G4QGSMFragmentation.hh"
+#include "G4ExcitedStringDecay.hh"
+
+#include "G4CHIPSElastic.hh"
+#include "G4CascadeInterface.hh"
+
+#include "G4TheoFSGenerator.hh"
+#include "G4ExcitationHandler.hh"
+#include "G4PreCompoundModel.hh"
+#include "G4GeneratorPrecompoundInterface.hh"
+#include "G4FTFModel.hh"
+#include "G4LundStringFragmentation.hh"
+#include "G4ExcitedStringDecay.hh"
+
+#include "G4CHIPSElasticXS.hh"
+#include "G4BGGNucleonInelasticXS.hh"
+#include "G4ProtonInelasticCrossSection.hh"
+#include "G4CrossSectionPairGG.hh"
+
+// Wrapper
+#include "XWrapperProcess.hh"
 
 PhysicsList::PhysicsList():  G4VUserPhysicsList(){
 }
@@ -83,51 +115,125 @@ PhysicsList::~PhysicsList(){
 
 void PhysicsList::ConstructProcess(){
     AddTransportation();
-    //AddDecay();
-    AddStepMax();
     AddChanneling();
+    AddInelaticProcesses();
     AddStandardSS();
+    AddDecay();
 }
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::ConstructParticle(){
-    // pseudo-particles
-    G4Geantino::GeantinoDefinition();
-    G4ChargedGeantino::ChargedGeantinoDefinition();
+    G4BosonConstructor pBosonConstructor;
+    pBosonConstructor.ConstructParticle();
     
-    // gamma
-    G4Gamma::GammaDefinition();
+    G4LeptonConstructor pLeptonConstructor;
+    pLeptonConstructor.ConstructParticle();
     
-    // leptons
-    G4Electron::ElectronDefinition();
-    G4Positron::PositronDefinition();
-    G4MuonPlus::MuonPlusDefinition();
-    G4MuonMinus::MuonMinusDefinition();
+    G4MesonConstructor pMesonConstructor;
+    pMesonConstructor.ConstructParticle();
     
-    G4NeutrinoE::NeutrinoEDefinition();
-    G4AntiNeutrinoE::AntiNeutrinoEDefinition();
-    G4NeutrinoMu::NeutrinoMuDefinition();
-    G4AntiNeutrinoMu::AntiNeutrinoMuDefinition();
+    G4BaryonConstructor pBaryonConstructor;
+    pBaryonConstructor.ConstructParticle();
     
-    // mesons
-    G4MesonConstructor mConstructor;
-    mConstructor.ConstructParticle();
+    G4IonConstructor pIonConstructor;
+    pIonConstructor.ConstructParticle();
     
-    // barions
-    G4BaryonConstructor bConstructor;
-    bConstructor.ConstructParticle();
+    G4ShortLivedConstructor pShortLivedConstructor;
+    pShortLivedConstructor.ConstructParticle();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void PhysicsList::AddInelaticProcesses(){
+    // this will be the model class for high energies
+    G4TheoFSGenerator * theTheoModel = new G4TheoFSGenerator;
     
-    // ions
-    G4IonConstructor iConstructor;
-    iConstructor.ConstructParticle();
+    // all models for treatment of thermal nucleus
+    G4Evaporation * theEvaporation = new G4Evaporation;
+    G4FermiBreakUp * theFermiBreakUp = new G4FermiBreakUp;
+    G4StatMF * theMF = new G4StatMF;
+    
+    // Evaporation logic
+    G4ExcitationHandler * theHandler = new G4ExcitationHandler;
+    theHandler->SetEvaporation(theEvaporation);
+    theHandler->SetFermiModel(theFermiBreakUp);
+    theHandler->SetMultiFragmentation(theMF);
+    theHandler->SetMaxAandZForFermiBreakUp(12, 6);
+    theHandler->SetMinEForMultiFrag(3*MeV);
+    
+    // Pre equilibrium stage
+    G4PreCompoundModel * thePreEquilib = new G4PreCompoundModel(theHandler);
+    
+    // a no-cascade generator-precompound interaface
+    G4GeneratorPrecompoundInterface * theCascade = new G4GeneratorPrecompoundInterface;
+    theCascade->SetDeExcitation(thePreEquilib);
+    
+    // here come the high energy parts
+    // the string model; still not quite according to design - Explicite use of the forseen interfaces
+    // will be tested and documented in this program by beta-02 at latest.
+    G4VPartonStringModel * theStringModel;
+    theStringModel = new G4FTFModel;
+    theTheoModel->SetTransport(theCascade);
+    theTheoModel->SetHighEnergyGenerator(theStringModel);
+    theTheoModel->SetMinEnergy(19*GeV);
+    theTheoModel->SetMaxEnergy(100*TeV);
+    
+    G4VLongitudinalStringDecay * theFragmentation = new G4QGSMFragmentation;
+    G4ExcitedStringDecay * theStringDecay = new G4ExcitedStringDecay(theFragmentation);
+    theStringModel->SetFragmentationModel(theStringDecay);
+    
+    // done with the generator model (most of the above is also available as default)
+    G4HadronElasticProcess* theElasticProcess =
+    new G4HadronElasticProcess;
+    G4LElastic* theElasticModel = new G4LElastic;
+    theElasticProcess->RegisterMe(theElasticModel);
+    
+    theParticleIterator->reset();
+    while( (*theParticleIterator)() ){
+        G4ParticleDefinition* particle = theParticleIterator->value();
+        G4ProcessManager* pmanager = particle->GetProcessManager();
+        G4String particleName = particle->GetParticleName();
+        if (particleName == "proton" ) {
+            G4ProtonInelasticProcess* theInelasticProcess =
+            new G4ProtonInelasticProcess("inelastic");
+            G4LEProtonInelastic* theInelasticModel = new G4LEProtonInelastic;
+            theInelasticProcess->RegisterMe(theInelasticModel);
+            theInelasticProcess->RegisterMe(theTheoModel);
+
+            XWrapperProcess *elasticProcess_wrapper = new XWrapperProcess();
+            elasticProcess_wrapper->registerProcess(theElasticProcess);
+            XWrapperProcess *inelasticProcess_wrapper = new XWrapperProcess();
+            inelasticProcess_wrapper->registerProcess(theInelasticProcess);
+            
+            //pmanager->AddDiscreteProcess(theElasticProcess);
+            //pmanager->AddDiscreteProcess(theInelasticProcess);
+            pmanager->AddDiscreteProcess(elasticProcess_wrapper);
+            pmanager->AddDiscreteProcess(inelasticProcess_wrapper);
+        }
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::AddStandardSS(){
-    G4VPhysicsConstructor*  fEmPhysicsList = new PhysListEmStandardSS("standardSS");
-    fEmPhysicsList->ConstructProcess();
+    
+    theParticleIterator->reset();
+    while( (*theParticleIterator)() ){
+        G4ParticleDefinition* particle = theParticleIterator->value();
+        G4ProcessManager* pmanager = particle->GetProcessManager();
+        G4String particleName = particle->GetParticleName();
+        if (particleName == "proton" ) {
+            G4CoulombScattering* cs = new G4CoulombScattering();
+            cs->SetBuildTableFlag(false);
+            
+            XWrapperProcess *cs_wrapper = new XWrapperProcess();
+            cs_wrapper->registerProcess(cs);
+
+            //pmanager->AddDiscreteProcess(cs);
+            pmanager->AddDiscreteProcess(cs_wrapper);
+        }
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -139,7 +245,7 @@ void PhysicsList::AddChanneling(){
         G4ProcessManager* pmanager = particle->GetProcessManager();
         G4String particleName = particle->GetParticleName();
         
-        if(particleName=="proton")
+        if(particleName == "proton")
         {
             G4cout<<"\n\nPhysicsList::ConstructParticle: \n\tFOUND PROTON...\n"<<G4endl;
             pmanager->AddDiscreteProcess(new ProcessChanneling());

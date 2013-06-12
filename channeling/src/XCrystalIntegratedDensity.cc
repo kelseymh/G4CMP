@@ -207,7 +207,7 @@ G4double XCrystalIntegratedDensity::ComputeValue(G4double vPotentialInitial){
     while(i1<fIntegrationPoints[0]){
         vPositionTemp.setX(G4double(G4double(i1)/G4double(fIntegrationPoints[0])*vInterplanarPeriod));
         if(fPotential->ComputeValue(vPositionTemp,fLattice).x() < vPotentialInitial){
-            vDensity += fElectronDensity->ComputeValue(vPositionTemp,fLattice).x();
+            //vDensity += fElectronDensity->ComputeValue(vPositionTemp,fLattice).x();
             vDensity += fNucleiDensity->ComputeValue(vPositionTemp,fLattice).x();
         }
         i1++;
@@ -215,7 +215,7 @@ G4double XCrystalIntegratedDensity::ComputeValue(G4double vPotentialInitial){
     
     vDensity *= vInterplanarPeriod;
     vDensity /= fIntegrationPoints[0];
-    vDensity /= 2.;
+    //vDensity /= 2.;
 
     return vDensity;
 }

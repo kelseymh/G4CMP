@@ -55,7 +55,8 @@ class A01EventAction : public G4UserEventAction
     G4int fSCI_ID;
 
     std::ofstream fFileOutSCI;
-    
+    std::ofstream fFileOutSD;
+
     A01EventActionMessenger* fMessenger;
     G4int fVerboseLevel;
 

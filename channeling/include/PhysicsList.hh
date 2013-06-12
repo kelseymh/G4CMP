@@ -15,6 +15,7 @@ public:
     void AddStandardSS();
     void AddChanneling();
     void AddDecay();
+    void AddInelaticProcesses();
     void AddStepMax();
     
     // Construct particle and physics

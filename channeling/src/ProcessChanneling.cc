@@ -62,12 +62,12 @@ ProcessChanneling::ProcessChanneling(const G4String& aName):G4VDiscreteProcess(a
     fLatticeManager = XLatticeManager3::GetXLatticeManager();
     
     G4double kCarTolerance = G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
-    G4cout<<"\n ProcessChanneling::Constructor: Geometry surface tolerance is: " << kCarTolerance / mm << " mm";
+    G4cout<<"\n ProcessChanneling::Constructor: Geometry surface tolerance is: " << kCarTolerance / mm << " mm"<<std::endl;
     if(verboseLevel>1) {
         G4cout << GetProcessName() << " is created "<< G4endl;
     }
         
-    fFileOut.open("channeling_z.txt");
+    fFileOut.open("channeling_NA.txt");
     fFileOut << "index,posin,angin,depth,pos,ang,dens,tr_en,ndch" << std::endl;
 
     InitializeCrystalCharacteristics();
@@ -274,7 +274,7 @@ G4double ProcessChanneling::GetChannelingMeanFreePath(const G4Track& aTrack){
     
     G4double vFactor = 10.;
     
-    G4double vMFP = vFactor * ComputeOscillationPeriod(aTrack) / GetInfo(aTrack)->GetChannelingFactor();
+    G4double vMFP = vFactor * ComputeOscillationPeriod(aTrack);// / GetInfo(aTrack)->GetChannelingFactor();
 
     return vMFP;
 }
@@ -294,8 +294,9 @@ G4double ProcessChanneling::GetMeanFreePath(const G4Track& aTrack, G4double /*pr
     if(fLatticeManager->HasLattice(GetVolume(aTrack))){
         return GetChannelingMeanFreePath(aTrack);
     }
-    
-    return DBL_MAX;
+    else{
+        return DBL_MAX;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -334,6 +335,7 @@ G4VParticleChange* ProcessChanneling::PostStepDoIt(const G4Track& aTrack, const 
             GetInfo(aTrack)->IncreaseNumberOfDechanneling();
         }
         GetInfo(aTrack)->SetChanneling(false);
+        GetInfo(aTrack)->SetChannelingFactor(1.);
     }
     
     return &aParticleChange;
@@ -415,11 +417,12 @@ void ProcessChanneling::ComputeCrystalCharacteristicForChanneling(const G4Track&
 }
 
 void ProcessChanneling::PrintCrystalCharacteristicsOnFiles(const G4Track& aTrack){
-    fIntegratedDensity->PrintOnFile("dens.txt");
-    fPotentialEnergy->PrintOnFile("pot.txt",GetXPhysicalLattice(aTrack),eV);
-    fElectricField->PrintOnFile("efx.txt",GetXPhysicalLattice(aTrack),eV/angstrom);
-    fElectronDensity->PrintOnFile("eld.txt",GetXPhysicalLattice(aTrack),angstrom);
-    fNucleiDensity->PrintOnFile("nud.txt",GetXPhysicalLattice(aTrack),angstrom);
+    char* filename;
+    fIntegratedDensity->PrintOnFile(filename="dens.txt");
+    fPotentialEnergy->PrintOnFile(filename="pot.txt",GetXPhysicalLattice(aTrack),eV);
+    fElectricField->PrintOnFile(filename="efx.txt",GetXPhysicalLattice(aTrack),eV/angstrom);
+    fElectronDensity->PrintOnFile(filename="eld.txt",GetXPhysicalLattice(aTrack),angstrom);
+    fNucleiDensity->PrintOnFile(filename="nud.txt",GetXPhysicalLattice(aTrack),angstrom);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
