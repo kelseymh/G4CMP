@@ -53,7 +53,7 @@ G4double XCrystalPlanarMoliereTempPotential::ComputeValueForSinglePlane(G4double
     G4VPhysicalVolume* vVolume = vLattice->GetVolume();
 
     G4double aTF = ComputeTFScreeningRadius(vLattice);
-    G4double vTVA = GetThermalVibrationAmplitude();
+    G4double vTVA = vLattice->GetThermalVibrationAmplitude();
     
     G4double vTau[3];
     for(unsigned int i=0;i<3;i++) vTau[i] = (pow( vTVA / aTF * fBeta[i] , 2. ) / 2.0);
@@ -81,21 +81,21 @@ G4double XCrystalPlanarMoliereTempPotential::ComputeValueForSinglePlane(G4double
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XCrystalPlanarMoliereTempPotential::GetMaximum(XPhysicalLattice* vLattice){
+G4double XCrystalPlanarMoliereTempPotential::ComputeMaximum(XPhysicalLattice* vLattice){
 
     G4double vMaximum = ComputeValue(G4ThreeVector(0.,0.,0.),vLattice).x();
     
-    return G4ThreeVector(vMaximum,0.,0.);
+    return vMaximum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XCrystalPlanarMoliereTempPotential::GetMinimum(XPhysicalLattice* vLattice){
+G4double XCrystalPlanarMoliereTempPotential::ComputeMinimum(XPhysicalLattice* vLattice){
     G4VPhysicalVolume* vVolume = vLattice->GetVolume();
     G4double vInterplanarDistance = GetXUnitCell(vVolume)->ComputeDirectPeriod(GetXPhysicalLattice(vVolume)->GetMiller(0),GetXPhysicalLattice(vVolume)->GetMiller(1),GetXPhysicalLattice(vVolume)->GetMiller(2));
     
     G4double vMinimum = ComputeValue(G4ThreeVector(vInterplanarDistance/2.,0.,0.),vLattice).x();
     
-    return G4ThreeVector(vMinimum,0.,0.);
+    return vMinimum;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

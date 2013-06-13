@@ -24,39 +24,51 @@
 // ********************************************************************
 //
 //
-// $Id$
-//
-#ifndef XVCrystalPlanarAnalytical_h
-#define XVCrystalPlanarAnalytical_h
 
-#include "XVCrystalCharacteristic.hh"
+#include "XCrystalIntegratedDensityPlanar.hh"
 
-class XVCrystalPlanarAnalytical:public XVCrystalCharacteristic {
-
-private:
-    G4int fNumberOfPlanes;
-
-public:
-    //set function
-    void SetNumberOfPlanes(G4int);
-
-    //retrieval function
-    G4int GetNumberOfPlanes();
-
-    virtual G4double ComputeValueForSinglePlane(G4double,XPhysicalLattice*) = 0; // G4double = position in the channel
+XCrystalIntegratedDensityPlanar::XCrystalIntegratedDensityPlanar(){
+    SetNumberOfPoints(256);
     
-    //virtual function of XVCrystalCharacteristic
-    G4ThreeVector ComputeValue(G4ThreeVector,XPhysicalLattice*);
-    G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);//G4double = position in the channel; G4double& = interplanar distance
-    
-    virtual G4double ComputeMaximum(XPhysicalLattice*);
-    virtual G4double ComputeMinimum(XPhysicalLattice*);
+    SetIntegrationPoints(0,1024);
+    SetIntegrationPoints(1,1);
+    SetIntegrationPoints(2,1);
+}
 
-    virtual void PrintOnFile(char*,XPhysicalLattice*,G4double);
-    
-    //Contructors
-    XVCrystalPlanarAnalytical();
-    ~XVCrystalPlanarAnalytical();
-};
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-#endif
+XCrystalIntegratedDensityPlanar::~XCrystalIntegratedDensityPlanar(){
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4bool XCrystalIntegratedDensityPlanar::HasBeenInitialized(){
+    if(fTable.size()==0) return false;
+    else return true;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4double XCrystalIntegratedDensityPlanar::ComputeValue(G4double vPotentialInitial){
+    
+    unsigned int i1 = 0;
+    
+    G4ThreeVector vPositionTemp = G4ThreeVector(0.,0.,0.);
+    G4double vDensity = 0.;
+    
+    G4double vInterplanarPeriod = fLattice->ComputeInterplanarPeriod();
+    while(i1<GetIntegrationPoints(0)){
+        vPositionTemp.setX(G4double(G4double(i1)/G4double(GetIntegrationPoints(0))*vInterplanarPeriod));
+        if(fPotential->ComputeValue(vPositionTemp,fLattice).x() < vPotentialInitial){
+            vDensity += fDensity->ComputeValue(vPositionTemp,fLattice).x();
+        }
+        i1++;
+    };
+    
+    vDensity *= vInterplanarPeriod;
+    vDensity /= GetIntegrationPoints(0);
+
+    return vDensity;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

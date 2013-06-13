@@ -34,7 +34,7 @@
 
 #include "XLatticeManager3.hh"
 #include "XVCrystalCharacteristic.hh"
-#include "XCrystalIntegratedDensity.hh"
+#include "XVCrystalIntegratedDensity.hh"
 
 #include "G4VPhysicalVolume.hh"
 #include "XPhysicalLattice.hh"
@@ -60,18 +60,9 @@ protected:
 public:
     XVCrystalCharacteristic* GetPotential();
     void SetPotential(XVCrystalCharacteristic*);
-
-    XVCrystalCharacteristic* GetNucleiDensity();
-    void SetNucleiDensity(XVCrystalCharacteristic*);
     
-    XVCrystalCharacteristic* GetElectronDensity();
-    void SetElectronDensity(XVCrystalCharacteristic*);
-
-    XVCrystalCharacteristic* GetElectricField();
-    void SetElectricField(XVCrystalCharacteristic*);
-    
-    XCrystalIntegratedDensity* GetIntegratedDensity();
-    void SetIntegratedDensity(XCrystalIntegratedDensity*);
+    XVCrystalIntegratedDensity* GetIntegratedDensity();
+    void SetIntegratedDensity(XVCrystalIntegratedDensity*);
     
 private:
     G4double GetChannelingMeanFreePath(const G4Track&);
@@ -84,7 +75,6 @@ private:
     G4ThreeVector ComputeChannelingOutgoingMomentum(const G4Track&);
     G4ThreeVector ComputeNewPosition(const G4Track&);
     
-    void InitializeCrystalCharacteristics();
     void ComputeCrystalCharacteristicForChanneling(const G4Track&);
     void PrintCrystalCharacteristicsOnFiles(const G4Track&);
     
@@ -107,11 +97,7 @@ private:
     XLatticeManager3* fLatticeManager;
       
     XVCrystalCharacteristic* fPotentialEnergy;
-    XVCrystalCharacteristic* fNucleiDensity;
-    XVCrystalCharacteristic* fElectronDensity;
-    XVCrystalCharacteristic* fElectricField;
-    
-    XCrystalIntegratedDensity* fIntegratedDensity;
+    XVCrystalIntegratedDensity* fIntegratedDensity;
     
     std::ofstream fFileOut;
 };

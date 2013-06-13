@@ -56,8 +56,8 @@ A01EventAction::A01EventAction()
 {
     fSD_ID = -1;
     fSCI_ID = -1;
-    fFileOutSCI.open("scintillator_20T.txt");
-    fFileOutSD.open("detector_20T.txt");
+    fFileOutSCI.open("scintillatorNC.txt");
+    fFileOutSD.open("detectorNC.txt");
     
     fFileOutSCI << "hit,det,posx,posy,posz" << std::endl;
     fFileOutSD << "hit,det,posx,posy,posz" << std::endl;

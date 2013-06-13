@@ -85,7 +85,7 @@ G4ThreeVector XVCrystalPlanarAnalytical::ComputePositionInUnitCell(G4ThreeVector
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XVCrystalPlanarAnalytical::ComputeMaximum(XPhysicalLattice* vLattice){
+G4double XVCrystalPlanarAnalytical::ComputeMaximum(XPhysicalLattice* vLattice){
     unsigned int vPrecision = 1024;
     G4VPhysicalVolume* vVolume = vLattice->GetVolume();
     G4double vStep = GetXPhysicalLattice(vVolume)->ComputeInterplanarPeriod() / vPrecision;
@@ -96,12 +96,12 @@ G4ThreeVector XVCrystalPlanarAnalytical::ComputeMaximum(XPhysicalLattice* vLatti
     for(unsigned int i=0;i<vPrecision;i++){
         if( (vValue = ComputeValue(G4ThreeVector(vStep * i,0.,0.),vLattice).x() ) > vMaximum) vMaximum = vValue;
     }
-    return G4ThreeVector(vMaximum,0.,0.);
+    return vMaximum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XVCrystalPlanarAnalytical::ComputeMinimum(XPhysicalLattice* vLattice){
+G4double XVCrystalPlanarAnalytical::ComputeMinimum(XPhysicalLattice* vLattice){
     unsigned int vPrecision = 1024;
     G4VPhysicalVolume* vVolume = vLattice->GetVolume();
     G4double vStep = GetXPhysicalLattice(vVolume)->ComputeInterplanarPeriod() / vPrecision;
@@ -112,7 +112,7 @@ G4ThreeVector XVCrystalPlanarAnalytical::ComputeMinimum(XPhysicalLattice* vLatti
     for(unsigned int i=0;i<vPrecision;i++){
         if( (vValue = ComputeValue(G4ThreeVector(vStep * i,0.,0.),vLattice).x() ) < vMinimum) vMinimum = vValue;
     }
-    return G4ThreeVector(vMinimum,0.,0.);
+    return vMinimum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

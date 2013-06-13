@@ -29,7 +29,9 @@
 
 XVCrystalCharacteristic::XVCrystalCharacteristic(){
     fLatticeManager = XLatticeManager3::GetXLatticeManager();
-    fThermalVibrationAmplitude = 0.075 * angstrom;
+    
+    fMaximum = DBL_MAX;    
+    fMinimum = DBL_MAX;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -60,18 +62,6 @@ XLogicalLattice* XVCrystalCharacteristic::GetLogicalLattice(G4VPhysicalVolume* v
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XVCrystalCharacteristic::SetThermalVibrationAmplitude(G4double vThermalVibrationAmplitude){
-    fThermalVibrationAmplitude = vThermalVibrationAmplitude;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-G4double XVCrystalCharacteristic::GetThermalVibrationAmplitude(){
-    return fThermalVibrationAmplitude;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
 G4double XVCrystalCharacteristic::ComputeTFScreeningRadius(XPhysicalLattice* vLattice){
     
     G4double vTFSR = Bohr_radius * 0.88534;
@@ -96,8 +86,8 @@ G4ThreeVector XVCrystalCharacteristic::ComputePositionInUnitCell(G4ThreeVector,X
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XVCrystalCharacteristic::GetMaximum(XPhysicalLattice* vLattice){
-    if(fMaximum == G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX)){
+G4double XVCrystalCharacteristic::GetMaximum(XPhysicalLattice* vLattice){
+    if(fMaximum == DBL_MAX){
         fMaximum = ComputeMaximum(vLattice);
     }
     return fMaximum;
@@ -105,8 +95,8 @@ G4ThreeVector XVCrystalCharacteristic::GetMaximum(XPhysicalLattice* vLattice){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XVCrystalCharacteristic::GetMinimum(XPhysicalLattice* vLattice){
-    if(fMinimum == G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX)){
+G4double XVCrystalCharacteristic::GetMinimum(XPhysicalLattice* vLattice){
+    if(fMinimum == DBL_MAX){
         fMinimum = ComputeMinimum(vLattice);
     }
     return fMinimum;
@@ -114,14 +104,54 @@ G4ThreeVector XVCrystalCharacteristic::GetMinimum(XPhysicalLattice* vLattice){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XVCrystalCharacteristic::ComputeMaximum(XPhysicalLattice*){
-    return G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+G4double XVCrystalCharacteristic::ComputeMaximum(XPhysicalLattice* vLattice){
+    unsigned int vPrecisionX = 1024;
+    unsigned int vPrecisionY = 1024;
+    unsigned int vPrecisionZ = 1024;
+    
+    G4VPhysicalVolume* vVolume = vLattice->GetVolume();
+    G4double vStepX = GetXUnitCell(vVolume)->GetSize().x() / vPrecisionX;
+    G4double vStepY = GetXUnitCell(vVolume)->GetSize().y() / vPrecisionY;
+    G4double vStepZ = GetXUnitCell(vVolume)->GetSize().z() / vPrecisionZ;
+
+    G4double vMaximum = -DBL_MAX;
+    G4double vValue;
+    
+    for(unsigned int i=0;i<vPrecisionX;i++){
+        for(unsigned int j=0;j<vPrecisionY;j++){
+            for(unsigned int k=0;k<vPrecisionZ;k++){
+                if( (vValue = ComputeValue(G4ThreeVector(vStepX * i,vStepY * i,vStepZ * i),vLattice).mag() ) > vMaximum) vMaximum = vValue;
+            }
+        }
+    }
+
+    return vMaximum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XVCrystalCharacteristic::ComputeMinimum(XPhysicalLattice*){
-    return G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+G4double XVCrystalCharacteristic::ComputeMinimum(XPhysicalLattice* vLattice){
+    unsigned int vPrecisionX = 1024;
+    unsigned int vPrecisionY = 1024;
+    unsigned int vPrecisionZ = 1024;
+    
+    G4VPhysicalVolume* vVolume = vLattice->GetVolume();
+    G4double vStepX = GetXUnitCell(vVolume)->GetSize().x() / vPrecisionX;
+    G4double vStepY = GetXUnitCell(vVolume)->GetSize().y() / vPrecisionY;
+    G4double vStepZ = GetXUnitCell(vVolume)->GetSize().z() / vPrecisionZ;
+    
+    G4double vMinimum = DBL_MAX;
+    G4double vValue;
+    
+    for(unsigned int i=0;i<vPrecisionX;i++){
+        for(unsigned int j=0;j<vPrecisionY;j++){
+            for(unsigned int k=0;k<vPrecisionZ;k++){
+                if( (vValue = ComputeValue(G4ThreeVector(vStepX * i,vStepY * i,vStepZ * i),vLattice).mag() ) < vMinimum) vMinimum = vValue;
+            }
+        }
+    }
+    
+    return vMinimum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

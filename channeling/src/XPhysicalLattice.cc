@@ -256,6 +256,42 @@ void XPhysicalLattice::SetXLogicalLattice(XLogicalLattice* Lat){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void XPhysicalLattice::SetThermalVibrationAmplitude(G4double vThermalVibrationAmplitude){
+    fThermalVibrationAmplitude = vThermalVibrationAmplitude;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4double XPhysicalLattice::GetThermalVibrationAmplitude(){
+    return fThermalVibrationAmplitude;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void XPhysicalLattice::ComputeThermalVibrationAmplitude(){
+//    double Constant = ( (3 * pow(cPlanckConstant,2)) / (4 * cBoltzmanConstant * GetA() * GetDebyeTemperature()));
+//    double Integral = 0.0;
+//    
+//    int i;
+//    int IntegrationStepNumber = 8192;
+//    double y_var_0 = GetDebyeTemperature() / GetTemperature() / IntegrationStepNumber;
+//    double y_var = 0.0;
+//    double y_value = 0.0;
+//    for(i=1;i<IntegrationStepNumber;i++)
+//    {
+//        y_var = i * y_var_0;
+//        y_value = ( y_var / (exp(y_var) - 1));
+//        Integral += (y_value * y_var_0 );
+//    }
+//    
+//    fThermalVibrationConstant = pow( Constant * ( 1 + 4 * Integral * pow(GetTemperature()/GetDebyeTemperature(),2)) , 0.5);
+//    if(fDebyeTemperature==0.0) fThermalVibrationConstant = 0.0;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 G4ThreeVector XPhysicalLattice::ProjectVectorFromWorldToLattice(G4ThreeVector vVector){
     vVector.rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
     return vVector;

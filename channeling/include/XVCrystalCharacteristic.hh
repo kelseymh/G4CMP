@@ -38,9 +38,8 @@ private:
     XLatticeManager3* fLatticeManager;
 
 protected:
-    G4double fThermalVibrationAmplitude; // TO BE MOVED TO XLogicalLattice
-    G4ThreeVector fMaximum;
-    G4ThreeVector fMinimum;
+    G4double fMaximum;
+    G4double fMinimum;
     
 public:
     //retrieval functions
@@ -48,20 +47,17 @@ public:
     XUnitCell* GetXUnitCell(G4VPhysicalVolume*);
     XLogicalLattice* GetLogicalLattice(G4VPhysicalVolume*);
 
-    void SetThermalVibrationAmplitude(G4double);
-    G4double GetThermalVibrationAmplitude();
-    
     //virtual function to compute value starting from the point in the xtal reference frame and the physical volume of the xtal
     virtual G4ThreeVector ComputeValue(G4ThreeVector,XPhysicalLattice*) = 0;
     virtual G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);
     
     virtual G4double ComputeTFScreeningRadius(XPhysicalLattice*);
-    
-    virtual G4ThreeVector GetMaximum(XPhysicalLattice*);
-    virtual G4ThreeVector GetMinimum(XPhysicalLattice*);
 
-    virtual G4ThreeVector ComputeMaximum(XPhysicalLattice*);
-    virtual G4ThreeVector ComputeMinimum(XPhysicalLattice*);
+    virtual G4double GetMaximum(XPhysicalLattice*);
+    virtual G4double GetMinimum(XPhysicalLattice*);
+
+    virtual G4double ComputeMaximum(XPhysicalLattice*);
+    virtual G4double ComputeMinimum(XPhysicalLattice*);
 
     virtual void PrintOnFile(char*,XPhysicalLattice*,G4double = 1) = 0;
     //Contructors

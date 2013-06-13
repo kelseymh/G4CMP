@@ -41,8 +41,8 @@ private:
 public:
     G4double ComputeValueForSinglePlane(G4double,XPhysicalLattice*);
     
-    G4ThreeVector GetMaximum(XPhysicalLattice*);
-    G4ThreeVector GetMinimum(XPhysicalLattice*);
+    G4double ComputeMaximum(XPhysicalLattice*);
+    G4double ComputeMinimum(XPhysicalLattice*);
 
     //Contructors
     XCrystalPlanarMoliereTempPotential();

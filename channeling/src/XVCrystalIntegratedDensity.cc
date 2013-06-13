@@ -25,33 +25,25 @@
 //
 //
 
-#include "XCrystalIntegratedDensity.hh"
+#include "XVCrystalIntegratedDensity.hh"
 
-XCrystalIntegratedDensity::XCrystalIntegratedDensity(XVCrystalCharacteristic* vPotential,XVCrystalCharacteristic* vNucleiDensity,XVCrystalCharacteristic* vElectronDensity){
-    
-    SetNucleiDensity(vNucleiDensity);
-    SetElectronDensity(vElectronDensity);
-    SetPotential(vPotential);
-    
+XVCrystalIntegratedDensity::XVCrystalIntegratedDensity(){
     fTable.clear();
     
-    fNumberOfPoints[0] = 256;
-    fNumberOfPoints[1] = 1;
-    fNumberOfPoints[2] = 1;
-    
-    fIntegrationPoints[0] = 1024;
-    fIntegrationPoints[1] = 1;
-    fIntegrationPoints[2] = 1;
+    fNumberOfPoints = 512;
+    fIntegrationPoints[0] = 32;
+    fIntegrationPoints[1] = 32;
+    fIntegrationPoints[2] = 32;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XCrystalIntegratedDensity::~XCrystalIntegratedDensity(){
+XVCrystalIntegratedDensity::~XVCrystalIntegratedDensity(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XCrystalIntegratedDensity::SetIntegrationPoints(unsigned int vIntegrationPoints,unsigned int vIndex){
+void XVCrystalIntegratedDensity::SetIntegrationPoints(unsigned int vIndex,unsigned int vIntegrationPoints){
     if(vIndex<3) {
         if(vIntegrationPoints > 0){
             fIntegrationPoints[vIndex] = vIntegrationPoints;
@@ -61,7 +53,7 @@ void XCrystalIntegratedDensity::SetIntegrationPoints(unsigned int vIntegrationPo
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-unsigned int XCrystalIntegratedDensity::GetIntegrationPoints(unsigned int vIndex){
+unsigned int XVCrystalIntegratedDensity::GetIntegrationPoints(unsigned int vIndex){
     if(vIndex<3) {
         return fIntegrationPoints[vIndex];
     }
@@ -72,116 +64,93 @@ unsigned int XCrystalIntegratedDensity::GetIntegrationPoints(unsigned int vIndex
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-unsigned int XCrystalIntegratedDensity::GetIntegrationPoints(){
+unsigned int XVCrystalIntegratedDensity::GetIntegrationPoints(){
     return fIntegrationPoints[0]*fIntegrationPoints[1]*fIntegrationPoints[2];
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XCrystalIntegratedDensity::SetNumberOfPoints(unsigned int vNumberOfPoints,unsigned int vIndex){
-    if(vIndex<3) {
-        if(vNumberOfPoints > 0){
-            fNumberOfPoints[vIndex] = vNumberOfPoints;
-        }
-    }
+void XVCrystalIntegratedDensity::SetNumberOfPoints(unsigned int vNumberOfPoints){
+    fNumberOfPoints = vNumberOfPoints;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-unsigned int XCrystalIntegratedDensity::GetNumberOfPoints(unsigned int vIndex){
-    if(vIndex<3) {
-        return fNumberOfPoints[vIndex];
-    }
-    else{
-        return 0;
-    }
+unsigned int XVCrystalIntegratedDensity::GetNumberOfPoints(){
+    return fNumberOfPoints;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-unsigned int XCrystalIntegratedDensity::GetNumberOfPoints(){
-    return fNumberOfPoints[0]*fNumberOfPoints[1]*fNumberOfPoints[2];
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-void XCrystalIntegratedDensity::SetPotential(XVCrystalCharacteristic* vPotential){
+void XVCrystalIntegratedDensity::SetPotential(XVCrystalCharacteristic* vPotential){
     fPotential = vPotential;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XVCrystalCharacteristic* XCrystalIntegratedDensity::GetPotential(){
+XVCrystalCharacteristic* XVCrystalIntegratedDensity::GetPotential(){
     return fPotential;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XCrystalIntegratedDensity::SetNucleiDensity(XVCrystalCharacteristic* vNucleiDensity){
-    fNucleiDensity = vNucleiDensity;
+void XVCrystalIntegratedDensity::SetDensity(XVCrystalCharacteristic* vDensity){
+    fDensity = vDensity;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XVCrystalCharacteristic* XCrystalIntegratedDensity::GetNucleiDensity(){
-    return fNucleiDensity;
+XVCrystalCharacteristic* XVCrystalIntegratedDensity::GetDensity(){
+    return fDensity;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XCrystalIntegratedDensity::SetElectronDensity(XVCrystalCharacteristic* vElectronDensity){
-    fElectronDensity = vElectronDensity;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-XVCrystalCharacteristic*  XCrystalIntegratedDensity::GetElectronDensity(){
-    return fElectronDensity;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-void XCrystalIntegratedDensity::SetXPhysicalLattice(XPhysicalLattice* vLattice){
+void XVCrystalIntegratedDensity::SetXPhysicalLattice(XPhysicalLattice* vLattice){
     fLattice = vLattice;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XPhysicalLattice*  XCrystalIntegratedDensity::GetXPhysicalLattice(){
+XPhysicalLattice*  XVCrystalIntegratedDensity::GetXPhysicalLattice(){
     return fLattice;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XCrystalIntegratedDensity::InitializeTable(){
-    fPotentialMinimum = fPotential->GetMinimum(fLattice).x();
-    fPotentialRange = fPotential->GetMaximum(fLattice).x() - fPotentialMinimum;
+G4double XVCrystalIntegratedDensity::GetStep(){
+    return fPotentialRange / fNumberOfPoints;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4bool XVCrystalIntegratedDensity::HasBeenInitialized(XPhysicalLattice* vLattice){
+    if(fTable.size()==0) return false;
+    if(vLattice!=GetXPhysicalLattice()) return false;
+    else return true;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void XVCrystalIntegratedDensity::InitializeTable(){
+    fPotentialMinimum = fPotential->GetMinimum(fLattice);
+    fPotentialRange = fPotential->GetMaximum(fLattice) - fPotentialMinimum;
     
-    G4cout << "XCrystalIntegratedDensity::InitializeTable()::Potential Range =  " << fPotentialRange/eV << std::endl;
+    G4cout << "XVCrystalIntegratedDensity::InitializeTable()::Potential Range =  " << fPotentialRange/eV << std::endl;
     
     for(unsigned int i=0;i<GetNumberOfPoints();i++){
-        fTable.push_back(ComputeValue(fPotentialMinimum + fPotentialRange * G4double(i+1) / G4double(fNumberOfPoints[0])));
+        fTable.push_back(ComputeValue(fPotentialMinimum + fPotentialRange * G4double(i+1) / G4double(fNumberOfPoints)));
     }
-}
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-G4double XCrystalIntegratedDensity::GetStep(unsigned int vIndex){
-    if(vIndex<3) {
-        return fPotentialRange / fNumberOfPoints[vIndex];
-    }
-    else return -1;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XCrystalIntegratedDensity::GetValue(G4double vPotential){
-    if(!HasBeenInitialized()) return -1.;
+G4double XVCrystalIntegratedDensity::GetValue(G4double vPotential,XPhysicalLattice* vLattice){
+    if(!HasBeenInitialized(vLattice)) return -1.;
     else if(vPotential >= (fPotentialMinimum+fPotentialRange)) return 1.;
     else if(vPotential <= fPotentialMinimum) return 0.;
     else{
-        unsigned int vIndex = int(((vPotential - fPotentialMinimum) / fPotentialRange ) * fNumberOfPoints[0]);
+        unsigned int vIndex = int(((vPotential - fPotentialMinimum) / fPotentialRange ) * fNumberOfPoints);
         return fTable.at(vIndex);
     }
     return 0.;
@@ -189,45 +158,45 @@ G4double XCrystalIntegratedDensity::GetValue(G4double vPotential){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4bool XCrystalIntegratedDensity::HasBeenInitialized(){
-    if(fTable.size()==0) return false;
-    else return true;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-G4double XCrystalIntegratedDensity::ComputeValue(G4double vPotentialInitial){
+G4double XVCrystalIntegratedDensity::ComputeValue(G4double vPotentialInitial){
     
-    unsigned int i1 = 0;
+    unsigned int i1,i2,i3;
+    i1 = i2 = i3 = 0;
     
     G4ThreeVector vPositionTemp = G4ThreeVector(0.,0.,0.);
     G4double vDensity = 0.;
     
-    G4double vInterplanarPeriod = fLattice->ComputeInterplanarPeriod();
-    while(i1<fIntegrationPoints[0]){
-        vPositionTemp.setX(G4double(G4double(i1)/G4double(fIntegrationPoints[0])*vInterplanarPeriod));
-        if(fPotential->ComputeValue(vPositionTemp,fLattice).x() < vPotentialInitial){
-            //vDensity += fElectronDensity->ComputeValue(vPositionTemp,fLattice).x();
-            vDensity += fNucleiDensity->ComputeValue(vPositionTemp,fLattice).x();
-        }
-        i1++;
+    G4ThreeVector vSize = fLattice->GetXUnitCell()->GetSize();
+    while(i1<fIntegrationPoints[2]){
+        vPositionTemp.setY(G4double(G4double(i3)/G4double(fIntegrationPoints[2])*vSize.z()));
+        while(i1<fIntegrationPoints[1]){
+            vPositionTemp.setZ(G4double(G4double(i2)/G4double(fIntegrationPoints[1])*vSize.y()));
+            while(i1<fIntegrationPoints[0]){
+                vPositionTemp.setX(G4double(G4double(i1)/G4double(fIntegrationPoints[0])*vSize.x()));
+                if(fPotential->ComputeValue(vPositionTemp,fLattice).x() < vPotentialInitial){
+                    vDensity += fDensity->ComputeValue(vPositionTemp,fLattice).x();
+                }
+                i1++;
+            };
+            i2++;
+        };
+        i3++;
     };
     
-    vDensity *= vInterplanarPeriod;
-    vDensity /= fIntegrationPoints[0];
-    //vDensity /= 2.;
-
+    vDensity *= fLattice->GetXUnitCell()->ComputeVolume();
+    vDensity /= GetIntegrationPoints();
+    
     return vDensity;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XCrystalIntegratedDensity::PrintOnFile(char* filename){
+void XVCrystalIntegratedDensity::PrintOnFile(char* filename){
     std::ofstream vFileOut;
     vFileOut.open(filename);
-    G4double vStep = GetStep(0) / eV;
+    G4double vStep = GetStep() / eV;
     vFileOut << "energy,dens" << std::endl;
-    for(unsigned int i = 0;i<fNumberOfPoints[0];i++){
+    for(unsigned int i = 0;i<fNumberOfPoints;i++){
         vFileOut << i * vStep << "," << fTable[i] << std::endl;
     }
     vFileOut.close();

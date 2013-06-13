@@ -26,37 +26,26 @@
 //
 // $Id$
 //
-#ifndef XVCrystalPlanarAnalytical_h
-#define XVCrystalPlanarAnalytical_h
+#ifndef XCrystalCharacteristicArray_h
+#define XCrystalCharacteristicArray_h
 
 #include "XVCrystalCharacteristic.hh"
 
-class XVCrystalPlanarAnalytical:public XVCrystalCharacteristic {
+class XCrystalCharacteristicArray: public XVCrystalCharacteristic {
 
 private:
-    G4int fNumberOfPlanes;
-
+    std::vector<XVCrystalCharacteristic*> fCharacteristicVector;
+protected:
+    
 public:
-    //set function
-    void SetNumberOfPlanes(G4int);
-
-    //retrieval function
-    G4int GetNumberOfPlanes();
-
-    virtual G4double ComputeValueForSinglePlane(G4double,XPhysicalLattice*) = 0; // G4double = position in the channel
+    std::vector<XVCrystalCharacteristic*> GetCharacteristicVector();
     
-    //virtual function of XVCrystalCharacteristic
-    G4ThreeVector ComputeValue(G4ThreeVector,XPhysicalLattice*);
-    G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);//G4double = position in the channel; G4double& = interplanar distance
-    
-    virtual G4double ComputeMaximum(XPhysicalLattice*);
-    virtual G4double ComputeMinimum(XPhysicalLattice*);
-
-    virtual void PrintOnFile(char*,XPhysicalLattice*,G4double);
+    virtual G4ThreeVector ComputeValue(G4ThreeVector,XPhysicalLattice*);
+    virtual G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);
     
     //Contructors
-    XVCrystalPlanarAnalytical();
-    ~XVCrystalPlanarAnalytical();
+    XCrystalCharacteristicArray();
+    ~XCrystalCharacteristicArray();
 };
 
 #endif

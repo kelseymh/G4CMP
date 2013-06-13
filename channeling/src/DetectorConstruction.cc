@@ -77,7 +77,7 @@ DetectorConstruction::~DetectorConstruction(){
 
 G4VPhysicalVolume* DetectorConstruction::Construct(){
     AddWorld();
-    AddCrystalTarget();
+    //AddCrystalTarget();
     AddScintillators();
     AddSiliconStripDetectors();
     return fWorldPhysical;
@@ -189,6 +189,7 @@ void DetectorConstruction::AddCrystalTarget(){
     physicalLattice->SetUnitCell(myCell);
     physicalLattice->SetMillerOrientation(2,2,0);
     physicalLattice->SetLatticeOrientation(0.,0.E-6 * radian);
+    physicalLattice->SetThermalVibrationAmplitude(0.075*angstrom);
 
     //----------------------------------------
     // Register XPhysicalLattice

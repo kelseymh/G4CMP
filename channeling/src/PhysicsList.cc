@@ -59,6 +59,16 @@
 // Channeling
 #include "ProcessChanneling.hh"
 
+#include "XVCrystalCharacteristic.hh"
+#include "XVCrystalIntegratedDensity.hh"
+
+#include "XCrystalPlanarMoliereTempPotential.hh"
+#include "XCrystalPlanarMoliereElectricField.hh"
+#include "XCrystalPlanarNucleiDensity.hh"
+#include "XCrystalPlanarMoliereElectronDensity.hh"
+#include "XCrystalCharacteristicArray.hh"
+#include "XCrystalIntegratedDensityPlanar.hh"
+
 // Proton hadronic
 #include "G4HadronElasticProcess.hh"
 #include "G4HadronFissionProcess.hh"
@@ -115,7 +125,7 @@ PhysicsList::~PhysicsList(){
 
 void PhysicsList::ConstructProcess(){
     AddTransportation();
-    AddChanneling();
+    //AddChanneling();
     AddInelaticProcesses();
     AddStandardSS();
     AddDecay();
@@ -239,6 +249,17 @@ void PhysicsList::AddStandardSS(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::AddChanneling(){
+
+    XVCrystalCharacteristic* vPotentialEnergy = new XCrystalPlanarMoliereTempPotential();
+    
+    XVCrystalCharacteristic* vElectricField = new XCrystalPlanarMoliereElectricField();
+    
+    XVCrystalCharacteristic* vNucleiDensity = new XCrystalPlanarNucleiDensity();
+    XVCrystalCharacteristic* vElectronDensity = new XCrystalPlanarMoliereElectronDensity();
+    XVCrystalIntegratedDensity* vIntegratedDensity = new XCrystalIntegratedDensityPlanar();
+    vIntegratedDensity->SetPotential(vPotentialEnergy);
+    vIntegratedDensity->SetDensity(vNucleiDensity);
+    
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){
         G4ParticleDefinition* particle = theParticleIterator->value();
@@ -248,7 +269,12 @@ void PhysicsList::AddChanneling(){
         if(particleName == "proton")
         {
             G4cout<<"\n\nPhysicsList::ConstructParticle: \n\tFOUND PROTON...\n"<<G4endl;
-            pmanager->AddDiscreteProcess(new ProcessChanneling());
+            ProcessChanneling* channeling =  new ProcessChanneling();
+            channeling->SetPotential(vPotentialEnergy);
+            channeling->SetIntegratedDensity(vIntegratedDensity);
+            
+            pmanager->AddDiscreteProcess(channeling);
+            
         }
     }
 }

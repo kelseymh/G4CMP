@@ -105,7 +105,12 @@ public:
     //general functions
     G4double ComputeInterplanarPeriod();
     
+    void SetThermalVibrationAmplitude(G4double);
+    G4double GetThermalVibrationAmplitude();
+    void ComputeThermalVibrationAmplitude();
+
 private:
+    G4double fThermalVibrationAmplitude; // TO BE MOVED TO XLogicalLattice
     G4int fMillerOrientation[3];
     XUnitCell* fUnitCell;
 };

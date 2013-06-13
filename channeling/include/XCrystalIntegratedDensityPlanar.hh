@@ -26,37 +26,23 @@
 //
 // $Id$
 //
-#ifndef XVCrystalPlanarAnalytical_h
-#define XVCrystalPlanarAnalytical_h
+#ifndef XCrystalIntegratedDensityPlanar_h
+#define XCrystalIntegratedDensityPlanar_h
 
-#include "XVCrystalCharacteristic.hh"
+#include "XVCrystalIntegratedDensity.hh"
 
-class XVCrystalPlanarAnalytical:public XVCrystalCharacteristic {
+class XCrystalIntegratedDensityPlanar : public XVCrystalIntegratedDensity{
 
-private:
-    G4int fNumberOfPlanes;
-
-public:
-    //set function
-    void SetNumberOfPlanes(G4int);
-
-    //retrieval function
-    G4int GetNumberOfPlanes();
-
-    virtual G4double ComputeValueForSinglePlane(G4double,XPhysicalLattice*) = 0; // G4double = position in the channel
+public:  
+    virtual G4bool HasBeenInitialized();
+    //now it checks only of the table is initialized, it does not check if the particular crystal is initialized. To be changed in the future!
     
-    //virtual function of XVCrystalCharacteristic
-    G4ThreeVector ComputeValue(G4ThreeVector,XPhysicalLattice*);
-    G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);//G4double = position in the channel; G4double& = interplanar distance
-    
-    virtual G4double ComputeMaximum(XPhysicalLattice*);
-    virtual G4double ComputeMinimum(XPhysicalLattice*);
+protected:
+    virtual G4double ComputeValue(G4double);
 
-    virtual void PrintOnFile(char*,XPhysicalLattice*,G4double);
-    
-    //Contructors
-    XVCrystalPlanarAnalytical();
-    ~XVCrystalPlanarAnalytical();
+public:   //Contructors
+    XCrystalIntegratedDensityPlanar();
+    ~XCrystalIntegratedDensityPlanar();
 };
 
 #endif

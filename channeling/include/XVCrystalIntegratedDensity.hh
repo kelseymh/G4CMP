@@ -26,64 +26,60 @@
 //
 // $Id$
 //
-#ifndef XCrystalIntegratedDensity_h
-#define XCrystalIntegratedDensity_h
+#ifndef XVCrystalIntegratedDensity_h
+#define XVCrystalIntegratedDensity_h
 
 #include "XVCrystalCharacteristic.hh"
 
-class XCrystalIntegratedDensity {
+class XVCrystalIntegratedDensity {
 
 public:
     void SetIntegrationPoints(unsigned int,unsigned int);
     unsigned int GetIntegrationPoints(unsigned int);
     unsigned int GetIntegrationPoints();
 
-    void SetNumberOfPoints(unsigned int,unsigned int);
-    unsigned int GetNumberOfPoints(unsigned int);
+    void SetNumberOfPoints(unsigned int);
     unsigned int GetNumberOfPoints();
 
-    G4double GetStep(unsigned int);
-
-    void SetNucleiDensity(XVCrystalCharacteristic*);
-    XVCrystalCharacteristic* GetNucleiDensity();
+    void SetDensity(XVCrystalCharacteristic*);
+    XVCrystalCharacteristic* GetDensity();
     
-    void SetElectronDensity(XVCrystalCharacteristic*);
-    XVCrystalCharacteristic* GetElectronDensity();
-
     void SetPotential(XVCrystalCharacteristic*);
     XVCrystalCharacteristic* GetPotential();
 
     void SetXPhysicalLattice(XPhysicalLattice*);
     XPhysicalLattice* GetXPhysicalLattice();
-    
-    G4double GetValue(G4double);
-    
-    void InitializeTable();
-    G4bool HasBeenInitialized();
-    //now it checks only of the table is initialized, it does not check if the particular crystal is initialized. To be changed in the future!
-    
+
     void PrintOnFile(char*);
+    G4bool HasBeenInitialized(XPhysicalLattice*);
+
+    G4double GetValue(G4double,XPhysicalLattice*);
+
+protected:
+    G4double GetStep();
+
+public:
+    virtual void InitializeTable();
     
 protected:
-    G4double ComputeValue(G4double);
+    virtual G4double ComputeValue(G4double) = 0;
 
-private:
+protected:
     XPhysicalLattice* fLattice;
-    XVCrystalCharacteristic* fElectronDensity;
-    XVCrystalCharacteristic* fNucleiDensity;
+    XVCrystalCharacteristic* fDensity;
     XVCrystalCharacteristic* fPotential;
 
     G4double fPotentialMinimum;
     G4double fPotentialRange;
     
     std::vector<G4double> fTable;
-    unsigned int fNumberOfPoints[3];
+    unsigned int fNumberOfPoints;
     unsigned int fIntegrationPoints[3];
     
 
 public:   //Contructors
-    XCrystalIntegratedDensity(XVCrystalCharacteristic*,XVCrystalCharacteristic*,XVCrystalCharacteristic*);
-    ~XCrystalIntegratedDensity();
+    XVCrystalIntegratedDensity();
+    ~XVCrystalIntegratedDensity();
 };
 
 #endif

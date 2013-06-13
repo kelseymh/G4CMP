@@ -49,13 +49,6 @@
 #include "XLogicalBase.hh"
 #include "XUnitCell.hh"
 
-#include "XCrystalPlanarMoliereTempPotential.hh"
-#include "XCrystalPlanarMoliereElectricField.hh"
-#include "XCrystalPlanarNucleiDensity.hh"
-#include "XCrystalPlanarMoliereElectronDensity.hh"
-
-#include "XCrystalIntegratedDensity.hh"
-
 #include "ChannelingParticleUserInfo.hh"
 
 ProcessChanneling::ProcessChanneling(const G4String& aName):G4VDiscreteProcess(aName){
@@ -67,20 +60,8 @@ ProcessChanneling::ProcessChanneling(const G4String& aName):G4VDiscreteProcess(a
         G4cout << GetProcessName() << " is created "<< G4endl;
     }
         
-    fFileOut.open("channeling_20T.txt");
+    fFileOut.open("channelingNC.txt");
     fFileOut << "index,posin,angin,depth,pos,ang,dens,tr_en,ndch" << std::endl;
-
-    InitializeCrystalCharacteristics();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-void ProcessChanneling::InitializeCrystalCharacteristics(){
-    fPotentialEnergy = new XCrystalPlanarMoliereTempPotential();
-    fElectricField = new XCrystalPlanarMoliereElectricField();
-    fNucleiDensity = new XCrystalPlanarNucleiDensity();
-    fElectronDensity = new XCrystalPlanarMoliereElectronDensity();
-    fIntegratedDensity = new XCrystalIntegratedDensity(fPotentialEnergy,fNucleiDensity,fElectronDensity);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -109,56 +90,20 @@ void ProcessChanneling::SetPotential(XVCrystalCharacteristic* vPotential){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XVCrystalCharacteristic* ProcessChanneling::GetNucleiDensity(){
-    return fNucleiDensity;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-void ProcessChanneling::SetNucleiDensity(XVCrystalCharacteristic* vNucleiDensity){
-    fNucleiDensity = vNucleiDensity;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-XVCrystalCharacteristic* ProcessChanneling::GetElectronDensity(){
-    return fElectronDensity;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-void ProcessChanneling::SetElectronDensity(XVCrystalCharacteristic* vElectronDensity){
-    fElectronDensity = vElectronDensity;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-XVCrystalCharacteristic* ProcessChanneling::GetElectricField(){
-    return fElectricField;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-void ProcessChanneling::SetElectricField(XVCrystalCharacteristic* vElectricField){
-    fElectricField = vElectricField;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-XCrystalIntegratedDensity* ProcessChanneling::GetIntegratedDensity(){
+XVCrystalIntegratedDensity* ProcessChanneling::GetIntegratedDensity(){
     return fIntegratedDensity;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void ProcessChanneling::SetIntegratedDensity(XCrystalIntegratedDensity* vIntegratedDensity){
+void ProcessChanneling::SetIntegratedDensity(XVCrystalIntegratedDensity* vIntegratedDensity){
     fIntegratedDensity = vIntegratedDensity;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void ProcessChanneling::UpdatePositionMomentumDensity(const G4Track& aTrack){    
-    if(!fIntegratedDensity->HasBeenInitialized()){
+    if(!fIntegratedDensity->HasBeenInitialized(GetXPhysicalLattice(aTrack))){
         ComputeCrystalCharacteristicForChanneling(aTrack);
         G4cout << "ChannelingProcess::UpdatePositionMomentumDensity::fIntegratedDensity->Initialized" << std::endl;
     }
@@ -180,13 +125,13 @@ void ProcessChanneling::UpdatePositionMomentumDensity(const G4Track& aTrack){
             GetInfo(aTrack)->SetMomentumChanneledFirst(GetInfo(aTrack)->GetMomentumChanneled());
         }
         
-        GetInfo(aTrack)->SetChannelingFactor(fIntegratedDensity->GetValue(ComputeTransverseEnergy(aTrack).x()));
+        GetInfo(aTrack)->SetChannelingFactor(fIntegratedDensity->GetValue(ComputeTransverseEnergy(aTrack).x(),GetXPhysicalLattice(aTrack)));
     }
     else{
         G4ThreeVector vMomentum = GetInfo(aTrack)->GetMomentumChanneled();
         vMomentum += fLatticeManager->GetXPhysicalLattice(GetVolume(aTrack))->ProjectVectorFromWorldToLattice(aTrack.GetMomentum());
         GetInfo(aTrack)->SetMomentumChanneled(vMomentum);
-        GetInfo(aTrack)->SetChannelingFactor(fIntegratedDensity->GetValue(ComputeTransverseEnergy(aTrack).x()));
+        GetInfo(aTrack)->SetChannelingFactor(fIntegratedDensity->GetValue(ComputeTransverseEnergy(aTrack).x(),GetXPhysicalLattice(aTrack)));
     }
     
 }
@@ -218,7 +163,7 @@ G4double ProcessChanneling::ComputeChannelingCriticalEnergy(const G4Track& aTrac
     //----------------------------------------
         
     G4double vCriticalEnergy = 0.;
-    vCriticalEnergy += fPotentialEnergy->GetMaximum(GetXPhysicalLattice(aTrack)).x();
+    vCriticalEnergy += fPotentialEnergy->GetMaximum(GetXPhysicalLattice(aTrack));
 
     return vCriticalEnergy;
 }
@@ -274,7 +219,13 @@ G4double ProcessChanneling::GetChannelingMeanFreePath(const G4Track& aTrack){
     
     G4double vFactor = 10.;
     
-    G4double vMFP = vFactor * ComputeOscillationPeriod(aTrack);// / GetInfo(aTrack)->GetChannelingFactor();
+    G4double vMFP = vFactor * ComputeOscillationPeriod(aTrack);
+    if(GetInfo(aTrack)->GetChannelingFactor() != 0){
+        vMFP /= GetInfo(aTrack)->GetChannelingFactor();
+    }
+    else{
+        vMFP * 100.;
+    }
 
     return vMFP;
 }
@@ -416,13 +367,12 @@ void ProcessChanneling::ComputeCrystalCharacteristicForChanneling(const G4Track&
     PrintCrystalCharacteristicsOnFiles(aTrack);
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 void ProcessChanneling::PrintCrystalCharacteristicsOnFiles(const G4Track& aTrack){
     char* filename;
     fIntegratedDensity->PrintOnFile(filename="dens.txt");
     fPotentialEnergy->PrintOnFile(filename="pot.txt",GetXPhysicalLattice(aTrack),eV);
-    fElectricField->PrintOnFile(filename="efx.txt",GetXPhysicalLattice(aTrack),eV/angstrom);
-    fElectronDensity->PrintOnFile(filename="eld.txt",GetXPhysicalLattice(aTrack),angstrom);
-    fNucleiDensity->PrintOnFile(filename="nud.txt",GetXPhysicalLattice(aTrack),angstrom);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
