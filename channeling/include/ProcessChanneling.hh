@@ -61,9 +61,12 @@ public:
     XVCrystalCharacteristic* GetPotential();
     void SetPotential(XVCrystalCharacteristic*);
     
-    XVCrystalIntegratedDensity* GetIntegratedDensity();
-    void SetIntegratedDensity(XVCrystalIntegratedDensity*);
-    
+    XVCrystalIntegratedDensity* GetIntegratedDensityNuclei();
+    void SetIntegratedDensityNuclei(XVCrystalIntegratedDensity*);
+
+    XVCrystalIntegratedDensity* GetIntegratedDensityElectron();
+    void SetIntegratedDensityElectron(XVCrystalIntegratedDensity*);
+
 private:
     G4double GetChannelingMeanFreePath(const G4Track&);
     
@@ -97,8 +100,9 @@ private:
     XLatticeManager3* fLatticeManager;
       
     XVCrystalCharacteristic* fPotentialEnergy;
-    XVCrystalIntegratedDensity* fIntegratedDensity;
-    
+    XVCrystalIntegratedDensity* fIntegratedDensityNuclei;
+    XVCrystalIntegratedDensity* fIntegratedDensityElectron;
+
     std::ofstream fFileOut;
 };
 

@@ -111,7 +111,7 @@
 #include "G4CrossSectionPairGG.hh"
 
 // Wrapper
-#include "XWrapperProcess.hh"
+#include "XWrapperDiscreteProcess.hh"
 
 PhysicsList::PhysicsList():  G4VUserPhysicsList(){
 }
@@ -125,7 +125,7 @@ PhysicsList::~PhysicsList(){
 
 void PhysicsList::ConstructProcess(){
     AddTransportation();
-    //AddChanneling();
+    AddChanneling();
     AddInelaticProcesses();
     AddStandardSS();
     AddDecay();
@@ -211,15 +211,15 @@ void PhysicsList::AddInelaticProcesses(){
             theInelasticProcess->RegisterMe(theInelasticModel);
             theInelasticProcess->RegisterMe(theTheoModel);
 
-            XWrapperProcess *elasticProcess_wrapper = new XWrapperProcess();
-            elasticProcess_wrapper->registerProcess(theElasticProcess);
-            XWrapperProcess *inelasticProcess_wrapper = new XWrapperProcess();
-            inelasticProcess_wrapper->registerProcess(theInelasticProcess);
+            XWrapperDiscreteProcess *elasticProcess_wrapper = new XWrapperDiscreteProcess();
+            elasticProcess_wrapper->RegisterProcess(theElasticProcess);
+            XWrapperDiscreteProcess *inelasticProcess_wrapper = new XWrapperDiscreteProcess();
+            inelasticProcess_wrapper->RegisterProcess(theInelasticProcess);
             
             //pmanager->AddDiscreteProcess(theElasticProcess);
             //pmanager->AddDiscreteProcess(theInelasticProcess);
-            pmanager->AddDiscreteProcess(elasticProcess_wrapper);
-            pmanager->AddDiscreteProcess(inelasticProcess_wrapper);
+            pmanager->AddDiscreteProcess(elasticProcess_wrapper,1);
+            pmanager->AddDiscreteProcess(inelasticProcess_wrapper,1);
         }
     }
 }
@@ -237,11 +237,11 @@ void PhysicsList::AddStandardSS(){
             G4CoulombScattering* cs = new G4CoulombScattering();
             cs->SetBuildTableFlag(false);
             
-            XWrapperProcess *cs_wrapper = new XWrapperProcess();
-            cs_wrapper->registerProcess(cs);
+            XWrapperDiscreteProcess *cs_wrapper = new XWrapperDiscreteProcess();
+            cs_wrapper->RegisterProcess(cs);
 
             //pmanager->AddDiscreteProcess(cs);
-            pmanager->AddDiscreteProcess(cs_wrapper);
+            pmanager->AddDiscreteProcess(cs_wrapper,1);
         }
     }
 }
@@ -256,9 +256,14 @@ void PhysicsList::AddChanneling(){
     
     XVCrystalCharacteristic* vNucleiDensity = new XCrystalPlanarNucleiDensity();
     XVCrystalCharacteristic* vElectronDensity = new XCrystalPlanarMoliereElectronDensity();
-    XVCrystalIntegratedDensity* vIntegratedDensity = new XCrystalIntegratedDensityPlanar();
-    vIntegratedDensity->SetPotential(vPotentialEnergy);
-    vIntegratedDensity->SetDensity(vNucleiDensity);
+ 
+    XVCrystalIntegratedDensity* vIntegratedDensityNuclei = new XCrystalIntegratedDensityPlanar();
+    vIntegratedDensityNuclei->SetPotential(vPotentialEnergy);
+    vIntegratedDensityNuclei->SetDensity(vNucleiDensity);
+    
+    XVCrystalIntegratedDensity* vIntegratedDensityElectron = new XCrystalIntegratedDensityPlanar();
+    vIntegratedDensityElectron->SetPotential(vPotentialEnergy);
+    vIntegratedDensityElectron->SetDensity(vElectronDensity);
     
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){
@@ -271,8 +276,9 @@ void PhysicsList::AddChanneling(){
             G4cout<<"\n\nPhysicsList::ConstructParticle: \n\tFOUND PROTON...\n"<<G4endl;
             ProcessChanneling* channeling =  new ProcessChanneling();
             channeling->SetPotential(vPotentialEnergy);
-            channeling->SetIntegratedDensity(vIntegratedDensity);
-            
+            channeling->SetIntegratedDensityNuclei(vIntegratedDensityNuclei);
+            channeling->SetIntegratedDensityElectron(vIntegratedDensityElectron);
+
             pmanager->AddDiscreteProcess(channeling);
             
         }

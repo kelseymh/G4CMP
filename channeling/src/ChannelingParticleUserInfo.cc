@@ -32,105 +32,130 @@
 #include "ChannelingParticleUserInfo.hh"
 
 ChannelingParticleUserInfo::ChannelingParticleUserInfo(){
-    channelingFlag = false;
-    channelingFactor = 1.0;
-    preStepChannelingFactor = 1.0;
+    bHasBeenInChanneling = false;
+    fNucleiDensity = 1.0;
+    fNucleiDensityPreviousStep = 1.0;
     fNumberOfDechanneling = 0;
-    momentumChanneled = G4ThreeVector(0.,0.,0.);
-    positionChanneled = G4ThreeVector(0.,0.,0.);
-    momentumChanneledFirst = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
-    positionChanneledFirst = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+    fMomentumInChanneling = G4ThreeVector(0.,0.,0.);
+    fPositionInChanneling = G4ThreeVector(0.,0.,0.);
+    fMomentumInChannelingInitial = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+    fPositionInChannelingInitial = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 ChannelingParticleUserInfo::~ChannelingParticleUserInfo(){
-    channelingFlag = false;
-    channelingFactor = 1.0;
+    bHasBeenInChanneling = false;
+    fNucleiDensity = 1.0;
+    fElectronDensity = 1.0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ChannelingParticleUserInfo::SetChanneling(bool flag){
-    channelingFlag = flag;
+    bHasBeenInChanneling = flag;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 bool ChannelingParticleUserInfo::GetChanneling(){
-    return channelingFlag;
+    return bHasBeenInChanneling;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ChannelingParticleUserInfo::SetChannelingFactor(G4double factor){
-    channelingFactor = factor;
+void ChannelingParticleUserInfo::SetNucleiDensity(G4double density){
+    fNucleiDensity = density;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4double ChannelingParticleUserInfo::GetChannelingFactor(){
-    return channelingFactor;
+G4double ChannelingParticleUserInfo::GetNucleiDensity(){
+    return fNucleiDensity;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4double ChannelingParticleUserInfo::GetPreStepChannelingFactor(){
-    return preStepChannelingFactor;
+void ChannelingParticleUserInfo::SetElectronDensity(G4double density){
+    fElectronDensity = density;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ChannelingParticleUserInfo::SetPreStepChannelingFactor(G4double factor){
-    preStepChannelingFactor = factor;
+G4double ChannelingParticleUserInfo::GetElectronDensity(){
+    return fElectronDensity;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4double ChannelingParticleUserInfo::GetNucleiDensityPreviousStep(){
+    return fNucleiDensityPreviousStep;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ChannelingParticleUserInfo::SetElectronDensityPreviousStep(G4double density){
+    fElectronDensityPreviousStep = density;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4double ChannelingParticleUserInfo::GetElectronDensityPreviousStep(){
+    return fElectronDensityPreviousStep;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ChannelingParticleUserInfo::SetNucleiDensityPreviousStep(G4double density){
+    fNucleiDensityPreviousStep = density;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreeVector ChannelingParticleUserInfo::GetMomentumChanneled(){
-    return momentumChanneled;
+    return fMomentumInChanneling;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ChannelingParticleUserInfo::SetMomentumChanneled(G4ThreeVector momentum){
-    momentumChanneled = momentum;
+    fMomentumInChanneling = momentum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreeVector ChannelingParticleUserInfo::GetPositionChanneled(){
-    return positionChanneled;
+    return fPositionInChanneling;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ChannelingParticleUserInfo::SetPositionChanneled(G4ThreeVector position){
-    positionChanneled = position;
+    fPositionInChanneling = position;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4ThreeVector ChannelingParticleUserInfo::GetMomentumChanneledFirst(){
-    return momentumChanneledFirst;
+G4ThreeVector ChannelingParticleUserInfo::GetMomentumChanneledInitial(){
+    return fMomentumInChannelingInitial;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ChannelingParticleUserInfo::SetMomentumChanneledFirst(G4ThreeVector momentum){
-    momentumChanneledFirst = momentum;
+void ChannelingParticleUserInfo::SetMomentumChanneledInitial(G4ThreeVector momentum){
+    fMomentumInChannelingInitial = momentum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4ThreeVector ChannelingParticleUserInfo::GetPositionChanneledFirst(){
-    return positionChanneledFirst;
+G4ThreeVector ChannelingParticleUserInfo::GetPositionChanneledInitial(){
+    return fPositionInChannelingInitial;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ChannelingParticleUserInfo::SetPositionChanneledFirst(G4ThreeVector position){
-    positionChanneledFirst = position;
+void ChannelingParticleUserInfo::SetPositionChanneledInitial(G4ThreeVector position){
+    fPositionInChannelingInitial = position;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

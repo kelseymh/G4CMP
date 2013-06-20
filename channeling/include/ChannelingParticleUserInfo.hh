@@ -47,40 +47,51 @@ public:
     void SetChanneling(bool flag); 
     bool GetChanneling();
     
-    void SetChannelingFactor(G4double);
-    G4double GetChannelingFactor();
+    void SetNucleiDensity(G4double);
+    G4double GetNucleiDensity();
     
-    void SetPreStepChannelingFactor(G4double);
-    G4double GetPreStepChannelingFactor();
+    void SetNucleiDensityPreviousStep(G4double);
+    G4double GetNucleiDensityPreviousStep();
+
+    void SetElectronDensity(G4double);
+    G4double GetElectronDensity();
     
+    void SetElectronDensityPreviousStep(G4double);
+    G4double GetElectronDensityPreviousStep();
+
     G4ThreeVector GetMomentumChanneled();
     void SetMomentumChanneled(G4ThreeVector);
     
     G4ThreeVector GetPositionChanneled();
     void SetPositionChanneled(G4ThreeVector);
 
-    G4ThreeVector GetMomentumChanneledFirst();
-    void SetMomentumChanneledFirst(G4ThreeVector);
+    G4ThreeVector GetMomentumChanneledInitial();
+    void SetMomentumChanneledInitial(G4ThreeVector);
     
-    G4ThreeVector GetPositionChanneledFirst();
-    void SetPositionChanneledFirst(G4ThreeVector);
+    G4ThreeVector GetPositionChanneledInitial();
+    void SetPositionChanneledInitial(G4ThreeVector);
 
     G4int GetNumberOfDechanneling();
     void IncreaseNumberOfDechanneling();
 
 private:
     
-    G4double preStepChannelingFactor;
+    bool bHasBeenInChanneling; //Has been in channeling in the last step
+
+    G4double fNucleiDensity; //Last value of density seen by channeled particle
+    G4double fNucleiDensityPreviousStep;
     
-    bool channelingFlag; //Has been in channeling in the last step
-    G4ThreeVector momentumChanneled; //Last position of the particle in the channel
-    G4ThreeVector positionChanneled; //Last projection fof the particle momentum in the crystal reference system
-    G4double channelingFactor; //Last value of density seen by channeled particle
+    G4double fElectronDensity; //Last value of density seen by channeled particle
+    G4double fElectronDensityPreviousStep;
+
+    G4ThreeVector fMomentumInChanneling; //Last position of the particle in the channel
+    G4ThreeVector fMomentumInChannelingInitial; //Last position of the particle in the channel
+
+    G4ThreeVector fPositionInChanneling; //Last projection fof the particle momentum in the crystal reference system
+    G4ThreeVector fPositionInChannelingInitial; //Last projection fof the particle momentum in the crystal reference system
 
     G4int fNumberOfDechanneling;
     
-    G4ThreeVector momentumChanneledFirst; //Last position of the particle in the channel
-    G4ThreeVector positionChanneledFirst; //Last projection fof the particle momentum in the crystal reference system
 
 };
 
