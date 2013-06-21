@@ -68,12 +68,12 @@ G4double XVCrystalCharacteristic::ComputeTFScreeningRadius(XPhysicalLattice* vLa
 
     vTFSR /= (std::pow(vLattice->GetXUnitCell()->GetBase(0)->GetElement()->GetZ(),0.333333333));
 
-    //if(vLattice->GetParticleDefinition()->GetParticleName() == "proton"){
-    //    vTFSR /= (std::pow(vLattice->GetMaterial()->GetZ(),0.333333333));
-    //}
-    //else{
-    //    vTFSR /= (std::pow(vLattice->GetMaterial()->GetZ(),0.23) + std::pow(vLattice->GetParticleDefinition()->GetPDGCharge(),0.23));
-    //}
+//    if(vLattice->GetParticleDefinition()->GetParticleName() == "proton"){
+//        vTFSR /= (std::pow(vLattice->GetMaterial()->GetZ(),0.333333333));
+//    }
+//    else{
+//        vTFSR /= (std::pow(vLattice->GetMaterial()->GetZ(),0.23) + std::pow(vLattice->GetParticleDefinition()->GetPDGCharge(),0.23));
+//    }
     
     return vTFSR;
 }

@@ -150,10 +150,35 @@ G4double XVCrystalIntegratedDensity::GetValue(G4double vPotential,XPhysicalLatti
     else if(vPotential >= (fPotentialMinimum+fPotentialRange)) return 1.;
     else if(vPotential <= fPotentialMinimum) return 0.;
     else{
-        unsigned int vIndex = int(((vPotential - fPotentialMinimum) / fPotentialRange ) * fNumberOfPoints);
-        return fTable.at(vIndex);
+        double vX = (vPotential - fPotentialMinimum) / fPotentialRange ;
+        unsigned int vIndex = round(vX * double(fNumberOfPoints));
+        
+        bool bIndexNearLeft = false;
+        if(vIndex == trunc(vX * double(fNumberOfPoints))) bIndexNearLeft = true;
+                
+        if( (vIndex > 2) && (vIndex < (fNumberOfPoints - 2)) ){
+            if(bIndexNearLeft){
+                return FindCatmullRomInterpolate(fTable[vIndex-1],fTable[vIndex],fTable[vIndex+1],fTable[vIndex+2],vX);
+            }
+            else{
+                return FindCatmullRomInterpolate(fTable[vIndex-2],fTable[vIndex-1],fTable[vIndex],fTable[vIndex+1],vX);
+            }
+        }
+        else{
+            if(vIndex <= 2){
+                return FindCatmullRomInterpolate(fTable[0],fTable[1],fTable[2],fTable[3],vX);
+            }
+            else if(vIndex >=  (fNumberOfPoints - 2)){
+                return FindCatmullRomInterpolate(fTable[fNumberOfPoints-3],fTable[fNumberOfPoints-2],fTable[fNumberOfPoints-1],fTable[fNumberOfPoints],vX);
+            }
+            else{
+                return 6.;
+
+                return fTable[vIndex];
+            }
+        }
     }
-    return 0.;
+    return 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -191,12 +216,28 @@ G4double XVCrystalIntegratedDensity::ComputeValue(G4double vPotentialInitial){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XVCrystalIntegratedDensity::PrintOnFile(char* filename){
+G4double XVCrystalIntegratedDensity::FindCatmullRomInterpolate(G4double &p0,G4double &p1, G4double &p2,G4double &p3,G4double &x)
+{
+    double a0, a1 , a2 , a3 , x2;
+    
+    x2 = x * x;
+    a0 = -0.5 * p0 + 1.5 * p1 - 1.5 * p2 + 0.5 * p3;
+    a1 = p0 - 2.5 * p1 + 2.0 * p2 - 0.5 * p3;
+    a2 = -0.5 * p0 + 0.5 * p2;
+    a3 = p1;
+    
+    return (a0 * x * x2 + a1 * x2 + a2 * x + a3);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void XVCrystalIntegratedDensity::PrintOnFile(char* filename,XPhysicalLattice* vLattice){
     std::ofstream vFileOut;
     vFileOut.open(filename);
     G4double vStep = GetStep() / eV;
+    
     vFileOut << "energy,dens" << std::endl;
-    for(unsigned int i = 0;i<fNumberOfPoints;i++){
+    for(unsigned int i = 0;i < fNumberOfPoints;i++){
         vFileOut << i * vStep << "," << fTable[i] << std::endl;
     }
     vFileOut.close();

@@ -216,15 +216,20 @@ G4double XWrapperContinuousDiscreteProcess::AlongStepGetPhysicalInteractionLengt
                                                                                    G4double  currentMinimumStep,
                                                                                    G4double& currentSafety,
                                                                                    G4GPILSelection* selection){
-    return fRegisteredProcess->AlongStepGetPhysicalInteractionLength(aTrack,previousStepSize,currentMinimumStep,currentSafety,selection);
+    G4double vDensityPreviousStep = GetDensityPreviousStep(aTrack);
+
+    return fRegisteredProcess->AlongStepGetPhysicalInteractionLength(aTrack,previousStepSize * vDensityPreviousStep,currentMinimumStep,currentSafety,selection);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4VParticleChange* XWrapperContinuousDiscreteProcess::PostStepDoIt(const G4Track& aTrack,
                                                                    const G4Step& aStep ){
+    G4double vDensity = GetDensity(aTrack);
+    G4double vStepLengthSaved = aStep.GetStepLength();
+    const_cast<G4Step&>(aStep).SetStepLength(aStep.GetStepLength() * vDensity);
     G4VParticleChange* aParticleChange = fRegisteredProcess->PostStepDoIt(aTrack, aStep);
-    
+    const_cast<G4Step&>(aStep).SetStepLength(vStepLengthSaved);
     return aParticleChange;
 }
 
@@ -232,7 +237,12 @@ G4VParticleChange* XWrapperContinuousDiscreteProcess::PostStepDoIt(const G4Track
 
 G4VParticleChange* XWrapperContinuousDiscreteProcess::AlongStepDoIt(const G4Track& aTrack,
                                                                     const G4Step& aStep ){
-        
+    G4double vDensity = GetDensity(aTrack);
+    G4double vStepLengthSaved = aStep.GetStepLength();
+    const_cast<G4Step&>(aStep).SetStepLength(aStep.GetStepLength() * vDensity);
+    G4VParticleChange* aParticleChange = fRegisteredProcess->AlongStepDoIt(aTrack, aStep);
+    const_cast<G4Step&>(aStep).SetStepLength(vStepLengthSaved);
+    return aParticleChange;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

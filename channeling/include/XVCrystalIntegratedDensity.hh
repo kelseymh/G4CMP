@@ -50,7 +50,7 @@ public:
     void SetXPhysicalLattice(XPhysicalLattice*);
     XPhysicalLattice* GetXPhysicalLattice();
 
-    void PrintOnFile(char*);
+    void PrintOnFile(char*,XPhysicalLattice*);
     G4bool HasBeenInitialized(XPhysicalLattice*);
 
     G4double GetValue(G4double,XPhysicalLattice*);
@@ -63,6 +63,7 @@ public:
     
 protected:
     virtual G4double ComputeValue(G4double) = 0;
+    G4double FindCatmullRomInterpolate(G4double &p0, G4double &p1, G4double &p2, G4double &p3, G4double &x);
 
 protected:
     XPhysicalLattice* fLattice;

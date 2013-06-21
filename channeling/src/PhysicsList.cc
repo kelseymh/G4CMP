@@ -51,6 +51,7 @@
 
 // Single Scattering EM model
 #include "G4CoulombScattering.hh"
+#include "G4hIonisation.hh"
 
 // Decay
 #include "G4Decay.hh"
@@ -112,6 +113,7 @@
 
 // Wrapper
 #include "XWrapperDiscreteProcess.hh"
+#include "XWrapperContinuousDiscreteProcess.hh"
 
 PhysicsList::PhysicsList():  G4VUserPhysicsList(){
 }
@@ -202,7 +204,7 @@ void PhysicsList::AddInelaticProcesses(){
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){
         G4ParticleDefinition* particle = theParticleIterator->value();
-        G4ProcessManager* pmanager = particle->GetProcessManager();
+        G4ProcessManager* pManager = particle->GetProcessManager();
         G4String particleName = particle->GetParticleName();
         if (particleName == "proton" ) {
             G4ProtonInelasticProcess* theInelasticProcess =
@@ -216,10 +218,10 @@ void PhysicsList::AddInelaticProcesses(){
             XWrapperDiscreteProcess *inelasticProcess_wrapper = new XWrapperDiscreteProcess();
             inelasticProcess_wrapper->RegisterProcess(theInelasticProcess);
             
-            //pmanager->AddDiscreteProcess(theElasticProcess);
-            //pmanager->AddDiscreteProcess(theInelasticProcess);
-            pmanager->AddDiscreteProcess(elasticProcess_wrapper,1);
-            pmanager->AddDiscreteProcess(inelasticProcess_wrapper,1);
+            //pManager->AddDiscreteProcess(theElasticProcess);
+            //pManager->AddDiscreteProcess(theInelasticProcess);
+            pManager->AddDiscreteProcess(elasticProcess_wrapper,1);
+            pManager->AddDiscreteProcess(inelasticProcess_wrapper,1);
         }
     }
 }
@@ -231,17 +233,21 @@ void PhysicsList::AddStandardSS(){
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){
         G4ParticleDefinition* particle = theParticleIterator->value();
-        G4ProcessManager* pmanager = particle->GetProcessManager();
+        G4ProcessManager* pManager = particle->GetProcessManager();
         G4String particleName = particle->GetParticleName();
         if (particleName == "proton" ) {
+            
             G4CoulombScattering* cs = new G4CoulombScattering();
             cs->SetBuildTableFlag(false);
-            
             XWrapperDiscreteProcess *cs_wrapper = new XWrapperDiscreteProcess();
             cs_wrapper->RegisterProcess(cs);
+            pManager->AddDiscreteProcess(cs_wrapper,1);
 
-            //pmanager->AddDiscreteProcess(cs);
-            pmanager->AddDiscreteProcess(cs_wrapper,1);
+            G4hIonisation* theppIonisation = new G4hIonisation();
+            XWrapperContinuousDiscreteProcess *hionisation_wrapper = new XWrapperContinuousDiscreteProcess();
+            hionisation_wrapper->RegisterProcess(theppIonisation,-1);
+            pManager->AddProcess(hionisation_wrapper,-1, 2, 2);
+
         }
     }
 }
@@ -268,7 +274,7 @@ void PhysicsList::AddChanneling(){
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){
         G4ParticleDefinition* particle = theParticleIterator->value();
-        G4ProcessManager* pmanager = particle->GetProcessManager();
+        G4ProcessManager* pManager = particle->GetProcessManager();
         G4String particleName = particle->GetParticleName();
         
         if(particleName == "proton")
@@ -279,7 +285,7 @@ void PhysicsList::AddChanneling(){
             channeling->SetIntegratedDensityNuclei(vIntegratedDensityNuclei);
             channeling->SetIntegratedDensityElectron(vIntegratedDensityElectron);
 
-            pmanager->AddDiscreteProcess(channeling);
+            pManager->AddDiscreteProcess(channeling);
             
         }
     }
@@ -293,15 +299,15 @@ void PhysicsList::AddDecay(){
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){
         G4ParticleDefinition* particle = theParticleIterator->value();
-        G4ProcessManager* pmanager = particle->GetProcessManager();
+        G4ProcessManager* pManager = particle->GetProcessManager();
         
         if (fDecayProcess->IsApplicable(*particle) && !particle->IsShortLived()) {
             
-            pmanager->AddProcess(fDecayProcess);
+            pManager->AddProcess(fDecayProcess);
             
             // set ordering for PostStepDoIt and AtRestDoIt
-            pmanager->SetProcessOrdering(fDecayProcess, idxPostStep);
-            pmanager->SetProcessOrdering(fDecayProcess, idxAtRest);
+            pManager->SetProcessOrdering(fDecayProcess, idxPostStep);
+            pManager->SetProcessOrdering(fDecayProcess, idxAtRest);
             
         }
     }
@@ -317,11 +323,11 @@ void PhysicsList::AddStepMax()
     theParticleIterator->reset();
     while ((*theParticleIterator)()){
         G4ParticleDefinition* particle = theParticleIterator->value();
-        G4ProcessManager* pmanager = particle->GetProcessManager();
+        G4ProcessManager* pManager = particle->GetProcessManager();
         
         if (stepMaxProcess->IsApplicable(*particle) && !particle->IsShortLived())
         {
-            pmanager ->AddDiscreteProcess(stepMaxProcess);
+            pManager ->AddDiscreteProcess(stepMaxProcess);
         }
     }
 }

@@ -395,8 +395,8 @@ void ProcessChanneling::ComputeCrystalCharacteristicForChanneling(const G4Track&
 
 void ProcessChanneling::PrintCrystalCharacteristicsOnFiles(const G4Track& aTrack){
     char* filename;
-    fIntegratedDensityNuclei->PrintOnFile(filename="dens_nuclei.txt");
-    fIntegratedDensityElectron->PrintOnFile(filename="dens_electrons.txt");
+    fIntegratedDensityNuclei->PrintOnFile(filename="dens_nuclei.txt",GetXPhysicalLattice(aTrack));
+    fIntegratedDensityElectron->PrintOnFile(filename="dens_electrons.txt",GetXPhysicalLattice(aTrack));
     fPotentialEnergy->PrintOnFile(filename="pot.txt",GetXPhysicalLattice(aTrack),eV);
 }
 
