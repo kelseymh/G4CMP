@@ -170,21 +170,30 @@ Phonons are quantized vibrations of the crystal lattice. The propagation of phon
 
 where $\rho$ is the crystal mass density, $\omega$ is the phonon frequency, $\vec{e}$ is the polarization vector, $\vec{k}$ is the wave vector and $\vec{C}_{ijml}$ is the elasticity tensor.
 
-For any given wave vector $\vec{k}$ Equation \ref{eq:3DWave} has three eigenvalues $\omega$ and three eigenvectors $\vec{e}$. These correspond to the three different polarization states \textit{Fast Transverse (FT), Slow Transverse (ST)} and \textit{Longitudinal (L)}. The actual direction and velocity of propagation of phonons is given by the group velocity vector $\vec{v_g} = d\omega/dk$. The group velocity can be calculated by interpreting $\omega$ in Equation \eqref{eq:3DWave} as a function of $\vec{k}$:
+For any given wave vector $\vec{k}$ Equation \ref{eq:3DWave} has three eigenvalues $\omega$ and three eigenvectors $\vec{e}$. These correspond to the three different polarization states \textit{Fast Transverse (FT), Slow Transverse (ST)} and \textit{Longitudinal (L)}. The actual direction and velocity of propagation of phonons is given by the group velocity vector $\vec{v_g} = d\omega/dk$. The group velocity can be calculated by interpreting $\omega$ in Equation \ref{eq:3DWave} as a function of $\vec{k}$:
 
 \begin{equation}
 \label{eq:GroupV}
 \vec{v_g}=\frac{d \omega (\vec{k})}{d\vec{k}}=\nabla_k \omega (\vec{k})
 \end{equation}
 
-Due to the anisotropy in $C_{ijlm}$, Eq. \eqref{eq:GroupV} yields a group velocity $\vec{v_g}$ which is not parallel to the phonon momentum $\hbar\vec{k}$. Instead, phonons are focused onto propagation directions which correspond to the highest density of eigenvectors $\vec{k}$. This focusing gives rise to intensity caustics when observing the energy intensity distribution resulting from a point like phonon source isotropic in $\vec{k}$-space. The resulting caustics can be observed using microcalorimeters [cite XXX]. It can be seen from Figure [XXX] that the caustics simulated by the Geant4 phonon transport code are in good agreement with experimental observations. 
+Due to the anisotropy in $C_{ijlm}$, Eq. \ref{eq:GroupV} yields a group velocity $\vec{v_g}$ which is not parallel to the phonon momentum $\hbar\vec{k}$. Instead, phonons are focused onto propagation directions which correspond to the highest density of eigenvectors $\vec{k}$. This focusing gives rise to intensity caustics when observing the energy intensity distribution resulting from a point like phonon source isotropic in $\vec{k}$-space. The resulting caustics can be observed using microcalorimeters [cite XXX]. It can be seen from Figure [XXX] that the caustics simulated by the Geant4 phonon transport code are in good agreement with experimental observations. 
 
 For the purposes of the G4CMP phonon transport code, the wave eqaution is not solved in real time but rather a look-up table is generated which maps $\vec{k}$ onto $\vec{v_g}$. Bilinear interpolation is used to generate a continuous mapping function. Phonon focusing and methods for solving the three-dimensional wave equations are treated in great detail in [cite XXXX].
+
+Also consider \ref{fig:caustics}.
+
+\begin{figure}
+	\centering
+		\includegraphics[width=1.00\textwidth]{caustics.png}
+	\caption{Caption to follow}
+	\label{fig:caustics}
+\end{figure}
 
 \subsection{Phonon processes}
 \label{sec:Processes}
 
-In addition to the phonon equation of motion, which is given by the three dimensional wave equation Eq.\eqref{eq:3DWave}, two processes are relevant to acoustic phonon transport in cryogenic crystals: Isotope scattering and anharmonic down conversion. The scattering and downconversion rates for phonons in the cryogenic crysstal are given by
+In addition to the phonon equation of motion, which is given by the three dimensional wave equation Eq.\ref{eq:3DWave}, two processes are relevant to acoustic phonon transport in cryogenic crystals: Isotope scattering and anharmonic down conversion. The scattering and downconversion rates for phonons in the cryogenic crysstal are given by
 
 \begin{equation}
 \label{eq:ScatterRate}
@@ -202,16 +211,9 @@ The isotope scattering process occurs when a phonon interacts with an isotopic s
 
 The anharmonic down conversion process causes a single energetic phonon to decay into two phonons of reduced energy. In the smulation, this process conserves energy but not momentum, since momentum is exchanged with the crystal lattice. While in theory all three polarization states can decay, the downconversion rate of $L$-phonons completely dominates the energy evolution of the phonon system [cite XXXX], with downconversion events from other polarization states being negligigible.
 
--Cryo: No scattering
--Current: Acoustic only
--Focusing: Achieved by mapping (from elasticity tensor) and bilinear interpolation
--FIGURE::Focusing validation
 
--Phonon processes:
-  -Constants from Elasticity tensor
-  -Isotope scattering and mode mixing
-  -Anharmonic down conversion
-  -Quasi-diffuse propagation
+As can be seen from eqs. \ref{eq:ScatterRate} \ref{eq:anhRate}, both process rates strongly depend on phonon energy $\hbar \nu$. High energy phonons ($\nu$ of order THz)start out in a diffusive regime with high isotope scattering and downconversion rates and mean free paths of order microns. Once a few downconversion events have occured, phonon mean free paths increase to be of order the size of a typical rare event search crystal detector (of order $0.1$ m linear dimension). This transition from a diffuse to a ballistic transport mode is commonly referred to as ``quasi-diffuse'' and it controls the time evolution of phonon heat pulses. Simulation of heat pulse propagation using our Geant4 transport code has been described previously [cite XXXX] and shows good agreement with experiment.
+
 
 
 

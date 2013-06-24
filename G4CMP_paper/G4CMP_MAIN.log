@@ -1,8 +1,8 @@
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011/TWW) (format=pdflatex 2013.6.10)  24 JUN 2013 15:40
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011/TWW) (format=pdflatex 2013.6.10)  24 JUN 2013 16:36
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**G4CMP_MAIN.tex
+**G4CMP_MAIN
 (./G4CMP_MAIN.tex
 LaTeX2e <2009/09/24>
 Babel <v3.8l> and hyphenation patterns for english, dumylang, nohyphenation, ge
@@ -221,56 +221,42 @@ es anisotropic phonon
 Package natbib Warning: Citation `Wolfe' on page 2 undefined on input line 164.
 
 
-! Undefined control sequence.
-l.173 ... interpreting $\omega$ in Equation \eqref
-                                                  {eq:3DWave} as a function ...
+[2] <caustics.png, id=19, 468.24937pt x 200.24812pt>
+File: caustics.png Graphic file (type png)
+ <use caustics.png>
+Package pdftex.def Info: caustics.png used on input line 188.
+(pdftex.def)             Requested size: 390.0pt x 166.79256pt.
 
-? 
-! Undefined control sequence.
-l.180 ... the anisotropy in $C_{ijlm}$, Eq. \eqref
-                                                  {eq:GroupV} yields a group...
-
-? 
-[2]
-! Undefined control sequence.
-l.187 ...three dimensional wave equation Eq.\eqref
-                                                  {eq:3DWave}, two processes...
-
-? 
-[3]
-Overfull \hbox (8.12369pt too wide) in paragraph at lines 205--209
-\OT1/cmr/m/n/12 map-ping (from elas-tic-ity ten-sor) and bi-lin-ear in-ter-po-l
-a-tion -FIGURE::Focusing
- []
-
+[3 <./caustics.png (PNG copy)>]
 No file G4CMP_MAIN.bbl.
 
 Package natbib Warning: There were undefined citations.
 
 [4] (./G4CMP_MAIN.aux) ) 
 Here is how much of TeX's memory you used:
- 2350 strings out of 493633
- 30877 string characters out of 3142976
- 87934 words of memory out of 3000000
- 5618 multiletter control sequences out of 15000+200000
+ 2358 strings out of 493633
+ 30980 string characters out of 3142976
+ 87942 words of memory out of 3000000
+ 5624 multiletter control sequences out of 15000+200000
  10274 words of font info for 38 fonts, out of 3000000 for 9000
  831 hyphenation exceptions out of 8191
- 38i,5n,30p,811b,181s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 38i,5n,30p,827b,220s stack positions out of 5000i,500n,10000p,200000b,50000s
 </opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public
 /amsfonts/cm/cmbx12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public
 /amsfonts/cm/cmmi12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public
 /amsfonts/cm/cmmi8.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmr12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/a
-msfonts/cm/cmr17.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/am
-sfonts/cm/cmr8.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmsy10.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmti10.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmti12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsf
-onts/symbols/msbm10.pfb>
-Output written on G4CMP_MAIN.pdf (4 pages, 119033 bytes).
+amsfonts/cm/cmr10.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmr12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmr17.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmr8.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmsy10.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmti10.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmti12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsfo
+nts/symbols/msbm10.pfb>
+Output written on G4CMP_MAIN.pdf (4 pages, 219203 bytes).
 PDF statistics:
- 57 PDF objects out of 1000 (max. 8388607)
- 40 compressed objects within 1 object stream
+ 62 PDF objects out of 1000 (max. 8388607)
+ 43 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 6 words of extra memory for PDF output out of 10000 (max. 10000000)
 
