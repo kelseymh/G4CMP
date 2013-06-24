@@ -1,0 +1,276 @@
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011/TWW) (format=pdflatex 2013.6.10)  24 JUN 2013 15:40
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**G4CMP_MAIN.tex
+(./G4CMP_MAIN.tex
+LaTeX2e <2009/09/24>
+Babel <v3.8l> and hyphenation patterns for english, dumylang, nohyphenation, ge
+rman-x-2009-06-19, ngerman-x-2009-06-19, afrikaans, ancientgreek, ibycus, arabi
+c, armenian, basque, bulgarian, catalan, pinyin, coptic, croatian, czech, danis
+h, dutch, ukenglish, usenglishmax, esperanto, estonian, ethiopic, farsi, finnis
+h, french, galician, german, ngerman, swissgerman, monogreek, greek, hungarian,
+ icelandic, assamese, bengali, gujarati, hindi, kannada, malayalam, marathi, or
+iya, panjabi, tamil, telugu, indonesian, interlingua, irish, italian, kurmanji,
+ lao, latin, latvian, lithuanian, mongolian, mongolianlmc, bokmal, nynorsk, pol
+ish, portuguese, romanian, russian, sanskrit, serbian, serbianc, slovak, sloven
+ian, spanish, swedish, turkish, turkmen, ukrainian, uppersorbian, welsh, loaded
+.
+(./elsarticle.cls
+Document Class: elsarticle 2009/09/17, 1.20b: Elsevier Ltd
+\@bls=\dimen102
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/base/size12.clo
+File: size12.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen103
+)
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/latexconfig/graphics.cfg
+File: graphics.cfg 2010/04/23 v1.9 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: pdftex.def on input line 91.
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2011/05/27 v0.06d Graphics/color for pdfTeX
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+Package: infwarerr 2010/04/08 v1.3 Providing info/warning/message (HO)
+)
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
+Package: ltxcmds 2011/04/18 v1.20 LaTeX kernel commands for general use (HO)
+)
+\Gread@gobject=\count87
+))
+\Gin@req@height=\dimen104
+\Gin@req@width=\dimen105
+)
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/psnfss/pifont.sty
+Package: pifont 2005/04/12 PSNFSS-v9.2a Pi font support (SPQR) 
+LaTeX Font Info:    Try loading font information for U+pzd on input line 63.
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/psnfss/upzd.fd
+File: upzd.fd 2001/06/04 font definitions for U/pzd.
+)
+LaTeX Font Info:    Try loading font information for U+psy on input line 64.
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/psnfss/upsy.fd
+File: upsy.fd 2001/06/04 font definitions for U/psy.
+))
+\c@tnote=\count88
+\c@fnote=\count89
+\c@cnote=\count90
+\c@ead=\count91
+\c@author=\count92
+\@eadauthor=\toks15
+\c@affn=\count93
+\absbox=\box26
+\keybox=\box27
+\Columnwidth=\dimen106
+\space@left=\dimen107
+\els@boxa=\box28
+\els@boxb=\box29
+\leftMargin=\dimen108
+\@enLab=\toks16
+\@sep=\skip43
+\@@sep=\skip44
+
+(./G4CMP_MAIN.spl)
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/natbib/natbib.sty
+Package: natbib 2010/09/13 8.31b (PWD, AO)
+\bibhang=\skip45
+\bibsep=\skip46
+LaTeX Info: Redefining \cite on input line 694.
+\c@NAT@ctr=\count94
+)
+\splwrite=\write3
+\openout3 = `G4CMP_MAIN.spl'.
+
+\appnamewidth=\dimen109
+)
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/amsfonts/amssymb.sty
+Package: amssymb 2009/06/22 v3.00
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/amsfonts/amsfonts.sty
+Package: amsfonts 2009/06/22 v3.00 Basic AMSFonts support
+\@emptytoks=\toks17
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 96.
+))
+(./G4CMP_MAIN.aux)
+\openout1 = `G4CMP_MAIN.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 80.
+LaTeX Font Info:    ... okay on input line 80.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 80.
+LaTeX Font Info:    ... okay on input line 80.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 80.
+LaTeX Font Info:    ... okay on input line 80.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 80.
+LaTeX Font Info:    ... okay on input line 80.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 80.
+LaTeX Font Info:    ... okay on input line 80.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 80.
+LaTeX Font Info:    ... okay on input line 80.
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/context/base/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count95
+\scratchdimen=\dimen110
+\scratchbox=\box30
+\nofMPsegments=\count96
+\nofMParguments=\count97
+\everyMPshowfont=\toks18
+\MPscratchCnt=\count98
+\MPscratchDim=\dimen111
+\MPnumerator=\count99
+\makeMPintoPDFobject=\count100
+\everyMPtoPDFconversion=\toks19
+) (/opt/TWWfsw/texlive2011p/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+Package: pdftexcmds 2011/04/22 v0.16 Utilities of pdfTeX for LuaTeX (HO)
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/generic/oberdiek/ifluatex.sty
+Package: ifluatex 2010/03/01 v1.3 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in PDF mode is detected.
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+Package: epstopdf-base 2010/02/09 v2.5 Base part for package epstopdf
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/oberdiek/grfext.sty
+Package: grfext 2010/08/19 v1.1 Managing graphics extensions (HO)
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
+Package: kvdefinekeys 2011/04/07 v1.3 Defining keys (HO)
+))
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2010/12/23 v3.10 Keyval support for LaTeX options (HO)
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+Package: kvsetkeys 2011/04/07 v1.13 Key value parser (HO)
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/generic/oberdiek/etexcmds.sty
+Package: etexcmds 2011/02/16 v1.5 Prefix for e-TeX command names (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)))
+Package grfext Info: Graphics extension search list:
+(grfext)             [.png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 452.
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+LaTeX Font Info:    Try loading font information for U+msa on input line 129.
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2009/06/22 v3.00 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 129.
+
+(/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2009/06/22 v3.00 AMS symbols B
+)
+Overfull \hbox (1.48853pt too wide) in paragraph at lines 154--155
+\OT1/cmr/m/n/12 charge col-lec-tion at cryo-genic tem-per-a-tures. This in-clud
+es anisotropic phonon
+ []
+
+[1
+
+
+{/opt/TWWfsw/texlive2011p/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+
+Package natbib Warning: Citation `Wolfe' on page 2 undefined on input line 164.
+
+
+! Undefined control sequence.
+l.173 ... interpreting $\omega$ in Equation \eqref
+                                                  {eq:3DWave} as a function ...
+
+? 
+! Undefined control sequence.
+l.180 ... the anisotropy in $C_{ijlm}$, Eq. \eqref
+                                                  {eq:GroupV} yields a group...
+
+? 
+[2]
+! Undefined control sequence.
+l.187 ...three dimensional wave equation Eq.\eqref
+                                                  {eq:3DWave}, two processes...
+
+? 
+[3]
+Overfull \hbox (8.12369pt too wide) in paragraph at lines 205--209
+\OT1/cmr/m/n/12 map-ping (from elas-tic-ity ten-sor) and bi-lin-ear in-ter-po-l
+a-tion -FIGURE::Focusing
+ []
+
+No file G4CMP_MAIN.bbl.
+
+Package natbib Warning: There were undefined citations.
+
+[4] (./G4CMP_MAIN.aux) ) 
+Here is how much of TeX's memory you used:
+ 2350 strings out of 493633
+ 30877 string characters out of 3142976
+ 87934 words of memory out of 3000000
+ 5618 multiletter control sequences out of 15000+200000
+ 10274 words of font info for 38 fonts, out of 3000000 for 9000
+ 831 hyphenation exceptions out of 8191
+ 38i,5n,30p,811b,181s stack positions out of 5000i,500n,10000p,200000b,50000s
+</opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmbx12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmmi12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmmi8.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmr12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmr17.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmr8.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmsy10.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmti10.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmti12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/amsf
+onts/symbols/msbm10.pfb>
+Output written on G4CMP_MAIN.pdf (4 pages, 119033 bytes).
+PDF statistics:
+ 57 PDF objects out of 1000 (max. 8388607)
+ 40 compressed objects within 1 object stream
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+

@@ -1,0 +1,244 @@
+%% This is file `elsarticle-template-1-num.tex',
+%%
+%% Copyright 2009 Elsevier Ltd
+%%
+%% This file is part of the 'Elsarticle Bundle'.
+%% ---------------------------------------------
+%%
+%% It may be distributed under the conditions of the LaTeX Project Public
+%% License, either version 1.2 of this license or (at your option) any
+%% later version.  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.2 or later is part of all distributions of LaTeX
+%% version 1999/12/01 or later.
+%%
+%% The list of all files belonging to the 'Elsarticle Bundle' is
+%% given in the file `manifest.txt'.
+%%
+%% Template article for Elsevier's document class `elsarticle'
+%% with numbered style bibliographic references
+%%
+%% $Id: elsarticle-template-1-num.tex 149 2009-10-08 05:01:15Z rishi $
+%% $URL: http://lenova.river-valley.com/svn/elsbst/trunk/elsarticle-template-1-num.tex $
+%%
+\documentclass[preprint,12pt]{elsarticle}
+
+%% Use the option review to obtain double line spacing
+%% \documentclass[preprint,review,12pt]{elsarticle}
+
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+\documentclass[final,1p,times]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn]{elsarticle}
+%% \documentclass[final,3p,times]{elsarticle}
+%% \documentclass[final,3p,times,twocolumn]{elsarticle}
+%% \documentclass[final,5p,times]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn]{elsarticle}
+
+%% if you use PostScript figures in your article
+%% use the graphics package for simple commands
+%% \usepackage{graphics}
+%% or use the graphicx package for more complicated commands
+\usepackage{graphicx}
+%% or use the epsfig package if you prefer to use the old commands
+%% \usepackage{epsfig}
+
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+%% \usepackage{amsthm}
+
+%% The lineno packages adds line numbers. Start line numbering with
+%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
+%% for the whole article with \linenumbers after \end{frontmatter}.
+%% \usepackage{lineno}
+
+%% natbib.sty is loaded by default. However, natbib options can be
+%% provided with \biboptions{...} command. Following options are
+%% valid:
+
+%%   round  -  round parentheses are used (default)
+%%   square -  square brackets are used   [option]
+%%   curly  -  curly braces are used      {option}
+%%   angle  -  angle brackets are used    <option>
+%%   semicolon  -  multiple citations separated by semi-colon
+%%   colon  - same as semicolon, an earlier confusion
+%%   comma  -  separated by comma
+%%   numbers-  selects numerical citations
+%%   super  -  numerical citations as superscripts
+%%   sort   -  sorts multiple citations according to order in ref. list
+%%   sort&compress   -  like sort, but also compresses numerical citations
+%%   compress - compresses without sorting
+%%
+%% \biboptions{comma,round}
+
+% \biboptions{}
+
+
+\journal{Nuclear Physics B}
+
+\begin{document}
+
+\begin{frontmatter}
+
+%% Title, authors and addresses
+
+%% use the tnoteref command within \title for footnotes;
+%% use the tnotetext command for the associated footnote;
+%% use the fnref command within \author or \address for footnotes;
+%% use the fntext command for the associated footnote;
+%% use the corref command within \author for corresponding author footnotes;
+%% use the cortext command for the associated footnote;
+%% use the ead command for the email address,
+%% and the form \ead[url] for the home page:
+%%
+%% \title{Title\tnoteref{label1}}
+%% \tnotetext[label1]{}
+%% \author{Name\corref{cor1}\fnref{label2}}
+%% \ead{email address}
+%% \ead[url]{home page}
+%% \fntext[label2]{}
+%% \cortext[cor1]{}
+%% \address{Address\fnref{label3}}
+%% \fntext[label3]{}
+
+\title{Semiconductor phonon and charge transport Monte Carlo simulation using Geant4}
+
+%% use optional labels to link authors explicitly to addresses:
+%% \author[label1,label2]{<author name>}
+%% \address[label1]{<address>}
+%% \address[label2]{<address>}
+
+\author{}
+
+\address{}
+
+\begin{abstract}
+%% Text of abstract
+
+\end{abstract}
+
+\begin{keyword}
+%% keywords here, in the form: keyword \sep keyword
+
+%% MSC codes here, in the form: \MSC code \sep code
+%% or \MSC[2008] code \sep code (2000 is the default)
+
+\end{keyword}
+
+\end{frontmatter}
+
+%%
+%% Start line numbering here if you want
+%%
+% \linenumbers
+
+%% main text
+\section{}
+\label{}
+
+%% The Appendices part is started with the command \appendix;
+%% appendix sections are then done as normal sections
+%% \appendix
+
+%% \section{}
+%% \label{}
+
+\section{Introduction}
+\label{sec:Introduction}
+
+In this paper we present a Monte Carlo simulation of phonon and charge transport in Semiconductor crystals using Geant4. Geant4 is a sophisticated C++ based Monte Carlo simulation toolkit maintained by an international collaboration. The toolkit was originally developed in support of High Energy Physics (HEP) experiments. It provides functionality for the simulation of the passage of particles through complex detector geometries and aims to accurately simulate all interactions of the particles with the matter through which they pass. Today, the Geant4 toolkit is an important tool both for HEP particle accelerator based experiments building Detector Monte Carlo(DMC) simulations as well as any experiment wishing to estimate backgrounds from environmental or cosmic ray radiation source.
+
+This paper documents our effort to build a cohesive Geant4 Condensed Matter Physics Monte Carlo simulation toolkit, G4CMP. This effort is motivated by the Cryogenic Dark Matter Search (CDMS) dark  matter direct detection experiment. The CDMS detectors are cylindrical Germanium crystals of approximate size $75$mm $\times$ $25$mm, cooled to ~$60$mK. Dark matter particles may recoil from Ge nuclei via the weak force and thus create phonons and free electron-hole pairs within the crystal. Electron-hole pairs are collected at the crystal surface by a small (~V/cm) drift field. Phonons are detected by Transition Edge Sensor (TES) bolometers. The need for an accurate Detector MonteCarlo simulation of the CDMS detector has provided the chief motivation for the work described in this paper.
+
+The phonon and charge transport code described here attempts to accurately model all physics processes believed to be relevant to phonon and charge collection at cryogenic temperatures. This includes anisotropic phonon transport/phonon focusing, phonon isotope scattering, anharmonic downconversion, oblique carrier propagation and emission of Luke-Neganov phonons by accelerated carriers. We believe that the resulting G4CMP framework is sufficiently general that it can be useful to other experiments employing cryogenically cold charge or phonon detectors. 
+
+\section{Phonon Transport}
+\label{sec:PhononTransport}
+
+Phonon transport was the first component of the G4CMP framework to be developed and early results were presented at LTD-14. Since the phonon transport code described here is intended for temperatures $T<1$K, scattering off thermally excited background phonons is ignored. Currenly, only acoustic phonons are simulated.
+
+\subsection{Anisotropic transport and phonon focusing}
+\label{sec:Focusing}
+
+Phonons are quantized vibrations of the crystal lattice. The propagation of phonons is governed by the three-dimensional wave equation \cite{Wolfe}:
+
+\begin{equation}
+\label{eq:3DWave}
+\rho\omega^2e_i=C_{ijlm}k_jk_me_l
+\end{equation}
+
+where $\rho$ is the crystal mass density, $\omega$ is the phonon frequency, $\vec{e}$ is the polarization vector, $\vec{k}$ is the wave vector and $\vec{C}_{ijml}$ is the elasticity tensor.
+
+For any given wave vector $\vec{k}$ Equation \ref{eq:3DWave} has three eigenvalues $\omega$ and three eigenvectors $\vec{e}$. These correspond to the three different polarization states $\textit{Fast Transverse (FT), Slow Transverse (ST)} and \textit{Longitudinal (L)}. The actual direction and velocity of propagation of phonons is given by the group velocity vector $\vec{v_g} = d\omega/dk$. The group velocity can be calculated by interpreting $\omega$ in Equation \eqref{eq:3DWave} as a function of $\vec{k}$:
+
+\begin{equation}
+\label{eq:GroupV}
+\vec{v_g}=\frac{d\omega(\vec{k})}{d\vec{k}}=\nabla_k\omega(\vec{k})
+\end{equation}
+
+Due to the anisotropy in $C_{ijlm}$, Eq. \eqref{eq:GroupV} yields a group velocity $\vec{v_g}$ which is not parallel to the phonon momentum $\hbar\vec{k}$. Instead, phonons are focused onto propagation directions which correspond to the highest density of eigenvectors $\vec{k}$. This focusing gives rise to intensity caustics when observing the energy intensity distribution resulting from a point like phonon source isotropic in $\vec{k}$-space. The resulting caustics can be observed using microcalorimeters [cite XXX]. It can be seen from Figure [XXX] that the caustics simulated by the Geant4 phonon transport code are in good agreement with experimental observations. 
+
+For the purposes of the G4CMP phonon transport code, the wave eqaution is not solved in real time but rather a look-up table is generated which maps $\vec{k}$ onto $\vec{v_g}$. Bilinear interpolation is used to generate a continuous mapping function. Phonon focusing and methods for solving the three-dimensional wave equations are treated in great detail in [cite XXXX].
+
+\subsection{Phonon processes|
+\label{sec: Processes}
+
+In addition to the phonon equation of motion, which is given by the three dimensional wave equation Eq.\eqref{eq:3DWave}, two processes are relevant to acoustic phonon transport in cryogenic crystals: Isotope scattering and mode mixing.
+
+-Cryo: No scattering
+-Current: Acoustic only
+-Focusing: Achieved by mapping (from elasticity tensor) and bilinear interpolation
+-FIGURE::Focusing validation
+
+-Phonon processes:
+  -Constants from Elasticity tensor
+  -Isotope scattering and mode mixing
+  -Anharmonic down conversion
+  -Quasi-diffuse propagation
+
+
+
+\section{Charge Transport}
+\label{sec:ChareTransport}
+
+
+\section{Conclusion}
+\label{sec:Conclusion}
+
+
+
+%% References
+%%
+%% Following citation commands can be used in the body text:
+%% Usage of \cite is as follows:
+%%   \cite{key}          ==>>  [#]
+%%   \cite[chap. 2]{key} ==>>  [#, chap. 2]
+%%   \citet{key}         ==>>  Author [#]
+
+%% References with bibTeX database:
+
+\bibliographystyle{model1-num-names}
+\bibliography{./literature}
+
+%% Authors are advised to submit their bibtex database files. They are
+%% requested to list a bibtex style file in the manuscript if they do
+%% not want to use model1-num-names.bst.
+
+%% References without bibTeX database:
+
+% \begin{thebibliography}{00}
+
+%% \bibitem must have the following form:
+%%   \bibitem{key}...
+%%
+
+% \bibitem{}
+
+% \end{thebibliography}
+
+
+\end{document}
+
+%%
+%% End of file `elsarticle-template-1-num.tex'.
