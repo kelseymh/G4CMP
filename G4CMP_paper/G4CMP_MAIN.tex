@@ -236,12 +236,18 @@ Anharmonic downconversion and isotope scattering are well understood and are dis
 
 
 \section{Charge Transport}
-\label{sec:ChareTransport}
+\label{sec:ChargeTransport}
 
+This section will be prepared by Rob. A. (UoF).
 
 \section{Conclusion}
 \label{sec:Conclusion}
+ -presented monte carlo transport code capable of propagating e-/h+/ph
+ -good agreement with experiment
+ -easily adaptable for other crystals
+ -implemented in G4, so available freely
 
+We have presented a Monte Carlo transport code capable of propagating phonons on a cryogenic crystal lattice (Section \ref{sec:PhononTransport}) as well as drifting electron/hole pairs, taking into account conduction band anisotropy (Section \ref{sec:ChargeTransport}). The result produced by the transport code are in good agreement with experiment, reproducing phonon caustics and carrier drift velocity with acceptable accuracy. It has been shown previously that this code can reproduce heat pulse propagation and dispersion in cryogenic Germanium crystals with acceptable accuray as well \cite{Brandt}. The entire transport code is written in Geant4 and is easily adeptable for crystals other than Germanium provided that the Voigt-contracted elasticity tensor and effective carrier masses are known. Since the simulation is implemented entirely using the Geant4 framework it can easily be shared and enhanced. The phonon transport code is already freely available as part of the examples provided with  Geant4 v9.6p02. We hope that the work presented here will help open up the possiblity of using Geant4 as a tool in condensed matter physics and cryogenic calorimeter design as well as motivating others to add to the G4CMP framework.
 
 
 %% References

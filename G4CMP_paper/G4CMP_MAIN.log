@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011/TWW) (format=pdflatex 2013.6.10)  26 JUN 2013 15:14
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011/TWW) (format=pdflatex 2013.6.10)  26 JUN 2013 15:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -198,16 +198,16 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Overfull \hbox (13.88701pt too wide) in paragraph at lines 133--134
+Overfull \hbox (13.88701pt too wide) in paragraph at lines 134--135
 \OT1/cmr/m/n/12 acous-tic phonons as well as elec-trons and holes in cryo-genic
  crys-tals. Anisotropic
  []
 
-LaTeX Font Info:    Try loading font information for U+msa on input line 147.
+LaTeX Font Info:    Try loading font information for U+msa on input line 148.
 (/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2009/06/22 v3.00 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 147.
+LaTeX Font Info:    Try loading font information for U+msb on input line 148.
 
 (/opt/TWWfsw/texlive2011p/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2009/06/22 v3.00 AMS symbols B
@@ -215,7 +215,7 @@ File: umsb.fd 2009/06/22 v3.00 AMS symbols B
 
 
 {/opt/TWWfsw/texlive2011p/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (1.48853pt too wide) in paragraph at lines 169--170
+Overfull \hbox (1.48853pt too wide) in paragraph at lines 170--171
 \OT1/cmr/m/n/12 charge col-lec-tion at cryo-genic tem-per-a-tures. This in-clud
 es anisotropic phonon
  []
@@ -223,33 +223,39 @@ es anisotropic phonon
 [2] <caustics.png, id=19, 468.24937pt x 200.24812pt>
 File: caustics.png Graphic file (type png)
  <use caustics.png>
-Package pdftex.def Info: caustics.png used on input line 203.
+Package pdftex.def Info: caustics.png used on input line 204.
 (pdftex.def)             Requested size: 390.0pt x 166.79256pt.
 
-[3] [4 <./caustics.png (PNG copy)>] [5] [6] (./G4CMP_MAIN.aux) ) 
+[3] [4 <./caustics.png (PNG copy)>]
+Overfull \hbox (22.7471pt too wide) in paragraph at lines 245--249
+\OT1/cmr/m/n/12 good agree-ment with ex-per-i-ment -easily adapt-able for other
+ crys-tals -implemented
+ []
+
+[5] [6] (./G4CMP_MAIN.aux) ) 
 Here is how much of TeX's memory you used:
  2412 strings out of 493633
- 31689 string characters out of 3142976
+ 31690 string characters out of 3142976
  88151 words of memory out of 3000000
  5676 multiletter control sequences out of 15000+200000
  12281 words of font info for 47 fonts, out of 3000000 for 9000
  831 hyphenation exceptions out of 8191
- 38i,7n,30p,1131b,233s stack positions out of 5000i,500n,10000p,200000b,50000s
-</opt/TWWfsw/te
-xlive2011p/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></opt/TWWfsw/te
-xlive2011p/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></opt/TWWfsw/te
-xlive2011p/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></opt/TWWfsw/te
-xlive2011p/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></opt/TWWfsw/tex
-live2011p/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></opt/TWWfsw/texl
-ive2011p/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></opt/TWWfsw/texli
-ve2011p/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></opt/TWWfsw/texliv
-e2011p/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></opt/TWWfsw/texlive2
-011p/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></opt/TWWfsw/texlive201
-1p/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></opt/TWWfsw/texlive201
-1p/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></opt/TWWfsw/texlive201
-1p/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></opt/TWWfsw/texlive201
-1p/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on G4CMP_MAIN.pdf (6 pages, 252092 bytes).
+ 38i,7n,30p,1275b,220s stack positions out of 5000i,500n,10000p,200000b,50000s
+</opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmbx10.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmbx12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmmi12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmmi8.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/pub
+lic/amsfonts/cm/cmr10.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmr12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmr17.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmr7.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmr8.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmsy10.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmti10.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmti12.pfb></opt/TWWfsw/texlive2011p/texmf-dist/fonts/type1/public/ams
+fonts/symbols/msbm10.pfb>
+Output written on G4CMP_MAIN.pdf (6 pages, 253277 bytes).
 PDF statistics:
  76 PDF objects out of 1000 (max. 8388607)
  53 compressed objects within 1 object stream
