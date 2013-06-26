@@ -23,76 +23,47 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/*
+ *  \file electromagnetic/TestEm7/include/G4LindhardPartition.hh
+ *  \brief Definition of the G4LindhardPartition class
+ *
+ *  Created by Marcus Mendenhall on 1/14/08.
+ *  2008 Vanderbilt University, Nashville, TN, USA.
+ *
+ */
+
+// $Id: G4LindhardPartition.hh 66995 2013-01-29 14:46:45Z gcosmo $
 //
 
-#ifndef XWrapperProcess_h
-#define XWrapperProcess_h 1
-
-#include "G4ios.hh"
 #include "globals.hh"
-#include "G4VDiscreteProcess.hh"
-#include "ChannelingParticleUserInfo.hh"
 
 class G4Material;
 
-class XWrapperProcess : public G4VDiscreteProcess 
+class G4VNIELPartition 
 {
-  public:
-
-  XWrapperProcess(const G4String& processName ="XWrapperProcess" );
-  XWrapperProcess(const G4String& processName, G4VDiscreteProcess*);
-
-  virtual ~XWrapperProcess();
-
-  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
-  virtual G4bool IsApplicable(const G4ParticleDefinition&);
-  virtual void BuildPhysicsTable(const G4ParticleDefinition&);
-
-  virtual G4double PostStepGetPhysicalInteractionLength (const G4Track &track, 
-							 G4double previousStepSize, 
-							 G4ForceCondition *condition);
-
-  void registerProcess(G4VDiscreteProcess* toRegister);  
-  //  void ResetNumberOfInteractionLengthLeft();
-  void StartTracking(G4Track* aTrack);
-  //  void SubtractNumberOfInteractionLengthLeft(G4double previousStepSize);
-
-    
-  //ADDED BY ENRICO
-    virtual void PreparePhysicsTable(const G4ParticleDefinition&);
-    virtual G4bool StorePhysicsTable(const G4ParticleDefinition* ,const G4String&, G4bool);
-    virtual G4bool RetrievePhysicsTable( const G4ParticleDefinition* ,const G4String&, G4bool);
-    
-    void SetChannelingFactor(G4double);
-    G4double GetChannelingFactor();
-
-protected:
-    G4double channelingFactor;
-
- 
-  virtual G4double GetMeanFreePath(
-                const G4Track&, G4double, G4ForceCondition* );
- 
-
-  private: 
-  
-  // hide assignment operator as private 
-  XWrapperProcess(XWrapperProcess&);
-  XWrapperProcess& operator=(const XWrapperProcess& right);
-
-  //private data members
-  G4VDiscreteProcess* registeredProcess;
-  
+public:
+        G4VNIELPartition() { }
+        virtual ~G4VNIELPartition() { }
+        
+        // return the fraction of the specified energy which will be deposited as NIEL
+        // if an incoming particle with z1, a1 is stopped in the specified material
+        // a1 is in atomic mass units, energy in native G4 energy units.
+        virtual G4double PartitionNIEL(
+                G4int z1, G4double a1, const G4Material *material, G4double energy
+        ) const =0;
 };
 
-#endif
-
-
-
-
-
-
-
-
-
+class G4LindhardRobinsonPartition : public G4VNIELPartition
+{
+public:
+        G4LindhardRobinsonPartition();
+        virtual ~G4LindhardRobinsonPartition() { }
+        
+        virtual G4double PartitionNIEL(
+                G4int z1, G4double a1, const G4Material *material, G4double energy
+        ) const ;
+        
+        G4double z23[120];
+        size_t   max_z;
+};
 

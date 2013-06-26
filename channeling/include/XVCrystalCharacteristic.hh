@@ -59,7 +59,7 @@ public:
     virtual G4double ComputeMaximum(XPhysicalLattice*);
     virtual G4double ComputeMinimum(XPhysicalLattice*);
     
-    virtual void PrintOnFile(char*,XPhysicalLattice*,G4double = 1) = 0;
+    virtual void PrintOnFile(const G4String&,XPhysicalLattice*,G4double = 1) = 0;
     
     //Contructors
     XVCrystalCharacteristic();

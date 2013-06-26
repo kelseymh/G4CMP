@@ -37,10 +37,12 @@
 #endif
 
 #include "G4VUserDetectorConstruction.hh"
+#include "DetectorConstructionMessenger.hh"
 
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
 #include "G4VPhysicalVolume.hh"
+#include "G4RunManager.hh"
 
 #include "globals.hh"
 
@@ -53,38 +55,132 @@ public:
     
     DetectorConstruction();
     ~DetectorConstruction();
-
+    
+    void DefineMaterials();
+    
 private:
-    void AddWorld();
-    void AddSiliconStripDetectors();
-    void AddScintillators();
-    void AddCrystalTarget();    
-
-private:        
+    DetectorConstructionMessenger* fMessenger;
+    
+private:
+    void ConstructWorld();
+    void ConstructSiliconStripDetectors();
+    void ConstructScintillators();
+    void ConstructRBSDetector();
+    void ConstructXtalTarget();
+    
+public:
+    void AddSiliconStripDetectors() {
+        bSSD = true;
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+    };
+    void AddScintillators() {
+        bSCI = true;
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+    };
+    void AddRBSDetector() {
+        bRBS = true;
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+    };
+    void AddXtalTarget() {
+        bXtal = true;
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+    };
+    
+private:
     G4double fWorldSizeXZ;
     G4double fWorldSizeY;
     G4Box* fWorldSolid;
     G4LogicalVolume* fWorldLogic;
     G4VPhysicalVolume* fWorldPhysical;
     
+public:
+    void SetSSD0XtalDistance(G4double);
+    G4double GetSSD0XtalDistance() {return fSSD0XtalDistance;};
+    void SetSSD1XtalDistance(G4double);
+    G4double GetSSD1XtalDistance() {return fSSD1XtalDistance;};
+    void SetSSD2XtalDistance(G4double);
+    G4double GetSSD2XtalDistance() {return fSSD2XtalDistance;};
+    
+private:
+    G4bool bSSD;
+    
+    G4double fSSD0XtalDistance;
+    G4double fSSD1XtalDistance;
+    G4double fSSD2XtalDistance;
     G4double fSSDSizeXZ;
     G4double fSSDSizeY;
     G4Box* fSSDSolid;
     G4LogicalVolume* fSSDLogic;
     G4VPhysicalVolume* fSSDPhysical;
-
+    
+    
+public:
+    void SetSCIRelativeDistance(G4double);
+    G4double GetSCIRelativeDistance() {return fSCIRelativeDistance;};
+    void SetSCIXtalDistance(G4double);
+    G4double GetSCIXtalDistance() {return fSCIXtalDistance;};
+    
+private:
+    G4bool bSCI;
+    
+    G4double fSCIXtalDistance;
+    G4double fSCIRelativeDistance;
     G4double fSCISizeXZ;
     G4double fSCISizeY;
     G4Box* fSCISolid;
     G4LogicalVolume* fSCILogic;
     G4VPhysicalVolume* fSCIPhysical;
-
-    G4double fXtalSizeXZ;
-    G4double fXtalSizeY;
+    
+public:
+    void SetRBSDistanceR(G4double);
+    G4double GetRBSDistanceR() {return fRBSDistanceR;};
+    void SetRBSAngleTheta(G4double);
+    G4double GetRBSAngleTheta() {return fRBSAngleTheta;};
+    void SetRBSAnglePhi(G4double);
+    G4double GetRBSAnglePhi() {return fRBSAnglePhi;};
+    
+private:
+    G4bool bRBS;
+    
+    G4double fRBSDistanceR;
+    G4double fRBSAngleTheta;
+    G4double fRBSAnglePhi;
+    
+    G4double fRBSSizeXZ;
+    G4double fRBSSizeY;
+    G4Box* fRBSSolid;
+    G4LogicalVolume* fRBSLogic;
+    G4VPhysicalVolume* fRBSPhysical;
+    
+public:
+    void SetXtalMaterial(const G4String& name);
+    G4String GetXtalMaterial();
+    void SetXtalCurvatureRadius(G4double);
+    G4double GetXtalCurvatureRadius() {return fXtalCurvatureRadius;};
+    void SetXtalSize(G4ThreeVector);
+    G4ThreeVector GetXtalSize() {return fXtalSize;};
+    void SetXtalAngle(G4ThreeVector); //planar case only set.z(); for axial also set.x()
+    G4ThreeVector GetXtalAngle() {return fXtalAngle;};
+    void SetXtalCellSize(G4ThreeVector);
+    G4ThreeVector GetXtalCellSize() {return fXtalCellSize;};
+    void SetXtalCellAngle(G4ThreeVector); //planar case only set.z(); for axial also set.x()
+    G4ThreeVector GetXtalCellAngle() {return fXtalCellAngle;};
+    
+private:
+    G4bool bXtal;
+    
+    G4double fXtalCurvatureRadius;
+    
+    G4Material* fXtalMaterial;
+    G4ThreeVector fXtalAngle;
+    G4ThreeVector fXtalSize;
+    G4ThreeVector fXtalCellSize;
+    G4ThreeVector fXtalCellAngle;
+    
     G4Box* fXtalSolid;
     G4LogicalVolume* fXtalLogic;
     G4VPhysicalVolume* fXtalPhysical;
-
+    
 public:
     G4VPhysicalVolume* Construct();
 };

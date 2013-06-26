@@ -42,23 +42,26 @@
 #include "G4ParticleDefinition.hh"
 #include "Randomize.hh"
 
+#include "PrimaryGeneratorActionMessenger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 {
-    G4int vNumberOfParticles = 1;
-    fParticleGun  = new G4ParticleGun(vNumberOfParticles);
+    fMessenger = new PrimaryGeneratorActionMessenger(this);
     
-    G4ParticleDefinition* vParticle = G4ParticleTable::GetParticleTable()->FindParticle("proton");
+    fParticleGun  = new G4ParticleGun(1);
     
-    fParticleGun->SetParticleDefinition(vParticle);
+    fParticleGun->SetParticleDefinition(G4ParticleTable::GetParticleTable()->FindParticle("proton"));
     
-    G4ThreeVector vParticlePosition = G4ThreeVector(0.,-60.*cm,0.);
+    fParticleGun->SetParticleEnergy(400. * GeV);
     
-    fParticleGun->SetParticleEnergy(400.*GeV);
+    fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,1.,0.));
     
-    fParticleGun->SetParticlePosition(vParticlePosition);
+    fParticleGun->SetParticlePosition(G4ThreeVector(0.,-10.*cm,0.));
+    
+    fDivX = 0.;
+    fDivY = 0.;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -66,6 +69,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
     delete fParticleGun;
+    delete fMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -77,14 +81,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     //--------------------------------------
     
     G4ThreeVector vParticleMomentumDirection = G4ThreeVector(0.,1.,0.);
-
-    G4bool bCollimated = false;
-
-    if(!bCollimated){
-        G4double vBeamDivergence = 0.0E-6 * radian;
-        G4double vRotation = (G4UniformRand() - 0.5 ) * 2. * vBeamDivergence;
-        vParticleMomentumDirection = G4ThreeVector(0.,1.,0.).rotate(G4ThreeVector(0,0,1),vRotation).unit();
-    }
+    
+    G4double vRotationX = (G4UniformRand() - 0.5 ) * 2. * fDivX;
+    G4double vRotationY = (G4UniformRand() - 0.5 ) * 2. * fDivY;
+    
+    vParticleMomentumDirection = G4ThreeVector(0.,1.,0.).rotate(G4ThreeVector(0,0,1),vRotationX).unit();
+    
+    vParticleMomentumDirection = vParticleMomentumDirection.rotate(G4ThreeVector(0,1,0),vRotationY).unit();
     
     fParticleGun->SetParticleMomentumDirection(vParticleMomentumDirection);
     

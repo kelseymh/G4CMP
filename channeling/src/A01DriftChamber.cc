@@ -39,24 +39,31 @@
 #include "G4Navigator.hh"
 #include "G4ios.hh"
 
-A01DriftChamber::A01DriftChamber(G4String name)
-:G4VSensitiveDetector(name)
+A01DriftChamber::A01DriftChamber(G4String name):G4VSensitiveDetector(name)
 {
     G4String HCname;
     collectionName.insert(HCname="collection");
     fHCID = -1;
 }
 
-A01DriftChamber::~A01DriftChamber(){;}
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+A01DriftChamber::~A01DriftChamber(){
+    ;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void A01DriftChamber::Initialize(G4HCofThisEvent*HCE)
 {
-    fHitsCollection = new A01DriftChamberHitsCollection
-    (SensitiveDetectorName,collectionName[0]);
-    if(fHCID<0)
-    { fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection); }
+    fHitsCollection = new A01DriftChamberHitsCollection(SensitiveDetectorName,collectionName[0]);
+    if(fHCID<0){
+        fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection);
+    }
     HCE->AddHitsCollection(fHCID,fHitsCollection);
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4bool A01DriftChamber::ProcessHits(G4Step*aStep,G4TouchableHistory* /*ROhist*/)
 {
@@ -66,23 +73,27 @@ G4bool A01DriftChamber::ProcessHits(G4Step*aStep,G4TouchableHistory* /*ROhist*/)
     G4StepPoint* preStepPoint = aStep->GetPreStepPoint();
     if(!(preStepPoint->GetStepStatus() == fGeomBoundary)) return true;
     
-    G4TouchableHistory* theTouchable
-    = (G4TouchableHistory*)(preStepPoint->GetTouchable());
+    G4TouchableHistory* theTouchable = (G4TouchableHistory*)(preStepPoint->GetTouchable());
     G4VPhysicalVolume* theMotherPhysical = theTouchable->GetVolume(1); // mother
     G4int copyNo = theMotherPhysical->GetCopyNo();
     G4ThreeVector worldPos = preStepPoint->GetPosition();
-    G4ThreeVector localPos
-    = theTouchable->GetHistory()->GetTopTransform().TransformPoint(worldPos);
+    G4ThreeVector localPos = theTouchable->GetHistory()->GetTopTransform().TransformPoint(worldPos);
     
     A01DriftChamberHit* aHit = new A01DriftChamberHit(copyNo);
     aHit->SetWorldPos(worldPos);
     aHit->SetLocalPos(localPos);
     aHit->SetTime(preStepPoint->GetGlobalTime());
+    aHit->SetEnergy(preStepPoint->GetTotalEnergy());
     
     fHitsCollection->insert(aHit);
     return true;
 }
 
-void A01DriftChamber::EndOfEvent(G4HCofThisEvent* /*HCE*/)
-{;}
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+void A01DriftChamber::EndOfEvent(G4HCofThisEvent* /*HCE*/)
+{
+    ;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

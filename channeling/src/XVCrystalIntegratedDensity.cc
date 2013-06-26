@@ -231,7 +231,7 @@ G4double XVCrystalIntegratedDensity::FindCatmullRomInterpolate(G4double &p0,G4do
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XVCrystalIntegratedDensity::PrintOnFile(char* filename,XPhysicalLattice* vLattice){
+void XVCrystalIntegratedDensity::PrintOnFile(const G4String& filename,XPhysicalLattice* vLattice){
     std::ofstream vFileOut;
     vFileOut.open(filename);
     G4double vStep = GetStep() / eV;

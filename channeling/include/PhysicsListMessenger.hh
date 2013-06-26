@@ -23,52 +23,43 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file analysis/A01/include/A01EventAction.hh
-/// \brief Definition of the A01EventAction class
+/// \file analysis/A01/include/PhysicsListMessenger.hh
+/// \brief Definition of the PhysicsListMessenger class
 //
 // $Id$
 // --------------------------------------------------------------
 //
-#ifndef A01EventAction_h
-#define A01EventAction_h 1
+#ifndef PhysicsListMessenger_h
+#define PhysicsListMessenger_h 1
 
+class PhysicsList;
+class G4UIcmdWithAString;
+class G4UIcmdWithABool;
 
-#include "G4UserEventAction.hh"
+#include "G4UImessenger.hh"
 #include "globals.hh"
-#include <iostream>
-#include <fstream>
 
-
-class A01EventActionMessenger;
-
-class A01EventAction : public G4UserEventAction
+class PhysicsListMessenger: public G4UImessenger
 {
   public:
-    A01EventAction();
-    virtual ~A01EventAction();
+    PhysicsListMessenger(PhysicsList* mpga);
+    virtual ~PhysicsListMessenger();
 
-    virtual void BeginOfEventAction(const G4Event*);
-    virtual void EndOfEventAction(const G4Event*);
+    virtual void SetNewValue(G4UIcommand * command,G4String newValues);
+    virtual G4String GetCurrentValue(G4UIcommand * command);
 
-    void SetFileName(const G4String&);
-    G4String GetFileName();
-    
   private:
-    G4int fSD_ID;
-    G4int fSCI_ID;
-    G4int fRBSD_ID;
+    PhysicsList* fTarget;
 
-    G4String fFileName;
-    std::ofstream fFileOutSCI;
-    std::ofstream fFileOutSD;
-    std::ofstream fFileOutRBSD;
+    G4UIcmdWithAString* fFileNameCmd;
+    G4UIcmdWithAString* fScatteringType;
 
-    A01EventActionMessenger* fMessenger;
-    G4int fVerboseLevel;
+    G4UIcmdWithABool* fChannelingCmd;
+    G4UIcmdWithABool* fWrapperCmd;
 
-  public:
-    inline void SetVerbose(G4int val) { fVerboseLevel = val; }
-    inline G4int GetVerbose() const { return fVerboseLevel; }
+    G4UIdirectory* fMyDirectory;
 };
 
 #endif
+
+

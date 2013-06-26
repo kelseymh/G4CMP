@@ -51,58 +51,111 @@
 
 #include "TrackingAction.hh"
 
-
 A01EventAction::A01EventAction()
 {
     fSD_ID = -1;
     fSCI_ID = -1;
-    fFileOutSCI.open("scintillatorNC.txt");
-    fFileOutSD.open("detectorNC.txt");
+    fRBSD_ID = -1;
     
-    fFileOutSCI << "hit,det,posx,posy,posz" << std::endl;
-    fFileOutSD << "hit,det,posx,posy,posz" << std::endl;
+    fFileName = "";
     
     fVerboseLevel = 0;
     fMessenger = new A01EventActionMessenger(this);
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 A01EventAction::~A01EventAction()
 {
     fFileOutSCI.close();
     fFileOutSD.close();
+    fFileOutRBSD.close();
+    
     delete fMessenger;
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void A01EventAction::SetFileName(const G4String& vFileName){
+    fFileOutSCI.close();
+    fFileOutSD.close();
+    fFileOutRBSD.close();
+    
+    fFileName = vFileName;
+    
+    G4String filename;
+    
+    filename = fFileName + "_SCI.txt";
+    fFileOutSCI.open(filename.c_str());
+    
+    filename = fFileName + "_SD.txt";
+    fFileOutSD.open(filename.c_str());
+    
+    filename = fFileName + "_RBSD.txt";
+    fFileOutRBSD.open(filename.c_str());
+    
+    fFileOutSCI << "hit,det,posx,posy,posz,en" << std::endl;
+    fFileOutSD << "hit,det,posx,posy,posz,en" << std::endl;
+    fFileOutRBSD << "hit,det,posx,posy,posz,en" << std::endl;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4String A01EventAction::GetFileName(){
+    return fFileName;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void A01EventAction::BeginOfEventAction(const G4Event* evt){
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 void A01EventAction::EndOfEventAction(const G4Event* evt)
 {
+    G4SDManager* SDman = G4SDManager::GetSDMpointer();
     
     if(fSD_ID==-1) {
         G4String sdName;
-        G4SDManager* SDman = G4SDManager::GetSDMpointer();
         fSD_ID = SDman->GetCollectionID(sdName="telescope/collection");
     }
     
     if(fSCI_ID==-1) {
         G4String sciName;
-        G4SDManager* SDman = G4SDManager::GetSDMpointer();
         fSCI_ID = SDman->GetCollectionID(sciName="scintillator/collection");
     }
     
+    if(fRBSD_ID==-1) {
+        G4String rbsdName;
+        fRBSD_ID = SDman->GetCollectionID(rbsdName="detectorRBS/collection");
+    }
+        
     A01DriftChamberHitsCollection* fSD = 0;
     A01DriftChamberHitsCollection* fSCI = 0;
+    A01DriftChamberHitsCollection* fRBSD = 0;
     
     G4HCofThisEvent * HCE = evt->GetHCofThisEvent();
     
     if(HCE)
     {
-        G4VHitsCollection* aHCSD = HCE->GetHC(fSD_ID);
-        G4VHitsCollection* aHCSCI = HCE->GetHC(fSCI_ID);
         //fSD = dynamic_cast<A01DriftChamberHitsCollection*>(aHC);
-        fSD = (A01DriftChamberHitsCollection*)(aHCSD);
-        fSCI = (A01DriftChamberHitsCollection*)(aHCSCI);
+        
+        
+        if(fSCI_ID != -1){
+            G4VHitsCollection* aHCSCI = HCE->GetHC(fSCI_ID);
+            fSCI = (A01DriftChamberHitsCollection*)(aHCSCI);
+        }
+        
+        if(fSD_ID != -1){
+            G4VHitsCollection* aHCSD = HCE->GetHC(fSD_ID);
+            fSD = (A01DriftChamberHitsCollection*)(aHCSD);
+        }
+        
+        if(fRBSD_ID != -1){
+            G4VHitsCollection* aHCRBSD = HCE->GetHC(fRBSD_ID);
+            fRBSD = (A01DriftChamberHitsCollection*)(aHCRBSD);
+        }
     }
     
     // Diagnostics
@@ -117,26 +170,36 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
     
     
     
-    if(fSCI)
+    if(fSCI && fFileOutSCI)
     {
         int n_hit_sci = fSCI->entries();
         for(int i1=0;i1<n_hit_sci;i1++)
         {
             A01DriftChamberHit* aHit = (*fSCI)[i1];
-            fFileOutSCI << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z() << std::endl;
+            fFileOutSCI << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z() << "," << aHit->GetEnergy() << std::endl;
         }
     }
     
-    if(fSD)
+    if(fSD && fFileOutSD)
     {
         int n_hit_sd = fSD->entries();
         for(int i1=0;i1<n_hit_sd;i1++)
         {
             A01DriftChamberHit* aHit = (*fSD)[i1];
-            fFileOutSD << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z()<< std::endl;
+            fFileOutSD << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z()<< "," << aHit->GetEnergy() << std::endl;
+        }
+    }
+    
+    if(fRBSD && fFileOutRBSD)
+    {
+        int n_hit_sd = fRBSD->entries();
+        for(int i1=0;i1<n_hit_sd;i1++)
+        {
+            A01DriftChamberHit* aHit = (*fRBSD)[i1];
+            fFileOutRBSD << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z()<< "," << aHit->GetEnergy() << std::endl;
         }
     }
     
 }
 
-
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

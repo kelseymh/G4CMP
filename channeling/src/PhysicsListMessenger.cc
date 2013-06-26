@@ -23,70 +23,90 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file analysis/A01/src/A01EventActionMessenger.cc
-/// \brief Implementation of the A01EventActionMessenger class
+/// \file analysis/A01/src/PhysicsListMessenger.cc
+/// \brief Implementation of the PhysicsListMessenger class
 //
 // $Id$
 // --------------------------------------------------------------
 //
 
-#include "A01EventActionMessenger.hh"
-#include "A01EventAction.hh"
+#include "PhysicsListMessenger.hh"
+#include "PhysicsList.hh"
 #include "G4UIdirectory.hh"
-#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4ios.hh"
 
-A01EventActionMessenger::A01EventActionMessenger(A01EventAction * mpga)
+PhysicsListMessenger::PhysicsListMessenger(PhysicsList * mpga)
 :fTarget (mpga)
 {
-    fMyDirectory = new G4UIdirectory("/myevt/");
+    fMyDirectory = new G4UIdirectory("/myproc/");
     
-    fFileNameCmd = new G4UIcmdWithAString("/myevt/filename",this);
+    fFileNameCmd = new G4UIcmdWithAString("/myproc/filename",this);
     fFileNameCmd->SetGuidance("Filename for output.");
     fFileNameCmd->SetParameterName("evtfilename",true);
     fFileNameCmd->SetDefaultValue("noname");
+
+    fScatteringType = new G4UIcmdWithAString("/myproc/scattering",this);
+    fScatteringType->SetGuidance("Scattering type.");
+    fScatteringType->SetParameterName("scattype",true);
+    fScatteringType->SetDefaultValue("ss");
+
+    fChannelingCmd = new G4UIcmdWithABool("/myproc/channeling",this);
+    fChannelingCmd->SetGuidance("Enable channeling");
+    fChannelingCmd->SetParameterName("channeling",true);
+    fChannelingCmd->SetDefaultValue(1);
     
-    fVerboseCmd = new G4UIcmdWithAnInteger("/myevt/verbose",this);
-    fVerboseCmd->SetGuidance("Verbose level for each event.");
-    fVerboseCmd->SetGuidance(" Event summary will be displayed for every 'level' events.");
-    fVerboseCmd->SetParameterName("level",true);
-    fVerboseCmd->SetRange("level>=0");
-    fVerboseCmd->SetDefaultValue(1);
+    fWrapperCmd = new G4UIcmdWithABool("/myproc/wrapper",this);
+    fWrapperCmd->SetGuidance("Enable wrapper");
+    fWrapperCmd->SetParameterName("wrapper",true);
+    fWrapperCmd->SetDefaultValue(1);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-A01EventActionMessenger::~A01EventActionMessenger()
+PhysicsListMessenger::~PhysicsListMessenger()
 {
-    delete fVerboseCmd;
     delete fFileNameCmd;
+    delete fScatteringType;
+    delete fChannelingCmd;
+    delete fWrapperCmd;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void A01EventActionMessenger::SetNewValue(G4UIcommand * command,G4String newValue)
+void PhysicsListMessenger::SetNewValue(G4UIcommand * command,G4String newValue)
 {
-    if( command==fVerboseCmd ){
-        fTarget->SetVerbose(fVerboseCmd->GetNewIntValue(newValue));
-    }
-    
     if( command==fFileNameCmd ){
         fTarget->SetFileName(newValue);
     }
+    if( command==fScatteringType ){
+        fTarget->SetScatteringType(newValue);
+    }
+    if( command==fChannelingCmd ){
+        fTarget->EnableChanneling(fChannelingCmd->GetNewBoolValue(newValue));
+    }
+    if( command==fWrapperCmd ){
+        fTarget->EnableWrapper(fWrapperCmd->GetNewBoolValue(newValue));
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4String A01EventActionMessenger::GetCurrentValue(G4UIcommand * command)
+G4String PhysicsListMessenger::GetCurrentValue(G4UIcommand * command)
 {
     G4String cv;
-    if( command==fVerboseCmd ){
-        cv = fVerboseCmd->ConvertToString(fTarget->GetVerbose());
-    }
-    
     if( command==fFileNameCmd ){
         cv = fTarget->GetFileName();
+    }
+    if( command==fScatteringType ){
+        cv = fTarget->GetScatteringType();
+    }
+    if( command==fChannelingCmd ){
+        cv = fChannelingCmd->ConvertToString(fTarget->GetChannelingState());
+    }
+    if( command==fChannelingCmd ){
+        cv = fChannelingCmd->ConvertToString(fTarget->GetWrapperState());
     }
     
     return cv;

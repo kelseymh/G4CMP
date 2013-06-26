@@ -45,7 +45,7 @@ public:
     ~ChannelingParticleUserInfo();
     
     void SetChanneling(bool flag); 
-    bool GetChanneling();
+    bool HasBeenInChanneling();
     
     void SetNucleiDensity(G4double);
     G4double GetNucleiDensity();

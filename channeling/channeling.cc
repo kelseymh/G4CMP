@@ -53,56 +53,51 @@
 
 int main(int argc,char** argv)
 {
+    //choose the Random engine
+    CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
     
-    
+    //Construct the default run manager
     G4RunManager* runManager = new G4RunManager;
-    G4ScoringManager* scoreManager = G4ScoringManager::GetScoringManager();
     
     // Set mandatory initialization classes
     runManager->SetUserInitialization(new DetectorConstruction);
-    
-    //G4VUserPhysicsList* physics = new QGSP_BERT();
+    runManager->SetUserInitialization(new PhysicsList());
 
-
-    PhysicsList* physics = new PhysicsList();
-    
-    runManager->SetUserInitialization(physics);
-
+    // Set user action classes
     runManager->SetUserAction(new PrimaryGeneratorAction);
-    
     runManager->SetUserAction(new A01EventAction);
-
     runManager->SetUserAction(new TrackingAction());
-
-    runManager->Initialize();
+       
+    // Get the pointer to the User Interface manager
+    G4UImanager* UI = G4UImanager::GetUIpointer();  
     
-    
-#ifdef G4VIS_USE
-    // Initialize visualization
-    G4VisManager* visManager = new G4VisExecutive;
-    visManager->Initialize();
-#endif
-    
-    G4UImanager* UImanager = G4UImanager::GetUIpointer();
-    G4UIExecutive* ui = new G4UIExecutive(argc,argv);
-
-    if(argc!=1){
-        G4String command;
-        G4String filename = argv[1];
-        UImanager->ApplyCommand(command + filename);
+    if (argc!=1)   // batch mode
+    {
+        G4String command = "/control/execute ";
+        G4String fileName = argv[1];
+        UI->ApplyCommand(command+fileName);
     }
     
-
-    ui->SessionStart();
-    delete ui;
-    
-    // Job termination
-    // Free the store: user actions, physics_list and detector_description are
-    //                 owned and deleted by the run manager, so they should not
-    //                 be deleted in the main() program !
+    else           // Define visualization and UI terminal for interactive mode
+    {
 #ifdef G4VIS_USE
-    delete visManager;
+        G4VisManager* visManager = new G4VisExecutive;
+        visManager->Initialize();
 #endif
+        
+#ifdef G4UI_USE
+        G4UIExecutive * ui = new G4UIExecutive(argc,argv);
+        ui->SessionStart();
+        delete ui;
+#endif
+        
+#ifdef G4VIS_USE
+        delete visManager;
+#endif
+    }
+    
+    //job termination
+    //
     delete runManager;
     
     return 0;

@@ -102,6 +102,11 @@ public:
     XLogicalLattice* GetLogicalLattice();
     G4int GetMiller(G4int);
 
+    G4double GetCurvatureRadius();
+    void SetCurvatureRadius(G4double);
+    
+    G4bool IsBent();
+    
     //general functions
     G4double ComputeInterplanarPeriod();
     
@@ -110,6 +115,7 @@ public:
     void ComputeThermalVibrationAmplitude();
 
 private:
+    G4double fCurvatureRadius;
     G4double fThermalVibrationAmplitude; // TO BE MOVED TO XLogicalLattice
     G4int fMillerOrientation[3];
     XUnitCell* fUnitCell;

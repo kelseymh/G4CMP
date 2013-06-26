@@ -34,31 +34,41 @@
 #include "G4SystemOfUnits.hh"
 
 XPhysicalLattice::XPhysicalLattice(){
-  fLattice=NULL;
-  fVolume=NULL;
-  fTheta=0;
-  fPhi=0;
+    fLattice=NULL;
+    fVolume=NULL;
+    fTheta=0;
+    fPhi=0;
+    
+    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+    // Begin Channeling specific code
+    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+    fCurvatureRadius = 0.; // if cr = 0 == no bending of the crystal
+    fThermalVibrationAmplitude = 0.1 * angstrom; // no physical meaning
+    fMillerOrientation[0] = 2;
+    fMillerOrientation[1] = 2;
+    fMillerOrientation[2] = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 XPhysicalLattice::XPhysicalLattice(G4VPhysicalVolume* Vol, XLogicalLattice* Lat){
-  fLattice=Lat;
-  fVolume=Vol;
-  fA=fLattice->GetAnhDecConstant();
-  fB=fLattice->GetScatteringConstant();
-  fDosL=fLattice->GetLDOS();
-  fDosST=fLattice->GetSTDOS();
-  fDosFT=fLattice->GetFTDOS();
-  fBeta=fLattice->GetBeta();
-  fGamma=fLattice->GetGamma();
-  fLambda=fLattice->GetLambda();
-  fMu=fLattice->GetMu();
-
-  G4RotationMatrix *rot = fVolume->GetObjectRotation();
-
-  fGlobalToLocal = G4AffineTransform(*rot);
-  fLocalToGlobal = fGlobalToLocal.Invert();
+    fLattice=Lat;
+    fVolume=Vol;
+    fA=fLattice->GetAnhDecConstant();
+    fB=fLattice->GetScatteringConstant();
+    fDosL=fLattice->GetLDOS();
+    fDosST=fLattice->GetSTDOS();
+    fDosFT=fLattice->GetFTDOS();
+    fBeta=fLattice->GetBeta();
+    fGamma=fLattice->GetGamma();
+    fLambda=fLattice->GetLambda();
+    fMu=fLattice->GetMu();
+    
+    G4RotationMatrix *rot = fVolume->GetObjectRotation();
+    
+    fGlobalToLocal = G4AffineTransform(*rot);
+    fLocalToGlobal = fGlobalToLocal.Invert();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -69,64 +79,64 @@ XPhysicalLattice::~XPhysicalLattice(){;}
 
 void XPhysicalLattice::SetDynamicalConstants(double Beta, double Gamma, double Lambda, double Mu)
 {
-  fBeta=Beta;
-  fGamma=Gamma;
-  fLambda=Lambda;
-  fMu=Mu;
+    fBeta=Beta;
+    fGamma=Gamma;
+    fLambda=Lambda;
+    fMu=Mu;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
 void XPhysicalLattice::SetScatteringConstant(G4double a){
-  fA=a;
+    fA=a;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
 void XPhysicalLattice::SetAnhDecConstant(G4double b){
-  fB=b;
+    fB=b;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
 void XPhysicalLattice::SetLDOS(double LDOS){
-  fDosL=LDOS;
+    fDosL=LDOS;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void XPhysicalLattice::SetSTDOS(double STDOS)
 {
-  fDosST = STDOS;
+    fDosST = STDOS;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void XPhysicalLattice::SetFTDOS(double FTDOS){
-  fDosFT = FTDOS;
+    fDosFT = FTDOS;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
 double XPhysicalLattice::GetBeta(){
-  return fBeta;
+    return fBeta;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
 double XPhysicalLattice::GetGamma(){
-  return fGamma;
+    return fGamma;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 double XPhysicalLattice::GetLambda(){
-  return fLambda;
+    return fLambda;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -134,7 +144,7 @@ double XPhysicalLattice::GetLambda(){
 
 double XPhysicalLattice::GetMu()
 {
-  return fMu;
+    return fMu;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -142,7 +152,7 @@ double XPhysicalLattice::GetMu()
 
 G4double XPhysicalLattice::GetScatteringConstant()
 {
-  return fB;
+    return fB;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -150,21 +160,21 @@ G4double XPhysicalLattice::GetScatteringConstant()
 
 G4double XPhysicalLattice::GetAnhDecConstant()
 {
-  return fA;
+    return fA;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
 double XPhysicalLattice::GetLDOS(){
-  return fDosL;
+    return fDosL;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
 double XPhysicalLattice::GetSTDOS(){
-  return fDosST;
+    return fDosST;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -172,7 +182,7 @@ double XPhysicalLattice::GetSTDOS(){
 
 double XPhysicalLattice::GetFTDOS()
 {
-  return fDosFT;
+    return fDosFT;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -183,13 +193,13 @@ double XPhysicalLattice::GetFTDOS()
 //Loads the group velocity in m/s
 /////////////////////////////
 double XPhysicalLattice::MapKtoV(int polarizationState, G4ThreeVector k){
-  double groupVelocity;
-
-  k.rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
-  groupVelocity = fLattice->MapKtoV(polarizationState, k);
-  k.rotate(G4ThreeVector(0,0,1), -fPhi).rotate(G4ThreeVector(0,1,0), -fTheta);
-
-  return groupVelocity;
+    double groupVelocity;
+    
+    k.rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
+    groupVelocity = fLattice->MapKtoV(polarizationState, k);
+    k.rotate(G4ThreeVector(0,0,1), -fPhi).rotate(G4ThreeVector(0,1,0), -fTheta);
+    
+    return groupVelocity;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -200,42 +210,42 @@ double XPhysicalLattice::MapKtoV(int polarizationState, G4ThreeVector k){
 //Loads the normalized direction vector along VG
 ///////////////////////////////
 G4ThreeVector XPhysicalLattice::MapKtoVDir(int polarizationState, G4ThreeVector k){
-
-  G4ThreeVector GroupVelocity;
-
-  k=k.rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
-  GroupVelocity = fLattice->MapKtoVDir(polarizationState, k);  
-
-  return GroupVelocity.rotate(G4ThreeVector(0,0,1), -fPhi).rotate(G4ThreeVector(0,1,0), -fTheta).unit();
+    
+    G4ThreeVector GroupVelocity;
+    
+    k=k.rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
+    GroupVelocity = fLattice->MapKtoVDir(polarizationState, k);
+    
+    return GroupVelocity.rotate(G4ThreeVector(0,0,1), -fPhi).rotate(G4ThreeVector(0,1,0), -fTheta).unit();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
 G4VPhysicalVolume* XPhysicalLattice::GetVolume(){
-  return fVolume;
+    return fVolume;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
 void XPhysicalLattice::SetPhysicalVolume(G4VPhysicalVolume* Vol){
-  fVolume=Vol;
+    fVolume=Vol;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
 void XPhysicalLattice::SetLatticeOrientation(G4double t_rot, G4double p_rot){
-  fTheta=t_rot;
-  fPhi= p_rot;
+    fTheta=t_rot;
+    fPhi= p_rot;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void XPhysicalLattice::SetMillerOrientation(int l, int k, int n){
-  //fTheta=pi/2-std::atan2(n+0.000001,l+0.000001)*rad;
-  //fPhi=pi/2-std::atan2(l+0.000001,k+0.000001)*rad;
+    //fTheta=pi/2-std::atan2(n+0.000001,l+0.000001)*rad;
+    //fPhi=pi/2-std::atan2(l+0.000001,k+0.000001)*rad;
     
     // // // added for channeling // // //
     fMillerOrientation[0]=l;
@@ -248,7 +258,7 @@ void XPhysicalLattice::SetMillerOrientation(int l, int k, int n){
 
 
 void XPhysicalLattice::SetXLogicalLattice(XLogicalLattice* Lat){
-  fLattice=Lat;
+    fLattice=Lat;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -271,23 +281,23 @@ G4double XPhysicalLattice::GetThermalVibrationAmplitude(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void XPhysicalLattice::ComputeThermalVibrationAmplitude(){
-//    double Constant = ( (3 * pow(cPlanckConstant,2)) / (4 * cBoltzmanConstant * GetA() * GetDebyeTemperature()));
-//    double Integral = 0.0;
-//    
-//    int i;
-//    int IntegrationStepNumber = 8192;
-//    double y_var_0 = GetDebyeTemperature() / GetTemperature() / IntegrationStepNumber;
-//    double y_var = 0.0;
-//    double y_value = 0.0;
-//    for(i=1;i<IntegrationStepNumber;i++)
-//    {
-//        y_var = i * y_var_0;
-//        y_value = ( y_var / (exp(y_var) - 1));
-//        Integral += (y_value * y_var_0 );
-//    }
-//    
-//    fThermalVibrationConstant = pow( Constant * ( 1 + 4 * Integral * pow(GetTemperature()/GetDebyeTemperature(),2)) , 0.5);
-//    if(fDebyeTemperature==0.0) fThermalVibrationConstant = 0.0;
+    //    double Constant = ( (3 * pow(cPlanckConstant,2)) / (4 * cBoltzmanConstant * GetA() * GetDebyeTemperature()));
+    //    double Integral = 0.0;
+    //
+    //    int i;
+    //    int IntegrationStepNumber = 8192;
+    //    double y_var_0 = GetDebyeTemperature() / GetTemperature() / IntegrationStepNumber;
+    //    double y_var = 0.0;
+    //    double y_value = 0.0;
+    //    for(i=1;i<IntegrationStepNumber;i++)
+    //    {
+    //        y_var = i * y_var_0;
+    //        y_value = ( y_var / (exp(y_var) - 1));
+    //        Integral += (y_value * y_var_0 );
+    //    }
+    //
+    //    fThermalVibrationConstant = pow( Constant * ( 1 + 4 * Integral * pow(GetTemperature()/GetDebyeTemperature(),2)) , 0.5);
+    //    if(fDebyeTemperature==0.0) fThermalVibrationConstant = 0.0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -309,6 +319,7 @@ G4ThreeVector XPhysicalLattice::ProjectVectorFromLatticeToWorld(G4ThreeVector vV
 G4ThreeVector XPhysicalLattice::GetLatticeDirection(){
     return ProjectVectorFromLatticeToWorld(G4ThreeVector(0.,1.,0.));
 }
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void XPhysicalLattice::SetUnitCell(XUnitCell* cell){
@@ -319,6 +330,29 @@ void XPhysicalLattice::SetUnitCell(XUnitCell* cell){
 
 XUnitCell* XPhysicalLattice::GetXUnitCell(){
     return fUnitCell;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void XPhysicalLattice::SetCurvatureRadius(G4double cr){
+    fCurvatureRadius =  cr;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4double XPhysicalLattice::GetCurvatureRadius(){
+    return fCurvatureRadius;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4bool XPhysicalLattice::IsBent(){
+    if(fCurvatureRadius != 0.) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

@@ -33,11 +33,18 @@
 
 ChannelingParticleUserInfo::ChannelingParticleUserInfo(){
     bHasBeenInChanneling = false;
+    
     fNucleiDensity = 1.0;
     fNucleiDensityPreviousStep = 1.0;
+    
+    fElectronDensity = 1.0;
+    fElectronDensityPreviousStep = 1.0;
+    
     fNumberOfDechanneling = 0;
+    
     fMomentumInChanneling = G4ThreeVector(0.,0.,0.);
     fPositionInChanneling = G4ThreeVector(0.,0.,0.);
+    
     fMomentumInChannelingInitial = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
     fPositionInChannelingInitial = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
 }
@@ -45,9 +52,6 @@ ChannelingParticleUserInfo::ChannelingParticleUserInfo(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 ChannelingParticleUserInfo::~ChannelingParticleUserInfo(){
-    bHasBeenInChanneling = false;
-    fNucleiDensity = 1.0;
-    fElectronDensity = 1.0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -58,7 +62,7 @@ void ChannelingParticleUserInfo::SetChanneling(bool flag){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-bool ChannelingParticleUserInfo::GetChanneling(){
+bool ChannelingParticleUserInfo::HasBeenInChanneling(){
     return bHasBeenInChanneling;
 }
 

@@ -23,52 +23,39 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file analysis/A01/include/A01EventAction.hh
-/// \brief Definition of the A01EventAction class
+/// \file analysis/A01/include/PrimaryGeneratorActionMessenger.hh
+/// \brief Definition of the PrimaryGeneratorActionMessenger class
 //
 // $Id$
 // --------------------------------------------------------------
 //
-#ifndef A01EventAction_h
-#define A01EventAction_h 1
+#ifndef PrimaryGeneratorActionMessenger_h
+#define PrimaryGeneratorActionMessenger_h 1
 
+class PrimaryGeneratorAction;
+class G4UIcmdWithADoubleAndUnit;
+class G4UIdirectory;
 
-#include "G4UserEventAction.hh"
+#include "G4UImessenger.hh"
 #include "globals.hh"
-#include <iostream>
-#include <fstream>
 
-
-class A01EventActionMessenger;
-
-class A01EventAction : public G4UserEventAction
+class PrimaryGeneratorActionMessenger: public G4UImessenger
 {
   public:
-    A01EventAction();
-    virtual ~A01EventAction();
+    PrimaryGeneratorActionMessenger(PrimaryGeneratorAction* mpga);
+    virtual ~PrimaryGeneratorActionMessenger();
 
-    virtual void BeginOfEventAction(const G4Event*);
-    virtual void EndOfEventAction(const G4Event*);
+    virtual void SetNewValue(G4UIcommand * command,G4String newValues);
+    virtual G4String GetCurrentValue(G4UIcommand * command);
 
-    void SetFileName(const G4String&);
-    G4String GetFileName();
-    
   private:
-    G4int fSD_ID;
-    G4int fSCI_ID;
-    G4int fRBSD_ID;
+    PrimaryGeneratorAction* fTarget;
 
-    G4String fFileName;
-    std::ofstream fFileOutSCI;
-    std::ofstream fFileOutSD;
-    std::ofstream fFileOutRBSD;
+    G4UIcmdWithADoubleAndUnit* fDivergenceX;
+    G4UIcmdWithADoubleAndUnit* fDivergenceY;
 
-    A01EventActionMessenger* fMessenger;
-    G4int fVerboseLevel;
-
-  public:
-    inline void SetVerbose(G4int val) { fVerboseLevel = val; }
-    inline G4int GetVerbose() const { return fVerboseLevel; }
 };
 
 #endif
+
+

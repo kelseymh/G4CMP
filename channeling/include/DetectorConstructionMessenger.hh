@@ -23,39 +23,65 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file analysis/A01/include/A01EventActionMessenger.hh
-/// \brief Definition of the A01EventActionMessenger class
+/// \file analysis/A01/include/DetectorConstructionMessenger.hh
+/// \brief Definition of the DetectorConstructionMessenger class
 //
 // $Id$
 // --------------------------------------------------------------
 //
-#ifndef A01EventActionMessenger_h
-#define A01EventActionMessenger_h 1
+#ifndef DetectorConstructionMessenger_h
+#define DetectorConstructionMessenger_h 1
 
-class A01EventAction;
-class G4UIcmdWithAnInteger;
-class G4UIcmdWithAString;
+class DetectorConstruction;
 class G4UIdirectory;
+class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWith3VectorAndUnit;
+class G4UIcmdWithAString;
+class G4UIcmdWithAString;
 
 #include "G4UImessenger.hh"
 #include "globals.hh"
 
-class A01EventActionMessenger: public G4UImessenger
+class DetectorConstructionMessenger: public G4UImessenger
 {
   public:
-    A01EventActionMessenger(A01EventAction* mpga);
-    virtual ~A01EventActionMessenger();
+    DetectorConstructionMessenger(DetectorConstruction* mpga);
+    ~DetectorConstructionMessenger();
 
     virtual void SetNewValue(G4UIcommand * command,G4String newValues);
     virtual G4String GetCurrentValue(G4UIcommand * command);
 
   private:
-    A01EventAction* fTarget;
+    DetectorConstruction * fTarget;
 
-    G4UIdirectory* fMyDirectory;
-    G4UIcmdWithAnInteger* fVerboseCmd;
-    G4UIcmdWithAString* fFileNameCmd;
+    G4UIdirectory* fMydetDirectory;
+    G4UIdirectory* fMySSDDirectory;
+    G4UIdirectory* fMySCIDirectory;
+    G4UIdirectory* fMyRBSDirectory;
+    G4UIdirectory* fMyXtalDirectory;
 
+    G4UIcmdWithAString*  fAddRBSDetector;
+    G4UIcmdWithAString*  fAddScintillator;
+    G4UIcmdWithAString*  fAddSiliconDetector;
+    G4UIcmdWithAString*  fAddXtalTarget;
+
+    G4UIcmdWithADoubleAndUnit*  fSSD0XtalDistanceCmd;
+    G4UIcmdWithADoubleAndUnit*  fSSD1XtalDistanceCmd;
+    G4UIcmdWithADoubleAndUnit*  fSSD2XtalDistanceCmd;
+    
+    G4UIcmdWithADoubleAndUnit*  fSCIRelativeDistanceCmd;
+    G4UIcmdWithADoubleAndUnit*  fSCIXtalDistanceCmd;
+    
+    G4UIcmdWithADoubleAndUnit*  fRBSDistanceRCmd;
+    G4UIcmdWithADoubleAndUnit*  fRBSAngleThetaCmd;
+    G4UIcmdWithADoubleAndUnit*  fRBSAnglePhiCmd;
+    
+    G4UIcmdWithAString*  fXtalMaterialCmd;
+    G4UIcmdWithADoubleAndUnit* fXtalCurvatureRadiusCmd;
+    G4UIcmdWith3VectorAndUnit* fXtalSizeCmd;
+    G4UIcmdWith3VectorAndUnit* fXtalAngleCmd;
+    G4UIcmdWith3VectorAndUnit* fXtalCellSizeCmd;
+    G4UIcmdWith3VectorAndUnit* fXtalCellAngleCmd;
 };
 
 #endif

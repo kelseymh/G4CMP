@@ -38,6 +38,7 @@
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleWithCuts.hh"
 #include "G4ProcessVector.hh"
+#include "G4RunManager.hh"
 
 // Particle
 #include "G4ParticleTypes.hh"
@@ -49,9 +50,10 @@
 #include "G4IonConstructor.hh"
 #include "G4ShortLivedConstructor.hh"
 
-// Single Scattering EM model
+// EM
 #include "G4CoulombScattering.hh"
 #include "G4hIonisation.hh"
+#include "G4ScreenedNuclearRecoil.hh"
 
 // Decay
 #include "G4Decay.hh"
@@ -116,6 +118,15 @@
 #include "XWrapperContinuousDiscreteProcess.hh"
 
 PhysicsList::PhysicsList():  G4VUserPhysicsList(){
+    fFileName = "";
+    
+    fScatteringType = "ss";
+    
+    bChannelingOn = true;
+    
+    bWrapperOn = true;
+    
+    fMessenger = new PhysicsListMessenger(this);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -127,10 +138,24 @@ PhysicsList::~PhysicsList(){
 
 void PhysicsList::ConstructProcess(){
     AddTransportation();
-    AddChanneling();
+    
+    if(bChannelingOn){
+        AddChanneling();
+    }
+    
     AddInelaticProcesses();
-    AddStandardSS();
+    
     AddDecay();
+
+    if(fScatteringType == "ss"){
+        AddStandardSS();
+    }
+    else if(fScatteringType == "nr"){
+        AddStandardNR();
+    }
+    else{
+        G4cout << "PhysicsList::ConstructProcess - No Scattering model selected" << G4endl;
+    }
 }
 
 
@@ -212,16 +237,24 @@ void PhysicsList::AddInelaticProcesses(){
             G4LEProtonInelastic* theInelasticModel = new G4LEProtonInelastic;
             theInelasticProcess->RegisterMe(theInelasticModel);
             theInelasticProcess->RegisterMe(theTheoModel);
-
+            
             XWrapperDiscreteProcess *elasticProcess_wrapper = new XWrapperDiscreteProcess();
             elasticProcess_wrapper->RegisterProcess(theElasticProcess);
             XWrapperDiscreteProcess *inelasticProcess_wrapper = new XWrapperDiscreteProcess();
             inelasticProcess_wrapper->RegisterProcess(theInelasticProcess);
             
-            //pManager->AddDiscreteProcess(theElasticProcess);
-            //pManager->AddDiscreteProcess(theInelasticProcess);
-            pManager->AddDiscreteProcess(elasticProcess_wrapper,1);
-            pManager->AddDiscreteProcess(inelasticProcess_wrapper,1);
+            if(bWrapperOn){
+                pManager->AddDiscreteProcess(elasticProcess_wrapper,1);
+                pManager->AddDiscreteProcess(inelasticProcess_wrapper,1);
+                G4cout<<"\nPhysicsList::AddInelaticProcesses: Hadronic inelastic process WITH WRAPPER added...\n"<<G4endl;
+                
+            }
+            else{
+                pManager->AddDiscreteProcess(theElasticProcess);
+                pManager->AddDiscreteProcess(theInelasticProcess);
+                G4cout<<"\nPhysicsList::AddInelaticProcesses: Hadronic inelastic process WITHOUT WRAPPER added...\n"<<G4endl;
+                
+            }
         }
     }
 }
@@ -240,14 +273,74 @@ void PhysicsList::AddStandardSS(){
             G4CoulombScattering* cs = new G4CoulombScattering();
             cs->SetBuildTableFlag(false);
             XWrapperDiscreteProcess *cs_wrapper = new XWrapperDiscreteProcess();
-            cs_wrapper->RegisterProcess(cs);
-            pManager->AddDiscreteProcess(cs_wrapper,1);
-
+            cs_wrapper->RegisterProcess(cs,1);
+            
             G4hIonisation* theppIonisation = new G4hIonisation();
+            theppIonisation->SetStepFunction(0.05, 1*um);
             XWrapperContinuousDiscreteProcess *hionisation_wrapper = new XWrapperContinuousDiscreteProcess();
             hionisation_wrapper->RegisterProcess(theppIonisation,-1);
-            pManager->AddProcess(hionisation_wrapper,-1, 2, 2);
+            
+            if(bWrapperOn){
+                pManager->AddDiscreteProcess(cs_wrapper,1);
+                pManager->AddProcess(hionisation_wrapper,-1, 2, 2);
+                
+            }
+            else{
+                
+                pManager->AddDiscreteProcess(cs,1);
+                pManager->AddProcess(theppIonisation,-1, 2, 2);
+                G4cout<<"\nPhysicsList::AddStandardSS: Single Scattering process WITHOUT WRAPPER added...\n"<<G4endl;
+            }
+            
+            G4cout<< "\nPhysicsList::AddStandardSS: Single Scattering process added";
+            if(bWrapperOn){
+                G4cout << "WITH WRAPPER...\n"<<G4endl;
+            }
+            else{
+                G4cout << "WITHOUT WRAPPER...\n"<<G4endl;
+            }
+        }
+    }
+}
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PhysicsList::AddStandardNR(){
+    
+    theParticleIterator->reset();
+    while( (*theParticleIterator)() ){
+        G4ParticleDefinition* particle = theParticleIterator->value();
+        G4ProcessManager* pManager = particle->GetProcessManager();
+        G4String particleName = particle->GetParticleName();
+        if (particleName == "proton" ) {
+            
+            G4ScreenedNuclearRecoil* nucr = new G4ScreenedNuclearRecoil();
+            XWrapperDiscreteProcess *nucr_wrapper = new XWrapperDiscreteProcess();
+            nucr_wrapper->RegisterProcess(nucr,1);
+            
+            G4hIonisation* theppIonisation = new G4hIonisation();
+            theppIonisation->SetStepFunction(0.05, 1*um);
+            XWrapperContinuousDiscreteProcess *hionisation_wrapper = new XWrapperContinuousDiscreteProcess();
+            hionisation_wrapper->RegisterProcess(theppIonisation,-1);
+            
+            if(bWrapperOn){
+                pManager->AddDiscreteProcess(nucr_wrapper,1);
+                pManager->AddProcess(hionisation_wrapper,-1, 2, 2);
+            }
+            else{
+                
+                pManager->AddDiscreteProcess(nucr,1);
+                pManager->AddProcess(theppIonisation,-1, 2, 2);
+            }
+            
+            G4cout<< "\nPhysicsList::AddStandardNR: Nuclear Recoil Scattering process added";
+            if(bWrapperOn){
+                G4cout << "WITH WRAPPER...\n" << G4endl;
+            }
+            else{
+                G4cout << "WITHOUT WRAPPER...\n" << G4endl;
+            }
+            
         }
     }
 }
@@ -255,14 +348,14 @@ void PhysicsList::AddStandardSS(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::AddChanneling(){
-
+    
     XVCrystalCharacteristic* vPotentialEnergy = new XCrystalPlanarMoliereTempPotential();
     
     XVCrystalCharacteristic* vElectricField = new XCrystalPlanarMoliereElectricField();
     
     XVCrystalCharacteristic* vNucleiDensity = new XCrystalPlanarNucleiDensity();
     XVCrystalCharacteristic* vElectronDensity = new XCrystalPlanarMoliereElectronDensity();
- 
+    
     XVCrystalIntegratedDensity* vIntegratedDensityNuclei = new XCrystalIntegratedDensityPlanar();
     vIntegratedDensityNuclei->SetPotential(vPotentialEnergy);
     vIntegratedDensityNuclei->SetDensity(vNucleiDensity);
@@ -279,14 +372,13 @@ void PhysicsList::AddChanneling(){
         
         if(particleName == "proton")
         {
-            G4cout<<"\n\nPhysicsList::ConstructParticle: \n\tFOUND PROTON...\n"<<G4endl;
             ProcessChanneling* channeling =  new ProcessChanneling();
             channeling->SetPotential(vPotentialEnergy);
             channeling->SetIntegratedDensityNuclei(vIntegratedDensityNuclei);
             channeling->SetIntegratedDensityElectron(vIntegratedDensityElectron);
-
+            channeling->SetFileName(fFileName);
             pManager->AddDiscreteProcess(channeling);
-            
+            G4cout<<"\nPhysicsList::AddChanneling: Channeling process added...\n"<<G4endl;
         }
     }
 }
@@ -308,9 +400,9 @@ void PhysicsList::AddDecay(){
             // set ordering for PostStepDoIt and AtRestDoIt
             pManager->SetProcessOrdering(fDecayProcess, idxPostStep);
             pManager->SetProcessOrdering(fDecayProcess, idxAtRest);
-            
         }
     }
+    G4cout<<"\nPhysicsList::AddDecay: Decay processes sdded...\n"<<G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -343,4 +435,53 @@ void PhysicsList::SetCuts()
     
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void PhysicsList::SetFileName(const G4String& vFilename){
+    if(fFileName != vFilename){
+        fFileName = vFilename;
+        G4RunManager::GetRunManager()->PhysicsHasBeenModified();
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4String PhysicsList::GetFileName(){
+    return fFileName;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void PhysicsList::SetScatteringType(const G4String& vScatteringType){
+    if(fScatteringType != vScatteringType){
+        fScatteringType = vScatteringType;
+        G4RunManager::GetRunManager()->PhysicsHasBeenModified();
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4String PhysicsList::GetScatteringType(){
+    return fScatteringType;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void PhysicsList::EnableChanneling(G4bool flag) {
+    if(bChannelingOn != flag){
+        bChannelingOn = flag;
+        G4RunManager::GetRunManager()->PhysicsHasBeenModified();
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void PhysicsList::EnableWrapper(G4bool flag) {
+    if(bWrapperOn != flag){
+        bWrapperOn = flag;
+        G4RunManager::GetRunManager()->PhysicsHasBeenModified();
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 

@@ -36,6 +36,7 @@
 #define PrimaryGeneratorAction_h 1
 
 #include "G4VUserPrimaryGeneratorAction.hh"
+#include "PrimaryGeneratorActionMessenger.hh"
 #include "globals.hh"
 
 class G4ParticleGun;
@@ -53,8 +54,19 @@ public:
     
     void GeneratePrimaries(G4Event*);
     
+    void SetBeamDivergenceX(G4double div) {fDivX = div;};
+    G4double GetBeamDivergenceX() {return fDivX;};
+
+    void SetBeamDivergenceY(G4double div) {fDivY=div;};
+    G4double GetBeamDivergenceY() {return fDivY;};
+
 private:
     G4ParticleGun* fParticleGun;	 //pointer a to G4  class
+    
+    PrimaryGeneratorActionMessenger *fMessenger;
+    
+    G4double fDivX;
+    G4double fDivY;
     
 };
 

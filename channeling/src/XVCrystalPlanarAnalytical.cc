@@ -117,7 +117,7 @@ G4double XVCrystalPlanarAnalytical::ComputeMinimum(XPhysicalLattice* vLattice){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XVCrystalPlanarAnalytical::PrintOnFile(char* filename,XPhysicalLattice* vLattice,G4double vUnit){
+void XVCrystalPlanarAnalytical::PrintOnFile(const G4String& filename,XPhysicalLattice* vLattice,G4double vUnit){
     std::ofstream vFileOut;
     vFileOut.open(filename);
     

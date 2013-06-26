@@ -45,40 +45,43 @@ class G4AttValue;
 
 class A01DriftChamberHit : public G4VHit
 {
-  public:
-      A01DriftChamberHit();
-      A01DriftChamberHit(G4int z);
-      virtual ~A01DriftChamberHit();
-      A01DriftChamberHit(const A01DriftChamberHit &right);
-      const A01DriftChamberHit& operator=(const A01DriftChamberHit &right);
-      int operator==(const A01DriftChamberHit &right) const;
-
-      inline void *operator new(size_t);
-      inline void operator delete(void *aHit);
-
-      inline float x();
-      inline float y();
-
-      virtual void Draw();
-      virtual const std::map<G4String,G4AttDef>* GetAttDefs() const;
-      virtual std::vector<G4AttValue>* CreateAttValues() const;
-      virtual void Print();
-
-  private:
-      G4int fLayerID;
-      G4double fTime;
-      G4ThreeVector fLocalPos;
-      G4ThreeVector fWorldPos;
-
-  public:
-      inline void SetLayerID(G4int z) { fLayerID = z; }
-      inline G4int GetLayerID() const { return fLayerID; }
-      inline void SetTime(G4double t) { fTime = t; }
-      inline G4double GetTime() const { return fTime; }
-      inline void SetLocalPos(G4ThreeVector xyz) { fLocalPos = xyz; }
-      inline G4ThreeVector GetLocalPos() const { return fLocalPos; }
-      inline void SetWorldPos(G4ThreeVector xyz) { fWorldPos = xyz; }
-      inline G4ThreeVector GetWorldPos() const { return fWorldPos; }
+public:
+    A01DriftChamberHit();
+    A01DriftChamberHit(G4int z);
+    virtual ~A01DriftChamberHit();
+    A01DriftChamberHit(const A01DriftChamberHit &right);
+    const A01DriftChamberHit& operator=(const A01DriftChamberHit &right);
+    int operator==(const A01DriftChamberHit &right) const;
+    
+    inline void *operator new(size_t);
+    inline void operator delete(void *aHit);
+    
+    inline float x();
+    inline float y();
+    
+    virtual void Draw();
+    virtual const std::map<G4String,G4AttDef>* GetAttDefs() const;
+    virtual std::vector<G4AttValue>* CreateAttValues() const;
+    virtual void Print();
+    
+private:
+    G4int fLayerID;
+    G4double fTime;
+    G4ThreeVector fLocalPos;
+    G4ThreeVector fWorldPos;
+    G4double fEnergy;
+    
+public:
+    inline void SetLayerID(G4int z) { fLayerID = z; }
+    inline G4int GetLayerID() const { return fLayerID; }
+    inline void SetTime(G4double t) { fTime = t; }
+    inline G4double GetTime() const { return fTime; }
+    inline void SetLocalPos(G4ThreeVector xyz) { fLocalPos = xyz; }
+    inline G4ThreeVector GetLocalPos() const { return fLocalPos; }
+    inline void SetWorldPos(G4ThreeVector xyz) { fWorldPos = xyz; }
+    inline G4ThreeVector GetWorldPos() const { return fWorldPos; }
+    inline void SetEnergy(G4double energy) { fEnergy = energy; }
+    inline G4double GetEnergy() const { return fEnergy; }
 };
 
 typedef G4THitsCollection<A01DriftChamberHit> A01DriftChamberHitsCollection;
@@ -87,14 +90,14 @@ extern G4Allocator<A01DriftChamberHit> A01DriftChamberHitAllocator;
 
 inline void* A01DriftChamberHit::operator new(size_t)
 {
-  void* aHit;
-  aHit = (void*)A01DriftChamberHitAllocator.MallocSingle();
-  return aHit;
+    void* aHit;
+    aHit = (void*)A01DriftChamberHitAllocator.MallocSingle();
+    return aHit;
 }
 
 inline void A01DriftChamberHit::operator delete(void* aHit)
 {
-  A01DriftChamberHitAllocator.FreeSingle((A01DriftChamberHit*) aHit);
+    A01DriftChamberHitAllocator.FreeSingle((A01DriftChamberHit*) aHit);
 }
 
 #endif

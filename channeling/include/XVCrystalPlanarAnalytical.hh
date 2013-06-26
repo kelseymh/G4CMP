@@ -52,7 +52,7 @@ public:
     virtual G4double ComputeMaximum(XPhysicalLattice*);
     virtual G4double ComputeMinimum(XPhysicalLattice*);
 
-    virtual void PrintOnFile(char*,XPhysicalLattice*,G4double);
+    virtual void PrintOnFile(const G4String&,XPhysicalLattice*,G4double);
     
     //Contructors
     XVCrystalPlanarAnalytical();

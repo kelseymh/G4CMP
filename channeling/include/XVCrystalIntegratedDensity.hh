@@ -50,7 +50,7 @@ public:
     void SetXPhysicalLattice(XPhysicalLattice*);
     XPhysicalLattice* GetXPhysicalLattice();
 
-    void PrintOnFile(char*,XPhysicalLattice*);
+    void PrintOnFile(const G4String&,XPhysicalLattice*);
     G4bool HasBeenInitialized(XPhysicalLattice*);
 
     G4double GetValue(G4double,XPhysicalLattice*);

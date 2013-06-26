@@ -1,0 +1,31 @@
+
+/myevt/filename ch400gev
+
+/myproc/filename ch400gev
+/myproc/channeling 1
+/myproc/wrapper 1
+
+/mydet/ssd/setDist0X -1040. cm
+/mydet/ssd/setDist1X -30. cm
+/mydet/ssd/setDist2X +1080. cm
+/mydet/addsd
+
+/mydet/sci/setDistX +60. cm
+/mydet/sci/setDist +1. cm
+/mydet/addsci
+
+/mydet/xtal/setMaterial G4_Si
+/mydet/xtal/setAngle 0. 0. 0. rad
+/mydet/xtal/setSize 60. 2. 60. mm
+/mydet/xtal/setCellAngle 90. 90. 90. deg
+/mydet/xtal/setCellSize 5.431 5.431 5.431 angstrom
+/mydet/xtal/setCurvRadius 10. m
+/mydet/addxtal
+
+/gun/energy 400. GeV
+/gun/setDivX 0.E-6 rad
+/gun/position 0. -1100. 0 cm
+
+
+/run/initialize
+/run/beamOn 100

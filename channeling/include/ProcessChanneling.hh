@@ -67,6 +67,10 @@ public:
     XVCrystalIntegratedDensity* GetIntegratedDensityElectron();
     void SetIntegratedDensityElectron(XVCrystalIntegratedDensity*);
 
+    void SetFileName(const G4String&);
+    G4String GetFileName();
+    void PrintChannelingPropertiesOnFile(const G4Track&);
+    
 private:
     G4double GetChannelingMeanFreePath(const G4Track&);
     
@@ -80,7 +84,6 @@ private:
     
     void ComputeCrystalCharacteristicForChanneling(const G4Track&);
     void PrintCrystalCharacteristicsOnFiles(const G4Track&);
-    
     G4double ComputeChannelingCriticalEnergy(const G4Track&);
     G4double ComputeChannelingCriticalAngle(const G4Track&);
     G4double ComputeOscillationPeriod(const G4Track&);
@@ -104,6 +107,7 @@ private:
     XVCrystalIntegratedDensity* fIntegratedDensityElectron;
 
     std::ofstream fFileOut;
+    G4String fFileName;
 };
 
 #endif
