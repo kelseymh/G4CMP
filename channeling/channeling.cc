@@ -57,15 +57,16 @@ int main(int argc,char** argv)
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
     
     //Construct the default run manager
-    G4RunManager* runManager = new G4RunManager;
+    G4RunManager* runManager = new G4RunManager();
     
     // Set mandatory initialization classes
-    runManager->SetUserInitialization(new DetectorConstruction);
+    G4VUserDetectorConstruction* detector = new DetectorConstruction;
+    runManager->SetUserInitialization(detector);
     runManager->SetUserInitialization(new PhysicsList());
 
     // Set user action classes
-    runManager->SetUserAction(new PrimaryGeneratorAction);
-    runManager->SetUserAction(new A01EventAction);
+    runManager->SetUserAction(new PrimaryGeneratorAction());
+    runManager->SetUserAction(new A01EventAction());
     runManager->SetUserAction(new TrackingAction());
        
     // Get the pointer to the User Interface manager

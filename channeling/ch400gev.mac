@@ -19,7 +19,7 @@
 /mydet/xtal/setSize 60. 2. 60. mm
 /mydet/xtal/setCellAngle 90. 90. 90. deg
 /mydet/xtal/setCellSize 5.431 5.431 5.431 angstrom
-/mydet/xtal/setCurvRadius 10. m
+/mydet/xtal/setCurvRadius 2. 0. 0. m
 /mydet/addxtal
 
 /gun/energy 400. GeV
@@ -28,4 +28,4 @@
 
 
 /run/initialize
-/run/beamOn 100
+/run/beamOn 10000

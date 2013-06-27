@@ -58,9 +58,10 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     
     fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,1.,0.));
     
-    fParticleGun->SetParticlePosition(G4ThreeVector(0.,-10.*cm,0.));
+    fParticleGun->SetParticlePosition(G4ThreeVector(0.,-20. * cm,0.));
     
     fDivX = 0.;
+    
     fDivY = 0.;
 }
 
@@ -83,6 +84,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4ThreeVector vParticleMomentumDirection = G4ThreeVector(0.,1.,0.);
     
     G4double vRotationX = (G4UniformRand() - 0.5 ) * 2. * fDivX;
+    
     G4double vRotationY = (G4UniformRand() - 0.5 ) * 2. * fDivY;
     
     vParticleMomentumDirection = G4ThreeVector(0.,1.,0.).rotate(G4ThreeVector(0,0,1),vRotationX).unit();

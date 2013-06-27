@@ -40,6 +40,7 @@
 #include "DetectorConstructionMessenger.hh"
 
 #include "G4Box.hh"
+#include "G4Tubs.hh"
 #include "G4LogicalVolume.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4RunManager.hh"
@@ -146,17 +147,17 @@ private:
     G4double fRBSAngleTheta;
     G4double fRBSAnglePhi;
     
-    G4double fRBSSizeXZ;
-    G4double fRBSSizeY;
-    G4Box* fRBSSolid;
+    G4double fRBSSizeZ;
+    G4double fRBSSizeR;
+    G4Tubs* fRBSSolid;
     G4LogicalVolume* fRBSLogic;
     G4VPhysicalVolume* fRBSPhysical;
     
 public:
     void SetXtalMaterial(const G4String& name);
     G4String GetXtalMaterial();
-    void SetXtalCurvatureRadius(G4double);
-    G4double GetXtalCurvatureRadius() {return fXtalCurvatureRadius;};
+    void SetXtalCurvatureRadius(G4ThreeVector);
+    G4ThreeVector GetXtalCurvatureRadius() {return fXtalCurvatureRadius;};
     void SetXtalSize(G4ThreeVector);
     G4ThreeVector GetXtalSize() {return fXtalSize;};
     void SetXtalAngle(G4ThreeVector); //planar case only set.z(); for axial also set.x()
@@ -169,7 +170,7 @@ public:
 private:
     G4bool bXtal;
     
-    G4double fXtalCurvatureRadius;
+    G4ThreeVector fXtalCurvatureRadius;
     
     G4Material* fXtalMaterial;
     G4ThreeVector fXtalAngle;

@@ -221,8 +221,7 @@ void PhysicsList::AddInelaticProcesses(){
     theStringModel->SetFragmentationModel(theStringDecay);
     
     // done with the generator model (most of the above is also available as default)
-    G4HadronElasticProcess* theElasticProcess =
-    new G4HadronElasticProcess;
+    G4HadronElasticProcess* theElasticProcess = new G4HadronElasticProcess;
     G4LElastic* theElasticModel = new G4LElastic;
     theElasticProcess->RegisterMe(theElasticModel);
     
@@ -232,8 +231,7 @@ void PhysicsList::AddInelaticProcesses(){
         G4ProcessManager* pManager = particle->GetProcessManager();
         G4String particleName = particle->GetParticleName();
         if (particleName == "proton" ) {
-            G4ProtonInelasticProcess* theInelasticProcess =
-            new G4ProtonInelasticProcess("inelastic");
+            G4ProtonInelasticProcess* theInelasticProcess = new G4ProtonInelasticProcess("inelastic");
             G4LEProtonInelastic* theInelasticModel = new G4LEProtonInelastic;
             theInelasticProcess->RegisterMe(theInelasticModel);
             theInelasticProcess->RegisterMe(theTheoModel);
@@ -288,7 +286,7 @@ void PhysicsList::AddStandardSS(){
             else{
                 
                 pManager->AddDiscreteProcess(cs,1);
-                pManager->AddProcess(theppIonisation,-1, 2, 2);
+                pManager->AddProcess(theppIonisation,-1, 1, 1);
                 G4cout<<"\nPhysicsList::AddStandardSS: Single Scattering process WITHOUT WRAPPER added...\n"<<G4endl;
             }
             

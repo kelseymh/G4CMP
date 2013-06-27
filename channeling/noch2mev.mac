@@ -2,10 +2,11 @@
 /myevt/filename ch2mev
 
 /myproc/filename ch2mev
+/myproc/scattering ss
 /myproc/channeling 0
 /myproc/wrapper 0
 
-/mydet/rbs/setDistX 10. cm
+/mydet/rbs/setDistR 10. cm
 #/mydet/rbs/setAngPhi 225. rad
 /mydet/rbs/setAngTheta 0. rad
 /mydet/addrbsd
@@ -24,4 +25,4 @@
 
 
 /run/initialize
-/run/beamOn 100000
+#/run/beamOn 100000

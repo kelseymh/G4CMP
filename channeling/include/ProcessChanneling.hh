@@ -77,15 +77,19 @@ private:
     G4bool IsInChanneling(const G4Track&);
 
     void UpdatePositionMomentumDensity(const G4Track&);
-    
+    void UpdatePosition(const G4Track&);
+    void UpdateMomentum(const G4Track&);
+    void UpdateDensity(const G4Track&);
+
     G4ThreeVector ComputeTransverseEnergy(const G4Track&);
-    G4ThreeVector ComputeChannelingOutgoingMomentum(const G4Track&);
-    G4ThreeVector ComputeNewPosition(const G4Track&);
-    
-    void ComputeCrystalCharacteristicForChanneling(const G4Track&);
+    G4ThreeVector ComputeOutgoingMomentum(const G4Track&);
+    G4ThreeVector ComputePostStepPositionInTheChannel(const G4Track&);
+    G4ThreeVector ComputePositionInTheCrystal(G4StepPoint*);
+
+    void ComputeCrystalCharacteristic(const G4Track&);
     void PrintCrystalCharacteristicsOnFiles(const G4Track&);
-    G4double ComputeChannelingCriticalEnergy(const G4Track&);
-    G4double ComputeChannelingCriticalAngle(const G4Track&);
+    G4double ComputeCriticalEnergy(const G4Track&);
+    G4double ComputeCriticalAngle(const G4Track&);
     G4double ComputeOscillationPeriod(const G4Track&);
     
 private:

@@ -93,17 +93,18 @@ public:
 public:
     //set methods
     void SetUnitCell(XUnitCell*);
-    G4ThreeVector ProjectVectorFromWorldToLattice(G4ThreeVector);
-    G4ThreeVector ProjectVectorFromLatticeToWorld(G4ThreeVector);
-    G4ThreeVector GetLatticeDirection();
+    G4ThreeVector ProjectMomentumVectorFromWorldToLattice(G4ThreeVector,G4ThreeVector);
+    G4ThreeVector ProjectMomentumVectorFromLatticeToWorld(G4ThreeVector,G4ThreeVector);
+    G4ThreeVector GetLatticeDirection(G4ThreeVector);
 
     //retrieval methods
     XUnitCell* GetXUnitCell();
     XLogicalLattice* GetLogicalLattice();
     G4int GetMiller(G4int);
 
-    G4double GetCurvatureRadius();
-    void SetCurvatureRadius(G4double);
+    G4ThreeVector GetCurvatureRadius();
+    void SetCurvatureRadius(G4ThreeVector);
+    G4ThreeVector ComputeBendingAngle(G4ThreeVector);
     
     G4bool IsBent();
     
@@ -115,7 +116,7 @@ public:
     void ComputeThermalVibrationAmplitude();
 
 private:
-    G4double fCurvatureRadius;
+    G4ThreeVector fCurvatureRadius;
     G4double fThermalVibrationAmplitude; // TO BE MOVED TO XLogicalLattice
     G4int fMillerOrientation[3];
     XUnitCell* fUnitCell;

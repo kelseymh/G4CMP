@@ -87,24 +87,24 @@ DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstructio
     fSCIXtalDistanceCmd->SetDefaultUnit("cm");
     
     
-    fRBSDistanceRCmd = new G4UIcmdWithADoubleAndUnit("/mydet/rbs/setDistX",this);
+    fRBSDistanceRCmd = new G4UIcmdWithADoubleAndUnit("/mydet/rbs/setDistR",this);
     fRBSDistanceRCmd->SetGuidance("Distance between the RBS detector and the xtal.");
     fRBSDistanceRCmd->SetParameterName("distRBS",true);
-    fRBSDistanceRCmd->SetRange("distRBS>1. && distRBS<=30.");
+    fRBSDistanceRCmd->SetRange("distRBS>0.5 && distRBS<=30.");
     fRBSDistanceRCmd->SetDefaultValue(20.);
     fRBSDistanceRCmd->SetDefaultUnit("cm");
     
     fRBSAngleThetaCmd = new G4UIcmdWithADoubleAndUnit("/mydet/rbs/setAngTheta",this);
     fRBSAngleThetaCmd->SetGuidance("Polar angle of the RBS detector.");
     fRBSAngleThetaCmd->SetParameterName("angRBStheta",true);
-    fRBSAngleThetaCmd->SetRange("angRBStheta>=0. && angRBStheta<180.");
+    //fRBSAngleThetaCmd->SetRange("angRBStheta>=0. && angRBStheta<180.");
     fRBSAngleThetaCmd->SetDefaultValue(0.);
     fRBSAngleThetaCmd->SetDefaultUnit("deg");
     
     fRBSAnglePhiCmd = new G4UIcmdWithADoubleAndUnit("/mydet/rbs/setAngPhi",this);
     fRBSAnglePhiCmd->SetGuidance("Azimuthal angle of the RBS detector.");
     fRBSAnglePhiCmd->SetParameterName("angRBSphi",true);
-    fRBSAnglePhiCmd->SetRange("angRBSphi>=0. && angRBSphi<360.");
+    //fRBSAnglePhiCmd->SetRange("angRBSphi>=0. && angRBSphi<360.");
     fRBSAnglePhiCmd->SetDefaultValue(-135.);
     fRBSAnglePhiCmd->SetDefaultUnit("deg");
     
@@ -114,10 +114,10 @@ DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstructio
     fXtalMaterialCmd->SetParameterName("xMat",true);
     fXtalMaterialCmd->SetDefaultValue("G4_Si");
     
-    fXtalCurvatureRadiusCmd = new G4UIcmdWithADoubleAndUnit("/mydet/xtal/setCurvRadius",this);
+    fXtalCurvatureRadiusCmd = new G4UIcmdWith3VectorAndUnit("/mydet/xtal/setCurvRadius",this);
     fXtalCurvatureRadiusCmd->SetGuidance("Set Xtal curvature radius.");
-    fXtalCurvatureRadiusCmd->SetParameterName("xtalcr",true);
-    fXtalCurvatureRadiusCmd->SetDefaultValue(0.);
+    fXtalCurvatureRadiusCmd->SetParameterName("xtalcrx","xtalcry","xtalcrz",true);
+    fXtalCurvatureRadiusCmd->SetDefaultValue(G4ThreeVector(0.,0.,0.));
     fXtalCurvatureRadiusCmd->SetDefaultUnit("m");
 
     fXtalSizeCmd = new G4UIcmdWith3VectorAndUnit("/mydet/xtal/setSize",this);
@@ -212,11 +212,11 @@ void DetectorConstructionMessenger::SetNewValue(G4UIcommand * command,G4String n
     if(command==fSSD0XtalDistanceCmd ){
         fTarget->SetSSD0XtalDistance(fSSD0XtalDistanceCmd->GetNewDoubleValue(newValue));
     }
-    if(command==fSSD0XtalDistanceCmd ){
+    if(command==fSSD1XtalDistanceCmd ){
         fTarget->SetSSD1XtalDistance(fSSD1XtalDistanceCmd->GetNewDoubleValue(newValue));
     }
-    if(command==fSSD0XtalDistanceCmd ){
-        fTarget->SetSSD2XtalDistance(fSSD1XtalDistanceCmd->GetNewDoubleValue(newValue));
+    if(command==fSSD2XtalDistanceCmd ){
+        fTarget->SetSSD2XtalDistance(fSSD2XtalDistanceCmd->GetNewDoubleValue(newValue));
     }
     
     
@@ -243,7 +243,7 @@ void DetectorConstructionMessenger::SetNewValue(G4UIcommand * command,G4String n
         fTarget->SetXtalMaterial(newValue);
     }
     if(command==fXtalCurvatureRadiusCmd ){
-        fTarget->SetXtalCurvatureRadius(fXtalCurvatureRadiusCmd->GetNewDoubleValue(newValue));
+        fTarget->SetXtalCurvatureRadius(fXtalCurvatureRadiusCmd->GetNew3VectorValue(newValue));
     }
     if(command==fXtalSizeCmd ){
         fTarget->SetXtalSize(fXtalSizeCmd->GetNew3VectorValue(newValue));

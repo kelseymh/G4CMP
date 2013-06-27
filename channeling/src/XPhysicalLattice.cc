@@ -33,6 +33,9 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
+#include "G4LogicalVolume.hh"
+#include "G4Box.hh"
+
 XPhysicalLattice::XPhysicalLattice(){
     fLattice=NULL;
     fVolume=NULL;
@@ -43,7 +46,7 @@ XPhysicalLattice::XPhysicalLattice(){
     // Begin Channeling specific code
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-    fCurvatureRadius = 0.; // if cr = 0 == no bending of the crystal
+    fCurvatureRadius = G4ThreeVector(0.,0.,0.); // if cr = 0 == no bending of the crystal
     fThermalVibrationAmplitude = 0.1 * angstrom; // no physical meaning
     fMillerOrientation[0] = 2;
     fMillerOrientation[1] = 2;
@@ -302,22 +305,32 @@ void XPhysicalLattice::ComputeThermalVibrationAmplitude(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XPhysicalLattice::ProjectVectorFromWorldToLattice(G4ThreeVector vVector){
-    vVector.rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
-    return vVector;
+G4ThreeVector XPhysicalLattice::ProjectMomentumVectorFromWorldToLattice(G4ThreeVector vMomentum,G4ThreeVector vPosition){
+    vMomentum.rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
+
+    if(IsBent() ){
+        vMomentum.rotate(G4ThreeVector(0,0,1),ComputeBendingAngle(vPosition).x());
+    }
+
+    return vMomentum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XPhysicalLattice::ProjectVectorFromLatticeToWorld(G4ThreeVector vVector){
-    vVector.rotate(G4ThreeVector(0,0,1), -fPhi).rotate(G4ThreeVector(0,1,0), -fTheta);
-    return vVector;
+G4ThreeVector XPhysicalLattice::ProjectMomentumVectorFromLatticeToWorld(G4ThreeVector vMomentum,G4ThreeVector vPosition){
+    vMomentum.rotate(G4ThreeVector(0,0,1), -fPhi).rotate(G4ThreeVector(0,1,0), -fTheta);
+    
+    if(IsBent() ){
+        vMomentum.rotate(G4ThreeVector(0,0,1),-ComputeBendingAngle(vPosition).x());
+    }
+
+    return vMomentum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XPhysicalLattice::GetLatticeDirection(){
-    return ProjectVectorFromLatticeToWorld(G4ThreeVector(0.,1.,0.));
+G4ThreeVector XPhysicalLattice::GetLatticeDirection(G4ThreeVector vPosition){
+    return ProjectMomentumVectorFromLatticeToWorld(G4ThreeVector(0.,1.,0.),vPosition);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -334,25 +347,32 @@ XUnitCell* XPhysicalLattice::GetXUnitCell(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XPhysicalLattice::SetCurvatureRadius(G4double cr){
+void XPhysicalLattice::SetCurvatureRadius(G4ThreeVector cr){
     fCurvatureRadius =  cr;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XPhysicalLattice::GetCurvatureRadius(){
+G4ThreeVector XPhysicalLattice::GetCurvatureRadius(){
     return fCurvatureRadius;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4bool XPhysicalLattice::IsBent(){
-    if(fCurvatureRadius != 0.) {
+    if(fCurvatureRadius.x() != 0.) {
         return true;
     }
     else {
         return false;
     }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4ThreeVector XPhysicalLattice::ComputeBendingAngle(G4ThreeVector vPosition){
+
+    return G4ThreeVector(vPosition.y() / GetCurvatureRadius().x(),0.,vPosition.y() / GetCurvatureRadius().z());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
