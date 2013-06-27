@@ -163,9 +163,9 @@ Implementation of the transport code using the Gent4 toolkit ensures availabilit
 \section{Introduction}
 \label{sec:Introduction}
 
-In this paper we present a Monte Carlo simulation of phonon and charge transport in Semiconductor crystals using Geant4. Geant4 is a sophisticated C++ based Monte Carlo simulation toolkit maintained by an international collaboration and freely available under an open source license \cite{Geant-A} \cite{Geant-B}. The toolkit was originally developed in support of High Energy Physics (HEP) experiments. It provides functionality for the simulation of the passage of particles through complex geometries and aims to accurately simulate all interactions of the particles with the matter through which they pass. Today, the Geant4 toolkit is an important tool both for HEP particle accelerator based experiments building Detector Monte Carlo(DMC) simulations as well as experiments wishing to estimate backgrounds from environmental or cosmic ray radiation sources [cite]\cite{Brandt}.
+In this paper we present a Monte Carlo simulation of phonon and charge transport in Semiconductor crystals using Geant4. Geant4 is a sophisticated C++ based Monte Carlo simulation toolkit maintained by an international collaboration and freely available under an open source license \cite{Geant-A} \cite{Geant-B}. The toolkit was originally developed in support of High Energy Physics (HEP) experiments. It provides functionality for the simulation of the passage of particles through complex geometries and aims to accurately simulate all interactions of the particles with the matter through which they pass. Today, the Geant4 toolkit is an important tool both for HEP particle accelerator based experiments building Detector Monte Carlo(DMC) simulations as well as experiments wishing to estimate backgrounds from environmental or cosmic ray radiation sources \cite{CDMS-D}\cite{Brandt}.
 
-In it's current incarnation, the Geant4 toolkit is entirely focused on free particles and does not take into account crystal physics and conduction/valence band interactions of the low energy charge carriers and phonons relevant to condensed matter physics. This paper documents our effort to build a cohesive Geant4 Condensed Matter Physics Monte Carlo simulation toolkit, G4CMP. This effort is motivated by the Cryogenic Dark Matter Search (CDMS) dark  matter direct detection experiment \cite{CDMS-A}\cite{CDMS-B}\cite{CDMS-C}. The CDMS detectors are cylindrical Germanium crystals of approximate size $75$mm $\times$ $25$mm [cite], cooled to ~$60$mK. Dark matter particles may recoil from Ge nuclei via the weak force and thus create phonons and free electron-hole pairs within the crystal [Lindhardt]. Electron-hole pairs are collected at the crystal surface by a small (~V/cm) drift field. Phonons are detected by Transition Edge Sensor (TES) bolometers. The need for an accurate Detector MonteCarlo simulation of the CDMS detector has provided the chief motivation for the work described in this paper.
+In it's current incarnation, the Geant4 toolkit is entirely focused on free particles and does not take into account crystal physics and conduction/valence band interactions of the low energy charge carriers and phonons relevant to condensed matter physics. This paper documents our effort to build a cohesive Geant4 Condensed Matter Physics Monte Carlo simulation toolkit, G4CMP. This effort is motivated by the Cryogenic Dark Matter Search (CDMS) dark  matter direct detection experiment \cite{CDMS-A}\cite{CDMS-B}\cite{CDMS-C}. The CDMS detectors are cylindrical Germanium crystals of approximate size $75$mm $\times$ $25$mm \cite{CDMS-E}, cooled to ~$60$mK. Dark matter particles may recoil from Ge nuclei via the weak force and thus create phonons and free electron-hole pairs within the crystal [Lindhardt]. Electron-hole pairs are collected at the crystal surface by a small (~V/cm) drift field. Phonons are detected by Transition Edge Sensor (TES) bolometers. The need for an accurate Detector MonteCarlo simulation of the CDMS detector has provided the chief motivation for the work described in this paper.
 
 The phonon and charge transport code described here attempts to accurately model all physics processes believed to be relevant to phonon and charge collection at cryogenic temperatures. This includes anisotropic phonon transport/phonon focusing, phonon isotope scattering, anharmonic downconversion, oblique carrier propagation and emission of Luke-Neganov phonons by accelerated carriers. We believe that the resulting G4CMP framework is sufficiently general that it can be useful to other experiments employing cryogenically cold charge or phonon detectors. 
 
@@ -209,7 +209,7 @@ Also consider \ref{fig:caustics}.
 \subsection{Phonon processes}
 \label{sec:Processes}
 
-In addition to the phonon equation of motion, which is given by the three dimensional wave equation Eq.\ref{eq:3DWave}, two processes are relevant to acoustic phonon transport in cryogenic crystals: Isotope scattering and anharmonic down conversion[cite]. The scattering and downconversion rates for phonons in the cryogenic crystal are given by \cite{Tamura2}:
+In addition to the phonon equation of motion, which is given by the three dimensional wave equation Eq.\ref{eq:3DWave}, two processes are relevant to acoustic phonon transport in cryogenic crystals: Isotope scattering and anharmonic down conversion\cite{Tamura1}\cite{Tamura2}\cite{Tamura3}. The scattering and downconversion rates for phonons in the cryogenic crystal are given by \cite{Tamura2}:
 
 \begin{equation}
 \label{eq:ScatterRate}
@@ -270,6 +270,9 @@ J. Allison et al., {\it IEEE Transactions on Nuclear Science} \textbf{53}, 270 -
 \bibitem{Geant-B}
 S. Agostinelli et al., {\it Nuclear Instruments and Methods A} \textbf{506}, 250 - 303, (2003).
 
+\bibitem{CDMS-D}
+D.S. Akerib et al., {\it Phys. Rev. D} \textbf{72},(2005).
+
 \bibitem{Brandt}
 D. Brandt et al., {\it Journal of Low Temperature Physics} \textbf{167}, 485 - 490, (2011).
 
@@ -284,6 +287,9 @@ Z. Ahmed et al., {\it Phys. Rev. D} \textbf{84}, 011102, (2011).
 
 \bibitem{CDMS-C}
 C. Collaboration et al., {\it arxiv astro-ph.CO} \textbf{1304.4279},(2013)
+
+\bibitem{CDMS-E}
+R. Agnese et al., {\it arxiv astro-ph} \textbf{1305.2405},(2013)
 
 %\bibitem{Sanglard}
 %V. Sanglard et al., {\it Phys. Rev. D.} \textbf{71}, 122002, (2005).
