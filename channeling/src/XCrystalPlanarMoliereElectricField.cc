@@ -44,7 +44,7 @@ XCrystalPlanarMoliereElectricField::~XCrystalPlanarMoliereElectricField(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XCrystalPlanarMoliereElectricField::ComputeValueForSinglePlane(G4double vXposition,XPhysicalLattice* vLattice){
+G4double XCrystalPlanarMoliereElectricField::ComputeECForSinglePlane(G4double vXposition,XPhysicalLattice* vLattice){
 
     G4VPhysicalVolume* vVolume = vLattice->GetVolume();
 

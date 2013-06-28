@@ -85,7 +85,7 @@ DetectorConstruction::DetectorConstruction()
     fWorldSizeXZ = 0.5 * m;
     
     bSSD = false;
-    fSSDSizeXZ = 1.92 * m; // originally cm
+    fSSDSizeXZ = 1.92 * 10. * cm; // originally 1.92 cm
     fSSDSizeY = 0.06 * cm;
 
     fSSD0XtalDistance = - 15 * cm;

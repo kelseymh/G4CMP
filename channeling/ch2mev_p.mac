@@ -1,7 +1,7 @@
 
-/myevt/filename ch2mev
+/myevt/filename ch2mev_p
 
-/myproc/filename ch2mev
+/myproc/filename ch2mev_p
 /myproc/scattering nr
 /myproc/channeling 1
 /myproc/wrapper 1
@@ -22,6 +22,7 @@
 /gun/setDivX 0.E-6 rad
 /gun/setDivY 0.E-6 rad
 /gun/position 0. -20. 0. cm
+/gun/particle proton
 
 
 /run/initialize

@@ -37,13 +37,13 @@ XCrystalCharacteristicArray::~XCrystalCharacteristicArray(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XCrystalCharacteristicArray::ComputeValue(G4ThreeVector vPosition,XPhysicalLattice* vLattice){
+G4ThreeVector XCrystalCharacteristicArray::ComputeEC(G4ThreeVector vPosition,XPhysicalLattice* vLattice){
     
     G4ThreeVector vValue = G4ThreeVector(0.,0.,0.);
     
     if(fCharacteristicVector.size()!=0){
         for(unsigned int i=0;i<fCharacteristicVector.size();i++){
-            vValue += fCharacteristicVector.at(i)->ComputeValue(vPosition,vLattice);
+            vValue += fCharacteristicVector.at(i)->ComputeEC(vPosition,vLattice);
         }
         return (vValue * G4double(1./G4double(fCharacteristicVector.size())));
     }

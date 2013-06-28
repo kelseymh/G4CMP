@@ -37,7 +37,7 @@ XCrystalPlanarNucleiDensity::~XCrystalPlanarNucleiDensity(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XCrystalPlanarNucleiDensity::ComputeValueForSinglePlane(G4double vXposition,XPhysicalLattice* vLattice){
+G4double XCrystalPlanarNucleiDensity::ComputeECForSinglePlane(G4double vXposition,XPhysicalLattice* vLattice){
     
     G4double vValueForSinglePlane = exp( - 0.5 * pow(vXposition/vLattice->GetThermalVibrationAmplitude(),2.0 ) );
 

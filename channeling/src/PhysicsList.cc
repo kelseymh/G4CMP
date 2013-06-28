@@ -55,6 +55,14 @@
 #include "G4hIonisation.hh"
 #include "G4ScreenedNuclearRecoil.hh"
 
+#include "G4eCoulombScatteringModel.hh"
+#include "G4eIonisation.hh"
+#include "G4eBremsstrahlung.hh"
+#include "G4Generator2BS.hh"
+#include "G4SeltzerBergerModel.hh"
+#include "G4PenelopeIonisationModel.hh"
+#include "G4UniversalFluctuation.hh"
+
 // Decay
 #include "G4Decay.hh"
 #include "StepMax.hh"
@@ -146,7 +154,7 @@ void PhysicsList::ConstructProcess(){
     AddInelaticProcesses();
     
     AddDecay();
-
+    
     if(fScatteringType == "ss"){
         AddStandardSS();
     }
@@ -268,11 +276,13 @@ void PhysicsList::AddStandardSS(){
         G4String particleName = particle->GetParticleName();
         if (particleName == "proton" ) {
             
+            // single scattering
             G4CoulombScattering* cs = new G4CoulombScattering();
             cs->SetBuildTableFlag(false);
             XWrapperDiscreteProcess *cs_wrapper = new XWrapperDiscreteProcess();
             cs_wrapper->RegisterProcess(cs,1);
             
+            // ionisation
             G4hIonisation* theppIonisation = new G4hIonisation();
             theppIonisation->SetStepFunction(0.05, 1*um);
             XWrapperContinuousDiscreteProcess *hionisation_wrapper = new XWrapperContinuousDiscreteProcess();
@@ -284,19 +294,61 @@ void PhysicsList::AddStandardSS(){
                 
             }
             else{
-                
                 pManager->AddDiscreteProcess(cs,1);
-                pManager->AddProcess(theppIonisation,-1, 1, 1);
-                G4cout<<"\nPhysicsList::AddStandardSS: Single Scattering process WITHOUT WRAPPER added...\n"<<G4endl;
+                pManager->AddProcess(theppIonisation,-1, 2, 2);
             }
             
-            G4cout<< "\nPhysicsList::AddStandardSS: Single Scattering process added";
+            G4cout<< "\nPhysicsList::AddStandardSS: PROTON - EM processes added";
             if(bWrapperOn){
                 G4cout << "WITH WRAPPER...\n"<<G4endl;
             }
             else{
                 G4cout << "WITHOUT WRAPPER...\n"<<G4endl;
             }
+        }
+        else if (particleName == "e-") {
+            // single scattering
+            G4CoulombScattering* ecs = new G4CoulombScattering();
+            ecs->SetBuildTableFlag(false);
+            XWrapperDiscreteProcess *ecs_wrapper = new XWrapperDiscreteProcess();
+            ecs_wrapper->RegisterProcess(ecs,1);
+            
+            // ionisation
+            G4eIonisation* eIoni = new G4eIonisation();
+            eIoni->SetStepFunction(0.2, 100*um);
+            G4VEmModel* theIoniPenelope = new G4PenelopeIonisationModel();
+            theIoniPenelope->SetHighEnergyLimit(0.1*MeV);
+            eIoni->AddEmModel(0, theIoniPenelope, new G4UniversalFluctuation());
+            
+            XWrapperContinuousDiscreteProcess *eIoni_wrapper = new XWrapperContinuousDiscreteProcess();
+            eIoni_wrapper->RegisterProcess(eIoni,-1);
+            
+            // bremsstrahlung
+            G4eBremsstrahlung* eBrem = new G4eBremsstrahlung();
+            
+            XWrapperContinuousDiscreteProcess *eBrem_wrapper = new XWrapperContinuousDiscreteProcess();
+            eBrem_wrapper->RegisterProcess(eBrem,-1);
+            
+            if(bWrapperOn){
+                pManager->AddDiscreteProcess(ecs_wrapper,1);
+                pManager->AddProcess(eIoni_wrapper,-1, 2, 2);
+                pManager->AddProcess(eBrem_wrapper,-1, 2, 2);
+                
+            }
+            else{
+                pManager->AddDiscreteProcess(ecs,1);
+                pManager->AddProcess(eIoni,-1, 2, 2);
+                pManager->AddProcess(eBrem,-1, 2, 2);
+            }
+            
+            G4cout<< "\nPhysicsList::AddStandardSS: ELECTRON - EM processes added";
+            if(bWrapperOn){
+                G4cout << "WITH WRAPPER...\n"<<G4endl;
+            }
+            else{
+                G4cout << "WITHOUT WRAPPER...\n"<<G4endl;
+            }
+            
         }
     }
 }
@@ -368,8 +420,11 @@ void PhysicsList::AddChanneling(){
         G4ProcessManager* pManager = particle->GetProcessManager();
         G4String particleName = particle->GetParticleName();
         
-        if(particleName == "proton")
+        if(particleName == "e-")
         {
+            vIntegratedDensityNuclei->SetParticle(particle);
+            vIntegratedDensityElectron->SetParticle(particle);
+            
             ProcessChanneling* channeling =  new ProcessChanneling();
             channeling->SetPotential(vPotentialEnergy);
             channeling->SetIntegratedDensityNuclei(vIntegratedDensityNuclei);

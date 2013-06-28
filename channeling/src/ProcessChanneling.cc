@@ -145,8 +145,8 @@ void ProcessChanneling::SetIntegratedDensityElectron(XVCrystalIntegratedDensity*
 
 void ProcessChanneling::UpdatePositionMomentumDensity(const G4Track& aTrack){
     
-    if(!fIntegratedDensityNuclei->HasBeenInitialized(GetXPhysicalLattice(aTrack)) ||
-       !fIntegratedDensityElectron->HasBeenInitialized(GetXPhysicalLattice(aTrack)) ){
+    if(!fIntegratedDensityNuclei->HasBeenInitialized(GetXPhysicalLattice(aTrack),GetParticleDefinition(aTrack)) ||
+       !fIntegratedDensityElectron->HasBeenInitialized(GetXPhysicalLattice(aTrack),GetParticleDefinition(aTrack)) ){
         ComputeCrystalCharacteristic(aTrack);
         G4cout << "ChannelingProcess::UpdatePositionMomentumDensity::fIntegratedDensityNuclei->Initialized" << std::endl;
         G4cout << "ChannelingProcess::UpdatePositionMomentumDensity::fIntegratedDensityElectron->Initialized" << std::endl;
@@ -202,10 +202,10 @@ void ProcessChanneling::UpdateMomentum(const G4Track& aTrack){
 
 void ProcessChanneling::UpdateDensity(const G4Track& aTrack){
     GetInfo(aTrack)->SetNucleiDensityPreviousStep(GetInfo(aTrack)->GetNucleiDensity());
-    GetInfo(aTrack)->SetNucleiDensity(fIntegratedDensityNuclei->GetValue(ComputeTransverseEnergy(aTrack).x(),GetXPhysicalLattice(aTrack)));
+    GetInfo(aTrack)->SetNucleiDensity(fIntegratedDensityNuclei->GetIntegratedDensity(ComputeTransverseEnergy(aTrack).x(),GetXPhysicalLattice(aTrack),GetParticleDefinition(aTrack)));
     
     GetInfo(aTrack)->SetElectronDensityPreviousStep(GetInfo(aTrack)->GetElectronDensity());
-    GetInfo(aTrack)->SetElectronDensity(fIntegratedDensityElectron->GetValue(ComputeTransverseEnergy(aTrack).x(),GetXPhysicalLattice(aTrack)));
+    GetInfo(aTrack)->SetElectronDensity(fIntegratedDensityElectron->GetIntegratedDensity(ComputeTransverseEnergy(aTrack).x(),GetXPhysicalLattice(aTrack),GetParticleDefinition(aTrack)));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -252,7 +252,7 @@ G4ThreeVector ProcessChanneling::ComputeTransverseEnergy(const G4Track& aTrack){
     
     G4double vTotalEnergy = aTrack.GetStep()->GetPostStepPoint()->GetTotalEnergy();
     
-    vTransverseEnergy += fPotentialEnergy->ComputeValue(GetInfo(aTrack)->GetPositionChanneled(),GetXPhysicalLattice(aTrack));
+    vTransverseEnergy += fPotentialEnergy->ComputeEC(GetInfo(aTrack)->GetPositionChanneled(),GetXPhysicalLattice(aTrack));
     
     vTransverseEnergy += G4ThreeVector( 0., 0., (  pow( GetInfo(aTrack)->GetMomentumChanneled().z(), 2. )  / vTotalEnergy ) );
     
@@ -400,7 +400,8 @@ G4VParticleChange* ProcessChanneling::PostStepDoIt(const G4Track& aTrack,
 
 
 G4bool ProcessChanneling::IsApplicable(const G4ParticleDefinition& aPD){
-    return(aPD.GetPDGCharge()>0.);
+    //return(aPD.GetPDGCharge()>0.);
+    return(true);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -464,6 +465,12 @@ ChannelingParticleUserInfo* ProcessChanneling::GetInfo(const G4Track& aTrack){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+G4ParticleDefinition* ProcessChanneling::GetParticleDefinition(const G4Track& aTrack){
+    return const_cast<G4ParticleDefinition*>(aTrack.GetParticleDefinition());
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 void ProcessChanneling::ComputeCrystalCharacteristic(const G4Track& aTrack){
     
     fIntegratedDensityNuclei->SetXPhysicalLattice(GetXPhysicalLattice(aTrack));
@@ -484,8 +491,8 @@ void ProcessChanneling::PrintCrystalCharacteristicsOnFiles(const G4Track& aTrack
     G4String filename;
     
     
-    fIntegratedDensityNuclei->PrintOnFile(filename=fFileName + "_nud.txt",GetXPhysicalLattice(aTrack));
-    fIntegratedDensityElectron->PrintOnFile(filename=fFileName + "_eld.txt",GetXPhysicalLattice(aTrack));
+    fIntegratedDensityNuclei->PrintOnFile(filename=fFileName + "_nud.txt",GetXPhysicalLattice(aTrack),GetParticleDefinition(aTrack));
+    fIntegratedDensityElectron->PrintOnFile(filename=fFileName + "_eld.txt",GetXPhysicalLattice(aTrack),GetParticleDefinition(aTrack));
     fPotentialEnergy->PrintOnFile(filename=fFileName + "_pot.txt",GetXPhysicalLattice(aTrack),eV);
     
 }

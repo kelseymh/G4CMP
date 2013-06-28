@@ -116,19 +116,26 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
 {
     G4SDManager* SDman = G4SDManager::GetSDMpointer();
     
+    
     if(fSD_ID==-1) {
         G4String sdName;
-        fSD_ID = SDman->GetCollectionID(sdName="telescope/collection");
+        if(SDman->FindSensitiveDetector(sdName="telescope",0)){
+            fSD_ID = SDman->GetCollectionID(sdName="telescope/collection");
+        }
     }
     
     if(fSCI_ID==-1) {
         G4String sciName;
-        fSCI_ID = SDman->GetCollectionID(sciName="scintillator/collection");
+        if(SDman->FindSensitiveDetector(sciName="scintillator",0)){
+            fSCI_ID = SDman->GetCollectionID(sciName="scintillator/collection");
+        }
     }
     
     if(fRBSD_ID==-1) {
         G4String rbsdName;
-        fRBSD_ID = SDman->GetCollectionID(rbsdName="detectorRBS/collection");
+        if(SDman->FindSensitiveDetector(rbsdName="detectorRBS",0)){
+            fRBSD_ID = SDman->GetCollectionID(rbsdName="detectorRBS/collection");
+        }
     }
         
     A01DriftChamberHitsCollection* fSD = 0;
@@ -163,10 +170,10 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
     //if (fVerboseLevel==0 || evt->GetEventID() % fVerboseLevel != 0) return;
     
     G4PrimaryParticle* primary = evt->GetPrimaryVertex(0)->GetPrimary(0);
-    G4cout << G4endl
-    << ">>> Event " << evt->GetEventID() << " >>> Simulation truth : "
-    << primary->GetG4code()->GetParticleName()
-    << " " << primary->GetMomentumDirection() << G4endl;
+//    G4cout << G4endl
+//    << ">>> Event " << evt->GetEventID() << " >>> Simulation truth : "
+//    << primary->GetG4code()->GetParticleName()
+//    << " " << primary->GetMomentumDirection() << G4endl;
     
     
     

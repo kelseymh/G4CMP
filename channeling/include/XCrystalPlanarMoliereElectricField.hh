@@ -38,7 +38,7 @@ private:
     G4double fBeta[3];
 
 public:
-    G4double ComputeValueForSinglePlane(G4double,XPhysicalLattice*);
+    G4double ComputeECForSinglePlane(G4double,XPhysicalLattice*);
     
     //Contructors
     XCrystalPlanarMoliereElectricField();

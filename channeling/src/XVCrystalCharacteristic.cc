@@ -120,7 +120,7 @@ G4double XVCrystalCharacteristic::ComputeMaximum(XPhysicalLattice* vLattice){
     for(unsigned int i=0;i<vPrecisionX;i++){
         for(unsigned int j=0;j<vPrecisionY;j++){
             for(unsigned int k=0;k<vPrecisionZ;k++){
-                if( (vValue = ComputeValue(G4ThreeVector(vStepX * i,vStepY * i,vStepZ * i),vLattice).mag() ) > vMaximum) vMaximum = vValue;
+                if( (vValue = ComputeEC(G4ThreeVector(vStepX * i,vStepY * i,vStepZ * i),vLattice).mag() ) > vMaximum) vMaximum = vValue;
             }
         }
     }
@@ -146,7 +146,7 @@ G4double XVCrystalCharacteristic::ComputeMinimum(XPhysicalLattice* vLattice){
     for(unsigned int i=0;i<vPrecisionX;i++){
         for(unsigned int j=0;j<vPrecisionY;j++){
             for(unsigned int k=0;k<vPrecisionZ;k++){
-                if( (vValue = ComputeValue(G4ThreeVector(vStepX * i,vStepY * i,vStepZ * i),vLattice).mag() ) < vMinimum) vMinimum = vValue;
+                if( (vValue = ComputeEC(G4ThreeVector(vStepX * i,vStepY * i,vStepZ * i),vLattice).mag() ) < vMinimum) vMinimum = vValue;
             }
         }
     }

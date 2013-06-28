@@ -43,10 +43,10 @@ public:
     //retrieval function
     G4int GetNumberOfPlanes();
 
-    virtual G4double ComputeValueForSinglePlane(G4double,XPhysicalLattice*) = 0; // G4double = position in the channel
+    virtual G4double ComputeECForSinglePlane(G4double,XPhysicalLattice*) = 0; // G4double = position in the channel
     
     //virtual function of XVCrystalCharacteristic
-    G4ThreeVector ComputeValue(G4ThreeVector,XPhysicalLattice*);
+    G4ThreeVector ComputeEC(G4ThreeVector,XPhysicalLattice*);
     G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);//G4double = position in the channel; G4double& = interplanar distance
     
     virtual G4double ComputeMaximum(XPhysicalLattice*);

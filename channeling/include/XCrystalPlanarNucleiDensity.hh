@@ -36,7 +36,7 @@ class XCrystalPlanarNucleiDensity:public XVCrystalPlanarAnalytical {
 private:
 
 public:
-    G4double ComputeValueForSinglePlane(G4double,XPhysicalLattice*);
+    G4double ComputeECForSinglePlane(G4double,XPhysicalLattice*);
     
     //Contructors
     XCrystalPlanarNucleiDensity();

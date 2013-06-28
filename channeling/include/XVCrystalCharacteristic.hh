@@ -48,7 +48,7 @@ public:
     XLogicalLattice* GetLogicalLattice(G4VPhysicalVolume*);
 
     //virtual function to compute value starting from the point in the xtal reference frame and the physical volume of the xtal
-    virtual G4ThreeVector ComputeValue(G4ThreeVector,XPhysicalLattice*) = 0;
+    virtual G4ThreeVector ComputeEC(G4ThreeVector,XPhysicalLattice*) = 0;
     virtual G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);
     
     virtual G4double ComputeTFScreeningRadius(XPhysicalLattice*);

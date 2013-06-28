@@ -1,7 +1,7 @@
 
-/myevt/filename ch400gev
+/myevt/filename ch400gev_p
 
-/myproc/filename ch400gev
+/myproc/filename ch400gev_p
 /myproc/channeling 1
 /myproc/wrapper 1
 
@@ -25,6 +25,7 @@
 /gun/energy 400. GeV
 /gun/setDivX 0.E-6 rad
 /gun/position 0. -1100. 0 cm
+/gun/particle proton
 
 
 /run/initialize

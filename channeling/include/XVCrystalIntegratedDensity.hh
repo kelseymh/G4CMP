@@ -30,6 +30,7 @@
 #define XVCrystalIntegratedDensity_h
 
 #include "XVCrystalCharacteristic.hh"
+#include "G4ParticleDefinition.hh"
 
 class XVCrystalIntegratedDensity {
 
@@ -50,10 +51,13 @@ public:
     void SetXPhysicalLattice(XPhysicalLattice*);
     XPhysicalLattice* GetXPhysicalLattice();
 
-    void PrintOnFile(const G4String&,XPhysicalLattice*);
-    G4bool HasBeenInitialized(XPhysicalLattice*);
+    void SetParticle(G4ParticleDefinition*);
+    G4ParticleDefinition* GetParticle();
 
-    G4double GetValue(G4double,XPhysicalLattice*);
+    void PrintOnFile(const G4String&,XPhysicalLattice*,G4ParticleDefinition*);
+    G4bool HasBeenInitialized(XPhysicalLattice*,G4ParticleDefinition*);
+
+    G4double GetIntegratedDensity(G4double,XPhysicalLattice*,G4ParticleDefinition*);
 
 protected:
     G4double GetStep();
@@ -62,11 +66,12 @@ public:
     virtual void InitializeTable();
     
 protected:
-    virtual G4double ComputeValue(G4double) = 0;
+    virtual G4double ComputeIntegratedDensity(G4double,XPhysicalLattice*,G4ParticleDefinition*) = 0;
     G4double FindCatmullRomInterpolate(G4double &p0, G4double &p1, G4double &p2, G4double &p3, G4double &x);
 
 protected:
     XPhysicalLattice* fLattice;
+    G4ParticleDefinition* fParticle;
     XVCrystalCharacteristic* fDensity;
     XVCrystalCharacteristic* fPotential;
 

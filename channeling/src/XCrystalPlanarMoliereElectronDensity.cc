@@ -44,7 +44,7 @@ XCrystalPlanarMoliereElectronDensity::~XCrystalPlanarMoliereElectronDensity(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XCrystalPlanarMoliereElectronDensity::ComputeValueForSinglePlane(G4double vXposition,XPhysicalLattice* vLattice){
+G4double XCrystalPlanarMoliereElectronDensity::ComputeECForSinglePlane(G4double vXposition,XPhysicalLattice* vLattice){
 
     G4double aTF = ComputeTFScreeningRadius(vLattice);
 

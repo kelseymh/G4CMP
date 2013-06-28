@@ -50,7 +50,7 @@ G4int XVCrystalPlanarAnalytical::GetNumberOfPlanes(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4ThreeVector XVCrystalPlanarAnalytical::ComputeValue(G4ThreeVector vPositionVector,XPhysicalLattice* vLattice){
+G4ThreeVector XVCrystalPlanarAnalytical::ComputeEC(G4ThreeVector vPositionVector,XPhysicalLattice* vLattice){
     G4VPhysicalVolume* vVolume = vLattice->GetVolume();
     
     G4double vInterplanarDistance = GetXPhysicalLattice(vVolume)->ComputeInterplanarPeriod();
@@ -59,7 +59,7 @@ G4ThreeVector XVCrystalPlanarAnalytical::ComputeValue(G4ThreeVector vPositionVec
     
     G4double vValue = 0.;
     for(int i=-int(GetNumberOfPlanes()/2);i<=+int(GetNumberOfPlanes()/2);i++){
-        vValue += ComputeValueForSinglePlane( ( vPosition + G4double(i) ) * vInterplanarDistance , vLattice );
+        vValue += ComputeECForSinglePlane( ( vPosition + G4double(i) ) * vInterplanarDistance , vLattice );
     }
     
     return G4ThreeVector(vValue,0.,0.);
@@ -94,7 +94,7 @@ G4double XVCrystalPlanarAnalytical::ComputeMaximum(XPhysicalLattice* vLattice){
     G4double vValue;
     
     for(unsigned int i=0;i<vPrecision;i++){
-        if( (vValue = ComputeValue(G4ThreeVector(vStep * i,0.,0.),vLattice).x() ) > vMaximum) vMaximum = vValue;
+        if( (vValue = ComputeEC(G4ThreeVector(vStep * i,0.,0.),vLattice).x() ) > vMaximum) vMaximum = vValue;
     }
     return vMaximum;
 }
@@ -110,7 +110,7 @@ G4double XVCrystalPlanarAnalytical::ComputeMinimum(XPhysicalLattice* vLattice){
     G4double vValue;
     
     for(unsigned int i=0;i<vPrecision;i++){
-        if( (vValue = ComputeValue(G4ThreeVector(vStep * i,0.,0.),vLattice).x() ) < vMinimum) vMinimum = vValue;
+        if( (vValue = ComputeEC(G4ThreeVector(vStep * i,0.,0.),vLattice).x() ) < vMinimum) vMinimum = vValue;
     }
     return vMinimum;
 }
@@ -129,7 +129,7 @@ void XVCrystalPlanarAnalytical::PrintOnFile(const G4String& filename,XPhysicalLa
     
     for(G4int i = 0;i<imax;i++){
         vXposition = double(i) / double(imax) * vInterplanarPeriod;
-        vFileOut << vXposition / angstrom << "," << ComputeValue(G4ThreeVector(vXposition,0.,0.),vLattice).x() / vUnit << std::endl;
+        vFileOut << vXposition / angstrom << "," << ComputeEC(G4ThreeVector(vXposition,0.,0.),vLattice).x() / vUnit << std::endl;
     }
     
     vFileOut.close();

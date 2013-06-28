@@ -97,7 +97,8 @@ private:
     XPhysicalLattice* GetXPhysicalLattice(const G4Track&);
     G4VPhysicalVolume* GetVolume(const G4Track&);
     ChannelingParticleUserInfo* GetInfo(const G4Track&);
-
+    G4ParticleDefinition* GetParticleDefinition(const G4Track& aTrack);
+    
 private:
     // hide assignment operator as private
     ProcessChanneling(ProcessChanneling&);

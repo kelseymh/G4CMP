@@ -40,7 +40,7 @@ protected:
 public:
     std::vector<XVCrystalCharacteristic*> GetCharacteristicVector();
     
-    virtual G4ThreeVector ComputeValue(G4ThreeVector,XPhysicalLattice*);
+    virtual G4ThreeVector ComputeEC(G4ThreeVector,XPhysicalLattice*);
     virtual G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);
     
     //Contructors

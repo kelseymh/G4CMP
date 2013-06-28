@@ -118,13 +118,25 @@ XPhysicalLattice*  XVCrystalIntegratedDensity::GetXPhysicalLattice(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+void XVCrystalIntegratedDensity::SetParticle(G4ParticleDefinition* vParticle){
+    fParticle = vParticle;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4ParticleDefinition*  XVCrystalIntegratedDensity::GetParticle(){
+    return fParticle;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 G4double XVCrystalIntegratedDensity::GetStep(){
     return fPotentialRange / fNumberOfPoints;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4bool XVCrystalIntegratedDensity::HasBeenInitialized(XPhysicalLattice* vLattice){
+G4bool XVCrystalIntegratedDensity::HasBeenInitialized(XPhysicalLattice* vLattice, G4ParticleDefinition* vParticle){
     if(fTable.size()==0) return false;
     if(vLattice!=GetXPhysicalLattice()) return false;
     else return true;
@@ -133,20 +145,29 @@ G4bool XVCrystalIntegratedDensity::HasBeenInitialized(XPhysicalLattice* vLattice
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void XVCrystalIntegratedDensity::InitializeTable(){
-    fPotentialMinimum = fPotential->GetMinimum(fLattice);
-    fPotentialRange = fPotential->GetMaximum(fLattice) - fPotentialMinimum;
+    fPotentialMinimum = fParticle->GetPDGCharge() * fPotential->GetMinimum(fLattice);
+    fPotentialRange = fParticle->GetPDGCharge() * fPotential->GetMaximum(fLattice) - fPotentialMinimum;
+    
+    if(fParticle->GetPDGCharge() < 0.){
+        fPotentialMinimum = fParticle->GetPDGCharge() * fPotential->GetMaximum(fLattice);
+        fPotentialRange = fParticle->GetPDGCharge() * fPotential->GetMinimum(fLattice) - fPotentialMinimum;
+    }
     
     G4cout << "XVCrystalIntegratedDensity::InitializeTable()::Potential Range =  " << fPotentialRange/eV << std::endl;
     
+    G4double vPotentialInitial = 0.;
+    
     for(unsigned int i=0;i<GetNumberOfPoints();i++){
-        fTable.push_back(ComputeValue(fPotentialMinimum + fPotentialRange * G4double(i+1) / G4double(fNumberOfPoints)));
+        vPotentialInitial = (fPotentialMinimum + fPotentialRange * G4double(i+1) / G4double(fNumberOfPoints));
+
+        fTable.push_back(ComputeIntegratedDensity(vPotentialInitial,fLattice,fParticle));
     }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XVCrystalIntegratedDensity::GetValue(G4double vPotential,XPhysicalLattice* vLattice){
-    if(!HasBeenInitialized(vLattice)) return -1.;
+G4double XVCrystalIntegratedDensity::GetIntegratedDensity(G4double vPotential, XPhysicalLattice* vLattice, G4ParticleDefinition* vParticle){
+    if(!HasBeenInitialized(vLattice,vParticle)) return -1.;
     else if(vPotential >= (fPotentialMinimum+fPotentialRange)) return 1.;
     else if(vPotential <= fPotentialMinimum) return 0.;
     else{
@@ -183,7 +204,7 @@ G4double XVCrystalIntegratedDensity::GetValue(G4double vPotential,XPhysicalLatti
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XVCrystalIntegratedDensity::ComputeValue(G4double vPotentialInitial){
+G4double XVCrystalIntegratedDensity::ComputeIntegratedDensity(G4double vPotentialInitial, XPhysicalLattice* vLattice, G4ParticleDefinition* vParticle){
     
     unsigned int i1,i2,i3;
     i1 = i2 = i3 = 0;
@@ -198,8 +219,8 @@ G4double XVCrystalIntegratedDensity::ComputeValue(G4double vPotentialInitial){
             vPositionTemp.setZ(G4double(G4double(i2)/G4double(fIntegrationPoints[1])*vSize.y()));
             while(i1<fIntegrationPoints[0]){
                 vPositionTemp.setX(G4double(G4double(i1)/G4double(fIntegrationPoints[0])*vSize.x()));
-                if(fPotential->ComputeValue(vPositionTemp,fLattice).x() < vPotentialInitial){
-                    vDensity += fDensity->ComputeValue(vPositionTemp,fLattice).x();
+                if(fPotential->ComputeEC(vPositionTemp,fLattice).x() < vPotentialInitial){
+                    vDensity += fDensity->ComputeEC(vPositionTemp,fLattice).x();
                 }
                 i1++;
             };
@@ -231,7 +252,7 @@ G4double XVCrystalIntegratedDensity::FindCatmullRomInterpolate(G4double &p0,G4do
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XVCrystalIntegratedDensity::PrintOnFile(const G4String& filename,XPhysicalLattice* vLattice){
+void XVCrystalIntegratedDensity::PrintOnFile(const G4String& filename,XPhysicalLattice* vLattice, G4ParticleDefinition* vParticle){
     std::ofstream vFileOut;
     vFileOut.open(filename);
     G4double vStep = GetStep() / eV;
