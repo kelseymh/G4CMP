@@ -33,10 +33,6 @@
 
 class XCrystalIntegratedDensityPlanar : public XVCrystalIntegratedDensity{
 
-public:  
-    virtual G4bool HasBeenInitialized(XPhysicalLattice*,G4ParticleDefinition*);
-    //now it checks only of the table is initialized, it does not check if the particular crystal is initialized. To be changed in the future!
-    
 protected:
     virtual G4double ComputeIntegratedDensity(G4double,XPhysicalLattice*,G4ParticleDefinition*);
 

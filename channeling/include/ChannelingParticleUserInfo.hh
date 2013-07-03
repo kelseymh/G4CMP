@@ -44,8 +44,8 @@ public:
     ChannelingParticleUserInfo();
     ~ChannelingParticleUserInfo();
     
-    void SetChanneling(bool flag); 
-    bool HasBeenInChanneling();
+    void SetCoherentEffect(G4int flag); 
+    G4int HasBeenUnderCoherentEffect();
     
     void SetNucleiDensity(G4double);
     G4double GetNucleiDensity();
@@ -76,7 +76,7 @@ public:
 
 private:
     
-    bool bHasBeenInChanneling; //Has been in channeling in the last step
+    G4int bHasBeenUnderCoherentEffect; //Has been in channeling in the last step
 
     G4double fNucleiDensity; //Last value of density seen by channeled particle
     G4double fNucleiDensityPreviousStep;

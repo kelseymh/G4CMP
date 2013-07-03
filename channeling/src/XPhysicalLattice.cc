@@ -309,7 +309,7 @@ G4ThreeVector XPhysicalLattice::ProjectMomentumVectorFromWorldToLattice(G4ThreeV
     vMomentum.rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
 
     if(IsBent() ){
-        vMomentum.rotate(G4ThreeVector(0,0,1),ComputeBendingAngle(vPosition).x());
+        vMomentum.rotate(G4ThreeVector(0,1,0), ComputeBendingAngle(vPosition).z()).rotate(G4ThreeVector(0,0,1), ComputeBendingAngle(vPosition).x());
     }
 
     return vMomentum;
@@ -321,7 +321,7 @@ G4ThreeVector XPhysicalLattice::ProjectMomentumVectorFromLatticeToWorld(G4ThreeV
     vMomentum.rotate(G4ThreeVector(0,0,1), -fPhi).rotate(G4ThreeVector(0,1,0), -fTheta);
     
     if(IsBent() ){
-        vMomentum.rotate(G4ThreeVector(0,0,1),-ComputeBendingAngle(vPosition).x());
+        vMomentum.rotate(G4ThreeVector(0,0,1), -ComputeBendingAngle(vPosition).x()).rotate(G4ThreeVector(0,1,0), -ComputeBendingAngle(vPosition).z());
     }
 
     return vMomentum;
@@ -372,7 +372,16 @@ G4bool XPhysicalLattice::IsBent(){
 
 G4ThreeVector XPhysicalLattice::ComputeBendingAngle(G4ThreeVector vPosition){
 
-    return G4ThreeVector(vPosition.y() / GetCurvatureRadius().x(),0.,vPosition.y() / GetCurvatureRadius().z());
+    G4double vRadiusX = 0.;
+    G4double vRadiusZ = 0.;
+    
+    if(GetCurvatureRadius().x() != 0){
+        vRadiusX = vPosition.y() / GetCurvatureRadius().x();
+    }
+    if(GetCurvatureRadius().z() != 0){
+        vRadiusZ = vPosition.y() / GetCurvatureRadius().z();
+    }
+    return G4ThreeVector(vRadiusX,0.,vRadiusZ);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

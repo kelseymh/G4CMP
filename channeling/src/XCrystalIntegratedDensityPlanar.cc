@@ -42,38 +42,45 @@ XCrystalIntegratedDensityPlanar::~XCrystalIntegratedDensityPlanar(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4bool XCrystalIntegratedDensityPlanar::HasBeenInitialized(XPhysicalLattice* vLattice,G4ParticleDefinition* vParticle){
-    if(fTable.size()==0) return false;
-    else return true;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
 G4double XCrystalIntegratedDensityPlanar::ComputeIntegratedDensity(G4double vPotentialInitial, XPhysicalLattice* vLattice, G4ParticleDefinition* vParticle){
     
     unsigned int i1 = 0;
     
     G4ThreeVector vPositionTemp = G4ThreeVector(0.,0.,0.);
-    G4double vDensity = 0.;
-    
-    G4double vInterplanarPeriod = fLattice->ComputeInterplanarPeriod();
+    G4double vInterplanarPeriod = GetXPhysicalLattice()->ComputeInterplanarPeriod();
     G4double vPotential = 0.;
+    G4double vDensity = 0.;
+    G4double xPos = 0.;
+    G4double xMin = +vInterplanarPeriod;
+    G4double xMax = -vInterplanarPeriod;
+    
     while(i1<GetIntegrationPoints(0)){
         
-        vPositionTemp.setX(G4double(G4double(i1)/G4double(GetIntegrationPoints(0))*vInterplanarPeriod));
+        xPos = G4double(G4double(i1)/G4double(GetIntegrationPoints(0))*vInterplanarPeriod);
         
-        vPotential = vParticle->GetPDGCharge() * fPotential->ComputeEC(vPositionTemp,fLattice).x();
+        vPositionTemp.setX(xPos);
+        
+        vPotential = vParticle->GetPDGCharge() * GetPotential()->ComputeEC(vPositionTemp,GetXPhysicalLattice()).x();
         
         if(vPotential < vPotentialInitial){
-            vDensity += fDensity->ComputeEC(vPositionTemp,fLattice).x();
+            vDensity += GetDensity()->ComputeEC(vPositionTemp,GetXPhysicalLattice()).x();
+            if(xPos < xMin){
+                xMin = xPos;
+            }
+            if(xPos > xMax){
+                xMax = xPos;
+            }
         }
         
         i1++;
     };
-    
-    vDensity *= vInterplanarPeriod;
-    vDensity /= GetIntegrationPoints(0);
+        
+    vDensity *= vInterplanarPeriod; // time correction for the density
 
+    vDensity *= vInterplanarPeriod/(xMax - xMin); // time correction for the density
+
+    vDensity /= GetIntegrationPoints(0);
+    
     return vDensity;
 }
 

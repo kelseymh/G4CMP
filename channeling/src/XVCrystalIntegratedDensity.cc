@@ -137,6 +137,7 @@ G4double XVCrystalIntegratedDensity::GetStep(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4bool XVCrystalIntegratedDensity::HasBeenInitialized(XPhysicalLattice* vLattice, G4ParticleDefinition* vParticle){
+    //now it checks only of the table is initialized, it does not check if the particular crystal is initialized. To be changed in the future!
     if(fTable.size()==0) return false;
     if(vLattice!=GetXPhysicalLattice()) return false;
     else return true;
@@ -144,23 +145,37 @@ G4bool XVCrystalIntegratedDensity::HasBeenInitialized(XPhysicalLattice* vLattice
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XVCrystalIntegratedDensity::InitializeTable(){
+void XVCrystalIntegratedDensity::ComputePotentialMinimaAndMaxima(){
     fPotentialMinimum = fParticle->GetPDGCharge() * fPotential->GetMinimum(fLattice);
-    fPotentialRange = fParticle->GetPDGCharge() * fPotential->GetMaximum(fLattice) - fPotentialMinimum;
-    
     if(fParticle->GetPDGCharge() < 0.){
         fPotentialMinimum = fParticle->GetPDGCharge() * fPotential->GetMaximum(fLattice);
-        fPotentialRange = fParticle->GetPDGCharge() * fPotential->GetMinimum(fLattice) - fPotentialMinimum;
     }
+
+    fPotentialMaximum = fParticle->GetPDGCharge() * fPotential->GetMaximum(fLattice);
+    if(fParticle->GetPDGCharge() < 0.){
+        fPotentialMaximum = fParticle->GetPDGCharge() * fPotential->GetMinimum(fLattice);
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void XVCrystalIntegratedDensity::InitializeTable(){
     
-    G4cout << "XVCrystalIntegratedDensity::InitializeTable()::Potential Range =  " << fPotentialRange/eV << std::endl;
+    ComputePotentialMinimaAndMaxima();
+        
+    fPotentialRange = fPotentialMaximum - fPotentialMinimum;
+
+    G4cout << "XVCrystalIntegratedDensity::InitializeTable()::Potential Range =  " << fPotentialRange/eV << " - Minimum = " << fPotentialMinimum/eV << " - Maximum " << fPotentialMaximum/eV << std::endl;
     
     G4double vPotentialInitial = 0.;
     
     for(unsigned int i=0;i<GetNumberOfPoints();i++){
+        fTable.push_back(0.);
+    }
+    
+    for(unsigned int i=0;i<GetNumberOfPoints();i++){
         vPotentialInitial = (fPotentialMinimum + fPotentialRange * G4double(i+1) / G4double(fNumberOfPoints));
-
-        fTable.push_back(ComputeIntegratedDensity(vPotentialInitial,fLattice,fParticle));
+        fTable.at(i) += ComputeIntegratedDensity(vPotentialInitial,fLattice,fParticle);
     }
 }
 

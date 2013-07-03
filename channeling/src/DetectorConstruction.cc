@@ -66,19 +66,18 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorConstruction::DetectorConstruction()
-//:fMessenger(0),
-//bXtal(0),fXtalCurvatureRadius(0),fXtalMaterial(0),fXtalAngle(0),fXtalSize(0),
-//fXtalCellSize(0),fXtalCellAngle(0),fXtalSolid(0),fXtalLogic(0),fXtalPhysical(0),
-//bRBS(0),fRBSDistanceR(0),fRBSAngleTheta(0),fRBSAnglePhi(0),
-//fRBSSizeZ(0),fRBSSizeR(0),fRBSSolid(0),fRBSLogic(0),fRBSPhysical(0),
-//bSCI(0),fSCIXtalDistance(0),fSCIRelativeDistance(0),
-//fSCISizeXZ(0),fSCISizeY(0),fSCISolid(0),fSCILogic(0),fSCIPhysical(0),
-//bSSD(0),fSSD0XtalDistance(0),fSSD1XtalDistance(0),fSSD2XtalDistance(0),
-//fSSDSizeXZ(0),fSSDSizeY(0),fSSDSolid(0),fSSDLogic(0),fSSDPhysical(0),
-//fWorldSizeXZ(0),fWorldSizeY(0),fWorldSolid(0),fWorldLogic(0),fWorldPhysical(0)
+DetectorConstruction::DetectorConstruction():fMessenger(0),
+bXtal(0),fXtalCurvatureRadius(0),fXtalMaterial(0),fXtalAngle(0),fXtalSize(0),
+fXtalCellSize(0),fXtalCellAngle(0),fXtalSolid(0),fXtalLogic(0),fXtalPhysical(0),
+bRBS(0),fRBSDistanceR(0),fRBSAngleTheta(0),fRBSAnglePhi(0),
+fRBSSizeZ(0),fRBSSizeR(0),fRBSSolid(0),fRBSLogic(0),fRBSPhysical(0),
+bSCI(0),fSCIXtalDistance(0),fSCIRelativeDistance(0),
+fSCISizeXZ(0),fSCISizeY(0),fSCISolid(0),fSCILogic(0),fSCIPhysical(0),
+bSSD(0),fSSD0XtalDistance(0),fSSD1XtalDistance(0),fSSD2XtalDistance(0),
+fSSDSizeXZ(0),fSSDSizeY(0),fSSDSolid(0),fSSDLogic(0),fSSDPhysical(0),
+fWorldSizeXZ(0),fWorldSizeY(0),fWorldSolid(0),fWorldLogic(0),fWorldPhysical(0)
 {
-
+    
     DefineMaterials();
     
     fWorldSizeY = 0.5 * m;
@@ -87,11 +86,11 @@ DetectorConstruction::DetectorConstruction()
     bSSD = false;
     fSSDSizeXZ = 1.92 * 10. * cm; // originally 1.92 cm
     fSSDSizeY = 0.06 * cm;
-
+    
     fSSD0XtalDistance = - 15 * cm;
     fSSD1XtalDistance = - 5 * cm;
     fSSD2XtalDistance = + 10 * cm;
-
+    
     bSCI = false;
     fSCIRelativeDistance = 1. * cm;
     fSCIXtalDistance = 30. * cm;
@@ -104,7 +103,7 @@ DetectorConstruction::DetectorConstruction()
     fRBSDistanceR = 10. * cm;
     fRBSAnglePhi = -135. * degree;
     fRBSAngleTheta = 0.;
-
+    
     bXtal = false;
     fXtalAngle = G4ThreeVector(0.,0.,0.E-6 * radian);
     fXtalSize = G4ThreeVector(60. * mm, 2. * mm, 60. * mm);
@@ -133,7 +132,7 @@ void DetectorConstruction::DefineMaterials(){
 G4VPhysicalVolume* DetectorConstruction::Construct(){
     
     ConstructWorld();
-        
+    
     if(bSCI) ConstructScintillators();
     
     if(bSSD) ConstructSiliconStripDetectors();
@@ -151,7 +150,7 @@ void DetectorConstruction::ConstructWorld(){
     G4Material* Vacuum = G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
     
     if(fabs(fSSD2XtalDistance) > fWorldSizeY/2.){
-       fWorldSizeY = fabs(fSSD2XtalDistance) * 2.6;
+        fWorldSizeY = fabs(fSSD2XtalDistance) * 2.6;
     }
     if(fabs(fSSD1XtalDistance) > fWorldSizeY/2.){
         fWorldSizeY = fabs(fSSD1XtalDistance) * 2.6;
@@ -161,7 +160,7 @@ void DetectorConstruction::ConstructWorld(){
     }
     
     fWorldSolid = new G4Box("World",fWorldSizeXZ/2.,fWorldSizeY/2.,fWorldSizeXZ/2.);
-
+    
     fWorldLogic = new G4LogicalVolume(fWorldSolid,Vacuum,"World");
     
     fWorldPhysical = new G4PVPlacement(0,G4ThreeVector(),fWorldLogic,"World",0,false,0);
@@ -172,19 +171,30 @@ void DetectorConstruction::ConstructWorld(){
 void DetectorConstruction::ConstructRBSDetector(){
     G4Material* Si = G4NistManager::Instance()->FindOrBuildMaterial("G4_Si");
     
-    G4ThreeVector vRBSDistance = G4ThreeVector(1.*cm,0.,0.);
-    
-    vRBSDistance.setR(fRBSDistanceR);
-    vRBSDistance.rotate(G4ThreeVector(0,1,0), fRBSAngleTheta).rotate(G4ThreeVector(0,0,1), fRBSAnglePhi);
-        
     fRBSSolid = new G4Tubs("DetRBS", 0.,fRBSSizeR,fRBSSizeZ/2.,0,2*M_PI*radian);
     fRBSLogic = new G4LogicalVolume(fRBSSolid,Si,"DetRBS");
-        
+
+    
+    G4ThreeVector vRBSDistance = G4ThreeVector(1.*cm,0.,0.);
+    vRBSDistance.setR(fRBSDistanceR);
+    vRBSDistance.rotate(G4ThreeVector(0,1,0), fRBSAngleTheta).rotate(G4ThreeVector(0,0,1), fRBSAnglePhi);
     G4RotationMatrix* vRotationMatrix = new G4RotationMatrix; // Rotates X and Z axes only
     vRotationMatrix->rotateX(M_PI/2 - fRBSAngleTheta);
     vRotationMatrix->rotateY(M_PI/2 + fRBSAnglePhi);
-
     fRBSPhysical = new G4PVPlacement(vRotationMatrix,vRBSDistance,fRBSLogic,"DetRBS",fWorldLogic,false,0);
+
+//    int vNumberOfDetectors = 32;
+//    
+//    G4double vUnitAngle = M_PI * 3. / 2. / vNumberOfDetectors;
+//    for(int j1=0;j1<vNumberOfDetectors;j1++){
+//        G4ThreeVector vRBSDistance = G4ThreeVector(1.*cm,0.,0.);
+//        vRBSDistance.setR(fRBSDistanceR);
+//        vRBSDistance.rotate(G4ThreeVector(0,1,0), fRBSAngleTheta).rotate(G4ThreeVector(0,0,1), - M_PI/4 + j1 * vUnitAngle);
+//        G4RotationMatrix* vRotationMatrix = new G4RotationMatrix; // Rotates X and Z axes only
+//        vRotationMatrix->rotateZ( - M_PI/4 - j1 * vUnitAngle);
+//        vRotationMatrix->rotateX(M_PI/2 - fRBSAngleTheta);
+//        fRBSPhysical = new G4PVPlacement(vRotationMatrix,vRBSDistance,fRBSLogic,"DetRBS",fWorldLogic,false,j1);
+//    }
     
     G4String SDname;
     G4VSensitiveDetector* detectorRBS = new A01DriftChamber(SDname="/detectorRBS");
@@ -196,16 +206,16 @@ void DetectorConstruction::ConstructRBSDetector(){
 
 void DetectorConstruction::ConstructScintillators(){
     G4Material* NaI = G4NistManager::Instance()->FindOrBuildMaterial("G4_SODIUM_IODIDE");
-     
+    
     fSCISolid = new G4Box("NaISCI", fSCISizeXZ/2.,fSCISizeY/2.,fSCISizeXZ/2.);
     fSCILogic = new G4LogicalVolume(fSCISolid,NaI,"NaISCI");
     
     G4double vDetDistX = (fSCIRelativeDistance / 2. + fSCISizeXZ / 2.);
-
+    
     fSCIPhysical = new G4PVPlacement(0,G4ThreeVector(-vDetDistX,fSCIXtalDistance,0.),fSCILogic,"NaISCI",fWorldLogic,false,0);
     
     fSCIPhysical = new G4PVPlacement(0,G4ThreeVector(+vDetDistX,fSCIXtalDistance,0.),fSCILogic,"NaISCI",fWorldLogic,false,1);
-
+    
     G4String SDname;
     G4VSensitiveDetector* telescope = new A01DriftChamber(SDname="/scintillator");
     G4SDManager::GetSDMpointer()->AddNewDetector(telescope);
@@ -225,12 +235,12 @@ void DetectorConstruction::ConstructSiliconStripDetectors(){
     fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*cm,fSSD1XtalDistance,0.*cm),fSSDLogic,"SiSD",fWorldLogic,false,1);
     
     fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*cm,fSSD2XtalDistance,0.*cm),fSSDLogic,"SiSD",fWorldLogic,false,2);
-
+    
     G4String SDname;
     G4VSensitiveDetector* telescope = new A01DriftChamber(SDname="/telescope");
     G4SDManager::GetSDMpointer()->AddNewDetector(telescope);
     fSSDLogic->SetSensitiveDetector(telescope);
-
+    
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -238,12 +248,12 @@ void DetectorConstruction::ConstructSiliconStripDetectors(){
 void DetectorConstruction::ConstructXtalTarget(){
     fXtalSolid = new G4Box("Target", fXtalSize.x()/2.,fXtalSize.y()/2.,fXtalSize.z()/2.);
     fXtalLogic = new G4LogicalVolume(fXtalSolid,fXtalMaterial,"Target");
-
+    
     G4RotationMatrix* vRotationMatrix = new G4RotationMatrix; // Rotates X and Z axes only
     vRotationMatrix->rotateX(fXtalAngle.x());
     vRotationMatrix->rotateY(fXtalAngle.y());
     vRotationMatrix->rotateZ(fXtalAngle.z());
-
+    
     fXtalPhysical = new G4PVPlacement(vRotationMatrix,G4ThreeVector(0.,1.*cm,0.),fXtalLogic,"Target",fWorldLogic,false,0);
     
     //----------------------------------------
@@ -258,7 +268,7 @@ void DetectorConstruction::ConstructXtalTarget(){
     XLogicalAtomicLatticeDiamond *diamond_lattice = new XLogicalAtomicLatticeDiamond();
     G4Element* element = G4NistManager::Instance()->FindOrBuildElement(fXtalMaterial->GetZ());
     XLogicalBase *base = new XLogicalBase(element,diamond_lattice);
-
+    
     //----------------------------------------
     // Create XUnitCell
     //----------------------------------------

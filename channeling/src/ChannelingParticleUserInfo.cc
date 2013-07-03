@@ -32,7 +32,7 @@
 #include "ChannelingParticleUserInfo.hh"
 
 ChannelingParticleUserInfo::ChannelingParticleUserInfo(){
-    bHasBeenInChanneling = false;
+    bHasBeenUnderCoherentEffect = 0;
     
     fNucleiDensity = 1.0;
     fNucleiDensityPreviousStep = 1.0;
@@ -56,14 +56,14 @@ ChannelingParticleUserInfo::~ChannelingParticleUserInfo(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ChannelingParticleUserInfo::SetChanneling(bool flag){
-    bHasBeenInChanneling = flag;
+void ChannelingParticleUserInfo::SetCoherentEffect(G4int flag){
+    bHasBeenUnderCoherentEffect = flag;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-bool ChannelingParticleUserInfo::HasBeenInChanneling(){
-    return bHasBeenInChanneling;
+G4int ChannelingParticleUserInfo::HasBeenUnderCoherentEffect(){
+    return bHasBeenUnderCoherentEffect;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -420,11 +420,8 @@ void PhysicsList::AddChanneling(){
         G4ProcessManager* pManager = particle->GetProcessManager();
         G4String particleName = particle->GetParticleName();
         
-        if(particleName == "e-")
+        if(particleName == "proton")
         {
-            vIntegratedDensityNuclei->SetParticle(particle);
-            vIntegratedDensityElectron->SetParticle(particle);
-            
             ProcessChanneling* channeling =  new ProcessChanneling();
             channeling->SetPotential(vPotentialEnergy);
             channeling->SetIntegratedDensityNuclei(vIntegratedDensityNuclei);

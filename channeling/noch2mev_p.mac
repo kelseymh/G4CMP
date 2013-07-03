@@ -1,13 +1,13 @@
 
-/myevt/filename ch2mev
+/myevt/filename noch2mev_p
 
-/myproc/filename ch2mev
+/myproc/filename noch2mev_p
 /myproc/scattering ss
 /myproc/channeling 0
 /myproc/wrapper 0
 
-/mydet/rbs/setDistR 10. cm
-#/mydet/rbs/setAngPhi 225. rad
+/mydet/rbs/setDistR 15. cm
+/mydet/rbs/setAngPhi -135. rad
 /mydet/rbs/setAngTheta 0. rad
 /mydet/addrbsd
 
@@ -22,7 +22,8 @@
 /gun/setDivX 0.E-6 rad
 /gun/setDivY 0.E-6 rad
 /gun/position 0. -20. 0. cm
+/gun/particle proton
 
 
 /run/initialize
-#/run/beamOn 100000
+/run/beamOn 1000000

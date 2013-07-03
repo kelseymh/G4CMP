@@ -2,7 +2,7 @@
 /myevt/filename ch2mev_p
 
 /myproc/filename ch2mev_p
-/myproc/scattering nr
+/myproc/scattering ss
 /myproc/channeling 1
 /myproc/wrapper 1
 
@@ -26,4 +26,4 @@
 
 
 /run/initialize
-#/run/beamOn 100000
+/run/beamOn 1000000

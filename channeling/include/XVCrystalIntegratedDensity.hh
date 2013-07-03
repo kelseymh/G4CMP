@@ -61,6 +61,10 @@ public:
 
 protected:
     G4double GetStep();
+    
+    virtual void ComputePotentialMinimaAndMaxima();
+    std::vector<G4int> GetPotentialMinima() {return fPotentialMinimumVector;};
+    std::vector<G4int> GetPotentialMaxima() {return fPotentialMaximumVector;};
 
 public:
     virtual void InitializeTable();
@@ -69,15 +73,21 @@ protected:
     virtual G4double ComputeIntegratedDensity(G4double,XPhysicalLattice*,G4ParticleDefinition*) = 0;
     G4double FindCatmullRomInterpolate(G4double &p0, G4double &p1, G4double &p2, G4double &p3, G4double &x);
 
-protected:
+private:
     XPhysicalLattice* fLattice;
     G4ParticleDefinition* fParticle;
     XVCrystalCharacteristic* fDensity;
     XVCrystalCharacteristic* fPotential;
 
+protected:
     G4double fPotentialMinimum;
+    G4double fPotentialMaximum;
     G4double fPotentialRange;
-    
+
+    std::vector<G4int> fPotentialMinimumVector;
+    std::vector<G4int> fPotentialMaximumVector;
+
+private:
     std::vector<G4double> fTable;
     unsigned int fNumberOfPoints;
     unsigned int fIntegrationPoints[3];

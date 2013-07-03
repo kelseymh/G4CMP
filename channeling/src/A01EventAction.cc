@@ -137,7 +137,7 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
             fRBSD_ID = SDman->GetCollectionID(rbsdName="detectorRBS/collection");
         }
     }
-        
+    
     A01DriftChamberHitsCollection* fSD = 0;
     A01DriftChamberHitsCollection* fSCI = 0;
     A01DriftChamberHitsCollection* fRBSD = 0;
@@ -170,11 +170,12 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
     //if (fVerboseLevel==0 || evt->GetEventID() % fVerboseLevel != 0) return;
     
     G4PrimaryParticle* primary = evt->GetPrimaryVertex(0)->GetPrimary(0);
-//    G4cout << G4endl
-//    << ">>> Event " << evt->GetEventID() << " >>> Simulation truth : "
-//    << primary->GetG4code()->GetParticleName()
-//    << " " << primary->GetMomentumDirection() << G4endl;
-    
+    if(fmod(evt->GetEventID(),100)==0){
+        G4cout << G4endl
+        << ">>> Event " << evt->GetEventID() << " >>> Simulation truth : "
+        << primary->GetG4code()->GetParticleName()
+        << " " << primary->GetMomentumDirection() << G4endl;
+    }
     
     
     if(fSCI && fFileOutSCI)
