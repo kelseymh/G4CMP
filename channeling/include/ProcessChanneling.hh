@@ -88,7 +88,7 @@ private:
     G4ThreeVector ComputeVolumeReflectionOutgoingMomentum(const G4Track&);
 
     G4ThreeVector ComputePostStepPositionInTheChannel(const G4Track&);
-    G4ThreeVector ComputePositionInTheCrystal(G4StepPoint*);
+    G4ThreeVector ComputePositionInTheCrystal(G4StepPoint*,const G4Track&);
 
     void ComputeCrystalCharacteristic(const G4Track&);
     void PrintCrystalCharacteristicsOnFiles(const G4Track&);
