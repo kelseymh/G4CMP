@@ -34,7 +34,7 @@
 class XCrystalIntegratedDensityPlanar : public XVCrystalIntegratedDensity{
 
 protected:
-    virtual G4double ComputeIntegratedDensity(G4double,XPhysicalLattice*,G4ParticleDefinition*);
+    virtual G4double ComputeIntegratedDensity(G4double,XPhysicalLattice*,G4int);
 
 public:   //Contructors
     XCrystalIntegratedDensityPlanar();

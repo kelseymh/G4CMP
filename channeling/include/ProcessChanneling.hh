@@ -34,7 +34,7 @@
 
 #include "XLatticeManager3.hh"
 #include "XVCrystalCharacteristic.hh"
-#include "XVCrystalIntegratedDensity.hh"
+#include "XCrystalIntegratedDensityHub.hh"
 
 #include "G4VPhysicalVolume.hh"
 #include "XPhysicalLattice.hh"
@@ -61,11 +61,8 @@ public:
     XVCrystalCharacteristic* GetPotential();
     void SetPotential(XVCrystalCharacteristic*);
     
-    XVCrystalIntegratedDensity* GetIntegratedDensityNuclei();
-    void SetIntegratedDensityNuclei(XVCrystalIntegratedDensity*);
-
-    XVCrystalIntegratedDensity* GetIntegratedDensityElectron();
-    void SetIntegratedDensityElectron(XVCrystalIntegratedDensity*);
+    XCrystalIntegratedDensityHub* GetIntegratedDensity();
+    void SetIntegratedDensity(XCrystalIntegratedDensityHub*);
 
     void SetFileName(const G4String&);
     G4String GetFileName();
@@ -114,8 +111,7 @@ private:
     XLatticeManager3* fLatticeManager;
       
     XVCrystalCharacteristic* fPotentialEnergy;
-    XVCrystalIntegratedDensity* fIntegratedDensityNuclei;
-    XVCrystalIntegratedDensity* fIntegratedDensityElectron;
+    XCrystalIntegratedDensityHub* fIntegratedDensity;
 
     std::ofstream fFileOut;
     G4String fFileName;

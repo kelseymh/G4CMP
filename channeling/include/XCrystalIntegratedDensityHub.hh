@@ -26,70 +26,58 @@
 //
 // $Id$
 //
-#ifndef XVCrystalIntegratedDensity_h
-#define XVCrystalIntegratedDensity_h
+#ifndef XCrystalIntegratedDensityHub_h
+#define XCrystalIntegratedDensityHub_h
 
 #include "XVCrystalCharacteristic.hh"
+#include "XVCrystalIntegratedDensity.hh"
+#include "G4ParticleDefinition.hh"
 
-class XVCrystalIntegratedDensity {
+class XCrystalIntegratedDensityHub {
 
 public:
-    void SetIntegrationPoints(unsigned int,unsigned int);
-    unsigned int GetIntegrationPoints(unsigned int);
-    unsigned int GetIntegrationPoints();
+    void SetDensityElectron(XVCrystalCharacteristic*);
+    XVCrystalCharacteristic* GetDensityElectron();
 
-    void SetNumberOfPoints(unsigned int);
-    unsigned int GetNumberOfPoints();
+    void SetDensityNuclei(XVCrystalCharacteristic*);
+    XVCrystalCharacteristic* GetDensityNuclei();
 
-    void SetDensity(XVCrystalCharacteristic*);
-    XVCrystalCharacteristic* GetDensity();
-    
     void SetPotential(XVCrystalCharacteristic*);
     XVCrystalCharacteristic* GetPotential();
 
     void SetXPhysicalLattice(XPhysicalLattice*);
     XPhysicalLattice* GetXPhysicalLattice();
 
-    void SetParticleCharge(G4int);
-    G4int GetParticleCharge();
+    void SetIntegratedDensityNuclei(XVCrystalIntegratedDensity*,G4int);
+    XVCrystalIntegratedDensity* GetIntegratedDensityNuclei(G4int);
 
-    void PrintOnFile(const G4String&);
-    G4bool HasBeenInitialized(XPhysicalLattice*,G4int);
+    void SetIntegratedDensityElectron(XVCrystalIntegratedDensity*,G4int);
+    XVCrystalIntegratedDensity* GetIntegratedDensityElectron(G4int);
 
-    G4double GetIntegratedDensity(G4double,XPhysicalLattice*,G4int);
+    void PrintOnFiles(const G4String&);
+    G4bool HasBeenInitialized(XPhysicalLattice*);
 
-protected:
-    G4double GetStep();
-    
-    virtual void ComputePotentialParameters();
+    G4double GetIntegratedDensityElectron(G4double,XPhysicalLattice*,G4int);
+    G4double GetIntegratedDensityNuclei(G4double,XPhysicalLattice*,G4int);
 
 public:
-    virtual void InitializeTable();
+    void InitializeTables();
     
-protected:
-    virtual G4double ComputeIntegratedDensity(G4double,XPhysicalLattice*,G4int) = 0;
-    G4double FindCatmullRomInterpolate(G4double &p0, G4double &p1, G4double &p2, G4double &p3, G4double &x);
-
 private:
     XPhysicalLattice* fLattice;
-    G4int fParticleCharge;
-    XVCrystalCharacteristic* fDensity;
+    XVCrystalCharacteristic* fDensityElectron;
+    XVCrystalCharacteristic* fDensityNuclei;
     XVCrystalCharacteristic* fPotential;
 
-protected:
-    G4double fPotentialMinimum;
-    G4double fPotentialMaximum;
-    G4double fPotentialRange;
+    XVCrystalIntegratedDensity* fIntDensElectronPositive;
+    XVCrystalIntegratedDensity* fIntDensNucleiPositive;
 
-private:
-    std::vector<G4double> fTable;
-    unsigned int fNumberOfPoints;
-    unsigned int fIntegrationPoints[3];
-    
+    XVCrystalIntegratedDensity* fIntDensElectronNegative;
+    XVCrystalIntegratedDensity* fIntDensNucleiNegative;
 
 public:   //Contructors
-    XVCrystalIntegratedDensity();
-    ~XVCrystalIntegratedDensity();
+    XCrystalIntegratedDensityHub();
+    ~XCrystalIntegratedDensityHub();
 };
 
 #endif

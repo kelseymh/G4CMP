@@ -42,7 +42,7 @@ XCrystalIntegratedDensityPlanar::~XCrystalIntegratedDensityPlanar(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XCrystalIntegratedDensityPlanar::ComputeIntegratedDensity(G4double vPotentialInitial, XPhysicalLattice* vLattice, G4ParticleDefinition* vParticle){
+G4double XCrystalIntegratedDensityPlanar::ComputeIntegratedDensity(G4double vPotentialInitial, XPhysicalLattice* vLattice, G4int vParticleCharge){
     
     unsigned int i1 = 0;
     
@@ -58,9 +58,9 @@ G4double XCrystalIntegratedDensityPlanar::ComputeIntegratedDensity(G4double vPot
         
         xPos = G4double(G4double(i1)/G4double(GetIntegrationPoints(0))*vInterplanarPeriod);
         
-        vPositionTemp.setX(xPos);
+        vPositionTemp.setX(xPos + vInterplanarPeriod / 2.);
         
-        vPotential = vParticle->GetPDGCharge() * GetPotential()->ComputeEC(vPositionTemp,GetXPhysicalLattice()).x();
+        vPotential = G4double(vParticleCharge) * GetPotential()->ComputeEC(vPositionTemp,GetXPhysicalLattice()).x();
         
         if(vPotential < vPotentialInitial){
             vDensity += GetDensity()->ComputeEC(vPositionTemp,GetXPhysicalLattice()).x();
@@ -74,7 +74,8 @@ G4double XCrystalIntegratedDensityPlanar::ComputeIntegratedDensity(G4double vPot
         
         i1++;
     };
-        
+    
+    
     vDensity *= vInterplanarPeriod; // time correction for the density
 
     vDensity *= vInterplanarPeriod/(xMax - xMin); // time correction for the density

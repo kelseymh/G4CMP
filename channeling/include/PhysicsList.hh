@@ -19,10 +19,11 @@ public:
     ~PhysicsList();
     
     //Add processes
-    void AddStandardSS();
-    void AddStandardNR();
+    void AddStandardSS(G4ParticleDefinition*);
+    void AddStandardNR(G4ParticleDefinition*);
     void AddChanneling();
     void AddDecay();
+    void AddEM();
     void AddInelaticProcesses();
     void AddStepMax();
     

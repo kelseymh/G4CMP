@@ -64,6 +64,16 @@
 #include "XCrystalPlanarNucleiDensity.hh"
 #include "XCrystalPlanarMoliereElectronDensity.hh"
 
+
+#include "XCrystalPlanarMoliereTempPotential.hh"
+#include "XCrystalPlanarMoliereElectricField.hh"
+#include "XCrystalPlanarNucleiDensity.hh"
+#include "XCrystalPlanarMoliereElectronDensity.hh"
+#include "XCrystalCharacteristicArray.hh"
+#include "XCrystalIntegratedDensityPlanar.hh"
+#include "XCrystalIntegratedDensityHub.hh"
+#include "XCrystalIntegratedDensityHub.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction():fMessenger(0),
@@ -173,7 +183,7 @@ void DetectorConstruction::ConstructRBSDetector(){
     
     fRBSSolid = new G4Tubs("DetRBS", 0.,fRBSSizeR,fRBSSizeZ/2.,0,2*M_PI*radian);
     fRBSLogic = new G4LogicalVolume(fRBSSolid,Si,"DetRBS");
-
+    
     
     G4ThreeVector vRBSDistance = G4ThreeVector(1.*cm,0.,0.);
     vRBSDistance.setR(fRBSDistanceR);
@@ -182,19 +192,19 @@ void DetectorConstruction::ConstructRBSDetector(){
     vRotationMatrix->rotateX(M_PI/2 - fRBSAngleTheta);
     vRotationMatrix->rotateY(M_PI/2 + fRBSAnglePhi);
     fRBSPhysical = new G4PVPlacement(vRotationMatrix,vRBSDistance,fRBSLogic,"DetRBS",fWorldLogic,false,0);
-
-//    int vNumberOfDetectors = 32;
-//    
-//    G4double vUnitAngle = M_PI * 3. / 2. / vNumberOfDetectors;
-//    for(int j1=0;j1<vNumberOfDetectors;j1++){
-//        G4ThreeVector vRBSDistance = G4ThreeVector(1.*cm,0.,0.);
-//        vRBSDistance.setR(fRBSDistanceR);
-//        vRBSDistance.rotate(G4ThreeVector(0,1,0), fRBSAngleTheta).rotate(G4ThreeVector(0,0,1), - M_PI/4 + j1 * vUnitAngle);
-//        G4RotationMatrix* vRotationMatrix = new G4RotationMatrix; // Rotates X and Z axes only
-//        vRotationMatrix->rotateZ( - M_PI/4 - j1 * vUnitAngle);
-//        vRotationMatrix->rotateX(M_PI/2 - fRBSAngleTheta);
-//        fRBSPhysical = new G4PVPlacement(vRotationMatrix,vRBSDistance,fRBSLogic,"DetRBS",fWorldLogic,false,j1);
-//    }
+    
+    //    int vNumberOfDetectors = 32;
+    //
+    //    G4double vUnitAngle = M_PI * 3. / 2. / vNumberOfDetectors;
+    //    for(int j1=0;j1<vNumberOfDetectors;j1++){
+    //        G4ThreeVector vRBSDistance = G4ThreeVector(1.*cm,0.,0.);
+    //        vRBSDistance.setR(fRBSDistanceR);
+    //        vRBSDistance.rotate(G4ThreeVector(0,1,0), fRBSAngleTheta).rotate(G4ThreeVector(0,0,1), - M_PI/4 + j1 * vUnitAngle);
+    //        G4RotationMatrix* vRotationMatrix = new G4RotationMatrix; // Rotates X and Z axes only
+    //        vRotationMatrix->rotateZ( - M_PI/4 - j1 * vUnitAngle);
+    //        vRotationMatrix->rotateX(M_PI/2 - fRBSAngleTheta);
+    //        fRBSPhysical = new G4PVPlacement(vRotationMatrix,vRBSDistance,fRBSLogic,"DetRBS",fWorldLogic,false,j1);
+    //    }
     
     G4String SDname;
     G4VSensitiveDetector* detectorRBS = new A01DriftChamber(SDname="/detectorRBS");
@@ -292,6 +302,7 @@ void DetectorConstruction::ConstructXtalTarget(){
     if(XLatticeManager3::GetXLatticeManager()->GetXPhysicalLattice(fXtalPhysical) != physicalLattice){
         XLatticeManager3::GetXLatticeManager()->RegisterLattice(physicalLattice);
     }
+    
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
