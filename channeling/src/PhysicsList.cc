@@ -79,6 +79,7 @@
 #include "G4MuBremsstrahlung.hh"
 #include "G4MuPairProduction.hh"
 
+#include "G4NuclearStopping.hh"
 
 // Decay
 #include "G4Decay.hh"
@@ -215,11 +216,11 @@ void PhysicsList::ConstructProcess(){
         AddChanneling();
     }
     
-    AddInelaticProcesses();
+    //AddInelaticProcesses();
     
-    AddDecay();
+    //AddDecay();
     
-    AddEM();
+    //AddEM();
     
 }
 
@@ -795,7 +796,7 @@ void PhysicsList::AddStandardNR(G4ParticleDefinition* particle){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::AddEM()
-{
+{    
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){
         G4ParticleDefinition* particle = theParticleIterator->value();
@@ -963,16 +964,24 @@ void PhysicsList::AddEM()
                 AddStandardNR(particle);
             }
             
+            // nuclear stopping
+            G4NuclearStopping* ionnuc = new G4NuclearStopping();
+            XWrapperDiscreteProcess *ionnuc_wrapper = new XWrapperDiscreteProcess();
+            ionnuc->SetMaxKinEnergy(MeV);
+            ionnuc_wrapper->RegisterProcess(ionnuc,+1);
+
             // ionisation
             G4hIonisation* theppIonisation = new G4hIonisation();
-            XWrapperContinuousDiscreteProcess *hionisation_wrapper = new XWrapperContinuousDiscreteProcess();
-            hionisation_wrapper->RegisterProcess(theppIonisation,-1);
+            XWrapperContinuousDiscreteProcess *theppIonisation_wrapper = new XWrapperContinuousDiscreteProcess();
+            theppIonisation_wrapper->RegisterProcess(theppIonisation,-1);
             
             if(bWrapperOn){
-                pManager->AddProcess(hionisation_wrapper,-1, 2, 2);
+                pManager->AddProcess(theppIonisation_wrapper,-1, 2, 2);
+                pManager->AddProcess(ionnuc_wrapper);
             }
             else{
                 pManager->AddProcess(theppIonisation,-1, 2, 2);
+                pManager->AddProcess(ionnuc);
             }
         }
         else {
@@ -986,17 +995,25 @@ void PhysicsList::AddEM()
                     AddStandardNR(particle);
                 }
                 
+                // nuclear stopping
+                G4NuclearStopping* ionnuc = new G4NuclearStopping();
+                XWrapperDiscreteProcess *ionnuc_wrapper = new XWrapperDiscreteProcess();
+                ionnuc->SetMaxKinEnergy(MeV);
+                ionnuc_wrapper->RegisterProcess(ionnuc,+1);
+
                 // ionisation
                 G4hIonisation* theppIonisation = new G4hIonisation();
-                XWrapperContinuousDiscreteProcess *hionisation_wrapper = new XWrapperContinuousDiscreteProcess();
-                hionisation_wrapper->RegisterProcess(theppIonisation,-1);
+                XWrapperContinuousDiscreteProcess *theppIonisation_wrapper = new XWrapperContinuousDiscreteProcess();
+                theppIonisation_wrapper->RegisterProcess(theppIonisation,-1);
                 
                 if(bWrapperOn){
-                    pManager->AddProcess(hionisation_wrapper,-1, 2, 2);
+                    pManager->AddProcess(theppIonisation_wrapper,-1, 2, 2);
+                    pManager->AddProcess(ionnuc_wrapper);
                 }
                 else{
                     pManager->AddProcess(theppIonisation,-1, 2, 2);
-                }
+                    pManager->AddProcess(ionnuc);
+               }
             }
         }
     }

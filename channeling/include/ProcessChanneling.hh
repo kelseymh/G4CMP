@@ -73,6 +73,9 @@ private:
     
     G4bool IsUnderCoherentEffect(const G4Track&);
 
+    G4bool HasLattice(const G4Track&);
+    G4bool HasLatticeOnBoundary(const G4Track&);
+
     void UpdatePositionMomentumDensity(const G4Track&);
     void UpdatePosition(const G4Track&);
     void UpdateMomentum(const G4Track&);
@@ -86,6 +89,8 @@ private:
 
     G4ThreeVector ComputePostStepPositionInTheChannel(const G4Track&);
     G4ThreeVector ComputePositionInTheCrystal(G4StepPoint*,const G4Track&);
+    G4StepPoint* CheckStepPointLatticeForVolume(G4StepPoint*,const G4Track&);
+    G4StepPoint* CheckStepPointLatticeForPosition(G4StepPoint*,const G4Track&);
 
     void ComputeCrystalCharacteristic(const G4Track&);
     void PrintCrystalCharacteristicsOnFiles(const G4Track&);

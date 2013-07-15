@@ -264,7 +264,7 @@ void DetectorConstruction::ConstructXtalTarget(){
     vRotationMatrix->rotateY(fXtalAngle.y());
     vRotationMatrix->rotateZ(fXtalAngle.z());
     
-    fXtalPhysical = new G4PVPlacement(vRotationMatrix,G4ThreeVector(0.,1.*cm,0.),fXtalLogic,"Target",fWorldLogic,false,0);
+    fXtalPhysical = new G4PVPlacement(vRotationMatrix,G4ThreeVector(0.,0.,0.),fXtalLogic,"Target",fWorldLogic,false,0);
     
     //----------------------------------------
     // Create XLogicalLattice

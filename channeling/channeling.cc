@@ -36,6 +36,7 @@
 #include "PrimaryGeneratorAction.hh"
 #include "PhysicsList.hh"
 #include "TrackingAction.hh"
+#include "StackingAction.hh"
 #include "QGSP_BERT.hh"
 #include "TrackingAction.hh"
 
@@ -67,6 +68,7 @@ int main(int argc,char** argv)
     // Set user action classes
     runManager->SetUserAction(new PrimaryGeneratorAction());
     runManager->SetUserAction(new A01EventAction());
+    runManager->SetUserAction(new StackingAction());
     runManager->SetUserAction(new TrackingAction());
        
     // Get the pointer to the User Interface manager

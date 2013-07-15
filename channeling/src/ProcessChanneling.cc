@@ -89,7 +89,7 @@ void ProcessChanneling::SetFileName(const G4String& vFilename){
         
         G4String filename;
         fFileOut.open(filename = fFileName + "_CH.txt");
-        fFileOut << "index,posin,angin,depth,pos,ang,dens,tr_en,ndch" << std::endl;
+        fFileOut << "index,posin,angin,depth,pos,ang,angout,dens,tr_en,ndch,cheff" << std::endl;
     }
 }
 
@@ -102,7 +102,17 @@ G4String ProcessChanneling::GetFileName(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void ProcessChanneling::PrintChannelingPropertiesOnFile(const G4Track& aTrack){
-    fFileOut << G4int(aTrack.GetTrackID()) << "," << GetInfo(aTrack)->GetPositionChanneledInitial().x()/angstrom << "," << GetInfo(aTrack)->GetMomentumChanneledInitial().x()/aTrack.GetStep()->GetPostStepPoint()->GetTotalEnergy()*1.E6   << "," << aTrack.GetStep()->GetPostStepPoint()->GetPosition().y()/micrometer << "," << GetInfo(aTrack)->GetPositionChanneled().x()/angstrom << "," << GetInfo(aTrack)->GetMomentumChanneled().x()/aTrack.GetStep()->GetPostStepPoint()->GetTotalEnergy()*1.E6 << "," << GetInfo(aTrack)->GetNucleiDensity() << "," <<  ComputeTransverseEnergy(aTrack).x()/eV << "," << GetInfo(aTrack)->GetNumberOfDechanneling()<< std::endl;
+    fFileOut << G4int(aTrack.GetTrackID()) << ","
+    << GetInfo(aTrack)->GetPositionChanneledInitial().x() / angstrom << ","
+    << GetInfo(aTrack)->GetMomentumChanneledInitial().x() / MeV << ","
+    << aTrack.GetStep()->GetPostStepPoint()->GetPosition().y() / micrometer << ","
+    << GetInfo(aTrack)->GetPositionChanneled().x() / angstrom << ","
+    << GetInfo(aTrack)->GetMomentumChanneled().x() / MeV << ","
+    << aTrack.GetMomentum().x() / MeV << ","
+    << GetInfo(aTrack)->GetNucleiDensity() << ","
+    << ComputeTransverseEnergy(aTrack).x() / eV << ","
+    << GetInfo(aTrack)->GetNumberOfDechanneling() << ","
+    << GetInfo(aTrack)->HasBeenUnderCoherentEffect() << std::endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -171,13 +181,12 @@ void ProcessChanneling::UpdateMomentum(const G4Track& aTrack){
         GetInfo(aTrack)->SetMomentumChanneled(vMomentum);
     }
     else{
-        
         G4ThreeVector vPosition = ComputePositionInTheCrystal(aTrack.GetStep()->GetPreStepPoint(),aTrack);
         // we take the PREVIOUS step point to compare, otherwise the momentum is not computed correctly
         
-        G4ThreeVector vMomentumChanneling = GetXPhysicalLattice(aTrack)->ProjectMomentumVectorFromWorldToLattice(aTrack.GetMomentum(),vPosition);
+        G4ThreeVector vMomentum = GetXPhysicalLattice(aTrack)->ProjectMomentumVectorFromWorldToLattice(aTrack.GetMomentum(),vPosition);
         
-        GetInfo(aTrack)->SetMomentumChanneled(vMomentumChanneling);
+        GetInfo(aTrack)->SetMomentumChanneled(vMomentum);
         
         if(GetInfo(aTrack)->GetMomentumChanneledInitial().x() == DBL_MAX){
             GetInfo(aTrack)->SetMomentumChanneledInitial(GetInfo(aTrack)->GetMomentumChanneled());
@@ -228,17 +237,17 @@ G4bool ProcessChanneling::IsUnderCoherentEffect(const G4Track& aTrack){
         vCriticalEnergy = ComputeCriticalEnergyBent(aTrack);
         vTransverseEnergy = ComputeTransverseEnergyBent(aTrack).x();
         if( vTransverseEnergy <=  vCriticalEnergy){
-            vCriticalEnergy = ComputeCriticalEnergy(aTrack);
-           if( vTransverseEnergy <= vCriticalEnergy ){
+            G4double vCriticalEnergyChanneling = ComputeCriticalEnergy(aTrack);
+            if( vTransverseEnergy <= vCriticalEnergyChanneling ){
                 GetInfo(aTrack)->SetCoherentEffect(1);
+                return true;
             }
             else{
                 GetInfo(aTrack)->SetCoherentEffect(2);
+                return true;
             }
-            return true;
         }
     }
-    
     return false;
 }
 
@@ -309,7 +318,9 @@ G4ThreeVector ProcessChanneling::ComputeTransverseEnergyBent(const G4Track& aTra
     
     G4double vTotalEnergy = aTrack.GetStep()->GetPostStepPoint()->GetTotalEnergy();
     
-    G4double vTransverseEnergyX = vTransverseEnergy.x() + vTotalEnergy * GetInfo(aTrack)->GetPositionChanneled().x() / fabs(GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x());
+    G4ThreeVector vPosition = ComputePositionInTheCrystal(aTrack.GetStep()->GetPreStepPoint(),aTrack);
+    
+    G4double vTransverseEnergyX = vTransverseEnergy.x() + vTotalEnergy * GetInfo(aTrack)->GetPositionChanneled().x() / GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x();
     
     vTransverseEnergy.setX(vTransverseEnergyX);
     
@@ -320,17 +331,30 @@ G4ThreeVector ProcessChanneling::ComputeTransverseEnergyBent(const G4Track& aTra
 
 G4ThreeVector ProcessChanneling::ComputeChannelingOutgoingMomentum(const G4Track& aTrack){
     
-    G4double vTotalEnergy = aTrack.GetStep()->GetPostStepPoint()->GetTotalEnergy();
+    G4StepPoint* vStepPre = aTrack.GetStep()->GetPreStepPoint();
     
-    G4double vPhi = 2. * ( G4UniformRand() - 0.5) * GetInfo(aTrack)->GetMomentumChanneled().x() / vTotalEnergy;
+    G4StepPoint* vStepPost = aTrack.GetStep()->GetPostStepPoint();
+
+    G4double vTotalEnergy = vStepPre->GetTotalEnergy();
     
-    G4double vTheta = 2. * ( G4UniformRand() - 0.5) * GetInfo(aTrack)->GetMomentumChanneled().z() / vTotalEnergy;
+    G4double vTransverseEnergy = 0.;
+    
+    if(GetXPhysicalLattice(aTrack)->IsBent()){
+        vTransverseEnergy = ComputeTransverseEnergyBent(aTrack).x();
+    }
+    else{
+        vTransverseEnergy = ComputeTransverseEnergy(aTrack).x();
+    }
+    
+    G4double vPhi = 2. * ( G4UniformRand() - 0.5) * fabs(vTransverseEnergy / vTotalEnergy);
+    
+    G4double vTheta = 2. * ( G4UniformRand() - 0.5) * fabs(vTransverseEnergy / vTotalEnergy);
     
     G4ThreeVector vNewMomentum = G4ThreeVector(0.,1.,0.);
     
     vNewMomentum.rotate(G4ThreeVector(0,0,1),vPhi).rotate(G4ThreeVector(1,0,0),vTheta);
     
-    G4ThreeVector vPosition = ComputePositionInTheCrystal(aTrack.GetStep()->GetPostStepPoint(),aTrack);
+    G4ThreeVector vPosition = ComputePositionInTheCrystal(vStepPost,aTrack);
     
     vNewMomentum = GetXPhysicalLattice(aTrack)->ProjectMomentumVectorFromLatticeToWorld(vNewMomentum,vPosition);
     
@@ -343,15 +367,25 @@ G4ThreeVector ProcessChanneling::ComputeChannelingOutgoingMomentum(const G4Track
 
 G4ThreeVector ProcessChanneling::ComputeVolumeReflectionOutgoingMomentum(const G4Track& aTrack){
     
-    G4double vTotalEnergy = aTrack.GetStep()->GetPostStepPoint()->GetTotalEnergy();
+    G4StepPoint* vStep = aTrack.GetStep()->GetPostStepPoint();
     
-    G4double vPhi = - 2. * GetInfo(aTrack)->GetMomentumChanneled().x() / vTotalEnergy;
+    G4double vPhi = 0.;
+    
+    if(GetXPhysicalLattice(aTrack)->IsBent()){
+        G4double vRadiusX = GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x();
+
+        G4double vTotalEnergy = vStep->GetTotalEnergy();
+
+        G4double vTransverseEnergy = ComputeTransverseEnergy(aTrack).x();
+
+        vPhi = + fabs(vRadiusX)/vRadiusX * 2. * fabs(vTransverseEnergy) / vTotalEnergy;
+    }
     
     G4ThreeVector vNewMomentum = G4ThreeVector(0.,1.,0.);
     
     vNewMomentum.rotate(G4ThreeVector(0,0,1),vPhi);
     
-    G4ThreeVector vPosition = ComputePositionInTheCrystal(aTrack.GetStep()->GetPostStepPoint(),aTrack);
+    G4ThreeVector vPosition = ComputePositionInTheCrystal(vStep,aTrack);
     
     vNewMomentum = GetXPhysicalLattice(aTrack)->ProjectMomentumVectorFromLatticeToWorld(vNewMomentum,vPosition);
     
@@ -363,28 +397,78 @@ G4ThreeVector ProcessChanneling::ComputeVolumeReflectionOutgoingMomentum(const G
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4ThreeVector ProcessChanneling::ComputePositionInTheCrystal(G4StepPoint* vStep,const G4Track& aTrack){
-    G4VPhysicalVolume* vVolumePre = aTrack.GetStep()->GetPreStepPoint()->GetPhysicalVolume();
-    G4VPhysicalVolume* vVolumePost = aTrack.GetStep()->GetPostStepPoint()->GetPhysicalVolume();
     
-    G4ThreeVector vLocalPos;
+    G4StepPoint* vStepVol = CheckStepPointLatticeForVolume(vStep,aTrack);
     
-    if(!fLatticeManager->HasLattice(vVolumePre)){
-        vLocalPos = G4ThreeVector(0.,0.,0.);
-    }
+    G4StepPoint* vStepPos = CheckStepPointLatticeForPosition(vStep,aTrack);
     
-    if(!fLatticeManager->HasLattice(vVolumePost)){
-        G4Box* vXtalSolid = (G4Box*) aTrack.GetStep()->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();
-        vLocalPos = G4ThreeVector(0.,vXtalSolid->GetYHalfLength()*2.,0.);
-        return vLocalPos;
-    }
     
-    G4TouchableHistory* theTouchable = (G4TouchableHistory*)(vStep->GetTouchable());
-    G4ThreeVector vWorldPos = vStep->GetPosition();
-    vLocalPos = theTouchable->GetHistory()->GetTopTransform().TransformPoint(vWorldPos);
-    G4Box* vXtalSolid = (G4Box*) vStep->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();
+    
+    G4TouchableHistory* theTouchable = (G4TouchableHistory*)(vStepVol->GetTouchable());
+    
+    G4ThreeVector vWorldPos = vStepPos->GetPosition();
+    
+    G4ThreeVector vLocalPos = theTouchable->GetHistory()->GetTopTransform().TransformPoint(vWorldPos);
+    
+    G4Box* vXtalSolid = (G4Box*) vStepVol->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();
+    
     vLocalPos += G4ThreeVector(vXtalSolid->GetXHalfLength(),vXtalSolid->GetYHalfLength(),vXtalSolid->GetZHalfLength());
     
     return vLocalPos;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4StepPoint* ProcessChanneling::CheckStepPointLatticeForVolume(G4StepPoint* vStep, const G4Track& aTrack){
+    
+    G4StepPoint* vStepPre = aTrack.GetStep()->GetPreStepPoint();
+    G4StepPoint* vStepPost = aTrack.GetStep()->GetPostStepPoint();
+    
+    if( fLatticeManager->HasLattice(vStep->GetPhysicalVolume()) ){
+        return vStep;
+    }
+    else if(!fLatticeManager->HasLattice(vStepPost->GetPhysicalVolume()) &&
+            fLatticeManager->HasLattice(vStepPre->GetPhysicalVolume()) &&
+            vStep == vStepPost &&
+            vStepPost->GetStepStatus() == fGeomBoundary) {
+        return vStepPre;
+    }
+    else if(!fLatticeManager->HasLattice(vStepPre->GetPhysicalVolume()) &&
+            fLatticeManager->HasLattice(vStepPost->GetPhysicalVolume()) &&
+            vStep == vStepPre &&
+            vStepPre->GetStepStatus() == fGeomBoundary) {
+        return vStepPost;
+    }
+    else{
+        return vStep;
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4StepPoint* ProcessChanneling::CheckStepPointLatticeForPosition(G4StepPoint* vStep, const G4Track& aTrack){
+    
+    G4StepPoint* vStepPre = aTrack.GetStep()->GetPreStepPoint();
+    G4StepPoint* vStepPost = aTrack.GetStep()->GetPostStepPoint();
+    
+    if( fLatticeManager->HasLattice(vStep->GetPhysicalVolume()) ){
+        return vStep;
+    }
+    else if(!fLatticeManager->HasLattice(vStepPost->GetPhysicalVolume()) &&
+            fLatticeManager->HasLattice(vStepPre->GetPhysicalVolume()) &&
+            vStep == vStepPost &&
+            vStepPost->GetStepStatus() == fGeomBoundary) {
+        return vStepPost;
+    }
+    else if(!fLatticeManager->HasLattice(vStepPre->GetPhysicalVolume()) &&
+            fLatticeManager->HasLattice(vStepPost->GetPhysicalVolume()) &&
+            vStep == vStepPre &&
+            vStepPre->GetStepStatus() == fGeomBoundary) {
+        return vStepPost;
+    }
+    else{
+        return vStep;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -394,7 +478,7 @@ G4double ProcessChanneling::GetChannelingMeanFreePath(const G4Track& aTrack){
     // return the channeling MFP
     //----------------------------------------
     
-    G4double vFactor = 10.;
+    G4double vFactor = 1.;
     
     G4double vMFP = vFactor * ComputeOscillationPeriod(aTrack);
     
@@ -402,7 +486,7 @@ G4double ProcessChanneling::GetChannelingMeanFreePath(const G4Track& aTrack){
         vMFP /= GetInfo(aTrack)->GetNucleiDensity();
     }
     else{
-        vMFP * 10.;
+        vMFP *= 1.;
     }
     
     return vMFP;
@@ -422,7 +506,7 @@ G4double ProcessChanneling::GetMeanFreePath(const G4Track& aTrack,
     
     *condition = Forced;
     
-    if(fLatticeManager->HasLattice(GetVolume(aTrack))){
+    if(HasLattice(aTrack)){
         return GetChannelingMeanFreePath(aTrack);
     }
     else{
@@ -447,10 +531,10 @@ G4VParticleChange* ProcessChanneling::PostStepDoIt(const G4Track& aTrack,
     
     aParticleChange.Initialize(aTrack);
     
-    bool bIsUnderCoherentEffect = false;
+    G4bool bIsUnderCoherentEffect = false;
     
-    if(GetInfo(aTrack)->HasBeenUnderCoherentEffect() == 0 ||
-       !fLatticeManager->HasLattice(GetVolume(aTrack))){
+    if(GetInfo(aTrack)->HasBeenUnderCoherentEffect() == 0 || !HasLattice(aTrack)){
+        // if the volume has no lattice or the particle was not under coherent effect, the density factor is reset
         GetInfo(aTrack)->SetNucleiDensityPreviousStep(1.);
         GetInfo(aTrack)->SetElectronDensityPreviousStep(1.);
         
@@ -458,40 +542,47 @@ G4VParticleChange* ProcessChanneling::PostStepDoIt(const G4Track& aTrack,
         GetInfo(aTrack)->SetElectronDensity(1.);
     }
     
-    if(fLatticeManager->HasLattice(GetVolume(aTrack))){
+    if(HasLattice(aTrack)){
         bIsUnderCoherentEffect = IsUnderCoherentEffect(aTrack);
         if(bIsUnderCoherentEffect){
             if(GetInfo(aTrack)->HasBeenUnderCoherentEffect() == 1){
+                // if the particle is in channeling it gives the direction of the lattice to the particle momentum
                 G4ThreeVector vPosition = ComputePositionInTheCrystal(aTrack.GetStep()->GetPostStepPoint(),aTrack);
                 aParticleChange.ProposeMomentumDirection(GetXPhysicalLattice(aTrack)->GetLatticeDirection(vPosition).unit());
             }
             else if(GetInfo(aTrack)->HasBeenUnderCoherentEffect() == 2){
+                // if the particle is in VR it gives a kick to the opposite site of the bending to the particle
                 aParticleChange.ProposeMomentumDirection(ComputeVolumeReflectionOutgoingMomentum(aTrack));
             }
         }
     }
     
-    if(!bIsUnderCoherentEffect){
+    if(!bIsUnderCoherentEffect && (HasLattice(aTrack) || HasLatticeOnBoundary(aTrack)) ){
+        // if has been under coherent effect but now it is not, the outgoing momentum is evaluated starting from the current position
         if(GetInfo(aTrack)->HasBeenUnderCoherentEffect() == 1){
             aParticleChange.ProposeMomentumDirection(ComputeChannelingOutgoingMomentum(aTrack));
+            
+            if(fFileOut){
+                PrintChannelingPropertiesOnFile(aTrack);
+            }            
+            GetInfo(aTrack)->IncreaseNumberOfDechanneling();
+        }
+        else if(GetInfo(aTrack)->HasBeenUnderCoherentEffect() == 2){
             
             if(fFileOut){
                 PrintChannelingPropertiesOnFile(aTrack);
             }
             GetInfo(aTrack)->IncreaseNumberOfDechanneling();
         }
-        if(GetInfo(aTrack)->HasBeenUnderCoherentEffect() == 2){
-            if(fFileOut){
-                PrintChannelingPropertiesOnFile(aTrack);
-            }
+        else{
+            // If is not under coherent effect set coherent effect to zero after the outgoing angle has been evaluated
+            GetInfo(aTrack)->SetCoherentEffect(0);
+            
+            GetInfo(aTrack)->SetNucleiDensity(1.);
+            GetInfo(aTrack)->SetElectronDensity(1.);
         }
-
-        
-        GetInfo(aTrack)->SetCoherentEffect(false);
-        
-        GetInfo(aTrack)->SetNucleiDensity(1.);
-        GetInfo(aTrack)->SetElectronDensity(1.);
     }
+    
     
     return &aParticleChange;
 }
@@ -504,7 +595,6 @@ G4bool ProcessChanneling::IsApplicable(const G4ParticleDefinition& aPD){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
 
 void ProcessChanneling::BuildPhysicsTable(const G4ParticleDefinition&){
     
@@ -547,13 +637,40 @@ G4double ProcessChanneling::ComputeOscillationPeriod(const G4Track& aTrack){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 XPhysicalLattice* ProcessChanneling::GetXPhysicalLattice(const G4Track& aTrack){
-    return fLatticeManager->GetXPhysicalLattice(aTrack.GetStep()->GetPostStepPoint()->GetPhysicalVolume());
+    if(fLatticeManager->HasLattice(aTrack.GetStep()->GetPostStepPoint()->GetPhysicalVolume())){
+        return fLatticeManager->GetXPhysicalLattice(aTrack.GetStep()->GetPostStepPoint()->GetPhysicalVolume());
+    }
+    else if(fLatticeManager->HasLattice(aTrack.GetStep()->GetPreStepPoint()->GetPhysicalVolume()) &&
+            aTrack.GetStep()->GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+        return fLatticeManager->GetXPhysicalLattice(aTrack.GetStep()->GetPreStepPoint()->GetPhysicalVolume());
+    }
+    else{
+        G4cout << "LATTICE NOT FOUND: ERROR!!!!!!" << G4endl;
+        return NULL;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4VPhysicalVolume* ProcessChanneling::GetVolume(const G4Track& aTrack){
-    return aTrack.GetStep()->GetPostStepPoint()->GetPhysicalVolume();
+G4bool ProcessChanneling::HasLattice(const G4Track& aTrack){
+    if(fLatticeManager->HasLattice(aTrack.GetStep()->GetPostStepPoint()->GetPhysicalVolume())){
+        return true;
+    }
+    else{
+       return false;
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4bool ProcessChanneling::HasLatticeOnBoundary(const G4Track& aTrack){
+    if(fLatticeManager->HasLattice(aTrack.GetStep()->GetPreStepPoint()->GetPhysicalVolume()) &&
+            aTrack.GetStep()->GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -585,7 +702,7 @@ void ProcessChanneling::ComputeCrystalCharacteristic(const G4Track& aTrack){
 void ProcessChanneling::PrintCrystalCharacteristicsOnFiles(const G4Track& aTrack){
     
     G4String filename;
-
+    
     fIntegratedDensity->PrintOnFiles(filename=fFileName);
     fPotentialEnergy->PrintOnFile(filename=fFileName + "_pot.txt",GetXPhysicalLattice(aTrack),eV);
     
