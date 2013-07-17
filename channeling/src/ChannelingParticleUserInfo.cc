@@ -98,20 +98,15 @@ G4double ChannelingParticleUserInfo::GetNucleiDensityPreviousStep(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ChannelingParticleUserInfo::SetElectronDensityPreviousStep(G4double density){
-    fElectronDensityPreviousStep = density;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 G4double ChannelingParticleUserInfo::GetElectronDensityPreviousStep(){
     return fElectronDensityPreviousStep;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ChannelingParticleUserInfo::SetNucleiDensityPreviousStep(G4double density){
-    fNucleiDensityPreviousStep = density;
+void ChannelingParticleUserInfo::StoreDensityPreviousStep(){
+    fElectronDensityPreviousStep = fElectronDensity;
+    fNucleiDensityPreviousStep = fNucleiDensity;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -154,6 +149,30 @@ void ChannelingParticleUserInfo::SetMomentumChanneledInitial(G4ThreeVector momen
 
 G4ThreeVector ChannelingParticleUserInfo::GetPositionChanneledInitial(){
     return fPositionInChannelingInitial;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ChannelingParticleUserInfo::SetEnergyChanneled(G4double energy){
+    fEnergyInChanneling = energy;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4double ChannelingParticleUserInfo::GetEnergyChanneled(){
+    return fEnergyInChanneling;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ChannelingParticleUserInfo::SetEnergyChanneledInitial(G4double energy){
+    fEnergyInChannelingInitial = energy;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4double ChannelingParticleUserInfo::GetEnergyChanneledInitial(){
+    return fEnergyInChannelingInitial;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -30,8 +30,8 @@
 #include <cmath>
 
 XUnitCell::XUnitCell(){
-    fSize = G4ThreeVector(0. * angstrom,0. * angstrom,0. * angstrom);
-    fAngle = G4ThreeVector(0.5 * M_PI * radian,0.5 * M_PI * radian,0.5 * M_PI * radian);
+    fSize = G4ThreeVector(0. * CLHEP::angstrom,0. * CLHEP::angstrom,0. * CLHEP::angstrom);
+    fAngle = G4ThreeVector(0.5 * M_PI * CLHEP::radian,0.5 * M_PI * CLHEP::radian,0.5 * M_PI * CLHEP::radian);
     fNumberOfBases = 0.;
 }
 

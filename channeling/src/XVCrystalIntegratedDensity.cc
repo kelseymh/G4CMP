@@ -166,7 +166,7 @@ void XVCrystalIntegratedDensity::InitializeTable(){
     
     ComputePotentialParameters();
     
-    G4cout << "XVCrystalIntegratedDensity::InitializeTable()::Potential Range =  " << fPotentialRange/eV << " - Minimum = " << fPotentialMinimum / eV << " - Maximum " << fPotentialMaximum / eV << std::endl;
+    G4cout << "XVCrystalIntegratedDensity::InitializeTable()::Potential Range =  " << fPotentialRange/CLHEP::eV << " - Minimum = " << fPotentialMinimum / CLHEP::eV << " - Maximum " << fPotentialMaximum / CLHEP::eV << std::endl;
     
     G4double vPotentialInitial = 0.;
     
@@ -278,13 +278,41 @@ G4double XVCrystalIntegratedDensity::FindCatmullRomInterpolate(G4double &p0,G4do
 void XVCrystalIntegratedDensity::PrintOnFile(const G4String& filename){
     std::ofstream vFileOut;
     vFileOut.open(filename);
-    G4double vStep = GetStep() / eV;
+    G4double vStep = GetStep() / CLHEP::eV;
     
     vFileOut << "energy,dens" << std::endl;
     for(unsigned int i = 0;i < fNumberOfPoints;i++){
-        vFileOut << i * vStep << "," << fTable[i] << std::endl;
+        vFileOut << i * vStep << " , " << fTable[i] << std::endl;
     }
     vFileOut.close();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void XVCrystalIntegratedDensity::ReadFromFile(const G4String& filename){
+    std::ifstream vFileIn;
+    vFileIn.open(filename);
+    
+    unsigned int vNumberOfPoints = 0;
+    G4double vPotential = 0.;
+    G4double fPotentialMinimum = +DBL_MAX;
+    G4double fPotentialMaximum = -DBL_MAX;
+    G4double vDensity = 0.;
+
+    fTable.clear();
+    
+    vFileIn >> fPotentialMinimum >> fPotentialMaximum;
+    
+    while(!vFileIn.eof()){
+        vFileIn >> vDensity;
+        fTable.push_back(vDensity);
+    };
+    
+    fNumberOfPoints = fTable.size();
+    
+    fPotentialRange = fPotentialMaximum - fPotentialMinimum;
+    
+    vFileIn.close();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

@@ -49,7 +49,7 @@ public:
     virtual ~ProcessChanneling();
     
     virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
-    
+        
     virtual G4bool IsApplicable(const G4ParticleDefinition&);
     
     virtual void BuildPhysicsTable(const G4ParticleDefinition&);
@@ -60,7 +60,10 @@ protected:
 public:
     XVCrystalCharacteristic* GetPotential();
     void SetPotential(XVCrystalCharacteristic*);
-    
+
+    XVCrystalCharacteristic* GetElectricField();
+    void SetElectricField(XVCrystalCharacteristic*);
+
     XCrystalIntegratedDensityHub* GetIntegratedDensity();
     void SetIntegratedDensity(XCrystalIntegratedDensityHub*);
 
@@ -80,14 +83,17 @@ private:
     void UpdatePosition(const G4Track&);
     void UpdateMomentum(const G4Track&);
     void UpdateDensity(const G4Track&);
+    void ResetDensity(const G4Track&);
 
     G4ThreeVector ComputeTransverseEnergy(const G4Track&);
     G4ThreeVector ComputeTransverseEnergyBent(const G4Track&);
     
+    G4double ComputePotentialEnergy(const G4Track&);
+    G4double ComputePotentialEnergyBent(const G4Track&);
+
     G4ThreeVector ComputeChannelingOutgoingMomentum(const G4Track&);
     G4ThreeVector ComputeVolumeReflectionOutgoingMomentum(const G4Track&);
 
-    G4ThreeVector ComputePostStepPositionInTheChannel(const G4Track&);
     G4ThreeVector ComputePositionInTheCrystal(G4StepPoint*,const G4Track&);
     G4StepPoint* CheckStepPointLatticeForVolume(G4StepPoint*,const G4Track&);
     G4StepPoint* CheckStepPointLatticeForPosition(G4StepPoint*,const G4Track&);
@@ -97,7 +103,12 @@ private:
     
     G4double ComputeCriticalEnergy(const G4Track&);
     G4double ComputeCriticalEnergyBent(const G4Track&);
+
+    G4double ComputeCriticalEnergyMinimum(const G4Track&);
+    G4double ComputeCriticalEnergyMinimumBent(const G4Track&);
+
     G4double ComputeCriticalAngle(const G4Track&);
+    G4double ComputeCriticalRadius(const G4Track&);
     G4double ComputeOscillationPeriod(const G4Track&);
     
 private:
@@ -116,6 +127,7 @@ private:
     XLatticeManager3* fLatticeManager;
       
     XVCrystalCharacteristic* fPotentialEnergy;
+    XVCrystalCharacteristic* fElectricField;
     XCrystalIntegratedDensityHub* fIntegratedDensity;
 
     std::ofstream fFileOut;

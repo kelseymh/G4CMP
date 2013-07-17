@@ -27,6 +27,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "G4RunManager.hh"
+
 #include "G4ScoringManager.hh"
 #include "G4UImanager.hh"
 
@@ -54,11 +55,11 @@
 
 int main(int argc,char** argv)
 {
+    //Construct the default run manager
+    G4RunManager* runManager = new G4RunManager;
+
     //choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-    
-    //Construct the default run manager
-    G4RunManager* runManager = new G4RunManager();
     
     // Set mandatory initialization classes
     G4VUserDetectorConstruction* detector = new DetectorConstruction;

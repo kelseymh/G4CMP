@@ -59,7 +59,7 @@ G4double XCrystalPlanarMolierePotential::ComputeECForSinglePlane(G4double vXposi
     
     vValueForSinglePlane *= aTF;
 
-    vValueForSinglePlane *= (elm_coupling);
+    vValueForSinglePlane *= (CLHEP::elm_coupling);
 
     vValueForSinglePlane *= (GetXUnitCell(vVolume)->ComputeAtomVolumeDensity());
 

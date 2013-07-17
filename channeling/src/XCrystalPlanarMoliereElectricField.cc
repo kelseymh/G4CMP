@@ -57,7 +57,7 @@ G4double XCrystalPlanarMoliereElectricField::ComputeECForSinglePlane(G4double vX
 
     vValueForSinglePlane *= 2. * M_PI * GetXUnitCell(vVolume)->ComputeDirectPeriod(GetXPhysicalLattice(vVolume)->GetMiller(0),GetXPhysicalLattice(vVolume)->GetMiller(1),GetXPhysicalLattice(vVolume)->GetMiller(2));
     
-    vValueForSinglePlane *= (elm_coupling);
+    vValueForSinglePlane *= (CLHEP::elm_coupling);
     
     vValueForSinglePlane *= (GetXUnitCell(vVolume)->ComputeAtomVolumeDensity());
     

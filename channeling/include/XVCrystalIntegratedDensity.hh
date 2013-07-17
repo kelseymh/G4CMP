@@ -54,6 +54,8 @@ public:
     G4int GetParticleCharge();
 
     void PrintOnFile(const G4String&);
+    void ReadFromFile(const G4String&);
+    
     G4bool HasBeenInitialized(XPhysicalLattice*,G4int);
 
     G4double GetIntegratedDensity(G4double,XPhysicalLattice*,G4int);

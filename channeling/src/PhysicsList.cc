@@ -176,12 +176,12 @@
 #include "G4QGSMFragmentation.hh"
 #include "G4ExcitedStringDecay.hh"
 
-#include "G4CHIPSElastic.hh"
+//#include "G4CHIPSElastic.hh"
 #include "G4CascadeInterface.hh"
 
 #include "G4LundStringFragmentation.hh"
 
-#include "G4CHIPSElasticXS.hh"
+//#include "G4CHIPSElasticXS.hh"
 #include "G4BGGNucleonInelasticXS.hh"
 #include "G4ProtonInelasticCrossSection.hh"
 #include "G4CrossSectionPairGG.hh"
@@ -1052,6 +1052,7 @@ void PhysicsList::AddChanneling(){
     ProcessChanneling* channeling =  new ProcessChanneling();
     channeling->SetPotential(vPotentialEnergy);
     channeling->SetIntegratedDensity(vIntegratedDensityHub);
+    channeling->SetElectricField(vElectricField);
     channeling->SetFileName(fFileName);
     
     theParticleIterator->reset();

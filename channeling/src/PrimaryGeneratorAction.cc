@@ -54,11 +54,11 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     
     fParticleGun->SetParticleDefinition(G4ParticleTable::GetParticleTable()->FindParticle("proton"));
     
-    fParticleGun->SetParticleEnergy(400. * GeV);
+    fParticleGun->SetParticleEnergy(400. * CLHEP::GeV);
     
     fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,1.,0.));
     
-    fParticleGun->SetParticlePosition(G4ThreeVector(0.,-20. * cm,0.));
+    fParticleGun->SetParticlePosition(G4ThreeVector(0.,-20. * CLHEP::centimeter,0.));
     
     fDivX = 0.;
     

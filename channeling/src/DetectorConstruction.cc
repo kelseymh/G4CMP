@@ -90,35 +90,35 @@ fWorldSizeXZ(0),fWorldSizeY(0),fWorldSolid(0),fWorldLogic(0),fWorldPhysical(0)
     
     DefineMaterials();
     
-    fWorldSizeY = 0.5 * m;
-    fWorldSizeXZ = 0.5 * m;
+    fWorldSizeY = 0.5 * CLHEP::meter;
+    fWorldSizeXZ = 0.5 * CLHEP::meter;
     
     bSSD = false;
-    fSSDSizeXZ = 1.92 * 10. * cm; // originally 1.92 cm
-    fSSDSizeY = 0.06 * cm;
+    fSSDSizeXZ = 1.92 * 10. * CLHEP::centimeter; // originally 1.92 CLHEP::centimeter
+    fSSDSizeY = 0.06 * CLHEP::centimeter;
     
-    fSSD0XtalDistance = - 15 * cm;
-    fSSD1XtalDistance = - 5 * cm;
-    fSSD2XtalDistance = + 10 * cm;
+    fSSD0XtalDistance = - 15 * CLHEP::centimeter;
+    fSSD1XtalDistance = - 5 * CLHEP::centimeter;
+    fSSD2XtalDistance = + 10 * CLHEP::centimeter;
     
     bSCI = false;
-    fSCIRelativeDistance = 1. * cm;
-    fSCIXtalDistance = 30. * cm;
-    fSCISizeXZ = 10. * cm;
-    fSCISizeY = 1. * cm;
+    fSCIRelativeDistance = 1. * CLHEP::centimeter;
+    fSCIXtalDistance = 30. * CLHEP::centimeter;
+    fSCISizeXZ = 10. * CLHEP::centimeter;
+    fSCISizeY = 1. * CLHEP::centimeter;
     
     bRBS = false;
-    fRBSSizeZ = 0.1 * cm;
-    fRBSSizeR = 1 * cm;
-    fRBSDistanceR = 10. * cm;
-    fRBSAnglePhi = -135. * degree;
+    fRBSSizeZ = 0.1 * CLHEP::centimeter;
+    fRBSSizeR = 1 * CLHEP::centimeter;
+    fRBSDistanceR = 10. * CLHEP::centimeter;
+    fRBSAnglePhi = -135. * CLHEP::degree;
     fRBSAngleTheta = 0.;
     
     bXtal = false;
-    fXtalAngle = G4ThreeVector(0.,0.,0.E-6 * radian);
-    fXtalSize = G4ThreeVector(60. * mm, 2. * mm, 60. * mm);
-    fXtalCellSize = G4ThreeVector(5.431 * angstrom, 5.431 * angstrom, 5.431 * angstrom);
-    fXtalSize = G4ThreeVector(0. * mm, 0. * mm, 0. * mm);
+    fXtalAngle = G4ThreeVector(0.,0.,0.E-6 * CLHEP::radian);
+    fXtalSize = G4ThreeVector(60. * CLHEP::millimeter, 2. * CLHEP::millimeter, 60. * CLHEP::millimeter);
+    fXtalCellSize = G4ThreeVector(5.431 * CLHEP::angstrom, 5.431 * CLHEP::angstrom, 5.431 * CLHEP::angstrom);
+    fXtalSize = G4ThreeVector(0. * CLHEP::millimeter, 0. * CLHEP::millimeter, 0. * CLHEP::millimeter);
     
     SetXtalMaterial("G4_Si");
     
@@ -181,11 +181,11 @@ void DetectorConstruction::ConstructWorld(){
 void DetectorConstruction::ConstructRBSDetector(){
     G4Material* Si = G4NistManager::Instance()->FindOrBuildMaterial("G4_Si");
     
-    fRBSSolid = new G4Tubs("DetRBS", 0.,fRBSSizeR,fRBSSizeZ/2.,0,2*M_PI*radian);
+    fRBSSolid = new G4Tubs("DetRBS", 0.,fRBSSizeR,fRBSSizeZ/2.,0,2*M_PI*CLHEP::radian);
     fRBSLogic = new G4LogicalVolume(fRBSSolid,Si,"DetRBS");
     
     
-    G4ThreeVector vRBSDistance = G4ThreeVector(1.*cm,0.,0.);
+    G4ThreeVector vRBSDistance = G4ThreeVector(1.*CLHEP::centimeter,0.,0.);
     vRBSDistance.setR(fRBSDistanceR);
     vRBSDistance.rotate(G4ThreeVector(0,1,0), fRBSAngleTheta).rotate(G4ThreeVector(0,0,1), fRBSAnglePhi);
     G4RotationMatrix* vRotationMatrix = new G4RotationMatrix; // Rotates X and Z axes only
@@ -197,7 +197,7 @@ void DetectorConstruction::ConstructRBSDetector(){
     //
     //    G4double vUnitAngle = M_PI * 3. / 2. / vNumberOfDetectors;
     //    for(int j1=0;j1<vNumberOfDetectors;j1++){
-    //        G4ThreeVector vRBSDistance = G4ThreeVector(1.*cm,0.,0.);
+    //        G4ThreeVector vRBSDistance = G4ThreeVector(1.*CLHEP::centimeter,0.,0.);
     //        vRBSDistance.setR(fRBSDistanceR);
     //        vRBSDistance.rotate(G4ThreeVector(0,1,0), fRBSAngleTheta).rotate(G4ThreeVector(0,0,1), - M_PI/4 + j1 * vUnitAngle);
     //        G4RotationMatrix* vRotationMatrix = new G4RotationMatrix; // Rotates X and Z axes only
@@ -240,11 +240,11 @@ void DetectorConstruction::ConstructSiliconStripDetectors(){
     fSSDSolid = new G4Box("SiSD", fSSDSizeXZ/2.,fSSDSizeY/2.,fSSDSizeXZ/2.);
     fSSDLogic = new G4LogicalVolume(fSSDSolid,Si,"SiSD");
     
-    fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*cm,fSSD0XtalDistance,0.*cm),fSSDLogic,"SiSD",fWorldLogic,false,0);
+    fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD0XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,0);
     
-    fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*cm,fSSD1XtalDistance,0.*cm),fSSDLogic,"SiSD",fWorldLogic,false,1);
+    fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD1XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,1);
     
-    fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*cm,fSSD2XtalDistance,0.*cm),fSSDLogic,"SiSD",fWorldLogic,false,2);
+    fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD2XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,2);
     
     G4String SDname;
     G4VSensitiveDetector* telescope = new A01DriftChamber(SDname="/telescope");
@@ -270,7 +270,7 @@ void DetectorConstruction::ConstructXtalTarget(){
     // Create XLogicalLattice
     //----------------------------------------
     XLogicalLattice* logicalLattice = new XLogicalLattice();
-    logicalLattice->SetScatteringConstant(3.67e-41*s*s*s);
+    logicalLattice->SetScatteringConstant(3.67e-41*CLHEP::second*CLHEP::second*CLHEP::second);
     
     //----------------------------------------
     // Create XLogicalBase
@@ -293,7 +293,7 @@ void DetectorConstruction::ConstructXtalTarget(){
     physicalLattice->SetUnitCell(myCell);
     physicalLattice->SetMillerOrientation(2,2,0);
     physicalLattice->SetLatticeOrientation(fXtalAngle.x(),fXtalAngle.z());
-    physicalLattice->SetThermalVibrationAmplitude(0.075*angstrom);
+    physicalLattice->SetThermalVibrationAmplitude(0.075*CLHEP::angstrom);
     physicalLattice->SetCurvatureRadius(fXtalCurvatureRadius);
     
     //----------------------------------------
@@ -402,7 +402,7 @@ void DetectorConstruction::SetRBSAnglePhi(G4double angle) {
     if(fRBSAnglePhi != angle) {
         G4RunManager::GetRunManager()->GeometryHasBeenModified();
         fRBSAnglePhi = angle;
-        G4cout << "DetectorConstruction::SetRBSAnglePhi() - New Phi = " << fRBSAnglePhi/deg << G4endl;
+        G4cout << "DetectorConstruction::SetRBSAnglePhi() - New Phi = " << fRBSAnglePhi/CLHEP::degree << G4endl;
     }
 }
 

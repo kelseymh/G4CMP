@@ -64,7 +64,7 @@ XLogicalLattice* XVCrystalCharacteristic::GetLogicalLattice(G4VPhysicalVolume* v
 
 G4double XVCrystalCharacteristic::ComputeTFScreeningRadius(XPhysicalLattice* vLattice){
     
-    G4double vTFSR = Bohr_radius * 0.88534;
+    G4double vTFSR = CLHEP::Bohr_radius * 0.88534;
 
     vTFSR /= (std::pow(vLattice->GetXUnitCell()->GetBase(0)->GetElement()->GetZ(),0.333333333));
 

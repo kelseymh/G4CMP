@@ -129,7 +129,7 @@ void XVCrystalPlanarAnalytical::PrintOnFile(const G4String& filename,XPhysicalLa
     
     for(G4int i = 0;i<imax;i++){
         vXposition = double(i) / double(imax) * vInterplanarPeriod;
-        vFileOut << vXposition / angstrom << "," << ComputeEC(G4ThreeVector(vXposition,0.,0.),vLattice).x() / vUnit << std::endl;
+        vFileOut << vXposition / CLHEP::angstrom << "," << ComputeEC(G4ThreeVector(vXposition,0.,0.),vLattice).x() / vUnit << std::endl;
     }
     
     vFileOut.close();
