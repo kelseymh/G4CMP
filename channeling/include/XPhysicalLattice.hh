@@ -41,7 +41,7 @@ class G4VPhysicalVolume;
 class XPhysicalLattice{
     
 private:
-    G4double fTheta, fPhi;
+    G4double fTheta, fPhi, fOmega;
     XLogicalLattice* fLattice;
     G4VPhysicalVolume* fVolume;
     
@@ -83,6 +83,7 @@ public:
     void SetPhysicalVolume(G4VPhysicalVolume*);
     void SetXLogicalLattice(XLogicalLattice*);
     void SetLatticeOrientation(G4double, G4double);
+    void SetLatticeOrientation(G4double, G4double, G4double);
     void SetMillerOrientation(int, int, int);
     
     
@@ -101,6 +102,7 @@ public:
     XUnitCell* GetXUnitCell();
     XLogicalLattice* GetLogicalLattice();
     G4int GetMiller(G4int);
+    G4ThreeVector GetLatticeAngles();
 
     G4ThreeVector GetCurvatureRadius();
     void SetCurvatureRadius(G4ThreeVector);

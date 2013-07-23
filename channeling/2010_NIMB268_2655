@@ -1,12 +1,8 @@
-
-/myevt/filename ch400gev_p
-
-/myproc/filename ch400gev_p
 /myproc/channeling 1
 /myproc/wrapper 1
 
-/mydet/ssd/setDist0X -1040. cm
-/mydet/ssd/setDist1X -30. cm
+/mydet/ssd/setDist0X -1057. cm
+/mydet/ssd/setDist1X -43. cm
 /mydet/ssd/setDist2X +1080. cm
 /mydet/addsd
 
@@ -16,17 +12,19 @@
 
 /mydet/xtal/setMaterial G4_Si
 /mydet/xtal/setAngle 0. 0. 0. rad
-/mydet/xtal/setSize 60. 2. 60. mm
+/mydet/xtal/setSize 0.5 1.94 70. mm
 /mydet/xtal/setCellAngle 90. 90. 90. deg
 /mydet/xtal/setCellSize 5.431 5.431 5.431 angstrom
-/mydet/xtal/setCurvRadius 2. 0. 0. m
+/mydet/xtal/setCurvRadius 10.27 0. 0. m
 /mydet/addxtal
 
 /gun/energy 400. GeV
-/gun/setDivX 0.E-6 rad
 /gun/position 0. -1100. 0 cm
 /gun/particle proton
 
+/myevt/filename 2010_NIMB268_2655
+/myproc/filename 2010_NIMB268_2655
+/gun/setDivX 2.E-6 rad
 
 /run/initialize
-/run/beamOn 10000
+/run/beamOn 100000

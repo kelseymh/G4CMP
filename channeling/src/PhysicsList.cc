@@ -216,11 +216,11 @@ void PhysicsList::ConstructProcess(){
         AddChanneling();
     }
     
-    //AddInelaticProcesses();
+    AddInelaticProcesses();
     
-    //AddDecay();
+    AddDecay();
     
-    //AddEM();
+    AddEM();
     
 }
 

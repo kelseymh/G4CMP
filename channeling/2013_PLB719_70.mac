@@ -1,0 +1,28 @@
+/myproc/channeling 1
+/myproc/wrapper 1
+
+/mystack/KillAllSecondaries 1
+
+/mydet/ssd/setDist0X -1215. cm
+/mydet/ssd/setDist1X -42. cm
+/mydet/ssd/setDist2X +997. cm
+/mydet/addsd
+
+/mydet/xtal/setMaterial G4_Si
+/mydet/xtal/setAngle 0. 0. 0. rad
+/mydet/xtal/setSize 1.0 1.94 70. mm
+/mydet/xtal/setCellAngle 90. 90. 90. deg
+/mydet/xtal/setCellSize 5.431 5.431 5.431 angstrom
+/mydet/xtal/setCurvRadius 38.416 0. 0. m
+/mydet/addxtal
+
+/gun/energy 150. GeV
+/gun/position 0. -1250. 0 cm
+/gun/particle pi-
+
+/myevt/filename 2013_PLB719_70
+/myproc/filename 2013_PLB719_70
+/gun/setDivX 5.E-6 rad
+
+/run/initialize
+/run/beamOn 1000000

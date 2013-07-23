@@ -55,8 +55,15 @@ public:
     virtual void BuildPhysicsTable(const G4ParticleDefinition&);
     
 protected:
+    
     virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* );
     
+private:
+    
+    G4double GetChannelingMeanFreePath(const G4Track&);
+    
+    G4bool IsUnderCoherentEffect(const G4Track&);
+
 public:
     XVCrystalCharacteristic* GetPotential();
     void SetPotential(XVCrystalCharacteristic*);
@@ -72,45 +79,43 @@ public:
     void PrintChannelingPropertiesOnFile(const G4Track&);
     
 private:
-    G4double GetChannelingMeanFreePath(const G4Track&);
-    
-    G4bool IsUnderCoherentEffect(const G4Track&);
-
-    G4bool HasLattice(const G4Track&);
-    G4bool HasLatticeOnBoundary(const G4Track&);
-
-    void UpdatePositionMomentumDensity(const G4Track&);
+    void UpdateParameters(const G4Track&);
     void UpdatePosition(const G4Track&);
     void UpdateMomentum(const G4Track&);
     void UpdateDensity(const G4Track&);
     void ResetDensity(const G4Track&);
 
-    G4ThreeVector ComputeTransverseEnergy(const G4Track&);
-    G4ThreeVector ComputeTransverseEnergyBent(const G4Track&);
-    
-    G4double ComputePotentialEnergy(const G4Track&);
+    G4double ComputeCriticalEnergyBent(const G4Track&);
+    G4double ComputeCriticalEnergyMinimumBent(const G4Track&);
     G4double ComputePotentialEnergyBent(const G4Track&);
+    G4ThreeVector ComputeTransverseEnergyBent(const G4Track&);
 
     G4ThreeVector ComputeChannelingOutgoingMomentum(const G4Track&);
     G4ThreeVector ComputeVolumeReflectionOutgoingMomentum(const G4Track&);
-
+    
     G4ThreeVector ComputePositionInTheCrystal(G4StepPoint*,const G4Track&);
     G4StepPoint* CheckStepPointLatticeForVolume(G4StepPoint*,const G4Track&);
     G4StepPoint* CheckStepPointLatticeForPosition(G4StepPoint*,const G4Track&);
-
-    void ComputeCrystalCharacteristic(const G4Track&);
-    void PrintCrystalCharacteristicsOnFiles(const G4Track&);
     
-    G4double ComputeCriticalEnergy(const G4Track&);
-    G4double ComputeCriticalEnergyBent(const G4Track&);
-
+    G4ThreeVector ComputeTransverseEnergy(const G4Track&);
+    G4ThreeVector ComputeKineticEnergy(const G4Track&);
+    G4ThreeVector ComputePotentialEnergy(const G4Track&);
+    G4ThreeVector ComputeCentrifugalEnergy(const G4Track&,G4ThreeVector);
+    G4ThreeVector ComputeMomentum(const G4Track&,G4StepPoint*);
+    
+    G4double ComputeCriticalEnergyMaximum(const G4Track&);
     G4double ComputeCriticalEnergyMinimum(const G4Track&);
-    G4double ComputeCriticalEnergyMinimumBent(const G4Track&);
-
     G4double ComputeCriticalAngle(const G4Track&);
     G4double ComputeCriticalRadius(const G4Track&);
     G4double ComputeOscillationPeriod(const G4Track&);
+    G4ThreeVector ComputePotentialWellCentre(const G4Track&);
     
+    G4bool HasLattice(const G4Track&);
+    G4bool HasLatticeOnBoundary(const G4Track&);
+    
+    void ComputeCrystalCharacteristic(const G4Track&);
+    void PrintCrystalCharacteristicsOnFiles(const G4Track&);
+
 private:
     //binding methods
     XPhysicalLattice* GetXPhysicalLattice(const G4Track&);

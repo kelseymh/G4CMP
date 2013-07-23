@@ -39,13 +39,15 @@
 XPhysicalLattice::XPhysicalLattice(){
     fLattice=NULL;
     fVolume=NULL;
-    fTheta=0;
-    fPhi=0;
-    
+    fTheta=0.;
+    fPhi=0.;
+    fOmega=0.;
+
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
     // Begin Channeling specific code
+    // Reference system for channeling: lattice is along (0,1,0) direction by default
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
+    
     fCurvatureRadius = G4ThreeVector(0.,0.,0.); // if cr = 0 == no bending of the crystal
     fThermalVibrationAmplitude = 0.1 * angstrom; // no physical meaning
     fMillerOrientation[0] = 2;
@@ -246,6 +248,14 @@ void XPhysicalLattice::SetLatticeOrientation(G4double t_rot, G4double p_rot){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+void XPhysicalLattice::SetLatticeOrientation(G4double t_rot, G4double p_rot, G4double o_rot){
+    fTheta=t_rot;
+    fPhi= p_rot;
+    fOmega = o_rot;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 void XPhysicalLattice::SetMillerOrientation(int l, int k, int n){
     //fTheta=pi/2-std::atan2(n+0.000001,l+0.000001)*rad;
     //fPhi=pi/2-std::atan2(l+0.000001,k+0.000001)*rad;
@@ -306,7 +316,7 @@ void XPhysicalLattice::ComputeThermalVibrationAmplitude(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4ThreeVector XPhysicalLattice::ProjectMomentumVectorFromWorldToLattice(G4ThreeVector vMomentum,G4ThreeVector vPosition){
-    vMomentum.rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
+    vMomentum.rotate(G4ThreeVector(1.,0.,0.), fOmega).rotate(G4ThreeVector(0.,1.,0.), fTheta).rotate(G4ThreeVector(0.,0.,1.), fPhi);
 
     if(IsBent() ){
         vMomentum.rotate(G4ThreeVector(0,1,0), ComputeBendingAngle(vPosition).z()).rotate(G4ThreeVector(0,0,1), ComputeBendingAngle(vPosition).x());
@@ -318,10 +328,10 @@ G4ThreeVector XPhysicalLattice::ProjectMomentumVectorFromWorldToLattice(G4ThreeV
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4ThreeVector XPhysicalLattice::ProjectMomentumVectorFromLatticeToWorld(G4ThreeVector vMomentum,G4ThreeVector vPosition){
-    vMomentum.rotate(G4ThreeVector(0,0,1), -fPhi).rotate(G4ThreeVector(0,1,0), -fTheta);
+    vMomentum.rotate(G4ThreeVector(0.,0.,1.), -fPhi).rotate(G4ThreeVector(0.,1.,0.), -fTheta).rotate(G4ThreeVector(1.,0.,0.), fOmega);
     
     if(IsBent() ){
-        vMomentum.rotate(G4ThreeVector(0,0,1), -ComputeBendingAngle(vPosition).x()).rotate(G4ThreeVector(0,1,0), -ComputeBendingAngle(vPosition).z());
+        vMomentum.rotate(G4ThreeVector(0.,0.,1.), -ComputeBendingAngle(vPosition).x()).rotate(G4ThreeVector(0.,1.,0.), -ComputeBendingAngle(vPosition).z());
     }
 
     return vMomentum;
@@ -396,6 +406,12 @@ G4int XPhysicalLattice::GetMiller(G4int vIndex){
     if(vIndex<3 && vIndex>=0)
         return fMillerOrientation[vIndex];
     else return -1;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4ThreeVector XPhysicalLattice::GetLatticeAngles(){
+    return G4ThreeVector(fPhi,fTheta,fOmega);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

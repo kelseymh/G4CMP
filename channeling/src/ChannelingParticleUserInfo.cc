@@ -153,30 +153,6 @@ G4ThreeVector ChannelingParticleUserInfo::GetPositionChanneledInitial(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ChannelingParticleUserInfo::SetEnergyChanneled(G4double energy){
-    fEnergyInChanneling = energy;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4double ChannelingParticleUserInfo::GetEnergyChanneled(){
-    return fEnergyInChanneling;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ChannelingParticleUserInfo::SetEnergyChanneledInitial(G4double energy){
-    fEnergyInChannelingInitial = energy;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4double ChannelingParticleUserInfo::GetEnergyChanneledInitial(){
-    return fEnergyInChannelingInitial;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void ChannelingParticleUserInfo::SetPositionChanneledInitial(G4ThreeVector position){
     fPositionInChannelingInitial = position;
 }

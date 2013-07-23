@@ -59,7 +59,7 @@ public:
 
     G4ThreeVector GetMomentumChanneled();
     void SetMomentumChanneled(G4ThreeVector);
-    
+
     G4ThreeVector GetPositionChanneled();
     void SetPositionChanneled(G4ThreeVector);
 
@@ -71,9 +71,6 @@ public:
     
     G4ThreeVector GetPositionChanneledInitial();
     void SetPositionChanneledInitial(G4ThreeVector);
-
-    G4double GetEnergyChanneledInitial();
-    void SetEnergyChanneledInitial(G4double);
 
     G4int GetNumberOfDechanneling();
     void IncreaseNumberOfDechanneling();
@@ -94,9 +91,6 @@ private:
 
     G4ThreeVector fPositionInChanneling; //Last projection fof the particle momentum in the crystal reference system
     G4ThreeVector fPositionInChannelingInitial; //Last projection fof the particle momentum in the crystal reference system
-
-    G4double fEnergyInChanneling;
-    G4double fEnergyInChannelingInitial;
     
     G4int fNumberOfDechanneling;
     
