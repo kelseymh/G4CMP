@@ -68,8 +68,10 @@ void A01DriftChamber::Initialize(G4HCofThisEvent*HCE)
 G4bool A01DriftChamber::ProcessHits(G4Step*aStep,G4TouchableHistory* /*ROhist*/)
 {
     G4double charge = aStep->GetTrack()->GetDefinition()->GetPDGCharge();
-    //if(charge==0.) return true;
-    
+//    if(charge!=-1) return true;
+//    if(aStep->GetTrack()->GetDefinition()->GetParticleName()!="e-") return true;
+    if(charge==0) return true;
+  
     G4StepPoint* preStepPoint = aStep->GetPreStepPoint();
     if(!(preStepPoint->GetStepStatus() == fGeomBoundary)) return true;
     

@@ -202,7 +202,7 @@ void DetectorConstructionMessenger::SetNewValue(G4UIcommand * command,G4String n
         fTarget->AddScintillators();
     }
     if(command==fAddSiliconDetector ){
-        fTarget->AddSiliconStripDetectors();
+        fTarget->AddSiliconStripDetectors(newValue);
     }
     if(command==fAddXtalTarget ){
         fTarget->AddXtalTarget();

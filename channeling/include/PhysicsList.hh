@@ -12,6 +12,8 @@ private:
 
     G4bool bWrapperOn;
     G4bool bChannelingOn;
+    G4bool bDecayOn;
+
     PhysicsListMessenger *fMessenger;
     
 public:
@@ -43,7 +45,9 @@ public:
     
     void EnableWrapper(G4bool flag);
     G4bool GetWrapperState() {return bWrapperOn;};
-private:
+    
+    void EnableDecay(G4bool flag);
+    G4bool GetDecayState() {return bDecayOn;};
     
 };
 

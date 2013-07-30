@@ -248,10 +248,10 @@ void XPhysicalLattice::SetLatticeOrientation(G4double t_rot, G4double p_rot){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XPhysicalLattice::SetLatticeOrientation(G4double t_rot, G4double p_rot, G4double o_rot){
+void XPhysicalLattice::SetLatticeOrientation(G4double t_rot, G4double o_rot, G4double p_rot){
     fTheta=t_rot;
-    fPhi= p_rot;
     fOmega = o_rot;
+    fPhi= p_rot;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

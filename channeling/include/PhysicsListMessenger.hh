@@ -56,6 +56,7 @@ class PhysicsListMessenger: public G4UImessenger
 
     G4UIcmdWithABool* fChannelingCmd;
     G4UIcmdWithABool* fWrapperCmd;
+    G4UIcmdWithABool* fDecayCmd;
 
     G4UIdirectory* fMyDirectory;
 };

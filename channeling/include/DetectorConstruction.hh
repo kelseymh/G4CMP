@@ -70,10 +70,8 @@ private:
     void ConstructXtalTarget();
     
 public:
-    void AddSiliconStripDetectors() {
-        bSSD = true;
-        G4RunManager::GetRunManager()->GeometryHasBeenModified();
-    };
+    void AddSiliconStripDetectors(G4String);
+    
     void AddScintillators() {
         bSCI = true;
         G4RunManager::GetRunManager()->GeometryHasBeenModified();
@@ -103,7 +101,9 @@ public:
     G4double GetSSD2XtalDistance() {return fSSD2XtalDistance;};
     
 private:
-    G4bool bSSD;
+    G4bool bSSD1;
+    G4bool bSSD2;
+    G4bool bSSD3;
     
     G4double fSSD0XtalDistance;
     G4double fSSD1XtalDistance;

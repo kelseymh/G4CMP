@@ -50,6 +50,18 @@ PrimaryGeneratorActionMessenger::PrimaryGeneratorActionMessenger(PrimaryGenerato
     fDivergenceY->SetParameterName("beamdivy",true);
     fDivergenceY->SetDefaultValue(0.);
     fDivergenceY->SetDefaultUnit("rad");
+
+    fWidthX = new G4UIcmdWithADoubleAndUnit("/gun/setWidthX",this);
+    fWidthX->SetGuidance("Set beam width X.");
+    fWidthX->SetParameterName("beamwidthx",true);
+    fWidthX->SetDefaultValue(0.);
+    fWidthX->SetDefaultUnit("mm");
+
+    fWidthY = new G4UIcmdWithADoubleAndUnit("/gun/setWidthY",this);
+    fWidthY->SetGuidance("Set beam width Y.");
+    fWidthY->SetParameterName("beamwidthy",true);
+    fWidthY->SetDefaultValue(0.);
+    fWidthY->SetDefaultUnit("mm");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -58,6 +70,8 @@ PrimaryGeneratorActionMessenger::~PrimaryGeneratorActionMessenger()
 {
     delete fDivergenceX;
     delete fDivergenceY;
+    delete fWidthX;
+    delete fWidthY;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -69,6 +83,12 @@ void PrimaryGeneratorActionMessenger::SetNewValue(G4UIcommand * command,G4String
     }
     if(command==fDivergenceY ){
         fTarget->SetBeamDivergenceY(fDivergenceY->GetNewDoubleValue(newValue));
+    }
+    if(command==fWidthX ){
+        fTarget->SetBeamWidthX(fWidthX->GetNewDoubleValue(newValue));
+    }
+    if(command==fWidthY ){
+        fTarget->SetBeamWidthY(fWidthY->GetNewDoubleValue(newValue));
     }
 }
 
@@ -82,6 +102,12 @@ G4String PrimaryGeneratorActionMessenger::GetCurrentValue(G4UIcommand * command)
     }
     if( command==fDivergenceY ){
         cv = fDivergenceY->ConvertToString(fTarget->GetBeamDivergenceY(),"rad");
+    }
+    if( command==fWidthX ){
+        cv = fWidthX->ConvertToString(fTarget->GetBeamWidthX(),"rad");
+    }
+    if( command==fWidthY ){
+        cv = fWidthY->ConvertToString(fTarget->GetBeamWidthY(),"rad");
     }
     
     return cv;

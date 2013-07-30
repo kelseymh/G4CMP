@@ -1,10 +1,12 @@
 /myproc/channeling 1
 /myproc/wrapper 1
+/myproc/scattering ss
+/myproc/decay 1
 
 /mydet/ssd/setDist0X -1057. cm
 /mydet/ssd/setDist1X -43. cm
 /mydet/ssd/setDist2X +1080. cm
-/mydet/addsd
+/mydet/addsd all
 
 /mydet/sci/setDistX +60. cm
 /mydet/sci/setDist +1. cm
@@ -22,8 +24,8 @@
 /gun/position 0. -1100. 0 cm
 /gun/particle proton
 
-/myevt/filename 2010_NIMB268_2655
-/myproc/filename 2010_NIMB268_2655
+/myevt/filename ../../../DATA/2010_NIMB268_2655
+/myproc/filename ../../../DATA/2010_NIMB268_2655
 /gun/setDivX 2.E-6 rad
 
 /run/initialize

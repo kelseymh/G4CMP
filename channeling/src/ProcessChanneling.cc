@@ -175,6 +175,10 @@ void ProcessChanneling::UpdatePosition(const G4Track& aTrack){
     if(GetInfo(aTrack)->GetPositionChanneledInitial().x() == DBL_MAX){
         G4double vXposition = G4UniformRand() * GetXPhysicalLattice(aTrack)->ComputeInterplanarPeriod();
         
+        if(GetParticleDefinition(aTrack)->GetPDGCharge()<0){
+            vXposition += ( GetXPhysicalLattice(aTrack)->ComputeInterplanarPeriod() * 0.5 );
+        }
+            
         GetInfo(aTrack)->SetPositionChanneled(G4ThreeVector(0.,0.,0.));
         
         GetInfo(aTrack)->SetPositionChanneledInitial(G4ThreeVector(vXposition,0.,0.));
@@ -192,7 +196,7 @@ void ProcessChanneling::UpdatePosition(const G4Track& aTrack){
 void ProcessChanneling::UpdateMomentum(const G4Track& aTrack){
     if(GetInfo(aTrack)->GetMomentumChanneledInitial().x() == DBL_MAX){        
         // we take the PREVIOUS step point to compare, otherwise the momentum is not computed correctly
-        G4ThreeVector vMomentum = ComputeMomentum(aTrack,aTrack.GetStep()->GetPreStepPoint());
+        G4ThreeVector vMomentum = ComputeMomentum(aTrack,aTrack.GetStep()->GetPostStepPoint());
         
         GetInfo(aTrack)->SetMomentumChanneled(vMomentum);
         
@@ -219,10 +223,10 @@ void ProcessChanneling::UpdateDensity(const G4Track& aTrack){
     
     if( GetXPhysicalLattice(aTrack)->IsBent() ){
         vTransverseEnergy += ComputeCentrifugalEnergy(aTrack, GetInfo(aTrack)->GetPositionChanneledInitial()).x();
-        G4double vInterplanarPeriod = GetXPhysicalLattice(aTrack)->ComputeInterplanarPeriod();
-        G4double vCentre = ComputePotentialWellCentre(aTrack).x() * 2.;
+        G4double vHalfInterplanarPeriod = 0.5 * GetXPhysicalLattice(aTrack)->ComputeInterplanarPeriod();
+        G4double vCentre = ComputePotentialWellCentre(aTrack).x();
 
-        //vFactor = vInterplanarPeriod / vCentre;
+        vFactor = vHalfInterplanarPeriod / vCentre;
     }
     
     G4double vNucleiDensity = fIntegratedDensity->GetIntegratedDensityNuclei(vTransverseEnergy,GetXPhysicalLattice(aTrack),vCharge);
@@ -288,6 +292,10 @@ G4ThreeVector ProcessChanneling::ComputeVolumeReflectionOutgoingMomentum(const G
         vTransverseEnergy = (G4UniformRand() * ComputeCentrifugalEnergy(aTrack,vInterplanarPeriod).x() ) + ComputeCriticalEnergyMaximum(aTrack);
         
         vVrAngle = - fabs(vRadiusX)/vRadiusX * pow(+ 2. * fabs(vTransverseEnergy) / vTotalEnergy , 0.5);
+        
+        if(GetParticleDefinition(aTrack)->GetPDGCharge()<0){
+            vVrAngle *= 0.57; // = 0.8 / 1.4 see PLB 681 (2009) 233
+        }
     }
 
     G4double vOmega = GetXPhysicalLattice(aTrack)->GetLatticeAngles().z();
@@ -365,7 +373,7 @@ G4StepPoint* ProcessChanneling::CheckStepPointLatticeForPosition(G4StepPoint* vS
             fLatticeManager->HasLattice(vStepPost->GetPhysicalVolume()) == true &&
             vStep == vStepPre &&
             vStepPre->GetStepStatus() == fGeomBoundary) {
-        return vStepPost;
+        return vStepPre;
     }
     else{
         return vStep;
@@ -391,7 +399,9 @@ G4bool ProcessChanneling::IsUnderCoherentEffect(const G4Track& aTrack){
     G4double vEnergyMax = ComputeCriticalEnergyMaximum(aTrack);
     G4double vEnergyMin = ComputeCriticalEnergyMinimum(aTrack);
     G4double vTransverseEnergy = ComputeTransverseEnergy(aTrack).x();
-    
+    G4double vCharge = GetParticleDefinition(aTrack)->GetPDGCharge();
+    G4double vInterplanarPeriod = GetXPhysicalLattice(aTrack)->ComputeInterplanarPeriod();
+
     if(GetXPhysicalLattice(aTrack)->IsBent() == false){
         
         if(vTransverseEnergy <= vEnergyMax &&
@@ -407,7 +417,13 @@ G4bool ProcessChanneling::IsUnderCoherentEffect(const G4Track& aTrack){
         }
     }
     else{
-        vEnergyMin += ComputeCentrifugalEnergy(aTrack,ComputePotentialWellCentre(aTrack)).x();
+        if(vCharge>0.) {
+            vEnergyMin += ComputeCentrifugalEnergy(aTrack,ComputePotentialWellCentre(aTrack)).x();
+       }
+        else{
+            vEnergyMin += ComputeCentrifugalEnergy(aTrack,G4ThreeVector(vInterplanarPeriod,0.,0.)).x();
+            vEnergyMax += ComputeCentrifugalEnergy(aTrack,ComputePotentialWellCentre(aTrack)).x();
+        }
         vTransverseEnergy += ComputeCentrifugalEnergy(aTrack,GetInfo(aTrack)->GetPositionChanneledInitial()).x();
         G4ThreeVector vMomentumPost = GetInfo(aTrack)->GetMomentumChanneled() + ComputeMomentum(aTrack,aTrack.GetStep()->GetPostStepPoint());
 
@@ -430,7 +446,8 @@ G4bool ProcessChanneling::IsUnderCoherentEffect(const G4Track& aTrack){
         }
                 
         if(vTransverseEnergy <= vEnergyMax &&
-           vTransverseEnergy >= vEnergyMin ){
+           vTransverseEnergy >= vEnergyMin &&
+           bNotBoundary){
             // the particle is in channeling
             GetInfo(aTrack)->SetCoherentEffect(1);
             return true;
@@ -517,7 +534,6 @@ G4VParticleChange* ProcessChanneling::PostStepDoIt(const G4Track& aTrack,
                 // if the particle is in channeling it gives the direction of the lattice to the particle momentum
                 G4ThreeVector vPosition = ComputePositionInTheCrystal(aTrack.GetStep()->GetPostStepPoint(),aTrack);
                 aParticleChange.ProposeMomentumDirection(GetXPhysicalLattice(aTrack)->GetLatticeDirection(vPosition).unit());
-                //aParticleChange.ProposeMomentumDirection(ComputeChannelingOutgoingMomentum(aTrack));
             }
             else if(GetInfo(aTrack)->HasBeenUnderCoherentEffect() == 2){
                 // if the particle is in VR it gives a kick to the opposite site of the bending to the particle
@@ -530,7 +546,7 @@ G4VParticleChange* ProcessChanneling::PostStepDoIt(const G4Track& aTrack,
         ResetDensity(aTrack);
     }
     
-    if(bIsUnderCoherentEffect == false && (HasLattice(aTrack) == true || HasLatticeOnBoundary(aTrack) == true) ){
+    if( (bIsUnderCoherentEffect == false && (HasLattice(aTrack) == true) ) || (HasLatticeOnBoundary(aTrack) == true) ) {
         // if has been under coherent effect but now it is not, the outgoing momentum is evaluated starting from the current position
         if(GetInfo(aTrack)->HasBeenUnderCoherentEffect() == 1){
             aParticleChange.ProposeMomentumDirection(ComputeChannelingOutgoingMomentum(aTrack));
@@ -573,8 +589,8 @@ G4ThreeVector ProcessChanneling::ComputeKineticEnergy(const G4Track& aTrack){
     
     G4ThreeVector vMom = GetInfo(aTrack)->GetMomentumChanneled();
     
-    G4ThreeVector vKineticEnergy = G4ThreeVector(pow( vMom.x(), 2. ) / vTotalEnergy, 0., pow( vMom.z(), 2. )  / vTotalEnergy);
-    
+    G4ThreeVector vKineticEnergy = G4ThreeVector((vMom.x() * vMom.x()) / vTotalEnergy, 0., (vMom.z() * vMom.z())  / vTotalEnergy);
+
     return vKineticEnergy;
 }
 
@@ -602,7 +618,14 @@ G4ThreeVector ProcessChanneling::ComputeCentrifugalEnergy(const G4Track& aTrack,
     //----------------------------------------
     
     G4double vTotalEnergy = aTrack.GetStep()->GetPreStepPoint()->GetTotalEnergy();
-    G4ThreeVector vEnergyVariation = G4ThreeVector(vTotalEnergy * vPosition.x() / GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x(),0.,0.);
+    
+    G4double vPositionX = vPosition.x();
+    
+    if(GetParticleDefinition(aTrack)->GetPDGCharge() < 0.){
+        vPositionX -= GetXPhysicalLattice(aTrack)->ComputeInterplanarPeriod() * 0.5;
+    }
+    
+    G4ThreeVector vEnergyVariation = G4ThreeVector(vTotalEnergy * vPositionX / GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x(),0.,0.);
     
     return vEnergyVariation;
 }
@@ -634,8 +657,18 @@ G4double ProcessChanneling::ComputeCriticalEnergyMaximum(const G4Track& aTrack){
     //----------------------------------------
     
     G4double vCriticalEnergy = 0.;
-    vCriticalEnergy += fPotentialEnergy->GetMaximum(GetXPhysicalLattice(aTrack));
+
+    G4double vCharge = GetParticleDefinition(aTrack)->GetPDGCharge();
     
+    if(vCharge > 0.){
+        vCriticalEnergy = + fPotentialEnergy->GetMaximum(GetXPhysicalLattice(aTrack));
+    }
+    else{
+        vCriticalEnergy = - fPotentialEnergy->GetMinimum(GetXPhysicalLattice(aTrack));
+    }
+    
+    vCriticalEnergy *= fabs(vCharge);
+
     return vCriticalEnergy;
 }
 
@@ -648,7 +681,17 @@ G4double ProcessChanneling::ComputeCriticalEnergyMinimum(const G4Track& aTrack){
     //----------------------------------------
     
     G4double vCriticalEnergy = 0.;
-    vCriticalEnergy += fPotentialEnergy->GetMinimum(GetXPhysicalLattice(aTrack));
+    
+    G4double vCharge = GetParticleDefinition(aTrack)->GetPDGCharge();
+    
+    if(vCharge > 0.){
+        vCriticalEnergy = + fPotentialEnergy->GetMinimum(GetXPhysicalLattice(aTrack));
+    }
+    else{
+        vCriticalEnergy = - fPotentialEnergy->GetMaximum(GetXPhysicalLattice(aTrack));
+    }
+
+    vCriticalEnergy *= fabs(vCharge);
     
     return vCriticalEnergy;
 }
@@ -700,14 +743,21 @@ G4ThreeVector ProcessChanneling::ComputePotentialWellCentre(const G4Track& aTrac
     //----------------------------------------
     
     G4double vInterplanarPeriodHalf = 0.5 * GetXPhysicalLattice(aTrack)->ComputeInterplanarPeriod();
-    G4double vTotalEnergy = aTrack.GetStep()->GetPreStepPoint()->GetTotalEnergy();
-    G4double vPotentialWellDepth = ComputeCriticalEnergyMaximum(aTrack) - (ComputeCriticalEnergyMinimum(aTrack));
     
     G4double vCentreX = vInterplanarPeriodHalf;
-    
-    //vCentreX *= (1. - ComputeCriticalRadius(aTrack) / GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x() );
-    vCentreX *= (1. - 0.5 * vTotalEnergy / vPotentialWellDepth / GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x() * vInterplanarPeriodHalf );
 
+    if(GetXPhysicalLattice(aTrack)->IsBent()){
+        G4double vTotalEnergy = aTrack.GetStep()->GetPreStepPoint()->GetTotalEnergy();
+    
+        G4double vPotentialWellDepth = ComputeCriticalEnergyMaximum(aTrack) - (ComputeCriticalEnergyMinimum(aTrack));
+            
+        vCentreX *= (1. - 0.5 * vTotalEnergy / vPotentialWellDepth / GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x() * vInterplanarPeriodHalf );
+        
+        if(GetParticleDefinition(aTrack)->GetPDGCharge() < 0.){
+            vCentreX = (vInterplanarPeriodHalf * 2. - vCentreX);
+        }
+    }
+    
     G4ThreeVector vCentre = G4ThreeVector(vCentreX,0.,0.);
     
     
@@ -761,6 +811,10 @@ G4bool ProcessChanneling::HasLattice(const G4Track& aTrack){
 G4bool ProcessChanneling::HasLatticeOnBoundary(const G4Track& aTrack){
     if(fLatticeManager->HasLattice(aTrack.GetStep()->GetPreStepPoint()->GetPhysicalVolume()) &&
        aTrack.GetStep()->GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+        return true;
+    }
+    if(fLatticeManager->HasLattice(aTrack.GetStep()->GetPostStepPoint()->GetPhysicalVolume()) &&
+       aTrack.GetStep()->GetPreStepPoint()->GetStepStatus() == fGeomBoundary) {
         return true;
     }
     else{

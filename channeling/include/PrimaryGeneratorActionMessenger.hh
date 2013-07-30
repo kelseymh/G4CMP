@@ -53,6 +53,8 @@ class PrimaryGeneratorActionMessenger: public G4UImessenger
 
     G4UIcmdWithADoubleAndUnit* fDivergenceX;
     G4UIcmdWithADoubleAndUnit* fDivergenceY;
+    G4UIcmdWithADoubleAndUnit* fWidthX;
+    G4UIcmdWithADoubleAndUnit* fWidthY;
 
 };
 

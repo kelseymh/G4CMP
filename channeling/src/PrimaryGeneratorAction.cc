@@ -50,7 +50,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 {
     fMessenger = new PrimaryGeneratorActionMessenger(this);
     
-    fParticleGun  = new G4ParticleGun(1);
+    fParticleGun = new G4ParticleGun(1);
     
     fParticleGun->SetParticleDefinition(G4ParticleTable::GetParticleTable()->FindParticle("proton"));
     
@@ -63,6 +63,10 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     fDivX = 0.;
     
     fDivY = 0.;
+
+    fWidthX = 0.;
+    
+    fWidthY = 0.;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -83,9 +87,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     
     G4ThreeVector vParticleMomentumDirection = G4ThreeVector(0.,1.,0.);
     
-    G4double vRotationX = (G4UniformRand() - 0.5 ) * 2. * fDivX;
+//    G4double vRotationX = (G4UniformRand() - 0.5 ) * 2. * fDivX;
+//    
+//    G4double vRotationY = (G4UniformRand() - 0.5 ) * 2. * fDivY;
     
-    G4double vRotationY = (G4UniformRand() - 0.5 ) * 2. * fDivY;
+    G4double vRotationX = CLHEP::RandGauss::shoot(0.,fDivX);
+    
+    G4double vRotationY = CLHEP::RandGauss::shoot(0.,fDivY);
     
     vParticleMomentumDirection = G4ThreeVector(0.,1.,0.).rotate(G4ThreeVector(0,0,1),vRotationX).unit();
     
@@ -93,6 +101,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     
     fParticleGun->SetParticleMomentumDirection(vParticleMomentumDirection);
     
+    G4ThreeVector vPosition = fParticleGun->GetParticlePosition();
+
+    vPosition.setX(CLHEP::RandGauss::shoot(0.,fWidthX));
+    
+    vPosition.setY(CLHEP::RandGauss::shoot(0.,fWidthY));
+    
+    fParticleGun->SetParticlePosition(vPosition);
+
     fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 

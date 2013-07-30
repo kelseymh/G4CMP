@@ -1,12 +1,14 @@
 /myproc/channeling 1
 /myproc/wrapper 1
+/myproc/scattering ss
+/myproc/decay 1
 
 /mystack/KillAllSecondaries 1
 
 /mydet/ssd/setDist0X -1117. cm
 /mydet/ssd/setDist1X -30. cm
 /mydet/ssd/setDist2X +1091.1 cm
-/mydet/addsd
+/mydet/addsd all
 
 /mydet/xtal/setMaterial G4_Si
 /mydet/xtal/setAngle 0. 0. 0. rad
@@ -20,8 +22,8 @@
 /gun/position 0. -1110. 0 cm
 /gun/particle proton
 
-/myevt/filename ch400gev_p
-/myproc/filename ch400gev_p
+/myevt/filename ../../../DATA/2009_PLB680_129
+/myproc/filename ../../../DATA/2009_PLB680_129
 /gun/setDivX 5.E-6 rad
 
 /run/initialize

@@ -83,7 +83,7 @@ bRBS(0),fRBSDistanceR(0),fRBSAngleTheta(0),fRBSAnglePhi(0),
 fRBSSizeZ(0),fRBSSizeR(0),fRBSSolid(0),fRBSLogic(0),fRBSPhysical(0),
 bSCI(0),fSCIXtalDistance(0),fSCIRelativeDistance(0),
 fSCISizeXZ(0),fSCISizeY(0),fSCISolid(0),fSCILogic(0),fSCIPhysical(0),
-bSSD(0),fSSD0XtalDistance(0),fSSD1XtalDistance(0),fSSD2XtalDistance(0),
+bSSD1(0),bSSD2(0),bSSD3(0),fSSD0XtalDistance(0),fSSD1XtalDistance(0),fSSD2XtalDistance(0),
 fSSDSizeXZ(0),fSSDSizeY(0),fSSDSolid(0),fSSDLogic(0),fSSDPhysical(0),
 fWorldSizeXZ(0),fWorldSizeY(0),fWorldSolid(0),fWorldLogic(0),fWorldPhysical(0)
 {
@@ -93,13 +93,15 @@ fWorldSizeXZ(0),fWorldSizeY(0),fWorldSolid(0),fWorldLogic(0),fWorldPhysical(0)
     fWorldSizeY = 0.5 * CLHEP::meter;
     fWorldSizeXZ = 0.5 * CLHEP::meter;
     
-    bSSD = false;
+    bSSD1 = false;
+    bSSD2 = false;
+    bSSD3 = false;
     fSSDSizeXZ = 1.92 * 10. * CLHEP::centimeter; // originally 1.92 CLHEP::centimeter
     fSSDSizeY = 0.06 * CLHEP::centimeter;
     
-    fSSD0XtalDistance = - 15 * CLHEP::centimeter;
-    fSSD1XtalDistance = - 5 * CLHEP::centimeter;
-    fSSD2XtalDistance = + 10 * CLHEP::centimeter;
+    fSSD0XtalDistance = - 150 * CLHEP::centimeter;
+    fSSD1XtalDistance = - 50 * CLHEP::centimeter;
+    fSSD2XtalDistance = + 100 * CLHEP::centimeter;
     
     bSCI = false;
     fSCIRelativeDistance = 1. * CLHEP::centimeter;
@@ -145,7 +147,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
     
     if(bSCI) ConstructScintillators();
     
-    if(bSSD) ConstructSiliconStripDetectors();
+    if(bSSD1 || bSSD2 || bSSD3) ConstructSiliconStripDetectors();
     
     if(bRBS) ConstructRBSDetector();
     
@@ -175,6 +177,29 @@ void DetectorConstruction::ConstructWorld(){
     
     fWorldPhysical = new G4PVPlacement(0,G4ThreeVector(),fWorldLogic,"World",0,false,0);
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::AddSiliconStripDetectors(G4String vDetectorString) {
+    if(vDetectorString == "0"){
+        bSSD1 = true;
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+    }
+    else if(vDetectorString == "1"){
+        bSSD2 = true;
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+    }
+    else if(vDetectorString == "2"){
+        bSSD3 = true;
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+    }
+    else if(vDetectorString == "all"){
+        bSSD1 = true;
+        bSSD2 = true;
+        bSSD3 = true;
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+    }
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -240,11 +265,15 @@ void DetectorConstruction::ConstructSiliconStripDetectors(){
     fSSDSolid = new G4Box("SiSD", fSSDSizeXZ/2.,fSSDSizeY/2.,fSSDSizeXZ/2.);
     fSSDLogic = new G4LogicalVolume(fSSDSolid,Si,"SiSD");
     
-    fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD0XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,0);
-    
-    fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD1XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,1);
-    
-    fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD2XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,2);
+    if(bSSD1){
+        fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD0XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,0);
+    }
+    if(bSSD2){
+        fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD1XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,1);
+    }
+    if(bSSD3) {
+        fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD2XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,2);
+    }
     
     G4String SDname;
     G4VSensitiveDetector* telescope = new A01DriftChamber(SDname="/telescope");
@@ -264,7 +293,7 @@ void DetectorConstruction::ConstructXtalTarget(){
     vRotationMatrix->rotateY(fXtalAngle.y());
     vRotationMatrix->rotateZ(fXtalAngle.z());
     
-    fXtalPhysical = new G4PVPlacement(vRotationMatrix,G4ThreeVector(0.,0.,0.),fXtalLogic,"Target",fWorldLogic,false,0);
+    fXtalPhysical = new G4PVPlacement(vRotationMatrix,G4ThreeVector(0.,+10.*CLHEP::cm,0.),fXtalLogic,"Target",fWorldLogic,false,0);
     
     //----------------------------------------
     // Create XLogicalLattice
@@ -292,7 +321,7 @@ void DetectorConstruction::ConstructXtalTarget(){
     XPhysicalLattice* physicalLattice = new XPhysicalLattice(fXtalPhysical, logicalLattice);
     physicalLattice->SetUnitCell(myCell);
     physicalLattice->SetMillerOrientation(2,2,0);
-    physicalLattice->SetLatticeOrientation(fXtalAngle.x(),fXtalAngle.z());
+    physicalLattice->SetLatticeOrientation(fXtalAngle.x(),fXtalAngle.y(),fXtalAngle.z());
     physicalLattice->SetThermalVibrationAmplitude(0.075*CLHEP::angstrom);
     physicalLattice->SetCurvatureRadius(fXtalCurvatureRadius);
     

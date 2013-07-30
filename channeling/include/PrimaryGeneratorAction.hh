@@ -60,6 +60,12 @@ public:
     void SetBeamDivergenceY(G4double div) {fDivY=div;};
     G4double GetBeamDivergenceY() {return fDivY;};
 
+    void SetBeamWidthX(G4double width) {fWidthX = width;};
+    G4double GetBeamWidthX() {return fWidthX;};
+    
+    void SetBeamWidthY(G4double width) {fWidthY=width;};
+    G4double GetBeamWidthY() {return fWidthY;};
+
 private:
     G4ParticleGun* fParticleGun;	 //pointer a to G4  class
     
@@ -67,6 +73,8 @@ private:
     
     G4double fDivX;
     G4double fDivY;
+    G4double fWidthX;
+    G4double fWidthY;
     
 };
 

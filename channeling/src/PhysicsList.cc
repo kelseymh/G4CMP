@@ -199,6 +199,8 @@ PhysicsList::PhysicsList():  G4VUserPhysicsList(){
     
     bWrapperOn = true;
     
+    bDecayOn = true;
+    
     fMessenger = new PhysicsListMessenger(this);
 }
 
@@ -216,11 +218,14 @@ void PhysicsList::ConstructProcess(){
         AddChanneling();
     }
     
-    AddInelaticProcesses();
-    
-    AddDecay();
-    
-    AddEM();
+    if(bDecayOn){
+        AddInelaticProcesses();
+        AddDecay();
+    }
+        
+    if(fScatteringType != "nosc"){
+        AddEM();
+    }
     
 }
 
@@ -1165,6 +1170,15 @@ void PhysicsList::EnableChanneling(G4bool flag) {
 void PhysicsList::EnableWrapper(G4bool flag) {
     if(bWrapperOn != flag){
         bWrapperOn = flag;
+        G4RunManager::GetRunManager()->PhysicsHasBeenModified();
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void PhysicsList::EnableDecay(G4bool flag) {
+    if(bDecayOn != flag){
+        bDecayOn = flag;
         G4RunManager::GetRunManager()->PhysicsHasBeenModified();
     }
 }

@@ -61,6 +61,11 @@ PhysicsListMessenger::PhysicsListMessenger(PhysicsList * mpga)
     fWrapperCmd->SetGuidance("Enable wrapper");
     fWrapperCmd->SetParameterName("wrapper",true);
     fWrapperCmd->SetDefaultValue(1);
+
+    fDecayCmd = new G4UIcmdWithABool("/myproc/decay",this);
+    fDecayCmd->SetGuidance("Enable decay");
+    fDecayCmd->SetParameterName("decay",true);
+    fDecayCmd->SetDefaultValue(1);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -71,6 +76,7 @@ PhysicsListMessenger::~PhysicsListMessenger()
     delete fScatteringType;
     delete fChannelingCmd;
     delete fWrapperCmd;
+    delete fDecayCmd;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -89,6 +95,10 @@ void PhysicsListMessenger::SetNewValue(G4UIcommand * command,G4String newValue)
     if( command==fWrapperCmd ){
         fTarget->EnableWrapper(fWrapperCmd->GetNewBoolValue(newValue));
     }
+    if( command==fDecayCmd ){
+        fTarget->EnableDecay(fDecayCmd->GetNewBoolValue(newValue));
+    }
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -105,8 +115,11 @@ G4String PhysicsListMessenger::GetCurrentValue(G4UIcommand * command)
     if( command==fChannelingCmd ){
         cv = fChannelingCmd->ConvertToString(fTarget->GetChannelingState());
     }
-    if( command==fChannelingCmd ){
+    if( command==fWrapperCmd ){
         cv = fChannelingCmd->ConvertToString(fTarget->GetWrapperState());
+    }
+    if( command==fDecayCmd ){
+        cv = fChannelingCmd->ConvertToString(fTarget->GetDecayState());
     }
     
     return cv;
