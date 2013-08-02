@@ -76,11 +76,9 @@ void XLogicalAtomicLattice::AddAtom(G4ThreeVector vAtomPosition){
 void XLogicalAtomicLattice::DeleteAtom(G4ThreeVector vAtomPosition){
     //Delete atoms in the lattice in the selected position
     
-    G4int CheckIfAtomExist = fLatticeAtomNumber;
     for(G4int i=0;i<fLatticeAtomNumber;i++)
         if(vAtomPosition == fLatticeAtomPosition[i])
         {
-            CheckIfAtomExist = i;
             for(G4int j=(i+1);j<fLatticeAtomNumber;j++)
             {
                 fLatticeAtomPosition[j-1]=fLatticeAtomPosition[j];

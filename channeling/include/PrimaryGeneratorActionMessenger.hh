@@ -34,9 +34,12 @@
 
 class PrimaryGeneratorAction;
 class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWithAString;
 class G4UIdirectory;
 
 #include "G4UImessenger.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWithAString.hh"
 #include "globals.hh"
 
 class PrimaryGeneratorActionMessenger: public G4UImessenger
@@ -51,6 +54,9 @@ class PrimaryGeneratorActionMessenger: public G4UImessenger
   private:
     PrimaryGeneratorAction* fTarget;
 
+    G4UIcmdWithAString* fDivergenceDistribution;
+    G4UIcmdWithADoubleAndUnit* fCutX;
+    G4UIcmdWithADoubleAndUnit* fCutY;
     G4UIcmdWithADoubleAndUnit* fDivergenceX;
     G4UIcmdWithADoubleAndUnit* fDivergenceY;
     G4UIcmdWithADoubleAndUnit* fWidthX;

@@ -76,38 +76,25 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorConstruction::DetectorConstruction():fMessenger(0),
-bXtal(0),fXtalCurvatureRadius(0),fXtalMaterial(0),fXtalAngle(0),fXtalSize(0),
-fXtalCellSize(0),fXtalCellAngle(0),fXtalSolid(0),fXtalLogic(0),fXtalPhysical(0),
-bRBS(0),fRBSDistanceR(0),fRBSAngleTheta(0),fRBSAnglePhi(0),
-fRBSSizeZ(0),fRBSSizeR(0),fRBSSolid(0),fRBSLogic(0),fRBSPhysical(0),
-bSCI(0),fSCIXtalDistance(0),fSCIRelativeDistance(0),
-fSCISizeXZ(0),fSCISizeY(0),fSCISolid(0),fSCILogic(0),fSCIPhysical(0),
-bSSD1(0),bSSD2(0),bSSD3(0),fSSD0XtalDistance(0),fSSD1XtalDistance(0),fSSD2XtalDistance(0),
-fSSDSizeXZ(0),fSSDSizeY(0),fSSDSolid(0),fSSDLogic(0),fSSDPhysical(0),
-fWorldSizeXZ(0),fWorldSizeY(0),fWorldSolid(0),fWorldLogic(0),fWorldPhysical(0)
-{
+DetectorConstruction::DetectorConstruction():fXtalLogic(0){
     
     DefineMaterials();
     
-    fWorldSizeY = 0.5 * CLHEP::meter;
-    fWorldSizeXZ = 0.5 * CLHEP::meter;
+    fWorldSizeY = 1. * CLHEP::meter;
+    fWorldSizeXZ = 2. * CLHEP::meter;
     
     bSSD1 = false;
     bSSD2 = false;
     bSSD3 = false;
-    fSSDSizeXZ = 1.92 * 10. * CLHEP::centimeter; // originally 1.92 CLHEP::centimeter
-    fSSDSizeY = 0.06 * CLHEP::centimeter;
-    
+    fSSDSize = G4ThreeVector(1.92 * CLHEP::centimeter,0.06 * CLHEP::centimeter,1.92 * CLHEP::centimeter); //
     fSSD0XtalDistance = - 150 * CLHEP::centimeter;
     fSSD1XtalDistance = - 50 * CLHEP::centimeter;
     fSSD2XtalDistance = + 100 * CLHEP::centimeter;
     
     bSCI = false;
+    fSCISize = G4ThreeVector(10. * CLHEP::centimeter,1. * CLHEP::centimeter,10. * CLHEP::centimeter); //
     fSCIRelativeDistance = 1. * CLHEP::centimeter;
     fSCIXtalDistance = 30. * CLHEP::centimeter;
-    fSCISizeXZ = 10. * CLHEP::centimeter;
-    fSCISizeY = 1. * CLHEP::centimeter;
     
     bRBS = false;
     fRBSSizeZ = 0.1 * CLHEP::centimeter;
@@ -135,8 +122,15 @@ DetectorConstruction::~DetectorConstruction(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
 void DetectorConstruction::DefineMaterials(){
-    G4Material* Si = G4NistManager::Instance()->FindOrBuildMaterial("G4_Si");
-    G4Material* Ge = G4NistManager::Instance()->FindOrBuildMaterial("G4_Ge");
+    G4double const Torr = CLHEP::atmosphere/760.; // 1 Torr
+    G4double z = 1.;
+    G4double a = 1.01*CLHEP::g/CLHEP::mole;
+    G4double density     = CLHEP::universe_mean_density;
+    G4double pressure    = 1.E-5 * Torr;
+    G4double temperature = 300.*CLHEP::kelvin;
+    G4Material* Vacuum = new G4Material("Vacuum", z , a , density, kStateGas,temperature,pressure);
+    
+    fWorldMaterial = Vacuum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -159,21 +153,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::ConstructWorld(){
-    G4Material* Vacuum = G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
     
-    if(fabs(fSSD2XtalDistance) > fWorldSizeY/2.){
-        fWorldSizeY = fabs(fSSD2XtalDistance) * 2.6;
+    if(fabs(fSSD2XtalDistance) > (fWorldSizeY/2.)){
+        fWorldSizeY = fabs(fSSD2XtalDistance) * 3.;
     }
-    if(fabs(fSSD1XtalDistance) > fWorldSizeY/2.){
-        fWorldSizeY = fabs(fSSD1XtalDistance) * 2.6;
+    if(fabs(fSSD1XtalDistance) > (fWorldSizeY/2.)){
+        fWorldSizeY = fabs(fSSD1XtalDistance) * 3.;
     }
-    if(fabs(fSSD0XtalDistance) > fWorldSizeY/2.){
-        fWorldSizeY = fabs(fSSD0XtalDistance) * 2.6;
+    if(fabs(fSSD0XtalDistance) > (fWorldSizeY/2.)){
+        fWorldSizeY = fabs(fSSD0XtalDistance) * 3.;
     }
     
     fWorldSolid = new G4Box("World",fWorldSizeXZ/2.,fWorldSizeY/2.,fWorldSizeXZ/2.);
     
-    fWorldLogic = new G4LogicalVolume(fWorldSolid,Vacuum,"World");
+    fWorldLogic = new G4LogicalVolume(fWorldSolid,fWorldMaterial,"World");
     
     fWorldPhysical = new G4PVPlacement(0,G4ThreeVector(),fWorldLogic,"World",0,false,0);
 }
@@ -199,7 +192,7 @@ void DetectorConstruction::AddSiliconStripDetectors(G4String vDetectorString) {
         bSSD3 = true;
         G4RunManager::GetRunManager()->GeometryHasBeenModified();
     }
-};
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -242,14 +235,14 @@ void DetectorConstruction::ConstructRBSDetector(){
 void DetectorConstruction::ConstructScintillators(){
     G4Material* NaI = G4NistManager::Instance()->FindOrBuildMaterial("G4_SODIUM_IODIDE");
     
-    fSCISolid = new G4Box("NaISCI", fSCISizeXZ/2.,fSCISizeY/2.,fSCISizeXZ/2.);
+    fSCISolid = new G4Box("NaISCI", fSCISize.x()/2.,fSCISize.y()/2.,fSCISize.z()/2.);
     fSCILogic = new G4LogicalVolume(fSCISolid,NaI,"NaISCI");
     
-    G4double vDetDistX = (fSCIRelativeDistance / 2. + fSCISizeXZ / 2.);
+    G4double vDetDistX = (fSCIRelativeDistance / 2. + fSCISize.x() / 2.);
     
-    fSCIPhysical = new G4PVPlacement(0,G4ThreeVector(-vDetDistX,fSCIXtalDistance,0.),fSCILogic,"NaISCI",fWorldLogic,false,0);
+    new G4PVPlacement(0,G4ThreeVector(-vDetDistX,fSCIXtalDistance,0.),fSCILogic,"NaISCI",fWorldLogic,false,0);
     
-    fSCIPhysical = new G4PVPlacement(0,G4ThreeVector(+vDetDistX,fSCIXtalDistance,0.),fSCILogic,"NaISCI",fWorldLogic,false,1);
+    new G4PVPlacement(0,G4ThreeVector(+vDetDistX,fSCIXtalDistance,0.),fSCILogic,"NaISCI",fWorldLogic,false,1);
     
     G4String SDname;
     G4VSensitiveDetector* telescope = new A01DriftChamber(SDname="/scintillator");
@@ -262,17 +255,17 @@ void DetectorConstruction::ConstructScintillators(){
 void DetectorConstruction::ConstructSiliconStripDetectors(){
     G4Material* Si = G4NistManager::Instance()->FindOrBuildMaterial("G4_Si");
     
-    fSSDSolid = new G4Box("SiSD", fSSDSizeXZ/2.,fSSDSizeY/2.,fSSDSizeXZ/2.);
+    fSSDSolid = new G4Box("SiSD", fSSDSize.x()/2.,fSSDSize.y()/2.,fSSDSize.z()/2.);
     fSSDLogic = new G4LogicalVolume(fSSDSolid,Si,"SiSD");
     
     if(bSSD1){
-        fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD0XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,0);
+        new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD0XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,0);
     }
     if(bSSD2){
-        fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD1XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,1);
+        new G4PVPlacement(0,G4ThreeVector(0.,fSSD1XtalDistance,0.),fSSDLogic,"SiSD",fWorldLogic,false,1);
     }
     if(bSSD3) {
-        fSSDPhysical = new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD2XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,2);
+        new G4PVPlacement(0,G4ThreeVector(0.*CLHEP::centimeter,fSSD2XtalDistance,0.*CLHEP::centimeter),fSSDLogic,"SiSD",fWorldLogic,false,2);
     }
     
     G4String SDname;
@@ -336,6 +329,34 @@ void DetectorConstruction::ConstructXtalTarget(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void DetectorConstruction::SetWorldMaterial(const G4String& name){
+    G4Material* vMaterial = G4Material::GetMaterial(name, false);
+    
+    if(!vMaterial){
+        vMaterial = G4NistManager::Instance()->FindOrBuildMaterial(name);
+    }
+    
+    if (vMaterial && vMaterial != fWorldMaterial) {
+        G4cout << "DetectorConstructor::SetXtalMaterial() - New Xtal Material: " << vMaterial->GetName() << G4endl;
+        fWorldMaterial = vMaterial;
+        if(fWorldLogic){
+            fWorldLogic->SetMaterial(vMaterial);
+            G4RunManager::GetRunManager()->PhysicsHasBeenModified();
+        }
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4String DetectorConstruction::GetWorldMaterial(){
+    if(fXtalMaterial) {
+        return fWorldMaterial->GetName();
+    }
+    return "";
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.
+
 void DetectorConstruction::SetXtalMaterial(const G4String& name){
     G4Material* vMaterial = G4Material::GetMaterial(name, false);
     
@@ -364,6 +385,16 @@ G4String DetectorConstruction::GetXtalMaterial(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void DetectorConstruction::SetSSDSize(G4ThreeVector size){
+    if(fSSDSize != size) {
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+        fSSDSize = size;
+    }
+
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void DetectorConstruction::SetSSD0XtalDistance(G4double distance) {
     if(fSSD0XtalDistance != distance) {
         G4RunManager::GetRunManager()->GeometryHasBeenModified();
@@ -387,6 +418,16 @@ void DetectorConstruction::SetSSD2XtalDistance(G4double distance) {
         G4RunManager::GetRunManager()->GeometryHasBeenModified();
         fSSD2XtalDistance = distance;
     }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::SetSCISize(G4ThreeVector size){
+    if(fSCISize != size) {
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+        fSCISize = size;
+    }
+    
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

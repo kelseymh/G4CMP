@@ -58,12 +58,18 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     
     fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,1.,0.));
     
-    fParticleGun->SetParticlePosition(G4ThreeVector(0.,-20. * CLHEP::centimeter,0.));
+    fParticleGun->SetParticlePosition(G4ThreeVector(0.,-1400. * CLHEP::centimeter,0.));
+    
+    fDivDistribution = "";
+    
+    fCutX = 0.;
+    
+    fCutY = 0.;
     
     fDivX = 0.;
     
     fDivY = 0.;
-
+    
     fWidthX = 0.;
     
     fWidthY = 0.;
@@ -79,6 +85,9 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
     //----------------------------------------
@@ -87,13 +96,37 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     
     G4ThreeVector vParticleMomentumDirection = G4ThreeVector(0.,1.,0.);
     
-//    G4double vRotationX = (G4UniformRand() - 0.5 ) * 2. * fDivX;
-//    
-//    G4double vRotationY = (G4UniformRand() - 0.5 ) * 2. * fDivY;
+    G4double vRotationX = 0.;
+    G4double vRotationY = 0.;
     
-    G4double vRotationX = CLHEP::RandGauss::shoot(0.,fDivX);
+    G4bool bCutX = true;
+    G4bool bCutY = true;
     
-    G4double vRotationY = CLHEP::RandGauss::shoot(0.,fDivY);
+    do{
+        if(fDivDistribution == "gauss"){
+            vRotationX = CLHEP::RandGauss::shoot(0.,fDivX);
+            vRotationY = CLHEP::RandGauss::shoot(0.,fDivY);
+        }
+        else{
+            vRotationX = (G4UniformRand() - 0.5 ) * 2. * fDivX;
+            vRotationY = (G4UniformRand() - 0.5 ) * 2. * fDivY;
+        }
+        if(fabs(vRotationX)<fCutX ||
+           fCutX == 0.){
+            bCutX = true;
+        }
+        else{
+            bCutX = false;
+        }
+        if(fabs(vRotationY)<fCutY ||
+           fCutY == 0.){
+            bCutY = true;
+        }
+        else{
+            bCutY = false;
+        }
+    }
+    while(!(bCutX && bCutY));
     
     vParticleMomentumDirection = G4ThreeVector(0.,1.,0.).rotate(G4ThreeVector(0,0,1),vRotationX).unit();
     
@@ -102,13 +135,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     fParticleGun->SetParticleMomentumDirection(vParticleMomentumDirection);
     
     G4ThreeVector vPosition = fParticleGun->GetParticlePosition();
-
+    
     vPosition.setX(CLHEP::RandGauss::shoot(0.,fWidthX));
     
-    vPosition.setY(CLHEP::RandGauss::shoot(0.,fWidthY));
+    vPosition.setZ(CLHEP::RandGauss::shoot(0.,fWidthY));
     
     fParticleGun->SetParticlePosition(vPosition);
-
+        
     fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 

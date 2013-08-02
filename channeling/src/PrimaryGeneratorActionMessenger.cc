@@ -39,6 +39,23 @@
 PrimaryGeneratorActionMessenger::PrimaryGeneratorActionMessenger(PrimaryGeneratorAction * mpga)
 :fTarget (mpga)
 {
+    fDivergenceDistribution = new G4UIcmdWithAString("/gun/setDivDistr",this);
+    fDivergenceDistribution->SetGuidance("Set beam divergence distribution.");
+    fDivergenceDistribution->SetParameterName("beamdivdistr",true);
+    fDivergenceDistribution->SetDefaultValue("");
+    
+    fCutX = new G4UIcmdWithADoubleAndUnit("/gun/setCutX",this);
+    fCutX->SetGuidance("Set beam cut Y.");
+    fCutX->SetParameterName("beamcutx",true);
+    fCutX->SetDefaultValue(0.);
+    fCutX->SetDefaultUnit("rad");
+    
+    fCutY = new G4UIcmdWithADoubleAndUnit("/gun/setCutY",this);
+    fCutY->SetGuidance("Set beam cut X.");
+    fCutY->SetParameterName("beamcuty",true);
+    fCutY->SetDefaultValue(0.);
+    fCutY->SetDefaultUnit("rad");
+
     fDivergenceX = new G4UIcmdWithADoubleAndUnit("/gun/setDivX",this);
     fDivergenceX->SetGuidance("Set beam divergence Y.");
     fDivergenceX->SetParameterName("beamdivx",true);
@@ -68,6 +85,9 @@ PrimaryGeneratorActionMessenger::PrimaryGeneratorActionMessenger(PrimaryGenerato
 
 PrimaryGeneratorActionMessenger::~PrimaryGeneratorActionMessenger()
 {
+    delete fDivergenceDistribution;
+    delete fCutX;
+    delete fCutY;
     delete fDivergenceX;
     delete fDivergenceY;
     delete fWidthX;
@@ -78,6 +98,15 @@ PrimaryGeneratorActionMessenger::~PrimaryGeneratorActionMessenger()
 
 void PrimaryGeneratorActionMessenger::SetNewValue(G4UIcommand * command,G4String newValue)
 {
+    if(command==fDivergenceDistribution ){
+        fTarget->SetBeamDivergencDistribution(newValue);
+    }
+    if(command==fCutX ){
+        fTarget->SetBeamCutX(fCutX->GetNewDoubleValue(newValue));
+    }
+    if(command==fCutY ){
+        fTarget->SetBeamCutX(fCutY->GetNewDoubleValue(newValue));
+    }
     if(command==fDivergenceX ){
         fTarget->SetBeamDivergenceX(fDivergenceX->GetNewDoubleValue(newValue));
     }
@@ -97,6 +126,15 @@ void PrimaryGeneratorActionMessenger::SetNewValue(G4UIcommand * command,G4String
 G4String PrimaryGeneratorActionMessenger::GetCurrentValue(G4UIcommand * command)
 {
     G4String cv;
+    if( command==fDivergenceDistribution ){
+        cv = fTarget->GetBeamDivergencDistribution();
+    }
+    if( command==fCutX ){
+        cv = fCutX->ConvertToString(fTarget->GetBeamCutX(),"rad");
+    }
+    if( command==fCutY ){
+        cv = fCutY->ConvertToString(fTarget->GetBeamCutY(),"rad");
+    }
     if( command==fDivergenceX ){
         cv = fDivergenceX->ConvertToString(fTarget->GetBeamDivergenceX(),"rad");
     }

@@ -53,12 +53,21 @@ public:
     virtual ~PrimaryGeneratorAction();
     
     void GeneratePrimaries(G4Event*);
-    
+
+    void SetBeamDivergencDistribution(G4String div) {fDivDistribution = div;};
+    G4String GetBeamDivergencDistribution() {return fDivDistribution;};
+
     void SetBeamDivergenceX(G4double div) {fDivX = div;};
     G4double GetBeamDivergenceX() {return fDivX;};
 
     void SetBeamDivergenceY(G4double div) {fDivY=div;};
     G4double GetBeamDivergenceY() {return fDivY;};
+
+    void SetBeamCutX(G4double div) {fCutX = div;};
+    G4double GetBeamCutX() {return fCutX;};
+    
+    void SetBeamCutY(G4double div) {fCutY = div;};
+    G4double GetBeamCutY() {return fCutY;};
 
     void SetBeamWidthX(G4double width) {fWidthX = width;};
     G4double GetBeamWidthX() {return fWidthX;};
@@ -70,7 +79,11 @@ private:
     G4ParticleGun* fParticleGun;	 //pointer a to G4  class
     
     PrimaryGeneratorActionMessenger *fMessenger;
+
     
+    G4String fDivDistribution;
+    G4double fCutX;
+    G4double fCutY;
     G4double fDivX;
     G4double fDivY;
     G4double fWidthX;

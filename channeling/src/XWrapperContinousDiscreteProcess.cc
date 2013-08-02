@@ -53,7 +53,7 @@ XWrapperContinuousDiscreteProcess::XWrapperContinuousDiscreteProcess(const G4Str
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XWrapperContinuousDiscreteProcess::XWrapperContinuousDiscreteProcess(const G4String& processName, G4VContinuousDiscreteProcess* toRegister)
+XWrapperContinuousDiscreteProcess::XWrapperContinuousDiscreteProcess(const G4String&, G4VContinuousDiscreteProcess* toRegister)
 :G4VContinuousDiscreteProcess("XWrapperContinuousDiscreteProcess"){
     fRegisteredProcess = toRegister;
 }
@@ -174,9 +174,9 @@ void XWrapperContinuousDiscreteProcess::StartTracking(G4Track* aTrack){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XWrapperContinuousDiscreteProcess::GetMeanFreePath(const G4Track& aTrack,
-                                                            G4double previousStepSize,
-                                                            G4ForceCondition *condition){
+G4double XWrapperContinuousDiscreteProcess::GetMeanFreePath(const G4Track&,
+                                                            G4double, //previousStepSize,
+                                                            G4ForceCondition*){
     return DBL_MAX;
 }
 

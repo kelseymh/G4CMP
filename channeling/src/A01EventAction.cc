@@ -71,6 +71,11 @@ A01EventAction::~A01EventAction()
     fFileOutSD.close();
     fFileOutRBSD.close();
     
+#ifdef ROOT
+    fTree->Write();
+    fTree->Close();
+#endif
+    
     delete fMessenger;
 }
 
@@ -94,9 +99,17 @@ void A01EventAction::SetFileName(const G4String& vFileName){
     filename = fFileName + "_RBSD.txt";
     fFileOutRBSD.open(filename.c_str());
     
-    fFileOutSCI << "hit,det,posx,posy,posz,en" << std::endl;
-    fFileOutSD << "hit,det,posx,posy,posz,en" << std::endl;
-    fFileOutRBSD << "hit,det,posx,posy,posz,en" << std::endl;
+#ifdef ROOT
+    std::string vRootFileName = fFileName + ".root";
+    fRootFile = new TFile(vRootFileName.c_str(),"RECREATE");
+    fTree = new TTree("t","G4CMP Channeling");
+    fTree->Branch("det",&fDetectorSave,"x/D:y/D:z/D:en/D:id/i:layer/i");
+#endif
+    
+    fFileOutSCI << "hit,det,posx,posy,posz,en,id" << std::endl;
+    //    fFileOutSD << "hit,det,posx,posy,posz,en,id" << std::endl;
+    fFileOutSD << "x1,y1,z1,x2,y2,z2,x3,y3,z3,s1,s2,id" << std::endl;
+    fFileOutRBSD << "hit,det,posx,posy,posz,en,id" << std::endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -107,7 +120,7 @@ G4String A01EventAction::GetFileName(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void A01EventAction::BeginOfEventAction(const G4Event* evt){
+void A01EventAction::BeginOfEventAction(const G4Event*){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -147,8 +160,7 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
     if(HCE)
     {
         //fSD = dynamic_cast<A01DriftChamberHitsCollection*>(aHC);
-        
-        
+
         if(fSCI_ID != -1){
             G4VHitsCollection* aHCSCI = HCE->GetHC(fSCI_ID);
             fSCI = (A01DriftChamberHitsCollection*)(aHCSCI);
@@ -166,9 +178,7 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
     }
     
     // Diagnostics
-    
-    //if (fVerboseLevel==0 || evt->GetEventID() % fVerboseLevel != 0) return;
-    
+        
     G4PrimaryParticle* primary = evt->GetPrimaryVertex(0)->GetPrimary(0);
     if(fmod(evt->GetEventID(),100)==0){
         G4cout << G4endl
@@ -176,27 +186,49 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
         << primary->GetG4code()->GetParticleName()
         << " " << primary->GetMomentumDirection() << G4endl;
     }
-    
-    
-    if(fSCI && fFileOutSCI)
-    {
-        int n_hit_sci = fSCI->entries();
-        for(int i1=0;i1<n_hit_sci;i1++)
-        {
-            A01DriftChamberHit* aHit = (*fSCI)[i1];
-            fFileOutSCI << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z() << "," << aHit->GetEnergy() << std::endl;
-        }
-    }
-    
+        
     if(fSD && fFileOutSD)
     {
         int n_hit_sd = fSD->entries();
-        for(int i1=0;i1<n_hit_sd;i1++)
-        {
-            A01DriftChamberHit* aHit = (*fSD)[i1];
-            fFileOutSD << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z()<< "," << aHit->GetEnergy() << std::endl;
+        for(int i2=0;i2<3;i2++){
+            bool bVoid = true;
+            for(int i1=0;i1<n_hit_sd;i1++)
+            {
+                A01DriftChamberHit* aHit = (*fSD)[i1];
+                if(aHit->GetLayerID()==i2 && bVoid == true) {
+                    fFileOutSD << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z() << ",";
+                    bVoid = false;
+                }
+            }
+            if(bVoid == true){
+                fFileOutSD << "0.,0.,0.,";
+            }
         }
     }
+
+    int hitA = 0;
+    int hitB = 0;
+
+    if(fSCI && fFileOutSD)
+    {
+        int n_hit_sd = fSCI->entries();
+            for(int i1=0;i1<n_hit_sd;i1++)
+            {
+                A01DriftChamberHit* aHit = (*fSCI)[i1];
+                if(aHit->GetLayerID()==0) {
+                    hitA++;
+                }
+                if(aHit->GetLayerID()==1) {
+                    hitB++;
+                }
+            }
+    }
+
+    fFileOutSD << hitA << "," << hitB << ",";
+
+    fFileOutSD <<  evt->GetEventID() <<  std::endl;
+    
+    
     
     if(fRBSD && fFileOutRBSD)
     {
@@ -204,9 +236,23 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
         for(int i1=0;i1<n_hit_sd;i1++)
         {
             A01DriftChamberHit* aHit = (*fRBSD)[i1];
-            fFileOutRBSD << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z()<< "," << aHit->GetEnergy() << std::endl;
+            fFileOutRBSD << i1 << "," << aHit->GetLayerID() << "," << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z()<< "," << aHit->GetEnergy() << ","<< evt->GetEventID() <<  std::endl;
         }
     }
+    
+    
+#ifdef ROOT
+    if((fSCI || fSD || fRBSD)){
+        fDetectorSave.x = aHit->GetWorldPos().x();
+        fDetectorSave.y = aHit->GetWorldPos().y();
+        fDetectorSave.z = aHit->GetWorldPos().z();
+        fDetectorSave.en = aHit->GetEnergy();
+        fDetectorSave.id = evt->GetEventID();
+        fDetectorSave.layer = aHit->GetLayerID();
+        fTree->Fill();
+    }
+#endif
+    
     
 }
 

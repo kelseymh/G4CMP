@@ -50,7 +50,7 @@ void TrackingAction::PreUserTrackingAction(const G4Track* aTrack){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void TrackingAction::PostUserTrackingAction(const G4Track* aTrack){
+void TrackingAction::PostUserTrackingAction(const G4Track*){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

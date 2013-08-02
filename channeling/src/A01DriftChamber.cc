@@ -73,15 +73,18 @@ G4bool A01DriftChamber::ProcessHits(G4Step*aStep,G4TouchableHistory* /*ROhist*/)
     if(charge==0) return true;
   
     G4StepPoint* preStepPoint = aStep->GetPreStepPoint();
-    if(!(preStepPoint->GetStepStatus() == fGeomBoundary)) return true;
+    G4StepPoint* postStepPoint = aStep->GetPostStepPoint();
+
+    if(!(postStepPoint->GetStepStatus() == fGeomBoundary)) return true;
     
     G4TouchableHistory* theTouchable = (G4TouchableHistory*)(preStepPoint->GetTouchable());
-    G4VPhysicalVolume* theMotherPhysical = theTouchable->GetVolume(1); // mother
-    G4int copyNo = theMotherPhysical->GetCopyNo();
+    G4VPhysicalVolume* thePhysical = theTouchable->GetVolume(0); // mother
+    G4int copyNo = thePhysical->GetCopyNo();
     G4ThreeVector worldPos = preStepPoint->GetPosition();
     G4ThreeVector localPos = theTouchable->GetHistory()->GetTopTransform().TransformPoint(worldPos);
     
     A01DriftChamberHit* aHit = new A01DriftChamberHit(copyNo);
+    aHit->SetLayerID(copyNo);
     aHit->SetWorldPos(worldPos);
     aHit->SetLocalPos(localPos);
     aHit->SetTime(preStepPoint->GetGlobalTime());

@@ -92,7 +92,7 @@ protected:
     virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* );
 
 protected:
-    virtual G4double GetContinuousStepLimit(const G4Track& aTrack,G4double  previousStepSize,G4double  currentMinimumStep,G4double& currentSafety) {;};
+    virtual G4double GetContinuousStepLimit(const G4Track& ,G4double  ,G4double ,G4double& ) {return DBL_MAX;}
     
 
     /////////////////////////////////////////////////////////

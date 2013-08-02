@@ -42,6 +42,11 @@
 DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstruction* mpga)
 :fTarget(mpga)
 {
+    fWorldMaterialCmd = new G4UIcmdWithAString("/mydet/setWorldMaterial",this);
+    fWorldMaterialCmd->SetGuidance("Set World material.");
+    fWorldMaterialCmd->SetParameterName("worldMat",true);
+    fWorldMaterialCmd->SetDefaultValue("G4_Galactic");
+
     fMydetDirectory = new G4UIdirectory("/mydet/");
     fMySSDDirectory = new G4UIdirectory("/mydet/ssd/");
     fMySCIDirectory = new G4UIdirectory("/mydet/sci/");
@@ -50,28 +55,37 @@ DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstructio
     
     fMydetDirectory->SetGuidance("Channeling experiment detector setup control commands.");
     
+    fSSDSizeCmd = new G4UIcmdWith3VectorAndUnit("/mydet/ssd/setSize",this);
+    fSSDSizeCmd->SetGuidance("Set SD size.");
+    fSSDSizeCmd->SetParameterName("sizeSSDx","sizeSSDy","sizeSSDz",true);
+    fSSDSizeCmd->SetDefaultValue(G4ThreeVector(1.92,0.06,1.92));
+    fSSDSizeCmd->SetDefaultUnit("cm");
+
     fSSD0XtalDistanceCmd = new G4UIcmdWithADoubleAndUnit("/mydet/ssd/setDist0X",this);
     fSSD0XtalDistanceCmd->SetGuidance("Distance Xtal and SD0.");
     fSSD0XtalDistanceCmd->SetParameterName("distSSD0Xtal",true);
-    //fSSD0XtalDistanceCmd->SetRange("distSSD0Xtal>-150. && distSSD0Xtal<-25.");
     fSSD0XtalDistanceCmd->SetDefaultValue(-105.);
     fSSD0XtalDistanceCmd->SetDefaultUnit("cm");
     
     fSSD1XtalDistanceCmd = new G4UIcmdWithADoubleAndUnit("/mydet/ssd/setDist1X",this);
     fSSD1XtalDistanceCmd->SetGuidance("Distance Xtal and SD1.");
     fSSD1XtalDistanceCmd->SetParameterName("distSSD1Xtal",true);
-    //fSSD1XtalDistanceCmd->SetRange("distSSD1Xtal>-20. && distSSD1Xtal<5.");
     fSSD1XtalDistanceCmd->SetDefaultValue(-5.);
     fSSD1XtalDistanceCmd->SetDefaultUnit("cm");
     
     fSSD2XtalDistanceCmd = new G4UIcmdWithADoubleAndUnit("/mydet/ssd/setDist2X",this);
     fSSD2XtalDistanceCmd->SetGuidance("Distance Xtal and SD2.");
     fSSD2XtalDistanceCmd->SetParameterName("distSSD2Xtal",true);
-    //fSSD2XtalDistanceCmd->SetRange("distSSD2Xtal>-5. && distSSD2Xtal<150.");
     fSSD2XtalDistanceCmd->SetDefaultValue(+95.);
     fSSD2XtalDistanceCmd->SetDefaultUnit("cm");
     
     
+    fSCISizeCmd = new G4UIcmdWith3VectorAndUnit("/mydet/sci/setSize",this);
+    fSCISizeCmd->SetGuidance("Set SCI size.");
+    fSCISizeCmd->SetParameterName("sizeSCIx","sizeSCIy","sizeSCIz",true);
+    fSCISizeCmd->SetDefaultValue(G4ThreeVector(1.92,0.06,1.92));
+    fSCISizeCmd->SetDefaultUnit("cm");
+
     fSCIRelativeDistanceCmd = new G4UIcmdWithADoubleAndUnit("/mydet/sci/setDist",this);
     fSCIRelativeDistanceCmd->SetGuidance("Distance between the two scintillators.");
     fSCIRelativeDistanceCmd->SetParameterName("distSCI",true);
@@ -166,11 +180,14 @@ DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstructio
 DetectorConstructionMessenger::~DetectorConstructionMessenger()
 {
     delete fMydetDirectory;
+    delete fWorldMaterialCmd;
     
+    delete fSSDSizeCmd;
     delete fSSD0XtalDistanceCmd;
     delete fSSD1XtalDistanceCmd;
     delete fSSD2XtalDistanceCmd;
     
+    delete fSCISizeCmd;
     delete fSCIRelativeDistanceCmd;
     delete fSCIXtalDistanceCmd;
     
@@ -195,6 +212,10 @@ DetectorConstructionMessenger::~DetectorConstructionMessenger()
 
 void DetectorConstructionMessenger::SetNewValue(G4UIcommand * command,G4String newValue)
 {
+    if(command==fWorldMaterialCmd ){
+        fTarget->SetWorldMaterial(newValue);
+    }
+
     if(command==fAddRBSDetector ){
         fTarget->AddRBSDetector();
     }
@@ -209,6 +230,9 @@ void DetectorConstructionMessenger::SetNewValue(G4UIcommand * command,G4String n
     }
 
     
+    if(command==fSSDSizeCmd ){
+        fTarget->SetSSDSize(fSSDSizeCmd->GetNew3VectorValue(newValue));
+    }
     if(command==fSSD0XtalDistanceCmd ){
         fTarget->SetSSD0XtalDistance(fSSD0XtalDistanceCmd->GetNewDoubleValue(newValue));
     }
@@ -220,6 +244,9 @@ void DetectorConstructionMessenger::SetNewValue(G4UIcommand * command,G4String n
     }
     
     
+    if(command==fSCISizeCmd ){
+        fTarget->SetSCISize(fSCISizeCmd->GetNew3VectorValue(newValue));
+    }
     if(command==fSCIRelativeDistanceCmd ){
         fTarget->SetSCIRelativeDistance(fSCIRelativeDistanceCmd->GetNewDoubleValue(newValue));
     }
@@ -265,6 +292,13 @@ G4String DetectorConstructionMessenger::GetCurrentValue(G4UIcommand * command)
 {
     G4String cv;
     
+    if( command==fWorldMaterialCmd ){
+        cv = fTarget->GetWorldMaterial();
+    }
+
+    if( command==fSSDSizeCmd ){
+        cv = fSSDSizeCmd->ConvertToString(fTarget->GetSSDSize(),"cm");
+    }
     if( command==fSSD0XtalDistanceCmd ){
         cv = fSSD0XtalDistanceCmd->ConvertToString(fTarget->GetSSD0XtalDistance(),"cm");
     }
@@ -276,6 +310,9 @@ G4String DetectorConstructionMessenger::GetCurrentValue(G4UIcommand * command)
     }
     
     
+    if( command==fSCISizeCmd ){
+        cv = fSCISizeCmd->ConvertToString(fTarget->GetSCISize(),"cm");
+    }
     if( command==fSCIRelativeDistanceCmd ){
         cv = fSCIRelativeDistanceCmd->ConvertToString(fTarget->GetSCIRelativeDistance(),"cm");
     }

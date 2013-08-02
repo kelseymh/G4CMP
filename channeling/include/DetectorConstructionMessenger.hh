@@ -37,7 +37,6 @@ class G4UIdirectory;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWith3VectorAndUnit;
 class G4UIcmdWithAString;
-class G4UIcmdWithAString;
 
 #include "G4UImessenger.hh"
 #include "globals.hh"
@@ -60,15 +59,19 @@ class DetectorConstructionMessenger: public G4UImessenger
     G4UIdirectory* fMyRBSDirectory;
     G4UIdirectory* fMyXtalDirectory;
 
+    G4UIcmdWithAString*  fWorldMaterialCmd;
+
     G4UIcmdWithAString*  fAddRBSDetector;
     G4UIcmdWithAString*  fAddScintillator;
     G4UIcmdWithAString*  fAddSiliconDetector;
     G4UIcmdWithAString*  fAddXtalTarget;
 
+    G4UIcmdWith3VectorAndUnit*  fSSDSizeCmd;
     G4UIcmdWithADoubleAndUnit*  fSSD0XtalDistanceCmd;
     G4UIcmdWithADoubleAndUnit*  fSSD1XtalDistanceCmd;
     G4UIcmdWithADoubleAndUnit*  fSSD2XtalDistanceCmd;
     
+    G4UIcmdWith3VectorAndUnit*  fSCISizeCmd;
     G4UIcmdWithADoubleAndUnit*  fSCIRelativeDistanceCmd;
     G4UIcmdWithADoubleAndUnit*  fSCIXtalDistanceCmd;
     

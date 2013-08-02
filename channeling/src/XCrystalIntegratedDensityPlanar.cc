@@ -42,7 +42,7 @@ XCrystalIntegratedDensityPlanar::~XCrystalIntegratedDensityPlanar(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XCrystalIntegratedDensityPlanar::ComputeIntegratedDensity(G4double vPotentialInitial, XPhysicalLattice* vLattice, G4int vParticleCharge){
+G4double XCrystalIntegratedDensityPlanar::ComputeIntegratedDensity(G4double vPotentialInitial, G4int vParticleCharge){
     
     unsigned int i1 = 0;
     

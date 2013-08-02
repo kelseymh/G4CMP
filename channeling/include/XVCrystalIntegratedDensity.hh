@@ -69,7 +69,7 @@ public:
     virtual void InitializeTable();
     
 protected:
-    virtual G4double ComputeIntegratedDensity(G4double,XPhysicalLattice*,G4int) = 0;
+    virtual G4double ComputeIntegratedDensity(G4double,G4int);
     G4double FindCatmullRomInterpolate(G4double &p0, G4double &p1, G4double &p2, G4double &p3, G4double &x);
 
 private:

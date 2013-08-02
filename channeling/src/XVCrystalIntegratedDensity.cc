@@ -176,7 +176,7 @@ void XVCrystalIntegratedDensity::InitializeTable(){
     
     for(unsigned int i=0;i<GetNumberOfPoints();i++){
         vPotentialInitial = (fPotentialMinimum + fPotentialRange * G4double(i+1) / G4double(fNumberOfPoints));
-        fTable.at(i) += ComputeIntegratedDensity(vPotentialInitial,fLattice,fParticleCharge);
+        fTable.at(i) += ComputeIntegratedDensity(vPotentialInitial,fParticleCharge);
     }
 }
 
@@ -227,7 +227,7 @@ G4double XVCrystalIntegratedDensity::GetIntegratedDensity(G4double vPotential, X
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XVCrystalIntegratedDensity::ComputeIntegratedDensity(G4double vPotentialInitial, XPhysicalLattice* vLattice, G4int vParticleCharge){
+G4double XVCrystalIntegratedDensity::ComputeIntegratedDensity(G4double vPotentialInitial, G4int){
     
     unsigned int i1,i2,i3;
     i1 = i2 = i3 = 0;
@@ -293,10 +293,8 @@ void XVCrystalIntegratedDensity::ReadFromFile(const G4String& filename){
     std::ifstream vFileIn;
     vFileIn.open(filename);
     
-    unsigned int vNumberOfPoints = 0;
-    G4double vPotential = 0.;
-    G4double fPotentialMinimum = +DBL_MAX;
-    G4double fPotentialMaximum = -DBL_MAX;
+    fPotentialMinimum = +DBL_MAX;
+    fPotentialMaximum = -DBL_MAX;
     G4double vDensity = 0.;
 
     fTable.clear();

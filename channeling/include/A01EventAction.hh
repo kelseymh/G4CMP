@@ -38,6 +38,19 @@
 #include <iostream>
 #include <fstream>
 
+#ifdef ROOT
+#include "TFile.h"
+#include "TTree.h"
+struct ROOT_save
+{
+    Double_t x;
+    Double_t y;
+    Double_t z;
+    Double_t en;
+    UInt_t id;
+    UInt_t layer;
+};
+#endif
 
 class A01EventActionMessenger;
 
@@ -62,6 +75,12 @@ class A01EventAction : public G4UserEventAction
     std::ofstream fFileOutSCI;
     std::ofstream fFileOutSD;
     std::ofstream fFileOutRBSD;
+
+#ifdef ROOT
+    TFile *fRootFile;
+    TTree *fTree;
+    const ROOT_save fDetectorSave;
+#endif
 
     A01EventActionMessenger* fMessenger;
     G4int fVerboseLevel;

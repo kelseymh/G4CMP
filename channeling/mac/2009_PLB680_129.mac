@@ -1,0 +1,35 @@
+/myproc/channeling 1
+/myproc/wrapper 1
+/myproc/scattering ss
+/myproc/decay 1
+
+/mystack/KillAllSecondaries 1
+
+/mydet/setWorldMaterial G4_AIR
+
+/mydet/ssd/setDist0X -1117. cm
+/mydet/ssd/setDist1X -30. cm
+/mydet/ssd/setDist2X +1091.1 cm
+/mydet/addsd all
+
+/mydet/xtal/setMaterial G4_Si
+/mydet/xtal/setAngle 0. 0. 0. rad
+/mydet/xtal/setSize 1.0 1.94 70. mm
+/mydet/xtal/setCellAngle 90. 90. 90. deg
+/mydet/xtal/setCellSize 5.431 5.431 5.431 angstrom
+/mydet/xtal/setCurvRadius 38.416 0. 0. m
+/mydet/addxtal
+
+/gun/energy 400. GeV
+/gun/position 0. -1200. 0 cm
+/gun/particle proton
+
+/myevt/filename ../../../DATA/2009_PLB680_129
+/myproc/filename ../../../DATA/2009_PLB680_129
+
+/gun/setDivX 13.36E-6 rad
+/gun/setDivY 11.25E-6 rad
+/gun/setDivDistr gauss
+
+/run/initialize
+/run/beamOn 1000000

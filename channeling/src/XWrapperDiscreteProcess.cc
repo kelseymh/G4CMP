@@ -53,7 +53,7 @@ XWrapperDiscreteProcess::XWrapperDiscreteProcess(const G4String& aName)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XWrapperDiscreteProcess::XWrapperDiscreteProcess(const G4String& processName, G4VDiscreteProcess* toRegister)
+XWrapperDiscreteProcess::XWrapperDiscreteProcess(const G4String&, G4VDiscreteProcess* toRegister)
 :G4VDiscreteProcess("XWrapperDiscreteProcess"){
     fRegisteredProcess = toRegister;
 }
@@ -174,9 +174,9 @@ void XWrapperDiscreteProcess::StartTracking(G4Track* aTrack){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double XWrapperDiscreteProcess::GetMeanFreePath(const G4Track& aTrack,
-                                                  G4double previousStepSize,
-                                                  G4ForceCondition* condition){
+G4double XWrapperDiscreteProcess::GetMeanFreePath(const G4Track&,
+                                                  G4double, //previousStepSize,
+                                                  G4ForceCondition*){
     return DBL_MAX;
 }
 

@@ -85,14 +85,21 @@ public:
         G4RunManager::GetRunManager()->GeometryHasBeenModified();
     };
     
+public:
+    void SetWorldMaterial(const G4String& name);
+    G4String GetWorldMaterial();
+
 private:
     G4double fWorldSizeXZ;
     G4double fWorldSizeY;
     G4Box* fWorldSolid;
     G4LogicalVolume* fWorldLogic;
     G4VPhysicalVolume* fWorldPhysical;
-    
+    G4Material* fWorldMaterial;
+
 public:
+    void SetSSDSize(G4ThreeVector);
+    G4ThreeVector GetSSDSize() {return fSSDSize;};
     void SetSSD0XtalDistance(G4double);
     G4double GetSSD0XtalDistance() {return fSSD0XtalDistance;};
     void SetSSD1XtalDistance(G4double);
@@ -108,14 +115,15 @@ private:
     G4double fSSD0XtalDistance;
     G4double fSSD1XtalDistance;
     G4double fSSD2XtalDistance;
-    G4double fSSDSizeXZ;
-    G4double fSSDSizeY;
+    G4ThreeVector fSSDSize;
     G4Box* fSSDSolid;
     G4LogicalVolume* fSSDLogic;
     G4VPhysicalVolume* fSSDPhysical;
     
     
 public:
+    void SetSCISize(G4ThreeVector);
+    G4ThreeVector GetSCISize() {return fSCISize;};
     void SetSCIRelativeDistance(G4double);
     G4double GetSCIRelativeDistance() {return fSCIRelativeDistance;};
     void SetSCIXtalDistance(G4double);
@@ -126,8 +134,7 @@ private:
     
     G4double fSCIXtalDistance;
     G4double fSCIRelativeDistance;
-    G4double fSCISizeXZ;
-    G4double fSCISizeY;
+    G4ThreeVector fSCISize;
     G4Box* fSCISolid;
     G4LogicalVolume* fSCILogic;
     G4VPhysicalVolume* fSCIPhysical;
