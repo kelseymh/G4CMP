@@ -281,3 +281,9 @@ G4bool XWrapperContinuousDiscreteProcess::RetrievePhysicsTable( const G4Particle
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4double XWrapperContinuousDiscreteProcess::GetContinuousStepLimit(const G4Track& ,G4double  ,G4double ,G4double& ){
+    return DBL_MAX;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

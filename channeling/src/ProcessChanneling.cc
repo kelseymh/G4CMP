@@ -298,7 +298,7 @@ G4ThreeVector ProcessChanneling::ComputeVolumeReflectionOutgoingMomentum(const G
         
         vTransverseEnergy += (G4UniformRand() * fabs(vCentrifugalForce) );
         
-        vVrAngle = - fabs(vRadiusX)/vRadiusX * pow(+ 2. * fabs(vTransverseEnergy) / vTotalEnergy , 0.5);
+        vVrAngle = + fabs(vRadiusX)/vRadiusX * pow(+ 2. * fabs(vTransverseEnergy) / vTotalEnergy , 0.5);
         
         if(ParticleIsNegative(aTrack)){
             vVrAngle *= 0.8; // = see PLB 681 (2009) 233

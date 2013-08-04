@@ -3,7 +3,9 @@
 /myproc/scattering ss
 /myproc/decay 1
 
-/mydet/setWorldMaterial G4_AIR
+/mystack/KillAllSecondaries 0
+
+/mydet/setWorldMaterial G4_Galactic
 
 /mydet/ssd/setDist0X -1057. cm
 /mydet/ssd/setDist1X -43. cm

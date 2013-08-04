@@ -1,5 +1,5 @@
-/myproc/channeling 1
-/myproc/wrapper 1
+/myproc/channeling 0
+/myproc/wrapper 0
 /myproc/scattering ss
 /myproc/decay 1
 
@@ -15,7 +15,7 @@
 /mydet/addsci
 
 /mydet/xtal/setMaterial G4_Si
-/mydet/xtal/setAngle 0. 0. -90.E-6 rad
+/mydet/xtal/setAngle 0. 0. 0. rad
 /mydet/xtal/setSize 0.5 1.94 70. mm
 /mydet/xtal/setCellAngle 90. 90. 90. deg
 /mydet/xtal/setCellSize 5.431 5.431 5.431 angstrom
@@ -26,8 +26,8 @@
 /gun/position 0. -1100. 0 cm
 /gun/particle proton
 
-/myevt/filename ../../../DATA/2010_NIMB268_2655_VR
-/myproc/filename ../../../DATA/2010_NIMB268_2655_VR
+/myevt/filename ../../../DATA/2010_NIMB268_2655_AM
+/myproc/filename ../../../DATA/2010_NIMB268_2655_AM
 
 /gun/setDivX 9.27E-6 rad
 /gun/setDivY 5.25E-6 rad

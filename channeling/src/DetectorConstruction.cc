@@ -76,7 +76,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorConstruction::DetectorConstruction():fXtalLogic(0){
+DetectorConstruction::DetectorConstruction():fWorldLogic(0),fXtalLogic(0){
     
     DefineMaterials();
     

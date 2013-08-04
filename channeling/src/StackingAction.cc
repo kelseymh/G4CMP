@@ -38,7 +38,7 @@
 // 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
 //
 ////////////////////////////////////////////////////////////////////////
-// 
+//
 
 #include "StackingAction.hh"
 #include "StackingMessenger.hh"
@@ -51,16 +51,16 @@
 
 StackingAction::StackingAction()
 {
-  fStackMessenger = new StackingMessenger(this);
-  fKillSecondary  = false;
-  fParticle       = 0; 
+    fStackMessenger = new StackingMessenger(this);
+    fKillSecondary  = false;
+    fParticle       = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 StackingAction::~StackingAction()
 {
-  delete fStackMessenger;
+    delete fStackMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -68,29 +68,34 @@ StackingAction::~StackingAction()
 G4ClassificationOfNewTrack
 StackingAction::ClassifyNewTrack(const G4Track* aTrack)
 {
-  G4ClassificationOfNewTrack status = fUrgent;
-
-  const G4ParticleDefinition* part = aTrack->GetDefinition();
-
-  //stack or delete secondaries
-  if(aTrack->GetTrackID() > 1) {  
-    if (fKillSecondary || fParticle == part) { status = fKill; }
-  }
-  return status;
+    G4ClassificationOfNewTrack status = fUrgent;
+    
+    const G4ParticleDefinition* part = aTrack->GetDefinition();
+    
+    //stack or delete secondaries
+    if(aTrack->GetTrackID() > 1) {
+        if (fKillSecondary || fParticle == part){
+            status = fKill;
+        }
+        if (part->GetPDGCharge()==0){
+            status = fKill;
+        }
+    }
+    return status;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void StackingAction::SetKillStatus(G4bool value)    
-{ 
-  fKillSecondary = value;
+void StackingAction::SetKillStatus(G4bool value)
+{
+    fKillSecondary = value;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void StackingAction::SetKill(const G4String& name)  
-{ 
-  fParticle = G4ParticleTable::GetParticleTable()->FindParticle(name);
+void StackingAction::SetKill(const G4String& name)
+{
+    fParticle = G4ParticleTable::GetParticleTable()->FindParticle(name);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

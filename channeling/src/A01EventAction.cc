@@ -180,7 +180,7 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
     // Diagnostics
         
     G4PrimaryParticle* primary = evt->GetPrimaryVertex(0)->GetPrimary(0);
-    if(fmod(evt->GetEventID(),100)==0){
+    if(fmod(evt->GetEventID(),1)==0){
         G4cout << G4endl
         << ">>> Event " << evt->GetEventID() << " >>> Simulation truth : "
         << primary->GetG4code()->GetParticleName()
