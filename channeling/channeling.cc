@@ -55,10 +55,14 @@
 
 int main(int argc,char** argv)
 {
-    //Construct the default run manager
+    // Construct the default run manager
     G4RunManager* runManager = new G4RunManager;
 
-    //choose the Random engine
+    // Activate UI-command base scorer
+    G4ScoringManager * scManager = G4ScoringManager::GetScoringManager();
+    scManager->SetVerboseLevel(0);
+    
+    // Choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
     
     // Set mandatory initialization classes
@@ -75,15 +79,15 @@ int main(int argc,char** argv)
     // Get the pointer to the User Interface manager
     G4UImanager* UI = G4UImanager::GetUIpointer();  
     
-    if (argc!=1)   // batch mode
-    {
+    if(argc!=1) {
+        // Batch mode
         G4String command = "/control/execute ";
         G4String fileName = argv[1];
         UI->ApplyCommand(command+fileName);
     }
     
-    else           // Define visualization and UI terminal for interactive mode
-    {
+    else {
+        // Define visualization and UI terminal for interactive mode
 #ifdef G4VIS_USE
         G4VisManager* visManager = new G4VisExecutive;
         visManager->Initialize();
@@ -100,8 +104,7 @@ int main(int argc,char** argv)
 #endif
     }
     
-    //job termination
-    //
+    // Job termination
     delete runManager;
     
     return 0;

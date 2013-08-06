@@ -285,7 +285,7 @@ G4ThreeVector ProcessChanneling::ComputeVolumeReflectionOutgoingMomentum(const G
         
         G4ThreeVector vInterplanarPeriod = G4ThreeVector(GetXPhysicalLattice(aTrack)->ComputeInterplanarPeriod(),0.,0.);
         
-        G4double vTransverseEnergy = (ComputeCriticalEnergyMaximum(aTrack) - ComputeCriticalEnergyMinimum(aTrack));
+        G4double vTransverseEnergy = fabs(ComputeCriticalEnergyMaximum(aTrack) - ComputeCriticalEnergyMinimum(aTrack));
         
         G4double vCentrifugalForce = 0.;
         
@@ -298,7 +298,7 @@ G4ThreeVector ProcessChanneling::ComputeVolumeReflectionOutgoingMomentum(const G
         
         vTransverseEnergy += (G4UniformRand() * fabs(vCentrifugalForce) );
         
-        vVrAngle = + fabs(vRadiusX)/vRadiusX * pow(+ 2. * fabs(vTransverseEnergy) / vTotalEnergy , 0.5);
+        vVrAngle = - fabs(vRadiusX)/vRadiusX * pow(+ 2. * fabs(vTransverseEnergy) / vTotalEnergy , 0.5);
         
         if(ParticleIsNegative(aTrack)){
             vVrAngle *= 0.8; // = see PLB 681 (2009) 233
@@ -423,14 +423,18 @@ G4bool ProcessChanneling::IsUnderCoherentEffect(const G4Track& aTrack){
         }
     }
     else{
+        G4double vEnergyMaxVR = vEnergyMax;
+
         if(ParticleIsNegative(aTrack)) {
             vEnergyMin += ComputeCentrifugalEnergy(aTrack,G4ThreeVector(vInterplanarPeriod,0.,0.)).x();
             vEnergyMax += ComputeCentrifugalEnergy(aTrack,ComputePotentialWellCentre(aTrack)).x();
+            vEnergyMaxVR += ComputeCentrifugalEnergy(aTrack,ComputePotentialWellCentre(aTrack)+G4ThreeVector(vInterplanarPeriod,0.,0.)).x();
         }
         else{
             vEnergyMin += ComputeCentrifugalEnergy(aTrack,ComputePotentialWellCentre(aTrack)).x();
+            vEnergyMaxVR += ComputeCentrifugalEnergy(aTrack,G4ThreeVector(vInterplanarPeriod,0.,0.)).x();
         }
-        vTransverseEnergy += ComputeCentrifugalEnergy(aTrack,GetInfo(aTrack)->GetPositionChanneledInitial()).x();
+        vTransverseEnergy += ComputeCentrifugalEnergy(aTrack,GetInfo(aTrack)->GetPositionChanneled() + GetInfo(aTrack)->GetPositionChanneledInitial()).x();
         
         G4bool bNotBoundary = false;
         if(aTrack.GetStep()->GetPostStepPoint()->GetStepStatus() != fGeomBoundary &&
@@ -447,16 +451,20 @@ G4bool ProcessChanneling::IsUnderCoherentEffect(const G4Track& aTrack){
         G4double vSignLatticePost = vLatticeDirectionPost.x() / fabs(vLatticeDirectionPost.x());
 
         G4bool bCrossingPlane = false;
-        if(GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x() < 0. &&
-           vSignLatticePost < 0 &&
-           vSignLatticePre > 0){
-            bCrossingPlane = true;
-        }
-        if(GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x() > 0. &&
-           vSignLatticePost > 0 &&
-           vSignLatticePre < 0){
-            bCrossingPlane = true;
-        }
+//        if(GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x() < 0. &&
+//           vSignLatticePost < 0 &&
+//           vSignLatticePre > 0){
+//            bCrossingPlane = true;
+//        }
+//        if(GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x() > 0. &&
+//           vSignLatticePost > 0 &&
+//           vSignLatticePre < 0){
+//            bCrossingPlane = true;
+//        }
+//        if(vTransverseEnergy > vEnergyMax &&
+//           vTransverseEnergy <= vEnergyMaxVR){
+//            bCrossingPlane = true;
+//        }
 
         if(vTransverseEnergy <= vEnergyMax &&
            vTransverseEnergy >= vEnergyMin &&

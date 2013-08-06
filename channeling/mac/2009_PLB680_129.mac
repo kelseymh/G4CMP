@@ -5,7 +5,7 @@
 
 /mystack/KillAllSecondaries 1
 
-/mydet/setWorldMaterial G4_AIR
+/mydet/setWorldMaterial G4_Galactic
 
 /mydet/ssd/setDist0X -1117. cm
 /mydet/ssd/setDist1X -30. cm
@@ -32,4 +32,4 @@
 /gun/setDivDistr gauss
 
 /run/initialize
-/run/beamOn 1000000
+/run/beamOn 100000

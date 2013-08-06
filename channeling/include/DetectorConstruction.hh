@@ -185,7 +185,7 @@ private:
     G4ThreeVector fXtalCellSize;
     G4ThreeVector fXtalCellAngle;
     
-    G4Box* fXtalSolid;
+    G4VSolid* fXtalSolid;
     G4LogicalVolume* fXtalLogic;
     G4VPhysicalVolume* fXtalPhysical;
     
