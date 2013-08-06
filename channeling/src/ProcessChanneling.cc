@@ -442,30 +442,8 @@ G4bool ProcessChanneling::IsUnderCoherentEffect(const G4Track& aTrack){
             bNotBoundary = true;
         }
         
-        G4ThreeVector vPositionPre = ComputePositionInTheCrystal(aTrack.GetStep()->GetPreStepPoint(),aTrack);
-        G4ThreeVector vLatticeDirectionPre = GetXPhysicalLattice(aTrack)->GetLatticeDirection(vPositionPre);
-        G4double vSignLatticePre = vLatticeDirectionPre.x() / fabs(vLatticeDirectionPre.x());
+        G4bool bCrossingPlane = ParticleIsCrossingPlane(aTrack);
         
-        G4ThreeVector vPositionPost = ComputePositionInTheCrystal(aTrack.GetStep()->GetPostStepPoint(),aTrack);
-        G4ThreeVector vLatticeDirectionPost = GetXPhysicalLattice(aTrack)->GetLatticeDirection(vPositionPost);
-        G4double vSignLatticePost = vLatticeDirectionPost.x() / fabs(vLatticeDirectionPost.x());
-
-        G4bool bCrossingPlane = false;
-//        if(GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x() < 0. &&
-//           vSignLatticePost < 0 &&
-//           vSignLatticePre > 0){
-//            bCrossingPlane = true;
-//        }
-//        if(GetXPhysicalLattice(aTrack)->GetCurvatureRadius().x() > 0. &&
-//           vSignLatticePost > 0 &&
-//           vSignLatticePre < 0){
-//            bCrossingPlane = true;
-//        }
-//        if(vTransverseEnergy > vEnergyMax &&
-//           vTransverseEnergy <= vEnergyMaxVR){
-//            bCrossingPlane = true;
-//        }
-
         if(vTransverseEnergy <= vEnergyMax &&
            vTransverseEnergy >= vEnergyMin &&
            bNotBoundary == true &&
@@ -474,10 +452,16 @@ G4bool ProcessChanneling::IsUnderCoherentEffect(const G4Track& aTrack){
             GetInfo(aTrack)->SetCoherentEffect(1);
             return true;
         }
+        else if(vTransverseEnergy > vEnergyMax &&
+                vTransverseEnergy <= vEnergyMaxVR){
+            // the particle is in volume reflection
+            GetInfo(aTrack)->SetCoherentEffect(2);
+            return true;
+        }
         else if(bCrossingPlane == true &&
                 bNotBoundary == true &&
                 GetInfo(aTrack)->HasBeenUnderCoherentEffect() == false){
-            
+            // the particle is in volume reflection
             GetInfo(aTrack)->SetCoherentEffect(2);
             return true;
         }
@@ -851,6 +835,27 @@ G4bool ProcessChanneling::ParticleIsNegative(const G4Track& aTrack){
     else{
         return false;
     }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4bool ProcessChanneling::ParticleIsCrossingPlane(const G4Track& aTrack){
+    G4ThreeVector vPositionPre = ComputePositionInTheCrystal(aTrack.GetStep()->GetPreStepPoint(),aTrack);
+    G4ThreeVector vMomentumPre = GetXPhysicalLattice(aTrack)->ProjectMomentumVectorFromWorldToLattice(aTrack.GetStep()->GetPreStepPoint()->GetMomentum(),vPositionPre);
+    
+    G4ThreeVector vPositionPost = ComputePositionInTheCrystal(aTrack.GetStep()->GetPostStepPoint(),aTrack);
+    G4ThreeVector vMomentumPost = GetXPhysicalLattice(aTrack)->ProjectMomentumVectorFromWorldToLattice(aTrack.GetStep()->GetPostStepPoint()->GetMomentum(),vPositionPost);
+    
+    if(vMomentumPost.x()<0. &&
+       vMomentumPre.x()>0.){
+        return true;
+    }
+    if(vMomentumPost.x()>0. &&
+       vMomentumPre.x()<0.){
+        return true;
+    }
+    
+    return false;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
