@@ -75,6 +75,9 @@ XVCrystalCharacteristic* XCrystalIntegratedDensityHub::GetDensityNuclei(){
 
 void XCrystalIntegratedDensityHub::SetXPhysicalLattice(XPhysicalLattice* vLattice){
     fLattice = vLattice;
+    fDensityElectron->InitializePhysicalLattice(fLattice);
+    fDensityNuclei->InitializePhysicalLattice(fLattice);
+    fPotential->InitializePhysicalLattice(fLattice);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

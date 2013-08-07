@@ -1,6 +1,6 @@
 /myproc/channeling 1
 /myproc/wrapper 1
-/myproc/scattering ss
+/myproc/scattering nosc
 /myproc/decay 0
 
 /mystack/KillAllSecondaries 1
@@ -13,11 +13,11 @@
 /mydet/addsd all
 
 /mydet/xtal/setMaterial G4_Si
-/mydet/xtal/setAngle 0. 0. 0.E-6 rad
-/mydet/xtal/setSize 1000.0 1.00 1000. mm
+/mydet/xtal/setAngle 0. 0. 0. rad
+/mydet/xtal/setSize 1000.0 4.00 1000. mm
 /mydet/xtal/setCellAngle 90. 90. 90. deg
 /mydet/xtal/setCellSize 5.431 5.431 5.431 angstrom
-/mydet/xtal/setCurvRadius 10. 0. 0. m
+/mydet/xtal/setCurvRadius 40. 0. 0. m
 /mydet/addxtal
 
 /gun/energy 400. GeV
@@ -27,8 +27,8 @@
 /myevt/filename toymodel
 /myproc/filename toymodel
 
-/gun/setDivX 150.E-6 rad
+/gun/setDivX 20.E-6 rad
 /gun/setDivY 0.E-6 rad
 
 /run/initialize
-/run/beamOn 1000
+/run/beamOn 100000

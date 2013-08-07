@@ -107,8 +107,8 @@ void A01EventAction::SetFileName(const G4String& vFileName){
 #endif
     
     fFileOutSCI << "hit,det,posx,posy,posz,en,id" << std::endl;
-    //    fFileOutSD << "hit,det,posx,posy,posz,en,id" << std::endl;
-    fFileOutSD << "x1,y1,z1,x2,y2,z2,x3,y3,z3,s1,s2,id" << std::endl;
+    // fFileOutSD << "hit,det,posx,posy,posz,en,id" << std::endl;
+    // fFileOutSD << "x1,y1,z1,x2,y2,z2,x3,y3,z3,s1,s2,id" << std::endl;
     fFileOutRBSD << "hit,det,posx,posy,posz,en,id" << std::endl;
 }
 
@@ -196,12 +196,13 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
             {
                 A01DriftChamberHit* aHit = (*fSD)[i1];
                 if(aHit->GetLayerID()==i2 && bVoid == true) {
-                    fFileOutSD << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z() << ",";
+                    // fFileOutSD << aHit->GetWorldPos().x() << "," << aHit->GetWorldPos().y() << "," << aHit->GetWorldPos().z() << ",";
+                    fFileOutSD << aHit->GetWorldPos().x() << " " << aHit->GetWorldPos().y() << " " << aHit->GetWorldPos().z() << " ";
                     bVoid = false;
                 }
             }
             if(bVoid == true){
-                fFileOutSD << "0.,0.,0.,";
+                fFileOutSD << "0. 0. 0. ";
             }
         }
     }
@@ -224,7 +225,8 @@ void A01EventAction::EndOfEventAction(const G4Event* evt)
             }
     }
 
-    fFileOutSD << hitA << "," << hitB << ",";
+    //fFileOutSD << hitA << "," << hitB << ",";
+    fFileOutSD << hitA << " " << hitB << " ";
 
     fFileOutSD <<  evt->GetEventID() <<  std::endl;
     

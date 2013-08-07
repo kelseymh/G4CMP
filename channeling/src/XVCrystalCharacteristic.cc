@@ -30,7 +30,7 @@
 XVCrystalCharacteristic::XVCrystalCharacteristic(){
     fLatticeManager = XLatticeManager3::GetXLatticeManager();
     
-    fMaximum = DBL_MAX;    
+    fMaximum = DBL_MAX;
     fMinimum = DBL_MAX;
 }
 
@@ -41,23 +41,40 @@ XVCrystalCharacteristic::~XVCrystalCharacteristic(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XPhysicalLattice* XVCrystalCharacteristic::GetXPhysicalLattice(G4VPhysicalVolume* vVolume)
-{
+XPhysicalLattice* XVCrystalCharacteristic::GetXPhysicalLattice(G4VPhysicalVolume* vVolume){
     return fLatticeManager->GetXPhysicalLattice(vVolume);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XUnitCell* XVCrystalCharacteristic::GetXUnitCell(G4VPhysicalVolume* vVolume)
-{
+XUnitCell* XVCrystalCharacteristic::GetXUnitCell(G4VPhysicalVolume* vVolume){
     return GetXPhysicalLattice(vVolume)->GetXUnitCell();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XLogicalLattice* XVCrystalCharacteristic::GetLogicalLattice(G4VPhysicalVolume* vVolume)
-{
+XLogicalLattice* XVCrystalCharacteristic::GetLogicalLattice(G4VPhysicalVolume* vVolume){
     return GetXPhysicalLattice(vVolume)->GetLogicalLattice();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void XVCrystalCharacteristic::InitializePhysicalLattice(XPhysicalLattice* vLattice){
+    if(fPhysicalLattice != vLattice){
+        fPhysicalLattice = vLattice;
+        InitializeVector();
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4ThreeVector XVCrystalCharacteristic::GetEC(G4ThreeVector vPosition,XPhysicalLattice* vLattice){
+    if(IsInitialized(vLattice)){
+        return ComputeECFromVector(vPosition);
+    }
+    else{
+        return ComputeEC(vPosition,vLattice);
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -65,15 +82,15 @@ XLogicalLattice* XVCrystalCharacteristic::GetLogicalLattice(G4VPhysicalVolume* v
 G4double XVCrystalCharacteristic::ComputeTFScreeningRadius(XPhysicalLattice* vLattice){
     
     G4double vTFSR = CLHEP::Bohr_radius * 0.88534;
-
+    
     vTFSR /= (std::pow(vLattice->GetXUnitCell()->GetBase(0)->GetElement()->GetZ(),0.333333333));
-
-//    if(vLattice->GetParticleDefinition()->GetParticleName() == "proton"){
-//        vTFSR /= (std::pow(vLattice->GetMaterial()->GetZ(),0.333333333));
-//    }
-//    else{
-//        vTFSR /= (std::pow(vLattice->GetMaterial()->GetZ(),0.23) + std::pow(vLattice->GetParticleDefinition()->GetPDGCharge(),0.23));
-//    }
+    
+    //    if(vLattice->GetParticleDefinition()->GetParticleName() == "proton"){
+    //        vTFSR /= (std::pow(vLattice->GetMaterial()->GetZ(),0.333333333));
+    //    }
+    //    else{
+    //        vTFSR /= (std::pow(vLattice->GetMaterial()->GetZ(),0.23) + std::pow(vLattice->GetParticleDefinition()->GetPDGCharge(),0.23));
+    //    }
     
     return vTFSR;
 }
@@ -113,18 +130,18 @@ G4double XVCrystalCharacteristic::ComputeMaximum(XPhysicalLattice* vLattice){
     G4double vStepX = GetXUnitCell(vVolume)->GetSize().x() / vPrecisionX;
     G4double vStepY = GetXUnitCell(vVolume)->GetSize().y() / vPrecisionY;
     G4double vStepZ = GetXUnitCell(vVolume)->GetSize().z() / vPrecisionZ;
-
+    
     G4double vMaximum = -DBL_MAX;
     G4double vValue;
     
     for(unsigned int i=0;i<vPrecisionX;i++){
         for(unsigned int j=0;j<vPrecisionY;j++){
             for(unsigned int k=0;k<vPrecisionZ;k++){
-                if( (vValue = ComputeEC(G4ThreeVector(vStepX * i,vStepY * i,vStepZ * i),vLattice).mag() ) > vMaximum) vMaximum = vValue;
+                if( (vValue = GetEC(G4ThreeVector(vStepX * i,vStepY * i,vStepZ * i),vLattice).mag() ) > vMaximum) vMaximum = vValue;
             }
         }
     }
-
+    
     return vMaximum;
 }
 
@@ -146,7 +163,7 @@ G4double XVCrystalCharacteristic::ComputeMinimum(XPhysicalLattice* vLattice){
     for(unsigned int i=0;i<vPrecisionX;i++){
         for(unsigned int j=0;j<vPrecisionY;j++){
             for(unsigned int k=0;k<vPrecisionZ;k++){
-                if( (vValue = ComputeEC(G4ThreeVector(vStepX * i,vStepY * i,vStepZ * i),vLattice).mag() ) < vMinimum) vMinimum = vValue;
+                if( (vValue = GetEC(G4ThreeVector(vStepX * i,vStepY * i,vStepZ * i),vLattice).mag() ) < vMinimum) vMinimum = vValue;
             }
         }
     }
@@ -156,3 +173,13 @@ G4double XVCrystalCharacteristic::ComputeMinimum(XPhysicalLattice* vLattice){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+G4bool XVCrystalCharacteristic::IsInitialized(XPhysicalLattice* vLattice){
+    if(vLattice == fPhysicalLattice){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

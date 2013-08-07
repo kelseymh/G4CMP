@@ -43,7 +43,7 @@ G4ThreeVector XCrystalCharacteristicArray::ComputeEC(G4ThreeVector vPosition,XPh
     
     if(fCharacteristicVector.size()!=0){
         for(unsigned int i=0;i<fCharacteristicVector.size();i++){
-            vValue += fCharacteristicVector.at(i)->ComputeEC(vPosition,vLattice);
+            vValue += fCharacteristicVector.at(i)->GetEC(vPosition,vLattice);
         }
         return (vValue * G4double(1./G4double(fCharacteristicVector.size())));
     }

@@ -114,6 +114,7 @@ private:
     G4bool HasLatticeOnBoundary(const G4Track&);
     G4bool ParticleIsNegative(const G4Track&);
     G4bool ParticleIsCrossingPlane(const G4Track&);
+    G4bool ParticleIsNotOnBoundary(const G4Track&);
 
     void ComputeCrystalCharacteristic(const G4Track&);
     void PrintCrystalCharacteristicsOnFiles(const G4Track&);

@@ -31,6 +31,7 @@
 
 #include "XLatticeManager3.hh"
 #include "G4Track.hh"
+#include "G4PhysicsVector.hh"
 
 class XVCrystalCharacteristic {
 
@@ -40,15 +41,20 @@ private:
 protected:
     G4double fMaximum;
     G4double fMinimum;
+    XPhysicalLattice *fPhysicalLattice;
+    G4PhysicsVector* fVectorEC;
     
 public:
     //retrieval functions
     XPhysicalLattice* GetXPhysicalLattice(G4VPhysicalVolume*);
     XUnitCell* GetXUnitCell(G4VPhysicalVolume*);
     XLogicalLattice* GetLogicalLattice(G4VPhysicalVolume*);
-
+    void InitializePhysicalLattice(XPhysicalLattice*);
+    
     //virtual function to compute value starting from the point in the xtal reference frame and the physical volume of the xtal
+    G4ThreeVector GetEC(G4ThreeVector,XPhysicalLattice*);
     virtual G4ThreeVector ComputeEC(G4ThreeVector,XPhysicalLattice*) = 0;
+    virtual G4ThreeVector ComputeECFromVector(G4ThreeVector) = 0;
     virtual G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);
     
     virtual G4double ComputeTFScreeningRadius(XPhysicalLattice*);
@@ -60,6 +66,8 @@ public:
     virtual G4double ComputeMinimum(XPhysicalLattice*);
     
     virtual void PrintOnFile(const G4String&,XPhysicalLattice*,G4double = 1) = 0;
+    G4bool IsInitialized(XPhysicalLattice*);
+    virtual void InitializeVector() = 0;
     
     //Contructors
     XVCrystalCharacteristic();

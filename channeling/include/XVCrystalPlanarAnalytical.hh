@@ -44,9 +44,10 @@ public:
     G4int GetNumberOfPlanes();
 
     virtual G4double ComputeECForSinglePlane(G4double,XPhysicalLattice*) = 0; // G4double = position in the channel
-    
+
     //virtual function of XVCrystalCharacteristic
     G4ThreeVector ComputeEC(G4ThreeVector,XPhysicalLattice*);
+    G4ThreeVector ComputeECFromVector(G4ThreeVector);
     G4ThreeVector ComputePositionInUnitCell(G4ThreeVector,XPhysicalLattice*);//G4double = position in the channel; G4double& = interplanar distance
     
     virtual G4double ComputeMaximum(XPhysicalLattice*);
@@ -54,6 +55,7 @@ public:
 
     virtual void PrintOnFile(const G4String&,XPhysicalLattice*,G4double);
     
+    void InitializeVector();
     //Contructors
     XVCrystalPlanarAnalytical();
     ~XVCrystalPlanarAnalytical();

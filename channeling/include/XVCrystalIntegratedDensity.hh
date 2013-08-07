@@ -30,6 +30,7 @@
 #define XVCrystalIntegratedDensity_h
 
 #include "XVCrystalCharacteristic.hh"
+#include "G4PhysicsLinearVector.hh"
 
 class XVCrystalIntegratedDensity {
 
@@ -84,7 +85,7 @@ protected:
     G4double fPotentialRange;
 
 private:
-    std::vector<G4double> fTable;
+    G4PhysicsLinearVector* fTableVector;
     unsigned int fNumberOfPoints;
     unsigned int fIntegrationPoints[3];
     

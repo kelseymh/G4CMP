@@ -13,23 +13,22 @@
 /mydet/addsd all
 
 /mydet/xtal/setMaterial G4_Si
-/mydet/xtal/setAngle 0. 0. 0. rad
-/mydet/xtal/setSize 1.0 1.94 70. mm
+/mydet/xtal/setAngle 0. 0. -70.E-6 rad
+/mydet/xtal/setSize 100.0 3.0 100. mm
 /mydet/xtal/setCellAngle 90. 90. 90. deg
 /mydet/xtal/setCellSize 5.431 5.431 5.431 angstrom
-/mydet/xtal/setCurvRadius 38.416 0. 0. m
+/mydet/xtal/setCurvRadius 18.52 0. 0. m
 /mydet/addxtal
 
 /gun/energy 400. GeV
 /gun/position 0. -1200. 0 cm
 /gun/particle proton
 
-/myevt/filename ../../../DATA/2009_PLB680_129
-/myproc/filename ../../../DATA/2009_PLB680_129
+/myevt/filename ../../../DATA/2007_PRL98_154801
+/myproc/filename ../../../DATA/2007_PRL98_154801
 
-/gun/setDivX 13.36E-6 rad
-/gun/setDivY 11.25E-6 rad
-/gun/setDivDistr gauss
+/gun/setDivX 140.E-6 rad
+/gun/setDivY 10.E-6 rad
 
 /run/initialize
 /run/beamOn 1000000
