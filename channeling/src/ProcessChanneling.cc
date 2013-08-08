@@ -187,7 +187,7 @@ void ProcessChanneling::UpdatePosition(const G4Track& aTrack){
     else{
         G4double vPositionX = GetInfo(aTrack)->GetPositionChanneled().x();
         
-        if(GetInfo(aTrack)->HasBeenUnderCoherentEffect() == 1 || HasLatticeOnBoundary(aTrack)){
+        if(GetInfo(aTrack)->HasBeenUnderCoherentEffect() != 0 || HasLatticeOnBoundary(aTrack)){
             GetInfo(aTrack)->SetPositionChanneled(G4ThreeVector(0.,0.,0.));
         }
         else{
@@ -201,7 +201,7 @@ void ProcessChanneling::UpdatePosition(const G4Track& aTrack){
 
 void ProcessChanneling::UpdateMomentum(const G4Track& aTrack){
     if(GetInfo(aTrack)->GetMomentumChanneledInitial().x() == DBL_MAX){
-        // we take the PREVIOUS step point to compare, otherwise the momentum is not computed correctly
+        // the first time it enter the crystal we take the momentum for the post step which is the only one in the crystal
         G4ThreeVector vMomentum = ComputeMomentum(aTrack,aTrack.GetStep()->GetPostStepPoint());
         
         GetInfo(aTrack)->SetMomentumChanneled(vMomentum);
@@ -209,7 +209,8 @@ void ProcessChanneling::UpdateMomentum(const G4Track& aTrack){
         GetInfo(aTrack)->SetMomentumChanneledInitial(GetInfo(aTrack)->GetMomentumChanneled());
     }
     else{
-        G4ThreeVector vMomentum = GetInfo(aTrack)->GetMomentumChanneled();
+        // we take the PREVIOUS step point to compare, otherwise the momentum is not computed correctly
+       G4ThreeVector vMomentum = GetInfo(aTrack)->GetMomentumChanneled();
         
         vMomentum += ComputeMomentum(aTrack,aTrack.GetStep()->GetPreStepPoint());
         
@@ -328,8 +329,11 @@ G4ThreeVector ProcessChanneling::ComputePositionInTheCrystal(G4StepPoint* vStep,
     G4TouchableHistory* theTouchable = (G4TouchableHistory*)(vStepVol->GetTouchable());
     G4ThreeVector vWorldPos = vStepPos->GetPosition();
     G4ThreeVector vLocalPos = theTouchable->GetHistory()->GetTopTransform().TransformPoint(vWorldPos);
-        G4Tubs* vXtalSolid = (G4Tubs*) vStepVol->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();
-   vLocalPos.rotateZ(-vXtalSolid->GetStartPhiAngle());
+//    G4Tubs* vXtalSolid = (G4Tubs*) vStepVol->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();
+//    vLocalPos.rotateZ(-vXtalSolid->GetStartPhiAngle());
+    G4Box* vXtalSolid = (G4Box*) vStepVol->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();
+    vLocalPos += G4ThreeVector(vXtalSolid->GetXHalfLength(),vXtalSolid->GetYHalfLength(),vXtalSolid->GetZHalfLength());
+ 
     return vLocalPos;
 }
 

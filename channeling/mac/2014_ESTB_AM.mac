@@ -5,10 +5,10 @@
 
 /mystack/KillAllSecondaries 1
 
-/mydet/setWorldMaterial Vacuum
+/mydet/setWorldMaterial G4_Galactic
 
 /mydet/ssd/setDist2X +1000. cm
-/mydet/ssd/setSize +10. 0.01 +10. cm
+/mydet/ssd/setSize +100. 0.01 +100. cm
 /mydet/addsd 2
 
 /mydet/sci/setDistX +200. cm
@@ -17,7 +17,7 @@
 
 /mydet/xtal/setMaterial G4_Si
 /mydet/xtal/setAngle 0. 0. 0.E-6 rad
-/mydet/xtal/setSize 1.0 0.1 70. mm
+/mydet/xtal/setSize 1000.0 0.1 1000. mm
 /mydet/xtal/setCellAngle 90. 90. 90. deg
 /mydet/xtal/setCellSize 5.431 5.431 5.431 angstrom
 /mydet/xtal/setCurvRadius 1. 0. 0. m

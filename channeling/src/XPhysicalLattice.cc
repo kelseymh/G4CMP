@@ -385,12 +385,22 @@ G4bool XPhysicalLattice::IsBent(){
 G4ThreeVector XPhysicalLattice::ComputeBendingAngle(G4ThreeVector vPosition){
 
     G4double vAngleX = 0.;
+    G4double vAngleZ = 0.;
+    
+//    if(GetCurvatureRadius().x() != 0){
+//        vAngleX = vPosition.phi();
+//    }
+//
+//    return G4ThreeVector(vAngleX,0.,0.);
     
     if(GetCurvatureRadius().x() != 0){
-        vAngleX = vPosition.phi();
+        vAngleX = vPosition.y() / GetCurvatureRadius().x();
     }
+    if(GetCurvatureRadius().z() != 0){
+        vAngleZ = vPosition.y() / GetCurvatureRadius().z();
+    }
+    return G4ThreeVector(vAngleX,0.,vAngleZ);
 
-    return G4ThreeVector(vAngleX,0.,0.);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

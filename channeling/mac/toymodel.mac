@@ -13,7 +13,7 @@
 /mydet/addsd all
 
 /mydet/xtal/setMaterial G4_Si
-/mydet/xtal/setAngle 0. 0. 0. rad
+/mydet/xtal/setAngle 0. 0. -50.E-6 rad
 /mydet/xtal/setSize 1000.0 4.00 1000. mm
 /mydet/xtal/setCellAngle 90. 90. 90. deg
 /mydet/xtal/setCellSize 5.431 5.431 5.431 angstrom
@@ -27,7 +27,7 @@
 /myevt/filename toymodel
 /myproc/filename toymodel
 
-/gun/setDivX 20.E-6 rad
+/gun/setDivX 75.E-6 rad
 /gun/setDivY 0.E-6 rad
 
 /run/initialize

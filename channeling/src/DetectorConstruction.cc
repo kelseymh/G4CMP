@@ -279,17 +279,19 @@ void DetectorConstruction::ConstructSiliconStripDetectors(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::ConstructXtalTarget(){
-    if(fXtalCurvatureRadius.x() != 0.){
-        fXtalSolid = new G4Tubs("Target",
-                                fXtalCurvatureRadius.x() - fXtalSize.x()/2,
-                                fXtalCurvatureRadius.x() + fXtalSize.x()/2,
-                                fXtalSize.z()/2.,
-                                fXtalAngle.z(),
-                                fXtalAngle.z() + fXtalSize.y()/fXtalCurvatureRadius.x());
-    }
-    else{
-        fXtalSolid = new G4Box("Target", fXtalSize.x()/2.,fXtalSize.y()/2.,fXtalSize.z()/2.);
-    }
+//    if(fXtalCurvatureRadius.x() != 0.){
+//        fXtalSolid = new G4Tubs("Target",
+//                                fXtalCurvatureRadius.x() - fXtalSize.x()/2,
+//                                fXtalCurvatureRadius.x() + fXtalSize.x()/2,
+//                                fXtalSize.z()/2.,
+//                                fXtalAngle.z(),
+//                                fXtalAngle.z() + fXtalSize.y()/fXtalCurvatureRadius.x());
+//    }
+//    else{
+//        fXtalSolid = new G4Box("Target", fXtalSize.x()/2.,fXtalSize.y()/2.,fXtalSize.z()/2.);
+//    }
+    fXtalSolid = new G4Box("Target", fXtalSize.x()/2.,fXtalSize.y()/2.,fXtalSize.z()/2.);
+
     
     fXtalLogic = new G4LogicalVolume(fXtalSolid,fXtalMaterial,"Target");
     
@@ -298,13 +300,15 @@ void DetectorConstruction::ConstructXtalTarget(){
     vRotationMatrix->rotateY(fXtalAngle.y());
     vRotationMatrix->rotateZ(fXtalAngle.z());
     
-    if(fXtalCurvatureRadius.x() != 0.){
-        fXtalPhysical = new G4PVPlacement(vRotationMatrix,G4ThreeVector(-fXtalCurvatureRadius.x(),0.,0.),fXtalLogic,"Target",fWorldLogic,false,0);
-    }
-    else{
-        fXtalPhysical = new G4PVPlacement(vRotationMatrix,G4ThreeVector(0.,0.,0.),fXtalLogic,"Target",fWorldLogic,false,0);
-    }
+//    if(fXtalCurvatureRadius.x() != 0.){
+//        fXtalPhysical = new G4PVPlacement(vRotationMatrix,G4ThreeVector(-fXtalCurvatureRadius.x(),0.,0.),fXtalLogic,"Target",fWorldLogic,false,0);
+//    }
+//    else{
+//        fXtalPhysical = new G4PVPlacement(vRotationMatrix,G4ThreeVector(0.,0.,0.),fXtalLogic,"Target",fWorldLogic,false,0);
+//    }
     
+    fXtalPhysical = new G4PVPlacement(vRotationMatrix,G4ThreeVector(0.,0.,0.),fXtalLogic,"Target",fWorldLogic,false,0);
+
     //----------------------------------------
     // Create XLogicalLattice
     //----------------------------------------
