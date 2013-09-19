@@ -158,6 +158,12 @@ DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstructio
     fXtalCellAngleCmd->SetDefaultValue(G4ThreeVector(90.,90.,90.));
     fXtalCellAngleCmd->SetDefaultUnit("deg");
 
+    fXtalCellThermalVibration = new G4UIcmdWithADoubleAndUnit("/mydet/xtal/setThermVibr",this);
+    fXtalCellThermalVibration->SetGuidance("Thermal vibration amplitude");
+    fXtalCellThermalVibration->SetParameterName("xtalThermVibr",true);
+    fXtalCellThermalVibration->SetDefaultValue(0.075);
+    fXtalCellThermalVibration->SetDefaultUnit("angstrom");
+
     fAddRBSDetector = new G4UIcmdWithAString("/mydet/addrbsd",this);
     fAddRBSDetector->SetGuidance("Add RBS detector.");
     fAddRBSDetector->SetParameterName("addrbsd",true);
@@ -284,6 +290,9 @@ void DetectorConstructionMessenger::SetNewValue(G4UIcommand * command,G4String n
     if(command==fXtalCellAngleCmd ){
         fTarget->SetXtalCellAngle(fXtalCellAngleCmd->GetNew3VectorValue(newValue));
     }
+    if(command==fXtalCellThermalVibration ){
+        fTarget->SetXtalThermalVibrationAmplitude(fXtalCellThermalVibration->GetNewDoubleValue(newValue));
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -349,6 +358,9 @@ G4String DetectorConstructionMessenger::GetCurrentValue(G4UIcommand * command)
     }
     if( command==fXtalCellAngleCmd ){
         cv = fXtalCellAngleCmd->ConvertToString(fTarget->GetXtalCellAngle(),"deg");
+    }
+    if( command==fXtalCellThermalVibration ){
+        cv = fXtalCellThermalVibration->ConvertToString(fTarget->GetXtalThermalVibrationAmplitude(),"angstrom");
     }
     
     return cv;

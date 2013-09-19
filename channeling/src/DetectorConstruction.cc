@@ -109,6 +109,7 @@ DetectorConstruction::DetectorConstruction():fWorldLogic(0),fXtalLogic(0){
     fXtalSize = G4ThreeVector(60. * CLHEP::millimeter, 2. * CLHEP::millimeter, 60. * CLHEP::millimeter);
     fXtalCellSize = G4ThreeVector(5.431 * CLHEP::angstrom, 5.431 * CLHEP::angstrom, 5.431 * CLHEP::angstrom);
     fXtalSize = G4ThreeVector(0. * CLHEP::millimeter, 0. * CLHEP::millimeter, 0. * CLHEP::millimeter);
+    fXtalThermalVibrationAmplitude = 0.075 * CLHEP::angstrom;
     
     SetXtalMaterial("G4_Si");
     
@@ -336,7 +337,7 @@ void DetectorConstruction::ConstructXtalTarget(){
     physicalLattice->SetUnitCell(myCell);
     physicalLattice->SetMillerOrientation(2,2,0);
     physicalLattice->SetLatticeOrientation(fXtalAngle.x(),fXtalAngle.y(),fXtalAngle.z());
-    physicalLattice->SetThermalVibrationAmplitude(0.075*CLHEP::angstrom);
+    physicalLattice->SetThermalVibrationAmplitude(fXtalThermalVibrationAmplitude);
     physicalLattice->SetCurvatureRadius(fXtalCurvatureRadius);
     
     //----------------------------------------
@@ -543,3 +544,12 @@ void DetectorConstruction::SetXtalCellAngle(G4ThreeVector cellangle) {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::SetXtalThermalVibrationAmplitude(G4double thermvibr) {
+    if(fXtalThermalVibrationAmplitude != thermvibr) {
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+        fXtalThermalVibrationAmplitude = thermvibr;
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo..

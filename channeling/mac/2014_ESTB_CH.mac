@@ -1,7 +1,7 @@
 /myproc/channeling 1
 /myproc/wrapper 1
-/myproc/scattering nr
-/myproc/decay 1
+/myproc/scattering nosc
+/myproc/decay 0
 
 /mystack/KillAllSecondaries 1
 
@@ -21,6 +21,7 @@
 /mydet/xtal/setCellAngle 90. 90. 90. deg
 /mydet/xtal/setCellSize 5.431 5.431 5.431 angstrom
 /mydet/xtal/setCurvRadius 1. 0. 0. m
+/mydet/xtal/setThermVibr 0.08 angstrom
 /mydet/addxtal
 
 /gun/energy 10. GeV
@@ -35,4 +36,4 @@
 /gun/setWidthY 0. mm
 
 /run/initialize
-/run/beamOn 1000000
+/run/beamOn 0

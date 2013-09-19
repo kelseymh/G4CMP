@@ -87,6 +87,7 @@
 
 // Channeling
 #include "ProcessChanneling.hh"
+#include "ProcessChannelingSlow.hh"
 
 #include "XVCrystalCharacteristic.hh"
 #include "XVCrystalIntegratedDensity.hh"
@@ -1041,7 +1042,6 @@ void PhysicsList::AddChanneling(){
     vIntegratedDensityElectron->SetPotential(vPotentialEnergy);
     vIntegratedDensityElectron->SetDensity(vElectronDensity);
     
-    
     XCrystalIntegratedDensityHub* vIntegratedDensityHub = new XCrystalIntegratedDensityHub();
     vIntegratedDensityHub->SetPotential(vPotentialEnergy);
     vIntegratedDensityHub->SetDensityNuclei(vNucleiDensity);
@@ -1055,6 +1055,7 @@ void PhysicsList::AddChanneling(){
     }
     
     ProcessChanneling* channeling =  new ProcessChanneling();
+    //ProcessChannelingSlow* channeling =  new ProcessChannelingSlow();
     channeling->SetPotential(vPotentialEnergy);
     channeling->SetIntegratedDensity(vIntegratedDensityHub);
     channeling->SetElectricField(vElectricField);

@@ -173,6 +173,8 @@ public:
     G4ThreeVector GetXtalCellSize() {return fXtalCellSize;};
     void SetXtalCellAngle(G4ThreeVector); //planar case only set.z(); for axial also set.x()
     G4ThreeVector GetXtalCellAngle() {return fXtalCellAngle;};
+    void SetXtalThermalVibrationAmplitude(G4double);
+    G4double GetXtalThermalVibrationAmplitude() {return fXtalThermalVibrationAmplitude;};
     
 private:
     G4bool bXtal;
@@ -184,6 +186,7 @@ private:
     G4ThreeVector fXtalSize;
     G4ThreeVector fXtalCellSize;
     G4ThreeVector fXtalCellAngle;
+    G4double fXtalThermalVibrationAmplitude;
     
     G4VSolid* fXtalSolid;
     G4LogicalVolume* fXtalLogic;

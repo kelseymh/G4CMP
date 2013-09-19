@@ -85,6 +85,7 @@ class DetectorConstructionMessenger: public G4UImessenger
     G4UIcmdWith3VectorAndUnit* fXtalAngleCmd;
     G4UIcmdWith3VectorAndUnit* fXtalCellSizeCmd;
     G4UIcmdWith3VectorAndUnit* fXtalCellAngleCmd;
+    G4UIcmdWithADoubleAndUnit* fXtalCellThermalVibration;
 };
 
 #endif
