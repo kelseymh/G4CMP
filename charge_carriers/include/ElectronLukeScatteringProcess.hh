@@ -19,7 +19,7 @@ public:
   G4double MakePhi(G4double& k, G4double& ks, G4double& theta);
 
   //ElectronLukeScatteringProcess(const G4String& processName = "LukeScattering");
-  ElectronLukeScatteringProcess();
+  ElectronLukeScatteringProcess(G4VProcess*);
 
   virtual ~ElectronLukeScatteringProcess();
 

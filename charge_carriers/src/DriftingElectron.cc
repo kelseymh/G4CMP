@@ -11,6 +11,7 @@ DriftingElectron* DriftingElectron::Definition(){
   const G4String name = "DriftingElectron";
   G4ParticleTable* pTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* anInstance = pTable->FindParticle(name);
+  G4double mc = .118;
   if (anInstance ==0)
     {
   
@@ -25,8 +26,7 @@ DriftingElectron* DriftingElectron::Definition(){
       //             shortlived      subType    anti_encoding
 
       anInstance = new G4ParticleDefinition(
-                 name,           electron_mass_c2,       0.0*MeV,         
--1.*eplus,
+                 name,           mc*electron_mass_c2,       0.0*MeV,       -1.*eplus,
                     1,               0,             0,
                     0,               0,             0,
              "lepton",               0,             0,         0,

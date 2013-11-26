@@ -79,8 +79,6 @@ void Tst1DetectorConstruction::SetupGeometry()
   //worldLogical->SetUserLimits(new G4UserLimits(0.01*mm, DBL_MAX, DBL_MAX, 0, 0));
   worldPhys = new G4PVPlacement(0,G4ThreeVector(),worldLogical,"World",0,false,0);
 
-  // E field
-  field = new Tst1EMField(worldLogical);
 
   
   //                               
@@ -90,6 +88,8 @@ void Tst1DetectorConstruction::SetupGeometry()
   G4LogicalVolume* germaniumLogical = new G4LogicalVolume(germaniumSolid,germanium,"germaniumLogical");
   G4VPhysicalVolume* GePhys = new G4PVPlacement(0,G4ThreeVector(),germaniumLogical,"germaniumPhysical",worldLogical,false,0);
 
+  // E field
+  field = new Tst1EMField(germaniumLogical);
   //  G4cout<<"\nUserlimits:"<<germaniumLogical->GetUserLimits();
 
   //germaniumLogical->SetUserLimits(new G4UserLimits(1e-2*mm, DBL_MAX, DBL_MAX));

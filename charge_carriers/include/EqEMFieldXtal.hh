@@ -50,6 +50,11 @@ class EqEMFieldXtal : public G4EquationOfMotion
       // calculates the value of the derivative dydx.
 
   void SetValleyTransform(G4AffineTransform xform);
+  inline G4AffineTransform GetValleyTransform() {return normalToValley;}
+  //void SetNormalToValleyTransform(G4AffineTransform ntv);
+  //inline G4AffineTransform GetNormalToValleyTransform() {return normalToValley;}
+  //void SetValleyToNormalTransform(G4AffineTransform vtn);
+  //inline G4AffineTransform GetValleyToNormalTransform() {return valleyToNormal;}
 
   private:
 

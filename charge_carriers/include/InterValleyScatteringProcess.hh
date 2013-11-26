@@ -1,5 +1,5 @@
-#ifndef LukeScatteringProcess_h
-#define LukeScatteringProcess_h 1
+#ifndef InterValleyScatteringProcess_h
+#define InterValleyScatteringProcess_h 1
 #define PI 3.14153
 
 #include "globals.hh"
@@ -10,18 +10,13 @@
 class G4VProcess;
 
 
-class LukeScatteringProcess : public G4VDiscreteProcess
-{
+class InterValleyScatteringProcess : public G4VDiscreteProcess
+{ 
 public:
 
+  InterValleyScatteringProcess();
 
-  G4double MakeTheta(G4double& k,G4double& ks);
-  G4double MakePhi(G4double& k, G4double& ks, G4double& theta);
-
-  //LukeScatteringProcess(const G4String& processName = "LukeScattering");
-  LukeScatteringProcess(G4VProcess* stepper);
-
-  virtual ~LukeScatteringProcess();
+  virtual ~InterValleyScatteringProcess();
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
@@ -33,10 +28,12 @@ protected:
 
 private:
   //hide assignment operator as private
-  LukeScatteringProcess(LukeScatteringProcess&);
-  LukeScatteringProcess& operator=(const LukeScatteringProcess& right);
+  InterValleyScatteringProcess(InterValleyScatteringProcess&);
+  InterValleyScatteringProcess& operator=(const InterValleyScatteringProcess& right);
 
   G4VProcess* stepLimiter;
+  G4AffineTransform normalToValley;
+  G4AffineTransform valleyToNormal;
 
   G4double velLong;
   G4double l0Hole;
@@ -44,6 +41,9 @@ private:
   G4double ksound_Hole;
   G4double massFreeElectron;
   G4double hbar;
+  G4double E_0_ED_203;
+  G4double E_0_ED_201;
+
 
 };
 

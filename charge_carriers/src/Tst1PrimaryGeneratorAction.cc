@@ -43,14 +43,31 @@ Tst1PrimaryGeneratorAction::~Tst1PrimaryGeneratorAction()
 void Tst1PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
 
-  for(int i=0;i<1;i++)
+  for(int i=0;i<10;i++)
   { 
     //particleGun->SetParticleDefinition(DriftingHole::Definition()); 
     //particleGun->SetParticleDefinition(LPhonon::Definition());
-    particleGun->SetParticleMomentumDirection(G4ThreeVector(0.0,0.0,1.0));
+    
     particleGun->SetParticlePosition(G4ThreeVector(0.0,0.0,1.26*cm));    
-    particleGun->SetParticleEnergy(1e-10*eV);  
-    //particleGun->SetParticleEnergy(1*keV);  
+    
+    //particleGun->SetParticlePosition(G4ThreeVector(0.0,0.0,0.5*cm));    
+    
+
+    //particleGun->SetParticlePosition(G4ThreeVector(0.0,0.0,2.52*cm));    
+     
+//particleGun->SetParticlePosition(G4ThreeVector(0.0,0.0,-1.26*cm));    
+    //particleGun->SetParticleEnergy(9.67e-6*eV);  
+    
+
+    particleGun->SetParticleEnergy(1e-13*eV);  
+    //particleGun->SetParticleEnergy(1e-15*eV);
+
+    //particleGun->SetParticleEnergy(1*eV);  
+    
+
+    //particleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,1));
+    
+
     //particleGun->GeneratePrimaryVertex(anEvent);
 
     //particleGun->SetParticleDefinition(DriftingHole::Definition());   

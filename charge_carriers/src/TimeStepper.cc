@@ -10,8 +10,15 @@
 #include "G4VParticleChange.hh"
 #include "G4TransportationManager.hh"
 #include "G4FieldManager.hh"
+#include "DriftingHole.hh"
+#include "DriftingElectron.hh"
  #include <fstream>
  #include <iostream>
+#include "DriftingElectronTrackInformation.hh"
+#include "G4VDiscreteProcess.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4LogicalVolume.hh"
+#include <math.h>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -44,39 +51,122 @@ G4double TimeStepper::PostStepGetPhysicalInteractionLength(
 							   G4double prevStepSize,
 							   G4ForceCondition* cond)
 {
-    //set condition to "Forced"
-    *cond = NotForced;
+  G4double me=electron_mass_c2/c_squared;
+  G4double velLong=5324.2077*m/s;
+  G4double mc, l0, ksound, kmax, velocity;
+  if (aTrack.GetParticleDefinition()->GetParticleName() == "DriftingElectron")
+  {
+    G4ThreeVector T = G4ThreeVector(sqrt(.118/1.588), sqrt(.118/.081), sqrt(.118/.081));
+    mc=.118*me;
+    l0 = 257e-6*m;
+    G4RotationMatrix trix;
+  int valley = ((DriftingElectronTrackInformation*) aTrack.GetUserInformation())->getValley();
+  switch(valley){
+      case 1:
+	  trix = G4RotationMatrix(G4Rep3x3( 1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0), 
+			  -1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0, 
+			  -1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          break;
+      case 2:
+	  trix = G4RotationMatrix(G4Rep3x3(-1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0), 
+		 -1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0, 
+		  1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          break;
+      case 3:
+	  trix = G4RotationMatrix(G4Rep3x3(-1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0), 
+		  1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0, 
+		  1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          break;
+      case 4:
+	  trix = G4RotationMatrix(G4Rep3x3( 1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0), 
+		  1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0, 
+		 -1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          break;
+  }
+    
+    G4RotationMatrix mInv = 
+		trix.inverse()*G4Rep3x3(1/1.588/me,   0.0    , 0.0,
+							0.0     , 1/.081/me, 0.0, 
+							0.0     ,   0.0    , 1/.081/me)
+							*trix;
   
-    G4double velLong=5400*m/s;
-    G4double l0Hole = 108e-6*m;
-    G4double massFreeElectron=9.1e-31*kg;
-    G4double massHole=0.35*massFreeElectron;
-    G4double ksound_Hole=1.6306e7/m;
-    G4double hbar= 6.5821e-16*eV*s;
-    
-    G4StepPoint* stepPoint = aTrack.GetStep()->GetPostStepPoint();
-    G4FieldManager* fieldMan = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-    const G4ElectricField* field = (G4ElectricField*)fieldMan->GetDetectorField();
-    
-    G4double fieldVal[6];
-    G4ThreeVector position3Vec = stepPoint->GetPosition();
-    G4double position[4] = {position3Vec[0], position3Vec[1], position3Vec[2], 0};
-    field->GetFieldValue(position,  fieldVal);
-    //G4cout <<  "Field Value:" << fieldVal[3] <<  " " <<  fieldVal[4] <<  " " <<  fieldVal[5] <<  G4endl;
-    G4ThreeVector fieldVec = G4ThreeVector(fieldVal[3],fieldVal[4], fieldVal[5]);
-    
-    G4double speed = stepPoint->GetVelocity();
-    G4double k = speed*massHole/hbar;
-    
-    G4double dt = (hbar * (ksound_Hole-k))/(fieldVec.mag())/stepPoint->GetCharge();
-    //if (dt<0) dt=-dt;
-    
-    G4double ProposedStep = speed*dt;
-    if (ProposedStep < 1e-4*mm) ProposedStep = 1e-4*mm;
+    valleyToNormal= G4AffineTransform(trix);
+    normalToValley= G4AffineTransform(trix).Inverse();  
+    G4FieldManager* fMan = 
+	G4TransportationManager::GetTransportationManager()->GetFieldManager();
+    const G4Field* field = fMan->GetDetectorField();
 
-    //G4cout <<  "TimeStepper: " <<  ProposedStep <<  G4endl;
-    //return ProposedStep;
-    return 1e-4*mm;
+    G4ThreeVector posVec = aTrack.GetPosition();
+    G4double position[4] = {posVec[0],posVec[1],posVec[2],0};
+    G4double fieldVal[6];
+
+    field->GetFieldValue(position,fieldVal);
+    G4ThreeVector Efield = G4ThreeVector(fieldVal[3], fieldVal[4], fieldVal[5]);
+    G4ThreeVector Efield_valley = normalToValley.TransformPoint(Efield);
+    G4ThreeVector Efield_HV = G4ThreeVector( Efield_valley[0]*T[0], 
+					     Efield_valley[1]*T[1], 
+					     Efield_valley[2]*T[2]);
+					     
+    G4ThreeVector k = aTrack.GetMomentum()/hbarc;
+    G4ThreeVector k_valley = normalToValley.TransformPoint(k);
+    G4ThreeVector k_HV= G4ThreeVector( k_valley[0]*T[0],
+					k_valley[1]*T[1], 
+					k_valley[2]*T[2]);
+    G4ThreeVector v_valley;
+    v_valley[0] = hbar_Planck*k_valley[0]/1.588/me;
+    v_valley[1] = hbar_Planck*k_valley[1]/.081/me;
+    v_valley[2] = hbar_Planck*k_valley[2]/.081/me;
+    G4ThreeVector v = valleyToNormal.TransformPoint(v_valley);
+    
+//     v_valley = k_HV*hbar_Planck/mc;
+//     v_valley[0] *= T[0];
+//     v_valley[1] *= T[1];
+//     v_valley[2] *= T[2];
+//     v = valleyToNormal.TransformPoint(v_valley);
+    
+    //v = k*hbar_Planck/mc;
+
+    ksound = velLong*mc/hbar_Planck;
+    //if (k_HV.mag()>ksound)
+//	return DBL_MAX;
+    kmax = 28.0*pow(m/volt, 
+		    1.0/3.0)*ksound*pow(Efield_HV.mag()/10.0, 1.0/3.0);
+    velocity = v.mag();
+  }
+  else
+  {
+    mc=.35*me;
+    l0 = 108e-6*m;
+    
+    G4FieldManager* fMan = 
+	G4TransportationManager::GetTransportationManager()->GetFieldManager();
+    const G4Field* field = fMan->GetDetectorField();
+
+    G4ThreeVector posVec = aTrack.GetPosition();
+    G4double position[4] = {posVec[0],posVec[1],posVec[2],0};
+    G4double fieldVal[6];
+
+    field->GetFieldValue(position,fieldVal);
+    G4ThreeVector Efield = G4ThreeVector(fieldVal[3], fieldVal[4], fieldVal[5]);
+
+    ksound = velLong*mc/hbar_Planck;
+    kmax = 14.72*pow(m/volt, 
+		    1.0/3.0)*ksound*pow(Efield.mag()/10.0, 1.0/3.0);
+    velocity = aTrack.GetStep()->GetPostStepPoint()->GetVelocity();
+  }
+
+    //set condition to "Forced"
+    *cond = Forced;
+
+    G4double dt =  1.0 / (
+		       2 * velLong / (3*l0)
+		       * (kmax / ksound) * (kmax / ksound)
+		       * ((1- ksound/kmax))
+		       * ((1- ksound/kmax))
+		       * ((1- ksound/kmax))
+		       );
+    //G4cout << velocity*dt/m << G4endl;
+    return velocity*dt;
 }
 
 G4VParticleChange* TimeStepper::PostStepDoIt(
@@ -84,6 +174,7 @@ G4VParticleChange* TimeStepper::PostStepDoIt(
 					  const G4Step& aStep
 					  )
 {
+   //G4cout <<  "Time Step" <<  G4endl;
   aParticleChange.Initialize(aTrack);
   /*
   G4cout<<"\nTimeStepper::PostStepDoIt: Delta time: " 

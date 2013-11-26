@@ -22,7 +22,7 @@
 #include "EFieldProcess.hh"
 #include "ObliqueEFieldProcess.hh"
 #include "TimeStepper.hh"
-
+#include "InterValleyScatteringProcess.hh"
 
 #include "Tst1EMField.hh"
 
@@ -111,8 +111,7 @@ void Tst1PhysicsList::ConstructProcess()
     {
 	    TimeStepper* stepperHole = new TimeStepper();
 	    pmanager->AddDiscreteProcess(stepperHole);
-	    //pmanager->AddDiscreteProcess(new LukeScatteringProcess(stepperHole));
-	    pmanager->AddDiscreteProcess(new LukeScatteringProcess());
+	    pmanager->AddDiscreteProcess(new LukeScatteringProcess(stepperHole));
         //pmanager->AddDiscreteProcess(new EFieldProcess());
 	    pmanager->AddDiscreteProcess(new DriftingCarrierBoundaryProcess());
     }   
@@ -120,9 +119,13 @@ void Tst1PhysicsList::ConstructProcess()
     {
 	    TimeStepper* stepperElectron = new TimeStepper();
 	    pmanager->AddDiscreteProcess(stepperElectron);
-	    pmanager->AddDiscreteProcess(new ElectronLukeScatteringProcess());
-	    //pmanager->AddDiscreteProcess(new ObliqueEFieldProcess());
+	    //pmanager->AddDiscreteProcess(new LukeScatteringProcess(stepperElectron));
+	    pmanager->AddDiscreteProcess(new ElectronLukeScatteringProcess(stepperElectron));
+
+	    pmanager->AddDiscreteProcess(new InterValleyScatteringProcess());
 	    pmanager->AddDiscreteProcess(new DriftingCarrierBoundaryProcess());
+
+
     }
   }
 }
