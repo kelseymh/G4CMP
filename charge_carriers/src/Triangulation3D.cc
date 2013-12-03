@@ -1,6 +1,7 @@
 #include "Triangulation3D.hh" 
 #include "libqhullcpp/Qhull.h"
 #include <fstream>
+//#include "time.h"
 
 using std::vector;
 
@@ -19,6 +20,7 @@ void Triangulation3D::RunQhull()
      */
     //double* boxPoints = new double[3*X.size()];
     double boxPoints[3*X.size()];
+    //G4cout << "Size of input = " << X.size() << " points" << G4endl;
       
     for(int i=0; i<X.size(); ++i)
     {
@@ -38,7 +40,12 @@ void Triangulation3D::RunQhull()
      *      Qbb = Scales the paraboloid that Qhull creates. This helps with precision.
      *      Qz = Add a point at infinity. This somehow helps with precision...
      */
+    //time_t end;
+    //time_t start;
+    //time(&start);
     orgQhull::Qhull hull = orgQhull::Qhull("", 3, X.size(), boxPoints, "d Qt Qbb Qz");
+    //time(&end);
+    //G4cout << "Time to make triangulation = " << end-start << " s" << G4endl;
         
     //delete[] boxPoints;
     

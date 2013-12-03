@@ -21,9 +21,9 @@ EqEMFieldXtal::SetChargeMomentumMass(G4double particleCharge, // e+ units
 		                            G4double,
                                             G4double particleMass)
 {
-   fElectroMagCof =  eplus*particleCharge*c_light;
+   //fElectroMagCof =  eplus*particleCharge*c_light;
    //fElectroMagCof = electron_charge;
-   fMassCof = particleMass*particleMass ; 
+   //fMassCof = particleMass*particleMass ; 
    /*
    G4cout<<"\nEqEMFIeldXtal::SetChargeMomentumMass: using normalToValley xform: \n\t"<<normalToValley.NetRotation().colX() <<"\n\t"<<normalToValley.NetRotation().colY()<<"\n\t"<<normalToValley.NetRotation().colZ();
 
@@ -40,110 +40,36 @@ EqEMFieldXtal::EvaluateRhsGivenB(const G4double y[],
 			                const G4double field[],
 				              G4double dydx[] ) const
 { 
+    G4double me = electron_mass_c2/c_squared;
+    G4double mc = .118;
     G4ThreeVector pc = G4ThreeVector(y[3], y[4], y[5]);
-    G4double pSquared = pc.mag2();
-    G4double pModuleInverse  = 1.0/pc.mag();
+    G4ThreeVector p = pc/c_light;
+    
+    G4RotationMatrix mInv = 
+		valleyToNormal.NetRotation()*G4Rep3x3(1/1.588/me,   0.0    , 0.0,
+							0.0     , 1/.081/me, 0.0, 
+							0.0     ,   0.0    , 1/.081/me)
+							*normalToValley.NetRotation();
 
-    G4double Energy   = std::sqrt( pSquared + fMassCof );
-    G4double cof1     = fElectroMagCof*pModuleInverse ;
-    G4double cof2     = Energy/c_light ;
-
-    dydx[0] = y[3]*pModuleInverse ;                         
-    dydx[1] = y[4]*pModuleInverse ;                         
-    dydx[2] = y[5]*pModuleInverse ;                        
-
+    G4ThreeVector v = mInv*p;
+    
+    dydx[0] = v[0]/v.mag();
+    dydx[1] = v[1]/v.mag();
+    dydx[2] = v[2]/v.mag();
+    
     G4ThreeVector Efield = G4ThreeVector(field[3], field[4], field[5]);
-    normalToValley.ApplyPointTransform(Efield);
-    Efield[0]*1.217;
-    Efield[1]*1.217;
-    Efield[2]*.27559;
-    G4ThreeVector retForce = cof1*cof2*Efield;
+    G4ThreeVector retForce = electron_charge*c_light*Efield/v.mag();
     
     dydx[3] = retForce[0];
-    dydx[4] = retForce[1]; 
-    dydx[5] = retForce[2];  
+    dydx[4] = retForce[1];
+    dydx[5] = retForce[2];
 
     dydx[6] = 0.;//not used
 
     // Lab Time of flight
-    G4double inverse_velocity = Energy * pModuleInverse / c_light;
+    G4double inverse_velocity = 1/v.mag();
     dydx[7] = inverse_velocity;
     return ;
-    /*
-    G4ThreeVector pc = G4ThreeVector(y[3], y[4], y[5]);
-    G4double pSquared = pc.mag2();
-    G4double pModuleInverse  = 1.0/pc.mag();
-
-    G4double Energy   = std::sqrt( pSquared + fMassCof );
-    G4double cof1     = fElectroMagCof*pModuleInverse ;
-    G4double cof2     = Energy/c_light ;
-
-    dydx[0] = y[3]*pModuleInverse ;                         
-    dydx[1] = y[4]*pModuleInverse ;                         
-    dydx[2] = y[5]*pModuleInverse ;                        
-
-    G4ThreeVector Efield = G4ThreeVector(field[3], field[4], field[5]);
-    G4ThreeVector retForce = cof1*cof2*Efield;
-    if (fElectroMagCof < 0)                                 //If electron
-    {
-      G4ThreeVector Efield_dir = Efield.unit();
-      normalToValley.ApplyPointTransform(Efield_dir);
-      G4ThreeVector rot_effect = G4ThreeVector(Efield_dir[0], 
-				  Efield_dir[1], Efield_dir[2]);  
-      for (int i = 0; i < 3; ++i) retForce[i] *= rot_effect[i];
-      normalToValley.ApplyPointTransform(retForce); 
-    }
-    
-    dydx[3] = retForce[0];
-    dydx[4] = retForce[1]; 
-    dydx[5] = retForce[2];  
-
-    dydx[6] = 0.;//not used
-
-    // Lab Time of flight
-    G4double inverse_velocity = Energy * pModuleInverse / c_light;
-    dydx[7] = inverse_velocity;
-    return ;
-    */
-    /*
-    G4ThreeVector pc = G4ThreeVector(y[3], y[4], y[5]);
-    G4double pSquared = pc.mag2();
-    G4double pModuleInverse  = 1.0/pc.mag();
-
-    G4double Energy   = std::sqrt( pSquared + fMassCof );
-    G4double cof1     = fElectroMagCof*pModuleInverse ;
-    G4double cof2     = Energy/c_light ;
-
-    dydx[0] = y[3]*pModuleInverse ;                         
-    dydx[1] = y[4]*pModuleInverse ;                         
-    dydx[2] = y[5]*pModuleInverse ;                        
-
-    G4ThreeVector Efield = G4ThreeVector(field[3], field[4], field[5]);
-    G4ThreeVector retForce = cof1*cof2*Efield;
-    if (fElectroMagCof < 0)                                 //If electron
-    {
-      G4ThreeVector Efield_dir = Efield.unit();
-      normalToValley.ApplyPointTransform(Efield_dir);
-      G4ThreeVector rot_effect = G4ThreeVector(Efield_dir[0], 
-				  Efield_dir[1], Efield_dir[2]);  
-      //for (int i = 0; i < 3; ++i) retForce[i] *= rot_effect[i];
-      normalToValley.ApplyPointTransform(retForce); 
-      retForce[0] /= .081;
-      retForce[1] /= .081;
-      retForce[2] /= 1.58;
-    }
-    
-    dydx[3] = retForce[0];
-    dydx[4] = retForce[1]; 
-    dydx[5] = retForce[2];  
-
-    dydx[6] = 0.;//not used
-
-    // Lab Time of flight
-    G4double inverse_velocity = Energy * pModuleInverse / c_light;
-    dydx[7] = inverse_velocity;
-    return ;
-    */
     /*
    G4double pSquared = y[3]*y[3] + y[4]*y[4] + y[5]*y[5] ;
 
@@ -175,12 +101,23 @@ EqEMFieldXtal::EvaluateRhsGivenB(const G4double y[],
 
    // Lab Time of flight
    dydx[7] = inverse_velocity;
+   dydx[6] = 0.;//not used
+
+   // Lab Time of flight
+   dydx[7] = inverse_velocity;
    //G4cout <<  "kmag: " <<  sqrt(pSquared/hbar_Planck)*m <<  G4endl;
    return ;
    */
 }
 
-void EqEMFieldXtal::SetValleyTransform(G4AffineTransform xform){
-  normalToValley = xform;
-  valleyToNormal = xform.Inverse();
+//void EqEMFieldXtal::SetNormalToValleyTransform(G4AffineTransform ntv){
+//  normalToValley = ntv;
+//}
+//void EqEMFieldXtal::SetValleyToNormalTransform(G4AffineTransform vtn){
+//  valleyToNormal = vtn;
+//}
+
+void EqEMFieldXtal::SetValleyTransform(G4AffineTransform xform) {
+    normalToValley = xform;
+    valleyToNormal = normalToValley.Inverse();
 }

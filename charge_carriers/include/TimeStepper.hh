@@ -4,6 +4,7 @@
 #include "G4ios.hh"
 #include "globals.hh"
 #include "G4VProcess.hh"
+#include "G4AffineTransform.hh"
 
 class TimeStepper : public G4VProcess
 {
@@ -56,6 +57,8 @@ private:
   TimeStepper(TimeStepper&);
   TimeStepper& operator=(const TimeStepper& right);
 
+  G4AffineTransform normalToValley;
+  G4AffineTransform valleyToNormal;
 };
 
 #endif

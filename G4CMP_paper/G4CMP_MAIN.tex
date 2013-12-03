@@ -115,7 +115,7 @@
  \fntext[stanford]{Stanford University, Stanford, CA, USA}
  \fntext[ucb]{University of California Berkeley, Berkeley, CA, USA}
  \fntext[ferrara]{University of Ferrara, Ferrara, Italy} 
- \fntext[MIT]{Massachussets Institute of Technology, Cambridge, MA, USA}
+ \fntext[MIT]{Massachusetts Institute of Technology, Cambridge, MA, USA}
 
 
 \title{Semiconductor phonon and charge transport Monte Carlo simulation using Geant4}
@@ -131,9 +131,9 @@
 
 \begin{abstract}
 
-A phonon and charge transport simulation based on the Geant4 Monte Carlo toolkit is presented. The transport code is capable of propagating acoustic phonons as well as electrons and holes in cryogenic crystals. Anisotropic phonon propagation, oblique carrier propagation and phonon emission by accelerated carriers are all taken into account. The simulation is successfull in reproducing theoretical predictions and experiemtntal observations sch as phonon caustics, heat pulse propagation times and mean carrier drift velocities.
+A phonon and charge transport simulation based on the Geant4 Monte Carlo toolkit is presented. The transport code is capable of propagating acoustic phonons, electrons and holes in cryogenic crystals. Anisotropic phonon propagation, oblique carrier propagation (with or without inter-valley scattering) and phonon emission by accelerated carriers are all taken into account. The simulation successfully reproduces theoretical predictions and experimental observations such as phonon caustics, heat pulse propagation times and mean carrier drift velocities.
 
-Implementation of the transport code using the Gent4 toolkit ensures availability of the transport code to the wider scientific community.
+Implementation of the transport code using the Geant4 toolkit ensures availability of the transport code to the wider scientific community.
 
 \end{abstract}
 
@@ -163,16 +163,17 @@ Implementation of the transport code using the Gent4 toolkit ensures availabilit
 \section{Introduction}
 \label{sec:Introduction}
 
-In this paper we present a Monte Carlo simulation of phonon and charge transport in Semiconductor crystals using Geant4. Geant4 is a sophisticated C++ based Monte Carlo simulation toolkit maintained by an international collaboration and freely available under an open source license \cite{Geant-A} \cite{Geant-B}. The toolkit was originally developed in support of High Energy Physics (HEP) experiments. It provides functionality for the simulation of the passage of particles through complex geometries and aims to accurately simulate all interactions of the particles with the matter through which they pass. Today, the Geant4 toolkit is an important tool both for HEP particle accelerator based experiments building Detector Monte Carlo(DMC) simulations as well as experiments wishing to estimate backgrounds from environmental or cosmic ray radiation sources \cite{CDMS-D}\cite{Brandt}.
+We present a Monte Carlo simulation of phonon and charge transport in semiconductor crystals using Geant4. Geant4 is a sophisticated C++ based Monte Carlo simulation toolkit maintained by an international collaboration and freely available under an open source license \cite{Geant-A} \cite{Geant-B}. The toolkit was originally developed in support of High Energy Physics (HEP) experiments and provides functionality for the simulation of the passage of particles through complex geometries and materials. It aims to accurately simulate all matter-particle interactions and has become an important tool both for HEP particle accelerator based experiments building Detector Monte Carlo(DMC) simulations and experiments wishing to estimate backgrounds from environmental or cosmic ray radiation sources \cite{CDMS-D}\cite{Brandt}.
 
-In it's current incarnation, the Geant4 toolkit is entirely focused on free particles and does not take into account crystal physics and conduction/valence band interactions of the low energy charge carriers and phonons relevant to condensed matter physics. This paper documents our effort to build a cohesive Geant4 Condensed Matter Physics Monte Carlo simulation toolkit, G4CMP. This effort is motivated by the Cryogenic Dark Matter Search (CDMS) dark  matter direct detection experiment \cite{CDMS-A}\cite{CDMS-B}\cite{CDMS-C}. The CDMS detectors are cylindrical Germanium crystals of approximate size $75$mm $\times$ $25$mm \cite{CDMS-E}, cooled to ~$60$mK. Dark matter particles may recoil from Ge nuclei via the weak force and thus create phonons and free electron-hole pairs within the crystal [Lindhardt]. Electron-hole pairs are collected at the crystal surface by a small (~V/cm) drift field. Phonons are detected by Transition Edge Sensor (TES) bolometers. The need for an accurate Detector MonteCarlo simulation of the CDMS detector has provided the chief motivation for the work described in this paper.
+In it's current incarnation, the Geant4 toolkit is entirely focused on free particles and does not take into account crystal physics and conduction/valence band interactions of the low energy charge carriers and phonons relevant to condensed matter physics. This paper documents our effort to build a cohesive Geant4 Condensed Matter Physics Monte Carlo simulation toolkit, G4CMP. The original purpose of this project was to accurately reproduce data from the dark-matter direct detection experiment, Cryogenic Dark Matter Search (CDMS) \cite{CDMS-A}\cite{CDMS-B}\cite{CDMS-C}. The CDMS detectors are cylindrical Ge crystals of approximately size $75$~mm in diameter with a height of $25$~mm \cite{CDMS-E}, cooled to $\sim60$~mK. Dark matter particles may recoil from Ge nuclei via the weak force and thus create phonons and free electron-hole pairs within the crystal \cite{Lindhart}. Electron-hole pairs are drifted to the crystal faces using a small drift field ($\sim$~V/m) where they are collected. Phonons are 
+detected by Transition Edge Sensor (TES) bolometers. We aim to reproduce all of these processes in our Monte-Carlo. 
 
-The phonon and charge transport code described here attempts to accurately model all physics processes believed to be relevant to phonon and charge collection at cryogenic temperatures. This includes anisotropic phonon transport/phonon focusing, phonon isotope scattering, anharmonic downconversion, oblique carrier propagation and emission of Luke-Neganov phonons by accelerated carriers. We believe that the resulting G4CMP framework is sufficiently general that it can be useful to other experiments employing cryogenically cold charge or phonon detectors. 
+The phonon and charge transport code described models all physics processes believed to be relevant to phonon and charge collection at cryogenic temperatures. This includes anisotropic phonon transport/phonon focusing, phonon isotope scattering, anharmonic downconversion, oblique carrier propagation (with and without inter-valley scattering) and emission of Luke-Neganov phonons by accelerated carriers. We believe that the resulting G4CMP framework is sufficiently general that it is useful to other experiments employing cryogenic charge or phonon detectors. 
 
 \section{Phonon Transport}
 \label{sec:PhononTransport}
 
-Phonon transport was the first component of the G4CMP framework to be developed and early results were presented at LTD-14 \cite{Brandt}. Since the phonon transport code described here is intended for temperatures $T<1$K, scattering off thermally excited background phonons is ignored. Currenly, only acoustic phonons are simulated.
+Phonon transport was the first component of the G4CMP framework to be developed and early results were presented at LTD-14 \cite{Brandt}. Since the phonon transport code described here is intended for temperatures $T<1$K, scattering off thermally excited background phonons is ignored. Currently, only acoustic phonons are simulated.
 
 \subsection{Anisotropic transport and phonon focusing}
 \label{sec:Focusing}
@@ -186,30 +187,28 @@ Phonons are quantized vibrations of the crystal lattice. The propagation of phon
 
 where $\rho$ is the crystal mass density, $\omega$ is the phonon frequency, $\vec{e}$ is the polarization vector, $\vec{k}$ is the wave vector and $\vec{C}_{ijml}$ is the elasticity tensor.
 
-For any given wave vector $\vec{k}$ Equation \ref{eq:3DWave} has three eigenvalues $\omega$ and three eigenvectors $\vec{e}$. These correspond to the three different polarization states \textit{Fast Transverse (FT), Slow Transverse (ST)} and \textit{Longitudinal (L)}. The actual direction and velocity of propagation of phonons is given by the group velocity vector $\vec{v_g} = d\omega/dk$. The group velocity can be calculated by interpreting $\omega$ in Equation \ref{eq:3DWave} as a function of $\vec{k}$:
+For any given wave vector, $\vec{k}$, Eq. \ref{eq:3DWave} has three eigenvalues, $\omega$, and three eigenvectors, $\vec{e}$. These correspond to the three different polarization states \textit{Fast Transverse (FT), Slow Transverse (ST)} and \textit{Longitudinal (L)}. The actual direction and velocity of propagation of phonons is given by the group velocity vector $\vec{v_g} = d\omega/dk$. The group velocity can be calculated by interpreting $\omega$ in Eq. \ref{eq:3DWave} as a function of $\vec{k}$:
 
 \begin{equation}
 \label{eq:GroupV}
 \vec{v_g}=\frac{d \omega (\vec{k})}{d\vec{k}}=\nabla_k \omega (\vec{k})
 \end{equation}
 
-Due to the anisotropy in $C_{ijlm}$, Eq. \ref{eq:GroupV} yields a group velocity $\vec{v_g}$ which is not parallel to the phonon momentum $\hbar\vec{k}$. Instead, phonons are focused onto propagation directions which correspond to the highest density of eigenvectors $\vec{k}$. This focusing gives rise to caustics when observing the energy  distribution resulting from a point-like phonon source isotropic in $\vec{k}$-space. The resulting caustics can be observed using microcalorimeters \cite{Nothrop}. It can be seen from Figure\ref{fig:caustics}. that the caustics simulated by the Geant4 phonon transport code are in good agreement with experimental observations. 
+Due to the anisotropy in $C_{ijlm}$, Eq. \ref{eq:GroupV} yields a group velocity $\vec{v_g}$ which is not parallel to the phonon momentum $\hbar\vec{k}$. Instead, phonons are focused onto propagation directions which correspond to the highest density of eigenvectors $\vec{k}$. This focusing gives rise to caustics when observing the energy  distribution resulting from a point-like phonon source isotropic in $\vec{k}$-space. The resulting caustics can be observed using micro-calorimeters \cite{Nothrop}. Figure~\ref{fig:caustics} shows that the caustics simulated by the Geant4 phonon transport code are in good agreement with experimental observations. 
 
-For the purposes of the G4CMP phonon transport code, the wave eqaution is not solved in real time but rather a look-up table is generated which maps $\vec{k}$ onto $\vec{v_g}$. Bilinear interpolation is used to generate a continuous mapping function. Phonon focusing and methods for solving the three-dimensional wave equations are treated in great detail in the book by Wolfe \cite{Wolfe}.
-
-Also consider \ref{fig:caustics}.
+For the purposes of the G4CMP phonon transport code, the wave equation is not solved in real time but rather a look-up table is generated which maps $\vec{k}$ onto $\vec{v_g}$. Bilinear interpolation is used to generate a continuous mapping function. Phonon focusing and methods for solving the three-dimensional wave equations are treated Wolfe's book \cite{Wolfe}. %For further reading please also consider \ref{fig:caustics}.
 
 \begin{figure}
 	\centering
-		\includegraphics[width=1.00\textwidth]{caustics.png}
-	\caption{\textbf{Left:} outline of phonon caustics in Germanium as predicted by Nothrop and Wolfe \cite{Nothrop}. \textbf{Right:} Phonon caustics as simulated using the Geant4 phonon transport code. This results is in good agreement with both the theoretical prediction and experimental observations reported by Nothrop and Wolfe \cite{Nothrop} }
+		\includegraphics[width=1.0\textwidth]{caustics.png}
+	\caption{\textbf{Left:} outline of phonon caustics in Ge as predicted by Nothrop and Wolfe \cite{Nothrop}. \textbf{Right:} Phonon caustics as simulated using the Geant4 phonon transport code. This results is in good agreement with both the theoretical prediction and experimental observations reported by Nothrop and Wolfe \cite{Nothrop} }
 	\label{fig:caustics}
 \end{figure}
 
 \subsection{Phonon processes}
 \label{sec:Processes}
 
-In addition to the phonon equation of motion, which is given by the three dimensional wave equation Eq.\ref{eq:3DWave}, two processes are relevant to acoustic phonon transport in cryogenic crystals: Isotope scattering and anharmonic down conversion\cite{Tamura1}\cite{Tamura2}\cite{Tamura3}. The scattering and downconversion rates for phonons in the cryogenic crystal are given by \cite{Tamura2}:
+In addition to the phonon equation of motion, which is given by the three dimensional wave equation Eq.~\ref{eq:3DWave}, two processes are relevant to acoustic phonon transport in cryogenic crystals: Isotope scattering and anharmonic down conversion\cite{Tamura1}\cite{Tamura2}\cite{Tamura3}. The scattering and downconversion rates for phonons in the cryogenic crystal are given by \cite{Tamura2}:
 
 \begin{equation}
 \label{eq:ScatterRate}
@@ -221,16 +220,14 @@ In addition to the phonon equation of motion, which is given by the three dimens
 \Gamma_{anh} = A\nu^5
 \end{equation}
 
-where $\Gamma_{scatter}$ is the number of scattering events per unit time, $\Gamma_{anh}$ is the number of anharmonic downconversion events per unit time, $nu$ is the phonon frequency and $A$, $B$ are constants of proportionality derived from the elasticity tensor. There value for Germanium has been discussed in an earlier paper \cite{Brandt} and methods for their derivation can be found in the literature \cite{Tamura1} \cite{Tamura2}.
+where $\Gamma_{scatter}$ is the number of scattering events per unit time, $\Gamma_{anh}$ is the number of anharmonic downconversion events per unit time, $\nu$ is the phonon frequency and $A$, $B$ are constants of proportionality derived from the elasticity tensor. Their value for Ge was discussed in \cite{Brandt} and methods for their derivation can be found in \cite{Tamura1} and \cite{Tamura2}.
 
 The isotope scattering process occurs when a phonon interacts with an isotopic substitution site in the lattice. It is effectively an elastic scattering process during which we assume the phonon momentum vector to be randomized. During this scattering process the phonon polarization state can change freely between the three states $L$, $ST$, $FT$. The branching ratio between the three polarizations is determined by the relative density of allowed states for each polarization.This change between polarization states is often referred to as mode mixing.
 
-The anharmonic down conversion process causes a single energetic phonon to decay into two phonons of reduced energy. In the smulation, this process conserves energy but not momentum, since momentum is exchanged with the crystal lattice. While in theory all three polarization states can decay, the downconversion rate of $L$-phonons completely dominates the energy evolution of the phonon system, with downconversion events from other polarization states being negligigible \cite{Tamura2}.
+The anharmonic down conversion process causes a single energetic phonon to decay into two phonons of reduced energy. This process conserves energy but not momentum, since momentum is exchanged with the crystal lattice. In theory all three polarization states can decay, however, the downconversion rate of $L$-phonons completely dominates the energy evolution of the phonon system, with downconversion events from other polarization states being negligible \cite{Tamura2}.
 
 
-As can be seen from eqs. \ref{eq:ScatterRate} \ref{eq:anhRate}, both process rates strongly depend on phonon energy $\hbar \nu$. High energy phonons ($\nu$ of order THz)start out in a diffusive regime with high isotope scattering and downconversion rates and mean free paths of order microns. Once a few downconversion events have occured, phonon mean free paths increase to be of order the size of a typical rare event search crystal detector (of order $0.1$ m linear dimension). This transition from a diffuse to a ballistic transport mode is commonly referred to as ``quasi-diffuse'' and it controls the time evolution of phonon heat pulses. Simulation of heat pulse propagation using our Geant4 transport code has been described previously \cite{Brandt} and shows good agreement with experiment.
-
-Anharmonic downconversion and isotope scattering are well understood and are discussed in great detail in the literature \cite{Tamura1}\cite{Tamura2}\cite{Wolfe}\cite{Tamura3}.
+Eqs. \ref{eq:ScatterRate} and \ref{eq:anhRate} show that both process rates strongly depend on phonon energy $\hbar \nu$. High energy phonons ($\nu$ of order THz) start out in a diffusive regime with high isotope scattering and downconversion rates and mean free paths of order microns. Once a few downconversion events have occurred, phonon mean free paths increase to be of order the size of a typical CDMS detector ($\sim0.1$~m). This transition from a diffuse to a ballistic transport mode is commonly referred to as ``quasi-diffuse'' and controls the time evolution of phonon heat pulses. Simulation of heat pulses using our Geant4 transport code was described in \cite{Brandt} and shows good agreement with experiment. Anharmonic downconversion and isotope scattering are well understood and are discussed in great detail in the literature \cite{Tamura1}\cite{Tamura2}\cite{Wolfe}\cite{Tamura3}.
 
 
 
@@ -240,14 +237,24 @@ Anharmonic downconversion and isotope scattering are well understood and are dis
 
 \input{chargeprop.tex}
 
+\subsection{Inter Valley Scattering}
+\label{sec:InterValley}
+
+\input{ivscattering.tex}
+
 \section{Conclusion}
 \label{sec:Conclusion}
- -presented monte carlo transport code capable of propagating e-/h+/ph
- -good agreement with experiment
- -easily adaptable for other crystals
- -implemented in G4, so available freely
 
-We have presented a Monte Carlo transport code capable of propagating phonons on a cryogenic crystal lattice (Section \ref{sec:PhononTransport}) as well as drifting electron/hole pairs, taking into account conduction band anisotropy (Section \ref{sec:ChargeTransport}). The result produced by the transport code are in good agreement with experiment, reproducing phonon caustics and carrier drift velocity with acceptable accuracy. It has been shown previously that this code can reproduce heat pulse propagation and dispersion in cryogenic Germanium crystals with acceptable accuray as well \cite{Brandt}. The entire transport code is written in Geant4 and is easily adeptable for crystals other than Germanium provided that the Voigt-contracted elasticity tensor and effective carrier masses are known. Since the simulation is implemented entirely using the Geant4 framework it can easily be shared and enhanced. The phonon transport code is already freely available as part of the examples provided with  Geant4 v9.6p02. We hope that the work presented here will help open up the possiblity of using Geant4 as a tool in condensed matter physics and cryogenic calorimeter design as well as motivating others to add to the G4CMP framework.
+%\begin{itemize}
+%  \item presented Monte Carlo transport code capable of propagating e-/h+/ph
+%  \item good agreement with experiment
+%  \item easily adaptable for other crystals
+%  \item implemented in Geant4, so available freely
+%\end{itemize}
+ 
+ 
+We presented Monte Carlo transport code capable of propagating phonons on a cryogenic crystal lattice (Section \ref{sec:PhononTransport}) as well as drifting electron/hole pairs, taking into account conduction band anisotropy (Section \ref{sec:ChargeTransport}). The results produced by the transport code are in good agreement with experiment, reproducing phonon caustics and carrier drift velocity with acceptable accuracy. It was shown that this code reproduces heat pulse propagation and dispersion in cryogenic Ge crystals with acceptable accuracy in \cite{Brandt}. The entire transport code is written in Geant4 and is easily adaptable for crystals other than Ge provided that the Voigt-contracted elasticity tensor and effective carrier masses are known. The Geant4 framework makes it possible to enhance and extend the code presented here. The phonon transport code is already freely available as part of the examples provided with  Geant4 v9.6p02, and newer. 
+We hope that the work presented here will establish Geant4 as a tool in condensed matter physics and cryogenic calorimeter design as well as motivating others to add to the G4CMP framework.
 
 
 %% References
@@ -260,9 +267,9 @@ We have presented a Monte Carlo transport code capable of propagating phonons on
 
 %% References with bibTeX database:
 
-\bibliographystyle{model1-num-names}
+%\bibliographystyle{model1-num-names}
+%\bibliographystyle{phjcp}
 \begin{thebibliography}{99}
-
 
 \bibitem{Geant-A}
 J. Allison et al., {\it IEEE Transactions on Nuclear Science} \textbf{53}, 270 - 278, (2006).
@@ -275,6 +282,9 @@ D.S. Akerib et al., {\it Phys. Rev. D} \textbf{72},(2005).
 
 \bibitem{Brandt}
 D. Brandt et al., {\it Journal of Low Temperature Physics} \textbf{167}, 485 - 490, (2011).
+
+\bibitem{Lindhart}
+Smith, P.F. and Lewin, J.D., {\it Phys.Rept.} \textbf{187}, 203, (1990).
 
 %\bibitem{Enss}
 %C. Enss, {\it Cryogenic Particle Detection },Springer Verlag, Germany (2005)
@@ -325,6 +335,14 @@ S. Tamura,{\it Phys. Rev. B.} \textbf{31}, (1985)
 \bibitem{Leman}
 S. W. Leman, {\it Rev. Sci. Instrum.} \textbf{83}, 091101, (2012).
 
+\bibitem{Cabrera}
+Cabrera, B. et al. , {\it arXiv},  Oblique propagation of electrons in crystals of germanium and silicon at sub-Kelvin temperature in low electric fields
+
+\bibitem{iv}
+Broniatowski, A., {\it Journal of Low Temperature Physics}, \textbf{167}, (2012)
+
+\bibitem{edelweiss}
+Juillard, A., {\it Journal of Low Temperature Physics}, \textbf{151}, (2008) 
 %\bibitem{McCarthy}
 %K.A. McCarthy et al., {\it These procedings},(2011)
 

@@ -12,7 +12,8 @@
 void XtalFieldManager::ConfigureForTrack(const G4Track* aTrack){
 
   if(aTrack->GetDefinition()->GetParticleName()=="DriftingElectron"){
-    int valley = ((DriftingElectronTrackInformation*) aTrack->GetUserInformation())->getValley();
+    int valley = ((DriftingElectronTrackInformation*) 
+aTrack->GetUserInformation())->getValley();
     switch(valley){
       case 1:
 	SetChordFinder(valley1ChordFinder);

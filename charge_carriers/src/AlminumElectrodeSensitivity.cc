@@ -70,7 +70,8 @@ G4bool AlminumElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory
   hitsCollection->insert(aHit);
   
   writer<<"\n"<<worldPos.getX()/mm<<","<<worldPos.getY()/mm;
-  writer2<<"\n"<<postStepPoint->GetGlobalTime()/ns<<" "<<aHit->GetEDep()/eV;
+  writer2<<"\n"<<postStepPoint->GetGlobalTime()/ns<<" "<<aHit->GetEDep()/eV << " " << postStepPoint->GetVelocity()/m*s;
+  //writer2<<"\n"<<postStepPoint->GetGlobalTime()/ns<<" "<< aStep->GetPostStepPoint()->GetKineticEnergy()/eV;
 
   return true;
 }

@@ -53,10 +53,18 @@ G4VParticleChange* DriftingCarrierBoundaryProcess::PostStepDoIt( const G4Track& 
   aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy());
   aParticleChange.ProposeTrackStatus(fStopAndKill);  
   //G4cout <<  "Track Killed" <<  G4endl;
+  //std::ofstream file;
+  //file.open("epositions.txt",std::ios::app);
+  //file << aTrack.GetPosition().getX()/m <<  " " <<  
+//aTrack.GetPosition().getY()/m 
+ // 	<< G4endl;
+  //file.close();
+
   std::ofstream file;
   file.open("epositions.txt",std::ios::app);
-  file << aTrack.GetPosition().getX()/m <<  " " <<  aTrack.GetPosition().getY()/m 
-  	<< G4endl;
+  file << aTrack.GetPosition().getX()/m <<  " " <<  
+    aTrack.GetPosition().getY()/m 
+       << G4endl;
   file.close();
   return &aParticleChange;
 }

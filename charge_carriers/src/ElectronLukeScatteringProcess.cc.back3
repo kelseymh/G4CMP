@@ -7,19 +7,16 @@
 #include "LatticeManager2.hh"
 #include "PhysicalLattice.hh"
 
-#include "G4FieldManager.hh"
 #include "G4Step.hh"
 #include "G4VParticleChange.hh"
 #include "Randomize.hh"
 #include "G4RandomDirection.hh"
 #include <fstream>
 #include <iostream>
-#include "G4TransportationManager.hh"
 #include "DriftingElectronTrackInformation.hh"
-#include "G4Field.hh"
-#include "Tst1EMField.hh"
 
 
+#include "G4Geantino.hh"
 
 
 /*ElectronLukeScatteringProcess::ElectronLukeScatteringProcess(const G4String& aName)
@@ -76,7 +73,6 @@ ElectronLukeScatteringProcess::ElectronLukeScatteringProcess(ElectronLukeScatter
 
 G4double ElectronLukeScatteringProcess::GetMeanFreePath(const G4Track& aTrack, G4double, G4ForceCondition* condition)
 {
-  //  G4cout << "GetMeanFreePath" << G4endl;
   G4double me=electron_mass_c2/c_squared;
   G4double mc = .118*me;
 
@@ -84,53 +80,24 @@ G4double ElectronLukeScatteringProcess::GetMeanFreePath(const G4Track& aTrack, G
   int valley = ((DriftingElectronTrackInformation*) aTrack.GetUserInformation())->getValley();
   switch(valley){
       case 1:
-	  trix = G4RotationMatrix(G4Rep3x3( 1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-			  -1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0, 
-			  -1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          trix = G4RotationMatrix(-PI/4, -PI/4, PI/4);
           break;
       case 2:
-	  trix = G4RotationMatrix(G4Rep3x3(-1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-		 -1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0, 
-		  1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          trix = G4RotationMatrix(PI/4, -PI/4, -PI/4);
           break;
       case 3:
-	  trix = G4RotationMatrix(G4Rep3x3(-1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-		  1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0, 
-		  1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          trix = G4RotationMatrix(-PI/4, PI/4, PI/4);
           break;
       case 4:
-	  trix = G4RotationMatrix(G4Rep3x3( 1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-		  1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0, 
-		 -1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          trix = G4RotationMatrix(PI/4, PI/4, -PI/4);
           break;
   }
   
-  valleyToNormal= G4AffineTransform(trix);
-  normalToValley= G4AffineTransform(trix).Inverse();    
-  G4ThreeVector T = G4ThreeVector(sqrt(.118/1.588), sqrt(.118/.081), sqrt(.118/.081));
-  G4FieldManager* fMan = 
-	G4TransportationManager::GetTransportationManager()->GetFieldManager();
-    const G4Field* field = fMan->GetDetectorField();
+  normalToValley= G4AffineTransform(trix);
+  valleyToNormal= G4AffineTransform(trix).Inverse();
 
-    G4ThreeVector posVec = aTrack.GetPosition();
-    G4double position[4] = {posVec[0],posVec[1],posVec[2],0};
-    G4double fieldVal[6];
-
-    field->GetFieldValue(position,fieldVal);
-    G4ThreeVector Efield = G4ThreeVector(fieldVal[3], fieldVal[4], fieldVal[5]);
-    G4ThreeVector Efield_valley = normalToValley.TransformPoint(Efield);
-    G4ThreeVector Efield_HV = G4ThreeVector( Efield_valley[0]*T[0], 
-					     Efield_valley[1]*T[1], 
-					     Efield_valley[2]*T[2]);
-    
-    G4RotationMatrix mInv = 
-		trix.inverse()*G4Rep3x3(1/1.588/me,   0.0    , 0.0,
-							0.0     , 1/.081/me, 0.0, 
-							0.0     ,   0.0    , 1/.081/me)
-							*trix;
-
+  G4ThreeVector T = G4ThreeVector(sqrt(.12/.081), sqrt(.12/.081), sqrt(.12/1.58));
   G4ThreeVector k = aTrack.GetMomentum()/hbarc;
-  G4ThreeVector v = mInv*k*hbar_Planck;
   G4ThreeVector k_valley = normalToValley.TransformPoint(k);
   G4ThreeVector k_HV =  G4ThreeVector(k_valley[0]*T[0], 
 					k_valley[1]*T[1], 
@@ -139,124 +106,66 @@ G4double ElectronLukeScatteringProcess::GetMeanFreePath(const G4Track& aTrack, G
   *condition = Forced;
 
   G4double kmag = k_HV.mag();
-					
-  if(kmag<=ksound_Hole) 
-  {
-      return DBL_MAX;
-  }
+  G4ThreeVector v_HV = hbar_Planck*k_HV/mc;
+  G4ThreeVector v_valley =  G4ThreeVector(v_HV[0]*T[0], 
+					v_HV[1]*T[1], 
+					v_HV[2]*T[2]);
+   G4ThreeVector v = valleyToNormal.TransformAxis(v_valley);
+  //G4cout << "kmag = " << kmag*m << G4endl;
+  G4double tau;
+  if (kmag<=ksound_Hole) return DBL_MAX;
 
-  G4double tau0 =  1.0 / (
-		       velLong / (3*l0Hole)
-		       * (kmag / ksound_Hole) * (kmag/ksound_Hole)
+  tau =  1.0 / (
+		       10.0*velLong / (3*l0Hole)
+		       * (kmag / ksound_Hole)
 		       * ((1- ksound_Hole /kmag))
 		       * ((1- ksound_Hole /kmag))
 		       * ((1- ksound_Hole /kmag))
 		       );
-	
-  G4double mfp0 = tau0*v.mag();
-  return mfp0;
-  G4cout << mfp0/m << G4endl;
-  
-  G4ThreeVector k1, k1_HV, x1, v1;
-  G4ThreeVector v0 = v;
-  G4ThreeVector x0 = posVec;
-  G4double mfp1, tau1;
-  G4double dmfp = 0;
-  for (int i=0; i<100; i++)
-  {
-  x1 = x0 + mfp0*v0/v0.mag();
-  k1_HV =  k_HV + electron_charge/hbar_Planck*Efield_HV*mfp0/v0.mag()/100;
-  v1 = v0 + mInv*Efield*electron_charge*mfp0/v0.mag()/100;
-  
-  //G4cout << (k1_HV.mag() - k_HV.mag())*m << G4endl;
-  
-  tau1 =  1.0 / (
-		       velLong / (3*l0Hole)
-		       * (k1_HV.mag()/ ksound_Hole)
-		       * ((1- ksound_Hole /k1_HV.mag()))
-		       * ((1- ksound_Hole /k1_HV.mag()))
-		       * ((1- ksound_Hole /k1_HV.mag()))
-		       );
-
-    //G4cout << "mfp0 = " << mfp0/m << G4endl;
-    //G4cout << "mfp1 = " << tau1*v1.mag()/m << G4endl;
-    //G4cout << "mfp2 = " << tau1*v1.mag()/m  + mfp0/10/m<< G4endl;
-    dmfp += mfp0/100;
-    mfp0 = mfp0/100 + tau1*v1.mag();
-    x0 = x1;
-    k_HV = k1_HV;
-    v0 = v1;
-  }
-  //dmfp += tau1*v1.mag();
-//   for (int i=0; i<100; i++)
-//   {
-//   //x1 = x0 + mfp0*v0/v0.mag();
-//   k1_HV =  k_HV + electron_charge/hbar_Planck*Efield_HV*mfp0/v0.mag()/100;
-//   v1 = v0 + mInv*Efield*electron_charge*mfp0/v0.mag()/100;
-//   
-//   G4cout << (k1_HV.mag() - k_HV.mag())*m << G4endl;
-//   
-//   tau1 =  1.0 / (
-// 		       velLong / (3*l0Hole)
-// 		       * (k1_HV.mag()/ ksound_Hole)
-// 		       * ((1- ksound_Hole /k1_HV.mag()))
-// 		       * ((1- ksound_Hole /k1_HV.mag()))
-// 		       * ((1- ksound_Hole /k1_HV.mag()))
-// 		       );
-// 
-//     G4cout << "mfp0 = " << mfp0/m << G4endl;
-//     G4cout << "mfp1 = " << tau1*v1.mag()/m << G4endl;
-//     G4cout << "mfp2 = " << tau1*v1.mag()/m  + mfp0/10/m<< G4endl;
-//     mfp0 = mfp0/100 + tau1*v1.mag();
-//   }
- G4cout << mfp0/m << G4endl; 
-  return dmfp;
-  
-  
+  //G4double mfp = tau*v_HV.mag();
+  G4double mfp = tau*v.mag();
+  //G4cout << v.mag() << G4endl;
+  //G4cout << aTrack.GetVelocity() << G4endl;
+  //G4cout << aTrack.GetMomentum().mag()/mc/c_light << G4endl;
+  //G4double mfp = tau*aTrack.GetVelocity();
+  G4cout << mfp/m << G4endl;
+    return mfp;
 }
 
 G4VParticleChange* ElectronLukeScatteringProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
+  G4cout << "Luke Emission" << G4endl;
   G4double me=electron_mass_c2/c_squared;
-  G4double mc = .118*me;
+  G4double mx=0.081*me;
+  G4double my=0.081*me;
+  G4double mz=1.58*me;
+  G4double mc = .12*me;
   aParticleChange.Initialize(aTrack); 
   G4RotationMatrix trix;
-  int valley = ((DriftingElectronTrackInformation*)aTrack.GetUserInformation())->getValley();
+  int valley = ((DriftingElectronTrackInformation*) 
+aTrack.GetUserInformation())->getValley();
+//if (valley != 2 && valley != 3)
+//G4cout << "valley = " << valley << G4endl;
   switch(valley){
       case 1:
-	  trix = G4RotationMatrix(G4Rep3x3( 1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-			  -1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0, 
-			  -1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          trix = G4RotationMatrix(-PI/4, -PI/4, PI/4);
           break;
       case 2:
-	  trix = G4RotationMatrix(G4Rep3x3(-1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-		 -1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0, 
-		  1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          trix = G4RotationMatrix(PI/4, -PI/4, -PI/4);
           break;
       case 3:
-	  trix = G4RotationMatrix(G4Rep3x3(-1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-		  1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0, 
-		  1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          trix = G4RotationMatrix(-PI/4, PI/4, PI/4);
           break;
       case 4:
-	  trix = G4RotationMatrix(G4Rep3x3( 1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-		  1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0, 
-		 -1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
+          trix = G4RotationMatrix(PI/4, PI/4, -PI/4);
           break;
   }
   
-  
   G4StepPoint* postStepPoint = aTrack.GetStep()->GetPostStepPoint();
-  valleyToNormal= G4AffineTransform(trix);
-  normalToValley= G4AffineTransform(trix).Inverse();
-    
-    G4RotationMatrix mInv = 
-		trix.inverse()*G4Rep3x3(1/1.588/me,   0.0    , 0.0,
-							0.0     , 1/.081/me, 0.0, 
-							0.0     ,   0.0    , 1/.081/me)
-							*trix;
+  normalToValley= G4AffineTransform(trix);
+  valleyToNormal= G4AffineTransform(trix).Inverse();
   
-  G4ThreeVector T = G4ThreeVector(sqrt(.12/1.588), sqrt(.12/.081), sqrt(.12/.081));
+  G4ThreeVector T = G4ThreeVector(sqrt(.12/.081), sqrt(.12/.081), sqrt(.12/1.58));
   G4ThreeVector k = postStepPoint->GetMomentum()/hbarc;
   G4ThreeVector k_valley = normalToValley.TransformPoint(k);
   G4ThreeVector k_HV =  G4ThreeVector(k_valley[0]*T[0], 
@@ -275,8 +184,9 @@ G4VParticleChange* ElectronLukeScatteringProcess::PostStepDoIt(const G4Track& aT
 	return &aParticleChange;
     }  
 
-  //G4cout << "Luke Emission1" << G4endl;
+  G4cout << "Luke Emission1" << G4endl;
   G4double theta_phonon= MakeTheta(kmag, ksound_Hole);
+  //G4cout << theta_phonon << G4endl;
 
   G4double theta_charge=acos( 
 			     (kmag*kmag - 2*ksound_Hole
@@ -291,19 +201,35 @@ G4VParticleChange* ElectronLukeScatteringProcess::PostStepDoIt(const G4Track& aT
 				     )) 
 			     );
 
+    //G4double T = kmag*kmag*hbar_Planck*hbar_Planck/2/mc;
   G4double q = 2*(kmag*cos(theta_phonon)-ksound_Hole);
+  //G4cout <<  k_HV.mag()*m << G4endl;
+  //G4cout <<  q << G4endl;
+  //G4cout << k_HV.mag2()*hbar_Planck*hbar_Planck/2/mc <<  G4endl;
+  //G4double Energy = k_HV.mag2()*hbar_Planck*hbar_Planck/2/mc;
+  G4double kold = k_HV.mag();
   k_HV.setMag(sqrt(k_HV.mag2() + q*q - 2*kmag*q*cos(theta_phonon)));
-  //k_HV.setMag(sqrt(kmag*kmag-2*mc*q*velLong/hbar_Planck));
+  //k_HV.setMag(sqrt(2*mc*newE/hbar_Planck/hbar_Planck));
 
   G4ThreeVector kdir = k_HV.unit();
-  //G4cout << "kmag = " << k_HV.mag() << G4endl;
-  k_HV.rotate(kdir.orthogonal(), theta_charge);
-  //G4cout << "kmag = " << k_HV.mag() << G4endl;
+  k_HV.rotate(theta_charge, kdir.orthogonal());
 
   G4double phi_charge =  G4UniformRand()*2*pi;
-  k_HV.rotate(kdir, phi_charge);
-  //G4cout << "kmag = " << k_HV.mag() << G4endl;
+  k_HV.rotate(phi_charge, kdir);
   
+  G4double Energy = k_HV.mag2()*hbar_Planck*hbar_Planck/2/mc;
+  G4double oldE = kold*kold*hbar_Planck*hbar_Planck/2/mc;
+  //G4cout << postStepPoint->GetKineticEnergy() << G4endl;
+  //G4cout << qEnergy << G4endl;
+  //G4cout << q*q*hbar_Planck*hbar_Planck/2/mc << G4endl;
+  //G4cout << oldE << G4endl;
+  //G4cout << Energy << G4endl;
+G4ThreeVector v_new = hbar_Planck/mc*k_HV;
+v_new = G4ThreeVector(v_new[0]*T[0], v_new[1]*T[1], v_new[2]*T[2]);
+//Energy = .5 * (v_new[0]*v_new[0]*mx, v_new[1]*v_new[1]*my, 
+//v_new[2]*v_new[2]*mz);
+valleyToNormal.ApplyPointTransform(v_new);
+
 G4ThreeVector p_new = hbar_Planck*k_HV;
 p_new[0] /= T[0];
 p_new[1] /= T[1];
@@ -335,11 +261,6 @@ files
 // 
 //   kwave << oldE/eV - Energy/eV << "\n";
 //   kwave.close();
-/*
-G4cout << "Energy before   : " << aTrack.GetKineticEnergy()/eV << G4endl;
-G4cout << "Energy before   : " << k.mag2()*hbar_Planck*hbar_Planck/2/mc/eV<< G4endl;
-G4cout << "Energy after    : " << p_new.mag2()/2/mc/eV << G4endl;
-G4cout << "Energy of Phonon: " << velLong*hbar_Planck*q/eV << G4endl;*/
   
   
   //G4cout << postStepPoint->GetVelocity()*s/m << G4endl;
@@ -347,8 +268,7 @@ G4cout << "Energy of Phonon: " << velLong*hbar_Planck*q/eV << G4endl;*/
   aParticleChange.ProposeMomentumDirection(p_new.unit());
   //aParticleChange.ProposeVelocity(v_new.mag()); 
   //aParticleChange.ProposeEnergy(Energy);
-  //aParticleChange.ProposeEnergy(p_new*(mInv*p_new)/2);
-  aParticleChange.ProposeEnergy(p_new.mag2()/2/mc);
+  aParticleChange.ProposeEnergy(p_new.mag2()/2/aTrack.GetDefinition()->GetPDGMass()*c_squared);
   //aParticleChange.ProposeEnergy(aTrack.GetKineticEnergy()-velLong*hbar_Planck*q);
   //aParticleChange.ProposeEnergy(T -velLong*hbar_Planck*q);
   ResetNumberOfInteractionLengthLeft();
@@ -356,7 +276,7 @@ G4cout << "Energy of Phonon: " << velLong*hbar_Planck*q/eV << G4endl;*/
 }
 
 G4double ElectronLukeScatteringProcess::MakeTheta(G4double& k, G4double& ks){
-   /*  G4double u = G4UniformRand();
+     G4double u = G4UniformRand();
  
   //Analytical method to compute theta
   
@@ -376,7 +296,7 @@ G4double ElectronLukeScatteringProcess::MakeTheta(G4double& k, G4double& ks){
   if(acos(ks/k)<theta) G4cout<<"\n  THETA OUT OF BOUNDS!!! (theta>acos(ks/k)) theta:"<<theta<<" acos(ks/k):"<<acos(ks/k);
   if(PI/2<=theta) G4cout<<"\n THETA OUT OF BOUNDS!!! (pi/2 < theta)";
       
-      */
+      /*
   //Rejection method for determining theta
   G4double theta;
   G4double pValue=2;
@@ -386,7 +306,7 @@ G4double ElectronLukeScatteringProcess::MakeTheta(G4double& k, G4double& ks){
   G4double pValMax;
   thetaMax=acos(ks/k);
   pValMax=(1-(ks/k))*(1-(ks/k));
-  bool first = false;
+  bool first = true;
 
   while(pValue>pDensity){
     pValue=G4UniformRand();//*pValMax;//  *(1+2*ks/k+(ks/k)*(ks/k));   
@@ -404,9 +324,10 @@ G4double ElectronLukeScatteringProcess::MakeTheta(G4double& k, G4double& ks){
    //  G4cout<<"\n\tks: "<<ks*m;
    //  G4cout<<endl;
     //}
-    //first=false;
+    first=false;
     
   }
+  */
   return theta;
 }
 

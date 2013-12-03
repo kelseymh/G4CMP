@@ -31,15 +31,17 @@ G4cout<<GetProcessName()<<" is created "<<G4endl;
 }
 }
  */
-LukeScatteringProcess::LukeScatteringProcess()
+LukeScatteringProcess::LukeScatteringProcess(G4VProcess* stepper)
 :G4VDiscreteProcess("LukeScattering")
 {
     velLong=5400*m/s;
     l0Hole = 108e-6*m;
-    massFreeElectron=9.1e-31*kg;
+    massFreeElectron=electron_mass_c2/c_squared;
     massHole=0.35*massFreeElectron;
-    ksound_Hole=1.6306e7/m;
+    //ksound_Hole=1.6306e7/m;
+    ksound_Hole=velLong*massHole/hbar_Planck;
     hbar= 6.5821e-16*eV*s;
+    stepLimiter = stepper;
 
     if(verboseLevel>1){
 	G4cout<<GetProcessName()<<" is created "<<G4endl;
@@ -57,9 +59,9 @@ G4double LukeScatteringProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 {
     G4StepPoint* stepPoint  = aTrack.GetStep()->GetPostStepPoint();
     G4double velocity = stepPoint->GetVelocity();
-    G4double kmag = velocity*massHole / hbar;
+    G4double kmag = velocity*massHole / hbar_Planck;
 
-    *condition = NotForced;
+    *condition = Forced;
 
     if (kmag<=ksound_Hole)
     {
@@ -89,14 +91,16 @@ G4VParticleChange* LukeScatteringProcess::PostStepDoIt(const G4Track& aTrack, co
     //G4cout<<"\nLukeScattering::PostStepDoIt: Step limited by process " <<postStepPoint->GetProcessDefinedStep()->GetProcessName() <<  G4endl;
 
 
-    /*if(	(postStepPoint->GetProcessDefinedStep()==stepLimiter)
+    if((postStepPoint->GetProcessDefinedStep()==stepLimiter)
 	|| (postStepPoint->GetStepStatus()==fGeomBoundary))
-	return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
-    */
+	return &aParticleChange;
+	//return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
 
 
-    G4double velocity = aStep.GetPostStepPoint()->GetVelocity();
-    G4double kmag = velocity*massHole / hbar;
+    G4double velocity = postStepPoint->GetVelocity();
+    G4double p = postStepPoint->GetMomentum().mag()/c_light;
+    //G4cout << "momentum: " <<  p <<  " " << velocity*massHole << G4endl;
+    G4double kmag = velocity*massHole / hbar_Planck;
     G4double theta_phonon=MakeTheta(kmag, ksound_Hole);
     G4double theta_charge=acos( 
 					    (kmag*kmag - 2*ksound_Hole
@@ -106,9 +110,13 @@ G4VParticleChange* LukeScatteringProcess::PostStepDoIt(const G4Track& aTrack, co
 					    / kmag/ (sqrt(kmag*kmag - 4*ksound_Hole
 					    *(kmag*cos(theta_phonon) - ksound_Hole))));
 
-    G4double qEnergy = (4 * hbar*hbar *ksound_Hole*ksound_Hole / 2 
-				    / massHole  * (kmag / ksound_Hole 
-				    * cos(theta_phonon) - 1 ));
+    //G4double qEnergy = (4 * hbar*hbar *ksound_Hole*ksound_Hole / 2 
+//				    / massHole  * (kmag / ksound_Hole 
+//				    * cos(theta_phonon) - 1 ));
+    G4double q = 2*(kmag*cos(theta_phonon)-ksound_Hole);
+    G4double T = hbar_Planck*hbar_Planck*kmag*kmag/2/massHole;
+    G4double qEnergy = velLong*hbar_Planck*q;
+    G4double knew = sqrt(kmag*kmag + q*q - kmag*q*cos(theta_phonon));
 
     G4ThreeVector momentum = G4ThreeVector(aTrack.GetMomentumDirection());
     G4ThreeVector orth = momentum.orthogonal();
@@ -116,9 +124,24 @@ G4VParticleChange* LukeScatteringProcess::PostStepDoIt(const G4Track& aTrack, co
     newDir.rotate(aTrack.GetMomentumDirection(), G4UniformRand()*2*pi);
 
     aParticleChange.ProposeMomentumDirection(newDir);
-    aParticleChange.ProposeEnergy(aTrack.GetKineticEnergy()-qEnergy);  
+    aParticleChange.ProposeEnergy(T-qEnergy);  
     ResetNumberOfInteractionLengthLeft();    
-
+/*
+G4cout << "Energy before   : " << aTrack.GetKineticEnergy()/eV << G4endl;
+G4cout << "Energy before   : " << p*p/2/massHole/eV << G4endl;
+G4cout << "Energy after    : " << knew*knew*hbar_Planck*hbar_Planck/2/massHole/eV << G4endl;
+G4cout << "Energy of Phonon: " << velLong*hbar_Planck*q/eV << G4endl;*/
+//   std::ofstream epositions;
+//   epositions.open("Scatters.txt", std::ofstream::app);
+// 
+//   epositions << 1 << "\n";
+//   epositions.close();
+//   std::ofstream qwave;
+//     qwave.open("q", std::ofstream::app);
+//   
+//     qwave << qEnergy/eV<< "\n";
+//     qwave.close();
+  
     return &aParticleChange;
 
 }
@@ -194,5 +217,5 @@ G4double LukeScatteringProcess::MakePhi(G4double& k,G4double& ks, G4double& thet
 
 G4bool LukeScatteringProcess::IsApplicable(const G4ParticleDefinition& aPD)
 {
-    return((&aPD==DriftingHole::Definition()));
+    return((&aPD==DriftingHole::Definition())|(&aPD==DriftingElectron::Definition()));
 }
