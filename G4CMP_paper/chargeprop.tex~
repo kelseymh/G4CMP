@@ -78,7 +78,7 @@ $v_i^* = v_i/\sqrt{m_c/m_i}$, where $m_c$ is given by $3/m_c = 1/m_\parallel +
 \end{equation}
 
 Once the coordinate system is rotated into the conduction valley frame, a
-Herring-Vogt transformation is applied,
+Herring-Vogt transformation is then applied,
 \begin{equation}
     T_{HV} = \left( \begin{array}{ccc}
                     \sqrt{\frac{m_c}{m_{\parallel}}} & 0 & 0 \\

@@ -195,7 +195,7 @@ For any given wave vector, $\vec{k}$, Eq. \ref{eq:3DWave} has three eigenvalues,
 
 Due to the anisotropy in $C_{ijlm}$, Eq. \ref{eq:GroupV} yields a group velocity $\vec{v_g}$ which is not parallel to the phonon momentum $\hbar\vec{k}$. Instead, phonons are focused onto propagation directions which correspond to the highest density of eigenvectors $\vec{k}$. This focusing gives rise to caustics when observing the energy  distribution resulting from a point-like phonon source isotropic in $\vec{k}$-space. The resulting caustics can be observed using micro-calorimeters \cite{Nothrop}. Figure~\ref{fig:caustics} shows that the caustics simulated by the Geant4 phonon transport code are in good agreement with experimental observations. 
 
-For the purposes of the G4CMP phonon transport code, the wave equation is not solved in real time but rather a look-up table is generated which maps $\vec{k}$ onto $\vec{v_g}$ and bilinear interpolation is used to generate a continuous mapping function. Phonon focusing and methods for solving the three-dimensional wave equations are treated in \cite{Wolfe}. %Wolfe's book \cite{Wolfe}. %For further reading please also consider \ref{fig:caustics}.
+For the purposes of the G4CMP phonon transport code, the wave equation is not solved in real time but rather a look-up table is generated which maps $\vec{k}$ onto $\vec{v_g}$ and bilinear interpolation is used to generate a continuous mapping function. Phonon focusing and methods for solving the three-dimensional wave equations are treated Wolfe's book \cite{Wolfe}. %For further reading please also consider \ref{fig:caustics}.
 
 \begin{figure}
 	\centering
