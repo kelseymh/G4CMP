@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.11.22)  3 DEC 2013 15:27
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.11.22)  3 DEC 2013 16:04
 entering extended mode
  %&-line parsing enabled.
 **G4CMP_MAIN.tex
@@ -575,7 +575,7 @@ Overfull \hbox (12.0pt too wide) in paragraph at lines 202--203
  []
 
 [2 <./caustics.png (PNG copy)>] (./chargeprop.tex) (./ivscattering.tex
-<intervalley.png, id=16, 575.0283pt x 578.4009pt>
+<intervalley.png, id=16, 582.978pt x 585.8688pt>
 File: intervalley.png Graphic file (type png)
  <use intervalley.png>
 Overfull \hbox (12.0pt too wide) in paragraph at lines 4--5
@@ -601,7 +601,7 @@ nts/type1/public/txfonts/txex.pfb></usr/share/texmf-texlive/fonts/type1/public/
 txfonts/txsy.pfb></usr/share/texmf-texlive/fonts/type1/urw/times/utmb8a.pfb></u
 sr/share/texmf-texlive/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf-texli
 ve/fonts/type1/urw/times/utmri8a.pfb>
-Output written on G4CMP_MAIN.pdf (4 pages, 2432640 bytes).
+Output written on G4CMP_MAIN.pdf (4 pages, 2450555 bytes).
 PDF statistics:
  60 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
