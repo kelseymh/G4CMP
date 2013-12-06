@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.11.22)  4 DEC 2013 10:08
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.11.22)  6 DEC 2013 10:51
 entering extended mode
  %&-line parsing enabled.
 **G4CMP_MAIN.tex
@@ -575,35 +575,33 @@ Overfull \hbox (12.0pt too wide) in paragraph at lines 202--203
  []
 
 [2 <./caustics.png (PNG copy)>] (./chargeprop.tex) (./ivscattering.tex
-<intervalley.png, id=16, 582.978pt x 585.8688pt>
+<intervalley.png, id=16, 937.5828pt x 594.5412pt>
 File: intervalley.png Graphic file (type png)
- <use intervalley.png>
-Overfull \hbox (12.0pt too wide) in paragraph at lines 4--5
- [][] 
- []
+ <use intervalley.png>)
+[3] [4 <./intervalley.png>] [5
 
-[3]) [4 <./intervalley.png>] (./G4CMP_MAIN.aux) ) 
+] (./G4CMP_MAIN.aux) ) 
 Here is how much of TeX's memory you used:
  2787 strings out of 495021
  34144 string characters out of 1181034
- 93401 words of memory out of 3000000
+ 96401 words of memory out of 3000000
  5916 multiletter control sequences out of 15000+50000
  39069 words of font info for 95 fonts, out of 3000000 for 9000
  28 hyphenation exceptions out of 8191
  32i,14n,30p,1159b,230s stack positions out of 5000i,500n,10000p,200000b,50000s
-{/usr/share/texmf-texlive/font
-s/enc/dvips/base/8r.enc}</usr/share/texmf-texlive/fonts/type1/public/amsfonts/s
-ymbols/msam10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/symbols
-/msbm10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/symbols/msbm7
-.pfb></usr/share/texmf-texlive/fonts/type1/public/txfonts/rtxmi.pfb></usr/share
-/texmf-texlive/fonts/type1/public/txfonts/rtxr.pfb></usr/share/texmf-texlive/fo
-nts/type1/public/txfonts/txex.pfb></usr/share/texmf-texlive/fonts/type1/public/
-txfonts/txsy.pfb></usr/share/texmf-texlive/fonts/type1/urw/times/utmb8a.pfb></u
-sr/share/texmf-texlive/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf-texli
-ve/fonts/type1/urw/times/utmri8a.pfb>
-Output written on G4CMP_MAIN.pdf (4 pages, 2177264 bytes).
+{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.enc}</u
+sr/share/texmf-texlive/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/sha
+re/texmf-texlive/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/share/tex
+mf-texlive/fonts/type1/public/amsfonts/symbols/msbm7.pfb></usr/share/texmf-texl
+ive/fonts/type1/public/txfonts/rtxmi.pfb></usr/share/texmf-texlive/fonts/type1/
+public/txfonts/rtxr.pfb></usr/share/texmf-texlive/fonts/type1/public/txfonts/tx
+ex.pfb></usr/share/texmf-texlive/fonts/type1/public/txfonts/txsy.pfb></usr/shar
+e/texmf-texlive/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-texlive/font
+s/type1/urw/times/utmr8a.pfb></usr/share/texmf-texlive/fonts/type1/urw/times/ut
+mri8a.pfb>
+Output written on G4CMP_MAIN.pdf (5 pages, 2481105 bytes).
 PDF statistics:
- 60 PDF objects out of 1000 (max. 8388607)
+ 63 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
