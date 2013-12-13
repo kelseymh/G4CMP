@@ -1,7 +1,7 @@
 
 \begin{figure*}
 	\centering
-		\includegraphics[width=0.9\textwidth]{intervalley.png}
+		\includegraphics[width=0.5\textwidth]{intervalley.png}
 	\caption{\textbf{Left:} Geant4 simulations \textbf{Right:} legacy MATLAB simulations. \textbf{Top Row:} Simulations with inter-valley scattering turned on, \textbf{Bottom Row:} Simulations with inter-valley scattering turned off, including hole transport through the crystal.}
 	\label{fig:intervalley}
 \end{figure*}
