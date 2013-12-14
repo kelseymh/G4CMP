@@ -23,13 +23,13 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/src/XAlminumElectrodeHit.cc
-/// \brief Implementation of the XAlminumElectrodeHit class
+/// \file exoticphysics/phonon/src/XAluminumElectrodeHit.cc
+/// \brief Implementation of the XAluminumElectrodeHit class
 //
-// $Id$
+// $Id: XAluminumElectrodeHit.cc 76246 2013-11-08 11:17:29Z gcosmo $
 //
 
-#include "XAlminumElectrodeHit.hh"
+#include "XAluminumElectrodeHit.hh"
 
 #include "G4LogicalVolume.hh"
 #include "G4Transform3D.hh"
@@ -45,24 +45,24 @@
 #include "G4VisAttributes.hh"
 #include "G4SystemOfUnits.hh"
 
-G4Allocator<XAlminumElectrodeHit> XAlminumElectrodeHitAllocator;
+G4Allocator<XAluminumElectrodeHit> XAluminumElectrodeHitAllocator;
 
-XAlminumElectrodeHit::XAlminumElectrodeHit()
+XAluminumElectrodeHit::XAluminumElectrodeHit()
 {
-  time = 0.;
+  fTime = 0.;
   fEdep = 0.;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XAlminumElectrodeHit::~XAlminumElectrodeHit()
+XAluminumElectrodeHit::~XAluminumElectrodeHit()
 {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XAlminumElectrodeHit::XAlminumElectrodeHit(const XAlminumElectrodeHit &right)
+XAluminumElectrodeHit::XAluminumElectrodeHit(const XAluminumElectrodeHit &right)
 : G4VHit() {
-  time = right.time;
+  fTime = right.fTime;
   fEdep = right.fEdep;
   fWorldPos = right.fWorldPos;
   fLocalPos = right.fLocalPos;
@@ -70,9 +70,9 @@ XAlminumElectrodeHit::XAlminumElectrodeHit(const XAlminumElectrodeHit &right)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-const XAlminumElectrodeHit& XAlminumElectrodeHit::operator=(const XAlminumElectrodeHit &right)
+const XAluminumElectrodeHit& XAluminumElectrodeHit::operator=(const XAluminumElectrodeHit &right)
 {
-  time = right.time;
+  fTime = right.fTime;
   fEdep = right.fEdep;
   fWorldPos = right.fWorldPos;
   fLocalPos = right.fLocalPos;
@@ -81,14 +81,14 @@ const XAlminumElectrodeHit& XAlminumElectrodeHit::operator=(const XAlminumElectr
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-int XAlminumElectrodeHit::operator==(const XAlminumElectrodeHit &/*right*/) const
+int XAluminumElectrodeHit::operator==(const XAluminumElectrodeHit &/*right*/) const
 {
   return 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XAlminumElectrodeHit::Draw()
+void XAluminumElectrodeHit::Draw()
 {
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if(pVVisManager)
@@ -98,8 +98,8 @@ void XAlminumElectrodeHit::Draw()
     circle.SetFillStyle(G4Circle::filled);
     G4Colour colour(0.65,0.65,0.);
     G4VisAttributes attribs(colour);
-    attribs.SetStartTime(time);
-    attribs.SetEndTime(time+1*ms);
+    attribs.SetStartTime(fTime);
+    attribs.SetEndTime(fTime+1*ms);
     circle.SetVisAttributes(attribs);
     pVVisManager->Draw(circle);
   }
@@ -107,11 +107,11 @@ void XAlminumElectrodeHit::Draw()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-const std::map<G4String,G4AttDef>* XAlminumElectrodeHit::GetAttDefs() const
+const std::map<G4String,G4AttDef>* XAluminumElectrodeHit::GetAttDefs() const
 {
   G4bool isNew;
   std::map<G4String,G4AttDef>* store
-    = G4AttDefStore::GetInstance("XAlminumElectrodeHit",isNew);
+    = G4AttDefStore::GetInstance("XAluminumElectrodeHit",isNew);
   if (isNew) {
     G4String HitType("HitType");
     (*store)[HitType] = G4AttDef(HitType,"Hit Type","Physics","","G4String");
@@ -131,14 +131,14 @@ const std::map<G4String,G4AttDef>* XAlminumElectrodeHit::GetAttDefs() const
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-std::vector<G4AttValue>* XAlminumElectrodeHit::CreateAttValues() const
+std::vector<G4AttValue>* XAluminumElectrodeHit::CreateAttValues() const
 {
   std::vector<G4AttValue>* values = new std::vector<G4AttValue>;
 
-  values->push_back(G4AttValue("HitType","XAlminumElectrodeHit",""));
+  values->push_back(G4AttValue("HitType","XAluminumElectrodeHit",""));
 
   values->push_back
-    (G4AttValue("Time",G4BestUnit(time,"Time"),""));
+    (G4AttValue("Time",G4BestUnit(fTime,"Time"),""));
 
   values->push_back
     (G4AttValue("EDep",G4BestUnit(fEdep,"Energy"),""));
@@ -151,9 +151,9 @@ std::vector<G4AttValue>* XAlminumElectrodeHit::CreateAttValues() const
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XAlminumElectrodeHit::Print()
+void XAluminumElectrodeHit::Print()
 {
-  G4cout << "  time " << time/ns << " (nsec) : at " << fLocalPos
+  G4cout << "  time " << fTime/ns << " (nsec) : at " << fLocalPos
          << "  -- fEdep = " << fEdep/eV << " [eV]" << G4endl;
 }
 

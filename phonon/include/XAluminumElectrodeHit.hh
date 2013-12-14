@@ -23,13 +23,13 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/include/XAlminumElectrodeHit.hh
-/// \brief Definition of the XAlminumElectrodeHit class
+/// \file exoticphysics/phonon/include/XAluminumElectrodeHit.hh
+/// \brief Definition of the XAluminumElectrodeHit class
 //
-// $Id$
+// $Id: XAluminumElectrodeHit.hh 76246 2013-11-08 11:17:29Z gcosmo $
 //
-#ifndef XAlminumElectrodeHit_h
-#define XAlminumElectrodeHit_h 1
+#ifndef XAluminumElectrodeHit_h
+#define XAluminumElectrodeHit_h 1
 
 #include "G4VHit.hh"
 #include "G4THitsCollection.hh"
@@ -39,15 +39,15 @@
 class G4AttDef;
 class G4AttValue;
 
-class XAlminumElectrodeHit : public G4VHit
+class XAluminumElectrodeHit : public G4VHit
 {
   public:
 
-      XAlminumElectrodeHit();
-      virtual ~XAlminumElectrodeHit();
-      XAlminumElectrodeHit(const XAlminumElectrodeHit &right);
-      const XAlminumElectrodeHit& operator=(const XAlminumElectrodeHit &right);
-      int operator==(const XAlminumElectrodeHit &right) const;
+      XAluminumElectrodeHit();
+      virtual ~XAluminumElectrodeHit();
+      XAluminumElectrodeHit(const XAluminumElectrodeHit &right);
+      const XAluminumElectrodeHit& operator=(const XAluminumElectrodeHit &right);
+      int operator==(const XAluminumElectrodeHit &right) const;
 
       inline void *operator new(size_t);
       inline void operator delete(void *aHit);
@@ -58,14 +58,14 @@ class XAlminumElectrodeHit : public G4VHit
       virtual void Print();
 
   private:
-      G4double time;
+      G4double fTime;
       G4double fEdep;
       G4ThreeVector fLocalPos;
       G4ThreeVector fWorldPos;
 
   public:
-      inline void SetTime(G4double t) { time = t; }
-      inline G4double GetTime() const { return time; }
+      inline void SetTime(G4double t) { fTime = t; }
+      inline G4double GetTime() const { return fTime; }
       inline void SetEDep(G4double e) { fEdep = e; }
       inline G4double GetEDep() const { return fEdep; }
       inline void SetLocalPos(G4ThreeVector xyz) { fLocalPos = xyz; }
@@ -74,20 +74,20 @@ class XAlminumElectrodeHit : public G4VHit
       inline G4ThreeVector GetWorldPos() const { return fWorldPos; }
 };
 
-typedef G4THitsCollection<XAlminumElectrodeHit> XAlminumElectrodeHitsCollection;
+typedef G4THitsCollection<XAluminumElectrodeHit> XAluminumElectrodeHitsCollection;
 
-extern G4Allocator<XAlminumElectrodeHit> XAlminumElectrodeHitAllocator;
+extern G4Allocator<XAluminumElectrodeHit> XAluminumElectrodeHitAllocator;
 
-inline void* XAlminumElectrodeHit::operator new(size_t)
+inline void* XAluminumElectrodeHit::operator new(size_t)
 {
   void* aHit;
-  aHit = (void*)XAlminumElectrodeHitAllocator.MallocSingle();
+  aHit = (void*)XAluminumElectrodeHitAllocator.MallocSingle();
   return aHit;
 }
 
-inline void XAlminumElectrodeHit::operator delete(void* aHit)
+inline void XAluminumElectrodeHit::operator delete(void* aHit)
 {
-  XAlminumElectrodeHitAllocator.FreeSingle((XAlminumElectrodeHit*) aHit);
+  XAluminumElectrodeHitAllocator.FreeSingle((XAluminumElectrodeHit*) aHit);
 }
 
 #endif

@@ -23,51 +23,52 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/include/XAlminumElectrodeSensitivity.hh
-/// \brief Definition of the XAlminumElectrodeSensitivity class
+/// \file processes/phonon/include/G4PhononTrackMap.hh
+/// \brief Definition of the G4PhononTrackMap base class
 //
-// $Id$
+// $Id: G4PhononTrackMap.hh 76503 2013-11-12 08:20:50Z gcosmo $
 //
-#ifndef XAlminumElectrodeSensitivity_h
-#define XAlminumElectrodeSensitivity_h 1
+// 20131111  Move implementation of Clear() to .cc file
 
-#include "G4VSensitiveDetector.hh"
-#include "XAlminumElectrodeHit.hh"
+#ifndef G4PhononTrackMap_h
+#define G4PhononTrackMap_h 1
 
-#include <iostream>
-#include <fstream>
+#include "G4ThreeVector.hh"
+#include <map>
 
-class G4Step;
-class G4HCofThisEvent;
-class G4TouchableHistory;
+class G4Track;
 
-using namespace std;
+class G4PhononTrackMap {
+public:
+  typedef std::map<const G4Track*, G4ThreeVector> TrkIDKmap;
+  static G4ThreadLocal G4PhononTrackMap* theTrackMap;
 
+public:
+  static G4PhononTrackMap* GetPhononTrackMap();	// Synonyms for access
+  static G4PhononTrackMap* GetInstance() { return GetPhononTrackMap(); }
 
-class XAlminumElectrodeSensitivity : public G4VSensitiveDetector
-{
+  // Update the wavevector for specified track, add track if not found
+  void SetK(const G4Track* track, const G4ThreeVector& K);
+  void SetK(const G4Track& track, const G4ThreeVector& K) { SetK(&track, K); }
 
-  public:
-      XAlminumElectrodeSensitivity(G4String);
-      virtual ~XAlminumElectrodeSensitivity();
+  // Access current wavevector for specified track (NULL if doesn't exist)
+  const G4ThreeVector& GetK(const G4Track* track) const;
+  const G4ThreeVector& GetK(const G4Track& track) const { return GetK(&track); }
 
-      virtual void Initialize(G4HCofThisEvent*);
-      virtual G4bool ProcessHits(G4Step*,G4TouchableHistory*);
-      virtual void EndOfEvent(G4HCofThisEvent*);
+  // Check if specified track is already loaded
+  G4bool Find(const G4Track* track) const;
+  G4bool Find(const G4Track& track) const { return Find(&track); }
 
-  XAlminumElectrodeHitsCollection* GetHitsCollection();
-  static XAlminumElectrodeHitsCollection* hitsCollection;
+  // Remove specified track from map (used by EndTracking)
+  void RemoveTrack(const G4Track* track);
 
-  private:
-  //XAlminumElectrodeHitsCollection * hitsCollection;
-  ofstream fWriter; //writing hit posn to file. Temporary fix.
-  ofstream fWriter2; //writing timing information to file. Temporary fix.
+  void Clear();			// Remove all entries from map
 
-      G4int HCID;
+private:
+  TrkIDKmap theMap;		// Associate track ID numbers with vectors
+
+private:
+  G4PhononTrackMap() { Clear(); }		// Ensure map is empty
+  ~G4PhononTrackMap() {;}
 };
-
-
-
-
-#endif
-
+#endif	/* G4PhononTrackMap_h */
