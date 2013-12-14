@@ -23,79 +23,93 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/include/XLogicalLattice.hh
-/// \brief Definition of the XLogicalLattice class
+/// \file materials/include/G4LatticeLogical.hh
+/// \brief Definition of the G4LatticeLogical class
 //
-// $Id$
+// $Id: G4LatticeLogical.hh 76883 2013-11-18 12:50:08Z gcosmo $
 //
-#ifndef XLogicalLattice_h
-#define XLogicalLattice_h
+// 20131114  Add verbosity for diagnostic output
+// 20131115  Expose maximum array dimensions for use by LatticeReader
 
-#define MAXRES 322  //maximum one dimensional map resolution
+#ifndef G4LatticeLogical_h
+#define G4LatticeLogical_h
 
-#include <iostream>
-#include <fstream>
-#include <string>
+#include "globals.hh"
 #include "G4ThreeVector.hh"
+#include <iosfwd>
 
 
-using namespace std;
+class G4LatticeLogical {
+public:
+  G4LatticeLogical();
+  virtual ~G4LatticeLogical();
 
-class XLogicalLattice{
+  void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
-private:
-  
-  int fVresTheta; //velocity  map theta resolution (inclination)
-  int fVresPhi;   //velocity  map phi resolution  (azimuth)
-  int fDresTheta; //direction map theta resn
-  int fDresPhi;   //direction map phi resn 
+  G4bool LoadMap(G4int, G4int, G4int, G4String);
+  G4bool Load_NMap(G4int, G4int, G4int, G4String);
 
-  double fMap[3][MAXRES][MAXRES];  //map for group velocity scalars
-  double fN_map[3][MAXRES][MAXRES][3];//normalized map containing group V direction unit vectors
+  // Get group velocity magnitude for input polarization and wavevector
+  virtual G4double MapKtoV(G4int, const G4ThreeVector& ) const;
 
-  double fA;       //Scaling constant for Anh.Dec. mean free path
-  double fB;       //Scaling constant for Iso.Scat. mean free path
-  double fDosL;    //Density of states for L-phonons
-  double fDosST;   //Density of states for ST-phonons
-  double fDosFT;    //Density of states for FT-phonons
-  double fBeta, fGamma, fLambda, fMu; //dynamical constants for material
+  // Get group velocity direction (unit vector) for input polarization and K
+  virtual G4ThreeVector MapKtoVDir(G4int, const G4ThreeVector& ) const;
 
-
-  ifstream fMapFile;
-  int fThetaRes, fPhiRes;
-
+  // Dump structure in format compatible with reading back
+  void Dump(std::ostream& os) const;
+  void DumpMap(std::ostream& os, G4int pol, const G4String& name) const;
+  void Dump_NMap(std::ostream& os, G4int pol, const G4String& name) const;
 
 public:
+  void SetDynamicalConstants(G4double Beta, G4double Gamma,
+			     G4double Lambda, G4double Mu) {
+    fBeta=Beta; fGamma=Gamma; fLambda=Lambda; fMu=Mu;
+  }
 
+  void SetScatteringConstant(G4double b) { fB=b; }
+  void SetAnhDecConstant(G4double a) { fA=a; }
+  void SetLDOS(G4double LDOS) { fLDOS=LDOS; }
+  void SetSTDOS(G4double STDOS) { fSTDOS=STDOS; }
+  void SetFTDOS(G4double FTDOS) { fFTDOS=FTDOS; }
 
+  G4double GetBeta() const { return fBeta; }
+  G4double GetGamma() const { return fGamma; }
+  G4double GetLambda() const { return fLambda; }
+  G4double GetMu() const { return fMu; }
+  G4double GetScatteringConstant() const { return fB; }
+  G4double GetAnhDecConstant() const { return fA; }
+  G4double GetLDOS() const { return fLDOS; }
+  G4double GetSTDOS() const { return fSTDOS; }
+  G4double GetFTDOS() const { return fFTDOS; }
+
+public:
+  enum { MAXRES=322 };			    // Maximum map resolution (bins)
   
-  XLogicalLattice();
-  ~XLogicalLattice();
+private:
+  G4int verboseLevel;			    // Enable diagnostic output
 
-  void SetDynamicalConstants(double, double, double, double);
-  void SetScatteringConstant(G4double);
-  void SetAnhDecConstant(G4double);
-  void SetLDOS(double);
-  void SetSTDOS(double);
-  void SetFTDOS(double);
-  
-  double GetBeta();
-  double GetGamma();
-  double GetLambda();
-  double GetMu();
-  G4double GetScatteringConstant();
-  G4double GetAnhDecConstant();
-  double GetLDOS();
-  double GetSTDOS();
-  double GetFTDOS();
-  
-  bool LoadMap(int, int, int, string);
-  bool Load_NMap(int, int, int, string);
-  double MapKtoV(int, G4ThreeVector);   //Get full group velocity vector
-  double BilinearInterpolateVDir(double, double, double, double, int, int); //interpolates group velocity direction
-  G4ThreeVector MapKtoVDir(int, G4ThreeVector);//Get normalized group velocity direction so that normalisatioon does not have to be done at run time
+  G4double fMap[3][MAXRES][MAXRES];	    // map for group velocity scalars
+  G4ThreeVector fN_map[3][MAXRES][MAXRES];  // map for direction vectors
 
+  G4int fVresTheta; //velocity  map theta resolution (inclination)
+  G4int fVresPhi;   //velocity  map phi resolution  (azimuth)
+  G4int fDresTheta; //direction map theta resn
+  G4int fDresPhi;   //direction map phi resn 
+
+  G4double fA;       //Scaling constant for Anh.Dec. mean free path
+  G4double fB;       //Scaling constant for Iso.Scat. mean free path
+  G4double fLDOS;    //Density of states for L-phonons
+  G4double fSTDOS;   //Density of states for ST-phonons
+  G4double fFTDOS;   //Density of states for FT-phonons
+  G4double fBeta, fGamma, fLambda, fMu; //dynamical constants for material
 };
 
+// Write lattice structure to output stream
+
+inline std::ostream& 
+operator<<(std::ostream& os, const G4LatticeLogical& lattice) {
+  lattice.Dump(os);
+  return os;
+}
 
 #endif

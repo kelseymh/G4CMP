@@ -23,37 +23,29 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/include/XLPhonon.hh
-/// \brief Definition of the XLPhonon class
+/// \file particles/include/G4PhononLong.hh
+/// \brief Definition of the G4PhononLong class
 //
-// $Id$
+// $Id: G4PhononLong.hh 75122 2013-10-28 09:51:40Z gcosmo $
 //
-#ifndef XLPhonon_h
-#define XLPhonon_h 1
+#ifndef G4PhononLong_h
+#define G4PhononLong_h 1
 
-#include "globals.hh"
-#include "G4ios.hh"
 #include "G4ParticleDefinition.hh"
 
 
-class XLPhonon : public G4ParticleDefinition
-{
- private:
-   static XLPhonon* theInstance;
+class G4PhononLong : public G4ParticleDefinition {
+private:
+  static G4PhononLong* theInstance;
 
- private:
-  XLPhonon () {}
+private:
+  G4PhononLong() {;}
 
+public:
+  virtual ~G4PhononLong() {;}
 
- public:
-
-  
-  /*  static void SetXLatticeManager(XLatticeManager2*);
-      static XLatticeManager2* GetXLatticeManager();*/
-  ~XLPhonon (){}
-
-  static XLPhonon* Definition();
-  static XLPhonon* PhononDefinition();
+  static G4PhononLong* Definition();
+  static G4PhononLong* PhononDefinition();
 
 };
 

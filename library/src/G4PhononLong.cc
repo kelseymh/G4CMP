@@ -23,25 +23,25 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/src/XLPhonon.cc
-/// \brief Implementation of the XLPhonon class
+/// \file particles/src/G4PhononLong.cc
+/// \brief Implementation of the G4PhononLong class
 //
-// $Id$
+// $Id: G4PhononLong.cc 75122 2013-10-28 09:51:40Z gcosmo $
 //
 
-#include "XLPhonon.hh"
+#include "G4PhononLong.hh"
 #include "G4ParticleTable.hh"
 #include "G4SystemOfUnits.hh"
 
-XLPhonon* XLPhonon::theInstance = 0;
+G4PhononLong* G4PhononLong::theInstance = 0;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XLPhonon*  XLPhonon::Definition() 
+G4PhononLong*  G4PhononLong::Definition() 
 {
   if (theInstance !=0) return theInstance;
 
-  const G4String name = "XLPhonon";
+  const G4String name = "phononL";
   // search in particle table
   G4ParticleTable* pTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* anInstance = pTable->FindParticle(name);
@@ -62,16 +62,16 @@ XLPhonon*  XLPhonon::Definition()
                     0,               0,             0,
              "phonon",               0,             0,         0,
                  true,             0.0,          NULL,
-                false,        "XLPhonon",           0
+                false,        "phononL",           0
              );
   }
-  theInstance = reinterpret_cast<XLPhonon*>(anInstance);
+  theInstance = reinterpret_cast<G4PhononLong*>(anInstance);
   return theInstance;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XLPhonon*  XLPhonon::PhononDefinition() 
+G4PhononLong*  G4PhononLong::PhononDefinition() 
 {
   return Definition();
 }

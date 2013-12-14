@@ -23,52 +23,34 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/include/XPhononReflectionProcess.hh
-/// \brief Definition of the XPhononReflectionProcess class
+/// \file processes/phonon/include/G4PhononReflection.hh
+/// \brief Definition of the G4PhononReflection class
 //
-// $Id$
+// $Id: G4PhononReflection.hh 75725 2013-11-05 16:52:30Z mkelsey $
 //
-#ifndef XPhononReflectionProcess_h
-#define XPhononReflectionProcess_h 1
+#ifndef G4PhononReflection_h
+#define G4PhononReflection_h 1
 
-#include "G4ios.hh"
-#include "globals.hh"
-#include "G4VDiscreteProcess.hh"
+#include "G4VPhononProcess.hh"
 
-class G4Material;
 
-class XPhononReflectionProcess : public G4VDiscreteProcess 
-{
-  public:
-
-     XPhononReflectionProcess(const G4String& processName ="XPhononReflectionProcess" );
-
-  virtual ~XPhononReflectionProcess();
+class G4PhononReflection : public G4VPhononProcess {
+public:
+  G4PhononReflection(const G4String& processName ="phononReflection" );
+  virtual ~G4PhononReflection();
   
-  virtual G4VParticleChange* PostStepDoIt(
-                const G4Track&, const G4Step& );
+  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
   
-  virtual G4bool IsApplicable(const G4ParticleDefinition&);
+protected:
+  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
-  virtual void BuildPhysicsTable(const G4ParticleDefinition&);
-                           
-  protected:
+private:
+  G4double kCarTolerance;
 
-  virtual G4double GetMeanFreePath(
-                const G4Track&, G4double, G4ForceCondition* );
-
-
-
-  private:
-  
+private:
   // hide assignment operator as private 
-     XPhononReflectionProcess(XPhononReflectionProcess&);
-     XPhononReflectionProcess& operator=(const XPhononReflectionProcess& right);
-
-  private:
- 
-     G4Material* fAlminum;
-     G4double kCarTolerance;
+  G4PhononReflection(G4PhononReflection&);
+  G4PhononReflection& operator=(const G4PhononReflection& right);
 };
 
 #endif

@@ -23,228 +23,135 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/src/XPhysicalLattice.cc
-/// \brief Implementation of the XPhysicalLattice class
+/// \file materials/src/G4LatticePhysical.cc
+/// \brief Implementation of the G4LatticePhysical class
 //
-// $Id$
+// $Id: G4LatticePhysical.cc 76883 2013-11-18 12:50:08Z gcosmo $
 //
-#include "XPhysicalLattice.hh"
-#include "G4VPhysicalVolume.hh"
+// 20131115  Save rotation results in local variable, report verbosely
+// 20131116  Replace G4Transform3D with G4RotationMatrix
+
+#include "G4LatticePhysical.hh"
+#include "G4LatticeLogical.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4RotationMatrix.hh"
 #include "G4SystemOfUnits.hh"
 
-XPhysicalLattice::XPhysicalLattice(){
-  fLattice=NULL;
-  fVolume=NULL;
-  fTheta=0;
-  fPhi=0;
+
+// Unit vectors defined for convenience (avoid memory churn)
+
+namespace {
+  G4ThreeVector xhat(1,0,0), yhat(0,1,0), zhat(0,0,1), nullVec(0,0,0);
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4LatticePhysical::G4LatticePhysical(const G4LatticeLogical* Lat,
+				     const G4RotationMatrix* Rot)
+  : verboseLevel(0), fTheta(0), fPhi(0), fLattice(Lat) {
+  SetPhysicalOrientation(Rot);
+}
+
+G4LatticePhysical::~G4LatticePhysical() {;}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void G4LatticePhysical::SetPhysicalOrientation(const G4RotationMatrix* Rot) {
+  if (!Rot) {					// No orientation specified
+    fLocalToGlobal = fGlobalToLocal = G4RotationMatrix::IDENTITY;
+  } else {
+    fLocalToGlobal = fGlobalToLocal = *Rot;		// Frame rotation
+    fGlobalToLocal.invert();
+  }
+
+  if (verboseLevel) {
+    G4cout << "G4LatticePhysical::SetPhysicalOrientation " << *Rot
+	   << "\nfLocalToGlobal: " << fLocalToGlobal
+	   << "\nfGlobalToLocal: " << fGlobalToLocal
+	   << G4endl;
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+void G4LatticePhysical::SetLatticeOrientation(G4double t_rot, G4double p_rot) {
+  fTheta = t_rot;
+  fPhi = p_rot;
 
-XPhysicalLattice::XPhysicalLattice(G4VPhysicalVolume* Vol, XLogicalLattice* Lat){
-  fLattice=Lat;
-  fVolume=Vol;
-  fA=fLattice->GetAnhDecConstant();
-  fB=fLattice->GetScatteringConstant();
-  fDosL=fLattice->GetLDOS();
-  fDosST=fLattice->GetSTDOS();
-  fDosFT=fLattice->GetFTDOS();
-  fBeta=fLattice->GetBeta();
-  fGamma=fLattice->GetGamma();
-  fLambda=fLattice->GetLambda();
-  fMu=fLattice->GetMu();
-
-  G4RotationMatrix *rot = fVolume->GetObjectRotation();
-
-  fGlobalToLocal = G4AffineTransform(*rot);
-  fLocalToGlobal = fGlobalToLocal.Invert();
+  if (verboseLevel) 
+    G4cout << "G4LatticePhysical::SetLatticeOrientation " << fTheta << " "
+	   << fPhi << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+void G4LatticePhysical::SetMillerOrientation(G4int l, G4int k, G4int n) {
+  fTheta = halfpi - std::atan2(n+0.000001,l+0.000001);
+  fPhi = halfpi - std::atan2(l+0.000001,k+0.000001);
 
-XPhysicalLattice::~XPhysicalLattice(){;}
-
-void XPhysicalLattice::SetDynamicalConstants(double Beta, double Gamma, double Lambda, double Mu)
-{
-  fBeta=Beta;
-  fGamma=Gamma;
-  fLambda=Lambda;
-  fMu=Mu;
+  if (verboseLevel) 
+    G4cout << "G4LatticePhysical::SetMillerOrientation(" << l << k << n 
+	   << ") : " << fTheta << " " << fPhi << G4endl;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-void XPhysicalLattice::SetScatteringConstant(G4double a){
-  fA=a;
-}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-void XPhysicalLattice::SetAnhDecConstant(G4double b){
-  fB=b;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-void XPhysicalLattice::SetLDOS(double LDOS){
-  fDosL=LDOS;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-void XPhysicalLattice::SetSTDOS(double STDOS)
-{
-  fDosST = STDOS;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-void XPhysicalLattice::SetFTDOS(double FTDOS){
-  fDosFT = FTDOS;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-double XPhysicalLattice::GetBeta(){
-  return fBeta;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-double XPhysicalLattice::GetGamma(){
-  return fGamma;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-double XPhysicalLattice::GetLambda(){
-  return fLambda;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-double XPhysicalLattice::GetMu()
-{
-  return fMu;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-G4double XPhysicalLattice::GetScatteringConstant()
-{
-  return fB;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-G4double XPhysicalLattice::GetAnhDecConstant()
-{
-  return fA;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-double XPhysicalLattice::GetLDOS(){
-  return fDosL;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-double XPhysicalLattice::GetSTDOS(){
-  return fDosST;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-double XPhysicalLattice::GetFTDOS()
-{
-  return fDosFT;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
 
 ///////////////////////////////
 //Loads the group velocity in m/s
 /////////////////////////////
-double XPhysicalLattice::MapKtoV(int polarizationState, G4ThreeVector k){
-  double groupVelocity;
+G4double G4LatticePhysical::MapKtoV(G4int polarizationState,
+				    G4ThreeVector k) const {
+  if (verboseLevel>1) G4cout << "G4LatticePhysical::MapKtoV " << k << G4endl;
 
-  k.rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
-  groupVelocity = fLattice->MapKtoV(polarizationState, k);
-  k.rotate(G4ThreeVector(0,0,1), -fPhi).rotate(G4ThreeVector(0,1,0), -fTheta);
-
-  return groupVelocity;
+  k.rotate(yhat,fTheta).rotate(zhat, fPhi);
+  return fLattice->MapKtoV(polarizationState, k);
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
 
 ///////////////////////////////
 //Loads the normalized direction vector along VG
 ///////////////////////////////
-G4ThreeVector XPhysicalLattice::MapKtoVDir(int polarizationState, G4ThreeVector k){
+G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int polarizationState,
+					    G4ThreeVector k) const {
+  if (verboseLevel>1) G4cout << "G4LatticePhysical::MapKtoVDir " << k << G4endl;
 
-  G4ThreeVector GroupVelocity;
+  k.rotate(yhat,fTheta).rotate(zhat,fPhi);
 
-  k=k.rotate(G4ThreeVector(0,1,0), fTheta).rotate(G4ThreeVector(0,0,1), fPhi);
-  GroupVelocity = fLattice->MapKtoVDir(polarizationState, k);  
+  G4ThreeVector VG = fLattice->MapKtoVDir(polarizationState, k);  
 
-  return GroupVelocity.rotate(G4ThreeVector(0,0,1), -fPhi).rotate(G4ThreeVector(0,1,0), -fTheta).unit();
+  return VG.rotate(zhat,-fPhi).rotate(yhat,-fTheta);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+// Apply orientation transforms to specified vector
 
-G4VPhysicalVolume* XPhysicalLattice::GetVolume(){
-  return fVolume;
+G4ThreeVector 
+G4LatticePhysical::RotateToGlobal(const G4ThreeVector& dir) const {
+  if (verboseLevel>1) {
+    G4cout << "G4LatticePhysical::RotateToGlobal " << dir
+	   << "\nusing fLocalToGlobal " << fLocalToGlobal
+	   << G4endl;
+  }
+
+  G4ThreeVector result = fLocalToGlobal*dir;
+  if (verboseLevel>1) G4cout << " result " << result << G4endl;
+
+  return result;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+G4ThreeVector 
+G4LatticePhysical::RotateToLocal(const G4ThreeVector& dir) const {
+  if (verboseLevel>1) {
+    G4cout << "G4LatticePhysical::RotateToLocal " << dir
+	   << "\nusing fGlobalToLocal " << fGlobalToLocal
+	   << G4endl;
+  }
 
+  G4ThreeVector result = fGlobalToLocal*dir;
+  if (verboseLevel>1) G4cout << " result " << result << G4endl;
 
-void XPhysicalLattice::SetPhysicalVolume(G4VPhysicalVolume* Vol){
-  fVolume=Vol;
+  return result;
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-void XPhysicalLattice::SetLatticeOrientation(G4double t_rot, G4double p_rot){
-  fTheta=t_rot;
-  fPhi= p_rot;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-void XPhysicalLattice::SetMillerOrientation(int l, int k, int n){
-  fTheta=pi/2-std::atan2(n+0.000001,l+0.000001)*rad;
-  fPhi=pi/2-std::atan2(l+0.000001,k+0.000001)*rad;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-void XPhysicalLattice::SetXLogicalLattice(XLogicalLattice* Lat){
-  fLattice=Lat;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-

@@ -23,35 +23,29 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/include/XTPhononSlow.hh
-/// \brief Definition of the XTPhononSlow class
+/// \file particles/phonons/include/G4PhononTransSlow.hh
+/// \brief Definition of the G4PhononTransSlow class
 //
-// $Id$
+// $Id: G4PhononTransSlow.hh 75122 2013-10-28 09:51:40Z gcosmo $
 //
 
-#ifndef XTPhononSlow_h
-#define XTPhononSlow_h 1
+#ifndef G4PhononTransSlow_h
+#define G4PhononTransSlow_h 1
 
-#include "globals.hh"
-#include "G4ios.hh"
 #include "G4ParticleDefinition.hh"
 
-class XTPhononSlow : public G4ParticleDefinition
-{
- private:
-   static XTPhononSlow* theInstance;
+class G4PhononTransSlow : public G4ParticleDefinition {
+private:
+  static G4PhononTransSlow* theInstance;
 
- private:
-  XTPhononSlow () {}
+private:
+  G4PhononTransSlow() {;}
 
- public:
-
-
-  ~XTPhononSlow (){}
-
-   static XTPhononSlow* Definition();
-   static XTPhononSlow* PhononDefinition();
-
+public:
+  virtual ~G4PhononTransSlow () {;}
+  
+  static G4PhononTransSlow* Definition();
+  static G4PhononTransSlow* PhononDefinition();
 };
 
 #endif

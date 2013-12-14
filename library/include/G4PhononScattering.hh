@@ -23,46 +23,31 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/include/XPhononScatteringProcess.hh
-/// \brief Definition of the XPhononScatteringProcess class
+/// \file processes/phonon/include/G4PhononScattering.hh
+/// \brief Definition of the G4PhononScattering class
 //
-// $Id$
+// $Id: G4PhononScattering.hh 75725 2013-11-05 16:52:30Z mkelsey $
 //
-#ifndef XPhononScatteringProcess_h
-#define XPhononScatteringProcess_h 1
-#define LON 0
+#ifndef G4PhononScattering_h
+#define G4PhononScattering_h 1
 
-#include "G4ios.hh"
-#include "globals.hh"
-#include "G4VDiscreteProcess.hh"
-#include "XLatticeManager3.hh"
+#include "G4VPhononProcess.hh"
 
-class XPhononScatteringProcess : public G4VDiscreteProcess 
-{
-  public:
+class G4PhononScattering : public G4VPhononProcess {
+public:
+  G4PhononScattering(const G4String& processName ="phononScattering" );
+  virtual ~G4PhononScattering();
 
-
-     XPhononScatteringProcess(const G4String& processName ="XPhononScattering" );
-
-     virtual ~XPhononScatteringProcess();
-
-     virtual G4VParticleChange* PostStepDoIt(
-                const G4Track&, const G4Step& );
- 
-     virtual G4bool IsApplicable(const G4ParticleDefinition&);
+  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
                            
-  protected:
+protected:
+  virtual G4double GetMeanFreePath(const G4Track&, G4double,
+				   G4ForceCondition* );
 
-     virtual G4double GetMeanFreePath(
-                const G4Track&, G4double, G4ForceCondition* );
-
-  private:
-  
+private:
   // hide assignment operator as private 
-     XPhononScatteringProcess(XPhononScatteringProcess&);
-     XPhononScatteringProcess& operator=(const XPhononScatteringProcess& right);
-
-
+  G4PhononScattering(G4PhononScattering&);
+  G4PhononScattering& operator=(const G4PhononScattering& right);
 };
 
 #endif

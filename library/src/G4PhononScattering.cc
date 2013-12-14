@@ -21,148 +21,85 @@
 // * any work based  on the software)  you  agree  to acknowledge its *
 // * use  in  resulting  scientific  publications,  and indicate your *
 // * acceptance of all terms of the Geant4 Software license.          *
-// *********************************************************** *********
+// ********************************************************************
 //
-/// \file exoticphysics/phonon/src/XPhononScatteringProcess.cc
-/// \brief Implementation of the XPhononScatteringProcess class
+/// \file processes/phonon/src/G4PhononScattering.cc
+/// \brief Implementation of the G4PhononScattering class
 //
-// $Id$
+// $Id: G4PhononScattering.cc 76693 2013-11-14 08:47:37Z gcosmo $
 //
-//
-#include "XPhononScatteringProcess.hh"
+// 20131111  Add verbose output for MFP calculation
 
+#include "G4PhononScattering.hh"
+#include "G4LatticePhysical.hh"
+#include "G4PhononPolarization.hh"
+#include "G4PhononLong.hh"
+#include "G4PhononTrackMap.hh"
+#include "G4PhononTransFast.hh"
+#include "G4PhononTransSlow.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4RandomDirection.hh"
 #include "G4Step.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4VParticleChange.hh"
 #include "Randomize.hh"
-#include "G4RandomDirection.hh"
-#include "XLPhonon.hh"
-#include "XTPhononFast.hh"
-#include "XTPhononSlow.hh"
-#include "XPhononTrackInformation.hh"
-#include "XPhysicalLattice.hh"
-
-#include "G4TransportationManager.hh"
-#include "G4Navigator.hh"
-#include "G4SystemOfUnits.hh"
 
 
-XPhononScatteringProcess::XPhononScatteringProcess(const G4String& aName)
-: G4VDiscreteProcess(aName)
-{
+G4PhononScattering::G4PhononScattering(const G4String& aName)
+  : G4VPhononProcess(aName) {;}
 
-   if (verboseLevel>1) {
-     G4cout << GetProcessName() << " is created "<< G4endl;
-   }
-}
+G4PhononScattering::~G4PhononScattering() {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-
-XPhononScatteringProcess::~XPhononScatteringProcess()
-{;}
-
-XPhononScatteringProcess::XPhononScatteringProcess(XPhononScatteringProcess& right)
-: G4VDiscreteProcess(right)
-{;}
- 
-G4double 
-  XPhononScatteringProcess::GetMeanFreePath( 
-       const G4Track& aTrack, G4double /*previousStepSize*/, G4ForceCondition* condition  )
-{
-
-  //Use LatticeManager3 to get physical lattice of current volume
-  XLatticeManager3* LM = XLatticeManager3::GetXLatticeManager();
-  XPhysicalLattice* Lattice = LM->GetXPhysicalLattice(aTrack.GetVolume());
-  if(Lattice==0) G4cout<<"\n\nXPhononScatteringProcess::GetMeanFreePath: WARNING!! PHYSICAL LATTICE POINTER IS NULL!!!\n\n";
-
+G4double G4PhononScattering::GetMeanFreePath(const G4Track& aTrack,
+					     G4double /*previousStepSize*/,
+					     G4ForceCondition* condition) {
   //Dynamical constants retrieved from PhysicalLattice
-  G4double B=Lattice->GetScatteringConstant();
-  G4double h=6.626e-34*m2*kg/s;
-  G4double E= aTrack.GetKineticEnergy();
+  G4double B = theLattice->GetScatteringConstant();
+  G4double Eoverh = aTrack.GetKineticEnergy()/h_Planck;
 
   //Calculate mean free path
-  G4double mfp = 1/((E/h)*(E/h)*(E/h)*(E/h)*B)*aTrack.GetVelocity();
+  G4double mfp = aTrack.GetVelocity()/(Eoverh*Eoverh*Eoverh*Eoverh*B);
 
-   *condition = NotForced;
+  if (verboseLevel > 1)
+    G4cout << "G4PhononScattering::GetMeanFreePath = " << mfp << G4endl;
+
+  *condition = NotForced;
  
-   return mfp;
+  return mfp;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-
-G4VParticleChange*
-  XPhononScatteringProcess::PostStepDoIt( const G4Track& aTrack,
-                                 const G4Step& aStep)
-{
-
+G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
+						     const G4Step& aStep) {
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
-  if(postStepPoint->GetStepStatus()==fGeomBoundary)
-   { return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);}
+  if (postStepPoint->GetStepStatus()==fGeomBoundary) {
+    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
+  }
+  
+  //Initialize particle change
+  aParticleChange.Initialize(aTrack);
+  
+  //randomly generate a new direction and polarization state
+  G4ThreeVector newDir = G4RandomDirection();
+  G4int polarization = ChoosePolarization(theLattice->GetLDOS(),
+					  theLattice->GetSTDOS(),
+					  theLattice->GetFTDOS());
 
-    //Initialize particle change
-    aParticleChange.Initialize(aTrack);
+  // Generate the new track after scattering
+  // FIXME:  If polarization state is the same, just step the track!
+  G4Track* sec =
+    CreateSecondary(polarization, newDir, aTrack.GetKineticEnergy());
+  aParticleChange.SetNumberOfSecondaries(1);
+  aParticleChange.AddSecondary(sec);
 
-    // Kill current track, then create scattered
-    // phonon as a secondary
-    aParticleChange.ProposeEnergy(0.);
-    aParticleChange.ProposeTrackStatus(fStopAndKill);
-    aParticleChange.SetNumberOfSecondaries(1);
-
-    //randomly generate a new direction
-    //modeMixer determines what the new 
-    //polarization type will be
-    G4Track* sec;
-    G4ThreeVector vgroup;  
-    G4ThreeVector newDir = G4RandomDirection();
-    G4double modeMixer = G4UniformRand();
-    
-    //Use LattaiceManager3 to obtains PhysicalLattice of current volume
-    XLatticeManager3* LM = XLatticeManager3::GetXLatticeManager();
-    XPhysicalLattice* Lattice = LM->GetXPhysicalLattice(aTrack.GetVolume());
-    double cProbST=Lattice->GetSTDOS();
-    double cProbFT=Lattice->GetFTDOS()+cProbST;
-
-    //Generate the new track after scattering
-    //the probabilities for the different po-
-    //larization types depends on the DOS
-    int polarization;
-    if(modeMixer<cProbST){  
-      polarization = 1;
-      vgroup=Lattice->MapKtoVDir(1, newDir);
-      vgroup=Lattice->fLocalToGlobal.TransformAxis(vgroup);
-      sec=new G4Track(new G4DynamicParticle(XTPhononSlow::PhononDefinition(),vgroup.unit(), aTrack.GetKineticEnergy()), aTrack.GetGlobalTime(), aTrack.GetPosition());
-
-    }else if(modeMixer<cProbFT){
-      polarization = 2;
-      vgroup=Lattice->MapKtoVDir(2, newDir);
-      vgroup=Lattice->fLocalToGlobal.TransformAxis(vgroup);
-      sec=new G4Track(new G4DynamicParticle(XTPhononFast::PhononDefinition(),vgroup.unit(), aTrack.GetKineticEnergy()), aTrack.GetGlobalTime(), aTrack.GetPosition());
-
-    } else {
-      polarization = 0;
-      vgroup=Lattice->MapKtoVDir(0, newDir);
-      vgroup=Lattice->fLocalToGlobal.TransformAxis(vgroup);
-      sec=new G4Track(new G4DynamicParticle(XLPhonon::PhononDefinition(),vgroup.unit(), aTrack.GetKineticEnergy()), aTrack.GetGlobalTime(), aTrack.GetPosition());
-
-    }
-
-    sec->SetUserInformation(new XPhononTrackInformation(Lattice->fLocalToGlobal.TransformAxis(newDir)));
-    sec->SetVelocity(Lattice->MapKtoV(polarization, newDir)*m/s);    
-    sec->UseGivenVelocity(true);
-    aParticleChange.AddSecondary(sec);
-
-    return &aParticleChange;
+  // Scattered phonon replaces current track
+  aParticleChange.ProposeEnergy(0.);
+  aParticleChange.ProposeTrackStatus(fStopAndKill);
+  
+  return &aParticleChange;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-G4bool XPhononScatteringProcess::IsApplicable(const G4ParticleDefinition& aPD)
-{
-  return ((&aPD==XLPhonon::PhononDefinition())|(&aPD==XTPhononFast::PhononDefinition())|(&aPD==XTPhononSlow::PhononDefinition()));
-
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-

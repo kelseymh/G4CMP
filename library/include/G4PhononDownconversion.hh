@@ -23,63 +23,45 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/include/XPhononDownconversionProcess.hh
-/// \brief Definition of the XPhononDownconversionProcess class
+/// \file processes/phonon/include/G4PhononDownconversion.hh
+/// \brief Definition of the G4PhononDownconversion class
 //
-// $Id$
+// $Id: G4PhononDownconversion.hh 75725 2013-11-05 16:52:30Z mkelsey $
 //
-#ifndef XPhononDownconversionProcess_h
-#define XPhononDownconversionProcess_h 1
+#ifndef G4PhononDownconversion_h
+#define G4PhononDownconversion_h 1
 
-#include "G4ios.hh"
-#include "globals.hh"
-#include "G4VDiscreteProcess.hh"
+#include "G4VPhononProcess.hh"
 
-#include "XPhysicalLattice.hh"
+class G4PhononDownconversion : public G4VPhononProcess {
+public:
+  G4PhononDownconversion(const G4String& processName ="phononDownconversion");
+  virtual ~G4PhononDownconversion();
 
-class XPhononDownconversionProcess : public G4VDiscreteProcess 
-{
-  public:
-
-
-     XPhononDownconversionProcess(const G4String& processName ="XPhononDownconversionProcess" );
-
-     virtual ~XPhononDownconversionProcess();
-
-     virtual G4VParticleChange* PostStepDoIt(
-                const G4Track&, const G4Step& );
- 
-     virtual G4bool IsApplicable(const G4ParticleDefinition&);
-                           
-  protected:
-
-     virtual G4double GetMeanFreePath(
-                const G4Track&, G4double, G4ForceCondition* );
-
-
-
- 
-  private:
-    double fBeta, fGamma, fLambda, fMu;
-
-  // hide assignment operator as private 
-     XPhononDownconversionProcess(XPhononDownconversionProcess&);
-     XPhononDownconversionProcess& operator=(const XPhononDownconversionProcess& right);
-
+  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
+  
+  virtual G4bool IsApplicable(const G4ParticleDefinition&);
+  
+protected:
+  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
+  
+private:
   // relative probability that anharmonic decay occurs L->L'+T'
-  inline double GetLTDecayProb(G4double, G4double);
-  inline double GetTTDecayProb(G4double, G4double);
-  inline double MakeLDeviation(G4double, G4double);
-  inline double MakeTTDeviation(G4double, G4double);
-  inline double MakeTDeviation(G4double, G4double);
+  inline double GetLTDecayProb(G4double, G4double) const;
+  inline double GetTTDecayProb(G4double, G4double) const;
+  inline double MakeLDeviation(G4double, G4double) const;
+  inline double MakeTTDeviation(G4double, G4double) const;
+  inline double MakeTDeviation(G4double, G4double) const;
+
   void MakeTTSecondaries(const G4Track&);
   void MakeLTSecondaries(const G4Track&);
 
+private:
+  double fBeta, fGamma, fLambda, fMu;	// Local buffers for calculations
 
-
-  XPhysicalLattice* Lattice;
-
-
+  // hide assignment operator as private 
+  G4PhononDownconversion(G4PhononDownconversion&);
+  G4PhononDownconversion& operator=(const G4PhononDownconversion& right);
 };
 
 #endif

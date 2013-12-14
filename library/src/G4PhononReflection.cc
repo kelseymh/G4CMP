@@ -23,150 +23,96 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/src/XPhononReflectionProcess.cc
-/// \brief Implementation of the XPhononReflectionProcess class
+/// \file processes/phonon/src/G4PhononReflection.cc
+/// \brief Implementation of the G4PhononReflection class
 //
-// $Id$
+// This process handles the interaction of phonons with
+// boundaries. Implementation of this class is highly 
+// geometry dependent.Currently, phonons are killed when
+// they reach a boundary. If the other side of the 
+// boundary was Al, a hit is registered.
+//  
+// $Id: G4PhononReflection.cc 76885 2013-11-18 12:55:15Z gcosmo $
 //
+// 20131115  Throw exception if track's polarization state is invalid.
 
-#include "XPhononReflectionProcess.hh"
-
+#include "G4PhononReflection.hh"
+#include "G4ExceptionSeverity.hh"
+#include "G4GeometryTolerance.hh"
+#include "G4LatticePhysical.hh"
+#include "G4PhononLong.hh"
+#include "G4PhononTransFast.hh"
+#include "G4PhononTransSlow.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
-#include "G4VParticleChange.hh"
-#include "Randomize.hh"
-#include "G4RandomDirection.hh"
-#include "G4RandomTools.hh"
-
-#include "XTPhononFast.hh"
-#include "XTPhononSlow.hh"
-#include "XLPhonon.hh"
-
-#include "G4Material.hh"
-#include "G4NistManager.hh"
-#include "G4TransportationManager.hh"
-#include "G4Navigator.hh"
-#include "G4GeometryTolerance.hh"
-
-#include "XPhononTrackInformation.hh"
-#include "XLatticeManager3.hh"
-
 #include "G4SystemOfUnits.hh"
+#include "G4VParticleChange.hh"
 
 
-XPhononReflectionProcess::XPhononReflectionProcess(const G4String& aName)
-:G4VDiscreteProcess(aName)
-{
-   fAlminum = NULL;
-   kCarTolerance = G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
-   G4cout<<"\n XPhononReflectionProcess::Constructor: Geometry surface tolerance is: " << kCarTolerance /mm << " mm";
-   if (verboseLevel>1) {
-     G4cout << GetProcessName() << " is created "<< G4endl;
-   }
+G4PhononReflection::G4PhononReflection(const G4String& aName)
+  : G4VPhononProcess(aName),
+    kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()) {;}
+
+G4PhononReflection::~G4PhononReflection() {;}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Always return DBL_MAX and Forced. This ensures that the process is
+// called at the end of every step. In PostStepDoIt the process
+// decides whether the step encountered a volume boundary and a
+// reflection should be applied
+
+G4double G4PhononReflection::GetMeanFreePath(const G4Track&, G4double,
+					     G4ForceCondition* condition) {
+  *condition = Forced;
+  return DBL_MAX;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-
-XPhononReflectionProcess::~XPhononReflectionProcess()
-{;}
-
-XPhononReflectionProcess::XPhononReflectionProcess(XPhononReflectionProcess& right)
-: G4VDiscreteProcess(right)
-{;}
- 
-G4double 
-  XPhononReflectionProcess::GetMeanFreePath( 
-       const G4Track&, G4double /*previousStepSize*/, G4ForceCondition* condition  )
-{
-// Always return DBL_MAX and Forced
-// This ensures that the process is called
-// at the end of every step. In 
-// PostStepDoIt the process decides whether
-// the step encountered a volume boundary 
-// and a reflection should be applied
-
-   *condition = Forced;
-
-   return DBL_MAX;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-
-G4VParticleChange*
-  XPhononReflectionProcess::PostStepDoIt( const G4Track& aTrack,
-                                 const G4Step& aStep )
-{ 
-
-  //This process handles the interaction of phonons with
-  //boundaries. Implementation of this class is highly 
-  //geometry dependent.Currently, phonons are killed when
-  //they reach a boundary. If the other side of the 
-  //boundary was Al, a hit is registered.
+// This process handles the interaction of phonons with
+// boundaries. Implementation of this class is highly geometry
+// dependent.Currently, phonons are killed when they reach a
+// boundary. If the other side of the boundary was Al, a hit is
+// registered.
   
+G4VParticleChange* G4PhononReflection::PostStepDoIt(const G4Track& aTrack,
+						    const G4Step& aStep) { 
   aParticleChange.Initialize(aTrack);
    
   //Check if current step is limited by a volume boundary
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
-  if(postStepPoint->GetStepStatus()!=fGeomBoundary)
-   {
+  if (postStepPoint->GetStepStatus()!=fGeomBoundary) {
+    //make sure that correct phonon velocity is used after the step
+    int pol = GetPolarization(aTrack);
+    if (pol < 0 || pol > 2) {
+      G4Exception("G4PhononReflection::PostStepDoIt","Phonon001",
+		  EventMustBeAborted, "Track is not a phonon");
+      return &aParticleChange;		// NOTE: Will never get here
+    }
 
-     //make sure that correct phonon velocity is used after the step
-
-     XLatticeManager3* LM = XLatticeManager3::GetXLatticeManager();
-     XPhysicalLattice* Lattice = LM->GetXPhysicalLattice(aTrack.GetVolume());
-
-     int pol = 0;
-     if (aTrack.GetDefinition() == XLPhonon::PhononDefinition()){
-       pol=0;
-     }
-     else if (aTrack.GetDefinition() == XTPhononSlow::Definition()){
-       pol=1;
-     }
-     else if (aTrack.GetDefinition() == XTPhononFast::Definition()){
-       pol=2;
-     }      
-     
-     //Since step was not a volume boundary, just set correct phonon velocity and return
-     aParticleChange.ProposeVelocity(Lattice->MapKtoV(pol, aTrack.GetMomentumDirection())*m/s);
-     return &aParticleChange;
-   }
+    // FIXME:  This should be using wave-vector, shouldn't it?
+    G4double vg = theLattice->MapKtoV(pol, aTrack.GetMomentumDirection());
+    
+    //Since step was not a volume boundary, just set correct phonon velocity and return
+    aParticleChange.ProposeVelocity(vg);
+    return &aParticleChange;
+  }
   
- 
- //do nothing but return is the step is too short
- //This is to allow actual reflection where after
- //the first boundary crossing a second, infinitesimal
- //step occurs crossing back into the original volume
- if(aTrack.GetStepLength()<=kCarTolerance/2)
-   { 
-
-     return &aParticleChange;
-   }
+  // do nothing but return is the step is too short
+  // This is to allow actual reflection where after
+  // the first boundary crossing a second, infinitesimal
+  // step occurs crossing back into the original volume
+  if (aTrack.GetStepLength()<=kCarTolerance/2) { 
+    return &aParticleChange;
+  }
   
   G4double eKin = aTrack.GetKineticEnergy();     
   aParticleChange.ProposeNonIonizingEnergyDeposit(eKin);
   aParticleChange.ProposeTrackStatus(fStopAndKill);
-
+  
   return &aParticleChange; 
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-G4bool XPhononReflectionProcess::IsApplicable(const G4ParticleDefinition& aPD)
-{
-  return ((&aPD==XTPhononFast::PhononDefinition())||(&aPD==XLPhonon::PhononDefinition())||(&aPD==XTPhononSlow::PhononDefinition()));
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-void XPhononReflectionProcess::BuildPhysicsTable(const G4ParticleDefinition&)
-{
-   if(!fAlminum)
-   { fAlminum = G4NistManager::Instance()->FindOrBuildMaterial("G4_Al"); }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

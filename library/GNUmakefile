@@ -11,13 +11,7 @@ endif
 
 include $(G4INSTALL)/config/architecture.gmk
 
-# Dependencies of all the phonon classes
-CPPFLAGS += -I$(G4BASE)/global/management/include \
-	-I$(G4BASE)/global/HEPgeometry/include \
-	-I$(G4BASE)/geometry/management/include \
-	-I$(G4BASE)/geometry/volumes/include \
-	-I$(G4BASE)/particles/management/include \
-	-I$(G4BASE)/processes/management/include
+CPPFLAGS += -I$(G4INCLUDE)	# Always defined in 9.6 and later
 
 # Library goes into user's G4WORKDIR, not into system install
 G4LIBDIR := $(G4WORKDIR)/$(G4SYSTEM)

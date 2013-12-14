@@ -23,35 +23,30 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/include/XTPhononFast.hh
-/// \brief Definition of the XTPhononFast class
+/// \file particles/phonons/include/G4PhononTransFast.hh
+/// \brief Definition of the G4PhononTransFast class
 //
-// $Id$
+// $Id: G4PhononTransFast.hh 75122 2013-10-28 09:51:40Z gcosmo $
 //
 
-#ifndef XTPhononFast_h
-#define XTPhononFast_h 1
+#ifndef G4PhononTransFast_h
+#define G4PhononTransFast_h 1
 
-#include "globals.hh"
-#include "G4ios.hh"
 #include "G4ParticleDefinition.hh"
 
 
-class XTPhononFast : public G4ParticleDefinition
-{
- private:
-   static XTPhononFast* theInstance;
-
- private:
-  XTPhononFast () {}
- 
-
- public:
-   ~XTPhononFast (){}
-
-   static XTPhononFast* Definition();
-  static XTPhononFast* PhononDefinition();
-
+class G4PhononTransFast : public G4ParticleDefinition {
+private:
+  static G4PhononTransFast* theInstance;
+  
+private:
+  G4PhononTransFast() {;}
+  
+public:
+  virtual ~G4PhononTransFast() {;}
+  
+  static G4PhononTransFast* Definition();
+  static G4PhononTransFast* PhononDefinition();
 };
 
 #endif

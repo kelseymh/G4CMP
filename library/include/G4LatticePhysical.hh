@@ -23,70 +23,64 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/include/XPhysicalLattice.hh
-/// \brief Definition of the XPhysicalLattice class
+/// \file materials/include/G4LatticePhysical.hh
+/// \brief Definition of the G4LatticePhysical class
 //
-// $Id$
+// $Id: G4LatticePhysical.hh 76883 2013-11-18 12:50:08Z gcosmo $
 //
-#ifndef XPhysicalLattice_h
-#define XPhysicalLattice_h 1
+// 20131114  Add verbosity for diagnostic output
+// 20131116  Replace G4Transform3D with G4RotationMatrix
 
-#include "XLogicalLattice.hh"
+#ifndef G4LatticePhysical_h
+#define G4LatticePhysical_h 1
+
+#include "G4LatticeLogical.hh"
+#include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
-#include "G4AffineTransform.hh"
-
-class G4VPhysicalVolume;
 
 
-class XPhysicalLattice{
+class G4LatticePhysical {
+public:
+  G4LatticePhysical(const G4LatticeLogical* Lat=0,
+		    const G4RotationMatrix* Rot=0);	// Use FRAME rotation
+  virtual ~G4LatticePhysical();
+
+  void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+
+  // NOTE:  Pass by value to allow in-situ rotations
+  G4double MapKtoV(G4int, G4ThreeVector) const;
+  G4ThreeVector MapKtoVDir(G4int, G4ThreeVector) const;
+
+  void SetLatticeLogical(const G4LatticeLogical* Lat) { fLattice = Lat; }
+  void SetPhysicalOrientation(const G4RotationMatrix* Rot); // FRAME rotation
+  void SetLatticeOrientation(G4double, G4double);
+  void SetMillerOrientation(G4int, G4int, G4int);
+
+public:  
+  const G4LatticeLogical* GetLattice() const { return fLattice; }
+
+  G4double GetScatteringConstant() const { return fLattice->GetScatteringConstant(); }
+  G4double GetAnhDecConstant() const { return fLattice->GetAnhDecConstant(); }
+  G4double GetLDOS() const           { return fLattice->GetLDOS(); }
+  G4double GetSTDOS() const          { return fLattice->GetSTDOS(); }
+  G4double GetFTDOS() const          { return fLattice->GetFTDOS(); }
+  G4double GetBeta() const           { return fLattice->GetBeta(); }
+  G4double GetGamma() const          { return fLattice->GetGamma(); }
+  G4double GetLambda() const         { return fLattice->GetLambda(); }
+  G4double GetMu() const             { return fLattice->GetMu(); }
+
+  // Apply orientation transforms to specified vector
+  G4ThreeVector RotateToGlobal(const G4ThreeVector& dir) const;
+  G4ThreeVector RotateToLocal(const G4ThreeVector& dir) const;
 
 private:
-  G4double fTheta, fPhi;
-  XLogicalLattice* fLattice;
-  G4VPhysicalVolume* fVolume;
+  G4int verboseLevel;			// Enable diagnostic output
 
-  double fA;       //Scaling constant for Anh.Dec. mean free path
-  double fB;       //Scaling constant for Iso.Scat. mean free path
-  double fDosL;    //Density of states for L-phonons
-  double fDosST;   //Density of states for ST-phonons
-  double fDosFT;    //Density of states for FT-phonons
-  double fBeta, fGamma, fLambda, fMu; //dynamical constants for material
+  G4double fTheta, fPhi;		// Lattice orientation within object
+  const G4LatticeLogical* fLattice;	// Underlying lattice parameters
 
-
-public:
-  G4AffineTransform fLocalToGlobal;
-  G4AffineTransform fGlobalToLocal;
-  
-  void SetDynamicalConstants(double, double, double, double);
-  void SetScatteringConstant(G4double);
-  void SetAnhDecConstant(G4double);
-  void SetLDOS(double);
-  void SetSTDOS(double);
-  void SetFTDOS(double);
-  
-  double GetBeta();
-  double GetGamma();
-  double GetLambda();
-  double GetMu();
-  G4double GetScatteringConstant();
-  G4double GetAnhDecConstant();
-  double GetLDOS();
-  double GetSTDOS();
-  double GetFTDOS();
-
-
-  XPhysicalLattice();
-  XPhysicalLattice(G4VPhysicalVolume*, XLogicalLattice*);
-  ~XPhysicalLattice();
-  double MapKtoV(int, G4ThreeVector);
-  G4ThreeVector MapKtoVDir(int, G4ThreeVector);
-  G4VPhysicalVolume* GetVolume();
-  void SetPhysicalVolume(G4VPhysicalVolume*);
-  void SetXLogicalLattice(XLogicalLattice*);
-  void SetLatticeOrientation(G4double, G4double);
-  void SetMillerOrientation(int, int, int);
-
-
+  G4RotationMatrix fLocalToGlobal;
+  G4RotationMatrix fGlobalToLocal;
 };
 
 #endif

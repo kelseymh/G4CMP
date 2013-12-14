@@ -23,23 +23,23 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/src/XTPhononSlow.cc
-/// \brief Implementation of the XTPhononSlow class
+/// \file particles/phonons/src/G4PhononTransSlow.cc
+/// \brief Implementation of the G4PhononTransSlow class
 //
-// $Id$
+// $Id: G4PhononTransSlow.cc 75122 2013-10-28 09:51:40Z gcosmo $
 //
 
-#include "XTPhononSlow.hh"
+#include "G4PhononTransSlow.hh"
 #include "G4ParticleTable.hh"
 #include "G4SystemOfUnits.hh"
 
-XTPhononSlow* XTPhononSlow::theInstance = 0;
+G4PhononTransSlow* G4PhononTransSlow::theInstance = 0;
 
-XTPhononSlow*  XTPhononSlow::Definition() 
+G4PhononTransSlow*  G4PhononTransSlow::Definition() 
 {
   if (theInstance !=0) return theInstance;
 
-  const G4String name = "XTPhononSlow";
+  const G4String name = "phononTS";
   // search in particle table
   G4ParticleTable* pTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* anInstance = pTable->FindParticle(name);
@@ -60,10 +60,10 @@ XTPhononSlow*  XTPhononSlow::Definition()
                     0,               0,             0,
              "phonon",               0,             0,         0,
                  true,             0.0,          NULL,
-                false,        "XTPhononSlow",       0
+                false,        "phononTS",       0
              );
   }
-  theInstance = reinterpret_cast<XTPhononSlow*>(anInstance);
+  theInstance = reinterpret_cast<G4PhononTransSlow*>(anInstance);
   return theInstance;
 }
 
@@ -71,7 +71,7 @@ XTPhononSlow*  XTPhononSlow::Definition()
 
 
 
-XTPhononSlow*  XTPhononSlow::PhononDefinition() 
+G4PhononTransSlow*  G4PhononTransSlow::PhononDefinition() 
 {
   return Definition();
 }

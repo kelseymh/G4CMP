@@ -23,77 +23,50 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/src/XPhononDownconversionProcess.cc
-/// \brief Implementation of the XPhononDownconversionProcess class
+/// \file processes/phonon/src/G4PhononDownconversion.cc
+/// \brief Implementation of the G4PhononDownconversion class
 //
-// $Id$
+// $Id: G4PhononDownconversion.cc 76885 2013-11-18 12:55:15Z gcosmo $
 //
+// 20131111  Add verbose output for MFP calculation
+// 20131115  Initialize data buffers in ctor
 
-#include "XPhononDownconversionProcess.hh"
-
+#include "G4PhononDownconversion.hh"
+#include "G4LatticePhysical.hh"
+#include "G4PhononLong.hh"
+#include "G4PhononPolarization.hh"
+#include "G4PhononTrackMap.hh"
+#include "G4PhononTransFast.hh"
+#include "G4PhononTransSlow.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4RandomDirection.hh"
 #include "G4Step.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4VParticleChange.hh"
 #include "Randomize.hh"
-#include "G4RandomDirection.hh"
-
-#include "XTPhononFast.hh"
-#include "XTPhononSlow.hh"
-#include "XLPhonon.hh"
 #include <cmath>
 
-#include "XPhononTrackInformation.hh"
-
-#include "G4TransportationManager.hh"
-#include "G4Navigator.hh"
-#include "G4SystemOfUnits.hh"
-#include "XLatticeManager3.hh"
-
-#include "G4PhysicalConstants.hh"
 
 
+G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
+  : G4VPhononProcess(aName), fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.) {;}
 
-XPhononDownconversionProcess::XPhononDownconversionProcess(const G4String& aName)
-: G4VDiscreteProcess(aName)
-{
-   if (verboseLevel>1) {
-     G4cout << GetProcessName() << " is created "<< G4endl;
-   }
-   Lattice=0;
-
-}
+G4PhononDownconversion::~G4PhononDownconversion() {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-
-XPhononDownconversionProcess::~XPhononDownconversionProcess()
-{
-
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-
-XPhononDownconversionProcess::XPhononDownconversionProcess(XPhononDownconversionProcess& right)
-: G4VDiscreteProcess(right)
-{;}
- 
-G4double 
-  XPhononDownconversionProcess::GetMeanFreePath( 
-       const G4Track& aTrack, G4double /*previousStepSize*/, G4ForceCondition* condition  )
-{
+G4double G4PhononDownconversion::GetMeanFreePath(const G4Track& aTrack,
+						 G4double /*previousStepSize*/,
+						 G4ForceCondition* condition) {
   //Determines mean free path for longitudinal phonons to split
-
-  //Get pointer to lattice manager singleton and use it to find the
-  //XPhysicalLattice object for current volume
-  XLatticeManager3* LM = XLatticeManager3::GetXLatticeManager();
-  Lattice = LM->GetXPhysicalLattice(aTrack.GetVolume());
-
-  G4double A=Lattice->GetAnhDecConstant();
-  G4double h=6.626068e-34*m2*kg/s; //Schroedinger's constant
-  G4double E= aTrack.GetKineticEnergy();
+  G4double A = theLattice->GetAnhDecConstant();
+  G4double Eoverh = aTrack.GetKineticEnergy()/h_Planck;
   
   //Calculate mean free path for anh. decay
-  G4double mfp = 1/((E/h)*(E/h)*(E/h)*(E/h)*(E/h)*A)*aTrack.GetVelocity();
+  G4double mfp = aTrack.GetVelocity()/(Eoverh*Eoverh*Eoverh*Eoverh*Eoverh*A);
+
+  if (verboseLevel > 1)
+    G4cout << "G4PhononDownconversion::GetMeanFreePath = " << mfp << G4endl;
   
   *condition = NotForced;
   return mfp;
@@ -102,30 +75,22 @@ G4double
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
-
-
-G4VParticleChange*
-  XPhononDownconversionProcess::PostStepDoIt( const G4Track& aTrack,
-                                 const G4Step&)
-{
-
+G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
+							 const G4Step&) {
   aParticleChange.Initialize(aTrack);
 
-  //Get pointer to lattice manager singleton and use it to find the
-  //XPhysicalLattice object for current volume
-  XLatticeManager3* LM = XLatticeManager3::GetXLatticeManager();
-  Lattice = LM->GetXPhysicalLattice(aTrack.GetVolume());
-
   //Obtain dynamical constants from this volume's lattice
-  fBeta=Lattice->GetBeta();
-  fGamma=Lattice->GetGamma();
-  fLambda=Lattice->GetLambda();
-  fMu=Lattice->GetMu();
+  fBeta=theLattice->GetBeta();
+  fGamma=theLattice->GetGamma();
+  fLambda=theLattice->GetLambda();
+  fMu=theLattice->GetMu();
 
   //Destroy the parent phonon and create the daughter phonons.
-  //74% chance that daughter phonons are both transverse: call MakeTTSecondaries 
-  //26% Transverse and Longitudinal: call MakeLTSecondaries
-  if(G4UniformRand()>0.740) MakeLTSecondaries(aTrack); else MakeTTSecondaries(aTrack);
+  //74% chance that daughter phonons are both transverse
+  //26% Transverse and Longitudinal
+  if (G4UniformRand()>0.740) MakeLTSecondaries(aTrack);
+  else MakeTTSecondaries(aTrack);
+
   aParticleChange.ProposeEnergy(0.);
   aParticleChange.ProposeTrackStatus(fStopAndKill);    
        
@@ -134,29 +99,25 @@ G4VParticleChange*
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-
-
-G4bool XPhononDownconversionProcess::IsApplicable(const G4ParticleDefinition& aPD)
-{
+G4bool G4PhononDownconversion::IsApplicable(const G4ParticleDefinition& aPD) {
   //Only L-phonons decay
-  return (&aPD==XLPhonon::PhononDefinition());
+  return (&aPD==G4PhononLong::PhononDefinition());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+//probability density of energy distribution of L'-phonon in L->L'+T process
 
-inline double XPhononDownconversionProcess::GetLTDecayProb(double d, double x){
-  //probability density of energy distribution of L'-phonon in L->L'+T process
+inline double G4PhononDownconversion::GetLTDecayProb(double d, double x) const {
   //d=delta= ratio of group velocities vl/vt and x is the fraction of energy in the longitudinal mode, i.e. x=EL'/EL
   return (1/(x*x))*(1-x*x)*(1-x*x)*((1+x)*(1+x)-d*d*((1-x)*(1-x)))*(1+x*x-d*d*(1-x)*(1-x))*(1+x*x-d*d*(1-x)*(1-x));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+//probability density of energy distribution of T-phonon in L->T+T process
 
-inline double XPhononDownconversionProcess::GetTTDecayProb(double d, double x){  
-  //probability density of energy distribution of T-phonon in L->T+T process
-  
+inline double G4PhononDownconversion::GetTTDecayProb(double d, double x) const {  
   //dynamic constants from Tamura, PRL31, 1985
   G4double A = 0.5*(1-d*d)*(fBeta+fLambda+(1+d*d)*(fGamma+fMu));
   G4double B = fBeta+fLambda+2*d*d*(fGamma+fMu);
@@ -169,27 +130,25 @@ inline double XPhononDownconversionProcess::GetTTDecayProb(double d, double x){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
-inline double XPhononDownconversionProcess::MakeLDeviation(double d, double x){
+inline double G4PhononDownconversion::MakeLDeviation(double d, double x) const {
   //change in L'-phonon propagation direction after decay
 
   return std::acos((1+(x*x)-((d*d)*(1-x)*(1-x)))/(2*x));
-  //return 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
-inline double XPhononDownconversionProcess::MakeTDeviation(double d, double x){
+inline double G4PhononDownconversion::MakeTDeviation(double d, double x) const {
   //change in T-phonon propagation direction after decay (L->L+T process)
   
   return std::acos((1-x*x+d*d*(1-x)*(1-x))/(2*d*(1-x)));
-  //return 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
-inline double XPhononDownconversionProcess::MakeTTDeviation(double d, double x){
+inline double G4PhononDownconversion::MakeTTDeviation(double d, double x) const {
   //change in T-phonon propagation direction after decay (L->T+T process)
 
   return std::acos((1-d*d*(1-x)*(1-x)+d*d*x*x)/(2*d*x));
@@ -198,9 +157,9 @@ inline double XPhononDownconversionProcess::MakeTTDeviation(double d, double x){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
-void XPhononDownconversionProcess::MakeTTSecondaries(const G4Track& aTrack){
-  //Generate daughter phonons from L->T+T process
+//Generate daughter phonons from L->T+T process
    
+void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   //d is the velocity ratio vL/vT
   G4double d=1.6338;
   G4double upperBound=(1+(1/d))/2;
@@ -211,75 +170,52 @@ void XPhononDownconversionProcess::MakeTTSecondaries(const G4Track& aTrack){
   //smaller that the curve of the probability density,
   //then accept that point.
   //x=fraction of parent phonon energy in first T phonon
-  G4double x = d*(G4UniformRand()*(upperBound-lowerBound)+lowerBound);
+  G4double x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
   G4double p = 1.5*G4UniformRand();
-  while(!(p<GetTTDecayProb(d, x))){
-    x=d*(G4UniformRand()*(upperBound-lowerBound)+lowerBound);
-    p=1.5*G4UniformRand(); 
+  while(p >= GetTTDecayProb(d, x*d)) {
+    x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
+    p = 1.5*G4UniformRand(); 
   }
-  x=x/d;
   
   //using energy fraction x to calculate daughter phonon directions
-  G4double theta1=MakeTTDeviation(d, (x));
-  G4double theta2=MakeTTDeviation(d, (1-x));
-  G4ThreeVector dir1=((XPhononTrackInformation*)(aTrack.GetUserInformation()))->GetK();
+  G4double theta1=MakeTTDeviation(d, x);
+  G4double theta2=MakeTTDeviation(d, 1-x);
+  G4ThreeVector dir1=trackKmap->GetK(aTrack);
   G4ThreeVector dir2=dir1;
-  G4ThreeVector ran = G4RandomDirection();
+
+  // FIXME:  These extra randoms change timing and causting outputs of example!
+  G4ThreeVector ran = G4RandomDirection();	// FIXME: Drop this line
   
-  //while(dir1.cross(ran)==0) ran=G4RandomDirection();
-  //dir1 = dir1.rotate(dir1.cross(ran),theta1);
-  //dir2 = dir2.rotate(dir2.cross(ran),-theta2);
-  G4double ph=G4UniformRand()*2*pi;
+  G4double ph=G4UniformRand()*twopi;
   dir1 = dir1.rotate(dir1.orthogonal(),theta1).rotate(dir1, ph);
   dir2 = dir2.rotate(dir2.orthogonal(),-theta2).rotate(dir2,ph);
 
-  aParticleChange.SetNumberOfSecondaries(2);
   G4double E=aTrack.GetKineticEnergy();
-  G4Track* sec1;
-  G4Track* sec2;
-  
-  G4double probST = Lattice->GetSTDOS()/(Lattice->GetSTDOS()+Lattice->GetFTDOS());
+  G4double Esec1 = x*E, Esec2 = E-Esec1;
 
- //First secondary:Make FT or ST phonon, probability density is funciton of eqn of state
-  int polarization1;
-  if(G4UniformRand()<probST){ // DOS_slow / (DOS_slow+DOS_fast) = 0.59345 according to ModeDensity.m
-    polarization1 = 1;
-    sec1 = new G4Track(new G4DynamicParticle(XTPhononSlow::PhononDefinition(),Lattice->MapKtoVDir(1,dir1), x*E),aTrack.GetGlobalTime(), aTrack.GetPosition() );
-  }else{
-    polarization1 = 2;
-    sec1 = new G4Track(new G4DynamicParticle(XTPhononFast::PhononDefinition(),Lattice->MapKtoVDir(2,dir1), x*E),aTrack.GetGlobalTime(), aTrack.GetPosition() );
-  }
+  // Make FT or ST phonon (0. means no longitudinal)
+  G4int polarization1 = ChoosePolarization(0., theLattice->GetSTDOS(),
+					   theLattice->GetFTDOS());
 
- //Second secondary:Make FT or ST phonon, probability density is funciton of eqn of state
-    int polarization2;
-  if(G4UniformRand()<probST){ // DOS_slow / (DOS_slow+DOS_fast) = 0.59345 according to ModeDensity.m
-    polarization2 = 1;
-    sec2 = new G4Track(new G4DynamicParticle(XTPhononSlow::PhononDefinition(),Lattice->MapKtoVDir(1,dir2), (1-x)*E),aTrack.GetGlobalTime(), aTrack.GetPosition() );
-  }else{
-    polarization2 = 2;
-    sec2 = new G4Track(new G4DynamicParticle(XTPhononFast::PhononDefinition(),Lattice->MapKtoVDir(2,dir2), (1-x)*E),aTrack.GetGlobalTime(), aTrack.GetPosition() );
-  }
+  // Make FT or ST phonon (0. means no longitudinal)
+  G4int polarization2 = ChoosePolarization(0., theLattice->GetSTDOS(),
+					   theLattice->GetFTDOS());
 
-  //Set the k-vectors for the two secondaries and add them to the process
-  sec1->SetUserInformation(new XPhononTrackInformation(dir1));
-  sec1->SetVelocity(Lattice->MapKtoV(polarization1, dir1)*m/s);
-  sec1->UseGivenVelocity(true);
+  // Construct the secondaries and set their wavevectors
+  G4Track* sec1 = CreateSecondary(polarization1, dir1, Esec1);
+  G4Track* sec2 = CreateSecondary(polarization2, dir2, Esec2);
 
-  sec2->SetUserInformation(new XPhononTrackInformation(dir2));
-  sec2->SetVelocity(Lattice->MapKtoV(polarization2, dir2)*m/s);
-  sec2->UseGivenVelocity(true);
-
+  aParticleChange.SetNumberOfSecondaries(2);
   aParticleChange.AddSecondary(sec1);
   aParticleChange.AddSecondary(sec2);
-
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
-void XPhononDownconversionProcess::MakeLTSecondaries(const G4Track& aTrack){
-
+//Generate daughter phonons from L->L'+T process
+   
+void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   //d is the velocity ratio vL/v
   G4double d=1.6338;
   G4double upperBound=1;
@@ -290,59 +226,40 @@ void XPhononDownconversionProcess::MakeLTSecondaries(const G4Track& aTrack){
   //smaller that the curve of the probability density,
   //then accept that point.
   //x=fraction of parent phonon energy in L phonon
-  G4double x =(G4UniformRand()*(upperBound-lowerBound)+lowerBound);
+  G4double x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
   G4double p = 4.0*G4UniformRand();
-  while(!(p<GetLTDecayProb(d, x))){
-    x=(G4UniformRand()*(upperBound-lowerBound)+lowerBound);
-    p=4.0*G4UniformRand(); //4.0 is about the max in the probability density function
+  while(p >= GetLTDecayProb(d, x)) {
+    x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
+    p = 4.0*G4UniformRand(); 		     //4.0 is about the max in the PDF
   }
 
   //using energy fraction x to calculate daughter phonon directions
   G4double thetaL=MakeLDeviation(d, x);
-  G4double thetaT=MakeTDeviation(d, x);;
-  G4ThreeVector dir1=((XPhononTrackInformation*)(aTrack.GetUserInformation()))->GetK();
+  G4double thetaT=MakeTDeviation(d, x);		// FIXME:  Should be 1-x?
+  G4ThreeVector dir1=trackKmap->GetK(aTrack);
   G4ThreeVector dir2=dir1;
 
-  G4double ph=G4UniformRand()*2*pi;
+  G4double ph=G4UniformRand()*twopi;
   dir1 = dir1.rotate(dir1.orthogonal(),thetaL).rotate(dir1, ph);
   dir2 = dir2.rotate(dir2.orthogonal(),-thetaT).rotate(dir2,ph);
 
+  G4double E=aTrack.GetKineticEnergy();
+  G4double Esec1 = x*E, Esec2 = E-Esec1;
 
+  // First secondary is longitudnal
+  int polarization1 = G4PhononPolarization::Long;
+
+  // Make FT or ST phonon (0. means no longitudinal)
+  G4int polarization2 = ChoosePolarization(0., theLattice->GetSTDOS(),
+					   theLattice->GetFTDOS());
+
+  // Construct the secondaries and set their wavevectors
+  G4Track* sec1 = CreateSecondary(polarization1, dir1, Esec1);
+  G4Track* sec2 = CreateSecondary(polarization2, dir2, Esec2);
 
   aParticleChange.SetNumberOfSecondaries(2);
-  G4double E=aTrack.GetKineticEnergy();
-
-  G4Track* sec1 = new G4Track(new G4DynamicParticle(XLPhonon::PhononDefinition(),Lattice->MapKtoVDir(0,dir1), x*E),aTrack.GetGlobalTime(), aTrack.GetPosition() );
-
-  G4Track* sec2;
-
-  //Make FT or ST phonon, probability density is funciton of eqn of state
-  G4double probST = Lattice->GetSTDOS()/(Lattice->GetSTDOS()+Lattice->GetFTDOS());
-  int polarization;
-  if(G4UniformRand()<probST){ // DOS_slow / (DOS_slow+DOS_fast) = 0.59345 according to ModeDensity.m
-    
-    sec2 = new G4Track(new G4DynamicParticle(XTPhononSlow::PhononDefinition(),Lattice->MapKtoVDir(1,dir2), (1-x)*E),aTrack.GetGlobalTime(), aTrack.GetPosition() );
-    polarization = 1;
-  
-  }else{
-    
-    sec2 = new G4Track(new G4DynamicParticle(XTPhononFast::PhononDefinition(),Lattice->MapKtoVDir(2,dir2), (1-x)*E),aTrack.GetGlobalTime(), aTrack.GetPosition() );
-    polarization = 2;
-
-  }
-
-  sec1->SetUserInformation(new XPhononTrackInformation(dir1));
-  sec1->SetVelocity(Lattice->MapKtoV(0, dir1)*m/s);
-  sec1->UseGivenVelocity(true);
-  
-  sec2->SetUserInformation(new XPhononTrackInformation(dir2));
-  sec2->SetVelocity(Lattice->MapKtoV(polarization, dir2)*m/s);
-  sec2->UseGivenVelocity(true);
-
   aParticleChange.AddSecondary(sec1);
   aParticleChange.AddSecondary(sec2); 
-
-    
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
