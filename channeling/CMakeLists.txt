@@ -36,19 +36,19 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(channeling channeling.cc ${sources} ${headers})
-target_link_libraries(channeling ${Geant4_LIBRARIES})
+add_executable(g4cmpChannel g4cmpChannel.cc ${sources} ${headers})
+target_link_libraries(g4cmpChannel ${Geant4_LIBRARIES})
 
 
 #----------------------------------------------------------------------------
 # For internal Geant4 use - but has no effect if you build this
 # example standalone
 #
-add_custom_target(Channeling DEPENDS channeling)
+add_custom_target(Channeling DEPENDS g4cmpChannel)
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS channeling DESTINATION bin)
+install(TARGETS g4cmpChannel DESTINATION bin)
 
 

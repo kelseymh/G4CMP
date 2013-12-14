@@ -138,11 +138,11 @@ set_target_properties(qhullcpp PROPERTIES
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(GeBox GeBox.cc ${sources} ${headers})
-target_link_libraries(GeBox ${Geant4_LIBRARIES})
-target_link_libraries(GeBox qhullcpp)
-target_link_libraries(GeBox qhullstatic_p)
-set_target_properties(GeBox PROPERTIES
+add_executable(g4cmpCharge g4cmpCharge.cc ${sources} ${headers})
+target_link_libraries(g4cmpCharge ${Geant4_LIBRARIES})
+target_link_libraries(g4cmpCharge qhullcpp)
+target_link_libraries(g4cmpCharge qhullstatic_p)
+set_target_properties(g4cmpCharge PROPERTIES
     COMPILE_DEFINITIONS "qh_QHpointer")
 set(CMAKE_CXX_FLAGS "-O2 -p -g")
 
@@ -159,12 +159,12 @@ set(CMAKE_CXX_FLAGS "-O2 -p -g")
 # For internal Geant4 use - but has no effect if you build this
 # example standalone
 #
-add_custom_target(dmc DEPENDS GeBox)
+add_custom_target(dmc DEPENDS g4cmpCharge)
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS GeBox DESTINATION bin)
+install(TARGETS g4cmpCharge DESTINATION bin)
 install(TARGETS test DESTINATION bin)
 
 

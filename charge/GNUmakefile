@@ -1,7 +1,7 @@
-# G4CMP/phonon/GNUmakefile -- for building phonon propagation demo
+# G4CMP/charge/GNUmakefile -- for building phonon propagation demo
 # $Id$
 
-name := g4cmpPhonon
+name := g4cmpCharge
 G4TARGET := $(name)
 G4EXLIB := true
 

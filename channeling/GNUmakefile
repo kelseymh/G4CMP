@@ -1,7 +1,7 @@
-# G4CMP/phonon/GNUmakefile -- for building phonon propagation demo
+# G4CMP/channeling/GNUmakefile -- for building channeling propagation demo
 # $Id$
 
-name := g4cmpPhonon
+name := g4cmpChannel
 G4TARGET := $(name)
 G4EXLIB := true
 

@@ -33,8 +33,8 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(XGeBox XGeBox.cc ${sources} ${headers})
-tarGet_link_libraries(XGeBox ${Geant4_LIBRARIES})
+add_executable(g4cmpPhonon  g4cmpPhonon .cc ${sources} ${headers})
+tarGet_link_libraries(g4cmpPhonon  ${Geant4_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
@@ -57,11 +57,11 @@ endforeach()
 # For internal Geant4 use - but has no effect if you build this
 # example standalone
 #
-add_custom_tarGet(dmc DEPENDS XGeBox)
+add_custom_tarGet(dmc DEPENDS g4cmpPhonon )
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS XGeBox DESTINATION bin)
+install(TARGETS g4cmpPhonon  DESTINATION bin)
 
 
