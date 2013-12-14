@@ -8,7 +8,6 @@
 #include "G4SDManager.hh"
 #include "G4Navigator.hh"
 #include "G4ios.hh"
-#include "Phonon.hh"
 
 using namespace std;
 
@@ -44,7 +43,6 @@ void AlminumElectrodeSensitivity::Initialize(G4HCofThisEvent*HCE)
 
 G4bool AlminumElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory* /*ROhist*/)
 {
-  //if(aStep->GetTrack()->GetDefinition()!=Phonon::PhononDefinition()) return true;
   G4double edp = aStep->GetNonIonizingEnergyDeposit();
   //G4double edp = aStep->GetTotalEnergyDeposit();
   if(edp==0.) return true;

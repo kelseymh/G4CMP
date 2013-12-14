@@ -7,7 +7,6 @@
 #include "Randomize.hh"
 #include "G4RandomDirection.hh"
 #include "G4RandomTools.hh"
-#include "Phonon.hh"
 #include "TPhononFast.hh"
 #include "TPhononSlow.hh"
 #include "LPhonon.hh"
@@ -184,7 +183,7 @@ G4VParticleChange*
 
 G4bool PhononReflectionProcess::IsApplicable(const G4ParticleDefinition& aPD)
 {
-  return ((&aPD==Phonon::PhononDefinition())||(&aPD==TPhononFast::PhononDefinition())||(&aPD==LPhonon::PhononDefinition())||(&aPD==TPhononSlow::PhononDefinition()));
+  return ((&aPD==TPhononFast::PhononDefinition())||(&aPD==LPhonon::PhononDefinition())||(&aPD==TPhononSlow::PhononDefinition()));
 }
 
 void PhononReflectionProcess::BuildPhysicsTable(const G4ParticleDefinition&)

@@ -5,7 +5,6 @@
 #include "G4ParticleGun.hh"
 #include "G4RandomDirection.hh"
 
-#include "Phonon.hh"
 #include "TPhononFast.hh"
 #include "TPhononSlow.hh"
 #include "LPhonon.hh"
