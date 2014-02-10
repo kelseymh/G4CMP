@@ -1,6 +1,5 @@
 #ifndef ElectronLukeScatteringProcess_h
 #define ElectronLukeScatteringProcess_h 1
-#define PI 3.14153
 
 #include "globals.hh"
 #include "G4VDiscreteProcess.hh"
@@ -36,23 +35,18 @@ private:
   ElectronLukeScatteringProcess(ElectronLukeScatteringProcess&);
   ElectronLukeScatteringProcess& operator=(const ElectronLukeScatteringProcess& right);
 
-  G4AffineTransform normalToValley;
-  G4AffineTransform valleyToNormal;
+  G4AffineTransform NormalToValley;
+  G4AffineTransform ValleyToNormal;
   //G4AffineTransform HVTransform;
-  //G4RotationMatrix HVMatrix;
+  G4RotationMatrix mInv; // Inverse mass tensor
+  G4ThreeVector T;       // HV Transformation matrix diagonal
   G4VProcess* stepLimiter;
 
-  G4double velLong;
-  G4double l0Hole;
-  G4double massHole;
-  G4double ksound_Hole;
-  G4double massFreeElectron;
-  G4double hbar;
-
-
-
-
-
+  G4double velLong;      // Speed of sound of longitudinal phonons
+  G4double l0;           // Characteristic scattering length
+  G4double me;           // Mass of electron
+  G4double mc;           // Effective mass of electron (units of electron)
+  G4double ksound;       // Wave number for mc moving at velLong
 };
 
 

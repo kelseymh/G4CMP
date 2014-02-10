@@ -32,6 +32,7 @@ class AlminumElectrodeSensitivity : public G4VSensitiveDetector
   //AlminumElectrodeHitsCollection * hitsCollection;
   ofstream writer; //writing hit posn to file. Temporary fix.
   ofstream writer2; //writing timing information to file. Temporary fix.
+  ofstream writer3; //writing timing information to file. Temporary fix.
 
       G4int HCID;
 };

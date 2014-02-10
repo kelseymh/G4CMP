@@ -26,7 +26,7 @@
 /// \file exoticphysics/phonon/src/XAluminumElectrodeSensitivity.cc
 /// \brief Implementation of the XAluminumElectrodeSensitivity class
 //
-// $Id: XAluminumElectrodeSensitivity.cc 76246 2013-11-08 11:17:29Z gcosmo $
+// $Id$
 //
 #include "XAluminumElectrodeSensitivity.hh"
 

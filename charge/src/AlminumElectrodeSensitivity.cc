@@ -8,6 +8,7 @@
 #include "G4SDManager.hh"
 #include "G4Navigator.hh"
 #include "G4ios.hh"
+#include "Phonon.hh"
 
 using namespace std;
 
@@ -19,7 +20,8 @@ AlminumElectrodeSensitivity::AlminumElectrodeSensitivity(G4String name)
   G4String HCname;
   collectionName.insert(HCname="AlminumElectrodeHit");
   HCID = -1;
-  writer.open("caustic.ssv",fstream::in | fstream::out | fstream::ate);
+  //writer.open("caustic.ssv",fstream::in | fstream::out | fstream::ate);
+  writer.open("e-h_data",fstream::in | fstream::out | fstream::ate);
   writer2.open("timing.ssv", fstream::in | fstream::out | fstream::ate);
 }
 
@@ -43,6 +45,7 @@ void AlminumElectrodeSensitivity::Initialize(G4HCofThisEvent*HCE)
 
 G4bool AlminumElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory* /*ROhist*/)
 {
+  //if(aStep->GetTrack()->GetDefinition()!=Phonon::PhononDefinition()) return true;
   G4double edp = aStep->GetNonIonizingEnergyDeposit();
   //G4double edp = aStep->GetTotalEnergyDeposit();
   if(edp==0.) return true;
@@ -67,8 +70,9 @@ G4bool AlminumElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory
 
   hitsCollection->insert(aHit);
   
-  writer<<"\n"<<worldPos.getX()/mm<<","<<worldPos.getY()/mm;
-  writer2<<"\n"<<postStepPoint->GetGlobalTime()/ns<<" "<<aHit->GetEDep()/eV << " " << postStepPoint->GetVelocity()/m*s;
+  //G4cout << "End of a track" <<G4endl;
+  writer<<charge/eplus<<","<<worldPos.getX()/m<<","<<worldPos.getY()/m<<","<<worldPos.getZ()/m<<", "<<edp/eV<< ", " << postStepPoint->GetGlobalTime()/ns << G4endl;
+  //writer2<<"\n"<<postStepPoint->GetGlobalTime()/ns<<" "<<aHit->GetEDep()/eV << " " << postStepPoint->GetVelocity()/m*s;
   //writer2<<"\n"<<postStepPoint->GetGlobalTime()/ns<<" "<< aStep->GetPostStepPoint()->GetKineticEnergy()/eV;
 
   return true;

@@ -28,13 +28,13 @@ public:
   virtual G4double AtRestGetPhysicalInteractionLength(
 						      const G4Track&,
 						      G4ForceCondition*
-						      ){ return -1.0;};
+                  ){ return -1.0;}
 
   //no-op in AtRestDoIt
   virtual G4VParticleChange* AtRestDoIt(
 					const G4Track&,
 					const G4Step&
-					){ return 0;};
+          ){ return 0;}
 
   //no-op in alongStepGPIL
   virtual G4double AlongStepGetPhysicalInteractionLength(
@@ -43,13 +43,13 @@ public:
 						      G4double,
 						      G4double&,
 						      G4GPILSelection*
-						      ){ return -1.0;};
+                  ){ return -1.0;}
 
   //no-op in alongStepDoIt
   virtual G4VParticleChange* AlongStepDoIt(
 					const G4Track&,
 					const G4Step&
-					){ return 0;};
+          ){ return 0;}
 
 private:
 
@@ -59,6 +59,9 @@ private:
 
   G4AffineTransform normalToValley;
   G4AffineTransform valleyToNormal;
+  G4double dt_e; //Time step for electrons
+  G4double dt_h; //Time step for holes
+
 };
 
 #endif

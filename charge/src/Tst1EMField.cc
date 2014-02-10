@@ -8,6 +8,7 @@
 #include "G4ExplicitEuler.hh" 
 #include "G4CashKarpRKF45.hh"
 #include "G4SimpleHeum.hh"
+#include "CDMS_iZip4_Field.hh"
 
 #include "G4ios.hh"
 #include "XtalFieldManager.hh"
@@ -15,7 +16,8 @@
 
 Tst1EMField::Tst1EMField(G4LogicalVolume* logVol){
 
-  G4ElectricField*        fEMfield;
+  CDMS_iZip4_Field*        fEMfield;
+  //G4UniformElectricField*        fEMfield;
   EqEMFieldXtal*          fEquation;
   //G4EqMagElectricField*   fEquation;
   G4MagIntegratorStepper* fStepper;
@@ -26,20 +28,17 @@ Tst1EMField::Tst1EMField(G4LogicalVolume* logVol){
   G4ChordFinder*          fChordFinder ;
 
 
-  //fEMfield = new G4UniformElectricField(
-  //               G4ThreeVector(0.0,0.0, 5.0*volt/cm));
+//   fEMfield = new G4UniformElectricField(
+//                  G4ThreeVector(0.0,0.0, 5.0*volt/cm));
+  fEMfield = new CDMS_iZip4_Field(G4String("Epot_iZip4"));
 
-    fEMfield = new G4UniformElectricField(
-                 G4ThreeVector(0.0,0.0, 0.524*volt/cm));
-
-  
   // Create an equation of motion for this field
   fEquation = new EqEMFieldXtal(fEMfield);
   //fEquation = new G4EqMagElectricField(fEMfield); 
   
   G4int nvar = 8;
-  fStepper = new DMCClassicalRK4( fEquation, nvar );       
-  //fStepper = new G4ClassicalRK4( fEquation, nvar );       
+  //fStepper = new DMCClassicalRK4( fEquation, nvar );       
+  fStepper = new G4ClassicalRK4( fEquation, nvar );       
 
   // Get the global field manager 
   //fFieldMgr= G4TransportationManager::GetTransportationManager()->
