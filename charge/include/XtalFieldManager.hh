@@ -5,10 +5,8 @@
 #include "globals.hh"
 #include "G4FieldManager.hh"
 
-class DMCClassicalRK4;
 class EqEMFieldXtal;
 class G4ChordFinder;
-class G4ClassicalRK4;
 class G4ElectricField;
 class G4EqMagElectricField;
 class G4MagInt_Driver;
