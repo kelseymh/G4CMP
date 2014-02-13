@@ -81,7 +81,6 @@ DMCClassicalRK4::DumbStepper( const G4double  yIn[],
    // G4cout << "DumbStepper" << G4endl;
   const G4int nvar = this->GetNumberOfVariables();   //  fNumberOfVariables(); 
   G4int i;
-  G4double me = electron_mass_c2/c_squared;
 
   // Initialise time to t0, needed when it is not updated by the integration.
   //        [ Note: Only for time dependent fields (usually electric) 
