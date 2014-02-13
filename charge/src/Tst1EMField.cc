@@ -1,11 +1,12 @@
 #include "Tst1EMField.hh"
-#include "G4FieldManager.hh"
-#include "G4TransportationManager.hh"
+#include "CDMS_iZip4_Field.hh"
+#include "EqEMFieldXtal.hh"
 #include "G4ChordFinder.hh"
+#include "G4ClassicalRK4.hh"
+#include "G4FieldManager.hh"
 #include "G4LogicalVolume.hh"
 #include "G4SystemOfUnits.hh"
-#include "CDMS_iZip4_Field.hh"
-
+#include "G4TransportationManager.hh"
 #include "G4ios.hh"
 #include "XtalFieldManager.hh"
 

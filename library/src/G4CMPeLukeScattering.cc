@@ -47,17 +47,15 @@
 #include "G4Field.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
-#include "Tst1EMField.hh"
 #include <fstream>
 #include <iostream>
 
 
 G4CMPeLukeScattering::G4CMPeLukeScattering(G4VProcess* sLim)
- :G4VPhononProcess("eLukeScattering"), velLong(5324.2077*m/s), 
-		    l0(257e-6*m), me(electron_mass_c2/c_squared),
-		    mc(.1185*electron_mass_c2/c_squared), stepLimiter(sLim) {
-  ksound = mc*velLong/hbar_Planck;
-  G4cout << "G4CMPeLukeScattering::Constructor:ksound_Hole = "
+ :G4VPhononProcess("eLukeScattering"), stepLimiter(sLim),
+  velLong(5324.2077*m/s), l0(257e-6*m), me(electron_mass_c2/c_squared),
+  mc(.1185*me), ksound(mc*velLong/hbar_Planck) {
+  G4cout << "G4CMPeLukeScattering::Constructor: ksound = "
 	 << ksound*m << " /m" << G4endl;
 
   if (verboseLevel > 1) {
@@ -100,15 +98,15 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
 		      -1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
     break;
   }
-  
+
   valleyToNormal= G4AffineTransform(trix);
   normalToValley= G4AffineTransform(trix).Inverse();    
-  G4ThreeVector T = G4ThreeVector(sqrt(.118/1.588), sqrt(.118/.081), sqrt(.118/.081));
+  T = G4ThreeVector(sqrt(.118/1.588), sqrt(.118/.081), sqrt(.118/.081));
 
 
   G4ThreeVector k = aTrack.GetMomentum()/hbarc;
   G4ThreeVector v = mInv*k*hbar_Planck;
-  G4ThreeVector k_valley = NormalToValley.TransformPoint(k);
+  G4ThreeVector k_valley = normalToValley.TransformPoint(k);
   G4ThreeVector k_HV =  G4ThreeVector(k_valley[0]*T[0],
 				      k_valley[1]*T[1],
 				      k_valley[2]*T[2]);
@@ -137,7 +135,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4StepPoint* postStepPoint = aTrack.GetStep()->GetPostStepPoint();
   
   G4ThreeVector k = postStepPoint->GetMomentum()/hbarc;
-  G4ThreeVector k_valley = NormalToValley.TransformPoint(k);
+  G4ThreeVector k_valley = normalToValley.TransformPoint(k);
   G4ThreeVector k_HV =  G4ThreeVector(k_valley[0]*T[0],
 				      k_valley[1]*T[1],
 				      k_valley[2]*T[2]);
@@ -174,7 +172,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   p_new[0] /= T[0];
   p_new[1] /= T[1];
   p_new[2] /= T[2];
-  ValleyToNormal.ApplyPointTransform(p_new);
+  valleyToNormal.ApplyPointTransform(p_new);
   
   G4ThreeVector phononq = q*k.unit().rotate(k.unit(), theta_phonon);
   //   std::ofstream charge("theta_charge", std::ios::app);

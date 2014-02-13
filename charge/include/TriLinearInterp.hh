@@ -7,8 +7,7 @@
 //#include "Tetrahedron.hh"
 
 using std::vector;
-class TriLinearInterp
-{
+class TriLinearInterp {
   public:
     TriLinearInterp( const vector<vector<G4double> >& xyz,
                          const vector<G4double>& v );
@@ -32,7 +31,7 @@ class TriLinearInterp
     inline void BuildT4x3( const G4double point[4], G4double T[4][3] ) const;
     inline G4double Det3( const G4double matrix[3][3] ) const;
     inline void MatInv( const G4double matrix[3][3],
-                              G4double result[3][3] ) const;
+			G4double result[3][3] ) const;
 };
 
 #endif

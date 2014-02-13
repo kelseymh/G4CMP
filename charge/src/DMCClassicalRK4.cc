@@ -31,6 +31,7 @@
 
 #include "DMCClassicalRK4.hh"
 #include "G4ThreeVector.hh"
+#include "G4PhysicalConstants.hh"
 
 //////////////////////////////////////////////////////////////////
 //

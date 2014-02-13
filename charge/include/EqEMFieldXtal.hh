@@ -1,4 +1,3 @@
-
 // CREATED FROM::
 //$Id$
 // GEANT4 tag $Name: geant4-09-03-patch-01 $
@@ -11,56 +10,57 @@
 // This is the right-hand side of equation of motion in a combined
 // electric and magnetic field.
 
-
 #ifndef EQEMFIELDXTAL_hh
 #define EQEMFIELDXTAL_hh
 
 #include "G4EquationOfMotion.hh"
-#include "G4ElectroMagneticField.hh"
-
 #include "G4AffineTransform.hh"
 #include "G4ThreeVector.hh"
+#include "G4Version.hh"
 
-#define PI 3.1415926
+class G4ElectroMagneticField;
+
 
 class EqEMFieldXtal : public G4EquationOfMotion
 {
-  public:  // with description
+public:
+  EqEMFieldXtal(G4ElectroMagneticField *emField );
+  ~EqEMFieldXtal() {;} 
+
+  void SetChargeMomentumMass(G4double particleCharge, // in e+ units
+			     G4double MomentumXc,
+			     G4double mass);
   
-  G4AffineTransform normalToValley;
-  G4AffineTransform valleyToNormal;
-
-
-    EqEMFieldXtal(G4ElectroMagneticField *emField )
-      : G4EquationOfMotion( emField ) {
-      normalToValley= G4AffineTransform(G4RotationMatrix(-PI/4, -PI/4,-PI/4));
-      valleyToNormal= G4AffineTransform(G4RotationMatrix(-PI/4, -PI/4,-PI/4)).Inverse();
-    }
-
-    ~EqEMFieldXtal() {;} 
-
-    void  SetChargeMomentumMass(G4double particleCharge, // in e+ units
-                                G4double MomentumXc,
-                                G4double mass);
-
-    void EvaluateRhsGivenB(const G4double y[],
-                           const G4double field[],
-                                 G4double dydx[] ) const;
-      // Given the value of the electromagnetic field, this function 
-      // calculates the value of the derivative dydx.
-
-  void SetValleyTransform(G4AffineTransform xform);
+#if G4VERSION_NUMBER >= 1000
+  // Prevent the previous function from "hiding" this new base version
+  void SetChargeMomentumMass(G4ChargeState particleCharge,
+			     G4double MomentumXc,
+			     G4double mass) {
+    SetChargeMomentumMass(particleCharge.GetCharge(), MomentumXc, mass);
+  }
+#endif
+  
+  void EvaluateRhsGivenB(const G4double y[],
+			 const G4double field[],
+			 G4double dydx[]) const;
+  // Given the value of the electromagnetic field, this function 
+  // calculates the value of the derivative dydx.
+  
+  void SetValleyTransform(const G4AffineTransform& xform);
   inline G4AffineTransform GetValleyTransform() {return normalToValley;}
   //void SetNormalToValleyTransform(G4AffineTransform ntv);
   //inline G4AffineTransform GetNormalToValleyTransform() {return normalToValley;}
   //void SetValleyToNormalTransform(G4AffineTransform vtn);
   //inline G4AffineTransform GetValleyToNormalTransform() {return valleyToNormal;}
-
-  private:
-
-    G4double        fElectroMagCof ;
-    G4double        fMassCof;
-    G4ThreeVector 	me;
+  
+public:
+  G4AffineTransform normalToValley;
+  G4AffineTransform valleyToNormal;
+  
+private:
+  G4double      fElectroMagCof;
+  G4double      fMassCof;
+  G4ThreeVector me;
 };
 
 #endif

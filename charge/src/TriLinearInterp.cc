@@ -3,23 +3,18 @@
 #include "libqhullcpp/QhullFacetList.h"
 #include "libqhullcpp/QhullFacetSet.h"
 #include "libqhullcpp/QhullVertexSet.h"
-#include <iostream>
 #include "Randomize.hh"
-//#include <fstream>
-//#include <cmath>
-//#include <cfloat>
+#include <iostream>
 #include <ctime>
 #include <map>
-//#include "TetraMesh.hh"
 
 using namespace orgQhull;
 using std::map;
 
-TriLinearInterp::TriLinearInterp( const vector<vector<G4double> >& xyz, 
-                         const vector<G4double>& v): 
-                         X(xyz), V(v), TetraIdx(0)
-{
-    BuildTetraMesh(xyz);
+TriLinearInterp::TriLinearInterp(const vector<vector<G4double> >& xyz, 
+				 const vector<G4double>& v)
+  : X(xyz), V(v), TetraIdx(0) {
+  BuildTetraMesh(xyz);
 }
 
 void TriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& xyz) 

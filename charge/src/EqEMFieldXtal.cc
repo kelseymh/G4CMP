@@ -10,16 +10,23 @@
 // D. Brandt
 // 05 / 23 / 2011
 
-
-
-
 #include "EqEMFieldXtal.hh"
-#include "globals.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4RotationMatrix.hh"
+
+
+EqEMFieldXtal::EqEMFieldXtal(G4ElectroMagneticField *emField )
+  : G4EquationOfMotion(emField) {
+  SetValleyTransform(G4AffineTransform(G4RotationMatrix(-PI/4,-PI/4,-PI/4)));
+}
+
+EqEMFieldXtal::~EqEMFieldXtal() {;} 
+
 
 void  
 EqEMFieldXtal::SetChargeMomentumMass(G4double particleCharge, // e+ units
-		                            G4double,
-                                            G4double particleMass)
+				     G4double,
+				     G4double particleMass)
 {
    //fElectroMagCof =  eplus*particleCharge*c_light;
    //fElectroMagCof = electron_charge;
@@ -110,12 +117,6 @@ EqEMFieldXtal::EvaluateRhsGivenB(const G4double y[],
    */
 }
 
-//void EqEMFieldXtal::SetNormalToValleyTransform(G4AffineTransform ntv){
-//  normalToValley = ntv;
-//}
-//void EqEMFieldXtal::SetValleyToNormalTransform(G4AffineTransform vtn){
-//  valleyToNormal = vtn;
-//}
 
 void EqEMFieldXtal::SetValleyTransform(G4AffineTransform xform) {
     normalToValley = xform;
