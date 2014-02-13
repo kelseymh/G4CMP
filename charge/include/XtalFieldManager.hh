@@ -8,7 +8,6 @@
 #include "G4MagIntegratorStepper.hh"
 #include "G4ChordFinder.hh"
 #include "G4ClassicalRK4.hh"
-#include "DMCClassicalRK4.hh"
 #include "G4AffineTransform.hh"
 #include "G4RotationMatrix.hh"
 
