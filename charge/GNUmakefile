@@ -15,7 +15,7 @@ all: lib bin
 EXTRALIBS := -L$(G4WORKDIR)/lib/$(G4SYSTEM) -lG4cmp -lqhullcpp
 
 include $(G4INSTALL)/config/binmake.gmk
-CPPFLAGS += -I../library/include -I$(G4WORKDIR)/include
+CPPFLAGS += -I../library/include -I$(G4WORKDIR)/include -Dqh_QHpointer
 
 visclean:
 	rm -f g4*.prim g4*.eps g4*.wrl

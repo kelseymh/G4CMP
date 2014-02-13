@@ -45,17 +45,12 @@
 #include "G4CMPPhysicsList.hh"
 #include "Tst1PrimaryGeneratorAction.hh"
 #include "G4CMPStackingAction.hh"
-#include "FET1.hh"
 //#include "FET.hh"
 //#include "FETMessenger.hh"
-#include "FETMessenger1.hh"
-//#include "FETUserRunAction.hh"
-//#include "FETUserEventAction.hh"
+
 
 int main(int argc,char** argv)
 {
-  
-
  // Construct the run manager
  //
  G4RunManager * runManager = new G4RunManager;
@@ -76,12 +71,8 @@ int main(int argc,char** argv)
 
  G4VUserPrimaryGeneratorAction* gen_action = new Tst1PrimaryGeneratorAction();
  runManager->SetUserAction(gen_action);
-// runManager->SetUserAction(new FETUserEventAction);
-// runManager->SetUserAction(new FETUserRunAction);
- //
- FET1* fetsim = new FET1();
+
  //FET* fetsim = new FET(runManager);
- FETMessenger1* fetmes = new FETMessenger1(fetsim);
 
 #ifdef G4VIS_USE
  // Visualization manager

@@ -11,16 +11,15 @@
 // 05 / 23 / 2011
 
 #include "EqEMFieldXtal.hh"
+#include "G4ElectroMagneticField.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RotationMatrix.hh"
 
 
 EqEMFieldXtal::EqEMFieldXtal(G4ElectroMagneticField *emField )
   : G4EquationOfMotion(emField) {
-  SetValleyTransform(G4AffineTransform(G4RotationMatrix(-PI/4,-PI/4,-PI/4)));
+  SetValleyTransform(G4AffineTransform(G4RotationMatrix(-pi/4,-pi/4,-pi/4)));
 }
-
-EqEMFieldXtal::~EqEMFieldXtal() {;} 
 
 
 void  
@@ -118,7 +117,7 @@ EqEMFieldXtal::EvaluateRhsGivenB(const G4double y[],
 }
 
 
-void EqEMFieldXtal::SetValleyTransform(G4AffineTransform xform) {
+void EqEMFieldXtal::SetValleyTransform(const G4AffineTransform& xform) {
     normalToValley = xform;
     valleyToNormal = normalToValley.Inverse();
 }

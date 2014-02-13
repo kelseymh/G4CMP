@@ -30,7 +30,7 @@ all : lib examples
 lib : library
 examples : phonon charge channeling
 
-clean : library.clean examples.clean
+clean : library.clean examples.clean qhull.cleanall
 
 # Package dependencies
 
@@ -48,7 +48,7 @@ qhull :
 	  BINDIR=$(G4WORKDIR)/bin/$(G4SYSTEM) \
 	  LIBDIR=$(G4WORKDIR)/lib/$(G4SYSTEM) \
 	  CC_OPTS3="$(if $(ISMAC),$(DYLIB_OPTS),)" \
-	  SO=$(if $(ISMAC),dylib,$(if $(ISWIN),dll,so)) \
+	  SO=$(if $(ISMAC),dylib,$(if $(ISWIN),dll,so)).6.3.1 \
 	  all install
 
 library phonon charge channeling :
