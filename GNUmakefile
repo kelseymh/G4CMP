@@ -1,5 +1,7 @@
 # G4CMP/GNUmakefile	Top-level driver to build library and demos
 # $Id$
+#
+# Add Mac and Windows handling for QHull build (we aren't using CMake there)
 
 .PHONY : library phonon charge channeling	# Targets named for directory
 
@@ -37,11 +39,17 @@ phonon charge channeling : library
 
 # Directory targets
 
+ISMAC := $(findstring Darwin,$(G4SYSTEM))
+ISWIN := $(findstring Win,$(G4SYSTEM))
+DYLIB_OPTS := -dynamiclib -undefined suppress -flat_namespace
+
 qhull :
 	-$(MAKE) -C qhull-2012.1 DESTDIR=$(G4WORKDIR) \
 	  BINDIR=$(G4WORKDIR)/bin/$(G4SYSTEM) \
 	  LIBDIR=$(G4WORKDIR)/lib/$(G4SYSTEM) \
-	  SO=$(if $(findstring Darwin,$(G4SYSTEM)),dylib,$(if $(findstring Win,$(G4SYSTEM)),dll,so))
+	  CC_OPTS3="$(if $(ISMAC),$(DYLIB_OPTS),)" \
+	  SO=$(if $(ISMAC),dylib,$(if $(ISWIN),dll,so)) \
+	  all install
 
 library phonon charge channeling :
 	-$(MAKE) -C $@
