@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/src/XDetectorConstruction.cc
-/// \brief Implementation of the XDetectorConstruction class
+/// \file exoticphysics/phonon/src/XDetectorConstruction.cc \brief
+/// Implementation of the XDetectorConstruction class
 //
-// $Id: XDetectorConstruction.cc 76938 2013-11-19 09:51:36Z gcosmo $
+// $Id$
 //
 
 #include "XDetectorConstruction.hh"
@@ -46,7 +46,7 @@
 #include "G4Colour.hh"
 #include "G4SDManager.hh"
 
-#include "XAluminumElectrodeSensitivity.hh"
+#include "G4CMPElectrodeSensitivity.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
 #include "G4LatticeManager.hh"
@@ -155,8 +155,8 @@ void XDetectorConstruction::SetupGeometry()
   // detector -- Note : Aluminum electrode sensitivity is attached to Germanium 
   //
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
-  XAluminumElectrodeSensitivity* electrodeSensitivity =
-    new XAluminumElectrodeSensitivity("XAluminumElectrode");
+  G4CMPElectrodeSensitivity* electrodeSensitivity =
+    new G4CMPElectrodeSensitivity("G4CMPElectrode");
   SDman->AddNewDetector(electrodeSensitivity);
   fGermaniumLogical->SetSensitiveDetector(electrodeSensitivity);
 

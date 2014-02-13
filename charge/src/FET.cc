@@ -1,21 +1,23 @@
-#include <vector>
-#include <math.h>
-#include <stdlib.h>
 #include "FET.hh"
-#include "inttypes.h"
-#include <fstream>
+#include "FETMessenger.hh"
+#include "G4CMPElectrodeHit.hh"
+#include "G4CMPElectrodeSensitivity.hh"
 #include "G4Event.hh"
 #include "G4HCofThisEvent.hh"
-#include "AlminumElectrodeHit.hh"
-#include "AlminumElectrodeSensitivity.hh"
-#include <ctime>
-#include <algorithm>
-#include "Interpolation3D.hh"
-#include <sstream>
-#include <string>
+#include "G4PhysicalConstants.hh"
 #include "G4SDManager.hh"
+#include "G4SystemOfUnits.hh"
+#include "Interpolation3D.hh"
 #include "MatWriter.hh"
-#include "FETMessenger.hh"
+#include "inttypes.h"
+#include <algorithm>
+#include <ctime>
+#include <fstream>
+#include <math.h>
+#include <sstream>
+#include <stdlib.h>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -260,19 +262,19 @@ G4double FET::CalculateChargeSupressionFactor(const G4Run* run)
     const vector<const G4Event*>* eventVec = run->GetEventVector();
     G4int numEvents = eventVec->size();
     G4HCofThisEvent* pHCofEvent;
-    AlminumElectrodeHitsCollection* pHitColl;
+    G4CMPElectrodeHitsCollection* pHitColl;
     G4double hitEnergy;
     vector<G4double> eventEnergy(numEvents,0);
     G4double totalEnergy = 0;
     G4SDManager* fSDM = G4SDManager::GetSDMpointer();
-    G4int collectionID = fSDM->GetCollectionID("AlminumElectrodeHit");
+    G4int collectionID = fSDM->GetCollectionID("G4CMPElectrodeHit");
     for(int i=0; i<numEvents; ++i)
     {
         pHCofEvent = (eventVec->at(i))->GetHCofThisEvent();
-        pHitColl = static_cast<AlminumElectrodeHitsCollection*>(pHCofEvent->GetHC(collectionID));
+        pHitColl = static_cast<G4CMPElectrodeHitsCollection*>(pHCofEvent->GetHC(collectionID));
         for(int k=0; k<pHitColl->entries(); ++k)
         {
-            hitEnergy = (static_cast<AlminumElectrodeHit*>(pHitColl->GetVector()->at(k)))->GetEDep();
+            hitEnergy = (static_cast<G4CMPElectrodeHit*>(pHitColl->GetVector()->at(k)))->GetEDep();
             eventEnergy[i] += hitEnergy;
             totalEnergy += hitEnergy;
         }
@@ -361,10 +363,10 @@ void FET::CalculateTrace(const G4Run* run)
     G4int numEvents = eventVec->size();
 
     G4HCofThisEvent* pHCofEvent;
-    AlminumElectrodeHitsCollection* pHitColl;
-    AlminumElectrodeHit hit;
+    G4CMPElectrodeHitsCollection* pHitColl;
+    G4CMPElectrodeHit hit;
     G4SDManager* fSDM = G4SDManager::GetSDMpointer();
-    G4int collectionID = fSDM->GetCollectionID("AlminumElectrodeHit");
+    G4int collectionID = fSDM->GetCollectionID("G4CMPElectrodeHit");
 
     G4ThreeVector positionVec;
     vector<G4double> position(3,0);
@@ -373,11 +375,11 @@ void FET::CalculateTrace(const G4Run* run)
         for(int i=0; i<numEvents; ++i)
         {
             pHCofEvent = (eventVec->at(i))->GetHCofThisEvent();
-            pHitColl = static_cast <AlminumElectrodeHitsCollection*>(pHCofEvent->GetHC(collectionID));
+            pHitColl = static_cast <G4CMPElectrodeHitsCollection*>(pHCofEvent->GetHC(collectionID));
             G4cout << "pHitColl->GetSize() = " << pHitColl->entries() << G4endl;
             for(int j=0; j<pHitColl->entries(); ++j)
             {
-                hit = *(static_cast<AlminumElectrodeHit*>(pHitColl->GetVector()->at(j)));
+                hit = *(static_cast<G4CMPElectrodeHit*>(pHitColl->GetVector()->at(j)));
                 if(hit.GetCharge() < 0)
                 {
                     positionVec = hit.GetWorldPos();

@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file processes/phonon/include/G4PhononTrackMap.hh
+/// \file library/include/G4PhononTrackMap.hh
 /// \brief Definition of the G4PhononTrackMap base class
 //
-// $Id: G4PhononTrackMap.hh 76503 2013-11-12 08:20:50Z gcosmo $
+// $Id$
 //
 // 20131111  Move implementation of Clear() to .cc file
 
@@ -71,4 +71,5 @@ private:
   G4PhononTrackMap() { Clear(); }		// Ensure map is empty
   ~G4PhononTrackMap() {;}
 };
+
 #endif	/* G4PhononTrackMap_h */

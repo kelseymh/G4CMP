@@ -12,7 +12,10 @@ endif
 .PHONY: all
 all: lib bin
 
+EXTRALIBS := -L$(G4WORKDIR)/lib/$(G4SYSTEM) -lG4cmp
+
 include $(G4INSTALL)/config/binmake.gmk
+CPPFLAGS += -I ../library/include	# Must add this _after_ G4 GMake
 
 visclean:
 	rm -f g4*.prim g4*.eps g4*.wrl

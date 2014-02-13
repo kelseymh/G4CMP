@@ -1,11 +1,13 @@
 #include "QPDownconversion.hh"
 
-#include "TPhononFast.hh"
-#include "TPhononSlow.hh"
-#include "LPhonon.hh"
+#include "G4PhononTransFast.hh"
+#include "G4PhononTransSlow.hh"
+#include "G4PhononLong.hh"
 #include "Randomize.hh"
 #include "G4DynamicParticle.hh"
-#include "PhononTrackInformation.hh"
+#include "G4PhononTrackMap.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 
 #include <cmath>
 #include <stack>
@@ -59,7 +61,7 @@ void QPDownconversion::downconvert(const G4Track& aTrack, G4VParticleChange* aPa
       //if there are quasi particles, emit phonons
       if(QPs.size()>0){
 	if(QPs.top()>3*alGap){
-	  phonons.push(new G4DynamicParticle(LPhonon::Definition(), direction, QPs.top()-PhEnergy(QPs.top())));
+	  phonons.push(new G4DynamicParticle(G4PhononLong::Definition(), direction, QPs.top()-PhEnergy(QPs.top())));
 	  QPs.top()=QPs.top()-phonons.top()->GetKineticEnergy();
 	}
 	else{
@@ -75,7 +77,7 @@ void QPDownconversion::downconvert(const G4Track& aTrack, G4VParticleChange* aPa
 	if(G4UniformRand()<0.4728){
 	  //	aParticleChange->AddSecondary(new G4DynamicParticle());
 	  G4Track* sec = new G4Track(phonons.top(), aTrack.GetGlobalTime(), aTrack.GetPosition());
-	  sec->SetUserInformation(new PhononTrackInformation(direction));
+	  G4PhononTrackMap::GetInstance()->SetK(sec, direction);
 	  //nos++;
 	  //aParticleChange->SetNumberOfSecondaries(nos);
 	  aParticleChange->AddSecondary(sec);

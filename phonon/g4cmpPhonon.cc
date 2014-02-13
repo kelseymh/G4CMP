@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/XGeBox.cc
-/// \brief Main program of the exoticphysics/phonon example
+/// \file phonon/g4cmpPhonon.cc
+/// \brief Main program of the G4CMP/phonon example
 //
-// $Id: XGeBox.cc 76246 2013-11-08 11:17:29Z gcosmo $
+// $Id$
 //
  
 #include "G4RunManager.hh"
@@ -42,9 +42,9 @@
 #endif
 
 #include "XDetectorConstruction.hh"
-#include "XPhysicsList.hh"
+#include "G4CMPPhysicsList.hh"
 #include "XPrimaryGeneratorAction.hh"
-#include "XPhononStackingAction.hh"
+#include "G4CMPStackingAction.hh"
 
 int main(int argc,char** argv)
 {
@@ -59,16 +59,16 @@ int main(int argc,char** argv)
  XDetectorConstruction* detector = new XDetectorConstruction();
  runManager->SetUserInitialization(detector);
  //
- G4VUserPhysicsList* physics = new XPhysicsList();
+ G4VUserPhysicsList* physics = new G4CMPPhysicsList();
  physics->SetCuts();
  runManager->SetUserInitialization(physics);
     
  // Set user action classes
  //
 
- runManager->SetUserAction(new XPhononStackingAction);
+ runManager->SetUserAction(new G4CMPStackingAction);
  // runManager->SetUserAction(new DriftingElectronStackingAction);
- // runManager->SetUserAction(new XPhononTrackingAction);
+ // runManager->SetUserAction(new G4CMPTrackingAction);
  // runManager->SetUserAction(new PhononSteppingAction);
 
  G4VUserPrimaryGeneratorAction* gen_action = new XPrimaryGeneratorAction();

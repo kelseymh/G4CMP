@@ -4,7 +4,7 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
-#include "LatticeManager2.hh"
+#include "G4LatticeManager.hh"
 
 
 class G4ParticleGun;

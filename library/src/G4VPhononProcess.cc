@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file processes/phonon/src/G4VPhononProcess.cc
+/// \file library/src/G4VPhononProcess.cc
 /// \brief Implementation of the G4VPhononProcess base class
 //
-// $Id: G4VPhononProcess.cc 76885 2013-11-18 12:55:15Z gcosmo $
+// $Id$
 //
 // 20131111  Add verbosity to report creating secondaries
 

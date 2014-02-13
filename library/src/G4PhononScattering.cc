@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file processes/phonon/src/G4PhononScattering.cc
+/// \file library/src/G4PhononScattering.cc
 /// \brief Implementation of the G4PhononScattering class
 //
-// $Id: G4PhononScattering.cc 76693 2013-11-14 08:47:37Z gcosmo $
+// $Id$
 //
 // 20131111  Add verbose output for MFP calculation
 

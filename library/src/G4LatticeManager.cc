@@ -26,7 +26,7 @@
 /// \file materials/src/G4LatticeManager.cc
 /// \brief Implementation of the G4LatticeManager class
 //
-// $Id: G4LatticeManager.cc 76693 2013-11-14 08:47:37Z gcosmo $
+// $Id$
 //
 // 20131113  Delete lattices in (new) registry, not in lookup maps
 

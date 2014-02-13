@@ -1,6 +1,6 @@
 //
 // MODIFIED::
-// $Id: G4EqMagElectricField.cc,v 1.14 2008/04/24 12:33:35 tnikitin Exp $
+// $Id$
 // GEANT4 tag $Name: geant4-09-03-patch-01 $
 //
 //  10.11.98   V.Grichine

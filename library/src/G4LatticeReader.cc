@@ -23,12 +23,12 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file processes/phonon/include/G4LatticeReader.hh
+/// \file library/include/G4LatticeReader.hh
 /// \brief Implementation of the G4LatticeReader class
 //
 // NOTE:  This reader class for logical lattices should be moved to
 //	  materials/ after the 10.0 release (and this comment removed).
-// $Id: G4LatticeReader.cc 76885 2013-11-18 12:55:15Z gcosmo $
+// $Id$
 //
 // 20131106  M.Kelsey -- Add const to getenv() to avoid compiler warning.
 // 20131112  Throw exception if input file fails.

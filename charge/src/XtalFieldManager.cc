@@ -1,42 +1,124 @@
 #include "XtalFieldManager.hh"
-#include "DriftingElectronTrackInformation.hh"
-
+#include "DMCClassicalRK4.hh"
+#include "EqEMFieldXtal.hh"
+#include "G4AffineTransform.hh"
+#include "G4CMPDriftElectron.hh"
+#include "G4CMPValleyTrackMap.hh"
+#include "G4ChordFinder.hh"
+#include "G4ClassicalRK4.hh"
+#include "G4ElectricField.hh"
+#include "G4EqMagElectricField.hh"
+#include "G4MagIntegratorStepper.hh"
 #include "G4ParticleDefinition.hh"
+#include "G4RotationMatrix.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 
 
+// Constructor and destructor
 
-    
+XtalFieldManager::XtalFieldManager(G4ElectricField *detectorField,
+				   G4ChordFinder *pChordFinder,
+				   G4bool b)
+  : G4FieldManager(detectorField, pChordFinder, b) {
+  EqNormal = new G4EqMagElectricField(detectorField);
+  EqValley1 = new EqEMFieldXtal(detectorField);
+  EqValley2 = new EqEMFieldXtal(detectorField);
+  EqValley3 = new EqEMFieldXtal(detectorField);
+  EqValley4 = new EqEMFieldXtal(detectorField);
+  
+  G4Rep3x3 M = G4Rep3x3( 1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0), 
+			 -1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0, 
+			 -1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) );
+  EqValley1->SetValleyTransform(G4AffineTransform(G4RotationMatrix(M))); 
+  
+  M = G4Rep3x3(-1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0), 
+	       -1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0, 
+	       1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) );
+  EqValley2->SetValleyTransform(G4AffineTransform(G4RotationMatrix(M))); 
+  
+  M = G4Rep3x3(-1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0), 
+	       1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0, 
+	       1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) );
+  EqValley3->SetValleyTransform(G4AffineTransform(G4RotationMatrix(M))); 
+  
+  M = G4Rep3x3( 1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0), 
+		1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0, 
+		-1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) );
+  EqValley4->SetValleyTransform(G4AffineTransform(G4RotationMatrix(M))); 
+  
+  normalStepper = new G4ClassicalRK4(EqNormal, 8);
+  valley1Stepper = new G4ClassicalRK4(EqValley1, 8);
+  valley2Stepper = new G4ClassicalRK4(EqValley2, 8);
+  valley3Stepper = new G4ClassicalRK4(EqValley3, 8);
+  valley4Stepper = new G4ClassicalRK4(EqValley4, 8);
+  
+  normalDriver = new G4MagInt_Driver(1e-9*mm, 
+				     normalStepper, 
+				     normalStepper->GetNumberOfVariables() );
+  
+  valley1Driver = new G4MagInt_Driver(1e-9*mm, 
+				      valley1Stepper, 
+				      valley1Stepper->GetNumberOfVariables() );
+  
+  valley2Driver = new G4MagInt_Driver(1e-9*mm, 
+				      valley2Stepper, 
+				      valley2Stepper->GetNumberOfVariables() );
+  
+  valley3Driver = new G4MagInt_Driver(1e-9*mm, 
+				      valley3Stepper, 
+				      valley3Stepper->GetNumberOfVariables() );
+  
+  valley4Driver = new G4MagInt_Driver(1e-9*mm, 
+				      valley4Stepper, 
+				      valley4Stepper->GetNumberOfVariables() );
+  
+  normalChordFinder = new G4ChordFinder(normalDriver);
+  valley1ChordFinder = new G4ChordFinder(valley1Driver);
+  valley2ChordFinder = new G4ChordFinder(valley2Driver);
+  valley3ChordFinder = new G4ChordFinder(valley3Driver);
+  valley4ChordFinder = new G4ChordFinder(valley4Driver);
+}
+
+XtalFieldManager::~XtalFieldManager() {
+  delete EqNormal;
+  delete EqValley1;
+  delete EqValley2;
+  delete EqValley3;
+  delete EqValley4;
+
+  delete normalStepper;
+  delete valley1Stepper;
+  delete valley2Stepper;
+  delete valley3Stepper;
+  delete valley4Stepper;
+
+  delete normalDriver;
+  delete valley1Driver;
+  delete valley2Driver;
+  delete valley3Driver;
+  delete valley4Driver;
+
+  delete normalChordFinder;
+  delete valley1ChordFinder;
+  delete valley2ChordFinder;
+  delete valley3ChordFinder;
+  delete valley4ChordFinder;
+}
 
 
 void XtalFieldManager::ConfigureForTrack(const G4Track* aTrack){
-
-  if(aTrack->GetDefinition()->GetParticleName()=="DriftingElectron"){
-    int valley = ((DriftingElectronTrackInformation*) 
-aTrack->GetUserInformation())->getValley();
-    switch(valley){
-      case 1:
-	SetChordFinder(valley1ChordFinder);
-	break;
-
-    case 2:
-      SetChordFinder(valley2ChordFinder);
-      break;
-
-    case 3:
-      SetChordFinder(valley3ChordFinder);
-      break;
- 
-    case 4:
-      SetChordFinder(valley4ChordFinder);
-      break;
+  if (aTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
+    int valley = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
+    switch(valley) {
+    case 1: SetChordFinder(valley1ChordFinder); break;
+    case 2: SetChordFinder(valley2ChordFinder); break;
+    case 3: SetChordFinder(valley3ChordFinder); break;
+    case 4: SetChordFinder(valley4ChordFinder); break;
     }
-
   } else {
     SetChordFinder(normalChordFinder);
   }
-  
-
 }
 
 

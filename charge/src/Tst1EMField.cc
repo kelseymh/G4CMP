@@ -8,6 +8,7 @@
 #include "G4ExplicitEuler.hh" 
 #include "G4CashKarpRKF45.hh"
 #include "G4SimpleHeum.hh"
+#include "G4SystemOfUnits.hh"
 
 #include "G4ios.hh"
 #include "XtalFieldManager.hh"

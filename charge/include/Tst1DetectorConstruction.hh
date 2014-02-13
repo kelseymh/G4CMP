@@ -4,7 +4,7 @@
 
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
-#include "LatticeManager2.hh"
+#include "G4LatticeManager.hh"
 #include "Tst1EMField.hh"
 
 class G4Material;

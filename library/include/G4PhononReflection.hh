@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file processes/phonon/include/G4PhononReflection.hh
+/// \file library/include/G4PhononReflection.hh
 /// \brief Definition of the G4PhononReflection class
 //
-// $Id: G4PhononReflection.hh 75725 2013-11-05 16:52:30Z mkelsey $
+// $Id$
 //
 #ifndef G4PhononReflection_h
 #define G4PhononReflection_h 1

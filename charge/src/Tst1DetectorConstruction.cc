@@ -18,11 +18,13 @@
 
 #include "G4ios.hh"
 
-#include "AlminumElectrodeSensitivity.hh"
-#include "PhysicalLattice.hh"
-#include "LogicalLattice.hh"
+#include "G4CMPElectrodeSensitivity.hh"
+#include "G4LatticePhysical.hh"
+#include "G4LatticeLogical.hh"
 
 #include "G4UserLimits.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 
 Tst1DetectorConstruction::Tst1DetectorConstruction():constructed(false),ifField(true)
 {
@@ -100,7 +102,7 @@ void Tst1DetectorConstruction::SetupGeometry()
   //Germanium lattice information
   ////////////////////////
   /*
-  LogicalLattice GeLogical;
+  G4LatticeLogical GeLogical;
  //Convention for polarization state: 0=LON, 1=ST, 2=FT
   if(GeLogical.load_NMap(161, 321, 0, "./CrystalMaps/LVec.ssv")){
     if(GeLogical.load_NMap(161, 321, 1, "./CrystalMaps/STVec.ssv")){
@@ -119,13 +121,13 @@ void Tst1DetectorConstruction::SetupGeometry()
   GeLogical.setSTDOS(0.53539);
   GeLogical.setFTDOS(0.36677);
   
-  PhysicalLattice GePhysical(GePhys,&GeLogical);
+  G4LatticePhysical GePhysical(GePhys,&GeLogical);
   //GePhysical.setMillerOrientation(0,0,1);
   //GePhysical.setLatticeOrientation((3.1/4)*rad,45);
-  LatticeManager2::registerLattice(&GePhysical);
+  G4LatticeManager::registerLattice(&GePhysical);
   */
   //
-  // Alminum
+  // Aluminum
   //
   G4VSolid* alminumSolid = new G4Tubs("aluminiumSolid",0.*cm,3.81*cm,0.01*cm, 0.*deg, 360.*deg);
 
@@ -150,10 +152,10 @@ void Tst1DetectorConstruction::SetupGeometry()
   //}
 
   //
-  // detector -- Note : Alminum electrode sensitivity is attached to Germanium 
+  // detector -- Note : Aluminum electrode sensitivity is attached to Germanium 
   //
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
-  AlminumElectrodeSensitivity* electrodeSensitivity = new AlminumElectrodeSensitivity("AlminumElectrode");
+  G4CMPElectrodeSensitivity* electrodeSensitivity = new G4CMPElectrodeSensitivity("G4CMPElectrode");
   SDman->AddNewDetector(electrodeSensitivity);
   germaniumLogical->SetSensitiveDetector(electrodeSensitivity);
 

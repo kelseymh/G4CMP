@@ -25,8 +25,8 @@
 /vis/modeling/trajectories/create/drawByParticleID
 
 
-/vis/modeling/trajectories/drawByParticleID-0/set XTPhononSlow Red 
-/vis/modeling/trajectories/drawByParticleID-0/set XTPhononFast Green
-/vis/modeling/trajectories/drawByParticleID-0/set XLPhonon Blue
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
 
 /run/beamOn 1

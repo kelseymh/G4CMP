@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file processes/phonon/src/G4PhononDownconversion.cc
+/// \file library/src/G4PhononDownconversion.cc
 /// \brief Implementation of the G4PhononDownconversion class
 //
-// $Id: G4PhononDownconversion.cc 76885 2013-11-18 12:55:15Z gcosmo $
+// $Id$
 //
 // 20131111  Add verbose output for MFP calculation
 // 20131115  Initialize data buffers in ctor
