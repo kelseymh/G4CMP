@@ -61,17 +61,17 @@ private:
   G4CMPeLukeScattering(G4CMPeLukeScattering&);
   G4CMPeLukeScattering& operator=(const G4CMPeLukeScattering& right);
 
-  G4AffineTransform normalToValley;
-  G4AffineTransform valleyToNormal;
-  //G4AffineTransform HVTransform;
-  //G4RotationMatrix HVMatrix;
   G4VProcess* stepLimiter;
 
-  G4double velLong;
-  G4double l0Hole;
-  G4double massHole;
-  G4double ksound_Hole;
-  G4double massFreeElectron;
+  G4AffineTransform normalToValley;
+  G4AffineTransform valleyToNormal;
+  G4RotationMatrix mInv; 	// Inverse mass tensor
+  G4ThreeVector T;       	// HV Transformation matrix diagonal
+  G4double velLong;      	// Speed of sound of longitudinal phonons
+  G4double l0;           	// Characteristic scattering length
+  G4double me;           	// Mass of electron
+  G4double mc;           	// Effective mass of electron (units of electron)
+  G4double ksound;       	// Wave number for mc moving at velLong
 };
 
 #endif
