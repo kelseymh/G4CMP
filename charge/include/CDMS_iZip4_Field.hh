@@ -1,7 +1,7 @@
 #ifndef CDMS_iZip4_Field_h 
 #define CDMS_iZip4_Field_h 1
 
-#include "TriLinearInterp.hh"
+#include "G4CMPTriLinearInterp.hh"
 #include "G4ElectricField.hh"
 
 class CDMS_iZip4_Field : public G4ElectricField 
@@ -22,8 +22,8 @@ class CDMS_iZip4_Field : public G4ElectricField
     // Copy constructor and assignment operator
     
   private:
-    TriLinearInterp Interp;
-    TriLinearInterp BuildInterp( G4String EpotFileName );
+    G4CMPTriLinearInterp Interp;
+    G4CMPTriLinearInterp BuildInterp( G4String EpotFileName );
 };
 
 namespace CDMS_Efield

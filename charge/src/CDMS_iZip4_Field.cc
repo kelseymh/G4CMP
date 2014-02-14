@@ -5,7 +5,7 @@
 
 using std::vector;
 
-TriLinearInterp CDMS_iZip4_Field::BuildInterp( G4String EpotFileName )
+G4CMPTriLinearInterp CDMS_iZip4_Field::BuildInterp( G4String EpotFileName )
 {
   G4cout << "CDMS_iZip4_Field::Constructor: Creating Electric Field" << G4endl;
   vector<vector<G4double> > tempX;
@@ -38,7 +38,7 @@ TriLinearInterp CDMS_iZip4_Field::BuildInterp( G4String EpotFileName )
     V[ii] = tempX[ii][3];
   }
 
-  return TriLinearInterp(X, V);
+  return G4CMPTriLinearInterp(X, V);
 }
 
 CDMS_iZip4_Field::~CDMS_iZip4_Field()

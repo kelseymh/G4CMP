@@ -1,4 +1,4 @@
-#include "Tst1EMField.hh"
+#include "ChargeEMField.hh"
 #include "CDMS_iZip4_Field.hh"
 #include "EqEMFieldXtal.hh"
 #include "G4ChordFinder.hh"
@@ -11,7 +11,7 @@
 #include "XtalFieldManager.hh"
 
 
-Tst1EMField::Tst1EMField(G4LogicalVolume* logVol){
+ChargeEMField::ChargeEMField(G4LogicalVolume* logVol){
   CDMS_iZip4_Field*        fEMfield;
   EqEMFieldXtal*          fEquation;
   G4MagIntegratorStepper* fStepper;
@@ -56,4 +56,4 @@ Tst1EMField::Tst1EMField(G4LogicalVolume* logVol){
   fFieldMgr->SetDetectorField(fEMfield);
 }
 
-Tst1EMField::~Tst1EMField() {;}
+ChargeEMField::~ChargeEMField() {;}

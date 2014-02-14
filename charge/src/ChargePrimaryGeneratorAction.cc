@@ -1,5 +1,5 @@
 
-#include "Tst1PrimaryGeneratorAction.hh"
+#include "ChargePrimaryGeneratorAction.hh"
 
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
@@ -18,9 +18,9 @@
 
 using namespace std;
 
-Tst1PrimaryGeneratorAction::Tst1PrimaryGeneratorAction()
+ChargePrimaryGeneratorAction::ChargePrimaryGeneratorAction()
 {
-  G4cout<<"\n\nTst1PrimaryGeneratorAction::Constructor: running"<<endl;
+  G4cout<<"\n\nChargePrimaryGeneratorAction::Constructor: running"<<endl;
   G4int n_particle = 1;
   particleGun  = new G4ParticleGun(n_particle);
   
@@ -31,12 +31,12 @@ Tst1PrimaryGeneratorAction::Tst1PrimaryGeneratorAction()
   particleGun->SetParticleEnergy(DBL_MIN);
 }
 
-Tst1PrimaryGeneratorAction::~Tst1PrimaryGeneratorAction()
+ChargePrimaryGeneratorAction::~ChargePrimaryGeneratorAction()
 {
   delete particleGun;
 }
 
-void Tst1PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+void ChargePrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   for(int i=0;i<10;i++)
   { 

@@ -41,9 +41,9 @@
 #include "G4UIExecutive.hh"
 #endif
 
-#include "Tst1DetectorConstruction.hh"
+#include "ChargeDetectorConstruction.hh"
 #include "G4CMPPhysicsList.hh"
-#include "Tst1PrimaryGeneratorAction.hh"
+#include "ChargePrimaryGeneratorAction.hh"
 #include "G4CMPStackingAction.hh"
 //#include "FET.hh"
 //#include "FETMessenger.hh"
@@ -57,7 +57,7 @@ int main(int argc,char** argv)
 
  // Set mandatory initialization classes
  //
- Tst1DetectorConstruction* detector = new Tst1DetectorConstruction();
+ ChargeDetectorConstruction* detector = new ChargeDetectorConstruction();
  runManager->SetUserInitialization(detector);
  //
  G4VUserPhysicsList* physics = new G4CMPPhysicsList();
@@ -69,7 +69,7 @@ int main(int argc,char** argv)
 
  runManager->SetUserAction(new G4CMPStackingAction);
 
- G4VUserPrimaryGeneratorAction* gen_action = new Tst1PrimaryGeneratorAction();
+ G4VUserPrimaryGeneratorAction* gen_action = new ChargePrimaryGeneratorAction();
  runManager->SetUserAction(gen_action);
 
  //FET* fetsim = new FET(runManager);

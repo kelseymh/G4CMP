@@ -1,5 +1,5 @@
 
-#include "Tst1DetectorConstruction.hh"
+#include "ChargeDetectorConstruction.hh"
 
 #include "G4Material.hh"
 #include "G4NistManager.hh"
@@ -26,7 +26,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
-Tst1DetectorConstruction::Tst1DetectorConstruction():constructed(false),ifField(true)
+ChargeDetectorConstruction::ChargeDetectorConstruction():constructed(false),ifField(true)
 {
   liquidHelium = NULL;
   germanium = NULL;
@@ -43,14 +43,14 @@ Tst1DetectorConstruction::Tst1DetectorConstruction():constructed(false),ifField(
     */
 }
 
-Tst1DetectorConstruction::~Tst1DetectorConstruction()
+ChargeDetectorConstruction::~ChargeDetectorConstruction()
 {
     delete field;
 }
 
 
 
-G4VPhysicalVolume* Tst1DetectorConstruction::Construct()
+G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
 {
   if(!constructed)
   { 
@@ -61,7 +61,7 @@ G4VPhysicalVolume* Tst1DetectorConstruction::Construct()
   return worldPhys;
 }
 
-void Tst1DetectorConstruction::DefineMaterials()
+void ChargeDetectorConstruction::DefineMaterials()
 { 
   G4NistManager* nistManager = G4NistManager::Instance();
 
@@ -71,7 +71,7 @@ void Tst1DetectorConstruction::DefineMaterials()
   tungsten = nistManager->FindOrBuildMaterial("G4_W");
 }
 
-void Tst1DetectorConstruction::SetupGeometry()
+void ChargeDetectorConstruction::SetupGeometry()
 {
   //     
   // World
@@ -91,7 +91,7 @@ void Tst1DetectorConstruction::SetupGeometry()
   G4VPhysicalVolume* GePhys = new G4PVPlacement(0,G4ThreeVector(),germaniumLogical,"germaniumPhysical",worldLogical,false,0);
 
   // E field
-  field = new Tst1EMField(germaniumLogical);
+  field = new ChargeEMField(germaniumLogical);
   //  G4cout<<"\nUserlimits:"<<germaniumLogical->GetUserLimits();
 
   //germaniumLogical->SetUserLimits(new G4UserLimits(1e-2*mm, DBL_MAX, DBL_MAX));
@@ -107,12 +107,12 @@ void Tst1DetectorConstruction::SetupGeometry()
   if(GeLogical.load_NMap(161, 321, 0, "./CrystalMaps/LVec.ssv")){
     if(GeLogical.load_NMap(161, 321, 1, "./CrystalMaps/STVec.ssv")){
       if(GeLogical.load_NMap(161, 321, 2, "./CrystalMaps/FTVec.ssv")){
-	G4cout<<"\nTst1DetectorConstruction::Loaded all three maps";}}}
+	G4cout<<"\nChargeDetectorConstruction::Loaded all three maps";}}}
 
   if(GeLogical.loadMap(161, 321, 0, "./CrystalMaps/L.ssv")){
     if(GeLogical.loadMap(161, 321, 1, "./CrystalMaps/ST.ssv")){
       if(GeLogical.loadMap(161, 321, 2, "./CrystalMaps/FT.ssv")){
-	G4cout<<"\nTst1DetectorConstruction::Loaded all three velocity maps";}}}
+	G4cout<<"\nChargeDetectorConstruction::Loaded all three velocity maps";}}}
 
   GeLogical.setDynamicalConstants(-0.732, -0.708, 0.376, 0.561);
   GeLogical.setScatteringConstant(3.67e-41*s*s*s);

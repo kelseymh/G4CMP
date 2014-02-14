@@ -1,6 +1,6 @@
 
-#ifndef Tst1PrimaryGeneratorAction_h
-#define Tst1PrimaryGeneratorAction_h 1
+#ifndef ChargePrimaryGeneratorAction_h
+#define ChargePrimaryGeneratorAction_h 1
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
@@ -10,11 +10,11 @@
 class G4ParticleGun;
 class G4Event;
 
-class Tst1PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
+class ChargePrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
 public:
-  Tst1PrimaryGeneratorAction();    
-  virtual ~Tst1PrimaryGeneratorAction();
+  ChargePrimaryGeneratorAction();    
+  virtual ~ChargePrimaryGeneratorAction();
 
   public:
     virtual void GeneratePrimaries(G4Event*);

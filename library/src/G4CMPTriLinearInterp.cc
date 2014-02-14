@@ -1,4 +1,4 @@
-#include "TriLinearInterp.hh"
+#include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
 #include "libqhullcpp/QhullFacetList.h"
 #include "libqhullcpp/QhullFacetSet.h"
@@ -12,15 +12,15 @@
 using namespace orgQhull;
 using std::map;
 
-TriLinearInterp::TriLinearInterp(const vector<vector<G4double> >& xyz, 
+G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<vector<G4double> >& xyz, 
 				 const vector<G4double>& v)
   : X(xyz), V(v), TetraIdx(0) {
   BuildTetraMesh(xyz);
 }
 
-void TriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& /*xyz*/) {
+void G4CMPTriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& /*xyz*/) {
     time_t start, fin;
-    G4cout << "    TriLinearInterp::Constructor: Creating Tetrahedral Mesh..." << G4endl;
+    G4cout << "    G4CMPTriLinearInterp::Constructor: Creating Tetrahedral Mesh..." << G4endl;
     std::time(&start);
     /* Qhull requires a column-major array of the
      * 3D points. i.e., [x1,y1,z1,x2,y2,z2,...]
@@ -99,10 +99,10 @@ void TriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& /*xyz*/) {
     delete[] boxPoints;		// Clean up local array
 
     std::time(&fin);
-    G4cout << "    TriLinearInterp::Constructor: Took " << difftime(fin, start) << " seconds." << G4endl;
+    G4cout << "    G4CMPTriLinearInterp::Constructor: Took " << difftime(fin, start) << " seconds." << G4endl;
 }
 
-G4int TriLinearInterp::FindPointID(const vector<G4double>& point, const G4int id) const
+G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& point, const G4int id) const
 {
   static map<G4int, G4int> qhull2x;
   if (qhull2x.count(id))
@@ -163,7 +163,7 @@ G4int TriLinearInterp::FindPointID(const vector<G4double>& point, const G4int id
   }
 }
 
-G4double TriLinearInterp::GetPotential(const G4double pos[3]) const
+G4double G4CMPTriLinearInterp::GetPotential(const G4double pos[3]) const
 {
     /* The barycentric coordinates of pos[]*/
     //vector<G4double> bary(4,0);
@@ -176,7 +176,7 @@ G4double TriLinearInterp::GetPotential(const G4double pos[3]) const
            V[Tetrahedra[TetraIdx][3]] * bary[3]);
 }
 
-void TriLinearInterp::GetField(const G4double pos[4], G4double field[6]) const
+void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) const
 {
     G4double bary[4];
     FindTetrahedon(pos, bary);
@@ -199,13 +199,13 @@ void TriLinearInterp::GetField(const G4double pos[4], G4double field[6]) const
     }
 }
 
-/*void TriLinearInterp::CalculateTetrahedra()
+/*void G4CMPTriLinearInterp::CalculateTetrahedra()
 {
     TetraMesh Triangulation(X);
 }*/
 
 
-void TriLinearInterp::FindTetrahedon(const G4double point[4], G4double bary[4]) const
+void G4CMPTriLinearInterp::FindTetrahedon(const G4double point[4], G4double bary[4]) const
 {
 //  G4int minBaryIdx;
   if (TetraIdx == -1) TetraIdx = 0;
@@ -261,7 +261,7 @@ void TriLinearInterp::FindTetrahedon(const G4double point[4], G4double bary[4]) 
   }
 }
 
-inline void TriLinearInterp::Cart2Bary(const G4double point[4], G4double bary[4]) const
+inline void G4CMPTriLinearInterp::Cart2Bary(const G4double point[4], G4double bary[4]) const
 {
   G4double T[3][3];
   G4double invT[3][3];
@@ -280,7 +280,7 @@ inline void TriLinearInterp::Cart2Bary(const G4double point[4], G4double bary[4]
   bary[3] = 1.0 - bary[0] - bary[1] - bary[2];
 }
 
-inline void TriLinearInterp::BuildT4x3(const G4double point[4],
+inline void G4CMPTriLinearInterp::BuildT4x3(const G4double point[4],
 				       G4double ET[4][3]) const
 {
   G4double T[3][3];
@@ -298,14 +298,14 @@ inline void TriLinearInterp::BuildT4x3(const G4double point[4],
   }
 }
 
-inline G4double TriLinearInterp::Det3(const G4double matrix[3][3]) const
+inline G4double G4CMPTriLinearInterp::Det3(const G4double matrix[3][3]) const
 {
         return(matrix[0][0]*(matrix[1][1]*matrix[2][2]-matrix[2][1]*matrix[1][2])
                 -matrix[0][1]*(matrix[1][0]*matrix[2][2]-matrix[2][0]*matrix[1][2])
                 +matrix[0][2]*(matrix[1][0]*matrix[2][1]-matrix[2][0]*matrix[1][1]));
 }
 
-inline void TriLinearInterp::MatInv(const G4double matrix[3][3], G4double result[3][3]) const
+inline void G4CMPTriLinearInterp::MatInv(const G4double matrix[3][3], G4double result[3][3]) const
 {
     G4double determ = Det3(matrix);
     result[0][0] = (matrix[1][1]*matrix[2][2] - matrix[1][2]*matrix[2][1])/determ;

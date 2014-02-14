@@ -1,5 +1,4 @@
 #include "XtalFieldManager.hh"
-#include "DMCClassicalRK4.hh"
 #include "EqEMFieldXtal.hh"
 #include "G4AffineTransform.hh"
 #include "G4CMPDriftElectron.hh"
@@ -17,10 +16,8 @@
 
 // Constructor and destructor
 
-XtalFieldManager::XtalFieldManager(G4ElectricField *detectorField,
-				   G4ChordFinder *pChordFinder,
-				   G4bool b)
-  : G4FieldManager(detectorField, pChordFinder, b) {
+XtalFieldManager::XtalFieldManager(G4ElectricField *detectorField)
+  : G4FieldManager(detectorField) {
   EqNormal = new G4EqMagElectricField(detectorField);
   EqValley1 = new EqEMFieldXtal(detectorField);
   EqValley2 = new EqEMFieldXtal(detectorField);
@@ -46,34 +43,22 @@ XtalFieldManager::XtalFieldManager(G4ElectricField *detectorField,
 		1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0, 
 		-1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) );
   EqValley4->SetValleyTransform(G4AffineTransform(G4RotationMatrix(M))); 
+
+  const G4int stepperVars = 8;
+
+  normalStepper  = new G4ClassicalRK4(EqNormal, stepperVars);
+  valley1Stepper = new G4ClassicalRK4(EqValley1, stepperVars);
+  valley2Stepper = new G4ClassicalRK4(EqValley2, stepperVars);
+  valley3Stepper = new G4ClassicalRK4(EqValley3, stepperVars);
+  valley4Stepper = new G4ClassicalRK4(EqValley4, stepperVars);
   
-  normalStepper = new G4ClassicalRK4(EqNormal, 8);
-  valley1Stepper = new G4ClassicalRK4(EqValley1, 8);
-  valley2Stepper = new G4ClassicalRK4(EqValley2, 8);
-  valley3Stepper = new G4ClassicalRK4(EqValley3, 8);
-  valley4Stepper = new G4ClassicalRK4(EqValley4, 8);
+  normalDriver  = new G4MagInt_Driver(1e-9*mm, normalStepper, stepperVars);
+  valley1Driver = new G4MagInt_Driver(1e-9*mm, valley1Stepper, stepperVars);
+  valley2Driver = new G4MagInt_Driver(1e-9*mm, valley2Stepper, stepperVars);
+  valley3Driver = new G4MagInt_Driver(1e-9*mm, valley3Stepper, stepperVars);
+  valley4Driver = new G4MagInt_Driver(1e-9*mm, valley4Stepper, stepperVars);
   
-  normalDriver = new G4MagInt_Driver(1e-9*mm, 
-				     normalStepper, 
-				     normalStepper->GetNumberOfVariables() );
-  
-  valley1Driver = new G4MagInt_Driver(1e-9*mm, 
-				      valley1Stepper, 
-				      valley1Stepper->GetNumberOfVariables() );
-  
-  valley2Driver = new G4MagInt_Driver(1e-9*mm, 
-				      valley2Stepper, 
-				      valley2Stepper->GetNumberOfVariables() );
-  
-  valley3Driver = new G4MagInt_Driver(1e-9*mm, 
-				      valley3Stepper, 
-				      valley3Stepper->GetNumberOfVariables() );
-  
-  valley4Driver = new G4MagInt_Driver(1e-9*mm, 
-				      valley4Stepper, 
-				      valley4Stepper->GetNumberOfVariables() );
-  
-  normalChordFinder = new G4ChordFinder(normalDriver);
+  normalChordFinder  = new G4ChordFinder(normalDriver);
   valley1ChordFinder = new G4ChordFinder(valley1Driver);
   valley2ChordFinder = new G4ChordFinder(valley2Driver);
   valley3ChordFinder = new G4ChordFinder(valley3Driver);

@@ -1,19 +1,19 @@
 
-#ifndef Tst1DetectorConstruction_h
-#define Tst1DetectorConstruction_h 1
+#ifndef ChargeDetectorConstruction_h
+#define ChargeDetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
 #include "G4LatticeManager.hh"
-#include "Tst1EMField.hh"
+#include "ChargeEMField.hh"
 
 class G4Material;
 class G4VPhysicalVolume;
-class Tst1DetectorConstruction : public G4VUserDetectorConstruction
+class ChargeDetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
-    Tst1DetectorConstruction();
-    virtual ~Tst1DetectorConstruction();
+    ChargeDetectorConstruction();
+    virtual ~ChargeDetectorConstruction();
 
 public:
     virtual G4VPhysicalVolume* Construct();
@@ -32,7 +32,7 @@ private:
     G4VPhysicalVolume* worldPhys;
     G4bool constructed;
     G4bool ifField;
-    Tst1EMField* field;
+    ChargeEMField* field;
 
   public:
     inline void Field(G4bool bl) { ifField = bl; }

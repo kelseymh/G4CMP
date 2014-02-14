@@ -1,5 +1,5 @@
-#ifndef TriLinearInterp_h 
-#define TriLinearInterp_h 
+#ifndef G4CMPTriLinearInterp_h 
+#define G4CMPTriLinearInterp_h 
 
 #include "globals.hh"
 #include <vector>
@@ -7,11 +7,11 @@
 //#include "Tetrahedron.hh"
 
 using std::vector;
-class TriLinearInterp {
+class G4CMPTriLinearInterp {
   public:
-    TriLinearInterp( const vector<vector<G4double> >& xyz,
+    G4CMPTriLinearInterp( const vector<vector<G4double> >& xyz,
                          const vector<G4double>& v );
-    ~TriLinearInterp() {}
+    ~G4CMPTriLinearInterp() {}
 
     G4double GetPotential( const G4double pos[3] ) const;
     void GetField( const G4double pos[4], G4double field[6] ) const;
