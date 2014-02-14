@@ -105,31 +105,12 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
   G4RotationMatrix trix;
 
   int valley = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
-  switch (valley) { 
-  case 1:
-    trix = G4RotationMatrix(
-		G4Rep3x3( 1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0),
-			 -1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0,
-			 -1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
-    break;
-  case 2:
-    trix = G4RotationMatrix(
-		G4Rep3x3(-1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0),
-			 -1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0,
-			  1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
-    break;
-  case 3:
-    trix = G4RotationMatrix(
-		G4Rep3x3(-1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0),
-			  1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0,
-			  1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
-    break;
-  case 4:
-    trix = G4RotationMatrix(
-		G4Rep3x3( 1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0),
-			  1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0,
-			 -1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
-    break;
+
+  switch(valley) {
+  case 1: trix = G4RotationMatrix(-pi/4, -pi/4, pi/4); break;
+  case 2: trix = G4RotationMatrix(pi/4, -pi/4, -pi/4); break;
+  case 3: trix = G4RotationMatrix(-pi/4, pi/4, pi/4);  break;
+  case 4: trix = G4RotationMatrix(pi/4, pi/4, -pi/4);  break;
   }
 
   G4RotationMatrix mInv = trix.inverse()

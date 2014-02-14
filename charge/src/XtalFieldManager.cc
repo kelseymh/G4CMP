@@ -9,6 +9,7 @@
 #include "G4EqMagElectricField.hh"
 #include "G4MagIntegratorStepper.hh"
 #include "G4ParticleDefinition.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4RotationMatrix.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
@@ -18,32 +19,22 @@
 
 XtalFieldManager::XtalFieldManager(G4ElectricField *detectorField)
   : G4FieldManager(detectorField) {
-  EqNormal = new G4EqMagElectricField(detectorField);
-  EqValley1 = new EqEMFieldXtal(detectorField);
-  EqValley2 = new EqEMFieldXtal(detectorField);
-  EqValley3 = new EqEMFieldXtal(detectorField);
-  EqValley4 = new EqEMFieldXtal(detectorField);
-  
-  G4Rep3x3 M = G4Rep3x3( 1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-			 -1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0, 
-			 -1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) );
-  EqValley1->SetValleyTransform(G4AffineTransform(G4RotationMatrix(M))); 
-  
-  M = G4Rep3x3(-1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-	       -1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0, 
-	       1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) );
-  EqValley2->SetValleyTransform(G4AffineTransform(G4RotationMatrix(M))); 
-  
-  M = G4Rep3x3(-1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-	       1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0, 
-	       1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) );
-  EqValley3->SetValleyTransform(G4AffineTransform(G4RotationMatrix(M))); 
-  
-  M = G4Rep3x3( 1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0), 
-		1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0, 
-		-1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) );
-  EqValley4->SetValleyTransform(G4AffineTransform(G4RotationMatrix(M))); 
+  G4RotationMatrix Mvalley;
 
+  EqNormal = new G4EqMagElectricField(detectorField);
+
+  Mvalley.set(-pi/4,-pi/4, pi/4);
+  EqValley1 = new EqEMFieldXtal(detectorField, G4AffineTransform(Mvalley));
+
+  Mvalley.set( pi/4,-pi/4,-pi/4);
+  EqValley2 = new EqEMFieldXtal(detectorField, G4AffineTransform(Mvalley));
+
+  Mvalley.set(-pi/4, pi/4, pi/4);
+  EqValley3 = new EqEMFieldXtal(detectorField, G4AffineTransform(Mvalley));
+
+  Mvalley.set( pi/4, pi/4,-pi/4);
+  EqValley4 = new EqEMFieldXtal(detectorField, G4AffineTransform(Mvalley));
+  
   const G4int stepperVars = 8;
 
   normalStepper  = new G4ClassicalRK4(EqNormal, stepperVars);

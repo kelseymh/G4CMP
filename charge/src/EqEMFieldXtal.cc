@@ -16,9 +16,10 @@
 #include "G4RotationMatrix.hh"
 
 
-EqEMFieldXtal::EqEMFieldXtal(G4ElectroMagneticField *emField )
+EqEMFieldXtal::EqEMFieldXtal(G4ElectroMagneticField *emField,
+			     const G4AffineTransform& valleyXform)
   : G4EquationOfMotion(emField) {
-  SetValleyTransform(G4AffineTransform(G4RotationMatrix(-pi/4,-pi/4,-pi/4)));
+  SetValleyTransform(valleyXform);	// Default transform, may be replaced
 }
 
 
@@ -39,7 +40,6 @@ EqEMFieldXtal::SetChargeMomentumMass(G4double particleCharge, // e+ units
 }
 
 
-
 void
 EqEMFieldXtal::EvaluateRhsGivenB(const G4double y[],
 			                const G4double field[],
@@ -50,10 +50,10 @@ EqEMFieldXtal::EvaluateRhsGivenB(const G4double y[],
     
     G4double me = electron_mass_c2/c_squared;
     G4RotationMatrix mInv = 
-		valleyToNormal.NetRotation()*G4Rep3x3(1/1.588/me,   0.0    , 0.0,
-							0.0     , 1/.081/me, 0.0, 
-							0.0     ,   0.0    , 1/.081/me)
-							*normalToValley.NetRotation();
+      valleyToNormal.NetRotation()*G4Rep3x3(1/1.588/me,   0.0    , 0.0,
+					    0.0     , 1/.081/me, 0.0, 
+					    0.0     ,   0.0    , 1/.081/me)
+      *normalToValley.NetRotation();
 
     G4ThreeVector v = mInv*p;
     
@@ -74,44 +74,6 @@ EqEMFieldXtal::EvaluateRhsGivenB(const G4double y[],
     G4double inverse_velocity = 1/v.mag();
     dydx[7] = inverse_velocity;
     return ;
-    /*
-   G4double pSquared = y[3]*y[3] + y[4]*y[4] + y[5]*y[5] ;
-
-   G4double Energy   = std::sqrt( pSquared + fMassCof );
-   G4double cof2     = Energy/c_light ;
-
-   G4double pModuleInverse  = 1.0/std::sqrt(pSquared) ;
-
-   G4double inverse_velocity = Energy * pModuleInverse / c_light;
-
-   G4double cof1     = fElectroMagCof*pModuleInverse ;
-
-   dydx[0] = y[3]*pModuleInverse ;                         
-   dydx[1] = y[4]*pModuleInverse ;                         
-   dydx[2] = y[5]*pModuleInverse ;                        
-
-   G4ThreeVector retForce;
-   retForce[0] = cof1*(cof2*field[3] + (y[4]*field[2] - y[5]*field[1]));
-   retForce[1] = cof1*(cof2*field[4] + (y[5]*field[0] - y[3]*field[2]));
-   retForce[2] = cof1*(cof2*field[5] + (y[3]*field[1] - y[4]*field[0]));
-   
-   dydx[3] = retForce[0];
-   
-   dydx[4] = retForce[1]; 
- 
-   dydx[5] = retForce[2];  
-
-   dydx[6] = 0.;//not used
-
-   // Lab Time of flight
-   dydx[7] = inverse_velocity;
-   dydx[6] = 0.;//not used
-
-   // Lab Time of flight
-   dydx[7] = inverse_velocity;
-   //G4cout <<  "kmag: " <<  sqrt(pSquared/hbar_Planck)*m <<  G4endl;
-   return ;
-   */
 }
 
 

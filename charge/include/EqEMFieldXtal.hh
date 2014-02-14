@@ -23,7 +23,9 @@ class G4ElectroMagneticField;
 class EqEMFieldXtal : public G4EquationOfMotion
 {
 public:
-  EqEMFieldXtal(G4ElectroMagneticField *emField );
+  EqEMFieldXtal(G4ElectroMagneticField *emField,
+		const G4AffineTransform& valleyXform);
+
   ~EqEMFieldXtal() {;} 
 
   void SetChargeMomentumMass(G4double particleCharge, // in e+ units

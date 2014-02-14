@@ -69,50 +69,26 @@ G4CMPeLukeScattering::~G4CMPeLukeScattering() {;}
 G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
 					       G4double,
 					       G4ForceCondition* condition) {
+  *condition = Forced;
+  
   G4RotationMatrix trix;
   int valley = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
     
-  switch (valley) {
-  case 1:
-    trix = G4RotationMatrix(
-	     G4Rep3x3( 1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0),
-		      -1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0,
-		      -1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
-    break;
-  case 2:
-    trix = G4RotationMatrix(
-	     G4Rep3x3(-1.0/sqrt(3.0),  1.0/sqrt(3.0),  1.0/sqrt(3.0),
-		      -1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0,
-		       1.0/sqrt(6.0), -1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
-    break;
-  case 3:
-    trix = G4RotationMatrix(
-	     G4Rep3x3(-1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0),
-		       1.0/sqrt(2.0), -1.0/sqrt(2.0),  0.0,
-		       1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
-    break;
-  case 4:
-    trix = G4RotationMatrix(
-	     G4Rep3x3( 1.0/sqrt(3.0), -1.0/sqrt(3.0),  1.0/sqrt(3.0),
-		       1.0/sqrt(2.0),  1.0/sqrt(2.0),  0.0,
-		      -1.0/sqrt(6.0),  1.0/sqrt(6.0),  sqrt(2.0/3.0) ));
-    break;
+  switch(valley) {
+  case 1: trix = G4RotationMatrix(-pi/4,-pi/4, pi/4); break;
+  case 2: trix = G4RotationMatrix( pi/4,-pi/4,-pi/4); break;
+  case 3: trix = G4RotationMatrix(-pi/4, pi/4, pi/4); break;
+  case 4: trix = G4RotationMatrix( pi/4, pi/4,-pi/4); break;
   }
 
   valleyToNormal= G4AffineTransform(trix);
   normalToValley= G4AffineTransform(trix).Inverse();    
   T = G4ThreeVector(sqrt(.118/1.588), sqrt(.118/.081), sqrt(.118/.081));
 
-
   G4ThreeVector k = aTrack.GetMomentum()/hbarc;
   G4ThreeVector v = mInv*k*hbar_Planck;
   G4ThreeVector k_valley = normalToValley.TransformPoint(k);
-  G4ThreeVector k_HV =  G4ThreeVector(k_valley[0]*T[0],
-				      k_valley[1]*T[1],
-				      k_valley[2]*T[2]);
-  
-  *condition = Forced;
-  
+  G4ThreeVector k_HV(k_valley[0]*T[0], k_valley[1]*T[1], k_valley[2]*T[2]);
   G4double kmag = k_HV.mag();
   
   if (kmag<=ksound) return DBL_MAX;
@@ -136,10 +112,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   
   G4ThreeVector k = postStepPoint->GetMomentum()/hbarc;
   G4ThreeVector k_valley = normalToValley.TransformPoint(k);
-  G4ThreeVector k_HV =  G4ThreeVector(k_valley[0]*T[0],
-				      k_valley[1]*T[1],
-				      k_valley[2]*T[2]);
-  
+  G4ThreeVector k_HV(k_valley[0]*T[0], k_valley[1]*T[1], k_valley[2]*T[2]);
   G4double kmag = k_HV.mag();
   
   //Do nothing other than re-calculate mfp when step limit reached or leaving

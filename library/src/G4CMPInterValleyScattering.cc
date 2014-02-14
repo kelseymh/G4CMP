@@ -55,19 +55,11 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack, G4do
     G4RotationMatrix trix;
     int valley = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
     
-    switch(valley){
-    case 1:
-      trix = G4RotationMatrix(-pi/4, -pi/4, pi/4);
-      break;
-    case 2:
-      trix = G4RotationMatrix(pi/4, -pi/4, -pi/4);
-      break;
-    case 3:
-      trix = G4RotationMatrix(-pi/4, pi/4, pi/4);
-      break;
-    case 4:
-      trix = G4RotationMatrix(pi/4, pi/4, -pi/4);
-      break;
+    switch(valley) {
+    case 1: trix = G4RotationMatrix(-pi/4,-pi/4, pi/4); break;
+    case 2: trix = G4RotationMatrix( pi/4,-pi/4,-pi/4); break;
+    case 3: trix = G4RotationMatrix(-pi/4, pi/4, pi/4); break;
+    case 4: trix = G4RotationMatrix( pi/4, pi/4,-pi/4); break;
     }
 
     normalToValley= G4AffineTransform(trix);
