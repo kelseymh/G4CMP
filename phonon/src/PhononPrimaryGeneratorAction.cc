@@ -23,13 +23,13 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/src/XPrimaryGeneratorAction.cc
-/// \brief Implementation of the XPrimaryGeneratorAction class
+/// \file exoticphysics/phonon/src/PhononPrimaryGeneratorAction.cc
+/// \brief Implementation of the PhononPrimaryGeneratorAction class
 //
 // $Id$
 //
 
-#include "XPrimaryGeneratorAction.hh"
+#include "PhononPrimaryGeneratorAction.hh"
 
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
@@ -43,7 +43,7 @@
 
 using namespace std;
 
-XPrimaryGeneratorAction::XPrimaryGeneratorAction()
+PhononPrimaryGeneratorAction::PhononPrimaryGeneratorAction()
 { 
   G4int n_particle = 1;
   fParticleGun  = new G4ParticleGun(n_particle);   
@@ -58,7 +58,7 @@ XPrimaryGeneratorAction::XPrimaryGeneratorAction()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
-XPrimaryGeneratorAction::~XPrimaryGeneratorAction()
+PhononPrimaryGeneratorAction::~PhononPrimaryGeneratorAction()
 {
   delete fParticleGun;
 }
@@ -66,7 +66,7 @@ XPrimaryGeneratorAction::~XPrimaryGeneratorAction()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
  
-void XPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+void PhononPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
  
   fParticleGun->SetParticleMomentumDirection(G4RandomDirection());

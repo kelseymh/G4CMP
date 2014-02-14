@@ -41,9 +41,9 @@
 #include "G4UIExecutive.hh"
 #endif
 
-#include "XDetectorConstruction.hh"
+#include "PhononDetectorConstruction.hh"
 #include "G4CMPPhysicsList.hh"
-#include "XPrimaryGeneratorAction.hh"
+#include "PhononPrimaryGeneratorAction.hh"
 #include "G4CMPStackingAction.hh"
 
 int main(int argc,char** argv)
@@ -56,7 +56,7 @@ int main(int argc,char** argv)
 
  // Set mandatory initialization classes
  //
- XDetectorConstruction* detector = new XDetectorConstruction();
+ PhononDetectorConstruction* detector = new PhononDetectorConstruction();
  runManager->SetUserInitialization(detector);
  //
  G4VUserPhysicsList* physics = new G4CMPPhysicsList();
@@ -71,7 +71,7 @@ int main(int argc,char** argv)
  // runManager->SetUserAction(new G4CMPTrackingAction);
  // runManager->SetUserAction(new PhononSteppingAction);
 
- G4VUserPrimaryGeneratorAction* gen_action = new XPrimaryGeneratorAction();
+ G4VUserPrimaryGeneratorAction* gen_action = new PhononPrimaryGeneratorAction();
  runManager->SetUserAction(gen_action);
  //
 

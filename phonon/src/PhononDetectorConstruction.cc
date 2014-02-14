@@ -23,13 +23,13 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/src/XDetectorConstruction.cc \brief
-/// Implementation of the XDetectorConstruction class
+/// \file exoticphysics/phonon/src/PhononDetectorConstruction.cc \brief
+/// Implementation of the PhononDetectorConstruction class
 //
 // $Id$
 //
 
-#include "XDetectorConstruction.hh"
+#include "PhononDetectorConstruction.hh"
 
 #include "G4Material.hh"
 #include "G4NistManager.hh"
@@ -58,7 +58,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XDetectorConstruction::XDetectorConstruction()
+PhononDetectorConstruction::PhononDetectorConstruction()
  : fConstructed(false), fIfField(true) {
   fLiquidHelium = NULL;
   fGermanium = NULL;
@@ -69,11 +69,11 @@ XDetectorConstruction::XDetectorConstruction()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-XDetectorConstruction::~XDetectorConstruction() {;}
+PhononDetectorConstruction::~PhononDetectorConstruction() {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4VPhysicalVolume* XDetectorConstruction::Construct()
+G4VPhysicalVolume* PhononDetectorConstruction::Construct()
 {
   if(!fConstructed)
   { 
@@ -86,7 +86,7 @@ G4VPhysicalVolume* XDetectorConstruction::Construct()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XDetectorConstruction::DefineMaterials()
+void PhononDetectorConstruction::DefineMaterials()
 { 
   G4NistManager* nistManager = G4NistManager::Instance();
 
@@ -98,7 +98,7 @@ void XDetectorConstruction::DefineMaterials()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void XDetectorConstruction::SetupGeometry()
+void PhononDetectorConstruction::SetupGeometry()
 {
   //     
   // World

@@ -23,45 +23,37 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file exoticphysics/phonon/include/XDetectorConstruction.hh
-/// \brief Definition of the XDetectorConstruction class
+/// \file exoticphysics/phonon/include/PhononPrimaryGeneratorAction.hh
+/// \brief Definition of the PhononPrimaryGeneratorAction class
 //
 // $Id$
 //
 
-#ifndef XDetectorConstruction_h
-#define XDetectorConstruction_h 1
+#ifndef PhononPrimaryGeneratorAction_h
+#define PhononPrimaryGeneratorAction_h 1
 
-#include "G4VUserDetectorConstruction.hh"
+#include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
 
-class G4Material;
-class G4VPhysicalVolume;
 
-class XDetectorConstruction : public G4VUserDetectorConstruction {
+class G4ParticleGun;
+class G4Event;
+
+class PhononPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
+{
 public:
-  XDetectorConstruction();
-  virtual ~XDetectorConstruction();
-  
-public:
-  virtual G4VPhysicalVolume* Construct();
-  
-private:
-  void DefineMaterials();
-  void SetupGeometry();
-  
-private:
-  G4Material* fLiquidHelium;
-  G4Material* fGermanium;
-  G4Material* fAluminum;
-  G4Material* fTungsten;
-  G4VPhysicalVolume* fWorldPhys;
-  G4bool fConstructed;
-  G4bool fIfField;
-  
-public:
-  inline void Field(G4bool bl) { fIfField = bl; }
+  PhononPrimaryGeneratorAction();    
+  virtual ~PhononPrimaryGeneratorAction();
+
+  public:
+    virtual void GeneratePrimaries(G4Event*);
+
+  private:
+    G4ParticleGun*                fParticleGun;
+
 };
 
+
 #endif
+
 
