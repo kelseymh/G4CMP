@@ -116,22 +116,22 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
 
 
     G4double velocity = postStepPoint->GetVelocity();
-    G4double p = postStepPoint->GetMomentum().mag()/c_light;
+    //G4double p = postStepPoint->GetMomentum().mag()/c_light;
     //G4cout << "momentum: " <<  p <<  " " << velocity*massHole << G4endl;
     G4double kmag = velocity*massHole / hbar_Planck;
     G4double theta_phonon=MakeTheta(kmag, ksound_Hole);
-    G4double theta_charge=acos( 
-					    (kmag*kmag - 2*ksound_Hole
-					    *(kmag*cos(theta_phonon) - ksound_Hole) 
-					    - 2 * (kmag*cos(theta_phonon) - ksound_Hole)
-					    * (kmag*cos(theta_phonon) - ksound_Hole)) 
-					    / kmag/ (sqrt(kmag*kmag - 4*ksound_Hole
-					    *(kmag*cos(theta_phonon) - ksound_Hole))));
+    G4double theta_charge=
+      acos((kmag*kmag - 2*ksound_Hole
+	    *(kmag*cos(theta_phonon) - ksound_Hole) 
+	    - 2 * (kmag*cos(theta_phonon) - ksound_Hole)
+	    * (kmag*cos(theta_phonon) - ksound_Hole)) 
+	   / kmag/ (sqrt(kmag*kmag - 4*ksound_Hole
+			 *(kmag*cos(theta_phonon) - ksound_Hole))));
 
     G4double q = 2*(kmag*cos(theta_phonon)-ksound_Hole);
     G4double T = hbar_Planck*hbar_Planck*kmag*kmag/2/massHole;
     G4double qEnergy = velLong*hbar_Planck*q;
-    G4double knew = sqrt(kmag*kmag + q*q - kmag*q*cos(theta_phonon));
+    //G4double knew = sqrt(kmag*kmag + q*q - kmag*q*cos(theta_phonon));
 
     G4ThreeVector momentum = G4ThreeVector(aTrack.GetMomentumDirection());
     G4ThreeVector orth = momentum.orthogonal();
@@ -182,7 +182,7 @@ G4double G4CMPhLukeScattering::MakeTheta(G4double& k, G4double& ks){
     thetaMax=acos(ks/k);
     pValMax=(1-(ks/k))*(1-(ks/k));
 
-    bool first=false;
+    //bool first=false;
 
     while(pValue>pDensity){
 	theta=G4UniformRand()*thetaMax;
@@ -200,7 +200,7 @@ G4double G4CMPhLukeScattering::MakeTheta(G4double& k, G4double& ks){
 	// G4cout<<"\n\tks: "<<ks*m;
 	// G4cout<<endl;
 	//}
-      //first=1;
+      //first=true;
 
       }
 

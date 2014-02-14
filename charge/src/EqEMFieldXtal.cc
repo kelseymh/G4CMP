@@ -24,12 +24,11 @@ EqEMFieldXtal::EqEMFieldXtal(G4ElectroMagneticField *emField )
 
 void  
 EqEMFieldXtal::SetChargeMomentumMass(G4double particleCharge, // e+ units
-				     G4double,
+				     G4double /*particleMom*/,
 				     G4double particleMass)
 {
-   //fElectroMagCof =  eplus*particleCharge*c_light;
-   //fElectroMagCof = electron_charge;
-   //fMassCof = particleMass*particleMass ; 
+   fElectroMagCof = electron_charge*particleCharge;
+   fMassCof = particleMass*particleMass ; 
    /*
    G4cout<<"\nEqEMFIeldXtal::SetChargeMomentumMass: using normalToValley xform: \n\t"<<normalToValley.NetRotation().colX() <<"\n\t"<<normalToValley.NetRotation().colY()<<"\n\t"<<normalToValley.NetRotation().colZ();
 
@@ -46,11 +45,10 @@ EqEMFieldXtal::EvaluateRhsGivenB(const G4double y[],
 			                const G4double field[],
 				              G4double dydx[] ) const
 { 
-    G4double me = electron_mass_c2/c_squared;
-    G4double mc = .118;
     G4ThreeVector pc = G4ThreeVector(y[3], y[4], y[5]);
     G4ThreeVector p = pc/c_light;
     
+    G4double me = electron_mass_c2/c_squared;
     G4RotationMatrix mInv = 
 		valleyToNormal.NetRotation()*G4Rep3x3(1/1.588/me,   0.0    , 0.0,
 							0.0     , 1/.081/me, 0.0, 

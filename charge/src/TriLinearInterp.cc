@@ -4,6 +4,7 @@
 #include "libqhullcpp/QhullFacetSet.h"
 #include "libqhullcpp/QhullVertexSet.h"
 #include "Randomize.hh"
+#include "G4SystemOfUnits.hh"
 #include <iostream>
 #include <ctime>
 #include <map>
@@ -17,19 +18,17 @@ TriLinearInterp::TriLinearInterp(const vector<vector<G4double> >& xyz,
   BuildTetraMesh(xyz);
 }
 
-void TriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& xyz) 
-{
+void TriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& /*xyz*/) {
     time_t start, fin;
     G4cout << "    TriLinearInterp::Constructor: Creating Tetrahedral Mesh..." << G4endl;
     std::time(&start);
     /* Qhull requires a column-major array of the
      * 3D points. i.e., [x1,y1,z1,x2,y2,z2,...]
      */
-    //double* boxPoints = new double[3*X.size()];
-    double boxPoints[3*X.size()];
+    double* boxPoints = new double[3*X.size()];
     //G4cout << "Size of input = " << X.size() << " points" << G4endl;
       
-    for(int i=0; i<X.size(); ++i)
+    for(size_t i=0; i<X.size(); ++i)
     {
         boxPoints[i*3] = X[i][0];
         boxPoints[i*3+1]= X[i][1];
@@ -96,7 +95,9 @@ void TriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& xyz)
 
     Tetrahedra.swap(tmpTetrahedra);
     Neighbors.swap(tmpNeighbors);
-	    
+
+    delete[] boxPoints;		// Clean up local array
+
     std::time(&fin);
     G4cout << "    TriLinearInterp::Constructor: Took " << difftime(fin, start) << " seconds." << G4endl;
 }
@@ -279,7 +280,8 @@ inline void TriLinearInterp::Cart2Bary(const G4double point[4], G4double bary[4]
   bary[3] = 1.0 - bary[0] - bary[1] - bary[2];
 }
 
-inline void TriLinearInterp::BuildT4x3(const G4double point[4], G4double ET[4][3]) const
+inline void TriLinearInterp::BuildT4x3(const G4double point[4],
+				       G4double ET[4][3]) const
 {
   G4double T[3][3];
   G4double Tinv[3][3];

@@ -15,7 +15,6 @@
 
 #include "G4EquationOfMotion.hh"
 #include "G4AffineTransform.hh"
-#include "G4ThreeVector.hh"
 #include "G4Version.hh"
 
 class G4ElectroMagneticField;
@@ -48,19 +47,14 @@ public:
   
   void SetValleyTransform(const G4AffineTransform& xform);
   inline G4AffineTransform GetValleyTransform() {return normalToValley;}
-  //void SetNormalToValleyTransform(G4AffineTransform ntv);
-  //inline G4AffineTransform GetNormalToValleyTransform() {return normalToValley;}
-  //void SetValleyToNormalTransform(G4AffineTransform vtn);
-  //inline G4AffineTransform GetValleyToNormalTransform() {return valleyToNormal;}
   
 public:
   G4AffineTransform normalToValley;
   G4AffineTransform valleyToNormal;
   
 private:
-  G4double      fElectroMagCof;
-  G4double      fMassCof;
-  G4ThreeVector me;
+  G4double fElectroMagCof;
+  G4double fMassCof;
 };
 
 #endif

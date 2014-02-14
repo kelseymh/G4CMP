@@ -21,7 +21,7 @@
 #include "G4TransportationManager.hh"
 #include "G4Geantino.hh"
 #include "G4SystemOfUnits.hh"
-
+#include "G4PhysicalConstants.hh"
 
 #include "math.h"
 
@@ -57,37 +57,33 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack, G4do
     
     switch(valley){
     case 1:
-      trix = G4RotationMatrix(-PI/4, -PI/4, PI/4);
+      trix = G4RotationMatrix(-pi/4, -pi/4, pi/4);
       break;
     case 2:
-      trix = G4RotationMatrix(PI/4, -PI/4, -PI/4);
+      trix = G4RotationMatrix(pi/4, -pi/4, -pi/4);
       break;
     case 3:
-      trix = G4RotationMatrix(-PI/4, PI/4, PI/4);
+      trix = G4RotationMatrix(-pi/4, pi/4, pi/4);
       break;
     case 4:
-      trix = G4RotationMatrix(PI/4, PI/4, -PI/4);
+      trix = G4RotationMatrix(pi/4, pi/4, -pi/4);
       break;
     }
 
     normalToValley= G4AffineTransform(trix);
     valleyToNormal= G4AffineTransform(trix).Inverse();
     
-    
-    //Field = GetFieldValue();
-    G4VPhysicalVolume* pVol = aTrack.GetVolume();
-        
-    G4LogicalVolume* lVol = pVol->GetLogicalVolume();
+    //G4VPhysicalVolume* pVol = aTrack.GetVolume();
+    //G4LogicalVolume* lVol = pVol->GetLogicalVolume();
     
     G4FieldManager* fMan = G4TransportationManager::GetTransportationManager()->GetFieldManager();
     
-    //Getting the field. Not sure a const_cast is the right way of
-    //doing this?!?!
-    G4Field* field = const_cast<G4Field*>(fMan->GetDetectorField());
-    
     //If there is no field, there is no IV scattering... but then there
     //is no e-h transport either...
-    G4bool FieldExists = fMan->DoesFieldExist() ;
+    if (!fMan->DoesFieldExist()) return DBL_MAX;
+
+    //Getting the field.
+    const G4Field* field = fMan->GetDetectorField();
     
     G4ThreeVector pos = aTrack.GetPosition();
     
@@ -125,15 +121,12 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack, G4do
 
 }
 
-G4VParticleChange* G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
-{
+G4VParticleChange* 
+G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
+					 const G4Step& /*aStep*/) {
 
     aParticleChange.Initialize(aTrack);  
 
-    G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
-    
-    G4double velocity = aStep.GetPostStepPoint()->GetVelocity();
-    
     //picking a new valley at random if IV-scattering process was triggered
     int valley = (int) (G4UniformRand()*4 + 1.0);
     
@@ -143,24 +136,24 @@ G4VParticleChange* G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrac
     G4RotationMatrix trix;
     switch(valley){
       case 1:
-          trix = G4RotationMatrix(-PI/4, -PI/4, PI/4);
+          trix = G4RotationMatrix(-pi/4, -pi/4, pi/4);
           break;
       case 2:
-          trix = G4RotationMatrix(PI/4, -PI/4, -PI/4);
+          trix = G4RotationMatrix(pi/4, -pi/4, -pi/4);
           break;
       case 3:
-          trix = G4RotationMatrix(-PI/4, PI/4, PI/4);
+          trix = G4RotationMatrix(-pi/4, pi/4, pi/4);
           break;
       case 4:
-          trix = G4RotationMatrix(PI/4, PI/4, -PI/4);
+          trix = G4RotationMatrix(pi/4, pi/4, -pi/4);
           break;
   }
 
-    normalToValley= G4AffineTransform(trix);
-    valleyToNormal= G4AffineTransform(trix).Inverse();
+    normalToValley = G4AffineTransform(trix);
+    valleyToNormal = G4AffineTransform(trix).Inverse();
     
     G4ThreeVector DirXYZ = aTrack.GetMomentumDirection();  
-    G4double velocityXYZ = aStep.GetPostStepPoint()->GetVelocity();
+    // G4double velocityXYZ = aStep.GetPostStepPoint()->GetVelocity();
     
     aParticleChange.ProposeMomentumDirection(DirXYZ);
     aParticleChange.ProposeEnergy(aTrack.GetKineticEnergy());  

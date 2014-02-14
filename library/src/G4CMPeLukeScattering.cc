@@ -132,7 +132,7 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
 G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 						      const G4Step& aStep) {
   aParticleChange.Initialize(aTrack); 
-  G4StepPoint* postStepPoint = aTrack.GetStep()->GetPostStepPoint();
+  G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
   G4ThreeVector k = postStepPoint->GetMomentum()/hbarc;
   G4ThreeVector k_valley = normalToValley.TransformPoint(k);

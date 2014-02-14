@@ -1,6 +1,5 @@
 #ifndef G4CMPInterValleyScattering_h
 #define G4CMPInterValleyScattering_h 1
-#define PI 3.14153
 
 #include "globals.hh"
 #include "G4VDiscreteProcess.hh"

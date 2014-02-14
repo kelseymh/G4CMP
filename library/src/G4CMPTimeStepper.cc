@@ -93,8 +93,8 @@ G4CMPTimeStepper::G4CMPTimeStepper(G4CMPTimeStepper& right)
 
 G4double G4CMPTimeStepper::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
-				     G4double prevStepSize,
-				     G4ForceCondition* cond) {
+				     G4double /*prevStepSize*/,
+				     G4ForceCondition* /*cond*/) {
   // Only drifting electrons have special treatment
   if (aTrack.GetParticleDefinition() != G4CMPDriftElectron::Definition()) {
     G4double v = aTrack.GetStep()->GetPostStepPoint()->GetVelocity();
@@ -149,7 +149,7 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 
 
 G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
-						  const G4Step& aStep) {
+						  const G4Step& /*aStep*/) {
   aParticleChange.Initialize(aTrack);
   return &aParticleChange;
 }

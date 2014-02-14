@@ -24,24 +24,22 @@ G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess(const G4String& aName):G4VD
 G4CMPDriftBoundaryProcess::~G4CMPDriftBoundaryProcess()
 { ; }
 
-G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess(G4CMPDriftBoundaryProcess& right):G4VDiscreteProcess(right)
-{ ; }
+G4CMPDriftBoundaryProcess::
+G4CMPDriftBoundaryProcess(G4CMPDriftBoundaryProcess& right)
+ : G4VDiscreteProcess(right) {;}
 
-G4double G4CMPDriftBoundaryProcess::GetMeanFreePath( 
-       const G4Track& aTrack, G4double /*previousStepSize*/, G4ForceCondition* condition  )
-{
 
+G4double 
+G4CMPDriftBoundaryProcess::GetMeanFreePath(const G4Track& /*aTrack*/,
+					   G4double /*previousStepSize*/,
+					   G4ForceCondition* condition) {
   *condition = Forced;
-  //G4double proposedStep = aTrack.GetStep()->GetPostStepPoint()->GetSafety();
-  //G4cout <<  "G4CMPDriftBoundaryProcess: " <<  proposedStep <<  G4endl;
-  //if (proposedStep == 0) proposedStep = DBL_MAX;
-  //return proposedStep;
   return DBL_MAX;
 }
 
-G4VParticleChange* G4CMPDriftBoundaryProcess::PostStepDoIt( const G4Track& aTrack, const G4Step& aStep )
-{    
-
+G4VParticleChange* 
+G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack, 
+					const G4Step& aStep) {    
   aParticleChange.Initialize(aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   //G4cout << postStepPoint->GetProcessDefinedStep()->GetProcessName() << G4endl;
