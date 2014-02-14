@@ -2,6 +2,7 @@
 # $Id$
 
 # Follow GEANT4 library building convention
+# Add CPPFLAGS to support use of QHull for E-field interpolation
 
 name := G4cmp
 
@@ -11,7 +12,7 @@ endif
 
 include $(G4INSTALL)/config/architecture.gmk
 
-CPPFLAGS += -I$(G4INCLUDE)	# Always defined in 9.6 and later
+CPPFLAGS += -I$(G4INCLUDE) -I$(G4WORKDIR)/include -Dqh_QHpointer
 
 # Library goes into user's G4WORKDIR, not into system install
 G4LIBDIR := $(G4WORKDIR)/lib/$(G4SYSTEM)
