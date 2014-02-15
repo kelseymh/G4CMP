@@ -38,7 +38,7 @@ G4CMPTimeStepper::~G4CMPTimeStepper()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4bool IsApplicable(const G4ParticleDefinition &pd) {
+G4bool G4CMPTimeStepper::IsApplicable(const G4ParticleDefinition &pd) {
   return (&pd == G4CMPDriftElectron::Definition() ||
 	  &pd == G4CMPDriftHole::Definition());
 }
