@@ -1,23 +1,5 @@
 # G4CMP/phonon/GNUmakefile -- for building phonon propagation demo
 # $Id$
 
-name := g4cmpPhonon
-G4TARGET := $(name)
-G4EXLIB := true
-
-ifndef G4INSTALL
-$(error Please configure your GEANT4 environment before building G4CMP)
-endif
-
-.PHONY: all
-all: lib bin
-
-EXTRALIBS := -L$(G4WORKDIR)/lib/$(G4SYSTEM) -lG4cmp
-
-include $(G4INSTALL)/config/binmake.gmk
-CPPFLAGS += -I ../library/include	# Must add this _after_ G4 GMake
-
-visclean:
-	rm -f g4*.prim g4*.eps g4*.wrl
-	rm -f .DAWN_*
-
+G4CMP_NAME := g4cmpPhonon
+include ../g4cmp.gmk

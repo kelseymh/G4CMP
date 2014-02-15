@@ -1,0 +1,27 @@
+# G4CMP/g4cmp.gmk	-- GNUmakefile fragment for building app directories
+
+ifndef G4CMP_NAME
+$(error Please set G4CMP_NAME in directory-level GNUmakefile)
+endif
+
+ifndef G4INSTALL
+$(error Please configure your GEANT4 environment before building G4CMP)
+endif
+
+name := $(G4CMP_NAME)
+G4TARGET := $(G4CMP_NAME)
+G4EXLIB := true
+
+.PHONY: all
+all: lib bin
+
+EXTRALIBS := -L$(G4WORKDIR)/lib/$(G4SYSTEM) -lG4cmp -lqhullcpp -lqhullstatic_p
+EXTRALIBS += -Wl,-rpath,$(G4WORKDIR)/lib/$(G4SYSTEM)
+
+include $(G4INSTALL)/config/binmake.gmk
+CPPFLAGS += -I ../library/include -I$(G4WORKDIR)/include -Dqh_QHpointer
+
+visclean:
+	rm -f g4*.prim g4*.eps g4*.wrl
+	rm -f .DAWN_*
+
