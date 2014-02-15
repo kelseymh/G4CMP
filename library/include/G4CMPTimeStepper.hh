@@ -1,58 +1,38 @@
 #ifndef G4CMPTimeStepper_h
 #define G4CMPTimeStepper_h 1
 
-#include "G4ios.hh"
 #include "globals.hh"
-#include "G4VProcess.hh"
+#include "G4VDiscreteProcess.hh"
 #include "G4AffineTransform.hh"
 
-class G4CMPTimeStepper : public G4VProcess
-{
+class G4CMPTimeStepper : public G4VDiscreteProcess {
 public:
   G4CMPTimeStepper(const G4String& processName="G4CMPTimeStepper");
 
   virtual ~G4CMPTimeStepper();
 
-  virtual G4double PostStepGetPhysicalInteractionLength(
-							const G4Track& aTrack,
-							G4double prevStepSize,
-							G4ForceCondition* condition
-							);
+  virtual G4bool IsApplicable(const G4ParticleDefinition &pd);
 
-  virtual G4VParticleChange* PostStepDoIt(
-					  const G4Track& aTrack,
-					  const G4Step& aStep
-					  );
+  virtual G4double 
+  PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
+				       G4double prevStepSize,
+				       G4ForceCondition* condition);
 
-  //no-op in atRest GPIL
-  virtual G4double AtRestGetPhysicalInteractionLength(
-						      const G4Track&,
-						      G4ForceCondition*
-                  ){ return -1.0;}
+  virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
+					  const G4Step& aStep);
 
-  //no-op in AtRestDoIt
-  virtual G4VParticleChange* AtRestDoIt(
-					const G4Track&,
-					const G4Step&
-          ){ return 0;}
+protected:
+  // Compute dt_e, dt_h and valley rotations at current location
+  void ComputeTimeSteps(const G4Track& aTrack);
 
-  //no-op in alongStepGPIL
-  virtual G4double AlongStepGetPhysicalInteractionLength(
-						      const G4Track&,
-						      G4double,
-						      G4double,
-						      G4double&,
-						      G4GPILSelection*
-                  ){ return -1.0;}
-
-  //no-op in alongStepDoIt
-  virtual G4VParticleChange* AlongStepDoIt(
-					const G4Track&,
-					const G4Step&
-          ){ return 0;}
+  virtual G4double GetMeanFreePath(const G4Track& aTrack,
+				   G4double prevStepSize,
+				   G4ForceCondition* condition) {
+    return PostStepGetPhysicalInteractionLength(aTrack, prevStepSize,
+						condition);
+  }
 
 private:
-
   //hide assignment operator
   G4CMPTimeStepper(G4CMPTimeStepper&);
   G4CMPTimeStepper& operator=(const G4CMPTimeStepper& right);
@@ -62,6 +42,15 @@ private:
   G4double dt_e; //Time step for electrons
   G4double dt_h; //Time step for holes
 
+  const G4double velLong;
+  const G4double me;
+  const G4double mc_e;
+  const G4double l0_e;
+  const G4double ksound_e;
+  const G4double mc_h;
+  const G4double l0_h;
+  const G4double ksound_h;
+  const G4ThreeVector T;
 };
 
 #endif
