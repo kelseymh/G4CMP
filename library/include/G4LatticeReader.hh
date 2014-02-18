@@ -31,11 +31,13 @@
 // $Id$
 //
 // 20131115  Move ctor, dtor implementations to .cc file.
+// 20140218  Add support for charge-carrier functionality
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
 
 #include "globals.hh"
+#include "G4RotationMatrix.hh"
 #include <iosfwd>
 
 class G4LatticeLogical;
@@ -54,10 +56,12 @@ protected:
   G4bool ProcessToken();
   G4bool ProcessValue(const G4String& name);	// Numerical parameters
   G4bool ProcessConstants();			// Four dynamical constants
+  G4bool ProcessMassTensor();			// Electron mass tensor
+  G4bool ProcessEulerAngles(const G4String& name);	// Drift directions
   G4bool ProcessMap();				// Velocity magnitudes file
   G4bool ProcessNMap();				// Direction vectors file
   G4bool ReadMapInfo();				// Get map file parameters
-  G4bool SkipComments();				// Everything after '#'
+  G4bool SkipComments();			// Everything after '#'
   void CloseFile();
 
 private:
@@ -71,8 +75,10 @@ private:
   G4double fValue;		// ... floating point data values
   G4String fMap, fsPol;		// ... map filename and polarization code
   G4int    fPol, fNX, fNY;	// ... map binning in each direction
-
+  G4RotationMatrix fMatrix;	// ... 3x3 matrix for mass, drift valleys
   static const G4String fDataDir;	// Directory path ($G4LATTICEDATA)
+
+  const G4double mElectron;	// Electron mass in kilograms
 };
 
 #endif	/* G4LatticeReader_h */

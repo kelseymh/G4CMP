@@ -34,11 +34,14 @@
 // 20131112  Throw exception if input file fails.
 // 20131115  Check file input arguments for maps for validity before use;
 //		move ctor, dtor here; check stream pointer before closing.
+// 20140218  Add support for charge-carrier functionality
 
 #include "G4LatticeReader.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeLogical.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4UnitsTable.hh"
 #include <fstream>
 #include <limits>
 #include <stdlib.h>
@@ -54,7 +57,8 @@ const G4String G4LatticeReader::fDataDir =
 
 G4LatticeReader::G4LatticeReader(G4int vb)
   : verboseLevel(vb), psLatfile(0), pLattice(0), fMapPath(""),
-    fToken(""), fValue(0.), fMap(""), fsPol(""), fPol(-1), fNX(0), fNY(0) {;}
+    fToken(""), fValue(0.), fMap(""), fsPol(""), fPol(-1), fNX(0), fNY(0),
+    mElectron(electron_mass_c2/c_squared) {;}
 
 G4LatticeReader::~G4LatticeReader() {
   delete psLatfile; psLatfile = 0;
@@ -144,6 +148,8 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "vdir")     return ProcessNMap();	// Direction vector map
   if (fToken == "vg")       return ProcessMap();	// Velocity magnitudes
   if (fToken == "dyn")      return ProcessConstants();	// Dynamical parameters
+  if (fToken == "emass")    return ProcessMassTensor();	// e- mass eigenvalues
+  if (fToken == "valley")   return ProcessEulerAngles(fToken); // e- drift dirs
   return ProcessValue(fToken);				// Single numeric value
 }
 
@@ -161,19 +167,18 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   if (verboseLevel>1) G4cout << " ProcessValue " << fValue << G4endl;
 
   G4bool good = true;
-  /***** NOTE: Individual Set functions not included in Release 10.0
        if (name == "beta")   pLattice->SetBeta(fValue);
   else if (name == "gamma")  pLattice->SetGamma(fValue);
   else if (name == "lambda") pLattice->SetLambda(fValue);
   else if (name == "mu")     pLattice->SetMu(fValue);
-  else *****/
-       if (name == "scat")   pLattice->SetScatteringConstant(fValue*s*s*s);
+  else if (name == "scat")   pLattice->SetScatteringConstant(fValue*s*s*s);
   else if (name == "b")      pLattice->SetScatteringConstant(fValue*s*s*s);
   else if (name == "decay")  pLattice->SetAnhDecConstant(fValue*s*s*s*s);
   else if (name == "a")      pLattice->SetAnhDecConstant(fValue*s*s*s*s);
   else if (name == "ldos")   pLattice->SetLDOS(fValue);
   else if (name == "stdos")  pLattice->SetSTDOS(fValue);
   else if (name == "ftdos")  pLattice->SetFTDOS(fValue);
+  else if (name == "hmass")  pLattice->SetHoleMass(fValue*mElectron);
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;
@@ -190,6 +195,46 @@ G4bool G4LatticeReader::ProcessConstants() {
 	   << " " << lambda << " " << mu << G4endl;
 
   pLattice->SetDynamicalConstants(beta, gamma, lambda, mu);
+  return psLatfile->good();
+}
+
+// Read diagonal scale factors for drift electron mass tensor
+
+G4bool G4LatticeReader::ProcessMassTensor() {
+  G4double mxx=1., myy=1., mzz=1.;
+  *psLatfile >> mxx >> myy >> mzz;
+  if (verboseLevel>1)
+    G4cout << " ProcessMassTensor " << mxx << " " << myy << " " << mzz
+	   << G4endl;
+
+  fMatrix.set(G4Rep3x3(mxx*mElectron, 0., 0.,
+		       0., myy*mElectron, 0.,
+		       0., 0., mzz*mElectron));
+  // NOTE:  Use of G4RotationMatrix not appropriate here, as matrix is
+  //        not normalized.  CLHEP/Matrix not available in GEANT4.
+
+  pLattice->SetElectronMass(fMatrix);
+  return psLatfile->good();
+}
+
+// Read Euler angles (phi, theta, psi) for named rotation matrix
+
+G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
+  G4double phi=0., theta=0., psi=0.;
+  G4String unit;
+  *psLatfile >> phi >> theta >> psi >> unit;
+  if (verboseLevel>1)
+    G4cout << " ProcessEulerAngles " << name << " " << phi << " " 
+	   << theta << " " << psi << " " << unit << G4endl;
+
+  G4double degOrRad = G4UnitDefinition::GetValueOf(unit);
+  fMatrix.set(phi*degOrRad, theta*degOrRad, psi*degOrRad);
+  if (name != "valley") {
+    G4cerr << "G4LatticeReader: Unknown rotation matrix " << name << G4endl;
+    return false;
+  }
+
+  pLattice->AddValley(fMatrix);
   return psLatfile->good();
 }
 

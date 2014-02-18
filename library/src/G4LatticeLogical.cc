@@ -28,6 +28,8 @@
 //
 // $Id$
 //
+// 20140318  Add new charge-carrier parameters to output
+
 #include "G4LatticeLogical.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
@@ -200,11 +202,25 @@ G4ThreeVector G4LatticeLogical::MapKtoVDir(G4int polarizationState,
 // Dump structure in format compatible with reading back
 
 void G4LatticeLogical::Dump(std::ostream& os) const {
-  os << "dyn " << fBeta << " " << fGamma << " " << fLambda << " " << fMu
+  os << "# Phonon propagation parameters"
+     << "\ndyn " << fBeta << " " << fGamma << " " << fLambda << " " << fMu
      << "\nscat " << fB << " decay " << fA
      << "\nLDOS " << fLDOS << " STDOS " << fSTDOS << " FTDOS " << fFTDOS
      << std::endl;
 
+  G4double mElectron = electron_mass_c2 / c_squared;	// Output is scaled
+  os << "# Charge carrier propagation parameters"
+     << "\nhmass " << fHoleMass/mElectron
+     << "\nemass " << fElectronMass.xx()/mElectron
+     << " " << fElectronMass.yy()/mElectron
+     << " " << fElectronMass.zz()/mElectron << std::endl;
+
+  for (size_t i=0; i<NumberOfValleys(); i++) {
+    os << "valley " << fValley[i].phi()/deg << " " << fValley[i].theta()/deg
+       << " " << fValley[i].psi()/deg << " deg" << std::endl;
+  }
+
+  os << "# Phonon wavevector/velocity maps" << std::endl;
   Dump_NMap(os, 0, "LVec.ssv");
   Dump_NMap(os, 1, "FTVec.ssv");
   Dump_NMap(os, 2, "STVec.ssv");
@@ -212,6 +228,8 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
   DumpMap(os, 0, "L.ssv");
   DumpMap(os, 1, "FT.ssv");
   DumpMap(os, 2, "ST.ssv");
+
+
 }
 
 void G4LatticeLogical::DumpMap(std::ostream& os, G4int pol,
