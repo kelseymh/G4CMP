@@ -75,10 +75,10 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   int valley = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
     
   switch(valley) {
-  case 1: trix = G4RotationMatrix(-pi/4,-pi/4, pi/4); break;
-  case 2: trix = G4RotationMatrix( pi/4,-pi/4,-pi/4); break;
-  case 3: trix = G4RotationMatrix(-pi/4, pi/4, pi/4); break;
-  case 4: trix = G4RotationMatrix( pi/4, pi/4,-pi/4); break;
+  case 1: trix.set(  -pi/4, 0.61548, pi/2); break;
+  case 2: trix.set(   pi/4, 0.61548, pi/2); break;
+  case 3: trix.set( 3*pi/4, 0.61548, pi/2); break;
+  case 4: trix.set(-3*pi/4, 0.61548, pi/2); break;
   }
 
   valleyToNormal= G4AffineTransform(trix);

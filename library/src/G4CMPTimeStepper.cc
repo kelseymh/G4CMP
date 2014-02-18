@@ -61,10 +61,10 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 
   G4RotationMatrix trix;
   switch(valley) {
-  case 1: trix.set(-pi/4,-pi/4, pi/4); break;
-  case 2: trix.set( pi/4,-pi/4,-pi/4); break;
-  case 3: trix.set(-pi/4, pi/4, pi/4); break;
-  case 4: trix.set( pi/4, pi/4,-pi/4); break;
+  case 1: trix.set(  -pi/4, 0.61548, pi/2); break;
+  case 2: trix.set(   pi/4, 0.61548, pi/2); break;
+  case 3: trix.set( 3*pi/4, 0.61548, pi/2); break;
+  case 4: trix.set(-3*pi/4, 0.61548, pi/2); break;
   }
 
   G4RotationMatrix mInv = trix.inverse()
@@ -131,10 +131,10 @@ void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
 
   G4RotationMatrix trix;
   switch(valley) {
-  case 1: trix.set(-pi/4,-pi/4, pi/4); break;
-  case 2: trix.set( pi/4,-pi/4,-pi/4); break;
-  case 3: trix.set(-pi/4, pi/4, pi/4); break;
-  case 4: trix.set( pi/4, pi/4,-pi/4); break;
+  case 1: trix.set(  -pi/4, 0.61548, pi/2); break;
+  case 2: trix.set(   pi/4, 0.61548, pi/2); break;
+  case 3: trix.set( 3*pi/4, 0.61548, pi/2); break;
+  case 4: trix.set(-3*pi/4, 0.61548, pi/2); break;
   }
 
   valleyToNormal = G4AffineTransform(trix);
