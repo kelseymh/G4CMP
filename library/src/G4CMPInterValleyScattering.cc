@@ -56,10 +56,10 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack, G4do
     int valley = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
     
     switch(valley) {
-    case 1: trix = G4RotationMatrix(-pi/4,-pi/4, pi/4); break;
-    case 2: trix = G4RotationMatrix( pi/4,-pi/4,-pi/4); break;
-    case 3: trix = G4RotationMatrix(-pi/4, pi/4, pi/4); break;
-    case 4: trix = G4RotationMatrix( pi/4, pi/4,-pi/4); break;
+    case 1: trix.set(  -pi/4, 0.61548, pi/2); break;
+    case 2: trix.set(   pi/4, 0.61548, pi/2); break;
+    case 3: trix.set( 3*pi/4, 0.61548, pi/2); break;
+    case 4: trix.set(-3*pi/4, 0.61548, pi/2); break;
     }
 
     normalToValley= G4AffineTransform(trix);
@@ -127,19 +127,11 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
     G4RotationMatrix trix;
     switch(valley){
-      case 1:
-          trix = G4RotationMatrix(-pi/4, -pi/4, pi/4);
-          break;
-      case 2:
-          trix = G4RotationMatrix(pi/4, -pi/4, -pi/4);
-          break;
-      case 3:
-          trix = G4RotationMatrix(-pi/4, pi/4, pi/4);
-          break;
-      case 4:
-          trix = G4RotationMatrix(pi/4, pi/4, -pi/4);
-          break;
-  }
+    case 1: trix.set(  -pi/4, 0.61548, pi/2); break;
+    case 2: trix.set(   pi/4, 0.61548, pi/2); break;
+    case 3: trix.set( 3*pi/4, 0.61548, pi/2); break;
+    case 4: trix.set(-3*pi/4, 0.61548, pi/2); break;
+    }
 
     normalToValley = G4AffineTransform(trix);
     valleyToNormal = G4AffineTransform(trix).Inverse();
