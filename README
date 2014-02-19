@@ -1,0 +1,29 @@
+G4CMP -- Geant4 add-on framework for phonon and charge-carrier physics
+
+	D. Brant, P. Redl, R. Agnese, M. Kelsey (who else?)
+
+
+This package provide a collection of particle types, physics processes, and
+supporting utilities to simulate a limiting set of solid-state physics
+processes in Geant4.  Developed for the low-temperature community, the
+package support production and propagation of acoustic phonons and
+electron-hole pairs through solid crystals such as germanium.
+
+
+Defining the Crystal Dynamics
+=============================
+
+In a user's application, each active G4CMP material (e.g., germanium
+crystals or diamonds) must have a collection of dynamical parameters
+defined.  These parameters are used by the phonon and charge-carrier
+processes to know how to create, propagate, and scatter the particles
+through the crystal.
+
+Each material's parameters are stored in a subdirectory under CrystalMaps
+(or wherever the envrionment variable G4LATTICEDATA points).  G4CMP is
+distributed with germanium data, in CrystalMaps/Ge/.  We recommend naming
+additional directories by element or material, matching the Geant4
+conventions.
+
+The parameter definition file is config.txt.  Each line starts with a
+keyword, followed by one or more values.
