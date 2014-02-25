@@ -2,8 +2,10 @@
 # $Id$
 #
 # Add Mac and Windows handling for QHull build (we aren't using CMake there)
+# Add "dist" target to make tar-ball for distribution to non-SLAC users
 
 .PHONY : library phonon charge channeling	# Targets named for directory
+.PHONY : all lib dist clean qhull
 
 # Initial target provides guidance if user tries bare |make|
 help :
@@ -22,7 +24,10 @@ help :
 	 echo "clean         Remove libraries and examples" ;\
 	 echo ;\
 	 echo "Users may pass targets through to directories as well:" ;\
-	 echo "  make <dir>.<target>"
+	 echo "  make <dir>.<target>" ;\
+	 echo ;\
+	 echo "For developers ONLY, make a distribution tar-ball:" ;\
+	 echo "dist          Builds a tar ball of the code, excluding .git/"
 
 # User targets
 
@@ -31,6 +36,8 @@ lib : library
 examples : phonon charge channeling
 
 clean : library.clean examples.clean qhull.cleanall
+
+dist : g4cmp.tgz
 
 # Package dependencies
 
@@ -68,3 +75,13 @@ examples.% :
 	-$(MAKE) phonon.$(subst .,,$(suffix $@))
 	-$(MAKE) charge.$(subst .,,$(suffix $@))
 	-$(MAKE) channeling.$(subst .,,$(suffix $@))
+
+# Make source code distribution (construct using symlinks and tar -h)
+
+g4cmp.tgz : clean
+	@mkdir G4CMP ;\
+	 ln -s ../README ../GNUmakefile ../g4cmp.gmk G4CMP ;\
+	 ln -s ../library ../qhull-2012.1 ../charge ../phonon G4CMP ;\
+	 ln -s ../channeling ../CrystalMaps G4CMP ;\
+	 gtar -hzc --exclude '.*' -f $@ G4CMP ;\
+	 /bin/rm -rf G4CMP

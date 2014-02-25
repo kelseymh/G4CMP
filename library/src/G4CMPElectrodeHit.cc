@@ -1,9 +1,5 @@
 #include "G4CMPElectrodeHit.hh"
 
-#include "G4LogicalVolume.hh"
-#include "G4Transform3D.hh"
-#include "G4RotationMatrix.hh"
-
 #include "G4ios.hh"
 #include "G4VVisManager.hh"
 #include "G4Circle.hh"
