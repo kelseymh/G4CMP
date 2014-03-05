@@ -48,6 +48,6 @@ class FET
         void CalculateTrace(const G4Run* run);
         void ReadRamoInputFile(const G4String& filename, vector<vector<G4double> >& X, vector<G4double>& V);
         void SaveResults(const G4String& matFile, const G4String& varName, G4int numRows, G4int numColumns,const vector<G4double>& colData, G4bool append);
-        G4bool QuadrantFlip(const G4int& quadrant, vector< vector<G4double> >& elecPos, vector< vector<G4double> >& holePos);
+        G4bool QuadrantFlip(const G4int& quadrant);
 };
 #endif

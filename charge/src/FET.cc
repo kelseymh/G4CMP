@@ -1,21 +1,23 @@
-#include <vector>
-#include <math.h>
-#include <stdlib.h>
 #include "FET.hh"
-#include "inttypes.h"
-#include <fstream>
+#include "FETMessenger.hh"
+#include "G4CMPElectrodeHit.hh"
+#include "G4CMPElectrodeSensitivity.hh"
+#include "G4CMPTriLinearInterp.hh"
 #include "G4Event.hh"
 #include "G4HCofThisEvent.hh"
-#include "AlminumElectrodeHit.hh"
-#include "AlminumElectrodeSensitivity.hh"
-#include <ctime>
-#include <algorithm>
-#include "TriLinearInterp.hh"
-#include <sstream>
-#include <string>
+#include "G4PhysicalConstants.hh"
 #include "G4SDManager.hh"
+#include "G4SystemOfUnits.hh"
 #include "MatWriter.hh"
-#include "FETMessenger.hh"
+#include "inttypes.h"
+#include <algorithm>
+#include <ctime>
+#include <fstream>
+#include <math.h>
+#include <sstream>
+#include <stdlib.h>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -260,19 +262,19 @@ G4double FET::CalculateChargeSupressionFactor(const G4Run* run)
     const vector<const G4Event*>* eventVec = run->GetEventVector();
     G4int numEvents = eventVec->size();
     G4HCofThisEvent* pHCofEvent;
-    AlminumElectrodeHitsCollection* pHitColl;
+    G4CMPElectrodeHitsCollection* pHitColl;
     G4double hitEnergy;
     vector<G4double> eventEnergy(numEvents,0);
     G4double totalEnergy = 0;
     G4SDManager* fSDM = G4SDManager::GetSDMpointer();
-    G4int collectionID = fSDM->GetCollectionID("AlminumElectrodeHit");
+    G4int collectionID = fSDM->GetCollectionID("G4CMPElectrodeHit");
     for(G4int i=0; i<numEvents; ++i)
     {
         pHCofEvent = (eventVec->at(i))->GetHCofThisEvent();
-        pHitColl = static_cast<AlminumElectrodeHitsCollection*>(pHCofEvent->GetHC(collectionID));
+        pHitColl = static_cast<G4CMPElectrodeHitsCollection*>(pHCofEvent->GetHC(collectionID));
         for(G4int k=0; k<pHitColl->entries(); ++k)
         {
-            hitEnergy = (static_cast<AlminumElectrodeHit*>(pHitColl->GetVector()->at(k)))->GetEDep();
+            hitEnergy = (static_cast<G4CMPElectrodeHit*>(pHitColl->GetVector()->at(k)))->GetEDep();
             eventEnergy[i] += hitEnergy;
             totalEnergy += hitEnergy;
         }
@@ -359,23 +361,23 @@ void FET::CalculateTrace(const G4Run* run)
     G4int numEvents = eventVec->size();
 
     G4HCofThisEvent* pHCofEvent;
-    AlminumElectrodeHitsCollection* pHitColl;
-    AlminumElectrodeHit hit;
+    G4CMPElectrodeHitsCollection* pHitColl;
+    G4CMPElectrodeHit hit;
     G4SDManager* fSDM = G4SDManager::GetSDMpointer();
-    G4int collectionID = fSDM->GetCollectionID("AlminumElectrodeHit");
+    G4int collectionID = fSDM->GetCollectionID("G4CMPElectrodeHit");
 
     G4ThreeVector positionVec;
     vector<G4double> position(3,0);
-    for(G4int q=0; q<quad.size(); ++q)
+    for(size_t q=0; q<quad.size(); ++q)
     {
         for(G4int i=0; i<numEvents; ++i)
         {
             pHCofEvent = (eventVec->at(i))->GetHCofThisEvent();
-            pHitColl = static_cast <AlminumElectrodeHitsCollection*>(pHCofEvent->GetHC(collectionID));
+            pHitColl = static_cast <G4CMPElectrodeHitsCollection*>(pHCofEvent->GetHC(collectionID));
             G4cout << "pHitColl->GetSize() = " << pHitColl->entries() << G4endl;
             for(G4int j=0; j<pHitColl->entries(); ++j)
             {
-                hit = *(static_cast<AlminumElectrodeHit*>(pHitColl->GetVector()->at(j)));
+                hit = *(static_cast<G4CMPElectrodeHit*>(pHitColl->GetVector()->at(j)));
                 if(hit.GetCharge() < 0)
                 {
                     positionVec = hit.GetWorldPos();
@@ -394,7 +396,7 @@ void FET::CalculateTrace(const G4Run* run)
                 }
             }
         }
-        QuadrantFlip(quad[q],elecPos,holePos);
+        QuadrantFlip(quad[q]);
 
         vector<vector<vector<G4double> > > FETTemplate(channels, 
                 vector<vector<G4double> >(channels, vector<G4double>(timeBins,0)));
@@ -408,13 +410,13 @@ void FET::CalculateTrace(const G4Run* run)
         {
           std::stringstream num;
           num << potChan2FETChan[channelRamo] + 1;
-          G4String ramoFile = G4String("EpotRamoChan") + G4String(num.str()) + G4String(".txt");
-          G4cout << ramoFile << G4endl;
-          ReadRamoInputFile(ramoFile, X, V);
-          TriLinearInterp ramo = TriLinearInterp(X,V);
+          G4String ramoFile2 = G4String("EpotRamoChan") + G4String(num.str()) + G4String(".txt");
+          G4cout << ramoFile2 << G4endl;
+          ReadRamoInputFile(ramoFile2, X, V);
+          G4CMPTriLinearInterp ramo = G4CMPTriLinearInterp(X,V);
             G4double minV = 0;
             G4double maxV = 0;
-            for(G4int i=0; i<V.size(); ++i)
+            for(size_t i=0; i<V.size(); ++i)
             {
                 if(V[i] > maxV)
                     maxV = V[i];
@@ -429,7 +431,7 @@ void FET::CalculateTrace(const G4Run* run)
 
             if(ramoModel == 1)
             {
-                for(G4int i=0; i<elecPos.size(); ++i)
+                for(size_t i=0; i<elecPos.size(); ++i)
                 {
                     if( (abs(sqrt(elecPos[i][0]*elecPos[i][0]+elecPos[i][1]*elecPos[i][1])) 
                                 >= radIn[channelRamo]) 
@@ -444,7 +446,7 @@ void FET::CalculateTrace(const G4Run* run)
             }
             else if(ramoModel == 2)
             {
-                for(G4int i=0; i<elecPos.size(); ++i)
+                for(size_t i=0; i<elecPos.size(); ++i)
                 {
                     elecPot[i] = ramo.GetPotential(&elecPos[i][0]);
                     holePot[i] = ramo.GetPotential(&holePos[i][0]);
@@ -454,11 +456,11 @@ void FET::CalculateTrace(const G4Run* run)
                 G4cout << "This is bad- no Ramo Model specified" << G4endl;
 
             fetStart=DBL_MAX;
-            for(G4int i=0; i<holeT.size(); ++i)
+            for(size_t i=0; i<holeT.size(); ++i)
                 if(min(holeT[i],elecT[i])<fetStart)
                     fetStart = min(holeT[i],elecT[i]);
 
-            for(G4int chargeNum=0; chargeNum<holeT.size(); ++chargeNum)
+            for(size_t chargeNum=0; chargeNum<holeT.size(); ++chargeNum)
                 for(G4int channelDAQ=0; channelDAQ<channels; ++channelDAQ)
                     for(G4int traceIdx=0; traceIdx<timeBins; ++traceIdx)
                     {
@@ -503,7 +505,7 @@ void FET::ReadRamoInputFile(const G4String& filename, vector<vector<G4double> >&
     {
         input >> x >> y >> z >> v;
 
-        if(X.size()>=100000*n)
+        if(X.size()>=100000U*n)
         {
             ++n;
             X.reserve(100000*n);
@@ -529,20 +531,20 @@ void FET::SaveResults(const G4String& matFile, const G4String& varName, G4int nu
     MatWriter(matFile, varName, numRows, numColumns, colData, append);
 }
 
-G4bool FET::QuadrantFlip(const G4int &quadrant, vector< vector<G4double> > &elecPos, vector< vector<G4double> > &holePos)
+G4bool FET::QuadrantFlip(const G4int &quadrant)
 {
     if (quadrant == 2 || quadrant == 3)
     {
-        for(int i = 0; i < elecPos.size(); ++i)
+        for(size_t i = 0; i < elecPos.size(); ++i)
             elecPos[i][1] = -1*elecPos[i][1];
-        for(int i = 0; i < holePos.size(); ++i)
+        for(size_t i = 0; i < holePos.size(); ++i)
             holePos[i][1] = -1*holePos[i][1];
     }
     if (quadrant == 3 || quadrant == 4)
     {
-        for(int i = 0; i < elecPos.size(); ++i)
+        for(size_t i = 0; i < elecPos.size(); ++i)
             elecPos[i][2] = -1*elecPos[i][2];
-        for(int i = 0; i < holePos.size(); ++i)
+        for(size_t i = 0; i < holePos.size(); ++i)
             holePos[i][2] = -1*holePos[i][2];
     }
     return(true);
