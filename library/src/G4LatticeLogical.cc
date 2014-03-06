@@ -31,6 +31,7 @@
 // 20140318  Add new charge-carrier parameters to output
 
 #include "G4LatticeLogical.hh"
+#include "G4RotationMatrix.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include <cmath>
@@ -195,6 +196,19 @@ G4ThreeVector G4LatticeLogical::MapKtoVDir(G4int polarizationState,
   }
 
   return fN_map[polarizationState][iTheta][iPhi];
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Transform for drifting-electron valleys in momentum space
+
+const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
+  if (verboseLevel>1) G4cout << "G4LatticeLogical::GetValley " << iv << G4endl;
+
+  if (iv >=0 && iv < (G4int)NumberOfValleys()) return fValley[iv];
+
+  G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
+  return G4RotationMatrix::IDENTITY;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

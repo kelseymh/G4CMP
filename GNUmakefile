@@ -75,7 +75,7 @@ qhull.% :
 examples.% :
 	-$(MAKE) phonon.$(subst .,,$(suffix $@))
 	-$(MAKE) charge.$(subst .,,$(suffix $@))
-	-$(MAKE) channeling.$(subst .,,$(suffix $@))
+	### -$(MAKE) channeling.$(subst .,,$(suffix $@))
 
 # Make source code distribution (construct using symlinks and tar -h)
 

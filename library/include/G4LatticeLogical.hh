@@ -99,7 +99,7 @@ public:
   G4double GetHoleMass() const { return fHoleMass; }
 
   // Transform for drifting-electron valleys in momentum space
-  void AddValley(const G4RotationMatrix& valley);
+  void AddValley(const G4RotationMatrix& valley) { fValley.push_back(valley); }
   void ClearValleys() { fValley.clear(); }
 
   size_t NumberOfValleys() const { return fValley.size(); }
