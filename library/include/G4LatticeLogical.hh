@@ -31,6 +31,7 @@
 // 20131114  Add verbosity for diagnostic output
 // 20131115  Expose maximum array dimensions for use by LatticeReader
 // 20140218  Add support for charge-carrier functionality
+// 20140306  Allow valley filling using Euler angles directly
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -100,6 +101,7 @@ public:
 
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley) { fValley.push_back(valley); }
+  void AddValley(G4double phi, G4double theta, G4double psi);
   void ClearValleys() { fValley.clear(); }
 
   size_t NumberOfValleys() const { return fValley.size(); }

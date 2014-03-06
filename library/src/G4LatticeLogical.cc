@@ -28,7 +28,8 @@
 //
 // $Id$
 //
-// 20140318  Add new charge-carrier parameters to output
+// 20140218  Add new charge-carrier parameters to output
+// 20140306  Allow valley filling using Euler angles directly
 
 #include "G4LatticeLogical.hh"
 #include "G4RotationMatrix.hh"
@@ -199,6 +200,19 @@ G4ThreeVector G4LatticeLogical::MapKtoVDir(G4int polarizationState,
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Store drifting-electron valley using Euler angles
+
+void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
+  if (verboseLevel>1) {
+    G4cout << "G4LatticeLogical::AddValley " << psi << " " << theta
+	   << " " << psi << " rad" << G4endl;
+  }
+
+  // Extend vector first, then fill last value, to reduce temporaries
+  fValley.resize(fValley.size()+1);
+  fValley.back().set(phi,theta,psi);
+}
 
 // Transform for drifting-electron valleys in momentum space
 

@@ -35,6 +35,7 @@
 // 20131115  Check file input arguments for maps for validity before use;
 //		move ctor, dtor here; check stream pointer before closing.
 // 20140218  Add support for charge-carrier functionality
+// 20140306  Use Euler angles directly to fill electron valley
 
 #include "G4LatticeReader.hh"
 #include "G4ExceptionSeverity.hh"
@@ -227,14 +228,13 @@ G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
     G4cout << " ProcessEulerAngles " << name << " " << phi << " " 
 	   << theta << " " << psi << " " << unit << G4endl;
 
-  G4double degOrRad = G4UnitDefinition::GetValueOf(unit);
-  fMatrix.set(phi*degOrRad, theta*degOrRad, psi*degOrRad);
   if (name != "valley") {
     G4cerr << "G4LatticeReader: Unknown rotation matrix " << name << G4endl;
     return false;
   }
 
-  pLattice->AddValley(fMatrix);
+  G4double degOrRad = G4UnitDefinition::GetValueOf(unit);
+  pLattice->AddValley(phi*degOrRad, theta*degOrRad, psi*degOrRad);
   return psLatfile->good();
 }
 
