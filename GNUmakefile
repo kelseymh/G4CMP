@@ -3,6 +3,7 @@
 #
 # Add Mac and Windows handling for QHull build (we aren't using CMake there)
 # Add "dist" target to make tar-ball for distribution to non-SLAC users
+# Temporarily exclude "channeling" from all examples, until it builds
 
 .PHONY : library phonon charge channeling	# Targets named for directory
 .PHONY : all lib dist clean qhull
@@ -33,7 +34,7 @@ help :
 
 all : lib examples
 lib : library
-examples : phonon charge channeling
+examples : phonon charge ### channeling
 
 clean : library.clean examples.clean qhull.cleanall
 
