@@ -74,7 +74,8 @@ void G4CMPTriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& /*xyz
         {
           neighbor = *nItr;
           if (!neighbor.isUpperDelaunay())
-            tmpNeighbors[numTet][j++] = neighbor.id();
+            tmpNeighbors[numTet][j] = neighbor.id();
+          ++j;
         }
         ++numTet;
       }
@@ -207,58 +208,68 @@ void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) co
 
 void G4CMPTriLinearInterp::FindTetrahedon(const G4double point[4], G4double bary[4]) const
 {
-//  G4int minBaryIdx;
+  const G4double maxError = 0;
+  G4int minBaryIdx;
+  G4double bestBary[4];
+  G4int bestTet;
   if (TetraIdx == -1) TetraIdx = 0;
-  vector<G4int> negBary;
-  negBary.reserve(4);
-  while (true)
+  for (G4int count = 0; count < Tetrahedra.size(); ++count)
   {
     Cart2Bary(point,bary);
 
-    if (bary[0] > -1.0e-6 && bary[1] > -1.0e-6 && bary[2] > -1.0e-6 && bary[3] > -1.0e-6)
+    if (bary[0] >= maxError && bary[1] >= maxError 
+        && bary[2] >= maxError && bary[3] >= maxError)
+      return;
+    else if (bary[0]*bary[0] + bary[1]*bary[1] + bary[2]*bary[2] + bary[3]*bary[3]
+            < bestBary[0]*bestBary[0] + bestBary[1]*bestBary[1] 
+              + bestBary[2]*bestBary[2] + bestBary[3]*bestBary[3]
+            || count == 0)
     {
+      for (G4int i = 0; i < 4; ++i)
+        bestBary[i] = bary[i];
+
+      bestTet = TetraIdx;
+    }
+
+    minBaryIdx = 0;
+    for (G4int i = 1; i < 4; ++i)
+      if (bary[i] < bary[minBaryIdx])
+        minBaryIdx = i;
+
+    TetraIdx = Neighbors[TetraIdx][minBaryIdx];
+    if (TetraIdx == -1)
+    {
+      G4cout << "Point outside of hull! Check your results." <<G4endl;
+      G4cout << "point[0] = " << point[0] << "; point[1] = " << point[1] 
+             << "; point[2] = " << point[2] << ";" << G4endl;
       return;
     }
-
-//    minBaryIdx = 0;
-    negBary.clear();
-    for (int i = 0; i < 4; ++i)
-    {
-//      if (bary[i] <= -1.0e-6 && Neighbors[TetraIdx][i] != -1)
-      if (bary[i] <= -1.0e-6)
-      {
-//        minBaryIdx = i;
-        negBary.push_back(Neighbors[TetraIdx][i]);
-      }
-    }
-//    TetraIdx = Neighbors[TetraIdx][minBaryIdx];
-//    if (TetraIdx == -1)
-//    {
-//      G4cout << "Point outside of hull!" <<G4endl;
-//      TetraIdx = -1;
-//      G4cout << point[0]/m << " " << point[1]/m << " " << point[2]/m << G4endl;
-//      return;
-//    }
-      //G4cout << "Before TetraIdx" <<G4endl;
-      //G4cout << negBary.size() <<G4endl;
-//      G4bool hasInnerNeighbor = false;
-//      for (int i = 0; i < negBary.size(); ++i)
-//      	hasInnerNeighbor = hasInnerNeighbor || negBary[i] != -1;
-      //if (hasInnerNeighbor)
-
-//      if (negBary.size()>0)
-        TetraIdx = negBary[round(G4UniformRand()*(negBary.size()-1))];
-//      else
-//        TetraIdx = -1;
-      //G4cout << "After TetraIdx" <<G4endl;
-      //G4cout <<TetraIdx<<G4endl;
-      if (TetraIdx == -1)
-      {
-        G4cout << "Outside of hull!" << G4endl;
-        G4cout << point[0]/m << " " << point[1]/m << " " << point[2]/m << G4endl;
-        return;
-      }
   }
+
+  G4cout << "G4CMPTriLinearInterp::FindTetrahedron: " 
+         << "Targeted walk search took too long. Trying a brute force search." 
+         << G4endl;
+
+  for (TetraIdx = 0; TetraIdx < Tetrahedra.size(); ++TetraIdx)
+  {
+    Cart2Bary(point,bary);
+
+    if (bary[0] >= maxError && bary[1] >= maxError && bary[2] >= maxError && bary[3] >= maxError)
+      return;
+  }
+
+  for (G4int i = 0; i < 4; ++i)
+    bary[i] = bestBary[i];
+
+  TetraIdx = bestTet;
+  G4cout << "G4CMPTriLinearInterp::FindTetrahedron: "
+         << "Tetrahedron not found! Using best tetrahedron." << G4endl;
+  G4cout << "point[0] = " << point[0] << "; point[1] = " << point[1] 
+         << "; point[2] = " << point[2] << ";" << G4endl;
+  G4cout << "Best Tetrahedron's barycentric coordinates: " << G4endl;
+  G4cout << "bary[0] = " << bary[0] << "; bary[1] = " << bary[1] 
+         << "; bary[2] = " << bary[2] << "; bary[3] = " << bary[3] << ";" 
+         << G4endl;
 }
 
 inline void G4CMPTriLinearInterp::Cart2Bary(const G4double point[4], G4double bary[4]) const

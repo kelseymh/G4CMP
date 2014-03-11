@@ -65,13 +65,6 @@ bool CDMS_Efield::vector_comp( const vector<G4double>& p1, const vector<G4double
 
 void CDMS_iZip4_Field::GetFieldValue(const G4double Point[4], G4double *Efield) const
 {
-  if (Point[0]*Point[0] + Point[1]*Point[1] > 3.81*3.81*cm*cm
-      || Point[2]*Point[2] > 1.27*1.27*cm*cm)
-      for (int i = 0; i < 6; ++i)
-      {
-        Efield[i] = 0.0;
-      }
-  else
     Interp.GetField(Point,Efield);
 }
 
