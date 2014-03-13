@@ -31,22 +31,16 @@
 
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
-#include "G4CMPDriftHole.hh"
-
-#include "G4PhononLong.hh"
+#include "G4CMPValleyTrackMap.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-
-#include "G4FieldManager.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4RandomDirection.hh"
 #include "G4Step.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4TransportationManager.hh"
 #include "G4VParticleChange.hh"
 #include "Randomize.hh"
-#include "G4RandomDirection.hh"
-#include "G4TransportationManager.hh"
-#include "G4CMPValleyTrackMap.hh"
-#include "G4Field.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4PhysicalConstants.hh"
 #include <fstream>
 #include <iostream>
 

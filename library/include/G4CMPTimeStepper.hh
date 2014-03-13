@@ -1,6 +1,7 @@
 // $Id$
 //
 // 20140313  Introduce multiple inheritance from G4CMPProcessUtils
+//	     Add wrapper function to compute individual time steps
 
 #ifndef G4CMPTimeStepper_h
 #define G4CMPTimeStepper_h 1
@@ -30,6 +31,7 @@ public:
 protected:
   // Compute dt_e, dt_h and valley rotations at current location
   void ComputeTimeSteps(const G4Track& aTrack);
+  G4double TimeStepInField(G4double Efield, G4double coeff, G4double l0) const;
 
   virtual G4double GetMeanFreePath(const G4Track& aTrack,
 				   G4double prevStepSize,
@@ -56,7 +58,6 @@ private:
   const G4double mc_h;
   const G4double l0_h;
   const G4double ksound_h;
-  const G4ThreeVector T;
 };
 
 #endif
