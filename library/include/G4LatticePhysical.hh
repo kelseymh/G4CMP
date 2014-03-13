@@ -30,6 +30,7 @@
 //
 // 20131114  Add verbosity for diagnostic output
 // 20131116  Replace G4Transform3D with G4RotationMatrix
+// 20140312  Add pass-through calls for charge-carrier support
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -68,6 +69,16 @@ public:
   G4double GetGamma() const          { return fLattice->GetGamma(); }
   G4double GetLambda() const         { return fLattice->GetLambda(); }
   G4double GetMu() const             { return fLattice->GetMu(); }
+
+  // Charge carriers have effective mass
+  const G4RotationMatrix& GetElectronMass() const { return fLattice->GetElectronMass(); }
+  G4double GetHoleMass() const { return fLattice->GetHoleMass(); }
+
+  // Electrons are biased to move along energy minima in momentum space
+  size_t NumberOfValleys() const { return fLattice->NumberOfValleys(); }
+
+  // FIXME:  Should valley matrix be rotated from local to global coordinates?
+  const G4RotationMatrix& GetValley(G4int iv) const { return fLattice->GetValley(iv); }
 
   // Apply orientation transforms to specified vector
   G4ThreeVector RotateToGlobal(const G4ThreeVector& dir) const;

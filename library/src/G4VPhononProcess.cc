@@ -80,6 +80,7 @@ void G4VPhononProcess::StartTracking(G4Track* track) {
   currentTrack = track;			// Save for use by EndTracking
 
   // Fetch lattice for current track once, use in subsequent steps
+  // WARNING!  This assumes track starts and ends in one single volume!
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
   theLattice = LM->GetLattice(track->GetVolume());
 }

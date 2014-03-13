@@ -6,7 +6,7 @@
 # Temporarily exclude "channeling" from all examples, until it builds
 
 .PHONY : library phonon charge channeling	# Targets named for directory
-.PHONY : all lib dist clean qhull
+.PHONY : all lib dist clean qhull examples
 
 # Initial target provides guidance if user tries bare |make|
 help :
