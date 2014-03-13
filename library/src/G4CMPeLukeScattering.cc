@@ -169,23 +169,14 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 G4double G4CMPeLukeScattering::MakeTheta(G4double& k, G4double& ks) {
   //Analytical method to compute theta
   G4double u = G4UniformRand();
-  G4double base = ( -(u-1)+3*(u-1)*(ks/k)
-		    -3*(u-1)*(ks/k)*(ks/k)
-		    +(u-1)*(ks/k)*(ks/k)*(ks/k) );
-  G4double exponent = 1.0/3.0;
-  G4double operand = ks/k+pow(base, exponent);
-  
-  if(operand>1.0) {
-        // G4cout<<"\nTruncating operand from"<<operand<<" to 1.0";
-        operand=1.0;
-    }
-  if(operand<0.0) G4cout<<"\noperand out of range: operand = "<<operand;
-  
+
+  G4double base = -(u-1)+3*(u-1)*(ks/k)-3*(u-1)*(ks/k)*(ks/k)+(u-1)*(ks/k)*(ks/k)*(ks/k);
+  if(base < 0.0) base = 0;
+
+  G4double operand = ks/k+pow(base, 1.0/3.0);   
+  if(operand > 1.0) operand=1.0;
+
   G4double theta = acos(operand);
-  
-  if(acos(ks/k)<theta) G4cout<<"\n  THETA OUT OF BOUNDS!!! (theta>acos(ks/k)) theta:"<<theta<<" acos(ks/k):"<<acos(ks/k);
-  if(pi/2<=theta) G4cout<<"\n THETA OUT OF BOUNDS!!! (pi/2 < theta)";
-  
   return theta;
 }
 
