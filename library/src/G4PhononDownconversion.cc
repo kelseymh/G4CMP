@@ -30,6 +30,7 @@
 //
 // 20131111  Add verbose output for MFP calculation
 // 20131115  Initialize data buffers in ctor
+// 20140312  Follow name change CreateSecondary -> CreatePhonon
 
 #include "G4PhononDownconversion.hh"
 #include "G4LatticePhysical.hh"
@@ -202,8 +203,8 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
 					   theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors
-  G4Track* sec1 = CreateSecondary(polarization1, dir1, Esec1);
-  G4Track* sec2 = CreateSecondary(polarization2, dir2, Esec2);
+  G4Track* sec1 = CreatePhonon(polarization1, dir1, Esec1);
+  G4Track* sec2 = CreatePhonon(polarization2, dir2, Esec2);
 
   aParticleChange.SetNumberOfSecondaries(2);
   aParticleChange.AddSecondary(sec1);
@@ -254,8 +255,8 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
 					   theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors
-  G4Track* sec1 = CreateSecondary(polarization1, dir1, Esec1);
-  G4Track* sec2 = CreateSecondary(polarization2, dir2, Esec2);
+  G4Track* sec1 = CreatePhonon(polarization1, dir1, Esec1);
+  G4Track* sec2 = CreatePhonon(polarization2, dir2, Esec2);
 
   aParticleChange.SetNumberOfSecondaries(2);
   aParticleChange.AddSecondary(sec1);

@@ -26,6 +26,7 @@ public:
 
   // Fetch lattice (if any) for volume occupied by track
   void LoadDataForTrack(const G4Track* track);
+  void ReleaseTrack();
 
   // Map phonon types to polarization index
   G4int GetPolarization(const G4Track& track) const;

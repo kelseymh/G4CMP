@@ -29,6 +29,7 @@
 // $Id$
 //
 // 20131111  Add verbose output for MFP calculation
+// 20140312  Follow name change CreateSecondary -> CreatePhonon
 
 #include "G4PhononScattering.hh"
 #include "G4LatticePhysical.hh"
@@ -91,7 +92,7 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
   // Generate the new track after scattering
   // FIXME:  If polarization state is the same, just step the track!
   G4Track* sec =
-    CreateSecondary(polarization, newDir, aTrack.GetKineticEnergy());
+    CreatePhonon(polarization, newDir, aTrack.GetKineticEnergy());
   aParticleChange.SetNumberOfSecondaries(1);
   aParticleChange.AddSecondary(sec);
 

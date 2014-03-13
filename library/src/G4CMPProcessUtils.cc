@@ -10,18 +10,22 @@
 //
 
 #include "G4CMPProcessUtils.hh"
+#include "G4CMPDriftElectron.hh"
+#include "G4CMPDriftHole.hh"
+#include "G4CMPValleyTrackMap.hh"
+#include "G4DynamicParticle.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4Track.hh"
-#include "G4PhononTrackMap.hh"
-#include "G4CMPValleyTrackMap.hh"
-#include "G4PhononPolarization.hh"
-#include "G4DynamicParticle.hh"
 #include "G4ParticleDefinition.hh"
+#include "G4PhononLong.hh"
+#include "G4PhononPolarization.hh"
+#include "G4PhononTrackMap.hh"
+#include "G4PhononTransFast.hh"
+#include "G4PhononTransSlow.hh"
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
-#include "G4CMPDriftHole.hh"
-#include "G4CMPDriftElectron.hh"
+#include "G4Track.hh"
+#include "Randomize.hh"
 
 
 // Constructor and destructor
@@ -42,6 +46,31 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   // WARNING!  This assumes track starts and ends in one single volume!
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
   theLattice = LM->GetLattice(track->GetVolume());
+
+  // Register track in either phonon or charge-carrier map
+  const G4ParticleDefinition* pd = track->GetParticleDefinition();
+
+  if (pd == G4PhononLong::Definition() ||
+      pd == G4PhononTransFast::Definition() ||
+      pd == G4PhononTransSlow::Definition()) {
+    if (!trackKmap->Find(track)) 
+      // FIXME:  THE WAVEVECTOR SHOULD BE COMPUTED BY INVERTING THE K/V MAP
+      trackKmap->SetK(track, track->GetMomentumDirection());
+  }
+
+  if (pd == G4CMPDriftElectron::Definition() ||
+      pd == G4CMPDriftHole::Definition()) {
+    if (!trackVmap->Find(track))
+      // FIXME:  HOW DO WE CONVERT THE MOMENTUM TO AN INITIAL VALLEY?
+      trackVmap->SetValley(track, (int)(G4UniformRand()*4 + 1.0));
+  }
+}
+
+void G4CMPProcessUtils::ReleaseTrack() {
+  trackKmap->RemoveTrack(currentTrack);
+  trackVmap->RemoveTrack(currentTrack);
+  currentTrack = 0;
+  theLattice = 0;
 }
 
 

@@ -28,18 +28,20 @@
 //
 // $Id$
 //
+// 20140312  Move utility functions to separate class, multiple inheritance
 #ifndef G4VPhononProcess_h
 #define G4VPhononProcess_h 1
 
 #include "globals.hh"
 #include "G4VDiscreteProcess.hh"
+#include "G4CMPProcessUtils.hh"
 #include "G4ThreeVector.hh"
 
 class G4PhononTrackMap;
 class G4LatticePhysical;
 
 
-class G4VPhononProcess : public G4VDiscreteProcess {
+class G4VPhononProcess : public G4VDiscreteProcess, public G4CMPProcessUtils {
 public:
   G4VPhononProcess(const G4String& processName);
   virtual ~G4VPhononProcess();
@@ -52,28 +54,13 @@ public:
   virtual void EndTracking();
 
 protected:
-  // For convenience, map phonon type to polarization code
-  virtual G4int GetPolarization(const G4Track& track) const;
-  virtual G4int GetPolarization(const G4Track* track) const {
-    return GetPolarization(*track);
-  }
-
   // For convenience, generate random polarization from density of states
   // Values passed may be zero to suppress particular states
   virtual G4int ChoosePolarization(G4double Ldos, G4double STdos,
 				   G4double FTdos) const;
 
-  // Construct new track with correct momentum, position, etc.
-  virtual G4Track* CreateSecondary(G4int polarization, const G4ThreeVector& K,
-				   G4double energy) const;
-
-protected:
-  G4PhononTrackMap* trackKmap;		// For convenient access by processes
-  const G4LatticePhysical* theLattice;
 
 private:
-  const G4Track* currentTrack;		// For use by Start/EndTracking
-
   // hide assignment operators as private 
   G4VPhononProcess(G4VPhononProcess&);
   G4VPhononProcess& operator=(const G4VPhononProcess& right);
