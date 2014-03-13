@@ -28,6 +28,8 @@
 //
 // $Id$
 //
+// 20140312  Introduce multiple inheritance from G4CMPProcessUtils
+
 #ifndef G4CMPVDriftProcess_h
 #define G4CMPVDriftProcess_h 1
 

@@ -36,6 +36,7 @@
 //		move ctor, dtor here; check stream pointer before closing.
 // 20140218  Add support for charge-carrier functionality
 // 20140306  Use Euler angles directly to fill electron valley
+// 20140313  Use diagonal terms directly to fill electron mass tensor
 
 #include "G4LatticeReader.hh"
 #include "G4ExceptionSeverity.hh"
@@ -208,13 +209,7 @@ G4bool G4LatticeReader::ProcessMassTensor() {
     G4cout << " ProcessMassTensor " << mxx << " " << myy << " " << mzz
 	   << G4endl;
 
-  fMatrix.set(G4Rep3x3(mxx*mElectron, 0., 0.,
-		       0., myy*mElectron, 0.,
-		       0., 0., mzz*mElectron));
-  // NOTE:  Use of G4RotationMatrix not appropriate here, as matrix is
-  //        not normalized.  CLHEP/Matrix not available in GEANT4.
-
-  pLattice->SetElectronMass(fMatrix);
+  pLattice->SetElectronMass(mxx, myy, mzz);
   return psLatfile->good();
 }
 

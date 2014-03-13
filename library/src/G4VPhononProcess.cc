@@ -29,6 +29,7 @@
 // $Id$
 //
 // 20131111  Add verbosity to report creating secondaries
+// 20140312  Move utility functions to new G4CMPProcessUtils
 
 #include "G4VPhononProcess.hh"
 #include "G4DynamicParticle.hh"
@@ -70,7 +71,6 @@ G4bool G4VPhononProcess::IsApplicable(const G4ParticleDefinition& aPD) {
 
 void G4VPhononProcess::StartTracking(G4Track* track) {
   G4VProcess::StartTracking(track);	// Apply base class actions
-
   LoadDataForTrack(track);
 }
 

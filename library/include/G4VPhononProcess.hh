@@ -29,6 +29,7 @@
 // $Id$
 //
 // 20140312  Move utility functions to separate class, multiple inheritance
+
 #ifndef G4VPhononProcess_h
 #define G4VPhononProcess_h 1
 
@@ -52,13 +53,6 @@ public:
   // NOTE:  These functions must call back to base class implementations!
   virtual void StartTracking(G4Track* track);
   virtual void EndTracking();
-
-protected:
-  // For convenience, generate random polarization from density of states
-  // Values passed may be zero to suppress particular states
-  virtual G4int ChoosePolarization(G4double Ldos, G4double STdos,
-				   G4double FTdos) const;
-
 
 private:
   // hide assignment operators as private 

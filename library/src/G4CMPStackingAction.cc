@@ -35,6 +35,7 @@
 
 #include "G4CMPStackingAction.hh"
 #include "G4LatticeManager.hh"
+#include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhononTrackMap.hh"
@@ -48,6 +49,8 @@
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "G4TrackStatus.hh"
+#include "Randomize.hh"
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -68,12 +71,14 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
 
   G4ParticleDefinition* pd = aTrack->GetDefinition();
 
+  // Obtain LatticeManager and lattice for current volume
+  // WARNING!  This assumes track starts and ends in one single volume!
+  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
+  G4LatticePhysical* theLattice = LM->GetLattice(aTrack->GetVolume());
+
   if (pd == G4PhononLong::Definition() ||
       pd == G4PhononTransFast::Definition() ||
       pd == G4PhononTransSlow::Definition()) {
-    //Obtain LatticeManager for phonon dynamics
-    G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-    
     G4int pol = G4PhononPolarization::Get(aTrack->GetDefinition());
     
     //Compute random wave-vector (override whatever ParticleGun did)
@@ -84,10 +89,10 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
     theKmap->SetK(aTrack, Ran);
     
     //Compute direction of propagation from wave vector
-    G4ThreeVector momentumDir = LM->MapKtoVDir(aTrack->GetVolume(), pol, Ran);
+    G4ThreeVector momentumDir = theLattice->MapKtoVDir(pol, Ran);
     
     //Compute true velocity of propagation
-    G4double velocity = LM->MapKtoV(aTrack->GetVolume(), pol, Ran);
+    G4double velocity = theLattice->MapKtoV(pol, Ran);
     
     //cast to non-const pointer so we can set the velocity
     G4Track* theTrack = const_cast<G4Track*>(aTrack);
@@ -99,7 +104,7 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
 
   if (pd == G4CMPDriftHole::Definition() ||
       pd == G4CMPDriftElectron::Definition()) {
-    int valley = (int) (G4UniformRand()*4 + 1.0);
+    int valley = (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
 
     G4CMPValleyTrackMap* theIVmap = G4CMPValleyTrackMap::GetValleyTrackMap();
     theIVmap->SetValley(aTrack, valley);

@@ -62,7 +62,7 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
       pd == G4CMPDriftHole::Definition()) {
     if (!trackVmap->Find(track))
       // FIXME:  HOW DO WE CONVERT THE MOMENTUM TO AN INITIAL VALLEY?
-      trackVmap->SetValley(track, (int)(G4UniformRand()*4 + 1.0));
+      trackVmap->SetValley(track, ChooseValley());
   }
 }
 
@@ -78,6 +78,22 @@ void G4CMPProcessUtils::ReleaseTrack() {
 
 G4int G4CMPProcessUtils::GetPolarization(const G4Track& track) const {
   return G4PhononPolarization::Get(track.GetParticleDefinition());
+}
+
+
+// Generate random polarization from density of states
+
+G4int G4CMPProcessUtils::ChoosePolarization(G4double Ldos, G4double STdos,
+					    G4double FTdos) const {
+  G4double norm = Ldos + STdos + FTdos;
+  G4double cProbST = STdos/norm;
+  G4double cProbFT = FTdos/norm + cProbST;
+
+  // NOTE:  Order of selection done to match previous random sequences
+  G4double modeMixer = G4UniformRand();
+  if (modeMixer<cProbST) return G4PhononPolarization::TransSlow;
+  if (modeMixer<cProbFT) return G4PhononPolarization::TransFast;
+  return G4PhononPolarization::Long;
 }
 
 
@@ -109,6 +125,13 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 }
 
 
+// Generate random valley for charge carrier
+
+G4int G4CMPProcessUtils::ChooseValley() const {
+  return (G4int)(G4UniformRand()*theLattice->NumberOfValleys());  
+}
+
+
 // Access electron propagation direction/index
 
 G4int G4CMPProcessUtils::GetValleyIndex(const G4Track& track) const {
@@ -120,6 +143,7 @@ G4CMPProcessUtils::GetValley(const G4Track& track) const {
   G4int iv = GetValleyIndex(track);
   return (iv>=0 ? theLattice->GetValley(iv) : G4RotationMatrix::IDENTITY);
 }
+
 
 // Construct new electron or hole track with correct conditions
 

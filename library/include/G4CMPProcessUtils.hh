@@ -9,6 +9,9 @@
 // $Id$
 //
 
+#ifndef G4CMPProcessUtils_hh
+#define G4CMPProcessUtils_hh 1
+
 #include "globals.hh"
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
@@ -34,6 +37,10 @@ public:
     return GetPolarization(*track);
   }
 
+  // Generate random phonon polarization from density of states
+  // Values passed may be zero to suppress particular states
+  G4int ChoosePolarization(G4double Ldos, G4double STdos, G4double FTdos) const;
+
   // Map charge carrier momentum to valley index
   G4int GetValleyIndex(const G4Track& track) const;
   G4int GetValleyIndex(const G4Track* track) const {
@@ -44,6 +51,9 @@ public:
   const G4RotationMatrix& GetValley(const G4Track* track) const {
     return GetValley(*track); 
   }
+
+  // Generate random valley for charge carrier
+  G4int ChooseValley() const;
 
   // Construct new phonon track with correct momentum, position, etc.
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
@@ -66,3 +76,5 @@ private:
   G4CMPProcessUtils(G4CMPProcessUtils&);
   G4CMPProcessUtils& operator=(const G4CMPProcessUtils& right);
 };
+
+#endif	/* G4CMPProcessUtils_hh */

@@ -1,31 +1,35 @@
+// $Id$
+//
+// 20140313  Introduce multiple inheritance from G4CMPProcessUtils, also
+//	     use proper TransformAxis() on vectors, *not* TransformPoint()
+
 #include "G4CMPTimeStepper.hh"
-#include "G4Step.hh"
-#include "G4Track.hh"
-#include "G4StepPoint.hh"
+#include "G4CMPDriftElectron.hh"
+#include "G4CMPDriftHole.hh"
+#include "G4CMPValleyTrackMap.hh"
 #include "G4Field.hh"
+#include "G4FieldManager.hh"
+#include "G4LatticePhysical.hh"
+#include "G4LogicalVolume.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4Track.hh"
+#include "G4TransportationManager.hh"
 #include "G4UserLimits.hh"
 #include "G4VParticleChange.hh"
-#include "G4TransportationManager.hh"
-#include "G4FieldManager.hh"
-#include "G4CMPDriftHole.hh"
-#include "G4CMPDriftElectron.hh"
-#include "G4CMPValleyTrackMap.hh"
 #include "G4VPhysicalVolume.hh"
-#include "G4LogicalVolume.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4PhysicalConstants.hh"
 #include <fstream>
 #include <iostream>
 #include <math.h>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4CMPTimeStepper::G4CMPTimeStepper(const G4String& aName)
-  : G4VDiscreteProcess(aName, fGeneral), dt_e(0.), dt_h(0.),
+G4CMPTimeStepper::G4CMPTimeStepper()
+  : G4VDiscreteProcess("G4CMPTimeStepper", fGeneral), G4CMPProcessUtils(),
+    dt_e(0.), dt_h(0.),
     velLong(5324.2077*m/s), me(electron_mass_c2/c_squared),
     mc_e(.118*me), l0_e(257e-6*m), ksound_e(velLong*mc_e/hbar_Planck),
-    mc_h(.350*me), l0_h(108e-6*m), ksound_h(velLong*mc_h/hbar_Planck),
-    T(sqrt(.118/1.588), sqrt(.118/.081), sqrt(.118/.081)) {
+    mc_h(.350*me), l0_h(108e-6*m), ksound_h(velLong*mc_h/hbar_Planck) {
   if (verboseLevel>0) {
     G4cout << GetProcessName() << " is created " << G4endl;
   }
@@ -57,27 +61,17 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
     return v*dt_h;
   }
 
-  int valley = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
+  const G4RotationMatrix& trix = GetValley(aTrack);
+  valleyToNormal = G4AffineTransform(trix);
+  normalToValley = G4AffineTransform(trix).Inverse();
 
-  G4RotationMatrix trix;
-  switch(valley) {
-  case 1: trix.set(  -pi/4, 0.61548, pi/2); break;
-  case 2: trix.set(   pi/4, 0.61548, pi/2); break;
-  case 3: trix.set( 3*pi/4, 0.61548, pi/2); break;
-  case 4: trix.set(-3*pi/4, 0.61548, pi/2); break;
-  }
-
-  G4RotationMatrix mInv = trix.inverse()
-    * G4Rep3x3(1/1.588/me,   0.0    , 0.0,
-	         0.0     , 1/.081/me, 0.0,
-	         0.0     ,   0.0    , 1/.081/me)
-    * trix;
+  G4RotationMatrix mInv = trix.inverse()*theLattice->GetElectronMass()*trix;
 
   G4ThreeVector k = aTrack.GetMomentum()/hbarc;
-  G4ThreeVector k_valley = normalToValley.TransformPoint(k);
+  G4ThreeVector k_valley = normalToValley.TransformAxis(k);
   
   G4ThreeVector v_valley = hbar_Planck*(mInv*k_valley);
-  G4ThreeVector v = valleyToNormal.TransformPoint(v_valley);
+  G4ThreeVector v = valleyToNormal.TransformAxis(v_valley);
   
   return v.mag()*dt_e;
 }
@@ -126,17 +120,4 @@ void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
            * ((1- ksound_h/kmaxHole))
            * ((1- ksound_h/kmaxHole))
            * ((1- ksound_h/kmaxHole)) );
-
-  int valley = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
-
-  G4RotationMatrix trix;
-  switch(valley) {
-  case 1: trix.set(  -pi/4, 0.61548, pi/2); break;
-  case 2: trix.set(   pi/4, 0.61548, pi/2); break;
-  case 3: trix.set( 3*pi/4, 0.61548, pi/2); break;
-  case 4: trix.set(-3*pi/4, 0.61548, pi/2); break;
-  }
-
-  valleyToNormal = G4AffineTransform(trix);
-  normalToValley = G4AffineTransform(trix).Inverse();
 }

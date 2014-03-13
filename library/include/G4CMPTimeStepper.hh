@@ -1,14 +1,20 @@
+// $Id$
+//
+// 20140313  Introduce multiple inheritance from G4CMPProcessUtils
+
 #ifndef G4CMPTimeStepper_h
 #define G4CMPTimeStepper_h 1
 
 #include "globals.hh"
 #include "G4VDiscreteProcess.hh"
 #include "G4AffineTransform.hh"
+#include "G4CMPProcessUtils.hh"
 
-class G4CMPTimeStepper : public G4VDiscreteProcess {
+
+class G4CMPTimeStepper : public G4VDiscreteProcess,
+			 public G4CMPProcessUtils {
 public:
-  G4CMPTimeStepper(const G4String& processName="G4CMPTimeStepper");
-
+  G4CMPTimeStepper();
   virtual ~G4CMPTimeStepper();
 
   virtual G4bool IsApplicable(const G4ParticleDefinition &pd);

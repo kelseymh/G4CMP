@@ -1,3 +1,5 @@
+// $Id$
+
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
@@ -11,22 +13,16 @@
 #include "G4SystemOfUnits.hh"
 
 
-G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess(const G4String& aName):G4VDiscreteProcess(aName){
-  
-  kCarTolerance = G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
-   
-   if (verboseLevel>1) {     
-     G4cout << GetProcessName() << " is created "<< G4endl;
-    }
-  
+G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess()
+  : G4VDiscreteProcess("DriftBoundaryProcess"), G4CMPProcessUtils(),
+    kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()) {
+  if (verboseLevel>1) {     
+    G4cout << GetProcessName() << " is created "<< G4endl;
+  }
 }
 
 G4CMPDriftBoundaryProcess::~G4CMPDriftBoundaryProcess()
 { ; }
-
-G4CMPDriftBoundaryProcess::
-G4CMPDriftBoundaryProcess(G4CMPDriftBoundaryProcess& right)
- : G4VDiscreteProcess(right) {;}
 
 
 G4double 
@@ -42,28 +38,19 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 					const G4Step& aStep) {    
   aParticleChange.Initialize(aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
-  //G4cout << postStepPoint->GetProcessDefinedStep()->GetProcessName() << G4endl;
 
 // do nothing but return if the current step is not limited by a volume boundar
-  if(postStepPoint->GetStepStatus()!=fGeomBoundary)
-    { 
-      return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
-    }
+  if (postStepPoint->GetStepStatus()!=fGeomBoundary) { 
+    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
+  }
 
   aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy());
   aParticleChange.ProposeTrackStatus(fStopAndKill);  
-  //G4cout <<  "Track Killed" <<  G4endl;
-  //std::ofstream file;
-  //file.open("epositions.txt",std::ios::app);
-  //file << aTrack.GetPosition().getX()/m <<  " " <<  
-//aTrack.GetPosition().getY()/m 
- // 	<< G4endl;
-  //file.close();
 
   std::ofstream file;
   file.open("epositions.txt",std::ios::app);
-  file << aTrack.GetPosition().getX()/m <<  " " <<  
-    aTrack.GetPosition().getY()/m 
+  file << aTrack.GetPosition().getX()/m << " "
+       << aTrack.GetPosition().getY()/m 
        << G4endl;
   file.close();
   return &aParticleChange;
@@ -71,8 +58,7 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
 G4bool G4CMPDriftBoundaryProcess::IsApplicable(const G4ParticleDefinition& aPD)
 {
-
-  return ((&aPD==G4CMPDriftElectron::G4CMPDriftElectronDefinition())||(&aPD==G4CMPDriftHole::Definition()));
-
+  return (&aPD==G4CMPDriftElectron::G4CMPDriftElectronDefinition() ||
+	  &aPD==G4CMPDriftHole::Definition());
 }
 

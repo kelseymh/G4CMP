@@ -201,6 +201,23 @@ G4ThreeVector G4LatticeLogical::MapKtoVDir(G4int polarizationState,
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+// Store electron mass tensor using diagonal elements
+
+void G4LatticeLogical::SetElectronMass(G4double mXX, G4double mYY,
+				       G4double mZZ) {
+  if (verboseLevel>1) {
+    G4cout << "G4LatticeLogical::SetElectronmass " << mXX << " " << mYY
+	   << " " << mZZ << " *m_e" << G4endl;
+  }
+
+  // NOTE:  Use of G4RotationMatrix not appropriate here, as matrix is
+  //        not normalized.  But CLHEP/Matrix not available in GEANT4.
+  G4double mElectron = electron_mass_c2/c_squared;
+  fElectronMass.set(G4Rep3x3(mXX*mElectron, 0., 0.,
+			     0., mYY*mElectron, 0.,
+			     0., 0., mZZ*mElectron));
+}
+
 // Store drifting-electron valley using Euler angles
 
 void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {

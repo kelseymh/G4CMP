@@ -32,6 +32,7 @@
 // 20131115  Expose maximum array dimensions for use by LatticeReader
 // 20140218  Add support for charge-carrier functionality
 // 20140306  Allow valley filling using Euler angles directly
+// 20140313  Allow electron mass filling with diagonal elements
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -94,6 +95,7 @@ public:
 public:
   // Parameters and structures for charge carrier transport
   void SetElectronMass(const G4RotationMatrix& emass) { fElectronMass = emass; }
+  void SetElectronMass(G4double mXX, G4double mYY, G4double mZZ);
   void SetHoleMass(G4double hmass) { fHoleMass = hmass; }
 
   const G4RotationMatrix& GetElectronMass() const { return fElectronMass; }
