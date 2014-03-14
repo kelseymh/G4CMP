@@ -31,24 +31,17 @@
 
 #include "G4CMPhLukeScattering.hh"
 #include "G4CMPDriftHole.hh"
-
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-
+#include "G4LogicalVolume.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
-#include "G4VParticleChange.hh"
-#include "Randomize.hh"
-#include "G4RandomDirection.hh"
-
-#include "G4VPhysicalVolume.hh"
-#include "G4LogicalVolume.hh"
-#include "G4FieldManager.hh"
-#include "G4Field.hh"
-
-#include "G4Geantino.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4PhysicalConstants.hh"
+#include "G4VParticleChange.hh"
+#include "G4VPhysicalVolume.hh"
+#include "Randomize.hh"
 
 #include "math.h"
 

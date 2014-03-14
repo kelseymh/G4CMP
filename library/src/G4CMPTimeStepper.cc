@@ -2,6 +2,7 @@
 //
 // 20140313  Introduce multiple inheritance from G4CMPProcessUtils, also
 //	     use proper TransformAxis() on vectors, *not* TransformPoint()
+//	     Add wrapper function to compute individual time steps
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -65,7 +66,9 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
   valleyToNormal = G4AffineTransform(trix);
   normalToValley = G4AffineTransform(trix).Inverse();
 
-  G4RotationMatrix mInv = trix.inverse()*theLattice->GetElectronMass()*trix;
+  G4RotationMatrix mInv =
+    trix.inverse()*theLattice->GetElectronMass()*trix;
+  mInv.invert();
 
   G4ThreeVector k = aTrack.GetMomentum()/hbarc;
   G4ThreeVector k_valley = normalToValley.TransformAxis(k);
@@ -87,12 +90,9 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 // Compute dt_e, dt_h and valley rotations at current location
 
 void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
-  G4ThreeVector pos = aTrack.GetPosition();
-  G4double position[4] = {pos.x(), pos.y(), pos.z(), 0.0};
-
   G4FieldManager* fMan =
     G4TransportationManager::GetTransportationManager()->GetFieldManager();
-  if (!fMan->DoesFieldExist()) {
+  if (!fMan || !fMan->DoesFieldExist()) {
     dt_e = 3.*l0_e/velLong;
     dt_h = 3.*l0_h/velLong;
     return;
@@ -100,24 +100,22 @@ void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
 
   const G4Field* field = fMan->GetDetectorField();
 
+  G4ThreeVector pos = aTrack.GetPosition();
+  G4double position[4] = {pos.x(), pos.y(), pos.z(), 0.0};
   G4double fieldVal[6];
 
   field->GetFieldValue(position,fieldVal);
-  G4ThreeVector Efield = G4ThreeVector(fieldVal[3], fieldVal[4], fieldVal[5]);
+  G4ThreeVector Efield(fieldVal[3], fieldVal[4], fieldVal[5]);
 
-  G4double kmaxElec = 28.0 * ksound_e * pow(Efield.mag()*(m/volt), 1.0/3.0);
+  dt_e = TimeStepInField(Efield.mag(), 28.0, l0_e);
+  dt_h = TimeStepInField(Efield.mag()/10., 14.72, l0_h);
+}
 
-  dt_e =  1.0 / ( 2 * velLong / (3*l0_e)
-           * (kmaxElec / ksound_e) * (kmaxElec / ksound_e)
-           * ((1- ksound_e/kmaxElec))
-           * ((1- ksound_e/kmaxElec))
-           * ((1- ksound_e/kmaxElec)) );
+// Compute time step for electrons or holes, pre-simplified expression
 
-  G4double kmaxHole = 14.72 * ksound_h * pow(Efield.mag()*(m/volt)/10.0, 1.0/3.0);
+G4double G4CMPTimeStepper::TimeStepInField(G4double Emag, G4double coeff, G4double l0) const {
+  G4double kmaxElec = coeff * pow(Emag*(m/volt), 1./3.);
+  G4double kmaxDelt = kmaxElec - 1.;
 
-  dt_h =  1.0 / ( 2 * velLong / (3*l0_h)
-           * (kmaxHole / ksound_h) * (kmaxHole / ksound_h)
-           * ((1- ksound_h/kmaxHole))
-           * ((1- ksound_h/kmaxHole))
-           * ((1- ksound_h/kmaxHole)) );
+  return (3*l0 * kmaxElec / (2*velLong * kmaxDelt*kmaxDelt*kmaxDelt) );
 }
