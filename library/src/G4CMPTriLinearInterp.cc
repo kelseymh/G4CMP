@@ -25,7 +25,7 @@ void G4CMPTriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& /*xyz
     /* Qhull requires a column-major array of the
      * 3D points. i.e., [x1,y1,z1,x2,y2,z2,...]
      */
-    double* boxPoints = new double[3*X.size()];
+    G4double* boxPoints = new G4double[3*X.size()];
     //G4cout << "Size of input = " << X.size() << " points" << G4endl;
       
     for(size_t i=0; i<X.size(); ++i)
@@ -84,7 +84,7 @@ void G4CMPTriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& /*xyz
 //    Tetrahedra.resize(i);
 //    Neighbors.resize(i);
     
-    for (int i = 0; i < numTet; ++i)
+    for (G4int i = 0; i < numTet; ++i)
       for (j = 0; j < 4; ++j)
       {
         if (tmpNeighbors[i][j] != -1)
@@ -171,10 +171,13 @@ G4double G4CMPTriLinearInterp::GetPotential(const G4double pos[3]) const
     G4double bary[4];
     FindTetrahedon(&pos[0], bary);
     
-    return(V[Tetrahedra[TetraIdx][0]] * bary[0] +
-           V[Tetrahedra[TetraIdx][1]] * bary[1] +
-           V[Tetrahedra[TetraIdx][2]] * bary[2] +
-           V[Tetrahedra[TetraIdx][3]] * bary[3]);
+    if (TetraIdx == -1)
+      return -999999;
+    else
+      return(V[Tetrahedra[TetraIdx][0]] * bary[0] +
+             V[Tetrahedra[TetraIdx][1]] * bary[1] +
+             V[Tetrahedra[TetraIdx][2]] * bary[2] +
+             V[Tetrahedra[TetraIdx][3]] * bary[3]);
 }
 
 void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) const
@@ -183,13 +186,13 @@ void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) co
     FindTetrahedon(pos, bary);
 
     if (TetraIdx == -1)
-      for (int i = 0; i < 6; ++i)
-        field[i] = 0.0;
+      for (G4int i = 0; i < 6; ++i)
+        field[i] = 0;
     else
     {
       G4double ET[4][3];
       BuildT4x3(pos, ET);
-      for (int i = 0; i < 3; ++i)
+      for (G4int i = 0; i < 3; ++i)
       {
         field[i] = 0.0;
         field[3+i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
@@ -277,13 +280,13 @@ inline void G4CMPTriLinearInterp::Cart2Bary(const G4double point[4], G4double ba
   G4double T[3][3];
   G4double invT[3][3];
 
-  for(int dim=0; dim<3; ++dim)
-    for(int vert=0; vert<3; ++vert)
+  for(G4int dim=0; dim<3; ++dim)
+    for(G4int vert=0; vert<3; ++vert)
       T[dim][vert] = X[Tetrahedra[TetraIdx][vert]][dim] - X[Tetrahedra[TetraIdx][3]][dim];
 
   MatInv(T, invT);
 
-  for(int k=0; k<3; ++k)
+  for(G4int k=0; k<3; ++k)
     bary[k] = invT[k][0]*(point[0] - X[Tetrahedra[TetraIdx][3]][0]) +
               invT[k][1]*(point[1] - X[Tetrahedra[TetraIdx][3]][1]) +
               invT[k][2]*(point[2] - X[Tetrahedra[TetraIdx][3]][2]);
@@ -296,14 +299,14 @@ inline void G4CMPTriLinearInterp::BuildT4x3(const G4double point[4],
 {
   G4double T[3][3];
   G4double Tinv[3][3];
-  for(int dim=0; dim<3; ++dim)
-    for(int vert=0; vert<3; ++vert)
+  for(G4int dim=0; dim<3; ++dim)
+    for(G4int vert=0; vert<3; ++vert)
       T[dim][vert] = X[Tetrahedra[TetraIdx][vert]][dim] - X[Tetrahedra[TetraIdx][3]][dim];
 
   MatInv(T, Tinv);
-  for(int i = 0; i < 3; ++i)
+  for(G4int i = 0; i < 3; ++i)
   {
-    for(int j = 0; j < 3; ++j)
+    for(G4int j = 0; j < 3; ++j)
       ET[i][j] = Tinv[i][j];
     ET[3][i] = -Tinv[0][i] - Tinv[1][i] - Tinv[2][i];
   }
