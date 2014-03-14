@@ -113,8 +113,11 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
     //G4cout << "momentum: " <<  p <<  " " << velocity*massHole << G4endl;
     G4double kmag = velocity*massHole / hbar_Planck;
     G4double theta_phonon=MakeTheta(kmag, ksound_Hole);
-    G4double theta_charge=
-      acos((kmag*kmag - 2*ksound_Hole
+    if (theta_phonon == 0)
+	G4double theta_charge = 0;
+    else
+	G4double theta_charge=
+	    acos((kmag*kmag - 2*ksound_Hole
 	    *(kmag*cos(theta_phonon) - ksound_Hole) 
 	    - 2 * (kmag*cos(theta_phonon) - ksound_Hole)
 	    * (kmag*cos(theta_phonon) - ksound_Hole)) 
@@ -145,7 +148,7 @@ G4double G4CMPhLukeScattering::MakeTheta(G4double& k, G4double& ks){
   G4double u = G4UniformRand();
 
   G4double base = -(u-1)+3*(u-1)*(ks/k)-3*(u-1)*(ks/k)*(ks/k)+(u-1)*(ks/k)*(ks/k)*(ks/k);
-  if(base < 0.0) base = 0;
+  if(base < 0.0) return 0;
 
   G4double operand = ks/k+pow(base, 1.0/3.0);   
   if(operand > 1.0) operand=1.0;
