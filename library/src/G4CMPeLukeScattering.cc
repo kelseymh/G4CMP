@@ -106,7 +106,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   G4double theta_phonon = MakeTheta(kmag, ksound_e);
-  G4double theta_charge = 
+  G4double theta_charge = (theta_phonon == 0.) ? 0. : 
     acos( (kmag*kmag - 2*ksound_e*(kmag*cos(theta_phonon)
 				 - ksound_e)
 	   - 2 * (kmag*cos(theta_phonon) - ksound_e)
@@ -129,17 +129,17 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   p_new[2] /= T[2];
   valleyToNormal.ApplyPointTransform(p_new);
   
-  G4ThreeVector phononq = q*k.unit().rotate(k.unit(), theta_phonon);
+  //G4ThreeVector phononq = q*k.unit().rotate(k.unit(), theta_phonon);
   //   std::ofstream charge("theta_charge", std::ios::app);
-  std::ofstream phonon("theta_phonon", std::ios::app);
+  //std::ofstream phonon("theta_phonon", std::ios::app);
   //   charge << theta_charge << G4endl;
-  phonon << phononq.getZ()/phononq.mag()<< G4endl;
+  //phonon << phononq.getZ()/phononq.mag()<< G4endl;
   //   charge.close();
-  phonon.close();
+  //phonon.close();
 
-  std::ofstream espec("energy_spectrum_phonon", std::ios::app);
-  espec << (k_HV.mag2()*hbar_Planck/2/mc_e)/eV*1000<< G4endl;
-  espec.close();
+  //std::ofstream espec("energy_spectrum_phonon", std::ios::app);
+  //espec << (k_HV.mag2()*hbar_Planck/2/mc)/eV*1000<< G4endl;
+  //espec.close();
   
   aParticleChange.ProposeMomentumDirection(p_new.unit());
   aParticleChange.ProposeEnergy(p_new.mag2()/2/mc_e);
@@ -153,7 +153,7 @@ G4double G4CMPeLukeScattering::MakeTheta(G4double& k, G4double& ks) {
   G4double u = G4UniformRand();
 
   G4double base = -(u-1)+3*(u-1)*(ks/k)-3*(u-1)*(ks/k)*(ks/k)+(u-1)*(ks/k)*(ks/k)*(ks/k);
-  if(base < 0.0) base = 0;
+  if(base < 0.0) return 0;
 
   G4double operand = ks/k+pow(base, 1.0/3.0);   
   if(operand > 1.0) operand=1.0;
