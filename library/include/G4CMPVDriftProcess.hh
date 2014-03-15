@@ -46,10 +46,22 @@ public:
 
   virtual G4bool IsApplicable(const G4ParticleDefinition& aPD);
 
-  // Initialize current valley for currently active track(s)
   // NOTE:  These functions must call back to base class implementations!
+  virtual void LoadDataForTrack(const G4Track* track);
+
+  // Initialize current valley for currently active track(s)
   virtual void StartTracking(G4Track* track);
   virtual void EndTracking();
+
+protected:
+  // Convenient parameters for computing carrier propagation
+  G4double velLong;		// Sound velocity in cystal
+  G4double mc_e;		// Effective electron mass
+  G4double l0_e;		// Electron scattering length
+  G4double ksound_e;		// Electron momentum at sound speed
+  G4double mc_h;		// Effective hole mass
+  G4double l0_h;		// Hole scattering length
+  G4double ksound_h;		// Hole momentum at sound speed
 
 private:
   // hide assignment operators as private 

@@ -37,6 +37,7 @@
 // 20140218  Add support for charge-carrier functionality
 // 20140306  Use Euler angles directly to fill electron valley
 // 20140313  Use diagonal terms directly to fill electron mass tensor
+// 20140314  Add charge-carrier propagation parameters
 
 #include "G4LatticeReader.hh"
 #include "G4ExceptionSeverity.hh"
@@ -180,6 +181,11 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "ldos")   pLattice->SetLDOS(fValue);
   else if (name == "stdos")  pLattice->SetSTDOS(fValue);
   else if (name == "ftdos")  pLattice->SetFTDOS(fValue);
+  else if (name == "vsound") pLattice->SetSoundSpeed(fValue*m/s);
+  else if (name == "escat")  pLattice->SetElectronScatter(fValue*m);
+  else if (name == "l0_e")   pLattice->SetElectronScatter(fValue*m);
+  else if (name == "hscat")  pLattice->SetHoleScatter(fValue*m);
+  else if (name == "l0_h")   pLattice->SetHoleScatter(fValue*m);
   else if (name == "hmass")  pLattice->SetHoleMass(fValue*mElectron);
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;

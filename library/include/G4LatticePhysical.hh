@@ -70,6 +70,11 @@ public:
   G4double GetLambda() const         { return fLattice->GetLambda(); }
   G4double GetMu() const             { return fLattice->GetMu(); }
 
+  // Charge carrier propagation parameters
+  G4double GetSoundSpeed() const      { return fLattice->GetSoundSpeed(); }
+  G4double GetElectronScatter() const { return fLattice->GetElectronScatter(); }
+  G4double GetHoleScatter() const     { return fLattice->GetHoleScatter(); }
+
   // Charge carriers have effective mass
   const G4RotationMatrix& GetElectronMass() const { return fLattice->GetElectronMass(); }
   G4double GetHoleMass() const { return fLattice->GetHoleMass(); }

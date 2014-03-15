@@ -3,6 +3,7 @@
 // 20140313  Introduce multiple inheritance from G4CMPProcessUtils, also
 //	     use proper TransformAxis() on vectors, *not* TransformPoint()
 //	     Add wrapper function to compute individual time steps
+// 20140314  Fetch propagation parameters from lattice, instead of hardwired
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -26,11 +27,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4CMPTimeStepper::G4CMPTimeStepper()
-  : G4VDiscreteProcess("G4CMPTimeStepper", fGeneral), G4CMPProcessUtils(),
-    dt_e(0.), dt_h(0.),
-    velLong(5324.2077*m/s), me(electron_mass_c2/c_squared),
-    mc_e(.118*me), l0_e(257e-6*m), ksound_e(velLong*mc_e/hbar_Planck),
-    mc_h(.350*me), l0_h(108e-6*m), ksound_h(velLong*mc_h/hbar_Planck) {
+  : G4CMPVDriftProcess("G4CMPTimeStepper"), dt_e(0.), dt_h(0.) {
   if (verboseLevel>0) {
     G4cout << GetProcessName() << " is created " << G4endl;
   }

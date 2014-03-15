@@ -46,14 +46,11 @@
 
 
 G4CMPeLukeScattering::G4CMPeLukeScattering(G4VProcess* sLim)
- :G4VPhononProcess("eLukeScattering"), stepLimiter(sLim),
-  velLong(5324.2077*m/s), l0(257e-6*m), me(electron_mass_c2/c_squared),
-  mc(.1185*me), ksound(mc*velLong/hbar_Planck) {
-  G4cout << "G4CMPeLukeScattering::Constructor: ksound = "
-	 << ksound*m << " /m" << G4endl;
-
+ : G4CMPVDriftProcess("eLukeScattering"), stepLimiter(sLim) {
   if (verboseLevel > 1) {
-    G4cout << GetProcessName() << " is created." << G4endl;
+    G4cout << "G4CMPeLukeScattering::Constructor: ksound_e = "
+	   << ksound_e*m << " /m" << G4endl
+	   << GetProcessName() << " is created." << G4endl;
   }
 }
 
@@ -65,16 +62,7 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
 					       G4ForceCondition* condition) {
   *condition = Forced;
   
-  G4RotationMatrix trix;
-  int valley = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
-    
-  switch(valley) {
-  case 1: trix.set(  -pi/4, 0.61548, pi/2); break;
-  case 2: trix.set(   pi/4, 0.61548, pi/2); break;
-  case 3: trix.set( 3*pi/4, 0.61548, pi/2); break;
-  case 4: trix.set(-3*pi/4, 0.61548, pi/2); break;
-  }
-
+  G4RotationMatrix trix = GetValley(aTrack);
   valleyToNormal= G4AffineTransform(trix);
   normalToValley= G4AffineTransform(trix).Inverse();    
   T = G4ThreeVector(sqrt(.118/1.588), sqrt(.118/.081), sqrt(.118/.081));
@@ -85,14 +73,14 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   G4ThreeVector k_HV(k_valley[0]*T[0], k_valley[1]*T[1], k_valley[2]*T[2]);
   G4double kmag = k_HV.mag();
   
-  if (kmag<=ksound) return DBL_MAX;
+  if (kmag<=ksound_e) return DBL_MAX;
   
   G4double tau0 =  1.0 / (
-			  velLong / (3*l0)
-			  * (kmag / ksound) * (kmag/ksound)
-			  * ((1- ksound /kmag))
-			  * ((1- ksound /kmag))
-			  * ((1- ksound /kmag))
+			  velLong / (3*l0_e)
+			  * (kmag / ksound_e) * (kmag/ksound_e)
+			  * ((1- ksound_e /kmag))
+			  * ((1- ksound_e /kmag))
+			  * ((1- ksound_e /kmag))
 			  );
   
   G4double mfp0 = tau0*v.mag();
@@ -113,22 +101,22 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   //volume
   if ( (postStepPoint->GetProcessDefinedStep()==stepLimiter)
        || (postStepPoint->GetStepStatus()==fGeomBoundary)
-       || (kmag <= ksound) ) {
+       || (kmag <= ksound_e) ) {
     return &aParticleChange;
   }
 
-  G4double theta_phonon = MakeTheta(kmag, ksound);
+  G4double theta_phonon = MakeTheta(kmag, ksound_e);
   G4double theta_charge = 
-    acos( (kmag*kmag - 2*ksound*(kmag*cos(theta_phonon)
-				 - ksound)
-	   - 2 * (kmag*cos(theta_phonon) - ksound)
-	   * (kmag*cos(theta_phonon) - ksound) )/
-	  kmag/ (sqrt(kmag*kmag - 4*ksound
-		      * (kmag*cos(theta_phonon) - ksound) ) ) );
+    acos( (kmag*kmag - 2*ksound_e*(kmag*cos(theta_phonon)
+				 - ksound_e)
+	   - 2 * (kmag*cos(theta_phonon) - ksound_e)
+	   * (kmag*cos(theta_phonon) - ksound_e) )/
+	  kmag/ (sqrt(kmag*kmag - 4*ksound_e
+		      * (kmag*cos(theta_phonon) - ksound_e) ) ) );
   
-  G4double q = 2*(kmag*cos(theta_phonon)-ksound);
+  G4double q = 2*(kmag*cos(theta_phonon)-ksound_e);
   //k_HV.setMag(sqrt(k_HV.mag2() + q*q - 2*kmag*q*cos(theta_phonon)));
-  k_HV.setMag(sqrt(kmag*kmag-2*mc*q*velLong/hbar_Planck));
+  k_HV.setMag(sqrt(kmag*kmag-2*mc_e*q*velLong/hbar_Planck));
   G4ThreeVector kdir = k_HV.unit();
   k_HV.rotate(kdir.orthogonal(), theta_charge);
   
@@ -150,11 +138,11 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   phonon.close();
 
   std::ofstream espec("energy_spectrum_phonon", std::ios::app);
-  espec << (k_HV.mag2()*hbar_Planck/2/mc)/eV*1000<< G4endl;
+  espec << (k_HV.mag2()*hbar_Planck/2/mc_e)/eV*1000<< G4endl;
   espec.close();
   
   aParticleChange.ProposeMomentumDirection(p_new.unit());
-  aParticleChange.ProposeEnergy(p_new.mag2()/2/mc);
+  aParticleChange.ProposeEnergy(p_new.mag2()/2/mc_e);
   ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
 }
@@ -180,5 +168,5 @@ G4double G4CMPeLukeScattering::MakePhi(G4double& k,G4double& ks, G4double& theta
 }
 
 G4bool G4CMPeLukeScattering::IsApplicable(const G4ParticleDefinition& aPD) {
-  return((&aPD==G4CMPDriftElectron::Definition()));
+  return (&aPD==G4CMPDriftElectron::Definition());
 }

@@ -13,6 +13,9 @@ VG L.ssv  L 161 321
 VG ST.ssv ST 161 321
 VG FT.ssv FT 161 321
 # Charge carrier parameters
+vsound 5324.2077
+l0_e 257e-6
+l0_h 108e-6
 hmass 0.35
 emass 7.43073e-2 1.45679 1.45679
 valley  -45 35.2644 90 deg

@@ -28,8 +28,9 @@ public:
   ~G4CMPProcessUtils();
 
   // Fetch lattice (if any) for volume occupied by track
-  void LoadDataForTrack(const G4Track* track);
-  void ReleaseTrack();
+  virtual void LoadDataForTrack(const G4Track* track);
+  virtual void ReleaseTrack();
+  // NOTE:  Subclasses may overload these, but be sure to callback to base
 
   // Map phonon types to polarization index
   G4int GetPolarization(const G4Track& track) const;

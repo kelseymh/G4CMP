@@ -33,14 +33,14 @@
 #define G4CMPhLukeScattering_h 1
 
 #include "globals.hh"
-#include "G4VPhononProcess.hh"
+#include "G4CMPVDriftProcess.hh"
 #include "G4RotationMatrix.hh"
 #include "G4AffineTransform.hh"
 
 class G4VProcess;
 
 
-class G4CMPhLukeScattering : public G4VPhononProcess {
+class G4CMPhLukeScattering : public G4CMPVDriftProcess {
 public:
   G4double MakeTheta(G4double& k,G4double& ks);
   G4double MakePhi(G4double& k, G4double& ks, G4double& theta);
@@ -64,12 +64,6 @@ private:
   G4CMPhLukeScattering& operator=(const G4CMPhLukeScattering& right);
 
   G4VProcess* stepLimiter;
-
-  G4double velLong;
-  G4double l0Hole;
-  G4double massHole;
-  G4double ksound_Hole;
-  G4double massFreeElectron;
 };
 
 #endif	/* G4CMPhLukeScattering */

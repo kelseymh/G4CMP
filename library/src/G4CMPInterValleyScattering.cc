@@ -1,3 +1,5 @@
+// $Id$
+
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPValleyTrackMap.hh"
@@ -15,11 +17,10 @@
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
-
 #include "math.h"
 
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()
-  : G4VDiscreteProcess("InterValleyScattering"), G4CMPProcessUtils() {
+  : G4CMPVDriftProcess("InterValleyScattering") {
   //E_0 from Edelweiss experiment LTD 14. This value is tuned for
   //EDELWEISS/CDMS crystals with small (~V/m) electric fields. It 
   //may still be fine for larger electric fields (~10-100V/m) 
@@ -34,9 +35,6 @@ G4CMPInterValleyScattering::G4CMPInterValleyScattering()
 G4CMPInterValleyScattering::~G4CMPInterValleyScattering()
 { ; }
 
-G4CMPInterValleyScattering::G4CMPInterValleyScattering(G4CMPInterValleyScattering& right)
-: G4VDiscreteProcess(right)
-{ ; }
 
 G4double 
 G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,

@@ -7,13 +7,11 @@
 #define G4CMPTimeStepper_h 1
 
 #include "globals.hh"
-#include "G4VDiscreteProcess.hh"
+#include "G4CMPVDriftProcess.hh"
 #include "G4AffineTransform.hh"
-#include "G4CMPProcessUtils.hh"
 
 
-class G4CMPTimeStepper : public G4VDiscreteProcess,
-			 public G4CMPProcessUtils {
+class G4CMPTimeStepper : public G4CMPVDriftProcess {
 public:
   G4CMPTimeStepper();
   virtual ~G4CMPTimeStepper();
@@ -28,7 +26,7 @@ public:
   virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
 					  const G4Step& aStep);
 
-protected:
+protected:  
   // Compute dt_e, dt_h and valley rotations at current location
   void ComputeTimeSteps(const G4Track& aTrack);
   G4double TimeStepInField(G4double Efield, G4double coeff, G4double l0) const;
@@ -49,15 +47,6 @@ private:
   G4AffineTransform valleyToNormal;
   G4double dt_e; //Time step for electrons
   G4double dt_h; //Time step for holes
-
-  const G4double velLong;
-  const G4double me;
-  const G4double mc_e;
-  const G4double l0_e;
-  const G4double ksound_e;
-  const G4double mc_h;
-  const G4double l0_h;
-  const G4double ksound_h;
 };
 
 #endif

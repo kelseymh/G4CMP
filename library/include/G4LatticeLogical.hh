@@ -94,12 +94,18 @@ public:
 
 public:
   // Parameters and structures for charge carrier transport
+  void SetSoundSpeed(G4double v) { fVSound = v; }
+  void SetElectronScatter(G4double l0) { fL0_e = l0; }
+  void SetHoleScatter(G4double l0) { fL0_h = l0; }
   void SetElectronMass(const G4RotationMatrix& emass) { fElectronMass = emass; }
   void SetElectronMass(G4double mXX, G4double mYY, G4double mZZ);
   void SetHoleMass(G4double hmass) { fHoleMass = hmass; }
 
+  G4double GetSoundSpeed() const                  { return fVSound; }
+  G4double GetElectronScatter() const             { return fL0_e; }
+  G4double GetHoleScatter() const                 { return fL0_h; }
   const G4RotationMatrix& GetElectronMass() const { return fElectronMass; }
-  G4double GetHoleMass() const { return fHoleMass; }
+  G4double GetHoleMass() const                    { return fHoleMass; }
 
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley) { fValley.push_back(valley); }
@@ -129,6 +135,10 @@ private:
   G4double fSTDOS;   //Density of states for ST-phonons
   G4double fFTDOS;   //Density of states for FT-phonons
   G4double fBeta, fGamma, fLambda, fMu; //dynamical constants for material
+
+  G4double fVSound;	// Speed of sound (longitudinal phonon)
+  G4double fL0_e;	// Scattering length for electrons
+  G4double fL0_h;	// Scattering length for holes
 
   G4RotationMatrix fElectronMass;	 // Electron mass tensor
   G4double fHoleMass;			 // Effective mass of +ve carrier

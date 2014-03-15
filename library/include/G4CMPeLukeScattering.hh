@@ -33,14 +33,14 @@
 #define G4CMPeLukeScattering_h 1
 
 #include "globals.hh"
-#include "G4VPhononProcess.hh"
+#include "G4CMPVDriftProcess.hh"
 #include "G4RotationMatrix.hh"
 #include "G4AffineTransform.hh"
 
 class G4VProcess;
 
 
-class G4CMPeLukeScattering : public G4VPhononProcess {
+class G4CMPeLukeScattering : public G4CMPVDriftProcess {
 public:
   G4double MakeTheta(G4double& k,G4double& ks);
   G4double MakePhi(G4double& k, G4double& ks, G4double& theta);
@@ -67,11 +67,6 @@ private:
   G4AffineTransform valleyToNormal;
   G4RotationMatrix mInv; 	// Inverse mass tensor
   G4ThreeVector T;       	// HV Transformation matrix diagonal
-  G4double velLong;      	// Speed of sound of longitudinal phonons
-  G4double l0;           	// Characteristic scattering length
-  G4double me;           	// Mass of electron
-  G4double mc;           	// Effective mass of electron (units of electron)
-  G4double ksound;       	// Wave number for mc moving at velLong
 };
 
 #endif

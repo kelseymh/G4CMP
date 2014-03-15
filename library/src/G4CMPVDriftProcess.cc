@@ -29,16 +29,18 @@
 // $Id$
 
 #include "G4CMPVDriftProcess.hh"
+#include "G4CMPDriftElectron.hh"
+#include "G4CMPDriftHole.hh"
+#include "G4CMPValleyTrackMap.hh"
 #include "G4DynamicParticle.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PhononPolarization.hh"
-#include "G4CMPValleyTrackMap.hh"
-#include "G4CMPDriftElectron.hh"
-#include "G4CMPDriftHole.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4ProcessType.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "Randomize.hh"
@@ -57,6 +59,23 @@ G4CMPVDriftProcess::~G4CMPVDriftProcess() {;}
 G4bool G4CMPVDriftProcess::IsApplicable(const G4ParticleDefinition& aPD) {
   return (&aPD==G4CMPDriftElectron::Definition() ||
 	  &aPD==G4CMPDriftHole::Definition() );
+}
+
+
+// Get additional parameters from lattice for carriers
+
+void G4CMPVDriftProcess::LoadDataForTrack(const G4Track* track) {
+  G4CMPProcessUtils::LoadDataForTrack(track);
+
+  velLong = theLattice->GetSoundSpeed();
+
+  mc_e = 0.118 * electron_mass_c2/c_squared;	// WHY ISN'T THIS MASS TENSOR?
+  l0_e = theLattice->GetElectronScatter();
+  ksound_e = velLong * mc_e/hbar_Planck;
+
+  mc_h = theLattice->GetHoleMass();
+  l0_h = theLattice->GetHoleScatter();
+  ksound_h = velLong * mc_h/hbar_Planck;
 }
 
 

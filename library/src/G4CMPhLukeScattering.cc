@@ -47,55 +47,46 @@
 
 
 G4CMPhLukeScattering::G4CMPhLukeScattering(G4VProcess* stepper)
-:G4VPhononProcess("hLukeScattering")
-{
-    velLong=5400*m/s;
-    l0Hole = 108e-6*m;
-    massFreeElectron=electron_mass_c2/c_squared;
-    massHole=0.35*massFreeElectron;
-    //ksound_Hole=1.6306e7/m;
-    ksound_Hole=velLong*massHole/hbar_Planck;
-    stepLimiter = stepper;
-
-    if(verboseLevel>1){
-	G4cout<<GetProcessName()<<" is created "<<G4endl;
-      }
+: G4CMPVDriftProcess("hLukeScattering") {
+  stepLimiter = stepper;
+  
+  if (verboseLevel>1) {
+    G4cout<<GetProcessName()<<" is created "<<G4endl;
+  }
 }
 
 G4CMPhLukeScattering::~G4CMPhLukeScattering()
 { ; }
 
 
-G4double G4CMPhLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double, G4ForceCondition* condition)
-{
+G4double 
+G4CMPhLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
+				      G4ForceCondition* condition) {
     G4StepPoint* stepPoint  = aTrack.GetStep()->GetPostStepPoint();
     G4double velocity = stepPoint->GetVelocity();
-    G4double kmag = velocity*massHole / hbar_Planck;
+    G4double kmag = velocity*mc_h / hbar_Planck;
 
     *condition = Forced;
 
-    if (kmag<=ksound_Hole)
+    if (kmag<=ksound_h)
     {
 	//G4cout <<  "G4CMPhLukeScattering: DBL_MAX" <<  G4endl;
 	return DBL_MAX;
     }
 
-    G4double mfp= velocity / ( velLong / (3*l0Hole)
-			    * (kmag / ksound_Hole)*(kmag / ksound_Hole)
-			    * ((1- ksound_Hole /kmag))
-			    * ((1- ksound_Hole /kmag))
-			    * ((1- ksound_Hole /kmag)));
-
+    G4double mfp= velocity / ( velLong / (3*l0_h)
+			    * (kmag / ksound_h)*(kmag / ksound_h)
+			    * ((1- ksound_h /kmag))
+			    * ((1- ksound_h /kmag))
+			    * ((1- ksound_h /kmag)));
 
     //G4cout <<  "G4CMPhLukeScattering: " <<  mfp <<  G4endl;
     return mfp;
-
 }
 
 G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
-
-    aParticleChange.Initialize(aTrack);  
+  aParticleChange.Initialize(aTrack);  
 
     //Do nothing other than re-calculate mfp when step limit reached or leaving volume
     G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
@@ -110,19 +101,19 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
 
     G4double velocity = postStepPoint->GetVelocity();
     //G4double p = postStepPoint->GetMomentum().mag()/c_light;
-    //G4cout << "momentum: " <<  p <<  " " << velocity*massHole << G4endl;
-    G4double kmag = velocity*massHole / hbar_Planck;
-    G4double theta_phonon=MakeTheta(kmag, ksound_Hole);
+    //G4cout << "momentum: " <<  p <<  " " << velocity*mc_h << G4endl;
+    G4double kmag = velocity*mc_h / hbar_Planck;
+    G4double theta_phonon=MakeTheta(kmag, ksound_h);
     G4double theta_charge=
-      acos((kmag*kmag - 2*ksound_Hole
-	    *(kmag*cos(theta_phonon) - ksound_Hole) 
-	    - 2 * (kmag*cos(theta_phonon) - ksound_Hole)
-	    * (kmag*cos(theta_phonon) - ksound_Hole)) 
-	   / kmag/ (sqrt(kmag*kmag - 4*ksound_Hole
-			 *(kmag*cos(theta_phonon) - ksound_Hole))));
+      acos((kmag*kmag - 2*ksound_h
+	    *(kmag*cos(theta_phonon) - ksound_h) 
+	    - 2 * (kmag*cos(theta_phonon) - ksound_h)
+	    * (kmag*cos(theta_phonon) - ksound_h)) 
+	   / kmag/ (sqrt(kmag*kmag - 4*ksound_h
+			 *(kmag*cos(theta_phonon) - ksound_h))));
 
-    G4double q = 2*(kmag*cos(theta_phonon)-ksound_Hole);
-    G4double T = hbar_Planck*hbar_Planck*kmag*kmag/2/massHole;
+    G4double q = 2*(kmag*cos(theta_phonon)-ksound_h);
+    G4double T = hbar_Planck*hbar_Planck*kmag*kmag/2/mc_h;
     G4double qEnergy = velLong*hbar_Planck*q;
     //G4double knew = sqrt(kmag*kmag + q*q - kmag*q*cos(theta_phonon));
 
