@@ -1,74 +1,57 @@
+// $Id$
 
 #include "ChargeDetectorConstruction.hh"
-
+#include "ChargeEMField.hh"
+#include "G4Box.hh"
+#include "G4CMPElectrodeSensitivity.hh"
+#include "G4Colour.hh"
+#include "G4FieldManager.hh"
+#include "G4LatticeLogical.hh"
+#include "G4LatticeManager.hh"
+#include "G4LatticePhysical.hh"
+#include "G4LogicalVolume.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
-
-#include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4Sphere.hh"
-#include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
-#include "G4UniformMagField.hh"
-#include "G4TransportationManager.hh"
-#include "G4FieldManager.hh"
-#include "G4VisAttributes.hh"
-#include "G4Colour.hh"
-#include "G4SDManager.hh"
-
-#include "G4ios.hh"
-
-#include "G4CMPElectrodeSensitivity.hh"
-#include "G4LatticePhysical.hh"
-#include "G4LatticeLogical.hh"
-
-#include "G4UserLimits.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4SDManager.hh"
+#include "G4Sphere.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4TransportationManager.hh"
+#include "G4Tubs.hh"
+#include "G4UniformMagField.hh"
+#include "G4UserLimits.hh"
+#include "G4VisAttributes.hh"
 
-ChargeDetectorConstruction::ChargeDetectorConstruction():constructed(false),ifField(true)
-{
-  liquidHelium = NULL;
-  germanium = NULL;
-  alminum = NULL;
-  tungsten = NULL;
-  worldPhys = NULL;
-	/*G4double position[4] = {0, 0, 0, -1.2*cm};
-    G4double fieldVal[6];
-    G4FieldManager* fieldMan = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-    const G4ElectricField* field = (G4ElectricField*)fieldMan->GetDetectorField();
-    field->GetFieldValue(position,  fieldVal);
-    G4cout <<  "Does field exist? : " <<  fieldMan->DoesFieldExist() <<  G4endl;
-    G4cout <<  "Field Value:" << fieldVal[3] <<  " " <<  fieldVal[4] <<  " " <<  fieldVal[5] <<  G4endl;
-    */
-}
 
-ChargeDetectorConstruction::~ChargeDetectorConstruction()
-{
+ChargeDetectorConstruction::ChargeDetectorConstruction()
+   : liquidHelium(0), germanium(0), alminum(0), tungsten(0), worldPhys(0),
+     constructed(false), ifField(true), field(0),
+     latManager(G4LatticeManager::GetLatticeManager()) {;}
+
+ChargeDetectorConstruction::~ChargeDetectorConstruction() {
     delete field;
 }
 
-
-
-G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
-{
-  if(!constructed)
-  { 
-    constructed = true;
+G4VPhysicalVolume* ChargeDetectorConstruction::Construct() {
+  if (!constructed) { 
     DefineMaterials();
     SetupGeometry();
+    constructed = true;
   }
   return worldPhys;
 }
 
-void ChargeDetectorConstruction::DefineMaterials()
-{ 
+void ChargeDetectorConstruction::DefineMaterials() { 
   G4NistManager* nistManager = G4NistManager::Instance();
 
   liquidHelium = nistManager->FindOrBuildMaterial("G4_AIR"); // to be corrected.......
   germanium = nistManager->FindOrBuildMaterial("G4_Ge");
   alminum = nistManager->FindOrBuildMaterial("G4_Al");
   tungsten = nistManager->FindOrBuildMaterial("G4_W");
+
+  // Attach lattice information for germanium
+  latManager->LoadLattice(germanium, "Ge");
 }
 
 void ChargeDetectorConstruction::SetupGeometry()
@@ -81,57 +64,27 @@ void ChargeDetectorConstruction::SetupGeometry()
   //worldLogical->SetUserLimits(new G4UserLimits(0.01*mm, DBL_MAX, DBL_MAX, 0, 0));
   worldPhys = new G4PVPlacement(0,G4ThreeVector(),worldLogical,"World",0,false,0);
 
-
-  
   //                               
   // Germanium
   //  
   G4VSolid* germaniumSolid = new G4Tubs("germaniumSolid",0.*cm,3.81*cm,1.27*cm, 0.*deg, 360.*deg);
   G4LogicalVolume* germaniumLogical = new G4LogicalVolume(germaniumSolid,germanium,"germaniumLogical");
-  G4VPhysicalVolume* GePhys = new G4PVPlacement(0,G4ThreeVector(),germaniumLogical,"germaniumPhysical",worldLogical,false,0);
+  G4VPhysicalVolume* germaniumPhysical = new G4PVPlacement(0,G4ThreeVector(),germaniumLogical,"germaniumPhysical",worldLogical,false,0);
 
-  // E field
+  // E field attached to germanium
   field = new ChargeEMField(germaniumLogical);
-  //  G4cout<<"\nUserlimits:"<<germaniumLogical->GetUserLimits();
 
-  //germaniumLogical->SetUserLimits(new G4UserLimits(1e-2*mm, DBL_MAX, DBL_MAX));
-
-  //G4cout<<"\nUserlimits:"<<germaniumLogical->GetUserLimits();
-
-  /////////////////////////
-  //Germanium lattice information
-  ////////////////////////
-  /*
-  G4LatticeLogical GeLogical;
- //Convention for polarization state: 0=LON, 1=ST, 2=FT
-  if(GeLogical.load_NMap(161, 321, 0, "./CrystalMaps/LVec.ssv")){
-    if(GeLogical.load_NMap(161, 321, 1, "./CrystalMaps/STVec.ssv")){
-      if(GeLogical.load_NMap(161, 321, 2, "./CrystalMaps/FTVec.ssv")){
-	G4cout<<"\nChargeDetectorConstruction::Loaded all three maps";}}}
-
-  if(GeLogical.loadMap(161, 321, 0, "./CrystalMaps/L.ssv")){
-    if(GeLogical.loadMap(161, 321, 1, "./CrystalMaps/ST.ssv")){
-      if(GeLogical.loadMap(161, 321, 2, "./CrystalMaps/FT.ssv")){
-	G4cout<<"\nChargeDetectorConstruction::Loaded all three velocity maps";}}}
-
-  GeLogical.setDynamicalConstants(-0.732, -0.708, 0.376, 0.561);
-  GeLogical.setScatteringConstant(3.67e-41*s*s*s);
-  GeLogical.setAnhDecConstant(1.6456e-54*s*s*s*s);
-  GeLogical.setLDOS(0.097834);
-  GeLogical.setSTDOS(0.53539);
-  GeLogical.setFTDOS(0.36677);
-  
-  G4LatticePhysical GePhysical(GePhys,&GeLogical);
-  //GePhysical.setMillerOrientation(0,0,1);
+  // Physical lattice for placed detector
+  G4LatticePhysical* detLattice =
+    new G4LatticePhysical(latManager->GetLattice(germanium));
+  detLattice->SetMillerOrientation(0,0,1);
   //GePhysical.setLatticeOrientation((3.1/4)*rad,45);
-  G4LatticeManager::registerLattice(&GePhysical);
-  */
+  latManager->RegisterLattice(germaniumPhysical, detLattice);
+
   //
   // Aluminum
   //
   G4VSolid* alminumSolid = new G4Tubs("aluminiumSolid",0.*cm,3.81*cm,0.01*cm, 0.*deg, 360.*deg);
-
-
   G4LogicalVolume* alminumLogical = new G4LogicalVolume(alminumSolid,alminum,"alminumLogical");
   new G4PVPlacement(0,G4ThreeVector(0.,0.,1.28*cm),alminumLogical,"alminumPhysical",worldLogical,false,0);
   new G4PVPlacement(0,G4ThreeVector(0.,0.,-1.28*cm),alminumLogical,"alminumPhysical",worldLogical,false,1);
@@ -144,12 +97,6 @@ void ChargeDetectorConstruction::SetupGeometry()
   new G4PVPlacement(0,G4ThreeVector(0.,0.6*cm,1.37*cm),tungstenLogical,"tungstenPhysical",worldLogical,false,0);
   new G4PVPlacement(0,G4ThreeVector(0.,0.6*cm,-1.37*cm),tungstenLogical,"tungstenPhysical",worldLogical,false,1);
   */
-  //
-  // electric field
-  //
-  //if(ifField)
-  //{
-  //}
 
   //
   // detector -- Note : Aluminum electrode sensitivity is attached to Germanium 
