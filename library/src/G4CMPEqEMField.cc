@@ -10,13 +10,13 @@
 // D. Brandt
 // 05 / 23 / 2011
 
-#include "EqEMFieldXtal.hh"
+#include "G4CMPEqEMField.hh"
 #include "G4ElectroMagneticField.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RotationMatrix.hh"
 
 
-EqEMFieldXtal::EqEMFieldXtal(G4ElectroMagneticField *emField,
+G4CMPEqEMField::G4CMPEqEMField(G4ElectroMagneticField *emField,
 			     const G4AffineTransform& valleyXform)
   : G4EquationOfMotion(emField) {
   SetValleyTransform(valleyXform);	// Default transform, may be replaced
@@ -24,7 +24,7 @@ EqEMFieldXtal::EqEMFieldXtal(G4ElectroMagneticField *emField,
 
 
 void  
-EqEMFieldXtal::SetChargeMomentumMass(G4double particleCharge, // e+ units
+G4CMPEqEMField::SetChargeMomentumMass(G4double particleCharge, // e+ units
 				     G4double /*particleMom*/,
 				     G4double particleMass)
 {
@@ -41,7 +41,7 @@ EqEMFieldXtal::SetChargeMomentumMass(G4double particleCharge, // e+ units
 
 
 void
-EqEMFieldXtal::EvaluateRhsGivenB(const G4double y[],
+G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 			                const G4double field[],
 				              G4double dydx[] ) const
 { 
@@ -77,7 +77,7 @@ EqEMFieldXtal::EvaluateRhsGivenB(const G4double y[],
 }
 
 
-void EqEMFieldXtal::SetValleyTransform(const G4AffineTransform& xform) {
+void G4CMPEqEMField::SetValleyTransform(const G4AffineTransform& xform) {
     normalToValley = xform;
     valleyToNormal = normalToValley.Inverse();
 }

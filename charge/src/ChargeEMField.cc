@@ -3,12 +3,12 @@
 #include "G4FieldManager.hh"
 #include "G4LogicalVolume.hh"
 #include "G4TransportationManager.hh"
-#include "XtalFieldManager.hh"
+#include "G4CMPFieldManager.hh"
 
 
 ChargeEMField::ChargeEMField(G4LogicalVolume* logVol) {
   CDMS_iZip4_Field* fEMfield  = new CDMS_iZip4_Field(G4String("Epot_iZip4"));
-  G4FieldManager*   fFieldMgr = new XtalFieldManager(fEMfield);
+  G4FieldManager*   fFieldMgr = new G4CMPFieldManager(fEMfield);
 
   // MHK -- Why is this not being done?
   //logVol->SetFieldManager(fFieldMgr,true);

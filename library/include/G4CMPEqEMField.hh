@@ -1,17 +1,13 @@
-// CREATED FROM::
-//$Id$
-// GEANT4 tag $Name: geant4-09-03-patch-01 $
-//
-//
-// class EqEMFieldXtal,  created from G4EqMagElectricField by D. Brandt
+// $Id$
+// class G4CMPEqEMField,  created from G4EqMagElectricField by D. Brandt
 //
 // Class description:
 //
 // This is the right-hand side of equation of motion in a combined
 // electric and magnetic field.
 
-#ifndef EQEMFIELDXTAL_hh
-#define EQEMFIELDXTAL_hh
+#ifndef G4CMPEqEMField_hh
+#define G4CMPEqEMField_hh
 
 #include "G4EquationOfMotion.hh"
 #include "G4AffineTransform.hh"
@@ -20,13 +16,13 @@
 class G4ElectroMagneticField;
 
 
-class EqEMFieldXtal : public G4EquationOfMotion
+class G4CMPEqEMField : public G4EquationOfMotion
 {
 public:
-  EqEMFieldXtal(G4ElectroMagneticField *emField,
+  G4CMPEqEMField(G4ElectroMagneticField *emField,
 		const G4AffineTransform& valleyXform);
 
-  ~EqEMFieldXtal() {;} 
+  ~G4CMPEqEMField() {;} 
 
   void SetChargeMomentumMass(G4double particleCharge, // in e+ units
 			     G4double MomentumXc,

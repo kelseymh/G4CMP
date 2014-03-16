@@ -1,10 +1,12 @@
-#ifndef XtalFieldManager_h
-#define XtalFieldManager_h 1
+// $Id$
+
+#ifndef G4CMPFieldManager_h
+#define G4CMPFieldManager_h 1
 
 #include "globals.hh"
 #include "G4FieldManager.hh"
 
-class EqEMFieldXtal;
+class G4CMPEqEMField;
 class G4ChordFinder;
 class G4ElectricField;
 class G4EqMagElectricField;
@@ -12,19 +14,19 @@ class G4MagInt_Driver;
 class G4MagIntegratorStepper;
 
 
-class XtalFieldManager : public G4FieldManager {
+class G4CMPFieldManager : public G4FieldManager {
 public:
-  XtalFieldManager(G4ElectricField *detectorField);
-  ~XtalFieldManager();
+  G4CMPFieldManager(G4ElectricField *detectorField);
+  ~G4CMPFieldManager();
 
   void ConfigureForTrack(const G4Track* aTrack);
 
 private:
   G4EqMagElectricField *EqNormal;	// Generic field outside valleys
-  EqEMFieldXtal *EqValley1;		// Field for each of four Ge valleys
-  EqEMFieldXtal *EqValley2;
-  EqEMFieldXtal *EqValley3;
-  EqEMFieldXtal *EqValley4;
+  G4CMPEqEMField *EqValley1;		// Field for each of four Ge valleys
+  G4CMPEqEMField *EqValley2;
+  G4CMPEqEMField *EqValley3;
+  G4CMPEqEMField *EqValley4;
 
   G4MagIntegratorStepper *normalStepper;
   G4MagIntegratorStepper *valley1Stepper;

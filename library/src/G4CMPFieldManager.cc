@@ -1,5 +1,5 @@
-#include "XtalFieldManager.hh"
-#include "EqEMFieldXtal.hh"
+#include "G4CMPFieldManager.hh"
+#include "G4CMPEqEMField.hh"
 #include "G4AffineTransform.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPValleyTrackMap.hh"
@@ -17,23 +17,23 @@
 
 // Constructor and destructor
 
-XtalFieldManager::XtalFieldManager(G4ElectricField *detectorField)
+G4CMPFieldManager::G4CMPFieldManager(G4ElectricField *detectorField)
   : G4FieldManager(detectorField) {
   G4RotationMatrix Mvalley;
 
   EqNormal = new G4EqMagElectricField(detectorField);
 
   Mvalley.set(-pi/4,-pi/4, pi/4);
-  EqValley1 = new EqEMFieldXtal(detectorField, G4AffineTransform(Mvalley));
+  EqValley1 = new G4CMPEqEMField(detectorField, G4AffineTransform(Mvalley));
 
   Mvalley.set( pi/4,-pi/4,-pi/4);
-  EqValley2 = new EqEMFieldXtal(detectorField, G4AffineTransform(Mvalley));
+  EqValley2 = new G4CMPEqEMField(detectorField, G4AffineTransform(Mvalley));
 
   Mvalley.set(-pi/4, pi/4, pi/4);
-  EqValley3 = new EqEMFieldXtal(detectorField, G4AffineTransform(Mvalley));
+  EqValley3 = new G4CMPEqEMField(detectorField, G4AffineTransform(Mvalley));
 
   Mvalley.set( pi/4, pi/4,-pi/4);
-  EqValley4 = new EqEMFieldXtal(detectorField, G4AffineTransform(Mvalley));
+  EqValley4 = new G4CMPEqEMField(detectorField, G4AffineTransform(Mvalley));
   
   const G4int stepperVars = 8;
 
@@ -56,7 +56,7 @@ XtalFieldManager::XtalFieldManager(G4ElectricField *detectorField)
   valley4ChordFinder = new G4ChordFinder(valley4Driver);
 }
 
-XtalFieldManager::~XtalFieldManager() {
+G4CMPFieldManager::~G4CMPFieldManager() {
   delete EqNormal;
   delete EqValley1;
   delete EqValley2;
@@ -83,7 +83,7 @@ XtalFieldManager::~XtalFieldManager() {
 }
 
 
-void XtalFieldManager::ConfigureForTrack(const G4Track* aTrack){
+void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack){
   if (aTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
     int valley = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
     switch(valley) {
