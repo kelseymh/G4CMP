@@ -10,7 +10,7 @@
 
 class G4CMPTriLinearInterp {
 public:
-  G4CMPTriLinearInterp();	// Uninitialized version, user must load!
+  G4CMPTriLinearInterp() : TetraIdx(0) {;}	// Uninitialized version
 
   G4CMPTriLinearInterp(const std::vector<std::vector<G4double> >& xyz,
 		       const std::vector<G4double>& v);
