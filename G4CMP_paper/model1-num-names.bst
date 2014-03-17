@@ -13,7 +13,7 @@
 %% and version 1.2 or later is part of all distributions of LaTeX
 %% version 1999/12/01 or later.
 %%
-%% $Id: model1-num-names.bst 206 2012-10-22 07:28:26Z rishi $
+%% $Id$
 %%
 %% $URL: http://lenova.river-valley.com/svn/elsbst/trunk/New-Model-1/model1-num-names.bst $
 %%
