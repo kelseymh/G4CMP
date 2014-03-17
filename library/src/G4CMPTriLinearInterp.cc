@@ -11,14 +11,25 @@
 
 using namespace orgQhull;
 using std::map;
+using std::vector;
 
-G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<vector<G4double> >& xyz, 
-				 const vector<G4double>& v)
+
+G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<vector<G4double> >& xyz,
+					   const vector<G4double>& v)
   : X(xyz), V(v), TetraIdx(0) {
-  BuildTetraMesh(xyz);
+  BuildTetraMesh();
 }
 
-void G4CMPTriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& /*xyz*/) {
+void 
+G4CMPTriLinearInterp::UseMesh(const std::vector<std::vector<G4double> >& xyz,
+			      const std::vector<G4double>& v) {
+  X = xyz;
+  V = v;
+  BuildTetraMesh();
+  TetraIdx = 0;
+}
+
+void G4CMPTriLinearInterp::BuildTetraMesh() {
     time_t start, fin;
     G4cout << "    G4CMPTriLinearInterp::Constructor: Creating Tetrahedral Mesh..." << G4endl;
     std::time(&start);
@@ -28,7 +39,7 @@ void G4CMPTriLinearInterp::BuildTetraMesh(const vector<vector<G4double> >& /*xyz
     G4double* boxPoints = new G4double[3*X.size()];
     //G4cout << "Size of input = " << X.size() << " points" << G4endl;
       
-    for(size_t i=0; i<X.size(); ++i)
+    for (size_t i=0; i<X.size(); ++i)
     {
         boxPoints[i*3] = X[i][0];
         boxPoints[i*3+1]= X[i][1];

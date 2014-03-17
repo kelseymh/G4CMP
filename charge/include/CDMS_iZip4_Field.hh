@@ -1,35 +1,36 @@
+// $Id$
+
 #ifndef CDMS_iZip4_Field_h 
 #define CDMS_iZip4_Field_h 1
 
 #include "G4CMPTriLinearInterp.hh"
 #include "G4ElectricField.hh"
+#include <vector>
 
-class CDMS_iZip4_Field : public G4ElectricField 
-{
-  public:
-    CDMS_iZip4_Field( G4String EpotFileName ) : Interp(BuildInterp( EpotFileName )) {}
-    //CDMS_iZip4_Field( G4double constEFieldVal );
-    ~CDMS_iZip4_Field();
+class CDMS_iZip4_Field : public G4ElectricField {
+public:
+  CDMS_iZip4_Field(const G4String& EpotFileName);
+  //CDMS_iZip4_Field( G4double constEFieldVal );
+  virtual ~CDMS_iZip4_Field() {;}
 
-    void GetFieldValue(const G4double Point[4], G4double *Efield) const;
-    void GetFieldValue(const G4double Point[3], G4double *Efield){
-	    G4double NewPoint[4]={Point[0],Point[1],Point[2],0.0};
-      this->GetFieldValue(NewPoint, Efield);
-    };
+  virtual void GetFieldValue(const G4double Point[4], G4double *Efield) const;
+  virtual void GetFieldValue(const G4double Point[3], G4double *Efield);
+  // NOTE:  This function is non-const ONLY because signatures are identical
+  //        (the array dimension is not part of the function signature)
 
-    CDMS_iZip4_Field(const CDMS_iZip4_Field &p);
-    CDMS_iZip4_Field& operator = (const CDMS_iZip4_Field &p);
-    // Copy constructor and assignment operator
-    
-  private:
-    G4CMPTriLinearInterp Interp;
-    G4CMPTriLinearInterp BuildInterp( G4String EpotFileName );
+  // Copy constructor and assignment operator
+  CDMS_iZip4_Field(const CDMS_iZip4_Field &p);
+  CDMS_iZip4_Field& operator = (const CDMS_iZip4_Field &p);
+  
+private:
+  G4CMPTriLinearInterp Interp;
+  void BuildInterp(const G4String& EpotFileName);
 };
 
 namespace CDMS_Efield
 {
-  bool vector_comp( const vector<G4double>& p1, const vector<G4double>& p2 );
+  G4bool vector_comp(const std::vector<G4double>& p1,
+		     const std::vector<G4double>& p2);
 }
 
-
-#endif
+#endif	/* CDMS_iZip4_Field_h */
