@@ -26,12 +26,10 @@
 
 ChargeDetectorConstruction::ChargeDetectorConstruction()
    : liquidHelium(0), germanium(0), alminum(0), tungsten(0), worldPhys(0),
-     constructed(false), ifField(true), field(0),
+     constructed(false), ifField(true),
      latManager(G4LatticeManager::GetLatticeManager()) {;}
 
-ChargeDetectorConstruction::~ChargeDetectorConstruction() {
-    delete field;
-}
+ChargeDetectorConstruction::~ChargeDetectorConstruction() {;}
 
 G4VPhysicalVolume* ChargeDetectorConstruction::Construct() {
   if (!constructed) { 
@@ -71,8 +69,8 @@ void ChargeDetectorConstruction::SetupGeometry()
   G4LogicalVolume* germaniumLogical = new G4LogicalVolume(germaniumSolid,germanium,"germaniumLogical");
   G4VPhysicalVolume* germaniumPhysical = new G4PVPlacement(0,G4ThreeVector(),germaniumLogical,"germaniumPhysical",worldLogical,false,0);
 
-  // E field attached to germanium
-  field = new ChargeEMField(germaniumLogical);
+  // Attach E field to germanium
+  ChargeEMField setField(germaniumLogical);
 
   // Physical lattice for placed detector
   G4LatticePhysical* detLattice =

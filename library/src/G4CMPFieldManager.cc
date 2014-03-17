@@ -7,6 +7,7 @@
 #include "G4ClassicalRK4.hh"
 #include "G4ElectricField.hh"
 #include "G4EqMagElectricField.hh"
+#include "G4LatticeLogical.hh"
 #include "G4MagIntegratorStepper.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PhysicalConstants.hh"
@@ -17,80 +18,49 @@
 
 // Constructor and destructor
 
-G4CMPFieldManager::G4CMPFieldManager(G4ElectricField *detectorField)
-  : G4FieldManager(detectorField) {
-  G4RotationMatrix Mvalley;
-
+G4CMPFieldManager::G4CMPFieldManager(G4ElectricField *detectorField,
+				     const G4LatticeLogical* lattice)
+  : G4FieldManager(detectorField), stepperVars(8), stepperLength(1e-9*mm),
+    EqNormal(0), normalStepper(0), normalDriver(0), normalChordFinder(0),
+    theLattice(lattice), nValleys(lattice?lattice->NumberOfValleys():0) {
+  // Set up default field for holes, non-valley charged particles
   EqNormal = new G4EqMagElectricField(detectorField);
-
-  Mvalley.set(-pi/4,-pi/4, pi/4);
-  EqValley1 = new G4CMPEqEMField(detectorField, G4AffineTransform(Mvalley));
-
-  Mvalley.set( pi/4,-pi/4,-pi/4);
-  EqValley2 = new G4CMPEqEMField(detectorField, G4AffineTransform(Mvalley));
-
-  Mvalley.set(-pi/4, pi/4, pi/4);
-  EqValley3 = new G4CMPEqEMField(detectorField, G4AffineTransform(Mvalley));
-
-  Mvalley.set( pi/4, pi/4,-pi/4);
-  EqValley4 = new G4CMPEqEMField(detectorField, G4AffineTransform(Mvalley));
-  
-  const G4int stepperVars = 8;
-
   normalStepper  = new G4ClassicalRK4(EqNormal, stepperVars);
-  valley1Stepper = new G4ClassicalRK4(EqValley1, stepperVars);
-  valley2Stepper = new G4ClassicalRK4(EqValley2, stepperVars);
-  valley3Stepper = new G4ClassicalRK4(EqValley3, stepperVars);
-  valley4Stepper = new G4ClassicalRK4(EqValley4, stepperVars);
-  
   normalDriver  = new G4MagInt_Driver(1e-9*mm, normalStepper, stepperVars);
-  valley1Driver = new G4MagInt_Driver(1e-9*mm, valley1Stepper, stepperVars);
-  valley2Driver = new G4MagInt_Driver(1e-9*mm, valley2Stepper, stepperVars);
-  valley3Driver = new G4MagInt_Driver(1e-9*mm, valley3Stepper, stepperVars);
-  valley4Driver = new G4MagInt_Driver(1e-9*mm, valley4Stepper, stepperVars);
-  
   normalChordFinder  = new G4ChordFinder(normalDriver);
-  valley1ChordFinder = new G4ChordFinder(valley1Driver);
-  valley2ChordFinder = new G4ChordFinder(valley2Driver);
-  valley3ChordFinder = new G4ChordFinder(valley3Driver);
-  valley4ChordFinder = new G4ChordFinder(valley4Driver);
+
+  // Set up fielding handling for valleys, if lattice was provided
+  for (size_t iv=0; iv<nValleys; iv++) {
+    EqValley.push_back(new G4CMPEqEMField(detectorField, theLattice->GetValley(iv)));
+    valleyStepper.push_back(new G4ClassicalRK4(EqValley.back(), stepperVars));
+    valleyDriver.push_back(new G4MagInt_Driver(stepperLength, valleyStepper.back(), stepperVars));
+    valleyChordFinder.push_back(new G4ChordFinder(valleyDriver.back()));
+  }
 }
 
 G4CMPFieldManager::~G4CMPFieldManager() {
-  delete EqNormal;
-  delete EqValley1;
-  delete EqValley2;
-  delete EqValley3;
-  delete EqValley4;
+  delete EqNormal;          EqNormal=0;
+  delete normalStepper;     normalStepper=0;
+  delete normalDriver;      normalDriver=0;
+  delete normalChordFinder; normalChordFinder=0;
 
-  delete normalStepper;
-  delete valley1Stepper;
-  delete valley2Stepper;
-  delete valley3Stepper;
-  delete valley4Stepper;
-
-  delete normalDriver;
-  delete valley1Driver;
-  delete valley2Driver;
-  delete valley3Driver;
-  delete valley4Driver;
-
-  delete normalChordFinder;
-  delete valley1ChordFinder;
-  delete valley2ChordFinder;
-  delete valley3ChordFinder;
-  delete valley4ChordFinder;
+  for (size_t iv=0; iv<nValleys; iv++) {
+    delete EqValley[iv];          EqValley[iv]=0;
+    delete valleyStepper[iv];     valleyStepper[iv]=0;
+    delete valleyDriver[iv];      valleyDriver[iv]=0;
+    delete valleyChordFinder[iv]; valleyChordFinder[iv]=0;
+  }
 }
 
 
-void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack){
+void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
   if (aTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
-    int valley = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
-    switch(valley) {
-    case 1: SetChordFinder(valley1ChordFinder); break;
-    case 2: SetChordFinder(valley2ChordFinder); break;
-    case 3: SetChordFinder(valley3ChordFinder); break;
-    case 4: SetChordFinder(valley4ChordFinder); break;
+    G4int iv = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
+    if (iv>=0 && iv<(G4int)nValleys) {
+      SetChordFinder(valleyChordFinder[iv]);
+    } else {
+      G4cerr << "ERROR: G4CMPFieldManager: invalid valley " << iv << G4endl;
+      SetChordFinder(normalChordFinder);
     }
   } else {
     SetChordFinder(normalChordFinder);

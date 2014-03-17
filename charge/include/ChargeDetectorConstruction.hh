@@ -6,7 +6,6 @@
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
 
-class ChargeEMField;
 class G4LatticeManager;
 class G4Material;
 class G4VPhysicalVolume;
@@ -31,7 +30,6 @@ private:
   G4VPhysicalVolume* worldPhys;
   G4bool constructed;
   G4bool ifField;
-  ChargeEMField* field;
   G4LatticeManager* latManager;
 
 public:

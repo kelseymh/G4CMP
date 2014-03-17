@@ -5,47 +5,43 @@
 
 #include "globals.hh"
 #include "G4FieldManager.hh"
+#include <vector>
 
 class G4CMPEqEMField;
 class G4ChordFinder;
 class G4ElectricField;
 class G4EqMagElectricField;
+class G4LatticeLogical;
 class G4MagInt_Driver;
 class G4MagIntegratorStepper;
 
 
 class G4CMPFieldManager : public G4FieldManager {
 public:
-  G4CMPFieldManager(G4ElectricField *detectorField);
+  G4CMPFieldManager(G4ElectricField *detectorField,
+		    const G4LatticeLogical* lattice);
+
   ~G4CMPFieldManager();
 
   void ConfigureForTrack(const G4Track* aTrack);
 
 private:
-  G4EqMagElectricField *EqNormal;	// Generic field outside valleys
-  G4CMPEqEMField *EqValley1;		// Field for each of four Ge valleys
-  G4CMPEqEMField *EqValley2;
-  G4CMPEqEMField *EqValley3;
-  G4CMPEqEMField *EqValley4;
+  const G4int stepperVars;
+  const G4double stepperLength;
 
-  G4MagIntegratorStepper *normalStepper;
-  G4MagIntegratorStepper *valley1Stepper;
-  G4MagIntegratorStepper *valley2Stepper;
-  G4MagIntegratorStepper *valley3Stepper;
-  G4MagIntegratorStepper *valley4Stepper;
+  // NOTE: All pointers are kept in order to delete in dtor
 
-  G4MagInt_Driver *normalDriver;
-  G4MagInt_Driver *valley1Driver;
-  G4MagInt_Driver *valley2Driver;
-  G4MagInt_Driver *valley3Driver;
-  G4MagInt_Driver *valley4Driver;
+  G4EqMagElectricField* EqNormal;	// Generic field outside valleys
+  G4MagIntegratorStepper* normalStepper;
+  G4MagInt_Driver* normalDriver;
+  G4ChordFinder* normalChordFinder;
 
-  G4ChordFinder *normalChordFinder;
-  G4ChordFinder *valley1ChordFinder;
-  G4ChordFinder *valley2ChordFinder;
-  G4ChordFinder *valley3ChordFinder;
-  G4ChordFinder *valley4ChordFinder;
+  const G4LatticeLogical* theLattice;
+  size_t nValleys;
+  std::vector<G4CMPEqEMField*> EqValley;	// Field for each Ge valley
+  std::vector<G4MagIntegratorStepper*> valleyStepper;
+  std::vector<G4MagInt_Driver*> valleyDriver;
+  std::vector<G4ChordFinder*> valleyChordFinder;
 };
 
-
-#endif
+#endif	/* G4CMPFieldManager_h */
