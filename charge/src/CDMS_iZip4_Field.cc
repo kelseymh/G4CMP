@@ -69,7 +69,7 @@ void CDMS_iZip4_Field::GetFieldValue(const G4double Point[3],
 				     G4double *Efield) {
   G4double tempPoint[4] = {Point[0], Point[1], Point[2], 0.0};
   this->GetFieldValue(tempPoint, Efield);
-};
+}
 
 void CDMS_iZip4_Field::GetFieldValue(const G4double Point[4],
 				     G4double *Efield) const {
