@@ -150,13 +150,13 @@ G4CMPProcessUtils::GetValley(const G4Track& track) const {
 G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 						const G4ThreeVector& p,
 						G4double energy) const {
-  if (charge != 0 && charge != -1) {
+  if (charge != 1 && charge != -1) {
     G4cerr << "ERROR:  CreateChargeCarrier invalid charge " << charge << G4endl;
     return 0;
   }
 
   G4ParticleDefinition* theCarrier = 0;
-  if (charge==0) theCarrier = G4CMPDriftHole::Definition();
+  if (charge==1) theCarrier = G4CMPDriftHole::Definition();
   else theCarrier = G4CMPDriftElectron::Definition();
 
   G4Track* sec = new G4Track(new G4DynamicParticle(theCarrier, p, energy),
