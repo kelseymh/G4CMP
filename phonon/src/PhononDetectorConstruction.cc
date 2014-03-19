@@ -127,6 +127,8 @@ void PhononDetectorConstruction::SetupGeometry()
 
   // G4LatticeManager gives physics processes access to lattices by volume
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
+  LM->SetVerboseLevel(1);
+
   G4LatticeLogical* GeLogical = LM->LoadLattice(fGermanium, "Ge");
 
   // G4LatticePhysical assigns G4LatticeLogical a physical orientation

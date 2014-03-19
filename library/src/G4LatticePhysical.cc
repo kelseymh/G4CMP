@@ -30,6 +30,7 @@
 //
 // 20131115  Save rotation results in local variable, report verbosely
 // 20131116  Replace G4Transform3D with G4RotationMatrix
+// 20140319  Add output functions for diagnostics
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -155,3 +156,15 @@ G4LatticePhysical::RotateToLocal(const G4ThreeVector& dir) const {
 
   return result;
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Dump contained logical lattice with volume information
+
+void G4LatticePhysical::Dump(std::ostream& os) const {
+  os << "# Physical lattice:\n"
+     << "# (theta,phi) = " << fTheta/deg << " " << fPhi/deg << " deg\n"
+     << "# Placement " << fLocalToGlobal << "\n"
+     << "# Logical lattice:\n" << *fLattice << std::endl;
+}
+

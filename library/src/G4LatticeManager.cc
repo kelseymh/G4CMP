@@ -29,6 +29,7 @@
 // $Id$
 //
 // 20131113  Delete lattices in (new) registry, not in lookup maps
+// 20140319  Dump lattices on load with verbosity; don't double register!
 
 #include "G4LatticeManager.hh"
 #include "G4LatticeLogical.hh"
@@ -95,6 +96,11 @@ G4bool G4LatticeManager::RegisterLattice(G4Material* Mat,
 					 G4LatticeLogical* Lat) {
   if (!Mat || !Lat) return false;	// Don't register null pointers
 
+  if (fLLatticeList.find(Mat) != fLLatticeList.end()) {
+    G4cerr << "WARNING:  Replacing existing lattice for " << Mat->GetName()
+	   << G4endl;
+  }
+
   fLLattices.insert(Lat);		// Take ownership in registry
   fLLatticeList[Mat] = Lat;
 
@@ -118,7 +124,8 @@ G4LatticeLogical* G4LatticeManager::LoadLattice(G4Material* Mat,
 		      
   G4LatticeReader latReader(verboseLevel);
   G4LatticeLogical* newLat = latReader.MakeLattice(latDir+"/config.txt");
-  if (verboseLevel>1) G4cout << " Created newLat " << newLat << G4endl;
+  if (verboseLevel>1)
+    G4cout << " Created newLat " << newLat << "\n" << *newLat << G4endl;
 
   if (newLat) RegisterLattice(Mat, newLat);
   else {
@@ -148,7 +155,8 @@ G4LatticePhysical* G4LatticeManager::LoadLattice(G4VPhysicalVolume* Vol,
     new G4LatticePhysical(lLattice, Vol->GetFrameRotation());
   if (pLattice) RegisterLattice(Vol, pLattice);
 
-  if (verboseLevel>1) G4cout << " Created pLattice " << pLattice << G4endl;
+  if (verboseLevel>1)
+    G4cout << " Created pLattice " << pLattice << "\n" << *pLattice << G4endl;
 
   return pLattice;
 }
@@ -164,6 +172,11 @@ G4bool G4LatticeManager::RegisterLattice(G4VPhysicalVolume* Vol,
 
   // SPECIAL: Register first lattice with a null volume to act as default
   if (fPLatticeList.empty()) fPLatticeList[0] = Lat;
+
+  if (fPLatticeList.find(Vol) != fPLatticeList.end()) {
+    G4cerr << "WARNING:  Replacing existing lattice for " << Vol->GetName()
+	   << G4endl;
+  }
 
   fPLattices.insert(Lat);
   fPLatticeList[Vol] = Lat;
