@@ -165,12 +165,12 @@ G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& point, const G4i
     else if (X[mid][0] < point[0])
     {
       min = mid + 1;
-      mid = min + ceil((max - min)/2);
+      mid = min + (G4int)ceil((max - min)/2.);
     }
     else
     {
       max = mid - 1;
-      mid = min + floor((max - min)/2);
+      mid = min + (G4int)floor((max - min)/2.);
     }
   }
 }
@@ -225,9 +225,9 @@ void G4CMPTriLinearInterp::FindTetrahedon(const G4double point[4], G4double bary
   const G4double maxError = 0;
   G4int minBaryIdx;
   G4double bestBary[4];
-  G4int bestTet;
+  G4int bestTet = -1;
   if (TetraIdx == -1) TetraIdx = 0;
-  for (G4int count = 0; count < Tetrahedra.size(); ++count)
+  for (size_t count = 0; count < Tetrahedra.size(); ++count)
   {
     Cart2Bary(point,bary);
 
@@ -264,7 +264,7 @@ void G4CMPTriLinearInterp::FindTetrahedon(const G4double point[4], G4double bary
          << "Targeted walk search took too long. Trying a brute force search." 
          << G4endl;
 
-  for (TetraIdx = 0; TetraIdx < Tetrahedra.size(); ++TetraIdx)
+  for (TetraIdx = 0; TetraIdx < (G4int)Tetrahedra.size(); ++TetraIdx)
   {
     Cart2Bary(point,bary);
 
@@ -306,7 +306,7 @@ inline void G4CMPTriLinearInterp::Cart2Bary(const G4double point[4], G4double ba
 }
 
 inline void G4CMPTriLinearInterp::BuildT4x3(const G4double point[4],
-				       G4double ET[4][3]) const
+					    G4double ET[4][3]) const
 {
   G4double T[3][3];
   G4double Tinv[3][3];

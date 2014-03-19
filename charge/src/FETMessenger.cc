@@ -17,8 +17,8 @@ FETMessenger::~FETMessenger()
     delete fetDir;
 }
 
-void FETMessenger::SetNewValue(G4UIcommand* command, G4String NewValue)
+void FETMessenger::SetNewValue(G4UIcommand* command, G4String /*NewValue*/)
 {
-    if(command == cmd)
+    if (command == cmd)
         target->Run();
 }

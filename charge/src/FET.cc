@@ -289,7 +289,7 @@ G4double FET::CalculateChargeSupressionFactor(const G4Run* run)
     for(G4int i=0; i<numEvents; ++i)
     {
         chFraction = eventEnergy[i]/totalEnergy; //Assume elec recoil
-        ncc = 4*floor(chargeEnergy*chFraction/elecHoleGap/4 + .5); //use floor(x+.5) to round.
+        ncc = 4*(G4int)floor(chargeEnergy*chFraction/elecHoleGap/4 + .5); //use floor(x+.5) to round.
         simChargeEnergyEvent = ncc * elecHoleGap;
         simChargeEnergy += simChargeEnergyEvent;
 
@@ -320,11 +320,12 @@ void FET::BuildFETTemplate(vector<vector<vector<G4double> > >& FETTemplate)
     {
         for(G4int i=0; i<channels; ++i)
         {
-            for(G4int j=0; j<preTrig/dt; ++j)
+	    G4int ndt = (G4int)(preTrig/dt);
+            for(G4int j=0; j<ndt; ++j)
                 FETTemplate[i][i][j] = 0;
 
-            for(G4int j=1; j<timeBins-preTrig/dt+1; ++j)
-                FETTemplate[i][i][j+preTrig/dt-1] = exp(-j*dt/decayTime);
+            for(G4int k=1; k<timeBins-ndt+1; ++k)
+	        FETTemplate[i][i][k+ndt-1] = exp(-k*dt/decayTime);
         }
     }
     templateFile.close();

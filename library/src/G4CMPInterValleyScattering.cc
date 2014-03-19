@@ -84,7 +84,7 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   E_0_ED_201 = fieldMagHV; 
   
   G4double mfp = velocity * 6.72e-6 * 
-    pow((E_0_ED_203 * E_0_ED_203 + abs(E_0_ED_201) * abs(E_0_ED_201)), 3.24/2.0 );
+    pow((E_0_ED_203*E_0_ED_203 + E_0_ED_201*E_0_ED_201), 3.24/2.0 );
   
   return mfp;
 }
