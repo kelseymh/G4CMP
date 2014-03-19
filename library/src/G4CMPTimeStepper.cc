@@ -64,8 +64,7 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
   normalToValley = G4AffineTransform(trix).Inverse();
 
   G4RotationMatrix mInv =
-    trix.inverse()*theLattice->GetElectronMass()*trix;
-  mInv.invert();
+    trix.inverse()*(theLattice->GetMInvTensor())*trix;
 
   G4ThreeVector k = aTrack.GetMomentum()/hbarc;
   G4ThreeVector k_valley = normalToValley.TransformAxis(k);

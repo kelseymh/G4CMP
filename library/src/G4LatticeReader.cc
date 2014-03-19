@@ -215,7 +215,7 @@ G4bool G4LatticeReader::ProcessMassTensor() {
     G4cout << " ProcessMassTensor " << mxx << " " << myy << " " << mzz
 	   << G4endl;
 
-  pLattice->SetElectronMass(mxx, myy, mzz);
+  pLattice->SetMassTensor(mxx, myy, mzz);
   return psLatfile->good();
 }
 

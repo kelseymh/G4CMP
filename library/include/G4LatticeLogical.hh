@@ -95,17 +95,19 @@ public:
 public:
   // Parameters and structures for charge carrier transport
   void SetSoundSpeed(G4double v) { fVSound = v; }
-  void SetElectronScatter(G4double l0) { fL0_e = l0; }
   void SetHoleScatter(G4double l0) { fL0_h = l0; }
-  void SetElectronMass(const G4RotationMatrix& emass) { fElectronMass = emass; }
-  void SetElectronMass(G4double mXX, G4double mYY, G4double mZZ);
   void SetHoleMass(G4double hmass) { fHoleMass = hmass; }
+  void SetElectronScatter(G4double l0) { fL0_e = l0; }
+  void SetMassTensor(const G4RotationMatrix& etens);
+  void SetMassTensor(G4double mXX, G4double mYY, G4double mZZ);
 
   G4double GetSoundSpeed() const                  { return fVSound; }
-  G4double GetElectronScatter() const             { return fL0_e; }
   G4double GetHoleScatter() const                 { return fL0_h; }
-  const G4RotationMatrix& GetElectronMass() const { return fElectronMass; }
   G4double GetHoleMass() const                    { return fHoleMass; }
+  G4double GetElectronScatter() const             { return fL0_e; }
+  G4double GetElectronMass() const 		  { return fElectronMass; }
+  const G4RotationMatrix& GetMassTensor() const   { return fMassTensor; }
+  const G4RotationMatrix& GetMInvTensor() const   { return fMassInverse; }
 
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley) { fValley.push_back(valley); }
@@ -140,8 +142,11 @@ private:
   G4double fL0_e;	// Scattering length for electrons
   G4double fL0_h;	// Scattering length for holes
 
-  G4RotationMatrix fElectronMass;	 // Electron mass tensor
-  G4double fHoleMass;			 // Effective mass of +ve carrier
+  const G4double mElectron;	 // Free electron mass (without G4's c^2)
+  G4double fHoleMass;		 // Effective mass of +ve carrier
+  G4double fElectronMass;	 // Effective mass (scalar) of -ve carrier
+  G4RotationMatrix fMassTensor;	 // Full electron mass tensor
+  G4RotationMatrix fMassInverse; // Inverse electron mass tensor (convenience)
   std::vector<G4RotationMatrix> fValley; // Electron transport directions
 };
 

@@ -76,8 +76,10 @@ public:
   G4double GetHoleScatter() const     { return fLattice->GetHoleScatter(); }
 
   // Charge carriers have effective mass
-  const G4RotationMatrix& GetElectronMass() const { return fLattice->GetElectronMass(); }
   G4double GetHoleMass() const { return fLattice->GetHoleMass(); }
+  G4double GetElectronMass() const { return fLattice->GetElectronMass(); }
+  const G4RotationMatrix& GetMassTensor() const { return fLattice->GetMassTensor(); }
+  const G4RotationMatrix& GetMInvTensor() const   { return fLattice->GetMInvTensor(); }
 
   // Electrons are biased to move along energy minima in momentum space
   size_t NumberOfValleys() const { return fLattice->NumberOfValleys(); }

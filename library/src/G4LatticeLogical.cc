@@ -30,6 +30,7 @@
 //
 // 20140218  Add new charge-carrier parameters to output
 // 20140306  Allow valley filling using Euler angles directly
+// 20140318  Compute electron mass scalar (Herring-Vogt) from tensor
 
 #include "G4LatticeLogical.hh"
 #include "G4RotationMatrix.hh"
@@ -44,7 +45,11 @@
 G4LatticeLogical::G4LatticeLogical()
   : verboseLevel(0), fVresTheta(0), fVresPhi(0), fDresTheta(0), fDresPhi(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0),
-    fBeta(0), fGamma(0), fLambda(0), fMu(0) {
+    fBeta(0), fGamma(0), fLambda(0), fMu(0),
+    fVSound(0.), fL0_e(0.), fL0_h(0.), 
+    mElectron(electron_mass_c2/c_squared),
+    fHoleMass(mElectron), fElectronMass(mElectron),
+    fMassTensor(G4Rep3x3(mElectron,0.,0.,0.,mElectron,0.,0.,0.,mElectron)) {
   for (G4int i=0; i<3; i++) {
     for (G4int j=0; j<MAXRES; j++) {
       for (G4int k=0; k<MAXRES; k++) {
@@ -203,19 +208,37 @@ G4ThreeVector G4LatticeLogical::MapKtoVDir(G4int polarizationState,
 
 // Store electron mass tensor using diagonal elements
 
-void G4LatticeLogical::SetElectronMass(G4double mXX, G4double mYY,
-				       G4double mZZ) {
+void G4LatticeLogical::SetMassTensor(G4double mXX, G4double mYY, G4double mZZ) {
   if (verboseLevel>1) {
-    G4cout << "G4LatticeLogical::SetElectronmass " << mXX << " " << mYY
+    G4cout << "G4LatticeLogical::SetMassTensor " << mXX << " " << mYY
 	   << " " << mZZ << " *m_e" << G4endl;
   }
 
   // NOTE:  Use of G4RotationMatrix not appropriate here, as matrix is
   //        not normalized.  But CLHEP/Matrix not available in GEANT4.
-  G4double mElectron = electron_mass_c2/c_squared;
-  fElectronMass.set(G4Rep3x3(mXX*mElectron, 0., 0.,
-			     0., mYY*mElectron, 0.,
-			     0., 0., mZZ*mElectron));
+  fMassTensor.set(G4Rep3x3(mXX*mElectron, 0., 0.,
+			   0., mYY*mElectron, 0.,
+			   0., 0., mZZ*mElectron));
+  fMassInverse = fMassTensor.inverse();
+
+  fElectronMass = mElectron * 3./(1./mXX + 1./mYY + 1./mZZ);
+}
+
+void G4LatticeLogical::SetMassTensor(const G4RotationMatrix& etens) {
+  // Check if mass tensor already has electron mass, or is just coefficients
+  G4bool hasEmass = (etens.xx()/mElectron > 1e-3 ||
+		     etens.yy()/mElectron > 1e-3 ||
+		     etens.zz()/mElectron > 1e-3);
+  G4double mscale = hasEmass ? 1. : mElectron;
+
+  // NOTE:  Use of G4RotationMatrix not appropriate here, as matrix is
+  //        not normalized.  But CLHEP/Matrix not available in GEANT4.
+  fMassTensor.set(G4Rep3x3(etens.xx()*mscale, 0., 0.,
+			   0., etens.yy()*mscale, 0.,
+			   0., 0., etens.zz()*mscale));
+  fMassInverse = fMassTensor.inverse();
+
+  fElectronMass = 3./(1./etens.xx() + 1./etens.yy() + 1./etens.zz());  
 }
 
 // Store drifting-electron valley using Euler angles
@@ -253,12 +276,11 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nLDOS " << fLDOS << " STDOS " << fSTDOS << " FTDOS " << fFTDOS
      << std::endl;
 
-  G4double mElectron = electron_mass_c2 / c_squared;	// Output is scaled
   os << "# Charge carrier propagation parameters"
      << "\nhmass " << fHoleMass/mElectron
-     << "\nemass " << fElectronMass.xx()/mElectron
-     << " " << fElectronMass.yy()/mElectron
-     << " " << fElectronMass.zz()/mElectron << std::endl;
+     << "\nemass " << fMassTensor.xx()/mElectron
+     << " " << fMassTensor.yy()/mElectron
+     << " " << fMassTensor.zz()/mElectron << std::endl;
 
   for (size_t i=0; i<NumberOfValleys(); i++) {
     os << "valley " << fValley[i].phi()/deg << " " << fValley[i].theta()/deg

@@ -31,7 +31,9 @@ G4CMPFieldManager::G4CMPFieldManager(G4ElectricField *detectorField,
 
   // Set up fielding handling for valleys, if lattice was provided
   for (size_t iv=0; iv<nValleys; iv++) {
-    EqValley.push_back(new G4CMPEqEMField(detectorField, theLattice->GetValley(iv)));
+    EqValley.push_back(new G4CMPEqEMField(detectorField,
+					  theLattice->GetValley(iv),
+					  theLattice->GetMassTensor()));
     valleyStepper.push_back(new G4ClassicalRK4(EqValley.back(), stepperVars));
     valleyDriver.push_back(new G4MagInt_Driver(stepperLength, valleyStepper.back(), stepperVars));
     valleyChordFinder.push_back(new G4ChordFinder(valleyDriver.back()));
