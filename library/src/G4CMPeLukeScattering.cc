@@ -69,7 +69,7 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
 
   G4ThreeVector k = aTrack.GetMomentum()/hbarc;
   mInv = theLattice->GetMInvTensor();
-  G4ThreeVector v = trix.inverse()*mInv*trix*k*hbar_Planck;
+  G4ThreeVector v = ((trix.inverse()*mInv*trix) * k) * hbar_Planck;
   G4cout << "v = " << v.mag()/m*s << G4endl;
   G4ThreeVector k_valley = normalToValley.TransformPoint(k);
   G4ThreeVector k_HV(k_valley[0]*T[0], k_valley[1]*T[1], k_valley[2]*T[2]);

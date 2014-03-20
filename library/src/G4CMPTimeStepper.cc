@@ -51,8 +51,8 @@ G4double G4CMPTimeStepper::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 				     G4double /*prevStepSize*/,
 				     G4ForceCondition* /*cond*/) {
-
   ComputeTimeSteps();
+
   // Only drifting electrons have special treatment
   if (aTrack.GetParticleDefinition() != G4CMPDriftElectron::Definition()) {
     G4double v = aTrack.GetStep()->GetPostStepPoint()->GetVelocity();
@@ -64,13 +64,10 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
   valleyToNormal = G4AffineTransform(trix);
   normalToValley = G4AffineTransform(trix).Inverse();
 
-  G4RotationMatrix mInv =
-    theLattice->GetMInvTensor();
-
   G4ThreeVector k = aTrack.GetMomentum()/hbarc;
   G4ThreeVector k_valley = normalToValley.TransformAxis(k);
   
-  G4ThreeVector v_valley = hbar_Planck*(mInv*k_valley);
+  G4ThreeVector v_valley = hbar_Planck * (theLattice->GetMInvTensor()*k_valley);
   G4ThreeVector v = valleyToNormal.TransformAxis(v_valley);
   
   return v.mag()*dt_e;
