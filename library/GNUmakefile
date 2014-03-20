@@ -12,7 +12,7 @@ endif
 
 include $(G4INSTALL)/config/architecture.gmk
 
-CPPFLAGS += -I$(G4INCLUDE) -I$(G4WORKDIR)/include -Dqh_QHpointer
+CPPFLAGS += -Dqh_QHpointer -I$(G4WORKDIR)/include -I$(G4INCLUDE)
 
 # Library goes into user's G4WORKDIR, not into system install
 G4LIBDIR := $(G4WORKDIR)/lib/$(G4SYSTEM)

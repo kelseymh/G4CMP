@@ -302,11 +302,11 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << " " << fMassTensor.yy()/mElectron
      << " " << fMassTensor.zz()/mElectron << std::endl;
 
-  os << "# Henning-Vogt scalar mass: " << fElectronMass/mElectron << std::endl
-     << "# Inverse mass tensor: " << fMassInverse.xx()/mElectron
-     << " " << fMassInverse.yy()/mElectron
-     << " " << fMassInverse.zz()/mElectron
-     << " * m(electron)" << std::endl
+  os << "# Inverse mass tensor: " << fMassInverse.xx()*mElectron
+     << " " << fMassInverse.yy()*mElectron
+     << " " << fMassInverse.zz()*mElectron
+     << " * 1/m(electron)" << std::endl
+     << "# Henning-Vogt scalar mass: " << fElectronMass/mElectron << std::endl
      << "# sqrt(tensor/scalor): " << fMassRatioSqrt.xx()/mElectron
      << " " << fMassRatioSqrt.yy()/mElectron
      << " " << fMassRatioSqrt.zz()/mElectron
