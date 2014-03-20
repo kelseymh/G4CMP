@@ -224,6 +224,10 @@ void G4LatticeLogical::SetMassTensor(G4double mXX, G4double mYY, G4double mZZ) {
 }
 
 void G4LatticeLogical::SetMassTensor(const G4RotationMatrix& etens) {
+  if (verboseLevel>1) {
+    G4cout << "G4LatticeLogical::SetMassTensor " << etens << G4endl;
+  }
+
   // Check if mass tensor already has electron mass, or is just coefficients
   G4bool hasEmass = (etens.xx()/mElectron > 1e-3 ||
 		     etens.yy()/mElectron > 1e-3 ||
@@ -246,7 +250,10 @@ void G4LatticeLogical::FillMassInfo() {
   fElectronMass = 3. / ( 1./fMassTensor.xx() + 1./fMassTensor.yy()
 			 + 1./fMassTensor.zz() );  
 
-  fMassInverse = fMassTensor.inverse();		// 1/m tensor for k/v calcs
+  // 1/m mass tensor used for k and v calculations in valley coordinates
+  fMassInverse.set(G4Rep3x3(1./fMassTensor.xx(), 0., 0.,
+			    0., 1./fMassTensor.yy(), 0.,
+			    0., 0., 1./fMassTensor.zz()));
 
   // Mass ratio tensor used for scattering and field calculations
   fMassRatioSqrt.set(G4Rep3x3(sqrt(fMassTensor.xx()/fElectronMass), 0., 0.,

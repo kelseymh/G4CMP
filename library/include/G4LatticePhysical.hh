@@ -39,6 +39,7 @@
 #include "G4LatticeLogical.hh"
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
+#include <iosfwd>
 
 
 class G4LatticePhysical {
@@ -101,7 +102,7 @@ private:
   G4double fTheta, fPhi;		// Lattice orientation within object
   const G4LatticeLogical* fLattice;	// Underlying lattice parameters
 
-  G4RotationMatrix fLocalToGlobal;
+  G4RotationMatrix fLocalToGlobal;	
   G4RotationMatrix fGlobalToLocal;
 };
 

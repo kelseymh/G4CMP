@@ -15,11 +15,12 @@ G4EXLIB := true
 .PHONY: all
 all: lib bin
 
-EXTRALIBS := -L$(G4WORKDIR)/lib/$(G4SYSTEM) -lG4cmp -lqhullcpp -lqhullstatic_p
+LDFLAGS := -L$(G4WORKDIR)/lib/$(G4SYSTEM)
+EXTRALIBS := -lG4cmp -lqhullcpp -lqhullstatic_p
 EXTRALIBS += -Wl,-rpath,$(G4WORKDIR)/lib/$(G4SYSTEM)
 
 include $(G4INSTALL)/config/binmake.gmk
-CPPFLAGS += -I ../library/include -I$(G4WORKDIR)/include -Dqh_QHpointer
+CPPFLAGS := -I ../library/include -I$(G4WORKDIR)/include -Dqh_QHpointer $(CPPFLAGS)
 
 visclean:
 	rm -f g4*.prim g4*.eps g4*.wrl
