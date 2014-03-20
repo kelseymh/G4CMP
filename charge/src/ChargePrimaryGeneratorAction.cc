@@ -40,9 +40,11 @@ void ChargePrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   for(int i=0;i<10;i++)
   { 
-    particleGun->SetParticlePosition(G4ThreeVector(0.0,0.0,1.26*cm));    
+    particleGun->SetParticlePosition(G4ThreeVector(0.0,0.0,0.0));    
     particleGun->SetParticleEnergy(1e-13*eV);  
     particleGun->SetParticleDefinition(G4CMPDriftElectron::Definition());
+    particleGun->GeneratePrimaryVertex(anEvent);
+    particleGun->SetParticleDefinition(G4CMPDriftHole::Definition());
     particleGun->GeneratePrimaryVertex(anEvent);
   }
 }

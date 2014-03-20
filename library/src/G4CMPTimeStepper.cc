@@ -51,11 +51,12 @@ G4double G4CMPTimeStepper::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 				     G4double /*prevStepSize*/,
 				     G4ForceCondition* /*cond*/) {
-  ComputeTimeSteps(aTrack);
 
+  ComputeTimeSteps();
   // Only drifting electrons have special treatment
   if (aTrack.GetParticleDefinition() != G4CMPDriftElectron::Definition()) {
     G4double v = aTrack.GetStep()->GetPostStepPoint()->GetVelocity();
+    //G4cout << v*dt_h/m << G4endl;
     return v*dt_h;
   }
 
@@ -64,7 +65,7 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
   normalToValley = G4AffineTransform(trix).Inverse();
 
   G4RotationMatrix mInv =
-    trix.inverse()*(theLattice->GetMInvTensor())*trix;
+    theLattice->GetMInvTensor();
 
   G4ThreeVector k = aTrack.GetMomentum()/hbarc;
   G4ThreeVector k_valley = normalToValley.TransformAxis(k);
@@ -85,7 +86,7 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 
 // Compute dt_e, dt_h and valley rotations at current location
 
-void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
+void G4CMPTimeStepper::ComputeTimeSteps() {
   G4FieldManager* fMan =
     G4TransportationManager::GetTransportationManager()->GetFieldManager();
   if (!fMan || !fMan->DoesFieldExist()) {
@@ -93,17 +94,16 @@ void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
     dt_h = 3.*l0_h/velLong;
     return;
   }
-
+  
   const G4Field* field = fMan->GetDetectorField();
 
-  G4ThreeVector pos = aTrack.GetPosition();
-  G4double position[4] = {pos.x(), pos.y(), pos.z(), 0.0};
+  G4double position[4] = {0.0,0.0,0.0,0.0};
   G4double fieldVal[6];
 
   field->GetFieldValue(position,fieldVal);
   G4ThreeVector Efield(fieldVal[3], fieldVal[4], fieldVal[5]);
 
-  dt_e = TimeStepInField(Efield.mag(), 28.0, l0_e);
+  dt_e = TimeStepInField(Efield.mag()/10., 28.0, l0_e);
   dt_h = TimeStepInField(Efield.mag()/10., 14.72, l0_h);
 }
 

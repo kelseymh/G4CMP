@@ -183,7 +183,7 @@ G4double G4CMPTriLinearInterp::GetPotential(const G4double pos[3]) const
     FindTetrahedon(&pos[0], bary);
     
     if (TetraIdx == -1)
-      return -999999;
+      return 0;
     else
       return(V[Tetrahedra[TetraIdx][0]] * bary[0] +
              V[Tetrahedra[TetraIdx][1]] * bary[1] +
@@ -213,12 +213,6 @@ void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) co
       }
     }
 }
-
-/*void G4CMPTriLinearInterp::CalculateTetrahedra()
-{
-    TetraMesh Triangulation(X);
-}*/
-
 
 void G4CMPTriLinearInterp::FindTetrahedon(const G4double point[4], G4double bary[4]) const
 {
@@ -272,10 +266,9 @@ void G4CMPTriLinearInterp::FindTetrahedon(const G4double point[4], G4double bary
       return;
   }
 
-  for (G4int i = 0; i < 4; ++i)
-    bary[i] = bestBary[i];
 
   TetraIdx = bestTet;
+  Cart2Bary(point,bary);
   G4cout << "G4CMPTriLinearInterp::FindTetrahedron: "
          << "Tetrahedron not found! Using best tetrahedron." << G4endl;
   G4cout << "point[0] = " << point[0] << "; point[1] = " << point[1] 
