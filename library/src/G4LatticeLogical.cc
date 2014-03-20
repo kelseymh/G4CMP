@@ -307,9 +307,9 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << " " << fMassInverse.zz()*mElectron
      << " * 1/m(electron)" << std::endl
      << "# Henning-Vogt scalar mass: " << fElectronMass/mElectron << std::endl
-     << "# sqrt(tensor/scalor): " << fMassRatioSqrt.xx()/mElectron
-     << " " << fMassRatioSqrt.yy()/mElectron
-     << " " << fMassRatioSqrt.zz()/mElectron
+     << "# sqrt(tensor/scalor): " << fMassRatioSqrt.xx()
+     << " " << fMassRatioSqrt.yy()
+     << " " << fMassRatioSqrt.zz()
      << std::endl;
 
   for (size_t i=0; i<NumberOfValleys(); i++) {
