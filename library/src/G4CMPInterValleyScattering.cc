@@ -73,6 +73,10 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   
   G4ThreeVector fieldVectorLLT = 
     normalToValley.TransformAxis(fieldVector).unit();
+
+  /**** THIS SHOULD BE RIGHT EXPRESSION, BUT NEED TO FIX x/z MISMATCH
+  G4ThreeVector fieldDirHV = fieldVectorLLT * theLattice->GetMassRatioSqrt();
+  ****/
   G4ThreeVector fieldDirHV = G4ThreeVector(fieldVectorLLT.getX()*(1/1.2172),
 					   fieldVectorLLT.getY()*(1/1.2172),
 					   fieldVectorLLT.getZ()*(1/0.27559)

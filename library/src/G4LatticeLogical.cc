@@ -219,9 +219,8 @@ void G4LatticeLogical::SetMassTensor(G4double mXX, G4double mYY, G4double mZZ) {
   fMassTensor.set(G4Rep3x3(mXX*mElectron, 0., 0.,
 			   0., mYY*mElectron, 0.,
 			   0., 0., mZZ*mElectron));
-  fMassInverse = fMassTensor.inverse();
 
-  fElectronMass = mElectron * 3./(1./mXX + 1./mYY + 1./mZZ);
+  FillMassInfo();
 }
 
 void G4LatticeLogical::SetMassTensor(const G4RotationMatrix& etens) {
@@ -236,9 +235,23 @@ void G4LatticeLogical::SetMassTensor(const G4RotationMatrix& etens) {
   fMassTensor.set(G4Rep3x3(etens.xx()*mscale, 0., 0.,
 			   0., etens.yy()*mscale, 0.,
 			   0., 0., etens.zz()*mscale));
-  fMassInverse = fMassTensor.inverse();
 
-  fElectronMass = 3./(1./etens.xx() + 1./etens.yy() + 1./etens.zz());  
+  FillMassInfo();
+}
+
+// Compute derived quantities from user-input mass tensor
+
+void G4LatticeLogical::FillMassInfo() {
+  // Henning-Vogt scalar mass of electron, used for sound speed calcs  
+  fElectronMass = 3. / ( 1./fMassTensor.xx() + 1./fMassTensor.yy()
+			 + 1./fMassTensor.zz() );  
+
+  fMassInverse = fMassTensor.inverse();		// 1/m tensor for k/v calcs
+
+  // Mass ratio tensor used for scattering and field calculations
+  fMassRatioSqrt.set(G4Rep3x3(sqrt(fMassTensor.xx()/fElectronMass), 0., 0.,
+			      0., sqrt(fMassTensor.yy()/fElectronMass), 0.,
+			      0., 0., sqrt(fMassTensor.zz()/fElectronMass)));
 }
 
 // Store drifting-electron valley using Euler angles
@@ -281,6 +294,16 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nemass " << fMassTensor.xx()/mElectron
      << " " << fMassTensor.yy()/mElectron
      << " " << fMassTensor.zz()/mElectron << std::endl;
+
+  os << "# Henning-Vogt scalar mass: " << fElectronMass/mElectron << std::endl
+     << "# Inverse mass tensor: " << fMassInverse.xx()/mElectron
+     << " " << fMassInverse.yy()/mElectron
+     << " " << fMassInverse.zz()/mElectron
+     << " * m(electron)" << std::endl
+     << "# sqrt(tensor/scalor): " << fMassRatioSqrt.xx()/mElectron
+     << " " << fMassRatioSqrt.yy()/mElectron
+     << " " << fMassRatioSqrt.zz()/mElectron
+     << std::endl;
 
   for (size_t i=0; i<NumberOfValleys(); i++) {
     os << "valley " << fValley[i].phi()/deg << " " << fValley[i].theta()/deg

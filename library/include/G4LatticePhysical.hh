@@ -31,6 +31,7 @@
 // 20131114  Add verbosity for diagnostic output
 // 20131116  Replace G4Transform3D with G4RotationMatrix
 // 20140312  Add pass-through calls for charge-carrier support
+// 20140319  Add output functions for diagnostics
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -91,6 +92,9 @@ public:
   G4ThreeVector RotateToGlobal(const G4ThreeVector& dir) const;
   G4ThreeVector RotateToLocal(const G4ThreeVector& dir) const;
 
+  // Dump logical lattice, with additional info about physical
+  void Dump(std::ostream& os) const;
+
 private:
   G4int verboseLevel;			// Enable diagnostic output
 
@@ -100,5 +104,13 @@ private:
   G4RotationMatrix fLocalToGlobal;
   G4RotationMatrix fGlobalToLocal;
 };
+
+// Write lattice structure to output stream
+
+inline std::ostream& 
+operator<<(std::ostream& os, const G4LatticePhysical& lattice) {
+  lattice.Dump(os);
+  return os;
+}
 
 #endif

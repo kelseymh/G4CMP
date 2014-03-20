@@ -33,6 +33,7 @@
 // 20140218  Add support for charge-carrier functionality
 // 20140306  Allow valley filling using Euler angles directly
 // 20140313  Allow electron mass filling with diagonal elements
+// 20140319  Add "extra" mass tensors with precomputed expressions
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -101,13 +102,14 @@ public:
   void SetMassTensor(const G4RotationMatrix& etens);
   void SetMassTensor(G4double mXX, G4double mYY, G4double mZZ);
 
-  G4double GetSoundSpeed() const                  { return fVSound; }
-  G4double GetHoleScatter() const                 { return fL0_h; }
-  G4double GetHoleMass() const                    { return fHoleMass; }
-  G4double GetElectronScatter() const             { return fL0_e; }
-  G4double GetElectronMass() const 		  { return fElectronMass; }
-  const G4RotationMatrix& GetMassTensor() const   { return fMassTensor; }
-  const G4RotationMatrix& GetMInvTensor() const   { return fMassInverse; }
+  G4double GetSoundSpeed() const                { return fVSound; }
+  G4double GetHoleScatter() const               { return fL0_h; }
+  G4double GetHoleMass() const                  { return fHoleMass; }
+  G4double GetElectronScatter() const           { return fL0_e; }
+  G4double GetElectronMass() const 		{ return fElectronMass; }
+  const G4RotationMatrix& GetMassTensor() const { return fMassTensor; }
+  const G4RotationMatrix& GetMInvTensor() const { return fMassInverse; }
+  const G4RotationMatrix& GetSqrtTensor() const { return fMassRatioSqrt; }
 
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley) { fValley.push_back(valley); }
@@ -119,7 +121,10 @@ public:
 
 public:
   enum { MAXRES=322 };			    // Maximum map resolution (bins)
-  
+
+private:
+  void FillMassInfo();	// Called from SetMassTensor() to compute derived forms
+
 private:
   G4int verboseLevel;			    // Enable diagnostic output
 
@@ -147,6 +152,7 @@ private:
   G4double fElectronMass;	 // Effective mass (scalar) of -ve carrier
   G4RotationMatrix fMassTensor;	 // Full electron mass tensor
   G4RotationMatrix fMassInverse; // Inverse electron mass tensor (convenience)
+  G4RotationMatrix fMassRatioSqrt;       // SQRT of tensor/scalar ratio
   std::vector<G4RotationMatrix> fValley; // Electron transport directions
 };
 
