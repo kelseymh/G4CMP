@@ -23,7 +23,7 @@ class G4CMPEqEMField : public G4EquationOfMotion
 public:
   G4CMPEqEMField(G4ElectroMagneticField *emField,
 		 const G4RotationMatrix& valleyXform,
-		 const G4RotationMatrix& electronMass);
+		 const G4RotationMatrix& electronMInv);
 
   ~G4CMPEqEMField() {;} 
 
@@ -49,8 +49,8 @@ public:
   void SetValleyTransform(const G4RotationMatrix& xform);
   const G4RotationMatrix& GetValleyTransform() { return normalToValley; }
 
-  void SetMassTensor(const G4RotationMatrix& electronMass) {
-    massTensor = electronMass;
+  void SetMassTensor(const G4RotationMatrix& electronMInv) {
+    massInverse = electronMass;
   }
   const G4RotationMatrix& GetMassTensor() { return massTensor; }
 
@@ -59,7 +59,7 @@ private:
   G4double fMassCof;
   G4RotationMatrix normalToValley;
   G4RotationMatrix valleyToNormal;
-  G4RotationMatrix massTensor;
+  G4RotationMatrix massInverse;
 };
 
 #endif

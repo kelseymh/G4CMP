@@ -15,10 +15,10 @@
 
 G4CMPEqEMField::G4CMPEqEMField(G4ElectroMagneticField *emField,
 			       const G4RotationMatrix& valleyXform,
-			       const G4RotationMatrix& electronMass)
+			       const G4RotationMatrix& electronMInv)
   : G4EquationOfMotion(emField) {
   SetValleyTransform(valleyXform);	// Default transform, may be replaced
-  SetMassTensor(electronMass);
+  SetMassTensor(electronMInv);
 }
 
 
@@ -37,7 +37,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
     G4ThreeVector pc(y[3], y[4], y[5]);
     G4ThreeVector p = pc/c_light;
     
-    G4RotationMatrix mInv = valleyToNormal*massTensor.inverse()*normalToValley;
+    G4RotationMatrix mInv = valleyToNormal*massInv*normalToValley;
 
     G4ThreeVector v = mInv*p;
     G4double vel = v.mag();
