@@ -204,7 +204,7 @@ void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) co
     else
     {
       G4double ET[4][3];
-      BuildT4x3(pos, ET);
+      BuildT4x3(ET);
       for (G4int i = 0; i < 3; ++i)
       {
         field[i] = 0.0;
