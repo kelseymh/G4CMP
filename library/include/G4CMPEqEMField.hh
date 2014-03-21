@@ -50,9 +50,9 @@ public:
   const G4RotationMatrix& GetValleyTransform() { return normalToValley; }
 
   void SetMassTensor(const G4RotationMatrix& electronMInv) {
-    massInverse = electronMass;
+    massInverse = electronMInv;
   }
-  const G4RotationMatrix& GetMassTensor() { return massTensor; }
+  const G4RotationMatrix& GetMassTensor() { return massInverse; }
 
 private:
   G4double fElectroMagCof;

@@ -12,7 +12,7 @@
 ChargeEMField::ChargeEMField(G4LogicalVolume* logVol) {
   G4LatticeLogical* lattice = G4LatticeManager::GetLatticeManager()->GetLattice(logVol->GetMaterial());
 
-  CDMS_iZip4_Field* fEMfield  = new CDMS_iZip4_Field("Epot_iZip4");
+  CDMS_iZip4_Field* fEMfield  = new CDMS_iZip4_Field("Epot_iZip4_small");
   G4FieldManager*   fFieldMgr = new G4CMPFieldManager(fEMfield, lattice);
 
   fFieldMgr->SetDetectorField(fEMfield);
