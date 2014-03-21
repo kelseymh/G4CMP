@@ -1,3 +1,5 @@
+// $Id$
+
 #include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
 #include "libqhullcpp/QhullFacetList.h"
@@ -279,7 +281,7 @@ void G4CMPTriLinearInterp::FindTetrahedon(const G4double point[4], G4double bary
          << G4endl;
 }
 
-inline void G4CMPTriLinearInterp::Cart2Bary(const G4double point[4], G4double bary[4]) const
+void G4CMPTriLinearInterp::Cart2Bary(const G4double point[4], G4double bary[4]) const
 {
   G4double T[3][3];
   G4double invT[3][3];
@@ -298,8 +300,7 @@ inline void G4CMPTriLinearInterp::Cart2Bary(const G4double point[4], G4double ba
   bary[3] = 1.0 - bary[0] - bary[1] - bary[2];
 }
 
-inline void G4CMPTriLinearInterp::BuildT4x3(const G4double point[4],
-					    G4double ET[4][3]) const
+void G4CMPTriLinearInterp::BuildT4x3(G4double ET[4][3]) const
 {
   G4double T[3][3];
   G4double Tinv[3][3];
@@ -316,14 +317,14 @@ inline void G4CMPTriLinearInterp::BuildT4x3(const G4double point[4],
   }
 }
 
-inline G4double G4CMPTriLinearInterp::Det3(const G4double matrix[3][3]) const
+G4double G4CMPTriLinearInterp::Det3(const G4double matrix[3][3]) const
 {
         return(matrix[0][0]*(matrix[1][1]*matrix[2][2]-matrix[2][1]*matrix[1][2])
                 -matrix[0][1]*(matrix[1][0]*matrix[2][2]-matrix[2][0]*matrix[1][2])
                 +matrix[0][2]*(matrix[1][0]*matrix[2][1]-matrix[2][0]*matrix[1][1]));
 }
 
-inline void G4CMPTriLinearInterp::MatInv(const G4double matrix[3][3], G4double result[3][3]) const
+void G4CMPTriLinearInterp::MatInv(const G4double matrix[3][3], G4double result[3][3]) const
 {
     G4double determ = Det3(matrix);
     result[0][0] = (matrix[1][1]*matrix[2][2] - matrix[1][2]*matrix[2][1])/determ;
