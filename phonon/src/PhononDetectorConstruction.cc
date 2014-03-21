@@ -28,6 +28,7 @@
 //
 // $Id$
 //
+// 20140321  Drop passing placement transform to G4LatticePhysical
 
 #include "PhononDetectorConstruction.hh"
 
@@ -127,13 +128,11 @@ void PhononDetectorConstruction::SetupGeometry()
 
   // G4LatticeManager gives physics processes access to lattices by volume
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  LM->SetVerboseLevel(1);
-
   G4LatticeLogical* GeLogical = LM->LoadLattice(fGermanium, "Ge");
 
   // G4LatticePhysical assigns G4LatticeLogical a physical orientation
-  G4LatticePhysical* GePhysical =
-    new G4LatticePhysical(GeLogical, GePhys->GetFrameRotation());
+  G4LatticePhysical* GePhysical = new G4LatticePhysical(GeLogical);
+  GePhysical->SetMillerOrientation(0,0,1);
   LM->RegisterLattice(GePhys, GePhysical);
 
   // NOTE:  Above registration can also be done in single step:

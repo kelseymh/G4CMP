@@ -8,11 +8,13 @@
 //
 // $Id$
 //
+// 20140321  Move lattice-based placement transformations here, via Touchable
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPValleyTrackMap.hh"
+#include "G4AffineTransform.hh"
 #include "G4DynamicParticle.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
@@ -25,6 +27,7 @@
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
+#include "G4VTouchable.hh"
 #include "Randomize.hh"
 
 
@@ -47,6 +50,10 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
   theLattice = LM->GetLattice(track->GetVolume());
 
+  // Get coordinate transformations for current volume
+  // WARNING!  This assumes track starts and ends in one single volume!
+  SetTransforms(track->GetTouchable());
+
   // Register track in either phonon or charge-carrier map
   const G4ParticleDefinition* pd = track->GetParticleDefinition();
 
@@ -66,7 +73,19 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   }
 }
 
+void G4CMPProcessUtils::SetTransforms(const G4VTouchable* touchable) {
+  if (!touchable) {			// Null pointer defaults to identity
+    fLocalToGlobal = fGlobalToLocal = G4AffineTransform();
+    return;
+  }
+
+  fLocalToGlobal = G4AffineTransform(touchable->GetRotation(),
+				     touchable->GetTranslation());
+  fGlobalToLocal = fLocalToGlobal.Inverse();
+}
+
 void G4CMPProcessUtils::ReleaseTrack() {
+  SetTransforms(0);
   trackKmap->RemoveTrack(currentTrack);
   trackVmap->RemoveTrack(currentTrack);
   currentTrack = 0;
@@ -103,7 +122,6 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 					 const G4ThreeVector& waveVec,
 					 G4double energy) const {
   G4ThreeVector vgroup = theLattice->MapKtoVDir(polarization, waveVec);
-  vgroup = theLattice->RotateToGlobal(vgroup);
   if (std::fabs(vgroup.mag()-1.) > 0.01) {
     G4cout << "WARNING: vgroup not a unit vector: " << vgroup << G4endl;
   }
@@ -111,12 +129,13 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
   G4ParticleDefinition* thePhonon = G4PhononPolarization::Get(polarization);
 
   // Secondaries are created at the current track coordinates
+  RotateToGlobalDirection(vgroup);
   G4Track* sec = new G4Track(new G4DynamicParticle(thePhonon, vgroup, energy),
 			     currentTrack->GetGlobalTime(),
 			     currentTrack->GetPosition());
 
   // Store wavevector in lookup table for future tracking
-  trackKmap->SetK(sec, theLattice->RotateToGlobal(waveVec));
+  trackKmap->SetK(sec, GetGlobalDirection(waveVec));
 
   sec->SetVelocity(theLattice->MapKtoV(polarization, waveVec));    
   sec->UseGivenVelocity(true);

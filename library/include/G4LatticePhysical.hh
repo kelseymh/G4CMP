@@ -32,6 +32,8 @@
 // 20131116  Replace G4Transform3D with G4RotationMatrix
 // 20140312  Add pass-through calls for charge-carrier support
 // 20140319  Add output functions for diagnostics
+// 20140321  Move placement transformations to G4CMPProcessUtils, put
+//		lattice orientation into ctor arguments
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -44,24 +46,38 @@
 
 class G4LatticePhysical {
 public:
-  G4LatticePhysical(const G4LatticeLogical* Lat=0,
-		    const G4RotationMatrix* Rot=0);	// Use FRAME rotation
+  G4LatticePhysical();		// User *MUST* set configuration manually
+
+  G4LatticePhysical(const G4LatticeLogical* Lat,	// Lattice orientation
+		    G4double theta=0., G4double phi=0.);
+
+  G4LatticePhysical(const G4LatticeLogical* Lat,	// Miller indices
+		    G4int h, G4int k, G4int l);
+
   virtual ~G4LatticePhysical();
 
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+
+  // Specific material lattice for this physical instance
+  void SetLatticeLogical(const G4LatticeLogical* Lat) { fLattice = Lat; }
+
+  // Set physical lattice orientation, relative to G4VSolid coordinates
+  void SetLatticeOrientation(G4double theta, G4double phi);
+  void SetMillerOrientation(G4int h, G4int k, G4int l);
+
+  // Rotate input vector between lattice and solid orientations
+  // Returns new vector value for convenience
+  const G4ThreeVector& RotateToLattice(G4ThreeVector& dir) const;
+  const G4ThreeVector& RotateToSolid(G4ThreeVector& dir) const;
 
   // NOTE:  Pass by value to allow in-situ rotations
   G4double MapKtoV(G4int, G4ThreeVector) const;
   G4ThreeVector MapKtoVDir(G4int, G4ThreeVector) const;
 
-  void SetLatticeLogical(const G4LatticeLogical* Lat) { fLattice = Lat; }
-  void SetPhysicalOrientation(const G4RotationMatrix* Rot); // FRAME rotation
-  void SetLatticeOrientation(G4double, G4double);
-  void SetMillerOrientation(G4int, G4int, G4int);
-
 public:  
   const G4LatticeLogical* GetLattice() const { return fLattice; }
 
+  // Phonon propagation parameters
   G4double GetScatteringConstant() const { return fLattice->GetScatteringConstant(); }
   G4double GetAnhDecConstant() const { return fLattice->GetAnhDecConstant(); }
   G4double GetLDOS() const           { return fLattice->GetLDOS(); }
@@ -81,17 +97,14 @@ public:
   G4double GetHoleMass() const { return fLattice->GetHoleMass(); }
   G4double GetElectronMass() const { return fLattice->GetElectronMass(); }
   const G4RotationMatrix& GetMassTensor() const { return fLattice->GetMassTensor(); }
-  const G4RotationMatrix& GetMInvTensor() const   { return fLattice->GetMInvTensor(); }
+  const G4RotationMatrix& GetMInvTensor() const { return fLattice->GetMInvTensor(); }
+  const G4RotationMatrix& GetSqrtTensor() const { return fLattice->GetSqrtTensor(); }
 
   // Electrons are biased to move along energy minima in momentum space
   size_t NumberOfValleys() const { return fLattice->NumberOfValleys(); }
 
   // FIXME:  Should valley matrix be rotated from local to global coordinates?
   const G4RotationMatrix& GetValley(G4int iv) const { return fLattice->GetValley(iv); }
-
-  // Apply orientation transforms to specified vector
-  G4ThreeVector RotateToGlobal(const G4ThreeVector& dir) const;
-  G4ThreeVector RotateToLocal(const G4ThreeVector& dir) const;
 
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;
@@ -101,9 +114,6 @@ private:
 
   G4double fTheta, fPhi;		// Lattice orientation within object
   const G4LatticeLogical* fLattice;	// Underlying lattice parameters
-
-  G4RotationMatrix fLocalToGlobal;	
-  G4RotationMatrix fGlobalToLocal;
 };
 
 // Write lattice structure to output stream

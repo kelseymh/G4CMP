@@ -76,7 +76,6 @@ void ChargeDetectorConstruction::SetupGeometry()
   G4LatticePhysical* detLattice =
     new G4LatticePhysical(latManager->GetLattice(germanium));
   detLattice->SetMillerOrientation(0,0,1);
-  //GePhysical.setLatticeOrientation((3.1/4)*rad,45);
   latManager->RegisterLattice(germaniumPhysical, detLattice);
 
   //

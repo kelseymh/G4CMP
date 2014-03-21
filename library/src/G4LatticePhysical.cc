@@ -31,6 +31,8 @@
 // 20131115  Save rotation results in local variable, report verbosely
 // 20131116  Replace G4Transform3D with G4RotationMatrix
 // 20140319  Add output functions for diagnostics
+// 20140321  Move placement transformations to G4CMPProcessUtils, put
+//		lattice orientation into ctor arguments
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -48,32 +50,27 @@ namespace {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+// Default constructor
+
+G4LatticePhysical::G4LatticePhysical()
+  : verboseLevel(0), fTheta(0), fPhi(0), fLattice(0) {;}
+
+// Set lattice orientation (relative to G4VSolid) with Euler angles
+
 G4LatticePhysical::G4LatticePhysical(const G4LatticeLogical* Lat,
-				     const G4RotationMatrix* Rot)
+				     G4double theta, G4double phi)
+  : verboseLevel(0), fTheta(theta), fPhi(phi), fLattice(Lat) {;}
+
+// Set lattice orientation (relative to G4VSolid) with Miller indices
+
+G4LatticePhysical::G4LatticePhysical(const G4LatticeLogical* Lat,
+				     G4int h, G4int k, G4int l)
   : verboseLevel(0), fTheta(0), fPhi(0), fLattice(Lat) {
-  SetPhysicalOrientation(Rot);
+  SetMillerOrientation(h, k, l);
 }
 
 G4LatticePhysical::~G4LatticePhysical() {;}
 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-void G4LatticePhysical::SetPhysicalOrientation(const G4RotationMatrix* Rot) {
-  if (!Rot) {					// No orientation specified
-    fLocalToGlobal = fGlobalToLocal = G4RotationMatrix::IDENTITY;
-  } else {
-    fLocalToGlobal = fGlobalToLocal = *Rot;		// Frame rotation
-    fGlobalToLocal.invert();
-  }
-
-  if (verboseLevel) {
-    G4cout << "G4LatticePhysical::SetPhysicalOrientation " << *Rot
-	   << "\nfLocalToGlobal: " << fLocalToGlobal
-	   << "\nfGlobalToLocal: " << fGlobalToLocal
-	   << G4endl;
-  }
-}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -88,13 +85,30 @@ void G4LatticePhysical::SetLatticeOrientation(G4double t_rot, G4double p_rot) {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void G4LatticePhysical::SetMillerOrientation(G4int l, G4int k, G4int n) {
-  fTheta = halfpi - std::atan2(n+0.000001,l+0.000001);
-  fPhi = halfpi - std::atan2(l+0.000001,k+0.000001);
+void G4LatticePhysical::SetMillerOrientation(G4int h, G4int k, G4int l) {
+  fTheta = halfpi - std::atan2(l+0.000001,h+0.000001);
+  fPhi = halfpi - std::atan2(h+0.000001,k+0.000001);
 
   if (verboseLevel) 
-    G4cout << "G4LatticePhysical::SetMillerOrientation(" << l << k << n 
+    G4cout << "G4LatticePhysical::SetMillerOrientation(" << h << k << l 
 	   << ") : " << fTheta << " " << fPhi << G4endl;
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Rotate input vector between lattice and solid orientations
+
+const G4ThreeVector&
+G4LatticePhysical::RotateToLattice(G4ThreeVector& dir) const {
+  dir.rotate(yhat,fTheta).rotate(zhat,fPhi);
+  return dir;
+}
+
+const G4ThreeVector& 
+G4LatticePhysical::RotateToSolid(G4ThreeVector& dir) const {
+  dir.rotate(zhat,-fPhi).rotate(yhat,-fTheta);
+  return dir;
 }
 
 
@@ -107,7 +121,7 @@ G4double G4LatticePhysical::MapKtoV(G4int polarizationState,
 				    G4ThreeVector k) const {
   if (verboseLevel>1) G4cout << "G4LatticePhysical::MapKtoV " << k << G4endl;
 
-  k.rotate(yhat,fTheta).rotate(zhat, fPhi);
+  RotateToLattice(k);
   return fLattice->MapKtoV(polarizationState, k);
 }
 
@@ -118,43 +132,10 @@ G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int polarizationState,
 					    G4ThreeVector k) const {
   if (verboseLevel>1) G4cout << "G4LatticePhysical::MapKtoVDir " << k << G4endl;
 
-  k.rotate(yhat,fTheta).rotate(zhat,fPhi);
-
+  RotateToLattice(k);
   G4ThreeVector VG = fLattice->MapKtoVDir(polarizationState, k);  
 
-  return VG.rotate(zhat,-fPhi).rotate(yhat,-fTheta);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-// Apply orientation transforms to specified vector
-
-G4ThreeVector 
-G4LatticePhysical::RotateToGlobal(const G4ThreeVector& dir) const {
-  if (verboseLevel>1) {
-    G4cout << "G4LatticePhysical::RotateToGlobal " << dir
-	   << "\nusing fLocalToGlobal " << fLocalToGlobal
-	   << G4endl;
-  }
-
-  G4ThreeVector result = fLocalToGlobal*dir;
-  if (verboseLevel>1) G4cout << " result " << result << G4endl;
-
-  return result;
-}
-
-G4ThreeVector 
-G4LatticePhysical::RotateToLocal(const G4ThreeVector& dir) const {
-  if (verboseLevel>1) {
-    G4cout << "G4LatticePhysical::RotateToLocal " << dir
-	   << "\nusing fGlobalToLocal " << fGlobalToLocal
-	   << G4endl;
-  }
-
-  G4ThreeVector result = fGlobalToLocal*dir;
-  if (verboseLevel>1) G4cout << " result " << result << G4endl;
-
-  return result;
+  return RotateToSolid(VG);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -162,9 +143,8 @@ G4LatticePhysical::RotateToLocal(const G4ThreeVector& dir) const {
 // Dump contained logical lattice with volume information
 
 void G4LatticePhysical::Dump(std::ostream& os) const {
-  os << "# Physical lattice:\n"
-     << "# (theta,phi) = " << fTheta/deg << " " << fPhi/deg << " deg\n"
-     << "# Placement " << fLocalToGlobal << "\n"
+  os << "# Physical lattice (theta,phi) = "
+     << fTheta/deg << " " << fPhi/deg << " deg\n"
      << "# Logical lattice:\n" << *fLattice << std::endl;
 }
 

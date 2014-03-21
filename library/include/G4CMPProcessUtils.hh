@@ -8,11 +8,13 @@
 //
 // $Id$
 //
+// 20140321  Move lattice-based placement transformations here, via Touchable
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
 
 #include "globals.hh"
+#include "G4AffineTransform.hh"
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 
@@ -20,6 +22,7 @@ class G4LatticePhysical;
 class G4Track;
 class G4PhononTrackMap;
 class G4CMPValleyTrackMap;
+class G4VTouchable;
 
 
 class G4CMPProcessUtils {
@@ -32,9 +35,43 @@ public:
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
 
+  // Convert global to local coordinates
+  inline G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const {
+    return fGlobalToLocal.TransformAxis(dir);
+  }
+
+  inline G4ThreeVector GetLocalPosition(const G4ThreeVector& pos) const {
+    return fGlobalToLocal.TransformPoint(pos);
+  }
+
+  inline void RotateToLocalDirection(G4ThreeVector& dir) const {
+    fGlobalToLocal.ApplyAxisTransform(dir);
+  }
+
+  inline void RotateToLocalPosition(G4ThreeVector& pos) const {
+    fGlobalToLocal.ApplyPointTransform(pos);
+  }
+
+  // Convert local to global coordinates
+  inline G4ThreeVector GetGlobalDirection(const G4ThreeVector& dir) const {
+    return fLocalToGlobal.TransformAxis(dir);
+  }
+
+  inline G4ThreeVector GetGlobalPosition(const G4ThreeVector& pos) const {
+    return fLocalToGlobal.TransformPoint(pos);
+  }
+
+  inline void RotateToGlobalDirection(G4ThreeVector& dir) const {
+    fLocalToGlobal.ApplyAxisTransform(dir);
+  }
+
+  inline void RotateToGlobalPosition(G4ThreeVector& pos) const {
+    fLocalToGlobal.ApplyPointTransform(pos);
+  }
+
   // Map phonon types to polarization index
   G4int GetPolarization(const G4Track& track) const;
-  G4int GetPolarization(const G4Track* track) const {
+  inline G4int GetPolarization(const G4Track* track) const {
     return GetPolarization(*track);
   }
 
@@ -44,12 +81,12 @@ public:
 
   // Map charge carrier momentum to valley index
   G4int GetValleyIndex(const G4Track& track) const;
-  G4int GetValleyIndex(const G4Track* track) const {
+  inline G4int GetValleyIndex(const G4Track* track) const {
     return GetValleyIndex(*track);
   }
 
   const G4RotationMatrix& GetValley(const G4Track& track) const;
-  const G4RotationMatrix& GetValley(const G4Track* track) const {
+  inline const G4RotationMatrix& GetValley(const G4Track* track) const {
     return GetValley(*track); 
   }
 
@@ -65,13 +102,16 @@ public:
 			       const G4ThreeVector& p, G4double energy) const;
 
 protected:
-  const G4LatticePhysical* theLattice;
-
-  G4PhononTrackMap* trackKmap;		// For convenient access by processes
+  const G4LatticePhysical* theLattice;	// For convenient access by processes
+  G4PhononTrackMap* trackKmap;
   G4CMPValleyTrackMap* trackVmap;
 
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking
+
+  G4AffineTransform fLocalToGlobal;	// For converting pos and momentum
+  G4AffineTransform fGlobalToLocal;
+  void SetTransforms(const G4VTouchable* touchable);
 
   // hide assignment operators as private 
   G4CMPProcessUtils(G4CMPProcessUtils&);

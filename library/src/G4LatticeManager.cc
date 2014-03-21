@@ -30,6 +30,7 @@
 //
 // 20131113  Delete lattices in (new) registry, not in lookup maps
 // 20140319  Dump lattices on load with verbosity; don't double register!
+// 20140321  Drop passing placement transform to G4LatticePhysical
 
 #include "G4LatticeManager.hh"
 #include "G4LatticeLogical.hh"
@@ -151,8 +152,7 @@ G4LatticePhysical* G4LatticeManager::LoadLattice(G4VPhysicalVolume* Vol,
   G4LatticeLogical* lLattice = LoadLattice(theMat, latDir);
   if (!lLattice) return 0;
 
-  G4LatticePhysical* pLattice =
-    new G4LatticePhysical(lLattice, Vol->GetFrameRotation());
+  G4LatticePhysical* pLattice = new G4LatticePhysical(lLattice);
   if (pLattice) RegisterLattice(Vol, pLattice);
 
   if (verboseLevel>1)
@@ -198,7 +198,7 @@ G4bool G4LatticeManager::RegisterLattice(G4VPhysicalVolume* Vol,
   RegisterLattice(Vol->GetLogicalVolume()->GetMaterial(), LLat);
 
   // Create and register new physical lattice to go with volume
-  return RegisterLattice(Vol, new G4LatticePhysical(LLat, Vol->GetFrameRotation()));
+  return RegisterLattice(Vol, new G4LatticePhysical(LLat));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
