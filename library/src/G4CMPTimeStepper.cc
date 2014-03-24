@@ -4,6 +4,7 @@
 //	     use proper TransformAxis() on vectors, *not* TransformPoint()
 //	     Add wrapper function to compute individual time steps
 // 20140314  Fetch propagation parameters from lattice, instead of hardwired
+// 20140324  Migrate to use of volume-local field, do coordinate transforms
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -16,7 +17,6 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
-#include "G4TransportationManager.hh"
 #include "G4UserLimits.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
@@ -51,7 +51,7 @@ G4double G4CMPTimeStepper::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 				     G4double /*prevStepSize*/,
 				     G4ForceCondition* /*cond*/) {
-  ComputeTimeSteps();
+  ComputeTimeSteps(aTrack);
 
   // Only drifting electrons have special treatment
   if (aTrack.GetParticleDefinition() != G4CMPDriftElectron::Definition()) {
@@ -83,21 +83,23 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 
 // Compute dt_e, dt_h and valley rotations at current location
 
-void G4CMPTimeStepper::ComputeTimeSteps() {
+void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
   G4FieldManager* fMan =
-    G4TransportationManager::GetTransportationManager()->GetFieldManager();
-  if (!fMan || !fMan->DoesFieldExist()) {
+    aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
+
+  if (!fMan || !fMan->DoesFieldExist()) {	// No field, no special action
     dt_e = 3.*l0_e/velLong;
     dt_h = 3.*l0_h/velLong;
     return;
   }
-  
+
+  G4double position[4] = {4*0.};
+  GetLocalPosition(aTrack, position);
+
   const G4Field* field = fMan->GetDetectorField();
-
-  G4double position[4] = {0.0,0.0,0.0,0.0};
   G4double fieldVal[6];
-
   field->GetFieldValue(position,fieldVal);
+
   G4ThreeVector Efield(fieldVal[3], fieldVal[4], fieldVal[5]);
 
   dt_e = TimeStepInField(Efield.mag()/10., 28.0, l0_e);

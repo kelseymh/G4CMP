@@ -1,4 +1,6 @@
 // $Id$
+//
+// 20130324  Field is local to specified volume
 
 #include "ChargeEMField.hh"
 #include "CDMS_iZip4_Field.hh"
@@ -6,7 +8,6 @@
 #include "G4LatticeManager.hh"
 #include "G4LatticeLogical.hh"
 #include "G4LogicalVolume.hh"
-#include "G4TransportationManager.hh"
 
 
 ChargeEMField::ChargeEMField(G4LogicalVolume* logVol) {
@@ -16,12 +17,7 @@ ChargeEMField::ChargeEMField(G4LogicalVolume* logVol) {
   G4FieldManager*   fFieldMgr = new G4CMPFieldManager(fEMfield, lattice);
 
   fFieldMgr->SetDetectorField(fEMfield);
-
-  // MHK -- Why is this not being done?
-  //logVol->SetFieldManager(fFieldMgr,true);
-
-  G4TransportationManager::GetTransportationManager()->SetFieldManager(fFieldMgr
-);
+  logVol->SetFieldManager(fFieldMgr, true);
 }
 
 ChargeEMField::~ChargeEMField() {;}

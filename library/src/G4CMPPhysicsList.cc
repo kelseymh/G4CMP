@@ -49,8 +49,6 @@
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPhLukeScattering.hh"
 #include "G4CMPeLukeScattering.hh"
-// #include "EFieldProcess.hh"
-// #include "ObliqueEFieldProcess.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPInterValleyScattering.hh"
 

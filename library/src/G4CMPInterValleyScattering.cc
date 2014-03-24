@@ -13,7 +13,6 @@
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4TransportationManager.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
@@ -40,46 +39,44 @@ G4double
 G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
 					    G4double,
 					    G4ForceCondition* condition) {
-  G4StepPoint* stepPoint  = aTrack.GetStep()->GetPostStepPoint();
-  G4double velocity = stepPoint->GetVelocity();
   *condition = NotForced;
-  
-  const G4RotationMatrix& trix = GetValley(aTrack);
-  normalToValley = G4AffineTransform(trix);
-  valleyToNormal = G4AffineTransform(trix).Inverse();
-  
-  //G4VPhysicalVolume* pVol = aTrack.GetVolume();
-  //G4LogicalVolume* lVol = pVol->GetLogicalVolume();
-  
-  G4FieldManager* fMan = G4TransportationManager::GetTransportationManager()->GetFieldManager();
+
+  // Get electric field associated with current volume, if any
+  G4FieldManager* fMan =
+    aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
   
   //If there is no field, there is no IV scattering... but then there
   //is no e-h transport either...
   if (!fMan->DoesFieldExist()) return DBL_MAX;
   
+  G4StepPoint* stepPoint  = aTrack.GetStep()->GetPostStepPoint();
+  G4double velocity = stepPoint->GetVelocity();
+  
+  const G4RotationMatrix& trix = GetValley(aTrack);
+  normalToValley = G4AffineTransform(trix);
+  valleyToNormal = G4AffineTransform(trix).Inverse();
+  
   //Getting the field.
+  G4double posVec[4] = { 4*0. };
+  GetLocalPosition(aTrack, posVec);
+
   const G4Field* field = fMan->GetDetectorField();
-  
-  G4ThreeVector pos = aTrack.GetPosition();
-  G4double  posVec[4] = { pos.x(), pos.y(), pos.z(), 0. };
-  
   G4double fieldValue[6];
-  
   field->GetFieldValue(posVec,fieldValue);
   
   G4ThreeVector fieldVector = G4ThreeVector(fieldValue[3]/(volt/m),
 					    fieldValue[4]/(volt/m), 
 					    fieldValue[5]/(volt/m));
   
-  G4ThreeVector fieldVectorLLT = 
+  G4ThreeVector fieldDirLLT = 
     normalToValley.TransformAxis(fieldVector).unit();
 
   /**** THIS SHOULD BE RIGHT EXPRESSION, BUT NEED TO FIX x/z MISMATCH
-  G4ThreeVector fieldDirHV = fieldVectorLLT * theLattice->GetMassRatioSqrt();
+  G4ThreeVector fieldDirHV = fieldDirLLT * theLattice->GetMInvRatioSqrt();
   ****/
-  G4ThreeVector fieldDirHV = G4ThreeVector(fieldVectorLLT.getX()*(1/1.2172),
-					   fieldVectorLLT.getY()*(1/1.2172),
-					   fieldVectorLLT.getZ()*(1/0.27559)
+  G4ThreeVector fieldDirHV = G4ThreeVector(fieldDirLLT.getX()*(1/1.2172),
+					   fieldDirLLT.getY()*(1/1.2172),
+					   fieldDirLLT.getZ()*(1/0.27559)
 					   );
   
   G4double fieldMagHV = fieldDirHV.mag();

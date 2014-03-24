@@ -7,8 +7,6 @@
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4VParticleChange.hh"
-#include "G4TransportationManager.hh"
-#include "G4Navigator.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4SystemOfUnits.hh"
 

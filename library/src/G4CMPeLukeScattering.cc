@@ -38,7 +38,6 @@
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4TransportationManager.hh"
 #include "G4VParticleChange.hh"
 #include "Randomize.hh"
 #include <fstream>
