@@ -107,7 +107,7 @@ void G4CMPProcessUtils::GetLocalPosition(const G4Track& track,
 }
 
 G4ThreeVector G4CMPProcessUtils::GetLocalMomentum(const G4Track& track) const {
-  return GetLocalMomentum(track.GetMomentum());
+  return GetLocalDirection(track.GetMomentum());
 }
 
 void G4CMPProcessUtils::GetLocalMomentum(const G4Track& track, 
