@@ -110,6 +110,7 @@ public:
   const G4RotationMatrix& GetMassTensor() const { return fMassTensor; }
   const G4RotationMatrix& GetMInvTensor() const { return fMassInverse; }
   const G4RotationMatrix& GetSqrtTensor() const { return fMassRatioSqrt; }
+  const G4RotationMatrix& GetSqrtInvTensor() const { return fMInvRatioSqrt; }
 
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley) { fValley.push_back(valley); }
@@ -153,6 +154,7 @@ private:
   G4RotationMatrix fMassTensor;	 // Full electron mass tensor
   G4RotationMatrix fMassInverse; // Inverse electron mass tensor (convenience)
   G4RotationMatrix fMassRatioSqrt;       // SQRT of tensor/scalar ratio
+  G4RotationMatrix fMInvRatioSqrt;       // SQRT of scalar/tensor ratio
   std::vector<G4RotationMatrix> fValley; // Electron transport directions
 };
 

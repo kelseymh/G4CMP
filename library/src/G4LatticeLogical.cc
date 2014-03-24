@@ -31,6 +31,7 @@
 // 20140218  Add new charge-carrier parameters to output
 // 20140306  Allow valley filling using Euler angles directly
 // 20140318  Compute electron mass scalar (Herring-Vogt) from tensor
+// 20140324  Include inverse mass-ratio tensor
 
 #include "G4LatticeLogical.hh"
 #include "G4RotationMatrix.hh"
@@ -259,6 +260,10 @@ void G4LatticeLogical::FillMassInfo() {
   fMassRatioSqrt.set(G4Rep3x3(sqrt(fMassTensor.xx()/fElectronMass), 0., 0.,
 			      0., sqrt(fMassTensor.yy()/fElectronMass), 0.,
 			      0., 0., sqrt(fMassTensor.zz()/fElectronMass)));
+
+  fMInvRatioSqrt.set(G4Rep3x3(1./fMassRatioSqrt.xx(), 0., 0.,
+			      0., 1./fMassRatioSqrt.yy(), 0.,
+			      0., 0., 1./fMassRatioSqrt.zz()));
 }
 
 // Store drifting-electron valley using Euler angles

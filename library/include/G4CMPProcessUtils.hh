@@ -69,6 +69,27 @@ public:
     fLocalToGlobal.ApplyPointTransform(pos);
   }
 
+  // Convenience functions to get local position, momenum from track
+  G4ThreeVector GetLocalPosition(const G4Track& track) const;
+  G4ThreeVector GetLocalPosition(const G4Track* track) const {
+    return GetLocalPosition(*track);
+  }
+
+  void GetLocalPosition(const G4Track& track, G4double pos[3]) const;
+  void GetLocalPosition(const G4Track* track, G4double pos[3]) const {
+    return GetLocalPosition(*track, pos);
+  }
+
+  G4ThreeVector GetLocalMomentum(const G4Track& track) const;
+  G4ThreeVector GetLocalMomentum(const G4Track* track) const {
+    return GetLocalMomentum(*track);
+  }
+
+  void GetLocalMomentum(const G4Track& track, G4double pos[3]) const;
+  void GetLocalMomentum(const G4Track* track, G4double pos[3]) const {
+    return GetLocalMomentum(*track, pos);
+  }
+
   // Map phonon types to polarization index
   G4int GetPolarization(const G4Track& track) const;
   inline G4int GetPolarization(const G4Track* track) const {

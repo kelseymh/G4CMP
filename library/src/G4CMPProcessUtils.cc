@@ -93,6 +93,32 @@ void G4CMPProcessUtils::ReleaseTrack() {
 }
 
 
+// Access track position and momentum in local coordinates
+G4ThreeVector G4CMPProcessUtils::GetLocalPosition(const G4Track& track) const {
+  return GetLocalPosition(track.GetPosition());
+}
+
+void G4CMPProcessUtils::GetLocalPosition(const G4Track& track,
+					 G4double pos[3]) const {
+  G4ThreeVector tpos = GetLocalPosition(track);
+  pos[0] = tpos.x();
+  pos[1] = tpos.y();
+  pos[2] = tpos.z();
+}
+
+G4ThreeVector G4CMPProcessUtils::GetLocalMomentum(const G4Track& track) const {
+  return GetLocalMomentum(track.GetMomentum());
+}
+
+void G4CMPProcessUtils::GetLocalMomentum(const G4Track& track, 
+					 G4double mom[3]) const {
+  G4ThreeVector tmom = GetLocalMomentum(track);
+  mom[0] = tmom.x();
+  mom[1] = tmom.y();
+  mom[2] = tmom.z();
+}
+
+
 // Access phonon particle-type/polarization indices
 
 G4int G4CMPProcessUtils::GetPolarization(const G4Track& track) const {
