@@ -99,6 +99,7 @@ public:
   const G4RotationMatrix& GetMassTensor() const { return fLattice->GetMassTensor(); }
   const G4RotationMatrix& GetMInvTensor() const { return fLattice->GetMInvTensor(); }
   const G4RotationMatrix& GetSqrtTensor() const { return fLattice->GetSqrtTensor(); }
+  const G4RotationMatrix& GetSqrtInvTensor() const { return fLattice->GetSqrtInvTensor(); }
 
   // Electrons are biased to move along energy minima in momentum space
   size_t NumberOfValleys() const { return fLattice->NumberOfValleys(); }
