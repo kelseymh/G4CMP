@@ -5,7 +5,6 @@
 #include "G4Box.hh"
 #include "G4CMPElectrodeSensitivity.hh"
 #include "G4Colour.hh"
-#include "G4FieldManager.hh"
 #include "G4LatticeLogical.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
@@ -15,11 +14,8 @@
 #include "G4PVPlacement.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SDManager.hh"
-#include "G4Sphere.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4TransportationManager.hh"
 #include "G4Tubs.hh"
-#include "G4UniformMagField.hh"
 #include "G4UserLimits.hh"
 #include "G4VisAttributes.hh"
 
@@ -70,7 +66,7 @@ void ChargeDetectorConstruction::SetupGeometry()
   G4VPhysicalVolume* germaniumPhysical = new G4PVPlacement(0,G4ThreeVector(),germaniumLogical,"germaniumPhysical",worldLogical,false,0);
 
   // Attach E field to germanium
-  ChargeEMField setField(germaniumLogical);
+  if (ifField) ChargeEMField setField(germaniumLogical);
 
   // Physical lattice for placed detector
   G4LatticePhysical* detLattice =
