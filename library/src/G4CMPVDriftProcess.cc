@@ -69,13 +69,13 @@ void G4CMPVDriftProcess::LoadDataForTrack(const G4Track* track) {
 
   velLong = theLattice->GetSoundSpeed();
 
-  mc_e = 0.118 * electron_mass_c2/c_squared;	// WHY ISN'T THIS MASS TENSOR?
+  mc_e = theLattice->GetElectronMass();		// Scalar mass (Henning-Vogt)
   l0_e = theLattice->GetElectronScatter();
-  ksound_e = velLong * mc_e/hbar_Planck;
+  ksound_e = velLong * mc_e/hbar_Planck;	// Wavevector for e @ "Mach 1"
 
   mc_h = theLattice->GetHoleMass();
   l0_h = theLattice->GetHoleScatter();
-  ksound_h = velLong * mc_h/hbar_Planck;
+  ksound_h = velLong * mc_h/hbar_Planck;	// Wavevector for h @ "Mach 1"
 }
 
 
