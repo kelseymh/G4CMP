@@ -5,6 +5,7 @@
 //	     Add wrapper function to compute individual time steps
 // 20140314  Fetch propagation parameters from lattice, instead of hardwired
 // 20140324  Migrate to use of volume-local field, do coordinate transforms
+// 20140325  Move most of time-step calculation to G4CMPProcessUtils
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -109,8 +110,8 @@ void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
 // Compute time step for electrons or holes, pre-simplified expression
 
 G4double G4CMPTimeStepper::TimeStepInField(G4double Emag, G4double coeff, G4double l0) const {
-  G4double kmaxElec = coeff * pow(Emag*(m/volt), 1./3.);
-  G4double kmaxDelt = kmaxElec - 1.;
+  // Maximum "Mach number" (carrier speed vs. sound) at specified field
+  G4double maxMach = coeff * pow(Emag*(m/volt), 1./3.);
 
-  return (3*l0 * kmaxElec / (2*velLong * kmaxDelt*kmaxDelt*kmaxDelt) );
+  return (0.5 * ChargeCarrierTimeStep(maxMach, l0));
 }

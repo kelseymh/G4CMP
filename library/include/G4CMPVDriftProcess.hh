@@ -29,6 +29,7 @@
 // $Id$
 //
 // 20140312  Introduce multiple inheritance from G4CMPProcessUtils
+// 20140325  Move time-step calculation here from TimeStepper and LukeScat
 
 #ifndef G4CMPVDriftProcess_h
 #define G4CMPVDriftProcess_h 1
@@ -62,6 +63,10 @@ protected:
   G4double mc_h;		// Effective hole mass
   G4double l0_h;		// Hole scattering length
   G4double ksound_h;		// Hole momentum at sound speed
+
+  // Compute characteristic time step for charge carrier
+  // Parameters are "Mach number" (ratio with sound speed) and scattering length
+  G4double ChargeCarrierTimeStep(G4double mach, G4double l0) const;
 
 private:
   // hide assignment operators as private 

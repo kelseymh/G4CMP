@@ -27,6 +27,8 @@
 /// \brief Implementation of the G4CMPVDriftProcess base class
 //
 // $Id$
+//
+// 20140325  Move time-step calculation here from TimeStepper and LukeScat
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPDriftElectron.hh"
@@ -89,4 +91,15 @@ void G4CMPVDriftProcess::StartTracking(G4Track* track) {
 void G4CMPVDriftProcess::EndTracking() {
   G4VProcess::EndTracking();		// Apply base class actions
   ReleaseTrack();
+}
+
+
+// Compute characteristic time step for charge carrier
+// Parameters are "Mach number" (ratio with sound speed) and scattering length
+
+G4double 
+G4CMPVDriftProcess::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
+  if (mach < 1.) return 3*l0/velLong;	// Sanity check if below sound speed
+
+  return ( 3*l0 * mach / (velLong * (mach-1)*(mach-1)*(mach-1)) );
 }

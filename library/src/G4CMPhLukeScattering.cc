@@ -28,6 +28,7 @@
 //
 // $Id$
 //
+// 20140325  Move time-step calculation to G4CMPProcessUtils
 
 #include "G4CMPhLukeScattering.hh"
 #include "G4CMPDriftHole.hh"
@@ -62,26 +63,21 @@ G4CMPhLukeScattering::~G4CMPhLukeScattering()
 G4double 
 G4CMPhLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
 				      G4ForceCondition* condition) {
-    G4StepPoint* stepPoint  = aTrack.GetStep()->GetPostStepPoint();
-    G4double velocity = stepPoint->GetVelocity();
-    G4double kmag = velocity*mc_h / hbar_Planck;
-
-    *condition = Forced;
-
-    if (kmag<=ksound_h)
-    {
-	//G4cout <<  "G4CMPhLukeScattering: DBL_MAX" <<  G4endl;
-	return DBL_MAX;
-    }
-
-    G4double mfp= velocity / ( velLong / (3*l0_h)
-			    * (kmag / ksound_h)*(kmag / ksound_h)
-			    * ((1- ksound_h /kmag))
-			    * ((1- ksound_h /kmag))
-			    * ((1- ksound_h /kmag)));
-
-    //G4cout <<  "G4CMPhLukeScattering: " <<  mfp <<  G4endl;
-    return mfp;
+  *condition = Forced;
+  
+  G4StepPoint* stepPoint = aTrack.GetStep()->GetPostStepPoint();
+  G4double velocity = stepPoint->GetVelocity();
+  G4double kmag = velocity*mc_h / hbar_Planck;
+  
+  if (kmag<=ksound_h) return DBL_MAX;
+  
+  // Time step corresponding to Mach number (avg. time between radiations)
+  G4double dtau = ChargeCarrierTimeStep(kmag/ksound_h, l0_h);
+  
+  G4double mfp = dtau * velocity;
+  
+  //G4cout <<  "G4CMPhLukeScattering: " <<  mfp <<  G4endl;
+  return mfp;
 }
 
 G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)

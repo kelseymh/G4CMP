@@ -28,6 +28,7 @@
 //
 // $Id$
 //
+// 20140325  Move time-step calculation to G4CMPProcessUtils
 
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -74,18 +75,13 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   G4double kmag = k_HV.mag();
   
   if (kmag<=ksound_e) return DBL_MAX;
+ 
+  // Time step corresponding to Mach number (avg. time between radiations)
+  G4double dtau = ChargeCarrierTimeStep(kmag/ksound_e, l0_e);
   
-  G4double tau0 =  1.0 / (
-			  velLong / (3*l0_e)
-			  * (kmag / ksound_e) * (kmag/ksound_e)
-			  * ((1- ksound_e /kmag))
-			  * ((1- ksound_e /kmag))
-			  * ((1- ksound_e /kmag))
-			  );
-  
-  G4double mfp0 = tau0*v.mag();
-  G4cout << "MFP = " << mfp0/m << G4endl;
-  return mfp0;
+  G4double mfp = dtau * v.mag();
+  G4cout << "MFP = " << mfp/m << G4endl;
+  return mfp;
 }
 
 G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,

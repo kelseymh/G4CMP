@@ -201,11 +201,19 @@ G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   }
 
   G4ParticleDefinition* theCarrier = 0;
-  if (charge==1) theCarrier = G4CMPDriftHole::Definition();
-  else theCarrier = G4CMPDriftElectron::Definition();
+  G4double carrierMass = 0;
+  if (charge==1) {
+    theCarrier  = G4CMPDriftHole::Definition();
+    carrierMass = theLattice->GetHoleMass();
+  } else {
+    theCarrier = G4CMPDriftElectron::Definition();
+    carrierMass = theLattice->GetElectronMass();	// Scalar value
+  }
 
-  G4Track* sec = new G4Track(new G4DynamicParticle(theCarrier, p, energy),
-			     currentTrack->GetGlobalTime(),
+  G4DynamicParticle* secDP = new G4DynamicParticle(theCarrier, p, energy);
+  secDP->SetMass(carrierMass);
+
+  G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(),
 			     currentTrack->GetPosition());
 
   // Store valley index in lookup table for future tracking
