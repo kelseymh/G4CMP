@@ -188,10 +188,10 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "hscat")  pLattice->SetHoleScatter(fValue*m);
   else if (name == "l0_h")   pLattice->SetHoleScatter(fValue*m);
   else if (name == "hmass")  pLattice->SetHoleMass(fValue*mElectron);
-  else if (name == "ivField") pLattice->SetIVField(fValue);	// in V/m
-  else if (name == "ivRate") pLattice->SetIVRate(fValue/s);
-  else if (name == "ivPower") pLattice->SetIVExponent(fValue);
-  else if (name == "ivExponent") pLattice->SetIVExponent(fValue);
+  else if (name == "ivfield") pLattice->SetIVField(fValue);	// in V/m
+  else if (name == "ivrate") pLattice->SetIVRate(fValue/s);
+  else if (name == "ivpower") pLattice->SetIVExponent(fValue);
+  else if (name == "ivexponent") pLattice->SetIVExponent(fValue);
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;
