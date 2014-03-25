@@ -38,6 +38,7 @@
 // 20140306  Use Euler angles directly to fill electron valley
 // 20140313  Use diagonal terms directly to fill electron mass tensor
 // 20140314  Add charge-carrier propagation parameters
+// 20140324  Add intervalley scattering parameters
 
 #include "G4LatticeReader.hh"
 #include "G4ExceptionSeverity.hh"
@@ -187,6 +188,10 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "hscat")  pLattice->SetHoleScatter(fValue*m);
   else if (name == "l0_h")   pLattice->SetHoleScatter(fValue*m);
   else if (name == "hmass")  pLattice->SetHoleMass(fValue*mElectron);
+  else if (name == "ivField") pLattice->SetIVField(fValue);	// in V/m
+  else if (name == "ivRate") pLattice->SetIVRate(fValue/s);
+  else if (name == "ivPower") pLattice->SetIVExponent(fValue);
+  else if (name == "ivExponent") pLattice->SetIVExponent(fValue);
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;

@@ -34,6 +34,7 @@
 // 20140319  Add output functions for diagnostics
 // 20140321  Move placement transformations to G4CMPProcessUtils, put
 //		lattice orientation into ctor arguments
+// 20140324  Add intervalley scattering parameters
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -104,8 +105,13 @@ public:
   // Electrons are biased to move along energy minima in momentum space
   size_t NumberOfValleys() const { return fLattice->NumberOfValleys(); }
 
-  // FIXME:  Should valley matrix be rotated from local to global coordinates?
+  // FIXME:  Should valley matrix be rotated from internal to local coordinates?
   const G4RotationMatrix& GetValley(G4int iv) const { return fLattice->GetValley(iv); }
+
+  // Parameters for electron intervalley scattering
+  G4double GetIVField() const    { return fLattice->GetIVField(); }
+  G4double GetIVRate() const     { return fLattice->GetIVRate(); }
+  G4double GetIVExponent() const { return fLattice->GetIVExponent(); }
 
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;

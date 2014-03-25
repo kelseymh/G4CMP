@@ -50,7 +50,9 @@ G4LatticeLogical::G4LatticeLogical()
     fVSound(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),
     fHoleMass(mElectron), fElectronMass(mElectron),
-    fMassTensor(G4Rep3x3(mElectron,0.,0.,0.,mElectron,0.,0.,0.,mElectron)) {
+    fMassTensor(G4Rep3x3(mElectron,0.,0.,0.,mElectron,0.,0.,0.,mElectron)),
+    fMassInverse(G4Rep3x3(1/mElectron,0.,0.,0.,1/mElectron,0.,0.,0.,1/mElectron)),
+    fIVField(0.), fIVRate(0.), fIVExponent(0.) {
   for (G4int i=0; i<3; i++) {
     for (G4int j=0; j<MAXRES; j++) {
       for (G4int k=0; k<MAXRES; k++) {
@@ -321,6 +323,11 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
     os << "valley " << fValley[i].phi()/deg << " " << fValley[i].theta()/deg
        << " " << fValley[i].psi()/deg << " deg" << std::endl;
   }
+
+  os << "# Intervalley scattering parameters"
+     << "\nivField " << fIVField << "\t# V/m"
+     << "\nivRate " << fIVRate/s << "\t# /s"
+     << "\nivPower" << fIVExponent << std::endl;
 
   os << "# Phonon wavevector/velocity maps" << std::endl;
   Dump_NMap(os, 0, "LVec.ssv");

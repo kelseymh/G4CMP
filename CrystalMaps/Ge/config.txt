@@ -22,3 +22,7 @@ valley  -45 35.2644 90 deg
 valley   45 35.2644 90 deg
 valley  135 35.2644 90 deg
 valley -135 35.2644 90 deg
+# Intervalley scattering
+ivField 217		# V/m
+ivRate 6.72e-2		# /s
+ivPower 3.24		# used in sqrt(field^ivPower)

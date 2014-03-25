@@ -34,6 +34,7 @@
 // 20140306  Allow valley filling using Euler angles directly
 // 20140313  Allow electron mass filling with diagonal elements
 // 20140319  Add "extra" mass tensors with precomputed expressions
+// 20140324  Add intervalley scattering parameters
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -120,6 +121,15 @@ public:
   size_t NumberOfValleys() const { return fValley.size(); }
   const G4RotationMatrix& GetValley(G4int iv) const;
 
+  // Parameters for electron intervalley scattering
+  void SetIVField(G4double v)    { fIVField = v; }
+  void SetIVRate(G4double v)     { fIVRate = v; }
+  void SetIVExponent(G4double v) { fIVExponent = v; }
+
+  G4double GetIVField() const    { return fIVField; }
+  G4double GetIVRate() const     { return fIVRate; }
+  G4double GetIVExponent() const { return fIVExponent; }
+
 public:
   enum { MAXRES=322 };			    // Maximum map resolution (bins)
 
@@ -156,6 +166,10 @@ private:
   G4RotationMatrix fMassRatioSqrt;       // SQRT of tensor/scalar ratio
   G4RotationMatrix fMInvRatioSqrt;       // SQRT of scalar/tensor ratio
   std::vector<G4RotationMatrix> fValley; // Electron transport directions
+
+  G4double fIVField;		 // Transverse field for intervalley scattering
+  G4double fIVRate;		 // Scale factor for IV scattering MFP
+  G4double fIVExponent;		 // Power law for E-field in IV scattering
 };
 
 // Write lattice structure to output stream
