@@ -1,3 +1,7 @@
+// $Id$
+//
+// 20140324  Drop hard-coded IV scattering parameters; get from lattice
+
 #ifndef G4CMPInterValleyScattering_h
 #define G4CMPInterValleyScattering_h 1
 
@@ -30,9 +34,6 @@ private:
   G4VProcess* stepLimiter;
   G4AffineTransform normalToValley;
   G4AffineTransform valleyToNormal;
-
-  G4double E_0_ED_203;
-  G4double E_0_ED_201;
 };
 
 #endif

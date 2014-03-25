@@ -64,14 +64,13 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   G4RotationMatrix trix = GetValley(aTrack);
   valleyToNormal= G4AffineTransform(trix);
   normalToValley= G4AffineTransform(trix).Inverse();    
-  T = G4ThreeVector(sqrt(.118/1.588), sqrt(.118/.081), sqrt(.118/.081));
 
   G4ThreeVector k = aTrack.GetMomentum()/hbarc;
   mInv = theLattice->GetMInvTensor();
   G4ThreeVector v = ((trix.inverse()*mInv*trix) * k) * hbar_Planck;
   G4cout << "v = " << v.mag()/m*s << G4endl;
   G4ThreeVector k_valley = normalToValley.TransformPoint(k);
-  G4ThreeVector k_HV(k_valley[0]*T[0], k_valley[1]*T[1], k_valley[2]*T[2]);
+  G4ThreeVector k_HV = theLattice->GetSqrtInvTensor() * k_valley;
   G4double kmag = k_HV.mag();
   
   if (kmag<=ksound_e) return DBL_MAX;
@@ -96,7 +95,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   
   G4ThreeVector k = postStepPoint->GetMomentum()/hbarc;
   G4ThreeVector k_valley = normalToValley.TransformPoint(k);
-  G4ThreeVector k_HV(k_valley[0]*T[0], k_valley[1]*T[1], k_valley[2]*T[2]);
+  G4ThreeVector k_HV = theLattice->GetSqrtInvTensor() * k_valley;
   G4double kmag = k_HV.mag();
   
   //Do nothing other than re-calculate mfp when step limit reached or leaving
@@ -125,11 +124,10 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double phi_charge =  G4UniformRand()*2*pi;
   k_HV.rotate(kdir, phi_charge);
   
-  G4ThreeVector p_new = hbar_Planck*k_HV;
-  p_new[0] /= T[0];
-  p_new[1] /= T[1];
-  p_new[2] /= T[2];
-  valleyToNormal.ApplyPointTransform(p_new);
+  G4ThreeVector p_new = theLattice->GetSqrtTensor() * (hbar_Planck*k_HV);
+  valleyToNormal.ApplyAxisTransform(p_new);
+
+  // FIXME:  Need to generate actual phonon!
   
   //G4ThreeVector phononq = q*k.unit().rotate(k.unit(), theta_phonon);
   //   std::ofstream charge("theta_charge", std::ios::app);
@@ -142,9 +140,12 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   //std::ofstream espec("energy_spectrum_phonon", std::ios::app);
   //espec << (k_HV.mag2()*hbar_Planck/2/mc)/eV*1000<< G4endl;
   //espec.close();
-  
+
+  G4double Enew = p_new.mag2()/2/mc_e;
   aParticleChange.ProposeMomentumDirection(p_new.unit());
-  aParticleChange.ProposeEnergy(p_new.mag2()/2/mc_e);
+  aParticleChange.ProposeEnergy(Enew);
+  aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy()-Enew);
+
   ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
 }

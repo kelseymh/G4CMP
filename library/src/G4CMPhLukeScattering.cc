@@ -123,7 +123,8 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
     newDir.rotate(aTrack.GetMomentumDirection(), G4UniformRand()*2*pi);
 
     aParticleChange.ProposeMomentumDirection(newDir);
-    aParticleChange.ProposeEnergy(T-qEnergy);  
+    aParticleChange.ProposeEnergy(T-qEnergy);
+    aParticleChange.ProposeNonIonizingEnergyDeposit(qEnergy);
     ResetNumberOfInteractionLengthLeft();    
   
     return &aParticleChange;

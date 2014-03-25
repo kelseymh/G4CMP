@@ -1,4 +1,6 @@
 // $Id$
+//
+// 20140324  Drop hard-coded IV scattering parameters; get from lattice
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -20,12 +22,6 @@
 
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()
   : G4CMPVDriftProcess("InterValleyScattering") {
-  //E_0 from Edelweiss experiment LTD 14. This value is tuned for
-  //EDELWEISS/CDMS crystals with small (~V/m) electric fields. It 
-  //may still be fine for larger electric fields (~10-100V/m) 
-  //however there is no experimental data as of now. 
-  E_0_ED_203 = 217.0 ; // V/m
-    
   if (verboseLevel>1) {
     G4cout<<GetProcessName()<<" is created "<<G4endl;
   }
@@ -64,28 +60,24 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   G4double fieldValue[6];
   field->GetFieldValue(posVec,fieldValue);
   
-  G4ThreeVector fieldVector = G4ThreeVector(fieldValue[3]/(volt/m),
-					    fieldValue[4]/(volt/m), 
-					    fieldValue[5]/(volt/m));
+  G4ThreeVector fieldVector(fieldValue[3], fieldValue[4], fieldValue[5]);
   
   G4ThreeVector fieldDirLLT = 
     normalToValley.TransformAxis(fieldVector).unit();
 
-  /**** THIS SHOULD BE RIGHT EXPRESSION, BUT NEED TO FIX x/z MISMATCH
-  G4ThreeVector fieldDirHV = fieldDirLLT * theLattice->GetMInvRatioSqrt();
-  ****/
+  // NOTE:  This expression changes the assumed symmetry axis from Z to X
+  G4ThreeVector fieldDirHV = theLattice->GetSqrtInvTensor() * fieldDirLLT;
+  /**** This is the previous expression, with symmetry along Z
   G4ThreeVector fieldDirHV = G4ThreeVector(fieldDirLLT.getX()*(1/1.2172),
 					   fieldDirLLT.getY()*(1/1.2172),
 					   fieldDirLLT.getZ()*(1/0.27559)
 					   );
-  
-  G4double fieldMagHV = fieldDirHV.mag();
-  
-  //setting the E-field parameter as outline in EDELSWEISS LTD-14.
-  E_0_ED_201 = fieldMagHV; 
-  
-  G4double mfp = velocity * 6.72e-6 * 
-    pow((E_0_ED_203*E_0_ED_203 + E_0_ED_201*E_0_ED_201), 3.24/2.0 );
+  ****/
+
+  // Compute mean free path per Edelweiss LTD-14 paper
+  G4double E_0 = theLattice->GetIVField();
+  G4double mfp = velocity * theLattice->GetIVRate() *
+    pow((E_0*E_0 + fieldDirHV.mag2()), theLattice->GetIVExponent()/2.0);
   
   return mfp;
 }
