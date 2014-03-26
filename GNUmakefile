@@ -28,7 +28,9 @@ help :
 	 echo "  make <dir>.<target>" ;\
 	 echo ;\
 	 echo "For developers ONLY, make a distribution tar-ball:" ;\
-	 echo "dist          Builds a tar ball of the code, excluding .git/"
+	 echo "dist          Builds a tar ball of the code, excluding .git/" ;\
+	 echo ;\
+	 echo "For step-by-step debugging, set G4CMP_DEBUG=1"
 
 # User targets
 
@@ -47,6 +49,18 @@ phonon charge channeling : library
 
 # Directory targets
 
+export G4CMP_DEBUG	# Turns on debugging output
+
+library phonon charge channeling :
+	-$(MAKE) -C $@
+
+library.% \
+phonon.% \
+charge.% \
+channeling.% :
+	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
+
+# Manually configure building the QHull libraries in Geant4 style
 ISMAC := $(findstring Darwin,$(G4SYSTEM))
 ISWIN := $(findstring Win,$(G4SYSTEM))
 DYLIB_OPTS := -dynamiclib -undefined suppress -flat_namespace
@@ -58,15 +72,6 @@ qhull :
 	  CC_OPTS3="$(if $(ISMAC),$(DYLIB_OPTS),)" \
 	  SO=$(if $(ISMAC),dylib,$(if $(ISWIN),dll,so)).6.3.1 \
 	  all install
-
-library phonon charge channeling :
-	-$(MAKE) -C $@
-
-library.% \
-phonon.% \
-charge.% \
-channeling.% :
-	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
 
 qhull.% :
 	-$(MAKE) -C qhull-2012.1 $(subst .,,$(suffix $@))

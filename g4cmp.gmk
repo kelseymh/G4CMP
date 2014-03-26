@@ -22,7 +22,7 @@ LDFLAGS := -L$(G4WORKDIR)/lib/$(G4SYSTEM)	# First flag for load order
 EXTRALIBS := -lG4cmp -lqhullcpp -lqhullstatic_p
 EXTRALIBS += -Wl,-rpath,$(G4WORKDIR)/lib/$(G4SYSTEM)
 
-G4CMP_FLAGS := -I ../library/include -I$(G4WORKDIR)/include -Dqh_QHpointer
+G4CMP_FLAGS := -I../library/include -I$(G4WORKDIR)/include -Dqh_QHpointer
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
 endif

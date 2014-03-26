@@ -3,6 +3,7 @@
 
 # Follow GEANT4 library building convention
 # Add CPPFLAGS to support use of QHull for E-field interpolation
+# Add G4CMP_DEBUG support
 
 name := G4cmp
 
@@ -13,6 +14,10 @@ endif
 include $(G4INSTALL)/config/architecture.gmk
 
 CPPFLAGS += -Dqh_QHpointer -I$(G4WORKDIR)/include -I$(G4INCLUDE)
+ifdef G4CMP_DEBUG
+  CPPFLAGS += -DG4CMP_DEBUG
+endif
+
 
 # Library goes into user's G4WORKDIR, not into system install
 G4LIBDIR := $(G4WORKDIR)/lib/$(G4SYSTEM)
