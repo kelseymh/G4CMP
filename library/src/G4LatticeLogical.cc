@@ -326,7 +326,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
 
   os << "# Intervalley scattering parameters"
      << "\nivField " << fIVField << "\t# V/m"
-     << "\nivRate " << fIVRate/s << "\t# /s"
+     << "\nivRate " << fIVRate/s << "\t# s"
      << "\nivPower" << fIVExponent << std::endl;
 
   os << "# Phonon wavevector/velocity maps" << std::endl;

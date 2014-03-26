@@ -76,7 +76,7 @@ G4CMPhLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
   
   G4double mfp = dtau * velocity;
   
-  //G4cout <<  "G4CMPhLukeScattering: " <<  mfp <<  G4endl;
+  G4cout << "hLuke MFP = " <<  mfp <<  G4endl;
   return mfp;
 }
 
