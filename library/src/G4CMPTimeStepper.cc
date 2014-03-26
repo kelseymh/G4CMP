@@ -28,16 +28,11 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4CMPTimeStepper::G4CMPTimeStepper()
-  : G4CMPVDriftProcess("G4CMPTimeStepper"), dt_e(0.), dt_h(0.) {
-  if (verboseLevel>0) {
-    G4cout << GetProcessName() << " is created " << G4endl;
-  }
-}
+  : G4CMPVDriftProcess("G4CMPTimeStepper"), dt_e(0.), dt_h(0.) {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4CMPTimeStepper::~G4CMPTimeStepper()
-{;}
+G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -57,7 +52,9 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
   // Only drifting electrons have special treatment
   if (aTrack.GetParticleDefinition() != G4CMPDriftElectron::Definition()) {
     G4double v = aTrack.GetStep()->GetPostStepPoint()->GetVelocity();
+#ifdef G4CMP_DEBUG
     G4cout << "TS hole = " << (v*dt_h)/m << G4endl;
+#endif
     return v*dt_h;
   }
 
@@ -71,8 +68,9 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
   G4ThreeVector v_valley = hbar_Planck * (theLattice->GetMInvTensor()*k_valley);
   G4ThreeVector v = valleyToNormal.TransformAxis(v_valley);
   
+#ifdef G4CMP_DEBUG
   G4cout << "TS electron = " << (v.mag()*dt_e)/m << G4endl;
-  
+#endif  
   return v.mag()*dt_e;
 }
 

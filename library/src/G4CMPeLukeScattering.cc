@@ -47,11 +47,10 @@
 
 G4CMPeLukeScattering::G4CMPeLukeScattering(G4VProcess* sLim)
  : G4CMPVDriftProcess("eLukeScattering"), stepLimiter(sLim) {
-  if (verboseLevel > 1) {
-    G4cout << "G4CMPeLukeScattering::Constructor: ksound_e = "
-	   << ksound_e*m << " /m" << G4endl
-	   << GetProcessName() << " is created." << G4endl;
-  }
+#ifdef G4CMP_DEBUG
+  G4cout << "G4CMPeLukeScattering::Constructor: ksound_e = "
+	 << ksound_e*m << " /m" << G4endl;
+#endif
 }
 
 G4CMPeLukeScattering::~G4CMPeLukeScattering() {;}
@@ -69,7 +68,11 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   G4ThreeVector k = aTrack.GetMomentum()/hbarc;
   mInv = theLattice->GetMInvTensor();
   G4ThreeVector v = ((trix.inverse()*mInv*trix) * k) * hbar_Planck;
+
+#ifdef G4CMP_DEBUG
   G4cout << "eLuke v = " << v.mag()/m*s << G4endl;
+#endif
+
   G4ThreeVector k_valley = normalToValley.TransformPoint(k);
   G4ThreeVector k_HV = theLattice->GetSqrtInvTensor() * k_valley;
   G4double kmag = k_HV.mag();
@@ -80,7 +83,9 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   G4double dtau = ChargeCarrierTimeStep(kmag/ksound_e, l0_e);
   
   G4double mfp = dtau * v.mag();
+#ifdef G4CMP_DEBUG
   G4cout << "eLuke MFP = " << mfp/m << G4endl;
+#endif
   return mfp;
 }
 
@@ -94,8 +99,14 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector k_HV = theLattice->GetSqrtInvTensor() * k_valley;
   G4double kmag = k_HV.mag();
   
-  //Do nothing other than re-calculate mfp when step limit reached or leaving
-  //volume
+  // Do nothing other than re-calculate mfp when step limit reached or leaving
+  // volume
+#ifdef G4CMP_DEBUG
+  G4cout << "LukeScattering::PostStepDoIt: Step limited by process "
+	 << postStepPoint->GetProcessDefinedStep()->GetProcessName()
+	 << G4endl;
+#endif
+
   if ( (postStepPoint->GetProcessDefinedStep()==stepLimiter)
        || (postStepPoint->GetStepStatus()==fGeomBoundary)
        || (kmag <= ksound_e) ) {
@@ -147,8 +158,9 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 }
 
 
+// Analytical method to compute theta
+
 G4double G4CMPeLukeScattering::MakeTheta(G4double& k, G4double& ks) {
-  //Analytical method to compute theta
   G4double u = G4UniformRand();
 
   G4double base = -(u-1)+3*(u-1)*(ks/k)-3*(u-1)*(ks/k)*(ks/k)+(u-1)*(ks/k)*(ks/k)*(ks/k);

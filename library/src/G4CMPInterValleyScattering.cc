@@ -22,14 +22,9 @@
 #include "math.h"
 
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()
-  : G4CMPVDriftProcess("InterValleyScattering") {
-  if (verboseLevel>1) {
-    G4cout<<GetProcessName()<<" is created "<<G4endl;
-  }
-}
+  : G4CMPVDriftProcess("InterValleyScattering") {;}
 
-G4CMPInterValleyScattering::~G4CMPInterValleyScattering()
-{ ; }
+G4CMPInterValleyScattering::~G4CMPInterValleyScattering() {;}
 
 
 G4double 
@@ -79,8 +74,9 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   G4double mfp = velocity * theLattice->GetIVRate()/s *
     pow((E_0*E_0 + fieldDirHV.mag2()), theLattice->GetIVExponent()/2.0);
 
+#ifdef G4CMP_DEBUG
   G4cout << "IV MFP = " << mfp/m << G4endl;
-
+#endif
   return mfp;
 }
 

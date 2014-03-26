@@ -51,7 +51,11 @@
 // Constructor and destructor
 
 G4CMPVDriftProcess::G4CMPVDriftProcess(const G4String& processName)
-  : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils() {;}
+  : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils() {
+#ifdef G4CMP_DEBUG
+  G4cout << GetProcessName() << " is created " << G4endl;
+#endif
+}
 
 G4CMPVDriftProcess::~G4CMPVDriftProcess() {;}
 

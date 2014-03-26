@@ -1,4 +1,7 @@
 # G4CMP/g4cmp.gmk	-- GNUmakefile fragment for building app directories
+# $Id$
+#
+# 20140326  Add support for "G4CMP_DEBUG" compile-time symbol
 
 ifndef G4CMP_NAME
 $(error Please set G4CMP_NAME in directory-level GNUmakefile)
@@ -15,12 +18,17 @@ G4EXLIB := true
 .PHONY: all
 all: lib bin
 
-LDFLAGS := -L$(G4WORKDIR)/lib/$(G4SYSTEM)
+LDFLAGS := -L$(G4WORKDIR)/lib/$(G4SYSTEM)	# First flag for load order
 EXTRALIBS := -lG4cmp -lqhullcpp -lqhullstatic_p
 EXTRALIBS += -Wl,-rpath,$(G4WORKDIR)/lib/$(G4SYSTEM)
 
+G4CMP_FLAGS := -I ../library/include -I$(G4WORKDIR)/include -Dqh_QHpointer
+ifdef G4CMP_DEBUG
+  G4CMP_FLAGS += -DG4CMP_DEBUG
+endif
+
 include $(G4INSTALL)/config/binmake.gmk
-CPPFLAGS := -I ../library/include -I$(G4WORKDIR)/include -Dqh_QHpointer $(CPPFLAGS)
+CPPFLAGS := $(G4CMP_FLAGS) $(CPPFLAGS)		# Prepend for right load order
 
 visclean:
 	rm -f g4*.prim g4*.eps g4*.wrl
