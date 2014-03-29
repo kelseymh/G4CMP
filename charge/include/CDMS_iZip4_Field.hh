@@ -14,9 +14,6 @@ public:
   virtual ~CDMS_iZip4_Field() {;}
 
   virtual void GetFieldValue(const G4double Point[4], G4double *Efield) const;
-  virtual void GetFieldValue(const G4double Point[3], G4double *Efield);
-  // NOTE:  This function is non-const ONLY because signatures are identical
-  //        (the array dimension is not part of the function signature)
 
   // Copy constructor and assignment operator
   CDMS_iZip4_Field(const CDMS_iZip4_Field &p);

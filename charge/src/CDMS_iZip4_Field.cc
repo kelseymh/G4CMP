@@ -11,6 +11,19 @@ CDMS_iZip4_Field::CDMS_iZip4_Field(const G4String& EpotFileName)
   BuildInterp(EpotFileName);
 }
 
+CDMS_iZip4_Field::CDMS_iZip4_Field(const CDMS_iZip4_Field &p)
+  : G4ElectricField(p), Interp(p.Interp) {;}
+
+CDMS_iZip4_Field& CDMS_iZip4_Field::operator=(const CDMS_iZip4_Field &p) {
+  if (this != &p) {				// Only copy if not self
+    G4ElectricField::operator=(p);		// Call through to base
+    Interp = p.Interp;
+  }
+
+  return *this;
+}
+
+
 void CDMS_iZip4_Field::BuildInterp(const G4String& EpotFileName) {
   G4cout << "CDMS_iZip4_Field::Constructor: Creating Electric Field" << G4endl;
   vector<vector<G4double> > tempX;
@@ -65,25 +78,7 @@ G4bool CDMS_Efield::vector_comp(const vector<G4double>& p1,
     return false;
 }
 
-void CDMS_iZip4_Field::GetFieldValue(const G4double Point[3],
-				     G4double *Efield) {
-  G4double tempPoint[4] = {Point[0], Point[1], Point[2], 0.0};
-  this->GetFieldValue(tempPoint, Efield);
-}
-
 void CDMS_iZip4_Field::GetFieldValue(const G4double Point[4],
 				     G4double *Efield) const {
   Interp.GetField(Point,Efield);
-}
-
-CDMS_iZip4_Field::CDMS_iZip4_Field(const CDMS_iZip4_Field &p)
-  : G4ElectricField(p), Interp(p.Interp) {;}
-
-CDMS_iZip4_Field& CDMS_iZip4_Field::operator=(const CDMS_iZip4_Field &p) {
-  if (this != &p) {				// Only copy if not self
-    G4ElectricField::operator=(p);		// Call through to base
-    Interp = p.Interp;
-  }
-
-  return *this;
 }

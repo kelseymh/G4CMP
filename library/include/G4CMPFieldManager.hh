@@ -5,6 +5,7 @@
 
 #include "globals.hh"
 #include "G4FieldManager.hh"
+#include "G4AffineTransform.hh"
 #include <vector>
 
 class G4CMPEqEMField;
@@ -29,8 +30,10 @@ private:
   const G4int stepperVars;
   const G4double stepperLength;
 
-  // NOTE: All pointers are kept in order to delete in dtor
+  // Non-const access to underlying field, base class doesn't provide
+  G4ElectricField* myDetectorField;
 
+  // NOTE: All pointers are kept in order to delete in dtor
   G4EqMagElectricField* EqNormal;	// Generic field outside valleys
   G4MagIntegratorStepper* normalStepper;
   G4MagInt_Driver* normalDriver;
@@ -42,6 +45,9 @@ private:
   std::vector<G4MagIntegratorStepper*> valleyStepper;
   std::vector<G4MagInt_Driver*> valleyDriver;
   std::vector<G4ChordFinder*> valleyChordFinder;
+
+  // Coordinate transformation from track, to pass to field and eq.-of-motion
+  G4AffineTransform fLocalToGlobal;
 };
 
 #endif	/* G4CMPFieldManager_h */

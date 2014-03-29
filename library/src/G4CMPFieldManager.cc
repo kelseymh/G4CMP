@@ -1,6 +1,10 @@
+// $Id$
+//
+// 20140328  Save field locally, get local/global transform from track to
+//	     pass to field and to chord finder for electrons.
+
 #include "G4CMPFieldManager.hh"
 #include "G4CMPEqEMField.hh"
-#include "G4AffineTransform.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPValleyTrackMap.hh"
 #include "G4ChordFinder.hh"
@@ -12,6 +16,7 @@
 #include "G4ParticleDefinition.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RotationMatrix.hh"
+#include "G4ThreeVector.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 
@@ -21,6 +26,7 @@
 G4CMPFieldManager::G4CMPFieldManager(G4ElectricField *detectorField,
 				     const G4LatticeLogical* lattice)
   : G4FieldManager(detectorField), stepperVars(8), stepperLength(1e-9*mm),
+    myDetectorField(detectorField),
     EqNormal(0), normalStepper(0), normalDriver(0), normalChordFinder(0),
     theLattice(lattice), nValleys(lattice?lattice->NumberOfValleys():0) {
   // Set up default field for holes, non-valley charged particles
@@ -35,12 +41,16 @@ G4CMPFieldManager::G4CMPFieldManager(G4ElectricField *detectorField,
 					  theLattice->GetValley(iv),
 					  theLattice->GetMInvTensor()));
     valleyStepper.push_back(new G4ClassicalRK4(EqValley.back(), stepperVars));
-    valleyDriver.push_back(new G4MagInt_Driver(stepperLength, valleyStepper.back(), stepperVars));
+    valleyDriver.push_back(new G4MagInt_Driver(stepperLength,
+					       valleyStepper.back(),
+					       stepperVars));
     valleyChordFinder.push_back(new G4ChordFinder(valleyDriver.back()));
   }
 }
 
 G4CMPFieldManager::~G4CMPFieldManager() {
+  delete myDetectorField;   myDetectorField=0;
+
   delete EqNormal;          EqNormal=0;
   delete normalStepper;     normalStepper=0;
   delete normalDriver;      normalDriver=0;
@@ -56,6 +66,13 @@ G4CMPFieldManager::~G4CMPFieldManager() {
 
 
 void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
+  // Extract local/global transform from track, to pass to field
+  // and chord finder for electrons (below)
+  const G4RotationMatrix* rot = aTrack->GetTouchable()->GetRotation();
+  const G4ThreeVector& trans  = aTrack->GetTouchable()->GetTranslation();
+  G4AffineTransform localToGlobal(rot, trans);
+  
+  // Select field configuration for either electrons or holes
   if (aTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
     G4int iv = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
     if (iv>=0 && iv<(G4int)nValleys) {
