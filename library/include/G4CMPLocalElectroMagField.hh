@@ -30,6 +30,11 @@ public:
   // Typically, this will be called from FieldManager::ConfigureForTrack()
   virtual void SetTransforms(const G4AffineTransform& lToG);
 
+  // Call-through to user-defined field, since properties aren't changed
+  virtual G4bool DoesFieldChangeEnergy() const {
+    return localField->DoesFieldChangeEnergy();
+  }
+
   // This function transforms Point[0..2] to local coordinates on input,
   // and Field[0..2], Field[3..5] from local to global coordinate on output
   virtual void GetFieldValue(const G4double Point[4], G4double *BEfield) const;
