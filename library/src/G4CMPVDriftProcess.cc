@@ -29,6 +29,7 @@
 // $Id$
 //
 // 20140325  Move time-step calculation here from TimeStepper and LukeScat
+// 20140331  Add required process subtype code
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPDriftElectron.hh"
@@ -50,8 +51,10 @@
 
 // Constructor and destructor
 
-G4CMPVDriftProcess::G4CMPVDriftProcess(const G4String& processName)
+G4CMPVDriftProcess::G4CMPVDriftProcess(const G4String& processName,
+				       G4CMPProcessSubType stype)
   : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils() {
+  SetProcessSubType(stype);
 #ifdef G4CMP_DEBUG
   G4cout << GetProcessName() << " is created " << G4endl;
 #endif

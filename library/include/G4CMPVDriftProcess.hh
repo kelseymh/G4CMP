@@ -30,19 +30,20 @@
 //
 // 20140312  Introduce multiple inheritance from G4CMPProcessUtils
 // 20140325  Move time-step calculation here from TimeStepper and LukeScat
+// 20140331  Add required subtype code to constructor
 
 #ifndef G4CMPVDriftProcess_h
 #define G4CMPVDriftProcess_h 1
 
-#include "globals.hh"
 #include "G4VDiscreteProcess.hh"
+#include "G4CMPProcessSubType.hh"
 #include "G4CMPProcessUtils.hh"
 #include "G4ThreeVector.hh"
 
 
 class G4CMPVDriftProcess : public G4VDiscreteProcess, public G4CMPProcessUtils {
 public:
-  G4CMPVDriftProcess(const G4String& processName);
+  G4CMPVDriftProcess(const G4String& processName, G4CMPProcessSubType stype);
   virtual ~G4CMPVDriftProcess();
 
   virtual G4bool IsApplicable(const G4ParticleDefinition& aPD);

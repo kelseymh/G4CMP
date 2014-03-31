@@ -2,6 +2,7 @@
 //
 // 20140324  Drop hard-coded IV scattering parameters; get from lattice
 // 20140324  Restore Z-axis mass tensor
+// 20140331  Add required process subtype code
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -22,7 +23,7 @@
 #include "math.h"
 
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()
-  : G4CMPVDriftProcess("InterValleyScattering") {;}
+  : G4CMPVDriftProcess("InterValleyScattering", fInterValleyScattering) {;}
 
 G4CMPInterValleyScattering::~G4CMPInterValleyScattering() {;}
 

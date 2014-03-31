@@ -6,6 +6,7 @@
 // 20140314  Fetch propagation parameters from lattice, instead of hardwired
 // 20140324  Migrate to use of volume-local field, do coordinate transforms
 // 20140325  Move most of time-step calculation to G4CMPProcessUtils
+// 20140331  Add required process subtype code
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -28,7 +29,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4CMPTimeStepper::G4CMPTimeStepper()
-  : G4CMPVDriftProcess("G4CMPTimeStepper"), dt_e(0.), dt_h(0.) {;}
+  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), dt_e(0.), dt_h(0.) {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

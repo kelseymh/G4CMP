@@ -30,6 +30,7 @@
 //
 // 20131111  Add verbose output for MFP calculation
 // 20140312  Follow name change CreateSecondary -> CreatePhonon
+// 20140331  Add required process subtype code
 
 #include "G4PhononScattering.hh"
 #include "G4LatticePhysical.hh"
@@ -47,7 +48,7 @@
 
 
 G4PhononScattering::G4PhononScattering(const G4String& aName)
-  : G4VPhononProcess(aName) {;}
+  : G4VPhononProcess(aName, fPhononScattering) {;}
 
 G4PhononScattering::~G4PhononScattering() {;}
 

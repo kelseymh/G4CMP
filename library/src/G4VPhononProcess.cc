@@ -30,6 +30,7 @@
 //
 // 20131111  Add verbosity to report creating secondaries
 // 20140312  Move utility functions to new G4CMPProcessUtils
+// 20140331  Add required process subtype code
 
 #include "G4VPhononProcess.hh"
 #include "G4DynamicParticle.hh"
@@ -52,8 +53,11 @@ namespace {
 
 // Constructor and destructor
 
-G4VPhononProcess::G4VPhononProcess(const G4String& processName)
-  : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils() {}
+G4VPhononProcess::G4VPhononProcess(const G4String& processName,
+				   G4CMPProcessSubType stype)
+  : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils() {
+  SetProcessSubType(stype);
+}
 
 G4VPhononProcess::~G4VPhononProcess() {;}
 

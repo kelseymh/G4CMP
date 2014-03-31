@@ -29,6 +29,7 @@
 // $Id$
 //
 // 20140325  Move time-step calculation to G4CMPProcessUtils
+// 20140331  Add required process subtype code
 
 #include "G4CMPhLukeScattering.hh"
 #include "G4CMPDriftHole.hh"
@@ -43,12 +44,12 @@
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
-
-#include "math.h"
+#include <math.h>
 
 
 G4CMPhLukeScattering::G4CMPhLukeScattering(G4VProcess* stepper)
-  : G4CMPVDriftProcess("hLukeScattering"), stepLimiter(stepper) {;}
+  : G4CMPVDriftProcess("hLukeScattering", fLukeScattering),
+    stepLimiter(stepper) {;}
 
 G4CMPhLukeScattering::~G4CMPhLukeScattering() {;}
 

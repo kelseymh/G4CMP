@@ -29,12 +29,13 @@
 // $Id$
 //
 // 20140312  Move utility functions to separate class, multiple inheritance
+// 20140331  Add required subtype code to constructor
 
 #ifndef G4VPhononProcess_h
 #define G4VPhononProcess_h 1
 
-#include "globals.hh"
 #include "G4VDiscreteProcess.hh"
+#include "G4CMPProcessSubType.hh"
 #include "G4CMPProcessUtils.hh"
 #include "G4ThreeVector.hh"
 
@@ -44,7 +45,7 @@ class G4LatticePhysical;
 
 class G4VPhononProcess : public G4VDiscreteProcess, public G4CMPProcessUtils {
 public:
-  G4VPhononProcess(const G4String& processName);
+  G4VPhononProcess(const G4String& processName, G4CMPProcessSubType stype);
   virtual ~G4VPhononProcess();
 
   virtual G4bool IsApplicable(const G4ParticleDefinition& aPD);

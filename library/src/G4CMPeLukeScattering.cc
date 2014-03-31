@@ -29,6 +29,7 @@
 // $Id$
 //
 // 20140325  Move time-step calculation to G4CMPProcessUtils
+// 20140331  Add required process subtype code
 
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -46,7 +47,7 @@
 
 
 G4CMPeLukeScattering::G4CMPeLukeScattering(G4VProcess* sLim)
- : G4CMPVDriftProcess("eLukeScattering"), stepLimiter(sLim) {
+  : G4CMPVDriftProcess("eLukeScattering", fLukeScattering), stepLimiter(sLim) {
 #ifdef G4CMP_DEBUG
   G4cout << "G4CMPeLukeScattering::Constructor: ksound_e = "
 	 << ksound_e*m << " /m" << G4endl;

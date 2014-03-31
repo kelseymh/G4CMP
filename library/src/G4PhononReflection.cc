@@ -36,6 +36,7 @@
 //
 // 20131115  Throw exception if track's polarization state is invalid.
 // 20140103  Move charge version of code here, still commented out
+// 20140331  Add required process subtype code
 
 #include "G4PhononReflection.hh"
 #include "G4ExceptionSeverity.hh"
@@ -56,7 +57,7 @@
 
 
 G4PhononReflection::G4PhononReflection(const G4String& aName)
-  : G4VPhononProcess(aName),
+  : G4VPhononProcess(aName, fPhononReflection),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()) {;}
 
 G4PhononReflection::~G4PhononReflection() {;}
