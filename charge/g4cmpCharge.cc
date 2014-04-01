@@ -31,7 +31,6 @@
 
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
-#include "G4UserSteppingAction.hh"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
@@ -77,7 +76,7 @@ int main(int argc,char** argv)
 #ifdef G4VIS_USE
  // Visualization manager
  //
- G4VisManager* visManager = new G4VisExecutive;
+ G4VisManager* visManager = new G4VisExecutive("quiet");
  visManager->Initialize();
 #endif
     
