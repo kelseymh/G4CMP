@@ -47,12 +47,8 @@
 
 
 G4CMPeLukeScattering::G4CMPeLukeScattering(G4VProcess* sLim)
-  : G4CMPVDriftProcess("eLukeScattering", fLukeScattering), stepLimiter(sLim) {
-#ifdef G4CMP_DEBUG
-  G4cout << "G4CMPeLukeScattering::Constructor: ksound_e = "
-	 << ksound_e*m << " /m" << G4endl;
-#endif
-}
+  : G4CMPVDriftProcess("eLukeScattering", fLukeScattering),
+    stepLimiter(sLim) {;}
 
 G4CMPeLukeScattering::~G4CMPeLukeScattering() {;}
 
