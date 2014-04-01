@@ -28,7 +28,7 @@
 // Constructors and destructor
 
 G4CMPFieldManager::G4CMPFieldManager(G4ElectroMagneticField *detectorField)
-  : G4FieldManager(detectorField),
+  : G4FieldManager(new G4CMPLocalElectroMagField(detectorField)),
     myDetectorField(new G4CMPLocalElectroMagField(detectorField)),
     stepperVars(8), stepperLength(1e-9*mm) {
   CreateTransport();
@@ -69,6 +69,11 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
     const G4RotationMatrix* rot = aTrack->GetTouchable()->GetRotation();
     const G4ThreeVector& trans  = aTrack->GetTouchable()->GetTranslation();
     G4AffineTransform localToGlobal(rot, trans);
+
+#ifdef G4CMP_DEBUG
+    G4cout << "G4CMPFieldManager::ConfigureForTrack with translation "
+	   << trans << " rotation " << *rot << G4endl;
+#endif
 
     myDetectorField->SetTransforms(localToGlobal);
     theEqMotion->SetTransforms(localToGlobal);
