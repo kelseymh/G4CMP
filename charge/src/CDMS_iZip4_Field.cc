@@ -28,7 +28,7 @@ void CDMS_iZip4_Field::BuildInterp(const G4String& EpotFileName) {
   G4cout << "CDMS_iZip4_Field::Constructor: Creating Electric Field" << G4endl;
   vector<vector<G4double> > tempX;
 
-  vector<G4double> temp = vector<G4double>(4, 0);
+  vector<G4double> temp(4, 0);
   G4double x,y,z,v;
 
   std::ifstream epotFile(EpotFileName, std::ios::in);
