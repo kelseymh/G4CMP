@@ -41,17 +41,15 @@ public:
   void SetNoValley();			// Use this for holes
 
   // Configuration function from base class
+  // NOTE: change of signature with G4 10.0
+#if G4VERSION_NUMBER >= 1000
+  virtual void SetChargeMomentumMass(G4ChargeState particleCharge,
+				     G4double MomentumXc,
+				     G4double mass);
+#else
   virtual void SetChargeMomentumMass(G4double particleCharge, // in e+ units
 				     G4double MomentumXc,
 				     G4double mass);
-  
-#if G4VERSION_NUMBER >= 1000
-  // Prevent the previous function from "hiding" this new base version
-  virtual void SetChargeMomentumMass(G4ChargeState particleCharge,
-				     G4double MomentumXc,
-				     G4double mass) {
-    SetChargeMomentumMass(particleCharge.GetCharge(), MomentumXc, mass);
-  }
 #endif
   
   void EvaluateRhsGivenB(const G4double y[],
@@ -63,8 +61,7 @@ public:
 private:
   const G4LatticePhysical* theLattice;
 
-  G4double fCharge;
-  G4double fMass;
+  G4double fCharge;	       		// Same as base class fElectrMagCof
 
   G4AffineTransform fLocalToGlobal;	// Local vs. global coordinates
   G4AffineTransform fGlobalToLocal;

@@ -19,7 +19,8 @@
 
 G4CMPEqEMField::G4CMPEqEMField(G4ElectroMagneticField *emField,
 			       const G4LatticePhysical* lattice)
-  : G4EqMagElectricField(emField), theLattice(lattice), useValley(false) {
+  : G4EqMagElectricField(emField), theLattice(lattice), fCharge(0.),
+    useValley(false) {
   if (lattice) massInverse = lattice->GetMInvTensor();
 }
 
@@ -65,21 +66,30 @@ void G4CMPEqEMField::SetNoValley() {
 
 
 void G4CMPEqEMField::SetValleyTransform(const G4RotationMatrix& xform) {
-    normalToValley = xform;
-    valleyToNormal = xform.inverse();
+  normalToValley = xform;
+  valleyToNormal = xform.inverse();
 }
 
 
-// Base class configuration function, called by Transportation
+// Configuration function must call through to base class
+// NOTE: change of signature with G4 10.0
 
-void  
-G4CMPEqEMField::SetChargeMomentumMass(G4double particleCharge, // e+ units
-				     G4double /*particleMom*/,
-				     G4double particleMass) {
-   fCharge = electron_charge*particleCharge;
-   fMass   = particleMass; 
+#if G4VERSION_NUMBER >= 1000
+void G4CMPEqEMField::SetChargeMomentumMass(G4ChargeState particleCharge,
+					   G4double MomentumXc,
+					   G4double mass) {
+  G4EqMagElectricField::SetChargeMomentumMass(particleCharge, MomentumXc, mass);
+  fCharge = particleCharge.GetCharge() * electron_charge;
 }
-
+#else
+void G4CMPEqEMField::SetChargeMomentumMass(G4double particleCharge,
+					   G4double MomentumXc,
+					   G4double mass) {
+  G4EqMagElectricField::SetChargeMomentumMass(particleCharge, MomentumXc, mass);
+  fCharge = particleCharge * electron_charge;
+}
+#endif
+  
 
 // Field evaluation:  Given momentum (y) and field, return velocity, force
 
@@ -89,6 +99,12 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   // No lattice behaviour, just use base class
   if (!useValley) {
     G4EqMagElectricField::EvaluateRhsGivenB(y, field, dydx);
+#ifdef G4CMP_DEBUG
+    G4cout << "Base class returns dydx { "
+	   << dydx[0] << " , " << dydx[1] << " , " << dydx[2] << " , "
+	   << dydx[3] << " , " << dydx[4] << " , " << dydx[5] << " , "
+	   << dydx[6] << " , " << dydx[7] << " }" << G4endl;
+#endif
     return;
   }
 
@@ -115,4 +131,11 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   dydx[5] = retForce[2];
   dydx[6] = 0.;			// not used
   dydx[7] = 1./vel;		// Lab Time of flight
-}
+
+#ifdef G4CMP_DEBUG
+    G4cout << "Valley calc returns dydx { "
+	   << dydx[0] << " , " << dydx[1] << " , " << dydx[2] << " , "
+	   << dydx[3] << " , " << dydx[4] << " , " << dydx[5] << " , "
+	   << dydx[6] << " , " << dydx[7] << " }" << G4endl;
+#endif
+ }
