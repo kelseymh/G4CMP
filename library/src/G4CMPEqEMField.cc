@@ -50,7 +50,7 @@ void G4CMPEqEMField::SetTransforms(const G4AffineTransform& lToG) {
 // Specify which valley to use for electrons, or no valley at all
 
 void G4CMPEqEMField::SetValley(size_t ivalley) {
-  if (theLattice && (ivalley>=0 || ivalley<theLattice->NumberOfValleys())) {
+  if (theLattice && ivalley<theLattice->NumberOfValleys()) {
     SetValleyTransform(theLattice->GetValley(ivalley));
     useValley = true;
   } else {

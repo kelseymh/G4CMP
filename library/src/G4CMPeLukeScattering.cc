@@ -103,7 +103,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // Do nothing other than re-calculate mfp when step limit reached or leaving
   // volume
 #ifdef G4CMP_DEBUG
-  G4cout << "LukeScattering::PostStepDoIt: Step limited by process "
+  G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
 	 << postStepPoint->GetProcessDefinedStep()->GetProcessName()
 	 << G4endl;
 #endif

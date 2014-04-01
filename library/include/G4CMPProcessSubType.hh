@@ -3,9 +3,11 @@
 #ifndef G4CMPProcessSubType_hh
 #define G4CMPProcessSubType_hh 1
 
+
+// NOTE:  SubType codes have to be globally unique; bad design!
+
 enum G4CMPProcessSubType {
-  fUnknownG4CMPProcess,
-  fPhononScattering,
+  fPhononScattering = 301,
   fPhononReflection,
   fPhononDownconversion,
   fInterValleyScattering,

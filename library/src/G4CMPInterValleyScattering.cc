@@ -50,8 +50,9 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   valleyToNormal = G4AffineTransform(trix).Inverse();
   
   //Getting the field.
-  G4double posVec[4] = { 4*0. };
-  GetLocalPosition(aTrack, posVec);
+  G4ThreeVector pos = aTrack.GetPosition();
+  G4double posVec[4] = { pos.x(), pos.y(), pos.z(), 0. }; //*** { 4*0. };
+  //*** GetLocalPosition(aTrack, posVec);
 
   const G4Field* field = fMan->GetDetectorField();
   G4double fieldValue[6];

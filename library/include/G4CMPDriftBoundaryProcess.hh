@@ -29,17 +29,16 @@
 // $Id$
 //
 // 20140313  Introduce multiple inheritance from G4CMPProcessUtils
+// 20140331  Inherit from G4CMPVDriftProcess to get subtype enforcement
 
 #ifndef G4CMPDriftBoundaryProcess_h
 #define G4CMPDriftBoundaryProcess_h 1
 
 #include "globals.hh"
-#include "G4VDiscreteProcess.hh"
-#include "G4CMPProcessUtils.hh"
+#include "G4CMPVDriftProcess.hh"
 
 
-class G4CMPDriftBoundaryProcess : public G4VDiscreteProcess,
-				  public G4CMPProcessUtils {
+class G4CMPDriftBoundaryProcess : public G4CMPVDriftProcess {
 public:
   G4CMPDriftBoundaryProcess();
   virtual ~G4CMPDriftBoundaryProcess();

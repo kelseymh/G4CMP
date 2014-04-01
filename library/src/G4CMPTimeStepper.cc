@@ -95,8 +95,9 @@ void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
     return;
   }
 
-  G4double position[4] = {4*0.};
-  GetLocalPosition(aTrack, position);
+  G4ThreeVector pos = aTrack.GetPosition();
+  G4double position[4] = { pos.x(), pos.y(), pos.z(), 0. }; //*** { 4*0. };
+  //*** GetLocalPosition(aTrack, position);
 
   const G4Field* field = fMan->GetDetectorField();
   G4double fieldVal[6];

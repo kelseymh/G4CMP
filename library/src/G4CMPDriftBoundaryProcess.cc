@@ -1,4 +1,6 @@
 // $Id$
+//
+// 20140331  Inherit from G4CMPVDriftProcess to get subtype enforcement
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
@@ -12,11 +14,13 @@
 
 
 G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess()
-  : G4VDiscreteProcess("DriftBoundaryProcess"), G4CMPProcessUtils(),
+  : G4CMPVDriftProcess("DriftBoundaryProcess", fChargeBoundary),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()) {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) {     
     G4cout << GetProcessName() << " is created "<< G4endl;
   }
+#endif
 }
 
 G4CMPDriftBoundaryProcess::~G4CMPDriftBoundaryProcess()
