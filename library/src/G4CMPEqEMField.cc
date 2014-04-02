@@ -101,14 +101,6 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   // No lattice behaviour, just use base class
   if (!useValley) {
     G4EqMagElectricField::EvaluateRhsGivenB(y, field, dydx);
-#ifdef G4CMP_DEBUG
-    /***
-    G4cout << "Base class returns dydx { "
-	   << dydx[0] << " , " << dydx[1] << " , " << dydx[2] << " , "
-	   << dydx[3] << " , " << dydx[4] << " , " << dydx[5] << " , "
-	   << dydx[6] << " , " << dydx[7] << " }" << G4endl;
-    ***/
-#endif
     return;
   }
 
@@ -131,13 +123,4 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   dydx[5] = retForce[2];
   dydx[6] = 0.;			// not used
   dydx[7] = 1./vel;		// Lab Time of flight
-
-#ifdef G4CMP_DEBUG
-  /***
-  G4cout << "Valley calc returns dydx { "
-         << dydx[0] << " , " << dydx[1] << " , " << dydx[2] << " , "
-	 << dydx[3] << " , " << dydx[4] << " , " << dydx[5] << " , "
-	 << dydx[6] << " , " << dydx[7] << " }" << G4endl;
-  ***/
-#endif
- }
+}
