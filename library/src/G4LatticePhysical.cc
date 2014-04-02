@@ -151,7 +151,7 @@ G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
 
   //*** RotateToLattice(p_e);
   const G4RotationMatrix& vToN = GetValley(ivalley);
-  G4ThreeVector V = (vToN.inverse()*GetMInvTensor()*vToN) * p_e / c_light;
+  G4ThreeVector V = (vToN.inverse()*GetMInvTensor()*vToN) * (p_e/c_light);
   return V; //*** RotateToSolid(V);
 }
 
@@ -165,7 +165,7 @@ G4LatticePhysical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
 
   //*** RotateToLattice(p_e);
   p_e.transform(GetValley(ivalley));	// Rotate into valley frame
-  G4ThreeVector k_HV = GetSqrtInvTensor() * p_e/hbarc;
+  G4ThreeVector k_HV = GetSqrtInvTensor() * (p_e/hbarc);
   return k_HV; //*** RotateToSolid(k_HV);
 }
 
