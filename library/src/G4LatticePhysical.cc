@@ -151,7 +151,7 @@ G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
 
   RotateToLattice(p_e);
   const G4RotationMatrix& vToN = GetValley(ivalley);
-  G4ThreeVector V = (vToN.inverse()*GetMInvTensor()*vToN) * p_e / hbarc;
+  G4ThreeVector V = (vToN.inverse()*GetMInvTensor()*vToN) * p_e / c_light;
   return RotateToSolid(V);
 }
 
