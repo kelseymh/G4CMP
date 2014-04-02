@@ -149,10 +149,10 @@ G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
     G4cout << "G4LatticePhysical::MapPtoV_el " << ivalley << " " << p_e
 	   << G4endl;
 
-  RotateToLattice(p_e);
+  //*** RotateToLattice(p_e);
   const G4RotationMatrix& vToN = GetValley(ivalley);
   G4ThreeVector V = (vToN.inverse()*GetMInvTensor()*vToN) * p_e / c_light;
-  return RotateToSolid(V);
+  return V; //*** RotateToSolid(V);
 }
 
 // Convert electron momentum to HV wavevector
@@ -163,10 +163,10 @@ G4LatticePhysical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
     G4cout << "G4LatticePhysical::MapPtoK_HV " << ivalley << " " << p_e
 	   << G4endl;
 
-  RotateToLattice(p_e);
+  //*** RotateToLattice(p_e);
   p_e.transform(GetValley(ivalley));	// Rotate into valley frame
   G4ThreeVector k_HV = GetSqrtInvTensor() * p_e/hbarc;
-  return RotateToSolid(k_HV);
+  return k_HV; //*** RotateToSolid(k_HV);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
