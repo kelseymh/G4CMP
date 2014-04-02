@@ -20,7 +20,7 @@
 G4CMPEqEMField::G4CMPEqEMField(G4ElectroMagneticField *emField,
 			       const G4LatticePhysical* lattice)
   : G4EqMagElectricField(emField), theLattice(lattice), fCharge(0.),
-    useValley(false) {
+    useValley(false), valleyIndex(-1) {
   if (lattice) massInverse = lattice->GetMInvTensor();
 }
 
@@ -52,6 +52,7 @@ void G4CMPEqEMField::SetTransforms(const G4AffineTransform& lToG) {
 
 void G4CMPEqEMField::SetValley(size_t ivalley) {
   if (theLattice && ivalley<theLattice->NumberOfValleys()) {
+    valleyIndex = ivalley;
     SetValleyTransform(theLattice->GetValley(ivalley));
     useValley = true;
   } else {
@@ -60,6 +61,7 @@ void G4CMPEqEMField::SetValley(size_t ivalley) {
 }
 
 void G4CMPEqEMField::SetNoValley() {
+  valleyIndex = -1;
   SetValleyTransform(G4RotationMatrix::IDENTITY);
   useValley = false;
 }
@@ -108,16 +110,12 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
     return;
   }
 
-  G4ThreeVector pc(y[3], y[4], y[5]);	// Momentum in G4 "natural units"
-  G4ThreeVector p = pc/c_light;		// Convert e.g., MeV to MeV/c
-
   // Momentum to velocity conversion must be done in local coordinates
+  G4ThreeVector p(y[3], y[4], y[5]);
   fGlobalToLocal.ApplyAxisTransform(p);
 
-  G4RotationMatrix mInv = valleyToNormal*massInverse*normalToValley;
-  G4ThreeVector v = mInv*p;
+  G4ThreeVector v = theLattice->MapPtoV_el(valleyIndex, p);
   fLocalToGlobal.ApplyAxisTransform(v);
-
   G4double vel = v.mag();
   
   G4ThreeVector Efield(field[3], field[4], field[5]);

@@ -68,6 +68,7 @@ private:
 
   void SetValleyTransform(const G4RotationMatrix& xform);
   G4bool useValley;			// Flag to avoid matrix op==()
+  G4int valleyIndex;			// Index of current valley (-1 if none)
   G4RotationMatrix normalToValley;	// Parameters for electron motion
   G4RotationMatrix valleyToNormal;
   G4RotationMatrix massInverse;

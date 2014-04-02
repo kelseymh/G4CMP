@@ -57,23 +57,16 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
 					       G4double,
 					       G4ForceCondition* condition) {
   *condition = Forced;
-  
-  G4RotationMatrix trix = GetValley(aTrack);
-  valleyToNormal= G4AffineTransform(trix);
-  normalToValley= G4AffineTransform(trix).Inverse();    
 
-  G4ThreeVector k = aTrack.GetMomentum()/hbarc;
-  mInv = theLattice->GetMInvTensor();
-  G4ThreeVector v = ((trix.inverse()*mInv*trix) * k) * hbar_Planck;
+  G4int iv = GetValleyIndex(aTrack);
+  G4ThreeVector v = theLattice->MapPtoV_el(iv,GetLocalMomentum(aTrack));
+  G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv,GetLocalMomentum(aTrack));
+  G4double kmag = k_HV.mag();
+
 
 #ifdef G4CMP_DEBUG
   G4cout << "eLuke v = " << v.mag()/m*s << G4endl;
 #endif
-
-  G4ThreeVector k_valley = normalToValley.TransformPoint(k);
-  G4ThreeVector k_HV = theLattice->GetSqrtInvTensor() * k_valley;
-  G4double kmag = k_HV.mag();
-  
   if (kmag<=ksound_e) return DBL_MAX;
  
   // Time step corresponding to Mach number (avg. time between radiations)
@@ -91,9 +84,8 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack); 
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
-  G4ThreeVector k = postStepPoint->GetMomentum()/hbarc;
-  G4ThreeVector k_valley = normalToValley.TransformPoint(k);
-  G4ThreeVector k_HV = theLattice->GetSqrtInvTensor() * k_valley;
+  G4int iv = GetValleyIndex(aTrack);
+  G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv,GetLocalMomentum(aTrack));
   G4double kmag = k_HV.mag();
   
   // Do nothing other than re-calculate mfp when step limit reached or leaving

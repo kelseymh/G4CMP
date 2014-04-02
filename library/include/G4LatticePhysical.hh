@@ -35,6 +35,7 @@
 // 20140321  Move placement transformations to G4CMPProcessUtils, put
 //		lattice orientation into ctor arguments
 // 20140324  Add intervalley scattering parameters
+// 20140401  Add valley momentum calculations
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -71,9 +72,14 @@ public:
   const G4ThreeVector& RotateToLattice(G4ThreeVector& dir) const;
   const G4ThreeVector& RotateToSolid(G4ThreeVector& dir) const;
 
-  // NOTE:  Pass by value to allow in-situ rotations
-  G4double MapKtoV(G4int, G4ThreeVector) const;
-  G4ThreeVector MapKtoVDir(G4int, G4ThreeVector) const;
+  // Convert input wave vector and polarization to group velocity
+  // NOTE:  Pass vector by value to allow in-situ rotations
+  G4double      MapKtoV(G4int pol, G4ThreeVector k) const;
+  G4ThreeVector MapKtoVDir(G4int pol, G4ThreeVector k) const;
+
+  // Convert electron momentum to valley velocity or HV wavevector
+  G4ThreeVector MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const;
+  G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
 
 public:  
   const G4LatticeLogical* GetLattice() const { return fLattice; }

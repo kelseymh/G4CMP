@@ -33,6 +33,7 @@
 // 20140319  Add output functions for diagnostics
 // 20140321  Move placement transformations to G4CMPProcessUtils, put
 //		lattice orientation into ctor arguments
+// 20140401  Add valley momentum calculations
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -136,6 +137,36 @@ G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int polarizationState,
   G4ThreeVector VG = fLattice->MapKtoVDir(polarizationState, k);  
 
   return RotateToSolid(VG);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Convert electron momentum to valley velocity
+
+G4ThreeVector 
+G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapPtoV_el " << ivalley << " " << p_e
+	   << G4endl;
+
+  RotateToLattice(p_e);
+  const G4RotationMatrix& vToN = GetValley(ivalley);
+  G4ThreeVector V = (vToN.inverse()*GetMInvTensor()*vToN) * p_e / hbarc;
+  return RotateToSolid(V);
+}
+
+// Convert electron momentum to HV wavevector
+
+G4ThreeVector 
+G4LatticePhysical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapPtoK_HV " << ivalley << " " << p_e
+	   << G4endl;
+
+  RotateToLattice(p_e);
+  p_e.transform(GetValley(ivalley));	// Rotate into valley frame
+  G4ThreeVector k_HV = GetSqrtInvTensor() * p_e/hbarc;
+  return RotateToSolid(k_HV);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
