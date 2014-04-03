@@ -21,7 +21,7 @@
 
 
 ChargeDetectorConstruction::ChargeDetectorConstruction()
-   : liquidHelium(0), germanium(0), alminum(0), tungsten(0), worldPhys(0),
+   : liquidHelium(0), germanium(0), aluminum(0), tungsten(0), worldPhys(0),
      constructed(false), ifField(true),
      latManager(G4LatticeManager::GetLatticeManager()) {;}
 
@@ -41,7 +41,7 @@ void ChargeDetectorConstruction::DefineMaterials() {
 
   liquidHelium = nistManager->FindOrBuildMaterial("G4_AIR"); // to be corrected.......
   germanium = nistManager->FindOrBuildMaterial("G4_Ge");
-  alminum = nistManager->FindOrBuildMaterial("G4_Al");
+  aluminum = nistManager->FindOrBuildMaterial("G4_Al");
   tungsten = nistManager->FindOrBuildMaterial("G4_W");
 
   // Attach lattice information for germanium
@@ -71,16 +71,16 @@ void ChargeDetectorConstruction::SetupGeometry()
   // Physical lattice for each placed detector
   G4LatticePhysical* detLattice =
     new G4LatticePhysical(latManager->GetLattice(germanium));
-  detLattice->SetMillerOrientation(0,0,1);
+  //*** detLattice->SetMillerOrientation(0,0,1);
   latManager->RegisterLattice(germaniumPhysical, detLattice);
 
   //
   // Aluminum
   //
-  G4VSolid* alminumSolid = new G4Tubs("aluminiumSolid",0.*cm,3.81*cm,0.01*cm, 0.*deg, 360.*deg);
-  G4LogicalVolume* alminumLogical = new G4LogicalVolume(alminumSolid,alminum,"alminumLogical");
-  new G4PVPlacement(0,G4ThreeVector(0.,0.,1.28*cm),alminumLogical,"alminumPhysical",worldLogical,false,0);
-  new G4PVPlacement(0,G4ThreeVector(0.,0.,-1.28*cm),alminumLogical,"alminumPhysical",worldLogical,false,1);
+  G4VSolid* aluminumSolid = new G4Tubs("aluminiumSolid",0.*cm,3.81*cm,0.01*cm, 0.*deg, 360.*deg);
+  G4LogicalVolume* aluminumLogical = new G4LogicalVolume(aluminumSolid,aluminum,"aluminumLogical");
+  new G4PVPlacement(0,G4ThreeVector(0.,0.,1.28*cm),aluminumLogical,"aluminumPhysical",worldLogical,false,0);
+  new G4PVPlacement(0,G4ThreeVector(0.,0.,-1.28*cm),aluminumLogical,"aluminumPhysical",worldLogical,false,1);
 
   //
   // Tungsten
@@ -106,7 +106,7 @@ void ChargeDetectorConstruction::SetupGeometry()
   G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
   simpleBoxVisAtt->SetVisibility(true);
   germaniumLogical->SetVisAttributes(simpleBoxVisAtt);
-  alminumLogical->SetVisAttributes(simpleBoxVisAtt);
+  aluminumLogical->SetVisAttributes(simpleBoxVisAtt);
   //  tungstenLogical->SetVisAttributes(simpleBoxVisAtt);
 }
 

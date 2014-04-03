@@ -25,7 +25,7 @@ private:
 private:
   G4Material* liquidHelium;
   G4Material* germanium;
-  G4Material* alminum;
+  G4Material* aluminum;
   G4Material* tungsten;
   G4VPhysicalVolume* worldPhys;
   G4bool constructed;
