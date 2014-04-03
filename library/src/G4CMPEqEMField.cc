@@ -115,12 +115,12 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   G4ThreeVector Efield(field[3], field[4], field[5]);
   G4ThreeVector retForce = fCharge * c_light * Efield/vel;
   
-  dydx[0] = v[0]/vel;		// Velocity direction
-  dydx[1] = v[1]/vel;
-  dydx[2] = v[2]/vel;
-  dydx[3] = retForce[0];	// Applied force
-  dydx[4] = retForce[1];
-  dydx[5] = retForce[2];
+  dydx[0] = v.x()/vel;		// Velocity direction
+  dydx[1] = v.y()/vel;
+  dydx[2] = v.z()/vel;
+  dydx[3] = retForce.x();	// Applied force
+  dydx[4] = retForce.y();
+  dydx[5] = retForce.z();
   dydx[6] = 0.;			// not used
   dydx[7] = 1./vel;		// Lab Time of flight
 }
