@@ -149,9 +149,10 @@ G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
     G4cout << "G4LatticePhysical::MapPtoV_el " << ivalley << " " << p_e
 	   << G4endl;
 
+  p_e /= c_light;			// Convert from MeV to MeV/c
   RotateToLattice(p_e);
   const G4RotationMatrix& vToN = GetValley(ivalley);
-  G4ThreeVector V = (vToN.inverse()*GetMInvTensor()*vToN) * (p_e/c_light);
+  G4ThreeVector V = (vToN.inverse()*GetMInvTensor()*vToN) * p_e;
   return RotateToSolid(V);
 }
 
@@ -163,9 +164,10 @@ G4LatticePhysical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
     G4cout << "G4LatticePhysical::MapPtoK_HV " << ivalley << " " << p_e
 	   << G4endl;
 
+  p_e /= hbarc;					// Convert to wavevector
   RotateToLattice(p_e);
   p_e.transform(GetValley(ivalley));		// Rotate into valley frame
-  G4ThreeVector k_HV = GetSqrtInvTensor() * (p_e/hbarc);    // Henning-Vogt
+  G4ThreeVector k_HV = GetSqrtInvTensor() * p_e;	// Henning-Vogt
   return RotateToSolid(k_HV);
 }
 
