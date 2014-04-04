@@ -81,6 +81,7 @@ public:
   G4ThreeVector MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
+  G4ThreeVector MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const;
 
 public:  
   const G4LatticeLogical* GetLattice() const { return fLattice; }

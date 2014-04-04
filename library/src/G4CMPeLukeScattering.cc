@@ -92,7 +92,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector p = GetLocalDirection(postStepPoint->GetMomentum());
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p);
   G4double kmag = k_HV.mag();
-  
+
   // Do nothing other than re-calculate mfp when step limit reached or leaving
   // volume
 #ifdef G4CMP_DEBUG
@@ -125,8 +125,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double phi_charge =  G4UniformRand()*2*pi;
   k_HV.rotate(kdir, phi_charge);
   
-  G4ThreeVector p_new = theLattice->GetSqrtTensor() * (hbar_Planck*k_HV);
-  valleyToNormal.ApplyAxisTransform(p_new);
+  G4ThreeVector p_new = theLattice->MapK_HVtoP(iv, k_HV);
 
   // FIXME:  Need to generate actual phonon!
   

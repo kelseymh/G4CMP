@@ -179,6 +179,19 @@ G4LatticePhysical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
   return RotateToSolid(k_HV);
 }
 
+G4ThreeVector 
+G4LatticePhysical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapK_HVtoP " << ivalley << " " << k_HV
+	   << G4endl;
+
+  RotateToLattice(k_HV);
+  k_HV *= GetSqrtTensor();		// From Henning-Vogt to valley 
+  k_HV.transform(GetValley(ivalley).inverse());	// Rotate out of valley frame
+  k_HV *= hbarc;			// Convert wavevector to momentum
+  return RotateToSolid(k_HV);
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 // Dump contained logical lattice with volume information
