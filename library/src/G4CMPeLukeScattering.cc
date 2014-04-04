@@ -66,7 +66,8 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
 #ifdef G4CMP_DEBUG
   G4cout << "eLuke v = " << v.mag()/m*s << " kmag = " << kmag*m
 	 << "\nv = " << v << "\nk_HV = " << k_HV
-	 << "\nk_valley = " << theLattice->MapPtoK(iv,GetLocalMomentum(aTrack))
+	 << "\nk_valley = "
+	 << theLattice->MapPtoK_valley(iv,GetLocalMomentum(aTrack))
 	 << G4endl;
 #endif
 
@@ -88,7 +89,8 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
   G4int iv = GetValleyIndex(aTrack);
-  G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv,GetLocalMomentum(aTrack));
+  G4ThreeVector p = GetLocalDirection(postStepPoint->GetMomentum());
+  G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p);
   G4double kmag = k_HV.mag();
   
   // Do nothing other than re-calculate mfp when step limit reached or leaving
@@ -146,7 +148,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy()-Enew);
 
 #ifdef G4CMP_DEBUG
-  G4cout << "k (post-step) = " << theLattice->MapPtoK(iv,GetLocalMomentum(aTrack))
+  G4cout << "k (post-step) = " << p/hbarc
 	 << "\ntheta_phonon = " << theta_phonon
 	 << " theta_charge = " << theta_charge
 	 << " phi_charge = " << phi_charge << " q = " << q
