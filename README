@@ -10,6 +10,51 @@ package support production and propagation of acoustic phonons and
 electron-hole pairs through solid crystals such as germanium.
 
 
+User Environment
+================
+
+Users must have a recent (9.6-patch-03 or later) version of GEANT4
+installed, and they must have their environment configured (using
+<g4-install-dir>/share/Geant4-<version>/geant4make/geant4make.csh or ...sh).
+
+Add the G4CMP environment variables using the g4cmp_env.csh or ...sh scripts
+found in the G4CMP top level directory.
+
+For developers, there is a G4CMP_DEBUG environment variable which may be set
+(e.g., setenv G4CMP_DEBUG 1) before building the libraries.  This variable
+will turn on some additional diagnostic output which may be of interest.
+
+G4CMP is only configured for use on Linux and MacOSX platforms.  A minimum
+configuration requires GCC 4.4.7 or later (required by the QHull package)
+
+
+Building the Package
+====================
+
+After configuring your environment, build the G4CMP library with the command
+
+	make library
+
+The libraries (libg4cmp.so and libqhull.so) will be written to your
+$G4WORKDIR/lib/$G4SYSTEM/ directory, just like any other Geant4 example or
+user code, and should be found automatically when linking an application.
+
+With the library built, any of the three demonstration programs (phonon,
+charge, and channeling) may be built as a normal GEANT4 user application.
+From the top-level directory, use the command
+
+	make examples
+
+to build them all, or
+
+	make <name>
+
+to build just one (where <name> is the directory name of interest).  The
+executables will be named "g4cmpPhonon", "g4cmpCharge", and
+"g4cmpChanneling", respectively, and will be written to
+$G4WORKDIR/bin/$G4SYSTEM.
+
+
 Defining the Crystal Dynamics
 =============================
 
