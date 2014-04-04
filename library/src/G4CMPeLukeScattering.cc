@@ -125,7 +125,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double phi_charge =  G4UniformRand()*2*pi;
   k_HV.rotate(kdir, phi_charge);
   
-  G4ThreeVector p_new = theLattice->MapK_HVtoP(iv, k_HV);
+  G4ThreeVector p_new = theLattice->MapK_HVtoP(iv, k_HV)/c_light;	// WHY?
 
   // FIXME:  Need to generate actual phonon!
   
