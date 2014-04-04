@@ -87,6 +87,8 @@ examples.% :
 g4cmp.tgz : clean
 	@mkdir G4CMP ;\
 	 ln -s ../README ../GNUmakefile ../g4cmp.gmk G4CMP ;\
+	 ln -s ../g4cmp_env.sh ../g4cmp_env.csh G4CMP ;\
+	 ln -s ../G4CMPOrdParamTable.txt G4CMP ;\
 	 ln -s ../library ../qhull-2012.1 ../charge ../phonon G4CMP ;\
 	 ln -s ../channeling ../CrystalMaps G4CMP ;\
 	 gtar -hzc --exclude '.*' -f $@ G4CMP ;\
