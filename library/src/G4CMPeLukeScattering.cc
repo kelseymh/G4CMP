@@ -146,8 +146,13 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy()-Enew);
 
 #ifdef G4CMP_DEBUG
-  G4cout << "Etrack = " << aTrack.GetKineticEnergy() << " Enew = " << Enew
-	 << "p_new = " << p_new << G4endl;
+  G4cout << "k (post-step) = " << theLattice->MapPtoK(iv,GetLocalMomentum(aTrack))
+	 << "\ntheta_phonon = " << theta_phonon
+	 << " theta_charge = " << theta_charge
+	 << " phi_charge = " << phi_charge << " q = " << q
+	 << "\nk_HV (rotated) = " << k_HV << "\np_new = " << p_new
+	 << "\nEtrack = " << aTrack.GetKineticEnergy() << " Enew = " << Enew
+	 << G4endl;
 #endif
 
   ResetNumberOfInteractionLengthLeft();
