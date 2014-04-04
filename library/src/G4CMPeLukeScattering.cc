@@ -64,7 +64,10 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   G4double kmag = k_HV.mag();
 
 #ifdef G4CMP_DEBUG
-  G4cout << "eLuke v = " << v.mag()/m*s << " kmag = " << kmag*m << G4endl;
+  G4cout << "eLuke v = " << v.mag()/m*s << " kmag = " << kmag*m
+	 << "\nv = " << v << "\nk_HV = " << k_HV
+	 << "\nk_valley = " << theLattice->MapPtoK(iv,GetLocalMomentum(aTrack))
+	 << G4endl;
 #endif
 
   if (kmag<=ksound_e) return DBL_MAX;

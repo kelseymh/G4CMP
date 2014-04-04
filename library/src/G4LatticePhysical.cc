@@ -141,7 +141,7 @@ G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int polarizationState,
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-// Convert electron momentum to valley velocity
+// Convert electron momentum to valley velocity, wavevector, and HV vector
 
 G4ThreeVector 
 G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
@@ -149,14 +149,23 @@ G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
     G4cout << "G4LatticePhysical::MapPtoV_el " << ivalley << " " << p_e
 	   << G4endl;
 
-  p_e /= c_light;			// Convert from MeV to MeV/c
   RotateToLattice(p_e);
   const G4RotationMatrix& vToN = GetValley(ivalley);
-  G4ThreeVector V = (vToN.inverse()*GetMInvTensor()*vToN) * p_e;
+  G4ThreeVector V = (vToN.inverse()*GetMInvTensor()*vToN) * p_e/c_light;
   return RotateToSolid(V);
 }
 
-// Convert electron momentum to HV wavevector
+G4ThreeVector 
+G4LatticePhysical::MapPtoK(G4int ivalley, G4ThreeVector p_e) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapPtoK " << ivalley << " " << p_e
+	   << G4endl;
+
+  RotateToLattice(p_e);
+  p_e /= hbarc;					// Convert to wavevector
+  p_e.transform(GetValley(ivalley));		// Rotate into valley frame
+  return RotateToSolid(p_e);
+}
 
 G4ThreeVector 
 G4LatticePhysical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
@@ -164,10 +173,9 @@ G4LatticePhysical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
     G4cout << "G4LatticePhysical::MapPtoK_HV " << ivalley << " " << p_e
 	   << G4endl;
 
-  p_e /= hbarc;					// Convert to wavevector
   RotateToLattice(p_e);
-  p_e.transform(GetValley(ivalley));	// Rotate into valley frame
-  G4ThreeVector k_HV = GetSqrtInvTensor() * p_e;	// Henning-Vogt
+  p_e.transform(GetValley(ivalley));		// Rotate into valley frame
+  G4ThreeVector k_HV = GetSqrtInvTensor() * p_e/hbarc;	// Henning-Vogt
   return RotateToSolid(k_HV);
 }
 
