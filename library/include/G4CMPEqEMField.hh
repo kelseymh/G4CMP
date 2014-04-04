@@ -10,6 +10,7 @@
 // 20140331  Inherit from G4EqMagElectricField to handle holes as well as
 //	     electrons.  Do local/global transformations; take valley index
 //	     run-time configuration argument.
+// 20140404  Drop unnecessary data members, using functions in G4LatticePhysical
 
 #ifndef G4CMPEqEMField_hh
 #define G4CMPEqEMField_hh
@@ -29,7 +30,7 @@ public:
   G4CMPEqEMField(G4ElectroMagneticField *emField,
 		 const G4LatticePhysical* lattice=0);
 
-  ~G4CMPEqEMField() {;} 
+  virtual ~G4CMPEqEMField() {;} 
 
   // Replace physical lattice if track has changed volumes
   // NOTE:  Returns TRUE if lattice was actually changed
@@ -38,7 +39,7 @@ public:
   // Configure for local coordinates and electron valley axis
   void SetTransforms(const G4AffineTransform& lToG);
   void SetValley(size_t ivalley);
-  void SetNoValley();			// Use this for holes
+  void SetNoValley() { valleyIndex = -1; }		// Use this for holes
 
   // Configuration function from base class
   // NOTE: change of signature with G4 10.0
@@ -62,16 +63,10 @@ private:
   const G4LatticePhysical* theLattice;
 
   G4double fCharge;	       		// Same as base class fElectrMagCof
+  G4int valleyIndex;			// Index of current valley (-1 if none)
 
   G4AffineTransform fLocalToGlobal;	// Local vs. global coordinates
   G4AffineTransform fGlobalToLocal;
-
-  void SetValleyTransform(const G4RotationMatrix& xform);
-  G4bool useValley;			// Flag to avoid matrix op==()
-  G4int valleyIndex;			// Index of current valley (-1 if none)
-  G4RotationMatrix normalToValley;	// Parameters for electron motion
-  G4RotationMatrix valleyToNormal;
-  G4RotationMatrix massInverse;
 };
 
 #endif

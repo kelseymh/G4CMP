@@ -28,6 +28,7 @@
 //
 // $Id$
 //
+// 20140404  Drop unnecessary data members, using functions in G4LatticePhysical
 
 #ifndef G4CMPeLukeScattering_h
 #define G4CMPeLukeScattering_h 1
@@ -62,11 +63,6 @@ private:
   G4CMPeLukeScattering& operator=(const G4CMPeLukeScattering& right);
 
   G4VProcess* stepLimiter;
-
-  G4AffineTransform normalToValley;
-  G4AffineTransform valleyToNormal;
-  G4RotationMatrix mInv; 	// Inverse mass tensor
-  G4ThreeVector T;       	// HV Transformation matrix diagonal
 };
 
 #endif

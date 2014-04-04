@@ -11,6 +11,7 @@
 // 20140331  Inherit from G4EqMagElectricField to handle holes as well as
 //	     electrons.  Do local/global transformations; take valley index
 //	     run-time configuration argument.
+// 20140404  Drop unnecessary data members, using functions in G4LatticePhysical
 
 #include "G4CMPEqEMField.hh"
 #include "G4ElectroMagneticField.hh"
@@ -20,9 +21,7 @@
 G4CMPEqEMField::G4CMPEqEMField(G4ElectroMagneticField *emField,
 			       const G4LatticePhysical* lattice)
   : G4EqMagElectricField(emField), theLattice(lattice), fCharge(0.),
-    useValley(false), valleyIndex(-1) {
-  if (lattice) massInverse = lattice->GetMInvTensor();
-}
+    valleyIndex(-1) {;}
 
 
 // Replace physical lattice if track has changed volumes
@@ -30,11 +29,7 @@ G4CMPEqEMField::G4CMPEqEMField(G4ElectroMagneticField *emField,
 
 G4bool G4CMPEqEMField::ChangeLattice(const G4LatticePhysical* lattice) {
   G4bool newLat = (lattice != theLattice);
-  if (newLat) {
-    theLattice = lattice;
-    if (lattice) massInverse = lattice->GetMInvTensor();
-  }
-
+  theLattice = lattice;
   return newLat;
 }
 
@@ -53,23 +48,9 @@ void G4CMPEqEMField::SetTransforms(const G4AffineTransform& lToG) {
 void G4CMPEqEMField::SetValley(size_t ivalley) {
   if (theLattice && ivalley<theLattice->NumberOfValleys()) {
     valleyIndex = ivalley;
-    SetValleyTransform(theLattice->GetValley(ivalley));
-    useValley = true;
   } else {
-    SetNoValley();
+    valleyIndex = -1;
   }
-}
-
-void G4CMPEqEMField::SetNoValley() {
-  valleyIndex = -1;
-  SetValleyTransform(G4RotationMatrix::IDENTITY);
-  useValley = false;
-}
-
-
-void G4CMPEqEMField::SetValleyTransform(const G4RotationMatrix& xform) {
-  normalToValley = xform;
-  valleyToNormal = xform.inverse();
 }
 
 
@@ -99,7 +80,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 				       const G4double field[],
 				       G4double dydx[]) const {
   // No lattice behaviour, just use base class
-  if (!useValley) {
+  if (valleyIndex < 0) {
     G4EqMagElectricField::EvaluateRhsGivenB(y, field, dydx);
     return;
   }
