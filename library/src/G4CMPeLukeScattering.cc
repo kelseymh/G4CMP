@@ -145,6 +145,11 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.ProposeEnergy(Enew);
   aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy()-Enew);
 
+#ifdef G4CMP_DEBUG
+  G4cout << "Etrack = " << aTrack.GetKineticEnergy() << " Enew = " << Enew
+	 << "p_new = " << p_new << G4endl;
+#endif
+
   ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
 }
