@@ -166,7 +166,7 @@ G4LatticePhysical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
 
   p_e /= hbarc;					// Convert to wavevector
   RotateToLattice(p_e);
-  p_e.transform(GetValley(ivalley).inverse());	// Rotate into valley frame
+  p_e.transform(GetValley(ivalley));	// Rotate into valley frame
   G4ThreeVector k_HV = GetSqrtInvTensor() * p_e;	// Henning-Vogt
   return RotateToSolid(k_HV);
 }

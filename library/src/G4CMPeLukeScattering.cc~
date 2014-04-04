@@ -63,10 +63,10 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv,GetLocalMomentum(aTrack));
   G4double kmag = k_HV.mag();
 
-#ifdef G4CMP_DEBUG
-  G4cout << "eLuke v = " << v.mag()/m*s << " kmag = " << kmag*m << G4endl;
-#endif
 
+#ifdef G4CMP_DEBUG
+  G4cout << "eLuke v = " << v.mag()/m*s << G4endl;
+#endif
   if (kmag<=ksound_e) return DBL_MAX;
  
   // Time step corresponding to Mach number (avg. time between radiations)
