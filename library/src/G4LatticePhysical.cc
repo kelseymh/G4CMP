@@ -156,7 +156,7 @@ G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
 }
 
 G4ThreeVector 
-G4LatticePhysical::MapPtoK(G4int ivalley, G4ThreeVector p_e) const {
+G4LatticePhysical::MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapPtoK " << ivalley << " " << p_e
 	   << G4endl;

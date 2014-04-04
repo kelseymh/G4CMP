@@ -79,7 +79,7 @@ public:
 
   // Convert electron momentum to valley velocity or HV wavevector
   G4ThreeVector MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const;
-  G4ThreeVector MapPtoK(G4int ivalley, G4ThreeVector p_e) const;
+  G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
 
 public:  
