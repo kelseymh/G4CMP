@@ -97,54 +97,27 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
   //G4double p = postStepPoint->GetMomentum().mag()/c_light;
   //G4cout << "momentum: " <<  p <<  " " << velocity*mc_h << G4endl;
   G4double kmag = velocity*mc_h / hbar_Planck;
-  G4double theta_phonon = MakeTheta(kmag, ksound_h);
-  G4double theta_charge = (theta_phonon==0.) ? 0 :
-    acos((kmag*kmag - 2*ksound_h
-	  *(kmag*cos(theta_phonon) - ksound_h) 
-	  - 2 * (kmag*cos(theta_phonon) - ksound_h)
-	  * (kmag*cos(theta_phonon) - ksound_h)) 
-	 / kmag/ (sqrt(kmag*kmag - 4*ksound_h
-		       *(kmag*cos(theta_phonon) - ksound_h))));
+
+  G4double theta_phonon = MakePhononTheta(kmag, ksound_h);
+  G4double theta_charge = MakeRecoilTheta(kmag, ksound_h, theta_phonon);
   
   G4double q = 2*(kmag*cos(theta_phonon)-ksound_h);
   G4double T = hbar_Planck*hbar_Planck*kmag*kmag/2/mc_h;
   G4double qEnergy = velLong*hbar_Planck*q;
-  //G4double knew = sqrt(kmag*kmag + q*q - kmag*q*cos(theta_phonon));
 
   G4ThreeVector momentum = G4ThreeVector(aTrack.GetMomentumDirection());
   G4ThreeVector orth = momentum.orthogonal();
   G4ThreeVector newDir = momentum.rotate(orth, theta_charge);
   newDir.rotate(aTrack.GetMomentumDirection(), G4UniformRand()*2*pi);
   
+  // FIXME:  Need to generate actual phonon!
+
   aParticleChange.ProposeMomentumDirection(newDir);
   aParticleChange.ProposeEnergy(T-qEnergy);
   aParticleChange.ProposeNonIonizingEnergyDeposit(qEnergy);
   ResetNumberOfInteractionLengthLeft();    
   
   return &aParticleChange;
-}
-
-//Analytical method to compute theta
-
-G4double G4CMPhLukeScattering::MakeTheta(G4double& k, G4double& ks) {
-  G4double u = G4UniformRand();
-  
-  G4double base = -(u-1)+3*(u-1)*(ks/k)-3*(u-1)*(ks/k)*(ks/k)+(u-1)*(ks/k)*(ks/k)*(ks/k);
-  if(base < 0.0) return 0;
-  
-  G4double operand = ks/k+pow(base, 1.0/3.0);   
-  if(operand > 1.0) operand=1.0;
-  
-  G4double theta = acos(operand);
-  
-  return theta;
-}
-
-G4double 
-G4CMPhLukeScattering::MakePhi(G4double& k,G4double& ks, G4double& theta) {
-  G4double phi=acos((k*k - 2*ks*(k*cos(theta)-ks)-2*(k*cos(theta)-ks)*(k*cos(theta)-ks))/(k*sqrt(k*k-4*ks*(k*cos(theta)-ks))));
-
-  return phi;
 }
 
 G4bool G4CMPhLukeScattering::IsApplicable(const G4ParticleDefinition& aPD) {

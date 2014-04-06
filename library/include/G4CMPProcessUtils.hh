@@ -9,6 +9,7 @@
 // $Id$
 //
 // 20140321  Move lattice-based placement transformations here, via Touchable
+// 20140407  Add functions for phonon generation in Luke scattering
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -113,6 +114,12 @@ public:
 
   // Generate random valley for charge carrier
   G4int ChooseValley() const;
+
+  // Generate direction angle for phonon generated in Luke scattering
+  G4double MakePhononTheta(G4double k, G4double ks) const;
+
+  // Compute direction angle for recoiling charge carrier
+  G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
 
   // Construct new phonon track with correct momentum, position, etc.
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,

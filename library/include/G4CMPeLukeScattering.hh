@@ -29,6 +29,7 @@
 // $Id$
 //
 // 20140404  Drop unnecessary data members, using functions in G4LatticePhysical
+// 20140407  Move angle generation to base class
 
 #ifndef G4CMPeLukeScattering_h
 #define G4CMPeLukeScattering_h 1
@@ -43,11 +44,7 @@ class G4VProcess;
 
 class G4CMPeLukeScattering : public G4CMPVDriftProcess {
 public:
-  G4double MakeTheta(G4double& k,G4double& ks);
-  G4double MakePhi(G4double& k, G4double& ks, G4double& theta);
-
   G4CMPeLukeScattering(G4VProcess* stepper);
-
   virtual ~G4CMPeLukeScattering();
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);

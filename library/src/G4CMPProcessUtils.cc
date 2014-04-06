@@ -9,6 +9,7 @@
 // $Id$
 //
 // 20140321  Move lattice-based placement transformations here, via Touchable
+// 20140407  Add functions for phonon generation in Luke scattering
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -174,6 +175,33 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 
 G4int G4CMPProcessUtils::ChooseValley() const {
   return (G4int)(G4UniformRand()*theLattice->NumberOfValleys());  
+}
+
+
+// Generate direction angle for phonons in Luke scattering
+
+G4double G4CMPProcessUtils::MakePhononTheta(G4double k, G4double ks) const {
+  G4double u = G4UniformRand();
+  G4double v = ks/k;
+  G4double base = (u-1) * (3*v - 3*v*v + v*v*v - 1);
+  if (base < 0.0) return 0;
+  
+  G4double operand = v + pow(base, 1.0/3.0);   
+  if (operand > 1.0) operand=1.0;
+  
+  return acos(operand);
+}
+
+// Compute direction angle for recoiling charge carrier
+
+G4double G4CMPProcessUtils::MakeRecoilTheta(G4double k, G4double ks,
+					     G4double th_phonon) const {
+  if (th_phonon == 0.) return 0.;		// Avoid unnecessary work
+
+  G4double kctks = k*cos(th_phonon) - ks;
+
+  return acos( (k*k - 2*ks*kctks - 2*kctks*kctks)
+	       / (k * sqrt(k*k - 4*ks*kctks)) );
 }
 
 
