@@ -151,7 +151,7 @@ G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
 	   << G4endl;
 
   RotateToLattice(p_e);
-  p_e = fLattice->MapPtoVel(ivalley, p_e);	// Overwrite to avoid temporary
+  p_e = fLattice->MapPtoV_el(ivalley, p_e);	// Overwrite to avoid temporary
   return RotateToSolid(p_e);
 }
 
