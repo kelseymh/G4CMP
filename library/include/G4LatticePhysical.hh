@@ -73,11 +73,14 @@ public:
   const G4ThreeVector& RotateToSolid(G4ThreeVector& dir) const;
 
   // Convert input wave vector and polarization to group velocity
+  // NOTE:  Input vector must be in local (G4VSolid) coordinate system
   // NOTE:  Pass vector by value to allow in-situ rotations
   G4double      MapKtoV(G4int pol, G4ThreeVector k) const;
   G4ThreeVector MapKtoVDir(G4int pol, G4ThreeVector k) const;
 
-  // Convert electron momentum to valley velocity or HV wavevector
+  // Convert between electron momentum and valley velocity or HV wavevector
+  // NOTE:  Input vector must be in local (G4VSolid) coordinate system
+  // NOTE:  Pass vector by value to allow in-situ rotations
   G4ThreeVector MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;

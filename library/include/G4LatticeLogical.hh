@@ -35,6 +35,7 @@
 // 20140313  Allow electron mass filling with diagonal elements
 // 20140319  Add "extra" mass tensors with precomputed expressions
 // 20140324  Add intervalley scattering parameters
+// 20140408  Add valley momentum calculations
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -61,11 +62,18 @@ public:
   void DumpMap(std::ostream& os, G4int pol, const G4String& name) const;
   void Dump_NMap(std::ostream& os, G4int pol, const G4String& name) const;
 
-  // Get group velocity magnitude for input polarization and wavevector
-  virtual G4double MapKtoV(G4int, const G4ThreeVector& ) const;
+  // Get group velocity magnitude, direction for input polarization and wavevector
+  // NOTE:  Wavevector must be in lattice symmetry frame (X == symmetry axis)
+  virtual G4double MapKtoV(G4int pol, const G4ThreeVector& k) const;
+  virtual G4ThreeVector MapKtoVDir(G4int pol, const G4ThreeVector& k) const;
 
-  // Get group velocity direction (unit vector) for input polarization and K
-  virtual G4ThreeVector MapKtoVDir(G4int, const G4ThreeVector& ) const;
+  // Convert between electron momentum and valley velocity or HV wavevector
+  // NOTE:  Input vector must be in lattice symmetry frame (X == symmetry axis)
+  G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
+  G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
+  G4ThreeVector MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const;
+  // NOTE:  Pass by value above to avoid creating temporary vectors
 
 public:
   // Parameters for phonon production and propagation

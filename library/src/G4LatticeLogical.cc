@@ -32,6 +32,7 @@
 // 20140306  Allow valley filling using Euler angles directly
 // 20140318  Compute electron mass scalar (Herring-Vogt) from tensor
 // 20140324  Include inverse mass-ratio tensor
+// 20140408  Add valley momentum calculations
 
 #include "G4LatticeLogical.hh"
 #include "G4RotationMatrix.hh"
@@ -205,6 +206,52 @@ G4ThreeVector G4LatticeLogical::MapKtoVDir(G4int polarizationState,
   }
 
   return fN_map[polarizationState][iTheta][iPhi];
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Convert electron momentum to valley velocity, wavevector, and HV vector
+
+G4ThreeVector 
+G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapPtoV_el " << ivalley << " " << p_e
+	   << G4endl;
+
+  const G4RotationMatrix& vToN = GetValley(ivalley);
+  return (vToN.inverse()*GetMInvTensor()*vToN) * p_e/c_light;
+}
+
+G4ThreeVector 
+G4LatticeLogical::MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapPtoK " << ivalley << " " << p_e
+	   << G4endl;
+
+  p_e /= hbarc;					// Convert to wavevector
+  return p_e.transform(GetValley(ivalley));	// Rotate into valley frame
+}
+
+G4ThreeVector 
+G4LatticeLogical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapPtoK_HV " << ivalley << " " << p_e
+	   << G4endl;
+
+  p_e.transform(GetValley(ivalley));		// Rotate into valley frame
+  return GetSqrtInvTensor() * p_e/hbarc;	// Henning-Vogt transformation
+}
+
+G4ThreeVector 
+G4LatticeLogical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapK_HVtoP " << ivalley << " " << k_HV
+	   << G4endl;
+
+  k_HV *= GetSqrtTensor();			// From Henning-Vogt to valley 
+  k_HV.transform(GetValley(ivalley).inverse());	// Rotate out of valley frame
+  k_HV *= hbarc;				// Convert wavevector to momentum
+  return k_HV;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

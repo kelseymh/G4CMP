@@ -34,6 +34,7 @@
 // 20140321  Move placement transformations to G4CMPProcessUtils, put
 //		lattice orientation into ctor arguments
 // 20140401  Add valley momentum calculations
+// 20140408  Move vally momentum calcs to G4LatticeLogical
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -150,9 +151,8 @@ G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
 	   << G4endl;
 
   RotateToLattice(p_e);
-  const G4RotationMatrix& vToN = GetValley(ivalley);
-  G4ThreeVector V = (vToN.inverse()*GetMInvTensor()*vToN) * p_e/c_light;
-  return RotateToSolid(V);
+  p_e = fLattice->MapPtoVel(ivalley, p_e);	// Overwrite to avoid temporary
+  return RotateToSolid(p_e);
 }
 
 G4ThreeVector 
@@ -162,8 +162,7 @@ G4LatticePhysical::MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const {
 	   << G4endl;
 
   RotateToLattice(p_e);
-  p_e /= hbarc;					// Convert to wavevector
-  p_e.transform(GetValley(ivalley));		// Rotate into valley frame
+  p_e = fLattice->MapPtoK_valley(ivalley, p_e);	// Overwrite to avoid temporary
   return RotateToSolid(p_e);
 }
 
@@ -174,9 +173,8 @@ G4LatticePhysical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
 	   << G4endl;
 
   RotateToLattice(p_e);
-  p_e.transform(GetValley(ivalley));		// Rotate into valley frame
-  G4ThreeVector k_HV = GetSqrtInvTensor() * p_e/hbarc;	// Henning-Vogt
-  return RotateToSolid(k_HV);
+  p_e = fLattice->MapPtoK_HV(ivalley, p_e);	// Overwrite to avoid temporary
+  return RotateToSolid(p_e);
 }
 
 G4ThreeVector 
@@ -186,9 +184,7 @@ G4LatticePhysical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {
 	   << G4endl;
 
   RotateToLattice(k_HV);
-  k_HV *= GetSqrtTensor();		// From Henning-Vogt to valley 
-  k_HV.transform(GetValley(ivalley).inverse());	// Rotate out of valley frame
-  k_HV *= hbarc;			// Convert wavevector to momentum
+  k_HV = fLattice->MapK_HVtoP(ivalley, k_HV);	// Overwrite to avoid temporary
   return RotateToSolid(k_HV);
 }
 
