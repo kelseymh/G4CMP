@@ -25,6 +25,7 @@
 #include "G4PhononTrackMap.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
@@ -192,10 +193,19 @@ G4double G4CMPProcessUtils::MakePhononTheta(G4double k, G4double ks) const {
   return acos(operand);
 }
 
+// Compute energy of phonon in Luke Scattering
+
+G4double G4CMPProcessUtils::MakePhononEnergy(G4double k, G4double ks,
+					     G4double th_phonon) const {
+  if (th_phonon == 0.) return 0.;		// Avoid unnecessary work
+
+  return 2.*(k*cos(th_phonon)-ks) * theLattice->GetSoundSpeed() * hbar_Planck;
+}
+
 // Compute direction angle for recoiling charge carrier
 
 G4double G4CMPProcessUtils::MakeRecoilTheta(G4double k, G4double ks,
-					     G4double th_phonon) const {
+					    G4double th_phonon) const {
   if (th_phonon == 0.) return 0.;		// Avoid unnecessary work
 
   G4double kctks = k*cos(th_phonon) - ks;

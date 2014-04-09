@@ -117,6 +117,7 @@ public:
 
   // Generate direction angle for phonon generated in Luke scattering
   G4double MakePhononTheta(G4double k, G4double ks) const;
+  G4double MakePhononEnergy(G4double k, G4double ks, G4double th_phonon) const;
 
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
