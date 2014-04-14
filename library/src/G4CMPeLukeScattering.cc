@@ -106,36 +106,70 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p);
   G4double kmag = k_HV.mag();
 
+  // Construct phonon pseudovector in Henning-Vogt space
   G4double theta_phonon = MakePhononTheta(kmag, ksound_e);
-  G4double theta_charge = MakeRecoilTheta(kmag, ksound_e, theta_phonon);
-  
+  G4double phi_phonon   = G4UniformRand()*twopi;
   G4double q = 2*(kmag*cos(theta_phonon)-ksound_e);
 
-  k_HV.setMag(sqrt(kmag*kmag-2*mc_e*q*velLong/hbar_Planck));
-  G4ThreeVector kdir = k_HV.unit();
-  k_HV.rotate(kdir.orthogonal(), theta_charge);
-  
-  G4double phi_charge =  G4UniformRand()*2*pi;
-  k_HV.rotate(kdir, phi_charge);
-  
-  G4ThreeVector p_new = theLattice->MapK_HVtoP(iv, k_HV)/c_light;	// WHY?
+  // Sanity check for phonon production: should be forward going, like Cherenkov
+  if (theta_phonon>acos(ksound_e/kmag) || theta_phonon>halfpi) {
+    G4cerr << "ERROR: Phonon production theta_phonon " << theta_phonon
+	   << " exceeds cone angle " << acos(ksound_e/kmag) << G4endl;
+  }
+
+  G4ThreeVector kdir = k_HV.unit();	// Angles relative to electron direction
+  G4ThreeVector q_HV = q*kdir;
+  q_HV.rotate(kdir.orthogonal(), theta_phonon);
+  q_HV.rotate(kdir, phi_phonon);
+
+  // Get recoil wavevector in HV space, convert to new momentum
+  G4ThreeVector k_recoil = k_HV - q_HV;
+  G4ThreeVector p_new = theLattice->MapK_HVtoP(iv, k_recoil);
+  RotateToGlobalDirection(p_new);
+
+  /*** NOT READY UNTIL EFFECTIVE MASS IS BEING USED EVERYWHERE
+  // Electron kinetic energy computed in valley frame using mass tensor
+  G4ThreeVector p_v = theLattice->GetValley(iv) * p_new;
+  G4ThreeVector psq(p_v.x()*p_v.x(), p_v.y()*p_v.y(), p_v.z()*p_v.z());
+  psq *= theLattice->GetMInvTensor();
+  G4double Enew = psq.mag() / 2.;		// 1/2 p^2/m, non-relativistic
+  G4double Mnew = p_new.mag2() / (2.*Enew);	// Effective scalar mass
+  ***/
+  G4double Enew = 0.5*p_new.mag2()/(mc_e*c_squared);	// Map momentum to energy
+
+  G4double Etrack = postStepPoint->GetKineticEnergy();
+  if (Enew > Etrack) {
+    G4cerr << "ERROR:  Energy is not conserved!  Etrack = " << Etrack
+	   << " less than Enew = " << Enew << G4endl;
+  }
+
+  // Convert phonon pseudovector to real space, compute energy
+  G4ThreeVector Pphonon = theLattice->MapK_HVtoP(iv, q_HV);
+  RotateToGlobalDirection(Pphonon);
+
+  G4double Ephonon = Etrack - Enew;		// E conservation
 
   // FIXME:  Need to generate actual phonon!
   
-  G4double Enew = p_new.mag2()/2/mc_e;
-  aParticleChange.ProposeMomentumDirection(p_new.unit());
-  aParticleChange.ProposeEnergy(Enew);
-  aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy()-Enew);
-
 #ifdef G4CMP_DEBUG
-  G4cout << "k (post-step) = " << p/hbarc
-	 << "\ntheta_phonon = " << theta_phonon
-	 << " theta_charge = " << theta_charge
-	 << " phi_charge = " << phi_charge << " q = " << q
-	 << "\nk_HV (rotated) = " << k_HV << "\np_new = " << p_new
-	 << "\nEtrack = " << aTrack.GetKineticEnergy() << " Enew = " << Enew
+  G4cout << "p (post-step) = " << p << "\np_mag = " << p.mag()
+	 << " M_track = " << p.mag2() / (2.*Etrack)
+	 << "\nk_HV = " << k_HV << "\nkmag = " << kmag
+	 << "\ntheta_phonon = " << theta_phonon << " phi_phonon = " << phi_phonon
+	 << "\nacos(ks/k)   = " << acos(ksound_e/kmag)
+	 << "\nq = " << q << "\nq_HV = " << q_HV
+	 << "\nk_recoil = " << k_recoil << "\nk_recoil-mag = " << k_recoil.mag()
+	 << "\nPphonon = " << Pphonon << "\nEphonon = " << Ephonon
+	 << "\np-Pphonon = " << (p-Pphonon)
+	 << "\np_new     = " << p_new << "\np_new_mag = " << p_new.mag()
+	 << " M_new = " << p_new.mag2() / (2.*Enew)
+	 << "\nEtrack = " << Etrack << " Enew = " << Enew
 	 << G4endl;
 #endif
+
+  aParticleChange.ProposeMomentumDirection(p_new.unit());
+  aParticleChange.ProposeEnergy(Enew);
+  aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
 
   ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
