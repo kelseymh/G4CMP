@@ -178,6 +178,17 @@ G4LatticePhysical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
 }
 
 G4ThreeVector 
+G4LatticePhysical::MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapK_HVtoP " << ivalley << " " << k_HV
+	   << G4endl;
+
+  RotateToLattice(k_HV);
+  k_HV = fLattice->MapK_HVtoK_valley(ivalley, k_HV);
+  return RotateToSolid(k_HV);
+}
+
+G4ThreeVector 
 G4LatticePhysical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapK_HVtoP " << ivalley << " " << k_HV
@@ -186,6 +197,17 @@ G4LatticePhysical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {
   RotateToLattice(k_HV);
   k_HV = fLattice->MapK_HVtoP(ivalley, k_HV);	// Overwrite to avoid temporary
   return RotateToSolid(k_HV);
+}
+
+G4ThreeVector 
+G4LatticePhysical::MapK_valleyToP(G4int ivalley, G4ThreeVector k) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapK_valleyToP " << ivalley << " " << k
+	   << G4endl;
+
+  RotateToLattice(k);
+  k = fLattice->MapK_valleyToP(ivalley, k);	// Overwrite to avoid temporary
+  return RotateToSolid(k);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

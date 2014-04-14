@@ -243,6 +243,16 @@ G4LatticeLogical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
 }
 
 G4ThreeVector 
+G4LatticeLogical::MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapK_HVtoK_valley " << ivalley << " " << k_HV
+	   << G4endl;
+
+  k_HV *= GetSqrtTensor();			// From Henning-Vogt to valley
+  return k_HV;
+}
+
+G4ThreeVector 
 G4LatticeLogical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapK_HVtoP " << ivalley << " " << k_HV
@@ -250,8 +260,19 @@ G4LatticeLogical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {
 
   k_HV *= GetSqrtTensor();			// From Henning-Vogt to valley 
   k_HV.transform(GetValley(ivalley).inverse());	// Rotate out of valley frame
-  k_HV *= hbarc;				// Convert wavevector to momentum
+  k_HV *= hbarc;			// Convert wavevector to momentum
   return k_HV;
+}
+
+G4ThreeVector 
+G4LatticeLogical::MapK_valleyToP(G4int ivalley, G4ThreeVector k) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapK_valleyToP " << ivalley << " " << k
+	   << G4endl;
+
+  k.transform(GetValley(ivalley).inverse());	// Rotate out of valley frame
+  k *= hbarc;				// Convert wavevector to momentum
+  return k;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

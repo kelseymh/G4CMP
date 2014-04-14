@@ -73,6 +73,9 @@ public:
   G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const;
+  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const;
+  G4ThreeVector MapK_valleyToP(G4int ivalley, G4ThreeVector k) const;
+
   // NOTE:  Pass by value above to avoid creating temporary vectors
 
 public:
