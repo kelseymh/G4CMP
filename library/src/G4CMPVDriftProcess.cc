@@ -54,7 +54,7 @@
 G4CMPVDriftProcess::G4CMPVDriftProcess(const G4String& processName,
 				       G4CMPProcessSubType stype)
   : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils(),
-    velLong(330*m/s), mc_e(electron_mass_c2), l0_e(1*nm), 
+    velLong(330*m/s), mc_e(electron_mass_c2/c_squared), l0_e(1*nm), 
     ksound_e(velLong*mc_e/hbar_Planck), mc_h(mc_e), l0_h(l0_e),
     ksound_h(ksound_e) {
   SetProcessSubType(stype);
