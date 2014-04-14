@@ -45,6 +45,10 @@ public:
 public:
   virtual G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack);
 
+protected:
+  // NOTE:  This will use a non-const version of aTrack
+  void SetChargeCarrierMass(const G4Track* aTrack) const;
+  void SetChargeCarrierValley(const G4Track* aTrack) const;
 };
 
 

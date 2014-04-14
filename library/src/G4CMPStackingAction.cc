@@ -32,6 +32,7 @@
 //
 // $Id$
 //
+// 20140411 Set charge carrier masses appropriately for material
 
 #include "G4CMPStackingAction.hh"
 #include "G4LatticeManager.hh"
@@ -44,6 +45,7 @@
 #include "G4CMPValleyTrackMap.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
@@ -104,10 +106,8 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
 
   if (pd == G4CMPDriftHole::Definition() ||
       pd == G4CMPDriftElectron::Definition()) {
-    int valley = (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
-
-    G4CMPValleyTrackMap* theIVmap = G4CMPValleyTrackMap::GetValleyTrackMap();
-    theIVmap->SetValley(aTrack, valley);
+    SetChargeCarrierMass(aTrack);
+    SetChargeCarrierValley(aTrack);
   }
 
   return classification; 
@@ -115,3 +115,40 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+// Set dynamical mass of charge carrier to scalar value for material
+
+void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
+  G4ParticleDefinition* pd = aTrack->GetDefinition();
+  if (pd != G4CMPDriftHole::Definition() &&
+      pd != G4CMPDriftElectron::Definition()) return;
+
+  // Obtain LatticeManager and lattice for current volume
+  // WARNING!  This assumes track starts and ends in one single volume!
+  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
+  G4LatticePhysical* theLattice = LM->GetLattice(aTrack->GetVolume());
+
+  // Cast to non-const pointer so we can change the effective mass
+  G4DynamicParticle* dynp =
+    const_cast<G4DynamicParticle*>(aTrack->GetDynamicParticle());
+
+  G4double mass = (pd == G4CMPDriftHole::Definition()
+		   ? theLattice->GetHoleMass() : theLattice->GetElectronMass());
+  dynp->SetMass(mass*c_squared);	// Converts to Geant4 [M]=[E] units
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Set current Brillouin valley (random) for electrons in material
+
+void G4CMPStackingAction::SetChargeCarrierValley(const G4Track* aTrack) const {
+  if (aTrack->GetDefinition() != G4CMPDriftElectron::Definition()) return;
+
+  // Obtain LatticeManager and lattice for current volume
+  // WARNING!  This assumes track starts and ends in one single volume!
+  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
+  G4LatticePhysical* theLattice = LM->GetLattice(aTrack->GetVolume());
+
+  int valley = (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
+  G4CMPValleyTrackMap* theIVmap = G4CMPValleyTrackMap::GetValleyTrackMap();
+  theIVmap->SetValley(aTrack, valley);
+}
