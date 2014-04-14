@@ -10,6 +10,7 @@
 //
 // 20140321  Move lattice-based placement transformations here, via Touchable
 // 20140407  Add functions for phonon generation in Luke scattering
+// 20140412  Add manual configuration options
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -19,10 +20,11 @@
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 
-class G4LatticePhysical;
-class G4Track;
-class G4PhononTrackMap;
 class G4CMPValleyTrackMap;
+class G4LatticePhysical;
+class G4PhononTrackMap;
+class G4Track;
+class G4VPhysicalVolume;
 class G4VTouchable;
 
 
@@ -31,10 +33,18 @@ public:
   G4CMPProcessUtils();
   ~G4CMPProcessUtils();
 
-  // Fetch lattice (if any) for volume occupied by track
+  // Configure for current track
   virtual void LoadDataForTrack(const G4Track* track);
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
+
+  // Set configuration manually, without a track
+  virtual void FindLattice(const G4VPhysicalVolume* volume);
+  virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
+
+  virtual void SetTransforms(const G4VTouchable* touchable);
+  virtual void SetTransforms(const G4RotationMatrix* rot,
+			     const G4ThreeVector& trans);
 
   // Convert global to local coordinates
   inline G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const {
@@ -140,7 +150,6 @@ private:
 
   G4AffineTransform fLocalToGlobal;	// For converting pos and momentum
   G4AffineTransform fGlobalToLocal;
-  void SetTransforms(const G4VTouchable* touchable);
 
   // hide assignment operators as private 
   G4CMPProcessUtils(G4CMPProcessUtils&);

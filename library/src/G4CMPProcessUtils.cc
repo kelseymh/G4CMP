@@ -10,6 +10,7 @@
 //
 // 20140321  Move lattice-based placement transformations here, via Touchable
 // 20140407  Add functions for phonon generation in Luke scattering
+// 20140412  Add manual configuration options
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -47,13 +48,8 @@ G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   currentTrack = track;
 
-  // Fetch lattice for current track once, use in subsequent steps
   // WARNING!  This assumes track starts and ends in one single volume!
-  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  theLattice = LM->GetLattice(track->GetVolume());
-
-  // Get coordinate transformations for current volume
-  // WARNING!  This assumes track starts and ends in one single volume!
+  FindLattice(track->GetVolume());
   SetTransforms(track->GetTouchable());
 
   // Register track in either phonon or charge-carrier map
@@ -75,16 +71,31 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   }
 }
 
+// Fetch lattice for current track, use in subsequent steps
+
+void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
+  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
+  theLattice = LM->GetLattice(volume);
+}
+
+// Configure orientation matrices for current track
+
 void G4CMPProcessUtils::SetTransforms(const G4VTouchable* touchable) {
   if (!touchable) {			// Null pointer defaults to identity
     fLocalToGlobal = fGlobalToLocal = G4AffineTransform();
     return;
   }
 
-  fLocalToGlobal = G4AffineTransform(touchable->GetRotation(),
-				     touchable->GetTranslation());
+  SetTransforms(touchable->GetRotation(), touchable->GetTranslation());
+}
+
+void G4CMPProcessUtils::SetTransforms(const G4RotationMatrix* rot,
+				      const G4ThreeVector& trans) {
+  fLocalToGlobal = G4AffineTransform(rot, trans);
   fGlobalToLocal = fLocalToGlobal.Inverse();
 }
+
+// Delete current configuration before new track starts
 
 void G4CMPProcessUtils::ReleaseTrack() {
   SetTransforms(0);
