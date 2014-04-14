@@ -31,6 +31,7 @@
 // 20131113  Delete lattices in (new) registry, not in lookup maps
 // 20140319  Dump lattices on load with verbosity; don't double register!
 // 20140321  Drop passing placement transform to G4LatticePhysical
+// 20140412  Use const volumes and materials for registration
 
 #include "G4LatticeManager.hh"
 #include "G4LatticeLogical.hh"
@@ -93,7 +94,7 @@ G4LatticeManager* G4LatticeManager::GetLatticeManager() {
 
 // Associate logical lattice with material
 
-G4bool G4LatticeManager::RegisterLattice(G4Material* Mat,
+G4bool G4LatticeManager::RegisterLattice(const G4Material* Mat,
 					 G4LatticeLogical* Lat) {
   if (!Mat || !Lat) return false;	// Don't register null pointers
 
@@ -116,7 +117,7 @@ G4bool G4LatticeManager::RegisterLattice(G4Material* Mat,
 
 // Construct logical lattice for material from config file
 
-G4LatticeLogical* G4LatticeManager::LoadLattice(G4Material* Mat,
+G4LatticeLogical* G4LatticeManager::LoadLattice(const G4Material* Mat,
 						const G4String& latDir) {
   if (verboseLevel) {
     G4cout << "G4LatticeManager::LoadLattice material " << Mat->GetName()
@@ -139,14 +140,14 @@ G4LatticeLogical* G4LatticeManager::LoadLattice(G4Material* Mat,
 
 // Combine loading and registration (Material extracted from volume)
 
-G4LatticePhysical* G4LatticeManager::LoadLattice(G4VPhysicalVolume* Vol,
+G4LatticePhysical* G4LatticeManager::LoadLattice(const G4VPhysicalVolume* Vol,
 						const G4String& latDir) {
   if (verboseLevel) {
     G4cout << "G4LatticeManager::LoadLattice volume " << Vol->GetName()
 	   << " " << latDir << G4endl;
   }
 		      
-  G4Material* theMat = Vol->GetLogicalVolume()->GetMaterial();
+  const G4Material* theMat = Vol->GetLogicalVolume()->GetMaterial();
 
   // Create and register the logical lattice, then the physical lattice
   G4LatticeLogical* lLattice = LoadLattice(theMat, latDir);
@@ -166,7 +167,7 @@ G4LatticePhysical* G4LatticeManager::LoadLattice(G4VPhysicalVolume* Vol,
 
 // Associate physical (oriented) lattice with physical volume
 
-G4bool G4LatticeManager::RegisterLattice(G4VPhysicalVolume* Vol,
+G4bool G4LatticeManager::RegisterLattice(const G4VPhysicalVolume* Vol,
 					 G4LatticePhysical* Lat) {
   if (!Vol || !Lat) return false;	// Don't register null pointers
 
@@ -190,7 +191,7 @@ G4bool G4LatticeManager::RegisterLattice(G4VPhysicalVolume* Vol,
   return true; 
 }
 
-G4bool G4LatticeManager::RegisterLattice(G4VPhysicalVolume* Vol,
+G4bool G4LatticeManager::RegisterLattice(const G4VPhysicalVolume* Vol,
 					 G4LatticeLogical* LLat) {
   if (!Vol || !LLat) return false;	// Don't register null pointers
 
@@ -205,7 +206,7 @@ G4bool G4LatticeManager::RegisterLattice(G4VPhysicalVolume* Vol,
 
 // Returns a pointer to the LatticeLogical associated with material
 
-G4LatticeLogical* G4LatticeManager::GetLattice(G4Material* Mat) const {
+G4LatticeLogical* G4LatticeManager::GetLattice(const G4Material* Mat) const {
   LatticeMatMap::const_iterator latFind = fLLatticeList.find(Mat);
   if (latFind != fLLatticeList.end()) {
     if (verboseLevel)
@@ -225,7 +226,8 @@ G4LatticeLogical* G4LatticeManager::GetLattice(G4Material* Mat) const {
 // Returns a pointer to the LatticePhysical associated with volume
 // NOTE:  Passing Vol==0 will return the default lattice
 
-G4LatticePhysical* G4LatticeManager::GetLattice(G4VPhysicalVolume* Vol) const {
+G4LatticePhysical* 
+G4LatticeManager::GetLattice(const G4VPhysicalVolume* Vol) const {
   LatticeVolMap::const_iterator latFind = fPLatticeList.find(Vol);
   if (latFind != fPLatticeList.end()) {
     if (verboseLevel)
@@ -245,13 +247,13 @@ G4LatticePhysical* G4LatticeManager::GetLattice(G4VPhysicalVolume* Vol) const {
 
 // Return true if volume Vol has a physical lattice
 
-G4bool G4LatticeManager::HasLattice(G4VPhysicalVolume* Vol) const {
+G4bool G4LatticeManager::HasLattice(const G4VPhysicalVolume* Vol) const {
   return (fPLatticeList.find(Vol) != fPLatticeList.end());
 }
 
 // Return true if material Mat has a logical lattice
 
-G4bool G4LatticeManager::HasLattice(G4Material* Mat) const {
+G4bool G4LatticeManager::HasLattice(const G4Material* Mat) const {
   return (fLLatticeList.find(Mat) != fLLatticeList.end());
 }
 
@@ -261,7 +263,7 @@ G4bool G4LatticeManager::HasLattice(G4Material* Mat) const {
 //and polarizationState(0=LON, 1=FT, 2=ST), 
 //returns phonon velocity in m/s
 
-G4double G4LatticeManager::MapKtoV(G4VPhysicalVolume* Vol,
+G4double G4LatticeManager::MapKtoV(const G4VPhysicalVolume* Vol,
 				 G4int polarizationState,
 				 const G4ThreeVector & k) const {
   G4LatticePhysical* theLattice = GetLattice(Vol);
@@ -279,7 +281,7 @@ G4double G4LatticeManager::MapKtoV(G4VPhysicalVolume* Vol,
 // and polarizationState(0=LON, 1=FT, 2=ST), 
 // returns phonon propagation direction as dimensionless unit vector
 
-G4ThreeVector G4LatticeManager::MapKtoVDir(G4VPhysicalVolume* Vol,
+G4ThreeVector G4LatticeManager::MapKtoVDir(const G4VPhysicalVolume* Vol,
 					   G4int polarizationState,
 					   const G4ThreeVector & k) const {
   G4LatticePhysical* theLattice = GetLattice(Vol);
