@@ -30,6 +30,7 @@
 //
 // 20140325  Move time-step calculation to G4CMPProcessUtils
 // 20140331  Add required process subtype code
+// 20140415  Add run-time flag to select valley vs. H-V kinematics
 
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -83,6 +84,9 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   return mfp;
 }
 
+// TEMPORARY:  Run-time flag to switch HV vs. Valley kinematics
+const G4bool eLuke_valley_kinematics = (getenv("ELUKE_VALLEY_KINEMATICS")!=0);
+
 G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 						      const G4Step& aStep) {
   aParticleChange.Initialize(aTrack); 
@@ -117,15 +121,31 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	   << " exceeds cone angle " << acos(ksound_e/kmag) << G4endl;
   }
 
-  G4ThreeVector kdir = k_HV.unit();	// Angles relative to electron direction
-  G4ThreeVector q_HV = q*kdir;
-  q_HV.rotate(kdir.orthogonal(), theta_phonon);
-  q_HV.rotate(kdir, phi_phonon);
+  // Compute kinematics in either Herring-Vogt or physical (valley) space
+  G4ThreeVector kdir, qvec, k_recoil, p_new;
 
-  // Get recoil wavevector in HV space, convert to new momentum
-  G4ThreeVector k_recoil = k_HV - q_HV;
-  G4ThreeVector p_new = theLattice->MapK_HVtoP(iv, k_recoil);
-  RotateToGlobalDirection(p_new);
+  if (eLuke_valley_kinematics) {	// Use vectors in valley frame
+#ifdef G4CMP_DEBUG
+    G4cout << "Using kinematics in valley frame, not H-V" << G4endl;
+#endif
+
+    G4ThreeVector k_valley = theLattice->MapPtoK_valley(iv, p);
+    kdir = k_valley.unit();
+    qvec = q*kdir;
+    qvec.rotate(kdir.orthogonal(), theta_phonon);
+    qvec.rotate(kdir, phi_phonon);
+    k_recoil = k_valley - qvec;
+    p_new = theLattice->MapK_valleyToP(iv, k_recoil);
+  } else {				// Use H-V vectors for everything
+    kdir = k_HV.unit();
+    qvec = q*kdir;
+    qvec.rotate(kdir.orthogonal(), theta_phonon);
+    qvec.rotate(kdir, phi_phonon);
+    k_recoil = k_HV - qvec;
+    p_new = theLattice->MapK_HVtoP(iv, k_recoil);
+  }
+
+  RotateToGlobalDirection(p_new);	// Put into global frame for tracks
 
   /*** NOT READY UNTIL EFFECTIVE MASS IS BEING USED EVERYWHERE
   // Electron kinetic energy computed in valley frame using mass tensor
@@ -135,8 +155,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double Enew = psq.mag() / 2.;		// 1/2 p^2/m, non-relativistic
   G4double Mnew = p_new.mag2() / (2.*Enew);	// Effective scalar mass
   ***/
-  G4double Enew = 0.5*p_new.mag2()/(mc_e*c_squared);	// Map momentum to energy
-
+  G4double Enew = 0.5*p_new.mag2()/(mc_e*c_squared);
   G4double Etrack = postStepPoint->GetKineticEnergy();
   if (Enew > Etrack) {
     G4cerr << "ERROR:  Energy is not conserved!  Etrack = " << Etrack
@@ -144,7 +163,12 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   // Convert phonon pseudovector to real space, compute energy
-  G4ThreeVector Pphonon = theLattice->MapK_HVtoP(iv, q_HV);
+  G4ThreeVector Pphonon;
+  if (eLuke_valley_kinematics)
+    Pphonon = theLattice->MapK_valleyToP(iv, qvec);
+  else
+    Pphonon = theLattice->MapK_HVtoP(iv, qvec);
+
   RotateToGlobalDirection(Pphonon);
 
   G4double Ephonon = Etrack - Enew;		// E conservation
@@ -157,10 +181,9 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	 << "\nk_HV = " << k_HV << "\nkmag = " << kmag
 	 << "\ntheta_phonon = " << theta_phonon << " phi_phonon = " << phi_phonon
 	 << "\nacos(ks/k)   = " << acos(ksound_e/kmag)
-	 << "\nq = " << q << "\nq_HV = " << q_HV
+	 << "\nq = " << q << "\nqvec = " << qvec
 	 << "\nk_recoil = " << k_recoil << "\nk_recoil-mag = " << k_recoil.mag()
 	 << "\nPphonon = " << Pphonon << "\nEphonon = " << Ephonon
-	 << "\np-Pphonon = " << (p-Pphonon)
 	 << "\np_new     = " << p_new << "\np_new_mag = " << p_new.mag()
 	 << " M_new = " << p_new.mag2() / (2.*Enew)
 	 << "\nEtrack = " << Etrack << " Enew = " << Enew
