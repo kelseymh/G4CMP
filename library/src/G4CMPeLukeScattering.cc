@@ -110,7 +110,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p);
   G4double kmag = k_HV.mag();
 
-  // Construct phonon pseudovector in Henning-Vogt space
+  // Construct phonon pseudovector in Herring-Vogt space
   G4double theta_phonon = MakePhononTheta(kmag, ksound_e);
   G4double phi_phonon   = G4UniformRand()*twopi;
   G4double q = 2*(kmag*cos(theta_phonon)-ksound_e);
@@ -178,7 +178,8 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 #ifdef G4CMP_DEBUG
   G4cout << "p (post-step) = " << p << "\np_mag = " << p.mag()
 	 << " M_track = " << p.mag2() / (2.*Etrack)
-	 << "\nk_HV = " << k_HV << "\nkmag = " << kmag
+	 << "\nk_HV = " << k_HV
+	 << "\nkmag = " << kmag << " k/ks = " << kmag/ksound_e
 	 << "\ntheta_phonon = " << theta_phonon << " phi_phonon = " << phi_phonon
 	 << "\nacos(ks/k)   = " << acos(ksound_e/kmag)
 	 << "\nq = " << q << "\nqvec = " << qvec
