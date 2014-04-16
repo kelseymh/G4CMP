@@ -239,7 +239,7 @@ G4LatticeLogical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
 	   << G4endl;
 
   p_e.transform(GetValley(ivalley));		// Rotate into valley frame
-  return GetSqrtInvTensor() * p_e/hbarc;	// Henning-Vogt transformation
+  return GetSqrtInvTensor() * p_e/hbarc;	// Herring-Vogt transformation
 }
 
 G4ThreeVector 
@@ -248,7 +248,7 @@ G4LatticeLogical::MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const {
     G4cout << "G4LatticeLogical::MapK_HVtoK_valley " << ivalley << " " << k_HV
 	   << G4endl;
 
-  k_HV *= GetSqrtTensor();			// From Henning-Vogt to valley
+  k_HV *= GetSqrtTensor();			// From Herring-Vogt to valley
   return k_HV;
 }
 
@@ -258,7 +258,7 @@ G4LatticeLogical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {
     G4cout << "G4LatticeLogical::MapK_HVtoP " << ivalley << " " << k_HV
 	   << G4endl;
 
-  k_HV *= GetSqrtTensor();			// From Henning-Vogt to valley 
+  k_HV *= GetSqrtTensor();			// From Herring-Vogt to valley 
   k_HV.transform(GetValley(ivalley).inverse());	// Rotate out of valley frame
   k_HV *= hbarc;			// Convert wavevector to momentum
   return k_HV;
@@ -317,7 +317,7 @@ void G4LatticeLogical::SetMassTensor(const G4RotationMatrix& etens) {
 // Compute derived quantities from user-input mass tensor
 
 void G4LatticeLogical::FillMassInfo() {
-  // Henning-Vogt scalar mass of electron, used for sound speed calcs  
+  // Herring-Vogt scalar mass of electron, used for sound speed calcs  
   fElectronMass = 3. / ( 1./fMassTensor.xx() + 1./fMassTensor.yy()
 			 + 1./fMassTensor.zz() );  
 
@@ -381,7 +381,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << " " << fMassInverse.yy()*mElectron
      << " " << fMassInverse.zz()*mElectron
      << " * 1/m(electron)" << std::endl
-     << "# Henning-Vogt scalar mass: " << fElectronMass/mElectron << std::endl
+     << "# Herring-Vogt scalar mass: " << fElectronMass/mElectron << std::endl
      << "# sqrt(tensor/scalor): " << fMassRatioSqrt.xx()
      << " " << fMassRatioSqrt.yy()
      << " " << fMassRatioSqrt.zz()
