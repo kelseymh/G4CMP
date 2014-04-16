@@ -81,7 +81,7 @@ void G4CMPVDriftProcess::LoadDataForTrack(const G4Track* track) {
 
   velLong = theLattice->GetSoundSpeed();
 
-  mc_e = theLattice->GetElectronMass();		// Scalar mass (Henning-Vogt)
+  mc_e = theLattice->GetElectronMass();		// Scalar mass (Herring-Vogt)
   l0_e = theLattice->GetElectronScatter();
   ksound_e = velLong * mc_e/hbar_Planck;	// Wavevector for e @ "Mach 1"
 
