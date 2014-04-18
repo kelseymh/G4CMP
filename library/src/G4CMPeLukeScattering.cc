@@ -107,43 +107,65 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4int iv = GetValleyIndex(aTrack);
   G4ThreeVector p = GetLocalDirection(postStepPoint->GetMomentum());
+  G4ThreeVector k_valley = theLattice->MapPtoK_valley(iv, p);
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p);
   G4double kmag = k_HV.mag();
 
-  // Construct phonon pseudovector in Herring-Vogt space
-  G4double theta_phonon = MakePhononTheta(kmag, ksound_e);
-  G4double phi_phonon   = G4UniformRand()*twopi;
-  G4double q = 2*(kmag*cos(theta_phonon)-ksound_e);
-
-  // Sanity check for phonon production: should be forward going, like Cherenkov
-  if (theta_phonon>acos(ksound_e/kmag) || theta_phonon>halfpi) {
-    G4cerr << "ERROR: Phonon production theta_phonon " << theta_phonon
-	   << " exceeds cone angle " << acos(ksound_e/kmag) << G4endl;
-  }
+#ifdef G4CMP_DEBUG
+  G4cout << "p (post-step) = " << p << "\np_mag = " << p.mag()
+	 << "\nk_HV = " << k_HV
+	 << "\nkmag = " << kmag << " k/ks = " << kmag/ksound_e
+	 << "\nacos(ks/k)   = " << acos(ksound_e/kmag) << G4endl;
+#endif
 
   // Compute kinematics in either Herring-Vogt or physical (valley) space
+  G4double theta_phonon=0., phi_phonon=0., q=0.;
   G4ThreeVector kdir, qvec, k_recoil, p_new;
 
-  if (eLuke_valley_kinematics) {	// Use vectors in valley frame
 #ifdef G4CMP_DEBUG
+  if (eLuke_valley_kinematics)
     G4cout << "Using kinematics in valley frame, not H-V" << G4endl;
 #endif
 
-    G4ThreeVector k_valley = theLattice->MapPtoK_valley(iv, p);
-    kdir = k_valley.unit();
-    qvec = q*kdir;
-    qvec.rotate(kdir.orthogonal(), theta_phonon);
-    qvec.rotate(kdir, phi_phonon);
-    k_recoil = k_valley - qvec;
-    p_new = theLattice->MapK_valleyToP(iv, k_recoil);
-  } else {				// Use H-V vectors for everything
-    kdir = k_HV.unit();
-    qvec = q*kdir;
-    qvec.rotate(kdir.orthogonal(), theta_phonon);
-    qvec.rotate(kdir, phi_phonon);
-    k_recoil = k_HV - qvec;
-    p_new = theLattice->MapK_HVtoP(iv, k_recoil);
-  }
+  // Iterate until final momentum (magnitude) less than track
+  G4int ntries = 0;
+  do {
+    ntries++;
+#ifdef G4CMP_DEBUG
+    if (ntries%10000 == 0) G4cout << "... generator trial " << ntries << G4endl;
+#endif
+    
+    // Construct phonon pseudovector in Herring-Vogt space
+    theta_phonon = MakePhononTheta(kmag, ksound_e);
+    phi_phonon   = G4UniformRand()*twopi;
+    q = 2*(kmag*cos(theta_phonon)-ksound_e);
+    
+    // Sanity check for phonon production: should be forward going, like Cherenkov
+    if (theta_phonon>acos(ksound_e/kmag) || theta_phonon>halfpi) {
+      G4cerr << "ERROR: Phonon production theta_phonon " << theta_phonon
+	     << " exceeds cone angle " << acos(ksound_e/kmag) << G4endl;
+    }
+    
+    if (eLuke_valley_kinematics) {	// Use vectors in valley frame
+      kdir = k_valley.unit();
+      qvec = q*kdir;
+      qvec.rotate(kdir.orthogonal(), theta_phonon);
+      qvec.rotate(kdir, phi_phonon);
+      k_recoil = k_valley - qvec;
+      p_new = theLattice->MapK_valleyToP(iv, k_recoil);
+    } else {				// Use H-V vectors for everything
+      kdir = k_HV.unit();
+      qvec = q*kdir;
+      qvec.rotate(kdir.orthogonal(), theta_phonon);
+      qvec.rotate(kdir, phi_phonon);
+      k_recoil = k_HV - qvec;
+      p_new = theLattice->MapK_HVtoP(iv, k_recoil);
+    }
+  } while ((p_new.mag()-p.mag())/p.mag() > -1e-7);	// Check conservation
+
+#ifdef G4CMP_DEBUG
+  G4cout << "Phonon generation required " << ntries << " trials" << G4endl;
+#endif
 
   RotateToGlobalDirection(p_new);	// Put into global frame for tracks
 
@@ -155,9 +177,10 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double Enew = psq.mag() / 2.;		// 1/2 p^2/m, non-relativistic
   G4double Mnew = p_new.mag2() / (2.*Enew);	// Effective scalar mass
   ***/
+
   G4double Enew = 0.5*p_new.mag2()/(mc_e*c_squared);
   G4double Etrack = postStepPoint->GetKineticEnergy();
-  if (Enew > Etrack) {
+  if ((Enew-Etrack)/Etrack > 1e-5) {		// Avoid floating inequalities
     G4cerr << "ERROR:  Energy is not conserved!  Etrack = " << Etrack
 	   << " less than Enew = " << Enew << G4endl;
   }
@@ -176,17 +199,12 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // FIXME:  Need to generate actual phonon!
   
 #ifdef G4CMP_DEBUG
-  G4cout << "p (post-step) = " << p << "\np_mag = " << p.mag()
-	 << " M_track = " << p.mag2() / (2.*Etrack)
-	 << "\nk_HV = " << k_HV
-	 << "\nkmag = " << kmag << " k/ks = " << kmag/ksound_e
-	 << "\ntheta_phonon = " << theta_phonon << " phi_phonon = " << phi_phonon
-	 << "\nacos(ks/k)   = " << acos(ksound_e/kmag)
+  G4cout << "\ntheta_phonon = " << theta_phonon
+	 << " phi_phonon = " << phi_phonon
 	 << "\nq = " << q << "\nqvec = " << qvec
 	 << "\nk_recoil = " << k_recoil << "\nk_recoil-mag = " << k_recoil.mag()
 	 << "\nPphonon = " << Pphonon << "\nEphonon = " << Ephonon
 	 << "\np_new     = " << p_new << "\np_new_mag = " << p_new.mag()
-	 << " M_new = " << p_new.mag2() / (2.*Enew)
 	 << "\nEtrack = " << Etrack << " Enew = " << Enew
 	 << G4endl;
 #endif
