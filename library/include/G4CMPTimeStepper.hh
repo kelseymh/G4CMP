@@ -2,13 +2,13 @@
 //
 // 20140313  Introduce multiple inheritance from G4CMPProcessUtils
 //	     Add wrapper function to compute individual time steps
+// 20140418  Remove local valley transforms; use lattice functions
 
 #ifndef G4CMPTimeStepper_h
 #define G4CMPTimeStepper_h 1
 
 #include "globals.hh"
 #include "G4CMPVDriftProcess.hh"
-#include "G4AffineTransform.hh"
 
 
 class G4CMPTimeStepper : public G4CMPVDriftProcess {
@@ -39,14 +39,12 @@ protected:
   }
 
 private:
+  G4double dt_e; 		// Time step for electrons
+  G4double dt_h; 		// Time step for holes
+
   //hide assignment operator
   G4CMPTimeStepper(G4CMPTimeStepper&);
   G4CMPTimeStepper& operator=(const G4CMPTimeStepper& right);
-
-  G4AffineTransform normalToValley;
-  G4AffineTransform valleyToNormal;
-  G4double dt_e; //Time step for electrons
-  G4double dt_h; //Time step for holes
 };
 
 #endif

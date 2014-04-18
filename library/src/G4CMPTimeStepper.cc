@@ -7,6 +7,7 @@
 // 20140324  Migrate to use of volume-local field, do coordinate transforms
 // 20140325  Move most of time-step calculation to G4CMPProcessUtils
 // 20140331  Add required process subtype code
+// 20140418  Remove explicit valley transforms, use lattice function
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -59,15 +60,8 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
     return v*dt_h;
   }
 
-  const G4RotationMatrix& trix = GetValley(aTrack);
-  valleyToNormal = G4AffineTransform(trix);
-  normalToValley = G4AffineTransform(trix).Inverse();
-
-  G4ThreeVector k = aTrack.GetMomentum()/hbarc;
-  G4ThreeVector k_valley = normalToValley.TransformAxis(k);
-  
-  G4ThreeVector v_valley = hbar_Planck * (theLattice->GetMInvTensor()*k_valley);
-  G4ThreeVector v = valleyToNormal.TransformAxis(v_valley);
+  G4int iv = GetValleyIndex(aTrack);
+  G4ThreeVector v = theLattice->MapPtoV_el(iv,GetLocalMomentum(aTrack));
   
 #ifdef G4CMP_DEBUG
   G4cout << "TS electron = " << (v.mag()*dt_e)/m << G4endl;
@@ -95,9 +89,8 @@ void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
     return;
   }
 
-  G4ThreeVector pos = aTrack.GetPosition();
-  G4double position[4] = { pos.x(), pos.y(), pos.z(), 0. }; //*** { 4*0. };
-  //*** GetLocalPosition(aTrack, position);
+  G4double position[4] = { 4*0. };
+  GetLocalPosition(aTrack, position);
 
   const G4Field* field = fMan->GetDetectorField();
   G4double fieldVal[6];

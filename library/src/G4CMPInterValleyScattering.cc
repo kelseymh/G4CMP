@@ -3,6 +3,7 @@
 // 20140324  Drop hard-coded IV scattering parameters; get from lattice
 // 20140324  Restore Z-axis mass tensor
 // 20140331  Add required process subtype code
+// 20140418  Drop local valley transforms, use lattice functions instead
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -45,31 +46,20 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   G4StepPoint* stepPoint  = aTrack.GetStep()->GetPostStepPoint();
   G4double velocity = stepPoint->GetVelocity();
   
-  const G4RotationMatrix& trix = GetValley(aTrack);
-  normalToValley = G4AffineTransform(trix);
-  valleyToNormal = G4AffineTransform(trix).Inverse();
-  
-  //Getting the field.
-  G4ThreeVector pos = aTrack.GetPosition();
-  G4double posVec[4] = { pos.x(), pos.y(), pos.z(), 0. }; //*** { 4*0. };
-  //*** GetLocalPosition(aTrack, posVec);
+  G4double posVec[4] = { 4*0. };
+  GetLocalPosition(aTrack, posVec);
 
   const G4Field* field = fMan->GetDetectorField();
   G4double fieldValue[6];
   field->GetFieldValue(posVec,fieldValue);
-  
-  G4ThreeVector fieldVector(fieldValue[3], fieldValue[4], fieldValue[5]);
-  
-  G4ThreeVector fieldDirLLT = 
-    normalToValley.TransformAxis(fieldVector).unit();
 
-  // NOTE:  This expression changes the assumed symmetry axis from Z to X
-  //*** G4ThreeVector fieldDirHV = theLattice->GetSqrtInvTensor() * fieldDirLLT;
-  // This is the previous expression, with symmetry along Z
-  G4ThreeVector fieldDirHV = G4ThreeVector(fieldDirLLT.getX()*(1/1.2172),
-					   fieldDirLLT.getY()*(1/1.2172),
-					   fieldDirLLT.getZ()*(1/0.27559)
-					   );
+  G4ThreeVector fieldVector(fieldValue[3], fieldValue[4], fieldValue[5]);
+
+  // Field direction (not magnitude?) in valley frame
+  G4ThreeVector fieldDirLLT = GetValley(aTrack) * fieldVector.unit();
+
+  // Field pseudo-magnituce in Herring-Vogt space
+  G4ThreeVector fieldDirHV = theLattice->GetSqrtInvTensor() * fieldDirLLT;
 
   // Compute mean free path per Edelweiss LTD-14 paper
   G4double E_0 = theLattice->GetIVField();
