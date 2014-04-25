@@ -132,13 +132,17 @@ public:
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
 
+  // Compute kinetic energy and effective mass of electron for E/p relation
+  void ElectronKinematics(G4int valley, const G4ThreeVector& p,
+			  G4double& energy, G4double& mass) const;
+
   // Construct new phonon track with correct momentum, position, etc.
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
 			G4double energy) const;
 
   // Construct new electron or hole track with correct conditions
   G4Track* CreateChargeCarrier(G4int charge, G4int valley,
-			       const G4ThreeVector& p, G4double energy) const;
+			       const G4ThreeVector& p) const;
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes

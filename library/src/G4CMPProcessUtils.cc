@@ -239,27 +239,44 @@ G4CMPProcessUtils::GetValley(const G4Track& track) const {
 }
 
 
+// Compute kinematics of charge carrier (electron) to satisfy E/p relation
+
+void G4CMPProcessUtils::ElectronKinematics(G4int valley,
+					   const G4ThreeVector& p,
+					   G4double& energy,
+					   G4double& mass) const {
+  if (valley < 0 || (size_t)valley > theLattice->NumberOfValleys()) {
+    G4cerr << "WARNING:  ElectronKinematics invalid valley " << valley
+	   << G4endl;
+    mass = theLattice->GetElectronMass();
+  } else {
+    mass = theLattice->GetElectronEffectiveMass(valley, p);
+  }
+
+  energy = p.mag2() / (2.*mass);	// Non-relativistic kinetic energy
+}
+
 // Construct new electron or hole track with correct conditions
 
 G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
-						const G4ThreeVector& p,
-						G4double energy) const {
+						const G4ThreeVector& p) const {
   if (charge != 1 && charge != -1) {
     G4cerr << "ERROR:  CreateChargeCarrier invalid charge " << charge << G4endl;
     return 0;
   }
 
   G4ParticleDefinition* theCarrier = 0;
-  G4double carrierMass = 0;
+  G4double carrierMass=0., carrierEnergy=0.;
   if (charge==1) {
-    theCarrier  = G4CMPDriftHole::Definition();
-    carrierMass = theLattice->GetHoleMass();
+    theCarrier    = G4CMPDriftHole::Definition();
+    carrierMass   = theLattice->GetHoleMass();
+    carrierEnergy = 0.5 * p.mag2() / carrierMass;	// Non-relativistic
   } else {
     theCarrier = G4CMPDriftElectron::Definition();
-    carrierMass = theLattice->GetElectronMass();	// Scalar value
+    ElectronKinematics(valley, p, carrierEnergy, carrierMass);
   }
 
-  G4DynamicParticle* secDP = new G4DynamicParticle(theCarrier, p, energy);
+  G4DynamicParticle* secDP = new G4DynamicParticle(theCarrier,p,carrierEnergy);
   secDP->SetMass(carrierMass);
 
   G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(),
@@ -267,8 +284,6 @@ G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 
   // Store valley index in lookup table for future tracking
   trackVmap->SetValley(sec, valley);
-
-  // FIXME:  Should momentum be aligned with valley here?
 
   return sec;
 }

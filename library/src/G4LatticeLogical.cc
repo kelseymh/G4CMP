@@ -33,6 +33,7 @@
 // 20140318  Compute electron mass scalar (Herring-Vogt) from tensor
 // 20140324  Include inverse mass-ratio tensor
 // 20140408  Add valley momentum calculations
+// 20140425  Add "effective mass" calculation for electrons
 
 #include "G4LatticeLogical.hh"
 #include "G4RotationMatrix.hh"
@@ -273,6 +274,35 @@ G4LatticeLogical::MapK_valleyToP(G4int ivalley, G4ThreeVector k) const {
   k.transform(GetValley(ivalley).inverse());	// Rotate out of valley frame
   k *= hbarc;				// Convert wavevector to momentum
   return k;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Apply energy-momentum relationship for electron transport
+
+G4double  
+G4LatticeLogical::MapPtoEkin(G4int iv, G4ThreeVector p) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapPtoEkin " << iv << " " << p << G4endl;
+
+  p *= GetValley(iv);			// Rotate to valley frame
+
+  // Compute kinetic energy component by component, then sum
+  return 0.5 * (p.x()*p.x()/fMassTensor.xx() +
+		p.y()*p.y()/fMassTensor.yy() +
+		p.z()*p.z()/fMassTensor.zz());
+}
+
+// Compute effective "scalar" electron mass to match energy/momentum relation
+
+G4double 
+G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
+					   const G4ThreeVector& p) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::GetElectronEffectiveMass " << iv
+	   << " " << p << G4endl;
+
+  return 0.5*p.mag2()/MapPtoEkin(iv,p);		// Non-relativistic expression
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

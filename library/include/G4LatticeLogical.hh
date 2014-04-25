@@ -36,6 +36,7 @@
 // 20140319  Add "extra" mass tensors with precomputed expressions
 // 20140324  Add intervalley scattering parameters
 // 20140408  Add valley momentum calculations
+// 20140425  Add "effective mass" calculation for electrons
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -69,6 +70,7 @@ public:
 
   // Convert between electron momentum and valley velocity or HV wavevector
   // NOTE:  Input vector must be in lattice symmetry frame (X == symmetry axis)
+  // NOTE:  Pass by value below to avoid creating temporary vectors
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
@@ -76,7 +78,8 @@ public:
   G4ThreeVector MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const;
   G4ThreeVector MapK_valleyToP(G4int ivalley, G4ThreeVector k) const;
 
-  // NOTE:  Pass by value above to avoid creating temporary vectors
+  // Apply energy-momentum relationship for electron transport
+  G4double MapPtoEkin(G4int ivalley, G4ThreeVector p_e) const;
 
 public:
   // Parameters for phonon production and propagation
@@ -123,6 +126,9 @@ public:
   const G4RotationMatrix& GetMInvTensor() const { return fMassInverse; }
   const G4RotationMatrix& GetSqrtTensor() const { return fMassRatioSqrt; }
   const G4RotationMatrix& GetSqrtInvTensor() const { return fMInvRatioSqrt; }
+
+  // Compute "effective mass" for electron to preserve E/p relationship
+  G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const;
 
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley) { fValley.push_back(valley); }

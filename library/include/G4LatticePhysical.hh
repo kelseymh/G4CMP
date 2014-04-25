@@ -36,6 +36,7 @@
 //		lattice orientation into ctor arguments
 // 20140324  Add intervalley scattering parameters
 // 20140401  Add valley momentum calculations
+// 20140425  Add "effective mass" calculation for electrons
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -88,6 +89,9 @@ public:
   G4ThreeVector MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const;
   G4ThreeVector MapK_valleyToP(G4int ivalley, G4ThreeVector k) const;
 
+  // Apply energy-momentum relationship for electron transport
+  G4double MapPtoEkin(G4int ivalley, G4ThreeVector p_e) const;
+
 public:  
   const G4LatticeLogical* GetLattice() const { return fLattice; }
 
@@ -110,6 +114,10 @@ public:
   // Charge carriers have effective mass
   G4double GetHoleMass() const { return fLattice->GetHoleMass(); }
   G4double GetElectronMass() const { return fLattice->GetElectronMass(); }
+  G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const {
+    return fLattice->GetElectronEffectiveMass(iv, p);
+  }
+
   const G4RotationMatrix& GetMassTensor() const { return fLattice->GetMassTensor(); }
   const G4RotationMatrix& GetMInvTensor() const { return fLattice->GetMInvTensor(); }
   const G4RotationMatrix& GetSqrtTensor() const { return fLattice->GetSqrtTensor(); }

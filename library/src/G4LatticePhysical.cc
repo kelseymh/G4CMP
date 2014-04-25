@@ -35,6 +35,7 @@
 //		lattice orientation into ctor arguments
 // 20140401  Add valley momentum calculations
 // 20140408  Move vally momentum calcs to G4LatticeLogical
+// 20140425  Add "effective mass" calculation for electrons
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -138,6 +139,18 @@ G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int polarizationState,
   G4ThreeVector VG = fLattice->MapKtoVDir(polarizationState, k);  
 
   return RotateToSolid(VG);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Compute effective "scalar" electron mass to match energy/momentum relation
+
+G4double G4LatticePhysical::MapPtoEkin(G4int iv, G4ThreeVector p) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapPtoEkin " << iv << " " << p << G4endl;
+
+  RotateToLattice(p);
+  return fLattice->MapPtoEkin(iv, p);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
