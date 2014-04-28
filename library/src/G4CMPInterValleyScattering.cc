@@ -55,16 +55,14 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
 
   G4ThreeVector fieldVector(fieldValue[3], fieldValue[4], fieldValue[5]);
 
-  // Field direction (not magnitude?) in valley frame
-  G4ThreeVector fieldDirLLT = GetValley(aTrack) * fieldVector.unit();
-
-  // Field pseudo-magnituce in Herring-Vogt space
-  G4ThreeVector fieldDirHV = theLattice->GetSqrtInvTensor() * fieldDirLLT;
+  // Find E-field in HV space by rotating into valley and then applying HV tansform.
+  // Also have to strip Efield units for use in MFP calculation.
+  fieldVector = theLattice->GetSqrtInvTensor() * GetValley(aTrack) * fieldVector/volt*m;
 
   // Compute mean free path per Edelweiss LTD-14 paper
   G4double E_0 = theLattice->GetIVField();
   G4double mfp = velocity * theLattice->GetIVRate()/s *
-    pow((E_0*E_0 + fieldDirHV.mag2()), theLattice->GetIVExponent()/2.0);
+    pow((E_0*E_0 + fieldVector.mag2()), theLattice->GetIVExponent()/2.0);
 
 #ifdef G4CMP_DEBUG
   G4cout << "IV MFP = " << mfp/m << G4endl;
