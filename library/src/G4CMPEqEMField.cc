@@ -12,10 +12,12 @@
 //	     electrons.  Do local/global transformations; take valley index
 //	     run-time configuration argument.
 // 20140404  Drop unnecessary data members, using functions in G4LatticePhysical
+// 20140501  Fix sign flip in electron charge calculation.
 
 #include "G4CMPEqEMField.hh"
 #include "G4ElectroMagneticField.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4SystemOfUnits.hh"
 
 
 G4CMPEqEMField::G4CMPEqEMField(G4ElectroMagneticField *emField,
@@ -62,14 +64,14 @@ void G4CMPEqEMField::SetChargeMomentumMass(G4ChargeState particleCharge,
 					   G4double MomentumXc,
 					   G4double mass) {
   G4EqMagElectricField::SetChargeMomentumMass(particleCharge, MomentumXc, mass);
-  fCharge = particleCharge.GetCharge() * electron_charge;
+  fCharge = particleCharge.GetCharge() * eplus;
 }
 #else
 void G4CMPEqEMField::SetChargeMomentumMass(G4double particleCharge,
 					   G4double MomentumXc,
 					   G4double mass) {
   G4EqMagElectricField::SetChargeMomentumMass(particleCharge, MomentumXc, mass);
-  fCharge = particleCharge * electron_charge;
+  fCharge = particleCharge * eplus;
 }
 #endif
   
