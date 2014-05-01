@@ -3,3 +3,6 @@
 /vis/scene/add/trajectories
 /vis/scene/add/hits
 /run/beamOn 1
+/vis/ogl/printFilename g4cmpCharge
+/vis/ogl/printEPS
+/vis/viewer/clear
