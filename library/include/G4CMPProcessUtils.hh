@@ -22,6 +22,7 @@
 
 class G4CMPValleyTrackMap;
 class G4LatticePhysical;
+class G4ParticleDefinition;
 class G4PhononTrackMap;
 class G4Track;
 class G4VPhysicalVolume;
@@ -132,10 +133,6 @@ public:
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
 
-  // Compute kinetic energy and effective mass of electron for E/p relation
-  void ElectronKinematics(G4int valley, const G4ThreeVector& p,
-			  G4double& energy, G4double& mass) const;
-
   // Construct new phonon track with correct momentum, position, etc.
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
 			G4double energy) const;
@@ -148,6 +145,8 @@ protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes
   G4PhononTrackMap* trackKmap;
   G4CMPValleyTrackMap* trackVmap;
+
+  const G4ParticleDefinition* GetCurrentParticle() const;
 
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking

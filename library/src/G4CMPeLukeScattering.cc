@@ -31,6 +31,7 @@
 // 20140325  Move time-step calculation to G4CMPProcessUtils
 // 20140331  Add required process subtype code
 // 20140415  Add run-time flag to select valley vs. H-V kinematics
+// 20140430  Compute kinematics using mass tensor; prepare to create phonons
 
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -38,6 +39,7 @@
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4PhononPolarization.hh"
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4SystemOfUnits.hh"
@@ -84,9 +86,6 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   return mfp;
 }
 
-// TEMPORARY:  Run-time flag to switch HV vs. Valley kinematics
-const G4bool eLuke_valley_kinematics = (getenv("ELUKE_VALLEY_KINEMATICS")!=0);
-
 G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 						      const G4Step& aStep) {
   aParticleChange.Initialize(aTrack); 
@@ -118,14 +117,9 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	 << "\nacos(ks/k)   = " << acos(ksound_e/kmag) << G4endl;
 #endif
 
-  // Compute kinematics in either Herring-Vogt or physical (valley) space
+  // Compute kinematics in Herring-Vogt space, where electron mass is scalar
   G4double theta_phonon=0., phi_phonon=0., q=0.;
   G4ThreeVector kdir, qvec, k_recoil, p_new;
-
-#ifdef G4CMP_DEBUG
-  if (eLuke_valley_kinematics)
-    G4cout << "Using kinematics in valley frame, not H-V" << G4endl;
-#endif
 
   // Iterate until final momentum (magnitude) less than track
   G4int ntries = 0;
@@ -139,78 +133,54 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
     theta_phonon = MakePhononTheta(kmag, ksound_e);
     phi_phonon   = G4UniformRand()*twopi;
     q = 2*(kmag*cos(theta_phonon)-ksound_e);
-    
-    // Sanity check for phonon production: should be forward going, like Cherenkov
+
+    // Sanity check for phonon production: should be forward, like Cherenkov
     if (theta_phonon>acos(ksound_e/kmag) || theta_phonon>halfpi) {
       G4cerr << "ERROR: Phonon production theta_phonon " << theta_phonon
 	     << " exceeds cone angle " << acos(ksound_e/kmag) << G4endl;
     }
     
-    if (eLuke_valley_kinematics) {	// Use vectors in valley frame
-      kdir = k_valley.unit();
-      qvec = q*kdir;
-      qvec.rotate(kdir.orthogonal(), theta_phonon);
-      qvec.rotate(kdir, phi_phonon);
-      k_recoil = k_valley - qvec;
-      p_new = theLattice->MapK_valleyToP(iv, k_recoil);
-    } else {				// Use H-V vectors for everything
-      kdir = k_HV.unit();
-      qvec = q*kdir;
-      qvec.rotate(kdir.orthogonal(), theta_phonon);
-      qvec.rotate(kdir, phi_phonon);
-      k_recoil = k_HV - qvec;
-      p_new = theLattice->MapK_HVtoP(iv, k_recoil);
-    }
+    kdir = k_HV.unit();			// Get phonon and recoil vectors
+    qvec = q*kdir;
+    qvec.rotate(kdir.orthogonal(), theta_phonon);
+    qvec.rotate(kdir, phi_phonon);
+    k_recoil = k_HV - qvec;
+    p_new = theLattice->MapK_HVtoP(iv, k_recoil);
   } while ((p_new.mag()-p.mag())/p.mag() > -1e-7);	// Check conservation
 
 #ifdef G4CMP_DEBUG
   G4cout << "Phonon generation required " << ntries << " trials" << G4endl;
 #endif
 
-  RotateToGlobalDirection(p_new);	// Put into global frame for tracks
+  // Convert phonon pseudovector to real space
+  G4double Ephonon = MakePhononEnergy(kmag, ksound_e, theta_phonon);
+  qvec = theLattice->MapK_HVtoK_valley(iv, qvec);
+  RotateToGlobalDirection(qvec);
 
-  /*** NOT READY UNTIL EFFECTIVE MASS IS BEING USED EVERYWHERE
-  // Electron kinetic energy computed in valley frame using mass tensor
-  G4ThreeVector p_v = theLattice->GetValley(iv) * p_new;
-  G4ThreeVector psq(p_v.x()*p_v.x(), p_v.y()*p_v.y(), p_v.z()*p_v.z());
-  psq *= theLattice->GetMInvTensor();
-  G4double Enew = psq.mag() / 2.;		// 1/2 p^2/m, non-relativistic
-  G4double Mnew = p_new.mag2() / (2.*Enew);	// Effective scalar mass
-  ***/
+  /*****
+  // Create real phonon to be propagated
+  G4Track* phonon = CreatePhonon(G4PhononPolarization::Long, qvec, Ephonon);
+  aParticleChange.SetNumberOfSecondaries(1);
+  aParticleChange.AddSecondary(phonon);
+  *****/
 
-  G4double Enew = 0.5*p_new.mag2()/(mc_e*c_squared);
-  G4double Etrack = postStepPoint->GetKineticEnergy();
-  if ((Enew-Etrack)/Etrack > 1e-5) {		// Avoid floating inequalities
-    G4cerr << "ERROR:  Energy is not conserved!  Etrack = " << Etrack
-	   << " less than Enew = " << Enew << G4endl;
-  }
-
-  // Convert phonon pseudovector to real space, compute energy
-  G4ThreeVector Pphonon;
-  if (eLuke_valley_kinematics)
-    Pphonon = theLattice->MapK_valleyToP(iv, qvec);
-  else
-    Pphonon = theLattice->MapK_HVtoP(iv, qvec);
-
-  RotateToGlobalDirection(Pphonon);
-
-  G4double Ephonon = Etrack - Enew;		// E conservation
-
-  // FIXME:  Need to generate actual phonon!
-  
 #ifdef G4CMP_DEBUG
+  G4double Etrack = theLattice->MapPtoEkin(iv, p);
+  G4double Enew = theLattice->MapPtoEkin(iv, p_new);
+
   G4cout << "\ntheta_phonon = " << theta_phonon
 	 << " phi_phonon = " << phi_phonon
-	 << "\nq = " << q << "\nqvec = " << qvec
+	 << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
 	 << "\nk_recoil = " << k_recoil << "\nk_recoil-mag = " << k_recoil.mag()
-	 << "\nPphonon = " << Pphonon << "\nEphonon = " << Ephonon
 	 << "\np_new     = " << p_new << "\np_new_mag = " << p_new.mag()
 	 << "\nEtrack = " << Etrack << " Enew = " << Enew
 	 << G4endl;
 #endif
 
-  aParticleChange.ProposeMomentumDirection(p_new.unit());
-  aParticleChange.ProposeEnergy(Enew);
+  // Compute energy and "effective mass" of recoiling electron
+  RotateToGlobalDirection(p_new);	// Put into global frame for tracks
+  SetNewKinematics(iv, p_new);
+
   aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
 
   ResetNumberOfInteractionLengthLeft();

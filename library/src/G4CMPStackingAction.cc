@@ -56,7 +56,8 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4CMPStackingAction::G4CMPStackingAction() {;}
+G4CMPStackingAction::G4CMPStackingAction()
+  : G4UserStackingAction(), G4CMPProcessUtils() {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -71,69 +72,60 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   // Non-initial tracks should not be touched
   if (aTrack->GetParentID() != 0) return classification;
 
-  G4ParticleDefinition* pd = aTrack->GetDefinition();
+  // Configure utility functions for current track
+  LoadDataForTrack(aTrack);
 
-  // Obtain LatticeManager and lattice for current volume
-  // WARNING!  This assumes track starts and ends in one single volume!
-  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  G4LatticePhysical* theLattice = LM->GetLattice(aTrack->GetVolume());
+  G4ParticleDefinition* pd = aTrack->GetDefinition();
 
   if (pd == G4PhononLong::Definition() ||
       pd == G4PhononTransFast::Definition() ||
       pd == G4PhononTransSlow::Definition()) {
-    G4int pol = G4PhononPolarization::Get(aTrack->GetDefinition());
-    
-    //Compute random wave-vector (override whatever ParticleGun did)
-    G4ThreeVector Ran = G4RandomDirection();
-    
-    //Store wave-vector as track information
-    G4PhononTrackMap* theKmap = G4PhononTrackMap::GetPhononTrackMap();
-    theKmap->SetK(aTrack, Ran);
-    
-    //Compute direction of propagation from wave vector
-    G4ThreeVector momentumDir = theLattice->MapKtoVDir(pol, Ran);
-    
-    //Compute true velocity of propagation
-    G4double velocity = theLattice->MapKtoV(pol, Ran);
-    
-    //cast to non-const pointer so we can set the velocity
-    G4Track* theTrack = const_cast<G4Track*>(aTrack);
-
-    theTrack->SetMomentumDirection(momentumDir);
-    theTrack->SetVelocity(velocity);
-    theTrack->UseGivenVelocity(true);
+    SetPhononWaveVector(aTrack);
+    SetPhononVelocity(aTrack);
   }
 
   if (pd == G4CMPDriftHole::Definition() ||
       pd == G4CMPDriftElectron::Definition()) {
-    SetChargeCarrierMass(aTrack);
     SetChargeCarrierValley(aTrack);
+    SetChargeCarrierMass(aTrack);
   }
+
+  ReleaseTrack();
 
   return classification; 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-// Set dynamical mass of charge carrier to scalar value for material
+// Generate random wave vector for initial phonon (ought to invert momentum)
 
-void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
-  G4ParticleDefinition* pd = aTrack->GetDefinition();
-  if (pd != G4CMPDriftHole::Definition() &&
-      pd != G4CMPDriftElectron::Definition()) return;
+void G4CMPStackingAction::SetPhononWaveVector(const G4Track* aTrack) const {
+  //Compute random wave-vector (override whatever ParticleGun did)
+  G4ThreeVector Ran = G4RandomDirection();
+  
+  //Store wave-vector as track information
+  trackKmap->SetK(aTrack, Ran);
+}
 
-  // Obtain LatticeManager and lattice for current volume
-  // WARNING!  This assumes track starts and ends in one single volume!
-  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  G4LatticePhysical* theLattice = LM->GetLattice(aTrack->GetVolume());
+// Set velocity of phonon track appropriately for material
 
-  // Cast to non-const pointer so we can change the effective mass
-  G4DynamicParticle* dynp =
-    const_cast<G4DynamicParticle*>(aTrack->GetDynamicParticle());
+void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
+  // Get wavevector associated with track
+  G4ThreeVector K = trackKmap->GetK(aTrack);
+  G4int pol = GetPolarization(aTrack);
 
-  G4double mass = (pd == G4CMPDriftHole::Definition()
-		   ? theLattice->GetHoleMass() : theLattice->GetElectronMass());
-  dynp->SetMass(mass*c_squared);	// Converts to Geant4 [M]=[E] units
+  //Compute direction of propagation from wave vector
+  G4ThreeVector momentumDir = theLattice->MapKtoVDir(pol, K);
+  
+  //Compute true velocity of propagation
+  G4double velocity = theLattice->MapKtoV(pol, K);
+  
+  // Cast to non-const pointer so we can adjust non-standard kinematics
+  G4Track* theTrack = const_cast<G4Track*>(aTrack);
+
+  theTrack->SetMomentumDirection(momentumDir);
+  theTrack->SetVelocity(velocity);
+  theTrack->UseGivenVelocity(true);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -143,12 +135,36 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
 void G4CMPStackingAction::SetChargeCarrierValley(const G4Track* aTrack) const {
   if (aTrack->GetDefinition() != G4CMPDriftElectron::Definition()) return;
 
-  // Obtain LatticeManager and lattice for current volume
-  // WARNING!  This assumes track starts and ends in one single volume!
-  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  G4LatticePhysical* theLattice = LM->GetLattice(aTrack->GetVolume());
-
   int valley = (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
-  G4CMPValleyTrackMap* theIVmap = G4CMPValleyTrackMap::GetValleyTrackMap();
-  theIVmap->SetValley(aTrack, valley);
+  trackVmap->SetValley(aTrack, valley);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Set dynamical mass of charge carrier to scalar value for material
+
+void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
+  G4ParticleDefinition* pd = aTrack->GetDefinition();
+
+  // Get effective mass for charge carrier
+  G4double mass=0;
+  if (pd == G4CMPDriftHole::Definition()) {
+    mass = theLattice->GetHoleMass();
+  }
+
+  if (pd == G4CMPDriftElectron::Definition()) {
+    G4ThreeVector p = GetLocalMomentum(aTrack);
+    G4int ivalley = GetValleyIndex(aTrack);
+    mass = theLattice->GetElectronEffectiveMass(ivalley, p);
+
+    // Adjust kinetic energy to keep momentum/mass relation
+    G4Track* theTrack = const_cast<G4Track*>(aTrack);
+    theTrack->SetKineticEnergy(theLattice->MapPtoEkin(ivalley, p));
+  }
+
+  // Cast to non-const pointer so we can change the effective mass
+  G4DynamicParticle* dynp =
+    const_cast<G4DynamicParticle*>(aTrack->GetDynamicParticle());
+
+  dynp->SetMass(mass*c_squared);	// Converts to Geant4 [M]=[E] units
 }

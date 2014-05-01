@@ -69,6 +69,9 @@ protected:
   // Parameters are "Mach number" (ratio with sound speed) and scattering length
   G4double ChargeCarrierTimeStep(G4double mach, G4double l0) const;
 
+  // Fill ParticleChange energy and mass for charge carrier
+  void SetNewKinematics(G4int ivalley, const G4ThreeVector& p);
+
 private:
   // hide assignment operators as private 
   G4CMPVDriftProcess(G4CMPVDriftProcess&);

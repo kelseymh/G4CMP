@@ -113,3 +113,27 @@ G4CMPVDriftProcess::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
 
   return ( 3*l0 * mach / (velLong * (mach-1)*(mach-1)*(mach-1)) );
 }
+
+
+// Fill ParticleChange energy and mass for electron charge carrier
+
+void 
+G4CMPVDriftProcess::SetNewKinematics(G4int ivalley,const G4ThreeVector& p) {
+  if (GetCurrentParticle() != G4CMPDriftElectron::Definition()) return;
+
+  // Get mass and energy from momentum using appropriate E-p relation
+  G4ThreeVector p_local = GetLocalDirection(p);
+  G4double mass = theLattice->GetElectronEffectiveMass(ivalley, p_local);
+  G4double energy = theLattice->MapPtoEkin(ivalley, p_local);
+
+#ifdef G4CMP_DEBUG
+  G4cout << GetProcessName() << "::SetNewKinematics valley " << ivalley
+	 << " p " << p << "\n energy " << energy << " mass " << mass*c_squared
+	 << G4endl;
+#endif
+
+  aParticleChange.ProposeMomentumDirection(p.unit());
+  aParticleChange.ProposeEnergy(energy);
+  aParticleChange.ProposeMass(mass*c_squared);		// GEANT4 units
+}
+

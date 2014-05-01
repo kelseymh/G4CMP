@@ -94,8 +94,6 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
   }
   
   G4double velocity = postStepPoint->GetVelocity();
-  //G4double p = postStepPoint->GetMomentum().mag()/c_light;
-  //G4cout << "momentum: " <<  p <<  " " << velocity*mc_h << G4endl;
   G4double kmag = velocity*mc_h / hbar_Planck;
 
   G4double theta_phonon = MakePhononTheta(kmag, ksound_h);
@@ -110,7 +108,7 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
   G4ThreeVector orth = momentum.orthogonal();
   G4ThreeVector newDir = momentum.rotate(orth, theta_charge);
   newDir.rotate(aTrack.GetMomentumDirection(), phi_charge);
-  
+
   // FIXME:  Need to generate actual phonon!
 
   aParticleChange.ProposeMomentumDirection(newDir);

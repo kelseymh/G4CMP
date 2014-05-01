@@ -4,6 +4,7 @@
 // 20140324  Restore Z-axis mass tensor
 // 20140331  Add required process subtype code
 // 20140418  Drop local valley transforms, use lattice functions instead
+// 20140429  Recompute kinematics relative to new valley
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -77,11 +78,13 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   int valley = ChooseValley();
     
   // Assigning a new valley...
-  G4CMPValleyTrackMap::GetInstance()->SetValley(aTrack, valley);
+  trackVmap->SetValley(aTrack, valley);
   
-  // No change to actual momentum, just following a different valley
+  // Adjust kinetic energy and "effective mass" for new valley frame
+  // NOTE:  These _should_ be the same if scattering is conservative
   aParticleChange.Initialize(aTrack);  
-  
+  SetNewKinematics(valley, aTrack.GetMomentum());
+
   ResetNumberOfInteractionLengthLeft();    
   return &aParticleChange;
 }

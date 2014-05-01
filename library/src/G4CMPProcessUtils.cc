@@ -132,6 +132,13 @@ void G4CMPProcessUtils::GetLocalMomentum(const G4Track& track,
 }
 
 
+// Return particle type for currently active track [set in LoadDataForTrack()]
+
+const G4ParticleDefinition* G4CMPProcessUtils::GetCurrentParticle() const {
+  return (currentTrack ? currentTrack->GetParticleDefinition() : 0);
+}
+
+
 // Access phonon particle-type/polarization indices
 
 G4int G4CMPProcessUtils::GetPolarization(const G4Track& track) const {
@@ -162,7 +169,8 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 					 G4double energy) const {
   G4ThreeVector vgroup = theLattice->MapKtoVDir(polarization, waveVec);
   if (std::fabs(vgroup.mag()-1.) > 0.01) {
-    G4cout << "WARNING: vgroup not a unit vector: " << vgroup << G4endl;
+    G4cerr << "WARNING: vgroup not a unit vector: " << vgroup
+	   << " length " << vgroup.mag() << G4endl;
   }
 
   G4ParticleDefinition* thePhonon = G4PhononPolarization::Get(polarization);
@@ -239,23 +247,6 @@ G4CMPProcessUtils::GetValley(const G4Track& track) const {
 }
 
 
-// Compute kinematics of charge carrier (electron) to satisfy E/p relation
-
-void G4CMPProcessUtils::ElectronKinematics(G4int valley,
-					   const G4ThreeVector& p,
-					   G4double& energy,
-					   G4double& mass) const {
-  if (valley < 0 || (size_t)valley > theLattice->NumberOfValleys()) {
-    G4cerr << "WARNING:  ElectronKinematics invalid valley " << valley
-	   << G4endl;
-    mass = theLattice->GetElectronMass();
-  } else {
-    mass = theLattice->GetElectronEffectiveMass(valley, p);
-  }
-
-  energy = p.mag2() / (2.*mass);	// Non-relativistic kinetic energy
-}
-
 // Construct new electron or hole track with correct conditions
 
 G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
@@ -272,8 +263,10 @@ G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
     carrierMass   = theLattice->GetHoleMass();
     carrierEnergy = 0.5 * p.mag2() / carrierMass;	// Non-relativistic
   } else {
-    theCarrier = G4CMPDriftElectron::Definition();
-    ElectronKinematics(valley, p, carrierEnergy, carrierMass);
+    theCarrier    = G4CMPDriftElectron::Definition();
+    G4ThreeVector p_local = GetLocalDirection(p);
+    carrierMass   = theLattice->GetElectronEffectiveMass(valley, p_local);
+    carrierEnergy = theLattice->MapPtoEkin(valley, p_local);
   }
 
   G4DynamicParticle* secDP = new G4DynamicParticle(theCarrier,p,carrierEnergy);
