@@ -285,12 +285,12 @@ G4LatticeLogical::MapPtoEkin(G4int iv, G4ThreeVector p) const {
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapPtoEkin " << iv << " " << p << G4endl;
 
-  p *= GetValley(iv);			// Rotate to valley frame
+  p *= GetValley(iv);				// Rotate to valley frame
 
   // Compute kinetic energy component by component, then sum
-  return 0.5 * (p.x()*p.x()/fMassTensor.xx() +
-		p.y()*p.y()/fMassTensor.yy() +
-		p.z()*p.z()/fMassTensor.zz());
+  return (0.5/c_squared) * (p.x()*p.x()*fMassInverse.xx() +
+			    p.y()*p.y()*fMassInverse.yy() +
+			    p.z()*p.z()*fMassInverse.zz());
 }
 
 // Compute effective "scalar" electron mass to match energy/momentum relation
@@ -302,7 +302,7 @@ G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
     G4cout << "G4LatticeLogical::GetElectronEffectiveMass " << iv
 	   << " " << p << G4endl;
 
-  return 0.5*p.mag2()/MapPtoEkin(iv,p);		// Non-relativistic expression
+  return 0.5*p.mag2()/c_squared/MapPtoEkin(iv,p);	// Non-relativistic
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
