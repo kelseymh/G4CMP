@@ -97,23 +97,38 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
   G4double kmag = velocity*mc_h / hbar_Planck;
 
   G4double theta_phonon = MakePhononTheta(kmag, ksound_h);
-  G4double qEnergy = MakePhononEnergy(kmag, ksound_h, theta_phonon);
-
-  G4double T = hbar_Planck*hbar_Planck*kmag*kmag/2/mc_h;
+  G4double phi_phonon = G4UniformRand()*twopi;
+  G4double q = 2*(kmag*cos(theta_phonon)-ksound_h);
 
   G4double theta_charge = MakeRecoilTheta(kmag, ksound_h, theta_phonon);
-  G4double phi_charge =  G4UniformRand()*2*pi;
-  
-  G4ThreeVector momentum = aTrack.GetMomentumDirection();
-  G4ThreeVector orth = momentum.orthogonal();
-  G4ThreeVector newDir = momentum.rotate(orth, theta_charge);
-  newDir.rotate(aTrack.GetMomentumDirection(), phi_charge);
+  G4double phi_charge = fmod(pi+phi_phonon, twopi);
 
-  // FIXME:  Need to generate actual phonon!
+  // Rotate hole direction vector to recoil
+  G4ThreeVector mdir = postStepPoint->GetMomentumDirection();
+  G4ThreeVector newDir = mdir;
+  newDir.rotate(mdir.orthogonal(), theta_charge);
+  newDir.rotate(mdir, phi_charge);
+
+  // Convert phonon pseudovector to real space
+  G4ThreeVector qvec = q*mdir;
+  qvec.rotate(mdir.orthogonal(), theta_phonon);
+  qvec.rotate(mdir, phi_phonon);
+  RotateToGlobalDirection(qvec);
+
+  G4double Ephonon = MakePhononEnergy(kmag, ksound_h, theta_phonon);
+
+  /*****
+  // Create real phonon to be propagated
+  G4Track* phonon = CreatePhonon(G4PhononPolarization::Long, qvec, Ephonon);
+  aParticleChange.SetNumberOfSecondaries(1);
+  aParticleChange.AddSecondary(phonon);
+  *****/
+
+  G4double Etrack = postStepPoint->GetKineticEnergy();
 
   aParticleChange.ProposeMomentumDirection(newDir);
-  aParticleChange.ProposeEnergy(T-qEnergy);
-  aParticleChange.ProposeNonIonizingEnergyDeposit(qEnergy);
+  aParticleChange.ProposeEnergy(Etrack-Ephonon);
+  aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
   ResetNumberOfInteractionLengthLeft();    
   
   return &aParticleChange;
