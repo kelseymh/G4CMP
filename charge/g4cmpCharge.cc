@@ -28,9 +28,11 @@
 //
 // $Id$
 //
+// 20140509  Add conditional code for Geant4 10.0 vs. earlier
 
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
+#include "G4Version.hh"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
@@ -40,9 +42,10 @@
 #include "G4UIExecutive.hh"
 #endif
 
+#include "ChargeActionInitialization.hh"
 #include "ChargeDetectorConstruction.hh"
-#include "G4CMPPhysicsList.hh"
 #include "ChargePrimaryGeneratorAction.hh"
+#include "G4CMPPhysicsList.hh"
 #include "G4CMPStackingAction.hh"
 //#include "FET.hh"
 //#include "FETMessenger.hh"
@@ -52,24 +55,25 @@ int main(int argc,char** argv)
 {
  // Construct the run manager
  //
- G4RunManager * runManager = new G4RunManager;
+ G4RunManager* runManager = new G4RunManager;
 
  // Set mandatory initialization classes
  //
- ChargeDetectorConstruction* detector = new ChargeDetectorConstruction();
+ ChargeDetectorConstruction* detector = new ChargeDetectorConstruction;
  runManager->SetUserInitialization(detector);
- //
+
  G4VUserPhysicsList* physics = new G4CMPPhysicsList();
  physics->SetCuts();
  runManager->SetUserInitialization(physics);
     
- // Set user action classes
+ // Set user action classes (different for Geant4 10.0)
  //
-
+#if (G4VERSION_NUMBER >= 1000)
+ runManager->SetUserInitialization(new ChargeActionInitialization);
+#else
  runManager->SetUserAction(new G4CMPStackingAction);
-
- G4VUserPrimaryGeneratorAction* gen_action = new ChargePrimaryGeneratorAction();
- runManager->SetUserAction(gen_action);
+ runManager->SetUserAction(new ChargePrimaryGeneratorAction);
+#endif
 
  //FET* fetsim = new FET(runManager);
 
@@ -92,9 +96,6 @@ int main(int argc,char** argv)
  {
 #ifdef G4UI_USE
       G4UIExecutive * ui = new G4UIExecutive(argc,argv);
-#ifdef G4VIS_USE
-      UImanager->ApplyCommand("/control/execute vis.mac");
-#endif
       ui->SessionStart();
       delete ui;
 #endif
