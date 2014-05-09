@@ -32,6 +32,7 @@
 // 20140331  Add required process subtype code
 // 20140415  Add run-time flag to select valley vs. H-V kinematics
 // 20140430  Compute kinematics using mass tensor; prepare to create phonons
+// 20140509  Remove valley vs. H-V flag; add run-time envvar to bias phonons
 
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -53,7 +54,8 @@
 // Runtime flag to generate real phonons during scattering
 
 namespace {
-  const G4bool generateLukePhonons = (getenv("G4CMP_LUKE_PHONONS") != 0);
+  const G4double generateLukePhonons =
+    (getenv("G4CMP_LUKE_PHONONS") ? strtod(getenv("G4CMP_LUKE_PHONONS"),0) : 0.);
 }
 
 
@@ -169,8 +171,9 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   qvec = theLattice->MapK_HVtoK_valley(iv, qvec);
   RotateToGlobalDirection(qvec);
 
-  if (generateLukePhonons) {		// Create real phonon to be propagated
-    G4Track* phonon = CreatePhonon(G4PhononPolarization::Long, qvec, Ephonon);
+  // Create real phonon to be propagated, with random polarization
+  if (generateLukePhonons > 0. && G4UniformRand() < generateLukePhonons) {
+    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN, qvec, Ephonon);
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(phonon);
   }

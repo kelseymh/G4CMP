@@ -30,6 +30,7 @@
 //
 // 20140325  Move time-step calculation to G4CMPProcessUtils
 // 20140331  Add required process subtype code
+// 20140509  Add run-time envvar to bias phonons
 
 #include "G4CMPhLukeScattering.hh"
 #include "G4CMPDriftHole.hh"
@@ -52,7 +53,8 @@
 // Runtime flag to generate real phonons during scattering
 
 namespace {
-  const G4bool generateLukePhonons = (getenv("G4CMP_LUKE_PHONONS") != 0);
+  const G4double generateLukePhonons =
+    (getenv("G4CMP_LUKE_PHONONS") ? strtod(getenv("G4CMP_LUKE_PHONONS"),0) : 0.);
 }
 
 
@@ -130,8 +132,9 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
 
   G4double Ephonon = MakePhononEnergy(kmag, ksound_h, theta_phonon);
 
-  if (generateLukePhonons) {		// Create real phonon to be propagated
-    G4Track* phonon = CreatePhonon(G4PhononPolarization::Long, qvec, Ephonon);
+  // Create real phonon to be propagated, with random polarization
+  if (generateLukePhonons > 0. && G4UniformRand() < generateLukePhonons) {
+    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN, qvec, Ephonon);
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(phonon);
   }

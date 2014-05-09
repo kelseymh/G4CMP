@@ -11,6 +11,7 @@
 // 20140321  Move lattice-based placement transformations here, via Touchable
 // 20140407  Add functions for phonon generation in Luke scattering
 // 20140412  Add manual configuration options
+// 20140509  Add ChoosePolarization() which uses DOS values from lattice
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -111,6 +112,7 @@ public:
   // Generate random phonon polarization from density of states
   // Values passed may be zero to suppress particular states
   G4int ChoosePolarization(G4double Ldos, G4double STdos, G4double FTdos) const;
+  G4int ChoosePolarization() const;		// Use DOS values from lattice
 
   // Map charge carrier momentum to valley index
   G4int GetValleyIndex(const G4Track& track) const;
