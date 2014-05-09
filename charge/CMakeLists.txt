@@ -29,6 +29,7 @@ include_directories(${PROJECT_SOURCE_DIR}/qhull-2012.1/src)
 
 set(charge_SOURCES 
     ${PROJECT_SOURCE_DIR}/charge/src/CDMS_iZip4_Field.cc
+    ${PROJECT_SOURCE_DIR}/charge/src/ChargeActionInitialization.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeDetectorConstruction.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeEMField.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargePrimaryGeneratorAction.cc
@@ -37,7 +38,7 @@ set(charge_SOURCES
     ${PROJECT_SOURCE_DIR}/charge/src/MatWriter.cc
     )
 add_executable(g4cmpCharge g4cmpCharge.cc ${charge_SOURCES})
-target_link_libraries(g4cmpCharge ${Geant4_LIBRARIES} G4cmp)
+target_link_libraries(g4cmpCharge G4cmp ${Geant4_LIBRARIES})
 set_target_properties(g4cmpCharge PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 set(CMAKE_CXX_FLAGS "-O2 -p -g")

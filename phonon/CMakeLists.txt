@@ -23,12 +23,13 @@ endif()
 include(${Geant4_USE_FILE})
 
 set(phonon_SOURCES 
+   ${PROJECT_SOURCE_DIR}/phonon/src/PhononActionInitialization.cc
    ${PROJECT_SOURCE_DIR}/phonon/src/PhononDetectorConstruction.cc
    ${PROJECT_SOURCE_DIR}/phonon/src/PhononPrimaryGeneratorAction.cc
    )
     
 add_executable(g4cmpPhonon g4cmpPhonon.cc ${phonon_SOURCES})
-target_link_libraries(g4cmpPhonon ${Geant4_LIBRARIES} G4cmp)
+target_link_libraries(g4cmpPhonon G4cmp ${Geant4_LIBRARIES})
 set_target_properties(g4cmpPhonon PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 set(CMAKE_CXX_FLAGS "-O2 -p -g")
