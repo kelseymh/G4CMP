@@ -5,7 +5,7 @@
 /vis/drawVolume
 /vis/scene/add/trajectories
 ### /vis/scene/add/hits
-/tracking/verbose 1
+/tracking/verbose 0
 /gun/number 10
 /run/beamOn 1
 /vis/ogl/set/printFilename g4cmpCharge
