@@ -1,5 +1,15 @@
 # G4CMP/charge/GNUmakefile -- for building charge-carrier propagation demo
 # $Id$
+#
+# 20140509  Support different executables by looking at target name
 
-G4CMP_NAME := g4cmpCharge
+ifndef G4CMP_NAME		# Two-pass method
+  .PHONY : luke_dist g4cmpCharge
+
+  g4cmpCharge luke_dist :
+	@$(MAKE) G4CMP_NAME=$@ bin
+
+  G4CMP_NAME := g4cmpCharge
+endif
+
 include ../g4cmp.gmk

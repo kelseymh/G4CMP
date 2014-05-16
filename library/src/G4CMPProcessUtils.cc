@@ -11,6 +11,7 @@
 // 20140321  Move lattice-based placement transformations here, via Touchable
 // 20140407  Add functions for phonon generation in Luke scattering
 // 20140412  Add manual configuration options
+// 20140509  Add ChoosePolarization() which uses DOS values from lattice
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -161,12 +162,21 @@ G4int G4CMPProcessUtils::ChoosePolarization(G4double Ldos, G4double STdos,
   return G4PhononPolarization::Long;
 }
 
+G4int G4CMPProcessUtils::ChoosePolarization() const {
+  return ChoosePolarization(theLattice->GetLDOS(), theLattice->GetSTDOS(),
+			    theLattice->GetFTDOS());
+}
+
 
 // Construct new phonon track with correct momentum, position, etc.
 
 G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 					 const G4ThreeVector& waveVec,
 					 G4double energy) const {
+  if (polarization == G4PhononPolarization::UNKNOWN) {		// Choose value
+    polarization = ChoosePolarization();
+  }
+
   G4ThreeVector vgroup = theLattice->MapKtoVDir(polarization, waveVec);
   if (std::fabs(vgroup.mag()-1.) > 0.01) {
     G4cerr << "WARNING: vgroup not a unit vector: " << vgroup

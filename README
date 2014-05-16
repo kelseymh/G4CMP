@@ -20,12 +20,24 @@ installed, and they must have their environment configured (using
 Add the G4CMP environment variables using the g4cmp_env.csh or ...sh scripts
 found in the G4CMP top level directory.
 
+G4CMP is only configured for use on Linux and MacOSX platforms.  A minimum
+configuration requires GCC 4.4.7 or later (required by the QHull package)
+
+An optional environment variable, G4CMP_LUKE_PHONONS, controls at run-time
+whether the two LukeScattering processes (eLukeScattering and
+hLukeScattering) produce secondary phonons (and what fraction of them), or
+only records the phonon energy as non-ionizing energy loss (NIEL) on the
+track:
+
+	unsetenv G4CMP_LUKE_PHONONS	# No secondary phonons generated
+	setenv G4CMP_LUKE_PHONONS 1	# Generate phonon at every occurrence
+	setenv G4CMP_LUKE_PHONONS 0.001	# Generate phonon 1:1000 occurrences
+
+Generating seconary phonons will significantly slow down the simulation.
+
 For developers, there is a G4CMP_DEBUG environment variable which may be set
 (e.g., setenv G4CMP_DEBUG 1) before building the libraries.  This variable
 will turn on some additional diagnostic output which may be of interest.
-
-G4CMP is only configured for use on Linux and MacOSX platforms.  A minimum
-configuration requires GCC 4.4.7 or later (required by the QHull package)
 
 
 Building the Package

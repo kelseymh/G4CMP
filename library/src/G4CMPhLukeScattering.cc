@@ -30,12 +30,14 @@
 //
 // 20140325  Move time-step calculation to G4CMPProcessUtils
 // 20140331  Add required process subtype code
+// 20140509  Add run-time envvar to bias phonons
 
 #include "G4CMPhLukeScattering.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
+#include "G4PhononPolarization.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
@@ -45,7 +47,18 @@
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
 #include <math.h>
+#include <stdlib.h>
 
+
+// Runtime flag to generate real phonons during scattering
+
+namespace {
+  const G4double generateLukePhonons =
+    (getenv("G4CMP_LUKE_PHONONS") ? strtod(getenv("G4CMP_LUKE_PHONONS"),0) : 0.);
+}
+
+
+// Constructor and destructor
 
 G4CMPhLukeScattering::G4CMPhLukeScattering(G4VProcess* stepper)
   : G4CMPVDriftProcess("hLukeScattering", fLukeScattering),
@@ -53,6 +66,8 @@ G4CMPhLukeScattering::G4CMPhLukeScattering(G4VProcess* stepper)
 
 G4CMPhLukeScattering::~G4CMPhLukeScattering() {;}
 
+
+// Physics
 
 G4double 
 G4CMPhLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
@@ -117,12 +132,12 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
 
   G4double Ephonon = MakePhononEnergy(kmag, ksound_h, theta_phonon);
 
-  /*****
-  // Create real phonon to be propagated
-  G4Track* phonon = CreatePhonon(G4PhononPolarization::Long, qvec, Ephonon);
-  aParticleChange.SetNumberOfSecondaries(1);
-  aParticleChange.AddSecondary(phonon);
-  *****/
+  // Create real phonon to be propagated, with random polarization
+  if (generateLukePhonons > 0. && G4UniformRand() < generateLukePhonons) {
+    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN, qvec, Ephonon);
+    aParticleChange.SetNumberOfSecondaries(1);
+    aParticleChange.AddSecondary(phonon);
+  }
 
   G4double Etrack = postStepPoint->GetKineticEnergy();
 

@@ -28,10 +28,11 @@
 //
 // $Id$
 //
- 
+// 20140509  Add conditional code for Geant4 10.0 vs. earlier
+
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
-#include "G4UserSteppingAction.hh"
+#include "G4Version.hh"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
@@ -41,15 +42,14 @@
 #include "G4UIExecutive.hh"
 #endif
 
-#include "PhononDetectorConstruction.hh"
 #include "G4CMPPhysicsList.hh"
-#include "PhononPrimaryGeneratorAction.hh"
 #include "G4CMPStackingAction.hh"
+#include "PhononActionInitialization.hh"
+#include "PhononDetectorConstruction.hh"
+#include "PhononPrimaryGeneratorAction.hh"
 
 int main(int argc,char** argv)
 {
-  
-
  // Construct the run manager
  //
  G4RunManager * runManager = new G4RunManager;
@@ -58,22 +58,19 @@ int main(int argc,char** argv)
  //
  PhononDetectorConstruction* detector = new PhononDetectorConstruction();
  runManager->SetUserInitialization(detector);
- //
+
  G4VUserPhysicsList* physics = new G4CMPPhysicsList();
  physics->SetCuts();
  runManager->SetUserInitialization(physics);
     
- // Set user action classes
+ // Set user action classes (different for Geant4 10.0)
  //
-
+#if (G4VERSION_NUMBER >= 1000)
+ runManager->SetUserInitialization(new PhononActionInitialization);
+#else
  runManager->SetUserAction(new G4CMPStackingAction);
- // runManager->SetUserAction(new DriftingElectronStackingAction);
- // runManager->SetUserAction(new G4CMPTrackingAction);
- // runManager->SetUserAction(new PhononSteppingAction);
-
- G4VUserPrimaryGeneratorAction* gen_action = new PhononPrimaryGeneratorAction();
- runManager->SetUserAction(gen_action);
- //
+ runManager->SetUserAction(new PhononPrimaryGeneratorAction );
+#endif
 
 #ifdef G4VIS_USE
  // Visualization manager
@@ -94,9 +91,6 @@ int main(int argc,char** argv)
  {
 #ifdef G4UI_USE
       G4UIExecutive * ui = new G4UIExecutive(argc,argv);
-#ifdef G4VIS_USE
-      UImanager->ApplyCommand("/control/execute vis.mac");
-#endif
       ui->SessionStart();
       delete ui;
 #endif

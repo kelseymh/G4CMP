@@ -32,14 +32,15 @@
 // 20140331  Add required process subtype code
 // 20140415  Add run-time flag to select valley vs. H-V kinematics
 // 20140430  Compute kinematics using mass tensor; prepare to create phonons
+// 20140509  Remove valley vs. H-V flag; add run-time envvar to bias phonons
 
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPValleyTrackMap.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4PhysicalConstants.hh"
 #include "G4PhononPolarization.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4SystemOfUnits.hh"
@@ -47,7 +48,18 @@
 #include "Randomize.hh"
 #include <fstream>
 #include <iostream>
+#include <stdlib.h>
 
+
+// Runtime flag to generate real phonons during scattering
+
+namespace {
+  const G4double generateLukePhonons =
+    (getenv("G4CMP_LUKE_PHONONS") ? strtod(getenv("G4CMP_LUKE_PHONONS"),0) : 0.);
+}
+
+
+// Constructor and destructor
 
 G4CMPeLukeScattering::G4CMPeLukeScattering(G4VProcess* sLim)
   : G4CMPVDriftProcess("eLukeScattering", fLukeScattering),
@@ -55,6 +67,8 @@ G4CMPeLukeScattering::G4CMPeLukeScattering(G4VProcess* sLim)
 
 G4CMPeLukeScattering::~G4CMPeLukeScattering() {;}
 
+
+// Physics
 
 G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
 					       G4double,
@@ -157,12 +171,12 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   qvec = theLattice->MapK_HVtoK_valley(iv, qvec);
   RotateToGlobalDirection(qvec);
 
-  /*****
-  // Create real phonon to be propagated
-  G4Track* phonon = CreatePhonon(G4PhononPolarization::Long, qvec, Ephonon);
-  aParticleChange.SetNumberOfSecondaries(1);
-  aParticleChange.AddSecondary(phonon);
-  *****/
+  // Create real phonon to be propagated, with random polarization
+  if (generateLukePhonons > 0. && G4UniformRand() < generateLukePhonons) {
+    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN, qvec, Ephonon);
+    aParticleChange.SetNumberOfSecondaries(1);
+    aParticleChange.AddSecondary(phonon);
+  }
 
 #ifdef G4CMP_DEBUG
   G4double Etrack = theLattice->MapPtoEkin(iv, p);
@@ -172,7 +186,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	 << " phi_phonon = " << phi_phonon
 	 << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
 	 << "\nk_recoil = " << k_recoil << "\nk_recoil-mag = " << k_recoil.mag()
-	 << "\np_new     = " << p_new << "\np_new_mag = " << p_new.mag()
+	 << "\np_new    = " << p_new << "\np_new_mag = " << p_new.mag()
 	 << "\nEtrack = " << Etrack << " Enew = " << Enew
 	 << G4endl;
 #endif
