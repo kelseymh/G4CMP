@@ -126,7 +126,7 @@ CXX_OPTS2 = $(CXX_OPTS1)
 
 # [gcc 4.4] Compiles without error (-Werror)
 CC_WARNINGS  = -Wall -Wcast-qual -Wextra -Wwrite-strings -Wshadow
-CXX_WARNINGS = -Wall -Wcast-qual -Wextra -Wwrite-strings -Wno-sign-conversion -Wshadow -Wconversion 
+CXX_WARNINGS = -Wall -Wcast-qual -Wextra -Wwrite-strings -Wshadow -Wconversion 
 
 # Compiles OK with all gcc warnings except for -Wno-sign-conversion and -Wconversion
 # Compiles OK with all g++ warnings except Qt source errors on -Wshadow and -Wconversion
