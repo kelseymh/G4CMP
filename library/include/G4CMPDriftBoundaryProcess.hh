@@ -53,6 +53,7 @@ protected:
 private:
   G4CMPDriftBoundaryProcess(G4CMPDriftBoundaryProcess&);
   G4CMPDriftBoundaryProcess& operator=(const G4CMPDriftBoundaryProcess& right);
+  std::ofstream file;
 
   G4double kCarTolerance;
 };
