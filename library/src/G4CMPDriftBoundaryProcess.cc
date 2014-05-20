@@ -16,6 +16,8 @@
 G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess()
   : G4CMPVDriftProcess("DriftBoundaryProcess", fChargeBoundary),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()) {
+  std::ofstream file;
+  file.open("epositions.txt",std::ios::app);
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {     
     G4cout << GetProcessName() << " is created "<< G4endl;
@@ -24,7 +26,9 @@ G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess()
 }
 
 G4CMPDriftBoundaryProcess::~G4CMPDriftBoundaryProcess()
-{ ; }
+{ 
+  file.close();
+}
 
 
 G4double 
@@ -49,15 +53,12 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy());
   aParticleChange.ProposeTrackStatus(fStopAndKill);  
 
-  std::ofstream file;
-  file.open("epositions.txt",std::ios::app);
   file << aTrack.GetDefinition()->GetPDGCharge() << " "
        << aTrack.GetPosition().getX()/m << " "
        << aTrack.GetPosition().getY()/m << " "
        << aTrack.GetPosition().getZ()/m << " "
        << aTrack.GetGlobalTime()/ns 
        << G4endl;
-  file.close();
   return &aParticleChange;
 }
 
