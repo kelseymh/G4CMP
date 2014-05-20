@@ -51,8 +51,11 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
   std::ofstream file;
   file.open("epositions.txt",std::ios::app);
-  file << aTrack.GetPosition().getX()/m << " "
-       << aTrack.GetPosition().getY()/m 
+  file << aTrack.GetDefinition()->GetPDGCharge() << " "
+       << aTrack.GetPosition().getX()/m << " "
+       << aTrack.GetPosition().getY()/m << " "
+       << aTrack.GetPosition().getZ()/m << " "
+       << aTrack.GetGlobalTime()/ns 
        << G4endl;
   file.close();
   return &aParticleChange;
