@@ -14,7 +14,7 @@ endif
 
 include $(G4INSTALL)/config/architecture.gmk
 
-G4CMP_FLAGS += -I$(G4WORKDIR)/include -I$(G4INCLUDE) -Dqh_QHpointer 
+G4CMP_FLAGS += -I./include -I$(G4WORKDIR)/include -I$(G4INCLUDE) -Dqh_QHpointer 
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
 endif
