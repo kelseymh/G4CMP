@@ -165,4 +165,4 @@ target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
 set_target_properties(G4cmp PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 set(CMAKE_CXX_FLAGS "-O2 -p -g")
-install(TARGETS G4cmp DESTINATION lib)
+install(TARGETS G4cmp qhullcpp qhullstatic_p DESTINATION lib)
