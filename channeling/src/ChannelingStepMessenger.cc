@@ -23,47 +23,44 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/*
- *  \file electromagnetic/TestEm7/include/G4LindhardPartition.hh
- *  \brief Definition of the G4LindhardPartition class
- *
- *  Created by Marcus Mendenhall on 1/14/08.
- *  2008 Vanderbilt University, Nashville, TN, USA.
- *
- */
-
+/// \file electromagnetic/TestEm5/src/ChannelingStepMessenger.cc
+/// \brief Implementation of the ChannelingStepMessenger class
+//
 // $Id$
 //
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "globals.hh"
+#include "ChannelingStepMessenger.hh"
 
-class G4Material;
+#include "ChannelingStepLimiter.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
 
-class G4VNIELPartition 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+ChannelingStepMessenger::ChannelingStepMessenger(ChannelingStepLimiter* stepM)
+:fChannelingStepLimiter(stepM)
+{ 
+  fChannelingStepLimiterCmd = new G4UIcmdWithADoubleAndUnit("/testem/stepMax",this);
+  fChannelingStepLimiterCmd->SetGuidance("Set max allowed step length");
+  fChannelingStepLimiterCmd->SetParameterName("mxStep",false);
+  fChannelingStepLimiterCmd->SetRange("mxStep>0.");
+  fChannelingStepLimiterCmd->SetUnitCategory("Length");
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+ChannelingStepMessenger::~ChannelingStepMessenger()
 {
-public:
-        G4VNIELPartition() { }
-        virtual ~G4VNIELPartition() { }
-        
-        // return the fraction of the specified energy which will be deposited as NIEL
-        // if an incoming particle with z1, a1 is stopped in the specified material
-        // a1 is in atomic mass units, energy in native G4 energy units.
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const =0;
-};
+  delete fChannelingStepLimiterCmd;
+}
 
-class G4LindhardRobinsonPartition : public G4VNIELPartition
-{
-public:
-        G4LindhardRobinsonPartition();
-        virtual ~G4LindhardRobinsonPartition() { }
-        
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const ;
-        
-        G4double z23[120];
-        size_t   max_z;
-};
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void ChannelingStepMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
+{ 
+  if (command == fChannelingStepLimiterCmd)
+    { fChannelingStepLimiter->SetMaxStep(fChannelingStepLimiterCmd->GetNewDoubleValue(newValue));}
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

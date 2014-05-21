@@ -23,47 +23,35 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/*
- *  \file electromagnetic/TestEm7/include/G4LindhardPartition.hh
- *  \brief Definition of the G4LindhardPartition class
- *
- *  Created by Marcus Mendenhall on 1/14/08.
- *  2008 Vanderbilt University, Nashville, TN, USA.
- *
- */
-
-// $Id$
+/// \file analysis/A01/include/ChannelingDriftChamber.hh
+/// \brief Definition of the ChannelingDriftChamber class
 //
+// $Id$
+// --------------------------------------------------------------
+//
+#ifndef ChannelingDriftChamber_h
+#define ChannelingDriftChamber_h 1
 
-#include "globals.hh"
+#include "G4VSensitiveDetector.hh"
+#include "ChannelingDriftHit.hh"
+class G4Step;
+class G4HCofThisEvent;
+class G4TouchableHistory;
 
-class G4Material;
-
-class G4VNIELPartition 
+class ChannelingDriftChamber : public G4VSensitiveDetector
 {
-public:
-        G4VNIELPartition() { }
-        virtual ~G4VNIELPartition() { }
-        
-        // return the fraction of the specified energy which will be deposited as NIEL
-        // if an incoming particle with z1, a1 is stopped in the specified material
-        // a1 is in atomic mass units, energy in native G4 energy units.
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const =0;
+  public:
+      ChannelingDriftChamber(G4String name);
+      virtual ~ChannelingDriftChamber();
+
+      virtual void Initialize(G4HCofThisEvent*HCE);
+      virtual G4bool ProcessHits(G4Step*aStep,G4TouchableHistory*ROhist);
+      virtual void EndOfEvent(G4HCofThisEvent*HCE);
+
+  private:
+      ChannelingDriftHitsCollection * fHitsCollection;
+      G4int fHCID;
 };
 
-class G4LindhardRobinsonPartition : public G4VNIELPartition
-{
-public:
-        G4LindhardRobinsonPartition();
-        virtual ~G4LindhardRobinsonPartition() { }
-        
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const ;
-        
-        G4double z23[120];
-        size_t   max_z;
-};
+#endif
 

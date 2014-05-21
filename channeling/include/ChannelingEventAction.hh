@@ -23,47 +23,71 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/*
- *  \file electromagnetic/TestEm7/include/G4LindhardPartition.hh
- *  \brief Definition of the G4LindhardPartition class
- *
- *  Created by Marcus Mendenhall on 1/14/08.
- *  2008 Vanderbilt University, Nashville, TN, USA.
- *
- */
-
-// $Id$
+/// \file analysis/A01/include/ChannelingEventAction.hh
+/// \brief Definition of the ChannelingEventAction class
 //
+// $Id$
+// --------------------------------------------------------------
+//
+#ifndef ChannelingEventAction_h
+#define ChannelingEventAction_h 1
 
+
+#include "G4UserEventAction.hh"
 #include "globals.hh"
+#include <iostream>
+#include <fstream>
 
-class G4Material;
-
-class G4VNIELPartition 
+#ifdef ROOT
+#include "TFile.h"
+#include "TTree.h"
+struct ROOT_save
 {
-public:
-        G4VNIELPartition() { }
-        virtual ~G4VNIELPartition() { }
-        
-        // return the fraction of the specified energy which will be deposited as NIEL
-        // if an incoming particle with z1, a1 is stopped in the specified material
-        // a1 is in atomic mass units, energy in native G4 energy units.
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const =0;
+    Double_t x;
+    Double_t y;
+    Double_t z;
+    Double_t en;
+    UInt_t id;
+    UInt_t layer;
+};
+#endif
+
+class ChannelingEventMessenger;
+
+class ChannelingEventAction : public G4UserEventAction
+{
+  public:
+    ChannelingEventAction();
+    virtual ~ChannelingEventAction();
+
+    virtual void BeginOfEventAction(const G4Event*);
+    virtual void EndOfEventAction(const G4Event*);
+
+    void SetFileName(const G4String&);
+    G4String GetFileName();
+    
+  private:
+    G4int fSD_ID;
+    G4int fSCI_ID;
+    G4int fRBSD_ID;
+
+    G4String fFileName;
+    std::ofstream fFileOutSCI;
+    std::ofstream fFileOutSD;
+    std::ofstream fFileOutRBSD;
+
+#ifdef ROOT
+    TFile *fRootFile;
+    TTree *fTree;
+    const ROOT_save fDetectorSave;
+#endif
+
+    ChannelingEventMessenger* fMessenger;
+    G4int fVerboseLevel;
+
+  public:
+    inline void SetVerbose(G4int val) { fVerboseLevel = val; }
+    inline G4int GetVerbose() const { return fVerboseLevel; }
 };
 
-class G4LindhardRobinsonPartition : public G4VNIELPartition
-{
-public:
-        G4LindhardRobinsonPartition();
-        virtual ~G4LindhardRobinsonPartition() { }
-        
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const ;
-        
-        G4double z23[120];
-        size_t   max_z;
-};
-
+#endif

@@ -23,47 +23,57 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/*
- *  \file electromagnetic/TestEm7/include/G4LindhardPartition.hh
- *  \brief Definition of the G4LindhardPartition class
- *
- *  Created by Marcus Mendenhall on 1/14/08.
- *  2008 Vanderbilt University, Nashville, TN, USA.
- *
- */
-
+/// \file hadronic/Hadr01/include/ChannelingStackingAction.hh
+/// \brief Definition of the ChannelingStackingAction class
+//
 // $Id$
 //
+/////////////////////////////////////////////////////////////////////////
+//
+// ChannelingStackingAction
+//
+// Created: 31.04.2006 V.Ivanchenko
+//
+// Modified:
+// 04.06.2006 Adoptation of Hadr01 (V.Ivanchenko)
+//
+////////////////////////////////////////////////////////////////////////
+// 
 
+#ifndef ChannelingStackingAction_h
+#define ChannelingStackingAction_h 1
+
+#include "G4UserStackingAction.hh"
 #include "globals.hh"
 
-class G4Material;
+class ChannelingStackingMessenger;
+class G4Track;
+class G4ParticleDefinition;
 
-class G4VNIELPartition 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+class ChannelingStackingAction : public G4UserStackingAction
 {
 public:
-        G4VNIELPartition() { }
-        virtual ~G4VNIELPartition() { }
-        
-        // return the fraction of the specified energy which will be deposited as NIEL
-        // if an incoming particle with z1, a1 is stopped in the specified material
-        // a1 is in atomic mass units, energy in native G4 energy units.
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const =0;
+
+  ChannelingStackingAction();
+  virtual ~ChannelingStackingAction();
+   
+  void SetKillStatus(G4bool value);
+  void SetKill(const G4String& name);
+     
+  G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track*);
+    
+private:
+
+  ChannelingStackingMessenger*  fStackMessenger;
+  G4bool              fKillSecondary;
+
+  const G4ParticleDefinition* fParticle;
+
 };
 
-class G4LindhardRobinsonPartition : public G4VNIELPartition
-{
-public:
-        G4LindhardRobinsonPartition();
-        virtual ~G4LindhardRobinsonPartition() { }
-        
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const ;
-        
-        G4double z23[120];
-        size_t   max_z;
-};
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+#endif
 

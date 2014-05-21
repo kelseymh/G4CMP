@@ -36,7 +36,7 @@
  */
 
 //
-// $Id: c2_function.hh 66995 2013-01-29 14:46:45Z gcosmo $
+// $Id$
 
 #ifndef __has_c2_function_hh
 #define __has_c2_function_hh 1

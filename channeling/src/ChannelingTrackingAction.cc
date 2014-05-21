@@ -23,47 +23,34 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/*
- *  \file electromagnetic/TestEm7/include/G4LindhardPartition.hh
- *  \brief Definition of the G4LindhardPartition class
- *
- *  Created by Marcus Mendenhall on 1/14/08.
- *  2008 Vanderbilt University, Nashville, TN, USA.
- *
- */
-
-// $Id$
 //
 
-#include "globals.hh"
+#include "ChannelingTrackingAction.hh"
 
-class G4Material;
+#include "G4TrackingManager.hh"
+#include "G4Track.hh"
+#include "G4TrackVector.hh"
 
-class G4VNIELPartition 
-{
-public:
-        G4VNIELPartition() { }
-        virtual ~G4VNIELPartition() { }
-        
-        // return the fraction of the specified energy which will be deposited as NIEL
-        // if an incoming particle with z1, a1 is stopped in the specified material
-        // a1 is in atomic mass units, energy in native G4 energy units.
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const =0;
-};
+#include "ChannelingParticleUserInfo.hh"
 
-class G4LindhardRobinsonPartition : public G4VNIELPartition
-{
-public:
-        G4LindhardRobinsonPartition();
-        virtual ~G4LindhardRobinsonPartition() { }
-        
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const ;
-        
-        G4double z23[120];
-        size_t   max_z;
-};
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void ChannelingTrackingAction::PreUserChannelingTrackingAction(const G4Track* aTrack){
+    ChannelingParticleUserInfo *  trackInfo( static_cast< ChannelingParticleUserInfo * >(aTrack->GetUserInformation() ) );
+    
+    if ( trackInfo ){
+        return;
+    }
+    else{
+        G4Track *  theTrack( const_cast< G4Track * >( aTrack ) );
+        trackInfo = new ChannelingParticleUserInfo();
+        theTrack->SetUserInformation( trackInfo );
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void ChannelingTrackingAction::PostUserChannelingTrackingAction(const G4Track*){
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

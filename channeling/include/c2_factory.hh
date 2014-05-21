@@ -33,7 +33,7 @@
  *         \version c2_factory.hh,v 1.13 2008/05/22 12:45:19 marcus Exp
  */
 //
-// $Id: c2_factory.hh 66995 2013-01-29 14:46:45Z gcosmo $
+// $Id$
 
 #ifndef __has_c2_factory_hh
 #define __has_c2_factory_hh 1

@@ -23,47 +23,27 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/*
- *  \file electromagnetic/TestEm7/include/G4LindhardPartition.hh
- *  \brief Definition of the G4LindhardPartition class
- *
- *  Created by Marcus Mendenhall on 1/14/08.
- *  2008 Vanderbilt University, Nashville, TN, USA.
- *
- */
-
-// $Id$
 //
 
-#include "globals.hh"
+#ifndef ChannelingTrackingAction_h
+#define ChannelingTrackingAction_h 1
 
-class G4Material;
+#include "G4UserTrackingAction.hh"
 
-class G4VNIELPartition 
-{
+class ChannelingTrackingAction : public G4UserTrackingAction {
 public:
-        G4VNIELPartition() { }
-        virtual ~G4VNIELPartition() { }
-        
-        // return the fraction of the specified energy which will be deposited as NIEL
-        // if an incoming particle with z1, a1 is stopped in the specified material
-        // a1 is in atomic mass units, energy in native G4 energy units.
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const =0;
+  void PreUserChannelingTrackingAction(const G4Track*);
+  void PostUserChannelingTrackingAction(const G4Track*);
 };
 
-class G4LindhardRobinsonPartition : public G4VNIELPartition
-{
-public:
-        G4LindhardRobinsonPartition();
-        virtual ~G4LindhardRobinsonPartition() { }
-        
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const ;
-        
-        G4double z23[120];
-        size_t   max_z;
-};
+#endif
+
+
+
+
+
+
+
+
+
 

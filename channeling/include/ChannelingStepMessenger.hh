@@ -23,47 +23,38 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/*
- *  \file electromagnetic/TestEm7/include/G4LindhardPartition.hh
- *  \brief Definition of the G4LindhardPartition class
- *
- *  Created by Marcus Mendenhall on 1/14/08.
- *  2008 Vanderbilt University, Nashville, TN, USA.
- *
- */
-
+/// \file electromagnetic/TestEm5/include/ChannelingStepMessenger.hh
+/// \brief Definition of the ChannelingStepMessenger class
+//
 // $Id$
 //
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+#ifndef ChannelingStepMessenger_h
+#define ChannelingStepMessenger_h 1
+
+#include "G4UImessenger.hh"
 #include "globals.hh"
 
-class G4Material;
+class ChannelingStepLimiter;
+class G4UIcmdWithADoubleAndUnit;
 
-class G4VNIELPartition 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+class ChannelingStepMessenger: public G4UImessenger
 {
-public:
-        G4VNIELPartition() { }
-        virtual ~G4VNIELPartition() { }
-        
-        // return the fraction of the specified energy which will be deposited as NIEL
-        // if an incoming particle with z1, a1 is stopped in the specified material
-        // a1 is in atomic mass units, energy in native G4 energy units.
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const =0;
+  public:
+    ChannelingStepMessenger(ChannelingStepLimiter*);
+   ~ChannelingStepMessenger();
+    
+    virtual void SetNewValue(G4UIcommand*, G4String);
+    
+  private:
+    ChannelingStepLimiter* fChannelingStepLimiter;
+    G4UIcmdWithADoubleAndUnit* fChannelingStepLimiterCmd;
 };
 
-class G4LindhardRobinsonPartition : public G4VNIELPartition
-{
-public:
-        G4LindhardRobinsonPartition();
-        virtual ~G4LindhardRobinsonPartition() { }
-        
-        virtual G4double PartitionNIEL(
-                G4int z1, G4double a1, const G4Material *material, G4double energy
-        ) const ;
-        
-        G4double z23[120];
-        size_t   max_z;
-};
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+#endif
