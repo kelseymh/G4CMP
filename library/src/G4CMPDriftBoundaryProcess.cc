@@ -12,11 +12,13 @@
 #include "G4GeometryTolerance.hh"
 #include "G4SystemOfUnits.hh"
 
+#include <fstream>
+
 
 G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess()
   : G4CMPVDriftProcess("DriftBoundaryProcess", fChargeBoundary),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()) {
-  file.open("epositions.txt",std::ios::app);
+  file.open("epositions.txt");
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {     
     G4cout << GetProcessName() << " is created "<< G4endl;
