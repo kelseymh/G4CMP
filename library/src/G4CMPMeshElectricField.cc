@@ -78,7 +78,7 @@ void G4CMPMeshElectricField::GetFieldValue(const G4double Point[4],
 }
 
 
-G4double GetPotential(const G4double Point[4]) const {
+G4double G4CMPMeshElectricField::GetPotential(const G4double Point[4]) const {
   return Interp.GetPotential(Point);
 }
 
