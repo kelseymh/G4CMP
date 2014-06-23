@@ -35,6 +35,10 @@ track:
 
 Generating seconary phonons will significantly slow down the simulation.
 
+An optional environemtn variable, G4CMP_EPOT_FILE, specifies the name of the
+mesh electric field field to be loaded for the g4cmpCharge test job.  The
+default name is "Epot_iZip4_small", found in the charge/ directory.
+
 For developers, there is a G4CMP_DEBUG environment variable which may be set
 (e.g., setenv G4CMP_DEBUG 1) before building the libraries.  This variable
 will turn on some additional diagnostic output which may be of interest.
@@ -83,4 +87,5 @@ additional directories by element or material, matching the Geant4
 conventions.
 
 The parameter definition file is config.txt.  Each line starts with a
-keyword, followed by one or more values.
+keyword, followed by one or more values.  Any line which starts with "#" is
+ignored, as is any text after a "#" on a parameter line.
