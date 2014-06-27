@@ -33,15 +33,12 @@
 
 #include "Randomize.hh"
 
-#include "DetectorConstruction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "PhysicsList.hh"
-#include "TrackingAction.hh"
-#include "StackingAction.hh"
-#include "QGSP_BERT.hh"
-#include "TrackingAction.hh"
-
-#include "A01EventAction.hh"
+#include "ChannelingDetectorConstruction.hh"
+#include "ChannelingPrimaryGeneratorAction.hh"
+#include "ChannelingPhysicsList.hh"
+#include "ChannelingTrackingAction.hh"
+#include "ChannelingStackingAction.hh"
+#include "ChannelingEventAction.hh"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
@@ -66,15 +63,15 @@ int main(int argc,char** argv)
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
     
     // Set mandatory initialization classes
-    G4VUserDetectorConstruction* detector = new DetectorConstruction;
+    G4VUserDetectorConstruction* detector = new ChannelingDetectorConstruction;
     runManager->SetUserInitialization(detector);
-    runManager->SetUserInitialization(new PhysicsList());
+    runManager->SetUserInitialization(new ChannelingPhysicsList());
 
     // Set user action classes
-    runManager->SetUserAction(new PrimaryGeneratorAction());
-    runManager->SetUserAction(new A01EventAction());
-    runManager->SetUserAction(new StackingAction());
-    runManager->SetUserAction(new TrackingAction());
+    runManager->SetUserAction(new ChannelingPrimaryGeneratorAction());
+    runManager->SetUserAction(new ChannelingEventAction());
+    runManager->SetUserAction(new ChannelingStackingAction());
+    runManager->SetUserAction(new ChannelingTrackingAction());
        
     // Get the pointer to the User Interface manager
     G4UImanager* UI = G4UImanager::GetUIpointer();  
