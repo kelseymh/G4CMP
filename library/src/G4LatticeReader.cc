@@ -189,7 +189,7 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "l0_h")   pLattice->SetHoleScatter(fValue*m);
   else if (name == "hmass")  pLattice->SetHoleMass(fValue*mElectron);
   else if (name == "ivfield") pLattice->SetIVField(fValue);	// in V/m
-  else if (name == "ivrate") pLattice->SetIVRate(fValue*s);
+  else if (name == "ivrate") pLattice->SetIVRate(fValue/s);
   else if (name == "ivpower") pLattice->SetIVExponent(fValue);
   else if (name == "ivexponent") pLattice->SetIVExponent(fValue);
   else {
