@@ -115,7 +115,7 @@ G4CMPVDriftProcess::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
 }
 
 
-// Fill ParticleChange energy and mass for electron charge carrier
+// Fill ParticleChange energy and mass for electron charge carrier momentum
 
 void 
 G4CMPVDriftProcess::SetNewKinematics(G4int ivalley,const G4ThreeVector& p) {
@@ -134,6 +134,28 @@ G4CMPVDriftProcess::SetNewKinematics(G4int ivalley,const G4ThreeVector& p) {
 
   aParticleChange.ProposeMomentumDirection(p.unit());
   aParticleChange.ProposeEnergy(energy);
+  aParticleChange.ProposeMass(mass*c_squared);		// GEANT4 units
+}
+
+// Fill ParticleChange mass for electron charge carrier with given energy
+
+void 
+G4CMPVDriftProcess::SetNewKinematics(G4int ivalley, G4double Ekin,
+				     const G4ThreeVector& pdir) {
+  if (GetCurrentParticle() != G4CMPDriftElectron::Definition()) return;
+
+  // Get mass and energy from momentum using appropriate E-p relation
+  G4ThreeVector p_local = GetLocalDirection(pdir);
+  G4double mass = theLattice->GetElectronEffectiveMass(ivalley, p_local);
+
+#ifdef G4CMP_DEBUG
+  G4cout << GetProcessName() << "::SetNewKinematics valley " << ivalley
+	 << " energy " << Ekin << " mass " << mass*c_squared
+	 << G4endl;
+#endif
+
+  aParticleChange.ProposeMomentumDirection(pdir.unit());
+  aParticleChange.ProposeEnergy(Ekin);
   aParticleChange.ProposeMass(mass*c_squared);		// GEANT4 units
 }
 

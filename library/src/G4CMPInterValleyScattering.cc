@@ -79,11 +79,11 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
     
   // Assigning a new valley...
   trackVmap->SetValley(aTrack, valley);
-  
-  // Adjust kinetic energy and "effective mass" for new valley frame
-  // NOTE:  These _should_ be the same if scattering is conservative
+
+  // Adjust track kinematics for new valley, conserving energy
   aParticleChange.Initialize(aTrack);  
-  SetNewKinematics(valley, aTrack.GetMomentum());
+  SetNewKinematics(valley, aTrack.GetKineticEnergy(),
+		   aTrack.GetMomentumDirection());
 
   ResetNumberOfInteractionLengthLeft();    
   return &aParticleChange;
