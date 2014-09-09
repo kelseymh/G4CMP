@@ -34,6 +34,7 @@
 // 20140430  Compute kinematics using mass tensor; prepare to create phonons
 // 20140509  Remove valley vs. H-V flag; add run-time envvar to bias phonons
 // 20140521  Remove momentum-check loop; energy conservation is enforced
+// 20140903  Get Etrack using valley kinematics, _not_ track or stepPoint
 
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -74,7 +75,7 @@ G4CMPeLukeScattering::~G4CMPeLukeScattering() {;}
 G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
 					       G4double,
 					       G4ForceCondition* condition) {
-  *condition = Forced;
+  *condition = NotForced;
 
   G4int iv = GetValleyIndex(aTrack);
   G4ThreeVector v = theLattice->MapPtoV_el(iv,GetLocalMomentum(aTrack));
@@ -114,8 +115,8 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	 << G4endl;
 #endif
 
-  if ( (postStepPoint->GetProcessDefinedStep()==stepLimiter)
-       || (postStepPoint->GetStepStatus()==fGeomBoundary) ) {
+  // Do we need to do anything about work functions or whatever?
+  if (postStepPoint->GetStepStatus()==fGeomBoundary) {
     return &aParticleChange;
   }
 
@@ -136,31 +137,47 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double theta_phonon=0., phi_phonon=0., q=0., Enew=0.;
   G4ThreeVector kdir, qvec, k_recoil, p_new;
 
-  // Construct phonon pseudovector in Herring-Vogt space
-  theta_phonon = MakePhononTheta(kmag, ksound_e);
-  phi_phonon   = G4UniformRand()*twopi;
-  q = 2*(kmag*cos(theta_phonon)-ksound_e);
-  
-  // Sanity check for phonon production: should be forward, like Cherenkov
-  if (theta_phonon>acos(ksound_e/kmag) || theta_phonon>halfpi) {
-    G4cerr << "ERROR: Phonon production theta_phonon " << theta_phonon
-	   << " exceeds cone angle " << acos(ksound_e/kmag) << G4endl;
-  }
-  
-  kdir = k_HV.unit();			// Get phonon and recoil vectors
-  qvec = q*kdir;
-  qvec.rotate(kdir.orthogonal(), theta_phonon);
-  qvec.rotate(kdir, phi_phonon);
-  k_recoil = k_HV - qvec;
-  
-  p_new = theLattice->MapK_HVtoP(iv, k_recoil);
-  Enew = theLattice->MapPtoEkin(iv, p_new);
+  G4double Etrack = theLattice->MapPtoEkin(iv, p);
+
+  // Iterate phonon generation to avoid energy violations
+  const G4int maxTries = 1000;
+  G4int nTries = 0;
+  do {
+    nTries++;
+
+    // Construct phonon pseudovector in Herring-Vogt space
+    theta_phonon = MakePhononTheta(kmag, ksound_e);
+    phi_phonon   = G4UniformRand()*twopi;
+    q = 2*(kmag*cos(theta_phonon)-ksound_e);
+    
+    // Sanity check for phonon production: should be forward, like Cherenkov
+    if (theta_phonon>acos(ksound_e/kmag) || theta_phonon>halfpi) {
+      G4cerr << "ERROR: Phonon production theta_phonon " << theta_phonon
+	     << " exceeds cone angle " << acos(ksound_e/kmag) << G4endl;
+    }
+    
+    kdir = k_HV.unit();			// Get phonon and recoil vectors
+    qvec = q*kdir;
+    qvec.rotate(kdir.orthogonal(), theta_phonon);
+    qvec.rotate(kdir, phi_phonon);
+    k_recoil = k_HV - qvec;
+    
+    p_new = theLattice->MapK_HVtoP(iv, k_recoil);
+    Enew = theLattice->MapPtoEkin(iv, p_new);
+
+    // Sanity check: electron should have lost energy in recoil
+  } while (Enew >= Etrack && nTries < maxTries);
+
+#ifdef G4CMP_DEBUG
+  G4cout << GetProcessName() << " Phonon generation " << nTries << " attempts"
+	 << G4endl;
+#endif
 
   // Sanity check: electron should have lost energy in recoil
-  G4double Etrack = postStepPoint->GetKineticEnergy();
   if (Enew > Etrack) {
-    G4cerr << GetProcessName() << " ERROR: Recoil energy exceeds input."
-	   << G4endl;
+    G4cerr << GetProcessName() << " ERROR: Recoil energy exceeds input after "
+	     << nTries << " attempts." << G4endl;
+    return &aParticleChange;
   }
 
   // Convert phonon pseudovector to real space

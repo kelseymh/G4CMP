@@ -1,0 +1,30 @@
+#ifndef G4CMPConfigMessenger_icc
+#define G4CMPConfigMessenger_icc 1
+
+// $Id$
+// File:  G4CMPConfigMessenger.icc
+//
+// Description:	Defines templated function to make new macro commands
+//
+// 20140904  Michael Kelsey -- copied from CDMSMessengerBase.icc
+
+#include "G4UImessenger.hh"
+#include "G4UIdirectory.hh"
+
+
+template <class T>
+T* G4CMPConfigMessenger::CreateCommand(const G4String& commandName,
+				       const G4String& description) {
+  G4String path = commandName;
+  if (commandName(0) != '/') {
+    path = (cmdDir ? cmdDir->GetCommandPath() : "") + path;
+  }
+
+  T* theCmd = new T(path.c_str(), this);	// <T> must be G4UIcommand!
+  theCmd->SetGuidance(description.c_str());
+  theCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  return theCmd;
+}
+
+#endif /* G4CMPConfigMessenger_icc */
