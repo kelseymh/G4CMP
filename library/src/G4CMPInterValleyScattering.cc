@@ -10,6 +10,7 @@
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPValleyTrackMap.hh"
+#include "G4CMPFieldManager.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
 #include "G4LatticeManager.hh"
@@ -78,10 +79,13 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   // Get track's energy in current valley
   G4ThreeVector p = aTrack.GetMomentum();
   G4double Ekin = theLattice->MapPtoEkin(GetValleyIndex(aTrack), p);
-					 
+
   // picking a new valley at random if IV-scattering process was triggered
   int valley = ChooseValley();
   trackVmap->SetValley(aTrack, valley);
+  G4CMPFieldManager* fMan =
+    dynamic_cast<G4CMPFieldManager*>(aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager());
+  fMan->SetElectronValleyForTrack(valley);
 
   // Adjust track kinematics for new valley
   aParticleChange.Initialize(aTrack);  

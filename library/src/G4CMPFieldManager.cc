@@ -82,7 +82,15 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
   // Configure electric field with valleys for either electrons or holes
   if (aTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
     G4int iv = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
-    theEqMotion->SetValley(iv);
+    SetElectronValleyForTrack(iv);
+  } else {
+    SetElectronValleyForTrack(-1);
+  }
+}
+
+void G4CMPFieldManager::SetElectronValleyForTrack(G4int valley) {
+  if(valley >= 0 && valley <= 3) {
+    theEqMotion->SetValley(valley);
   } else {
     theEqMotion->SetNoValley();
   }

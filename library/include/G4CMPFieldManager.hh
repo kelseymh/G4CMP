@@ -27,6 +27,7 @@ public:
   ~G4CMPFieldManager();
 
   void ConfigureForTrack(const G4Track* aTrack);
+  void SetElectronValleyForTrack(G4int valley);
 
 private:
   // Non-const access to underlying field, base class doesn't provide
