@@ -22,7 +22,7 @@
 %% given in the file `manifest.txt'.
 %% 
 %%
-%% $Id: elsarticle.dtx 19 2009-12-17 07:07:52Z rishi $
+%% $Id$
 %%
  \def\RCSfile{elsarticle}%
  \def\RCSversion{1.20b}%

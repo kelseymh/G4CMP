@@ -13,7 +13,7 @@
 %% and version 1.2 or later is part of all distributions of LaTeX
 %% version 1999/12/01 or later.
 %%
-%% $Id: elsarticle-num-names.bst 54 2012-10-22 08:02:10Z rishi $
+%% $Id$
 %%
 %% $URL: http://lenova.river-valley.com/svn/elsarticle/trunk/elsarticle-num-names.bst $
 %%
