@@ -8,20 +8,37 @@
 #include "ChargeEMField.hh"
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPFieldManager.hh"
+#include "G4UniformElectricField.hh"
 #include "G4LogicalVolume.hh"
+#include "G4SystemOfUnits.hh"
+#include "ChargeFieldMessenger.hh"
 
-// Get name of field file from envvar
-namespace {
-  const G4String epotFile =
-    (getenv("G4CMP_EPOT_FILE") ? getenv("G4CMP_EPOT_FILE") : "Epot_iZip4_small");
-}
-
-ChargeEMField::ChargeEMField(G4LogicalVolume* logVol) {
-  G4ElectricField* fEMfield  = new G4CMPMeshElectricField(epotFile);
-  G4FieldManager*  fFieldMgr = new G4CMPFieldManager(fEMfield);
-
-  fFieldMgr->SetDetectorField(fEMfield);
-  logVol->SetFieldManager(fFieldMgr, true);
+ChargeEMField::ChargeEMField(G4LogicalVolume* logVol) :
+                              UseConstEField(false),
+                              ConstEFieldMag(158*volt/m),
+                              ConstEFieldDir(G4ThreeVector(0,0,1)),
+                              DetectorVolume(logVol) {
+  EPotFile =
+    (getenv("G4CMP_EPOT_FILE") ? getenv("G4CMP_EPOT_FILE") : "Epot_iZip4");
+  Messenger = new ChargeFieldMessenger(this);
 }
 
 ChargeEMField::~ChargeEMField() {;}
+
+void ChargeEMField::Build() {
+  G4ElectricField* fEMfield;
+
+  if (UseConstEField) {
+    fEMfield = new G4UniformElectricField(ConstEFieldMag*ConstEFieldDir);
+  } else {
+    fEMfield = new G4CMPMeshElectricField(EPotFile);
+  }
+
+  if(DetectorVolume->GetFieldManager()) {
+    DetectorVolume->GetFieldManager()->SetDetectorField(fEMfield);
+  } else {
+    G4FieldManager*  fFieldMgr = new G4CMPFieldManager(fEMfield);
+    fFieldMgr->SetDetectorField(fEMfield);
+    DetectorVolume->SetFieldManager(fFieldMgr, true);
+  }
+}
