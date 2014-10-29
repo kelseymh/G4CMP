@@ -77,6 +77,9 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
 void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
   theLattice = LM->GetLattice(volume);
+
+  if (!theLattice) 
+    G4cerr << "WARNING: No lattice for volume " << volume->GetName() << G4endl;
 }
 
 // Configure orientation matrices for current track
