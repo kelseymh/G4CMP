@@ -29,12 +29,18 @@
 // $Id$
 //
 // 20131111  Move implementation of Clear() to .cc file
+// 20141024  Support G4 before 10.0 by suppressing "G4ThreadLocal"
 
 #ifndef G4CMPValleyTrackMap_h
 #define G4CMPValleyTrackMap_h 1
 
 #include "globals.hh"
 #include <map>
+
+#include "G4Version.hh"
+#if G4VERSION_NUMBER < 1000
+#define G4ThreadLocal
+#endif
 
 class G4Track;
 
