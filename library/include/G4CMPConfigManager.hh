@@ -25,12 +25,14 @@ public:
   static G4double GetVoltage()           { return Instance()->voltage; }
   static const G4String& GetEpotFile()   { return Instance()->Epot_file; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
+  static const G4String& GetHitOutput() { return Instance()->Hit_file; }
 
   // Change values (e.g., via Messenger)
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
   static void SetVoltage(G4double value) { Instance()->voltage = value; }
   static void SetEpotFile(const G4String& name) { Instance()->Epot_file=name; }
   static void SetLatticeDir(const G4String& dir) { Instance()->LatticeDir=dir; }
+  static void SetHitOutput(const G4String& name) { Instance()->Hit_file=name;}
 
 private:
   G4CMPConfigManager();		// Singleton: only constructed on request
@@ -43,6 +45,7 @@ private:
   G4double voltage;		// Voltage setting for uniform electric field
   G4String Epot_file;		// Name of E-field file ($G4CMP_EPOT_FILE)
   G4String LatticeDir;		// Lattice data directory ($G4LATTICEDATA)
+  G4String Hit_file;		// Output file of e/h hits ($G4CMP_HIT_FILE)
 
   G4CMPConfigMessenger* messenger;
 };

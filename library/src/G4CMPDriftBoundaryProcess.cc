@@ -1,11 +1,12 @@
 // $Id$
 //
 // 20140331  Inherit from G4CMPVDriftProcess to get subtype enforcement
+// 20141029  Get output hits file from configuration manager
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
-
+#include "G4CMPConfigManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4VParticleChange.hh"
@@ -18,7 +19,6 @@
 G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess()
   : G4CMPVDriftProcess("DriftBoundaryProcess", fChargeBoundary),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()) {
-  file.open("epositions.txt");
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {     
     G4cout << GetProcessName() << " is created "<< G4endl;
@@ -56,6 +56,14 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
   aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy());
   aParticleChange.ProposeTrackStatus(fStopAndKill);  
+
+  if (!file.is_open()) {
+#ifdef G4CMP_DEBUG
+    G4cout << " opening hits file " << G4CMPConfigManager::GetHitOutput()
+	   << G4endl;
+#endif
+    file.open(G4CMPConfigManager::GetHitOutput());
+  }
 
   file << aTrack.GetDefinition()->GetPDGCharge() << " "
        << aTrack.GetPosition().getX()/m << " "

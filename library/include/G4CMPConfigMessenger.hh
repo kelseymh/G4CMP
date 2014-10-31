@@ -8,6 +8,7 @@
 //		G4CMPConfigManager.
 //
 // 20140904  Michael Kelsey
+// 20141029  Add command to set output e/h positions file
 
 #include "G4UImessenger.hh"
 
@@ -43,6 +44,7 @@ private:
   G4UIcmdWithADoubleAndUnit* voltageCmd;
   G4UIcmdWithAString* fileCmd;
   G4UIcmdWithAString* dirCmd;
+  G4UIcmdWithAString* hitsCmd;
 };
 
 #include "G4CMPConfigMessenger.icc"
