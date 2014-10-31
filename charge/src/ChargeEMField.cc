@@ -10,27 +10,37 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPFieldManager.hh"
+#include "G4UniformElectricField.hh"
 #include "G4LogicalVolume.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
-#include "G4UniformElectricField.hh"
+#include "ChargeFieldMessenger.hh"
 
-
-ChargeEMField::ChargeEMField(G4LogicalVolume* logVol) {
-  G4double voltage = G4CMPConfigManager::GetVoltage();
-  const G4String& epotFile = G4CMPConfigManager::GetEpotFile();
-
-  G4ElectricField* fEMfield = 0;
-  if (voltage == 0.) fEMfield = new G4CMPMeshElectricField(epotFile);
-  else {
-    G4ThreeVector evec(0.,0.,voltage/(25.4*mm));	// CDMS iZIP thickness
-    fEMfield = new G4UniformElectricField(evec);
-  }
-
-  G4FieldManager* fFieldMgr = new G4CMPFieldManager(fEMfield);
-
-  fFieldMgr->SetDetectorField(fEMfield);
-  logVol->SetFieldManager(fFieldMgr, true);
+ChargeEMField::ChargeEMField(G4LogicalVolume* logVol) :
+  EPotFile(G4CMPConfigManager::GetEpotFile()),
+  UseConstEField(G4CMPConfigManager::GetVoltage()!=0.),
+  ConstEFieldMag(G4CMPConfigManager::GetVoltage()/(25.4*mm)),
+  ConstEFieldDir(0,0,1), DetectorVolume(logVol) {
+  Messenger = new ChargeFieldMessenger(this);
+  Build();			// Ensure that default field is alway created
 }
 
 ChargeEMField::~ChargeEMField() {;}
+
+void ChargeEMField::Build() {
+  G4ElectricField* fEMfield = 0;
+
+  if (UseConstEField) {
+    fEMfield = new G4UniformElectricField(ConstEFieldMag*ConstEFieldDir);
+  } else {
+    fEMfield = new G4CMPMeshElectricField(EPotFile);
+  }
+
+  // Ensure that logical volume has a field manager attached
+  if (!DetectorVolume->GetFieldManager()) {
+    G4FieldManager* fFieldMgr = new G4CMPFieldManager(fEMfield);
+    DetectorVolume->SetFieldManager(fFieldMgr, true);
+  }
+
+  DetectorVolume->GetFieldManager()->SetDetectorField(fEMfield);
+}

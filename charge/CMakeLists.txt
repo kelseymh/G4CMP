@@ -28,10 +28,10 @@ include(${Geant4_USE_FILE})
 include_directories(${PROJECT_SOURCE_DIR}/qhull-2012.1/src)
 
 set(charge_SOURCES 
-    ${PROJECT_SOURCE_DIR}/charge/src/CDMS_iZip4_Field.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeActionInitialization.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeDetectorConstruction.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeEMField.cc
+    ${PROJECT_SOURCE_DIR}/charge/src/ChargeFieldMessenger.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargePrimaryGeneratorAction.cc
     ${PROJECT_SOURCE_DIR}/charge/src/FET.cc
     ${PROJECT_SOURCE_DIR}/charge/src/FETMessenger.cc

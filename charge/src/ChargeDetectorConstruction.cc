@@ -66,7 +66,8 @@ void ChargeDetectorConstruction::SetupGeometry()
   G4VPhysicalVolume* germaniumPhysical = new G4PVPlacement(0,G4ThreeVector(),germaniumLogical,"germaniumPhysical",worldLogical,false,0);
 
   // Attach E field to germanium (logical volume, so all placements)
-  if (ifField) ChargeEMField setField(germaniumLogical);
+  // NOTE:  Pointer isn't used here; must be permanent to support macros
+  if (ifField) new ChargeEMField(germaniumLogical);
 
   // Physical lattice for each placed detector
   G4LatticePhysical* detLattice =

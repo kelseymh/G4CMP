@@ -3,4 +3,6 @@ qhull-2012.1/bin/
 qhull-2012.1/lib/
 *.o
 *.log
+CMakeLists.txt.user*
+epositions.txt
 
