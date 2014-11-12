@@ -1,4 +1,4 @@
-# Production example:  Fifty at-rest e/h pairs per event, 100 events
+# Production example:  Twenty at-rest e/h pairs per event, 100 events
 /tracking/verbose 0
-/gun/number 50
+/gun/number 20
 /run/beamOn 100
