@@ -285,7 +285,7 @@ G4LatticeLogical::MapPtoEkin(G4int iv, G4ThreeVector p) const {
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapPtoEkin " << iv << " " << p << G4endl;
 
-  p *= GetValley(iv);				// Rotate to valley frame
+  p.transform(GetValley(iv));			// Rotate to valley frame
 
   // Compute kinetic energy component by component, then sum
   return (0.5/c_squared) * (p.x()*p.x()*fMassInverse.xx() +
