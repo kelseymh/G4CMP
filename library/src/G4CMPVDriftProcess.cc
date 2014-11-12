@@ -121,20 +121,11 @@ void
 G4CMPVDriftProcess::SetNewKinematics(G4int ivalley,const G4ThreeVector& p) {
   if (GetCurrentParticle() != G4CMPDriftElectron::Definition()) return;
 
-  // Get mass and energy from momentum using appropriate E-p relation
+  // Get energy from momentum using appropriate E-p relation
   G4ThreeVector p_local = GetLocalDirection(p);
-  G4double mass = theLattice->GetElectronEffectiveMass(ivalley, p_local);
   G4double energy = theLattice->MapPtoEkin(ivalley, p_local);
 
-#ifdef G4CMP_DEBUG
-  G4cout << GetProcessName() << "::SetNewKinematics valley " << ivalley
-	 << " p " << p << "\n energy " << energy << " mass " << mass*c_squared
-	 << G4endl;
-#endif
-
-  aParticleChange.ProposeMomentumDirection(p.unit());
-  aParticleChange.ProposeEnergy(energy);
-  aParticleChange.ProposeMass(mass*c_squared);		// GEANT4 units
+  SetNewKinematics(ivalley, energy, p);
 }
 
 // Fill ParticleChange mass for electron charge carrier with given energy
@@ -144,14 +135,14 @@ G4CMPVDriftProcess::SetNewKinematics(G4int ivalley, G4double Ekin,
 				     const G4ThreeVector& pdir) {
   if (GetCurrentParticle() != G4CMPDriftElectron::Definition()) return;
 
-  // Get mass and energy from momentum using appropriate E-p relation
+  // Get effective scalar mass from momentum and valley
   G4ThreeVector p_local = GetLocalDirection(pdir);
   G4double mass = theLattice->GetElectronEffectiveMass(ivalley, p_local);
 
 #ifdef G4CMP_DEBUG
   G4cout << GetProcessName() << "::SetNewKinematics valley " << ivalley
-	 << " energy " << Ekin << " mass " << mass*c_squared
-	 << G4endl;
+	 << " energy " << Ekin << "\n p " << pdir
+	 << " mass " << mass*c_squared << G4endl;
 #endif
 
   aParticleChange.ProposeMomentumDirection(pdir.unit());
