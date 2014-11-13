@@ -78,15 +78,15 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   *condition = NotForced;
 
   G4int iv = GetValleyIndex(aTrack);
-  G4ThreeVector v = theLattice->MapPtoV_el(iv,GetLocalMomentum(aTrack));
-  G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv,GetLocalMomentum(aTrack));
+  G4ThreeVector p_local = GetLocalMomentum(aTrack);
+  G4ThreeVector v = theLattice->MapPtoV_el(iv, p_local);
+  G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p_local);
   G4double kmag = k_HV.mag();
 
 #ifdef G4CMP_DEBUG
   G4cout << "eLuke v = " << v.mag()/m*s << " kmag = " << kmag*m
 	 << "\nv = " << v << "\nk_HV = " << k_HV
-	 << "\nk_valley = "
-	 << theLattice->MapPtoK_valley(iv,GetLocalMomentum(aTrack))
+	 << "\nk_valley = " << theLattice->MapPtoK_valley(iv, p_local)
 	 << G4endl;
 #endif
 
