@@ -220,7 +220,7 @@ G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
 	   << G4endl;
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
-  return (vToN.inverse()*GetMInvTensor()*vToN) * p_e/c_light;
+  return (vToN.inverse()*GetMInvTensor()*vToN) * (p_e/c_light);
 }
 
 G4ThreeVector 
