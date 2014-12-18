@@ -35,6 +35,7 @@
 // 20140509  Remove valley vs. H-V flag; add run-time envvar to bias phonons
 // 20140521  Remove momentum-check loop; energy conservation is enforced
 // 20140903  Get Etrack using valley kinematics, _not_ track or stepPoint
+// 20141216  Use k_valley for MFP, for consistency with dynamic mass
 
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -81,19 +82,18 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   G4ThreeVector p_local = GetLocalMomentum(aTrack);
   G4ThreeVector v = theLattice->MapPtoV_el(iv, p_local);
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p_local);
-  G4double kmag = k_HV.mag();
+  G4ThreeVector k_valley = theLattice->MapPtoK_valley(iv, p_local);
 
 #ifdef G4CMP_DEBUG
-  G4cout << "eLuke v = " << v.mag()/m*s << " kmag = " << kmag*m
-	 << "\nv = " << v << "\nk_HV = " << k_HV
-	 << "\nk_valley = " << theLattice->MapPtoK_valley(iv, p_local)
+  G4cout << "eLuke v = " << v.mag()/m*s << "v = " << v
+	 << "\nk_HV = " << k_HV << "\nk_valley = " << k_valley
 	 << G4endl;
 #endif
 
-  if (kmag<=ksound_e) return DBL_MAX;
+  if (k_HV.mag()<=ksound_e) return DBL_MAX;
  
   // Time step corresponding to Mach number (avg. time between radiations)
-  G4double dtau = ChargeCarrierTimeStep(kmag/ksound_e, l0_e);
+  G4double dtau = ChargeCarrierTimeStep(k_valley.mag()/ksound_e, l0_e);
   
   G4double mfp = dtau * v.mag();
 #ifdef G4CMP_DEBUG
@@ -126,9 +126,11 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p);
   G4double kmag = k_HV.mag();
 
+  if (kmag < ksound_e) return &aParticleChange;
+
 #ifdef G4CMP_DEBUG
   G4cout << "p (post-step) = " << p << "\np_mag = " << p.mag()
-	 << "\nk_HV = " << k_HV
+	 << "\nk_HV = " << k_HV << " k_valley = " << k_valley
 	 << "\nkmag = " << kmag << " k/ks = " << kmag/ksound_e
 	 << "\nacos(ks/k)   = " << acos(ksound_e/kmag) << G4endl;
 #endif

@@ -33,6 +33,7 @@
 // $Id$
 //
 // 20140411 Set charge carrier masses appropriately for material
+// 20141216 Set velocity for electrons
 
 #include "G4CMPStackingAction.hh"
 #include "G4LatticeManager.hh"
@@ -135,8 +136,10 @@ void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
 void G4CMPStackingAction::SetChargeCarrierValley(const G4Track* aTrack) const {
   if (aTrack->GetDefinition() != G4CMPDriftElectron::Definition()) return;
 
-  int valley = (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
-  trackVmap->SetValley(aTrack, valley);
+  if (trackVmap->GetValley(aTrack) < 0) {
+    int valley = (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
+    trackVmap->SetValley(aTrack, valley);
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -147,7 +150,8 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
   G4ParticleDefinition* pd = aTrack->GetDefinition();
 
   // Get effective mass for charge carrier
-  G4double mass=0;
+  G4double mass = pd->GetPDGMass();
+
   if (pd == G4CMPDriftHole::Definition()) {
     mass = theLattice->GetHoleMass();
   }
@@ -160,6 +164,8 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
     // Adjust kinetic energy to keep momentum/mass relation
     G4Track* theTrack = const_cast<G4Track*>(aTrack);
     theTrack->SetKineticEnergy(theLattice->MapPtoEkin(ivalley, p));
+    theTrack->SetVelocity(theLattice->MapPtoV_el(ivalley, p).mag());
+    theTrack->UseGivenVelocity(true);
   }
 
   // Cast to non-const pointer so we can change the effective mass

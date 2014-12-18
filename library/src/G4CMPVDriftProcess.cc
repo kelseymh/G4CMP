@@ -30,6 +30,7 @@
 //
 // 20140325  Move time-step calculation here from TimeStepper and LukeScat
 // 20140331  Add required process subtype code
+// 20141216  Set true electron velocity (and force it) in SetNewKinematics()
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPDriftElectron.hh"
@@ -138,6 +139,7 @@ G4CMPVDriftProcess::SetNewKinematics(G4int ivalley, G4double Ekin,
   // Get effective scalar mass from momentum and valley
   G4ThreeVector p_local = GetLocalDirection(pdir);
   G4double mass = theLattice->GetElectronEffectiveMass(ivalley, p_local);
+  G4double velocity = theLattice->MapPtoV_el(ivalley, p_local).mag();
 
 #ifdef G4CMP_DEBUG
   G4cout << GetProcessName() << "::SetNewKinematics valley " << ivalley
@@ -148,5 +150,6 @@ G4CMPVDriftProcess::SetNewKinematics(G4int ivalley, G4double Ekin,
   aParticleChange.ProposeMomentumDirection(pdir.unit());
   aParticleChange.ProposeEnergy(Ekin);
   aParticleChange.ProposeMass(mass*c_squared);		// GEANT4 units
+  aParticleChange.ProposeVelocity(velocity);
 }
 

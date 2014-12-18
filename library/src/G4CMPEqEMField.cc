@@ -13,6 +13,7 @@
 //	     run-time configuration argument.
 // 20140404  Drop unnecessary data members, using functions in G4LatticePhysical
 // 20140501  Fix sign flip in electron charge calculation.
+// 20141217  Avoid floating-point division by using vinv = 1/v.mag()
 
 #include "G4CMPEqEMField.hh"
 #include "G4ElectroMagneticField.hh"
@@ -93,17 +94,17 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 
   G4ThreeVector v = theLattice->MapPtoV_el(valleyIndex, p);
   fLocalToGlobal.ApplyAxisTransform(v);
-  G4double vel = v.mag();
+  G4double vinv = 1./v.mag();
   
   G4ThreeVector Efield(field[3], field[4], field[5]);
-  G4ThreeVector retForce = fCharge * c_light * Efield/vel;
+  G4ThreeVector retForce = fCharge * Efield * c_light*vinv;
   
-  dydx[0] = v.x()/vel;		// Velocity direction
-  dydx[1] = v.y()/vel;
-  dydx[2] = v.z()/vel;
+  dydx[0] = v.x()*vinv;		// Velocity direction
+  dydx[1] = v.y()*vinv;
+  dydx[2] = v.z()*vinv;
   dydx[3] = retForce.x();	// Applied force
   dydx[4] = retForce.y();
   dydx[5] = retForce.z();
   dydx[6] = 0.;			// not used
-  dydx[7] = 1./vel;		// Lab Time of flight
+  dydx[7] = vinv;		// Lab Time of flight (sec/mm)
 }

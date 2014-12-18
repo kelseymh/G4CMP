@@ -12,6 +12,7 @@
 // 20140407  Add functions for phonon generation in Luke scattering
 // 20140412  Add manual configuration options
 // 20140509  Add ChoosePolarization() which uses DOS values from lattice
+// 20141216  Set velocity "by hand" for secondary electrons
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -270,7 +271,7 @@ G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   }
 
   G4ParticleDefinition* theCarrier = 0;
-  G4double carrierMass=0., carrierEnergy=0.;
+  G4double carrierMass=0., carrierEnergy=0., carrierSpeed=0.;
   if (charge==1) {
     theCarrier    = G4CMPDriftHole::Definition();
     carrierMass   = theLattice->GetHoleMass();
@@ -280,6 +281,7 @@ G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
     G4ThreeVector p_local = GetLocalDirection(p);
     carrierMass   = theLattice->GetElectronEffectiveMass(valley, p_local);
     carrierEnergy = theLattice->MapPtoEkin(valley, p_local);
+    carrierSpeed  = theLattice->MapPtoV_el(valley, p_local).mag();
   }
 
   G4DynamicParticle* secDP = new G4DynamicParticle(theCarrier,p,carrierEnergy);
@@ -287,6 +289,10 @@ G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 
   G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(),
 			     currentTrack->GetPosition());
+  if (charge == -1) {
+    sec->SetVelocity(carrierSpeed);
+    sec->UseGivenVelocity(true);
+  }
 
   // Store valley index in lookup table for future tracking
   trackVmap->SetValley(sec, valley);
