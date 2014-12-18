@@ -27,9 +27,9 @@ ChargePrimaryGeneratorAction::~ChargePrimaryGeneratorAction() {
 }
 
 void ChargePrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
-  particleGun->SetParticleDefinition(G4CMPDriftElectron::Definition());
-  particleGun->GeneratePrimaryVertex(anEvent);
   particleGun->SetParticleDefinition(G4CMPDriftHole::Definition());
+  particleGun->GeneratePrimaryVertex(anEvent);
+  particleGun->SetParticleDefinition(G4CMPDriftElectron::Definition());
   particleGun->GeneratePrimaryVertex(anEvent);
 }
 
