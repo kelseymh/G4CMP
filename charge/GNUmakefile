@@ -4,9 +4,9 @@
 # 20140509  Support different executables by looking at target name
 
 ifndef G4CMP_NAME		# Two-pass method
-  .PHONY : luke_dist g4cmpCharge
+  .PHONY : g4cmpCharge luke_dist electron_Epv
 
-  g4cmpCharge luke_dist :
+  g4cmpCharge luke_dist electron_Epv :
 	@$(MAKE) G4CMP_NAME=$@ bin
 
   G4CMP_NAME := g4cmpCharge
