@@ -31,6 +31,7 @@
 // 20140325  Move time-step calculation here from TimeStepper and LukeScat
 // 20140331  Add required process subtype code
 // 20141216  Set true electron velocity (and force it) in SetNewKinematics()
+// 20150109  Use G4CMP_SET_ELECTRON_MASS to enable dynamical mass, velocity
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPDriftElectron.hh"
@@ -122,9 +123,13 @@ void
 G4CMPVDriftProcess::SetNewKinematics(G4int ivalley,const G4ThreeVector& p) {
   if (GetCurrentParticle() != G4CMPDriftElectron::Definition()) return;
 
+#ifdef G4CMP_SET_ELECTRON_MASS
   // Get energy from momentum using appropriate E-p relation
   G4ThreeVector p_local = GetLocalDirection(p);
   G4double energy = theLattice->MapPtoEkin(ivalley, p_local);
+#else
+  G4double energy = 0.5*p.mag2()/mc_e/c_squared;
+#endif
 
   SetNewKinematics(ivalley, energy, p);
 }
@@ -136,6 +141,7 @@ G4CMPVDriftProcess::SetNewKinematics(G4int ivalley, G4double Ekin,
 				     const G4ThreeVector& pdir) {
   if (GetCurrentParticle() != G4CMPDriftElectron::Definition()) return;
 
+#ifdef G4CMP_SET_ELECTRON_MASS
   // Get effective scalar mass from momentum and valley
   G4ThreeVector p_local = GetLocalDirection(pdir);
   G4double mass = theLattice->GetElectronEffectiveMass(ivalley, p_local);
@@ -147,9 +153,11 @@ G4CMPVDriftProcess::SetNewKinematics(G4int ivalley, G4double Ekin,
 	 << " mass " << mass*c_squared << G4endl;
 #endif
 
-  aParticleChange.ProposeMomentumDirection(pdir.unit());
-  aParticleChange.ProposeEnergy(Ekin);
   aParticleChange.ProposeMass(mass*c_squared);		// GEANT4 units
   aParticleChange.ProposeVelocity(velocity);
+#endif
+
+  aParticleChange.ProposeMomentumDirection(pdir.unit());
+  aParticleChange.ProposeEnergy(Ekin);
 }
 

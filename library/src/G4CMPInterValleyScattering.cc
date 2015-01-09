@@ -6,6 +6,7 @@
 // 20140418  Drop local valley transforms, use lattice functions instead
 // 20140429  Recompute kinematics relative to new valley
 // 20140908  Allow IV scatter to change momentum by conserving energy
+// 20150109  Revert IV scattering to preserve momentum
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -44,7 +45,7 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   
   //If there is no field, there is no IV scattering... but then there
   //is no e-h transport either...
-  if (!fMan->DoesFieldExist()) return DBL_MAX;
+  if (!fMan || !fMan->DoesFieldExist()) return DBL_MAX;
   
   G4StepPoint* stepPoint  = aTrack.GetStep()->GetPostStepPoint();
   G4double velocity = stepPoint->GetVelocity();
@@ -75,10 +76,9 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
 
 G4VParticleChange* 
 G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
-					 const G4Step& /*aStep*/) {
+					 const G4Step& aStep) {
   // Get track's energy in current valley
-  G4ThreeVector p = aTrack.GetMomentum();
-  G4double Ekin = theLattice->MapPtoEkin(GetValleyIndex(aTrack), p);
+  G4ThreeVector p = aStep.GetPostStepPoint()->GetMomentum();
 
   // picking a new valley at random if IV-scattering process was triggered
   int valley = ChooseValley();
@@ -89,7 +89,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Adjust track kinematics for new valley
   aParticleChange.Initialize(aTrack);  
-  SetNewKinematics(valley, Ekin, p);
+  SetNewKinematics(valley, p);
 
   ResetNumberOfInteractionLengthLeft();    
   return &aParticleChange;

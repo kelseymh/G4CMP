@@ -47,6 +47,13 @@ For developers, there is a G4CMP_DEBUG environment variable which may be set
 (e.g., setenv G4CMP_DEBUG 1) before building the libraries.  This variable
 will turn on some additional diagnostic output which may be of interest.
 
+For developers, there is an environment variable, G4CMP_SET_ELECTRON_MASS,
+to enable the use of step-by-step dynamical effective mass and velocity
+setting for electrons.  This should allow end users to query G4Track or
+G4Step directly and obtain the true kinematical quantities for the electron
+in the lattice.  However, this operation is currently inconsistent with
+G4Transportation, and results in non-physical electron drift speeds.
+
 
 Building the Package
 ====================

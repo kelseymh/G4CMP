@@ -36,6 +36,7 @@
 // 20140521  Remove momentum-check loop; energy conservation is enforced
 // 20140903  Get Etrack using valley kinematics, _not_ track or stepPoint
 // 20141216  Use k_valley for MFP, for consistency with dynamic mass
+// 20150109  Use G4CMP_SET_ELECTRON_MASS to choose kinematics model
 
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -84,16 +85,22 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p_local);
   G4ThreeVector k_valley = theLattice->MapPtoK_valley(iv, p_local);
 
-#ifdef G4CMP_DEBUG
-  G4cout << "eLuke v = " << v.mag()/m*s << "v = " << v
-	 << "\nk_HV = " << k_HV << "\nk_valley = " << k_valley
-	 << G4endl;
+#ifdef G4CMP_SET_ELECTRON_MASS
+  G4double kmag = k_valley.mag();
+#else
+  G4double kmag = k_HV.mag();
 #endif
 
-  if (k_HV.mag()<=ksound_e) return DBL_MAX;
+#ifdef G4CMP_DEBUG
+  G4cout << "eLuke v = " << v.mag()/m*s << " kmag = " << kmag*m
+	 << "\v = " << v << "\nk_HV = " << k_HV
+	 << "\nk_valley = " << k_valley << G4endl;
+#endif
+
+  if (kmag<=ksound_e) return DBL_MAX;
  
   // Time step corresponding to Mach number (avg. time between radiations)
-  G4double dtau = ChargeCarrierTimeStep(k_valley.mag()/ksound_e, l0_e);
+  G4double dtau = ChargeCarrierTimeStep(kmag/ksound_e, l0_e);
   
   G4double mfp = dtau * v.mag();
 #ifdef G4CMP_DEBUG
@@ -117,6 +124,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Do we need to do anything about work functions or whatever?
   if (postStepPoint->GetStepStatus()==fGeomBoundary) {
+    SetNewKinematics(GetValleyIndex(aTrack), postStepPoint->GetMomentum());
     return &aParticleChange;
   }
 
@@ -126,7 +134,10 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p);
   G4double kmag = k_HV.mag();
 
-  if (kmag < ksound_e) return &aParticleChange;
+  if (kmag < ksound_e) {
+    SetNewKinematics(iv, postStepPoint->GetMomentum());
+    return &aParticleChange;
+  }
 
 #ifdef G4CMP_DEBUG
   G4cout << "p (post-step) = " << p << "\np_mag = " << p.mag()
@@ -139,7 +150,11 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double theta_phonon=0., phi_phonon=0., q=0., Enew=0.;
   G4ThreeVector kdir, qvec, k_recoil, p_new;
 
+#ifdef G4CMP_ELECTRON_SET_MASS
   G4double Etrack = theLattice->MapPtoEkin(iv, p);
+#else
+  G4double Etrack = 0.5*p.mag2()/(mc_e*c_squared);	// Map momentum to energy
+#endif
 
   // Iterate phonon generation to avoid energy violations
   const G4int maxTries = 1000;
@@ -162,10 +177,16 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
     qvec = q*kdir;
     qvec.rotate(kdir.orthogonal(), theta_phonon);
     qvec.rotate(kdir, phi_phonon);
+
+    // Get recoil wavevector in HV space, convert to new momentum
     k_recoil = k_HV - qvec;
-    
     p_new = theLattice->MapK_HVtoP(iv, k_recoil);
+
+#ifdef G4CMP_ELECTRON_SET_MASS
     Enew = theLattice->MapPtoEkin(iv, p_new);
+#else
+    Enew = 0.5*p_new.mag2()/(mc_e*c_squared);	// Map momentum to energy
+#endif
 
     // Sanity check: electron should have lost energy in recoil
   } while (Enew >= Etrack && nTries < maxTries);
@@ -179,11 +200,13 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (Enew > Etrack) {
     G4cerr << GetProcessName() << " ERROR: Recoil energy exceeds input after "
 	     << nTries << " attempts." << G4endl;
+    SetNewKinematics(iv, postStepPoint->GetMomentum());
     return &aParticleChange;
   }
 
   // Convert phonon pseudovector to real space
   G4double Ephonon = MakePhononEnergy(kmag, ksound_e, theta_phonon);
+
   qvec = theLattice->MapK_HVtoK_valley(iv, qvec);
   RotateToGlobalDirection(qvec);
 
@@ -195,8 +218,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
 #ifdef G4CMP_DEBUG
-  G4cout << "\ntheta_phonon = " << theta_phonon
-	 << " phi_phonon = " << phi_phonon
+  G4cout << "\ntheta_phonon = " << theta_phonon << " phi_phonon = " << phi_phonon
 	 << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
 	 << "\nk_recoil = " << k_recoil << "\nk_recoil-mag = " << k_recoil.mag()
 	 << "\np_new    = " << p_new << "\np_new_mag = " << p_new.mag()

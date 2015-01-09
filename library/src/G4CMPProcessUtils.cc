@@ -13,6 +13,7 @@
 // 20140412  Add manual configuration options
 // 20140509  Add ChoosePolarization() which uses DOS values from lattice
 // 20141216  Set velocity "by hand" for secondary electrons
+// 20150109  Use G4CMP_SET_ELECTRON_MASS to enable dynamic mass, velocity set
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -271,17 +272,26 @@ G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   }
 
   G4ParticleDefinition* theCarrier = 0;
-  G4double carrierMass=0., carrierEnergy=0., carrierSpeed=0.;
+  G4double carrierMass=0., carrierEnergy=0.;
+#ifdef G4CMP_SET_ELECTRON_MASS
+  G4double carrierSpeed=0.;
+#endif
+
   if (charge==1) {
     theCarrier    = G4CMPDriftHole::Definition();
     carrierMass   = theLattice->GetHoleMass();
     carrierEnergy = 0.5 * p.mag2() / carrierMass;	// Non-relativistic
   } else {
     theCarrier    = G4CMPDriftElectron::Definition();
+#ifdef G4CMP_SET_ELECTRON_MASS
     G4ThreeVector p_local = GetLocalDirection(p);
     carrierMass   = theLattice->GetElectronEffectiveMass(valley, p_local);
     carrierEnergy = theLattice->MapPtoEkin(valley, p_local);
     carrierSpeed  = theLattice->MapPtoV_el(valley, p_local).mag();
+#else
+    carrierMass   = theLattice->GetElectronMass();
+    carrierEnergy = 0.5 * p.mag2() / carrierMass;	// Non-relativistic
+#endif
   }
 
   G4DynamicParticle* secDP = new G4DynamicParticle(theCarrier,p,carrierEnergy);
@@ -289,10 +299,13 @@ G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 
   G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(),
 			     currentTrack->GetPosition());
+
+#ifdef G4CMP_SET_ELECTRON_MASS
   if (charge == -1) {
     sec->SetVelocity(carrierSpeed);
     sec->UseGivenVelocity(true);
   }
+#endif
 
   // Store valley index in lookup table for future tracking
   trackVmap->SetValley(sec, valley);

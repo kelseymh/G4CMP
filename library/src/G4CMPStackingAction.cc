@@ -34,6 +34,7 @@
 //
 // 20140411 Set charge carrier masses appropriately for material
 // 20141216 Set velocity for electrons
+// 20150109 Protect velocity flag with compiler flag
 
 #include "G4CMPStackingAction.hh"
 #include "G4LatticeManager.hh"
@@ -88,7 +89,9 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   if (pd == G4CMPDriftHole::Definition() ||
       pd == G4CMPDriftElectron::Definition()) {
     SetChargeCarrierValley(aTrack);
+#ifdef G4CMP_SET_ELECTRON_MASS
     SetChargeCarrierMass(aTrack);
+#endif
   }
 
   ReleaseTrack();
