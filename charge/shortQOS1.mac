@@ -1,0 +1,73 @@
+/g4cmp/EpotFile Epot_iZip4_small_shortQOS1
+
+/vis/open OGL
+/vis/viewer/set/upVector 0 0 1
+/vis/viewer/set/viewpointVector 1 0 0
+/vis/viewer/zoomTo 3
+/vis/drawVolume
+/vis/scene/add/trajectories
+/vis/ogl/set/printFilename shortQOS1
+/vis/ogl/set/printMode pixmap
+
+# Set colors to match MATLAB-based CDMS DMC simulation
+/vis/modeling/trajectories/create/drawByCharge dmcColors
+/vis/modeling/trajectories/dmcColors/set 1 red
+/vis/modeling/trajectories/dmcColors/set -1 blue
+/vis/modeling/trajectories/dmcColors/set 0 yellow
+
+### /tracking/verbose 1
+/gun/number 100
+
+/gun/position 0 0 0 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/vis/viewer/zoomTo 1.5
+
+/gun/position 0.025 0 0.0023 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/gun/position 0 0.025 0.0023 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/gun/position 0.025 0 0.0083 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/gun/position 0 0.025 0.0083 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/gun/position -0.036 0 -0.0107 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/gun/position 0 0.036 -0.0107 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/gun/position 0.025 0 -0.0023 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/gun/position 0 0.025 -0.0023 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/gun/position 0.025 0 -0.0083 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/gun/position 0 0.025 -0.0083 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/gun/position -0.036 0 0.0107 m
+/run/beamOn 1
+/vis/ogl/printEPS
+
+/gun/position 0 0.036 0.0107 m
+/run/beamOn 1
+/vis/ogl/printEPS

@@ -1,0 +1,4 @@
+/tracking/verbose 0
+/gun/number 20
+/random/setSavingFlag true
+/run/beamOn 100
