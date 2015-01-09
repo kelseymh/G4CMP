@@ -5,6 +5,7 @@
 # Add CPPFLAGS to support use of QHull for E-field interpolation
 # Add G4CMP_DEBUG support
 # Add "link-time" dependendence on QHull
+# Add G4CMP_SET_ELECTRON_MASS support to build with dynamic mass code
 
 name := G4cmp
 
@@ -17,6 +18,9 @@ include $(G4INSTALL)/config/architecture.gmk
 G4CMP_FLAGS += -I./include -I$(G4WORKDIR)/include -I$(G4INCLUDE) -Dqh_QHpointer 
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
+endif
+ifdef G4CMP_SET_ELECTRON_MASS
+  G4CMP_FLAGS += -DG4CMP_SET_ELECTRON_MASS
 endif
 
 CPPFLAGS := $(G4CMP_FLAGS) $(CPPFLAGS)		# Prepend for right load order

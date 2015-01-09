@@ -4,6 +4,7 @@
 # Add Mac and Windows handling for QHull build (we aren't using CMake there)
 # Add "dist" target to make tar-ball for distribution to non-SLAC users
 # Temporarily exclude "channeling" from all examples, until it builds
+# Add G4CMP_SET_ELECTRON_MASS support to build with dynamic mass code
 
 .PHONY : library phonon charge channeling	# Targets named for directory
 .PHONY : all lib dist clean qhull examples
@@ -49,7 +50,8 @@ phonon charge channeling : library
 
 # Directory targets
 
-export G4CMP_DEBUG	# Turns on debugging output
+export G4CMP_DEBUG		# Turns on debugging output
+export G4CMP_SET_ELECTRON_MASS	# Turns on dynamical electron mass
 
 library phonon charge channeling :
 	-$(MAKE) -C $@
