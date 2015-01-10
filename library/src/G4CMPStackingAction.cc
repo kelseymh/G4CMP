@@ -89,9 +89,7 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   if (pd == G4CMPDriftHole::Definition() ||
       pd == G4CMPDriftElectron::Definition()) {
     SetChargeCarrierValley(aTrack);
-#ifdef G4CMP_SET_ELECTRON_MASS
     SetChargeCarrierMass(aTrack);
-#endif
   }
 
   ReleaseTrack();
@@ -160,8 +158,10 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
   }
 
   if (pd == G4CMPDriftElectron::Definition()) {
+#ifdef G4CMP_SET_ELECTRON_MASS
     G4ThreeVector p = GetLocalMomentum(aTrack);
     G4int ivalley = GetValleyIndex(aTrack);
+
     mass = theLattice->GetElectronEffectiveMass(ivalley, p);
 
     // Adjust kinetic energy to keep momentum/mass relation
@@ -169,6 +169,9 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
     theTrack->SetKineticEnergy(theLattice->MapPtoEkin(ivalley, p));
     theTrack->SetVelocity(theLattice->MapPtoV_el(ivalley, p).mag());
     theTrack->UseGivenVelocity(true);
+#else
+    mass = theLattice->GetElectronMass();	// Herring-Vogt scalar mass
+#endif
   }
 
   // Cast to non-const pointer so we can change the effective mass

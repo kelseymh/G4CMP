@@ -77,8 +77,22 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
 G4VParticleChange* 
 G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
 					 const G4Step& aStep) {
+  aParticleChange.Initialize(aTrack); 
+  G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
+  
+  // Do nothing when step limit reached or leaving volume
+#ifdef G4CMP_DEBUG
+  G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
+	 << postStepPoint->GetProcessDefinedStep()->GetProcessName()
+	 << G4endl;
+#endif
+
+  if (postStepPoint->GetStepStatus()==fGeomBoundary) {
+    return &aParticleChange;
+  }
+
   // Get track's energy in current valley
-  G4ThreeVector p = aStep.GetPostStepPoint()->GetMomentum();
+  G4ThreeVector p = postStepPoint->GetMomentum();
 
   // picking a new valley at random if IV-scattering process was triggered
   int valley = ChooseValley();
@@ -88,7 +102,6 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   fMan->SetElectronValleyForTrack(valley);
 
   // Adjust track kinematics for new valley
-  aParticleChange.Initialize(aTrack);  
   SetNewKinematics(valley, p);
 
   ResetNumberOfInteractionLengthLeft();    

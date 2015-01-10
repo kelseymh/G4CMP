@@ -77,7 +77,7 @@ G4CMPeLukeScattering::~G4CMPeLukeScattering() {;}
 G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
 					       G4double,
 					       G4ForceCondition* condition) {
-  *condition = NotForced;
+  *condition = Forced;
 
   G4int iv = GetValleyIndex(aTrack);
   G4ThreeVector p_local = GetLocalMomentum(aTrack);
@@ -122,9 +122,9 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	 << G4endl;
 #endif
 
-  // Do we need to do anything about work functions or whatever?
-  if (postStepPoint->GetStepStatus()==fGeomBoundary) {
-    SetNewKinematics(GetValleyIndex(aTrack), postStepPoint->GetMomentum());
+  // Do nothing other than re-calculate mfp when step limit reached or leaving volume
+  if (postStepPoint->GetStepStatus()==fGeomBoundary ||
+      postStepPoint->GetProcessDefinedStep()==stepLimiter) {
     return &aParticleChange;
   }
 
@@ -132,12 +132,14 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector p = GetLocalDirection(postStepPoint->GetMomentum());
   G4ThreeVector k_valley = theLattice->MapPtoK_valley(iv, p);
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p);
-  G4double kmag = k_HV.mag();
 
-  if (kmag < ksound_e) {
-    SetNewKinematics(iv, postStepPoint->GetMomentum());
-    return &aParticleChange;
-  }
+#ifdef G4CMP_SET_ELECTRON_MASS
+  G4double kmag = k_valley.mag();
+#else
+  G4double kmag = k_HV.mag();
+#endif
+
+  if (kmag <= ksound_e) return &aParticleChange;
 
 #ifdef G4CMP_DEBUG
   G4cout << "p (post-step) = " << p << "\np_mag = " << p.mag()
@@ -150,11 +152,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double theta_phonon=0., phi_phonon=0., q=0., Enew=0.;
   G4ThreeVector kdir, qvec, k_recoil, p_new;
 
-#ifdef G4CMP_ELECTRON_SET_MASS
   G4double Etrack = theLattice->MapPtoEkin(iv, p);
-#else
-  G4double Etrack = 0.5*p.mag2()/(mc_e*c_squared);	// Map momentum to energy
-#endif
 
   // Iterate phonon generation to avoid energy violations
   const G4int maxTries = 1000;
@@ -182,11 +180,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
     k_recoil = k_HV - qvec;
     p_new = theLattice->MapK_HVtoP(iv, k_recoil);
 
-#ifdef G4CMP_ELECTRON_SET_MASS
     Enew = theLattice->MapPtoEkin(iv, p_new);
-#else
-    Enew = 0.5*p_new.mag2()/(mc_e*c_squared);	// Map momentum to energy
-#endif
 
     // Sanity check: electron should have lost energy in recoil
   } while (Enew >= Etrack && nTries < maxTries);
@@ -200,7 +194,6 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (Enew > Etrack) {
     G4cerr << GetProcessName() << " ERROR: Recoil energy exceeds input after "
 	     << nTries << " attempts." << G4endl;
-    SetNewKinematics(iv, postStepPoint->GetMomentum());
     return &aParticleChange;
   }
 
