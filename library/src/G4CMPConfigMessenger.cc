@@ -6,6 +6,7 @@
 //
 // 20140904  Michael Kelsey
 // 20141029  Add command to set output e/h positions file
+// 20150106  Add command to toggle generate Luke phonons
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -32,6 +33,12 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 				"Set voltage for uniform electric field");
   voltageCmd->SetUnitCategory("Electric potential");
 
+  minstepCmd = CreateCommand<G4UIcmdWithADouble>("minimumStep",
+			 "Set fraction of L0 for charge carrier minimum step");
+
+  makeLukeCmd = CreateCommand<G4UIcmdWithADouble>("produceLukePhonons",
+				  "Set rate of production of Luke phonons");
+
   fileCmd = CreateCommand<G4UIcmdWithAString>("EpotFile",
 			      "Set filename for non-uniform electric field");
 
@@ -47,6 +54,8 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete verboseCmd; verboseCmd=0;
   delete voltageCmd; voltageCmd=0;
+  delete minstepCmd; minstepCmd=0;
+  delete makeLukeCmd; makeLukeCmd=0;
   delete fileCmd; fileCmd=0;
   delete dirCmd; dirCmd=0;
   delete hitsCmd; hitsCmd=0;
@@ -83,6 +92,8 @@ void G4CMPConfigMessenger::CreateDirectory(const char* path, const char* desc) {
 void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == verboseCmd) theManager->SetVerboseLevel(StoI(value));
   if (cmd == voltageCmd) theManager->SetVoltage(voltageCmd->GetNewDoubleValue(value));
+  if (cmd == minstepCmd) theManager->SetMinStepScale(StoD(value));
+  if (cmd == makeLukeCmd) theManager->SetLukePhonons(StoD(value));
   if (cmd == fileCmd) theManager->SetEpotFile(value);
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
   if (cmd == hitsCmd) theManager->SetHitOutput(value);

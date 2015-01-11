@@ -23,11 +23,26 @@ found in the G4CMP top level directory.
 G4CMP is only configured for use on Linux and MacOSX platforms.  A minimum
 configuration requires GCC 4.4.7 or later (required by the QHull package)
 
-An optional environment variable, G4CMP_LUKE_PHONONS, controls at run-time
-whether the two LukeScattering processes (eLukeScattering and
-hLukeScattering) produce secondary phonons (and what fraction of them), or
-only records the phonon energy as non-ionizing energy loss (NIEL) on the
-track:
+Several configuration parameters are available through environment variables
+and macro commands, as listed below.  Most of these affect charge carrier
+propagation and related processes.
+
+
+Environment variable	Macro command		Value/action
+====================	=============		============
+G4LATTICEDATA		/g4cmp/LatticeData	Directory with lattice configs
+G4CMP_DEBUG		/g4cmp/verbose		>0: Enable diagnostic messages
+G4CMP_VOLTAGE [V]	/g4cmp/voltage <V>	!=0: Apply uniform +Z voltage
+G4CMP_EPOT_FILE [F]	/g4cmp/EpotFile <F>	V=0: Read mesh field file "F"
+G4CMP_MIN_STEP [S]	/g4cmp/minimumStep <S>	S>0: Force minimum step S*L0
+G4CMP_LUKE_PHONONS [R]	/g4cmp/produceLukePhonons <R>
+						Generate phonons every R hits
+G4CMP_HIT_FILE [F]	/g4cmp/HitsFile <F>	Write e/h hit locations to "F"
+
+The environment variable $G4CMP_LUKE_PHONONS controls whether whether the
+two LukeScattering processes (eLukeScattering and hLukeScattering) produce
+secondary phonons (and what fraction of the time), or only records the
+phonon energy as non-ionizing energy loss (NIEL) on the track:
 
 	unsetenv G4CMP_LUKE_PHONONS	# No secondary phonons generated
 	setenv G4CMP_LUKE_PHONONS 1	# Generate phonon at every occurrence
@@ -47,12 +62,13 @@ For developers, there is a G4CMP_DEBUG environment variable which may be set
 (e.g., setenv G4CMP_DEBUG 1) before building the libraries.  This variable
 will turn on some additional diagnostic output which may be of interest.
 
-For developers, there is an environment variable, G4CMP_SET_ELECTRON_MASS,
-to enable the use of step-by-step dynamical effective mass and velocity
-setting for electrons.  This should allow end users to query G4Track or
-G4Step directly and obtain the true kinematical quantities for the electron
-in the lattice.  However, this operation is currently inconsistent with
-G4Transportation, and results in non-physical electron drift speeds.
+For developers, there is a environment and Make variable,
+G4CMP_SET_ELECTRON_MASS, to enable compilation of code to set step-by-step
+dynamical effective mass, kinetic energy and velocity for electrons.  This
+should allow end users to query G4Track or G4Step directly and obtain the
+true kinematical quantities for the electron in the lattice.  However, this
+operation is currently inconsistent with GEANT4, due to an issue in
+G4Transportation.cc, and results in non-physical electron drift speeds.
 
 
 Building the Package

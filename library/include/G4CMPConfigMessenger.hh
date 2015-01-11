@@ -9,6 +9,8 @@
 //
 // 20140904  Michael Kelsey
 // 20141029  Add command to set output e/h positions file
+// 20141231  Add command to set scale (relative to l0) for minimum steps
+// 20150106  Add command to toggle generate Luke phonons
 
 #include "G4UImessenger.hh"
 
@@ -42,6 +44,8 @@ private:
 
   G4UIcmdWithAnInteger* verboseCmd;
   G4UIcmdWithADoubleAndUnit* voltageCmd;
+  G4UIcmdWithADouble* minstepCmd;
+  G4UIcmdWithADouble* makeLukeCmd;
   G4UIcmdWithAString* fileCmd;
   G4UIcmdWithAString* dirCmd;
   G4UIcmdWithAString* hitsCmd;

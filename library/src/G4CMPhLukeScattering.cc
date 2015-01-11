@@ -23,20 +23,22 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file library/src/G4LukeScattering.cc
-/// \brief Implementation of the G4LukeScattering class
+/// \file library/src/G4CMPhLukeScattering.cc
+/// \brief Implementation of the G4CMPhLukeScattering class
 //
 // $Id$
 //
 // 20140325  Move time-step calculation to G4CMPProcessUtils
 // 20140331  Add required process subtype code
 // 20140509  Add run-time envvar to bias phonons
+// 20141231  Rename "minimum step" function to ComputeMinTimeStep
+// 20150111  Move envvar to G4CMPConfigManager
 
 #include "G4CMPhLukeScattering.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4LogicalVolume.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
@@ -44,25 +46,20 @@
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4VParticleChange.hh"
-#include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
-#include <math.h>
-#include <stdlib.h>
-
-
-// Runtime flag to generate real phonons during scattering
-
-namespace {
-  const G4double generateLukePhonons =
-    (getenv("G4CMP_LUKE_PHONONS") ? strtod(getenv("G4CMP_LUKE_PHONONS"),0) : 0.);
-}
+#include <iostream>
+#include <fstream>
 
 
 // Constructor and destructor
 
 G4CMPhLukeScattering::G4CMPhLukeScattering(G4VProcess* stepper)
   : G4CMPVDriftProcess("hLukeScattering", fLukeScattering),
-    stepLimiter(stepper) {;}
+    stepLimiter(stepper) {
+#ifdef G4CMP_DEBUG
+  output.open("hLukePhononEnergies");
+#endif
+}
 
 G4CMPhLukeScattering::~G4CMPhLukeScattering() {;}
 
@@ -72,7 +69,7 @@ G4CMPhLukeScattering::~G4CMPhLukeScattering() {;}
 G4double 
 G4CMPhLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
 				      G4ForceCondition* condition) {
-  *condition = Forced;
+  *condition = Forced;		// In order to recompute MFP after TimeStepper
   
   G4StepPoint* stepPoint = aTrack.GetStep()->GetPostStepPoint();
   G4double velocity = stepPoint->GetVelocity();
@@ -94,17 +91,18 @@ G4CMPhLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
 G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
   aParticleChange.Initialize(aTrack);  
-  
-  // Do nothing other than re-calculate mfp when step limit reached or leaving volume
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
+  
 #ifdef G4CMP_DEBUG
-  G4cout << GetProcessName() << "PostStepDoIt: Step limited by process "
+  G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
 	 << postStepPoint->GetProcessDefinedStep()->GetProcessName()
 	 << G4endl;
 #endif
   
+  // Do nothing other than re-calculate mfp when step limit reached or leaving
+  // volume
   if (postStepPoint->GetProcessDefinedStep()==stepLimiter
-     || postStepPoint->GetStepStatus()==fGeomBoundary) {
+      || postStepPoint->GetStepStatus()==fGeomBoundary) {
     return &aParticleChange;
   }
   
@@ -131,10 +129,14 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
   RotateToGlobalDirection(qvec);
 
   G4double Ephonon = MakePhononEnergy(kmag, ksound_h, theta_phonon);
+#ifdef G4CMP_DEBUG
+  output << Ephonon/eV << G4endl;
+#endif
 
   // Create real phonon to be propagated, with random polarization
-  if (generateLukePhonons > 0. && G4UniformRand() < generateLukePhonons) {
-    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN, qvec, Ephonon);
+  static const G4double genLuke = G4CMPConfigManager::GetLukePhonons();
+  if (genLuke > 0. && G4UniformRand() < genLuke) {
+    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(phonon);
   }
@@ -144,11 +146,11 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
   aParticleChange.ProposeMomentumDirection(newDir);
   aParticleChange.ProposeEnergy(Etrack-Ephonon);
   aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
-  ResetNumberOfInteractionLengthLeft();    
-  
+
+  ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
 }
 
 G4bool G4CMPhLukeScattering::IsApplicable(const G4ParticleDefinition& aPD) {
-  return(&aPD==G4CMPDriftHole::Definition() );
+  return (&aPD==G4CMPDriftHole::Definition());
 }

@@ -23,8 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file library/src/G4eLukeScattering.cc
-/// \brief Implementation of the G4eLukeScattering class
+/// \file library/src/G4CMPeLukeScattering.cc
+/// \brief Implementation of the G4CMPeLukeScattering class
 //
 // $Id$
 //
@@ -35,10 +35,12 @@
 // 20140509  Remove valley vs. H-V flag; add run-time envvar to bias phonons
 // 20140521  Remove momentum-check loop; energy conservation is enforced
 // 20140903  Get Etrack using valley kinematics, _not_ track or stepPoint
-// 20141216  Use k_valley for MFP, for consistency with dynamic mass
-// 20150109  Use G4CMP_SET_ELECTRON_MASS to choose kinematics model
+// 201411??  R.Agnese -- Merge functionality from TimeStepper here
+// 20141231  Rename "minimum step" function to ComputeMinTimeStep
+// 20150106  Move envvar to G4CMPConfigManager
 
 #include "G4CMPeLukeScattering.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPValleyTrackMap.hh"
 #include "G4LatticeManager.hh"
@@ -47,27 +49,23 @@
 #include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
+#include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4VParticleChange.hh"
 #include "Randomize.hh"
-#include <fstream>
 #include <iostream>
-#include <stdlib.h>
-
-
-// Runtime flag to generate real phonons during scattering
-
-namespace {
-  const G4double generateLukePhonons =
-    (getenv("G4CMP_LUKE_PHONONS") ? strtod(getenv("G4CMP_LUKE_PHONONS"),0) : 0.);
-}
+#include <fstream>
 
 
 // Constructor and destructor
 
 G4CMPeLukeScattering::G4CMPeLukeScattering(G4VProcess* sLim)
   : G4CMPVDriftProcess("eLukeScattering", fLukeScattering),
-    stepLimiter(sLim) {;}
+    stepLimiter(sLim) {
+#ifdef G4CMP_DEBUG
+  output.open("eLukePhononEnergies");
+#endif
+}
 
 G4CMPeLukeScattering::~G4CMPeLukeScattering() {;}
 
@@ -102,6 +100,7 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
 #ifdef G4CMP_DEBUG
   G4cout << "eLuke MFP = " << mfp/m << G4endl;
 #endif
+
   return mfp;
 }
 
@@ -161,6 +160,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
     if (theta_phonon>acos(ksound_e/kmag) || theta_phonon>halfpi) {
       G4cerr << "ERROR: Phonon production theta_phonon " << theta_phonon
 	     << " exceeds cone angle " << acos(ksound_e/kmag) << G4endl;
+      continue;
     }
     
     kdir = k_HV.unit();			// Get phonon and recoil vectors
@@ -191,19 +191,24 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Convert phonon pseudovector to real space
   G4double Ephonon = MakePhononEnergy(kmag, ksound_e, theta_phonon);
+#ifdef G4CMP_DEBUG
+  output << Ephonon/eV << G4endl;
+#endif
 
   qvec = theLattice->MapK_HVtoK_valley(iv, qvec);
   RotateToGlobalDirection(qvec);
 
   // Create real phonon to be propagated, with random polarization
-  if (generateLukePhonons > 0. && G4UniformRand() < generateLukePhonons) {
-    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN, qvec, Ephonon);
+  static const G4double genLuke = G4CMPConfigManager::GetLukePhonons();
+  if (genLuke > 0. && G4UniformRand() < genLuke) {
+    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(phonon);
   }
 
 #ifdef G4CMP_DEBUG
-  G4cout << "\ntheta_phonon = " << theta_phonon << " phi_phonon = " << phi_phonon
+  G4cout << "\ntheta_phonon = " << theta_phonon
+	 << " phi_phonon = " << phi_phonon
 	 << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
 	 << "\nk_recoil = " << k_recoil << "\nk_recoil-mag = " << k_recoil.mag()
 	 << "\np_new    = " << p_new << "\np_new_mag = " << p_new.mag()
@@ -220,7 +225,6 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
 }
-
 
 G4bool G4CMPeLukeScattering::IsApplicable(const G4ParticleDefinition& aPD) {
   return (&aPD==G4CMPDriftElectron::Definition());

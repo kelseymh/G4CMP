@@ -106,6 +106,36 @@ void G4CMPVDriftProcess::EndTracking() {
 }
 
 
+// Overload base version to set a minimum step size, avoiding "stuck" tracks
+
+G4double G4CMPVDriftProcess::
+PostStepGetPhysicalInteractionLength(const G4Track& track,
+				     G4double previousStepSize,
+				     G4ForceCondition* condition) {
+  G4double trueLength =
+    G4VDiscreteProcess::PostStepGetPhysicalInteractionLength(track,
+							     previousStepSize,
+							     condition);
+
+  const G4double scale = G4CMPConfigManager::GetMinStepScale();
+
+  if (scale > 0.) {
+    const G4double minLength = scale *
+      (track.GetParticleDefinition()==G4CMPDriftElectron::Definition()
+       ? l0_e : l0_h);
+
+#ifdef G4CMP_DEBUG
+    G4cout << GetProcessName() << "::PostStepGPIL: minLength " << minLength
+	   << " trueLength " << trueLength << G4endl;
+#endif
+
+    return minLength<trueLength ? trueLength : minLength;
+  }
+
+  return trueLength;
+}
+
+
 // Compute characteristic time step for charge carrier
 // Parameters are "Mach number" (ratio with sound speed) and scattering length
 
