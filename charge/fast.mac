@@ -1,0 +1,4 @@
+# Fast production example:  Twenty at-rest e/h pairs per event, 10 events
+/tracking/verbose 0
+/gun/number 20
+/run/beamOn 10
