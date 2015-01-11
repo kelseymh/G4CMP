@@ -37,7 +37,7 @@
 // 20140903  Get Etrack using valley kinematics, _not_ track or stepPoint
 // 201411??  R.Agnese -- Merge functionality from TimeStepper here
 // 20141231  Rename "minimum step" function to ComputeMinTimeStep
-// 20150106  Move envvar to G4CMPConfigManager
+// 20150106  Move envvar to G4CMPConfigManager, unify overlapping code w/hLuke
 
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -72,31 +72,27 @@ G4CMPeLukeScattering::~G4CMPeLukeScattering() {;}
 
 // Physics
 
-G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
-					       G4double,
-					       G4ForceCondition* condition) {
-  *condition = Forced;
+G4double 
+G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
+				      G4ForceCondition* condition) {
+  *condition = Forced;		// In order to recompute MFP after TimeStepper
 
   G4int iv = GetValleyIndex(aTrack);
   G4ThreeVector p_local = GetLocalMomentum(aTrack);
-  G4ThreeVector v = theLattice->MapPtoV_el(iv, p_local);
+  G4double velocity = theLattice->MapPtoV_el(iv, p_local).mag();
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p_local);
-  G4ThreeVector k_valley = theLattice->MapPtoK_valley(iv, p_local);
-
   G4double kmag = k_HV.mag();
 
 #ifdef G4CMP_DEBUG
-  G4cout << "eLuke v = " << v.mag()/m*s << " kmag = " << kmag*m
-	 << "\v = " << v << "\nk_HV = " << k_HV
-	 << "\nk_valley = " << k_valley << G4endl;
+  G4cout << "eLuke v = " << velocity/m*s << " kmag = " << kmag*m << G4endl;
 #endif
 
   if (kmag<=ksound_e) return DBL_MAX;
  
   // Time step corresponding to Mach number (avg. time between radiations)
   G4double dtau = ChargeCarrierTimeStep(kmag/ksound_e, l0_e);
-  
-  G4double mfp = dtau * v.mag();
+  G4double mfp = dtau * velocity;
+
 #ifdef G4CMP_DEBUG
   G4cout << "eLuke MFP = " << mfp/m << G4endl;
 #endif
@@ -125,16 +121,15 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4int iv = GetValleyIndex(aTrack);
   G4ThreeVector p = GetLocalDirection(postStepPoint->GetMomentum());
-  G4ThreeVector k_valley = theLattice->MapPtoK_valley(iv, p);
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p);
-
   G4double kmag = k_HV.mag();
 
+  // Sanity check: this should have been done in MFP already
   if (kmag <= ksound_e) return &aParticleChange;
 
 #ifdef G4CMP_DEBUG
   G4cout << "p (post-step) = " << p << "\np_mag = " << p.mag()
-	 << "\nk_HV = " << k_HV << " k_valley = " << k_valley
+	 << "\nk_HV = " << k_HV
 	 << "\nkmag = " << kmag << " k/ks = " << kmag/ksound_e
 	 << "\nacos(ks/k)   = " << acos(ksound_e/kmag) << G4endl;
 #endif
@@ -171,7 +166,6 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
     // Get recoil wavevector in HV space, convert to new momentum
     k_recoil = k_HV - qvec;
     p_new = theLattice->MapK_HVtoP(iv, k_recoil);
-
     Enew = theLattice->MapPtoEkin(iv, p_new);
 
     // Sanity check: electron should have lost energy in recoil
@@ -189,12 +183,12 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
     return &aParticleChange;
   }
 
-  // Convert phonon pseudovector to real space
   G4double Ephonon = MakePhononEnergy(kmag, ksound_e, theta_phonon);
 #ifdef G4CMP_DEBUG
   output << Ephonon/eV << G4endl;
 #endif
 
+  // Convert phonon pseudovector to real space
   qvec = theLattice->MapK_HVtoK_valley(iv, qvec);
   RotateToGlobalDirection(qvec);
 
@@ -221,7 +215,6 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   SetNewKinematics(iv, p_new);
 
   aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
-
   ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
 }

@@ -32,7 +32,7 @@
 // 20140331  Add required process subtype code
 // 20140509  Add run-time envvar to bias phonons
 // 20141231  Rename "minimum step" function to ComputeMinTimeStep
-// 20150111  Move envvar to G4CMPConfigManager
+// 20150111  Move envvar to G4CMPConfigManager, unify overlapping code w/eLuke
 
 #include "G4CMPhLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -71,25 +71,29 @@ G4CMPhLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
 				      G4ForceCondition* condition) {
   *condition = Forced;		// In order to recompute MFP after TimeStepper
   
-  G4StepPoint* stepPoint = aTrack.GetStep()->GetPostStepPoint();
-  G4double velocity = stepPoint->GetVelocity();
-  G4double kmag = velocity*mc_h / hbar_Planck;
+  G4ThreeVector p_local = GetLocalMomentum(aTrack);
+  G4double velocity = p_local.mag() / mc_h;
+  G4double kmag = p_local.mag() / hbarc;
   
+#ifdef G4CMP_DEBUG
+  G4cout << "hLuke v = " << velocity/m*s << " kmag = " << kmag*m << G4endl;
+#endif
+
   if (kmag<=ksound_h) return DBL_MAX;
   
   // Time step corresponding to Mach number (avg. time between radiations)
   G4double dtau = ChargeCarrierTimeStep(kmag/ksound_h, l0_h);
-  
   G4double mfp = dtau * velocity;
 
 #ifdef G4CMP_DEBUG  
   G4cout << "hLuke MFP = " <<  mfp <<  G4endl;
 #endif
+
   return mfp;
 }
 
-G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
-{
+G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack,
+						      const G4Step& aStep) {
   aParticleChange.Initialize(aTrack);  
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
@@ -99,25 +103,28 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
 	 << G4endl;
 #endif
   
-  // Do nothing other than re-calculate mfp when step limit reached or leaving
-  // volume
-  if (postStepPoint->GetProcessDefinedStep()==stepLimiter
-      || postStepPoint->GetStepStatus()==fGeomBoundary) {
+  // Do nothing other than re-calculate mfp when step limit reached or leaving volume
+  if (postStepPoint->GetStepStatus()==fGeomBoundary ||
+      postStepPoint->GetProcessDefinedStep()==stepLimiter) {
     return &aParticleChange;
   }
   
-  G4double velocity = postStepPoint->GetVelocity();
-  G4double kmag = velocity*mc_h / hbar_Planck;
+  G4ThreeVector p = GetLocalDirection(postStepPoint->GetMomentum());
+  G4double kmag = p.mag() / hbarc;
+
+  // Sanity check: this should have been done in MFP already
+  if (kmag <= ksound_h) return &aParticleChange;
 
   G4double theta_phonon = MakePhononTheta(kmag, ksound_h);
   G4double phi_phonon = G4UniformRand()*twopi;
   G4double q = 2*(kmag*cos(theta_phonon)-ksound_h);
 
+  G4double Etrack = postStepPoint->GetKineticEnergy();
   G4double theta_charge = MakeRecoilTheta(kmag, ksound_h, theta_phonon);
   G4double phi_charge = fmod(pi+phi_phonon, twopi);
 
   // Rotate hole direction vector to recoil
-  G4ThreeVector mdir = postStepPoint->GetMomentumDirection();
+  G4ThreeVector mdir = p.unit();
   G4ThreeVector newDir = mdir;
   newDir.rotate(mdir.orthogonal(), theta_charge);
   newDir.rotate(mdir, phi_charge);
@@ -141,12 +148,19 @@ G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack, con
     aParticleChange.AddSecondary(phonon);
   }
 
-  G4double Etrack = postStepPoint->GetKineticEnergy();
+#ifdef G4CMP_DEBUG
+  G4cout << "\ntheta_phonon = " << theta_phonon
+	 << " phi_phonon = " << phi_phonon
+	 << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
+	 << "\nnewDir   = " << newDir
+	 << "\nEtrack = " << Etrack << " Enew = " << Etrack-Ephonon
+	 << G4endl;
+#endif
 
+  RotateToGlobalDirection(newDir);	// Put into global frame for tracks
   aParticleChange.ProposeMomentumDirection(newDir);
   aParticleChange.ProposeEnergy(Etrack-Ephonon);
   aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
-
   ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
 }
