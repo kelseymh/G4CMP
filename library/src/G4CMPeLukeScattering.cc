@@ -85,11 +85,7 @@ G4double G4CMPeLukeScattering::GetMeanFreePath(const G4Track& aTrack,
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p_local);
   G4ThreeVector k_valley = theLattice->MapPtoK_valley(iv, p_local);
 
-#ifdef G4CMP_SET_ELECTRON_MASS
-  G4double kmag = k_valley.mag();
-#else
   G4double kmag = k_HV.mag();
-#endif
 
 #ifdef G4CMP_DEBUG
   G4cout << "eLuke v = " << v.mag()/m*s << " kmag = " << kmag*m
@@ -133,11 +129,7 @@ G4VParticleChange* G4CMPeLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector k_valley = theLattice->MapPtoK_valley(iv, p);
   G4ThreeVector k_HV = theLattice->MapPtoK_HV(iv, p);
 
-#ifdef G4CMP_SET_ELECTRON_MASS
-  G4double kmag = k_valley.mag();
-#else
   G4double kmag = k_HV.mag();
-#endif
 
   if (kmag <= ksound_e) return &aParticleChange;
 
