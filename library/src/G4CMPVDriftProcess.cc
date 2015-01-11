@@ -32,8 +32,10 @@
 // 20140331  Add required process subtype code
 // 20141216  Set true electron velocity (and force it) in SetNewKinematics()
 // 20150109  Use G4CMP_SET_ELECTRON_MASS to enable dynamical mass, velocity
+// 20150111  Add functionality to enforce minimum step length
 
 #include "G4CMPVDriftProcess.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPValleyTrackMap.hh"

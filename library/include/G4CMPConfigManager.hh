@@ -34,14 +34,11 @@ public:
   // Change values (e.g., via Messenger)
   static void SetVerboseLevel(G4int value)      { Instance()->verbose = value; }
   static void SetVoltage(G4double value)        { Instance()->voltage = value; }
-  static void SetEpotFile(const G4String& name) { Instance()->Epot_file=name; }
-  static void SetVerboseLevel(G4int value)      { Instance()->verbose = value; }
-  static void SetVoltage(G4double value)        { Instance()->voltage = value; }
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
-  static void SetLukePhonons(G4double value) { Instance()->lukePhonons = value;}
+  static void SetLukePhonons(G4double value)  { Instance()->lukePhonons=value; }
   static void SetEpotFile(const G4String& name)  { Instance()->Epot_file=name; }
   static void SetLatticeDir(const G4String& dir) { Instance()->LatticeDir=dir; }
-  static void SetHitOutput(const G4String& name) { Instance()->Hit_file=name;}
+  static void SetHitOutput(const G4String& name) { Instance()->Hit_file=name; }
 
 private:
   G4CMPConfigManager();		// Singleton: only constructed on request

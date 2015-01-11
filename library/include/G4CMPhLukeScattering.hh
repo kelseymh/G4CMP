@@ -29,14 +29,14 @@
 // $Id$
 //
 // 20140407  Move angle generation to base class
+// 20150111  Add debugging output file with phonon energies
 
 #ifndef G4CMPhLukeScattering_h
 #define G4CMPhLukeScattering_h 1
 
 #include "globals.hh"
 #include "G4CMPVDriftProcess.hh"
-#include "G4RotationMatrix.hh"
-#include "G4AffineTransform.hh"
+#include <iostream>
 
 class G4VProcess;
 
@@ -60,6 +60,10 @@ private:
   G4CMPhLukeScattering& operator=(const G4CMPhLukeScattering& right);
 
   G4VProcess* stepLimiter;
+
+#ifdef G4CMP_DEBUG
+  std::ofstream output;
+#endif
 };
 
 #endif	/* G4CMPhLukeScattering */

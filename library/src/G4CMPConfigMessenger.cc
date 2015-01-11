@@ -10,6 +10,7 @@
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"

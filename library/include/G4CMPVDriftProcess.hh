@@ -32,6 +32,7 @@
 // 20140325  Move time-step calculation here from TimeStepper and LukeScat
 // 20140331  Add required subtype code to constructor
 // 20140902  Add new kinematics function which takes energy as input
+// 20141231  Add function to enforce minimum step length (fraction of L0)
 
 #ifndef G4CMPVDriftProcess_h
 #define G4CMPVDriftProcess_h 1
@@ -48,6 +49,12 @@ public:
   virtual ~G4CMPVDriftProcess();
 
   virtual G4bool IsApplicable(const G4ParticleDefinition& aPD);
+
+  // Overload base version to set a minimum step size, avoiding "stuck" tracks
+  virtual G4double
+  PostStepGetPhysicalInteractionLength(const G4Track& track,
+				       G4double previousStepSize,
+				       G4ForceCondition* condition);
 
   // NOTE:  These functions must call back to base class implementations!
   virtual void LoadDataForTrack(const G4Track* track);
@@ -69,6 +76,10 @@ protected:
   // Compute characteristic time step for charge carrier
   // Parameters are "Mach number" (ratio with sound speed) and scattering length
   G4double ChargeCarrierTimeStep(G4double mach, G4double l0) const;
+
+  // Minimum Time Step in electric field. Coeff is determined empirically
+  G4double ComputeMinTimeStep(const G4Track& track);
+  G4double MaxMachStep(G4double Emag, G4double coeff, G4double l0) const;
 
   // Fill ParticleChange energy and mass for charge carrier of given momentum
   void SetNewKinematics(G4int ivalley, const G4ThreeVector& p);

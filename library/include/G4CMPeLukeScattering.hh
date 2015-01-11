@@ -30,14 +30,14 @@
 //
 // 20140404  Drop unnecessary data members, using functions in G4LatticePhysical
 // 20140407  Move angle generation to base class
+// 20150111  Add debugging output file with phonon energies
 
 #ifndef G4CMPeLukeScattering_h
 #define G4CMPeLukeScattering_h 1
 
 #include "globals.hh"
 #include "G4CMPVDriftProcess.hh"
-#include "G4RotationMatrix.hh"
-#include "G4AffineTransform.hh"
+#include <iostream>
 
 class G4VProcess;
 
@@ -60,6 +60,10 @@ private:
   G4CMPeLukeScattering& operator=(const G4CMPeLukeScattering& right);
 
   G4VProcess* stepLimiter;
+
+#ifdef G4CMP_DEBUG
+  std::ofstream output;
+#endif
 };
 
 #endif

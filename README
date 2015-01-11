@@ -21,7 +21,7 @@ Add the G4CMP environment variables using the g4cmp_env.csh or ...sh scripts
 found in the G4CMP top level directory.
 
 G4CMP is only configured for use on Linux and MacOSX platforms.  A minimum
-configuration requires GCC 4.4.7 or later (required by the QHull package)
+configuration requires GCC 4.4.7 or later (required by the QHull package).
 
 Several configuration parameters are available through environment variables
 and macro commands, as listed below.  Most of these affect charge carrier
