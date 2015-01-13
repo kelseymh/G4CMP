@@ -41,5 +41,5 @@ add_executable(g4cmpCharge g4cmpCharge.cc ${charge_SOURCES})
 target_link_libraries(g4cmpCharge G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
 set_target_properties(g4cmpCharge PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
-set(CMAKE_CXX_FLAGS "-O2 -p -g")
+#set(CMAKE_CXX_FLAGS "-O2 -p -g")
 install(TARGETS g4cmpCharge DESTINATION bin)

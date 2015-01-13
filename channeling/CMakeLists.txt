@@ -69,5 +69,5 @@ set(channeling_SOURCES
     target_link_libraries(g4cmpChannel ${Geant4_LIBRARIES} G4cmp qhullcpp qhullstatic_p)
     set_target_properties(g4cmpChannel PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
-    set(CMAKE_CXX_FLAGS "-O2 -p -g")
+    #set(CMAKE_CXX_FLAGS "-O2 -p -g")
     install(TARGETS g4cmpChannel DESTINATION bin)

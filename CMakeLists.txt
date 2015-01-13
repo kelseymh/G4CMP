@@ -28,5 +28,6 @@ if(BUILD_ALL_EXAMPLES OR BUILD_CHARGE_EXAMPLE)
 endif()
 
 if(BUILD_ALL_EXAMPLES OR BUILD_CHANNELING_EXAMPLE)
-    add_subdirectory(channeling)
+    #FIXME: Channeling demo is broken right now
+    #add_subdirectory(channeling)
 endif()
