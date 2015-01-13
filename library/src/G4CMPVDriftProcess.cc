@@ -33,6 +33,7 @@
 // 20141216  Set true electron velocity (and force it) in SetNewKinematics()
 // 20150109  Use G4CMP_SET_ELECTRON_MASS to enable dynamical mass, velocity
 // 20150111  Add functionality to enforce minimum step length
+// 20150112  Handle holes as well as electrons with FillParticleChange()
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -152,44 +153,46 @@ G4CMPVDriftProcess::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
 // Fill ParticleChange energy and mass for electron charge carrier momentum
 
 void 
-G4CMPVDriftProcess::SetNewKinematics(G4int ivalley,const G4ThreeVector& p) {
-  if (GetCurrentParticle() != G4CMPDriftElectron::Definition()) return;
+G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
+  G4double mass = GetCurrentTrack()->GetDynamicParticle()->GetMass();
+  G4double energy = 0.5*p.mag2()/mass;	// Non-relativistic, but "mass" is mc^2
 
 #ifdef G4CMP_SET_ELECTRON_MASS
-  // Get energy from momentum using appropriate E-p relation
-  G4ThreeVector p_local = GetLocalDirection(p);
-  G4double energy = theLattice->MapPtoEkin(ivalley, p_local);
-#else
-  G4double energy = 0.5*p.mag2()/mc_e/c_squared;
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
+    // Get energy from momentum using appropriate E-p relation
+    G4ThreeVector p_local = GetLocalDirection(p);
+    energy = theLattice->MapPtoEkin(ivalley, p_local);
+  }
 #endif
 
-  SetNewKinematics(ivalley, energy, p);
+  FillParticleChange(ivalley, energy, p);
 }
 
 // Fill ParticleChange mass for electron charge carrier with given energy
 
 void 
-G4CMPVDriftProcess::SetNewKinematics(G4int ivalley, G4double Ekin,
-				     const G4ThreeVector& pdir) {
-  if (GetCurrentParticle() != G4CMPDriftElectron::Definition()) return;
-
+G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
+				     const G4ThreeVector& p) {
 #ifdef G4CMP_SET_ELECTRON_MASS
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
+
   // Get effective scalar mass from momentum and valley
-  G4ThreeVector p_local = GetLocalDirection(pdir);
-  G4double mass = theLattice->GetElectronEffectiveMass(ivalley, p_local);
-  G4double velocity = theLattice->MapPtoV_el(ivalley, p_local).mag();
-
+    G4ThreeVector p_local = GetLocalDirection(p);
+    G4double mass = theLattice->GetElectronEffectiveMass(ivalley, p_local);
+    G4double velocity = theLattice->MapPtoV_el(ivalley, p_local).mag();
+    
 #ifdef G4CMP_DEBUG
-  G4cout << GetProcessName() << "::SetNewKinematics valley " << ivalley
-	 << " energy " << Ekin << "\n p " << pdir
-	 << " mass " << mass*c_squared << G4endl;
+    G4cout << GetProcessName() << "::FillParticleChange valley " << ivalley
+	   << " energy " << Ekin << "\n p " << p
+	   << " mass " << mass*c_squared << G4endl;
+#endif
+    
+    aParticleChange.ProposeMass(mass*c_squared);		// GEANT4 units
+    aParticleChange.ProposeVelocity(velocity);
+  }
 #endif
 
-  aParticleChange.ProposeMass(mass*c_squared);		// GEANT4 units
-  aParticleChange.ProposeVelocity(velocity);
-#endif
-
-  aParticleChange.ProposeMomentumDirection(pdir.unit());
+  aParticleChange.ProposeMomentumDirection(p.unit());
   aParticleChange.ProposeEnergy(Ekin);
 }
 

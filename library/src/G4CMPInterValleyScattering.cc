@@ -7,6 +7,7 @@
 // 20140429  Recompute kinematics relative to new valley
 // 20140908  Allow IV scatter to change momentum by conserving energy
 // 20150109  Revert IV scattering to preserve momentum
+// 20150112  Follow renaming of "SetNewKinematics" to FillParticleChange
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -102,7 +103,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   fMan->SetElectronValleyForTrack(valley);
 
   // Adjust track kinematics for new valley
-  SetNewKinematics(valley, p);
+  FillParticleChange(valley, p);
 
   ResetNumberOfInteractionLengthLeft();    
   return &aParticleChange;

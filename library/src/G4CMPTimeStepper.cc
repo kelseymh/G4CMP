@@ -9,6 +9,8 @@
 // 20140331  Add required process subtype code
 // 20140418  Remove explicit valley transforms, use lattice function
 // 20140429  Adjust "effective mass" and energy based on end-of-step momentum
+// 20150112  Follow renaming of "SetNewKinematics" to FillParticleChange, drop
+//	     redundant IsApplicable()
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -39,13 +41,6 @@ G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4bool G4CMPTimeStepper::IsApplicable(const G4ParticleDefinition &pd) {
-  return (&pd == G4CMPDriftElectron::Definition() ||
-	  &pd == G4CMPDriftHole::Definition());
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 G4double G4CMPTimeStepper::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 				     G4double /*prevStepSize*/,
@@ -65,10 +60,7 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
   G4ThreeVector v = theLattice->MapPtoV_el(iv,GetLocalMomentum(aTrack));
   
 #ifdef G4CMP_DEBUG
-  G4double meff = theLattice->GetElectronEffectiveMass(iv,GetLocalMomentum(aTrack))*c_squared;
-  G4cout << "TS electron = " << (v.mag()*dt_e)/m
-	 << "\nTS eKin = " << aTrack.GetStep()->GetPostStepPoint()->GetKineticEnergy()
-	 << " M_eff = " << meff << G4endl;
+  G4cout << "TS electron = " << (v.mag()*dt_e)/m << G4endl;
 #endif  
 
   return v.mag()*dt_e;
@@ -81,8 +73,8 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 
   // Adjust mass and kinetic energy using end-of-step momentum
   G4ThreeVector pfinal = aStep.GetPostStepPoint()->GetMomentum();
-  SetNewKinematics(GetValleyIndex(aTrack), pfinal);
-    
+  FillParticleChange(GetValleyIndex(aTrack), pfinal);
+
   return &aParticleChange;
 }
 

@@ -3,6 +3,7 @@
 // 20140313  Introduce multiple inheritance from G4CMPProcessUtils
 //	     Add wrapper function to compute individual time steps
 // 20140418  Remove local valley transforms; use lattice functions
+// 20150112  Drop redundant IsApplicable (identical to base version)
 
 #ifndef G4CMPTimeStepper_h
 #define G4CMPTimeStepper_h 1
@@ -15,8 +16,6 @@ class G4CMPTimeStepper : public G4CMPVDriftProcess {
 public:
   G4CMPTimeStepper();
   virtual ~G4CMPTimeStepper();
-
-  virtual G4bool IsApplicable(const G4ParticleDefinition &pd);
 
   virtual G4double 
   PostStepGetPhysicalInteractionLength(const G4Track& aTrack,

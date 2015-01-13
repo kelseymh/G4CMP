@@ -33,6 +33,7 @@
 // 20140331  Add required subtype code to constructor
 // 20140902  Add new kinematics function which takes energy as input
 // 20141231  Add function to enforce minimum step length (fraction of L0)
+// 20150112  Rename SetNewKinematics to FillParticleChange for clarity
 
 #ifndef G4CMPVDriftProcess_h
 #define G4CMPVDriftProcess_h 1
@@ -82,11 +83,11 @@ protected:
   G4double MaxMachStep(G4double Emag, G4double coeff, G4double l0) const;
 
   // Fill ParticleChange energy and mass for charge carrier of given momentum
-  void SetNewKinematics(G4int ivalley, const G4ThreeVector& p);
+  void FillParticleChange(G4int ivalley, const G4ThreeVector& p);
 
   // Fill ParticleChange energy and mass for charge carrier of given energy
-  void SetNewKinematics(G4int ivalley, G4double Ekin,
-			const G4ThreeVector& pdir);
+  void FillParticleChange(G4int ivalley, G4double Ekin,
+			  const G4ThreeVector& pdir);
 
 private:
   // hide assignment operators as private 

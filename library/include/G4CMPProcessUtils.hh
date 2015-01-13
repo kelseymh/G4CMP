@@ -12,6 +12,8 @@
 // 20140407  Add functions for phonon generation in Luke scattering
 // 20140412  Add manual configuration options
 // 20140509  Add ChoosePolarization() which uses DOS values from lattice
+// 20150112  Add GetCurrentValley() function to get valley of current track,
+//	     protect valley functions against null pointers
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -117,12 +119,12 @@ public:
   // Map charge carrier momentum to valley index
   G4int GetValleyIndex(const G4Track& track) const;
   inline G4int GetValleyIndex(const G4Track* track) const {
-    return GetValleyIndex(*track);
+    return (track ? GetValleyIndex(*track) : -1);
   }
 
   const G4RotationMatrix& GetValley(const G4Track& track) const;
   inline const G4RotationMatrix& GetValley(const G4Track* track) const {
-    return GetValley(*track); 
+    return (track ? GetValley(*track) : G4RotationMatrix::IDENTITY); 
   }
 
   // Generate random valley for charge carrier
@@ -149,6 +151,8 @@ protected:
   G4CMPValleyTrackMap* trackVmap;
 
   const G4ParticleDefinition* GetCurrentParticle() const;
+  const G4Track* GetCurrentTrack() const { return currentTrack; }
+  G4int GetCurrentValley() const { return GetValleyIndex(currentTrack); }
 
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking

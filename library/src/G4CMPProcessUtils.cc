@@ -14,6 +14,8 @@
 // 20140509  Add ChoosePolarization() which uses DOS values from lattice
 // 20141216  Set velocity "by hand" for secondary electrons
 // 20150109  Use G4CMP_SET_ELECTRON_MASS to enable dynamic mass, velocity set
+// 20150112  Add GetCurrentValley() function to get valley of current track,
+//	     allow GetValley functions to treat holes, returning -1
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -252,7 +254,8 @@ G4double G4CMPProcessUtils::MakeRecoilTheta(G4double k, G4double ks,
 // Access electron propagation direction/index
 
 G4int G4CMPProcessUtils::GetValleyIndex(const G4Track& track) const {
-  return trackVmap->GetValley(&track);
+  return (track.GetParticleDefinition() == G4CMPDriftElectron::Definition()
+	  ? trackVmap->GetValley(&track) : -1);
 }
 
 const G4RotationMatrix& 

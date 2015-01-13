@@ -30,40 +30,39 @@
 //
 // 20140407  Move angle generation to base class
 // 20150111  Add debugging output file with phonon energies
+// 20150111  Move majority of interface to new base class
 
 #ifndef G4CMPhLukeScattering_h
 #define G4CMPhLukeScattering_h 1
 
 #include "globals.hh"
-#include "G4CMPVDriftProcess.hh"
-#include <iostream>
+#include "G4CMPVLukeScattering.hh"
 
 class G4VProcess;
 
 
-class G4CMPhLukeScattering : public G4CMPVDriftProcess {
+class G4CMPhLukeScattering : public G4CMPVLukeScattering {
 public:
   G4CMPhLukeScattering(G4VProcess* stepper);
   virtual ~G4CMPhLukeScattering();
   
-  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
-  
-  // Override default applicability for phonon processes
-  virtual bool IsApplicable(const G4ParticleDefinition&);
+  //*****  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
   
 protected:
-  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
+  virtual G4ThreeVector GetWaveVector(const G4Track& aTrack) const;
+  virtual G4double GetVelocity(const G4Track& aTrack) const;
+  virtual G4double GetKineticEnergy(const G4Track& aTrack) const;
+
+  // Convert local wave-vector to global
+  virtual void MakeGlobalPhonon(G4ThreeVector& kphonon) const;
+
+  // Convert local wave-vector to global momentum
+  virtual void MakeGlobalRecoil(G4ThreeVector& krecoil) const;
 
 private:
   //hide assignment operator as private
   G4CMPhLukeScattering(G4CMPhLukeScattering&);
   G4CMPhLukeScattering& operator=(const G4CMPhLukeScattering& right);
-
-  G4VProcess* stepLimiter;
-
-#ifdef G4CMP_DEBUG
-  std::ofstream output;
-#endif
 };
 
 #endif	/* G4CMPhLukeScattering */

@@ -33,6 +33,7 @@
 // 20140509  Add run-time envvar to bias phonons
 // 20141231  Rename "minimum step" function to ComputeMinTimeStep
 // 20150111  Move envvar to G4CMPConfigManager, unify overlapping code w/eLuke
+// 20150111  Migrate most physics to new base class G4CMPVLukeScattering
 
 #include "G4CMPhLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -54,117 +55,34 @@
 // Constructor and destructor
 
 G4CMPhLukeScattering::G4CMPhLukeScattering(G4VProcess* stepper)
-  : G4CMPVDriftProcess("hLukeScattering", fLukeScattering),
-    stepLimiter(stepper) {
-#ifdef G4CMP_DEBUG
-  output.open("hLukePhononEnergies");
-#endif
-}
+  : G4CMPVLukeScattering("hLuke", G4CMPDriftHole::Definition(), stepper) {;}
 
 G4CMPhLukeScattering::~G4CMPhLukeScattering() {;}
 
 
 // Physics
 
-G4double 
-G4CMPhLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
-				      G4ForceCondition* condition) {
-  *condition = Forced;		// In order to recompute MFP after TimeStepper
-  
-  G4ThreeVector p_local = GetLocalMomentum(aTrack);
-  G4double velocity = p_local.mag() / mc_h;
-  G4double kmag = p_local.mag() / hbarc;
-  
-#ifdef G4CMP_DEBUG
-  G4cout << "hLuke v = " << velocity/m*s << " kmag = " << kmag*m << G4endl;
-#endif
-
-  if (kmag<=ksound_h) return DBL_MAX;
-  
-  // Time step corresponding to Mach number (avg. time between radiations)
-  G4double dtau = ChargeCarrierTimeStep(kmag/ksound_h, l0_h);
-  G4double mfp = dtau * velocity;
-
-#ifdef G4CMP_DEBUG  
-  G4cout << "hLuke MFP = " <<  mfp <<  G4endl;
-#endif
-
-  return mfp;
+G4double G4CMPhLukeScattering::GetVelocity(const G4Track& aTrack) const {
+  return aTrack.GetStep()->GetPostStepPoint()->GetVelocity();
 }
 
-G4VParticleChange* G4CMPhLukeScattering::PostStepDoIt(const G4Track& aTrack,
-						      const G4Step& aStep) {
-  aParticleChange.Initialize(aTrack);  
-  G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
-  
-#ifdef G4CMP_DEBUG
-  G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
-	 << postStepPoint->GetProcessDefinedStep()->GetProcessName()
-	 << G4endl;
-#endif
-  
-  // Do nothing other than re-calculate mfp when step limit reached or leaving volume
-  if (postStepPoint->GetStepStatus()==fGeomBoundary ||
-      postStepPoint->GetProcessDefinedStep()==stepLimiter) {
-    return &aParticleChange;
-  }
-  
-  G4ThreeVector p = GetLocalDirection(postStepPoint->GetMomentum());
-  G4double kmag = p.mag() / hbarc;
-
-  // Sanity check: this should have been done in MFP already
-  if (kmag <= ksound_h) return &aParticleChange;
-
-  G4double theta_phonon = MakePhononTheta(kmag, ksound_h);
-  G4double phi_phonon = G4UniformRand()*twopi;
-  G4double q = 2*(kmag*cos(theta_phonon)-ksound_h);
-
-  G4double Etrack = postStepPoint->GetKineticEnergy();
-  G4double theta_charge = MakeRecoilTheta(kmag, ksound_h, theta_phonon);
-  G4double phi_charge = fmod(pi+phi_phonon, twopi);
-
-  // Rotate hole direction vector to recoil
-  G4ThreeVector mdir = p.unit();
-  G4ThreeVector newDir = mdir;
-  newDir.rotate(mdir.orthogonal(), theta_charge);
-  newDir.rotate(mdir, phi_charge);
-
-  // Convert phonon pseudovector to real space
-  G4ThreeVector qvec = q*mdir;
-  qvec.rotate(mdir.orthogonal(), theta_phonon);
-  qvec.rotate(mdir, phi_phonon);
-  RotateToGlobalDirection(qvec);
-
-  G4double Ephonon = MakePhononEnergy(kmag, ksound_h, theta_phonon);
-#ifdef G4CMP_DEBUG
-  output << Ephonon/eV << G4endl;
-#endif
-
-  // Create real phonon to be propagated, with random polarization
-  static const G4double genLuke = G4CMPConfigManager::GetLukePhonons();
-  if (genLuke > 0. && G4UniformRand() < genLuke) {
-    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
-    aParticleChange.SetNumberOfSecondaries(1);
-    aParticleChange.AddSecondary(phonon);
-  }
-
-#ifdef G4CMP_DEBUG
-  G4cout << "\ntheta_phonon = " << theta_phonon
-	 << " phi_phonon = " << phi_phonon
-	 << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
-	 << "\nnewDir   = " << newDir
-	 << "\nEtrack = " << Etrack << " Enew = " << Etrack-Ephonon
-	 << G4endl;
-#endif
-
-  RotateToGlobalDirection(newDir);	// Put into global frame for tracks
-  aParticleChange.ProposeMomentumDirection(newDir);
-  aParticleChange.ProposeEnergy(Etrack-Ephonon);
-  aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
-  ResetNumberOfInteractionLengthLeft();
-  return &aParticleChange;
+G4ThreeVector G4CMPhLukeScattering::GetWaveVector(const G4Track& aTrack) const {
+  return aTrack.GetStep()->GetPostStepPoint()->GetMomentum() / hbarc;
 }
 
-G4bool G4CMPhLukeScattering::IsApplicable(const G4ParticleDefinition& aPD) {
-  return (&aPD==G4CMPDriftHole::Definition());
+G4double G4CMPhLukeScattering::GetKineticEnergy(const G4Track& aTrack) const {
+  return aTrack.GetStep()->GetPostStepPoint()->GetKineticEnergy();
+}
+
+// Convert local wave-vector to global
+
+void G4CMPhLukeScattering::MakeGlobalPhonon(G4ThreeVector& kphonon) const {
+  RotateToGlobalDirection(kphonon);
+}
+
+// Convert local wave-vector to global momentum
+
+void G4CMPhLukeScattering::MakeGlobalRecoil(G4ThreeVector& krecoil) const {
+  krecoil *= hbarc;
+  RotateToGlobalDirection(krecoil);
 }
