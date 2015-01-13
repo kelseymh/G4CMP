@@ -126,6 +126,8 @@ set_target_properties(qhullcpp PROPERTIES
 include_directories(${PROJECT_SOURCE_DIR}/qhull-2012.1/src)
 
 set(library_SOURCES 
+   ${PROJECT_SOURCE_DIR}/library/src/G4CMPConfigManager.cc
+   ${PROJECT_SOURCE_DIR}/library/src/G4CMPConfigMessenger.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPDriftBoundaryProcess.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPDriftElectron.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPDriftHole.cc
@@ -137,6 +139,8 @@ set(library_SOURCES
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPhLukeScattering.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPInterValleyScattering.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPLocalElectroMagField.cc
+   ${PROJECT_SOURCE_DIR}/library/src/G4CMPMeshElectricField.cc
+   ${PROJECT_SOURCE_DIR}/library/src/G4CMPMessengerBase.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPPhysics.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPPhysicsList.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPProcessUtils.cc
@@ -145,6 +149,7 @@ set(library_SOURCES
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPTriLinearInterp.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPValleyTrackMap.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPVDriftProcess.cc
+   ${PROJECT_SOURCE_DIR}/library/src/G4CMPVLukeScattering.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4LatticeLogical.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4LatticeManager.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4LatticePhysical.cc
@@ -164,5 +169,5 @@ add_library(G4cmp SHARED ${library_SOURCES})
 target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
 set_target_properties(G4cmp PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
-set(CMAKE_CXX_FLAGS "-O2 -p -g")
+#set(CMAKE_CXX_FLAGS "-O2 -p -g")
 install(TARGETS G4cmp qhullcpp qhullstatic_p DESTINATION lib)
