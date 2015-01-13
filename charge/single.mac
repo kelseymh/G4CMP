@@ -1,3 +1,4 @@
 /tracking/verbose 1
 /gun/number 1
+/run/initialize
 /run/beamOn 1

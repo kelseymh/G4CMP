@@ -17,8 +17,9 @@
 
 ### /tracking/verbose 1
 /gun/number 100
-
 /gun/position 0 0 0 m
+
+/run/initialize
 /run/beamOn 1
 /vis/ogl/printEPS
 

@@ -1,4 +1,5 @@
 /g4cmp/EpotFile Epot_iZip4_small
 /tracking/verbose 1
 /gun/number 1
+/run/initialize
 /run/beamOn 1

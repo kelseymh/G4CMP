@@ -29,6 +29,7 @@
 // $Id$
 //
 // 20140509  Add conditional code for Geant4 10.0 vs. earlier
+// 20150112  Remove RM->Initialize() call to allow macro configuration
 
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
@@ -79,10 +80,6 @@ int main(int argc,char** argv)
  visManager->Initialize();
 #endif
     
- // Initialize G4 kernel
- //
- runManager->Initialize();
-  
  // Get the pointer to the User Interface manager
  //
  G4UImanager* UImanager = G4UImanager::GetUIpointer();  

@@ -4,4 +4,5 @@
 
 /control/execute {OPEN}
 /control/execute {STYLE}
+/run/initialize
 /run/beamOn {EVTS}

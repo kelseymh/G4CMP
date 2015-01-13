@@ -1,4 +1,5 @@
 /tracking/verbose 1
 /gun/number 20
 /random/resetEngineFrom currentEvent.rndm
+/run/initialize
 /run/beamOn 1
