@@ -182,7 +182,7 @@ G4double G4CMPTriLinearInterp::GetPotential(const G4double pos[3]) const
     /* The barycentric coordinates of pos[]*/
     //vector<G4double> bary(4,0);
     G4double bary[4];
-    FindTetrahedon(&pos[0], bary);
+    FindTetrahedron(&pos[0], bary);
     
     if (TetraIdx == -1)
       return 0;
@@ -196,7 +196,7 @@ G4double G4CMPTriLinearInterp::GetPotential(const G4double pos[3]) const
 void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) const
 {
     G4double bary[4];
-    FindTetrahedon(pos, bary);
+    FindTetrahedron(pos, bary);
 
     if (TetraIdx == -1)
       for (G4int i = 0; i < 6; ++i)
@@ -216,7 +216,7 @@ void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) co
     }
 }
 
-void G4CMPTriLinearInterp::FindTetrahedon(const G4double point[4], G4double bary[4]) const
+void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bary[4]) const
 {
   const G4double maxError = 0;
   G4int minBaryIdx;
@@ -249,9 +249,9 @@ void G4CMPTriLinearInterp::FindTetrahedon(const G4double point[4], G4double bary
     TetraIdx = Neighbors[TetraIdx][minBaryIdx];
     if (TetraIdx == -1)
     {
-      G4cout << "Point outside of hull! Check your results." <<G4endl;
-      G4cout << "point[0] = " << point[0] << "; point[1] = " << point[1] 
-             << "; point[2] = " << point[2] << ";" << G4endl;
+      //G4cout << "Point outside of hull! Check your results." <<G4endl;
+      //G4cout << "point[0] = " << point[0] << "; point[1] = " << point[1] 
+      //       << "; point[2] = " << point[2] << ";" << G4endl;
       return;
     }
   }
