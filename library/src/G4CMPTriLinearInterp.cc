@@ -218,7 +218,7 @@ void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) co
 
 void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bary[4]) const
 {
-  const G4double maxError = 0;
+  const G4double maxError = -1e-16;
   G4int minBaryIdx;
   G4double bestBary[4];
   G4int bestTet = -1;
@@ -256,6 +256,9 @@ void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bar
     }
   }
 
+  /*******  I'm not sure that doing the brute force search has EVER 
+   *******  gotten a better result that just taking the best tetrahedron
+  
   G4cout << "G4CMPTriLinearInterp::FindTetrahedron: " 
          << "Targeted walk search took too long. Trying a brute force search." 
          << G4endl;
@@ -267,6 +270,7 @@ void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bar
     if (bary[0] >= maxError && bary[1] >= maxError && bary[2] >= maxError && bary[3] >= maxError)
       return;
   }
+  */
 
 
   TetraIdx = bestTet;
