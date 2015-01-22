@@ -46,6 +46,7 @@
 #include "ChargeActionInitialization.hh"
 #include "ChargeDetectorConstruction.hh"
 #include "ChargePrimaryGeneratorAction.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPPhysicsList.hh"
 #include "G4CMPStackingAction.hh"
 //#include "FET.hh"
@@ -75,6 +76,9 @@ int main(int argc,char** argv)
  runManager->SetUserAction(new G4CMPStackingAction);
  runManager->SetUserAction(new ChargePrimaryGeneratorAction);
 #endif
+
+ // Create G4CMP configuration manager to ensure macro commands exist
+ G4CMPConfigManager::GetVerboseLevel();
 
  //FET* fetsim = new FET(runManager);
 
