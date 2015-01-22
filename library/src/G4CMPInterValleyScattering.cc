@@ -8,6 +8,7 @@
 // 20140908  Allow IV scatter to change momentum by conserving energy
 // 20150109  Revert IV scattering to preserve momentum
 // 20150112  Follow renaming of "SetNewKinematics" to FillParticleChange
+// 20150122  Use verboseLevel instead of compiler flag for debugging
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -48,8 +49,10 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   //is no e-h transport either...
   if (!fMan || !fMan->DoesFieldExist()) return DBL_MAX;
   
-  G4StepPoint* stepPoint  = aTrack.GetStep()->GetPostStepPoint();
-  G4double velocity = stepPoint->GetVelocity();
+  G4ThreeVector p_local = GetLocalMomentum(aTrack);
+
+  G4int valley = GetValleyIndex(aTrack);
+  G4double velocity = theLattice->MapPtoV_el(valley, p_local).mag();
   
   G4double posVec[4] = { 4*0. };
   GetLocalPosition(aTrack, posVec);
@@ -60,18 +63,30 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
 
   G4ThreeVector fieldVector(fieldValue[3], fieldValue[4], fieldValue[5]);
 
-  // Find E-field in HV space by rotating into valley and then applying HV tansform.
-  // Also have to strip Efield units for use in MFP calculation.
-  fieldVector = theLattice->GetSqrtInvTensor() * GetValley(aTrack) * fieldVector/volt*m;
+  if (verboseLevel > 1) {
+    G4cout << "IV local position (" << posVec[0] << "," << posVec[1] << ","
+	   << posVec[2] << ")\n field " << fieldVector/volt*cm << " V/cm"
+	   << "\n magnitude " << fieldVector.mag()/volt*cm << " V/cm toward "
+	   << fieldVector.cosTheta() << " z" << G4endl;
+  }
+
+  // Find E-field in HV space: rotate into valley, then apply HV tansform.
+  // NOTE:  Separate steps to avoid matrix-matrix multiplications
+  fieldVector *= GetValley(aTrack);
+  fieldVector *= theLattice->GetSqrtInvTensor();
+  fieldVector /= volt/m;			// Strip units for MFP below
+
+  if (verboseLevel > 1) {
+    G4cout << " in HV space " << fieldVector*0.01 << " ("
+	   << fieldVector.mag()*0.01 << ") V/cm" << G4endl;
+  }
 
   // Compute mean free path per Edelweiss LTD-14 paper
   G4double E_0 = theLattice->GetIVField();
   G4double mfp = velocity / ( theLattice->GetIVRate() *
     pow((E_0*E_0 + fieldVector.mag2()), theLattice->GetIVExponent()/2.0) );
 
-#ifdef G4CMP_DEBUG
-  G4cout << "IV MFP = " << mfp/m << G4endl;
-#endif
+  if (verboseLevel > 1) G4cout << "IV MFP = " << mfp/m << G4endl;
   return mfp;
 }
 
@@ -82,11 +97,11 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
   // Do nothing when step limit reached or leaving volume
-#ifdef G4CMP_DEBUG
-  G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
-	 << postStepPoint->GetProcessDefinedStep()->GetProcessName()
-	 << G4endl;
-#endif
+  if (verboseLevel > 0) {
+    G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
+	   << postStepPoint->GetProcessDefinedStep()->GetProcessName()
+	   << G4endl;
+  }
 
   if (postStepPoint->GetStepStatus()==fGeomBoundary) {
     return &aParticleChange;
@@ -98,9 +113,6 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   // picking a new valley at random if IV-scattering process was triggered
   int valley = ChooseValley();
   trackVmap->SetValley(aTrack, valley);
-  G4CMPFieldManager* fMan =
-    dynamic_cast<G4CMPFieldManager*>(aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager());
-  fMan->SetElectronValleyForTrack(valley);
 
   // Adjust track kinematics for new valley
   FillParticleChange(valley, p);

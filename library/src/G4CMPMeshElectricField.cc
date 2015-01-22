@@ -5,8 +5,12 @@
 // points in the envelope of the mesh.  The input file format is fixed:
 // each line consists of four floating-point values, x, y and z in meters,
 // and voltage in volts.
+//
+// 20150122  Use verboseLevel instead of compiler flag for debugging; move
+//	     vector_comp into class (static).
 
 #include "G4CMPMeshElectricField.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4SystemOfUnits.hh"
 #include <vector>
 #include <fstream>
@@ -33,15 +37,17 @@ G4CMPMeshElectricField& G4CMPMeshElectricField::operator=(const G4CMPMeshElectri
 
 
 void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
-#ifdef G4CMP_DEBUG
-  G4cout << "G4CMPMeshElectricField::Constructor: Creating Electric Field " 
-	 << EpotFileName << G4endl;
-#endif
+  if (G4CMPConfigManager::GetVerboseLevel() > 0) {
+    G4cout << "G4CMPMeshElectricField::Constructor: Creating Electric Field " 
+	   << EpotFileName << G4endl;
+  }
 
   vector<vector<G4double> > tempX;
 
   vector<G4double> temp(4, 0);
   G4double x,y,z,v;
+
+  G4double vmin=99999., vmax=-99999.;
 
   std::ifstream epotFile(EpotFileName);
   while (epotFile.good() && !epotFile.eof())
@@ -52,10 +58,18 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
     temp[2] = z*m;
     temp[3] = v*volt;
     tempX.push_back(temp);
+
+    if (temp[3]<vmin) vmin = temp[3];
+    if (temp[3]>vmax) vmax = temp[3];
   }
   epotFile.close();
 
-  std::sort(tempX.begin(),tempX.end(), CDMS_Efield::vector_comp);
+  if (G4CMPConfigManager::GetVerboseLevel() > 1) {
+    G4cout << " Voltage from " << vmin/volt << " to " << vmax/volt << " V"
+	   << G4endl;
+  }
+
+  std::sort(tempX.begin(),tempX.end(), vector_comp);
 
   vector<vector<G4double> > X(tempX.size(),vector<G4double>(3,0));
   vector<G4double> V(tempX.size(),0);
@@ -83,8 +97,8 @@ G4double G4CMPMeshElectricField::GetPotential(const G4double Point[4]) const {
 }
 
 
-G4bool CDMS_Efield::vector_comp(const vector<G4double>& p1,
-				const vector<G4double>& p2) {
+G4bool G4CMPMeshElectricField::vector_comp(const vector<G4double>& p1,
+					   const vector<G4double>& p2) {
   if (p1[0] < p2[0])
     return true;
   else if (p2[0] < p1[0])

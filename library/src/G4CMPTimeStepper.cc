@@ -11,6 +11,7 @@
 // 20140429  Adjust "effective mass" and energy based on end-of-step momentum
 // 20150112  Follow renaming of "SetNewKinematics" to FillParticleChange, drop
 //	     redundant IsApplicable()
+// 20150122  Use verboseLevel instead of compiler flag for debugging
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -50,19 +51,15 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
   // Only drifting electrons have special treatment
   if (aTrack.GetParticleDefinition() != G4CMPDriftElectron::Definition()) {
     G4double v = aTrack.GetStep()->GetPostStepPoint()->GetVelocity();
-#ifdef G4CMP_DEBUG
-    G4cout << "TS hole = " << (v*dt_h)/m << G4endl;
-#endif
+
+    if (verboseLevel > 1) G4cout << "TS hole = " << (v*dt_h)/m << G4endl;
     return v*dt_h;
   }
 
   G4int iv = GetValleyIndex(aTrack);
   G4ThreeVector v = theLattice->MapPtoV_el(iv,GetLocalMomentum(aTrack));
   
-#ifdef G4CMP_DEBUG
-  G4cout << "TS electron = " << (v.mag()*dt_e)/m << G4endl;
-#endif  
-
+  if (verboseLevel>1) G4cout << "TS electron = " << (v.mag()*dt_e)/m << G4endl;
   return v.mag()*dt_e;
 }
 

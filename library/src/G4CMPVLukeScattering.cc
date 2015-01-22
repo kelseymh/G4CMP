@@ -29,6 +29,7 @@
 // $Id$
 //
 // 20150111  New base class for both electron and hole Luke processes
+// 20150122  Use verboseLevel instead of compiler flag for debugging
 
 #include "G4CMPVLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -107,9 +108,10 @@ G4CMPVLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double velocity = GetVelocity(aTrack);
   G4double kmag = GetWaveNumber(aTrack);
   
-#ifdef G4CMP_DEBUG
-  G4cout << shortName << " v = " << velocity/m*s << " kmag = " << kmag*m << G4endl;
-#endif
+  if (verboseLevel > 1) {
+    G4cout << shortName << " v = " << velocity/m*s << " kmag = " << kmag*m
+	   << G4endl;
+  }
 
   if (kmag<=theKsound) return DBL_MAX;
   
@@ -117,9 +119,9 @@ G4CMPVLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double dtau = ChargeCarrierTimeStep(kmag/theKsound, theL0);
   G4double mfp = dtau * velocity;
 
-#ifdef G4CMP_DEBUG  
-  G4cout << shortName << " MFP = " <<  mfp <<  G4endl;
-#endif
+  if (verboseLevel > 1) {
+    G4cout << shortName << " MFP = " <<  mfp <<  G4endl;
+  }
 
   return mfp;
 }
@@ -132,11 +134,11 @@ G4VParticleChange* G4CMPVLukeScattering::PostStepDoIt(const G4Track& aTrack,
   
   // Do nothing other than re-calculate mfp when step limit reached or leaving
   // volume
-#ifdef G4CMP_DEBUG
-  G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
-	 << postStepPoint->GetProcessDefinedStep()->GetProcessName()
-	 << G4endl;
-#endif
+  if (verboseLevel > 1) {
+    G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
+	   << postStepPoint->GetProcessDefinedStep()->GetProcessName()
+	   << G4endl;
+  }
 
   // Do nothing other than re-calculate mfp when step limit reached or leaving volume
   if (postStepPoint->GetStepStatus()==fGeomBoundary ||
@@ -150,13 +152,13 @@ G4VParticleChange* G4CMPVLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // Sanity check: this should have been done in MFP already
   if (kmag <= theKsound) return &aParticleChange;
 
-#ifdef G4CMP_DEBUG
-  G4cout << "p (post-step) = " << postStepPoint->GetMomentum()
-	 << "\np_mag = " << postStepPoint->GetMomentum().mag()
-	 << "\nktrk = " << ktrk
-	 << "\nkmag = " << kmag << " k/ks = " << kmag/theKsound
-	 << "\nacos(ks/k) = " << acos(theKsound/kmag) << G4endl;
-#endif
+  if (verboseLevel > 1) {
+    G4cout << "p (post-step) = " << postStepPoint->GetMomentum()
+	   << "\np_mag = " << postStepPoint->GetMomentum().mag()
+	   << "\nktrk = " << ktrk
+	   << "\nkmag = " << kmag << " k/ks = " << kmag/theKsound
+	   << "\nacos(ks/k) = " << acos(theKsound/kmag) << G4endl;
+  }
 
   G4double theta_phonon = MakePhononTheta(kmag, theKsound);
   G4double phi_phonon   = G4UniformRand()*twopi;
@@ -184,12 +186,14 @@ G4VParticleChange* G4CMPVLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // Get recoil wavevector, convert to new momentum
   G4ThreeVector k_recoil = ktrk - qvec;
 
-#ifdef G4CMP_DEBUG
-  G4cout << "theta_phonon = " << theta_phonon << " phi_phonon = " << phi_phonon
-	 << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
-	 << "\nk_recoil = " << k_recoil << "\nk_recoil-mag = " << k_recoil.mag()
-	 << G4endl;
-#endif
+  if (verboseLevel > 1) {
+    G4cout << "theta_phonon = " << theta_phonon
+	   << " phi_phonon = " << phi_phonon
+	   << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
+	   << "\nk_recoil = " << k_recoil
+	   << "\nk_recoil-mag = " << k_recoil.mag()
+	   << G4endl;
+  }
 
   // Create real phonon to be propagated, with random polarization
   static const G4double genLuke = G4CMPConfigManager::GetLukePhonons();

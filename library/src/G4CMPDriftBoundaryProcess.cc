@@ -2,6 +2,7 @@
 //
 // 20140331  Inherit from G4CMPVDriftProcess to get subtype enforcement
 // 20141029  Get output hits file from configuration manager
+// 20150122  Use verboseLevel instead of compiler flag for debugging
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
@@ -19,11 +20,7 @@
 G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess()
   : G4CMPVDriftProcess("DriftBoundaryProcess", fChargeBoundary),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()) {
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) {     
-    G4cout << GetProcessName() << " is created "<< G4endl;
-  }
-#endif
+  if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
 }
 
 G4CMPDriftBoundaryProcess::~G4CMPDriftBoundaryProcess() { 
@@ -50,18 +47,19 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
   }
 
-#ifdef G4CMP_DEBUG  
-  G4cout << "G4CMPDriftBoundaryProcess::PostStepDoIt" << G4endl;
-#endif
+  if (verboseLevel) {
+    G4cout << "G4CMPDriftBoundaryProcess::PostStepDoIt" << G4endl;
+  }
 
   aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy());
   aParticleChange.ProposeTrackStatus(fStopAndKill);  
 
   if (!file.is_open()) {
-#ifdef G4CMP_DEBUG
-    G4cout << " opening hits file " << G4CMPConfigManager::GetHitOutput()
-	   << G4endl;
-#endif
+    if (verboseLevel) {
+      G4cout << " opening hits file " << G4CMPConfigManager::GetHitOutput()
+	     << G4endl;
+    }
+
     file.open(G4CMPConfigManager::GetHitOutput());
   }
 

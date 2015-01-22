@@ -62,10 +62,10 @@ G4CMPVDriftProcess::G4CMPVDriftProcess(const G4String& processName,
     velLong(330*m/s), mc_e(electron_mass_c2/c_squared), l0_e(1*nm), 
     ksound_e(velLong*mc_e/hbar_Planck), mc_h(mc_e), l0_h(l0_e),
     ksound_h(ksound_e) {
+  verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   SetProcessSubType(stype);
-#ifdef G4CMP_DEBUG
-  G4cout << GetProcessName() << " is created " << G4endl;
-#endif
+
+  if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
 }
 
 G4CMPVDriftProcess::~G4CMPVDriftProcess() {;}
@@ -127,10 +127,10 @@ PostStepGetPhysicalInteractionLength(const G4Track& track,
       (track.GetParticleDefinition()==G4CMPDriftElectron::Definition()
        ? l0_e : l0_h);
 
-#ifdef G4CMP_DEBUG
-    G4cout << GetProcessName() << "::PostStepGPIL: minLength " << minLength
-	   << " trueLength " << trueLength << G4endl;
-#endif
+    if (verboseLevel > 1) {
+      G4cout << GetProcessName() << "::PostStepGPIL: minLength " << minLength
+	     << " trueLength " << trueLength << G4endl;
+    }
 
     return minLength<trueLength ? trueLength : minLength;
   }
@@ -181,11 +181,11 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
     G4double mass = theLattice->GetElectronEffectiveMass(ivalley, p_local);
     G4double velocity = theLattice->MapPtoV_el(ivalley, p_local).mag();
     
-#ifdef G4CMP_DEBUG
-    G4cout << GetProcessName() << "::FillParticleChange valley " << ivalley
-	   << " energy " << Ekin << "\n p " << p
-	   << " mass " << mass*c_squared << G4endl;
-#endif
+    if (verboseLevel > 1) {
+      G4cout << GetProcessName() << "::FillParticleChange valley " << ivalley
+	     << " energy " << Ekin << "\n p " << p
+	     << " mass " << mass*c_squared << G4endl;
+    }
     
     aParticleChange.ProposeMass(mass*c_squared);		// GEANT4 units
     aParticleChange.ProposeVelocity(velocity);

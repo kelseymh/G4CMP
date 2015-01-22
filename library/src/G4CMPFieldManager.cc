@@ -5,8 +5,10 @@
 // 20140329  Pass G4CMP field pointer, which handles local/global transform
 // 20140331  Use G4CMPEqEMField for everything, now handles holes; don't
 //	     need lattice locally; get physical lattice track by track
+// 20150122  Use verboseLevel instead of compiler flag for debugging
 
 #include "G4CMPFieldManager.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPEqEMField.hh"
 #include "G4CMPLocalElectroMagField.hh"
@@ -70,10 +72,10 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
     const G4ThreeVector& trans  = aTrack->GetTouchable()->GetTranslation();
     G4AffineTransform localToGlobal(rot, trans);
 
-#ifdef G4CMP_DEBUG
-    G4cout << "G4CMPFieldManager::ConfigureForTrack with translation "
-	   << trans << " rotation " << *rot << G4endl;
-#endif
+    if (G4CMPConfigManager::GetVerboseLevel() > 1) {
+      G4cout << "G4CMPFieldManager::ConfigureForTrack with translation "
+	     << trans << " rotation " << *rot << G4endl;
+    }
 
     myDetectorField->SetTransforms(localToGlobal);
     theEqMotion->SetTransforms(localToGlobal);
