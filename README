@@ -58,17 +58,17 @@ default), then G4CMP_EPOT_FILE specifies the name of the mesh electric field
 field to be loaded for the g4cmpCharge test job.  The default name is
 "Epot_iZip4_small", found in the charge/ directory.
 
-For developers, there is a G4CMP_DEBUG environment variable which may be set
-(e.g., setenv G4CMP_DEBUG 1) before building the libraries.  This variable
-will turn on some additional diagnostic output which may be of interest.
+For developers, there is a preprocessor flag (make G4CMP_DEBUG=1) which may
+be set before building the libraries.  This variable will turn on some
+additional diagnostic output files which may be of interest.
 
-For developers, there is a environment and Make variable,
-G4CMP_SET_ELECTRON_MASS, to enable compilation of code to set step-by-step
-dynamical effective mass, kinetic energy and velocity for electrons.  This
-should allow end users to query G4Track or G4Step directly and obtain the
-true kinematical quantities for the electron in the lattice.  However, this
-operation is currently inconsistent with GEANT4, due to an issue in
-G4Transportation.cc, and results in non-physical electron drift speeds.
+For developers, there is a preprocessor flag (make G4CMP_SET_ELECTRON_MASS=1)
+to enable compilation of code to set step-by-step dynamical effective mass,
+kinetic energy and velocity for electrons.  This should allow end users to
+query G4Track or G4Step directly and obtain the true kinematical quantities
+for the electron in the lattice.  However, this operation is currently
+inconsistent with GEANT4, due to an issue in G4Transportation.cc, and
+results in non-physical electron drift speeds.
 
 
 Building the Package
