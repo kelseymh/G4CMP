@@ -32,7 +32,7 @@ private:
 
   void BuildTetraMesh();	// Builds mesh from pre-initialized 'X' array
   
-  void FindTetrahedon(const G4double point[4], G4double bary[4]) const;
+  void FindTetrahedron(const G4double point[4], G4double bary[4]) const;
   G4int FindPointID(const std::vector<G4double>& point, const G4int id) const;
   
   void Cart2Bary(const G4double point[4], G4double bary[4]) const;
