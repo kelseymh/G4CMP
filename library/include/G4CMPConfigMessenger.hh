@@ -11,6 +11,7 @@
 // 20141029  Add command to set output e/h positions file
 // 20141231  Add command to set scale (relative to l0) for minimum steps
 // 20150106  Add command to toggle generating Luke phonons
+// 20150122  Add command to rescale Epot file voltage by some factor
 
 #include "G4UImessenger.hh"
 
@@ -47,6 +48,7 @@ private:
   G4UIcmdWithADoubleAndUnit* voltageCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makeLukeCmd;
+  G4UIcmdWithADouble* escaleCmd;
   G4UIcmdWithAString* fileCmd;
   G4UIcmdWithAString* dirCmd;
   G4UIcmdWithAString* hitsCmd;

@@ -37,9 +37,14 @@ G4CMPMeshElectricField& G4CMPMeshElectricField::operator=(const G4CMPMeshElectri
 
 
 void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
+  G4double VScale = G4CMPConfigManager::GetEpotScale();
+
   if (G4CMPConfigManager::GetVerboseLevel() > 0) {
     G4cout << "G4CMPMeshElectricField::Constructor: Creating Electric Field " 
-	   << EpotFileName << G4endl;
+	   << EpotFileName;
+
+    if (VScale != 1.) G4cout << " rescaled by " << VScale;
+    G4cout << G4endl;
   }
 
   vector<vector<G4double> > tempX;
@@ -56,7 +61,7 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
     temp[0] = x*m;
     temp[1] = y*m;
     temp[2] = z*m;
-    temp[3] = v*volt;
+    temp[3] = v*volt * VScale;
     tempX.push_back(temp);
 
     if (temp[3]<vmin) vmin = temp[3];

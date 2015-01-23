@@ -7,6 +7,7 @@
 // 20140904  Michael Kelsey
 // 20141029  Add command to set output e/h positions file
 // 20150106  Add command to toggle generate Luke phonons
+// 20150122  Add command to rescale Epot file voltage by some factor
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -23,7 +24,7 @@
 
 G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : theManager(mgr), localCmdDir(false), cmdDir(0), verboseCmd(0),
-    voltageCmd(0), fileCmd(0), dirCmd(0), hitsCmd(0) {
+    voltageCmd(0), escaleCmd(0), fileCmd(0), dirCmd(0), hitsCmd(0) {
   CreateDirectory("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library");
 
@@ -39,6 +40,9 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   makeLukeCmd = CreateCommand<G4UIcmdWithADouble>("produceLukePhonons",
 				  "Set rate of production of Luke phonons");
+
+  escaleCmd = CreateCommand<G4UIcmdWithADouble>("scaleEpot",
+		"Set a scale factor for voltages in Epot electric field file");
 
   fileCmd = CreateCommand<G4UIcmdWithAString>("EpotFile",
 			      "Set filename for non-uniform electric field");
@@ -57,6 +61,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete voltageCmd; voltageCmd=0;
   delete minstepCmd; minstepCmd=0;
   delete makeLukeCmd; makeLukeCmd=0;
+  delete escaleCmd; escaleCmd=0;
   delete fileCmd; fileCmd=0;
   delete dirCmd; dirCmd=0;
   delete hitsCmd; hitsCmd=0;
@@ -95,6 +100,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == voltageCmd) theManager->SetVoltage(voltageCmd->GetNewDoubleValue(value));
   if (cmd == minstepCmd) theManager->SetMinStepScale(StoD(value));
   if (cmd == makeLukeCmd) theManager->SetLukePhonons(StoD(value));
+  if (cmd == escaleCmd) theManager->SetEpotScale(escaleCmd->GetNewDoubleValue(value));
   if (cmd == fileCmd) theManager->SetEpotFile(value);
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
   if (cmd == hitsCmd) theManager->SetHitOutput(value);
