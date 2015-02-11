@@ -164,10 +164,23 @@ set(library_SOURCES
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononTransSlow.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4VPhononProcess.cc
    )
-    
+
+set(crystal_SETTINGS
+    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/config.txt
+    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/FT.ssv
+    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/FTVec.ssv
+    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/L.ssv
+    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/LVec.ssv
+    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/ST.ssv
+    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/STVec.ssv
+    )
+
 add_library(G4cmp SHARED ${library_SOURCES})
 target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
 set_target_properties(G4cmp PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
-#set(CMAKE_CXX_FLAGS "-O2 -p -g")
+set(CMAKE_CXX_FLAGS "-O2")
 install(TARGETS G4cmp qhullcpp qhullstatic_p DESTINATION lib)
+install(FILES g4cmp_env.sh g4cmp_env.csh G4CMPOrdParamTable.txt
+        DESTINATION . COMPONENT config)
+install(FILES ${crystal_SETTINGS} DESTINATION CrystalMaps/Ge COMPONENT config)
