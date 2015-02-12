@@ -18,7 +18,7 @@
 
 
 G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess()
-  : G4CMPVDriftProcess("DriftBoundaryProcess", fChargeBoundary),
+  : G4CMPVDriftProcess("G4CMPDriftBoundaryProcess", fChargeBoundary),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()) {
   if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
 }

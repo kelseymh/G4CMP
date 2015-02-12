@@ -30,7 +30,7 @@
 #include "math.h"
 
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()
-  : G4CMPVDriftProcess("InterValleyScattering", fInterValleyScattering) {;}
+  : G4CMPVDriftProcess("G4CMPInterValleyScattering", fInterValleyScattering) {;}
 
 G4CMPInterValleyScattering::~G4CMPInterValleyScattering() {;}
 

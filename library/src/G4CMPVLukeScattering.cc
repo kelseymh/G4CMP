@@ -54,7 +54,7 @@
 G4CMPVLukeScattering::G4CMPVLukeScattering(const G4String& name,
 					   const G4ParticleDefinition* carrier,
 					   G4VProcess* stepper)
-  : G4CMPVDriftProcess(name+"Scattering", fLukeScattering),
+  : G4CMPVDriftProcess("G4CMP"+name+"Scattering", fLukeScattering),
     shortName(name), stepLimiter(stepper), theCarrier(carrier),
     theKsound(ksound_e), theL0(l0_e) {
 #ifdef G4CMP_DEBUG
