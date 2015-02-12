@@ -30,6 +30,7 @@
 //
 // 20140313  Introduce multiple inheritance from G4CMPProcessUtils
 // 20140331  Inherit from G4CMPVDriftProcess to get subtype enforcement
+// 20150212  Remove file IO. Use sensitive detectors instead
 
 #ifndef G4CMPDriftBoundaryProcess_h
 #define G4CMPDriftBoundaryProcess_h 1
@@ -53,7 +54,6 @@ protected:
 private:
   G4CMPDriftBoundaryProcess(G4CMPDriftBoundaryProcess&);
   G4CMPDriftBoundaryProcess& operator=(const G4CMPDriftBoundaryProcess& right);
-  std::ofstream file;
 
   G4double kCarTolerance;
 };

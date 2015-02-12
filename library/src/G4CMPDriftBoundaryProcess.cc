@@ -3,6 +3,7 @@
 // 20140331  Inherit from G4CMPVDriftProcess to get subtype enforcement
 // 20141029  Get output hits file from configuration manager
 // 20150122  Use verboseLevel instead of compiler flag for debugging
+// 20150212  Remove file IO. Use sensitive detectors instead
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
@@ -14,18 +15,13 @@
 #include "G4GeometryTolerance.hh"
 #include "G4SystemOfUnits.hh"
 
-#include <fstream>
-
-
 G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess()
   : G4CMPVDriftProcess("G4CMPDriftBoundaryProcess", fChargeBoundary),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()) {
   if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
 }
 
-G4CMPDriftBoundaryProcess::~G4CMPDriftBoundaryProcess() { 
-  file.close();
-}
+G4CMPDriftBoundaryProcess::~G4CMPDriftBoundaryProcess() {}
 
 
 G4double 
@@ -42,7 +38,8 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
 
-// do nothing but return if the current step is not limited by a volume boundar
+  // do nothing but return if the current step is not limited by a volume
+  // boundary
   if (postStepPoint->GetStepStatus()!=fGeomBoundary) { 
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
   }
@@ -54,21 +51,6 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy());
   aParticleChange.ProposeTrackStatus(fStopAndKill);  
 
-  if (!file.is_open()) {
-    if (verboseLevel) {
-      G4cout << " opening hits file " << G4CMPConfigManager::GetHitOutput()
-	     << G4endl;
-    }
-
-    file.open(G4CMPConfigManager::GetHitOutput());
-  }
-
-  file << aTrack.GetDefinition()->GetPDGCharge() << " "
-       << aTrack.GetPosition().getX()/m << " "
-       << aTrack.GetPosition().getY()/m << " "
-       << aTrack.GetPosition().getZ()/m << " "
-       << aTrack.GetGlobalTime()/ns 
-       << G4endl;
   return &aParticleChange;
 }
 
