@@ -181,6 +181,6 @@ set_target_properties(G4cmp PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 set(CMAKE_CXX_FLAGS "-O2")
 install(TARGETS G4cmp qhullcpp qhullstatic_p DESTINATION lib)
-install(FILES g4cmp_env.sh g4cmp_env.csh G4CMPOrdParamTable.txt
+install(FILES ../g4cmp_env.sh ../g4cmp_env.csh ../G4CMPOrdParamTable.txt
         DESTINATION . COMPONENT config)
 install(FILES ${crystal_SETTINGS} DESTINATION CrystalMaps/Ge COMPONENT config)
