@@ -9,8 +9,6 @@
 #include "G4Navigator.hh"
 #include "G4ios.hh"
 
-using namespace std;
-
 G4CMPElectrodeHitsCollection* G4CMPElectrodeSensitivity::hitsCollection = NULL;
 
 G4CMPElectrodeSensitivity::G4CMPElectrodeSensitivity(G4String name)
@@ -19,17 +17,13 @@ G4CMPElectrodeSensitivity::G4CMPElectrodeSensitivity(G4String name)
   G4String HCname;
   collectionName.insert(HCname="G4CMPElectrodeHit");
   HCID = -1;
-  //writer.open("caustic.ssv",fstream::in | fstream::out | fstream::ate);
-  writer.open("e-h_data",fstream::in | fstream::out | fstream::ate);
-  writer2.open("timing.ssv", fstream::in | fstream::out | fstream::ate);
 }
 
-G4CMPElectrodeSensitivity::~G4CMPElectrodeSensitivity(){
-  writer.close();
-  writer2.close();
-}
+G4CMPElectrodeSensitivity::~G4CMPElectrodeSensitivity()
+{;}
 
-G4CMPElectrodeHitsCollection* G4CMPElectrodeSensitivity::getHitsCollection(){
+G4CMPElectrodeHitsCollection* G4CMPElectrodeSensitivity::getHitsCollection()
+{
   return hitsCollection;
 }
 
@@ -38,41 +32,36 @@ void G4CMPElectrodeSensitivity::Initialize(G4HCofThisEvent*HCE)
   hitsCollection = new G4CMPElectrodeHitsCollection
                    (SensitiveDetectorName,collectionName[0]);
   if(HCID<0)
-  { HCID = G4SDManager::GetSDMpointer()->GetCollectionID(hitsCollection); }
+    HCID = G4SDManager::GetSDMpointer()->GetCollectionID(hitsCollection);
   HCE->AddHitsCollection(HCID,hitsCollection);
 }
 
 G4bool G4CMPElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory* /*ROhist*/)
 {
   G4double edp = aStep->GetNonIonizingEnergyDeposit();
-  //G4double edp = aStep->GetTotalEnergyDeposit();
-  if(edp==0.) return true;
-  //G4cout << "Energy of Hit = " << aStep->GetTotalEnergyDeposit() << G4endl;
-  //G4cout << "NonIonizingEnergy of Hit = " << edp/eV << G4endl;
+  if(edp) {
+    G4Track* track = aStep->GetTrack();
+    G4StepPoint* postStepPoint = aStep->GetPostStepPoint();
 
-  G4double charge = aStep->GetTrack()->GetParticleDefinition()->GetPDGCharge(); //Added by Rob for FETSim 9/27/12
-  G4StepPoint* preStepPoint = aStep->GetPreStepPoint();
-  G4StepPoint* postStepPoint = aStep->GetPostStepPoint();
-  G4TouchableHistory* theTouchable
-    = (G4TouchableHistory*)(preStepPoint->GetTouchable());
-  G4ThreeVector worldPos = postStepPoint->GetPosition();
-  G4ThreeVector localPos
-    = theTouchable->GetHistory()->GetTopTransform().TransformPoint(worldPos);
+    G4int trackID = track->GetTrackID();
+    G4double charge = track->GetParticleDefinition()->GetPDGCharge();
+    G4double startE = track->GetVertexKineticEnergy();
+    G4double time = track->GetGlobalTime();
+    G4ThreeVector startPosition = track->GetVertexPosition();
+    G4ThreeVector finalPosition = postStepPoint->GetPosition();
 
-  G4CMPElectrodeHit* aHit = new G4CMPElectrodeHit();
-  aHit->SetTime(postStepPoint->GetGlobalTime());
-  aHit->SetEDep(edp);
-  aHit->SetWorldPos(worldPos);
-  aHit->SetLocalPos(localPos);
-  aHit->SetCharge(charge); //Added by Rob for FETSim 9/27/12
+    G4CMPElectrodeHit* aHit = new G4CMPElectrodeHit();
+    aHit->SetTrackID(trackID);
+    aHit->SetCharge(charge);
+    aHit->SetStartEnergy(startE);
+    aHit->SetTrackTime(time);
+    aHit->SetEnergyDeposit(edp);
+    aHit->SetStartPosition(startPosition);
+    aHit->SetFinalPosition(finalPosition);
 
-  hitsCollection->insert(aHit);
+    hitsCollection->insert(aHit);
+  }
   
-  //G4cout << "End of a track" <<G4endl;
-  writer<<charge/eplus<<","<<worldPos.getX()/m<<","<<worldPos.getY()/m<<","<<worldPos.getZ()/m<<", "<<edp/eV<< ", " << postStepPoint->GetGlobalTime()/ns << G4endl;
-  //writer2<<"\n"<<postStepPoint->GetGlobalTime()/ns<<" "<<aHit->GetEDep()/eV << " " << postStepPoint->GetVelocity()/m*s;
-  //writer2<<"\n"<<postStepPoint->GetGlobalTime()/ns<<" "<< aStep->GetPostStepPoint()->GetKineticEnergy()/eV;
-
   return true;
 }
 

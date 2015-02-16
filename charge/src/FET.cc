@@ -274,7 +274,7 @@ G4double FET::CalculateChargeSupressionFactor(const G4Run* run)
         pHitColl = static_cast<G4CMPElectrodeHitsCollection*>(pHCofEvent->GetHC(collectionID));
         for(G4int k=0; k<pHitColl->entries(); ++k)
         {
-            hitEnergy = (static_cast<G4CMPElectrodeHit*>(pHitColl->GetVector()->at(k)))->GetEDep();
+            hitEnergy = (static_cast<G4CMPElectrodeHit*>(pHitColl->GetVector()->at(k)))->GetEnergyDeposit();
             eventEnergy[i] += hitEnergy;
             totalEnergy += hitEnergy;
         }
@@ -381,19 +381,19 @@ void FET::CalculateTrace(const G4Run* run)
                 hit = *(static_cast<G4CMPElectrodeHit*>(pHitColl->GetVector()->at(j)));
                 if(hit.GetCharge() < 0)
                 {
-                    positionVec = hit.GetWorldPos();
+                    positionVec = hit.GetFinalPosition();
                     for(G4int k=0; k<3; ++k)
                         position[k] = positionVec[k];
                     elecPos.push_back(position);
-                    elecT.push_back(hit.GetTime());
+                    elecT.push_back(hit.GetTrackTime());
                 }
                 else
                 {
-                    positionVec = hit.GetWorldPos();
+                    positionVec = hit.GetFinalPosition();
                     for(G4int k=0; k<3; ++k)
                         position[k] = positionVec[k];
                     holePos.push_back(position);
-                    holeT.push_back(hit.GetTime());
+                    holeT.push_back(hit.GetTrackTime());
                 }
             }
         }

@@ -28,23 +28,35 @@ class G4CMPElectrodeHit : public G4VHit
       virtual void Print();
 
   private:
-      G4double time;
-      G4double edep;
-      G4double charge;    //Need charge for FETSim 9/27/12
-      G4ThreeVector localPos;
-      G4ThreeVector worldPos;
+    G4int trackID;
+    G4double charge;
+    G4double trackTime;
+    G4double startE;
+    G4double EDep;
+    G4ThreeVector startPos;
+    G4ThreeVector finalPos;
 
   public:
-      inline void SetTime(G4double t) { time = t; }
-      inline G4double GetTime() const { return time; }
-      inline void SetEDep(G4double e) { edep = e; }
-      inline G4double GetEDep() const { return edep; }
-      inline void SetLocalPos(G4ThreeVector xyz) { localPos = xyz; }
-      inline G4ThreeVector GetLocalPos() const { return localPos; }
-      inline void SetWorldPos(G4ThreeVector xyz) { worldPos = xyz; }
-      inline G4ThreeVector GetWorldPos() const { return worldPos; }
-      inline void SetCharge(G4double c) { charge = c; } //Added by Rob for FETSim 9/27/12
-      inline G4double GetCharge() { return charge; } //Added by Rob for FETSim 9/27/12
+    inline void SetTrackID(G4int id) { trackID = id; }
+    inline G4int GetTrackID() const { return trackID; }
+
+    inline void SetCharge(G4int q) { charge = q; }
+    inline G4double GetCharge() const { return charge; }
+
+    inline void SetStartEnergy(G4double E) { EDep = E; }
+    inline G4double GetStartEnergy() const { return EDep; }
+
+    inline void SetTrackTime(G4double t) { trackTime = t; }
+    inline G4double GetTrackTime() const { return trackTime; }
+
+    inline void SetEnergyDeposit(G4double E) { EDep = E; }
+    inline G4double GetEnergyDeposit() const { return EDep; }
+
+    inline void SetStartPosition(G4ThreeVector xyz) { startPos = xyz; }
+    inline G4ThreeVector GetStartPosition() const { return startPos; }
+
+    inline void SetFinalPosition(G4ThreeVector xyz) { finalPos = xyz; }
+    inline G4ThreeVector GetFinalPosition() const { return finalPos; }
 };
 
 typedef G4THitsCollection<G4CMPElectrodeHit> G4CMPElectrodeHitsCollection;

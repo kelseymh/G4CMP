@@ -15,28 +15,31 @@
 G4Allocator<G4CMPElectrodeHit> G4CMPElectrodeHitAllocator;
 
 G4CMPElectrodeHit::G4CMPElectrodeHit()
-{
-  time = 0.;
-  edep = 0.;
-}
+{;}
 
 G4CMPElectrodeHit::~G4CMPElectrodeHit()
 {;}
 
 G4CMPElectrodeHit::G4CMPElectrodeHit(const G4CMPElectrodeHit &right)
 : G4VHit() {
-  time = right.time;
-  edep = right.edep;
-  worldPos = right.worldPos;
-  localPos = right.localPos;
+  trackID = right.trackID;
+  charge = right.charge;
+  startE = right.startE;
+  trackTime = right.trackTime;
+  EDep = right.EDep;
+  startPos = right.startPos;
+  finalPos = right.finalPos;
 }
 
 const G4CMPElectrodeHit& G4CMPElectrodeHit::operator=(const G4CMPElectrodeHit &right)
 {
-  time = right.time;
-  edep = right.edep;
-  worldPos = right.worldPos;
-  localPos = right.localPos;
+  trackID = right.trackID;
+  charge = right.charge;
+  startE = right.startE;
+  trackTime = right.trackTime;
+  EDep = right.EDep;
+  startPos = right.startPos;
+  finalPos = right.finalPos;
   return *this;
 }
 
@@ -50,13 +53,13 @@ void G4CMPElectrodeHit::Draw()
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if(pVVisManager)
   {
-    G4Circle circle(worldPos);
+    G4Circle circle(finalPos);
     circle.SetScreenSize(15);
     circle.SetFillStyle(G4Circle::filled);
     G4Colour colour(0.65,0.65,0.);
     G4VisAttributes attribs(colour);
-    attribs.SetStartTime(time);
-    attribs.SetEndTime(time+1*ms);
+    attribs.SetStartTime(trackTime);
+    attribs.SetEndTime(trackTime+1*ms);
     circle.SetVisAttributes(attribs);
     pVVisManager->Draw(circle);
   }
@@ -91,21 +94,21 @@ std::vector<G4AttValue>* G4CMPElectrodeHit::CreateAttValues() const
   values->push_back(G4AttValue("HitType","G4CMPElectrodeHit",""));
 
   values->push_back
-    (G4AttValue("Time",G4BestUnit(time,"Time"),""));
+    (G4AttValue("Time",G4BestUnit(trackTime,"Time"),""));
 
   values->push_back
-    (G4AttValue("EDep",G4BestUnit(edep,"Energy"),""));
+    (G4AttValue("EDep",G4BestUnit(EDep,"Energy"),""));
 
   values->push_back
-    (G4AttValue("Pos",G4BestUnit(worldPos,"Length"),""));
+    (G4AttValue("Pos",G4BestUnit(finalPos,"Length"),""));
 
   return values;
 }
 
 void G4CMPElectrodeHit::Print()
 {
-  G4cout << "  time " << time/ns << " (nsec) : at " << localPos
-         << "  -- edep = " << edep/eV << " [eV]" << G4endl;
+  G4cout << "  time " << trackTime/ns << " (nsec) : at " << finalPos
+         << "  -- edep = " << EDep/eV << " [eV]" << G4endl;
 }
 
 
