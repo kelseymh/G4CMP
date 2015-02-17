@@ -29,34 +29,31 @@ ChargeElectrodeSensitivity::~ChargeElectrodeSensitivity()
 
 void ChargeElectrodeSensitivity::EndOfEvent(G4HCofThisEvent* HCE)
 {
-  G4int n = HCE->GetNumberOfCollections();
-  for (G4int i = 0; i < n; ++i) {
-    G4CMPElectrodeHitsCollection* hitCol =
-        static_cast<G4CMPElectrodeHitsCollection*>(HCE->GetHC(i));
-    std::vector<G4CMPElectrodeHit*>* hitVec = hitCol->GetVector();
-    /* Can we use C++11 yet? Look how nice this should look:
-    for (auto j : *hitVec)
-      output << j->GetTrackID() << ", " << j->GetCharge() << ", "
-             << j->GetStartEnergy()/eV << ", " << j->GetTrackTime()/ns
-             << ", " << j->GetEnergyDeposit()/eV << ", "
-             << j->GetStartPosition().getX()/m << ", "
-             << j->GetStartPosition().getY()/m << ", "
-             << j->GetStartPosition().getZ()/m << ", "
-             << j->GetFinalPosition().getX()/m << ", "
-             << j->GetFinalPosition().getY()/m << ", "
-             << j->GetFinalPosition().getZ()/m << G4endl;
-    */
-    std::vector<G4CMPElectrodeHit*>::iterator itr = hitVec->begin();
-    for (; itr != hitVec->end(); itr++)
-      output << (*itr)->GetTrackID() << ", " << (*itr)->GetCharge() << ", "
-             << (*itr)->GetStartEnergy()/eV << ", " << (*itr)->GetTrackTime()/ns
-             << ", " << (*itr)->GetEnergyDeposit()/eV << ", "
-             << (*itr)->GetStartPosition().getX()/m << ", "
-             << (*itr)->GetStartPosition().getY()/m << ", "
-             << (*itr)->GetStartPosition().getZ()/m << ", "
-             << (*itr)->GetFinalPosition().getX()/m << ", "
-             << (*itr)->GetFinalPosition().getY()/m << ", "
-             << (*itr)->GetFinalPosition().getZ()/m << G4endl;
-  }
+  G4CMPElectrodeHitsCollection* hitCol =
+        static_cast<G4CMPElectrodeHitsCollection*>(HCE->GetHC(HCID));
+  std::vector<G4CMPElectrodeHit*>* hitVec = hitCol->GetVector();
+  /* Can we use C++11 yet? Look how nice this should look:
+  for (auto j : *hitVec)
+    output << j->GetTrackID() << ", " << j->GetCharge() << ", "
+           << j->GetStartEnergy()/eV << ", " << j->GetTrackTime()/ns
+           << ", " << j->GetEnergyDeposit()/eV << ", "
+           << j->GetStartPosition().getX()/m << ", "
+           << j->GetStartPosition().getY()/m << ", "
+           << j->GetStartPosition().getZ()/m << ", "
+           << j->GetFinalPosition().getX()/m << ", "
+           << j->GetFinalPosition().getY()/m << ", "
+           << j->GetFinalPosition().getZ()/m << G4endl;
+  */
+  std::vector<G4CMPElectrodeHit*>::iterator itr = hitVec->begin();
+  for (; itr != hitVec->end(); itr++)
+    output << (*itr)->GetTrackID() << ", " << (*itr)->GetCharge() << ", "
+           << (*itr)->GetStartEnergy()/eV << ", " << (*itr)->GetTrackTime()/ns
+           << ", " << (*itr)->GetEnergyDeposit()/eV << ", "
+           << (*itr)->GetStartPosition().getX()/m << ", "
+           << (*itr)->GetStartPosition().getY()/m << ", "
+           << (*itr)->GetStartPosition().getZ()/m << ", "
+           << (*itr)->GetFinalPosition().getX()/m << ", "
+           << (*itr)->GetFinalPosition().getY()/m << ", "
+           << (*itr)->GetFinalPosition().getZ()/m << G4endl;
 }
 
