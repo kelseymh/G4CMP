@@ -30,7 +30,7 @@ ChargeElectrodeSensitivity::~ChargeElectrodeSensitivity()
 void ChargeElectrodeSensitivity::EndOfEvent(G4HCofThisEvent* HCE)
 {
   G4CMPElectrodeHitsCollection* hitCol =
-        static_cast<G4CMPElectrodeHitsCollection*>(HCE->GetHC(HCID));
+        static_cast<G4CMPElectrodeHitsCollection*>(HCE->GetHC(GetHCID()));
   std::vector<G4CMPElectrodeHit*>* hitVec = hitCol->GetVector();
   /* Can we use C++11 yet? Look how nice this should look:
   for (auto j : *hitVec)

@@ -19,6 +19,9 @@ public:
   
   G4CMPElectrodeHitsCollection* getHitsCollection();
   static G4CMPElectrodeHitsCollection* hitsCollection;
+
+protected:
+  inline G4int GetHCID() { return HCID; }
   
 private:
   G4int HCID;
