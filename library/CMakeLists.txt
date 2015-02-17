@@ -165,6 +165,46 @@ set(library_SOURCES
    ${PROJECT_SOURCE_DIR}/library/src/G4VPhononProcess.cc
    )
 
+set(library_HEADERS
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPConfigManager.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPConfigMessenger.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPDriftBoundaryProcess.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPDriftElectron.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPDriftHole.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPElectrodeHit.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPElectrodeSensitivity.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPeLukeScattering.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPEqEMField.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPFieldManager.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPhLukeScattering.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPInterValleyScattering.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPLocalElectroMagField.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPMeshElectricField.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPMessengerBase.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhysics.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhysicsList.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPProcessUtils.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPStackingAction.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPTimeStepper.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPTriLinearInterp.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPValleyTrackMap.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPVDriftProcess.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPVLukeScattering.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4LatticeLogical.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4LatticeManager.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4LatticePhysical.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4LatticeReader.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4PhononDownconversion.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4PhononLong.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4PhononPolarization.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4PhononReflection.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4PhononScattering.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4PhononTrackMap.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4PhononTransFast.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4PhononTransSlow.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4VPhononProcess.hh
+   )
+
 set(crystal_SETTINGS
     ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/config.txt
     ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/FT.ssv
@@ -181,6 +221,7 @@ set_target_properties(G4cmp PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 set(CMAKE_CXX_FLAGS "-O2")
 install(TARGETS G4cmp qhullcpp qhullstatic_p DESTINATION lib)
+install(FILES ${library_HEADERS} DESTINATION include)
 install(FILES ../g4cmp_env.sh ../g4cmp_env.csh ../G4CMPOrdParamTable.txt
         DESTINATION . COMPONENT config)
 install(FILES ${crystal_SETTINGS} DESTINATION CrystalMaps/Ge COMPONENT config)
