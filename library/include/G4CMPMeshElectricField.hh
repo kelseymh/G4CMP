@@ -13,7 +13,6 @@
 
 #include "G4CMPTriLinearInterp.hh"
 #include "G4ElectricField.hh"
-#include <vector>
 
 class G4CMPMeshElectricField : public G4ElectricField {
 public:
@@ -28,10 +27,6 @@ public:
   // Copy constructor and assignment operator
   G4CMPMeshElectricField(const G4CMPMeshElectricField &p);
   G4CMPMeshElectricField& operator=(const G4CMPMeshElectricField &p);
-
-  // Sorting operator (compares x, y, z in sequence)
-  static G4bool vector_comp(const std::vector<G4double>& p1,
-			    const std::vector<G4double>& p2);
 
 private:
   G4CMPTriLinearInterp Interp;
