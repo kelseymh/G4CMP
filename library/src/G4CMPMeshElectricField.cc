@@ -74,6 +74,8 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
 	   << G4endl;
   }
 
+  std::sort(tempX.begin(),tempX.end(), vector_comp);
+
   vector<vector<G4double> > X(tempX.size(),vector<G4double>(3,0));
   vector<G4double> V(tempX.size(),0);
 
@@ -97,4 +99,23 @@ void G4CMPMeshElectricField::GetFieldValue(const G4double Point[4],
 
 G4double G4CMPMeshElectricField::GetPotential(const G4double Point[4]) const {
   return Interp.GetPotential(Point);
+}
+
+
+G4bool G4CMPMeshElectricField::vector_comp(const vector<G4double>& p1,
+					   const vector<G4double>& p2) {
+  if (p1[0] < p2[0])
+    return true;
+  else if (p2[0] < p1[0])
+    return false;
+  else if (p1[1] < p2[1])
+    return true;
+  else if (p2[1] < p1[1])
+    return false;
+  else if (p1[2] < p2[2])
+    return true;
+  else if (p2[2] < p1[2])
+    return false;
+  else
+    return false;
 }
