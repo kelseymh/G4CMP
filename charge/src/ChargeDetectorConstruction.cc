@@ -3,7 +3,7 @@
 #include "ChargeDetectorConstruction.hh"
 #include "ChargeEMField.hh"
 #include "G4Box.hh"
-#include "G4CMPElectrodeSensitivity.hh"
+#include "ChargeElectrodeSensitivity.hh"
 #include "G4Colour.hh"
 #include "G4LatticeLogical.hh"
 #include "G4LatticeManager.hh"
@@ -96,7 +96,7 @@ void ChargeDetectorConstruction::SetupGeometry()
   // detector -- Note : Aluminum electrode sensitivity is attached to Germanium 
   //
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
-  G4CMPElectrodeSensitivity* electrodeSensitivity = new G4CMPElectrodeSensitivity("G4CMPElectrode");
+  ChargeElectrodeSensitivity* electrodeSensitivity = new ChargeElectrodeSensitivity("ChargeElectrode");
   SDman->AddNewDetector(electrodeSensitivity);
   germaniumLogical->SetSensitiveDetector(electrodeSensitivity);
 

@@ -31,15 +31,25 @@ set(charge_SOURCES
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeActionInitialization.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeDetectorConstruction.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeEMField.cc
+    ${PROJECT_SOURCE_DIR}/charge/src/ChargeElectrodeSensitivity.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeFieldMessenger.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargePrimaryGeneratorAction.cc
     ${PROJECT_SOURCE_DIR}/charge/src/FET.cc
     ${PROJECT_SOURCE_DIR}/charge/src/FETMessenger.cc
     ${PROJECT_SOURCE_DIR}/charge/src/MatWriter.cc
     )
+
+set(charge_EPOT_FILES
+    ${PROJECT_SOURCE_DIR}/charge/EPot_iZIP4_axissymmetric_shortQOS1
+    ${PROJECT_SOURCE_DIR}/charge/Epot_iZip4_small_shortQOS1
+    ${PROJECT_SOURCE_DIR}/charge/Epot_iZip4
+    ${PROJECT_SOURCE_DIR}/charge/Epot_iZip4_small
+    )
+
 add_executable(g4cmpCharge g4cmpCharge.cc ${charge_SOURCES})
 target_link_libraries(g4cmpCharge G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
 set_target_properties(g4cmpCharge PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 set(CMAKE_CXX_FLAGS "-O2")
 install(TARGETS g4cmpCharge DESTINATION bin)
+install(FILES ${charge_EPOT_FILES} DESTINATION . COMPONENT config)

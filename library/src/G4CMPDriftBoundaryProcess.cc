@@ -8,7 +8,6 @@
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
-#include "G4CMPConfigManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4VParticleChange.hh"
