@@ -77,8 +77,8 @@ const std::map<G4String,G4AttDef>* G4CMPElectrodeHit::GetAttDefs() const
     G4String Time("Time");
     (*store)[Time] = G4AttDef(Time,"Time","Physics","G4BestUnit","G4double");
 
-    G4String EDep("EDep");
-    (*store)[EDep] = G4AttDef(Time,"EDep","Physics","G4BestUnit","G4double");
+    G4String EDepName("EDep");
+    (*store)[EDepName] = G4AttDef(EDepName, "EDep","Physics","G4BestUnit","G4double");
 
     G4String Pos("Pos");
     (*store)[Pos] = G4AttDef(Pos, "Position",
