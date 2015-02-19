@@ -33,6 +33,9 @@ void ChargePrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
     particleGun->GeneratePrimaryVertex(anEvent);
     particleGun->SetParticleDefinition(G4CMPDriftElectron::Definition());
     particleGun->GeneratePrimaryVertex(anEvent);
+
+    // Restore "not set" condition for next event
+    particleGun->SetParticleDefinition(G4Geantino::Definition());
   } else {
     particleGun->GeneratePrimaryVertex(anEvent);
   }
