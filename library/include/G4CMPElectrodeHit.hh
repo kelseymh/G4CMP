@@ -43,8 +43,8 @@ class G4CMPElectrodeHit : public G4VHit
     inline void SetCharge(G4int q) { charge = q; }
     inline G4double GetCharge() const { return charge; }
 
-    inline void SetStartEnergy(G4double E) { EDep = E; }
-    inline G4double GetStartEnergy() const { return EDep; }
+    inline void SetStartEnergy(G4double E) { startE = E; }
+    inline G4double GetStartEnergy() const { return startE; }
 
     inline void SetTrackTime(G4double t) { trackTime = t; }
     inline G4double GetTrackTime() const { return trackTime; }

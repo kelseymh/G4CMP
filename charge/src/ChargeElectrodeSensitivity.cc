@@ -18,7 +18,8 @@ ChargeElectrodeSensitivity::ChargeElectrodeSensitivity(G4String name)
 {
   output.open(G4CMPConfigManager::GetHitOutput());
   output << "Track ID, Charge, Start Energy [eV], Track Lifetime [ns], "
-         << "Energy Deposit [eV], Start Position [m], End Position [m]"
+         << "Energy Deposit [eV], Start X [m], Start Y [m], Start Z [m], "
+         << "End X [m], End Y [m], End Z [m]"
          << G4endl;
 }
 
