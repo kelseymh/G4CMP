@@ -184,6 +184,7 @@ set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhysics.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhysicsList.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPProcessUtils.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPProcessSubType.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPStackingAction.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTimeStepper.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTriLinearInterp.hh
