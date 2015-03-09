@@ -147,6 +147,29 @@ public:
   G4double GetIVRate() const     { return fIVRate; }
   G4double GetIVExponent() const { return fIVExponent; }
 
+  // Parameters for charge carrier absorption
+  void SetAbsProb(G4double v)         { fAbsProb = v; }
+  void SetAbsDeltaV(G4double v)       { fAbsDeltaV = v; }
+  void SetAbsTopMinKElec(G4double v)  { fAbsTopMinKElec = v; }
+  void SetAbsBotMinKElec(G4double v)  { fAbsBotMinKElec = v; }
+  void SetAbsWallMinKElec(G4double v) { fAbsWallMinKElec = v; }
+  void SetAbsTopMinKHole(G4double v)  { fAbsTopMinKHole = v; }
+  void SetAbsBotMinKHole(G4double v)  { fAbsBotMinKHole = v; }
+  void SetAbsWallMinKHole(G4double v) { fAbsWallMinKHole = v; }
+  void SetBotElectrodeV(G4double v)   { fBotElectrodeV = v; }
+  void SetTopElectrodeV(G4double v)   { fTopElectrodeV = v; }
+
+  G4double GetAbsProb() const        { return fAbsProb; }
+  G4double GetAbsDeltaV() const      { return fAbsDeltaV; }
+  G4double GetAbsTopMinKElec() const { return fAbsTopMinKElec; }
+  G4double GetAbsBotMinKElec() const { return fAbsBotMinKElec; }
+  G4double GetAbsWallMinKElec() const { return fAbsWallMinKElec; }
+  G4double GetAbsTopMinKHole() const { return fAbsTopMinKHole; }
+  G4double GetAbsBotMinKHole() const { return fAbsBotMinKHole; }
+  G4double GetAbsWallMinKHole() const { return fAbsWallMinKHole; }
+  G4double GetBotElectrodeV() const { return fBotElectrodeV; }
+  G4double GetTopElectrodeV() const { return fTopElectrodeV; }
+
 public:
   enum { MAXRES=322 };			    // Maximum map resolution (bins)
 
@@ -187,6 +210,16 @@ private:
   G4double fIVField;		 // Transverse field for intervalley scattering
   G4double fIVRate;		 // Scale factor for IV scattering MFP
   G4double fIVExponent;		 // Power law for E-field in IV scattering
+  G4double fAbsProb;    // Flat absorption probability for carrier at a surface
+  G4double fAbsDeltaV;  // Absorb if within this amount of max/min V at surface
+  G4double fAbsTopMinKElec; // Min K required to absorb into a surface
+  G4double fAbsBotMinKElec;
+  G4double fAbsWallMinKElec;
+  G4double fAbsTopMinKHole;
+  G4double fAbsBotMinKHole;
+  G4double fAbsWallMinKHole;
+  G4double fBotElectrodeV;
+  G4double fTopElectrodeV;
 };
 
 // Write lattice structure to output stream

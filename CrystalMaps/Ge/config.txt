@@ -26,3 +26,14 @@ valley -135 35.2644 90 deg
 ivField 217		# V/m
 ivRate 6.72e-2		# s
 ivPower 3.24		# used in sqrt(field^ivPower)
+# Charge carrier surface reflection parameters
+absProb 1e-5
+absDeltaV 0.02  # V
+absTopMinKElec 4.3650e8 # 1/m 
+absBotMinKElec 3.9600e8 # 1/m 
+absWallMinKElec 0 # 1/m 
+absTopMinKHole 7.5175e8 # 1/m 
+absBotMinKHole 6.8200e8 # 1/m 
+absWallMinKHole 0 # 1/m 
+botElectrodeV -2 # V
+topElectrodeV 2 # V

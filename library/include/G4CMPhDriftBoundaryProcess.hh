@@ -23,39 +23,30 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file library/include/G4CMPDriftBoundaryProcess.hh
-/// \brief Definition of the G4CMPDriftBoundaryProcess base class
+/// \file library/include/G4CMPhDriftBoundaryProcess.hh
+/// \brief Definition of the G4CMPhDriftBoundaryProcess class
 //
 // $Id$
 //
-// 20140313  Introduce multiple inheritance from G4CMPProcessUtils
-// 20140331  Inherit from G4CMPVDriftProcess to get subtype enforcement
-// 20150212  Remove file IO. Use sensitive detectors instead
 
-#ifndef G4CMPDriftBoundaryProcess_h
-#define G4CMPDriftBoundaryProcess_h 1
+#ifndef G4CMPhDriftBoundaryProcess_h
+#define G4CMPhDriftBoundaryProcess_h 1
 
 #include "globals.hh"
-#include "G4CMPVDriftProcess.hh"
+#include "G4CMPVDriftBoundaryProcess.hh"
 
-
-class G4CMPDriftBoundaryProcess : public G4CMPVDriftProcess {
+class G4CMPhDriftBoundaryProcess : public G4CMPVDriftBoundaryProcess {
 public:
-  G4CMPDriftBoundaryProcess();
-  virtual ~G4CMPDriftBoundaryProcess();
-
-  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
-
-  virtual G4bool IsApplicable(const G4ParticleDefinition&);
+  G4CMPhDriftBoundaryProcess();
+  virtual ~G4CMPhDriftBoundaryProcess();
 
 protected:
-  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
+  virtual G4ThreeVector GetWaveVector(const G4Track& aTrack) const;
+  virtual G4double GetKineticEnergy(const G4Track& aTrack) const;
 
 private:
-  G4CMPDriftBoundaryProcess(G4CMPDriftBoundaryProcess&);
-  G4CMPDriftBoundaryProcess& operator=(const G4CMPDriftBoundaryProcess& right);
-
-  G4double kCarTolerance;
+  G4CMPhDriftBoundaryProcess(G4CMPhDriftBoundaryProcess&);
+  G4CMPhDriftBoundaryProcess& operator=(const G4CMPhDriftBoundaryProcess& right);
 };
 
 #endif

@@ -4,7 +4,8 @@
 // Usage:  [physics-list]->AddPhysics(new G4CMPPhysics(<verbose>));
 
 #include "G4CMPPhysics.hh"
-#include "G4CMPDriftBoundaryProcess.hh"
+#include "G4CMPeDriftBoundaryProcess.hh"
+#include "G4CMPhDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPInterValleyScattering.hh"
@@ -33,21 +34,23 @@ void G4CMPPhysics::ConstructParticle() {
 
 void G4CMPPhysics::ConstructProcess() {
   // Only make processes once; will be deleted when physics list goes away
-  G4VProcess* phScat = new G4PhononScattering;
-  G4VProcess* phRefl = new G4PhononReflection;
-  G4VProcess* phDown = new G4PhononDownconversion;
-  G4VProcess* tmStep = new G4CMPTimeStepper;
-  G4VProcess* driftB = new G4CMPDriftBoundaryProcess;
-  G4VProcess* ivScat = new G4CMPInterValleyScattering;
-  G4VProcess* eLuke  = new G4CMPeLukeScattering(tmStep);
-  G4VProcess* hLuke  = new G4CMPhLukeScattering(tmStep);
+  G4VProcess* phScat  = new G4PhononScattering;
+  G4VProcess* phRefl  = new G4PhononReflection;
+  G4VProcess* phDown  = new G4PhononDownconversion;
+  G4VProcess* tmStep  = new G4CMPTimeStepper;
+  G4VProcess* eDriftB = new G4CMPeDriftBoundaryProcess;
+  G4VProcess* hDriftB = new G4CMPhDriftBoundaryProcess;
+  G4VProcess* ivScat  = new G4CMPInterValleyScattering;
+  G4VProcess* eLuke   = new G4CMPeLukeScattering(tmStep);
+  G4VProcess* hLuke   = new G4CMPhLukeScattering(tmStep);
 
   // Set process verbosity to match physics list, for diagnostics
   phScat->SetVerboseLevel(verboseLevel);
   phRefl->SetVerboseLevel(verboseLevel);
   phDown->SetVerboseLevel(verboseLevel);
   tmStep->SetVerboseLevel(verboseLevel);
-  driftB->SetVerboseLevel(verboseLevel);
+  eDriftB->SetVerboseLevel(verboseLevel);
+  hDriftB->SetVerboseLevel(verboseLevel);
   ivScat->SetVerboseLevel(verboseLevel);
   eLuke->SetVerboseLevel(verboseLevel);
   hLuke->SetVerboseLevel(verboseLevel);
@@ -74,11 +77,11 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(tmStep, particle);
   RegisterProcess(eLuke, particle);
   RegisterProcess(ivScat, particle);
-  RegisterProcess(driftB, particle);
+  RegisterProcess(eDriftB, particle);
 
   particle = G4CMPDriftHole::Definition();
   RegisterProcess(tmStep, particle);
   RegisterProcess(hLuke, particle);
-  RegisterProcess(driftB, particle);
+  RegisterProcess(hDriftB, particle);
 }
 
