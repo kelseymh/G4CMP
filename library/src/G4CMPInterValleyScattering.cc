@@ -47,8 +47,8 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   
   //If there is no field, there is no IV scattering... but then there
   //is no e-h transport either...
-  if (!fMan || !fMan->DoesFieldExist()) return DBL_MAX;
-  
+  if (!fMan || !fMan->DoesFieldExist()) G4cout << "No IV field" << G4endl; return DBL_MAX;
+ G4cout << "Yes IV field" << G4endl;
   G4ThreeVector p_local = GetLocalMomentum(aTrack);
 
   G4int valley = GetValleyIndex(aTrack);

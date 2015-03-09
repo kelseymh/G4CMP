@@ -98,6 +98,8 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
         return &aParticleChange;
       }
     }
+  } else {
+  G4cout << "WTF- no field?" << G4endl;
   }
 
   // No absorption means reflection. Naive approach.
