@@ -8,6 +8,7 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPInterValleyScattering.hh"
+#include "G4CMPIonisationWrapper.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPhLukeScattering.hh"
@@ -80,5 +81,14 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(tmStep, particle);
   RegisterProcess(hLuke, particle);
   RegisterProcess(driftB, particle);
+
+  WrapIonisation();
 }
 
+
+// Find and wrap G4*Ionisation processes to generate e/h and phonons
+
+void G4CMPPhysics::WrapIonisation() {
+  
+
+}

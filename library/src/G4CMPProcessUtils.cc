@@ -16,6 +16,8 @@
 // 20150109  Use G4CMP_SET_ELECTRON_MASS to enable dynamic mass, velocity set
 // 20150112  Add GetCurrentValley() function to get valley of current track,
 //	     allow GetValley functions to treat holes, returning -1
+// 20150309  Add Create*() functions which take position and energy arguments
+//	     (for use with AlongStepDoIt() actions).
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -180,6 +182,13 @@ G4int G4CMPProcessUtils::ChoosePolarization() const {
 G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 					 const G4ThreeVector& waveVec,
 					 G4double energy) const {
+  return CreatePhonon(polarization,waveVec,energy,currentTrack->GetPosition());
+}
+
+G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
+					 const G4ThreeVector& waveVec,
+					 G4double energy,
+					 const G4ThreeVector& pos) const {
   if (polarization == G4PhononPolarization::UNKNOWN) {		// Choose value
     polarization = ChoosePolarization();
   }
@@ -195,8 +204,7 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
   // Secondaries are created at the current track coordinates
   RotateToGlobalDirection(vgroup);
   G4Track* sec = new G4Track(new G4DynamicParticle(thePhonon, vgroup, energy),
-			     currentTrack->GetGlobalTime(),
-			     currentTrack->GetPosition());
+			     currentTrack->GetGlobalTime(), pos);
 
   // Store wavevector in lookup table for future tracking
   trackKmap->SetK(sec, GetGlobalDirection(waveVec));
@@ -269,6 +277,35 @@ G4CMPProcessUtils::GetValley(const G4Track& track) const {
 
 G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 						const G4ThreeVector& p) const {
+  return CreateChargeCarrier(charge, valley, p, currentTrack->GetPosition());
+}
+
+G4Track* 
+G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
+				       G4double Ekin, 
+				       const G4ThreeVector& dir,
+				       const G4ThreeVector& pos) const {
+  G4double carrierMass = 0.;
+  if (charge==1) {
+    carrierMass = theLattice->GetHoleMass();
+  } else if (charge==-1) {
+#ifdef G4CMP_SET_ELECTRON_MASS
+    G4ThreeVector p_local = GetLocalDirection(p);
+    carrierMass = theLattice->GetElectronEffectiveMass(valley, p_local);
+#else
+    carrierMass = theLattice->GetElectronMass();
+#endif
+  }
+
+  G4double carrierMom = std::sqrt(2.*Ekin*carrierMass);
+
+  return CreateChargeCarrier(charge, valley, carrierMom*dir, pos);
+}
+
+G4Track* 
+G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
+				       const G4ThreeVector& p,
+				       const G4ThreeVector& pos) const {
   if (charge != 1 && charge != -1) {
     G4cerr << "ERROR:  CreateChargeCarrier invalid charge " << charge << G4endl;
     return 0;
@@ -300,8 +337,7 @@ G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   G4DynamicParticle* secDP = new G4DynamicParticle(theCarrier,p,carrierEnergy);
   secDP->SetMass(carrierMass);
 
-  G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(),
-			     currentTrack->GetPosition());
+  G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), pos);
 
 #ifdef G4CMP_SET_ELECTRON_MASS
   if (charge == -1) {

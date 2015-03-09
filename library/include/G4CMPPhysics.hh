@@ -2,6 +2,8 @@
 //
 // Create particles and physics processes for phonons and charge carriers
 // Usage:  [physics-list]->AddPhysics(new G4CMPPhysics);
+//
+// 20150309  M. Kelsey -- Add function to find and wrap *Ionisation processes
 
 #ifndef G4CMPPhysics_hh
 #define G4CMPPhysics_hh 1
@@ -19,6 +21,9 @@ public:
 public:
   virtual void ConstructParticle();	// Creates phonons and "drifters"
   virtual void ConstructProcess();	// Adds processes to physics list
+
+protected:
+  void WrapIonisation();		// Find and replace *Ionisation
 
 private:
   G4CMPPhysics(const G4CMPPhysics& rhs);		// Copying is forbidden
