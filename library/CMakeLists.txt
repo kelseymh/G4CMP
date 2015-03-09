@@ -192,6 +192,7 @@ set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTimeStepper.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTriLinearInterp.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPValleyTrackMap.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPVDriftBoundaryProcess.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPVDriftProcess.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPVLukeScattering.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4LatticeLogical.hh
