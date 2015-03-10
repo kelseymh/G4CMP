@@ -24,7 +24,7 @@
 
 G4CMPVDriftBoundaryProcess::G4CMPVDriftBoundaryProcess(const G4String& name,
                                          const G4ParticleDefinition* carrier)
-  : G4CMPVDriftProcess("G4CMP"+name+"BoundaryProcess", fChargeBoundary),
+  : G4CMPVDriftProcess("G4CMP"+name+"Boundary", fChargeBoundary),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()),
     theCarrier(carrier), shortName(name) {
   if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
@@ -46,27 +46,43 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 					const G4Step& aStep) {    
   aParticleChange.Initialize(aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
+  G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
 
-  // do nothing but return if the current step is not limited by a volume
-  // boundary
+  // do nothing if the current step is not limited by a volume boundary
   if (postStepPoint->GetStepStatus()!=fGeomBoundary) { 
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
   }
 
   if (verboseLevel) {
-    G4cout << "G4CMPDriftBoundaryProcess::PostStepDoIt" << G4endl;
+    G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+    G4cout << "    Track volume: " << aTrack.GetVolume()->GetName()
+	   << "\n PreStep volume: " << preStepPoint->GetPhysicalVolume()->GetName()
+	   << "\nPostStep volume: " << postStepPoint->GetPhysicalVolume()->GetName()
+	   << G4endl;
+  }
+
+  // do nothing if the current step is inbound from the original volume
+  G4LatticePhysical* volLattice =
+    G4LatticeManager::GetLatticeManager()->GetLattice(preStepPoint->GetPhysicalVolume());
+  if (volLattice != theLattice) {
+    if (verboseLevel>1)
+      G4cout << GetProcessName() << ": Track inbound after reflection" << G4endl;
+    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
   }
 
   // Test #1: There is an absProb chance to be absorbed no matter what.
   if (G4UniformRand() <= absProb) {
+    if (verboseLevel>1)
+      G4cout << GetProcessName() << ": Track absorbed" << G4endl;
+
     aParticleChange.ProposeNonIonizingEnergyDeposit(GetKineticEnergy(aTrack));
     aParticleChange.ProposeTrackStatus(fStopAndKill);
     return &aParticleChange;
   }
 
   // Test #2: If k is larger than the threshold for this surface.
-  G4VPhysicalVolume* PV = aTrack.GetVolume();
-  G4ThreeVector surfNorm = PV->GetLogicalVolume()->GetSolid()->SurfaceNormal(postStepPoint->GetPosition());
+  G4LogicalVolume* LV = preStepPoint->GetPhysicalVolume()->GetLogicalVolume();
+  G4ThreeVector surfNorm = LV->GetSolid()->SurfaceNormal(postStepPoint->GetPosition());
 
   G4double absThresh;
   if (surfNorm.getZ() > 0.5)
@@ -77,40 +93,51 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     absThresh = absWallMinK;
 
   if (GetWaveVector(aTrack).dot(surfNorm) > absThresh) {
+    if (verboseLevel>1)
+      G4cout << GetProcessName() << ": Track absorbed" << G4endl;
+
     aParticleChange.ProposeNonIonizingEnergyDeposit(GetKineticEnergy(aTrack));
     aParticleChange.ProposeTrackStatus(fStopAndKill);
     return &aParticleChange;
   }
 
   // Test #3: If landed on an electrode.
-  G4FieldManager* fMan = PV->GetLogicalVolume()->GetFieldManager();
-
-  if(fMan && fMan->DoesFieldExist()) {
-    if(const G4CMPMeshElectricField* field = dynamic_cast<const G4CMPMeshElectricField*>(fMan->GetDetectorField())) {
+  G4FieldManager* fMan = LV->GetFieldManager();
+  if (fMan && fMan->DoesFieldExist()) {
+    const G4CMPMeshElectricField* field = 
+      dynamic_cast<const G4CMPMeshElectricField*>(fMan->GetDetectorField());
+    if (field) {
       G4double posVec[4] = { 4*0. };
       GetLocalPosition(aTrack, posVec);
       G4double potential = field->GetPotential(posVec);
 
-      if(surfNorm.getZ() > 0.5 && fabs(potential - topElectrodeV) <= absDeltaV ||
-         surfNorm.getZ() < -0.5 && fabs(potential - botElectrodeV) <= absDeltaV) {
+      if((surfNorm.getZ()>0.5 && fabs(potential-topElectrodeV) <= absDeltaV) ||
+         (surfNorm.getZ()<-0.5 && fabs(potential-botElectrodeV) <= absDeltaV)) {
+	if (verboseLevel>1)
+	  G4cout << GetProcessName() << ": Track hit electrode" << G4endl;
+
         aParticleChange.ProposeNonIonizingEnergyDeposit(GetKineticEnergy(aTrack));
         aParticleChange.ProposeTrackStatus(fStopAndKill);
         return &aParticleChange;
       }
     }
   } else {
-  G4cout << "WTF- no field?" << G4endl;
+    G4cout << "WTF- no field?" << G4endl;
   }
 
-  // No absorption means reflection. Naive approach.
+  // No absorption means reflection. Naive approach, only reflect outbound
   G4ThreeVector momentumDir = aTrack.GetMomentumDirection();
-  if (surfNorm.getZ() > 0.5 || surfNorm.getZ() < -0.5) {
-    momentumDir.setZ(-momentumDir.getZ());
-  } else {
-    momentumDir.setX(-momentumDir.getX());
-    momentumDir.setY(-momentumDir.getY());
+  G4double momNorm = surfNorm.dot(momentumDir);
+  if (momNorm > 0.) {
+    if (verboseLevel>1)
+      G4cout << GetProcessName() << ": Track reflected" << G4endl;
+
+    momentumDir -= 2.*momNorm*surfNorm;
+
+    aParticleChange.ProposeMomentumDirection(momentumDir);
+    aParticleChange.ProposeTrackStatus(fAlive);	// Reject "boundary crossing"
   }
-  aParticleChange.ProposeMomentumDirection(momentumDir);
+
   return &aParticleChange;
 }
 
