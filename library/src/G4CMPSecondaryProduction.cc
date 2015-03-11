@@ -23,8 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file library/include/G4CMPIonisationWrapper.hh
-/// \brief Definition of the G4CMPIonisationWrapper process class.  This
+/// \file library/include/G4CMPSecondaryProduction.hh
+/// \brief Definition of the G4CMPSecondaryProduction process class.  This
 ///	class will be used to extend the existing Geant4 ionization
 ///	(and possibly other) processes to generate phonons and charge
 ///	carriers as secondaries.
@@ -33,159 +33,226 @@
 //
 // 20150306  Michael Kelsey
 
-#include "G4CMPIonisationWrapper.hh"
+#include "G4CMPSecondaryProduction.hh"
+#include "G4CMPDriftElectron.hh"
+#include "G4CMPDriftHole.hh"
+#include "G4CMPProcessSubType.hh"
+#include "G4IonisParamMat.hh"
+#include "G4LatticeManager.hh"
+#include "G4LatticePhysical.hh"
+#include "G4LogicalVolume.hh"
+#include "G4Material.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4ProcessType.hh"
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 #include "G4VParticleChange.hh"
+#include "G4VPhysicalVolume.hh"
 #include "G4VProcess.hh"
 #include "Randomize.hh"
 
 // Constructor and destructor
 
-G4CMPIonisationWrapper::G4CMPIonisationWrapper(G4VProcess* ionizProc)
-  : G4WrapperProcess(ionizProc->GetProcessName(), ionizProc->GetProcessType()),
-    energyPerPhonon(1e-3*eV), sigmaEPerPhonon(1e-4*eV),
-    energyPerChargePair(1.*eV), sigmaEPerChargePair(0.1*eV) {
-  RegisterProcess(ionizProc);
+G4CMPSecondaryProduction::G4CMPSecondaryProduction()
+  : G4VContinuousProcess("G4CMPSecondaryProduction", fPhonon),
+    ionizationEnergy(0.*eV), yieldPerPhonon(0.67), yieldPerChargePair(0.33),
+    sigmaPerPhonon(0.05), sigmaPerChargePair(0.05) {
+  SetProcessSubType(fSecondaryProduction);
 }
 
-G4CMPIonisationWrapper::~G4CMPIonisationWrapper() {;}
+G4CMPSecondaryProduction::~G4CMPSecondaryProduction() {;}
 
 
-// Actions:  Let process do its work, use energy loss to generate secondaries
+// Applies to all charged, non-resonance particles except the drift charges
 
-G4VParticleChange* 
-G4CMPIonisationWrapper::PostStepDoIt(const G4Track& track,
-			             const G4Step&  stepData) {
-  LoadDataForTrack(&track);	// Get lattice information
-
-  G4VParticleChange* theChange = pRegProcess->PostStepDoIt(track, stepData);
-  AddPhonons(theChange, stepData);
-  AddChargeCarriers(theChange, stepData);
-
-  ReleaseTrack();
-
-  return theChange;
+G4bool G4CMPSecondaryProduction::IsApplicable(const G4ParticleDefinition& pd) {
+  return (pd.GetPDGCharge() != 0 && !pd.IsShortLived() &&
+	  &pd != G4CMPDriftElectron::Definition() &&
+	  &pd != G4CMPDriftHole::Definition());
 }
 
+
+// Overload G4CMPProcessUtils function to fill energy parameters
+
+void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
+  G4CMPProcessUtils::LoadDataForTrack(track);
+
+  /***** FIXME:  MeanExcitationEnergy() below is 350 eV?!?  Not ~3 eV?
+  G4Material* theMat = track->GetVolume()->GetLogicalVolume()->GetMaterial();
+  G4IonisParamMat* ionisPar = theMat->GetIonisation();
+
+  // FIXME: We should use the parametrization to do fluctuations below
+  ionizationEnergy = ionisPar->GetMeanExcitationEnergy();
+  *****/
+  ionizationEnergy = 3*eV;	// Hard-code this temporarily
+
+  if (verboseLevel>1) {
+    G4cout << GetProcessName() << " ionizationEnergy " << ionizationEnergy/eV
+	   << " eV" << G4endl;
+  }
+}
+
+
+// Use previously computed energy loss to generate secondaries
+
 G4VParticleChange* 
-G4CMPIonisationWrapper::AlongStepDoIt(const G4Track& track,
-				      const G4Step& stepData) {
-  LoadDataForTrack(&track);	// Get lattice information
+G4CMPSecondaryProduction::AlongStepDoIt(const G4Track& track,
+					const G4Step& stepData) {
+  aParticleChange.Initialize(track); 
 
-  G4VParticleChange* theChange = pRegProcess->AlongStepDoIt(track, stepData);
-  AddPhonons(theChange, stepData);
-  AddChargeCarriers(theChange, stepData);
+  // Only apply to tracks while they are in lattice-configured volumes
+  G4VPhysicalVolume* trkPV = track.GetVolume();
+  G4LatticePhysical* theLattice =
+    G4LatticeManager::GetLatticeManager()->GetLattice(trkPV);
+  if (!theLattice) return &aParticleChange;
 
-  ReleaseTrack();
+  if (verboseLevel) G4cout << GetProcessName() << "::AlongStepDoIt" << G4endl;
 
-  return theChange;
+  LoadDataForTrack(&track);		// Do on every step to change volumes
+  AddPhonons(stepData);
+  AddChargeCarriers(stepData);
+
+  // NOTE:  This process does NOT change the track's momentum or energy
+  return &aParticleChange;
 }
 
 
 // Use non-ionizing energy loss to generate phonons along path
 
-void G4CMPIonisationWrapper::AddPhonons(G4VParticleChange* theChange,
-					const G4Step& stepData) {
-  G4double Etotal = theChange->GetNonIonizingEnergyDeposit();
-  if (Etotal < energyPerPhonon) return;
+void G4CMPSecondaryProduction::AddPhonons(const G4Step& stepData) {
+  G4double Etotal = stepData.GetTotalEnergyDeposit();
+  if (Etotal < ionizationEnergy) return;
 
-  if (verboseLevel) G4cout << "G4CMPIonisationWrapper::AddPhonons" << G4endl;
+  if (verboseLevel) G4cout << " AddPhonons " << Etotal/eV << " eV" << G4endl;
 
-  GenerateEnergyPositions(stepData, Etotal, energyPerPhonon, sigmaEPerPhonon);
+  G4int nsec = GenerateEnergyPositions(stepData, Etotal, yieldPerPhonon,
+				       sigmaPerPhonon);
+
+  if (verboseLevel>1) G4cout << " Adding " << nsec << " phonons" << G4endl;
+  aParticleChange.SetNumberOfSecondaries(nsec);
 
   // Distribute generated phonons along trajectory
-  G4ThreeVector prePos  = stepData.GetPreStepPoint()->GetPosition();
-  G4ThreeVector postPos = stepData.GetPostStepPoint()->GetPosition();
-  G4ThreeVector traj = postPos - prePos;
-
-  G4ThreeVector pos = prePos;
+  G4ThreeVector dir;
   G4Track* aSec = 0;
   for (size_t i=0; i<energyPosList.size(); i++) {
-    aSec = CreatePhonon(ChoosePolarization(), G4RandomDirection(),
-			energyPosList[i].first, pos);
-    theChange->AddSecondary(aSec);
+    dir = G4RandomDirection();
+    aSec = CreatePhonon(ChoosePolarization(), dir, energyPosList[i].first,
+			energyPosList[i].second);
 
-    pos += energyPosList[i].second * traj;
+    if (verboseLevel>2) {
+      G4cout << " Created secondary " << i << " "
+	     << aSec->GetParticleDefinition()->GetParticleName()
+	     << "\n track along " << aSec->GetMomentumDirection()
+	     << " (length " << aSec->GetMomentumDirection().mag() << ")"
+	     << "\n E " << aSec->GetKineticEnergy()/eV << " eV,"
+	     << "\n @ " << aSec->GetPosition() << G4endl;
+    }
+
+    aParticleChange.AddSecondary(aSec);
   }
 }
 
 
 // Use ionizing energy loss to generate charge pairs along path
 
-void G4CMPIonisationWrapper::AddChargeCarriers(G4VParticleChange* theChange,
-					       const G4Step& stepData) {
-  G4double Etotal = (theChange->GetLocalEnergyDeposit()
-		     - theChange->GetNonIonizingEnergyDeposit());
-  if (Etotal < energyPerChargePair) return;
+void G4CMPSecondaryProduction::AddChargeCarriers(const G4Step& stepData) {
+  G4double Etotal = stepData.GetTotalEnergyDeposit();
+  if (Etotal < ionizationEnergy) return;
 
   if (verboseLevel)
-    G4cout << "G4CMPIonisationWrapper::AddChargeCarriers" << G4endl;
+    G4cout << " AddChargeCarriers " << Etotal/eV << " eV" << G4endl;
 
-  GenerateEnergyPositions(stepData, Etotal, energyPerChargePair,
-			  sigmaEPerChargePair);
+  G4int nsec = GenerateEnergyPositions(stepData, Etotal, yieldPerChargePair,
+				       sigmaPerChargePair);
 
+  if (verboseLevel>1) G4cout << " Adding " << nsec << " e/h pairs" << G4endl;
+  aParticleChange.SetNumberOfSecondaries(2*nsec);
 
   // Distribute generated phonons along trajectory
-  G4ThreeVector prePos  = stepData.GetPreStepPoint()->GetPosition();
-  G4ThreeVector postPos = stepData.GetPostStepPoint()->GetPosition();
-  G4ThreeVector traj = postPos - prePos;
-
-  G4ThreeVector pos = prePos;
-  G4ThreeVector dir;
   G4Track* aSec = 0;
+  G4ThreeVector dir;
   for (size_t i=0; i<energyPosList.size(); i++) {
-    dir = G4RandomDirection();		// Produce with back-to-back momentum
+    dir = G4RandomDirection();		// Produce back-to-back
+
+    // FIXME:  Energy should be split to balance momenta!
     aSec = CreateChargeCarrier(-1, ChooseValley(), energyPosList[i].first/2.,
-			       dir, pos);
-    theChange->AddSecondary(aSec);
+			       dir, energyPosList[i].second);
+    if (verboseLevel>2) {
+      G4cout << " Created secondary " << 2*i << " "
+	     << aSec->GetParticleDefinition()->GetParticleName()
+	     << "\n along " << aSec->GetMomentumDirection()
+	     << " (length " << aSec->GetMomentumDirection().mag() << ")"
+	     << "\n E " << aSec->GetKineticEnergy()/eV << " eV,"
+	     << "\n @ " << aSec->GetPosition() << G4endl;
+    }
 
-    aSec = CreateChargeCarrier(1, ChooseValley(), energyPosList[i].first/2.,
-			       -dir, pos);
-    theChange->AddSecondary(aSec);
+    aParticleChange.AddSecondary(aSec);
 
-    pos += energyPosList[i].second * traj;
+    aSec = CreateChargeCarrier(1, 0, energyPosList[i].first/2.,
+			       -dir, energyPosList[i].second);
+    if (verboseLevel>2) {
+      G4cout << " Created secondary " << 2*i+1 << " "
+	     << aSec->GetParticleDefinition()->GetParticleName()
+	     << "\n track along " << aSec->GetMomentumDirection()
+	     << " (length " << aSec->GetMomentumDirection().mag() << ")"
+	     << "\n E " << aSec->GetKineticEnergy()/eV << " eV,"
+	     << "\n @ " << aSec->GetPosition() << G4endl;
+    }
+
+    aParticleChange.AddSecondary(aSec);
   }
 }
 
 
 // Generate energy steps along step trajectory (straight line only!)
 
-void G4CMPIonisationWrapper::GenerateEnergyPositions(const G4Step& stepData,
-						     G4double Etotal,
-						     G4double Eunit, 
-						     G4double sigmaE) {
+G4int G4CMPSecondaryProduction::GenerateEnergyPositions(const G4Step& stepData,
+							G4double Etotal,
+							G4double yield, 
+							G4double sigma) {
   if (verboseLevel>1) {
-    G4cout << " GenerateEnergyPositions Etotal " << Etotal/eV
-	   << " Eunit " << Eunit/eV << " sigmaE " << sigmaE/eV
-	   << " [eV]" << G4endl;
+    G4cout << " GenerateEnergyPositions Etotal " << Etotal/eV << " eV"
+	   << " yield " << yield << " sigma " << sigma << G4endl;
   }
 
-  G4int nsec = Etotal / Eunit;		// Average number of secondaries
+  G4int nsec = Etotal / ionizationEnergy;	// Average number of secondaries
 
   // Get average distance between secondaries along (straight) trajectory
   G4ThreeVector prePos  = stepData.GetPreStepPoint()->GetPosition();
   G4ThreeVector postPos = stepData.GetPostStepPoint()->GetPosition();
+  G4ThreeVector traj = postPos - prePos;
+
   G4double length = (postPos-prePos).mag();
   G4double dr = length / G4double(nsec);
 
+  if (verboseLevel>1) {
+    G4cout << " About " << nsec << " secondaries along " << length/mm << " mm"
+	   << G4endl;
+  }
+
   // Minimum energy and spacing values to stop iteration
-  G4double emin = Eunit - 2.*sigmaE;
+  G4double emin = ionizationEnergy * (1. - 2.*sigma);
   G4double lmin = 0.5 * dr;
 
   // Build list of energy-position pairs for secondaries
-  EPosPair theEPos(0.,0.);
   energyPosList.clear();
   energyPosList.reserve(nsec);		// Assume we get the average
+
+  EPosPair theEPos(0.,prePos);		// Buffers to fill secondary steps
+  G4double ystep=0., substep=0.;
   do {
-    theEPos.first = G4RandGauss::shoot(Eunit, sigmaE);
-    theEPos.second = G4RandExponential::shoot(dr);
-    
-    Etotal -= theEPos.first;		// May end up negative at end
-    length -= theEPos.second;
+    ystep = G4RandGauss::shoot(yield, sigma);
+    substep = G4RandExponential::shoot(dr);	// Distance to next step
+
+    theEPos.first = ionizationEnergy * ystep;
+    theEPos.second += substep*traj;
+    energyPosList.push_back(theEPos);
+
+    Etotal -= theEPos.first/yield;		// May end up negative at end
+    length -= substep;
   } while (Etotal > emin && length > lmin);
 
   // Adjust energies and lengths to absorb residuals
@@ -194,9 +261,22 @@ void G4CMPIonisationWrapper::GenerateEnergyPositions(const G4Step& stepData,
   G4double ladj = length / G4double(nsec);
 
   for (G4int i=0; i<nsec; i++) {
-    energyPosList[i].first += eadj;
-    energyPosList[i].second += ladj;
+    energyPosList[i].first  += eadj;
+    energyPosList[i].second += ladj*traj;
   }
 
   // Resulting list returned for use in building secondaries
+  return nsec;
 }
+
+
+// Calculate step limit for Along Step (not needed here)
+
+G4double 
+G4CMPSecondaryProduction::GetContinuousStepLimit(const G4Track& aTrack,
+						 G4double  previousStepSize,
+						 G4double  currentMinimumStep,
+						 G4double& currentSafety) {
+  return DBL_MAX;	// This should prevent step-limiting here
+}
+

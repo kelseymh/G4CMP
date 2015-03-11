@@ -18,6 +18,7 @@
 //	     allow GetValley functions to treat holes, returning -1
 // 20150309  Add Create*() functions which take position and energy arguments
 //	     (for use with AlongStepDoIt() actions).
+// 20150310  Fix CreateChargeCarrier to use momentum unit vector
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -290,7 +291,7 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
     carrierMass = theLattice->GetHoleMass();
   } else if (charge==-1) {
 #ifdef G4CMP_SET_ELECTRON_MASS
-    G4ThreeVector p_local = GetLocalDirection(p);
+    G4ThreeVector p_local = GetLocalDirection(dir);
     carrierMass = theLattice->GetElectronEffectiveMass(valley, p_local);
 #else
     carrierMass = theLattice->GetElectronMass();
@@ -334,8 +335,8 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 #endif
   }
 
-  G4DynamicParticle* secDP = new G4DynamicParticle(theCarrier,p,carrierEnergy);
-  secDP->SetMass(carrierMass);
+  G4DynamicParticle* secDP =
+    new G4DynamicParticle(theCarrier, p.unit(), carrierEnergy, carrierMass);
 
   G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), pos);
 

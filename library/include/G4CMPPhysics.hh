@@ -15,15 +15,15 @@ class G4CMPPhysics : public G4VPhysicsConstructor {
 public:
   G4CMPPhysics(const G4String& name="G4CMPPhysics")
     : G4VPhysicsConstructor(name) {;}
-
+  
   virtual ~G4CMPPhysics() {;}
-
+  
 public:
   virtual void ConstructParticle();	// Creates phonons and "drifters"
   virtual void ConstructProcess();	// Adds processes to physics list
 
 protected:
-  void WrapIonisation();		// Find and replace *Ionisation
+  void AddSecondaryProduction();	// All charged particles make e/h, phn
 
 private:
   G4CMPPhysics(const G4CMPPhysics& rhs);		// Copying is forbidden

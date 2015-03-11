@@ -23,20 +23,19 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file library/include/G4CMPIonisationWrapper.hh
-/// \brief Definition of the G4CMPIonisationWrapper process class.  This
-///	class will be used to extend the existing Geant4 ionization
-///	(and possibly other) processes to generate phonons and charge
-///	carriers as secondaries.
+/// \file library/include/G4CMPSecondaryProduction.hh
+/// \brief Definition of the G4CMPSecondaryProduction process class.  This
+///	class will be used to generate phonons and charge carriers as
+///     secondaries, based on energy loss along step.
 //
 // $Id$
 //
-// 20150306  Michael Kelsey
+// 20150310  Michael Kelsey
 
-#ifndef G4CMPIonisationWrapper_hh
-#define G4CMPIonisationWrapper_hh 1
+#ifndef G4CMPSecondaryProduction_hh
+#define G4CMPSecondaryProduction_hh 1
 
-#include "G4WrapperProcess.hh"
+#include "G4VContinuousProcess.hh"
 #include "G4CMPProcessUtils.hh"
 #include "G4ThreeVector.hh"
 #include <vector>
@@ -45,42 +44,54 @@
 class G4Track;
 class G4Step;
 class G4VParticleChange;
+class G4ParticleDefinition;
 
 
-class G4CMPIonisationWrapper : public G4WrapperProcess,
-			       public G4CMPProcessUtils {
+class G4CMPSecondaryProduction : public G4VContinuousProcess,
+				 public G4CMPProcessUtils {
 public:
-  G4CMPIonisationWrapper(G4VProcess* ionizProc);
-  virtual ~G4CMPIonisationWrapper();
+  G4CMPSecondaryProduction();
+  virtual ~G4CMPSecondaryProduction();
 
-  // Call through to wrapped process to get energy loss
-  virtual G4VParticleChange* PostStepDoIt(const G4Track& track,
-					  const G4Step& stepData);
+  // Applies to all charged, non-resonance particles
+  virtual G4bool IsApplicable(const G4ParticleDefinition&);
 
+  // Generate secondaries based on already-computed energy loss
   virtual G4VParticleChange* AlongStepDoIt(const G4Track& track,
 					   const G4Step& stepData);
 
+  // Overload G4CMPProcessUtils function to fill energy parameters
+  virtual void LoadDataForTrack(const G4Track* track);
+
 protected:
-  void AddPhonons(G4VParticleChange* theChange, const G4Step& stepData);
+  // Calculate step limit for Along Step (not needed here)
+  virtual G4double GetContinuousStepLimit(const G4Track& aTrack,
+					  G4double  previousStepSize,
+					  G4double  currentMinimumStep,
+					  G4double& currentSafety);
 
-  void AddChargeCarriers(G4VParticleChange* theChange, const G4Step& stepData);
-
-  void GenerateEnergyPositions(const G4Step& stepData, G4double Etotal,
-			       G4double Eunit, G4double sigmaE);
+protected:
+  void AddPhonons(const G4Step& stepData);
+  
+  void AddChargeCarriers(const G4Step& stepData);
+  
+  G4int GenerateEnergyPositions(const G4Step& stepData, G4double Etotal,
+				G4double yield, G4double sigma);
 
 private:
-  G4double energyPerPhonon;	// Energy partition and fluctuations
-  G4double sigmaEPerPhonon;
+  // NOTE:  These are temporary local params -- will move to lattice config
+  G4double ionizationEnergy;		// Get this from G4Material
+  G4double yieldPerPhonon;
+  G4double yieldPerChargePair;
+  G4double sigmaPerPhonon;
+  G4double sigmaPerChargePair;
 
-  G4double energyPerChargePair;
-  G4double sigmaEPerChargePair;
-
-  typedef std::pair<G4double, G4double> EPosPair;
+  typedef std::pair<G4double, G4ThreeVector> EPosPair;
   std::vector<EPosPair> energyPosList;		// Buffer for secondaries
-
+  
   // No copying allowed
-  G4CMPIonisationWrapper(const G4CMPIonisationWrapper& right);
-  G4CMPIonisationWrapper& operator=(const G4CMPIonisationWrapper& right);
+  G4CMPSecondaryProduction(const G4CMPSecondaryProduction& right);
+  G4CMPSecondaryProduction& operator=(const G4CMPSecondaryProduction& right);
 };
 
-#endif	/* G4CMPIonisationWrapper_hh */
+#endif	/* G4CMPSecondaryProduction_hh */
