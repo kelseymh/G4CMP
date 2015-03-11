@@ -1,0 +1,6 @@
+/run/initialize
+/process/setVerbose 1 G4CMPeDriftBoundary
+/process/setVerbose 1 G4CMPhDriftBoundary
+/tracking/verbose 1
+/gun/number 5
+/run/beamOn 1

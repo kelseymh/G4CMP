@@ -48,8 +48,10 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
 
-  // do nothing if the current step is not limited by a volume boundary
-  if (postStepPoint->GetStepStatus()!=fGeomBoundary) { 
+  // do nothing if the current step is not limited by a volume boundary,
+  // or if it is the returning "null step" after a reflection
+  if (postStepPoint->GetStepStatus()!=fGeomBoundary ||
+      aTrack.GetStepLength()<=kCarTolerance/2) { 
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
   }
 
