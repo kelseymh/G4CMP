@@ -14,6 +14,8 @@
 // 20140509  Add ChoosePolarization() which uses DOS values from lattice
 // 20150112  Add GetCurrentValley() function to get valley of current track,
 //	     protect valley functions against null pointers
+// 20150309  Add Create*() functions which take position and energy arguments
+//	     (for use with AlongStepDoIt() actions).
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -141,9 +143,20 @@ public:
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
 			G4double energy) const;
 
+  G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
+			G4double energy, const G4ThreeVector& pos) const;
+
   // Construct new electron or hole track with correct conditions
   G4Track* CreateChargeCarrier(G4int charge, G4int valley,
 			       const G4ThreeVector& p) const;
+
+  G4Track* CreateChargeCarrier(G4int charge, G4int valley, G4double Ekin,
+			       const G4ThreeVector& pdir,
+			       const G4ThreeVector& pos) const;
+
+  G4Track* CreateChargeCarrier(G4int charge, G4int valley,
+			       const G4ThreeVector& p,
+			       const G4ThreeVector& pos) const;
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes

@@ -1,9 +1,10 @@
 /g4cmp/EpotFile Epot_iZip4_small_shortQOS1
+/run/initialize
 
-/vis/open OGL
+/vis/open OGLIX 600x600
 /vis/viewer/set/upVector 0 0 1
-/vis/viewer/set/viewpointVector 1 0 0
-/vis/viewer/zoomTo 3
+/vis/viewer/set/viewpointVector 1 0 0.15
+/vis/viewer/zoomTo 1.5
 /vis/drawVolume
 /vis/scene/add/trajectories
 /vis/ogl/set/printFilename shortQOS1
@@ -15,11 +16,9 @@
 /vis/modeling/trajectories/dmcColors/set -1 blue
 /vis/modeling/trajectories/dmcColors/set 0 yellow
 
-### /tracking/verbose 1
 /gun/number 100
 /gun/position 0 0 0 m
 
-/run/initialize
 /run/beamOn 1
 /vis/ogl/printEPS
 

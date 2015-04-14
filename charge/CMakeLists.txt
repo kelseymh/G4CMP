@@ -44,6 +44,7 @@ set(charge_EPOT_FILES
     ${PROJECT_SOURCE_DIR}/charge/Epot_iZip4_small_shortQOS1
     ${PROJECT_SOURCE_DIR}/charge/Epot_iZip4
     ${PROJECT_SOURCE_DIR}/charge/Epot_iZip4_small
+    ${PROJECT_SOURCE_DIR}/charge/EPot_iZIP4_COMSOL5
     )
 
 add_executable(g4cmpCharge g4cmpCharge.cc ${charge_SOURCES})

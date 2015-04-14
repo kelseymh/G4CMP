@@ -9,15 +9,18 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPInterValleyScattering.hh"
+#include "G4CMPSecondaryProduction.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPhLukeScattering.hh"
+#include "G4ParticleTable.hh"
 #include "G4PhononDownconversion.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononReflection.hh"
 #include "G4PhononScattering.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
+#include "G4ProcessManager.hh"
 
 
 // Create phonon and charage carrier particles for later use
@@ -83,5 +86,24 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(tmStep, particle);
   RegisterProcess(hLuke, particle);
   RegisterProcess(hDriftB, particle);
+
+  AddSecondaryProduction();
 }
 
+
+// Add charge and phonon generator to all charged particles
+
+void G4CMPPhysics::AddSecondaryProduction() {
+  G4VProcess* maker = new G4CMPSecondaryProduction;
+  maker->SetVerboseLevel(verboseLevel);
+
+  aParticleIterator->reset();
+  while ((*aParticleIterator)()) {
+    G4ParticleDefinition* particle = aParticleIterator->value();
+    G4ProcessManager* pmanager = particle->GetProcessManager();
+    if (maker->IsApplicable(*particle)) { 
+      pmanager->AddProcess(maker);
+      pmanager->SetProcessOrderingToLast(maker, idxAlongStep);
+    }
+  }
+}
