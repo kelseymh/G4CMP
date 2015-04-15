@@ -9,9 +9,11 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPMeshElectricField.hh"
+#include "G4CMPSurfaceProperty.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticeLogical.hh"
 #include "G4LatticePhysical.hh"
+#include "G4LogicalBorderSurface.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VSolid.hh"
 #include "G4FieldManager.hh"
@@ -51,8 +53,8 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   // do nothing if the current step is not limited by a volume boundary,
   // or if it is the returning "null step" after a reflection
   if (postStepPoint->GetStepStatus()!=fGeomBoundary ||
-      aTrack.GetStepLength()<=kCarTolerance/2) { 
-    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
+      aTrack.GetStepLength()<=kCarTolerance/2.) {
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
   if (verboseLevel) {
@@ -72,6 +74,29 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
   }
 
+  // Grab surface information
+  G4VPhysicalVolume* thePrePV = preStepPoint->GetPhysicalVolume();
+  G4VPhysicalVolume* thePostPV = postStepPoint->GetPhysicalVolume();
+  G4LogicalSurface* surface = G4LogicalBorderSurface::GetSurface(thePrePV,
+                                                                 thePostPV);
+  G4CMPSurfaceProperty* borderSurface;
+
+  if (surface) {
+    borderSurface = static_cast <G4CMPSurfaceProperty*> (
+                                                surface->GetSurfaceProperty());
+  } else {
+    if (verboseLevel>1)
+      G4cout << GetProcessName() << ": No border surface defined." << G4endl;
+    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
+  }
+
+  absProb = borderSurface->GetAbsProb();
+  absDeltaV = borderSurface->GetAbsDeltaV();
+  absMinKElec = borderSurface->GetMinKElec();
+  absMinKHole = borderSurface->GetMinKHole();
+  electrodeV = borderSurface->GetElectrodeV();
+
+
   // Test #1: There is an absProb chance to be absorbed no matter what.
   if (G4UniformRand() <= absProb) {
     if (verboseLevel>1)
@@ -83,16 +108,11 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   // Test #2: If k is larger than the threshold for this surface.
-  G4LogicalVolume* LV = preStepPoint->GetPhysicalVolume()->GetLogicalVolume();
+  G4LogicalVolume* LV = thePrePV->GetLogicalVolume();
   G4ThreeVector surfNorm = LV->GetSolid()->SurfaceNormal(postStepPoint->GetPosition());
 
-  G4double absThresh;
-  if (surfNorm.getZ() > 0.5)
-    absThresh = absTopMinK;
-  else if (surfNorm.getZ() < -0.5)
-    absThresh = absBotMinK;
-  else
-    absThresh = absWallMinK;
+  G4double absThresh = (theCarrier == G4CMPDriftElectron::Definition()) ?
+                        absMinKElec : absMinKHole;
 
   if (GetWaveVector(aTrack).dot(surfNorm) > absThresh) {
     if (verboseLevel>1)
@@ -113,10 +133,10 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
       GetLocalPosition(aTrack, posVec);
       G4double potential = field->GetPotential(posVec);
 
-      if((surfNorm.getZ()>0.5 && fabs(potential-topElectrodeV) <= absDeltaV) ||
-         (surfNorm.getZ()<-0.5 && fabs(potential-botElectrodeV) <= absDeltaV)) {
-	if (verboseLevel>1)
-	  G4cout << GetProcessName() << ": Track hit electrode" << G4endl;
+      if((fabs(surfNorm.getZ())>0.5
+            && fabs(potential-electrodeV) <= absDeltaV)) {
+        if (verboseLevel>1)
+          G4cout << GetProcessName() << ": Track hit electrode" << G4endl;
 
         aParticleChange.ProposeNonIonizingEnergyDeposit(GetKineticEnergy(aTrack));
         aParticleChange.ProposeTrackStatus(fStopAndKill);
@@ -151,20 +171,6 @@ void G4CMPVDriftBoundaryProcess::LoadDataForTrack(const G4Track* track) {
   }
 
   G4CMPVDriftProcess::LoadDataForTrack(track);
-
-  absProb = theLattice->GetAbsProb();
-  absDeltaV = theLattice->GetAbsDeltaV();
-  botElectrodeV = theLattice->GetBotElectrodeV();
-  topElectrodeV = theLattice->GetTopElectrodeV();
-  if (theCarrier == G4CMPDriftHole::Definition()) {
-    absTopMinK = theLattice->GetAbsTopMinKHole();
-    absBotMinK = theLattice->GetAbsBotMinKHole();
-    absWallMinK = theLattice->GetAbsWallMinKHole();
-  } else if (theCarrier == G4CMPDriftElectron::Definition()) {
-    absTopMinK = theLattice->GetAbsTopMinKElec();
-    absBotMinK = theLattice->GetAbsBotMinKElec();
-    absWallMinK = theLattice->GetAbsWallMinKElec();
-  }
 }
 
 G4bool G4CMPVDriftBoundaryProcess::IsApplicable(const G4ParticleDefinition& aPD) {

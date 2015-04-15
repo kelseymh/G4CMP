@@ -69,11 +69,9 @@ protected:
   const G4ParticleDefinition* theCarrier;
   G4double absProb;
   G4double absDeltaV;
-  G4double absTopMinK;
-  G4double absBotMinK;
-  G4double absWallMinK;
-  G4double botElectrodeV;
-  G4double topElectrodeV;
+  G4double absMinKElec;
+  G4double absMinKHole;
+  G4double electrodeV;
   G4String shortName;
 };
 

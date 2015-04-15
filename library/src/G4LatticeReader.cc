@@ -192,16 +192,6 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "ivrate") pLattice->SetIVRate(fValue/s);
   else if (name == "ivpower") pLattice->SetIVExponent(fValue);
   else if (name == "ivexponent") pLattice->SetIVExponent(fValue);
-  else if (name == "absprob") pLattice->SetAbsProb(fValue);
-  else if (name == "absdeltav") pLattice->SetAbsDeltaV(fValue*volt);
-  else if (name == "abstopminkelec") pLattice->SetAbsTopMinKElec(fValue/m);
-  else if (name == "absbotminkelec") pLattice->SetAbsBotMinKElec(fValue/m);
-  else if (name == "abswallminkelec") pLattice->SetAbsWallMinKElec(fValue/m);
-  else if (name == "abstopminkhole") pLattice->SetAbsTopMinKHole(fValue/m);
-  else if (name == "absbotminkhole") pLattice->SetAbsBotMinKHole(fValue/m);
-  else if (name == "abswallminkhole") pLattice->SetAbsWallMinKHole(fValue/m);
-  else if (name == "botelectrodev") pLattice->SetBotElectrodeV(fValue*volt);
-  else if (name == "topelectrodev") pLattice->SetTopElectrodeV(fValue*volt);
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;
