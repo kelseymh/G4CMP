@@ -55,14 +55,6 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
   }
 
-  if (verboseLevel) {
-    G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
-    G4cout << "    Track volume: " << aTrack.GetVolume()->GetName()
-	   << "\n PreStep volume: " << preStepPoint->GetPhysicalVolume()->GetName()
-	   << "\nPostStep volume: " << postStepPoint->GetPhysicalVolume()->GetName()
-	   << G4endl;
-  }
-
   // do nothing if the current step is inbound from the original volume
   G4LatticePhysical* volLattice =
     G4LatticeManager::GetLatticeManager()->GetLattice(preStepPoint->GetPhysicalVolume());
@@ -70,6 +62,14 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     if (verboseLevel>1)
       G4cout << GetProcessName() << ": Track inbound after reflection" << G4endl;
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
+  }
+
+  if (verboseLevel) {
+    G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+    G4cout << "    Track volume: " << aTrack.GetVolume()->GetName()
+	   << "\n PreStep volume: " << preStepPoint->GetPhysicalVolume()->GetName()
+	   << "\nPostStep volume: " << postStepPoint->GetPhysicalVolume()->GetName()
+	   << G4endl;
   }
 
   // Test #1: There is an absProb chance to be absorbed no matter what.
@@ -134,10 +134,9 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     if (verboseLevel>1)
       G4cout << GetProcessName() << ": Track reflected" << G4endl;
 
-    momentumDir -= 2.*momNorm*surfNorm;
+    momentumDir -= 2.*momNorm*surfNorm;		// Simple specular reflection
 
     aParticleChange.ProposeMomentumDirection(momentumDir);
-    aParticleChange.ProposeTrackStatus(fAlive);	// Reject "boundary crossing"
   }
 
   return &aParticleChange;
