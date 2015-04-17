@@ -95,13 +95,13 @@ void ChargeDetectorConstruction::SetupGeometry()
   G4VPhysicalVolume* aluminumTopPhysical = new G4PVPlacement(
                                                0, G4ThreeVector(0.,0.,1.28*cm),
                                                aluminumLogical,
-                                               "aluminumPhysical", worldLogical,
+                                               "topAluminumPhysical", worldLogical,
                                                false, 0);
 
   G4VPhysicalVolume* aluminumBotPhysical = new G4PVPlacement(
-                                               0, G4ThreeVector(0.,0.,11.28*cm),
+                                               0, G4ThreeVector(0.,0.,-1.28*cm),
                                                aluminumLogical,
-                                               "aluminumPhysical", worldLogical,
+                                               "bottomAluminumPhysical", worldLogical,
                                                false, 1);
 
   // Add surfaces between Ge-Al, and Ge-World
@@ -114,16 +114,13 @@ void ChargeDetectorConstruction::SetupGeometry()
   G4CMPSurfaceProperty* wallSurfProp = new G4CMPSurfaceProperty("wallSurfProp",
                                                  1e-5, 0., 0., 0., 0.);
 
-  G4LogicalBorderSurface* topSurf = new G4LogicalBorderSurface("iZIPTop",
-                                        aluminumTopPhysical, germaniumPhysical,
+  new G4LogicalBorderSurface("iZIPTop", germaniumPhysical, aluminumTopPhysical,
                                         topSurfProp);
 
-  G4LogicalBorderSurface* botSurf = new G4LogicalBorderSurface("iZIPBot",
-                                        aluminumBotPhysical, germaniumPhysical,
+  new G4LogicalBorderSurface("iZIPBot", germaniumPhysical, aluminumBotPhysical,
                                         botSurfProp);
 
-  G4LogicalBorderSurface* wallSurf = new G4LogicalBorderSurface("iZIPWall",
-                                         worldPhys, germaniumPhysical,
+  new G4LogicalBorderSurface("iZIPWall", germaniumPhysical, worldPhys,
                                          wallSurfProp);
 
   // detector -- Note : Aluminum electrode sensitivity is attached to Germanium 
