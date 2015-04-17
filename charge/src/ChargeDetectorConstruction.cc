@@ -62,7 +62,7 @@ void ChargeDetectorConstruction::SetupGeometry()
   G4VSolid* germaniumSolid = new G4Tubs("germaniumCyl", 0.*cm, 3.81*cm,
                                         1.27*cm, 0.*deg, 360.*deg);
   G4VSolid* zipCutBox = new G4Box("ZipCutBox", 37.7444*mm, 36.0934*mm,
-                                  1.27*cm);
+                                  1.28*cm);
   G4VSolid* zipSolid = new G4IntersectionSolid("germaniumSolid", germaniumSolid,
                                                zipCutBox);
   G4LogicalVolume* germaniumLogical = new G4LogicalVolume(zipSolid, germanium,
@@ -80,7 +80,7 @@ void ChargeDetectorConstruction::SetupGeometry()
   // Physical lattice for each placed detector
   G4LatticePhysical* detLattice =
     new G4LatticePhysical(latManager->GetLattice(germanium));
-  //*** detLattice->SetMillerOrientation(0,0,1);
+  detLattice->SetLatticeOrientation(0.,45.*deg);	// Flats at [110]
   latManager->RegisterLattice(germaniumPhysical, detLattice);
 
   // Aluminum
