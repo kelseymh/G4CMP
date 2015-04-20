@@ -35,10 +35,16 @@ G4CMPVDriftBoundaryProcess::G4CMPVDriftBoundaryProcess(const G4String& name,
 G4CMPVDriftBoundaryProcess::~G4CMPVDriftBoundaryProcess() {}
 
 
-G4double 
-G4CMPVDriftBoundaryProcess::GetMeanFreePath(const G4Track& /*aTrack*/,
-					   G4double /*previousStepSize*/,
-					   G4ForceCondition* condition) {
+G4double G4CMPVDriftBoundaryProcess::
+PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
+				     G4double previousStepSize,
+				     G4ForceCondition* condition) {
+  return GetMeanFreePath(aTrack, previousStepSize, condition);
+}
+
+G4double G4CMPVDriftBoundaryProcess::
+GetMeanFreePath(const G4Track& /*aTrack*/,G4double /*previousStepSize*/,
+		G4ForceCondition* condition) {
   *condition = Forced;
   return DBL_MAX;
 }
@@ -57,12 +63,17 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
+  if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+
   // do nothing if the current step is inbound from the original volume
   G4LatticePhysical* volLattice =
     G4LatticeManager::GetLatticeManager()->GetLattice(preStepPoint->GetPhysicalVolume());
   if (volLattice != theLattice) {
-    if (verboseLevel>1)
-      G4cout << GetProcessName() << ": Track inbound after reflection" << G4endl;
+    if (verboseLevel>1) {
+      G4cout << GetProcessName() << ": Track inbound after reflection"
+	     << G4endl;
+    }
+
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
   }
 
@@ -77,8 +88,12 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     borderSurface = static_cast <G4CMPSurfaceProperty*> (
                                                 surface->GetSurfaceProperty());
   } else {
-    if (verboseLevel>1)
-      G4cout << GetProcessName() << ": No border surface defined." << G4endl;
+    if (verboseLevel>1) {
+      G4cerr << GetProcessName() << ": No border surface defined for "
+	     << thePrePV->GetName() << " to "  << thePostPV->GetName()
+	     << G4endl;
+    }
+
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
   }
 
@@ -88,11 +103,10 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   absMinKHole = borderSurface->GetMinKHole();
   electrodeV = borderSurface->GetElectrodeV();
 
-  if (verboseLevel) {
-    G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+  if (verboseLevel>1) {
     G4cout << "    Track volume: " << aTrack.GetVolume()->GetName()
-	   << "\n PreStep volume: " << preStepPoint->GetPhysicalVolume()->GetName()
-	   << "\nPostStep volume: " << postStepPoint->GetPhysicalVolume()->GetName()
+	   << "\n PreStep volume: " << thePrePV->GetName()
+	   << "\nPostStep volume: " << thePostPV->GetName()
 	   << G4endl;
   }
 
@@ -156,6 +170,7 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     momentumDir -= 2.*momNorm*surfNorm;		// Simple specular reflection
 
     aParticleChange.ProposeMomentumDirection(momentumDir);
+    aParticleChange.ProposeTrackStatus(fAlive);
   }
 
   return &aParticleChange;
