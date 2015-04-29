@@ -145,6 +145,7 @@ set(library_SOURCES
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPPhysicsList.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPProcessUtils.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPStackingAction.cc
+   ${PROJECT_SOURCE_DIR}/library/src/G4CMPSecondaryProduction.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPTimeStepper.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPTriLinearInterp.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPValleyTrackMap.cc
