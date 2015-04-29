@@ -33,6 +33,7 @@
 // 20150212  Remove file IO. Use sensitive detectors instead
 // 20150304  Change to generic G4CMPVDrifBoundaryProcess and
 //           utilize specific G4CMPDrift{Electron,Hole}BoundaryProcess
+// 20150420  Replace MFP with GPIL to suppress unnecessary verbosity.
 
 #ifndef G4CMPVDriftBoundaryProcess_h
 #define G4CMPVDriftBoundaryProcess_h 1
@@ -48,6 +49,11 @@ public:
   virtual ~G4CMPVDriftBoundaryProcess();
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
+
+  virtual G4double 
+  PostStepGetPhysicalInteractionLength(const G4Track& track,
+				       G4double previousStepSize,
+				       G4ForceCondition* condition);
 
   virtual G4bool IsApplicable(const G4ParticleDefinition&);
 
@@ -69,11 +75,9 @@ protected:
   const G4ParticleDefinition* theCarrier;
   G4double absProb;
   G4double absDeltaV;
-  G4double absTopMinK;
-  G4double absBotMinK;
-  G4double absWallMinK;
-  G4double botElectrodeV;
-  G4double topElectrodeV;
+  G4double absMinKElec;
+  G4double absMinKHole;
+  G4double electrodeV;
   G4String shortName;
 };
 

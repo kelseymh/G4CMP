@@ -134,17 +134,6 @@ public:
   G4double GetIVRate() const     { return fLattice->GetIVRate(); }
   G4double GetIVExponent() const { return fLattice->GetIVExponent(); }
 
-  G4double GetAbsProb() const        { return fLattice->GetAbsProb(); }
-  G4double GetAbsDeltaV() const      { return fLattice->GetAbsDeltaV(); }
-  G4double GetAbsTopMinKElec() const { return fLattice->GetAbsTopMinKElec(); }
-  G4double GetAbsBotMinKElec() const { return fLattice->GetAbsBotMinKElec(); }
-  G4double GetAbsWallMinKElec() const { return fLattice->GetAbsWallMinKElec(); }
-  G4double GetAbsTopMinKHole() const { return fLattice->GetAbsTopMinKHole(); }
-  G4double GetAbsBotMinKHole() const { return fLattice->GetAbsBotMinKHole(); }
-  G4double GetAbsWallMinKHole() const { return fLattice->GetAbsWallMinKHole(); }
-  G4double GetBotElectrodeV() const { return fLattice->GetBotElectrodeV(); }
-  G4double GetTopElectrodeV() const { return fLattice->GetTopElectrodeV(); }
-
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;
 

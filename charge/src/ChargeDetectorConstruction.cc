@@ -1,10 +1,12 @@
 // $Id$
 
 #include "ChargeDetectorConstruction.hh"
+#include "ChargeElectrodeSensitivity.hh"
 #include "ChargeEMField.hh"
+#include "G4CMPSurfaceProperty.hh"
+#include "G4LogicalBorderSurface.hh"
 #include "G4Box.hh"
 #include "G4IntersectionSolid.hh"
-#include "ChargeElectrodeSensitivity.hh"
 #include "G4Colour.hh"
 #include "G4LatticeLogical.hh"
 #include "G4LatticeManager.hh"
@@ -89,10 +91,37 @@ void ChargeDetectorConstruction::SetupGeometry()
   G4LogicalVolume* aluminumLogical = new G4LogicalVolume(aluminumSolid,
                                                          aluminum,
                                                          "aluminumLogical");
-  new G4PVPlacement(0, G4ThreeVector(0.,0.,1.28*cm), aluminumLogical,
-                    "aluminumPhysical", worldLogical, false, 0);
-  new G4PVPlacement(0, G4ThreeVector(0.,0.,-1.28*cm), aluminumLogical,
-                    "aluminumPhysical", worldLogical, false, 1);
+
+  G4VPhysicalVolume* aluminumTopPhysical = new G4PVPlacement(
+                                               0, G4ThreeVector(0.,0.,1.28*cm),
+                                               aluminumLogical,
+                                               "topAluminumPhysical", worldLogical,
+                                               false, 0);
+
+  G4VPhysicalVolume* aluminumBotPhysical = new G4PVPlacement(
+                                               0, G4ThreeVector(0.,0.,-1.28*cm),
+                                               aluminumLogical,
+                                               "bottomAluminumPhysical", worldLogical,
+                                               false, 1);
+
+  // Add surfaces between Ge-Al, and Ge-World
+  G4CMPSurfaceProperty* topSurfProp = new G4CMPSurfaceProperty("topSurfProp",
+                                                 1e-5, 0.02*volt, 4.3650e8/m,
+                                                 7.5175e8/m, 2*volt);
+  G4CMPSurfaceProperty* botSurfProp = new G4CMPSurfaceProperty("botSurfProp",
+                                                 1e-5, 0.02*volt, 3.9600e8/m,
+                                                 6.8200e8/m, -2*volt);
+  G4CMPSurfaceProperty* wallSurfProp = new G4CMPSurfaceProperty("wallSurfProp",
+                                                 1e-5, 0., 0., 0., 0.);
+
+  new G4LogicalBorderSurface("iZIPTop", germaniumPhysical, aluminumTopPhysical,
+                                        topSurfProp);
+
+  new G4LogicalBorderSurface("iZIPBot", germaniumPhysical, aluminumBotPhysical,
+                                        botSurfProp);
+
+  new G4LogicalBorderSurface("iZIPWall", germaniumPhysical, worldPhys,
+                                         wallSurfProp);
 
   // detector -- Note : Aluminum electrode sensitivity is attached to Germanium 
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
