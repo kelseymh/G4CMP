@@ -220,7 +220,7 @@ void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bar
 
   TetraIdx = bestTet;
   Cart2Bary(point,bary);
-  G4cout << "G4CMPTriLinearInterp::FindTetrahedron: "
+  /*G4cout << "G4CMPTriLinearInterp::FindTetrahedron: "
          << "Tetrahedron not found! Using best tetrahedron." << G4endl;
   G4cout << "point[0] = " << point[0] << "; point[1] = " << point[1] 
          << "; point[2] = " << point[2] << ";" << G4endl;
@@ -228,6 +228,7 @@ void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bar
   G4cout << "bary[0] = " << bary[0] << "; bary[1] = " << bary[1] 
          << "; bary[2] = " << bary[2] << "; bary[3] = " << bary[3] << ";" 
          << G4endl;
+         */
 }
 
 void G4CMPTriLinearInterp::Cart2Bary(const G4double point[4], G4double bary[4]) const {
