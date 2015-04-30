@@ -386,7 +386,8 @@ const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
 
   if (iv >=0 && iv < (G4int)NumberOfValleys()) return fValley[iv];
 
-  G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
+  if (verboseLevel>1)
+    G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
   return G4RotationMatrix::IDENTITY;
 }
 
