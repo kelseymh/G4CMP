@@ -14,9 +14,7 @@
 #include "G4PhysicalConstants.hh"
 
 G4CMPhDriftBoundaryProcess::G4CMPhDriftBoundaryProcess()
-  : G4CMPVDriftBoundaryProcess("hDrift", G4CMPDriftHole::Definition()) {
-  if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
-}
+  : G4CMPVDriftBoundaryProcess("hDrift", G4CMPDriftHole::Definition()) {;}
 
 G4CMPhDriftBoundaryProcess::~G4CMPhDriftBoundaryProcess() {}
 

@@ -13,9 +13,7 @@
 #include "G4SystemOfUnits.hh"
 
 G4CMPeDriftBoundaryProcess::G4CMPeDriftBoundaryProcess()
-  : G4CMPVDriftBoundaryProcess("eDrift", G4CMPDriftElectron::Definition()) {
-  if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
-}
+  : G4CMPVDriftBoundaryProcess("eDrift", G4CMPDriftElectron::Definition()) {;}
 
 G4CMPeDriftBoundaryProcess::~G4CMPeDriftBoundaryProcess() {}
 
