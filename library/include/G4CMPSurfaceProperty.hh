@@ -22,6 +22,8 @@
 // * use  in  resulting  scientific  publications,  and indicate your *
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
+//
+// $Id$
 
 #ifndef G4CMPSurfaceProperty_h
 #define G4CMPSurfaceProperty_h 1
@@ -31,19 +33,17 @@
 #include "G4SurfaceProperty.hh"
 
 // TODO: Someday will probably have to use MaterialPropertiesTable
-//class G4MaterialPropertiesTable;
+// class G4MaterialPropertiesTable;
 
-class G4CMPSurfaceProperty : public G4SurfaceProperty
-{
-
+class G4CMPSurfaceProperty : public G4SurfaceProperty {
 public:
     G4CMPSurfaceProperty(const G4String& name,
-                         G4SurfaceType type = dielectric_dielectric);
+                         G4SurfaceType stype = dielectric_dielectric);
 
     G4CMPSurfaceProperty(const G4String& name,
                          G4double prob, G4double deltaV,
                          G4double minKe, G4double minKh,
-                         G4double V, G4SurfaceType type = dielectric_dielectric);
+                         G4double V, G4SurfaceType stype = dielectric_dielectric);
 
     G4CMPSurfaceProperty(const G4CMPSurfaceProperty &right);
     G4CMPSurfaceProperty & operator=(const G4CMPSurfaceProperty &right);
@@ -53,16 +53,6 @@ public:
 
     virtual ~G4CMPSurfaceProperty();
 
-    //inline G4MaterialPropertiesTable* GetMaterialPropertiesTable() const
-    //                   { return theMaterialPropertiesTable; }
-
-    //inline void SetMaterialPropertiesTable(G4MaterialPropertiesTable *anMPT)
-    //                   { theMaterialPropertiesTable = anMPT; }
-
-    void DumpInfo() const;
-
-    void SetType(const G4SurfaceType& type);
-    inline G4SurfaceType GetType() {return type; }
     inline void SetAbsProb(G4double p) { absProb = p; }
     inline G4double GetAbsProb() { return absProb; }
     inline void SetAbsDeltaV(G4double p) { absDeltaV = p; }
@@ -74,13 +64,10 @@ public:
     inline void SetElectrodeV(G4double v) { electrodeV = v; }
     inline G4double GetElectrodeV() { return electrodeV; }
 
-
-    //void ReadLUTFile(void);
+  void DumpInfo() const;	// To be implemented
 
 private:
     //G4MaterialPropertiesTable* theMaterialPropertiesTable;
-    //FILE* readLUTFileHandle;
-    G4SurfaceType type;
     G4double absProb;
     G4double absDeltaV;
     G4double minKElec;

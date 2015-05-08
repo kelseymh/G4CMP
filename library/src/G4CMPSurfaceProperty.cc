@@ -23,22 +23,22 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
+// $Id$
 
 #include "G4ios.hh"
 #include "globals.hh"
 #include "G4CMPSurfaceProperty.hh"
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
-           G4SurfaceType type) : G4SurfaceProperty(name,type)
+           G4SurfaceType stype) : G4SurfaceProperty(name, stype)
 {;}
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                          G4double prob, G4double deltaV,
                          G4double minKe, G4double minKh,
                          G4double V,
-                         G4SurfaceType type)
-                         : G4SurfaceProperty(name,type), absProb(prob),
+                         G4SurfaceType stype)
+                         : G4SurfaceProperty(name,stype), absProb(prob),
                          absDeltaV(deltaV), minKElec(minKe), minKHole(minKh),
                          electrodeV(V)
 {;}
@@ -48,28 +48,21 @@ G4CMPSurfaceProperty::~G4CMPSurfaceProperty()
 {;}
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4CMPSurfaceProperty &right)
-  : G4SurfaceProperty(right.theName,right.theType)
+  : G4SurfaceProperty(right.theName, right.theType)	// No base copy ctor
 {
     *this = right;
-    this->theName    = right.theName;
-    this->theType    = right.theType;
-    this->absProb    = right.absProb;
-    this->absDeltaV  = right.absDeltaV;
-    this->minKElec   = right.minKElec;
-    this->minKHole   = right.minKHole;
-    this->electrodeV = right.electrodeV;
 }
 
 G4CMPSurfaceProperty& G4CMPSurfaceProperty::operator=(const G4CMPSurfaceProperty& right)
 {
   if (this != &right) {
-      theName    = right.theName;
-      type       = right.type;
-      absProb    = right.absProb;
-      absDeltaV  = right.absDeltaV;
-      minKElec   = right.minKElec;
-      minKHole   = right.minKHole;
-      electrodeV = right.electrodeV;
+    theName    = right.theName;
+    theType    = right.theType;
+    absProb    = right.absProb;
+    absDeltaV  = right.absDeltaV;
+    minKElec   = right.minKElec;
+    minKHole   = right.minKHole;
+    electrodeV = right.electrodeV;
   }
   return *this;
 }
