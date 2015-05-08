@@ -10,29 +10,31 @@
 #include "G4CMPDriftHole.hh"
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPSurfaceProperty.hh"
-#include "G4LatticeManager.hh"
+#include "G4Field.hh"
+#include "G4FieldManager.hh"
+#include "G4GeometryTolerance.hh"
 #include "G4LatticeLogical.hh"
+#include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalBorderSurface.hh"
-#include "G4VPhysicalVolume.hh"
-#include "G4VSolid.hh"
-#include "G4FieldManager.hh"
-#include "G4Field.hh"
+#include "G4ParallelWorldProcess.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
-#include "G4VParticleChange.hh"
-#include "G4GeometryTolerance.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4TransportationManager.hh"
+#include "G4VParticleChange.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4VSolid.hh"
+#include <vector>
+
 
 G4CMPVDriftBoundaryProcess::G4CMPVDriftBoundaryProcess(const G4String& name,
                                          const G4ParticleDefinition* carrier)
   : G4CMPVDriftProcess("G4CMP"+name+"Boundary", fChargeBoundary),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()),
-    theCarrier(carrier), shortName(name) {
-  if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
-}
+  theCarrier(carrier), shortName(name) {;}
 
-G4CMPVDriftBoundaryProcess::~G4CMPVDriftBoundaryProcess() {}
+G4CMPVDriftBoundaryProcess::~G4CMPVDriftBoundaryProcess() {;}
 
 
 G4double G4CMPVDriftBoundaryProcess::
@@ -63,11 +65,23 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
-  if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+  if (verboseLevel) {
+    G4cout << GetProcessName() << "::PostStepDoIt length "
+	   << aTrack.GetStepLength() << G4endl;
+  }
 
-  // do nothing if the current step is inbound from the original volume
+  G4VPhysicalVolume* thePrePV = preStepPoint->GetPhysicalVolume();
+  G4VPhysicalVolume* thePostPV = postStepPoint->GetPhysicalVolume();
+
+  if (thePrePV == thePostPV) {
+    G4cerr << GetProcessName() << " ERROR: fGeomBoundary status set, but"
+	   << " pre- and post-step volumes are identical!" << G4endl;
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+  }
+
+  // do nothing if the current step is inbound from outside the original volume
   G4LatticePhysical* volLattice =
-    G4LatticeManager::GetLatticeManager()->GetLattice(preStepPoint->GetPhysicalVolume());
+    G4LatticeManager::GetLatticeManager()->GetLattice(thePrePV);
   if (volLattice != theLattice) {
     if (verboseLevel>1) {
       G4cout << GetProcessName() << ": Track inbound after reflection"
@@ -78,15 +92,12 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   // Grab surface information
-  G4VPhysicalVolume* thePrePV = preStepPoint->GetPhysicalVolume();
-  G4VPhysicalVolume* thePostPV = postStepPoint->GetPhysicalVolume();
   G4LogicalSurface* surface = G4LogicalBorderSurface::GetSurface(thePrePV,
                                                                  thePostPV);
   G4CMPSurfaceProperty* borderSurface;
-
   if (surface) {
-    borderSurface = static_cast <G4CMPSurfaceProperty*> (
-                                                surface->GetSurfaceProperty());
+    borderSurface =
+      static_cast<G4CMPSurfaceProperty*>(surface->GetSurfaceProperty());
   } else {
     if (verboseLevel>1) {
       G4cerr << GetProcessName() << ": No border surface defined for "
@@ -120,10 +131,25 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     return &aParticleChange;
   }
 
-  // Test #2: If k is larger than the threshold for this surface.
-  G4LogicalVolume* LV = thePrePV->GetLogicalVolume();
-  G4ThreeVector surfNorm = LV->GetSolid()->SurfaceNormal(postStepPoint->GetPosition());
+  // Get outward normal using G4Navigator method (more reliable than G4VSolid)
+  G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
+  std::vector<G4Navigator*>::iterator iNav =
+    G4TransportationManager::GetTransportationManager()->GetActiveNavigatorsIterator();
 
+  G4bool goodNorm;
+  G4ThreeVector surfNorm =
+    iNav[navID]->GetGlobalExitNormal(postStepPoint->GetPosition(), &goodNorm);
+  if (!goodNorm) {
+    G4cerr << GetProcessName() << " ERROR:  Cannot get normal at surface of "
+	   << thePrePV->GetName() << " @ " << postStepPoint->GetPosition()
+	   << G4endl;
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+  } else if (verboseLevel>2) {
+    G4cout << " Normal " << surfNorm << " @ " << postStepPoint->GetPosition()
+	   << G4endl;
+  }
+
+  // Test #2: If k is larger than the threshold for this surface.
   G4double absThresh = (theCarrier == G4CMPDriftElectron::Definition()) ?
                         absMinKElec : absMinKHole;
 
@@ -137,7 +163,7 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   // Test #3: If landed on an electrode.
-  G4FieldManager* fMan = LV->GetFieldManager();
+  G4FieldManager* fMan = thePrePV->GetLogicalVolume()->GetFieldManager();
   if (fMan && fMan->DoesFieldExist()) {
     const G4CMPMeshElectricField* field = 
       dynamic_cast<const G4CMPMeshElectricField*>(fMan->GetDetectorField());
@@ -167,11 +193,24 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     if (verboseLevel>1)
       G4cout << GetProcessName() << ": Track reflected" << G4endl;
 
+    if (verboseLevel>2)
+      G4cout << " Old momentum direction " << momentumDir << G4endl;
+
     momentumDir -= 2.*momNorm*surfNorm;		// Simple specular reflection
 
+    if (verboseLevel>2)
+      G4cout << " New momentum direction " << momentumDir << G4endl;
+
     aParticleChange.ProposeMomentumDirection(momentumDir);
-    aParticleChange.ProposeTrackStatus(fAlive);
-  }
+    // FIXME:  This needs to be different for electrons!
+  } else {
+    if (verboseLevel>1) {
+      G4cerr << GetProcessName() << ": Track reflection failed, momentum"
+	     << " and surface norm opposite" << G4endl
+	     << " Momentum dir:   " << momentumDir << G4endl
+	     << " Surface normal: " << surfNorm << G4endl;
+    }
+  } 
 
   return &aParticleChange;
 }
