@@ -60,8 +60,16 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
   // do nothing if the current step is not limited by a volume boundary,
   // or if it is the returning "null step" after a reflection
-  if (postStepPoint->GetStepStatus()!=fGeomBoundary ||
-      aTrack.GetStepLength()<=kCarTolerance/2.) {
+  if (postStepPoint->GetStepStatus()!=fGeomBoundary) {
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+  }
+
+  if (aTrack.GetStepLength()<=kCarTolerance/2.) {
+    if (verboseLevel>1) {
+      G4cout << GetProcessName() << ": Track step too small "
+	     << aTrack.GetStepLength() << G4endl;
+    }
+
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
