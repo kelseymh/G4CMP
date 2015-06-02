@@ -36,6 +36,7 @@
 // 20140401  Add valley momentum calculations
 // 20140408  Move vally momentum calcs to G4LatticeLogical
 // 20140425  Add "effective mass" calculation for electrons
+// 20150601  Add mapping from electron velocity back to momentum
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -166,6 +167,17 @@ G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
   RotateToLattice(p_e);
   p_e = fLattice->MapPtoV_el(ivalley, p_e);	// Overwrite to avoid temporary
   return RotateToSolid(p_e);
+}
+
+G4ThreeVector 
+G4LatticePhysical::MapV_elToP(G4int ivalley, G4ThreeVector v_e) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapPtoV_el " << ivalley << " " << v_e
+	   << G4endl;
+
+  RotateToLattice(v_e);
+  v_e = fLattice->MapV_elToP(ivalley, v_e);	// Overwrite to avoid temporary
+  return RotateToSolid(v_e);
 }
 
 G4ThreeVector 

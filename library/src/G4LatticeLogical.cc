@@ -34,6 +34,7 @@
 // 20140324  Include inverse mass-ratio tensor
 // 20140408  Add valley momentum calculations
 // 20140425  Add "effective mass" calculation for electrons
+// 20150601  Add mapping from electron velocity back to momentum
 
 #include "G4LatticeLogical.hh"
 #include "G4RotationMatrix.hh"
@@ -220,7 +221,17 @@ G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
 	   << G4endl;
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
-  return (vToN.inverse()*GetMInvTensor()*vToN) * (p_e/c_light);
+  return vToN.inverse()*(GetMInvTensor()*(vToN*p_e/c_light));
+}
+
+G4ThreeVector 
+G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapV_elToP " << ivalley << " " << v_e
+	   << G4endl;
+
+  const G4RotationMatrix& vToN = GetValley(ivalley);
+  return vToN.inverse()*(GetMassTensor()*(vToN*v_e*c_light));
 }
 
 G4ThreeVector 

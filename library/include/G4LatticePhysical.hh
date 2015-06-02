@@ -37,6 +37,7 @@
 // 20140324  Add intervalley scattering parameters
 // 20140401  Add valley momentum calculations
 // 20140425  Add "effective mass" calculation for electrons
+// 20150601  Add mapping from electron velocity back to momentum
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -83,6 +84,7 @@ public:
   // NOTE:  Input vector must be in local (G4VSolid) coordinate system
   // NOTE:  Pass vector by value to allow in-situ rotations
   G4ThreeVector MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const;
+  G4ThreeVector MapV_elToP(G4int ivalley, G4ThreeVector v_el) const;
   G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const;
