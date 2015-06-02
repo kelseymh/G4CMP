@@ -14,8 +14,10 @@
 // 20140404  Drop unnecessary data members, using functions in G4LatticePhysical
 // 20140501  Fix sign flip in electron charge calculation.
 // 20141217  Avoid floating-point division by using vinv = 1/v.mag()
+// 20150528  Add debugging output
 
 #include "G4CMPEqEMField.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4ElectroMagneticField.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -98,7 +100,15 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   
   G4ThreeVector Efield(field[3], field[4], field[5]);
   G4ThreeVector retForce = fCharge * Efield * c_light*vinv;
-  
+
+  if (G4CMPConfigManager::GetVerboseLevel() > 2) {
+    G4cout << "G4CMPEqEMField: @ (" << y[0] << "," << y[1] << "," << y[2]
+	   << ")\n p (" << y[3] << "," << y[4] << "," << y[5]
+	   << ")\n Efield " << Efield.mag() << " " << Efield
+	   << "\n retForce " << retForce.mag() << " " << retForce
+	   << "\n TOF " << vinv << " vdir " << v.unit() << G4endl;
+  }
+
   dydx[0] = v.x()*vinv;		// Velocity direction
   dydx[1] = v.y()*vinv;
   dydx[2] = v.z()*vinv;
