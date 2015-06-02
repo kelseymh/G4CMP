@@ -34,6 +34,7 @@
 // 20150304  Change to generic G4CMPVDrifBoundaryProcess and
 //           utilize specific G4CMPDrift{Electron,Hole}BoundaryProcess
 // 20150420  Replace MFP with GPIL to suppress unnecessary verbosity.
+// 20150529  Add DoReflection() function, so electron can overload
 
 #ifndef G4CMPVDriftBoundaryProcess_h
 #define G4CMPVDriftBoundaryProcess_h 1
@@ -65,6 +66,16 @@ protected:
   virtual G4ThreeVector GetWaveVector(const G4Track&) const =0;
   virtual G4double GetKineticEnergy(const G4Track&) const =0;
 
+  // Decide and apply different surface actions; subclasses may override
+  virtual G4bool AbsorbTrack(const G4Step& aStep);
+  virtual G4VParticleChange* DoAbsorption(const G4Step& aStep);
+
+  virtual G4bool HitElectrode(const G4Step& aStep);
+  virtual G4VParticleChange* DoElectrodeHit(const G4Step& aStep);
+
+  virtual G4bool ReflectTrack(const G4Step& aStep);
+  virtual G4VParticleChange* DoReflection(const G4Step& aStep);
+
 private:
   G4CMPVDriftBoundaryProcess(G4CMPVDriftBoundaryProcess&);
   G4CMPVDriftBoundaryProcess& operator=(const G4CMPVDriftBoundaryProcess& right);
@@ -73,12 +84,14 @@ private:
 
 protected:
   const G4ParticleDefinition* theCarrier;
+  G4String shortName;
+
   G4double absProb;
   G4double absDeltaV;
   G4double absMinKElec;
   G4double absMinKHole;
   G4double electrodeV;
-  G4String shortName;
+  G4ThreeVector surfNorm;	// Surface normal (temporary buffer)
 };
 
 #endif

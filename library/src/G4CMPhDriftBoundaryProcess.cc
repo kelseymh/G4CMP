@@ -25,3 +25,11 @@ G4ThreeVector G4CMPhDriftBoundaryProcess::GetWaveVector(const G4Track& aTrack) c
 G4double G4CMPhDriftBoundaryProcess::GetKineticEnergy(const G4Track& aTrack) const {
   return aTrack.GetStep()->GetPostStepPoint()->GetKineticEnergy();
 }
+
+
+// Apply kinematic absoprtion (wave-vector at surface)
+
+G4bool G4CMPhDriftBoundaryProcess::AbsorbTrack(const G4Step& aStep) {
+  return (G4CMPVDriftBoundaryProcess::AbsorbTrack(aStep) ||
+	  GetWaveVector(*(aStep.GetTrack()))*surfNorm > absMinKHole);
+}

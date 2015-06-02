@@ -37,6 +37,12 @@ G4CMPVDriftBoundaryProcess::G4CMPVDriftBoundaryProcess(const G4String& name,
 G4CMPVDriftBoundaryProcess::~G4CMPVDriftBoundaryProcess() {;}
 
 
+G4bool 
+G4CMPVDriftBoundaryProcess::IsApplicable(const G4ParticleDefinition& aPD) {
+  return (&aPD==theCarrier);
+}
+
+
 G4double G4CMPVDriftBoundaryProcess::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 				     G4double previousStepSize,
@@ -99,6 +105,15 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
   }
 
+  if (verboseLevel>1) {
+    G4cout <<   "    Track volume: " << aTrack.GetVolume()->GetName()
+	   << "\n  PreStep volume: " << thePrePV->GetName() << " @ "
+	   << preStepPoint->GetPosition()
+	   << "\n PostStep volume: " << thePostPV->GetName() << " @ "
+	   << postStepPoint->GetPosition()
+	   << G4endl;
+  }
+
   // Grab surface information
   G4LogicalSurface* surface = G4LogicalBorderSurface::GetSurface(thePrePV,
                                                                  thePostPV);
@@ -122,30 +137,13 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   absMinKHole = borderSurface->GetMinKHole();
   electrodeV = borderSurface->GetElectrodeV();
 
-  if (verboseLevel>1) {
-    G4cout << "    Track volume: " << aTrack.GetVolume()->GetName()
-	   << "\n PreStep volume: " << thePrePV->GetName()
-	   << "\nPostStep volume: " << thePostPV->GetName()
-	   << G4endl;
-  }
-
-  // Test #1: There is an absProb chance to be absorbed no matter what.
-  if (G4UniformRand() <= absProb) {
-    if (verboseLevel>1)
-      G4cout << GetProcessName() << ": Track absorbed" << G4endl;
-
-    aParticleChange.ProposeNonIonizingEnergyDeposit(GetKineticEnergy(aTrack));
-    aParticleChange.ProposeTrackStatus(fStopAndKill);
-    return &aParticleChange;
-  }
-
   // Get outward normal using G4Navigator method (more reliable than G4VSolid)
   G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
   std::vector<G4Navigator*>::iterator iNav =
     G4TransportationManager::GetTransportationManager()->GetActiveNavigatorsIterator();
 
   G4bool goodNorm;
-  G4ThreeVector surfNorm =
+  surfNorm =
     iNav[navID]->GetGlobalExitNormal(postStepPoint->GetPosition(), &goodNorm);
   if (!goodNorm) {
     G4cerr << GetProcessName() << " ERROR:  Cannot get normal at surface of "
@@ -157,67 +155,28 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 	   << G4endl;
   }
 
-  // Test #2: If k is larger than the threshold for this surface.
-  G4double absThresh = (theCarrier == G4CMPDriftElectron::Definition()) ?
-                        absMinKElec : absMinKHole;
+  // Abosrption at surface without signal
+  if (AbsorbTrack(aStep)) {
+    return DoAbsorption(aStep);
+  }
 
-  if (GetWaveVector(aTrack).dot(surfNorm) > absThresh) {
-    if (verboseLevel>1)
-      G4cout << GetProcessName() << ": Track absorbed" << G4endl;
-
-    aParticleChange.ProposeNonIonizingEnergyDeposit(GetKineticEnergy(aTrack));
-    aParticleChange.ProposeTrackStatus(fStopAndKill);
-    return &aParticleChange;
+  if (verboseLevel>2) {
+    G4cout <<   " K direction: " << GetWaveVector(aTrack).unit()
+	   << "\n P direction: " << aTrack.GetMomentumDirection() << G4endl;
   }
 
   // Test #3: If landed on an electrode.
-  G4FieldManager* fMan = thePrePV->GetLogicalVolume()->GetFieldManager();
-  if (fMan && fMan->DoesFieldExist()) {
-    const G4CMPMeshElectricField* field = 
-      dynamic_cast<const G4CMPMeshElectricField*>(fMan->GetDetectorField());
-    if (field) {
-      G4double posVec[4] = { 4*0. };
-      GetLocalPosition(aTrack, posVec);
-      G4double potential = field->GetPotential(posVec);
-
-      if((fabs(surfNorm.getZ())>0.5
-            && fabs(potential-electrodeV) <= absDeltaV)) {
-        if (verboseLevel>1)
-          G4cout << GetProcessName() << ": Track hit electrode" << G4endl;
-
-        aParticleChange.ProposeNonIonizingEnergyDeposit(GetKineticEnergy(aTrack));
-        aParticleChange.ProposeTrackStatus(fStopAndKill);
-        return &aParticleChange;
-      }
-    }
-  } else {
-    G4cout << "WTF- no field?" << G4endl;
+  if (HitElectrode(aStep)) {
+    return DoElectrodeHit(aStep);
   }
 
   // No absorption means reflection. Naive approach, only reflect outbound
-  G4ThreeVector momentumDir = aTrack.GetMomentumDirection();
-  G4double momNorm = surfNorm.dot(momentumDir);
-  if (momNorm > 0.) {
-    if (verboseLevel>1)
-      G4cout << GetProcessName() << ": Track reflected" << G4endl;
+  if (ReflectTrack(aStep)) {
+    return DoReflection(aStep);
+  }
 
-    if (verboseLevel>2)
-      G4cout << " Old momentum direction " << momentumDir << G4endl;
-
-    momentumDir -= 2.*momNorm*surfNorm;		// Simple specular reflection
-
-    if (verboseLevel>2)
-      G4cout << " New momentum direction " << momentumDir << G4endl;
-
-    aParticleChange.ProposeMomentumDirection(momentumDir);
-    // FIXME:  This needs to be different for electrons!
-  } else {
-    if (verboseLevel>1) {
-      G4cerr << GetProcessName() << ": Track reflection failed, momentum"
-	     << " and surface norm opposite" << G4endl
-	     << " Momentum dir:   " << momentumDir << G4endl
-	     << " Surface normal: " << surfNorm << G4endl;
-    }
+  if (verboseLevel>1) {
+    G4cerr << GetProcessName() << ": Track boundary process failed" << G4endl;
   } 
 
   return &aParticleChange;
@@ -233,6 +192,77 @@ void G4CMPVDriftBoundaryProcess::LoadDataForTrack(const G4Track* track) {
   G4CMPVDriftProcess::LoadDataForTrack(track);
 }
 
-G4bool G4CMPVDriftBoundaryProcess::IsApplicable(const G4ParticleDefinition& aPD) {
-  return (&aPD==theCarrier);
+// Decide and apply different surface actions; subclasses may override
+
+G4bool G4CMPVDriftBoundaryProcess::AbsorbTrack(const G4Step& aStep) {
+  // Universal absorption threshold
+  return (G4UniformRand() <= absProb);
+}
+
+G4VParticleChange* 
+G4CMPVDriftBoundaryProcess::DoAbsorption(const G4Step& aStep) {
+  if (verboseLevel>1)
+    G4cout << GetProcessName() << ": Track absorbed" << G4endl;
+
+  G4double Ekin = GetKineticEnergy(*(aStep.GetTrack()));
+  aParticleChange.ProposeNonIonizingEnergyDeposit(Ekin);
+  aParticleChange.ProposeTrackStatus(fStopAndKill);
+  return &aParticleChange;
+}
+
+G4bool G4CMPVDriftBoundaryProcess::HitElectrode(const G4Step& aStep) {
+  G4VPhysicalVolume* thePrePV = aStep.GetPreStepPoint()->GetPhysicalVolume();
+  G4FieldManager* fMan = thePrePV->GetLogicalVolume()->GetFieldManager();
+
+  if (!fMan || !fMan->DoesFieldExist()) {
+    G4cerr << "WTF- no field?" << G4endl;	// Sanity check, must have field
+    return false;
+  }
+
+  const G4CMPMeshElectricField* field = 
+    dynamic_cast<const G4CMPMeshElectricField*>(fMan->GetDetectorField());
+  if (!field) return false;
+
+  // Extract potential at hit point from G4CMP-specific field interface
+  G4double posVec[4] = { 4*0. };
+  GetLocalPosition(aStep.GetTrack(), posVec);
+  G4double potential = field->GetPotential(posVec);
+  
+  return (fabs(potential-electrodeV) <= absDeltaV);
+}
+ 
+G4VParticleChange* 
+G4CMPVDriftBoundaryProcess::DoElectrodeHit(const G4Step& aStep) {
+  if (verboseLevel>1)
+    G4cout << GetProcessName() << ": Track hit electrode" << G4endl;
+
+  return DoAbsorption(aStep);
+}
+
+
+// Default behaviour assumes normal, scalar kinematics
+
+G4bool G4CMPVDriftBoundaryProcess::ReflectTrack(const G4Step& aStep) {
+  // Track is outbound hitting surface of volume
+  return (aStep.GetPostStepPoint()->GetMomentumDirection()*surfNorm > 0.);
+}
+
+G4VParticleChange*  
+G4CMPVDriftBoundaryProcess::DoReflection(const G4Step& aStep) {
+  if (verboseLevel>1)
+    G4cout << GetProcessName() << ": Track reflected" << G4endl;
+
+  G4ThreeVector momDir = aStep.GetPostStepPoint()->GetMomentumDirection();
+  if (verboseLevel>2)
+    G4cout << " Old momentum direction " << momDir << G4endl;
+
+  // Specular reflecton reverses momentum along normal
+  G4double momNorm = momDir * surfNorm;
+  momDir -= 2.*momNorm*surfNorm;
+  
+  if (verboseLevel>2)
+    G4cout << " New momentum direction " << momDir << G4endl;
+  
+  aParticleChange.ProposeMomentumDirection(momDir);
+  return &aParticleChange;
 }

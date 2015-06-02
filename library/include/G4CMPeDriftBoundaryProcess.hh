@@ -28,6 +28,7 @@
 //
 // $Id$
 //
+// 20150601  M. Kelsey -- Follow encapsulation of boundary process actions
 
 #ifndef G4CMPeDriftBoundaryProcess_h
 #define G4CMPeDriftBoundaryProcess_h 1
@@ -43,6 +44,13 @@ public:
 protected:
   virtual G4ThreeVector GetWaveVector(const G4Track& aTrack) const;
   virtual G4double GetKineticEnergy(const G4Track& aTrack) const;
+
+  // Apply kinematic absoprtion (wave-vector at surface)
+  virtual G4bool AbsorbTrack(const G4Step&);
+
+  // Apply reflection to velocity vector, not momentum
+  virtual G4bool ReflectTrack(const G4Step& aStep);
+  virtual G4VParticleChange* DoReflection(const G4Step& aStep);
 
 private:
   G4CMPeDriftBoundaryProcess(G4CMPeDriftBoundaryProcess&);
