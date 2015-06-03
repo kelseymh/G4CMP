@@ -66,16 +66,8 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
   // do nothing if the current step is not limited by a volume boundary,
   // or if it is the returning "null step" after a reflection
-  if (postStepPoint->GetStepStatus()!=fGeomBoundary) {
-    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-  }
-
-  if (aTrack.GetStepLength()<=kCarTolerance/2.) {
-    if (verboseLevel>1) {
-      G4cout << GetProcessName() << ": Track step too small "
-	     << aTrack.GetStepLength() << G4endl;
-    }
-
+  if (postStepPoint->GetStepStatus() != fGeomBoundary ||
+      aTrack.GetStepLength() <= kCarTolerance/2.) {
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
@@ -88,8 +80,11 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   G4VPhysicalVolume* thePostPV = postStepPoint->GetPhysicalVolume();
 
   if (thePrePV == thePostPV) {
-    G4cerr << GetProcessName() << " ERROR: fGeomBoundary status set, but"
-	   << " pre- and post-step volumes are identical!" << G4endl;
+    if (verboseLevel) {
+      G4cerr << GetProcessName() << " ERROR: fGeomBoundary status set, but"
+	     << " pre- and post-step volumes are identical!" << G4endl;
+    }
+
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
@@ -214,11 +209,13 @@ G4bool G4CMPVDriftBoundaryProcess::HitElectrode(const G4Step& aStep) {
   G4VPhysicalVolume* thePrePV = aStep.GetPreStepPoint()->GetPhysicalVolume();
   G4FieldManager* fMan = thePrePV->GetLogicalVolume()->GetFieldManager();
 
-  if (!fMan || !fMan->DoesFieldExist()) {
-    G4cerr << "WTF- no field?" << G4endl;	// Sanity check, must have field
+  if (!fMan || !fMan->DoesFieldExist()) {	// Sanity check, must have field
+    G4cerr << GetProcessName() << " ERROR: No Field for volume "
+	   << thePrePV->GetName() << G4endl;
     return false;
   }
 
+  // Can only get potential (to identify electrode) from G4CMP special field
   const G4CMPMeshElectricField* field = 
     dynamic_cast<const G4CMPMeshElectricField*>(fMan->GetDetectorField());
   if (!field) return false;
@@ -230,7 +227,10 @@ G4bool G4CMPVDriftBoundaryProcess::HitElectrode(const G4Step& aStep) {
   
   return (fabs(potential-electrodeV) <= absDeltaV);
 }
- 
+
+// Default behaviour just kills the track, may need to have "state flag"
+// akin to G3OpBoundaryProcess.
+
 G4VParticleChange* 
 G4CMPVDriftBoundaryProcess::DoElectrodeHit(const G4Step& aStep) {
   if (verboseLevel>1)
