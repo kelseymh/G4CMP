@@ -4,8 +4,10 @@
 // 20141029  Get output hits file from configuration manager
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 // 20150212  Remove file IO. Use sensitive detectors instead
+// 20150603  Add functionality to globally limit reflections
 
 #include "G4CMPVDriftBoundaryProcess.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPMeshElectricField.hh"
@@ -32,7 +34,9 @@ G4CMPVDriftBoundaryProcess::G4CMPVDriftBoundaryProcess(const G4String& name,
                                          const G4ParticleDefinition* carrier)
   : G4CMPVDriftProcess("G4CMP"+name+"Boundary", fChargeBoundary),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()),
-  theCarrier(carrier), shortName(name) {;}
+    theCarrier(carrier), shortName(name), absProb(1.), absDeltaV(0.), 
+    absMinKElec(0.), absMinKHole(0.), electrodeV(0.), numberOfReflections(0)
+{;}
 
 G4CMPVDriftBoundaryProcess::~G4CMPVDriftBoundaryProcess() {;}
 
@@ -150,7 +154,7 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 	   << G4endl;
   }
 
-  // Abosrption at surface without signal
+  // Test #1 and #2: Abosrption at surface without signal
   if (AbsorbTrack(aStep)) {
     return DoAbsorption(aStep);
   }
@@ -165,13 +169,24 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     return DoElectrodeHit(aStep);
   }
 
-  // No absorption means reflection. Naive approach, only reflect outbound
-  if (ReflectTrack(aStep)) {
-    return DoReflection(aStep);
+  // Test #4: Charge carrier reflects off surface
+  if (numberOfReflections < G4CMPConfigManager::GetMaxChargeBounces()) {
+    if (ReflectTrack(aStep)) {
+      numberOfReflections++;
+      return DoReflection(aStep);
+    }
+  } else {
+    if (verboseLevel>1) {
+      G4cout << GetProcessName() << ": Track reflected " << numberOfReflections
+	     << " times." << G4endl;
+    }
+    return DoAbsorption(aStep);
   }
 
+  // Should never reach this code!
   if (verboseLevel>1) {
-    G4cerr << GetProcessName() << ": Track boundary process failed" << G4endl;
+    G4cerr << GetProcessName() << " ERROR: Track boundary process failed"
+	   << G4endl;
   } 
 
   return &aParticleChange;
@@ -185,6 +200,7 @@ void G4CMPVDriftBoundaryProcess::LoadDataForTrack(const G4Track* track) {
   }
 
   G4CMPVDriftProcess::LoadDataForTrack(track);
+  numberOfReflections = 0;		// New track, no bounces
 }
 
 // Decide and apply different surface actions; subclasses may override

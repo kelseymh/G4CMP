@@ -35,6 +35,7 @@
 //           utilize specific G4CMPDrift{Electron,Hole}BoundaryProcess
 // 20150420  Replace MFP with GPIL to suppress unnecessary verbosity.
 // 20150529  Add DoReflection() function, so electron can overload
+// 20150603  Add parameter to count number of reflections by track
 
 #ifndef G4CMPVDriftBoundaryProcess_h
 #define G4CMPVDriftBoundaryProcess_h 1
@@ -92,6 +93,8 @@ protected:
   G4double absMinKHole;
   G4double electrodeV;
   G4ThreeVector surfNorm;	// Surface normal (temporary buffer)
+
+  G4int numberOfReflections;	// Counter to prevent runaway tracks
 };
 
 #endif

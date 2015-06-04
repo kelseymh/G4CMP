@@ -13,6 +13,8 @@
 // 20141231  Add parameter to set scale (relative to l0) for minimum steps
 // 20150106  Move Luke phonon generating flag here, out of processes
 // 20150122  Add parameter to rescale voltage in Epot field files
+// 20150603  Add parameter to limit reflections in DriftBoundaryProcess
+
 #include "globals.hh"
 
 class G4CMPConfigMessenger;
@@ -24,6 +26,7 @@ public:
 
   // Access current values
   static G4int GetVerboseLevel()         { return Instance()->verbose; }
+  static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
   static G4double GetVoltage()           { return Instance()->voltage; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetLukePhonons()       { return Instance()->lukePhonons; }
@@ -34,6 +37,7 @@ public:
 
   // Change values (e.g., via Messenger)
   static void SetVerboseLevel(G4int value)      { Instance()->verbose = value; }
+  static void SetMaxChargeBounces(G4int value){ Instance()->ehBounces = value; }
   static void SetVoltage(G4double value)        { Instance()->voltage = value; }
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
   static void SetLukePhonons(G4double value)  { Instance()->lukePhonons=value; }
@@ -57,6 +61,7 @@ private:
   G4String Epot_file;		// Name of E-field file ($G4CMP_EPOT_FILE)
   G4String LatticeDir;		// Lattice data directory ($G4LATTICEDATA)
   G4String Hit_file;		// Output file of e/h hits ($G4CMP_HIT_FILE)
+  G4int ehBounces;		// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
 
   G4CMPConfigMessenger* messenger;
 };

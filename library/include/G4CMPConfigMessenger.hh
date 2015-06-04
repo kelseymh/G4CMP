@@ -12,6 +12,7 @@
 // 20141231  Add command to set scale (relative to l0) for minimum steps
 // 20150106  Add command to toggle generating Luke phonons
 // 20150122  Add command to rescale Epot file voltage by some factor
+// 20150603  Add command to limit reflections in DriftBoundaryProcess
 
 #include "G4UImessenger.hh"
 
@@ -45,6 +46,7 @@ private:
   G4UIdirectory* cmdDir;
 
   G4UIcmdWithAnInteger* verboseCmd;
+  G4UIcmdWithAnInteger* bounceCmd;
   G4UIcmdWithADoubleAndUnit* voltageCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makeLukeCmd;
