@@ -170,7 +170,8 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   // Test #4: Charge carrier reflects off surface
-  if (numberOfReflections < G4CMPConfigManager::GetMaxChargeBounces()) {
+  const G4int maxRefl = G4CMPConfigManager::GetMaxChargeBounces();
+  if (maxRefl<0 || numberOfReflections < maxRefl) {
     if (ReflectTrack(aStep)) {
       numberOfReflections++;
       return DoReflection(aStep);
