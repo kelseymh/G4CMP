@@ -47,10 +47,30 @@ set(charge_EPOT_FILES
     ${PROJECT_SOURCE_DIR}/charge/EPot_iZip4_70V_COMSOL5
     )
 
+set(charge_MACROS
+    ${PROJECT_SOURCE_DIR}/charge/run.mac
+    ${PROJECT_SOURCE_DIR}/charge/vis.mac
+    ${PROJECT_SOURCE_DIR}/charge/fast.mac
+    ${PROJECT_SOURCE_DIR}/charge/loop.mac
+    ${PROJECT_SOURCE_DIR}/charge/open.mac
+    ${PROJECT_SOURCE_DIR}/charge/play.mac
+    ${PROJECT_SOURCE_DIR}/charge/iZip4.mac
+    ${PROJECT_SOURCE_DIR}/charge/single.mac
+    ${PROJECT_SOURCE_DIR}/charge/openNew.mac
+    ${PROJECT_SOURCE_DIR}/charge/useRndm.mac
+    ${PROJECT_SOURCE_DIR}/charge/saveRndm.mac
+    ${PROJECT_SOURCE_DIR}/charge/testRefl.mac
+    ${PROJECT_SOURCE_DIR}/charge/shortQOS1.mac
+    ${PROJECT_SOURCE_DIR}/charge/testIonize.mac
+    ${PROJECT_SOURCE_DIR}/charge/drift_curve.mac
+    ${PROJECT_SOURCE_DIR}/charge/movie.loop
+    )
+
 add_executable(g4cmpCharge g4cmpCharge.cc ${charge_SOURCES})
 target_link_libraries(g4cmpCharge G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
 set_target_properties(g4cmpCharge PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 set(CMAKE_CXX_FLAGS "-O2")
 install(TARGETS g4cmpCharge DESTINATION bin)
-install(FILES ${charge_EPOT_FILES} DESTINATION . COMPONENT config)
+install(FILES ${charge_EPOT_FILES} DESTINATION EPotFiles COMPONENT config)
+install(FILES ${charge_MACROS} DESTINATION macros/g4cmpCharge)
