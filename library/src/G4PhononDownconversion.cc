@@ -238,7 +238,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
 
   //using energy fraction x to calculate daughter phonon directions
   G4double thetaL=MakeLDeviation(d, x);
-  G4double thetaT=MakeTDeviation(d, x);		// FIXME:  Should be 1-x?
+  G4double thetaT=MakeTDeviation(d, 1.0-x);		// FIXME:  Should be 1-x?
   G4ThreeVector dir1=trackKmap->GetK(aTrack);
   G4ThreeVector dir2=dir1;
 

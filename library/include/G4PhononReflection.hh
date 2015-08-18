@@ -43,9 +43,17 @@ public:
   
 protected:
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
+  G4bool ReflectTrack(const G4Step& aStep);
+  G4VParticleChange* DoReflection(const G4Step& aStep);
+  G4ThreeVector LambertRotation();
 
 private:
   G4double kCarTolerance;
+  G4double absProb;
+  G4double specProb;
+  G4double gapEnergy;
+  G4ThreeVector surfNorm;
+  G4int numberOfReflections;
 
 private:
   // hide assignment operator as private 

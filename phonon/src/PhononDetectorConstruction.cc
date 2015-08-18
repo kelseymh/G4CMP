@@ -39,6 +39,7 @@
 #include "G4Tubs.hh"
 #include "G4Sphere.hh"
 #include "G4LogicalVolume.hh"
+#include "G4LogicalBorderSurface.hh"
 #include "G4PVPlacement.hh"
 #include "G4UniformMagField.hh"
 #include "G4TransportationManager.hh"
@@ -48,6 +49,7 @@
 #include "G4SDManager.hh"
 
 #include "G4CMPElectrodeSensitivity.hh"
+#include "G4CMPSurfaceProperty.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
 #include "G4LatticeManager.hh"
@@ -146,11 +148,12 @@ void PhononDetectorConstruction::SetupGeometry()
 
   G4LogicalVolume* fAluminumLogical =
     new G4LogicalVolume(fAluminumSolid,fAluminum,"fAluminumLogical");
-  new G4PVPlacement(0,G4ThreeVector(0.,0.,1.28*cm),fAluminumLogical,
-                    "fAluminumPhysical",worldLogical,false,0);
-  new G4PVPlacement(0,G4ThreeVector(0.,0.,-1.28*cm),fAluminumLogical,
-                    "fAluminumPhysical",worldLogical,false,1);
-
+  G4VPhysicalVolume* aluminumTopPhysical = new G4PVPlacement(0,
+    G4ThreeVector(0.,0.,1.28*cm), fAluminumLogical, "fAluminumPhysical",
+    worldLogical,false,0);
+  G4VPhysicalVolume* aluminumBotPhysical = new G4PVPlacement(0,
+    G4ThreeVector(0.,0.,-1.28*cm), fAluminumLogical, "fAluminumPhysical",
+    worldLogical,false,1);
 
   //
   // detector -- Note : Aluminum electrode sensitivity is attached to Germanium 
@@ -160,6 +163,23 @@ void PhononDetectorConstruction::SetupGeometry()
     new G4CMPElectrodeSensitivity("G4CMPElectrode");
   SDman->AddNewDetector(electrodeSensitivity);
   fGermaniumLogical->SetSensitiveDetector(electrodeSensitivity);
+
+  //
+  // surface between Al and Ge determines phonon reflection/absorption
+  //
+  G4CMPSurfaceProperty* topSurfProp = new G4CMPSurfaceProperty("TopAlSurf", 0.30,
+    0.0, 347.43e-6*eV);
+  G4CMPSurfaceProperty* botSurfProp = new G4CMPSurfaceProperty("BotAlSurf", 0.30,
+    0.0, 347.43e-6*eV);
+  G4CMPSurfaceProperty* wallSurfProp = new G4CMPSurfaceProperty("WallAlSurf", 0.0,
+    0.0, 347.43e-6*eV);
+
+  new G4LogicalBorderSurface("iZIPTop", GePhys, aluminumTopPhysical,
+                                        topSurfProp);
+  new G4LogicalBorderSurface("iZIPBot", GePhys, aluminumBotPhysical,
+                                        botSurfProp);
+  new G4LogicalBorderSurface("iZIPWall", GePhys, fWorldPhys,
+                                        wallSurfProp);
 
   //                                        
   // Visualization attributes

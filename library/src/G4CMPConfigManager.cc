@@ -32,6 +32,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     lukePhonons(getenv("G4CMP_LUKE_PHONONS")?strtod(getenv("G4CMP_LUKE_PHONONS"),0):0.),
     epotScale(getenv("G4CMP_EPOT_SCALE")?strtod(getenv("G4CMP_EPOT_SCALE"),0):1.),
     ehBounces(getenv("G4CMP_EH_BOUNCES")?atoi(getenv("G4CMP_EH_BOUNCES")):1),
+    pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     Epot_file(getenv("G4CMP_EPOT_FILE")?getenv("G4CMP_EPOT_FILE"):"Epot_iZip4_small"),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"."),
     Hit_file(getenv("G4CMP_HIT_FILE")?getenv("G4CMP_HIT_FILE"):"epositions.txt"),

@@ -31,48 +31,70 @@
 #include "G4Types.hh"
 #include "G4Physics2DVector.hh"
 #include "G4SurfaceProperty.hh"
-
-// TODO: Someday will probably have to use MaterialPropertiesTable
-// class G4MaterialPropertiesTable;
+#include "G4MaterialPropertiesTable.hh"
 
 class G4CMPSurfaceProperty : public G4SurfaceProperty {
 public:
-    G4CMPSurfaceProperty(const G4String& name,
+  G4CMPSurfaceProperty(const G4String& name,
                          G4SurfaceType stype = dielectric_dielectric);
+  //Empty constructor. Not very useful.
 
-    G4CMPSurfaceProperty(const G4String& name,
-                         G4double prob, G4double deltaV,
-                         G4double minKe, G4double minKh,
-                         G4double V, G4SurfaceType stype = dielectric_dielectric);
+  G4CMPSurfaceProperty(const G4String& name,
+                       G4double qAbsProb, //Prob. to absorb charge no matter what
+                       G4double V, //Voltage of electrode
+                       G4double deltaV, //Absorb charge if voltage >= |V-deltaV|
+                       G4double minKe, //Min wave number to absorb electron
+                       G4double minKh, //Min wave number to absorb hole
+                       G4double pAbsProb, //Prob. to absorb phonon
+                       G4double specProb, //Prob. of specular reflection
+                       G4double gapEnergy, //Band gap energy of second surf.
+                       G4SurfaceType stype = dielectric_dielectric);
+  //Full constructor
 
-    G4CMPSurfaceProperty(const G4CMPSurfaceProperty &right);
-    G4CMPSurfaceProperty & operator=(const G4CMPSurfaceProperty &right);
+  G4CMPSurfaceProperty(const G4String& name,
+                       G4double qAbsprob, G4double V,
+                       G4double deltaV, G4double minKe,
+                       G4double minKh,
+                       G4SurfaceType stype = dielectric_dielectric);
+  //Charge-only constructor
 
-    G4int operator==(const G4CMPSurfaceProperty &right) const;
-    G4int operator!=(const G4CMPSurfaceProperty &right) const;
+  G4CMPSurfaceProperty(const G4String& name,
+                       G4double pAbsprob, G4double specProb,
+                       G4double gapEnergy,
+                       G4SurfaceType stype = dielectric_dielectric);
+  //Phonon-only consutrctor
 
-    virtual ~G4CMPSurfaceProperty();
+  /* I don't think we need copy constructors anymore, since they are trivial.
+   * The compiler should do it correctly.
+  G4CMPSurfaceProperty(const G4CMPSurfaceProperty &right);
+  G4CMPSurfaceProperty & operator=(const G4CMPSurfaceProperty &right);
+  */
 
-    inline void SetAbsProb(G4double p) { absProb = p; }
-    inline G4double GetAbsProb() { return absProb; }
-    inline void SetAbsDeltaV(G4double p) { absDeltaV = p; }
-    inline G4double GetAbsDeltaV() { return absDeltaV; }
-    inline void SetMinKElec(G4double k) { minKElec = k; }
-    inline G4double GetMinKElec() { return minKElec; }
-    inline void SetMinKHole(G4double k) { minKHole = k; }
-    inline G4double GetMinKHole() { return minKHole; }
-    inline void SetElectrodeV(G4double v) { electrodeV = v; }
-    inline G4double GetElectrodeV() { return electrodeV; }
+  G4int operator==(const G4CMPSurfaceProperty &right) const;
+  G4int operator!=(const G4CMPSurfaceProperty &right) const;
+
+  inline const G4MaterialPropertiesTable* GetChargeMaterialPropertiesTablePointer() const
+                       { return &theChargeMatPropTable; }
+  inline const G4MaterialPropertiesTable* GetPhononMaterialPropertiesTablePointer() const
+                       { return &thePhononMatPropTable; }
+  inline G4MaterialPropertiesTable GetChargeMaterialPropertiesTable() const
+                       { return theChargeMatPropTable; }
+  inline G4MaterialPropertiesTable GetPhononMaterialPropertiesTable() const
+                       { return thePhononMatPropTable; }
+
+  void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
+  void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
+  void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable mpt);
+  void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable mpt);
 
   void DumpInfo() const;	// To be implemented
 
 private:
-    //G4MaterialPropertiesTable* theMaterialPropertiesTable;
-    G4double absProb;
-    G4double absDeltaV;
-    G4double minKElec;
-    G4double minKHole;
-    G4double electrodeV;
+  G4MaterialPropertiesTable theChargeMatPropTable;
+  G4MaterialPropertiesTable thePhononMatPropTable;
+
+  G4MaterialPropertiesTable CopyMaterialPropertiesTable(
+    G4MaterialPropertiesTable *mpt);
 };
 
 #endif /* G4OpticalSurface_h */

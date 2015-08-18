@@ -27,6 +27,7 @@ public:
   // Access current values
   static G4int GetVerboseLevel()         { return Instance()->verbose; }
   static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
+  static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
   static G4double GetVoltage()           { return Instance()->voltage; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetLukePhonons()       { return Instance()->lukePhonons; }
@@ -38,6 +39,7 @@ public:
   // Change values (e.g., via Messenger)
   static void SetVerboseLevel(G4int value)      { Instance()->verbose = value; }
   static void SetMaxChargeBounces(G4int value){ Instance()->ehBounces = value; }
+  static void SetMaxPhononBounces(G4int value){ Instance()->pBounces = value; }
   static void SetVoltage(G4double value)        { Instance()->voltage = value; }
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
   static void SetLukePhonons(G4double value)  { Instance()->lukePhonons=value; }
@@ -62,6 +64,7 @@ private:
   G4String LatticeDir;		// Lattice data directory ($G4LATTICEDATA)
   G4String Hit_file;		// Output file of e/h hits ($G4CMP_HIT_FILE)
   G4int ehBounces;		// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
+  G4int pBounces;		// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
 
   G4CMPConfigMessenger* messenger;
 };

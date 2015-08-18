@@ -34,37 +34,47 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
 {;}
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
-                         G4double prob, G4double deltaV,
-                         G4double minKe, G4double minKh,
-                         G4double V,
+                         G4double qAbsprob, G4double V,
+                         G4double deltaV, G4double minKe,
+                         G4double minKh, G4double pAbsprob, G4double specProb,
+                         G4double gapEnergy,
                          G4SurfaceType stype)
-                         : G4SurfaceProperty(name,stype), absProb(prob),
-                         absDeltaV(deltaV), minKElec(minKe), minKHole(minKh),
-                         electrodeV(V)
-{;}
-
-
-G4CMPSurfaceProperty::~G4CMPSurfaceProperty()
-{;}
-
-G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4CMPSurfaceProperty &right)
-  : G4SurfaceProperty(right.theName, right.theType)	// No base copy ctor
+                         : G4SurfaceProperty(name, stype)
 {
-    *this = right;
+  theChargeMatPropTable.AddConstProperty("absProb", qAbsprob);
+  theChargeMatPropTable.AddConstProperty("electrodeV", V);
+  theChargeMatPropTable.AddConstProperty("absDeltaV", deltaV);
+  theChargeMatPropTable.AddConstProperty("minKElec", minKe);
+  theChargeMatPropTable.AddConstProperty("minKHole", minKh);
+
+  thePhononMatPropTable.AddConstProperty("absProb", pAbsprob);
+  thePhononMatPropTable.AddConstProperty("specProb", specProb);
+  thePhononMatPropTable.AddConstProperty("gapEnergy", gapEnergy);
 }
 
-G4CMPSurfaceProperty& G4CMPSurfaceProperty::operator=(const G4CMPSurfaceProperty& right)
+G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
+                         G4double qAbsprob, G4double V,
+                         G4double deltaV, G4double minKe,
+                         G4double minKh,
+                         G4SurfaceType stype)
+                         : G4SurfaceProperty(name,stype)
 {
-  if (this != &right) {
-    theName    = right.theName;
-    theType    = right.theType;
-    absProb    = right.absProb;
-    absDeltaV  = right.absDeltaV;
-    minKElec   = right.minKElec;
-    minKHole   = right.minKHole;
-    electrodeV = right.electrodeV;
-  }
-  return *this;
+  theChargeMatPropTable.AddConstProperty("absProb", qAbsprob);
+  theChargeMatPropTable.AddConstProperty("electrodeV", V);
+  theChargeMatPropTable.AddConstProperty("absDeltaV", deltaV);
+  theChargeMatPropTable.AddConstProperty("minKElec", minKe);
+  theChargeMatPropTable.AddConstProperty("minKHole", minKh);
+}
+
+G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
+                         G4double pAbsprob, G4double specProb,
+                         G4double gapEnergy,
+                         G4SurfaceType stype)
+                         : G4SurfaceProperty(name, stype)
+{
+  thePhononMatPropTable.AddConstProperty("absProb", pAbsprob);
+  thePhononMatPropTable.AddConstProperty("specProb", specProb);
+  thePhononMatPropTable.AddConstProperty("gapEnergy", gapEnergy);
 }
 
 G4int G4CMPSurfaceProperty::operator==(const G4CMPSurfaceProperty &right) const
@@ -76,9 +86,35 @@ G4int G4CMPSurfaceProperty::operator!=(const G4CMPSurfaceProperty &right) const
 {
   return (this != (G4CMPSurfaceProperty *) &right);
 }
+
         ////////////
         // Methods
         ////////////
+
+
+void G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable(
+                            G4MaterialPropertiesTable* mpt)
+{
+  theChargeMatPropTable = CopyMaterialPropertiesTable(mpt);
+}
+
+void G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable(
+                            G4MaterialPropertiesTable* mpt)
+{
+  thePhononMatPropTable = CopyMaterialPropertiesTable(mpt);
+}
+
+void G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable(
+  G4MaterialPropertiesTable mpt)
+{
+  theChargeMatPropTable = mpt;
+}
+
+void G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable(
+  G4MaterialPropertiesTable mpt)
+{
+  thePhononMatPropTable = mpt;
+}
 
 void G4CMPSurfaceProperty::DumpInfo() const
 {
@@ -86,4 +122,28 @@ void G4CMPSurfaceProperty::DumpInfo() const
   // Dump info for surface
   // TO DO
 
+}
+
+G4MaterialPropertiesTable G4CMPSurfaceProperty::CopyMaterialPropertiesTable(
+  G4MaterialPropertiesTable* in)
+{
+  G4MaterialPropertiesTable out;
+  const std::map<G4String,G4MaterialPropertyVector*,std::less<G4String> >*
+    inMap = in->GetPropertiesMap();
+  const std::map<G4String,G4double,std::less<G4String> >* inCMap =
+                                              in->GetPropertiesCMap();
+  std::map<G4String,G4MaterialPropertyVector*,std::less<G4String> >::const_iterator
+   inItr = inMap->begin();
+  std::map<G4String,G4double,std::less<G4String> >::const_iterator inCItr =
+                                              inCMap->begin();
+
+  for(; inItr != inMap->end(); ++inItr) {
+    out.AddProperty(inItr->first, inItr->second);
+  }
+
+  for(; inCItr != inCMap->end(); ++inCItr) {
+    out.AddConstProperty(inItr->first, inCItr->second);
+  }
+
+  return out;
 }
