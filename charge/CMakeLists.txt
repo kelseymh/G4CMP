@@ -53,4 +53,4 @@ set_target_properties(g4cmpCharge PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 set(CMAKE_CXX_FLAGS "-O2")
 install(TARGETS g4cmpCharge DESTINATION bin)
-install(FILES ${charge_EPOT_FILES} DESTINATION . COMPONENT config)
+install(FILES ${charge_EPOT_FILES} DESTINATION EPotFiles COMPONENT config)

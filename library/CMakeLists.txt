@@ -232,5 +232,5 @@ set(CMAKE_CXX_FLAGS "-O2")
 install(TARGETS G4cmp qhullcpp qhullstatic_p DESTINATION lib)
 install(FILES ${library_HEADERS} DESTINATION include)
 install(FILES ../g4cmp_env.sh ../g4cmp_env.csh ../G4CMPOrdParamTable.txt
-        DESTINATION . COMPONENT config)
+        DESTINATION bin COMPONENT config)
 install(FILES ${crystal_SETTINGS} DESTINATION CrystalMaps/Ge COMPONENT config)
