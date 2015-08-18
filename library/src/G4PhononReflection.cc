@@ -200,7 +200,7 @@ G4VParticleChange* G4PhononReflection::PostStepDoIt(const G4Track& aTrack,
      << G4endl;
   }
 
-  const G4int maxRefl = G4CMPConfigManager::GetMaxChargeBounces();
+  const G4int maxRefl = G4CMPConfigManager::GetMaxPhononBounces();
   if (maxRefl<0 || numberOfReflections < maxRefl) {
     if (ReflectTrack(aStep)) {
       numberOfReflections++;
@@ -315,14 +315,15 @@ G4VParticleChange* G4PhononReflection::DoReflection(const G4Step& aStep)
     return &aParticleChange;
   }
 
+  if (verboseLevel>1)
+    G4cout << GetProcessName() << ": Track reflected" << G4endl;
+
+  G4ThreeVector k = trackKmap->GetK(aStep.GetTrack());
+  if (verboseLevel>2)
+    G4cout << " Old momentum direction " << k.unit() << G4endl;
+
   if (G4UniformRand()<specProb){
-    if (verboseLevel>1)
-      G4cout << GetProcessName() << ": Track reflected" << G4endl;
-
-    G4ThreeVector momDir = aStep.GetPostStepPoint()->GetMomentumDirection();
-    if (verboseLevel>2)
-      G4cout << " Old momentum direction " << momDir << G4endl;
-
+    G4ThreeVector momDir = k.unit();
     // Specular reflecton reverses momentum along normal
     G4double momNorm = momDir * surfNorm;
     momDir -= 2.*momNorm*surfNorm;
@@ -330,11 +331,20 @@ G4VParticleChange* G4PhononReflection::DoReflection(const G4Step& aStep)
     if (verboseLevel>2)
       G4cout << " New momentum direction " << momDir << G4endl;
 
-    aParticleChange.ProposeMomentumDirection(momDir);
+    k = k.mag()*momDir;
+    trackKmap->SetK(aStep.GetTrack(),k);
+    aParticleChange.ProposeMomentumDirection(
+      theLattice->MapKtoVDir(GetPolarization(aStep.GetTrack()),k));
   } else {
-    G4ThreeVector reflectedDirection = LambertRotation();
+    G4ThreeVector reflectedkDir = LambertRotation();
 
-    aParticleChange.ProposeMomentumDirection(reflectedDirection);
+    if (verboseLevel>2)
+      G4cout << " New momentum direction " << reflectedkDir << G4endl;
+
+    k = k.mag()*reflectedkDir;
+    trackKmap->SetK(aStep.GetTrack(),k);
+    aParticleChange.ProposeMomentumDirection(
+      theLattice->MapKtoVDir(GetPolarization(aStep.GetTrack()),k));
   }
 
   //We know eKin >= 2.0*gapEnergy
