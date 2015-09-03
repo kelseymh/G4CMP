@@ -178,8 +178,8 @@ G4VParticleChange* G4PhononReflection::PostStepDoIt(const G4Track& aTrack,
   G4MaterialPropertiesTable* phonPropTable =
     const_cast<G4MaterialPropertiesTable*>(
       borderSurface->GetPhononMaterialPropertiesTablePointer());
-  absProb = phonPropTable->GetConstProperty("absProb");
-  specProb = phonPropTable->GetConstProperty("specProb");
+  absProb   = phonPropTable->GetConstProperty("absProb");
+  specProb  = phonPropTable->GetConstProperty("specProb");
   gapEnergy = phonPropTable->GetConstProperty("gapEnergy");
 
   // Get outward normal using G4Navigator method (more reliable than G4VSolid)
@@ -336,15 +336,37 @@ G4VParticleChange* G4PhononReflection::DoReflection(const G4Step& aStep)
     aParticleChange.ProposeMomentumDirection(
       theLattice->MapKtoVDir(GetPolarization(aStep.GetTrack()),k));
   } else {
-    G4ThreeVector reflectedkDir = LambertRotation();
+    G4ThreeVector v = aStep.GetTrack()->GetMomentum();
+    /*G4cout << "norm: " << surfNorm << G4endl;
+    G4cout << "vinit.unit(): "
+      << theLattice->MapKtoVDir(GetPolarization(aStep.GetTrack()),k)
+      <<G4endl;
+    G4cout << "kinit.unit(): " << k.unit() << G4endl;
+    */
 
-    if (verboseLevel>2)
-      G4cout << " New momentum direction " << reflectedkDir << G4endl;
+    do {
+      G4ThreeVector reflectedkDir = LambertRotation();
 
-    k = k.mag()*reflectedkDir;
+      if (verboseLevel>2)
+        G4cout << " New momentum direction " << reflectedkDir << G4endl;
+
+      k = k.mag()*reflectedkDir;
+      v = theLattice->MapKtoVDir(GetPolarization(aStep.GetTrack()),k);
+    } while (v.dot(surfNorm)>=0.0 || k.unit().dot(surfNorm)>=0.0);
+
+    /*G4cout << "vfinal.unit(): " << v << G4endl;
+    G4cout << "kfinal.unit(): " << k.unit() << G4endl;
+    G4cout << "Ang. between v and n: " << v.unit().angle(surfNorm) << G4endl;
+    G4cout << "Ang. between k and n: " << k.unit().angle(surfNorm) << G4endl;
+    G4cout << "position: " << aStep.GetPostStepPoint()->GetPosition() << G4endl << G4endl;
+    */
     trackKmap->SetK(aStep.GetTrack(),k);
-    aParticleChange.ProposeMomentumDirection(
-      theLattice->MapKtoVDir(GetPolarization(aStep.GetTrack()),k));
+    aParticleChange.ProposeMomentumDirection(v.unit());
+    /*G4cout << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance() << "\n"
+      << G4GeometryTolerance::GetInstance()->GetAngularTolerance() << "\n"
+      << G4GeometryTolerance::GetInstance()->GetRadialTolerance() << "\n"
+      << G4endl;
+      */
   }
 
   //We know eKin >= 2.0*gapEnergy

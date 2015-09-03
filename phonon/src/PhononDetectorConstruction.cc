@@ -43,6 +43,7 @@
 #include "G4PVPlacement.hh"
 #include "G4UniformMagField.hh"
 #include "G4TransportationManager.hh"
+//#include "G4GeometryManager.hh"
 #include "G4FieldManager.hh"
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
@@ -79,7 +80,8 @@ PhononDetectorConstruction::~PhononDetectorConstruction() {;}
 G4VPhysicalVolume* PhononDetectorConstruction::Construct()
 {
   if(!fConstructed)
-  { 
+  {
+    //G4GeometryManager::GetInstance()->SetWorldMaximumExtent(1e-6*mm);
     fConstructed = true;
     DefineMaterials();
     SetupGeometry();
