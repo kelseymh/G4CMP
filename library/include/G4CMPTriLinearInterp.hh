@@ -6,6 +6,7 @@
 #include "globals.hh"
 #include "G4ThreeVector.hh"
 #include <vector>
+#include <map>
 
 
 class G4CMPTriLinearInterp {
@@ -24,6 +25,7 @@ public:
   void GetField(const G4double pos[4], G4double field[6]) const;
   
 private:
+  std::map<G4int,G4int> qhull2x;
   std::vector<std::vector<G4double> > X;
   std::vector<G4double> V;
   std::vector<std::vector<G4int> > Tetrahedra;
@@ -33,7 +35,7 @@ private:
   void BuildTetraMesh();	// Builds mesh from pre-initialized 'X' array
   
   void FindTetrahedron(const G4double point[4], G4double bary[4]) const;
-  G4int FindPointID(const std::vector<G4double>& point, const G4int id) const;
+  G4int FindPointID(const std::vector<G4double>& point, const G4int id);
   
   void Cart2Bary(const G4double point[4], G4double bary[4]) const;
   void BuildT4x3(G4double ET[4][3]) const;

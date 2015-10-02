@@ -111,8 +111,8 @@ void G4CMPTriLinearInterp::BuildTetraMesh() {
 }
 
 G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& point,
-                                        const G4int id) const {
-  static map<G4int, G4int> qhull2x;
+                                        const G4int id) {
+  //static map<G4int, G4int> qhull2x;
   if (qhull2x.count(id)) {
     return qhull2x[id];
   }

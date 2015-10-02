@@ -1,0 +1,10 @@
+useTemplate = 1; //bool, whether to use template file
+templateFilename = "config/G4CMP/FETSim/FETTemplates"; //Must have numChannels^2 entries!
+numChannels = 4; // number of fet channels.
+ramoFileDir = "config/G4CMP/FETSim";
+decayTime = 40e-6; //[sec]
+dt = 800e-9; //[sec]
+preTrig = 0.0004096;//[sec]
+timeBins = 4096;
+
+templateEnergy = 100e3;//[eV]

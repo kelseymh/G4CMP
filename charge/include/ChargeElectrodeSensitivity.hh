@@ -4,10 +4,8 @@
 #include "G4CMPElectrodeSensitivity.hh"
 #include "G4CMPElectrodeHit.hh"
 
-class G4Step;
 class G4HCofThisEvent;
-class G4TouchableHistory;
-class ofstream;
+class ChargeFETDigitizerModule;
 
 using std::ofstream;
 
@@ -17,11 +15,13 @@ class ChargeElectrodeSensitivity
 public:
   ChargeElectrodeSensitivity(G4String);
   virtual ~ChargeElectrodeSensitivity();
+  virtual void Initialize(G4HCofThisEvent*);
   
   virtual void EndOfEvent(G4HCofThisEvent*);
   
 private:
   ofstream output;
+  ChargeFETDigitizerModule* FET;
 };
 
 #endif
