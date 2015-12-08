@@ -23,9 +23,10 @@ G4CMPElectrodeHit::~G4CMPElectrodeHit()
 G4CMPElectrodeHit::G4CMPElectrodeHit(const G4CMPElectrodeHit &right)
 : G4VHit() {
   trackID = right.trackID;
+  particleName = right.particleName;
   charge = right.charge;
   startE = right.startE;
-  trackTime = right.trackTime;
+  finalTime = right.finalTime;
   EDep = right.EDep;
   startPos = right.startPos;
   finalPos = right.finalPos;
@@ -34,9 +35,10 @@ G4CMPElectrodeHit::G4CMPElectrodeHit(const G4CMPElectrodeHit &right)
 const G4CMPElectrodeHit& G4CMPElectrodeHit::operator=(const G4CMPElectrodeHit &right)
 {
   trackID = right.trackID;
+  particleName = right.particleName;
   charge = right.charge;
   startE = right.startE;
-  trackTime = right.trackTime;
+  finalTime = right.finalTime;
   EDep = right.EDep;
   startPos = right.startPos;
   finalPos = right.finalPos;
@@ -107,7 +109,7 @@ std::vector<G4AttValue>* G4CMPElectrodeHit::CreateAttValues() const
 
 void G4CMPElectrodeHit::Print()
 {
-  G4cout << "  time " << trackTime/ns << " (nsec) : at " << finalPos
+  G4cout << "  time " << finalTime/ns << " (nsec) : at " << finalPos
          << "  -- edep = " << EDep/eV << " [eV]" << G4endl;
 }
 

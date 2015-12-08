@@ -43,6 +43,7 @@ G4bool G4CMPElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory* 
                     aStep->GetNonIonizingEnergyDeposit()) {
     G4Track* track = aStep->GetTrack();
     G4int trackID = track->GetTrackID();
+    G4String name = track->GetDefinition()->GetParticleName();
     G4double charge = track->GetParticleDefinition()->GetPDGCharge();
     G4double startE = track->GetVertexKineticEnergy();
     G4double time = track->GetGlobalTime();
@@ -52,9 +53,10 @@ G4bool G4CMPElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory* 
 
     G4CMPElectrodeHit* aHit = new G4CMPElectrodeHit();
     aHit->SetTrackID(trackID);
+    aHit->SetParticleName(name);
     aHit->SetCharge(charge);
     aHit->SetStartEnergy(startE);
-    aHit->SetTrackTime(time);
+    aHit->SetFinalTime(time);
     aHit->SetEnergyDeposit(edp);
     aHit->SetStartPosition(startPosition);
     aHit->SetFinalPosition(finalPosition);
