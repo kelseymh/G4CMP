@@ -13,6 +13,7 @@ int main(int argc, char** argv) {
   ChargeFETDigitizerModule fetsim;
   if (argc > 2)
     fetsim.SetOutputFilename(argv[2]);
+
   fetsim.Initialize();
   fetsim.PostProcess(filename);
 
