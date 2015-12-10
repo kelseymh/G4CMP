@@ -16,6 +16,7 @@
 //	     protect valley functions against null pointers
 // 20150309  Add Create*() functions which take position and energy arguments
 //	     (for use with AlongStepDoIt() actions).
+// 20151209  Replace trackMap classes with an AuxiliaryInformation class.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -25,10 +26,8 @@
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 
-class G4CMPValleyTrackMap;
 class G4LatticePhysical;
 class G4ParticleDefinition;
-class G4PhononTrackMap;
 class G4Track;
 class G4VPhysicalVolume;
 class G4VTouchable;
@@ -160,12 +159,11 @@ public:
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes
-  G4PhononTrackMap* trackKmap;
-  G4CMPValleyTrackMap* trackVmap;
 
   const G4ParticleDefinition* GetCurrentParticle() const;
   const G4Track* GetCurrentTrack() const { return currentTrack; }
   G4int GetCurrentValley() const { return GetValleyIndex(currentTrack); }
+  G4int fPhysicsModelID;
 
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking

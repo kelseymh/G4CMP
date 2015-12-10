@@ -37,6 +37,7 @@
 // 20150109 Protect velocity flag with compiler flag
 
 #include "G4CMPStackingAction.hh"
+#include "G4CMPTrackInformation.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
@@ -44,7 +45,6 @@
 #include "G4PhononTrackMap.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftElectron.hh"
-#include "G4CMPValleyTrackMap.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
@@ -106,14 +106,19 @@ void G4CMPStackingAction::SetPhononWaveVector(const G4Track* aTrack) const {
   G4ThreeVector Ran = G4RandomDirection();
   
   //Store wave-vector as track information
-  trackKmap->SetK(aTrack, Ran);
+  static_cast<G4CMPTrackInformation*>(
+    aTrack->GetAuxiliaryTrackInformation(fPhysicsModelID)
+                                     )->SetK(Ran);
 }
 
 // Set velocity of phonon track appropriately for material
 
 void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
   // Get wavevector associated with track
-  G4ThreeVector K = trackKmap->GetK(aTrack);
+  G4ThreeVector K =
+    static_cast<G4CMPTrackInformation*>(
+      aTrack->GetAuxiliaryTrackInformation(fPhysicsModelID)
+                                       )->GetK();
   G4int pol = GetPolarization(aTrack);
 
   //Compute direction of propagation from wave vector
@@ -137,9 +142,11 @@ void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
 void G4CMPStackingAction::SetChargeCarrierValley(const G4Track* aTrack) const {
   if (aTrack->GetDefinition() != G4CMPDriftElectron::Definition()) return;
 
-  if (trackVmap->GetValley(aTrack) < 0) {
+  if (GetValleyIndex(aTrack) < 0) {
     int valley = (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
-    trackVmap->SetValley(aTrack, valley);
+    static_cast<G4CMPTrackInformation*>(
+      aTrack->GetAuxiliaryTrackInformation(fPhysicsModelID)
+                                       )->SetValleyIndex(valley);
   }
 }
 

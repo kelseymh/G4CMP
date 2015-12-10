@@ -39,7 +39,6 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
-#include "G4CMPValleyTrackMap.hh"
 #include "G4DynamicParticle.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
@@ -99,11 +98,13 @@ void G4CMPVDriftProcess::LoadDataForTrack(const G4Track* track) {
 // Initialize wave vectors for currently active track(s)
 
 void G4CMPVDriftProcess::StartTracking(G4Track* track) {
+  G4cout << "Begin tracking" << G4endl;
   G4VProcess::StartTracking(track);	// Apply base class actions
   LoadDataForTrack(track);
 }
 
 void G4CMPVDriftProcess::EndTracking() {
+  G4cout << "End tracking" << G4endl;
   G4VProcess::EndTracking();		// Apply base class actions
   ReleaseTrack();
 }
