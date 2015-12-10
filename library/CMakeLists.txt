@@ -147,8 +147,8 @@ set(library_SOURCES
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPStackingAction.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPSecondaryProduction.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPTimeStepper.cc
+   ${PROJECT_SOURCE_DIR}/library/src/G4CMPTrackInformation.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPTriLinearInterp.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPValleyTrackMap.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPVDriftProcess.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPVLukeScattering.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4LatticeLogical.cc
@@ -160,7 +160,6 @@ set(library_SOURCES
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononPolarization.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononReflection.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononScattering.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4PhononTrackMap.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononTransFast.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononTransSlow.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4VPhononProcess.cc
@@ -188,8 +187,8 @@ set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPProcessSubType.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPStackingAction.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTimeStepper.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPTrackInformation.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTriLinearInterp.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPValleyTrackMap.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPVDriftProcess.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPVLukeScattering.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4LatticeLogical.hh
@@ -201,7 +200,6 @@ set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4PhononPolarization.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4PhononReflection.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4PhononScattering.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4PhononTrackMap.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4PhononTransFast.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4PhononTransSlow.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4VPhononProcess.hh
@@ -217,11 +215,12 @@ set(crystal_SETTINGS
     ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/STVec.ssv
     )
 
+message(STATUS ${Geant4_CXXSTD})
 add_library(G4cmp SHARED ${library_SOURCES})
 target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
 set_target_properties(G4cmp PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
-set(CMAKE_CXX_FLAGS "-O2")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2")
 install(TARGETS G4cmp qhullcpp qhullstatic_p DESTINATION lib)
 install(FILES ${library_HEADERS} DESTINATION include/G4CMP)
 install(FILES ../g4cmp_env.sh ../g4cmp_env.csh ../G4CMPOrdParamTable.txt
