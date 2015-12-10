@@ -63,8 +63,8 @@ void ChargeFETDigitizerModule::Digitize()
   G4ThreeVector vecPosition;
   for(G4int chan = 0; chan < numChannels; ++chan) {
     for(size_t hitIdx=0; hitIdx < hitVec->size(); ++hitIdx) {
-      if(hitVec->at(hitIdx)->GetParticleName=="G4CMPDriftElectron" ||
-         hitVec->at(hitIdx)->GetParticleName=="G4CMPDriftHole") {
+      if(hitVec->at(hitIdx)->GetParticleName()=="G4CMPDriftElectron" ||
+         hitVec->at(hitIdx)->GetParticleName()=="G4CMPDriftHole") {
         vecPosition = hitVec->at(hitIdx)->GetFinalPosition();
         position[0] = vecPosition.getX();
         position[1] = vecPosition.getY();

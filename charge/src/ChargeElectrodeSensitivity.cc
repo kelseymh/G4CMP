@@ -53,7 +53,7 @@ void ChargeElectrodeSensitivity::EndOfEvent(G4HCofThisEvent* HCE)
     output << G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID() << ','
            << G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() << ','
            << (*itr)->GetTrackID() << ',' << (*itr)->GetCharge() << ','
-           << (*itr)->GetStartEnergy()/eV << ',' << (*itr)->GetTrackTime()/ns
+           << (*itr)->GetStartEnergy()/eV << ',' << (*itr)->GetFinalTime()/ns
            << ',' << (*itr)->GetEnergyDeposit()/eV << ','
            << (*itr)->GetStartPosition().getX()/m << ','
            << (*itr)->GetStartPosition().getY()/m << ','

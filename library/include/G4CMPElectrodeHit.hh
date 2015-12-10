@@ -15,8 +15,6 @@ class G4CMPElectrodeHit : public G4VHit
 
       G4CMPElectrodeHit();
       virtual ~G4CMPElectrodeHit();
-      G4CMPElectrodeHit(const G4CMPElectrodeHit &right);
-      const G4CMPElectrodeHit& operator=(const G4CMPElectrodeHit &right);
       int operator==(const G4CMPElectrodeHit &right) const;
 
       inline void *operator new(size_t);
