@@ -215,7 +215,6 @@ set(crystal_SETTINGS
     ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/STVec.ssv
     )
 
-message(STATUS ${Geant4_CXXSTD})
 add_library(G4cmp SHARED ${library_SOURCES})
 target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
 set_target_properties(G4cmp PROPERTIES
