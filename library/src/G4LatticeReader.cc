@@ -51,18 +51,14 @@
 #include <stdlib.h>
 
 
-// Default path to lattice files, for use with filenames below
-
-const G4String G4LatticeReader::fDataDir =
-  getenv("G4LATTICEDATA") ? (const char*)getenv("G4LATTICEDATA") : "./CrystalMaps";
-
-
 // Constructor and destructor
 
 G4LatticeReader::G4LatticeReader(G4int vb)
   : verboseLevel(vb), psLatfile(0), pLattice(0), fMapPath(""),
     fToken(""), fValue(0.), fMap(""), fsPol(""), fPol(-1), fNX(0), fNY(0),
-    mElectron(electron_mass_c2/c_squared) {;}
+    fDataDir(getenv("G4LATTICEDATA") ?
+      (const char*)getenv("G4LATTICEDATA"):"./CrystalMaps"),
+    mElectron(electron_mass_c2/c_squared) {}
 
 G4LatticeReader::~G4LatticeReader() {
   delete psLatfile; psLatfile = 0;

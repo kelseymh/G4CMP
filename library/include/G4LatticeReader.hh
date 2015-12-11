@@ -32,6 +32,7 @@
 //
 // 20131115  Move ctor, dtor implementations to .cc file.
 // 20140218  Add support for charge-carrier functionality
+// 20151211  Change fDataDir from static to not static.
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
@@ -76,7 +77,7 @@ private:
   G4String fMap, fsPol;		// ... map filename and polarization code
   G4int    fPol, fNX, fNY;	// ... map binning in each direction
   G4RotationMatrix fMatrix;	// ... 3x3 matrix for mass, drift valleys
-  static const G4String fDataDir;	// Directory path ($G4LATTICEDATA)
+  const G4String fDataDir;	// Directory path ($G4LATTICEDATA)
 
   const G4double mElectron;	// Electron mass in kilograms
 };
