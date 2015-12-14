@@ -25,7 +25,8 @@ void ChargeElectrodeSensitivity::Initialize(G4HCofThisEvent *HCE)
 {
   //Prepare output file.
   if (output.is_open()) output.close();
-  output.open(G4CMPConfigManager::GetHitOutput(), std::ios_base::app);
+  fileName = G4CMPConfigManager::GetHitOutput();
+  output.open(fileName, std::ios_base::app);
   if (!output.good()) {
     G4ExceptionDescription msg;
     msg << "Error opening output file, " << fileName << ".\n"

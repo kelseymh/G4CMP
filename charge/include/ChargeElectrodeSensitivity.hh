@@ -21,6 +21,7 @@ public:
   
 private:
   ofstream output;
+  G4String fileName;
   ChargeFETDigitizerModule* FET;
 };
 
