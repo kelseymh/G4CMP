@@ -90,7 +90,7 @@ target_link_libraries(g4cmpFETSim G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic
 set_target_properties(g4cmpFETSim PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall")
 install(TARGETS g4cmpCharge DESTINATION bin)
 install(TARGETS g4cmpFETSim DESTINATION bin)
 install(FILES ${charge_EPOT_FILES} DESTINATION EPotFiles COMPONENT config)
