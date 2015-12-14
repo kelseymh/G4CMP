@@ -8,12 +8,12 @@ class G4CMPTrackInformation : public G4VAuxiliaryTrackInformation {
 public:
   G4CMPTrackInformation();
 
-  void inline SetK(G4ThreeVector k)          {phononKVec = k;}
-  void inline SetValleyIndex(G4int valley)     {chargeValleyIdx = valley;}
-  //void inline SetReflectionCount(G4int n) {chargeReflCount = n;}
-  //void inline IncrementReflectionCount()  {++chargeReflCount;}
-  G4ThreeVector inline GetK()                {return phononKVec;}
-  G4int inline GetValleyIndex()                {return chargeValleyIdx;}
+  void inline SetK(G4ThreeVector k)           {phononKVec = k;}
+  void inline SetValleyIndex(G4int valley)    {chargeValleyIdx = valley;}
+  //void inline SetReflectionCount(G4int n)     {chargeReflCount = n;}
+  //void inline IncrementReflectionCount()      {++chargeReflCount;}
+  G4ThreeVector inline GetK()                 {return phononKVec;}
+  G4int inline GetValleyIndex()               {return chargeValleyIdx;}
 
   virtual void Print() const override;
 
