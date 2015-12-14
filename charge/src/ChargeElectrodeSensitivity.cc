@@ -34,7 +34,8 @@ void ChargeElectrodeSensitivity::Initialize(G4HCofThisEvent *HCE)
          << G4endl;
 
   //Initialize FETSim.
-  FET->Initialize();
+  if (FET->FETSimIsEnabled())
+    FET->Initialize();
 }
 
 ChargeElectrodeSensitivity::~ChargeElectrodeSensitivity()

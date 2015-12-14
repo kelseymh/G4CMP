@@ -12,45 +12,44 @@
 #include <sstream>
 
 ChargeFETDigitizerModule::ChargeFETDigitizerModule(G4String modName) :
-  G4VDigitizerModule(modName), messenger(new ChargeFETDigitizerMessenger(this)),
-  configFilename("config/G4CMP/FETSim/ConstantsFET"), outputFilename("FETOutput"),
-  numChannels(4), timeBins(4096), decayTime(40e-6*s), dt(800e-9*s), preTrig(0.0004096*s),
-  templateEnergy(100e3*eV), templateFilename("config/G4CMP/FETSim/FETTemplates")
+  G4VDigitizerModule(modName), outputFilename("FETOutput"),
+  configFilename("config/G4CMP/FETSim/ConstantsFET"),
+  templateFilename("config/G4CMP/FETSim/FETTemplates"),
+  ramoFileDir("."), decayTime(40e-6*s), dt(800e-9*s), preTrig(4096e-7*s),
+  templateEnergy(100e-3*eV), numChannels(4), timeBins(4096), runLive(false),
+  messenger(new ChargeFETDigitizerMessenger(this))
 {}
 
 ChargeFETDigitizerModule::ChargeFETDigitizerModule() :
-  G4VDigitizerModule("NoSim"), messenger(0),
-  configFilename("config/G4CMP/FETSim/ConstantsFET"), outputFilename("FETOutput"),
-  numChannels(4), timeBins(4096), decayTime(40e-6*s), dt(800e-9*s), preTrig(0.0004096*s),
-  templateEnergy(100e3*eV), templateFilename("config/G4CMP/FETSim/FETTemplates")
+  G4VDigitizerModule("NoSim"), outputFilename("FETOutput"),
+  configFilename("config/G4CMP/FETSim/ConstantsFET"),
+  templateFilename("config/G4CMP/FETSim/FETTemplates"),
+  ramoFileDir("."), decayTime(40e-6*s), dt(800e-9*s), preTrig(4096e-7*s),
+  templateEnergy(100e-3*eV), numChannels(4), timeBins(4096), runLive(false),
+  messenger(nullptr)
 {}
 
 ChargeFETDigitizerModule::~ChargeFETDigitizerModule()
 {
-  vector<G4CMPMeshElectricField*>::reverse_iterator epotItr = RamoFields.rbegin();
-  vector<G4CMPMeshElectricField*>::reverse_iterator epotEnd = RamoFields.rend();
-  for(; epotItr != epotEnd; ++epotItr) {
-    delete *epotItr;
-  }
-
   delete messenger;
-  output.close();
+  outputFile.close();
 }
 
 void ChargeFETDigitizerModule::Initialize()
 {
-  ReadFETConstantsFile(configFilename);
+  ReadFETConstantsFile();
   BuildFETTemplates();
   BuildRamoFields();
-  if (output.is_open())
-    output.close();
-  output.open(outputFilename, std::ios_base::app);
-  output << "Run ID,Event ID,Channel,Pulse (4096 bins)"
+  if (outputFile.is_open())
+    outputFile.close();
+  outputFile.open(outputFilename, std::ios_base::app);
+  outputFile << "Run ID,Event ID,Channel,Pulse (4096 bins)"
          << G4endl;
 }
 
 void ChargeFETDigitizerModule::Digitize()
 {
+  if (!runLive) return;
   G4HCofThisEvent* HCE = G4RunManager::GetRunManager()->GetCurrentEvent()->GetHCofThisEvent();
   G4SDManager* fSDM = G4SDManager::GetSDMpointer();
   G4int HCID = fSDM->GetCollectionID("G4CMPElectrodeHit");
@@ -61,7 +60,7 @@ void ChargeFETDigitizerModule::Digitize()
   vector<G4double> scaleFactors(numChannels,0);
   G4double position[4] = {0.,0.,0.,0.};
   G4ThreeVector vecPosition;
-  for(G4int chan = 0; chan < numChannels; ++chan) {
+  for(size_t chan = 0; chan < numChannels; ++chan) {
     for(size_t hitIdx=0; hitIdx < hitVec->size(); ++hitIdx) {
       if(hitVec->at(hitIdx)->GetParticleName()=="G4CMPDriftElectron" ||
          hitVec->at(hitIdx)->GetParticleName()=="G4CMPDriftHole") {
@@ -70,7 +69,7 @@ void ChargeFETDigitizerModule::Digitize()
         position[1] = vecPosition.getY();
         position[2] = vecPosition.getZ();
         scaleFactors[chan] -= hitVec->at(hitIdx)->GetCharge()
-                                    * RamoFields[chan]->GetPotential(position);
+                                    * RamoFields[chan].GetPotential(position);
       }
     }
   }
@@ -81,9 +80,15 @@ void ChargeFETDigitizerModule::Digitize()
   WriteFETTraces(FETTraces, runID, eventID);
 }
 
-void ChargeFETDigitizerModule::PostProcess(G4String fileName)
+void ChargeFETDigitizerModule::PostProcess(const G4String& fileName)
 {
   std::ifstream input(fileName);
+  if (!input.good()) {
+    G4ExceptionDescription msg;
+    msg << "Error reading data input file from " << fileName;
+    G4Exception("ChargeFETDigitizerModule::PostProcess", "Charge002",
+    FatalException, msg);
+  }
   G4double throw_away;
   G4double position[4] = {0.,0.,0.,0.};
   G4double charge;
@@ -120,7 +125,7 @@ void ChargeFETDigitizerModule::PostProcess(G4String fileName)
     }
 
     for(G4int chan = 0; chan < numChannels; ++chan)
-      scaleFactors[chan] -= charge*RamoFields[chan]->GetPotential(position);
+      scaleFactors[chan] -= charge*RamoFields[chan].GetPotential(position);
   }
 
   vector<vector<G4double> > FETTraces(CalculateTraces(scaleFactors));
@@ -131,29 +136,30 @@ vector<vector<G4double> > ChargeFETDigitizerModule::CalculateTraces(
                                     const vector<G4double>& scaleFactors)
 {
   vector<vector<G4double> > FETTraces(numChannels,vector<G4double>(timeBins,0.));
-  for(G4int chan=0; chan < numChannels; ++chan) {
-    for(G4int cross=0; cross < numChannels; ++cross) {
-      for(G4int bin=0; bin < timeBins; ++bin) {
+  for(size_t chan=0; chan < numChannels; ++chan)
+    for(size_t cross=0; cross < numChannels; ++cross)
+      for(size_t bin=0; bin < timeBins; ++bin)
         FETTraces[chan][bin] += scaleFactors[cross]*FETTemplates[chan][cross][bin];
-      }
-    }
-  }
   return FETTraces;
 }
 
-void ChargeFETDigitizerModule::ReadFETConstantsFile(G4String filename)
+void ChargeFETDigitizerModule::ReadFETConstantsFile()
 {
-  std::ifstream constants;
-  constants.open(filename);
+  constantsFile.open(configFilename);
+  if (!constantsFile.good()) {
+    G4ExceptionDescription msg;
+    msg << "Error reading FET constants file from " << configFilename;
+    G4Exception("ChargeFETDigitizerModule::ReadFETConstantsFile", "Charge001",
+    FatalException, msg);
+  }
   G4String buffer;
   G4String varName;
   G4String varVal;
   G4bool comment = false;
   size_t pos;
 
-  while(!constants.eof())
-  {
-    getline(constants, buffer);
+  while(!constantsFile.eof()) {
+    getline(constantsFile, buffer);
     if((!comment) && (buffer.find("//") != std::string::npos)) {
       if(buffer.find("//") == 0)
         continue;
@@ -207,6 +213,7 @@ void ChargeFETDigitizerModule::ReadFETConstantsFile(G4String filename)
       }
     }
   }
+  constantsFile.close();
 }
 
 void ChargeFETDigitizerModule::BuildFETTemplates()
@@ -244,7 +251,7 @@ void ChargeFETDigitizerModule::BuildRamoFields()
     std::ifstream ramoFile(name.str().c_str());
     if(ramoFile.good()) {
       ramoFile.close();
-      RamoFields.push_back(new G4CMPMeshElectricField(name.str()));
+      RamoFields.emplace_back(G4CMPMeshElectricField(name.str()));
     } else {
       ramoFile.close();
       G4cerr << "ChargeFETDigitizerModule::BuildRamoFields(): ERROR: Could"
@@ -257,10 +264,10 @@ void ChargeFETDigitizerModule::WriteFETTraces(
   const vector<vector<G4double> >& traces, G4int RunID, G4int EventID)
 {
   for(G4int chan = 0; chan < numChannels; ++chan) {
-    output << RunID << "," << EventID << "," << chan+1 << ",";
+    outputFile << RunID << "," << EventID << "," << chan+1 << ",";
     for(G4int bin = 0; bin < timeBins-1; ++bin) {
-      output << traces[chan][bin] << ",";
+      outputFile << traces[chan][bin] << ",";
     }
-    output << traces[chan][timeBins-1] << "\n";
+    outputFile << traces[chan][timeBins-1] << "\n";
   }
 }
