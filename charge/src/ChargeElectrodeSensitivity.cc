@@ -24,21 +24,23 @@ ChargeElectrodeSensitivity::ChargeElectrodeSensitivity(G4String name)
 void ChargeElectrodeSensitivity::Initialize(G4HCofThisEvent *HCE)
 {
   //Prepare output file.
-  if (output.is_open()) output.close();
-  fileName = G4CMPConfigManager::GetHitOutput();
-  output.open(fileName, std::ios_base::app);
-  if (!output.good()) {
-    G4ExceptionDescription msg;
-    msg << "Error opening output file, " << fileName << ".\n"
-        << "Will continue simulation.";
-    G4Exception("ChargeElectrodeSensitivity::Initialize", "Charge003",
-                JustWarning, msg);
-    output.close();
-  } else {
-    output << "Run ID,Event ID,Track ID,Charge,Start Energy [eV],"
-           << "Track Lifetime [ns],Energy Deposit [eV],Start X [m],Start Y [m],"
-           << "Start Z [m],End X [m],End Y [m],End Z [m]"
-           << G4endl;
+  if (fileName != G4CMPConfigManager::GetHitOutput()) {
+    if (output.is_open()) output.close();
+    fileName = G4CMPConfigManager::GetHitOutput();
+    output.open(fileName, std::ios_base::app);
+    if (!output.good()) {
+      G4ExceptionDescription msg;
+      msg << "Error opening output file, " << fileName << ".\n"
+          << "Will continue simulation.";
+      G4Exception("ChargeElectrodeSensitivity::Initialize", "Charge003",
+                  JustWarning, msg);
+      output.close();
+    } else {
+      output << "Run ID,Event ID,Track ID,Charge,Start Energy [eV],"
+             << "Track Lifetime [ns],Energy Deposit [eV],Start X [m],Start Y [m],"
+             << "Start Z [m],End X [m],End Y [m],End Z [m]"
+             << G4endl;
+    }
   }
   //Call base class initialization.
   G4CMPElectrodeSensitivity::Initialize(HCE);
