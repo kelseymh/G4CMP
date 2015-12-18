@@ -14,10 +14,10 @@ ChargeFETDigitizerMessenger::ChargeFETDigitizerMessenger(
   fetDir = new G4UIdirectory("/g4cmp/FETSim/");
   fetDir->SetGuidance("FETSim commands");
 
-  EnableFETSimCmd = new G4UIcmdWithABool("g4cmp/FETSim/EnableFETSim",this);
+  EnableFETSimCmd = new G4UIcmdWithABool("/g4cmp/FETSim/EnableFETSim",this);
   EnableFETSimCmd->SetGuidance("Enable FET simulation during run.");
 
-  DisableFETSimCmd = new G4UIcmdWithABool("g4cmp/FETSim/DisableFETSim",this);
+  DisableFETSimCmd = new G4UIcmdWithABool("/g4cmp/FETSim/DisableFETSim",this);
   DisableFETSimCmd->SetGuidance("Disable FET simulation during run.");
 
   GetEnabledStateCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetEnabledState",this);
@@ -77,11 +77,8 @@ ChargeFETDigitizerMessenger::ChargeFETDigitizerMessenger(
   GetPreTrigCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetPreTriggerTime",this);
   GetPreTrigCmd->SetGuidance("Get pre-trigger time for pulse (if not using templates)");
 
-  SetTemplateEnergyCmd = new G4UIcmdWithADoubleAndUnit("/g4cmp/FETSim/SetTemplateEnergy",this);
-  SetTemplateEnergyCmd->SetGuidance("Set energy scaling for template pulses");
-
-  GetTemplateEnergyCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetTemplateEnergy",this);
-  GetTemplateEnergyCmd->SetGuidance("Get energy scaling for templates pulses");
+  UpdateCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/Update",this);
+  UpdateCmd->SetGuidance("Must manually udpate FETSim after changing parameters.");
 }
 
 ChargeFETDigitizerMessenger::~ChargeFETDigitizerMessenger()
@@ -108,8 +105,7 @@ ChargeFETDigitizerMessenger::~ChargeFETDigitizerMessenger()
     delete GetUnitTimeCmd;
     delete SetPreTrigCmd;
     delete GetPreTrigCmd;
-    delete SetTemplateEnergyCmd;
-    delete GetTemplateEnergyCmd;
+    delete UpdateCmd;
 }
 
 void ChargeFETDigitizerMessenger::SetNewValue(G4UIcommand* command, G4String NewValue)
@@ -119,9 +115,9 @@ void ChargeFETDigitizerMessenger::SetNewValue(G4UIcommand* command, G4String New
   else if (command == DisableFETSimCmd)
     fet->DisableFETSim();
   else if (command == SetOutputFileCmd)
-    fet->SetOutputFilename(NewValue);
+    fet->SetOutputFile(NewValue);
   else if (command == GetOutputFileCmd)
-    fet->GetOutputFilename();
+    fet->GetOutputFile();
   else if (command == SetConfigFileCmd)
     fet->SetConfigFilename(NewValue);
   else if (command == GetConfigFileCmd)
@@ -156,8 +152,6 @@ void ChargeFETDigitizerMessenger::SetNewValue(G4UIcommand* command, G4String New
     fet->SetPreTrig(SetPreTrigCmd->ConvertToDimensionedDouble(NewValue));
   else if (command == GetPreTrigCmd)
     fet->GetPreTrig();
-  else if (command == SetTemplateEnergyCmd)
-    fet->SetTemplateEnergy(SetTemplateEnergyCmd->ConvertToDimensionedDouble(NewValue));
-  else if (command == GetTemplateEnergyCmd)
-    fet->GetTemplateEnergy();
+  else if (command == UpdateCmd)
+    fet->Build();
 }

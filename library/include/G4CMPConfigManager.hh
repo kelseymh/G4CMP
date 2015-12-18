@@ -14,6 +14,7 @@
 // 20150106  Move Luke phonon generating flag here, out of processes
 // 20150122  Add parameter to rescale voltage in Epot field files
 #include "globals.hh"
+#include "G4RunManager.hh"
 
 class G4CMPConfigMessenger;
 
@@ -33,14 +34,25 @@ public:
   static const G4String& GetHitOutput()  { return Instance()->Hit_file; }
 
   // Change values (e.g., via Messenger)
-  static void SetVerboseLevel(G4int value)      { Instance()->verbose = value; }
-  static void SetVoltage(G4double value)        { Instance()->voltage = value; }
-  static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
-  static void SetLukePhonons(G4double value)  { Instance()->lukePhonons=value; }
-  static void SetEpotScale(G4double value)    { Instance()->epotScale = value; }
-  static void SetEpotFile(const G4String& name)  { Instance()->Epot_file=name; }
-  static void SetLatticeDir(const G4String& dir) { Instance()->LatticeDir=dir; }
-  static void SetHitOutput(const G4String& name) { Instance()->Hit_file=name; }
+  static void SetVerboseLevel(G4int value)
+    { Instance()->verbose = value; }
+  static void SetVoltage(G4double value)
+    { Instance()->voltage = value; UpdateGeometry(); }
+  static void SetMinStepScale(G4double value)
+    { Instance()->stepScale = value; }
+  static void SetLukePhonons(G4double value)
+    { Instance()->lukePhonons=value; }
+  static void SetEpotScale(G4double value)
+    { Instance()->epotScale = value; UpdateGeometry(); }
+  static void SetEpotFile(const G4String& name)
+    { Instance()->Epot_file=name; UpdateGeometry(); }
+  static void SetLatticeDir(const G4String& dir)
+    { Instance()->LatticeDir=dir; UpdateGeometry(); }
+  static void SetHitOutput(const G4String& name)
+    { Instance()->Hit_file=name; UpdateGeometry(); }
+
+  static void UpdateGeometry()
+    { G4RunManager::GetRunManager()->ReinitializeGeometry(true); }
 
 private:
   G4CMPConfigManager();		// Singleton: only constructed on request

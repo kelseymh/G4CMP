@@ -1,6 +1,6 @@
 # Generate entire drift curve in one macro (no loops)
 
-/tracking/verbose 1
+/tracking/verbose 0
 
 /control/getEnv G4CMP_HIT_SUFFIX
 
@@ -25,26 +25,26 @@
 /g4cmp/HitsFile epos_4v-{G4CMP_HIT_SUFFIX}.txt
 /run/beamOn 10
 
-/g5cmp/voltage 5 volt
-/g5cmp/HitsFile epos_5v-{G4CMP_HIT_SUFFIX}.txt
+/g4cmp/voltage 5 volt
+/g4cmp/HitsFile epos_5v-{G4CMP_HIT_SUFFIX}.txt
 /run/beamOn 10
 
-/g6cmp/voltage 6 volt
-/g6cmp/HitsFile epos_6v-{G4CMP_HIT_SUFFIX}.txt
+/g4cmp/voltage 6 volt
+/g4cmp/HitsFile epos_6v-{G4CMP_HIT_SUFFIX}.txt
 /run/beamOn 10
 
-/g8cmp/voltage 8 volt
-/g8cmp/HitsFile epos_8v-{G4CMP_HIT_SUFFIX}.txt
+/g4cmp/voltage 8 volt
+/g4cmp/HitsFile epos_8v-{G4CMP_HIT_SUFFIX}.txt
 /run/beamOn 10
 
-/g10cmp/voltage 10 volt
-/g10cmp/HitsFile epos_10v-{G4CMP_HIT_SUFFIX}.txt
+/g4cmp/voltage 10 volt
+/g4cmp/HitsFile epos_10v-{G4CMP_HIT_SUFFIX}.txt
 /run/beamOn 10
 
-/g10cmp/voltage 12 volt
-/g10cmp/HitsFile epos_12v-{G4CMP_HIT_SUFFIX}.txt
+/g4cmp/voltage 12 volt
+/g4cmp/HitsFile epos_12v-{G4CMP_HIT_SUFFIX}.txt
 /run/beamOn 10
 
-/g10cmp/voltage 14 volt
-/g10cmp/HitsFile epos_14v-{G4CMP_HIT_SUFFIX}.txt
+/g4cmp/voltage 14 volt
+/g4cmp/HitsFile epos_14v-{G4CMP_HIT_SUFFIX}.txt
 /run/beamOn 10

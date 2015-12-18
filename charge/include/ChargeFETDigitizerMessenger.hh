@@ -19,7 +19,7 @@ class ChargeFETDigitizerMessenger : public G4UImessenger
     ~ChargeFETDigitizerMessenger();
     void SetNewValue(G4UIcommand* command, G4String NewValue);
   private:
-    ChargeFETDigitizerModule* fet;
+    ChargeFETDigitizerModule*  fet;
     G4UIdirectory*             fetDir;
     G4UIcmdWithABool*          EnableFETSimCmd;
     G4UIcmdWithABool*          DisableFETSimCmd;
@@ -42,8 +42,7 @@ class ChargeFETDigitizerMessenger : public G4UImessenger
     G4UIcmdWithoutParameter*   GetUnitTimeCmd;
     G4UIcmdWithADoubleAndUnit* SetPreTrigCmd;
     G4UIcmdWithoutParameter*   GetPreTrigCmd;
-    G4UIcmdWithADoubleAndUnit* SetTemplateEnergyCmd;
-    G4UIcmdWithoutParameter*   GetTemplateEnergyCmd;
+    G4UIcmdWithoutParameter*   UpdateCmd;
 };
 
 #endif

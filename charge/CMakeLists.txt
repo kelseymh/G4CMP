@@ -30,11 +30,9 @@ include_directories(${PROJECT_SOURCE_DIR}/qhull-2012.1/src)
 set(charge_SOURCES 
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeActionInitialization.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeDetectorConstruction.cc
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargeEMField.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeElectrodeSensitivity.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeFETDigitizerModule.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeFETDigitizerMessenger.cc
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargeFieldMessenger.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargePrimaryGeneratorAction.cc
     )
 

@@ -17,37 +17,11 @@
 
 #include <fstream>
 
-ChargeElectrodeSensitivity::ChargeElectrodeSensitivity(G4String name)
-:G4CMPElectrodeSensitivity(name), FET(new ChargeFETDigitizerModule("FETSim"))
-{}
-
-void ChargeElectrodeSensitivity::Initialize(G4HCofThisEvent *HCE)
+ChargeElectrodeSensitivity::ChargeElectrodeSensitivity(G4String name) :
+  G4CMPElectrodeSensitivity(name), fileName(""),
+  FET(new ChargeFETDigitizerModule("FETSim"))
 {
-  //Prepare output file.
-  if (fileName != G4CMPConfigManager::GetHitOutput()) {
-    if (output.is_open()) output.close();
-    fileName = G4CMPConfigManager::GetHitOutput();
-    output.open(fileName, std::ios_base::app);
-    if (!output.good()) {
-      G4ExceptionDescription msg;
-      msg << "Error opening output file, " << fileName << ".\n"
-          << "Will continue simulation.";
-      G4Exception("ChargeElectrodeSensitivity::Initialize", "Charge003",
-                  JustWarning, msg);
-      output.close();
-    } else {
-      output << "Run ID,Event ID,Track ID,Charge,Start Energy [eV],"
-             << "Track Lifetime [ns],Energy Deposit [eV],Start X [m],Start Y [m],"
-             << "Start Z [m],End X [m],End Y [m],End Z [m]"
-             << G4endl;
-    }
-  }
-  //Call base class initialization.
-  G4CMPElectrodeSensitivity::Initialize(HCE);
-
-  //Initialize FETSim.
-  if (FET->FETSimIsEnabled())
-    FET->Initialize();
+  SetOutputFile(G4CMPConfigManager::GetHitOutput());
 }
 
 ChargeElectrodeSensitivity::~ChargeElectrodeSensitivity()
@@ -90,3 +64,24 @@ void ChargeElectrodeSensitivity::EndOfEvent(G4HCofThisEvent* HCE)
   FET->Digitize();
 }
 
+void ChargeElectrodeSensitivity::SetOutputFile(const G4String &fn)
+{
+  if (fileName != fn) {
+    if (output.is_open()) output.close();
+    fileName = fn;
+    output.open(fileName, std::ios_base::app);
+    if (!output.good()) {
+      G4ExceptionDescription msg;
+      msg << "Error opening output file, " << fileName << ".\n"
+          << "Will continue simulation.";
+      G4Exception("ChargeElectrodeSensitivity::SetOutputFile", "Charge003",
+                  JustWarning, msg);
+      output.close();
+    } else {
+      output << "Run ID,Event ID,Track ID,Charge,Start Energy [eV],"
+             << "Track Lifetime [ns],Energy Deposit [eV],Start X [m],"
+             << "Start Y [m],Start Z [m],End X [m],End Y [m],End Z [m]"
+             << G4endl;
+    }
+  }
+}

@@ -16,49 +16,45 @@ class ChargeFETDigitizerModule : public G4VDigitizerModule
 {
   public:
     ChargeFETDigitizerModule(G4String modName);
-    // Default constructor only to be used for post-processing!
+    // Default constructor only to be used for stand-alone post-processing!
     ChargeFETDigitizerModule();
     virtual ~ChargeFETDigitizerModule();
 
-    void Initialize();
+    void Build();
     virtual void Digitize();
     void PostProcess(const G4String& fileName);
 
     // Methods for Messenger
-    void     EnableFETSim() {runLive = true;}
-    void     DisableFETSim() {runLive = false;}
-    G4bool   FETSimIsEnabled() const {return runLive;}
+    void     EnableFETSim();
+    void     DisableFETSim() {enabledForSD = false;}
+    G4bool   FETSimIsEnabled() const {return enabledForSD;}
 
-    void     SetOutputFilename(G4String name) {outputFilename = name;}
-    G4String GetOutputFilename() const {return outputFilename;}
+    void     SetOutputFile(const G4String& name);
+    G4String GetOutputFile() const {return outputFilename;}
 
-    void     SetConfigFilename(G4String name) {configFilename = name;}
+    void     SetConfigFilename(const G4String& name);
     G4String GetConfigFilename() const {return configFilename;}
 
-    void     SetTemplateFilename(G4String name) {templateFilename = name;}
+    void     SetTemplateFilename(const G4String& name);
     G4String GetTemplateFilename() const {return templateFilename;}
 
-    void     SetRamoFileDir(G4String name) {ramoFileDir = name;}
+    void     SetRamoFileDir(const G4String& name);
     G4String GetRamoFileDir() const {return ramoFileDir;}
 
-    void     SetNumberOfChannels(G4int n) {numChannels = n;}
+    void     SetNumberOfChannels(G4int n);
     G4int    GetNumberOfChannels() const {return numChannels;}
 
-    void     SetTimeBins(G4int n) {timeBins = n;}
+    void     SetTimeBins(G4int n);
     G4int    GetTimeBins() const {return timeBins;}
 
-    void     SetDecayTime(G4double n) {decayTime = n;}
+    void     SetDecayTime(G4double n);
     G4double GetDecayTime() const {return decayTime;}
 
-    void     SetUnitTime(G4double n) {dt = n;}
+    void     SetUnitTime(G4double n);
     G4double GetUnitTime() const {return dt;}
 
-    void     SetPreTrig(G4double n) {preTrig = n;}
+    void     SetPreTrig(G4double n);
     G4double GetPreTrig() const {return preTrig;}
-
-    void     SetTemplateEnergy(G4double n) {templateEnergy = n;}
-    G4double GetTemplateEnergy() const {return templateEnergy;}
-
 
   private:
     void ReadFETConstantsFile();
@@ -68,6 +64,19 @@ class ChargeFETDigitizerModule : public G4VDigitizerModule
     void WriteFETTraces(const vector<vector<G4double> >& FETTraces,
                         G4int RunID, G4int EventID);
 
+    ChargeFETDigitizerMessenger* messenger;
+    // FET constants
+    G4double decayTime;
+    G4double dt;
+    G4double preTrig;
+    G4int numChannels;
+    G4int timeBins;
+    // Enable/Disable FETSim during sim
+    G4bool enabledForSD;
+    // Internal flags to not waste time on unnecessary recalculating
+    G4bool rereadConfigFile;
+    G4bool rebuildFETTemplates;
+    G4bool rebuildRamoFields;
     // File Stuff
     std::ofstream outputFile;
     std::ifstream constantsFile;
@@ -76,19 +85,9 @@ class ChargeFETDigitizerModule : public G4VDigitizerModule
     G4String configFilename;
     G4String templateFilename;
     G4String ramoFileDir;
-    // FET constants
-    G4double decayTime;
-    G4double dt;
-    G4double preTrig;
-    G4double templateEnergy;
-    G4int numChannels;
-    G4int timeBins;
-    // Enable/Disable FETSim during sim
-    G4bool runLive;
     // FETSim Quantities
     vector<vector<vector<G4double> > > FETTemplates; //4x4x4096 = 4 channels w/ cross-talk terms
     vector<G4CMPMeshElectricField> RamoFields;
-    ChargeFETDigitizerMessenger* messenger;
 };
 
 #endif // CHARGEFETDIGITIZERMODULE_HH

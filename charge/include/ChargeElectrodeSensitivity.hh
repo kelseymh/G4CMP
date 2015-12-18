@@ -13,11 +13,12 @@ class ChargeElectrodeSensitivity
     : public G4CMPElectrodeSensitivity
 {
 public:
-  ChargeElectrodeSensitivity(G4String);
+  ChargeElectrodeSensitivity(G4String name);
   virtual ~ChargeElectrodeSensitivity();
-  virtual void Initialize(G4HCofThisEvent*);
-  
+  //virtual void Initialize(G4HCofThisEvent*);
   virtual void EndOfEvent(G4HCofThisEvent*);
+
+  void SetOutputFile(const G4String& fn);
   
 private:
   ofstream output;
