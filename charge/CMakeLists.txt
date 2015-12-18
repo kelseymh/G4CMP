@@ -30,11 +30,9 @@ include_directories(${PROJECT_SOURCE_DIR}/qhull-2012.1/src)
 set(charge_SOURCES 
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeActionInitialization.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeDetectorConstruction.cc
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargeEMField.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeElectrodeSensitivity.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeFETDigitizerModule.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargeFETDigitizerMessenger.cc
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargeFieldMessenger.cc
     ${PROJECT_SOURCE_DIR}/charge/src/ChargePrimaryGeneratorAction.cc
     )
 
@@ -90,7 +88,7 @@ target_link_libraries(g4cmpFETSim G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic
 set_target_properties(g4cmpFETSim PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 
-set(CMAKE_CXX_FLAGS "-O2")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall")
 install(TARGETS g4cmpCharge DESTINATION bin)
 install(TARGETS g4cmpFETSim DESTINATION bin)
 install(FILES ${charge_EPOT_FILES} DESTINATION EPotFiles COMPONENT config)

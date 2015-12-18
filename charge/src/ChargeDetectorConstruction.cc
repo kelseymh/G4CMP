@@ -1,10 +1,12 @@
-// $Id$
+// $Id: be4e879b33241dd90f04560177057fb1aecebf27 $
 
 #include "ChargeDetectorConstruction.hh"
 #include "ChargeElectrodeSensitivity.hh"
-#include "ChargeEMField.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4LogicalBorderSurface.hh"
+#include "G4CMPConfigManager.hh"
+#include "G4CMPFieldManager.hh"
+#include "G4CMPMeshElectricField.hh"
 #include "G4Box.hh"
 #include "G4IntersectionSolid.hh"
 #include "G4Colour.hh"
@@ -21,21 +23,74 @@
 #include "G4Tubs.hh"
 #include "G4UserLimits.hh"
 #include "G4VisAttributes.hh"
+#include "G4GeometryManager.hh"
+#include "G4PhysicalVolumeStore.hh"
+#include "G4LogicalVolumeStore.hh"
+#include "G4SolidStore.hh"
+#include "G4ElectricField.hh"
+#include "G4UniformElectricField.hh"
 
 
 ChargeDetectorConstruction::ChargeDetectorConstruction()
-   : liquidHelium(0), germanium(0), aluminum(0), tungsten(0), worldPhys(0),
-     constructed(false), ifField(true),
-     latManager(G4LatticeManager::GetLatticeManager()) {;}
+   : latManager(G4LatticeManager::GetLatticeManager()),
+     fEMField(nullptr), sensitivity(nullptr), liquidHelium(nullptr),
+     germanium(nullptr), aluminum(nullptr), tungsten(nullptr),
+     worldPhys(nullptr), zipThickness(2.54*cm),
+     epotScale(0.),
+     voltage(0.),
+     constructed(false),
+     epotFileName(""),
+     outputFileName("")
+{
+  /* Default initialization does not leave object in unusable state.
+   * Doesn't matter because run initialization will call Construct() and all
+   * will be well.
+   */
+}
 
-ChargeDetectorConstruction::~ChargeDetectorConstruction() {;}
+ChargeDetectorConstruction::~ChargeDetectorConstruction()
+{
+  delete fEMField;
+}
 
-G4VPhysicalVolume* ChargeDetectorConstruction::Construct() {
-  if (!constructed) { 
-    DefineMaterials();
-    SetupGeometry();
-    constructed = true;
+G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
+{
+  if (constructed) {
+    if (!G4RunManager::IfGeometryHasBeenDestroyed()) {
+      // Run manager hasn't cleaned volume stores. This code shouldn't execute
+      G4cout << "world exists" << G4endl;
+      G4GeometryManager::GetInstance()->OpenGeometry();
+      G4PhysicalVolumeStore::GetInstance()->Clean();
+      G4LogicalVolumeStore::GetInstance()->Clean();
+      G4SolidStore::GetInstance()->Clean();
+    }
+    // Only regenerate E field if it has changed since last construction.
+    if (epotFileName != G4CMPConfigManager::GetEpotFile() ||
+        epotScale != G4CMPConfigManager::GetEpotScale() ||
+        voltage != G4CMPConfigManager::GetVoltage()) {
+
+        epotFileName = G4CMPConfigManager::GetEpotFile();
+        epotScale = G4CMPConfigManager::GetEpotScale();
+        voltage = G4CMPConfigManager::GetVoltage();
+       delete fEMField;
+       fEMField = nullptr;
+    }
+    // Sensitivity doesn't need to ever be deleted, just updated.
+    if (outputFileName != G4CMPConfigManager::GetHitOutput()) {
+      outputFileName = G4CMPConfigManager::GetHitOutput();
+      sensitivity->SetOutputFile(outputFileName);
+    }
+    // Have to completely remove all lattices to avoid warning on reconstruction
+    latManager->Reset();
+  } else { // First setup of geometry
+    epotScale = G4CMPConfigManager::GetEpotScale();
+    voltage = G4CMPConfigManager::GetVoltage();
+    epotFileName = G4CMPConfigManager::GetEpotFile();
+    outputFileName = G4CMPConfigManager::GetHitOutput();
   }
+  DefineMaterials();
+  SetupGeometry();
+  constructed = true;
   return worldPhys;
 }
 
@@ -54,15 +109,21 @@ void ChargeDetectorConstruction::DefineMaterials() {
 void ChargeDetectorConstruction::SetupGeometry()
 {
   // World
-  G4VSolid* worldSolid = new G4Box("World",16.*cm,16.*cm,16.*cm);
+  G4VSolid* worldSolid = new G4Box("World", 16.*cm, 16.*cm, 16.*cm);
   G4LogicalVolume* worldLogical = new G4LogicalVolume(worldSolid,
-                                                      liquidHelium, "World");
-  worldPhys = new G4PVPlacement(0, G4ThreeVector(), worldLogical, "World", 0,
-                                false, 0);
+                                                      liquidHelium,
+                                                      "World");
+  worldPhys = new G4PVPlacement(0,
+                                G4ThreeVector(),
+                                worldLogical,
+                                "World",
+                                0,
+                                false,
+                                0);
 
   // Germanium
   G4VSolid* germaniumSolid = new G4Tubs("germaniumCyl", 0.*cm, 3.81*cm,
-                                        1.27*cm, 0.*deg, 360.*deg);
+                                        zipThickness/2., 0.*deg, 360.*deg);
   G4VSolid* zipCutBox = new G4Box("ZipCutBox", 37.7444*mm, 36.0934*mm,
                                   1.28*cm);
   G4VSolid* zipSolid = new G4IntersectionSolid("germaniumSolid", germaniumSolid,
@@ -76,14 +137,10 @@ void ChargeDetectorConstruction::SetupGeometry()
                                                            false, 0);
 
   // Attach E field to germanium (logical volume, so all placements)
-  // NOTE:  Pointer isn't used here; must be permanent to support macros
-  if (ifField) new ChargeEMField(germaniumLogical);
+  AttachField(germaniumLogical);
 
   // Physical lattice for each placed detector
-  G4LatticePhysical* detLattice =
-    new G4LatticePhysical(latManager->GetLattice(germanium));
-  detLattice->SetLatticeOrientation(0.,45.*deg);	// Flats at [110]
-  latManager->RegisterLattice(germaniumPhysical, detLattice);
+  AttachLattice(germaniumPhysical);
 
   // Aluminum
   G4VSolid* aluminumSolid = new G4Tubs("aluminiumSolid", 0.*cm, 3.81*cm,
@@ -123,12 +180,8 @@ void ChargeDetectorConstruction::SetupGeometry()
   new G4LogicalBorderSurface("iZIPWall", germaniumPhysical, worldPhys,
                                          wallSurfProp);
 
-  // detector -- Note : Aluminum electrode sensitivity is attached to Germanium 
-  G4SDManager* SDman = G4SDManager::GetSDMpointer();
-  ChargeElectrodeSensitivity* electrodeSensitivity =
-                              new ChargeElectrodeSensitivity("ChargeElectrode");
-  SDman->AddNewDetector(electrodeSensitivity);
-  germaniumLogical->SetSensitiveDetector(electrodeSensitivity);
+  // detector -- Note : Aluminum electrode sensitivity is attached to Germanium
+  AttachSensitivity(germaniumLogical);
 
   // Visualization attributes
   worldLogical->SetVisAttributes(G4VisAttributes::Invisible);
@@ -138,4 +191,41 @@ void ChargeDetectorConstruction::SetupGeometry()
   aluminumLogical->SetVisAttributes(simpleBoxVisAtt);
 }
 
+void ChargeDetectorConstruction::AttachField(G4LogicalVolume* lv)
+{
+  if (!fEMField) { // Only create field if one doesn't exist.
+    if (voltage != 0.0) {
+      G4double fieldMag = voltage/zipThickness;
+      fEMField = new G4UniformElectricField(fieldMag*G4ThreeVector(0., 0., 1.));
+    } else {
+      fEMField = new G4CMPMeshElectricField(epotFileName);
+    }
+  }
 
+  // Ensure that logical volume has a field manager attached
+  if (!lv->GetFieldManager()) { // Should always run
+    G4FieldManager* fFieldMgr = new G4CMPFieldManager(fEMField);
+    lv->SetFieldManager(fFieldMgr, true);
+  }
+
+  lv->GetFieldManager()->SetDetectorField(fEMField);
+}
+
+void ChargeDetectorConstruction::AttachLattice(G4VPhysicalVolume* pv)
+{
+  G4LatticePhysical* detLattice =
+    new G4LatticePhysical(latManager->GetLattice(germanium));
+  detLattice->SetLatticeOrientation(0.,45.*deg);	// Flats at [110]
+  latManager->RegisterLattice(pv, detLattice);
+}
+
+void ChargeDetectorConstruction::AttachSensitivity(G4LogicalVolume *lv)
+{
+  if (!sensitivity) { // Only create detector if one doesn't exist.
+    // NOTE: ChargeElectrodeSensitivity's ctor will call SetOutputFile()
+    sensitivity = new ChargeElectrodeSensitivity("ChargeElectrode");
+  }
+  G4SDManager* SDman = G4SDManager::GetSDMpointer();
+  SDman->AddNewDetector(sensitivity);
+  lv->SetSensitiveDetector(sensitivity);
+}

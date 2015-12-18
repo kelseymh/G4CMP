@@ -1,4 +1,4 @@
-// $Id$
+// $Id: d9c3dff5ec93e2dc13ca7f05eadf1af626fab333 $
 //
 // Generator uses G4ParticleGun, producing one electron and one hole per
 // event by default.  User may change the number of particles per event

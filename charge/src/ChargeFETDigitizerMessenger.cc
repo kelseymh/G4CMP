@@ -6,75 +6,95 @@
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWithABool.hh"
 
 ChargeFETDigitizerMessenger::ChargeFETDigitizerMessenger(
                           ChargeFETDigitizerModule* digitizer) : fet(digitizer)
 {    
-    fetDir = new G4UIdirectory("/g4cmp/FETSim/");
-    fetDir->SetGuidance("FETSim commands");
+  fetDir = new G4UIdirectory("/g4cmp/FETSim/");
+  fetDir->SetGuidance("FETSim commands");
 
-    SetOutputFileCmd = new G4UIcmdWithAString("/g4cmp/FETSim/SetOutputFile",this);
-    SetOutputFileCmd->SetGuidance("Set path to FET output file.");
+  EnableFETSimCmd = new G4UIcmdWithABool("/g4cmp/FETSim/EnableFETSim",this);
+  EnableFETSimCmd->SetGuidance("Enable FET simulation during run.");
 
-    GetOutputFileCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetOutputFile",this);
-    GetOutputFileCmd->SetGuidance("Current path to FET output file.");
+  DisableFETSimCmd = new G4UIcmdWithABool("/g4cmp/FETSim/DisableFETSim",this);
+  DisableFETSimCmd->SetGuidance("Disable FET simulation during run.");
 
-    SetTemplateFileCmd = new G4UIcmdWithAString("/g4cmp/FETSim/SetTemplateFile",this);
-    SetTemplateFileCmd->SetGuidance("Set path to FET template file.");
+  GetEnabledStateCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetEnabledState",this);
+  GetEnabledStateCmd->SetGuidance("Report whether FET simulation is enabled.");
 
-    GetTemplateFileCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetTemplateFile",this);
-    GetTemplateFileCmd->SetGuidance("Current path to FET template file.");
+  SetOutputFileCmd = new G4UIcmdWithAString("/g4cmp/FETSim/SetOutputFile",this);
+  SetOutputFileCmd->SetGuidance("Set path to FET output file.");
 
-    SetTemplateFileCmd = new G4UIcmdWithAString("/g4cmp/FETSim/SetRamoFileDir",this);
-    SetTemplateFileCmd->SetGuidance("Set path to Ramo potential files.");
+  GetOutputFileCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetOutputFile",this);
+  GetOutputFileCmd->SetGuidance("Current path to FET output file.");
 
-    GetTemplateFileCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetRamoFileDir",this);
-    GetTemplateFileCmd->SetGuidance("Current path to Ramo potential files.");
+  SetConfigFileCmd = new G4UIcmdWithAString("/g4cmp/FETSim/SetConfigFile",this);
+  SetConfigFileCmd->SetGuidance("Set path to FET config file.");
 
-    SetNumChanCmd = new G4UIcmdWithAnInteger("/g4cmp/FETSim/SetNumberOfChannels",this);
-    SetNumChanCmd->SetGuidance("Number of FET channels in detector needs to match number of Ramo potential files.");
+  GetConfigFileCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetConfigFile",this);
+  GetConfigFileCmd->SetGuidance("Current path to FET config file.");
 
-    GetNumChanCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetNumberOfChannels",this);
-    GetNumChanCmd->SetGuidance("Number of FET channels");
+  SetTemplateFileCmd = new G4UIcmdWithAString("/g4cmp/FETSim/SetTemplateFile",this);
+  SetTemplateFileCmd->SetGuidance("Set path to FET template file.");
 
-    SetTimeBinCmd = new G4UIcmdWithAnInteger("/g4cmp/FETSim/SetNumberOfBins",this);
-    SetTimeBinCmd->SetGuidance("Set number of digitizer bins");
+  GetTemplateFileCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetTemplateFile",this);
+  GetTemplateFileCmd->SetGuidance("Current path to FET template file.");
 
-    GetTimeBinCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetNumberOfBins",this);
-    GetTimeBinCmd->SetGuidance("Number of digitizer bins");
+  SetRamoFileDirCmd = new G4UIcmdWithAString("/g4cmp/FETSim/SetRamoFileDir",this);
+  SetRamoFileDirCmd->SetGuidance("Set path to Ramo potential files.");
 
-    SetDecayTimeCmd = new G4UIcmdWithADoubleAndUnit("/g4cmp/FETSim/SetDecayTime",this);
-    SetDecayTimeCmd->SetGuidance("Pulse decay time (if not using templates)");
+  GetRamoFileDirCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetRamoFileDir",this);
+  GetRamoFileDirCmd->SetGuidance("Current path to Ramo potential files.");
 
-    GetDecayTimeCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetDecayTime",this);
-    GetDecayTimeCmd->SetGuidance("Get pulse decay time (if not using templates)");
+  SetNumChanCmd = new G4UIcmdWithAnInteger("/g4cmp/FETSim/SetNumberOfChannels",this);
+  SetNumChanCmd->SetGuidance("Number of FET channels in detector needs to match number of Ramo potential files.");
 
-    SetUnitTimeCmd = new G4UIcmdWithADoubleAndUnit("/g4cmp/FETSim/SetUnitTime",this);
-    SetUnitTimeCmd->SetGuidance("Set dt for pulse bins (if not using templates)");
+  GetNumChanCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetNumberOfChannels",this);
+  GetNumChanCmd->SetGuidance("Number of FET channels");
 
-    GetUnitTimeCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetUnitTime",this);
-    GetUnitTimeCmd->SetGuidance("Get dt for pulse bins (if not using templates)");
+  SetTimeBinCmd = new G4UIcmdWithAnInteger("/g4cmp/FETSim/SetNumberOfBins",this);
+  SetTimeBinCmd->SetGuidance("Set number of digitizer bins");
 
-    SetPreTrigCmd = new G4UIcmdWithADoubleAndUnit("/g4cmp/FETSim/SetPreTriggerTime",this);
-    SetPreTrigCmd->SetGuidance("Set pre-trigger time for pulse (if not using templates)");
+  GetTimeBinCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetNumberOfBins",this);
+  GetTimeBinCmd->SetGuidance("Number of digitizer bins");
 
-    GetPreTrigCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetPreTriggerTime",this);
-    GetPreTrigCmd->SetGuidance("Get pre-trigger time for pulse (if not using templates)");
+  SetDecayTimeCmd = new G4UIcmdWithADoubleAndUnit("/g4cmp/FETSim/SetDecayTime",this);
+  SetDecayTimeCmd->SetGuidance("Pulse decay time (if not using templates)");
 
-    SetTemplateEnergyCmd = new G4UIcmdWithADoubleAndUnit("/g4cmp/FETSim/SetTemplateEnergy",this);
-    SetTemplateEnergyCmd->SetGuidance("Set energy scaling for template pulses");
+  GetDecayTimeCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetDecayTime",this);
+  GetDecayTimeCmd->SetGuidance("Get pulse decay time (if not using templates)");
 
-    GetTemplateEnergyCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetTemplateEnergy",this);
-    GetTemplateEnergyCmd->SetGuidance("Get energy scaling for templates pulses");
+  SetUnitTimeCmd = new G4UIcmdWithADoubleAndUnit("/g4cmp/FETSim/SetUnitTime",this);
+  SetUnitTimeCmd->SetGuidance("Set dt for pulse bins (if not using templates)");
+
+  GetUnitTimeCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetUnitTime",this);
+  GetUnitTimeCmd->SetGuidance("Get dt for pulse bins (if not using templates)");
+
+  SetPreTrigCmd = new G4UIcmdWithADoubleAndUnit("/g4cmp/FETSim/SetPreTriggerTime",this);
+  SetPreTrigCmd->SetGuidance("Set pre-trigger time for pulse (if not using templates)");
+
+  GetPreTrigCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/GetPreTriggerTime",this);
+  GetPreTrigCmd->SetGuidance("Get pre-trigger time for pulse (if not using templates)");
+
+  UpdateCmd = new G4UIcmdWithoutParameter("/g4cmp/FETSim/Update",this);
+  UpdateCmd->SetGuidance("Must manually udpate FETSim after changing parameters.");
 }
 
 ChargeFETDigitizerMessenger::~ChargeFETDigitizerMessenger()
 {
     delete fetDir;
+    delete EnableFETSimCmd;
+    delete DisableFETSimCmd;
+    delete GetEnabledStateCmd;
     delete SetOutputFileCmd;
     delete GetOutputFileCmd;
+    delete SetConfigFileCmd;
+    delete GetConfigFileCmd;
     delete SetTemplateFileCmd;
     delete GetTemplateFileCmd;
+    delete SetRamoFileDirCmd;
+    delete GetRamoFileDirCmd;
     delete SetNumChanCmd;
     delete GetNumChanCmd;
     delete SetTimeBinCmd;
@@ -85,23 +105,32 @@ ChargeFETDigitizerMessenger::~ChargeFETDigitizerMessenger()
     delete GetUnitTimeCmd;
     delete SetPreTrigCmd;
     delete GetPreTrigCmd;
-    delete SetTemplateEnergyCmd;
-    delete GetTemplateEnergyCmd;
+    delete UpdateCmd;
 }
 
 void ChargeFETDigitizerMessenger::SetNewValue(G4UIcommand* command, G4String NewValue)
 {
-  if (command == SetOutputFileCmd)
-    fet->SetOutputFilename(NewValue);
+  if (command == EnableFETSimCmd)
+    fet->EnableFETSim();
+  else if (command == DisableFETSimCmd)
+    fet->DisableFETSim();
+  else if (command == SetOutputFileCmd)
+    fet->SetOutputFile(NewValue);
   else if (command == GetOutputFileCmd)
-    fet->GetOutputFilename();
+    fet->GetOutputFile();
+  else if (command == SetConfigFileCmd)
+    fet->SetConfigFilename(NewValue);
+  else if (command == GetConfigFileCmd)
+    fet->GetConfigFilename();
+  else if (command == GetEnabledStateCmd)
+    fet->FETSimIsEnabled();
   else if (command == SetTemplateFileCmd)
     fet->SetTemplateFilename(NewValue);
   else if (command == GetTemplateFileCmd)
     fet->GetTemplateFilename();
   else if (command == SetRamoFileDirCmd)
     fet->SetRamoFileDir(NewValue);
-  else if (command == GetRamoFileCmd)
+  else if (command == GetRamoFileDirCmd)
     fet->GetRamoFileDir();
   else if (command == SetNumChanCmd)
     fet->SetNumberOfChannels(SetNumChanCmd->ConvertToInt(NewValue));
@@ -123,8 +152,6 @@ void ChargeFETDigitizerMessenger::SetNewValue(G4UIcommand* command, G4String New
     fet->SetPreTrig(SetPreTrigCmd->ConvertToDimensionedDouble(NewValue));
   else if (command == GetPreTrigCmd)
     fet->GetPreTrig();
-  else if (command == SetTemplateEnergyCmd)
-    fet->SetTemplateEnergy(SetTemplateEnergyCmd->ConvertToDimensionedDouble(NewValue));
-  else if (command == GetTemplateEnergyCmd)
-    fet->GetTemplateEnergy();
+  else if (command == UpdateCmd)
+    fet->Build();
 }

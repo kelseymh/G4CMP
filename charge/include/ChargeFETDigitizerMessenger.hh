@@ -7,6 +7,7 @@ class G4UIcmdWithoutParameter;
 class G4UIcmdWithAString;
 class G4UIcmdWithAnInteger;
 class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWithABool;
 
 #include "G4UImessenger.hh"
 #include "globals.hh"
@@ -16,18 +17,21 @@ class ChargeFETDigitizerMessenger : public G4UImessenger
   public:
     ChargeFETDigitizerMessenger(ChargeFETDigitizerModule* digitizer);
     ~ChargeFETDigitizerMessenger();
-  public:
     void SetNewValue(G4UIcommand* command, G4String NewValue);
   private:
-    ChargeFETDigitizerModule* fet;
-  private:
+    ChargeFETDigitizerModule*  fet;
     G4UIdirectory*             fetDir;
+    G4UIcmdWithABool*          EnableFETSimCmd;
+    G4UIcmdWithABool*          DisableFETSimCmd;
+    G4UIcmdWithoutParameter*   GetEnabledStateCmd;
     G4UIcmdWithAString*        SetOutputFileCmd;
     G4UIcmdWithoutParameter*   GetOutputFileCmd;
+    G4UIcmdWithAString*        SetConfigFileCmd;
+    G4UIcmdWithoutParameter*   GetConfigFileCmd;
     G4UIcmdWithAString*        SetTemplateFileCmd;
     G4UIcmdWithoutParameter*   GetTemplateFileCmd;
     G4UIcmdWithAString*        SetRamoFileDirCmd;
-    G4UIcmdWithoutParameter*   GetRamoFileCmd;
+    G4UIcmdWithoutParameter*   GetRamoFileDirCmd;
     G4UIcmdWithAnInteger*      SetNumChanCmd;
     G4UIcmdWithoutParameter*   GetNumChanCmd;
     G4UIcmdWithAnInteger*      SetTimeBinCmd;
@@ -38,8 +42,7 @@ class ChargeFETDigitizerMessenger : public G4UImessenger
     G4UIcmdWithoutParameter*   GetUnitTimeCmd;
     G4UIcmdWithADoubleAndUnit* SetPreTrigCmd;
     G4UIcmdWithoutParameter*   GetPreTrigCmd;
-    G4UIcmdWithADoubleAndUnit* SetTemplateEnergyCmd;
-    G4UIcmdWithoutParameter*   GetTemplateEnergyCmd;
+    G4UIcmdWithoutParameter*   UpdateCmd;
 };
 
 #endif

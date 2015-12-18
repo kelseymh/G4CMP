@@ -13,7 +13,7 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPEqEMField.hh"
 #include "G4CMPLocalElectroMagField.hh"
-#include "G4CMPValleyTrackMap.hh"
+#include "G4CMPTrackInformation.hh"
 #include "G4ChordFinder.hh"
 #include "G4ClassicalRK4.hh"
 #include "G4ElectroMagneticField.hh"
@@ -87,7 +87,15 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
 
   // Configure electric field with valleys for either electrons or holes
   if (aTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
-    G4int iv = G4CMPValleyTrackMap::GetInstance()->GetValley(aTrack);
+    G4int modelID = G4PhysicsModelCatalog::GetIndex("G4CMP process");
+    if (modelID < 0) {
+      G4Exception("G4CMPFieldManager::ConfigureForTrack","Electron001",
+      EventMustBeAborted, "Track is electron, but has no G4CMP Aux. Info.");
+    }
+    G4int iv =
+      static_cast<G4CMPTrackInformation*>(
+        aTrack->GetAuxiliaryTrackInformation(modelID)
+                                         )->GetValleyIndex();
     SetElectronValleyForTrack(iv);
   } else {
     SetElectronValleyForTrack(-1);

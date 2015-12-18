@@ -44,7 +44,6 @@
 #include "G4CMPeLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
-#include "G4CMPValleyTrackMap.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononPolarization.hh"

@@ -16,7 +16,6 @@
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
-#include "G4CMPValleyTrackMap.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
 #include "G4LatticePhysical.hh"
@@ -27,8 +26,6 @@
 #include "G4UserLimits.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
-#include <fstream>
-#include <iostream>
 #include <math.h>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

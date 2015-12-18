@@ -12,7 +12,7 @@
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
-#include "G4CMPValleyTrackMap.hh"
+#include "G4CMPTrackInformation.hh"
 #include "G4CMPFieldManager.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
@@ -114,7 +114,9 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
   // picking a new valley at random if IV-scattering process was triggered
   valley = ChooseValley();
-  trackVmap->SetValley(aTrack, valley);
+  static_cast<G4CMPTrackInformation*>(
+    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
+                                     )->SetValleyIndex(valley);
 
   p = theLattice->MapK_valleyToP(valley, p); // p is p again
   RotateToGlobalDirection(p);

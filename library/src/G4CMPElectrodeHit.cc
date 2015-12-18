@@ -20,31 +20,6 @@ G4CMPElectrodeHit::G4CMPElectrodeHit()
 G4CMPElectrodeHit::~G4CMPElectrodeHit()
 {;}
 
-G4CMPElectrodeHit::G4CMPElectrodeHit(const G4CMPElectrodeHit &right)
-: G4VHit() {
-  trackID = right.trackID;
-  particleName = right.particleName;
-  charge = right.charge;
-  startE = right.startE;
-  finalTime = right.finalTime;
-  EDep = right.EDep;
-  startPos = right.startPos;
-  finalPos = right.finalPos;
-}
-
-const G4CMPElectrodeHit& G4CMPElectrodeHit::operator=(const G4CMPElectrodeHit &right)
-{
-  trackID = right.trackID;
-  particleName = right.particleName;
-  charge = right.charge;
-  startE = right.startE;
-  finalTime = right.finalTime;
-  EDep = right.EDep;
-  startPos = right.startPos;
-  finalPos = right.finalPos;
-  return *this;
-}
-
 int G4CMPElectrodeHit::operator==(const G4CMPElectrodeHit &/*right*/) const
 {
   return 0;
@@ -60,8 +35,8 @@ void G4CMPElectrodeHit::Draw()
     circle.SetFillStyle(G4Circle::filled);
     G4Colour colour(0.65,0.65,0.);
     G4VisAttributes attribs(colour);
-    attribs.SetStartTime(trackTime);
-    attribs.SetEndTime(trackTime+1*ms);
+    attribs.SetStartTime(finalTime);
+    attribs.SetEndTime(finalTime+1*ms);
     circle.SetVisAttributes(attribs);
     pVVisManager->Draw(circle);
   }
@@ -96,7 +71,7 @@ std::vector<G4AttValue>* G4CMPElectrodeHit::CreateAttValues() const
   values->push_back(G4AttValue("HitType","G4CMPElectrodeHit",""));
 
   values->push_back
-    (G4AttValue("Time",G4BestUnit(trackTime,"Time"),""));
+    (G4AttValue("Time",G4BestUnit(finalTime,"Time"),""));
 
   values->push_back
     (G4AttValue("EDep",G4BestUnit(EDep,"Energy"),""));

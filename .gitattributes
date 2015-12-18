@@ -1,1 +1,8 @@
-* ident
+# We want to use ident, but Qhull's files contain the $Id tags as well,
+# so we have to carve around the Qhull files.
+charge/* ident
+phonon/* ident
+# The next line dodges modifying the qhull source files by not stepping into
+# library/include/qhull/*
+library/include/*.hh ident
+library/src/* ident

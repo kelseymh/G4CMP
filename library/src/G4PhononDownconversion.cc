@@ -33,11 +33,11 @@
 // 20140312  Follow name change CreateSecondary -> CreatePhonon
 // 20140331  Add required process subtype code
 
+#include "G4CMPTrackInformation.hh"
 #include "G4PhononDownconversion.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
-#include "G4PhononTrackMap.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
@@ -183,7 +183,9 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   //using energy fraction x to calculate daughter phonon directions
   G4double theta1=MakeTTDeviation(d, x);
   G4double theta2=MakeTTDeviation(d, 1-x);
-  G4ThreeVector dir1=trackKmap->GetK(aTrack);
+  G4ThreeVector dir1=static_cast<G4CMPTrackInformation*>(
+    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
+                                                        )->GetK();
   G4ThreeVector dir2=dir1;
 
   // FIXME:  These extra randoms change timing and causting outputs of example!
@@ -239,7 +241,9 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   //using energy fraction x to calculate daughter phonon directions
   G4double thetaL=MakeLDeviation(d, x);
   G4double thetaT=MakeTDeviation(d, x);		// FIXME:  Should be 1-x?
-  G4ThreeVector dir1=trackKmap->GetK(aTrack);
+  G4ThreeVector dir1=static_cast<G4CMPTrackInformation*>(
+    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
+                                                        )->GetK();
   G4ThreeVector dir2=dir1;
 
   G4double ph=G4UniformRand()*twopi;
