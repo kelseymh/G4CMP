@@ -7,6 +7,7 @@
 #include "globals.hh"
 
 class ChargeElectrodeSensitivity;
+class G4CMPSurfaceProperty;
 class G4LatticeManager;
 class G4Material;
 class G4VPhysicalVolume;
@@ -28,9 +29,12 @@ private:
   void AttachSensitivity(G4LogicalVolume* lv);
 
 private:
+  ChargeElectrodeSensitivity* sensitivity;
+  G4CMPSurfaceProperty* topSurfProp;
+  G4CMPSurfaceProperty* botSurfProp;
+  G4CMPSurfaceProperty* wallSurfProp;
   G4LatticeManager* latManager;
   G4ElectricField* fEMField;
-  ChargeElectrodeSensitivity* sensitivity;
   G4Material* liquidHelium;
   G4Material* germanium;
   G4Material* aluminum;
