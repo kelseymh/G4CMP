@@ -154,7 +154,19 @@ G4CMPVDriftProcess::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
 void 
 G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
   G4double mass = GetCurrentTrack()->GetDynamicParticle()->GetMass();
-  G4double energy = 0.5*p.mag2()/mass;	// Non-relativistic, but "mass" is mc^2
+
+  G4ThreeVector v;
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
+    G4ThreeVector p_local = GetLocalDirection(p);
+    v = GetGlobalDirection(theLattice->MapPtoV_el(ivalley, p_local));
+  } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
+    v = p*c_light/mass;
+  } else {
+    G4Exception("G4CMMPVDriftProcess::FillParticleChange", "DriftProcess001",
+    EventMustBeAborted, "Unknown charge carrier");
+  }
+
+  G4double energy = 0.5*mass*v.mag2()/c_squared;	// Non-relativistic, but "mass" is mc^2
 
 #ifdef G4CMP_SET_ELECTRON_MASS
   if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
@@ -164,14 +176,14 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
   }
 #endif
 
-  FillParticleChange(ivalley, energy, p);
+  FillParticleChange(ivalley, energy, v);
 }
 
 // Fill ParticleChange mass for electron charge carrier with given energy
 
 void 
 G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
-				     const G4ThreeVector& p) {
+             const G4ThreeVector& v) {
 #ifdef G4CMP_SET_ELECTRON_MASS
   if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
 
@@ -190,8 +202,7 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
     aParticleChange.ProposeVelocity(velocity);
   }
 #endif
-
-  aParticleChange.ProposeMomentumDirection(p.unit());
+  aParticleChange.ProposeMomentumDirection(v.unit());
   aParticleChange.ProposeEnergy(Ekin);
 }
 

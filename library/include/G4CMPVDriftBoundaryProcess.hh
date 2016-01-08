@@ -64,8 +64,7 @@ public:
 
 protected:
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
-  virtual G4ThreeVector GetWaveVector(const G4Track&) const =0;
-  virtual G4double GetKineticEnergy(const G4Track&) const =0;
+  virtual G4ThreeVector GetLocalWaveVector(const G4Track&) const =0;
 
   // Decide and apply different surface actions; subclasses may override
   virtual G4bool AbsorbTrack(const G4Step& aStep);

@@ -132,7 +132,16 @@ void G4CMPProcessUtils::GetLocalPosition(const G4Track& track,
 }
 
 G4ThreeVector G4CMPProcessUtils::GetLocalMomentum(const G4Track& track) const {
-  return GetLocalDirection(track.GetMomentum());
+  if (currentTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
+    return theLattice->MapV_elToP(GetValleyIndex(track),
+                                  GetLocalVelocityVector(track));
+  } else if (currentTrack->GetDefinition() == G4CMPDriftHole::Definition()) {
+    return GetLocalDirection(track.GetMomentum());
+  } else {
+    G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
+                EventMustBeAborted, "Unknown charge carrier");
+    return G4ThreeVector();
+  }
 }
 
 void G4CMPProcessUtils::GetLocalMomentum(const G4Track& track, 
@@ -143,6 +152,76 @@ void G4CMPProcessUtils::GetLocalMomentum(const G4Track& track,
   mom[2] = tmom.z();
 }
 
+G4ThreeVector G4CMPProcessUtils::GetLocalVelocityVector(const G4Track& track) const {
+  G4ThreeVector vel = track.CalculateVelocity() * track.GetMomentumDirection();
+  return GetLocalDirection(vel);
+}
+
+void G4CMPProcessUtils::GetLocalVelocityVector(const G4Track &track, G4double vel[]) const {
+  G4ThreeVector v_local = GetLocalVelocityVector(track);
+  vel[0] = v_local.x();
+  vel[1] = v_local.y();
+  vel[2] = v_local.z();
+}
+
+// Access track position and momentum in global coordinates
+G4ThreeVector G4CMPProcessUtils::GetGlobalPosition(const G4Track& track) const {
+  return track.GetPosition();
+}
+
+void G4CMPProcessUtils::GetGlobalPosition(const G4Track& track,
+           G4double pos[3]) const {
+  G4ThreeVector tpos = GetGlobalPosition(track);
+  pos[0] = tpos.x();
+  pos[1] = tpos.y();
+  pos[2] = tpos.z();
+}
+
+G4ThreeVector G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
+  if (currentTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
+    G4ThreeVector p = theLattice->MapV_elToP(GetValleyIndex(track),
+                                             GetLocalVelocityVector(track));
+    return GetGlobalDirection(p);
+  } else if (currentTrack->GetDefinition() == G4CMPDriftHole::Definition()) {
+    return track.GetMomentum();
+  } else {
+    G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
+                EventMustBeAborted, "Unknown charge carrier");
+    return G4ThreeVector();
+  }
+}
+
+void G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track,
+           G4double mom[3]) const {
+  G4ThreeVector tmom = GetGlobalMomentum(track);
+  mom[0] = tmom.x();
+  mom[1] = tmom.y();
+  mom[2] = tmom.z();
+}
+
+G4ThreeVector G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track& track) const {
+  return track.CalculateVelocity() * track.GetMomentumDirection();
+}
+
+void G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track &track, G4double vel[]) const {
+  G4ThreeVector v_local = GetGlobalVelocityVector(track);
+  vel[0] = v_local.x();
+  vel[1] = v_local.y();
+  vel[2] = v_local.z();
+}
+
+G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
+  if (currentTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
+    return theLattice->MapV_elToEkin(GetValleyIndex(track),
+                                     GetLocalVelocityVector(track));
+  } else if (currentTrack->GetDefinition() == G4CMPDriftHole::Definition()) {
+    return track.GetKineticEnergy();
+  } else {
+    G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
+                EventMustBeAborted, "Unknown charge carrier");
+    return 0.0;
+  }
+}
 
 // Return particle type for currently active track [set in LoadDataForTrack()]
 
@@ -321,10 +400,12 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   G4double carrierSpeed=0.;
 #endif
 
+  G4ThreeVector v_unit;
   if (charge==1) {
     theCarrier    = G4CMPDriftHole::Definition();
     carrierMass   = theLattice->GetHoleMass();
     carrierEnergy = 0.5 * p.mag2() / carrierMass;	// Non-relativistic
+    v_unit = p.unit();
   } else {
     theCarrier    = G4CMPDriftElectron::Definition();
 #ifdef G4CMP_SET_ELECTRON_MASS
@@ -334,12 +415,16 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
     carrierSpeed  = theLattice->MapPtoV_el(valley, p_local).mag();
 #else
     carrierMass   = theLattice->GetElectronMass();
-    carrierEnergy = 0.5 * p.mag2() / carrierMass;	// Non-relativistic
+    G4ThreeVector p_local = GetLocalDirection(p);
+    G4ThreeVector v_local = theLattice->MapPtoV_el(valley, p_local);
+    RotateToGlobalDirection(v_local);
+    carrierEnergy = 0.5 * carrierMass * v_local.mag2();// Non-relativistic
+    v_unit = v_local.unit();
 #endif
   }
 
   G4DynamicParticle* secDP =
-    new G4DynamicParticle(theCarrier, p.unit(), carrierEnergy, carrierMass);
+    new G4DynamicParticle(theCarrier, v_unit, carrierEnergy, carrierMass);
 
   G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), pos);
 

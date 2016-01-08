@@ -19,26 +19,17 @@ G4CMPeDriftBoundaryProcess::G4CMPeDriftBoundaryProcess()
 
 G4CMPeDriftBoundaryProcess::~G4CMPeDriftBoundaryProcess() {}
 
-G4ThreeVector G4CMPeDriftBoundaryProcess::GetWaveVector(const G4Track& aTrack) const {
+G4ThreeVector
+G4CMPeDriftBoundaryProcess::GetLocalWaveVector(const G4Track& aTrack) const {
   G4int iv = GetValleyIndex(aTrack);
-  G4ThreeVector p_local =
-    GetLocalDirection(aTrack.GetStep()->GetPostStepPoint()->GetMomentum());
-  return theLattice->MapPtoK_HV(iv, p_local);
+  return theLattice->MapV_elToK_HV(iv, GetLocalVelocityVector(aTrack));
 }
-
-G4double G4CMPeDriftBoundaryProcess::GetKineticEnergy(const G4Track& aTrack) const {
-  G4int iv = GetValleyIndex(aTrack);
-  G4ThreeVector p_local =
-    GetLocalDirection(aTrack.GetStep()->GetPostStepPoint()->GetMomentum());
-  return theLattice->MapPtoEkin(iv, p_local);
-}
-
 
 // Apply kinematic absoprtion (wave-vector at surface)
 
 G4bool G4CMPeDriftBoundaryProcess::AbsorbTrack(const G4Step& aStep) {
   return (G4CMPVDriftBoundaryProcess::AbsorbTrack(aStep) ||
-	  GetWaveVector(*(aStep.GetTrack()))*surfNorm > absMinKElec);
+    GetLocalWaveVector(*(aStep.GetTrack()))*surfNorm > absMinKElec);
 }
 
 
@@ -46,19 +37,14 @@ G4bool G4CMPeDriftBoundaryProcess::AbsorbTrack(const G4Step& aStep) {
 
 G4bool G4CMPeDriftBoundaryProcess::ReflectTrack(const G4Step& aStep) {
   G4Track* aTrack = aStep.GetTrack();
-  G4ThreeVector vel = theLattice->MapPtoV_el(GetCurrentValley(),
-					     GetLocalMomentum(aTrack));
-  RotateToGlobalDirection(vel);
-
-  return (vel*surfNorm > 0.);		// Velocity must be output from volume
+  G4ThreeVector vel = GetGlobalVelocityVector(aTrack);
+  return (vel*surfNorm > 0.);		// Velocity must be outward from volume
 }
 
 G4VParticleChange* 
 G4CMPeDriftBoundaryProcess::DoReflection(const G4Step& aStep) {
   G4Track* aTrack = aStep.GetTrack();
-  G4ThreeVector vel = theLattice->MapPtoV_el(GetCurrentValley(),
-					     GetLocalMomentum(aTrack));
-  RotateToGlobalDirection(vel);
+  G4ThreeVector vel = GetGlobalVelocityVector(aTrack);
   
   if (verboseLevel>2)
     G4cout << " Old velocity direction " << vel.unit() << G4endl;

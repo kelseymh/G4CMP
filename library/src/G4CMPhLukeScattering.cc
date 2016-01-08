@@ -62,16 +62,8 @@ G4CMPhLukeScattering::~G4CMPhLukeScattering() {;}
 
 // Physics
 
-G4double G4CMPhLukeScattering::GetVelocity(const G4Track& aTrack) const {
-  return aTrack.GetStep()->GetPostStepPoint()->GetVelocity();
-}
-
-G4ThreeVector G4CMPhLukeScattering::GetWaveVector(const G4Track& aTrack) const {
-  return aTrack.GetStep()->GetPostStepPoint()->GetMomentum() / hbarc;
-}
-
-G4double G4CMPhLukeScattering::GetKineticEnergy(const G4Track& aTrack) const {
-  return aTrack.GetStep()->GetPostStepPoint()->GetKineticEnergy();
+G4ThreeVector G4CMPhLukeScattering::GetLocalWaveVector(const G4Track& aTrack) const {
+  return GetLocalMomentum(aTrack) / hbarc;
 }
 
 // Convert local wave-vector to global

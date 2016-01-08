@@ -160,7 +160,7 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   if (verboseLevel>2) {
-    G4cout <<   " K direction: " << GetWaveVector(aTrack).unit()
+    G4cout <<   " K direction: " << GetLocalWaveVector(aTrack).unit()
 	   << "\n P direction: " << aTrack.GetMomentumDirection() << G4endl;
   }
 
@@ -246,7 +246,7 @@ G4bool G4CMPVDriftBoundaryProcess::HitElectrode(const G4Step& aStep) {
 }
 
 // Default behaviour just kills the track, may need to have "state flag"
-// akin to G3OpBoundaryProcess.
+// akin to G4OpBoundaryProcess.
 
 G4VParticleChange* 
 G4CMPVDriftBoundaryProcess::DoElectrodeHit(const G4Step& aStep) {
