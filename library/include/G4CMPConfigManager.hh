@@ -30,7 +30,7 @@ public:
   static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
   static G4double GetVoltage()           { return Instance()->voltage; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
-  static G4double GetLukePhonons()       { return Instance()->lukePhonons; }
+  static G4double GetGenPhonons()        { return Instance()->genPhonons; }
   static G4double GetEpotScale()         { return Instance()->epotScale; }
   static const G4String& GetEpotFile()   { return Instance()->Epot_file; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
@@ -45,8 +45,8 @@ public:
     { Instance()->voltage = value; UpdateGeometry(); }
   static void SetMinStepScale(G4double value)
     { Instance()->stepScale = value; }
-  static void SetLukePhonons(G4double value)
-    { Instance()->lukePhonons=value; }
+  static void SetGenPhonons(G4double value)
+    { Instance()->genPhonons=value; }
   static void SetEpotScale(G4double value)
     { Instance()->epotScale = value; UpdateGeometry(); }
   static void SetEpotFile(const G4String& name)
@@ -67,14 +67,14 @@ private:
 
 private:
   G4int verbose;		// Global verbosity (all processes, lattices)
+  G4int ehBounces;		// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
   G4double voltage;		// Uniform field voltage ($G4CMP_VOLTAGE)
   G4double stepScale;		// Fraction of l0 for steps ($G4CMP_MIN_STEP)
-  G4double lukePhonons;         // Rate to create phonons ($G4CMP_LUKE_PHONONS)
+  G4double genPhonons;         // Rate to create phonons ($G4CMP_LUKE_PHONONS)
   G4double epotScale;		// Scale factor for Epot ($G4CMP_EPOT_SCALE)
   G4String Epot_file;		// Name of E-field file ($G4CMP_EPOT_FILE)
   G4String LatticeDir;		// Lattice data directory ($G4LATTICEDATA)
   G4String Hit_file;		// Output file of e/h hits ($G4CMP_HIT_FILE)
-  G4int ehBounces;		// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
 
   G4CMPConfigMessenger* messenger;
 };

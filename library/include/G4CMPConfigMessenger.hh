@@ -49,7 +49,7 @@ private:
   G4UIcmdWithAnInteger* bounceCmd;
   G4UIcmdWithADoubleAndUnit* voltageCmd;
   G4UIcmdWithADouble* minstepCmd;
-  G4UIcmdWithADouble* makeLukeCmd;
+  G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* escaleCmd;
   G4UIcmdWithAString* fileCmd;
   G4UIcmdWithAString* dirCmd;

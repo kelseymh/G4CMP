@@ -40,8 +40,8 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   minstepCmd = CreateCommand<G4UIcmdWithADouble>("minimumStep",
 			 "Set fraction of L0 for charge carrier minimum step");
 
-  makeLukeCmd = CreateCommand<G4UIcmdWithADouble>("produceLukePhonons",
-				  "Set rate of production of Luke phonons");
+  makePhononCmd = CreateCommand<G4UIcmdWithADouble>("producePhonons",
+          "Set rate of production of Luke and relaxation phonons");
 
   escaleCmd = CreateCommand<G4UIcmdWithADouble>("scaleEpot",
 		"Set a scale factor for voltages in Epot electric field file");
@@ -66,7 +66,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete bounceCmd; bounceCmd=0;
   delete voltageCmd; voltageCmd=0;
   delete minstepCmd; minstepCmd=0;
-  delete makeLukeCmd; makeLukeCmd=0;
+  delete makePhononCmd; makePhononCmd=0;
   delete escaleCmd; escaleCmd=0;
   delete fileCmd; fileCmd=0;
   delete dirCmd; dirCmd=0;
@@ -105,7 +105,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == verboseCmd) theManager->SetVerboseLevel(StoI(value));
   if (cmd == voltageCmd) theManager->SetVoltage(voltageCmd->GetNewDoubleValue(value));
   if (cmd == minstepCmd) theManager->SetMinStepScale(StoD(value));
-  if (cmd == makeLukeCmd) theManager->SetLukePhonons(StoD(value));
+  if (cmd == makePhononCmd) theManager->SetGenPhonons(StoD(value));
   if (cmd == escaleCmd) theManager->SetEpotScale(escaleCmd->GetNewDoubleValue(value));
   if (cmd == bounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == fileCmd) theManager->SetEpotFile(value);
