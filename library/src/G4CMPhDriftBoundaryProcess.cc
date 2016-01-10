@@ -18,10 +18,6 @@ G4CMPhDriftBoundaryProcess::G4CMPhDriftBoundaryProcess()
 
 G4CMPhDriftBoundaryProcess::~G4CMPhDriftBoundaryProcess() {}
 
-G4ThreeVector G4CMPhDriftBoundaryProcess::GetLocalWaveVector(const G4Track& aTrack) const {
-  return GetLocalMomentum(aTrack) / hbarc;
-}
-
 // Apply kinematic absoprtion (wave-vector at surface)
 
 G4bool G4CMPhDriftBoundaryProcess::AbsorbTrack(const G4Step& aStep) {

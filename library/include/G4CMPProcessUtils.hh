@@ -117,6 +117,11 @@ public:
     return GetLocalVelocityVector(*track, vel);
   }
 
+  G4ThreeVector GetLocalWaveVector(const G4Track& track) const;
+  G4ThreeVector GetLocalWaveVector(const G4Track* track) const {
+    return GetLocalWaveVector(*track);
+  }
+
   // Convenience functions to get position, momentum, velocity from track
   G4ThreeVector GetGlobalPosition(const G4Track& track) const;
   G4ThreeVector GetGlobalPosition(const G4Track* track) const {
@@ -204,6 +209,9 @@ public:
 
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
+
+  void MakeLocalPhononK(G4ThreeVector& kphonon) const;
+  void MakeGlobalPhononK(G4ThreeVector& kphonon) const;
 
   // Construct new phonon track with correct momentum, position, etc.
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,

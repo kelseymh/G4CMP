@@ -52,10 +52,9 @@ public:
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
-  virtual G4double 
-  PostStepGetPhysicalInteractionLength(const G4Track& track,
-				       G4double previousStepSize,
-				       G4ForceCondition* condition);
+  virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& track,
+                                                   G4double previousStepSize,
+                                                   G4ForceCondition* condition);
 
   virtual G4bool IsApplicable(const G4ParticleDefinition&);
 
@@ -64,7 +63,6 @@ public:
 
 protected:
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
-  virtual G4ThreeVector GetLocalWaveVector(const G4Track&) const =0;
 
   // Decide and apply different surface actions; subclasses may override
   virtual G4bool AbsorbTrack(const G4Step& aStep);

@@ -132,10 +132,10 @@ void G4CMPProcessUtils::GetLocalPosition(const G4Track& track,
 }
 
 G4ThreeVector G4CMPProcessUtils::GetLocalMomentum(const G4Track& track) const {
-  if (currentTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
     return theLattice->MapV_elToP(GetValleyIndex(track),
                                   GetLocalVelocityVector(track));
-  } else if (currentTrack->GetDefinition() == G4CMPDriftHole::Definition()) {
+  } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
     return GetLocalDirection(track.GetMomentum());
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
@@ -157,11 +157,25 @@ G4ThreeVector G4CMPProcessUtils::GetLocalVelocityVector(const G4Track& track) co
   return GetLocalDirection(vel);
 }
 
-void G4CMPProcessUtils::GetLocalVelocityVector(const G4Track &track, G4double vel[]) const {
+void G4CMPProcessUtils::GetLocalVelocityVector(const G4Track &track,
+                                               G4double vel[]) const {
   G4ThreeVector v_local = GetLocalVelocityVector(track);
   vel[0] = v_local.x();
   vel[1] = v_local.y();
   vel[2] = v_local.z();
+}
+
+G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const {
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
+    return theLattice->MapV_elToK_HV(GetValleyIndex(track),
+                                     GetLocalVelocityVector(track));
+  } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
+    return GetLocalMomentum(track) / hbarc;
+  } else {
+    G4Exception("G4CMPProcessUtils::GetLocalWaveVector", "DriftProcess002",
+                EventMustBeAborted, "Unknown charge carrier");
+    return G4ThreeVector();
+  }
 }
 
 // Access track position and momentum in global coordinates
@@ -178,14 +192,14 @@ void G4CMPProcessUtils::GetGlobalPosition(const G4Track& track,
 }
 
 G4ThreeVector G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
-  if (currentTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
     G4ThreeVector p = theLattice->MapV_elToP(GetValleyIndex(track),
                                              GetLocalVelocityVector(track));
     return GetGlobalDirection(p);
-  } else if (currentTrack->GetDefinition() == G4CMPDriftHole::Definition()) {
+  } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
     return track.GetMomentum();
   } else {
-    G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
+    G4Exception("G4CMPProcessUtils::GetGlobalMomentum", "DriftProcess003",
                 EventMustBeAborted, "Unknown charge carrier");
     return G4ThreeVector();
   }
@@ -211,13 +225,13 @@ void G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track &track, G4double v
 }
 
 G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
-  if (currentTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
     return theLattice->MapV_elToEkin(GetValleyIndex(track),
                                      GetLocalVelocityVector(track));
-  } else if (currentTrack->GetDefinition() == G4CMPDriftHole::Definition()) {
+  } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
     return track.GetKineticEnergy();
   } else {
-    G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
+    G4Exception("G4CMPProcessUtils::GetKineticEnergy", "DriftProcess004",
                 EventMustBeAborted, "Unknown charge carrier");
     return 0.0;
   }
@@ -257,6 +271,19 @@ G4int G4CMPProcessUtils::ChoosePolarization() const {
 			    theLattice->GetFTDOS());
 }
 
+void G4CMPProcessUtils::MakeLocalPhononK(G4ThreeVector& kphonon) const {
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
+    kphonon = theLattice->MapK_HVtoK(GetValleyIndex(GetCurrentTrack()), kphonon);
+  } else if (GetCurrentParticle() != G4CMPDriftHole::Definition()) {
+    G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess005",
+                EventMustBeAborted, "Unknown charge carrier");
+  }
+}
+
+void G4CMPProcessUtils::MakeGlobalPhononK(G4ThreeVector& kphonon) const {
+  MakeLocalPhononK(kphonon);
+  RotateToGlobalDirection(kphonon);
+}
 
 // Construct new phonon track with correct momentum, position, etc.
 

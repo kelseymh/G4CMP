@@ -19,12 +19,6 @@ G4CMPeDriftBoundaryProcess::G4CMPeDriftBoundaryProcess()
 
 G4CMPeDriftBoundaryProcess::~G4CMPeDriftBoundaryProcess() {}
 
-G4ThreeVector
-G4CMPeDriftBoundaryProcess::GetLocalWaveVector(const G4Track& aTrack) const {
-  G4int iv = GetValleyIndex(aTrack);
-  return theLattice->MapV_elToK_HV(iv, GetLocalVelocityVector(aTrack));
-}
-
 // Apply kinematic absoprtion (wave-vector at surface)
 
 G4bool G4CMPeDriftBoundaryProcess::AbsorbTrack(const G4Step& aStep) {
@@ -57,6 +51,7 @@ G4CMPeDriftBoundaryProcess::DoReflection(const G4Step& aStep) {
     G4cout << " New velocity direction " << vel.unit() << G4endl;
 
   // Convert velocity back to momentum and update direction
+  RotateToLocalDirection(vel);
   G4ThreeVector p = theLattice->MapV_elToP(GetCurrentValley(), vel);
   RotateToGlobalDirection(p);
 
@@ -65,7 +60,7 @@ G4CMPeDriftBoundaryProcess::DoReflection(const G4Step& aStep) {
 
     // SANITY CHECK:  Does new momentum get back to new velocity?
     G4ThreeVector vnew = theLattice->MapPtoV_el(GetCurrentValley(),
-						GetLocalDirection(p));
+            GetLocalDirection(p));
     RotateToGlobalDirection(vnew);
     G4cout << " Cross-check new v dir  " << vnew.unit() << G4endl;
   }

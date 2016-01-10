@@ -274,6 +274,17 @@ G4LatticeLogical::MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const {
   return k_HV;
 }
 
+G4ThreeVector
+G4LatticeLogical::MapK_HVtoK(G4int ivalley, G4ThreeVector k_HV) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapK_HVtoK " << ivalley << " " << k_HV
+     << G4endl;
+
+  k_HV *= GetSqrtTensor();			// From Herring-Vogt to valley
+  k_HV.transform(GetValley(ivalley).inverse());	// Rotate out of valley frame
+  return k_HV;
+}
+
 G4ThreeVector 
 G4LatticeLogical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {
   if (verboseLevel>1)
