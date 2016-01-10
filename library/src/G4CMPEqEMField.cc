@@ -14,8 +14,10 @@
 // 20140404  Drop unnecessary data members, using functions in G4LatticePhysical
 // 20140501  Fix sign flip in electron charge calculation.
 // 20141217  Avoid floating-point division by using vinv = 1/v.mag()
+// 20150528  Add debugging output
 
 #include "G4CMPEqEMField.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4ElectroMagneticField.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -66,16 +68,17 @@ void G4CMPEqEMField::SetChargeMomentumMass(G4ChargeState particleCharge,
 					   G4double mass) {
   G4EqMagElectricField::SetChargeMomentumMass(particleCharge, MomentumXc, mass);
   fCharge = particleCharge.GetCharge() * eplus;
+  fMass = mass/c_squared;
 }
 #else
 void G4CMPEqEMField::SetChargeMomentumMass(G4double particleCharge,
-					   G4double MomentumXc,
-					   G4double mass) {
+             G4double MomentumXc,
+             G4double mass) {
   G4EqMagElectricField::SetChargeMomentumMass(particleCharge, MomentumXc, mass);
   fCharge = particleCharge * eplus;
 }
 #endif
-  
+
 
 // Field evaluation:  Given momentum (y) and field, return velocity, force
 
@@ -83,28 +86,46 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 				       const G4double field[],
 				       G4double dydx[]) const {
   // No lattice behaviour, just use base class
-  if (valleyIndex < 0) {
+  if (valleyIndex == -1) {
     G4EqMagElectricField::EvaluateRhsGivenB(y, field, dydx);
     return;
   }
 
-  // Momentum to velocity conversion must be done in local coordinates
-  G4ThreeVector p(y[3], y[4], y[5]);
-  fGlobalToLocal.ApplyAxisTransform(p);
-
-  G4ThreeVector v = theLattice->MapPtoV_el(valleyIndex, p);
-  fLocalToGlobal.ApplyAxisTransform(v);
+  /* This part is confusing. "Momentum" reported by G4 is not really the
+   * momentum for charge carriers with valleys. It's just the velocity times
+   * the defined scalar mass.
+   *
+   * So we need to calculate the true dp/dx, and then transform it into dv/dx
+   * and then multiply that by the mass to get this "psuedomomentum."
+   */
+  G4ThreeVector v = G4ThreeVector(y[3], y[4], y[5])/fMass/c_light;
   G4double vinv = 1./v.mag();
-  
+
   G4ThreeVector Efield(field[3], field[4], field[5]);
-  G4ThreeVector retForce = fCharge * Efield * c_light*vinv;
-  
+  G4ThreeVector force = fCharge * Efield;
+  /* Since F is proportional to dp, it will transform like momentum.
+   * This transformation picks up units of 1/mass and 1/c.
+   * But, before we transform momentum, it needs to be in local coordinates.
+   */
+  fGlobalToLocal.ApplyAxisTransform(force);
+  G4ThreeVector forceEffective = theLattice->MapPtoV_el(valleyIndex, force);
+  forceEffective *= fMass * vinv * c_squared;
+  fLocalToGlobal.ApplyAxisTransform(forceEffective);
+
+  if (G4CMPConfigManager::GetVerboseLevel() > 2) {
+    G4cout << "G4CMPEqEMField: @ (" << y[0] << "," << y[1] << "," << y[2]
+	   << ")\n p (" << y[3] << "," << y[4] << "," << y[5]
+	   << ")\n Efield " << Efield.mag() << " " << Efield
+     << "\n retForce " << forceEffective.mag() << " " << forceEffective
+	   << "\n TOF " << vinv << " vdir " << v.unit() << G4endl;
+  }
+
   dydx[0] = v.x()*vinv;		// Velocity direction
   dydx[1] = v.y()*vinv;
   dydx[2] = v.z()*vinv;
-  dydx[3] = retForce.x();	// Applied force
-  dydx[4] = retForce.y();
-  dydx[5] = retForce.z();
+  dydx[3] = forceEffective.x();	// Applied force
+  dydx[4] = forceEffective.y();
+  dydx[5] = forceEffective.z();
   dydx[6] = 0.;			// not used
   dydx[7] = vinv;		// Lab Time of flight (sec/mm)
 }

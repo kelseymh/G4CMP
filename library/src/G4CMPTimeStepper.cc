@@ -28,16 +28,12 @@
 #include "G4VPhysicalVolume.hh"
 #include <math.h>
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 G4CMPTimeStepper::G4CMPTimeStepper()
   : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), dt_e(0.), dt_h(0.) {;}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4double G4CMPTimeStepper::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
@@ -45,19 +41,14 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 				     G4ForceCondition* /*cond*/) {
   ComputeTimeSteps(aTrack);
 
-  // Only drifting electrons have special treatment
+  G4double v = aTrack.GetStep()->GetPostStepPoint()->GetVelocity();
   if (aTrack.GetParticleDefinition() != G4CMPDriftElectron::Definition()) {
-    G4double v = aTrack.GetStep()->GetPostStepPoint()->GetVelocity();
-
     if (verboseLevel > 1) G4cout << "TS hole = " << (v*dt_h)/m << G4endl;
     return v*dt_h;
+  } else {
+    if (verboseLevel > 1) G4cout << "TS elec = " << (v*dt_e)/m << G4endl;
+    return v*dt_e;
   }
-
-  G4int iv = GetValleyIndex(aTrack);
-  G4ThreeVector v = theLattice->MapPtoV_el(iv,GetLocalMomentum(aTrack));
-  
-  if (verboseLevel>1) G4cout << "TS electron = " << (v.mag()*dt_e)/m << G4endl;
-  return v.mag()*dt_e;
 }
 
 
@@ -66,12 +57,11 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack);
 
   // Adjust mass and kinetic energy using end-of-step momentum
-  G4ThreeVector pfinal = aStep.GetPostStepPoint()->GetMomentum();
+  G4ThreeVector pfinal = GetGlobalMomentum(aTrack);
   FillParticleChange(GetValleyIndex(aTrack), pfinal);
 
   return &aParticleChange;
 }
-
 
 // Compute dt_e, dt_h and valley rotations at current location
 

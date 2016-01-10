@@ -39,7 +39,8 @@ void G4CMPElectrodeSensitivity::Initialize(G4HCofThisEvent*HCE)
 G4bool G4CMPElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory* /*ROhist*/)
 {
   G4StepPoint* postStepPoint = aStep->GetPostStepPoint();
-  if(postStepPoint->GetStepStatus() == fGeomBoundary) {
+  if(postStepPoint->GetStepStatus()==fGeomBoundary &&
+                    aStep->GetNonIonizingEnergyDeposit()) {
     G4Track* track = aStep->GetTrack();
     G4int trackID = track->GetTrackID();
     G4String name = track->GetDefinition()->GetParticleName();

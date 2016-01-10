@@ -94,7 +94,7 @@ G4bool G4CMPVLukeScattering::IsApplicable(const G4ParticleDefinition& aPD) {
 }
 
 G4double G4CMPVLukeScattering::GetWaveNumber(const G4Track& aTrack) const {
-  return GetWaveVector(aTrack).mag();
+  return GetLocalWaveVector(aTrack).mag();
 }
 
 
@@ -147,7 +147,7 @@ G4VParticleChange* G4CMPVLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   G4double kmag = GetWaveNumber(aTrack);
-  G4ThreeVector ktrk = GetWaveVector(aTrack);
+  G4ThreeVector ktrk = GetLocalWaveVector(aTrack);
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= theKsound) return &aParticleChange;

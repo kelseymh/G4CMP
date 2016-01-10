@@ -6,6 +6,7 @@
 // 20140331  Use G4CMPEqEMField for everything, now handles holes; don't
 //	     need lattice locally; get physical lattice track by track
 // 20150122  Use verboseLevel instead of compiler flag for debugging
+// 20150528  Pass verbosity through to field computation classes
 
 #include "G4CMPFieldManager.hh"
 #include "G4CMPConfigManager.hh"
@@ -48,6 +49,9 @@ void G4CMPFieldManager::CreateTransport() {
   theDriver      = new G4MagInt_Driver(stepperLength, theStepper, stepperVars);
   theChordFinder = new G4ChordFinder(theDriver);
   SetChordFinder(theChordFinder);
+
+  theDriver->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
+  theChordFinder->SetVerbose(G4CMPConfigManager::GetVerboseLevel());
 }
 
 G4CMPFieldManager::~G4CMPFieldManager() {

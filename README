@@ -37,6 +37,7 @@ G4CMP_EPOT_FILE [F]	/g4cmp/EpotFile <F>	V=0: Read mesh field file "F"
 G4CMP_MIN_STEP [S]	/g4cmp/minimumStep <S>	S>0: Force minimum step S*L0
 G4CMP_LUKE_PHONONS [R]	/g4cmp/produceLukePhonons <R>
 						Generate phonons every R hits
+G4CMP_EH_BOUNCES [N]    /g4cmp/chargeBounces	Maximum e/h reflections
 G4CMP_HIT_FILE [F]	/g4cmp/HitsFile <F>	Write e/h hit locations to "F"
 
 The environment variable $G4CMP_LUKE_PHONONS controls whether whether the

@@ -63,6 +63,7 @@ private:
   const G4LatticePhysical* theLattice;
 
   G4double fCharge;	       		// Same as base class fElectrMagCof
+  G4double fMass;	       		// Same as base class fElectrMagCof
   G4int valleyIndex;			// Index of current valley (-1 if none)
 
   G4AffineTransform fLocalToGlobal;	// Local vs. global coordinates

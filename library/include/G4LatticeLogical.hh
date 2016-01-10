@@ -37,6 +37,7 @@
 // 20140324  Add intervalley scattering parameters
 // 20140408  Add valley momentum calculations
 // 20140425  Add "effective mass" calculation for electrons
+// 20150601  Add mapping from electron velocity back to momentum
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -72,14 +73,18 @@ public:
   // NOTE:  Input vector must be in lattice symmetry frame (X == symmetry axis)
   // NOTE:  Pass by value below to avoid creating temporary vectors
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
+  G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
   G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
   G4ThreeVector MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const;
   G4ThreeVector MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const;
+  G4ThreeVector MapK_HVtoK(G4int ivalley, G4ThreeVector k_HV) const;
   G4ThreeVector MapK_valleyToP(G4int ivalley, G4ThreeVector k) const;
 
-  // Apply energy-momentum relationship for electron transport
+  // Apply energy relationships for electron transport
   G4double MapPtoEkin(G4int ivalley, G4ThreeVector p_e) const;
+  G4double MapV_elToEkin(G4int ivalley, G4ThreeVector v_e) const;
 
 public:
   // Parameters for phonon production and propagation

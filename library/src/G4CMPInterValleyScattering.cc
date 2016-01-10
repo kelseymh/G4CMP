@@ -48,11 +48,8 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   //If there is no field, there is no IV scattering... but then there
   //is no e-h transport either...
   if (!fMan || !fMan->DoesFieldExist()) return DBL_MAX;
-  
-  G4ThreeVector p_local = GetLocalMomentum(aTrack);
 
-  G4int valley = GetValleyIndex(aTrack);
-  G4double velocity = theLattice->MapPtoV_el(valley, p_local).mag();
+  G4double velocity = GetVelocity(aTrack);
   
   G4double posVec[4] = { 4*0. };
   GetLocalPosition(aTrack, posVec);

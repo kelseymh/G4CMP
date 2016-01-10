@@ -68,25 +68,9 @@ G4CMPeLukeScattering::~G4CMPeLukeScattering() {;}
 
 // Physics
 
-G4double G4CMPeLukeScattering::GetVelocity(const G4Track& aTrack) const {
-  G4int iv = GetValleyIndex(aTrack);
-  G4ThreeVector p_local =
-    GetLocalDirection(aTrack.GetStep()->GetPostStepPoint()->GetMomentum());
-  return theLattice->MapPtoV_el(iv, p_local).mag();
-}
-
-G4ThreeVector G4CMPeLukeScattering::GetWaveVector(const G4Track& aTrack) const {
-  G4int iv = GetValleyIndex(aTrack);
-  G4ThreeVector p_local =
-    GetLocalDirection(aTrack.GetStep()->GetPostStepPoint()->GetMomentum());
-  return theLattice->MapPtoK_HV(iv, p_local);
-}
-
-G4double G4CMPeLukeScattering::GetKineticEnergy(const G4Track& aTrack) const {
-  G4int iv = GetValleyIndex(aTrack);
-  G4ThreeVector p_local =
-    GetLocalDirection(aTrack.GetStep()->GetPostStepPoint()->GetMomentum());
-  return theLattice->MapPtoEkin(iv, p_local);
+G4ThreeVector G4CMPeLukeScattering::GetLocalWaveVector(const G4Track& aTrack) const {
+  return theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
+                                   GetLocalVelocityVector(aTrack));
 }
 
 // Convert local wave-vector to global using HV transform

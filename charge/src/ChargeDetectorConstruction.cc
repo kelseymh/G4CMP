@@ -2,6 +2,8 @@
 
 #include "ChargeDetectorConstruction.hh"
 #include "ChargeElectrodeSensitivity.hh"
+#include "G4CMPSurfaceProperty.hh"
+#include "G4LogicalBorderSurface.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPFieldManager.hh"
 #include "G4CMPMeshElectricField.hh"
@@ -29,16 +31,13 @@
 #include "G4UniformElectricField.hh"
 
 
-ChargeDetectorConstruction::ChargeDetectorConstruction()
-   : latManager(G4LatticeManager::GetLatticeManager()),
-     fEMField(nullptr), sensitivity(nullptr), liquidHelium(nullptr),
-     germanium(nullptr), aluminum(nullptr), tungsten(nullptr),
-     worldPhys(nullptr), zipThickness(2.54*cm),
-     epotScale(0.),
-     voltage(0.),
-     constructed(false),
-     epotFileName(""),
-     outputFileName("")
+ChargeDetectorConstruction::ChargeDetectorConstruction() :
+  sensitivity(nullptr), topSurfProp(nullptr), botSurfProp(nullptr),
+  wallSurfProp(nullptr), latManager(G4LatticeManager::GetLatticeManager()),
+  fEMField(nullptr), liquidHelium(nullptr), germanium(nullptr),
+  aluminum(nullptr), tungsten(nullptr), worldPhys(nullptr), zipThickness(2.54*cm),
+  epotScale(0.), voltage(0.), constructed(false), epotFileName(""),
+  outputFileName("")
 {
   /* Default initialization does not leave object in unusable state.
    * Doesn't matter because run initialization will call Construct() and all
@@ -49,6 +48,9 @@ ChargeDetectorConstruction::ChargeDetectorConstruction()
 ChargeDetectorConstruction::~ChargeDetectorConstruction()
 {
   delete fEMField;
+  delete topSurfProp;
+  delete botSurfProp;
+  delete wallSurfProp;
 }
 
 G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
@@ -56,7 +58,6 @@ G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
   if (constructed) {
     if (!G4RunManager::IfGeometryHasBeenDestroyed()) {
       // Run manager hasn't cleaned volume stores. This code shouldn't execute
-      G4cout << "world exists" << G4endl;
       G4GeometryManager::GetInstance()->OpenGeometry();
       G4PhysicalVolumeStore::GetInstance()->Clean();
       G4LogicalVolumeStore::GetInstance()->Clean();
@@ -70,8 +71,7 @@ G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
         epotFileName = G4CMPConfigManager::GetEpotFile();
         epotScale = G4CMPConfigManager::GetEpotScale();
         voltage = G4CMPConfigManager::GetVoltage();
-       delete fEMField;
-       fEMField = nullptr;
+       delete fEMField; fEMField = nullptr;
     }
     // Sensitivity doesn't need to ever be deleted, just updated.
     if (outputFileName != G4CMPConfigManager::GetHitOutput()) {
@@ -80,6 +80,9 @@ G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
     }
     // Have to completely remove all lattices to avoid warning on reconstruction
     latManager->Reset();
+    // Clear all LogicalSurfaces
+    // NOTE: No need to redefine the G4CMPSurfaceProperties
+    G4LogicalBorderSurface::CleanSurfaceTable();
   } else { // First setup of geometry
     epotScale = G4CMPConfigManager::GetEpotScale();
     voltage = G4CMPConfigManager::GetVoltage();
@@ -146,17 +149,53 @@ void ChargeDetectorConstruction::SetupGeometry()
   G4LogicalVolume* aluminumLogical = new G4LogicalVolume(aluminumSolid,
                                                          aluminum,
                                                          "aluminumLogical");
-  new G4PVPlacement(0, G4ThreeVector(0.,0.,1.28*cm), aluminumLogical,
-                    "aluminumPhysical", worldLogical, false, 0);
-  new G4PVPlacement(0, G4ThreeVector(0.,0.,-1.28*cm), aluminumLogical,
-                    "aluminumPhysical", worldLogical, false, 1);
+
+  G4VPhysicalVolume* aluminumTopPhys = new G4PVPlacement(
+                                               0,
+                                               G4ThreeVector(0.,0.,1.28*cm),
+                                               aluminumLogical,
+                                               "topAluminumPhysical",
+                                                worldLogical,
+                                               false,
+                                               0);
+
+  G4VPhysicalVolume* aluminumBotPhys = new G4PVPlacement(
+                                               0,
+                                               G4ThreeVector(0.,0.,-1.28*cm),
+                                               aluminumLogical,
+                                               "bottomAluminumPhysical",
+                                               worldLogical,
+                                               false,
+                                               1);
+
+  // Define surface properties. Only should be done once
+  if (!constructed) {
+    topSurfProp = new G4CMPSurfaceProperty("topSurfProp",
+                                           1e-5, 0.02*volt, 4.3650e8/m,
+                                           7.5175e8/m, 2*volt);
+    botSurfProp = new G4CMPSurfaceProperty("botSurfProp",
+                                           1e-5, 0.02*volt, 3.9600e8/m,
+                                           6.8200e8/m, -2*volt);
+    wallSurfProp = new G4CMPSurfaceProperty("wallSurfProp",
+                                            1e-5, 0., 0., 0., 0.);
+  }
+
+  // Add surfaces between Ge-Al, and Ge-World
+  new G4LogicalBorderSurface("iZIPTop", germaniumPhysical, aluminumTopPhys,
+                             topSurfProp);
+
+  new G4LogicalBorderSurface("iZIPBot", germaniumPhysical, aluminumBotPhys,
+                             botSurfProp);
+
+  new G4LogicalBorderSurface("iZIPWall", germaniumPhysical, worldPhys,
+                             wallSurfProp);
 
   // detector -- Note : Aluminum electrode sensitivity is attached to Germanium
   AttachSensitivity(germaniumLogical);
 
   // Visualization attributes
   worldLogical->SetVisAttributes(G4VisAttributes::Invisible);
-  G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
+  G4VisAttributes* simpleBoxVisAtt = new G4VisAttributes(G4Colour(1.0,1.0,1.0));
   simpleBoxVisAtt->SetVisibility(true);
   germaniumLogical->SetVisAttributes(simpleBoxVisAtt);
   aluminumLogical->SetVisAttributes(simpleBoxVisAtt);

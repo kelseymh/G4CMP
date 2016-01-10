@@ -61,9 +61,7 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
   // Charge carrier subclasses must implement these individually
-  virtual G4ThreeVector GetWaveVector(const G4Track& aTrack) const = 0;
-  virtual G4double GetVelocity(const G4Track& aTrack) const = 0;
-  virtual G4double GetKineticEnergy(const G4Track& aTrack) const = 0;
+  virtual G4ThreeVector GetLocalWaveVector(const G4Track& aTrack) const = 0;
   virtual G4double GetWaveNumber(const G4Track& aTrack) const;
 
   // Convert local wave-vector to global (electrons need HV transform)

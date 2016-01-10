@@ -50,9 +50,7 @@ public:
   //*****  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
 protected:
-  virtual G4ThreeVector GetWaveVector(const G4Track& aTrack) const;
-  virtual G4double GetVelocity(const G4Track& aTrack) const;
-  virtual G4double GetKineticEnergy(const G4Track& aTrack) const;
+  virtual G4ThreeVector GetLocalWaveVector(const G4Track& aTrack) const;
 
   // Convert local wave-vector to global using HV transform
   virtual void MakeGlobalPhonon(G4ThreeVector& kphonon) const;
