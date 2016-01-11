@@ -60,7 +60,7 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
 
   // Register G4CMP with PhysicsModelCatalog and create aux. track info.
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
-  G4CMPTrackInformation* trackInfo = new G4CMPTrackInformation();
+  G4CMPTrackInformation* trackInfo = nullptr;
 
   const G4ParticleDefinition* pd = track->GetParticleDefinition();
 
@@ -68,13 +68,24 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
       pd == G4PhononTransFast::Definition() ||
       pd == G4PhononTransSlow::Definition()) {
       // FIXME:  THE WAVEVECTOR SHOULD BE COMPUTED BY INVERTING THE K/V MAP
-    trackInfo->SetK(track->GetMomentumDirection());
+    G4ThreeVector kdir = track->GetMomentumDirection();
+    trackInfo = new G4CMPTrackInformation(kdir);
+    G4Track* tmp_track = const_cast<G4Track*>(track); // Must strip const to modify direction
+    tmp_track->SetMomentumDirection(
+      theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), kdir));
   }
 
-  if (pd == G4CMPDriftElectron::Definition() ||
-      pd == G4CMPDriftHole::Definition()) {
+  if (pd == G4CMPDriftElectron::Definition()) {
       // FIXME:  HOW DO WE CONVERT THE MOMENTUM TO AN INITIAL VALLEY?
-    trackInfo->SetValleyIndex(ChooseValley());
+    trackInfo = new G4CMPTrackInformation(theLattice->GetElectronScatter(),
+                                          theLattice->GetElectronMass(),
+                                          ChooseValley());
+  }
+
+  if (pd == G4CMPDriftHole::Definition()) {
+    trackInfo = new G4CMPTrackInformation(theLattice->GetHoleScatter(),
+                                          theLattice->GetHoleMass(),
+                                          -1); // Disable valley behavior
   }
 
   // NOTE: trackInfo will be deleted when the track is deleted. No need for us
@@ -285,6 +296,17 @@ void G4CMPProcessUtils::MakeGlobalPhononK(G4ThreeVector& kphonon) const {
   RotateToGlobalDirection(kphonon);
 }
 
+void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
+    kphonon = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),kphonon);
+  } else if (GetCurrentParticle() != G4CMPDriftHole::Definition()) {
+    kphonon *= hbarc;
+    G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess006",
+                EventMustBeAborted, "Unknown charge carrier");
+  }
+  RotateToGlobalDirection(kphonon);
+}
+
 // Construct new phonon track with correct momentum, position, etc.
 
 G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
@@ -316,7 +338,7 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 
   // Store wavevector in auxiliary info for track
   G4CMPTrackInformation* trackInfo = new G4CMPTrackInformation();
-  trackInfo->SetK(GetGlobalDirection(waveVec));
+  trackInfo->SetPhononK(GetGlobalDirection(waveVec));
   sec->SetAuxiliaryTrackInformation(fPhysicsModelID, trackInfo);
 
   sec->SetVelocity(theLattice->MapKtoV(polarization, waveVec));    

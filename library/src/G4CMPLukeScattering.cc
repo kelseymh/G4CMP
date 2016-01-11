@@ -31,10 +31,11 @@
 // 20150111  New base class for both electron and hole Luke processes
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 
-#include "G4CMPVLukeScattering.hh"
+#include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPTrackInformation.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononPolarization.hh"
@@ -51,84 +52,57 @@
 
 // Constructor and destructor
 
-G4CMPVLukeScattering::G4CMPVLukeScattering(const G4String& name,
-					   const G4ParticleDefinition* carrier,
-					   G4VProcess* stepper)
-  : G4CMPVDriftProcess("G4CMP"+name+"Scattering", fLukeScattering),
-    shortName(name), stepLimiter(stepper), theCarrier(carrier),
-    theKsound(ksound_e), theL0(l0_e) {
+G4CMPLukeScattering::G4CMPLukeScattering(G4VProcess* stepper)
+  : G4CMPVDriftProcess("G4CMPLukeScattering", fLukeScattering),
+    stepLimiter(stepper) {
 #ifdef G4CMP_DEBUG
-  output.open((shortName+"PhononEnergies").c_str());
+  output.open("LukePhononEnergies");
 #endif
 }
 
-G4CMPVLukeScattering::~G4CMPVLukeScattering() {
+G4CMPLukeScattering::~G4CMPLukeScattering() {
 #ifdef G4CMP_DEBUG
   output.close();
 #endif
 }
 
 
-// Configuration
-
-void G4CMPVLukeScattering::LoadDataForTrack(const G4Track* track) {
-  if (track->GetDefinition() != theCarrier) {
-    G4cerr << GetProcessName() << " ERROR:  Track type "
-	   << track->GetDefinition()->GetParticleName() << " not valid" << G4endl;
-    return;
-  }
-
-  G4CMPVDriftProcess::LoadDataForTrack(track);
-
-  if (theCarrier == G4CMPDriftHole::Definition()) {
-    theKsound = ksound_h;
-    theL0 = l0_h;
-  } else if (theCarrier == G4CMPDriftElectron::Definition()) {
-    theKsound = ksound_e;
-    theL0 = l0_e;
-  }
-}
-
-G4bool G4CMPVLukeScattering::IsApplicable(const G4ParticleDefinition& aPD) {
-  return (&aPD==theCarrier);
-}
-
-G4double G4CMPVLukeScattering::GetWaveNumber(const G4Track& aTrack) const {
-  return GetLocalWaveVector(aTrack).mag();
-}
-
-
 // Physics
 
 G4double 
-G4CMPVLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
-				      G4ForceCondition* condition) {
+G4CMPLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
+                                     G4ForceCondition* condition) {
   *condition = Forced;		// In order to recompute MFP after TimeStepper
 
+  G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
+    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID));
+
   G4double velocity = GetVelocity(aTrack);
-  G4double kmag = GetWaveNumber(aTrack);
-  
+  G4double kmag = GetLocalWaveVector(aTrack).mag();
+  G4double l0 = trackInfo->GetScatterLength();
+  G4double kSound = CalculateKSound(trackInfo);
+
   if (verboseLevel > 1) {
-    G4cout << shortName << " v = " << velocity/m*s << " kmag = " << kmag*m
+    G4cout << "LukeScattering v = " << velocity/m*s << " kmag = " << kmag*m
 	   << G4endl;
   }
 
-  if (kmag<=theKsound) return DBL_MAX;
+  if (kmag <= kSound) return DBL_MAX;
   
   // Time step corresponding to Mach number (avg. time between radiations)
-  G4double dtau = ChargeCarrierTimeStep(kmag/theKsound, theL0);
+  G4double dtau = ChargeCarrierTimeStep(kmag/kSound, l0);
   G4double mfp = dtau * velocity;
 
   if (verboseLevel > 1) {
-    G4cout << shortName << " MFP = " <<  mfp <<  G4endl;
+    G4cout << "LukeScattering MFP = " << mfp << G4endl;
   }
 
   return mfp;
 }
 
 
-G4VParticleChange* G4CMPVLukeScattering::PostStepDoIt(const G4Track& aTrack,
-						      const G4Step& aStep) {
+G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
+                                                     const G4Step& aStep) {
   aParticleChange.Initialize(aTrack); 
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
@@ -146,28 +120,32 @@ G4VParticleChange* G4CMPVLukeScattering::PostStepDoIt(const G4Track& aTrack,
     return &aParticleChange;
   }
 
-  G4double kmag = GetWaveNumber(aTrack);
+  G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
+    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID));
+
   G4ThreeVector ktrk = GetLocalWaveVector(aTrack);
+  G4double kmag = ktrk.mag();
+  G4double kSound = CalculateKSound(trackInfo);
 
   // Sanity check: this should have been done in MFP already
-  if (kmag <= theKsound) return &aParticleChange;
+  if (kmag <= kSound) return &aParticleChange;
 
   if (verboseLevel > 1) {
     G4cout << "p (post-step) = " << postStepPoint->GetMomentum()
 	   << "\np_mag = " << postStepPoint->GetMomentum().mag()
 	   << "\nktrk = " << ktrk
-	   << "\nkmag = " << kmag << " k/ks = " << kmag/theKsound
-	   << "\nacos(ks/k) = " << acos(theKsound/kmag) << G4endl;
+     << "\nkmag = " << kmag << " k/ks = " << kmag/kSound
+     << "\nacos(ks/k) = " << acos(kSound/kmag) << G4endl;
   }
 
-  G4double theta_phonon = MakePhononTheta(kmag, theKsound);
+  G4double theta_phonon = MakePhononTheta(kmag, kSound);
   G4double phi_phonon   = G4UniformRand()*twopi;
-  G4double q = 2*(kmag*cos(theta_phonon)-theKsound);
+  G4double q = 2*(kmag*cos(theta_phonon)-kSound);
 
   // Sanity check for phonon production: should be forward, like Cherenkov
-  if (theta_phonon>acos(theKsound/kmag) || theta_phonon>halfpi) {
+  if (theta_phonon>acos(kSound/kmag) || theta_phonon>halfpi) {
     G4cerr << GetProcessName() << " ERROR: Phonon production theta_phonon "
-	   << theta_phonon << " exceeds cone angle " << acos(theKsound/kmag)
+     << theta_phonon << " exceeds cone angle " << acos(kSound/kmag)
 	   << G4endl;
     return &aParticleChange;
   }
@@ -178,7 +156,7 @@ G4VParticleChange* G4CMPVLukeScattering::PostStepDoIt(const G4Track& aTrack,
   qvec.rotate(kdir.orthogonal(), theta_phonon);
   qvec.rotate(kdir, phi_phonon);
 
-  G4double Ephonon = MakePhononEnergy(kmag, theKsound, theta_phonon);
+  G4double Ephonon = MakePhononEnergy(kmag, kSound, theta_phonon);
 #ifdef G4CMP_DEBUG
   output << Ephonon/eV << G4endl;
 #endif
@@ -196,9 +174,10 @@ G4VParticleChange* G4CMPVLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   // Create real phonon to be propagated, with random polarization
-  static const G4double genLuke = G4CMPConfigManager::GetLukePhonons();
-  if (genLuke > 0. && G4UniformRand() < genLuke) {
-    MakeGlobalPhonon(qvec);  		// Convert phonon vector to real space
+  static const G4double genLuke = G4CMPConfigManager::GetGenPhonons();
+  //if (genLuke > 0. && G4UniformRand() < genLuke) {
+  if (false) {
+    MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
     G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
     aParticleChange.SetNumberOfSecondaries(1);
@@ -211,4 +190,9 @@ G4VParticleChange* G4CMPVLukeScattering::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
   ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
+}
+
+G4double
+G4CMPLukeScattering::CalculateKSound(const G4CMPTrackInformation* trackInfo) {
+  return theLattice->GetSoundSpeed()*trackInfo->GetEffectiveMass()/hbar_Planck;
 }

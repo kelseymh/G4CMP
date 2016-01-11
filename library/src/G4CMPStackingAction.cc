@@ -108,7 +108,7 @@ void G4CMPStackingAction::SetPhononWaveVector(const G4Track* aTrack) const {
   //Store wave-vector as track information
   static_cast<G4CMPTrackInformation*>(
     aTrack->GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                     )->SetK(Ran);
+                                     )->SetPhononK(Ran);
 }
 
 // Set velocity of phonon track appropriately for material
@@ -118,7 +118,7 @@ void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
   G4ThreeVector K =
     static_cast<G4CMPTrackInformation*>(
       aTrack->GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                       )->GetK();
+                                       )->GetPhononK();
   G4int pol = GetPolarization(aTrack);
 
   //Compute direction of propagation from wave vector

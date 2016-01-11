@@ -16,6 +16,7 @@
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPTrackInformation.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
 #include "G4LatticePhysical.hh"
@@ -29,7 +30,7 @@
 #include <math.h>
 
 G4CMPTimeStepper::G4CMPTimeStepper()
-  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), dt_e(0.), dt_h(0.) {;}
+  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper) {;}
 
 
 G4CMPTimeStepper::~G4CMPTimeStepper() {;}
@@ -39,16 +40,17 @@ G4double G4CMPTimeStepper::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 				     G4double /*prevStepSize*/,
 				     G4ForceCondition* /*cond*/) {
-  ComputeTimeSteps(aTrack);
+  G4double dt = ComputeTimeSteps(aTrack);
+  G4double v = GetVelocity(aTrack);
 
-  G4double v = aTrack.GetStep()->GetPostStepPoint()->GetVelocity();
-  if (aTrack.GetParticleDefinition() != G4CMPDriftElectron::Definition()) {
-    if (verboseLevel > 1) G4cout << "TS hole = " << (v*dt_h)/m << G4endl;
-    return v*dt_h;
-  } else {
-    if (verboseLevel > 1) G4cout << "TS elec = " << (v*dt_e)/m << G4endl;
-    return v*dt_e;
+  if (verboseLevel > 1) {
+    if (aTrack.GetParticleDefinition() == G4CMPDriftElectron::Definition())
+      G4cout << "TS elec = " << (v*dt)/m << G4endl;
+    else
+      G4cout << "TS hole = " << (v*dt)/m << G4endl;
   }
+
+  return v*dt;
 }
 
 
@@ -65,14 +67,16 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 
 // Compute dt_e, dt_h and valley rotations at current location
 
-void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
+G4double G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
+  G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
+    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID));
+  G4double l0 = trackInfo->GetScatterLength();
+
+
   G4FieldManager* fMan =
     aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
-
   if (!fMan || !fMan->DoesFieldExist()) {	// No field, no special action
-    dt_e = 3.*l0_e/velLong;
-    dt_h = 3.*l0_h/velLong;
-    return;
+    return 3.*l0/velLong;
   }
 
   G4double position[4] = { 4*0. };
@@ -84,8 +88,16 @@ void G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
 
   G4ThreeVector Efield(fieldVal[3], fieldVal[4], fieldVal[5]);
 
-  dt_e = TimeStepInField(Efield.mag()/10., 28.0, l0_e);
-  dt_h = TimeStepInField(Efield.mag()/10., 14.72, l0_h);
+  G4double timeStepParam = 0.;
+  if (aTrack.GetParticleDefinition() == G4CMPDriftElectron::Definition()) {
+    timeStepParam = 28.0;
+  } else if (aTrack.GetParticleDefinition() == G4CMPDriftHole::Definition()) {
+    timeStepParam = 14.72;
+  } else {
+    // TODO: Write an exception
+  }
+
+  return TimeStepInField(Efield.mag()/10., timeStepParam, l0);
 }
 
 // Compute time step for electrons or holes, pre-simplified expression
