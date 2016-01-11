@@ -189,7 +189,8 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   G4ThreeVector dir2=dir1;
 
   // FIXME:  These extra randoms change timing and causting outputs of example!
-  G4ThreeVector ran = G4RandomDirection();	// FIXME: Drop this line
+  //G4ThreeVector ran = G4RandomDirection();	// FIXME: Drop this line
+  // Is this issue fixed by dropping the above line?
   
   G4double ph=G4UniformRand()*twopi;
   dir1 = dir1.rotate(dir1.orthogonal(),theta1).rotate(dir1, ph);
@@ -240,7 +241,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
 
   //using energy fraction x to calculate daughter phonon directions
   G4double thetaL=MakeLDeviation(d, x);
-  G4double thetaT=MakeTDeviation(d, x);		// FIXME:  Should be 1-x?
+  G4double thetaT=MakeTDeviation(d, 1.-x);
   G4ThreeVector dir1=static_cast<G4CMPTrackInformation*>(
     aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
                                                         )->GetPhononK();
