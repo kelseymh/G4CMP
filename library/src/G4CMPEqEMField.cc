@@ -62,7 +62,6 @@ void G4CMPEqEMField::SetValley(size_t ivalley) {
 // Configuration function must call through to base class
 // NOTE: change of signature with G4 10.0
 
-#if G4VERSION_NUMBER >= 1000
 void G4CMPEqEMField::SetChargeMomentumMass(G4ChargeState particleCharge,
 					   G4double MomentumXc,
 					   G4double mass) {
@@ -70,14 +69,6 @@ void G4CMPEqEMField::SetChargeMomentumMass(G4ChargeState particleCharge,
   fCharge = particleCharge.GetCharge() * eplus;
   fMass = mass/c_squared;
 }
-#else
-void G4CMPEqEMField::SetChargeMomentumMass(G4double particleCharge,
-             G4double MomentumXc,
-             G4double mass) {
-  G4EqMagElectricField::SetChargeMomentumMass(particleCharge, MomentumXc, mass);
-  fCharge = particleCharge * eplus;
-}
-#endif
 
 
 // Field evaluation:  Given momentum (y) and field, return velocity, force

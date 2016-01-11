@@ -1,13 +1,7 @@
-// $Id$
-//
-// For Geant4 10.0, replaces runManager->SetUserAction() calls.
-// Not valid for previous releases; G4VERSION check is used to disable.
+// $Id: e58a61fedbb99b167e16dafebc9c8664ae0c7b94 $
 
 #ifndef PhononActionInitialization_hh
 #define PhononActionInitialization_hh 1
-
-#include "G4Version.hh"
-#if (G4VERSION_NUMBER >= 1000)
 
 #include "G4VUserActionInitialization.hh"
 
@@ -18,5 +12,4 @@ public:
   virtual void Build() const;
 };
 
-#endif	/* G4VERSION_NUMBER */
 #endif	/* PhononActionInitialization_hh */
