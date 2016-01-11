@@ -213,6 +213,8 @@ public:
   void MakeLocalPhononK(G4ThreeVector& kphonon) const;
   void MakeGlobalPhononK(G4ThreeVector& kphonon) const;
 
+  void MakeGlobalRecoil(G4ThreeVector& kphonon) const;
+
   // Construct new phonon track with correct momentum, position, etc.
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
 			G4double energy) const;

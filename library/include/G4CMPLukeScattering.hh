@@ -23,58 +23,47 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file library/src/G4CMPhLukeScattering.cc
-/// \brief Implementation of the G4CMPhLukeScattering class
+/// \file library/include/G4CMPLukeScattering.hh
+/// \brief Definition of the G4CMPLukeScattering class
 //
 // $Id$
 //
-// 20140325  Move time-step calculation to G4CMPProcessUtils
-// 20140331  Add required process subtype code
-// 20140509  Add run-time envvar to bias phonons
-// 20141231  Rename "minimum step" function to ComputeMinTimeStep
-// 20150111  Move envvar to G4CMPConfigManager, unify overlapping code w/eLuke
-// 20150111  Migrate most physics to new base class G4CMPVLukeScattering
+// 20150111  New base class for both electron and hole Luke processes
+// 20160110  Remerge the electron and hole subclasses into one class
 
-#include "G4CMPhLukeScattering.hh"
-#include "G4CMPConfigManager.hh"
-#include "G4CMPDriftHole.hh"
-#include "G4LatticeManager.hh"
-#include "G4LatticePhysical.hh"
-#include "G4PhononPolarization.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4RandomDirection.hh"
-#include "G4Step.hh"
-#include "G4StepPoint.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4VParticleChange.hh"
-#include "Randomize.hh"
+#ifndef G4CMPLukeScattering_h
+#define G4CMPLukeScattering_h 1
+
+#include "globals.hh"
+#include "G4CMPVDriftProcess.hh"
+#include "G4ThreeVector.hh"
 #include <iostream>
-#include <fstream>
 
+class G4CMPTrackInformation;
+class G4VProcess;
+class G4ParticleDefinition;
+class G4Track;
 
-// Constructor and destructor
+class G4CMPLukeScattering : public G4CMPVDriftProcess {
+public:
+  G4CMPLukeScattering(G4VProcess* stepper=0);
+  virtual ~G4CMPLukeScattering();
 
-G4CMPhLukeScattering::G4CMPhLukeScattering(G4VProcess* stepper)
-  : G4CMPVLukeScattering("hLuke", G4CMPDriftHole::Definition(), stepper) {;}
+  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
-G4CMPhLukeScattering::~G4CMPhLukeScattering() {;}
+protected:
+  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
+private:
+  G4double CalculateKSound(const G4CMPTrackInformation* trackInfo);
+  // hide assignment operator as private
+  G4CMPLukeScattering(G4CMPLukeScattering&);
+  G4CMPLukeScattering& operator=(const G4CMPLukeScattering& right);
 
-// Physics
+  G4VProcess* stepLimiter;
+#ifdef G4CMP_DEBUG
+  std::ofstream output;
+#endif
+};
 
-G4ThreeVector G4CMPhLukeScattering::GetLocalWaveVector(const G4Track& aTrack) const {
-  return GetLocalMomentum(aTrack) / hbarc;
-}
-
-// Convert local wave-vector to global
-
-void G4CMPhLukeScattering::MakeGlobalPhonon(G4ThreeVector& kphonon) const {
-  RotateToGlobalDirection(kphonon);
-}
-
-// Convert local wave-vector to global momentum
-
-void G4CMPhLukeScattering::MakeGlobalRecoil(G4ThreeVector& krecoil) const {
-  krecoil *= hbarc;
-  RotateToGlobalDirection(krecoil);
-}
+#endif	/* G4CMPLukeScattering */
