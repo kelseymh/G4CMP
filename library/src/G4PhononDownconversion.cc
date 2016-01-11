@@ -185,7 +185,7 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   G4double theta2=MakeTTDeviation(d, 1-x);
   G4ThreeVector dir1=static_cast<G4CMPTrackInformation*>(
     aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                                        )->GetK();
+                                                        )->GetPhononK();
   G4ThreeVector dir2=dir1;
 
   // FIXME:  These extra randoms change timing and causting outputs of example!
@@ -243,7 +243,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   G4double thetaT=MakeTDeviation(d, x);		// FIXME:  Should be 1-x?
   G4ThreeVector dir1=static_cast<G4CMPTrackInformation*>(
     aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                                        )->GetK();
+                                                        )->GetPhononK();
   G4ThreeVector dir2=dir1;
 
   G4double ph=G4UniformRand()*twopi;

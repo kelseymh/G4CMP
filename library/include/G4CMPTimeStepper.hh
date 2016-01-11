@@ -27,7 +27,7 @@ public:
 
 protected:  
   // Compute dt_e, dt_h, and valley rotations at current location
-  void ComputeTimeSteps(const G4Track& aTrack);
+  G4double ComputeTimeSteps(const G4Track& aTrack);
   G4double TimeStepInField(G4double Efield, G4double coeff, G4double l0) const;
 
   virtual G4double GetMeanFreePath(const G4Track& aTrack,
@@ -38,9 +38,6 @@ protected:
   }
 
 private:
-  G4double dt_e; 		// Time step for electrons
-  G4double dt_h; 		// Time step for holes
-
   //hide assignment operator
   G4CMPTimeStepper(G4CMPTimeStepper&);
   G4CMPTimeStepper& operator=(const G4CMPTimeStepper& right);
