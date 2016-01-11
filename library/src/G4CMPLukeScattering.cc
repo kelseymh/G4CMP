@@ -175,8 +175,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Create real phonon to be propagated, with random polarization
   static const G4double genLuke = G4CMPConfigManager::GetGenPhonons();
-  //if (genLuke > 0. && G4UniformRand() < genLuke) {
-  if (false) {
+  if (genLuke > 0. && G4UniformRand() < genLuke) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
     G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
