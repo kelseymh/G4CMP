@@ -4,13 +4,13 @@
 #define ChargeDetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
-#include "globals.hh"
 
 class ChargeElectrodeSensitivity;
 class G4CMPSurfaceProperty;
 class G4LatticeManager;
 class G4Material;
 class G4VPhysicalVolume;
+class G4VUserDetectorConstruction;
 class G4ElectricField;
 
 

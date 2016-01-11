@@ -1,6 +1,5 @@
 #include "ChargeFETDigitizerMessenger.hh"
 #include "ChargeFETDigitizerModule.hh"
-#include "G4RunManager.hh"
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithoutParameter.hh"
 #include "G4UIcmdWithAString.hh"

@@ -45,10 +45,8 @@
 
 #include "ChargeActionInitialization.hh"
 #include "ChargeDetectorConstruction.hh"
-#include "ChargePrimaryGeneratorAction.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPPhysicsList.hh"
-#include "G4CMPStackingAction.hh"
 //#include "FET.hh"
 //#include "FETMessenger.hh"
 

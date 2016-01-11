@@ -263,7 +263,7 @@ void ChargeFETDigitizerModule::BuildRamoFields()
     std::ifstream ramoFile(name.str().c_str());
     if(ramoFile.good()) {
       ramoFile.close();
-      RamoFields.emplace_back(G4CMPMeshElectricField(name.str()));
+      RamoFields.emplace_back(name.str());
     } else {
       ramoFile.close();
       G4cerr << "ChargeFETDigitizerModule::BuildRamoFields(): ERROR: Could"

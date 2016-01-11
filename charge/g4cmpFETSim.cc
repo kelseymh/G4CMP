@@ -1,5 +1,4 @@
 #include "ChargeFETDigitizerModule.hh"
-#include "G4SystemOfUnits.hh"
 
 int main(int argc, char** argv) {
   G4String filename;

@@ -2,7 +2,6 @@
 #define CHARGEFETDIGITIZERMODULE_HH
 
 #include "G4VDigitizerModule.hh"
-#include <vector>
 #include <fstream>
 
 class ChargeFETDigitizerMessenger;
