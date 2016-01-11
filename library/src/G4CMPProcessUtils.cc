@@ -299,8 +299,9 @@ void G4CMPProcessUtils::MakeGlobalPhononK(G4ThreeVector& kphonon) const {
 void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
   if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
     kphonon = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),kphonon);
-  } else if (GetCurrentParticle() != G4CMPDriftHole::Definition()) {
+  } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
     kphonon *= hbarc;
+  } else {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess006",
                 EventMustBeAborted, "Unknown charge carrier");
   }
