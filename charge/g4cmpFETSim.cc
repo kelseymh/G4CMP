@@ -10,8 +10,11 @@ int main(int argc, char** argv) {
   }
 
   ChargeFETDigitizerModule fetsim;
-  if (argc > 2)
+  if (argc > 2) {
     fetsim.SetOutputFile(argv[2]);
+  } else {
+    fetsim.SetOutputFile("FETOutput");
+  }
 
   fetsim.Build();
   fetsim.PostProcess(filename);
