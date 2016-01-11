@@ -33,6 +33,7 @@
 // 20140321  Drop passing placement transform to G4LatticePhysical
 // 20140412  Use const volumes and materials for registration
 // 20141008  Change to global singleton; must be shared across worker threads
+// 20160111  Remove G4 version checking. We hard depend on 10.2+
 
 #include "G4LatticeManager.hh"
 #include "G4LatticeLogical.hh"
@@ -42,17 +43,14 @@
 #include "G4Material.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4Version.hh"
 #include <fstream>
 
 G4LatticeManager* G4LatticeManager::fLM = 0;
 
-#if G4VERSION_NUMBER >= 1000
 #include "G4AutoLock.hh"
 namespace {
   G4Mutex latMutex = G4MUTEX_INITIALIZER;     // For thread protection
 }
-#endif
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -93,9 +91,7 @@ void G4LatticeManager::Clear() {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4LatticeManager* G4LatticeManager::GetLatticeManager() {
-#if G4VERSION_NUMBER >= 1000
   G4AutoLock latLock(&latMutex);      // Protect before changing pointer
-#endif
 
   // if no lattice manager exists, create one.
   if (!fLM) fLM = new G4LatticeManager();
@@ -115,9 +111,7 @@ G4bool G4LatticeManager::RegisterLattice(const G4Material* Mat,
 	   << G4endl;
   }
 
-#if G4VERSION_NUMBER >= 1000
   G4AutoLock latLock(&latMutex);      // Protect before changing registry
-#endif
 
   fLLattices.insert(Lat);		// Take ownership in registry
   fLLatticeList[Mat] = Lat;
@@ -187,9 +181,7 @@ G4bool G4LatticeManager::RegisterLattice(const G4VPhysicalVolume* Vol,
 					 G4LatticePhysical* Lat) {
   if (!Vol || !Lat) return false;	// Don't register null pointers
 
-#if G4VERSION_NUMBER >= 1000
   G4AutoLock latLock(&latMutex);      // Protect before changing pointer
-#endif
 
   // SPECIAL: Register first lattice with a null volume to act as default
   if (fPLatticeList.empty()) fPLatticeList[0] = Lat;

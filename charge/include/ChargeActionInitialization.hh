@@ -1,13 +1,8 @@
-// $Id$
+// $Id: 10d985fa839a054ee76ee8f3176a55e43ee840ce $
 //
-// For Geant4 10.0, replaces runManager->SetUserAction() calls.
-// Not valid for previous releases; G4VERSION check is used to disable.
 
 #ifndef ChargeActionInitialization_hh
 #define ChargeActionInitialization_hh 1
-
-#include "G4Version.hh"
-#if (G4VERSION_NUMBER >= 1000)
 
 #include "G4VUserActionInitialization.hh"
 
@@ -18,5 +13,4 @@ public:
   virtual void Build() const;
 };
 
-#endif	/* G4VERSION_NUMBER */
 #endif	/* ChargeActionInitialization_hh */
