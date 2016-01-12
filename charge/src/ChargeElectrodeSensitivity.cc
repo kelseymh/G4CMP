@@ -1,19 +1,12 @@
 #include "ChargeElectrodeSensitivity.hh"
 #include "ChargeFETDigitizerModule.hh"
-#include "G4CMPElectrodeSensitivity.hh"
 #include "G4CMPElectrodeHit.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4RunManager.hh"
 #include "G4Run.hh"
 #include "G4Event.hh"
 #include "G4HCofThisEvent.hh"
-#include "G4TouchableHistory.hh"
-#include "G4Track.hh"
-#include "G4Step.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4SDManager.hh"
-#include "G4Navigator.hh"
-#include "G4ios.hh"
 
 #include <fstream>
 

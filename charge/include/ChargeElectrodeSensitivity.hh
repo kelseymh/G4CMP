@@ -2,7 +2,6 @@
 #define ChargeElectrodeSensitivity_h 1
 
 #include "G4CMPElectrodeSensitivity.hh"
-#include "G4CMPElectrodeHit.hh"
 
 class G4HCofThisEvent;
 class ChargeFETDigitizerModule;

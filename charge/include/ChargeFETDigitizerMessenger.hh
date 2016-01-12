@@ -1,6 +1,8 @@
 #ifndef CHARGEFETMESSENGER_HH
 #define CHARGEFETMESSENGER_HH 1
 
+#include "G4UImessenger.hh"
+
 class ChargeFETDigitizerModule;
 class G4UIdirectory;
 class G4UIcmdWithoutParameter;
@@ -8,9 +10,6 @@ class G4UIcmdWithAString;
 class G4UIcmdWithAnInteger;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithABool;
-
-#include "G4UImessenger.hh"
-#include "globals.hh"
 
 class ChargeFETDigitizerMessenger : public G4UImessenger
 {

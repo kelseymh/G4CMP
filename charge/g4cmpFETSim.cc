@@ -1,5 +1,4 @@
 #include "ChargeFETDigitizerModule.hh"
-#include "G4SystemOfUnits.hh"
 
 int main(int argc, char** argv) {
   G4String filename;
@@ -11,8 +10,11 @@ int main(int argc, char** argv) {
   }
 
   ChargeFETDigitizerModule fetsim;
-  if (argc > 2)
+  if (argc > 2) {
     fetsim.SetOutputFile(argv[2]);
+  } else {
+    fetsim.SetOutputFile("FETOutput");
+  }
 
   fetsim.Build();
   fetsim.PostProcess(filename);
