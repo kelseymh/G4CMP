@@ -15,8 +15,6 @@ class G4CMPElectrodeHit : public G4VHit
 
       G4CMPElectrodeHit();
       virtual ~G4CMPElectrodeHit();
-      G4CMPElectrodeHit(const G4CMPElectrodeHit &right);
-      const G4CMPElectrodeHit& operator=(const G4CMPElectrodeHit &right);
       int operator==(const G4CMPElectrodeHit &right) const;
 
       inline void *operator new(size_t);
@@ -29,8 +27,9 @@ class G4CMPElectrodeHit : public G4VHit
 
   private:
     G4int trackID;
+    G4String particleName;
     G4double charge;
-    G4double trackTime;
+    G4double finalTime;
     G4double startE;
     G4double EDep;
     G4ThreeVector startPos;
@@ -40,14 +39,17 @@ class G4CMPElectrodeHit : public G4VHit
     inline void SetTrackID(G4int id) { trackID = id; }
     inline G4int GetTrackID() const { return trackID; }
 
+    inline void SetParticleName(G4String name) { particleName = name; }
+    inline G4String GetParticleName() const { return particleName; }
+
     inline void SetCharge(G4int q) { charge = q; }
     inline G4double GetCharge() const { return charge; }
 
     inline void SetStartEnergy(G4double E) { startE = E; }
     inline G4double GetStartEnergy() const { return startE; }
 
-    inline void SetTrackTime(G4double t) { trackTime = t; }
-    inline G4double GetTrackTime() const { return trackTime; }
+    inline void SetFinalTime(G4double t) { finalTime = t; }
+    inline G4double GetFinalTime() const { return finalTime; }
 
     inline void SetEnergyDeposit(G4double E) { EDep = E; }
     inline G4double GetEnergyDeposit() const { return EDep; }

@@ -39,7 +39,7 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
-#include "G4CMPValleyTrackMap.hh"
+#include "G4CMPTrackInformation.hh"
 #include "G4DynamicParticle.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
@@ -57,11 +57,9 @@
 // Constructor and destructor
 // NOTE:  Initial values are arbitrary and non-physical
 G4CMPVDriftProcess::G4CMPVDriftProcess(const G4String& processName,
-				       G4CMPProcessSubType stype)
+                                       G4CMPProcessSubType stype)
   : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils(),
-    velLong(330*m/s), mc_e(electron_mass_c2/c_squared), l0_e(1*nm), 
-    ksound_e(velLong*mc_e/hbar_Planck), mc_h(mc_e), l0_h(l0_e),
-    ksound_h(ksound_e) {
+    velLong(330*m/s) {
   verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   SetProcessSubType(stype);
 
@@ -75,7 +73,7 @@ G4CMPVDriftProcess::~G4CMPVDriftProcess() {;}
 
 G4bool G4CMPVDriftProcess::IsApplicable(const G4ParticleDefinition& aPD) {
   return (&aPD==G4CMPDriftElectron::Definition() ||
-	  &aPD==G4CMPDriftHole::Definition() );
+          &aPD==G4CMPDriftHole::Definition());
 }
 
 
@@ -83,16 +81,7 @@ G4bool G4CMPVDriftProcess::IsApplicable(const G4ParticleDefinition& aPD) {
 
 void G4CMPVDriftProcess::LoadDataForTrack(const G4Track* track) {
   G4CMPProcessUtils::LoadDataForTrack(track);
-
   velLong = theLattice->GetSoundSpeed();
-
-  mc_e = theLattice->GetElectronMass();		// Scalar mass (Herring-Vogt)
-  l0_e = theLattice->GetElectronScatter();
-  ksound_e = velLong * mc_e/hbar_Planck;	// Wavevector for e @ "Mach 1"
-
-  mc_h = theLattice->GetHoleMass();
-  l0_h = theLattice->GetHoleScatter();
-  ksound_h = velLong * mc_h/hbar_Planck;	// Wavevector for h @ "Mach 1"
 }
 
 
@@ -111,21 +100,23 @@ void G4CMPVDriftProcess::EndTracking() {
 
 // Overload base version to set a minimum step size, avoiding "stuck" tracks
 
-G4double G4CMPVDriftProcess::
-PostStepGetPhysicalInteractionLength(const G4Track& track,
-				     G4double previousStepSize,
-				     G4ForceCondition* condition) {
+G4double
+G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
+                      const G4Track& track,
+                      G4double previousStepSize,
+                      G4ForceCondition* condition) {
   G4double trueLength =
     G4VDiscreteProcess::PostStepGetPhysicalInteractionLength(track,
-							     previousStepSize,
-							     condition);
+                                                             previousStepSize,
+                                                             condition);
 
   const G4double scale = G4CMPConfigManager::GetMinStepScale();
 
   if (scale > 0.) {
-    const G4double minLength = scale *
-      (track.GetParticleDefinition()==G4CMPDriftElectron::Definition()
-       ? l0_e : l0_h);
+    G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
+      track.GetAuxiliaryTrackInformation(fPhysicsModelID));
+
+    const G4double minLength = scale * trackInfo->GetScatterLength();
 
     if (verboseLevel > 1) {
       G4cout << GetProcessName() << "::PostStepGPIL: minLength " << minLength
@@ -155,7 +146,19 @@ G4CMPVDriftProcess::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
 void 
 G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
   G4double mass = GetCurrentTrack()->GetDynamicParticle()->GetMass();
-  G4double energy = 0.5*p.mag2()/mass;	// Non-relativistic, but "mass" is mc^2
+
+  G4ThreeVector v;
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
+    G4ThreeVector p_local = GetLocalDirection(p);
+    v = GetGlobalDirection(theLattice->MapPtoV_el(ivalley, p_local));
+  } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
+    v = p*c_light/mass;
+  } else {
+    G4Exception("G4CMMPVDriftProcess::FillParticleChange", "DriftProcess001",
+    EventMustBeAborted, "Unknown charge carrier");
+  }
+
+  G4double energy = 0.5*mass*v.mag2()/c_squared;	// Non-relativistic, but "mass" is mc^2
 
 #ifdef G4CMP_SET_ELECTRON_MASS
   if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
@@ -165,14 +168,14 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
   }
 #endif
 
-  FillParticleChange(ivalley, energy, p);
+  FillParticleChange(ivalley, energy, v);
 }
 
 // Fill ParticleChange mass for electron charge carrier with given energy
 
 void 
 G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
-				     const G4ThreeVector& p) {
+             const G4ThreeVector& v) {
 #ifdef G4CMP_SET_ELECTRON_MASS
   if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
 
@@ -191,8 +194,7 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
     aParticleChange.ProposeVelocity(velocity);
   }
 #endif
-
-  aParticleChange.ProposeMomentumDirection(p.unit());
+  aParticleChange.ProposeMomentumDirection(v.unit());
   aParticleChange.ProposeEnergy(Ekin);
 }
 

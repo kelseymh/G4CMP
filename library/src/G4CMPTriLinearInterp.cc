@@ -111,8 +111,8 @@ void G4CMPTriLinearInterp::BuildTetraMesh() {
 }
 
 G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& point,
-                                        const G4int id) const {
-  static map<G4int, G4int> qhull2x;
+                                        const G4int id) {
+  //static map<G4int, G4int> qhull2x;
   if (qhull2x.count(id)) {
     return qhull2x[id];
   }
@@ -183,7 +183,7 @@ void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) co
 }
 
 void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bary[4]) const {
-  const G4double maxError = -1e-16;
+  const G4double maxError = -1e-10;
   G4int minBaryIdx;
   G4double bestBary[4];
   G4int bestTet = -1;
@@ -191,8 +191,8 @@ void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bar
   for (size_t count = 0; count < Tetrahedra.size(); ++count) {
     Cart2Bary(point,bary);
 
-    if (bary[0] >= maxError && bary[1] >= maxError 
-        && bary[2] >= maxError && bary[3] >= maxError)
+    if (bary[3] >= maxError && bary[2] >= maxError 
+        && bary[1] >= maxError && bary[0] >= maxError) //bary[3] more likely to be bad.
       return;
     else if (bary[0]*bary[0] + bary[1]*bary[1] + bary[2]*bary[2] + bary[3]*bary[3]
             < bestBary[0]*bestBary[0] + bestBary[1]*bestBary[1] 

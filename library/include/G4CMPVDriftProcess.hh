@@ -67,12 +67,6 @@ public:
 protected:
   // Convenient parameters for computing carrier propagation
   G4double velLong;		// Sound velocity in cystal
-  G4double mc_e;		// Effective electron mass
-  G4double l0_e;		// Electron scattering length
-  G4double ksound_e;		// Electron momentum at sound speed
-  G4double mc_h;		// Effective hole mass
-  G4double l0_h;		// Hole scattering length
-  G4double ksound_h;		// Hole momentum at sound speed
 
   // Compute characteristic time step for charge carrier
   // Parameters are "Mach number" (ratio with sound speed) and scattering length
@@ -87,7 +81,7 @@ protected:
 
   // Fill ParticleChange energy and mass for charge carrier of given energy
   void FillParticleChange(G4int ivalley, G4double Ekin,
-			  const G4ThreeVector& pdir);
+              const G4ThreeVector& v);
 
 private:
   // hide assignment operators as private 

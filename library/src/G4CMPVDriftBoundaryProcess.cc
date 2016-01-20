@@ -12,6 +12,7 @@
 #include "G4CMPDriftHole.hh"
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPSurfaceProperty.hh"
+#include "G4CMPTrackInformation.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
 #include "G4GeometryTolerance.hh"
@@ -20,6 +21,9 @@
 #include "G4LatticePhysical.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4ParallelWorldProcess.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4PhononPolarization.hh"
+#include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
@@ -63,7 +67,7 @@ GetMeanFreePath(const G4Track& /*aTrack*/,G4double /*previousStepSize*/,
 
 G4VParticleChange* 
 G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
-					const G4Step& aStep) {    
+                                         const G4Step& aStep) {
   aParticleChange.Initialize(aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
@@ -88,7 +92,6 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
       G4cerr << GetProcessName() << " ERROR: fGeomBoundary status set, but"
 	     << " pre- and post-step volumes are identical!" << G4endl;
     }
-
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
@@ -100,7 +103,6 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
       G4cout << GetProcessName() << ": Track inbound after reflection"
 	     << G4endl;
     }
-
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);      
   }
 
@@ -126,7 +128,6 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 	     << thePrePV->GetName() << " to "  << thePostPV->GetName()
 	     << G4endl;
     }
-
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
   }
 
@@ -163,7 +164,7 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   if (verboseLevel>2) {
-    G4cout <<   " K direction: " << GetWaveVector(aTrack).unit()
+    G4cout <<   " K direction: " << GetLocalWaveVector(aTrack).unit()
 	   << "\n P direction: " << aTrack.GetMomentumDirection() << G4endl;
   }
 
@@ -219,7 +220,39 @@ G4CMPVDriftBoundaryProcess::DoAbsorption(const G4Step& aStep) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track absorbed" << G4endl;
 
-  G4double Ekin = GetKineticEnergy(*(aStep.GetTrack()));
+  G4Track* aTrack = aStep.GetTrack();
+  G4double Ekin = GetKineticEnergy(aTrack);
+
+/* FIXME: Eventually uncomment this code to produce a real phonon that will
+   propagate into the next volume.
+
+  // Create real phonon to be propagated, with random polarization
+  static const G4double genPhonon = G4CMPConfigManager::GetGenPhonons();
+  if (genPhonon > 0. && G4UniformRand() < genPhonon) {
+    G4int polarization = ChoosePolarization();
+
+    // Conserve energy and momentum(mag)
+    // As a first guess, let's just take the carriers k and give it to the
+    // phonon. We have to make sure if gives us a v that points out of the volume.
+    G4ThreeVector k = GetLocalWaveVector(aTrack);
+    G4double kmag = k.mag();
+    G4ThreeVector vdir = theLattice->MapKtoVDir(polarization, k);
+    RotateToGlobalDirection(vdir);
+    // FIXME: We should have a MapVtoK map to make this not slow.
+    while (vdir*surfNorm < 0.5) {
+      G4ThreeVector kdir = G4RandomDirection();
+      k = kmag*kdir;
+      MakeLocalPhononK(k);
+      vdir = theLattice->MapKtoVDir(polarization, k);
+      RotateToGlobalDirection(vdir);
+    }
+
+    G4Track* phonon = CreatePhonon(polarization, k, Ekin);
+    aParticleChange.SetNumberOfSecondaries(1);
+    aParticleChange.AddSecondary(phonon);
+  }
+*/
+
   aParticleChange.ProposeNonIonizingEnergyDeposit(Ekin);
   aParticleChange.ProposeTrackStatus(fStopAndKill);
   return &aParticleChange;
@@ -249,7 +282,7 @@ G4bool G4CMPVDriftBoundaryProcess::HitElectrode(const G4Step& aStep) {
 }
 
 // Default behaviour just kills the track, may need to have "state flag"
-// akin to G3OpBoundaryProcess.
+// akin to G4OpBoundaryProcess.
 
 G4VParticleChange* 
 G4CMPVDriftBoundaryProcess::DoElectrodeHit(const G4Step& aStep) {

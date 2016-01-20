@@ -144,14 +144,20 @@ G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int polarizationState,
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-// Compute effective "scalar" electron mass to match energy/momentum relation
-
 G4double G4LatticePhysical::MapPtoEkin(G4int iv, G4ThreeVector p) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapPtoEkin " << iv << " " << p << G4endl;
 
   RotateToLattice(p);
   return fLattice->MapPtoEkin(iv, p);
+}
+
+G4double G4LatticePhysical::MapV_elToEkin(G4int iv, G4ThreeVector v) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapV_elToEkin " << iv << " " << v << G4endl;
+
+  RotateToLattice(v);
+  return fLattice->MapV_elToEkin(iv, v);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -172,11 +178,22 @@ G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
 G4ThreeVector 
 G4LatticePhysical::MapV_elToP(G4int ivalley, G4ThreeVector v_e) const {
   if (verboseLevel>1)
-    G4cout << "G4LatticePhysical::MapPtoV_el " << ivalley << " " << v_e
+    G4cout << "G4LatticePhysical::MapV_elRoP " << ivalley << " " << v_e
 	   << G4endl;
 
   RotateToLattice(v_e);
   v_e = fLattice->MapV_elToP(ivalley, v_e);	// Overwrite to avoid temporary
+  return RotateToSolid(v_e);
+}
+
+G4ThreeVector
+G4LatticePhysical::MapV_elToK_HV(G4int ivalley, G4ThreeVector v_e) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapV_elToK_HV " << ivalley << " " << v_e
+     << G4endl;
+
+  RotateToLattice(v_e);
+  v_e = fLattice->MapV_elToK_HV(ivalley, v_e);	// Overwrite to avoid temporary
   return RotateToSolid(v_e);
 }
 
@@ -212,6 +229,18 @@ G4LatticePhysical::MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const {
   k_HV = fLattice->MapK_HVtoK_valley(ivalley, k_HV);
   return RotateToSolid(k_HV);
 }
+
+G4ThreeVector
+G4LatticePhysical::MapK_HVtoK(G4int ivalley, G4ThreeVector k_HV) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapK_HVtoK " << ivalley << " " << k_HV
+     << G4endl;
+
+  RotateToLattice(k_HV);
+  k_HV = fLattice->MapK_HVtoK(ivalley, k_HV);	// Overwrite to avoid temporary
+  return RotateToSolid(k_HV);
+}
+
 
 G4ThreeVector 
 G4LatticePhysical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {

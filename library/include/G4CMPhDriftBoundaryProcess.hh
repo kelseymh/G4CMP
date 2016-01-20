@@ -41,9 +41,6 @@ public:
   virtual ~G4CMPhDriftBoundaryProcess();
 
 protected:
-  virtual G4ThreeVector GetWaveVector(const G4Track& aTrack) const;
-  virtual G4double GetKineticEnergy(const G4Track& aTrack) const;
-
   // Apply kinematic absoprtion (wave-vector at surface)
   virtual G4bool AbsorbTrack(const G4Step&);
 

@@ -16,6 +16,8 @@
 //	     protect valley functions against null pointers
 // 20150309  Add Create*() functions which take position and energy arguments
 //	     (for use with AlongStepDoIt() actions).
+// 20151209  Replace trackMap classes with an AuxiliaryInformation class.
+// 20160107  Add GetVelocity functions.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -24,12 +26,10 @@
 #include "G4AffineTransform.hh"
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
+#include "G4Track.hh"
 
-class G4CMPValleyTrackMap;
 class G4LatticePhysical;
 class G4ParticleDefinition;
-class G4PhononTrackMap;
-class G4Track;
 class G4VPhysicalVolume;
 class G4VTouchable;
 
@@ -86,7 +86,7 @@ public:
     fLocalToGlobal.ApplyPointTransform(pos);
   }
 
-  // Convenience functions to get local position, momenum from track
+  // Convenience functions to get local position, momentum, velocity from track
   G4ThreeVector GetLocalPosition(const G4Track& track) const;
   G4ThreeVector GetLocalPosition(const G4Track* track) const {
     return GetLocalPosition(*track);
@@ -102,9 +102,80 @@ public:
     return GetLocalMomentum(*track);
   }
 
-  void GetLocalMomentum(const G4Track& track, G4double pos[3]) const;
-  void GetLocalMomentum(const G4Track* track, G4double pos[3]) const {
-    return GetLocalMomentum(*track, pos);
+  void GetLocalMomentum(const G4Track& track, G4double mom[3]) const;
+  void GetLocalMomentum(const G4Track* track, G4double mom[3]) const {
+    return GetLocalMomentum(*track, mom);
+  }
+
+  G4ThreeVector GetLocalVelocityVector(const G4Track& track) const;
+  G4ThreeVector GetLocalVelocityVector(const G4Track* track) const {
+    return GetLocalVelocityVector(*track);
+  }
+
+  void GetLocalVelocityVector(const G4Track& track, G4double vel[3]) const;
+  void GetLocalVelocityVector(const G4Track* track, G4double vel[3]) const {
+    return GetLocalVelocityVector(*track, vel);
+  }
+
+  G4ThreeVector GetLocalWaveVector(const G4Track& track) const;
+  G4ThreeVector GetLocalWaveVector(const G4Track* track) const {
+    return GetLocalWaveVector(*track);
+  }
+
+  // Convenience functions to get position, momentum, velocity from track
+  G4ThreeVector GetGlobalPosition(const G4Track& track) const;
+  G4ThreeVector GetGlobalPosition(const G4Track* track) const {
+    return GetGlobalPosition(*track);
+  }
+
+  void GetGlobalPosition(const G4Track& track, G4double pos[3]) const;
+  void GetGlobalPosition(const G4Track* track, G4double pos[3]) const {
+    return GetGlobalPosition(*track, pos);
+  }
+
+  G4ThreeVector GetGlobalMomentum(const G4Track& track) const;
+  G4ThreeVector GetGlobalMomentum(const G4Track* track) const {
+    return GetGlobalMomentum(*track);
+  }
+
+  void GetGlobalMomentum(const G4Track& track, G4double mom[3]) const;
+  void GetGlobalMomentum(const G4Track* track, G4double mom[3]) const {
+    return GetGlobalMomentum(*track, mom);
+  }
+
+  // These functions only exist to make a uniform interface for getting
+  // track info in a G4CMP physics process class.
+  G4double CalculateVelocity(const G4Track& track) const {
+    return track.CalculateVelocity();
+  }
+
+  G4double CalculateVelocity(const G4Track* track) const {
+    return CalculateVelocity(*track);
+  }
+
+  G4double GetVelocity(const G4Track& track) const {
+    return CalculateVelocity(track);
+  }
+
+  G4double GetVelocity(const G4Track* track) const {
+    return CalculateVelocity(*track);
+  }
+
+  G4ThreeVector GetGlobalVelocityVector(const G4Track& track) const;
+  G4ThreeVector GetGlobalVelocityVector(const G4Track* track) const {
+    return GetGlobalVelocityVector(*track);
+  }
+
+  void GetGlobalVelocityVector(const G4Track& track, G4double vel[3]) const;
+  void GetGlobalVelocityVector(const G4Track* track, G4double vel[3]) const {
+    return GetGlobalVelocityVector(*track, vel);
+  }
+
+  // Convenience functions to get position, momentum, velocity from track
+
+  G4double GetKineticEnergy(const G4Track& track) const;
+  G4double GetKineticEnergy(const G4Track* track) const {
+    return GetKineticEnergy(*track);
   }
 
   // Map phonon types to polarization index
@@ -139,6 +210,11 @@ public:
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
 
+  void MakeLocalPhononK(G4ThreeVector& kphonon) const;
+  void MakeGlobalPhononK(G4ThreeVector& kphonon) const;
+
+  void MakeGlobalRecoil(G4ThreeVector& kphonon) const;
+
   // Construct new phonon track with correct momentum, position, etc.
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
 			G4double energy) const;
@@ -160,12 +236,11 @@ public:
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes
-  G4PhononTrackMap* trackKmap;
-  G4CMPValleyTrackMap* trackVmap;
 
   const G4ParticleDefinition* GetCurrentParticle() const;
   const G4Track* GetCurrentTrack() const { return currentTrack; }
   G4int GetCurrentValley() const { return GetValleyIndex(currentTrack); }
+  G4int fPhysicsModelID;
 
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking

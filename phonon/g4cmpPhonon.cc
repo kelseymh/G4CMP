@@ -30,10 +30,10 @@
 //
 // 20140509  Add conditional code for Geant4 10.0 vs. earlier
 // 20150112  Remove RM->Initialize() call to allow macro configuration
+// 20160111  Remove Geant4 version check since we now hard depend on 10.2+
 
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
-#include "G4Version.hh"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
@@ -66,12 +66,7 @@ int main(int argc,char** argv)
     
  // Set user action classes (different for Geant4 10.0)
  //
-#if (G4VERSION_NUMBER >= 1000)
  runManager->SetUserInitialization(new PhononActionInitialization);
-#else
- runManager->SetUserAction(new G4CMPStackingAction);
- runManager->SetUserAction(new PhononPrimaryGeneratorAction );
-#endif
 
 #ifdef G4VIS_USE
  // Visualization manager

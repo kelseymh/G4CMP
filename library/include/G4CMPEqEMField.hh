@@ -19,7 +19,6 @@
 #include "G4AffineTransform.hh"
 #include "G4LatticePhysical.hh"
 #include "G4RotationMatrix.hh"
-#include "G4Version.hh"
 
 class G4ElectroMagneticField;
 
@@ -43,15 +42,9 @@ public:
 
   // Configuration function from base class
   // NOTE: change of signature with G4 10.0
-#if G4VERSION_NUMBER >= 1000
   virtual void SetChargeMomentumMass(G4ChargeState particleCharge,
 				     G4double MomentumXc,
 				     G4double mass);
-#else
-  virtual void SetChargeMomentumMass(G4double particleCharge, // in e+ units
-				     G4double MomentumXc,
-				     G4double mass);
-#endif
   
   void EvaluateRhsGivenB(const G4double y[],
 			 const G4double field[],
@@ -63,6 +56,7 @@ private:
   const G4LatticePhysical* theLattice;
 
   G4double fCharge;	       		// Same as base class fElectrMagCof
+  G4double fMass;	       		// Same as base class fElectrMagCof
   G4int valleyIndex;			// Index of current valley (-1 if none)
 
   G4AffineTransform fLocalToGlobal;	// Local vs. global coordinates

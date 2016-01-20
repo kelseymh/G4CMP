@@ -12,7 +12,7 @@
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
-#include "G4CMPValleyTrackMap.hh"
+#include "G4CMPTrackInformation.hh"
 #include "G4CMPFieldManager.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
@@ -49,10 +49,7 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   //is no e-h transport either...
   if (!fMan || !fMan->DoesFieldExist()) return DBL_MAX;
 
-  G4ThreeVector p_local = GetLocalMomentum(aTrack);
-
-  G4int valley = GetValleyIndex(aTrack);
-  G4double velocity = theLattice->MapPtoV_el(valley, p_local).mag();
+  G4double velocity = GetVelocity(aTrack);
   
   G4double posVec[4] = { 4*0. };
   GetLocalPosition(aTrack, posVec);
@@ -114,7 +111,9 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
   // picking a new valley at random if IV-scattering process was triggered
   valley = ChooseValley();
-  trackVmap->SetValley(aTrack, valley);
+  static_cast<G4CMPTrackInformation*>(
+    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
+                                     )->SetValleyIndex(valley);
 
   p = theLattice->MapK_valleyToP(valley, p); // p is p again
   RotateToGlobalDirection(p);

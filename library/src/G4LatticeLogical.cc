@@ -234,6 +234,16 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
   return vToN.inverse()*(GetMassTensor()*(vToN*v_e*c_light));
 }
 
+G4ThreeVector
+G4LatticeLogical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector &v_e) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapV_elToK_HV " << ivalley << " " << v_e
+     << G4endl;
+
+  const G4RotationMatrix& vToN = GetValley(ivalley);
+  return GetSqrtInvTensor()*GetMassTensor()*vToN*v_e/hbar_Planck;
+}
+
 G4ThreeVector 
 G4LatticeLogical::MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const {
   if (verboseLevel>1)
@@ -261,6 +271,17 @@ G4LatticeLogical::MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const {
 	   << G4endl;
 
   k_HV *= GetSqrtTensor();			// From Herring-Vogt to valley
+  return k_HV;
+}
+
+G4ThreeVector
+G4LatticeLogical::MapK_HVtoK(G4int ivalley, G4ThreeVector k_HV) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapK_HVtoK " << ivalley << " " << k_HV
+     << G4endl;
+
+  k_HV *= GetSqrtTensor();			// From Herring-Vogt to valley
+  k_HV.transform(GetValley(ivalley).inverse());	// Rotate out of valley frame
   return k_HV;
 }
 
@@ -302,6 +323,19 @@ G4LatticeLogical::MapPtoEkin(G4int iv, G4ThreeVector p) const {
   return (0.5/c_squared) * (p.x()*p.x()*fMassInverse.xx() +
 			    p.y()*p.y()*fMassInverse.yy() +
 			    p.z()*p.z()*fMassInverse.zz());
+}
+
+G4double
+G4LatticeLogical::MapV_elToEkin(G4int iv, G4ThreeVector v) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapV_elToEkin " << iv << " " << v << G4endl;
+
+  v.transform(GetValley(iv));			// Rotate to valley frame
+
+  // Compute kinetic energy component by component, then sum
+  return 0.5 * (v.x()*v.x()*fMassTensor.xx() +
+          v.y()*v.y()*fMassTensor.yy() +
+          v.z()*v.z()*fMassTensor.zz());
 }
 
 // Compute effective "scalar" electron mass to match energy/momentum relation
