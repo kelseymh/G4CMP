@@ -37,7 +37,8 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                          G4double qAbsprob, G4double V,
                          G4double deltaV, G4double minKe,
                          G4double minKh, G4double pAbsprob, G4double specProb,
-                         G4double gapEnergy,
+                         G4double gapEnergy, G4double lowQPLimit,
+                         G4double pScatterLength, G4double filmThickness,
                          G4SurfaceType stype)
                          : G4SurfaceProperty(name, stype)
 {
@@ -50,6 +51,9 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
   thePhononMatPropTable.AddConstProperty("absProb", pAbsprob);
   thePhononMatPropTable.AddConstProperty("specProb", specProb);
   thePhononMatPropTable.AddConstProperty("gapEnergy", gapEnergy);
+  thePhononMatPropTable.AddConstProperty("lowQPLimit", lowQPLimit);
+  thePhononMatPropTable.AddConstProperty("scatterLength", pScatterLength);
+  thePhononMatPropTable.AddConstProperty("filmThickness", filmThickness);
 }
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
@@ -68,13 +72,17 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                          G4double pAbsprob, G4double specProb,
-                         G4double gapEnergy,
+                         G4double gapEnergy,G4double lowQPLimit,
+                         G4double pScatterLength, G4double filmThickness,
                          G4SurfaceType stype)
                          : G4SurfaceProperty(name, stype)
 {
   thePhononMatPropTable.AddConstProperty("absProb", pAbsprob);
   thePhononMatPropTable.AddConstProperty("specProb", specProb);
   thePhononMatPropTable.AddConstProperty("gapEnergy", gapEnergy);
+  thePhononMatPropTable.AddConstProperty("lowQPLimit", lowQPLimit);
+  thePhononMatPropTable.AddConstProperty("scatterLength", pScatterLength);
+  thePhononMatPropTable.AddConstProperty("filmThickness", filmThickness);
 }
 
 G4int G4CMPSurfaceProperty::operator==(const G4CMPSurfaceProperty &right) const
@@ -86,11 +94,6 @@ G4int G4CMPSurfaceProperty::operator!=(const G4CMPSurfaceProperty &right) const
 {
   return (this != (G4CMPSurfaceProperty *) &right);
 }
-
-        ////////////
-        // Methods
-        ////////////
-
 
 void G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable(
                             G4MaterialPropertiesTable* mpt)

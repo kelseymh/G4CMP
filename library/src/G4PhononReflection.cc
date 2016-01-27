@@ -39,12 +39,15 @@
 // 20140331  Add required process subtype code
 
 #include "G4CMPConfigManager.hh"
+#include "G4CMPSurfaceProperty.hh"
+#include "G4CMPTrackInformation.hh"
 #include "G4PhononReflection.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononTrackMap.hh"
+#include "G4PhononPolarization.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
@@ -59,7 +62,6 @@
 #include "G4VParticleChange.hh"
 #include "G4LogicalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
-#include "G4CMPSurfaceProperty.hh"
 #include "Randomize.hh"
 
 
@@ -67,62 +69,29 @@ G4PhononReflection::G4PhononReflection(const G4String& aName)
   : G4VPhononProcess(aName, fPhononReflection),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()) {;}
 
-G4PhononReflection::~G4PhononReflection() {;}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-// Always return DBL_MAX and Forced. This ensures that the process is
-// called at the end of every step. In PostStepDoIt the process
-// decides whether the step encountered a volume boundary and a
-// reflection should be applied
-
-G4double G4PhononReflection::GetMeanFreePath(const G4Track&, G4double,
-					     G4ForceCondition* condition) {
-  *condition = Forced;
-  return DBL_MAX;
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-// This process handles the interaction of phonons with
-// boundaries. Implementation of this class is highly geometry
-// dependent.Currently, phonons are killed when they reach a
-// boundary. If the other side of the boundary was Al, a hit is
-// registered.
-  
 G4VParticleChange* G4PhononReflection::PostStepDoIt(const G4Track& aTrack,
-						    const G4Step& aStep) { 
+                                                    const G4Step& aStep) {
+  // This process handles the interaction of phonons with
+  // boundaries. Implementation of this class is highly geometry
+  // dependent.Currently, phonons are killed when they reach a
+  // boundary. If the other side of the boundary was Al, a hit is
+  // registered.
   aParticleChange.Initialize(aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
 
-  if (postStepPoint->GetStepStatus()!=fGeomBoundary) {
-    //make sure that correct phonon velocity is used after the step
-    int pol = GetPolarization(aTrack);
-    if (pol < 0 || pol > 2) {
-      G4Exception("G4PhononReflection::PostStepDoIt","Phonon001",
-      EventMustBeAborted, "Track is not a phonon");
-      return &aParticleChange;		// NOTE: Will never get here
-    }
-
-    // FIXME:  This should be using wave-vector, shouldn't it?
-    G4double vg = theLattice->MapKtoV(pol, trackKmap->GetK(aTrack));
-
-    //Since step was not a volume boundary, just set correct phonon velocity and return
-    aParticleChange.ProposeVelocity(vg);
-    return &aParticleChange;
-  }
-
-  // do nothing but return if the step is too short
-  // This is to allow actual reflection where after
-  // the first boundary crossing a second, infinitesimal
-  // step occurs crossing back into the original volume
-  if (aTrack.GetStepLength()<=kCarTolerance/2) {
+  // Do nothing but return if the step is not boundary limited, or if
+  // the step is too short. This is to allow actual reflection where after
+  // the first boundary crossing a second, infinitesimal, step occurs crossing
+  // back into the original volume
+  if (postStepPoint->GetStepStatus() != fGeomBoundary ||
+      aTrack.GetStepLength() <= kCarTolerance/2.) {
     return &aParticleChange;
   }
 
   if (verboseLevel) {
     G4cout << GetProcessName() << "::PostStepDoIt length "
-     << aTrack.GetStepLength() << G4endl;
+           << aTrack.GetStepLength() << G4endl;
   }
 
   G4VPhysicalVolume* thePrePV = preStepPoint->GetPhysicalVolume();
@@ -131,19 +100,20 @@ G4VParticleChange* G4PhononReflection::PostStepDoIt(const G4Track& aTrack,
   if (thePrePV == thePostPV) {
     if (verboseLevel) {
       G4cerr << GetProcessName() << " ERROR: fGeomBoundary status set, but"
-       << " pre- and post-step volumes are identical!" << G4endl;
+             << " pre- and post-step volumes are identical!" << G4endl;
     }
 
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
   // do nothing if the current step is inbound from outside the original volume
-  G4LatticePhysical* volLattice =
-    G4LatticeManager::GetLatticeManager()->GetLattice(thePrePV);
+  // FIXME: Shouldn't this test be redundant with the kCarTolerance test?
+  G4LatticePhysical*
+    volLattice = G4LatticeManager::GetLatticeManager()->GetLattice(thePrePV);
   if (volLattice != theLattice) {
     if (verboseLevel>1) {
       G4cout << GetProcessName() << ": Track inbound after reflection"
-       << G4endl;
+             << G4endl;
     }
 
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
@@ -151,36 +121,39 @@ G4VParticleChange* G4PhononReflection::PostStepDoIt(const G4Track& aTrack,
 
   if (verboseLevel>1) {
     G4cout <<   "    Track volume: " << aTrack.GetVolume()->GetName()
-     << "\n  PreStep volume: " << thePrePV->GetName() << " @ "
-     << preStepPoint->GetPosition()
-     << "\n PostStep volume: " << thePostPV->GetName() << " @ "
-     << postStepPoint->GetPosition()
-     << G4endl;
+           << "\n  PreStep volume: " << thePrePV->GetName() << " @ "
+           << preStepPoint->GetPosition()
+           << "\n PostStep volume: " << thePostPV->GetName() << " @ "
+           << postStepPoint->GetPosition()
+           << G4endl;
   }
 
   // Grab surface information
   G4LogicalSurface* surface = G4LogicalBorderSurface::GetSurface(thePrePV,
                                                                  thePostPV);
-  G4CMPSurfaceProperty* borderSurface;
+  G4CMPSurfaceProperty* borderSurface = nullptr;
   if (surface) {
     borderSurface =
       static_cast<G4CMPSurfaceProperty*>(surface->GetSurfaceProperty());
   } else {
     if (verboseLevel>1) {
       G4cerr << GetProcessName() << ": No border surface defined for "
-       << thePrePV->GetName() << " to "  << thePostPV->GetName()
-       << G4endl;
+             << thePrePV->GetName() << " to "  << thePostPV->GetName()
+             << G4endl;
     }
 
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
   }
 
-  G4MaterialPropertiesTable* phonPropTable =
-    const_cast<G4MaterialPropertiesTable*>(
-      borderSurface->GetPhononMaterialPropertiesTablePointer());
-  absProb   = phonPropTable->GetConstProperty("absProb");
-  specProb  = phonPropTable->GetConstProperty("specProb");
-  gapEnergy = phonPropTable->GetConstProperty("gapEnergy");
+  if (!borderSurface) {
+    if (verboseLevel>1) {
+      G4cerr << GetProcessName() << ": No surface properties defined for "
+             << thePrePV->GetName() << " to "  << thePostPV->GetName()
+             << G4endl;
+    }
+
+    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
+  }
 
   // Get outward normal using G4Navigator method (more reliable than G4VSolid)
   G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
@@ -188,202 +161,189 @@ G4VParticleChange* G4PhononReflection::PostStepDoIt(const G4Track& aTrack,
     G4TransportationManager::GetTransportationManager()->GetActiveNavigatorsIterator();
 
   G4bool goodNorm;
-  surfNorm =
+  G4ThreeVector surfNorm =
     iNav[navID]->GetGlobalExitNormal(postStepPoint->GetPosition(), &goodNorm);
   if (!goodNorm) {
     G4cerr << GetProcessName() << " ERROR:  Cannot get normal at surface of "
-     << thePrePV->GetName() << " @ " << postStepPoint->GetPosition()
-     << G4endl;
+           << thePrePV->GetName() << " @ " << postStepPoint->GetPosition()
+           << G4endl;
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   } else if (verboseLevel>2) {
     G4cout << " Normal " << surfNorm << " @ " << postStepPoint->GetPosition()
-     << G4endl;
+           << G4endl;
   }
 
   const G4int maxRefl = G4CMPConfigManager::GetMaxPhononBounces();
-  if (maxRefl<0 || numberOfReflections < maxRefl) {
-    if (ReflectTrack(aStep)) {
-      numberOfReflections++;
-      return DoReflection(aStep);
-    } else {
-      if (verboseLevel) {
-        G4cout << GetProcessName() << " WARNING: Phonon has reflected "
-          << maxRefl << " times. Track being killed." << G4endl;
-      }
-      G4double eKin = aTrack.GetKineticEnergy();
-      aParticleChange.ProposeNonIonizingEnergyDeposit(eKin);
-      aParticleChange.ProposeTrackStatus(fStopAndKill);
-    }
-  }
-
-
-  /*** THIS IS WHERE REFLECTION/TRANSMISSION CALCULATIONS BELONG ***
-
-  const G4DynamicParticle* theDP = aTrack.GetDynamicParticle();
-  G4ThreeVector incidentDirection = theDP->GetMomentumDirection();
-  G4Navigator* theNavigator = 
-    G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
-
-  G4bool valid = true;
-  G4ThreeVector localNormal = theNavigator->GetLocalExitNormal(&valid);
-  if (valid) { localNormal = -localNormal; }
-  G4ThreeVector globalNormal = 
-    theNavigator->GetLocalToGlobalTransform().TransformAxis(localNormal);
-  
-  //Set specular scattering probability SSP//
-  G4double SSP = 0;
-
-  if (G4UniformRand()<SSP){
-    if (incidentDirection*globalNormal>0.0) {
-      // this should not happen but .......
-      globalNormal = - globalNormal;
-    }
-
-    G4double PdotN = incidentDirection*globalNormal;
-
-    reflectedDirection = incidentDirection - (2.*PdotN)*globalNormal;
-    info->setK(reflectedDirection);  //This is just a temporary bug fix, in order to determine a k-vector. Not physical
-    //reflectedDirection=G4LatticeManager::mapKtoVDir(aTrack.GetVolume(),2,reflectedDirection);
+  G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
+    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID));
+  G4int nRefl = trackInfo->GetReflectionCount();
+  if (maxRefl<0 || nRefl < maxRefl) {
+    trackInfo->IncrementReflectionCount();
+    return DoReflection(aStep, surfNorm, borderSurface, trackInfo);
   } else {
-    /////////If scattering is diffuse:///////////
-    G4ThreeVector reflectedK;
-    
-    G4double PdotN = incidentDirection*globalNormal;
-    if (PdotN>0.) {
-      // this should not happen but .......
-      globalNormal = - globalNormal;
-      PdotN *= -1.;
+    if (verboseLevel) {
+      G4cout << GetProcessName() << " WARNING: Phonon has reflected "
+             << maxRefl << " times. Track being killed." << G4endl;
     }
-    
-    reflectedDirection = G4LambertianRand(globalNormal);
-    
-    info->setK(reflectedDirection); 
-    //if(aTrack.GetDefinition()==G4PhononLong::PhononDefinition()) reflectedDirection=G4LatticeManager::mapKtoVDir(aTrack.GetVolume(),0,reflectedDirection);
-    //else if(aTrack.GetDefinition()==G4PhononTransSlow::PhononDefinition()) reflectedDirection=G4LatticeManager::mapKtoVDir(aTrack.GetVolume(),1,reflectedDirection);
-    //else if(aTrack.GetDefinition()==G4PhononTransFast::PhononDefinition()) reflectedDirection=G4LatticeManager::mapKtoVDir(aTrack.GetVolume(),2,reflectedDirection);
+    G4double eKin = aTrack.GetKineticEnergy();
+    aParticleChange.ProposeNonIonizingEnergyDeposit(eKin);
+    aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
-  
-  aParticleChange.ProposeMomentumDirection(reflectedDirection.unit());
-  
-  //   check if phonon is lost to black body radiation
-  if (postStepPoint->GetMaterial() != alminum) {
-    if (G4UniformRand()<0.001) { 
-      aParticleChange.ProposeTrackStatus(fStopAndKill);
-    }
-  } else {
-    // in case the other side is alminum electrode, deposit energy
-    //   QPDownconversion con;
-    if ((G4UniformRand()<0.02013) && 
-	(aTrack.GetKineticEnergy()>347.43e-6*eV)) {
-      //       con.downconvert(aTrack, &aParticleChange, reflectedDirection);
-      G4double TwoAlGap = 347.43e-6*eV;
-      G4double eKin = aTrack.GetKineticEnergy();
-      
-      if(eKin<4*TwoAlGap){
-	aParticleChange.ProposeTrackStatus(fStopAndKill);   
-	aParticleChange.ProposeNonIonizingEnergyDeposit(eKin);
-      } else {
-	aParticleChange.ProposeNonIonizingEnergyDeposit(4*TwoAlGap);
-	aParticleChange.ProposeEnergy(eKin-4*TwoAlGap);
-	//if(G4UniformRand()>(5.6/15.0)){
-	//aParticleChange.ProposeTrackStatus(fStopAndKill);
-	//aParticleChange.ProposeEnergy(0);
-	//}
-      }
-    } else if (aTrack.GetKineticEnergy()<347.4e-6*eV){
-      aParticleChange.ProposeTrackStatus(fStopAndKill);  
-    }
-  } else
-  ***/
 
   return &aParticleChange; 
 }
 
-G4bool G4PhononReflection::ReflectTrack(const G4Step& aStep)
-{
-  // Track is outbound hitting surface of volume
-  return (aStep.GetPostStepPoint()->GetMomentumDirection()*surfNorm > 0.);
+G4double G4PhononReflection::GetMeanFreePath(const G4Track&aTrack,
+                                             G4double prevStepLength,
+                                             G4ForceCondition* condition) {
+  // Always return DBL_MAX and Forced. This ensures that the process is
+  // called at the end of every step. In PostStepDoIt the process
+  // decides whether the step encountered a volume boundary and a
+  // reflection should be applied
+  *condition = Forced;
+  return DBL_MAX;
 }
 
-G4VParticleChange* G4PhononReflection::DoReflection(const G4Step& aStep)
-{
-  // If the phonon has energy < 2*GapEnergy, we'll never detect it since it
-  // can't break a Cooper pair.
-  G4double eKin = aStep.GetPostStepPoint()->GetKineticEnergy();
-  if (eKin < 2.0*gapEnergy) {
-    aParticleChange.ProposeTrackStatus(fStopAndKill);
-    return &aParticleChange;
-  }
-
+G4VParticleChange*
+G4PhononReflection::DoReflection(const G4Step& aStep,
+                                 const G4ThreeVector& surfNorm,
+                                 const G4CMPSurfaceProperty* surfProp,
+                                 const G4CMPTrackInformation* trackInfo) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track reflected" << G4endl;
 
-  G4ThreeVector k = trackKmap->GetK(aStep.GetTrack());
+  G4ThreeVector k = trackInfo->GetPhononK();
   if (verboseLevel>2)
     G4cout << " Old momentum direction " << k.unit() << G4endl;
 
-  if (G4UniformRand()<specProb){
-    G4ThreeVector momDir = k.unit();
-    // Specular reflecton reverses momentum along normal
-    G4double momNorm = momDir * surfNorm;
-    momDir -= 2.*momNorm*surfNorm;
+  // Grab phonon properties from the surface
+  G4MaterialPropertiesTable*
+    phonPropTable = const_cast<G4MaterialPropertiesTable*>(
+      surfProp->GetPhononMaterialPropertiesTablePointer());
+  G4double absProb       = phonPropTable->GetConstProperty("absProb");
+  G4double specProb      = phonPropTable->GetConstProperty("specProb");
+  G4double gapEnergy     = phonPropTable->GetConstProperty("gapEnergy");
 
-    if (verboseLevel>2)
-      G4cout << " New momentum direction " << momDir << G4endl;
+  G4ThreeVector reflectedKDir = k.unit();
+  do {
+    if (G4UniformRand() < specProb) {
+      // Specular reflecton reverses momentum along normal
+      G4double momNorm = reflectedKDir * surfNorm;
+      reflectedKDir -= 2. * momNorm * surfNorm;
+    } else {
+      reflectedkDir = LambertRotation(surfNorm);
+    }
+    k = k.mag()*reflectedkDir;
+  } while (!ReflectionIsGood(k, surfNorm));
 
-    k = k.mag()*momDir;
-    trackKmap->SetK(aStep.GetTrack(),k);
-    aParticleChange.ProposeMomentumDirection(
-      theLattice->MapKtoVDir(GetPolarization(aStep.GetTrack()),k));
-  } else {
-    G4ThreeVector v = aStep.GetTrack()->GetMomentum();
-    /*G4cout << "norm: " << surfNorm << G4endl;
-    G4cout << "vinit.unit(): "
-      << theLattice->MapKtoVDir(GetPolarization(aStep.GetTrack()),k)
-      <<G4endl;
-    G4cout << "kinit.unit(): " << k.unit() << G4endl;
-    */
+  if (verboseLevel>2)
+    G4cout << " New momentum direction " << reflectedKDir << G4endl;
 
-    do {
-      G4ThreeVector reflectedkDir = LambertRotation();
-
-      if (verboseLevel>2)
-        G4cout << " New momentum direction " << reflectedkDir << G4endl;
-
-      k = k.mag()*reflectedkDir;
-      v = theLattice->MapKtoVDir(GetPolarization(aStep.GetTrack()),k);
-    } while (v.dot(surfNorm)>=0.0 || k.unit().dot(surfNorm)>=0.0);
-
-    /*G4cout << "vfinal.unit(): " << v << G4endl;
-    G4cout << "kfinal.unit(): " << k.unit() << G4endl;
-    G4cout << "Ang. between v and n: " << v.unit().angle(surfNorm) << G4endl;
-    G4cout << "Ang. between k and n: " << k.unit().angle(surfNorm) << G4endl;
-    G4cout << "position: " << aStep.GetPostStepPoint()->GetPosition() << G4endl << G4endl;
-    */
-    trackKmap->SetK(aStep.GetTrack(),k);
-    aParticleChange.ProposeMomentumDirection(v.unit());
-    /*G4cout << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance() << "\n"
-      << G4GeometryTolerance::GetInstance()->GetAngularTolerance() << "\n"
-      << G4GeometryTolerance::GetInstance()->GetRadialTolerance() << "\n"
-      << G4endl;
-      */
+  if (G4UniformRand() < absProb) {
+    std::vector<G4double> phononEnergies = KaplanPhononQP(phonPropTable);
+    aParticleChange.ProposeNonIonizingEnergyDeposit(EDep);
+    if (aStep.GetPostStepPoint()->GetKineticEnergy() - EDep <
+        2.0 * gapEnergy) {
+      aParticleChange.ProposeTrackStatus(fStopAndKill);
+    }
   }
 
-  //We know eKin >= 2.0*gapEnergy
-  aParticleChange.ProposeNonIonizingEnergyDeposit(eKin - 2.0*gapEnergy);
-  if (eKin - 2.0*gapEnergy < 2.0*gapEnergy) {
-    aParticleChange.ProposeTrackStatus(fStopAndKill);
-  }
+  G4ThreeVector v = theLattice->MapKtoV(GetPolarization(aStep.GetTrack()),k));
+  trackInfo->SetPhononK(k);
+  aParticleChange.ProposeVelocity(v.mag());
+  aParticleChange.ProposeMomentumDirection(v.unit());
+
   return &aParticleChange;
 }
 
-G4ThreeVector G4PhononReflection::LambertRotation()
-{
+G4ThreeVector
+G4PhononReflection::LambertRotation(const G4ThreeVector& surfNorm) {
   G4double phi = 2.0*pi*G4UniformRand();
-  G4double theta = acos(2.0*G4UniformRand() - 1) / 2.0;
+  G4double theta = acos(2.0*G4UniformRand() - 1.0) / 2.0;
 
   G4ThreeVector refl = -surfNorm;
   refl = refl.rotate(surfNorm.orthogonal(), theta);
   refl = refl.rotate(surfNorm, phi);
   return refl;
+}
+
+G4bool G4PhononReflection::ReflectionIsGood(const G4ThreeVector& k,
+                                            const G4ThreeVector& surfNorm) {
+  vDir = theLattice->MapKtoVDir(GetPolarization(aStep.GetTrack()),k);
+  return vDir.dot(surfNorm) < 0.0;
+}
+
+std::vector<G4double> G4PhononReflection::KaplanPhononQP(G4double energy,
+                                        const G4MaterialPropertiesTable* prop) {
+  G4double gapEnergy     = prop->GetConstProperty("gapEnergy");
+  G4double lowQPLimit    = prop->GetConstProperty("lowQPLimit");
+  G4double scatterLength = prop->GetConstProperty("pScatterLength");
+  G4double filmThickness = prop->GetConstProperty("filmThickness");
+
+  G4double EDep = 0.;
+  if (energy > 2.0*gapEnergy &&
+      G4UniformRand() > exp(-2.*2.*filmThickness/scatterLength)) {
+    std::vector<G4double> qpEnergies;
+    std::vector<G4double> phonEnergies{energy};
+    std::vector<G4double> reflectedEnergies;
+    while (qpEnergies.size()>0 || phonEnergies.size()>0) {
+      if (phonEnergies.size()>0) {
+        // Partition the phonons' energies into quasi-particles according to
+        // a PDF defined in CalcQPEnergies().
+        // NOTE: Both energy vectors mutate.
+        EDep += CalcQPEnergies(gapEnergy, lowQPLimit, phonEnergies, qpEnergies);
+      }
+      if (qpEnergies.size()>0) {
+        // Quasiparticles can also excite phonons.
+        // NOTE: Both energy vectors mutate.
+        CalcPhononEnergies(gapEnergy, phonEnergies, qpEnergies);
+      }
+      if (phonEnergies.size()>0) {
+        // Some phonons will escape back into the crystal.
+        CalcReflectedPhononEnergies(reflectedEnergies);
+      }
+    }
+  }
+
+  return EDep;
+}
+
+G4double G4PhononReflection::CalcQPEnergies(G4double gapEnergy,
+                                            G4double lowQPLimit,
+                                            std::vector<G4double>& phonEnergies,
+                                            std::vector<G4double>& qpEnergies) {
+  G4double EDep = 0.;
+  for (G4double E: phonEnergies) {
+    G4double qpE = QPEnergyRand(gapEnergy, E);
+    if (qpE >= lowQPLimit*gapEnergy)
+      qpEnergies.push_back(qpE);
+    else
+      EDep += qpE;
+
+    if (E-qpE >= lowQPLimit*gapEnergy)
+      qpEnergies.push_back(E-qpE);
+    else
+      EDep += E-qpE;
+  }
+
+  phonEnergies.clear();
+  return EDep;
+}
+
+
+void G4PhononReflection::CalcPhononEnergies(G4double gapEnergy,
+                                       std::vector<G4double>& phonEnergies,
+                                       std::vector<G4double>& qpEnergies) {
+  // NOTE: Phonons with low energy will not be seen by the detector, so we
+  // don't record those energies and just "lose" those phonons.
+  for (G4double E: qpEnergies) {
+    G4double phonE = PhononEnergyRand(gapEnergy, E);
+    if (phonE >= 2.0*gapEnergy)
+      phonEnergies.push_back(phonE);
+
+    if (E-phonE >= 2.0*gapEnergy)
+      phonEnergies.push_back(E-phonE);
+  }
+
+  qpEnergies.clear();
 }

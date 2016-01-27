@@ -33,27 +33,38 @@
 
 #include "G4VPhononProcess.hh"
 
+class G4CMPTrackInformation;
+class G4CMPSurfaceProperty;
 
 class G4PhononReflection : public G4VPhononProcess {
 public:
   G4PhononReflection(const G4String& processName ="phononReflection" );
-  virtual ~G4PhononReflection();
   
-  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
+  virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
+                                          const G4Step& aStep);
   
 protected:
-  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
-  G4bool ReflectTrack(const G4Step& aStep);
-  G4VParticleChange* DoReflection(const G4Step& aStep);
-  G4ThreeVector LambertRotation();
+  virtual G4double GetMeanFreePath(const G4Track& aTrack,
+                                   G4double prevStepLength,
+                                   G4ForceCondition* condition);
+  G4VParticleChange* DoReflection(const G4Step& aStep,
+                                  const G4ThreeVector& surfNorm,
+                                  const G4CMPSurfaceProperty* surfProp,
+                                  const G4CMPTrackInformation* trackInfo);
+  G4ThreeVector LambertRotation(const G4ThreeVector& surfNorm);
+  G4bool ReflectionIsGood(const G4ThreeVector& k,
+                          const G4ThreeVector& surfNorm);
+  std::vector<G4double> KaplanPhononQP(G4double energy,
+                          const G4MaterialPropertiesTable* prop);
+  G4double CalcQPEnergies(G4double gapEnergy, G4double lowQPLimit,
+                          std::vector<G4double>& phonEnergies,
+                          std::vector<G4double>& qpEnergies);
+  void CalcPhononEnergies(G4double gapEnergy,
+                          std::vector<G4double>& phonEnergies,
+                          std::vector<G4double>& qpEnergies);
 
 private:
   G4double kCarTolerance;
-  G4double absProb;
-  G4double specProb;
-  G4double gapEnergy;
-  G4ThreeVector surfNorm;
-  G4int numberOfReflections;
 
 private:
   // hide assignment operator as private 

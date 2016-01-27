@@ -26,7 +26,7 @@
 /// \file exoticphysics/phonon/src/PhononDetectorConstruction.cc \brief
 /// Implementation of the PhononDetectorConstruction class
 //
-// $Id$
+// $Id: a2016d29cc7d1e75482bfc623a533d20b60390da $
 //
 // 20140321  Drop passing placement transform to G4LatticePhysical
 

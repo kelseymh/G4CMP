@@ -35,10 +35,11 @@
 
 class G4CMPSurfaceProperty : public G4SurfaceProperty {
 public:
+  //Empty constructor. Not very useful.
   G4CMPSurfaceProperty(const G4String& name,
                          G4SurfaceType stype = dielectric_dielectric);
-  //Empty constructor. Not very useful.
 
+  //Full constructor
   G4CMPSurfaceProperty(const G4String& name,
                        G4double qAbsProb, //Prob. to absorb charge no matter what
                        G4double V, //Voltage of electrode
@@ -48,27 +49,24 @@ public:
                        G4double pAbsProb, //Prob. to absorb phonon
                        G4double specProb, //Prob. of specular reflection
                        G4double gapEnergy, //Band gap energy of second surf.
+                       G4double lowQPLimit, //Down convert phonon until energy < lowQPLimit*gapEnergy
+                       G4double pScatterLength, //Mean length before breaking a Cooper pair
+                       G4double filmThickness,
                        G4SurfaceType stype = dielectric_dielectric);
-  //Full constructor
 
+  //Charge-only constructor for convenience
   G4CMPSurfaceProperty(const G4String& name,
                        G4double qAbsprob, G4double V,
                        G4double deltaV, G4double minKe,
                        G4double minKh,
                        G4SurfaceType stype = dielectric_dielectric);
-  //Charge-only constructor
 
+  //Phonon-only consutrctor for convenience
   G4CMPSurfaceProperty(const G4String& name,
                        G4double pAbsprob, G4double specProb,
-                       G4double gapEnergy,
+                       G4double gapEnergy,G4double lowQPLimit,
+                       G4double pScatterLength, G4double filmThickness,
                        G4SurfaceType stype = dielectric_dielectric);
-  //Phonon-only consutrctor
-
-  /* I don't think we need copy constructors anymore, since they are trivial.
-   * The compiler should do it correctly.
-  G4CMPSurfaceProperty(const G4CMPSurfaceProperty &right);
-  G4CMPSurfaceProperty & operator=(const G4CMPSurfaceProperty &right);
-  */
 
   G4int operator==(const G4CMPSurfaceProperty &right) const;
   G4int operator!=(const G4CMPSurfaceProperty &right) const;
@@ -97,4 +95,4 @@ private:
     G4MaterialPropertiesTable *mpt);
 };
 
-#endif /* G4OpticalSurface_h */
+#endif
