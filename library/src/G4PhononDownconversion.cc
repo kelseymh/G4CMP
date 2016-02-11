@@ -241,7 +241,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
 
   //using energy fraction x to calculate daughter phonon directions
   G4double thetaL=MakeLDeviation(d, x);
-  G4double thetaT=MakeTDeviation(d, 1.-x);
+  G4double thetaT=MakeTDeviation(d, x);
   G4ThreeVector dir1=static_cast<G4CMPTrackInformation*>(
     aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
                                                         )->GetPhononK();
