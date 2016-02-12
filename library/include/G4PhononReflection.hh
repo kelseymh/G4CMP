@@ -52,25 +52,9 @@ private:
                                   const G4ThreeVector& surfNorm,
                                   const G4CMPSurfaceProperty* surfProp,
                                   G4CMPTrackInformation* trackInfo);
-  G4ThreeVector LambertRotation(const G4ThreeVector& surfNorm);
+
   G4bool ReflectionIsGood(G4int polarization, const G4ThreeVector& k,
                           const G4ThreeVector& surfNorm);
-  std::vector<G4double> KaplanPhononQP(G4double energy,
-                          G4MaterialPropertiesTable* prop);
-  G4double CalcEscapeProbability(G4double energy,
-                          G4double thicknessFrac,
-                          G4MaterialPropertiesTable* prop);
-  G4double CalcQPEnergies(G4double gapEnergy, G4double lowQPLimit,
-                          std::vector<G4double>& phonEnergies,
-                          std::vector<G4double>& qpEnergies);
-  G4double CalcPhononEnergies(G4double gapEnergy, G4double lowQPLimit,
-                          std::vector<G4double>& phonEnergies,
-                          std::vector<G4double>& qpEnergies);
-  void CalcReflectedPhononEnergies(G4MaterialPropertiesTable* prop,
-                          std::vector<G4double>& phonEnergies,
-                          std::vector<G4double>& reflectedEnergies);
-  G4double QPEnergyRand(G4double gapEnergy, G4double Energy);
-  G4double PhononEnergyRand(G4double gapEnergy, G4double& Energy);
 
   G4double kCarTolerance;
 
