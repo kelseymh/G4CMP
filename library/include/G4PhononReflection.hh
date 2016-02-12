@@ -47,26 +47,33 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track& aTrack,
                                    G4double prevStepLength,
                                    G4ForceCondition* condition);
+private:
   G4VParticleChange* DoReflection(const G4Step& aStep,
                                   const G4ThreeVector& surfNorm,
                                   const G4CMPSurfaceProperty* surfProp,
-                                  const G4CMPTrackInformation* trackInfo);
+                                  G4CMPTrackInformation* trackInfo);
   G4ThreeVector LambertRotation(const G4ThreeVector& surfNorm);
-  G4bool ReflectionIsGood(const G4ThreeVector& k,
+  G4bool ReflectionIsGood(G4int polarization, const G4ThreeVector& k,
                           const G4ThreeVector& surfNorm);
   std::vector<G4double> KaplanPhononQP(G4double energy,
-                          const G4MaterialPropertiesTable* prop);
+                          G4MaterialPropertiesTable* prop);
+  G4double CalcEscapeProbability(G4double energy,
+                          G4double thicknessFrac,
+                          G4MaterialPropertiesTable* prop);
   G4double CalcQPEnergies(G4double gapEnergy, G4double lowQPLimit,
                           std::vector<G4double>& phonEnergies,
                           std::vector<G4double>& qpEnergies);
-  void CalcPhononEnergies(G4double gapEnergy,
+  G4double CalcPhononEnergies(G4double gapEnergy, G4double lowQPLimit,
                           std::vector<G4double>& phonEnergies,
                           std::vector<G4double>& qpEnergies);
+  void CalcReflectedPhononEnergies(G4MaterialPropertiesTable* prop,
+                          std::vector<G4double>& phonEnergies,
+                          std::vector<G4double>& reflectedEnergies);
+  G4double QPEnergyRand(G4double gapEnergy, G4double Energy);
+  G4double PhononEnergyRand(G4double gapEnergy, G4double& Energy);
 
-private:
   G4double kCarTolerance;
 
-private:
   // hide assignment operator as private 
   G4PhononReflection(G4PhononReflection&);
   G4PhononReflection& operator=(const G4PhononReflection& right);

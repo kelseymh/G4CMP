@@ -38,7 +38,8 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                          G4double deltaV, G4double minKe,
                          G4double minKh, G4double pAbsprob, G4double specProb,
                          G4double gapEnergy, G4double lowQPLimit,
-                         G4double pScatterLength, G4double filmThickness,
+                         G4double pLifetime, G4double vSound,
+                         G4double lifetimeVsESlope, G4double filmThickness,
                          G4SurfaceType stype)
                          : G4SurfaceProperty(name, stype)
 {
@@ -52,7 +53,9 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
   thePhononMatPropTable.AddConstProperty("specProb", specProb);
   thePhononMatPropTable.AddConstProperty("gapEnergy", gapEnergy);
   thePhononMatPropTable.AddConstProperty("lowQPLimit", lowQPLimit);
-  thePhononMatPropTable.AddConstProperty("scatterLength", pScatterLength);
+  thePhononMatPropTable.AddConstProperty("phononLifetime", pLifetime);
+  thePhononMatPropTable.AddConstProperty("phononLifetimeSlope", lifetimeVsESlope);
+  thePhononMatPropTable.AddConstProperty("vSound", vSound);
   thePhononMatPropTable.AddConstProperty("filmThickness", filmThickness);
 }
 
@@ -72,8 +75,9 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                          G4double pAbsprob, G4double specProb,
-                         G4double gapEnergy,G4double lowQPLimit,
-                         G4double pScatterLength, G4double filmThickness,
+                         G4double gapEnergy, G4double lowQPLimit,
+                         G4double pLifetime, G4double lifetimeVsESlope,
+                         G4double vSound, G4double filmThickness,
                          G4SurfaceType stype)
                          : G4SurfaceProperty(name, stype)
 {
@@ -81,7 +85,9 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
   thePhononMatPropTable.AddConstProperty("specProb", specProb);
   thePhononMatPropTable.AddConstProperty("gapEnergy", gapEnergy);
   thePhononMatPropTable.AddConstProperty("lowQPLimit", lowQPLimit);
-  thePhononMatPropTable.AddConstProperty("scatterLength", pScatterLength);
+  thePhononMatPropTable.AddConstProperty("phononLifetime", pLifetime);
+  thePhononMatPropTable.AddConstProperty("phononLifetimeSlope", lifetimeVsESlope);
+  thePhononMatPropTable.AddConstProperty("vSound", vSound);
   thePhononMatPropTable.AddConstProperty("filmThickness", filmThickness);
 }
 

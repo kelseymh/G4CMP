@@ -50,7 +50,9 @@ public:
                        G4double specProb, //Prob. of specular reflection
                        G4double gapEnergy, //Band gap energy of second surf.
                        G4double lowQPLimit, //Down convert phonon until energy < lowQPLimit*gapEnergy
-                       G4double pScatterLength, //Mean length before breaking a Cooper pair
+                       G4double pLifetime, //Average phonon lifetime in file @ E=2*gapE
+                       G4double vSound, //Speed of sound in film
+                       G4double lifetimeVsESlope, //Unitless slope to define tau(E)
                        G4double filmThickness,
                        G4SurfaceType stype = dielectric_dielectric);
 
@@ -65,7 +67,8 @@ public:
   G4CMPSurfaceProperty(const G4String& name,
                        G4double pAbsprob, G4double specProb,
                        G4double gapEnergy,G4double lowQPLimit,
-                       G4double pScatterLength, G4double filmThickness,
+                       G4double pLifetime, G4double vSound,
+                       G4double lifetimeVsESlope, G4double filmThickness,
                        G4SurfaceType stype = dielectric_dielectric);
 
   G4int operator==(const G4CMPSurfaceProperty &right) const;
