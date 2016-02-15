@@ -33,21 +33,31 @@
 
 #include "G4VPhononProcess.hh"
 
+class G4CMPTrackInformation;
+class G4CMPSurfaceProperty;
 
 class G4PhononReflection : public G4VPhononProcess {
 public:
   G4PhononReflection(const G4String& processName ="phononReflection" );
-  virtual ~G4PhononReflection();
   
-  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
+  virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
+                                          const G4Step& aStep);
   
 protected:
-  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
-
+  virtual G4double GetMeanFreePath(const G4Track& aTrack,
+                                   G4double prevStepLength,
+                                   G4ForceCondition* condition);
 private:
+  G4VParticleChange* DoReflection(const G4Step& aStep,
+                                  const G4ThreeVector& surfNorm,
+                                  const G4CMPSurfaceProperty* surfProp,
+                                  G4CMPTrackInformation* trackInfo);
+
+  G4bool ReflectionIsGood(G4int polarization, const G4ThreeVector& k,
+                          const G4ThreeVector& surfNorm);
+
   G4double kCarTolerance;
 
-private:
   // hide assignment operator as private 
   G4PhononReflection(G4PhononReflection&);
   G4PhononReflection& operator=(const G4PhononReflection& right);

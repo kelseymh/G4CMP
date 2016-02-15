@@ -28,6 +28,7 @@ public:
   // Access current values
   static G4int GetVerboseLevel()         { return Instance()->verbose; }
   static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
+  static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
   static G4double GetVoltage()           { return Instance()->voltage; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetGenPhonons()        { return Instance()->genPhonons; }
@@ -66,12 +67,13 @@ private:
   static G4CMPConfigManager* theInstance;
 
 private:
-  G4int verbose;		// Global verbosity (all processes, lattices)
-  G4int ehBounces;		// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
   G4double voltage;		// Uniform field voltage ($G4CMP_VOLTAGE)
   G4double stepScale;		// Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double genPhonons;         // Rate to create phonons ($G4CMP_LUKE_PHONONS)
   G4double epotScale;		// Scale factor for Epot ($G4CMP_EPOT_SCALE)
+  G4int verbose;		// Global verbosity (all processes, lattices)
+  G4int ehBounces;		// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
+  G4int pBounces;		// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
   G4String Epot_file;		// Name of E-field file ($G4CMP_EPOT_FILE)
   G4String LatticeDir;		// Lattice data directory ($G4LATTICEDATA)
   G4String Hit_file;		// Output file of e/h hits ($G4CMP_HIT_FILE)

@@ -131,11 +131,14 @@ G4CMPVDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
   }
 
-  absProb = borderSurface->GetAbsProb();
-  absDeltaV = borderSurface->GetAbsDeltaV();
-  absMinKElec = borderSurface->GetMinKElec();
-  absMinKHole = borderSurface->GetMinKHole();
-  electrodeV = borderSurface->GetElectrodeV();
+  G4MaterialPropertiesTable* chargePropTable =
+    const_cast<G4MaterialPropertiesTable*>(
+      borderSurface->GetChargeMaterialPropertiesTablePointer());
+  absProb = chargePropTable->GetConstProperty("absProb");
+  electrodeV = chargePropTable->GetConstProperty("electrodeV");
+  absDeltaV = chargePropTable->GetConstProperty("absDeltaV");
+  absMinKElec = chargePropTable->GetConstProperty("minKElec");
+  absMinKHole = chargePropTable->GetConstProperty("minKHole");
 
   // Get outward normal using G4Navigator method (more reliable than G4VSolid)
   G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
