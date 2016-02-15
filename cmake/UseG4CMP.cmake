@@ -1,0 +1,2 @@
+include_directories(${G4CMP_INCLUDE_DIRS})
+set(CMAKE_CXX_FLAGS "${G4CMP_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
