@@ -17,6 +17,7 @@ option(BUILD_CHANNELING_EXAMPLE "Build charge channeling example. Default: OFF" 
 #-----------------------------------------------------------------------------
 # Add subdirectories based on options selected
 #
+
 add_subdirectory(library)
 
 if(BUILD_ALL_EXAMPLES OR BUILD_PHONON_EXAMPLE)
@@ -31,3 +32,12 @@ if(BUILD_ALL_EXAMPLES OR BUILD_CHANNELING_EXAMPLE)
     #FIXME: Channeling demo is broken right now
     #add_subdirectory(channeling)
 endif()
+
+#-----------------------------------------------------------------------------
+# Install CMake config file
+#
+
+install(FILES ${PROJECT_SOURCE_DIR}/cmake/G4CMPConfig.cmake
+        DESTINATION cmake)
+install(FILES ${PROJECT_SOURCE_DIR}/cmake/UseG4CMP.cmake
+        DESTINATION cmake)
