@@ -167,13 +167,14 @@ void ChargeDetectorConstruction::SetupGeometry()
   // Define surface properties. Only should be done once
   if (!constructed) {
     topSurfProp = new G4CMPSurfaceProperty("topSurfProp",
-                                           1e-5, 0.02*volt, 4.3650e8/m,
-                                           7.5175e8/m, 2*volt);
+                                           1., 0., 0., 0.,
+                                           0., 1., 1., 0.);
     botSurfProp = new G4CMPSurfaceProperty("botSurfProp",
-                                           1e-5, 0.02*volt, 3.9600e8/m,
-                                           6.8200e8/m, -2*volt);
+                                           1., 0., 0., 0.,
+                                           0., 1., 1., 0.);
     wallSurfProp = new G4CMPSurfaceProperty("wallSurfProp",
-                                            1e-5, 0., 0., 0., 0.);
+                                            1., 0., 0., 0.,
+                                            0., 1., 1., 0.);
   }
 
   // Add surfaces between Ge-Al, and Ge-World

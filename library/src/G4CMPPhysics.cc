@@ -4,8 +4,7 @@
 // Usage:  [physics-list]->AddPhysics(new G4CMPPhysics(<verbose>));
 
 #include "G4CMPPhysics.hh"
-#include "G4CMPeDriftBoundaryProcess.hh"
-#include "G4CMPhDriftBoundaryProcess.hh"
+#include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPInterValleyScattering.hh"
@@ -40,8 +39,7 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* phRefl  = new G4PhononReflection;
   G4VProcess* phDown  = new G4PhononDownconversion;
   G4VProcess* tmStep  = new G4CMPTimeStepper;
-  G4VProcess* eDriftB = new G4CMPeDriftBoundaryProcess;
-  G4VProcess* hDriftB = new G4CMPhDriftBoundaryProcess;
+  G4VProcess* driftB  = new G4CMPDriftBoundaryProcess;
   G4VProcess* ivScat  = new G4CMPInterValleyScattering;
   G4VProcess* luke    = new G4CMPLukeScattering(tmStep);
 
@@ -50,8 +48,7 @@ void G4CMPPhysics::ConstructProcess() {
   phRefl->SetVerboseLevel(verboseLevel);
   phDown->SetVerboseLevel(verboseLevel);
   tmStep->SetVerboseLevel(verboseLevel);
-  eDriftB->SetVerboseLevel(verboseLevel);
-  hDriftB->SetVerboseLevel(verboseLevel);
+  driftB->SetVerboseLevel(verboseLevel);
   ivScat->SetVerboseLevel(verboseLevel);
   luke->SetVerboseLevel(verboseLevel);
 
@@ -77,12 +74,12 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(tmStep, particle);
   RegisterProcess(luke, particle);
   RegisterProcess(ivScat, particle);
-  RegisterProcess(eDriftB, particle);
+  RegisterProcess(driftB, particle);
 
   particle = G4CMPDriftHole::Definition();
   RegisterProcess(tmStep, particle);
   RegisterProcess(luke, particle);
-  RegisterProcess(hDriftB, particle);
+  RegisterProcess(driftB, particle);
 
   AddSecondaryProduction();
 }
