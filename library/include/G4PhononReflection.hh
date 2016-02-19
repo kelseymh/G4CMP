@@ -47,18 +47,27 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track& aTrack,
                                    G4double prevStepLength,
                                    G4ForceCondition* condition);
-private:
-  G4VParticleChange* DoReflection(const G4Step& aStep,
-                                  const G4ThreeVector& surfNorm,
-                                  const G4CMPSurfaceProperty* surfProp,
-                                  G4CMPTrackInformation* trackInfo);
+  // Decide and apply different surface actions; subclasses may override
+  virtual G4bool AbsorbTrack(const G4Step& aStep);
+  virtual G4VParticleChange* DoAbsorption(const G4Step& aStep);
 
-  G4bool ReflectionIsGood(G4int polarization, const G4ThreeVector& k,
-                          const G4ThreeVector& surfNorm);
+  virtual G4bool ReflectTrack(const G4Step& aStep);
+  virtual G4VParticleChange* DoReflection(const G4Step& aStep);
+
+  G4bool ReflectionIsGood(G4int polarization);
 
   G4double kCarTolerance;
+  G4double absProb;
+  G4double reflProb;
+  G4double specProb;
+  G4double absMinK;
+  G4double maxRefl;
+  G4CMPTrackInformation* trackInfo;
+  G4ThreeVector waveVector;
+  G4ThreeVector surfNorm;
 
-  // hide assignment operator as private 
+private:
+  // hide assignment operator as private
   G4PhononReflection(G4PhononReflection&);
   G4PhononReflection& operator=(const G4PhononReflection& right);
 };

@@ -169,12 +169,15 @@ void PhononDetectorConstruction::SetupGeometry()
   //
   // surface between Al and Ge determines phonon reflection/absorption
   //
-  G4CMPSurfaceProperty* topSurfProp = new G4CMPSurfaceProperty("TopAlSurf", 0.0,
-  1.0, 0.0, 0.0, 0.70, 1.0, 0.0, 0.0);
-  G4CMPSurfaceProperty* botSurfProp = new G4CMPSurfaceProperty("BotAlSurf", 0.0,
-  1.0, 0.0, 0.0, 0.70, 1.0, 0.0, 0.0);
-  G4CMPSurfaceProperty* wallSurfProp = new G4CMPSurfaceProperty("WallAlSurf", 0.0,
-  1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+  G4CMPSurfaceProperty* topSurfProp = new G4CMPSurfaceProperty("TopAlSurf",
+                                                            1.0, 0.0, 0.0, 0.0,
+                                                            0.3, 1.0, 0.0, 0.0);
+  G4CMPSurfaceProperty* botSurfProp = new G4CMPSurfaceProperty("BotAlSurf",
+                                                            1.0, 0.0, 0.0, 0.0,
+                                                            0.3, 1.0, 0.0, 0.0);
+  G4CMPSurfaceProperty* wallSurfProp = new G4CMPSurfaceProperty("WallAlSurf",
+                                                            0.0, 1.0, 0.0, 0.0,
+                                                            0.0, 1.0, 0.0, 0.0);
 
   new G4LogicalBorderSurface("iZIPTop", GePhys, aluminumTopPhysical,
                                         topSurfProp);
