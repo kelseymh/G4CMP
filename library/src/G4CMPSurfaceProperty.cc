@@ -30,65 +30,31 @@
 #include "G4CMPSurfaceProperty.hh"
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
-           G4SurfaceType stype) : G4SurfaceProperty(name, stype)
+                                           G4SurfaceType stype)
+                                                : G4SurfaceProperty(name, stype)
 {;}
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
-                         G4double qAbsprob, G4double V,
-                         G4double deltaV, G4double minKe,
-                         G4double minKh, G4double pAbsprob, G4double specProb,
-                         G4double gapEnergy, G4double lowQPLimit,
-                         G4double pLifetime, G4double vSound,
-                         G4double lifetimeVsESlope, G4double filmThickness,
-                         G4SurfaceType stype)
-                         : G4SurfaceProperty(name, stype)
+                                           G4double qAbsProb,
+                                           G4double qReflProb,
+                                           G4double eMinK,
+                                           G4double hMinK,
+                                           G4double pAbsProb,
+                                           G4double pReflProb,
+                                           G4double pSpecProb,
+                                           G4double pMinK,
+                                           G4SurfaceType stype)
+                                                : G4SurfaceProperty(name, stype)
 {
-  theChargeMatPropTable.AddConstProperty("absProb", qAbsprob);
-  theChargeMatPropTable.AddConstProperty("electrodeV", V);
-  theChargeMatPropTable.AddConstProperty("absDeltaV", deltaV);
-  theChargeMatPropTable.AddConstProperty("minKElec", minKe);
-  theChargeMatPropTable.AddConstProperty("minKHole", minKh);
+  theChargeMatPropTable.AddConstProperty("absProb", qAbsProb);
+  theChargeMatPropTable.AddConstProperty("reflProb", qReflProb);
+  theChargeMatPropTable.AddConstProperty("minKElec", eMinK);
+  theChargeMatPropTable.AddConstProperty("minKHole", hMinK);
 
-  thePhononMatPropTable.AddConstProperty("absProb", pAbsprob);
-  thePhononMatPropTable.AddConstProperty("specProb", specProb);
-  thePhononMatPropTable.AddConstProperty("gapEnergy", gapEnergy);
-  thePhononMatPropTable.AddConstProperty("lowQPLimit", lowQPLimit);
-  thePhononMatPropTable.AddConstProperty("phononLifetime", pLifetime);
-  thePhononMatPropTable.AddConstProperty("phononLifetimeSlope", lifetimeVsESlope);
-  thePhononMatPropTable.AddConstProperty("vSound", vSound);
-  thePhononMatPropTable.AddConstProperty("filmThickness", filmThickness);
-}
-
-G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
-                         G4double qAbsprob, G4double V,
-                         G4double deltaV, G4double minKe,
-                         G4double minKh,
-                         G4SurfaceType stype)
-                         : G4SurfaceProperty(name,stype)
-{
-  theChargeMatPropTable.AddConstProperty("absProb", qAbsprob);
-  theChargeMatPropTable.AddConstProperty("electrodeV", V);
-  theChargeMatPropTable.AddConstProperty("absDeltaV", deltaV);
-  theChargeMatPropTable.AddConstProperty("minKElec", minKe);
-  theChargeMatPropTable.AddConstProperty("minKHole", minKh);
-}
-
-G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
-                         G4double pAbsprob, G4double specProb,
-                         G4double gapEnergy, G4double lowQPLimit,
-                         G4double pLifetime, G4double lifetimeVsESlope,
-                         G4double vSound, G4double filmThickness,
-                         G4SurfaceType stype)
-                         : G4SurfaceProperty(name, stype)
-{
-  thePhononMatPropTable.AddConstProperty("absProb", pAbsprob);
-  thePhononMatPropTable.AddConstProperty("specProb", specProb);
-  thePhononMatPropTable.AddConstProperty("gapEnergy", gapEnergy);
-  thePhononMatPropTable.AddConstProperty("lowQPLimit", lowQPLimit);
-  thePhononMatPropTable.AddConstProperty("phononLifetime", pLifetime);
-  thePhononMatPropTable.AddConstProperty("phononLifetimeSlope", lifetimeVsESlope);
-  thePhononMatPropTable.AddConstProperty("vSound", vSound);
-  thePhononMatPropTable.AddConstProperty("filmThickness", filmThickness);
+  thePhononMatPropTable.AddConstProperty("absProb", pAbsProb);
+  thePhononMatPropTable.AddConstProperty("reflProb", pReflProb);
+  thePhononMatPropTable.AddConstProperty("specProb", pSpecProb);
+  thePhononMatPropTable.AddConstProperty("minK", pMinK);
 }
 
 G4int G4CMPSurfaceProperty::operator==(const G4CMPSurfaceProperty &right) const
@@ -123,6 +89,28 @@ void G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable(
   G4MaterialPropertiesTable mpt)
 {
   thePhononMatPropTable = mpt;
+}
+
+void G4CMPSurfaceProperty::FillChargeMaterialPropertiesTable(G4double qAbsProb,
+                                                             G4double qReflProb,
+                                                             G4double eMinK,
+                                                             G4double hMinK)
+{
+  theChargeMatPropTable.AddConstProperty("absProb", qAbsProb);
+  theChargeMatPropTable.AddConstProperty("reflProb", qReflProb);
+  theChargeMatPropTable.AddConstProperty("minKElec", eMinK);
+  theChargeMatPropTable.AddConstProperty("minKHole", hMinK);
+}
+
+void G4CMPSurfaceProperty::FillPhononMaterialPropertiesTable(G4double pAbsProb,
+                                                             G4double pReflProb,
+                                                             G4double pSpecProb,
+                                                             G4double pMinK)
+{
+  thePhononMatPropTable.AddConstProperty("absProb", pAbsProb);
+  thePhononMatPropTable.AddConstProperty("reflProb", pReflProb);
+  thePhononMatPropTable.AddConstProperty("specProb", pSpecProb);
+  thePhononMatPropTable.AddConstProperty("minK", pMinK);
 }
 
 void G4CMPSurfaceProperty::DumpInfo() const

@@ -35,40 +35,22 @@
 
 class G4CMPSurfaceProperty : public G4SurfaceProperty {
 public:
-  //Empty constructor. Not very useful.
+  // Empty constructor. Users must call at least one of the FillPropertiesTable
+  // member functions. But, really, you shouldn't use this. It's dangerous and
+  // I don't know why I put it here at all.
   G4CMPSurfaceProperty(const G4String& name,
-                         G4SurfaceType stype = dielectric_dielectric);
+                       G4SurfaceType stype = dielectric_dielectric);
 
   //Full constructor
   G4CMPSurfaceProperty(const G4String& name,
-                       G4double qAbsProb, //Prob. to absorb charge no matter what
-                       G4double V, //Voltage of electrode
-                       G4double deltaV, //Absorb charge if voltage >= |V-deltaV|
-                       G4double minKe, //Min wave number to absorb electron
-                       G4double minKh, //Min wave number to absorb hole
-                       G4double pAbsProb, //Prob. to absorb phonon
-                       G4double specProb, //Prob. of specular reflection
-                       G4double gapEnergy, //Band gap energy of second surf.
-                       G4double lowQPLimit, //Down convert phonon until energy < lowQPLimit*gapEnergy
-                       G4double pLifetime, //Average phonon lifetime in file @ E=2*gapE
-                       G4double vSound, //Speed of sound in film
-                       G4double lifetimeVsESlope, //Unitless slope to define tau(E)
-                       G4double filmThickness,
-                       G4SurfaceType stype = dielectric_dielectric);
-
-  //Charge-only constructor for convenience
-  G4CMPSurfaceProperty(const G4String& name,
-                       G4double qAbsprob, G4double V,
-                       G4double deltaV, G4double minKe,
-                       G4double minKh,
-                       G4SurfaceType stype = dielectric_dielectric);
-
-  //Phonon-only consutrctor for convenience
-  G4CMPSurfaceProperty(const G4String& name,
-                       G4double pAbsprob, G4double specProb,
-                       G4double gapEnergy,G4double lowQPLimit,
-                       G4double pLifetime, G4double vSound,
-                       G4double lifetimeVsESlope, G4double filmThickness,
+                       G4double qAbsProb, // Prob. to absorb charge carrier
+                       G4double qReflProb, // If not absorbed, prob to reflect
+                       G4double eMinK, //Min wave number to absorb electron
+                       G4double hMinK, //Min wave number to absorb hole
+                       G4double pAbsProb, // Prob. to absorb charge carrier
+                       G4double pReflProb, // If not absorbed, prob to reflect
+                       G4double pSpecProb, //Prob. of specular reflection
+                       G4double pMinK, //Min wave number to absorb phonon
                        G4SurfaceType stype = dielectric_dielectric);
 
   G4int operator==(const G4CMPSurfaceProperty &right) const;
@@ -87,6 +69,16 @@ public:
   void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
   void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable mpt);
   void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable mpt);
+
+  void FillChargeMaterialPropertiesTable(G4double qAbsProb,
+                                         G4double qReflProb,
+                                         G4double eMinK,
+                                         G4double hMinK);
+
+  void FillPhononMaterialPropertiesTable(G4double pAbsProb,
+                                         G4double pReflProb,
+                                         G4double pSpecProb,
+                                         G4double pMinK);
 
   void DumpInfo() const;	// To be implemented
 

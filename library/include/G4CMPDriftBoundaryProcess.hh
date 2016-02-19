@@ -23,8 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file library/include/G4CMPVDriftBoundaryProcess.hh
-/// \brief Definition of the G4CMPVDriftBoundaryProcess base class
+/// \file library/include/G4CMPDriftBoundaryProcess.hh
+/// \brief Definition of the G4CMPDriftBoundaryProcess base class
 //
 // $Id$
 //
@@ -36,27 +36,26 @@
 // 20150420  Replace MFP with GPIL to suppress unnecessary verbosity.
 // 20150529  Add DoReflection() function, so electron can overload
 // 20150603  Add parameter to count number of reflections by track
+// 20160215  Reunify boundary processes at least until we remove CDMS-specific
+//           stuff.
 
-#ifndef G4CMPVDriftBoundaryProcess_h
-#define G4CMPVDriftBoundaryProcess_h 1
+#ifndef G4CMPDriftBoundaryProcess_h
+#define G4CMPDriftBoundaryProcess_h 1
 
 #include "globals.hh"
 #include "G4CMPVDriftProcess.hh"
 
 
-class G4CMPVDriftBoundaryProcess : public G4CMPVDriftProcess {
+class G4CMPDriftBoundaryProcess : public G4CMPVDriftProcess {
 public:
-  G4CMPVDriftBoundaryProcess(const G4String& name="Drift",
-               const G4ParticleDefinition* carrier=0);
-  virtual ~G4CMPVDriftBoundaryProcess();
+  G4CMPDriftBoundaryProcess(const G4String& name="Drift");
+  virtual ~G4CMPDriftBoundaryProcess();
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
   virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& track,
                                                    G4double previousStepSize,
                                                    G4ForceCondition* condition);
-
-  virtual G4bool IsApplicable(const G4ParticleDefinition&);
 
   // NOTE:  These functions must call back to base class implementations!
   virtual void LoadDataForTrack(const G4Track* track);
@@ -68,27 +67,22 @@ protected:
   virtual G4bool AbsorbTrack(const G4Step& aStep);
   virtual G4VParticleChange* DoAbsorption(const G4Step& aStep);
 
-  virtual G4bool HitElectrode(const G4Step& aStep);
-  virtual G4VParticleChange* DoElectrodeHit(const G4Step& aStep);
-
   virtual G4bool ReflectTrack(const G4Step& aStep);
   virtual G4VParticleChange* DoReflection(const G4Step& aStep);
 
 private:
-  G4CMPVDriftBoundaryProcess(G4CMPVDriftBoundaryProcess&);
-  G4CMPVDriftBoundaryProcess& operator=(const G4CMPVDriftBoundaryProcess& right);
-
-  G4double kCarTolerance;
+  G4CMPDriftBoundaryProcess(G4CMPDriftBoundaryProcess&);
+  G4CMPDriftBoundaryProcess& operator=(const G4CMPDriftBoundaryProcess& right);
 
 protected:
-  const G4ParticleDefinition* theCarrier;
+  G4double kCarTolerance;
   G4String shortName;
+  const G4ParticleDefinition* theCarrier;
 
+  G4double reflProb;
   G4double absProb;
-  G4double absDeltaV;
-  G4double absMinKElec;
-  G4double absMinKHole;
-  G4double electrodeV;
+  G4double absMinK;
+  G4double maxRefl;
   G4ThreeVector surfNorm;	// Surface normal (temporary buffer)
 
   G4int numberOfReflections;	// Counter to prevent runaway tracks

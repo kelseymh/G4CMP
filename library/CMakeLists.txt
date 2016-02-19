@@ -128,14 +128,13 @@ include_directories(${PROJECT_SOURCE_DIR}/qhull-2012.1/src)
 set(library_SOURCES 
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPConfigManager.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPConfigMessenger.cc
+   ${PROJECT_SOURCE_DIR}/library/src/G4CMPDriftBoundaryProcess.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPDriftElectron.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPDriftHole.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPElectrodeHit.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPElectrodeSensitivity.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPeDriftBoundaryProcess.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPEqEMField.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPFieldManager.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPhDriftBoundaryProcess.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPInterValleyScattering.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPLocalElectroMagField.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPLukeScattering.cc
@@ -150,7 +149,6 @@ set(library_SOURCES
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPTimeStepper.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPTrackInformation.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPTriLinearInterp.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPVDriftBoundaryProcess.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPVDriftProcess.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4LatticeLogical.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4LatticeManager.cc
@@ -169,14 +167,13 @@ set(library_SOURCES
 set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPConfigManager.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPConfigMessenger.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPDriftBoundaryProcess.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPDriftElectron.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPDriftHole.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPElectrodeHit.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPElectrodeSensitivity.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPeDriftBoundaryProcess.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPEqEMField.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPFieldManager.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPhDriftBoundaryProcess.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPInterValleyScattering.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPLocalElectroMagField.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPLukeScattering.hh
@@ -192,7 +189,6 @@ set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTimeStepper.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTrackInformation.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTriLinearInterp.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPVDriftBoundaryProcess.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPVDriftProcess.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4LatticeLogical.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4LatticeManager.hh
