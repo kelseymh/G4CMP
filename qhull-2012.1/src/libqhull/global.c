@@ -12,7 +12,7 @@
    see qhull_a.h for internal functions
 
    Copyright (c) 1993-2012 The Geometry Center.
-   $Id: //main/2011/qhull/src/libqhull/global.c#15 $$Change: 1490 $
+   $Id: a9063ea8ad1469bab1a2fbb82a0f24f94f40bafa $$Change: 1490 $
    $DateTime: 2012/02/19 20:27:01 $$Author: bbarber $
  */
 

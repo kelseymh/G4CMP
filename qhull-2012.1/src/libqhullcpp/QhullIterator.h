@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (c) 2008-2012 C.B. Barber. All rights reserved.
-** $Id$$Change: 1464 $
+** $Id: 71bfa7f05f5d6765c7b2bcb047c7a3b1d51b38e7 $$Change: 1464 $
 ** $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 **
 ****************************************************************************/
@@ -16,8 +16,7 @@ extern "C" {
 #include <assert.h>
 #include <string>
 #include <vector>
-//! Avoid dependence on <iterator>
-namespace std { struct bidirectional_iterator_tag; struct random_access_iterator_tag; }
+#include <iterator>
 
 namespace orgQhull {
 

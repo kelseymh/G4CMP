@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (c) 2009-2012 C.B. Barber. All rights reserved.
-** $Id$$Change: 1464 $
+** $Id: 634c954a22c9f7ce5baf27b96ab4fc4af90c77e0 $$Change: 1464 $
 ** $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 **
 ****************************************************************************/
@@ -81,8 +81,8 @@ public:
     size_t             size() const { return coordinate_array.size(); }
 
 #//Element access
-    coordT             &at(int idx) { return coordinate_array.at(idx); }
-    const coordT       &at(int idx) const { return coordinate_array.at(idx); }
+    coordT             &at(size_t idx) { return coordinate_array.at(idx); }
+    const coordT       &at(size_t idx) const { return coordinate_array.at(idx); }
     coordT             &back() { return coordinate_array.back(); }
     const coordT       &back() const { return coordinate_array.back(); }
     coordT             &first() { return front(); }
@@ -92,9 +92,9 @@ public:
     coordT             &last() { return back(); }
     const coordT       &last() const { return back(); }
     Coordinates        mid(int idx, int length= -1) const;
-    coordT            &operator[](int idx) { return coordinate_array.operator[](idx); }
-    const coordT      &operator[](int idx) const { return coordinate_array.operator[](idx); }
-    coordT             value(int idx, const coordT &defaultValue) const;
+    coordT            &operator[](size_t idx) { return coordinate_array.operator[](idx); }
+    const coordT      &operator[](size_t idx) const { return coordinate_array.operator[](idx); }
+    coordT             value(size_t idx, const coordT &defaultValue) const;
 
 #//Iterator
     iterator            begin() { return iterator(coordinate_array.begin()); }
@@ -128,9 +128,9 @@ public:
     void                removeAt(int idx) { erase(begin()+idx); }
     void                removeFirst() { erase(begin()); }
     void                removeLast() { erase(--end()); }
-    void                replace(int idx, const coordT &c) { (*this)[idx]= c; }
-    void                reserve(int i) { coordinate_array.reserve(i); }
-    void                swap(int idx, int other);
+    void                replace(size_t idx, const coordT &c) { (*this)[idx]= c; }
+    void                reserve(size_t i) { coordinate_array.reserve(i); }
+    void                swap(size_t idx, size_t other);
     coordT              takeAt(int idx);
     coordT              takeFirst() { return takeAt(0); }
     coordT              takeLast();
@@ -148,7 +148,7 @@ public:
 
     private:
         std::vector<coordT>::iterator i;
-        friend class    const_iterator;
+        friend class    orgQhull::Coordinates::const_iterator;
 
     public:
         typedef std::random_access_iterator_tag  iterator_category;

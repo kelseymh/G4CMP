@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (c) 2009-2012 C.B. Barber. All rights reserved.
-** $Id$$Change: 1464 $
+** $Id: 5ccca87f2340fafbe85f1a69ecdff4e91a7ab231 $$Change: 1464 $
 ** $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 **
 ****************************************************************************/
@@ -243,7 +243,7 @@ void PointCoordinates::
 reserveCoordinates(int newCoordinates)
 {
     // vector::reserve is not const
-    point_coordinates.reserve((int)point_coordinates.size()+newCoordinates); // WARN64
+  point_coordinates.reserve(point_coordinates.size()+(size_t)newCoordinates); // WARN64
     makeValid();
 }//reserveCoordinates
 

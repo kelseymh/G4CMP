@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (c) 2009-2012 C.B. Barber. All rights reserved.
-** $Id$$Change: 1464 $
+** $Id: 2aa6aa393a3e9583a700adf92717cf027c537b55 $$Change: 1464 $
 ** $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 **
 ****************************************************************************/
@@ -77,13 +77,13 @@ public:
     int                 dimension() const { return point_dimension; }
     bool                empty() const { return point_end==point_first; }
     coordT             *extraCoordinates() const { return extraCoordinatesCount() ? (point_end-extraCoordinatesCount()) : 0; }
-    int                 extraCoordinatesCount() const { return point_dimension>0 ? (int)((point_end-point_first)%(size_t)point_dimension) : 0; }  // WARN64
+    int                 extraCoordinatesCount() const { return point_dimension>0 ? coordinateCount()%point_dimension : 0; }  // WARN64
     bool                includesCoordinates(const coordT *c) const { return c>=point_first && c<point_end; }
     bool                isEmpty() const { return empty(); }
     bool                operator==(const QhullPoints &other) const;
     bool                operator!=(const QhullPoints &other) const { return !operator==(other); }
     void                setDimension(int pointDimension) { QHULL_ASSERT(pointDimension>=0); point_dimension= pointDimension; }
-    size_t              size() const { return (point_dimension ? (point_end-point_first)/point_dimension : 0); }
+    size_t              size() const { return (size_t)(point_dimension>0 ? (point_end-point_first)/point_dimension : 0); }
 
 #//ElementAccess -- can not return references to QhullPoint
     QhullPoint          at(int idx) const { coordT *p= point_first+idx*point_dimension; QHULL_ASSERT(p<point_end); return QhullPoint(point_dimension, p); }

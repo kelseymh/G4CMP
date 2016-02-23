@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (c) 2008-2012 C.B. Barber. All rights reserved.
-** $Id$$Change: 1464 $
+** $Id: f603ead08af8a0c9ae9477eaef96b262a4e463db $$Change: 1464 $
 ** $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 **
 ****************************************************************************/
@@ -70,7 +70,7 @@ public:
     QhullPoint          getCenter(int qhRunId) { return getCenter(qhRunId, qh_PRINTpoints); }
     QhullPoint          getCenter(int qhRunId, qh_PRINT printFormat);
     QhullHyperplane     hyperplane() const { return QhullHyperplane(dimension(), qh_facet->normal, qh_facet->offset); }
-    int                 id() const { return qh_facet ? qh_facet->id : -1; }
+    int                 id() const { return qh_facet ? (int)qh_facet->id : -1; }
     QhullHyperplane     innerplane(int qhRunId) const;
     bool                isDefined() const { return qh_facet && qh_facet != &s_empty_facet; }
     bool                isGood() const { return qh_facet && qh_facet->good; }
