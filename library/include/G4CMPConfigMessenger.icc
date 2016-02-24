@@ -1,7 +1,12 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 #ifndef G4CMPConfigMessenger_icc
 #define G4CMPConfigMessenger_icc 1
 
-// $Id$
+// $Id: ba0dd5ff025e571a5569983bf3db34e2276c0c1f $
 // File:  G4CMPConfigMessenger.icc
 //
 // Description:	Defines templated function to make new macro commands

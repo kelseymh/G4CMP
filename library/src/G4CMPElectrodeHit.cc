@@ -1,3 +1,8 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 #include "G4CMPElectrodeHit.hh"
 
 #include "G4ios.hh"

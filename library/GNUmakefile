@@ -1,10 +1,10 @@
 # G4CMP/library/GNUmakefile	Build common-code library libG4cmp.(a|so|dylib)
-# $Id$
+# $Id: a3356a2caa936d64b7c9ed2c6112d8e18aca3a6b $
 
 # Follow GEANT4 library building convention
-# Add CPPFLAGS to support use of QHull for E-field interpolation
+# Add CPPFLAGS to support use of Qhull for E-field interpolation
 # Add G4CMP_DEBUG support
-# Add "link-time" dependendence on QHull
+# Add "link-time" dependendence on Qhull
 # Add G4CMP_SET_ELECTRON_MASS support to build with dynamic mass code
 
 name := G4cmp

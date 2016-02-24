@@ -1,7 +1,12 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 // $Id$
 //
 // Wrapper class to process a numerically tabulated electric field mesh
-// and use QHull to interpolate the potential and field at arbitrary
+// and use Qhull to interpolate the potential and field at arbitrary
 // points in the envelope of the mesh.  The input file format is fixed:
 // each line consists of four floating-point values, x, y and z in meters,
 // and voltage in volts.

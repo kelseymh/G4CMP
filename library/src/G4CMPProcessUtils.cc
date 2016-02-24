@@ -1,3 +1,8 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 //
 /// \file library/src/G4CMPProcessUtils.cc
 /// \brief Implementation of the G4CMPProcessUtils class

@@ -1,3 +1,8 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 // $Id: be4e879b33241dd90f04560177057fb1aecebf27 $
 
 #include "ChargeDetectorConstruction.hh"

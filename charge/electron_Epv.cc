@@ -1,3 +1,8 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 // electron_Epv.cc	Generate data showing electron kinematics, both
 //			true valley-frame and G4 effective-mass.
 //

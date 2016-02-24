@@ -1,4 +1,8 @@
-//
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 /// \file library/include/G4CMPProcessUtils.hh
 /// \brief Definition of the G4CMPProcessUtils class
 ///   Provides useful general functions to fetch and store lattice, access

@@ -1,3 +1,8 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 // $Id$
 //
 // 20150601  M. Kelsey -- Follow encapsulation of boundary process actions

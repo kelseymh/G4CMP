@@ -1,7 +1,7 @@
 # G4CMP/GNUmakefile	Top-level driver to build library and demos
-# $Id$
+# $Id: b50f1e17e36e73b8ee4a2e6a8e10327f3864cbbd $
 #
-# Add Mac and Windows handling for QHull build (we aren't using CMake there)
+# Add Mac and Windows handling for Qhull build (we aren't using CMake there)
 # Add "dist" target to make tar-ball for distribution to non-SLAC users
 # Temporarily exclude "channeling" from all examples, until it builds
 # Add G4CMP_SET_ELECTRON_MASS support to build with dynamic mass code
@@ -62,7 +62,7 @@ charge.% \
 channeling.% :
 	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
 
-# Manually configure building the QHull libraries in Geant4 style
+# Manually configure building the Qhull libraries in Geant4 style
 ISMAC := $(findstring Darwin,$(G4SYSTEM))
 ISWIN := $(findstring Win,$(G4SYSTEM))
 DYLIB_OPTS := -dynamiclib -undefined suppress -flat_namespace

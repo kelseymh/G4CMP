@@ -1,6 +1,11 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 #ifndef G4CMPMessengerBase_icc
 #define G4CMPMessengerBase_icc 1
-// $Id$
+// $Id: e28f4b6152b52bbca30f1030d35283590026e639 $
 ////////////////////////////////////////////////////////////////////////
 //  File:        G4CMPMessengerBase.icc                               //     
 //  Description: Implementation of templated function in class, to    //

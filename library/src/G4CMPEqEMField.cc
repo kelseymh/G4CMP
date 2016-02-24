@@ -1,7 +1,9 @@
-//
-// MODIFIED::
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 // $Id$
-// GEANT4 tag $Name: geant4-09-03-patch-01 $
 //
 // -------------------------------------------------------------------
 // This version modified to allow oblique electron propagation

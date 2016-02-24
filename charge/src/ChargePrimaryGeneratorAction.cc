@@ -1,3 +1,8 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 // $Id: d9c3dff5ec93e2dc13ca7f05eadf1af626fab333 $
 //
 // Generator uses G4ParticleGun, producing one electron and one hole per
