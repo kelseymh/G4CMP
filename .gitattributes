@@ -3,6 +3,6 @@
 charge/* ident
 phonon/* ident
 # The next line dodges modifying the qhull source files by not stepping into
-# library/include/qhull/*
+# qhull-2012.1/*
 library/include/*.hh ident
 library/src/* ident
