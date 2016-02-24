@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (c) 2009-2012 C.B. Barber. All rights reserved.
-** $Id$$Change: 1464 $
+** $Id: //main/2011/qhull/src/libqhullcpp/QhullPointSet.h#6 $$Change: 1464 $
 ** $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 **
 ****************************************************************************/
@@ -111,8 +111,7 @@ public:
 
     // before const_iterator for conversion with comparison operators
     class iterator {
-      // MHK 20140512:  For GCC 4.0.1, must use fully-qualifed name
-      friend class    orgQhull::QhullPointSet::const_iterator;
+        friend class    const_iterator;
 
     private:
         coordT        **i;

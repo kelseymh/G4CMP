@@ -4,7 +4,7 @@
 ;   [mar'11] 399 symbols 
 ;   Annotate as DATA qh_qh qh_qhstat qhmem qhull_inuse rbox_inuse
 ;
-; $Id$$Change: 1368 $
+; $Id: //main/2011/qhull/src/libqhull/qhull-exports.def#2 $$Change: 1368 $
 ; $DateTime: 2011/04/16 08:12:32 $$Author: bbarber $
 ;
 ; Define qhull_VERSION in CMakeLists.txt, Makefile, qhull-exports.def, qhull_p-exports.def, and qhull-warn.pri

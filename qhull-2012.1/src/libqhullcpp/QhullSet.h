@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (c) 2008-2012 C.B. Barber. All rights reserved.
-** $Id$$Change: 1464 $
+** $Id: //main/2011/qhull/src/libqhullcpp/QhullSet.h#7 $$Change: 1464 $
 ** $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 **
 ****************************************************************************/
@@ -115,8 +115,7 @@ public:
                         //Copy constructor copies pointer but not contents.  Needed for return by value.
                         QhullSet<T>(const QhullSet<T> &o) : QhullSetBase(o) {}
                         //Conversion from setT* is not type-safe.  Implicit conversion for void* to T
-    // MHK 20140512  For use with Geant4, can't use "s" as argument name
-    explicit            QhullSet<T>(setT *ss) : QhullSetBase(ss) { QHULL_ASSERT(sizeof(T)==sizeof(void *)); }
+    explicit            QhullSet<T>(setT *s) : QhullSetBase(s) { QHULL_ASSERT(sizeof(T)==sizeof(void *)); }
                        ~QhullSet<T>() {}
 
 private:

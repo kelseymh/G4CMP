@@ -5,7 +5,7 @@
 ;   Annotate as DATA qh_qh qh_qhstat qhmem qhull_inuse rbox_inuse
 ;   Same as ../libqhullp/qhull_p-exports.def without qh_save_qhull and qh_restore_qhull
 ;
-; $Id$$Change: 1468 $
+; $Id: //main/2011/qhull/src/libqhull/qhull-exports.def#4 $$Change: 1468 $
 ; $DateTime: 2012/01/26 23:42:31 $$Author: bbarber $
 ; 
 ; Define qhull_VERSION in CMakeLists.txt, Makefile, qhull-exports.def, qhull_p-exports.def, and qhull-warn.pri

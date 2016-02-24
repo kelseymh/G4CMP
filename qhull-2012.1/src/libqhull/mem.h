@@ -12,7 +12,7 @@
      qh_errexit(qhmem_ERRqhull, NULL, NULL) otherwise
 
    Copyright (c) 1993-2012 The Geometry Center.
-   $Id$$Change: 1464 $
+   $Id: //main/2011/qhull/src/libqhull/mem.h#4 $$Change: 1464 $
    $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 */
 

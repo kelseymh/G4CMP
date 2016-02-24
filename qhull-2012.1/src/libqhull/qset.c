@@ -12,7 +12,7 @@
    of the set (i.e., setelemT).
 
    Copyright (c) 1993-2012 The Geometry Center.
-   $Id$$Change: 1475 $
+   $Id: //main/2011/qhull/src/libqhull/qset.c#6 $$Change: 1475 $
    $DateTime: 2012/01/27 22:32:16 $$Author: bbarber $
 */
 
