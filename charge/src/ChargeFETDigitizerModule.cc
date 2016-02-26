@@ -231,7 +231,7 @@ void ChargeFETDigitizerModule::BuildFETTemplates()
   FETTemplates = vector<vector<vector<G4double> > >
     (numChannels, vector<vector<G4double> >
     (numChannels, vector<G4double>(timeBins, 0) ) );
-  std::fstream templateFile(templateFilename.c_str());
+  templateFile.open(templateFilename.c_str());
   if(templateFile.good()) {
     for(size_t i=0; i<numChannels; ++i)
       for(size_t j=0; j<numChannels; ++j)
