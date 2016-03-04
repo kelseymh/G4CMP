@@ -71,6 +71,7 @@ public:
   G4ThreeVector MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const;
   G4ThreeVector MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const;
   G4ThreeVector MapK_HVtoK(G4int ivalley, G4ThreeVector k_HV) const;
+  G4ThreeVector MapK_HVtoV_el(G4int ivalley, G4ThreeVector k_HV) const;
   G4ThreeVector MapK_valleyToP(G4int ivalley, G4ThreeVector k) const;
 
   // Apply energy relationships for electron transport

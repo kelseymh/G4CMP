@@ -31,6 +31,8 @@
 #include "G4CMPTrackInformation.hh"
 #include "G4AffineTransform.hh"
 #include "G4DynamicParticle.hh"
+#include "G4FieldManager.hh"
+#include "G4Field.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
@@ -272,6 +274,68 @@ G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
     G4Exception("G4CMPProcessUtils::GetKineticEnergy", "DriftProcess004",
                 EventMustBeAborted, "Unknown charge carrier");
     return 0.0;
+  }
+}
+
+G4ThreeVector
+G4CMPProcessUtils::GetLocalEffectiveEField(const G4Track& track) const {
+  G4ThreeVector fieldVector(0.,0.,0.);
+  G4FieldManager* fMan =
+    track.GetVolume()->GetLogicalVolume()->GetFieldManager();
+
+  if (!fMan || !fMan->DoesFieldExist()) {
+    return fieldVector;
+  }
+
+  G4double pos[4]{0.,0.,0.,0.};
+  GetLocalPosition(track, pos);
+  const G4Field* field = fMan->GetDetectorField();
+  G4double fieldValue[6];
+  field->GetFieldValue(pos,fieldValue);
+
+  fieldVector.set(fieldValue[3], fieldValue[4], fieldValue[5]);
+  if (GetValleyIndex(track) != -1) {
+    // NOTE: Seperate steps to avoid matrix-matrix multiplication.
+    fieldVector *= GetValley(track);
+    fieldVector *= theLattice->GetSqrtInvTensor();
+  }
+
+  return fieldVector;
+}
+
+G4ThreeVector
+G4CMPProcessUtils::GetLocalEffectiveEField(const G4Track& track,
+                                               const G4ThreeVector& pos) const {
+  G4ThreeVector fieldVector(0.,0.,0.);
+  G4FieldManager* fMan =
+    track.GetVolume()->GetLogicalVolume()->GetFieldManager();
+
+  if (!fMan || !fMan->DoesFieldExist()) {
+    return fieldVector;
+  }
+
+  G4double posArr[4]{pos.getX(), pos.getY(), pos.getZ(), 0.};
+  const G4Field* field = fMan->GetDetectorField();
+  G4double fieldValue[6];
+  field->GetFieldValue(posArr,fieldValue);
+
+  fieldVector.set(fieldValue[3], fieldValue[4], fieldValue[5]);
+  if (GetValleyIndex(track) != -1) {
+    // NOTE: Seperate steps to avoid matrix-matrix multiplication.
+    fieldVector *= GetValley(track);
+    fieldVector *= theLattice->GetSqrtInvTensor();
+  }
+
+  return fieldVector;
+}
+
+G4ThreeVector G4CMPProcessUtils::ConvertWaveVectorToVelocityVector(
+                          const G4Track& track, const G4ThreeVector& k) const {
+  G4double valleyIdx = GetValleyIndex(track);
+  if (valleyIdx != -1) {
+    return theLattice->MapK_HVtoV_el(valleyIdx, k);
+  } else {
+    return hbar_Planck*c_squared/track.GetDynamicParticle()->GetMass() * k;
   }
 }
 
