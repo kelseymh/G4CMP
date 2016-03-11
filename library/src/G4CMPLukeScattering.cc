@@ -74,7 +74,8 @@ G4CMPLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double mfp = dtau * velocity;
 
   if (verboseLevel > 1) {
-    G4cout << "LukeScattering MFP = " << mfp << G4endl;
+    G4cout << "LukeScattering Time Step = " << dtau << "\n"
+           << "LukeScattering MFP = " << mfp << G4endl;
   }
 
   return mfp;
