@@ -3,8 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/include/G4CMPDriftBoundaryProcess.hh
-/// \brief Definition of the G4CMPDriftBoundaryProcess base class
+/// \file library/include/G4CMPVBoundaryProcess.hh
+/// \brief Definition of the G4CMPVBoundaryProcess base class
 //
 // $Id$
 //
@@ -18,54 +18,68 @@
 // 20150603  Add parameter to count number of reflections by track
 // 20160215  Reunify boundary processes at least until we remove CDMS-specific
 //           stuff.
+// 20160415  Refactor to make PostStepDoIt() very generic. Derived classes
+//           should only need to implement absorb/reflect/transmit functions.
 
 #ifndef G4CMPDriftBoundaryProcess_h
 #define G4CMPDriftBoundaryProcess_h 1
 
-#include "globals.hh"
 #include "G4CMPVDriftProcess.hh"
+#include "globals.hh"
 
+class G4SurfaceProperty;
 
 class G4CMPDriftBoundaryProcess : public G4CMPVDriftProcess {
 public:
-  G4CMPDriftBoundaryProcess(const G4String& name="Drift");
-  virtual ~G4CMPDriftBoundaryProcess();
-
-  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
+  G4CMPDriftBoundaryProcess(const G4String& name = "G4CMPChargeBoundary",
+                            G4CMPProcessSubType type = fChargeBoundary);
 
   virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& track,
                                                    G4double previousStepSize,
                                                    G4ForceCondition* condition);
 
-  // NOTE:  These functions must call back to base class implementations!
+  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
+  // NOTE: This function and any dervied must call back to base class implementation!
   virtual void LoadDataForTrack(const G4Track* track);
 
 protected:
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
   // Decide and apply different surface actions; subclasses may override
-  virtual G4bool AbsorbTrack(const G4Step& aStep);
-  virtual G4VParticleChange* DoAbsorption(const G4Step& aStep);
+  virtual G4bool AbsorbTrack(const G4Track& aTrack,
+                             const G4Step& aStep,
+                             const G4SurfaceProperty* surfProp);
 
-  virtual G4bool ReflectTrack(const G4Step& aStep);
-  virtual G4VParticleChange* DoReflection(const G4Step& aStep);
+  virtual G4VParticleChange* DoAbsorption(const G4Track& aTrack,
+                                          const G4Step& aStep,
+                                          const G4SurfaceProperty* surfProp);
+
+  virtual G4bool ReflectTrack(const G4Track& aTrack,
+                              const G4Step& aStep,
+                              const G4SurfaceProperty* surfProp);
+
+  virtual G4VParticleChange* DoReflection(const G4Track& aTrack,
+                                          const G4Step& aStep,
+                                          const G4SurfaceProperty* surfProp);
+
+  virtual G4VParticleChange* DoTransmission(const G4Track& aTrack,
+                                            const G4Step& aStep,
+                                            const G4SurfaceProperty* surfProp);
+
+  G4ThreeVector GetSurfaceNormal(const G4Step& aStep);
 
 private:
+  // No copying/moving
   G4CMPDriftBoundaryProcess(G4CMPDriftBoundaryProcess&);
-  G4CMPDriftBoundaryProcess& operator=(const G4CMPDriftBoundaryProcess& right);
+  G4CMPDriftBoundaryProcess(G4CMPDriftBoundaryProcess&&);
+  G4CMPDriftBoundaryProcess& operator=(const G4CMPDriftBoundaryProcess&);
+  G4CMPDriftBoundaryProcess& operator=(const G4CMPDriftBoundaryProcess&&);
 
 protected:
   G4double kCarTolerance;
-  G4String shortName;
-  const G4ParticleDefinition* theCarrier;
-
-  G4double reflProb;
-  G4double absProb;
-  G4double absMinK;
-  G4double maxRefl;
-  G4ThreeVector surfNorm;	// Surface normal (temporary buffer)
-
-  G4int numberOfReflections;	// Counter to prevent runaway tracks
+  // Keep track and limit number of bounces.
+  G4int maxNumReflections;
+  G4int numReflections;
 };
 
 #endif

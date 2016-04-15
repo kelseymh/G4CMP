@@ -15,23 +15,14 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
-#include "G4CMPMeshElectricField.hh"
 #include "G4CMPSurfaceProperty.hh"
-#include "G4CMPTrackInformation.hh"
-#include "G4Field.hh"
-#include "G4FieldManager.hh"
 #include "G4GeometryTolerance.hh"
-#include "G4LatticeLogical.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4ParallelWorldProcess.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4PhononPolarization.hh"
-#include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4TransportationManager.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
@@ -39,15 +30,11 @@
 #include <vector>
 
 
-G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess(const G4String& name)
-  : G4CMPVDriftProcess("G4CMPDriftBoundary", fChargeBoundary),
-    kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()),
-    shortName(name), theCarrier(nullptr), reflProb(0.), absProb(1.),
-    absMinK(0.), numberOfReflections(0)
+G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess(const G4String& name,
+                                                     G4CMPProcessSubType type)
+  : G4CMPVDriftProcess(name, type),
+    kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance())
 {;}
-
-G4CMPDriftBoundaryProcess::~G4CMPDriftBoundaryProcess() {;}
-
 
 G4double G4CMPDriftBoundaryProcess::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
@@ -114,64 +101,37 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   // Grab surface information
-  G4LogicalSurface* surface = G4LogicalBorderSurface::GetSurface(thePrePV,
-                                                                 thePostPV);
-  G4CMPSurfaceProperty* borderSurface;
-  if (surface) {
-    borderSurface =
-      static_cast<G4CMPSurfaceProperty*>(surface->GetSurfaceProperty());
-  } else {
-    if (verboseLevel>1) {
-      G4cerr << GetProcessName() << ": No border surface defined for "
-	     << thePrePV->GetName() << " to "  << thePostPV->GetName()
-	     << G4endl;
-    }
-    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
-  }
+  G4LogicalSurface* surfaceLog = G4LogicalBorderSurface::GetSurface(thePrePV,
+                                                                    thePostPV);
 
-  G4MaterialPropertiesTable*
-  chargePropTable = const_cast<G4MaterialPropertiesTable*>(
-                      borderSurface->GetChargeMaterialPropertiesTablePointer());
-  reflProb = chargePropTable->GetConstProperty("reflProb");
-  absProb = chargePropTable->GetConstProperty("absProb");
-
-  if (theCarrier == G4CMPDriftElectron::Definition()) {
-    absMinK = chargePropTable->GetConstProperty("minKElec");
-  } else if (theCarrier == G4CMPDriftHole::Definition()) {
-    absMinK = chargePropTable->GetConstProperty("minKHole");
-  } else {
+  if (!surfaceLog) {
     G4Exception("G4CMPDriftBoundaryProcess::PostStepDoIt", "Boundary001",
-                EventMustBeAborted, "Invalid particle for this process.");
+                EventMustBeAborted, ("No surface defined between " +
+                                    thePrePV->GetName() + " and " +
+                                    thePostPV->GetName() + ".").c_str());
   }
 
-  // Get outward normal using G4Navigator method (more reliable than G4VSolid)
-  G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
-  std::vector<G4Navigator*>::iterator iNav =
-    G4TransportationManager::GetTransportationManager()->GetActiveNavigatorsIterator();
+  G4SurfaceProperty* surfProp = surfaceLog->GetSurfaceProperty();
 
-  G4bool goodNorm;
-  surfNorm = iNav[navID]->GetGlobalExitNormal(postStepPoint->GetPosition(),
-                                              &goodNorm);
-  if (!goodNorm) {
-    G4cerr << GetProcessName() << " ERROR:  Cannot get normal at surface of "
-           << thePrePV->GetName() << " @ " << postStepPoint->GetPosition()
-           << G4endl;
-    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-  } else if (verboseLevel>2) {
-    G4cout << " Normal " << surfNorm << " @ " << postStepPoint->GetPosition()
-           << G4endl;
+  if (!surfProp) {
+    G4Exception("G4CMPDriftBoundaryProcess::PostStepDoIt", "Boundary002",
+                EventMustBeAborted, ("No surface property defined for " +
+                                    surfaceLog->GetName() + ".").c_str());
   }
 
-  // If the particle doesn't get absorbed, it either reflects or transmits
-  if (AbsorbTrack(aStep)) {
-    return DoAbsorption(aStep);
-  } else if (ReflectTrack(aStep)) {
-    return DoReflection(aStep);
-  } // else the particle passes through the boundary
 
   if (verboseLevel>2) {
     G4cout << " K direction: " << GetLocalWaveVector(aTrack).unit()
            << "\n P direction: " << aTrack.GetMomentumDirection() << G4endl;
+  }
+
+  // If the particle doesn't get absorbed, it either reflects or transmits
+  if (AbsorbTrack(aTrack, aStep, surfProp)) {
+    return DoAbsorption(aTrack, aStep, surfProp);
+  } else if (ReflectTrack(aTrack, aStep, surfProp)) {
+    return DoReflection(aTrack, aStep, surfProp);
+  } else {
+    return DoTransmission(aTrack, aStep, surfProp);
   }
 
   return &aParticleChange;
@@ -179,25 +139,44 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
 void G4CMPDriftBoundaryProcess::LoadDataForTrack(const G4Track* track) {
   G4CMPVDriftProcess::LoadDataForTrack(track);
-  theCarrier = track->GetDefinition();
-  maxRefl = G4CMPConfigManager::GetMaxChargeBounces();
-  numberOfReflections = 0;		// New track, no bounces
+  maxNumReflections = G4CMPConfigManager::GetMaxChargeBounces();
+  numReflections = 0;		// New track, no bounces
 }
 
 // Decide and apply different surface actions; subclasses may override
 
-G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Step& aStep) {
-  // Universal absorption threshold
+G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
+                                              const G4Step& aStep,
+                                              const G4SurfaceProperty* surfProp) {
+  // Check out this abomination:
+  G4MaterialPropertiesTable*
+    chargePropTable = const_cast<G4MaterialPropertiesTable*>(
+                        static_cast<const G4CMPSurfaceProperty*>(surfProp)->
+                          GetChargeMaterialPropertiesTablePointer()
+                                                            );
+  G4ThreeVector surfNorm = GetSurfaceNormal(aStep);
+  G4double absProb = chargePropTable->GetConstProperty("absProb");
+  G4double absMinK;
+  if (aTrack.GetDefinition() == G4CMPDriftElectron::Definition()) {
+    absMinK = chargePropTable->GetConstProperty("minKElec");
+  } else if (aTrack.GetDefinition() == G4CMPDriftHole::Definition()) {
+    absMinK = chargePropTable->GetConstProperty("minKHole");
+  } else {
+    G4Exception("G4CMPDriftBoundaryProcess::AbsorbTrack", "Boundary003",
+                EventMustBeAborted, "Invalid particle for this process.");
+  }
+
   return (G4UniformRand() <= absProb &&
-          GetLocalWaveVector(aStep.GetTrack())*surfNorm > absMinK);
+          GetLocalWaveVector(aTrack)*surfNorm > absMinK);
 }
 
 G4VParticleChange*
-G4CMPDriftBoundaryProcess::DoAbsorption(const G4Step& aStep) {
+G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
+                                        const G4Step& aStep,
+                                        const G4SurfaceProperty* surfProp) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track absorbed" << G4endl;
 
-  G4Track* aTrack = aStep.GetTrack();
   G4double Ekin = GetKineticEnergy(aTrack);
 
   aParticleChange.ProposeNonIonizingEnergyDeposit(Ekin);
@@ -205,21 +184,29 @@ G4CMPDriftBoundaryProcess::DoAbsorption(const G4Step& aStep) {
   return &aParticleChange;
 }
 
-G4bool G4CMPDriftBoundaryProcess::ReflectTrack(const G4Step& aStep) {
-  if (verboseLevel>1) {
-    G4cout << GetProcessName() << ": Track reflected " << numberOfReflections
-           << " times." << G4endl;
-  }
+G4bool G4CMPDriftBoundaryProcess::ReflectTrack(const G4Track& aTrack,
+                                               const G4Step& aStep,
+                                               const G4SurfaceProperty* surfProp) {
+  G4MaterialPropertiesTable*
+    chargePropTable = const_cast<G4MaterialPropertiesTable*>(
+                        static_cast<const G4CMPSurfaceProperty*>(surfProp)->
+                          GetChargeMaterialPropertiesTablePointer()
+                                                            );
+  G4double reflProb = chargePropTable->GetConstProperty("reflProb");
   return (G4UniformRand() <= reflProb);
 }
 
 G4VParticleChange*  
-G4CMPDriftBoundaryProcess::DoReflection(const G4Step& aStep) {
-  ++numberOfReflections;
-  if (numberOfReflections > maxRefl && maxRefl >= 0) {
+G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack,
+                                        const G4Step& aStep,
+                                        const G4SurfaceProperty* surfProp) {
+  if (++numReflections > maxNumReflections && maxNumReflections >= 0) {
     // If it reflects more than the user wants, we just kill it without
-    // absorbing. This corresponds to the charge being too low energy to
-    // detect.
+    // absorbing.
+    if (verboseLevel>1)
+      G4cout << GetProcessName() << ": Track reflected more than "
+             << maxNumReflections << " times. Track killed." << G4endl;
+
     aParticleChange.ProposeTrackStatus(fStopAndKill);
     return &aParticleChange;
   }
@@ -227,14 +214,17 @@ G4CMPDriftBoundaryProcess::DoReflection(const G4Step& aStep) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track reflected" << G4endl;
 
+
   G4ThreeVector momDir = aStep.GetPostStepPoint()->GetMomentumDirection();
   if (verboseLevel>2)
     G4cout << " Old momentum direction " << momDir << G4endl;
 
+  G4ThreeVector surfNorm = GetSurfaceNormal(aStep);
+
   // Electrons and holes need to be handled separately until we further
   // generalize the physics.
 
-  if (theCarrier == G4CMPDriftElectron::Definition()) {
+  if (aTrack.GetDefinition() == G4CMPDriftElectron::Definition()) {
     G4Track* aTrack = aStep.GetTrack();
     G4ThreeVector vel = GetGlobalVelocityVector(aTrack);
 
@@ -264,7 +254,7 @@ G4CMPDriftBoundaryProcess::DoReflection(const G4Step& aStep) {
     }
 
     FillParticleChange(GetCurrentValley(), p);	// Handle effective mass, vel
-  } else if (theCarrier == G4CMPDriftHole::Definition()) {
+  } else if (aTrack.GetDefinition() == G4CMPDriftHole::Definition()) {
     G4double momNorm = momDir * surfNorm;
     momDir -= 2.*momNorm*surfNorm;
 
@@ -273,9 +263,42 @@ G4CMPDriftBoundaryProcess::DoReflection(const G4Step& aStep) {
 
     aParticleChange.ProposeMomentumDirection(momDir);
   } else {
-    G4Exception("G4CMPDriftBoundaryProcess::DoReflection", "Boundary002",
+    G4Exception("G4CMPDriftBoundaryProcess::DoReflection", "Boundary004",
                 EventMustBeAborted, "Invalid particle for this process.");
   }
 
   return &aParticleChange;
+}
+
+G4VParticleChange*
+G4CMPDriftBoundaryProcess::DoTransmission(const G4Track& aTrack,
+                                          const G4Step& aStep,
+                                          const G4SurfaceProperty* surfProp) {
+  //noop - "Move along, Particle."
+  return &aParticleChange;
+}
+
+G4ThreeVector G4CMPDriftBoundaryProcess::GetSurfaceNormal(const G4Step& aStep) {
+  // Get outward normal using G4Navigator method (more reliable than G4VSolid)
+  G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
+  std::vector<G4Navigator*>::iterator iNav =
+    G4TransportationManager::GetTransportationManager()->GetActiveNavigatorsIterator();
+
+  G4bool goodNorm;
+  G4ThreeVector surfNorm = iNav[navID]->GetGlobalExitNormal(
+                                      aStep.GetPostStepPoint()->GetPosition(),
+                                      &goodNorm);
+  if (!goodNorm) {
+    G4VPhysicalVolume* thePrePV = aStep.GetPreStepPoint()->GetPhysicalVolume();
+    G4VPhysicalVolume* thePostPV = aStep.GetPostStepPoint()->GetPhysicalVolume();
+    G4Exception("G4CMPDriftBoundaryProcess::PostStepDoIt", "Boundary001",
+                EventMustBeAborted, ("Can't get normal vector of surface between " +
+                                    thePrePV->GetName() + " and " +
+                                    thePostPV->GetName()+ ".").c_str());
+  } else if (verboseLevel>2) {
+    G4cout << " Normal " << surfNorm << " @ "
+           << aStep.GetPostStepPoint()->GetPosition() << G4endl;
+  }
+
+  return surfNorm;
 }
