@@ -90,6 +90,9 @@ public:
     fLocalToGlobal.ApplyPointTransform(pos);
   }
 
+  // Used especially in boundary processes
+  G4ThreeVector GetSurfaceNormal(const G4Step& aStep);
+
   // Convenience functions to get local position, momentum, velocity from track
   G4ThreeVector GetLocalPosition(const G4Track& track) const;
   G4ThreeVector GetLocalPosition(const G4Track* track) const {

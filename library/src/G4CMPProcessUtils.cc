@@ -34,6 +34,7 @@
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
+#include "G4ParallelWorldProcess.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhononTransFast.hh"
@@ -42,6 +43,7 @@
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
+#include "G4TransportationManager.hh"
 #include "G4VTouchable.hh"
 #include "Randomize.hh"
 
@@ -133,6 +135,26 @@ void G4CMPProcessUtils::ReleaseTrack() {
   theLattice = nullptr;
 }
 
+G4ThreeVector G4CMPProcessUtils::GetSurfaceNormal(const G4Step& aStep) {
+  // Get outward normal using G4Navigator method (more reliable than G4VSolid)
+  G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
+  std::vector<G4Navigator*>::iterator iNav =
+    G4TransportationManager::GetTransportationManager()->GetActiveNavigatorsIterator();
+
+  G4bool goodNorm;
+  G4ThreeVector surfNorm = iNav[navID]->GetGlobalExitNormal(
+                                      aStep.GetPostStepPoint()->GetPosition(),
+                                      &goodNorm);
+  if (!goodNorm) {
+    G4VPhysicalVolume* thePrePV = aStep.GetPreStepPoint()->GetPhysicalVolume();
+    G4VPhysicalVolume* thePostPV = aStep.GetPostStepPoint()->GetPhysicalVolume();
+    G4Exception("G4CMPDriftBoundaryProcess::PostStepDoIt", "Boundary001",
+                EventMustBeAborted, ("Can't get normal vector of surface between " +
+                                    thePrePV->GetName() + " and " +
+                                    thePostPV->GetName()+ ".").c_str());
+  }
+  return surfNorm;
+}
 
 // Access track position and momentum in local coordinates
 G4ThreeVector G4CMPProcessUtils::GetLocalPosition(const G4Track& track) const {

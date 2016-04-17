@@ -13,13 +13,13 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPInterValleyScattering.hh"
+#include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPLukeScattering.hh"
 #include "G4ParticleTable.hh"
 #include "G4PhononDownconversion.hh"
 #include "G4PhononLong.hh"
-#include "G4PhononReflection.hh"
 #include "G4PhononScattering.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
@@ -41,7 +41,7 @@ void G4CMPPhysics::ConstructParticle() {
 void G4CMPPhysics::ConstructProcess() {
   // Only make processes once; will be deleted when physics list goes away
   G4VProcess* phScat  = new G4PhononScattering;
-  G4VProcess* phRefl  = new G4PhononReflection;
+  G4VProcess* phRefl  = new G4CMPPhononBoundaryProcess;
   G4VProcess* phDown  = new G4PhononDownconversion;
   G4VProcess* tmStep  = new G4CMPTimeStepper;
   G4VProcess* driftB  = new G4CMPDriftBoundaryProcess;
