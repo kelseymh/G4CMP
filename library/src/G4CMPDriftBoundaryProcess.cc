@@ -119,7 +119,6 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
                                     surfaceLog->GetName() + ".").c_str());
   }
 
-
   if (verboseLevel>2) {
     G4cout << " K direction: " << GetLocalWaveVector(aTrack).unit()
            << "\n P direction: " << aTrack.GetMomentumDirection() << G4endl;
