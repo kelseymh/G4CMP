@@ -140,6 +140,7 @@ set(library_SOURCES
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPLukeScattering.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPMeshElectricField.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPMessengerBase.cc
+   ${PROJECT_SOURCE_DIR}/library/src/G4CMPPhononBoundaryProcess.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPPhysics.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPPhysicsList.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4CMPProcessUtils.cc
@@ -157,7 +158,6 @@ set(library_SOURCES
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononDownconversion.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononLong.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononPolarization.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4PhononReflection.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononScattering.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononTransFast.cc
    ${PROJECT_SOURCE_DIR}/library/src/G4PhononTransSlow.cc
@@ -179,6 +179,7 @@ set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPLukeScattering.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPMeshElectricField.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPMessengerBase.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhononBoundaryProcess.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhysics.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhysicsList.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPProcessUtils.hh
@@ -197,7 +198,6 @@ set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4PhononDownconversion.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4PhononLong.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4PhononPolarization.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4PhononReflection.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4PhononScattering.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4PhononTransFast.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4PhononTransSlow.hh
