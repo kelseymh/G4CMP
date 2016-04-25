@@ -29,6 +29,7 @@ public:
   G4CMPLukeScattering();
   virtual ~G4CMPLukeScattering();
 
+  virtual G4double PostStepGetPhysicalInteractionLength(const G4Track &track, G4double previousStepSize, G4ForceCondition *condition);
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
 protected:
@@ -58,6 +59,9 @@ private:
 #ifdef G4CMP_DEBUG
   std::ofstream output;
 #endif
+  std::ofstream energyOut;
+  std::ofstream mfpOut;
+  G4ThreeVector prePoint;
 };
 
 #endif	/* G4CMPLukeScattering */
