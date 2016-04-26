@@ -356,6 +356,18 @@ G4double G4CMPProcessUtils::KaplanPhononQP(G4double energy,
   if (reflectedEnergies.size()>0)
     G4Exception("G4CMPProcessUtils::KaplanPhononQP()", "DriftProcess007",
                 JustWarning, "Passed a nonempty vector.");
+  // Check that the MaterialPropertiesTable has everything we need. If it came
+  // from a G4CMPSurfaceProperty, then it will be fine.
+  if (!(prop->ConstPropertyExists("gapEnergy") &&
+        prop->ConstPropertyExists("lowQPLimit") &&
+        prop->ConstPropertyExists("phononLifetime") &&
+        prop->ConstPropertyExists("phononLifetimeSlope") &&
+        prop->ConstPropertyExists("vSound") &&
+        prop->ConstPropertyExists("fileThickness"))) {
+    G4Exception("G4CMPProcessUtils::KaplanPhononQP()", "ProcessUtils001",
+                RunMustBeAborted,
+                "Insufficient info in MaterialPropertiesTable.");
+  }
   G4double gapEnergy     = prop->GetConstProperty("gapEnergy");
   G4double lowQPLimit    = prop->GetConstProperty("lowQPLimit");
 
