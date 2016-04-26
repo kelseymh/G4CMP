@@ -11,8 +11,7 @@
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4SurfaceType stype)
-                                                : G4SurfaceProperty(name, stype)
-{;}
+                                           : G4SurfaceProperty(name, stype) {;}
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4double qAbsProb,
@@ -24,8 +23,7 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4double pSpecProb,
                                            G4double pMinK,
                                            G4SurfaceType stype)
-                                                : G4SurfaceProperty(name, stype)
-{
+                                           : G4SurfaceProperty(name, stype) {
   theChargeMatPropTable.AddConstProperty("absProb", qAbsProb);
   theChargeMatPropTable.AddConstProperty("reflProb", qReflProb);
   theChargeMatPropTable.AddConstProperty("minKElec", eMinK);
@@ -37,45 +35,71 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
   thePhononMatPropTable.AddConstProperty("minK", pMinK);
 }
 
-G4int G4CMPSurfaceProperty::operator==(const G4CMPSurfaceProperty &right) const
-{
-  return (this == (G4CMPSurfaceProperty *) &right);
+G4CMPSurfaceProperty::~G4CMPSurfaceProperty() {
+  // Find ourselves in the static SurfaceProperty table and remove ourselves.
+  std::vector<G4SurfaceProperty*>::iterator me =
+    std::find_if(theSurfacePropertyTable.begin(), theSurfacePropertyTable.end(),
+                 [this](G4SurfaceProperty* a)->G4bool {return *this == *a;});
+  if (me != theSurfacePropertyTable.end())
+    theSurfacePropertyTable.erase(me);
 }
 
-G4int G4CMPSurfaceProperty::operator!=(const G4CMPSurfaceProperty &right) const
-{
-  return (this != (G4CMPSurfaceProperty *) &right);
+G4bool G4CMPSurfaceProperty::operator==(const G4SurfaceProperty& right) const {
+  return (this == dynamic_cast<const G4CMPSurfaceProperty*>(&right));
 }
 
-void G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable(
-                            G4MaterialPropertiesTable* mpt)
-{
-  theChargeMatPropTable = CopyMaterialPropertiesTable(mpt);
-}
-
-void G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable(
-                            G4MaterialPropertiesTable* mpt)
-{
-  thePhononMatPropTable = CopyMaterialPropertiesTable(mpt);
+G4bool G4CMPSurfaceProperty::operator!=(const G4SurfaceProperty &right) const {
+  return !(*this == right);
 }
 
 void G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable(
-  G4MaterialPropertiesTable mpt)
-{
-  theChargeMatPropTable = mpt;
+                            G4MaterialPropertiesTable* mpt) {
+  if (IsValidChargePropTable(*mpt)) {
+    theChargeMatPropTable = *mpt;
+  } else {
+    G4Exception("G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable",
+                "detector001", RunMustBeAborted,
+                "Tried to set properties table to one that is not valid.");
+  }
 }
 
 void G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable(
-  G4MaterialPropertiesTable mpt)
-{
-  thePhononMatPropTable = mpt;
+                            G4MaterialPropertiesTable* mpt) {
+  if (IsValidChargePropTable(*mpt)) {
+    thePhononMatPropTable = *mpt;
+  } else {
+    G4Exception("G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable",
+                "detector002", RunMustBeAborted,
+                "Tried to set properties table to one that is not valid.");
+  }
+}
+
+void G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable(
+  G4MaterialPropertiesTable mpt) {
+  if (IsValidChargePropTable(mpt)) {
+    theChargeMatPropTable = mpt;
+  } else {
+    G4Exception("G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable",
+                "detector003", RunMustBeAborted,
+                "Tried to set properties table to one that is not valid.");
+  }
+}
+
+void G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable(
+  G4MaterialPropertiesTable mpt) {
+  if (IsValidChargePropTable(mpt)) {
+    thePhononMatPropTable = mpt;
+  } else {
+    G4Exception("G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable",
+                "detector004", RunMustBeAborted,
+                "Tried to set properties table to one that is not valid.");
+  }
 }
 
 void G4CMPSurfaceProperty::FillChargeMaterialPropertiesTable(G4double qAbsProb,
                                                              G4double qReflProb,
                                                              G4double eMinK,
-                                                             G4double hMinK)
-{
+                                                             G4double hMinK) {
   theChargeMatPropTable.AddConstProperty("absProb", qAbsProb);
   theChargeMatPropTable.AddConstProperty("reflProb", qReflProb);
   theChargeMatPropTable.AddConstProperty("minKElec", eMinK);
@@ -85,42 +109,36 @@ void G4CMPSurfaceProperty::FillChargeMaterialPropertiesTable(G4double qAbsProb,
 void G4CMPSurfaceProperty::FillPhononMaterialPropertiesTable(G4double pAbsProb,
                                                              G4double pReflProb,
                                                              G4double pSpecProb,
-                                                             G4double pMinK)
-{
+                                                             G4double pMinK) {
   thePhononMatPropTable.AddConstProperty("absProb", pAbsProb);
   thePhononMatPropTable.AddConstProperty("reflProb", pReflProb);
   thePhononMatPropTable.AddConstProperty("specProb", pSpecProb);
   thePhononMatPropTable.AddConstProperty("minK", pMinK);
 }
 
-void G4CMPSurfaceProperty::DumpInfo() const
-{
+void G4CMPSurfaceProperty::DumpInfo() const {
 
   // Dump info for surface
   // TO DO
 
 }
 
-G4MaterialPropertiesTable G4CMPSurfaceProperty::CopyMaterialPropertiesTable(
-  G4MaterialPropertiesTable* in)
-{
-  G4MaterialPropertiesTable out;
-  const std::map<G4String,G4MaterialPropertyVector*,std::less<G4String> >*
-    inMap = in->GetPropertiesMap();
-  const std::map<G4String,G4double,std::less<G4String> >* inCMap =
-                                              in->GetPropertiesCMap();
-  std::map<G4String,G4MaterialPropertyVector*,std::less<G4String> >::const_iterator
-   inItr = inMap->begin();
-  std::map<G4String,G4double,std::less<G4String> >::const_iterator inCItr =
-                                              inCMap->begin();
+G4bool G4CMPSurfaceProperty::IsValidChargePropTable(
+                              G4MaterialPropertiesTable& propTab) const {
+  // A property table is valid for us if it at least contains all of the
+  // properties that we require.
+  return (propTab.ConstPropertyExists("absProb") &&
+          propTab.ConstPropertyExists("reflProb") &&
+          propTab.ConstPropertyExists("minKElec") &&
+          propTab.ConstPropertyExists("minKHole"));
+}
 
-  for(; inItr != inMap->end(); ++inItr) {
-    out.AddProperty(inItr->first, inItr->second);
-  }
-
-  for(; inCItr != inCMap->end(); ++inCItr) {
-    out.AddConstProperty(inItr->first, inCItr->second);
-  }
-
-  return out;
+G4bool G4CMPSurfaceProperty::IsValidPhononPropTable(
+                              G4MaterialPropertiesTable& propTab) const {
+  // A property table is valid for us if it at least contains all of the
+  // properties that we require.
+  return (propTab.ConstPropertyExists("absProb") &&
+          propTab.ConstPropertyExists("reflProb") &&
+          propTab.ConstPropertyExists("specProb") &&
+          propTab.ConstPropertyExists("minK"));
 }

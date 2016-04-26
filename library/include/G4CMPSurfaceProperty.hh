@@ -8,8 +8,6 @@
 #ifndef G4CMPSurfaceProperty_h
 #define G4CMPSurfaceProperty_h 1
 
-#include "G4Types.hh"
-#include "G4Physics2DVector.hh"
 #include "G4SurfaceProperty.hh"
 #include "G4MaterialPropertiesTable.hh"
 
@@ -27,22 +25,24 @@ public:
                        G4double qReflProb, // If not absorbed, prob to reflect
                        G4double eMinK, //Min wave number to absorb electron
                        G4double hMinK, //Min wave number to absorb hole
-                       G4double pAbsProb, // Prob. to absorb charge carrier
+                       G4double pAbsProb, // Prob. to absorb phonon
                        G4double pReflProb, // If not absorbed, prob to reflect
                        G4double pSpecProb, //Prob. of specular reflection
                        G4double pMinK, //Min wave number to absorb phonon
                        G4SurfaceType stype = dielectric_dielectric);
 
-  G4int operator==(const G4CMPSurfaceProperty &right) const;
-  G4int operator!=(const G4CMPSurfaceProperty &right) const;
+  virtual ~G4CMPSurfaceProperty();
 
-  inline const G4MaterialPropertiesTable* GetChargeMaterialPropertiesTablePointer() const
+  G4bool operator==(const G4SurfaceProperty &right) const;
+  G4bool operator!=(const G4SurfaceProperty &right) const;
+
+  const G4MaterialPropertiesTable* GetChargeMaterialPropertiesTablePointer() const
                        { return &theChargeMatPropTable; }
-  inline const G4MaterialPropertiesTable* GetPhononMaterialPropertiesTablePointer() const
+  const G4MaterialPropertiesTable* GetPhononMaterialPropertiesTablePointer() const
                        { return &thePhononMatPropTable; }
-  inline G4MaterialPropertiesTable GetChargeMaterialPropertiesTable() const
+  G4MaterialPropertiesTable GetChargeMaterialPropertiesTable() const
                        { return theChargeMatPropTable; }
-  inline G4MaterialPropertiesTable GetPhononMaterialPropertiesTable() const
+  G4MaterialPropertiesTable GetPhononMaterialPropertiesTable() const
                        { return thePhononMatPropTable; }
 
   void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
@@ -62,12 +62,13 @@ public:
 
   void DumpInfo() const;	// To be implemented
 
-private:
+protected:
   G4MaterialPropertiesTable theChargeMatPropTable;
   G4MaterialPropertiesTable thePhononMatPropTable;
 
-  G4MaterialPropertiesTable CopyMaterialPropertiesTable(
-    G4MaterialPropertiesTable *mpt);
+  // These args should be const, but G4MaterialPropertiesTables is silly.
+  virtual G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
+  virtual G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
 };
 
 #endif
