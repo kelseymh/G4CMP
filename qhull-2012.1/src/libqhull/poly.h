@@ -7,7 +7,7 @@
    see qh-poly.htm, libqhull.h and poly.c
 
    Copyright (c) 1993-2012 The Geometry Center.
-   $Id: //main/2011/qhull/src/libqhull/poly.h#3 $$Change: 1464 $
+   $Id: 9cf04cfbacf7b2f6de8afb0a57c12d4c1e58cd3b $$Change: 1464 $
    $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 */
 

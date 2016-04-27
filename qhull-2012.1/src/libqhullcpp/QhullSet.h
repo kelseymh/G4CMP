@@ -78,12 +78,12 @@ public:
     int                 count() const { return QhullSetBase::count(qh_set); }
     bool                empty() const { return SETfirst_(qh_set)==0; }
     bool                isEmpty() const { return empty(); }
-    size_t              size() const { return count(); }
+    size_t              size() const { return (size_t)count(); }
 
 #//Element
 protected:
     void              **beginPointer() const { return &qh_set->e[0].p; }
-    void              **elementPointer(int idx) const { QHULL_ASSERT(idx>=0 && idx<qh_set->maxsize); return &SETelem_(qh_set, idx); }
+    void              **elementPointer(size_t idx) const { QHULL_ASSERT(idx<(size_t)qh_set->maxsize); return &SETelem_(qh_set, idx); }
                         //! Always points to 0
     void              **endPointer() const { return qh_setendpointer(qh_set); }
 };//QhullSetBase
@@ -141,7 +141,7 @@ public:
     bool                operator!=(const QhullSet<T> &other) const { return !operator==(other); }
 
 #//Element access
-    const T            &at(int idx) const { return operator[](idx); }
+    const T            &at(size_t idx) const { return operator[](idx); }
     T                  &back() { return last(); }
     T                  &back() const { return last(); }
     //! end element is NULL
@@ -155,12 +155,12 @@ public:
     T                  &last() { QHULL_ASSERT(!isEmpty()); return *(end()-1); }
     const T            &last() const {  QHULL_ASSERT(!isEmpty()); return *(end()-1); }
     // mid() not available.  No setT constructor
-    T                  &operator[](int idx) { T *n= reinterpret_cast<T *>(elementPointer(idx)); QHULL_ASSERT(idx>=0 && n < reinterpret_cast<T *>(endPointer())); return *n; }
-    const T            &operator[](int idx) const { const T *n= reinterpret_cast<const T *>(elementPointer(idx)); QHULL_ASSERT(idx>=0 && n < reinterpret_cast<T *>(endPointer())); return *n; }
+    T                  &operator[](size_t idx) { T *n= reinterpret_cast<T *>(elementPointer(idx)); QHULL_ASSERT(n < reinterpret_cast<T *>(endPointer())); return *n; }
+    const T            &operator[](size_t idx) const { const T *n= reinterpret_cast<const T *>(elementPointer(idx)); QHULL_ASSERT(n < reinterpret_cast<T *>(endPointer())); return *n; }
     T                  &second() { return operator[](1); }
     const T            &second() const { return operator[](1); }
-    T                   value(int idx) const;
-    T                   value(int idx, const T &defaultValue) const;
+    T                   value(size_t idx) const;
+    T                   value(size_t idx, const T &defaultValue) const;
 
 #//Read-write -- Not available, no setT constructor
 
@@ -255,20 +255,20 @@ toQList() const
 
 template <typename T>
 T QhullSet<T>::
-value(int idx) const
+value(size_t idx) const
 {
     // Avoid call to qh_setsize() and assert in elementPointer()
     const T *n= reinterpret_cast<const T *>(&SETelem_(getSetT(), idx));
-    return (idx>=0 && n<end()) ? *n : T();
+    return (n<end()) ? *n : T();
 }//value
 
 template <typename T>
 T QhullSet<T>::
-value(int idx, const T &defaultValue) const
+value(size_t idx, const T &defaultValue) const
 {
     // Avoid call to qh_setsize() and assert in elementPointer()
     const T *n= reinterpret_cast<const T *>(&SETelem_(getSetT(), idx));
-    return (idx>=0 && n<end()) ? *n : defaultValue;
+    return (n<end()) ? *n : defaultValue;
 }//value
 
 #//Search

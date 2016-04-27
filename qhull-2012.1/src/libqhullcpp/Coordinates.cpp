@@ -39,9 +39,9 @@ mid(int idx, int length) const
 }//mid
 
 coordT Coordinates::
-value(int idx, const coordT &defaultValue) const
+value(size_t idx, const coordT &defaultValue) const
 {
-    return ((idx < 0 || idx >= count()) ? defaultValue : (*this)[idx]);
+  return ((idx >= size()) ? defaultValue : (*this)[idx]);
 }//value
 
 #//Operator
@@ -71,7 +71,7 @@ operator+=(const Coordinates &other)
 coordT Coordinates::
 takeAt(int idx)
 {
-    coordT c= at(idx);
+    coordT c= at((size_t)idx);
     erase(begin()+idx);
     return c;
 }//takeAt
@@ -85,7 +85,7 @@ takeLast()
 }//takeLast
 
 void Coordinates::
-swap(int idx, int other)
+swap(size_t idx, size_t other)
 {
     coordT c= at(idx);
     at(idx)= at(other);

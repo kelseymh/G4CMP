@@ -243,7 +243,7 @@ void PointCoordinates::
 reserveCoordinates(int newCoordinates)
 {
     // vector::reserve is not const
-    point_coordinates.reserve((int)point_coordinates.size()+newCoordinates); // WARN64
+  point_coordinates.reserve(point_coordinates.size()+(size_t)newCoordinates); // WARN64
     makeValid();
 }//reserveCoordinates
 

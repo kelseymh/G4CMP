@@ -7,7 +7,7 @@
    see qh-geom.htm and geom.h
 
    Copyright (c) 1993-2012 The Geometry Center.
-   $Id: //main/2011/qhull/src/libqhull/geom.c#3 $$Change: 1464 $
+   $Id: 0f3b9d9840c2a7258d470e2e79e0276e72fb528a $$Change: 1464 $
    $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 
    infrequent code goes into geom2.c
