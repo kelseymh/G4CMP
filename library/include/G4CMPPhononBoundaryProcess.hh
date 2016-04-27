@@ -11,7 +11,6 @@
 #ifndef G4CMPPhononBoundaryProcess_h
 #define G4CMPPhononBoundaryProcess_h 1
 
-#include "G4CMPVBoundaryProcessCommon.hh"
 #include "G4VPhononProcess.hh"
 
 class G4CMPTrackInformation;
