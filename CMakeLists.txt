@@ -2,6 +2,7 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(G4CMP)
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wextra -Wshadow")
 
 #----------------------------------------------------------------------------
 # Options to build examples
@@ -12,7 +13,6 @@ examples. Default: OFF" OFF)
 option(BUILD_PHONON_EXAMPLE "Build phonon example. Default: OFF" OFF)
 option(BUILD_CHARGE_EXAMPLE "Build charge example. Default: OFF" OFF)
 option(BUILD_CHANNELING_EXAMPLE "Build charge channeling example. Default: OFF" OFF)
-
 
 #-----------------------------------------------------------------------------
 # Add subdirectories based on options selected

@@ -218,7 +218,6 @@ add_library(G4cmp SHARED ${library_SOURCES})
 target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
 set_target_properties(G4cmp PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall")
 install(TARGETS G4cmp qhullcpp qhullstatic_p DESTINATION lib)
 install(FILES ${library_HEADERS} DESTINATION include/G4CMP)
 install(FILES ../g4cmp_env.sh ../g4cmp_env.csh ../G4CMPOrdParamTable.txt
