@@ -224,7 +224,6 @@ G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack,
   // generalize the physics.
 
   if (aTrack.GetDefinition() == G4CMPDriftElectron::Definition()) {
-    G4Track* aTrack = aStep.GetTrack();
     G4ThreeVector vel = GetGlobalVelocityVector(aTrack);
 
     if (verboseLevel>2)
