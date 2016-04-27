@@ -30,7 +30,7 @@
     global.c (qh_initbuffers) for an example of using mem.c
 
   Copyright (c) 1993-2012 The Geometry Center.
-  $Id: //main/2011/qhull/src/libqhull/mem.c#4 $$Change: 1464 $
+  $Id: 2b865aebdb8e792ac41f8dab001f1aad5f0fc8e1 $$Change: 1464 $
   $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 */
 

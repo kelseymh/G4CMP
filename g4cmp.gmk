@@ -1,5 +1,5 @@
 # G4CMP/g4cmp.gmk	-- GNUmakefile fragment for building app directories
-# $Id$
+# $Id: a82ab26afcc85bee91813a3bb17ef3c9e291eedf $
 #
 # 20140326  Add support for "G4CMP_DEBUG" compile-time symbol
 # 20150109  Add G4CMP_SET_ELECTRON_MASS support to build with dynamic mass code
@@ -23,7 +23,7 @@ LDFLAGS := -L$(G4WORKDIR)/lib/$(G4SYSTEM)	# First flag for load order
 EXTRALIBS := -lG4cmp -lqhullcpp -lqhullstatic_p
 EXTRALIBS += -Wl,-rpath,$(G4WORKDIR)/lib/$(G4SYSTEM)
 
-G4CMP_FLAGS := -I../library/include -I$(G4WORKDIR)/include -Dqh_QHpointer
+G4CMP_FLAGS := -I../library/include -I../qhull-2012.1/src -Dqh_QHpointer
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
 endif

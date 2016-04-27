@@ -9,7 +9,7 @@
 #ifndef QHULLLINKEDLIST_H
 #define QHULLLINKEDLIST_H
 
-namespace std { struct bidirectional_iterator_tag; struct random_access_iterator_tag; }
+#include <iterator>
 
 #include "QhullError.h"
 
@@ -67,7 +67,7 @@ private:
                         //!disabled since a sentinel must be allocated as the private type
                         QhullLinkedList<T>() {}
                         //!disabled since qs= qs2 is ambiguous (pointer vs. contents)
-    QhullLinkedList<T> &operator=(const QhullLinkedList<T> &l) {}
+    QhullLinkedList<T> &operator=(const QhullLinkedList<T>&) {}
 public:
 
 #//Conversions
@@ -112,7 +112,7 @@ public:
 
     private:
         T               i;
-        friend class    const_iterator;
+        friend class orgQhull::QhullLinkedList<T>::const_iterator;
 
     public:
         typedef std::bidirectional_iterator_tag  iterator_category;

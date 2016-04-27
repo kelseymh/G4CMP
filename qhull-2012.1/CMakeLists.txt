@@ -31,7 +31,7 @@
 #   Remove CMAKE_INTDIR from PreprocessorDefinitions
 #   Adjust target names and destinations (e.g., lib/libqhullstatic_d.a)
 #  
-# $Id: //main/2011/qhull/CMakeLists.txt#23 $$Change: 1494 $
+# $Id: 98dbc705e29c035e6a8f68a8d725deead771d2ff $$Change: 1494 $
 # $DateTime: 2012/02/21 22:41:40 $$Author: bbarber $
 
 project(qhull)

@@ -80,14 +80,14 @@ public:
     bool                operator!=(const QhullPointSet &o) const { return !operator==(o); }
 
 #//Element access -- can not return references since QhullPoint must be generated
-    QhullPoint          at(int idx) const { return operator[](idx); }
+    QhullPoint          at(size_t idx) const { return operator[](idx); }
     QhullPoint          back() const { return last(); }
     //! end element is NULL
     QhullPoint          first() const { QHULL_ASSERT(!isEmpty()); return *begin(); }
     QhullPoint          front() const { return first(); }
     QhullPoint          last() const { QHULL_ASSERT(!isEmpty()); return *(end()-1); }
     // mid() not available.  No setT constructor
-    QhullPoint          operator[](int idx) const { return QhullPoint(dimension(), QhullSet<coordT *>::operator[](idx)); }
+    QhullPoint          operator[](size_t idx) const { return QhullPoint(dimension(), QhullSet<coordT *>::operator[](idx)); }
     QhullPoint          second()  const { return operator[](1); }
     QhullPoint          value(int idx) const;
     // Non-const since copy is an alias

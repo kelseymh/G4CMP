@@ -6,6 +6,7 @@
 # Add G4CMP_DEBUG support
 # Add "link-time" dependendence on Qhull
 # Add G4CMP_SET_ELECTRON_MASS support to build with dynamic mass code
+# Add qhull/src directory to include directories list
 
 name := G4cmp
 
@@ -15,7 +16,7 @@ endif
 
 include $(G4INSTALL)/config/architecture.gmk
 
-G4CMP_FLAGS += -I./include -I$(G4WORKDIR)/include -I$(G4INCLUDE) -Dqh_QHpointer 
+G4CMP_FLAGS += -I./include -I../qhull-2012.1/src -I$(G4INCLUDE) -Dqh_QHpointer 
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
 endif

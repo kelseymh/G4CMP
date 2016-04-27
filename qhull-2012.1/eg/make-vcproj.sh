@@ -4,7 +4,7 @@
 #
 # [jan'12] Additional changes made by hand for qhull 2012.1.   This file updated but not tested.
 #
-# $Id: //main/2011/qhull/eg/make-vcproj.sh#5 $$Change: 1476 $
+# $Id: 90f3450c31e4333c1a9992ad1f83c095f4749ab3 $$Change: 1476 $
 # $DateTime: 2012/01/28 09:37:56 $$Author: bbarber $
 
 if [[ ! -f CMakeLists.txt || ! -f src/qhull-all.pro ]]; then

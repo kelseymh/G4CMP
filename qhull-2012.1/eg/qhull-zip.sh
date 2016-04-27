@@ -6,7 +6,7 @@
 #   can not use path with $zip_file 
 #   odd error messages if can't locate directory
 #
-# $Id: //main/2011/qhull/eg/qhull-zip.sh#16 $$Change: 1493 $
+# $Id: b9b04b54cbfe57fff3f6cda2ee8f09a96c30f4bc $$Change: 1493 $
 # $DateTime: 2012/02/20 09:31:24 $$Author: bbarber $
 
 if [[ $# -eq 0 ]]; then
