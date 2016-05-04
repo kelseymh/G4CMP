@@ -177,6 +177,8 @@ set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPInterValleyScattering.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPLocalElectroMagField.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPLukeScattering.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPMatrix.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPMatrix.icc
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPMeshElectricField.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPMessengerBase.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhononBoundaryProcess.hh
