@@ -53,8 +53,14 @@ G4bool G4CMPElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory* 
     G4double startE = track->GetVertexKineticEnergy();
     G4double time = track->GetGlobalTime();
     G4double edp = aStep->GetNonIonizingEnergyDeposit();
-    G4ThreeVector startPosition = track->GetVertexPosition();
-    G4ThreeVector finalPosition = postStepPoint->GetPosition();
+
+    G4StepPoint* preStepPoint = aStep->GetPreStepPoint();
+    G4VPhysicalVolume* pVol = preStepPoint->GetPhysicalVolume();
+    G4AffineTransform toLocal = G4AffineTransform(pVol->GetRotation(),
+                                                  pVol->GetTranslation()).Inverse();
+
+    G4ThreeVector startPosition = toLocal.TransformPoint(track->GetVertexPosition());
+    G4ThreeVector finalPosition = toLocal.TransformPoint(postStepPoint->GetPosition());
 
     G4CMPElectrodeHit* aHit = new G4CMPElectrodeHit();
     aHit->SetTrackID(trackID);
