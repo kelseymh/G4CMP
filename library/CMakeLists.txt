@@ -192,6 +192,7 @@ set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTimeStepper.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTrackInformation.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTriLinearInterp.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPUtils.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPVDriftProcess.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4LatticeLogical.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4LatticeManager.hh
