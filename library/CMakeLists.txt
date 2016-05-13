@@ -123,6 +123,10 @@ set_target_properties(qhullcpp PROPERTIES
     COMPILE_DEFINITIONS "qh_QHpointer"
     VERSION 6.3.1.1494)
     
+# For some reason, OSX likes it if I link these libraries before linking
+# them all at the end.
+target_link_libraries(qhullcpp qhullstatic_p)
+
 include_directories(${PROJECT_SOURCE_DIR}/qhull-2012.1/src)
 
 set(library_SOURCES 
@@ -218,7 +222,7 @@ set(crystal_SETTINGS
     )
 
 add_library(G4cmp SHARED ${library_SOURCES})
-target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
+target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp)
 set_target_properties(G4cmp PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 install(TARGETS G4cmp qhullcpp qhullstatic_p DESTINATION lib)
