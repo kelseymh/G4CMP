@@ -123,6 +123,10 @@ set_target_properties(qhullcpp PROPERTIES
     COMPILE_DEFINITIONS "qh_QHpointer"
     VERSION 6.3.1.1494)
     
+# For some reason, OSX likes it if I link these libraries before linking
+# them all at the end.
+target_link_libraries(qhullcpp qhullstatic_p)
+
 include_directories(${PROJECT_SOURCE_DIR}/qhull-2012.1/src)
 
 set(library_SOURCES 
@@ -177,6 +181,8 @@ set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPInterValleyScattering.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPLocalElectroMagField.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPLukeScattering.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPMatrix.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPMatrix.icc
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPMeshElectricField.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPMessengerBase.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhononBoundaryProcess.hh
@@ -190,6 +196,7 @@ set(library_HEADERS
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTimeStepper.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTrackInformation.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPTriLinearInterp.hh
+   ${PROJECT_SOURCE_DIR}/library/include/G4CMPUtils.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4CMPVDriftProcess.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4LatticeLogical.hh
    ${PROJECT_SOURCE_DIR}/library/include/G4LatticeManager.hh
@@ -215,7 +222,7 @@ set(crystal_SETTINGS
     )
 
 add_library(G4cmp SHARED ${library_SOURCES})
-target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
+target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp)
 set_target_properties(G4cmp PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 install(TARGETS G4cmp qhullcpp qhullstatic_p DESTINATION lib)
