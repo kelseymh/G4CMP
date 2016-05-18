@@ -19,6 +19,7 @@
 // 20150106  Move Luke phonon generating flag here, out of processes
 // 20150122  Add parameter to rescale voltage in Epot field files
 // 20150603  Add parameter to limit reflections in DriftBoundaryProcess
+// 20160517  
 
 #include "globals.hh"
 #include "G4RunManager.hh"
@@ -34,6 +35,9 @@ public:
   static G4int GetVerboseLevel()         { return Instance()->verbose; }
   static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
   static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
+  static G4int GetMillerH()		 { return Instance()->millerH; }
+  static G4int GetMillerK()		 { return Instance()->millerK; }
+  static G4int GetMillerL()		 { return Instance()->millerL; }
   static G4double GetVoltage()           { return Instance()->voltage; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetGenPhonons()        { return Instance()->genPhonons; }
@@ -42,11 +46,19 @@ public:
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetHitOutput()  { return Instance()->Hit_file; }
 
+  static void GetMillerOrientation(G4int& h, G4int& k, G4int& l) {
+    h = Instance()->millerH; k = Instance()->millerK; l = Instance()->millerL;
+  }
+
   // Change values (e.g., via Messenger)
   static void SetVerboseLevel(G4int value)
     { Instance()->verbose = value; }
   static void SetMaxChargeBounces(G4int value)
     { Instance()->ehBounces = value; }
+  static void SetMaxPhononBounces(G4int value)
+    { Instance()->pBounces = value; }
+  static void SetMillerOrientation(G4int h, G4int k, G4int l)
+    { Instance()->millerH=h; Instance()->millerK=k, Instance()->millerL=l; }
   static void SetVoltage(G4double value)
     { Instance()->voltage = value; UpdateGeometry(); }
   static void SetMinStepScale(G4double value)
@@ -79,6 +91,9 @@ private:
   G4int verbose;		// Global verbosity (all processes, lattices)
   G4int ehBounces;		// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
   G4int pBounces;		// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
+  G4int millerH;		// Lattice orientation ($G4CMP_MILLER_H,_K,_L)
+  G4int millerK;
+  G4int millerL;
   G4String Epot_file;		// Name of E-field file ($G4CMP_EPOT_FILE)
   G4String LatticeDir;		// Lattice data directory ($G4LATTICEDATA)
   G4String Hit_file;		// Output file of e/h hits ($G4CMP_HIT_FILE)

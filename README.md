@@ -47,16 +47,23 @@ G4CMP/library/src/G4CMPConfigMessenger.cc to see what is available.
 
 | Environment variable    | Macro command                 | Value/action                            |
 | ------------------------| ----------------------------- | ----------------------------------------|
-| G4LATTICEDATA		      | /g4cmp/LatticeData	          | Directory with lattice configs          |
-| G4CMP\_DEBUG		      | /g4cmp/verbose		>0:       | Enable diagnostic messages              |
-| G4CMP\_VOLTAGE [V]      | /g4cmp/voltage <V>	!=0:      | Apply uniform +Z voltage                |
-| G4CMP\_EPOT\_FILE [F]   | /g4cmp/EpotFile <F>	V=0:      | Read mesh field file "F"                |
-| G4CMP\_EPOT\_SCALE [F]  | /g4cmp/scaleEpot <M>	V=0:  | Scale the potentials in Epot by factor m|
-| G4CMP\_MIN\_STEP [S]    | /g4cmp/minimumStep <S>	S>0:  | Force minimum step S\*L0                |
-| G4CMP\_MAKE\_PHONONS [R]| /g4cmp/producePhonons <R>     | Generate phonons every 1/R hits         |
-| G4CMP\_EH\_BOUNCES [N]  | /g4cmp/chargeBounces	      | Maximum e/h reflections                 |
-| G4CMP\_PHON\_BOUNCES [N]| /g4cmp/phononBounces	      | Maximum phonon reflections              |
-| G4CMP\_HIT\_FILE [F]	  | /g4cmp/HitsFile <F>	          | Write e/h hit locations to "F"          |
+| G4LATTICEDATA           | /g4cmp/LatticeData	          | Directory with lattice configs          |
+| G4CMP\_DEBUG	           | /g4cmp/verbose <L> >0:        | Enable diagnostic messages              |
+| G4CMP\_VOLTAGE [V]       | /g4cmp/voltage <V>	!=0:       | Apply uniform +Z voltage                |
+| G4CMP\_EPOT\_FILE [F]     | /g4cmp/EpotFile <F> V=0:      | Read mesh field file "F"                |
+| G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEpot <M> V=0:     | Scale the potentials in Epot by factor m|
+| G4CMP\_MIN\_STEP [S]      | /g4cmp/minimumStep <S> S>0:   | Force minimum step S\*L0                |
+| G4CMP\_MAKE\_PHONONS [R]  | /g4cmp/producePhonons <R>     | Generate phonons every 1/R hits         |
+| G4CMP\_MILLER\_H          | /g4cmp/orientation h k l      | Miller indices for lattice orientation  |
+| G4CMP\_MILLER\_K          |                               |                                         |
+| G4CMP\_MILLER\_L          |                               |                                         |
+| G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces          | Maximum e/h reflections                 |
+| G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces          | Maximum phonon reflections              |
+| G4CMP\_HIT\_FILE [F]	    | /g4cmp/HitsFile <F>           | Write e/h hit locations to "F"          |
+
+The default lattice orientation is to be aligned with the associated
+G4VSolid coordinate system.  A different orientation can be specified by
+setting the Miller indices (hkl) with $G4CMP\_ORIENTATION\_H, \_K, and \_L.
 
 The environment variable $G4CMP\_MAKE\_PHONONS controls whether whether the
 two LukeScattering processes (eLukeScattering and hLukeScattering) produce

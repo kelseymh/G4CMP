@@ -15,6 +15,7 @@
 // 20140408  Add valley momentum calculations
 // 20140425  Add "effective mass" calculation for electrons
 // 20150601  Add mapping from electron velocity back to momentum
+// 20160517  Add basis vectors for lattice, to use with Miller orientation
 
 #include "G4LatticeLogical.hh"
 #include "G4RotationMatrix.hh"
@@ -50,6 +51,26 @@ G4LatticeLogical::~G4LatticeLogical() {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+/////////////////////////////////////////////////////////////
+//Complete basis vectors: right-handed, possibly orthonormal
+/////////////////////////////////////////////////////////////
+void G4LatticeLogical::SetBasis() {
+  static const G4ThreeVector origin(0.,0.,0.);
+  if (fBasis[0].isNear(origin,1e-6)) fBasis[0].set(1.,0.,0.);
+  if (fBasis[1].isNear(origin,1e-6)) fBasis[1].set(0.,1.,0.);
+  if (fBasis[2].isNear(origin,1e-6)) fBasis[2] = fBasis[0].cross(fBasis[1]);
+
+  // Ensure that all basis vectors are unit
+  fBasis[0].setMag(1.);
+  fBasis[1].setMag(1.);
+  fBasis[2].setMag(1.);
+
+  if (fBasis[0].cross(fBasis[1]).dot(fBasis[2]) < 0.) {
+    G4cerr << "ERROR G4LatticeLogical has a left-handed basis!" << G4endl;
+  }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 ///////////////////////////////////////////
 //Load map of group velocity scalars (m/s)

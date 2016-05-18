@@ -36,6 +36,7 @@
 G4LatticeReader::G4LatticeReader(G4int vb)
   : verboseLevel(vb), psLatfile(0), pLattice(0), fMapPath(""),
     fToken(""), fValue(0.), fMap(""), fsPol(""), fPol(-1), fNX(0), fNY(0),
+    f3Vec(0.,0.,0.), fLastBasis(-1),
     fDataDir(getenv("G4LATTICEDATA") ?
       (const char*)getenv("G4LATTICEDATA"):"./CrystalMaps"),
     mElectron(electron_mass_c2/c_squared) {}
@@ -59,6 +60,7 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
   }
 
   pLattice = new G4LatticeLogical;	// Create lattice to be filled
+  fLastBasis = -1;			// Reset index counter for basis vectors
 
   G4bool goodLattice = true;
   while (!psLatfile->eof()) {
@@ -75,6 +77,7 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
     pLattice = 0;
   }
 
+  pLattice->SetBasis();	// Fill or complete right-handed basis vectors
   return pLattice;	// Lattice complete; return pointer with ownership
 }
 
@@ -129,6 +132,7 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "vg")       return ProcessMap();	// Velocity magnitudes
   if (fToken == "dyn")      return ProcessConstants();	// Dynamical parameters
   if (fToken == "emass")    return ProcessMassTensor();	// e- mass eigenvalues
+  if (fToken == "basis")    return ProcessBasisVector(); // Crystal axis dir
   if (fToken == "valley")   return ProcessEulerAngles(fToken); // e- drift dirs
   return ProcessValue(fToken);				// Single numeric value
 }
@@ -197,6 +201,23 @@ G4bool G4LatticeReader::ProcessMassTensor() {
 	   << G4endl;
 
   pLattice->SetMassTensor(mxx, myy, mzz);
+  return psLatfile->good();
+}
+
+// Read unit vector components for basis vectors (in order, b1, b2, b3)
+
+G4bool G4LatticeReader::ProcessBasisVector() {
+  *psLatfile >> f3Vec;
+  if (verboseLevel>1) G4cout << " ProcessBasisVector " << f3Vec << G4endl;
+
+  ++fLastBasis;
+  if (fLastBasis>2) {
+    G4cerr << " ERROR too many basis vectors.  Ignorning " << fLastBasis
+	   << G4endl;
+    return false;
+  }
+
+  pLattice->SetBasis(fLastBasis, f3Vec.unit());
   return psLatfile->good();
 }
 

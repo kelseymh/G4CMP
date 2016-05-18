@@ -80,6 +80,9 @@ public:
 public:  
   const G4LatticeLogical* GetLattice() const { return fLattice; }
 
+  // Call through to get crystal basis vectors
+  const G4ThreeVector& GetBasis(G4int i) const { return fLattice->GetBasis(i); }
+
   // Phonon propagation parameters
   G4double GetScatteringConstant() const { return fLattice->GetScatteringConstant(); }
   G4double GetAnhDecConstant() const { return fLattice->GetAnhDecConstant(); }

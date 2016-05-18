@@ -17,6 +17,7 @@
 // 20140408  Move vally momentum calcs to G4LatticeLogical
 // 20140425  Add "effective mass" calculation for electrons
 // 20150601  Add mapping from electron velocity back to momentum
+// 20160517  Replace unit vectors with CLHEP built-in values
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -25,10 +26,10 @@
 #include "G4SystemOfUnits.hh"
 
 
-// Unit vectors defined for convenience (avoid memory churn)
+// Null vector defined for convenience (avoid memory churn)
 
 namespace {
-  G4ThreeVector xhat(1,0,0), yhat(0,1,0), zhat(0,0,1), nullVec(0,0,0);
+  G4ThreeVector nullVec(0,0,0);
 }
 
 
@@ -70,8 +71,9 @@ void G4LatticePhysical::SetLatticeOrientation(G4double t_rot, G4double p_rot) {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void G4LatticePhysical::SetMillerOrientation(G4int h, G4int k, G4int l) {
-  fTheta = halfpi - std::atan2(l+0.000001,h+0.000001);
-  fPhi = halfpi - std::atan2(h+0.000001,k+0.000001);
+  G4ThreeVector norm = h*GetBasis(0) + k*GetBasis(1) + l*GetBasis(2);
+  fTheta = norm.theta();
+  fPhi = norm.phi();
 
   if (verboseLevel) 
     G4cout << "G4LatticePhysical::SetMillerOrientation(" << h << k << l 
@@ -85,13 +87,13 @@ void G4LatticePhysical::SetMillerOrientation(G4int h, G4int k, G4int l) {
 
 const G4ThreeVector&
 G4LatticePhysical::RotateToLattice(G4ThreeVector& dir) const {
-  dir.rotate(yhat,fTheta).rotate(zhat,fPhi);
+  dir.rotate(CLHEP::HepYHat,fTheta).rotate(CLHEP::HepZHat,fPhi);
   return dir;
 }
 
 const G4ThreeVector& 
 G4LatticePhysical::RotateToSolid(G4ThreeVector& dir) const {
-  dir.rotate(zhat,-fPhi).rotate(yhat,-fTheta);
+  dir.rotate(CLHEP::HepZHat,-fPhi).rotate(CLHEP::HepYHat,-fTheta);
   return dir;
 }
 

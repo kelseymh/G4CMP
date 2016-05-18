@@ -18,6 +18,7 @@
 // 20150106  Add command to toggle generating Luke phonons
 // 20150122  Add command to rescale Epot file voltage by some factor
 // 20150603  Add command to limit reflections in DriftBoundaryProcess
+// 20160518  Add commands for Miller orientation, phonon bounces
 
 #include "G4UImessenger.hh"
 
@@ -51,7 +52,8 @@ private:
   G4UIdirectory* cmdDir;
 
   G4UIcmdWithAnInteger* verboseCmd;
-  G4UIcmdWithAnInteger* bounceCmd;
+  G4UIcmdWithAnInteger* ehBounceCmd;
+  G4UIcmdWithAnInteger* pBounceCmd;
   G4UIcmdWithADoubleAndUnit* voltageCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
@@ -59,6 +61,7 @@ private:
   G4UIcmdWithAString* fileCmd;
   G4UIcmdWithAString* dirCmd;
   G4UIcmdWithAString* hitsCmd;
+  G4UIcmdWithAString* millerCmd;	// Will parse out three integers
 };
 
 #include "G4CMPConfigMessenger.icc"
