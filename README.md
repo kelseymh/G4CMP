@@ -30,7 +30,8 @@ installed and configured (via GEANT4's bin/geant4.sh or bin/geant4.csh. See
 GEANT4's documentation for further instructions.).
 
 Add the G4CMP environment variables using the g4cmp\_env.csh or ...sh scripts
-found in the G4CMP top level directory.
+found in the G4CMP top level directory.  This must be done before building
+or running executables.
 
 G4CMP is only configured for use on Linux and MacOSX platforms.  A minimum
 configuration requires a recent enough version of GCC or Clang to support

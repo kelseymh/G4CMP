@@ -2,6 +2,7 @@
 # $Id$
 #
 # 20140509  Support different executables by looking at target name
+# 20160518  Use G4CMPINSTALL instead of ".." to find includes
 
 ifndef G4CMP_NAME		# Two-pass method
   .PHONY : g4cmpCharge luke_dist electron_Epv ionize
@@ -12,4 +13,4 @@ ifndef G4CMP_NAME		# Two-pass method
   G4CMP_NAME := g4cmpCharge
 endif
 
-include ../g4cmp.gmk
+include $(G4CMPINSTALL)/g4cmp.gmk
