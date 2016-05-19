@@ -491,9 +491,11 @@ void G4LatticeLogical::DumpMap(std::ostream& os, G4int pol,
   os << "VG " << name << " " << (pol==0?"L":pol==1?"FT":pol==2?"ST":"??")
      << " " << fVresTheta << " " << fVresPhi << std::endl;
 
-  for (G4int iTheta=0; iTheta<fVresTheta; iTheta++) {
-    for (G4int iPhi=0; iPhi<fVresPhi; iPhi++) {
-      os << fMap[pol][iTheta][iPhi] << std::endl;
+  if (verboseLevel) {
+    for (G4int iTheta=0; iTheta<fVresTheta; iTheta++) {
+      for (G4int iPhi=0; iPhi<fVresPhi; iPhi++) {
+	os << fMap[pol][iTheta][iPhi] << std::endl;
+      }
     }
   }
 }
@@ -503,12 +505,14 @@ void G4LatticeLogical::Dump_NMap(std::ostream& os, G4int pol,
   os << "VDir " << name << " " << (pol==0?"L":pol==1?"FT":pol==2?"ST":"??")
      << " " << fDresTheta << " " << fDresPhi << std::endl;
 
-  for (G4int iTheta=0; iTheta<fDresTheta; iTheta++) {
-    for (G4int iPhi=0; iPhi<fDresPhi; iPhi++) {
-      os << fN_map[pol][iTheta][iPhi].x()
-	 << " " << fN_map[pol][iTheta][iPhi].y()
-	 << " " << fN_map[pol][iTheta][iPhi].z()
-	 << std::endl;
+  if (verboseLevel) {
+    for (G4int iTheta=0; iTheta<fDresTheta; iTheta++) {
+      for (G4int iPhi=0; iPhi<fDresPhi; iPhi++) {
+	os << fN_map[pol][iTheta][iPhi].x()
+	   << " " << fN_map[pol][iTheta][iPhi].y()
+	   << " " << fN_map[pol][iTheta][iPhi].z()
+	   << std::endl;
+      }
     }
   }
 }
