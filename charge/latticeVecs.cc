@@ -27,6 +27,17 @@ void showLatticeFrame(G4LatticePhysical* lat, G4ThreeVector vec) {
 	 << lat->RotateToLattice(vec) << G4endl;
 }
 
+void showValleyFrame(G4LatticePhysical* lat, G4int iv, G4ThreeVector vec) {
+  G4cout << " Vector " << vec << " in valley " << iv << " frame "
+	 << vec.transform(lat->GetValley(iv)) << G4endl;
+}
+
+void fromValleyFrame(G4LatticePhysical* lat, G4int iv, G4ThreeVector vec) {
+  G4cout << " Valley " << iv << " vector " << vec << " in physical frame "
+	 << vec.transform(lat->GetValley(iv).inverse()) << G4endl;
+}
+
+
 int main(int argc, char* argv[]) {
   // Materials available
   G4Material* ge = new G4Material("Ge", 32., 72.630*g/mole, 5.323*g/cm3,
@@ -65,12 +76,33 @@ int main(int argc, char* argv[]) {
 
   geLat->SetVerboseLevel(1);
 
+  G4ThreeVector diag(1.,1.,1.);		// Test vector for frame changes
+
+  // Show reference vectors in valley frame, and vice versa
+  G4int iValley = 1;
+
+  G4cout << "Testing valley " << iValley << " frame: ";
+  geLat->GetLattice()->DumpValley(G4cout, iValley);
+  G4cout << G4endl;
+
+  showValleyFrame(geLat, iValley, CLHEP::HepXHat);
+  showValleyFrame(geLat, iValley, CLHEP::HepYHat);
+  showValleyFrame(geLat, iValley, CLHEP::HepZHat);
+  showValleyFrame(geLat, iValley, diag);
+  G4cout << G4endl;
+
+  fromValleyFrame(geLat, iValley, CLHEP::HepXHat);
+  fromValleyFrame(geLat, iValley, CLHEP::HepYHat);
+  fromValleyFrame(geLat, iValley, CLHEP::HepZHat);
+  fromValleyFrame(geLat, iValley, diag);
+  G4cout << G4endl;
+
   // Report what should be null rotations
-  G4ThreeVector diag(1.,1.,1.);
   showLatticeFrame(geLat, CLHEP::HepXHat);
   showLatticeFrame(geLat, CLHEP::HepYHat);
   showLatticeFrame(geLat, CLHEP::HepZHat);
   showLatticeFrame(geLat, diag);
+  G4cout << G4endl;
 
   // Put lattice into (100) orientation
   geLat->SetMillerOrientation(1,0,0);
@@ -78,6 +110,7 @@ int main(int argc, char* argv[]) {
   showLatticeFrame(geLat, CLHEP::HepYHat);
   showLatticeFrame(geLat, CLHEP::HepZHat);
   showLatticeFrame(geLat, diag);
+  G4cout << G4endl;
 
   // Put lattice into (001) orientation
   geLat->SetMillerOrientation(0,0,1);
@@ -85,6 +118,7 @@ int main(int argc, char* argv[]) {
   showLatticeFrame(geLat, CLHEP::HepYHat);
   showLatticeFrame(geLat, CLHEP::HepZHat);
   showLatticeFrame(geLat, diag);
+  G4cout << G4endl;
 
   // Put lattice into (111) orientation
   geLat->SetMillerOrientation(1,1,1);
@@ -92,4 +126,5 @@ int main(int argc, char* argv[]) {
   showLatticeFrame(geLat, CLHEP::HepYHat);
   showLatticeFrame(geLat, CLHEP::HepZHat);
   showLatticeFrame(geLat, diag);
+  G4cout << G4endl;
 }
