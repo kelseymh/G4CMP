@@ -16,6 +16,7 @@
 // 20140425  Add "effective mass" calculation for electrons
 // 20150601  Add mapping from electron velocity back to momentum
 // 20160517  Add basis vectors for lattice, to use with Miller orientation
+// 20160520  Add reporting function to format valley Euler angles
 
 #include "G4LatticeLogical.hh"
 #include "G4RotationMatrix.hh"
@@ -465,8 +466,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << std::endl;
 
   for (size_t i=0; i<NumberOfValleys(); i++) {
-    os << "valley " << fValley[i].phi()/deg << " " << fValley[i].theta()/deg
-       << " " << fValley[i].psi()/deg << " deg" << std::endl;
+    DumpValley(os, i);
   }
 
   os << "# Intervalley scattering parameters"
@@ -482,8 +482,6 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
   DumpMap(os, 0, "L.ssv");
   DumpMap(os, 1, "FT.ssv");
   DumpMap(os, 2, "ST.ssv");
-
-
 }
 
 void G4LatticeLogical::DumpMap(std::ostream& os, G4int pol,
@@ -517,3 +515,13 @@ void G4LatticeLogical::Dump_NMap(std::ostream& os, G4int pol,
   }
 }
 
+// Print out Euler angles of requested valley
+
+void G4LatticeLogical::DumpValley(std::ostream& os, G4int iv) const {
+  if (iv < 0 || iv >= NumberOfValleys()) return;
+
+  os << "valley " << fValley[iv].phi()/deg
+     << " " << fValley[iv].theta()/deg
+     << " " << fValley[iv].psi()/deg
+     << " deg" << std::endl;
+}

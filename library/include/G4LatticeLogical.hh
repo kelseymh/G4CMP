@@ -19,6 +19,7 @@
 // 20140425  Add "effective mass" calculation for electrons
 // 20150601  Add mapping from electron velocity back to momentum
 // 20160517  Add basis vectors for lattice, to use with Miller orientation
+// 20160520  Add reporting function to format valley Euler angles
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -140,6 +141,9 @@ public:
 
   size_t NumberOfValleys() const { return fValley.size(); }
   const G4RotationMatrix& GetValley(G4int iv) const;
+
+  // Print out Euler angles of requested valley
+  void DumpValley(std::ostream& os, G4int iv) const;
 
   // Parameters for electron intervalley scattering
   void SetIVField(G4double v)    { fIVField = v; }
