@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
   G4ThreeVector diag(1.,1.,1.);		// Test vector for frame changes
 
   // Show reference vectors in valley frame, and vice versa
-  G4int iValley = 1;
+  G4int iValley = 2;
 
   G4cout << "Testing valley " << iValley << " frame: ";
   geLat->GetLattice()->DumpValley(G4cout, iValley);
