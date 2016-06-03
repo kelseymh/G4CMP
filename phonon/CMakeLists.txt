@@ -29,5 +29,9 @@ set(phonon_SOURCES
    )
     
 add_executable(g4cmpPhonon g4cmpPhonon.cc ${phonon_SOURCES})
-target_link_libraries(g4cmpPhonon G4cmp ${Geant4_LIBRARIES} qhullcpp qhullstatic_p)
+target_link_libraries(g4cmpPhonon G4cmp)
+set_target_properties(g4cmpPhonon PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+    INSTALL_RPATH_USE_LINK_RPATH TRUE
+    BUILD_WITH_INSTALL_RPATH FALSE)
 install(TARGETS g4cmpPhonon DESTINATION bin)
