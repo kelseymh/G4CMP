@@ -2,42 +2,42 @@
 #include <utility>
 
 template <class T>
-G4CMPMatrix<T>::G4CMPMatrix() : data(std::vector<T>()), ncols(0) {}
+inline G4CMPMatrix<T>::G4CMPMatrix() : data(std::vector<T>()), ncols(0) {}
 
 template <class T>
-G4CMPMatrix<T>::G4CMPMatrix(size_t rows, size_t columns, const T& val) :
+inline G4CMPMatrix<T>::G4CMPMatrix(size_t rows, size_t columns, const T& val) :
   data(std::vector<T>(rows*columns, val)), ncols(columns) {}
 
 template <class T>
-G4CMPMatrix<T>::G4CMPMatrix(const std::vector<T>& vec, size_t columns) :
+inline G4CMPMatrix<T>::G4CMPMatrix(const std::vector<T>& vec, size_t columns) :
   data(vec), ncols(columns) {}
 
 template <class T>
-G4CMPMatrix<T>::G4CMPMatrix(const std::vector<T>& vec) :
+inline G4CMPMatrix<T>::G4CMPMatrix(const std::vector<T>& vec) :
   data(vec), ncols(vec.size()) {}
 
 template <class T>
-typename G4CMPMatrix<T>::iterator G4CMPMatrix<T>::begin() {
+inline typename G4CMPMatrix<T>::iterator G4CMPMatrix<T>::begin() {
   return data.begin();
 }
 
 template <class T>
-typename G4CMPMatrix<T>::const_iterator G4CMPMatrix<T>::begin() const {
+inline typename G4CMPMatrix<T>::const_iterator G4CMPMatrix<T>::begin() const {
   return data.begin();
 }
 
 template <class T>
-typename G4CMPMatrix<T>::iterator G4CMPMatrix<T>::end() {
-  return data.begin();
-}
-
-template <class T>
-typename G4CMPMatrix<T>::const_iterator G4CMPMatrix<T>::end() const {
+inline typename G4CMPMatrix<T>::iterator G4CMPMatrix<T>::end() {
   return data.end();
 }
 
 template <class T>
-G4CMPMatrix<T>& G4CMPMatrix<T>::operator+=(const G4CMPMatrix<T>& rhs) {
+inline typename G4CMPMatrix<T>::const_iterator G4CMPMatrix<T>::end() const {
+  return data.end();
+}
+
+template <class T>
+inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator+=(const G4CMPMatrix<T>& rhs) {
   // TODO: Add assert on data dimensions != rhs.data dimensions?
   for (size_t i = 0; i < data.size(); ++i)
     data[i] += rhs.data[i];
@@ -45,7 +45,7 @@ G4CMPMatrix<T>& G4CMPMatrix<T>::operator+=(const G4CMPMatrix<T>& rhs) {
 }
 
 template <class T>
-G4CMPMatrix<T>& G4CMPMatrix<T>::operator-=(const G4CMPMatrix<T>& rhs) {
+inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator-=(const G4CMPMatrix<T>& rhs) {
   // TODO: Add assert on data dimensions != rhs.data dimensions?
   for (size_t i = 0; i < data.size(); ++i)
     data[i] -= rhs.data[i];
@@ -53,28 +53,28 @@ G4CMPMatrix<T>& G4CMPMatrix<T>::operator-=(const G4CMPMatrix<T>& rhs) {
 }
 
 template <class T>
-G4CMPMatrix<T>& G4CMPMatrix<T>::operator+=(const T& rhs) {
+inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator+=(const T& rhs) {
   for (size_t i = 0; i < data.size(); ++i)
     data[i] += rhs;
   return *this;
 }
 
 template <class T>
-G4CMPMatrix<T>& G4CMPMatrix<T>::operator-=(const T& rhs) {
+inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator-=(const T& rhs) {
   for (size_t i = 0; i < data.size(); ++i)
     data[i] -= rhs;
   return *this;
 }
 
 template <class T>
-G4CMPMatrix<T>& G4CMPMatrix<T>::operator*=(const T& rhs) {
+inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator*=(const T& rhs) {
   for (size_t i = 0; i < data.size(); ++i)
     data[i] *= rhs;
   return *this;
 }
 
 template <class T>
-G4CMPMatrix<T>& G4CMPMatrix<T>::operator/=(const T& rhs) {
+inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator/=(const T& rhs) {
   for (size_t i = 0; i < data.size(); ++i)
     data[i] /= rhs;
   return *this;
@@ -82,38 +82,38 @@ G4CMPMatrix<T>& G4CMPMatrix<T>::operator/=(const T& rhs) {
 
 // Access
 template <class T>
-T& G4CMPMatrix<T>::operator()(size_t i, size_t j) {
+inline T& G4CMPMatrix<T>::operator()(size_t i, size_t j) {
   return data[i*ncols + j];
 }
 
 template <class T>
-const T& G4CMPMatrix<T>::operator()(size_t i, size_t j) const {
+inline const T& G4CMPMatrix<T>::operator()(size_t i, size_t j) const {
   return data[i*ncols + j];
 }
 
 template <class T>
-T& G4CMPMatrix<T>::operator()(size_t i) {
+inline T& G4CMPMatrix<T>::operator()(size_t i) {
   return data[i];
 }
 
 template <class T>
-const T& G4CMPMatrix<T>::operator()(size_t i) const {
+inline const T& G4CMPMatrix<T>::operator()(size_t i) const {
   return data[i];
 }
 
 template <class T>
-T& G4CMPMatrix<T>::operator[](size_t i) {
+inline T& G4CMPMatrix<T>::operator[](size_t i) {
   return data[i];
 }
 
 template <class T>
-const T& G4CMPMatrix<T>::operator[](size_t i) const {
+inline const T& G4CMPMatrix<T>::operator[](size_t i) const {
   return data[i];
 }
 
 // Modify
 template <class T>
-void G4CMPMatrix<T>::push_back(const std::vector<T>& vec) {
+inline void G4CMPMatrix<T>::push_back(const std::vector<T>& vec) {
   // TODO: Except if vec.size() != columns?
   // Supposedly no need for data.reserve(). insert() will precalculate size.
   data.insert(data.end(), vec.begin(), vec.end());
@@ -121,7 +121,7 @@ void G4CMPMatrix<T>::push_back(const std::vector<T>& vec) {
 }
 
 template <class T>
-void G4CMPMatrix<T>::push_back(std::vector<T>&& vec) {
+inline void G4CMPMatrix<T>::push_back(std::vector<T>&& vec) {
   // TODO: Except if vec.size() != columns?
   // Supposedly no need for data.reserve(). insert() will precalculate size.
   data.insert(data.end(), make_move_iterator(vec.begin()),
@@ -130,7 +130,7 @@ void G4CMPMatrix<T>::push_back(std::vector<T>&& vec) {
 }
 
 template <class T>
-void G4CMPMatrix<T>::concat(const G4CMPMatrix<T>& rhs) {
+inline void G4CMPMatrix<T>::concat(const G4CMPMatrix<T>& rhs) {
   // TODO: Except if rhs.columns() != columns?
   // Supposedly no need for data.reserve(). insert() will precalculate size.
   data.insert(data.end(), rhs.data.begin(), rhs.data.end());
@@ -138,7 +138,7 @@ void G4CMPMatrix<T>::concat(const G4CMPMatrix<T>& rhs) {
 }
 
 template <class T>
-void G4CMPMatrix<T>::concat(G4CMPMatrix<T>&& rhs) {
+inline void G4CMPMatrix<T>::concat(G4CMPMatrix<T>&& rhs) {
   // TODO: Except if rhs.columns() != columns?
   // Supposedly no need for data.reserve(). insert() will precalculate size.
   data.insert(data.end(), make_move_iterator(rhs.data.begin()),
@@ -148,74 +148,74 @@ void G4CMPMatrix<T>::concat(G4CMPMatrix<T>&& rhs) {
 
 // Information
 template <class T>
-size_t G4CMPMatrix<T>::size() const {
+inline size_t G4CMPMatrix<T>::size() const {
   return data.size();
 }
 
 template <class T>
-size_t G4CMPMatrix<T>::columns() const {
+inline size_t G4CMPMatrix<T>::columns() const {
   return ncols;
 }
 
 template <class T>
-size_t G4CMPMatrix<T>::rows() const {
+inline size_t G4CMPMatrix<T>::rows() const {
   return ncols ? data.size()/ncols : 0;
 }
 
 // Comparison
 template <class T>
-bool operator==(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
+inline bool operator==(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
   return (lhs.data == rhs.data) && (lhs.ncols == rhs.ncols);
 }
 
 template <class T>
-bool operator!=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
+inline bool operator!=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
   return !(lhs == rhs);
 }
 
 template <class T>
-bool operator<(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
+inline bool operator<(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
   return (lhs.data < rhs.data);
 }
 
 template <class T>
-bool operator<=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
+inline bool operator<=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
   return (lhs.data <= rhs.data);
 }
 
 template <class T>
-bool operator>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
+inline bool operator>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
   return (lhs.data > rhs.data);
 }
 
 template <class T>
-bool operator>=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
+inline bool operator>=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
   return (lhs.data >= rhs.data);
 }
 
 // Negate
 template <class T>
-G4CMPMatrix<T>& operator-(G4CMPMatrix<T>& lhs) {
+inline G4CMPMatrix<T>& operator-(G4CMPMatrix<T>& lhs) {
   return lhs *= T(-1);
 }
 
 // Matrix-Matrix math:
 template <class T>
-G4CMPMatrix<T> operator+(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs) {
+inline G4CMPMatrix<T> operator+(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs) {
   return lhs += rhs;
 }
 
 template <class T>
-G4CMPMatrix<T> operator-(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs) {
+inline G4CMPMatrix<T> operator-(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs) {
   return lhs -= rhs;
 }
 
 template <class T>
-G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
+inline G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
   // Naive algorithm with some cache friendliness. Still pretty slow.
   G4CMPMatrix<T> out(lhs.rows(), rhs.columns());
   for (size_t i = 0; i < out.rows(); ++i)
-  for (size_t k = 0; k < lhs.columns(); ++k)
+  for (size_t k = 0; k < lhs.columns(); ++k) // lhs.columns() == rhs.rows()
   for (size_t j = 0; j < out.columns(); ++j)
     out(i,j) += lhs(i,k) * rhs(k,j);
 
@@ -224,41 +224,56 @@ G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
 
 // Matrix-Number math:
 template <class T>
-G4CMPMatrix<T> operator+(G4CMPMatrix<T> lhs, const T& rhs) {
+inline G4CMPMatrix<T> operator+(G4CMPMatrix<T> lhs, const T& rhs) {
   return lhs += rhs;
 }
 
 template <class T>
-G4CMPMatrix<T> operator+(const T& lhs, G4CMPMatrix<T> rhs) {
+inline G4CMPMatrix<T> operator+(const T& lhs, G4CMPMatrix<T> rhs) {
   return rhs += lhs;
 }
 
 template <class T>
-G4CMPMatrix<T> operator-(G4CMPMatrix<T> lhs, const T& rhs) {
+inline G4CMPMatrix<T> operator-(G4CMPMatrix<T> lhs, const T& rhs) {
   return lhs -= rhs;
 }
 
 template <class T>
-G4CMPMatrix<T> operator-(const T& lhs, G4CMPMatrix<T> rhs) {
+inline G4CMPMatrix<T> operator-(const T& lhs, G4CMPMatrix<T> rhs) {
   return rhs -= lhs;
 }
 
 template <class T>
-G4CMPMatrix<T> operator*(G4CMPMatrix<T> lhs, const T& rhs) {
+inline G4CMPMatrix<T> operator*(G4CMPMatrix<T> lhs, const T& rhs) {
   return lhs *= rhs;
 }
 
 template <class T>
-G4CMPMatrix<T> operator*(const T& lhs, G4CMPMatrix<T> rhs) {
+inline G4CMPMatrix<T> operator*(const T& lhs, G4CMPMatrix<T> rhs) {
   return rhs *= lhs;
 }
 
 template <class T>
-G4CMPMatrix<T> operator/(G4CMPMatrix<T> lhs, const T& rhs) {
+inline G4CMPMatrix<T> operator/(G4CMPMatrix<T> lhs, const T& rhs) {
   return lhs /= rhs;
 }
 
 template <class T>
-G4CMPMatrix<T> operator/(const T& lhs, G4CMPMatrix<T> rhs) {
+inline G4CMPMatrix<T> operator/(const T& lhs, G4CMPMatrix<T> rhs) {
   return rhs /= lhs;
+}
+
+template <class T>
+std::ostream& operator<<(std::ostream& out, const G4CMPMatrix<T>& rhs) {
+  out << "[";
+  for (size_t i = 0; i < rhs.rows(); ++i) {
+    out << "[ ";
+    for (size_t j = 0; j < rhs.columns()-1; ++j)
+      out << rhs(i,j) << ", ";
+
+    out << rhs(i, rhs.columns()-1) << " ]";
+    if (i < rhs.rows()-1) out << std::endl;
+  }
+  out << "]" << std::endl;
+  return out;
 }

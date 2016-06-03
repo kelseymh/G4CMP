@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstdlib>
+#include <ostream>
 
 // Forward declarations needed for friend operators
 template <class T> class G4CMPMatrix;
@@ -44,12 +45,12 @@ public:
   G4CMPMatrix& operator/=(const T& rhs);
 
   // Comparison
-  friend bool operator== <T>(const G4CMPMatrix& lhs, const G4CMPMatrix& rhs);
-  friend bool operator!= <T>(const G4CMPMatrix& lhs, const G4CMPMatrix& rhs);
-  friend bool operator<  <T>(const G4CMPMatrix& lhs, const G4CMPMatrix& rhs);
-  friend bool operator<= <T>(const G4CMPMatrix& lhs, const G4CMPMatrix& rhs);
-  friend bool operator>  <T>(const G4CMPMatrix& lhs, const G4CMPMatrix& rhs);
-  friend bool operator>= <T>(const G4CMPMatrix& lhs, const G4CMPMatrix& rhs);
+  friend bool operator== <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
+  friend bool operator!= <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
+  friend bool operator<  <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
+  friend bool operator<= <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
+  friend bool operator>  <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
+  friend bool operator>= <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
 
   // Access
   T& operator()(size_t i, size_t j);
@@ -104,6 +105,10 @@ template <class T>
 G4CMPMatrix<T> operator/(G4CMPMatrix<T> lhs, const T& rhs);
 template <class T>
 G4CMPMatrix<T> operator/(const T& lhs, G4CMPMatrix<T> rhs);
+
+// Printing
+template <class T>
+std::ostream& operator<<(std::ostream& out, const G4CMPMatrix<T>& rhs);
 
 #include "G4CMPMatrix.icc"
 #endif
