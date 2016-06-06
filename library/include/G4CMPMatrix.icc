@@ -117,33 +117,33 @@ inline void G4CMPMatrix<T>::push_back(const std::vector<T>& vec) {
   // TODO: Except if vec.size() != columns?
   // Supposedly no need for data.reserve(). insert() will precalculate size.
   data.insert(data.end(), vec.begin(), vec.end());
-  ++ncols;
 }
 
 template <class T>
 inline void G4CMPMatrix<T>::push_back(std::vector<T>&& vec) {
   // TODO: Except if vec.size() != columns?
-  // Supposedly no need for data.reserve(). insert() will precalculate size.
   data.insert(data.end(), make_move_iterator(vec.begin()),
                           make_move_iterator(vec.end()));
-  ++ncols;
 }
 
 template <class T>
-inline void G4CMPMatrix<T>::concat(const G4CMPMatrix<T>& rhs) {
-  // TODO: Except if rhs.columns() != columns?
+inline void G4CMPMatrix<T>::vert_cat(const G4CMPMatrix<T>& rhs) {
+  // TODO: Except if rhs.columns() != columns()?
   // Supposedly no need for data.reserve(). insert() will precalculate size.
   data.insert(data.end(), rhs.data.begin(), rhs.data.end());
-  ncols += rhs.ncols;
 }
 
 template <class T>
-inline void G4CMPMatrix<T>::concat(G4CMPMatrix<T>&& rhs) {
-  // TODO: Except if rhs.columns() != columns?
+inline void G4CMPMatrix<T>::vert_cat(G4CMPMatrix<T>&& rhs) {
+  // TODO: Except if rhs.columns() != columns()?
   // Supposedly no need for data.reserve(). insert() will precalculate size.
   data.insert(data.end(), make_move_iterator(rhs.data.begin()),
                           make_move_iterator(rhs.data.end()));
-  ncols += rhs.ncols;
+}
+
+template <class T>
+inline void G4CMPMatrix<T>::horiz_cat(const G4CMPMatrix<T>& rhs) {
+  *this = horiz_cat(*this, rhs);
 }
 
 // Information
@@ -261,6 +261,32 @@ inline G4CMPMatrix<T> operator/(G4CMPMatrix<T> lhs, const T& rhs) {
 template <class T>
 inline G4CMPMatrix<T> operator/(const T& lhs, G4CMPMatrix<T> rhs) {
   return rhs /= lhs;
+}
+
+// Matrix-Matrix operations:
+template <class T>
+inline G4CMPMatrix<T> vert_cat(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs) {
+  return lhs.vert_cat(rhs);
+}
+
+template <class T>
+inline G4CMPMatrix<T> vert_cat(G4CMPMatrix<T> lhs, G4CMPMatrix<T>&& rhs) {
+  return lhs.vert_cat(rhs);
+}
+
+template <class T>
+inline G4CMPMatrix<T> horiz_cat(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
+  // TODO: Except if rhs.rows() != rows()?
+  size_t newCols = lhs.columns() + rhs.columns();
+  G4CMPMatrix<T> newMat(lhs.rows(), newCols);
+  for (size_t i = 0; i < lhs.rows(); ++i) {
+    size_t j = 0;
+    for (; j < lhs.columns(); ++j) 
+      newMat(i,j) = lhs(i,j);
+    for (; j < newCols; ++j) 
+      newMat(i,j) = rhs(i,j);
+  }
+  return newMat;
 }
 
 template <class T>

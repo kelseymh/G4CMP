@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <ostream>
 
-// Forward declarations needed for friend operators
+// Forward declarations needed for friend functions 
 template <class T> class G4CMPMatrix;
 
 template <class T>
@@ -63,8 +63,10 @@ public:
   // Modify
   void push_back(const std::vector<T>& vec);
   void push_back(std::vector<T>&& vec);
-  void concat(const G4CMPMatrix<T>& rhs);
-  void concat(G4CMPMatrix<T>&& rhs);
+  void vert_cat(const G4CMPMatrix<T>& rhs);
+  void vert_cat(G4CMPMatrix<T>&& rhs);
+  void horiz_cat(const G4CMPMatrix<T>& rhs);
+  // No point in having a move version of horiz_cat
 
   // Information
   size_t size() const;
@@ -105,6 +107,14 @@ template <class T>
 G4CMPMatrix<T> operator/(G4CMPMatrix<T> lhs, const T& rhs);
 template <class T>
 G4CMPMatrix<T> operator/(const T& lhs, G4CMPMatrix<T> rhs);
+
+// Matrix-Matrix operations:
+template <class T>
+G4CMPMatrix<T> vert_cat(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs);
+template <class T>
+G4CMPMatrix<T> vert_cat(G4CMPMatrix<T> lhs, G4CMPMatrix<T>&& rhs);
+template <class T>
+G4CMPMatrix<T> horiz_cat(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
 
 // Printing
 template <class T>
