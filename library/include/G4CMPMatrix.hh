@@ -84,35 +84,55 @@ G4CMPMatrix<T>& operator-(G4CMPMatrix<T>& lhs);
 
 // Matrix-Matrix math:
 template <class T>
-G4CMPMatrix<T> operator+(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs);
+G4CMPMatrix<T> operator+(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
 template <class T>
-G4CMPMatrix<T> operator-(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs);
+G4CMPMatrix<T> operator+(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs);
+template <class T>
+G4CMPMatrix<T> operator-(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
+template <class T>
+G4CMPMatrix<T> operator-(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs);
 template <class T>
 G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
 
 // Matrix-Number math:
 template <class T>
-G4CMPMatrix<T> operator+(G4CMPMatrix<T> lhs, const T& rhs);
+G4CMPMatrix<T> operator+(const G4CMPMatrix<T>& lhs, const T& rhs);
 template <class T>
-G4CMPMatrix<T> operator+(const T& lhs, G4CMPMatrix<T> rhs);
+G4CMPMatrix<T> operator+(G4CMPMatrix<T>&& lhs, const T& rhs);
 template <class T>
-G4CMPMatrix<T> operator-(G4CMPMatrix<T> lhs, const T& rhs);
+G4CMPMatrix<T> operator+(const T& lhs, const G4CMPMatrix<T>& rhs);
 template <class T>
-G4CMPMatrix<T> operator-(const T& lhs, G4CMPMatrix<T> rhs);
+G4CMPMatrix<T> operator+(const T& lhs, G4CMPMatrix<T>&& rhs);
 template <class T>
-G4CMPMatrix<T> operator*(G4CMPMatrix<T> lhs, const T& rhs);
+G4CMPMatrix<T> operator-(const G4CMPMatrix<T>& lhs, const T& rhs);
 template <class T>
-G4CMPMatrix<T> operator*(const T& lhs, G4CMPMatrix<T> rhs);
+G4CMPMatrix<T> operator-(G4CMPMatrix<T>&& lhs, const T& rhs);
 template <class T>
-G4CMPMatrix<T> operator/(G4CMPMatrix<T> lhs, const T& rhs);
+G4CMPMatrix<T> operator-(const T& lhs, const G4CMPMatrix<T>& rhs);
 template <class T>
-G4CMPMatrix<T> operator/(const T& lhs, G4CMPMatrix<T> rhs);
+G4CMPMatrix<T> operator-(const T& lhs, G4CMPMatrix<T>&& rhs);
+template <class T>
+G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, const T& rhs);
+template <class T>
+G4CMPMatrix<T> operator*(G4CMPMatrix<T>&& lhs, const T& rhs);
+template <class T>
+G4CMPMatrix<T> operator*(const T& lhs, const G4CMPMatrix<T>& rhs);
+template <class T>
+G4CMPMatrix<T> operator*(const T& lhs, G4CMPMatrix<T>&& rhs);
+template <class T>
+G4CMPMatrix<T> operator/(const G4CMPMatrix<T>& lhs, const T& rhs);
+template <class T>
+G4CMPMatrix<T> operator/(G4CMPMatrix<T>&& lhs, const T& rhs);
+template <class T>
+G4CMPMatrix<T> operator/(const T& lhs, const G4CMPMatrix<T>& rhs);
+template <class T>
+G4CMPMatrix<T> operator/(const T& lhs, G4CMPMatrix<T>&& rhs);
 
 // Matrix-Matrix operations:
 template <class T>
-G4CMPMatrix<T> vert_cat(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs);
+G4CMPMatrix<T> vert_cat(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
 template <class T>
-G4CMPMatrix<T> vert_cat(G4CMPMatrix<T> lhs, G4CMPMatrix<T>&& rhs);
+G4CMPMatrix<T> vert_cat(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs);
 template <class T>
 G4CMPMatrix<T> horiz_cat(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
 

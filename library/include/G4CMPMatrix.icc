@@ -201,17 +201,32 @@ inline G4CMPMatrix<T>& operator-(G4CMPMatrix<T>& lhs) {
 
 // Matrix-Matrix math:
 template <class T>
-inline G4CMPMatrix<T> operator+(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs) {
+inline G4CMPMatrix<T> operator+(const G4CMPMatrix<T>& lhs, 
+                                const G4CMPMatrix<T>& rhs) {
+  G4CMPMatrix<T> out(lhs);
+  return out += rhs;
+}
+
+template <class T>
+inline G4CMPMatrix<T> operator+(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs) {
   return lhs += rhs;
 }
 
 template <class T>
-inline G4CMPMatrix<T> operator-(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs) {
+inline G4CMPMatrix<T> operator-(const G4CMPMatrix<T>& lhs, 
+                                const G4CMPMatrix<T>& rhs) {
+  G4CMPMatrix<T> out(lhs);
+  return out -= rhs;
+}
+
+template <class T>
+inline G4CMPMatrix<T> operator-(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs) {
   return lhs -= rhs;
 }
 
 template <class T>
-inline G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
+inline G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, 
+                                const G4CMPMatrix<T>& rhs) {
   // Naive algorithm with some cache friendliness. Still pretty slow.
   G4CMPMatrix<T> out(lhs.rows(), rhs.columns());
   for (size_t i = 0; i < out.rows(); ++i)
@@ -224,58 +239,107 @@ inline G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>&
 
 // Matrix-Number math:
 template <class T>
-inline G4CMPMatrix<T> operator+(G4CMPMatrix<T> lhs, const T& rhs) {
+inline G4CMPMatrix<T> operator+(const G4CMPMatrix<T>& lhs, const T& rhs) {
+  G4CMPMatrix<T> out(lhs);
+  return out += rhs;
+}
+
+template <class T>
+inline G4CMPMatrix<T> operator+(G4CMPMatrix<T>&& lhs, const T& rhs) {
   return lhs += rhs;
 }
 
 template <class T>
-inline G4CMPMatrix<T> operator+(const T& lhs, G4CMPMatrix<T> rhs) {
-  return rhs += lhs;
+inline G4CMPMatrix<T> operator+(const T& lhs, const G4CMPMatrix<T>& rhs) {
+  return rhs + lhs;
 }
 
 template <class T>
-inline G4CMPMatrix<T> operator-(G4CMPMatrix<T> lhs, const T& rhs) {
+inline G4CMPMatrix<T> operator+(const T& lhs, G4CMPMatrix<T>&& rhs) {
+  return rhs + lhs;
+}
+
+template <class T>
+inline G4CMPMatrix<T> operator-(const G4CMPMatrix<T>& lhs, const T& rhs) {
+  G4CMPMatrix<T> out(lhs);
+  return out -= rhs;
+}
+
+template <class T>
+inline G4CMPMatrix<T> operator-(G4CMPMatrix<T>&& lhs, const T& rhs) {
   return lhs -= rhs;
 }
 
 template <class T>
-inline G4CMPMatrix<T> operator-(const T& lhs, G4CMPMatrix<T> rhs) {
-  return rhs -= lhs;
+inline G4CMPMatrix<T> operator-(const T& lhs, const G4CMPMatrix<T>& rhs) {
+  return rhs - lhs;
 }
 
 template <class T>
-inline G4CMPMatrix<T> operator*(G4CMPMatrix<T> lhs, const T& rhs) {
+inline G4CMPMatrix<T> operator-(const T& lhs, G4CMPMatrix<T>&& rhs) {
+  return rhs - lhs;
+}
+
+template <class T>
+inline G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, const T& rhs) {
+  G4CMPMatrix<T> out(lhs);
+  return out *= rhs;
+}
+
+template <class T>
+inline G4CMPMatrix<T> operator*(G4CMPMatrix<T>&& lhs, const T& rhs) {
   return lhs *= rhs;
 }
 
 template <class T>
-inline G4CMPMatrix<T> operator*(const T& lhs, G4CMPMatrix<T> rhs) {
-  return rhs *= lhs;
+inline G4CMPMatrix<T> operator*(const T& lhs, const G4CMPMatrix<T>& rhs) {
+  return rhs * lhs;
 }
 
 template <class T>
-inline G4CMPMatrix<T> operator/(G4CMPMatrix<T> lhs, const T& rhs) {
+inline G4CMPMatrix<T> operator*(const T& lhs, G4CMPMatrix<T>&& rhs) {
+  return rhs * lhs;
+}
+
+template <class T>
+inline G4CMPMatrix<T> operator/(const G4CMPMatrix<T>& lhs, const T& rhs) {
+  G4CMPMatrix<T> out(lhs);
+  return out /= rhs;
+}
+
+template <class T>
+inline G4CMPMatrix<T> operator/(G4CMPMatrix<T>&& lhs, const T& rhs) {
   return lhs /= rhs;
 }
 
 template <class T>
-inline G4CMPMatrix<T> operator/(const T& lhs, G4CMPMatrix<T> rhs) {
-  return rhs /= lhs;
+inline G4CMPMatrix<T> operator/(const T& lhs, const G4CMPMatrix<T>& rhs) {
+  return rhs / lhs;
+}
+
+template <class T>
+inline G4CMPMatrix<T> operator/(const T& lhs, G4CMPMatrix<T>&& rhs) {
+  return rhs / lhs;
 }
 
 // Matrix-Matrix operations:
 template <class T>
-inline G4CMPMatrix<T> vert_cat(G4CMPMatrix<T> lhs, const G4CMPMatrix<T>& rhs) {
-  return lhs.vert_cat(rhs);
+inline G4CMPMatrix<T> vert_cat(const G4CMPMatrix<T>& lhs, 
+                               const G4CMPMatrix<T>& rhs) {
+  G4CMPMatrix<T> out(lhs);
+  out.vert_cat(rhs);
+  return out;
 }
 
 template <class T>
-inline G4CMPMatrix<T> vert_cat(G4CMPMatrix<T> lhs, G4CMPMatrix<T>&& rhs) {
-  return lhs.vert_cat(rhs);
+inline G4CMPMatrix<T> vert_cat(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs) {
+  lhs.vert_cat(rhs);
+  return lhs;
 }
 
 template <class T>
-inline G4CMPMatrix<T> horiz_cat(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
+inline G4CMPMatrix<T> horiz_cat(const G4CMPMatrix<T>& lhs, 
+                                const G4CMPMatrix<T>& rhs) {
   // TODO: Except if rhs.rows() != rows()?
   size_t newCols = lhs.columns() + rhs.columns();
   G4CMPMatrix<T> newMat(lhs.rows(), newCols);
@@ -284,7 +348,7 @@ inline G4CMPMatrix<T> horiz_cat(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>&
     for (; j < lhs.columns(); ++j) 
       newMat(i,j) = lhs(i,j);
     for (; j < newCols; ++j) 
-      newMat(i,j) = rhs(i,j);
+      newMat(i,j) = rhs(i,j - lhs.columns());
   }
   return newMat;
 }
