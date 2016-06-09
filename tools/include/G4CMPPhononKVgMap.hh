@@ -1,55 +1,20 @@
-//  G4CMPG4CMPPhononKVgMap.h
+//  G4CMPPhononKVgMap.hh
 //  Created by Daniel Palken in 2014 for G4CMP
 
-#ifndef __G4CMPG4CMPPhononKVgMap__
-#define __G4CMPG4CMPPhononKVgMap__
+#ifndef G4CMPPhononKVgMap_hh
+#define G4CMPPhononKVgMap_hh
 
 #include "G4CMPEigenSolver.hh" // Numerical Recipes III code
 #include "G4ThreeVector.hh"
 #include <string>
-using namespace std;
+using std::string;
 
-// ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 // '''''''''''''''''''''''''''''' PUBLIC CONSTANTS ''''''''''''''''''''''''''''''''
-// data type indexing
-/* note that this is based on the index (starting at 0) within the large data structure,
- and is off by one from the column number (still starting at 0) in the lookup table
- itself, due to the mode column which is present to make the lookup table a good deal
- more read- and debugg-able */
-#define N_X                     0           // k_x directional component
-#define N_Y                     1           // k_y directional component
-#define N_Z                     2           // k_z directional component
-#define THETA                   3           // angle out from x-axis in xy-plane
-#define PHI                     4           // angle down from z-axis
-#define S_X                     5           // slowness x component
-#define S_Y                     6           // slowness y component
-#define S_Z                     7           // slowness z component
-#define S_MAG                   8           // slowness magnitude
-#define S_PAR                   9           // slowness parallel component
-#define V_P                     10          // phase velocity = omega/k
-#define V_G                     11          // group velocity = grad_k(omega)
-#define V_GX                    12          // group velocity x component
-#define V_GY                    13          // group velocity y component
-#define V_GZ                    14          // group velocity z component
-#define E_X                     15          // polarization x compoent
-#define E_Y                     16          // polarization y compoent
-#define E_Z                     17          // polarization z compoent
-// in total:
-#define NUM_DATA_TYPES          18          // see above
 
-// wave mode indexing for eigenvalues and vectors
-#define L                       0           // longitudinal
-#define ST                      1           // slow transverse
-#define FT                      2           // fast transverse
-// in total:
-#define NUM_MODES               3           // L, ST, FT
-
-// interpolation
+// magic values for use with interpolation
 #define OUT_OF_BOUNDS           9.0e299     // signals looking outside of the lookup table
 #define ERRONEOUS_INPUT         1.0e99      // signals that input is not correct
 // ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-// ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
 
 // ||||||||||||||||||||||||| Material STRUCT ||||||||||||||||||||||||||||||||||||||
 struct Material {
@@ -83,13 +48,26 @@ private:
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// ++++++++++++++++++++++++++++++ G4CMPPhononKVgMap STRUCT ++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++ G4CMPPhononKVgMap STRUCT ++++++++++++++++++++++++
 struct G4CMPPhononKVgMap {
 private:
   Material* material;
   vector<vector<G4CMPBiLinearInterp> > quantityMap;
   vector<vector<vector<double> > > lookupData;
+
+public:
+  // Symbolic identifiers for various arrays
+  enum DataTypes { N_X, N_Y, N_Z, THETA, PHI,	// Wavevector
+		   S_X, S_Y, S_Z, S_MAG, S_PAR,	// Slowness (1/vphase)
+		   V_P,				// Vphase = omega/k
+		   V_G, V_GX, V_GY, V_GZ,		// Vgroup
+		   E_X, E_Y, E_Z,			// Polarization
+		   NUM_DATA_TYPES };
+  string getDataTypeName(int TYPE);
+
+  // Wave mode indexing (longitudinal, slow and fast transverse)
+  enum PhononModes { L, ST, FT, NUM_MODES };
+  string getModeName(int MODE);
     
 public:
   G4CMPPhononKVgMap(Material *mat) : material(mat) {
@@ -97,9 +75,7 @@ public:
     generateMultiEvenTable();
   }
 
-  ~G4CMPPhononKVgMap() {
-    clearQuantityMap();
-  }
+  ~G4CMPPhononKVgMap() { clearQuantityMap(); }
 
   // Direct calculations
   void computeKinematics(const G4ThreeVector& n_dir);
@@ -134,7 +110,7 @@ private:
   void setUpDataVectors();
   void generateLookupTable();
   void generateMultiEvenTable();
-  G4CMPBiLinearInterp generateEvenTable(int MODE, int TYPE_OUT);
+  G4CMPBiLinearInterp generateEvenTable(PhononModes MODE, DataTypes TYPE_OUT);
   void clearQuantityMap();
 
 private:
@@ -148,18 +124,14 @@ private:
   G4ThreeVector polarization[NUM_MODES];
 };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// ############################# EXTRANEOUS HEADERS ###############################
-string getModeName(int MODE);
-string getDataTypeName(int DATA_TYPE);
-
+// ############################# UTILITY FUNCTIONS ################################
 bool doubApproxEquals(double D1, double D2, double Tol = 1.0e-10,
                       bool USE_ABS_TOL = true);
 bool doubGreaterThanApprox(double D1, double D2, double TOL = 1.0e-10,
                            bool USE_ABS_TOL = true);
 bool doubLessThanApprox(double D1, double D2, double TOL = 1.0e-10,
                         bool USE_ABS_TOL = true);
-// #############################################################################
+// #################################################################################
 
-#endif /* defined(__KMappingCondensed__G4CMPPhononKVgMap__) */
+#endif /* G4CMPPhononKVgMap_hh */

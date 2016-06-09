@@ -42,17 +42,17 @@ int main(int argc, const char * argv[])
   const int Nphi = 321;
   
   // 4. Loop over modes (L, ST, FT) to set up output files
-  for (int mode=L; mode<NUM_MODES; mode++) {
-    string vgname = getModeName(mode) + ".ssv";
+  for (int mode=G4CMPPhononKVgMap::L; mode<G4CMPPhononKVgMap::NUM_MODES; mode++) {
+    string vgname = map->getModeName(mode) + ".ssv";
     ofstream vgfile(vgname, ios::trunc);
     vgfile << scientific << setprecision(7);
     
-    string vdirname = getModeName(mode) + "Vec.ssv";
+    string vdirname = map->getModeName(mode) + "Vec.ssv";
     ofstream vdirfile(vdirname, ios::trunc);
     vdirfile << scientific << setprecision(7);
     
     cout << "Generating " << materialToUse->getName() << " "
-	 << getModeName(mode) << " files " << Ntheta << " x " << Nphi
+	 << map->getModeName(mode) << " files " << Ntheta << " x " << Nphi
 	 << endl;
     
     G4ThreeVector kvec, Vg;

@@ -333,7 +333,9 @@ double G4CMPPhononKVgMap::interpolateEven(double nx, double ny, int MODE, int TY
 
 /* sets up JUST ONE interpolation table for N_X and N_Y, which are evenly spaced.
    Any one kind of data (TYPE_OUT) can be read off of this table */
-G4CMPBiLinearInterp G4CMPPhononKVgMap::generateEvenTable(int MODE, int TYPE_OUT) {
+G4CMPBiLinearInterp 
+G4CMPPhononKVgMap::generateEvenTable(G4CMPPhononKVgMap::PhononModes MODE,
+				     G4CMPPhononKVgMap::DataTypes TYPE_OUT) {
   /* set up the two vectors of input components (N_X and N_Y) which
      will define the grid that will be interpolated on */
   size_t SIZE = lookupData[MODE][N_X].size();
@@ -403,7 +405,7 @@ void G4CMPPhononKVgMap::generateMultiEvenTable() {
     vector<G4CMPBiLinearInterp> subTable;
     for (int dType = 0; dType < NUM_DATA_TYPES; dType++)
       // make individual tables:
-      subTable.push_back(generateEvenTable(mode, dType));
+      subTable.push_back(generateEvenTable((PhononModes)mode,(DataTypes)dType));
     quantityMap.push_back(subTable);
   }
 }
@@ -459,22 +461,21 @@ void G4CMPPhononKVgMap::writeLookupTable() {
     }
   }
 }
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// ############################# EXTRANEOUS HEADERS ############################
 // given the mode index, returns the symbol "L", "FT", or "ST"
-string getModeName(int MODE) {
+string G4CMPPhononKVgMap::getModeName(int MODE) {
   switch (MODE) {
   case L: return "L";
   case FT: return "FT";
   case ST: return "ST";
+  default: throw("ERROR: not a valid mode");
   } throw("ERROR: not a valid mode");
 }
 
 // given the data type index, returns the abbreviation (s_x, etc...)
 // make sure to update this method if the data types are altered
-string getDataTypeName(int DATA_TYPE) {
-  switch (DATA_TYPE) {
+string G4CMPPhononKVgMap::getDataTypeName(int TYPE) {
+  switch (TYPE) {
   case N_X:   return "n_x";
   case N_Y:   return "n_y";
   case N_Z:   return "n_z";
@@ -493,8 +494,12 @@ string getDataTypeName(int DATA_TYPE) {
   case E_X:   return "e_x";
   case E_Y:   return "e_y";
   case E_Z:   return "e_z";
+  default:  throw("ERROR: not al valid data type");
   } throw("ERROR: not al valid data type");
 }
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// ############################# EXTRANEOUS HEADERS ############################
 
 /* takes two Doubs and returns 'true' if they are sufficiently close
    to one another.  This is to get around the often annoying issue of
