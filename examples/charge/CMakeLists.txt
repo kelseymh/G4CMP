@@ -93,6 +93,7 @@ set_target_properties(g4cmpFETSim PROPERTIES
     BUILD_WITH_INSTALL_RPATH FALSE)
 
 install(TARGETS g4cmpCharge DESTINATION bin)
+install(TARGETS g4cmpIonize DESTINATION bin)
 install(TARGETS g4cmpFETSim DESTINATION bin)
 install(FILES ${charge_EPOT_FILES} DESTINATION EPotFiles COMPONENT config)
 install(FILES ${charge_MACROS} DESTINATION macros/g4cmpCharge)

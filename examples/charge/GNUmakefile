@@ -3,9 +3,10 @@
 #
 # 20140509  Support different executables by looking at target name
 # 20160518  Use G4CMPINSTALL instead of ".." to find includes
+# 20160609  Remove utilities, add FETSim, rename ionize
 
 ifndef G4CMP_NAME		# Two-pass method
-  .PHONY : g4cmpCharge luke_dist electron_Epv ionize
+  .PHONY : g4cmpCharge g4cmpIonize g4cmpFETSim
 
   g4cmpCharge luke_dist electron_Epv ionize :
 	@$(MAKE) G4CMP_NAME=$@ bin
