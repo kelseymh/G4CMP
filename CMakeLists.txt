@@ -39,16 +39,16 @@ option(BUILD_CHANNELING_EXAMPLE "Build charge channeling example. Default: OFF" 
 add_subdirectory(library)
 
 if(BUILD_ALL_EXAMPLES OR BUILD_PHONON_EXAMPLE)
-    add_subdirectory(phonon)
+    add_subdirectory(examples/phonon)
 endif()
 
 if(BUILD_ALL_EXAMPLES OR BUILD_CHARGE_EXAMPLE)
-    add_subdirectory(charge)
+    add_subdirectory(examples/charge)
 endif()
 
 if(BUILD_ALL_EXAMPLES OR BUILD_CHANNELING_EXAMPLE)
     #FIXME: Channeling demo is broken right now
-    #add_subdirectory(channeling)
+    #add_subdirectory(examples/channeling)
 endif()
 
 #-----------------------------------------------------------------------------
