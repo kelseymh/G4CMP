@@ -18,6 +18,7 @@
 // 20140401  Add valley momentum calculations
 // 20140425  Add "effective mass" calculation for electrons
 // 20150601  Add mapping from electron velocity back to momentum
+// 20160608  Drop (theta,phi) lattice orientation function.
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -32,11 +33,9 @@ class G4LatticePhysical {
 public:
   G4LatticePhysical();		// User *MUST* set configuration manually
 
-  G4LatticePhysical(const G4LatticeLogical* Lat,	// Lattice orientation
-		    G4double theta=0., G4double phi=0.);
-
-  G4LatticePhysical(const G4LatticeLogical* Lat,	// Miller indices
-		    G4int h, G4int k, G4int l);
+  // Miller orientation aligns lattice normal (hkl) with geometry +Z
+  G4LatticePhysical(const G4LatticeLogical* Lat,
+		    G4int h=0, G4int k=0, G4int l=0, G4double rot=0.);
 
   virtual ~G4LatticePhysical();
 
@@ -46,8 +45,8 @@ public:
   void SetLatticeLogical(const G4LatticeLogical* Lat) { fLattice = Lat; }
 
   // Set physical lattice orientation, relative to G4VSolid coordinates
-  void SetLatticeOrientation(G4double theta, G4double phi);
-  void SetMillerOrientation(G4int h, G4int k, G4int l);
+  // Miller orientation aligns lattice normal (hkl) with geometry +Z
+  void SetMillerOrientation(G4int h, G4int k, G4int l, G4double rot=0.);
 
   // Rotate input vector between lattice and solid orientations
   // Returns new vector value for convenience
@@ -128,8 +127,11 @@ public:
 private:
   G4int verboseLevel;			// Enable diagnostic output
 
-  G4double fTheta, fPhi;		// Lattice orientation within object
   const G4LatticeLogical* fLattice;	// Underlying lattice parameters
+  G4RotationMatrix fOrient;		// Rotate geometry into lattice frame
+  G4RotationMatrix fInverse;
+  G4int hMiller, kMiller, lMiller;	// Save Miller indices for dumps
+  G4double fRot;
 };
 
 // Write lattice structure to output stream
