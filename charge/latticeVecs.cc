@@ -86,15 +86,23 @@ int main(int argc, char* argv[]) {
   G4cout << G4endl;
 
   showValleyFrame(geLat, iValley, CLHEP::HepXHat);
+  showValleyFrame(geLat, iValley,-CLHEP::HepXHat);
   showValleyFrame(geLat, iValley, CLHEP::HepYHat);
+  showValleyFrame(geLat, iValley,-CLHEP::HepYHat);
   showValleyFrame(geLat, iValley, CLHEP::HepZHat);
+  showValleyFrame(geLat, iValley,-CLHEP::HepZHat);
   showValleyFrame(geLat, iValley, diag);
+  showValleyFrame(geLat, iValley,-diag);
   G4cout << G4endl;
 
   fromValleyFrame(geLat, iValley, CLHEP::HepXHat);
+  fromValleyFrame(geLat, iValley,-CLHEP::HepXHat);
   fromValleyFrame(geLat, iValley, CLHEP::HepYHat);
+  fromValleyFrame(geLat, iValley,-CLHEP::HepYHat);
   fromValleyFrame(geLat, iValley, CLHEP::HepZHat);
+  fromValleyFrame(geLat, iValley,-CLHEP::HepZHat);
   fromValleyFrame(geLat, iValley, diag);
+  fromValleyFrame(geLat, iValley,-diag);
   G4cout << G4endl;
 
   // Report what should be null rotations
