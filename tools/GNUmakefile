@@ -4,7 +4,8 @@
 # 20160518  Use G4CMPINSTALL instead of ".." to find includes
 # 20160609  Support different executables by looking at target name
 
-TOOLS := g4cmpKVtables electron_Epv luke_dist
+# Add additional utility programs to list below
+TOOLS := g4cmpKVtables
 .PHONY : $(TOOLS)
 
 ifndef G4CMP_NAME
@@ -12,8 +13,6 @@ help :			# First target, in case user just types "make"
 	@echo "G4CMP/tools : This directory contains standalone utilities"
 	@echo
 	@echo "g4cmpKVtables : Generate phonon K-Vgroup mapping files"
-	@echo "electron_Epv  : Generate tab-delimited file of e- kinematics"
-	@echo "luke_dist     : Generate tab-delimited file of phonon kinematics"
 	@echo
 	@echo Please specify which one to build as your make target, or "all"
 
