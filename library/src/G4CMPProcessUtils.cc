@@ -205,8 +205,8 @@ void G4CMPProcessUtils::GetLocalVelocityVector(const G4Track &track,
 
 G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const {
   if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
-    return theLattice->MapV_elToK_HV(GetValleyIndex(track),
-                                     GetLocalVelocityVector(track));
+    return theLattice->MapPtoK_HV(GetValleyIndex(track),
+				  GetLocalMomentum(track));
   } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
     return GetLocalMomentum(track) / hbarc;
   } else {

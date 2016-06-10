@@ -120,8 +120,14 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   if (verboseLevel>2) {
+    if (aTrack.GetDefinition() == G4CMPDriftElectron::Definition()) {
+      G4cout << " K_valley (" << GetValleyIndex(aTrack) << ") direction: "
+	     << theLattice->MapPtoK_valley(GetValleyIndex(aTrack),
+					   GetLocalMomentum(aTrack)).unit()
+	     << G4endl;
+    }
     G4cout << " K direction: " << GetLocalWaveVector(aTrack).unit()
-           << "\n P direction: " << aTrack.GetMomentumDirection() << G4endl;
+           << "\n P direction: " << GetLocalMomentum(aTrack).unit() << G4endl;
   }
 
   // If the particle doesn't get absorbed, it either reflects or transmits
@@ -165,6 +171,12 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
                 EventMustBeAborted, "Invalid particle for this process.");
   }
 
+  if (verboseLevel>2) {
+    G4cout << " AbsorbTrack: absProb " << absProb
+	   << " local k-perp " << GetLocalWaveVector(aTrack)*surfNorm
+	   <<" >? absMinK " << absMinK << G4endl;
+  }
+
   return (G4UniformRand() <= absProb &&
           GetLocalWaveVector(aTrack)*surfNorm > absMinK);
 }
@@ -192,6 +204,10 @@ G4bool G4CMPDriftBoundaryProcess::ReflectTrack(const G4Track& aTrack,
                           GetChargeMaterialPropertiesTablePointer()
                                                             );
   G4double reflProb = chargePropTable->GetConstProperty("reflProb");
+
+  if (verboseLevel>2)
+    G4cout << " ReflectTrack: reflProb " << reflProb << G4endl;
+
   return (G4UniformRand() <= reflProb);
 }
 
@@ -212,7 +228,6 @@ G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack,
 
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track reflected" << G4endl;
-
 
   G4ThreeVector momDir = aStep.GetPostStepPoint()->GetMomentumDirection();
   if (verboseLevel>2)
@@ -272,6 +287,9 @@ G4VParticleChange*
 G4CMPDriftBoundaryProcess::DoTransmission(const G4Track& aTrack,
                                           const G4Step& aStep,
                                           const G4SurfaceProperty* surfProp) {
+  if (verboseLevel>1)
+    G4cout << GetProcessName() << ": Track transmitted" << G4endl;
+
   //noop - "Move along, Particle."
   return &aParticleChange;
 }
