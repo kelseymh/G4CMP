@@ -22,6 +22,7 @@
 //	     (for use with AlongStepDoIt() actions).
 // 20151209  Replace trackMap classes with an AuxiliaryInformation class.
 // 20160107  Add GetVelocity functions.
+// 20160610  Add accessor for auxiliary information
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -32,6 +33,7 @@
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 
+class G4CMPTrackInformation;
 class G4LatticePhysical;
 class G4ParticleDefinition;
 class G4VPhysicalVolume;
@@ -55,6 +57,12 @@ public:
   virtual void SetTransforms(const G4VTouchable* touchable);
   virtual void SetTransforms(const G4RotationMatrix* rot,
 			     const G4ThreeVector& trans);
+
+  // Extract auxiliary information for track (current track if none given)
+  const G4CMPTrackInformation* GetTrackInfo(const G4Track* track=0) const;
+  const G4CMPTrackInformation* GetTrackInfo(const G4Track& track) const {
+    return GetTrackInfo(&track);
+  }
 
   // Convert global to local coordinates
   inline G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const {
@@ -278,6 +286,7 @@ protected:
 
   const G4ParticleDefinition* GetCurrentParticle() const;
   const G4Track* GetCurrentTrack() const { return currentTrack; }
+
   G4int GetCurrentValley() const { return GetValleyIndex(currentTrack); }
   G4int fPhysicsModelID;
 

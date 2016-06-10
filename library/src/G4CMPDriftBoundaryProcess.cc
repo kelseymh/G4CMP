@@ -150,16 +150,15 @@ void G4CMPDriftBoundaryProcess::LoadDataForTrack(const G4Track* track) {
 
 // Decide and apply different surface actions; subclasses may override
 
-G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
-                                              const G4Step& aStep,
-                                              const G4SurfaceProperty* surfProp) {
+G4bool G4CMPDriftBoundaryProcess::
+AbsorbTrack(const G4Track& aTrack, const G4Step& aStep,
+	    const G4SurfaceProperty* surfProp) {
   // Check out this abomination:
   G4MaterialPropertiesTable*
     chargePropTable = const_cast<G4MaterialPropertiesTable*>(
                         static_cast<const G4CMPSurfaceProperty*>(surfProp)->
                           GetChargeMaterialPropertiesTablePointer()
                                                             );
-  G4ThreeVector surfNorm = GetSurfaceNormal(aStep);
   G4double absProb = chargePropTable->GetConstProperty("absProb");
   G4double absMinK;
   if (aTrack.GetDefinition() == G4CMPDriftElectron::Definition()) {
@@ -171,14 +170,18 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
                 EventMustBeAborted, "Invalid particle for this process.");
   }
 
+  G4ThreeVector kvec = GetLocalWaveVector(aTrack);
+
+  // NOTE:  K vector above is in local coords, must use local normal
+  G4ThreeVector surfNorm = GetLocalDirection(GetSurfaceNormal(aStep));
+
   if (verboseLevel>2) {
     G4cout << " AbsorbTrack: absProb " << absProb
-	   << " local k-perp " << GetLocalWaveVector(aTrack)*surfNorm
+	   << " local k-perp " << kvec*surfNorm
 	   <<" >? absMinK " << absMinK << G4endl;
   }
 
-  return (G4UniformRand() <= absProb &&
-          GetLocalWaveVector(aTrack)*surfNorm > absMinK);
+  return (G4UniformRand() <= absProb && kvec*surfNorm > absMinK);
 }
 
 G4VParticleChange*
@@ -229,10 +232,6 @@ G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack,
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track reflected" << G4endl;
 
-  G4ThreeVector momDir = aStep.GetPostStepPoint()->GetMomentumDirection();
-  if (verboseLevel>2)
-    G4cout << " Old momentum direction " << momDir << G4endl;
-
   G4ThreeVector surfNorm = GetSurfaceNormal(aStep);
 
   // Electrons and holes need to be handled separately until we further
@@ -268,6 +267,10 @@ G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack,
 
     FillParticleChange(GetCurrentValley(), p);	// Handle effective mass, vel
   } else if (aTrack.GetDefinition() == G4CMPDriftHole::Definition()) {
+    G4ThreeVector momDir = aStep.GetPostStepPoint()->GetMomentumDirection();
+    if (verboseLevel>2)
+      G4cout << " Old momentum direction " << momDir << G4endl;
+
     G4double momNorm = momDir * surfNorm;
     momDir -= 2.*momNorm*surfNorm;
 

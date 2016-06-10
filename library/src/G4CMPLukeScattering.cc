@@ -105,6 +105,10 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID));
 
   G4ThreeVector ktrk = GetLocalWaveVector(aTrack);
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
+    ktrk = theLattice->MapPtoK_HV(GetValleyIndex(aTrack),
+				  GetLocalMomentum(aTrack));
+  }
   G4double kmag = ktrk.mag();
   G4double kSound = CalculateKSound(trackInfo);
 
