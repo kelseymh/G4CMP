@@ -5,9 +5,12 @@
 #define G4CMPPhononKVgMap_hh
 
 #include "G4CMPEigenSolver.hh" // Numerical Recipes III code
+#include "G4CMPInterpolator.hh"
 #include "G4ThreeVector.hh"
 #include <string>
+#include <vector>
 using std::string;
+using std::vector;
 
 // '''''''''''''''''''''''''''''' PUBLIC CONSTANTS ''''''''''''''''''''''''''''''''
 

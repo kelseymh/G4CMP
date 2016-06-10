@@ -49,4 +49,13 @@ private:
 
 #include "matrix.icc"
 
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@  Matrix Classes @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+#include <vector>
+typedef std::vector<double> VecDoub;
+typedef matrix<int> MatInt;
+typedef matrix<double> MatDoub;
+
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 #endif	/* matrix.h */
