@@ -1,7 +1,7 @@
 # Charge carrier parameters
 vsound 9000.0 #approximate
-l0_e 160.9e-6
-l0_h 70.5e-6
+l0_e 16.9e-6
+l0_h 7.5e-6
 #hole and electron masses taken from Robert's thesis
 hmass 0.50
 emass 0.91 0.19 0.19
