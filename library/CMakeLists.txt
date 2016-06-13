@@ -22,93 +22,93 @@ endif()
 include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
-# Qhull Compilation stuff
+# Qhull Compilation stuff -- sources are under current (library/) directory
 #
 set(libqhull_HEADERS
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/libqhull.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/geom.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/io.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/mem.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/merge.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/poly.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/qhull_a.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/qset.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/random.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/stat.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/user.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/libqhull.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/geom.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/io.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/mem.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/merge.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/poly.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/qhull_a.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/qset.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/random.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/stat.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/user.h
 )
 
 set(libqhull_SOURCES
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/global.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/stat.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/geom2.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/poly2.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/merge.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/libqhull.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/geom.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/poly.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/qset.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/mem.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/random.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/usermem.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/userprintf.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/io.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/user.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/rboxlib.c
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhull/userprintf_rbox.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/global.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/stat.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/geom2.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/poly2.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/merge.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/libqhull.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/geom.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/poly.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/qset.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/mem.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/random.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/usermem.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/userprintf.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/io.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/user.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/rboxlib.c
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhull/userprintf_rbox.c
    ${libqhull_HEADERS}
 )
 
 set(libqhullcpp_HEADERS
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/Coordinates.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/functionObjects.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/PointCoordinates.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/Qhull.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullError.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacet.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacetList.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacetSet.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullHyperplane.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullIterator.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullLinkedList.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPoint.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPoints.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPointSet.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullQh.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullRidge.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullSet.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullSets.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullStat.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullVertex.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullVertexSet.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RboxPoints.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RoadError.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RoadLogEvent.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/UsingLibQhull.h
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/qhulltest/RoadTest.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/Coordinates.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/functionObjects.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/PointCoordinates.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/Qhull.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullError.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacet.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacetList.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacetSet.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullHyperplane.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullIterator.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullLinkedList.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPoint.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPoints.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPointSet.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullQh.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullRidge.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullSet.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullSets.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullStat.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullVertex.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullVertexSet.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RboxPoints.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RoadError.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RoadLogEvent.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/UsingLibQhull.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/qhulltest/RoadTest.h
 )
 
 set(libqhullcpp_SOURCES
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/Coordinates.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/PointCoordinates.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/Qhull.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacet.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacetList.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacetSet.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullHyperplane.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPoint.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPointSet.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPoints.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullQh.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullRidge.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullSet.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullStat.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullVertex.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullVertexSet.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RboxPoints.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RoadError.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RoadLogEvent.cpp
-   ${PROJECT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/UsingLibQhull.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/Coordinates.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/PointCoordinates.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/Qhull.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacet.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacetList.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullFacetSet.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullHyperplane.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPoint.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPointSet.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullPoints.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullQh.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullRidge.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullSet.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullStat.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullVertex.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/QhullVertexSet.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RboxPoints.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RoadError.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/RoadLogEvent.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/UsingLibQhull.cpp
    ${libqhullcpp_HEADERS}
 )
 
@@ -126,88 +126,88 @@ set_target_properties(qhullcpp PROPERTIES
 # them all at the end.
 target_link_libraries(qhullcpp qhull_p)
 
-include_directories(${PROJECT_SOURCE_DIR}/qhull-2012.1/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src)
 
 set(library_SOURCES 
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPConfigManager.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPConfigMessenger.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPDriftBoundaryProcess.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPDriftElectron.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPDriftHole.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPElectrodeHit.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPElectrodeSensitivity.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPEqEMField.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPFieldManager.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPInterValleyScattering.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPLocalElectroMagField.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPLukeScattering.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPMeshElectricField.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPMessengerBase.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPPhononBoundaryProcess.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPPhysics.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPPhysicsList.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPProcessUtils.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPSecondaryProduction.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPStackingAction.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPSurfaceProperty.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPTimeStepper.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPTrackInformation.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPTriLinearInterp.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4CMPVDriftProcess.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4LatticeLogical.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4LatticeManager.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4LatticePhysical.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4LatticeReader.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4PhononDownconversion.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4PhononLong.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4PhononPolarization.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4PhononScattering.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4PhononTransFast.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4PhononTransSlow.cc
-   ${PROJECT_SOURCE_DIR}/library/src/G4VPhononProcess.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigManager.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigMessenger.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftBoundaryProcess.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftElectron.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftHole.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeHit.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeSensitivity.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEqEMField.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFieldManager.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyScattering.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLocalElectroMagField.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeScattering.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMeshElectricField.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMessengerBase.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononBoundaryProcess.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysics.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysicsList.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPProcessUtils.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSecondaryProduction.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPStackingAction.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSurfaceProperty.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTimeStepper.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTrackInformation.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTriLinearInterp.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVDriftProcess.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeLogical.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeManager.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticePhysical.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeReader.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononDownconversion.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononLong.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononPolarization.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononScattering.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransFast.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VPhononProcess.cc
    )
 
 set(library_HEADERS
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPConfigManager.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPConfigMessenger.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPDriftBoundaryProcess.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPDriftElectron.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPDriftHole.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPElectrodeHit.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPElectrodeSensitivity.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPEqEMField.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPFieldManager.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPInterValleyScattering.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPLocalElectroMagField.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPLukeScattering.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPMatrix.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPMatrix.icc
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPMeshElectricField.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPMessengerBase.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhononBoundaryProcess.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhysics.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPPhysicsList.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPProcessUtils.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPProcessSubType.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPSecondaryProduction.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPStackingAction.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPSurfaceProperty.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPTimeStepper.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPTrackInformation.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPTriLinearInterp.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPUtils.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4CMPVDriftProcess.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4LatticeLogical.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4LatticeManager.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4LatticePhysical.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4LatticeReader.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4PhononDownconversion.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4PhononLong.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4PhononPolarization.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4PhononScattering.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4PhononTransFast.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4PhononTransSlow.hh
-   ${PROJECT_SOURCE_DIR}/library/include/G4VPhononProcess.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigManager.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftBoundaryProcess.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftElectron.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftHole.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeHit.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeSensitivity.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEqEMField.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldManager.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLocalElectroMagField.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeScattering.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.icc
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMeshElectricField.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMessengerBase.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysics.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysicsList.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPProcessUtils.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPProcessSubType.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSecondaryProduction.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPStackingAction.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSurfaceProperty.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTimeStepper.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTrackInformation.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTriLinearInterp.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPUtils.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVDriftProcess.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticeLogical.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticeManager.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticePhysical.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticeReader.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononDownconversion.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononLong.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononPolarization.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononScattering.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransFast.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
    )
 
 set(crystal_SETTINGS

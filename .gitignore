@@ -1,6 +1,6 @@
 # Ignore temporary files produced by qhull build
-qhull-2012.1/bin/
-qhull-2012.1/lib/
+library/qhull-2012.1/bin/
+library/qhull-2012.1/lib/
 *~
 *.o
 *.log
