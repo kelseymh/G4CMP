@@ -23,15 +23,14 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 #----------------------------------------------------------------------------
-# Options to build examples
+# Options to build examples and other directories
 #
 
-option(BUILD_ALL_EXAMPLES "Build phonon, charge, and charge channeling
-examples. Default: OFF" OFF)
+option(BUILD_G4CMP_TOOLS "Build utility and support programs.  Default: ON" ON)
+option(BUILD_G4CMP_TESTS "Build unit tests for classes.  Default: OFF" OFF)
+option(BUILD_ALL_EXAMPLES "Build phonon and charge examples. Default: OFF" OFF)
 option(BUILD_PHONON_EXAMPLE "Build phonon example. Default: OFF" OFF)
 option(BUILD_CHARGE_EXAMPLE "Build charge example. Default: OFF" OFF)
-option(BUILD_CHANNELING_EXAMPLE "Build charge channeling example. Default: OFF" OFF)
-
 #-----------------------------------------------------------------------------
 # Add subdirectories based on options selected
 #
@@ -46,9 +45,12 @@ if(BUILD_ALL_EXAMPLES OR BUILD_CHARGE_EXAMPLE)
     add_subdirectory(examples/charge)
 endif()
 
-if(BUILD_ALL_EXAMPLES OR BUILD_CHANNELING_EXAMPLE)
-    #FIXME: Channeling demo is broken right now
-    #add_subdirectory(examples/channeling)
+if (BUILD_G4CMP_TOOLS)
+    add_subdirectory(tools)
+endif()
+
+if (BUILD_G4CMP_TESTS)
+    add_subdirectory(tests)
 endif()
 
 #-----------------------------------------------------------------------------
