@@ -24,6 +24,7 @@
 // 20150309  Add Create*() functions which take position and energy arguments
 //	     (for use with AlongStepDoIt() actions).
 // 20150310  Fix CreateChargeCarrier to use momentum unit vector
+// 20160610  Return regular (NOT Herring-Vogt) wave vector for electrons
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -204,11 +205,13 @@ void G4CMPProcessUtils::GetLocalVelocityVector(const G4Track &track,
 }
 
 G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const {
-  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
-    return theLattice->MapV_elToK_HV(GetValleyIndex(track),
-                                     GetLocalVelocityVector(track));
-  } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
+  if (GetCurrentParticle() == G4CMPDriftElectron::Definition() ||
+      GetCurrentParticle() == G4CMPDriftHole::Definition()) {
     return GetLocalMomentum(track) / hbarc;
+  } else if (GetCurrentParticle() == G4PhononLong::Definition() ||
+	     GetCurrentParticle() == G4PhononTransFast::Definition() ||
+	     GetCurrentParticle() == G4PhononTransSlow::Definition()) {
+    return GetTrackInfo(track)->GetPhononK();
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalWaveVector", "DriftProcess002",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -244,7 +247,7 @@ G4ThreeVector G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
 }
 
 void G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track,
-           G4double mom[3]) const {
+					  G4double mom[3]) const {
   G4ThreeVector tmom = GetGlobalMomentum(track);
   mom[0] = tmom.x();
   mom[1] = tmom.y();
@@ -279,6 +282,18 @@ G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
 
 const G4ParticleDefinition* G4CMPProcessUtils::GetCurrentParticle() const {
   return (currentTrack ? currentTrack->GetParticleDefinition() : 0);
+}
+
+
+// Return auxiliary information for track (phonon, charge kinematics)
+
+const G4CMPTrackInformation* 
+G4CMPProcessUtils::GetTrackInfo(const G4Track* track) const {
+  if (!track) track = GetCurrentTrack();	// No argument, use current
+  if (!track) return 0;
+
+  return dynamic_cast<G4CMPTrackInformation*>
+    (track->GetAuxiliaryTrackInformation(fPhysicsModelID));
 }
 
 
@@ -678,9 +693,7 @@ G4double G4CMPProcessUtils::MakeRecoilTheta(G4double k, G4double ks,
 // Access electron propagation direction/index
 
 G4int G4CMPProcessUtils::GetValleyIndex(const G4Track& track) const {
-  return
-    static_cast<G4CMPTrackInformation*>
-      (track.GetAuxiliaryTrackInformation(fPhysicsModelID))->GetValleyIndex();
+  return GetTrackInfo(track)->GetValleyIndex();
 }
 
 const G4RotationMatrix& 

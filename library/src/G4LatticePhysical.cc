@@ -17,6 +17,8 @@
 // 20140408  Move vally momentum calcs to G4LatticeLogical
 // 20140425  Add "effective mass" calculation for electrons
 // 20150601  Add mapping from electron velocity back to momentum
+// 20160517  Replace unit vectors with CLHEP built-in values
+// 20160608  Drop (theta,phi) lattice orientation function.
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -25,10 +27,10 @@
 #include "G4SystemOfUnits.hh"
 
 
-// Unit vectors defined for convenience (avoid memory churn)
+// Null vector defined for convenience (avoid memory churn)
 
 namespace {
-  G4ThreeVector xhat(1,0,0), yhat(0,1,0), zhat(0,0,1), nullVec(0,0,0);
+  G4ThreeVector nullVec(0,0,0);
 }
 
 
@@ -37,20 +39,15 @@ namespace {
 // Default constructor
 
 G4LatticePhysical::G4LatticePhysical()
-  : verboseLevel(0), fTheta(0), fPhi(0), fLattice(0) {;}
-
-// Set lattice orientation (relative to G4VSolid) with Euler angles
-
-G4LatticePhysical::G4LatticePhysical(const G4LatticeLogical* Lat,
-				     G4double theta, G4double phi)
-  : verboseLevel(0), fTheta(theta), fPhi(phi), fLattice(Lat) {;}
+  : verboseLevel(0), fLattice(0), hMiller(0), kMiller(0), lMiller(0),
+    fRot(0.) {;}
 
 // Set lattice orientation (relative to G4VSolid) with Miller indices
 
 G4LatticePhysical::G4LatticePhysical(const G4LatticeLogical* Lat,
-				     G4int h, G4int k, G4int l)
-  : verboseLevel(0), fTheta(0), fPhi(0), fLattice(Lat) {
-  SetMillerOrientation(h, k, l);
+				     G4int h, G4int k, G4int l, G4double rot)
+  : verboseLevel(0), fLattice(Lat) {
+  SetMillerOrientation(h, k, l, rot);
 }
 
 G4LatticePhysical::~G4LatticePhysical() {;}
@@ -58,24 +55,31 @@ G4LatticePhysical::~G4LatticePhysical() {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void G4LatticePhysical::SetLatticeOrientation(G4double t_rot, G4double p_rot) {
-  fTheta = t_rot;
-  fPhi = p_rot;
+// Align Miller normal vector (hkl) with +Z axis, and rotation about axis
+void G4LatticePhysical::SetMillerOrientation(G4int h, G4int k, G4int l,
+					     G4double rot) {
+  if (verboseLevel) {
+    G4cout << "G4LatticePhysical::SetMillerOrientation(" << h << " "
+	   << k << " " << l << ", " << rot/deg << " deg)" << G4endl;
+  }
 
-  if (verboseLevel) 
-    G4cout << "G4LatticePhysical::SetLatticeOrientation " << fTheta << " "
-	   << fPhi << G4endl;
-}
+  hMiller = h;
+  kMiller = k;
+  lMiller = l;
+  fRot = rot;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+  G4ThreeVector norm = (h*GetBasis(0)+k*GetBasis(1)+l*GetBasis(2)).unit();
 
-void G4LatticePhysical::SetMillerOrientation(G4int h, G4int k, G4int l) {
-  fTheta = halfpi - std::atan2(l+0.000001,h+0.000001);
-  fPhi = halfpi - std::atan2(h+0.000001,k+0.000001);
+  if (verboseLevel>1) G4cout << " norm = " << norm << G4endl;
 
-  if (verboseLevel) 
-    G4cout << "G4LatticePhysical::SetMillerOrientation(" << h << k << l 
-	   << ") : " << fTheta << " " << fPhi << G4endl;
+  // Aligns geometry +Z axis with lattice (hkl) normal
+  fOrient = G4RotationMatrix::IDENTITY;
+  fOrient.rotateZ(rot).rotateY(norm.theta()).rotateZ(norm.phi());
+  fInverse = fOrient.inverse();
+
+  if (verboseLevel>1) G4cout << " fOrient = " << fOrient << G4endl;
+
+  // FIXME:  Is this equivalent to (phi,theta,rot) Euler angles???
 }
 
 
@@ -85,14 +89,12 @@ void G4LatticePhysical::SetMillerOrientation(G4int h, G4int k, G4int l) {
 
 const G4ThreeVector&
 G4LatticePhysical::RotateToLattice(G4ThreeVector& dir) const {
-  dir.rotate(yhat,fTheta).rotate(zhat,fPhi);
-  return dir;
+  return dir.transform(fOrient);
 }
 
 const G4ThreeVector& 
 G4LatticePhysical::RotateToSolid(G4ThreeVector& dir) const {
-  dir.rotate(zhat,-fPhi).rotate(yhat,-fTheta);
-  return dir;
+  return dir.transform(fInverse);
 }
 
 
@@ -249,8 +251,9 @@ G4LatticePhysical::MapK_valleyToP(G4int ivalley, G4ThreeVector k) const {
 // Dump contained logical lattice with volume information
 
 void G4LatticePhysical::Dump(std::ostream& os) const {
-  os << "# Physical lattice (theta,phi) = "
-     << fTheta/deg << " " << fPhi/deg << " deg\n"
+  os << "# Physical lattice (hkl) = "
+     << hMiller << " " << kMiller << " " << lMiller
+     << " rotation " << fRot/deg << " deg\n"
      << "# Logical lattice:\n" << *fLattice << std::endl;
 }
 

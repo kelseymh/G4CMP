@@ -227,7 +227,7 @@ void ChargeDetectorConstruction::AttachLattice(G4VPhysicalVolume* pv)
 {
   G4LatticePhysical* detLattice =
     new G4LatticePhysical(latManager->GetLattice(germanium));
-  detLattice->SetLatticeOrientation(0.,45.*deg);	// Flats at [110]
+  detLattice->SetMillerOrientation(1,0,0,45.*deg);	// Flats at [110]
   latManager->RegisterLattice(pv, detLattice);
 }
 

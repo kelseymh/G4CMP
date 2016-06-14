@@ -5,10 +5,10 @@
 # 20160518  Use G4CMPINSTALL instead of ".." to find includes
 
 ifndef G4CMP_NAME		# Two-pass method
-  .PHONY : g4cmpCharge luke_dist electron_Epv ionize
+  .PHONY : g4cmpCharge luke_dist electron_Epv ionize latticeVecs
 
-  g4cmpCharge luke_dist electron_Epv ionize :
-	@$(MAKE) G4CMP_NAME=$@ bin
+  g4cmpCharge luke_dist electron_Epv ionize latticeVecs :
+	@$(MAKE) G4CMP_NAME=$@
 
   G4CMP_NAME := g4cmpCharge
 endif

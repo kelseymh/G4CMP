@@ -18,6 +18,8 @@
 // 20140408  Add valley momentum calculations
 // 20140425  Add "effective mass" calculation for electrons
 // 20150601  Add mapping from electron velocity back to momentum
+// 20160517  Add basis vectors for lattice, to use with Miller orientation
+// 20160520  Add reporting function to format valley Euler angles
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -67,6 +69,23 @@ public:
   G4double MapV_elToEkin(G4int ivalley, G4ThreeVector v_e) const;
 
 public:
+  // Unit (direct) basis vectors for crystal structure
+  void SetBasis(const G4ThreeVector& b1, const G4ThreeVector& b2,
+		const G4ThreeVector& b3) {
+    SetBasis(0, b1); SetBasis(1, b2); SetBasis(2, b3);
+  }
+
+  void SetBasis(G4int i, const G4ThreeVector& bi) {
+    if (i>=0 && i<3) fBasis[i] = bi.unit();
+  }
+
+  void SetBasis();	// Initialize or complete (via cross) basis vectors
+
+  const G4ThreeVector& GetBasis(G4int i) const {
+    static const G4ThreeVector nullVec(0.,0.,0.);
+    return (i>=0 && i<3 ? fBasis[i] : nullVec);
+  }
+
   // Parameters for phonon production and propagation
   void SetDynamicalConstants(G4double Beta, G4double Gamma,
 			     G4double Lambda, G4double Mu) {
@@ -123,6 +142,9 @@ public:
   size_t NumberOfValleys() const { return fValley.size(); }
   const G4RotationMatrix& GetValley(G4int iv) const;
 
+  // Print out Euler angles of requested valley
+  void DumpValley(std::ostream& os, G4int iv) const;
+
   // Parameters for electron intervalley scattering
   void SetIVField(G4double v)    { fIVField = v; }
   void SetIVRate(G4double v)     { fIVRate = v; }
@@ -140,6 +162,8 @@ private:
 
 private:
   G4int verboseLevel;			    // Enable diagnostic output
+
+  G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
 
   G4double fMap[3][MAXRES][MAXRES];	    // map for group velocity scalars
   G4ThreeVector fN_map[3][MAXRES][MAXRES];  // map for direction vectors

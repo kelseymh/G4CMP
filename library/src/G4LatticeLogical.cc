@@ -15,6 +15,8 @@
 // 20140408  Add valley momentum calculations
 // 20140425  Add "effective mass" calculation for electrons
 // 20150601  Add mapping from electron velocity back to momentum
+// 20160517  Add basis vectors for lattice, to use with Miller orientation
+// 20160520  Add reporting function to format valley Euler angles
 
 #include "G4LatticeLogical.hh"
 #include "G4RotationMatrix.hh"
@@ -50,6 +52,26 @@ G4LatticeLogical::~G4LatticeLogical() {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+/////////////////////////////////////////////////////////////
+//Complete basis vectors: right-handed, possibly orthonormal
+/////////////////////////////////////////////////////////////
+void G4LatticeLogical::SetBasis() {
+  static const G4ThreeVector origin(0.,0.,0.);
+  if (fBasis[0].isNear(origin,1e-6)) fBasis[0].set(1.,0.,0.);
+  if (fBasis[1].isNear(origin,1e-6)) fBasis[1].set(0.,1.,0.);
+  if (fBasis[2].isNear(origin,1e-6)) fBasis[2] = fBasis[0].cross(fBasis[1]);
+
+  // Ensure that all basis vectors are unit
+  fBasis[0].setMag(1.);
+  fBasis[1].setMag(1.);
+  fBasis[2].setMag(1.);
+
+  if (fBasis[0].cross(fBasis[1]).dot(fBasis[2]) < 0.) {
+    G4cerr << "ERROR G4LatticeLogical has a left-handed basis!" << G4endl;
+  }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 ///////////////////////////////////////////
 //Load map of group velocity scalars (m/s)
@@ -444,8 +466,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << std::endl;
 
   for (size_t i=0; i<NumberOfValleys(); i++) {
-    os << "valley " << fValley[i].phi()/deg << " " << fValley[i].theta()/deg
-       << " " << fValley[i].psi()/deg << " deg" << std::endl;
+    DumpValley(os, i);
   }
 
   os << "# Intervalley scattering parameters"
@@ -461,8 +482,6 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
   DumpMap(os, 0, "L.ssv");
   DumpMap(os, 1, "FT.ssv");
   DumpMap(os, 2, "ST.ssv");
-
-
 }
 
 void G4LatticeLogical::DumpMap(std::ostream& os, G4int pol,
@@ -470,9 +489,11 @@ void G4LatticeLogical::DumpMap(std::ostream& os, G4int pol,
   os << "VG " << name << " " << (pol==0?"L":pol==1?"FT":pol==2?"ST":"??")
      << " " << fVresTheta << " " << fVresPhi << std::endl;
 
-  for (G4int iTheta=0; iTheta<fVresTheta; iTheta++) {
-    for (G4int iPhi=0; iPhi<fVresPhi; iPhi++) {
-      os << fMap[pol][iTheta][iPhi] << std::endl;
+  if (verboseLevel) {
+    for (G4int iTheta=0; iTheta<fVresTheta; iTheta++) {
+      for (G4int iPhi=0; iPhi<fVresPhi; iPhi++) {
+	os << fMap[pol][iTheta][iPhi] << std::endl;
+      }
     }
   }
 }
@@ -482,13 +503,25 @@ void G4LatticeLogical::Dump_NMap(std::ostream& os, G4int pol,
   os << "VDir " << name << " " << (pol==0?"L":pol==1?"FT":pol==2?"ST":"??")
      << " " << fDresTheta << " " << fDresPhi << std::endl;
 
-  for (G4int iTheta=0; iTheta<fDresTheta; iTheta++) {
-    for (G4int iPhi=0; iPhi<fDresPhi; iPhi++) {
-      os << fN_map[pol][iTheta][iPhi].x()
-	 << " " << fN_map[pol][iTheta][iPhi].y()
-	 << " " << fN_map[pol][iTheta][iPhi].z()
-	 << std::endl;
+  if (verboseLevel) {
+    for (G4int iTheta=0; iTheta<fDresTheta; iTheta++) {
+      for (G4int iPhi=0; iPhi<fDresPhi; iPhi++) {
+	os << fN_map[pol][iTheta][iPhi].x()
+	   << " " << fN_map[pol][iTheta][iPhi].y()
+	   << " " << fN_map[pol][iTheta][iPhi].z()
+	   << std::endl;
+      }
     }
   }
 }
 
+// Print out Euler angles of requested valley
+
+void G4LatticeLogical::DumpValley(std::ostream& os, G4int iv) const {
+  if (iv < 0 || iv >= NumberOfValleys()) return;
+
+  os << "valley " << fValley[iv].phi()/deg
+     << " " << fValley[iv].theta()/deg
+     << " " << fValley[iv].psi()/deg
+     << " deg" << std::endl;
+}

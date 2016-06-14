@@ -14,6 +14,7 @@
 // 20150109  Revert IV scattering to preserve momentum
 // 20150112  Follow renaming of "SetNewKinematics" to FillParticleChange
 // 20150122  Use verboseLevel instead of compiler flag for debugging
+// 20160601  Must apply lattice rotation before valley.
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -72,8 +73,10 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
 	   << fieldVector.cosTheta() << " z" << G4endl;
   }
 
-  // Find E-field in HV space: rotate into valley, then apply HV tansform.
+  // Find E-field in HV space: in lattice frame, rotate into valley,
+  // then apply HV tansform.
   // NOTE:  Separate steps to avoid matrix-matrix multiplications
+  theLattice->RotateToLattice(fieldVector);
   fieldVector *= GetValley(aTrack);
   fieldVector *= theLattice->GetSqrtInvTensor();
   fieldVector /= volt/m;			// Strip units for MFP below

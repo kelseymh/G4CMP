@@ -1,0 +1,14 @@
+# Charge carrier parameters
+vsound 9000.0 #approximate
+l0_e 16.9e-6
+l0_h 7.5e-6
+#hole and electron masses taken from Robert's thesis
+hmass 0.50
+emass 0.91 0.19 0.19
+valley   0  0 90 deg
+valley  90  0 90 deg
+valley   0 90 90 deg
+# Intervalley scattering
+ivField 217		# V/m
+ivRate 6.72e-2		# s #Ge rate, these are not tuned for Si
+ivPower 3.24		# used in sqrt(field^ivPower)
