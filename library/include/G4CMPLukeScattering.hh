@@ -26,9 +26,10 @@ class G4Track;
 
 class G4CMPLukeScattering : public G4CMPVDriftProcess {
 public:
-  G4CMPLukeScattering(G4VProcess* stepper=0);
+  G4CMPLukeScattering();
   virtual ~G4CMPLukeScattering();
 
+  virtual G4double PostStepGetPhysicalInteractionLength(const G4Track &track, G4double previousStepSize, G4ForceCondition *condition);
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
 protected:
@@ -36,14 +37,31 @@ protected:
 
 private:
   G4double CalculateKSound(const G4CMPTrackInformation* trackInfo);
+  G4double ComputeTimeSteps(const G4Track& aTrack);
+  G4double TimeStepInField(G4double Emag, G4double coeff, G4double l0) const;
+  G4double CalculateEmissionRate(const G4CMPTrackInformation* trackInfo, 
+                                 const G4ThreeVector& k, 
+                                 const G4ThreeVector& E, 
+                                 G4double charge, 
+                                 G4double t) const;
   // hide assignment operator as private
   G4CMPLukeScattering(G4CMPLukeScattering&);
   G4CMPLukeScattering& operator=(const G4CMPLukeScattering& right);
 
-  G4VProcess* stepLimiter;
+  std::vector<std::vector<std::vector<G4double> > > MeanFreeTimes;
+  G4int ESIZE;
+  G4int KSIZE;
+  G4int THETASIZE;
+  G4double EMAX;
+  G4double KMAX;
+  G4double THETAMAX;
+
 #ifdef G4CMP_DEBUG
   std::ofstream output;
 #endif
+  std::ofstream energyOut;
+  std::ofstream mfpOut;
+  G4ThreeVector prePoint;
 };
 
 #endif	/* G4CMPLukeScattering */

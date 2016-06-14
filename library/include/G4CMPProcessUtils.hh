@@ -186,12 +186,25 @@ public:
     return GetGlobalVelocityVector(*track, vel);
   }
 
-  // Convenience functions to get position, momentum, velocity from track
-
   G4double GetKineticEnergy(const G4Track& track) const;
   G4double GetKineticEnergy(const G4Track* track) const {
     return GetKineticEnergy(*track);
   }
+
+  G4ThreeVector GetLocalEffectiveEField(const G4Track& track) const;
+  G4ThreeVector GetLocalEffectiveEField(const G4Track* track) const {
+    return GetLocalEffectiveEField(*track);
+  }
+
+  G4ThreeVector GetLocalEffectiveEField(const G4Track& track,
+                                        const G4ThreeVector& pos) const;
+  G4ThreeVector GetLocalEffectiveEField(const G4Track* track,
+                                        const G4ThreeVector& pos) const {
+    return GetLocalEffectiveEField(*track, pos);
+  }
+
+  G4ThreeVector ConvertWaveVectorToVelocityVector(const G4Track& track,
+                                                  const G4ThreeVector& k) const;
 
   // Map phonon types to polarization index
   G4int GetPolarization(const G4Track& track) const;
@@ -280,6 +293,12 @@ public:
   G4Track* CreateChargeCarrier(G4int charge, G4int valley,
 			       const G4ThreeVector& p,
 			       const G4ThreeVector& pos) const;
+
+  // Silly little math function to check if two numbers have the same sign
+  template <class T>
+    G4bool SameSign(T val1, T val2) {
+    return ((T(0) < val1) - (val1 < T(0))) == ((T(0) < val2) - (val2 < T(0)));
+  }
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes

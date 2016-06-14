@@ -45,17 +45,59 @@ G4double G4CMPTimeStepper::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 				     G4double /*prevStepSize*/,
 				     G4ForceCondition* /*cond*/) {
-  G4double dt = ComputeTimeSteps(aTrack);
-  G4double v = GetVelocity(aTrack);
+  G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
+    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID));
+  G4ThreeVector x0 = GetLocalPosition(aTrack);
+  G4ThreeVector v0 = GetLocalVelocityVector(aTrack);
+  G4ThreeVector k0 = GetLocalWaveVector(aTrack);
+  G4ThreeVector Efield0 = GetLocalEffectiveEField(aTrack, x0);
+  G4double mass = trackInfo->GetEffectiveMass()*c_squared;
+  G4double q = aTrack.GetDynamicParticle()->GetCharge()*eplus;
+  G4double kSound = theLattice->GetSoundSpeed();
+  G4double l0 = trackInfo->GetScatterLength();
 
-  if (verboseLevel > 1) {
-    if (aTrack.GetParticleDefinition() == G4CMPDriftElectron::Definition())
-      G4cout << "TS elec = " << (v*dt)/m << G4endl;
-    else
-      G4cout << "TS hole = " << (v*dt)/m << G4endl;
+  // Leman-Verlet method:
+  G4double dt0 = ComputeTimeSteps(aTrack);
+  G4ThreeVector x1 = x0 + v0*dt0 + 0.5*dt0*dt0*q*Efield0/mass;
+  G4ThreeVector Efield1 = GetLocalEffectiveEField(aTrack, x1);
+  G4ThreeVector k1 = k0 + 0.5*q/hbarc*dt0*(Efield0 + Efield1);
+  if (k0.mag() <= kSound || k1.mag() <= kSound) {
+    return v0.mag()*dt0;
   }
 
-  return v*dt;
+  G4double tau0 = ChargeCarrierTimeStep(k0.mag()/kSound, l0);
+  G4double tau1 = ChargeCarrierTimeStep(k1.mag()/kSound, l0);
+  G4double a0 = 1./tau0;
+  G4double a1 = 1./dt0*(1./tau1 - 1./tau0);
+  G4double arg = a0*a0 - 2.*a1*std::log(G4UniformRand());
+  if (arg < 0. || a1 < DBL_MIN)
+    return v0.mag()*dt0;
+  G4double dt1 = (std::sqrt(arg) - a0)/a1;
+  if (dt1 < DBL_MIN) dt1 = DBL_MIN;
+
+  if (dt1 < dt0) {
+    x1 = x0 + v0*dt1 + 0.5*dt1*dt1*q/mass*Efield0;
+    Efield1 = GetLocalEffectiveEField(aTrack, x1);
+    k1 = k0 + 0.5*q/hbarc*dt1*(Efield0 + Efield1);
+    if (k1.mag() <= kSound) {
+      return v0.mag()*dt0;
+    }
+    tau1 = ChargeCarrierTimeStep(k1.mag()/kSound, l0);
+    a1 = 1./dt1*(1./tau1 - 1./tau0);
+    arg = a0*a0 - 2.*a1*std::log(G4UniformRand());
+    if (arg < 0. || a1 < DBL_MIN)
+      return v0.mag()*dt0;
+    dt1 = (std::sqrt(arg) - a0)/a1;
+    if (dt1 < DBL_MIN) dt1 = DBL_MIN;
+  }
+   G4double gpil = 0.5*((v0+ConvertWaveVectorToVelocityVector(aTrack, k1))*dt1).mag();
+
+  if (verboseLevel > 1) {
+      G4cout << "TimeStepper " << aTrack.GetDefinition()->GetParticleName() <<
+                " GPIL = " << gpil/m << G4endl;
+  }
+
+  return gpil;
 }
 
 
@@ -68,6 +110,7 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
   FillParticleChange(GetValleyIndex(aTrack), pfinal);
 
   return &aParticleChange;
+//  return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 }
 
 // Compute dt_e, dt_h and valley rotations at current location
@@ -77,21 +120,9 @@ G4double G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
     aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID));
   G4double l0 = trackInfo->GetScatterLength();
 
-
-  G4FieldManager* fMan =
-    aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
-  if (!fMan || !fMan->DoesFieldExist()) {	// No field, no special action
+  G4ThreeVector Efield = GetLocalEffectiveEField(aTrack);
+  if (Efield.mag() <= DBL_MIN) // No field, no special action
     return 3.*l0/velLong;
-  }
-
-  G4double position[4] = { 4*0. };
-  GetLocalPosition(aTrack, position);
-
-  const G4Field* field = fMan->GetDetectorField();
-  G4double fieldVal[6];
-  field->GetFieldValue(position,fieldVal);
-
-  G4ThreeVector Efield(fieldVal[3], fieldVal[4], fieldVal[5]);
 
   G4double timeStepParam = 0.;
   if (aTrack.GetParticleDefinition() == G4CMPDriftElectron::Definition()) {

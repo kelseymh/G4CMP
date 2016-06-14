@@ -15,7 +15,9 @@ endif
 
 name := $(G4CMP_NAME)
 G4TARGET := $(G4CMP_NAME)
-G4EXLIB := true
+ifneq (,$(wildcard include))	# Build library if include/,src/ directories
+  G4EXLIB := true
+endif
 
 .PHONY: all
 all: lib bin
