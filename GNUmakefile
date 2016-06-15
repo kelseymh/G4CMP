@@ -21,10 +21,10 @@ help :
 	 echo "all           Builds everything: library and examples" ;\
 	 echo "lib, library  Builds library, including qhull" ;\
 	 echo "examples      Builds all examples, plus library if needed" ;\
-	 echo "tools         Builds support utilities (lookup table maker)" ;\
-	 echo "tests         Builds small test programs for classes" ;\
 	 echo "phonon        Builds pure phonon example" ;\
 	 echo "charge        Builds charge-carrier (e-/h) example" ;\
+	 echo "tools         Builds support utilities (lookup table maker)" ;\
+	 echo "tests         Builds small test programs for classes" ;\
 	 echo "clean         Remove libraries and examples" ;\
 	 echo ;\
 	 echo "Users may pass targets through to directories as well:" ;\
@@ -41,7 +41,11 @@ all : lib examples tests tools
 lib : library
 examples : phonon charge
 
-clean : library.clean examples.clean
+clean :		# FIXME: This doesn't work as dependencies
+	-$(MAKE) tests.clean
+	-$(MAKE) tools.clean
+	-$(MAKE) examples.clean
+	-$(MAKE) library.clean 
 
 dist : g4cmp.tgz
 
@@ -50,26 +54,28 @@ dist : g4cmp.tgz
 export G4CMP_DEBUG		# Turns on debugging output
 export G4CMP_SET_ELECTRON_MASS	# Turns on dynamical electron mass
 
-tests tools \
 library :
 	-$(MAKE) -C $@
 
-tests.% tools.% \
+tests.% \
+tools.% \
 library.% :
 	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
 
-examples : phonon charge
-phonon charge :
+phonon charge : library
 	-@$(MAKE) -C examples/$@
 
 phonon.% \
 charge.% :
 	-$(MAKE) -C examples/$(basename $@) $(subst .,,$(suffix $@))
 
-# FIXME: This should work with dependencies, but doesn't
+# FIXME: These should work with dependencies, but don't
 examples.% :
 	-$(MAKE) phonon.$(subst .,,$(suffix $@))
 	-$(MAKE) charge.$(subst .,,$(suffix $@))
+
+tests : tests.all
+tools : tools.all
 
 # Make source code distribution (construct using symlinks and tar -h)
 
