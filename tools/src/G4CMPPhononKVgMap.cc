@@ -36,108 +36,8 @@ const double N_Y_INC = (N_Y_MAX - N_Y_MIN) / (double)NUM_N_Ys; // y step size
 
 // interpolation (others in this category are public)
 #define INTERP_DIMS             2           // s_x, s_y
-// '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-Material::Material(const string& MATERIAL_NAME, double DEN, double C11,
-                   double C12, double C44)
-: NAME(MATERIAL_NAME), DENSITY(DEN), C_11(C11), C_12(C12), C_44(C44),
-  C_reduced(REDUCED_TENSOR_SIZE, REDUCED_TENSOR_SIZE, 0.),
-  C_full(0), rn(6,2,0), rn2(2,2,0) {
-  // set up the redueced and full elasticity tensros for the material
-  generate_rn();
-  generate_rn2();
-  fillReducedTensor();
-  fillFullTensor();
-}
-
-Material::~Material() {
-  for(int i=0; i<FULL_TENSOR_SIZE; i++) {
-    for(int j=0; j<FULL_TENSOR_SIZE; j++) {
-      for(int k=0; k<FULL_TENSOR_SIZE; k++) {
-	delete [] C_full[i][j][k];
-      }
-      delete [] C_full[i][j];
-    }
-    delete [] C_full[i];
-  }
-  delete [] C_full;
-}
-
-// Index mapping to generate full tensor (all other elements are zero)
-void Material::generate_rn() {
-  rn[1][0] = rn[1][1] = rn[3][0] = rn[5][1] = 1;
-  rn[2][0] = rn[2][1] = rn[3][1] = rn[4][0] = 2;
-}
-
-void Material::generate_rn2() {
-  rn2[0][1] = rn2[1][0] = 1;
-}
-
-/* sets up the reduced elasticity tensor using the information given
-   in the constructor.  Assumes a high level of symmetry whereby we only
-   need 3 constants to specify the full tensor */
-void Material::fillReducedTensor() {
-  for(int i=0; i<(REDUCED_TENSOR_SIZE/2); i++)
-    for(int j=0; j<(REDUCED_TENSOR_SIZE/2); j++)
-      C_reduced[i][j] = (i == j) ? C_11 : C_12;
-
-  for(int i=(REDUCED_TENSOR_SIZE/2); i<REDUCED_TENSOR_SIZE; i++)
-    C_reduced[i][i] = C_44;
-}
-
-/* sets up the full elasticity tensor from the reduced tensor. There
-   are no assumptions of symmetry of any sort that go into this
-   method */
-void Material::fillFullTensor() {
-  // allocate memory for the 3 x 3 x 3 x 3 tensor
-  C_full = new double***[FULL_TENSOR_SIZE];
-  for(int i=0; i<FULL_TENSOR_SIZE; i++) {
-    C_full[i] = new double**[FULL_TENSOR_SIZE];
-
-    for(int j=0; j<FULL_TENSOR_SIZE; j++) {
-      C_full[i][j] = new double*[FULL_TENSOR_SIZE];
-
-      for(int k=0; k<FULL_TENSOR_SIZE; k++) {
-	C_full[i][j][k] = new double[FULL_TENSOR_SIZE];
-  
-	for(int l=0; l<FULL_TENSOR_SIZE; l++) {
-	  C_full[i][j][k][l] = 0.;
-	}
-      }
-    }
-  }
-
-  // unpack the reduced elasticity tensor into the appropriate elements
-  // of the full tensor
-  for(int l=0; l<2; l++)
-    for(int k=0; k<2; k++)
-      for(int j=0; j<6; j++)
-	for(int i=0; i<6; i++)
-	  C_full[rn[i][rn2[k][0]]][rn[i][rn2[k][1]]]
-	    [rn[j][rn2[l][0]]][rn[j][rn2[l][1]]] = C_reduced[i][j];
-}
-
-// builds D_il, the Christoffel Matrix that defines the eigensystem we are dealing with
-MatDoub Material::getChristoffelMatrix(const G4ThreeVector& nn)
-{
-  MatDoub D(SPATIAL_DIMENSIONS, SPATIAL_DIMENSIONS, 0.);
-  for (int i = 0; i < SPATIAL_DIMENSIONS; i++) {
-    for (int l = 0; l < SPATIAL_DIMENSIONS; l++) {
-      for (int j = 0; j < SPATIAL_DIMENSIONS; j++) {
-	for (int m = 0; m < SPATIAL_DIMENSIONS; m++) {
-	  D[i][l] += (C_full[i][j][l][m] * nn[j] * nn[m]);
-	}
-      }
-      D[i][l] /= DENSITY; // save computational time by only doing this division once
-    }
-  }
-
-  return D;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// ++++++++++++++++++++++ G4CMPPhononKVgMap STRUCT METHODS +++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++ G4CMPPhononKVgMap STRUCT METHODS +++++++++++++++++++++
 
 void G4CMPPhononKVgMap::clearQuantityMap() {
   // common technique to free up the memory of a vector:
@@ -166,17 +66,8 @@ G4ThreeVector G4CMPPhononKVgMap::interpGroupVelocity_N(int mode, const G4ThreeVe
 /* sets up the vector of vectors of vectors used to store the data
    from the lookup table */
 void G4CMPPhononKVgMap::setUpDataVectors() {
-  lookupData.resize(NUM_MODES);
-
-  // set up 2nd level vectors within largest vector:
-  for (int i=0; i < NUM_MODES; i++) {
-    lookupData[i].resize(NUM_DATA_TYPES);
-
-    // set up 3rd level vectors within 2nd level vectors:
-    for (int j=0; j < NUM_DATA_TYPES; j++) {
-      lookupData[i][j].clear();
-    }
-  }
+  // Preload outer vectors with correct structure, to avoid push-backs
+  lookupData.resize(NUM_MODES, vector<vector<double> >(NUM_DATA_TYPES));
 }
 
 // makes the lookup table for whatever material is specified
@@ -220,12 +111,29 @@ void G4CMPPhononKVgMap::generateLookupTable() {
   }
 }
 
+// Build D_il, the Christoffel matrix that defines the eigensystem
+void G4CMPPhononKVgMap::fillChristoffelMatrix(const G4ThreeVector& nn)
+{
+  christoffel.clear();
+  christoffel.resize(SPATIAL_DIMENSIONS, SPATIAL_DIMENSIONS, 0.);
+  for (int i = 0; i < SPATIAL_DIMENSIONS; i++) {
+    for (int l = 0; l < SPATIAL_DIMENSIONS; l++) {
+      for (int j = 0; j < SPATIAL_DIMENSIONS; j++) {
+	for (int m = 0; m < SPATIAL_DIMENSIONS; m++) {
+	  christoffel[i][l] += (lattice->GetCijkl(i,j,l,m) * nn[j] * nn[m]);
+	}
+      }
+      christoffel[i][l] /= lattice->GetDensity();
+    }
+  }
+}
+
 // Compute kinematics for specified wavevector (direction)
 void G4CMPPhononKVgMap::computeKinematics(const G4ThreeVector& n_dir) {
   /* get the Christoffel Matrix D_il, which is symmetric (it
      equals its transpose).  This also means its eigenvalues will
      all be real (NR, pg. 564) */
-  christoffel = material->getChristoffelMatrix(n_dir);
+  fillChristoffelMatrix(n_dir);
   
   /* set up and solve eigensystem of D_il:
      Use NR's method for real, symmetric matricies.
@@ -252,20 +160,20 @@ void G4CMPPhononKVgMap::computeKinematics(const G4ThreeVector& n_dir) {
 
 // Fill group velocity cache for specified mode from lattice parameters
 void G4CMPPhononKVgMap::computeGroupVelocity(int mode, const MatDoub& e_mat,
-				   const G4ThreeVector& slow) {
+					     const G4ThreeVector& slow) {
   vgroup[mode].set(0.,0.,0.);
   for (int dim=0; dim<SPATIAL_DIMENSIONS; dim++) {
     for (int i=0; i<FULL_TENSOR_SIZE; i++) {
       for (int j=0; j<FULL_TENSOR_SIZE; j++) {
 	for (int l=0; l<FULL_TENSOR_SIZE; l++) {
-	  vgroup[mode][dim] += (e_mat[i][mode] * material->getC_ijlm(i,j,l,dim)
+	  vgroup[mode][dim] += (e_mat[i][mode] * lattice->GetCijkl(i,j,l,dim)
 				* slow[j] * e_mat[l][mode]);
 	}
       }
     }
   }
   
-  vgroup[mode] /= material->getDensity();
+  vgroup[mode] /= lattice->GetDensity();
 }
 
 const G4ThreeVector& G4CMPPhononKVgMap::getGroupVelocity(int mode, const G4ThreeVector& n_dir) {
@@ -416,7 +324,7 @@ void G4CMPPhononKVgMap::generateMultiEvenTable() {
 void G4CMPPhononKVgMap::writeLookupTable() {
   // <^><^><^><^><^><^><^><^><^> INITIAL SETUP <^><^><^><^><^><^><^><^><
   // set up the lookup table as a data file:
-  string fName = material->getName()+"LookupTable.txt";
+  string fName = lattice->GetName()+"LookupTable.txt";
   ofstream lookupTable(fName.c_str());
 
   lookupTable.setf(ios::left);

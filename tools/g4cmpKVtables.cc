@@ -6,6 +6,11 @@
 
 #include "G4CMPPhononKVgMap.hh"
 #include "G4ThreeVector.hh"
+#include "G4Material.hh"
+#include "G4NistManager.hh"
+#include "G4LatticeManager.hh"
+#include "G4LatticeLogical.hh"
+#include "G4SystemOfUnits.hh"
 #include <fstream>
 #include <iomanip>
 #include <string>
@@ -13,27 +18,23 @@
 using namespace std;
 
 
-// Units of density are kg/m3, of Cij are Pa
-// NOTE:  To reproduce D. Brandt's Vg tables, use Ge 5196.2792 kg/m3
-Material Ge("Ge", 5323.0, 1.26e11, 0.44e11, 0.67e11);
-Material Si("Si", 2329.0, 1.656e11, 0.639e11, 0.795e11);
+// Get lattice configuration for density and elasticity matrix
+G4LatticeLogical* GetLattice(const G4String& name) {
+  G4Material* mat = G4NistManager::Instance()->FindOrBuildMaterial("G4_"+name);
+  return G4LatticeManager::Instance()->LoadLattice(mat, name);
+}
 
 int main(int argc, const char * argv[])
 {
   // 1. choose material
-  Material *materialToUse = 0;
-  if (argc > 1) {
-    if (string(argv[1]) == "Ge") materialToUse = &Ge;
-    if (string(argv[1]) == "Si") materialToUse = &Si;
-  } else materialToUse = &Ge;		// No command line arguments
-
-  if (!materialToUse) {
+  G4LatticeLogical* lattice = GetLattice((argc>1) ? argv[1] : "Ge");
+  if (!lattice) {
     cerr << argv[0] << " Invalid material " << argv[1] << " specified" << endl;
     ::exit(1);
   }
 
   // 2. set up the entire interpolation infrastrcuture
-  G4CMPPhononKVgMap *map = new G4CMPPhononKVgMap(materialToUse);
+  G4CMPPhononKVgMap *map = new G4CMPPhononKVgMap(lattice);
   
   map->writeLookupTable();		// Dump Dan's version of data file
   
@@ -51,7 +52,7 @@ int main(int argc, const char * argv[])
     ofstream vdirfile(vdirname, ios::trunc);
     vdirfile << scientific << setprecision(7);
     
-    cout << "Generating " << materialToUse->getName() << " "
+    cout << "Generating " << lattice->GetName() << " "
 	 << map->getModeName(mode) << " files " << Ntheta << " x " << Nphi
 	 << endl;
     
@@ -69,7 +70,7 @@ int main(int argc, const char * argv[])
 	kvec.setRThetaPhi(1.,theta,phi);
 	
 	// 5. Get group velocity for given direction, write to file
-	Vg = map->getGroupVelocity(mode, kvec);
+	Vg = map->getGroupVelocity(mode, kvec) / (m/s);
 	
 	vgfile << setw(16) << Vg.mag() << endl;
 	
