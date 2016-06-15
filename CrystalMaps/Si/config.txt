@@ -1,3 +1,18 @@
+# Phonon parameters
+beta -0.429 gamma -0.945 lambda 0.524 mu 0.680
+scat 2.43e-42
+decay 7.41e-56
+#### Need values for silicon; below is Ge
+LDOS 0.097834
+STDOS 0.53539
+FTDOS 0.36677
+# Wavevector mapping tables
+VDir LVec.ssv  L  161 321
+VDir STVec.ssv ST 161 321
+VDir FTVec.ssv FT 161 321
+VG L.ssv  L 161 321
+VG ST.ssv ST 161 321
+VG FT.ssv FT 161 321
 # Charge carrier parameters
 vsound 9000.0 #approximate
 l0_e 16.9e-6
