@@ -32,9 +32,9 @@ set(kvmap_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKVgMap.cc
     )
 
-add_executable(electron_Epv electron_Epv.cc $(kvmap_SOURCES))
-target_link_libraries(electron_Epv G4cmp)
-set_target_properties(electron_Epv PROPERTIES
+add_executable(g4cmpKVtables g4cmpKVtables.cc ${kvmap_SOURCES})
+target_link_libraries(g4cmpKVtables G4cmp)
+set_target_properties(g4cmpKVtables PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
     INSTALL_RPATH_USE_LINK_RPATH TRUE
     BUILD_WITH_INSTALL_RPATH FALSE)

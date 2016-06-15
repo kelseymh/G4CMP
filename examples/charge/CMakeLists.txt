@@ -25,62 +25,77 @@ include(${Geant4_USE_FILE})
 #----------------------------------------------------------------------------
 # Grab Qhull files needed to link against it.
 # 
-include_directories(${PROJECT_SOURCE_DIR}/qhull-2012.1/src)
+include_directories(${PROJECT_SOURCE_DIR}/library/qhull-2012.1/src)
 
 set(charge_SOURCES 
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargeActionInitialization.cc
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargeDetectorConstruction.cc
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargeElectrodeSensitivity.cc
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargeFETDigitizerModule.cc
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargeFETDigitizerMessenger.cc
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargePrimaryGeneratorAction.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeActionInitialization.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeDetectorConstruction.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeElectrodeSensitivity.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerModule.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerMessenger.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargePrimaryGeneratorAction.cc
     )
 
 set(fet_SOURCES
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargeFETDigitizerModule.cc
-    ${PROJECT_SOURCE_DIR}/charge/src/ChargeFETDigitizerMessenger.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerModule.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerMessenger.cc
     )
 
+set(ionize_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeActionInitialization.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeDetectorConstruction.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeElectrodeSensitivity.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerModule.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerMessenger.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargePrimaryGeneratorAction.cc
+    )
 
 set(charge_EPOT_FILES
-    ${PROJECT_SOURCE_DIR}/charge/EPotFiles/EPot_iZIP4_axissymmetric_shortQOS1
-    ${PROJECT_SOURCE_DIR}/charge/EPotFiles/Epot_iZip4_small_shortQOS1
-    ${PROJECT_SOURCE_DIR}/charge/EPotFiles/Epot_iZip4
-    ${PROJECT_SOURCE_DIR}/charge/EPotFiles/Epot_iZip4_small
-    ${PROJECT_SOURCE_DIR}/charge/EPotFiles/EPot_iZip4_70V_COMSOL5
+    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZIP4_axissymmetric_shortQOS1
+    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/Epot_iZip4_small_shortQOS1
+    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/Epot_iZip4
+    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/Epot_iZip4_small
+    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZip4_70V_COMSOL5
     )
 
 set(charge_MACROS
-    ${PROJECT_SOURCE_DIR}/charge/run.mac
-    ${PROJECT_SOURCE_DIR}/charge/vis.mac
-    ${PROJECT_SOURCE_DIR}/charge/fast.mac
-    ${PROJECT_SOURCE_DIR}/charge/loop.mac
-    ${PROJECT_SOURCE_DIR}/charge/open.mac
-    ${PROJECT_SOURCE_DIR}/charge/play.mac
-    ${PROJECT_SOURCE_DIR}/charge/iZip4.mac
-    ${PROJECT_SOURCE_DIR}/charge/single.mac
-    ${PROJECT_SOURCE_DIR}/charge/openNew.mac
-    ${PROJECT_SOURCE_DIR}/charge/useRndm.mac
-    ${PROJECT_SOURCE_DIR}/charge/saveRndm.mac
-    ${PROJECT_SOURCE_DIR}/charge/testRefl.mac
-    ${PROJECT_SOURCE_DIR}/charge/shortQOS1.mac
-    ${PROJECT_SOURCE_DIR}/charge/testIonize.mac
-    ${PROJECT_SOURCE_DIR}/charge/drift_curve.mac
-    ${PROJECT_SOURCE_DIR}/charge/movie.loop
+    ${CMAKE_CURRENT_SOURCE_DIR}/run.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/vis.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/fast.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/loop.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/open.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/play.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/iZip4.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/single.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/openNew.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/useRndm.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/saveRndm.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/testRefl.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/shortQOS1.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/testIonize.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/drift_curve.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/movie.loop
     )
 
 set(fet_CONFIGS
-    ${PROJECT_SOURCE_DIR}/charge/config/ConstantsFET
-    ${PROJECT_SOURCE_DIR}/charge/config/FETTemplates
-    ${PROJECT_SOURCE_DIR}/charge/config/EpotRamoChan1
-    ${PROJECT_SOURCE_DIR}/charge/config/EpotRamoChan2
-    ${PROJECT_SOURCE_DIR}/charge/config/EpotRamoChan3
-    ${PROJECT_SOURCE_DIR}/charge/config/EpotRamoChan4
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/ConstantsFET
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/FETTemplates
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/EpotRamoChan1
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/EpotRamoChan2
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/EpotRamoChan3
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/EpotRamoChan4
     )
 
 add_executable(g4cmpCharge g4cmpCharge.cc ${charge_SOURCES})
 target_link_libraries(g4cmpCharge G4cmp)
 set_target_properties(g4cmpCharge PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+    INSTALL_RPATH_USE_LINK_RPATH TRUE
+    BUILD_WITH_INSTALL_RPATH FALSE)
+
+add_executable(g4cmpIonize g4cmpIonize.cc ${ionize_SOURCES})
+target_link_libraries(g4cmpIonize G4cmp)
+set_target_properties(g4cmpIonize PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
     INSTALL_RPATH_USE_LINK_RPATH TRUE
     BUILD_WITH_INSTALL_RPATH FALSE)

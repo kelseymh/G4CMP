@@ -23,9 +23,9 @@ endif()
 include(${Geant4_USE_FILE})
 
 set(phonon_SOURCES 
-   ${PROJECT_SOURCE_DIR}/phonon/src/PhononActionInitialization.cc
-   ${PROJECT_SOURCE_DIR}/phonon/src/PhononDetectorConstruction.cc
-   ${PROJECT_SOURCE_DIR}/phonon/src/PhononPrimaryGeneratorAction.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononActionInitialization.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononDetectorConstruction.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononPrimaryGeneratorAction.cc
    )
     
 add_executable(g4cmpPhonon g4cmpPhonon.cc ${phonon_SOURCES})
