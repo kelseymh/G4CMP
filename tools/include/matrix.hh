@@ -53,7 +53,6 @@ private:
 
 #include <vector>
 typedef std::vector<double> VecDoub;
-typedef matrix<int> MatInt;
 typedef matrix<double> MatDoub;
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
