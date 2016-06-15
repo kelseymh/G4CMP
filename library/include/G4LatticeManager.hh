@@ -33,6 +33,7 @@ private:
 
 public:
   static G4LatticeManager* GetLatticeManager(); 
+  static G4LatticeManager* Instance() { return GetLatticeManager(); }
 
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 

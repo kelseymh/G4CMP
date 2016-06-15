@@ -17,6 +17,7 @@
 // 20150601  Add mapping from electron velocity back to momentum
 // 20160517  Add basis vectors for lattice, to use with Miller orientation
 // 20160520  Add reporting function to format valley Euler angles
+// 20160614  Add elasticity tensors and density (set from G4Material) 
 
 #include "G4LatticeLogical.hh"
 #include "G4RotationMatrix.hh"
@@ -28,8 +29,10 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4LatticeLogical::G4LatticeLogical()
-  : verboseLevel(0), fVresTheta(0), fVresPhi(0), fDresTheta(0), fDresPhi(0),
+G4LatticeLogical::G4LatticeLogical(const G4String& name)
+  : verboseLevel(0), fName(name),
+    fDensity(0.), fElasticity{}, fElReduced{}, fHasElasticity(false),
+    fVresTheta(0), fVresPhi(0), fDresTheta(0), fDresPhi(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
     fVSound(0.), fL0_e(0.), fL0_h(0.), 
@@ -46,6 +49,8 @@ G4LatticeLogical::G4LatticeLogical()
       }
     }
   }
+  SetElasticityCubic(0.,0.,0.);		// Fill elasticity tensors with zeros;
+  fHasElasticity = false;
 }
 
 G4LatticeLogical::~G4LatticeLogical() {;}
@@ -69,6 +74,51 @@ void G4LatticeLogical::SetBasis() {
   if (fBasis[0].cross(fBasis[1]).dot(fBasis[2]) < 0.) {
     G4cerr << "ERROR G4LatticeLogical has a left-handed basis!" << G4endl;
   }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+/////////////////////////////////////////////////////////////
+// Elasticity matrix, with cubic symmetries
+/////////////////////////////////////////////////////////////
+void 
+G4LatticeLogical::SetElasticityCubic(G4double C11, G4double C12, G4double C44) {
+  if (verboseLevel) {
+    G4cout << "G4LatticeLogical[" << fName << "]::SetElasticityCubic "
+	   << C11 << " " << C12 << " " << C44 << G4endl;
+  }
+
+  // Reduced elasticity tensor is block-symmetric 6x6 array
+  for (int i=0; i<3; i++) {
+    for (int j=0; j<3; j++) {
+      fElReduced[i][j] = (i==j) ? C11 : C12;
+    }
+  }
+
+  for (int i=3; i<6; i++) {
+    fElReduced[i][i] = C44;
+  }
+
+  // Unpack reduced elasticity tensor into full four-dimensional Cijkl
+  G4int rn1[6][2] = { };
+  rn1[1][0] = rn1[1][1] = rn1[3][0] = rn1[5][1] = 1;
+  rn1[2][0] = rn1[2][1] = rn1[3][1] = rn1[4][0] = 2;
+
+  G4int rn2[2][2] = { };
+  rn2[0][1] = rn2[1][0] = 1;
+
+  for(int l=0; l<2; l++) {
+    for(int k=0; k<2; k++) {
+      for(int j=0; j<6; j++) {
+	for(int i=0; i<6; i++) {
+	  fElasticity[rn1[i][rn2[k][0]]][rn1[i][rn2[k][1]]]
+	             [rn1[j][rn2[l][0]]][rn1[j][rn2[l][1]]] = fElReduced[i][j];
+	}
+      }
+    }
+  }
+
+  fHasElasticity = true;	// Flag use of tensors is safe
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -165,10 +215,12 @@ G4double G4LatticeLogical::MapKtoV(G4int polarizationState,
 
   G4double Vg = fMap[polarizationState][int(theta/tRes)][int(phi/pRes)];
 
-  if(Vg == 0){
-      G4cout<<"\nFound v=0 for polarization "<<polarizationState
-            <<" theta "<<theta<<" phi "<<phi<< " translating to map coords "
-            <<"theta "<< int(theta/tRes) << " phi " << int(phi/pRes)<<G4endl;
+  if (Vg == 0) {
+    G4cerr << "Found v=0 for polarization "<< polarizationState
+	   << " theta " << theta << " phi " << phi
+	   << " translating to map coords"
+	   << " theta " << int(theta/tRes) << " phi " << int(phi/pRes)
+	   << G4endl;
   }
 
   if (verboseLevel>1) {
@@ -456,6 +508,18 @@ const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
 // Dump structure in format compatible with reading back
 
 void G4LatticeLogical::Dump(std::ostream& os) const {
+  os << "# " << fName << " crystal lattice parameters" << std::endl;
+  if (fHasElasticity) {		// TEMPORARY: Assume cubic only!
+    os << "cubic " << fElReduced[1][1]
+       << " " << fElReduced[1][2]
+       << " " << fElReduced[4][4] << std::endl;
+  }
+
+  for (size_t i=0; i<3; i++) {
+    os << "basis " << fBasis[0].x() << " " << fBasis[0].y()
+       << " " << fBasis[0].z() << std::endl;
+  }
+
   os << "# Phonon propagation parameters"
      << "\ndyn " << fBeta << " " << fGamma << " " << fLambda << " " << fMu
      << "\nscat " << fB << " decay " << fA

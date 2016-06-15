@@ -14,6 +14,7 @@
 // 20140218  Add support for charge-carrier functionality
 // 20151211  Change fDataDir from static to not static.
 // 20160517  Add support to set crystal basis vectors.
+// 20160615  Add support to set elasticity tensor.
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
@@ -22,6 +23,7 @@
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 #include <iosfwd>
+#include <vector>
 
 class G4LatticeLogical;
 
@@ -41,6 +43,7 @@ protected:
   G4bool ProcessConstants();			// Four dynamical constants
   G4bool ProcessBasisVector();			// Crystal basis vector
   G4bool ProcessMassTensor();			// Electron mass tensor
+  G4bool ProcessElasticity(const G4String& name);	// Elasticity tensor
   G4bool ProcessEulerAngles(const G4String& name);	// Drift directions
   G4bool ProcessMap();				// Velocity magnitudes file
   G4bool ProcessNMap();				// Direction vectors file
@@ -56,7 +59,7 @@ private:
 
   G4String fMapPath;		// Path to config file to find velocity maps
   G4String fToken;		// Reusable buffers for reading file
-  G4double fValue;		// ... floating point data values
+  G4double fValue;		// ... floating point data value
   G4String fMap, fsPol;		// ... map filename and polarization code
   G4int    fPol, fNX, fNY;	// ... map binning in each direction
   G4RotationMatrix fMatrix;	// ... 3x3 matrix for mass, drift valleys

@@ -20,6 +20,7 @@
 // 20150601  Add mapping from electron velocity back to momentum
 // 20160517  Add basis vectors for lattice, to use with Miller orientation
 // 20160520  Add reporting function to format valley Euler angles
+// 20160614  Add elasticity tensors and density (set from G4Material) 
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -30,13 +31,20 @@
 #include <iosfwd>
 #include <vector>
 
-
+// Arrays for full and reduced elasticity matrices
 class G4LatticeLogical {
 public:
-  G4LatticeLogical();
+  typedef G4double Elasticity[3][3][3][3];
+  typedef G4double ReducedElasticity[6][6];
+
+public:
+  G4LatticeLogical(const G4String& name="");
   virtual ~G4LatticeLogical();
 
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+
+  void SetName(const G4String& name) { fName = name; }
+  const G4String& GetName() const { return fName; }
 
   G4bool LoadMap(G4int, G4int, G4int, G4String);
   G4bool Load_NMap(G4int, G4int, G4int, G4String);
@@ -69,7 +77,6 @@ public:
   G4double MapPtoEkin(G4int ivalley, G4ThreeVector p_e) const;
   G4double MapV_elToEkin(G4int ivalley, G4ThreeVector v_e) const;
 
-public:
   // Unit (direct) basis vectors for crystal structure
   void SetBasis(const G4ThreeVector& b1, const G4ThreeVector& b2,
 		const G4ThreeVector& b3) {
@@ -86,6 +93,20 @@ public:
     static const G4ThreeVector nullVec(0.,0.,0.);
     return (i>=0 && i<3 ? fBasis[i] : nullVec);
   }
+
+  // Physical parameters of lattice (density, elasticity)
+  void SetDensity(G4double val) { fDensity = val; }
+  void SetElasticityCubic(G4double C11, G4double C12, G4double C44);
+  // NOTE:  Will need to provide for other crystal symmetries!
+
+  G4double GetDensity() const { return fDensity; }
+  const Elasticity& GetElasticity() const { return fElasticity; }
+  G4double GetCijkl(G4int i, G4int j, G4int k, G4int l) const {
+    return fElasticity[i][j][k][l];
+  }
+
+  const ReducedElasticity& GetElReduced() const { return fElReduced; }
+  G4double GetCij(G4int i, G4int j) const { return fElReduced[i][j]; }
 
   // Parameters for phonon production and propagation
   void SetDynamicalConstants(G4double Beta, G4double Gamma,
@@ -113,7 +134,6 @@ public:
   G4double GetSTDOS() const { return fSTDOS; }
   G4double GetFTDOS() const { return fFTDOS; }
 
-public:
   // Parameters and structures for charge carrier transport
   void SetSoundSpeed(G4double v) { fVSound = v; }
   void SetHoleScatter(G4double l0) { fL0_h = l0; }
@@ -163,6 +183,12 @@ private:
 
 private:
   G4int verboseLevel;			    // Enable diagnostic output
+  G4String fName;			    // Name of lattice for messages
+
+  G4double fDensity;			    // Material density (natural units)
+  Elasticity fElasticity;	    	    // Full 4D elasticity tensor
+  ReducedElasticity fElReduced;		    // Reduced 2D elasticity tensor
+  G4bool fHasElasticity;		    // Flag filled elasticity tensors
 
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
 

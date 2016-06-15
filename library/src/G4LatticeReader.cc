@@ -19,6 +19,8 @@
 // 20140313  Use diagonal terms directly to fill electron mass tensor
 // 20140314  Add charge-carrier propagation parameters
 // 20140324  Add intervalley scattering parameters
+// 20160517  Add basis vectors for lattice
+// 20160615  Add elasticity tensor (cubic lattice only)
 
 #include "G4LatticeReader.hh"
 #include "G4ExceptionSeverity.hh"
@@ -133,6 +135,7 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "dyn")      return ProcessConstants();	// Dynamical parameters
   if (fToken == "emass")    return ProcessMassTensor();	// e- mass eigenvalues
   if (fToken == "basis")    return ProcessBasisVector(); // Crystal axis dir
+  if (fToken == "cubic")    return ProcessElasticity(fToken);  // C11,C12,C44
   if (fToken == "valley")   return ProcessEulerAngles(fToken); // e- drift dirs
   return ProcessValue(fToken);				// Single numeric value
 }
@@ -219,6 +222,22 @@ G4bool G4LatticeReader::ProcessBasisVector() {
 
   pLattice->SetBasis(fLastBasis, f3Vec.unit());
   return psLatfile->good();
+}
+
+// Read components expected for elasticity tensor:
+// "cubic" is C11, C12 and C44
+G4bool G4LatticeReader::ProcessElasticity(const G4String& name) {
+  G4bool good=false;
+
+  if (name == "cubic") {
+    G4double C11=0., C12=0., C44=0.;
+    *psLatfile >> C11 >> C12 >> C44;		// In pascals
+
+    pLattice->SetElasticityCubic(C11*hep_pascal,C12*hep_pascal,C44*hep_pascal);
+    good = psLatfile->good();
+  }
+
+  return good;
 }
 
 // Read Euler angles (phi, theta, psi) for named rotation matrix
