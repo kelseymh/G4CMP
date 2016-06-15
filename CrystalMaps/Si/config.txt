@@ -1,3 +1,8 @@
+# Crystal parameters
+basis 1 0 0
+basis 0 1 0
+basis 0 0 1
+cubic 1.656e11 0.639e11 0.795e11	# Pa
 # Phonon parameters
 beta -0.429 gamma -0.945 lambda 0.524 mu 0.680
 scat 2.43e-42
@@ -14,12 +19,12 @@ VG L.ssv  L 161 321
 VG ST.ssv ST 161 321
 VG FT.ssv FT 161 321
 # Charge carrier parameters
-vsound 9000.0 #approximate
-l0_e 16.9e-6
-l0_h 7.5e-6
+vsound 9000.0 		# m/s (approximate)
+l0_e 16.9e-6		# m
+l0_h 7.5e-6		# m
 #hole and electron masses taken from Robert's thesis
-hmass 0.50
-emass 0.91 0.19 0.19
+hmass 0.50		# per m(electron)
+emass 0.91 0.19 0.19	# per m(electron)
 valley   0  0 90 deg
 valley  90  0 90 deg
 valley   0 90 90 deg
