@@ -2,15 +2,15 @@
 basis 1 0 0
 basis 0 1 0
 basis 0 0 1
-cubic 1.656e11 0.639e11 0.795e11	# Pa
+cubic 1.656e11 0.639e11 0.795e11	# C11, C12, C44 in Pa
 # Phonon parameters
 beta -0.429 gamma -0.945 lambda 0.524 mu 0.680
 scat 2.43e-42
 decay 7.41e-56
-#### Need values for silicon; below is Ge
-LDOS 0.097834
-STDOS 0.53539
-FTDOS 0.36677
+# From S. Tamura et al., PRB44(7), 1991
+LDOS  0.093
+STDOS 0.531
+FTDOS 0.376
 # Wavevector mapping tables
 VDir LVec.ssv  L  161 321
 VDir STVec.ssv ST 161 321
