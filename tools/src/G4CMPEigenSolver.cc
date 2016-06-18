@@ -2,6 +2,7 @@
 //  Created by Daniel Palken in 2014 for G4CMP
 
 #include "G4CMPEigenSolver.hh"
+#include <limits>
 #include <cmath>
 
 using namespace std;

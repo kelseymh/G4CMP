@@ -1,7 +1,6 @@
 #----------------------------------------------------------------------------
 # Need to include G4CMP directories before G4.
 #
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/library/include)
 
 #----------------------------------------------------------------------------
