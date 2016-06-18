@@ -88,15 +88,15 @@ G4LatticeLogical::SetElasticityCubic(G4double C11, G4double C12, G4double C44) {
 	   << C11 << " " << C12 << " " << C44 << G4endl;
   }
 
-  // Reduced elasticity tensor is block-symmetric 6x6 array
-  for (int i=0; i<3; i++) {
-    for (int j=0; j<3; j++) {
-      fElReduced[i][j] = (i==j) ? C11 : C12;
-    }
-  }
+  fHasElasticity = true;	// Flag use of tensors is safe
 
-  for (int i=3; i<6; i++) {
-    fElReduced[i][i] = C44;
+  // Reduced elasticity tensor is block-symmetric 6x6 array
+  for (int i=0; i<6; i++) {
+    if (i>=3) fElReduced[i][i] = C44;
+    else {
+      for (int j=0; j<3; j++) {
+	fElReduced[i][j] = (i==j) ? C11 : C12;
+      }
   }
 
   // Unpack reduced elasticity tensor into full four-dimensional Cijkl
@@ -117,8 +117,6 @@ G4LatticeLogical::SetElasticityCubic(G4double C11, G4double C12, G4double C44) {
       }
     }
   }
-
-  fHasElasticity = true;	// Flag use of tensors is safe
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
