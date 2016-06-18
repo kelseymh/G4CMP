@@ -8,7 +8,7 @@
 #include <cmath>
 #include <cstdlib>	/* To get abs(int) */
 #include <limits>
-
+#include <vector>
 using namespace std;
 
 /* The code in this section comes from Numerical Recipes III (Press et. al.)
@@ -17,7 +17,7 @@ using namespace std;
 
 // """""""""""""""" interp_1d.h METHODS (Numerical Respies III) """"""""""""""""
 // constructor
-G4CMPVInterpolator::G4CMPVInterpolator(const VecDoub &x, const double *y, int m)
+G4CMPVInterpolator::G4CMPVInterpolator(const vector<double> &x, const double *y, int m)
   : n(x.size()), mm(m), jsav(0), cor(0), xx(&x[0]), yy(y) {
   dj = min(1, (int)sqrt(sqrt((double)n)));
 }  

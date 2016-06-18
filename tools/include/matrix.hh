@@ -9,6 +9,7 @@
 /* Two-dimension matrix class implemented analogously to std::vector;
    does not include all of the required STL features */
 
+namespace G4CMP {
 template <class T>
 class matrix {
 private:
@@ -47,14 +48,8 @@ private:
   inline void fill(const T &a=T(0));
 };
 
+}
+
 #include "matrix.icc"
-
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@  Matrix Classes @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-#include <vector>
-typedef std::vector<double> VecDoub;
-typedef matrix<double> MatDoub;
-
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 #endif	/* matrix.h */

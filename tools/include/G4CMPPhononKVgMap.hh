@@ -8,10 +8,12 @@
 #include "G4CMPInterpolator.hh"
 #include "G4LatticeLogical.hh"
 #include "G4ThreeVector.hh"
+#include "matrix.hh"
 #include <string>
 #include <vector>
 using std::string;
 using std::vector;
+using G4CMP::matrix;
 
 // '''''''''''''''''''''''''''''' PUBLIC CONSTANTS ''''''''''''''''''''''''''''''''
 
@@ -38,7 +40,7 @@ public:
   // Direct calculations
   void computeKinematics(const G4ThreeVector& n_dir);
   void fillChristoffelMatrix(const G4ThreeVector& n_dir);
-  void computeGroupVelocity(int mode, const MatDoub& epol,
+  void computeGroupVelocity(int mode, const matrix<double>& epol,
 			    const G4ThreeVector& slow);
   const G4ThreeVector& getGroupVelocity(int mode, const G4ThreeVector& n_dir);
   const G4ThreeVector& getPolarization(int mode, const G4ThreeVector& n_dir);
@@ -88,7 +90,7 @@ private:
   // Data buffers to compute kinematics for all modes in specified direction
   G4ThreeVector last_ndir;		// Buffer to handle caching results
   G4CMPEigenSolver eigenSys;
-  MatDoub christoffel;
+  matrix<double> christoffel;
   double  vphase[NUM_MODES];
   G4ThreeVector slowness[NUM_MODES];
   G4ThreeVector vgroup[NUM_MODES];

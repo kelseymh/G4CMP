@@ -7,6 +7,9 @@
 #define _G4CMPInterpolator_hh
 
 #include "matrix.hh"
+#include <vector>
+using G4CMP::matrix;
+using std::vector;
 
 /* The code in this section comes from Numerical Recipes III (Press et. al.)
    and is at some points modified slightly to suit our purposes */
@@ -16,7 +19,7 @@ struct G4CMPVInterpolator {
   int n, mm, jsav, cor, dj;
   const double *xx, *yy;
 
-  G4CMPVInterpolator(const VecDoub &x, const double *y, int m);
+  G4CMPVInterpolator(const vector<double> &x, const double *y, int m);
     
   double interp(double x) {
     int jlo = cor ? hunt(x) : locate(x);
@@ -32,7 +35,7 @@ struct G4CMPVInterpolator {
 
 // >>>>>>>>>>>>>>>>> interp_linear.h from Numerical Recipes >>>>>>>>>>>>>>>>>>>
 struct G4CMPLinearInterp : G4CMPVInterpolator {
-  G4CMPLinearInterp(const VecDoub &xv, const VecDoub &yv)
+  G4CMPLinearInterp(const vector<double> &xv, const vector<double> &yv)
     : G4CMPVInterpolator(xv,&yv[0],2)  {}
 
   double rawinterp(int j, double x) {
@@ -46,10 +49,11 @@ struct G4CMPLinearInterp : G4CMPVInterpolator {
 // ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; interp_2d.h ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 struct G4CMPBiLinearInterp {
   int m,n;
-  MatDoub y;
+  matrix<double> y;
   G4CMPLinearInterp x1terp, x2terp;
   
-  G4CMPBiLinearInterp(const VecDoub &x1v, const VecDoub &x2v, const MatDoub &ym)
+  G4CMPBiLinearInterp(const vector<double> &x1v, const vector<double> &x2v,
+		      const matrix<double> &ym)
     : m(x1v.size()), n(x2v.size()), y(ym), x1terp(x1v,x1v), x2terp(x2v,x2v) {}
     
   // adding this method seems to be required to make things run...

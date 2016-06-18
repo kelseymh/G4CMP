@@ -5,6 +5,8 @@
 #ifndef _matrix_icc
 #define _matrix_icc
 
+namespace G4CMP {
+
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@  Matrix Class @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 template <class T>
@@ -98,5 +100,7 @@ inline const T* matrix<T>::operator[](size_t i) const
 }
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+}
 
 #endif	/* matrix_icc */

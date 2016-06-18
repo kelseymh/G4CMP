@@ -3,12 +3,13 @@
 
 #include "G4CMPPhononKVgMap.hh"
 #include "G4ThreeVector.hh"
+#include "matrix.hh"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
 using namespace std;
-
+using G4CMP::matrix;
 
 // '''''''''''''''''''''''''''''' PRIVATE CONSTANTS ''''''''''''''''''''''''''''
 // looping
@@ -159,7 +160,7 @@ void G4CMPPhononKVgMap::computeKinematics(const G4ThreeVector& n_dir) {
 }
 
 // Fill group velocity cache for specified mode from lattice parameters
-void G4CMPPhononKVgMap::computeGroupVelocity(int mode, const MatDoub& e_mat,
+void G4CMPPhononKVgMap::computeGroupVelocity(int mode, const matrix<double>& e_mat,
 					     const G4ThreeVector& slow) {
   vgroup[mode].set(0.,0.,0.);
   for (int dim=0; dim<SPATIAL_DIMENSIONS; dim++) {
@@ -248,12 +249,12 @@ G4CMPPhononKVgMap::generateEvenTable(G4CMPPhononKVgMap::PhononModes MODE,
      will define the grid that will be interpolated on */
   size_t SIZE = lookupData[MODE][N_X].size();
   /* these grids are deliberately oversized, as our grid is evenly
-     spaced but circular, not square. Make the MatDoubs and VecDoubs
+     spaced but circular, not square. Make the matrix<double>s and vector<double>s
      pointers so they are not be destroyed when they go out of scope
      at the end of this method */
-  VecDoub x1(NUM_N_Xs+1, OUT_OF_BOUNDS);
-  VecDoub x2(NUM_N_Ys+1, OUT_OF_BOUNDS);
-  MatDoub dataVals(x1.size(), x2.size(), OUT_OF_BOUNDS);
+  vector<double> x1(NUM_N_Xs+1, OUT_OF_BOUNDS);
+  vector<double> x2(NUM_N_Ys+1, OUT_OF_BOUNDS);
+  matrix<double> dataVals(x1.size(), x2.size(), OUT_OF_BOUNDS);
   
   double lastLargestNx = N_X_MIN, lastLargestNy = N_Y_MIN;
   x1[0] = lastLargestNx, x2[0] = lastLargestNy;

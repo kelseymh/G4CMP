@@ -9,19 +9,22 @@
 
 // some system #include's we'll need
 #include "matrix.hh"
+#include <vector>
+using G4CMP::matrix;
+using std::vector;
 
 // ................. eigen_sym.h from Numerical Recipes III ...................
 struct G4CMPEigenSolver {
   size_t n;
-  MatDoub z;
-  VecDoub d,e;
+  matrix<double> z;
+  vector<double> d,e;
   bool yesvecs;
 
   G4CMPEigenSolver() : n(0), yesvecs(false) {;}
 
-  G4CMPEigenSolver(const MatDoub &a, bool yesvec=true) { init(a, yesvec); }
+  G4CMPEigenSolver(const matrix<double> &a, bool yesvec=true) { init(a, yesvec); }
 
-  void init(const MatDoub &a, bool yesvec=true) {
+  void init(const matrix<double> &a, bool yesvec=true) {
     n = a.nrows();
     z = a;
     d.resize(n,0.);
@@ -33,11 +36,11 @@ struct G4CMPEigenSolver {
     sort();
   }
 
-  G4CMPEigenSolver(const VecDoub &dd, const VecDoub &ee, bool yesvec=true) {
+  G4CMPEigenSolver(const vector<double> &dd, const vector<double> &ee, bool yesvec=true) {
     init(dd, ee, yesvec);
   }
 
-  void init(const VecDoub &dd, const VecDoub &ee, bool yesvec=true) {
+  void init(const vector<double> &dd, const vector<double> &ee, bool yesvec=true) {
     n = dd.size();
     d = dd;
     e = ee;
