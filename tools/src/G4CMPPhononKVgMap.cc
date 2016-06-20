@@ -40,6 +40,14 @@ const double N_Y_INC = (N_Y_MAX - N_Y_MIN) / (double)NUM_N_Ys; // y step size
 
 // ++++++++++++++++++++++ G4CMPPhononKVgMap STRUCT METHODS +++++++++++++++++++++
 
+G4CMPPhononKVgMap::G4CMPPhononKVgMap(G4LatticeLogical *lat)
+  : lattice(lat), christoffel(SPATIAL_DIMENSIONS, SPATIAL_DIMENSIONS, 0.) {
+  generateLookupTable();
+  generateMultiEvenTable();
+}
+
+G4CMPPhononKVgMap::~G4CMPPhononKVgMap() { clearQuantityMap(); }
+
 void G4CMPPhononKVgMap::clearQuantityMap() {
   // common technique to free up the memory of a vector:
   quantityMap.clear(); // this alone actually does not free up the memory
@@ -116,7 +124,6 @@ void G4CMPPhononKVgMap::generateLookupTable() {
 void G4CMPPhononKVgMap::fillChristoffelMatrix(const G4ThreeVector& nn)
 {
   christoffel.clear();
-  christoffel.resize(SPATIAL_DIMENSIONS, SPATIAL_DIMENSIONS, 0.);
   for (int i = 0; i < SPATIAL_DIMENSIONS; i++) {
     for (int l = 0; l < SPATIAL_DIMENSIONS; l++) {
       for (int j = 0; j < SPATIAL_DIMENSIONS; j++) {
@@ -142,7 +149,7 @@ void G4CMPPhononKVgMap::computeKinematics(const G4ThreeVector& n_dir) {
      Eigenvectors are the corresponding polaizrations e_l.
      Eigenvalues stored in eigenSys.d[0..n-1] in descening order.
      Corresponding eigenvectors are the columns of eigenSys.z[0..n-1][0..n-1] */
-  eigenSys.init(christoffel);
+  eigenSys.setup(christoffel);
   
   /* Extract eigen vectors and values for each mode */
   for (int mode = 0; mode < NUM_MODES; mode++) {

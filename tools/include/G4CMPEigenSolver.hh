@@ -22,32 +22,29 @@ struct G4CMPEigenSolver {
 
   G4CMPEigenSolver() : n(0), yesvecs(false) {;}
 
-  G4CMPEigenSolver(const matrix<double> &a, bool yesvec=true) { init(a, yesvec); }
-
-  void init(const matrix<double> &a, bool yesvec=true) {
-    n = a.nrows();
-    z = a;
-    d.resize(n,0.);
-    e.resize(n,0.);
-    yesvecs = yesvec;
-
+  G4CMPEigenSolver(const matrix<double> &a, bool yesvec=true)
+    : n(a.rows()), z(a), d(a.rows(),0.), e(a.rows(),0.), yesvecs(yesvec) {
     tred2();
     tqli();
     sort();
   }
 
-  G4CMPEigenSolver(const vector<double> &dd, const vector<double> &ee, bool yesvec=true) {
-    init(dd, ee, yesvec);
+  G4CMPEigenSolver(const vector<double> &dd, const vector<double> &ee,
+		   bool yesvec=true)
+    : n(dd.size()), z(dd.size(),dd.size(),0.), d(dd), e(ee), yesvecs(yesvec) {
+    for (int i=0;i<n;i++) z[i][i]=1.0;
+    tqli();
+    sort();
   }
 
-  void init(const vector<double> &dd, const vector<double> &ee, bool yesvec=true) {
-    n = dd.size();
-    d = dd;
-    e = ee;
+  // Reusable with matrix constructor above
+  void setup(const matrix<double> &a, bool yesvec=true) {
+    n = a.rows();
+    z = a;
+    d.resize(n,0.);
+    e.resize(n,0.);
     yesvecs = yesvec;
-
-    z.resize(n,n,0.0);
-    for (int i=0;i<n;i++) z[i][i]=1.0;
+    tred2();
     tqli();
     sort();
   }

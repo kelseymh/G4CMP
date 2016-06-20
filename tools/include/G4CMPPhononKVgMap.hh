@@ -30,12 +30,8 @@ public:
   string getModeName(int MODE);
     
 public:
-  G4CMPPhononKVgMap(G4LatticeLogical *lat) : lattice(lat) {
-    generateLookupTable();
-    generateMultiEvenTable();
-  }
-
-  ~G4CMPPhononKVgMap() { clearQuantityMap(); }
+  G4CMPPhononKVgMap(G4LatticeLogical *lat);
+  ~G4CMPPhononKVgMap();
 
   // Direct calculations
   void computeKinematics(const G4ThreeVector& n_dir);

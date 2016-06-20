@@ -5,102 +5,112 @@
 #ifndef _matrix_icc
 #define _matrix_icc
 
-namespace G4CMP {
-
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@  Matrix Class @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-template <class T>
-matrix<T>::matrix(size_t n, size_t m) : nn(n), mm(m), v(NULL) { fill(); }
+namespace G4CMP {
+  template <class T>
+  matrix<T>::matrix(size_t n, size_t m) : matrix() { resize(n,m);}
 
-template <class T>
-matrix<T>::matrix(size_t n, size_t m, const T &a) : nn(n), mm(m), v(NULL) { fill(a); }
-
-template <class T>
-matrix<T>::matrix(size_t n, size_t m, const T *a) : nn(n), mm(m), v(NULL) { *this=a; }
-
-template <class T>
-matrix<T>::matrix(const matrix &rhs) : nn(0), mm(0), v(NULL) { *this = rhs; }
-
-template <class T>
-matrix<T>& matrix<T>::operator=(const matrix<T> &rhs)
-// postcondition: normal assignment via copying has been performed;
-//		if matrix and rhs were different sizes, matrix
-//		has been resized to match the size of rhs
-{
-  if (this != &rhs) {
-    resize(rhs.nn, rhs.mm);		// No effect if equal dimensions
-    for (size_t i=0; i<nn; i++) for (size_t j=0; j<mm; j++) v[i][j] = rhs[i][j];
+  template <class T>
+  matrix<T>::matrix(size_t n, size_t m, const T &a) : matrix() { resize(n,m,a);}
+  
+  template <class T>
+  matrix<T>::matrix(size_t n, size_t m, const T *a) : matrix() {
+    resize(n,m);
+    *this = a;
   }
-  return *this;
-}
+  
+  template <class T>
+  matrix<T>::matrix(const matrix &rhs) : nn(rhs.nn), mm(rhs.mm), v(rhs.v) {;}
+  
+  template <class T>
+  matrix<T>& matrix<T>::operator=(const matrix<T> &rhs) {
+    // postcondition: normal assignment via copying has been performed;
+    //		if matrix and rhs were different sizes, matrix
+    //		has been resized to match the size of rhs
+    if (this != &rhs) {
+      resize(rhs.nn, rhs.mm);		// No effect if equal dimensions
+      v = rhs.v;			// Handles nested copying automatically
+    }
+    return *this;
+  }
+  
+  template <class T>
+  matrix<T>& matrix<T>::operator=(const T *a) {		// Copy array entries
+    for (size_t i=0; i<nn; i++) for (size_t j=0; j<mm; j++) v[i][j] = *a++;
+  }
+  
+  
+  
+  template <class T>
+  void matrix<T>::resize(size_t n, size_t m, const T& a) {
+    if (nn==n && mm==m) return;		// Correct size, no work needed
 
-template <class T>
-matrix<T>& matrix<T>::operator=(const T *a) {		// Copy array entries
-  if (!v || !v[0]) resize(nn,mm);
-  for (size_t i=0; i<nn; i++) for (size_t j=0; j<mm; j++) v[i][j] = *a++;
-}
- 
+    v.resize(n, vector<T>(mm,a));	// Trim or add rows filled with 'a'
+    for (size_t i=0; i<n; i++) v[i].resize(m,a);	// Pre-existing rows
+    nn = n;
+    mm = m;
+  }
 
-template <class T>
-inline void matrix<T>::resize(size_t n, size_t m) {
-  if (n == nn && m == mm && v && v[0]) return;		// Already correct size
-  clear();
-
-  v = new T*[n];
-  v[0] = new T[n*m];
-  if (v && v[0]) for (size_t i=1; i<n; i++) v[i] = v[i-1] + m;
-
-  nn=n; mm=m;
-}
-
-template <class T>
-inline void matrix<T>::resize(size_t n, size_t m, const T& a) {
-  resize(n,m);
-  fill(a);
-}
-
-template <class T>
-inline void matrix<T>::fill(const T &a) {		// Initialize elements
-  if (!v || !v[0]) resize(nn,mm);
-  for (size_t i=0; i<nn; i++) for (size_t j=0; j<mm; j++) v[i][j] = a;
-}
-
-template <class T>
-inline T& matrix<T>::at(size_t i, size_t j) {			// double subscripting
+  template <class T>
+  inline void matrix<T>::clear() {
+    for (size_t i=0; i<nn; i++) {
+      v[i].clear();
+      v[i].resize(mm,T(0));		// Re-allocate full matrix of zeroes
+    }
+  }
+  
+  template <class T>
+  inline T& matrix<T>::at(size_t i, size_t j) {		// double subscripting
 #ifdef _CHECKBOUNDS_
     if (i>=nn || j>=mm) throw("matrix subscript out of bounds");
 #endif
     return v[i][j];
-}
-
-template <class T>
-inline const T& matrix<T>::at(size_t i, size_t j) const {
+  }
+  
+  template <class T>
+  inline const T& matrix<T>::at(size_t i, size_t j) const {
 #ifdef _CHECKBOUNDS_
-  if (i>=nn || j>=mm) throw("matrix subscript out of bounds");
+    if (i>=nn || j>=mm) throw("matrix subscript out of bounds");
 #endif
-  return v[i][j];
-}
+    return v[i][j];
+  }
 
+  // Append rows to bottom of current matrix, resizing if necessary
+  template <class T>
+  inline void matrix<T>::vert_cat(const matrix<T>& rhs) {
+    if (mm != rhs.mm) resize(nn, rhs.mm);	// Trim rows if needed
+    v.insert(v.end(), rhs.v.begin(), rhs.v.end());
+    nn += rhs.nn;
+  }
+  
+  template <class T>
+  inline void matrix<T>::vert_cat(matrix<T>&& rhs) {
+    if (mm != rhs.mm) resize(nn, rhs.mm);	// Trim rows if needed
+    v.insert(v.end(), make_move_iterator(rhs.v.begin()),
+	              make_move_iterator(rhs.v.end()));
+    nn += rhs.nn;
 
-template <class T>
-inline T* matrix<T>::operator[](size_t i) {	//subscripting: pointer to row i
-#ifdef _CHECKBOUNDS_
-  if (i>=nn) throw("matrix subscript out of bounds");
-#endif
-  return v[i];
-}
+    rhs.nn = rhs.mm = 0;	// After move, zero out source size
+  }
+  
+  // Apend columns to end of all current rows, resizing, extending if necessary
+  template <class T>
+  inline void matrix<T>::horiz_cat(const matrix<T>& rhs) {
+    if (rhs.nn > nn) {
+      resize(rhs.nn, mm);	// Does not extend rows
+      nn = rhs.nn;
+    }
 
-template <class T>
-inline const T* matrix<T>::operator[](size_t i) const
-{
-#ifdef _CHECKBOUNDS_
-  if (i>=nn) throw("matrix subscript out of bounds");
-#endif
-  return v[i];
-}
+    for (size_t i=0; i<nn; i++) {	// Append RHS to each row, or extend
+      if (i<rhs.nn) v[i].insert(v[i].end(), rhs.v[i].begin(), rhs.v[i].end());
+      else v[i].resize(mm+rhs.mm, T(0));
+    }
+    mm += rhs.mm;
+  }
+  
+}	/* namespace G4CMP */
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-}
 
 #endif	/* matrix_icc */
