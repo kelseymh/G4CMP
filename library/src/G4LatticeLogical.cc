@@ -97,6 +97,7 @@ G4LatticeLogical::SetElasticityCubic(G4double C11, G4double C12, G4double C44) {
       for (int j=0; j<3; j++) {
 	fElReduced[i][j] = (i==j) ? C11 : C12;
       }
+    }
   }
 
   // Unpack reduced elasticity tensor into full four-dimensional Cijkl
@@ -107,10 +108,10 @@ G4LatticeLogical::SetElasticityCubic(G4double C11, G4double C12, G4double C44) {
   G4int rn2[2][2] = { };
   rn2[0][1] = rn2[1][0] = 1;
 
-  for(int l=0; l<2; l++) {
-    for(int k=0; k<2; k++) {
-      for(int j=0; j<6; j++) {
-	for(int i=0; i<6; i++) {
+  for (int l=0; l<2; l++) {
+    for (int k=0; k<2; k++) {
+      for (int j=0; j<6; j++) {
+	for (int i=0; i<6; i++) {
 	  fElasticity[rn1[i][rn2[k][0]]][rn1[i][rn2[k][1]]]
 	             [rn1[j][rn2[l][0]]][rn1[j][rn2[l][1]]] = fElReduced[i][j];
 	}
