@@ -176,10 +176,10 @@ for readability.
 
 | Keyword | Arguments | Value type(s)             | Units              |
 |---------|-----------|---------------------------|--------------------|
-|: *Lattice parameters* :|
+| **Lattice parameters** |
 | basis   | <x> <y> <z>       | unit vector       | none               |
 | cubic   | <C11> <C12> <C44> | elasticity tensor | pascal (typ ...e11) |
-|: *Phonon parameters* :|
+| **Phonon parameters** |
 | beta    | <val>     | scattering parameters     | 10^11 pascal       |
 | gamma   | <val>     | (see S. Tamura, PRB 1985) | 10^11 pascal       |
 | lambda  | <val>     |                           | 10^11 pascal       |
@@ -189,10 +189,10 @@ for readability.
 | LDOS    | <frac>    | longitudnal density of states | sum to unity   |
 | STDOS   | <frac>    | slow-transverse density of states |            |
 | FTDOS   | <frac>    | fast-transverse density of states |            |
-|: *Wavevector mapping tables* :|
+| **Wavevector mapping tables** |
 | VDir | <name> <type> <Ntheta> <Nphi> | K-Vg direction lookup table | filename, L/ST/FT, theta/phi binning |
 | VG   | <name> <type> <Ntheta> <Nphi> | K-Vg magnitude lookup table | |
-|: *Charge carrier parameters* :|
+| **Charge carrier parameters** |
 | vsound  | <Vlong>   | sound speed (longitudinal) | m/s               |
 | l0_e    | <len>     | electron scattering length | meter             |
 | l0_h	  | <len>     | hole scattering length     | meter             |
