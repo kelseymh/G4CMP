@@ -1,25 +1,8 @@
 #ifndef G4CMPMatrix_hh
 #define G4CMPMatrix_hh 1
 
-#include <vector>
-#include <cstdlib>
 #include <ostream>
-
-// Forward declarations needed for friend functions 
-template <class T> class G4CMPMatrix;
-
-template <class T>
-bool operator==(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-bool operator!=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-bool operator<(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-bool operator<=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-bool operator>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-bool operator>=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
+#include <vector>
 
 // This class is mostly just a wrapper around std::vector to mimic being 2D
 template <class T> class G4CMPMatrix {
@@ -28,6 +11,7 @@ public:
   G4CMPMatrix(size_t rows, size_t ncols, const T& val = T(0));
   G4CMPMatrix(const std::vector<T>& vec, size_t ncols);
   explicit G4CMPMatrix(const std::vector<T>& vec);
+  G4CMPMatrix(const G4CMPMatrix<T> &rhs);
 
   using iterator = typename std::vector<T>::iterator;
   using const_iterator = typename std::vector<T>::const_iterator;
@@ -36,21 +20,28 @@ public:
   iterator end();
   const_iterator end() const;
 
+  // Assignment
+  G4CMPMatrix& operator=(const G4CMPMatrix<T> &rhs);
+  G4CMPMatrix& operator=(G4CMPMatrix<T>&& rhs);
+  G4CMPMatrix& operator=(const std::vector<T>& rhs);
+  G4CMPMatrix& operator=(const T& a);		// Filling/zeroing
+  void clear() { operator=(T(0)); }
+
   // Compound Assignment
-  G4CMPMatrix& operator+=(const G4CMPMatrix& rhs);
-  G4CMPMatrix& operator-=(const G4CMPMatrix& rhs);
+  G4CMPMatrix& operator+=(const G4CMPMatrix<T>& rhs);
+  G4CMPMatrix& operator-=(const G4CMPMatrix<T>& rhs);
   G4CMPMatrix& operator+=(const T& rhs);
   G4CMPMatrix& operator-=(const T& rhs);
   G4CMPMatrix& operator*=(const T& rhs);
   G4CMPMatrix& operator/=(const T& rhs);
 
   // Comparison
-  friend bool operator== <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-  friend bool operator!= <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-  friend bool operator<  <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-  friend bool operator<= <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-  friend bool operator>  <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-  friend bool operator>= <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
+  bool operator==(const G4CMPMatrix<T>& rhs) const;
+  bool operator!=(const G4CMPMatrix<T>& rhs) const;
+  bool operator< (const G4CMPMatrix<T>& rhs) const;
+  bool operator<=(const G4CMPMatrix<T>& rhs) const;
+  bool operator> (const G4CMPMatrix<T>& rhs) const;
+  bool operator>=(const G4CMPMatrix<T>& rhs) const;
 
   // Access
   T& operator()(size_t i, size_t j);
@@ -59,6 +50,10 @@ public:
   const T& operator()(size_t i) const;
   T& operator[](size_t i);
   const T& operator[](size_t i) const;
+
+  // Access for use with pointers
+  inline T& at(size_t i, size_t j) { return operator()(i,j); }
+  inline const T& at(size_t i, size_t j) const { return operator()(i,j); }
 
   // Modify
   void push_back(const std::vector<T>& vec);
@@ -69,9 +64,9 @@ public:
   // No point in having a move version of horiz_cat
 
   // Information
-  size_t size() const;
-  size_t columns() const;
-  size_t rows() const;
+  inline size_t size() const { return data.size(); }
+  inline size_t columns() const { return ncols; }
+  inline size_t rows() const { return (ncols ? data.size()/ncols : 0); }
 
 private:
   std::vector<T> data;

@@ -1,20 +1,60 @@
 #include "G4CMPMatrix.hh"
+#include <algorithm>
+#include <cstdlib>
 #include <utility>
 
+// Constructors
+
 template <class T>
-inline G4CMPMatrix<T>::G4CMPMatrix() : data(std::vector<T>()), ncols(0) {}
+inline G4CMPMatrix<T>::G4CMPMatrix() : data(std::vector<T>()), ncols(0) {;}
 
 template <class T>
 inline G4CMPMatrix<T>::G4CMPMatrix(size_t rows, size_t columns, const T& val) :
-  data(std::vector<T>(rows*columns, val)), ncols(columns) {}
+  data(std::vector<T>(rows*columns, val)), ncols(columns) {;}
 
 template <class T>
 inline G4CMPMatrix<T>::G4CMPMatrix(const std::vector<T>& vec, size_t columns) :
-  data(vec), ncols(columns) {}
+  data(vec), ncols(columns) {;}
 
 template <class T>
 inline G4CMPMatrix<T>::G4CMPMatrix(const std::vector<T>& vec) :
-  data(vec), ncols(vec.size()) {}
+  data(vec), ncols(vec.size()) {;}
+
+
+// Copy and assignment
+
+template <class T>
+inline G4CMPMatrix<T>::G4CMPMatrix(const G4CMPMatrix<T> &rhs)
+  : data(rhs.data), ncols(rhs.ncols) {;}
+
+template <class T>
+inline G4CMPMatrix<T>::G4CMPMatrix& operator=(const G4CMPMatrix<T> &rhs) {
+  if (&rhs != this) {
+    data = rhs.data;
+    ncols = rhs.ncols:
+  }
+  return *this;
+}
+
+template <class T>
+inline G4CMPMatrix<T>::G4CMPMatrix& operator=(G4CMPMatrix<T>&& rhs) {
+  data = std::move(rhs.data);	// Is this right?
+  ncols = rhs.ncols;
+  rhs.ncols = 0;
+}
+
+template <class T>
+inline G4CMPMatrix<T>::G4CMPMatrix& operator=(const std::vector<T>& rhs) {
+  // TODO:  Check if rhs size matches dimensions
+  data = rhs;
+}
+
+template <class T>
+inline G4CMPMatrix<T>::G4CMPMatrix& operator=(const T& a) {	// Fill
+  std::fill(begin(), end(), a);
+}
+
+// Iterators
 
 template <class T>
 inline typename G4CMPMatrix<T>::iterator G4CMPMatrix<T>::begin() {
@@ -35,6 +75,8 @@ template <class T>
 inline typename G4CMPMatrix<T>::const_iterator G4CMPMatrix<T>::end() const {
   return data.end();
 }
+
+// Compound assignment
 
 template <class T>
 inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator+=(const G4CMPMatrix<T>& rhs) {
@@ -146,51 +188,35 @@ inline void G4CMPMatrix<T>::horiz_cat(const G4CMPMatrix<T>& rhs) {
   *this = horiz_cat(*this, rhs);
 }
 
-// Information
-template <class T>
-inline size_t G4CMPMatrix<T>::size() const {
-  return data.size();
-}
-
-template <class T>
-inline size_t G4CMPMatrix<T>::columns() const {
-  return ncols;
-}
-
-template <class T>
-inline size_t G4CMPMatrix<T>::rows() const {
-  return ncols ? data.size()/ncols : 0;
-}
-
 // Comparison
 template <class T>
-inline bool operator==(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return (lhs.data == rhs.data) && (lhs.ncols == rhs.ncols);
+inline bool G4CMPMatrix<T>::operator==(const G4CMPMatrix<T>& rhs) const {
+  return (data == rhs.data) && (ncols == rhs.ncols);
 }
 
 template <class T>
-inline bool operator!=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return !(lhs == rhs);
+inline bool G4CMPMatrix<T>::operator!=(const G4CMPMatrix<T>& rhs) const {
+  return !(*this == rhs);
 }
 
 template <class T>
-inline bool operator<(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return (lhs.data < rhs.data);
+inline bool G4CMPMatrix<T>::operator<(const G4CMPMatrix<T>& rhs) const {
+  return (data < rhs.data);
 }
 
 template <class T>
-inline bool operator<=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return (lhs.data <= rhs.data);
+inline bool G4CMPMatrix<T>::operator<=(const G4CMPMatrix<T>& rhs) const {
+  return (data <= rhs.data);
 }
 
 template <class T>
-inline bool operator>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return (lhs.data > rhs.data);
+inline bool G4CMPMatrix<T>::operator>(const G4CMPMatrix<T>& rhs) const {
+  return (data > rhs.data);
 }
 
 template <class T>
-inline bool operator>=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return (lhs.data >= rhs.data);
+inline bool G4CMPMatrix<T>::operator>=(const G4CMPMatrix<T>& rhs) const {
+  return (data >= rhs.data);
 }
 
 // Negate
