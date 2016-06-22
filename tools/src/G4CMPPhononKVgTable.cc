@@ -3,6 +3,8 @@
 
 #include "G4CMPPhononKVgTable.hh"
 #include "G4CMPPhononKVgMap.hh"
+#include "G4PhononPolarization.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "matrix.hh"
 #include <fstream>
@@ -23,19 +25,12 @@ const double N_X_INC = (N_X_MAX - N_X_MIN) / (double)NUM_N_Xs; // x step size
 #define NUM_N_Ys                250         // at x = 0, actual # will be 1 higher
 const double N_Y_INC = (N_Y_MAX - N_Y_MIN) / (double)NUM_N_Ys; // y step size
 
-// other
-#define NUM_HEADER_LINES        3           // in lookup table file
-#define WIDTH                   18          // for data output
-
-// cartesian indexing
-#define X_DIR                   0
-#define Y_DIR                   1
-#define Z_DIR                   2
-// in total:
-#define SPATIAL_DIMENSIONS      3           // x, y, z
-
 // interpolation (others in this category are public)
 #define INTERP_DIMS             2           // s_x, s_y
+
+// table output
+#define NUM_HEADER_LINES        3           // in lookup table file
+#define WIDTH                   18          // for data output
 
 // ++++++++++++++++++++++ G4CMPPhononKVgTable STRUCT METHODS +++++++++++++++++++++
 
@@ -75,7 +70,7 @@ G4ThreeVector G4CMPPhononKVgTable::interpGroupVelocity_N(int mode, const G4Three
    from the lookup table */
 void G4CMPPhononKVgTable::setUpDataVectors() {
   // Preload outer vectors with correct structure, to avoid push-backs
-  lookupData.resize(G4CMPPhononKVgMap::NUM_MODES,
+  lookupData.resize(G4PhononPolarization::NUM_MODES,
 		    vector<vector<double> >(NUM_DATA_TYPES));
 }
 
@@ -84,6 +79,7 @@ void G4CMPPhononKVgTable::generateLookupTable() {
   setUpDataVectors();
 
   // Kinematic data buffers fetched from Mapper (avoids memory churn)
+  G4double vphase;
   G4ThreeVector slowness;
   G4ThreeVector vgroup;
   G4ThreeVector polarization;
@@ -99,9 +95,10 @@ void G4CMPPhononKVgTable::generateLookupTable() {
       // NOTE: G4CMPPhononKVgTable code has opposite theta,phi convention from Geant4!
       double theta=n_dir.theta(), phi=n_dir.phi();
 
-      for (int mode = 0; mode < G4CMPPhononKVgMap::NUM_MODES; mode++) {
-	vgroup = mapper->getGroupVelocity(mode, n_dir);
-	slowness = mapper->getSlowness(mode, n_dir);
+      for (int mode = 0; mode < G4PhononPolarization::NUM_MODES; mode++) {
+	vphase = mapper->getPhaseSpeed(mode, n_dir) / (m/s);
+	vgroup = mapper->getGroupVelocity(mode, n_dir) / (m/s);
+	slowness = mapper->getSlowness(mode, n_dir) / (s/m);	// 1/vphase
 	polarization = mapper->getPolarization(mode, n_dir);
 
         lookupData[mode][N_X].push_back(n_dir.x());	// Wavevector dir.
@@ -114,7 +111,7 @@ void G4CMPPhononKVgTable::generateLookupTable() {
 	lookupData[mode][S_Z].push_back(slowness.z());
 	lookupData[mode][S_MAG].push_back(slowness.mag());
 	lookupData[mode][S_PAR].push_back(slowness.perp());
-	lookupData[mode][V_P].push_back(mapper->getPhaseSpeed(mode, n_dir));
+	lookupData[mode][V_P].push_back(vphase);
 	lookupData[mode][V_G].push_back(vgroup.mag());
 	lookupData[mode][V_GX].push_back(vgroup.x());
 	lookupData[mode][V_GY].push_back(vgroup.y());
@@ -134,7 +131,8 @@ void G4CMPPhononKVgTable::generateLookupTable() {
 /* given the (pointer to the) evenly spaced interpolation grid
    generated previously, this method returns an interpolated value for
    the data type already built into the G4CMPBiLinearInterp structure */
-double G4CMPPhononKVgTable::interpolateEven(G4CMPBiLinearInterp& grid, double nx, double ny) {
+double G4CMPPhononKVgTable::interpolateEven(G4CMPBiLinearInterp& grid,
+					    double nx, double ny) {
     // check that the n values we're interpolating at are possible:
     if (doubGreaterThanApprox((nx*nx + ny*ny), 1.0)) {
         cout << "ERROR: Cannot interpolate at (" << nx << ", " << ny << "): "
@@ -149,8 +147,8 @@ double G4CMPPhononKVgTable::interpolateEven(G4CMPBiLinearInterp& grid, double nx
    interpolation grid structures.  Much the same as its simpler version,
    but this one requires specification of the mode and data type
    desired */
-double G4CMPPhononKVgTable::interpolateEven(double nx, double ny, int MODE, int TYPE_OUT,
-				bool SILENT) {
+double G4CMPPhononKVgTable::interpolateEven(double nx, double ny, int MODE,
+					    int TYPE_OUT, bool SILENT) {
   // check that the n values we're interpolating at are possible:
   if (doubGreaterThanApprox((nx*nx + ny*ny), 1.0)) {
     cout << "ERROR: Cannot interpolate at (" << nx << ", " << ny << "): "
@@ -207,20 +205,23 @@ G4CMPPhononKVgTable::generateEvenTable(int MODE,
     if (doubApproxEquals(x1[x1vecIndex+1], nxVal) && x1vecIndex+1 < x1.size())
       x1vecIndex++;                           // resolve possible rounding issue
     else if (!doubApproxEquals(x1[x1vecIndex], nxVal))  // check
-      cout << "ERROR: Unanticipated n_x-index rounding behavior\n";
+      cerr << "ERROR: Unanticipated n_x-index rounding behavior, nxVal= "
+	   << nxVal << endl;
 
     // figure out n_y-index of current data point:
     int x2vecIndex = (int)(nyVal / N_Y_INC);    // may round down to nearest integer index
     if (doubApproxEquals(x2[x2vecIndex+1], nyVal) && x2vecIndex+1 < x2.size())
       x2vecIndex++;                           // resolve possible rounding issue
     else if (!doubApproxEquals(x2[x2vecIndex], nyVal))  // check
-      cout << "ERROR: Unanticipated n_y-index rounding behavior\n";
+      cerr << "ERROR: Unanticipated n_y-index rounding behavior, nyVal= "
+	   << nyVal << endl;
     
     // fill in data point in matrix:
     // first check to make sure that point not already entered:
     if (!doubApproxEquals(dataVals[x1vecIndex][x2vecIndex], OUT_OF_BOUNDS,
 			  1.0e-10, false))
-      cout << "ERROR: Attempting to enter a data value more than once\n";
+      cerr << "ERROR: Attempting to enter a data value more than once @ "
+	   << x1vecIndex << " " << x2vecIndex << endl;
     else // at long last, put data point in matrix
       dataVals[x1vecIndex][x2vecIndex] = lookupData[MODE][TYPE_OUT][i];
   }
@@ -238,7 +239,7 @@ G4CMPPhononKVgTable::generateEvenTable(int MODE,
 void G4CMPPhononKVgTable::generateMultiEvenTable() {
   clearQuantityMap();
 
-  for (int mode = 0; mode < G4CMPPhononKVgMap::NUM_MODES; mode++) {
+  for (int mode = 0; mode < G4PhononPolarization::NUM_MODES; mode++) {
     // create 2nd level vectors:
     vector<G4CMPBiLinearInterp> subTable;
     for (int dType = 0; dType < NUM_DATA_TYPES; dType++)
@@ -287,8 +288,8 @@ void G4CMPPhononKVgTable::write() {
       double rho2 = nx*nx + ny*ny;
       if (!doubLessThanApprox(rho2, 1.0, 1.0e-4)) break;
 
-      for (int mode = 0; mode < G4CMPPhononKVgMap::NUM_MODES; mode++) {
-	lookupTable << setw(WIDTH) << getModeName(mode);
+      for (int mode = 0; mode < G4PhononPolarization::NUM_MODES; mode++) {
+	lookupTable << setw(WIDTH) << G4PhononPolarization::Label(mode);
 	for (size_t cols=0; cols<NUM_DATA_TYPES; cols++) {
 	  lookupTable << setw(WIDTH) << lookupData[mode][cols][entry];
 	}
@@ -298,16 +299,6 @@ void G4CMPPhononKVgTable::write() {
       entry++;		// Increment counter, corresponding to push_back()
     }
   }
-}
-
-// given the mode index, returns the symbol "L", "FT", or "ST"
-string G4CMPPhononKVgTable::getModeName(int MODE) {
-  switch (MODE) {
-  case G4CMPPhononKVgMap::L: return "L";
-  case G4CMPPhononKVgMap::FT: return "FT";
-  case G4CMPPhononKVgMap::ST: return "ST";
-  default: throw("ERROR: not a valid mode");
-  } throw("ERROR: not a valid mode");
 }
 
 // given the data type index, returns the abbreviation (s_x, etc...)

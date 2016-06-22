@@ -3,6 +3,8 @@
 
 #include "G4CMPPhononKVgMap.hh"
 #include "G4LatticeLogical.hh"
+#include "G4PhononPolarization.hh"
+#include "G4ThreeVector.hh"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -15,17 +17,10 @@ using namespace std;
 #define REDUCED_TENSOR_SIZE     6           // 2D tensor, 36 elements
 #define FULL_TENSOR_SIZE        3           // 4D tensor, 81 elements
 
-// cartesian indexing
-#define X_DIR                   0
-#define Y_DIR                   1
-#define Z_DIR                   2
-// in total:
-#define SPATIAL_DIMENSIONS      3           // x, y, z
-
 // ++++++++++++++++++++++ G4CMPPhononKVgMap STRUCT METHODS +++++++++++++++++++++
 
 G4CMPPhononKVgMap::G4CMPPhononKVgMap(G4LatticeLogical *lat)
-  : lattice(lat), christoffel(SPATIAL_DIMENSIONS, SPATIAL_DIMENSIONS, 0.) {;}
+  : lattice(lat), christoffel(G4ThreeVector::SIZE, G4ThreeVector::SIZE, 0.) {;}
 
 G4CMPPhononKVgMap::~G4CMPPhononKVgMap() {;}
 
@@ -36,10 +31,10 @@ G4CMPPhononKVgMap::~G4CMPPhononKVgMap() {;}
 void G4CMPPhononKVgMap::fillChristoffelMatrix(const G4ThreeVector& nn)
 {
   christoffel.clear();
-  for (int i = 0; i < SPATIAL_DIMENSIONS; i++) {
-    for (int l = 0; l < SPATIAL_DIMENSIONS; l++) {
-      for (int j = 0; j < SPATIAL_DIMENSIONS; j++) {
-	for (int m = 0; m < SPATIAL_DIMENSIONS; m++) {
+  for (int i = 0; i < G4ThreeVector::SIZE; i++) {
+    for (int l = 0; l < G4ThreeVector::SIZE; l++) {
+      for (int j = 0; j < G4ThreeVector::SIZE; j++) {
+	for (int m = 0; m < G4ThreeVector::SIZE; m++) {
 	  christoffel[i][l] += (lattice->GetCijkl(i,j,l,m) * nn[j] * nn[m]);
 	}
       }
@@ -64,12 +59,13 @@ void G4CMPPhononKVgMap::computeKinematics(const G4ThreeVector& n_dir) {
   eigenSys.setup(christoffel);
   
   /* Extract eigen vectors and values for each mode */
-  for (int mode = 0; mode < NUM_MODES; mode++) {
+  for (int mode = 0; mode < G4PhononPolarization::NUM_MODES; mode++) {
     // calculate desired quantities that will populate lookup table:
     vphase[mode] = sqrt(eigenSys.d[mode]);
     slowness[mode] = n_dir/vphase[mode];
-    polarization[mode].set(eigenSys.z[X_DIR][mode], eigenSys.z[Y_DIR][mode],
-			   eigenSys.z[Z_DIR][mode]);
+    polarization[mode].set(eigenSys.z[G4ThreeVector::X][mode],
+			   eigenSys.z[G4ThreeVector::Y][mode],
+			   eigenSys.z[G4ThreeVector::Z][mode]);
     
     computeGroupVelocity(mode, eigenSys.z, slowness[mode]);
   }
@@ -82,7 +78,7 @@ void G4CMPPhononKVgMap::computeKinematics(const G4ThreeVector& n_dir) {
 void G4CMPPhononKVgMap::computeGroupVelocity(int mode, const matrix<double>& e_mat,
 					     const G4ThreeVector& slow) {
   vgroup[mode].set(0.,0.,0.);
-  for (int dim=0; dim<SPATIAL_DIMENSIONS; dim++) {
+  for (int dim=0; dim<G4ThreeVector::SIZE; dim++) {
     for (int i=0; i<FULL_TENSOR_SIZE; i++) {
       for (int j=0; j<FULL_TENSOR_SIZE; j++) {
 	for (int l=0; l<FULL_TENSOR_SIZE; l++) {

@@ -6,12 +6,13 @@
 
 #include "G4CMPPhononKVgMap.hh"
 #include "G4CMPPhononKVgTable.hh"
-#include "G4ThreeVector.hh"
+#include "G4LatticeLogical.hh"
+#include "G4LatticeManager.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
-#include "G4LatticeManager.hh"
-#include "G4LatticeLogical.hh"
+#include "G4PhononPolarization.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4ThreeVector.hh"
 #include <fstream>
 #include <iomanip>
 #include <string>
@@ -45,18 +46,20 @@ int main(int argc, const char * argv[])
   const int Nphi = 321;
   
   // 4. Loop over modes (L, ST, FT) to set up output files
-  for (int mode=G4CMPPhononKVgMap::L; mode<G4CMPPhononKVgMap::NUM_MODES; mode++) {
-    string vgname = lookup.getModeName(mode) + ".ssv";
+  for (int mode=0; mode<G4PhononPolarization::NUM_MODES; mode++) {
+    string vgname = G4PhononPolarization::Label(mode);
+    vgname += ".ssv";
     ofstream vgfile(vgname, ios::trunc);
     vgfile << scientific << setprecision(7);
     
-    string vdirname = lookup.getModeName(mode) + "Vec.ssv";
+    string vdirname = G4PhononPolarization::Label(mode);
+    vdirname += "Vec.ssv";
     ofstream vdirfile(vdirname, ios::trunc);
     vdirfile << scientific << setprecision(7);
     
     cout << "Generating " << lattice->GetName() << " "
-	 << lookup.getModeName(mode) << " files " << Ntheta << " x " << Nphi
-	 << endl;
+	 << G4PhononPolarization::Label(mode) << " files "
+	 << Ntheta << " x " << Nphi << endl;
     
     G4ThreeVector kvec, Vg;
     double theta, phi;

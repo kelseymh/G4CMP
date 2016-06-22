@@ -5,6 +5,7 @@
 #define G4CMPPhononKVgMap_hh
 
 #include "G4CMPEigenSolver.hh" // Numerical Recipes III code
+#include "G4PhononPolarization.hh"
 #include "G4ThreeVector.hh"
 #include "matrix.hh"
 #include <string>
@@ -17,10 +18,6 @@ class G4LatticeLogical;
 
 
 class G4CMPPhononKVgMap {
-public:
-  // Wave mode indexing (longitudinal, slow and fast transverse)
-  enum PhononModes { L, ST, FT, NUM_MODES };
-    
 public:
   G4CMPPhononKVgMap(G4LatticeLogical *lat);
   ~G4CMPPhononKVgMap();
@@ -45,10 +42,10 @@ private:
   G4ThreeVector last_ndir;		// Buffer to handle caching results
   G4CMPEigenSolver eigenSys;
   matrix<double> christoffel;
-  double  vphase[NUM_MODES];
-  G4ThreeVector slowness[NUM_MODES];
-  G4ThreeVector vgroup[NUM_MODES];
-  G4ThreeVector polarization[NUM_MODES];
+  double vphase[G4PhononPolarization::NUM_MODES];
+  G4ThreeVector slowness[G4PhononPolarization::NUM_MODES];
+  G4ThreeVector vgroup[G4PhononPolarization::NUM_MODES];
+  G4ThreeVector polarization[G4PhononPolarization::NUM_MODES];
 };
 
 #endif /* G4CMPPhononKVgMap_hh */

@@ -36,10 +36,10 @@ public:
 		   E_X, E_Y, E_Z,		// Polarization
 		   NUM_DATA_TYPES };
   string getDataTypeName(int TYPE);
-  string getModeName(int MODE);
 
   // interpolation methods
-  double interpolateEven(double nx, double ny, int MODE, int TYPE_OUT, bool SILENT=true);
+  double interpolateEven(double nx, double ny, int MODE, int TYPE_OUT,
+			 bool SILENT=true);
   double interpolateEven(G4CMPBiLinearInterp& grid, double nx, double ny);
   double interpGeneral(int mode, const G4ThreeVector& k, int typeDesired);
 
