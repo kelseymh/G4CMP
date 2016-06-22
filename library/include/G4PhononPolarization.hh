@@ -8,6 +8,8 @@
 //
 // $Id$
 //
+// 20160622  Add functions to return name strings
+
 #ifndef G4PhononPolarization_h
 #define G4PhononPolarization_h 1
 
@@ -17,10 +19,13 @@ class G4ParticleDefinition;
 
 
 namespace G4PhononPolarization {
-  enum { Long=0, TransSlow=1, TransFast=2, UNKNOWN=-1 };
+  enum { Long=0, TransSlow=1, TransFast=2, NUM_MODES=3, UNKNOWN=-1 };
 
   G4int Get(const G4ParticleDefinition* aPD);
   G4ParticleDefinition* Get(G4int pol);
+
+  const G4String& Name(G4int pol);	// Returns full particle name
+  const char* Label(G4int pol);		// Returns short affix (L, ST, FT)
 }
 
 #endif	/* G4PhononPolarization_h */
