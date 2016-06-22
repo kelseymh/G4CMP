@@ -223,17 +223,6 @@ G4LatticePhysical::MapK_HVtoK(G4int ivalley, G4ThreeVector k_HV) const {
   return RotateToSolid(k_HV);
 }
 
-G4ThreeVector
-G4LatticePhysical::MapK_HVtoV_el(G4int ivalley, G4ThreeVector k_HV) const {
-  if (verboseLevel>1)
-    G4cout << "G4LatticePhysical::MapK_HVtoV_el " << ivalley << " " << k_HV
-     << G4endl;
-
-  RotateToLattice(k_HV);
-  k_HV = fLattice->MapK_HVtoV_el(ivalley, k_HV);	// Overwrite to avoid temporary
-  return RotateToSolid(k_HV);
-}
-
 
 G4ThreeVector 
 G4LatticePhysical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {
