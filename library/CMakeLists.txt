@@ -180,8 +180,8 @@ set(library_HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLocalElectroMagField.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeScattering.hh
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.hh
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.icc
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.icc
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMeshElectricField.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMessengerBase.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh

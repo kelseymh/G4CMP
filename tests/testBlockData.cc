@@ -1,4 +1,4 @@
-#include "G4CMPMatrix.hh"
+#include "G4CMPBlockData.hh"
 #include <algorithm>
 #include <iostream>
 #include <cstdlib>
@@ -13,10 +13,10 @@ int main() {
     b = rand()%5;
   } while (b == a); // I don't want to test on square matrices
 
-  G4CMPMatrix<int> mat1(a, b);
+  G4CMPBlockData<int> mat1(a, b);
   cout << "Constructing first matrix. Should have " << a << " rows and "
-       << b << " columns: \n G4CMPMatrix::rows() = " << mat1.rows()
-       << "\n G4CMPMatrix::columns() = " << mat1.columns() << endl;
+       << b << " columns: \n G4CMPBlockData::rows() = " << mat1.rows()
+       << "\n G4CMPBlockData::columns() = " << mat1.columns() << endl;
 
   cout << "Filling matrix with random data: " << endl;
   std::generate(mat1.begin(), mat1.end(), 
@@ -29,7 +29,7 @@ int main() {
   cout << mat1 << endl;
   
   cout << "Make and print another matrix to work with: " << endl;
-  G4CMPMatrix<int> mat2(a, b);
+  G4CMPBlockData<int> mat2(a, b);
   std::generate(mat2.begin(), mat2.end(), []{return rand()%10;});
   cout << mat2 << endl;
 
@@ -40,7 +40,7 @@ int main() {
   cout << mat1 - mat2 << endl;
 
   cout << "Make and print another matrix to work with: " << endl;
-  G4CMPMatrix<int> mat3(b, a);
+  G4CMPBlockData<int> mat3(b, a);
   std::generate(mat3.begin(), mat3.end(), []{return rand()%10;});
   cout << mat3 << endl;
 
