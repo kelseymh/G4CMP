@@ -5,6 +5,7 @@
 //
 
 #include "G4CMPPhononKVgMap.hh"
+#include "G4CMPPhononKVgTable.hh"
 #include "G4ThreeVector.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
@@ -33,10 +34,11 @@ int main(int argc, const char * argv[])
     ::exit(1);
   }
 
-  // 2. set up the entire interpolation infrastrcuture
+  // 2. set up the wavevector-velocity mapping infrastrcuture
   G4CMPPhononKVgMap *map = new G4CMPPhononKVgMap(lattice);
-  
-  map->writeLookupTable();		// Dump Dan's version of data file
+
+  G4CMPPhononKVgTable lookup(map);	// Dump Dan's version of data file
+  lookup.write();
   
   // 3. G4CMP uses (theta,phi) binning
   const int Ntheta = 161;		// These must match config.txt values
@@ -44,16 +46,16 @@ int main(int argc, const char * argv[])
   
   // 4. Loop over modes (L, ST, FT) to set up output files
   for (int mode=G4CMPPhononKVgMap::L; mode<G4CMPPhononKVgMap::NUM_MODES; mode++) {
-    string vgname = map->getModeName(mode) + ".ssv";
+    string vgname = lookup.getModeName(mode) + ".ssv";
     ofstream vgfile(vgname, ios::trunc);
     vgfile << scientific << setprecision(7);
     
-    string vdirname = map->getModeName(mode) + "Vec.ssv";
+    string vdirname = lookup.getModeName(mode) + "Vec.ssv";
     ofstream vdirfile(vdirname, ios::trunc);
     vdirfile << scientific << setprecision(7);
     
     cout << "Generating " << lattice->GetName() << " "
-	 << map->getModeName(mode) << " files " << Ntheta << " x " << Nphi
+	 << lookup.getModeName(mode) << " files " << Ntheta << " x " << Nphi
 	 << endl;
     
     G4ThreeVector kvec, Vg;
