@@ -28,29 +28,29 @@ inline G4CMPMatrix<T>::G4CMPMatrix(const G4CMPMatrix<T> &rhs)
   : data(rhs.data), ncols(rhs.ncols) {;}
 
 template <class T>
-inline G4CMPMatrix<T>::G4CMPMatrix& operator=(const G4CMPMatrix<T> &rhs) {
+inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator=(const G4CMPMatrix<T> &rhs) {
   if (&rhs != this) {
     data = rhs.data;
-    ncols = rhs.ncols:
+    ncols = rhs.ncols;
   }
   return *this;
 }
 
 template <class T>
-inline G4CMPMatrix<T>::G4CMPMatrix& operator=(G4CMPMatrix<T>&& rhs) {
+inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator=(G4CMPMatrix<T>&& rhs) {
   data = std::move(rhs.data);	// Is this right?
   ncols = rhs.ncols;
   rhs.ncols = 0;
 }
 
 template <class T>
-inline G4CMPMatrix<T>::G4CMPMatrix& operator=(const std::vector<T>& rhs) {
+inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator=(const std::vector<T>& rhs) {
   // TODO:  Check if rhs size matches dimensions
   data = rhs;
 }
 
 template <class T>
-inline G4CMPMatrix<T>::G4CMPMatrix& operator=(const T& a) {	// Fill
+inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator=(const T& a) {	// Fill
   std::fill(begin(), end(), a);
 }
 
