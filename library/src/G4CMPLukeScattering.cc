@@ -57,26 +57,16 @@ G4CMPLukeScattering::G4CMPLukeScattering()
 #ifdef G4CMP_DEBUG
   output.open("LukePhononEnergies");
 #endif
-  energyOut.open("LukePhononEnergies");
-  mfpOut.open("LukePhononMFP");
-  prePoint = G4ThreeVector(0.);
 }
 
 G4CMPLukeScattering::~G4CMPLukeScattering() {
 #ifdef G4CMP_DEBUG
   output.close();
 #endif
-energyOut.close();
-mfpOut.close();
 }
+
 
 // Physics
-G4double
-G4CMPLukeScattering::PostStepGetPhysicalInteractionLength(const G4Track &track,
-                        G4double previousStepSize, G4ForceCondition *condition) {
-
-  return GetMeanFreePath(track, previousStepSize, condition);
-}
 
 G4double 
 G4CMPLukeScattering::GetMeanFreePath(const G4Track& aTrack,
@@ -181,9 +171,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 #ifdef G4CMP_DEBUG
   output << Ephonon/eV << G4endl;
 #endif
-  energyOut << Ephonon/eV << G4endl;
-  mfpOut << (postStepPoint->GetPosition() - prePoint).mag()/um << G4endl;
-  prePoint = postStepPoint->GetPosition();
 
   // Get recoil wavevector, convert to new momentum
   G4ThreeVector k_recoil = ktrk - qvec;
@@ -211,7 +198,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   FillParticleChange(GetValleyIndex(aTrack), k_recoil);
 
   aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
-  //ResetNumberOfInteractionLengthLeft();
+  ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
 }
 
