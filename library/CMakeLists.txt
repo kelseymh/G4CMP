@@ -134,6 +134,7 @@ set(library_SOURCES
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftBoundaryProcess.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftElectron.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftHole.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEigenSolver.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeHit.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeSensitivity.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEqEMField.cc
@@ -144,6 +145,7 @@ set(library_SOURCES
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMeshElectricField.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMessengerBase.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononBoundaryProcess.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKVgMap.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysics.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysicsList.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPProcessUtils.cc
@@ -168,11 +170,14 @@ set(library_SOURCES
    )
 
 set(library_HEADERS
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.icc
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigManager.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftBoundaryProcess.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftElectron.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftHole.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEigenSolver.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeHit.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeSensitivity.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEqEMField.hh
@@ -180,15 +185,16 @@ set(library_HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLocalElectroMagField.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeScattering.hh
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.hh
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.icc
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.icc
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMeshElectricField.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMessengerBase.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKVgMap.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysics.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysicsList.hh
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPProcessUtils.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPProcessSubType.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPProcessUtils.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSecondaryProduction.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPStackingAction.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSurfaceProperty.hh
