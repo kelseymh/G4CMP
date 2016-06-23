@@ -14,28 +14,19 @@
 using namespace std;
 using G4CMP::matrix;
 
-// '''''''''''''''''''''''''''''' PRIVATE CONSTANTS ''''''''''''''''''''''''''''
-// looping
-#define N_X_MIN                 0.0         // start x loop here
-#define N_X_MAX                 1.0         // end x loop here
-#define NUM_N_Xs                250         // at y = 0, actual # will be 1 higher
-const double N_X_INC = (N_X_MAX - N_X_MIN) / (double)NUM_N_Xs; // x step size
-#define N_Y_MIN                 0.0         // start y loop here
-#define N_Y_MAX                 1.0         // end y loop here
-#define NUM_N_Ys                250         // at x = 0, actual # will be 1 higher
-const double N_Y_INC = (N_Y_MAX - N_Y_MIN) / (double)NUM_N_Ys; // y step size
+// ++++++++++++++++++++++ G4CMPPhononKVgTable METHODS +++++++++++++++++++++++++
 
-// interpolation (others in this category are public)
-#define INTERP_DIMS             2           // s_x, s_y
+// magic values for use with interpolation
+const G4double G4CMPPhononKVgTable::OUT_OF_BOUNDS = 9.0e299;
+const G4double G4CMPPhononKVgTable::ERRONEOUS_INPUT = 1.0e99;
 
-// table output
-#define NUM_HEADER_LINES        3           // in lookup table file
-#define WIDTH                   18          // for data output
-
-// ++++++++++++++++++++++ G4CMPPhononKVgTable STRUCT METHODS +++++++++++++++++++++
-
-G4CMPPhononKVgTable::G4CMPPhononKVgTable(G4CMPPhononKVgMap* map)
-  : mapper(map) {
+G4CMPPhononKVgTable::G4CMPPhononKVgTable(G4CMPPhononKVgMap* map, G4double xmin,
+					 G4double xmax, G4int nx,
+					 G4double ymin, G4double ymax,
+					 G4double ny)
+  : nxMin(xmin), nxMax(xmax), nxStep((nx>0)?(xmax-xmin)/nx:1.), nxCount(nx),
+    nyMin(ymin), nyMax(ymax), nyStep((ny>0)?(ymax-ymin)/ny:1.), nyCount(ny),
+    mapper(map) {
   generateLookupTable();
   generateMultiEvenTable();
 }
@@ -50,7 +41,8 @@ void G4CMPPhononKVgTable::clearQuantityMap() {
 }
 
 // returns any quantity desired from the interpolation table
-double G4CMPPhononKVgTable::interpGeneral(int mode, const G4ThreeVector& k, int typeDesired) {
+double G4CMPPhononKVgTable::interpGeneral(int mode, const G4ThreeVector& k,
+					  int typeDesired) {
   double nx = k.unit().x(), ny = k.unit().y();
 
   // note: this method at present does not require nz
@@ -86,8 +78,8 @@ void G4CMPPhononKVgTable::generateLookupTable() {
 
   // ensures even spacing for x and y on a unit circle in the xy-plane
   G4ThreeVector n_dir;
-  for (double nx=N_X_MIN; nx<=N_X_MAX; nx+=N_X_INC) {
-    for (double ny=N_Y_MIN; ny<=N_Y_MAX; ny+=N_Y_INC) {
+  for (double nx=nxMin; nx<=nxMax; nx+=nxStep) {
+    for (double ny=nyMin; ny<=nyMax; ny+=nyStep) {
       double rho2 = nx*nx + ny*ny;
       if (!doubLessThanApprox(rho2, 1.0, 1.0e-4)) break;
 
@@ -179,11 +171,11 @@ G4CMPPhononKVgTable::generateEvenTable(int MODE,
      spaced but circular, not square. Make the matrix<double>s and vector<double>s
      pointers so they are not be destroyed when they go out of scope
      at the end of this method */
-  vector<double> x1(NUM_N_Xs+1, OUT_OF_BOUNDS);
-  vector<double> x2(NUM_N_Ys+1, OUT_OF_BOUNDS);
+  vector<double> x1(nxCount+1, OUT_OF_BOUNDS);
+  vector<double> x2(nyCount+1, OUT_OF_BOUNDS);
   matrix<double> dataVals(x1.size(), x2.size(), OUT_OF_BOUNDS);
   
-  double lastLargestNx = N_X_MIN, lastLargestNy = N_Y_MIN;
+  double lastLargestNx = nxMin, lastLargestNy = nyMin;
   x1[0] = lastLargestNx, x2[0] = lastLargestNy;
   int currentXindex = 1, currentYindex = 1;
   for (size_t i = 0; i<SIZE; i++) {
@@ -201,7 +193,7 @@ G4CMPPhononKVgTable::generateEvenTable(int MODE,
     }
     
     // figure out n_x-index of current data point:
-    int x1vecIndex = (int)(nxVal / N_X_INC);
+    int x1vecIndex = (int)(nxVal / nxStep);
     if (doubApproxEquals(x1[x1vecIndex+1], nxVal) && x1vecIndex+1 < x1.size())
       x1vecIndex++;                           // resolve possible rounding issue
     else if (!doubApproxEquals(x1[x1vecIndex], nxVal))  // check
@@ -209,7 +201,7 @@ G4CMPPhononKVgTable::generateEvenTable(int MODE,
 	   << nxVal << endl;
 
     // figure out n_y-index of current data point:
-    int x2vecIndex = (int)(nyVal / N_Y_INC);    // may round down to nearest integer index
+    int x2vecIndex = (int)(nyVal / nyStep);    // may round down to nearest integer index
     if (doubApproxEquals(x2[x2vecIndex+1], nyVal) && x2vecIndex+1 < x2.size())
       x2vecIndex++;                           // resolve possible rounding issue
     else if (!doubApproxEquals(x2[x2vecIndex], nyVal))  // check
@@ -263,35 +255,35 @@ void G4CMPPhononKVgTable::write() {
   // file header:
   /* the next few steps ensure the same number of header lines looked for when reading
      from the lookup table */
-  vector<string> headerLines(NUM_HEADER_LINES);
-  headerLines[0] = "Columns:";
-  headerLines[1] = "mode";
-  headerLines[2] = "----";
+  vector<string> headerLines;
+  headerLines.push_back("Columns:");
+  headerLines.push_back("mode");
+  headerLines.push_back("----");
   for (int i = 0; i < NUM_DATA_TYPES; i++) {
     headerLines[1] += " | " + getDataTypeName(i);
     headerLines[2] += "------";
   }
 
-  for (int i=0; i < NUM_HEADER_LINES; i++)
+  for (int i=0; i < headerLines.size(); i++)
     lookupTable << "# " << headerLines[i] << endl;
   // <^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><
 
   // Reproduce (x,y) loops used to fill lookup table, to get indexing
 
   int entry=0;
-  for (int ix=0; ix<=NUM_N_Xs; ix++) {
-    double nx = N_X_MIN + N_X_INC*ix;
+  for (int ix=0; ix<=nxCount; ix++) {
+    double nx = nxMin + nxStep*ix;
 
-    for (int iy=0; iy<=NUM_N_Ys; iy++) {
-      double ny = N_Y_MIN + N_Y_INC*iy;
+    for (int iy=0; iy<=nyCount; iy++) {
+      double ny = nyMin + nyStep*iy;
 
       double rho2 = nx*nx + ny*ny;
       if (!doubLessThanApprox(rho2, 1.0, 1.0e-4)) break;
 
       for (int mode = 0; mode < G4PhononPolarization::NUM_MODES; mode++) {
-	lookupTable << setw(WIDTH) << G4PhononPolarization::Label(mode);
+	lookupTable << setw(18) << G4PhononPolarization::Label(mode);
 	for (size_t cols=0; cols<NUM_DATA_TYPES; cols++) {
-	  lookupTable << setw(WIDTH) << lookupData[mode][cols][entry];
+	  lookupTable << setw(18) << lookupData[mode][cols][entry];
 	}
 	lookupTable << endl;
       }

@@ -11,21 +11,12 @@
 #include <string>
 using namespace std;
 
-// '''''''''''''''''''''''''''''' PRIVATE CONSTANTS ''''''''''''''''''''''''''''
-
-// other
-#define REDUCED_TENSOR_SIZE     6           // 2D tensor, 36 elements
-#define FULL_TENSOR_SIZE        3           // 4D tensor, 81 elements
-
-// ++++++++++++++++++++++ G4CMPPhononKVgMap STRUCT METHODS +++++++++++++++++++++
+// ++++++++++++++++++++++ G4CMPPhononKVgMap METHODS +++++++++++++++++++++++++++
 
 G4CMPPhononKVgMap::G4CMPPhononKVgMap(G4LatticeLogical *lat)
   : lattice(lat), christoffel(G4ThreeVector::SIZE, G4ThreeVector::SIZE, 0.) {;}
 
 G4CMPPhononKVgMap::~G4CMPPhononKVgMap() {;}
-
-
-// ****************************** BUILD METHODS ********************************
 
 // Build D_il, the Christoffel matrix that defines the eigensystem
 void G4CMPPhononKVgMap::fillChristoffelMatrix(const G4ThreeVector& nn)
@@ -79,9 +70,9 @@ void G4CMPPhononKVgMap::computeGroupVelocity(int mode, const matrix<double>& e_m
 					     const G4ThreeVector& slow) {
   vgroup[mode].set(0.,0.,0.);
   for (int dim=0; dim<G4ThreeVector::SIZE; dim++) {
-    for (int i=0; i<FULL_TENSOR_SIZE; i++) {
-      for (int j=0; j<FULL_TENSOR_SIZE; j++) {
-	for (int l=0; l<FULL_TENSOR_SIZE; l++) {
+    for (int i=0; i<G4ThreeVector::SIZE; i++) {
+      for (int j=0; j<G4ThreeVector::SIZE; j++) {
+	for (int l=0; l<G4ThreeVector::SIZE; l++) {
 	  vgroup[mode][dim] += (e_mat[i][mode] * lattice->GetCijkl(i,j,l,dim)
 				* slow[j] * e_mat[l][mode]);
 	}
@@ -116,4 +107,4 @@ const G4String& G4CMPPhononKVgMap::getLatticeName() const {
   return lattice->GetName();
 }
 
-// *****************************************************************************
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

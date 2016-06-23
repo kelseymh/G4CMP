@@ -14,17 +14,12 @@ using std::vector;
 class G4CMPPhononKVgMap;
 
 
-// '''''''''''''''''''''''''''''' PUBLIC CONSTANTS ''''''''''''''''''''''''''''''''
-
-// magic values for use with interpolation
-#define OUT_OF_BOUNDS           9.0e299     // signals looking outside of the lookup table
-#define ERRONEOUS_INPUT         1.0e99      // signals that input is not correct
-// ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-// ++++++++++++++++++++++++++++++ G4CMPPhononKVgTable ++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++ G4CMPPhononKVgTable +++++++++++++++++++++++++
 class G4CMPPhononKVgTable {
 public:
-  G4CMPPhononKVgTable(G4CMPPhononKVgMap* map);
+  G4CMPPhononKVgTable(G4CMPPhononKVgMap* map, G4double xmin=0.,G4double xmax=1.,
+		      G4int nx=250,G4double ymin=0.,G4double ymax=1.,
+		      G4double ny=250);
   ~G4CMPPhononKVgTable();
 
 public:
@@ -36,6 +31,10 @@ public:
 		   E_X, E_Y, E_Z,		// Polarization
 		   NUM_DATA_TYPES };
   string getDataTypeName(int TYPE);
+
+  // Special values for interpolation errors
+  static const G4double OUT_OF_BOUNDS;     // Looking outside of lookup table
+  static const G4double ERRONEOUS_INPUT;   // Input is not correct
 
   // interpolation methods
   double interpolateEven(double nx, double ny, int MODE, int TYPE_OUT,
@@ -55,6 +54,11 @@ public:
   void write();
 
 private:
+  G4double nxMin, nxMax, nxStep;	// Range and steps for wavevector 'x'
+  G4int nxCount;
+  G4double nyMin, nyMax, nyStep;	// Range and steps for wavevector 'y'
+  G4int nyCount;
+
   // Populate full table for interpolation
   void setUpDataVectors();
   void generateLookupTable();
