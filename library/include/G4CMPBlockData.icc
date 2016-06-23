@@ -41,17 +41,20 @@ inline G4CMPBlockData<T>& G4CMPBlockData<T>::operator=(G4CMPBlockData<T>&& rhs) 
   data = std::move(rhs.data);	// Is this right?
   ncols = rhs.ncols;
   rhs.ncols = 0;
+  return *this;
 }
 
 template <class T>
 inline G4CMPBlockData<T>& G4CMPBlockData<T>::operator=(const std::vector<T>& rhs) {
   // TODO:  Check if rhs size matches dimensions
   data = rhs;
+  return *this;
 }
 
 template <class T>
 inline G4CMPBlockData<T>& G4CMPBlockData<T>::operator=(const T& a) {	// Fill
   std::fill(begin(), end(), a);
+  return *this;
 }
 
 // Iterators
