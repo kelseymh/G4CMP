@@ -2,8 +2,8 @@
 //  Created by Daniel Palken in 2014 for G4CMP
 //  20160507  M. Kelsey -- Split from matrix.h 
 
-#ifndef _matrix_icc
-#define _matrix_icc
+#ifndef G4CMPMatrix_icc
+#define G4CMPMatrix_icc
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@  Matrix Class @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -113,4 +113,4 @@ namespace G4CMP {
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-#endif	/* matrix_icc */
+#endif	/* G4CMPMatrix_icc */

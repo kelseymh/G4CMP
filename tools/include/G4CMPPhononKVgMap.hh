@@ -5,9 +5,9 @@
 #define G4CMPPhononKVgMap_hh
 
 #include "G4CMPEigenSolver.hh" // Numerical Recipes III code
+#include "G4CMPMatrix.hh"
 #include "G4PhononPolarization.hh"
 #include "G4ThreeVector.hh"
-#include "matrix.hh"
 #include <string>
 #include <vector>
 using std::string;

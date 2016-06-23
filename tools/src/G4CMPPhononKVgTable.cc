@@ -2,11 +2,11 @@
 //  Created by Daniel Palken in 2014 for G4CMP
 
 #include "G4CMPPhononKVgTable.hh"
+#include "G4CMPMatrix.hh"
 #include "G4CMPPhononKVgMap.hh"
 #include "G4PhononPolarization.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
-#include "matrix.hh"
 #include <fstream>
 #include <iomanip>
 #include <iostream>

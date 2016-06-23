@@ -1,8 +1,8 @@
 //  matrix.h
 //  Created by Daniel Palken in 2014 for G4CMP
 
-#ifndef _matrix_h
-#define _matrix_h
+#ifndef G4CMPMatrix_h
+#define G4CMPMatrix_h
 
 #include <vector>
 using std::vector;
@@ -54,6 +54,6 @@ private:
 
 }
 
-#include "matrix.icc"
+#include "G4CMPMatrix.icc"
 
-#endif	/* matrix.h */
+#endif	/* G4CMPMatrix_h */

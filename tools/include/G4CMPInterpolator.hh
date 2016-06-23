@@ -6,7 +6,7 @@
 #ifndef _G4CMPInterpolator_hh
 #define _G4CMPInterpolator_hh
 
-#include "matrix.hh"
+#include "G4CMPMatrix.hh"
 #include <vector>
 using G4CMP::matrix;
 using std::vector;

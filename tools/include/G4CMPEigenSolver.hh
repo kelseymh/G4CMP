@@ -8,7 +8,7 @@
    and is at some points modified slightly to suit our purposes */
 
 // some system #include's we'll need
-#include "matrix.hh"
+#include "G4CMPMatrix.hh"
 #include <vector>
 using G4CMP::matrix;
 using std::vector;
