@@ -1,8 +1,8 @@
-//  G4CMPPhononKVgTable.hh
+//  G4CMPPhononKinTable.hh
 //  Created by Daniel Palken in 2014 for G4CMP
 
-#ifndef G4CMPPhononKVgTable_hh
-#define G4CMPPhononKVgTable_hh
+#ifndef G4CMPPhononKinTable_hh
+#define G4CMPPhononKinTable_hh
 
 #include "G4CMPInterpolator.hh"
 #include "G4ThreeVector.hh"
@@ -11,16 +11,16 @@
 using std::string;
 using std::vector;
 
-class G4CMPPhononKVgMap;
+class G4CMPPhononKinematics;
 
 
-// ++++++++++++++++++++++++++++++ G4CMPPhononKVgTable +++++++++++++++++++++++++
-class G4CMPPhononKVgTable {
+// ++++++++++++++++++++++++++++++ G4CMPPhononKinTable +++++++++++++++++++++++++
+class G4CMPPhononKinTable {
 public:
-  G4CMPPhononKVgTable(G4CMPPhononKVgMap* map, G4double xmin=0.,G4double xmax=1.,
+  G4CMPPhononKinTable(G4CMPPhononKinematics* map, G4double xmin=0.,G4double xmax=1.,
 		      G4int nx=250,G4double ymin=0.,G4double ymax=1.,
 		      G4double ny=250);
-  ~G4CMPPhononKVgTable();
+  ~G4CMPPhononKinTable();
 
 public:
   // Symbolic identifiers for various arrays, to use with lookup table
@@ -67,7 +67,7 @@ private:
   void clearQuantityMap();
 
 private:
-  G4CMPPhononKVgMap* mapper;
+  G4CMPPhononKinematics* mapper;
   vector<vector<G4CMPBiLinearInterp> > quantityMap;
   vector<vector<vector<double> > > lookupData;
 };
@@ -82,4 +82,4 @@ bool doubLessThanApprox(double D1, double D2, double TOL = 1.0e-10,
                         bool USE_ABS_TOL = true);
 // #################################################################################
 
-#endif /* G4CMPPhononKVgTable_hh */
+#endif /* G4CMPPhononKinTable_hh */

@@ -1,9 +1,9 @@
-//  G4CMPPhononKVgTable.cpp
+//  G4CMPPhononKinTable.cpp
 //  Created by Daniel Palken in 2014 for G4CMP
 
-#include "G4CMPPhononKVgTable.hh"
+#include "G4CMPPhononKinTable.hh"
 #include "G4CMPMatrix.hh"
-#include "G4CMPPhononKVgMap.hh"
+#include "G4CMPPhononKinematics.hh"
 #include "G4PhononPolarization.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
@@ -14,13 +14,13 @@
 using namespace std;
 using G4CMP::matrix;
 
-// ++++++++++++++++++++++ G4CMPPhononKVgTable METHODS +++++++++++++++++++++++++
+// ++++++++++++++++++++++ G4CMPPhononKinTable METHODS +++++++++++++++++++++++++
 
 // magic values for use with interpolation
-const G4double G4CMPPhononKVgTable::OUT_OF_BOUNDS = 9.0e299;
-const G4double G4CMPPhononKVgTable::ERRONEOUS_INPUT = 1.0e99;
+const G4double G4CMPPhononKinTable::OUT_OF_BOUNDS = 9.0e299;
+const G4double G4CMPPhononKinTable::ERRONEOUS_INPUT = 1.0e99;
 
-G4CMPPhononKVgTable::G4CMPPhononKVgTable(G4CMPPhononKVgMap* map, G4double xmin,
+G4CMPPhononKinTable::G4CMPPhononKinTable(G4CMPPhononKinematics* map, G4double xmin,
 					 G4double xmax, G4int nx,
 					 G4double ymin, G4double ymax,
 					 G4double ny)
@@ -31,9 +31,9 @@ G4CMPPhononKVgTable::G4CMPPhononKVgTable(G4CMPPhononKVgMap* map, G4double xmin,
   generateMultiEvenTable();
 }
 
-G4CMPPhononKVgTable::~G4CMPPhononKVgTable() { clearQuantityMap(); }
+G4CMPPhononKinTable::~G4CMPPhononKinTable() { clearQuantityMap(); }
 
-void G4CMPPhononKVgTable::clearQuantityMap() {
+void G4CMPPhononKinTable::clearQuantityMap() {
   // common technique to free up the memory of a vector:
   quantityMap.clear(); // this alone actually does not free up the memory
   vector<vector<G4CMPBiLinearInterp> > newVec;
@@ -41,7 +41,7 @@ void G4CMPPhononKVgTable::clearQuantityMap() {
 }
 
 // returns any quantity desired from the interpolation table
-double G4CMPPhononKVgTable::interpGeneral(int mode, const G4ThreeVector& k,
+double G4CMPPhononKinTable::interpGeneral(int mode, const G4ThreeVector& k,
 					  int typeDesired) {
   double nx = k.unit().x(), ny = k.unit().y();
 
@@ -50,7 +50,7 @@ double G4CMPPhononKVgTable::interpGeneral(int mode, const G4ThreeVector& k,
 }
 
 // returns the unit vector pointing in the direction of Vg
-G4ThreeVector G4CMPPhononKVgTable::interpGroupVelocity_N(int mode, const G4ThreeVector& k) {
+G4ThreeVector G4CMPPhononKinTable::interpGroupVelocity_N(int mode, const G4ThreeVector& k) {
   G4ThreeVector Vg(interpGeneral(mode, k, V_GX),
 		   interpGeneral(mode, k, V_GY),
 		   interpGeneral(mode, k, V_GZ));
@@ -60,14 +60,14 @@ G4ThreeVector G4CMPPhononKVgTable::interpGroupVelocity_N(int mode, const G4Three
 // ****************************** BUILD METHODS ********************************
 /* sets up the vector of vectors of vectors used to store the data
    from the lookup table */
-void G4CMPPhononKVgTable::setUpDataVectors() {
+void G4CMPPhononKinTable::setUpDataVectors() {
   // Preload outer vectors with correct structure, to avoid push-backs
   lookupData.resize(G4PhononPolarization::NUM_MODES,
 		    vector<vector<double> >(NUM_DATA_TYPES));
 }
 
 // makes the lookup table for whatever material is specified
-void G4CMPPhononKVgTable::generateLookupTable() {
+void G4CMPPhononKinTable::generateLookupTable() {
   setUpDataVectors();
 
   // Kinematic data buffers fetched from Mapper (avoids memory churn)
@@ -84,7 +84,7 @@ void G4CMPPhononKVgTable::generateLookupTable() {
       if (!doubLessThanApprox(rho2, 1.0, 1.0e-4)) break;
 
       n_dir.set(nx, ny, sqrt(1.-rho2));		// Unit vector
-      // NOTE: G4CMPPhononKVgTable code has opposite theta,phi convention from Geant4!
+      // NOTE: G4CMPPhononKinTable code has opposite theta,phi convention from Geant4!
       double theta=n_dir.theta(), phi=n_dir.phi();
 
       for (int mode = 0; mode < G4PhononPolarization::NUM_MODES; mode++) {
@@ -123,7 +123,7 @@ void G4CMPPhononKVgTable::generateLookupTable() {
 /* given the (pointer to the) evenly spaced interpolation grid
    generated previously, this method returns an interpolated value for
    the data type already built into the G4CMPBiLinearInterp structure */
-double G4CMPPhononKVgTable::interpolateEven(G4CMPBiLinearInterp& grid,
+double G4CMPPhononKinTable::interpolateEven(G4CMPBiLinearInterp& grid,
 					    double nx, double ny) {
     // check that the n values we're interpolating at are possible:
     if (doubGreaterThanApprox((nx*nx + ny*ny), 1.0)) {
@@ -139,7 +139,7 @@ double G4CMPPhononKVgTable::interpolateEven(G4CMPBiLinearInterp& grid,
    interpolation grid structures.  Much the same as its simpler version,
    but this one requires specification of the mode and data type
    desired */
-double G4CMPPhononKVgTable::interpolateEven(double nx, double ny, int MODE,
+double G4CMPPhononKinTable::interpolateEven(double nx, double ny, int MODE,
 					    int TYPE_OUT, bool SILENT) {
   // check that the n values we're interpolating at are possible:
   if (doubGreaterThanApprox((nx*nx + ny*ny), 1.0)) {
@@ -162,8 +162,8 @@ double G4CMPPhononKVgTable::interpolateEven(double nx, double ny, int MODE,
 /* sets up JUST ONE interpolation table for N_X and N_Y, which are evenly spaced.
    Any one kind of data (TYPE_OUT) can be read off of this table */
 G4CMPBiLinearInterp 
-G4CMPPhononKVgTable::generateEvenTable(int MODE,
-				     G4CMPPhononKVgTable::DataTypes TYPE_OUT) {
+G4CMPPhononKinTable::generateEvenTable(int MODE,
+				     G4CMPPhononKinTable::DataTypes TYPE_OUT) {
   /* set up the two vectors of input components (N_X and N_Y) which
      will define the grid that will be interpolated on */
   size_t SIZE = lookupData[MODE][N_X].size();
@@ -228,7 +228,7 @@ G4CMPPhononKVgTable::generateEvenTable(int MODE,
    gains in efficiency that might be made are not terribly
    significant. Output is a vector of vectors of G4CMPBiLinearInterps, with the
    first index specifying mode, and the 2nd data type, as ususal */
-void G4CMPPhononKVgTable::generateMultiEvenTable() {
+void G4CMPPhononKinTable::generateMultiEvenTable() {
   clearQuantityMap();
 
   for (int mode = 0; mode < G4PhononPolarization::NUM_MODES; mode++) {
@@ -244,7 +244,7 @@ void G4CMPPhononKVgTable::generateMultiEvenTable() {
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 // +++++++++++++++++++++++++++++ COMPLETE LOOKUP TABLE +++++++++++++++++++++++++
-void G4CMPPhononKVgTable::write() {
+void G4CMPPhononKinTable::write() {
   // <^><^><^><^><^><^><^><^><^> INITIAL SETUP <^><^><^><^><^><^><^><^><
   // set up the lookup table as a data file:
   string fName = mapper->getLatticeName()+"LookupTable.txt";
@@ -295,7 +295,7 @@ void G4CMPPhononKVgTable::write() {
 
 // given the data type index, returns the abbreviation (s_x, etc...)
 // make sure to update this method if the data types are altered
-string G4CMPPhononKVgTable::getDataTypeName(int TYPE) {
+string G4CMPPhononKinTable::getDataTypeName(int TYPE) {
   switch (TYPE) {
   case N_X:   return "n_x";
   case N_Y:   return "n_y";

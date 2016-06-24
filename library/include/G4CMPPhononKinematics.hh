@@ -1,8 +1,8 @@
-//  G4CMPPhononKVgMap.hh
+//  G4CMPPhononKinematics.hh
 //  Created by Daniel Palken in 2014 for G4CMP
 
-#ifndef G4CMPPhononKVgMap_hh
-#define G4CMPPhononKVgMap_hh
+#ifndef G4CMPPhononKinematics_hh
+#define G4CMPPhononKinematics_hh
 
 #include "G4CMPEigenSolver.hh" // Numerical Recipes III code
 #include "G4CMPMatrix.hh"
@@ -17,10 +17,10 @@ using G4CMP::matrix;
 class G4LatticeLogical;
 
 
-class G4CMPPhononKVgMap {
+class G4CMPPhononKinematics {
 public:
-  G4CMPPhononKVgMap(G4LatticeLogical *lat);
-  ~G4CMPPhononKVgMap();
+  G4CMPPhononKinematics(G4LatticeLogical *lat);
+  ~G4CMPPhononKinematics();
 
   // Direct calculations
   void computeKinematics(const G4ThreeVector& n_dir);
@@ -48,4 +48,4 @@ private:
   G4ThreeVector polarization[G4PhononPolarization::NUM_MODES];
 };
 
-#endif /* G4CMPPhononKVgMap_hh */
+#endif /* G4CMPPhononKinematics_hh */

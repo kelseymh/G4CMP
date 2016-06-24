@@ -1,11 +1,11 @@
 //
 //  g4cmpKVtables -- Generate wavevector mapping tables for G4CMP
 //
-//  Uses G4CMPPhononKVgMap, written by Daniel Palken 2014.
+//  Uses G4CMPPhononKinematics, written by Daniel Palken 2014.
 //
 
-#include "G4CMPPhononKVgMap.hh"
-#include "G4CMPPhononKVgTable.hh"
+#include "G4CMPPhononKinematics.hh"
+#include "G4CMPPhononKinTable.hh"
 #include "G4LatticeLogical.hh"
 #include "G4LatticeManager.hh"
 #include "G4Material.hh"
@@ -36,9 +36,9 @@ int main(int argc, const char * argv[])
   }
 
   // 2. set up the wavevector-velocity mapping infrastrcuture
-  G4CMPPhononKVgMap *map = new G4CMPPhononKVgMap(lattice);
+  G4CMPPhononKinematics *map = new G4CMPPhononKinematics(lattice);
 
-  G4CMPPhononKVgTable lookup(map);	// Dump Dan's version of data file
+  G4CMPPhononKinTable lookup(map);	// Dump Dan's version of data file
   lookup.write();
   
   // 3. G4CMP uses (theta,phi) binning

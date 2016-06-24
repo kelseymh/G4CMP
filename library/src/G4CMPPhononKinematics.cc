@@ -1,7 +1,7 @@
-//  G4CMPPhononKVgMap.cpp
+//  G4CMPPhononKinematics.cpp
 //  Created by Daniel Palken in 2014 for G4CMP
 
-#include "G4CMPPhononKVgMap.hh"
+#include "G4CMPPhononKinematics.hh"
 #include "G4LatticeLogical.hh"
 #include "G4PhononPolarization.hh"
 #include "G4ThreeVector.hh"
@@ -11,15 +11,15 @@
 #include <string>
 using namespace std;
 
-// ++++++++++++++++++++++ G4CMPPhononKVgMap METHODS +++++++++++++++++++++++++++
+// ++++++++++++++++++++++ G4CMPPhononKinematics METHODS +++++++++++++++++++++++++++
 
-G4CMPPhononKVgMap::G4CMPPhononKVgMap(G4LatticeLogical *lat)
+G4CMPPhononKinematics::G4CMPPhononKinematics(G4LatticeLogical *lat)
   : lattice(lat), christoffel(G4ThreeVector::SIZE, G4ThreeVector::SIZE, 0.) {;}
 
-G4CMPPhononKVgMap::~G4CMPPhononKVgMap() {;}
+G4CMPPhononKinematics::~G4CMPPhononKinematics() {;}
 
 // Build D_il, the Christoffel matrix that defines the eigensystem
-void G4CMPPhononKVgMap::fillChristoffelMatrix(const G4ThreeVector& nn)
+void G4CMPPhononKinematics::fillChristoffelMatrix(const G4ThreeVector& nn)
 {
   christoffel.clear();
   for (int i = 0; i < G4ThreeVector::SIZE; i++) {
@@ -35,7 +35,7 @@ void G4CMPPhononKVgMap::fillChristoffelMatrix(const G4ThreeVector& nn)
 }
 
 // Compute kinematics for specified wavevector (direction)
-void G4CMPPhononKVgMap::computeKinematics(const G4ThreeVector& n_dir) {
+void G4CMPPhononKinematics::computeKinematics(const G4ThreeVector& n_dir) {
   /* get the Christoffel Matrix D_il, which is symmetric (it
      equals its transpose).  This also means its eigenvalues will
      all be real (NR, pg. 564) */
@@ -66,7 +66,7 @@ void G4CMPPhononKVgMap::computeKinematics(const G4ThreeVector& n_dir) {
 }
 
 // Fill group velocity cache for specified mode from lattice parameters
-void G4CMPPhononKVgMap::computeGroupVelocity(int mode, const matrix<double>& e_mat,
+void G4CMPPhononKinematics::computeGroupVelocity(int mode, const matrix<double>& e_mat,
 					     const G4ThreeVector& slow) {
   vgroup[mode].set(0.,0.,0.);
   for (int dim=0; dim<G4ThreeVector::SIZE; dim++) {
@@ -83,27 +83,27 @@ void G4CMPPhononKVgMap::computeGroupVelocity(int mode, const matrix<double>& e_m
   vgroup[mode] /= lattice->GetDensity();
 }
 
-const G4ThreeVector& G4CMPPhononKVgMap::getGroupVelocity(int mode, const G4ThreeVector& n_dir) {
+const G4ThreeVector& G4CMPPhononKinematics::getGroupVelocity(int mode, const G4ThreeVector& n_dir) {
   if (!n_dir.isNear(last_ndir)) computeKinematics(n_dir);
   return vgroup[mode];
 }
 
-const G4ThreeVector& G4CMPPhononKVgMap::getPolarization(int mode, const G4ThreeVector& n_dir) {
+const G4ThreeVector& G4CMPPhononKinematics::getPolarization(int mode, const G4ThreeVector& n_dir) {
   if (!n_dir.isNear(last_ndir)) computeKinematics(n_dir);
   return polarization[mode];
 }
 
-const G4ThreeVector& G4CMPPhononKVgMap::getSlowness(int mode, const G4ThreeVector& n_dir) {
+const G4ThreeVector& G4CMPPhononKinematics::getSlowness(int mode, const G4ThreeVector& n_dir) {
   if (!n_dir.isNear(last_ndir)) computeKinematics(n_dir);
   return slowness[mode];
 }
 
-double G4CMPPhononKVgMap::getPhaseSpeed(int mode, const G4ThreeVector& n_dir) {
+double G4CMPPhononKinematics::getPhaseSpeed(int mode, const G4ThreeVector& n_dir) {
   if (!n_dir.isNear(last_ndir)) computeKinematics(n_dir);
   return vphase[mode];
 }
 
-const G4String& G4CMPPhononKVgMap::getLatticeName() const {
+const G4String& G4CMPPhononKinematics::getLatticeName() const {
   return lattice->GetName();
 }
 
