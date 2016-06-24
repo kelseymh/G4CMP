@@ -23,7 +23,6 @@
 /vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
 #
 # Generate 20 phonons per event to populate display
-/tracking/verbose 1
 /gun/number 20
 /run/beamOn 1
 #
