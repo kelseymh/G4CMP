@@ -1,13 +1,11 @@
+/run/initialize
 #
 # Create a scene handler for a specific graphics system
 # (Edit the next line(s) to choose another graphic system)
 #
 /vis/open OGL
-#
-# draw scene
-#
-/vis/viewer/reset
-/vis/viewer/set/viewpointThetaPhi 180. 90. deg
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointVector 0 0 1
 /vis/viewer/zoom 1.4
 /vis/drawVolume
 #
@@ -25,8 +23,8 @@
 /vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
 #
 # Generate 20 phonons per event to populate display
+/tracking/verbose 1
 /gun/number 20
-/run/initialize
 /run/beamOn 1
 #
 # Write event display to output files for analysis (face and side views)
