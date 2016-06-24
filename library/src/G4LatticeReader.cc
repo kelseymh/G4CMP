@@ -20,6 +20,7 @@
 // 20140314  Add charge-carrier propagation parameters
 // 20140324  Add intervalley scattering parameters
 
+#include "G4CMPConfigManager.hh"
 #include "G4LatticeReader.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeLogical.hh"
@@ -37,8 +38,7 @@ G4LatticeReader::G4LatticeReader(G4int vb)
   : verboseLevel(vb), psLatfile(0), pLattice(0), fMapPath(""),
     fToken(""), fValue(0.), fMap(""), fsPol(""), fPol(-1), fNX(0), fNY(0),
     f3Vec(0.,0.,0.), fLastBasis(-1),
-    fDataDir(getenv("G4LATTICEDATA") ?
-      (const char*)getenv("G4LATTICEDATA"):"./CrystalMaps"),
+    fDataDir(G4CMPConfigManager::GetLatticeDir()),
     mElectron(electron_mass_c2/c_squared) {}
 
 G4LatticeReader::~G4LatticeReader() {
