@@ -46,7 +46,7 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* tmStep  = new G4CMPTimeStepper;
   G4VProcess* driftB  = new G4CMPDriftBoundaryProcess;
   G4VProcess* ivScat  = new G4CMPInterValleyScattering;
-  G4VProcess* luke    = new G4CMPLukeScattering(tmStep);
+  G4VProcess* luke    = new G4CMPLukeScattering;
 
   // Set process verbosity to match physics list, for diagnostics
   phScat->SetVerboseLevel(verboseLevel);

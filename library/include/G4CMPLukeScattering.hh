@@ -18,29 +18,49 @@
 #include "G4CMPVDriftProcess.hh"
 #include "G4ThreeVector.hh"
 #include <iostream>
+#include <unordered_map>
 
-class G4CMPTrackInformation;
 class G4VProcess;
 class G4ParticleDefinition;
 class G4Track;
 
+using PDFParamTuple = std::array<G4double,3>;
+using PDFDataRow = std::vector<PDFParamTuple>;
+using PDFDataMatrix = std::vector<PDFDataRow>;
+using PDFDataTensor = std::vector<PDFDataMatrix>;
+
 class G4CMPLukeScattering : public G4CMPVDriftProcess {
 public:
-  G4CMPLukeScattering(G4VProcess* stepper=0);
+  G4CMPLukeScattering();
   virtual ~G4CMPLukeScattering();
+  virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
+                                                        G4double prevStepSize,
+                                                        G4ForceCondition* cond);
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
 protected:
-  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
+  // GetMeanFreePath is pure virtual, so we *have* to define it.
+  virtual G4double GetMeanFreePath(const G4Track&,
+                                   G4double, G4ForceCondition*) { return -1.; }
 
 private:
-  G4double CalculateKSound(const G4CMPTrackInformation* trackInfo);
+  G4double CalculateKSound(const G4Track&);
   // hide assignment operator as private
   G4CMPLukeScattering(G4CMPLukeScattering&);
   G4CMPLukeScattering& operator=(const G4CMPLukeScattering& right);
 
-  G4VProcess* stepLimiter;
+  size_t ESIZE;
+  size_t MACHSIZE;
+  size_t THETASIZE;
+  G4double EMIN;
+  G4double EMAX;
+  G4double MACHMIN;
+  G4double MACHMAX;
+  G4double THETAMIN;
+  G4double THETAMAX;
+  PDFDataTensor GPILData;
+
 #ifdef G4CMP_DEBUG
   std::ofstream output;
 #endif
