@@ -21,6 +21,7 @@
 // 20160517  Add basis vectors for lattice, to use with Miller orientation
 // 20160520  Add reporting function to format valley Euler angles
 // 20160614  Add elasticity tensors and density (set from G4Material) 
+// 20160624  Add direct calculation of phonon kinematics from elasticity
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -30,6 +31,8 @@
 #include "G4RotationMatrix.hh"
 #include <iosfwd>
 #include <vector>
+
+class G4CMPPhononKinematics;
 
 // Arrays for full and reduced elasticity matrices
 class G4LatticeLogical {
@@ -180,6 +183,14 @@ public:
 private:
   void FillMassInfo();	// Called from SetMassTensor() to compute derived forms
 
+  // Use lookup table to get group velocity for phonons
+  G4double LookupKtoV(G4int pol, const G4ThreeVector& k) const;
+  G4ThreeVector LookupKtoVDir(G4int pol, const G4ThreeVector& k) const;
+
+  // Use direct calculation to get group velocity for phonons
+  G4double ComputeKtoV(G4int pol, const G4ThreeVector& k) const;
+  G4ThreeVector ComputeKtoVDir(G4int pol, const G4ThreeVector& k) const;
+
 private:
   G4int verboseLevel;			    // Enable diagnostic output
   G4String fName;			    // Name of lattice for messages
@@ -187,7 +198,8 @@ private:
   G4double fDensity;			    // Material density (natural units)
   Elasticity fElasticity;	    	    // Full 4D elasticity tensor
   ReducedElasticity fElReduced;		    // Reduced 2D elasticity tensor
-  G4bool fHasElasticity;		    // Flag filled elasticity tensors
+  G4bool fHasElasticity;		    // Flag valid elasticity tensors
+  G4CMPPhononKinematics* fpPhononKin;	    // Kinematics calculator with tensor
 
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
 

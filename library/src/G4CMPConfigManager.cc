@@ -41,6 +41,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     Epot_file(getenv("G4CMP_EPOT_FILE")?getenv("G4CMP_EPOT_FILE"):"Epot_iZip4_small"),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"."),
     Hit_file(getenv("G4CMP_HIT_FILE")?getenv("G4CMP_HIT_FILE"):"epositions.txt"),
+    useKVtables(getenv("G4CMP_USE_KVTABLES")?atoi(getenv("G4CMP_USE_KVTABLES")):0),
     messenger(new G4CMPConfigMessenger(this)) {;}
 
 G4CMPConfigManager::~G4CMPConfigManager() {
