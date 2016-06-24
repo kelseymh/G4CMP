@@ -5,9 +5,8 @@
 
 // $Id$
 
-#include "G4ios.hh"
-#include "globals.hh"
 #include "G4CMPSurfaceProperty.hh"
+
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4SurfaceType stype)
@@ -24,15 +23,8 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4double pMinK,
                                            G4SurfaceType stype)
                                            : G4SurfaceProperty(name, stype) {
-  theChargeMatPropTable.AddConstProperty("absProb", qAbsProb);
-  theChargeMatPropTable.AddConstProperty("reflProb", qReflProb);
-  theChargeMatPropTable.AddConstProperty("minKElec", eMinK);
-  theChargeMatPropTable.AddConstProperty("minKHole", hMinK);
-
-  thePhononMatPropTable.AddConstProperty("absProb", pAbsProb);
-  thePhononMatPropTable.AddConstProperty("reflProb", pReflProb);
-  thePhononMatPropTable.AddConstProperty("specProb", pSpecProb);
-  thePhononMatPropTable.AddConstProperty("minK", pMinK);
+  FillChargeMaterialPropertiesTable(qAbsProb, qReflProb, eMinK, hMinK);
+  FillPhononMaterialPropertiesTable(pAbsProb, pReflProb, pSpecProb, pMinK);
 }
 
 G4CMPSurfaceProperty::~G4CMPSurfaceProperty() {
@@ -113,7 +105,7 @@ void G4CMPSurfaceProperty::FillPhononMaterialPropertiesTable(G4double pAbsProb,
   thePhononMatPropTable.AddConstProperty("absProb", pAbsProb);
   thePhononMatPropTable.AddConstProperty("reflProb", pReflProb);
   thePhononMatPropTable.AddConstProperty("specProb", pSpecProb);
-  thePhononMatPropTable.AddConstProperty("minK", pMinK);
+  thePhononMatPropTable.AddConstProperty("absMinK", pMinK);
 }
 
 void G4CMPSurfaceProperty::DumpInfo() const {
@@ -140,5 +132,5 @@ G4bool G4CMPSurfaceProperty::IsValidPhononPropTable(
   return (propTab.ConstPropertyExists("absProb") &&
           propTab.ConstPropertyExists("reflProb") &&
           propTab.ConstPropertyExists("specProb") &&
-          propTab.ConstPropertyExists("minK"));
+          propTab.ConstPropertyExists("absMinK"));
 }
