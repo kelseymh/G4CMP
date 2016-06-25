@@ -38,7 +38,7 @@ void G4CMPPhononKinematics::fillChristoffelMatrix(const G4ThreeVector& nn)
 
 // Compute kinematics for specified wavevector (direction)
 void G4CMPPhononKinematics::computeKinematics(const G4ThreeVector& n_dir) {
-  if (!n_dir.unit().isNear(last_ndir)) return;		// Already computed
+  if (n_dir.unit().isNear(last_ndir)) return;		// Already computed
 
   /* get the Christoffel Matrix D_il, which is symmetric (it
      equals its transpose).  This also means its eigenvalues will
