@@ -58,9 +58,13 @@ public:
   virtual void SetTransforms(const G4RotationMatrix* rot,
 			     const G4ThreeVector& trans);
 
+  // Attach or retrieve auxiliary information object for track
+  // NOTE:  This will cast the track to non-const if required
+  G4CMPTrackInformation* AttachTrackInfo(const G4Track* track) const;
+
   // Extract auxiliary information for track (current track if none given)
-  const G4CMPTrackInformation* GetTrackInfo(const G4Track* track=0) const;
-  const G4CMPTrackInformation* GetTrackInfo(const G4Track& track) const {
+  G4CMPTrackInformation* GetTrackInfo(const G4Track* track=0) const;
+  G4CMPTrackInformation* GetTrackInfo(const G4Track& track) const {
     return GetTrackInfo(&track);
   }
 

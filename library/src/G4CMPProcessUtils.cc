@@ -52,7 +52,9 @@
 // Constructor and destructor
 
 G4CMPProcessUtils::G4CMPProcessUtils()
-  : theLattice(nullptr), currentTrack(nullptr) {;}
+  : theLattice(nullptr), fPhysicsModelID(0), currentTrack(nullptr) {
+  fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
+}
 
 G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
@@ -66,40 +68,51 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   FindLattice(track->GetVolume());
   SetTransforms(track->GetTouchable());
 
-  // Register G4CMP with PhysicsModelCatalog and create aux. track info.
-  fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
-  G4CMPTrackInformation* trackInfo = nullptr;
+  // Fill auxiliary track info not already recorded (needs non-const object)
+  G4CMPTrackInformation* trackInfo = AttachTrackInfo(track);
 
   const G4ParticleDefinition* pd = track->GetParticleDefinition();
 
   if (pd == G4PhononLong::Definition() ||
       pd == G4PhononTransFast::Definition() ||
       pd == G4PhononTransSlow::Definition()) {
-      // FIXME:  THE WAVEVECTOR SHOULD BE COMPUTED BY INVERTING THE K/V MAP
-    G4ThreeVector kdir = track->GetMomentumDirection();
-    trackInfo = new G4CMPTrackInformation(kdir);
-    G4Track* tmp_track = const_cast<G4Track*>(track); // Must strip const to modify direction
+    // Set momentum direction using already provided wavevector
+    G4ThreeVector kdir = trackInfo->GetPhononK();
+
+    G4Track* tmp_track = const_cast<G4Track*>(track);
     tmp_track->SetMomentumDirection(
       theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), kdir));
   }
 
   if (pd == G4CMPDriftElectron::Definition()) {
-      // FIXME:  HOW DO WE CONVERT THE MOMENTUM TO AN INITIAL VALLEY?
-    trackInfo = new G4CMPTrackInformation(theLattice->GetElectronScatter(),
-                                          theLattice->GetElectronMass(),
-                                          ChooseValley());
+    trackInfo->SetScatterLength(theLattice->GetElectronScatter());
+    trackInfo->SetEffectiveMass(theLattice->GetElectronMass());
+    if (trackInfo->GetValleyIndex() < 0)
+      trackInfo->SetValleyIndex(ChooseValley());
   }
 
   if (pd == G4CMPDriftHole::Definition()) {
-    trackInfo = new G4CMPTrackInformation(theLattice->GetHoleScatter(),
-                                          theLattice->GetHoleMass(),
-                                          -1); // Disable valley behavior
+    trackInfo->SetScatterLength(theLattice->GetHoleScatter());
+    trackInfo->SetEffectiveMass(theLattice->GetHoleMass());
+    trackInfo->SetValleyIndex(-1);		// Holes don't have valleys
+  }
+}
+
+// Create new info object or return existing one for track
+
+G4CMPTrackInformation*
+G4CMPProcessUtils::AttachTrackInfo(const G4Track* track) const {
+  if (track == 0) return nullptr;		// Must have valid track
+
+  G4CMPTrackInformation* trkInfo = GetTrackInfo(track);
+  if (!trkInfo) {
+    trkInfo = new G4CMPTrackInformation;
+    track->SetAuxiliaryTrackInformation(fPhysicsModelID, trkInfo);
   }
 
-  // NOTE: trackInfo will be deleted when the track is deleted. No need for us
-  // to clean it up.
-  track->SetAuxiliaryTrackInformation(fPhysicsModelID, trackInfo);
+  return trkInfo;
 }
+
 
 // Fetch lattice for current track, use in subsequent steps
 
@@ -287,7 +300,7 @@ const G4ParticleDefinition* G4CMPProcessUtils::GetCurrentParticle() const {
 
 // Return auxiliary information for track (phonon, charge kinematics)
 
-const G4CMPTrackInformation* 
+G4CMPTrackInformation* 
 G4CMPProcessUtils::GetTrackInfo(const G4Track* track) const {
   if (!track) track = GetCurrentTrack();	// No argument, use current
   if (!track) return 0;
@@ -606,6 +619,7 @@ G4CMPProcessUtils::PhononEnergyRand(G4double gapEnergy, G4double& Energy) {
   return phononE;
 }
 
+
 // Construct new phonon track with correct momentum, position, etc.
 
 G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
@@ -636,9 +650,7 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 			     currentTrack->GetGlobalTime(), pos);
 
   // Store wavevector in auxiliary info for track
-  G4CMPTrackInformation* trackInfo = new G4CMPTrackInformation();
-  trackInfo->SetPhononK(GetGlobalDirection(waveVec));
-  sec->SetAuxiliaryTrackInformation(fPhysicsModelID, trackInfo);
+  AttachTrackInfo(sec)->SetPhononK(GetGlobalDirection(waveVec));
 
   sec->SetVelocity(theLattice->MapKtoV(polarization, waveVec));    
   sec->UseGivenVelocity(true);
@@ -775,9 +787,7 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), pos);
 
   // Store wavevector in auxiliary info for track
-  G4CMPTrackInformation* trackInfo = new G4CMPTrackInformation();
-  trackInfo->SetValleyIndex(valley);
-  sec->SetAuxiliaryTrackInformation(fPhysicsModelID, trackInfo);
+  AttachTrackInfo(sec)->SetValleyIndex(valley);
 
 #ifdef G4CMP_SET_ELECTRON_MASS
   if (charge == -1) {
