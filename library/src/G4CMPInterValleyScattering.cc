@@ -119,9 +119,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
   // picking a new valley at random if IV-scattering process was triggered
   valley = ChooseValley();
-  static_cast<G4CMPTrackInformation*>(
-    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                     )->SetValleyIndex(valley);
+  GetTrackInfo(aTrack)->SetValleyIndex(valley);
 
   p = theLattice->MapK_valleyToP(valley, p); // p is p again
   RotateToGlobalDirection(p);

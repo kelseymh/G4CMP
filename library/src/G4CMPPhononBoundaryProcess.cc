@@ -17,6 +17,7 @@
 // 20131115  Throw exception if track's polarization state is invalid.
 // 20140103  Move charge version of code here, still commented out
 // 20140331  Add required process subtype code
+// 20160624  Use GetTrackInfo() accessor
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -162,10 +163,7 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
   G4double absProb = phonPropTable->GetConstProperty("absProb");
   G4double absMinK = phonPropTable->GetConstProperty("absMinK");
 
-  G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
-                            aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                                                        );
-  G4ThreeVector k = trackInfo->GetPhononK();
+  G4ThreeVector k = GetTrackInfo()->GetPhononK();
 
   return (G4UniformRand() <= absProb && k*surfNorm > absMinK);
 }

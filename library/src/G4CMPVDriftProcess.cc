@@ -14,6 +14,7 @@
 // 20150109  Use G4CMP_SET_ELECTRON_MASS to enable dynamical mass, velocity
 // 20150111  Add functionality to enforce minimum step length
 // 20150112  Handle holes as well as electrons with FillParticleChange()
+// 20160624  Use GetTrackInfo() accessor
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -93,10 +94,7 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
   const G4double scale = G4CMPConfigManager::GetMinStepScale();
 
   if (scale > 0.) {
-    G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
-      track.GetAuxiliaryTrackInformation(fPhysicsModelID));
-
-    const G4double minLength = scale * trackInfo->GetScatterLength();
+    G4double minLength = scale * GetTrackInfo(track)->GetScatterLength();
 
     if (verboseLevel > 1) {
       G4cout << GetProcessName() << "::PostStepGPIL: minLength " << minLength
