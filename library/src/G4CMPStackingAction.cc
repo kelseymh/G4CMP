@@ -54,12 +54,14 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   // Non-initial tracks should not be touched
   if (aTrack->GetParentID() != 0) return classification;
 
-  // Attach auxiliary info to new track (requires casting)
-  AttachTrackInfo(const_cast<G4Track*>(aTrack));
+  // Attach auxiliary info to new track
+  AttachTrackInfo(aTrack);
 
   // Configure utility functions for current track
-  LoadDataForTrack(aTrack);
+  FindLattice(aTrack->GetVolume());
+  SetTransforms(aTrack->GetTouchable());
 
+  // Fill kinematic data for new track (secondaries will have this done)
   G4ParticleDefinition* pd = aTrack->GetDefinition();
 
   if (pd == G4PhononLong::Definition() ||
