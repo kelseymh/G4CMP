@@ -54,6 +54,9 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   // Non-initial tracks should not be touched
   if (aTrack->GetParentID() != 0) return classification;
 
+  // Attach auxiliary info to new track (requires casting)
+  AttachTrackInfo(const_cast<G4Track*>(aTrack));
+
   // Configure utility functions for current track
   LoadDataForTrack(aTrack);
 
@@ -83,22 +86,17 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
 
 void G4CMPStackingAction::SetPhononWaveVector(const G4Track* aTrack) const {
   //Compute random wave-vector (override whatever ParticleGun did)
-  G4ThreeVector Ran = G4RandomDirection();
+  G4ThreeVector ranK = G4RandomDirection();
   
   //Store wave-vector as track information
-  static_cast<G4CMPTrackInformation*>(
-    aTrack->GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                     )->SetPhononK(Ran);
+  AttachTrackInfo(aTrack)->SetPhononK(ranK);
 }
 
 // Set velocity of phonon track appropriately for material
 
 void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
   // Get wavevector associated with track
-  G4ThreeVector K =
-    static_cast<G4CMPTrackInformation*>(
-      aTrack->GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                       )->GetPhononK();
+  G4ThreeVector K = GetTrackInfo(aTrack)->GetPhononK();
   G4int pol = GetPolarization(aTrack);
 
   //Compute direction of propagation from wave vector
@@ -124,9 +122,7 @@ void G4CMPStackingAction::SetChargeCarrierValley(const G4Track* aTrack) const {
 
   if (GetValleyIndex(aTrack) < 0) {
     int valley = (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
-    static_cast<G4CMPTrackInformation*>(
-      aTrack->GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                       )->SetValleyIndex(valley);
+    AttachTrackInfo(aTrack)->SetValleyIndex(valley);
   }
 }
 

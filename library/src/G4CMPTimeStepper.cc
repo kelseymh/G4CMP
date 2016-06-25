@@ -17,6 +17,7 @@
 // 20150112  Follow renaming of "SetNewKinematics" to FillParticleChange, drop
 //	     redundant IsApplicable()
 // 20150122  Use verboseLevel instead of compiler flag for debugging
+// 20160624  Use GetTrackInfo() accessor
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -73,10 +74,7 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 // Compute dt_e, dt_h and valley rotations at current location
 
 G4double G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
-  G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
-    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID));
-  G4double l0 = trackInfo->GetScatterLength();
-
+  G4double l0 = GetTrackInfo()->GetScatterLength();
 
   G4FieldManager* fMan =
     aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
