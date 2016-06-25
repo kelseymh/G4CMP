@@ -12,6 +12,7 @@
 // 20131115  Initialize data buffers in ctor
 // 20140312  Follow name change CreateSecondary -> CreatePhonon
 // 20140331  Add required process subtype code
+// 20160624  Use GetTrackInfo() accessor
 
 #include "G4CMPTrackInformation.hh"
 #include "G4PhononDownconversion.hh"
@@ -222,9 +223,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   //using energy fraction x to calculate daughter phonon directions
   G4double thetaL=MakeLDeviation(d, x);
   G4double thetaT=MakeTDeviation(d, x);
-  G4ThreeVector dir1=static_cast<G4CMPTrackInformation*>(
-    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                                        )->GetPhononK();
+  G4ThreeVector dir1=GetTrackInfo(aTrack)->GetPhononK();
   G4ThreeVector dir2=dir1;
 
   G4double ph=G4UniformRand()*twopi;

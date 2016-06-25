@@ -10,6 +10,7 @@
 //
 // 20150111  New base class for both electron and hole Luke processes
 // 20150122  Use verboseLevel instead of compiler flag for debugging
+// 20160624  Use GetTrackInfo() accessor
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -54,8 +55,7 @@ G4CMPLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
                                      G4ForceCondition* condition) {
   *condition = Forced;		// In order to recompute MFP after TimeStepper
 
-  G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
-    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID));
+  G4CMPTrackInformation* trackInfo = GetTrackInfo(aTrack);
 
   G4double velocity = GetVelocity(aTrack);
   G4double kmag = GetLocalWaveVector(aTrack).mag();
@@ -101,16 +101,13 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     return &aParticleChange;
   }
 
-  G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
-    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID));
-
   G4ThreeVector ktrk = GetLocalWaveVector(aTrack);
   if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
     ktrk = theLattice->MapPtoK_HV(GetValleyIndex(aTrack),
 				  GetLocalMomentum(aTrack));
   }
   G4double kmag = ktrk.mag();
-  G4double kSound = CalculateKSound(trackInfo);
+  G4double kSound = CalculateKSound(GetTrackInfo(aTrack));
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
