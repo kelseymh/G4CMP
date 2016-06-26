@@ -23,6 +23,7 @@
 // 20151209  Replace trackMap classes with an AuxiliaryInformation class.
 // 20160107  Add GetVelocity functions.
 // 20160610  Add accessor for auxiliary information
+// 20160625  Add accessors for particle identification
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -49,6 +50,14 @@ public:
   virtual void LoadDataForTrack(const G4Track* track);
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
+
+  // Identify track type to simplify some conditionals
+  virtual G4bool IsPhonon(const G4Track* track) const;
+  virtual G4bool IsElectron(const G4Track* track) const;
+  virtual G4bool IsHole(const G4Track* track) const;
+  virtual G4bool IsChargeCarrier(const G4Track* track) const {
+    return (IsElectron(track) || IsHole(track));
+  }
 
   // Set configuration manually, without a track
   virtual void FindLattice(const G4VPhysicalVolume* volume);
