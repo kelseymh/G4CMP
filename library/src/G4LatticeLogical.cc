@@ -134,7 +134,9 @@ G4LatticeLogical::SetElasticityCubic(G4double C11, G4double C12, G4double C44) {
       G4cout << " Elasticity matrix loaded; create KV calculator" << G4endl;
 
     fpPhononKin = new G4CMPPhononKinematics(this);
+    /***** USE OUR OWN INTERPOLATION, THIS IS TOO SLOW
     fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
+    *****/
   }
 }
 
