@@ -19,10 +19,10 @@
 // 20160520  Add reporting function to format valley Euler angles
 // 20160614  Add elasticity tensors and density (set from G4Material) 
 // 20160624  Add direct calculation of phonon kinematics from elasticity
+// 20160627  Interpolate values from lookup tables
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
-#include "G4CMPPhononKinTable.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4CMPConfigManager.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4RotationMatrix.hh"
 #include "G4SystemOfUnits.hh"
@@ -133,7 +133,6 @@ G4LatticeLogical::SetElasticityCubic(G4double C11, G4double C12, G4double C44) {
       G4cout << " Elasticity matrix loaded; create KV calculator" << G4endl;
 
     fpPhononKin = new G4CMPPhononKinematics(this);
-    fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
   }
 }
 
@@ -225,7 +224,7 @@ G4double G4LatticeLogical::MapKtoV(G4int polarizationState,
 G4double G4LatticeLogical::ComputeKtoV(G4int polarizationState,
 				       const G4ThreeVector& k) const {  
   if (!fpPhononKin) {
-    G4Exception("G4LatticeLogical::ComputeKtoV", "Lattice003",
+    G4Exception("G4LatticeLogical::ComputeKtoV", "Lattice001",
 		RunMustBeAborted, "Phonon kinematics not available.");
   }
 
@@ -234,42 +233,44 @@ G4double G4LatticeLogical::ComputeKtoV(G4int polarizationState,
 
 G4double G4LatticeLogical::LookupKtoV(G4int polarizationState,
 				      const G4ThreeVector& k) const {
-  if (fpPhononTable)
-    return fpPhononTable->interpGroupVelocity(polarizationState,k);
-
   if (fVresTheta <= 0 || fVresPhi <= 0) {
-    G4Exception("G4LatticeLogical::LookupKtoV", "Lattice001",
+    G4Exception("G4LatticeLogical::LookupKtoV", "Lattice002",
 		RunMustBeAborted, "No lookup tables loaded.");
     return 0.;
   }
 
-  G4double theta, phi, tRes, pRes;
+  G4int iTheta, iPhi;		// Bin indices
+  G4double dTheta, dPhi;	// Offsets in bin for interpolation
+  if (!FindLookupBins(k, fVresTheta, fVresPhi, iTheta, iPhi, dTheta, dPhi)) {
+    G4Exception("G4LatticeLogical::LookupKtoVDir", "Lattice003",
+		EventMustBeAborted, "Interpolation failed.");
+    return 0.;
+  }
 
-  tRes=pi/(fVresTheta-1);
-  pRes=twopi/(fVresPhi-1);
-  
-  theta=k.getTheta();
-  phi=k.getPhi();
-
-  if (theta>pi) theta=theta-pi;
-  if (phi<0) phi = phi + twopi;
-
-  G4int iTheta = int(theta/tRes);
-  G4int iPhi = int(phi/pRes);
-
+  /**** Returns direct bin value
   G4double Vg = fMap[polarizationState][iTheta][iPhi];
+  ****/
+
+  // Bilinear interpolation using the four corner bins (i,j) to (i+1,j+1)
+  G4double Vg =
+    (1.-dTheta)*(1.-dPhi)*fMap[polarizationState][iTheta][iPhi] +
+    dTheta*(1.-dPhi)*fMap[polarizationState][iTheta+1][iPhi] +
+    (1.-dTheta)*dPhi*fMap[polarizationState][iTheta][iPhi+1] +
+    dTheta*dPhi*fMap[polarizationState][iTheta+1][iPhi+1];
+
 
   if (Vg == 0) {
     G4cerr << "Found v=0 for polarization "<< polarizationState
-	   << " theta " << theta << " phi " << phi
+	   << " theta " << k.theta() << " phi " << k.phi()
 	   << " translating to map coords"
 	   << " theta " << iTheta << " phi " << iPhi
 	   << G4endl;
   }
 
   if (verboseLevel>1) {
-    G4cout << "G4LatticeLogical::MapKtoV theta,phi=" << theta << " " << phi
-	   << " : ith,iph " << int(theta/tRes) << " " << int(phi/pRes)
+    G4cout << "G4LatticeLogical::MapKtoV theta,phi="
+	   << k.theta() << " " << k.phi()
+	   << " : ith,iph " << iTheta << " " << iPhi
 	   << " : V " << Vg << G4endl;
   }
 
@@ -291,7 +292,7 @@ G4ThreeVector G4LatticeLogical::MapKtoVDir(G4int polarizationState,
 G4ThreeVector G4LatticeLogical::ComputeKtoVDir(G4int polarizationState,
 					       const G4ThreeVector& k) const {  
   if (!fpPhononKin) {
-    G4Exception("G4LatticeLogical::ComputeKtoVDir", "Lattice003",
+    G4Exception("G4LatticeLogical::ComputeKtoVDir", "Lattice004",
 		RunMustBeAborted, "Phonon kinematics not available.");
   }
 
@@ -300,36 +301,70 @@ G4ThreeVector G4LatticeLogical::ComputeKtoVDir(G4int polarizationState,
 
 G4ThreeVector G4LatticeLogical::LookupKtoVDir(G4int polarizationState,
 					      const G4ThreeVector& k) const {  
-  if (fpPhononTable)
-    return fpPhononTable->interpGroupVelocity_N(polarizationState,k).unit();
-
   if (fDresTheta <= 0 || fDresPhi <= 0) {
-    G4Exception("G4LatticeLogical::LookupKtoVDir", "Lattice002",
+    G4Exception("G4LatticeLogical::LookupKtoVDir", "Lattice005",
 		RunMustBeAborted, "No lookup tables loaded.");
     return G4ThreeVector();
   }
 
-  G4double theta, phi, tRes, pRes;
-
-  tRes=pi/(fDresTheta-1);	// Last array element is upper edge (pi, twopi)
-  pRes=twopi/(fDresPhi-1);
-
-  theta=k.getTheta();
-  phi=k.getPhi(); 
-
-  if(theta>pi) theta=theta-pi;
-  if(phi<0) phi = phi + twopi;
-
-  G4int iTheta = int(theta/tRes);
-  G4int iPhi = int(phi/pRes);
-
-  if (verboseLevel>1) {
-    G4cout << "G4LatticeLogical::MapKtoVDir theta,phi=" << theta << " " << phi
-	   << " : ith,iph " << iTheta << " " << iPhi
-	   << " : dir " << fN_map[polarizationState][iTheta][iPhi] << G4endl;
+  G4int iTheta, iPhi;		// Bin indices
+  G4double dTheta, dPhi;	// Offsets in bin for interpolation
+  if (!FindLookupBins(k, fDresTheta, fDresPhi, iTheta, iPhi, dTheta, dPhi)) {
+    G4Exception("G4LatticeLogical::LookupKtoVDir", "Lattice006",
+		EventMustBeAborted, "Interpolation failed.");
+    return G4ThreeVector();
   }
 
-  return fN_map[polarizationState][iTheta][iPhi];
+  /**** Returns direct bin value
+  const G4ThreeVector& vdir = fN_map[polarizationState][iTheta][iPhi];
+  ****/
+
+  // Bilinear interpolation using the four corner bins (i,j) to (i+1,j+1)
+  G4ThreeVector vdir =
+    ( (1.-dTheta)*(1.-dPhi)*fN_map[polarizationState][iTheta][iPhi] +
+      dTheta*(1.-dPhi)*fN_map[polarizationState][iTheta+1][iPhi] +
+      (1.-dTheta)*dPhi*fN_map[polarizationState][iTheta][iPhi+1] +
+      dTheta*dPhi*fN_map[polarizationState][iTheta+1][iPhi+1] ).unit();
+
+  if (verboseLevel>1) {
+    G4cout << "G4LatticeLogical::MapKtoVDir theta,phi="
+	   << k.theta() << " " << k.phi()
+	   << " : ith,iph " << iTheta << " " << iPhi
+	   << " : dir " << vdir << G4endl;
+  }
+
+  return vdir;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Get theta, phi bins and offsets for interpolation
+
+G4bool 
+G4LatticeLogical::FindLookupBins(const G4ThreeVector& k,
+				 G4int nTheta, G4int nPhi,
+				 G4int& iTheta, G4int& iPhi,
+				 G4double& dTheta, G4double& dPhi) const {
+  if (nTheta<=0 || nPhi<=0) return false;
+
+  G4double tStep = pi/(nTheta-1);	// Last element is upper edge
+  G4double pStep = twopi/(nPhi-1);
+
+  G4double theta = k.getTheta();	// Normalize theta to [0,pi)
+  if (theta<0) theta+=pi;
+
+  G4double phi = k.getPhi();		// Normalize phi to [0,twopi)
+  if (phi<0) phi += twopi;
+
+  dTheta = theta/tStep;
+  iTheta = int(dTheta);
+  dTheta -= iTheta;			// Fraction of bin width
+
+  dPhi = phi/pStep;
+  iPhi = int(dPhi);
+  dPhi -= iPhi;				// Fraction of bin width
+
+  return (iTheta<nTheta && iPhi<nPhi);	// Sanity check on bin indexing
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

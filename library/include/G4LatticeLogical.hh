@@ -188,6 +188,11 @@ private:
   G4double LookupKtoV(G4int pol, const G4ThreeVector& k) const;
   G4ThreeVector LookupKtoVDir(G4int pol, const G4ThreeVector& k) const;
 
+  // Get theta, phi bins and offsets for interpolation
+  G4bool FindLookupBins(const G4ThreeVector& k, G4int nTheta, G4int nPhi,
+			G4int& iTheta, G4int& iPhi, G4double& dTheta,
+			G4double& dPhi) const;
+
   // Use direct calculation to get group velocity for phonons
   G4double ComputeKtoV(G4int pol, const G4ThreeVector& k) const;
   G4ThreeVector ComputeKtoVDir(G4int pol, const G4ThreeVector& k) const;
