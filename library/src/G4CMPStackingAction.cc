@@ -103,7 +103,14 @@ void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
 
   //Compute direction of propagation from wave vector
   G4ThreeVector momentumDir = theLattice->MapKtoVDir(pol, K);
-  
+
+  if (momentumDir.mag() < 0.9) {
+    G4cerr << " track mode " << pol << " K " << K << G4endl;
+    G4Exception("G4CMPStackingAction::SetPhononVelocity", "Lattice010",
+		FatalException, "KtoVDir failed to return unit vector");
+    return;
+  }
+
   //Compute true velocity of propagation
   G4double velocity = theLattice->MapKtoV(pol, K);
   

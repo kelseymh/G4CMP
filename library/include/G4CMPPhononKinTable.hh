@@ -1,10 +1,13 @@
 //  G4CMPPhononKinTable.hh
 //  Created by Daniel Palken in 2014 for G4CMP
+//
+//  20160628  Tabulating on nx and ny is just wrong; use theta, phi
 
 #ifndef G4CMPPhononKinTable_hh
 #define G4CMPPhononKinTable_hh
 
 #include "G4CMPInterpolator.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4ThreeVector.hh"
 #include <string>
 #include <vector>
@@ -17,9 +20,9 @@ class G4CMPPhononKinematics;
 // ++++++++++++++++++++++++++++++ G4CMPPhononKinTable +++++++++++++++++++++++++
 class G4CMPPhononKinTable {
 public:
-  G4CMPPhononKinTable(G4CMPPhononKinematics* map, G4double xmin=-1.,
-		      G4double xmax=1., G4int nx=250, G4double ymin=-1.,
-		      G4double ymax=1., G4double ny=250);
+  G4CMPPhononKinTable(G4CMPPhononKinematics* map, G4double thmin=0.,
+		      G4double thmax=pi, G4int nth=250, G4double phmin=0.,
+		      G4double phmax=twopi, G4int nph=250);
   ~G4CMPPhononKinTable();
 
   void initialize();		// Trigger filling of lookup tables
@@ -33,10 +36,16 @@ public:
 		   E_X, E_Y, E_Z,		// Polarization
 		   NUM_DATA_TYPES };
   string getDataTypeName(int TYPE);
+  G4double getDataUnit(int TYPE);	   // Geant4 units for writing output
 
   // Special values for interpolation errors
   static const G4double OUT_OF_BOUNDS;     // Looking outside of lookup table
   static const G4double ERRONEOUS_INPUT;   // Input is not correct
+
+  bool goodBin(G4double theta, G4double phi) {
+    return (thetaMin <= theta && theta <= thetaMax &&
+	    phiMin <= phi && phi <= phiMax);
+  }
 
   // interpolation methods
   double interpGeneral(int mode, const G4ThreeVector& k, int typeDesired);
@@ -54,15 +63,15 @@ public:
 
 protected:
   // Internal drivers for lookup tables
-  double interpolateEven(double nx, double ny, int MODE, int TYPE_OUT,
+  double interpolateEven(double theta, double phi, int MODE, int TYPE_OUT,
 			 bool SILENT=true);
-  double interpolateEven(G4CMPBiLinearInterp& grid, double nx, double ny);
+  double interpolateEven(G4CMPBiLinearInterp& grid, double theta, double phi);
 
 private:
-  G4double nxMin, nxMax, nxStep;	// Range and steps for wavevector 'x'
-  G4int nxCount;
-  G4double nyMin, nyMax, nyStep;	// Range and steps for wavevector 'y'
-  G4int nyCount;
+  G4double thetaMin, thetaMax, thetaStep;   // Range and steps for wavevector
+  G4int thetaCount;
+  G4double phiMin, phiMax, phiStep;
+  G4int phiCount;
 
   // Populate full table for interpolation
   void setUpDataVectors();

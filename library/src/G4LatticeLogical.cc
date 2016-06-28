@@ -23,6 +23,7 @@
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
+#include "G4CMPPhononKinTable.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4CMPConfigManager.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4RotationMatrix.hh"
 #include "G4SystemOfUnits.hh"
@@ -133,6 +134,7 @@ G4LatticeLogical::SetElasticityCubic(G4double C11, G4double C12, G4double C44) {
       G4cout << " Elasticity matrix loaded; create KV calculator" << G4endl;
 
     fpPhononKin = new G4CMPPhononKinematics(this);
+    fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
   }
 }
 
@@ -233,6 +235,9 @@ G4double G4LatticeLogical::ComputeKtoV(G4int polarizationState,
 
 G4double G4LatticeLogical::LookupKtoV(G4int polarizationState,
 				      const G4ThreeVector& k) const {
+  if (fpPhononTable)
+    return fpPhononTable->interpGroupVelocity(polarizationState, k.unit());
+
   if (fVresTheta <= 0 || fVresPhi <= 0) {
     G4Exception("G4LatticeLogical::LookupKtoV", "Lattice002",
 		RunMustBeAborted, "No lookup tables loaded.");
@@ -301,6 +306,9 @@ G4ThreeVector G4LatticeLogical::ComputeKtoVDir(G4int polarizationState,
 
 G4ThreeVector G4LatticeLogical::LookupKtoVDir(G4int polarizationState,
 					      const G4ThreeVector& k) const {  
+  if (fpPhononTable)
+    return fpPhononTable->interpGroupVelocity_N(polarizationState, k.unit()).unit();
+
   if (fDresTheta <= 0 || fDresPhi <= 0) {
     G4Exception("G4LatticeLogical::LookupKtoVDir", "Lattice005",
 		RunMustBeAborted, "No lookup tables loaded.");
