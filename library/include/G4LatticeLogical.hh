@@ -33,6 +33,7 @@
 #include <vector>
 
 class G4CMPPhononKinematics;
+class G4CMPPhononKinTable;
 
 // Arrays for full and reduced elasticity matrices
 class G4LatticeLogical {
@@ -200,6 +201,7 @@ private:
   ReducedElasticity fElReduced;		    // Reduced 2D elasticity tensor
   G4bool fHasElasticity;		    // Flag valid elasticity tensors
   G4CMPPhononKinematics* fpPhononKin;	    // Kinematics calculator with tensor
+  G4CMPPhononKinTable* fpPhononTable;	    // Kinematics interpolator
 
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
 

@@ -17,9 +17,9 @@ using std::vector;
 // """""""""""""""""" interp_1d.h from Numerical Respies III """"""""""""""""""
 struct G4CMPVInterpolator {
   int n, mm, jsav, cor, dj;
-  const double *xx, *yy;
+  vector<double> xx, yy;
 
-  G4CMPVInterpolator(const vector<double> &x, const double *y, int m);
+  G4CMPVInterpolator(const vector<double>& x, const vector<double>& y, int m);
     
   double interp(double x) {
     int jlo = cor ? hunt(x) : locate(x);
@@ -36,7 +36,7 @@ struct G4CMPVInterpolator {
 // >>>>>>>>>>>>>>>>> interp_linear.h from Numerical Recipes >>>>>>>>>>>>>>>>>>>
 struct G4CMPLinearInterp : G4CMPVInterpolator {
   G4CMPLinearInterp(const vector<double> &xv, const vector<double> &yv)
-    : G4CMPVInterpolator(xv,&yv[0],2)  {}
+    : G4CMPVInterpolator(xv,yv,2)  {}
 
   double rawinterp(int j, double x) {
     if (xx[j]==xx[j+1]) return yy[j];
@@ -56,10 +56,7 @@ struct G4CMPBiLinearInterp {
 		      const matrix<double> &ym)
     : m(x1v.size()), n(x2v.size()), y(ym), x1terp(x1v,x1v), x2terp(x2v,x2v) {}
     
-  // adding this method seems to be required to make things run...
-  // ... I am not sure why or why having it empty works, but it seems to
   G4CMPBiLinearInterp& operator=(const G4CMPBiLinearInterp& oldBI) {
-    // Proper content added by M. Kelsey
     m = oldBI.m;
     n = oldBI.n;
     y = oldBI.y;

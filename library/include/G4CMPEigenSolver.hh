@@ -41,8 +41,8 @@ struct G4CMPEigenSolver {
   void setup(const matrix<double> &a, bool yesvec=true) {
     n = a.rows();
     z = a;
-    d.resize(n,0.);
-    e.resize(n,0.);
+    d.clear(); d.resize(n,0.);
+    e.clear(); e.resize(n,0.);
     yesvecs = yesvec;
     tred2();
     tqli();

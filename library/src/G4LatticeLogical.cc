@@ -22,6 +22,7 @@
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
+#include "G4CMPPhononKinTable.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4CMPConfigManager.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4RotationMatrix.hh"
 #include "G4SystemOfUnits.hh"
@@ -35,7 +36,8 @@
 G4LatticeLogical::G4LatticeLogical(const G4String& name)
   : verboseLevel(0), fName(name),
     fDensity(0.), fElasticity{}, fElReduced{}, fHasElasticity(false),
-    fpPhononKin(0), fVresTheta(0), fVresPhi(0), fDresTheta(0), fDresPhi(0),
+    fpPhononKin(0), fpPhononTable(0),
+    fVresTheta(0), fVresPhi(0), fDresTheta(0), fDresPhi(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
     fVSound(0.), fL0_e(0.), fL0_h(0.), 
@@ -58,6 +60,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
 
 G4LatticeLogical::~G4LatticeLogical() {
   delete fpPhononKin; fpPhononKin = 0;
+  delete fpPhononTable; fpPhononTable = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -130,6 +133,7 @@ G4LatticeLogical::SetElasticityCubic(G4double C11, G4double C12, G4double C44) {
       G4cout << " Elasticity matrix loaded; create KV calculator" << G4endl;
 
     fpPhononKin = new G4CMPPhononKinematics(this);
+    fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
   }
 }
 
@@ -230,6 +234,9 @@ G4double G4LatticeLogical::ComputeKtoV(G4int polarizationState,
 
 G4double G4LatticeLogical::LookupKtoV(G4int polarizationState,
 				      const G4ThreeVector& k) const {
+  if (fpPhononTable)
+    return fpPhononTable->interpGroupVelocity(polarizationState,k);
+
   if (fVresTheta <= 0 || fVresPhi <= 0) {
     G4Exception("G4LatticeLogical::LookupKtoV", "Lattice001",
 		RunMustBeAborted, "No lookup tables loaded.");
@@ -238,22 +245,25 @@ G4double G4LatticeLogical::LookupKtoV(G4int polarizationState,
 
   G4double theta, phi, tRes, pRes;
 
-  tRes=pi/fVresTheta;
-  pRes=twopi/fVresPhi;
+  tRes=pi/(fVresTheta-1);
+  pRes=twopi/(fVresPhi-1);
   
   theta=k.getTheta();
   phi=k.getPhi();
 
-  if(phi<0) phi = phi + twopi;
-  if(theta>pi) theta=theta-pi;
+  if (theta>pi) theta=theta-pi;
+  if (phi<0) phi = phi + twopi;
 
-  G4double Vg = fMap[polarizationState][int(theta/tRes)][int(phi/pRes)];
+  G4int iTheta = int(theta/tRes);
+  G4int iPhi = int(phi/pRes);
+
+  G4double Vg = fMap[polarizationState][iTheta][iPhi];
 
   if (Vg == 0) {
     G4cerr << "Found v=0 for polarization "<< polarizationState
 	   << " theta " << theta << " phi " << phi
 	   << " translating to map coords"
-	   << " theta " << int(theta/tRes) << " phi " << int(phi/pRes)
+	   << " theta " << iTheta << " phi " << iPhi
 	   << G4endl;
   }
 
@@ -290,6 +300,9 @@ G4ThreeVector G4LatticeLogical::ComputeKtoVDir(G4int polarizationState,
 
 G4ThreeVector G4LatticeLogical::LookupKtoVDir(G4int polarizationState,
 					      const G4ThreeVector& k) const {  
+  if (fpPhononTable)
+    return fpPhononTable->interpGroupVelocity_N(polarizationState,k).unit();
+
   if (fDresTheta <= 0 || fDresPhi <= 0) {
     G4Exception("G4LatticeLogical::LookupKtoVDir", "Lattice002",
 		RunMustBeAborted, "No lookup tables loaded.");
@@ -298,18 +311,17 @@ G4ThreeVector G4LatticeLogical::LookupKtoVDir(G4int polarizationState,
 
   G4double theta, phi, tRes, pRes;
 
-  tRes=pi/(fDresTheta-1);//The summant "-1" is required:index=[0:array length-1]
+  tRes=pi/(fDresTheta-1);	// Last array element is upper edge (pi, twopi)
   pRes=twopi/(fDresPhi-1);
 
   theta=k.getTheta();
   phi=k.getPhi(); 
 
   if(theta>pi) theta=theta-pi;
-  //phi=[0 to 2 pi] in accordance with DMC //if(phi>pi/2) phi=phi-pi/2;
   if(phi<0) phi = phi + twopi;
 
-  G4int iTheta = int(theta/tRes+0.5);
-  G4int iPhi = int(phi/pRes+0.5);
+  G4int iTheta = int(theta/tRes);
+  G4int iPhi = int(phi/pRes);
 
   if (verboseLevel>1) {
     G4cout << "G4LatticeLogical::MapKtoVDir theta,phi=" << theta << " " << phi

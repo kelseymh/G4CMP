@@ -39,7 +39,11 @@ int main(int argc, const char * argv[])
   G4CMPPhononKinematics *map = new G4CMPPhononKinematics(lattice);
 
   G4CMPPhononKinTable lookup(map);	// Dump Dan's version of data file
+  lookup.initialize();
   lookup.write();
+
+  return 0;
+
   
   // 3. G4CMP uses (theta,phi) binning
   const int Ntheta = 161;		// These must match config.txt values
@@ -66,10 +70,10 @@ int main(int argc, const char * argv[])
     for (int itheta = 0; itheta<Ntheta; itheta++) {
       cout << "." << flush;
 
-      theta = M_PI*itheta / Ntheta;		// Bin edges
+      theta = M_PI*itheta / (Ntheta-1);		// Bin edges; last is upper edge
 
       for (int iphi = 0; iphi<Nphi; iphi++) {
-	phi = 2.*M_PI*iphi / Nphi;		// Bin edges
+	phi = 2.*M_PI*iphi / (Nphi-1);		// Bin edges; last is upper edge
 
 	// Convert phi, theta bin center to unit vector
 	kvec.setRThetaPhi(1.,theta,phi);

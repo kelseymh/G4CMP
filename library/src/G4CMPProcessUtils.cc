@@ -182,7 +182,9 @@ G4ThreeVector G4CMPProcessUtils::GetSurfaceNormal(const G4Step& aStep) {
   G4ThreeVector surfNorm = iNav[navID]->GetGlobalExitNormal(
                                       aStep.GetPostStepPoint()->GetPosition(),
                                       &goodNorm);
-  if (!goodNorm) {
+
+  // FIXME:  Sometimes G4Navigator fails, but still returns "good"
+  if (!goodNorm || surfNorm.mag()<0.99) {
     G4VPhysicalVolume* thePrePV = aStep.GetPreStepPoint()->GetPhysicalVolume();
     G4VPhysicalVolume* thePostPV = aStep.GetPostStepPoint()->GetPhysicalVolume();
     G4Exception("G4CMPProcessUtils::GetSurfaceNormal", "Boundary001",

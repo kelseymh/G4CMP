@@ -17,8 +17,9 @@ using namespace std;
 
 // """""""""""""""" interp_1d.h METHODS (Numerical Respies III) """"""""""""""""
 // constructor
-G4CMPVInterpolator::G4CMPVInterpolator(const vector<double> &x, const double *y, int m)
-  : n(x.size()), mm(m), jsav(0), cor(0), xx(&x[0]), yy(y) {
+G4CMPVInterpolator::G4CMPVInterpolator(const vector<double> &x,
+				       const vector<double> &y, int m)
+  : n(x.size()), mm(m), jsav(0), cor(0), xx(x), yy(y) {
   dj = min(1, (int)sqrt(sqrt((double)n)));
 }  
 

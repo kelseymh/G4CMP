@@ -1,5 +1,7 @@
 //  G4CMPPhononKinTable.cpp
 //  Created by Daniel Palken in 2014 for G4CMP
+//
+//  20160627  M. Kelsey -- Defer table building to first query
 
 #include "G4CMPPhononKinTable.hh"
 #include "G4CMPMatrix.hh"
@@ -26,23 +28,32 @@ G4CMPPhononKinTable::G4CMPPhononKinTable(G4CMPPhononKinematics* map, G4double xm
 					 G4double ny)
   : nxMin(xmin), nxMax(xmax), nxStep((nx>0)?(xmax-xmin)/nx:1.), nxCount(nx),
     nyMin(ymin), nyMax(ymax), nyStep((ny>0)?(ymax-ymin)/ny:1.), nyCount(ny),
-    mapper(map) {
-  generateLookupTable();
-  generateMultiEvenTable();
-}
+    mapper(map), lookupReady(false) {;}
 
 G4CMPPhononKinTable::~G4CMPPhononKinTable() { clearQuantityMap(); }
+
+void G4CMPPhononKinTable::initialize() {
+  if (lookupReady) return;		// Tables already generated
+
+  generateLookupTable();
+  generateMultiEvenTable();
+  lookupReady = true;
+}
 
 void G4CMPPhononKinTable::clearQuantityMap() {
   // common technique to free up the memory of a vector:
   quantityMap.clear(); // this alone actually does not free up the memory
   vector<vector<G4CMPBiLinearInterp> > newVec;
   quantityMap.swap(newVec);
+
+  lookupReady = false;
 }
 
 // returns any quantity desired from the interpolation table
 double G4CMPPhononKinTable::interpGeneral(int mode, const G4ThreeVector& k,
 					  int typeDesired) {
+  if (!lookupReady) initialize();	// Fill tables on first query
+
   double nx = k.unit().x(), ny = k.unit().y();
 
   // note: this method at present does not require nz
@@ -54,7 +65,7 @@ G4ThreeVector G4CMPPhononKinTable::interpGroupVelocity_N(int mode, const G4Three
   G4ThreeVector Vg(interpGeneral(mode, k, V_GX),
 		   interpGeneral(mode, k, V_GY),
 		   interpGeneral(mode, k, V_GZ));
-  return Vg;
+  return Vg.unit();
 }
 
 // ****************************** BUILD METHODS ********************************
@@ -76,16 +87,25 @@ void G4CMPPhononKinTable::generateLookupTable() {
   G4ThreeVector vgroup;
   G4ThreeVector polarization;
 
+#ifdef G4CMP_DEBUG
+  cout << "G4CMPPhononKinTable: "
+       << nxCount << " X bins [" << nxMin << ".." << nxMax << "], "
+       << nyCount << " X bins [" << nyMin << ".." << nyMax << "]"
+       << G4endl;
+#endif
+
   // ensures even spacing for x and y on a unit circle in the xy-plane
   G4ThreeVector n_dir;
-  for (double nx=nxMin; nx<=nxMax; nx+=nxStep) {
-    for (double ny=nyMin; ny<=nyMax; ny+=nyStep) {
+  for (int ix=0; ix<=nxCount; ix++) {
+    double nx = nxMin + ix*nxStep;
+
+    for (int iy=0; iy<=nyCount; iy++) {
+      double ny = nyMin + iy*nyStep;
+
       double rho2 = nx*nx + ny*ny;
-      if (!doubLessThanApprox(rho2, 1.0, 1.0e-4)) break;
+      if (rho2 > 1.0) continue;		  // Accept right up to circle edge
 
       n_dir.set(nx, ny, sqrt(1.-rho2));		// Unit vector
-      // NOTE: G4CMPPhononKinTable code has opposite theta,phi convention from Geant4!
-      double theta=n_dir.theta(), phi=n_dir.phi();
 
       for (int mode = 0; mode < G4PhononPolarization::NUM_MODES; mode++) {
 	vphase = mapper->getPhaseSpeed(mode, n_dir) / (m/s);
@@ -96,8 +116,8 @@ void G4CMPPhononKinTable::generateLookupTable() {
         lookupData[mode][N_X].push_back(n_dir.x());	// Wavevector dir.
 	lookupData[mode][N_Y].push_back(n_dir.y());
 	lookupData[mode][N_Z].push_back(n_dir.z());
-	lookupData[mode][THETA].push_back(theta);	// Wavevector angles
-	lookupData[mode][PHI].push_back(phi);
+	lookupData[mode][THETA].push_back(n_dir.theta());  // ... and angles
+	lookupData[mode][PHI].push_back(n_dir.phi());
 	lookupData[mode][S_X].push_back(slowness.x());	// Slowness direction
 	lookupData[mode][S_Y].push_back(slowness.y());
 	lookupData[mode][S_Z].push_back(slowness.z());
@@ -127,7 +147,7 @@ double G4CMPPhononKinTable::interpolateEven(G4CMPBiLinearInterp& grid,
 					    double nx, double ny) {
     // check that the n values we're interpolating at are possible:
     if (doubGreaterThanApprox((nx*nx + ny*ny), 1.0)) {
-        cout << "ERROR: Cannot interpolate at (" << nx << ", " << ny << "): "
+        cerr << "ERROR: Cannot interpolate at (" << nx << ", " << ny << "): "
 	     << "Pythagorean sum exceeds 1.0\n";
         return ERRONEOUS_INPUT; // exit method
     }
@@ -143,7 +163,7 @@ double G4CMPPhononKinTable::interpolateEven(double nx, double ny, int MODE,
 					    int TYPE_OUT, bool SILENT) {
   // check that the n values we're interpolating at are possible:
   if (doubGreaterThanApprox((nx*nx + ny*ny), 1.0)) {
-    cout << "ERROR: Cannot interpolate at (" << nx << ", " << ny << "): "
+    cerr << "ERROR: Cannot interpolate at (" << nx << ", " << ny << "): "
 	 << "Pythagorean sum exceeds 1.0\n";
     return ERRONEOUS_INPUT; // exit method
   }
@@ -165,49 +185,42 @@ G4CMPBiLinearInterp
 G4CMPPhononKinTable::generateEvenTable(int MODE,
 				     G4CMPPhononKinTable::DataTypes TYPE_OUT) {
   /* set up the two vectors of input components (N_X and N_Y) which
-     will define the grid that will be interpolated on */
-  size_t SIZE = lookupData[MODE][N_X].size();
-  /* these grids are deliberately oversized, as our grid is evenly
-     spaced but circular, not square. Make the matrix<double>s and vector<double>s
-     pointers so they are not be destroyed when they go out of scope
-     at the end of this method */
-  vector<double> x1(nxCount+1, OUT_OF_BOUNDS);
-  vector<double> x2(nyCount+1, OUT_OF_BOUNDS);
+     will define the grid that will be interpolated on
+     these grids are deliberately oversized, as our grid is evenly
+     spaced but circular, not square. */
+  vector<double> x1;
+  for (int ix=0; ix<=nxCount; ix++) x1.push_back(nxMin+ix*nxStep);
+
+  vector<double> x2;
+  for (int iy=0; iy<=nyCount; iy++) x2.push_back(nyMin+iy*nyStep);
+
+  /* set up the matrix of data values to be interpolated */
   matrix<double> dataVals(x1.size(), x2.size(), OUT_OF_BOUNDS);
-  
-  double lastLargestNx = nxMin, lastLargestNy = nyMin;
-  x1[0] = lastLargestNx, x2[0] = lastLargestNy;
-  int currentXindex = 1, currentYindex = 1;
+  size_t SIZE = lookupData[MODE][N_X].size();
   for (size_t i = 0; i<SIZE; i++) {
     double nxVal = lookupData[MODE][N_X][i];
     double nyVal = lookupData[MODE][N_Y][i];
     
-    // if new largest x-value found...
-    // following 2 if-statements will assemble vectors of x and y in ascending order:
-    if (doubGreaterThanApprox(nxVal, lastLargestNx)) {
-      x1[currentXindex] = lastLargestNx = nxVal;
-      currentXindex++;
-    } if (doubGreaterThanApprox(nyVal, lastLargestNy)) {
-      x2[currentYindex] = lastLargestNy = nyVal;
-      currentYindex++;
-    }
-    
     // figure out n_x-index of current data point:
-    int x1vecIndex = (int)(nxVal / nxStep);
+    int x1vecIndex = (int)((nxVal-nxMin) / nxStep);
     if (doubApproxEquals(x1[x1vecIndex+1], nxVal) && x1vecIndex+1 < x1.size())
       x1vecIndex++;                           // resolve possible rounding issue
-    else if (!doubApproxEquals(x1[x1vecIndex], nxVal))  // check
+    else if (!doubApproxEquals(x1[x1vecIndex], nxVal)) { // check
       cerr << "ERROR: Unanticipated n_x-index rounding behavior, nxVal= "
-	   << nxVal << endl;
+	   << nxVal << " index " << x1vecIndex << " = " << x1[x1vecIndex]
+	   << endl;
+    }
 
     // figure out n_y-index of current data point:
-    int x2vecIndex = (int)(nyVal / nyStep);    // may round down to nearest integer index
+    int x2vecIndex = (int)((nyVal-nyMin) / nyStep);    // may round down to nearest integer index
     if (doubApproxEquals(x2[x2vecIndex+1], nyVal) && x2vecIndex+1 < x2.size())
       x2vecIndex++;                           // resolve possible rounding issue
-    else if (!doubApproxEquals(x2[x2vecIndex], nyVal))  // check
+    else if (!doubApproxEquals(x2[x2vecIndex], nyVal)) {  // check
       cerr << "ERROR: Unanticipated n_y-index rounding behavior, nyVal= "
-	   << nyVal << endl;
-    
+	   << nyVal << " index " << x2vecIndex << " = " << x2[x2vecIndex]
+	   << endl;
+    }
+
     // fill in data point in matrix:
     // first check to make sure that point not already entered:
     if (!doubApproxEquals(dataVals[x1vecIndex][x2vecIndex], OUT_OF_BOUNDS,
@@ -272,13 +285,13 @@ void G4CMPPhononKinTable::write() {
 
   int entry=0;
   for (int ix=0; ix<=nxCount; ix++) {
-    double nx = nxMin + nxStep*ix;
+    double nx = nxMin + ix*nxStep;
 
     for (int iy=0; iy<=nyCount; iy++) {
-      double ny = nyMin + nyStep*iy;
+      double ny = nyMin + iy*nyStep;
 
       double rho2 = nx*nx + ny*ny;
-      if (!doubLessThanApprox(rho2, 1.0, 1.0e-4)) break;
+      if (rho2 > 1.) continue;
 
       for (int mode = 0; mode < G4PhononPolarization::NUM_MODES; mode++) {
 	lookupTable << setw(18) << G4PhononPolarization::Label(mode);

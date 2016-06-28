@@ -17,10 +17,12 @@ class G4CMPPhononKinematics;
 // ++++++++++++++++++++++++++++++ G4CMPPhononKinTable +++++++++++++++++++++++++
 class G4CMPPhononKinTable {
 public:
-  G4CMPPhononKinTable(G4CMPPhononKinematics* map, G4double xmin=0.,G4double xmax=1.,
-		      G4int nx=250,G4double ymin=0.,G4double ymax=1.,
-		      G4double ny=250);
+  G4CMPPhononKinTable(G4CMPPhononKinematics* map, G4double xmin=-1.,
+		      G4double xmax=1., G4int nx=250, G4double ymin=-1.,
+		      G4double ymax=1., G4double ny=250);
   ~G4CMPPhononKinTable();
+
+  void initialize();		// Trigger filling of lookup tables
 
 public:
   // Symbolic identifiers for various arrays, to use with lookup table
@@ -37,9 +39,6 @@ public:
   static const G4double ERRONEOUS_INPUT;   // Input is not correct
 
   // interpolation methods
-  double interpolateEven(double nx, double ny, int MODE, int TYPE_OUT,
-			 bool SILENT=true);
-  double interpolateEven(G4CMPBiLinearInterp& grid, double nx, double ny);
   double interpGeneral(int mode, const G4ThreeVector& k, int typeDesired);
 
   G4ThreeVector interpGroupVelocity_N(int mode, const G4ThreeVector& k);
@@ -52,6 +51,12 @@ public:
   
   // Dump lookup table for external use
   void write();
+
+protected:
+  // Internal drivers for lookup tables
+  double interpolateEven(double nx, double ny, int MODE, int TYPE_OUT,
+			 bool SILENT=true);
+  double interpolateEven(G4CMPBiLinearInterp& grid, double nx, double ny);
 
 private:
   G4double nxMin, nxMax, nxStep;	// Range and steps for wavevector 'x'
@@ -68,6 +73,7 @@ private:
 
 private:
   G4CMPPhononKinematics* mapper;
+  G4bool lookupReady;			// Flag once tables are filled
   vector<vector<G4CMPBiLinearInterp> > quantityMap;
   vector<vector<vector<double> > > lookupData;
 };
