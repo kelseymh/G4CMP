@@ -216,7 +216,7 @@ G4bool G4LatticeLogical::Load_NMap(G4int tRes, G4int pRes,
 
 G4double G4LatticeLogical::MapKtoV(G4int polarizationState,
 				   const G4ThreeVector& k) const {
-  return ( (fpPhononKin && !G4CMPConfigManager::UseKVLookupTables())
+  return ( (fpPhononKin && G4CMPConfigManager::UseKVSolver())
 	   ? ComputeKtoV(polarizationState,k)
 	   : LookupKtoV(polarizationState,k) );
 }
@@ -284,7 +284,7 @@ G4double G4LatticeLogical::LookupKtoV(G4int polarizationState,
 
 G4ThreeVector G4LatticeLogical::MapKtoVDir(G4int polarizationState,
 					   const G4ThreeVector& k) const {
-  return ( (fpPhononKin && !G4CMPConfigManager::UseKVLookupTables())
+  return ( (fpPhononKin && G4CMPConfigManager::UseKVSolver())
 	   ? ComputeKtoVDir(polarizationState,k)
 	   : LookupKtoVDir(polarizationState,k) );
 }

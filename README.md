@@ -55,6 +55,7 @@ developers should check the source code in
 | G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEpot <M> V=0:     | Scale the potentials in Epot by factor m|
 | G4CMP\_MIN\_STEP [S]      | /g4cmp/minimumStep <S> S>0:   | Force minimum step S\*L0                |
 | G4CMP\_MAKE\_PHONONS [R]  | /g4cmp/producePhonons <R>     | Generate phonons every 1/R hits         |
+| G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t|f]      | Use eigensolver for K-Vg mapping        |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation h k l      | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
 | G4CMP\_MILLER\_L          |                               |                                         |
@@ -77,13 +78,21 @@ phonon energy as non-ionizing energy loss (NIEL) on the track:
 
 Generating seconary phonons will significantly slow down the simulation.
 
-Three optional environment variables are used to configure the electric field
-across the germanium crystal.  `$G4CMP\_VOLTAGE` specifies the voltage across
-the crystal, used to generate a uniform electric field (no edge or corner
-effects) from the bottom to the top face.  If the voltage is zero (the
-default), then `$G4CMP\_EPOT\_FILE` specifies the name of the mesh electric field
-field to be loaded for the g4cmpCharge test job.  The default name is
-"`Epot\_iZip4\_small`", found in the `charge/` directory.
+For phonon propagation, a set of lookup tables to convert wavevector (phase
+velocity) direction to group velocity are provided in the lattice
+configuration file (see below).  The environment variable
+`$G4CMP\_USE\_KVSOLVER` controls whether the eigenvalue solver should be
+used directly for these calculations, instead of the lookup tables.  The
+eigensolver imposes a factor of three penalty in CPU time, with the benefit
+of maximum accuracy in phonon kinematics.
+
+Three optional environment variables are used to configure the electric
+field across the germanium crystal.  `$G4CMP\_VOLTAGE` specifies the voltage
+across the crystal, used to generate a uniform electric field (no edge or
+corner effects) from the bottom to the top face.  If the voltage is zero
+(the default), then `$G4CMP\_EPOT\_FILE` specifies the name of the mesh
+electric field field to be loaded for the g4cmpCharge test job.  The default
+name is "`Epot\_iZip4\_small`", found in the `charge/` directory.
 
 For developers, there is a preprocessor flag (`make G4CMP\_DEBUG=1`) which may
 be set before building the libraries.  This variable will turn on some
@@ -177,8 +186,8 @@ for readability.
 | Keyword | Arguments | Value type(s)             | Units              |
 |---------|-----------|---------------------------|--------------------|
 | **Lattice parameters** |
-| basis   | x y z       | unit vector       | none               |
-| cubic   | C11 C12 C44 | elasticity tensor | pascal (typ ...e11) |
+| basis   | x y z       | unit vector            | none                |
+| cubic   | C11 C12 C44 | elasticity tensor      | pascal (typ ...e11) |
 | **Phonon parameters** |
 | beta    | val       | scattering parameters     | 10^11 pascal       |
 | gamma   | val       | (see S. Tamura, PRB 1985) | 10^11 pascal       |

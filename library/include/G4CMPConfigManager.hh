@@ -50,7 +50,7 @@ public:
     h = Instance()->millerH; k = Instance()->millerK; l = Instance()->millerL;
   }
 
-  static G4bool UseKVLookupTables()      { return Instance()->useKVtables; }
+  static G4bool UseKVSolver()      { return Instance()->useKVsolver; }
 
   // Change values (e.g., via Messenger)
   static void SetVerboseLevel(G4int value)
@@ -77,8 +77,8 @@ public:
     { Instance()->LatticeDir=dir; UpdateGeometry(); }
   static void SetHitOutput(const G4String& name)
     { Instance()->Hit_file=name; UpdateGeometry(); }
-  static void UseKVLookupTables(G4bool value)
-    { Instance()->useKVtables = value; }
+  static void UseKVSolver(G4bool value)
+    { Instance()->useKVsolver = value; }
 
   static void UpdateGeometry()
     { G4RunManager::GetRunManager()->ReinitializeGeometry(true); }
@@ -94,7 +94,7 @@ private:
   G4double stepScale;		// Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double genPhonons;         // Rate to create phonons ($G4CMP_LUKE_PHONONS)
   G4double epotScale;		// Scale factor for Epot ($G4CMP_EPOT_SCALE)
-  G4bool useKVtables;		// Use phonon K-Vg tables ($G4CMP_USE_KVTABLES)
+  G4bool useKVsolver;		// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4int verbose;		// Global verbosity (all processes, lattices)
   G4int ehBounces;		// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
   G4int pBounces;		// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)

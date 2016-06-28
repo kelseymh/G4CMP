@@ -75,8 +75,8 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   hitsCmd = CreateCommand<G4UIcmdWithAString>("HitsFile",
 			      "Set filename for output of e/h hit locations");
 
-  kvmapCmd = CreateCommand<G4UIcmdWithABool>("useKVlookup",
-			     "Use lookup tables (L.ssv, etc.) for phonon Vg");
+  kvmapCmd = CreateCommand<G4UIcmdWithABool>("useKVsolver",
+			     "Use eigenvector solver for K-Vg conversion");
   kvmapCmd->SetParameterName("lookup",true,false);
   kvmapCmd->SetDefaultValue(true);
 }
@@ -142,6 +142,6 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
     theManager->SetMillerOrientation(StoI(split()), StoI(split()), StoI(split()));
   }
 
-  if (cmd == kvmapCmd) theManager->UseKVLookupTables(StoB(value));
+  if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
 }
 
