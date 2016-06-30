@@ -19,10 +19,12 @@
 // 20150122  Add command to rescale Epot file voltage by some factor
 // 20150603  Add command to limit reflections in DriftBoundaryProcess
 // 20160518  Add commands for Miller orientation, phonon bounces
+// 20160624  Add command to select KV lookup tables vs. calculator
 
 #include "G4UImessenger.hh"
 
 class G4CMPConfigManager;
+class G4UIcmdWithABool;
 class G4UIcmdWithAnInteger;
 class G4UIcmdWithADouble;
 class G4UIcmdWithADoubleAndUnit;
@@ -62,6 +64,7 @@ private:
   G4UIcmdWithAString* dirCmd;
   G4UIcmdWithAString* hitsCmd;
   G4UIcmdWithAString* millerCmd;	// Will parse out three integers
+  G4UIcmdWithABool*   kvmapCmd;
 };
 
 #include "G4CMPConfigMessenger.icc"

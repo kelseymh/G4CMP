@@ -19,7 +19,7 @@
 // 20150106  Move Luke phonon generating flag here, out of processes
 // 20150122  Add parameter to rescale voltage in Epot field files
 // 20150603  Add parameter to limit reflections in DriftBoundaryProcess
-// 20160517  
+// 20160624  Add flag to use or ignore phonon KV lookup tables
 
 #include "globals.hh"
 #include "G4RunManager.hh"
@@ -50,6 +50,8 @@ public:
     h = Instance()->millerH; k = Instance()->millerK; l = Instance()->millerL;
   }
 
+  static G4bool UseKVSolver()      { return Instance()->useKVsolver; }
+
   // Change values (e.g., via Messenger)
   static void SetVerboseLevel(G4int value)
     { Instance()->verbose = value; }
@@ -58,7 +60,9 @@ public:
   static void SetMaxPhononBounces(G4int value)
     { Instance()->pBounces = value; }
   static void SetMillerOrientation(G4int h, G4int k, G4int l)
-    { Instance()->millerH=h; Instance()->millerK=k, Instance()->millerL=l; }
+    { Instance()->millerH=h; Instance()->millerK=k, Instance()->millerL=l;
+      UpdateGeometry();
+    }
   static void SetVoltage(G4double value)
     { Instance()->voltage = value; UpdateGeometry(); }
   static void SetMinStepScale(G4double value)
@@ -73,6 +77,8 @@ public:
     { Instance()->LatticeDir=dir; UpdateGeometry(); }
   static void SetHitOutput(const G4String& name)
     { Instance()->Hit_file=name; UpdateGeometry(); }
+  static void UseKVSolver(G4bool value)
+    { Instance()->useKVsolver = value; }
 
   static void UpdateGeometry()
     { G4RunManager::GetRunManager()->ReinitializeGeometry(true); }
@@ -88,6 +94,7 @@ private:
   G4double stepScale;		// Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double genPhonons;         // Rate to create phonons ($G4CMP_LUKE_PHONONS)
   G4double epotScale;		// Scale factor for Epot ($G4CMP_EPOT_SCALE)
+  G4bool useKVsolver;		// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4int verbose;		// Global verbosity (all processes, lattices)
   G4int ehBounces;		// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
   G4int pBounces;		// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)

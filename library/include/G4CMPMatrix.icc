@@ -1,369 +1,116 @@
-#include "G4CMPMatrix.hh"
-#include <utility>
+//  matrix.icc
+//  Created by Daniel Palken in 2014 for G4CMP
+//  20160507  M. Kelsey -- Split from matrix.h 
 
-template <class T>
-inline G4CMPMatrix<T>::G4CMPMatrix() : data(std::vector<T>()), ncols(0) {}
+#ifndef G4CMPMatrix_icc
+#define G4CMPMatrix_icc
 
-template <class T>
-inline G4CMPMatrix<T>::G4CMPMatrix(size_t rows, size_t columns, const T& val) :
-  data(std::vector<T>(rows*columns, val)), ncols(columns) {}
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@  Matrix Class @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-template <class T>
-inline G4CMPMatrix<T>::G4CMPMatrix(const std::vector<T>& vec, size_t columns) :
-  data(vec), ncols(columns) {}
+namespace G4CMP {
+  template <class T>
+  matrix<T>::matrix(size_t n, size_t m) : matrix() { resize(n,m);}
 
-template <class T>
-inline G4CMPMatrix<T>::G4CMPMatrix(const std::vector<T>& vec) :
-  data(vec), ncols(vec.size()) {}
-
-template <class T>
-inline typename G4CMPMatrix<T>::iterator G4CMPMatrix<T>::begin() {
-  return data.begin();
-}
-
-template <class T>
-inline typename G4CMPMatrix<T>::const_iterator G4CMPMatrix<T>::begin() const {
-  return data.begin();
-}
-
-template <class T>
-inline typename G4CMPMatrix<T>::iterator G4CMPMatrix<T>::end() {
-  return data.end();
-}
-
-template <class T>
-inline typename G4CMPMatrix<T>::const_iterator G4CMPMatrix<T>::end() const {
-  return data.end();
-}
-
-template <class T>
-inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator+=(const G4CMPMatrix<T>& rhs) {
-  // TODO: Add assert on data dimensions != rhs.data dimensions?
-  for (size_t i = 0; i < data.size(); ++i)
-    data[i] += rhs.data[i];
-  return *this;
-}
-
-template <class T>
-inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator-=(const G4CMPMatrix<T>& rhs) {
-  // TODO: Add assert on data dimensions != rhs.data dimensions?
-  for (size_t i = 0; i < data.size(); ++i)
-    data[i] -= rhs.data[i];
-  return *this;
-}
-
-template <class T>
-inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator+=(const T& rhs) {
-  for (size_t i = 0; i < data.size(); ++i)
-    data[i] += rhs;
-  return *this;
-}
-
-template <class T>
-inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator-=(const T& rhs) {
-  for (size_t i = 0; i < data.size(); ++i)
-    data[i] -= rhs;
-  return *this;
-}
-
-template <class T>
-inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator*=(const T& rhs) {
-  for (size_t i = 0; i < data.size(); ++i)
-    data[i] *= rhs;
-  return *this;
-}
-
-template <class T>
-inline G4CMPMatrix<T>& G4CMPMatrix<T>::operator/=(const T& rhs) {
-  for (size_t i = 0; i < data.size(); ++i)
-    data[i] /= rhs;
-  return *this;
-}
-
-// Access
-template <class T>
-inline T& G4CMPMatrix<T>::operator()(size_t i, size_t j) {
-  return data[i*ncols + j];
-}
-
-template <class T>
-inline const T& G4CMPMatrix<T>::operator()(size_t i, size_t j) const {
-  return data[i*ncols + j];
-}
-
-template <class T>
-inline T& G4CMPMatrix<T>::operator()(size_t i) {
-  return data[i];
-}
-
-template <class T>
-inline const T& G4CMPMatrix<T>::operator()(size_t i) const {
-  return data[i];
-}
-
-template <class T>
-inline T& G4CMPMatrix<T>::operator[](size_t i) {
-  return data[i];
-}
-
-template <class T>
-inline const T& G4CMPMatrix<T>::operator[](size_t i) const {
-  return data[i];
-}
-
-// Modify
-template <class T>
-inline void G4CMPMatrix<T>::push_back(const std::vector<T>& vec) {
-  // TODO: Except if vec.size() != columns?
-  // Supposedly no need for data.reserve(). insert() will precalculate size.
-  data.insert(data.end(), vec.begin(), vec.end());
-}
-
-template <class T>
-inline void G4CMPMatrix<T>::push_back(std::vector<T>&& vec) {
-  // TODO: Except if vec.size() != columns?
-  data.insert(data.end(), make_move_iterator(vec.begin()),
-                          make_move_iterator(vec.end()));
-}
-
-template <class T>
-inline void G4CMPMatrix<T>::vert_cat(const G4CMPMatrix<T>& rhs) {
-  // TODO: Except if rhs.columns() != columns()?
-  // Supposedly no need for data.reserve(). insert() will precalculate size.
-  data.insert(data.end(), rhs.data.begin(), rhs.data.end());
-}
-
-template <class T>
-inline void G4CMPMatrix<T>::vert_cat(G4CMPMatrix<T>&& rhs) {
-  // TODO: Except if rhs.columns() != columns()?
-  // Supposedly no need for data.reserve(). insert() will precalculate size.
-  data.insert(data.end(), make_move_iterator(rhs.data.begin()),
-                          make_move_iterator(rhs.data.end()));
-}
-
-template <class T>
-inline void G4CMPMatrix<T>::horiz_cat(const G4CMPMatrix<T>& rhs) {
-  *this = horiz_cat(*this, rhs);
-}
-
-// Information
-template <class T>
-inline size_t G4CMPMatrix<T>::size() const {
-  return data.size();
-}
-
-template <class T>
-inline size_t G4CMPMatrix<T>::columns() const {
-  return ncols;
-}
-
-template <class T>
-inline size_t G4CMPMatrix<T>::rows() const {
-  return ncols ? data.size()/ncols : 0;
-}
-
-// Comparison
-template <class T>
-inline bool operator==(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return (lhs.data == rhs.data) && (lhs.ncols == rhs.ncols);
-}
-
-template <class T>
-inline bool operator!=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return !(lhs == rhs);
-}
-
-template <class T>
-inline bool operator<(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return (lhs.data < rhs.data);
-}
-
-template <class T>
-inline bool operator<=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return (lhs.data <= rhs.data);
-}
-
-template <class T>
-inline bool operator>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return (lhs.data > rhs.data);
-}
-
-template <class T>
-inline bool operator>=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs) {
-  return (lhs.data >= rhs.data);
-}
-
-// Negate
-template <class T>
-inline G4CMPMatrix<T>& operator-(G4CMPMatrix<T>& lhs) {
-  return lhs *= T(-1);
-}
-
-// Matrix-Matrix math:
-template <class T>
-inline G4CMPMatrix<T> operator+(const G4CMPMatrix<T>& lhs, 
-                                const G4CMPMatrix<T>& rhs) {
-  G4CMPMatrix<T> out(lhs);
-  return out += rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator+(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs) {
-  return lhs += rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator-(const G4CMPMatrix<T>& lhs, 
-                                const G4CMPMatrix<T>& rhs) {
-  G4CMPMatrix<T> out(lhs);
-  return out -= rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator-(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs) {
-  return lhs -= rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, 
-                                const G4CMPMatrix<T>& rhs) {
-  // Naive algorithm with some cache friendliness. Still pretty slow.
-  G4CMPMatrix<T> out(lhs.rows(), rhs.columns());
-  for (size_t i = 0; i < out.rows(); ++i)
-  for (size_t k = 0; k < lhs.columns(); ++k) // lhs.columns() == rhs.rows()
-  for (size_t j = 0; j < out.columns(); ++j)
-    out(i,j) += lhs(i,k) * rhs(k,j);
-
-  return out;
-}
-
-// Matrix-Number math:
-template <class T>
-inline G4CMPMatrix<T> operator+(const G4CMPMatrix<T>& lhs, const T& rhs) {
-  G4CMPMatrix<T> out(lhs);
-  return out += rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator+(G4CMPMatrix<T>&& lhs, const T& rhs) {
-  return lhs += rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator+(const T& lhs, const G4CMPMatrix<T>& rhs) {
-  return rhs + lhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator+(const T& lhs, G4CMPMatrix<T>&& rhs) {
-  return rhs + lhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator-(const G4CMPMatrix<T>& lhs, const T& rhs) {
-  G4CMPMatrix<T> out(lhs);
-  return out -= rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator-(G4CMPMatrix<T>&& lhs, const T& rhs) {
-  return lhs -= rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator-(const T& lhs, const G4CMPMatrix<T>& rhs) {
-  return rhs - lhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator-(const T& lhs, G4CMPMatrix<T>&& rhs) {
-  return rhs - lhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, const T& rhs) {
-  G4CMPMatrix<T> out(lhs);
-  return out *= rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator*(G4CMPMatrix<T>&& lhs, const T& rhs) {
-  return lhs *= rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator*(const T& lhs, const G4CMPMatrix<T>& rhs) {
-  return rhs * lhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator*(const T& lhs, G4CMPMatrix<T>&& rhs) {
-  return rhs * lhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator/(const G4CMPMatrix<T>& lhs, const T& rhs) {
-  G4CMPMatrix<T> out(lhs);
-  return out /= rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator/(G4CMPMatrix<T>&& lhs, const T& rhs) {
-  return lhs /= rhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator/(const T& lhs, const G4CMPMatrix<T>& rhs) {
-  return rhs / lhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> operator/(const T& lhs, G4CMPMatrix<T>&& rhs) {
-  return rhs / lhs;
-}
-
-// Matrix-Matrix operations:
-template <class T>
-inline G4CMPMatrix<T> vert_cat(const G4CMPMatrix<T>& lhs, 
-                               const G4CMPMatrix<T>& rhs) {
-  G4CMPMatrix<T> out(lhs);
-  out.vert_cat(rhs);
-  return out;
-}
-
-template <class T>
-inline G4CMPMatrix<T> vert_cat(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs) {
-  lhs.vert_cat(rhs);
-  return lhs;
-}
-
-template <class T>
-inline G4CMPMatrix<T> horiz_cat(const G4CMPMatrix<T>& lhs, 
-                                const G4CMPMatrix<T>& rhs) {
-  // TODO: Except if rhs.rows() != rows()?
-  size_t newCols = lhs.columns() + rhs.columns();
-  G4CMPMatrix<T> newMat(lhs.rows(), newCols);
-  for (size_t i = 0; i < lhs.rows(); ++i) {
-    size_t j = 0;
-    for (; j < lhs.columns(); ++j) 
-      newMat(i,j) = lhs(i,j);
-    for (; j < newCols; ++j) 
-      newMat(i,j) = rhs(i,j - lhs.columns());
+  template <class T>
+  matrix<T>::matrix(size_t n, size_t m, const T &a) : matrix() { resize(n,m,a);}
+  
+  template <class T>
+  matrix<T>::matrix(size_t n, size_t m, const T *a) : matrix() {
+    resize(n,m);
+    *this = a;
   }
-  return newMat;
-}
-
-template <class T>
-std::ostream& operator<<(std::ostream& out, const G4CMPMatrix<T>& rhs) {
-  out << "[";
-  for (size_t i = 0; i < rhs.rows(); ++i) {
-    out << "[ ";
-    for (size_t j = 0; j < rhs.columns()-1; ++j)
-      out << rhs(i,j) << ", ";
-
-    out << rhs(i, rhs.columns()-1) << " ]";
-    if (i < rhs.rows()-1) out << std::endl;
+  
+  template <class T>
+  matrix<T>::matrix(const matrix &rhs) : nn(rhs.nn), mm(rhs.mm), v(rhs.v) {;}
+  
+  template <class T>
+  matrix<T>& matrix<T>::operator=(const matrix<T> &rhs) {
+    // postcondition: normal assignment via copying has been performed;
+    //		if matrix and rhs were different sizes, matrix
+    //		has been resized to match the size of rhs
+    if (this != &rhs) {
+      resize(rhs.nn, rhs.mm);		// No effect if equal dimensions
+      v = rhs.v;			// Handles nested copying automatically
+    }
+    return *this;
   }
-  out << "]" << std::endl;
-  return out;
-}
+  
+  template <class T>
+  matrix<T>& matrix<T>::operator=(const T *a) {		// Copy array entries
+    for (size_t i=0; i<nn; i++) for (size_t j=0; j<mm; j++) v[i][j] = *a++;
+  }
+  
+  
+  
+  template <class T>
+  void matrix<T>::resize(size_t n, size_t m, const T& a) {
+    if (nn==n && mm==m) return;		// Correct size, no work needed
+
+    v.resize(n, vector<T>(mm,a));	// Trim or add rows filled with 'a'
+    for (size_t i=0; i<n; i++) v[i].resize(m,a);	// Pre-existing rows
+    nn = n;
+    mm = m;
+  }
+
+  template <class T>
+  inline void matrix<T>::clear() {
+    for (size_t i=0; i<nn; i++) {
+      v[i].clear();
+      v[i].resize(mm,T(0));		// Re-allocate full matrix of zeroes
+    }
+  }
+  
+  template <class T>
+  inline T& matrix<T>::at(size_t i, size_t j) {		// double subscripting
+#ifdef _CHECKBOUNDS_
+    if (i>=nn || j>=mm) throw("matrix subscript out of bounds");
+#endif
+    return v[i][j];
+  }
+  
+  template <class T>
+  inline const T& matrix<T>::at(size_t i, size_t j) const {
+#ifdef _CHECKBOUNDS_
+    if (i>=nn || j>=mm) throw("matrix subscript out of bounds");
+#endif
+    return v[i][j];
+  }
+
+  // Append rows to bottom of current matrix, resizing if necessary
+  template <class T>
+  inline void matrix<T>::vert_cat(const matrix<T>& rhs) {
+    if (mm != rhs.mm) resize(nn, rhs.mm);	// Trim rows if needed
+    v.insert(v.end(), rhs.v.begin(), rhs.v.end());
+    nn += rhs.nn;
+  }
+  
+  template <class T>
+  inline void matrix<T>::vert_cat(matrix<T>&& rhs) {
+    if (mm != rhs.mm) resize(nn, rhs.mm);	// Trim rows if needed
+    v.insert(v.end(), make_move_iterator(rhs.v.begin()),
+	              make_move_iterator(rhs.v.end()));
+    nn += rhs.nn;
+
+    rhs.nn = rhs.mm = 0;	// After move, zero out source size
+  }
+  
+  // Apend columns to end of all current rows, resizing, extending if necessary
+  template <class T>
+  inline void matrix<T>::horiz_cat(const matrix<T>& rhs) {
+    if (rhs.nn > nn) {
+      resize(rhs.nn, mm);	// Does not extend rows
+      nn = rhs.nn;
+    }
+
+    for (size_t i=0; i<nn; i++) {	// Append RHS to each row, or extend
+      if (i<rhs.nn) v[i].insert(v[i].end(), rhs.v[i].begin(), rhs.v[i].end());
+      else v[i].resize(mm+rhs.mm, T(0));
+    }
+    mm += rhs.mm;
+  }
+  
+}	/* namespace G4CMP */
+
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+#endif	/* G4CMPMatrix_icc */

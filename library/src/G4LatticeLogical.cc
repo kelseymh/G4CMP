@@ -17,8 +17,15 @@
 // 20150601  Add mapping from electron velocity back to momentum
 // 20160517  Add basis vectors for lattice, to use with Miller orientation
 // 20160520  Add reporting function to format valley Euler angles
+// 20160614  Add elasticity tensors and density (set from G4Material) 
+// 20160624  Add direct calculation of phonon kinematics from elasticity
+// 20160627  Interpolate values from lookup tables
+// 20160629  Add post-constuction initialization (for tables, computed pars)
 
 #include "G4LatticeLogical.hh"
+#include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
+#include "G4CMPPhononKinTable.hh"	// **** THIS BREAKS G4 PORTING ****
+#include "G4CMPConfigManager.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4RotationMatrix.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
@@ -28,8 +35,11 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4LatticeLogical::G4LatticeLogical()
-  : verboseLevel(0), fVresTheta(0), fVresPhi(0), fDresTheta(0), fDresPhi(0),
+G4LatticeLogical::G4LatticeLogical(const G4String& name)
+  : verboseLevel(0), fName(name),
+    fDensity(0.), fElasticity{}, fElReduced{}, fHasElasticity(false),
+    fpPhononKin(0), fpPhononTable(0),
+    fVresTheta(0), fVresPhi(0), fDresTheta(0), fDresPhi(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
     fVSound(0.), fL0_e(0.), fL0_h(0.), 
@@ -46,9 +56,42 @@ G4LatticeLogical::G4LatticeLogical()
       }
     }
   }
+
+  SetElasticityCubic(0.,0.,0.);		// Fill elasticity tensors with zeros
 }
 
-G4LatticeLogical::~G4LatticeLogical() {;}
+G4LatticeLogical::~G4LatticeLogical() {
+  delete fpPhononKin; fpPhononKin = 0;
+  delete fpPhononTable; fpPhononTable = 0;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+/////////////////////////////////////////////////////////////
+//Configured derived parameters and tables after loading
+/////////////////////////////////////////////////////////////
+void G4LatticeLogical::Initialize(const G4String& newName) {
+  if (!newName.empty()) SetName(newName);
+
+  SetBasis();				// Ensure complete set of basis vectors
+
+  // If elasticity matrix available, create phonon calculator
+  if (fHasElasticity) {
+    FillElasticity();			// Unpack reduced matrix to full Cijkl
+    if (!fpPhononKin) fpPhononKin = new G4CMPPhononKinematics(this);
+  }
+
+  /***** USE OUR OWN INTERPOLATION, THIS IS TOO SLOW
+  if (fpPhononKin) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
+  *****/
+
+  // Populate phonon lookup tables if not read from files
+  if (fVresTheta*fVresPhi*fDresTheta*fDresPhi == 0) {
+    for (int mode=0; mode<G4PhononPolarization::NUM_MODES; mode++) {
+      FillMaps(MAXRES, MAXRES, mode);
+    }
+  }
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -68,6 +111,52 @@ void G4LatticeLogical::SetBasis() {
 
   if (fBasis[0].cross(fBasis[1]).dot(fBasis[2]) < 0.) {
     G4cerr << "ERROR G4LatticeLogical has a left-handed basis!" << G4endl;
+  }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+/////////////////////////////////////////////////////////////
+// Elasticity matrix, with cubic symmetries
+/////////////////////////////////////////////////////////////
+void 
+G4LatticeLogical::SetElasticityCubic(G4double C11, G4double C12, G4double C44) {
+  if (verboseLevel) {
+    G4cout << "G4LatticeLogical[" << fName << "]::SetElasticityCubic "
+	   << C11 << " " << C12 << " " << C44 << G4endl;
+  }
+
+  fHasElasticity = (C11*C12*C44 != 0.);		// Only non-zero components okay
+
+  // Reduced elasticity tensor is block-symmetric 6x6 array
+  for (int i=0; i<6; i++) {
+    if (i>=3) fElReduced[i][i] = C44;
+    else {
+      for (int j=0; j<3; j++) {
+	fElReduced[i][j] = (i==j) ? C11 : C12;
+      }
+    }
+  }
+}
+
+// Unpack reduced elasticity tensor into full four-dimensional Cijkl
+void G4LatticeLogical::FillElasticity() {
+  G4int rn1[6][2] = { };
+  rn1[1][0] = rn1[1][1] = rn1[3][0] = rn1[5][1] = 1;
+  rn1[2][0] = rn1[2][1] = rn1[3][1] = rn1[4][0] = 2;
+
+  G4int rn2[2][2] = { };
+  rn2[0][1] = rn2[1][0] = 1;
+
+  for (int l=0; l<2; l++) {
+    for (int k=0; k<2; k++) {
+      for (int j=0; j<6; j++) {
+	for (int i=0; i<6; i++) {
+	  fElasticity[rn1[i][rn2[k][0]]][rn1[i][rn2[k][1]]]
+	             [rn1[j][rn2[l][0]]][rn1[j][rn2[l][1]]] = fElReduced[i][j];
+	}
+      }
+    }
   }
 }
 
@@ -96,7 +185,7 @@ G4bool G4LatticeLogical::LoadMap(G4int tRes, G4int pRes,
   }
 
   if (verboseLevel) {
-    G4cout << "\nG4LatticeLogical::LoadMap(" << map << ") successful"
+    G4cout << "G4LatticeLogical::LoadMap(" << map << ") successful"
 	   << " (Vg scalars " << tRes << " x " << pRes << " for polarization "
 	   << polarizationState << ")." << G4endl;
   }
@@ -123,18 +212,16 @@ G4bool G4LatticeLogical::Load_NMap(G4int tRes, G4int pRes,
   std::ifstream fMapFile(map.data());
   if(!fMapFile.is_open()) return false;
 
-  G4double x,y,z;	// Buffers to read coordinates from file
-  G4ThreeVector dir;
+  G4ThreeVector dir;		// Buffers to read coordinates from file
   for (G4int theta = 0; theta<tRes; theta++) {
     for (G4int phi = 0; phi<pRes; phi++) {
-      fMapFile >> x >> y >> z;
-      dir.set(x,y,z);
+      fMapFile >> dir;
       fN_map[polarizationState][theta][phi] = dir.unit();	// Enforce unity
     }
   }
 
   if (verboseLevel) {
-    G4cout << "\nG4LatticeLogical::Load_NMap(" << map << ") successful"
+    G4cout << "G4LatticeLogical::Load_NMap(" << map << ") successful"
 	   << " (Vdir " << tRes << " x " << pRes << " for polarization "
 	   << polarizationState << ")." << G4endl;
   }
@@ -146,34 +233,103 @@ G4bool G4LatticeLogical::Load_NMap(G4int tRes, G4int pRes,
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-//Given the phonon wave vector k, phonon physical volume Vol 
-//and polarizationState(0=LON, 1=FT, 2=ST), 
+// Populate lookup tables using kinematics calculator
+
+G4bool G4LatticeLogical::FillMaps(G4int tRes, G4int pRes,
+				  G4int polarizationState) {
+  if (!fpPhononKin) return false;		// Can't fill without solver
+
+  G4ThreeVector k, Vg;
+  for (G4int itheta = 0; itheta<tRes; itheta++) {
+    G4double theta = itheta*pi/(tRes-1);	// Last entry is at pi
+
+    for (G4int iphi = 0; iphi<pRes; iphi++) {
+      G4double phi = iphi*twopi/(pRes-1);	// Last entry is at 2pi
+
+      k.setRThetaPhi(1.,theta,phi);
+      Vg = fpPhononKin->getGroupVelocity(polarizationState,k);
+
+      fMap[polarizationState][itheta][iphi] = Vg.mag();
+      fN_map[polarizationState][itheta][iphi] = Vg.unit();
+    }
+  }
+
+  if (verboseLevel) {
+    G4cout << "G4LatticeLogical::FillMaps successful (" << tRes << " x "
+	   << pRes << " for all polarizations)." << G4endl;
+  }
+
+  fVresTheta = fDresTheta = tRes;
+  fVresPhi = fDresPhi = pRes;
+
+  return true;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+//Given the phonon wave vector k and polarizationState(0=LON, 1=FT, 2=ST), 
 //returns phonon velocity in m/s
 
 G4double G4LatticeLogical::MapKtoV(G4int polarizationState,
 				   const G4ThreeVector& k) const {
-  G4double theta, phi, tRes, pRes;
+  return ( (fpPhononKin && G4CMPConfigManager::UseKVSolver())
+	   ? ComputeKtoV(polarizationState,k)
+	   : LookupKtoV(polarizationState,k) );
+}
 
-  tRes=pi/fVresTheta;
-  pRes=twopi/fVresPhi;
-  
-  theta=k.getTheta();
-  phi=k.getPhi();
+G4double G4LatticeLogical::ComputeKtoV(G4int polarizationState,
+				       const G4ThreeVector& k) const {  
+  if (!fpPhononKin) {
+    G4Exception("G4LatticeLogical::ComputeKtoV", "Lattice001",
+		RunMustBeAborted, "Phonon kinematics not available.");
+  }
 
-  if(phi<0) phi = phi + twopi;
-  if(theta>pi) theta=theta-pi;
+  return fpPhononKin->getGroupVelocity(polarizationState,k).mag();
+}
 
-  G4double Vg = fMap[polarizationState][int(theta/tRes)][int(phi/pRes)];
+G4double G4LatticeLogical::LookupKtoV(G4int polarizationState,
+				      const G4ThreeVector& k) const {
+  if (fpPhononTable)
+    return fpPhononTable->interpGroupVelocity(polarizationState, k.unit());
 
-  if(Vg == 0){
-      G4cout<<"\nFound v=0 for polarization "<<polarizationState
-            <<" theta "<<theta<<" phi "<<phi<< " translating to map coords "
-            <<"theta "<< int(theta/tRes) << " phi " << int(phi/pRes)<<G4endl;
+  if (fVresTheta <= 0 || fVresPhi <= 0) {
+    G4Exception("G4LatticeLogical::LookupKtoV", "Lattice002",
+		RunMustBeAborted, "No lookup tables loaded.");
+    return 0.;
+  }
+
+  G4int iTheta, iPhi;		// Bin indices
+  G4double dTheta, dPhi;	// Offsets in bin for interpolation
+  if (!FindLookupBins(k, fVresTheta, fVresPhi, iTheta, iPhi, dTheta, dPhi)) {
+    G4Exception("G4LatticeLogical::LookupKtoVDir", "Lattice003",
+		EventMustBeAborted, "Interpolation failed.");
+    return 0.;
+  }
+
+  /**** Returns direct bin value
+  G4double Vg = fMap[polarizationState][iTheta][iPhi];
+  ****/
+
+  // Bilinear interpolation using the four corner bins (i,j) to (i+1,j+1)
+  G4double Vg =
+    (1.-dTheta)*(1.-dPhi)*fMap[polarizationState][iTheta][iPhi] +
+    dTheta*(1.-dPhi)*fMap[polarizationState][iTheta+1][iPhi] +
+    (1.-dTheta)*dPhi*fMap[polarizationState][iTheta][iPhi+1] +
+    dTheta*dPhi*fMap[polarizationState][iTheta+1][iPhi+1];
+
+
+  if (Vg == 0) {
+    G4cerr << "Found v=0 for polarization "<< polarizationState
+	   << " theta " << k.theta() << " phi " << k.phi()
+	   << " translating to map coords"
+	   << " theta " << iTheta << " phi " << iPhi
+	   << G4endl;
   }
 
   if (verboseLevel>1) {
-    G4cout << "G4LatticeLogical::MapKtoV theta,phi=" << theta << " " << phi
-	   << " : ith,iph " << int(theta/tRes) << " " << int(phi/pRes)
+    G4cout << "G4LatticeLogical::MapKtoV theta,phi="
+	   << k.theta() << " " << k.phi()
+	   << " : ith,iph " << iTheta << " " << iPhi
 	   << " : V " << Vg << G4endl;
   }
 
@@ -182,34 +338,95 @@ G4double G4LatticeLogical::MapKtoV(G4int polarizationState,
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-//Given the phonon wave vector k, phonon physical volume Vol 
-//and polarizationState(0=LON, 1=FT, 2=ST), 
+//Given the phonon wave vector k and polarizationState(0=LON, 1=FT, 2=ST), 
 //returns phonon propagation direction as dimensionless unit vector
 
 G4ThreeVector G4LatticeLogical::MapKtoVDir(G4int polarizationState,
-					   const G4ThreeVector& k) const {  
-  G4double theta, phi, tRes, pRes;
+					   const G4ThreeVector& k) const {
+  return ( (fpPhononKin && G4CMPConfigManager::UseKVSolver())
+	   ? ComputeKtoVDir(polarizationState,k)
+	   : LookupKtoVDir(polarizationState,k) );
+}
 
-  tRes=pi/(fDresTheta-1);//The summant "-1" is required:index=[0:array length-1]
-  pRes=2*pi/(fDresPhi-1);
-
-  theta=k.getTheta();
-  phi=k.getPhi(); 
-
-  if(theta>pi) theta=theta-pi;
-  //phi=[0 to 2 pi] in accordance with DMC //if(phi>pi/2) phi=phi-pi/2;
-  if(phi<0) phi = phi + 2*pi;
-
-  G4int iTheta = int(theta/tRes+0.5);
-  G4int iPhi = int(phi/pRes+0.5);
-
-  if (verboseLevel>1) {
-    G4cout << "G4LatticeLogical::MapKtoVDir theta,phi=" << theta << " " << phi
-	   << " : ith,iph " << iTheta << " " << iPhi
-	   << " : dir " << fN_map[polarizationState][iTheta][iPhi] << G4endl;
+G4ThreeVector G4LatticeLogical::ComputeKtoVDir(G4int polarizationState,
+					       const G4ThreeVector& k) const {  
+  if (!fpPhononKin) {
+    G4Exception("G4LatticeLogical::ComputeKtoVDir", "Lattice004",
+		RunMustBeAborted, "Phonon kinematics not available.");
   }
 
-  return fN_map[polarizationState][iTheta][iPhi];
+  return fpPhononKin->getGroupVelocity(polarizationState,k).unit();
+}
+
+G4ThreeVector G4LatticeLogical::LookupKtoVDir(G4int polarizationState,
+					      const G4ThreeVector& k) const {  
+  if (fpPhononTable)
+    return fpPhononTable->interpGroupVelocity_N(polarizationState, k.unit()).unit();
+
+  if (fDresTheta <= 0 || fDresPhi <= 0) {
+    G4Exception("G4LatticeLogical::LookupKtoVDir", "Lattice005",
+		RunMustBeAborted, "No lookup tables loaded.");
+    return G4ThreeVector();
+  }
+
+  G4int iTheta, iPhi;		// Bin indices
+  G4double dTheta, dPhi;	// Offsets in bin for interpolation
+  if (!FindLookupBins(k, fDresTheta, fDresPhi, iTheta, iPhi, dTheta, dPhi)) {
+    G4Exception("G4LatticeLogical::LookupKtoVDir", "Lattice006",
+		EventMustBeAborted, "Interpolation failed.");
+    return G4ThreeVector();
+  }
+
+  /**** Returns direct bin value
+  const G4ThreeVector& vdir = fN_map[polarizationState][iTheta][iPhi];
+  ****/
+
+  // Bilinear interpolation using the four corner bins (i,j) to (i+1,j+1)
+  G4ThreeVector vdir =
+    ( (1.-dTheta)*(1.-dPhi)*fN_map[polarizationState][iTheta][iPhi] +
+      dTheta*(1.-dPhi)*fN_map[polarizationState][iTheta+1][iPhi] +
+      (1.-dTheta)*dPhi*fN_map[polarizationState][iTheta][iPhi+1] +
+      dTheta*dPhi*fN_map[polarizationState][iTheta+1][iPhi+1] ).unit();
+
+  if (verboseLevel>1) {
+    G4cout << "G4LatticeLogical::MapKtoVDir theta,phi="
+	   << k.theta() << " " << k.phi()
+	   << " : ith,iph " << iTheta << " " << iPhi
+	   << " : dir " << vdir << G4endl;
+  }
+
+  return vdir;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Get theta, phi bins and offsets for interpolation
+
+G4bool 
+G4LatticeLogical::FindLookupBins(const G4ThreeVector& k,
+				 G4int nTheta, G4int nPhi,
+				 G4int& iTheta, G4int& iPhi,
+				 G4double& dTheta, G4double& dPhi) const {
+  if (nTheta<=0 || nPhi<=0) return false;
+
+  G4double tStep = pi/(nTheta-1);	// Last element is upper edge
+  G4double pStep = twopi/(nPhi-1);
+
+  G4double theta = k.getTheta();	// Normalize theta to [0,pi)
+  if (theta<0) theta+=pi;
+
+  G4double phi = k.getPhi();		// Normalize phi to [0,twopi)
+  if (phi<0) phi += twopi;
+
+  dTheta = theta/tStep;
+  iTheta = int(dTheta);
+  dTheta -= iTheta;			// Fraction of bin width
+
+  dPhi = phi/pStep;
+  iPhi = int(dPhi);
+  dPhi -= iPhi;				// Fraction of bin width
+
+  return (iTheta<nTheta && iPhi<nPhi);	// Sanity check on bin indexing
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -443,6 +660,18 @@ const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
 // Dump structure in format compatible with reading back
 
 void G4LatticeLogical::Dump(std::ostream& os) const {
+  os << "# " << fName << " crystal lattice parameters" << std::endl;
+  if (fHasElasticity) {		// TEMPORARY: Assume cubic only!
+    os << "cubic " << fElReduced[1][1]
+       << " " << fElReduced[1][2]
+       << " " << fElReduced[4][4] << std::endl;
+  }
+
+  for (size_t i=0; i<3; i++) {
+    os << "basis " << fBasis[0].x() << " " << fBasis[0].y()
+       << " " << fBasis[0].z() << std::endl;
+  }
+
   os << "# Phonon propagation parameters"
      << "\ndyn " << fBeta << " " << fGamma << " " << fLambda << " " << fMu
      << "\nscat " << fB << " decay " << fA

@@ -15,10 +15,12 @@
 // 20150122  Add command to rescale Epot file voltage by some factor
 // 20150603  Add command to limit reflections in DriftBoundaryProcess
 // 20160518  Add commands for Miller orientation, phonon bounces
+// 20160624  Add command to select KV lookup tables vs. calculator
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4Tokenizer.hh"
+#include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithAString.hh"
@@ -33,7 +35,7 @@
 G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : theManager(mgr), localCmdDir(false), cmdDir(0), verboseCmd(0),
     ehBounceCmd(0), pBounceCmd(0), voltageCmd(0), escaleCmd(0), fileCmd(0),
-    dirCmd(0), hitsCmd(0), millerCmd(0) {
+    dirCmd(0), hitsCmd(0), millerCmd(0), kvmapCmd(0) {
   CreateDirectory("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library");
 
@@ -73,6 +75,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   hitsCmd = CreateCommand<G4UIcmdWithAString>("HitsFile",
 			      "Set filename for output of e/h hit locations");
 
+  kvmapCmd = CreateCommand<G4UIcmdWithABool>("useKVsolver",
+			     "Use eigenvector solver for K-Vg conversion");
+  kvmapCmd->SetParameterName("lookup",true,false);
+  kvmapCmd->SetDefaultValue(true);
 }
 
 
@@ -88,6 +94,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete fileCmd; fileCmd=0;
   delete dirCmd; dirCmd=0;
   delete hitsCmd; hitsCmd=0;
+  delete kvmapCmd; kvmapCmd=0;
 
   if (localCmdDir) delete cmdDir; cmdDir=0;
 }
@@ -134,5 +141,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
     G4Tokenizer split(value);
     theManager->SetMillerOrientation(StoI(split()), StoI(split()), StoI(split()));
   }
+
+  if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
 }
 

@@ -116,7 +116,7 @@ void PhononDetectorConstruction::SetupGeometry()
 
   // G4LatticePhysical assigns G4LatticeLogical a physical orientation
   G4LatticePhysical* GePhysical = new G4LatticePhysical(GeLogical);
-  GePhysical->SetMillerOrientation(0,0,1);
+  GePhysical->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(GePhys, GePhysical);
 
   // NOTE:  Above registration can also be done in single step:

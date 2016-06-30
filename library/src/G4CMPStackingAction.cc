@@ -15,6 +15,7 @@
 // 20140411 Set charge carrier masses appropriately for material
 // 20141216 Set velocity for electrons
 // 20150109 Protect velocity flag with compiler flag
+// 20160625 Process _all_ tracks to ensure they're in correct volumes
 
 #include "G4CMPStackingAction.hh"
 #include "G4CMPTrackInformation.hh"
@@ -51,26 +52,27 @@ G4ClassificationOfNewTrack
 G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   G4ClassificationOfNewTrack classification = fUrgent;
 
+  // Configure utility functions for current track
+  FindLattice(aTrack->GetVolume());
+  SetTransforms(aTrack->GetTouchable());
+
+  // If phonon or charge carrier is not in a lattice-enabled volume, kill it
+  if ((IsPhonon(aTrack) || IsChargeCarrier(aTrack)) && !theLattice)
+    return fKill;
+  
   // Non-initial tracks should not be touched
   if (aTrack->GetParentID() != 0) return classification;
 
-  // Attach auxiliary info to new track (requires casting)
-  AttachTrackInfo(const_cast<G4Track*>(aTrack));
+  // Attach auxiliary info to new track
+  AttachTrackInfo(aTrack);
 
-  // Configure utility functions for current track
-  LoadDataForTrack(aTrack);
-
-  G4ParticleDefinition* pd = aTrack->GetDefinition();
-
-  if (pd == G4PhononLong::Definition() ||
-      pd == G4PhononTransFast::Definition() ||
-      pd == G4PhononTransSlow::Definition()) {
+  // Fill kinematic data for new track (secondaries will have this done)
+  if (IsPhonon(aTrack)) {
     SetPhononWaveVector(aTrack);
     SetPhononVelocity(aTrack);
   }
 
-  if (pd == G4CMPDriftHole::Definition() ||
-      pd == G4CMPDriftElectron::Definition()) {
+  if (IsChargeCarrier(aTrack)) {
     SetChargeCarrierValley(aTrack);
     SetChargeCarrierMass(aTrack);
   }
@@ -101,7 +103,14 @@ void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
 
   //Compute direction of propagation from wave vector
   G4ThreeVector momentumDir = theLattice->MapKtoVDir(pol, K);
-  
+
+  if (momentumDir.mag() < 0.9) {
+    G4cerr << " track mode " << pol << " K " << K << G4endl;
+    G4Exception("G4CMPStackingAction::SetPhononVelocity", "Lattice010",
+		FatalException, "KtoVDir failed to return unit vector");
+    return;
+  }
+
   //Compute true velocity of propagation
   G4double velocity = theLattice->MapKtoV(pol, K);
   
@@ -131,16 +140,14 @@ void G4CMPStackingAction::SetChargeCarrierValley(const G4Track* aTrack) const {
 // Set dynamical mass of charge carrier to scalar value for material
 
 void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
-  G4ParticleDefinition* pd = aTrack->GetDefinition();
-
   // Get effective mass for charge carrier
-  G4double mass = pd->GetPDGMass();
+  G4double mass = aTrack->GetDefinition()->GetPDGMass();
 
-  if (pd == G4CMPDriftHole::Definition()) {
+  if (IsHole(aTrack)) {
     mass = theLattice->GetHoleMass();
   }
 
-  if (pd == G4CMPDriftElectron::Definition()) {
+  if (IsElectron(aTrack)) {
 #ifdef G4CMP_SET_ELECTRON_MASS
     G4ThreeVector p = GetLocalMomentum(aTrack);
     G4int ivalley = GetValleyIndex(aTrack);

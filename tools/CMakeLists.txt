@@ -23,16 +23,10 @@ endif()
 include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
-# Executables include supporting source files from include/ and src/
+# Executables
 #
 
-set(kvmap_SOURCES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEigenSolver.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKVgMap.cc
-    )
-
-add_executable(g4cmpKVtables g4cmpKVtables.cc ${kvmap_SOURCES})
+add_executable(g4cmpKVtables g4cmpKVtables.cc)
 target_link_libraries(g4cmpKVtables G4cmp)
 set_target_properties(g4cmpKVtables PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
