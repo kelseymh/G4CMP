@@ -198,9 +198,6 @@ for readability.
 | LDOS    | frac      | longitudnal density of states | sum to unity   |
 | STDOS   | frac      | slow-transverse density of states |            |
 | FTDOS   | frac      | fast-transverse density of states |            |
-| **Wavevector mapping tables** |
-| VDir | name type Ntheta Nphi | K-Vg direction lookup table | filename, L/ST/FT, theta/phi binning |
-| VG   | name type Ntheta Nphi | K-Vg magnitude lookup table | |
 | **Charge carrier parameters** |
 | vsound  | Vlong     | sound speed (longitudinal) | m/s               |
 | l0_e    | len       | electron scattering length | meter             |
