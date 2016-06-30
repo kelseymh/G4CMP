@@ -79,7 +79,6 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
     pLattice = 0;
   }
 
-  pLattice->SetBasis();	// Fill or complete right-handed basis vectors
   return pLattice;	// Lattice complete; return pointer with ownership
 }
 

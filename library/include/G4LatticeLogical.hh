@@ -22,6 +22,7 @@
 // 20160520  Add reporting function to format valley Euler angles
 // 20160614  Add elasticity tensors and density (set from G4Material) 
 // 20160624  Add direct calculation of phonon kinematics from elasticity
+// 20160629  Add post-constuction initialization (for tables, computed pars)
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -50,8 +51,11 @@ public:
   void SetName(const G4String& name) { fName = name; }
   const G4String& GetName() const { return fName; }
 
-  G4bool LoadMap(G4int, G4int, G4int, G4String);
-  G4bool Load_NMap(G4int, G4int, G4int, G4String);
+  G4bool LoadMap(G4int tRes, G4int pRes, G4int polarizationState, G4String map);
+  G4bool Load_NMap(G4int tRes,G4int pRes,G4int polarizationState, G4String map);
+
+  // Compute derived quantities, fill tables, etc. after setting parameters
+  void Initialize(const G4String& name="");
 
   // Dump structure in format compatible with reading back
   void Dump(std::ostream& os) const;
@@ -182,6 +186,9 @@ public:
   enum { MAXRES=322 };			    // Maximum map resolution (bins)
 
 private:
+  // Populate lookup tables using kinematics calculator
+  G4bool FillMaps(G4int tRes, G4int pRes, G4int polarizationState);
+  void FillElasticity();	// Unpack reduced Cij into full Cijlk
   void FillMassInfo();	// Called from SetMassTensor() to compute derived forms
 
   // Use lookup table to get group velocity for phonons

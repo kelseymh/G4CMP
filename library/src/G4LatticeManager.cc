@@ -96,7 +96,6 @@ G4bool G4LatticeManager::RegisterLattice(const G4Material* Mat,
 
   fLLattices.insert(Lat);		// Take ownership in registry
   fLLatticeList[Mat] = Lat;
-  fLLatticeList[Mat]->SetDensity(Mat->GetDensity());
 
   if (verboseLevel) {
     G4cout << "G4LatticeManager::RegisterLattice: "
@@ -119,7 +118,8 @@ G4LatticeLogical* G4LatticeManager::LoadLattice(const G4Material* Mat,
   G4LatticeReader latReader(verboseLevel);
   G4LatticeLogical* newLat = latReader.MakeLattice(latDir+"/config.txt");
   if (newLat) {
-    newLat->SetName(latDir);
+    newLat->SetDensity(Mat->GetDensity());
+    newLat->Initialize(latDir);
     if (verboseLevel>1)
       G4cout << " Created newLat " << newLat << "\n" << *newLat << G4endl;
 
