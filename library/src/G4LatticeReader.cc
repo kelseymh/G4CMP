@@ -21,6 +21,7 @@
 // 20140324  Add intervalley scattering parameters
 // 20160517  Add basis vectors for lattice
 // 20160615  Add elasticity tensor (cubic lattice only)
+// 20160630  Drop loading of K-Vg lookup table files
 
 #include "G4LatticeReader.hh"
 #include "G4ExceptionSeverity.hh"
@@ -36,7 +37,7 @@
 // Constructor and destructor
 
 G4LatticeReader::G4LatticeReader(G4int vb)
-  : verboseLevel(vb), psLatfile(0), pLattice(0), fMapPath(""),
+  : verboseLevel(vb), psLatfile(0), pLattice(0),
     fToken(""), fValue(0.), fMap(""), fsPol(""), fPol(-1), fNX(0), fNY(0),
     f3Vec(0.,0.,0.), fLastBasis(-1),
     fDataDir(getenv("G4LATTICEDATA") ?
@@ -101,11 +102,6 @@ G4bool G4LatticeReader::OpenFile(const G4String& filename) {
     if (verboseLevel>1) G4cout << " Found file " << filepath << G4endl;
   }
 
-  // Extract path from filename to use in finding .ssv map files
-  size_t lastdir = filepath.last('/');
-  if (lastdir == std::string::npos) fMapPath = ".";	// No path at all
-  else fMapPath = filepath(0,lastdir);
-
   return true;
 }
 
@@ -129,8 +125,6 @@ G4bool G4LatticeReader::ProcessToken() {
 
   fToken.toLower();
   if (fToken.contains('#')) return SkipComments();	// Ignore rest of line
-  if (fToken == "vdir")     return ProcessNMap();	// Direction vector map
-  if (fToken == "vg")       return ProcessMap();	// Velocity magnitudes
   if (fToken == "dyn")      return ProcessConstants();	// Dynamical parameters
   if (fToken == "emass")    return ProcessMassTensor();	// e- mass eigenvalues
   if (fToken == "basis")    return ProcessBasisVector(); // Crystal axis dir
@@ -257,58 +251,4 @@ G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
   G4double degOrRad = G4UnitDefinition::GetValueOf(unit);
   pLattice->AddValley(phi*degOrRad, theta*degOrRad, psi*degOrRad);
   return psLatfile->good();
-}
-
-// Read map filename, polarization, and binning dimensions 
-
-G4bool G4LatticeReader::ReadMapInfo() {
-  *psLatfile >> fMap >> fsPol >> fNX >> fNY;
-  if (verboseLevel>1)
-    G4cout << " ReadMapInfo " << fMap << " " << fsPol
-	   << " " << fNX << " " << fNY << G4endl;
-
-  if (fNX < 0 || fNX >= G4LatticeLogical::MAXRES) {
-    G4cerr << "G4LatticeReader: Invalid map theta dimension " << fNX << G4endl;
-    return false;
-  }
-
-  if (fNY < 0 || fNY >= G4LatticeLogical::MAXRES) {
-    G4cerr << "G4LatticeReader: Invalid map phi dimension " << fNY << G4endl;
-    return false;
-  }
-
-  // Prepend path to data files to map filename
-  fMap = fMapPath + "/" + fMap;
-
-  // Convert string code (L,ST,LT) to polarization index
-  fsPol.toLower();
-  fPol = ( (fsPol=="l")  ? 0 :		// Longitudinal
-	   (fsPol=="st") ? 1 :		// Slow-transverse
-	   (fsPol=="ft") ? 2 :		// Fast-transverse
-	   -1 );			// Invalid code
-
-  if (fPol<0 || fPol>2) {
-    G4cerr << "G4LatticeReader: Invalid polarization code " << fsPol << G4endl;
-    return false;
-  }
-
-  return true;
-}
-
-G4bool G4LatticeReader::ProcessMap() {
-  if (!ReadMapInfo()) {		// Get specific parameters for map to load
-    G4cerr << "G4LatticeReader: Unable to process mapfile directive." << G4endl;
-    return false;
-  }
-
-  return pLattice->LoadMap(fNX, fNY, fPol, fMap);
-}
-
-G4bool G4LatticeReader::ProcessNMap() {
-  if (!ReadMapInfo()) {		// Get specific parameters for map to load
-    G4cerr << "G4LatticeReader: Unable to process mapfile directive." << G4endl;
-    return false;
-  }
-
-  return pLattice->Load_NMap(fNX, fNY, fPol, fMap);
 }

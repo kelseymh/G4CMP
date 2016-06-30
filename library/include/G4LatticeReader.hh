@@ -15,6 +15,7 @@
 // 20151211  Change fDataDir from static to not static.
 // 20160517  Add support to set crystal basis vectors.
 // 20160615  Add support to set elasticity tensor.
+// 20160630  Drop loading of K-Vg lookup table files
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
@@ -45,8 +46,6 @@ protected:
   G4bool ProcessMassTensor();			// Electron mass tensor
   G4bool ProcessElasticity(const G4String& name);	// Elasticity tensor
   G4bool ProcessEulerAngles(const G4String& name);	// Drift directions
-  G4bool ProcessMap();				// Velocity magnitudes file
-  G4bool ProcessNMap();				// Direction vectors file
   G4bool ReadMapInfo();				// Get map file parameters
   G4bool SkipComments();			// Everything after '#'
   void CloseFile();

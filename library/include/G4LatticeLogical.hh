@@ -23,6 +23,7 @@
 // 20160614  Add elasticity tensors and density (set from G4Material) 
 // 20160624  Add direct calculation of phonon kinematics from elasticity
 // 20160629  Add post-constuction initialization (for tables, computed pars)
+// 20160630  Drop loading of K-Vg lookup table files
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -30,6 +31,7 @@
 #include "globals.hh"
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
+#include "G4PhononPolarization.hh"
 #include <iosfwd>
 #include <vector>
 
@@ -51,21 +53,23 @@ public:
   void SetName(const G4String& name) { fName = name; }
   const G4String& GetName() const { return fName; }
 
-  G4bool LoadMap(G4int tRes, G4int pRes, G4int polarizationState, G4String map);
-  G4bool Load_NMap(G4int tRes,G4int pRes,G4int polarizationState, G4String map);
-
   // Compute derived quantities, fill tables, etc. after setting parameters
   void Initialize(const G4String& name="");
 
   // Dump structure in format compatible with reading back
   void Dump(std::ostream& os) const;
-  void DumpMap(std::ostream& os, G4int pol, const G4String& name) const;
-  void Dump_NMap(std::ostream& os, G4int pol, const G4String& name) const;
 
   // Get group velocity magnitude, direction for input polarization and wavevector
   // NOTE:  Wavevector must be in lattice symmetry frame (X == symmetry axis)
-  virtual G4double MapKtoV(G4int pol, const G4ThreeVector& k) const;
-  virtual G4ThreeVector MapKtoVDir(G4int pol, const G4ThreeVector& k) const;
+  virtual G4ThreeVector MapKtoVg(G4int pol, const G4ThreeVector& k) const;
+
+  virtual G4double MapKtoV(G4int pol, const G4ThreeVector& k) const {
+    return MapKtoVg(pol,k).mag();
+  }
+
+  virtual G4ThreeVector MapKtoVDir(G4int pol, const G4ThreeVector& k) const {
+    return MapKtoVg(pol,k).unit();
+  }
 
   // Convert between electron momentum and valley velocity or HV wavevector
   // NOTE:  Input vector must be in lattice symmetry frame (X == symmetry axis)
@@ -182,27 +186,20 @@ public:
   G4double GetIVRate() const     { return fIVRate; }
   G4double GetIVExponent() const { return fIVExponent; }
 
-public:
-  enum { MAXRES=322 };			    // Maximum map resolution (bins)
-
 private:
-  // Populate lookup tables using kinematics calculator
-  G4bool FillMaps(G4int tRes, G4int pRes, G4int polarizationState);
   void FillElasticity();	// Unpack reduced Cij into full Cijlk
+  void FillMaps();	// Populate lookup tables using kinematics calculator
   void FillMassInfo();	// Called from SetMassTensor() to compute derived forms
 
-  // Use lookup table to get group velocity for phonons
-  G4double LookupKtoV(G4int pol, const G4ThreeVector& k) const;
-  G4ThreeVector LookupKtoVDir(G4int pol, const G4ThreeVector& k) const;
-
   // Get theta, phi bins and offsets for interpolation
-  G4bool FindLookupBins(const G4ThreeVector& k, G4int nTheta, G4int nPhi,
-			G4int& iTheta, G4int& iPhi, G4double& dTheta,
-			G4double& dPhi) const;
+  G4bool FindLookupBins(const G4ThreeVector& k, G4int& iTheta, G4int& iPhi,
+			G4double& dTheta, G4double& dPhi) const;
+
+  // Use lookup table to get group velocity for phonons
+  G4ThreeVector LookupKtoVg(G4int pol, const G4ThreeVector& k) const;
 
   // Use direct calculation to get group velocity for phonons
-  G4double ComputeKtoV(G4int pol, const G4ThreeVector& k) const;
-  G4ThreeVector ComputeKtoVDir(G4int pol, const G4ThreeVector& k) const;
+  G4ThreeVector ComputeKtoVg(G4int pol, const G4ThreeVector& k) const;
 
 private:
   G4int verboseLevel;			    // Enable diagnostic output
@@ -217,13 +214,9 @@ private:
 
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
 
-  G4double fMap[3][MAXRES][MAXRES];	    // map for group velocity scalars
-  G4ThreeVector fN_map[3][MAXRES][MAXRES];  // map for direction vectors
-
-  G4int fVresTheta; //velocity  map theta resolution (inclination)
-  G4int fVresPhi;   //velocity  map phi resolution  (azimuth)
-  G4int fDresTheta; //direction map theta resn
-  G4int fDresPhi;   //direction map phi resn 
+  // map for group velocity vectors
+  enum { KVBINS=315 };			    // K-Vg lookup table binning
+  G4ThreeVector fKVMap[G4PhononPolarization::NUM_MODES][KVBINS][KVBINS];
 
   G4double fA;       //Scaling constant for Anh.Dec. mean free path
   G4double fB;       //Scaling constant for Iso.Scat. mean free path
