@@ -11,13 +11,6 @@ decay 7.41e-56
 LDOS  0.093
 STDOS 0.531
 FTDOS 0.376
-# Wavevector mapping tables
-VDir LVec.ssv  L  161 321
-VDir STVec.ssv ST 161 321
-VDir FTVec.ssv FT 161 321
-VG L.ssv  L 161 321
-VG ST.ssv ST 161 321
-VG FT.ssv FT 161 321
 # Charge carrier parameters
 vsound 9000.0 		# m/s (approximate)
 l0_e 16.9e-6		# m
