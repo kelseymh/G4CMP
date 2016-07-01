@@ -13,45 +13,25 @@
 #include "G4SystemOfUnits.hh"
 
 
-// Constructors set the axis vectors using optional angles
+// Some input angles may be ignored, depending on crystal symmetry
 
-// Group must be orthogonal or hexagonal, otherwise throw exception
-G4CMPCrystalGroup::G4CMPCrystalGroup(Bravais grp) : group(grp) {
+void G4CMPCrystalGroup::Set(G4CMPCrystalGroup::Bravais grp,
+			    G4double alpha, G4double beta, G4double gamma) {
+  group = grp;
   switch (group) {
   case amorphous:
   case cubic:
   case tetragonal:
   case orthorhombic: SetCartesian(); break;
   case hexagonal:    SetHexagonal(); break;
+  case monoclinic:   SetMonoclinic(alpha); break;
+  case rhombohedral: SetRhombohedral(alpha); break;
+  case triclinic:    SetTriclinic(alpha, beta, gamma); break;
   default:
     G4ExceptionDescription msg;
-    msg << "Crystal group " << Name() << " must have angles specified";
+    msg << "Unrecognized crystal group " << group;
     G4Exception("G4CMPCrystalGroup", "Lattice100", FatalException, msg);
   }
-}
-
-// Non-orthogonal, one unique angle
-G4CMPCrystalGroup::G4CMPCrystalGroup(Bravais grp, G4double angle)
-  : group(grp) {
-  switch (group) {
-  case monoclinic:   SetMonoclinic(angle); break;
-  case rhombohedral: SetRhombohedral(angle); break;
-  case triclinic:
-    G4Exception("G4CMPCrystalGroup", "Lattice101", FatalException,
-		"Crystal group triclinic must have three angles");
-    break;
-  default:
-    G4ExceptionDescription msg;
-    msg << "Crystal group " << Name() << " should have no angles specified";
-    G4Exception("G4CMPCrystalGroup", "Lattice102", FatalException, msg);
-  }
-}
-
-// Only TRICLINIC has three different angles
-G4CMPCrystalGroup::G4CMPCrystalGroup(G4double alpha, G4double beta,
-				     G4double gamma)
-  : group(G4CMPCrystalGroup::triclinic) {
-  SetTriclinic(alpha, beta, gamma);
 }
 
 
@@ -203,7 +183,7 @@ void G4CMPCrystalGroup::ReflectElReduced(G4double Cij[6][6]) const {
 }
 
 
-// Convert enumerator to useful string
+// Convert between enumerator and useful strings
 
 const char* G4CMPCrystalGroup::Name(Bravais grp) {
   switch (grp) {
@@ -219,4 +199,16 @@ const char* G4CMPCrystalGroup::Name(Bravais grp) {
   }
 
   return 0;	// Force crash: should never get here if passed enum
+}
+
+G4CMPCrystalGroup::Bravais G4CMPCrystalGroup::Group(const G4String& name) {
+  if (name.index("amo")==0) return amorphous;
+  if (name.index("cub")==0) return cubic;
+  if (name.index("tet")==0) return tetragonal;
+  if (name.index("ort")==0) return orthorhombic;
+  if (name.index("hex")==0) return hexagonal;
+  if (name.index("mon")==0) return monoclinic;
+  if (name.index("tri")==0) return triclinic;
+
+  return UNKNOWN;	// Failure condition; calling code should test
 }

@@ -17,22 +17,28 @@
 class G4CMPCrystalGroup {
 public:
   enum Bravais { amorphous, cubic, tetragonal, orthorhombic, hexagonal,
-		 rhombohedral, monoclinic, triclinic };
+		 rhombohedral, monoclinic, triclinic, UNKNOWN=-1 };
   static const char* Name(Bravais grp);
+  static Bravais Group(const G4String& name);	// May return -1 if invalid
 
 public:				// For convenient access to data members 
   Bravais group;
   G4ThreeVector axis[3];	// Basis unit vectors in direct orientation
 
 public:
-  G4CMPCrystalGroup(Bravais grp);			// Orthogonal axes only
-  G4CMPCrystalGroup(Bravais grp, G4double angle);	// One non-ortho angle
-  G4CMPCrystalGroup(G4double alpha, G4double beta,	// Triclinic only
-		    G4double gamma);
+  G4CMPCrystalGroup() : group(UNKNOWN) {;}	// Default ctor, must use Set()
+  G4CMPCrystalGroup(Bravais grp) { Set(grp); }
+  G4CMPCrystalGroup(Bravais grp, G4double angle) { Set(grp, angle); }
+  G4CMPCrystalGroup(G4double alpha, G4double beta, G4double gamma) {
+    Set(triclinic, alpha, beta, gamma);
+  }
 
   virtual ~G4CMPCrystalGroup() {;}
 
   const char* Name() const { return Name(group); }
+
+  // Some parameters may be omitted depending on symmetry
+  void Set(Bravais grp, G4double alpha=0., G4double beta=0., G4double gamma=0.);
 
   // Copy appropriate elements of Cij matrix based on crystal symmetry
   // NOTE:  Non-const array passed in for modification

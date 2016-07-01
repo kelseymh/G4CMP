@@ -22,8 +22,10 @@
 // 20160517  Add basis vectors for lattice
 // 20160615  Add elasticity tensor (cubic lattice only)
 // 20160630  Drop loading of K-Vg lookup table files
+// 20160701  Withdraw seting basis vectors, set crystal symmetry instead
 
 #include "G4LatticeReader.hh"
+#include "G4CMPCrystalGroup.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeLogical.hh"
 #include "G4PhysicalConstants.hh"
@@ -38,8 +40,7 @@
 
 G4LatticeReader::G4LatticeReader(G4int vb)
   : verboseLevel(vb), psLatfile(0), pLattice(0),
-    fToken(""), fValue(0.), fMap(""), fsPol(""), fPol(-1), fNX(0), fNY(0),
-    f3Vec(0.,0.,0.), fLastBasis(-1),
+    fToken(""), fValue(0.), f3Vec(0.,0.,0.),
     fDataDir(getenv("G4LATTICEDATA") ?
       (const char*)getenv("G4LATTICEDATA"):"./CrystalMaps"),
     mElectron(electron_mass_c2/c_squared) {}
@@ -63,7 +64,6 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
   }
 
   pLattice = new G4LatticeLogical;	// Create lattice to be filled
-  fLastBasis = -1;			// Reset index counter for basis vectors
 
   G4bool goodLattice = true;
   while (!psLatfile->eof()) {
@@ -126,10 +126,13 @@ G4bool G4LatticeReader::ProcessToken() {
   fToken.toLower();
   if (fToken.contains('#')) return SkipComments();	// Ignore rest of line
   if (fToken == "dyn")      return ProcessConstants();	// Dynamical parameters
+  if (fToken == "stiffness" ||
+      fToken == "cij")      return ProcessStiffness();  // Elasticity element
   if (fToken == "emass")    return ProcessMassTensor();	// e- mass eigenvalues
-  if (fToken == "basis")    return ProcessBasisVector(); // Crystal axis dir
-  if (fToken == "cubic")    return ProcessElasticity(fToken);  // C11,C12,C44
   if (fToken == "valley")   return ProcessEulerAngles(fToken); // e- drift dirs
+  if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
+                            return ProcessCrystalGroup(fToken);
+
   return ProcessValue(fToken);				// Single numeric value
 }
 
@@ -187,6 +190,55 @@ G4bool G4LatticeReader::ProcessConstants() {
   return psLatfile->good();
 }
 
+
+// Read lattice constants and angles for specified symmetry
+
+G4bool G4LatticeReader::ProcessCrystalGroup(const G4String& name) {
+  // Input buffers for reading; different crystals need different data
+  G4double a=0., b=0., c=0., alpha=0., beta=0., gamma=0.;
+  G4String unit;
+
+  G4CMPCrystalGroup::Bravais group = G4CMPCrystalGroup::Group(name);
+  switch (group) {
+  case G4CMPCrystalGroup::amorphous:
+    a=b=c=1./angstrom; break;			// No lattice constants
+  case G4CMPCrystalGroup::cubic:
+    *psLatfile >> a; b=c=a; break;		// Equal sides, orthogonal
+  case G4CMPCrystalGroup::tetragonal:
+  case G4CMPCrystalGroup::hexagonal:
+    *psLatfile >> a >> c; b=c; break;		// Two sides, orthogonal
+  case G4CMPCrystalGroup::orthorhombic:
+    *psLatfile >> a >> b >> c; break;		// Three sides, orthogonal
+  case G4CMPCrystalGroup::rhombohedral:
+    *psLatfile >> a >> alpha >> unit; b=c=a; break;
+  case G4CMPCrystalGroup::monoclinic:
+    *psLatfile >> a >> b >> c >> alpha >> unit; break;
+  case G4CMPCrystalGroup::triclinic:
+    *psLatfile >> a >> b >> c >> alpha >> beta >> gamma >> unit; break;
+  default: break;
+  }
+
+  G4double degOrRad = unit.empty() ? 0. : G4UnitDefinition::GetValueOf(unit);
+  pLattice->SetCrystal(group, a*angstrom, b*angstrom, c*angstrom,
+		       alpha*degOrRad, beta*degOrRad, gamma*degOrRad);
+
+  return psLatfile->good();
+}
+
+// Read element of reduced elasticity (stiffness) matrix
+
+G4bool G4LatticeReader::ProcessStiffness() {
+  G4int p=0, q=0;	// Indices of reduced matrix
+  G4double value=0.;	// Matrix element in pascals
+
+  *psLatfile >> p >> q >> value;
+  if (verboseLevel>1)
+    G4cout << "ProcessStiffness " << p << " " << q << " " << value << G4endl;
+
+  pLattice->SetCij(p-1,q-1,value);	// Convention is C11-C66,
+  return psLatfile->good();
+}
+
 // Read diagonal scale factors for drift electron mass tensor
 
 G4bool G4LatticeReader::ProcessMassTensor() {
@@ -198,39 +250,6 @@ G4bool G4LatticeReader::ProcessMassTensor() {
 
   pLattice->SetMassTensor(mxx, myy, mzz);
   return psLatfile->good();
-}
-
-// Read unit vector components for basis vectors (in order, b1, b2, b3)
-
-G4bool G4LatticeReader::ProcessBasisVector() {
-  *psLatfile >> f3Vec;
-  if (verboseLevel>1) G4cout << " ProcessBasisVector " << f3Vec << G4endl;
-
-  ++fLastBasis;
-  if (fLastBasis>2) {
-    G4cerr << " ERROR too many basis vectors.  Ignorning " << fLastBasis
-	   << G4endl;
-    return false;
-  }
-
-  pLattice->SetBasis(fLastBasis, f3Vec.unit());
-  return psLatfile->good();
-}
-
-// Read components expected for elasticity tensor:
-// "cubic" is C11, C12 and C44
-G4bool G4LatticeReader::ProcessElasticity(const G4String& name) {
-  G4bool good=false;
-
-  if (name == "cubic") {
-    G4double C11=0., C12=0., C44=0.;
-    *psLatfile >> C11 >> C12 >> C44;		// In pascals
-
-    pLattice->SetElasticityCubic(C11*hep_pascal,C12*hep_pascal,C44*hep_pascal);
-    good = psLatfile->good();
-  }
-
-  return good;
 }
 
 // Read Euler angles (phi, theta, psi) for named rotation matrix

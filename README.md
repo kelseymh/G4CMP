@@ -183,11 +183,25 @@ ignored, as is any text after a "#" on a parameter line.  Multiple
 keywords/value sets may be included on a single line of the file if desired
 for readability.
 
+The lattice symmetry is specified by one of the seven crystal systems (or
+"amorphous") followed by the appropriate combination of lattice constant(s)
+and angle(s) needed to specify it uniquely.  The reduced elasticity matrix,
+Cij, must be specified term by term; which components are needed depends on
+the crystal system.
+
 | Keyword | Arguments | Value type(s)             | Units              |
 |---------|-----------|---------------------------|--------------------|
 | **Lattice parameters** |
-| basis   | x y z       | unit vector            | none                |
-| cubic   | C11 C12 C44 | elasticity tensor      | pascal (typ ...e11) |
+| amorphous | -none-  | Polycrystalline solid     |                    |
+| cubic   | a         | Lattice constant          | angstrom           |
+| tetragonal | a c    | Lattice constants         | angstrom           |
+| hexagonal  | a c    | Lattice constants         | angstrom           |
+| orthorhombic | a b c | Lattice constants        | angstrom           |
+| rhombohedral | a alpha unit | Lattice, angle    | angstrom, deg/rad  |
+| monoclinic | a b c alpha unit | Lattice, angle  | angstrom, deg/rad  |
+| triclinic | a b c alpha beta gamma unit | Lattice, angle | angstrom, deg/rad |
+| stiffness | i j val | Indices 1-6, elasticity  | pascal (typ ...e11) |
+| Cij       | i j val | Indices 1-6, elasticity  | pascal (typ ...e11) |
 | **Phonon parameters** |
 | beta    | val       | scattering parameters     | 10^11 pascal       |
 | gamma   | val       | (see S. Tamura, PRB 1985) | 10^11 pascal       |

@@ -1,8 +1,8 @@
 # Crystal parameters
-basis 1 0 0
-basis 0 1 0
-basis 0 0 1
-cubic 1.26e11 0.44e11 0.67e11	# Pa
+cubic 5.658		# A (Lattice constant)
+stiffness 1 1 1.26e11	# C11, C12, C44 in Pa
+stiffness 1 2 0.44e11
+stiffness 4 4 0.67e11
 # Phonon parameters
 beta -0.732 gamma -0.708 lambda 0.376 mu 0.561
 scat 3.67e-41

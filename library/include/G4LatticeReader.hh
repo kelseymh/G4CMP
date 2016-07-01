@@ -16,6 +16,7 @@
 // 20160517  Add support to set crystal basis vectors.
 // 20160615  Add support to set elasticity tensor.
 // 20160630  Drop loading of K-Vg lookup table files
+// 20160701  Withdraw seting basis vectors, set crystal symmetry instead
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
@@ -42,11 +43,10 @@ protected:
   G4bool ProcessToken();
   G4bool ProcessValue(const G4String& name);	// Numerical parameters
   G4bool ProcessConstants();			// Four dynamical constants
-  G4bool ProcessBasisVector();			// Crystal basis vector
   G4bool ProcessMassTensor();			// Electron mass tensor
-  G4bool ProcessElasticity(const G4String& name);	// Elasticity tensor
+  G4bool ProcessCrystalGroup(const G4String& name);	// Symmetry, spacing
+  G4bool ProcessStiffness();			// Elasticity matrix element
   G4bool ProcessEulerAngles(const G4String& name);	// Drift directions
-  G4bool ReadMapInfo();				// Get map file parameters
   G4bool SkipComments();			// Everything after '#'
   void CloseFile();
 
@@ -56,14 +56,10 @@ private:
   std::ifstream* psLatfile;	// Configuration file being read
   G4LatticeLogical* pLattice;	// Lattice under construction (not owned)
 
-  G4String fMapPath;		// Path to config file to find velocity maps
   G4String fToken;		// Reusable buffers for reading file
   G4double fValue;		// ... floating point data value
-  G4String fMap, fsPol;		// ... map filename and polarization code
-  G4int    fPol, fNX, fNY;	// ... map binning in each direction
   G4RotationMatrix fMatrix;	// ... 3x3 matrix for mass, drift valleys
-  G4ThreeVector f3Vec;		// ... three-vector for mass, crystal bases
-  G4int fLastBasis;		// ... index counter for basis vectors
+  G4ThreeVector f3Vec;		// ... three-vector for mass
 
   const G4String fDataDir;	// Directory path ($G4LATTICEDATA)
   const G4double mElectron;	// Electron mass in kilograms

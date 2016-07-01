@@ -23,13 +23,20 @@ int main() {
 
   G4CMPCrystalGroup rhomb(G4CMPCrystalGroup::rhombohedral, 60.*deg);
 
-  G4cout << rhomb.Name() << " created w/60 deg angles"
-	 << " : X-Y " << xyangle(rhomb)/deg << " X-Z " << xzangle(rhomb)/deg
+  G4cout << rhomb.Name() << " created w/60 deg angles :"
+	 << " X-Y " << xyangle(rhomb)/deg << " X-Z " << xzangle(rhomb)/deg
 	 << " Y-Z " << yzangle(rhomb)/deg << G4endl;
 
   G4CMPCrystalGroup tricl(60.*deg, 70.*deg, 80.*deg);	// Triclinic
 
-  G4cout << tricl.Name() << " created with 60, 70, 80 deg angles"
-	 << " : X-Y " << xyangle(tricl)/deg << " X-Z " << xzangle(tricl)/deg
+  G4cout << tricl.Name() << " created with 60, 70, 80 deg angles :"
+	 << " X-Y " << xyangle(tricl)/deg << " X-Z " << xzangle(tricl)/deg
 	 << " Y-Z " << yzangle(tricl)/deg << G4endl;
+
+  rhomb.Set(G4CMPCrystalGroup::cubic);
+
+  G4cout << rhomb.Name() << " has angles :"
+	 << " X-Y " << xyangle(rhomb)/deg << " X-Z " << xzangle(rhomb)/deg
+	 << " Y-Z " << yzangle(rhomb)/deg << G4endl;
+
 }

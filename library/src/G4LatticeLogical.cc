@@ -22,6 +22,7 @@
 // 20160627  Interpolate values from lookup tables
 // 20160629  Add post-constuction initialization (for tables, computed pars)
 // 20160630  Drop loading of K-Vg lookup table files
+// 20160701  Add interface to set elements of reduced elasticity matrix
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -37,8 +38,8 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4LatticeLogical::G4LatticeLogical(const G4String& name)
-  : verboseLevel(0), fName(name),
-    fDensity(0.), fElasticity{}, fElReduced{}, fHasElasticity(false),
+  : verboseLevel(0), fName(name), fDensity(0.),
+    fElasticity{}, fElReduced{}, fHasElasticity(false),
     fpPhononKin(0), fpPhononTable(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
@@ -55,8 +56,6 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
       }
     }
   }
-
-  SetElasticityCubic(0.,0.,0.);		// Fill elasticity tensors with zeros
 }
 
 G4LatticeLogical::~G4LatticeLogical() {
@@ -67,12 +66,49 @@ G4LatticeLogical::~G4LatticeLogical() {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 /////////////////////////////////////////////////////////////
+//Copy or set components of reduced elasticity matrix
+/////////////////////////////////////////////////////////////
+void G4LatticeLogical::SetElReduced(const ReducedElasticity& mat) {
+  for (size_t i=0; i<6; i++) {
+    for (size_t j=0; j<6; j++) {
+      fElReduced[i][j] = mat[i][j];
+    }
+  }
+
+  fHasElasticity = true;
+}
+
+void G4LatticeLogical::SetCij(G4int i, G4int j, G4double value) {
+  if (i>=0 && i<6 && j>=0 && j<6) fElReduced[i][j] = value;
+  fHasElasticity = true;
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+/////////////////////////////////////////////////////////////
+// Configure crystal symmetry group and lattice spacing/angles
+/////////////////////////////////////////////////////////////
+void G4LatticeLogical::SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a,
+				  G4double b, G4double c, G4double alpha,
+				  G4double beta, G4double gamma) {
+  fCrystal.Set(group, alpha, beta, gamma);	// Defines unit cell axes
+
+  fBasis[0] = a*fCrystal.axis[0];	// Basis vectors include spacing
+  fBasis[1] = b*fCrystal.axis[1];
+  fBasis[2] = c*fCrystal.axis[2];
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+/////////////////////////////////////////////////////////////
 //Configured derived parameters and tables after loading
 /////////////////////////////////////////////////////////////
 void G4LatticeLogical::Initialize(const G4String& newName) {
   if (!newName.empty()) SetName(newName);
 
-  SetBasis();				// Ensure complete set of basis vectors
+  CheckBasis();				// Ensure complete, right handed frame
 
   // If elasticity matrix available, create phonon calculator
   if (fHasElasticity) {
@@ -93,7 +129,7 @@ void G4LatticeLogical::Initialize(const G4String& newName) {
 /////////////////////////////////////////////////////////////
 //Complete basis vectors: right-handed, possibly orthonormal
 /////////////////////////////////////////////////////////////
-void G4LatticeLogical::SetBasis() {
+void G4LatticeLogical::CheckBasis() {
   static const G4ThreeVector origin(0.,0.,0.);
   if (fBasis[0].isNear(origin,1e-6)) fBasis[0].set(1.,0.,0.);
   if (fBasis[1].isNear(origin,1e-6)) fBasis[1].set(0.,1.,0.);
@@ -111,31 +147,11 @@ void G4LatticeLogical::SetBasis() {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-/////////////////////////////////////////////////////////////
-// Elasticity matrix, with cubic symmetries
-/////////////////////////////////////////////////////////////
-void 
-G4LatticeLogical::SetElasticityCubic(G4double C11, G4double C12, G4double C44) {
-  if (verboseLevel) {
-    G4cout << "G4LatticeLogical[" << fName << "]::SetElasticityCubic "
-	   << C11 << " " << C12 << " " << C44 << G4endl;
-  }
-
-  fHasElasticity = (C11*C12*C44 != 0.);		// Only non-zero components okay
-
-  // Reduced elasticity tensor is block-symmetric 6x6 array
-  for (int i=0; i<6; i++) {
-    if (i>=3) fElReduced[i][i] = C44;
-    else {
-      for (int j=0; j<3; j++) {
-	fElReduced[i][j] = (i==j) ? C11 : C12;
-      }
-    }
-  }
-}
 
 // Unpack reduced elasticity tensor into full four-dimensional Cijkl
 void G4LatticeLogical::FillElasticity() {
+  fCrystal.FillElReduced(fElReduced);		// Apply symmetry conditions
+
   G4int rn1[6][2] = { };
   rn1[1][0] = rn1[1][1] = rn1[3][0] = rn1[5][1] = 1;
   rn1[2][0] = rn1[2][1] = rn1[3][1] = rn1[4][0] = 2;

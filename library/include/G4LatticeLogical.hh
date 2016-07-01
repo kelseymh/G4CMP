@@ -29,6 +29,7 @@
 #define G4LatticeLogical_h
 
 #include "globals.hh"
+#include "G4CMPCrystalGroup.hh"
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
 #include "G4PhononPolarization.hh"
@@ -88,18 +89,11 @@ public:
   G4double MapPtoEkin(G4int ivalley, G4ThreeVector p_e) const;
   G4double MapV_elToEkin(G4int ivalley, G4ThreeVector v_e) const;
 
-  // Unit (direct) basis vectors for crystal structure
-  void SetBasis(const G4ThreeVector& b1, const G4ThreeVector& b2,
-		const G4ThreeVector& b3) {
-    SetBasis(0, b1); SetBasis(1, b2); SetBasis(2, b3);
-  }
+  // Configure crystal symmetry group and lattice spacing/angles
+  void SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a, G4double b,
+		  G4double c, G4double alpha, G4double beta, G4double gamma);
 
-  void SetBasis(G4int i, const G4ThreeVector& bi) {
-    if (i>=0 && i<3) fBasis[i] = bi.unit();
-  }
-
-  void SetBasis();	// Initialize or complete (via cross) basis vectors
-
+  // Get specified basis vector (returns null if invalid index)
   const G4ThreeVector& GetBasis(G4int i) const {
     static const G4ThreeVector nullVec(0.,0.,0.);
     return (i>=0 && i<3 ? fBasis[i] : nullVec);
@@ -107,8 +101,6 @@ public:
 
   // Physical parameters of lattice (density, elasticity)
   void SetDensity(G4double val) { fDensity = val; }
-  void SetElasticityCubic(G4double C11, G4double C12, G4double C44);
-  // NOTE:  Will need to provide for other crystal symmetries!
 
   G4double GetDensity() const { return fDensity; }
   const Elasticity& GetElasticity() const { return fElasticity; }
@@ -116,7 +108,10 @@ public:
     return fElasticity[i][j][k][l];
   }
 
+  void SetElReduced(const ReducedElasticity& mat);
   const ReducedElasticity& GetElReduced() const { return fElReduced; }
+
+  void SetCij(G4int i, G4int j, G4double value);
   G4double GetCij(G4int i, G4int j) const { return fElReduced[i][j]; }
 
   // Parameters for phonon production and propagation
@@ -187,6 +182,7 @@ public:
   G4double GetIVExponent() const { return fIVExponent; }
 
 private:
+  void CheckBasis();	// Initialize or complete (via cross) basis vectors
   void FillElasticity();	// Unpack reduced Cij into full Cijlk
   void FillMaps();	// Populate lookup tables using kinematics calculator
   void FillMassInfo();	// Called from SetMassTensor() to compute derived forms
@@ -205,14 +201,14 @@ private:
   G4int verboseLevel;			    // Enable diagnostic output
   G4String fName;			    // Name of lattice for messages
 
+  G4CMPCrystalGroup fCrystal;		    // Symmetry group, axis unit vectors
+  G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
   G4double fDensity;			    // Material density (natural units)
   Elasticity fElasticity;	    	    // Full 4D elasticity tensor
   ReducedElasticity fElReduced;		    // Reduced 2D elasticity tensor
   G4bool fHasElasticity;		    // Flag valid elasticity tensors
   G4CMPPhononKinematics* fpPhononKin;	    // Kinematics calculator with tensor
   G4CMPPhononKinTable* fpPhononTable;	    // Kinematics interpolator
-
-  G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
 
   // map for group velocity vectors
   enum { KVBINS=315 };			    // K-Vg lookup table binning
