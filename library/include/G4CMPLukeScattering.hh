@@ -45,7 +45,8 @@ protected:
                                    G4double, G4ForceCondition*) { return -1.; }
 
 private:
-  G4double CalculateKSound(const G4Track&);
+  PDFDataTensor LoadDataFromLUT(const G4String& filename);
+  G4double CalculateKSound(G4double mass);
   // hide assignment operator as private
   G4CMPLukeScattering(G4CMPLukeScattering&);
   G4CMPLukeScattering& operator=(const G4CMPLukeScattering& right);
@@ -59,7 +60,8 @@ private:
   G4double MACHMAX;
   G4double THETAMIN;
   G4double THETAMAX;
-  PDFDataTensor GPILData;
+  PDFDataTensor ElecGPILData;
+  PDFDataTensor HoleGPILData;
 
 #ifdef G4CMP_DEBUG
   std::ofstream output;
