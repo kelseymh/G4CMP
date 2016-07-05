@@ -33,7 +33,7 @@ int G4CMPVInterpolator::locate(double x) {
   ju=n-1;
   while (ju-jl > 1) {
     jm = (ju+jl) >> 1;
-    if (x >= xx[jm] == ascnd) jl=jm;
+    if ((x >= xx[jm]) == ascnd) jl=jm;
     else ju=jm;
   }
   cor = abs(jl-jsav) > dj ? 0 : 1;
@@ -50,11 +50,11 @@ int G4CMPVInterpolator::hunt(double x)
     jl=0;
     ju=n-1;
   } else {
-    if (x >= xx[jl] == ascnd) {
+    if ((x >= xx[jl]) == ascnd) {
       for (;;) {
 	ju = jl + inc;
 	if (ju >= n-1) { ju = n-1; break;}
-	else if (x < xx[ju] == ascnd) break;
+	else if ((x < xx[ju]) == ascnd) break;
 	else {
 	  jl = ju;
 	  inc += inc;
@@ -65,7 +65,7 @@ int G4CMPVInterpolator::hunt(double x)
       for (;;) {
 	jl = jl - inc;
 	if (jl <= 0) { jl = 0; break;}
-	else if (x >= xx[jl] == ascnd) break;
+	else if ((x >= xx[jl]) == ascnd) break;
 	else {
 	  ju = jl;
 	  inc += inc;
@@ -75,7 +75,7 @@ int G4CMPVInterpolator::hunt(double x)
   }
   while (ju-jl > 1) {
     jm = (ju+jl) >> 1;
-    if (x >= xx[jm] == ascnd) jl=jm;
+    if ((x >= xx[jm]) == ascnd) jl=jm;
     else ju=jm;
   }
   cor = abs(jl-jsav) > dj ? 0 : 1;

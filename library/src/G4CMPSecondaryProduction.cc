@@ -85,9 +85,9 @@ G4CMPSecondaryProduction::AlongStepDoIt(const G4Track& track,
 
   // Only apply to tracks while they are in lattice-configured volumes
   G4VPhysicalVolume* trkPV = track.GetVolume();
-  G4LatticePhysical* theLattice =
+  G4LatticePhysical* lattice =
     G4LatticeManager::GetLatticeManager()->GetLattice(trkPV);
-  if (!theLattice) return &aParticleChange;
+  if (!lattice) return &aParticleChange;
 
   if (verboseLevel) G4cout << GetProcessName() << "::AlongStepDoIt" << G4endl;
 
@@ -253,10 +253,10 @@ G4int G4CMPSecondaryProduction::GenerateEnergyPositions(const G4Step& stepData,
 // Calculate step limit for Along Step (not needed here)
 
 G4double 
-G4CMPSecondaryProduction::GetContinuousStepLimit(const G4Track& aTrack,
-						 G4double  previousStepSize,
-						 G4double  currentMinimumStep,
-						 G4double& currentSafety) {
+G4CMPSecondaryProduction::GetContinuousStepLimit(const G4Track& /*aTrack*/,
+						 G4double  /*previousStepSize*/,
+						 G4double  /*currentMinimumStep*/,
+						 G4double& /*currentSafety*/) {
   return DBL_MAX;	// This should prevent step-limiting here
 }
 

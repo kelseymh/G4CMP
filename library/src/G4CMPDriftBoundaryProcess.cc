@@ -186,8 +186,8 @@ AbsorbTrack(const G4Track& aTrack, const G4Step& aStep,
 
 G4VParticleChange*
 G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
-                                        const G4Step& aStep,
-                                        const G4SurfaceProperty* surfProp) {
+                                        const G4Step& /*aStep*/,
+                                        const G4SurfaceProperty* /*surfProp*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track absorbed" << G4endl;
 
@@ -198,8 +198,8 @@ G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   return &aParticleChange;
 }
 
-G4bool G4CMPDriftBoundaryProcess::ReflectTrack(const G4Track& aTrack,
-                                               const G4Step& aStep,
+G4bool G4CMPDriftBoundaryProcess::ReflectTrack(const G4Track& /*aTrack*/,
+                                               const G4Step& /*aStep*/,
                                                const G4SurfaceProperty* surfProp) {
   G4MaterialPropertiesTable*
     chargePropTable = const_cast<G4MaterialPropertiesTable*>(
@@ -217,7 +217,7 @@ G4bool G4CMPDriftBoundaryProcess::ReflectTrack(const G4Track& aTrack,
 G4VParticleChange*  
 G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack,
                                         const G4Step& aStep,
-                                        const G4SurfaceProperty* surfProp) {
+                                        const G4SurfaceProperty* /*surfProp*/) {
   if (++numReflections > maxNumReflections && maxNumReflections >= 0) {
     // If it reflects more than the user wants, we just kill it without
     // absorbing.
@@ -287,9 +287,9 @@ G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack,
 }
 
 G4VParticleChange*
-G4CMPDriftBoundaryProcess::DoTransmission(const G4Track& aTrack,
-                                          const G4Step& aStep,
-                                          const G4SurfaceProperty* surfProp) {
+G4CMPDriftBoundaryProcess::DoTransmission(const G4Track& /*aTrack*/,
+                                          const G4Step& /*aStep*/,
+                                          const G4SurfaceProperty* /*surfProp*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track transmitted" << G4endl;
 

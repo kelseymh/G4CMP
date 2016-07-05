@@ -32,7 +32,7 @@ struct G4CMPEigenSolver {
   G4CMPEigenSolver(const vector<double> &dd, const vector<double> &ee,
 		   bool yesvec=true)
     : n(dd.size()), z(dd.size(),dd.size(),0.), d(dd), e(ee), yesvecs(yesvec) {
-    for (int i=0;i<n;i++) z[i][i]=1.0;
+    for (size_t i=0;i<n;i++) z[i][i]=1.0;
     tqli();
     sort();
   }

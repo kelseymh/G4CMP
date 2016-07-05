@@ -129,18 +129,18 @@ void ChargeFETDigitizerModule::PostProcess(const G4String& fileName)
     std::getline(ssLine,entry,',');
     std::istringstream(entry) >> charge;
 
-    for (G4int i=0; i<6; ++i) {
+    for (size_t i=0; i<6; ++i) {
       std::getline(ssLine,entry,',');
       std::istringstream(entry) >> throw_away;
     }
 
-    for (G4int i=0; i<3; ++i) {
+    for (size_t i=0; i<3; ++i) {
       std::getline(ssLine,entry,',');
       std::istringstream(entry) >> position[i];
       position[i] *= m;
     }
 
-    for(G4int chan = 0; chan < numChannels; ++chan)
+    for(size_t chan = 0; chan < numChannels; ++chan)
       scaleFactors[chan] -= charge*RamoFields[chan].GetPotential(position);
   }
 
@@ -247,7 +247,7 @@ void ChargeFETDigitizerModule::BuildFETTemplates()
            << "from template file failed. Using default pulse templates."
            << G4endl;
     for(size_t i=0; i<numChannels; ++i) {
-      G4int ndt = (G4int)(preTrig/dt);
+      size_t ndt = static_cast<size_t>(preTrig/dt);
       for(size_t j=0; j<ndt; ++j)
         FETTemplates[i][i][j] = 0;
       for(size_t k=1; k<timeBins-ndt+1; ++k)
@@ -338,7 +338,7 @@ void ChargeFETDigitizerModule::SetRamoFileDir(const G4String& name)
   rebuildRamoFields = true;
 }
 
-void ChargeFETDigitizerModule::SetNumberOfChannels(G4int n)
+void ChargeFETDigitizerModule::SetNumberOfChannels(size_t n)
 {
   if (numChannels == n) return;
   numChannels = n;
@@ -346,7 +346,7 @@ void ChargeFETDigitizerModule::SetNumberOfChannels(G4int n)
   rebuildFETTemplates = true;
 }
 
-void ChargeFETDigitizerModule::SetTimeBins(G4int n)
+void ChargeFETDigitizerModule::SetTimeBins(size_t n)
 {
   if (timeBins == n) return;
   timeBins = n;

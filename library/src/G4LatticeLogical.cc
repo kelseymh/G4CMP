@@ -747,7 +747,7 @@ void G4LatticeLogical::Dump_NMap(std::ostream& os, G4int pol,
 // Print out Euler angles of requested valley
 
 void G4LatticeLogical::DumpValley(std::ostream& os, G4int iv) const {
-  if (iv < 0 || iv >= NumberOfValleys()) return;
+  if (iv < 0 || static_cast<size_t>(iv) >= NumberOfValleys()) return;
 
   os << "valley " << fValley[iv].phi()/deg
      << " " << fValley[iv].theta()/deg

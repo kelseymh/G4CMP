@@ -206,7 +206,7 @@ G4CMPPhononKinTable::generateEvenTable(int MODE,
     double phiVal = lookupData[MODE][PHI][i];
     
     // figure out n_x-index of current data point:
-    int x1vecIndex = (int)((thetaVal-thetaMin) / thetaStep);
+    size_t x1vecIndex = (size_t)((thetaVal-thetaMin) / thetaStep);
     if (doubApproxEquals(x1[x1vecIndex+1], thetaVal) && x1vecIndex+1 < x1.size())
       x1vecIndex++;                           // resolve possible rounding issue
     else if (!doubApproxEquals(x1[x1vecIndex], thetaVal)) { // check
@@ -216,7 +216,7 @@ G4CMPPhononKinTable::generateEvenTable(int MODE,
     }
 
     // figure out n_y-index of current data point:
-    int x2vecIndex = (int)((phiVal-phiMin) / phiStep);    // may round down to nearest integer index
+    size_t x2vecIndex = (size_t)((phiVal-phiMin) / phiStep);    // may round down to nearest integer index
     if (doubApproxEquals(x2[x2vecIndex+1], phiVal) && x2vecIndex+1 < x2.size())
       x2vecIndex++;                           // resolve possible rounding issue
     else if (!doubApproxEquals(x2[x2vecIndex], phiVal)) {  // check
@@ -281,7 +281,7 @@ void G4CMPPhononKinTable::write() {
     headerLines[2] += "------";
   }
 
-  for (int i=0; i < headerLines.size(); i++)
+  for (size_t i=0; i < headerLines.size(); i++)
     lookupTable << "# " << headerLines[i] << endl;
   // <^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><
 

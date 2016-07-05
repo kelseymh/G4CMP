@@ -96,7 +96,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete hitsCmd; hitsCmd=0;
   delete kvmapCmd; kvmapCmd=0;
 
-  if (localCmdDir) delete cmdDir; cmdDir=0;
+  if (localCmdDir) {delete cmdDir; cmdDir=0;}
 }
 
 

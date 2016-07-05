@@ -61,7 +61,7 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 
 
 G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
-						  const G4Step& aStep) {
+						  const G4Step& /*aStep*/) {
   aParticleChange.Initialize(aTrack);
 
   // Adjust mass and kinetic energy using end-of-step momentum

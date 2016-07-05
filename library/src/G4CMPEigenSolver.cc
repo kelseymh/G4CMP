@@ -20,7 +20,7 @@ void G4CMPEigenSolver::sort() {
       d[k]=d[i];
       d[i]=p;
       if (yesvecs)
-	for (int j=0;j<n;j++) swap(z[j][i],z[j][k]);
+	for (size_t j=0;j<n;j++) swap(z[j][i],z[j][k]);
     }
   }
 }
