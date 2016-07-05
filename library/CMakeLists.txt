@@ -146,8 +146,8 @@ set(library_SOURCES
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMeshElectricField.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMessengerBase.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononBoundaryProcess.cc
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKVgMap.cc
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKVgTable.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinTable.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinematics.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysics.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysicsList.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPProcessUtils.cc
@@ -193,8 +193,8 @@ set(library_HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMeshElectricField.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMessengerBase.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKVgMap.hh
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKVgTable.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinTable.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinematics.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysics.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysicsList.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPProcessSubType.hh
