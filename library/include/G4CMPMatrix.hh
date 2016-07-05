@@ -4,6 +4,7 @@
 #ifndef G4CMPMatrix_h
 #define G4CMPMatrix_h
 
+#include <cstddef>
 #include <vector>
 using std::vector;
 
