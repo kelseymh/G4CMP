@@ -17,6 +17,7 @@
 #include "globals.hh"
 #include "G4CMPVDriftProcess.hh"
 #include "G4ThreeVector.hh"
+#include <array>
 #include <iostream>
 #include <unordered_map>
 
@@ -45,7 +46,7 @@ protected:
                                    G4double, G4ForceCondition*) { return -1.; }
 
 private:
-  PDFDataTensor LoadDataFromLUT(const G4String& filename);
+  void LoadDataFromLUT(const G4String& filename, PDFDataTensor& LUTdata);
   G4double CalculateKSound(G4double mass);
   // hide assignment operator as private
   G4CMPLukeScattering(G4CMPLukeScattering&);

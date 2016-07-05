@@ -36,10 +36,10 @@
 
 G4CMPLukeScattering::G4CMPLukeScattering()
   : G4CMPVDriftProcess("G4CMPLukeScattering", fLukeScattering) {
-  ElecGPILData = LoadDataFromLUT(G4CMPConfigManager::GetLatticeDir() +
-                                 "/Ge/luke_scatter_times_elec.dat");
-  HoleGPILData = LoadDataFromLUT(G4CMPConfigManager::GetLatticeDir() +
-                                 "/Ge/luke_scatter_times_hole.dat");
+  LoadDataFromLUT(G4CMPConfigManager::GetLatticeDir() +
+		  "/Ge/luke_scatter_times_elec.dat", ElecGPILData);
+  LoadDataFromLUT(G4CMPConfigManager::GetLatticeDir() +
+		  "/Ge/luke_scatter_times_hole.dat", HoleGPILData);
 
 #ifdef G4CMP_DEBUG
   output.open("LukePhononEnergies");
@@ -61,8 +61,8 @@ G4CMPLukeScattering::PostStepGetPhysicalInteractionLength(
   *condition = NotForced;
 
   G4double velocity = GetVelocity(aTrack);
-  G4double mass;
-  PDFDataTensor* GPILData;
+  G4double mass = 0.;
+  PDFDataTensor* GPILData = nullptr;
   G4ThreeVector k0;
   if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
     mass = theLattice->GetElectronMass();
@@ -77,6 +77,7 @@ G4CMPLukeScattering::PostStepGetPhysicalInteractionLength(
     G4Exception("G4CMPLukeScattering::PostStepGetPhysicalInteractionLength",
                 "G4CMPLuke003", EventMustBeAborted,
                 "Invalid particle for LukeScatter process");
+    return 0.;
   }
   //FIXME: This should be a global wave vector, not local?
   G4double kSound = CalculateKSound(mass);
@@ -209,7 +210,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack); 
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
 
-  G4double mass;
+  G4double mass = 0.;
   if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
     mass = theLattice->GetElectronMass();
   } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
@@ -217,6 +218,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   } else {
     G4Exception("G4CMPLukeScattering::PostStepDoIt", "G4CMPLuke005",
                 EventMustBeAborted, "Invalid particle for LukeScatter process");
+    return &aParticleChange;
   }
   
   G4ThreeVector ktrk = GetLocalWaveVector(aTrack);
@@ -294,7 +296,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   return &aParticleChange;
 }
 
-PDFDataTensor G4CMPLukeScattering::LoadDataFromLUT(const G4String &filename) {
+void G4CMPLukeScattering::LoadDataFromLUT(const G4String &filename,
+					  PDFDataTensor& GPILData) {
   std::ifstream LUT(filename);
 
   std::string temp;
@@ -320,10 +323,10 @@ PDFDataTensor G4CMPLukeScattering::LoadDataFromLUT(const G4String &filename) {
 
   G4double code, mean, std;
   G4String fitType;
-  PDFDataTensor GPILData(ESIZE,
-                         PDFDataMatrix(THETASIZE,
-                                       PDFDataRow(MACHSIZE,
-                                                  PDFParamTuple())));
+  GPILData.resize(ESIZE,
+		  PDFDataMatrix(THETASIZE,
+				PDFDataRow(MACHSIZE,
+					   PDFParamTuple())));
   for (size_t i=0; i<ESIZE; ++i) {
     for (size_t j=0; j<THETASIZE; ++j) {
       for (size_t k=0; k<MACHSIZE; ++k) {
@@ -340,8 +343,6 @@ PDFDataTensor G4CMPLukeScattering::LoadDataFromLUT(const G4String &filename) {
       }
     }
   }
-
-  return GPILData;
 }
 
 G4double G4CMPLukeScattering::CalculateKSound(G4double mass) {
