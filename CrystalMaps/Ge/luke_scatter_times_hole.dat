@@ -1,6 +1,6 @@
-number of fields, first field, last field, number of thetas, first theta, last theta, number of machs, first mach, last mach
+number of fields, first field [V/m], last field [V/m], number of thetas, first theta [rad], last theta [rad], number of machs, first mach, last mach
 71 0.0 1818.0 2 0.0 3.1416 10 0.0 40.0
-fit type [0 = Gaus., 1 = Expon., 2 = Zero], mean, std
+fit type [0 = Gaus., 1 = Expon., 2 = Zero], mean [ns], std [ns]
 flat 1.000000 1.000000
 exp 6.618353 1.000000
 exp 1.101768 1.000000

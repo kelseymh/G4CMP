@@ -137,13 +137,13 @@ def fill_look_up_table(file_path, vl, l0, m, qsign,
 def create_file(file_path, fields, thetas, machs):
     outfile = open(file_path, 'w')
 
-    outfile.write("number of fields, first field, last field, " +
-                  "number of thetas, first theta, last theta, " +
+    outfile.write("number of fields, first field [V/m], last field [V/m], " +
+                  "number of thetas, first theta [rad], last theta [rad], " +
                   "number of machs, first mach, last mach\n")
     outfile.write(' '.join([str(len(fields)), str(fields[0]), str(fields[-1]),
                             str(len(thetas)), str(thetas[0]), str(thetas[-1]),
                             str(len(machs)), str(machs[0]), str(machs[-1])]))
-    outfile.write("\nfit type [0 = Gaus., 1 = Expon., 2 = Zero], mean, std\n")
+    outfile.write("\nfit type [0 = Gaus., 1 = Expon., 2 = Zero], mean [ns], std [ns]\n")
 
     return outfile
 
