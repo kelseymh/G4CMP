@@ -56,6 +56,8 @@ set(charge_EPOT_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/Epot_iZip4
     ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/Epot_iZip4_small
     ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZip4_70V_COMSOL5
+    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZip4_4V_COMSOL5
+    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZip4_4V_COMSOL5_small
     )
 
 set(charge_MACROS
