@@ -51,13 +51,10 @@ set(ionize_SOURCES
     )
 
 set(charge_EPOT_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZIP4_4V
+    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZIP4_4V_small
+    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZIP4_70V_small
     ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZIP4_axissymmetric_shortQOS1
-    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/Epot_iZip4_small_shortQOS1
-    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/Epot_iZip4
-    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/Epot_iZip4_small
-    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZip4_70V_COMSOL5
-    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZip4_4V_COMSOL5
-    ${CMAKE_CURRENT_SOURCE_DIR}/EPotFiles/EPot_iZip4_4V_COMSOL5_small
     )
 
 set(charge_MACROS
