@@ -150,26 +150,30 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   if (verboseLevel>1) G4cout << " ProcessValue " << fValue << G4endl;
 
   G4bool good = true;
-       if (name == "beta")   pLattice->SetBeta(fValue);
-  else if (name == "gamma")  pLattice->SetGamma(fValue);
-  else if (name == "lambda") pLattice->SetLambda(fValue);
-  else if (name == "mu")     pLattice->SetMu(fValue);
-  else if (name == "scat")   pLattice->SetScatteringConstant(fValue*s*s*s);
-  else if (name == "b")      pLattice->SetScatteringConstant(fValue*s*s*s);
-  else if (name == "decay")  pLattice->SetAnhDecConstant(fValue*s*s*s*s);
-  else if (name == "a")      pLattice->SetAnhDecConstant(fValue*s*s*s*s);
-  else if (name == "ldos")   pLattice->SetLDOS(fValue);
-  else if (name == "stdos")  pLattice->SetSTDOS(fValue);
-  else if (name == "ftdos")  pLattice->SetFTDOS(fValue);
-  else if (name == "vsound") pLattice->SetSoundSpeed(fValue*m/s);
-  else if (name == "escat")  pLattice->SetElectronScatter(fValue*m);
-  else if (name == "l0_e")   pLattice->SetElectronScatter(fValue*m);
-  else if (name == "hscat")  pLattice->SetHoleScatter(fValue*m);
-  else if (name == "l0_h")   pLattice->SetHoleScatter(fValue*m);
-  else if (name == "hmass")  pLattice->SetHoleMass(fValue*mElectron);
-  else if (name == "ivfield") pLattice->SetIVField(fValue);	// in V/m
-  else if (name == "ivrate") pLattice->SetIVRate(fValue/s);
-  else if (name == "ivpower") pLattice->SetIVExponent(fValue);
+       if (name == "beta")       pLattice->SetBeta(fValue);
+  else if (name == "gamma")      pLattice->SetGamma(fValue);
+  else if (name == "lambda")     pLattice->SetLambda(fValue);
+  else if (name == "mu")         pLattice->SetMu(fValue);
+  else if (name == "scat")       pLattice->SetScatteringConstant(fValue*s*s*s);
+  else if (name == "b")          pLattice->SetScatteringConstant(fValue*s*s*s);
+  else if (name == "decay")      pLattice->SetAnhDecConstant(fValue*s*s*s*s);
+  else if (name == "a")          pLattice->SetAnhDecConstant(fValue*s*s*s*s);
+  else if (name == "ldos")       pLattice->SetLDOS(fValue);
+  else if (name == "stdos")      pLattice->SetSTDOS(fValue);
+  else if (name == "ftdos")      pLattice->SetFTDOS(fValue);
+  else if (name == "debyefreq")  pLattice->SetDebyeFreq(fValue*hertz);
+  else if (name == "bandgap")    pLattice->SetBandGapEnergy(fValue*eV);
+  else if (name == "pairenergy") pLattice->SetPairProductionEnergy(fValue*eV);
+  else if (name == "fanofactor") pLattice->SetFanoFactor(fValue);
+  else if (name == "vsound")     pLattice->SetSoundSpeed(fValue*m/s);
+  else if (name == "escat")      pLattice->SetElectronScatter(fValue*m);
+  else if (name == "l0_e")       pLattice->SetElectronScatter(fValue*m);
+  else if (name == "hscat")      pLattice->SetHoleScatter(fValue*m);
+  else if (name == "l0_h")       pLattice->SetHoleScatter(fValue*m);
+  else if (name == "hmass")      pLattice->SetHoleMass(fValue*mElectron);
+  else if (name == "ivfield")    pLattice->SetIVField(fValue);	// in V/m
+  else if (name == "ivrate")     pLattice->SetIVRate(fValue/s);
+  else if (name == "ivpower")    pLattice->SetIVExponent(fValue);
   else if (name == "ivexponent") pLattice->SetIVExponent(fValue);
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;

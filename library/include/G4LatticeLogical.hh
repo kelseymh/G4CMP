@@ -129,6 +129,7 @@ public:
   void SetLDOS(G4double LDOS) { fLDOS=LDOS; }
   void SetSTDOS(G4double STDOS) { fSTDOS=STDOS; }
   void SetFTDOS(G4double FTDOS) { fFTDOS=FTDOS; }
+  void SetDebyeFreq(G4double nu) { fDebNu=nu; }
 
   G4double GetBeta() const { return fBeta; }
   G4double GetGamma() const { return fGamma; }
@@ -139,8 +140,12 @@ public:
   G4double GetLDOS() const { return fLDOS; }
   G4double GetSTDOS() const { return fSTDOS; }
   G4double GetFTDOS() const { return fFTDOS; }
+  G4double GetDebyeFreq() const { return fDebNu; }
 
   // Parameters and structures for charge carrier transport
+  void SetBandGapEnergy(G4double bg) { fBandGap = bg; }
+  void SetPairProductionEnergy(G4double pp) { fPairEnergy = pp; }
+  void SetFanoFactor(G4double f) { fFanoFactor = f; }
   void SetSoundSpeed(G4double v) { fVSound = v; }
   void SetHoleScatter(G4double l0) { fL0_h = l0; }
   void SetHoleMass(G4double hmass) { fHoleMass = hmass; }
@@ -148,6 +153,9 @@ public:
   void SetMassTensor(const G4RotationMatrix& etens);
   void SetMassTensor(G4double mXX, G4double mYY, G4double mZZ);
 
+  G4double GetBandGapEnergy() const             { return fBandGap; }
+  G4double GetPairProductionEnergy() const      { return fPairEnergy; }
+  G4double GetFanoFactor() const                { return fFanoFactor; }
   G4double GetSoundSpeed() const                { return fVSound; }
   G4double GetHoleScatter() const               { return fL0_h; }
   G4double GetHoleMass() const                  { return fHoleMass; }
@@ -214,12 +222,13 @@ private:
   enum { KVBINS=315 };			    // K-Vg lookup table binning
   G4ThreeVector fKVMap[G4PhononPolarization::NUM_MODES][KVBINS][KVBINS];
 
-  G4double fA;       //Scaling constant for Anh.Dec. mean free path
-  G4double fB;       //Scaling constant for Iso.Scat. mean free path
-  G4double fLDOS;    //Density of states for L-phonons
-  G4double fSTDOS;   //Density of states for ST-phonons
-  G4double fFTDOS;   //Density of states for FT-phonons
-  G4double fBeta, fGamma, fLambda, fMu; //dynamical constants for material
+  G4double fA;       // Scaling constant for Anh.Dec. mean free path
+  G4double fB;       // Scaling constant for Iso.Scat. mean free path
+  G4double fLDOS;    // Density of states for L-phonons
+  G4double fSTDOS;   // Density of states for ST-phonons
+  G4double fFTDOS;   // Density of states for FT-phonons
+  G4double fBeta, fGamma, fLambda, fMu; // dynamical constants for material
+  G4double fDebNu;  // Debye frequency
 
   G4double fVSound;	// Speed of sound (longitudinal phonon)
   G4double fL0_e;	// Scattering length for electrons
@@ -228,6 +237,9 @@ private:
   const G4double mElectron;	 // Free electron mass (without G4's c^2)
   G4double fHoleMass;		 // Effective mass of +ve carrier
   G4double fElectronMass;	 // Effective mass (scalar) of -ve carrier
+  G4double fBandGap;	 // Minimum band gap energy
+  G4double fPairEnergy;   // electron-hole pair production average energy
+  G4double fFanoFactor;   // Fano factor (duh)
   G4RotationMatrix fMassTensor;	 // Full electron mass tensor
   G4RotationMatrix fMassInverse; // Inverse electron mass tensor (convenience)
   G4RotationMatrix fMassRatioSqrt;       // SQRT of tensor/scalar ratio
