@@ -61,6 +61,7 @@ G4CMPLukeScattering::PostStepGetPhysicalInteractionLength(
   *condition = NotForced;
 
   G4double velocity = GetVelocity(aTrack);
+  //TODO: Get mass from trackInfo or DynamicParticle
   G4double mass = 0.;
   PDFDataTensor* GPILData = nullptr;
   G4ThreeVector k0;
@@ -68,7 +69,7 @@ G4CMPLukeScattering::PostStepGetPhysicalInteractionLength(
     mass = theLattice->GetElectronMass();
     GPILData = &ElecGPILData;
     k0 = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
-                                   GetGlobalVelocityVector(aTrack));
+                                   GetLocalVelocityVector(aTrack));
   } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
     mass = theLattice->GetHoleMass();
     GPILData = &HoleGPILData;
@@ -79,7 +80,6 @@ G4CMPLukeScattering::PostStepGetPhysicalInteractionLength(
                 "Invalid particle for LukeScatter process");
     return 0.;
   }
-  //FIXME: This should be a global wave vector, not local?
   G4double kSound = CalculateKSound(mass);
   G4double mach = k0.mag()/kSound;
 
@@ -94,8 +94,7 @@ G4CMPLukeScattering::PostStepGetPhysicalInteractionLength(
   G4ThreeVector E0(0., 0., 0.);
   if (fMan && fMan->DoesFieldExist()) {
     const G4Field* field = fMan->GetDetectorField();
-    //FIXME: This should be global position?
-    G4ThreeVector x0 = GetLocalPosition(aTrack);
+    G4ThreeVector x0 = GetGlobalPosition(aTrack);
     G4double fieldValue[6];
     field->GetFieldValue(&x0[0], fieldValue);
 
@@ -110,13 +109,7 @@ G4CMPLukeScattering::PostStepGetPhysicalInteractionLength(
     }
   }
 
-  G4double theta = 0;
-  if (k0.mag() && E0.mag()) {
-    G4double arg = k0*E0/(k0.mag()*E0.mag());
-    if (arg > 1.) arg = 1.;
-    if (arg < -1.) arg = -1.;
-    theta = acos(arg);
-  }
+  G4double theta = fabs(k0.angle(E0));
 
   size_t thetabin = 0;
   if (theta > THETAMAX) {
@@ -335,7 +328,7 @@ void G4CMPLukeScattering::LoadDataFromLUT(const G4String &filename,
         if (fitType == "gaus") code = 0;
         else if (fitType == "exp") code = 1;
         else if (fitType == "flat") code = 2;
-        else G4cout << "BAD" << G4endl;
+        else G4cout << "BAD" << G4endl; //TODO: add exception/warning?
 
         GPILData[i][j][k][0] = code;
         GPILData[i][j][k][1] = mean * ns;
