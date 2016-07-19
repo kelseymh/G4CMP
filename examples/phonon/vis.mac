@@ -2,6 +2,7 @@
 # Create a scene handler for a specific graphics system
 # (Edit the next line(s) to choose another graphic system)
 #
+/run/initialize
 /vis/open OGL
 #
 # draw scene
@@ -26,7 +27,6 @@
 #
 # Generate 20 phonons per event to populate display
 /gun/number 20
-/run/initialize
 /run/beamOn 1
 #
 # Write event display to output files for analysis (face and side views)
