@@ -1,8 +1,8 @@
 # Crystal parameters
-basis 1 0 0
-basis 0 1 0
-basis 0 0 1
-cubic 1.26e11 0.44e11 0.67e11	# Pa
+cubic 5.658		# A (Lattice constant)
+stiffness 1 1 1.26e11	# C11, C12, C44 in Pa
+stiffness 1 2 0.44e11
+stiffness 4 4 0.67e11
 # Phonon parameters
 beta -0.732 gamma -0.708 lambda 0.376 mu 0.561
 scat 3.67e-41
@@ -10,13 +10,6 @@ decay 1.6456e-54
 LDOS 0.097834
 STDOS 0.53539
 FTDOS 0.36677
-# Wavevector mapping tables
-VDir LVec.ssv  L  161 321
-VDir STVec.ssv ST 161 321
-VDir FTVec.ssv FT 161 321
-VG L.ssv  L 161 321
-VG ST.ssv ST 161 321
-VG FT.ssv FT 161 321
 # Charge carrier parameters
 vsound 5324.2077	# m/s
 l0_e 257e-6		# m
