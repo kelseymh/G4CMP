@@ -11,6 +11,7 @@
 // 20140321  Drop passing placement transform to G4LatticePhysical
 
 #include "PhononDetectorConstruction.hh"
+#include "PhononSensitivity.hh"
 
 #include "G4Material.hh"
 #include "G4NistManager.hh"
@@ -142,7 +143,7 @@ void PhononDetectorConstruction::SetupGeometry()
   //
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   G4CMPElectrodeSensitivity* electrodeSensitivity =
-    new G4CMPElectrodeSensitivity("G4CMPElectrode");
+    new PhononSensitivity("PhononElectrode");
   SDman->AddNewDetector(electrodeSensitivity);
   fGermaniumLogical->SetSensitiveDetector(electrodeSensitivity);
 
