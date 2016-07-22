@@ -223,12 +223,6 @@ set(library_HEADERS
 
 set(crystal_SETTINGS
     ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/config.txt
-    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/FT.ssv
-    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/FTVec.ssv
-    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/L.ssv
-    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/LVec.ssv
-    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/ST.ssv
-    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/STVec.ssv
     )
 
 add_library(G4cmp SHARED ${library_SOURCES})
