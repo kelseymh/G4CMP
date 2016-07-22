@@ -10,7 +10,11 @@ decay 1.6456e-54
 LDOS 0.097834
 STDOS 0.53539
 FTDOS 0.36677
+DebyeFreq 2e12 # Hz
 # Charge carrier parameters
+bandgap 0.74 # eV
+pairEnergy 2.96 # eV
+fanoFactor 0.1057
 vsound 5324.2077	# m/s
 l0_e 257e-6		# m
 l0_h 108e-6		# m

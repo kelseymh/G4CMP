@@ -92,8 +92,12 @@ public:
   G4double GetGamma() const          { return fLattice->GetGamma(); }
   G4double GetLambda() const         { return fLattice->GetLambda(); }
   G4double GetMu() const             { return fLattice->GetMu(); }
+  G4double GetDebyFreq() const       { return fLattice->GetDebyeFreq(); }
 
   // Charge carrier propagation parameters
+  G4double GetBandGapEnergy() const   { return fLattice->GetBandGapEnergy(); }
+  G4double GetPairProductionEnergy() const { return fLattice->GetPairProductionEnergy(); }
+  G4double GetFanoFactor() const      { return fLattice->GetFanoFactor(); }
   G4double GetSoundSpeed() const      { return fLattice->GetSoundSpeed(); }
   G4double GetElectronScatter() const { return fLattice->GetElectronScatter(); }
   G4double GetHoleScatter() const     { return fLattice->GetHoleScatter(); }
