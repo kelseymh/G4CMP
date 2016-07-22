@@ -131,6 +131,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src)
 set(library_SOURCES 
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigManager.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigMessenger.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPCrystalGroup.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftBoundaryProcess.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftElectron.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftHole.cc
