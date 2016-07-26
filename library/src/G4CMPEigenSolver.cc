@@ -101,7 +101,7 @@ void G4CMPEigenSolver::tqli() {
 	g=d[m]-d[l]+e[l]/(g+copysign(r,g));
 	s=c=1.0;
 	p=0.0;
-	for (i=m-1;i>=l;i--) {
+	for (i=m-1;i>=l&&i<n;i--) {
 	  f=s*e[i];
 	  b=c*e[i];
 	  e[i+1]=(r=pythag(f,g));
