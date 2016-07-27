@@ -17,6 +17,8 @@
 // 20160615  Add support to set elasticity tensor.
 // 20160630  Drop loading of K-Vg lookup table files
 // 20160701  Withdraw seting basis vectors, set crystal symmetry instead
+// 20160727  Add functions to handle processing units from config file,
+//		define additional units for solid state physics use
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
@@ -39,7 +41,11 @@ public:
   G4LatticeLogical* MakeLattice(const G4String& filepath);
 
 protected:
+  void DefineUnits();		// Create time^3 and time^4 units for rates
+
   G4bool OpenFile(const G4String& filepath);
+  void CloseFile();
+
   G4bool ProcessToken();
   G4bool ProcessValue(const G4String& name);	// Numerical parameters
   G4bool ProcessConstants();			// Four dynamical constants
@@ -48,7 +54,11 @@ protected:
   G4bool ProcessStiffness();			// Elasticity matrix element
   G4bool ProcessEulerAngles(const G4String& name);	// Drift directions
   G4bool SkipComments();			// Everything after '#'
-  void CloseFile();
+
+  // Read expected dimensions for value from file, return scale factor
+  // Input argument "unitcat" may be comma-delimited list of categories
+  G4double ProcessUnits(const G4String& unitcat);
+  G4double ProcessUnits(const G4String& unit, const G4String& unitcat);
 
 private:
   G4int verboseLevel;		// For reporting progress, also use G4VERBOSE
@@ -60,6 +70,9 @@ private:
   G4double fValue;		// ... floating point data value
   G4RotationMatrix fMatrix;	// ... 3x3 matrix for mass, drift valleys
   G4ThreeVector f3Vec;		// ... three-vector for mass
+  G4double fUnits;		// ... dimensional unit scale factor
+  G4String fUnitName;		// ... unit string from reading file
+  G4String fUnitCat;		// ... G4UnitsCategory of dimensions
 
   const G4String fDataDir;	// Directory path ($G4LATTICEDATA)
   const G4double mElectron;	// Electron mass in kilograms

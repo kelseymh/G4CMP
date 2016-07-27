@@ -183,6 +183,14 @@ ignored, as is any text after a "#" on a parameter line.  Multiple
 keywords/value sets may be included on a single line of the file if desired
 for readability.
 
+Dimensional parameters MUST be specified with the value in each entry.  For 
+keywords taking multiple values, a single unit may be specified after the
+group of values, e.g., 
+
+	triclinic 1. 2. 3. Ang 30. 50. 45. deg
+
+where "Ang" and "deg" are the appropriate length and angular dimensions.
+
 The lattice symmetry is specified by one of the seven crystal systems (or
 "amorphous") followed by the appropriate combination of lattice constant(s)
 and angle(s) needed to specify it uniquely.  The reduced elasticity matrix,
@@ -193,32 +201,33 @@ the crystal system.
 |---------|-----------|---------------------------|--------------------|
 | **Lattice parameters** |
 | amorphous | -none-  | Polycrystalline solid     |                    |
-| cubic   | a         | Lattice constant          | angstrom           |
-| tetragonal | a c    | Lattice constants         | angstrom           |
-| hexagonal  | a c    | Lattice constants         | angstrom           |
-| orthorhombic | a b c | Lattice constants        | angstrom           |
-| rhombohedral | a alpha unit | Lattice, angle    | angstrom, deg/rad  |
-| monoclinic | a b c alpha unit | Lattice, angle  | angstrom, deg/rad  |
-| triclinic | a b c alpha beta gamma unit | Lattice, angle | angstrom, deg/rad |
-| stiffness | i j val | Indices 1-6, elasticity  | pascal (typ ...e11) |
-| Cij       | i j val | Indices 1-6, elasticity  | pascal (typ ...e11) |
+| cubic   | a         | Lattice constant          | length             |
+| tetragonal | a c    | Lattice constants         | length             |
+| hexagonal  | a c    | Lattice constants         | length             |
+| orthorhombic | a b c | Lattice constants        | length             |
+| rhombohedral | a alpha | Lattice const., angle  | length, deg/rad    |
+| monoclinic | a b c alpha | Lattice const., angle | length, deg/rad   |
+| triclinic | a b c alpha beta gamma | Lattice const., angle | length, deg/rad |
+| stiffness | i j val | Indices 1-6, elasticity   | pressure (Pa, GPa) |
+| Cij       | i j val | Indices 1-6, elasticity   | Pa, GPa            |
 | **Phonon parameters** |
-| beta    | val       | scattering parameters     | 10^11 pascal       |
-| gamma   | val       | (see S. Tamura, PRB 1985) | 10^11 pascal       |
-| lambda  | val       |                           | 10^11 pascal       |
-| mu      | val       |                           | 10^11 pascal       |
-| scat    | B         | isotope scattering rate   | second^3           |
-| decay   | A         | anharmonic decay rate     | second^4           |
+| beta    | val       | scattering parameters     | Pa, GPa            |
+| gamma   | val       | (see S. Tamura, PRB 1985) | Pa, GPa            |
+| lambda  | val       |                           | Pa, GPa            |
+| mu      | val       |                           | Pa, GPa            |
+| dyn    | beta gamma lambda mu | All four params | Pa, GPa            |
+| scat    | B         | isotope scattering rate   | second^3 (s3)      |
+| decay   | A         | anharmonic decay rate     | second^4 (s4)      |
 | LDOS    | frac      | longitudnal density of states | sum to unity   |
 | STDOS   | frac      | slow-transverse density of states |            |
 | FTDOS   | frac      | fast-transverse density of states |            |
 | **Charge carrier parameters** |
 | vsound  | Vlong     | sound speed (longitudinal) | m/s               |
-| l0_e    | len       | electron scattering length | meter             |
-| l0_h	  | len       | hole scattering length     | meter             |
+| l0_e    | len       | electron scattering length | length            |
+| l0_h	  | len       | hole scattering length     | length            |
 | hmass   | m_h       | effective mass of hole   | electron mass ratio |
 | emass   | m_xx m_yy m_zz | electron mass tensor | (same)             |
-| valley  | theta phi psi unit | Euler angles     | "deg" or "rad"     |
+| valley  | theta phi psi unit | Euler angles     | angle (deg/rad)    |
 | ivField | E0        | Edelweiss intervalley scattering  | V/m        |
-| ivRate  | t0        | Time between intervalley scatters | second     |
+| ivRate  | freq      | Intervalley scattering rate       | Hz         |
 | ivPower | val       | Power law [sqrt(field^ivPower)]   | none       |

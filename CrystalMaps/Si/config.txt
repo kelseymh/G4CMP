@@ -1,24 +1,24 @@
 # Crystal parameters
-cubic 5.431		# A (Lattice constant)
-stiffness 1 1 1.656e11	# C11, C12, C44 in Pa
-stiffness 1 2 0.639e11
-stiffness 4 4 0.795e11
+cubic 5.431 Ang		# (Lattice constant)
+stiffness 1 1 165.6 GPa	# C11, C12, C44
+stiffness 1 2  63.9 GPa
+stiffness 4 4  79.5 GPa
 # Phonon parameters
-beta -0.429 gamma -0.945 lambda 0.524 mu 0.680
-scat 2.43e-42
-decay 7.41e-56
+dyn -42.9 -94.5 52.4 68.0 GPa
+scat 2.43e-42 s3
+decay 7.41e-56 s4
 # From S. Tamura et al., PRB44(7), 1991
 LDOS  0.093
 STDOS 0.531
 FTDOS 0.376
-DebyeFreq 1.5e13 # Hz
+DebyeFreq 15 THz
 # Charge carrier parameters
-bandgap 1.17 # eV
-pairEnergy 3.81 # eV
+bandgap 1.17 eV
+pairEnergy 3.81 eV
 fanoFactor 0.15
-vsound 9000.0 		# m/s (approximate)
-l0_e 16.9e-6		# m
-l0_h 7.5e-6		# m
+vsound 9000.0 m/s	# (approximate)
+l0_e 16.9e-6 m
+l0_h 7.5e-6 m
 #hole and electron masses taken from Robert's thesis
 hmass 0.50		# per m(electron)
 emass 0.91 0.19 0.19	# per m(electron)
@@ -26,6 +26,6 @@ valley   0  0 90 deg
 valley  90  0 90 deg
 valley   0 90 90 deg
 # Intervalley scattering
-ivField 217		# V/m
-ivRate 6.72e-2		# s #Ge rate, these are not tuned for Si
+ivField 217 V/m
+ivRate 6.72e-2 Hz	# Ge rate, these are not tuned for Si
 ivPower 3.24		# used in sqrt(field^ivPower)
