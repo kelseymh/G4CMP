@@ -2,8 +2,12 @@
 library/qhull-2012.1/bin/
 library/qhull-2012.1/lib/
 *~
+*.swp
+*.swo
+*.swn
 *.o
 *.log
 CMakeLists.txt.user*
 epositions.txt
-
+*.png
+*__pycache__*
