@@ -30,6 +30,7 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPTrackInformation.hh"
+#include "G4CMPUtils.hh"
 #include "G4AffineTransform.hh"
 #include "G4DynamicParticle.hh"
 #include "G4LatticeManager.hh"
@@ -341,22 +342,10 @@ G4int G4CMPProcessUtils::GetPolarization(const G4Track& track) const {
 
 // Generate random polarization from density of states
 
-G4int G4CMPProcessUtils::ChoosePolarization(G4double Ldos, G4double STdos,
-					    G4double FTdos) const {
-  G4double norm = Ldos + STdos + FTdos;
-  G4double cProbST = STdos/norm;
-  G4double cProbFT = FTdos/norm + cProbST;
-
-  // NOTE:  Order of selection done to match previous random sequences
-  G4double modeMixer = G4UniformRand();
-  if (modeMixer<cProbST) return G4PhononPolarization::TransSlow;
-  if (modeMixer<cProbFT) return G4PhononPolarization::TransFast;
-  return G4PhononPolarization::Long;
-}
-
-G4int G4CMPProcessUtils::ChoosePolarization() const {
-  return ChoosePolarization(theLattice->GetLDOS(), theLattice->GetSTDOS(),
-			    theLattice->GetFTDOS());
+G4int G4CMPProcessUtils::ChoosePhononPolarization() const {
+  return G4CMP::ChoosePhononPolarization(theLattice->GetLDOS(),
+                                         theLattice->GetSTDOS(),
+                                         theLattice->GetFTDOS());
 }
 
 void G4CMPProcessUtils::MakeLocalPhononK(G4ThreeVector& kphonon) const {
@@ -655,7 +644,7 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 					 G4double energy,
 					 const G4ThreeVector& pos) const {
   if (polarization == G4PhononPolarization::UNKNOWN) {		// Choose value
-    polarization = ChoosePolarization();
+    polarization = ChoosePhononPolarization();
   }
 
   G4ThreeVector vgroup = theLattice->MapKtoVDir(polarization, waveVec);

@@ -15,6 +15,7 @@
 // 20160624  Use GetTrackInfo() accessor
 
 #include "G4CMPTrackInformation.hh"
+#include "G4CMPUtils.hh"
 #include "G4PhononDownconversion.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
@@ -181,11 +182,11 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   G4double Esec1 = x*E, Esec2 = E-Esec1;
 
   // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization1 = ChoosePolarization(0., theLattice->GetSTDOS(),
+  G4int polarization1 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
 					   theLattice->GetFTDOS());
 
   // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization2 = ChoosePolarization(0., theLattice->GetSTDOS(),
+  G4int polarization2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
 					   theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors
@@ -237,7 +238,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   int polarization1 = G4PhononPolarization::Long;
 
   // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization2 = ChoosePolarization(0., theLattice->GetSTDOS(),
+  G4int polarization2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
 					   theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors

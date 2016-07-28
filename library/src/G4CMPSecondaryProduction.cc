@@ -119,7 +119,7 @@ void G4CMPSecondaryProduction::AddPhonons(const G4Step& stepData) {
   G4Track* aSec = 0;
   for (size_t i=0; i<energyPosList.size(); i++) {
     dir = G4RandomDirection();
-    aSec = CreatePhonon(ChoosePolarization(), dir, energyPosList[i].first,
+    aSec = CreatePhonon(ChoosePhononPolarization(), dir, energyPosList[i].first,
 			energyPosList[i].second);
 
     if (verboseLevel>2) {

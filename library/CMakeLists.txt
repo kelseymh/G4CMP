@@ -158,6 +158,7 @@ set(library_SOURCES
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTimeStepper.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTrackInformation.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTriLinearInterp.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPUtils.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVDriftProcess.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeLogical.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeManager.cc
@@ -177,6 +178,7 @@ set(library_HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.icc
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigManager.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPCrystalGroup.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftBoundaryProcess.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftElectron.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftHole.hh

@@ -12,6 +12,7 @@
 // 20140312  Follow name change CreateSecondary -> CreatePhonon
 // 20140331  Add required process subtype code
 
+#include "G4CMPUtils.hh"
 #include "G4PhononScattering.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononPolarization.hh"
@@ -66,7 +67,7 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
   
   //randomly generate a new direction and polarization state
   G4ThreeVector newDir = G4RandomDirection();
-  G4int polarization = ChoosePolarization(theLattice->GetLDOS(),
+  G4int polarization = G4CMP::ChoosePhononPolarization(theLattice->GetLDOS(),
 					  theLattice->GetSTDOS(),
 					  theLattice->GetFTDOS());
 
