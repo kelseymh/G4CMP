@@ -65,7 +65,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   pBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("phononBounces",
 		  "Maximum number of reflections allowed for phonons");
 
-  fileCmd = CreateCommand<G4UIcmdWithAString>("EpotFile",
+  fileCmd = CreateCommand<G4UIcmdWithAString>("EPotFile",
 			      "Set filename for non-uniform electric field");
 
   dirCmd = CreateCommand<G4UIcmdWithAString>("LatticeData",
