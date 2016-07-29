@@ -107,7 +107,8 @@ void ChargeFETDigitizerModule::PostProcess(const G4String& fileName)
     G4Exception("ChargeFETDigitizerModule::PostProcess", "Charge002",
     FatalException, msg);
   }
-  G4double throw_away;
+  std::istream throw_away;
+  std::istream particleName;
   G4double position[4] = {0.,0.,0.,0.};
   G4double charge;
   G4int RunID, EventID;
@@ -129,7 +130,7 @@ void ChargeFETDigitizerModule::PostProcess(const G4String& fileName)
     std::istringstream(entry) >> throw_away;
 
     std::getline(ssLine,entry,',');
-    std::istringstream(entry) >> charge;
+    std::istringstream(entry) >> particleName;
 
     for (size_t i=0; i<6; ++i) {
       std::getline(ssLine,entry,',');
@@ -142,8 +143,19 @@ void ChargeFETDigitizerModule::PostProcess(const G4String& fileName)
       position[i] *= m;
     }
 
-    for(size_t chan = 0; chan < numChannels; ++chan)
+    std::getline(ssLine,entry,',');
+    std::istringstream(entry) >> throw_away;
+
+    if (particleName == "G4CMPDriftElectron") {
+      charge = -1;
+    } else if (particleName == "G4CMPDriftElectron") {
+      charge = 1;
+    } else {
+      continue;
+    }
+    for(size_t chan = 0; chan < numChannels; ++chan) {
       scaleFactors[chan] -= charge*RamoFields[chan].GetPotential(position);
+    }
   }
 
   vector<vector<G4double> > FETTraces(CalculateTraces(scaleFactors));
