@@ -24,6 +24,7 @@
 // 20160630  Drop loading of K-Vg lookup table files
 // 20160701  Withdraw seting basis vectors, set crystal symmetry instead
 // 20160727  Use G4CMP-specific units; allow multiple units for Debye energy
+// 20160802  Use hep_pascal for pressure (Windows compatibility)
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"

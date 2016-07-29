@@ -87,7 +87,7 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   }
 
   // Compute mean free path per Edelweiss LTD-14 paper
-  G4double E_0 = theLattice->GetIVField();
+  G4double E_0 = theLattice->GetIVField() / (volt/m);
   G4double mfp = velocity / ( theLattice->GetIVRate() *
     pow((E_0*E_0 + fieldVector.mag2()), theLattice->GetIVExponent()/2.0) );
 

@@ -64,11 +64,11 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
 							 const G4Step&) {
   aParticleChange.Initialize(aTrack);
 
-  //Obtain dynamical constants from this volume's lattice
-  fBeta=theLattice->GetBeta();
-  fGamma=theLattice->GetGamma();
-  fLambda=theLattice->GetLambda();
-  fMu=theLattice->GetMu();
+  // Obtain dynamical constants from this volume's lattice
+  fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
+  fGamma  = theLattice->GetGamma() / (1e11*pascal);
+  fLambda = theLattice->GetLambda() / (1e11*pascal);
+  fMu     = theLattice->GetMu() / (1e11*pascal);
 
   //Destroy the parent phonon and create the daughter phonons.
   //74% chance that daughter phonons are both transverse

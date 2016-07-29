@@ -9,6 +9,7 @@
 /// \file library/include/G4CMPUnitsTable.hh
 /// \brief Define additional units with symbols for crystal applications
 //
+// 20160802 Use hep_pascal for pressure (Windows compatibility)
 
 #include "G4Types.hh"
 #include "G4UnitsTable.hh"
@@ -38,7 +39,7 @@ static const double second4      = second3*second;
 static const double millisecond4 = millisecond3*millisecond;
 static const double microsecond4 = microsecond3*microsecond;
 
-static const double gigapascal = 1e9*pascal;
+static const double gigapascal = 1e9*hep_pascal;
 static const double terahertz  = 1e12*hertz;
 
 static const double s3   = second3;
