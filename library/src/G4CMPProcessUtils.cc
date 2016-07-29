@@ -307,9 +307,11 @@ G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
                                      GetLocalVelocityVector(track));
   } else if (IsHole(&track)) {
     return track.GetKineticEnergy();
+  } else if (IsPhonon(&track)) {
+    return GetTrackInfo(track)->GetPhononK() * hbar_Planck;
   } else {
-    G4Exception("G4CMPProcessUtils::GetKineticEnergy", "DriftProcess004",
-                EventMustBeAborted, "Unknown charge carrier");
+    G4Exception("G4CMPProcessUtils::GetKineticEnergy", "G4CMPProcess004",
+                EventMustBeAborted, "Unknown condensed matter particle");
     return 0.0;
   }
 }
@@ -402,7 +404,7 @@ G4double G4CMPProcessUtils::KaplanPhononQP(G4double energy,
         prop->ConstPropertyExists("phononLifetime") &&
         prop->ConstPropertyExists("phononLifetimeSlope") &&
         prop->ConstPropertyExists("vSound") &&
-        prop->ConstPropertyExists("fileThickness"))) {
+        prop->ConstPropertyExists("filmThickness"))) {
     G4Exception("G4CMPProcessUtils::KaplanPhononQP()", "ProcessUtils001",
                 RunMustBeAborted,
                 "Insufficient info in MaterialPropertiesTable.");

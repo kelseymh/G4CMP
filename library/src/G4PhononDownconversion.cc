@@ -45,7 +45,7 @@ G4double G4PhononDownconversion::GetMeanFreePath(const G4Track& aTrack,
 						 G4ForceCondition* condition) {
   //Determines mean free path for longitudinal phonons to split
   G4double A = theLattice->GetAnhDecConstant();
-  G4double Eoverh = aTrack.GetKineticEnergy()/h_Planck;
+  G4double Eoverh = GetKineticEnergy(aTrack)/h_Planck;
   
   //Calculate mean free path for anh. decay
   G4double mfp = aTrack.GetVelocity()/(Eoverh*Eoverh*Eoverh*Eoverh*Eoverh*A);
@@ -165,9 +165,7 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   //using energy fraction x to calculate daughter phonon directions
   G4double theta1=MakeTTDeviation(d, x);
   G4double theta2=MakeTTDeviation(d, 1-x);
-  G4ThreeVector dir1=static_cast<G4CMPTrackInformation*>(
-    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                                        )->GetPhononK();
+  G4ThreeVector dir1=GetTrackInfo(track)->GetPhononK();
   G4ThreeVector dir2=dir1;
 
   // FIXME:  These extra randoms change timing and causting outputs of example!
@@ -178,7 +176,7 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   dir1 = dir1.rotate(dir1.orthogonal(),theta1).rotate(dir1, ph);
   dir2 = dir2.rotate(dir2.orthogonal(),-theta2).rotate(dir2,ph);
 
-  G4double E=aTrack.GetKineticEnergy();
+  G4double E=GetKineticEnergy(aTrack);
   G4double Esec1 = x*E, Esec2 = E-Esec1;
 
   // Make FT or ST phonon (0. means no longitudinal)
@@ -231,7 +229,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   dir1 = dir1.rotate(dir1.orthogonal(),thetaL).rotate(dir1, ph);
   dir2 = dir2.rotate(dir2.orthogonal(),-thetaT).rotate(dir2,ph);
 
-  G4double E=aTrack.GetKineticEnergy();
+  G4double E=GetKineticEnergy(aTrack);
   G4double Esec1 = x*E, Esec2 = E-Esec1;
 
   // First secondary is longitudnal
