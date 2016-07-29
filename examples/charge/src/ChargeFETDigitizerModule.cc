@@ -107,8 +107,8 @@ void ChargeFETDigitizerModule::PostProcess(const G4String& fileName)
     G4Exception("ChargeFETDigitizerModule::PostProcess", "Charge002",
     FatalException, msg);
   }
-  std::istream throw_away;
-  std::istream particleName;
+  G4double throw_away;
+  G4String particleName;
   G4double position[4] = {0.,0.,0.,0.};
   G4double charge;
   G4int RunID, EventID;

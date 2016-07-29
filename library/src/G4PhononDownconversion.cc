@@ -165,7 +165,7 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   //using energy fraction x to calculate daughter phonon directions
   G4double theta1=MakeTTDeviation(d, x);
   G4double theta2=MakeTTDeviation(d, 1-x);
-  G4ThreeVector dir1=GetTrackInfo(track)->GetPhononK();
+  G4ThreeVector dir1=GetTrackInfo(aTrack)->GetPhononK();
   G4ThreeVector dir2=dir1;
 
   // FIXME:  These extra randoms change timing and causting outputs of example!

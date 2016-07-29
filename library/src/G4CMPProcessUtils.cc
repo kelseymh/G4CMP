@@ -308,7 +308,7 @@ G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
   } else if (IsHole(&track)) {
     return track.GetKineticEnergy();
   } else if (IsPhonon(&track)) {
-    return GetTrackInfo(track)->GetPhononK() * hbar_Planck;
+    return GetTrackInfo(track)->GetPhononK().mag() * hbar_Planck;
   } else {
     G4Exception("G4CMPProcessUtils::GetKineticEnergy", "G4CMPProcess004",
                 EventMustBeAborted, "Unknown condensed matter particle");
