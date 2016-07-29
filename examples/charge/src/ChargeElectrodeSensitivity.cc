@@ -47,7 +47,7 @@ void ChargeElectrodeSensitivity::EndOfEvent(G4HCofThisEvent* HCE)
       output << runMan->GetCurrentRun()->GetRunID() << ','
              << runMan->GetCurrentEvent()->GetEventID() << ','
              << (*itr)->GetTrackID() << ','
-             << (*itr)->GetCharge() << ','
+             << (*itr)->GetParticleName() << ','
              << (*itr)->GetStartEnergy()/eV << ','
              << (*itr)->GetFinalTime()/ns << ','
              << (*itr)->GetEnergyDeposit()/eV << ','
@@ -76,7 +76,7 @@ void ChargeElectrodeSensitivity::SetOutputFile(const G4String &fn)
                   JustWarning, msg);
       output.close();
     } else {
-      output << "Run ID,Event ID,Track ID,Charge,Start Energy [eV],"
+      output << "Run ID,Event ID,Track ID,Particle Name,Start Energy [eV],"
              << "Track Lifetime [ns],Energy Deposit [eV],Start X [m],"
              << "Start Y [m],Start Z [m],End X [m],End Y [m],End Z [m]"
              << G4endl;

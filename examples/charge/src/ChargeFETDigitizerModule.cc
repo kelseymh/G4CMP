@@ -84,8 +84,10 @@ void ChargeFETDigitizerModule::Digitize()
         position[0] = vecPosition.getX();
         position[1] = vecPosition.getY();
         position[2] = vecPosition.getZ();
-        scaleFactors[chan] -= hitVec->at(hitIdx)->GetCharge()
-                                    * RamoFields[chan].GetPotential(position);
+        if(hitVec->at(hitIdx)->GetParticleName()=="G4CMPDriftElectron")
+          scaleFactors[chan] -= -1 * RamoFields[chan].GetPotential(position);
+        else
+          scaleFactors[chan] -= 1 * RamoFields[chan].GetPotential(position);
       }
     }
   }
