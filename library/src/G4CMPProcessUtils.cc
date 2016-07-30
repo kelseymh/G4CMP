@@ -308,7 +308,11 @@ G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
   } else if (IsHole(&track)) {
     return track.GetKineticEnergy();
   } else if (IsPhonon(&track)) {
-    return GetTrackInfo(track)->GetPhononK().mag() * hbar_Planck;
+    //G4cout << "k*hbar = " << GetTrackInfo(track)->GetPhononK().mag() *
+    //                         GetVelocity(track) *
+    //                         hbar_Planck << G4endl;
+    //G4cout << "getKin = " << track.GetKineticEnergy() << G4endl;
+    return track.GetKineticEnergy();
   } else {
     G4Exception("G4CMPProcessUtils::GetKineticEnergy", "G4CMPProcess004",
                 EventMustBeAborted, "Unknown condensed matter particle");
@@ -395,7 +399,7 @@ G4double G4CMPProcessUtils::KaplanPhononQP(G4double energy,
                                      G4MaterialPropertiesTable* prop,
                                      std::vector<G4double>& reflectedEnergies) {
   if (reflectedEnergies.size()>0)
-    G4Exception("G4CMPProcessUtils::KaplanPhononQP()", "DriftProcess007",
+    G4Exception("G4CMPProcessUtils::KaplanPhononQP()", "ProcessUtils007",
                 JustWarning, "Passed a nonempty vector.");
   // Check that the MaterialPropertiesTable has everything we need. If it came
   // from a G4CMPSurfaceProperty, then it will be fine.
