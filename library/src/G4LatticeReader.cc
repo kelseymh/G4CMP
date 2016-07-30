@@ -23,12 +23,12 @@
 // 20160615  Add elasticity tensor (cubic lattice only)
 // 20160630  Drop loading of K-Vg lookup table files
 // 20160701  Withdraw seting basis vectors, set crystal symmetry instead
-// 20160727  Require units in config file for all parameters,
-//		define additional units for solid state physics use
+// 20160727  Use G4CMP-specific units; allow multiple units for Debye energy
 
-#include "G4CMPConfigManager.hh"
 #include "G4LatticeReader.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPCrystalGroup.hh"
+#include "G4CMPUnitsTable.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeLogical.hh"
 #include "G4PhysicalConstants.hh"
@@ -42,60 +42,16 @@
 // Constructor and destructor
 
 G4LatticeReader::G4LatticeReader(G4int vb)
-  : verboseLevel(vb), psLatfile(0), pLattice(0),
+  : verboseLevel(vb?vb:G4CMPConfigManager::GetVerboseLevel()),
+    psLatfile(0), pLattice(0),
     fToken(""), fValue(0.), f3Vec(0.,0.,0.),
     fDataDir(G4CMPConfigManager::GetLatticeDir()),
     mElectron(electron_mass_c2/c_squared) {
-  DefineUnits();
+  G4CMPUnitsTable::Init();	// Ensures thread-by-thread initialization
 }
 
 G4LatticeReader::~G4LatticeReader() {
   delete psLatfile; psLatfile = 0;
-}
-
-
-// Define special time units for scattering rate coefficients
-
-void G4LatticeReader::DefineUnits() {
-  // Phonon scattering coeffient B [s^3]
-  new G4UnitDefinition(     "second^3","s3"   ,"Time cubed",s*s*s);
-  new G4UnitDefinition("millisecond^3","ms3"  ,"Time cubed",ms*ms*ms);
-  new G4UnitDefinition("microsecond^3","mus3" ,"Time cubed",
-		       microsecond*microsecond*microsecond);
-  new G4UnitDefinition( "nanosecond^3","ns3"  ,"Time cubed",ns*ns*ns);
-  new G4UnitDefinition( "picosecond^3","ps3"  ,"Time cubed",
-			picosecond*picosecond*picosecond);
-  new G4UnitDefinition(     "hertz^-3","Hz-3" ,"Time cubed",
-			    1./(hertz*hertz*hertz));
-  new G4UnitDefinition( "kilohertz^-3","kHz-3","Time cubed",
-			1./(kilohertz*kilohertz*kilohertz));
-  new G4UnitDefinition( "megahertz^-3","MHz-3","Time cubed",
-			1./(megahertz*megahertz*megahertz));
-
-  // Phonon anharmonic decay coefficient A [s^4]
-  new G4UnitDefinition(     "second^4","s4"   ,"Time fourth",s*s*s*s);
-  new G4UnitDefinition("millisecond^4","ms4"  ,"Time fourth",ms*ms*ms*ms);
-  new G4UnitDefinition("microsecond^4","mus4" ,"Time fourth",
-		       microsecond*microsecond*microsecond*microsecond);
-  new G4UnitDefinition( "nanosecond^4","ns4"  ,"Time fourth",ns*ns*ns*ns);
-  new G4UnitDefinition( "picosecond^4","ps4"  ,"Time fourth",
-			picosecond*picosecond*picosecond*picosecond);
-  new G4UnitDefinition(     "hertz^-4","Hz-4" ,"Time fourth",
-			    1./(hertz*hertz*hertz*hertz));
-  new G4UnitDefinition( "kilohertz^-4","kHz-4","Time fourth",
-			1./(kilohertz*kilohertz*kilohertz*kilohertz));
-  new G4UnitDefinition( "megahertz^-4","MHz-4","Time fourth",
-			1./(megahertz*megahertz*megahertz*megahertz));
-
-  // Stiffness (pressure) and frequency units suitable for solid state physics
-  new G4UnitDefinition("gigapascal", "GPa", "Pressure",  1e9*pascal);
-  new G4UnitDefinition( "terahertz", "THz", "Frequency", 1e12*hertz);
-
-  // Velocity (?!? Why aren't these already defined in Geant4 ?!?)
-  new G4UnitDefinition(     "meters/second",  "m/s", "Velocity", m/s);
-  new G4UnitDefinition( "kilometers/second", "km/s", "Velocity", km/s);
-  new G4UnitDefinition("millimeters/second", "mm/s", "Velocity", mm/s);
-  new G4UnitDefinition("centimeters/second", "cm/s", "Velocity", cm/s);
 }
 
 
@@ -128,6 +84,9 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
     delete pLattice;
     pLattice = 0;
   }
+
+  if (verboseLevel>1)
+    G4cout << "G4LatticeReader produced\n" << *pLattice << G4endl;
 
   return pLattice;	// Lattice complete; return pointer with ownership
 }
@@ -179,6 +138,8 @@ G4bool G4LatticeReader::ProcessToken() {
       fToken == "cij")      return ProcessStiffness();  // Elasticity element
   if (fToken == "emass")    return ProcessMassTensor();	// e- mass eigenvalues
   if (fToken == "valley")   return ProcessEulerAngles(fToken); // e- drift dirs
+  if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
+
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
                             return ProcessCrystalGroup(fToken);
 
@@ -210,7 +171,6 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "ldos")       pLattice->SetLDOS(fValue);
   else if (name == "stdos")      pLattice->SetSTDOS(fValue);
   else if (name == "ftdos")      pLattice->SetFTDOS(fValue);
-  else if (name == "debyefreq")  pLattice->SetDebyeFreq(fValue*ProcessUnits("Frequency"));
   else if (name == "bandgap")    pLattice->SetBandGapEnergy(fValue*ProcessUnits("Energy"));
   else if (name == "pairenergy") pLattice->SetPairProductionEnergy(fValue*ProcessUnits("Energy"));
   else if (name == "fanofactor") pLattice->SetFanoFactor(fValue);
@@ -243,6 +203,7 @@ G4bool G4LatticeReader::ProcessConstants() {
 
   pLattice->SetDynamicalConstants(beta*fUnits, gamma*fUnits, lambda*fUnits,
 				  mu*fUnits);
+
   return psLatfile->good();
 }
 
@@ -308,6 +269,22 @@ G4bool G4LatticeReader::ProcessCrystalGroup(const G4String& name) {
   return psLatfile->good();
 }
 
+// Read frequency, temperature or energy for Debye level (phonon primaries)
+
+G4bool G4LatticeReader::ProcessDebyeLevel() {
+  *psLatfile >> fValue;
+  G4double dval = fValue*ProcessUnits("Energy,Frequency,Temperature");
+
+  if (verboseLevel>1)
+    G4cout << "ProcessDebyeLevel " << fValue << " " << fUnitName << G4endl;
+
+  if (fUnitCat == "Energy")      pLattice->SetDebyeEnergy(dval);
+  if (fUnitCat == "Frequency")   pLattice->SetDebyeFreq(dval);
+  if (fUnitCat == "Temperature") pLattice->SetDebyeTemp(dval);
+
+  return psLatfile->good();
+}
+
 // Read element of reduced elasticity (stiffness) matrix
 
 G4bool G4LatticeReader::ProcessStiffness() {
@@ -318,8 +295,8 @@ G4bool G4LatticeReader::ProcessStiffness() {
   if (verboseLevel>1)
     G4cout << "ProcessStiffness " << p << " " << q << " " << value << G4endl;
 
-  // Convention for indices is C11-C66, but arguments below are (0,0) - (5,5)
-  pLattice->SetCij(p-1,q-1,value*ProcessUnits("Pressure"));
+  // Convention for indices is C11-C66
+  pLattice->SetCpq(p,q,value*ProcessUnits("Pressure"));
   return psLatfile->good();
 }
 

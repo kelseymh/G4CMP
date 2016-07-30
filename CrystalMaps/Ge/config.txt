@@ -11,7 +11,7 @@ decay 1.6456e-54 s4
 LDOS 0.097834
 STDOS 0.53539
 FTDOS 0.36677
-DebyeFreq 2 THz
+Debye 2 THz		# Can also use temperature or energy
 # Charge carrier parameters
 bandgap 0.74 eV
 pairEnergy 2.96 eV

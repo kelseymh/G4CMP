@@ -24,6 +24,7 @@
 // 20160624  Add direct calculation of phonon kinematics from elasticity
 // 20160629  Add post-constuction initialization (for tables, computed pars)
 // 20160630  Drop loading of K-Vg lookup table files
+// 20160727  Store Debye energy for phonon primaries, support different access
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -111,8 +112,9 @@ public:
   void SetElReduced(const ReducedElasticity& mat);
   const ReducedElasticity& GetElReduced() const { return fElReduced; }
 
-  void SetCij(G4int i, G4int j, G4double value);
-  G4double GetCij(G4int i, G4int j) const { return fElReduced[i][j]; }
+  // Reduced elasticity tensor: C11-C66 interface for clarity
+  void SetCpq(G4int p, G4int q, G4double value);
+  G4double GetCpq(G4int p, G4int q) const { return fElReduced[p-1][q-1]; }
 
   // Parameters for phonon production and propagation
   void SetDynamicalConstants(G4double Beta, G4double Gamma,
@@ -129,7 +131,10 @@ public:
   void SetLDOS(G4double LDOS) { fLDOS=LDOS; }
   void SetSTDOS(G4double STDOS) { fSTDOS=STDOS; }
   void SetFTDOS(G4double FTDOS) { fFTDOS=FTDOS; }
-  void SetDebyeFreq(G4double nu) { fDebNu=nu; }
+
+  void SetDebyeEnergy(G4double energy) { fDebye = energy; }
+  void SetDebyeFreq(G4double nu);
+  void SetDebyeTemp(G4double temp);
 
   G4double GetBeta() const { return fBeta; }
   G4double GetGamma() const { return fGamma; }
@@ -140,7 +145,7 @@ public:
   G4double GetLDOS() const { return fLDOS; }
   G4double GetSTDOS() const { return fSTDOS; }
   G4double GetFTDOS() const { return fFTDOS; }
-  G4double GetDebyeFreq() const { return fDebNu; }
+  G4double GetDebyeEnergy() const { return fDebye; }
 
   // Parameters and structures for charge carrier transport
   void SetBandGapEnergy(G4double bg) { fBandGap = bg; }
@@ -179,6 +184,12 @@ public:
 
   // Print out Euler angles of requested valley
   void DumpValley(std::ostream& os, G4int iv) const;
+
+  // Print out crystal symmetry information
+  void DumpCrystalInfo(std::ostream& os) const;
+
+  // Print out elasticity tensor element with units, in C11-C66 notation
+  void DumpCpq(std::ostream& os, G4int p, G4int q) const;
 
   // Parameters for electron intervalley scattering
   void SetIVField(G4double v)    { fIVField = v; }
@@ -228,7 +239,7 @@ private:
   G4double fSTDOS;   // Density of states for ST-phonons
   G4double fFTDOS;   // Density of states for FT-phonons
   G4double fBeta, fGamma, fLambda, fMu; // dynamical constants for material
-  G4double fDebNu;  // Debye frequency
+  G4double fDebye;   // Debye energy, for partitioning primary phonons
 
   G4double fVSound;	// Speed of sound (longitudinal phonon)
   G4double fL0_e;	// Scattering length for electrons

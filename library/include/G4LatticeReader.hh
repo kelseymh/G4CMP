@@ -51,6 +51,7 @@ protected:
   G4bool ProcessConstants();			// Four dynamical constants
   G4bool ProcessMassTensor();			// Electron mass tensor
   G4bool ProcessCrystalGroup(const G4String& name);	// Symmetry, spacing
+  G4bool ProcessDebyeLevel();			// Frequency or temperature
   G4bool ProcessStiffness();			// Elasticity matrix element
   G4bool ProcessEulerAngles(const G4String& name);	// Drift directions
   G4bool SkipComments();			// Everything after '#'

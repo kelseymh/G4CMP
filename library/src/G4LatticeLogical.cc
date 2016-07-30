@@ -23,11 +23,13 @@
 // 20160629  Add post-constuction initialization (for tables, computed pars)
 // 20160630  Drop loading of K-Vg lookup table files
 // 20160701  Add interface to set elements of reduced elasticity matrix
+// 20160727  Store Debye energy for phonon primaries, support different access
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4CMPPhononKinTable.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4CMPConfigManager.hh"	// **** THIS BREAKS G4 PORTING ****
+#include "G4CMPUnitsTable.hh"		// **** THIS BREAKS G4 PORTING ****
 #include "G4RotationMatrix.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
@@ -78,8 +80,8 @@ void G4LatticeLogical::SetElReduced(const ReducedElasticity& mat) {
   fHasElasticity = true;
 }
 
-void G4LatticeLogical::SetCij(G4int i, G4int j, G4double value) {
-  if (i>=0 && i<6 && j>=0 && j<6) fElReduced[i][j] = value;
+void G4LatticeLogical::SetCpq(G4int p, G4int q, G4double value) {
+  if (p>0 && p<7 && q>0 && q<7) fElReduced[p-1][q-1] = value;
   fHasElasticity = true;
 }
 
@@ -512,28 +514,41 @@ const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+// Set Debye energy for phonon partitioning from alternative parameters
+
+void G4LatticeLogical::SetDebyeFreq(G4double nu) { fDebye = nu*h_Planck; }
+
+void G4LatticeLogical::SetDebyeTemp(G4double temp) { fDebye = temp*k_Boltzmann;}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 // Dump structure in format compatible with reading back
 
 void G4LatticeLogical::Dump(std::ostream& os) const {
-  os << "# " << fName << " crystal lattice parameters" << std::endl;
-  if (fHasElasticity) {		// TEMPORARY: Assume cubic only!
-    os << "cubic " << fElReduced[1][1]
-       << " " << fElReduced[1][2]
-       << " " << fElReduced[4][4] << std::endl;
-  }
+  os << "# " << fName << " crystal lattice parameters"
+     << "\n# density " << fDensity/(g/cm3) << " g/cm3"
+     << std::endl;
 
-  for (size_t i=0; i<3; i++) {
-    os << "basis " << fBasis[0].x() << " " << fBasis[0].y()
-       << " " << fBasis[0].z() << std::endl;
-  }
+  if (fHasElasticity) DumpCrystalInfo(os);
 
   os << "# Phonon propagation parameters"
-     << "\ndyn " << fBeta << " " << fGamma << " " << fLambda << " " << fMu
-     << "\nscat " << fB << " decay " << fA
+     << "\ndyn " << fBeta/GPa << " " << fGamma/GPa  << " "
+     << fLambda/GPa  << " " << fMu/GPa << " GPa"
+     << "\nscat " << fB/s3 << " s3" << " decay " << fA/s4 << " s4" 
      << "\nLDOS " << fLDOS << " STDOS " << fSTDOS << " FTDOS " << fFTDOS
+     << "\nDebye " << fDebye/eV << " eV"
      << std::endl;
 
   os << "# Charge carrier propagation parameters"
+     << "\nbandgap " << fBandGap/eV << " eV"
+     << "\npairEnergy " << fPairEnergy/eV << " eV"
+     << "\nfanoFactor " << fFanoFactor
+     << "\nvsound " << fVSound/(m/s) << " m/s"
+     << "\nl0_e " << fL0_e/um << " um"
+     << "\nl0_h " << fL0_h/um << " um"
+     << std::endl;
+
+  os << "# Charge carrier masses [m(electron) units]"
      << "\nhmass " << fHoleMass/mElectron
      << "\nemass " << fMassTensor.xx()/mElectron
      << " " << fMassTensor.yy()/mElectron
@@ -544,7 +559,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << " " << fMassInverse.zz()*mElectron
      << " * 1/m(electron)" << std::endl
      << "# Herring-Vogt scalar mass: " << fElectronMass/mElectron << std::endl
-     << "# sqrt(tensor/scalor): " << fMassRatioSqrt.xx()
+     << "# sqrt(tensor/scalar): " << fMassRatioSqrt.xx()
      << " " << fMassRatioSqrt.yy()
      << " " << fMassRatioSqrt.zz()
      << std::endl;
@@ -554,9 +569,9 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
   }
 
   os << "# Intervalley scattering parameters"
-     << "\nivField " << fIVField << "\t# V/m"
-     << "\nivRate " << fIVRate/s << "\t# s"
-     << "\nivPower" << fIVExponent << std::endl;
+     << "\nivField " << fIVField/(volt/m) << " V/m"
+     << "\nivRate " << fIVRate/hertz << " Hz"
+     << "\nivPower " << fIVExponent << std::endl;
 }
 
 // Print out Euler angles of requested valley
@@ -568,4 +583,69 @@ void G4LatticeLogical::DumpValley(std::ostream& os, G4int iv) const {
      << " " << fValley[iv].theta()/deg
      << " " << fValley[iv].psi()/deg
      << " deg" << std::endl;
+}
+
+// Print out crystal symmetry information
+
+void G4LatticeLogical::DumpCrystalInfo(std::ostream& os) const {
+  G4double a=fBasis[0].mag()/angstrom;		// Lattice params for printing
+  G4double b=fBasis[1].mag()/angstrom;
+  G4double c=fBasis[2].mag()/angstrom;
+
+  os << fCrystal.Name() << " ";
+  switch (fCrystal.group) {		// Lattice constants and angles
+  case G4CMPCrystalGroup::cubic:
+    os << a << " Ang"; break;
+  case G4CMPCrystalGroup::tetragonal:
+  case G4CMPCrystalGroup::hexagonal:
+    os << a << c << " Ang"; break;
+  case G4CMPCrystalGroup::orthorhombic:
+    os << a << " " << b << " " << c << " Ang"; break;
+  case G4CMPCrystalGroup::rhombohedral:
+    os << a << " Ang " << fCrystal.alpha()/deg << " deg"; break;
+  case G4CMPCrystalGroup::monoclinic:
+    os << a << " " << b << " " << c << " Ang "
+       << fCrystal.alpha()/deg << " deg"; break;
+  case G4CMPCrystalGroup::triclinic:
+    os << a << " " << b << " " << c << " Ang "
+       << fCrystal.alpha()/deg << " " << fCrystal.beta()/deg << " "
+       << fCrystal.gamma()/deg << " deg"; break;
+  default: break;
+  }
+  os << std::endl;
+
+  switch (fCrystal.group) {		// Reduced elasticity tensor
+  case G4CMPCrystalGroup::tetragonal:
+    DumpCpq(os,1,6);				// Plus all below
+  case G4CMPCrystalGroup::hexagonal:
+    DumpCpq(os,1,3); DumpCpq(os,3,3); DumpCpq(os,6,6);	// Plus all below
+  case G4CMPCrystalGroup::cubic:
+    DumpCpq(os,4,4);				// Plus all below
+  case G4CMPCrystalGroup::amorphous:
+    DumpCpq(os,1,1); DumpCpq(os,1,2); break;
+  case G4CMPCrystalGroup::rhombohedral:
+    DumpCpq(os,1,1); DumpCpq(os,1,2); DumpCpq(os,1,3);
+    DumpCpq(os,1,4); DumpCpq(os,1,5);
+    DumpCpq(os,3,3); DumpCpq(os,4,4); DumpCpq(os,6,6); break;
+  case G4CMPCrystalGroup::monoclinic:
+    DumpCpq(os,1,6); DumpCpq(os,2,6); DumpCpq(os,3,6);	// Plus all below
+    DumpCpq(os,4,5);
+  case G4CMPCrystalGroup::orthorhombic:
+    for (int p=1; p<7; p++) {		// Upper corner and lower diagonal
+      for (int q=p; q<4; q++) DumpCpq(os,p,q);
+      if (p>3) DumpCpq(os,p,p);
+    }
+    break;
+  case G4CMPCrystalGroup::triclinic:	// Entire upper half, no zeroes
+    for (int p=1; p<7; p++) for (int q=p; q<7; q++) DumpCpq(os,p,q);
+    break;
+  default: break;
+  }
+}
+
+// Print out elasticity tensor element with units
+
+void G4LatticeLogical::DumpCpq(std::ostream& os, G4int p, G4int q) const {
+  os << "Cpq " << p << " " << q << " " << GetCpq(p,q)/GPa << " GPa"
+     << std::endl;
 }

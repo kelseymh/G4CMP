@@ -5,10 +5,11 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/include/G4PhononPolarization.hh
+// $Id$
+/// \file library/include/G4CMPCrystalGroup.hh
 /// \brief Enumerator and support functions for lattice symmetry groups
 //
-// $Id$
+// 20160729  M. Kelsey -- Add accessors for unit cell angles
 
 #include "globals.hh"
 #include "G4ThreeVector.hh"
@@ -36,6 +37,10 @@ public:
   virtual ~G4CMPCrystalGroup() {;}
 
   const char* Name() const { return Name(group); }
+
+  G4double alpha() const { return fabs(axis[0].angle(axis[2])); }
+  G4double beta() const  { return fabs(axis[1].angle(axis[2])); }
+  G4double gamma() const { return fabs(axis[0].angle(axis[1])); }
 
   // Some parameters may be omitted depending on symmetry
   void Set(Bravais grp, G4double alpha=0., G4double beta=0., G4double gamma=0.);

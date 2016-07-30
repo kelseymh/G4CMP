@@ -25,13 +25,13 @@ license can be found at `G4CMP/LICENSE`.
 
 ## User Environment
 
-Users must have a recent (10.2 or later) version of GEANT4
-installed and configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See
-GEANT4's documentation for further instructions.).
+Users must have a recent (10.2 or later) version of GEANT4 installed and
+configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See GEANT4's
+documentation for further instructions.).
 
-Add the G4CMP environment variables using the `g4cmp\_env.csh` or `...sh` scripts
-found in the G4CMP top level directory.  This must be done before building
-or running executables.
+Add the G4CMP environment variables using the `g4cmp\_env.csh` or `...sh`
+scripts found in the G4CMP top level directory.  This must be done before
+building or running executables.
 
 G4CMP is only configured for use on Linux and MacOSX platforms.  A minimum
 configuration requires a recent enough version of GCC or Clang to support
@@ -65,7 +65,8 @@ developers should check the source code in
 
 The default lattice orientation is to be aligned with the associated
 G4VSolid coordinate system.  A different orientation can be specified by
-setting the Miller indices (hkl) with `$G4CMP\_ORIENTATION\_H`, `\_K`, and `\_L`.
+setting the Miller indices (hkl) with `$G4CMP\_MILLER\_H`, `\_K`, and
+`\_L`.
 
 The environment variable `$G4CMP\_MAKE\_PHONONS` controls whether whether the
 two LukeScattering processes (eLukeScattering and hLukeScattering) produce
@@ -92,7 +93,7 @@ across the crystal, used to generate a uniform electric field (no edge or
 corner effects) from the bottom to the top face.  If the voltage is zero
 (the default), then `$G4CMP\_EPOT\_FILE` specifies the name of the mesh
 electric field field to be loaded for the g4cmpCharge test job.  The default
-name is "`Epot\_iZip4\_small`", found in the `charge/` directory.
+name is "`Epot\_iZip4\_$V\_small`", found in the `charge/EPotFiles` directory.
 
 For developers, there is a preprocessor flag (`make G4CMP\_DEBUG=1`) which may
 be set before building the libraries.  This variable will turn on some
@@ -105,7 +106,7 @@ G4CMP supports building with make and CMake.
 ### Building with make
 
 Configure your build environment (using
-`/share/Geant4-${VERSION}/geant4make/geant4make.csh` or `...sh`).
+`<g4dir>/share/Geant4-${VERSION}/geant4make/geant4make.csh` or `...sh`).
 
 After configuring your environment, build the G4CMP library with the command
 
@@ -116,7 +117,7 @@ The libraries (libg4cmp.so and libqhull.so) will be written to your
 user code, and should be found automatically when linking an application.
 
 With the library built, any of the three demonstration programs (phonon,
-charge, and channeling) may be built as a normal GEANT4 user application.
+charge) may be built as a normal GEANT4 user application.
 From the top-level directory, use the command
 
 	make examples
@@ -126,9 +127,8 @@ to build them all, or
 	make <name>
 
 to build just one (where <name> is the directory name of interest).  The
-executables will be named "g4cmpPhonon", "g4cmpCharge", and
-"g4cmpChanneling", respectively, and will be written to
-`$G4WORKDIR/bin/$G4SYSTEM`.
+executables will be named `g4cmpPhonon` and `g4cmpCharge`, respectively, and
+will be written to `$G4WORKDIR/bin/$G4SYSTEM/`.
 
 ### Building with CMake
 
@@ -221,8 +221,12 @@ the crystal system.
 | LDOS    | frac      | longitudnal density of states | sum to unity   |
 | STDOS   | frac      | slow-transverse density of states |            |
 | FTDOS   | frac      | fast-transverse density of states |            |
+| Debye   | val       | Debye energy for phonon primaries | E, T, Hz   |
 | **Charge carrier parameters** |
 | vsound  | Vlong     | sound speed (longitudinal) | m/s               |
+| bandgap | val       | Bandgap energy             | energy (eV)       |
+| pairEnergy | val    | Energy taken by e-h pair   | energy (eV)       |
+| fanoFactor | val    | Spread of e-h pair energy  |                   |
 | l0_e    | len       | electron scattering length | length            |
 | l0_h	  | len       | hole scattering length     | length            |
 | hmass   | m_h       | effective mass of hole   | electron mass ratio |
