@@ -1,8 +1,15 @@
 #include "G4CMPUtils.hh"
 #include "G4PhononPolarization.hh"
+#include "G4LatticePhysical.hh"
 #include "Randomize.hh"
 
-G4int G4CMP::ChoosePhononPolarization(G4double Ldos, 
+G4int G4CMP::ChoosePhononPolarization(const G4LatticePhysical* lattice) {
+  return ChoosePhononPolarization(lattice->GetLDOS(),
+                                  lattice->GetSTDOS(),
+                                  lattice->GetFTDOS());
+}
+
+G4int G4CMP::ChoosePhononPolarization(G4double Ldos,
                                       G4double STdos, 
                                       G4double FTdos) {
   G4double norm = Ldos + STdos + FTdos;
