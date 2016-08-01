@@ -48,7 +48,7 @@ protected:
   // Decide and apply different surface actions; subclasses may override
   virtual G4bool AbsorbTrack(const G4Track& aTrack,
                              const G4Step& aStep,
-                             const G4SurfaceProperty* surfProp);
+                             const G4SurfaceProperty* surfProp) const;
 
   virtual G4VParticleChange* DoAbsorption(const G4Track& aTrack,
                                           const G4Step& aStep,
@@ -56,7 +56,7 @@ protected:
 
   virtual G4bool ReflectTrack(const G4Track& aTrack,
                               const G4Step& aStep,
-                              const G4SurfaceProperty* surfProp);
+                              const G4SurfaceProperty* surfProp) const;
 
   virtual G4VParticleChange* DoReflection(const G4Track& aTrack,
                                           const G4Step& aStep,
@@ -66,7 +66,7 @@ protected:
                                             const G4Step& aStep,
                                             const G4SurfaceProperty* surfProp);
 
-  G4ThreeVector GetSurfaceNormal(const G4Step& aStep);
+  G4ThreeVector GetSurfaceNormal(const G4Step& aStep) const;
 
 private:
   // No copying/moving
