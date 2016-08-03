@@ -281,6 +281,10 @@ public:
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
 			G4double energy, const G4ThreeVector& pos) const;
 
+  G4Track* CreatePhononInFromBoundary(G4int polarization,
+                                      const G4ThreeVector& K,
+                                      G4double energy) const;
+
   // Construct new electron or hole track with correct conditions
   G4Track* CreateChargeCarrier(G4int charge, G4int valley,
 			       const G4ThreeVector& p) const;

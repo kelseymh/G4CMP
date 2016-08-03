@@ -308,10 +308,6 @@ G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
   } else if (IsHole(&track)) {
     return track.GetKineticEnergy();
   } else if (IsPhonon(&track)) {
-    //G4cout << "k*hbar = " << GetTrackInfo(track)->GetPhononK().mag() *
-    //                         GetVelocity(track) *
-    //                         hbar_Planck << G4endl;
-    //G4cout << "getKin = " << track.GetKineticEnergy() << G4endl;
     return track.GetKineticEnergy();
   } else {
     G4Exception("G4CMPProcessUtils::GetKineticEnergy", "G4CMPProcess004",
@@ -675,11 +671,25 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
   return sec;
 }
 
+G4Track*
+G4CMPProcessUtils::CreatePhononInFromBoundary(G4int polarization,
+                                              const G4ThreeVector& waveVec,
+                                              G4double energy) const {
+  G4Track* sec = CreatePhonon(polarization, waveVec, energy);
+
+  G4StepPoint* preStepPoint = currentTrack->GetStep()->GetPreStepPoint();
+
+  G4LogicalVolume* lVol = preStepPoint->GetPhysicalVolume()->GetLogicalVolume();
+  sec->SetLogicalVolumeAtVertex(lVol);
+  const G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
+  sec->SetTouchableHandle(touchable);
+  return sec;
+}
 
 // Generate random valley for charge carrier
 
 G4int G4CMPProcessUtils::ChooseValley() const {
-  return (G4int)(G4UniformRand()*theLattice->NumberOfValleys());  
+  return (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
 }
 
 
