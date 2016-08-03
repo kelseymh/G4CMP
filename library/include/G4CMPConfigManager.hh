@@ -42,6 +42,9 @@ public:
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetGenPhonons()        { return Instance()->genPhonons; }
   static G4double GetEpotScale()         { return Instance()->epotScale; }
+  static G4double GetPhononMinEnergy()   { return Instance()->phononMinE; }
+  static G4double GetElectronMinEnergy() { return Instance()->elecMinE; }
+  static G4double GetHoleMinEnergy()     { return Instance()->holeMinE; }
   static const G4String& GetEpotFile()   { return Instance()->Epot_file; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetHitOutput()  { return Instance()->Hit_file; }
@@ -71,6 +74,12 @@ public:
     { Instance()->genPhonons=value; }
   static void SetEpotScale(G4double value)
     { Instance()->epotScale = value; UpdateGeometry(); }
+  static void SetMinPhononEnergy(G4double value)
+    { Instance()->phononMinE = value; }
+  static void SetMinElectronEnergy(G4double value)
+    { Instance()->elecMinE = value; }
+  static void SetMinHoleEnergy(G4double value)
+    { Instance()->holeMinE = value; }
   static void SetEpotFile(const G4String& name)
     { Instance()->Epot_file=name; UpdateGeometry(); }
   static void SetLatticeDir(const G4String& dir)
@@ -94,6 +103,9 @@ private:
   G4double stepScale;		// Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double genPhonons;         // Rate to create phonons ($G4CMP_LUKE_PHONONS)
   G4double epotScale;		// Scale factor for Epot ($G4CMP_EPOT_SCALE)
+  G4double phononMinE; // Minimum phonon energy to simulate ($G4CMP_MIN_PHON_E)
+  G4double elecMinE;     // Minimum electron energy to simulate ($G4CMP_MIN_ELEC_E)
+  G4double holeMinE;     // Minimum hole energy to simulate ($G4CMP_MIN_HOLE_E)
   G4bool useKVsolver;		// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4int verbose;		// Global verbosity (all processes, lattices)
   G4int ehBounces;		// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
