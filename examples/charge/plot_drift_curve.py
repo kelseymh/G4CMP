@@ -38,10 +38,10 @@ for file in files:
     with open(file) as text:
         reader = csv.DictReader(text)
         for line in reader:
-            if line["Charge"] == "1":
+            if line["Particle Name"] == "G4CMPDriftHole":
                 count_h += 1
                 temp_h += float(line["Track Lifetime [ns]"]) * 1e-9
-            elif line["Charge"] == "-1":
+            elif line["Particle Name"] == "G4CMPDriftElectron":
                 count_e += 1
                 temp_e += float(line["Track Lifetime [ns]"]) * 1e-9
     dt_h.append(temp_h/float(count_h))
