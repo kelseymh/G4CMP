@@ -25,6 +25,7 @@
 //	     (for use with AlongStepDoIt() actions).
 // 20150310  Fix CreateChargeCarrier to use momentum unit vector
 // 20160610  Return regular (NOT Herring-Vogt) wave vector for electrons
+// 20160809  BUG FIX:  th_phonon==0 is fine for computing energy.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -711,8 +712,6 @@ G4double G4CMPProcessUtils::MakePhononTheta(G4double k, G4double ks) const {
 
 G4double G4CMPProcessUtils::MakePhononEnergy(G4double k, G4double ks,
 					     G4double th_phonon) const {
-  if (th_phonon == 0.) return 0.;		// Avoid unnecessary work
-
   return 2.*(k*cos(th_phonon)-ks) * theLattice->GetSoundSpeed() * hbar_Planck;
 }
 
