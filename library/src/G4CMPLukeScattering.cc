@@ -156,6 +156,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   // Create real phonon to be propagated, with random polarization
+  // If phonon is not created, register the energy as deposited
   G4double genLuke = G4CMPConfigManager::GetGenPhonons();
   if (genLuke > 0. && G4UniformRand() < genLuke) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
@@ -163,12 +164,12 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(phonon);
+  } else {
+    aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
   }
 
   MakeGlobalRecoil(k_recoil);		// Converts wavevector to momentum
   FillParticleChange(GetValleyIndex(aTrack), k_recoil);
-
-  aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
   ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
 }
