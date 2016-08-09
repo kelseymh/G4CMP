@@ -55,12 +55,21 @@ G4CMPLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
                                      G4ForceCondition* condition) {
   *condition = Forced;		// In order to recompute MFP after TimeStepper
 
-  G4CMPTrackInformation* trackInfo = GetTrackInfo(aTrack);
+  G4double kmag = 0.;
+  if (IsElectron(&aTrack)) {
+    kmag = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
+                                     GetLocalVelocityVector(aTrack)).mag();
+  } else if (IsHole(&aTrack)) {
+    kmag = GetLocalWaveVector(aTrack).mag();
+  } else {
+    G4Exception("G4CMPLukeScattering::GetMeanFreePath", "Luke001",
+                EventMustBeAborted, "Unknown charge carrier");
+  }
 
-  G4double velocity = GetVelocity(aTrack);
-  G4double kmag = GetLocalWaveVector(aTrack).mag();
+  G4CMPTrackInformation* trackInfo = GetTrackInfo(aTrack);
   G4double l0 = trackInfo->GetScatterLength();
   G4double kSound = CalculateKSound(trackInfo);
+  G4double velocity = GetVelocity(aTrack);
 
   if (verboseLevel > 1) {
     G4cout << "LukeScattering v = " << velocity/m*s << " kmag = " << kmag*m
@@ -91,8 +100,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // volume
   if (verboseLevel > 1) {
     G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
-	   << postStepPoint->GetProcessDefinedStep()->GetProcessName()
-	   << G4endl;
+           << postStepPoint->GetProcessDefinedStep()->GetProcessName()
+           << G4endl;
   }
 
   // Do nothing other than re-calculate mfp when step limit reached or leaving volume
@@ -101,11 +110,17 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     return &aParticleChange;
   }
 
-  G4ThreeVector ktrk = GetLocalWaveVector(aTrack);
-  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
-    ktrk = theLattice->MapPtoK_HV(GetValleyIndex(aTrack),
-				  GetLocalMomentum(aTrack));
+  G4ThreeVector ktrk(0.);
+  if (IsElectron(&aTrack)) {
+    ktrk = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
+                                     GetLocalVelocityVector(aTrack));
+  } else if (IsHole(&aTrack)) {
+    ktrk = GetLocalWaveVector(aTrack);
+  } else {
+    G4Exception("G4CMPLukeScattering::PostStepDoIt", "Luke002",
+                EventMustBeAborted, "Unknown charge carrier");
   }
+
   G4double kmag = ktrk.mag();
   G4double kSound = CalculateKSound(GetTrackInfo(aTrack));
 
@@ -127,8 +142,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // Sanity check for phonon production: should be forward, like Cherenkov
   if (theta_phonon>acos(kSound/kmag) || theta_phonon>halfpi) {
     G4cerr << GetProcessName() << " ERROR: Phonon production theta_phonon "
-     << theta_phonon << " exceeds cone angle " << acos(kSound/kmag)
-	   << G4endl;
+           << theta_phonon << " exceeds cone angle " << acos(kSound/kmag)
+           << G4endl;
     return &aParticleChange;
   }
   
@@ -148,11 +163,11 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   if (verboseLevel > 1) {
     G4cout << "theta_phonon = " << theta_phonon
-	   << " phi_phonon = " << phi_phonon
-	   << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
-	   << "\nk_recoil = " << k_recoil
-	   << "\nk_recoil-mag = " << k_recoil.mag()
-	   << G4endl;
+           << " phi_phonon = " << phi_phonon
+           << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
+           << "\nk_recoil = " << k_recoil
+           << "\nk_recoil-mag = " << k_recoil.mag()
+           << G4endl;
   }
 
   // Create real phonon to be propagated, with random polarization
