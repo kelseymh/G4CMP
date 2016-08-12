@@ -98,7 +98,9 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
 
 void G4CMPMeshElectricField::GetFieldValue(const G4double Point[4],
 				     G4double *Efield) const {
-  Interp.GetField(Point,Efield);
+  // FIXME: TriLinearInterp really shouldn't have a GetField or GetPotential
+  // method. They should be moved into this class.
+  -1 * Interp.GetField(Point,Efield);
 }
 
 

@@ -207,7 +207,7 @@ void ChargeDetectorConstruction::AttachField(G4LogicalVolume* lv)
 {
   if (!fEMField) { // Only create field if one doesn't exist.
     if (voltage != 0.0) {
-      G4double fieldMag = voltage/zipThickness;
+      G4double fieldMag = -voltage/zipThickness;
       fEMField = new G4UniformElectricField(fieldMag*G4ThreeVector(0., 0., 1.));
     } else {
       fEMField = new G4CMPMeshElectricField(epotFileName);
