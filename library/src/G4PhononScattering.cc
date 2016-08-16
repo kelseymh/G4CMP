@@ -12,6 +12,7 @@
 // 20140312  Follow name change CreateSecondary -> CreatePhonon
 // 20140331  Add required process subtype code
 
+#include "G4CMPUtils.hh"
 #include "G4PhononScattering.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononPolarization.hh"
@@ -39,7 +40,7 @@ G4double G4PhononScattering::GetMeanFreePath(const G4Track& aTrack,
 					     G4ForceCondition* condition) {
   //Dynamical constants retrieved from PhysicalLattice
   G4double B = theLattice->GetScatteringConstant();
-  G4double Eoverh = aTrack.GetKineticEnergy()/h_Planck;
+  G4double Eoverh = GetKineticEnergy(aTrack)/h_Planck;
 
   //Calculate mean free path
   G4double mfp = aTrack.GetVelocity()/(Eoverh*Eoverh*Eoverh*Eoverh*B);
@@ -66,14 +67,14 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
   
   //randomly generate a new direction and polarization state
   G4ThreeVector newDir = G4RandomDirection();
-  G4int polarization = ChoosePolarization(theLattice->GetLDOS(),
+  G4int polarization = G4CMP::ChoosePhononPolarization(theLattice->GetLDOS(),
 					  theLattice->GetSTDOS(),
 					  theLattice->GetFTDOS());
 
   // Generate the new track after scattering
   // FIXME:  If polarization state is the same, just step the track!
   G4Track* sec =
-    CreatePhonon(polarization, newDir, aTrack.GetKineticEnergy());
+    CreatePhonon(polarization, newDir, GetKineticEnergy(aTrack));
   aParticleChange.SetNumberOfSecondaries(1);
   aParticleChange.AddSecondary(sec);
 

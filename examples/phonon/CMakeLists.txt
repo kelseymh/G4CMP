@@ -26,6 +26,7 @@ set(phonon_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononActionInitialization.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononDetectorConstruction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononPrimaryGeneratorAction.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononSensitivity.cc
    )
     
 add_executable(g4cmpPhonon g4cmpPhonon.cc ${phonon_SOURCES})

@@ -173,13 +173,13 @@ void ChargeDetectorConstruction::SetupGeometry()
   if (!constructed) {
     topSurfProp = new G4CMPSurfaceProperty("topSurfProp",
                                            1., 0., 0., 0.,
-                                           0., 1., 1., 0.);
+                                           0.22, 1., 0., 0.);
     botSurfProp = new G4CMPSurfaceProperty("botSurfProp",
                                            1., 0., 0., 0.,
-                                           0., 1., 1., 0.);
+                                           0.22, 1., 0., 0.);
     wallSurfProp = new G4CMPSurfaceProperty("wallSurfProp",
                                             1., 0., 0., 0.,
-                                            0., 1., 1., 0.);
+                                            0., 1., 0., 0.);
   }
 
   // Add surfaces between Ge-Al, and Ge-World
@@ -207,7 +207,7 @@ void ChargeDetectorConstruction::AttachField(G4LogicalVolume* lv)
 {
   if (!fEMField) { // Only create field if one doesn't exist.
     if (voltage != 0.0) {
-      G4double fieldMag = voltage/zipThickness;
+      G4double fieldMag = -voltage/zipThickness;
       fEMField = new G4UniformElectricField(fieldMag*G4ThreeVector(0., 0., 1.));
     } else {
       fEMField = new G4CMPMeshElectricField(epotFileName);

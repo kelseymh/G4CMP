@@ -84,8 +84,10 @@ void ChargeFETDigitizerModule::Digitize()
         position[0] = vecPosition.getX();
         position[1] = vecPosition.getY();
         position[2] = vecPosition.getZ();
-        scaleFactors[chan] -= hitVec->at(hitIdx)->GetCharge()
-                                    * RamoFields[chan].GetPotential(position);
+        if(hitVec->at(hitIdx)->GetParticleName()=="G4CMPDriftElectron")
+          scaleFactors[chan] -= -1 * RamoFields[chan].GetPotential(position);
+        else
+          scaleFactors[chan] -= 1 * RamoFields[chan].GetPotential(position);
       }
     }
   }
@@ -106,6 +108,7 @@ void ChargeFETDigitizerModule::PostProcess(const G4String& fileName)
     FatalException, msg);
   }
   G4double throw_away;
+  G4String particleName;
   G4double position[4] = {0.,0.,0.,0.};
   G4double charge;
   G4int RunID, EventID;
@@ -127,21 +130,32 @@ void ChargeFETDigitizerModule::PostProcess(const G4String& fileName)
     std::istringstream(entry) >> throw_away;
 
     std::getline(ssLine,entry,',');
-    std::istringstream(entry) >> charge;
+    std::istringstream(entry) >> particleName;
 
-    for (G4int i=0; i<6; ++i) {
+    for (size_t i=0; i<6; ++i) {
       std::getline(ssLine,entry,',');
       std::istringstream(entry) >> throw_away;
     }
 
-    for (G4int i=0; i<3; ++i) {
+    for (size_t i=0; i<3; ++i) {
       std::getline(ssLine,entry,',');
       std::istringstream(entry) >> position[i];
       position[i] *= m;
     }
 
-    for(G4int chan = 0; chan < numChannels; ++chan)
+    std::getline(ssLine,entry,',');
+    std::istringstream(entry) >> throw_away;
+
+    if (particleName == "G4CMPDriftElectron") {
+      charge = -1;
+    } else if (particleName == "G4CMPDriftElectron") {
+      charge = 1;
+    } else {
+      continue;
+    }
+    for(size_t chan = 0; chan < numChannels; ++chan) {
       scaleFactors[chan] -= charge*RamoFields[chan].GetPotential(position);
+    }
   }
 
   vector<vector<G4double> > FETTraces(CalculateTraces(scaleFactors));
@@ -247,7 +261,7 @@ void ChargeFETDigitizerModule::BuildFETTemplates()
            << "from template file failed. Using default pulse templates."
            << G4endl;
     for(size_t i=0; i<numChannels; ++i) {
-      G4int ndt = (G4int)(preTrig/dt);
+      size_t ndt = static_cast<size_t>(preTrig/dt);
       for(size_t j=0; j<ndt; ++j)
         FETTemplates[i][i][j] = 0;
       for(size_t k=1; k<timeBins-ndt+1; ++k)
@@ -338,7 +352,7 @@ void ChargeFETDigitizerModule::SetRamoFileDir(const G4String& name)
   rebuildRamoFields = true;
 }
 
-void ChargeFETDigitizerModule::SetNumberOfChannels(G4int n)
+void ChargeFETDigitizerModule::SetNumberOfChannels(size_t n)
 {
   if (numChannels == n) return;
   numChannels = n;
@@ -346,7 +360,7 @@ void ChargeFETDigitizerModule::SetNumberOfChannels(G4int n)
   rebuildFETTemplates = true;
 }
 
-void ChargeFETDigitizerModule::SetTimeBins(G4int n)
+void ChargeFETDigitizerModule::SetTimeBins(size_t n)
 {
   if (timeBins == n) return;
   timeBins = n;

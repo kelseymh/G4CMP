@@ -17,8 +17,19 @@
 // 20150601  Add mapping from electron velocity back to momentum
 // 20160517  Add basis vectors for lattice, to use with Miller orientation
 // 20160520  Add reporting function to format valley Euler angles
+// 20160614  Add elasticity tensors and density (set from G4Material) 
+// 20160624  Add direct calculation of phonon kinematics from elasticity
+// 20160627  Interpolate values from lookup tables
+// 20160629  Add post-constuction initialization (for tables, computed pars)
+// 20160630  Drop loading of K-Vg lookup table files
+// 20160701  Add interface to set elements of reduced elasticity matrix
+// 20160727  Store Debye energy for phonon primaries, support different access
 
 #include "G4LatticeLogical.hh"
+#include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
+#include "G4CMPPhononKinTable.hh"	// **** THIS BREAKS G4 PORTING ****
+#include "G4CMPConfigManager.hh"	// **** THIS BREAKS G4 PORTING ****
+#include "G4CMPUnitsTable.hh"		// **** THIS BREAKS G4 PORTING ****
 #include "G4RotationMatrix.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
@@ -28,8 +39,10 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4LatticeLogical::G4LatticeLogical()
-  : verboseLevel(0), fVresTheta(0), fVresPhi(0), fDresTheta(0), fDresPhi(0),
+G4LatticeLogical::G4LatticeLogical(const G4String& name)
+  : verboseLevel(0), fName(name), fDensity(0.),
+    fElasticity{}, fElReduced{}, fHasElasticity(false),
+    fpPhononKin(0), fpPhononTable(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
     fVSound(0.), fL0_e(0.), fL0_h(0.), 
@@ -38,24 +51,87 @@ G4LatticeLogical::G4LatticeLogical()
     fMassTensor(G4Rep3x3(mElectron,0.,0.,0.,mElectron,0.,0.,0.,mElectron)),
     fMassInverse(G4Rep3x3(1/mElectron,0.,0.,0.,1/mElectron,0.,0.,0.,1/mElectron)),
     fIVField(0.), fIVRate(0.), fIVExponent(0.) {
-  for (G4int i=0; i<3; i++) {
-    for (G4int j=0; j<MAXRES; j++) {
-      for (G4int k=0; k<MAXRES; k++) {
-	fMap[i][j][k] = 0.;
-	fN_map[i][j][k].set(0.,0.,0.);
+  for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
+    for (G4int j=0; j<KVBINS; j++) {
+      for (G4int k=0; k<KVBINS; k++) {
+	fKVMap[i][j][k].set(0.,0.,0.);
       }
     }
   }
 }
 
-G4LatticeLogical::~G4LatticeLogical() {;}
+G4LatticeLogical::~G4LatticeLogical() {
+  delete fpPhononKin; fpPhononKin = 0;
+  delete fpPhononTable; fpPhononTable = 0;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+/////////////////////////////////////////////////////////////
+//Copy or set components of reduced elasticity matrix
+/////////////////////////////////////////////////////////////
+void G4LatticeLogical::SetElReduced(const ReducedElasticity& mat) {
+  for (size_t i=0; i<6; i++) {
+    for (size_t j=0; j<6; j++) {
+      fElReduced[i][j] = mat[i][j];
+    }
+  }
+
+  fHasElasticity = true;
+}
+
+void G4LatticeLogical::SetCpq(G4int p, G4int q, G4double value) {
+  if (p>0 && p<7 && q>0 && q<7) fElReduced[p-1][q-1] = value;
+  fHasElasticity = true;
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+/////////////////////////////////////////////////////////////
+// Configure crystal symmetry group and lattice spacing/angles
+/////////////////////////////////////////////////////////////
+void G4LatticeLogical::SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a,
+				  G4double b, G4double c, G4double alpha,
+				  G4double beta, G4double gamma) {
+  fCrystal.Set(group, alpha, beta, gamma);	// Defines unit cell axes
+
+  fBasis[0] = a*fCrystal.axis[0];	// Basis vectors include spacing
+  fBasis[1] = b*fCrystal.axis[1];
+  fBasis[2] = c*fCrystal.axis[2];
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+/////////////////////////////////////////////////////////////
+//Configured derived parameters and tables after loading
+/////////////////////////////////////////////////////////////
+void G4LatticeLogical::Initialize(const G4String& newName) {
+  if (!newName.empty()) SetName(newName);
+
+  CheckBasis();				// Ensure complete, right handed frame
+
+  // If elasticity matrix available, create phonon calculator
+  if (fHasElasticity) {
+    FillElasticity();			// Unpack reduced matrix to full Cijkl
+    if (!fpPhononKin) fpPhononKin = new G4CMPPhononKinematics(this);
+  }
+
+  /***** USE OUR OWN INTERPOLATION, THIS IS TOO SLOW
+  if (fpPhononKin) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
+  *****/
+
+  // Populate phonon lookup tables if not read from files
+  FillMaps();
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 /////////////////////////////////////////////////////////////
 //Complete basis vectors: right-handed, possibly orthonormal
 /////////////////////////////////////////////////////////////
-void G4LatticeLogical::SetBasis() {
+void G4LatticeLogical::CheckBasis() {
   static const G4ThreeVector origin(0.,0.,0.);
   if (fBasis[0].isNear(origin,1e-6)) fBasis[0].set(1.,0.,0.);
   if (fBasis[1].isNear(origin,1e-6)) fBasis[1].set(0.,1.,0.);
@@ -73,143 +149,141 @@ void G4LatticeLogical::SetBasis() {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-///////////////////////////////////////////
-//Load map of group velocity scalars (m/s)
-////////////////////////////////////////////
-G4bool G4LatticeLogical::LoadMap(G4int tRes, G4int pRes,
-				 G4int polarizationState, G4String map) {
-  if (tRes>MAXRES || pRes>MAXRES) {
-    G4cerr << "G4LatticeLogical::LoadMap exceeds maximum resolution of "
-           << MAXRES << " by " << MAXRES << ". terminating." << G4endl;
-    return false; 		//terminate if resolution out of bounds.
+
+// Unpack reduced elasticity tensor into full four-dimensional Cijkl
+void G4LatticeLogical::FillElasticity() {
+  fCrystal.FillElReduced(fElReduced);		// Apply symmetry conditions
+
+  G4int rn1[6][2] = { };
+  rn1[1][0] = rn1[1][1] = rn1[3][0] = rn1[5][1] = 1;
+  rn1[2][0] = rn1[2][1] = rn1[3][1] = rn1[4][0] = 2;
+
+  G4int rn2[2][2] = { };
+  rn2[0][1] = rn2[1][0] = 1;
+
+  for (int l=0; l<2; l++) {
+    for (int k=0; k<2; k++) {
+      for (int j=0; j<6; j++) {
+	for (int i=0; i<6; i++) {
+	  fElasticity[rn1[i][rn2[k][0]]][rn1[i][rn2[k][1]]]
+	             [rn1[j][rn2[l][0]]][rn1[j][rn2[l][1]]] = fElReduced[i][j];
+	}
+      }
+    }
   }
+}
 
-  std::ifstream fMapFile(map.data());
-  if (!fMapFile.is_open()) return false;
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-  G4double vgrp = 0.;
-  for (G4int theta = 0; theta<tRes; theta++) {
-    for (G4int phi = 0; phi<pRes; phi++) {
-      fMapFile >> vgrp;
-      fMap[polarizationState][theta][phi] = vgrp * (m/s);
+// Populate lookup tables using kinematics calculator
+
+void G4LatticeLogical::FillMaps() {
+  if (!fpPhononKin) return;			// Can't fill without solver
+
+  G4ThreeVector k;
+  for (G4int itheta = 0; itheta<KVBINS; itheta++) {
+    G4double theta = itheta*pi/(KVBINS-1);	// Last entry is at pi
+
+    for (G4int iphi = 0; iphi<KVBINS; iphi++) {
+      G4double phi = iphi*twopi/(KVBINS-1);	// Last entry is at 2pi
+
+      k.setRThetaPhi(1.,theta,phi);
+      for (G4int mode=0; mode<G4PhononPolarization::NUM_MODES; mode++) {
+	fKVMap[mode][itheta][iphi] = fpPhononKin->getGroupVelocity(mode,k);
+      }
     }
   }
 
   if (verboseLevel) {
-    G4cout << "\nG4LatticeLogical::LoadMap(" << map << ") successful"
-	   << " (Vg scalars " << tRes << " x " << pRes << " for polarization "
-	   << polarizationState << ")." << G4endl;
+    G4cout << "G4LatticeLogical::FillMaps populated " << KVBINS
+	   << " bins in theta and phi for all polarizations." << G4endl;
   }
-
-  fVresTheta=tRes; //store map dimensions
-  fVresPhi=pRes;
-  return true;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+//Given the phonon wave vector k and polarizationState(0=LON, 1=FT, 2=ST), 
+//returns phonon group velocity vector
 
-////////////////////////////////////
-//Load map of group velocity unit vectors
-///////////////////////////////////
-G4bool G4LatticeLogical::Load_NMap(G4int tRes, G4int pRes,
-				   G4int polarizationState, G4String map) {
-  if (tRes>MAXRES || pRes>MAXRES) {
-    G4cerr << "G4LatticeLogical::LoadMap exceeds maximum resolution of "
-           << MAXRES << " by " << MAXRES << ". terminating." << G4endl;
-    return false; 		//terminate if resolution out of bounds.
-  }
-
-  std::ifstream fMapFile(map.data());
-  if(!fMapFile.is_open()) return false;
-
-  G4double x,y,z;	// Buffers to read coordinates from file
-  G4ThreeVector dir;
-  for (G4int theta = 0; theta<tRes; theta++) {
-    for (G4int phi = 0; phi<pRes; phi++) {
-      fMapFile >> x >> y >> z;
-      dir.set(x,y,z);
-      fN_map[polarizationState][theta][phi] = dir.unit();	// Enforce unity
-    }
-  }
-
-  if (verboseLevel) {
-    G4cout << "\nG4LatticeLogical::Load_NMap(" << map << ") successful"
-	   << " (Vdir " << tRes << " x " << pRes << " for polarization "
-	   << polarizationState << ")." << G4endl;
-  }
-
-  fDresTheta=tRes; //store map dimensions
-  fDresPhi=pRes;
-  return true;
+G4ThreeVector G4LatticeLogical::MapKtoVg(G4int polarizationState,
+					 const G4ThreeVector& k) const {
+  return ( (fpPhononKin && G4CMPConfigManager::UseKVSolver())
+	   ? ComputeKtoVg(polarizationState,k)
+	   : LookupKtoVg(polarizationState,k) );
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-//Given the phonon wave vector k, phonon physical volume Vol 
-//and polarizationState(0=LON, 1=FT, 2=ST), 
-//returns phonon velocity in m/s
-
-G4double G4LatticeLogical::MapKtoV(G4int polarizationState,
-				   const G4ThreeVector& k) const {
-  G4double theta, phi, tRes, pRes;
-
-  tRes=pi/fVresTheta;
-  pRes=twopi/fVresPhi;
-  
-  theta=k.getTheta();
-  phi=k.getPhi();
-
-  if(phi<0) phi = phi + twopi;
-  if(theta>pi) theta=theta-pi;
-
-  G4double Vg = fMap[polarizationState][int(theta/tRes)][int(phi/pRes)];
-
-  if(Vg == 0){
-      G4cout<<"\nFound v=0 for polarization "<<polarizationState
-            <<" theta "<<theta<<" phi "<<phi<< " translating to map coords "
-            <<"theta "<< int(theta/tRes) << " phi " << int(phi/pRes)<<G4endl;
+G4ThreeVector G4LatticeLogical::ComputeKtoVg(G4int polarizationState,
+					     const G4ThreeVector& k) const {  
+  if (!fpPhononKin) {
+    G4Exception("G4LatticeLogical::ComputeKtoV", "Lattice001",
+		RunMustBeAborted, "Phonon kinematics not available.");
   }
+
+  return fpPhononKin->getGroupVelocity(polarizationState,k);
+}
+
+G4ThreeVector G4LatticeLogical::LookupKtoVg(G4int polarizationState,
+					    const G4ThreeVector& k) const {  
+  if (fpPhononTable)
+    return (fpPhononTable->interpGroupVelocity(polarizationState, k.unit())*
+	    fpPhononTable->interpGroupVelocity_N(polarizationState, k.unit()).unit()
+	    );
+
+  G4int iTheta, iPhi;		// Bin indices
+  G4double dTheta, dPhi;	// Offsets in bin for interpolation
+  if (!FindLookupBins(k, iTheta, iPhi, dTheta, dPhi)) {
+    G4Exception("G4LatticeLogical::LookupKtoVDir", "Lattice006",
+		EventMustBeAborted, "Interpolation failed.");
+    return G4ThreeVector();
+  }
+
+  /**** Returns direct bin value
+  const G4ThreeVector& vdir = fKVMap[polarizationState][iTheta][iPhi];
+  ****/
+
+  // Bilinear interpolation using the four corner bins (i,j) to (i+1,j+1)
+  G4ThreeVector vdir =
+    ( (1.-dTheta)*(1.-dPhi)*fKVMap[polarizationState][iTheta][iPhi] +
+      dTheta*(1.-dPhi)*fKVMap[polarizationState][iTheta+1][iPhi] +
+      (1.-dTheta)*dPhi*fKVMap[polarizationState][iTheta][iPhi+1] +
+      dTheta*dPhi*fKVMap[polarizationState][iTheta+1][iPhi+1] );
 
   if (verboseLevel>1) {
-    G4cout << "G4LatticeLogical::MapKtoV theta,phi=" << theta << " " << phi
-	   << " : ith,iph " << int(theta/tRes) << " " << int(phi/pRes)
-	   << " : V " << Vg << G4endl;
-  }
-
-  return Vg;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-//Given the phonon wave vector k, phonon physical volume Vol 
-//and polarizationState(0=LON, 1=FT, 2=ST), 
-//returns phonon propagation direction as dimensionless unit vector
-
-G4ThreeVector G4LatticeLogical::MapKtoVDir(G4int polarizationState,
-					   const G4ThreeVector& k) const {  
-  G4double theta, phi, tRes, pRes;
-
-  tRes=pi/(fDresTheta-1);//The summant "-1" is required:index=[0:array length-1]
-  pRes=2*pi/(fDresPhi-1);
-
-  theta=k.getTheta();
-  phi=k.getPhi(); 
-
-  if(theta>pi) theta=theta-pi;
-  //phi=[0 to 2 pi] in accordance with DMC //if(phi>pi/2) phi=phi-pi/2;
-  if(phi<0) phi = phi + 2*pi;
-
-  G4int iTheta = int(theta/tRes+0.5);
-  G4int iPhi = int(phi/pRes+0.5);
-
-  if (verboseLevel>1) {
-    G4cout << "G4LatticeLogical::MapKtoVDir theta,phi=" << theta << " " << phi
+    G4cout << "G4LatticeLogical::MapKtoVDir theta,phi="
+	   << k.theta() << " " << k.phi()
 	   << " : ith,iph " << iTheta << " " << iPhi
-	   << " : dir " << fN_map[polarizationState][iTheta][iPhi] << G4endl;
+	   << " : dir " << vdir << G4endl;
   }
 
-  return fN_map[polarizationState][iTheta][iPhi];
+  return vdir;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Get theta, phi bins and offsets for interpolation
+
+G4bool 
+G4LatticeLogical::FindLookupBins(const G4ThreeVector& k,
+				 G4int& iTheta, G4int& iPhi,
+				 G4double& dTheta, G4double& dPhi) const {
+  G4double tStep = pi/(KVBINS-1);	// Last element is upper edge
+  G4double pStep = twopi/(KVBINS-1);
+
+  G4double theta = k.getTheta();	// Normalize theta to [0,pi)
+  if (theta<0) theta+=pi;
+
+  G4double phi = k.getPhi();		// Normalize phi to [0,twopi)
+  if (phi<0) phi += twopi;
+
+  dTheta = theta/tStep;
+  iTheta = int(dTheta);
+  dTheta -= iTheta;			// Fraction of bin width
+
+  dPhi = phi/pStep;
+  iPhi = int(dPhi);
+  dPhi -= iPhi;				// Fraction of bin width
+
+  return (iTheta<KVBINS && iPhi<KVBINS);	// Sanity check on bin indexing
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -440,16 +514,41 @@ const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+// Set Debye energy for phonon partitioning from alternative parameters
+
+void G4LatticeLogical::SetDebyeFreq(G4double nu) { fDebye = nu*h_Planck; }
+
+void G4LatticeLogical::SetDebyeTemp(G4double temp) { fDebye = temp*k_Boltzmann;}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 // Dump structure in format compatible with reading back
 
 void G4LatticeLogical::Dump(std::ostream& os) const {
+  os << "# " << fName << " crystal lattice parameters"
+     << "\n# density " << fDensity/(g/cm3) << " g/cm3"
+     << std::endl;
+
+  if (fHasElasticity) DumpCrystalInfo(os);
+
   os << "# Phonon propagation parameters"
-     << "\ndyn " << fBeta << " " << fGamma << " " << fLambda << " " << fMu
-     << "\nscat " << fB << " decay " << fA
+     << "\ndyn " << fBeta/GPa << " " << fGamma/GPa  << " "
+     << fLambda/GPa  << " " << fMu/GPa << " GPa"
+     << "\nscat " << fB/s3 << " s3" << " decay " << fA/s4 << " s4" 
      << "\nLDOS " << fLDOS << " STDOS " << fSTDOS << " FTDOS " << fFTDOS
+     << "\nDebye " << fDebye/eV << " eV"
      << std::endl;
 
   os << "# Charge carrier propagation parameters"
+     << "\nbandgap " << fBandGap/eV << " eV"
+     << "\npairEnergy " << fPairEnergy/eV << " eV"
+     << "\nfanoFactor " << fFanoFactor
+     << "\nvsound " << fVSound/(m/s) << " m/s"
+     << "\nl0_e " << fL0_e/um << " um"
+     << "\nl0_h " << fL0_h/um << " um"
+     << std::endl;
+
+  os << "# Charge carrier masses [m(electron) units]"
      << "\nhmass " << fHoleMass/mElectron
      << "\nemass " << fMassTensor.xx()/mElectron
      << " " << fMassTensor.yy()/mElectron
@@ -460,7 +559,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << " " << fMassInverse.zz()*mElectron
      << " * 1/m(electron)" << std::endl
      << "# Herring-Vogt scalar mass: " << fElectronMass/mElectron << std::endl
-     << "# sqrt(tensor/scalor): " << fMassRatioSqrt.xx()
+     << "# sqrt(tensor/scalar): " << fMassRatioSqrt.xx()
      << " " << fMassRatioSqrt.yy()
      << " " << fMassRatioSqrt.zz()
      << std::endl;
@@ -470,58 +569,83 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
   }
 
   os << "# Intervalley scattering parameters"
-     << "\nivField " << fIVField << "\t# V/m"
-     << "\nivRate " << fIVRate/s << "\t# s"
-     << "\nivPower" << fIVExponent << std::endl;
-
-  os << "# Phonon wavevector/velocity maps" << std::endl;
-  Dump_NMap(os, 0, "LVec.ssv");
-  Dump_NMap(os, 1, "FTVec.ssv");
-  Dump_NMap(os, 2, "STVec.ssv");
-
-  DumpMap(os, 0, "L.ssv");
-  DumpMap(os, 1, "FT.ssv");
-  DumpMap(os, 2, "ST.ssv");
-}
-
-void G4LatticeLogical::DumpMap(std::ostream& os, G4int pol,
-			       const G4String& name) const {
-  os << "VG " << name << " " << (pol==0?"L":pol==1?"FT":pol==2?"ST":"??")
-     << " " << fVresTheta << " " << fVresPhi << std::endl;
-
-  if (verboseLevel) {
-    for (G4int iTheta=0; iTheta<fVresTheta; iTheta++) {
-      for (G4int iPhi=0; iPhi<fVresPhi; iPhi++) {
-	os << fMap[pol][iTheta][iPhi] << std::endl;
-      }
-    }
-  }
-}
-
-void G4LatticeLogical::Dump_NMap(std::ostream& os, G4int pol,
-				 const G4String& name) const {
-  os << "VDir " << name << " " << (pol==0?"L":pol==1?"FT":pol==2?"ST":"??")
-     << " " << fDresTheta << " " << fDresPhi << std::endl;
-
-  if (verboseLevel) {
-    for (G4int iTheta=0; iTheta<fDresTheta; iTheta++) {
-      for (G4int iPhi=0; iPhi<fDresPhi; iPhi++) {
-	os << fN_map[pol][iTheta][iPhi].x()
-	   << " " << fN_map[pol][iTheta][iPhi].y()
-	   << " " << fN_map[pol][iTheta][iPhi].z()
-	   << std::endl;
-      }
-    }
-  }
+     << "\nivField " << fIVField/(volt/m) << " V/m"
+     << "\nivRate " << fIVRate/hertz << " Hz"
+     << "\nivPower " << fIVExponent << std::endl;
 }
 
 // Print out Euler angles of requested valley
 
 void G4LatticeLogical::DumpValley(std::ostream& os, G4int iv) const {
-  if (iv < 0 || iv >= NumberOfValleys()) return;
+  if (iv < 0 || static_cast<size_t>(iv) >= NumberOfValleys()) return;
 
   os << "valley " << fValley[iv].phi()/deg
      << " " << fValley[iv].theta()/deg
      << " " << fValley[iv].psi()/deg
      << " deg" << std::endl;
+}
+
+// Print out crystal symmetry information
+
+void G4LatticeLogical::DumpCrystalInfo(std::ostream& os) const {
+  G4double a=fBasis[0].mag()/angstrom;		// Lattice params for printing
+  G4double b=fBasis[1].mag()/angstrom;
+  G4double c=fBasis[2].mag()/angstrom;
+
+  os << fCrystal.Name() << " ";
+  switch (fCrystal.group) {		// Lattice constants and angles
+  case G4CMPCrystalGroup::cubic:
+    os << a << " Ang"; break;
+  case G4CMPCrystalGroup::tetragonal:
+  case G4CMPCrystalGroup::hexagonal:
+    os << a << c << " Ang"; break;
+  case G4CMPCrystalGroup::orthorhombic:
+    os << a << " " << b << " " << c << " Ang"; break;
+  case G4CMPCrystalGroup::rhombohedral:
+    os << a << " Ang " << fCrystal.alpha()/deg << " deg"; break;
+  case G4CMPCrystalGroup::monoclinic:
+    os << a << " " << b << " " << c << " Ang "
+       << fCrystal.alpha()/deg << " deg"; break;
+  case G4CMPCrystalGroup::triclinic:
+    os << a << " " << b << " " << c << " Ang "
+       << fCrystal.alpha()/deg << " " << fCrystal.beta()/deg << " "
+       << fCrystal.gamma()/deg << " deg"; break;
+  default: break;
+  }
+  os << std::endl;
+
+  switch (fCrystal.group) {		// Reduced elasticity tensor
+  case G4CMPCrystalGroup::tetragonal:
+    DumpCpq(os,1,6);				// Plus all below
+  case G4CMPCrystalGroup::hexagonal:
+    DumpCpq(os,1,3); DumpCpq(os,3,3); DumpCpq(os,6,6);	// Plus all below
+  case G4CMPCrystalGroup::cubic:
+    DumpCpq(os,4,4);				// Plus all below
+  case G4CMPCrystalGroup::amorphous:
+    DumpCpq(os,1,1); DumpCpq(os,1,2); break;
+  case G4CMPCrystalGroup::rhombohedral:
+    DumpCpq(os,1,1); DumpCpq(os,1,2); DumpCpq(os,1,3);
+    DumpCpq(os,1,4); DumpCpq(os,1,5);
+    DumpCpq(os,3,3); DumpCpq(os,4,4); DumpCpq(os,6,6); break;
+  case G4CMPCrystalGroup::monoclinic:
+    DumpCpq(os,1,6); DumpCpq(os,2,6); DumpCpq(os,3,6);	// Plus all below
+    DumpCpq(os,4,5);
+  case G4CMPCrystalGroup::orthorhombic:
+    for (int p=1; p<7; p++) {		// Upper corner and lower diagonal
+      for (int q=p; q<4; q++) DumpCpq(os,p,q);
+      if (p>3) DumpCpq(os,p,p);
+    }
+    break;
+  case G4CMPCrystalGroup::triclinic:	// Entire upper half, no zeroes
+    for (int p=1; p<7; p++) for (int q=p; q<7; q++) DumpCpq(os,p,q);
+    break;
+  default: break;
+  }
+}
+
+// Print out elasticity tensor element with units
+
+void G4LatticeLogical::DumpCpq(std::ostream& os, G4int p, G4int q) const {
+  os << "Cpq " << p << " " << q << " " << GetCpq(p,q)/GPa << " GPa"
+     << std::endl;
 }

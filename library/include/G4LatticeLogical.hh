@@ -20,36 +20,58 @@
 // 20150601  Add mapping from electron velocity back to momentum
 // 20160517  Add basis vectors for lattice, to use with Miller orientation
 // 20160520  Add reporting function to format valley Euler angles
+// 20160614  Add elasticity tensors and density (set from G4Material) 
+// 20160624  Add direct calculation of phonon kinematics from elasticity
+// 20160629  Add post-constuction initialization (for tables, computed pars)
+// 20160630  Drop loading of K-Vg lookup table files
+// 20160727  Store Debye energy for phonon primaries, support different access
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
 
 #include "globals.hh"
+#include "G4CMPCrystalGroup.hh"
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
+#include "G4PhononPolarization.hh"
 #include <iosfwd>
 #include <vector>
 
+class G4CMPPhononKinematics;
+class G4CMPPhononKinTable;
 
+// Arrays for full and reduced elasticity matrices
 class G4LatticeLogical {
 public:
-  G4LatticeLogical();
+  typedef G4double Elasticity[3][3][3][3];
+  typedef G4double ReducedElasticity[6][6];
+
+public:
+  G4LatticeLogical(const G4String& name="");
   virtual ~G4LatticeLogical();
 
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
-  G4bool LoadMap(G4int, G4int, G4int, G4String);
-  G4bool Load_NMap(G4int, G4int, G4int, G4String);
+  void SetName(const G4String& name) { fName = name; }
+  const G4String& GetName() const { return fName; }
+
+  // Compute derived quantities, fill tables, etc. after setting parameters
+  void Initialize(const G4String& name="");
 
   // Dump structure in format compatible with reading back
   void Dump(std::ostream& os) const;
-  void DumpMap(std::ostream& os, G4int pol, const G4String& name) const;
-  void Dump_NMap(std::ostream& os, G4int pol, const G4String& name) const;
 
   // Get group velocity magnitude, direction for input polarization and wavevector
   // NOTE:  Wavevector must be in lattice symmetry frame (X == symmetry axis)
-  virtual G4double MapKtoV(G4int pol, const G4ThreeVector& k) const;
-  virtual G4ThreeVector MapKtoVDir(G4int pol, const G4ThreeVector& k) const;
+  virtual G4ThreeVector MapKtoVg(G4int pol, const G4ThreeVector& k) const;
+
+  virtual G4double MapKtoV(G4int pol, const G4ThreeVector& k) const {
+    return MapKtoVg(pol,k).mag();
+  }
+
+  virtual G4ThreeVector MapKtoVDir(G4int pol, const G4ThreeVector& k) const {
+    return MapKtoVg(pol,k).unit();
+  }
 
   // Convert between electron momentum and valley velocity or HV wavevector
   // NOTE:  Input vector must be in lattice symmetry frame (X == symmetry axis)
@@ -68,23 +90,31 @@ public:
   G4double MapPtoEkin(G4int ivalley, G4ThreeVector p_e) const;
   G4double MapV_elToEkin(G4int ivalley, G4ThreeVector v_e) const;
 
-public:
-  // Unit (direct) basis vectors for crystal structure
-  void SetBasis(const G4ThreeVector& b1, const G4ThreeVector& b2,
-		const G4ThreeVector& b3) {
-    SetBasis(0, b1); SetBasis(1, b2); SetBasis(2, b3);
-  }
+  // Configure crystal symmetry group and lattice spacing/angles
+  void SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a, G4double b,
+		  G4double c, G4double alpha, G4double beta, G4double gamma);
 
-  void SetBasis(G4int i, const G4ThreeVector& bi) {
-    if (i>=0 && i<3) fBasis[i] = bi.unit();
-  }
-
-  void SetBasis();	// Initialize or complete (via cross) basis vectors
-
+  // Get specified basis vector (returns null if invalid index)
   const G4ThreeVector& GetBasis(G4int i) const {
     static const G4ThreeVector nullVec(0.,0.,0.);
     return (i>=0 && i<3 ? fBasis[i] : nullVec);
   }
+
+  // Physical parameters of lattice (density, elasticity)
+  void SetDensity(G4double val) { fDensity = val; }
+
+  G4double GetDensity() const { return fDensity; }
+  const Elasticity& GetElasticity() const { return fElasticity; }
+  G4double GetCijkl(G4int i, G4int j, G4int k, G4int l) const {
+    return fElasticity[i][j][k][l];
+  }
+
+  void SetElReduced(const ReducedElasticity& mat);
+  const ReducedElasticity& GetElReduced() const { return fElReduced; }
+
+  // Reduced elasticity tensor: C11-C66 interface for clarity
+  void SetCpq(G4int p, G4int q, G4double value);
+  G4double GetCpq(G4int p, G4int q) const { return fElReduced[p-1][q-1]; }
 
   // Parameters for phonon production and propagation
   void SetDynamicalConstants(G4double Beta, G4double Gamma,
@@ -102,6 +132,10 @@ public:
   void SetSTDOS(G4double STDOS) { fSTDOS=STDOS; }
   void SetFTDOS(G4double FTDOS) { fFTDOS=FTDOS; }
 
+  void SetDebyeEnergy(G4double energy) { fDebye = energy; }
+  void SetDebyeFreq(G4double nu);
+  void SetDebyeTemp(G4double temp);
+
   G4double GetBeta() const { return fBeta; }
   G4double GetGamma() const { return fGamma; }
   G4double GetLambda() const { return fLambda; }
@@ -111,9 +145,12 @@ public:
   G4double GetLDOS() const { return fLDOS; }
   G4double GetSTDOS() const { return fSTDOS; }
   G4double GetFTDOS() const { return fFTDOS; }
+  G4double GetDebyeEnergy() const { return fDebye; }
 
-public:
   // Parameters and structures for charge carrier transport
+  void SetBandGapEnergy(G4double bg) { fBandGap = bg; }
+  void SetPairProductionEnergy(G4double pp) { fPairEnergy = pp; }
+  void SetFanoFactor(G4double f) { fFanoFactor = f; }
   void SetSoundSpeed(G4double v) { fVSound = v; }
   void SetHoleScatter(G4double l0) { fL0_h = l0; }
   void SetHoleMass(G4double hmass) { fHoleMass = hmass; }
@@ -121,6 +158,9 @@ public:
   void SetMassTensor(const G4RotationMatrix& etens);
   void SetMassTensor(G4double mXX, G4double mYY, G4double mZZ);
 
+  G4double GetBandGapEnergy() const             { return fBandGap; }
+  G4double GetPairProductionEnergy() const      { return fPairEnergy; }
+  G4double GetFanoFactor() const                { return fFanoFactor; }
   G4double GetSoundSpeed() const                { return fVSound; }
   G4double GetHoleScatter() const               { return fL0_h; }
   G4double GetHoleMass() const                  { return fHoleMass; }
@@ -145,6 +185,12 @@ public:
   // Print out Euler angles of requested valley
   void DumpValley(std::ostream& os, G4int iv) const;
 
+  // Print out crystal symmetry information
+  void DumpCrystalInfo(std::ostream& os) const;
+
+  // Print out elasticity tensor element with units, in C11-C66 notation
+  void DumpCpq(std::ostream& os, G4int p, G4int q) const;
+
   // Parameters for electron intervalley scattering
   void SetIVField(G4double v)    { fIVField = v; }
   void SetIVRate(G4double v)     { fIVRate = v; }
@@ -154,31 +200,46 @@ public:
   G4double GetIVRate() const     { return fIVRate; }
   G4double GetIVExponent() const { return fIVExponent; }
 
-public:
-  enum { MAXRES=322 };			    // Maximum map resolution (bins)
-
 private:
+  void CheckBasis();	// Initialize or complete (via cross) basis vectors
+  void FillElasticity();	// Unpack reduced Cij into full Cijlk
+  void FillMaps();	// Populate lookup tables using kinematics calculator
   void FillMassInfo();	// Called from SetMassTensor() to compute derived forms
+
+  // Get theta, phi bins and offsets for interpolation
+  G4bool FindLookupBins(const G4ThreeVector& k, G4int& iTheta, G4int& iPhi,
+			G4double& dTheta, G4double& dPhi) const;
+
+  // Use lookup table to get group velocity for phonons
+  G4ThreeVector LookupKtoVg(G4int pol, const G4ThreeVector& k) const;
+
+  // Use direct calculation to get group velocity for phonons
+  G4ThreeVector ComputeKtoVg(G4int pol, const G4ThreeVector& k) const;
 
 private:
   G4int verboseLevel;			    // Enable diagnostic output
+  G4String fName;			    // Name of lattice for messages
 
+  G4CMPCrystalGroup fCrystal;		    // Symmetry group, axis unit vectors
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
+  G4double fDensity;			    // Material density (natural units)
+  Elasticity fElasticity;	    	    // Full 4D elasticity tensor
+  ReducedElasticity fElReduced;		    // Reduced 2D elasticity tensor
+  G4bool fHasElasticity;		    // Flag valid elasticity tensors
+  G4CMPPhononKinematics* fpPhononKin;	    // Kinematics calculator with tensor
+  G4CMPPhononKinTable* fpPhononTable;	    // Kinematics interpolator
 
-  G4double fMap[3][MAXRES][MAXRES];	    // map for group velocity scalars
-  G4ThreeVector fN_map[3][MAXRES][MAXRES];  // map for direction vectors
+  // map for group velocity vectors
+  enum { KVBINS=315 };			    // K-Vg lookup table binning
+  G4ThreeVector fKVMap[G4PhononPolarization::NUM_MODES][KVBINS][KVBINS];
 
-  G4int fVresTheta; //velocity  map theta resolution (inclination)
-  G4int fVresPhi;   //velocity  map phi resolution  (azimuth)
-  G4int fDresTheta; //direction map theta resn
-  G4int fDresPhi;   //direction map phi resn 
-
-  G4double fA;       //Scaling constant for Anh.Dec. mean free path
-  G4double fB;       //Scaling constant for Iso.Scat. mean free path
-  G4double fLDOS;    //Density of states for L-phonons
-  G4double fSTDOS;   //Density of states for ST-phonons
-  G4double fFTDOS;   //Density of states for FT-phonons
-  G4double fBeta, fGamma, fLambda, fMu; //dynamical constants for material
+  G4double fA;       // Scaling constant for Anh.Dec. mean free path
+  G4double fB;       // Scaling constant for Iso.Scat. mean free path
+  G4double fLDOS;    // Density of states for L-phonons
+  G4double fSTDOS;   // Density of states for ST-phonons
+  G4double fFTDOS;   // Density of states for FT-phonons
+  G4double fBeta, fGamma, fLambda, fMu; // dynamical constants for material
+  G4double fDebye;   // Debye energy, for partitioning primary phonons
 
   G4double fVSound;	// Speed of sound (longitudinal phonon)
   G4double fL0_e;	// Scattering length for electrons
@@ -187,6 +248,9 @@ private:
   const G4double mElectron;	 // Free electron mass (without G4's c^2)
   G4double fHoleMass;		 // Effective mass of +ve carrier
   G4double fElectronMass;	 // Effective mass (scalar) of -ve carrier
+  G4double fBandGap;	 // Minimum band gap energy
+  G4double fPairEnergy;   // electron-hole pair production average energy
+  G4double fFanoFactor;   // Fano factor (duh)
   G4RotationMatrix fMassTensor;	 // Full electron mass tensor
   G4RotationMatrix fMassInverse; // Inverse electron mass tensor (convenience)
   G4RotationMatrix fMassRatioSqrt;       // SQRT of tensor/scalar ratio

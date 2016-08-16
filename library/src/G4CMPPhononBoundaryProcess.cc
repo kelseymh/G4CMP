@@ -17,6 +17,7 @@
 // 20131115  Throw exception if track's polarization state is invalid.
 // 20140103  Move charge version of code here, still commented out
 // 20140331  Add required process subtype code
+// 20160624  Use GetTrackInfo() accessor
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -142,14 +143,14 @@ void G4CMPPhononBoundaryProcess::LoadDataForTrack(const G4Track* track) {
 }
 
 
-G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track&aTrack,
-                                             G4double prevStepLength,
+G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track& /*aTrack*/,
+                                             G4double /*prevStepLength*/,
                                              G4ForceCondition* condition) {
   *condition = Forced;
   return DBL_MAX;
 }
 
-G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
+G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& /*aTrack*/,
                                                const G4Step& aStep,
                                                const G4SurfaceProperty* surfProp) {
   // Check out this abomination:
@@ -162,18 +163,15 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
   G4double absProb = phonPropTable->GetConstProperty("absProb");
   G4double absMinK = phonPropTable->GetConstProperty("absMinK");
 
-  G4CMPTrackInformation* trackInfo = static_cast<G4CMPTrackInformation*>(
-                            aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                                                        );
-  G4ThreeVector k = trackInfo->GetPhononK();
+  G4ThreeVector k = GetTrackInfo()->GetPhononK();
 
   return (G4UniformRand() <= absProb && k*surfNorm > absMinK);
 }
 
 G4VParticleChange*
 G4CMPPhononBoundaryProcess::DoAbsorption(const G4Track& aTrack,
-                                         const G4Step& aStep,
-                                         const G4SurfaceProperty* surfProp) {
+                                         const G4Step& /*aStep*/,
+                                         const G4SurfaceProperty* /*surfProp*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track absorbed" << G4endl;
 
@@ -184,8 +182,8 @@ G4CMPPhononBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   return &aParticleChange;
 }
 
-G4bool G4CMPPhononBoundaryProcess::ReflectTrack(const G4Track& aTrack,
-                                                const G4Step& aStep,
+G4bool G4CMPPhononBoundaryProcess::ReflectTrack(const G4Track& /*aTrack*/,
+                                                const G4Step& /*aStep*/,
                                                 const G4SurfaceProperty* surfProp) {
   G4MaterialPropertiesTable*
     phonPropTable = const_cast<G4MaterialPropertiesTable*>(
@@ -256,9 +254,9 @@ G4CMPPhononBoundaryProcess::DoReflection(const G4Track& aTrack,
 }
 
 G4VParticleChange*
-G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
-                                           const G4Step& aStep,
-                                           const G4SurfaceProperty* surfProp) {
+G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& /*aTrack*/,
+                                           const G4Step& /*aStep*/,
+                                           const G4SurfaceProperty* /*surfProp*/) {
   //noop
   return &aParticleChange;
 }

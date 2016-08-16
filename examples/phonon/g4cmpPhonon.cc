@@ -24,10 +24,9 @@
 #endif
 
 #include "G4CMPPhysicsList.hh"
-#include "G4CMPStackingAction.hh"
+#include "G4CMPConfigManager.hh"
 #include "PhononActionInitialization.hh"
 #include "PhononDetectorConstruction.hh"
-#include "PhononPrimaryGeneratorAction.hh"
 
 int main(int argc,char** argv)
 {
@@ -47,6 +46,9 @@ int main(int argc,char** argv)
  // Set user action classes (different for Geant4 10.0)
  //
  runManager->SetUserInitialization(new PhononActionInitialization);
+
+ // Create G4CMP configuration manager to ensure macro commands exist
+ G4CMPConfigManager::GetVerboseLevel();
 
 #ifdef G4VIS_USE
  // Visualization manager

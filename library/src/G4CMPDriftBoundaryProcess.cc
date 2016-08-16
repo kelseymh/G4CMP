@@ -34,7 +34,7 @@ G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess(const G4String& name,
                                                      G4CMPProcessSubType type)
   : G4CMPVDriftProcess(name, type),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance())
-{;}
+{}
 
 G4double G4CMPDriftBoundaryProcess::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
@@ -150,9 +150,10 @@ void G4CMPDriftBoundaryProcess::LoadDataForTrack(const G4Track* track) {
 
 // Decide and apply different surface actions; subclasses may override
 
-G4bool G4CMPDriftBoundaryProcess::
-AbsorbTrack(const G4Track& aTrack, const G4Step& aStep,
-	    const G4SurfaceProperty* surfProp) {
+G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
+                                              const G4Step& aStep,
+                                              const G4SurfaceProperty* surfProp)
+                                              const {
   // Check out this abomination:
   G4MaterialPropertiesTable*
     chargePropTable = const_cast<G4MaterialPropertiesTable*>(
@@ -186,8 +187,8 @@ AbsorbTrack(const G4Track& aTrack, const G4Step& aStep,
 
 G4VParticleChange*
 G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
-                                        const G4Step& aStep,
-                                        const G4SurfaceProperty* surfProp) {
+                                        const G4Step& /*aStep*/,
+                                        const G4SurfaceProperty* /*surfProp*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track absorbed" << G4endl;
 
@@ -198,9 +199,10 @@ G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   return &aParticleChange;
 }
 
-G4bool G4CMPDriftBoundaryProcess::ReflectTrack(const G4Track& aTrack,
-                                               const G4Step& aStep,
-                                               const G4SurfaceProperty* surfProp) {
+G4bool G4CMPDriftBoundaryProcess::ReflectTrack(const G4Track& /*aTrack*/,
+                                               const G4Step& /*aStep*/,
+                                               const G4SurfaceProperty* surfProp)
+                                               const {
   G4MaterialPropertiesTable*
     chargePropTable = const_cast<G4MaterialPropertiesTable*>(
                         static_cast<const G4CMPSurfaceProperty*>(surfProp)->
@@ -217,7 +219,7 @@ G4bool G4CMPDriftBoundaryProcess::ReflectTrack(const G4Track& aTrack,
 G4VParticleChange*  
 G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack,
                                         const G4Step& aStep,
-                                        const G4SurfaceProperty* surfProp) {
+                                        const G4SurfaceProperty* /*surfProp*/) {
   if (++numReflections > maxNumReflections && maxNumReflections >= 0) {
     // If it reflects more than the user wants, we just kill it without
     // absorbing.
@@ -287,9 +289,9 @@ G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack,
 }
 
 G4VParticleChange*
-G4CMPDriftBoundaryProcess::DoTransmission(const G4Track& aTrack,
-                                          const G4Step& aStep,
-                                          const G4SurfaceProperty* surfProp) {
+G4CMPDriftBoundaryProcess::DoTransmission(const G4Track& /*aTrack*/,
+                                          const G4Step& /*aStep*/,
+                                          const G4SurfaceProperty* /*surfProp*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track transmitted" << G4endl;
 
@@ -297,7 +299,8 @@ G4CMPDriftBoundaryProcess::DoTransmission(const G4Track& aTrack,
   return &aParticleChange;
 }
 
-G4ThreeVector G4CMPDriftBoundaryProcess::GetSurfaceNormal(const G4Step& aStep) {
+G4ThreeVector
+G4CMPDriftBoundaryProcess::GetSurfaceNormal(const G4Step& aStep) const {
   // Get outward normal using G4Navigator method (more reliable than G4VSolid)
   G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
   std::vector<G4Navigator*>::iterator iNav =

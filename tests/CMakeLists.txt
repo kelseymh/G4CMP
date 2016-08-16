@@ -46,9 +46,16 @@ set_target_properties(luke_dist PROPERTIES
     INSTALL_RPATH_USE_LINK_RPATH TRUE
     BUILD_WITH_INSTALL_RPATH FALSE)
 
-add_executable(testG4CMPMatrix testG4CMPMatrix.cc)
-target_link_libraries(testG4CMPMatrix G4cmp)
-set_target_properties(testG4CMPMatrix PROPERTIES
+add_executable(testBlockData testBlockData.cc)
+target_link_libraries(testBlockData G4cmp)
+set_target_properties(testBlockData PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+    INSTALL_RPATH_USE_LINK_RPATH TRUE
+    BUILD_WITH_INSTALL_RPATH FALSE)
+
+add_executable(testCrystalGroup testCrystalGroup.cc)
+target_link_libraries(testCrystalGroup G4cmp)
+set_target_properties(testCrystalGroup PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
     INSTALL_RPATH_USE_LINK_RPATH TRUE
     BUILD_WITH_INSTALL_RPATH FALSE)

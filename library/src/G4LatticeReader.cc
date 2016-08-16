@@ -19,9 +19,17 @@
 // 20140313  Use diagonal terms directly to fill electron mass tensor
 // 20140314  Add charge-carrier propagation parameters
 // 20140324  Add intervalley scattering parameters
+// 20160517  Add basis vectors for lattice
+// 20160615  Add elasticity tensor (cubic lattice only)
+// 20160630  Drop loading of K-Vg lookup table files
+// 20160701  Withdraw seting basis vectors, set crystal symmetry instead
+// 20160727  Use G4CMP-specific units; allow multiple units for Debye energy
+// 20160802  Use hep_pascal for pressure (Windows compatibility)
 
-#include "G4CMPConfigManager.hh"
 #include "G4LatticeReader.hh"
+#include "G4CMPConfigManager.hh"
+#include "G4CMPCrystalGroup.hh"
+#include "G4CMPUnitsTable.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeLogical.hh"
 #include "G4PhysicalConstants.hh"
@@ -35,11 +43,13 @@
 // Constructor and destructor
 
 G4LatticeReader::G4LatticeReader(G4int vb)
-  : verboseLevel(vb), psLatfile(0), pLattice(0), fMapPath(""),
-    fToken(""), fValue(0.), fMap(""), fsPol(""), fPol(-1), fNX(0), fNY(0),
-    f3Vec(0.,0.,0.), fLastBasis(-1),
+  : verboseLevel(vb?vb:G4CMPConfigManager::GetVerboseLevel()),
+    psLatfile(0), pLattice(0),
+    fToken(""), fValue(0.), f3Vec(0.,0.,0.),
     fDataDir(G4CMPConfigManager::GetLatticeDir()),
-    mElectron(electron_mass_c2/c_squared) {}
+    mElectron(electron_mass_c2/c_squared) {
+  G4CMPUnitsTable::Init();	// Ensures thread-by-thread initialization
+}
 
 G4LatticeReader::~G4LatticeReader() {
   delete psLatfile; psLatfile = 0;
@@ -60,7 +70,6 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
   }
 
   pLattice = new G4LatticeLogical;	// Create lattice to be filled
-  fLastBasis = -1;			// Reset index counter for basis vectors
 
   G4bool goodLattice = true;
   while (!psLatfile->eof()) {
@@ -77,7 +86,9 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
     pLattice = 0;
   }
 
-  pLattice->SetBasis();	// Fill or complete right-handed basis vectors
+  if (verboseLevel>1)
+    G4cout << "G4LatticeReader produced\n" << *pLattice << G4endl;
+
   return pLattice;	// Lattice complete; return pointer with ownership
 }
 
@@ -99,11 +110,6 @@ G4bool G4LatticeReader::OpenFile(const G4String& filename) {
     }
     if (verboseLevel>1) G4cout << " Found file " << filepath << G4endl;
   }
-
-  // Extract path from filename to use in finding .ssv map files
-  size_t lastdir = filepath.last('/');
-  if (lastdir == std::string::npos) fMapPath = ".";	// No path at all
-  else fMapPath = filepath(0,lastdir);
 
   return true;
 }
@@ -128,12 +134,16 @@ G4bool G4LatticeReader::ProcessToken() {
 
   fToken.toLower();
   if (fToken.contains('#')) return SkipComments();	// Ignore rest of line
-  if (fToken == "vdir")     return ProcessNMap();	// Direction vector map
-  if (fToken == "vg")       return ProcessMap();	// Velocity magnitudes
   if (fToken == "dyn")      return ProcessConstants();	// Dynamical parameters
+  if (fToken == "stiffness" ||
+      fToken == "cij")      return ProcessStiffness();  // Elasticity element
   if (fToken == "emass")    return ProcessMassTensor();	// e- mass eigenvalues
-  if (fToken == "basis")    return ProcessBasisVector(); // Crystal axis dir
   if (fToken == "valley")   return ProcessEulerAngles(fToken); // e- drift dirs
+  if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
+
+  if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
+                            return ProcessCrystalGroup(fToken);
+
   return ProcessValue(fToken);				// Single numeric value
 }
 
@@ -151,26 +161,29 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   if (verboseLevel>1) G4cout << " ProcessValue " << fValue << G4endl;
 
   G4bool good = true;
-       if (name == "beta")   pLattice->SetBeta(fValue);
-  else if (name == "gamma")  pLattice->SetGamma(fValue);
-  else if (name == "lambda") pLattice->SetLambda(fValue);
-  else if (name == "mu")     pLattice->SetMu(fValue);
-  else if (name == "scat")   pLattice->SetScatteringConstant(fValue*s*s*s);
-  else if (name == "b")      pLattice->SetScatteringConstant(fValue*s*s*s);
-  else if (name == "decay")  pLattice->SetAnhDecConstant(fValue*s*s*s*s);
-  else if (name == "a")      pLattice->SetAnhDecConstant(fValue*s*s*s*s);
-  else if (name == "ldos")   pLattice->SetLDOS(fValue);
-  else if (name == "stdos")  pLattice->SetSTDOS(fValue);
-  else if (name == "ftdos")  pLattice->SetFTDOS(fValue);
-  else if (name == "vsound") pLattice->SetSoundSpeed(fValue*m/s);
-  else if (name == "escat")  pLattice->SetElectronScatter(fValue*m);
-  else if (name == "l0_e")   pLattice->SetElectronScatter(fValue*m);
-  else if (name == "hscat")  pLattice->SetHoleScatter(fValue*m);
-  else if (name == "l0_h")   pLattice->SetHoleScatter(fValue*m);
-  else if (name == "hmass")  pLattice->SetHoleMass(fValue*mElectron);
-  else if (name == "ivfield") pLattice->SetIVField(fValue);	// in V/m
-  else if (name == "ivrate") pLattice->SetIVRate(fValue/s);
-  else if (name == "ivpower") pLattice->SetIVExponent(fValue);
+       if (name == "beta")       pLattice->SetBeta(fValue*ProcessUnits("Pressure"));
+  else if (name == "gamma")      pLattice->SetGamma(fValue*ProcessUnits("Pressure"));
+  else if (name == "lambda")     pLattice->SetLambda(fValue*ProcessUnits("Pressure"));
+  else if (name == "mu")         pLattice->SetMu(fValue*ProcessUnits("Pressure"));
+  else if (name == "scat")       pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
+  else if (name == "b")          pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
+  else if (name == "decay")      pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
+  else if (name == "a")          pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
+  else if (name == "ldos")       pLattice->SetLDOS(fValue);
+  else if (name == "stdos")      pLattice->SetSTDOS(fValue);
+  else if (name == "ftdos")      pLattice->SetFTDOS(fValue);
+  else if (name == "bandgap")    pLattice->SetBandGapEnergy(fValue*ProcessUnits("Energy"));
+  else if (name == "pairenergy") pLattice->SetPairProductionEnergy(fValue*ProcessUnits("Energy"));
+  else if (name == "fanofactor") pLattice->SetFanoFactor(fValue);
+  else if (name == "vsound")     pLattice->SetSoundSpeed(fValue*ProcessUnits("Velocity"));
+  else if (name == "escat")      pLattice->SetElectronScatter(fValue*ProcessUnits("Length"));
+  else if (name == "l0_e")       pLattice->SetElectronScatter(fValue*ProcessUnits("Length"));
+  else if (name == "hscat")      pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
+  else if (name == "l0_h")       pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
+  else if (name == "hmass")      pLattice->SetHoleMass(fValue*mElectron);
+  else if (name == "ivfield")    pLattice->SetIVField(fValue*ProcessUnits("Electric field"));
+  else if (name == "ivrate")     pLattice->SetIVRate(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivpower")    pLattice->SetIVExponent(fValue);
   else if (name == "ivexponent") pLattice->SetIVExponent(fValue);
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
@@ -183,11 +196,108 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
 G4bool G4LatticeReader::ProcessConstants() {
   G4double beta=0., gamma=0., lambda=0., mu=0.;
   *psLatfile >> beta >> gamma >> lambda >> mu;
+  ProcessUnits("Pressure");
+
   if (verboseLevel>1)
     G4cout << " ProcessConstants " << beta << " " << gamma
-	   << " " << lambda << " " << mu << G4endl;
+	   << " " << lambda << " " << mu << " " << fUnitName << G4endl;
 
-  pLattice->SetDynamicalConstants(beta, gamma, lambda, mu);
+  pLattice->SetDynamicalConstants(beta*fUnits, gamma*fUnits, lambda*fUnits,
+				  mu*fUnits);
+
+  return psLatfile->good();
+}
+
+
+// Read lattice constants and angles for specified symmetry
+
+G4bool G4LatticeReader::ProcessCrystalGroup(const G4String& name) {
+  if (verboseLevel>1) G4cout << " ProcessCrystalGroup " << name << G4endl;
+
+
+  // Input buffers for reading; different crystals need different data
+  G4double a=0., b=0., c=0., alpha=0., beta=0., gamma=0.;
+  G4double lunit=0., degOrRad=0.;		// Length and angle units
+
+  G4CMPCrystalGroup::Bravais group = G4CMPCrystalGroup::Group(name);
+  switch (group) {
+  case G4CMPCrystalGroup::amorphous:
+    a=b=c=1.; lunit=1.; break;			// No lattice constants
+  case G4CMPCrystalGroup::cubic:
+    *psLatfile >> a; b=c=a; 			// Equal sides, orthogonal
+    lunit = ProcessUnits("Length");
+    break;
+  case G4CMPCrystalGroup::tetragonal:
+  case G4CMPCrystalGroup::hexagonal:
+    *psLatfile >> a >> c; b=c;			// Two sides, orthogonal
+    lunit = ProcessUnits("Length");
+    break;
+  case G4CMPCrystalGroup::orthorhombic:
+    *psLatfile >> a >> b >> c;			// Three sides, orthogonal
+    lunit = ProcessUnits("Length");
+    break;
+  case G4CMPCrystalGroup::rhombohedral:
+    *psLatfile >> a; b=c=a;
+    lunit = ProcessUnits("Length");
+    *psLatfile >> alpha;
+    degOrRad = ProcessUnits("Angle");
+    break;
+  case G4CMPCrystalGroup::monoclinic:
+    *psLatfile >> a >> b >> c;
+    lunit = ProcessUnits("Length");
+    *psLatfile >> alpha;
+    degOrRad = ProcessUnits("Angle");
+    break;
+  case G4CMPCrystalGroup::triclinic:
+    *psLatfile >> a >> b >> c;
+    lunit = ProcessUnits("Length");
+    *psLatfile >> alpha >> beta >> gamma;
+    degOrRad = ProcessUnits("Angle");
+    break;
+  default: break;
+  }
+
+  if (verboseLevel>1) {
+    G4cout << " a " << a*lunit/angstrom << " b " << b*lunit/angstrom
+	   << " c " << c*lunit/angstrom << " Ang "
+	   << " alpha " << alpha/deg << " beta " << beta/deg
+	   << " gamma " << gamma/deg << " deg" << G4endl;
+  }
+
+  pLattice->SetCrystal(group, a*lunit, b*lunit, c*lunit,
+		       alpha*degOrRad, beta*degOrRad, gamma*degOrRad);
+
+  return psLatfile->good();
+}
+
+// Read frequency, temperature or energy for Debye level (phonon primaries)
+
+G4bool G4LatticeReader::ProcessDebyeLevel() {
+  *psLatfile >> fValue;
+  G4double dval = fValue*ProcessUnits("Energy,Frequency,Temperature");
+
+  if (verboseLevel>1)
+    G4cout << "ProcessDebyeLevel " << fValue << " " << fUnitName << G4endl;
+
+  if (fUnitCat == "Energy")      pLattice->SetDebyeEnergy(dval);
+  if (fUnitCat == "Frequency")   pLattice->SetDebyeFreq(dval);
+  if (fUnitCat == "Temperature") pLattice->SetDebyeTemp(dval);
+
+  return psLatfile->good();
+}
+
+// Read element of reduced elasticity (stiffness) matrix
+
+G4bool G4LatticeReader::ProcessStiffness() {
+  G4int p=0, q=0;	// Indices of reduced matrix
+  G4double value=0.;	// Matrix element in pascals
+
+  *psLatfile >> p >> q >> value;
+  if (verboseLevel>1)
+    G4cout << "ProcessStiffness " << p << " " << q << " " << value << G4endl;
+
+  // Convention for indices is C11-C66
+  pLattice->SetCpq(p,q,value*ProcessUnits("Pressure"));
   return psLatfile->good();
 }
 
@@ -204,93 +314,53 @@ G4bool G4LatticeReader::ProcessMassTensor() {
   return psLatfile->good();
 }
 
-// Read unit vector components for basis vectors (in order, b1, b2, b3)
-
-G4bool G4LatticeReader::ProcessBasisVector() {
-  *psLatfile >> f3Vec;
-  if (verboseLevel>1) G4cout << " ProcessBasisVector " << f3Vec << G4endl;
-
-  ++fLastBasis;
-  if (fLastBasis>2) {
-    G4cerr << " ERROR too many basis vectors.  Ignorning " << fLastBasis
-	   << G4endl;
-    return false;
-  }
-
-  pLattice->SetBasis(fLastBasis, f3Vec.unit());
-  return psLatfile->good();
-}
-
 // Read Euler angles (phi, theta, psi) for named rotation matrix
 
 G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
   G4double phi=0., theta=0., psi=0.;
-  G4String unit;
-  *psLatfile >> phi >> theta >> psi >> unit;
+  *psLatfile >> phi >> theta >> psi;
   if (verboseLevel>1)
     G4cout << " ProcessEulerAngles " << name << " " << phi << " " 
-	   << theta << " " << psi << " " << unit << G4endl;
+	   << theta << " " << psi << G4endl;
 
   if (name != "valley") {
     G4cerr << "G4LatticeReader: Unknown rotation matrix " << name << G4endl;
     return false;
   }
 
-  G4double degOrRad = G4UnitDefinition::GetValueOf(unit);
+  G4double degOrRad = ProcessUnits("Angle");
   pLattice->AddValley(phi*degOrRad, theta*degOrRad, psi*degOrRad);
   return psLatfile->good();
 }
 
-// Read map filename, polarization, and binning dimensions 
 
-G4bool G4LatticeReader::ReadMapInfo() {
-  *psLatfile >> fMap >> fsPol >> fNX >> fNY;
+// Read expected dimensions for value from file, return scale factor
+// Input argument "unitcat" may be comma-delimited list of categories
+
+G4double G4LatticeReader::ProcessUnits(const G4String& unitcat) {
+  *psLatfile >> fUnitName;
+  return ProcessUnits(fUnitName, unitcat);
+}
+
+G4double G4LatticeReader::ProcessUnits(const G4String& unit,
+				       const G4String& unitcat) {
   if (verboseLevel>1)
-    G4cout << " ReadMapInfo " << fMap << " " << fsPol
-	   << " " << fNX << " " << fNY << G4endl;
+    G4cout << " ProcessUnits " << unit << " " << unitcat << G4endl;
 
-  if (fNX < 0 || fNX >= G4LatticeLogical::MAXRES) {
-    G4cerr << "G4LatticeReader: Invalid map theta dimension " << fNX << G4endl;
-    return false;
+  // Do processing -- invalid input string will cause fatal exception
+  fUnitName = unit;
+  fUnits    = G4UnitDefinition::GetValueOf(fUnitName);
+  fUnitCat  = G4UnitDefinition::GetCategory(fUnitName);
+
+  // If actual category doesn't match expected, throw exception
+  if (!unitcat.contains(fUnitCat)) {
+    G4ExceptionDescription msg;
+    msg << "Expected " << unitcat << " units, got " << fUnitName << " ("
+	<< fUnitCat << ")";
+    G4Exception("G4LatticeReader::ProcessUnits", "Lattice003",
+		FatalException, msg);
+    return 0.;
   }
 
-  if (fNY < 0 || fNY >= G4LatticeLogical::MAXRES) {
-    G4cerr << "G4LatticeReader: Invalid map phi dimension " << fNY << G4endl;
-    return false;
-  }
-
-  // Prepend path to data files to map filename
-  fMap = fMapPath + "/" + fMap;
-
-  // Convert string code (L,ST,LT) to polarization index
-  fsPol.toLower();
-  fPol = ( (fsPol=="l")  ? 0 :		// Longitudinal
-	   (fsPol=="st") ? 1 :		// Slow-transverse
-	   (fsPol=="ft") ? 2 :		// Fast-transverse
-	   -1 );			// Invalid code
-
-  if (fPol<0 || fPol>2) {
-    G4cerr << "G4LatticeReader: Invalid polarization code " << fsPol << G4endl;
-    return false;
-  }
-
-  return true;
-}
-
-G4bool G4LatticeReader::ProcessMap() {
-  if (!ReadMapInfo()) {		// Get specific parameters for map to load
-    G4cerr << "G4LatticeReader: Unable to process mapfile directive." << G4endl;
-    return false;
-  }
-
-  return pLattice->LoadMap(fNX, fNY, fPol, fMap);
-}
-
-G4bool G4LatticeReader::ProcessNMap() {
-  if (!ReadMapInfo()) {		// Get specific parameters for map to load
-    G4cerr << "G4LatticeReader: Unable to process mapfile directive." << G4endl;
-    return false;
-  }
-
-  return pLattice->Load_NMap(fNX, fNY, fPol, fMap);
+  return fUnits;	// Return value for convenient inlining
 }

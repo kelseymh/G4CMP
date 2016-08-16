@@ -1,144 +1,60 @@
-#ifndef G4CMPMatrix_hh
-#define G4CMPMatrix_hh 1
+//  matrix.h
+//  Created by Daniel Palken in 2014 for G4CMP
 
+#ifndef G4CMPMatrix_h
+#define G4CMPMatrix_h
+
+#include <cstddef>
 #include <vector>
-#include <cstdlib>
-#include <ostream>
+using std::vector;
 
-// Forward declarations needed for friend functions 
-template <class T> class G4CMPMatrix;
+/* Two-dimension matrix class implemented analogously to std::vector;
+   does not include all of the required STL features */
 
+namespace G4CMP {
 template <class T>
-bool operator==(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-bool operator!=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-bool operator<(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-bool operator<=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-bool operator>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-bool operator>=(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-
-// This class is mostly just a wrapper around std::vector to mimic being 2D
-template <class T> class G4CMPMatrix {
-public:
-  G4CMPMatrix();
-  G4CMPMatrix(size_t rows, size_t ncols, const T& val = T(0));
-  G4CMPMatrix(const std::vector<T>& vec, size_t ncols);
-  explicit G4CMPMatrix(const std::vector<T>& vec);
-
-  using iterator = typename std::vector<T>::iterator;
-  using const_iterator = typename std::vector<T>::const_iterator;
-  iterator begin();
-  const_iterator begin() const;
-  iterator end();
-  const_iterator end() const;
-
-  // Compound Assignment
-  G4CMPMatrix& operator+=(const G4CMPMatrix& rhs);
-  G4CMPMatrix& operator-=(const G4CMPMatrix& rhs);
-  G4CMPMatrix& operator+=(const T& rhs);
-  G4CMPMatrix& operator-=(const T& rhs);
-  G4CMPMatrix& operator*=(const T& rhs);
-  G4CMPMatrix& operator/=(const T& rhs);
-
-  // Comparison
-  friend bool operator== <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-  friend bool operator!= <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-  friend bool operator<  <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-  friend bool operator<= <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-  friend bool operator>  <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-  friend bool operator>= <T>(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-
-  // Access
-  T& operator()(size_t i, size_t j);
-  const T& operator()(size_t i, size_t j) const;
-  T& operator()(size_t i);
-  const T& operator()(size_t i) const;
-  T& operator[](size_t i);
-  const T& operator[](size_t i) const;
-
-  // Modify
-  void push_back(const std::vector<T>& vec);
-  void push_back(std::vector<T>&& vec);
-  void vert_cat(const G4CMPMatrix<T>& rhs);
-  void vert_cat(G4CMPMatrix<T>&& rhs);
-  void horiz_cat(const G4CMPMatrix<T>& rhs);
-  // No point in having a move version of horiz_cat
-
-  // Information
-  size_t size() const;
-  size_t columns() const;
-  size_t rows() const;
-
+class matrix {
 private:
-  std::vector<T> data;
-  size_t ncols;
+  size_t nn, mm;
+  vector<vector<T> > v;
+
+ public:
+  typedef T value_type; 			// make T available externally
+  typedef T& reference;
+
+  matrix() : nn(0), mm(0), v(0) {;}
+  matrix(size_t n, size_t m);			// Zero based array
+  matrix(size_t n, size_t m, const T &a);	// Initialize to constant
+  matrix(size_t n, size_t m, const T *a);	// Initialize to array
+  matrix(const matrix &rhs);			// Copy constructor
+
+  ~matrix() {;}
+  
+  matrix& operator=(const matrix &rhs);		// Assignment
+  matrix& operator=(const T *a);		// Copy array into matrix
+
+  void resize(size_t n, size_t m, const T& a=T(0));
+  inline void clear();
+
+  inline T& at(size_t i, size_t j);		// double subscripting
+  inline const T& at(size_t i, size_t j) const;
+
+  // Support double subscripting to individual elements
+  inline vector<T>& operator[](size_t i) { return v[i]; }
+  inline const vector<T>& operator[](size_t i) const { return v[i]; }
+
+  // Appending functions
+  void vert_cat(const matrix<T>& rhs);
+  void vert_cat( matrix<T>&& rhs);
+  void horiz_cat(const matrix<T>& rhs);
+
+  inline size_t size() const { return nn*mm; }
+  inline size_t rows() const { return nn; }
+  inline size_t columns() const { return mm; }
 };
 
-// Negate
-template <class T>
-G4CMPMatrix<T>& operator-(G4CMPMatrix<T>& lhs);
-
-// Matrix-Matrix math:
-template <class T>
-G4CMPMatrix<T> operator+(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-G4CMPMatrix<T> operator+(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs);
-template <class T>
-G4CMPMatrix<T> operator-(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-G4CMPMatrix<T> operator-(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs);
-template <class T>
-G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-
-// Matrix-Number math:
-template <class T>
-G4CMPMatrix<T> operator+(const G4CMPMatrix<T>& lhs, const T& rhs);
-template <class T>
-G4CMPMatrix<T> operator+(G4CMPMatrix<T>&& lhs, const T& rhs);
-template <class T>
-G4CMPMatrix<T> operator+(const T& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-G4CMPMatrix<T> operator+(const T& lhs, G4CMPMatrix<T>&& rhs);
-template <class T>
-G4CMPMatrix<T> operator-(const G4CMPMatrix<T>& lhs, const T& rhs);
-template <class T>
-G4CMPMatrix<T> operator-(G4CMPMatrix<T>&& lhs, const T& rhs);
-template <class T>
-G4CMPMatrix<T> operator-(const T& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-G4CMPMatrix<T> operator-(const T& lhs, G4CMPMatrix<T>&& rhs);
-template <class T>
-G4CMPMatrix<T> operator*(const G4CMPMatrix<T>& lhs, const T& rhs);
-template <class T>
-G4CMPMatrix<T> operator*(G4CMPMatrix<T>&& lhs, const T& rhs);
-template <class T>
-G4CMPMatrix<T> operator*(const T& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-G4CMPMatrix<T> operator*(const T& lhs, G4CMPMatrix<T>&& rhs);
-template <class T>
-G4CMPMatrix<T> operator/(const G4CMPMatrix<T>& lhs, const T& rhs);
-template <class T>
-G4CMPMatrix<T> operator/(G4CMPMatrix<T>&& lhs, const T& rhs);
-template <class T>
-G4CMPMatrix<T> operator/(const T& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-G4CMPMatrix<T> operator/(const T& lhs, G4CMPMatrix<T>&& rhs);
-
-// Matrix-Matrix operations:
-template <class T>
-G4CMPMatrix<T> vert_cat(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-template <class T>
-G4CMPMatrix<T> vert_cat(G4CMPMatrix<T>&& lhs, G4CMPMatrix<T>&& rhs);
-template <class T>
-G4CMPMatrix<T> horiz_cat(const G4CMPMatrix<T>& lhs, const G4CMPMatrix<T>& rhs);
-
-// Printing
-template <class T>
-std::ostream& operator<<(std::ostream& out, const G4CMPMatrix<T>& rhs);
+}
 
 #include "G4CMPMatrix.icc"
-#endif
+
+#endif	/* G4CMPMatrix_h */

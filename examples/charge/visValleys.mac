@@ -1,0 +1,17 @@
+/tracking/verbose 0
+/gun/number 100
+/g4cmp/voltage 0.01 volt
+/run/initialize
+/vis/open OGL
+/vis/viewer/set/upVector 1 0 0
+/vis/viewer/set/viewpointVector 1 0 1
+/vis/viewer/zoomTo 2
+/vis/drawVolume
+/vis/scene/add/trajectories
+# /vis/scene/add/hits
+/process/inactivate G4CMPInterValleyScattering
+/run/beamOn 1
+/vis/ogl/set/printFilename g4cmpCharge_noIV
+/vis/ogl/set/printMode pixmap
+/vis/ogl/printEPS
+/vis/viewer/clear

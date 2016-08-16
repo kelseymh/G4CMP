@@ -212,11 +212,16 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
                 EventMustBeAborted, "Invalid particle for LukeScatter process");
     return &aParticleChange;
   }
-  
-  G4ThreeVector ktrk = GetLocalWaveVector(aTrack);
-  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
+
+  G4ThreeVector ktrk(0.);
+  if (IsElectron(&aTrack)) {
     ktrk = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
-                                     GetGlobalVelocityVector(aTrack));
+                                     GetLocalVelocityVector(aTrack));
+  } else if (IsHole(&aTrack)) {
+    ktrk = GetLocalWaveVector(aTrack);
+  } else {
+    G4Exception("G4CMPLukeScattering::PostStepDoIt", "Luke002",
+                EventMustBeAborted, "Unknown charge carrier");
   }
 
   G4double kmag = ktrk.mag();

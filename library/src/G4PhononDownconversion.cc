@@ -12,8 +12,10 @@
 // 20131115  Initialize data buffers in ctor
 // 20140312  Follow name change CreateSecondary -> CreatePhonon
 // 20140331  Add required process subtype code
+// 20160624  Use GetTrackInfo() accessor
 
 #include "G4CMPTrackInformation.hh"
+#include "G4CMPUtils.hh"
 #include "G4PhononDownconversion.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
@@ -43,7 +45,7 @@ G4double G4PhononDownconversion::GetMeanFreePath(const G4Track& aTrack,
 						 G4ForceCondition* condition) {
   //Determines mean free path for longitudinal phonons to split
   G4double A = theLattice->GetAnhDecConstant();
-  G4double Eoverh = aTrack.GetKineticEnergy()/h_Planck;
+  G4double Eoverh = GetKineticEnergy(aTrack)/h_Planck;
   
   //Calculate mean free path for anh. decay
   G4double mfp = aTrack.GetVelocity()/(Eoverh*Eoverh*Eoverh*Eoverh*Eoverh*A);
@@ -62,11 +64,11 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
 							 const G4Step&) {
   aParticleChange.Initialize(aTrack);
 
-  //Obtain dynamical constants from this volume's lattice
-  fBeta=theLattice->GetBeta();
-  fGamma=theLattice->GetGamma();
-  fLambda=theLattice->GetLambda();
-  fMu=theLattice->GetMu();
+  // Obtain dynamical constants from this volume's lattice
+  fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
+  fGamma  = theLattice->GetGamma() / (1e11*pascal);
+  fLambda = theLattice->GetLambda() / (1e11*pascal);
+  fMu     = theLattice->GetMu() / (1e11*pascal);
 
   //Destroy the parent phonon and create the daughter phonons.
   //74% chance that daughter phonons are both transverse
@@ -163,9 +165,7 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   //using energy fraction x to calculate daughter phonon directions
   G4double theta1=MakeTTDeviation(d, x);
   G4double theta2=MakeTTDeviation(d, 1-x);
-  G4ThreeVector dir1=static_cast<G4CMPTrackInformation*>(
-    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                                        )->GetPhononK();
+  G4ThreeVector dir1=GetTrackInfo(aTrack)->GetPhononK();
   G4ThreeVector dir2=dir1;
 
   // FIXME:  These extra randoms change timing and causting outputs of example!
@@ -176,15 +176,15 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   dir1 = dir1.rotate(dir1.orthogonal(),theta1).rotate(dir1, ph);
   dir2 = dir2.rotate(dir2.orthogonal(),-theta2).rotate(dir2,ph);
 
-  G4double E=aTrack.GetKineticEnergy();
+  G4double E=GetKineticEnergy(aTrack);
   G4double Esec1 = x*E, Esec2 = E-Esec1;
 
   // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization1 = ChoosePolarization(0., theLattice->GetSTDOS(),
+  G4int polarization1 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
 					   theLattice->GetFTDOS());
 
   // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization2 = ChoosePolarization(0., theLattice->GetSTDOS(),
+  G4int polarization2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
 					   theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors
@@ -222,23 +222,21 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   //using energy fraction x to calculate daughter phonon directions
   G4double thetaL=MakeLDeviation(d, x);
   G4double thetaT=MakeTDeviation(d, x);
-  G4ThreeVector dir1=static_cast<G4CMPTrackInformation*>(
-    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                                        )->GetPhononK();
+  G4ThreeVector dir1=GetTrackInfo(aTrack)->GetPhononK();
   G4ThreeVector dir2=dir1;
 
   G4double ph=G4UniformRand()*twopi;
   dir1 = dir1.rotate(dir1.orthogonal(),thetaL).rotate(dir1, ph);
   dir2 = dir2.rotate(dir2.orthogonal(),-thetaT).rotate(dir2,ph);
 
-  G4double E=aTrack.GetKineticEnergy();
+  G4double E=GetKineticEnergy(aTrack);
   G4double Esec1 = x*E, Esec2 = E-Esec1;
 
   // First secondary is longitudnal
   int polarization1 = G4PhononPolarization::Long;
 
   // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization2 = ChoosePolarization(0., theLattice->GetSTDOS(),
+  G4int polarization2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
 					   theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors

@@ -87,7 +87,7 @@ G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
   }
 
   // Compute mean free path per Edelweiss LTD-14 paper
-  G4double E_0 = theLattice->GetIVField();
+  G4double E_0 = theLattice->GetIVField() / (volt/m);
   G4double mfp = velocity / ( theLattice->GetIVRate() *
     pow((E_0*E_0 + fieldVector.mag2()), theLattice->GetIVExponent()/2.0) );
 
@@ -119,9 +119,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
   // picking a new valley at random if IV-scattering process was triggered
   valley = ChooseValley();
-  static_cast<G4CMPTrackInformation*>(
-    aTrack.GetAuxiliaryTrackInformation(fPhysicsModelID)
-                                     )->SetValleyIndex(valley);
+  GetTrackInfo(aTrack)->SetValleyIndex(valley);
 
   p = theLattice->MapK_valleyToP(valley, p); // p is p again
   RotateToGlobalDirection(p);

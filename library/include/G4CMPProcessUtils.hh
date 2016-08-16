@@ -23,6 +23,7 @@
 // 20151209  Replace trackMap classes with an AuxiliaryInformation class.
 // 20160107  Add GetVelocity functions.
 // 20160610  Add accessor for auxiliary information
+// 20160625  Add accessors for particle identification
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -50,6 +51,14 @@ public:
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
 
+  // Identify track type to simplify some conditionals
+  virtual G4bool IsPhonon(const G4Track* track) const;
+  virtual G4bool IsElectron(const G4Track* track) const;
+  virtual G4bool IsHole(const G4Track* track) const;
+  virtual G4bool IsChargeCarrier(const G4Track* track) const {
+    return (IsElectron(track) || IsHole(track));
+  }
+
   // Set configuration manually, without a track
   virtual void FindLattice(const G4VPhysicalVolume* volume);
   virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
@@ -58,9 +67,13 @@ public:
   virtual void SetTransforms(const G4RotationMatrix* rot,
 			     const G4ThreeVector& trans);
 
+  // Attach or retrieve auxiliary information object for track
+  // NOTE:  This will cast the track to non-const if required
+  G4CMPTrackInformation* AttachTrackInfo(const G4Track* track) const;
+
   // Extract auxiliary information for track (current track if none given)
-  const G4CMPTrackInformation* GetTrackInfo(const G4Track* track=0) const;
-  const G4CMPTrackInformation* GetTrackInfo(const G4Track& track) const {
+  G4CMPTrackInformation* GetTrackInfo(const G4Track* track=0) const;
+  G4CMPTrackInformation* GetTrackInfo(const G4Track& track) const {
     return GetTrackInfo(&track);
   }
 
@@ -201,8 +214,7 @@ public:
 
   // Generate random phonon polarization from density of states
   // Values passed may be zero to suppress particular states
-  G4int ChoosePolarization(G4double Ldos, G4double STdos, G4double FTdos) const;
-  G4int ChoosePolarization() const;		// Use DOS values from lattice
+  G4int ChoosePhononPolarization() const;		// Use DOS values from lattice
 
   // Map charge carrier momentum to valley index
   G4int GetValleyIndex(const G4Track& track) const;
@@ -268,6 +280,10 @@ public:
 
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
 			G4double energy, const G4ThreeVector& pos) const;
+
+  G4Track* CreatePhononInFromBoundary(G4int polarization,
+                                      const G4ThreeVector& K,
+                                      G4double energy) const;
 
   // Construct new electron or hole track with correct conditions
   G4Track* CreateChargeCarrier(G4int charge, G4int valley,

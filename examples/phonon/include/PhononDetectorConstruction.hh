@@ -17,6 +17,8 @@
 
 class G4Material;
 class G4VPhysicalVolume;
+class G4CMPSurfaceProperty;
+class G4CMPElectrodeSensitivity;
 
 class PhononDetectorConstruction : public G4VUserDetectorConstruction {
 public:
@@ -36,6 +38,10 @@ private:
   G4Material* fAluminum;
   G4Material* fTungsten;
   G4VPhysicalVolume* fWorldPhys;
+  G4CMPSurfaceProperty* topSurfProp;
+  G4CMPSurfaceProperty* botSurfProp;
+  G4CMPSurfaceProperty* wallSurfProp;
+  G4CMPElectrodeSensitivity* electrodeSensitivity;
   G4bool fConstructed;
   G4bool fIfField;
   

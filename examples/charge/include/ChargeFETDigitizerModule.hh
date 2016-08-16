@@ -45,11 +45,11 @@ class ChargeFETDigitizerModule : public G4VDigitizerModule
     void     SetRamoFileDir(const G4String& name);
     G4String GetRamoFileDir() const {return ramoFileDir;}
 
-    void     SetNumberOfChannels(G4int n);
-    G4int    GetNumberOfChannels() const {return numChannels;}
+    void     SetNumberOfChannels(size_t n);
+    size_t   GetNumberOfChannels() const {return numChannels;}
 
-    void     SetTimeBins(G4int n);
-    G4int    GetTimeBins() const {return timeBins;}
+    void     SetTimeBins(size_t n);
+    size_t   GetTimeBins() const {return timeBins;}
 
     void     SetDecayTime(G4double n);
     G4double GetDecayTime() const {return decayTime;}
@@ -73,8 +73,8 @@ class ChargeFETDigitizerModule : public G4VDigitizerModule
     G4double decayTime;
     G4double dt;
     G4double preTrig;
-    G4int numChannels;
-    G4int timeBins;
+    size_t numChannels;
+    size_t timeBins;
     // Enable/Disable FETSim during sim
     G4bool enabledForSD;
     // Internal flags to not waste time on unnecessary recalculating

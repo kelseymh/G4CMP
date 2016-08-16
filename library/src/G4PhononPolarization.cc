@@ -8,6 +8,7 @@
 //
 // $Id$
 //
+// 20160622  Add functions to return name strings
 
 #include "G4PhononPolarization.hh"
 #include "G4ParticleDefinition.hh"
@@ -32,4 +33,22 @@ G4ParticleDefinition* G4PhononPolarization::Get(G4int pol) {
   }
 
   return 0;
+}
+
+// Returns full particle name (convenience funciton)
+const G4String& G4PhononPolarization::Name(G4int pol) {
+  static const G4String empty;
+  return (pol>=Long && pol<NUM_MODES) ? Get(pol)->GetParticleName() : empty;
+}
+
+// Returns short affix (L, ST, FT)
+const char* G4PhononPolarization::Label(G4int pol) {
+  switch (pol) {
+  case Long:      return "L"; break;
+  case TransSlow: return "ST"; break;
+  case TransFast: return "LT"; break;
+  default: ;
+  }
+
+  return "";
 }

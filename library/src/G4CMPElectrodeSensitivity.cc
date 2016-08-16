@@ -17,23 +17,19 @@
 G4CMPElectrodeHitsCollection* G4CMPElectrodeSensitivity::hitsCollection = NULL;
 
 G4CMPElectrodeSensitivity::G4CMPElectrodeSensitivity(G4String name)
-:G4VSensitiveDetector(name)
-{
+:G4VSensitiveDetector(name) {
   G4String HCname;
   collectionName.insert(HCname="G4CMPElectrodeHit");
   HCID = -1;
 }
 
-G4CMPElectrodeSensitivity::~G4CMPElectrodeSensitivity()
-{;}
+G4CMPElectrodeSensitivity::~G4CMPElectrodeSensitivity() {}
 
-G4CMPElectrodeHitsCollection* G4CMPElectrodeSensitivity::getHitsCollection()
-{
+G4CMPElectrodeHitsCollection* G4CMPElectrodeSensitivity::getHitsCollection() {
   return hitsCollection;
 }
 
-void G4CMPElectrodeSensitivity::Initialize(G4HCofThisEvent*HCE)
-{
+void G4CMPElectrodeSensitivity::Initialize(G4HCofThisEvent*HCE) {
   hitsCollection = new G4CMPElectrodeHitsCollection
                    (SensitiveDetectorName,collectionName[0]);
   if(HCID<0)
@@ -41,17 +37,17 @@ void G4CMPElectrodeSensitivity::Initialize(G4HCofThisEvent*HCE)
   HCE->AddHitsCollection(HCID,hitsCollection);
 }
 
-G4bool G4CMPElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory* /*ROhist*/)
-{
+G4bool G4CMPElectrodeSensitivity::ProcessHits(G4Step* aStep,
+                                              G4TouchableHistory* /*ROhist*/) {
   G4StepPoint* postStepPoint = aStep->GetPostStepPoint();
   if(postStepPoint->GetStepStatus()==fGeomBoundary &&
                     aStep->GetNonIonizingEnergyDeposit()) {
     G4Track* track = aStep->GetTrack();
     G4int trackID = track->GetTrackID();
     G4String name = track->GetDefinition()->GetParticleName();
-    G4double charge = track->GetParticleDefinition()->GetPDGCharge();
     G4double startE = track->GetVertexKineticEnergy();
-    G4double time = track->GetGlobalTime();
+    G4double startTime = track->GetGlobalTime()-track->GetLocalTime();
+    G4double finalTime = track->GetGlobalTime();
     G4double edp = aStep->GetNonIonizingEnergyDeposit();
 
     G4StepPoint* preStepPoint = aStep->GetPreStepPoint();
@@ -65,9 +61,9 @@ G4bool G4CMPElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory* 
     G4CMPElectrodeHit* aHit = new G4CMPElectrodeHit();
     aHit->SetTrackID(trackID);
     aHit->SetParticleName(name);
-    aHit->SetCharge(charge);
+    aHit->SetStartTime(startTime);
+    aHit->SetFinalTime(finalTime);
     aHit->SetStartEnergy(startE);
-    aHit->SetFinalTime(time);
     aHit->SetEnergyDeposit(edp);
     aHit->SetStartPosition(startPosition);
     aHit->SetFinalPosition(finalPosition);
@@ -78,6 +74,5 @@ G4bool G4CMPElectrodeSensitivity::ProcessHits(G4Step* aStep,G4TouchableHistory* 
   return true;
 }
 
-void G4CMPElectrodeSensitivity::EndOfEvent(G4HCofThisEvent* /*HCE*/)
-{;}
+void G4CMPElectrodeSensitivity::EndOfEvent(G4HCofThisEvent* /*HCE*/) {}
 

@@ -1,14 +1,12 @@
+/run/initialize
 #
 # Create a scene handler for a specific graphics system
 # (Edit the next line(s) to choose another graphic system)
 #
 /run/initialize
 /vis/open OGL
-#
-# draw scene
-#
-/vis/viewer/reset
-/vis/viewer/set/viewpointThetaPhi 180. 90. deg
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointVector 0 0 1
 /vis/viewer/zoom 1.4
 /vis/drawVolume
 #

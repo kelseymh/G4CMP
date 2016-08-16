@@ -14,12 +14,11 @@
 class G4AttDef;
 class G4AttValue;
 
-class G4CMPElectrodeHit : public G4VHit
-{
+class G4CMPElectrodeHit : public G4VHit {
   public:
 
       G4CMPElectrodeHit();
-      virtual ~G4CMPElectrodeHit();
+      ~G4CMPElectrodeHit();
       int operator==(const G4CMPElectrodeHit &right) const;
 
       inline void *operator new(size_t);
@@ -33,7 +32,7 @@ class G4CMPElectrodeHit : public G4VHit
   private:
     G4int trackID;
     G4String particleName;
-    G4double charge;
+    G4double startTime;
     G4double finalTime;
     G4double startE;
     G4double EDep;
@@ -47,14 +46,14 @@ class G4CMPElectrodeHit : public G4VHit
     inline void SetParticleName(G4String name) { particleName = name; }
     inline G4String GetParticleName() const { return particleName; }
 
-    inline void SetCharge(G4int q) { charge = q; }
-    inline G4double GetCharge() const { return charge; }
-
-    inline void SetStartEnergy(G4double E) { startE = E; }
-    inline G4double GetStartEnergy() const { return startE; }
+    inline void SetStartTime(G4double t) { startTime = t; }
+    inline G4double GetStartTime() const { return startTime; }
 
     inline void SetFinalTime(G4double t) { finalTime = t; }
     inline G4double GetFinalTime() const { return finalTime; }
+
+    inline void SetStartEnergy(G4double E) { startE = E; }
+    inline G4double GetStartEnergy() const { return startE; }
 
     inline void SetEnergyDeposit(G4double E) { EDep = E; }
     inline G4double GetEnergyDeposit() const { return EDep; }
@@ -70,15 +69,13 @@ typedef G4THitsCollection<G4CMPElectrodeHit> G4CMPElectrodeHitsCollection;
 
 extern G4Allocator<G4CMPElectrodeHit> G4CMPElectrodeHitAllocator;
 
-inline void* G4CMPElectrodeHit::operator new(size_t)
-{
+inline void* G4CMPElectrodeHit::operator new(size_t) {
   void* aHit;
   aHit = (void*)G4CMPElectrodeHitAllocator.MallocSingle();
   return aHit;
 }
 
-inline void G4CMPElectrodeHit::operator delete(void* aHit)
-{
+inline void G4CMPElectrodeHit::operator delete(void* aHit) {
   G4CMPElectrodeHitAllocator.FreeSingle((G4CMPElectrodeHit*) aHit);
 }
 

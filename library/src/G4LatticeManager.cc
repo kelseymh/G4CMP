@@ -14,6 +14,7 @@
 // 20140412  Use const volumes and materials for registration
 // 20141008  Change to global singleton; must be shared across worker threads
 // 20160111  Remove G4 version checking. We hard depend on 10.2+
+// 20160615  Set name of G4LatticeLogical to match config directory
 
 #include "G4LatticeManager.hh"
 #include "G4LatticeLogical.hh"
@@ -116,11 +117,14 @@ G4LatticeLogical* G4LatticeManager::LoadLattice(const G4Material* Mat,
 		      
   G4LatticeReader latReader(verboseLevel);
   G4LatticeLogical* newLat = latReader.MakeLattice(latDir+"/config.txt");
-  if (verboseLevel>1)
-    G4cout << " Created newLat " << newLat << "\n" << *newLat << G4endl;
+  if (newLat) {
+    newLat->SetDensity(Mat->GetDensity());
+    newLat->Initialize(latDir);
+    if (verboseLevel>1)
+      G4cout << " Created newLat " << newLat << "\n" << *newLat << G4endl;
 
-  if (newLat) RegisterLattice(Mat, newLat);
-  else {
+    RegisterLattice(Mat, newLat);
+  } else {
     G4cerr << "ERROR creating " << latDir << " lattice for material "
 	   << Mat->GetName() << G4endl;
   }
