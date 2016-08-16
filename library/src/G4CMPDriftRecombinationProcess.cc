@@ -5,16 +5,24 @@
 
 #include "G4CMPDriftRecombinationProcess.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4CMPDriftElectron.hh"
+#include "G4CMPDriftHole.hh"
 #include "G4LatticePhysical.hh"
 #include "G4RandomDirection.hh"
 
 G4CMPDriftRecombinationProcess::G4CMPDriftRecombinationProcess(
                                                        const G4String &name,
                                                        G4CMPProcessSubType type)
-  : G4VRestProcess(name, fPhonon), G4CMPProcessUtils() {
+                          : G4VRestProcess(name, fPhonon), G4CMPProcessUtils() {
   verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   SetProcessSubType(type);
   if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
+}
+
+G4bool G4CMPDriftRecombinationProcess::IsApplicable(
+                                              const G4ParticleDefinition& aPD) {
+  return (&aPD==G4CMPDriftElectron::Definition() ||
+          &aPD==G4CMPDriftHole::Definition());
 }
 
 G4double G4CMPDriftRecombinationProcess::AtRestGetPhysicalInteractionLength(
@@ -24,15 +32,22 @@ G4double G4CMPDriftRecombinationProcess::AtRestGetPhysicalInteractionLength(
 }
 
 G4double G4CMPDriftRecombinationProcess::GetMeanLifeTime(
-                                                  const G4Track& /*aTrack*/,
-                                                  G4ForceCondition* condition) {
-  *condition = Forced;
-  return DBL_MAX;
+                                              const G4Track& /*aTrack*/,
+                                              G4ForceCondition* /*condition*/) {
+  // Charge carriers should immediately recombine when KE = 0.
+  return 0.;
 }
 
 G4VParticleChange* G4CMPDriftRecombinationProcess::AtRestDoIt(
                                                       const G4Track& aTrack,
                                                       const G4Step& /*aStep*/) {
+  if (verboseLevel > 1) {
+    G4cout << "G4CMPDriftRecombinationProcess::AtRestDoIt: "
+           << aTrack.GetDefinition()->GetParticleName()
+           << " reabsorbed by the lattice."
+           << G4endl;
+  }
+
   aParticleChange.Initialize(aTrack);
 
   // FIXME: Each charge carrier is independent, so it only gives back 0.5 times

@@ -15,6 +15,8 @@ public:
   G4CMPDriftRecombinationProcess(const G4String& name = "G4CMPChargeRecombine",
                                  G4CMPProcessSubType type = fChargeRecombine);
 
+  virtual G4bool IsApplicable(const G4ParticleDefinition& aPD);
+
   virtual G4double AtRestGetPhysicalInteractionLength(const G4Track& track,
                                                    G4ForceCondition* condition);
 
