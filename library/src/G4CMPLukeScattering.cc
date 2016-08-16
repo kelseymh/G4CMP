@@ -10,6 +10,7 @@
 //
 // 20150111  New base class for both electron and hole Luke processes
 // 20150122  Use verboseLevel instead of compiler flag for debugging
+// 20160624  Use GetTrackInfo() accessor
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -51,8 +52,6 @@ G4CMPLukeScattering::~G4CMPLukeScattering() {
   output.close();
 #endif
 }
-
-// Physics
 
 G4double
 G4CMPLukeScattering::PostStepGetPhysicalInteractionLength(
@@ -219,6 +218,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     ktrk = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
                                      GetGlobalVelocityVector(aTrack));
   }
+
   G4double kmag = ktrk.mag();
   G4double kSound = CalculateKSound(mass);
 
@@ -243,8 +243,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // Sanity check for phonon production: should be forward, like Cherenkov
   if (theta_phonon>acos(kSound/kmag) || theta_phonon>halfpi) {
     G4cerr << GetProcessName() << " ERROR: Phonon production theta_phonon "
-     << theta_phonon << " exceeds cone angle " << acos(kSound/kmag)
-	   << G4endl;
+           << theta_phonon << " exceeds cone angle " << acos(kSound/kmag)
+           << G4endl;
     return &aParticleChange;
   }
   
@@ -264,27 +264,28 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   if (verboseLevel > 1) {
     G4cout << "theta_phonon = " << theta_phonon
-	   << " phi_phonon = " << phi_phonon
-	   << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
-	   << "\nk_recoil = " << k_recoil
-	   << "\nk_recoil-mag = " << k_recoil.mag()
-	   << G4endl;
+           << " phi_phonon = " << phi_phonon
+           << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
+           << "\nk_recoil = " << k_recoil
+           << "\nk_recoil-mag = " << k_recoil.mag()
+           << G4endl;
   }
 
   // Create real phonon to be propagated, with random polarization
-  static const G4double genLuke = G4CMPConfigManager::GetGenPhonons();
+  // If phonon is not created, register the energy as deposited
+  G4double genLuke = G4CMPConfigManager::GetGenPhonons();
   if (genLuke > 0. && G4UniformRand() < genLuke) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
     G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(phonon);
+  } else {
+    aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
   }
 
   MakeGlobalRecoil(k_recoil);		// Converts wavevector to momentum
   FillParticleChange(GetValleyIndex(aTrack), k_recoil);
-
-  aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
   ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
 }

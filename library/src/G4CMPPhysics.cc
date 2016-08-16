@@ -43,7 +43,6 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* phScat  = new G4PhononScattering;
   G4VProcess* phRefl  = new G4CMPPhononBoundaryProcess;
   G4VProcess* phDown  = new G4PhononDownconversion;
-  G4VProcess* tmStep  = new G4CMPTimeStepper;
   G4VProcess* driftB  = new G4CMPDriftBoundaryProcess;
   G4VProcess* ivScat  = new G4CMPInterValleyScattering;
   G4VProcess* luke    = new G4CMPLukeScattering;
@@ -52,7 +51,6 @@ void G4CMPPhysics::ConstructProcess() {
   phScat->SetVerboseLevel(verboseLevel);
   phRefl->SetVerboseLevel(verboseLevel);
   phDown->SetVerboseLevel(verboseLevel);
-  tmStep->SetVerboseLevel(verboseLevel);
   driftB->SetVerboseLevel(verboseLevel);
   ivScat->SetVerboseLevel(verboseLevel);
   luke->SetVerboseLevel(verboseLevel);
@@ -76,13 +74,11 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(phRefl, particle);
 
   particle = G4CMPDriftElectron::Definition();
-  RegisterProcess(tmStep, particle);
   RegisterProcess(luke, particle);
   RegisterProcess(ivScat, particle);
   RegisterProcess(driftB, particle);
 
   particle = G4CMPDriftHole::Definition();
-  RegisterProcess(tmStep, particle);
   RegisterProcess(luke, particle);
   RegisterProcess(driftB, particle);
 
