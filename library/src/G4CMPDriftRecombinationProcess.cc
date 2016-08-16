@@ -1,0 +1,52 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
+#include "G4CMPDriftRecombinationProcess.hh"
+#include "G4CMPConfigManager.hh"
+#include "G4LatticePhysical.hh"
+#include "G4RandomDirection.hh"
+
+G4CMPDriftRecombinationProcess::G4CMPDriftRecombinationProcess(
+                                                       const G4String &name,
+                                                       G4CMPProcessSubType type)
+  : G4VRestProcess(name, fPhonon), G4CMPProcessUtils() {
+  verboseLevel = G4CMPConfigManager::GetVerboseLevel();
+  SetProcessSubType(type);
+  if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
+}
+
+G4double G4CMPDriftRecombinationProcess::AtRestGetPhysicalInteractionLength(
+                                                  const G4Track& aTrack,
+                                                  G4ForceCondition* condition) {
+  return GetMeanLifeTime(aTrack, condition);
+}
+
+G4double G4CMPDriftRecombinationProcess::GetMeanLifeTime(
+                                                  const G4Track& /*aTrack*/,
+                                                  G4ForceCondition* condition) {
+  *condition = Forced;
+  return DBL_MAX;
+}
+
+G4VParticleChange* G4CMPDriftRecombinationProcess::AtRestDoIt(
+                                                      const G4Track& aTrack,
+                                                      const G4Step& /*aStep*/) {
+  aParticleChange.Initialize(aTrack);
+
+  // FIXME: Each charge carrier is independent, so it only gives back 0.5 times
+  // the band gap. Really electrons and holes should recombine, killing both
+  // tracks and giving back the band gap. Maybe there is a better way?
+
+  // FIXME: What does the recombo phonon distribution look like?
+
+  G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,
+                                 G4RandomDirection(),
+                                 0.5 * theLattice->GetBandGapEnergy());
+  aParticleChange.SetNumberOfSecondaries(1);
+  aParticleChange.AddSecondary(phonon);
+  aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+  return &aParticleChange;
+}
