@@ -37,6 +37,7 @@ private:
   std::vector<std::array<G4int, 4> > Tetrahedra;
   std::vector<std::array<G4int, 4> > Neighbors;
   mutable G4int TetraIdx;
+  mutable G4double tmpField[6];
 
   void BuildTetraMesh();	// Builds mesh from pre-initialized 'X' array
   
