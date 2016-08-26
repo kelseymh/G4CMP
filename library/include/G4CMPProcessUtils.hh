@@ -24,12 +24,15 @@
 // 20160107  Add GetVelocity functions.
 // 20160610  Add accessor for auxiliary information
 // 20160625  Add accessors for particle identification
+// 20160825  Add assignment operators for cross-process configuration;
+//	     move track identification functions to G4CMPUtils
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
 
 #include "globals.hh"
 #include "G4AffineTransform.hh"
+#include "G4CMPUtils.hh"
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
@@ -44,7 +47,11 @@ class G4VTouchable;
 class G4CMPProcessUtils {
 public:
   G4CMPProcessUtils();
-  ~G4CMPProcessUtils();
+  virtual ~G4CMPProcessUtils();
+
+  // Assignment operators allow dependent configuration
+  G4CMPProcessUtils(G4CMPProcessUtils&);
+  G4CMPProcessUtils& operator=(const G4CMPProcessUtils& right);
 
   // Configure for current track
   virtual void LoadDataForTrack(const G4Track* track);
@@ -52,11 +59,11 @@ public:
   // NOTE:  Subclasses may overload these, but be sure to callback to base
 
   // Identify track type to simplify some conditionals
-  virtual G4bool IsPhonon(const G4Track* track) const;
-  virtual G4bool IsElectron(const G4Track* track) const;
-  virtual G4bool IsHole(const G4Track* track) const;
-  virtual G4bool IsChargeCarrier(const G4Track* track) const {
-    return (IsElectron(track) || IsHole(track));
+  G4bool IsPhonon(const G4Track* track) const { return G4CMP::IsPhonon(track); }
+  G4bool IsElectron(const G4Track* track) const { return G4CMP::IsElectron(track); }
+  G4bool IsHole(const G4Track* track) const { return G4CMP::IsHole(track); }
+  G4bool IsChargeCarrier(const G4Track* track) const {
+    return G4CMP::IsChargeCarrier(track);
   }
 
   // Set configuration manually, without a track
@@ -274,6 +281,14 @@ public:
   // Compute phonon energy distribution from quasiparticle in superconductor
   G4double PhononEnergyRand(G4double gapEnergy, G4double& Energy);
 
+
+  // Construct new phonon or charge carrier track
+  G4Track* CreateTrack(G4ParticleDefinition* pd, const G4ThreeVector& K,
+		       G4double energy) const;
+
+  G4Track* CreateTrack(G4ParticleDefinition* pd, const G4ThreeVector& K,
+		       G4double energy, const G4ThreeVector& pos) const;
+
   // Construct new phonon track with correct momentum, position, etc.
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
 			G4double energy) const;
@@ -308,13 +323,10 @@ protected:
 
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking
+  const G4VPhysicalVolume* currentVolume;
 
   G4AffineTransform fLocalToGlobal;	// For converting pos and momentum
   G4AffineTransform fGlobalToLocal;
-
-  // hide assignment operators as private 
-  G4CMPProcessUtils(G4CMPProcessUtils&);
-  G4CMPProcessUtils& operator=(const G4CMPProcessUtils& right);
 };
 
 #endif	/* G4CMPProcessUtils_hh */

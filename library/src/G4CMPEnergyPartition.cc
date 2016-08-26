@@ -13,11 +13,15 @@
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4CMPDriftElectron.hh"
+#include "G4CMPDriftHole.hh"
 #include "G4DynamicParticle.hh"
 #include "G4LatticePhysical.hh"
 #include "G4Material.hh"
+#include "G4PhononPolarization.hh"
 #include "G4Pow.hh"
 #include "G4PrimaryParticle.hh"
+#include "G4RandomDirection.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 #include <cmath>
@@ -29,19 +33,19 @@
 G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), material(mat), holeFraction(0.5),
-    verboseLevel(G4ConfigManager::GetVerboseLevel()),
+    verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
     nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
   SetLattice(lat);
 }
 
-G4CMPEnergyPartition::~G4CMEnergyPartition() {;}
+G4CMPEnergyPartition::~G4CMPEnergyPartition() {;}
 
 
 // Fraction of total energy deposit in material which goes to e/h pairs
 
 G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
   if (!material) {
-    static const G4bool report = true;
+    static G4bool report = true;
     if (report) {
       G4cerr << "G4CMPEnergyPartition: No material configured" << G4endl;
       report = false;
@@ -53,8 +57,8 @@ G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
   const G4double Z=material->GetZ(), A=material->GetA();
 
   if (verboseLevel>1) {
-    G4cout << "G4CMPEnergyPartition::LindhardScalingFactor " << E
-	   << " for (Z,A) " << Z << " " << A << G4endl;
+    G4cout << " LindhardScalingFactor " << E << " for (Z,A) " << Z
+	   << " " << A << G4endl;
   }
 
   // From Lewin and Smith, 1996
@@ -77,8 +81,8 @@ G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
 G4double G4CMPEnergyPartition::MeasuredChargeEnergy(G4double eTrue) const {
   // Fano noise changes the measured charge energy
   // Std deviation of energy distribution
-  G4double sigmaE = std::sqrt(eTrue * lattice->GetFanoFactor()
-			      lattice->GetPairProductionEnergy());
+  G4double sigmaE = std::sqrt(eTrue * theLattice->GetFanoFactor()
+			      * theLattice->GetPairProductionEnergy());
   return G4RandGauss::shoot(eTrue, sigmaE);
 }
 
@@ -97,10 +101,9 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
 }
 
 void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
-  if (verboseLevel>1)
-    G4cout << "G4CMPEnergyPartition::GenerateCharges " << energy << G4endl;
+  if (verboseLevel>1) G4cout << " GenerateCharges " << energy << G4endl;
 
-  G4double ePair = lattice->GetPairProductionEnergy();
+  G4double ePair = theLattice->GetPairProductionEnergy();
   G4double eMeas = MeasuredChargeEnergy(energy);	// Applies Fano factor
 
   nPairs = std::floor(eMeas / ePair);		// Average number of e/h pairs
@@ -119,20 +122,19 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
 }
 
 void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
-  G4double eFree = ePair - lattice->GetBandGapEnergy();	// TODO: Is this right?
+  G4double eFree = ePair - theLattice->GetBandGapEnergy(); // TODO: Is this right?
 
-  charges.push_back(Data(G4CMPDriftElectron::Definition(), G4RandomDirection(),
+  particles.push_back(Data(G4CMPDriftElectron::Definition(),G4RandomDirection(),
 			 (1.-holeFraction)*eFree));
 
-  charges.push_back(Data(G4CMPDriftHole::Definition(), G4RandomDirection(),
+  particles.push_back(Data(G4CMPDriftHole::Definition(), G4RandomDirection(),
 			 holeFraction*eFree));
 }
 
 void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
-  if (verboseLevel>1)
-    G4cout << "G4CMPEnergyPartition::GeneratePhonons " << energy << G4endl;
+  if (verboseLevel>1) G4cout << " GeneratePhonons " << energy << G4endl;
 
-  G4double ePhon = lattice->GetDebyeEnergy();	// TODO: No fluctuations yet!
+  G4double ePhon = theLattice->GetDebyeEnergy(); // TODO: No fluctuations yet!
 
   nPhonons = std::ceil(energy / ePhon);		// Average number of phonons
   particles.reserve(particles.size() + nPhonons);
@@ -175,12 +177,12 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
     primaries[i]->SetMomentumDirection(p.dir);
     primaries[i]->SetKineticEnergy(p.ekin);
 
-    if (verboseLevel>2) primaries[i].Print();
+    if (verboseLevel>2) primaries[i]->Print();
   }
 }
 
 void G4CMPEnergyPartition::
-GetSecondaries(std::vector<G4DynamicParticle*>& secondaries) const {
+GetSecondaries(std::vector<G4Track*>& secondaries) const {
   if (verboseLevel) G4cout << "G4CMPEnergyPartition::GetSecondaries" << G4endl;
 
   secondaries.clear();
@@ -190,8 +192,8 @@ GetSecondaries(std::vector<G4DynamicParticle*>& secondaries) const {
 
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
-    secondaries[i] = new G4DynamicParticle(p.pd, p.dir, p.ekin);
+    secondaries[i] = CreateTrack(p.pd, p.dir, p.ekin);
 
-    if (verboseLevel>2) secondaries[i]->DumpInfo();
+    if (verboseLevel>2) secondaries[i]->GetDynamicParticle()->DumpInfo();
   }
 }

@@ -11,6 +11,7 @@
 // $Id$
 //
 // 20150310  Michael Kelsey
+// 20160825  Replace implementation with use of G4CMPEnergyPartition
 
 #ifndef G4CMPSecondaryProduction_hh
 #define G4CMPSecondaryProduction_hh 1
@@ -19,12 +20,13 @@
 #include "G4CMPProcessUtils.hh"
 #include "G4ThreeVector.hh"
 #include <vector>
-#include <utility>
 
-class G4Track;
-class G4Step;
-class G4VParticleChange;
+class G4CMPEnergyPartition;
+class G4DynamicParticle;
 class G4ParticleDefinition;
+class G4Step;
+class G4Track;
+class G4VParticleChange;
 
 
 class G4CMPSecondaryProduction : public G4VContinuousProcess,
@@ -45,30 +47,21 @@ public:
 
 protected:
   // Calculate step limit for Along Step (not needed here)
-  virtual G4double GetContinuousStepLimit(const G4Track& aTrack,
-					  G4double  previousStepSize,
-					  G4double  currentMinimumStep,
-					  G4double& currentSafety);
+  virtual G4double GetContinuousStepLimit(const G4Track&, G4double, G4double,
+					  G4double&);
 
 protected:
-  void AddPhonons(const G4Step& stepData);
-  
-  void AddChargeCarriers(const G4Step& stepData);
-  
-  G4int GenerateEnergyPositions(const G4Step& stepData, G4double Etotal,
-				G4double yield, G4double sigma);
+  void AddSecondaries(const G4Step& stepData);
+  void GeneratePositions(const G4Step& stepData, size_t npos);
+
+public:
+  static size_t RandomIndex(size_t imax);	// Used to randomize secondaries
 
 private:
-  // NOTE:  These are temporary local params -- will move to lattice config
-  G4double ionizationEnergy;		// Get this from G4Material
-  G4double yieldPerPhonon;
-  G4double yieldPerChargePair;
-  G4double sigmaPerPhonon;
-  G4double sigmaPerChargePair;
+  G4CMPEnergyPartition* partitioner;		// Creates secondary kinematics
+  std::vector<G4Track*> theSecs;		// List of created secondaries
+  std::vector<G4ThreeVector> posSecs;		// Positions along trajectory
 
-  typedef std::pair<G4double, G4ThreeVector> EPosPair;
-  std::vector<EPosPair> energyPosList;		// Buffer for secondaries
-  
   // No copying allowed
   G4CMPSecondaryProduction(const G4CMPSecondaryProduction& right);
   G4CMPSecondaryProduction& operator=(const G4CMPSecondaryProduction& right);

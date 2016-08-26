@@ -12,20 +12,21 @@
 //
 
 #include "globals.hh"
+#include "G4CMPProcessUtils.hh"
 #include "G4ThreeVector.hh"
 #include <vector>
 
-class G4DynamicParticle;
 class G4LatticePhysical;
 class G4Material;
-class G4PrimaryParticle;
 class G4ParticleDefinition;
+class G4PrimaryParticle;
+class G4Track;
 
 
 class G4CMPEnergyPartition : public G4CMPProcessUtils {
 public:
   G4CMPEnergyPartition(G4Material* mat=0, G4LatticePhysical* lat=0);
-  virtual ~G4CMEnergyPartition();
+  virtual ~G4CMPEnergyPartition();
 
   // Material is needed for (Z,A) in Lindhard scaling
   void SetMaterial(G4Material* mat) { material = mat; }
@@ -35,7 +36,7 @@ public:
 
   // Nuclear recoil deposit uses Lindhard scale factor for e/h vs. phonons
   void NuclearRecoil(G4double energy) {
-    G4double lind = LindhardScalingFactor(G4double energy);
+    G4double lind = LindhardScalingFactor(energy);
     DoPartition(energy*lind, energy*(1.-lind));
   }
 
@@ -47,7 +48,7 @@ public:
 
   // Return either primary or secondary particles from partitioning
   void GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const;
-  void GetSecondaries(std::vector<G4DynamicParticle*>& secondaries) const;
+  void GetSecondaries(std::vector<G4Track*>& secondaries) const;
   
   // Fraction of total energy deposit in material which goes to e/h pairs
   G4double LindhardScalingFactor(G4double energy) const;
@@ -57,7 +58,10 @@ public:
 
 protected:
   void GenerateCharges(G4double energy);
+  void AddChargePair(G4double ePair);
+
   void GeneratePhonons(G4double energy);
+  void AddPhonon(G4double ePhon);
 
 protected:
   G4Material* material;		// To get (Z,A) for Lindhard scaling
@@ -71,12 +75,12 @@ protected:
   G4double phononEnergyLeft;	// Energy to partition into phonons
 
   struct Data {
-    G4ParticleDefintion* partDef;
+    G4ParticleDefinition* pd;
     G4ThreeVector dir;
     G4double ekin;
 
-    Data(G4ParticleDefintion* pd, const G4ThreeVector& d, G4double E)
-      : partDef(pd), dir(d), ekin(E) {;}
+    Data(G4ParticleDefinition* part, const G4ThreeVector& d, G4double E)
+      : pd(part), dir(d), ekin(E) {;}
   };
     
   std::vector<Data> particles;	// Combined phonons and charge carriers
