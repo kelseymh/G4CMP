@@ -59,3 +59,10 @@ set_target_properties(testCrystalGroup PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
     INSTALL_RPATH_USE_LINK_RPATH TRUE
     BUILD_WITH_INSTALL_RPATH FALSE)
+
+add_executable(g4cmpEFieldTest g4cmpEFieldTest.cc)
+target_link_libraries(g4cmpEFieldTest G4cmp)
+set_target_properties(g4cmpEFieldTest PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+    INSTALL_RPATH_USE_LINK_RPATH TRUE
+    BUILD_WITH_INSTALL_RPATH FALSE)
