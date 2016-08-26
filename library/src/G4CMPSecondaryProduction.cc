@@ -65,7 +65,7 @@ G4bool G4CMPSecondaryProduction::IsApplicable(const G4ParticleDefinition& pd) {
 
 void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
   G4CMPProcessUtils::LoadDataForTrack(track);
-  *partitioner = *this;		// Copies lattice and other important info
+  *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
 
   partitioner->SetVerboseLevel(verboseLevel);
 }
@@ -113,7 +113,7 @@ void G4CMPSecondaryProduction::AddSecondaries(const G4Step& stepData) {
     partitioner->DoPartition(eTotal-eNIEL, eTotal);
   }
 
-  partitioner->GetSeconaries(theSecs);
+  partitioner->GetSecondaries(theSecs);
   size_t nsec = theSecs.size();
 
   if (verboseLevel>1) G4cout << " Adding " << nsec << " secondaries" << G4endl;
@@ -124,7 +124,7 @@ void G4CMPSecondaryProduction::AddSecondaries(const G4Step& stepData) {
 
   GeneratePositions(stepData, nsec);
   for (size_t i=0; i<theSecs.size(); i++) {
-    theSecs[i].SetPosition(posSecs[i]);
+    theSecs[i]->SetPosition(posSecs[i]);
     aParticleChange.AddSecondary(theSecs[i]);
 
     if (verboseLevel>2) {
@@ -155,7 +155,7 @@ void G4CMPSecondaryProduction::GeneratePositions(const G4Step& stepData,
 
   G4double length = (postPos-prePos).mag();
   G4double dl = length / G4double(nsec);
-  G4double sigl = dr/6.;
+  G4double sigl = dl/6.;
 
   if (verboseLevel>1)
     G4cout << " Choosing positions along " << length/mm << " mm" << G4endl;

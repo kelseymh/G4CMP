@@ -32,7 +32,6 @@
 
 #include "globals.hh"
 #include "G4AffineTransform.hh"
-#include "G4CMPUtils.hh"
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
@@ -59,12 +58,10 @@ public:
   // NOTE:  Subclasses may overload these, but be sure to callback to base
 
   // Identify track type to simplify some conditionals
-  G4bool IsPhonon(const G4Track* track) const { return G4CMP::IsPhonon(track); }
-  G4bool IsElectron(const G4Track* track) const { return G4CMP::IsElectron(track); }
-  G4bool IsHole(const G4Track* track) const { return G4CMP::IsHole(track); }
-  G4bool IsChargeCarrier(const G4Track* track) const {
-    return G4CMP::IsChargeCarrier(track);
-  }
+  G4bool IsPhonon(const G4Track* track) const;
+  G4bool IsElectron(const G4Track* track) const;
+  G4bool IsHole(const G4Track* track) const;
+  G4bool IsChargeCarrier(const G4Track* track) const;
 
   // Set configuration manually, without a track
   virtual void FindLattice(const G4VPhysicalVolume* volume);

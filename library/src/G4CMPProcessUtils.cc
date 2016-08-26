@@ -46,6 +46,7 @@
 #include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RotationMatrix.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "G4TransportationManager.hh"
@@ -72,8 +73,8 @@ G4CMPProcessUtils::G4CMPProcessUtils(G4CMPProcessUtils& right)
     fLocalToGlobal(right.fLocalToGlobal),
     fGlobalToLocal(right.fGlobalToLocal) {;}
 
-G4CMPProcessUtils::G4CMPProcessUtils&
-operator=(const G4CMPProcessUtils& right) {
+G4CMPProcessUtils&
+G4CMPProcessUtils::operator=(const G4CMPProcessUtils& right) {
   if (this != &right) {			// Avoid unnecessary work
     theLattice      = right.theLattice;
     fPhysicsModelID = right.fPhysicsModelID;
@@ -144,6 +145,26 @@ G4CMPProcessUtils::AttachTrackInfo(const G4Track* track) const {
 
   return trkInfo;
 }
+
+
+// Identify track type to simplify some conditionals
+
+G4bool G4CMPProcessUtils::IsPhonon(const G4Track* track) const {
+  return G4CMP::IsPhonon(track);
+}
+
+G4bool G4CMPProcessUtils::IsElectron(const G4Track* track) const {
+  return G4CMP::IsElectron(track);
+}
+
+G4bool G4CMPProcessUtils::IsHole(const G4Track* track) const {
+  return G4CMP::IsHole(track);
+}
+
+G4bool G4CMPProcessUtils::IsChargeCarrier(const G4Track* track) const {
+  return G4CMP::IsChargeCarrier(track);
+}
+
 
 
 // Fetch lattice for current track, use in subsequent steps
@@ -688,13 +709,13 @@ G4Track* G4CMPProcessUtils::CreateTrack(G4ParticleDefinition* pd,
 					const G4ThreeVector& waveVec,
 					G4double energy,
 					const G4ThreeVector& pos) const {
-  if (IsPhonon(pd)) {
+  if (G4CMP::IsPhonon(pd)) {
     return CreatePhonon(G4PhononPolarization::Get(pd), waveVec, energy, pos);
   }
 
-  if (IsChargeCarrier(pd)) {
-    return CreateChargeCarrier(pd->GetPDGCharge()/eplus, ChooseValley(),
-			       waveVec, energy, pos);
+  if (G4CMP::IsChargeCarrier(pd)) {
+    return CreateChargeCarrier(int(pd->GetPDGCharge()/eplus), ChooseValley(),
+			       energy, waveVec, pos);
   }
 
   G4cerr << "WARNING: " << pd->GetParticleName() << " is not G4CMP" << G4endl;

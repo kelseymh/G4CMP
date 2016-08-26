@@ -55,11 +55,3 @@ G4bool G4CMP::IsHole(const G4Track* track) {
 G4bool G4CMP::IsHole(const G4ParticleDefinition* pd) {
   return (pd == G4CMPDriftHole::Definition());
 }
-
-G4bool G4CMP::IsChargeCarrier(const G4Track* track) {
-  return (track!=0 && IsChargeCarrier(track->GetParticleDefinition()));
-}
-
-G4bool G4CMP::IsChargeCarrier(const G4ParticleDefinition* pd) {
-  return (IsElectron(pd) || IsHole(pd));
-}
