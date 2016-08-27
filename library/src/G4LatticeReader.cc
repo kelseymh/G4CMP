@@ -220,6 +220,8 @@ G4bool G4LatticeReader::ProcessCrystalGroup(const G4String& name) {
   G4double lunit=0., degOrRad=0.;		// Length and angle units
 
   G4CMPCrystalGroup::Bravais group = G4CMPCrystalGroup::Group(name);
+  if (verboseLevel>2) G4cout << " group code " << group << G4endl;
+
   switch (group) {
   case G4CMPCrystalGroup::amorphous:
     a=b=c=1.; lunit=1.; break;			// No lattice constants
@@ -339,6 +341,8 @@ G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
 
 G4double G4LatticeReader::ProcessUnits(const G4String& unitcat) {
   *psLatfile >> fUnitName;
+  if (verboseLevel>1) G4cout << " ProcessUnits " << fUnitName << G4endl;
+
   return ProcessUnits(fUnitName, unitcat);
 }
 
