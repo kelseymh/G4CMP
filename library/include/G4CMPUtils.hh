@@ -31,14 +31,10 @@ namespace G4CMP {
   G4bool IsPhonon(const G4Track* track);
   G4bool IsElectron(const G4Track* track);
   G4bool IsHole(const G4Track* track);
-  G4bool IsChargeCarrier(const G4Track* track) {
-    return (IsElectron(track) || IsHole(track));
-  }
+  G4bool IsChargeCarrier(const G4Track* track);
 
   G4bool IsPhonon(const G4ParticleDefinition* pd);
   G4bool IsElectron(const G4ParticleDefinition* pd);
   G4bool IsHole(const G4ParticleDefinition* pd);
-  G4bool IsChargeCarrier(const G4ParticleDefinition* pd) {
-    return (IsElectron(pd) || IsHole(pd));
-  }
+  G4bool IsChargeCarrier(const G4ParticleDefinition* pd);
 }
