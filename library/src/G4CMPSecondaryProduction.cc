@@ -100,8 +100,10 @@ void G4CMPSecondaryProduction::AddSecondaries(const G4Step& stepData) {
   G4double eTotal = stepData.GetTotalEnergyDeposit();
   G4double eNIEL  = stepData.GetNonIonizingEnergyDeposit();
 
-  if (verboseLevel)
-    G4cout << " AddSecondaries " << eTotal/eV << " eV" << G4endl;
+  if (verboseLevel) {
+    G4cout << " AddSecondaries " << eTotal/eV << " eV"
+	   << " (" << eNIEL << " NEIL)" << G4endl;
+  }
 
   // Configure energy partitioning for EM, nuclear, or pre-determined energy
   if (eNIEL <= 0.) {
@@ -114,15 +116,15 @@ void G4CMPSecondaryProduction::AddSecondaries(const G4Step& stepData) {
   }
 
   partitioner->GetSecondaries(theSecs);
+  std::random_shuffle(theSecs.begin(), theSecs.end(), RandomIndex);
+
   size_t nsec = theSecs.size();
+  GeneratePositions(stepData, nsec);
 
   if (verboseLevel>1) G4cout << " Adding " << nsec << " secondaries" << G4endl;
   aParticleChange.SetNumberOfSecondaries(nsec);
 
   // Distribute generated particles along (straight line) trajectory
-  std::random_shuffle(theSecs.begin(), theSecs.end(), RandomIndex);
-
-  GeneratePositions(stepData, nsec);
   for (size_t i=0; i<theSecs.size(); i++) {
     theSecs[i]->SetPosition(posSecs[i]);
     aParticleChange.AddSecondary(theSecs[i]);
@@ -153,12 +155,14 @@ void G4CMPSecondaryProduction::GeneratePositions(const G4Step& stepData,
   G4ThreeVector traj = postPos - prePos;
   G4ThreeVector tdir = traj.unit();
 
-  G4double length = (postPos-prePos).mag();
+  G4double length = traj.mag();
   G4double dl = length / G4double(nsec);
   G4double sigl = dl/6.;
 
-  if (verboseLevel>1)
-    G4cout << " Choosing positions along " << length/mm << " mm" << G4endl;
+  if (verboseLevel>1) {
+    G4cout << " Choosing positions along " << length/mm << " mm " << tdir
+	   << ": steps " << dl << " +- " << sigl << " mm" << G4endl;
+  }
 
   posSecs.clear();
   posSecs.reserve(nsec);

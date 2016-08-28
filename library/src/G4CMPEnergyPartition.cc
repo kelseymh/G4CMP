@@ -101,7 +101,7 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
 }
 
 void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
-  if (verboseLevel>1) G4cout << " GenerateCharges " << energy << G4endl;
+  if (verboseLevel) G4cout << " GenerateCharges " << energy << G4endl;
 
   G4double ePair = theLattice->GetPairProductionEnergy();
   G4double eMeas = MeasuredChargeEnergy(energy);	// Applies Fano factor
@@ -109,7 +109,7 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   nPairs = std::floor(eMeas / ePair);		// Average number of e/h pairs
   particles.reserve(particles.size() + 2*nPairs);
 
-  if (verboseLevel>2)
+  if (verboseLevel>1)
     G4cout << " eMeas " << eMeas/MeV << " MeV => " << nPairs << G4endl;
 
   chargeEnergyLeft = eMeas;
@@ -118,7 +118,7 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
     chargeEnergyLeft -= ePair;
   }
 
-  if (verboseLevel>2) G4cout << " " << chargeEnergyLeft << " excess" << G4endl;
+  if (verboseLevel>1) G4cout << " " << chargeEnergyLeft << " excess" << G4endl;
 }
 
 void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
@@ -132,14 +132,14 @@ void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
 }
 
 void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
-  if (verboseLevel>1) G4cout << " GeneratePhonons " << energy << G4endl;
+  if (verboseLevel) G4cout << " GeneratePhonons " << energy << G4endl;
 
   G4double ePhon = theLattice->GetDebyeEnergy(); // TODO: No fluctuations yet!
 
   nPhonons = std::ceil(energy / ePhon);		// Average number of phonons
   particles.reserve(particles.size() + nPhonons);
 
-  if (verboseLevel>2)
+  if (verboseLevel>1)
     G4cout << " ePhon " << ePhon/eV << " eV => " << nPhonons << G4endl;
 
   phononEnergyLeft = energy;
