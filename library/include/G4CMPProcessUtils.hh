@@ -314,6 +314,7 @@ protected:
 
   const G4ParticleDefinition* GetCurrentParticle() const;
   const G4Track* GetCurrentTrack() const { return currentTrack; }
+  const G4VPhysicalVolume* GetCurrentVolume() const { return currentVolume; }
 
   G4int GetCurrentValley() const { return GetValleyIndex(currentTrack); }
   G4int fPhysicsModelID;

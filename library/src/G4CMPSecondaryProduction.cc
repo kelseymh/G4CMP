@@ -64,9 +64,20 @@ G4bool G4CMPSecondaryProduction::IsApplicable(const G4ParticleDefinition& pd) {
 // Overload G4CMPProcessUtils function to fill energy parameters
 
 void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
+  if (verboseLevel>1)
+    G4cout << "G4CMPSecondaryProduction::LoadDataForTrack" << G4endl;
+
   G4CMPProcessUtils::LoadDataForTrack(track);
+
   *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
 
+  if (verboseLevel>1) {
+    G4cout << " using material "
+	   << GetCurrentVolume()->GetLogicalVolume()->GetMaterial()->GetName()
+	   << G4endl;
+  }
+
+  partitioner->SetMaterial(GetCurrentVolume()->GetLogicalVolume()->GetMaterial());
   partitioner->SetVerboseLevel(verboseLevel);
 }
 
