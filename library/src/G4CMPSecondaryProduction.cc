@@ -88,16 +88,13 @@ G4VParticleChange*
 G4CMPSecondaryProduction::AlongStepDoIt(const G4Track& track,
 					const G4Step& stepData) {
   aParticleChange.Initialize(track); 
+  LoadDataForTrack(&track);
 
   // Only apply to tracks while they are in lattice-configured volumes
-  G4VPhysicalVolume* trkPV = track.GetVolume();
-  G4LatticePhysical* lattice =
-    G4LatticeManager::GetLatticeManager()->GetLattice(trkPV);
-  if (!lattice) return &aParticleChange;
+  if (!theLattice) return &aParticleChange;
 
   if (verboseLevel) G4cout << GetProcessName() << "::AlongStepDoIt" << G4endl;
 
-  LoadDataForTrack(&track);		// Do on every step to change volumes
   AddSecondaries(stepData);
 
   // NOTE:  This process does NOT change the track's momentum or energy

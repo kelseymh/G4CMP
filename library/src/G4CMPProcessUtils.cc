@@ -170,6 +170,8 @@ G4bool G4CMPProcessUtils::IsChargeCarrier(const G4Track* track) const {
 // Fetch lattice for current track, use in subsequent steps
 
 void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
+  currentVolume = volume;		// 
+
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
   theLattice = LM->GetLattice(volume);
 

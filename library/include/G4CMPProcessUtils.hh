@@ -66,6 +66,7 @@ public:
   // Set configuration manually, without a track
   virtual void FindLattice(const G4VPhysicalVolume* volume);
   virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
+  virtual const G4LatticePhysical* GetLattice() const { return theLattice; }
 
   virtual void SetTransforms(const G4VTouchable* touchable);
   virtual void SetTransforms(const G4RotationMatrix* rot,
