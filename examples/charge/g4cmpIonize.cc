@@ -3,6 +3,11 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+/// \file charge/g4cmpIonize.cc
+/// \brief Alternate G4CMP/charge example, demonstrating phonon, e/h production
+//
+// $Id$
+
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
 
@@ -16,11 +21,11 @@
 
 #include "ChargeActionInitialization.hh"
 #include "ChargeDetectorConstruction.hh"
-#include "ChargePrimaryGeneratorAction.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPPhysics.hh"
 #include "G4CMPStackingAction.hh"
 #include "FTFP_BERT.hh"
+
 
 int main(int argc,char** argv) {
   // Construct the run manager
@@ -43,8 +48,6 @@ int main(int argc,char** argv) {
   
   // Create G4CMP configuration manager to ensure macro commands exist
   G4CMPConfigManager::GetVerboseLevel();
-  
-  //FET* fetsim = new FET(runManager);
   
 #ifdef G4VIS_USE
   // Visualization manager
@@ -69,9 +72,6 @@ int main(int argc,char** argv) {
     UImanager->ApplyCommand(command+fileName);
   }
   
-  //G4cout << runManager->GetCurrentRun()->GetEventVector()->size() << G4endl;
-  // FET* fet = new FET(runManager->GetCurrentRun());
-  // delete fet;
 #ifdef G4VIS_USE
   delete visManager;
 #endif

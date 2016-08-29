@@ -1,24 +1,27 @@
-/run/initialize
-### /process/setVerbose 3 G4CMPSecondaryProduction
-/tracking/verbose 1
+/g4cmp/voltage -4 volt
 /gun/number 1
-/gun/particle e-
-/gun/position -5 0 1.3 cm
-/gun/direction 0.5 0 -1
-/gun/energy 3 MeV
+/gun/particle mu-
+/gun/position -3.7 0 0 cm		# Left to right across frame
+/gun/direction 1 0 0
+/gun/energy 50 MeV
 
-/vis/open OGLIX 800x800-0+0
+/run/initialize
+###/process/inactivate G4CMPSecondaryProduction
+/vis/open OGL
 /vis/viewer/set/upVector 0 0 1
-/vis/viewer/set/viewpointVector 0 1 -0.1
-/vis/viewer/zoomTo 1.2
+/vis/viewer/set/viewpointVector 0 -1 0.1
+/vis/viewer/zoomTo 1.5
 /vis/drawVolume
+
 /vis/scene/add/trajectories
+###/tracking/verbose 1
+/run/beamOn 1
+
 /vis/modeling/trajectories/create/drawByCharge dmcColors
 /vis/modeling/trajectories/dmcColors/set 1 red
 /vis/modeling/trajectories/dmcColors/set -1 blue
 /vis/modeling/trajectories/dmcColors/set 0 yellow
 
-/run/beamOn 1
 
 /vis/ogl/set/printMode pixmap
 /vis/ogl/set/printFilename ionize

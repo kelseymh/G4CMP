@@ -15,8 +15,10 @@
 // 20141008  Change to global singleton; must be shared across worker threads
 // 20160111  Remove G4 version checking. We hard depend on 10.2+
 // 20160615  Set name of G4LatticeLogical to match config directory
+// 20160826  Get default verbosity from envvar
 
 #include "G4LatticeManager.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4LatticeLogical.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LatticeReader.hh"
@@ -35,7 +37,8 @@ namespace {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4LatticeManager::G4LatticeManager() : verboseLevel(0) {
+G4LatticeManager::G4LatticeManager()
+  : verboseLevel(G4CMPConfigManager::GetVerboseLevel()) {
   Clear();
 }
 
