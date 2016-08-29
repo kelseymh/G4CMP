@@ -114,15 +114,8 @@ void G4CMPSecondaryProduction::AddSecondaries(const G4Step& stepData) {
   }
 
   // Configure energy partitioning for EM, nuclear, or pre-determined energy
-  if (eNIEL <= 0.) {
-    if (GetCurrentParticle()->GetParticleType() == "nucleus")
-      partitioner->NuclearRecoil(eTotal);
-    else
-      partitioner->Ionization(eTotal);
-  } else {
-    partitioner->DoPartition(eTotal-eNIEL, eTotal);
-  }
-
+  G4int ptype = stepData.GetTrack()->GetParticleDefinition()->GetPDGEncoding();
+  partitioner->DoPartition(ptype, eTotal, eNIEL);
   partitioner->GetSecondaries(theSecs);
   std::random_shuffle(theSecs.begin(), theSecs.end(), RandomIndex);
 

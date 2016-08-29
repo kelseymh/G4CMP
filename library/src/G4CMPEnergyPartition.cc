@@ -86,10 +86,35 @@ G4double G4CMPEnergyPartition::MeasuredChargeEnergy(G4double eTrue) const {
   return G4RandGauss::shoot(eTrue, sigmaE);
 }
 
+
+// Generate charge carriers and phonons, depending on interaction type
+
+void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
+				       G4double eNIEL) {
+  if (verboseLevel) {
+    G4cout << "G4CMPEnergyPartition::DoPartition " << PDGcode
+	   << " eTotal " << energy/MeV << " eNIEL " << eNIEL/MeV << " MeV"
+	   << G4endl;
+  }
+
+  // User specified phonon energy directly; assume it is correct
+  if (eNIEL > 0.) DoPartition(energy-eNIEL, eNIEL);
+  else {
+    if (PDGcode == 2112 || PDGcode > 10000) {	// Neutron or nucleus
+      if (verboseLevel>1)
+	G4cout << " Nuclear Recoil: type = " << PDGcode << G4endl;
+      NuclearRecoil(energy);
+    } else {
+      Ionization(energy);
+    }
+  }
+}
+
+
 // Generate charge carriers and phonons according to uniform phase space
 
 void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
-  if (verboseLevel) {
+  if (verboseLevel>1) {
     G4cout << "G4CMPEnergyPartition::DoPartition eIon " << eIon/MeV
 	   << " eNIEL " << eNIEL/MeV << " MeV" << G4endl;
   }
@@ -110,7 +135,8 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   particles.reserve(particles.size() + 2*nPairs);
 
   if (verboseLevel>1)
-    G4cout << " eMeas " << eMeas/MeV << " MeV => " << nPairs << G4endl;
+    G4cout << " eMeas " << eMeas/MeV << " MeV => " << nPairs << " pairs"
+	   << G4endl;
 
   chargeEnergyLeft = eMeas;
   while (chargeEnergyLeft > ePair) {
@@ -140,7 +166,8 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   particles.reserve(particles.size() + nPhonons);
 
   if (verboseLevel>1)
-    G4cout << " ePhon " << ePhon/eV << " eV => " << nPhonons << G4endl;
+    G4cout << " ePhon " << ePhon/eV << " eV => " << nPhonons << " phonons"
+	   << G4endl;
 
   phononEnergyLeft = energy;
   while (phononEnergyLeft > ePhon) {
@@ -177,7 +204,13 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
     primaries[i]->SetMomentumDirection(p.dir);
     primaries[i]->SetKineticEnergy(p.ekin);
 
-    if (verboseLevel>2) primaries[i]->Print();
+    if (verboseLevel==3) {
+      G4cout << i << " : " << p.pd->GetParticleName() << " " << p.ekin/eV
+	     << " eV along " << p.dir << G4endl;
+    } else if (verboseLevel>3) {
+      G4cout << i << " : ";
+      primaries[i]->Print();
+    }
   }
 }
 
@@ -194,6 +227,12 @@ GetSecondaries(std::vector<G4Track*>& secondaries) const {
     const Data& p = particles[i];	// For convenience below
     secondaries[i] = CreateTrack(p.pd, p.dir, p.ekin);
 
-    if (verboseLevel>2) secondaries[i]->GetDynamicParticle()->DumpInfo();
+    if (verboseLevel==3) {
+      G4cout << i << " : " << p.pd->GetParticleName() << " " << p.ekin/eV
+	     << " eV along " << p.dir << G4endl;
+    } else if (verboseLevel>3) {
+      G4cout << i << " : ";
+      secondaries[i]->GetDynamicParticle()->DumpInfo();
+    }
   }
 }

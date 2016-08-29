@@ -34,6 +34,9 @@ public:
   // Set debugging output
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
+  // Specify particle type (PDG), total and NIEL energy deposit
+  void DoPartition(G4int PDGcode, G4double energy, G4double eNIEL);
+
   // Nuclear recoil deposit uses Lindhard scale factor for e/h vs. phonons
   void NuclearRecoil(G4double energy) {
     G4double lind = LindhardScalingFactor(energy);
