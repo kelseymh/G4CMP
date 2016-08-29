@@ -26,6 +26,8 @@
 // 20150310  Fix CreateChargeCarrier to use momentum unit vector
 // 20160610  Return regular (NOT Herring-Vogt) wave vector for electrons
 // 20160809  BUG FIX:  th_phonon==0 is fine for computing energy.
+// 20160825  Add assignment operators for cross-process configuration;
+//	     move track identification functions to G4CMPUtils.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -44,6 +46,7 @@
 #include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RotationMatrix.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "G4TransportationManager.hh"
@@ -54,28 +57,33 @@
 // Constructor and destructor
 
 G4CMPProcessUtils::G4CMPProcessUtils()
-  : theLattice(nullptr), fPhysicsModelID(0), currentTrack(nullptr) {
+  : theLattice(nullptr), fPhysicsModelID(0), currentTrack(nullptr),
+    currentVolume(nullptr) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 }
 
 G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
 
-// Identify track type to simplify some conditionals
+// Assignment operators allow dependent configuration
 
-G4bool G4CMPProcessUtils::IsPhonon(const G4Track* track) const {
-  const G4ParticleDefinition* pd = track->GetParticleDefinition();
-  return (pd == G4PhononLong::Definition() ||
-	  pd == G4PhononTransFast::Definition() ||
-	  pd == G4PhononTransSlow::Definition());
-}
+G4CMPProcessUtils::G4CMPProcessUtils(G4CMPProcessUtils& right)
+  : theLattice(right.theLattice), fPhysicsModelID(right.fPhysicsModelID),
+    currentTrack(right.currentTrack), currentVolume(right.currentVolume),
+    fLocalToGlobal(right.fLocalToGlobal),
+    fGlobalToLocal(right.fGlobalToLocal) {;}
 
-G4bool G4CMPProcessUtils::IsElectron(const G4Track* track) const {
-  return (track->GetParticleDefinition() == G4CMPDriftElectron::Definition());
-}
-
-G4bool G4CMPProcessUtils::IsHole(const G4Track* track) const {
-  return (track->GetParticleDefinition() == G4CMPDriftHole::Definition());
+G4CMPProcessUtils&
+G4CMPProcessUtils::operator=(const G4CMPProcessUtils& right) {
+  if (this != &right) {			// Avoid unnecessary work
+    theLattice      = right.theLattice;
+    fPhysicsModelID = right.fPhysicsModelID;
+    currentTrack    = right.currentTrack;
+    currentVolume   = right.currentVolume;
+    fLocalToGlobal  = right.fLocalToGlobal;
+    fGlobalToLocal  = right.fGlobalToLocal;
+  }
+  return *this;
 }
 
 
@@ -83,6 +91,7 @@ G4bool G4CMPProcessUtils::IsHole(const G4Track* track) const {
 
 void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   currentTrack = track;
+  currentVolume = track->GetVolume();
 
   // WARNING!  This assumes track starts and ends in one single volume!
   SetTransforms(track->GetTouchable());
@@ -138,9 +147,31 @@ G4CMPProcessUtils::AttachTrackInfo(const G4Track* track) const {
 }
 
 
+// Identify track type to simplify some conditionals
+
+G4bool G4CMPProcessUtils::IsPhonon(const G4Track* track) const {
+  return G4CMP::IsPhonon(track);
+}
+
+G4bool G4CMPProcessUtils::IsElectron(const G4Track* track) const {
+  return G4CMP::IsElectron(track);
+}
+
+G4bool G4CMPProcessUtils::IsHole(const G4Track* track) const {
+  return G4CMP::IsHole(track);
+}
+
+G4bool G4CMPProcessUtils::IsChargeCarrier(const G4Track* track) const {
+  return G4CMP::IsChargeCarrier(track);
+}
+
+
+
 // Fetch lattice for current track, use in subsequent steps
 
 void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
+  currentVolume = volume;		// 
+
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
   theLattice = LM->GetLattice(volume);
 
@@ -634,6 +665,67 @@ G4CMPProcessUtils::PhononEnergyRand(G4double gapEnergy, G4double& Energy) {
 }
 
 
+// Generate direction angle for phonons in Luke scattering
+
+G4double G4CMPProcessUtils::MakePhononTheta(G4double k, G4double ks) const {
+  G4double u = G4UniformRand();
+  G4double v = ks/k;
+  G4double base = (u-1) * (3*v - 3*v*v + v*v*v - 1);
+  if (base < 0.0) return 0;
+  
+  G4double operand = v + pow(base, 1.0/3.0);   
+  if (operand > 1.0) operand=1.0;
+  
+  return acos(operand);
+}
+
+// Compute energy of phonon in Luke Scattering
+
+G4double G4CMPProcessUtils::MakePhononEnergy(G4double k, G4double ks,
+					     G4double th_phonon) const {
+  return 2.*(k*cos(th_phonon)-ks) * theLattice->GetSoundSpeed() * hbar_Planck;
+}
+
+// Compute direction angle for recoiling charge carrier
+
+G4double G4CMPProcessUtils::MakeRecoilTheta(G4double k, G4double ks,
+					    G4double th_phonon) const {
+  if (th_phonon == 0.) return 0.;		// Avoid unnecessary work
+
+  G4double kctks = k*cos(th_phonon) - ks;
+
+  return acos( (k*k - 2*ks*kctks - 2*kctks*kctks)
+	       / (k * sqrt(k*k - 4*ks*kctks)) );
+}
+
+
+// Construct new phonon or charge carrier track
+
+G4Track* G4CMPProcessUtils::CreateTrack(G4ParticleDefinition* pd,
+					const G4ThreeVector& waveVec,
+					G4double energy) const {
+  return CreateTrack(pd, waveVec, energy, currentTrack->GetPosition());
+}
+
+G4Track* G4CMPProcessUtils::CreateTrack(G4ParticleDefinition* pd,
+					const G4ThreeVector& waveVec,
+					G4double energy,
+					const G4ThreeVector& pos) const {
+  if (G4CMP::IsPhonon(pd)) {
+    return CreatePhonon(G4PhononPolarization::Get(pd), waveVec, energy, pos);
+  }
+
+  if (G4CMP::IsChargeCarrier(pd)) {
+    return CreateChargeCarrier(int(pd->GetPDGCharge()/eplus), ChooseValley(),
+			       energy, waveVec, pos);
+  }
+
+  G4cerr << "WARNING: " << pd->GetParticleName() << " is not G4CMP" << G4endl;
+  return new G4Track(new G4DynamicParticle(pd, waveVec, energy),
+		     currentTrack->GetGlobalTime(), pos);
+}
+
+
 // Construct new phonon track with correct momentum, position, etc.
 
 G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
@@ -687,44 +779,11 @@ G4CMPProcessUtils::CreatePhononInFromBoundary(G4int polarization,
   return sec;
 }
 
+
 // Generate random valley for charge carrier
 
 G4int G4CMPProcessUtils::ChooseValley() const {
   return (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
-}
-
-
-// Generate direction angle for phonons in Luke scattering
-
-G4double G4CMPProcessUtils::MakePhononTheta(G4double k, G4double ks) const {
-  G4double u = G4UniformRand();
-  G4double v = ks/k;
-  G4double base = (u-1) * (3*v - 3*v*v + v*v*v - 1);
-  if (base < 0.0) return 0;
-  
-  G4double operand = v + pow(base, 1.0/3.0);   
-  if (operand > 1.0) operand=1.0;
-  
-  return acos(operand);
-}
-
-// Compute energy of phonon in Luke Scattering
-
-G4double G4CMPProcessUtils::MakePhononEnergy(G4double k, G4double ks,
-					     G4double th_phonon) const {
-  return 2.*(k*cos(th_phonon)-ks) * theLattice->GetSoundSpeed() * hbar_Planck;
-}
-
-// Compute direction angle for recoiling charge carrier
-
-G4double G4CMPProcessUtils::MakeRecoilTheta(G4double k, G4double ks,
-					    G4double th_phonon) const {
-  if (th_phonon == 0.) return 0.;		// Avoid unnecessary work
-
-  G4double kctks = k*cos(th_phonon) - ks;
-
-  return acos( (k*k - 2*ks*kctks - 2*kctks*kctks)
-	       / (k * sqrt(k*k - 4*ks*kctks)) );
 }
 
 
@@ -739,6 +798,7 @@ G4CMPProcessUtils::GetValley(const G4Track& track) const {
   G4int iv = GetValleyIndex(track);
   return (iv>=0 ? theLattice->GetValley(iv) : G4RotationMatrix::IDENTITY);
 }
+
 
 // Construct new electron or hole track with correct conditions
 
