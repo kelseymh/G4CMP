@@ -28,6 +28,7 @@
 // 20160809  BUG FIX:  th_phonon==0 is fine for computing energy.
 // 20160825  Add assignment operators for cross-process configuration;
 //	     move track identification functions to G4CMPUtils.
+// 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -813,16 +814,8 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 				       const G4ThreeVector& dir,
 				       const G4ThreeVector& pos) const {
   G4double carrierMass = 0.;
-  if (charge==1) {
-    carrierMass = theLattice->GetHoleMass();
-  } else if (charge==-1) {
-#ifdef G4CMP_SET_ELECTRON_MASS
-    G4ThreeVector p_local = GetLocalDirection(dir);
-    carrierMass = theLattice->GetElectronEffectiveMass(valley, p_local);
-#else
-    carrierMass = theLattice->GetElectronMass();
-#endif
-  }
+  if (charge==1)       carrierMass = theLattice->GetHoleMass();
+  else if (charge==-1) carrierMass = theLattice->GetElectronMass();
 
   G4double carrierMom = std::sqrt(2.*Ekin*carrierMass);
 
@@ -840,9 +833,6 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 
   G4ParticleDefinition* theCarrier = 0;
   G4double carrierMass=0., carrierEnergy=0.;
-#ifdef G4CMP_SET_ELECTRON_MASS
-  G4double carrierSpeed=0.;
-#endif
 
   G4ThreeVector v_unit;
   if (charge==1) {
@@ -852,19 +842,12 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
     v_unit = p.unit();
   } else {
     theCarrier    = G4CMPDriftElectron::Definition();
-#ifdef G4CMP_SET_ELECTRON_MASS
-    G4ThreeVector p_local = GetLocalDirection(p);
-    carrierMass   = theLattice->GetElectronEffectiveMass(valley, p_local);
-    carrierEnergy = theLattice->MapPtoEkin(valley, p_local);
-    carrierSpeed  = theLattice->MapPtoV_el(valley, p_local).mag();
-#else
     carrierMass   = theLattice->GetElectronMass();
     G4ThreeVector p_local = GetLocalDirection(p);
     G4ThreeVector v_local = theLattice->MapPtoV_el(valley, p_local);
     RotateToGlobalDirection(v_local);
     carrierEnergy = 0.5 * carrierMass * v_local.mag2();// Non-relativistic
     v_unit = v_local.unit();
-#endif
   }
 
   G4DynamicParticle* secDP =
@@ -874,13 +857,6 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 
   // Store wavevector in auxiliary info for track
   AttachTrackInfo(sec)->SetValleyIndex(valley);
-
-#ifdef G4CMP_SET_ELECTRON_MASS
-  if (charge == -1) {
-    sec->SetVelocity(carrierSpeed);
-    sec->UseGivenVelocity(true);
-  }
-#endif
 
   return sec;
 }

@@ -16,6 +16,7 @@
 // 20141216 Set velocity for electrons
 // 20150109 Protect velocity flag with compiler flag
 // 20160625 Process _all_ tracks to ensure they're in correct volumes
+// 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 
 #include "G4CMPStackingAction.hh"
 #include "G4CMPTrackInformation.hh"
@@ -143,26 +144,8 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
   // Get effective mass for charge carrier
   G4double mass = aTrack->GetDefinition()->GetPDGMass();
 
-  if (IsHole(aTrack)) {
-    mass = theLattice->GetHoleMass();
-  }
-
-  if (IsElectron(aTrack)) {
-#ifdef G4CMP_SET_ELECTRON_MASS
-    G4ThreeVector p = GetLocalMomentum(aTrack);
-    G4int ivalley = GetValleyIndex(aTrack);
-
-    mass = theLattice->GetElectronEffectiveMass(ivalley, p);
-
-    // Adjust kinetic energy to keep momentum/mass relation
-    G4Track* theTrack = const_cast<G4Track*>(aTrack);
-    theTrack->SetKineticEnergy(theLattice->MapPtoEkin(ivalley, p));
-    theTrack->SetVelocity(theLattice->MapPtoV_el(ivalley, p).mag());
-    theTrack->UseGivenVelocity(true);
-#else
-    mass = theLattice->GetElectronMass();	// Herring-Vogt scalar mass
-#endif
-  }
+  if (IsHole(aTrack))     mass = theLattice->GetHoleMass();
+  if (IsElectron(aTrack)) mass = theLattice->GetElectronMass();	// H-V scalar
 
   // Cast to non-const pointer so we can change the effective mass
   G4DynamicParticle* dynp =

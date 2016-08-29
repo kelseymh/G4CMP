@@ -15,6 +15,7 @@
 // 20150111  Add functionality to enforce minimum step length
 // 20150112  Handle holes as well as electrons with FillParticleChange()
 // 20160624  Use GetTrackInfo() accessor
+// 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -136,15 +137,8 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
     EventMustBeAborted, "Unknown charge carrier");
   }
 
-  G4double energy = 0.5*mass*v.mag2()/c_squared;	// Non-relativistic, but "mass" is mc^2
-
-#ifdef G4CMP_SET_ELECTRON_MASS
-  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
-    // Get energy from momentum using appropriate E-p relation
-    G4ThreeVector p_local = GetLocalDirection(p);
-    energy = theLattice->MapPtoEkin(ivalley, p_local);
-  }
-#endif
+  // Non-relativistic, but "mass" is mc^2
+  G4double energy = 0.5*mass*v.mag2()/c_squared;
 
   FillParticleChange(ivalley, energy, v);
 }
@@ -154,24 +148,6 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
 void 
 G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
              const G4ThreeVector& v) {
-#ifdef G4CMP_SET_ELECTRON_MASS
-  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
-
-  // Get effective scalar mass from momentum and valley
-    G4ThreeVector p_local = GetLocalDirection(p);
-    G4double mass = theLattice->GetElectronEffectiveMass(ivalley, p_local);
-    G4double velocity = theLattice->MapPtoV_el(ivalley, p_local).mag();
-    
-    if (verboseLevel > 1) {
-      G4cout << GetProcessName() << "::FillParticleChange valley " << ivalley
-	     << " energy " << Ekin << "\n p " << p
-	     << " mass " << mass*c_squared << G4endl;
-    }
-    
-    aParticleChange.ProposeMass(mass*c_squared);		// GEANT4 units
-    aParticleChange.ProposeVelocity(velocity);
-  }
-#endif
   aParticleChange.ProposeMomentumDirection(v.unit());
   aParticleChange.ProposeEnergy(Ekin);
 }

@@ -9,6 +9,7 @@
 # Add qhull/src directory to include directories list
 # Use G4CMPINSTALL instead of ".." to find includes
 # Move QHull building under library
+# Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 
 name := G4cmp
 
@@ -22,9 +23,6 @@ G4CMP_FLAGS += -I./include -I$(G4CMPINSTALL)/library/qhull-2012.1/src \
 	-I$(G4INCLUDE) -Dqh_QHpointer 
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
-endif
-ifdef G4CMP_SET_ELECTRON_MASS
-  G4CMP_FLAGS += -DG4CMP_SET_ELECTRON_MASS
 endif
 
 CPPFLAGS := $(G4CMP_FLAGS) $(CPPFLAGS)		# Prepend for right load order

@@ -4,6 +4,7 @@
 # 20140326  Add support for "G4CMP_DEBUG" compile-time symbol
 # 20150109  Add G4CMP_SET_ELECTRON_MASS support to build with dynamic mass code
 # 20160518  Use G4CMPINSTALL instead of ".." to find things
+# 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 
 ifndef G4CMP_NAME
 $(error Please set G4CMP_NAME in directory-level GNUmakefile)
@@ -31,9 +32,6 @@ G4CMP_FLAGS := -I$(G4CMPINSTALL)/library/include \
 
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
-endif
-ifdef G4CMP_SET_ELECTRON_MASS
-  G4CMP_FLAGS += -DG4CMP_SET_ELECTRON_MASS
 endif
 
 include $(G4INSTALL)/config/binmake.gmk

@@ -7,6 +7,7 @@
 # Add G4CMP_SET_ELECTRON_MASS support to build with dynamic mass code
 # Move individual examples to "examples/" directory, add tools and tests
 # Move QHull down to library/ directory; update tar-ball generator
+# Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 
 .PHONY : library phonon charge tests tools	# Targets named for directory
 .PHONY : all lib dist clean qhull examples
@@ -52,7 +53,6 @@ dist : g4cmp.tgz
 # Directory targets
 
 export G4CMP_DEBUG		# Turns on debugging output
-export G4CMP_SET_ELECTRON_MASS	# Turns on dynamical electron mass
 
 library :
 	-$(MAKE) -C $@
