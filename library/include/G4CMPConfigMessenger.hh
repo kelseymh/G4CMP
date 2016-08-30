@@ -20,6 +20,7 @@
 // 20150603  Add command to limit reflections in DriftBoundaryProcess
 // 20160518  Add commands for Miller orientation, phonon bounces
 // 20160624  Add command to select KV lookup tables vs. calculator
+// 20160830  Add command to scale production of e/h pairs, like phonons
 
 #include "G4UImessenger.hh"
 
@@ -59,6 +60,7 @@ private:
   G4UIcmdWithADoubleAndUnit* voltageCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
+  G4UIcmdWithADouble* makeChargeCmd;
   G4UIcmdWithADouble* escaleCmd;
   G4UIcmdWithAString* fileCmd;
   G4UIcmdWithAString* dirCmd;
