@@ -3,7 +3,10 @@
 /gun/particle mu-
 /gun/position -3.7 0 0 cm		# Left to right across frame
 /gun/direction 1 0 0
-/gun/energy 5 MeV
+/gun/energy 50 MeV
+
+/g4cmp/producePhonons 0.001		# EM hits, so can produce many
+/g4cmp/produceCharges 0.001		# Scale down charge carriers
 
 /run/initialize
 /vis/open OGL
@@ -19,12 +22,12 @@
 /vis/modeling/trajectories/dmcColors/set 0 yellow
 
 # Disable processes which change particles
-###/process/inactivate phononScattering
-###/process/inactivate G4CMPLukeScattering
-###/process/inactivate G4CMPInterValleyScattering
+/process/inactivate phononScattering
+/process/inactivate G4CMPLukeScattering
+/process/inactivate G4CMPInterValleyScattering
 
 ###/tracking/verbose 1
-###/process/setVerbose 2 G4CMPSecondaryProduction
+/process/setVerbose 1 G4CMPSecondaryProduction
 /run/beamOn 1
 
 /vis/ogl/set/printMode pixmap
