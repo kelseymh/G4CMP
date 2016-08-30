@@ -11,12 +11,13 @@
 // 20150111  New base class for both electron and hole Luke processes
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 // 20160624  Use GetTrackInfo() accessor
+// 20160830  Replace direct use of G4CMP_MAKE_PHONONS with ChooseWeight
 
 #include "G4CMPLukeScattering.hh"
-#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPTrackInformation.hh"
+#include "G4CMPUtils.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononPolarization.hh"
@@ -172,11 +173,14 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Create real phonon to be propagated, with random polarization
   // If phonon is not created, register the energy as deposited
-  G4double genLuke = G4CMPConfigManager::GetGenPhonons();
-  if (genLuke > 0. && G4UniformRand() < genLuke) {
+  G4double weight = G4CMPUtils::ChoosePhononWeight();
+
+  if (weight > 0.) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
     G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
+    phonon->SetWeight(weight);
+
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(phonon);
   } else {

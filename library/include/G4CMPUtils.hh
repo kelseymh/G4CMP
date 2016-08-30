@@ -40,4 +40,6 @@ namespace G4CMP {
 
   // Throw biasing decision for particle production and return weight
   G4double ChooseWeight(const G4ParticleDefinition* pd);
+  G4double ChoosePhononWeight();
+  G4double ChooseChargeWeight();
 }

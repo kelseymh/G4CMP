@@ -10,11 +10,13 @@
 ///
 // $Id$
 //
+// 20160830  Apply production biasing for primaries and secondaries
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPUtils.hh"
 #include "G4DynamicParticle.hh"
 #include "G4LatticePhysical.hh"
 #include "G4Material.hh"
@@ -54,7 +56,8 @@ G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
   }
 
   static const G4Pow* g4pow = G4Pow::GetInstance();	// Tabulated for speed
-  const G4double Z=material->GetZ(), A=material->GetA();
+  const G4double Z = material->GetZ();
+  const G4double A = material->GetA() / (g/mole);
 
   if (verboseLevel>1) {
     G4cout << " LindhardScalingFactor " << E << " for (Z,A) " << Z
@@ -62,17 +65,17 @@ G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
   }
 
   // From Lewin and Smith, 1996
-  G4double epsilon = 0.0115 * E * g4pow->powN(g4pow->A13(Z),-7);
-  G4double k = 0.133 * g4pow->A23(Z) / std::sqrt(A);
-  G4double h = (0.7*g4pow->powA(epsilon,0.6) + 3.*g4pow->powA(epsilon,0.15)
+  G4double epsilon = 0.0115 * E * std::pow(Z, -7./3.);
+  G4double k = 0.133 * std::pow(Z, 2./3.) / std::sqrt(A);
+  G4double h = (0.7*std::pow(epsilon,0.6) + 3.*std::pow(epsilon,0.15)
 		+ epsilon);
 
   if (verboseLevel>2) {
     G4cout << " eps " << epsilon << " k " << k << " h " << h << " : "
-	   << 1.-1./(k*h) << G4endl;
+	   << k*h / (1.+k*h) << G4endl;
   }
 
-  return (1. - 1./(k*h));
+  return (k*h / (1.+k*h));
 }
 
 
@@ -151,10 +154,10 @@ void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
   G4double eFree = ePair - theLattice->GetBandGapEnergy(); // TODO: Is this right?
 
   particles.push_back(Data(G4CMPDriftElectron::Definition(),G4RandomDirection(),
-			 (1.-holeFraction)*eFree));
+			   (1.-holeFraction)*eFree));
 
   particles.push_back(Data(G4CMPDriftHole::Definition(), G4RandomDirection(),
-			 holeFraction*eFree));
+			   holeFraction*eFree));
 }
 
 void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
@@ -193,25 +196,39 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
   if (verboseLevel) G4cout << "G4CMPEnergyPartition::GetPrimaries" << G4endl;
 
   primaries.clear();
-  primaries.resize(particles.size());	// Pre-create list, address by index
+  primaries.reserve(particles.size());
 
-  if (verboseLevel>1) G4cout << " filling " << particles.size() << G4endl;
+  if (verboseLevel>1) {
+    G4cout << " processing " << particles.size()
+	   << " bias " << G4CMPConfigManager::GetGenPhonons() << " phonons"
+	   << " bias " << G4CMPConfigManager::GetGenCharges() << " e/h pairs"
+	   << G4endl;
+  }
 
+  G4double weight = 0.;
+  G4PrimaryParticle* thePrim = 0;
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
-    primaries[i] = new G4PrimaryParticle();
-    primaries[i]->SetParticleDefinition(p.pd);
-    primaries[i]->SetMomentumDirection(p.dir);
-    primaries[i]->SetKineticEnergy(p.ekin);
+    weight = G4CMP::ChooseWeight(p.pd);
+    if (weight <= 0.) continue;		// Biasing rejected particle creation
+
+    thePrim = new G4PrimaryParticle();
+    thePrim->SetParticleDefinition(p.pd);
+    thePrim->SetMomentumDirection(p.dir);
+    thePrim->SetKineticEnergy(p.ekin);
+    thePrim->SetWeight(weight);
+    primaries.push_back(thePrim);
 
     if (verboseLevel==3) {
       G4cout << i << " : " << p.pd->GetParticleName() << " " << p.ekin/eV
-	     << " eV along " << p.dir << G4endl;
+	     << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
     } else if (verboseLevel>3) {
       G4cout << i << " : ";
-      primaries[i]->Print();
+      thePrim->Print();
     }
   }
+
+  primaries.shrink_to_fit();		// Reduce footprint if biasing done
 }
 
 void G4CMPEnergyPartition::
@@ -219,20 +236,34 @@ GetSecondaries(std::vector<G4Track*>& secondaries) const {
   if (verboseLevel) G4cout << "G4CMPEnergyPartition::GetSecondaries" << G4endl;
 
   secondaries.clear();
-  secondaries.resize(particles.size());	// Pre-create list, address by index
+  secondaries.reserve(particles.size());
 
-  if (verboseLevel>1) G4cout << " filling " << particles.size() << G4endl;
+  if (verboseLevel>1) {
+    G4cout << " processing " << particles.size()
+	   << " bias " << G4CMPConfigManager::GetGenPhonons() << " phonons"
+	   << " bias " << G4CMPConfigManager::GetGenCharges() << " e/h pairs"
+	   << G4endl;
+  }
 
+  G4double weight = 0.;
+  G4Track* theSec = 0;
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
-    secondaries[i] = CreateTrack(p.pd, p.dir, p.ekin);
+    weight = G4CMP::ChooseWeight(p.pd);
+    if (weight <= 0.) continue;		// Biasing rejected particle creation
+
+    theSec = CreateTrack(p.pd, p.dir, p.ekin);
+    theSec->SetWeight(weight);
+    secondaries.push_back(theSec);
 
     if (verboseLevel==3) {
       G4cout << i << " : " << p.pd->GetParticleName() << " " << p.ekin/eV
-	     << " eV along " << p.dir << G4endl;
+	     << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
     } else if (verboseLevel>3) {
       G4cout << i << " : ";
-      secondaries[i]->GetDynamicParticle()->DumpInfo();
+      theSec->GetDynamicParticle()->DumpInfo();
     }
   }
+
+  secondaries.shrink_to_fit();		// Reduce footprint if biasing done
 }
