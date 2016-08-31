@@ -44,14 +44,4 @@ private:
   G4PhononDownconversion& operator=(const G4PhononDownconversion& right);
 };
 
-#endif
-
-
-
-
-
-
-
-
-
-
+#endif	/* G4PhononDownconversion_h */

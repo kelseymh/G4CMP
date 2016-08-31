@@ -69,14 +69,4 @@ private:
   G4CMPPhononBoundaryProcess& operator=(const G4CMPPhononBoundaryProcess&&);
 };
 
-#endif
-
-
-
-
-
-
-
-
-
-
+#endif	/* G4CMPPhononBoundaryProcess_h */

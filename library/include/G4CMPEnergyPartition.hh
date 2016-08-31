@@ -11,6 +11,9 @@
 // $Id$
 //
 
+#ifndef G4CMPEnergyPartition_hh
+#define G4CMPEnergyPartition_hh 1
+
 #include "globals.hh"
 #include "G4CMPProcessUtils.hh"
 #include "G4ThreeVector.hh"
@@ -88,3 +91,5 @@ protected:
     
   std::vector<Data> particles;	// Combined phonons and charge carriers
 };
+
+#endif	/* G4CMPEnergyPartition_hh */

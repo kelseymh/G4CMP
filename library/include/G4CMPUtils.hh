@@ -10,6 +10,9 @@
 //
 // $Id$
 
+#ifndef G4CMPUtils_hh
+#define G4CMPUtils_hh 1
+
 #include "G4ThreeVector.hh"
 #include "globals.hh"
 
@@ -38,3 +41,5 @@ namespace G4CMP {
   G4bool IsHole(const G4ParticleDefinition* pd);
   G4bool IsChargeCarrier(const G4ParticleDefinition* pd);
 }
+
+#endif	/* G4CMPUtils_hh */

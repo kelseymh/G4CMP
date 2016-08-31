@@ -79,6 +79,4 @@ inline void G4CMPElectrodeHit::operator delete(void* aHit) {
   G4CMPElectrodeHitAllocator.FreeSingle((G4CMPElectrodeHit*) aHit);
 }
 
-#endif
-
-
+#endif	/* G4CMPElectrodeHit_h */
