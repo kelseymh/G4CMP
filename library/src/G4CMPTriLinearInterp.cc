@@ -154,7 +154,7 @@ G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& point,
   }
 }
 
-G4double G4CMPTriLinearInterp::GetPotential(const G4double pos[3]) const {
+G4double G4CMPTriLinearInterp::GetValue(const G4double pos[3]) const {
   G4double bary[4];
   FindTetrahedron(&pos[0], bary);
     
@@ -164,10 +164,10 @@ G4double G4CMPTriLinearInterp::GetPotential(const G4double pos[3]) const {
     return(V[Tetrahedra[TetraIdx][0]] * bary[0] +
            V[Tetrahedra[TetraIdx][1]] * bary[1] +
            V[Tetrahedra[TetraIdx][2]] * bary[2] +
-           V[Tetrahedra[TetraIdx][3]] * bary[3]);
+           V[Tetrahedra[TetraIdx][3]] * bary[3]);    
 }
 
-void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) const {
+G4double* G4CMPTriLinearInterp::GetGrad(const G4double pos[4]) const {
   G4double bary[4];
   FindTetrahedron(pos, bary);
 
@@ -185,6 +185,7 @@ void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) co
                    V[Tetrahedra[TetraIdx][3]]*ET[3][i];
     }
   }
+  return tmpField;
 }
 
 void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bary[4]) const {
