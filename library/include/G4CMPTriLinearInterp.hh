@@ -27,8 +27,8 @@ public:
   void UseMesh(const std::vector<point >& xyz,
 	       const std::vector<G4double>& v);
   
-  G4double GetPotential(const G4double pos[3]) const;
-  void GetField(const G4double pos[4], G4double field[6]) const;
+  G4double GetValue(const G4double pos[3]) const;
+  G4double* GetGrad(const G4double pos[4]) const;
   
 private:
   std::map<G4int,G4int> qhull2x;
