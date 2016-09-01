@@ -82,7 +82,7 @@ G4double G4CMP::ChoosePhononWeight() {
 }
 
 G4double G4CMP::ChooseChargeWeight() {
-  G4double prob = G4CMPConfigManager::GetGenCharges()
+  G4double prob = G4CMPConfigManager::GetGenCharges();
 
   // If prob=0., random throw always fails, never divides by zero
   return ((prob==1.) ? 1. : (G4UniformRand()<prob) ? 1./prob : 0.);

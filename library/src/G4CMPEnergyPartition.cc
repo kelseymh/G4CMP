@@ -22,7 +22,6 @@
 #include "G4LatticePhysical.hh"
 #include "G4Material.hh"
 #include "G4PhononPolarization.hh"
-#include "G4Pow.hh"
 #include "G4PrimaryParticle.hh"
 #include "G4RandomDirection.hh"
 #include "G4SystemOfUnits.hh"
@@ -56,7 +55,6 @@ G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
     return 1.;
   }
 
-  static const G4Pow* g4pow = G4Pow::GetInstance();	// Tabulated for speed
   const G4double Z=material->GetZ(), A=material->GetA()/(g/mole);
 
   if (verboseLevel>1) {
