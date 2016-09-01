@@ -40,6 +40,11 @@ namespace G4CMP {
   G4bool IsElectron(const G4ParticleDefinition* pd);
   G4bool IsHole(const G4ParticleDefinition* pd);
   G4bool IsChargeCarrier(const G4ParticleDefinition* pd);
+
+  // Throw biasing decision for particle production and return weight
+  G4double ChooseWeight(const G4ParticleDefinition* pd);
+  G4double ChoosePhononWeight();
+  G4double ChooseChargeWeight();
 }
 
 #endif	/* G4CMPUtils_hh */

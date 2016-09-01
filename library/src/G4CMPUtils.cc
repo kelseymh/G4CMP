@@ -1,4 +1,5 @@
 #include "G4CMPUtils.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4LatticePhysical.hh"
@@ -62,4 +63,27 @@ G4bool G4CMP::IsChargeCarrier(const G4Track* track) {
 
 G4bool G4CMP::IsChargeCarrier(const G4ParticleDefinition* pd) {
   return (IsElectron(pd) || IsHole(pd));
+}
+
+
+// Generate weighting factor for phonons, charge carriers
+// NOTE:  If zero is returned, track should NOT be created!
+
+G4double G4CMP::ChooseWeight(const G4ParticleDefinition* pd) {
+  return (IsChargeCarrier(pd) ? ChooseChargeWeight()
+	  : IsPhonon(pd) ? ChoosePhononWeight() : 1.);
+}
+
+G4double G4CMP::ChoosePhononWeight() {
+  G4double prob = G4CMPConfigManager::GetGenPhonons();
+
+  // If prob=0., random throw always fails, never divides by zero
+  return ((prob==1.) ? 1. : (G4UniformRand()<prob) ? 1./prob : 0.);
+}
+
+G4double G4CMP::ChooseChargeWeight() {
+  G4double prob = G4CMPConfigManager::GetGenCharges()
+
+  // If prob=0., random throw always fails, never divides by zero
+  return ((prob==1.) ? 1. : (G4UniformRand()<prob) ? 1./prob : 0.);
 }

@@ -16,6 +16,7 @@
 // 20150603  Add command to limit reflections in DriftBoundaryProcess
 // 20160518  Add commands for Miller orientation, phonon bounces
 // 20160624  Add command to select KV lookup tables vs. calculator
+// 20160830  Add command to scale production of e/h pairs, like phonons
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -54,7 +55,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 			 "Set fraction of L0 for charge carrier minimum step");
 
   makePhononCmd = CreateCommand<G4UIcmdWithADouble>("producePhonons",
-          "Set rate of production of Luke and relaxation phonons");
+          "Set rate of production of primary, Luke and relaxation phonons");
+
+  makeChargeCmd = CreateCommand<G4UIcmdWithADouble>("produceCharges",
+		    "Set rate of production of primary charge carriers");
 
   escaleCmd = CreateCommand<G4UIcmdWithADouble>("scaleEpot",
 		"Set a scale factor for voltages in Epot electric field file");
@@ -90,6 +94,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete millerCmd; millerCmd=0;
   delete minstepCmd; minstepCmd=0;
   delete makePhononCmd; makePhononCmd=0;
+  delete makeChargeCmd; makeChargeCmd=0;
   delete escaleCmd; escaleCmd=0;
   delete fileCmd; fileCmd=0;
   delete dirCmd; dirCmd=0;
@@ -127,15 +132,20 @@ void G4CMPConfigMessenger::CreateDirectory(const char* path, const char* desc) {
 
 void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == verboseCmd) theManager->SetVerboseLevel(StoI(value));
-  if (cmd == voltageCmd) theManager->SetVoltage(voltageCmd->GetNewDoubleValue(value));
   if (cmd == minstepCmd) theManager->SetMinStepScale(StoD(value));
   if (cmd == makePhononCmd) theManager->SetGenPhonons(StoD(value));
-  if (cmd == escaleCmd) theManager->SetEpotScale(escaleCmd->GetNewDoubleValue(value));
+  if (cmd == makeChargeCmd) theManager->SetGenCharges(StoD(value));
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
   if (cmd == fileCmd) theManager->SetEpotFile(value);
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
   if (cmd == hitsCmd) theManager->SetHitOutput(value);
+
+  if (cmd == voltageCmd)
+    theManager->SetVoltage(voltageCmd->GetNewDoubleValue(value));
+
+  if (cmd == escaleCmd)
+    theManager->SetEpotScale(escaleCmd->GetNewDoubleValue(value));
 
   if (cmd == millerCmd) {		// Special, takes three integer args
     G4Tokenizer split(value);

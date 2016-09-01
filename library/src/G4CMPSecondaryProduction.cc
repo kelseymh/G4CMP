@@ -110,7 +110,7 @@ void G4CMPSecondaryProduction::AddSecondaries(const G4Step& stepData) {
 
   if (verboseLevel) {
     G4cout << " AddSecondaries " << eTotal/eV << " eV"
-	   << " (" << eNIEL << " NEIL)" << G4endl;
+	   << " (" << eNIEL << " NIEL)" << G4endl;
   }
 
   // Configure energy partitioning for EM, nuclear, or pre-determined energy
@@ -132,12 +132,11 @@ void G4CMPSecondaryProduction::AddSecondaries(const G4Step& stepData) {
 
     if (verboseLevel>2) {
       G4Track* aSec = theSecs[i];
-      G4cout << " Created secondary " << i << " "
+      G4cout << " secondary " << i << " : "
 	     << aSec->GetParticleDefinition()->GetParticleName()
-	     << "\n track along " << aSec->GetMomentumDirection()
-	     << " (length " << aSec->GetMomentumDirection().mag() << ")"
-	     << "\n E " << aSec->GetKineticEnergy()/eV << " eV,"
-	     << "\n @ " << aSec->GetPosition() << G4endl;
+	     << " " << aSec->GetKineticEnergy()/eV << " eV "
+	     << " along " << aSec->GetMomentumDirection()
+	     << " @ " << aSec->GetPosition() << G4endl;
     }
   }
 }
