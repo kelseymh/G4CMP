@@ -10,6 +10,9 @@
 //
 // $Id$
 
+#ifndef G4CMPUtils_hh
+#define G4CMPUtils_hh 1
+
 #include "G4ThreeVector.hh"
 #include "globals.hh"
 
@@ -43,3 +46,5 @@ namespace G4CMP {
   G4double ChoosePhononWeight();
   G4double ChooseChargeWeight();
 }
+
+#endif	/* G4CMPUtils_hh */

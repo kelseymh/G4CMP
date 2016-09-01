@@ -11,6 +11,7 @@
 // $Id$
 //
 // 20160830  Apply production biasing for primaries and secondaries
+// 20160830  Fix 'A' parameter in Lindhard to convert from g/mole units.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPConfigManager.hh"
@@ -56,8 +57,7 @@ G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
   }
 
   static const G4Pow* g4pow = G4Pow::GetInstance();	// Tabulated for speed
-  const G4double Z = material->GetZ();
-  const G4double A = material->GetA() / (g/mole);
+  const G4double Z=material->GetZ(), A=material->GetA()/(g/mole);
 
   if (verboseLevel>1) {
     G4cout << " LindhardScalingFactor " << E << " for (Z,A) " << Z

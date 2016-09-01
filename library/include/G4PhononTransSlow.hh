@@ -28,5 +28,4 @@ public:
   static G4PhononTransSlow* PhononDefinition();
 };
 
-#endif
-
+#endif	/* G4PhononTransSlow_h */

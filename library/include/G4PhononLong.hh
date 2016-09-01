@@ -29,5 +29,4 @@ public:
 
 };
 
-#endif
-
+#endif	/* G4PhononLong_h */

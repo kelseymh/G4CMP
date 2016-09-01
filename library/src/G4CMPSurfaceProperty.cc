@@ -4,13 +4,19 @@
 \***********************************************************************/
 
 // $Id$
+//
+// 20160831  M. Kelsey -- Add optional electrode geometry class
 
 #include "G4CMPSurfaceProperty.hh"
+#include "G4CMPVElectrodePattern.hh"
 
+
+// Constructors and destructor
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4SurfaceType stype)
-                                           : G4SurfaceProperty(name, stype) {;}
+  : G4SurfaceProperty(name, stype), theChargeElectrode(0),
+    thePhononElectrode(0) {;}
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4double qAbsProb,
@@ -22,7 +28,7 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4double pSpecProb,
                                            G4double pMinK,
                                            G4SurfaceType stype)
-                                           : G4SurfaceProperty(name, stype) {
+: G4CMPSurfaceProperty(name, stype) {
   FillChargeMaterialPropertiesTable(qAbsProb, qReflProb, eMinK, hMinK);
   FillPhononMaterialPropertiesTable(pAbsProb, pReflProb, pSpecProb, pMinK);
 }
@@ -67,7 +73,7 @@ void G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable(
 }
 
 void G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable(
-  G4MaterialPropertiesTable mpt) {
+  G4MaterialPropertiesTable& mpt) {
   if (IsValidChargePropTable(mpt)) {
     theChargeMatPropTable = mpt;
   } else {
@@ -78,7 +84,7 @@ void G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable(
 }
 
 void G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable(
-  G4MaterialPropertiesTable mpt) {
+  G4MaterialPropertiesTable& mpt) {
   if (IsValidChargePropTable(mpt)) {
     thePhononMatPropTable = mpt;
   } else {
@@ -108,15 +114,30 @@ void G4CMPSurfaceProperty::FillPhononMaterialPropertiesTable(G4double pAbsProb,
   thePhononMatPropTable.AddConstProperty("absMinK", pMinK);
 }
 
-void G4CMPSurfaceProperty::DumpInfo() const {
 
-  // Dump info for surface
-  // TO DO
+// Complex electrode geometries
 
+void G4CMPSurfaceProperty::SetChargeElectrode(G4CMPVElectrodePattern* cel) {
+  theChargeElectrode = cel;
+  theChargeElectrode->UseSurfaceTable(theChargeMatPropTable);
 }
 
-G4bool G4CMPSurfaceProperty::IsValidChargePropTable(
-                              G4MaterialPropertiesTable& propTab) const {
+void G4CMPSurfaceProperty::SetPhononElectrode(G4CMPVElectrodePattern* pel) {
+  thePhononElectrode = pel;
+  thePhononElectrode->UseSurfaceTable(thePhononMatPropTable);
+}
+
+
+// Report configuration parameters for diagnostics
+
+void G4CMPSurfaceProperty::DumpInfo() const {
+  // FIXME:  Stupid Tables don't have any const accessors!
+  const_cast<G4MaterialPropertiesTable*>(&theChargeMatPropTable)->DumpTable();
+  const_cast<G4MaterialPropertiesTable*>(&thePhononMatPropTable)->DumpTable();
+}
+
+G4bool G4CMPSurfaceProperty::
+IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const {
   // A property table is valid for us if it at least contains all of the
   // properties that we require.
   return (propTab.ConstPropertyExists("absProb") &&
@@ -125,8 +146,8 @@ G4bool G4CMPSurfaceProperty::IsValidChargePropTable(
           propTab.ConstPropertyExists("minKHole"));
 }
 
-G4bool G4CMPSurfaceProperty::IsValidPhononPropTable(
-                              G4MaterialPropertiesTable& propTab) const {
+G4bool G4CMPSurfaceProperty::
+IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const {
   // A property table is valid for us if it at least contains all of the
   // properties that we require.
   return (propTab.ConstPropertyExists("absProb") &&

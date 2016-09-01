@@ -4,12 +4,17 @@
 \***********************************************************************/
 
 // $Id$
+//
+// 20160831  M. Kelsey -- Add optional electrode geometry class
 
 #ifndef G4CMPSurfaceProperty_h
 #define G4CMPSurfaceProperty_h 1
 
 #include "G4SurfaceProperty.hh"
 #include "G4MaterialPropertiesTable.hh"
+
+class G4CMPVElectrodePattern;
+
 
 class G4CMPSurfaceProperty : public G4SurfaceProperty {
 public:
@@ -36,39 +41,53 @@ public:
   G4bool operator==(const G4SurfaceProperty &right) const;
   G4bool operator!=(const G4SurfaceProperty &right) const;
 
-  const G4MaterialPropertiesTable* GetChargeMaterialPropertiesTablePointer() const
-                       { return &theChargeMatPropTable; }
-  const G4MaterialPropertiesTable* GetPhononMaterialPropertiesTablePointer() const
-                       { return &thePhononMatPropTable; }
-  G4MaterialPropertiesTable GetChargeMaterialPropertiesTable() const
-                       { return theChargeMatPropTable; }
-  G4MaterialPropertiesTable GetPhononMaterialPropertiesTable() const
-                       { return thePhononMatPropTable; }
+  // Accessors for charge-pair and phonon boundary parameters
+  // NOTE:  These return non-functional objects because Tables can't be const
+  const G4MaterialPropertiesTable* 
+  GetChargeMaterialPropertiesTablePointer() const { return &theChargeMatPropTable; }
 
+  const G4MaterialPropertiesTable*
+  GetPhononMaterialPropertiesTablePointer() const { return &thePhononMatPropTable; }
+
+  // NOTE:  These return by value because Tables can't be const
+  G4MaterialPropertiesTable
+  GetChargeMaterialPropertiesTable() const { return theChargeMatPropTable; }
+
+  G4MaterialPropertiesTable
+  GetPhononMaterialPropertiesTable() const { return thePhononMatPropTable; }
+
+  // Accessors to fill charge-pair and phonon boundary parameters
   void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
   void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
-  void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable mpt);
-  void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable mpt);
+  void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable& mpt);
+  void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable& mpt);
 
-  void FillChargeMaterialPropertiesTable(G4double qAbsProb,
-                                         G4double qReflProb,
-                                         G4double eMinK,
-                                         G4double hMinK);
+  void FillChargeMaterialPropertiesTable(G4double qAbsProb, G4double qReflProb,
+                                         G4double eMinK,    G4double hMinK);
 
-  void FillPhononMaterialPropertiesTable(G4double pAbsProb,
-                                         G4double pReflProb,
-                                         G4double pSpecProb,
-                                         G4double pMinK);
+  void FillPhononMaterialPropertiesTable(G4double pAbsProb,  G4double pReflProb,
+                                         G4double pSpecProb, G4double pMinK);
 
-  void DumpInfo() const;	// To be implemented
+  // Complex electrode geometries
+  void SetChargeElectrode(G4CMPVElectrodePattern* cel);
+  void SetPhononElectrode(G4CMPVElectrodePattern* pel);
+
+  G4CMPVElectrodePattern* GetChargeElectrode() const { return theChargeElectrode; }
+  G4CMPVElectrodePattern* GetPhononElectrode() const { return thePhononElectrode; }
+
+
+  virtual void DumpInfo() const;	// To be implemented
 
 protected:
   G4MaterialPropertiesTable theChargeMatPropTable;
   G4MaterialPropertiesTable thePhononMatPropTable;
 
+  G4CMPVElectrodePattern* theChargeElectrode;
+  G4CMPVElectrodePattern* thePhononElectrode;
+
   // These args should be const, but G4MaterialPropertiesTables is silly.
-  virtual G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
-  virtual G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
+  G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
+  G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
 };
 
 #endif

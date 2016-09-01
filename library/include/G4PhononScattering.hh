@@ -30,14 +30,4 @@ private:
   G4PhononScattering& operator=(const G4PhononScattering& right);
 };
 
-#endif
-
-
-
-
-
-
-
-
-
-
+#endif	/* G4PhononScattering_h */
