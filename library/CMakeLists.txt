@@ -138,6 +138,8 @@ set(library_SOURCES
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEigenSolver.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeHit.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeSensitivity.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEnergyLimiter.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEnergyPartition.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEqEMField.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFieldManager.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
@@ -186,6 +188,8 @@ set(library_HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEigenSolver.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeHit.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeSensitivity.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEnergyLimiter.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEnergyPartition.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEqEMField.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldManager.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
@@ -225,7 +229,7 @@ set(library_HEADERS
    )
 
 set(crystal_SETTINGS
-    ${PROJECT_SOURCE_DIR}/CrystalMaps/Ge/config.txt
+    ${PROJECT_SOURCE_DIR}/CrystalMaps
     )
 
 add_library(G4cmp SHARED ${library_SOURCES})
@@ -236,4 +240,4 @@ install(TARGETS G4cmp qhullcpp qhull_p DESTINATION lib)
 install(FILES ${library_HEADERS} DESTINATION include/G4CMP)
 install(FILES ../g4cmp_env.sh ../g4cmp_env.csh ../G4CMPOrdParamTable.txt
         DESTINATION bin COMPONENT config)
-install(FILES ${crystal_SETTINGS} DESTINATION CrystalMaps/Ge COMPONENT config)
+install(FILES ${crystal_SETTINGS} DESTINATION CrystalMaps COMPONENT config)

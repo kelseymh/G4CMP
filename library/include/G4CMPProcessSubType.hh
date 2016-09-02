@@ -19,7 +19,8 @@ enum G4CMPProcessSubType {
   fLukeScattering,
   fChargeBoundary,
   fTimeStepper,
-  fSecondaryProduction
+  fSecondaryProduction,
+  fEnergyLimiter
 };
 
 #endif	/* G4CMPProcessSubType_hh */

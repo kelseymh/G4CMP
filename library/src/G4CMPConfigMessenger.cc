@@ -35,8 +35,10 @@
 
 G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : theManager(mgr), localCmdDir(false), cmdDir(0), verboseCmd(0),
-    ehBounceCmd(0), pBounceCmd(0), voltageCmd(0), escaleCmd(0), fileCmd(0),
-    dirCmd(0), hitsCmd(0), millerCmd(0), kvmapCmd(0) {
+    ehBounceCmd(0), pBounceCmd(0), voltageCmd(0), minEPhononCmd(0),
+    minEChargeCmd(0), minstepCmd(0), makePhononCmd(0), makeChargeCmd(0),
+    escaleCmd(0), fileCmd(0), dirCmd(0), hitsCmd(0), millerCmd(0),
+    kvmapCmd(0) {
   CreateDirectory("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library");
 
@@ -59,6 +61,12 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   makeChargeCmd = CreateCommand<G4UIcmdWithADouble>("produceCharges",
 		    "Set rate of production of primary charge carriers");
+
+  minEPhononCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("minEPhonons",
+          "Minimum energy for creating or tracking phonons");
+
+  minEChargeCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("minECharges",
+          "Minimum energy for creating or tracking charge carriers");
 
   escaleCmd = CreateCommand<G4UIcmdWithADouble>("scaleEpot",
 		"Set a scale factor for voltages in Epot electric field file");
@@ -91,7 +99,8 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete ehBounceCmd; ehBounceCmd=0;
   delete pBounceCmd; pBounceCmd=0;
   delete voltageCmd; voltageCmd=0;
-  delete millerCmd; millerCmd=0;
+  delete minEPhononCmd; minEPhononCmd=0;
+  delete minEChargeCmd; minEChargeCmd=0;
   delete minstepCmd; minstepCmd=0;
   delete makePhononCmd; makePhononCmd=0;
   delete makeChargeCmd; makeChargeCmd=0;
@@ -99,6 +108,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete fileCmd; fileCmd=0;
   delete dirCmd; dirCmd=0;
   delete hitsCmd; hitsCmd=0;
+  delete millerCmd; millerCmd=0;
   delete kvmapCmd; kvmapCmd=0;
 
   if (localCmdDir) {delete cmdDir; cmdDir=0;}
@@ -147,9 +157,15 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == escaleCmd)
     theManager->SetEpotScale(escaleCmd->GetNewDoubleValue(value));
 
+  if (cmd == minEPhononCmd)
+    theManager->SetMinPhononEnergy(minEPhononCmd->GetNewDoubleValue(value));
+
+  if (cmd == minEChargeCmd)
+    theManager->SetMinChargeEnergy(minEChargeCmd->GetNewDoubleValue(value));
+
   if (cmd == millerCmd) {		// Special, takes three integer args
     G4Tokenizer split(value);
-    theManager->SetMillerOrientation(StoI(split()), StoI(split()), StoI(split()));
+    theManager->SetMillerOrientation(StoI(split()),StoI(split()),StoI(split()));
   }
 
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));

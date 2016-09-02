@@ -21,6 +21,7 @@
 // 20160518  Add commands for Miller orientation, phonon bounces
 // 20160624  Add command to select KV lookup tables vs. calculator
 // 20160830  Add command to scale production of e/h pairs, like phonons
+// 20160901  Add commands to set minimum energy for phonons, charges
 
 #include "G4UImessenger.hh"
 
@@ -58,6 +59,8 @@ private:
   G4UIcmdWithAnInteger* ehBounceCmd;
   G4UIcmdWithAnInteger* pBounceCmd;
   G4UIcmdWithADoubleAndUnit* voltageCmd;
+  G4UIcmdWithADoubleAndUnit* minEPhononCmd;
+  G4UIcmdWithADoubleAndUnit* minEChargeCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;

@@ -59,3 +59,5 @@ InterValleyScattering       11     304     -1        -1     1000 0
 LukeScattering              11     305     -1        -1     1000 0
 ChargeBoundary              11     306     -1        -1     1000 0
 TimeStepper                 11     307     -1        -1     1000 0
+G4CMPSecondaryProduction    11     308     -1        -1     1000 0
+EnergyLimiter               11     309     -1        -1     1000 0
