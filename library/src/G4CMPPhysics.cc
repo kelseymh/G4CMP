@@ -7,11 +7,14 @@
 //
 // Create particles and physics processes for phonons and charge carriers
 // Usage:  [physics-list]->AddPhysics(new G4CMPPhysics(<verbose>));
+//
+// 20160901  M. Kelsey -- Add minimum-energy cut process
 
 #include "G4CMPPhysics.hh"
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPEnergyLimiter.hh"
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPSecondaryProduction.hh"
@@ -47,6 +50,7 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* driftB  = new G4CMPDriftBoundaryProcess;
   G4VProcess* ivScat  = new G4CMPInterValleyScattering;
   G4VProcess* luke    = new G4CMPLukeScattering(tmStep);
+  G4VProcess* eLimit  = new G4CMPEnergyLimiter;
 
   // Set process verbosity to match physics list, for diagnostics
   phScat->SetVerboseLevel(verboseLevel);
@@ -56,6 +60,7 @@ void G4CMPPhysics::ConstructProcess() {
   driftB->SetVerboseLevel(verboseLevel);
   ivScat->SetVerboseLevel(verboseLevel);
   luke->SetVerboseLevel(verboseLevel);
+  eLimit->SetVerboseLevel(verboseLevel);
 
   G4ParticleDefinition* particle = 0;	// Reusable buffer for convenience
 
@@ -64,27 +69,32 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(phScat, particle);
   RegisterProcess(phDown, particle);
   RegisterProcess(phRefl, particle);
+  RegisterProcess(eLimit, particle);
 
   particle = G4PhononTransSlow::PhononDefinition();
   RegisterProcess(phScat, particle);
   RegisterProcess(phDown, particle);
   RegisterProcess(phRefl, particle);
+  RegisterProcess(eLimit, particle);
 
   particle = G4PhononTransFast::PhononDefinition();
   RegisterProcess(phScat, particle);
   RegisterProcess(phDown, particle);
   RegisterProcess(phRefl, particle);
+  RegisterProcess(eLimit, particle);
 
   particle = G4CMPDriftElectron::Definition();
   RegisterProcess(tmStep, particle);
   RegisterProcess(luke, particle);
   RegisterProcess(ivScat, particle);
   RegisterProcess(driftB, particle);
+  RegisterProcess(eLimit, particle);
 
   particle = G4CMPDriftHole::Definition();
   RegisterProcess(tmStep, particle);
   RegisterProcess(luke, particle);
   RegisterProcess(driftB, particle);
+  RegisterProcess(eLimit, particle);
 
   AddSecondaryProduction();
 }
