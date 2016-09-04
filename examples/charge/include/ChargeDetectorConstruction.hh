@@ -4,12 +4,15 @@
 \***********************************************************************/
 
 // $Id: 165a1df2a9364e285f19b48f5c016259faee053b $
+//
+// 20160904  Add electrode pattern to surface configuration
 
 #ifndef ChargeDetectorConstruction_h
 #define ChargeDetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
 
+class ChargeElectrodePattern;
 class ChargeElectrodeSensitivity;
 class G4CMPSurfaceProperty;
 class G4LatticeManager;
@@ -35,6 +38,7 @@ private:
 
 private:
   ChargeElectrodeSensitivity* sensitivity;
+  ChargeElectrodePattern* electrode;
   G4CMPSurfaceProperty* topSurfProp;
   G4CMPSurfaceProperty* botSurfProp;
   G4CMPSurfaceProperty* wallSurfProp;
