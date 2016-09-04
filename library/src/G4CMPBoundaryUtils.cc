@@ -11,6 +11,8 @@
 ///   Use via multiple inheritance with concrete boundary classes.
 //
 // $Id$
+//
+// 20160904  Add electrode pattern handling
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -18,6 +20,7 @@
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPTrackInformation.hh"
 #include "G4CMPUtils.hh"
+#include "G4CMPVElectrodePattern.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
@@ -41,7 +44,8 @@ G4CMPBoundaryUtils::G4CMPBoundaryUtils(G4VProcess* process)
   : buVerboseLevel(G4CMPConfigManager::GetVerboseLevel()),
     procName(process->GetProcessName()), procUtils(0),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()),
-    maximumReflections(-1), prePV(0), postPV(0), surfProp(0), matTable(0) {
+    maximumReflections(-1), prePV(0), postPV(0), surfProp(0), matTable(0),
+    electrode(0) {
   procUtils = dynamic_cast<G4CMPProcessUtils*>(process);
   if (!procUtils) {
     G4Exception("G4CMPBoundaryUtils::G4CMPBoundaryUtils", "Boundary000",
@@ -139,13 +143,18 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
     return false;
   }
     
-  // Extract particle-specific material table for later
+  // Extract particle-specific information for later
   const G4ParticleDefinition* pd = aStep.GetTrack()->GetParticleDefinition();
   const G4MaterialPropertiesTable* constTbl = 0;
-  if (G4CMP::IsChargeCarrier(pd))
+  if (G4CMP::IsChargeCarrier(pd)) {
     constTbl = surfProp->GetChargeMaterialPropertiesTablePointer();
-  if (G4CMP::IsPhonon(pd))
+    electrode = surfProp->GetChargeElectrode();
+  }
+
+  if (G4CMP::IsPhonon(pd)) {
     constTbl = surfProp->GetPhononMaterialPropertiesTablePointer();
+    electrode = surfProp->GetPhononElectrode();
+  }
 
   if (!constTbl) {
     G4Exception((procName+"::GetSurfaceProperty").c_str(),
@@ -172,13 +181,17 @@ ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
   if (!LoadDataForStep(aStep)) return false;
 
   // If the particle doesn't get absorbed, it either reflects or transmits
-  if (AbsorbTrack(aTrack, aStep)) {
-    DoAbsorption(aTrack, aStep, aParticleChange);
+  if (electrode && electrode->IsNearElectrode(aStep)) {
+    electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
+  } else if (AbsorbTrack(aTrack, aStep)) {
+    if (electrode)
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+    else 
+      DoAbsorption(aTrack, aStep, aParticleChange);
+  } else if (MaximumReflections(aTrack)) {
+    DoSimpleKill(aTrack, aStep, aParticleChange);
   } else if (ReflectTrack(aTrack, aStep)) {
-    if (MaximumReflections(aTrack))
-      DoSimpleKill(aTrack,aStep,aParticleChange);
-    else
-      DoReflection(aTrack, aStep, aParticleChange);
+    DoReflection(aTrack, aStep, aParticleChange);
   } else {
     DoTransmission(aTrack, aStep, aParticleChange);
   }

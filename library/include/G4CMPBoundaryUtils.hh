@@ -11,6 +11,8 @@
 ///   Use via multiple inheritance with concrete boundary classes.
 //
 // $Id$
+//
+// 20160904  Add electrode pattern handling
 
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
@@ -20,6 +22,7 @@
 
 class G4CMPProcessUtils;
 class G4CMPSurfaceProperty;
+class G4CMPVElectrodePattern;
 class G4MaterialPropertiesTable;
 class G4ParticleChange;
 class G4Step;
@@ -75,6 +78,7 @@ protected:
   G4VPhysicalVolume* postPV;
   G4CMPSurfaceProperty* surfProp;	// Surface property with G4CMP data
   G4MaterialPropertiesTable* matTable;	// Phonon- or charge-specific parameters
+  const G4CMPVElectrodePattern* electrode; // Patterned electrode for absorption
 };
 
 #endif	/* G4CMPBoundaryUtils_hh */
