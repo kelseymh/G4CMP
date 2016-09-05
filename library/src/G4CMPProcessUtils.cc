@@ -756,6 +756,18 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
   G4Track* sec = new G4Track(new G4DynamicParticle(thePhonon, vgroup, energy),
 			     currentTrack->GetGlobalTime(), pos);
 
+  // If the step is on a boundary, create the phonon in the initial volume
+  G4Step step = currentTrack->GetStep();
+  if (step.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+    G4StepPoint preStepPoint = step.GetPreStepPoint();
+
+    G4LogicalVolume* lVol = preStepPoint->GetPhysicalVolume()->GetLogicalVolume();
+    sec->SetLogicalVolumeAtVertex(lVol);
+
+    const G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
+    sec->SetTouchableHandle(touchable);
+  }
+
   // Store wavevector in auxiliary info for track
   AttachTrackInfo(sec)->SetPhononK(GetGlobalDirection(waveVec));
 
@@ -764,22 +776,6 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 
   return sec;
 }
-
-G4Track*
-G4CMPProcessUtils::CreatePhononInFromBoundary(G4int polarization,
-                                              const G4ThreeVector& waveVec,
-                                              G4double energy) const {
-  G4Track* sec = CreatePhonon(polarization, waveVec, energy);
-
-  G4StepPoint* preStepPoint = currentTrack->GetStep()->GetPreStepPoint();
-
-  G4LogicalVolume* lVol = preStepPoint->GetPhysicalVolume()->GetLogicalVolume();
-  sec->SetLogicalVolumeAtVertex(lVol);
-  const G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
-  sec->SetTouchableHandle(touchable);
-  return sec;
-}
-
 
 // Generate random valley for charge carrier
 
@@ -854,6 +850,18 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
     new G4DynamicParticle(theCarrier, v_unit, carrierEnergy, carrierMass);
 
   G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), pos);
+
+  // If the step is on a boundary, create the carrier in the initial volume
+  G4Step step = currentTrack->GetStep();
+  if (step.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+    G4StepPoint preStepPoint = step.GetPreStepPoint();
+
+    G4LogicalVolume* lVol = preStepPoint->GetPhysicalVolume()->GetLogicalVolume();
+    sec->SetLogicalVolumeAtVertex(lVol);
+
+    const G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
+    sec->SetTouchableHandle(touchable);
+  }
 
   // Store wavevector in auxiliary info for track
   AttachTrackInfo(sec)->SetValleyIndex(valley);
