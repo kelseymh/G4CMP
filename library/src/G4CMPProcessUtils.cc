@@ -758,9 +758,9 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 			     currentTrack->GetGlobalTime(), pos);
 
   // If the step is on a boundary, create the phonon in the initial volume
-  G4Step step = currentTrack->GetStep();
-  if (step.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
-    G4StepPoint preStepPoint = step.GetPreStepPoint();
+  const G4Step* step = currentTrack->GetStep();
+  if (step->GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+    G4StepPoint* preStepPoint = step->GetPreStepPoint();
 
     G4LogicalVolume* lVol = preStepPoint->GetPhysicalVolume()->GetLogicalVolume();
     sec->SetLogicalVolumeAtVertex(lVol);
@@ -853,9 +853,9 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), pos);
 
   // If the step is on a boundary, create the carrier in the initial volume
-  G4Step step = currentTrack->GetStep();
-  if (step.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
-    G4StepPoint preStepPoint = step.GetPreStepPoint();
+  const G4Step* step = currentTrack->GetStep();
+  if (step->GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+    G4StepPoint* preStepPoint = step->GetPreStepPoint();
 
     G4LogicalVolume* lVol = preStepPoint->GetPhysicalVolume()->GetLogicalVolume();
     sec->SetLogicalVolumeAtVertex(lVol);
