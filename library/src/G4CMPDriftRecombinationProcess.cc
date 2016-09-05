@@ -7,6 +7,7 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPUtils.hh"
 #include "G4LatticePhysical.hh"
 #include "G4RandomDirection.hh"
 
@@ -56,11 +57,14 @@ G4VParticleChange* G4CMPDriftRecombinationProcess::AtRestDoIt(
 
   // FIXME: What does the recombo phonon distribution look like?
 
-  G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,
-                                 G4RandomDirection(),
-                                 0.5 * theLattice->GetBandGapEnergy());
-  aParticleChange.SetNumberOfSecondaries(1);
-  aParticleChange.AddSecondary(phonon);
+  G4double weight = G4CMP::ChoosePhononWeight();
+  if (weight > 0.) {
+    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,
+                                   G4RandomDirection(),
+                                   0.5 * theLattice->GetBandGapEnergy());
+    aParticleChange.SetNumberOfSecondaries(1);
+    aParticleChange.AddSecondary(phonon);
+  }
   aParticleChange.ProposeTrackStatus(fStopAndKill);
 
   return &aParticleChange;
