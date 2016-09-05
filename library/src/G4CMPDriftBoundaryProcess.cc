@@ -17,11 +17,13 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPSurfaceProperty.hh"
+#include "G4CMPUtils.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4ParallelWorldProcess.hh"
+#include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4TransportationManager.hh"
@@ -105,9 +107,30 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 }
 
 
-void G4CMPDriftBoundaryProcess::
-DoReflection(const G4Track& aTrack, const G4Step& aStep,
-	     G4ParticleChange& aParticleChange) {
+void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
+              const G4Step& /*aStep*/,
+              G4ParticleChange& /*aParticleChange*/) {
+  if (verboseLevel>1) G4cout << GetProcessName() << ": Track absorbed" << G4endl;
+
+  G4double ekin = GetKineticEnergy(aTrack);
+
+  G4double weight = G4CMP::ChoosePhononWeight();
+  if (weight > 0.) {
+    //FIXME: What does the phonon distribution look like?
+    CreatePhonon(G4PhononPolarization::UNKNOWN, G4RandomDirection(),
+                            ekin, aTrack.GetPosition());
+  } else {
+    aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
+  }
+
+  aParticleChange.ProposeEnergy(0.);
+  aParticleChange.ProposeTrackStatus(fStopAndKill);
+}
+
+
+void
+G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack, const G4Step& aStep,
+                                        G4ParticleChange& aParticleChange) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track reflected" << G4endl;
 

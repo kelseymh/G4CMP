@@ -46,6 +46,8 @@ protected:
 
   // Decide and apply different surface actions; subclasses may override
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
+  virtual void DoAbsorption(const G4Track& aTrack, const G4Step& aStep,
+                G4ParticleChange& aParticleChange);
 
   virtual void DoReflection(const G4Track& aTrack,const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
