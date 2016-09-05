@@ -108,17 +108,23 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 
 
 void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
-              const G4Step& /*aStep*/,
-              G4ParticleChange& /*aParticleChange*/) {
-  if (verboseLevel>1) G4cout << GetProcessName() << ": Track absorbed" << G4endl;
+                                             const G4Step& /*aStep*/,
+                                             G4ParticleChange& /*aParticleChange*/) {
+  if (verboseLevel>1) {
+    G4cout << GetProcessName() << ": Track absorbed" << G4endl;
+  }
 
   G4double ekin = GetKineticEnergy(aTrack);
 
   G4double weight = G4CMP::ChoosePhononWeight();
   if (weight > 0.) {
     //FIXME: What does the phonon distribution look like?
-    CreatePhonon(G4PhononPolarization::UNKNOWN, G4RandomDirection(),
-                            ekin, aTrack.GetPosition());
+    G4Track* sec = CreatePhonon(G4PhononPolarization::UNKNOWN,
+                                G4RandomDirection(),
+                                ekin,
+                                aTrack.GetPosition());
+    aParticleChange.SetNumberOfSecondaries(1);
+    aParticleChange.AddSecondary(sec);
   } else {
     aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
   }
@@ -130,7 +136,7 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
 
 void
 G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack, const G4Step& aStep,
-                                        G4ParticleChange& aParticleChange) {
+                                        G4ParticleChange& /*aParticleChange*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track reflected" << G4endl;
 
