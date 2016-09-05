@@ -21,6 +21,7 @@
 #include "G4LatticePhysical.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4ParallelWorldProcess.hh"
+#include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4TransportationManager.hh"
@@ -101,6 +102,47 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
   }
 
   return (kvec*surfNorm > absMinK);
+}
+
+
+void G4CMPBoundaryUtils::DoAbsorption(const G4Track& aTrack,
+              const G4Step& /*aStep*/,
+              G4ParticleChange& aParticleChange) {
+  if (buVerboseLevel>1) G4cout << procName << ": Track absorbed" << G4endl;
+
+  G4double ekin = procUtils->GetKineticEnergy(aTrack);
+
+  G4double weight = G4CMP::ChoosePhononWeight();
+  if (weight > 0.) {
+    //FIXME: What does the phonon distribution look like?
+    procUtils->CreatePhonon(G4PhononPolarization::UNKNOWN, G4RandomDirection(),
+                            ekin, aTrack.GetPosition());
+  } else {
+    aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
+  }
+
+  aParticleChange.ProposeEnergy(0.);
+  aParticleChange.ProposeTrackStatus(fStopAndKill);
+}
+
+void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
+              const G4Step& aStep,
+              G4ParticleChange& aParticleChange) {
+  G4cerr << procName << " WARNING!  G4CMPBoundaryUtils::DoReflection invoked."
+   << "\n Process should have overridden this version!"
+   << "  Results may be non-physical" << G4endl;
+
+  if (buVerboseLevel>1) {
+    G4cout << procName << ": Track reflected "
+           << procUtils->GetTrackInfo(aTrack)->GetReflectionCount()
+     << " times." << G4endl;
+  }
+
+  G4ThreeVector pdir = aTrack.GetMomentumDirection();
+  G4ThreeVector norm = procUtils->GetSurfaceNormal(aStep);	// Outward normal
+  pdir -= 2.*(pdir.dot(norm))*norm;			// Reverse along normal
+
+  aParticleChange.ProposeMomentumDirection(pdir);
 }
 
 
