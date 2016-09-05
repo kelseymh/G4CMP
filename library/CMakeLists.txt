@@ -228,8 +228,10 @@ set(library_HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
    )
 
-set(crystal_SETTINGS
-    ${PROJECT_SOURCE_DIR}/CrystalMaps
+set(config_FILES
+    ${PROJECT_SOURCE_DIR}/g4cmp_env.sh
+    ${PROJECT_SOURCE_DIR}/g4cmp_env.csh
+    ${PROJECT_SOURCE_DIR}/G4CMPOrdParamTable.txt
     )
 
 add_library(G4cmp SHARED ${library_SOURCES})
@@ -238,6 +240,5 @@ set_target_properties(G4cmp PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 install(TARGETS G4cmp qhullcpp qhull_p DESTINATION lib)
 install(FILES ${library_HEADERS} DESTINATION include/G4CMP)
-install(FILES ../g4cmp_env.sh ../g4cmp_env.csh ../G4CMPOrdParamTable.txt
-        DESTINATION bin COMPONENT config)
-install(FILES ${crystal_SETTINGS} DESTINATION CrystalMaps COMPONENT config)
+install(FILES ${config_FILES} DESTINATION bin COMPONENT config)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/CrystalMaps DESTINATION CrystalMaps COMPONENT config)
