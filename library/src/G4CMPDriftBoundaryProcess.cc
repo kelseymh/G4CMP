@@ -16,6 +16,7 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPSurfaceProperty.hh"
+#include "G4CMPUtils.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
@@ -105,18 +106,24 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 }
 
 
-void G4CMPBoundaryUtils::DoAbsorption(const G4Track& aTrack,
+void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
               const G4Step& /*aStep*/,
-              G4ParticleChange& aParticleChange) {
-  if (buVerboseLevel>1) G4cout << procName << ": Track absorbed" << G4endl;
+              G4ParticleChange& /*aParticleChange*/) {
+  if (verboseLevel>1) {
+    G4cout << "G4CMPDriftBoundaryProcess: Track absorbed" << G4endl;
+  }
 
-  G4double ekin = procUtils->GetKineticEnergy(aTrack);
+  G4double ekin = GetKineticEnergy(aTrack);
 
   G4double weight = G4CMP::ChoosePhononWeight();
   if (weight > 0.) {
     //FIXME: What does the phonon distribution look like?
-    procUtils->CreatePhonon(G4PhononPolarization::UNKNOWN, G4RandomDirection(),
-                            ekin, aTrack.GetPosition());
+    G4Track* sec = CreatePhonon(G4PhononPolarization::UNKNOWN,
+                                G4RandomDirection(),
+                                ekin,
+                                aTrack.GetPosition());
+    aParticleChange.SetNumberOfSecondaries(1);
+    aParticleChange.AddSecondary(sec);
   } else {
     aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
   }
@@ -125,30 +132,9 @@ void G4CMPBoundaryUtils::DoAbsorption(const G4Track& aTrack,
   aParticleChange.ProposeTrackStatus(fStopAndKill);
 }
 
-void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
-              const G4Step& aStep,
-              G4ParticleChange& aParticleChange) {
-  G4cerr << procName << " WARNING!  G4CMPBoundaryUtils::DoReflection invoked."
-   << "\n Process should have overridden this version!"
-   << "  Results may be non-physical" << G4endl;
-
-  if (buVerboseLevel>1) {
-    G4cout << procName << ": Track reflected "
-           << procUtils->GetTrackInfo(aTrack)->GetReflectionCount()
-     << " times." << G4endl;
-  }
-
-  G4ThreeVector pdir = aTrack.GetMomentumDirection();
-  G4ThreeVector norm = procUtils->GetSurfaceNormal(aStep);	// Outward normal
-  pdir -= 2.*(pdir.dot(norm))*norm;			// Reverse along normal
-
-  aParticleChange.ProposeMomentumDirection(pdir);
-}
-
-
 void
 G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack, const G4Step& aStep,
-                                        G4ParticleChange& aParticleChange) {
+                                        G4ParticleChange& /*aParticleChange*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track reflected" << G4endl;
 
