@@ -35,8 +35,8 @@ public:
   G4CMPMeshElectricField& operator=(const G4CMPMeshElectricField &p);
 
   // Sorting operator (compares x, y, z in sequence)
-  static G4bool vector_comp(const std::vector<G4double>& p1,
-			    const std::vector<G4double>& p2);
+  static G4bool vector_comp(const std::array<G4double, 4>& p1,
+          const std::array<G4double, 4>& p2);
 
 private:
   G4CMPTriLinearInterp Interp;

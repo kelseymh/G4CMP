@@ -15,20 +15,20 @@
 #include <iostream>
 #include <ctime>
 #include <map>
+#include <array>
 
 using namespace orgQhull;
 using std::map;
 using std::vector;
 
-
-G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<vector<G4double> >& xyz,
+G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<point >& xyz,
 					   const vector<G4double>& v)
   : X(xyz), V(v), TetraIdx(0) {
   BuildTetraMesh();
 }
 
 void 
-G4CMPTriLinearInterp::UseMesh(const std::vector<std::vector<G4double> >& xyz,
+G4CMPTriLinearInterp::UseMesh(const std::vector<point >& xyz,
 			      const std::vector<G4double>& v) {
   X = xyz;
   V = v;
@@ -72,10 +72,10 @@ void G4CMPTriLinearInterp::BuildTetraMesh() {
   QhullSet<QhullVertex>::iterator vItr;
   map<G4int, G4int> ID2Idx;
   G4int numTet = 0, j;
-  vector<vector<G4int> > tmpTetrahedra =
-      vector<vector<G4int> >(hull.facetCount(), vector<G4int>(4, 0));
-  vector<vector<G4int> > tmpNeighbors =
-      vector<vector<G4int> >(hull.facetCount(), vector<G4int>(4, -1));
+  vector<std::array<G4int, 4> > tmpTetrahedra =
+          vector<std::array<G4int, 4> >(hull.facetCount(), {{0,0,0,0}});
+  vector<std::array<G4int, 4> > tmpNeighbors =
+          vector<std::array<G4int, 4> >(hull.facetCount(), {{-1,-1,-1,-1}});
   for (fItr = hull.facetList().begin();fItr != hull.facetList().end(); fItr++) {
     facet = *fItr;
     if (!facet.isUpperDelaunay()) {
@@ -169,11 +169,15 @@ G4double G4CMPTriLinearInterp::GetPotential(const G4double pos[3]) const {
 
 void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) const {
   G4double bary[4];
+  G4int oldIdx = TetraIdx;
   FindTetrahedron(pos, bary);
 
   if (TetraIdx == -1)
     for (G4int i = 0; i < 6; ++i)
       field[i] = 0;
+  if (oldIdx == TetraIdx)
+    for (G4int i = 0; i < 6; ++i)
+      field[i] = tmpField[i];
   else {
     G4double ET[4][3];
     BuildT4x3(ET);
@@ -183,7 +187,9 @@ void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) co
                    V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
                    V[Tetrahedra[TetraIdx][2]]*ET[2][i] +
                    V[Tetrahedra[TetraIdx][3]]*ET[3][i];
-    }
+      }
+    for (G4int i = 0; i < 6; ++i)
+      tmpField[i] = field[i];
   }
 }
 
