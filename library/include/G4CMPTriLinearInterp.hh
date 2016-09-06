@@ -14,17 +14,18 @@
 #include <map>
 #include <array>
 
+using point = std::array<G4double, 3>;
 
 class G4CMPTriLinearInterp {
 public:
   G4CMPTriLinearInterp() : TetraIdx(0) {;}	// Uninitialized version
 
-  G4CMPTriLinearInterp(const std::vector<std::array<G4double, 3> >& xyz,
+  G4CMPTriLinearInterp(const std::vector<point >& xyz,
 		       const std::vector<G4double>& v);
   ~G4CMPTriLinearInterp() {;}
 
   // User initialization or re-initialization
-  void UseMesh(const std::vector<std::array<G4double, 3> >& xyz,
+  void UseMesh(const std::vector<point >& xyz,
 	       const std::vector<G4double>& v);
   
   G4double GetPotential(const G4double pos[3]) const;
@@ -32,7 +33,7 @@ public:
   
 private:
   std::map<G4int,G4int> qhull2x;
-  std::vector<std::array<G4double, 3> > X;
+  std::vector<point > X;
   std::vector<G4double> V;
   std::vector<std::array<G4int, 4> > Tetrahedra;
   std::vector<std::array<G4int, 4> > Neighbors;

@@ -20,9 +20,6 @@
 using namespace orgQhull;
 using std::map;
 using std::vector;
-using point = std::array<G4double, 3>;
-
-G4int oldIdx = -9;
 
 
 G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<point >& xyz,
@@ -173,27 +170,27 @@ G4double G4CMPTriLinearInterp::GetPotential(const G4double pos[3]) const {
 
 void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) const {
   G4double bary[4];
+  G4int oldIdx = TetraIdx;
   FindTetrahedron(pos, bary);
 
   if (TetraIdx == -1)
-      for (G4int i = 0; i < 6; ++i)
-          field[i] = 0;
+    for (G4int i = 0; i < 6; ++i)
+      field[i] = 0;
   if (oldIdx == TetraIdx)
-      for (G4int i = 0; i < 6; ++i)
-          field[i] = tmpField[i];
+    for (G4int i = 0; i < 6; ++i)
+      field[i] = tmpField[i];
   else {
-      G4double ET[4][3];
-      BuildT4x3(ET);
-      for (G4int i = 0; i < 3; ++i) {
-          field[i] = 0.0;
-          field[3+i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
-                       V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
-                       V[Tetrahedra[TetraIdx][2]]*ET[2][i] +
-                       V[Tetrahedra[TetraIdx][3]]*ET[3][i];
+    G4double ET[4][3];
+    BuildT4x3(ET);
+    for (G4int i = 0; i < 3; ++i) {
+      field[i] = 0.0;
+      field[3+i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
+                   V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
+                   V[Tetrahedra[TetraIdx][2]]*ET[2][i] +
+                   V[Tetrahedra[TetraIdx][3]]*ET[3][i];
       }
-      for (G4int i = 0; i < 6; ++i)
-          tmpField[i] = field[i];
-      oldIdx = TetraIdx;
+    for (G4int i = 0; i < 6; ++i)
+      tmpField[i] = field[i];
   }
 }
 
