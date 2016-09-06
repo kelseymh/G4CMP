@@ -117,7 +117,7 @@ public:
   }
 
   // Used especially in boundary processes
-  G4ThreeVector GetSurfaceNormal(const G4Step& aStep);
+  G4ThreeVector GetSurfaceNormal(const G4Step& aStep) const;
 
   // Convenience functions to get local position, momentum, velocity from track
   G4ThreeVector GetLocalPosition(const G4Track& track) const;
@@ -292,7 +292,7 @@ public:
 			G4double energy) const;
 
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
-			G4double energy, const G4ThreeVector& pos) const;
+            G4double energy, const G4ThreeVector& pos) const;
 
   G4Track* CreatePhononInFromBoundary(G4int polarization,
                                       const G4ThreeVector& K,
@@ -308,7 +308,9 @@ public:
 
   G4Track* CreateChargeCarrier(G4int charge, G4int valley,
 			       const G4ThreeVector& p,
-			       const G4ThreeVector& pos) const;
+                   const G4ThreeVector& pos) const;
+
+  G4ThreeVector ValidateSecondaryPosition(const G4ThreeVector& pos) const;
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes
