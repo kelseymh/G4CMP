@@ -40,12 +40,17 @@ G4bool ChargeElectrodePattern::IsNearElectrode(const G4Step& aStep) const {
   G4ThreeVector pos = aStep.GetPreStepPoint()->GetPosition();
   toLocal.ApplyPointTransform(pos);
 
-  // Electrodes are 1 mm rings spaced 1 cm apart on top and bottom faces
-  G4double r = pos.rho()/cm;
+  // Electrodes are .1 mm rings spaced 2 mm apart on top and bottom faces
+  G4double r = pos.rho()/(2.*mm);
 
-  G4cout << " electrode r " << r << G4endl;
+  G4bool isnear = ((r - std::floor(r)) < 0.05);
 
-  return ((r - std::floor(r)) < 0.05);		// 0.5 mm either side
+#ifdef G4CMP_DEBUG
+  G4cout << " " << aStep.GetTrack()->GetParticleDefinition()->GetParticleName()
+	 << " electrode r " << r << " " << (isnear?"yes":"no") << G4endl;
+#endif
+
+  return isnear;
 }
 
 // Simple absorption to make a hit
