@@ -21,7 +21,6 @@ using namespace orgQhull;
 using std::map;
 using std::vector;
 
-
 G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<point >& xyz,
 					   const vector<G4double>& v)
   : X(xyz), V(v), TetraIdx(0) {
