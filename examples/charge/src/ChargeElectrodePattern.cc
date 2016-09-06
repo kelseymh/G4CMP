@@ -42,7 +42,10 @@ G4bool ChargeElectrodePattern::IsNearElectrode(const G4Step& aStep) const {
 
   // Electrodes are 1 mm rings spaced 1 cm apart on top and bottom faces
   G4double r = pos.rho()/cm;
-  return (fabs(r - std::floor(r)) < 0.05);	// 0.5 mm either side
+
+  G4cout << " electrode r " << r << G4endl;
+
+  return ((r - std::floor(r)) < 0.05);		// 0.5 mm either side
 }
 
 // Simple absorption to make a hit
@@ -51,7 +54,8 @@ AbsorbAtElectrode(const G4Track& aTrack, const G4Step& aStep,
 		  G4ParticleChange& aParticleChange) const {
   if (verboseLevel) {
     G4cout << "ChargeElectrodePattern::AbsorbAtElectrode "
-	   << aStep.GetPreStepPoint()->GetPosition() << G4endl;
+	   << " rho " << aStep.GetPreStepPoint()->GetPosition().rho()
+	   << G4endl;
   }
 
   //*** FIXME: Need ProcessUtils::GetKineticEnergy() ***

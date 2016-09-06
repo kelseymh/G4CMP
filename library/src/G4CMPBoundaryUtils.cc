@@ -57,11 +57,16 @@ G4CMPBoundaryUtils::~G4CMPBoundaryUtils() {;}
 
 // Initialize volumes, surface properties, etc.
 
-G4bool G4CMPBoundaryUtils::LoadDataForStep(const G4Step& aStep) {
+G4bool G4CMPBoundaryUtils::IsGoodBoundary(const G4Step& aStep) {
   const G4ParticleDefinition* pd = aStep.GetTrack()->GetParticleDefinition();
   maximumReflections = 
     (G4CMP::IsChargeCarrier(pd) ? G4CMPConfigManager::GetMaxChargeBounces()
      : G4CMP::IsPhonon(pd) ? G4CMPConfigManager::GetMaxPhononBounces() : -1);
+
+  if (buVerboseLevel>1) {
+    G4cout << procName << "::LoadDataForStep maxRefl " << maximumReflections
+	   << G4endl;
+  }
 
   return (CheckStepStatus(aStep) &&
 	  GetBoundingVolumes(aStep) &&
@@ -69,17 +74,16 @@ G4bool G4CMPBoundaryUtils::LoadDataForStep(const G4Step& aStep) {
 }
 
 G4bool G4CMPBoundaryUtils::CheckStepStatus(const G4Step& aStep) {
-  // do nothing if the current step is not limited by a volume boundary,
-  // or if it is the returning "null step" after a reflection
-  if (aStep.GetPostStepPoint()->GetStepStatus() != fGeomBoundary ||
-      aStep.GetTrack()->GetStepLength() <= kCarTolerance) return false;
-
-  if (buVerboseLevel) {
-    G4cout << procName << "::CheckStepStatus length "
-	   << aStep.GetStepLength() << G4endl;
+  if (buVerboseLevel>1) {
+    G4cout << procName << "::CheckStepStatus status "
+	   << aStep.GetPostStepPoint()->GetStepStatus()
+	   << " length " << aStep.GetStepLength() << G4endl;
   }
 
-  return true;
+  // do nothing if the current step is not limited by a volume boundary,
+  // or if it is the returning "null step" after a reflection
+  return (aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary &&
+	  aStep.GetStepLength() > kCarTolerance);
 }
 
 G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
@@ -173,21 +177,24 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
 
 // Implement PostStepDoIt() in a common way; processes should call through
 
-G4bool G4CMPBoundaryUtils::
+void G4CMPBoundaryUtils::
 ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
 		    G4ParticleChange& aParticleChange) {
   aParticleChange.Initialize(aTrack);
 
-  if (!LoadDataForStep(aStep)) return false;
+  if (!IsGoodBoundary(aStep)) return;		// May have been done already
 
   // If the particle doesn't get absorbed, it either reflects or transmits
   if (electrode && electrode->IsNearElectrode(aStep)) {
+    if (buVerboseLevel>1) G4cout << procName << ": Track electrode " << G4endl;
     electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
   } else if (AbsorbTrack(aTrack, aStep)) {
-    if (electrode)
+    if (electrode) {
       DoSimpleKill(aTrack, aStep, aParticleChange);
-    else 
+    } else {
+      if (buVerboseLevel>1) G4cout << procName << ": Track absorbed " << G4endl;
       DoAbsorption(aTrack, aStep, aParticleChange);
+    }
   } else if (MaximumReflections(aTrack)) {
     DoSimpleKill(aTrack, aStep, aParticleChange);
   } else if (ReflectTrack(aTrack, aStep)) {
@@ -195,8 +202,6 @@ ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
   } else {
     DoTransmission(aTrack, aStep, aParticleChange);
   }
-
-  return true;
 }
 
 
@@ -204,7 +209,7 @@ ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
 
 G4bool G4CMPBoundaryUtils::AbsorbTrack(const G4Track&, const G4Step&) {
   G4double absProb = matTable->GetConstProperty("absProb");
-  if (buVerboseLevel>2)
+  if (buVerboseLevel>1)
     G4cout << " AbsorbTrack: absProb " << absProb << G4endl;
 
   return (G4UniformRand() <= absProb);
@@ -212,7 +217,7 @@ G4bool G4CMPBoundaryUtils::AbsorbTrack(const G4Track&, const G4Step&) {
 
 G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track&, const G4Step&) {
   G4double reflProb = matTable->GetConstProperty("reflProb");
-  if (buVerboseLevel>2)
+  if (buVerboseLevel>1)
     G4cout << " ReflectTrack: reflProb " << reflProb << G4endl;
 
   return (G4UniformRand() <= reflProb);

@@ -36,11 +36,14 @@ public:
   G4CMPBoundaryUtils(G4VProcess* process);
   virtual ~G4CMPBoundaryUtils();
 
+  virtual void SetVerboseLevel(G4int vb) { buVerboseLevel = vb; }
+
+  // Check whether this step is at a good boundary for processing
+  virtual G4bool IsGoodBoundary(const G4Step& aStep);
+
   // Implements PostStepDoIt() in a common way; processes should call through
-  virtual G4bool ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
-				     G4ParticleChange& aParticleChange);
-  // NOTE:  If step condition tests fail, function will return false, and
-  //	    processes should call through to G4VDiscreteProcess:PostStepDoIt()
+  virtual void ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
+				   G4ParticleChange& aParticleChange);
 
   // Decide and apply different surface actions; subclasses may override
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep);
@@ -60,8 +63,6 @@ public:
 			      G4ParticleChange& aParticleChange);
 
 protected:
-  // Initialize volumes, surface properties, etc.
-  G4bool LoadDataForStep(const G4Step& aStep);
   G4bool CheckStepStatus(const G4Step& aStep);
   G4bool GetBoundingVolumes(const G4Step& aStep);
   G4bool GetSurfaceProperty(const G4Step& aStep);

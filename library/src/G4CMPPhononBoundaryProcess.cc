@@ -62,20 +62,20 @@ G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track& /*aTrack*/,
 G4VParticleChange*
 G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
                                          const G4Step& aStep) {
-  if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+  // NOTE:  G4VProcess::SetVerboseLevel is not virtual!  Can't overlaod it
+  G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
 
   aParticleChange.Initialize(aTrack);
+  if (!IsGoodBoundary(aStep)) return &aParticleChange;
+
+  if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
   if (verboseLevel>2) {
     G4cout << " K direction: " << GetLocalWaveVector(aTrack).unit()
            << "\n P direction: " << aTrack.GetMomentumDirection() << G4endl;
   }
 
-  if (!ApplyBoundaryAction(aTrack, aStep, aParticleChange)) {
-    if (verboseLevel)
-      G4cerr << GetProcessName() << " ERROR from ApplyBoundaryAction" << G4endl;
-  }
-
+  ApplyBoundaryAction(aTrack, aStep, aParticleChange);
   return &aParticleChange;
 }
 
