@@ -55,6 +55,8 @@
 #include "G4VTouchable.hh"
 #include "Randomize.hh"
 
+#include "G4GeometryTolerance.hh"
+#include "G4VSolid.hh"
 
 // Constructor and destructor
 
@@ -94,6 +96,25 @@ G4CMPProcessUtils::operator=(const G4CMPProcessUtils& right) {
 void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   currentTrack = track;
   currentVolume = track->GetVolume();
+//  G4cout << "New track:" << G4endl;
+//  G4cout << track->GetDefinition()->GetParticleName() << G4endl;
+//  G4cout << track->GetPosition() << G4endl;
+//  G4cout << track->GetMomentumDirection() << G4endl;
+//  if (aTrack->GetCreatorProcess()) {
+//  G4cout << "Creator Process: " << aTrack->GetCreatorProcess()->GetProcessName() << G4endl;
+//  }
+//  if (aTrack->GetMaterial()) {
+//  G4cout << "Material: " << aTrack->GetMaterial()->GetName() << G4endl;
+//  }
+//  if (track->GetVolume()) {
+//  if (track->GetCreatorProcess())
+//  G4cout << "Parent Proc: " << track->GetCreatorProcess()->GetProcessName() << G4endl;
+//  G4cout << "Log vol at vert: " << track->GetLogicalVolumeAtVertex()->GetName() << G4endl;
+//  G4cout << "Origin touchable: " << track->GetOriginTouchable()->GetVolume(0)->GetName() << G4endl;
+//  G4cout << "Touchable: " << track->GetTouchable()->GetVolume(0)->GetName() << G4endl;
+//  G4cout << "NextTouchable: " << track->GetNextTouchable()->GetVolume(0)->GetName() << G4endl;
+//  G4cout << "Volume: " << track->GetVolume()->GetName() << G4endl;
+//  }
 
   // WARNING!  This assumes track starts and ends in one single volume!
   SetTransforms(track->GetTouchable());
@@ -739,7 +760,7 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 					 const G4ThreeVector& waveVec,
 					 G4double energy,
-					 const G4ThreeVector& pos) const {
+           const G4ThreeVector& pos) const {
   if (polarization == G4PhononPolarization::UNKNOWN) {		// Choose value
     polarization = ChoosePhononPolarization();
   }
@@ -752,22 +773,12 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 
   G4ParticleDefinition* thePhonon = G4PhononPolarization::Get(polarization);
 
-  // Secondaries are created at the current track coordinates
+  // Secondaries are (usually) created at the current track coordinates
   RotateToGlobalDirection(vgroup);
+  G4ThreeVector secPos = ValidateSecondaryPosition(pos);
+
   G4Track* sec = new G4Track(new G4DynamicParticle(thePhonon, vgroup, energy),
-			     currentTrack->GetGlobalTime(), pos);
-
-  // If the step is on a boundary, create the phonon in the initial volume
-  const G4Step* step = currentTrack->GetStep();
-  if (step->GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
-    G4StepPoint* preStepPoint = step->GetPreStepPoint();
-
-    G4LogicalVolume* lVol = preStepPoint->GetPhysicalVolume()->GetLogicalVolume();
-    sec->SetLogicalVolumeAtVertex(lVol);
-
-    const G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
-    sec->SetTouchableHandle(touchable);
-  }
+                             currentTrack->GetGlobalTime(), secPos);
 
   // Store wavevector in auxiliary info for track
   AttachTrackInfo(sec)->SetPhononK(GetGlobalDirection(waveVec));
@@ -850,7 +861,8 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   G4DynamicParticle* secDP =
     new G4DynamicParticle(theCarrier, v_unit, carrierEnergy, carrierMass);
 
-  G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), pos);
+  G4ThreeVector secPos = ValidateSecondaryPosition(pos);
+  G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), secPos);
 
   // If the step is on a boundary, create the carrier in the initial volume
   const G4Step* step = currentTrack->GetStep();
@@ -868,4 +880,23 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   AttachTrackInfo(sec)->SetValleyIndex(valley);
 
   return sec;
+}
+
+G4ThreeVector G4CMPProcessUtils::ValidateSecondaryPosition(const G4ThreeVector& pos) const {
+  G4ThreeVector secPos(pos);
+
+  // If the step is near a boundary, create the secondary in the initial volume
+  G4Navigator* nav = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+  // Safety is the distance to a boundary
+  G4double safety = nav->ComputeSafety(pos);
+  // Tolerance is the error in deciding which volume a track is in
+  G4double kCarTolerance = G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
+  // If the distance to an edge is within error, we might accidentally get placed
+  // in the next volume. Instead, let's scoot a bit away from the edge.
+  if (safety <= kCarTolerance) {
+    G4ThreeVector norm = currentTrack->GetVolume()->GetLogicalVolume()->GetSolid()->SurfaceNormal(pos);
+    secPos = pos + (safety - kCarTolerance * (1.001)) * norm;
+  }
+
+  return secPos;
 }
