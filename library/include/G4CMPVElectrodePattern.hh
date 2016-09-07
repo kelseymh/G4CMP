@@ -10,6 +10,7 @@
 //
 // 20160831  M. Kelsey -- Add optional electrode geometry class
 // 20160904  M. Kelsey -- Pass ref to concrete G4ParticleChange
+// 20160906  M. Kelsey -- Add function handle constness of material table
 
 #ifndef G4CMPVElectrodePattern_h
 #define G4CMPVElectrodePattern_h 1
@@ -44,6 +45,9 @@ public:
 				 G4ParticleChange& aParticleChange) const {;}
 
 protected:
+  // Handles casting table to non-const for access
+  G4double GetMaterialProperty(const G4String& key) const;
+
   G4int verboseLevel;
   G4MaterialPropertiesTable theSurfaceTable;
 };
