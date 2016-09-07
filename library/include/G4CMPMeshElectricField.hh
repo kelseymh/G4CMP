@@ -18,6 +18,7 @@
 
 #include "G4CMPTriLinearInterp.hh"
 #include "G4ElectricField.hh"
+#include "G4ThreeVector.hh"
 #include <vector>
 
 class G4CMPMeshElectricField : public G4ElectricField {
@@ -25,10 +26,10 @@ public:
   G4CMPMeshElectricField(const G4String& EpotFileName);
   virtual ~G4CMPMeshElectricField() {;}
 
-  virtual void GetFieldValue(const G4double Point[4], G4double *Efield) const;
+  virtual void GetFieldValue(const G4double Point[3], G4double *Efield) const;
 
   // Call through to interpolator (e.g., for use with FET code)
-  virtual G4double GetPotential(const G4double Point[4]) const;
+  virtual G4double GetPotential(const G4double Point[3]) const;
 
   // Copy constructor and assignment operator
   G4CMPMeshElectricField(const G4CMPMeshElectricField &p);
