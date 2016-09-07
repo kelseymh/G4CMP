@@ -863,18 +863,6 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   G4ThreeVector secPos = ValidateSecondaryPosition(pos);
   G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), secPos);
 
-  // If the step is on a boundary, create the carrier in the initial volume
-  const G4Step* step = currentTrack->GetStep();
-  if (step->GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
-    G4StepPoint* preStepPoint = step->GetPreStepPoint();
-
-    G4LogicalVolume* lVol = preStepPoint->GetPhysicalVolume()->GetLogicalVolume();
-    sec->SetLogicalVolumeAtVertex(lVol);
-
-    const G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
-    sec->SetTouchableHandle(touchable);
-  }
-
   // Store wavevector in auxiliary info for track
   AttachTrackInfo(sec)->SetValleyIndex(valley);
 
