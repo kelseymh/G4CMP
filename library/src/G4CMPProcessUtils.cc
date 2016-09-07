@@ -882,6 +882,7 @@ G4ThreeVector G4CMPProcessUtils::ValidateSecondaryPosition(const G4ThreeVector& 
   // in the next volume. Instead, let's scoot a bit away from the edge.
   if (safety <= kCarTolerance) {
     G4ThreeVector norm = currentTrack->GetVolume()->GetLogicalVolume()->GetSolid()->SurfaceNormal(pos);
+    RotateToGlobalDirection(norm);
     secPos = pos + (safety - kCarTolerance * (1.001)) * norm;
   }
 
