@@ -19,6 +19,7 @@
 #include "G4SystemOfUnits.hh"
 #include <vector>
 #include <fstream>
+#include <array>
 
 using std::vector;
 
@@ -52,9 +53,9 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
     G4cout << G4endl;
   }
 
-  vector<vector<G4double> > tempX;
+  vector<std::array<G4double, 4> > tempX;
 
-  vector<G4double> temp(4, 0);
+  std::array<G4double, 4> temp = {{ 0, 0, 0, 0 }};
   G4double x,y,z,v;
 
   G4double vmin=99999., vmax=-99999.;
@@ -81,7 +82,7 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
 
   std::sort(tempX.begin(),tempX.end(), vector_comp);
 
-  vector<vector<G4double> > X(tempX.size(),vector<G4double>(3,0));
+  vector<std::array<G4double, 3> > X(tempX.size(), {{0,0,0}});
   vector<G4double> V(tempX.size(),0);
 
   for (size_t ii = 0; ii < tempX.size(); ++ii)
@@ -96,9 +97,9 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
 }
 
 
-void G4CMPMeshElectricField::GetFieldValue(const G4double Point[4],
+void G4CMPMeshElectricField::GetFieldValue(const G4double Point[3],
 				     G4double *Efield) const {
-  G4double* InterpField = Interp.GetGrad(Point);
+  G4ThreeVector InterpField = Interp.GetGrad(Point);
   for (size_t i = 0; i < 3; ++i) {
     Efield[i] = 0.0;
     Efield[3+i] = -1 * InterpField[i];
@@ -106,13 +107,13 @@ void G4CMPMeshElectricField::GetFieldValue(const G4double Point[4],
 }
 
 
-G4double G4CMPMeshElectricField::GetPotential(const G4double Point[4]) const {
+G4double G4CMPMeshElectricField::GetPotential(const G4double Point[3]) const {
   return Interp.GetValue(Point);
 }
 
 
-G4bool G4CMPMeshElectricField::vector_comp(const vector<G4double>& p1,
-					   const vector<G4double>& p2) {
+G4bool G4CMPMeshElectricField::vector_comp(const std::array<G4double, 4>& p1,
+                       const std::array<G4double, 4>& p2) {
   if (p1[0] < p2[0])
     return true;
   else if (p2[0] < p1[0])
