@@ -13,6 +13,7 @@
 // $Id$
 //
 // 20160904  Add electrode pattern handling
+// 20160906  Make most functions const, provide casting function for matTable
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -207,23 +208,23 @@ ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
 
 // Default conditions for absorption or reflection
 
-G4bool G4CMPBoundaryUtils::AbsorbTrack(const G4Track&, const G4Step&) {
-  G4double absProb = matTable->GetConstProperty("absProb");
+G4bool G4CMPBoundaryUtils::AbsorbTrack(const G4Track&, const G4Step&) const {
+  G4double absProb = GetMaterialProperty("absProb");
   if (buVerboseLevel>1)
     G4cout << " AbsorbTrack: absProb " << absProb << G4endl;
 
   return (G4UniformRand() <= absProb);
 }
 
-G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track&, const G4Step&) {
-  G4double reflProb = matTable->GetConstProperty("reflProb");
+G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track&, const G4Step&) const {
+  G4double reflProb = GetMaterialProperty("reflProb");
   if (buVerboseLevel>1)
     G4cout << " ReflectTrack: reflProb " << reflProb << G4endl;
 
   return (G4UniformRand() <= reflProb);
 }
 
-G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) {
+G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) const {
   G4CMPTrackInformation* trackInfo = procUtils->GetTrackInfo(aTrack);
   trackInfo->IncrementReflectionCount();
 
@@ -264,7 +265,6 @@ void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
   aParticleChange.ProposeMomentumDirection(pdir);
 }
 
-
 void G4CMPBoundaryUtils::DoSimpleKill(const G4Track& aTrack,
 				      const G4Step& aStep,
 				      G4ParticleChange& aParticleChange) {
@@ -273,11 +273,21 @@ void G4CMPBoundaryUtils::DoSimpleKill(const G4Track& aTrack,
   aParticleChange.ProposeTrackStatus(fStopAndKill);
 }
 
-void G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
-					const G4Step& aStep,
-					G4ParticleChange& aParticleChange) {
+void 
+G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
+				   const G4Step& aStep,
+				   G4ParticleChange& aParticleChange) {
   if (buVerboseLevel>1) G4cout << procName << ": Track transmitted" << G4endl;
 
   // FIXME:  Really, this should never happen.  Track should be recreated
-  //         on other side of boundary, associated with new material
+  //         on other side of boundary, associated with new material.
+  //	     *** Should we call back to DoSimpleKill()? ***
 }
+
+
+// Access information from materials table even when const
+
+G4double G4CMPBoundaryUtils::GetMaterialProperty(const G4String& key) const {
+  return const_cast<G4MaterialPropertiesTable*>(matTable)->GetConstProperty(key);
+}
+

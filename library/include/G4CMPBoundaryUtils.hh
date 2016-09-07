@@ -13,6 +13,7 @@
 // $Id$
 //
 // 20160904  Add electrode pattern handling
+// 20160906  Make most functions const, provide casting function for matTable
 
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
@@ -46,15 +47,15 @@ public:
 				   G4ParticleChange& aParticleChange);
 
   // Decide and apply different surface actions; subclasses may override
-  virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep);
+  virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
   virtual void DoAbsorption(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
-  virtual G4bool ReflectTrack(const G4Track& aTrack, const G4Step& aStep);
+  virtual G4bool ReflectTrack(const G4Track& aTrack, const G4Step& aStep) const;
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
-  virtual G4bool MaximumReflections(const G4Track& aTrack);
+  virtual G4bool MaximumReflections(const G4Track& aTrack) const;
   virtual void DoSimpleKill(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
@@ -66,6 +67,9 @@ protected:
   G4bool CheckStepStatus(const G4Step& aStep);
   G4bool GetBoundingVolumes(const G4Step& aStep);
   G4bool GetSurfaceProperty(const G4Step& aStep);
+
+  // Does const-casting of matTable for access
+  G4double GetMaterialProperty(const G4String& key) const;
 
 private:
   G4int buVerboseLevel;			// For local use; name avoids collisions

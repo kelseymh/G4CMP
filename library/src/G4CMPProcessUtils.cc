@@ -29,6 +29,7 @@
 // 20160825  Add assignment operators for cross-process configuration;
 //	     move track identification functions to G4CMPUtils.
 // 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
+// 20160906  Make GetSurfaceNormal() const.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -206,7 +207,7 @@ void G4CMPProcessUtils::ReleaseTrack() {
   theLattice = nullptr;
 }
 
-G4ThreeVector G4CMPProcessUtils::GetSurfaceNormal(const G4Step& aStep) {
+G4ThreeVector G4CMPProcessUtils::GetSurfaceNormal(const G4Step& aStep) const {
   // Get outward normal using G4Navigator method (more reliable than G4VSolid)
   G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
   std::vector<G4Navigator*>::iterator iNav =
