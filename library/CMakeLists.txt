@@ -129,6 +129,7 @@ target_link_libraries(qhullcpp qhull_p)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src)
 
 set(library_SOURCES 
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBoundaryUtils.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigManager.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigMessenger.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPCrystalGroup.cc
@@ -179,6 +180,7 @@ set(library_SOURCES
 set(library_HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.icc
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBoundaryUtils.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigManager.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPCrystalGroup.hh
@@ -228,8 +230,10 @@ set(library_HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
    )
 
-set(crystal_SETTINGS
-    ${PROJECT_SOURCE_DIR}/CrystalMaps
+set(config_FILES
+    ${PROJECT_SOURCE_DIR}/g4cmp_env.sh
+    ${PROJECT_SOURCE_DIR}/g4cmp_env.csh
+    ${PROJECT_SOURCE_DIR}/G4CMPOrdParamTable.txt
     )
 
 add_library(G4cmp SHARED ${library_SOURCES})
@@ -238,6 +242,5 @@ set_target_properties(G4cmp PROPERTIES
                         COMPILE_DEFINITIONS "qh_QHpointer")
 install(TARGETS G4cmp qhullcpp qhull_p DESTINATION lib)
 install(FILES ${library_HEADERS} DESTINATION include/G4CMP)
-install(FILES ../g4cmp_env.sh ../g4cmp_env.csh ../G4CMPOrdParamTable.txt
-        DESTINATION bin COMPONENT config)
-install(FILES ${crystal_SETTINGS} DESTINATION CrystalMaps COMPONENT config)
+install(FILES ${config_FILES} DESTINATION bin COMPONENT config)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/CrystalMaps DESTINATION CrystalMaps COMPONENT config)
