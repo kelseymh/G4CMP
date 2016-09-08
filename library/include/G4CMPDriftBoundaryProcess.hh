@@ -21,6 +21,7 @@
 // 20160415  Refactor to make PostStepDoIt() very generic. Derived classes
 //           should only need to implement absorb/reflect/transmit functions.
 // 20160903  Add inheritance from G4CMPBoundaryUtils, remove redundant functions
+// 20160906  Follow constness of G4CMPBoundaryUtils
 
 #ifndef G4CMPDriftBoundaryProcess_h
 #define G4CMPDriftBoundaryProcess_h 1
@@ -44,7 +45,7 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
   // Decide and apply different surface actions; subclasses may override
-  virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep);
+  virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
   virtual void DoAbsorption(const G4Track& aTrack, const G4Step& aStep,
                 G4ParticleChange& aParticleChange);
 

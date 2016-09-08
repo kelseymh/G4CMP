@@ -29,6 +29,7 @@
 // 20160825  Add assignment operators for cross-process configuration;
 //	     move track identification functions to G4CMPUtils.
 // 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
+// 20160906  Make GetSurfaceNormal() const.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"

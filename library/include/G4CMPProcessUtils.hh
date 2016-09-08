@@ -26,6 +26,7 @@
 // 20160625  Add accessors for particle identification
 // 20160825  Add assignment operators for cross-process configuration;
 //	     move track identification functions to G4CMPUtils
+// 20160906  Make GetSurfaceNormal() const.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1

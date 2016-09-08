@@ -19,6 +19,7 @@
 // 20140331  Add required process subtype code
 // 20160624  Use GetTrackInfo() accessor
 // 20160903  Migrate to use G4CMPBoundaryUtils for most functionality
+// 20160906  Follow constness of G4CMPBoundaryUtils
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -81,8 +82,8 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
 
 G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
-                                               const G4Step& aStep) {
-  G4double absMinK = matTable->GetConstProperty("absMinK");
+                                               const G4Step& aStep) const {
+  G4double absMinK = GetMaterialProperty("absMinK");
   G4ThreeVector k = GetTrackInfo()->GetPhononK();
   
   return (G4CMPBoundaryUtils::AbsorbTrack(aTrack,aStep) &&
@@ -90,9 +91,9 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 }
 
 
-void
-G4CMPPhononBoundaryProcess::DoReflection(const G4Track& aTrack, const G4Step& aStep,
-					 G4ParticleChange& aParticleChange) {
+void G4CMPPhononBoundaryProcess::
+DoReflection(const G4Track& aTrack, const G4Step& aStep,
+	     G4ParticleChange& aParticleChange) {
   G4CMPTrackInformation* trackInfo = GetTrackInfo();
 
   if (verboseLevel>1) {
@@ -108,7 +109,7 @@ G4CMPPhononBoundaryProcess::DoReflection(const G4Track& aTrack, const G4Step& aS
   if (verboseLevel>2)
     G4cout << " Old momentum direction " << waveVector.unit() << G4endl;
 
-  G4double specProb = matTable->GetConstProperty("specProb");
+  G4double specProb = GetMaterialProperty("specProb");
   G4ThreeVector reflectedKDir;
   do {
     reflectedKDir = waveVector.unit();
@@ -131,9 +132,9 @@ G4CMPPhononBoundaryProcess::DoReflection(const G4Track& aTrack, const G4Step& aS
   aParticleChange.ProposeMomentumDirection(vdir);
 }
 
-G4bool G4CMPPhononBoundaryProcess::ReflectionIsGood(G4int polarization,
-                                                    G4ThreeVector waveVector,
-                                                    G4ThreeVector surfNorm) {
+G4bool G4CMPPhononBoundaryProcess::
+ReflectionIsGood(G4int polarization, G4ThreeVector waveVector,
+		 G4ThreeVector surfNorm) const {
   G4ThreeVector vDir = theLattice->MapKtoVDir(polarization, waveVector);
   return vDir.dot(surfNorm) < 0.0;
 }
