@@ -29,6 +29,7 @@
 // 20160825  Add assignment operators for cross-process configuration;
 //	     move track identification functions to G4CMPUtils.
 // 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
+// 20160906  Make GetSurfaceNormal() const.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -863,18 +864,6 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   G4ThreeVector secPos = ValidateSecondaryPosition(pos);
   G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), secPos);
 
-  // If the step is on a boundary, create the carrier in the initial volume
-  const G4Step* step = currentTrack->GetStep();
-  if (step->GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
-    G4StepPoint* preStepPoint = step->GetPreStepPoint();
-
-    G4LogicalVolume* lVol = preStepPoint->GetPhysicalVolume()->GetLogicalVolume();
-    sec->SetLogicalVolumeAtVertex(lVol);
-
-    const G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
-    sec->SetTouchableHandle(touchable);
-  }
-
   // Store wavevector in auxiliary info for track
   AttachTrackInfo(sec)->SetValleyIndex(valley);
 
@@ -894,6 +883,7 @@ G4ThreeVector G4CMPProcessUtils::ValidateSecondaryPosition(const G4ThreeVector& 
   // in the next volume. Instead, let's scoot a bit away from the edge.
   if (safety <= kCarTolerance) {
     G4ThreeVector norm = currentTrack->GetVolume()->GetLogicalVolume()->GetSolid()->SurfaceNormal(pos);
+    RotateToGlobalDirection(norm);
     secPos = pos + (safety - kCarTolerance * (1.001)) * norm;
   }
 

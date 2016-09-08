@@ -10,6 +10,7 @@
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 // 20150212  Remove file IO. Use sensitive detectors instead
 // 20150603  Add functionality to globally limit reflections
+// 20160906  Follow constness of G4CMPBoundaryUtils
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -80,11 +81,11 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 // Decide and apply different surface actions; subclasses may override
 
 G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
-                                              const G4Step& aStep) {
+                                              const G4Step& aStep) const {
   if (!G4CMPBoundaryUtils::AbsorbTrack(aTrack,aStep)) return false;
 
-  G4double absMinK = (IsElectron(&aTrack) ? matTable->GetConstProperty("minKElec")
-		      : IsHole(&aTrack) ? matTable->GetConstProperty("minKHole")
+  G4double absMinK = (IsElectron(&aTrack) ? GetMaterialProperty("minKElec")
+		      : IsHole(&aTrack) ? GetMaterialProperty("minKHole")
 		      : -1.);
 
   if (absMinK < 0.) {
@@ -107,10 +108,10 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 
 
 void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
-              const G4Step& /*aStep*/,
-              G4ParticleChange& /*aParticleChange*/) {
+                                             const G4Step& /*aStep*/,
+                                             G4ParticleChange& /*aParticleChange*/) {
   if (verboseLevel>1) {
-    G4cout << "G4CMPDriftBoundaryProcess: Track absorbed" << G4endl;
+    G4cout << GetProcessName() << "::DoAbsorption: Track absorbed" << G4endl;
   }
 
   G4double ekin = GetKineticEnergy(aTrack);

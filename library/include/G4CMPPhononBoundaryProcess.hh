@@ -9,6 +9,7 @@
 // $Id$
 //
 // 20160903  Add inheritance from G4CMPBoundaryUtils, remove redundant functions
+// 20160906  Follow constness of G4CMPBoundaryUtils
 
 #ifndef G4CMPPhononBoundaryProcess_h
 #define G4CMPPhononBoundaryProcess_h 1
@@ -35,13 +36,13 @@ protected:
                                    G4ForceCondition* condition);
 
   // Apply phonon-specific conditions, after calling through to base
-  virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep);
+  virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
 
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
   G4bool ReflectionIsGood(G4int polarization, G4ThreeVector waveVector,
-                          G4ThreeVector surfNorm);
+                          G4ThreeVector surfNorm) const;
 
 private:
   // hide assignment operator as private

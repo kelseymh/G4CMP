@@ -15,20 +15,20 @@
 #include <iostream>
 #include <ctime>
 #include <map>
+#include <array>
 
 using namespace orgQhull;
 using std::map;
 using std::vector;
 
-
-G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<vector<G4double> >& xyz,
+G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<point3D>& xyz,
 					   const vector<G4double>& v)
-  : X(xyz), V(v), TetraIdx(0) {
+  : X(xyz), V(v), TetraIdx(0), staleCache(true) {
   BuildTetraMesh();
 }
 
 void 
-G4CMPTriLinearInterp::UseMesh(const std::vector<std::vector<G4double> >& xyz,
+G4CMPTriLinearInterp::UseMesh(const std::vector<point3D>& xyz,
 			      const std::vector<G4double>& v) {
   X = xyz;
   V = v;
@@ -72,10 +72,8 @@ void G4CMPTriLinearInterp::BuildTetraMesh() {
   QhullSet<QhullVertex>::iterator vItr;
   map<G4int, G4int> ID2Idx;
   G4int numTet = 0, j;
-  vector<vector<G4int> > tmpTetrahedra =
-      vector<vector<G4int> >(hull.facetCount(), vector<G4int>(4, 0));
-  vector<vector<G4int> > tmpNeighbors =
-      vector<vector<G4int> >(hull.facetCount(), vector<G4int>(4, -1));
+  vector<std::array<G4int, 4> > tmpTetrahedra(hull.facetCount(), {{0,0,0,0}});
+  vector<std::array<G4int, 4> > tmpNeighbors(vector<std::array<G4int, 4> >(hull.facetCount(), {{-1,-1,-1,-1}}));
   for (fItr = hull.facetList().begin();fItr != hull.facetList().end(); fItr++) {
     facet = *fItr;
     if (!facet.isUpperDelaunay()) {
@@ -154,9 +152,10 @@ G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& point,
   }
 }
 
-G4double G4CMPTriLinearInterp::GetPotential(const G4double pos[3]) const {
+G4double G4CMPTriLinearInterp::GetValue(const G4double pos[3]) const {
   G4double bary[4];
   FindTetrahedron(&pos[0], bary);
+  staleCache = true;
     
   if (TetraIdx == -1)
     return 0;
@@ -164,27 +163,29 @@ G4double G4CMPTriLinearInterp::GetPotential(const G4double pos[3]) const {
     return(V[Tetrahedra[TetraIdx][0]] * bary[0] +
            V[Tetrahedra[TetraIdx][1]] * bary[1] +
            V[Tetrahedra[TetraIdx][2]] * bary[2] +
-           V[Tetrahedra[TetraIdx][3]] * bary[3]);
+           V[Tetrahedra[TetraIdx][3]] * bary[3]);    
 }
 
-void G4CMPTriLinearInterp::GetField(const G4double pos[4], G4double field[6]) const {
+G4ThreeVector G4CMPTriLinearInterp::GetGrad(const G4double pos[3]) const {
   G4double bary[4];
+  G4int oldIdx = TetraIdx;
   FindTetrahedron(pos, bary);
 
   if (TetraIdx == -1)
-    for (G4int i = 0; i < 6; ++i)
-      field[i] = 0;
-  else {
+    for (size_t i = 0; i < 3; ++i)
+      cachedGrad[i] = 0;
+  if (TetraIdx != oldIdx || staleCache) {
     G4double ET[4][3];
     BuildT4x3(ET);
-    for (G4int i = 0; i < 3; ++i) {
-      field[i] = 0.0;
-      field[3+i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
-                   V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
-                   V[Tetrahedra[TetraIdx][2]]*ET[2][i] +
-                   V[Tetrahedra[TetraIdx][3]]*ET[3][i];
+    for (size_t i = 0; i < 3; ++i) {
+      cachedGrad[i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
+                      V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
+                      V[Tetrahedra[TetraIdx][2]]*ET[2][i] +
+                      V[Tetrahedra[TetraIdx][3]]*ET[3][i];
     }
+    staleCache = false;
   }
+  return cachedGrad;
 }
 
 void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bary[4]) const {
