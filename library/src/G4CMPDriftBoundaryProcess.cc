@@ -111,7 +111,7 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
                                              const G4Step& /*aStep*/,
                                              G4ParticleChange& /*aParticleChange*/) {
   if (verboseLevel>1) {
-    G4cout << GetProcessName() << ": Track absorbed" << G4endl;
+    G4cout << GetProcessName() << "::DoAbsorption: Track absorbed" << G4endl;
   }
 
   G4double ekin = GetKineticEnergy(aTrack);
