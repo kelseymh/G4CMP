@@ -40,11 +40,12 @@ void G4CMPElectrodeSensitivity::Initialize(G4HCofThisEvent*HCE) {
 G4bool G4CMPElectrodeSensitivity::ProcessHits(G4Step* aStep,
                                               G4TouchableHistory* /*ROhist*/) {
   G4StepPoint* postStepPoint = aStep->GetPostStepPoint();
-  if(postStepPoint->GetStepStatus()==fGeomBoundary &&
-                    aStep->GetNonIonizingEnergyDeposit()) {
+  if (postStepPoint->GetStepStatus()==fGeomBoundary &&
+      aStep->GetTrack()->GetTrackStatus()==fStopAndKill) {
     G4Track* track = aStep->GetTrack();
     G4int trackID = track->GetTrackID();
     G4String name = track->GetDefinition()->GetParticleName();
+    G4double weight = track->GetWeight();
     G4double startE = track->GetVertexKineticEnergy();
     G4double startTime = track->GetGlobalTime()-track->GetLocalTime();
     G4double finalTime = track->GetGlobalTime();
@@ -65,6 +66,7 @@ G4bool G4CMPElectrodeSensitivity::ProcessHits(G4Step* aStep,
     aHit->SetFinalTime(finalTime);
     aHit->SetStartEnergy(startE);
     aHit->SetEnergyDeposit(edp);
+    aHit->SetWeight(weight);
     aHit->SetStartPosition(startPosition);
     aHit->SetFinalPosition(finalPosition);
 
