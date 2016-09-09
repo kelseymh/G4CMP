@@ -164,6 +164,7 @@ set(library_SOURCES
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPUnitsTable.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPUtils.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVDriftProcess.cc
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVElectrodePattern.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeLogical.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeManager.cc
    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticePhysical.cc
@@ -217,6 +218,7 @@ set(library_HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTriLinearInterp.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPUtils.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVDriftProcess.hh
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVElectrodePattern.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticeLogical.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticeManager.hh
    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticePhysical.hh
