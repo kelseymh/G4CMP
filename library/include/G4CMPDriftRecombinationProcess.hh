@@ -16,6 +16,8 @@ public:
                                  G4CMPProcessSubType type = fChargeRecombine);
 
   virtual G4bool IsApplicable(const G4ParticleDefinition& aPD);
+  virtual void StartTracking(G4Track* track);
+  virtual void EndTracking();
 
   virtual G4double AtRestGetPhysicalInteractionLength(const G4Track& track,
                                                    G4ForceCondition* condition);
