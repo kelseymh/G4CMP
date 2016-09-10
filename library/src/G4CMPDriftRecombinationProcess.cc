@@ -26,6 +26,16 @@ G4bool G4CMPDriftRecombinationProcess::IsApplicable(
           &aPD==G4CMPDriftHole::Definition());
 }
 
+void G4CMPDriftRecombinationProcess::StartTracking(G4Track* track) {
+  G4VProcess::StartTracking(track);	// Apply base class actions
+  LoadDataForTrack(track);
+}
+
+void G4CMPDriftRecombinationProcess::EndTracking() {
+  G4VProcess::EndTracking();		// Apply base class actions
+  ReleaseTrack();
+}
+
 G4double G4CMPDriftRecombinationProcess::AtRestGetPhysicalInteractionLength(
                                                   const G4Track& aTrack,
                                                   G4ForceCondition* condition) {
@@ -41,7 +51,7 @@ G4double G4CMPDriftRecombinationProcess::GetMeanLifeTime(
 
 G4VParticleChange* G4CMPDriftRecombinationProcess::AtRestDoIt(
                                                       const G4Track& aTrack,
-                                                      const G4Step& /*aStep*/) {
+                                                      const G4Step& aStep) {
   if (verboseLevel > 1) {
     G4cout << "G4CMPDriftRecombinationProcess::AtRestDoIt: "
            << aTrack.GetDefinition()->GetParticleName()
