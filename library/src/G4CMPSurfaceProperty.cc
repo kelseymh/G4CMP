@@ -6,6 +6,7 @@
 // $Id$
 //
 // 20160831  M. Kelsey -- Add optional electrode geometry class
+// 20160907  M. Kelsey -- Protect against (allowed!) null electrode pointers
 
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPVElectrodePattern.hh"
@@ -119,12 +120,12 @@ void G4CMPSurfaceProperty::FillPhononMaterialPropertiesTable(G4double pAbsProb,
 
 void G4CMPSurfaceProperty::SetChargeElectrode(G4CMPVElectrodePattern* cel) {
   theChargeElectrode = cel;
-  theChargeElectrode->UseSurfaceTable(theChargeMatPropTable);
+  if (cel) theChargeElectrode->UseSurfaceTable(theChargeMatPropTable);
 }
 
 void G4CMPSurfaceProperty::SetPhononElectrode(G4CMPVElectrodePattern* pel) {
   thePhononElectrode = pel;
-  thePhononElectrode->UseSurfaceTable(thePhononMatPropTable);
+  if (pel) thePhononElectrode->UseSurfaceTable(thePhononMatPropTable);
 }
 
 
