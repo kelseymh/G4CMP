@@ -20,7 +20,8 @@ enum G4CMPProcessSubType {
   fChargeBoundary,
   fTimeStepper,
   fSecondaryProduction,
-  fEnergyLimiter
+  fEnergyLimiter,
+  fChargeRecombine
 };
 
 #endif	/* G4CMPProcessSubType_hh */
