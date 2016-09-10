@@ -119,12 +119,14 @@ DoAbsorption(const G4Track& aTrack, const G4Step& /*aStep*/,
 
   G4double ekin = GetKineticEnergy(aTrack);
 
-  G4double weight = G4CMP::ChoosePhononWeight();
+  G4double weight = G4CMP::ChoosePhononWeight() * aTrack.GetWeight();
   if (weight > 0.) {
     //FIXME: What does the phonon distribution look like?
     G4Track* sec = CreatePhonon(G4PhononPolarization::UNKNOWN,
                                 G4RandomDirection(), ekin,
                                 aTrack.GetPosition());
+    sec->SetWeight(weight);
+    aParticleChange.SetSecondaryWeightByProcess(true);
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(sec);
   } else {

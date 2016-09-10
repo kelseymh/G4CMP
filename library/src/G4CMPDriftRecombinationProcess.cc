@@ -67,11 +67,13 @@ G4VParticleChange* G4CMPDriftRecombinationProcess::AtRestDoIt(
 
   // FIXME: What does the recombo phonon distribution look like?
 
-  G4double weight = G4CMP::ChoosePhononWeight();
+  G4double weight = G4CMP::ChoosePhononWeight() * aTrack.GetWeight();
   if (weight > 0.) {
     G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,
                                    G4RandomDirection(),
                                    0.5 * theLattice->GetBandGapEnergy());
+    phonon->SetWeight(weight);
+    aParticleChange.SetSecondaryWeightByProcess(true);
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(phonon);
   }

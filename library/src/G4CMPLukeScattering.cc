@@ -173,13 +173,14 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Create real phonon to be propagated, with random polarization
   // If phonon is not created, register the energy as deposited
-  G4double weight = G4CMP::ChoosePhononWeight();
+  G4double weight = G4CMP::ChoosePhononWeight() * aTrack.GetWeight();
   if (weight > 0.) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
     G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
     phonon->SetWeight(weight);
 
+    aParticleChange.SetSecondaryWeightByProcess(true);
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(phonon);
   } else {
