@@ -10,6 +10,7 @@
 
 #include "globals.hh"
 #include "G4ThreeVector.hh"
+#include "G4Threading.hh"
 #include <vector>
 #include <map>
 #include <array>
@@ -39,7 +40,7 @@ private:
   std::vector<std::array<G4int, 4> > Tetrahedra;
   std::vector<std::array<G4int, 4> > Neighbors;
   mutable G4int TetraIdx;
-  mutable G4ThreeVector cachedGrad;
+  mutable G4ThreadLocal G4ThreeVector cachedGrad;
   mutable G4bool staleCache;
 
   void BuildTetraMesh();	// Builds mesh from pre-initialized 'X' array
