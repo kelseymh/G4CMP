@@ -19,19 +19,13 @@
 
 G4Allocator<G4CMPElectrodeHit> G4CMPElectrodeHitAllocator;
 
-G4CMPElectrodeHit::G4CMPElectrodeHit()
-{;}
+G4CMPElectrodeHit::G4CMPElectrodeHit() {}
 
-G4CMPElectrodeHit::~G4CMPElectrodeHit()
-{;}
-
-int G4CMPElectrodeHit::operator==(const G4CMPElectrodeHit &/*right*/) const
-{
+int G4CMPElectrodeHit::operator==(const G4CMPElectrodeHit &/*right*/) const {
   return 0;
 }
 
-void G4CMPElectrodeHit::Draw()
-{
+void G4CMPElectrodeHit::Draw() {
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if(pVVisManager)
   {
@@ -47,8 +41,7 @@ void G4CMPElectrodeHit::Draw()
   }
 }
 
-const std::map<G4String,G4AttDef>* G4CMPElectrodeHit::GetAttDefs() const
-{
+const std::map<G4String,G4AttDef>* G4CMPElectrodeHit::GetAttDefs() const {
   G4bool isNew;
   std::map<G4String,G4AttDef>* store
     = G4AttDefStore::GetInstance("G4CMPElectrodeHit",isNew);
@@ -69,8 +62,7 @@ const std::map<G4String,G4AttDef>* G4CMPElectrodeHit::GetAttDefs() const
   return store;
 }
 
-std::vector<G4AttValue>* G4CMPElectrodeHit::CreateAttValues() const
-{
+std::vector<G4AttValue>* G4CMPElectrodeHit::CreateAttValues() const {
   std::vector<G4AttValue>* values = new std::vector<G4AttValue>;
 
   values->push_back(G4AttValue("HitType","G4CMPElectrodeHit",""));
@@ -87,8 +79,7 @@ std::vector<G4AttValue>* G4CMPElectrodeHit::CreateAttValues() const
   return values;
 }
 
-void G4CMPElectrodeHit::Print()
-{
+void G4CMPElectrodeHit::Print() {
   G4cout << "  time " << finalTime/ns << " (nsec) : at " << finalPos
          << "  -- edep = " << EDep/eV << " [eV]" << G4endl;
 }
