@@ -24,8 +24,9 @@ endif
 all: lib bin
 
 LDFLAGS := -L$(G4WORKDIR)/lib/$(G4SYSTEM)	# First flag for load order
+LDFLAGS += -Wl,-rpath,$(G4WORKDIR)/lib/$(G4SYSTEM)
+
 EXTRALIBS := -lG4cmp -lqhullcpp -lqhullstatic_p
-EXTRALIBS += -Wl,-rpath,$(G4WORKDIR)/lib/$(G4SYSTEM)
 
 G4CMP_FLAGS := -I$(G4CMPINSTALL)/library/include \
 	-I$(G4CMPINSTALL)/qhull-2012.1/src -Dqh_QHpointer
