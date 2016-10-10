@@ -313,7 +313,7 @@ public:
 			       const G4ThreeVector& p,
                    const G4ThreeVector& pos) const;
 
-  G4ThreeVector ValidateSecondaryPosition(const G4ThreeVector& pos) const;
+  G4ThreeVector AdjustSecondaryPosition(G4ThreeVector pos) const;
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes
