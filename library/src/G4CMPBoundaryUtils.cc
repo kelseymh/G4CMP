@@ -279,9 +279,7 @@ G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
 				   G4ParticleChange& aParticleChange) {
   if (buVerboseLevel>1) G4cout << procName << ": Track transmitted" << G4endl;
 
-  // FIXME:  Really, this should never happen.  Track should be recreated
-  //         on other side of boundary, associated with new material.
-  //	     *** Should we call back to DoSimpleKill()? ***
+  DoSimpleKill(aTrack, aStep, aParticleChange);
 }
 
 
