@@ -30,6 +30,7 @@
 //	     move track identification functions to G4CMPUtils.
 // 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 // 20160906  Make GetSurfaceNormal() const.
+// 20161004  Add new ChangeValley() function to avoid null selection
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -793,6 +794,15 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 
 G4int G4CMPProcessUtils::ChooseValley() const {
   return (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
+}
+
+G4int G4CMPProcessUtils::ChangeValley(G4int valley) const {
+  // generate random valley offset (up to N-1)
+  G4int nv = theLattice->NumberOfValleys();
+  G4int dv = (G4int)(G4UniformRand()*(nv-1))+1;
+
+  // Apply offset to change input to new value
+  return (valley+dv) % nv;
 }
 
 

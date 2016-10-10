@@ -27,6 +27,7 @@
 // 20160825  Add assignment operators for cross-process configuration;
 //	     move track identification functions to G4CMPUtils
 // 20160906  Make GetSurfaceNormal() const.
+// 20161004  Add new ChangeValley() function to avoid null selection
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -235,6 +236,7 @@ public:
 
   // Generate random valley for charge carrier
   G4int ChooseValley() const;
+  G4int ChangeValley(G4int valley) const;	// Excludes input valley
 
   // Generate direction angle for phonon generated in Luke scattering
   G4double MakePhononTheta(G4double k, G4double ks) const;
