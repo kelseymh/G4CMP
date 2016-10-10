@@ -26,6 +26,8 @@
 // 20160625  Add accessors for particle identification
 // 20160825  Add assignment operators for cross-process configuration;
 //	     move track identification functions to G4CMPUtils
+// 20160906  Make GetSurfaceNormal() const.
+// 20161004  Add new ChangeValley() function to avoid null selection
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -117,7 +119,7 @@ public:
   }
 
   // Used especially in boundary processes
-  G4ThreeVector GetSurfaceNormal(const G4Step& aStep);
+  G4ThreeVector GetSurfaceNormal(const G4Step& aStep) const;
 
   // Convenience functions to get local position, momentum, velocity from track
   G4ThreeVector GetLocalPosition(const G4Track& track) const;
@@ -234,6 +236,7 @@ public:
 
   // Generate random valley for charge carrier
   G4int ChooseValley() const;
+  G4int ChangeValley(G4int valley) const;	// Excludes input valley
 
   // Generate direction angle for phonon generated in Luke scattering
   G4double MakePhononTheta(G4double k, G4double ks) const;
@@ -292,7 +295,7 @@ public:
 			G4double energy) const;
 
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
-			G4double energy, const G4ThreeVector& pos) const;
+            G4double energy, const G4ThreeVector& pos) const;
 
   G4Track* CreatePhononInFromBoundary(G4int polarization,
                                       const G4ThreeVector& K,
@@ -308,7 +311,9 @@ public:
 
   G4Track* CreateChargeCarrier(G4int charge, G4int valley,
 			       const G4ThreeVector& p,
-			       const G4ThreeVector& pos) const;
+                   const G4ThreeVector& pos) const;
+
+  G4ThreeVector ValidateSecondaryPosition(const G4ThreeVector& pos) const;
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes

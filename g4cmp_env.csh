@@ -35,6 +35,16 @@ if (! $?G4CMPINSTALL) then
   return 1
 endif
 
+# Extend library path to include G4CMP library location
+
+set g4cmplib = $G4WORKDIR/lib/$G4SYSTEM
+if ($?LD_LIBRARY_PATH) then
+  setenv LD_LIBRARY_PATH ${g4cmplib}:$LD_LIBRARY_PATH
+endif
+if ($?DYLD_LIBRARY_PATH) then
+  setenv DYLD_LIBRARY_PATH ${g4cmplib}:$DYLD_LIBRARY_PATH
+endif
+
 # Assign environment variables for runtime configuraiton
 
 setenv G4LATTICEDATA $G4CMPINSTALL/CrystalMaps

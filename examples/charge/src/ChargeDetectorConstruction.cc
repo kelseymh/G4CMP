@@ -4,8 +4,11 @@
 \***********************************************************************/
 
 // $Id: be4e879b33241dd90f04560177057fb1aecebf27 $
+//
+// 20160904  Add electrode pattern to surface configuration
 
 #include "ChargeDetectorConstruction.hh"
+#include "ChargeElectrodePattern.hh"
 #include "ChargeElectrodeSensitivity.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4LogicalBorderSurface.hh"
@@ -33,14 +36,16 @@
 
 
 ChargeDetectorConstruction::ChargeDetectorConstruction() :
-  sensitivity(nullptr), topSurfProp(nullptr), botSurfProp(nullptr),
-  wallSurfProp(nullptr), latManager(G4LatticeManager::GetLatticeManager()),
+
+  sensitivity(nullptr), electrode(nullptr), topSurfProp(nullptr),
+  botSurfProp(nullptr), wallSurfProp(nullptr),
+  latManager(G4LatticeManager::GetLatticeManager()),
   fEMField(nullptr), liquidHelium(nullptr), germanium(nullptr),
-  aluminum(nullptr), tungsten(nullptr), worldPhys(nullptr), zipThickness(2.54*cm),
-  epotScale(0.), voltage(0.), constructed(false), epotFileName(""),
-  outputFileName("")
+  aluminum(nullptr), tungsten(nullptr), worldPhys(nullptr),
+  zipThickness(2.54*cm), epotScale(0.), voltage(0.), constructed(false),
+  epotFileName(""), outputFileName("")
 {
-  /* Default initialization does not leave object in unusable state.
+  /* Default initialization does not leave object in usable state.
    * Doesn't matter because run initialization will call Construct() and all
    * will be well.
    */
@@ -171,12 +176,18 @@ void ChargeDetectorConstruction::SetupGeometry()
 
   // Define surface properties. Only should be done once
   if (!constructed) {
+    electrode = new ChargeElectrodePattern;
+
     topSurfProp = new G4CMPSurfaceProperty("topSurfProp",
                                            1., 0., 0., 0.,
                                            0.22, 1., 0., 0.);
+    topSurfProp->SetChargeElectrode(electrode);
+
     botSurfProp = new G4CMPSurfaceProperty("botSurfProp",
                                            1., 0., 0., 0.,
                                            0.22, 1., 0., 0.);
+    botSurfProp->SetChargeElectrode(electrode);
+
     wallSurfProp = new G4CMPSurfaceProperty("wallSurfProp",
                                             1., 0., 0., 0.,
                                             0., 1., 0., 0.);

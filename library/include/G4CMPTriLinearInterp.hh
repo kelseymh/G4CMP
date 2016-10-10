@@ -17,10 +17,9 @@
 
 using point = std::array<G4double, 3>;
 
-
 class G4CMPTriLinearInterp {
 public:
-  G4CMPTriLinearInterp() : TetraIdx(0) {;}	// Uninitialized version
+  G4CMPTriLinearInterp() : TetraIdx(0), staleCache(true) {;}	// Uninitialized version
 
   G4CMPTriLinearInterp(const std::vector<point >& xyz,
 		       const std::vector<G4double>& v);

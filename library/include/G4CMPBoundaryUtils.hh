@@ -11,6 +11,9 @@
 ///   Use via multiple inheritance with concrete boundary classes.
 //
 // $Id$
+//
+// 20160904  Add electrode pattern handling
+// 20160906  Make most functions const, provide casting function for matTable
 
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
@@ -20,6 +23,7 @@
 
 class G4CMPProcessUtils;
 class G4CMPSurfaceProperty;
+class G4CMPVElectrodePattern;
 class G4MaterialPropertiesTable;
 class G4ParticleChange;
 class G4Step;
@@ -33,22 +37,25 @@ public:
   G4CMPBoundaryUtils(G4VProcess* process);
   virtual ~G4CMPBoundaryUtils();
 
+  virtual void SetVerboseLevel(G4int vb) { buVerboseLevel = vb; }
+
+  // Check whether this step is at a good boundary for processing
+  virtual G4bool IsGoodBoundary(const G4Step& aStep);
+
   // Implements PostStepDoIt() in a common way; processes should call through
-  virtual G4bool ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
-				     G4ParticleChange& aParticleChange);
-  // NOTE:  If step condition tests fail, function will return false, and
-  //	    processes should call through to G4VDiscreteProcess:PostStepDoIt()
+  virtual void ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
+				   G4ParticleChange& aParticleChange);
 
   // Decide and apply different surface actions; subclasses may override
-  virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep);
+  virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
   virtual void DoAbsorption(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
-  virtual G4bool ReflectTrack(const G4Track& aTrack, const G4Step& aStep);
+  virtual G4bool ReflectTrack(const G4Track& aTrack, const G4Step& aStep) const;
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
-  virtual G4bool MaximumReflections(const G4Track& aTrack);
+  virtual G4bool MaximumReflections(const G4Track& aTrack) const;
   virtual void DoSimpleKill(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
@@ -57,11 +64,12 @@ public:
 			      G4ParticleChange& aParticleChange);
 
 protected:
-  // Initialize volumes, surface properties, etc.
-  G4bool LoadDataForStep(const G4Step& aStep);
   G4bool CheckStepStatus(const G4Step& aStep);
   G4bool GetBoundingVolumes(const G4Step& aStep);
   G4bool GetSurfaceProperty(const G4Step& aStep);
+
+  // Does const-casting of matTable for access
+  G4double GetMaterialProperty(const G4String& key) const;
 
 private:
   G4int buVerboseLevel;			// For local use; name avoids collisions
@@ -75,6 +83,7 @@ protected:
   G4VPhysicalVolume* postPV;
   G4CMPSurfaceProperty* surfProp;	// Surface property with G4CMP data
   G4MaterialPropertiesTable* matTable;	// Phonon- or charge-specific parameters
+  const G4CMPVElectrodePattern* electrode; // Patterned electrode for absorption
 };
 
 #endif	/* G4CMPBoundaryUtils_hh */

@@ -10,17 +10,20 @@
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 // 20150212  Remove file IO. Use sensitive detectors instead
 // 20150603  Add functionality to globally limit reflections
+// 20160906  Follow constness of G4CMPBoundaryUtils
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPSurfaceProperty.hh"
+#include "G4CMPUtils.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4ParallelWorldProcess.hh"
+#include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4TransportationManager.hh"
@@ -32,6 +35,7 @@
 
 G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess(const G4String& name)
   : G4CMPVDriftProcess(name, fChargeBoundary), G4CMPBoundaryUtils(this) {;}
+
 
 G4double G4CMPDriftBoundaryProcess::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
@@ -51,9 +55,13 @@ GetMeanFreePath(const G4Track& /*aTrack*/,G4double /*previousStepSize*/,
 G4VParticleChange* 
 G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
                                          const G4Step& aStep) {
-  if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+  // NOTE:  G4VProcess::SetVerboseLevel is not virtual!  Can't overlaod it
+  G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
 
   aParticleChange.Initialize(aTrack);
+  if (!IsGoodBoundary(aStep)) return &aParticleChange;
+
+  if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
   if (verboseLevel>2) {
     if (aTrack.GetDefinition() == G4CMPDriftElectron::Definition()) {
@@ -66,11 +74,7 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
            << "\n P direction: " << GetLocalMomentum(aTrack).unit() << G4endl;
   }
 
-  if (!ApplyBoundaryAction(aTrack, aStep, aParticleChange)) {
-    if (verboseLevel)
-      G4cerr << GetProcessName() << " ERROR from ApplyBoundaryAction" << G4endl;
-  }
-
+  ApplyBoundaryAction(aTrack, aStep, aParticleChange);
   return &aParticleChange;
 }
 
@@ -78,11 +82,11 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 // Decide and apply different surface actions; subclasses may override
 
 G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
-                                              const G4Step& aStep) {
+                                              const G4Step& aStep) const {
   if (!G4CMPBoundaryUtils::AbsorbTrack(aTrack,aStep)) return false;
 
-  G4double absMinK = (IsElectron(&aTrack) ? matTable->GetConstProperty("minKElec")
-		      : IsHole(&aTrack) ? matTable->GetConstProperty("minKHole")
+  G4double absMinK = (IsElectron(&aTrack) ? GetMaterialProperty("minKElec")
+		      : IsHole(&aTrack) ? GetMaterialProperty("minKHole")
 		      : -1.);
 
   if (absMinK < 0.) {
@@ -104,9 +108,37 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 }
 
 
-void
-G4CMPDriftBoundaryProcess::DoReflection(const G4Track& aTrack, const G4Step& aStep,
-                                        G4ParticleChange& aParticleChange) {
+// May convert recombination into phonon
+
+void G4CMPDriftBoundaryProcess::
+DoAbsorption(const G4Track& aTrack, const G4Step& /*aStep*/,
+	     G4ParticleChange& /*aParticleChange*/) {
+  if (verboseLevel>1) {
+    G4cout << GetProcessName() << "::DoAbsorption: Track absorbed" << G4endl;
+  }
+
+  G4double ekin = GetKineticEnergy(aTrack);
+
+  G4double weight = G4CMP::ChoosePhononWeight();
+  if (weight > 0.) {
+    //FIXME: What does the phonon distribution look like?
+    G4Track* sec = CreatePhonon(G4PhononPolarization::UNKNOWN,
+                                G4RandomDirection(), ekin,
+                                aTrack.GetPosition());
+    aParticleChange.SetNumberOfSecondaries(1);
+    aParticleChange.AddSecondary(sec);
+  } else {
+    aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
+  }
+
+  aParticleChange.ProposeEnergy(0.);
+  aParticleChange.ProposeTrackStatus(fStopAndKill);
+}
+
+
+void G4CMPDriftBoundaryProcess::
+DoReflection(const G4Track& aTrack, const G4Step& aStep,
+	     G4ParticleChange& /*aParticleChange*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track reflected" << G4endl;
 

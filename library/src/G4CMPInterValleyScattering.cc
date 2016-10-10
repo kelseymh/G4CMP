@@ -15,6 +15,7 @@
 // 20150112  Follow renaming of "SetNewKinematics" to FillParticleChange
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 // 20160601  Must apply lattice rotation before valley.
+// 20161004  Change valley selection function to avoid null choice
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -118,7 +119,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   p = theLattice->MapPtoK_valley(valley, p); // p is actually k now
 
   // picking a new valley at random if IV-scattering process was triggered
-  valley = ChooseValley();
+  valley = ChangeValley(valley);
   GetTrackInfo(aTrack)->SetValleyIndex(valley);
 
   p = theLattice->MapK_valleyToP(valley, p); // p is p again

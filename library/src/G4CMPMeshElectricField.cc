@@ -106,13 +106,14 @@ void G4CMPMeshElectricField::GetFieldValue(const G4double Point[3],
   }
 }
 
+
 G4double G4CMPMeshElectricField::GetPotential(const G4double Point[3]) const {
   return Interp.GetValue(Point);
 }
 
 
 G4bool G4CMPMeshElectricField::vector_comp(const std::array<G4double, 4>& p1,
-                       const std::array<G4double, 4>& p2) {
+                                           const std::array<G4double, 4>& p2) {
   if (p1[0] < p2[0])
     return true;
   else if (p2[0] < p1[0])

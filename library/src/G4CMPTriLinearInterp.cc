@@ -15,15 +15,15 @@
 #include <iostream>
 #include <ctime>
 #include <map>
+#include <array>
 
 using namespace orgQhull;
 using std::map;
 using std::vector;
 
-
 G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<point >& xyz,
 					   const vector<G4double>& v)
-  : X(xyz), V(v), TetraIdx(0) {
+  : X(xyz), V(v), TetraIdx(0), staleCache(true) {
   BuildTetraMesh();
 }
 
@@ -72,10 +72,8 @@ void G4CMPTriLinearInterp::BuildTetraMesh() {
   QhullSet<QhullVertex>::iterator vItr;
   map<G4int, G4int> ID2Idx;
   G4int numTet = 0, j;
-  vector<std::array<G4int, 4> > tmpTetrahedra =
-      vector<std::array<G4int, 4> >(hull.facetCount(), {{0,0,0,0}});
-  vector<std::array<G4int, 4> > tmpNeighbors =
-          vector<std::array<G4int, 4> >(hull.facetCount(), {{-1,-1,-1,-1}});
+  vector<std::array<G4int, 4> > tmpTetrahedra(hull.facetCount(), {{0,0,0,0}});
+  vector<std::array<G4int, 4> > tmpNeighbors(hull.facetCount(), {{-1,-1,-1,-1}});
   for (fItr = hull.facetList().begin();fItr != hull.facetList().end(); fItr++) {
     facet = *fItr;
     if (!facet.isUpperDelaunay()) {
@@ -176,8 +174,7 @@ G4ThreeVector G4CMPTriLinearInterp::GetGrad(const G4double pos[3]) const {
   if (TetraIdx == -1)
     for (size_t i = 0; i < 3; ++i)
       cachedGrad[i] = 0;
-  if (TetraIdx == oldIdx && !staleCache) ;
-  else {
+  if (TetraIdx != oldIdx || staleCache) {
     G4double ET[4][3];
     BuildT4x3(ET);
     for (size_t i = 0; i < 3; ++i) {
