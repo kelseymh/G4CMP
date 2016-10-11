@@ -21,10 +21,6 @@ ifndef G4INSTALL
   $(error Please configure your GEANT4 environment before building G4CMP)
 endif
 
-ifndef G4CMP_LIB
-  G4CMP_LIB := $(word 1,$(G4CMP_NAME))
-endif
-
 # For multiple executables, provide targets and ensure all are cleaned up
 
 ifndef G4TARGET
@@ -32,7 +28,6 @@ ifndef G4TARGET
 $(G4CMP_NAME) :
 	@$(MAKE) G4TARGET=$@
 clean ::
-	@rm -f  $(G4WORKDIR)/lib/$(G4SYSTEM)/lib$(G4CMP_LIB).*
 	@rm -rf $(foreach t,$(G4CMP_NAME),$(G4WORKDIR)/tmp/$(G4SYSTEM)/$t)
 	@rm -f  $(foreach t,$(G4CMP_NAME),$(G4BINDIR)/$t)
 clean_bin ::
@@ -44,15 +39,19 @@ endif
 # Build library in user's common area instead of using "G4EXLIB"
 
 ifneq (,$(wildcard include)$(wildcard src))
-  name := $(G4CMP_LIB)
+  name := $(word 1,$(G4CMP_NAME))
   G4LIBDIR := $(G4WORKDIR)/lib/$(G4SYSTEM)
+
+  $(shell mkdir -p $(G4WORKDIR)/tmp/$(G4SYSTEM)/$(name))
 
   include $(G4INSTALL)/config/architecture.gmk
   include $(G4INSTALL)/config/common.gmk
 
-  EXTRALIBS := -l$(G4CMP_LIB) 
+  EXTRALIBS := -l$(name) 
 
 $(G4TARGET) : lib
+clean ::
+	@rm -f  $(G4WORKDIR)/lib/$(G4SYSTEM)/lib$(name).*
 endif
 
 # Configure compiling and linking flags before binmake.gmk

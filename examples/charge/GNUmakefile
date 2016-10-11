@@ -5,7 +5,6 @@
 # 20160518  Use G4CMPINSTALL instead of ".." to find includes
 # 20160609  Remove utilities, add FETSim, rename ionize
 
-G4CMP_LIB := g4cmpCharge
 G4CMP_NAME := g4cmpCharge g4cmpIonize g4cmpFETSim
 
 include $(G4CMPINSTALL)/g4cmp.gmk
