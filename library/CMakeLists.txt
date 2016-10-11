@@ -140,7 +140,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransFast.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VPhononProcess.cc
-)
+    )
  
 set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.hh
@@ -195,13 +195,13 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransFast.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
-)
+    )
 
 set(config_FILES
     ${PROJECT_SOURCE_DIR}/g4cmp_env.sh
     ${PROJECT_SOURCE_DIR}/g4cmp_env.csh
     ${PROJECT_SOURCE_DIR}/G4CMPOrdParamTable.txt
-)
+    )
 
 add_library(G4cmp SHARED ${library_SOURCES})
 target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp)
