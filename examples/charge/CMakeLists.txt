@@ -1,25 +1,17 @@
 #----------------------------------------------------------------------------
-# Need to include G4CMP directories before G4.
+# Find Geant4 package
+# NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
 #
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/library/include)
-
-#----------------------------------------------------------------------------
-# Find Geant4 package, activating all available UI and Vis drivers by default
-# You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
-# to build a batch mode only executable
-#
-option(WITH_GEANT4_UIVIS "Build example with Geant4 UI and Vis drivers" ON)
-if(WITH_GEANT4_UIVIS)
-  find_package(Geant4 REQUIRED ui_all vis_all)
-else()
-  find_package(Geant4 REQUIRED)
+if(NOT ${Geant4_FOUND})
+    include(${PROJECT_SOURCE_DIR}/FindGeant4.cmake)
 endif()
 
 #----------------------------------------------------------------------------
-# Setup Geant4 include directories and compile definitions
-# Setup include directory for this project
+# Setup include directories and compile definitions
+# NOTE: Need to include G4CMP directories before G4.
 #
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/library/include)
 include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
