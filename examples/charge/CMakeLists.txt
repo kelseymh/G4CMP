@@ -15,6 +15,20 @@ include_directories(${PROJECT_SOURCE_DIR}/library/include)
 include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
+# RPATH stuff
+#
+# Automatically add paths of linked libraries to RPATH *unless* they are in the 
+# build directory
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# Set the RPATH of the installed objects *unless* they are installing to a 
+# system directory, in which case they shouldn't need an explicitly set RPATH.
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES 
+     "${CMAKE_INSTALL_PREFIX}/lib" is_SYSTEM_DIR)
+if("${is_SYSTEM_DIR}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
+
+#----------------------------------------------------------------------------
 # Grab Qhull files needed to link against it.
 # 
 include_directories(${PROJECT_SOURCE_DIR}/library/qhull-2012.1/src)
@@ -81,24 +95,12 @@ set(fet_CONFIGS
 
 add_executable(g4cmpCharge g4cmpCharge.cc ${charge_SOURCES})
 target_link_libraries(g4cmpCharge G4cmp)
-set_target_properties(g4cmpCharge PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-    INSTALL_RPATH_USE_LINK_RPATH TRUE
-    BUILD_WITH_INSTALL_RPATH FALSE)
 
 add_executable(g4cmpIonize g4cmpIonize.cc ${ionize_SOURCES})
 target_link_libraries(g4cmpIonize G4cmp)
-set_target_properties(g4cmpIonize PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-    INSTALL_RPATH_USE_LINK_RPATH TRUE
-    BUILD_WITH_INSTALL_RPATH FALSE)
 
 add_executable(g4cmpFETSim g4cmpFETSim.cc ${fet_SOURCES})
 target_link_libraries(g4cmpFETSim G4cmp)
-set_target_properties(g4cmpFETSim PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-    INSTALL_RPATH_USE_LINK_RPATH TRUE
-    BUILD_WITH_INSTALL_RPATH FALSE)
 
 install(TARGETS g4cmpCharge DESTINATION bin)
 install(TARGETS g4cmpIonize DESTINATION bin)
