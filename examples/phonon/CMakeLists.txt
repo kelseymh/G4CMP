@@ -14,6 +14,23 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/library/include)
 include(${Geant4_USE_FILE})
 
+#----------------------------------------------------------------------------
+# RPATH stuff
+#
+# Automatically add paths of linked libraries to RPATH *unless* they are in the 
+# build directory
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# Set the RPATH of the installed objects *unless* they are installing to a 
+# system directory, in which case they shouldn't need an explicitly set RPATH.
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES 
+     "${CMAKE_INSTALL_PREFIX}/lib" is_SYSTEM_DIR)
+if("${is_SYSTEM_DIR}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
+
+#----------------------------------------------------------------------------
+# Build stuff
+#
 set(phonon_SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononActionInitialization.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononDetectorConstruction.cc
@@ -23,8 +40,5 @@ set(phonon_SOURCES
     
 add_executable(g4cmpPhonon g4cmpPhonon.cc ${phonon_SOURCES})
 target_link_libraries(g4cmpPhonon G4cmp)
-set_target_properties(g4cmpPhonon PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-    INSTALL_RPATH_USE_LINK_RPATH TRUE
-    BUILD_WITH_INSTALL_RPATH FALSE)
+
 install(TARGETS g4cmpPhonon DESTINATION bin)

@@ -14,6 +14,20 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
+# RPATH stuff
+#
+# Automatically add paths of linked libraries to RPATH *unless* they are in the 
+# build directory
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# Set the RPATH of the installed objects *unless* they are installing to a 
+# system directory, in which case they shouldn't need an explicitly set RPATH.
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES 
+     "${CMAKE_INSTALL_PREFIX}/lib" is_SYSTEM_DIR)
+if("${is_SYSTEM_DIR}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
+
+#----------------------------------------------------------------------------
 # Qhull Compilation stuff -- sources are under current (library/) directory
 #
 set(libqhull_HEADERS
