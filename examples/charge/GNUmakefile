@@ -5,13 +5,7 @@
 # 20160518  Use G4CMPINSTALL instead of ".." to find includes
 # 20160609  Remove utilities, add FETSim, rename ionize
 
-ifndef G4CMP_NAME		# Two-pass method
-  .PHONY : g4cmpCharge g4cmpIonize g4cmpFETSim
-
-  g4cmpCharge g4cmpIonize g4cmpFETSim :
-	@$(MAKE) G4CMP_NAME=$@
-
-  G4CMP_NAME := g4cmpCharge
-endif
+G4CMP_LIB := g4cmpCharge
+G4CMP_NAME := g4cmpCharge g4cmpIonize g4cmpFETSim
 
 include $(G4CMPINSTALL)/g4cmp.gmk

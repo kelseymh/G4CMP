@@ -5,28 +5,64 @@
 # 20150109  Add G4CMP_SET_ELECTRON_MASS support to build with dynamic mass code
 # 20160518  Use G4CMPINSTALL instead of ".." to find things
 # 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
+# 20161007  Handle multiple executable names with common local library
+
+# Default targets
+.PHONY: all lib bin $(G4CMP_NAME)
+bin : $(G4CMP_NAME)
+
+# Ensure that all required variables are properly defined
 
 ifndef G4CMP_NAME
-$(error Please set G4CMP_NAME in directory-level GNUmakefile)
+  $(error Please set G4CMP_NAME in directory-level GNUmakefile)
 endif
 
 ifndef G4INSTALL
-$(error Please configure your GEANT4 environment before building G4CMP)
+  $(error Please configure your GEANT4 environment before building G4CMP)
 endif
 
-name := $(G4CMP_NAME)
-G4TARGET := $(G4CMP_NAME)
-ifneq (,$(wildcard include))	# Build library if include/,src/ directories
-  G4EXLIB := true
+ifndef G4CMP_LIB
+  G4CMP_LIB := $(word 1,$(G4CMP_NAME))
 endif
 
-.PHONY: all
-all: lib bin
+# For multiple executables, provide targets and ensure all are cleaned up
 
-LDFLAGS := -L$(G4WORKDIR)/lib/$(G4SYSTEM)	# First flag for load order
-LDFLAGS += -Wl,-rpath,$(G4WORKDIR)/lib/$(G4SYSTEM)
+ifndef G4TARGET
+  ifneq (1,$(words $(G4CMP_NAME)))	# This will name the executable
+$(G4CMP_NAME) :
+	@$(MAKE) G4TARGET=$@
+clean ::
+	@rm -f  $(G4WORKDIR)/lib/$(G4SYSTEM)/lib$(G4CMP_LIB).*
+	@rm -rf $(foreach t,$(G4CMP_NAME),$(G4WORKDIR)/tmp/$(G4SYSTEM)/$t)
+	@rm -f  $(foreach t,$(G4CMP_NAME),$(G4BINDIR)/$t)
+clean_bin ::
+	@rm -f  $(foreach t,$(G4CMP_NAME),$(G4BINDIR)/$t)
+  endif
+  G4TARGET := $(word 1,$(G4CMP_NAME))
+endif
 
-EXTRALIBS := -lG4cmp -lqhullcpp -lqhullstatic_p
+# Build library in user's common area instead of using "G4EXLIB"
+
+ifneq (,$(wildcard include)$(wildcard src))
+  name := $(G4CMP_LIB)
+  G4LIBDIR := $(G4WORKDIR)/lib/$(G4SYSTEM)
+
+  include $(G4INSTALL)/config/architecture.gmk
+  include $(G4INSTALL)/config/common.gmk
+
+  EXTRALIBS := -l$(G4CMP_LIB) 
+
+$(G4TARGET) : lib
+endif
+
+# Configure compiling and linking flags before binmake.gmk
+
+LDFLAGS := -L$(G4WORKDIR)/lib/$(G4SYSTEM)
+ifdef G4RUNPATHOPTION
+  LDFLAGS += $(G4RUNPATHOPTION)$(G4WORKDIR)/lib/$(G4SYSTEM)
+endif
+
+EXTRALIBS += -lG4cmp -lqhullcpp -lqhullstatic_p
 
 G4CMP_FLAGS := -I$(G4CMPINSTALL)/library/include \
 	-I$(G4CMPINSTALL)/qhull-2012.1/src -Dqh_QHpointer
@@ -36,9 +72,10 @@ ifdef G4CMP_DEBUG
 endif
 
 include $(G4INSTALL)/config/binmake.gmk
-CPPFLAGS := $(G4CMP_FLAGS) $(CPPFLAGS)		# Prepend for right load order
+
+# Prepend custom flags to ensure proper order of include search
+CPPFLAGS := $(G4CMP_FLAGS) $(CPPFLAGS)
 
 visclean:
 	rm -f g4*.prim g4*.eps g4*.wrl
 	rm -f .DAWN_*
-
