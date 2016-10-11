@@ -30,6 +30,8 @@ CPPFLAGS := $(G4CMP_FLAGS) $(CPPFLAGS)		# Prepend for right load order
 # Library goes into user's G4WORKDIR, not into system install
 G4LIBDIR := $(G4WORKDIR)/lib/$(G4SYSTEM)
 
+.PHONY : lib clean
+
 lib : qhull		# Set dependence on QHull before Geant4 configuration
 clean :: qhull.cleanall
 
@@ -37,8 +39,8 @@ include $(G4INSTALL)/config/common.gmk
 
 # Include linking against Qhull when forming G4CMP shared library
 # FIXME:  Needed on MacOSX 10.5.8 (GCC 4.0.1), not other platforms
-G4CMP_LIBDEP := -L$(G4WORKDIR)/lib/$(G4SYSTEM) -lqhullcpp -lqhullstatic_p
-G4CMP_LIBDEP += -Wl,-rpath,$(G4WORKDIR)/lib/$(G4SYSTEM)
+G4CMP_LIBDEP := -L$(G4LIBDIR) -lqhullcpp -lqhullstatic_p
+G4CMP_LIBDEP += -Wl,-rpath,$(G4LIBDIR)
 INTYLIBS += $(G4CMP_LIBDEP)
 
 # Manually configure building the Qhull libraries in Geant4 style
@@ -46,10 +48,12 @@ ISMAC := $(findstring Darwin,$(G4SYSTEM))
 ISWIN := $(findstring Win,$(G4SYSTEM))
 DYLIB_OPTS := -dynamiclib -undefined suppress -flat_namespace
 
+.PHONY : qhull qhull.all qhull.install qhull.cleanall
+
 qhull :
 	-$(MAKE) -C qhull-2012.1 DESTDIR=$(G4WORKDIR) \
+	  LIBDIR=$(G4LIBDIR) \
 	  BINDIR=$(G4WORKDIR)/bin/$(G4SYSTEM) \
-	  LIBDIR=$(G4WORKDIR)/lib/$(G4SYSTEM) \
 	  CC_OPTS3="$(if $(ISMAC),$(DYLIB_OPTS),)" \
 	  SO=$(if $(ISMAC),dylib,$(if $(ISWIN),dll,so)).6.3.1 \
 	  all install
