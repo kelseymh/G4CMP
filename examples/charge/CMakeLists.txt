@@ -29,9 +29,8 @@ if("${is_SYSTEM_DIR}" STREQUAL "-1")
 endif()
 
 #----------------------------------------------------------------------------
-# Grab Qhull files needed to link against it.
+# Build stuff
 # 
-include_directories(${PROJECT_SOURCE_DIR}/library/qhull-2012.1/src)
 
 set(charge_SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeActionInitialization.cc
