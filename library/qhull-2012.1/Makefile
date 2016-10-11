@@ -217,7 +217,7 @@ qtest:
 	@echo == Run the qhull smoketest ===
 	@echo ==============================
 	-bin/rbox D4 | bin/qhull Tv
-	
+
 qtestall:  qtest
 	@echo ==============================
 	@echo ========= qconvex ============
@@ -311,7 +311,7 @@ LIBQHULLCPP_OBJS = $(LCPP)/RoadError.o $(LCPP)/RoadLogEvent.o $(LCPP)/Coordinate
 	$(LCPP)/QhullPoints.o $(LCPP)/QhullPointSet.o $(LCPP)/QhullQh.o \
 	$(LCPP)/QhullRidge.o $(LCPP)/QhullSet.o $(LCPP)/QhullStat.o \
 	$(LCPP)/QhullVertex.o $(LCPP)/QhullVertexSet.o $(LCPP)/RboxPoints.o \
-	$(LCPP)/UsingLibQhull.o src/user_eg3/user_eg3.o 
+	$(LCPP)/UsingLibQhull.o
 
 # CFILES ordered alphabetically after libqhull.c 
 CFILES= src/qhull/unix.c $(L)/libqhull.c $(L)/geom.c $(L)/geom2.c $(L)/global.c $(L)/io.c \
@@ -326,8 +326,8 @@ CXXFILES= $(LCPP)/RoadError.cpp $(LCPP)/RoadLogEvent.cpp $(LCPP)/Coordinates.cpp
 	$(LCPP)/QhullPoints.cpp $(LCPP)/QhullPointSet.cpp $(LCPP)/QhullQh.cpp \
 	$(LCPP)/QhullRidge.cpp $(LCPP)/QhullSet.cpp $(LCPP)/QhullStat.cpp \
 	$(LCPP)/QhullVertex.cpp $(LCPP)/QhullVertexSet.cpp $(LCPP)/RboxPoints.cpp \
-	$(LCPP)/UsingLibQhull.cpp src/user_eg3/user_eg3.cpp 
-	
+	$(LCPP)/UsingLibQhull.cpp
+
 TESTFILES= $(TCPP)/qhulltest.cpp $(TCPP)/Coordinates_test.cpp $(TCPP)/Point_test.cpp $(TCPP)/PointCoordinates_test.cpp \
 	$(TCPP)/Qhull_test.cpp $(TCPP)/QhullFacet_test.cpp $(TCPP)/QhullFacetList_test.cpp \
 	$(TCPP)/QhullFacetSet_test.cpp $(TCPP)/QhullHyperplane_test.cpp $(TCPP)/QhullLinkedList_test.cpp \
