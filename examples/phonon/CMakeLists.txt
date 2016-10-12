@@ -2,7 +2,7 @@
 # Find Geant4 package
 # NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
 #
-if(NOT ${Geant4_FOUND})
+if(NOT Geant4_FOUND)
     include(${PROJECT_SOURCE_DIR}/FindGeant4.cmake)
 endif()
 
@@ -38,11 +38,17 @@ set(phonon_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononSensitivity.cc
     )
     
-add_library(G4cmpPhonon SHARED ${phonon_SOURCES})
-target_link_libraries(G4cmpPhonon G4cmp)
+if(USE_GEANT4_STATIC_LIBS)
+    add_library(phononLib STATIC ${phonon_SOURCES})
+else()
+    add_library(phononLib SHARED ${phonon_SOURCES})
+endif()
+set_target_properties(phononLib PROPERTIES OUTPUT_NAME G4cmpPhonon)
+
+target_link_libraries(phononLib G4cmp)
 
 add_executable(g4cmpPhonon g4cmpPhonon.cc)
-target_link_libraries(g4cmpPhonon G4cmpPhonon)
+target_link_libraries(g4cmpPhonon phononLib)
 
-install(TARGETS G4cmpPhonon DESTINATION lib)
+install(TARGETS phononLib DESTINATION lib)
 install(TARGETS g4cmpPhonon DESTINATION bin)

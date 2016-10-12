@@ -2,7 +2,7 @@
 # Find Geant4 package
 # NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
 #
-if(NOT ${Geant4_FOUND})
+if(NOT Geant4_FOUND)
     include(${PROJECT_SOURCE_DIR}/FindGeant4.cmake)
 endif()
 
@@ -77,12 +77,20 @@ set(libqhullcpp_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/qhull-2012.1/src/libqhullcpp/UsingLibQhull.cpp
 )
 
-add_library(qhull_p SHARED ${libqhull_SOURCES})
+if(USE_GEANT4_STATIC_LIBS)
+    add_library(qhull_p STATIC ${libqhull_SOURCES})
+else()
+    add_library(qhull_p SHARED ${libqhull_SOURCES})
+endif()
 set_target_properties(qhull_p PROPERTIES
     COMPILE_DEFINITIONS "qh_QHpointer"
     VERSION 6.3.1.1494)
 
-add_library(qhullcpp SHARED ${libqhullcpp_SOURCES})
+if(USE_GEANT4_STATIC_LIBS)
+    add_library(qhullcpp STATIC ${libqhullcpp_SOURCES})
+else()
+    add_library(qhullcpp SHARED ${libqhullcpp_SOURCES})
+endif()
 set_target_properties(qhullcpp PROPERTIES
     COMPILE_DEFINITIONS "qh_QHpointer"
     VERSION 6.3.1.1494)
@@ -203,7 +211,11 @@ set(config_FILES
     ${PROJECT_SOURCE_DIR}/G4CMPOrdParamTable.txt
     )
 
-add_library(G4cmp SHARED ${library_SOURCES})
+if(USE_GEANT4_STATIC_LIBS)
+    add_library(G4cmp STATIC ${library_SOURCES})
+else()
+    add_library(G4cmp SHARED ${library_SOURCES})
+endif()
 target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp)
 set_target_properties(G4cmp PROPERTIES COMPILE_DEFINITIONS "qh_QHpointer")
 
