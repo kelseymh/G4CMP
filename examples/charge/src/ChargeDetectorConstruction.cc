@@ -179,17 +179,17 @@ void ChargeDetectorConstruction::SetupGeometry()
     electrode = new ChargeElectrodePattern;
 
     topSurfProp = new G4CMPSurfaceProperty("topSurfProp",
-                                           1., 0., 0., 0.,
+                                           1., 1., 0., 0.,
                                            0.22, 1., 0., 0.);
     topSurfProp->SetChargeElectrode(electrode);
 
     botSurfProp = new G4CMPSurfaceProperty("botSurfProp",
-                                           1., 0., 0., 0.,
+                                           1., 1., 0., 0.,
                                            0.22, 1., 0., 0.);
     botSurfProp->SetChargeElectrode(electrode);
 
     wallSurfProp = new G4CMPSurfaceProperty("wallSurfProp",
-                                            1., 0., 0., 0.,
+                                            1., 1., 0., 0.,
                                             0., 1., 0., 0.);
   }
 

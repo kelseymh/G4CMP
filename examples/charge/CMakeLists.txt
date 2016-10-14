@@ -1,52 +1,42 @@
 #----------------------------------------------------------------------------
-# Need to include G4CMP directories before G4.
+# Find Geant4 package
+# NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
 #
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/library/include)
-
-#----------------------------------------------------------------------------
-# Find Geant4 package, activating all available UI and Vis drivers by default
-# You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
-# to build a batch mode only executable
-#
-option(WITH_GEANT4_UIVIS "Build example with Geant4 UI and Vis drivers" ON)
-if(WITH_GEANT4_UIVIS)
-  find_package(Geant4 REQUIRED ui_all vis_all)
-else()
-  find_package(Geant4 REQUIRED)
+if(NOT Geant4_FOUND)
+    include(${PROJECT_SOURCE_DIR}/FindGeant4.cmake)
 endif()
 
 #----------------------------------------------------------------------------
-# Setup Geant4 include directories and compile definitions
-# Setup include directory for this project
+# Setup include directories and compile definitions
+# NOTE: Need to include G4CMP directories before G4.
 #
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/library/include)
 include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
-# Grab Qhull files needed to link against it.
+# RPATH stuff
+#
+# Automatically add paths of linked libraries to RPATH *unless* they are in the 
+# build directory
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# Set the RPATH of the installed objects *unless* they are installing to a 
+# system directory, in which case they shouldn't need an explicitly set RPATH.
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES 
+     "${CMAKE_INSTALL_PREFIX}/lib" is_SYSTEM_DIR)
+if("${is_SYSTEM_DIR}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
+
+#----------------------------------------------------------------------------
+# Build stuff
 # 
-include_directories(${PROJECT_SOURCE_DIR}/library/qhull-2012.1/src)
 
 set(charge_SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeActionInitialization.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeDetectorConstruction.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeElectrodeSensitivity.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeElectrodePattern.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerModule.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerMessenger.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargePrimaryGeneratorAction.cc
-    )
-
-set(fet_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerModule.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerMessenger.cc
-    )
-
-set(ionize_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeActionInitialization.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeDetectorConstruction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeElectrodeSensitivity.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeElectrodePattern.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerModule.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerMessenger.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargePrimaryGeneratorAction.cc
@@ -87,27 +77,25 @@ set(fet_CONFIGS
     ${CMAKE_CURRENT_SOURCE_DIR}/config/EpotRamoChan4
     )
 
-add_executable(g4cmpCharge g4cmpCharge.cc ${charge_SOURCES})
-target_link_libraries(g4cmpCharge G4cmp)
-set_target_properties(g4cmpCharge PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-    INSTALL_RPATH_USE_LINK_RPATH TRUE
-    BUILD_WITH_INSTALL_RPATH FALSE)
+if(USE_GEANT4_STATIC_LIBS)
+    add_library(G4cmpCharge STATIC ${charge_SOURCES})
+else()
+    add_library(chargeLib SHARED ${charge_SOURCES})
+endif()
+set_target_properties(chargeLib PROPERTIES OUTPUT_NAME G4cmpCharge)
+    
+target_link_libraries(chargeLib G4cmp)
 
-add_executable(g4cmpIonize g4cmpIonize.cc ${ionize_SOURCES})
-target_link_libraries(g4cmpIonize G4cmp)
-set_target_properties(g4cmpIonize PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-    INSTALL_RPATH_USE_LINK_RPATH TRUE
-    BUILD_WITH_INSTALL_RPATH FALSE)
+add_executable(g4cmpCharge g4cmpCharge.cc)
+target_link_libraries(g4cmpCharge chargeLib)
 
-add_executable(g4cmpFETSim g4cmpFETSim.cc ${fet_SOURCES})
-target_link_libraries(g4cmpFETSim G4cmp)
-set_target_properties(g4cmpFETSim PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-    INSTALL_RPATH_USE_LINK_RPATH TRUE
-    BUILD_WITH_INSTALL_RPATH FALSE)
+add_executable(g4cmpIonize g4cmpIonize.cc)
+target_link_libraries(g4cmpIonize chargeLib)
 
+add_executable(g4cmpFETSim g4cmpFETSim.cc)
+target_link_libraries(g4cmpFETSim chargeLib)
+
+install(TARGETS chargeLib DESTINATION lib)
 install(TARGETS g4cmpCharge DESTINATION bin)
 install(TARGETS g4cmpIonize DESTINATION bin)
 install(TARGETS g4cmpFETSim DESTINATION bin)

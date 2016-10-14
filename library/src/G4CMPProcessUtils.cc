@@ -776,7 +776,7 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 
   // Secondaries are (usually) created at the current track coordinates
   RotateToGlobalDirection(vgroup);
-  G4ThreeVector secPos = ValidateSecondaryPosition(pos);
+  G4ThreeVector secPos = AdjustSecondaryPosition(pos);
 
   G4Track* sec = new G4Track(new G4DynamicParticle(thePhonon, vgroup, energy),
                              currentTrack->GetGlobalTime(), secPos);
@@ -871,7 +871,7 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   G4DynamicParticle* secDP =
     new G4DynamicParticle(theCarrier, v_unit, carrierEnergy, carrierMass);
 
-  G4ThreeVector secPos = ValidateSecondaryPosition(pos);
+  G4ThreeVector secPos = AdjustSecondaryPosition(pos);
   G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), secPos);
 
   // Store wavevector in auxiliary info for track
@@ -880,9 +880,8 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   return sec;
 }
 
-G4ThreeVector G4CMPProcessUtils::ValidateSecondaryPosition(const G4ThreeVector& pos) const {
-  G4ThreeVector secPos(pos);
-
+G4ThreeVector G4CMPProcessUtils::AdjustSecondaryPosition(G4ThreeVector pos) const {
+  // Take a copy because we would've had to make a copy at some point anyway.
   // If the step is near a boundary, create the secondary in the initial volume
   G4Navigator* nav = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
   // Safety is the distance to a boundary
@@ -892,10 +891,10 @@ G4ThreeVector G4CMPProcessUtils::ValidateSecondaryPosition(const G4ThreeVector& 
   // If the distance to an edge is within error, we might accidentally get placed
   // in the next volume. Instead, let's scoot a bit away from the edge.
   if (safety <= kCarTolerance) {
-    G4ThreeVector norm = currentTrack->GetVolume()->GetLogicalVolume()->GetSolid()->SurfaceNormal(pos);
+    G4ThreeVector norm = currentVolume->GetLogicalVolume()->GetSolid()->SurfaceNormal(GetLocalPosition(pos));
     RotateToGlobalDirection(norm);
-    secPos = pos + (safety - kCarTolerance * (1.001)) * norm;
+    pos += (safety - kCarTolerance * (1.001)) * norm;
   }
 
-  return secPos;
+  return pos;
 }
