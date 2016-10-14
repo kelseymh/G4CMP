@@ -28,8 +28,8 @@ fi
 # Extend library path to include G4CMP library location
 
 g4cmplib=$G4WORKDIR/lib/$G4SYSTEM
-[ -n "$LD_LIBRARY_PATH" ]   && export LD_LIBRARY_PATH ${g4cmplib}:$LD_LIBRARY_PATH
-[ -n "$DYLD_LIBRARY_PATH" ] && export DYLD_LIBRARY_PATH ${g4cmplib}:$DYLD_LIBRARY_PATH
+[ -n "$LD_LIBRARY_PATH" ]   && export LD_LIBRARY_PATH=${g4cmplib}:$LD_LIBRARY_PATH
+[ -n "$DYLD_LIBRARY_PATH" ] && export DYLD_LIBRARY_PATH=${g4cmplib}:$DYLD_LIBRARY_PATH
 
 # Assign environment variables for runtime configuraiton
 
