@@ -110,25 +110,27 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 
 // May convert recombination into phonon
 
-void G4CMPDriftBoundaryProcess::
-DoAbsorption(const G4Track& aTrack, const G4Step& /*aStep*/,
-	     G4ParticleChange& /*aParticleChange*/) {
+void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
+                                             const G4Step&,
+                                             G4ParticleChange&) {
+  // Charge carrier gets killed and its energy goes into phonons.
   if (verboseLevel>1) {
     G4cout << GetProcessName() << "::DoAbsorption: Track absorbed" << G4endl;
   }
 
-  G4double ekin = GetKineticEnergy(aTrack);
+  G4double eKin = GetKineticEnergy(aTrack);
 
-  G4double weight = G4CMP::ChoosePhononWeight();
-  if (weight > 0.) {
-    //FIXME: What does the phonon distribution look like?
+  //FIXME: What does the phonon distribution look like?
+  G4double eDeb = theLattice->GetDebyeEnergy();
+  size_t n = std::ceil(eKin / eDeb);
+  aParticleChange.SetNumberOfSecondaries(n);
+  while (eKin > 0.) {
+    G4double E = eKin > eDeb ? eDeb : eKin;
+    eKin -= eDeb;
     G4Track* sec = CreatePhonon(G4PhononPolarization::UNKNOWN,
-                                G4RandomDirection(), ekin,
+                                G4RandomDirection(), E,
                                 aTrack.GetPosition());
-    aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(sec);
-  } else {
-    aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
   }
 
   aParticleChange.ProposeEnergy(0.);
