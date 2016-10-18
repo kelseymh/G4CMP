@@ -83,8 +83,7 @@ G4bool G4CMPBoundaryUtils::CheckStepStatus(const G4Step& aStep) {
 
   // do nothing if the current step is not limited by a volume boundary,
   // or if it is the returning "null step" after a reflection
-  return (aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary &&
-	  aStep.GetStepLength() > kCarTolerance);
+  return aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary;
 }
 
 G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
