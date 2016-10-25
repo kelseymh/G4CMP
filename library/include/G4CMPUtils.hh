@@ -16,8 +16,10 @@
 #include "G4ThreeVector.hh"
 #include "globals.hh"
 
+class G4CMPElectrodeHit;
 class G4LatticePhysical;
 class G4ParticleDefinition;
+class G4Step;
 class G4Track;
 
 
@@ -45,6 +47,9 @@ namespace G4CMP {
   G4double ChooseWeight(const G4ParticleDefinition* pd);
   G4double ChoosePhononWeight();
   G4double ChooseChargeWeight();
+
+  // Create a Hit from a G4Step. Less error prone to use this helper.
+  void FillHit(const G4Step*, G4CMPElectrodeHit*);
 }
 
 #endif	/* G4CMPUtils_hh */
