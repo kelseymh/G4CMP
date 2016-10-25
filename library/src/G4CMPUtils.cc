@@ -2,6 +2,7 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPElectrodeHit.hh"
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PhononPolarization.hh"
@@ -86,4 +87,37 @@ G4double G4CMP::ChooseChargeWeight() {
 
   // If prob=0., random throw always fails, never divides by zero
   return ((prob==1.) ? 1. : (G4UniformRand()<prob) ? 1./prob : 0.);
+}
+
+void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
+  // Get information from the track
+  G4Track* track     = step->GetTrack();
+  G4int trackID      = track->GetTrackID();
+  G4String name      = track->GetDefinition()->GetParticleName();
+  G4double startE    = track->GetVertexKineticEnergy();
+  G4double startTime = track->GetGlobalTime() - track->GetLocalTime();
+  G4double finalTime = track->GetGlobalTime();
+  G4double weight    = track->GetWeight();
+  G4double edp       = step->GetNonIonizingEnergyDeposit();
+
+  // Get start and end positions. Must use PreStepPoint to get correct
+  // volume
+  G4StepPoint* preStepPoint = step->GetPreStepPoint();
+  G4StepPoint* postStepPoint = step->GetPostStepPoint();
+  G4VPhysicalVolume* pVol = preStepPoint->GetPhysicalVolume();
+  G4AffineTransform toLocal = G4AffineTransform(pVol->GetRotation(),
+                                                pVol->GetTranslation()).Inverse();
+  G4ThreeVector startPosition = toLocal.TransformPoint(track->GetVertexPosition());
+  G4ThreeVector finalPosition = toLocal.TransformPoint(postStepPoint->GetPosition());
+
+  // Insert data into hit.
+  hit->SetStartTime(startTime);
+  hit->SetFinalTime(finalTime);
+  hit->SetStartEnergy(startE);
+  hit->SetEnergyDeposit(edp);
+  hit->SetWeight(weight);
+  hit->SetStartPosition(startPosition);
+  hit->SetFinalPosition(finalPosition);
+  hit->SetTrackID(trackID);
+  hit->SetParticleName(name);
 }
