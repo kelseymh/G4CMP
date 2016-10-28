@@ -51,7 +51,7 @@ G4double G4CMPDriftRecombinationProcess::GetMeanLifeTime(
 
 G4VParticleChange* G4CMPDriftRecombinationProcess::AtRestDoIt(
                                                       const G4Track& aTrack,
-                                                      const G4Step& aStep) {
+                                                      const G4Step&) {
   if (verboseLevel > 1) {
     G4cout << "G4CMPDriftRecombinationProcess::AtRestDoIt: "
            << aTrack.GetDefinition()->GetParticleName()
@@ -66,16 +66,19 @@ G4VParticleChange* G4CMPDriftRecombinationProcess::AtRestDoIt(
   // tracks and giving back the band gap. Maybe there is a better way?
 
   // FIXME: What does the recombo phonon distribution look like?
-
-  G4double weight = G4CMP::ChoosePhononWeight();
-  if (weight > 0.) {
+  // For now we'll just divvy up the gap energy into n Debye energy phonons.
+  G4double ePot = 0.5 * theLattice->GetBandGapEnergy();
+  G4double eDeb = theLattice->GetDebyeEnergy();
+  size_t n = std::ceil(ePot / eDeb);
+  aParticleChange.SetNumberOfSecondaries(n);
+  while (ePot > 0.) {
+    G4double E = ePot > eDeb ? eDeb : ePot;
+    ePot -= eDeb;
     G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,
-                                   G4RandomDirection(),
-                                   0.5 * theLattice->GetBandGapEnergy());
-    aParticleChange.SetNumberOfSecondaries(1);
+                                   G4RandomDirection(), E);
     aParticleChange.AddSecondary(phonon);
   }
-  aParticleChange.ProposeTrackStatus(fStopAndKill);
 
+  aParticleChange.ProposeTrackStatus(fStopAndKill);
   return &aParticleChange;
 }

@@ -178,8 +178,10 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
     G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
-    phonon->SetWeight(weight);
+    // Secondary's weight has to be multiplicative with its parent's
+    phonon->SetWeight(aTrack.GetWeight() * weight);
 
+    aParticleChange.SetSecondaryWeightByProcess(true);
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(phonon);
   } else {
