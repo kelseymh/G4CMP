@@ -76,6 +76,9 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   if (IsChargeCarrier(aTrack)) {
     SetChargeCarrierValley(aTrack);
     SetChargeCarrierMass(aTrack);
+    if (IsElectron(aTrack)) {
+      SetElectronEnergy(aTrack);
+    }
   }
 
   ReleaseTrack();
@@ -152,4 +155,25 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
     const_cast<G4DynamicParticle*>(aTrack->GetDynamicParticle());
 
   dynp->SetMass(mass*c_squared);	// Converts to Geant4 [M]=[E] units
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Set G4Track energy to correctly calculate velocity
+
+void G4CMPStackingAction::SetElectronEnergy(const G4Track* aTrack) const {
+  G4int valley = GetTrackInfo(aTrack)->GetValleyIndex();
+  G4double E = aTrack->GetKineticEnergy();
+  G4double kmag_HV = std::sqrt(2. * E * theLattice->GetElectronMass()) /
+                     hbar_Planck;
+  G4ThreeVector kdir_HV = theLattice->MapV_elToK_HV(valley,
+                                                    aTrack->GetMomentumDirection());
+
+  G4ThreeVector p = theLattice->MapK_HVtoP(valley, kmag_HV * kdir_HV.unit());
+  G4ThreeVector vTrue = theLattice->MapPtoV_el(valley, p);
+  // Set fake E that yeilds correct v
+  (const_cast<G4Track*>(aTrack))->SetKineticEnergy(0.5 *
+                                                   aTrack->GetDynamicParticle()->GetMass() /
+                                                   c_squared *
+                                                   vTrue.mag2());
 }
