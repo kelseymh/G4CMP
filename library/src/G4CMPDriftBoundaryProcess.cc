@@ -134,7 +134,7 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   }
 
   aParticleChange.ProposeEnergy(0.);
-  aParticleChange.ProposeTrackStatus(fStopAndKill);
+  aParticleChange.ProposeTrackStatus(fStopButAlive);
 }
 
 
