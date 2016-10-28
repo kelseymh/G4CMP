@@ -241,7 +241,7 @@ void G4CMPBoundaryUtils::DoAbsorption(const G4Track& aTrack,
 
   G4double ekin = procUtils->GetKineticEnergy(aTrack);
   aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
-  aParticleChange.ProposeTrackStatus(fStopAndKill);
+  aParticleChange.ProposeTrackStatus(fStopButAlive);
 }
 
 void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
@@ -269,7 +269,7 @@ void G4CMPBoundaryUtils::DoSimpleKill(const G4Track& aTrack,
 				      G4ParticleChange& aParticleChange) {
   if (buVerboseLevel>1) G4cout << procName << ": Track killed" << G4endl;
 
-  aParticleChange.ProposeTrackStatus(fStopAndKill);
+  aParticleChange.ProposeTrackStatus(fStopButAlive);
 }
 
 void 
