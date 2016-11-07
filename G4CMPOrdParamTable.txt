@@ -61,4 +61,4 @@ ChargeBoundary              11     306     -1        -1     1000 0
 TimeStepper                 11     307     -1        -1     1000 0
 G4CMPSecondaryProduction    11     308     -1        -1     1000 0
 EnergyLimiter               11     309     -1        -1     1000 0
-ChargeRecombine             11     310   1000        -1       -1 0
+ChargeRecombine             11     310     -1        -1     1000 0
