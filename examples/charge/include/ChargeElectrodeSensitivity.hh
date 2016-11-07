@@ -7,15 +7,14 @@
 #define ChargeElectrodeSensitivity_h 1
 
 #include "G4CMPElectrodeHit.hh"
-#include "G4VSensitiveDetector.hh"
+#include "G4CMPElectrodeSensitivity.hh"
 
-class G4HCofThisEvent;
 class ChargeFETDigitizerModule;
 
-class ChargeElectrodeSensitivity : public G4VSensitiveDetector {
+class ChargeElectrodeSensitivity final : public G4CMPElectrodeSensitivity {
 public:
-  ChargeElectrodeSensitivity(G4String name);
-  virtual ~ChargeElectrodeSensitivity() override;
+  ChargeElectrodeSensitivity(G4String);
+  virtual ~ChargeElectrodeSensitivity();
   // No copies
   ChargeElectrodeSensitivity(const ChargeElectrodeSensitivity&) = delete;
   ChargeElectrodeSensitivity& operator=(const ChargeElectrodeSensitivity&) = delete;
@@ -23,18 +22,15 @@ public:
   ChargeElectrodeSensitivity(ChargeElectrodeSensitivity&&);
   ChargeElectrodeSensitivity& operator=(ChargeElectrodeSensitivity&&);
 
-  virtual void Initialize(G4HCofThisEvent*) override;
-  virtual void EndOfEvent(G4HCofThisEvent*) override;
+  virtual void EndOfEvent(G4HCofThisEvent*);
 
   void SetOutputFile(const G4String& fn);
 
 protected:
-  virtual G4bool ProcessHits(G4Step*,G4TouchableHistory*) override;
+  virtual G4bool IsHit(const G4Step*, const G4TouchableHistory*) const;
 
 private:
-  G4bool IsHit(const G4Step*, const G4TouchableHistory*) const;
   std::unique_ptr<ChargeFETDigitizerModule> FET;
-  G4CMPElectrodeHitsCollection* hitsCollection;
   std::ofstream output;
   G4String fileName;
 };
