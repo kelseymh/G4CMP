@@ -7,32 +7,23 @@
 #define G4CMPDriftRecombinationProcess_h 1
 
 #include "G4CMPVDriftProcess.hh"
-#include "G4VRestProcess.hh"
 #include "globals.hh"
 
-class G4CMPDriftRecombinationProcess : public G4VRestProcess, G4CMPProcessUtils {
+class G4CMPDriftRecombinationProcess : public G4CMPVDriftProcess {
 public:
   G4CMPDriftRecombinationProcess(const G4String& name = "G4CMPChargeRecombine",
                                  G4CMPProcessSubType type = fChargeRecombine);
+  // No copying/moving
+  G4CMPDriftRecombinationProcess(G4CMPDriftRecombinationProcess&) = delete;
+  G4CMPDriftRecombinationProcess(G4CMPDriftRecombinationProcess&&) = delete;
+  G4CMPDriftRecombinationProcess& operator=(const G4CMPDriftRecombinationProcess&) = delete;
+  G4CMPDriftRecombinationProcess& operator=(const G4CMPDriftRecombinationProcess&&) = delete;
 
-  virtual G4bool IsApplicable(const G4ParticleDefinition& aPD);
-  virtual void StartTracking(G4Track* track);
-  virtual void EndTracking();
-
-  virtual G4double AtRestGetPhysicalInteractionLength(const G4Track& track,
-                                                   G4ForceCondition* condition);
-
-  virtual G4VParticleChange* AtRestDoIt(const G4Track&, const G4Step&);
+  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&) override;
 
 protected:
-  virtual G4double GetMeanLifeTime(const G4Track&, G4ForceCondition*);
-
-private:
-  // No copying/moving
-  G4CMPDriftRecombinationProcess(G4CMPDriftRecombinationProcess&);
-  G4CMPDriftRecombinationProcess(G4CMPDriftRecombinationProcess&&);
-  G4CMPDriftRecombinationProcess& operator=(const G4CMPDriftRecombinationProcess&);
-  G4CMPDriftRecombinationProcess& operator=(const G4CMPDriftRecombinationProcess&&);
+  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*)
+                                   override;
 };
 
 #endif

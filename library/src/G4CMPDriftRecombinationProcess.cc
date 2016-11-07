@@ -14,52 +14,25 @@
 G4CMPDriftRecombinationProcess::G4CMPDriftRecombinationProcess(
                                                        const G4String &name,
                                                        G4CMPProcessSubType type)
-                          : G4VRestProcess(name, fPhonon), G4CMPProcessUtils() {
-  verboseLevel = G4CMPConfigManager::GetVerboseLevel();
-  SetProcessSubType(type);
-  if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
+  : G4CMPVDriftProcess(name, type) {
 }
 
-G4bool G4CMPDriftRecombinationProcess::IsApplicable(
-                                              const G4ParticleDefinition& aPD) {
-  return (&aPD==G4CMPDriftElectron::Definition() ||
-          &aPD==G4CMPDriftHole::Definition());
-}
-
-void G4CMPDriftRecombinationProcess::StartTracking(G4Track* track) {
-  G4VProcess::StartTracking(track);	// Apply base class actions
-  LoadDataForTrack(track);
-}
-
-void G4CMPDriftRecombinationProcess::EndTracking() {
-  G4VProcess::EndTracking();		// Apply base class actions
-  ReleaseTrack();
-}
-
-G4double G4CMPDriftRecombinationProcess::AtRestGetPhysicalInteractionLength(
-                                                  const G4Track& aTrack,
-                                                  G4ForceCondition* condition) {
-  return GetMeanLifeTime(aTrack, condition);
-}
-
-G4double G4CMPDriftRecombinationProcess::GetMeanLifeTime(
-                                              const G4Track& /*aTrack*/,
-                                              G4ForceCondition* /*condition*/) {
-  // Charge carriers should immediately recombine when KE = 0.
-  return 0.;
-}
-
-G4VParticleChange* G4CMPDriftRecombinationProcess::AtRestDoIt(
+G4VParticleChange* G4CMPDriftRecombinationProcess::PostStepDoIt(
                                                       const G4Track& aTrack,
                                                       const G4Step&) {
+  aParticleChange.Initialize(aTrack);
+
+  // If the particle has not come to rest, do nothing
+  if (aTrack.GetTrackStatus() != fStopButAlive) {
+    return &aParticleChange;
+  }
+
   if (verboseLevel > 1) {
-    G4cout << "G4CMPDriftRecombinationProcess::AtRestDoIt: "
+    G4cout << "G4CMPDriftRecombinationProcess::PostStepDoIt: "
            << aTrack.GetDefinition()->GetParticleName()
            << " reabsorbed by the lattice."
            << G4endl;
   }
-
-  aParticleChange.Initialize(aTrack);
 
   // FIXME: Each charge carrier is independent, so it only gives back 0.5 times
   // the band gap. Really electrons and holes should recombine, killing both
@@ -82,3 +55,11 @@ G4VParticleChange* G4CMPDriftRecombinationProcess::AtRestDoIt(
   aParticleChange.ProposeTrackStatus(fStopAndKill);
   return &aParticleChange;
 }
+
+G4double G4CMPDriftRecombinationProcess::GetMeanFreePath(const G4Track&,
+                                                         G4double,
+                                                         G4ForceCondition* cond) {
+  *cond = Forced;
+  return DBL_MAX;
+}
+
