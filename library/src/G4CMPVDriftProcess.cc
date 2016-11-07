@@ -21,6 +21,7 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackInformation.hh"
 #include "G4DynamicParticle.hh"
 #include "G4ExceptionSeverity.hh"
@@ -128,8 +129,9 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
 
   G4ThreeVector v;
   if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
-    G4ThreeVector p_local = GetLocalDirection(p);
-    v = GetGlobalDirection(theLattice->MapPtoV_el(ivalley, p_local));
+    G4ThreeVector p_local = G4CMP::GetLocalDirection(GetCurrentVolume(), p);
+    v = G4CMP::GetGlobalDirection(GetCurrentVolume(),
+                                  theLattice->MapPtoV_el(ivalley, p_local));
   } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
     v = p*c_light/mass;
   } else {

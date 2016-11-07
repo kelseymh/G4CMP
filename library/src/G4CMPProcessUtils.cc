@@ -35,6 +35,7 @@
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackInformation.hh"
 #include "G4CMPUtils.hh"
 #include "G4AffineTransform.hh"
@@ -254,7 +255,7 @@ G4ThreeVector G4CMPProcessUtils::GetSurfaceNormal(const G4Step& aStep) const {
 
 // Access track position and momentum in local coordinates
 G4ThreeVector G4CMPProcessUtils::GetLocalPosition(const G4Track& track) const {
-  return GetLocalPosition(track.GetPosition());
+  return G4CMP::GetLocalPosition(currentVolume, track.GetPosition());
 }
 
 void G4CMPProcessUtils::GetLocalPosition(const G4Track& track,
@@ -270,7 +271,7 @@ G4ThreeVector G4CMPProcessUtils::GetLocalMomentum(const G4Track& track) const {
     return theLattice->MapV_elToP(GetValleyIndex(track),
                                   GetLocalVelocityVector(track));
   } else if (IsHole(&track)) {
-    return GetLocalDirection(track.GetMomentum());
+    return G4CMP::GetLocalDirection(currentVolume, track.GetMomentum());
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -288,7 +289,7 @@ void G4CMPProcessUtils::GetLocalMomentum(const G4Track& track,
 
 G4ThreeVector G4CMPProcessUtils::GetLocalVelocityVector(const G4Track& track) const {
   G4ThreeVector vel = track.CalculateVelocity() * track.GetMomentumDirection();
-  return GetLocalDirection(vel);
+  return G4CMP::GetLocalDirection(currentVolume, vel);
 }
 
 void G4CMPProcessUtils::GetLocalVelocityVector(const G4Track &track,
@@ -328,7 +329,7 @@ G4ThreeVector G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
   if (IsElectron(&track)) {
     G4ThreeVector p = theLattice->MapV_elToP(GetValleyIndex(track),
                                              GetLocalVelocityVector(track));
-    return GetGlobalDirection(p);
+    return G4CMP::GetGlobalDirection(currentVolume, p);
   } else if (IsHole(&track)) {
     return track.GetMomentum();
   } else {
@@ -417,7 +418,7 @@ void G4CMPProcessUtils::MakeLocalPhononK(G4ThreeVector& kphonon) const {
 
 void G4CMPProcessUtils::MakeGlobalPhononK(G4ThreeVector& kphonon) const {
   MakeLocalPhononK(kphonon);
-  RotateToGlobalDirection(kphonon);
+  G4CMP::RotateToGlobalDirection(currentVolume, kphonon);
 }
 
 void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
@@ -429,7 +430,7 @@ void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess006",
                 EventMustBeAborted, "Unknown charge carrier");
   }
-  RotateToGlobalDirection(kphonon);
+  G4CMP::RotateToGlobalDirection(currentVolume, kphonon);
 }
 
 // Compute a Lambertian distribution for reflected phonons
@@ -775,14 +776,15 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
   G4ParticleDefinition* thePhonon = G4PhononPolarization::Get(polarization);
 
   // Secondaries are (usually) created at the current track coordinates
-  RotateToGlobalDirection(vgroup);
+  G4CMP::RotateToGlobalDirection(currentVolume, vgroup);
   G4ThreeVector secPos = AdjustSecondaryPosition(pos);
 
   G4Track* sec = new G4Track(new G4DynamicParticle(thePhonon, vgroup, energy),
                              currentTrack->GetGlobalTime(), secPos);
 
   // Store wavevector in auxiliary info for track
-  AttachTrackInfo(sec)->SetPhononK(GetGlobalDirection(waveVec));
+  AttachTrackInfo(sec)->SetPhononK(G4CMP::GetGlobalDirection(currentVolume,
+                                                             waveVec));
 
   sec->SetVelocity(theLattice->MapKtoV(polarization, waveVec));    
   sec->UseGivenVelocity(true);
@@ -861,9 +863,9 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
   } else {
     theCarrier    = G4CMPDriftElectron::Definition();
     carrierMass   = theLattice->GetElectronMass();
-    G4ThreeVector p_local = GetLocalDirection(p);
+    G4ThreeVector p_local = G4CMP::GetLocalDirection(currentVolume, p);
     G4ThreeVector v_local = theLattice->MapPtoV_el(valley, p_local);
-    RotateToGlobalDirection(v_local);
+    G4CMP::RotateToGlobalDirection(currentVolume, v_local);
     carrierEnergy = 0.5 * carrierMass * v_local.mag2();// Non-relativistic
     v_unit = v_local.unit();
   }
@@ -891,8 +893,9 @@ G4ThreeVector G4CMPProcessUtils::AdjustSecondaryPosition(G4ThreeVector pos) cons
   // If the distance to an edge is within error, we might accidentally get placed
   // in the next volume. Instead, let's scoot a bit away from the edge.
   if (safety <= kCarTolerance) {
-    G4ThreeVector norm = currentVolume->GetLogicalVolume()->GetSolid()->SurfaceNormal(GetLocalPosition(pos));
-    RotateToGlobalDirection(norm);
+    G4ThreeVector norm = currentVolume->GetLogicalVolume()->GetSolid()
+                         ->SurfaceNormal(G4CMP::GetLocalPosition(currentVolume, pos));
+    G4CMP::RotateToGlobalDirection(currentVolume, norm);
     pos += (safety - kCarTolerance * (1.001)) * norm;
   }
 

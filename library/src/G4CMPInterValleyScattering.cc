@@ -21,6 +21,7 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPTrackInformation.hh"
 #include "G4CMPFieldManager.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
 #include "G4LatticeManager.hh"
@@ -123,7 +124,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   GetTrackInfo(aTrack)->SetValleyIndex(valley);
 
   p = theLattice->MapK_valleyToP(valley, p); // p is p again
-  RotateToGlobalDirection(p);
+  G4CMP::RotateToGlobalDirection(postStepPoint->GetPhysicalVolume(), p);
 
   // Adjust track kinematics for new valley
   FillParticleChange(valley, p);
