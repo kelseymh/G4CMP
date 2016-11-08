@@ -51,8 +51,8 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* driftB  = new G4CMPDriftBoundaryProcess;
   G4VProcess* ivScat  = new G4CMPInterValleyScattering;
   G4VProcess* luke    = new G4CMPLukeScattering(tmStep);
-  G4VProcess* eLimit  = new G4CMPEnergyLimiter;
   G4VProcess* recomb  = new G4CMPDriftRecombinationProcess;
+  G4VProcess* eLimit  = new G4CMPEnergyLimiter;
 
   // Set process verbosity to match physics list, for diagnostics
   phScat->SetVerboseLevel(verboseLevel);
@@ -62,8 +62,8 @@ void G4CMPPhysics::ConstructProcess() {
   driftB->SetVerboseLevel(verboseLevel);
   ivScat->SetVerboseLevel(verboseLevel);
   luke->SetVerboseLevel(verboseLevel);
-  eLimit->SetVerboseLevel(verboseLevel);
   recomb->SetVerboseLevel(verboseLevel);
+  eLimit->SetVerboseLevel(verboseLevel);
 
   G4ParticleDefinition* particle = 0;	// Reusable buffer for convenience
 
@@ -91,15 +91,15 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(luke, particle);
   RegisterProcess(ivScat, particle);
   RegisterProcess(driftB, particle);
-  RegisterProcess(eLimit, particle);
   RegisterProcess(recomb, particle);
+  RegisterProcess(eLimit, particle);
 
   particle = G4CMPDriftHole::Definition();
   RegisterProcess(tmStep, particle);
   RegisterProcess(luke, particle);
   RegisterProcess(driftB, particle);
-  RegisterProcess(eLimit, particle);
   RegisterProcess(recomb, particle);
+  RegisterProcess(eLimit, particle);
 
   AddSecondaryProduction();
 }
