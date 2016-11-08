@@ -17,17 +17,12 @@
 
 #include "G4VPhysicalVolume.hh"
 
-#include "G4AutoLock.hh"
-namespace {
-  G4Mutex mut = G4MUTEX_INITIALIZER;
-}
-
-G4AffineTransform&
+const G4AffineTransform&
 G4CMPGlobalLocalTransformStore::ToLocal(const G4VPhysicalVolume* pv) {
   return Instance().GetOrBuildTransforms(pv).globalToLocal;
 }
 
-G4AffineTransform&
+const G4AffineTransform&
 G4CMPGlobalLocalTransformStore::ToGlobal(const G4VPhysicalVolume* pv) {
   return Instance().GetOrBuildTransforms(pv).localToGlobal;
 }
@@ -37,17 +32,19 @@ G4CMPGlobalLocalTransformStore::Reset() {
   Instance().cache.clear();
 }
 
-G4CMPGlobalLocalTransformStore::Transforms&
+const G4CMPGlobalLocalTransformStore::Transforms&
 G4CMPGlobalLocalTransformStore::GetOrBuildTransforms(const G4VPhysicalVolume* pv) {
-  //if (!pv) return Transforms(); // Identity for both
+  if (!pv) {
+    G4Exception("G4CMPGlobalLocalTransformStore::GetOrBuildTransforms",
+                "trans001", FatalErrorInArgument,
+                "PhysicalVolume pointer is null.");
+  }
 
   if (Instance().cache.count(pv) == 0) {
     auto localToGlobal = G4AffineTransform(pv->GetRotation(),
                                            pv->GetTranslation());
-    G4AutoLock lock(&mut);
     return Instance().cache[pv] = Transforms { localToGlobal,
                                                localToGlobal.Inverse() };
-    // unlock
   }
 
   return Instance().cache[pv];

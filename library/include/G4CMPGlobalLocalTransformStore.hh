@@ -23,8 +23,8 @@ class G4VPhysicalVolume;
 
 class G4CMPGlobalLocalTransformStore {
   public:
-    static G4AffineTransform& ToLocal(const G4VPhysicalVolume*);
-    static G4AffineTransform& ToGlobal(const G4VPhysicalVolume*);
+    static const G4AffineTransform& ToLocal(const G4VPhysicalVolume*);
+    static const G4AffineTransform& ToGlobal(const G4VPhysicalVolume*);
 
     static void Reset();
 
@@ -38,7 +38,7 @@ class G4CMPGlobalLocalTransformStore {
     };
 
     std::unordered_map<const G4VPhysicalVolume*, Transforms> cache;
-    Transforms& GetOrBuildTransforms(const G4VPhysicalVolume*);
+    const Transforms& GetOrBuildTransforms(const G4VPhysicalVolume*);
 };
 
 #endif
