@@ -115,6 +115,8 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEnergyPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEqEMField.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFieldManager.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGeometryUtils.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGlobalLocalTransformStore.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLocalElectroMagField.cc

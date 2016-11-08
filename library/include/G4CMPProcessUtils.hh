@@ -85,36 +85,60 @@ public:
   }
 
   // Convert global to local coordinates
-  inline G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const {
+  // FIXME: DEPRECATED
+  G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const {
+    G4Exception("G4CMPProcessUtils: GetLocalDirection", "dep001", JustWarning,
+                "This function is deprecated. See G4CMPGeometryUtils.hh");
     return fGlobalToLocal.TransformAxis(dir);
   }
 
-  inline G4ThreeVector GetLocalPosition(const G4ThreeVector& pos) const {
+  // FIXME: DEPRECATED
+  G4ThreeVector GetLocalPosition(const G4ThreeVector& pos) const {
+    G4Exception("G4CMPProcessUtils: GetLocalPosition", "dep002", JustWarning,
+                "This function is deprecated. See G4CMPGeometryUtils.hh");
     return fGlobalToLocal.TransformPoint(pos);
   }
 
-  inline void RotateToLocalDirection(G4ThreeVector& dir) const {
+  // FIXME: DEPRECATED
+  void RotateToLocalDirection(G4ThreeVector& dir) const {
+    G4Exception("G4CMPProcessUtils: RotateToLocalDirection", "dep003", JustWarning,
+                "This function is deprecated. See G4CMPGeometryUtils.hh");
     fGlobalToLocal.ApplyAxisTransform(dir);
   }
 
-  inline void RotateToLocalPosition(G4ThreeVector& pos) const {
+  // FIXME: DEPRECATED
+  void RotateToLocalPosition(G4ThreeVector& pos) const {
+    G4Exception("G4CMPProcessUtils: RotateToLocalPosition", "dep004", JustWarning,
+                "This function is deprecated. See G4CMPGeometryUtils.hh");
     fGlobalToLocal.ApplyPointTransform(pos);
   }
 
   // Convert local to global coordinates
-  inline G4ThreeVector GetGlobalDirection(const G4ThreeVector& dir) const {
+  // FIXME: DEPRECATED
+  G4ThreeVector GetGlobalDirection(const G4ThreeVector& dir) const {
+    G4Exception("G4CMPProcessUtils: GetGlobalDirection", "dep005", JustWarning,
+                "This function is deprecated. See G4CMPGeometryUtils.hh");
     return fLocalToGlobal.TransformAxis(dir);
   }
 
-  inline G4ThreeVector GetGlobalPosition(const G4ThreeVector& pos) const {
+  // FIXME: DEPRECATED
+  G4ThreeVector GetGlobalPosition(const G4ThreeVector& pos) const {
+    G4Exception("G4CMPProcessUtils: GetGlobalPosition", "dep006", JustWarning,
+                "This function is deprecated. See G4CMPGeometryUtils.hh");
     return fLocalToGlobal.TransformPoint(pos);
   }
 
-  inline void RotateToGlobalDirection(G4ThreeVector& dir) const {
+  // FIXME: DEPRECATED
+  void RotateToGlobalDirection(G4ThreeVector& dir) const {
+    G4Exception("G4CMPProcessUtils: RotateToGlobalDirection", "dep007", JustWarning,
+                "This function is deprecated. See G4CMPGeometryUtils.hh");
     fLocalToGlobal.ApplyAxisTransform(dir);
   }
 
-  inline void RotateToGlobalPosition(G4ThreeVector& pos) const {
+  // FIXME: DEPRECATED
+  void RotateToGlobalPosition(G4ThreeVector& pos) const {
+    G4Exception("G4CMPProcessUtils: RotateToGlobalPosition", "dep008", JustWarning,
+                "This function is deprecated. See G4CMPGeometryUtils.hh");
     fLocalToGlobal.ApplyPointTransform(pos);
   }
 
