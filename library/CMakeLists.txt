@@ -170,6 +170,8 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEnergyPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEqEMField.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldManager.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGeometryUtils.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGlobalLocalTransformStore.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLocalElectroMagField.hh
