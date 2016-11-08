@@ -84,8 +84,6 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
 G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
                                               const G4Step& aStep) const {
-  if (!G4CMPBoundaryUtils::AbsorbTrack(aTrack,aStep)) return false;
-
   G4double absMinK = (IsElectron(&aTrack) ? GetMaterialProperty("minKElec")
 		      : IsHole(&aTrack) ? GetMaterialProperty("minKHole")
 		      : -1.);
@@ -107,7 +105,7 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 	   <<" >? absMinK " << absMinK << G4endl;
   }
 
-  return (kvec*surfNorm > absMinK);
+  return (kvec*surfNorm > absMinK) || G4CMPBoundaryUtils::AbsorbTrack(aTrack, aStep);
 }
 
 
