@@ -231,6 +231,9 @@ void G4CMPProcessUtils::ReleaseTrack() {
 }
 
 G4ThreeVector G4CMPProcessUtils::GetSurfaceNormal(const G4Step& aStep) const {
+  G4Exception("G4CMPProcessUtils: GetSurfaceNormal", "dep015", JustWarning,
+              "This function is deprecated. See G4CMPGeometryUtils.hh");
+
   // Get outward normal using G4Navigator method (more reliable than G4VSolid)
   G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
   std::vector<G4Navigator*>::iterator iNav =

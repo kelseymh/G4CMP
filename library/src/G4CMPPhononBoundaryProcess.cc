@@ -23,6 +23,7 @@
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPTrackInformation.hh"
 #include "G4ExceptionSeverity.hh"
@@ -87,13 +88,13 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
   G4ThreeVector k = GetTrackInfo()->GetPhononK();
   
   return (G4CMPBoundaryUtils::AbsorbTrack(aTrack,aStep) &&
-	  k*GetSurfaceNormal(aStep) > absMinK);
+    k*G4CMP::GetSurfaceNormal(aStep) > absMinK);
 }
 
 
 void G4CMPPhononBoundaryProcess::
-DoReflection(const G4Track& aTrack, const G4Step& aStep,
-	     G4ParticleChange& aParticleChange) {
+DoReflection(const G4Track& /*aTrack*/, const G4Step& aStep,
+       G4ParticleChange& particleChange) {
   G4CMPTrackInformation* trackInfo = GetTrackInfo();
 
   if (verboseLevel>1) {
@@ -104,7 +105,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // FIXME:  waveVector and reflectedKDir need to handle local/global rotations!
   G4ThreeVector waveVector = trackInfo->GetPhononK();
   G4int pol = GetPolarization(aStep.GetTrack());
-  G4ThreeVector surfNorm = GetSurfaceNormal(aStep);
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   if (verboseLevel>2)
     G4cout << " Old momentum direction " << waveVector.unit() << G4endl;
@@ -128,8 +129,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector vdir = theLattice->MapKtoVDir(pol, reflectedKDir);
   G4double v = theLattice->MapKtoV(pol, reflectedKDir);
   trackInfo->SetPhononK(reflectedKDir);
-  aParticleChange.ProposeVelocity(v);
-  aParticleChange.ProposeMomentumDirection(vdir);
+  particleChange.ProposeVelocity(v);
+  particleChange.ProposeMomentumDirection(vdir);
 }
 
 G4bool G4CMPPhononBoundaryProcess::

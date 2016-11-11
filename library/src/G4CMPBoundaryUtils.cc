@@ -17,6 +17,7 @@
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPTrackInformation.hh"
@@ -251,7 +252,7 @@ void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
   }
 
   G4ThreeVector pdir = aTrack.GetMomentumDirection();
-  G4ThreeVector norm = procUtils->GetSurfaceNormal(aStep);	// Outward normal
+  G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);	// Outward normal
   pdir -= 2.*(pdir.dot(norm))*norm;			// Reverse along normal
 
   aParticleChange.ProposeMomentumDirection(pdir);

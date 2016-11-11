@@ -143,6 +143,7 @@ public:
   }
 
   // Used especially in boundary processes
+  // FIXME: DEPRECATED
   G4ThreeVector GetSurfaceNormal(const G4Step& aStep) const;
 
   // Convenience functions to get local position, momentum, velocity from track

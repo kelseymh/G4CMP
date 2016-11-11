@@ -16,6 +16,7 @@
 #include "G4ThreeVector.hh"
 
 class G4VPhysicalVolume;
+class G4Step;
 
 namespace G4CMP {
 
@@ -42,5 +43,7 @@ void RotateToGlobalDirection(const G4VPhysicalVolume* pv,
 
 void RotateToGlobalPosition(const G4VPhysicalVolume* pv,
                             G4ThreeVector& pos);
+
+G4ThreeVector GetSurfaceNormal(const G4Step& step);
 }
 #endif

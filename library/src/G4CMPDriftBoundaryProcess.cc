@@ -98,7 +98,7 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
   // NOTE:  K vector above is in local coords, must use local normal
   // Must use PreStepPoint volume for transform.
   G4ThreeVector surfNorm = G4CMP::GetLocalDirection(aStep.GetPreStepPoint()->GetPhysicalVolume(),
-                                                    GetSurfaceNormal(aStep));
+                                                    G4CMP::GetSurfaceNormal(aStep));
 
   if (verboseLevel>2) {
     G4cout << " AbsorbTrack: local k-perp " << kvec*surfNorm
@@ -145,7 +145,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track reflected" << G4endl;
 
-  G4ThreeVector surfNorm = GetSurfaceNormal(aStep);
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   // Electrons and holes need to be handled separately until we further
   // generalize the physics.
