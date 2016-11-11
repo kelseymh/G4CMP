@@ -278,32 +278,39 @@ public:
   G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
 
   // Model Kaplan phonon-quasiparticle interactions in superconductor sensors
+  // FIXME: DEPRECATED
   G4double KaplanPhononQP(G4double energy, G4MaterialPropertiesTable* prop,
                           std::vector<G4double>& reflectedEnergies);
 
   // Compute the probability of a phonon reentering the crystal
+  // FIXME: DEPRECATED
   G4double CalcEscapeProbability(G4double energy, G4double thicknessFrac,
                                  G4MaterialPropertiesTable* prop);
 
   // Model the phonons breaking Cooper pairs into quasiparticles
+  // FIXME: DEPRECATED
   G4double CalcQPEnergies(G4double gapEnergy, G4double lowQPLimit,
                           std::vector<G4double>& phonEnergies,
                           std::vector<G4double>& qpEnergies);
 
   // Model the quasiparticles emitting phonons in the superconductor
+  // FIXME: DEPRECATED
   G4double CalcPhononEnergies(G4double gapEnergy, G4double lowQPLimit,
                               std::vector<G4double>& phonEnergies,
                               std::vector<G4double>& qpEnergies);
 
   // Calculate energies of phonon tracks that have reentered the crystal
+  // FIXME: DEPRECATED
   void CalcReflectedPhononEnergies(G4MaterialPropertiesTable* prop,
                                    std::vector<G4double>& phonEnergies,
                                    std::vector<G4double>& reflectedEnergies);
 
   // Compute quasiparticle energy distribution from broken Cooper pair
+  // FIXME: DEPRECATED
   G4double QPEnergyRand(G4double gapEnergy, G4double Energy);
 
   // Compute phonon energy distribution from quasiparticle in superconductor
+  // FIXME: DEPRECATED
   G4double PhononEnergyRand(G4double gapEnergy, G4double& Energy);
 
 

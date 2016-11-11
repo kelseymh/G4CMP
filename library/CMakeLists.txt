@@ -119,6 +119,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGlobalLocalTransformStore.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyScattering.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPKaplanQP.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLocalElectroMagField.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMeshElectricField.cc
@@ -174,6 +175,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGlobalLocalTransformStore.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPKaplanQP.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLocalElectroMagField.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.hh

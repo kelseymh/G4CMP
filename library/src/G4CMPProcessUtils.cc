@@ -451,6 +451,9 @@ G4CMPProcessUtils::LambertReflection(const G4ThreeVector& surfNorm) {
 G4double G4CMPProcessUtils::KaplanPhononQP(G4double energy,
                                      G4MaterialPropertiesTable* prop,
                                      std::vector<G4double>& reflectedEnergies) {
+  G4Exception("G4CMPProcessUtils: KaplanPhononQP", "dep008", JustWarning,
+              "This function is deprecated. See G4CMPKaplanQP.hh");
+
   if (reflectedEnergies.size()>0)
     G4Exception("G4CMPProcessUtils::KaplanPhononQP()", "ProcessUtils007",
                 JustWarning, "Passed a nonempty vector.");
@@ -508,6 +511,8 @@ G4double G4CMPProcessUtils::KaplanPhononQP(G4double energy,
 G4double G4CMPProcessUtils::CalcEscapeProbability(G4double energy,
                                               G4double thicknessFrac,
                                               G4MaterialPropertiesTable* prop) {
+  G4Exception("G4CMPProcessUtils: CalcEscapeProbability", "dep009", JustWarning,
+              "This function is deprecated. See G4CMPKaplanQP.hh");
   G4double gapEnergy = prop->GetConstProperty("gapEnergy");
   G4double phononLifetime = prop->GetConstProperty("phononLifetime");
   G4double phononLifetimeSlope = prop->GetConstProperty("phononLifetimeSlope");
@@ -525,6 +530,8 @@ G4double G4CMPProcessUtils::CalcQPEnergies(G4double gapEnergy,
                                            G4double lowQPLimit,
                                            std::vector<G4double>& phonEnergies,
                                            std::vector<G4double>& qpEnergies) {
+  G4Exception("G4CMPProcessUtils: CalcQPEnergies", "dep010", JustWarning,
+              "This function is deprecated. See G4CMPKaplanQP.hh");
   // Each phonon gives all of its energy to the qp pair it breaks.
   G4double EDep = 0.;
   for (G4double E: phonEnergies) {
@@ -550,6 +557,8 @@ G4double G4CMPProcessUtils::CalcPhononEnergies(G4double gapEnergy,
                                             G4double lowQPLimit,
                                             std::vector<G4double>& phonEnergies,
                                             std::vector<G4double>& qpEnergies) {
+  G4Exception("G4CMPProcessUtils: CalcPhononEnergies", "dep011", JustWarning,
+              "This function is deprecated. See G4CMPKaplanQP.hh");
   // NOTE: Phonons with low energy will not be seen by the detector, so we
   // don't record those energies and just "lose" those phonons.
   // Have a reference in for loop b/c qp doesn't give all of its energy away.
@@ -576,6 +585,9 @@ void G4CMPProcessUtils::CalcReflectedPhononEnergies(
                                      G4MaterialPropertiesTable* prop,
                                      std::vector<G4double>& phonEnergies,
                                      std::vector<G4double>& reflectedEnergies) {
+  G4Exception("G4CMPProcessUtils: CalcReflectedPhononEnergies", "dep012", JustWarning,
+              "This function is deprecated. See G4CMPKaplanQP.hh");
+
   // There is a 50% chance that a phonon is headed away from (toward) substrate
   std::vector<G4double> newPhonEnergies;
   for (G4double E : phonEnergies) {
@@ -591,6 +603,9 @@ void G4CMPProcessUtils::CalcReflectedPhononEnergies(
 // Compute quasiparticle energy distribution from broken Cooper pair
 
 G4double G4CMPProcessUtils::QPEnergyRand(G4double gapEnergy, G4double Energy) {
+  G4Exception("G4CMPProcessUtils: QPEnergyRand", "dep013", JustWarning,
+              "This function is deprecated. See G4CMPKaplanQP.hh");
+
   // PDF is not integrable, so we can't do an inverse transform sampling.
   // Instead, we'll do a rejection method.
   //
@@ -659,6 +674,9 @@ G4double G4CMPProcessUtils::QPEnergyRand(G4double gapEnergy, G4double Energy) {
 
 G4double
 G4CMPProcessUtils::PhononEnergyRand(G4double gapEnergy, G4double& Energy) {
+  G4Exception("G4CMPProcessUtils: PhononEnergyRand", "dep014", JustWarning,
+              "This function is deprecated. See G4CMPKaplanQP.hh");
+
   // PDF is not integrable, so we can't do an inverse transform sampling.
   // Instead, we'll do a rejection method.
   //
