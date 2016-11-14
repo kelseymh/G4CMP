@@ -18,11 +18,13 @@
 //	     redundant IsApplicable()
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 // 20160624  Use GetTrackInfo() accessor
+// 20161114  Use new G4CMPDriftTrackInfo
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
-#include "G4CMPTrackInformation.hh"
+#include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPTrackUtils.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
 #include "G4LatticePhysical.hh"
@@ -74,7 +76,18 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 // Compute dt_e, dt_h and valley rotations at current location
 
 G4double G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
-  G4double l0 = GetTrackInfo()->GetScatterLength();
+  const G4LatticePhysical* lat =
+      G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->Lattice();
+  G4double timeStepParam = 0.; G4double l0 = 0.;
+  if (IsElectron(&aTrack)) {
+    timeStepParam = 28.0;
+    l0 = lat->GetElectronScatter();
+  } else if (IsHole(&aTrack)) {
+    timeStepParam = 14.72;
+    l0 = lat->GetHoleScatter();
+  } else {
+    // TODO: Write an exception
+  }
 
   G4FieldManager* fMan =
     aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
@@ -90,16 +103,6 @@ G4double G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
   field->GetFieldValue(position,fieldVal);
 
   G4ThreeVector Efield(fieldVal[3], fieldVal[4], fieldVal[5]);
-
-  G4double timeStepParam = 0.;
-  if (aTrack.GetParticleDefinition() == G4CMPDriftElectron::Definition()) {
-    timeStepParam = 28.0;
-  } else if (aTrack.GetParticleDefinition() == G4CMPDriftHole::Definition()) {
-    timeStepParam = 14.72;
-  } else {
-    // TODO: Write an exception
-  }
-
   return TimeStepInField(Efield.mag()/10., timeStepParam, l0);
 }
 

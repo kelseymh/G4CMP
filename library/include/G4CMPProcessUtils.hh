@@ -38,7 +38,9 @@
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 
-class G4CMPTrackInformation;
+class G4CMPDriftTrackInfo;
+class G4CMPPhononTrackInfo;
+class G4CMPVTrackInfo;
 class G4LatticePhysical;
 class G4ParticleDefinition;
 class G4VPhysicalVolume;
@@ -73,16 +75,6 @@ public:
   virtual void SetTransforms(const G4VTouchable* touchable);
   virtual void SetTransforms(const G4RotationMatrix* rot,
 			     const G4ThreeVector& trans);
-
-  // Attach or retrieve auxiliary information object for track
-  // NOTE:  This will cast the track to non-const if required
-  G4CMPTrackInformation* AttachTrackInfo(const G4Track* track) const;
-
-  // Extract auxiliary information for track (current track if none given)
-  G4CMPTrackInformation* GetTrackInfo(const G4Track* track=0) const;
-  G4CMPTrackInformation* GetTrackInfo(const G4Track& track) const {
-    return GetTrackInfo(&track);
-  }
 
   // Convert global to local coordinates
   // FIXME: DEPRECATED
@@ -355,7 +347,6 @@ protected:
   const G4VPhysicalVolume* GetCurrentVolume() const { return currentVolume; }
 
   G4int GetCurrentValley() const { return GetValleyIndex(currentTrack); }
-  G4int fPhysicsModelID;
 
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking

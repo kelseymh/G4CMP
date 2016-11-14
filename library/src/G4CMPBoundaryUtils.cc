@@ -14,13 +14,15 @@
 //
 // 20160904  Add electrode pattern handling
 // 20160906  Make most functions const, provide casting function for matTable
+// 20161114  Use G4CMPVTrackInfo
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPProcessUtils.hh"
-#include "G4CMPTrackInformation.hh"
+#include "G4CMPVTrackInfo.hh"
+#include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4CMPVElectrodePattern.hh"
 #include "G4ExceptionSeverity.hh"
@@ -218,11 +220,11 @@ G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track&, const G4Step&) const {
 }
 
 G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) const {
-  G4CMPTrackInformation* trackInfo = procUtils->GetTrackInfo(aTrack);
+  auto trackInfo = G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack);
   trackInfo->IncrementReflectionCount();
 
   return (maximumReflections >= 0 &&
-	  trackInfo->GetReflectionCount() > maximumReflections);
+    trackInfo->ReflectionCount() > static_cast<size_t>(maximumReflections));
 }
 
 
@@ -247,7 +249,7 @@ void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
 
   if (buVerboseLevel>1) {
     G4cout << procName << ": Track reflected "
-           << procUtils->GetTrackInfo(aTrack)->GetReflectionCount()
+           << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
 	   << " times." << G4endl;
   }
 
