@@ -161,6 +161,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBoundaryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigManager.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPCrystalGroup.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftElectron.hh
@@ -176,8 +177,8 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldManager.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGeometryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGlobalLocalTransformStore.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPKaplanQP.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLocalElectroMagField.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeScattering.hh
@@ -185,6 +186,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMeshElectricField.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMessengerBase.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMessengerBase.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinematics.hh
@@ -200,6 +202,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTrackUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTrackUtils.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTriLinearInterp.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPUnitsTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVDriftProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVElectrodePattern.hh
