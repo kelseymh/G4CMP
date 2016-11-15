@@ -17,6 +17,8 @@
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
 
+//G4Allocator<G4CMPDriftTrackInfo> G4CMPDriftTrackInfoAllocator;
+
 G4CMPDriftTrackInfo::G4CMPDriftTrackInfo(const G4LatticePhysical* lat,
                                          G4int valIdx) :
                                          G4CMPVTrackInfo(lat) {

@@ -18,11 +18,28 @@
 
 #include "G4CMPVTrackInfo.hh"
 #include "G4ThreeVector.hh"
+/*
+#include "G4Allocator.hh"
+
+class G4CMPPhononTrackInfo;
+
+extern G4Allocator<G4CMPPhononTrackInfo> G4CMPPhononTrackInfoAllocator;
+*/
 
 class G4CMPPhononTrackInfo: public G4CMPVTrackInfo {
 public:
   G4CMPPhononTrackInfo() = delete;
   G4CMPPhononTrackInfo(const G4LatticePhysical* lat, G4ThreeVector k);
+
+/*
+  void *operator new(size_t) noexcept {
+    return static_cast<void*>(G4CMPPhononTrackInfoAllocator.MallocSingle());
+  }
+
+  void operator delete(void* info) noexcept {
+    G4CMPPhononTrackInfoAllocator.FreeSingle(static_cast<G4CMPPhononTrackInfo*>(info));
+  }
+*/
 
   void SetK(G4ThreeVector k)                                    { waveVec = k; }
   void SetWaveVector(G4ThreeVector k)                           { waveVec = k; }

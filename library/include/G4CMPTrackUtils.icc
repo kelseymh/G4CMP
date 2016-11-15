@@ -24,8 +24,9 @@ void G4CMP::AttachTrackInfo(const G4Track& track, T* trackInfo) {
 }
 
 template<class T> T* G4CMP::GetTrackInfo(const G4Track& track) {
-  static_assert(std::is_base_of<G4CMPVTrackInfo, T>::value,
-                "Generic type must be a G4CMPVTrackInfo or a subtype of it.");
+  static_assert(std::is_base_of<G4CMPVTrackInfo, T>::value ||
+                std::is_same<G4CMPVTrackInfo, T>::value,
+                "Generic type must be a strict subtype of G4CMPVTrackInfo.");
 
   return dynamic_cast<T*>(track.GetAuxiliaryTrackInformation(
                             G4CMPConfigManager::GetPhysicsModelID()));
