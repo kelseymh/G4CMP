@@ -18,6 +18,7 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4LatticeManager.hh"
@@ -189,7 +190,11 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (weight > 0.) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
-    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
+    G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetVolume(),
+                                          G4PhononPolarization::UNKNOWN,
+                                          qvec,Ephonon,
+                                          aTrack.GetGlobalTime(),
+                                          aTrack.GetPosition());
     // Secondary's weight has to be multiplicative with its parent's
     phonon->SetWeight(aTrack.GetWeight() * weight);
 

@@ -7,6 +7,7 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4LatticePhysical.hh"
 #include "G4RandomDirection.hh"
@@ -47,8 +48,11 @@ G4VParticleChange* G4CMPDriftRecombinationProcess::PostStepDoIt(
   while (ePot > 0.) {
     G4double E = ePot > eDeb ? eDeb : ePot;
     ePot -= eDeb;
-    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,
-                                   G4RandomDirection(), E);
+    G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetVolume(),
+                                          G4PhononPolarization::UNKNOWN,
+                                          G4RandomDirection(), E,
+                                          aTrack.GetGlobalTime(),
+                                          aTrack.GetPosition());
     aParticleChange.AddSecondary(phonon);
   }
 

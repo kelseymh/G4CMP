@@ -252,6 +252,7 @@ public:
   }
 
   // Generate random valley for charge carrier
+  // FIXME: DEPRECATED
   G4int ChooseValley() const;
   G4int ChangeValley(G4int valley) const;	// Excludes input valley
 
@@ -308,35 +309,44 @@ public:
 
 
   // Construct new phonon or charge carrier track
+  // FIXME: DEPRECATED
   G4Track* CreateTrack(G4ParticleDefinition* pd, const G4ThreeVector& K,
 		       G4double energy) const;
 
+  // FIXME: DEPRECATED
   G4Track* CreateTrack(G4ParticleDefinition* pd, const G4ThreeVector& K,
 		       G4double energy, const G4ThreeVector& pos) const;
 
   // Construct new phonon track with correct momentum, position, etc.
+  // FIXME: DEPRECATED
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
 			G4double energy) const;
 
+  // FIXME: DEPRECATED
   G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
             G4double energy, const G4ThreeVector& pos) const;
 
+  // FIXME: DEPRECATED
   G4Track* CreatePhononInFromBoundary(G4int polarization,
                                       const G4ThreeVector& K,
                                       G4double energy) const;
 
   // Construct new electron or hole track with correct conditions
+  // FIXME: DEPRECATED
   G4Track* CreateChargeCarrier(G4int charge, G4int valley,
 			       const G4ThreeVector& p) const;
 
+  // FIXME: DEPRECATED
   G4Track* CreateChargeCarrier(G4int charge, G4int valley, G4double Ekin,
 			       const G4ThreeVector& pdir,
 			       const G4ThreeVector& pos) const;
 
+  // FIXME: DEPRECATED
   G4Track* CreateChargeCarrier(G4int charge, G4int valley,
 			       const G4ThreeVector& p,
                    const G4ThreeVector& pos) const;
 
+  // FIXME: DEPRECATED
   G4ThreeVector AdjustSecondaryPosition(G4ThreeVector pos) const;
 
 protected:

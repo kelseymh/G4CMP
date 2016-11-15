@@ -32,6 +32,10 @@ G4int G4CMP::ChoosePhononPolarization(G4double Ldos,
   return G4PhononPolarization::Long;
 }
 
+G4int G4CMP::ChooseValley(const G4LatticePhysical* lattice) {
+  return static_cast<G4int>(G4UniformRand()*lattice->NumberOfValleys());
+}
+
 
 // Identify G4CMP particle categories
 G4bool G4CMP::IsPhonon(const G4Track* track) {

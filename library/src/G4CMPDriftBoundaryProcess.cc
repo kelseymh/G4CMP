@@ -17,6 +17,7 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPGeometryUtils.hh"
+#include "G4CMPSecondaryUtils.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPUtils.hh"
 #include "G4GeometryTolerance.hh"
@@ -128,9 +129,11 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   while (eKin > 0.) {
     G4double E = eKin > eDeb ? eDeb : eKin;
     eKin -= eDeb;
-    G4Track* sec = CreatePhonon(G4PhononPolarization::UNKNOWN,
-                                G4RandomDirection(), E,
-                                aTrack.GetPosition());
+    G4Track* sec = G4CMP::CreatePhonon(aTrack.GetVolume(),
+                                       G4PhononPolarization::UNKNOWN,
+                                       G4RandomDirection(), E,
+                                       aTrack.GetGlobalTime(),
+                                       aTrack.GetPosition());
     aParticleChange.AddSecondary(sec);
   }
 
