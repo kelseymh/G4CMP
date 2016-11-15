@@ -12,13 +12,16 @@
 //	     need lattice locally; get physical lattice track by track
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 // 20150528  Pass verbosity through to field computation classes
+// 20161114  Use new G4CMPDriftTrackInfo
 
 #include "G4CMPFieldManager.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
+#include "G4CMPDriftHole.hh"
 #include "G4CMPEqEMField.hh"
 #include "G4CMPLocalElectroMagField.hh"
-#include "G4CMPTrackInformation.hh"
+#include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPTrackUtils.hh"
 #include "G4ChordFinder.hh"
 #include "G4ClassicalRK4.hh"
 #include "G4ElectroMagneticField.hh"
@@ -90,25 +93,24 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
     theEqMotion->SetTransforms(localToGlobal);
   }
 
-  // Configure electric field with valleys for either electrons or holes
-  if (aTrack->GetDefinition() == G4CMPDriftElectron::Definition()) {
-    G4int modelID = G4PhysicsModelCatalog::GetIndex("G4CMP process");
-    if (modelID < 0) {
-      G4Exception("G4CMPFieldManager::ConfigureForTrack","Electron001",
-      EventMustBeAborted, "Track is electron, but has no G4CMP Aux. Info.");
-    }
-    G4int iv =
-      static_cast<G4CMPTrackInformation*>(
-        aTrack->GetAuxiliaryTrackInformation(modelID)
-                                         )->GetValleyIndex();
-    SetElectronValleyForTrack(iv);
-  } else {
-    SetElectronValleyForTrack(-1);
+  G4int iv = -1;
+  if (aTrack->GetDefinition() == G4CMPDriftElectron::Definition() ||
+      aTrack->GetDefinition() == G4CMPDriftHole::Definition()) {
+    iv = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(*aTrack)->ValleyIndex();
   }
+
+  SetChargeValleyForTrack(lat, iv);
 }
 
-void G4CMPFieldManager::SetElectronValleyForTrack(G4int valley) {
-  if(valley >= 0 && valley <= 3) {
+void G4CMPFieldManager::SetChargeValleyForTrack(const G4LatticePhysical* lat,
+                                                G4int valley) {
+  if (valley < -1 || valley > static_cast<G4int>(lat->NumberOfValleys() - 1)) {
+    G4Exception("G4CMPFieldManager::SetChargeValleyForTrack", "FieldMan001",
+                EventMustBeAborted,
+                "Valley index is not valid for the current lattice.");
+  }
+
+  if(valley >= 0) {
     theEqMotion->SetValley(valley);
   } else {
     theEqMotion->SetNoValley();

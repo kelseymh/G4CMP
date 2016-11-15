@@ -16,10 +16,12 @@
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 // 20160601  Must apply lattice rotation before valley.
 // 20161004  Change valley selection function to avoid null choice
+// 20161114  Use G4CMPDriftTrackInfo
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
-#include "G4CMPTrackInformation.hh"
+#include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPTrackUtils.hh"
 #include "G4CMPFieldManager.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4Field.hh"
@@ -121,7 +123,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
   // picking a new valley at random if IV-scattering process was triggered
   valley = ChangeValley(valley);
-  GetTrackInfo(aTrack)->SetValleyIndex(valley);
+  G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
 
   p = theLattice->MapK_valleyToP(valley, p); // p is p again
   G4CMP::RotateToGlobalDirection(postStepPoint->GetPhysicalVolume(), p);

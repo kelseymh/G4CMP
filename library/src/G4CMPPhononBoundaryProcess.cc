@@ -20,12 +20,14 @@
 // 20160624  Use GetTrackInfo() accessor
 // 20160903  Migrate to use G4CMPBoundaryUtils for most functionality
 // 20160906  Follow constness of G4CMPBoundaryUtils
+// 20161114  Use new G4CMPPhononTrackInfo
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGeometryUtils.hh"
+#include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPSurfaceProperty.hh"
-#include "G4CMPTrackInformation.hh"
+#include "G4CMPTrackUtils.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
@@ -85,7 +87,7 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
                                                const G4Step& aStep) const {
   G4double absMinK = GetMaterialProperty("absMinK");
-  G4ThreeVector k = GetTrackInfo()->GetPhononK();
+  G4ThreeVector k = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack)->k();
   
   return (G4CMPBoundaryUtils::AbsorbTrack(aTrack,aStep) &&
     k*G4CMP::GetSurfaceNormal(aStep) > absMinK);
@@ -93,17 +95,17 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 
 
 void G4CMPPhononBoundaryProcess::
-DoReflection(const G4Track& /*aTrack*/, const G4Step& aStep,
+DoReflection(const G4Track& aTrack, const G4Step& aStep,
        G4ParticleChange& particleChange) {
-  G4CMPTrackInformation* trackInfo = GetTrackInfo();
+  auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
 
   if (verboseLevel>1) {
     G4cout << GetProcessName() << ": Track reflected "
-           << trackInfo->GetReflectionCount() << " times." << G4endl;
+           << trackInfo->ReflectionCount() << " times." << G4endl;
   }
 
   // FIXME:  waveVector and reflectedKDir need to handle local/global rotations!
-  G4ThreeVector waveVector = trackInfo->GetPhononK();
+  G4ThreeVector waveVector = trackInfo->k();
   G4int pol = GetPolarization(aStep.GetTrack());
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
@@ -128,7 +130,7 @@ DoReflection(const G4Track& /*aTrack*/, const G4Step& aStep,
 
   G4ThreeVector vdir = theLattice->MapKtoVDir(pol, reflectedKDir);
   G4double v = theLattice->MapKtoV(pol, reflectedKDir);
-  trackInfo->SetPhononK(reflectedKDir);
+  trackInfo->SetWaveVector(reflectedKDir);
   particleChange.ProposeVelocity(v);
   particleChange.ProposeMomentumDirection(vdir);
 }

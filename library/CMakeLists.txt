@@ -105,6 +105,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigMessenger.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPCrystalGroup.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftBoundaryProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftTrackInfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftElectron.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftHole.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftRecombinationProcess.cc
@@ -127,6 +128,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononBoundaryProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinTable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinematics.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononTrackInfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysics.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysicsList.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPProcessUtils.cc
@@ -134,12 +136,12 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPStackingAction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSurfaceProperty.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTimeStepper.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTrackInformation.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTriLinearInterp.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPUnitsTable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVDriftProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVElectrodePattern.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVTrackInfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeLogical.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeManager.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticePhysical.cc
@@ -159,11 +161,13 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBoundaryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigManager.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPCrystalGroup.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftElectron.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftHole.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftRecombinationProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftTrackInfo.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEigenSolver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeHit.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeSensitivity.hh
@@ -173,8 +177,8 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldManager.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGeometryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGlobalLocalTransformStore.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPKaplanQP.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLocalElectroMagField.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeScattering.hh
@@ -182,9 +186,11 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMeshElectricField.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMessengerBase.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMessengerBase.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinematics.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononTrackInfo.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysics.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysicsList.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPProcessSubType.hh
@@ -193,11 +199,14 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPStackingAction.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSurfaceProperty.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTimeStepper.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTrackInformation.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTrackUtils.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTrackUtils.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTriLinearInterp.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPUnitsTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVDriftProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVElectrodePattern.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVTrackInfo.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticeLogical.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticeManager.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticePhysical.hh
