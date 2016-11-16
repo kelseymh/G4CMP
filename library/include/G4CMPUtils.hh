@@ -32,6 +32,9 @@ namespace G4CMP {
   G4int ChoosePhononPolarization(const G4LatticePhysical* lattice);
   G4int ChoosePhononPolarization(G4double Ldos, G4double STdos, G4double FTdos);
 
+  // Randomly choose valley for charge carrier
+  G4int ChooseValley(const G4LatticePhysical* lattice);
+
   // Identify G4CMP particle categories
   G4bool IsPhonon(const G4Track* track);
   G4bool IsElectron(const G4Track* track);

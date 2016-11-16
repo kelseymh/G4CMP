@@ -144,7 +144,7 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
 
   if (IsElectron(track)) {
     // NOTE: TrackInfos get cleaned up by G4 when Track gets killed.
-    auto trackInfo = new G4CMPDriftTrackInfo(theLattice, ChooseValley());
+    auto trackInfo = new G4CMPDriftTrackInfo(theLattice, G4CMP::ChooseValley(theLattice));
     G4CMP::AttachTrackInfo(*track, trackInfo);
   }
 
@@ -721,6 +721,8 @@ G4double G4CMPProcessUtils::MakeRecoilTheta(G4double k, G4double ks,
 G4Track* G4CMPProcessUtils::CreateTrack(G4ParticleDefinition* pd,
 					const G4ThreeVector& waveVec,
 					G4double energy) const {
+  G4Exception("G4CMPProcessUtils: CreateTrack", "dep016", JustWarning,
+              "This function is deprecated. See G4CMPSecondaryUtils.hh");
   return CreateTrack(pd, waveVec, energy, currentTrack->GetPosition());
 }
 
@@ -728,13 +730,15 @@ G4Track* G4CMPProcessUtils::CreateTrack(G4ParticleDefinition* pd,
 					const G4ThreeVector& waveVec,
 					G4double energy,
 					const G4ThreeVector& pos) const {
+  G4Exception("G4CMPProcessUtils: CreateTrack", "dep017", JustWarning,
+              "This function is deprecated. See G4CMPSecondaryUtils.hh");
   if (G4CMP::IsPhonon(pd)) {
     return CreatePhonon(G4PhononPolarization::Get(pd), waveVec, energy, pos);
   }
 
   if (G4CMP::IsChargeCarrier(pd)) {
-    return CreateChargeCarrier(int(pd->GetPDGCharge()/eplus), ChooseValley(),
-			       energy, waveVec, pos);
+    return CreateChargeCarrier(int(pd->GetPDGCharge()/eplus),
+                               G4CMP::ChooseValley(theLattice), energy, waveVec, pos);
   }
 
   G4cerr << "WARNING: " << pd->GetParticleName() << " is not G4CMP" << G4endl;
@@ -748,6 +752,8 @@ G4Track* G4CMPProcessUtils::CreateTrack(G4ParticleDefinition* pd,
 G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 					 const G4ThreeVector& waveVec,
 					 G4double energy) const {
+  G4Exception("G4CMPProcessUtils: CreatePhonon", "dep018", JustWarning,
+              "This function is deprecated. See G4CMPSecondaryUtils.hh");
   return CreatePhonon(polarization,waveVec,energy,currentTrack->GetPosition());
 }
 
@@ -755,6 +761,8 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 					 const G4ThreeVector& waveVec,
 					 G4double energy,
            const G4ThreeVector& pos) const {
+  G4Exception("G4CMPProcessUtils: CreatePhonon", "dep019", JustWarning,
+              "This function is deprecated. See G4CMPSecondaryUtils.hh");
   if (polarization == G4PhononPolarization::UNKNOWN) {		// Choose value
     polarization = ChoosePhononPolarization();
   }
@@ -789,6 +797,8 @@ G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
 // Generate random valley for charge carrier
 
 G4int G4CMPProcessUtils::ChooseValley() const {
+  G4Exception("G4CMPProcessUtils: ChooseValley", "dep024", JustWarning,
+              "This function is deprecated. See G4CMPUtils.hh");
   return (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
 }
 
@@ -819,6 +829,8 @@ G4CMPProcessUtils::GetValley(const G4Track& track) const {
 
 G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 						const G4ThreeVector& p) const {
+  G4Exception("G4CMPProcessUtils: CreateChargeCarrier", "dep020", JustWarning,
+              "This function is deprecated. See G4CMPSecondaryUtils.hh");
   return CreateChargeCarrier(charge, valley, p, currentTrack->GetPosition());
 }
 
@@ -827,6 +839,8 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 				       G4double Ekin, 
 				       const G4ThreeVector& dir,
 				       const G4ThreeVector& pos) const {
+  G4Exception("G4CMPProcessUtils: CreateChargeCarrier", "dep021", JustWarning,
+              "This function is deprecated. See G4CMPSecondaryUtils.hh");
   G4double carrierMass = 0.;
   if (charge==1)       carrierMass = theLattice->GetHoleMass();
   else if (charge==-1) carrierMass = theLattice->GetElectronMass();
@@ -840,6 +854,8 @@ G4Track*
 G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 				       const G4ThreeVector& p,
 				       const G4ThreeVector& pos) const {
+  G4Exception("G4CMPProcessUtils: CreateChargeCarrier", "dep022", JustWarning,
+              "This function is deprecated. See G4CMPSecondaryUtils.hh");
   if (charge != 1 && charge != -1) {
     G4cerr << "ERROR:  CreateChargeCarrier invalid charge " << charge << G4endl;
     return 0;
@@ -878,6 +894,8 @@ G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
 }
 
 G4ThreeVector G4CMPProcessUtils::AdjustSecondaryPosition(G4ThreeVector pos) const {
+  G4Exception("G4CMPProcessUtils: AdjustSecondaryPosition", "dep023", JustWarning,
+              "This function is deprecated. See G4CMPSecondaryUtils.hh");
   // Take a copy because we would've had to make a copy at some point anyway.
   // If the step is near a boundary, create the secondary in the initial volume
   G4Navigator* nav = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();

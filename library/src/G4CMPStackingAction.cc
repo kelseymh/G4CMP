@@ -20,16 +20,17 @@
 
 #include "G4CMPStackingAction.hh"
 
+#include "G4CMPDriftHole.hh"
+#include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
+#include "G4CMPUtils.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhononTrackMap.hh"
-#include "G4CMPDriftHole.hh"
-#include "G4CMPDriftElectron.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
@@ -77,7 +78,7 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   if (IsChargeCarrier(aTrack)) {
     SetChargeCarrierMass(aTrack);
     if (IsElectron(aTrack)) {
-      auto trackInfo = new G4CMPDriftTrackInfo(theLattice, ChooseValley());
+      auto trackInfo = new G4CMPDriftTrackInfo(theLattice, G4CMP::ChooseValley(theLattice));
       G4CMP::AttachTrackInfo(*aTrack, trackInfo);
       SetElectronEnergy(aTrack);
     } else { // IsHole
