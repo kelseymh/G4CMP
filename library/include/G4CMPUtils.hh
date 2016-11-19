@@ -53,6 +53,16 @@ namespace G4CMP {
 
   // Create a Hit from a G4Step. Less error prone to use this helper.
   void FillHit(const G4Step*, G4CMPElectrodeHit*);
+
+  // Phonons reflect difusively from surfaces.
+  G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
+
+  // Test that a phonon's wave vector relates to an inward velocity.
+  G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice,
+                                G4int polarization,
+                                G4ThreeVector waveVector,
+                                G4ThreeVector surfNorm);
+
 }
 
 #endif	/* G4CMPUtils_hh */
