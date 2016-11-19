@@ -28,6 +28,7 @@
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPTrackUtils.hh"
+#include "G4CMPUtils.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
@@ -121,9 +122,10 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
       G4double momNorm = reflectedKDir * surfNorm;
       reflectedKDir -= 2. * momNorm * surfNorm;
     } else {
-      reflectedKDir = LambertReflection(surfNorm);
+      reflectedKDir = G4CMP::LambertReflection(surfNorm);
     }
-  } while (!ReflectionIsGood(pol, reflectedKDir, surfNorm));
+  } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
+                                          reflectedKDir, surfNorm));
 
   if (verboseLevel>2)
     G4cout << " New momentum direction " << reflectedKDir << G4endl;
@@ -133,11 +135,4 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   trackInfo->SetWaveVector(reflectedKDir);
   particleChange.ProposeVelocity(v);
   particleChange.ProposeMomentumDirection(vdir);
-}
-
-G4bool G4CMPPhononBoundaryProcess::
-ReflectionIsGood(G4int polarization, G4ThreeVector waveVector,
-		 G4ThreeVector surfNorm) const {
-  G4ThreeVector vDir = theLattice->MapKtoVDir(polarization, waveVector);
-  return vDir.dot(surfNorm) < 0.0;
 }

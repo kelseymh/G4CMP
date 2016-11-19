@@ -269,6 +269,7 @@ public:
   void MakeGlobalRecoil(G4ThreeVector& kphonon) const;
 
   // Compute a Lambertian distribution for reflected phonons
+  // FIXME: DEPRECATED
   G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
 
   // Model Kaplan phonon-quasiparticle interactions in superconductor sensors

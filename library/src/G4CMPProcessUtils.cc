@@ -411,6 +411,8 @@ void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
 
 G4ThreeVector
 G4CMPProcessUtils::LambertReflection(const G4ThreeVector& surfNorm) {
+  G4Exception("G4CMPProcessUtils: LambertReflection", "dep025", JustWarning,
+              "This function is deprecated. See G4CMPUtils.hh");
   G4double phi = 2.0*pi*G4UniformRand();
   G4double theta = acos(2.0*G4UniformRand() - 1.0) / 2.0;
 
