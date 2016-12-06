@@ -41,13 +41,13 @@ G4bool G4CMPEnergyLimiter::BelowEnergyCut(const G4Track& track) const {
 
 G4double G4CMPEnergyLimiter::
 PostStepGetPhysicalInteractionLength(const G4Track& track, G4double,
-				     G4ForceCondition* condition) {
+                                     G4ForceCondition* condition) {
   *condition = (BelowEnergyCut(track) ? Forced : NotForced);
   return DBL_MAX;
 }
 
 G4VParticleChange* G4CMPEnergyLimiter::PostStepDoIt(const G4Track& track,
-						    const G4Step& step) {
+                                                    const G4Step& /*step*/) {
   aParticleChange.Initialize(track);
 
   if (BelowEnergyCut(track)) {
