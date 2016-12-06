@@ -201,13 +201,13 @@ inline void G4CMPBlockData<T>::vert_cat(G4CMPBlockData<T>&& rhs) {
 template <class T>
 inline void G4CMPBlockData<T>::horiz_cat(const G4CMPBlockData<T>& rhs) {
   assert((rhs.rows() == rows()));
-  G4CMPBlockData<T> tmp(rows, columns + rhs.columns);
+  G4CMPBlockData<T> tmp(rows, ncols + rhs.ncols);
   for (size_t i = 0; i < rows; ++i) {
-      for (size_t j = 0; j < columns; ++j) {
+      for (size_t j = 0; j < ncols; ++j) {
         tmp(i, j) = *this(i, j);
       }
-      for (size_t j = columns; j < tmp.columns; ++j) {
-        tmp(i, j) = rhs(i, j-columns);
+      for (size_t j = ncols; j < tmp.ncols; ++j) {
+        tmp(i, j) = rhs(i, j-ncols);
       }
   }
   std::swap(*this, tmp);
