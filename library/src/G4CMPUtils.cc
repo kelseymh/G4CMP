@@ -6,6 +6,7 @@
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PhononPolarization.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4Track.hh"
 #include "Randomize.hh"
 
@@ -30,6 +31,10 @@ G4int G4CMP::ChoosePhononPolarization(G4double Ldos,
   if (modeMixer<cProbST) return G4PhononPolarization::TransSlow;
   if (modeMixer<cProbFT) return G4PhononPolarization::TransFast;
   return G4PhononPolarization::Long;
+}
+
+G4int G4CMP::ChooseValley(const G4LatticePhysical* lattice) {
+  return static_cast<G4int>(G4UniformRand()*lattice->NumberOfValleys());
 }
 
 
@@ -120,4 +125,22 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
   hit->SetFinalPosition(finalPosition);
   hit->SetTrackID(trackID);
   hit->SetParticleName(name);
+}
+
+G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
+  G4double phi = 2.0*pi*G4UniformRand();
+  G4double theta = acos(2.0*G4UniformRand() - 1.0) / 2.0;
+
+  G4ThreeVector refl = -surfNorm;
+  refl = refl.rotate(surfNorm.orthogonal(), theta);
+  refl = refl.rotate(surfNorm, phi);
+  return refl;
+}
+
+G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
+                                     G4int polarization,
+                                     G4ThreeVector waveVector,
+                                     G4ThreeVector surfNorm) {
+  G4ThreeVector vDir = lattice->MapKtoVDir(polarization, waveVector);
+  return vDir.dot(surfNorm) < 0.0;
 }

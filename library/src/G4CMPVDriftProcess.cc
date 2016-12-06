@@ -16,12 +16,15 @@
 // 20150112  Handle holes as well as electrons with FillParticleChange()
 // 20160624  Use GetTrackInfo() accessor
 // 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
+// 20161114  Use new G4CMPDriftTrackInfo
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
-#include "G4CMPTrackInformation.hh"
+#include "G4CMPGeometryUtils.hh"
+#include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPTrackUtils.hh"
 #include "G4DynamicParticle.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
@@ -95,7 +98,17 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
   const G4double scale = G4CMPConfigManager::GetMinStepScale();
 
   if (scale > 0.) {
-    G4double minLength = scale * GetTrackInfo(track)->GetScatterLength();
+    G4double l0 = 0.;
+    if (IsElectron(&track)) {
+      l0 = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(track)->Lattice()->GetElectronScatter();
+    } else if (IsHole(&track)) {
+      l0 = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(track)->Lattice()->GetHoleScatter();
+    } else {
+      G4Exception("G4CMPVDriftProcess::FillParticleChange", "DriftProcess002",
+                  EventMustBeAborted, "Unknown charge carrier");
+    }
+
+    G4double minLength = scale * l0;
 
     if (verboseLevel > 1) {
       G4cout << GetProcessName() << "::PostStepGPIL: minLength " << minLength
@@ -128,12 +141,13 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
 
   G4ThreeVector v;
   if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
-    G4ThreeVector p_local = GetLocalDirection(p);
-    v = GetGlobalDirection(theLattice->MapPtoV_el(ivalley, p_local));
+    G4ThreeVector p_local = G4CMP::GetLocalDirection(GetCurrentVolume(), p);
+    v = G4CMP::GetGlobalDirection(GetCurrentVolume(),
+                                  theLattice->MapPtoV_el(ivalley, p_local));
   } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
     v = p*c_light/mass;
   } else {
-    G4Exception("G4CMMPVDriftProcess::FillParticleChange", "DriftProcess001",
+    G4Exception("G4CMPVDriftProcess::FillParticleChange", "DriftProcess001",
     EventMustBeAborted, "Unknown charge carrier");
   }
 
@@ -145,8 +159,10 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
 
 // Fill ParticleChange mass for electron charge carrier with given energy
 
+// FIXME: Remove this trivial method, or at least remove the first parameter
+// from its signature.
 void 
-G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
+G4CMPVDriftProcess::FillParticleChange(G4int /*ivalley*/, G4double Ekin,
              const G4ThreeVector& v) {
   aParticleChange.ProposeMomentumDirection(v.unit());
   aParticleChange.ProposeEnergy(Ekin);

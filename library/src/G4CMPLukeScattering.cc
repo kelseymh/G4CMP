@@ -12,11 +12,14 @@
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 // 20160624  Use GetTrackInfo() accessor
 // 20160830  Replace direct use of G4CMP_MAKE_PHONONS with ChooseWeight
+// 20161114  Use new DriftTrackInfo
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
-#include "G4CMPTrackInformation.hh"
+#include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPSecondaryUtils.hh"
+#include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
@@ -56,20 +59,24 @@ G4CMPLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
                                      G4ForceCondition* condition) {
   *condition = Forced;		// In order to recompute MFP after TimeStepper
 
-  G4double kmag = 0.;
+  auto trackInfo = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack);
+  const G4LatticePhysical* lat = trackInfo->Lattice();
+  G4double kmag = 0.; G4double l0 = 0.; G4double mass = 0.;
   if (IsElectron(&aTrack)) {
-    kmag = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
-                                     GetLocalVelocityVector(aTrack)).mag();
+    kmag = lat->MapV_elToK_HV(GetValleyIndex(aTrack),
+                              GetLocalVelocityVector(aTrack)).mag();
+    l0 = lat->GetElectronScatter();
+    mass = lat->GetElectronMass();
   } else if (IsHole(&aTrack)) {
     kmag = GetLocalWaveVector(aTrack).mag();
+    l0 = lat->GetHoleScatter();
+    mass = lat->GetHoleMass();
   } else {
     G4Exception("G4CMPLukeScattering::GetMeanFreePath", "Luke001",
                 EventMustBeAborted, "Unknown charge carrier");
   }
 
-  G4CMPTrackInformation* trackInfo = GetTrackInfo(aTrack);
-  G4double l0 = trackInfo->GetScatterLength();
-  G4double kSound = CalculateKSound(trackInfo);
+  G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
   G4double velocity = GetVelocity(aTrack);
 
   if (verboseLevel > 1) {
@@ -111,19 +118,25 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     return &aParticleChange;
   }
 
+  auto trackInfo = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack);
+  const G4LatticePhysical* lat = trackInfo->Lattice();
+
   G4ThreeVector ktrk(0.);
+  G4double mass = 0.;
   if (IsElectron(&aTrack)) {
-    ktrk = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
-                                     GetLocalVelocityVector(aTrack));
+    ktrk = lat->MapV_elToK_HV(GetValleyIndex(aTrack),
+                              GetLocalVelocityVector(aTrack));
+    mass = lat->GetElectronMass();
   } else if (IsHole(&aTrack)) {
     ktrk = GetLocalWaveVector(aTrack);
+    mass = lat->GetHoleMass();
   } else {
     G4Exception("G4CMPLukeScattering::PostStepDoIt", "Luke002",
                 EventMustBeAborted, "Unknown charge carrier");
   }
 
   G4double kmag = ktrk.mag();
-  G4double kSound = CalculateKSound(GetTrackInfo(aTrack));
+  G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
@@ -177,7 +190,11 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (weight > 0.) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
-    G4Track* phonon = CreatePhonon(G4PhononPolarization::UNKNOWN,qvec,Ephonon);
+    G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetVolume(),
+                                          G4PhononPolarization::UNKNOWN,
+                                          qvec,Ephonon,
+                                          aTrack.GetGlobalTime(),
+                                          aTrack.GetPosition());
     // Secondary's weight has to be multiplicative with its parent's
     phonon->SetWeight(aTrack.GetWeight() * weight);
 
@@ -192,9 +209,4 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   FillParticleChange(GetValleyIndex(aTrack), k_recoil);
   ResetNumberOfInteractionLengthLeft();
   return &aParticleChange;
-}
-
-G4double
-G4CMPLukeScattering::CalculateKSound(const G4CMPTrackInformation* trackInfo) {
-  return theLattice->GetSoundSpeed()*trackInfo->GetEffectiveMass()/hbar_Planck;
 }

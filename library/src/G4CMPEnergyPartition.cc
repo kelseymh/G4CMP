@@ -17,6 +17,7 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4DynamicParticle.hh"
 #include "G4LatticePhysical.hh"
@@ -250,7 +251,7 @@ GetSecondaries(std::vector<G4Track*>& secondaries) const {
     weight = G4CMP::ChooseWeight(p.pd);
     if (weight <= 0.) continue;		// Biasing rejected particle creation
 
-    theSec = CreateTrack(p.pd, p.dir, p.ekin);
+    theSec = G4CMP::CreateSecondary(*GetCurrentTrack(), p.pd, p.dir, p.ekin);
     theSec->SetWeight(weight);
     secondaries.push_back(theSec);
 
