@@ -15,9 +15,13 @@ public:
   // No copies
   PhononSensitivity(const PhononSensitivity&) = delete;
   PhononSensitivity& operator=(const PhononSensitivity&) = delete;
+  /* Move is disabled for now because old versions of GCC can't move ofstream
   // Move OK
   PhononSensitivity(PhononSensitivity&&);
   PhononSensitivity& operator=(PhononSensitivity&&);
+  */
+  PhononSensitivity(PhononSensitivity&&) = delete;
+  PhononSensitivity& operator=(PhononSensitivity&&) = delete;
 
   virtual void EndOfEvent(G4HCofThisEvent*);
 

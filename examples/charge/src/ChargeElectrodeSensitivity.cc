@@ -26,6 +26,7 @@ ChargeElectrodeSensitivity::ChargeElectrodeSensitivity(G4String name) :
   SetOutputFile(G4CMPConfigManager::GetHitOutput());
 }
 
+/* Move is disabled for now because old versions of GCC can't move ofstream
 ChargeElectrodeSensitivity::ChargeElectrodeSensitivity(ChargeElectrodeSensitivity&& in) :
   G4CMPElectrodeSensitivity(std::move(in)), FET(std::move(in.FET)),
   output(std::move(in.output)),
@@ -44,6 +45,7 @@ ChargeElectrodeSensitivity& ChargeElectrodeSensitivity::operator=(ChargeElectrod
 
   return *this;
 }
+*/
 
 ChargeElectrodeSensitivity::~ChargeElectrodeSensitivity() {
   if (output.is_open()) output.close();

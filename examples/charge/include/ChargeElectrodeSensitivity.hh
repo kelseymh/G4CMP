@@ -20,9 +20,13 @@ public:
   // No copies
   ChargeElectrodeSensitivity(const ChargeElectrodeSensitivity&) = delete;
   ChargeElectrodeSensitivity& operator=(const ChargeElectrodeSensitivity&) = delete;
+  /* Move is disabled for now because old versions of GCC can't move ofstream
   // Move OK
   ChargeElectrodeSensitivity(ChargeElectrodeSensitivity&&);
   ChargeElectrodeSensitivity& operator=(ChargeElectrodeSensitivity&&);
+  */
+  ChargeElectrodeSensitivity(ChargeElectrodeSensitivity&&) = delete;
+  ChargeElectrodeSensitivity& operator=(ChargeElectrodeSensitivity&&) = delete;
 
   virtual void EndOfEvent(G4HCofThisEvent*);
 
