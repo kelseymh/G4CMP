@@ -24,6 +24,7 @@ PhononSensitivity::PhononSensitivity(G4String name) :
   SetOutputFile(G4CMPConfigManager::GetHitOutput());
 }
 
+/* Move is disabled for now because old versions of GCC can't move ofstream
 PhononSensitivity::PhononSensitivity(PhononSensitivity&& in) :
   G4CMPElectrodeSensitivity(std::move(in)),
   output(std::move(in.output)),
@@ -41,6 +42,7 @@ PhononSensitivity& PhononSensitivity::operator=(PhononSensitivity&& in) {
 
   return *this;
 }
+*/
 
 PhononSensitivity::~PhononSensitivity() {
   if (output.is_open()) output.close();
