@@ -9,6 +9,8 @@
 #include "G4CMPElectrodeHit.hh"
 #include "G4CMPElectrodeSensitivity.hh"
 
+#include <memory>
+
 class ChargeFETDigitizerModule;
 
 class ChargeElectrodeSensitivity final : public G4CMPElectrodeSensitivity {
