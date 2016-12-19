@@ -13,7 +13,7 @@
 
 // Create dummy class to trigger constructor below
 
-G4CMPUnitsTable* G4CMPUnitsTable::g4cmpUnitsTable = 0;
+G4ThreadLocal G4CMPUnitsTable* G4CMPUnitsTable::g4cmpUnitsTable = 0;
 
 void G4CMPUnitsTable::Init() {
   if (!g4cmpUnitsTable) g4cmpUnitsTable = new G4CMPUnitsTable;
