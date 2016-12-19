@@ -9,6 +9,7 @@
 // Usage:  [physics-list]->AddPhysics(new G4CMPPhysics(<verbose>));
 //
 // 20160901  M. Kelsey -- Add minimum-energy cut process
+// 20161219  M. Kelsey -- Use particle table iterator directly
 
 #include "G4CMPPhysics.hh"
 #include "G4CMPDriftBoundaryProcess.hh"
@@ -111,9 +112,10 @@ void G4CMPPhysics::AddSecondaryProduction() {
   G4VProcess* maker = new G4CMPSecondaryProduction;
   maker->SetVerboseLevel(verboseLevel);
 
-  aParticleIterator->reset();
-  while ((*aParticleIterator)()) {
-    G4ParticleDefinition* particle = aParticleIterator->value();
+  auto pIter = G4ParticleTable::GetParticleTable()->GetIterator();
+  pIter->reset();
+  while ((*pIter)()) {
+    G4ParticleDefinition* particle = pIter->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
     if (maker->IsApplicable(*particle)) { 
       pmanager->AddProcess(maker);
