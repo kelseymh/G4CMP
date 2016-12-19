@@ -16,6 +16,8 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPGeometryUtils.hh"
+#include "G4CMPSecondaryUtils.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPUtils.hh"
 #include "G4GeometryTolerance.hh"
@@ -83,8 +85,6 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
 G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
                                               const G4Step& aStep) const {
-  if (!G4CMPBoundaryUtils::AbsorbTrack(aTrack,aStep)) return false;
-
   G4double absMinK = (IsElectron(&aTrack) ? GetMaterialProperty("minKElec")
 		      : IsHole(&aTrack) ? GetMaterialProperty("minKHole")
 		      : -1.);
@@ -97,14 +97,16 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
   G4ThreeVector kvec = GetLocalWaveVector(aTrack);
 
   // NOTE:  K vector above is in local coords, must use local normal
-  G4ThreeVector surfNorm = GetLocalDirection(GetSurfaceNormal(aStep));
+  // Must use PreStepPoint volume for transform.
+  G4ThreeVector surfNorm = G4CMP::GetLocalDirection(aStep.GetPreStepPoint()->GetPhysicalVolume(),
+                                                    G4CMP::GetSurfaceNormal(aStep));
 
   if (verboseLevel>2) {
     G4cout << " AbsorbTrack: local k-perp " << kvec*surfNorm
 	   <<" >? absMinK " << absMinK << G4endl;
   }
 
-  return (kvec*surfNorm > absMinK);
+  return (kvec*surfNorm > absMinK) || G4CMPBoundaryUtils::AbsorbTrack(aTrack, aStep);
 }
 
 
@@ -127,9 +129,11 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   while (eKin > 0.) {
     G4double E = eKin > eDeb ? eDeb : eKin;
     eKin -= eDeb;
-    G4Track* sec = CreatePhonon(G4PhononPolarization::UNKNOWN,
-                                G4RandomDirection(), E,
-                                aTrack.GetPosition());
+    G4Track* sec = G4CMP::CreatePhonon(aTrack.GetVolume(),
+                                       G4PhononPolarization::UNKNOWN,
+                                       G4RandomDirection(), E,
+                                       aTrack.GetGlobalTime(),
+                                       aTrack.GetPosition());
     aParticleChange.AddSecondary(sec);
   }
 
@@ -144,7 +148,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track reflected" << G4endl;
 
-  G4ThreeVector surfNorm = GetSurfaceNormal(aStep);
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   // Electrons and holes need to be handled separately until we further
   // generalize the physics.
@@ -163,17 +167,18 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
       G4cout << " New velocity direction " << vel.unit() << G4endl;
 
     // Convert velocity back to momentum and update direction
-    RotateToLocalDirection(vel);
+    G4VPhysicalVolume* pv = aStep.GetPreStepPoint()->GetPhysicalVolume();
+    G4CMP::RotateToLocalDirection(pv, vel);
     G4ThreeVector p = theLattice->MapV_elToP(GetCurrentValley(), vel);
-    RotateToGlobalDirection(p);
+    G4CMP::RotateToGlobalDirection(pv, p);
 
     if (verboseLevel>2) {
       G4cout << " New momentum direction " << p.unit() << G4endl;
 
       // SANITY CHECK:  Does new momentum get back to new velocity?
       G4ThreeVector vnew = theLattice->MapPtoV_el(GetCurrentValley(),
-                                                  GetLocalDirection(p));
-      RotateToGlobalDirection(vnew);
+                                                  G4CMP::GetLocalDirection(pv, p));
+      G4CMP::RotateToGlobalDirection(pv, vnew);
       G4cout << " Cross-check new v dir  " << vnew.unit() << G4endl;
     }
 

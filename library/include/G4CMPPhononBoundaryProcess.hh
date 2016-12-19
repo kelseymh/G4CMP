@@ -41,9 +41,6 @@ protected:
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
-  G4bool ReflectionIsGood(G4int polarization, G4ThreeVector waveVector,
-                          G4ThreeVector surfNorm) const;
-
 private:
   // hide assignment operator as private
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&);

@@ -35,7 +35,6 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
 private:
-  G4double CalculateKSound(const G4CMPTrackInformation* trackInfo);
   // hide assignment operator as private
   G4CMPLukeScattering(G4CMPLukeScattering&);
   G4CMPLukeScattering& operator=(const G4CMPLukeScattering& right);

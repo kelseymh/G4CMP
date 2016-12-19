@@ -14,12 +14,15 @@
 //
 // 20160904  Add electrode pattern handling
 // 20160906  Make most functions const, provide casting function for matTable
+// 20161114  Use G4CMPVTrackInfo
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPProcessUtils.hh"
-#include "G4CMPTrackInformation.hh"
+#include "G4CMPVTrackInfo.hh"
+#include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4CMPVElectrodePattern.hh"
 #include "G4ExceptionSeverity.hh"
@@ -177,24 +180,17 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
 
 // Implement PostStepDoIt() in a common way; processes should call through
 
-void G4CMPBoundaryUtils::
-ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
-		    G4ParticleChange& aParticleChange) {
+void G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
+              const G4Step& aStep,
+              G4ParticleChange& aParticleChange) {
   aParticleChange.Initialize(aTrack);
 
   if (!IsGoodBoundary(aStep)) return;		// May have been done already
 
-  // If the particle doesn't get absorbed, it either reflects or transmits
   if (electrode && electrode->IsNearElectrode(aStep)) {
-    if (buVerboseLevel>1) G4cout << procName << ": Track electrode " << G4endl;
     electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
   } else if (AbsorbTrack(aTrack, aStep)) {
-    if (electrode) {
-      DoSimpleKill(aTrack, aStep, aParticleChange);
-    } else {
-      if (buVerboseLevel>1) G4cout << procName << ": Track absorbed " << G4endl;
-      DoAbsorption(aTrack, aStep, aParticleChange);
-    }
+    DoAbsorption(aTrack, aStep, aParticleChange);
   } else if (MaximumReflections(aTrack)) {
     DoSimpleKill(aTrack, aStep, aParticleChange);
   } else if (ReflectTrack(aTrack, aStep)) {
@@ -224,11 +220,11 @@ G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track&, const G4Step&) const {
 }
 
 G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) const {
-  G4CMPTrackInformation* trackInfo = procUtils->GetTrackInfo(aTrack);
+  auto trackInfo = G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack);
   trackInfo->IncrementReflectionCount();
 
   return (maximumReflections >= 0 &&
-	  trackInfo->GetReflectionCount() > maximumReflections);
+    trackInfo->ReflectionCount() > static_cast<size_t>(maximumReflections));
 }
 
 
@@ -241,7 +237,7 @@ void G4CMPBoundaryUtils::DoAbsorption(const G4Track& aTrack,
 
   G4double ekin = procUtils->GetKineticEnergy(aTrack);
   aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
-  aParticleChange.ProposeTrackStatus(fStopButAlive);
+  aParticleChange.ProposeTrackStatus(fStopAndKill);
 }
 
 void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
@@ -253,23 +249,23 @@ void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
 
   if (buVerboseLevel>1) {
     G4cout << procName << ": Track reflected "
-           << procUtils->GetTrackInfo(aTrack)->GetReflectionCount()
+           << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
 	   << " times." << G4endl;
   }
 
   G4ThreeVector pdir = aTrack.GetMomentumDirection();
-  G4ThreeVector norm = procUtils->GetSurfaceNormal(aStep);	// Outward normal
+  G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);	// Outward normal
   pdir -= 2.*(pdir.dot(norm))*norm;			// Reverse along normal
 
   aParticleChange.ProposeMomentumDirection(pdir);
 }
 
-void G4CMPBoundaryUtils::DoSimpleKill(const G4Track& aTrack,
-				      const G4Step& aStep,
+void G4CMPBoundaryUtils::DoSimpleKill(const G4Track& /*aTrack*/,
+              const G4Step& /*aStep*/,
 				      G4ParticleChange& aParticleChange) {
   if (buVerboseLevel>1) G4cout << procName << ": Track killed" << G4endl;
 
-  aParticleChange.ProposeTrackStatus(fStopButAlive);
+  aParticleChange.ProposeTrackStatus(fStopAndKill);
 }
 
 void 

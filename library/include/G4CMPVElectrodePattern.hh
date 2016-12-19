@@ -41,8 +41,8 @@ public:
 
   // Subclass MAY implement this to deposit energy from track into electrode
   // Return is not necessary: aParticleChange may be altered in situ
-  virtual void AbsorbAtElectrode(const G4Track& aTrack, const G4Step& aStep,
-				 G4ParticleChange& aParticleChange) const {;}
+  virtual void AbsorbAtElectrode(const G4Track&, const G4Step&,
+                                 G4ParticleChange&) const {;}
 
 protected:
   // Handles casting table to non-const for access

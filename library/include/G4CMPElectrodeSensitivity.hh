@@ -3,33 +3,31 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-#ifndef G4CMPElectrodeSensitivity_h
-#define G4CMPElectrodeSensitivity_h 1
+#ifndef G4CMPElectrodeSensitivity_hh
+#define G4CMPElectrodeSensitivity_hh 1
 
 #include "G4VSensitiveDetector.hh"
 #include "G4CMPElectrodeHit.hh"
 
-class G4Step;
 class G4HCofThisEvent;
-class G4TouchableHistory;
 
 class G4CMPElectrodeSensitivity : public G4VSensitiveDetector {
 public:
-  G4CMPElectrodeSensitivity(G4String);
-  virtual ~G4CMPElectrodeSensitivity();
-  
-  virtual void Initialize(G4HCofThisEvent*);
-  virtual G4bool ProcessHits(G4Step*,G4TouchableHistory*);
-  virtual void EndOfEvent(G4HCofThisEvent*);
-  
-  G4CMPElectrodeHitsCollection* getHitsCollection();
-  static G4CMPElectrodeHitsCollection* hitsCollection;
+  explicit G4CMPElectrodeSensitivity(G4String);
+  // No copies
+  G4CMPElectrodeSensitivity(const G4CMPElectrodeSensitivity&) = delete;
+  G4CMPElectrodeSensitivity& operator=(const G4CMPElectrodeSensitivity&) = delete;
+  // Move OK
+  G4CMPElectrodeSensitivity(G4CMPElectrodeSensitivity&&);
+  G4CMPElectrodeSensitivity& operator=(G4CMPElectrodeSensitivity&&);
 
-protected:
-  inline G4int GetHCID() { return HCID; }
+  virtual void Initialize(G4HCofThisEvent*) override;
   
-private:
-  G4int HCID;
+protected:
+  virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*) override;
+  virtual G4bool IsHit(const G4Step*, const G4TouchableHistory*) const;
+
+  G4CMPElectrodeHitsCollection* hitsCollection;
 };
 
 #endif

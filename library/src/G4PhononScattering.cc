@@ -12,6 +12,7 @@
 // 20140312  Follow name change CreateSecondary -> CreatePhonon
 // 20140331  Add required process subtype code
 
+#include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4PhononScattering.hh"
 #include "G4LatticePhysical.hh"
@@ -74,7 +75,9 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
   // Generate the new track after scattering
   // FIXME:  If polarization state is the same, just step the track!
   G4Track* sec =
-    CreatePhonon(polarization, newDir, GetKineticEnergy(aTrack));
+    G4CMP::CreatePhonon(aTrack.GetVolume(), polarization, newDir,
+                        GetKineticEnergy(aTrack), aTrack.GetGlobalTime(),
+                        aTrack.GetPosition());
   aParticleChange.SetNumberOfSecondaries(1);
   aParticleChange.AddSecondary(sec);
 
