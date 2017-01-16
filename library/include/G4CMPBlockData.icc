@@ -280,7 +280,7 @@ inline G4CMPBlockData<T> operator-(G4CMPBlockData<T>&& lhs,
 template <class T>
 inline G4CMPBlockData<T> operator*(const G4CMPBlockData<T>& lhs, 
                                    const G4CMPBlockData<T>& rhs) {
-  assert((lhs.ncols == rhs.rows()));
+  assert((lhs.columns() == rhs.rows()));
   // Naive algorithm with some cache friendliness. Still pretty slow.
   G4CMPBlockData<T> out(lhs.rows(), rhs.columns());
   for (size_t i = 0; i < out.rows(); ++i)
