@@ -159,7 +159,8 @@ inline const T& G4CMPBlockData<T>::operator[](size_t i) const {
 // Modify
 template <class T>
 inline void G4CMPBlockData<T>::push_back(const std::vector<T>& vec) {
-  assert((vec.size() == ncols));
+  // special case for ncols == 0 means we're just initializing the block data.
+  assert(vec.size() == ncols || ncols == 0);
   // Supposedly no need for data.reserve(). insert() will precalculate size.
   data.insert(data.end(), vec.begin(), vec.end());
   if (ncols == 0) {
@@ -169,7 +170,8 @@ inline void G4CMPBlockData<T>::push_back(const std::vector<T>& vec) {
 
 template <class T>
 inline void G4CMPBlockData<T>::push_back(std::vector<T>&& vec) {
-  assert((vec.size() == ncols));
+  // special case for ncols == 0 means we're just initializing the block data.
+  assert(vec.size() == ncols || ncols == 0);
   data.insert(data.end(), std::make_move_iterator(vec.begin()),
                           std::make_move_iterator(vec.end()));
   if (ncols == 0) {
