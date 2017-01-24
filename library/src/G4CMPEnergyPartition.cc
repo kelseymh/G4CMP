@@ -209,7 +209,8 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
     weight = G4CMP::ChooseWeight(p.pd);
-    if (weight <= 0.) continue;		// Biasing rejected particle creation
+    // Biasing rejected particle creation
+    if (weight <= 0. ? true : 1. / weight <= G4UniformRand()) continue;
 
     thePrim = new G4PrimaryParticle();
     thePrim->SetParticleDefinition(p.pd);
@@ -249,7 +250,7 @@ GetSecondaries(std::vector<G4Track*>& secondaries) const {
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
     weight = G4CMP::ChooseWeight(p.pd);
-    if (weight <= 0.) continue;		// Biasing rejected particle creation
+    if (weight <= 0. ? true : 1. / weight <= G4UniformRand()) continue;
 
     theSec = G4CMP::CreateSecondary(*GetCurrentTrack(), p.pd, p.dir, p.ekin);
     theSec->SetWeight(weight);
