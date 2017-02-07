@@ -91,6 +91,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 			     "Use eigenvector solver for K-Vg conversion");
   kvmapCmd->SetParameterName("lookup",true,false);
   kvmapCmd->SetDefaultValue(true);
+
+  fanoStatsCmd = CreateCommand<G4UIcmdWithABool>("enableFanoStatistics",
+           "Modify input ionization energy according to Fano statistics.");
+  fanoStatsCmd->SetDefaultValue(true);
 }
 
 
@@ -110,6 +114,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete hitsCmd; hitsCmd=0;
   delete millerCmd; millerCmd=0;
   delete kvmapCmd; kvmapCmd=0;
+  delete fanoStatsCmd; fanoStatsCmd=0;
 
   if (localCmdDir) {delete cmdDir; cmdDir=0;}
 }
@@ -169,5 +174,6 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   }
 
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
+  if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));
 }
 

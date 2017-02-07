@@ -83,8 +83,13 @@ G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
 G4double G4CMPEnergyPartition::MeasuredChargeEnergy(G4double eTrue) const {
   // Fano noise changes the measured charge energy
   // Std deviation of energy distribution
+
+  if (!G4CMPConfigManager::FanoStatisticsEnabled()) {
+    return eTrue;
+  }
+
   G4double sigmaE = std::sqrt(eTrue * theLattice->GetFanoFactor()
-			      * theLattice->GetPairProductionEnergy());
+                              * theLattice->GetPairProductionEnergy());
   return G4RandGauss::shoot(eTrue, sigmaE);
 }
 
@@ -94,8 +99,8 @@ G4double G4CMPEnergyPartition::MeasuredChargeEnergy(G4double eTrue) const {
 void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
 				       G4double eNIEL) {
   if (verboseLevel) {
-    G4cout << "G4CMPEnergyPartition::DoPartition " << PDGcode
-	   << " eTotal " << energy/MeV << " eNIEL " << eNIEL/MeV << " MeV"
+    G4cout << "G4CMPEnergyPartition::DoPartition: ParticleID " << PDGcode
+     << "; eTotal " << energy/MeV << " MeV; eNIEL " << eNIEL/MeV << " MeV"
 	   << G4endl;
   }
 
@@ -104,7 +109,7 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
   else {
     if (PDGcode == 2112 || PDGcode > 10000) {	// Neutron or nucleus
       if (verboseLevel>1)
-	G4cout << " Nuclear Recoil: type = " << PDGcode << G4endl;
+        G4cout << " Nuclear Recoil: type = " << PDGcode << G4endl;
       NuclearRecoil(energy);
     } else {
       Ionization(energy);
@@ -117,8 +122,8 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
 
 void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
   if (verboseLevel>1) {
-    G4cout << "G4CMPEnergyPartition::DoPartition eIon " << eIon/MeV
-	   << " eNIEL " << eNIEL/MeV << " MeV" << G4endl;
+    G4cout << "G4CMPEnergyPartition::DoPartition: eIon " << eIon/MeV
+     << " MeV; eNIEL " << eNIEL/MeV << " MeV" << G4endl;
   }
 
   particles.clear();		// Discard previous results
@@ -128,7 +133,7 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
 }
 
 void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
-  if (verboseLevel) G4cout << " GenerateCharges " << energy << G4endl;
+  if (verboseLevel) G4cout << " GenerateCharges " << energy/MeV << " MeV" << G4endl;
 
   G4double ePair = theLattice->GetPairProductionEnergy();
   G4double eMeas = MeasuredChargeEnergy(energy);	// Applies Fano factor
@@ -160,7 +165,7 @@ void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
 }
 
 void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
-  if (verboseLevel) G4cout << " GeneratePhonons " << energy << G4endl;
+  if (verboseLevel) G4cout << " GeneratePhonons " << energy/MeV << " MeV" <<  G4endl;
 
   G4double ePhon = theLattice->GetDebyeEnergy(); // TODO: No fluctuations yet!
 
