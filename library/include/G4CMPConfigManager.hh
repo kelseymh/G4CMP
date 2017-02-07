@@ -55,6 +55,7 @@ public:
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetHitOutput()  { return Instance()->Hit_file; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
+  static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
 
   static void GetMillerOrientation(G4int& h, G4int& k, G4int& l) {
     h = Instance()->millerH; k = Instance()->millerK; l = Instance()->millerL;
@@ -71,6 +72,7 @@ public:
   static void SetGenPhonons(G4double value) { Instance()->genPhonons = value; }
   static void SetGenCharges(G4double value) { Instance()->genCharges = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
+  static void EnableFanoStatistics(G4bool value) { Instance()->useKVsolver = value; }
 
   // These settings require the geometry to be rebuilt
   static void SetVoltage(G4double value)
@@ -114,6 +116,8 @@ private:
   G4int millerK;
   G4int millerL;
   G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
+  G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits
+                        // ($G4CMP_FANO_ENABLED)
   G4String Epot_file;	// Name of E-field file ($G4CMP_EPOT_FILE)
   G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
   G4String Hit_file;	// Output file of e/h hits ($G4CMP_HIT_FILE)
