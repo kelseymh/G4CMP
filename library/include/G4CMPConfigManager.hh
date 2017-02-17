@@ -72,7 +72,7 @@ public:
   static void SetGenPhonons(G4double value) { Instance()->genPhonons = value; }
   static void SetGenCharges(G4double value) { Instance()->genCharges = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
-  static void EnableFanoStatistics(G4bool value) { Instance()->useKVsolver = value; }
+  static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
 
   // These settings require the geometry to be rebuilt
   static void SetVoltage(G4double value)
