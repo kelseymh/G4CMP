@@ -47,7 +47,7 @@ inline G4CMPBlockData<T>& G4CMPBlockData<T>::operator=(G4CMPBlockData<T>&& rhs) 
 template <class T>
 inline G4CMPBlockData<T>& G4CMPBlockData<T>::operator=(const std::vector<T>& rhs) {
   data = rhs;
-  columns = rhs.size();
+  ncols = rhs.size();
   return *this;
 }
 
@@ -203,8 +203,8 @@ inline void G4CMPBlockData<T>::vert_cat(G4CMPBlockData<T>&& rhs) {
 template <class T>
 inline void G4CMPBlockData<T>::horiz_cat(const G4CMPBlockData<T>& rhs) {
   assert((rhs.rows() == rows()));
-  G4CMPBlockData<T> tmp(rows, ncols + rhs.ncols);
-  for (size_t i = 0; i < rows; ++i) {
+  G4CMPBlockData<T> tmp(rows(), ncols + rhs.ncols);
+  for (size_t i = 0; i < rows(); ++i) {
       for (size_t j = 0; j < ncols; ++j) {
         tmp(i, j) = *this(i, j);
       }
