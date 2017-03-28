@@ -144,8 +144,9 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
 
   if (IsElectron(track)) {
     // NOTE: TrackInfos get cleaned up by G4 when Track gets killed.
+    if (!track->GetAuxiliaryTrackInformation(G4CMPConfigManager::GetPhysicsModelID())) {
     auto trackInfo = new G4CMPDriftTrackInfo(theLattice, G4CMP::ChooseValley(theLattice));
-    G4CMP::AttachTrackInfo(*track, trackInfo);
+    G4CMP::AttachTrackInfo(*track, trackInfo); }
   }
 
   if (IsHole(track)) {
