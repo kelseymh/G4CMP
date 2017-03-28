@@ -213,9 +213,9 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
   G4PrimaryParticle* thePrim = 0;
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
+
     weight = G4CMP::ChooseWeight(p.pd);
-    // Biasing rejected particle creation
-    if (weight <= 0. ? true : 1. / weight <= G4UniformRand()) continue;
+    if (weight == 0.) continue; // Biasing rejected particle creation
 
     thePrim = new G4PrimaryParticle();
     thePrim->SetParticleDefinition(p.pd);
@@ -226,7 +226,7 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
 
     if (verboseLevel==3) {
       G4cout << i << " : " << p.pd->GetParticleName() << " " << p.ekin/eV
-	     << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
+	           << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
     } else if (verboseLevel>3) {
       G4cout << i << " : ";
       thePrim->Print();
@@ -254,8 +254,9 @@ GetSecondaries(std::vector<G4Track*>& secondaries) const {
   G4Track* theSec = 0;
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
+
     weight = G4CMP::ChooseWeight(p.pd);
-    if (weight <= 0. ? true : 1. / weight <= G4UniformRand()) continue;
+    if (weight == 0.) continue;
 
     theSec = G4CMP::CreateSecondary(*GetCurrentTrack(), p.pd, p.dir, p.ekin);
     theSec->SetWeight(weight);
@@ -263,7 +264,7 @@ GetSecondaries(std::vector<G4Track*>& secondaries) const {
 
     if (verboseLevel==3) {
       G4cout << i << " : " << p.pd->GetParticleName() << " " << p.ekin/eV
-	     << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
+	           << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
     } else if (verboseLevel>3) {
       G4cout << i << " : ";
       theSec->GetDynamicParticle()->DumpInfo();

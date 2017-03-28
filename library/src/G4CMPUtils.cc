@@ -107,13 +107,9 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
 
   // Get start and end positions. Must use PreStepPoint to get correct
   // volume
-  G4StepPoint* preStepPoint = step->GetPreStepPoint();
   G4StepPoint* postStepPoint = step->GetPostStepPoint();
-  G4VPhysicalVolume* pVol = preStepPoint->GetPhysicalVolume();
-  G4AffineTransform toLocal = G4AffineTransform(pVol->GetRotation(),
-                                                pVol->GetTranslation()).Inverse();
-  G4ThreeVector startPosition = toLocal.TransformPoint(track->GetVertexPosition());
-  G4ThreeVector finalPosition = toLocal.TransformPoint(postStepPoint->GetPosition());
+  G4ThreeVector startPosition = track->GetVertexPosition();
+  G4ThreeVector finalPosition = postStepPoint->GetPosition();
 
   // Insert data into hit.
   hit->SetStartTime(startTime);
