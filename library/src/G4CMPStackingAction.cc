@@ -19,14 +19,18 @@
 // 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 
 #include "G4CMPStackingAction.hh"
-#include "G4CMPTrackInformation.hh"
+
+#include "G4CMPDriftHole.hh"
+#include "G4CMPDriftElectron.hh"
+#include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPPhononTrackInfo.hh"
+#include "G4CMPTrackUtils.hh"
+#include "G4CMPUtils.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhononTrackMap.hh"
-#include "G4CMPDriftHole.hh"
-#include "G4CMPDriftElectron.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
@@ -64,18 +68,23 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   // Non-initial tracks should not be touched
   if (aTrack->GetParentID() != 0) return classification;
 
-  // Attach auxiliary info to new track
-  AttachTrackInfo(aTrack);
-
   // Fill kinematic data for new track (secondaries will have this done)
   if (IsPhonon(aTrack)) {
-    SetPhononWaveVector(aTrack);
+    auto trackInfo = new G4CMPPhononTrackInfo(theLattice, G4RandomDirection());
+    G4CMP::AttachTrackInfo(*aTrack, trackInfo);
     SetPhononVelocity(aTrack);
   }
 
   if (IsChargeCarrier(aTrack)) {
-    SetChargeCarrierValley(aTrack);
     SetChargeCarrierMass(aTrack);
+    if (IsElectron(aTrack)) {
+      auto trackInfo = new G4CMPDriftTrackInfo(theLattice, G4CMP::ChooseValley(theLattice));
+      G4CMP::AttachTrackInfo(*aTrack, trackInfo);
+      SetElectronEnergy(aTrack);
+    } else { // IsHole
+      auto trackInfo = new G4CMPDriftTrackInfo(theLattice, -1);
+      G4CMP::AttachTrackInfo(*aTrack, trackInfo);
+    }
   }
 
   ReleaseTrack();
@@ -83,37 +92,27 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   return classification; 
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-// Generate random wave vector for initial phonon (ought to invert momentum)
-
-void G4CMPStackingAction::SetPhononWaveVector(const G4Track* aTrack) const {
-  //Compute random wave-vector (override whatever ParticleGun did)
-  G4ThreeVector ranK = G4RandomDirection();
-  
-  //Store wave-vector as track information
-  AttachTrackInfo(aTrack)->SetPhononK(ranK);
-}
-
 // Set velocity of phonon track appropriately for material
 
 void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
   // Get wavevector associated with track
-  G4ThreeVector K = GetTrackInfo(aTrack)->GetPhononK();
+  G4ThreeVector k = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(*aTrack)->k();
   G4int pol = GetPolarization(aTrack);
 
-  //Compute direction of propagation from wave vector
-  G4ThreeVector momentumDir = theLattice->MapKtoVDir(pol, K);
+  // Compute direction of propagation from wave vector
+  // Geant4 thinks that momentum and velocity point in same direction,
+  // momentumDir here actually means velocity direction.
+  G4ThreeVector momentumDir = theLattice->MapKtoVDir(pol, k);
 
   if (momentumDir.mag() < 0.9) {
-    G4cerr << " track mode " << pol << " K " << K << G4endl;
+    G4cerr << " track mode " << pol << " k " << k << G4endl;
     G4Exception("G4CMPStackingAction::SetPhononVelocity", "Lattice010",
 		FatalException, "KtoVDir failed to return unit vector");
     return;
   }
 
   //Compute true velocity of propagation
-  G4double velocity = theLattice->MapKtoV(pol, K);
+  G4double velocity = theLattice->MapKtoV(pol, k);
   
   // Cast to non-const pointer so we can adjust non-standard kinematics
   G4Track* theTrack = const_cast<G4Track*>(aTrack);
@@ -121,19 +120,6 @@ void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
   theTrack->SetMomentumDirection(momentumDir);
   theTrack->SetVelocity(velocity);
   theTrack->UseGivenVelocity(true);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-// Set current Brillouin valley (random) for electrons in material
-
-void G4CMPStackingAction::SetChargeCarrierValley(const G4Track* aTrack) const {
-  if (aTrack->GetDefinition() != G4CMPDriftElectron::Definition()) return;
-
-  if (GetValleyIndex(aTrack) < 0) {
-    int valley = (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
-    AttachTrackInfo(aTrack)->SetValleyIndex(valley);
-  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -152,4 +138,25 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
     const_cast<G4DynamicParticle*>(aTrack->GetDynamicParticle());
 
   dynp->SetMass(mass*c_squared);	// Converts to Geant4 [M]=[E] units
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Set G4Track energy to correctly calculate velocity
+
+void G4CMPStackingAction::SetElectronEnergy(const G4Track* aTrack) const {
+  G4int valley = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(*aTrack)->ValleyIndex();
+  G4double E = aTrack->GetKineticEnergy();
+  G4double kmag_HV = std::sqrt(2. * E * theLattice->GetElectronMass()) /
+                     hbar_Planck;
+  G4ThreeVector kdir_HV = theLattice->MapV_elToK_HV(valley,
+                                                    aTrack->GetMomentumDirection());
+
+  G4ThreeVector p = theLattice->MapK_HVtoP(valley, kmag_HV * kdir_HV.unit());
+  G4ThreeVector vTrue = theLattice->MapPtoV_el(valley, p);
+  // Set fake E that yeilds correct v
+  (const_cast<G4Track*>(aTrack))->SetKineticEnergy(0.5 *
+                                                   aTrack->GetDynamicParticle()->GetMass() /
+                                                   c_squared *
+                                                   vTrue.mag2());
 }

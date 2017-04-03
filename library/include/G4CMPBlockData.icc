@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <utility>
+#include <cassert>
 
 // Constructors
 
@@ -9,12 +10,12 @@ template <class T>
 inline G4CMPBlockData<T>::G4CMPBlockData() : data(std::vector<T>()), ncols(0) {;}
 
 template <class T>
-inline G4CMPBlockData<T>::G4CMPBlockData(size_t rows, size_t columns, const T& val) :
-  data(std::vector<T>(rows*columns, val)), ncols(columns) {;}
+inline G4CMPBlockData<T>::G4CMPBlockData(size_t rows, size_t cols, const T& val) :
+  data(std::vector<T>(rows*cols, val)), ncols(cols) {;}
 
 template <class T>
-inline G4CMPBlockData<T>::G4CMPBlockData(const std::vector<T>& vec, size_t columns) :
-  data(vec), ncols(columns) {;}
+inline G4CMPBlockData<T>::G4CMPBlockData(const std::vector<T>& vec, size_t cols) :
+  data(vec), ncols(cols) {;}
 
 template <class T>
 inline G4CMPBlockData<T>::G4CMPBlockData(const std::vector<T>& vec) :
@@ -40,14 +41,13 @@ template <class T>
 inline G4CMPBlockData<T>& G4CMPBlockData<T>::operator=(G4CMPBlockData<T>&& rhs) {
   data = std::move(rhs.data);	// Is this right?
   ncols = rhs.ncols;
-  rhs.ncols = 0;
   return *this;
 }
 
 template <class T>
 inline G4CMPBlockData<T>& G4CMPBlockData<T>::operator=(const std::vector<T>& rhs) {
-  // TODO:  Check if rhs size matches dimensions
   data = rhs;
+  ncols = rhs.size();
   return *this;
 }
 
@@ -83,7 +83,7 @@ inline typename G4CMPBlockData<T>::const_iterator G4CMPBlockData<T>::end() const
 
 template <class T>
 inline G4CMPBlockData<T>& G4CMPBlockData<T>::operator+=(const G4CMPBlockData<T>& rhs) {
-  // TODO: Add assert on data dimensions != rhs.data dimensions?
+  assert((rhs.columns() == ncols && rhs.size() == size()));
   for (size_t i = 0; i < data.size(); ++i)
     data[i] += rhs.data[i];
   return *this;
@@ -91,7 +91,7 @@ inline G4CMPBlockData<T>& G4CMPBlockData<T>::operator+=(const G4CMPBlockData<T>&
 
 template <class T>
 inline G4CMPBlockData<T>& G4CMPBlockData<T>::operator-=(const G4CMPBlockData<T>& rhs) {
-  // TODO: Add assert on data dimensions != rhs.data dimensions?
+  assert((rhs.columns() == ncols && rhs.size() == size()));
   for (size_t i = 0; i < data.size(); ++i)
     data[i] -= rhs.data[i];
   return *this;
@@ -159,36 +159,60 @@ inline const T& G4CMPBlockData<T>::operator[](size_t i) const {
 // Modify
 template <class T>
 inline void G4CMPBlockData<T>::push_back(const std::vector<T>& vec) {
-  // TODO: Except if vec.size() != columns?
+  // special case for ncols == 0 means we're just initializing the block data.
+  assert(vec.size() == ncols || ncols == 0);
   // Supposedly no need for data.reserve(). insert() will precalculate size.
   data.insert(data.end(), vec.begin(), vec.end());
+  if (ncols == 0) {
+    ncols = vec.size();
+  }
 }
 
 template <class T>
 inline void G4CMPBlockData<T>::push_back(std::vector<T>&& vec) {
-  // TODO: Except if vec.size() != columns?
-  data.insert(data.end(), make_move_iterator(vec.begin()),
-                          make_move_iterator(vec.end()));
+  // special case for ncols == 0 means we're just initializing the block data.
+  assert(vec.size() == ncols || ncols == 0);
+  data.insert(data.end(), std::make_move_iterator(vec.begin()),
+                          std::make_move_iterator(vec.end()));
+  if (ncols == 0) {
+    ncols = data.size();
+  }
 }
 
 template <class T>
 inline void G4CMPBlockData<T>::vert_cat(const G4CMPBlockData<T>& rhs) {
-  // TODO: Except if rhs.columns() != columns()?
+  assert((rhs.ncols == ncols));
   // Supposedly no need for data.reserve(). insert() will precalculate size.
   data.insert(data.end(), rhs.data.begin(), rhs.data.end());
+  if (ncols == 0) {
+    ncols = rhs.size();
+  }
 }
 
 template <class T>
 inline void G4CMPBlockData<T>::vert_cat(G4CMPBlockData<T>&& rhs) {
-  // TODO: Except if rhs.columns() != columns()?
+  assert((rhs.ncols == ncols));
   // Supposedly no need for data.reserve(). insert() will precalculate size.
-  data.insert(data.end(), make_move_iterator(rhs.data.begin()),
-                          make_move_iterator(rhs.data.end()));
+  data.insert(data.end(), std::make_move_iterator(rhs.data.begin()),
+                          std::make_move_iterator(rhs.data.end()));
+  if (ncols == 0) {
+    ncols = rhs.size();
+  }
 }
 
 template <class T>
 inline void G4CMPBlockData<T>::horiz_cat(const G4CMPBlockData<T>& rhs) {
-  *this = horiz_cat(*this, rhs);
+  assert((rhs.rows() == rows()));
+  G4CMPBlockData<T> tmp(rows(), ncols + rhs.ncols);
+  for (size_t i = 0; i < rows(); ++i) {
+      for (size_t j = 0; j < ncols; ++j) {
+        tmp(i, j) = *this(i, j);
+      }
+      for (size_t j = ncols; j < tmp.ncols; ++j) {
+        tmp(i, j) = rhs(i, j-ncols);
+      }
+  }
+  std::swap(*this, tmp);
 }
 
 // Comparison
@@ -231,31 +255,34 @@ inline G4CMPBlockData<T>& operator-(G4CMPBlockData<T>& lhs) {
 // Matrix-Matrix math:
 template <class T>
 inline G4CMPBlockData<T> operator+(const G4CMPBlockData<T>& lhs, 
-                                const G4CMPBlockData<T>& rhs) {
+                                   const G4CMPBlockData<T>& rhs) {
   G4CMPBlockData<T> out(lhs);
   return out += rhs;
 }
 
 template <class T>
-inline G4CMPBlockData<T> operator+(G4CMPBlockData<T>&& lhs, G4CMPBlockData<T>&& rhs) {
+inline G4CMPBlockData<T> operator+(G4CMPBlockData<T>&& lhs,
+                                   G4CMPBlockData<T>&& rhs) {
   return lhs += rhs;
 }
 
 template <class T>
 inline G4CMPBlockData<T> operator-(const G4CMPBlockData<T>& lhs, 
-                                const G4CMPBlockData<T>& rhs) {
+                                   const G4CMPBlockData<T>& rhs) {
   G4CMPBlockData<T> out(lhs);
   return out -= rhs;
 }
 
 template <class T>
-inline G4CMPBlockData<T> operator-(G4CMPBlockData<T>&& lhs, G4CMPBlockData<T>&& rhs) {
+inline G4CMPBlockData<T> operator-(G4CMPBlockData<T>&& lhs,
+                                   G4CMPBlockData<T>&& rhs) {
   return lhs -= rhs;
 }
 
 template <class T>
 inline G4CMPBlockData<T> operator*(const G4CMPBlockData<T>& lhs, 
-                                const G4CMPBlockData<T>& rhs) {
+                                   const G4CMPBlockData<T>& rhs) {
+  assert((lhs.columns() == rhs.rows()));
   // Naive algorithm with some cache friendliness. Still pretty slow.
   G4CMPBlockData<T> out(lhs.rows(), rhs.columns());
   for (size_t i = 0; i < out.rows(); ++i)
@@ -354,22 +381,26 @@ inline G4CMPBlockData<T> operator/(const T& lhs, G4CMPBlockData<T>&& rhs) {
 // Matrix-Matrix operations:
 template <class T>
 inline G4CMPBlockData<T> vert_cat(const G4CMPBlockData<T>& lhs, 
-                               const G4CMPBlockData<T>& rhs) {
+                                  const G4CMPBlockData<T>& rhs) {
+  assert((lhs.columns() == rhs.columns()));
   G4CMPBlockData<T> out(lhs);
   out.vert_cat(rhs);
   return out;
 }
 
 template <class T>
-inline G4CMPBlockData<T> vert_cat(G4CMPBlockData<T>&& lhs, G4CMPBlockData<T>&& rhs) {
+inline G4CMPBlockData<T> vert_cat(G4CMPBlockData<T>&& lhs,
+                                  G4CMPBlockData<T>&& rhs) {
+  assert((lhs.columns() == rhs.columns()));
   lhs.vert_cat(rhs);
   return lhs;
 }
 
 template <class T>
 inline G4CMPBlockData<T> horiz_cat(const G4CMPBlockData<T>& lhs, 
-                                const G4CMPBlockData<T>& rhs) {
-  // TODO: Except if rhs.rows() != rows()?
+                                   const G4CMPBlockData<T>& rhs) {
+  assert((lhs.rows() == rhs.rows()));
+
   size_t newCols = lhs.columns() + rhs.columns();
   G4CMPBlockData<T> newMat(lhs.rows(), newCols);
   for (size_t i = 0; i < lhs.rows(); ++i) {

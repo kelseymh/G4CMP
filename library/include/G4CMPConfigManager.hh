@@ -33,6 +33,10 @@ class G4CMPConfigManager {
 public:
   ~G4CMPConfigManager();	// Must be public for end-of-job cleanup
 
+  // Access G4CMP's physics ID for aux. track information
+  // FIXME: This maybe should go in G4CMPVProcess when it exists.
+  static G4int GetPhysicsModelID()      { return Instance()->fPhysicsModelID; }
+
   // Access current values
   static G4int GetVerboseLevel()         { return Instance()->verbose; }
   static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
@@ -51,6 +55,7 @@ public:
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetHitOutput()  { return Instance()->Hit_file; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
+  static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
 
   static void GetMillerOrientation(G4int& h, G4int& k, G4int& l) {
     h = Instance()->millerH; k = Instance()->millerK; l = Instance()->millerL;
@@ -67,6 +72,7 @@ public:
   static void SetGenPhonons(G4double value) { Instance()->genPhonons = value; }
   static void SetGenCharges(G4double value) { Instance()->genCharges = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
+  static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
 
   // These settings require the geometry to be rebuilt
   static void SetVoltage(G4double value)
@@ -102,13 +108,16 @@ private:
   G4double EminPhonons;	// Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	// Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
   G4double epotScale;	// Scale factor for Epot ($G4CMP_EPOT_SCALE)
-  G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4int verbose;	// Global verbosity (all processes, lattices)
+  G4int fPhysicsModelID; // ID key to get aux. track info.
   G4int ehBounces;	// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
   G4int pBounces;	// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
   G4int millerH;	// Lattice orientation ($G4CMP_MILLER_H,_K,_L)
   G4int millerK;
   G4int millerL;
+  G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
+  G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits
+                        // ($G4CMP_FANO_ENABLED)
   G4String Epot_file;	// Name of E-field file ($G4CMP_EPOT_FILE)
   G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
   G4String Hit_file;	// Output file of e/h hits ($G4CMP_HIT_FILE)

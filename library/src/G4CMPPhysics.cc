@@ -9,6 +9,7 @@
 // Usage:  [physics-list]->AddPhysics(new G4CMPPhysics(<verbose>));
 //
 // 20160901  M. Kelsey -- Add minimum-energy cut process
+// 20161219  M. Kelsey -- Use particle table iterator directly
 
 #include "G4CMPPhysics.hh"
 #include "G4CMPDriftBoundaryProcess.hh"
@@ -51,8 +52,8 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* driftB  = new G4CMPDriftBoundaryProcess;
   G4VProcess* ivScat  = new G4CMPInterValleyScattering;
   G4VProcess* luke    = new G4CMPLukeScattering(tmStep);
-  G4VProcess* eLimit  = new G4CMPEnergyLimiter;
   G4VProcess* recomb  = new G4CMPDriftRecombinationProcess;
+  G4VProcess* eLimit  = new G4CMPEnergyLimiter;
 
   // Set process verbosity to match physics list, for diagnostics
   phScat->SetVerboseLevel(verboseLevel);
@@ -62,8 +63,8 @@ void G4CMPPhysics::ConstructProcess() {
   driftB->SetVerboseLevel(verboseLevel);
   ivScat->SetVerboseLevel(verboseLevel);
   luke->SetVerboseLevel(verboseLevel);
-  eLimit->SetVerboseLevel(verboseLevel);
   recomb->SetVerboseLevel(verboseLevel);
+  eLimit->SetVerboseLevel(verboseLevel);
 
   G4ParticleDefinition* particle = 0;	// Reusable buffer for convenience
 
@@ -91,15 +92,15 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(luke, particle);
   RegisterProcess(ivScat, particle);
   RegisterProcess(driftB, particle);
-  RegisterProcess(eLimit, particle);
   RegisterProcess(recomb, particle);
+  RegisterProcess(eLimit, particle);
 
   particle = G4CMPDriftHole::Definition();
   RegisterProcess(tmStep, particle);
   RegisterProcess(luke, particle);
   RegisterProcess(driftB, particle);
-  RegisterProcess(eLimit, particle);
   RegisterProcess(recomb, particle);
+  RegisterProcess(eLimit, particle);
 
   AddSecondaryProduction();
 }
@@ -111,9 +112,10 @@ void G4CMPPhysics::AddSecondaryProduction() {
   G4VProcess* maker = new G4CMPSecondaryProduction;
   maker->SetVerboseLevel(verboseLevel);
 
-  aParticleIterator->reset();
-  while ((*aParticleIterator)()) {
-    G4ParticleDefinition* particle = aParticleIterator->value();
+  auto pIter = G4ParticleTable::GetParticleTable()->GetIterator();
+  pIter->reset();
+  while ((*pIter)()) {
+    G4ParticleDefinition* particle = pIter->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
     if (maker->IsApplicable(*particle)) { 
       pmanager->AddProcess(maker);

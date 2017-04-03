@@ -70,6 +70,7 @@ private:
   G4UIcmdWithAString* hitsCmd;
   G4UIcmdWithAString* millerCmd;	// Will parse out three integers
   G4UIcmdWithABool*   kvmapCmd;
+  G4UIcmdWithABool*   fanoStatsCmd;
 };
 
 #include "G4CMPConfigMessenger.icc"

@@ -13,8 +13,11 @@
 // 20140312  Follow name change CreateSecondary -> CreatePhonon
 // 20140331  Add required process subtype code
 // 20160624  Use GetTrackInfo() accessor
+// 20161114  Use new PhononTrackInfo
 
-#include "G4CMPTrackInformation.hh"
+#include "G4CMPPhononTrackInfo.hh"
+#include "G4CMPSecondaryUtils.hh"
+#include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4PhononDownconversion.hh"
 #include "G4LatticePhysical.hh"
@@ -165,7 +168,7 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   //using energy fraction x to calculate daughter phonon directions
   G4double theta1=MakeTTDeviation(d, x);
   G4double theta2=MakeTTDeviation(d, 1-x);
-  G4ThreeVector dir1=GetTrackInfo(aTrack)->GetPhononK();
+  G4ThreeVector dir1=G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack)->k();
   G4ThreeVector dir2=dir1;
 
   // FIXME:  These extra randoms change timing and causting outputs of example!
@@ -188,12 +191,34 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
 					   theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors
-  G4Track* sec1 = CreatePhonon(polarization1, dir1, Esec1);
-  G4Track* sec2 = CreatePhonon(polarization2, dir2, Esec2);
+  // Always produce one of the secondaries. The other will be produced
+  // based on track biasing values.
+  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetVolume(), polarization1, dir1,
+                                      Esec1, aTrack.GetGlobalTime(),
+                                      aTrack.GetPosition());
+  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetVolume(), polarization2, dir2,
+                                      Esec2, aTrack.GetGlobalTime(),
+                                      aTrack.GetPosition());
 
-  aParticleChange.SetNumberOfSecondaries(2);
-  aParticleChange.AddSecondary(sec1);
-  aParticleChange.AddSecondary(sec2);
+  // Pick which secondary gets the weight randomly
+  if (G4UniformRand() < 0.5) {
+    std::swap(sec1, sec2);
+  }
+
+  G4double weight1 = aTrack.GetWeight();
+  G4double weight2 = weight1 * G4CMP::ChoosePhononWeight();
+  if (weight2 > 0.) { // Produce both daughters
+    aParticleChange.SetSecondaryWeightByProcess(true);
+    sec1->SetWeight(weight1); // Default weight
+    sec2->SetWeight(weight2);
+
+    aParticleChange.SetNumberOfSecondaries(2);
+    aParticleChange.AddSecondary(sec2);
+    aParticleChange.AddSecondary(sec1);
+  } else { // Only produce one daughter
+    aParticleChange.SetNumberOfSecondaries(1);
+    aParticleChange.AddSecondary(sec1);
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -222,7 +247,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   //using energy fraction x to calculate daughter phonon directions
   G4double thetaL=MakeLDeviation(d, x);
   G4double thetaT=MakeTDeviation(d, x);
-  G4ThreeVector dir1=GetTrackInfo(aTrack)->GetPhononK();
+  G4ThreeVector dir1=G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack)->k();
   G4ThreeVector dir2=dir1;
 
   G4double ph=G4UniformRand()*twopi;
@@ -240,12 +265,29 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
 					   theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors
-  G4Track* sec1 = CreatePhonon(polarization1, dir1, Esec1);
-  G4Track* sec2 = CreatePhonon(polarization2, dir2, Esec2);
+  // Always produce the L mode phonon. Produce T mode phonon based on
+  // biasing.
+  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetVolume(), polarization1, dir1,
+                                      Esec1, aTrack.GetGlobalTime(),
+                                      aTrack.GetPosition());
+  G4double weight1 = aTrack.GetWeight();
+  G4double weight2 = weight1 * G4CMP::ChoosePhononWeight();
+  if (weight2 > 0.) { // Produce both daughters
+    G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetVolume(), polarization2, dir2,
+                                      Esec2, aTrack.GetGlobalTime(),
+                                      aTrack.GetPosition());
 
-  aParticleChange.SetNumberOfSecondaries(2);
-  aParticleChange.AddSecondary(sec1);
-  aParticleChange.AddSecondary(sec2); 
+    aParticleChange.SetSecondaryWeightByProcess(true);
+    sec1->SetWeight(weight1); // Default weight
+    sec2->SetWeight(weight2);
+
+    aParticleChange.SetNumberOfSecondaries(2);
+    aParticleChange.AddSecondary(sec2);
+    aParticleChange.AddSecondary(sec1);
+  } else { // Only produce L mode daughter
+    aParticleChange.SetNumberOfSecondaries(1);
+    aParticleChange.AddSecondary(sec1);
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

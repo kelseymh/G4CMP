@@ -27,11 +27,10 @@ public:
   virtual G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack);
 
 protected:
-  void SetPhononWaveVector(const G4Track* theTrack) const;
   void SetPhononVelocity(const G4Track* theTrack) const;
 
-  void SetChargeCarrierValley(const G4Track* theTrack) const;
   void SetChargeCarrierMass(const G4Track* theTrack) const;
+  void SetElectronEnergy(const G4Track* aTrack) const;
 };
 
 #endif /* G4CMPStackingAction_h */

@@ -16,8 +16,10 @@
 #include "G4ThreeVector.hh"
 #include "globals.hh"
 
+class G4CMPElectrodeHit;
 class G4LatticePhysical;
 class G4ParticleDefinition;
+class G4Step;
 class G4Track;
 
 
@@ -29,6 +31,9 @@ namespace G4CMP {
   // Select phonon mode randomly from density of states
   G4int ChoosePhononPolarization(const G4LatticePhysical* lattice);
   G4int ChoosePhononPolarization(G4double Ldos, G4double STdos, G4double FTdos);
+
+  // Randomly choose valley for charge carrier
+  G4int ChooseValley(const G4LatticePhysical* lattice);
 
   // Identify G4CMP particle categories
   G4bool IsPhonon(const G4Track* track);
@@ -45,6 +50,19 @@ namespace G4CMP {
   G4double ChooseWeight(const G4ParticleDefinition* pd);
   G4double ChoosePhononWeight();
   G4double ChooseChargeWeight();
+
+  // Create a Hit from a G4Step. Less error prone to use this helper.
+  void FillHit(const G4Step*, G4CMPElectrodeHit*);
+
+  // Phonons reflect difusively from surfaces.
+  G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
+
+  // Test that a phonon's wave vector relates to an inward velocity.
+  G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice,
+                                G4int polarization,
+                                G4ThreeVector waveVector,
+                                G4ThreeVector surfNorm);
+
 }
 
 #endif	/* G4CMPUtils_hh */

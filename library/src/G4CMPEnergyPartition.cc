@@ -17,6 +17,7 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4DynamicParticle.hh"
 #include "G4LatticePhysical.hh"
@@ -82,8 +83,13 @@ G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
 G4double G4CMPEnergyPartition::MeasuredChargeEnergy(G4double eTrue) const {
   // Fano noise changes the measured charge energy
   // Std deviation of energy distribution
+
+  if (!G4CMPConfigManager::FanoStatisticsEnabled()) {
+    return eTrue;
+  }
+
   G4double sigmaE = std::sqrt(eTrue * theLattice->GetFanoFactor()
-			      * theLattice->GetPairProductionEnergy());
+                              * theLattice->GetPairProductionEnergy());
   return G4RandGauss::shoot(eTrue, sigmaE);
 }
 
@@ -93,8 +99,8 @@ G4double G4CMPEnergyPartition::MeasuredChargeEnergy(G4double eTrue) const {
 void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
 				       G4double eNIEL) {
   if (verboseLevel) {
-    G4cout << "G4CMPEnergyPartition::DoPartition " << PDGcode
-	   << " eTotal " << energy/MeV << " eNIEL " << eNIEL/MeV << " MeV"
+    G4cout << "G4CMPEnergyPartition::DoPartition: ParticleID " << PDGcode
+     << "; eTotal " << energy/MeV << " MeV; eNIEL " << eNIEL/MeV << " MeV"
 	   << G4endl;
   }
 
@@ -103,7 +109,7 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
   else {
     if (PDGcode == 2112 || PDGcode > 10000) {	// Neutron or nucleus
       if (verboseLevel>1)
-	G4cout << " Nuclear Recoil: type = " << PDGcode << G4endl;
+        G4cout << " Nuclear Recoil: type = " << PDGcode << G4endl;
       NuclearRecoil(energy);
     } else {
       Ionization(energy);
@@ -116,8 +122,8 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
 
 void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
   if (verboseLevel>1) {
-    G4cout << "G4CMPEnergyPartition::DoPartition eIon " << eIon/MeV
-	   << " eNIEL " << eNIEL/MeV << " MeV" << G4endl;
+    G4cout << "G4CMPEnergyPartition::DoPartition: eIon " << eIon/MeV
+     << " MeV; eNIEL " << eNIEL/MeV << " MeV" << G4endl;
   }
 
   particles.clear();		// Discard previous results
@@ -127,7 +133,7 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
 }
 
 void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
-  if (verboseLevel) G4cout << " GenerateCharges " << energy << G4endl;
+  if (verboseLevel) G4cout << " GenerateCharges " << energy/MeV << " MeV" << G4endl;
 
   G4double ePair = theLattice->GetPairProductionEnergy();
   G4double eMeas = MeasuredChargeEnergy(energy);	// Applies Fano factor
@@ -159,7 +165,7 @@ void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
 }
 
 void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
-  if (verboseLevel) G4cout << " GeneratePhonons " << energy << G4endl;
+  if (verboseLevel) G4cout << " GeneratePhonons " << energy/MeV << " MeV" <<  G4endl;
 
   G4double ePhon = theLattice->GetDebyeEnergy(); // TODO: No fluctuations yet!
 
@@ -207,8 +213,9 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
   G4PrimaryParticle* thePrim = 0;
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
+
     weight = G4CMP::ChooseWeight(p.pd);
-    if (weight <= 0.) continue;		// Biasing rejected particle creation
+    if (weight == 0.) continue; // Biasing rejected particle creation
 
     thePrim = new G4PrimaryParticle();
     thePrim->SetParticleDefinition(p.pd);
@@ -219,7 +226,7 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
 
     if (verboseLevel==3) {
       G4cout << i << " : " << p.pd->GetParticleName() << " " << p.ekin/eV
-	     << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
+	           << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
     } else if (verboseLevel>3) {
       G4cout << i << " : ";
       thePrim->Print();
@@ -247,16 +254,17 @@ GetSecondaries(std::vector<G4Track*>& secondaries) const {
   G4Track* theSec = 0;
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
-    weight = G4CMP::ChooseWeight(p.pd);
-    if (weight <= 0.) continue;		// Biasing rejected particle creation
 
-    theSec = CreateTrack(p.pd, p.dir, p.ekin);
+    weight = G4CMP::ChooseWeight(p.pd);
+    if (weight == 0.) continue;
+
+    theSec = G4CMP::CreateSecondary(*GetCurrentTrack(), p.pd, p.dir, p.ekin);
     theSec->SetWeight(weight);
     secondaries.push_back(theSec);
 
     if (verboseLevel==3) {
       G4cout << i << " : " << p.pd->GetParticleName() << " " << p.ekin/eV
-	     << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
+	           << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
     } else if (verboseLevel>3) {
       G4cout << i << " : ";
       theSec->GetDynamicParticle()->DumpInfo();

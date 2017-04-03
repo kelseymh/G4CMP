@@ -2,9 +2,11 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPElectrodeHit.hh"
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PhononPolarization.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4Track.hh"
 #include "Randomize.hh"
 
@@ -29,6 +31,10 @@ G4int G4CMP::ChoosePhononPolarization(G4double Ldos,
   if (modeMixer<cProbST) return G4PhononPolarization::TransSlow;
   if (modeMixer<cProbFT) return G4PhononPolarization::TransFast;
   return G4PhononPolarization::Long;
+}
+
+G4int G4CMP::ChooseValley(const G4LatticePhysical* lattice) {
+  return static_cast<G4int>(G4UniformRand()*lattice->NumberOfValleys());
 }
 
 
@@ -86,4 +92,51 @@ G4double G4CMP::ChooseChargeWeight() {
 
   // If prob=0., random throw always fails, never divides by zero
   return ((prob==1.) ? 1. : (G4UniformRand()<prob) ? 1./prob : 0.);
+}
+
+void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
+  // Get information from the track
+  G4Track* track     = step->GetTrack();
+  G4int trackID      = track->GetTrackID();
+  G4String name      = track->GetDefinition()->GetParticleName();
+  G4double startE    = track->GetVertexKineticEnergy();
+  G4double startTime = track->GetGlobalTime() - track->GetLocalTime();
+  G4double finalTime = track->GetGlobalTime();
+  G4double weight    = track->GetWeight();
+  G4double edp       = step->GetNonIonizingEnergyDeposit();
+
+  // Get start and end positions. Must use PreStepPoint to get correct
+  // volume
+  G4StepPoint* postStepPoint = step->GetPostStepPoint();
+  G4ThreeVector startPosition = track->GetVertexPosition();
+  G4ThreeVector finalPosition = postStepPoint->GetPosition();
+
+  // Insert data into hit.
+  hit->SetStartTime(startTime);
+  hit->SetFinalTime(finalTime);
+  hit->SetStartEnergy(startE);
+  hit->SetEnergyDeposit(edp);
+  hit->SetWeight(weight);
+  hit->SetStartPosition(startPosition);
+  hit->SetFinalPosition(finalPosition);
+  hit->SetTrackID(trackID);
+  hit->SetParticleName(name);
+}
+
+G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
+  G4double phi = 2.0*pi*G4UniformRand();
+  G4double theta = acos(2.0*G4UniformRand() - 1.0) / 2.0;
+
+  G4ThreeVector refl = -surfNorm;
+  refl = refl.rotate(surfNorm.orthogonal(), theta);
+  refl = refl.rotate(surfNorm, phi);
+  return refl;
+}
+
+G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
+                                     G4int polarization,
+                                     G4ThreeVector waveVector,
+                                     G4ThreeVector surfNorm) {
+  G4ThreeVector vDir = lattice->MapKtoVDir(polarization, waveVector);
+  return vDir.dot(surfNorm) < 0.0;
 }

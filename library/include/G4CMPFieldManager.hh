@@ -21,6 +21,7 @@ class G4CMPLocalElectroMagField;
 class G4ChordFinder;
 class G4ElectroMagneticField;
 class G4LatticeLogical;
+class G4LatticePhysical;
 class G4MagInt_Driver;
 class G4MagIntegratorStepper;
 
@@ -32,7 +33,7 @@ public:
   ~G4CMPFieldManager();
 
   void ConfigureForTrack(const G4Track* aTrack);
-  void SetElectronValleyForTrack(G4int valley);
+  void SetChargeValleyForTrack(const G4LatticePhysical* lat, G4int valley);
 
 private:
   // Non-const access to underlying field, base class doesn't provide

@@ -11,15 +11,15 @@ option(WITH_GEANT4_UIVIS "Build example with Geant4 UI and Vis drivers" ON)
 option(USE_GEANT4_STATIC_LIBS "Build example with Geant4 static libraries" OFF)
 
 if(WITH_GEANT4_UIVIS)
-    list(APPEND ${components} ui_all vis_all)
+    list(APPEND COMPONENTS ui_all vis_all)
 endif()
 
 if(USE_GEANT4_STATIC_LIBS)
-    list(APPEND ${components} static)
+    list(APPEND COMPONENTS static)
 endif()
 
 # G4CMP Requires G4 version 10.2 or greater.
-find_package(Geant4 10.2 REQUIRED ${components})
+find_package(Geant4 10.2 REQUIRED ${COMPONENTS})
 
 # Geant4 version 10+, I think, requires C++11, but we'll check just in case.
 if(Geant4_CXXSTD STREQUAL "c++98")
