@@ -175,7 +175,7 @@ G4bool G4CMPCrystalGroup::FillTriclinic(G4double Cij[6][6]) const {
 
 // Apply matrix symmetry about diagonal: Cji = Cij
 void G4CMPCrystalGroup::ReflectElReduced(G4double Cij[6][6]) const {
-  for (size_t i=1; i<6; i++) {
+  for (size_t i=0; i<6; i++) {
     for (size_t j=i+1; j<6; j++) {
       Cij[j][i] = Cij[i][j];
     }

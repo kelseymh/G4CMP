@@ -1,3 +1,8 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
 /* This test creates slowness surface and group velocity data for silicon.
  * Use plot_test_phonon_kinematics.py to plot the results.
  */

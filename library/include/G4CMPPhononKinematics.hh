@@ -25,7 +25,7 @@ public:
   // Direct calculations
   void computeKinematics(const G4ThreeVector& n_dir);
   void fillChristoffelMatrix(const G4ThreeVector& n_dir);
-  void computeGroupVelocity(int mode, const matrix<double>& epol,
+  void computeGroupVelocity(int mode, size_t idx, const matrix<double>& epol,
 			    const G4ThreeVector& slow);
   const G4ThreeVector& getGroupVelocity(int mode, const G4ThreeVector& n_dir);
   const G4ThreeVector& getPolarization(int mode, const G4ThreeVector& n_dir);

@@ -153,21 +153,47 @@ void G4LatticeLogical::CheckBasis() {
 // Unpack reduced elasticity tensor into full four-dimensional Cijkl
 void G4LatticeLogical::FillElasticity() {
   fCrystal.FillElReduced(fElReduced);		// Apply symmetry conditions
+  /* The reduced matrix looks like this:
+   * Cxxxx, Cxxyy, Cxxzz, Cxxyz, Cxxxz, Cxxxy
+   * Cxxyy, Cyyyy, Cyyzz, Cyyyz, Cyyxz, Cyyxy
+   * Cxxyy, Cyyzz, Czzzz, Czzyz, Czzxz, Czzxy
+   * Cxxyz, Cyyyz, Czzyz, Cyzyz, Cyzxz, Cyzxy
+   * Cxxxz, Cyyxz, Czzxz, Cyzxz, Cxzxz, Cxzxy
+   * Cxxxy, Cyyxy, Czzxy, Cyzxy, Cxzxy, Cxyxy
+   */
 
-  G4int rn1[6][2] = { };
-  rn1[1][0] = rn1[1][1] = rn1[3][0] = rn1[5][1] = 1;
-  rn1[2][0] = rn1[2][1] = rn1[3][1] = rn1[4][0] = 2;
+  auto reducedIdx = [](size_t i, size_t j) -> size_t {
+    // i == j -> i
+    // i == 0 && j == 1 -> 5
+    // i == 0 && j == 2 -> 4
+    // i == 1 && j == 2 -> 3
+    if (i > 2 || j > 2) {
+      G4Exception("G4LatticeLogical::FillElasticity",
+                  "Lattice011",
+                  EventMustBeAborted,
+                  "Indices can only span 0 to 2 (x to z).");
+    }
+    if (i == j) return i;
+    if ((i == 0 && j == 1) || (i == 1 && j == 0)) return 5;
+    if ((i == 0 && j == 2) || (i == 2 && j == 0)) return 4;
+    if ((i == 1 && j == 2) || (i == 2 && j == 1)) return 3;
+    // Compiler warns us that there is no return at the end, but we have covered
+    // all bases.
+  };
 
-  G4int rn2[2][2] = { };
-  rn2[0][1] = rn2[1][0] = 1;
-
-  for (int l=0; l<2; l++) {
-    for (int k=0; k<2; k++) {
-      for (int j=0; j<6; j++) {
-	for (int i=0; i<6; i++) {
-	  fElasticity[rn1[i][rn2[k][0]]][rn1[i][rn2[k][1]]]
-	             [rn1[j][rn2[l][0]]][rn1[j][rn2[l][1]]] = fElReduced[i][j];
-	}
+  /* This could potentially be sped up because of various symmetries:
+   * Cijkl = Cjikl = Cijlk
+   * Cxxyy = Cyyxx
+   * But it probably doesn't matter because this is only done at init anyway.
+   * Plus it may get slowed down by messing with the CPU's branch prediction
+   * and compiler loop unrolling.
+   */
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t l = 0; l < 3; ++l) {
+          fElasticity[i][j][k][l] = fElReduced[reducedIdx(i, j)][reducedIdx(k, l)];
+        }
       }
     }
   }
