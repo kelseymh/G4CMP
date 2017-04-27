@@ -180,7 +180,8 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   dir2 = dir2.rotate(dir2.orthogonal(),-theta2).rotate(dir2,ph);
 
   G4double E=GetKineticEnergy(aTrack);
-  G4double Esec1 = x*E, Esec2 = E-Esec1;
+  G4double Esec1 = x*E;
+  G4double Esec2 = E-Esec1;
 
   // Make FT or ST phonon (0. means no longitudinal)
   G4int polarization1 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
@@ -205,19 +206,17 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
     std::swap(sec1, sec2);
   }
 
-  G4double weight1 = aTrack.GetWeight();
-  G4double weight2 = weight1 * G4CMP::ChoosePhononWeight();
-  if (weight2 > 0.) { // Produce both daughters
+  G4double bias = G4CMPConfigManager::GetGenPhonons();
+  if (G4CMP::ChoosePhononWeight() > 0.) { // Produce both daughters
     aParticleChange.SetSecondaryWeightByProcess(true);
-    sec1->SetWeight(weight1); // Default weight
-    sec2->SetWeight(weight2);
+    sec1->SetWeight(aTrack.GetWeight()/bias); // Default weight
+    sec2->SetWeight(aTrack.GetWeight()/bias);
 
     aParticleChange.SetNumberOfSecondaries(2);
     aParticleChange.AddSecondary(sec2);
     aParticleChange.AddSecondary(sec1);
-  } else { // Only produce one daughter
-    aParticleChange.SetNumberOfSecondaries(1);
-    aParticleChange.AddSecondary(sec1);
+  } else { // Produce no daughters
+   aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy());
   }
 }
 
@@ -270,23 +269,22 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetVolume(), polarization1, dir1,
                                       Esec1, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
-  G4double weight1 = aTrack.GetWeight();
-  G4double weight2 = weight1 * G4CMP::ChoosePhononWeight();
-  if (weight2 > 0.) { // Produce both daughters
-    G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetVolume(), polarization2, dir2,
+  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetVolume(), polarization2, dir2,
                                       Esec2, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
 
+  G4double bias = G4CMPConfigManager::GetGenPhonons();
+
+  if(G4CMP::ChoosePhononWeight() > 0.) { // Produce both daughters
     aParticleChange.SetSecondaryWeightByProcess(true);
-    sec1->SetWeight(weight1); // Default weight
-    sec2->SetWeight(weight2);
+    sec1->SetWeight(aTrack.GetWeight());
+    sec2->SetWeight(aTrack.GetWeight());
 
     aParticleChange.SetNumberOfSecondaries(2);
     aParticleChange.AddSecondary(sec2);
     aParticleChange.AddSecondary(sec1);
-  } else { // Only produce L mode daughter
-    aParticleChange.SetNumberOfSecondaries(1);
-    aParticleChange.AddSecondary(sec1);
+  } else { // Create no daughters
+    aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy());
   }
 }
 
