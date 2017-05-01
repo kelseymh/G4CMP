@@ -231,6 +231,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   G4double upperBound=1;
   G4double lowerBound=(d-1)/(d+1);
   
+  /*
   //Use MC method to generate point from distribution:
   //if a random point on the energy-probability plane is
   //smaller that the curve of the probability density,
@@ -241,6 +242,18 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   while(p >= GetLTDecayProb(d, x)) {
     x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
     p = 4.0*G4UniformRand(); 		     //4.0 is about the max in the PDF
+  }
+  */
+
+  G4double u = G4UniformRand();
+  G4double x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
+  G4double q = 0;
+  if (x <= upperBound && x >= lowerBound) q = 1/(upperBound-lowerBound);
+  while (u >= GetLTDecayProb(d, x)/(2.8/(upperBound-lowerBound))) {
+    u = G4UniformRand();
+    x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
+    if (x <= upperBound && x >= lowerBound) q = 1/(upperBound-lowerBound);
+    else q = 0;
   }
 
   //using energy fraction x to calculate daughter phonon directions
@@ -277,8 +290,8 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
 
   if(G4CMP::ChoosePhononWeight() > 0.) { // Produce both daughters
     aParticleChange.SetSecondaryWeightByProcess(true);
-    sec1->SetWeight(aTrack.GetWeight());
-    sec2->SetWeight(aTrack.GetWeight());
+    sec1->SetWeight(aTrack.GetWeight()/bias);
+    sec2->SetWeight(aTrack.GetWeight()/bias);
 
     aParticleChange.SetNumberOfSecondaries(2);
     aParticleChange.AddSecondary(sec2);
