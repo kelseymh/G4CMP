@@ -34,7 +34,7 @@ public:
   virtual void Print() const override;
 
 private:
-  size_t reflCount; // Number of times track has been reflected
+  size_t reflCount = 0; // Number of times track has been reflected
   const G4LatticePhysical* lattice; // The lattice the track is currently in
 };
 
