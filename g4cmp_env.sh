@@ -5,6 +5,7 @@
 # Usage: . g4cmp_env.sh
 #
 # 20161006  Add G4WORKDIR to (DY)LD_LIBRARY_PATH
+# 20170509  Define G4CMPLIB and G4CMPINCLUDE relative to G4CMPINSTALL
 
 # Identify location of script from user command (c.f. geant4make.sh)
 
@@ -24,6 +25,11 @@ if [ -z "$G4CMPINSTALL" ]; then
   echo "Please cd to the installation area and source script again."
   return 1
 fi
+
+# Assign environment variable for vanilla GMake build, linking
+
+export G4CMPLIB=$G4WORKDIR/lib/$G4SYSTEM
+export G4CMPINCLUDE=$G4CMPINSTALL/library/include
 
 # Extend library path to include G4CMP library location
 

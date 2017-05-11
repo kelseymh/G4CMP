@@ -3,6 +3,8 @@
 # Configure's users C shell (/bin/csh) or TCSH environment for G4CMP
 #
 # Usage: source g4cmp_env.csh
+#
+# 20170509  Define G4CMPLIB and G4CMPINCLUDE relative to G4CMPINSTALL
 
 # Identify location of script from user command (c.f. geant4make.csh)
 
@@ -34,6 +36,11 @@ if (! $?G4CMPINSTALL) then
   echo "Please cd to the installation area and source script again."
   return 1
 endif
+
+# Assign environment variable for vanilla GMake build, linking
+
+setenv G4CMPLIB $G4WORKDIR/lib/$G4SYSTEM
+setenv G4CMPINCLUDE $G4CMPINSTALL/library/include
 
 # Extend library path to include G4CMP library location
 

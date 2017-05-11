@@ -30,8 +30,13 @@ configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See GEANT4's
 documentation for further instructions.).
 
 Add the G4CMP environment variables using the `g4cmp\_env.csh` or `...sh`
-scripts found in the G4CMP top level directory.  This must be done before
-building or running executables.
+scripts found in the G4CMP installation directory (see below for build and
+installation procedures):
+
+	source g4cmp\_env.csh		# For CSH/TCSH users
+	. g4cmp\_env.sh			# For SH/BASH users
+
+This must be done before building or running executables.
 
 G4CMP is only configured for use on Linux and MacOSX platforms.  A minimum
 configuration requires a recent enough version of GCC or Clang to support
@@ -119,12 +124,16 @@ additional diagnostic output files which may be of interest.
 
 ## Building the Package
 
-G4CMP supports building with make and CMake.
+G4CMP supports building itself with either GNU Make or CMake, and separately
+supports being linked into user applicated with either GNU Make (via
+environment variable settings) or CMake.
 
-### Building with make
+### Building with Make
 
-Configure your build environment (using
-`<g4dir>/share/Geant4-${VERSION}/geant4make/geant4make.csh` or `...sh`).
+Configure your Geant4 build environment using
+`<g4dir>/share/Geant4-${VERSION}/geant4make/geant4make.csh` or `...sh`, then
+configure or G4CMP environment as described above with `g4cmp_env.csh` or
+`...sh`.
 
 After configuring your environment, build the G4CMP library with the command
 
@@ -161,8 +170,9 @@ to be built, use the following command
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} ../G4CMP
 
 If you want to install to a local path, rather than system-wide, use the
-`-DCMAKE\_INSTALL\_PREFIX=/path/to/install` option. If you want to build an
-example application,
+`-DCMAKE\_INSTALL\_PREFIX=/path/to/install` option.
+
+If you want to build an example application,
 
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DBUILD_CHARGE_EXAMPLE=ON ../G4CMP
 
@@ -178,6 +188,16 @@ While it's not strictly necessary, we strongly recommend installing G4CMP to
 the install prefix rather than running the binaries from the build directory
 
     make install
+
+Once the build/install step is completed, the destination directory will
+contain local, modified versions of the `g4cmp\_env.csh` and `...sh` scripts
+discussed above.  In the modified scripts, the environment variables will
+point to the appropriate installation path, rather than the original checked
+out G4CMP package sources.
+
+### Linking user applications against G4CMP
+
+_To be written._
 
 
 ## Defining the Crystal Dynamics
