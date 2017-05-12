@@ -21,21 +21,26 @@ fi
 # Ensure that G4CMP installation is known
 
 if [ -z "$G4CMPINSTALL" ]; then
-  echo "ERROR: g4cmp_env.sh could self-locate G4CMP installation."
+  echo "ERROR: g4cmp_env.sh could not self-locate G4CMP installation."
   echo "Please cd to the installation area and source script again."
   return 1
 fi
 
-# Assign environment variable for vanilla GMake build, linking
+# If running script from source directory, assume GMake build
 
-export G4CMPLIB=$G4WORKDIR/lib/$G4SYSTEM
-export G4CMPINCLUDE=$G4CMPINSTALL/library/include
+if [ -r $G4CMPINSTALL/README.md ]; then
+  export G4CMPLIB=$G4WORKDIR/lib/$G4SYSTEM
+  export G4CMPINCLUDE=$G4CMPINSTALL/library/include
+elif [ `dirname $G4CMPINSTALL|xargs basename` = "share" ]; then
+  topdir=`dirname $G4CMPINSTALL|xargs dirname`
+  export G4CMPLIB=$topdir/lib
+  export G4CMPINCLUDE=$topdir/include/G4CMP
+fi
 
 # Extend library path to include G4CMP library location
 
-g4cmplib=$G4WORKDIR/lib/$G4SYSTEM
-[ -n "$LD_LIBRARY_PATH" ]   && export LD_LIBRARY_PATH=${g4cmplib}:$LD_LIBRARY_PATH
-[ -n "$DYLD_LIBRARY_PATH" ] && export DYLD_LIBRARY_PATH=${g4cmplib}:$DYLD_LIBRARY_PATH
+[ -n "$LD_LIBRARY_PATH" ]   && export LD_LIBRARY_PATH=${G4CMPLIB}:$LD_LIBRARY_PATH
+[ -n "$DYLD_LIBRARY_PATH" ] && export DYLD_LIBRARY_PATH=${G4CMPLIB}:$DYLD_LIBRARY_PATH
 
 # Assign environment variables for runtime configuraiton
 

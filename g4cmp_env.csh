@@ -32,27 +32,32 @@ endif
 # Ensure that G4CMP installation is known
 
 if (! $?G4CMPINSTALL) then
-  echo "ERROR: g4cmp_env.sh could self-locate G4CMP installation."
+  echo "ERROR: g4cmp_env.sh could not self-locate G4CMP installation."
   echo "Please cd to the installation area and source script again."
   return 1
 endif
 
-# Assign environment variable for vanilla GMake build, linking
+# If running script from source directory, assume GMake build
 
-setenv G4CMPLIB $G4WORKDIR/lib/$G4SYSTEM
-setenv G4CMPINCLUDE $G4CMPINSTALL/library/include
+if (-r $G4CMPINSTALL/README.md) then
+  setenv G4CMPLIB     $G4WORKDIR/lib/$G4SYSTEM
+  setenv G4CMPINCLUDE $G4CMPINSTALL/library/include
+else if (`dirname $G4CMPINSTALL|xargs basename` == "share") then
+  set topdir = `dirname $G4CMPINSTALL|xargs dirname`
+  setenv G4CMPLIB     $topdir/lib
+  setenv G4CMPINCLUDE $topdir/include/G4CMP
+endif
 
 # Extend library path to include G4CMP library location
 
-set g4cmplib = $G4WORKDIR/lib/$G4SYSTEM
 if ($?LD_LIBRARY_PATH) then
-  setenv LD_LIBRARY_PATH ${g4cmplib}:$LD_LIBRARY_PATH
+  setenv LD_LIBRARY_PATH ${G4CMPLIB}:$LD_LIBRARY_PATH
 endif
 if ($?DYLD_LIBRARY_PATH) then
-  setenv DYLD_LIBRARY_PATH ${g4cmplib}:$DYLD_LIBRARY_PATH
+  setenv DYLD_LIBRARY_PATH ${G4CMPLIB}:$DYLD_LIBRARY_PATH
 endif
 
 # Assign environment variables for runtime configuraiton
 
-setenv G4LATTICEDATA $G4CMPINSTALL/CrystalMaps
+setenv G4LATTICEDATA   $G4CMPINSTALL/CrystalMaps
 setenv G4ORDPARAMTABLE $G4CMPINSTALL/G4CMPOrdParamTable.txt
