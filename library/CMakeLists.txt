@@ -238,5 +238,5 @@ set_target_properties(G4cmp PROPERTIES COMPILE_DEFINITIONS "qh_QHpointer")
 
 install(TARGETS G4cmp qhullcpp qhull_p DESTINATION lib)
 install(FILES ${library_HEADERS} DESTINATION include/G4CMP)
-install(FILES ${config_FILES} DESTINATION bin COMPONENT config)
+install(FILES ${config_FILES} DESTINATION share/G4CMP COMPONENT config)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/CrystalMaps DESTINATION share/G4CMP COMPONENT config)

@@ -30,8 +30,13 @@ configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See GEANT4's
 documentation for further instructions.).
 
 Add the G4CMP environment variables using the `g4cmp\_env.csh` or `...sh`
-scripts found in the G4CMP top level directory.  This must be done before
-building or running executables.
+scripts found in the G4CMP installation directory (see below for build and
+installation procedures):
+
+	source g4cmp\_env.csh		# For CSH/TCSH users
+	. g4cmp\_env.sh			# For SH/BASH users
+
+This must be done before building or running executables.
 
 G4CMP is only configured for use on Linux and MacOSX platforms.  A minimum
 configuration requires a recent enough version of GCC or Clang to support
@@ -119,12 +124,16 @@ additional diagnostic output files which may be of interest.
 
 ## Building the Package
 
-G4CMP supports building with make and CMake.
+G4CMP supports building itself with either GNU Make or CMake, and separately
+supports being linked into user applicated with either GNU Make (via
+environment variable settings) or CMake.
 
-### Building with make
+### Building with Make
 
-Configure your build environment (using
-`<g4dir>/share/Geant4-${VERSION}/geant4make/geant4make.csh` or `...sh`).
+Configure your Geant4 build environment using
+`<g4dir>/share/Geant4-${VERSION}/geant4make/geant4make.csh` or `...sh`, then
+configure or G4CMP environment as described above with `g4cmp_env.csh` or
+`...sh`.
 
 After configuring your environment, build the G4CMP library with the command
 
@@ -161,8 +170,9 @@ to be built, use the following command
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} ../G4CMP
 
 If you want to install to a local path, rather than system-wide, use the
-`-DCMAKE\_INSTALL\_PREFIX=/path/to/install` option. If you want to build an
-example application,
+`-DCMAKE\_INSTALL\_PREFIX=/path/to/install` option.
+
+If you want to build an example application,
 
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DBUILD_CHARGE_EXAMPLE=ON ../G4CMP
 
@@ -178,6 +188,33 @@ While it's not strictly necessary, we strongly recommend installing G4CMP to
 the install prefix rather than running the binaries from the build directory
 
     make install
+
+Once theinstall step is completed, the /path/to/install/share/G4CMP/
+directory will contain copies of the `g4cmp\_env.csh` and `...sh` scripts
+discussed above.  These copies should be sourced in order to correctly
+locate the installed libraries and header files.
+
+### Linking user applications against G4CMP
+
+G4CMP is an application library, which can be linked into a user's Geant4
+application in order to provide phonon and charge carrier transport in
+crystals.  Users must reference G4CMP in their application build in order to
+utilize these features.  
+
+If you have a simple Makefile build system (GMake), the following two lines,
+or an appropriate variation on them, should be sufficient:
+
+    CXXFLAGS += -I$(G4CMPINCLUDE)
+    LDFLAGS += -L$(G4CMPLIB) -lG4cmp -lqhullcpp -lqhullstatic_p
+
+These actions must occur _before_ the Geant4 libraries and include directory
+are referenced (G4CMP includes modified versions of some toolkit code).
+
+If you are using CMake to build your application, it should be sufficient to
+add the following two actions, before referencing Geant4:
+
+    find_package(G4CMP REQUIRED)
+    include(${G4CMP_USE_FILE})
 
 
 ## Defining the Crystal Dynamics
