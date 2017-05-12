@@ -189,15 +189,32 @@ the install prefix rather than running the binaries from the build directory
 
     make install
 
-Once the build/install step is completed, the destination directory will
-contain local, modified versions of the `g4cmp\_env.csh` and `...sh` scripts
-discussed above.  In the modified scripts, the environment variables will
-point to the appropriate installation path, rather than the original checked
-out G4CMP package sources.
+Once theinstall step is completed, the /path/to/install/share/G4CMP/
+directory will contain copies of the `g4cmp\_env.csh` and `...sh` scripts
+discussed above.  These copies should be sourced in order to correctly
+locate the installed libraries and header files.
 
 ### Linking user applications against G4CMP
 
-_To be written._
+G4CMP is an application library, which can be linked into a user's Geant4
+application in order to provide phonon and charge carrier transport in
+crystals.  Users must reference G4CMP in their application build in order to
+utilize these features.  
+
+If you have a simple Makefile build system (GMake), the following two lines,
+or an appropriate variation on them, should be sufficient:
+
+    CXXFLAGS += -I$(G4CMPINCLUDE)
+    LDFLAGS += -L$(G4CMPLIB) -lG4cmp -lqhullcpp -lqhullstatic_p
+
+These actions must occur _before_ the Geant4 libraries and include directory
+are referenced (G4CMP includes modified versions of some toolkit code).
+
+If you are using CMake to build your application, it should be sufficient to
+add the following two actions, before referencing Geant4:
+
+    find_package(G4CMP REQUIRED)
+    include(${G4CMP_USE_FILE})
 
 
 ## Defining the Crystal Dynamics
