@@ -244,12 +244,14 @@ void G4LatticeLogical::FillElasticity() {
                   EventMustBeAborted,
                   "Indices can only span 0 to 2 (x to z).");
     }
+
     if (i == j) return i;
     if ((i == 0 && j == 1) || (i == 1 && j == 0)) return 5;
     if ((i == 0 && j == 2) || (i == 2 && j == 0)) return 4;
     if ((i == 1 && j == 2) || (i == 2 && j == 1)) return 3;
-    // Compiler warns us that there is no return at the end, but we have covered
-    // all bases.
+
+    // Should never get to this point (Exception thrown above
+    return 0;
   };
 
   /* This could potentially be sped up because of various symmetries:
