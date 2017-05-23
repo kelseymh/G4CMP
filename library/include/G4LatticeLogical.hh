@@ -25,6 +25,7 @@
 // 20160629  Add post-constuction initialization (for tables, computed pars)
 // 20160630  Drop loading of K-Vg lookup table files
 // 20160727  Store Debye energy for phonon primaries, support different access
+// 20170523  Add interface for axis vector of valleys
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -175,12 +176,13 @@ public:
   G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const;
 
   // Transform for drifting-electron valleys in momentum space
-  void AddValley(const G4RotationMatrix& valley) { fValley.push_back(valley); }
+  void AddValley(const G4RotationMatrix& valley);
   void AddValley(G4double phi, G4double theta, G4double psi);
-  void ClearValleys() { fValley.clear(); }
+  void ClearValleys() { fValley.clear(); fValleyAxis.clear(); }
 
   size_t NumberOfValleys() const { return fValley.size(); }
   const G4RotationMatrix& GetValley(G4int iv) const;
+  const G4ThreeVector& GetValleyAxis(G4int iv) const;
 
   // Print out Euler angles of requested valley
   void DumpValley(std::ostream& os, G4int iv) const;
@@ -256,6 +258,7 @@ private:
   G4RotationMatrix fMassRatioSqrt;       // SQRT of tensor/scalar ratio
   G4RotationMatrix fMInvRatioSqrt;       // SQRT of scalar/tensor ratio
   std::vector<G4RotationMatrix> fValley; // Electron transport directions
+  std::vector<G4ThreeVector> fValleyAxis;
 
   G4double fIVField;		 // Transverse field for intervalley scattering
   G4double fIVRate;		 // Scale factor for IV scattering MFP

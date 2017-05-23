@@ -24,6 +24,7 @@
 // 20160630  Drop loading of K-Vg lookup table files
 // 20160701  Add interface to set elements of reduced elasticity matrix
 // 20160727  Store Debye energy for phonon primaries, support different access
+// 20170523  Add interface for axis vector of valleys
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -147,8 +148,8 @@ void G4LatticeLogical::CheckBasis() {
   }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 // Unpack reduced elasticity tensor into full four-dimensional Cijkl
 void G4LatticeLogical::FillElasticity() {
@@ -198,6 +199,7 @@ void G4LatticeLogical::FillElasticity() {
     }
   }
 }
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -513,6 +515,8 @@ void G4LatticeLogical::FillMassInfo() {
 			      0., 0., 1./fMassRatioSqrt.zz()));
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 // Store drifting-electron valley using Euler angles
 
 void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
@@ -524,6 +528,18 @@ void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
   // Extend vector first, then fill last value, to reduce temporaries
   fValley.resize(fValley.size()+1);
   fValley.back().set(phi,theta,psi);
+
+  // NOTE:  Rotation matrices take external vector along valley axis to X-hat
+  fValleyAxis.push_back(fValley.back().inverse()*G4ThreeVector(1.,0.,0.));
+}
+
+// Store rotation matrix and corresponding axis vector for valley
+
+void G4LatticeLogical::AddValley(const G4RotationMatrix& valley) {
+  fValley.push_back(valley);
+
+  // NOTE:  Rotation matrices take external vector along valley axis to X-hat
+  fValleyAxis.push_back(valley.inverse()*G4ThreeVector(1.,0.,0.));
 }
 
 // Transform for drifting-electron valleys in momentum space
@@ -536,6 +552,19 @@ const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
   if (verboseLevel)
     G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
   return G4RotationMatrix::IDENTITY;
+}
+
+const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::GetValleyAxis " << iv << G4endl;
+
+  if (iv >=0 && iv < (G4int)NumberOfValleys()) return fValleyAxis[iv];
+
+  if (verboseLevel)
+    G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
+
+  static const G4ThreeVector nullVec(0.,0.,0.);
+  return nullVec;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

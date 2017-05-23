@@ -19,6 +19,7 @@
 // 20140425  Add "effective mass" calculation for electrons
 // 20150601  Add mapping from electron velocity back to momentum
 // 20160608  Drop (theta,phi) lattice orientation function.
+// 20170523  Add interface for axis vector of valleys
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -119,6 +120,7 @@ public:
 
   // FIXME:  Should valley matrix be rotated from internal to local coordinates?
   const G4RotationMatrix& GetValley(G4int iv) const { return fLattice->GetValley(iv); }
+  const G4ThreeVector& GetValleyAxis(G4int iv) const { return fLattice->GetValleyAxis(iv); }
 
   // Parameters for electron intervalley scattering
   G4double GetIVField() const    { return fLattice->GetIVField(); }
