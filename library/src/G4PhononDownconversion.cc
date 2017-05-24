@@ -34,7 +34,6 @@
 #include <cmath>
 
 
-
 G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   : G4VPhononProcess(aName, fPhononDownconversion),
     fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.) {;}
@@ -216,7 +215,6 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
     aParticleChange.AddSecondary(sec2);
     aParticleChange.AddSecondary(sec1);
   } else { // Produce no daughters
-   aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy());
   }
 }
 
@@ -267,7 +265,8 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   dir2 = dir2.rotate(dir2.orthogonal(),-thetaT).rotate(dir2,ph);
 
   G4double E=GetKineticEnergy(aTrack);
-  G4double Esec1 = x*E, Esec2 = E-Esec1;
+  G4double Esec1 = x*E;
+  G4double Esec2 = E-Esec1;
 
   // First secondary is longitudnal
   int polarization1 = G4PhononPolarization::Long;
@@ -287,7 +286,6 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
                                       aTrack.GetPosition());
 
   G4double bias = G4CMPConfigManager::GetGenPhonons();
-
   if(G4CMP::ChoosePhononWeight() > 0.) { // Produce both daughters
     aParticleChange.SetSecondaryWeightByProcess(true);
     sec1->SetWeight(aTrack.GetWeight()/bias);
@@ -297,7 +295,6 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
     aParticleChange.AddSecondary(sec2);
     aParticleChange.AddSecondary(sec1);
   } else { // Create no daughters
-    aParticleChange.ProposeNonIonizingEnergyDeposit(aTrack.GetKineticEnergy());
   }
 }
 
