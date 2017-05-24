@@ -10,6 +10,7 @@
 ///
 // $Id$
 //
+// 20170524  Add constructor and accessor for position argument
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -29,13 +30,18 @@ class G4Track;
 class G4CMPEnergyPartition : public G4CMPProcessUtils {
 public:
   G4CMPEnergyPartition(G4Material* mat=0, G4LatticePhysical* lat=0);
+  G4CMPEnergyPartition(const G4ThreeVector& pos);
+
   virtual ~G4CMPEnergyPartition();
+
+  // Set debugging output
+  void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
   // Material is needed for (Z,A) in Lindhard scaling
   void SetMaterial(G4Material* mat) { material = mat; }
 
-  // Set debugging output
-  void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+  // Position may be used to get material and lattice from geometry
+  void UsePosition(const G4ThreeVector& pos);
 
   // Specify particle type (PDG), total and NIEL energy deposit
   void DoPartition(G4int PDGcode, G4double energy, G4double eNIEL);

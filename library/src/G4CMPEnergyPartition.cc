@@ -12,6 +12,7 @@
 //
 // 20160830  Apply production biasing for primaries and secondaries
 // 20160830  Fix 'A' parameter in Lindhard to convert from g/mole units.
+// 20170524  Add constructor and accessor for position argument
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPConfigManager.hh"
@@ -21,11 +22,15 @@
 #include "G4CMPUtils.hh"
 #include "G4DynamicParticle.hh"
 #include "G4LatticePhysical.hh"
+#include "G4LogicalVolume.hh"
 #include "G4Material.hh"
+#include "G4Navigator.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PrimaryParticle.hh"
 #include "G4RandomDirection.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4TransportationManager.hh"
+#include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
 #include <cmath>
 #include <vector>
@@ -35,13 +40,35 @@
 
 G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
-  : G4CMPProcessUtils(), material(mat), holeFraction(0.5),
+  : G4CMPProcessUtils(), material(0), holeFraction(0.5),
     verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
     nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
   SetLattice(lat);
 }
 
+G4CMPEnergyPartition::G4CMPEnergyPartition(const G4ThreeVector& pos)
+  : G4CMPEnergyPartition() {
+  UsePosition(pos);
+}
+
 G4CMPEnergyPartition::~G4CMPEnergyPartition() {;}
+
+
+// Extract material and lattice information from geometry
+
+void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
+  G4TransportationManager* transMan =
+    G4TransportationManager::GetTransportationManager();
+  G4Navigator* nav = transMan->GetNavigatorForTracking();
+  G4VPhysicalVolume* volume = nav->LocateGlobalPointAndSetup(pos,0,false);
+
+  if (verboseLevel) 
+    G4cout << "G4CMPEnergyPartition: " << pos << " in volume "
+	   << volume->GetName() << G4endl;
+
+  FindLattice(volume);
+  SetMaterial(volume->GetLogicalVolume()->GetMaterial());
+}
 
 
 // Fraction of total energy deposit in material which goes to e/h pairs
