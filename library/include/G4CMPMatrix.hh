@@ -1,5 +1,7 @@
 //  matrix.h
 //  Created by Daniel Palken in 2014 for G4CMP
+//
+//  20170525  M. Kelsey -- Add move semantics for copy ctor and assignment
 
 #ifndef G4CMPMatrix_h
 #define G4CMPMatrix_h
@@ -18,7 +20,7 @@ private:
   size_t nn, mm;
   vector<vector<T> > v;
 
- public:
+public:
   typedef T value_type; 			// make T available externally
   typedef T& reference;
 
@@ -27,10 +29,12 @@ private:
   matrix(size_t n, size_t m, const T &a);	// Initialize to constant
   matrix(size_t n, size_t m, const T *a);	// Initialize to array
   matrix(const matrix &rhs);			// Copy constructor
+  matrix(matrix &&rhs);				// Move constructor
 
   ~matrix() {;}
   
   matrix& operator=(const matrix &rhs);		// Assignment
+  matrix& operator=(matrix &&rhs);		// Move assignment
   matrix& operator=(const T *a);		// Copy array into matrix
 
   void resize(size_t n, size_t m, const T& a=T(0));

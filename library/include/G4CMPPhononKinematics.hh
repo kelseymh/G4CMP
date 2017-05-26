@@ -1,8 +1,10 @@
-//  G4CMPPhononKinematics.hh
-//  Created by Daniel Palken in 2014 for G4CMP
-
 #ifndef G4CMPPhononKinematics_hh
 #define G4CMPPhononKinematics_hh
+
+//  G4CMPPhononKinematics.hh
+//  Created by Daniel Palken in 2014 for G4CMP
+//
+//  20170525  Drop unnecessary empty destructor ("rule of five" semantics)
 
 #include "G4CMPEigenSolver.hh" // Numerical Recipes III code
 #include "G4CMPMatrix.hh"
@@ -20,7 +22,6 @@ class G4LatticeLogical;
 class G4CMPPhononKinematics {
 public:
   G4CMPPhononKinematics(G4LatticeLogical *lat);
-  ~G4CMPPhononKinematics();
 
   // Direct calculations
   void computeKinematics(const G4ThreeVector& n_dir);

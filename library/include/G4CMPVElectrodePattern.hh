@@ -11,6 +11,7 @@
 // 20160831  M. Kelsey -- Add optional electrode geometry class
 // 20160904  M. Kelsey -- Pass ref to concrete G4ParticleChange
 // 20160906  M. Kelsey -- Add function handle constness of material table
+// 20170525  M. Kelsey -- Add "rule of five" default copy/move operators
 
 #ifndef G4CMPVElectrodePattern_h
 #define G4CMPVElectrodePattern_h 1
@@ -28,6 +29,12 @@ class G4CMPVElectrodePattern {
 public:
   G4CMPVElectrodePattern() : verboseLevel(0) {;}
   virtual ~G4CMPVElectrodePattern() {;}
+
+  // Use default copy/move operators
+  G4CMPVElectrodePattern(const G4CMPVElectrodePattern&) = default;
+  G4CMPVElectrodePattern(G4CMPVElectrodePattern&&) = default;
+  G4CMPVElectrodePattern& operator=(const G4CMPVElectrodePattern&) = default;
+  G4CMPVElectrodePattern& operator=(G4CMPVElectrodePattern&&) = default;
 
   // Subclasses may use verbosity level for diagnostics
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }

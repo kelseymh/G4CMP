@@ -8,6 +8,8 @@
 //
 // $Id$
 //
+// 20170525  M. Kelsey -- Add default "rule of five" copy/move operators
+
 #ifndef G4CMPStackingAction_h
 #define G4CMPStackingAction_h 1
 
@@ -31,6 +33,13 @@ protected:
 
   void SetChargeCarrierMass(const G4Track* theTrack) const;
   void SetElectronEnergy(const G4Track* aTrack) const;
+
+public:
+  G4CMPStackingAction(const G4CMPStackingAction&) = default;
+  G4CMPStackingAction(G4CMPStackingAction&&) = default;
+  G4CMPStackingAction& operator=(const G4CMPStackingAction&) = default;
+  G4CMPStackingAction& operator=(G4CMPStackingAction&&) = default;
+
 };
 
 #endif /* G4CMPStackingAction_h */

@@ -4,6 +4,8 @@
 \***********************************************************************/
 
 // $Id$
+//
+// 20170525  Drop unnecessary empty destructor ("rule of five" pattern)
 
 #ifndef G4CMPTriLinearInterp_h 
 #define G4CMPTriLinearInterp_h 
@@ -22,7 +24,6 @@ public:
 
   G4CMPTriLinearInterp(const std::vector<point >& xyz,
 		       const std::vector<G4double>& v);
-  ~G4CMPTriLinearInterp() {;}
 
   // User initialization or re-initialization
   void UseMesh(const std::vector<point >& xyz,

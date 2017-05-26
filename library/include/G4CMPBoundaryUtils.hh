@@ -14,6 +14,7 @@
 //
 // 20160904  Add electrode pattern handling
 // 20160906  Make most functions const, provide casting function for matTable
+// 20170525  Add default "rule of five" copy/move operators (no owned pointers)
 
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
@@ -37,6 +38,11 @@ public:
   G4CMPBoundaryUtils(G4VProcess* process);
   virtual ~G4CMPBoundaryUtils();
 
+  G4CMPBoundaryUtils(const G4CMPBoundaryUtils&) = default;
+  G4CMPBoundaryUtils(G4CMPBoundaryUtils&&) = default;
+  G4CMPBoundaryUtils& operator=(const G4CMPBoundaryUtils&) = default;
+  G4CMPBoundaryUtils& operator=(G4CMPBoundaryUtils&&) = default;
+  
   virtual void SetVerboseLevel(G4int vb) { buVerboseLevel = vb; }
 
   // Check whether this step is at a good boundary for processing

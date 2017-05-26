@@ -25,6 +25,7 @@
 // 20160701  Add interface to set elements of reduced elasticity matrix
 // 20160727  Store Debye energy for phonon primaries, support different access
 // 20170523  Add interface for axis vector of valleys
+// 20170525  Add "rule of five" copy/move semantics
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -65,6 +66,73 @@ G4LatticeLogical::~G4LatticeLogical() {
   delete fpPhononKin; fpPhononKin = 0;
   delete fpPhononTable; fpPhononTable = 0;
 }
+
+// Copy and move operators (to handle owned pointers)
+
+G4LatticeLogical::G4LatticeLogical(const G4LatticeLogical& rhs)
+  : G4LatticeLogical() { *this = rhs; }
+
+G4LatticeLogical::G4LatticeLogical(G4LatticeLogical&& rhs)
+  : G4LatticeLogical() { std::swap(*this, rhs); }
+
+G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
+  if (this == &rhs) return *this;	// Avoid unnecessary work;
+
+  verboseLevel = rhs.verboseLevel;
+  fName = rhs.fName;
+  fCrystal = rhs.fCrystal;
+  std::copy(rhs.fBasis, rhs.fBasis+3, fBasis);
+  fDensity = rhs.fDensity;
+  fHasElasticity = rhs.fHasElasticity;
+  fA = rhs.fA;
+  fB = rhs.fB;
+  fLDOS = rhs.fLDOS;
+  fSTDOS = rhs.fSTDOS;
+  fFTDOS = rhs.fFTDOS;
+  fBeta = rhs.fBeta;
+  fGamma = rhs.fGamma;
+  fLambda = rhs.fLambda;
+  fMu = rhs.fMu;
+  fDebye = rhs.fDebye;
+  fVSound = rhs.fVSound;
+  fL0_e = rhs.fL0_e;
+  fL0_h = rhs.fL0_h;
+  fHoleMass = rhs.fHoleMass;
+  fElectronMass = rhs.fElectronMass;
+  fBandGap = rhs.fBandGap;
+  fPairEnergy = rhs.fPairEnergy;
+  fFanoFactor = rhs.fFanoFactor;
+  fMassTensor = rhs.fMassTensor;
+  fMassInverse = rhs.fMassInverse;
+  fMassRatioSqrt = rhs.fMassRatioSqrt;
+  fMInvRatioSqrt = rhs.fMInvRatioSqrt;
+  fValley = rhs.fValley;
+  fValleyAxis = rhs.fValleyAxis;
+  fIVField = rhs.fIVField;
+  fIVRate = rhs.fIVRate;
+  fIVExponent = rhs.fIVExponent;
+
+  if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
+  if (!rhs.fpPhononTable) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
+
+  SetElReduced(rhs.fElReduced);
+  FillElasticity();
+
+  for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
+    for (G4int j=0; j<KVBINS; j++) {
+      for (G4int k=0; k<KVBINS; k++) {
+	fKVMap[i][j][k] = rhs.fKVMap[i][j][k];
+      }
+    }
+  }
+
+  return *this;
+}
+
+G4LatticeLogical& G4LatticeLogical::operator=(G4LatticeLogical&& rhs) {
+  std::swap(*this, rhs);
+}
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 

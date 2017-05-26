@@ -19,6 +19,7 @@
 // 20150601  Add mapping from electron velocity back to momentum
 // 20160517  Replace unit vectors with CLHEP built-in values
 // 20160608  Drop (theta,phi) lattice orientation function.
+// 20170525  Drop empty destructor to allow default "rule of five" semantics
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -49,8 +50,6 @@ G4LatticePhysical::G4LatticePhysical(const G4LatticeLogical* Lat,
   : verboseLevel(0), fLattice(Lat) {
   SetMillerOrientation(h, k, l, rot);
 }
-
-G4LatticePhysical::~G4LatticePhysical() {;}
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

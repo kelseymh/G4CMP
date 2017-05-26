@@ -2,6 +2,7 @@
 //  Created by Daniel Palken in 2014 for G4CMP
 //
 //  20160628  Tabulating on nx and ny is just wrong; use theta, phi
+//  20170525  Drop unnecessary empty destructor ("rule of five" semantics)
 
 #ifndef G4CMPPhononKinTable_hh
 #define G4CMPPhononKinTable_hh
@@ -23,7 +24,6 @@ public:
   G4CMPPhononKinTable(G4CMPPhononKinematics* map, G4double thmin=0.,
 		      G4double thmax=pi, G4int nth=250, G4double phmin=0.,
 		      G4double phmax=twopi, G4int nph=250);
-  ~G4CMPPhononKinTable();
 
   void initialize();		// Trigger filling of lookup tables
 
@@ -81,7 +81,7 @@ private:
   void clearQuantityMap();
 
 private:
-  G4CMPPhononKinematics* mapper;
+  G4CMPPhononKinematics* mapper;	// Not owned; client responsibility
   G4bool lookupReady;			// Flag once tables are filled
   vector<vector<G4CMPBiLinearInterp> > quantityMap;
   vector<vector<vector<double> > > lookupData;

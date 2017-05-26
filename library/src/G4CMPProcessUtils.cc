@@ -31,6 +31,7 @@
 // 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 // 20160906  Make GetSurfaceNormal() const.
 // 20161004  Add new ChangeValley() function to avoid null selection
+// 20170525  Drop explicit copy constructors; let compiler do the work
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -70,27 +71,6 @@ G4CMPProcessUtils::G4CMPProcessUtils()
 }
 
 G4CMPProcessUtils::~G4CMPProcessUtils() {;}
-
-
-// Assignment operators allow dependent configuration
-
-G4CMPProcessUtils::G4CMPProcessUtils(G4CMPProcessUtils& right)
-  : theLattice(right.theLattice),
-    currentTrack(right.currentTrack), currentVolume(right.currentVolume),
-    fLocalToGlobal(right.fLocalToGlobal),
-    fGlobalToLocal(right.fGlobalToLocal) {;}
-
-G4CMPProcessUtils&
-G4CMPProcessUtils::operator=(const G4CMPProcessUtils& right) {
-  if (this != &right) {			// Avoid unnecessary work
-    theLattice      = right.theLattice;
-    currentTrack    = right.currentTrack;
-    currentVolume   = right.currentVolume;
-    fLocalToGlobal  = right.fLocalToGlobal;
-    fGlobalToLocal  = right.fGlobalToLocal;
-  }
-  return *this;
-}
 
 
 // Initialization for current track

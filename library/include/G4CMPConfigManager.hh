@@ -22,6 +22,7 @@
 // 20160624  Add flag to use or ignore phonon KV lookup tables
 // 20160830  Add parameter to scale production of e/h pairs, like phonons
 // 20160901  Add parameters to set minimum energy for phonons, charges
+// 20170525  Block 'rule of five' copy/move semantics, as singleton
 
 #include "globals.hh"
 #include "G4RunManager.hh"
@@ -96,6 +97,10 @@ public:
 
 private:
   G4CMPConfigManager();		// Singleton: only constructed on request
+  G4CMPConfigManager(const G4CMPConfigManager&) = delete;
+  G4CMPConfigManager(G4CMPConfigManager&&) = delete;
+  G4CMPConfigManager& operator=(const G4CMPConfigManager&) = delete;
+  G4CMPConfigManager& operator=(G4CMPConfigManager&&) = delete;
 
   static G4CMPConfigManager* Instance();   // Only needed by static accessors
   static G4CMPConfigManager* theInstance;

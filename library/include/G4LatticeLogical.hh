@@ -26,6 +26,7 @@
 // 20160630  Drop loading of K-Vg lookup table files
 // 20160727  Store Debye energy for phonon primaries, support different access
 // 20170523  Add interface for axis vector of valleys
+// 20170525  Add "rule of five" copy/move semantics
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -51,6 +52,13 @@ public:
   G4LatticeLogical(const G4String& name="");
   virtual ~G4LatticeLogical();
 
+  // Copy and move operators (to handle owned pointers)
+  G4LatticeLogical(const G4LatticeLogical& rhs);
+  G4LatticeLogical(G4LatticeLogical&& rhs);
+  G4LatticeLogical& operator=(const G4LatticeLogical& rhs);
+  G4LatticeLogical& operator=(G4LatticeLogical&& rhs);
+
+  // Run-time configuration
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
   void SetName(const G4String& name) { fName = name; }

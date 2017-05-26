@@ -38,6 +38,10 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*) {
     return DBL_MAX;
   }
+
+private:
+  G4CMPEnergyLimiter(const G4CMPEnergyLimiter&);	// Copying is forbidden
+  G4CMPEnergyLimiter& operator=(const G4CMPEnergyLimiter&);
 };
 
 #endif	/* G4CMPEnergyLimiter_hh */

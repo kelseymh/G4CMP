@@ -28,6 +28,7 @@
 //	     move track identification functions to G4CMPUtils
 // 20160906  Make GetSurfaceNormal() const.
 // 20161004  Add new ChangeValley() function to avoid null selection
+// 20170525  Drop explicit copy constructors; let compiler do the work
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -53,8 +54,10 @@ public:
   virtual ~G4CMPProcessUtils();
 
   // Assignment operators allow dependent configuration
-  G4CMPProcessUtils(G4CMPProcessUtils&);
-  G4CMPProcessUtils& operator=(const G4CMPProcessUtils& right);
+  G4CMPProcessUtils(const G4CMPProcessUtils&) = default;
+  G4CMPProcessUtils(G4CMPProcessUtils&&) = default;
+  G4CMPProcessUtils& operator=(const G4CMPProcessUtils& right) = default;
+  G4CMPProcessUtils& operator=(G4CMPProcessUtils&& right) = default;
 
   // Configure for current track
   virtual void LoadDataForTrack(const G4Track* track);

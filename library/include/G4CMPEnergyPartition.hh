@@ -11,6 +11,7 @@
 // $Id$
 //
 // 20170524  Add constructor and accessor for position argument
+// 20170525  Add "rule of five" copy/move operators
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -33,6 +34,12 @@ public:
   G4CMPEnergyPartition(const G4ThreeVector& pos);
 
   virtual ~G4CMPEnergyPartition();
+
+  // Default copy and move operators
+  G4CMPEnergyPartition(const G4CMPEnergyPartition&) = default;
+  G4CMPEnergyPartition(G4CMPEnergyPartition&&) = default;
+  G4CMPEnergyPartition& operator=(const G4CMPEnergyPartition&) = default;
+  G4CMPEnergyPartition& operator=(G4CMPEnergyPartition&&) = default;
 
   // Set debugging output
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
