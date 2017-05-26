@@ -8,6 +8,7 @@
 // 20140329  Pass G4CMP field pointer, which handles local/global transform
 // 20140331  Use G4CMPEqEMField for everything, now handles holes; drop local
 //	     caching of lattice.
+// 20170525  Destructor should be virtual; add "rule of five" copy/move
 
 #ifndef G4CMPFieldManager_h
 #define G4CMPFieldManager_h 1
@@ -30,8 +31,15 @@ class G4CMPFieldManager : public G4FieldManager {
 public:
   G4CMPFieldManager(G4ElectroMagneticField *globalField);
   G4CMPFieldManager(G4CMPLocalElectroMagField *detectorField);
-  ~G4CMPFieldManager();
+  virtual ~G4CMPFieldManager();
 
+  // Base class does not allow copying
+  G4CMPFieldManager(const G4CMPFieldManager&) = delete;
+  G4CMPFieldManager(G4CMPFieldManager&&) = delete;
+  G4CMPFieldManager& operator=(const G4CMPFieldManager&) = delete;
+  G4CMPFieldManager& operator=(G4CMPFieldManager&&) = delete;
+  
+  // Run-time configuration
   void ConfigureForTrack(const G4Track* aTrack);
   void SetChargeValleyForTrack(const G4LatticePhysical* lat, G4int valley);
 

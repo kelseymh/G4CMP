@@ -3,6 +3,7 @@
 //
 //  20160627  M. Kelsey -- Defer table building to first query
 //  20160628  Tabulating on nx and ny is just wrong; use theta, phi
+//  20170525  Drop unnecessary empty destructor ("rule of five" semantics)
 
 #include "G4CMPPhononKinTable.hh"
 #include "G4CMPMatrix.hh"
@@ -32,8 +33,6 @@ G4CMPPhononKinTable(G4CMPPhononKinematics* map,
     phiMin(phmin), phiMax(phmax),
     phiStep((nph>0)?(phmax-phmin)/nph:1.), phiCount(nph),
     mapper(map), lookupReady(false) {;}
-
-G4CMPPhononKinTable::~G4CMPPhononKinTable() { clearQuantityMap(); }
 
 void G4CMPPhononKinTable::initialize() {
   if (lookupReady) return;		// Tables already generated

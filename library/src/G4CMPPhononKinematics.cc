@@ -2,6 +2,7 @@
 //  Created by Daniel Palken in 2014 for G4CMP
 //
 //  20160624  Allow non-unit vector to be passed into computeKinematics()
+//  20170525  Drop unnecessary empty destructor ("rule of five" semantics)
 
 #include "G4CMPPhononKinematics.hh"
 #include "G4LatticeLogical.hh"
@@ -17,8 +18,6 @@ using namespace std;
 
 G4CMPPhononKinematics::G4CMPPhononKinematics(G4LatticeLogical *lat)
   : lattice(lat), christoffel(G4ThreeVector::SIZE, G4ThreeVector::SIZE, 0.) {;}
-
-G4CMPPhononKinematics::~G4CMPPhononKinematics() {;}
 
 // Build D_il, the Christoffel matrix that defines the eigensystem
 void G4CMPPhononKinematics::fillChristoffelMatrix(const G4ThreeVector& nn)

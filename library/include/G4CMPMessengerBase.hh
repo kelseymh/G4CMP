@@ -43,6 +43,9 @@ private:
 private:
   G4bool localCmdDir;		// Flag if directory was created or found
   G4UIdirectory* cmdDir;
+
+  G4CMPMessengerBase(const G4CMPMessengerBase&);	// Copying is forbidden
+  G4CMPMessengerBase& operator=(const G4CMPMessengerBase&);
 };
 
 #include "G4CMPMessengerBase.icc"

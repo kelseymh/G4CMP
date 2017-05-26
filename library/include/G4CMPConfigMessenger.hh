@@ -71,6 +71,10 @@ private:
   G4UIcmdWithAString* millerCmd;	// Will parse out three integers
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;
+
+private:
+  G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden
+  G4CMPConfigMessenger& operator=(const G4CMPConfigMessenger&);
 };
 
 #include "G4CMPConfigMessenger.icc"

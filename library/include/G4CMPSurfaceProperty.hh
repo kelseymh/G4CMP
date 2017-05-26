@@ -6,6 +6,7 @@
 // $Id$
 //
 // 20160831  M. Kelsey -- Add optional electrode geometry class
+// 20170525  M. Kelsey -- Add default "rule of five" copy/move operators
 
 #ifndef G4CMPSurfaceProperty_h
 #define G4CMPSurfaceProperty_h 1
@@ -37,6 +38,11 @@ public:
                        G4SurfaceType stype = dielectric_dielectric);
 
   virtual ~G4CMPSurfaceProperty();
+
+  G4CMPSurfaceProperty(const G4CMPSurfaceProperty&) = default;
+  G4CMPSurfaceProperty(G4CMPSurfaceProperty&&) = default;
+  G4CMPSurfaceProperty& operator=(const G4CMPSurfaceProperty&) = default;
+  G4CMPSurfaceProperty& operator=(G4CMPSurfaceProperty&&) = default;
 
   G4bool operator==(const G4SurfaceProperty &right) const;
   G4bool operator!=(const G4SurfaceProperty &right) const;

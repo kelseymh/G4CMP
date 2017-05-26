@@ -20,6 +20,7 @@
 // 20150601  Add mapping from electron velocity back to momentum
 // 20160608  Drop (theta,phi) lattice orientation function.
 // 20170523  Add interface for axis vector of valleys
+// 20170525  Drop empty destructor to allow default "rule of five" semantics
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -37,8 +38,6 @@ public:
   // Miller orientation aligns lattice normal (hkl) with geometry +Z
   G4LatticePhysical(const G4LatticeLogical* Lat,
 		    G4int h=0, G4int k=0, G4int l=0, G4double rot=0.);
-
-  virtual ~G4LatticePhysical();
 
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 

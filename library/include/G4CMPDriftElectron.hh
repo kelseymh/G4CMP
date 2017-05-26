@@ -3,6 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+// 20170525  Remove empty default destructor ("rule of five" semantics)
+
 #ifndef G4CMPDriftElectron_h
 #define G4CMPDriftElectron_h 1
 
@@ -10,24 +12,14 @@
 #include "G4ios.hh"
 #include "G4ParticleDefinition.hh"
 
-class G4CMPDriftElectron : public G4ParticleDefinition{
+class G4CMPDriftElectron : public G4ParticleDefinition {
+public:
+  static G4CMPDriftElectron* Definition();
+  static G4CMPDriftElectron* G4CMPDriftElectronDefinition();
 
 private:
   static G4CMPDriftElectron* theInstance;
-
-private:
-  G4CMPDriftElectron(){}
-
-public:
-  ~G4CMPDriftElectron(){}
-
-  static G4CMPDriftElectron* Definition();
-  static G4CMPDriftElectron* G4CMPDriftElectronDefinition();
+  G4CMPDriftElectron() {;}
 };
 
-
-
-
-
-
-#endif
+#endif	/* G4CMPDriftElectron_h */
