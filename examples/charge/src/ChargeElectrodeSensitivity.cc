@@ -91,10 +91,9 @@ void ChargeElectrodeSensitivity::SetOutputFile(const G4String &fn) {
     output.open(fileName, std::ios_base::app);
     if (!output.good()) {
       G4ExceptionDescription msg;
-      msg << "Error opening output file, " << fileName << ".\n"
-          << "Will continue simulation.";
+      msg << "Error opening output file, " << fileName << ".\n";
       G4Exception("ChargeElectrodeSensitivity::SetOutputFile", "Charge003",
-                  JustWarning, msg);
+                  FatalException, msg);
       output.close();
     } else {
       output << "Run ID,Event ID,Track ID,Particle Name,Start Energy [eV],"

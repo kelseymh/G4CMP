@@ -10,10 +10,13 @@
  * given potential from the EPot file.
  * Outputs a file with the voltage and E field components at each position.
  * Also prints how long it takes to run.
+ *
+ * 20170527  Abort job if output file fails
  */
+
 #include "G4CMPMeshElectricField.hh"
 #include <ctime>
-#include<fstream>
+#include <fstream>
 
 int main(int argc, char** argv) {
 
@@ -36,7 +39,8 @@ int main(int argc, char** argv) {
     std::fstream outputFile;
     outputFile.open("EFieldTestdata.txt", std::fstream::out);
     if (!outputFile.is_open()) {
-        std::cerr << "Cannot create file, error was: " << strerror(errno) << std::endl;
+      std::cerr << "Cannot create file, error was: " << strerror(errno) << std::endl;
+      ::exit(1);
     }
     outputFile << "Data formatted as x, y, z, V, Ex, Ey, Ez" << "\r\n";
 

@@ -61,6 +61,14 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
   G4double vmin=99999., vmax=-99999.;
 
   std::ifstream epotFile(EpotFileName);
+  if (!epotFile.good()) {
+    G4ExceptionDescription msg;
+    msg << "Unable to open " << EpotFileName;
+    G4Exception("G4CMPMeshElectricField::BuildInterp", "G4CMPEM001",
+		FatalException, msg);
+    return;
+  }
+
   while (epotFile.good() && !epotFile.eof())
   {
     epotFile >> x >> y >> z >> v;

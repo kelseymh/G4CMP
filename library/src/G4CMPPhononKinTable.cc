@@ -4,6 +4,7 @@
 //  20160627  M. Kelsey -- Defer table building to first query
 //  20160628  Tabulating on nx and ny is just wrong; use theta, phi
 //  20170525  Drop unnecessary empty destructor ("rule of five" semantics)
+//  20170527  Abort job if output file fails
 
 #include "G4CMPPhononKinTable.hh"
 #include "G4CMPMatrix.hh"
@@ -15,6 +16,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+
 using namespace std;
 using G4CMP::matrix;
 
@@ -265,7 +267,13 @@ void G4CMPPhononKinTable::write() {
   // set up the lookup table as a data file:
   string fName = mapper->getLatticeName()+"LookupTable.txt";
   ofstream lookupTable(fName.c_str());
-
+  if (!lookupTable.good()) {
+    G4ExceptionDescription msg;
+    msg << "Unable to open " << fName << " for output.";
+    G4Exception("G4CMPPhononKinTable::write", "Phonon010",
+		FatalException, msg);
+    return;
+  }
   lookupTable.setf(ios::left);
 
   // file header:

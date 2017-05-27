@@ -8,11 +8,6 @@
 #include "G4LatticeLogical.hh"
 #include "G4PhononPolarization.hh"
 #include "G4ThreeVector.hh"
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <string>
-using namespace std;
 
 // ++++++++++++++++++++++ G4CMPPhononKinematics METHODS +++++++++++++++++++++++++++
 

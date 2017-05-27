@@ -5,6 +5,8 @@
 
 /* This test creates slowness surface and group velocity data for silicon.
  * Use plot_test_phonon_kinematics.py to plot the results.
+ *
+ * 20170527  Abort job if output files can't be opened
  */
 
 #include "G4CMPPhononKinematics.hh"
@@ -14,6 +16,7 @@
 #include "G4Material.hh"
 #include "G4SystemOfUnits.hh"
 #include <fstream>
+#include <assert.h>
 
 using CLHEP::pi;
 
@@ -25,11 +28,23 @@ void useG4CMPSolver(G4LatticeLogical* lattice) {
   G4CMPPhononKinematics solver(lattice);
 
   std::ofstream slowness_trans_slow("phonon_slowness_trans_slow");
+  assert(slowness_trans_slow.is_good());
+
   std::ofstream slowness_trans_fast("phonon_slowness_trans_fast");
+  assert(slowness_trans_fast.is_good());
+
   std::ofstream slowness_longi("phonon_slowness_longi");
+  assert(slowness_longi.is_good());
+
   std::ofstream trans_slow("phonon_group_vel_trans_slow");
+  assert(trans_slow.is_good());
+
   std::ofstream trans_fast("phonon_group_vel_trans_fast");
+  assert(trans_fast.is_good());
+
   std::ofstream longi("phonon_group_vel_long");
+  assert(longi.is_good());
+
 
   G4ThreeVector kdir(1., 0, 0);
   for (G4double theta = 0; theta < pi / 2.; theta += pi / 200.) {

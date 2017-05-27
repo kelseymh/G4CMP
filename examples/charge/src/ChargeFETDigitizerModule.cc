@@ -47,7 +47,7 @@ ChargeFETDigitizerModule::~ChargeFETDigitizerModule()
     msg << "Error closing output file, " << outputFilename << ".\n"
         << "Expect bad things like loss of data.";
     G4Exception("ChargeFETDigitizerModule::~ChargeFETDigitizerModule",
-                "Charge005", JustWarning, msg);
+                "Charge005", FatalException, msg);
   }
 }
 
@@ -180,7 +180,7 @@ void ChargeFETDigitizerModule::ReadFETConstantsFile()
     G4ExceptionDescription msg;
     msg << "Error reading FET constants file from " << configFilename;
     G4Exception("ChargeFETDigitizerModule::ReadFETConstantsFile", "Charge001",
-    FatalException, msg);
+		FatalException, msg);
   }
   G4String buffer;
   G4String varName;
@@ -257,9 +257,10 @@ void ChargeFETDigitizerModule::BuildFETTemplates()
         for(size_t k=0; k<timeBins; ++k)
           templateFile >> FETTemplates[i][j][k];
   } else {
-    G4cout << "ChargeFETDigitizerModule::BuildFETTemplate(): WARNING: Reading "
-           << "from template file failed. Using default pulse templates."
-           << G4endl;
+    G4Exception("ChargeFETDigitizerModule::BuildFETTemplate", "Charge007",
+		JustWarning,
+	"Reading from template file failed. Using default pulse templates.");
+
     for(size_t i=0; i<numChannels; ++i) {
       size_t ndt = static_cast<size_t>(preTrig/dt);
       for(size_t j=0; j<ndt; ++j)

@@ -26,6 +26,7 @@
 // 20160727  Store Debye energy for phonon primaries, support different access
 // 20170523  Add interface for axis vector of valleys
 // 20170525  Add "rule of five" copy/move semantics
+// 20170527  Drop unnecessary <fstream>
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -131,6 +132,7 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
 
 G4LatticeLogical& G4LatticeLogical::operator=(G4LatticeLogical&& rhs) {
   std::swap(*this, rhs);
+  return *this;
 }
 
 

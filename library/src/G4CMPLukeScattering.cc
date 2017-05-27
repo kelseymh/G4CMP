@@ -21,6 +21,7 @@
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononPolarization.hh"
@@ -42,6 +43,10 @@ G4CMPLukeScattering::G4CMPLukeScattering(G4VProcess* stepper)
     stepLimiter(stepper) {
 #ifdef G4CMP_DEBUG
   output.open("LukePhononEnergies");
+  if (!output.good()) {
+    G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
+		FatalException, "Unable to open LukePhononEnergies");
+  }
 #endif
 }
 
