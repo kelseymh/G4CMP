@@ -17,13 +17,15 @@
 // 20160601  Must apply lattice rotation before valley.
 // 20161004  Change valley selection function to avoid null choice
 // 20161114  Use G4CMPDriftTrackInfo
+// 20170602  Use G4CMPUtils for particle identity checks
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftTrackInfo.hh"
-#include "G4CMPTrackUtils.hh"
 #include "G4CMPFieldManager.hh"
 #include "G4CMPGeometryUtils.hh"
+#include "G4CMPTrackUtils.hh"
+#include "G4CMPUtils.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
 #include "G4LatticeManager.hh"
@@ -43,6 +45,12 @@ G4CMPInterValleyScattering::G4CMPInterValleyScattering()
   : G4CMPVDriftProcess("G4CMPInterValleyScattering", fInterValleyScattering) {;}
 
 G4CMPInterValleyScattering::~G4CMPInterValleyScattering() {;}
+
+
+G4bool 
+G4CMPInterValleyScattering::IsApplicable(const G4ParticleDefinition& aPD) {
+  return G4CMP::IsElectron(&aPD);
+}
 
 
 G4double 
@@ -133,9 +141,4 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
   ResetNumberOfInteractionLengthLeft();    
   return &aParticleChange;
-}
-
-G4bool G4CMPInterValleyScattering::IsApplicable(const G4ParticleDefinition& aPD)
-{
-  return (&aPD==G4CMPDriftElectron::Definition());
 }

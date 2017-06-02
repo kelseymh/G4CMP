@@ -17,6 +17,7 @@
 // 20160624  Use GetTrackInfo() accessor
 // 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 // 20161114  Use new G4CMPDriftTrackInfo
+// 20170601  Inherit from new G4CMPVProcess, which provides G4CMPProcessUtils
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -25,6 +26,7 @@
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
+#include "G4CMPUtils.hh"
 #include "G4DynamicParticle.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
@@ -43,11 +45,7 @@
 // NOTE:  Initial values are arbitrary and non-physical
 G4CMPVDriftProcess::G4CMPVDriftProcess(const G4String& processName,
                                        G4CMPProcessSubType stype)
-  : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils(),
-    velLong(330*m/s) {
-  verboseLevel = G4CMPConfigManager::GetVerboseLevel();
-  SetProcessSubType(stype);
-
+  : G4CMPVProcess(processName, stype), velLong(330*m/s) {
   if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
 }
 
@@ -57,8 +55,7 @@ G4CMPVDriftProcess::~G4CMPVDriftProcess() {;}
 // Only applies to the known charge carriers
 
 G4bool G4CMPVDriftProcess::IsApplicable(const G4ParticleDefinition& aPD) {
-  return (&aPD==G4CMPDriftElectron::Definition() ||
-          &aPD==G4CMPDriftHole::Definition());
+  return G4CMP::IsChargeCarrier(&aPD);
 }
 
 
@@ -67,19 +64,6 @@ G4bool G4CMPVDriftProcess::IsApplicable(const G4ParticleDefinition& aPD) {
 void G4CMPVDriftProcess::LoadDataForTrack(const G4Track* track) {
   G4CMPProcessUtils::LoadDataForTrack(track);
   velLong = theLattice->GetSoundSpeed();
-}
-
-
-// Initialize wave vectors for currently active track(s)
-
-void G4CMPVDriftProcess::StartTracking(G4Track* track) {
-  G4VProcess::StartTracking(track);	// Apply base class actions
-  LoadDataForTrack(track);
-}
-
-void G4CMPVDriftProcess::EndTracking() {
-  G4VProcess::EndTracking();		// Apply base class actions
-  ReleaseTrack();
 }
 
 
@@ -167,4 +151,3 @@ G4CMPVDriftProcess::FillParticleChange(G4int /*ivalley*/, G4double Ekin,
   aParticleChange.ProposeMomentumDirection(v.unit());
   aParticleChange.ProposeEnergy(Ekin);
 }
-
