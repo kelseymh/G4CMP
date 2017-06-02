@@ -13,6 +13,7 @@
 // 20160624  Use GetTrackInfo() accessor
 // 20160830  Replace direct use of G4CMP_MAKE_PHONONS with ChooseWeight
 // 20161114  Use new DriftTrackInfo
+// 20170602  Use G4CMPUtils for track identity functions
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -67,12 +68,12 @@ G4CMPLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack);
   const G4LatticePhysical* lat = trackInfo->Lattice();
   G4double kmag = 0.; G4double l0 = 0.; G4double mass = 0.;
-  if (IsElectron(&aTrack)) {
+  if (G4CMP::IsElectron(aTrack)) {
     kmag = lat->MapV_elToK_HV(GetValleyIndex(aTrack),
                               GetLocalVelocityVector(aTrack)).mag();
     l0 = lat->GetElectronScatter();
     mass = lat->GetElectronMass();
-  } else if (IsHole(&aTrack)) {
+  } else if (G4CMP::IsHole(aTrack)) {
     kmag = GetLocalWaveVector(aTrack).mag();
     l0 = lat->GetHoleScatter();
     mass = lat->GetHoleMass();
@@ -128,11 +129,11 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
-  if (IsElectron(&aTrack)) {
+  if (IsElectron()) {
     ktrk = lat->MapV_elToK_HV(GetValleyIndex(aTrack),
                               GetLocalVelocityVector(aTrack));
     mass = lat->GetElectronMass();
-  } else if (IsHole(&aTrack)) {
+  } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
     mass = lat->GetHoleMass();
   } else {

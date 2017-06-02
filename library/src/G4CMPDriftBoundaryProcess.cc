@@ -66,7 +66,7 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
   if (verboseLevel>2) {
-    if (aTrack.GetDefinition() == G4CMPDriftElectron::Definition()) {
+    if (IsElectron()) {
       G4cout << " K_valley (" << GetValleyIndex(aTrack) << ") direction: "
 	     << theLattice->MapPtoK_valley(GetValleyIndex(aTrack),
 					   GetLocalMomentum(aTrack)).unit()
@@ -85,8 +85,8 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
 G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
                                               const G4Step& aStep) const {
-  G4double absMinK = (IsElectron(&aTrack) ? GetMaterialProperty("minKElec")
-		      : IsHole(&aTrack) ? GetMaterialProperty("minKHole")
+  G4double absMinK = (G4CMP::IsElectron(aTrack) ? GetMaterialProperty("minKElec")
+		      : G4CMP::IsHole(aTrack) ? GetMaterialProperty("minKHole")
 		      : -1.);
 
   if (absMinK < 0.) {

@@ -62,22 +62,23 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   SetTransforms(aTrack->GetTouchable());
 
   // If phonon or charge carrier is not in a lattice-enabled volume, kill it
-  if ((IsPhonon(aTrack) || IsChargeCarrier(aTrack)) && !theLattice)
+  if ((G4CMP::IsPhonon(aTrack) || G4CMP::IsChargeCarrier(aTrack))
+      && !theLattice)
     return fKill;
   
   // Non-initial tracks should not be touched
   if (aTrack->GetParentID() != 0) return classification;
 
   // Fill kinematic data for new track (secondaries will have this done)
-  if (IsPhonon(aTrack)) {
+  if (G4CMP::IsPhonon(aTrack)) {
     auto trackInfo = new G4CMPPhononTrackInfo(theLattice, G4RandomDirection());
     G4CMP::AttachTrackInfo(*aTrack, trackInfo);
     SetPhononVelocity(aTrack);
   }
 
-  if (IsChargeCarrier(aTrack)) {
+  if (G4CMP::IsChargeCarrier(aTrack)) {
     SetChargeCarrierMass(aTrack);
-    if (IsElectron(aTrack)) {
+    if (G4CMP::IsElectron(aTrack)) {
       auto trackInfo = new G4CMPDriftTrackInfo(theLattice, G4CMP::ChooseValley(theLattice));
       G4CMP::AttachTrackInfo(*aTrack, trackInfo);
       SetElectronEnergy(aTrack);
@@ -130,8 +131,8 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
   // Get effective mass for charge carrier
   G4double mass = aTrack->GetDefinition()->GetPDGMass();
 
-  if (IsHole(aTrack))     mass = theLattice->GetHoleMass();
-  if (IsElectron(aTrack)) mass = theLattice->GetElectronMass();	// H-V scalar
+  if (G4CMP::IsHole(aTrack))     mass = theLattice->GetHoleMass();
+  if (G4CMP::IsElectron(aTrack)) mass = theLattice->GetElectronMass();	// H-V scalar
 
   // Cast to non-const pointer so we can change the effective mass
   G4DynamicParticle* dynp =

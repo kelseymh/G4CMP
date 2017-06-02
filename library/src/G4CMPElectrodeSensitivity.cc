@@ -70,12 +70,8 @@ G4bool G4CMPElectrodeSensitivity::IsHit(const G4Step* step,
   const G4StepPoint* postStepPoint = step->GetPostStepPoint();
   const G4ParticleDefinition* particle = track->GetDefinition();
 
-  G4bool isCharge = particle == G4CMPDriftElectron::Definition() ||
-                    particle == G4CMPDriftHole::Definition();
-
-  G4bool isPhonon = particle == G4PhononLong::Definition() ||
-                    particle == G4PhononTransFast::Definition() ||
-                    particle == G4PhononTransSlow::Definition();
+  G4bool isCharge = G4CMP::IsChargeCarrier(particle);
+  G4bool isPhonon = G4CMP::IsPhonon(particle);
 
   G4bool deadAtBoundary = step->GetTrack()->GetTrackStatus() == fStopAndKill &&
                           postStepPoint->GetStepStatus() == fGeomBoundary;

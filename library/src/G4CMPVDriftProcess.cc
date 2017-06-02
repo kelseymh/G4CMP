@@ -55,7 +55,7 @@ G4CMPVDriftProcess::~G4CMPVDriftProcess() {;}
 // Only applies to the known charge carriers
 
 G4bool G4CMPVDriftProcess::IsApplicable(const G4ParticleDefinition& aPD) {
-  return G4CMP::IsChargeCarrier(&aPD);
+  return G4CMP::IsChargeCarrier(aPD);
 }
 
 
@@ -83,9 +83,9 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
 
   if (scale > 0.) {
     G4double l0 = 0.;
-    if (IsElectron(&track)) {
+    if (G4CMP::IsElectron(track)) {
       l0 = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(track)->Lattice()->GetElectronScatter();
-    } else if (IsHole(&track)) {
+    } else if (G4CMP::IsHole(track)) {
       l0 = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(track)->Lattice()->GetHoleScatter();
     } else {
       G4Exception("G4CMPVDriftProcess::FillParticleChange", "DriftProcess002",

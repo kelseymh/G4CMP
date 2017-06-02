@@ -32,6 +32,7 @@
 // 20160906  Make GetSurfaceNormal() const.
 // 20161004  Add new ChangeValley() function to avoid null selection
 // 20170525  Drop explicit copy constructors; let compiler do the work
+// 20170602  Local track identification functions apply to current track only
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -78,25 +79,6 @@ G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   currentTrack = track;
   currentVolume = track->GetVolume();
-//  G4cout << "New track:" << G4endl;
-//  G4cout << track->GetDefinition()->GetParticleName() << G4endl;
-//  G4cout << track->GetPosition() << G4endl;
-//  G4cout << track->GetMomentumDirection() << G4endl;
-//  if (aTrack->GetCreatorProcess()) {
-//  G4cout << "Creator Process: " << aTrack->GetCreatorProcess()->GetProcessName() << G4endl;
-//  }
-//  if (aTrack->GetMaterial()) {
-//  G4cout << "Material: " << aTrack->GetMaterial()->GetName() << G4endl;
-//  }
-//  if (track->GetVolume()) {
-//  if (track->GetCreatorProcess())
-//  G4cout << "Parent Proc: " << track->GetCreatorProcess()->GetProcessName() << G4endl;
-//  G4cout << "Log vol at vert: " << track->GetLogicalVolumeAtVertex()->GetName() << G4endl;
-//  G4cout << "Origin touchable: " << track->GetOriginTouchable()->GetVolume(0)->GetName() << G4endl;
-//  G4cout << "Touchable: " << track->GetTouchable()->GetVolume(0)->GetName() << G4endl;
-//  G4cout << "NextTouchable: " << track->GetNextTouchable()->GetVolume(0)->GetName() << G4endl;
-//  G4cout << "Volume: " << track->GetVolume()->GetName() << G4endl;
-//  }
 
   // WARNING!  This assumes track starts and ends in one single volume!
   SetTransforms(track->GetTouchable());
@@ -109,7 +91,7 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
     return;	// No lattice, no special actions possible
   }
 
-  if (IsPhonon(track)) {
+  if (IsPhonon()) {
     // NOTE: TrackInfos get cleaned up by G4 when Track gets killed.
     auto trackInfo = new G4CMPPhononTrackInfo(theLattice, G4RandomDirection());
     G4CMP::AttachTrackInfo(*track, trackInfo);
@@ -122,36 +104,36 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
       theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), kdir));
   }
 
-  if (IsElectron(track)) {
+  if (IsElectron()) {
     // NOTE: TrackInfos get cleaned up by G4 when Track gets killed.
     if (!track->GetAuxiliaryTrackInformation(G4CMPConfigManager::GetPhysicsModelID())) {
     auto trackInfo = new G4CMPDriftTrackInfo(theLattice, G4CMP::ChooseValley(theLattice));
     G4CMP::AttachTrackInfo(*track, trackInfo); }
   }
 
-  if (IsHole(track)) {
+  if (IsHole()) {
     // NOTE: TrackInfos get cleaned up by G4 when Track gets killed.
     auto trackInfo = new G4CMPDriftTrackInfo(theLattice, -1);
     G4CMP::AttachTrackInfo(*track, trackInfo);
   }
 }
 
-// Identify track type to simplify some conditionals
+// Identify current track type to simplify some conditionals
 
-G4bool G4CMPProcessUtils::IsPhonon(const G4Track* track) const {
-  return G4CMP::IsPhonon(track);
+G4bool G4CMPProcessUtils::IsPhonon() const {
+  return G4CMP::IsPhonon(currentTrack);
 }
 
-G4bool G4CMPProcessUtils::IsElectron(const G4Track* track) const {
-  return G4CMP::IsElectron(track);
+G4bool G4CMPProcessUtils::IsElectron() const {
+  return G4CMP::IsElectron(currentTrack);
 }
 
-G4bool G4CMPProcessUtils::IsHole(const G4Track* track) const {
-  return G4CMP::IsHole(track);
+G4bool G4CMPProcessUtils::IsHole() const {
+  return G4CMP::IsHole(currentTrack);
 }
 
-G4bool G4CMPProcessUtils::IsChargeCarrier(const G4Track* track) const {
-  return G4CMP::IsChargeCarrier(track);
+G4bool G4CMPProcessUtils::IsChargeCarrier() const {
+  return G4CMP::IsChargeCarrier(currentTrack);
 }
 
 
@@ -234,10 +216,10 @@ void G4CMPProcessUtils::GetLocalPosition(const G4Track& track,
 }
 
 G4ThreeVector G4CMPProcessUtils::GetLocalMomentum(const G4Track& track) const {
-  if (IsElectron(&track)) {
+  if (G4CMP::IsElectron(track)) {
     return theLattice->MapV_elToP(GetValleyIndex(track),
                                   GetLocalVelocityVector(track));
-  } else if (IsHole(&track)) {
+  } else if (G4CMP::IsHole(track)) {
     return G4CMP::GetLocalDirection(currentVolume, track.GetMomentum());
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
@@ -268,9 +250,9 @@ void G4CMPProcessUtils::GetLocalVelocityVector(const G4Track &track,
 }
 
 G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const {
-  if (IsChargeCarrier(&track)) {
+  if (G4CMP::IsChargeCarrier(track)) {
     return GetLocalMomentum(track) / hbarc;
-  } else if (IsPhonon(&track)) {
+  } else if (G4CMP::IsPhonon(track)) {
     return G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track)->k();
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalWaveVector", "DriftProcess002",
@@ -293,11 +275,11 @@ void G4CMPProcessUtils::GetGlobalPosition(const G4Track& track,
 }
 
 G4ThreeVector G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
-  if (IsElectron(&track)) {
+  if (G4CMP::IsElectron(track)) {
     G4ThreeVector p = theLattice->MapV_elToP(GetValleyIndex(track),
                                              GetLocalVelocityVector(track));
     return G4CMP::GetGlobalDirection(currentVolume, p);
-  } else if (IsHole(&track)) {
+  } else if (G4CMP::IsHole(track)) {
     return track.GetMomentum();
   } else {
     G4Exception("G4CMPProcessUtils::GetGlobalMomentum", "DriftProcess003",
@@ -326,12 +308,12 @@ void G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track &track, G4double v
 }
 
 G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
-  if (IsElectron(&track)) {
+  if (G4CMP::IsElectron(track)) {
     return theLattice->MapV_elToEkin(GetValleyIndex(track),
                                      GetLocalVelocityVector(track));
-  } else if (IsHole(&track)) {
+  } else if (G4CMP::IsHole(track)) {
     return track.GetKineticEnergy();
-  } else if (IsPhonon(&track)) {
+  } else if (G4CMP::IsPhonon(track)) {
     return track.GetKineticEnergy();
   } else {
     G4Exception("G4CMPProcessUtils::GetKineticEnergy", "G4CMPProcess004",
@@ -363,9 +345,9 @@ G4int G4CMPProcessUtils::ChoosePhononPolarization() const {
 }
 
 void G4CMPProcessUtils::MakeLocalPhononK(G4ThreeVector& kphonon) const {
-  if (IsElectron(GetCurrentTrack())) {
+  if (IsElectron()) {
     kphonon = theLattice->MapK_HVtoK(GetValleyIndex(GetCurrentTrack()), kphonon);
-  } else if (!IsHole(GetCurrentTrack())) {
+  } else if (!IsHole()) {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess005",
                 EventMustBeAborted, "Unknown charge carrier");
   }
@@ -377,9 +359,9 @@ void G4CMPProcessUtils::MakeGlobalPhononK(G4ThreeVector& kphonon) const {
 }
 
 void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
-  if (IsElectron(GetCurrentTrack())) {
+  if (IsElectron()) {
     kphonon = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),kphonon);
-  } else if (IsHole(GetCurrentTrack())) {
+  } else if (IsHole()) {
     kphonon *= hbarc;
   } else {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess006",

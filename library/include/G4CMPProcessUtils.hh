@@ -29,6 +29,7 @@
 // 20160906  Make GetSurfaceNormal() const.
 // 20161004  Add new ChangeValley() function to avoid null selection
 // 20170525  Drop explicit copy constructors; let compiler do the work
+// 20170602  Local track identification functions apply to current track only
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -64,11 +65,11 @@ public:
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
 
-  // Identify track type to simplify some conditionals
-  G4bool IsPhonon(const G4Track* track) const;
-  G4bool IsElectron(const G4Track* track) const;
-  G4bool IsHole(const G4Track* track) const;
-  G4bool IsChargeCarrier(const G4Track* track) const;
+  // Identify current track type to simplify some conditionals
+  G4bool IsPhonon() const;
+  G4bool IsElectron() const;
+  G4bool IsHole() const;
+  G4bool IsChargeCarrier() const;
 
   // Set configuration manually, without a track
   virtual void FindLattice(const G4VPhysicalVolume* volume);
