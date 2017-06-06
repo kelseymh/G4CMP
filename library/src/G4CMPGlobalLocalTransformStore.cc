@@ -12,19 +12,28 @@
 //      (used by MeshElectricField and most lattice-aware physics processes).
 //
 // 20161102  Rob Agnese
+// 20170605  Pass touchable from track, not just local TOUCH
 
 #include "G4CMPGlobalLocalTransformStore.hh"
 
-#include "G4VPhysicalVolume.hh"
+#include "G4NavigationHistory.hh"
+#include "G4VTouchable.hh"
 
-const G4AffineTransform&
-G4CMPGlobalLocalTransformStore::ToLocal(const G4VPhysicalVolume* pv) {
-  return Instance().GetOrBuildTransforms(pv).globalToLocal;
+
+G4CMPGlobalLocalTransformStore&
+G4CMPGlobalLocalTransformStore::Instance() {
+  static G4CMPGlobalLocalTransformStore instance;
+  return instance;
 }
 
 const G4AffineTransform&
-G4CMPGlobalLocalTransformStore::ToGlobal(const G4VPhysicalVolume* pv) {
-  return Instance().GetOrBuildTransforms(pv).localToGlobal;
+G4CMPGlobalLocalTransformStore::ToLocal(const G4VTouchable* touch) {
+  return Instance().GetOrBuildTransforms(touch).globalToLocal;
+}
+
+const G4AffineTransform&
+G4CMPGlobalLocalTransformStore::ToGlobal(const G4VTouchable* touch) {
+  return Instance().GetOrBuildTransforms(touch).localToGlobal;
 }
 
 void
@@ -33,25 +42,40 @@ G4CMPGlobalLocalTransformStore::Reset() {
 }
 
 const G4CMPGlobalLocalTransformStore::Transforms&
-G4CMPGlobalLocalTransformStore::GetOrBuildTransforms(const G4VPhysicalVolume* pv) {
-  if (!pv) {
+G4CMPGlobalLocalTransformStore::GetOrBuildTransforms(const G4VTouchable* touch) {
+  if (!touch) {
     G4Exception("G4CMPGlobalLocalTransformStore::GetOrBuildTransforms",
                 "trans001", FatalErrorInArgument,
-                "PhysicalVolume pointer is null.");
+                "Touchable pointer is null.");
   }
 
-  if (Instance().cache.count(pv) == 0) {
-    auto localToGlobal = G4AffineTransform(pv->GetRotation(),
-                                           pv->GetTranslation());
-    return Instance().cache[pv] = Transforms { localToGlobal,
-                                               localToGlobal.Inverse() };
+  uintptr_t thash = Hash(touch);
+  if (Instance().cache.count(thash) == 0) {
+    G4AffineTransform lToG = touch->GetHistory()->GetTransform(0);
+    return Instance().cache[thash] = Transforms { lToG,
+						  lToG.Inverse() };
   }
 
-  return Instance().cache[pv];
+  return Instance().cache[thash];
 }
 
-G4CMPGlobalLocalTransformStore&
-G4CMPGlobalLocalTransformStore::Instance() {
-  static G4CMPGlobalLocalTransformStore instance;
-  return instance;
+// Convert touchable volume chain to unique identifier
+uintptr_t 
+G4CMPGlobalLocalTransformStore::Hash(const G4VTouchable* touch) const {
+  if (!touch) {
+    G4Exception("G4CMPGlobalLocalTransformStore::GetOrBuildTransforms",
+                "trans001", FatalErrorInArgument,
+                "Touchable pointer is null.");
+  }
+
+  static const uintptr_t prime = 12764787846358441471UL;	// 2^64 / Phi
+  uintptr_t h = 1;
+  for (G4int d=0; d<touch->GetHistoryDepth(); d++) {
+    // NOTE:  Mapping pointer address to integer must be done explicitly
+    uintptr_t pv = (uintptr_t)(void*)(touch->GetVolume(d));
+    h *= prime + 2*(pv%prime);
+    h %= prime;
+  }
+
+  return h/2;
 }
