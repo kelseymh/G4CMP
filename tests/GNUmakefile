@@ -3,7 +3,8 @@
 #
 # 20160609  Support different executables by looking at target name
 
-TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup
+TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup \
+	g4cmpEFieldTest phononKinematics
 .PHONY : $(TESTS)
 
 ifndef G4CMP_NAME
@@ -15,6 +16,8 @@ help :			# First target, in case user just types "make"
 	@echo "luke_dist     : Generate tab-delimited file of phonon kinematics"
 	@echo "testBlockData : Demonstrate use of data container"
 	@echo "testCrystalGroup : Validate non-orthogonal crystal axes"
+	@echo "g4cmpEFieldTest : Validate COMSOL field file in rectangular box"
+	@echo "phononKinematics : Generate Si kinematics and plot"
 	@echo
 	@echo Please specify which one to build as your make target, or \"all\"
 
