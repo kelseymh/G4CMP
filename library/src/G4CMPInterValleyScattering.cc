@@ -134,7 +134,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
 
   p = theLattice->MapK_valleyToP(valley, p); // p is p again
-  G4CMP::RotateToGlobalDirection(postStepPoint->GetPhysicalVolume(), p);
+  RotateToGlobalDirection(p);
 
   // Adjust track kinematics for new valley
   FillParticleChange(valley, p);

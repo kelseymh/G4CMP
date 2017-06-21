@@ -11,6 +11,7 @@
 // 20131111  Add verbose output for MFP calculation
 // 20140312  Follow name change CreateSecondary -> CreatePhonon
 // 20140331  Add required process subtype code
+// 20170620  Follow interface changes in G4CMPSecondaryUtils
 
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
@@ -75,7 +76,7 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
   // Generate the new track after scattering
   // FIXME:  If polarization state is the same, just step the track!
   G4Track* sec =
-    G4CMP::CreatePhonon(aTrack.GetVolume(), polarization, newDir,
+    G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization, newDir,
                         GetKineticEnergy(aTrack), aTrack.GetGlobalTime(),
                         aTrack.GetPosition());
   aParticleChange.SetNumberOfSecondaries(1);

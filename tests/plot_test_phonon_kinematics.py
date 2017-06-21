@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """
 Run this script after the phononKinematics test binary to plot the resulting
 slowness surfaces and group velocities.

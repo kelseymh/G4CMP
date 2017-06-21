@@ -7,6 +7,7 @@
  * Use plot_test_phonon_kinematics.py to plot the results.
  *
  * 20170527  Abort job if output files can't be opened
+ * 20170620  Change 'is_good()' to 'good()'
  */
 
 #include "G4CMPPhononKinematics.hh"
@@ -28,22 +29,22 @@ void useG4CMPSolver(G4LatticeLogical* lattice) {
   G4CMPPhononKinematics solver(lattice);
 
   std::ofstream slowness_trans_slow("phonon_slowness_trans_slow");
-  assert(slowness_trans_slow.is_good());
+  assert(slowness_trans_slow.good());
 
   std::ofstream slowness_trans_fast("phonon_slowness_trans_fast");
-  assert(slowness_trans_fast.is_good());
+  assert(slowness_trans_fast.good());
 
   std::ofstream slowness_longi("phonon_slowness_longi");
-  assert(slowness_longi.is_good());
+  assert(slowness_longi.good());
 
   std::ofstream trans_slow("phonon_group_vel_trans_slow");
-  assert(trans_slow.is_good());
+  assert(trans_slow.good());
 
   std::ofstream trans_fast("phonon_group_vel_trans_fast");
-  assert(trans_fast.is_good());
+  assert(trans_fast.good());
 
   std::ofstream longi("phonon_group_vel_long");
-  assert(longi.is_good());
+  assert(longi.good());
 
 
   G4ThreeVector kdir(1., 0, 0);

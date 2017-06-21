@@ -30,6 +30,8 @@
 // 20161004  Add new ChangeValley() function to avoid null selection
 // 20170525  Drop explicit copy constructors; let compiler do the work
 // 20170602  Local track identification functions apply to current track only
+// 20170603  Drop deprecated functions; don't deprecate transforms.
+// 20170620  Drop local caching of transforms; call through to G4CMPUtils.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -62,6 +64,7 @@ public:
 
   // Configure for current track
   virtual void LoadDataForTrack(const G4Track* track);
+  virtual void SetCurrentTrack(const G4Track* track) { currentTrack = track; }
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
 
@@ -76,71 +79,17 @@ public:
   virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
   virtual const G4LatticePhysical* GetLattice() const { return theLattice; }
 
-  virtual void SetTransforms(const G4VTouchable* touchable);
-  virtual void SetTransforms(const G4RotationMatrix* rot,
-			     const G4ThreeVector& trans);
+  // Convert global to local coordinates with respect to current track
+  G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const;
+  G4ThreeVector GetLocalPosition(const G4ThreeVector& pos) const;
+  void RotateToLocalDirection(G4ThreeVector& dir) const;
+  void RotateToLocalPosition(G4ThreeVector& pos) const;
 
-  // Convert global to local coordinates
-  // FIXME: DEPRECATED
-  G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const {
-    G4Exception("G4CMPProcessUtils: GetLocalDirection", "dep001", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    return fGlobalToLocal.TransformAxis(dir);
-  }
-
-  // FIXME: DEPRECATED
-  G4ThreeVector GetLocalPosition(const G4ThreeVector& pos) const {
-    G4Exception("G4CMPProcessUtils: GetLocalPosition", "dep002", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    return fGlobalToLocal.TransformPoint(pos);
-  }
-
-  // FIXME: DEPRECATED
-  void RotateToLocalDirection(G4ThreeVector& dir) const {
-    G4Exception("G4CMPProcessUtils: RotateToLocalDirection", "dep003", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    fGlobalToLocal.ApplyAxisTransform(dir);
-  }
-
-  // FIXME: DEPRECATED
-  void RotateToLocalPosition(G4ThreeVector& pos) const {
-    G4Exception("G4CMPProcessUtils: RotateToLocalPosition", "dep004", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    fGlobalToLocal.ApplyPointTransform(pos);
-  }
-
-  // Convert local to global coordinates
-  // FIXME: DEPRECATED
-  G4ThreeVector GetGlobalDirection(const G4ThreeVector& dir) const {
-    G4Exception("G4CMPProcessUtils: GetGlobalDirection", "dep005", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    return fLocalToGlobal.TransformAxis(dir);
-  }
-
-  // FIXME: DEPRECATED
-  G4ThreeVector GetGlobalPosition(const G4ThreeVector& pos) const {
-    G4Exception("G4CMPProcessUtils: GetGlobalPosition", "dep006", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    return fLocalToGlobal.TransformPoint(pos);
-  }
-
-  // FIXME: DEPRECATED
-  void RotateToGlobalDirection(G4ThreeVector& dir) const {
-    G4Exception("G4CMPProcessUtils: RotateToGlobalDirection", "dep007", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    fLocalToGlobal.ApplyAxisTransform(dir);
-  }
-
-  // FIXME: DEPRECATED
-  void RotateToGlobalPosition(G4ThreeVector& pos) const {
-    G4Exception("G4CMPProcessUtils: RotateToGlobalPosition", "dep008", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    fLocalToGlobal.ApplyPointTransform(pos);
-  }
-
-  // Used especially in boundary processes
-  // FIXME: DEPRECATED
-  G4ThreeVector GetSurfaceNormal(const G4Step& aStep) const;
+  // Convert local to global coordinates with respect to current track
+  G4ThreeVector GetGlobalDirection(const G4ThreeVector& dir) const;
+  G4ThreeVector GetGlobalPosition(const G4ThreeVector& pos) const;
+  void RotateToGlobalDirection(G4ThreeVector& dir) const;
+  void RotateToGlobalPosition(G4ThreeVector& pos) const;
 
   // Convenience functions to get local position, momentum, velocity from track
   G4ThreeVector GetLocalPosition(const G4Track& track) const;
@@ -256,8 +205,6 @@ public:
   }
 
   // Generate random valley for charge carrier
-  // FIXME: DEPRECATED
-  G4int ChooseValley() const;
   G4int ChangeValley(G4int valley) const;	// Excludes input valley
 
   // Generate direction angle for phonon generated in Luke scattering
@@ -272,93 +219,13 @@ public:
 
   void MakeGlobalRecoil(G4ThreeVector& kphonon) const;
 
-  // Compute a Lambertian distribution for reflected phonons
-  // FIXME: DEPRECATED
-  G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
-
-  // Model Kaplan phonon-quasiparticle interactions in superconductor sensors
-  // FIXME: DEPRECATED
-  G4double KaplanPhononQP(G4double energy, G4MaterialPropertiesTable* prop,
-                          std::vector<G4double>& reflectedEnergies);
-
-  // Compute the probability of a phonon reentering the crystal
-  // FIXME: DEPRECATED
-  G4double CalcEscapeProbability(G4double energy, G4double thicknessFrac,
-                                 G4MaterialPropertiesTable* prop);
-
-  // Model the phonons breaking Cooper pairs into quasiparticles
-  // FIXME: DEPRECATED
-  G4double CalcQPEnergies(G4double gapEnergy, G4double lowQPLimit,
-                          std::vector<G4double>& phonEnergies,
-                          std::vector<G4double>& qpEnergies);
-
-  // Model the quasiparticles emitting phonons in the superconductor
-  // FIXME: DEPRECATED
-  G4double CalcPhononEnergies(G4double gapEnergy, G4double lowQPLimit,
-                              std::vector<G4double>& phonEnergies,
-                              std::vector<G4double>& qpEnergies);
-
-  // Calculate energies of phonon tracks that have reentered the crystal
-  // FIXME: DEPRECATED
-  void CalcReflectedPhononEnergies(G4MaterialPropertiesTable* prop,
-                                   std::vector<G4double>& phonEnergies,
-                                   std::vector<G4double>& reflectedEnergies);
-
-  // Compute quasiparticle energy distribution from broken Cooper pair
-  // FIXME: DEPRECATED
-  G4double QPEnergyRand(G4double gapEnergy, G4double Energy);
-
-  // Compute phonon energy distribution from quasiparticle in superconductor
-  // FIXME: DEPRECATED
-  G4double PhononEnergyRand(G4double gapEnergy, G4double& Energy);
-
-
-  // Construct new phonon or charge carrier track
-  // FIXME: DEPRECATED
-  G4Track* CreateTrack(G4ParticleDefinition* pd, const G4ThreeVector& K,
-		       G4double energy) const;
-
-  // FIXME: DEPRECATED
-  G4Track* CreateTrack(G4ParticleDefinition* pd, const G4ThreeVector& K,
-		       G4double energy, const G4ThreeVector& pos) const;
-
-  // Construct new phonon track with correct momentum, position, etc.
-  // FIXME: DEPRECATED
-  G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
-			G4double energy) const;
-
-  // FIXME: DEPRECATED
-  G4Track* CreatePhonon(G4int polarization, const G4ThreeVector& K,
-            G4double energy, const G4ThreeVector& pos) const;
-
-  // FIXME: DEPRECATED
-  G4Track* CreatePhononInFromBoundary(G4int polarization,
-                                      const G4ThreeVector& K,
-                                      G4double energy) const;
-
-  // Construct new electron or hole track with correct conditions
-  // FIXME: DEPRECATED
-  G4Track* CreateChargeCarrier(G4int charge, G4int valley,
-			       const G4ThreeVector& p) const;
-
-  // FIXME: DEPRECATED
-  G4Track* CreateChargeCarrier(G4int charge, G4int valley, G4double Ekin,
-			       const G4ThreeVector& pdir,
-			       const G4ThreeVector& pos) const;
-
-  // FIXME: DEPRECATED
-  G4Track* CreateChargeCarrier(G4int charge, G4int valley,
-			       const G4ThreeVector& p,
-                   const G4ThreeVector& pos) const;
-
-  // FIXME: DEPRECATED
-  G4ThreeVector AdjustSecondaryPosition(G4ThreeVector pos) const;
-
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes
 
-  const G4ParticleDefinition* GetCurrentParticle() const;
   const G4Track* GetCurrentTrack() const { return currentTrack; }
+  const G4ParticleDefinition* GetCurrentParticle() const;
+  const G4VTouchable* GetCurrentTouchable() const;
+
   const G4VPhysicalVolume* GetCurrentVolume() const { return currentVolume; }
 
   G4int GetCurrentValley() const { return GetValleyIndex(currentTrack); }
@@ -366,9 +233,6 @@ protected:
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking
   const G4VPhysicalVolume* currentVolume;
-
-  G4AffineTransform fLocalToGlobal;	// For converting pos and momentum
-  G4AffineTransform fGlobalToLocal;
 };
 
 #endif	/* G4CMPProcessUtils_hh */
