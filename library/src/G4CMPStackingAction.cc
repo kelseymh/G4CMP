@@ -16,8 +16,9 @@
 // 20141216 Set velocity for electrons
 // 20150109 Protect velocity flag with compiler flag
 // 20160625 Process _all_ tracks to ensure they're in correct volumes
-// 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
-
+// 20160829 Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
+// 20170620 Drop obsolete SetTransforms() call
+ 
 #include "G4CMPStackingAction.hh"
 
 #include "G4CMPDriftHole.hh"
@@ -57,9 +58,9 @@ G4ClassificationOfNewTrack
 G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   G4ClassificationOfNewTrack classification = fUrgent;
 
-  // Configure utility functions for current track
+  // Configure utility functions for current track (do NOT use LoadDataForTrack)
+  SetCurrentTrack(aTrack);
   FindLattice(aTrack->GetVolume());
-  SetTransforms(aTrack->GetTouchable());
 
   // If phonon or charge carrier is not in a lattice-enabled volume, kill it
   if ((G4CMP::IsPhonon(aTrack) || G4CMP::IsChargeCarrier(aTrack))

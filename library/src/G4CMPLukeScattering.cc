@@ -196,7 +196,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (weight > 0.) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
-    G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetVolume(),
+    G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetTouchable(),
                                           G4PhononPolarization::UNKNOWN,
                                           qvec,Ephonon,
                                           aTrack.GetGlobalTime(),

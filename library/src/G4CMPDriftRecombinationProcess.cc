@@ -3,6 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+// 20170620  M. Kelsey -- Follow interface changes in G4CMPSecondaryUtils
+
 #include "G4CMPDriftRecombinationProcess.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
@@ -12,15 +14,19 @@
 #include "G4LatticePhysical.hh"
 #include "G4RandomDirection.hh"
 
-G4CMPDriftRecombinationProcess::G4CMPDriftRecombinationProcess(
-                                                       const G4String &name,
-                                                       G4CMPProcessSubType type)
-  : G4CMPVDriftProcess(name, type) {
-}
 
-G4VParticleChange* G4CMPDriftRecombinationProcess::PostStepDoIt(
-                                                      const G4Track& aTrack,
-                                                      const G4Step&) {
+// Constructor
+
+G4CMPDriftRecombinationProcess::
+G4CMPDriftRecombinationProcess(const G4String &name, G4CMPProcessSubType type)
+  : G4CMPVDriftProcess(name, type) {;}
+
+
+// Process actions
+
+G4VParticleChange* 
+G4CMPDriftRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
+					     const G4Step&) {
   aParticleChange.Initialize(aTrack);
 
   // If the particle has not come to rest, do nothing
@@ -48,7 +54,7 @@ G4VParticleChange* G4CMPDriftRecombinationProcess::PostStepDoIt(
   while (ePot > 0.) {
     G4double E = ePot > eDeb ? eDeb : ePot;
     ePot -= eDeb;
-    G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetVolume(),
+    G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetTouchable(),
                                           G4PhononPolarization::UNKNOWN,
                                           G4RandomDirection(), E,
                                           aTrack.GetGlobalTime(),
@@ -60,9 +66,9 @@ G4VParticleChange* G4CMPDriftRecombinationProcess::PostStepDoIt(
   return &aParticleChange;
 }
 
-G4double G4CMPDriftRecombinationProcess::GetMeanFreePath(const G4Track&,
-                                                         G4double,
-                                                         G4ForceCondition* cond) {
+G4double 
+G4CMPDriftRecombinationProcess::GetMeanFreePath(const G4Track&, G4double,
+						G4ForceCondition* cond) {
   *cond = Forced;
   return DBL_MAX;
 }

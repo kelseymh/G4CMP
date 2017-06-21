@@ -31,6 +31,7 @@
 // 20170525  Drop explicit copy constructors; let compiler do the work
 // 20170602  Local track identification functions apply to current track only
 // 20170603  Drop deprecated functions; don't deprecate transforms.
+// 20170620  Drop local caching of transforms; call through to G4CMPUtils.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -63,6 +64,7 @@ public:
 
   // Configure for current track
   virtual void LoadDataForTrack(const G4Track* track);
+  virtual void SetCurrentTrack(const G4Track* track) { currentTrack = track; }
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
 
@@ -77,67 +79,17 @@ public:
   virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
   virtual const G4LatticePhysical* GetLattice() const { return theLattice; }
 
-  virtual void SetTransforms(const G4VTouchable* touchable);
-  virtual void SetTransforms(const G4RotationMatrix* rot,
-			     const G4ThreeVector& trans);
+  // Convert global to local coordinates with respect to current track
+  G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const;
+  G4ThreeVector GetLocalPosition(const G4ThreeVector& pos) const;
+  void RotateToLocalDirection(G4ThreeVector& dir) const;
+  void RotateToLocalPosition(G4ThreeVector& pos) const;
 
-  // Convert global to local coordinates
-  // FIXME: DEPRECATED
-  G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const {
-    G4Exception("G4CMPProcessUtils: GetLocalDirection", "dep001", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    return fGlobalToLocal.TransformAxis(dir);
-  }
-
-  // FIXME: DEPRECATED
-  G4ThreeVector GetLocalPosition(const G4ThreeVector& pos) const {
-    G4Exception("G4CMPProcessUtils: GetLocalPosition", "dep002", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    return fGlobalToLocal.TransformPoint(pos);
-  }
-
-  // FIXME: DEPRECATED
-  void RotateToLocalDirection(G4ThreeVector& dir) const {
-    G4Exception("G4CMPProcessUtils: RotateToLocalDirection", "dep003", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    fGlobalToLocal.ApplyAxisTransform(dir);
-  }
-
-  // FIXME: DEPRECATED
-  void RotateToLocalPosition(G4ThreeVector& pos) const {
-    G4Exception("G4CMPProcessUtils: RotateToLocalPosition", "dep004", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    fGlobalToLocal.ApplyPointTransform(pos);
-  }
-
-  // Convert local to global coordinates
-  // FIXME: DEPRECATED
-  G4ThreeVector GetGlobalDirection(const G4ThreeVector& dir) const {
-    G4Exception("G4CMPProcessUtils: GetGlobalDirection", "dep005", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    return fLocalToGlobal.TransformAxis(dir);
-  }
-
-  // FIXME: DEPRECATED
-  G4ThreeVector GetGlobalPosition(const G4ThreeVector& pos) const {
-    G4Exception("G4CMPProcessUtils: GetGlobalPosition", "dep006", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    return fLocalToGlobal.TransformPoint(pos);
-  }
-
-  // FIXME: DEPRECATED
-  void RotateToGlobalDirection(G4ThreeVector& dir) const {
-    G4Exception("G4CMPProcessUtils: RotateToGlobalDirection", "dep007", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    fLocalToGlobal.ApplyAxisTransform(dir);
-  }
-
-  // FIXME: DEPRECATED
-  void RotateToGlobalPosition(G4ThreeVector& pos) const {
-    G4Exception("G4CMPProcessUtils: RotateToGlobalPosition", "dep008", JustWarning,
-                "This function is deprecated. See G4CMPGeometryUtils.hh");
-    fLocalToGlobal.ApplyPointTransform(pos);
-  }
+  // Convert local to global coordinates with respect to current track
+  G4ThreeVector GetGlobalDirection(const G4ThreeVector& dir) const;
+  G4ThreeVector GetGlobalPosition(const G4ThreeVector& pos) const;
+  void RotateToGlobalDirection(G4ThreeVector& dir) const;
+  void RotateToGlobalPosition(G4ThreeVector& pos) const;
 
   // Convenience functions to get local position, momentum, velocity from track
   G4ThreeVector GetLocalPosition(const G4Track& track) const;
@@ -270,8 +222,10 @@ public:
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes
 
-  const G4ParticleDefinition* GetCurrentParticle() const;
   const G4Track* GetCurrentTrack() const { return currentTrack; }
+  const G4ParticleDefinition* GetCurrentParticle() const;
+  const G4VTouchable* GetCurrentTouchable() const;
+
   const G4VPhysicalVolume* GetCurrentVolume() const { return currentVolume; }
 
   G4int GetCurrentValley() const { return GetValleyIndex(currentTrack); }
@@ -279,9 +233,6 @@ protected:
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking
   const G4VPhysicalVolume* currentVolume;
-
-  G4AffineTransform fLocalToGlobal;	// For converting pos and momentum
-  G4AffineTransform fGlobalToLocal;
 };
 
 #endif	/* G4CMPProcessUtils_hh */

@@ -51,9 +51,8 @@ G4CMPGlobalLocalTransformStore::GetOrBuildTransforms(const G4VTouchable* touch) 
 
   uintptr_t thash = Hash(touch);
   if (Instance().cache.count(thash) == 0) {
-    G4AffineTransform lToG = touch->GetHistory()->GetTransform(0);
-    return Instance().cache[thash] = Transforms { lToG,
-						  lToG.Inverse() };
+    const G4AffineTransform& lToG = touch->GetHistory()->GetTransform(0);
+    Instance().cache[thash] = Transforms { lToG, lToG.Inverse() };
   }
 
   return Instance().cache[thash];

@@ -33,6 +33,7 @@
 // 20161004  Add new ChangeValley() function to avoid null selection
 // 20170525  Drop explicit copy constructors; let compiler do the work
 // 20170602  Local track identification functions apply to current track only
+// 20170620  Drop local caching of transforms; call through to G4CMPUtils.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -81,7 +82,6 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   currentVolume = track->GetVolume();
 
   // WARNING!  This assumes track starts and ends in one single volume!
-  SetTransforms(track->GetTouchable());
   FindLattice(track->GetVolume());
 
   if (!theLattice) {
@@ -140,7 +140,7 @@ G4bool G4CMPProcessUtils::IsChargeCarrier() const {
 // Fetch lattice for current track, use in subsequent steps
 
 void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
-  currentVolume = volume;		// 
+  currentVolume = volume;
 
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
   theLattice = LM->GetLattice(volume);
@@ -151,37 +151,59 @@ void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
 }
 
 
-// Configure orientation matrices for current track
-
-void G4CMPProcessUtils::SetTransforms(const G4VTouchable* touchable) {
-  if (!touchable) {			// Null pointer defaults to identity
-    fLocalToGlobal = fGlobalToLocal = G4AffineTransform();
-    return;
-  }
-
-  fLocalToGlobal = touchable->GetHistory()->GetTransform(0);
-  fGlobalToLocal = fLocalToGlobal.Inverse();
-}
-
-void G4CMPProcessUtils::SetTransforms(const G4RotationMatrix* rot,
-				      const G4ThreeVector& trans) {
-  fLocalToGlobal = G4AffineTransform(rot, trans);
-  fGlobalToLocal = fLocalToGlobal.Inverse();
-}
-
-
 // Delete current configuration before new track starts
 
 void G4CMPProcessUtils::ReleaseTrack() {
-  SetTransforms(nullptr);
   currentTrack = nullptr;
   theLattice = nullptr;
 }
 
+
+// Convert between local and global coordinates in currentTrack frame
+
+G4ThreeVector
+G4CMPProcessUtils::GetLocalDirection(const G4ThreeVector& dir) const {
+  return G4CMP::GetLocalDirection(GetCurrentTouchable(),dir);
+}
+
+G4ThreeVector
+G4CMPProcessUtils::GetLocalPosition(const G4ThreeVector& pos) const {
+  return G4CMP::GetLocalPosition(GetCurrentTouchable(),pos);
+}
+
+void G4CMPProcessUtils::RotateToLocalDirection(G4ThreeVector& dir) const {
+  return G4CMP::RotateToLocalDirection(GetCurrentTouchable(),dir);
+}
+
+void G4CMPProcessUtils::RotateToLocalPosition(G4ThreeVector& pos) const {
+  return G4CMP::RotateToLocalPosition(GetCurrentTouchable(),pos);
+}
+
+// Convert between local and global coordinates in currentTrack frame
+
+G4ThreeVector 
+G4CMPProcessUtils::GetGlobalDirection(const G4ThreeVector& dir) const {
+  return G4CMP::GetGlobalDirection(GetCurrentTouchable(),dir);
+}
+
+G4ThreeVector
+G4CMPProcessUtils::GetGlobalPosition(const G4ThreeVector& pos) const {
+  return G4CMP::GetGlobalPosition(GetCurrentTouchable(),pos);
+}
+
+void G4CMPProcessUtils::RotateToGlobalDirection(G4ThreeVector& dir) const {
+  return G4CMP::RotateToGlobalDirection(GetCurrentTouchable(),dir);
+}
+
+void G4CMPProcessUtils::RotateToGlobalPosition(G4ThreeVector& pos) const {
+  return G4CMP::RotateToGlobalPosition(GetCurrentTouchable(),pos);
+}
+
+
 // Access track position and momentum in local coordinates
 
 G4ThreeVector G4CMPProcessUtils::GetLocalPosition(const G4Track& track) const {
-  return fGlobalToLocal.TransformPoint(track.GetPosition());
+  return GetLocalPosition(track.GetPosition());
 }
 
 void G4CMPProcessUtils::GetLocalPosition(const G4Track& track,
@@ -197,7 +219,7 @@ G4ThreeVector G4CMPProcessUtils::GetLocalMomentum(const G4Track& track) const {
     return theLattice->MapV_elToP(GetValleyIndex(track),
                                   GetLocalVelocityVector(track));
   } else if (G4CMP::IsHole(track)) {
-    return fGlobalToLocal.TransformAxis(track.GetMomentum());
+    return GetLocalDirection(track.GetMomentum());
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -213,9 +235,10 @@ void G4CMPProcessUtils::GetLocalMomentum(const G4Track& track,
   mom[2] = tmom.z();
 }
 
-G4ThreeVector G4CMPProcessUtils::GetLocalVelocityVector(const G4Track& track) const {
+G4ThreeVector 
+G4CMPProcessUtils::GetLocalVelocityVector(const G4Track& track) const {
   G4ThreeVector vel = track.CalculateVelocity() * track.GetMomentumDirection();
-  fGlobalToLocal.ApplyAxisTransform(vel);
+  RotateToLocalDirection(vel);
   return vel;
 }
 
@@ -240,7 +263,8 @@ G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const 
 }
 
 // Access track position and momentum in global coordinates
-G4ThreeVector G4CMPProcessUtils::GetGlobalPosition(const G4Track& track) const {
+G4ThreeVector 
+G4CMPProcessUtils::GetGlobalPosition(const G4Track& track) const {
   return track.GetPosition();
 }
 
@@ -252,11 +276,12 @@ void G4CMPProcessUtils::GetGlobalPosition(const G4Track& track,
   pos[2] = tpos.z();
 }
 
-G4ThreeVector G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
+G4ThreeVector 
+G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
   if (G4CMP::IsElectron(track)) {
     G4ThreeVector p = theLattice->MapV_elToP(GetValleyIndex(track),
                                              GetLocalVelocityVector(track));
-    fLocalToGlobal.ApplyAxisTransform(p);
+    RotateToGlobalDirection(p);
     return p;
   } else if (G4CMP::IsHole(track)) {
     return track.GetMomentum();
@@ -308,6 +333,13 @@ const G4ParticleDefinition* G4CMPProcessUtils::GetCurrentParticle() const {
 }
 
 
+// Return touchable for currently active track for transforms
+
+const G4VTouchable* G4CMPProcessUtils::GetCurrentTouchable() const {
+  return (currentTrack ? currentTrack->GetTouchable() : 0);
+}
+
+
 // Access phonon particle-type/polarization indices
 
 G4int G4CMPProcessUtils::GetPolarization(const G4Track& track) const {
@@ -334,7 +366,7 @@ void G4CMPProcessUtils::MakeLocalPhononK(G4ThreeVector& kphonon) const {
 
 void G4CMPProcessUtils::MakeGlobalPhononK(G4ThreeVector& kphonon) const {
   MakeLocalPhononK(kphonon);
-  fLocalToGlobal.ApplyAxisTransform(kphonon);
+  RotateToGlobalDirection(kphonon);
 }
 
 void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
@@ -346,7 +378,8 @@ void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess006",
                 EventMustBeAborted, "Unknown charge carrier");
   }
-  fLocalToGlobal.ApplyAxisTransform(kphonon);
+
+  RotateToGlobalDirection(kphonon);
 }
 
 

@@ -14,6 +14,7 @@
 // 20140331  Add required process subtype code
 // 20160624  Use GetTrackInfo() accessor
 // 20161114  Use new PhononTrackInfo
+// 20170620  FOllow interface changes in G4CMPSecondaryUtils
 
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPSecondaryUtils.hh"
@@ -193,11 +194,11 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   // Construct the secondaries and set their wavevectors
   // Always produce one of the secondaries. The other will be produced
   // based on track biasing values.
-  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetVolume(), polarization1, dir1,
-                                      Esec1, aTrack.GetGlobalTime(),
+  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization1,
+                                       dir1, Esec1, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
-  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetVolume(), polarization2, dir2,
-                                      Esec2, aTrack.GetGlobalTime(),
+  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization2,
+                                      dir2, Esec2, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
 
   // Pick which secondary gets the weight randomly
@@ -267,15 +268,15 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   // Construct the secondaries and set their wavevectors
   // Always produce the L mode phonon. Produce T mode phonon based on
   // biasing.
-  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetVolume(), polarization1, dir1,
-                                      Esec1, aTrack.GetGlobalTime(),
+  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization1,
+				      dir1, Esec1, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
   G4double weight1 = aTrack.GetWeight();
   G4double weight2 = weight1 * G4CMP::ChoosePhononWeight();
   if (weight2 > 0.) { // Produce both daughters
-    G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetVolume(), polarization2, dir2,
-                                      Esec2, aTrack.GetGlobalTime(),
-                                      aTrack.GetPosition());
+    G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization2,
+					dir2, Esec2, aTrack.GetGlobalTime(),
+					aTrack.GetPosition());
 
     aParticleChange.SetSecondaryWeightByProcess(true);
     sec1->SetWeight(weight1); // Default weight

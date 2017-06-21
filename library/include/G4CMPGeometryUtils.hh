@@ -46,4 +46,5 @@ namespace G4CMP {
   
   G4ThreeVector GetSurfaceNormal(const G4Step& step);
 }
+
 #endif	/* G4CMPGeometryUtils_hh */

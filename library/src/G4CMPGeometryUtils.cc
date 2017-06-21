@@ -17,6 +17,7 @@
 #include "G4Step.hh"
 #include "G4TransportationManager.hh"
 
+
 G4ThreeVector G4CMP::GetLocalDirection(const G4VTouchable* touch,
                                        const G4ThreeVector& dir) {
   return G4CMPGlobalLocalTransformStore::ToLocal(touch).TransformAxis(dir);

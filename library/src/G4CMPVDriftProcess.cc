@@ -18,6 +18,7 @@
 // 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 // 20161114  Use new G4CMPDriftTrackInfo
 // 20170601  Inherit from new G4CMPVProcess, which provides G4CMPProcessUtils
+// 20170620  Follow interface changes in G4CMPProcessUtils
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -124,11 +125,9 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
   G4double mass = GetCurrentTrack()->GetDynamicParticle()->GetMass();
 
   G4ThreeVector v;
-  if (GetCurrentParticle() == G4CMPDriftElectron::Definition()) {
-    G4ThreeVector p_local = G4CMP::GetLocalDirection(GetCurrentVolume(), p);
-    v = G4CMP::GetGlobalDirection(GetCurrentVolume(),
-                                  theLattice->MapPtoV_el(ivalley, p_local));
-  } else if (GetCurrentParticle() == G4CMPDriftHole::Definition()) {
+  if (IsElectron()) {
+    v = GetGlobalDirection(theLattice->MapPtoV_el(ivalley, GetLocalDirection(p)));
+  } else if (IsHole()) {
     v = p*c_light/mass;
   } else {
     G4Exception("G4CMPVDriftProcess::FillParticleChange", "DriftProcess001",
