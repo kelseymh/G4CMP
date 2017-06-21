@@ -34,6 +34,7 @@
 // 20170525  Drop explicit copy constructors; let compiler do the work
 // 20170602  Local track identification functions apply to current track only
 // 20170620  Drop local caching of transforms; call through to G4CMPUtils.
+// 20170621  Drop local initialization of TrackInfo; StackingAction only
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -91,10 +92,19 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
     return;	// No lattice, no special actions possible
   }
 
+  // Sanity check -- track should already have kinematics container
+  if (!G4CMP::HasTrackInfo(track)) {
+    G4Exception("G4CMPProcessUtils::LoadDataForTrack", "Utils002",
+		JustWarning, "No auxiliary info found for track");
+    
+    G4CMP::AttachTrackInfo(track);
+  }
+
+  // Transfer phonon wavevector into momentum direction for this step
   if (IsPhonon()) {
-    // NOTE: TrackInfos get cleaned up by G4 when Track gets killed.
-    auto trackInfo = new G4CMPPhononTrackInfo(theLattice, G4RandomDirection());
-    G4CMP::AttachTrackInfo(*track, trackInfo);
+    G4CMPPhononTrackInfo* trackInfo =
+      G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(*track);
+
     // Set momentum direction using already provided wavevector
     G4ThreeVector kdir = trackInfo->k();
 
@@ -102,19 +112,6 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
     G4Track* tmp_track = const_cast<G4Track*>(track);
     tmp_track->SetMomentumDirection(
       theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), kdir));
-  }
-
-  if (IsElectron()) {
-    // NOTE: TrackInfos get cleaned up by G4 when Track gets killed.
-    if (!track->GetAuxiliaryTrackInformation(G4CMPConfigManager::GetPhysicsModelID())) {
-    auto trackInfo = new G4CMPDriftTrackInfo(theLattice, G4CMP::ChooseValley(theLattice));
-    G4CMP::AttachTrackInfo(*track, trackInfo); }
-  }
-
-  if (IsHole()) {
-    // NOTE: TrackInfos get cleaned up by G4 when Track gets killed.
-    auto trackInfo = new G4CMPDriftTrackInfo(theLattice, -1);
-    G4CMP::AttachTrackInfo(*track, trackInfo);
   }
 }
 

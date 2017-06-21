@@ -137,6 +137,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPStackingAction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSurfaceProperty.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTimeStepper.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTrackUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTriLinearInterp.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPUnitsTable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPUtils.cc
