@@ -64,7 +64,9 @@ public:
 
   // Configure for current track
   virtual void LoadDataForTrack(const G4Track* track);
-  virtual void SetCurrentTrack(const G4Track* track) { currentTrack = track; }
+  virtual void SetCurrentTrack(const G4Track* track);
+  virtual void SetLattice(const G4Track* track);
+
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
 
@@ -223,10 +225,9 @@ protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes
 
   const G4Track* GetCurrentTrack() const { return currentTrack; }
+  const G4VPhysicalVolume* GetCurrentVolume() const { return currentVolume; }
   const G4ParticleDefinition* GetCurrentParticle() const;
   const G4VTouchable* GetCurrentTouchable() const;
-
-  const G4VPhysicalVolume* GetCurrentVolume() const { return currentVolume; }
 
   G4int GetCurrentValley() const { return GetValleyIndex(currentTrack); }
 

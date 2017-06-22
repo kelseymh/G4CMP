@@ -18,8 +18,8 @@
 // 20160625 Process _all_ tracks to ensure they're in correct volumes
 // 20160829 Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 // 20170620 Drop obsolete SetTransforms() call
-// 20170621 For primary tracks, must get volume from G4Navigator
- 
+// 20170624 Clean up track initialization
+
 #include "G4CMPStackingAction.hh"
 
 #include "G4CMPDriftHole.hh"
@@ -65,22 +65,15 @@ G4ClassificationOfNewTrack
 G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   G4ClassificationOfNewTrack classification = fUrgent;
 
-  // Get track's initial volume (directly or from position)
-  G4VPhysicalVolume* trkvol = aTrack->GetVolume();
-  if (!trkvol) {		// Primary tracks don't have volumes yet
-    G4ThreeVector pos = aTrack->GetPosition();
-    G4TransportationManager* transMan =
-      G4TransportationManager::GetTransportationManager();
-    G4Navigator* nav = transMan->GetNavigatorForTracking();
-    trkvol = nav->LocateGlobalPointAndSetup(pos);
-  }
-
   // Configure utility functions for current track (do NOT use LoadDataForTrack)
   SetCurrentTrack(aTrack);
-  FindLattice(trkvol);
+  SetLattice(aTrack);
 
   // If phonon or charge carrier is not in a lattice-enabled volume, kill it
-  if ((IsPhonon() || IsChargeCarrier()) && !theLattice) return fKill;
+  if ((IsPhonon() || IsChargeCarrier()) && !theLattice) {
+    ReleaseTrack();
+    return fKill;
+  }
 
   // Attach appropriate container to store additional kinematics if needed
   if (!G4CMP::HasTrackInfo(aTrack)) {

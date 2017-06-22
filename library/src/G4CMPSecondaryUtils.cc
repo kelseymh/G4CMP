@@ -80,9 +80,7 @@ G4Track* G4CMP::CreatePhonon(const G4VTouchable* touch, G4int polarization,
                          time, AdjustSecondaryPosition(touch, pos));
 
   // Store wavevector in auxiliary info for track
-  auto secInfo =
-    new G4CMPPhononTrackInfo(lat, GetGlobalDirection(touch, waveVec));
-  AttachTrackInfo(*sec, secInfo);
+  AttachTrackInfo(sec, GetGlobalDirection(touch, waveVec));
 
   sec->SetVelocity(lat->MapKtoV(polarization, waveVec));
   sec->UseGivenVelocity(true);
@@ -163,8 +161,7 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
   auto sec = new G4Track(secDP, time, AdjustSecondaryPosition(touch, pos));
 
   // Store wavevector in auxiliary info for track
-  auto trackInfo = new G4CMPDriftTrackInfo(lat, valley);
-  G4CMP::AttachTrackInfo(*sec, trackInfo);
+  G4CMP::AttachTrackInfo(sec, valley);
 
   return sec;
 }

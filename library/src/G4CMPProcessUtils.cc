@@ -35,6 +35,7 @@
 // 20170602  Local track identification functions apply to current track only
 // 20170620  Drop local caching of transforms; call through to G4CMPUtils.
 // 20170621  Drop local initialization of TrackInfo; StackingAction only
+// 20170624  Improve initialization from track, use Navigator to infer volume
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -48,6 +49,7 @@
 #include "G4DynamicParticle.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
+#include "G4Navigator.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParallelWorldProcess.hh"
 #include "G4PhononLong.hh"
@@ -79,11 +81,9 @@ G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 // Initialization for current track
 
 void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
-  currentTrack = track;
-  currentVolume = track->GetVolume();
-
   // WARNING!  This assumes track starts and ends in one single volume!
-  FindLattice(track->GetVolume());
+  SetCurrentTrack(track);
+  SetLattice(track);
 
   if (!theLattice) {
     G4Exception("G4CMPProcessUtils::LoadDataForTrack", "Utils001",
@@ -115,6 +115,7 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   }
 }
 
+
 // Identify current track type to simplify some conditionals
 
 G4bool G4CMPProcessUtils::IsPhonon() const {
@@ -134,7 +135,28 @@ G4bool G4CMPProcessUtils::IsChargeCarrier() const {
 }
 
 
-// Fetch lattice for current track, use in subsequent steps
+// Cache volume associated with tracking, using Navigator if necessary
+
+void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
+  currentTrack = track;
+  currentVolume = track ? track->GetVolume() : nullptr;
+
+  if (!track) return;		// Avoid unnecessry work
+
+  if (!currentVolume) {		// Primary tracks may not have volumes yet
+    G4TransportationManager* transMan =
+      G4TransportationManager::GetTransportationManager();
+    G4Navigator* nav = transMan->GetNavigatorForTracking();
+    currentVolume = nav->LocateGlobalPointAndSetup(track->GetPosition());
+  }
+}
+
+void G4CMPProcessUtils::SetLattice(const G4Track* track) {
+  theLattice = track ? G4CMP::GetLattice(*track) : nullptr;
+}
+
+
+// Fetch lattice for specified volume, use in subsequent steps
 
 void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
   currentVolume = volume;
@@ -152,6 +174,7 @@ void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
 
 void G4CMPProcessUtils::ReleaseTrack() {
   currentTrack = nullptr;
+  currentVolume = nullptr;
   theLattice = nullptr;
 }
 
