@@ -18,7 +18,8 @@
 // 20160625 Process _all_ tracks to ensure they're in correct volumes
 // 20160829 Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 // 20170620 Drop obsolete SetTransforms() call
- 
+// 20170624 Clean up track initialization
+
 #include "G4CMPStackingAction.hh"
 
 #include "G4CMPDriftHole.hh"
@@ -29,6 +30,7 @@
 #include "G4CMPUtils.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
+#include "G4Navigator.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhononTrackMap.hh"
@@ -40,6 +42,11 @@
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "G4TrackStatus.hh"
+#include "G4TransportationManager.hh"
+#include "G4TouchableHistory.hh"
+#include "G4TouchableHistoryHandle.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4VTouchable.hh"
 #include "Randomize.hh"
 
 
@@ -60,32 +67,24 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
 
   // Configure utility functions for current track (do NOT use LoadDataForTrack)
   SetCurrentTrack(aTrack);
-  FindLattice(aTrack->GetVolume());
+  SetLattice(aTrack);
 
   // If phonon or charge carrier is not in a lattice-enabled volume, kill it
-  if ((G4CMP::IsPhonon(aTrack) || G4CMP::IsChargeCarrier(aTrack))
-      && !theLattice)
+  if ((IsPhonon() || IsChargeCarrier()) && !theLattice) {
+    ReleaseTrack();
     return fKill;
-  
-  // Non-initial tracks should not be touched
-  if (aTrack->GetParentID() != 0) return classification;
-
-  // Fill kinematic data for new track (secondaries will have this done)
-  if (G4CMP::IsPhonon(aTrack)) {
-    auto trackInfo = new G4CMPPhononTrackInfo(theLattice, G4RandomDirection());
-    G4CMP::AttachTrackInfo(*aTrack, trackInfo);
-    SetPhononVelocity(aTrack);
   }
 
-  if (G4CMP::IsChargeCarrier(aTrack)) {
-    SetChargeCarrierMass(aTrack);
-    if (G4CMP::IsElectron(aTrack)) {
-      auto trackInfo = new G4CMPDriftTrackInfo(theLattice, G4CMP::ChooseValley(theLattice));
-      G4CMP::AttachTrackInfo(*aTrack, trackInfo);
-      SetElectronEnergy(aTrack);
-    } else { // IsHole
-      auto trackInfo = new G4CMPDriftTrackInfo(theLattice, -1);
-      G4CMP::AttachTrackInfo(*aTrack, trackInfo);
+  // Attach appropriate container to store additional kinematics if needed
+  if (!G4CMP::HasTrackInfo(aTrack)) {
+    G4CMP::AttachTrackInfo(aTrack);
+
+    // Fill kinematic data for new track (secondaries will have this done)
+    if (IsPhonon()) SetPhononVelocity(aTrack);
+
+    if (IsChargeCarrier()) {
+      SetChargeCarrierMass(aTrack);
+      if (IsElectron()) SetElectronEnergy(aTrack);
     }
   }
 
