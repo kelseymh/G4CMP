@@ -23,7 +23,7 @@
 
 class G4CMPMeshElectricField : public G4ElectricField {
 public:
-  G4CMPMeshElectricField(const G4String& EpotFileName);
+  G4CMPMeshElectricField(const G4String& EPotFileName);
   virtual ~G4CMPMeshElectricField() {;}
 
   virtual void GetFieldValue(const G4double Point[3], G4double *Efield) const;
@@ -41,7 +41,7 @@ public:
 
 private:
   G4CMPTriLinearInterp Interp;
-  void BuildInterp(const G4String& EpotFileName);
+  void BuildInterp(const G4String& EPotFileName);
 };
 
 #endif	/* G4CMPMeshElectricField_h */

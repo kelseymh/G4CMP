@@ -70,12 +70,12 @@ G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
       G4SolidStore::GetInstance()->Clean();
     }
     // Only regenerate E field if it has changed since last construction.
-    if (epotFileName != G4CMPConfigManager::GetEpotFile() ||
-        epotScale != G4CMPConfigManager::GetEpotScale() ||
+    if (epotFileName != G4CMPConfigManager::GetEPotFile() ||
+        epotScale != G4CMPConfigManager::GetEPotScale() ||
         voltage != G4CMPConfigManager::GetVoltage()) {
 
-        epotFileName = G4CMPConfigManager::GetEpotFile();
-        epotScale = G4CMPConfigManager::GetEpotScale();
+        epotFileName = G4CMPConfigManager::GetEPotFile();
+        epotScale = G4CMPConfigManager::GetEPotScale();
         voltage = G4CMPConfigManager::GetVoltage();
        delete fEMField; fEMField = nullptr;
     }
@@ -90,9 +90,9 @@ G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
     // NOTE: No need to redefine the G4CMPSurfaceProperties
     G4LogicalBorderSurface::CleanSurfaceTable();
   } else { // First setup of geometry
-    epotScale = G4CMPConfigManager::GetEpotScale();
+    epotScale = G4CMPConfigManager::GetEPotScale();
     voltage = G4CMPConfigManager::GetVoltage();
-    epotFileName = G4CMPConfigManager::GetEpotFile();
+    epotFileName = G4CMPConfigManager::GetEPotFile();
     outputFileName = G4CMPConfigManager::GetHitOutput();
   }
   DefineMaterials();

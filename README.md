@@ -56,8 +56,8 @@ developers should check the source code in
 | G4LATTICEDATA           | /g4cmp/LatticeData	          | Directory with lattice configs          |
 | G4CMP\_DEBUG	           | /g4cmp/verbose <L> >0:        | Enable diagnostic messages              |
 | G4CMP\_VOLTAGE [V]       | /g4cmp/voltage <V>	volt !=0:  | Apply uniform +Z voltage                |
-| G4CMP\_EPOT\_FILE [F]     | /g4cmp/EpotFile <F> V=0:      | Read mesh field file "F"                |
-| G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEpot <M> V=0:     | Scale the potentials in Epot by factor m|
+| G4CMP\_EPOT\_FILE [F]     | /g4cmp/EPotFile <F> V=0:      | Read mesh field file "F"                |
+| G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEPot <M> V=0:     | Scale the potentials in EPotFile by factor m|
 | G4CMP\_MIN\_STEP [S]      | /g4cmp/minimumStep <S> S>0:   | Force minimum step S\*L0                |
 | G4CMP\_MAKE\_PHONONS [R]  | /g4cmp/producePhonons <R>     | Generate phonons every R hits           |
 | G4CMP\_MAKE\_CHARGES [R]  | /g4cmp/produceCharges <R>     | Generate charge pairs every R hits      |
@@ -115,8 +115,8 @@ field across the germanium crystal.  `$G4CMP\_VOLTAGE` specifies the voltage
 across the crystal, used to generate a uniform electric field (no edge or
 corner effects) from the bottom to the top face.  If the voltage is zero
 (the default), then `$G4CMP\_EPOT\_FILE` specifies the name of the mesh
-electric field field to be loaded for the g4cmpCharge test job.  The default
-name is "`Epot\_iZip4\_$V\_small`", found in the `charge/EPotFiles` directory.
+electric field field to be loaded for the g4cmpCharge test job.  There is no
+default file.
 
 For developers, there is a preprocessor flag (`make G4CMP\_DEBUG=1`) which may
 be set before building the libraries.  This variable will turn on some

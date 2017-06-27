@@ -24,9 +24,9 @@
 using std::vector;
 
 
-G4CMPMeshElectricField::G4CMPMeshElectricField(const G4String& EpotFileName)
+G4CMPMeshElectricField::G4CMPMeshElectricField(const G4String& EPotFileName)
   : G4ElectricField() {
-  BuildInterp(EpotFileName);
+  BuildInterp(EPotFileName);
 }
 
 G4CMPMeshElectricField::G4CMPMeshElectricField(const G4CMPMeshElectricField &p)
@@ -42,12 +42,12 @@ G4CMPMeshElectricField& G4CMPMeshElectricField::operator=(const G4CMPMeshElectri
 }
 
 
-void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
-  G4double VScale = G4CMPConfigManager::GetEpotScale();
+void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName) {
+  G4double VScale = G4CMPConfigManager::GetEPotScale();
 
   if (G4CMPConfigManager::GetVerboseLevel() > 0) {
     G4cout << "G4CMPMeshElectricField::Constructor: Creating Electric Field " 
-	   << EpotFileName;
+	   << EPotFileName;
 
     if (VScale != 1.) G4cout << " rescaled by " << VScale;
     G4cout << G4endl;
@@ -60,10 +60,10 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EpotFileName) {
 
   G4double vmin=99999., vmax=-99999.;
 
-  std::ifstream epotFile(EpotFileName);
+  std::ifstream epotFile(EPotFileName);
   if (!epotFile.good()) {
     G4ExceptionDescription msg;
-    msg << "Unable to open " << EpotFileName;
+    msg << "Unable to open " << EPotFileName;
     G4Exception("G4CMPMeshElectricField::BuildInterp", "G4CMPEM001",
 		FatalException, msg);
     return;
