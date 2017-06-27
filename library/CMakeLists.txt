@@ -105,10 +105,10 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigMessenger.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPCrystalGroup.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftBoundaryProcess.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftTrackInfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftElectron.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftHole.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftRecombinationProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftTrackInfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEigenSolver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeHit.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeSensitivity.cc
@@ -118,8 +118,8 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFieldManager.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGeometryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGlobalLocalTransformStore.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyScattering.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPKaplanQP.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLocalElectroMagField.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeScattering.cc
@@ -143,6 +143,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVDriftProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVElectrodePattern.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVTrackInfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeLogical.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeManager.cc
@@ -209,6 +210,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVDriftProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVElectrodePattern.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVTrackInfo.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticeLogical.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticeManager.hh
