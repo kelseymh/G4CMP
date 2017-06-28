@@ -18,7 +18,7 @@
 G4double
 G4CMPVElectrodePattern::GetMaterialProperty(const G4String& key) const {
   G4MaterialPropertiesTable* ncTable =
-    const_cast<G4MaterialPropertiesTable*>(&theSurfaceTable);
+    const_cast<G4MaterialPropertiesTable*>(theSurfaceTable);
 
   return ncTable->GetConstProperty(key);
 }

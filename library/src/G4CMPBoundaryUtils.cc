@@ -152,18 +152,17 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
     
   // Extract particle-specific information for later
   const G4ParticleDefinition* pd = aStep.GetTrack()->GetParticleDefinition();
-  const G4MaterialPropertiesTable* constTbl = 0;
   if (G4CMP::IsChargeCarrier(pd)) {
-    constTbl = surfProp->GetChargeMaterialPropertiesTablePointer();
+    matTable = surfProp->GetChargeMaterialPropertiesTablePointer();
     electrode = surfProp->GetChargeElectrode();
   }
 
   if (G4CMP::IsPhonon(pd)) {
-    constTbl = surfProp->GetPhononMaterialPropertiesTablePointer();
+    matTable = surfProp->GetPhononMaterialPropertiesTablePointer();
     electrode = surfProp->GetPhononElectrode();
   }
 
-  if (!constTbl) {
+  if (!matTable) {
     G4Exception((procName+"::GetSurfaceProperty").c_str(),
 		"Boundary004", EventMustBeAborted,
 		(pd->GetParticleName()+" has no material properties").c_str()
@@ -171,8 +170,8 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
     return false;
   }
 
-  // Must store non-const pointer, as table has no const accessors
-  matTable = const_cast<G4MaterialPropertiesTable*>(constTbl);
+  // Initialize electrode for current track
+  if (electrode) electrode->LoadDataForTrack(aStep.GetTrack());
 
   return true;
 }
@@ -180,9 +179,10 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
 
 // Implement PostStepDoIt() in a common way; processes should call through
 
-void G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
-              const G4Step& aStep,
-              G4ParticleChange& aParticleChange) {
+void 
+G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
+					const G4Step& aStep,
+					G4ParticleChange& aParticleChange) {
   aParticleChange.Initialize(aTrack);
 
   if (!IsGoodBoundary(aStep)) return;		// May have been done already
