@@ -120,12 +120,12 @@ void G4CMPSurfaceProperty::FillPhononMaterialPropertiesTable(G4double pAbsProb,
 
 void G4CMPSurfaceProperty::SetChargeElectrode(G4CMPVElectrodePattern* cel) {
   theChargeElectrode = cel;
-  if (cel) theChargeElectrode->UseSurfaceTable(theChargeMatPropTable);
+  if (cel) theChargeElectrode->UseSurfaceTable(&theChargeMatPropTable);
 }
 
 void G4CMPSurfaceProperty::SetPhononElectrode(G4CMPVElectrodePattern* pel) {
   thePhononElectrode = pel;
-  if (pel) thePhononElectrode->UseSurfaceTable(thePhononMatPropTable);
+  if (pel) thePhononElectrode->UseSurfaceTable(&thePhononMatPropTable);
 }
 
 

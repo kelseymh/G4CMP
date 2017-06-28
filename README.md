@@ -30,8 +30,13 @@ configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See GEANT4's
 documentation for further instructions.).
 
 Add the G4CMP environment variables using the `g4cmp\_env.csh` or `...sh`
-scripts found in the G4CMP top level directory.  This must be done before
-building or running executables.
+scripts found in the G4CMP installation directory (see below for build and
+installation procedures):
+
+	source g4cmp\_env.csh		# For CSH/TCSH users
+	. g4cmp\_env.sh			# For SH/BASH users
+
+This must be done before building or running executables.
 
 G4CMP is only configured for use on Linux and MacOSX platforms.  A minimum
 configuration requires a recent enough version of GCC or Clang to support
@@ -51,8 +56,8 @@ developers should check the source code in
 | G4LATTICEDATA           | /g4cmp/LatticeData	          | Directory with lattice configs          |
 | G4CMP\_DEBUG	           | /g4cmp/verbose <L> >0:        | Enable diagnostic messages              |
 | G4CMP\_VOLTAGE [V]       | /g4cmp/voltage <V>	volt !=0:  | Apply uniform +Z voltage                |
-| G4CMP\_EPOT\_FILE [F]     | /g4cmp/EpotFile <F> V=0:      | Read mesh field file "F"                |
-| G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEpot <M> V=0:     | Scale the potentials in Epot by factor m|
+| G4CMP\_EPOT\_FILE [F]     | /g4cmp/EPotFile <F> V=0:      | Read mesh field file "F"                |
+| G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEPot <M> V=0:     | Scale the potentials in EPotFile by factor m|
 | G4CMP\_MIN\_STEP [S]      | /g4cmp/minimumStep <S> S>0:   | Force minimum step S\*L0                |
 | G4CMP\_MAKE\_PHONONS [R]  | /g4cmp/producePhonons <R>     | Generate phonons every R hits           |
 | G4CMP\_MAKE\_CHARGES [R]  | /g4cmp/produceCharges <R>     | Generate charge pairs every R hits      |
@@ -110,8 +115,8 @@ field across the germanium crystal.  `$G4CMP\_VOLTAGE` specifies the voltage
 across the crystal, used to generate a uniform electric field (no edge or
 corner effects) from the bottom to the top face.  If the voltage is zero
 (the default), then `$G4CMP\_EPOT\_FILE` specifies the name of the mesh
-electric field field to be loaded for the g4cmpCharge test job.  The default
-name is "`Epot\_iZip4\_$V\_small`", found in the `charge/EPotFiles` directory.
+electric field field to be loaded for the g4cmpCharge test job.  There is no
+default file.
 
 For developers, there is a preprocessor flag (`make G4CMP\_DEBUG=1`) which may
 be set before building the libraries.  This variable will turn on some
@@ -119,12 +124,16 @@ additional diagnostic output files which may be of interest.
 
 ## Building the Package
 
-G4CMP supports building with make and CMake.
+G4CMP supports building itself with either GNU Make or CMake, and separately
+supports being linked into user applicated with either GNU Make (via
+environment variable settings) or CMake.
 
-### Building with make
+### Building with Make
 
-Configure your build environment (using
-`<g4dir>/share/Geant4-${VERSION}/geant4make/geant4make.csh` or `...sh`).
+Configure your Geant4 build environment using
+`<g4dir>/share/Geant4-${VERSION}/geant4make/geant4make.csh` or `...sh`, then
+configure or G4CMP environment as described above with `g4cmp_env.csh` or
+`...sh`.
 
 After configuring your environment, build the G4CMP library with the command
 
@@ -161,8 +170,9 @@ to be built, use the following command
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} ../G4CMP
 
 If you want to install to a local path, rather than system-wide, use the
-`-DCMAKE\_INSTALL\_PREFIX=/path/to/install` option. If you want to build an
-example application,
+`-DCMAKE\_INSTALL\_PREFIX=/path/to/install` option.
+
+If you want to build an example application,
 
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DBUILD_CHARGE_EXAMPLE=ON ../G4CMP
 
@@ -178,6 +188,33 @@ While it's not strictly necessary, we strongly recommend installing G4CMP to
 the install prefix rather than running the binaries from the build directory
 
     make install
+
+Once theinstall step is completed, the /path/to/install/share/G4CMP/
+directory will contain copies of the `g4cmp\_env.csh` and `...sh` scripts
+discussed above.  These copies should be sourced in order to correctly
+locate the installed libraries and header files.
+
+### Linking user applications against G4CMP
+
+G4CMP is an application library, which can be linked into a user's Geant4
+application in order to provide phonon and charge carrier transport in
+crystals.  Users must reference G4CMP in their application build in order to
+utilize these features.  
+
+If you have a simple Makefile build system (GMake), the following two lines,
+or an appropriate variation on them, should be sufficient:
+
+    CXXFLAGS += -I$(G4CMPINCLUDE)
+    LDFLAGS += -L$(G4CMPLIB) -lG4cmp -lqhullcpp -lqhullstatic_p
+
+These actions must occur _before_ the Geant4 libraries and include directory
+are referenced (G4CMP includes modified versions of some toolkit code).
+
+If you are using CMake to build your application, it should be sufficient to
+add the following two actions, before referencing Geant4:
+
+    find_package(G4CMP REQUIRED)
+    include(${G4CMP_USE_FILE})
 
 
 ## Defining the Crystal Dynamics

@@ -9,19 +9,18 @@
 //
 // $Id$
 //
+// 20170602  M. Kelsey -- Inherit from new G4CMPVProcess
 
 #ifndef G4CMPEnergyLimiter_hh
 #define G4CMPEnergyLimiter_hh 1
 
-#include "G4VDiscreteProcess.hh"
-#include "G4CMPProcessUtils.hh"
-#include "G4CMPProcessSubType.hh"
+#include "G4CMPVProcess.hh"
 
 
-class G4CMPEnergyLimiter : public G4VDiscreteProcess, public G4CMPProcessUtils {
+class G4CMPEnergyLimiter : public G4CMPVProcess {
 public:
   G4CMPEnergyLimiter(const G4String& name="EnergyLimiter")
-    : G4VDiscreteProcess(name, fPhonon) { SetProcessSubType(fEnergyLimiter); }
+    : G4CMPVProcess(name, fEnergyLimiter) {;}
   virtual ~G4CMPEnergyLimiter() {;}
 
   virtual G4bool IsApplicable(const G4ParticleDefinition& pd);
@@ -38,6 +37,10 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*) {
     return DBL_MAX;
   }
+
+private:
+  G4CMPEnergyLimiter(const G4CMPEnergyLimiter&);	// Copying is forbidden
+  G4CMPEnergyLimiter& operator=(const G4CMPEnergyLimiter&);
 };
 
 #endif	/* G4CMPEnergyLimiter_hh */

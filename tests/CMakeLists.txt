@@ -34,3 +34,6 @@ target_link_libraries(testCrystalGroup G4cmp)
 
 add_executable(g4cmpEFieldTest g4cmpEFieldTest.cc)
 target_link_libraries(g4cmpEFieldTest G4cmp)
+
+add_executable(phononKinematics phononKinematics.cc)
+target_link_libraries(phononKinematics G4cmp)

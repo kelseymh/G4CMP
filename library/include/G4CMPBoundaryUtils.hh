@@ -14,6 +14,8 @@
 //
 // 20160904  Add electrode pattern handling
 // 20160906  Make most functions const, provide casting function for matTable
+// 20170525  Add default "rule of five" copy/move operators (no owned pointers)
+// 20170627  Make electrode pointer non-const, for initialization
 
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
@@ -37,6 +39,11 @@ public:
   G4CMPBoundaryUtils(G4VProcess* process);
   virtual ~G4CMPBoundaryUtils();
 
+  G4CMPBoundaryUtils(const G4CMPBoundaryUtils&) = default;
+  G4CMPBoundaryUtils(G4CMPBoundaryUtils&&) = default;
+  G4CMPBoundaryUtils& operator=(const G4CMPBoundaryUtils&) = default;
+  G4CMPBoundaryUtils& operator=(G4CMPBoundaryUtils&&) = default;
+  
   virtual void SetVerboseLevel(G4int vb) { buVerboseLevel = vb; }
 
   // Check whether this step is at a good boundary for processing
@@ -83,7 +90,7 @@ protected:
   G4VPhysicalVolume* postPV;
   G4CMPSurfaceProperty* surfProp;	// Surface property with G4CMP data
   G4MaterialPropertiesTable* matTable;	// Phonon- or charge-specific parameters
-  const G4CMPVElectrodePattern* electrode; // Patterned electrode for absorption
+  G4CMPVElectrodePattern* electrode;	// Patterned electrode for absorption
 };
 
 #endif	/* G4CMPBoundaryUtils_hh */

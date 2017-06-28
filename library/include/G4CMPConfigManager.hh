@@ -22,6 +22,7 @@
 // 20160624  Add flag to use or ignore phonon KV lookup tables
 // 20160830  Add parameter to scale production of e/h pairs, like phonons
 // 20160901  Add parameters to set minimum energy for phonons, charges
+// 20170525  Block 'rule of five' copy/move semantics, as singleton
 
 #include "globals.hh"
 #include "G4RunManager.hh"
@@ -50,8 +51,8 @@ public:
   static G4double GetMinChargeEnergy()   { return Instance()->EminCharges; }
   static G4double GetGenPhonons()        { return Instance()->genPhonons; }
   static G4double GetGenCharges()        { return Instance()->genCharges; }
-  static G4double GetEpotScale()         { return Instance()->epotScale; }
-  static const G4String& GetEpotFile()   { return Instance()->Epot_file; }
+  static G4double GetEPotScale()         { return Instance()->epotScale; }
+  static const G4String& GetEPotFile()   { return Instance()->EPot_file; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetHitOutput()  { return Instance()->Hit_file; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
@@ -77,10 +78,10 @@ public:
   // These settings require the geometry to be rebuilt
   static void SetVoltage(G4double value)
     { Instance()->voltage = value; UpdateGeometry(); }
-  static void SetEpotScale(G4double value)
+  static void SetEPotScale(G4double value)
     { Instance()->epotScale = value; UpdateGeometry(); }
-  static void SetEpotFile(const G4String& name)
-    { Instance()->Epot_file=name; UpdateGeometry(); }
+  static void SetEPotFile(const G4String& name)
+    { Instance()->EPot_file=name; UpdateGeometry(); }
   static void SetLatticeDir(const G4String& dir)
     { Instance()->LatticeDir=dir; UpdateGeometry(); }
   static void SetHitOutput(const G4String& name)
@@ -96,6 +97,10 @@ public:
 
 private:
   G4CMPConfigManager();		// Singleton: only constructed on request
+  G4CMPConfigManager(const G4CMPConfigManager&) = delete;
+  G4CMPConfigManager(G4CMPConfigManager&&) = delete;
+  G4CMPConfigManager& operator=(const G4CMPConfigManager&) = delete;
+  G4CMPConfigManager& operator=(G4CMPConfigManager&&) = delete;
 
   static G4CMPConfigManager* Instance();   // Only needed by static accessors
   static G4CMPConfigManager* theInstance;
@@ -107,7 +112,7 @@ private:
   G4double genCharges;	// Rate to create e/h pairs ($G4CMP_MAKE_CHARGES)
   G4double EminPhonons;	// Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	// Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
-  G4double epotScale;	// Scale factor for Epot ($G4CMP_EPOT_SCALE)
+  G4double epotScale;	// Scale factor for EPot ($G4CMP_EPOT_SCALE)
   G4int verbose;	// Global verbosity (all processes, lattices)
   G4int fPhysicsModelID; // ID key to get aux. track info.
   G4int ehBounces;	// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
@@ -118,7 +123,7 @@ private:
   G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits
                         // ($G4CMP_FANO_ENABLED)
-  G4String Epot_file;	// Name of E-field file ($G4CMP_EPOT_FILE)
+  G4String EPot_file;	// Name of E-field file ($G4CMP_EPOT_FILE)
   G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
   G4String Hit_file;	// Output file of e/h hits ($G4CMP_HIT_FILE)
 

@@ -10,6 +10,7 @@
 /// \brief Define additional units with symbols for crystal applications
 //
 // 20160802 Use hep_pascal for pressure (Windows compatibility)
+// 20170525 Drop unnecessary empty destructor
 
 #include "G4Types.hh"
 #include "G4UnitsTable.hh"
@@ -20,8 +21,6 @@
 
 class G4CMPUnitsTable {
 public:
-  ~G4CMPUnitsTable() {;}
-
   static void Init();		// Provides thread-by-thread initialization
 
 private:

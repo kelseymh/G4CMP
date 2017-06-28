@@ -31,6 +31,11 @@
 // 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 // 20160906  Make GetSurfaceNormal() const.
 // 20161004  Add new ChangeValley() function to avoid null selection
+// 20170525  Drop explicit copy constructors; let compiler do the work
+// 20170602  Local track identification functions apply to current track only
+// 20170620  Drop local caching of transforms; call through to G4CMPUtils.
+// 20170621  Drop local initialization of TrackInfo; StackingAction only
+// 20170624  Improve initialization from track, use Navigator to infer volume
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -44,6 +49,7 @@
 #include "G4DynamicParticle.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
+#include "G4Navigator.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParallelWorldProcess.hh"
 #include "G4PhononLong.hh"
@@ -72,55 +78,12 @@ G4CMPProcessUtils::G4CMPProcessUtils()
 G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
 
-// Assignment operators allow dependent configuration
-
-G4CMPProcessUtils::G4CMPProcessUtils(G4CMPProcessUtils& right)
-  : theLattice(right.theLattice),
-    currentTrack(right.currentTrack), currentVolume(right.currentVolume),
-    fLocalToGlobal(right.fLocalToGlobal),
-    fGlobalToLocal(right.fGlobalToLocal) {;}
-
-G4CMPProcessUtils&
-G4CMPProcessUtils::operator=(const G4CMPProcessUtils& right) {
-  if (this != &right) {			// Avoid unnecessary work
-    theLattice      = right.theLattice;
-    currentTrack    = right.currentTrack;
-    currentVolume   = right.currentVolume;
-    fLocalToGlobal  = right.fLocalToGlobal;
-    fGlobalToLocal  = right.fGlobalToLocal;
-  }
-  return *this;
-}
-
-
 // Initialization for current track
 
 void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
-  currentTrack = track;
-  currentVolume = track->GetVolume();
-//  G4cout << "New track:" << G4endl;
-//  G4cout << track->GetDefinition()->GetParticleName() << G4endl;
-//  G4cout << track->GetPosition() << G4endl;
-//  G4cout << track->GetMomentumDirection() << G4endl;
-//  if (aTrack->GetCreatorProcess()) {
-//  G4cout << "Creator Process: " << aTrack->GetCreatorProcess()->GetProcessName() << G4endl;
-//  }
-//  if (aTrack->GetMaterial()) {
-//  G4cout << "Material: " << aTrack->GetMaterial()->GetName() << G4endl;
-//  }
-//  if (track->GetVolume()) {
-//  if (track->GetCreatorProcess())
-//  G4cout << "Parent Proc: " << track->GetCreatorProcess()->GetProcessName() << G4endl;
-//  G4cout << "Log vol at vert: " << track->GetLogicalVolumeAtVertex()->GetName() << G4endl;
-//  G4cout << "Origin touchable: " << track->GetOriginTouchable()->GetVolume(0)->GetName() << G4endl;
-//  G4cout << "Touchable: " << track->GetTouchable()->GetVolume(0)->GetName() << G4endl;
-//  G4cout << "NextTouchable: " << track->GetNextTouchable()->GetVolume(0)->GetName() << G4endl;
-//  G4cout << "Volume: " << track->GetVolume()->GetName() << G4endl;
-//  }
-
   // WARNING!  This assumes track starts and ends in one single volume!
-  SetTransforms(track->GetTouchable());
-  FindLattice(track->GetVolume());
+  SetCurrentTrack(track);
+  SetLattice(track);
 
   if (!theLattice) {
     G4Exception("G4CMPProcessUtils::LoadDataForTrack", "Utils001",
@@ -129,10 +92,19 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
     return;	// No lattice, no special actions possible
   }
 
-  if (IsPhonon(track)) {
-    // NOTE: TrackInfos get cleaned up by G4 when Track gets killed.
-    auto trackInfo = new G4CMPPhononTrackInfo(theLattice, G4RandomDirection());
-    G4CMP::AttachTrackInfo(*track, trackInfo);
+  // Sanity check -- track should already have kinematics container
+  if (!G4CMP::HasTrackInfo(track)) {
+    G4Exception("G4CMPProcessUtils::LoadDataForTrack", "Utils002",
+		JustWarning, "No auxiliary info found for track");
+    
+    G4CMP::AttachTrackInfo(track);
+  }
+
+  // Transfer phonon wavevector into momentum direction for this step
+  if (IsPhonon()) {
+    G4CMPPhononTrackInfo* trackInfo =
+      G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(*track);
+
     // Set momentum direction using already provided wavevector
     G4ThreeVector kdir = trackInfo->k();
 
@@ -141,45 +113,53 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
     tmp_track->SetMomentumDirection(
       theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), kdir));
   }
+}
 
-  if (IsElectron(track)) {
-    // NOTE: TrackInfos get cleaned up by G4 when Track gets killed.
-    if (!track->GetAuxiliaryTrackInformation(G4CMPConfigManager::GetPhysicsModelID())) {
-    auto trackInfo = new G4CMPDriftTrackInfo(theLattice, G4CMP::ChooseValley(theLattice));
-    G4CMP::AttachTrackInfo(*track, trackInfo); }
+
+// Identify current track type to simplify some conditionals
+
+G4bool G4CMPProcessUtils::IsPhonon() const {
+  return G4CMP::IsPhonon(currentTrack);
+}
+
+G4bool G4CMPProcessUtils::IsElectron() const {
+  return G4CMP::IsElectron(currentTrack);
+}
+
+G4bool G4CMPProcessUtils::IsHole() const {
+  return G4CMP::IsHole(currentTrack);
+}
+
+G4bool G4CMPProcessUtils::IsChargeCarrier() const {
+  return G4CMP::IsChargeCarrier(currentTrack);
+}
+
+
+// Cache volume associated with tracking, using Navigator if necessary
+
+void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
+  currentTrack = track;
+  currentVolume = track ? track->GetVolume() : nullptr;
+
+  if (!track) return;		// Avoid unnecessry work
+
+  if (!currentVolume) {		// Primary tracks may not have volumes yet
+    G4TransportationManager* transMan =
+      G4TransportationManager::GetTransportationManager();
+    G4Navigator* nav = transMan->GetNavigatorForTracking();
+    currentVolume = nav->LocateGlobalPointAndSetup(track->GetPosition());
   }
-
-  if (IsHole(track)) {
-    // NOTE: TrackInfos get cleaned up by G4 when Track gets killed.
-    auto trackInfo = new G4CMPDriftTrackInfo(theLattice, -1);
-    G4CMP::AttachTrackInfo(*track, trackInfo);
-  }
 }
 
-// Identify track type to simplify some conditionals
-
-G4bool G4CMPProcessUtils::IsPhonon(const G4Track* track) const {
-  return G4CMP::IsPhonon(track);
-}
-
-G4bool G4CMPProcessUtils::IsElectron(const G4Track* track) const {
-  return G4CMP::IsElectron(track);
-}
-
-G4bool G4CMPProcessUtils::IsHole(const G4Track* track) const {
-  return G4CMP::IsHole(track);
-}
-
-G4bool G4CMPProcessUtils::IsChargeCarrier(const G4Track* track) const {
-  return G4CMP::IsChargeCarrier(track);
+void G4CMPProcessUtils::SetLattice(const G4Track* track) {
+  theLattice = track ? G4CMP::GetLattice(*track) : nullptr;
 }
 
 
-
-// Fetch lattice for current track, use in subsequent steps
+// Fetch lattice for specified volume, use in subsequent steps
 
 void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
-  currentVolume = volume;		// 
+  currentVolume = volume;
 
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
   theLattice = LM->GetLattice(volume);
@@ -189,60 +169,61 @@ void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
   }
 }
 
-// Configure orientation matrices for current track
-
-void G4CMPProcessUtils::SetTransforms(const G4VTouchable* touchable) {
-  if (!touchable) {			// Null pointer defaults to identity
-    fLocalToGlobal = fGlobalToLocal = G4AffineTransform();
-    return;
-  }
-
-  SetTransforms(touchable->GetRotation(), touchable->GetTranslation());
-}
-
-void G4CMPProcessUtils::SetTransforms(const G4RotationMatrix* rot,
-				      const G4ThreeVector& trans) {
-  fLocalToGlobal = G4AffineTransform(rot, trans);
-  fGlobalToLocal = fLocalToGlobal.Inverse();
-}
 
 // Delete current configuration before new track starts
 
 void G4CMPProcessUtils::ReleaseTrack() {
-  SetTransforms(nullptr);
   currentTrack = nullptr;
+  currentVolume = nullptr;
   theLattice = nullptr;
 }
 
-G4ThreeVector G4CMPProcessUtils::GetSurfaceNormal(const G4Step& aStep) const {
-  G4Exception("G4CMPProcessUtils: GetSurfaceNormal", "dep015", JustWarning,
-              "This function is deprecated. See G4CMPGeometryUtils.hh");
 
-  // Get outward normal using G4Navigator method (more reliable than G4VSolid)
-  G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
-  std::vector<G4Navigator*>::iterator iNav =
-    G4TransportationManager::GetTransportationManager()->GetActiveNavigatorsIterator();
+// Convert between local and global coordinates in currentTrack frame
 
-  G4bool goodNorm;
-  G4ThreeVector surfNorm = iNav[navID]->GetGlobalExitNormal(
-                                      aStep.GetPostStepPoint()->GetPosition(),
-                                      &goodNorm);
-
-  // FIXME:  Sometimes G4Navigator fails, but still returns "good"
-  if (!goodNorm || surfNorm.mag()<0.99) {
-    G4VPhysicalVolume* thePrePV = aStep.GetPreStepPoint()->GetPhysicalVolume();
-    G4VPhysicalVolume* thePostPV = aStep.GetPostStepPoint()->GetPhysicalVolume();
-    G4Exception("G4CMPProcessUtils::GetSurfaceNormal", "Boundary001",
-                EventMustBeAborted, ("Can't get normal vector of surface between " +
-                                    thePrePV->GetName() + " and " +
-                                    thePostPV->GetName()+ ".").c_str());
-  }
-  return surfNorm;
+G4ThreeVector
+G4CMPProcessUtils::GetLocalDirection(const G4ThreeVector& dir) const {
+  return G4CMP::GetLocalDirection(GetCurrentTouchable(),dir);
 }
 
+G4ThreeVector
+G4CMPProcessUtils::GetLocalPosition(const G4ThreeVector& pos) const {
+  return G4CMP::GetLocalPosition(GetCurrentTouchable(),pos);
+}
+
+void G4CMPProcessUtils::RotateToLocalDirection(G4ThreeVector& dir) const {
+  return G4CMP::RotateToLocalDirection(GetCurrentTouchable(),dir);
+}
+
+void G4CMPProcessUtils::RotateToLocalPosition(G4ThreeVector& pos) const {
+  return G4CMP::RotateToLocalPosition(GetCurrentTouchable(),pos);
+}
+
+// Convert between local and global coordinates in currentTrack frame
+
+G4ThreeVector 
+G4CMPProcessUtils::GetGlobalDirection(const G4ThreeVector& dir) const {
+  return G4CMP::GetGlobalDirection(GetCurrentTouchable(),dir);
+}
+
+G4ThreeVector
+G4CMPProcessUtils::GetGlobalPosition(const G4ThreeVector& pos) const {
+  return G4CMP::GetGlobalPosition(GetCurrentTouchable(),pos);
+}
+
+void G4CMPProcessUtils::RotateToGlobalDirection(G4ThreeVector& dir) const {
+  return G4CMP::RotateToGlobalDirection(GetCurrentTouchable(),dir);
+}
+
+void G4CMPProcessUtils::RotateToGlobalPosition(G4ThreeVector& pos) const {
+  return G4CMP::RotateToGlobalPosition(GetCurrentTouchable(),pos);
+}
+
+
 // Access track position and momentum in local coordinates
+
 G4ThreeVector G4CMPProcessUtils::GetLocalPosition(const G4Track& track) const {
-  return G4CMP::GetLocalPosition(currentVolume, track.GetPosition());
+  return GetLocalPosition(track.GetPosition());
 }
 
 void G4CMPProcessUtils::GetLocalPosition(const G4Track& track,
@@ -254,11 +235,11 @@ void G4CMPProcessUtils::GetLocalPosition(const G4Track& track,
 }
 
 G4ThreeVector G4CMPProcessUtils::GetLocalMomentum(const G4Track& track) const {
-  if (IsElectron(&track)) {
+  if (G4CMP::IsElectron(track)) {
     return theLattice->MapV_elToP(GetValleyIndex(track),
                                   GetLocalVelocityVector(track));
-  } else if (IsHole(&track)) {
-    return G4CMP::GetLocalDirection(currentVolume, track.GetMomentum());
+  } else if (G4CMP::IsHole(track)) {
+    return GetLocalDirection(track.GetMomentum());
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -274,9 +255,11 @@ void G4CMPProcessUtils::GetLocalMomentum(const G4Track& track,
   mom[2] = tmom.z();
 }
 
-G4ThreeVector G4CMPProcessUtils::GetLocalVelocityVector(const G4Track& track) const {
+G4ThreeVector 
+G4CMPProcessUtils::GetLocalVelocityVector(const G4Track& track) const {
   G4ThreeVector vel = track.CalculateVelocity() * track.GetMomentumDirection();
-  return G4CMP::GetLocalDirection(currentVolume, vel);
+  RotateToLocalDirection(vel);
+  return vel;
 }
 
 void G4CMPProcessUtils::GetLocalVelocityVector(const G4Track &track,
@@ -288,9 +271,9 @@ void G4CMPProcessUtils::GetLocalVelocityVector(const G4Track &track,
 }
 
 G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const {
-  if (IsChargeCarrier(&track)) {
+  if (G4CMP::IsChargeCarrier(track)) {
     return GetLocalMomentum(track) / hbarc;
-  } else if (IsPhonon(&track)) {
+  } else if (G4CMP::IsPhonon(track)) {
     return G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track)->k();
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalWaveVector", "DriftProcess002",
@@ -300,7 +283,8 @@ G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const 
 }
 
 // Access track position and momentum in global coordinates
-G4ThreeVector G4CMPProcessUtils::GetGlobalPosition(const G4Track& track) const {
+G4ThreeVector 
+G4CMPProcessUtils::GetGlobalPosition(const G4Track& track) const {
   return track.GetPosition();
 }
 
@@ -312,12 +296,14 @@ void G4CMPProcessUtils::GetGlobalPosition(const G4Track& track,
   pos[2] = tpos.z();
 }
 
-G4ThreeVector G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
-  if (IsElectron(&track)) {
+G4ThreeVector 
+G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
+  if (G4CMP::IsElectron(track)) {
     G4ThreeVector p = theLattice->MapV_elToP(GetValleyIndex(track),
                                              GetLocalVelocityVector(track));
-    return G4CMP::GetGlobalDirection(currentVolume, p);
-  } else if (IsHole(&track)) {
+    RotateToGlobalDirection(p);
+    return p;
+  } else if (G4CMP::IsHole(track)) {
     return track.GetMomentum();
   } else {
     G4Exception("G4CMPProcessUtils::GetGlobalMomentum", "DriftProcess003",
@@ -346,12 +332,12 @@ void G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track &track, G4double v
 }
 
 G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
-  if (IsElectron(&track)) {
+  if (G4CMP::IsElectron(track)) {
     return theLattice->MapV_elToEkin(GetValleyIndex(track),
                                      GetLocalVelocityVector(track));
-  } else if (IsHole(&track)) {
+  } else if (G4CMP::IsHole(track)) {
     return track.GetKineticEnergy();
-  } else if (IsPhonon(&track)) {
+  } else if (G4CMP::IsPhonon(track)) {
     return track.GetKineticEnergy();
   } else {
     G4Exception("G4CMPProcessUtils::GetKineticEnergy", "G4CMPProcess004",
@@ -364,6 +350,13 @@ G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
 
 const G4ParticleDefinition* G4CMPProcessUtils::GetCurrentParticle() const {
   return (currentTrack ? currentTrack->GetParticleDefinition() : 0);
+}
+
+
+// Return touchable for currently active track for transforms
+
+const G4VTouchable* G4CMPProcessUtils::GetCurrentTouchable() const {
+  return (currentTrack ? currentTrack->GetTouchable() : 0);
 }
 
 
@@ -383,9 +376,9 @@ G4int G4CMPProcessUtils::ChoosePhononPolarization() const {
 }
 
 void G4CMPProcessUtils::MakeLocalPhononK(G4ThreeVector& kphonon) const {
-  if (IsElectron(GetCurrentTrack())) {
+  if (IsElectron()) {
     kphonon = theLattice->MapK_HVtoK(GetValleyIndex(GetCurrentTrack()), kphonon);
-  } else if (!IsHole(GetCurrentTrack())) {
+  } else if (!IsHole()) {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess005",
                 EventMustBeAborted, "Unknown charge carrier");
   }
@@ -393,295 +386,20 @@ void G4CMPProcessUtils::MakeLocalPhononK(G4ThreeVector& kphonon) const {
 
 void G4CMPProcessUtils::MakeGlobalPhononK(G4ThreeVector& kphonon) const {
   MakeLocalPhononK(kphonon);
-  G4CMP::RotateToGlobalDirection(currentVolume, kphonon);
+  RotateToGlobalDirection(kphonon);
 }
 
 void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
-  if (IsElectron(GetCurrentTrack())) {
+  if (IsElectron()) {
     kphonon = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),kphonon);
-  } else if (IsHole(GetCurrentTrack())) {
+  } else if (IsHole()) {
     kphonon *= hbarc;
   } else {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess006",
                 EventMustBeAborted, "Unknown charge carrier");
   }
-  G4CMP::RotateToGlobalDirection(currentVolume, kphonon);
-}
 
-// Compute a Lambertian distribution for reflected phonons
-
-G4ThreeVector
-G4CMPProcessUtils::LambertReflection(const G4ThreeVector& surfNorm) {
-  G4Exception("G4CMPProcessUtils: LambertReflection", "dep025", JustWarning,
-              "This function is deprecated. See G4CMPUtils.hh");
-  G4double phi = 2.0*pi*G4UniformRand();
-  G4double theta = acos(2.0*G4UniformRand() - 1.0) / 2.0;
-
-  G4ThreeVector refl = -surfNorm;
-  refl = refl.rotate(surfNorm.orthogonal(), theta);
-  refl = refl.rotate(surfNorm, phi);
-  return refl;
-}
-
-// Model Kaplan phonon-quasiparticle interactions in superconductor sensors
-
-G4double G4CMPProcessUtils::KaplanPhononQP(G4double energy,
-                                     G4MaterialPropertiesTable* prop,
-                                     std::vector<G4double>& reflectedEnergies) {
-  G4Exception("G4CMPProcessUtils: KaplanPhononQP", "dep008", JustWarning,
-              "This function is deprecated. See G4CMPKaplanQP.hh");
-
-  if (reflectedEnergies.size()>0)
-    G4Exception("G4CMPProcessUtils::KaplanPhononQP()", "ProcessUtils007",
-                JustWarning, "Passed a nonempty vector.");
-  // Check that the MaterialPropertiesTable has everything we need. If it came
-  // from a G4CMPSurfaceProperty, then it will be fine.
-  if (!(prop->ConstPropertyExists("gapEnergy") &&
-        prop->ConstPropertyExists("lowQPLimit") &&
-        prop->ConstPropertyExists("phononLifetime") &&
-        prop->ConstPropertyExists("phononLifetimeSlope") &&
-        prop->ConstPropertyExists("vSound") &&
-        prop->ConstPropertyExists("filmThickness"))) {
-    G4Exception("G4CMPProcessUtils::KaplanPhononQP()", "ProcessUtils001",
-                RunMustBeAborted,
-                "Insufficient info in MaterialPropertiesTable.");
-  }
-  G4double gapEnergy     = prop->GetConstProperty("gapEnergy");
-  G4double lowQPLimit    = prop->GetConstProperty("lowQPLimit");
-
-  //For the phonon to not break a Cooper pair, it must go 2*thickness
-  G4double frac = 2.0;
-
-  G4double phononEscapeProb = CalcEscapeProbability(energy, frac, prop);
-
-  G4double EDep = 0.;
-  if (energy > 2.0*gapEnergy && G4UniformRand() > phononEscapeProb) {
-    std::vector<G4double> qpEnergies;
-    std::vector<G4double> phonEnergies{energy};
-    while (qpEnergies.size()>0 || phonEnergies.size()>0) {
-      if (phonEnergies.size()>0) {
-        // Partition the phonons' energies into quasi-particles according to
-        // a PDF defined in CalcQPEnergies().
-        // NOTE: Both energy vectors mutate.
-        EDep += CalcQPEnergies(gapEnergy, lowQPLimit, phonEnergies, qpEnergies);
-      }
-      if (qpEnergies.size()>0) {
-        // Quasiparticles can also excite phonons.
-        // NOTE: Both energy vectors mutate.
-        EDep += CalcPhononEnergies(gapEnergy, lowQPLimit, phonEnergies, qpEnergies);
-      }
-      if (phonEnergies.size()>0) {
-        // Some phonons will escape back into the crystal.
-        // NOTE: Both energy vectors mutate.
-        CalcReflectedPhononEnergies(prop, phonEnergies, reflectedEnergies);
-      }
-    }
-  } else {
-    reflectedEnergies.push_back(energy);
-  }
-
-  return EDep;
-}
-
-// Compute the probability of a phonon reentering the crystal
-
-G4double G4CMPProcessUtils::CalcEscapeProbability(G4double energy,
-                                              G4double thicknessFrac,
-                                              G4MaterialPropertiesTable* prop) {
-  G4Exception("G4CMPProcessUtils: CalcEscapeProbability", "dep009", JustWarning,
-              "This function is deprecated. See G4CMPKaplanQP.hh");
-  G4double gapEnergy = prop->GetConstProperty("gapEnergy");
-  G4double phononLifetime = prop->GetConstProperty("phononLifetime");
-  G4double phononLifetimeSlope = prop->GetConstProperty("phononLifetimeSlope");
-  G4double vSound = prop->GetConstProperty("vSound");
-  G4double thickness = prop->GetConstProperty("filmThickness");
-
-  G4double mfp = vSound * phononLifetime / (1. + phononLifetimeSlope * (
-    energy/gapEnergy - 2.));
-  return exp(-2.* thicknessFrac * thickness/mfp);
-}
-
-// Model the phonons breaking Cooper pairs into quasiparticles
-
-G4double G4CMPProcessUtils::CalcQPEnergies(G4double gapEnergy,
-                                           G4double lowQPLimit,
-                                           std::vector<G4double>& phonEnergies,
-                                           std::vector<G4double>& qpEnergies) {
-  G4Exception("G4CMPProcessUtils: CalcQPEnergies", "dep010", JustWarning,
-              "This function is deprecated. See G4CMPKaplanQP.hh");
-  // Each phonon gives all of its energy to the qp pair it breaks.
-  G4double EDep = 0.;
-  for (G4double E: phonEnergies) {
-    G4double qpE = QPEnergyRand(gapEnergy, E);
-    if (qpE >= lowQPLimit*gapEnergy)
-      qpEnergies.push_back(qpE);
-    else
-      EDep += qpE;
-
-    if (E-qpE >= lowQPLimit*gapEnergy)
-      qpEnergies.push_back(E-qpE);
-    else
-      EDep += E-qpE;
-  }
-
-  phonEnergies.clear();
-  return EDep;
-}
-
-// Model the quasiparticles emitting phonons in the superconductor
-
-G4double G4CMPProcessUtils::CalcPhononEnergies(G4double gapEnergy,
-                                            G4double lowQPLimit,
-                                            std::vector<G4double>& phonEnergies,
-                                            std::vector<G4double>& qpEnergies) {
-  G4Exception("G4CMPProcessUtils: CalcPhononEnergies", "dep011", JustWarning,
-              "This function is deprecated. See G4CMPKaplanQP.hh");
-  // NOTE: Phonons with low energy will not be seen by the detector, so we
-  // don't record those energies and just "lose" those phonons.
-  // Have a reference in for loop b/c qp doesn't give all of its energy away.
-  G4double EDep = 0.;
-  std::vector<G4double> newQPEnergies;
-  for (G4double& E: qpEnergies) {
-    // NOTE: E mutates in PhononEnergyRand.
-    G4double phonE = PhononEnergyRand(gapEnergy, E);
-    if (phonE >= 2.0*gapEnergy)
-      phonEnergies.push_back(phonE);
-    if (E >= lowQPLimit*gapEnergy)
-      newQPEnergies.push_back(E);
-    else
-      EDep += E;
-  }
-
-  qpEnergies.swap(newQPEnergies);
-  return EDep;
-}
-
-// Calculate energies of phonon tracks that have reentered the crystal
-
-void G4CMPProcessUtils::CalcReflectedPhononEnergies(
-                                     G4MaterialPropertiesTable* prop,
-                                     std::vector<G4double>& phonEnergies,
-                                     std::vector<G4double>& reflectedEnergies) {
-  G4Exception("G4CMPProcessUtils: CalcReflectedPhononEnergies", "dep012", JustWarning,
-              "This function is deprecated. See G4CMPKaplanQP.hh");
-
-  // There is a 50% chance that a phonon is headed away from (toward) substrate
-  std::vector<G4double> newPhonEnergies;
-  for (G4double E : phonEnergies) {
-    G4double frac = (G4UniformRand() < 0.5 ? 0.5 : 1.5);
-    if (G4UniformRand() < CalcEscapeProbability(E, frac, prop))
-      reflectedEnergies.push_back(E);
-    else
-      newPhonEnergies.push_back(E);
-  }
-  phonEnergies.swap(newPhonEnergies);
-}
-
-// Compute quasiparticle energy distribution from broken Cooper pair
-
-G4double G4CMPProcessUtils::QPEnergyRand(G4double gapEnergy, G4double Energy) {
-  G4Exception("G4CMPProcessUtils: QPEnergyRand", "dep013", JustWarning,
-              "This function is deprecated. See G4CMPKaplanQP.hh");
-
-  // PDF is not integrable, so we can't do an inverse transform sampling.
-  // Instead, we'll do a rejection method.
-  //
-  // PDF(E') = (E'*(Energy - E') + gapEnergy*gapEnergy)
-  //           /
-  //           sqrt((E'*E' - gapEnergy*gapEnergy) *
-  //                ((Energy - E')*(Energy - E') - gapEnergy*gapEnergy));
-  // The shape of the PDF is like a U, so the max values are at the endpoints:
-  // E' = gapEnergy and E' = Energy - gapEnergy
-
-  // Add buffer so first/last bins don't give zero denominator in pdfSum
-  const G4double BUFF = 1000.;
-  G4double xmin = gapEnergy + (Energy-2.*gapEnergy)/BUFF;
-  G4double xmax = gapEnergy + (Energy-2.*gapEnergy)*(BUFF-1.)/BUFF;
-
-  G4double ymax = (xmin*(Energy-xmin) + gapEnergy*gapEnergy)
-                  /
-                  sqrt((xmin*xmin - gapEnergy*gapEnergy) *
-                       ((Energy-xmin)*(Energy-xmin) - gapEnergy*gapEnergy));
-
-  G4double ytest = G4UniformRand()*ymax;
-  G4double xtest = G4UniformRand()*(xmax-xmin) + xmin;
-  while (ytest > (xtest*(Energy-xtest) + gapEnergy*gapEnergy)
-                  /
-                  sqrt((xtest*xtest - gapEnergy*gapEnergy) *
-                       ((Energy-xtest)*(Energy-xtest) - gapEnergy*gapEnergy))) {
-    ytest = G4UniformRand()*ymax;
-    xtest = G4UniformRand()*(xmax-xmin) + xmin;
-  }
-
-  return xtest;
-/*
-  // PDF is not integrable, so we can't do an inverse transform sampling.
-  // PDF is shaped like a capital U, so a rejection method would be slow.
-  // Let's numerically calculate a CDF and throw a random to find E.
-
-  const G4int BINS = 1000;
-  G4double energyArr[BINS];
-  G4double cdf[BINS];
-  G4double pdfSum = 0.;
-  for (size_t i = 0; i < BINS; ++i) {
-    // Add 1 to i so first bin doesn't give zero denominator in pdfSum
-    // Add 1 to BINS so last bin doesn't give zero denominator in pdfSum
-    energyArr[i] = gapEnergy + (Energy-2.*gapEnergy) * (i+1.)/(BINS+1.);
-    pdfSum += (energyArr[i]*(Energy - energyArr[i]) + gapEnergy*gapEnergy)
-              /
-              sqrt((energyArr[i]*energyArr[i] - gapEnergy*gapEnergy) *
-                   ((Energy - energyArr[i])*(Energy - energyArr[i]) -
-                    gapEnergy*gapEnergy));
-    cdf[i] = pdfSum;
-  }
-
-  G4double u = G4UniformRand();
-
-  size_t index = 0;
-  for (; index < BINS; ++index) { //Combine normalization and search loops
-    if (cdf[index]/pdfSum >= u)
-      break;
-  }
-
-  return energyArr[index];
-*/
-}
-
-// Compute phonon energy distribution from quasiparticle in superconductor
-
-G4double
-G4CMPProcessUtils::PhononEnergyRand(G4double gapEnergy, G4double& Energy) {
-  G4Exception("G4CMPProcessUtils: PhononEnergyRand", "dep014", JustWarning,
-              "This function is deprecated. See G4CMPKaplanQP.hh");
-
-  // PDF is not integrable, so we can't do an inverse transform sampling.
-  // Instead, we'll do a rejection method.
-  //
-  // PDF(E') = (E'*(Energy-E')*(Energy-E') * (E'-gapEnergy*gapEnergy/Energy))
-  //           /
-  //           sqrt((E'*E' - gapEnergy*gapEnergy);
-
-  // Add buffer so first bin doesn't give zero denominator in pdfSum
-  const G4double BUFF = 1000.;
-  G4double xmin = gapEnergy + gapEnergy/BUFF;
-  G4double xmax = Energy;
-
-  G4double ymax = (xmin*(Energy-xmin)*(Energy-xmin) *
-                    (xmin-gapEnergy*gapEnergy/Energy)) /
-                  sqrt(xmin*xmin - gapEnergy*gapEnergy);
-
-  G4double ytest = G4UniformRand()*ymax;
-  G4double xtest = G4UniformRand()*(xmax-xmin) + xmin;
-  while (ytest > (xtest*(Energy-xtest)*(Energy-xtest) *
-                    (xtest-gapEnergy*gapEnergy/Energy)) /
-                  sqrt(xtest*xtest - gapEnergy*gapEnergy)) {
-    ytest = G4UniformRand()*ymax;
-    xtest = G4UniformRand()*(xmax-xmin) + xmin;
-  }
-
-  G4double phononE = Energy - xtest;
-  Energy = xtest;
-  return phononE;
+  RotateToGlobalDirection(kphonon);
 }
 
 
@@ -719,91 +437,7 @@ G4double G4CMPProcessUtils::MakeRecoilTheta(G4double k, G4double ks,
 }
 
 
-// Construct new phonon or charge carrier track
-
-G4Track* G4CMPProcessUtils::CreateTrack(G4ParticleDefinition* pd,
-					const G4ThreeVector& waveVec,
-					G4double energy) const {
-  G4Exception("G4CMPProcessUtils: CreateTrack", "dep016", JustWarning,
-              "This function is deprecated. See G4CMPSecondaryUtils.hh");
-  return CreateTrack(pd, waveVec, energy, currentTrack->GetPosition());
-}
-
-G4Track* G4CMPProcessUtils::CreateTrack(G4ParticleDefinition* pd,
-					const G4ThreeVector& waveVec,
-					G4double energy,
-					const G4ThreeVector& pos) const {
-  G4Exception("G4CMPProcessUtils: CreateTrack", "dep017", JustWarning,
-              "This function is deprecated. See G4CMPSecondaryUtils.hh");
-  if (G4CMP::IsPhonon(pd)) {
-    return CreatePhonon(G4PhononPolarization::Get(pd), waveVec, energy, pos);
-  }
-
-  if (G4CMP::IsChargeCarrier(pd)) {
-    return CreateChargeCarrier(int(pd->GetPDGCharge()/eplus),
-                               G4CMP::ChooseValley(theLattice), energy, waveVec, pos);
-  }
-
-  G4cerr << "WARNING: " << pd->GetParticleName() << " is not G4CMP" << G4endl;
-  return new G4Track(new G4DynamicParticle(pd, waveVec, energy),
-		     currentTrack->GetGlobalTime(), pos);
-}
-
-
-// Construct new phonon track with correct momentum, position, etc.
-
-G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
-					 const G4ThreeVector& waveVec,
-					 G4double energy) const {
-  G4Exception("G4CMPProcessUtils: CreatePhonon", "dep018", JustWarning,
-              "This function is deprecated. See G4CMPSecondaryUtils.hh");
-  return CreatePhonon(polarization,waveVec,energy,currentTrack->GetPosition());
-}
-
-G4Track* G4CMPProcessUtils::CreatePhonon(G4int polarization,
-					 const G4ThreeVector& waveVec,
-					 G4double energy,
-           const G4ThreeVector& pos) const {
-  G4Exception("G4CMPProcessUtils: CreatePhonon", "dep019", JustWarning,
-              "This function is deprecated. See G4CMPSecondaryUtils.hh");
-  if (polarization == G4PhononPolarization::UNKNOWN) {		// Choose value
-    polarization = ChoosePhononPolarization();
-  }
-
-  G4ThreeVector vgroup = theLattice->MapKtoVDir(polarization, waveVec);
-  if (std::fabs(vgroup.mag()-1.) > 0.01) {
-    G4cerr << "WARNING: vgroup not a unit vector: " << vgroup
-	   << " length " << vgroup.mag() << G4endl;
-  }
-
-  G4ParticleDefinition* thePhonon = G4PhononPolarization::Get(polarization);
-
-  // Secondaries are (usually) created at the current track coordinates
-  G4CMP::RotateToGlobalDirection(currentVolume, vgroup);
-  G4ThreeVector secPos = AdjustSecondaryPosition(pos);
-
-  G4Track* sec = new G4Track(new G4DynamicParticle(thePhonon, vgroup, energy),
-                             currentTrack->GetGlobalTime(), secPos);
-
-  // Store wavevector in auxiliary info for track
-  auto trackInfo = new G4CMPPhononTrackInfo(theLattice,
-                                            G4CMP::GetGlobalDirection(
-                                              currentVolume, waveVec));
-  G4CMP::AttachTrackInfo(*sec, trackInfo);
-
-  sec->SetVelocity(theLattice->MapKtoV(polarization, waveVec));    
-  sec->UseGivenVelocity(true);
-
-  return sec;
-}
-
 // Generate random valley for charge carrier
-
-G4int G4CMPProcessUtils::ChooseValley() const {
-  G4Exception("G4CMPProcessUtils: ChooseValley", "dep024", JustWarning,
-              "This function is deprecated. See G4CMPUtils.hh");
-  return (G4int)(G4UniformRand()*theLattice->NumberOfValleys());
-}
 
 G4int G4CMPProcessUtils::ChangeValley(G4int valley) const {
   // generate random valley offset (up to N-1)
@@ -825,95 +459,4 @@ const G4RotationMatrix&
 G4CMPProcessUtils::GetValley(const G4Track& track) const {
   G4int iv = GetValleyIndex(track);
   return (iv>=0 ? theLattice->GetValley(iv) : G4RotationMatrix::IDENTITY);
-}
-
-
-// Construct new electron or hole track with correct conditions
-
-G4Track* G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
-						const G4ThreeVector& p) const {
-  G4Exception("G4CMPProcessUtils: CreateChargeCarrier", "dep020", JustWarning,
-              "This function is deprecated. See G4CMPSecondaryUtils.hh");
-  return CreateChargeCarrier(charge, valley, p, currentTrack->GetPosition());
-}
-
-G4Track* 
-G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
-				       G4double Ekin, 
-				       const G4ThreeVector& dir,
-				       const G4ThreeVector& pos) const {
-  G4Exception("G4CMPProcessUtils: CreateChargeCarrier", "dep021", JustWarning,
-              "This function is deprecated. See G4CMPSecondaryUtils.hh");
-  G4double carrierMass = 0.;
-  if (charge==1)       carrierMass = theLattice->GetHoleMass();
-  else if (charge==-1) carrierMass = theLattice->GetElectronMass();
-
-  G4double carrierMom = std::sqrt(2.*Ekin*carrierMass);
-
-  return CreateChargeCarrier(charge, valley, carrierMom*dir, pos);
-}
-
-G4Track* 
-G4CMPProcessUtils::CreateChargeCarrier(G4int charge, G4int valley,
-				       const G4ThreeVector& p,
-				       const G4ThreeVector& pos) const {
-  G4Exception("G4CMPProcessUtils: CreateChargeCarrier", "dep022", JustWarning,
-              "This function is deprecated. See G4CMPSecondaryUtils.hh");
-  if (charge != 1 && charge != -1) {
-    G4cerr << "ERROR:  CreateChargeCarrier invalid charge " << charge << G4endl;
-    return 0;
-  }
-
-  G4ParticleDefinition* theCarrier = 0;
-  G4double carrierMass=0., carrierEnergy=0.;
-
-  G4ThreeVector v_unit;
-  if (charge==1) {
-    theCarrier    = G4CMPDriftHole::Definition();
-    carrierMass   = theLattice->GetHoleMass();
-    carrierEnergy = 0.5 * p.mag2() / carrierMass;	// Non-relativistic
-    v_unit = p.unit();
-  } else {
-    theCarrier    = G4CMPDriftElectron::Definition();
-    carrierMass   = theLattice->GetElectronMass();
-    G4ThreeVector p_local = G4CMP::GetLocalDirection(currentVolume, p);
-    G4ThreeVector v_local = theLattice->MapPtoV_el(valley, p_local);
-    G4CMP::RotateToGlobalDirection(currentVolume, v_local);
-    carrierEnergy = 0.5 * carrierMass * v_local.mag2();// Non-relativistic
-    v_unit = v_local.unit();
-  }
-
-  G4DynamicParticle* secDP =
-    new G4DynamicParticle(theCarrier, v_unit, carrierEnergy, carrierMass);
-
-  G4ThreeVector secPos = AdjustSecondaryPosition(pos);
-  G4Track* sec = new G4Track(secDP, currentTrack->GetGlobalTime(), secPos);
-
-  // Store wavevector in auxiliary info for track
-  auto trackInfo = new G4CMPDriftTrackInfo(theLattice, valley);
-  G4CMP::AttachTrackInfo(*sec, trackInfo);
-
-  return sec;
-}
-
-G4ThreeVector G4CMPProcessUtils::AdjustSecondaryPosition(G4ThreeVector pos) const {
-  G4Exception("G4CMPProcessUtils: AdjustSecondaryPosition", "dep023", JustWarning,
-              "This function is deprecated. See G4CMPSecondaryUtils.hh");
-  // Take a copy because we would've had to make a copy at some point anyway.
-  // If the step is near a boundary, create the secondary in the initial volume
-  G4Navigator* nav = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
-  // Safety is the distance to a boundary
-  G4double safety = nav->ComputeSafety(pos);
-  // Tolerance is the error in deciding which volume a track is in
-  G4double kCarTolerance = G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
-  // If the distance to an edge is within error, we might accidentally get placed
-  // in the next volume. Instead, let's scoot a bit away from the edge.
-  if (safety <= kCarTolerance) {
-    G4ThreeVector norm = currentVolume->GetLogicalVolume()->GetSolid()
-                         ->SurfaceNormal(G4CMP::GetLocalPosition(currentVolume, pos));
-    G4CMP::RotateToGlobalDirection(currentVolume, norm);
-    pos += (safety - kCarTolerance * (1.001)) * norm;
-  }
-
-  return pos;
 }

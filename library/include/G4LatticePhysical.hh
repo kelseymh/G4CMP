@@ -19,6 +19,8 @@
 // 20140425  Add "effective mass" calculation for electrons
 // 20150601  Add mapping from electron velocity back to momentum
 // 20160608  Drop (theta,phi) lattice orientation function.
+// 20170523  Add interface for axis vector of valleys
+// 20170525  Drop empty destructor to allow default "rule of five" semantics
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -36,8 +38,6 @@ public:
   // Miller orientation aligns lattice normal (hkl) with geometry +Z
   G4LatticePhysical(const G4LatticeLogical* Lat,
 		    G4int h=0, G4int k=0, G4int l=0, G4double rot=0.);
-
-  virtual ~G4LatticePhysical();
 
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
@@ -119,6 +119,7 @@ public:
 
   // FIXME:  Should valley matrix be rotated from internal to local coordinates?
   const G4RotationMatrix& GetValley(G4int iv) const { return fLattice->GetValley(iv); }
+  const G4ThreeVector& GetValleyAxis(G4int iv) const { return fLattice->GetValleyAxis(iv); }
 
   // Parameters for electron intervalley scattering
   G4double GetIVField() const    { return fLattice->GetIVField(); }

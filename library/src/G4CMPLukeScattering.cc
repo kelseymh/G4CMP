@@ -13,6 +13,7 @@
 // 20160624  Use GetTrackInfo() accessor
 // 20160830  Replace direct use of G4CMP_MAKE_PHONONS with ChooseWeight
 // 20161114  Use new DriftTrackInfo
+// 20170602  Use G4CMPUtils for track identity functions
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPDriftElectron.hh"
@@ -21,6 +22,7 @@
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononPolarization.hh"
@@ -42,6 +44,10 @@ G4CMPLukeScattering::G4CMPLukeScattering(G4VProcess* stepper)
     stepLimiter(stepper) {
 #ifdef G4CMP_DEBUG
   output.open("LukePhononEnergies");
+  if (!output.good()) {
+    G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
+		FatalException, "Unable to open LukePhononEnergies");
+  }
 #endif
 }
 
@@ -62,12 +68,12 @@ G4CMPLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack);
   const G4LatticePhysical* lat = trackInfo->Lattice();
   G4double kmag = 0.; G4double l0 = 0.; G4double mass = 0.;
-  if (IsElectron(&aTrack)) {
+  if (G4CMP::IsElectron(aTrack)) {
     kmag = lat->MapV_elToK_HV(GetValleyIndex(aTrack),
                               GetLocalVelocityVector(aTrack)).mag();
     l0 = lat->GetElectronScatter();
     mass = lat->GetElectronMass();
-  } else if (IsHole(&aTrack)) {
+  } else if (G4CMP::IsHole(aTrack)) {
     kmag = GetLocalWaveVector(aTrack).mag();
     l0 = lat->GetHoleScatter();
     mass = lat->GetHoleMass();
@@ -123,11 +129,11 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
-  if (IsElectron(&aTrack)) {
+  if (IsElectron()) {
     ktrk = lat->MapV_elToK_HV(GetValleyIndex(aTrack),
                               GetLocalVelocityVector(aTrack));
     mass = lat->GetElectronMass();
-  } else if (IsHole(&aTrack)) {
+  } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
     mass = lat->GetHoleMass();
   } else {
@@ -190,7 +196,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (weight > 0.) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
-    G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetVolume(),
+    G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetTouchable(),
                                           G4PhononPolarization::UNKNOWN,
                                           qvec,Ephonon,
                                           aTrack.GetGlobalTime(),

@@ -9,6 +9,8 @@
 ///     be moved here from G4CMPProcessUtils.
 //
 // $Id$
+//
+// 20170602  Provide call-by-reference versions of track identity functions
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -28,23 +30,33 @@ namespace G4CMP {
     return (T(0) < val) - (val < T(0));
   }
 
-  // Select phonon mode randomly from density of states
-  G4int ChoosePhononPolarization(const G4LatticePhysical* lattice);
-  G4int ChoosePhononPolarization(G4double Ldos, G4double STdos, G4double FTdos);
-
-  // Randomly choose valley for charge carrier
-  G4int ChooseValley(const G4LatticePhysical* lattice);
-
   // Identify G4CMP particle categories
   G4bool IsPhonon(const G4Track* track);
   G4bool IsElectron(const G4Track* track);
   G4bool IsHole(const G4Track* track);
   G4bool IsChargeCarrier(const G4Track* track);
 
+  G4bool IsPhonon(const G4Track& track);
+  G4bool IsElectron(const G4Track& track);
+  G4bool IsHole(const G4Track& track);
+  G4bool IsChargeCarrier(const G4Track& track);
+
   G4bool IsPhonon(const G4ParticleDefinition* pd);
   G4bool IsElectron(const G4ParticleDefinition* pd);
   G4bool IsHole(const G4ParticleDefinition* pd);
   G4bool IsChargeCarrier(const G4ParticleDefinition* pd);
+
+  G4bool IsPhonon(const G4ParticleDefinition& pd);
+  G4bool IsElectron(const G4ParticleDefinition& pd);
+  G4bool IsHole(const G4ParticleDefinition& pd);
+  G4bool IsChargeCarrier(const G4ParticleDefinition& pd);
+
+  // Select phonon mode randomly from density of states
+  G4int ChoosePhononPolarization(const G4LatticePhysical* lattice);
+  G4int ChoosePhononPolarization(G4double Ldos, G4double STdos, G4double FTdos);
+
+  // Randomly choose valley for charge carrier
+  G4int ChooseValley(const G4LatticePhysical* lattice);
 
   // Throw biasing decision for particle production and return weight
   G4double ChooseWeight(const G4ParticleDefinition* pd);
@@ -60,9 +72,8 @@ namespace G4CMP {
   // Test that a phonon's wave vector relates to an inward velocity.
   G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                 G4int polarization,
-                                G4ThreeVector waveVector,
-                                G4ThreeVector surfNorm);
-
+                                const G4ThreeVector& waveVector,
+                                const G4ThreeVector& surfNorm);
 }
 
 #endif	/* G4CMPUtils_hh */

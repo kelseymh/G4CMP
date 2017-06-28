@@ -1,4 +1,4 @@
-/g4cmp/EpotFile EPot_iZIP4_axissymmetric_shortQOS1
+/g4cmp/EPotFile EPotFiles/EPot_iZIP4_axissymmetric_shortQOS1
 /run/initialize
 
 /vis/open OGLIX 600x600

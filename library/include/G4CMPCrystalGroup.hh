@@ -10,6 +10,7 @@
 /// \brief Enumerator and support functions for lattice symmetry groups
 //
 // 20160729  M. Kelsey -- Add accessors for unit cell angles
+// 20170525  M. Kelsey -- Add default "rule of five" copy/move operators
 
 #include "globals.hh"
 #include "G4ThreeVector.hh"
@@ -35,6 +36,11 @@ public:
   }
 
   virtual ~G4CMPCrystalGroup() {;}
+
+  G4CMPCrystalGroup(const G4CMPCrystalGroup&) = default;
+  G4CMPCrystalGroup(G4CMPCrystalGroup&&) = default;
+  G4CMPCrystalGroup& operator=(const G4CMPCrystalGroup&) = default;
+  G4CMPCrystalGroup& operator=(G4CMPCrystalGroup&&) = default;
 
   const char* Name() const { return Name(group); }
 

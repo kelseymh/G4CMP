@@ -6,6 +6,8 @@
 // $Id$
 //
 // 20160831  M. Kelsey -- Add optional electrode geometry class
+// 20170525  M. Kelsey -- Add default "rule of five" copy/move operators
+// 20170627  M. Kelsey -- Return non-const pointers, for functional use
 
 #ifndef G4CMPSurfaceProperty_h
 #define G4CMPSurfaceProperty_h 1
@@ -38,16 +40,23 @@ public:
 
   virtual ~G4CMPSurfaceProperty();
 
+  G4CMPSurfaceProperty(const G4CMPSurfaceProperty&) = default;
+  G4CMPSurfaceProperty(G4CMPSurfaceProperty&&) = default;
+  G4CMPSurfaceProperty& operator=(const G4CMPSurfaceProperty&) = default;
+  G4CMPSurfaceProperty& operator=(G4CMPSurfaceProperty&&) = default;
+
   G4bool operator==(const G4SurfaceProperty &right) const;
   G4bool operator!=(const G4SurfaceProperty &right) const;
 
   // Accessors for charge-pair and phonon boundary parameters
-  // NOTE:  These return non-functional objects because Tables can't be const
-  const G4MaterialPropertiesTable* 
-  GetChargeMaterialPropertiesTablePointer() const { return &theChargeMatPropTable; }
+  // NOTE:  Must return non-const pointer as Tables can't be const
+  G4MaterialPropertiesTable* GetChargeMaterialPropertiesTablePointer() const {
+    return const_cast<G4MaterialPropertiesTable*>(&theChargeMatPropTable);
+  }
 
-  const G4MaterialPropertiesTable*
-  GetPhononMaterialPropertiesTablePointer() const { return &thePhononMatPropTable; }
+  G4MaterialPropertiesTable* GetPhononMaterialPropertiesTablePointer() const {
+    return const_cast<G4MaterialPropertiesTable*>(&thePhononMatPropTable);
+  }
 
   // NOTE:  These return by value because Tables can't be const
   G4MaterialPropertiesTable

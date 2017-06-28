@@ -16,6 +16,7 @@
 //	     electrons.  Do local/global transformations; take valley index
 //	     run-time configuration argument.
 // 20140404  Drop unnecessary data members, using functions in G4LatticePhysical
+// 20170525  Add default "rule of five" copy/move operators
 
 #ifndef G4CMPEqEMField_hh
 #define G4CMPEqEMField_hh
@@ -35,6 +36,11 @@ public:
 		 const G4LatticePhysical* lattice=0);
 
   virtual ~G4CMPEqEMField() {;} 
+
+  G4CMPEqEMField(const G4CMPEqEMField&) = default;
+  G4CMPEqEMField(G4CMPEqEMField&&) = default;
+  G4CMPEqEMField& operator=(const G4CMPEqEMField&) = default;
+  G4CMPEqEMField& operator=(G4CMPEqEMField&&) = default;
 
   // Replace physical lattice if track has changed volumes
   // NOTE:  Returns TRUE if lattice was actually changed

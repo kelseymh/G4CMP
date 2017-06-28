@@ -68,8 +68,8 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   minEChargeCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("minECharges",
           "Minimum energy for creating or tracking charge carriers");
 
-  escaleCmd = CreateCommand<G4UIcmdWithADouble>("scaleEpot",
-		"Set a scale factor for voltages in Epot electric field file");
+  escaleCmd = CreateCommand<G4UIcmdWithADouble>("scaleEPot",
+		"Set a scale factor for voltages in EPot electric field file");
 
   ehBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("chargeBounces",
 		  "Maximum number of reflections allowed for charge carriers");
@@ -152,7 +152,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == makeChargeCmd) theManager->SetGenCharges(StoD(value));
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
-  if (cmd == fileCmd) theManager->SetEpotFile(value);
+  if (cmd == fileCmd) theManager->SetEPotFile(value);
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
   if (cmd == hitsCmd) theManager->SetHitOutput(value);
 
@@ -160,7 +160,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
     theManager->SetVoltage(voltageCmd->GetNewDoubleValue(value));
 
   if (cmd == escaleCmd)
-    theManager->SetEpotScale(escaleCmd->GetNewDoubleValue(value));
+    theManager->SetEPotScale(escaleCmd->GetNewDoubleValue(value));
 
   if (cmd == minEPhononCmd)
     theManager->SetMinPhononEnergy(minEPhononCmd->GetNewDoubleValue(value));

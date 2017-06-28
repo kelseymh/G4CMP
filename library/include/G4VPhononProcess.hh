@@ -10,30 +10,24 @@
 //
 // 20140312  Move utility functions to separate class, multiple inheritance
 // 20140331  Add required subtype code to constructor
+// 20170601  Inherit from new G4CMPVProcess, only need IsApplicable
 
 #ifndef G4VPhononProcess_h
 #define G4VPhononProcess_h 1
 
-#include "G4VDiscreteProcess.hh"
+#include "G4CMPVProcess.hh"
 #include "G4CMPProcessSubType.hh"
-#include "G4CMPProcessUtils.hh"
-#include "G4ThreeVector.hh"
 
-class G4PhononTrackMap;
-class G4LatticePhysical;
+class G4ParticleDefinition;
 
 
-class G4VPhononProcess : public G4VDiscreteProcess, public G4CMPProcessUtils {
+class G4VPhononProcess : public G4CMPVProcess {
 public:
-  G4VPhononProcess(const G4String& processName, G4CMPProcessSubType stype);
-  virtual ~G4VPhononProcess();
+  G4VPhononProcess(const G4String& processName, G4CMPProcessSubType stype)
+    : G4CMPVProcess(processName, stype) {;}
+  virtual ~G4VPhononProcess() {;}
 
   virtual G4bool IsApplicable(const G4ParticleDefinition& aPD);
-
-  // Initialize wave vectors for currently active track(s)
-  // NOTE:  These functions must call back to base class implementations!
-  virtual void StartTracking(G4Track* track);
-  virtual void EndTracking();
 
 private:
   // hide assignment operators as private 

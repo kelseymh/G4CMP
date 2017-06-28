@@ -19,12 +19,14 @@
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 // 20160624  Use GetTrackInfo() accessor
 // 20161114  Use new G4CMPDriftTrackInfo
+// 20170602  Use G4CMPUtils for track identity functions
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
+#include "G4CMPUtils.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
 #include "G4LatticePhysical.hh"
@@ -79,10 +81,10 @@ G4double G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
   const G4LatticePhysical* lat =
       G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->Lattice();
   G4double timeStepParam = 0.; G4double l0 = 0.;
-  if (IsElectron(&aTrack)) {
+  if (G4CMP::IsElectron(aTrack)) {
     timeStepParam = 28.0;
     l0 = lat->GetElectronScatter();
-  } else if (IsHole(&aTrack)) {
+  } else if (G4CMP::IsHole(&aTrack)) {
     timeStepParam = 14.72;
     l0 = lat->GetHoleScatter();
   } else {

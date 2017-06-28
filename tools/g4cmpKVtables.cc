@@ -3,6 +3,7 @@
 //
 //  Uses G4CMPPhononKinematics, written by Daniel Palken 2014.
 //
+//  20170527  Abort if output files can't be opened
 
 #include "G4CMPPhononKinematics.hh"
 #include "G4CMPPhononKinTable.hh"
@@ -16,6 +17,7 @@
 #include <fstream>
 #include <iomanip>
 #include <string>
+#include <assert.h>
 #include <math.h>
 using namespace std;
 
@@ -53,12 +55,12 @@ int main(int argc, const char * argv[])
   for (int mode=0; mode<G4PhononPolarization::NUM_MODES; mode++) {
     string vgname = G4PhononPolarization::Label(mode);
     vgname += ".ssv";
-    ofstream vgfile(vgname, ios::trunc);
+    ofstream vgfile(vgname, ios::trunc); assert(vgfile.is_good());
     vgfile << scientific << setprecision(7);
     
     string vdirname = G4PhononPolarization::Label(mode);
     vdirname += "Vec.ssv";
-    ofstream vdirfile(vdirname, ios::trunc);
+    ofstream vdirfile(vdirname, ios::trunc); assert(vdirfile.is_good());
     vdirfile << scientific << setprecision(7);
     
     cout << "Generating " << lattice->GetName() << " "

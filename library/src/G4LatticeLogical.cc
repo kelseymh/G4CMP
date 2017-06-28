@@ -24,6 +24,9 @@
 // 20160630  Drop loading of K-Vg lookup table files
 // 20160701  Add interface to set elements of reduced elasticity matrix
 // 20160727  Store Debye energy for phonon primaries, support different access
+// 20170523  Add interface for axis vector of valleys
+// 20170525  Add "rule of five" copy/move semantics
+// 20170527  Drop unnecessary <fstream>
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -64,6 +67,74 @@ G4LatticeLogical::~G4LatticeLogical() {
   delete fpPhononKin; fpPhononKin = 0;
   delete fpPhononTable; fpPhononTable = 0;
 }
+
+// Copy and move operators (to handle owned pointers)
+
+G4LatticeLogical::G4LatticeLogical(const G4LatticeLogical& rhs)
+  : G4LatticeLogical() { *this = rhs; }
+
+G4LatticeLogical::G4LatticeLogical(G4LatticeLogical&& rhs)
+  : G4LatticeLogical() { std::swap(*this, rhs); }
+
+G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
+  if (this == &rhs) return *this;	// Avoid unnecessary work;
+
+  verboseLevel = rhs.verboseLevel;
+  fName = rhs.fName;
+  fCrystal = rhs.fCrystal;
+  std::copy(rhs.fBasis, rhs.fBasis+3, fBasis);
+  fDensity = rhs.fDensity;
+  fHasElasticity = rhs.fHasElasticity;
+  fA = rhs.fA;
+  fB = rhs.fB;
+  fLDOS = rhs.fLDOS;
+  fSTDOS = rhs.fSTDOS;
+  fFTDOS = rhs.fFTDOS;
+  fBeta = rhs.fBeta;
+  fGamma = rhs.fGamma;
+  fLambda = rhs.fLambda;
+  fMu = rhs.fMu;
+  fDebye = rhs.fDebye;
+  fVSound = rhs.fVSound;
+  fL0_e = rhs.fL0_e;
+  fL0_h = rhs.fL0_h;
+  fHoleMass = rhs.fHoleMass;
+  fElectronMass = rhs.fElectronMass;
+  fBandGap = rhs.fBandGap;
+  fPairEnergy = rhs.fPairEnergy;
+  fFanoFactor = rhs.fFanoFactor;
+  fMassTensor = rhs.fMassTensor;
+  fMassInverse = rhs.fMassInverse;
+  fMassRatioSqrt = rhs.fMassRatioSqrt;
+  fMInvRatioSqrt = rhs.fMInvRatioSqrt;
+  fValley = rhs.fValley;
+  fValleyAxis = rhs.fValleyAxis;
+  fIVField = rhs.fIVField;
+  fIVRate = rhs.fIVRate;
+  fIVExponent = rhs.fIVExponent;
+
+  if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
+  if (!rhs.fpPhononTable) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
+
+  SetElReduced(rhs.fElReduced);
+  FillElasticity();
+
+  for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
+    for (G4int j=0; j<KVBINS; j++) {
+      for (G4int k=0; k<KVBINS; k++) {
+	fKVMap[i][j][k] = rhs.fKVMap[i][j][k];
+      }
+    }
+  }
+
+  return *this;
+}
+
+G4LatticeLogical& G4LatticeLogical::operator=(G4LatticeLogical&& rhs) {
+  std::swap(*this, rhs);
+  return *this;
+}
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -147,31 +218,60 @@ void G4LatticeLogical::CheckBasis() {
   }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 // Unpack reduced elasticity tensor into full four-dimensional Cijkl
 void G4LatticeLogical::FillElasticity() {
   fCrystal.FillElReduced(fElReduced);		// Apply symmetry conditions
+  /* The reduced matrix looks like this:
+   * Cxxxx, Cxxyy, Cxxzz, Cxxyz, Cxxxz, Cxxxy
+   * Cxxyy, Cyyyy, Cyyzz, Cyyyz, Cyyxz, Cyyxy
+   * Cxxyy, Cyyzz, Czzzz, Czzyz, Czzxz, Czzxy
+   * Cxxyz, Cyyyz, Czzyz, Cyzyz, Cyzxz, Cyzxy
+   * Cxxxz, Cyyxz, Czzxz, Cyzxz, Cxzxz, Cxzxy
+   * Cxxxy, Cyyxy, Czzxy, Cyzxy, Cxzxy, Cxyxy
+   */
 
-  G4int rn1[6][2] = { };
-  rn1[1][0] = rn1[1][1] = rn1[3][0] = rn1[5][1] = 1;
-  rn1[2][0] = rn1[2][1] = rn1[3][1] = rn1[4][0] = 2;
+  auto reducedIdx = [](size_t i, size_t j) -> size_t {
+    // i == j -> i
+    // i == 0 && j == 1 -> 5
+    // i == 0 && j == 2 -> 4
+    // i == 1 && j == 2 -> 3
+    if (i > 2 || j > 2) {
+      G4Exception("G4LatticeLogical::FillElasticity",
+                  "Lattice011",
+                  EventMustBeAborted,
+                  "Indices can only span 0 to 2 (x to z).");
+    }
 
-  G4int rn2[2][2] = { };
-  rn2[0][1] = rn2[1][0] = 1;
+    if (i == j) return i;
+    if ((i == 0 && j == 1) || (i == 1 && j == 0)) return 5;
+    if ((i == 0 && j == 2) || (i == 2 && j == 0)) return 4;
+    if ((i == 1 && j == 2) || (i == 2 && j == 1)) return 3;
 
-  for (int l=0; l<2; l++) {
-    for (int k=0; k<2; k++) {
-      for (int j=0; j<6; j++) {
-	for (int i=0; i<6; i++) {
-	  fElasticity[rn1[i][rn2[k][0]]][rn1[i][rn2[k][1]]]
-	             [rn1[j][rn2[l][0]]][rn1[j][rn2[l][1]]] = fElReduced[i][j];
-	}
+    // Should never get to this point (Exception thrown above
+    return 0;
+  };
+
+  /* This could potentially be sped up because of various symmetries:
+   * Cijkl = Cjikl = Cijlk
+   * Cxxyy = Cyyxx
+   * But it probably doesn't matter because this is only done at init anyway.
+   * Plus it may get slowed down by messing with the CPU's branch prediction
+   * and compiler loop unrolling.
+   */
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t l = 0; l < 3; ++l) {
+          fElasticity[i][j][k][l] = fElReduced[reducedIdx(i, j)][reducedIdx(k, l)];
+        }
       }
     }
   }
 }
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -487,6 +587,8 @@ void G4LatticeLogical::FillMassInfo() {
 			      0., 0., 1./fMassRatioSqrt.zz()));
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 // Store drifting-electron valley using Euler angles
 
 void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
@@ -498,6 +600,18 @@ void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
   // Extend vector first, then fill last value, to reduce temporaries
   fValley.resize(fValley.size()+1);
   fValley.back().set(phi,theta,psi);
+
+  // NOTE:  Rotation matrices take external vector along valley axis to X-hat
+  fValleyAxis.push_back(fValley.back().inverse()*G4ThreeVector(1.,0.,0.));
+}
+
+// Store rotation matrix and corresponding axis vector for valley
+
+void G4LatticeLogical::AddValley(const G4RotationMatrix& valley) {
+  fValley.push_back(valley);
+
+  // NOTE:  Rotation matrices take external vector along valley axis to X-hat
+  fValleyAxis.push_back(valley.inverse()*G4ThreeVector(1.,0.,0.));
 }
 
 // Transform for drifting-electron valleys in momentum space
@@ -510,6 +624,19 @@ const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
   if (verboseLevel)
     G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
   return G4RotationMatrix::IDENTITY;
+}
+
+const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::GetValleyAxis " << iv << G4endl;
+
+  if (iv >=0 && iv < (G4int)NumberOfValleys()) return fValleyAxis[iv];
+
+  if (verboseLevel)
+    G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
+
+  static const G4ThreeVector nullVec(0.,0.,0.);
+  return nullVec;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

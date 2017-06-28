@@ -1,9 +1,13 @@
 //  matrix.icc
 //  Created by Daniel Palken in 2014 for G4CMP
+//
 //  20160507  M. Kelsey -- Split from matrix.h 
+//  20170525  M. Kelsey -- Add move semantics for copy ctor and assignment
 
 #ifndef G4CMPMatrix_icc
 #define G4CMPMatrix_icc
+
+#include <algorithm>
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@  Matrix Class @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -24,6 +28,12 @@ namespace G4CMP {
   matrix<T>::matrix(const matrix &rhs) : nn(rhs.nn), mm(rhs.mm), v(rhs.v) {;}
   
   template <class T>
+  matrix<T>::matrix(matrix &&rhs) : nn(rhs.nn), mm(rhs.mm) {
+    std::swap(v, rhs.v);			// RHS is going to disappear!
+    rhs.nn = rhs.mm = 0;	// After move, zero out source size
+  }
+  
+  template <class T>
   matrix<T>& matrix<T>::operator=(const matrix<T> &rhs) {
     // postcondition: normal assignment via copying has been performed;
     //		if matrix and rhs were different sizes, matrix
@@ -36,10 +46,19 @@ namespace G4CMP {
   }
   
   template <class T>
+  matrix<T>& matrix<T>::operator=(matrix<T> &&rhs) {
+    nn = rhs.nn;
+    mm = rhs.mm;
+    std::swap(v, rhs.v);
+    rhs.nn = rhs.mm = 0;	// After move, zero out source size
+
+    return *this;
+  }
+
+  template <class T>
   matrix<T>& matrix<T>::operator=(const T *a) {		// Copy array entries
     for (size_t i=0; i<nn; i++) for (size_t j=0; j<mm; j++) v[i][j] = *a++;
   }
-  
   
   
   template <class T>

@@ -39,32 +39,65 @@ G4int G4CMP::ChooseValley(const G4LatticePhysical* lattice) {
 
 
 // Identify G4CMP particle categories
+
+G4bool G4CMP::IsPhonon(const G4Track& track) {
+  return IsPhonon(track.GetParticleDefinition());
+}
+
 G4bool G4CMP::IsPhonon(const G4Track* track) {
-  return (track!=0 && IsPhonon(track->GetParticleDefinition()));
+  return (track!=0 && IsPhonon(*track));
+}
+
+G4bool G4CMP::IsPhonon(const G4ParticleDefinition& pd) {
+  return IsPhonon(&pd);
 }
 
 G4bool G4CMP::IsPhonon(const G4ParticleDefinition* pd) {
   return (G4PhononPolarization::Get(pd) != G4PhononPolarization::UNKNOWN);
 }
 
+G4bool G4CMP::IsElectron(const G4Track& track) {
+  return IsElectron(track.GetParticleDefinition());
+}
+
 G4bool G4CMP::IsElectron(const G4Track* track) {
-  return (track!=0 && IsElectron(track->GetParticleDefinition()));
+  return (track!=0 && IsElectron(*track));
+}
+
+G4bool G4CMP::IsElectron(const G4ParticleDefinition& pd) {
+  return IsElectron(&pd);
 }
 
 G4bool G4CMP::IsElectron(const G4ParticleDefinition* pd) {
   return (pd == G4CMPDriftElectron::Definition());
 }
 
+G4bool G4CMP::IsHole(const G4Track& track) {
+  return IsHole(track.GetParticleDefinition());
+}
+
 G4bool G4CMP::IsHole(const G4Track* track) {
-  return (track!=0 && IsHole(track->GetParticleDefinition()));
+  return (track!=0 && IsHole(*track));
+}
+
+G4bool G4CMP::IsHole(const G4ParticleDefinition& pd) {
+  return IsHole(&pd);
 }
 
 G4bool G4CMP::IsHole(const G4ParticleDefinition* pd) {
   return (pd == G4CMPDriftHole::Definition());
 }
 
+G4bool G4CMP::IsChargeCarrier(const G4Track& track) {
+  return (IsElectron(track) || IsHole(track));
+}
+
 G4bool G4CMP::IsChargeCarrier(const G4Track* track) {
   return (IsElectron(track) || IsHole(track));
+}
+
+G4bool G4CMP::IsChargeCarrier(const G4ParticleDefinition& pd) {
+  return (IsElectron(pd) || IsHole(pd));
 }
 
 G4bool G4CMP::IsChargeCarrier(const G4ParticleDefinition* pd) {
@@ -135,8 +168,8 @@ G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
 
 G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int polarization,
-                                     G4ThreeVector waveVector,
-                                     G4ThreeVector surfNorm) {
+                                     const G4ThreeVector& waveVector,
+                                     const G4ThreeVector& surfNorm) {
   G4ThreeVector vDir = lattice->MapKtoVDir(polarization, waveVector);
   return vDir.dot(surfNorm) < 0.0;
 }

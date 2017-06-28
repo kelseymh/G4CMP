@@ -14,17 +14,17 @@
 // 20140902  Add new kinematics function which takes energy as input
 // 20141231  Add function to enforce minimum step length (fraction of L0)
 // 20150112  Rename SetNewKinematics to FillParticleChange for clarity
+// 20150601  Inherit from new G4CMPVProcess
 
 #ifndef G4CMPVDriftProcess_h
 #define G4CMPVDriftProcess_h 1
 
-#include "G4VDiscreteProcess.hh"
+#include "G4CMPVProcess.hh"
 #include "G4CMPProcessSubType.hh"
-#include "G4CMPProcessUtils.hh"
 #include "G4ThreeVector.hh"
 
 
-class G4CMPVDriftProcess : public G4VDiscreteProcess, public G4CMPProcessUtils {
+class G4CMPVDriftProcess : public G4CMPVProcess {
 public:
   G4CMPVDriftProcess(const G4String& processName, G4CMPProcessSubType stype);
   virtual ~G4CMPVDriftProcess();
@@ -37,12 +37,8 @@ public:
 				       G4double previousStepSize,
 				       G4ForceCondition* condition);
 
-  // NOTE:  These functions must call back to base class implementations!
+  // NOTE:  This function must call back to base class implementations!
   virtual void LoadDataForTrack(const G4Track* track);
-
-  // Initialize current valley for currently active track(s)
-  virtual void StartTracking(G4Track* track);
-  virtual void EndTracking();
 
 protected:
   // Convenient parameters for computing carrier propagation

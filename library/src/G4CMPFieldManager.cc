@@ -51,6 +51,17 @@ G4CMPFieldManager::G4CMPFieldManager(G4CMPLocalElectroMagField *detectorField)
   CreateTransport();
 }
 
+G4CMPFieldManager::~G4CMPFieldManager() {
+  delete myDetectorField;   myDetectorField=0;
+  delete theEqMotion;       theEqMotion=0;
+  delete theStepper;        theStepper=0;
+  delete theDriver;         theDriver=0;
+  delete theChordFinder;    theChordFinder=0;
+}
+
+
+// Create all of the pieces for transport through electric field
+
 void G4CMPFieldManager::CreateTransport() {
   theEqMotion    = new G4CMPEqEMField(myDetectorField);
   theStepper     = new G4ClassicalRK4(theEqMotion, stepperVars);
@@ -62,14 +73,8 @@ void G4CMPFieldManager::CreateTransport() {
   theChordFinder->SetVerbose(G4CMPConfigManager::GetVerboseLevel());
 }
 
-G4CMPFieldManager::~G4CMPFieldManager() {
-  delete myDetectorField;   myDetectorField=0;
-  delete theEqMotion;       theEqMotion=0;
-  delete theStepper;        theStepper=0;
-  delete theDriver;         theDriver=0;
-  delete theChordFinder;    theChordFinder=0;
-}
 
+// Run-time Configuration
 
 void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
   // Configure equation of motion with physical lattice

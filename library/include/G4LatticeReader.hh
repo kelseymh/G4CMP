@@ -19,6 +19,7 @@
 // 20160701  Withdraw seting basis vectors, set crystal symmetry instead
 // 20160727  Add functions to handle processing units from config file,
 //		define additional units for solid state physics use
+// 20170525  Implement 'rule of five' with default copy/move semantics
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
@@ -36,6 +37,13 @@ public:
   G4LatticeReader(G4int vb=0);
   ~G4LatticeReader();
 
+  // Use default copy/move semantics
+  G4LatticeReader(const G4LatticeReader&) = default;
+  G4LatticeReader(G4LatticeReader&&) = default;
+  G4LatticeReader& operator=(const G4LatticeReader&) = default;
+  G4LatticeReader& operator=(G4LatticeReader&&) = default;
+
+  // Configuration actions
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
   G4LatticeLogical* MakeLattice(const G4String& filepath);

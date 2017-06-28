@@ -22,7 +22,7 @@
 // Only applies to G4CMP particles
 
 G4bool G4CMPEnergyLimiter::IsApplicable(const G4ParticleDefinition& pd) {
-  return (G4CMP::IsPhonon(&pd) || G4CMP::IsChargeCarrier(&pd));
+  return (G4CMP::IsPhonon(pd) || G4CMP::IsChargeCarrier(pd));
 }
 
 
@@ -30,8 +30,8 @@ G4bool G4CMPEnergyLimiter::IsApplicable(const G4ParticleDefinition& pd) {
 
 G4bool G4CMPEnergyLimiter::BelowEnergyCut(const G4Track& track) const {
   G4double ecut =
-    (IsChargeCarrier(&track) ? G4CMPConfigManager::GetMinChargeEnergy()
-     : IsPhonon(&track) ? G4CMPConfigManager::GetMinPhononEnergy() : -1.);
+    (G4CMP::IsChargeCarrier(track) ? G4CMPConfigManager::GetMinChargeEnergy()
+     : G4CMP::IsPhonon(track) ? G4CMPConfigManager::GetMinPhononEnergy() : -1.);
 
   return (track.GetKineticEnergy() < ecut);
 }

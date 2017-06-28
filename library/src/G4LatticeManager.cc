@@ -16,6 +16,7 @@
 // 20160111  Remove G4 version checking. We hard depend on 10.2+
 // 20160615  Set name of G4LatticeLogical to match config directory
 // 20160826  Get default verbosity from envvar
+// 20170527  Drop unnecessary <fstream>
 
 #include "G4LatticeManager.hh"
 #include "G4CMPConfigManager.hh"
@@ -26,7 +27,6 @@
 #include "G4Material.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4SystemOfUnits.hh"
-#include <fstream>
 
 G4LatticeManager* G4LatticeManager::fLM = 0;
 

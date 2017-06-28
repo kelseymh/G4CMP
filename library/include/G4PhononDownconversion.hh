@@ -19,7 +19,8 @@ public:
   virtual ~G4PhononDownconversion();
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
-  
+
+  // Only longitudinal phonons decay (L -> L' T, or L -> T T') 
   virtual G4bool IsApplicable(const G4ParticleDefinition&);
   
 protected:

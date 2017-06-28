@@ -22,6 +22,7 @@ public:
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
+  // Only electrons have physical valleys associated with them
   virtual bool IsApplicable(const G4ParticleDefinition&);
 
 protected:
