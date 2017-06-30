@@ -36,9 +36,23 @@
 
 G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   : G4VPhononProcess(aName, fPhononDownconversion),
-    fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.) {;}
+    fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.) {
+#ifdef G4CMP_DEBUG
+  output.open("phonon_downsampling_stats", std::ios_base::app);
+  if (output.good()) {
+    output << "First Daughter Theta,Second Daughter Theta,First Daughter Energy [eV],Second Daughter Energy [eV],"
+              "First Daughter Weight,Second Daughter Weight,Decay Branch,Parent Weight,"
+              "Number of Outgoing Tracks,Parent Energy [eV]\n";
+  } else {
+    G4cerr << "Could not open phonon debugging output file!" << G4endl;}
+#endif
+  }
 
-G4PhononDownconversion::~G4PhononDownconversion() {;}
+G4PhononDownconversion::~G4PhononDownconversion() {
+#ifdef G4CMP_DEBUG
+  output.close();
+#endif
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -77,6 +91,12 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
   //26% Transverse and Longitudinal
   if (G4UniformRand()>0.740) MakeLTSecondaries(aTrack);
   else MakeTTSecondaries(aTrack);
+
+#ifdef G4CMP_DEBUG
+  output << aTrack.GetWeight() << ','
+         << aParticleChange.GetNumberOfSecondaries() << ','
+         << aTrack.GetKineticEnergy()/eV << G4endl;
+#endif
 
   aParticleChange.ProposeEnergy(0.);
   aParticleChange.ProposeTrackStatus(fStopAndKill);    
@@ -205,16 +225,30 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
     std::swap(sec1, sec2);
   }
 
+#ifdef G4CMP_DEBUG
+  output << theta1 << ',' << theta2 << ',';
+#endif
+
+#ifdef G4CMP_DEBUG
+  output << sec1->GetKineticEnergy()/eV << ',' << sec2->GetKineticEnergy()/eV << ',';
+#endif
+
   G4double bias = G4CMPConfigManager::GetGenPhonons();
   if (G4CMP::ChoosePhononWeight() > 0.) { // Produce both daughters
     aParticleChange.SetSecondaryWeightByProcess(true);
     sec1->SetWeight(aTrack.GetWeight()/bias); // Default weight
     sec2->SetWeight(aTrack.GetWeight()/bias);
+#ifdef G4CMP_DEBUG
+    output << sec1->GetWeight() << ',' << sec2->GetWeight() << ',' << "TT" << ',';
+#endif
 
     aParticleChange.SetNumberOfSecondaries(2);
     aParticleChange.AddSecondary(sec2);
     aParticleChange.AddSecondary(sec1);
   } else { // Produce no daughters
+#ifdef G4CMP_DEBUG
+    output << 0 << ',' << 0 << ',' << "TT" << ',';
+#endif
   }
 }
 
@@ -285,16 +319,29 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
                                       Esec2, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
 
+#ifdef G4CMP_DEBUG
+  output << thetaL << ',' << thetaT << ',';
+#endif
+#ifdef G4CMP_DEBUG
+  sec1->GetKineticEnergy()/eV << ',' << sec2->GetKineticEnergy()/eV << ',';
+#endif
+
   G4double bias = G4CMPConfigManager::GetGenPhonons();
   if(G4CMP::ChoosePhononWeight() > 0.) { // Produce both daughters
     aParticleChange.SetSecondaryWeightByProcess(true);
     sec1->SetWeight(aTrack.GetWeight()/bias);
     sec2->SetWeight(aTrack.GetWeight()/bias);
+#ifdef G4CMP_DEBUG
+    output << sec1->GetWeight() << ',' << sec2->GetWeight() << ',' << "LT" << ',';
+#endif
 
     aParticleChange.SetNumberOfSecondaries(2);
     aParticleChange.AddSecondary(sec2);
     aParticleChange.AddSecondary(sec1);
   } else { // Create no daughters
+#ifdef G4CMP_DEBUG
+    output << 0 << ',' << 0 << ',' << "LT" << ',';
+#endif
   }
 }
 

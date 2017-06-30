@@ -42,6 +42,10 @@ private:
   // hide assignment operator as private 
   G4PhononDownconversion(G4PhononDownconversion&);
   G4PhononDownconversion& operator=(const G4PhononDownconversion& right);
+
+#ifdef G4CMP_DEBUG
+  std::ofstream output;
+#endif
 };
 
 #endif	/* G4PhononDownconversion_h */
