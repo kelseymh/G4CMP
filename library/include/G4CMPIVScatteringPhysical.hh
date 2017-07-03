@@ -7,6 +7,7 @@
 //
 // 20140324  Drop hard-coded IV scattering parameters; get from lattice
 // 20140418  Drop valley transforms; get from lattice
+// 20170702  New class for different formulation added to git
 
 #ifndef G4CMPIVScatteringPhysical_h
 #define G4CMPIVScatteringPhysical_h 1
