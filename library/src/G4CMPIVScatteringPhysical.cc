@@ -41,10 +41,10 @@
 #include "Randomize.hh"
 #include "math.h"
 #include "G4CMPIVScatteringPhysical.hh"
-G4CMPIVScatteringPhysical::G4CMPIScatteringPhysical()
+G4CMPIVScatteringPhysical::G4CMPIVScatteringPhysical()
   : G4CMPVDriftProcess("G4CMPIVScatteringPhysical", fIVScatteringPhysical) {;}
 
-G4CMPIVScatteringPhysical::~G4CMPInterValleyScattering() {;}
+G4CMPIVScatteringPhysical::~G4CMPIVScatteringPhysical() {;}
 
 
 G4bool 
