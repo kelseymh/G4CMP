@@ -69,7 +69,7 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
 
   G4double velocity = GetVelocity(aTrack);
   
-  G4double posVec[4] = { 4*0. };
+  /*  G4double posVec[4] = { 4*0. };
   GetLocalPosition(aTrack, posVec);
 
   const G4Field* field = fMan->GetDetectorField();
@@ -83,7 +83,7 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
 	   << posVec[2] << ")\n field " << fieldVector/volt*cm << " V/cm"
 	   << "\n magnitude " << fieldVector.mag()/volt*cm << " V/cm toward "
 	   << fieldVector.cosTheta() << " z" << G4endl;
-  }
+	   }
 
   // Find E-field in HV space: in lattice frame, rotate into valley,
   // then apply HV tansform.
@@ -96,7 +96,7 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   if (verboseLevel > 1) {
     G4cout << " in HV space " << fieldVector*0.01 << " ("
 	   << fieldVector.mag()*0.01 << ") V/cm" << G4endl;
-  }
+	   }*/
 
   // Compute mean free path per Edelweiss LTD-14 paper
   // G4double E_0 = theLattice->GetIVField() / (volt/m);
@@ -105,7 +105,7 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   //
   //Acoustic Phonon Scattering 
   G4double energy = GetEnergy(aTrack);
-  const  G4double pi = 3.1159265358974;
+  const  G4double pi = 3.14159265359;
   G4double T =0 ;
   G4double K_b = 1.38064852 *  pow(10,-23);
   G4double h = 1.0545718 * pow (10 , -34);
@@ -135,15 +135,17 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
 
  cout << " this Neutral Impurities " << Gamma << endl ; 
 
- 
+ G4double mfp  =  velocity / ( Gamma + omfp + amfp ); 
+
+ cout << " this is the mean free path" << mfp << endl ; 
      
 
   if (verboseLevel > 1) G4cout << "IV MFP = " << mfp/m << G4endl;
   return mfp;
-}
+}/*
 
 G4VParticleChange* 
-G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
+G4CMPIVScatteringPhysical::PostStepDoIt(const G4Track& aTrack, 
 					 const G4Step& aStep) {
   aParticleChange.Initialize(aTrack); 
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
@@ -176,4 +178,5 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
   ResetNumberOfInteractionLengthLeft();    
   return &aParticleChange;
-}
+  }*/
+
