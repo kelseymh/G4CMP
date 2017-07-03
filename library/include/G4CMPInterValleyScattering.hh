@@ -20,7 +20,7 @@ public:
   G4CMPInterValleyScattering();
   virtual ~G4CMPInterValleyScattering();
 
-  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
+  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step &aStep);
 
   // Only electrons have physical valleys associated with them
   virtual bool IsApplicable(const G4ParticleDefinition&);
@@ -32,6 +32,8 @@ private:
   //hide assignment operator as private
   G4CMPInterValleyScattering(G4CMPInterValleyScattering&);
   G4CMPInterValleyScattering& operator=(const G4CMPInterValleyScattering& right);
+  G4double CalculateKSound(const G4CMPTrackInformation*);
+  G4double GetIVSRate(const G4double, const G4double, const G4double);
 };
 
 #endif
