@@ -7,6 +7,7 @@
 //
 // 20160831  M. Kelsey -- Add optional electrode geometry class
 // 20160907  M. Kelsey -- Protect against (allowed!) null electrode pointers
+// 20170627  M. Kelsey -- Take ownership of electrode pointers and delete
 
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPVElectrodePattern.hh"
@@ -41,6 +42,10 @@ G4CMPSurfaceProperty::~G4CMPSurfaceProperty() {
                  [this](G4SurfaceProperty* a)->G4bool {return *this == *a;});
   if (me != theSurfacePropertyTable.end())
     theSurfacePropertyTable.erase(me);
+
+  // Delete electrodes associated with this surface
+  delete theChargeElectrode; theChargeElectrode=0;
+  delete thePhononElectrode; thePhononElectrode=0;
 }
 
 G4bool G4CMPSurfaceProperty::operator==(const G4SurfaceProperty& right) const {

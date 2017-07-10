@@ -102,9 +102,10 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
   if (aTrack->GetDefinition() == G4CMPDriftElectron::Definition() ||
       aTrack->GetDefinition() == G4CMPDriftHole::Definition()) {
     iv = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(*aTrack)->ValleyIndex();
+    SetChargeValleyForTrack(lat, iv);
+  } else {
+    theEqMotion->SetNoValley();
   }
-
-  SetChargeValleyForTrack(lat, iv);
 }
 
 void G4CMPFieldManager::SetChargeValleyForTrack(const G4LatticePhysical* lat,

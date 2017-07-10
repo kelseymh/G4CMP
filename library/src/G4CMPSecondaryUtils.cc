@@ -6,6 +6,7 @@
 //
 // 20161115 Initial commit - R. Agnese
 // 20170620 M. Kelsey -- Replace PV arg with Touchable, for transforms
+// 20170629 M. Kelsey -- Add volume name to "no lattice" error messages.
 
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPDriftHole.hh"
@@ -46,7 +47,8 @@ G4Track* G4CMP::CreateSecondary(const G4Track& track,
   }
 
   G4Exception("G4CMP::CreateSecondary", "Secondary001", EventMustBeAborted,
-              "Particle Definition does not match a G4CMP particle.");
+              ("Particle Definition "+pd->GetParticleName()
+	       +" does not match a G4CMP particle.").c_str());
   return nullptr;
 }
 
@@ -58,7 +60,7 @@ G4Track* G4CMP::CreatePhonon(const G4VTouchable* touch, G4int polarization,
   G4LatticePhysical* lat = latMan->GetLattice(vol);
   if (!lat) {
     G4Exception("G4CMP::CreatePhonon", "Secondary002", EventMustBeAborted,
-                "No lattice for volume.");
+                ("No lattice for volume "+vol->GetName()).c_str());
   }
 
   if (polarization == G4PhononPolarization::UNKNOWN) {		// Choose value
@@ -97,7 +99,7 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
   G4LatticePhysical* lat = latMan->GetLattice(vol);
   if (!lat) {
     G4Exception("G4CMP::CreateChargeCarrier", "Secondary003", EventMustBeAborted,
-                "No lattice for volume.");
+                ("No lattice for volume "+vol->GetName()).c_str());
   }
 
   if (charge != 1 && charge != -1) {
@@ -129,7 +131,7 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
   G4LatticePhysical* lat = latMan->GetLattice(vol);
   if (!lat) {
     G4Exception("G4CMP::CreateChargeCarrier", "Secondary006", EventMustBeAborted,
-                "No lattice for volume.");
+                ("No lattice for volume "+vol->GetName()).c_str());
   }
 
   if (charge != 1 && charge != -1) {

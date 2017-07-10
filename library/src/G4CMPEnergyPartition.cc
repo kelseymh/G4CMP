@@ -165,7 +165,13 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   G4double ePair = theLattice->GetPairProductionEnergy();
   G4double eMeas = MeasuredChargeEnergy(energy);	// Applies Fano factor
 
-  nPairs = std::floor(eMeas / ePair);		// Average number of e/h pairs
+  if (eMeas > 0) {
+    nPairs = std::floor(eMeas / ePair);   // Average number of e/h pairs
+  } else {
+    nPairs = 0; // This prevents nPairs from blowing up when assigned as a negative number
+                // which would cause particles.reserve() to crash
+  }
+  
   particles.reserve(particles.size() + 2*nPairs);
 
   if (verboseLevel>1)
