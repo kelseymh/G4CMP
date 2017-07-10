@@ -15,6 +15,7 @@
 // 20160904  Add electrode pattern handling
 // 20160906  Make most functions const, provide casting function for matTable
 // 20161114  Use G4CMPVTrackInfo
+// 20170710  Look for skin surface (LV) if border surface not found
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -30,6 +31,7 @@
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalBorderSurface.hh"
+#include "G4LogicalSkinSurface.hh"
 #include "G4LogicalSurface.hh"
 #include "G4Navigator.hh"
 #include "G4ParticleChange.hh"
@@ -123,7 +125,12 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
 }
 
 G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
+  // Look for specific surface between pre- and post-step points first
   G4LogicalSurface* surface = G4LogicalBorderSurface::GetSurface(prePV, postPV);
+  if (!surface) {			// Then for generic pre-setp surface
+    surface = G4LogicalSkinSurface::GetSurface(prePV->GetLogicalVolume());
+  }
+
   if (!surface) {
     G4Exception((procName+"::GetSurfaceProperty").c_str(), "Boundary001",
                 EventMustBeAborted, ("No surface defined between " +
