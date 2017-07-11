@@ -63,53 +63,18 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   G4FieldManager* fMan =
     aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
   
-  //If there is no field, there is no IV scattering... but then there
-  
-//is no e-h transport either...
-  if (!fMan || !fMan->DoesFieldExist()) return DBL_MAX;
+  //is no e-h transport either...
+  if (!fMan || !fMan->DoesFieldExist()) 
+    return DBL_MAX;
 
   G4double velocity = GetVelocity(aTrack);
   
-  /*  G4double posVec[4] = { 4*0. };
-  GetLocalPosition(aTrack, posVec);
-
-  const G4Field* field = fMan->GetDetectorField();
-  G4double fieldValue[6];
-  field->GetFieldValue(posVec,fieldValue);
-
-  G4ThreeVector fieldVector(fieldValue[3], fieldValue[4], fieldValue[5]);
-
-  if (verboseLevel > 1) {
-    G4cout << "IV local position (" << posVec[0] << "," << posVec[1] << ","
-	   << posVec[2] << ")\n field " << fieldVector/volt*cm << " V/cm"
-	   << "\n magnitude " << fieldVector.mag()/volt*cm << " V/cm toward "
-	   << fieldVector.cosTheta() << " z" << G4endl;
-	   }
-
-  // Find E-field in HV space: in lattice frame, rotate into valley,
-  // then apply HV tansform.
-  // NOTE:  Separate steps to avoid matrix-matrix multiplications
-  theLattice->RotateToLattice(fieldVector);
-  fieldVector *= GetValley(aTrack);
-  fieldVector *= theLattice->GetSqrtInvTensor();
-  fieldVector /= volt/m;			// Strip units for MFP below
-
-  if (verboseLevel > 1) {
-    G4cout << " in HV space " << fieldVector*0.01 << " ("
-	   << fieldVector.mag()*0.01 << ") V/cm" << G4endl;
-	   }*/
-
-  // Compute mean free path per Edelweiss LTD-14 paper
-  // G4double E_0 = theLattice->GetIVField() / (volt/m);
-  // G4double mfp = velocity / ( theLattice->GetIVRate() *
-  // pow((E_0*E_0 + fieldVector.mag2()), theLattice->GetIVExponent()/2.0) );
-  //
   //Acoustic Phonon Scattering 
   G4double energy = GetEnergy(aTrack);
   const  G4double pi = 3.14159265359;
   G4double T = 0.015 ;
-  G4double K_b = 1.38064852 *  pow(10,-23);
-  G4double h = 1.0545718 * pow (10 , -34);
+  G4double K_b = 1.38064852e-23;
+  G4double h = 1.0545718e-34;
   G4double M_D = 1.98615472 * pow (10, -31) ;
   G4double D_ac = 1.7622* pow( 10, -18);
   G4double rho = 5.327 * pow(10 , 3); 
@@ -135,36 +100,39 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   G4double D_op []= {3 * pow(10,10),2* pow(10,9)}  ;
   G4double w_op []= {27.3,10.3} ;
   G4double omfp[] = {0,0};
-  for (int i = 0 ;i<2 ; i++)
-    {
-      D_op[i]=D_op[i]*ev;
-      w_op[i]= w_op* .001 * ev 
-	G4double omfp[i]  = ( K_b * T * pow (M_D ,1.5) * (D_op[i]*D_op[i]))*
-	sqrt((energy -( h*w_op[i]))*(1 + alpha*(energy -( h*w_op[i])))) *
-                     (1 + 2*alpha*(energy - h*w_op[i])) / (sqrt(2) * pi* pow(h,2)\
-							  *rho*h*w_op[i]);
-  cout << " this is the Optical Phonon Scattering " << omfp[0]+omfp[1] << endl ;
+  G4double omfpTotal = 0;
+  for (int i = 0 ;i<2 ; i++){
+    D_op[i]=D_op[i]*ev;
+    w_op[i]= w_op* .001 * ev;
+    omfp[i]=( K_b * T * pow (M_D ,1.5) * (D_op[i]*D_op[i]))*
+      sqrt((energy -( h*w_op[i]))*(1 + alpha*(energy -( h*w_op[i])))) *
+      (1 + 2*alpha*(energy - h*w_op[i])) / (sqrt(2) * pi* pow(h,2)	\
+					    *rho*h*w_op[i]);
+    cout << " this is the Optical Phonon Scattering " << i << " " << ofmp[i] << endl;
+    omfpTotal+=omfp[i];
+  }
  
   //Neutral Impurities 
   G4double E_T =(M_D /m) * (e_o /e) ;
   G4double n_l = pow(10,17) ;
   G4double Gamma = (4*sprt(2)* n_l * (h*h) * row(energy,1/2))/
-                     (row(m , 3/2)* (energy + E_T));
-
- cout << " this Neutral Impurities " << Gamma << endl ; 
-
- G4double mfp  =  velocity / ( Gamma + omfp + amfp ); 
-
- cout << " this is the mean free path" << mfp << endl ; 
-     
-
-  if (verboseLevel > 1) G4cout << "IV MFP = " << mfp/m << G4endl;
+    (row(m , 3/2)* (energy + E_T));
+  
+  cout << " this Neutral Impurities " << Gamma << endl ; 
+  
+  G4double mfp  =  velocity / ( Gamma + omfpTotal + amfp ); 
+  
+  cout << " this is the mean free path" << mfp << endl ;      
+  
+  if (verboseLevel > 1) 
+    G4cout << "IV MFP = " << mfp/m << G4endl;
+  
   return mfp;
-}/*
+}
 
-G4VParticleChange* 
-G4CMPIVScatteringPhysical::PostStepDoIt(const G4Track& aTrack, 
-					 const G4Step& aStep) {
+
+G4VParticleChange*  G4CMPIVScatteringPhysical::PostStepDoIt(const G4Track& aTrack, 
+							    const G4Step& aStep) {
   aParticleChange.Initialize(aTrack); 
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
@@ -174,27 +142,27 @@ G4CMPIVScatteringPhysical::PostStepDoIt(const G4Track& aTrack,
 	   << postStepPoint->GetProcessDefinedStep()->GetProcessName()
 	   << G4endl;
   }
-
+  
   if (postStepPoint->GetStepStatus()==fGeomBoundary) {
     return &aParticleChange;
   }
-
+  
   // Get track's energy in current valley
   G4ThreeVector p = GetLocalMomentum(aTrack);
   G4int valley = GetValleyIndex(aTrack);
   p = theLattice->MapPtoK_valley(valley, p); // p is actually k now
-
+  
   // picking a new valley at random if IV-scattering process was triggered
   valley = ChangeValley(valley);
   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
-
+  
   p = theLattice->MapK_valleyToP(valley, p); // p is p again
   RotateToGlobalDirection(p);
-
+  
   // Adjust track kinematics for new valley
   FillParticleChange(valley, p);
-
+  
   ResetNumberOfInteractionLengthLeft();    
   return &aParticleChange;
-  }*/
+}
 
