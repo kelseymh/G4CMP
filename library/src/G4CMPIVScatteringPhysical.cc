@@ -64,7 +64,8 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
     aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
   
   //If there is no field, there is no IV scattering... but then there
-  //is no e-h transport either...
+  
+//is no e-h transport either...
   if (!fMan || !fMan->DoesFieldExist()) return DBL_MAX;
 
   G4double velocity = GetVelocity(aTrack);
@@ -106,31 +107,48 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   //Acoustic Phonon Scattering 
   G4double energy = GetEnergy(aTrack);
   const  G4double pi = 3.14159265359;
-  G4double T =0 ;
+  G4double T = 0.015 ;
   G4double K_b = 1.38064852 *  pow(10,-23);
   G4double h = 1.0545718 * pow (10 , -34);
-  G4double M_D = 0;
-  G4double D_ac = 0;
-  G4double rho = 0; 
-  G4double u = 0;
-  G4double alpha = 0 
-  G4double amfp =(sprt(2)*K_b * T * pow(M_D , 3/2)* (D_ac*D_ac)*
-		 (sprt(energy + alpha(enery*energy)))* (1+ (2*alpha*energy)))/
-                 (pi* pow(h,4) * rho * ( u*u));
+  G4double M_D = 1.98615472 * pow (10, -31) ;
+  G4double D_ac = 1.7622* pow( 10, -18);
+  G4double rho = 5.327 * pow(10 , 3); 
+  G4double alpha = 1.872659176 * pow(10 ,18);
+  G4double m = 9.109 * pow(10, -31);
+  G4double e_0 = 8.85 * pow(10, -12);
+  G4double e = 1.4337 * pow(10, -10);
+
+  G4double amfp =(sqrt(2)*K_b * T * pow(M_D , 1.5)* (D_ac*D_ac)*
+		 (sqrt(energy + alpha(enery*energy)))* (1+ (2*alpha*energy)))/
+                 (pi* pow(h,4) * rho * ( velocity*velocity));
   cout << "this is Acoustic phonon Scattering " <<  amfp << G4endl;
 
   // Optical phonon Scattering equation 
-  G4double D_op = 0 ;
-  G4double w_op = 0 ;
-  G4double omfp = ( K_b * T * pow (M_D ,3/2) * (D_op*D_op)*
-		    (sprt((energy - h*w_op)(1 + alpa(energy - h*w_op))) *
-		     (1 + 2*alpha(energy - h*w_op)))) / (sprt(2) * pi*row(h,2)*rho*h*w_op);
-  cout << " this is the Optical Phonon Scattering " << omfp << endl ; 
-  //Neatral Impurities 
-  G4double E_T = 5 * row (10 , -4); 
-  G4double m _ = 0 ;
-  G4double n_l = 0 ;
-   G4double Gamma = (4*sprt(2)* n_l * (h*h) * row(energy,1/2))/
+  G4double D_op []= {3 * pow(10,10),2* pow(10,9)}  ;
+  G4double w_op []= {27.3,10.3} ;
+  G4double amfp =(sqrt(2)*K_b * T * pow(M_D , 1.5)* (D_ac*D_ac)*
+		  (sqrt(energy + alpha(enery*energy)))* (1+ (2*alpha*energy)))/
+    (pi* pow(h,4) * rho * ( velocity*velocity));
+  cout << "this is Acoustic phonon Scattering " <<  amfp << G4endl;
+
+  // Optical phonon Scattering equation
+  G4double D_op []= {3 * pow(10,10),2* pow(10,9)}  ;
+  G4double w_op []= {27.3,10.3} ;
+  G4double omfp[] = {0,0};
+  for (int i = 0 ;i<2 ; i++)
+    {
+      D_op[i]=D_op[i]*ev;
+      w_op[i]= w_op* .001 * ev 
+	G4double omfp[i]  = ( K_b * T * pow (M_D ,1.5) * (D_op[i]*D_op[i]))*
+	sqrt((energy -( h*w_op[i]))*(1 + alpha*(energy -( h*w_op[i])))) *
+                     (1 + 2*alpha*(energy - h*w_op[i])) / (sqrt(2) * pi* pow(h,2)\
+							  *rho*h*w_op[i]);
+  cout << " this is the Optical Phonon Scattering " << omfp[0]+omfp[1] << endl ;
+ 
+  //Neutral Impurities 
+  G4double E_T =(M_D /m) * (e_o /e) ;
+  G4double n_l = pow(10,17) ;
+  G4double Gamma = (4*sprt(2)* n_l * (h*h) * row(energy,1/2))/
                      (row(m , 3/2)* (energy + E_T));
 
  cout << " this Neutral Impurities " << Gamma << endl ; 
