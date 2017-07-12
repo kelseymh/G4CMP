@@ -42,7 +42,7 @@
 #include "math.h"
 #include "G4CMPIVScatteringPhysical.hh"
 G4CMPIVScatteringPhysical::G4CMPIVScatteringPhysical()
-  : G4CMPVDriftProcess("G4CMPIVScatteringPhysical", fIVScatteringPhysical) {;}
+  : G4CMPVDriftProcess("G4CMPIVScatteringPhysical", fInterValleyScattering) {;}
 
 G4CMPIVScatteringPhysical::~G4CMPIVScatteringPhysical() {;}
 
@@ -70,7 +70,7 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   G4double velocity = GetVelocity(aTrack);
   
   //Acoustic Phonon Scattering 
-  G4double energy = GetEnergy(aTrack);
+  G4double energy = 30.2 ;
   const  G4double pi = 3.14159265359;
   G4double T = 0.015 ;
   G4double K_b = 1.38064852e-23;
@@ -86,29 +86,23 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   G4double amfp =(sqrt(2)*K_b * T * pow(M_D , 1.5)* (D_ac*D_ac)*
 		 (sqrt(energy + alpha*(energy*energy)))* (1+ (2*alpha*energy)))/
                  (pi* pow(h,4) * rho * ( velocity*velocity));
-  cout << "this is Acoustic phonon Scattering " <<  amfp << G4endl;
+  G4cout << "this is Acoustic phonon Scattering " <<  amfp << G4endl;
 
-  // Optical phonon Scattering equation 
-  G4double D_op []= {3 * pow(10,10),2* pow(10,9)}  ;
-  G4double w_op []= {27.3,10.3} ;
-  G4double amfp =(sqrt(2)*K_b * T * pow(M_D , 1.5)* (D_ac*D_ac)*
-		  (sqrt(energy + alpha*(energy*energy)))* (1+ (2*alpha*energy)))/
-    (pi* pow(h,4) * rho * ( velocity*velocity));
-  cout << "this is Acoustic phonon Scattering " <<  amfp << G4endl;
-
+  
+  G4double ev = 1.602e-19;
   // Optical phonon Scattering equation
-  G4double D_op []= {3 * pow(10,10),2* pow(10,9)}  ;
+  G4double D_op []= {3e10 ,2e9}  ;
   G4double w_op []= {27.3,10.3} ;
   G4double omfp[] = {0,0};
   G4double omfpTotal = 0;
   for (int i = 0 ;i<2 ; i++){
     D_op[i]=D_op[i]*ev;
-    w_op[i]= w_op* .001 * ev;
+    w_op[i]= w_op[i]*1e-3 * ev;
     omfp[i]=( K_b * T * pow (M_D ,1.5) * (D_op[i]*D_op[i]))*
       sqrt((energy -( h*w_op[i]))*(1 + alpha*(energy -( h*w_op[i])))) *
       (1 + 2*alpha*(energy - h*w_op[i])) / (sqrt(2) * pi* pow(h,2)	\
 					    *rho*h*w_op[i]);
-    cout << " this is the Optical Phonon Scattering " << i << " " << ofmp[i] << endl;
+    G4cout << " this is the Optical Phonon Scattering " << i << " " << ofmp[i] <<G4endl;
     omfpTotal+=omfp[i];
   }
  
@@ -118,11 +112,11 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   G4double Gamma = (4*sqrt(2)* n_l * (h*h) * pow(energy,.5))/
     (pow(m , 1.5)* (energy + E_T));
   
-  cout << " this Neutral Impurities " << Gamma << endl ; 
+  G4cout << " this Neutral Impurities " << Gamma << G4endl ; 
   
   G4double mfp  =  velocity / ( Gamma + omfpTotal + amfp ); 
   
-  cout << " this is the mean free path" << mfp << endl ;      
+  G4cout << " this is the mean free path" << mfp << G4endl ;      
   
   if (verboseLevel > 1) 
     G4cout << "IV MFP = " << mfp/m << G4endl;
