@@ -75,16 +75,16 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   G4double T = 0.015 ;
   G4double K_b = 1.38064852e-23;
   G4double h = 1.0545718e-34;
-  G4double M_D = 1.98615472 * pow (10, -31) ;
-  G4double D_ac = 1.7622* pow( 10, -18);
-  G4double rho = 5.327 * pow(10 , 3); 
-  G4double alpha = 1.872659176 * pow(10 ,18);
-  G4double m = 9.109 * pow(10, -31);
-  G4double e_0 = 8.85 * pow(10, -12);
-  G4double e = 1.4337 * pow(10, -10);
+  G4double M_D = 1.98615472e-31;
+  G4double D_ac = 1.7622e-18;
+  G4double rho = 5.327e3 ; 
+  G4double alpha = 1.872659176e18 ;
+  G4double m = 9.109e-31;
+  G4double e_0 = 8.85e-12 ;
+  G4double e = 1.4337e-10 ;
 
   G4double amfp =(sqrt(2)*K_b * T * pow(M_D , 1.5)* (D_ac*D_ac)*
-		 (sqrt(energy + alpha(enery*energy)))* (1+ (2*alpha*energy)))/
+		 (sqrt(energy + alpha*(energy*energy)))* (1+ (2*alpha*energy)))/
                  (pi* pow(h,4) * rho * ( velocity*velocity));
   cout << "this is Acoustic phonon Scattering " <<  amfp << G4endl;
 
@@ -92,7 +92,7 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   G4double D_op []= {3 * pow(10,10),2* pow(10,9)}  ;
   G4double w_op []= {27.3,10.3} ;
   G4double amfp =(sqrt(2)*K_b * T * pow(M_D , 1.5)* (D_ac*D_ac)*
-		  (sqrt(energy + alpha(enery*energy)))* (1+ (2*alpha*energy)))/
+		  (sqrt(energy + alpha*(energy*energy)))* (1+ (2*alpha*energy)))/
     (pi* pow(h,4) * rho * ( velocity*velocity));
   cout << "this is Acoustic phonon Scattering " <<  amfp << G4endl;
 
@@ -113,10 +113,10 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   }
  
   //Neutral Impurities 
-  G4double E_T =(M_D /m) * (e_o /e) ;
+  G4double E_T =(M_D /m) * (e_0 /e) ;
   G4double n_l = pow(10,17) ;
-  G4double Gamma = (4*sprt(2)* n_l * (h*h) * row(energy,1/2))/
-    (row(m , 3/2)* (energy + E_T));
+  G4double Gamma = (4*sqrt(2)* n_l * (h*h) * pow(energy,.5))/
+    (pow(m , 1.5)* (energy + E_T));
   
   cout << " this Neutral Impurities " << Gamma << endl ; 
   
