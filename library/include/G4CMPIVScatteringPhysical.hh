@@ -31,7 +31,7 @@ protected:
 
 private:
   //hide assignment operator as private
-  G4CMPIVScatteringPhysical(G4CMPInterValleyScattering&);
+  G4CMPIVScatteringPhysical(G4CMPIVScatteringPhysical&);
   G4CMPIVScatteringPhysical& operator=(const G4CMPIVScatteringPhysical& right);
 };
 
