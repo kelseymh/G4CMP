@@ -5,21 +5,9 @@
 
 // $Id$
 //
-// 20140324  Drop hard-coded IV scattering parameters; get from lattice
-// 20140324  Restore Z-axis mass tensor
-// 20140331  Add required process subtype code
-// 20140418  Drop local valley transforms, use lattice functions instead
-// 20140429  Recompute kinematics relative to new valley
-// 20140908  Allow IV scatter to change momentum by conserving energy
-// 20150109  Revert IV scattering to preserve momentum
-// 20150112  Follow renaming of "SetNewKinematics" to FillParticleChange
-// 20150122  Use verboseLevel instead of compiler flag for debugging
-// 20160601  Must apply lattice rotation before valley.
-// 20161004  Change valley selection function to avoid null choice
-// 20161114  Use G4CMPDriftTrackInfo
-// 20170602  Use G4CMPUtils for particle identity checks
+// 20170711  New class implementing physically motivated IV scattering
 
-//#include "G4CMPInterValleyScattering.hh"
+#include "G4CMPIVScatteringPhysical.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPFieldManager.hh"
@@ -40,12 +28,17 @@
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
 #include "math.h"
-#include "G4CMPIVScatteringPhysical.hh"
+
+
+// Constructor and destructor
+
 G4CMPIVScatteringPhysical::G4CMPIVScatteringPhysical()
-  : G4CMPVDriftProcess("G4CMPIVScatteringPhysical", fIVScatteringPhysical) {;}
+  : G4CMPVDriftProcess("G4CMPIVScatteringPhysical", fInterValleyScattering) {;}
 
 G4CMPIVScatteringPhysical::~G4CMPIVScatteringPhysical() {;}
 
+
+// Flag which kind of particle does IV scattering
 
 G4bool 
 G4CMPIVScatteringPhysical::IsApplicable(const G4ParticleDefinition& aPD) {
@@ -68,55 +61,49 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
     return DBL_MAX;
 
   G4double velocity = GetVelocity(aTrack);
-  
+
   //Acoustic Phonon Scattering 
   G4double energy = GetEnergy(aTrack);
-  const  G4double pi = 3.14159265359;
-  G4double T = 0.015 ;
-  G4double K_b = 1.38064852e-23;
-  G4double h = 1.0545718e-34;
-  G4double M_D = 1.98615472e-31;
-  G4double D_ac = 1.7622e-18;
-  G4double rho = 5.327e3 ; 
-  G4double alpha = 1.872659176e18 ;
-  G4double m = 9.109e-31;
-  G4double e_0 = 8.85e-12 ;
-  G4double e = 1.4337e-10 ;
+  G4double T = 0.015*kelvin ;
 
-  G4double amfp =(sqrt(2)*K_b * T * pow(M_D , 1.5)* (D_ac*D_ac)*
+  G4double M_D = 1.98615472e-31;	// Units?  Meaning?
+  G4double D_ac = 1.7622e-18;		// Units?  Meaning?
+  G4double rho = 5.327e3 ; 		// Units?  Meaning?
+  G4double alpha = 1.872659176e18 ;	// Units?  Meaning?
+  G4double m = 9.109e-31;		// Units?  Meaning?
+  G4double e_0 = 8.85e-12 ;		// Units?  Meaning?
+  G4double e = 1.4337e-10 ;		// Units?  Meaning?
+
+  // Useful constants for expressions below
+  const G4double h_sq  = h_Planck*h_Planck;
+  const G4double h_4th = h_sq * h_sq;
+  const G4double M_D3half = sqrt(M_D*M_D*M_D);
+
+  G4double amfp =(sqrt(2)*k_Boltzmann * T * M_D3half * D_ac*D_ac *
 		 (sqrt(energy + alpha*(energy*energy)))* (1+ (2*alpha*energy)))/
-                 (pi* pow(h,4) * rho * ( velocity*velocity));
-  cout << "this is Acoustic phonon Scattering " <<  amfp << G4endl;
-
-  // Optical phonon Scattering equation 
-  G4double D_op []= {3 * pow(10,10),2* pow(10,9)}  ;
-  G4double w_op []= {27.3,10.3} ;
-  G4double amfp =(sqrt(2)*K_b * T * pow(M_D , 1.5)* (D_ac*D_ac)*
-		  (sqrt(energy + alpha*(energy*energy)))* (1+ (2*alpha*energy)))/
-    (pi* pow(h,4) * rho * ( velocity*velocity));
+                 (pi* h_4th * rho * velocity*velocity);
   cout << "this is Acoustic phonon Scattering " <<  amfp << G4endl;
 
   // Optical phonon Scattering equation
-  G4double D_op []= {3 * pow(10,10),2* pow(10,9)}  ;
-  G4double w_op []= {27.3,10.3} ;
+  G4double D_op []= { 3e10*eV, 2e9*eV }  ;
+  G4double w_op []= { 27.3e-3*eV, 10.3e-3*eV } ;
   G4double omfp[] = {0,0};
   G4double omfpTotal = 0;
-  for (int i = 0 ;i<2 ; i++){
-    D_op[i]=D_op[i]*ev;
-    w_op[i]= w_op* .001 * ev;
-    omfp[i]=( K_b * T * pow (M_D ,1.5) * (D_op[i]*D_op[i]))*
-      sqrt((energy -( h*w_op[i]))*(1 + alpha*(energy -( h*w_op[i])))) *
-      (1 + 2*alpha*(energy - h*w_op[i])) / (sqrt(2) * pi* pow(h,2)	\
-					    *rho*h*w_op[i]);
+  for (int i = 0; i<2; i++) {
+    G4double hw_op = h_Planck*w_op[i];
+
+    omfp[i] = ( k_Boltzmann * T * M_D3half * (D_op[i]*D_op[i]))*
+      sqrt((energy - hw_op)*(1 + alpha*(energy - hw_op))) *
+      (1 + 2*alpha*(energy - hw_op)) / (sqrt(2) * pi* h_sq *rho*hw_op);
     cout << " this is the Optical Phonon Scattering " << i << " " << ofmp[i] << endl;
     omfpTotal+=omfp[i];
   }
  
   //Neutral Impurities 
-  G4double E_T =(M_D /m) * (e_0 /e) ;
-  G4double n_l = pow(10,17) ;
-  G4double Gamma = (4*sqrt(2)* n_l * (h*h) * pow(energy,.5))/
-    (pow(m , 1.5)* (energy + E_T));
+  G4double E_T = (M_D /m) * (e_0 /e) ;
+  G4double n_l = 1e17 ;			// Units?
+  G4double Gamma = (4*sqrt(2)* n_l * (h_Planck*h_Planck) * sqrt(energy))/
+    ( sqrt(m*m*m)* (energy + E_T));
   
   cout << " this Neutral Impurities " << Gamma << endl ; 
   
