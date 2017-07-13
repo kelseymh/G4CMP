@@ -16,12 +16,15 @@
 // 20160906  Make most functions const, provide casting function for matTable
 // 20170525  Add default "rule of five" copy/move operators (no owned pointers)
 // 20170627  Make electrode pointer non-const, for initialization
+// 20170713  Add registry to keep track of missing-surface warnings
 
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
 
 #include "globals.hh"
 #include "G4ThreeVector.hh"
+#include <map>
+#include <utility>
 
 class G4CMPProcessUtils;
 class G4CMPSurfaceProperty;
@@ -91,6 +94,10 @@ protected:
   G4CMPSurfaceProperty* surfProp;	// Surface property with G4CMP data
   G4MaterialPropertiesTable* matTable;	// Phonon- or charge-specific parameters
   G4CMPVElectrodePattern* electrode;	// Patterned electrode for absorption
+
+  // Flag whether a given PV pair has a defined surface property or not
+  typedef std::pair<G4VPhysicalVolume*,G4VPhysicalVolume*> BoundaryPV;
+  std::map<BoundaryPV, G4bool> hasSurface;
 };
 
 #endif	/* G4CMPBoundaryUtils_hh */
