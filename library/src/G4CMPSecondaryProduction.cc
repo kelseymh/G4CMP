@@ -67,7 +67,8 @@ void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
   if (verboseLevel>1)
     G4cout << "G4CMPSecondaryProduction::LoadDataForTrack" << G4endl;
 
-  G4CMPProcessUtils::LoadDataForTrack(track);
+  SetCurrentTrack(track);
+  SetLattice(track);
 
   *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
 
