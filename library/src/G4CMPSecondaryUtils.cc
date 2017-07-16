@@ -40,7 +40,7 @@ G4Track* G4CMP::CreateSecondary(const G4Track& track,
   }
 
   if (G4CMP::IsChargeCarrier(pd)) {
-    const G4LatticePhysical* lat = GetTrackInfo<G4CMPDriftTrackInfo>(track)->Lattice();
+    const G4LatticePhysical* lat = G4CMP::GetLattice(track);
     return CreateChargeCarrier(track.GetTouchable(), G4int(pd->GetPDGCharge()/eplus),
                                ChooseValley(lat), energy, track.GetGlobalTime(),
                                waveVec, track.GetPosition());
