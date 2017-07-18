@@ -61,7 +61,7 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   G4double energy = GetKineticEnergy(aTrack);
   G4double T = 0.015*kelvin ;
   G4double ml = 1.38 *mass_electron;
-  g4double mt = .081 *mass_electron;
+  G4double mt = .081 *mass_electron;
 
   G4double M_D =cbrt( ml*mt*mt) kilogram ;	// kg  density of mass state get from Lattice class (eventually) 
   G4double D_ac = 1.7622e-18;		// Units?  defermation material
