@@ -58,16 +58,17 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   G4double velocity = GetVelocity(aTrack);
 
   //Acoustic Phonon Scattering 
-  G4double energy = GetKineticEnergy(aTrack);
+
   G4double T = 0.015*kelvin ;
+  G4double mass_electron = 9.109e-31*kilogram ;	// killograms?  electron mass? same as M_D
   G4double ml = 1.38 *mass_electron;
   G4double mt = .081 *mass_electron;
 
-  G4double M_D =cbrt( ml*mt*mt) kilogram ;	// kg  density of mass state get from Lattice class (eventually) 
+  G4double M_D =cbrt( ml*mt*mt)* kilogram ;	// kg  density of mass state get from Lattice class (eventually) 
   G4double D_ac = 1.7622e-18;		// Units?  defermation material
   G4double rho = 5.327e3 * kilogram/m3 ; 		// kg/m^3  Crystal Density?
   G4double alpha = 1.872659176e18 ;	// 1/C      Meaning?
-  G4double mass_electron = 9.109e-31*kilogram ;	// killograms?  electron mass? same as M_D
+
   //Units?  freespace?
   G4double epsilon_r = 16.2;
   G4double epsilon = epsilon_r*epsilon0;		// Units?  epsilon/Permittivity of ?
