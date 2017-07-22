@@ -7,6 +7,7 @@
 // 20161115 Initial commit - R. Agnese
 // 20170620 M. Kelsey -- Replace PV arg with Touchable, for transforms
 // 20170629 M. Kelsey -- Add volume name to "no lattice" error messages.
+// 20170721 M. Kelsey -- Check volume in AdjustSecondaryPosition.
 
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPDriftHole.hh"
@@ -182,13 +183,22 @@ G4ThreeVector G4CMP::AdjustSecondaryPosition(const G4VTouchable* touch,
   // Tolerance is the error in deciding which volume a track is in
   G4double kCarTolerance = G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
 
-  // If the distance to an edge is within error, we might accidentally get placed
-  // in the next volume. Instead, let's scoot a bit away from the edge.
+  // If the distance to an edge is within error, we might accidentally get
+  // placed in the next volume. Instead, let's scoot a bit away from the edge.
   if (safety <= kCarTolerance) {
-    G4ThreeVector norm = touch->GetVolume()->GetLogicalVolume()->GetSolid()
-                         ->SurfaceNormal(GetLocalPosition(touch, pos));
+    G4VPhysicalVolume* pv = touch->GetVolume();
+    G4VSolid* solid = pv->GetLogicalVolume()->GetSolid();
+    G4ThreeVector norm = solid->SurfaceNormal(GetLocalPosition(touch, pos));
+
+    // Check if track's assigned volume is correct or incorrect
+    G4ThreadLocalStatic auto latMan = G4LatticeManager::GetLatticeManager();
+    G4LatticePhysical* lat = latMan->GetLattice(pv);
+
+    // If volume doesn't have lattice, assume opposite side of boundary
+    if (!lat) norm = -norm;
+
     RotateToGlobalDirection(touch, norm);
-    pos += (safety - kCarTolerance * (1.001)) * norm;
+    pos -= 1.001*kCarTolerance * norm;
   }
 
   return pos;
