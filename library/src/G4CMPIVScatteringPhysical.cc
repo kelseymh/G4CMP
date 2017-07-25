@@ -42,8 +42,7 @@ G4CMPIVScatteringPhysical::~G4CMPIVScatteringPhysical() {;}
 
 G4bool 
 G4CMPIVScatteringPhysical::IsApplicable(const G4ParticleDefinition& aPD) {
-  return G4CMP::IsElectron(&aPD);
-git}
+  return G4CMP::IsElectron(&aPD);}
 
 
 
