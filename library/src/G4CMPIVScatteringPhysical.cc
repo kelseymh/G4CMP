@@ -43,7 +43,7 @@ G4CMPIVScatteringPhysical::~G4CMPIVScatteringPhysical() {;}
 G4bool 
 G4CMPIVScatteringPhysical::IsApplicable(const G4ParticleDefinition& aPD) {
   return G4CMP::IsElectron(&aPD);
-}
+git}
 
 
 
@@ -51,30 +51,31 @@ G4double
 G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
 					    G4double,
 					    G4ForceCondition* condition) {
-  *condition = NotForced;
-
-  
+ *condition = NotForced;
+ 
 
   G4double velocity = GetVelocity(aTrack);
-
+  G4double energy = GetKineticEnergy(aTrack);
   //Acoustic Phonon Scattering 
 
   G4double T = 0.015*kelvin ;
-  G4double mass_electron = 9.109e-31*kilogram ;	// killograms?  electron mass? same as M_D
+  G4double mass_electron = electron_mass_c2/c_squared;  
+       // 9.109e-31*kilogram ;	// killograms?  electron mass? same as M_D
+ 
   G4double ml = 1.38 *mass_electron;
   G4double mt = .081 *mass_electron;
 
   G4double M_D =cbrt( ml*mt*mt)* kilogram ;	// kg  density of mass state get from Lattice class (eventually) 
-  G4double D_ac = 1.7622e-18;		// Units?  defermation material
-  G4double rho = 5.327e3 * kilogram/m3 ; 		// kg/m^3  Crystal Density?
-  G4double alpha = 1.872659176e18 ;	// 1/C      Meaning?
+  G4double D_ac = 11*eV;            // 1.7622e-18;/ Units?  defermation material
+  G4double rho = 5.327e3 * kilogram/m3 ; 		
+  G4double alpha=0.3/eV;                         // 1.872659176e18  * 1/coulomb ;     
 
   //Units?  freespace?
   G4double epsilon_r = 16.2;
-  G4double epsilon = epsilon_r*epsilon0;		// Units?  epsilon/Permittivity of ?
+  G4double epsilon = epsilon_r * epsilon0;	      
 
   // Useful constants for expressions below
-  const G4double hbar_sq  = hbar_Planck*hbar_Planck;
+  const G4double hbar_sq  = hbar_Planck * hbar_Planck;
   const G4double hbar_4th = hbar_sq * hbar_sq;
   const G4double M_D3half = sqrt(M_D*M_D*M_D);
   const G4double D_ac_sq = D_ac*D_ac;
@@ -119,13 +120,13 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   
   
   
-  if (verboseLevel > 1) 
+  if (verboseLevel > 1) {
     G4cout << "IV MFP = " << mfp/m << G4endl;
     G4cout << "this is Acoustic phonon Scattering " <<  amfp << G4endl;
     // G4cout << " this is the Optical Phonon Scattering " << i << " " << ofmp[i] << G4endl;   
     G4cout << " this Neutral Impurities " << Gamma << G4endl ;
     G4cout << " this is the mean free path" << mfp << G4endl ;       
-  return mfp;
+    return mfp; }
 }
 
 
