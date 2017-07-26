@@ -53,25 +53,24 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
  *condition = NotForced;
  
 
-  G4double velocity = GetVelocity(aTrack);
+ G4double velocity = GetVelocity(aTrack);
   G4double energy = GetKineticEnergy(aTrack);
-  //Acoustic Phonon Scattering 
+
 
   G4double T = 0.015*kelvin ;
   G4double mass_electron = electron_mass_c2/c_squared;  
-       // 9.109e-31*kilogram ;	// killograms?  electron mass? same as M_D
- 
   G4double ml = 1.38 *mass_electron;
   G4double mt = .081 *mass_electron;
-
-  G4double M_D =cbrt( ml*mt*mt)* kilogram ;	// kg  density of mass state get from Lattice class (eventually) 
-  G4double D_ac = 11*eV;            // 1.7622e-18;/ Units?  defermation material
+ 
+ //Acoustic Phonon Scattering 
+  G4double M_D =cbrt( ml*mt*mt)* kilogram ;    
+  G4double D_ac = 11*eV;            
   G4double rho = 5.327e3 * kilogram/m3 ; 		
-  G4double alpha=0.3/eV;                         // 1.872659176e18  * 1/coulomb ;     
+  G4double alpha=0.3/eV;                     
 
-  //Units?  freespace?
-  G4double epsilon_r = 16.2;
-  G4double epsilon = epsilon_r * epsilon0;	      
+  
+ 
+ 
 
   // Useful constants for expressions below
   const G4double hbar_sq  = hbar_Planck * hbar_Planck;
@@ -99,6 +98,7 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
     G4double alpha_times_ehw_op = alpha * energy_minus_hw_op;
     G4double everything_under_sqrt = sqrt(energy_minus_hw_op + energy_minus_hw_op * alpha_times_ehw_op);
 
+
     omfp[i] =  k_Boltzmann * T * M_D3half * D_op_sq * everything_under_sqrt *
       (1 + 2*alpha_times_ehw_op) / (sqrt(2) * pi* hbar_sq *rho*hw_op);
    
@@ -106,6 +106,8 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   }
  
   //Neutral Impurities
+  G4double epsilon_r = 16.2;
+  G4double epsilon = epsilon_r * epsilon0;	       
   G4double e_r =  epsilon0/epsilon;
   G4double E_T = (M_D /mass_electron) * e_r;
   G4double n_l = 1e17 ;			// Units? The number density of inpurities
@@ -116,16 +118,18 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   
   
   G4double mfp  =  velocity / ( Gamma + omfpTotal + amfp ); 
-  
+
   
   
   if (verboseLevel > 1) {
-    G4cout << "IV MFP = " << mfp/m << G4endl;
-    G4cout << "this is Acoustic phonon Scattering " <<  amfp << G4endl;
-    // G4cout << " this is the Optical Phonon Scattering " << i << " " << ofmp[i] << G4endl;   
-    G4cout << " this Neutral Impurities " << Gamma << G4endl ;
-    G4cout << " this is the mean free path" << mfp << G4endl ;       
-    return mfp; }
+    G4cout << "IV MFP = " << mfp/m << " m"
+	   << "\n this is Acoustic phonon Scattering " <<  amfp
+	   << "\n this is the Optical Phonon Scattering " << omfpTotal
+	   << "\n this Neutral Impurities " << Gamma << G4endl;
+  }
+
+  return mfp; 
+   
 }
 
 
