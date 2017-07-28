@@ -63,13 +63,13 @@ namespace G4CMP {
   
   
   template <class T>
-  void matrix<T>::resize(size_t n, size_t m, const T& a) {
-    if (nrow==n && ncol==m) return;		// Correct size, no work needed
+  void matrix<T>::resize(size_t nr, size_t nc, const T& a) {
+    if (nrow==nr && ncol==nc) return;		// Correct size, no work needed
 
-    v.resize(n, vector<T>(ncol,a));	// Trim or add rows filled with 'a'
-    for (size_t i=0; i<n; i++) v[i].resize(m,a);	// Pre-existing rows
-    nrow = n;
-    ncol = m;
+    v.resize(nr, vector<T>(nc,a));	// Trim or add rows filled with 'a'
+    for (size_t i=0; i<n; i++) v[i].resize(nc,a);	// Pre-existing rows
+    nrow = nr;
+    ncol = nc;
   }
 
   template <class T>
