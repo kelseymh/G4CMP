@@ -13,6 +13,7 @@
 // 20160830  Apply production biasing for primaries and secondaries
 // 20160830  Fix 'A' parameter in Lindhard to convert from g/mole units.
 // 20170524  Add constructor and accessor for position argument
+// 20170728  Forgot to assign material to data member in ctor.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPConfigManager.hh"
@@ -40,7 +41,7 @@
 
 G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
-  : G4CMPProcessUtils(), material(0), holeFraction(0.5),
+  : G4CMPProcessUtils(), material(mat), holeFraction(0.5),
     verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
     nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
   SetLattice(lat);
