@@ -67,7 +67,7 @@ namespace G4CMP {
     if (nrow==nr && ncol==nc) return;		// Correct size, no work needed
 
     v.resize(nr, vector<T>(nc,a));	// Trim or add rows filled with 'a'
-    for (size_t i=0; i<n; i++) v[i].resize(nc,a);	// Pre-existing rows
+    for (size_t i=0; i<nrow; i++) v[i].resize(nc,a);	// Pre-existing rows
     nrow = nr;
     ncol = nc;
   }
