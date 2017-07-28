@@ -59,8 +59,8 @@ public:
   // Assignment operators allow dependent configuration
   G4CMPProcessUtils(const G4CMPProcessUtils&) = default;
   G4CMPProcessUtils(G4CMPProcessUtils&&) = default;
-  G4CMPProcessUtils& operator=(const G4CMPProcessUtils& right) = default;
-  G4CMPProcessUtils& operator=(G4CMPProcessUtils&& right) = default;
+  G4CMPProcessUtils& operator=(const G4CMPProcessUtils&) = default;
+  G4CMPProcessUtils& operator=(G4CMPProcessUtils&&) = default;
 
   // Configure for current track
   virtual void LoadDataForTrack(const G4Track* track);

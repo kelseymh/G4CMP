@@ -61,9 +61,9 @@ int main(int argc, char** argv) {
                 G4double y = -(Deltay * n/2) + (j * Deltay);
                 G4double z = -(Deltaz * n/2) + (k * Deltaz);
                 outputFile << x << " " << y << " " << z << " ";
-                const G4double point[4] = {x, y, z, 0};
-                outputFile << EField.GetPotential(point) << " ";
-                EField.GetFieldValue(point, EMfield);
+                const G4double pt[4] = {x, y, z, 0};
+                outputFile << EField.GetPotential(pt) << " ";
+                EField.GetFieldValue(pt, EMfield);
                 outputFile << EMfield[3] << " " << EMfield[4] << " " << EMfield[5] << " ";
                 //normE = EMfield[3]*EMfield[3] + EMfield[4]*EMfield[4] + EMfield[5]*EMfield[5];
                 //outputFile << normE;

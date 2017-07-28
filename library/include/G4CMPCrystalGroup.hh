@@ -11,6 +11,7 @@
 //
 // 20160729  M. Kelsey -- Add accessors for unit cell angles
 // 20170525  M. Kelsey -- Add default "rule of five" copy/move operators
+// 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm" (-Wshadow)
 
 #include "globals.hh"
 #include "G4ThreeVector.hh"
@@ -31,8 +32,8 @@ public:
   G4CMPCrystalGroup() : group(UNKNOWN) {;}	// Default ctor, must use Set()
   G4CMPCrystalGroup(Bravais grp) { Set(grp); }
   G4CMPCrystalGroup(Bravais grp, G4double angle) { Set(grp, angle); }
-  G4CMPCrystalGroup(G4double alpha, G4double beta, G4double gamma) {
-    Set(triclinic, alpha, beta, gamma);
+  G4CMPCrystalGroup(G4double al, G4double bt, G4double gm) {
+    Set(triclinic, al, bt, gm);
   }
 
   virtual ~G4CMPCrystalGroup() {;}
@@ -49,7 +50,7 @@ public:
   G4double gamma() const { return fabs(axis[0].angle(axis[1])); }
 
   // Some parameters may be omitted depending on symmetry
-  void Set(Bravais grp, G4double alpha=0., G4double beta=0., G4double gamma=0.);
+  void Set(Bravais grp, G4double a=0., G4double b=0., G4double g=0.);
 
   // Copy appropriate elements of Cij matrix based on crystal symmetry
   // NOTE:  Non-const array passed in for modification
@@ -60,7 +61,7 @@ private:
   void SetHexagonal();
   void SetRhombohedral(G4double angle);
   void SetMonoclinic(G4double angle);
-  void SetTriclinic(G4double alpha, G4double beta, G4double gamma);
+  void SetTriclinic(G4double al, G4double bt, G4double gm);
 
   // Separate functions for completing Cij to avoid long spaghetti code
   G4bool FillCubic(G4double Cij[6][6]) const;
