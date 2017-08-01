@@ -77,10 +77,29 @@ void G4CMPFieldManager::CreateTransport() {
 // Run-time Configuration
 
 void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
+  if (G4CMPConfigManager::GetVerboseLevel()) {
+    G4cout << "G4CMPFieldManager::ConfigureForTrack "
+	   << aTrack->GetTrackID() << "/" << aTrack->GetCurrentStepNumber()
+	   << " @ " << aTrack->GetPosition() << " in "
+	   << aTrack->GetVolume()->GetName() << G4endl;
+  }
+
   // Configure equation of motion with physical lattice
   const G4LatticePhysical* lat =
     G4LatticeManager::GetLatticeManager()->GetLattice(aTrack->GetVolume());
-  G4bool newLat = theEqMotion->ChangeLattice(lat);
+
+  // TEMPORARY:  Keep previous lattice configuration to see what happens
+  if (!lat) {
+    G4Exception("G4CMPFieldManager::ConfigureForTrack", "FieldMan002",
+		JustWarning, /*EventMustBeAborted,*/
+		("No lattice available for track volume "
+		 + aTrack->GetVolume()->GetName()).c_str());
+    theEqMotion->SetNoValley();
+    return;
+  }
+
+  // Hack around boundary issues; don't store or change vol if null lattice!
+  G4bool newLat = lat ? theEqMotion->ChangeLattice(lat) : false;
 
   // Extract local/global transform from track only if volume has changed
   // This avoids creating and copying transforms on every step
@@ -90,8 +109,7 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
     G4AffineTransform localToGlobal(rot, trans);
 
     if (G4CMPConfigManager::GetVerboseLevel() > 1) {
-      G4cout << "G4CMPFieldManager::ConfigureForTrack with translation "
-	     << trans << " rotation " << *rot << G4endl;
+      G4cout << " translation " << trans << " rotation " << *rot << G4endl;
     }
 
     myDetectorField->SetTransforms(localToGlobal);
@@ -114,6 +132,7 @@ void G4CMPFieldManager::SetChargeValleyForTrack(const G4LatticePhysical* lat,
     G4Exception("G4CMPFieldManager::SetChargeValleyForTrack", "FieldMan001",
                 EventMustBeAborted,
                 "Valley index is not valid for the current lattice.");
+    return;
   }
 
   if(valley >= 0) {

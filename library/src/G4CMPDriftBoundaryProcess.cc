@@ -29,6 +29,8 @@
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
+#include "G4StepStatus.hh"
+#include "G4Track.hh"
 #include "G4TransportationManager.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
@@ -48,7 +50,7 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 }
 
 G4double G4CMPDriftBoundaryProcess::
-GetMeanFreePath(const G4Track& /*aTrack*/,G4double /*previousStepSize*/,
+GetMeanFreePath(const G4Track& aTrack, G4double /*previousStepSize*/,
 		G4ForceCondition* condition) {
   *condition = Forced;
   return DBL_MAX;
@@ -58,7 +60,7 @@ GetMeanFreePath(const G4Track& /*aTrack*/,G4double /*previousStepSize*/,
 G4VParticleChange* 
 G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
                                          const G4Step& aStep) {
-  // NOTE:  G4VProcess::SetVerboseLevel is not virtual!  Can't overlaod it
+  // NOTE:  G4VProcess::SetVerboseLevel is not virtual!  Can't overload it
   G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
 
   aParticleChange.Initialize(aTrack);
@@ -114,7 +116,7 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 // May convert recombination into phonon
 
 void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
-                                             const G4Step&,
+                                             const G4Step& aStep,
                                              G4ParticleChange&) {
   // Charge carrier gets killed and its energy goes into phonons.
   if (verboseLevel>1) {
@@ -130,9 +132,15 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   while (eKin > 0.) {
     G4double E = eKin > eDeb ? eDeb : eKin;
     eKin -= eDeb;
+
+    // Radiate phonons inward from surface
+    G4ThreeVector normOut = G4CMP::GetSurfaceNormal(aStep);
+    G4ThreeVector phononDir = G4RandomDirection();
+    if (phononDir.dot(normIn) > 0.) phononDir = -phononDir;
+
     G4Track* sec = G4CMP::CreatePhonon(aTrack.GetTouchable(),
                                        G4PhononPolarization::UNKNOWN,
-                                       G4RandomDirection(), E,
+                                       phononDir, E,
                                        aTrack.GetGlobalTime(),
                                        aTrack.GetPosition());
     aParticleChange.AddSecondary(sec);
@@ -149,54 +157,101 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Track reflected" << G4endl;
 
-  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
-
   // Electrons and holes need to be handled separately until we further
   // generalize the physics.
 
-  if (aTrack.GetDefinition() == G4CMPDriftElectron::Definition()) {
-    G4ThreeVector vel = GetGlobalVelocityVector(aTrack);
-
-    if (verboseLevel>2)
-      G4cout << " Old velocity direction " << vel.unit() << G4endl;
-
-    // Specular reflecton reverses velocity along normal
-    G4double velNorm = vel * surfNorm;
-    vel -= 2.*velNorm*surfNorm;
-
-    if (verboseLevel>2)
-      G4cout << " New velocity direction " << vel.unit() << G4endl;
-
-    // Convert velocity back to momentum and update direction
-    RotateToLocalDirection(vel);
-    G4ThreeVector p = theLattice->MapV_elToP(GetCurrentValley(), vel);
-    RotateToGlobalDirection(p);
-
-    if (verboseLevel>2) {
-      G4cout << " New momentum direction " << p.unit() << G4endl;
-
-      // SANITY CHECK:  Does new momentum get back to new velocity?
-      G4ThreeVector vnew = theLattice->MapPtoV_el(GetCurrentValley(),
-                                                  GetLocalDirection(p));
-      RotateToGlobalDirection(vnew);
-      G4cout << " Cross-check new v dir  " << vnew.unit() << G4endl;
-    }
-
-    FillParticleChange(GetCurrentValley(), p);	// Handle effective mass, vel
-  } else if (aTrack.GetDefinition() == G4CMPDriftHole::Definition()) {
-    G4ThreeVector momDir = aStep.GetPostStepPoint()->GetMomentumDirection();
-    if (verboseLevel>2)
-      G4cout << " Old momentum direction " << momDir << G4endl;
-
-    G4double momNorm = momDir * surfNorm;
-    momDir -= 2.*momNorm*surfNorm;
-
-    if (verboseLevel>2)
-      G4cout << " New momentum direction " << momDir << G4endl;
-
-    aParticleChange.ProposeMomentumDirection(momDir);
-  } else {
+  if (IsElectron())  DoReflectionElectron(aTrack, aStep, aParticleChange);
+  else if (IsHole()) DoReflectionHole(aTrack, aStep, aParticleChange);
+  else {
     G4Exception("G4CMPDriftBoundaryProcess::DoReflection", "Boundary004",
                 EventMustBeAborted, "Invalid particle for this process.");
   }
+}
+
+void G4CMPDriftBoundaryProcess::
+DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
+		     G4ParticleChange& /*aParticleChange*/) {
+  if (verboseLevel>1)
+    G4cout << GetProcessName() << ": Electron reflected" << G4endl;
+
+  // Get outward normal from current volume
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
+
+  if (verboseLevel>2) {
+    G4StepPoint* preP = aStep.GetPreStepPoint();
+    G4StepPoint* postP = aStep.GetPostStepPoint();
+    G4VPhysicalVolume* prePV = preP->GetPhysicalVolume();
+    G4VPhysicalVolume* postPV = postP->GetPhysicalVolume();
+
+    G4VSolid* preSolid = prePV->GetLogicalVolume()->GetSolid();
+    G4ThreeVector prePos = preP->GetPosition();
+    G4CMP::RotateToLocalPosition(preP->GetTouchable(), prePos);
+
+    G4cout << " Sanity check: surfNorm " << surfNorm
+	   << " Normal using prePV " << preSolid->SurfaceNormal(prePos)
+	   << G4endl;
+
+    // Transform postStep location to preStep coordinate system
+    G4ThreeVector postPosInPre = postP->GetPosition();
+    G4CMP::RotateToLocalPosition(preP->GetTouchable(), postPosInPre);
+    EInside postIn = preSolid->Inside(postPosInPre);
+
+    G4cout << " postStep @ " << postPosInPre << " in prePV coords"
+	   << "\n Is postStep location outside of preStep Volume? "
+	   << (postIn==kOutside ? "outside" :
+	       postIn==kInside  ? "inside" :
+	       postIn==kSurface ? "surface" : "INVALID") << G4endl;
+  }
+
+  G4ThreeVector vel = GetGlobalVelocityVector(aTrack);
+
+  if (verboseLevel>2) {
+    G4cout << " Old momentum direction " << GetGlobalMomentum(aTrack).unit()
+	   << "\n Old velocity direction " << vel.unit() << G4endl;
+  }
+
+  // Specular reflection reverses velocity along normal
+  G4double velNorm = vel * surfNorm;
+  vel -= 2.*velNorm*surfNorm;
+  
+  if (verboseLevel>2)
+    G4cout << " New velocity direction " << vel.unit() << G4endl;
+  
+  // Convert velocity back to momentum and update direction
+  RotateToLocalDirection(vel);
+  G4ThreeVector p = theLattice->MapV_elToP(GetCurrentValley(), vel);
+  RotateToGlobalDirection(p);
+  
+  if (verboseLevel>2) {
+    G4cout << " New momentum direction " << p.unit() << G4endl;
+    
+    // SANITY CHECK:  Does new momentum get back to new velocity?
+    G4ThreeVector vnew = theLattice->MapPtoV_el(GetCurrentValley(),
+						GetLocalDirection(p));
+    RotateToGlobalDirection(vnew);
+    G4cout << " Cross-check new v dir  " << vnew.unit() << G4endl;
+  }
+  
+  FillParticleChange(GetCurrentValley(), p);	// Handle effective mass, vel
+}
+
+void G4CMPDriftBoundaryProcess::
+DoReflectionHole(const G4Track& aTrack, const G4Step& aStep,
+		 G4ParticleChange& /*aParticleChange*/) {
+  if (verboseLevel>1)
+    G4cout << GetProcessName() << ": Hole reflected" << G4endl;
+
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
+
+  G4ThreeVector momDir = aStep.GetPostStepPoint()->GetMomentumDirection();
+  if (verboseLevel>2)
+    G4cout << " Old momentum direction " << momDir << G4endl;
+  
+  G4double momNorm = momDir * surfNorm;
+  momDir -= 2.*momNorm*surfNorm;
+  
+  if (verboseLevel>2)
+    G4cout << " New momentum direction " << momDir << G4endl;
+  
+  aParticleChange.ProposeMomentumDirection(momDir);
 }
