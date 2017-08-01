@@ -136,7 +136,7 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
     // Radiate phonons inward from surface
     G4ThreeVector normOut = G4CMP::GetSurfaceNormal(aStep);
     G4ThreeVector phononDir = G4RandomDirection();
-    if (phononDir.dot(normIn) > 0.) phononDir = -phononDir;
+    if (phononDir.dot(normOut) > 0.) phononDir = -phononDir;
 
     G4Track* sec = G4CMP::CreatePhonon(aTrack.GetTouchable(),
                                        G4PhononPolarization::UNKNOWN,
