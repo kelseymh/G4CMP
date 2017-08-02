@@ -17,6 +17,7 @@
 // 20160518  Add commands for Miller orientation, phonon bounces
 // 20160624  Add command to select KV lookup tables vs. calculator
 // 20160830  Add command to scale production of e/h pairs, like phonons
+// 20170802  Add commands for separate Luke, downconversion scaing
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -37,6 +38,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : theManager(mgr), localCmdDir(false), cmdDir(0), verboseCmd(0),
     ehBounceCmd(0), pBounceCmd(0), voltageCmd(0), minEPhononCmd(0),
     minEChargeCmd(0), minstepCmd(0), makePhononCmd(0), makeChargeCmd(0),
+    lukePhononCmd(0), downconvCmd(0), 
     escaleCmd(0), fileCmd(0), dirCmd(0), hitsCmd(0), millerCmd(0),
     kvmapCmd(0) {
   CreateDirectory("/g4cmp/",
@@ -57,10 +59,16 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 			 "Set fraction of L0 for charge carrier minimum step");
 
   makePhononCmd = CreateCommand<G4UIcmdWithADouble>("producePhonons",
-          "Set rate of production of primary, Luke and relaxation phonons");
+		    "Set rate of production of primary phonons");
 
   makeChargeCmd = CreateCommand<G4UIcmdWithADouble>("produceCharges",
 		    "Set rate of production of primary charge carriers");
+
+  lukePhononCmd = CreateCommand<G4UIcmdWithADouble>("sampleLuke",
+		    "Set rate of Luke actual phonon production");
+
+  downconvCmd = CreateCommand<G4UIcmdWithADouble>("downconvertPhonons",
+		  "Set scale factor for rate of phonon downconversion process");
 
   minEPhononCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("minEPhonons",
           "Minimum energy for creating or tracking phonons");
@@ -108,6 +116,8 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete minstepCmd; minstepCmd=0;
   delete makePhononCmd; makePhononCmd=0;
   delete makeChargeCmd; makeChargeCmd=0;
+  delete lukePhononCmd; lukePhononCmd=0;
+  delete downconvCmd; downconvCmd=0;
   delete escaleCmd; escaleCmd=0;
   delete fileCmd; fileCmd=0;
   delete dirCmd; dirCmd=0;
@@ -150,6 +160,8 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == minstepCmd) theManager->SetMinStepScale(StoD(value));
   if (cmd == makePhononCmd) theManager->SetGenPhonons(StoD(value));
   if (cmd == makeChargeCmd) theManager->SetGenCharges(StoD(value));
+  if (cmd == lukePhononCmd) theManager->SetLukeSampling(StoD(value));
+  if (cmd == downconvCmd) theManager->SetDownconversionSampling(StoD(value));
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
   if (cmd == fileCmd) theManager->SetEPotFile(value);
