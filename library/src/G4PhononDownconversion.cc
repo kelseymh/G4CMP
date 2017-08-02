@@ -14,7 +14,8 @@
 // 20140331  Add required process subtype code
 // 20160624  Use GetTrackInfo() accessor
 // 20161114  Use new PhononTrackInfo
-// 20170620  FOllow interface changes in G4CMPSecondaryUtils
+// 20170620  Follow interface changes in G4CMPSecondaryUtils
+// 20170801  Protect PostStepDoIt() from being called at boundary
 
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPSecondaryUtils.hh"
@@ -78,7 +79,11 @@ G4double G4PhononDownconversion::GetMeanFreePath(const G4Track& aTrack,
 
 
 G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
-							 const G4Step&) {
+							 const G4Step& aStep) {
+  if (aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
+  }
+    
   aParticleChange.Initialize(aTrack);
 
   // Obtain dynamical constants from this volume's lattice

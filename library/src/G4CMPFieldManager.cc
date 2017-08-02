@@ -13,6 +13,7 @@
 // 20150122  Use verboseLevel instead of compiler flag for debugging
 // 20150528  Pass verbosity through to field computation classes
 // 20161114  Use new G4CMPDriftTrackInfo
+// 20170801  Count consecutive null lattice pointers for reflection steps
 
 #include "G4CMPFieldManager.hh"
 #include "G4CMPConfigManager.hh"
@@ -41,13 +42,15 @@
 G4CMPFieldManager::G4CMPFieldManager(G4ElectroMagneticField *detectorField)
   : G4FieldManager(new G4CMPLocalElectroMagField(detectorField)),
     myDetectorField(new G4CMPLocalElectroMagField(detectorField)),
-    stepperVars(8), stepperLength(1e-9*mm) {
+    stepperVars(8), stepperLength(1e-9*mm),
+    latticeNulls(0), maxLatticeNulls(3) {
   CreateTransport();
 }
 
 G4CMPFieldManager::G4CMPFieldManager(G4CMPLocalElectroMagField *detectorField)
   : G4FieldManager(detectorField), myDetectorField(detectorField),
-    stepperVars(8), stepperLength(1e-9*mm) {
+    stepperVars(8), stepperLength(1e-9*mm),
+    latticeNulls(0), maxLatticeNulls(3) {
   CreateTransport();
 }
 
@@ -88,12 +91,20 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
   const G4LatticePhysical* lat =
     G4LatticeManager::GetLatticeManager()->GetLattice(aTrack->GetVolume());
 
-  // TEMPORARY:  Keep previous lattice configuration to see what happens
-  if (!lat) {
-    G4Exception("G4CMPFieldManager::ConfigureForTrack", "FieldMan002",
-		JustWarning, /*EventMustBeAborted,*/
-		("No lattice available for track volume "
-		 + aTrack->GetVolume()->GetName()).c_str());
+  // If track is outside valid volume, count attemps to look for reflections
+  if (lat) latticeNulls = 0;
+  else {
+    latticeNulls++;
+    if (latticeNulls > maxLatticeNulls) {
+      G4ExceptionDescription msg;
+      msg << "No lattice available for volume "
+	  << aTrack->GetVolume()->GetName() << " after " << latticeNulls
+	  << " steps.";
+
+      G4Exception("G4CMPFieldManager::ConfigureForTrack", "FieldMan002",
+		  EventMustBeAborted, msg);
+    }
+
     theEqMotion->SetNoValley();
     return;
   }
@@ -117,8 +128,8 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
   }
 
   G4int iv = -1;
-  if (aTrack->GetDefinition() == G4CMPDriftElectron::Definition() ||
-      aTrack->GetDefinition() == G4CMPDriftHole::Definition()) {
+  if (lat && (aTrack->GetDefinition() == G4CMPDriftElectron::Definition() ||
+	      aTrack->GetDefinition() == G4CMPDriftHole::Definition())) {
     iv = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(*aTrack)->ValleyIndex();
     SetChargeValleyForTrack(lat, iv);
   } else {
