@@ -9,6 +9,7 @@
 // 20140331  Use G4CMPEqEMField for everything, now handles holes; drop local
 //	     caching of lattice.
 // 20170525  Destructor should be virtual; add "rule of five" copy/move
+// 20170801  Add counter to track instances of null-lattice, for reflections.
 
 #ifndef G4CMPFieldManager_h
 #define G4CMPFieldManager_h 1
@@ -49,6 +50,9 @@ private:
 
   const G4int stepperVars;
   const G4double stepperLength;
+
+  G4int latticeNulls;		// Count consective cases of no lattice
+  const G4int maxLatticeNulls;	// Maximum allowed cases (reflection == 2)
 
   // NOTE: All pointers are kept in order to delete in dtor
   void CreateTransport();
