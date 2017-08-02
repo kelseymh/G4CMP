@@ -52,13 +52,13 @@ public:
 #//Class methods
     static int          count(const setT *set);
     //s may be null
-    static bool         isEmpty(const setT *s) { return SETempty_(s); }
+    static bool         isEmpty(const setT *set) { return SETempty_(set); }
 
 
 #//Constructors
                         //! Copy constructor copies the pointer but not the set.  Needed for return by value and parameter passing.
                         QhullSetBase(const QhullSetBase &o) : qh_set(o.qh_set) {}
-    explicit            QhullSetBase(setT *s) : qh_set(s ? s : &s_empty_set) {}
+    explicit            QhullSetBase(setT *set) : qh_set(set ? set : &s_empty_set) {}
                        ~QhullSetBase() {}
 
 private:
@@ -70,7 +70,7 @@ public:
 
 #//Conversions
                         //! Not type-safe since setT may contain any type
-    void                defineAs(setT *s) { qh_set= s ? s : &s_empty_set; }
+    void                defineAs(setT *set) { qh_set= set ? set : &s_empty_set; }
     setT               *getSetT() const { return qh_set; }
     setT              **referenceSetT() { return &qh_set; }
 
@@ -109,13 +109,13 @@ public:
 #//Class methods
     static int          count(const setT *set);
                         //s may be null
-    static bool         isEmpty(const setT *s) { return SETempty_(s); }
+    static bool         isEmpty(const setT *set) { return SETempty_(set); }
 
 #//Constructors
                         //Copy constructor copies pointer but not contents.  Needed for return by value.
                         QhullSet<T>(const QhullSet<T> &o) : QhullSetBase(o) {}
                         //Conversion from setT* is not type-safe.  Implicit conversion for void* to T
-    explicit            QhullSet<T>(setT *s) : QhullSetBase(s) { QHULL_ASSERT(sizeof(T)==sizeof(void *)); }
+    explicit            QhullSet<T>(setT *set) : QhullSetBase(set) { QHULL_ASSERT(sizeof(T)==sizeof(void *)); }
                        ~QhullSet<T>() {}
 
 private:
@@ -277,9 +277,9 @@ template <typename T>
 bool QhullSet<T>::
 contains(const T &t) const
 {
-    setT *s= getSetT();
+    setT *set= getSetT();
     void *e= t.getBaseT();  // contains() is not inline for better error reporting
-    int result= qh_setin(s, e);
+    int result= qh_setin(set, e);
     return result!=0;
 }//contains
 

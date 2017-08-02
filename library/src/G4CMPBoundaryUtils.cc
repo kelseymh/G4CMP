@@ -71,7 +71,7 @@ G4bool G4CMPBoundaryUtils::IsGoodBoundary(const G4Step& aStep) {
      : G4CMP::IsPhonon(pd) ? G4CMPConfigManager::GetMaxPhononBounces() : -1);
 
   if (buVerboseLevel>1) {
-    G4cout << procName << "::LoadDataForStep maxRefl " << maximumReflections
+    G4cout << procName << "::IsGoodBoundary maxRefl " << maximumReflections
 	   << G4endl;
   }
 
@@ -282,7 +282,7 @@ void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
 }
 
 void G4CMPBoundaryUtils::DoSimpleKill(const G4Track& /*aTrack*/,
-              const G4Step& /*aStep*/,
+				      const G4Step& /*aStep*/,
 				      G4ParticleChange& aParticleChange) {
   if (buVerboseLevel>1) G4cout << procName << ": Track killed" << G4endl;
 
@@ -293,7 +293,8 @@ void
 G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
 				   const G4Step& aStep,
 				   G4ParticleChange& aParticleChange) {
-  if (buVerboseLevel>1) G4cout << procName << ": Track transmitted" << G4endl;
+  if (buVerboseLevel>1) 
+    G4cout << procName << ": Track transmission requested" << G4endl;
 
   DoSimpleKill(aTrack, aStep, aParticleChange);
 }

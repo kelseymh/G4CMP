@@ -14,6 +14,7 @@
 // 20161102  Rob Agnese
 // 20170605  Pass touchable from track, not just local volume
 // 20170721  BUG FIX:  NavHistory indexed in opposite direction from Touchable
+// 20170728  BUG FIX:  NavHistory returns global-to-local transform.
 
 #include "G4CMPGlobalLocalTransformStore.hh"
 
@@ -53,8 +54,8 @@ G4CMPGlobalLocalTransformStore::GetOrBuildTransforms(const G4VTouchable* touch) 
   uintptr_t thash = Hash(touch);
   if (Instance().cache.count(thash) == 0) {
     const G4NavigationHistory* thist = touch->GetHistory();
-    const G4AffineTransform& lToG = thist->GetTransform(thist->GetDepth());
-    Instance().cache[thash] = Transforms { lToG, lToG.Inverse() };
+    const G4AffineTransform& gToL = thist->GetTransform(thist->GetDepth());
+    Instance().cache[thash] = Transforms { gToL.Inverse(), gToL };
   }
 
   return Instance().cache[thash];

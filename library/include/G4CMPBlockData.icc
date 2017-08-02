@@ -10,8 +10,8 @@ template <class T>
 inline G4CMPBlockData<T>::G4CMPBlockData() : data(std::vector<T>()), ncols(0) {;}
 
 template <class T>
-inline G4CMPBlockData<T>::G4CMPBlockData(size_t rows, size_t cols, const T& val) :
-  data(std::vector<T>(rows*cols, val)), ncols(cols) {;}
+inline G4CMPBlockData<T>::G4CMPBlockData(size_t nrows, size_t cols, const T& val) :
+  data(std::vector<T>(nrows*cols, val)), ncols(cols) {;}
 
 template <class T>
 inline G4CMPBlockData<T>::G4CMPBlockData(const std::vector<T>& vec, size_t cols) :
