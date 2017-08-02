@@ -115,9 +115,9 @@ G4CMPIVScatteringPhysical::GetMeanFreePath(const G4Track& aTrack,
   G4double epsilon = epsilon_r * epsilon0;	       
   G4double e_r =  epsilon0/epsilon;
   G4double E_T = (M_D /mass_electron) * e_r;
-  G4double n_l = 1e17 ;		// Units? The number density of inpurities
+  G4double n_I = 1e11/cm3; // The number density of inpurities per cubic cm
   
-  G4double nrate = (4*sqrt(2)* n_l * hbar_sq * sqrt(energy)) /
+  G4double nrate = (4*sqrt(2)* n_I * hbar_sq * sqrt(energy)) /
     ( M_D3half * (energy + E_T));
 
   if (verboseLevel>1)
