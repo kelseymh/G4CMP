@@ -71,14 +71,7 @@ void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
   SetLattice(track);
 
   *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
-
-  if (verboseLevel>1) {
-    G4cout << " using material "
-	   << GetCurrentVolume()->GetLogicalVolume()->GetMaterial()->GetName()
-	   << G4endl;
-  }
-
-  partitioner->SetMaterial(GetCurrentVolume()->GetLogicalVolume()->GetMaterial());
+  partitioner->UseVolume(GetCurrentVolume());
   partitioner->SetVerboseLevel(verboseLevel);
 }
 

@@ -12,11 +12,13 @@
 // 20150603  Add functionality to globally limit reflections
 // 20160906  Follow constness of G4CMPBoundaryUtils
 // 20170620  Follow interface changes in G4CMPUtils, G4CMPSecondaryUtils
+// 20170802  M. Kelsey -- Replace phonon production with G4CMPEnergyPartition
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPEnergyPartition.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPSurfaceProperty.hh"
@@ -29,6 +31,7 @@
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
+#include "G4Track.hh"
 #include "G4TransportationManager.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
@@ -37,8 +40,15 @@
 
 
 G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess(const G4String& name)
-  : G4CMPVDriftProcess(name, fChargeBoundary), G4CMPBoundaryUtils(this) {;}
+  : G4CMPVDriftProcess(name, fChargeBoundary), G4CMPBoundaryUtils(this),
+    partitioner(new G4CMPEnergyPartition) {;}
 
+G4CMPDriftBoundaryProcess::~G4CMPDriftBoundaryProcess() {
+  delete partitioner;
+}
+
+
+// Process actions
 
 G4double G4CMPDriftBoundaryProcess::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
@@ -47,9 +57,8 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
   return GetMeanFreePath(aTrack, previousStepSize, condition);
 }
 
-G4double G4CMPDriftBoundaryProcess::
-GetMeanFreePath(const G4Track& /*aTrack*/,G4double /*previousStepSize*/,
-		G4ForceCondition* condition) {
+G4double G4CMPDriftBoundaryProcess::GetMeanFreePath(const G4Track&,G4double,
+						    G4ForceCondition* condition) {
   *condition = Forced;
   return DBL_MAX;
 }
@@ -70,7 +79,7 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     if (IsElectron()) {
       G4cout << " K_valley (" << GetValleyIndex(aTrack) << ") direction: "
 	     << theLattice->MapPtoK_valley(GetValleyIndex(aTrack),
-					   GetLocalMomentum(aTrack)).unit()
+				   GetLocalMomentum(aTrack)).unit()
 	     << G4endl;
     }
     G4cout << " K direction: " << GetLocalWaveVector(aTrack).unit()
@@ -121,21 +130,27 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
     G4cout << GetProcessName() << "::DoAbsorption: Track absorbed" << G4endl;
   }
 
+  partitioner->UseVolume(aTrack.GetVolume());
+
   G4double eKin = GetKineticEnergy(aTrack);
 
-  //FIXME: What does the phonon distribution look like?
-  G4double eDeb = theLattice->GetDebyeEnergy();
-  size_t n = std::ceil(eKin / eDeb);
-  aParticleChange.SetNumberOfSecondaries(n);
-  while (eKin > 0.) {
-    G4double E = eKin > eDeb ? eDeb : eKin;
-    eKin -= eDeb;
-    G4Track* sec = G4CMP::CreatePhonon(aTrack.GetTouchable(),
-                                       G4PhononPolarization::UNKNOWN,
-                                       G4RandomDirection(), E,
-                                       aTrack.GetGlobalTime(),
-                                       aTrack.GetPosition());
-    aParticleChange.AddSecondary(sec);
+  std::vector<G4Track*> phonons;
+  partitioner->DoPartition(0., eKin);
+  partitioner->GetSecondaries(phonons);
+
+  if (!phonons.empty()) {		// Transfer phonons as new tracks
+    aParticleChange.SetNumberOfSecondaries(phonons.size());
+    aParticleChange.SetSecondaryWeightByProcess(true);
+
+    G4Track* sec = 0;
+    while (!phonons.empty()) {		// Pull phonons off end of list
+      sec = phonons.back();
+      sec->SetWeight(aTrack.GetWeight()*sec->GetWeight());  // Apply track weight
+      aParticleChange.AddSecondary(sec);
+      phonons.pop_back();
+    }
+  } else {				// Record energy release
+    aParticleChange.ProposeNonIonizingEnergyDeposit(eKin);
   }
 
   aParticleChange.ProposeEnergy(0.);

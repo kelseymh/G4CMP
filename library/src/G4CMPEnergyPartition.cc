@@ -15,6 +15,7 @@
 // 20170524  Add constructor and accessor for position argument
 // 20170728  Forgot to assign material to data member in ctor.
 // 20170731  Move point-to-volume conversion to G4CMPGeometryUtils.
+// 20170802  Add constructor and accessor for volume argument
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPConfigManager.hh"
@@ -49,6 +50,11 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
   SetLattice(lat);
 }
 
+G4CMPEnergyPartition::G4CMPEnergyPartition(const G4VPhysicalVolume* volume)
+  : G4CMPEnergyPartition() {
+  UseVolume(volume);
+}
+
 G4CMPEnergyPartition::G4CMPEnergyPartition(const G4ThreeVector& pos)
   : G4CMPEnergyPartition() {
   UsePosition(pos);
@@ -59,15 +65,18 @@ G4CMPEnergyPartition::~G4CMPEnergyPartition() {;}
 
 // Extract material and lattice information from geometry
 
+void G4CMPEnergyPartition::UseVolume(const G4VPhysicalVolume* volume) {
+  FindLattice(volume);
+  SetMaterial(volume->GetLogicalVolume()->GetMaterial());
+}
+
 void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
   G4VPhysicalVolume* volume = G4CMP::GetVolumeAtPoint(pos);
-
   if (verboseLevel) 
     G4cout << "G4CMPEnergyPartition: " << pos << " in volume "
 	   << volume->GetName() << G4endl;
 
-  FindLattice(volume);
-  SetMaterial(volume->GetLogicalVolume()->GetMaterial());
+  UseVolume(volume);
 }
 
 
