@@ -1,3 +1,18 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
+/// \file library/include/G4CMPUtils.cc
+/// \brief Namespace for general purpose or static utilities supporting
+///	G4CMP.  Functions not dependent on current track/step info will
+///     be moved here from G4CMPProcessUtils.
+//
+// $Id$
+//
+// 20170602  Provide call-by-reference versions of track identity functions
+// 20170802  Provide scale factor argument to ChooseWeight functions
+
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
@@ -106,26 +121,31 @@ G4bool G4CMP::IsChargeCarrier(const G4ParticleDefinition* pd) {
 
 
 // Generate weighting factor for phonons, charge carriers
+// NOTE:  biasScale < 0. means to use "primary generator" scaling
 // NOTE:  If zero is returned, track should NOT be created!
 
-G4double G4CMP::ChooseWeight(const G4ParticleDefinition* pd) {
-  return (IsChargeCarrier(pd) ? ChooseChargeWeight()
-	  : IsPhonon(pd) ? ChoosePhononWeight() : 1.);
+G4double G4CMP::ChooseWeight(const G4ParticleDefinition* pd,
+			     G4double biasScale) {
+  return (IsChargeCarrier(pd) ? ChooseChargeWeight(biasScale)
+	  : IsPhonon(pd) ? ChoosePhononWeight(biasScale) : 1.);
 }
 
-G4double G4CMP::ChoosePhononWeight() {
-  G4double prob = G4CMPConfigManager::GetGenPhonons();
+G4double G4CMP::ChoosePhononWeight(G4double prob) {
+  if (prob < 0.) prob = G4CMPConfigManager::GetGenPhonons();
 
   // If prob=0., random throw always fails, never divides by zero
   return ((prob==1.) ? 1. : (G4UniformRand()<prob) ? 1./prob : 0.);
 }
 
-G4double G4CMP::ChooseChargeWeight() {
-  G4double prob = G4CMPConfigManager::GetGenCharges();
+G4double G4CMP::ChooseChargeWeight(G4double prob) {
+  if (prob < 0.) prob = G4CMPConfigManager::GetGenCharges();
 
   // If prob=0., random throw always fails, never divides by zero
   return ((prob==1.) ? 1. : (G4UniformRand()<prob) ? 1./prob : 0.);
 }
+
+
+// Copy information from current step into data block]
 
 void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
   // Get information from the track
@@ -156,6 +176,9 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
   hit->SetParticleName(name);
 }
 
+
+// Generate cos(theta) law for diffuse reflection
+
 G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
   G4double phi = 2.0*pi*G4UniformRand();
   G4double theta = acos(2.0*G4UniformRand() - 1.0) / 2.0;
@@ -165,6 +188,9 @@ G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
   refl = refl.rotate(surfNorm, phi);
   return refl;
 }
+
+
+// Check that phonon is properly directed from the volume surface
 
 G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int polarization,

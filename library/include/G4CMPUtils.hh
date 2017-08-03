@@ -11,6 +11,7 @@
 // $Id$
 //
 // 20170602  Provide call-by-reference versions of track identity functions
+// 20170802  Provide scale factor argument to ChooseWeight functions
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -59,9 +60,10 @@ namespace G4CMP {
   G4int ChooseValley(const G4LatticePhysical* lattice);
 
   // Throw biasing decision for particle production and return weight
-  G4double ChooseWeight(const G4ParticleDefinition* pd);
-  G4double ChoosePhononWeight();
-  G4double ChooseChargeWeight();
+  // NOTE:  biasScale < 0. means to use "primary generator" scaling
+  G4double ChooseWeight(const G4ParticleDefinition* pd, G4double biasScale=-1.);
+  G4double ChoosePhononWeight(G4double biasScale=-1.);
+  G4double ChooseChargeWeight(G4double biasScale=-1.);
 
   // Create a Hit from a G4Step. Less error prone to use this helper.
   void FillHit(const G4Step*, G4CMPElectrodeHit*);
