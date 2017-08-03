@@ -9,19 +9,41 @@
 // $Id$
 //
 // 20170601  New abstract base class for all G4CMP processes
+// 20170802  Add registration of external scattering rate (MFP) model
 
 #include "G4CMPVProcess.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4CMPVScatteringRate.hh"
+#include "G4ForceCondition.hh"
 
 
-// Constructor and initialization only
+// Constructor and destructor
 
 G4CMPVProcess::G4CMPVProcess(const G4String& processName,
 			     G4CMPProcessSubType stype)
-  : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils() {
+  : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils(),
+    rateModel(0) {
   verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   SetProcessSubType(stype);
 }
+
+G4CMPVProcess::~G4CMPVProcess() {
+  delete rateModel; rateModel=0;
+}
+
+
+// Register utility class for computing scattering rate for MFP
+// NOTE:  Takes ownership of model for deletion; deletes any previous version
+
+void G4CMPVProcess::UseRateModel(G4CMPVScatteringRate* model) {
+  if (!model) model->SetVerboseLevel(verboseLevel);
+
+  if (rateModel) delete rateModel;		// Avoid memory leaks!
+  rateModel = model;
+}
+
+
+// Configuration
 
 void G4CMPVProcess::StartTracking(G4Track* track) {
   G4VProcess::StartTracking(track);	// Apply base class actions
@@ -31,4 +53,14 @@ void G4CMPVProcess::StartTracking(G4Track* track) {
 void G4CMPVProcess::EndTracking() {
   G4VProcess::EndTracking();		// Apply base class actions
   ReleaseTrack();
+}
+
+
+// Compute MFP using track velocity and scattering rate
+
+G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
+					G4ForceCondition* condition) {
+  *condition = NotForced;
+
+  return rateModel ? GetVelocity(aTrack)/rateModel->Rate(aTrack) : DBL_MAX;
 }

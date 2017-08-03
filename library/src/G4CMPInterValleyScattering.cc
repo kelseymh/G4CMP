@@ -18,31 +18,24 @@
 // 20161004  Change valley selection function to avoid null choice
 // 20161114  Use G4CMPDriftTrackInfo
 // 20170602  Use G4CMPUtils for particle identity checks
+// 20170802  Remove MFP calculation; use scattering-rate model
 
 #include "G4CMPInterValleyScattering.hh"
-#include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftTrackInfo.hh"
-#include "G4CMPFieldManager.hh"
-#include "G4CMPGeometryUtils.hh"
+#include "G4CMPIVRateEdelweiss.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
-#include "G4Field.hh"
-#include "G4FieldManager.hh"
-#include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4LogicalVolume.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
-#include "G4SystemOfUnits.hh"
+#include "G4ThreeVector.hh"
 #include "G4VParticleChange.hh"
-#include "G4VPhysicalVolume.hh"
-#include "Randomize.hh"
-#include "math.h"
+#include <math.h>
 
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()
-  : G4CMPVDriftProcess("G4CMPInterValleyScattering", fInterValleyScattering) {;}
+  : G4CMPVDriftProcess("G4CMPInterValleyScattering", fInterValleyScattering) {
+  UseRateModel(new G4CMPIVRateEdelweiss);
+}
 
 G4CMPInterValleyScattering::~G4CMPInterValleyScattering() {;}
 
@@ -52,60 +45,6 @@ G4CMPInterValleyScattering::IsApplicable(const G4ParticleDefinition& aPD) {
   return G4CMP::IsElectron(&aPD);
 }
 
-
-G4double 
-G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& aTrack,
-					    G4double,
-					    G4ForceCondition* condition) {
-  *condition = NotForced;
-
-  // Get electric field associated with current volume, if any
-  G4FieldManager* fMan =
-    aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
-  
-  //If there is no field, there is no IV scattering... but then there
-  //is no e-h transport either...
-  if (!fMan || !fMan->DoesFieldExist()) return DBL_MAX;
-
-  G4double velocity = GetVelocity(aTrack);
-  
-  G4double posVec[4] = { 4*0. };
-  GetLocalPosition(aTrack, posVec);
-
-  const G4Field* field = fMan->GetDetectorField();
-  G4double fieldValue[6];
-  field->GetFieldValue(posVec,fieldValue);
-
-  G4ThreeVector fieldVector(fieldValue[3], fieldValue[4], fieldValue[5]);
-
-  if (verboseLevel > 1) {
-    G4cout << "IV local position (" << posVec[0] << "," << posVec[1] << ","
-	   << posVec[2] << ")\n field " << fieldVector/volt*cm << " V/cm"
-	   << "\n magnitude " << fieldVector.mag()/volt*cm << " V/cm toward "
-	   << fieldVector.cosTheta() << " z" << G4endl;
-  }
-
-  // Find E-field in HV space: in lattice frame, rotate into valley,
-  // then apply HV tansform.
-  // NOTE:  Separate steps to avoid matrix-matrix multiplications
-  theLattice->RotateToLattice(fieldVector);
-  fieldVector *= GetValley(aTrack);
-  fieldVector *= theLattice->GetSqrtInvTensor();
-  fieldVector /= volt/m;			// Strip units for MFP below
-
-  if (verboseLevel > 1) {
-    G4cout << " in HV space " << fieldVector*0.01 << " ("
-	   << fieldVector.mag()*0.01 << ") V/cm" << G4endl;
-  }
-
-  // Compute mean free path per Edelweiss LTD-14 paper
-  G4double E_0 = theLattice->GetIVField() / (volt/m);
-  G4double mfp = velocity / ( theLattice->GetIVRate() *
-    pow((E_0*E_0 + fieldVector.mag2()), theLattice->GetIVExponent()/2.0) );
-
-  if (verboseLevel > 1) G4cout << "IV MFP = " << mfp/m << G4endl;
-  return mfp;
-}
 
 G4VParticleChange* 
 G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
