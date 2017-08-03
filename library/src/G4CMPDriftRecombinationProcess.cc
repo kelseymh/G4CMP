@@ -4,25 +4,40 @@
 \***********************************************************************/
 
 // 20170620  M. Kelsey -- Follow interface changes in G4CMPSecondaryUtils
+// 20170802  M. Kelsey -- Replace phonon production with G4CMPEnergyPartition
 
 #include "G4CMPDriftRecombinationProcess.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPEnergyPartition.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4LatticePhysical.hh"
 #include "G4RandomDirection.hh"
+#include "G4Track.hh"
+#include <vector>
 
 
-// Constructor
+// Constructor and destructor
 
 G4CMPDriftRecombinationProcess::
 G4CMPDriftRecombinationProcess(const G4String &name, G4CMPProcessSubType type)
-  : G4CMPVDriftProcess(name, type) {;}
+  : G4CMPVDriftProcess(name, type), partitioner(new G4CMPEnergyPartition) {;}
+
+G4CMPDriftRecombinationProcess::~G4CMPDriftRecombinationProcess() {
+  delete partitioner;
+}
 
 
 // Process actions
+
+G4double 
+G4CMPDriftRecombinationProcess::GetMeanFreePath(const G4Track&, G4double,
+						G4ForceCondition* cond) {
+  *cond = Forced;
+  return DBL_MAX;
+}
 
 G4VParticleChange* 
 G4CMPDriftRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
@@ -41,35 +56,20 @@ G4CMPDriftRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
            << G4endl;
   }
 
+  partitioner->UseVolume(aTrack.GetVolume());
+
   // FIXME: Each charge carrier is independent, so it only gives back 0.5 times
   // the band gap. Really electrons and holes should recombine, killing both
   // tracks and giving back the band gap. Maybe there is a better way?
-
-  // FIXME: What does the recombo phonon distribution look like?
-  // For now we'll just divvy up the gap energy into n Debye energy phonons.
   G4double ePot = 0.5 * theLattice->GetBandGapEnergy();
-  G4double eDeb = theLattice->GetDebyeEnergy();
-  size_t n = std::ceil(ePot / eDeb);
-  aParticleChange.SetNumberOfSecondaries(n);
-  while (ePot > 0.) {
-    G4double E = ePot > eDeb ? eDeb : ePot;
-    ePot -= eDeb;
-    G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetTouchable(),
-                                          G4PhononPolarization::UNKNOWN,
-                                          G4RandomDirection(), E,
-                                          aTrack.GetGlobalTime(),
-                                          aTrack.GetPosition());
-    aParticleChange.AddSecondary(phonon);
+
+  partitioner->DoPartition(0., ePot);
+  partitioner->GetSecondaries(&aParticleChange);
+
+  if (aParticleChange.GetNumberOfSecondaries() == 0) {	// Record energy release
+    aParticleChange.ProposeNonIonizingEnergyDeposit(ePot);
   }
 
   aParticleChange.ProposeTrackStatus(fStopAndKill);
   return &aParticleChange;
 }
-
-G4double 
-G4CMPDriftRecombinationProcess::GetMeanFreePath(const G4Track&, G4double,
-						G4ForceCondition* cond) {
-  *cond = Forced;
-  return DBL_MAX;
-}
-

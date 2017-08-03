@@ -14,8 +14,10 @@
 // 20160830  Replace direct use of G4CMP_MAKE_PHONONS with ChooseWeight
 // 20161114  Use new DriftTrackInfo
 // 20170602  Use G4CMPUtils for track identity functions
+// 20170802  Use G4CMP_LUKE_SAMPLE biasing with ChooseWeight()
 
 #include "G4CMPLukeScattering.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
@@ -192,7 +194,9 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Create real phonon to be propagated, with random polarization
   // If phonon is not created, register the energy as deposited
-  G4double weight = G4CMP::ChoosePhononWeight();
+  G4double weight =
+    G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
+
   if (weight > 0.) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 

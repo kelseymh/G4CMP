@@ -14,7 +14,9 @@
 // 20140331  Add required process subtype code
 // 20160624  Use GetTrackInfo() accessor
 // 20161114  Use new PhononTrackInfo
-// 20170620  FOllow interface changes in G4CMPSecondaryUtils
+// 20170620  Follow interface changes in G4CMPSecondaryUtils
+// 20170802  Use G4CMP_DOWN_SAMPLE biasing with ChooseWeight(), move outside
+//		of sub-functions.
 
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPSecondaryUtils.hh"
@@ -42,7 +44,7 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   output.open("phonon_downsampling_stats", std::ios_base::app);
   if (output.good()) {
     output << "First Daughter Theta,Second Daughter Theta,First Daughter Energy [eV],Second Daughter Energy [eV],"
-              "First Daughter Weight,Second Daughter Weight,Decay Branch,Parent Weight,"
+              "Decay Branch,First Daughter Weight,Second Daughter Weight,Parent Weight,"
               "Number of Outgoing Tracks,Parent Energy [eV]\n";
   } else {
     G4cerr << "Could not open phonon debugging output file!" << G4endl;}
@@ -99,9 +101,12 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
          << aTrack.GetKineticEnergy()/eV << G4endl;
 #endif
 
-  aParticleChange.ProposeEnergy(0.);
-  aParticleChange.ProposeTrackStatus(fStopAndKill);    
-       
+  // Only kill the track if downconversion actually happened
+  if (aParticleChange.GetNumberOfSecondaries() > 0) {
+    aParticleChange.ProposeEnergy(0.);
+    aParticleChange.ProposeTrackStatus(fStopAndKill);    
+  }
+
   return &aParticleChange;
 }
 
@@ -203,52 +208,49 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   G4double Esec1 = x*E;
   G4double Esec2 = E-Esec1;
 
-  // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization1 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
-					   theLattice->GetFTDOS());
+  // Make FT or ST phonons (0. means no longitudinal)
+  G4int mode1 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
+						theLattice->GetFTDOS());
 
   // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
-					   theLattice->GetFTDOS());
+  G4int mode2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
+						theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors
-  // Always produce one of the secondaries. The other will be produced
-  // based on track biasing values.
-  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization1,
-                                       dir1, Esec1, aTrack.GetGlobalTime(),
+  // Always produce the secondaries.
+  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode1,
+				      dir1, Esec1, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
-  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization2,
+  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode2,
                                       dir2, Esec2, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
 
   // Pick which secondary gets the weight randomly
-  if (G4UniformRand() < 0.5) {
-    std::swap(sec1, sec2);
-  }
-
 #ifdef G4CMP_DEBUG
-  output << theta1 << ',' << theta2 << ',';
+  output << theta1 << ',' << theta2 << ','
+	 << sec1->GetKineticEnergy()/eV << ','
+	 << sec2->GetKineticEnergy()/eV << ',';
 #endif
 
-#ifdef G4CMP_DEBUG
-  output << sec1->GetKineticEnergy()/eV << ',' << sec2->GetKineticEnergy()/eV << ',';
-#endif
-
-  G4double bias = G4CMPConfigManager::GetGenPhonons();
-  if (G4CMP::ChoosePhononWeight() > 0.) { // Produce both daughters
+  G4double bias = G4CMPConfigManager::GetDownconversionSampling();
+  G4double weight = G4CMP::ChoosePhononWeight(bias);
+  if (weight > 0.) {				// Produce both daughters
     aParticleChange.SetSecondaryWeightByProcess(true);
-    sec1->SetWeight(aTrack.GetWeight()/bias); // Default weight
-    sec2->SetWeight(aTrack.GetWeight()/bias);
+    sec1->SetWeight(aTrack.GetWeight()*weight); // Default weight
+    sec2->SetWeight(aTrack.GetWeight()*weight);
 #ifdef G4CMP_DEBUG
-    output << sec1->GetWeight() << ',' << sec2->GetWeight() << ',' << "TT" << ',';
+    output << "TT" << ',' << sec1->GetWeight() << ','
+	   << sec2->GetWeight() << ',';
 #endif
 
     aParticleChange.SetNumberOfSecondaries(2);
     aParticleChange.AddSecondary(sec2);
     aParticleChange.AddSecondary(sec1);
-  } else { // Produce no daughters
+  } else {			// Produce no daughters
+    delete sec1;		// It would be better not to create/delete
+    delete sec2;
 #ifdef G4CMP_DEBUG
-    output << 0 << ',' << 0 << ',' << "TT" << ',';
+    output << "TT" << ',' << 0 << ',' << 0 << ',';
 #endif
   }
 }
@@ -304,19 +306,19 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   G4double Esec2 = E-Esec1;
 
   // First secondary is longitudnal
-  int polarization1 = G4PhononPolarization::Long;
+  int mode1 = G4PhononPolarization::Long;
 
   // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
-					   theLattice->GetFTDOS());
+  G4int mode2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
+						theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors
   // Always produce the L mode phonon. Produce T mode phonon based on
   // biasing.
-  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization1,
+  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode1,
 				      dir1, Esec1, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
-  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization2,
+  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode2,
                                       dir2, Esec2, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
 
@@ -325,21 +327,25 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
 	 << ',' << sec2->GetKineticEnergy()/eV << ',';
 #endif
 
-  G4double bias = G4CMPConfigManager::GetGenPhonons();
-  if(G4CMP::ChoosePhononWeight() > 0.) { // Produce both daughters
+  G4double bias = G4CMPConfigManager::GetDownconversionSampling();
+  G4double weight = G4CMP::ChoosePhononWeight(bias);
+  if (weight > 0.) {				// Produce both daughters
     aParticleChange.SetSecondaryWeightByProcess(true);
     sec1->SetWeight(aTrack.GetWeight()/bias);
     sec2->SetWeight(aTrack.GetWeight()/bias);
 #ifdef G4CMP_DEBUG
-    output << sec1->GetWeight() << ',' << sec2->GetWeight() << ',' << "LT" << ',';
+    output << "LT" << ',' << sec1->GetWeight() << ','
+	   << sec2->GetWeight() << ',';
 #endif
 
     aParticleChange.SetNumberOfSecondaries(2);
     aParticleChange.AddSecondary(sec2);
     aParticleChange.AddSecondary(sec1);
-  } else { // Create no daughters
+  } else {			// Produce no daughters
+    delete sec1;		// It would be better not to create/delete
+    delete sec2;
 #ifdef G4CMP_DEBUG
-    output << 0 << ',' << 0 << ',' << "LT" << ',';
+    output << "LT" << ',' << 0 << ',' << 0 << ',';
 #endif
   }
 }

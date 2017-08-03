@@ -59,8 +59,10 @@ developers should check the source code in
 | G4CMP\_EPOT\_FILE [F]     | /g4cmp/EPotFile <F> V=0:      | Read mesh field file "F"                |
 | G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEPot <M> V=0:     | Scale the potentials in EPotFile by factor m|
 | G4CMP\_MIN\_STEP [S]      | /g4cmp/minimumStep <S> S>0:   | Force minimum step S\*L0                |
-| G4CMP\_MAKE\_PHONONS [R]  | /g4cmp/producePhonons <R>     | Generate phonons every R hits           |
-| G4CMP\_MAKE\_CHARGES [R]  | /g4cmp/produceCharges <R>     | Generate charge pairs every R hits      |
+| G4CMP\_MAKE\_PHONONS [R]  | /g4cmp/producePhonons <R>     | Fraction of phonons from energy deposit   |
+| G4CMP\_MAKE\_CHARGES [R]  | /g4cmp/produceCharges <R>     | Fraction of charge pairs from energy deposit |
+| G4CMP\_LUKE\_SAMPLE [R]   | /g4cmp/sampleLuke <R>         | Fraction of generated Luke phonons |
+| G4CMP\_DOWN\_SAMPLE [R]   | /g4cmp/downconvertPhonons <R> | Fraction of natural phonon downconversions |
 | G4CMP\_EMIN\_PHONONS [E]  | /g4cmp/minEPhonons <E> eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges <E> eV     | Minimum energy to track charges         |
 | G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t|f]      | Use eigensolver for K-Vg mapping        |
@@ -76,22 +78,9 @@ G4VSolid coordinate system.  A different orientation can be specified by
 setting the Miller indices (hkl) with `$G4CMP\_MILLER\_H`, `\_K`, and
 `\_L`.
 
-The environment variable `$G4CMP\_MAKE\_PHONONS` controls the rate (R) as a
-fraction of total interactions, at which secondary phonons are produced (by
-Luke scattering, downconversion, or energy partitioning).  Secondaries will
-be produced with a track weight set to 1/R:
-
-	unsetenv G4CMP_MAKE_PHONONS     # No secondary phonons generated
-	setenv G4CMP_MAKE_PHONONS 1     # Generate phonon at every occurrence
-	setenv G4CMP_MAKE_PHONONS 0.001 # Generate phonon 1:1000 occurrences
-
-When secondary phonons are not produced, the equivalent energy is recorded as
-non-ionizing energy loss (NIEL) on the track.  Generating seconary phonons
-will significantly slow down the simulation.
-
 The environment variable `$G4CMP\_MAKE\_CHARGES` controls the rate (R) as a
 fraction of total interactions, at which electron-hole pairs are produced
-(by energy partitioning or by high-energy phonons).  Secondaries will be
+by energy partitioning.  Secondaries will be
 produced with a track weight set to 1/R:
 
 	unsetenv G4CMP_MAKE_CHARGES     # No new charge pairs generated
@@ -101,6 +90,25 @@ produced with a track weight set to 1/R:
 When secondary phonons are not produced, the equivalent energy is recorded as
 non-ionizing energy loss (NIEL) on the track.  Generating seconary phonons
 will significantly slow down the simulation.
+
+The environment variable `$G4CMP\_MAKE\_PHONONS` controls the rate (R) as a
+fraction of total interactions, at which "primary" phonons are produced (by
+energy partitioning or recombination).  Secondaries will be produced with a
+track weight set to 1/R:
+
+	unsetenv G4CMP_MAKE_PHONONS     # No secondary phonons generated
+	setenv G4CMP_MAKE_PHONONS 1     # Generate phonon at every occurrence
+	setenv G4CMP_MAKE_PHONONS 0.001 # Generate phonon 1:1000 occurrences
+
+When primary phonons are not produced, the equivalent energy is recorded as
+non-ionizing energy loss (NIEL) on the track.  
+
+Secondary phonons may be produced either by downconversion of higher energy
+phonons, or by emission of Luke-Neganov phonons from charge carriers.
+Generating seconary phonons can significantly slow down the simulation, so
+each of these processes has analogous environment variables,
+`$G4CMP\_LUKE\_SAMPLE` and `$G4CMP\_DOWN\_SAMPLE`, respectively, defined
+with rates (R) as above.
 
 For phonon propagation, a set of lookup tables to convert wavevector (phase
 velocity) direction to group velocity are provided in the lattice

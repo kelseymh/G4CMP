@@ -23,6 +23,7 @@
 // 20160830  Add parameter to scale production of e/h pairs, like phonons
 // 20160901  Add parameters to set minimum energy for phonons, charges
 // 20170525  Block 'rule of five' copy/move semantics, as singleton
+// 20170802  Add separate scaling factors for Luke and downconversion
 
 #include "globals.hh"
 #include "G4RunManager.hh"
@@ -51,6 +52,8 @@ public:
   static G4double GetMinChargeEnergy()   { return Instance()->EminCharges; }
   static G4double GetGenPhonons()        { return Instance()->genPhonons; }
   static G4double GetGenCharges()        { return Instance()->genCharges; }
+  static G4double GetLukeSampling()      { return Instance()->lukeSample; }
+  static G4double GetDownconversionSampling() { return Instance()->downSample; }
   static G4double GetEPotScale()         { return Instance()->epotScale; }
   static const G4String& GetEPotFile()   { return Instance()->EPot_file; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
@@ -66,12 +69,13 @@ public:
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
   static void SetMaxChargeBounces(G4int value) { Instance()->ehBounces = value; }
   static void SetMaxPhononBounces(G4int value) { Instance()->pBounces = value; }
-  static void SetMinStepScale(G4double value)
-    { Instance()->stepScale = value; }
+  static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
   static void SetMinPhononEnergy(G4double value) { Instance()->EminPhonons = value; }
   static void SetMinChargeEnergy(G4double value) { Instance()->EminCharges = value; }
   static void SetGenPhonons(G4double value) { Instance()->genPhonons = value; }
   static void SetGenCharges(G4double value) { Instance()->genCharges = value; }
+  static void SetLukeSampling(G4double value) { Instance()->lukeSample = value; }
+  static void SetDownconversionSampling(G4double value) { Instance()->downSample = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
 
@@ -108,8 +112,10 @@ private:
 private:
   G4double voltage;	// Uniform field voltage ($G4CMP_VOLTAGE)
   G4double stepScale;	// Fraction of l0 for steps ($G4CMP_MIN_STEP)
-  G4double genPhonons;	// Rate to create phonons ($G4CMP_MAKE_PHONONS)
-  G4double genCharges;	// Rate to create e/h pairs ($G4CMP_MAKE_CHARGES)
+  G4double genPhonons;	// Rate to create primary phonons ($G4CMP_MAKE_PHONONS)
+  G4double genCharges;	// Rate to create primary e/h pairs ($G4CMP_MAKE_CHARGES)
+  G4double lukeSample;  // Rate to create Luke phonons ($G4CMP_LUKE_SAMPLE)
+  G4double downSample;  // Rate to apply downconversion ($G4CMP_DOWN_SAMPLE)
   G4double EminPhonons;	// Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	// Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
   G4double epotScale;	// Scale factor for EPot ($G4CMP_EPOT_SCALE)

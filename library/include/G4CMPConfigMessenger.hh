@@ -22,6 +22,7 @@
 // 20160624  Add command to select KV lookup tables vs. calculator
 // 20160830  Add command to scale production of e/h pairs, like phonons
 // 20160901  Add commands to set minimum energy for phonons, charges
+// 20170802  Add commands for separate Luke, downconversion scaing
 
 #include "G4UImessenger.hh"
 
@@ -64,6 +65,8 @@ private:
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;
+  G4UIcmdWithADouble* lukePhononCmd;
+  G4UIcmdWithADouble* downconvCmd;
   G4UIcmdWithADouble* escaleCmd;
   G4UIcmdWithAString* fileCmd;
   G4UIcmdWithAString* dirCmd;
