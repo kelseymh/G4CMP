@@ -12,7 +12,7 @@
 //
 // 20170524  Add constructor and accessor for position argument
 // 20170525  Add "rule of five" copy/move operators
-// 20170802  Add constructor and accessor for volume argument
+// 20170802  Add constructor and accessor for volume argument, particle change
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -27,6 +27,7 @@ class G4Material;
 class G4ParticleDefinition;
 class G4PrimaryParticle;
 class G4Track;
+class G4VParticleChange;
 class G4VPhysicalVolume;
 
 
@@ -73,8 +74,12 @@ public:
 
   // Return either primary or secondary particles from partitioning
   void GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const;
-  void GetSecondaries(std::vector<G4Track*>& secondaries) const;
-  
+
+  void GetSecondaries(std::vector<G4Track*>& secondaries,
+		      G4double trkWeight=1.) const;
+
+  void GetSecondaries(G4VParticleChange* aParticleChange) const;
+
   // Fraction of total energy deposit in material which goes to e/h pairs
   G4double LindhardScalingFactor(G4double energy) const;
 

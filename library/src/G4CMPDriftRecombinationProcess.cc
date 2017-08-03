@@ -63,22 +63,10 @@ G4CMPDriftRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
   // tracks and giving back the band gap. Maybe there is a better way?
   G4double ePot = 0.5 * theLattice->GetBandGapEnergy();
 
-  std::vector<G4Track*> phonons;
   partitioner->DoPartition(0., ePot);
-  partitioner->GetSecondaries(phonons);
+  partitioner->GetSecondaries(&aParticleChange);
 
-  if (!phonons.empty()) {		// Transfer phonons as new tracks
-    aParticleChange.SetNumberOfSecondaries(phonons.size());
-    aParticleChange.SetSecondaryWeightByProcess(true);
-
-    G4Track* sec = 0;
-    while (!phonons.empty()) {		// Pull phonons off end of list
-      sec = phonons.back();
-      sec->SetWeight(aTrack.GetWeight()*sec->GetWeight());  // Apply track weight
-      aParticleChange.AddSecondary(sec);
-      phonons.pop_back();
-    }
-  } else {				// Record energy release
+  if (aParticleChange.GetNumberOfSecondaries() == 0) {	// Record energy release
     aParticleChange.ProposeNonIonizingEnergyDeposit(ePot);
   }
 

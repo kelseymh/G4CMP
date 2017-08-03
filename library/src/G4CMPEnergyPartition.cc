@@ -15,7 +15,7 @@
 // 20170524  Add constructor and accessor for position argument
 // 20170728  Forgot to assign material to data member in ctor.
 // 20170731  Move point-to-volume conversion to G4CMPGeometryUtils.
-// 20170802  Add constructor and accessor for volume argument
+// 20170802  Add constructor and accessor for volume argument, particle change
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPConfigManager.hh"
@@ -34,6 +34,7 @@
 #include "G4RandomDirection.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4TransportationManager.hh"
+#include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
 #include <cmath>
@@ -279,8 +280,11 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
 }
 
 void G4CMPEnergyPartition::
-GetSecondaries(std::vector<G4Track*>& secondaries) const {
-  if (verboseLevel) G4cout << "G4CMPEnergyPartition::GetSecondaries" << G4endl;
+GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
+  if (verboseLevel) {
+    G4cout << "G4CMPEnergyPartition::GetSecondaries, parent weight "
+	   << trkWeight << G4endl;
+  }
 
   secondaries.clear();
   secondaries.reserve(particles.size());
@@ -297,7 +301,7 @@ GetSecondaries(std::vector<G4Track*>& secondaries) const {
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
 
-    weight = G4CMP::ChooseWeight(p.pd);
+    weight = trkWeight * G4CMP::ChooseWeight(p.pd);
     if (weight == 0.) continue;
 
     theSec = G4CMP::CreateSecondary(*GetCurrentTrack(), p.pd, p.dir, p.ekin);
@@ -315,3 +319,23 @@ GetSecondaries(std::vector<G4Track*>& secondaries) const {
 
   secondaries.shrink_to_fit();		// Reduce footprint if biasing done
 }
+
+void G4CMPEnergyPartition::
+GetSecondaries(G4VParticleChange* aParticleChange) const {
+  if (verboseLevel) {
+    G4cout << "G4CMPEnergyPartition::GetSecondaries into ParticleChange"
+	   << G4endl;
+  }
+
+  std::vector<G4Track*> secondaries;	// Can we make this a mutable buffer?
+  GetSecondaries(secondaries, aParticleChange->GetWeight());
+
+  aParticleChange->SetNumberOfSecondaries(secondaries.size());
+  aParticleChange->SetSecondaryWeightByProcess(true);
+  
+  while (!secondaries.empty()) {	// Move entries from list to tracking
+    aParticleChange->AddSecondary(secondaries.back());
+    secondaries.pop_back();
+  }
+}
+
