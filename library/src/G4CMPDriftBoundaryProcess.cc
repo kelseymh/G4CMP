@@ -130,6 +130,7 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
     G4cout << GetProcessName() << "::DoAbsorption: Track absorbed" << G4endl;
   }
 
+  *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
   partitioner->UseVolume(aTrack.GetVolume());
 
   G4double eKin = GetKineticEnergy(aTrack);

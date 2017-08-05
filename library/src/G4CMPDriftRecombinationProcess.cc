@@ -56,6 +56,7 @@ G4CMPDriftRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
            << G4endl;
   }
 
+  *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
   partitioner->UseVolume(aTrack.GetVolume());
 
   // FIXME: Each charge carrier is independent, so it only gives back 0.5 times
