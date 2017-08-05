@@ -60,7 +60,15 @@ void G4CMPVProcess::EndTracking() {
 
 G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 					G4ForceCondition* condition) {
-  *condition = NotForced;
+  *condition = (rateModel && rateModel->IsForced()) ? Forced : NotForced;
 
-  return rateModel ? GetVelocity(aTrack)/rateModel->Rate(aTrack) : DBL_MAX;
+  G4double rate = rateModel ? rateModel->Rate(aTrack) : 0.;
+  G4double mfp  = rate>0. ? GetVelocity(aTrack)/rate : DBL_MAX;
+
+  if (verboseLevel>1) {
+    G4cout << GetName() << " rate = " << rate/hertz << " Hz" << G4endl;
+    if (rate>0.) G4cout << GetName() << " MFP =  " << mfp/m << " m" << G4endl;
+  }
+
+  return mfp;
 }
