@@ -174,31 +174,29 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
 
 G4ThreeVector G4CMP::AdjustSecondaryPosition(const G4VTouchable* touch,
 					     G4ThreeVector pos) {
+  // Clearance is the minimum distance where a position is guaranteed Inside
+  const G4double clearance = 1e-7*mm;
+
   // If the step is near a boundary, create the secondary in the initial volume
   G4Navigator* nav = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+  G4VPhysicalVolume* pv = touch->GetVolume();
+  G4VSolid* solid = pv->GetLogicalVolume()->GetSolid();
 
-  // Safety is the distance to a boundary
-  G4double safety = nav->ComputeSafety(pos);
-
-  // Tolerance is the error in deciding which volume a track is in
-  G4double kCarTolerance = G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
+  // Check if track's assigned volume is correct or incorrect
+  G4ThreadLocalStatic auto latMan = G4LatticeManager::GetLatticeManager();
+  G4LatticePhysical* lat = latMan->GetLattice(pv);
 
   // If the distance to an edge is within error, we might accidentally get
   // placed in the next volume. Instead, let's scoot a bit away from the edge.
-  if (safety <= kCarTolerance) {
-    G4VPhysicalVolume* pv = touch->GetVolume();
-    G4VSolid* solid = pv->GetLogicalVolume()->GetSolid();
+  G4double safety = 0.;
+  while ((safety=nav->ComputeSafety(pos))>0. && safety < clearance) {
     G4ThreeVector norm = solid->SurfaceNormal(GetLocalPosition(touch, pos));
 
-    // Check if track's assigned volume is correct or incorrect
-    G4ThreadLocalStatic auto latMan = G4LatticeManager::GetLatticeManager();
-    G4LatticePhysical* lat = latMan->GetLattice(pv);
-
-    // If volume doesn't have lattice, assume opposite side of boundary
+    // If volume doesn't have lattice, assume wrong side of boundary
     if (!lat) norm = -norm;
 
     RotateToGlobalDirection(touch, norm);
-    pos -= 1.001*kCarTolerance * norm;
+    pos -= clearance * norm;
   }
 
   return pos;
