@@ -460,3 +460,15 @@ G4CMPProcessUtils::GetValley(const G4Track& track) const {
   G4int iv = GetValleyIndex(track);
   return (iv>=0 ? theLattice->GetValley(iv) : G4RotationMatrix::IDENTITY);
 }
+
+
+// Compute characteristic time step for charge carrier
+// Parameters are "Mach number" (ratio with sound speed) and scattering length
+
+G4double 
+G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
+  const G4double velLong = theLattice->GetSoundSpeed();
+
+  const G4double tstep = 3.*l0/velLong;
+  return (mach<1.) ? tstep : tstep*mach/((mach-1)*(mach-1)*(mach-1));
+}

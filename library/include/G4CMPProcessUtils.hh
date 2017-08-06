@@ -32,6 +32,7 @@
 // 20170602  Local track identification functions apply to current track only
 // 20170603  Drop deprecated functions; don't deprecate transforms.
 // 20170620  Drop local caching of transforms; call through to G4CMPUtils.
+// 20170806  Move ChargeCarrierTimeStep() here from DriftProcess.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -220,6 +221,10 @@ public:
   void MakeGlobalPhononK(G4ThreeVector& kphonon) const;
 
   void MakeGlobalRecoil(G4ThreeVector& kphonon) const;
+
+  // Compute time between scatters/emissions for moving charge carrier
+  // Parameters are "Mach number" (ratio to sound speed) and scattering length
+  G4double ChargeCarrierTimeStep(G4double mach, G4double l0) const;
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes

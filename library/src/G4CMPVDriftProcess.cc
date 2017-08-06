@@ -46,7 +46,7 @@
 // NOTE:  Initial values are arbitrary and non-physical
 G4CMPVDriftProcess::G4CMPVDriftProcess(const G4String& processName,
                                        G4CMPProcessSubType stype)
-  : G4CMPVProcess(processName, stype), velLong(330*m/s) {
+  : G4CMPVProcess(processName, stype) {
   if (verboseLevel) G4cout << GetProcessName() << " is created " << G4endl;
 }
 
@@ -57,14 +57,6 @@ G4CMPVDriftProcess::~G4CMPVDriftProcess() {;}
 
 G4bool G4CMPVDriftProcess::IsApplicable(const G4ParticleDefinition& aPD) {
   return G4CMP::IsChargeCarrier(aPD);
-}
-
-
-// Get additional parameters from lattice for carriers
-
-void G4CMPVDriftProcess::LoadDataForTrack(const G4Track* track) {
-  G4CMPProcessUtils::LoadDataForTrack(track);
-  velLong = theLattice->GetSoundSpeed();
 }
 
 
@@ -104,17 +96,6 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
   }
 
   return trueLength;
-}
-
-
-// Compute characteristic time step for charge carrier
-// Parameters are "Mach number" (ratio with sound speed) and scattering length
-
-G4double 
-G4CMPVDriftProcess::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
-  if (mach < 1.) return 3*l0/velLong;	// Sanity check if below sound speed
-
-  return ( 3*l0 * mach / (velLong * (mach-1)*(mach-1)*(mach-1)) );
 }
 
 
