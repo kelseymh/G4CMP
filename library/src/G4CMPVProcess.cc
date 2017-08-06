@@ -15,6 +15,7 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPVScatteringRate.hh"
 #include "G4ForceCondition.hh"
+#include "G4SystemOfUnits.hh"
 
 
 // Constructor and destructor
@@ -66,8 +67,9 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double mfp  = rate>0. ? GetVelocity(aTrack)/rate : DBL_MAX;
 
   if (verboseLevel>1) {
-    G4cout << GetName() << " rate = " << rate/hertz << " Hz" << G4endl;
-    if (rate>0.) G4cout << GetName() << " MFP =  " << mfp/m << " m" << G4endl;
+    G4cout << GetProcessName() << " rate = " << rate/hertz << " Hz" << G4endl;
+    if (rate>0.)
+      G4cout << GetProcessName() << "  MFP = " << mfp/m << " m" << G4endl;
   }
 
   return mfp;

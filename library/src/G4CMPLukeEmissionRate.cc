@@ -9,15 +9,12 @@
 // $Id$
 
 #include "G4CMPLukeEmissionRate.hh"
-#include "G4Field.hh"
-#include "G4FieldManager.hh"
+#include "G4CMPUtils.hh"
 #include "G4LatticePhysical.hh"
-#include "G4LogicalVolume.hh"
-#include "G4RotationMatrix.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
-#include "G4VPhysicalVolume.hh"
 #include <math.h>
 
 

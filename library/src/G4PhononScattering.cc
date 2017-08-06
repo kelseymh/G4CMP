@@ -12,16 +12,14 @@
 // 20140312  Follow name change CreateSecondary -> CreatePhonon
 // 20140331  Add required process subtype code
 // 20170620  Follow interface changes in G4CMPSecondaryUtils
+// 20170805  Move GetMeanFreePath() to scattering-rate model
 
+#include "G4PhononScattering.hh"
+#include "G4CMPPhononScatteringRate.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
-#include "G4PhononScattering.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononPolarization.hh"
-#include "G4PhononLong.hh"
-#include "G4PhononTrackMap.hh"
-#include "G4PhononTransFast.hh"
-#include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
@@ -31,29 +29,11 @@
 
 
 G4PhononScattering::G4PhononScattering(const G4String& aName)
-  : G4VPhononProcess(aName, fPhononScattering) {;}
+  : G4VPhononProcess(aName, fPhononScattering) {
+  UseRateModel(new G4CMPPhononScatteringRate);
+}
 
 G4PhononScattering::~G4PhononScattering() {;}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-G4double G4PhononScattering::GetMeanFreePath(const G4Track& aTrack,
-					     G4double /*previousStepSize*/,
-					     G4ForceCondition* condition) {
-  //Dynamical constants retrieved from PhysicalLattice
-  G4double B = theLattice->GetScatteringConstant();
-  G4double Eoverh = GetKineticEnergy(aTrack)/h_Planck;
-
-  //Calculate mean free path
-  G4double mfp = aTrack.GetVelocity()/(Eoverh*Eoverh*Eoverh*Eoverh*B);
-
-  if (verboseLevel > 1)
-    G4cout << "G4PhononScattering::GetMeanFreePath = " << mfp << G4endl;
-
-  *condition = NotForced;
- 
-  return mfp;
-}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
