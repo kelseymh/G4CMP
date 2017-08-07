@@ -20,6 +20,7 @@
 // 20160624  Use GetTrackInfo() accessor
 // 20161114  Use new G4CMPDriftTrackInfo
 // 20170602  Use G4CMPUtils for track identity functions
+// 20170806  Swap GPIL and MFP functins to work with G4CMPVProcess base
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -46,10 +47,10 @@ G4CMPTimeStepper::G4CMPTimeStepper()
 G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
 
-G4double G4CMPTimeStepper::
-PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
-				     G4double /*prevStepSize*/,
-				     G4ForceCondition* /*cond*/) {
+G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
+					   G4ForceCondition* cond) {
+  *cond = NotForced;
+
   G4double dt = ComputeTimeSteps(aTrack);
   G4double v = GetVelocity(aTrack);
 
@@ -78,15 +79,13 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 // Compute dt_e, dt_h and valley rotations at current location
 
 G4double G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
-  const G4LatticePhysical* lat =
-      G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->Lattice();
   G4double timeStepParam = 0.; G4double l0 = 0.;
   if (G4CMP::IsElectron(aTrack)) {
     timeStepParam = 28.0;
-    l0 = lat->GetElectronScatter();
+    l0 = theLattice->GetElectronScatter();
   } else if (G4CMP::IsHole(&aTrack)) {
     timeStepParam = 14.72;
-    l0 = lat->GetHoleScatter();
+    l0 = theLattice->GetHoleScatter();
   } else {
     // TODO: Write an exception
   }
@@ -94,7 +93,7 @@ G4double G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
   G4FieldManager* fMan =
     aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
   if (!fMan || !fMan->DoesFieldExist()) {	// No field, no special action
-    return 3.*l0/velLong;
+    return ChargeCarrierTimeStep(0., l0);
   }
 
   G4double position[4] = { 4*0. };

@@ -17,8 +17,10 @@
 // 20170620  Follow interface changes in G4CMPSecondaryUtils
 // 20170802  Use G4CMP_DOWN_SAMPLE biasing with ChooseWeight(), move outside
 //		of sub-functions.
+// 20170805  Replace GetMeanFreePath() with scattering-rate model
 
 #include "G4CMPPhononTrackInfo.hh"
+#include "G4CMPDownconversionRate.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -40,6 +42,8 @@
 G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   : G4VPhononProcess(aName, fPhononDownconversion),
     fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.) {
+  UseRateModel(new G4CMPDownconversionRate);
+
 #ifdef G4CMP_DEBUG
   output.open("phonon_downsampling_stats", std::ios_base::app);
   if (output.good()) {
@@ -58,26 +62,6 @@ G4PhononDownconversion::~G4PhononDownconversion() {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-G4double G4PhononDownconversion::GetMeanFreePath(const G4Track& aTrack,
-						 G4double /*previousStepSize*/,
-						 G4ForceCondition* condition) {
-  //Determines mean free path for longitudinal phonons to split
-  G4double A = theLattice->GetAnhDecConstant();
-  G4double Eoverh = GetKineticEnergy(aTrack)/h_Planck;
-  
-  //Calculate mean free path for anh. decay
-  G4double mfp = aTrack.GetVelocity()/(Eoverh*Eoverh*Eoverh*Eoverh*Eoverh*A);
-
-  if (verboseLevel > 1)
-    G4cout << "G4PhononDownconversion::GetMeanFreePath = " << mfp << G4endl;
-  
-  *condition = NotForced;
-  return mfp;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
 
 G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
 							 const G4Step&) {
