@@ -7,6 +7,7 @@
 //
 // 20140324  Drop hard-coded IV scattering parameters; get from lattice
 // 20140418  Drop valley transforms; get from lattice
+// 20170802  Remove MFP calculation; use scattering-rate model
 
 #ifndef G4CMPInterValleyScattering_h
 #define G4CMPInterValleyScattering_h 1
@@ -24,9 +25,6 @@ public:
 
   // Only electrons have physical valleys associated with them
   virtual bool IsApplicable(const G4ParticleDefinition&);
-
-protected:
-  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
 private:
   //hide assignment operator as private
