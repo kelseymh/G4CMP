@@ -20,6 +20,7 @@
 // 20160727  Add functions to handle processing units from config file,
 //		define additional units for solid state physics use
 // 20170525  Implement 'rule of five' with default copy/move semantics
+// 20170810  Add utility function to process list of values with unit.
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
@@ -55,16 +56,21 @@ protected:
   void CloseFile();
 
   G4bool ProcessToken();
-  G4bool ProcessValue(const G4String& name);	// Numerical parameters
+  G4bool ProcessValue(const G4String& name);	// Single numerical parameter
+  G4bool ProcessList(const G4String& unitcat);	// List of parameters with unit
+
   G4bool ProcessConstants();			// Four dynamical constants
   G4bool ProcessMassTensor();			// Electron mass tensor
   G4bool ProcessCrystalGroup(const G4String& name);	// Symmetry, spacing
   G4bool ProcessDebyeLevel();			// Frequency or temperature
   G4bool ProcessStiffness();			// Elasticity matrix element
   G4bool ProcessEulerAngles(const G4String& name);	// Drift directions
+  G4bool ProcessDeformation();		// Optical IV deformation potentials
+  G4bool ProcessThresholds();		// Optical IV scatter energy thresholds
   G4bool SkipComments();			// Everything after '#'
 
   // Read expected dimensions for value from file, return scale factor
+  // NOTE: String from file may have leading "/" for inverse units
   // Input argument "unitcat" may be comma-delimited list of categories
   G4double ProcessUnits(const G4String& unitcat);
   G4double ProcessUnits(const G4String& unit, const G4String& unitcat);
@@ -77,6 +83,7 @@ private:
 
   G4String fToken;		// Reusable buffers for reading file
   G4double fValue;		// ... floating point data value
+  std::vector<G4double> fList;	// ... list of floating point values
   G4RotationMatrix fMatrix;	// ... 3x3 matrix for mass, drift valleys
   G4ThreeVector f3Vec;		// ... three-vector for mass
   G4double fUnits;		// ... dimensional unit scale factor
