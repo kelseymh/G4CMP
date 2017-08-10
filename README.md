@@ -287,6 +287,14 @@ the crystal system.
 | hmass   | m_h       | effective mass of hole   | electron mass ratio |
 | emass   | m_xx m_yy m_zz | electron mass tensor | (same)             |
 | valley  | theta phi psi unit | Euler angles     | angle (deg/rad)    |
+| ** InterValley scattering with matrix elements ** |
+| epsilon | e/e0      | Relative permittivity     |                    |
+| neutDens | N        | Number density of neutron impurities | /volume |
+| alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
+| acDeform | val      | Acoustic deformation potential | energy (eV)   |
+| opDeform | val val ... | Optical deformation potentials | energy (eV) |
+| opEnergy | val val ... | Optical phonon thresholds | energy (eV)     |
+| ** InterValley scattering with Edelweiss model ** |
 | ivField | E0        | Edelweiss intervalley scattering  | V/m        |
 | ivRate  | freq      | Intervalley scattering rate       | Hz         |
 | ivPower | val       | Power law [sqrt(field^ivPower)]   | none       |
