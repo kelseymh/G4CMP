@@ -37,17 +37,13 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
   G4double hbar_sq  = hbar_Planck * hbar_Planck;
   G4double hbar_4th = hbar_sq * hbar_sq;
 
-  G4double mass_electron = electron_mass_c2/c_squared;  
-  G4double mxx = theLattice->GetMassTensor().xx();	// m(parallel)
-  G4double myy = theLattice->GetMassTensor().yy();	// m(perp)
-  G4double mzz = theLattice->GetMassTensor().zz();
-
-  G4double m_DOS = cbrt(mxx*myy*mzz);		// Average carrier mass
-  G4double m_DOS3half = sqrt(mxx*myy*mzz);	// m_DOS^3/2
+  G4double m_electron = electron_mass_c2/c_squared;  
+  G4double m_DOS = theLattice->GetElectronDOSMass();
+  G4double m_DOS3half = sqrt(m_DOS*m_DOS*m_DOS);
  
   //Acoustic Phonon Scattering 
-  G4double D_ac  = 11*eV;			// Deformation potential
-  G4double alpha = 0.3/eV;			// Non-parabolicity scale
+  G4double D_ac  = theLattice->GetAcousticDeform();
+  G4double alpha = theLattice->GetAlpha();	// Non-parabolicity scale
 
   // Useful constants for expressions below
   G4double D_ac_sq = D_ac*D_ac;
@@ -59,34 +55,35 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
 
   if (verboseLevel>2) G4cout << " Acoustic phonon rate " <<  arate << G4endl;
 
-  // Optical phonon Scattering equation
-  G4double D_op[]  = { 3e10*eV, 2e9*eV };	// Deformation potentials
-  G4double Emin_op[] = { 27.3e-3*eV, 10.3e-3*eV }; // Optical phonon thresholds
-  G4double orate[]  = { 0,0 };
+  // Optical Phonon Scattering
   G4double orateTotal = 0;
-  
-  for (int i = 0; i<2; i++) {
-    if (energy <= Emin_op[i]) continue;		// Apply threshold behaviour
 
-    G4double dE = energy - Emin_op[i];		// Energy above threshold
-    G4double D_op_sq = D_op[i]*D_op[i];
+  G4int N_op = theLattice->GetNOptical();
+  for (G4int i = 0; i<N_op; i++) {
+    G4double D_op = theLattice->GetOpticalDeform(i);
+    G4double Emin_op = theLattice->GetOpticalEnergy(i);
 
-    orate[i] = ( kT * m_DOS3half * D_op_sq *
-		 sqrt(dE*(1 + alpha*dE))*(1 + 2*alpha*dE)
-		 / (sqrt(2)*pi*hbar_sq*density*Emin_op[i]) );
+    if (energy <= Emin_op) continue;		// Apply threshold behaviour
+
+    G4double dE = energy - Emin_op;		// Energy above threshold
+    G4double D_op_sq = D_op*D_op;
+
+    G4double orate = ( kT * m_DOS3half * D_op_sq *
+		       sqrt(dE*(1 + alpha*dE))*(1 + 2*alpha*dE)
+		       / (sqrt(2)*pi*hbar_sq*density*Emin_op) );
 
     if (verboseLevel>2)
-      G4cout << " Optical phonon rate [" << i << "] " << orate[i] << G4endl;
+      G4cout << " Optical phonon rate [" << i << "] " << orate << G4endl;
 
-    orateTotal += orate[i];
+    orateTotal += orate;
   }
 
   if (verboseLevel>2) G4cout << " Optical Phonon rate " << orateTotal << G4endl;
  
   //Neutral Impurities
-  G4double n_I = 1e11/cm3; 			// Number density of inpurities
-  G4double epsilon_r = 16.2;			// Relative permittivity of Ge
-  G4double E_T = 0.75*eV * (m_DOS/mass_electron) / epsilon_r;
+  G4double n_I = theLattice->GetImpurities();		// Number density
+  G4double epsilon_r = theLattice->GetPermittivity();	// Relative
+  G4double E_T = 0.75*eV * (m_DOS/m_electron) / epsilon_r;
   
   G4double nrate = ( 4*sqrt(2)* n_I * hbar_sq * sqrt(energy)
 		     / (m_DOS3half * (energy+E_T)) );

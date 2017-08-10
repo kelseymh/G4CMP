@@ -135,7 +135,7 @@ public:
 
   G4double GetAlpha() const      { return fLattice->GetAlpha(); }
   G4double GetAcousticDeform() const { return fLattice->GetAcousticDeform(); }
-  G4double GetNOptical() const { return fLattice->GetNOptical(); }
+  G4int    GetNOptical() const { return fLattice->GetNOptical(); }
   G4double GetOpticalDeform(G4int i) const { return fLattice->GetOpticalDeform(i); }
   G4double GetOpticalEnergy(G4int i) const { return fLattice->GetOpticalEnergy(i); }
 

@@ -229,7 +229,7 @@ public:
 
   G4double GetAlpha() const	       { return fAlpha; }
   G4double GetAcousticDeform() const { return fAcDeform; }
-  G4double GetNOptical() const { return fOpDeform.size(); }
+  G4int    GetNOptical() const { return (G4int)fOpDeform.size(); }
   G4double GetOpticalDeform(G4int i) const {
     return (i>=0 && i<GetNOptical()) ? fOpDeform[i] : 0.;
   }
