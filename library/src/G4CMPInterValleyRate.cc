@@ -88,9 +88,9 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
   if (verboseLevel>2) G4cout << " Optical Phonon rate " << orateTotal << G4endl;
  
   //Neutral Impurities
+  G4double n_I = 1e11/cm3; 			// Number density of inpurities
   G4double epsilon_r = 16.2;			// Relative permittivity of Ge
   G4double E_T = (M_D/mass_electron) / epsilon_r;
-  G4double n_I = 1e11/cm3; // The number density of inpurities per cubic cm
   
   G4double nrate = (4*sqrt(2)* n_I * hbar_sq * sqrt(energy)) /
     ( M_D3half * (energy + E_T));
