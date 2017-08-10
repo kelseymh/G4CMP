@@ -16,7 +16,7 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPEnergyLimiter.hh"
-#include "G4CMPIVScatteringPhysical.hh"
+#include "G4CMPInterValleyScattering.hh"
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPTimeStepper.hh"
@@ -50,7 +50,7 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* phDown  = new G4PhononDownconversion;
   G4VProcess* tmStep  = new G4CMPTimeStepper;
   G4VProcess* driftB  = new G4CMPDriftBoundaryProcess;
-  G4VProcess* ivScat  = new G4CMPIVScatteringPhysical;
+  G4VProcess* ivScat  = new G4CMPInterValleyScattering;
   G4VProcess* luke    = new G4CMPLukeScattering(tmStep);
   G4VProcess* recomb  = new G4CMPDriftRecombinationProcess;
   G4VProcess* eLimit  = new G4CMPEnergyLimiter;
