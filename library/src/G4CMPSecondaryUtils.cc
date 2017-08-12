@@ -178,26 +178,35 @@ G4ThreeVector G4CMP::AdjustSecondaryPosition(const G4VTouchable* touch,
   const G4double clearance = 1e-7*mm;
 
   // If the step is near a boundary, create the secondary in the initial volume
-  G4Navigator* nav = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
   G4VPhysicalVolume* pv = touch->GetVolume();
-  G4VSolid* solid = pv->GetLogicalVolume()->GetSolid();
-
-  // Check if track's assigned volume is correct or incorrect
   G4ThreadLocalStatic auto latMan = G4LatticeManager::GetLatticeManager();
   G4LatticePhysical* lat = latMan->GetLattice(pv);
 
-  // If the distance to an edge is within error, we might accidentally get
-  // placed in the next volume. Instead, let's scoot a bit away from the edge.
-  G4double safety = 0.;
-  while ((safety=nav->ComputeSafety(pos))>0. && safety < clearance) {
-    G4ThreeVector norm = solid->SurfaceNormal(GetLocalPosition(touch, pos));
+  if (!lat) {		// No lattice in touchable's volume, try pos instead
+    pv = G4CMP::GetVolumeAtPoint(pos);
+    lat = latMan->GetLattice(pv);
 
-    // If volume doesn't have lattice, assume wrong side of boundary
-    if (!lat) norm = -norm;
-
-    RotateToGlobalDirection(touch, norm);
-    pos -= clearance * norm;
+    if (!lat) {
+      G4ExceptionDescription msg;
+      msg << "Position " << pos << " not associated with valid volume.";
+      G4Exception("G4CMP::CreateSecondary", "Secondary008",
+		  EventMustBeAborted, msg);
+      return pos;
+    }
   }
 
+  // Work in local coordinates, adjusting position to be clear of surface
+  RotateToLocalPosition(touch, pos);
+
+  G4VSolid* solid = pv->GetLogicalVolume()->GetSolid();
+  G4ThreeVector norm = solid->SurfaceNormal(pos);
+
+  while (solid->Inside(pos) != kInside ||
+	 solid->DistanceToOut(pos,norm) < clearance) {
+    pos -= norm*clearance;
+    norm = solid->SurfaceNormal(pos);	// Nearest surface may change
+  }
+
+  RotateToGlobalPosition(touch, pos);
   return pos;
 }
