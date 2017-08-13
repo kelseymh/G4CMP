@@ -22,6 +22,7 @@
 //           should only need to implement absorb/reflect/transmit functions.
 // 20160903  Add inheritance from G4CMPBoundaryUtils, remove redundant functions
 // 20160906  Follow constness of G4CMPBoundaryUtils
+// 20170731  Split electron, hole reflection into utility functions
 // 20170802  Add EnergyPartition to handle phonon production
 
 #ifndef G4CMPDriftBoundaryProcess_h
@@ -56,6 +57,12 @@ protected:
 
   virtual void DoReflection(const G4Track& aTrack,const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
+
+  virtual void DoReflectionElectron(const G4Track& aTrack,const G4Step& aStep,
+				    G4ParticleChange& aParticleChange);
+
+  virtual void DoReflectionHole(const G4Track& aTrack,const G4Step& aStep,
+				G4ParticleChange& aParticleChange);
 
 private:
   G4CMPEnergyPartition* partitioner;

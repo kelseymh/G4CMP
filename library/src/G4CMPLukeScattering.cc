@@ -71,15 +71,14 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack); 
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
-  // Do nothing other than re-calculate mfp when step limit reached or leaving
-  // volume
   if (verboseLevel > 1) {
     G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
            << postStepPoint->GetProcessDefinedStep()->GetProcessName()
            << G4endl;
   }
 
-  // Do nothing other than re-calculate mfp when step limit reached or leaving volume
+  // Do nothing other than re-calculate mfp when step limit reached or
+  // leaving volume
   if (postStepPoint->GetStepStatus()==fGeomBoundary ||
       postStepPoint->GetProcessDefinedStep()==stepLimiter) {
     return &aParticleChange;

@@ -144,10 +144,7 @@ void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
   if (!track) return;		// Avoid unnecessry work
 
   if (!currentVolume) {		// Primary tracks may not have volumes yet
-    G4TransportationManager* transMan =
-      G4TransportationManager::GetTransportationManager();
-    G4Navigator* nav = transMan->GetNavigatorForTracking();
-    currentVolume = nav->LocateGlobalPointAndSetup(track->GetPosition());
+    currentVolume = G4CMP::GetVolumeAtPoint(track->GetPosition());
   }
 }
 

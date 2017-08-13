@@ -15,6 +15,7 @@
 // 20160624  Use GetTrackInfo() accessor
 // 20161114  Use new PhononTrackInfo
 // 20170620  Follow interface changes in G4CMPSecondaryUtils
+// 20170801  Protect PostStepDoIt() from being called at boundary
 // 20170802  Use G4CMP_DOWN_SAMPLE biasing with ChooseWeight(), move outside
 //		of sub-functions.
 // 20170805  Replace GetMeanFreePath() with scattering-rate model
@@ -64,7 +65,11 @@ G4PhononDownconversion::~G4PhononDownconversion() {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
-							 const G4Step&) {
+							 const G4Step& aStep) {
+  if (aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
+  }
+    
   aParticleChange.Initialize(aTrack);
 
   // Obtain dynamical constants from this volume's lattice
