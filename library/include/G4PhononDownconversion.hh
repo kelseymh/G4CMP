@@ -8,6 +8,8 @@
 //
 // $Id$
 //
+// 20170805  Replace GetMeanFreePath() with scattering-rate model
+
 #ifndef G4PhononDownconversion_h
 #define G4PhononDownconversion_h 1
 
@@ -24,7 +26,11 @@ public:
   virtual G4bool IsApplicable(const G4ParticleDefinition&);
   
 protected:
-  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
+  // Keep function here as call-back to avoid getting old toolkit version
+  virtual G4double GetMeanFreePath(const G4Track& trk, G4double prevstep,
+				   G4ForceCondition* cond) {
+    return G4CMPVProcess::GetMeanFreePath(trk, prevstep, cond);
+  }
   
 private:
   // relative probability that anharmonic decay occurs L->L'+T'

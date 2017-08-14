@@ -21,7 +21,14 @@ public:
   virtual ~G4PhononScattering();
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
-                           
+
+protected:
+  // Keep function here as call-back to avoid getting old toolkit version
+  virtual G4double GetMeanFreePath(const G4Track& trk, G4double prevstep,
+				   G4ForceCondition* cond) {
+    return G4CMPVProcess::GetMeanFreePath(trk, prevstep, cond);
+  }
+
 private:
   // hide assignment operator as private 
   G4PhononScattering(G4PhononScattering&);
