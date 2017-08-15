@@ -7,16 +7,16 @@
 /// \brief Compute rate for phonon impurity scattering (mode mixing)
 //
 // $Id$
+//
+// 20170815  Move G4CMPProcessUtils inheritance to base class
 
 #ifndef G4CMPPhononScatteringRate_hh
 #define G4CMPPhononScatteringRate_hh 1
 
 #include "G4CMPVScatteringRate.hh"
-#include "G4CMPProcessUtils.hh"
 
 
-class G4CMPPhononScatteringRate : public G4CMPVScatteringRate,
-				  public G4CMPProcessUtils {
+class G4CMPPhononScatteringRate : public G4CMPVScatteringRate {
 public:
   G4CMPPhononScatteringRate() : G4CMPVScatteringRate("PhononScattering") {;}
   virtual ~G4CMPPhononScatteringRate() {;}

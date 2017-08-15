@@ -7,16 +7,16 @@
 /// \brief Compute emission rate for Luke-Neganov phonons.
 //
 // $Id$
+//
+// 20170815  Move G4CMPProcessUtils inheritance to base class
 
 #ifndef G4CMPLukeEmissionRate_hh
 #define G4CMPLukeEmissionRate_hh 1
 
 #include "G4CMPVScatteringRate.hh"
-#include "G4CMPProcessUtils.hh"
 
 
-class G4CMPLukeEmissionRate : public G4CMPVScatteringRate,
-			     public G4CMPProcessUtils {
+class G4CMPLukeEmissionRate : public G4CMPVScatteringRate {
 public:
   G4CMPLukeEmissionRate() : G4CMPVScatteringRate("Luke", true) {;}
   virtual ~G4CMPLukeEmissionRate() {;}

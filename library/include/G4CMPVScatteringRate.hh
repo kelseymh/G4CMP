@@ -3,6 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+// $Id$
+//
 /// \file library/include/G4CMPVScatteringRate.hh
 /// \brief Definition of the G4CMPVScatteringRate base class.  This class
 ///	   provides an interface to implement calculations of scattering
@@ -10,21 +12,23 @@
 ///	   charge carriers.  Subclasses may specified ctor argument if
 ///	   process should be forced.
 //
-// $Id$
+// 20170815  Inherit from G4CMPProcessUtils here, instead of in subclasses
 
 #ifndef G4CMPVScatteringRate_hh
 #define G4CMPVScatteringRate_hh 1
 
 #include "globals.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4CMPProcessUtils.hh"
 
 class G4Track;
 
 
-class G4CMPVScatteringRate {
+class G4CMPVScatteringRate : public G4CMPProcessUtils {
 public:
   G4CMPVScatteringRate(const G4String& theName, G4bool force=false)
-    : verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
+    : G4CMPProcessUtils(),
+      verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
       name(theName), isForced(force) {;}
 
   virtual ~G4CMPVScatteringRate() {;}

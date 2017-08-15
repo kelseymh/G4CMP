@@ -10,6 +10,7 @@
 //
 // 20170601  New abstract base class for all G4CMP processes
 // 20170802  Add registration of external scattering rate (MFP) model
+// 20170815  Call through to scattering-rate LoadDataForTrack()
 
 #include "G4CMPVProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -49,11 +50,13 @@ void G4CMPVProcess::UseRateModel(G4CMPVScatteringRate* model) {
 void G4CMPVProcess::StartTracking(G4Track* track) {
   G4VProcess::StartTracking(track);	// Apply base class actions
   LoadDataForTrack(track);
+  if (rateModel) rateModel->LoadDataForTrack(track);
 }
 
 void G4CMPVProcess::EndTracking() {
   G4VProcess::EndTracking();		// Apply base class actions
   ReleaseTrack();
+  if (rateModel) rateModel->ReleaseTrack();
 }
 
 

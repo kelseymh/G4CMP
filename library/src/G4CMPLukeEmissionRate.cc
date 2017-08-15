@@ -7,6 +7,8 @@
 /// \brief Compute emission rate for Luke-Neganov phonons.
 //
 // $Id$
+//
+// 20170815  Drop call to LoadDataForTrack(); now handled in process.
 
 #include "G4CMPLukeEmissionRate.hh"
 #include "G4CMPUtils.hh"
@@ -21,8 +23,6 @@
 // Scattering rate is computed from electric field
 
 G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
-  const_cast<G4CMPLukeEmissionRate*>(this)->LoadDataForTrack(&aTrack);
-
   // Sanity check -- IsApplicable() should protect against this
   if (!G4CMP::IsChargeCarrier(aTrack)) {
     G4Exception("G4CMPLukeEmissionRate::Rate", "Luke001", EventMustBeAborted, 

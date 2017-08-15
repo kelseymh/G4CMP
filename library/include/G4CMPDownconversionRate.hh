@@ -7,16 +7,16 @@
 /// \brief Compute rate for phonon anharmonic decay (downconversion)
 //
 // $Id$
+//
+// 20170815  Move G4CMPProcessUtils inheritance to base class
 
 #ifndef G4CMPDownconversionRate_hh
 #define G4CMPDownconversionRate_hh 1
 
 #include "G4CMPVScatteringRate.hh"
-#include "G4CMPProcessUtils.hh"
 
 
-class G4CMPDownconversionRate : public G4CMPVScatteringRate,
-				public G4CMPProcessUtils {
+class G4CMPDownconversionRate : public G4CMPVScatteringRate {
 public:
   G4CMPDownconversionRate() : G4CMPVScatteringRate("Downconversion") {;}
   virtual ~G4CMPDownconversionRate() {;}

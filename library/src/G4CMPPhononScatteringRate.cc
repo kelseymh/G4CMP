@@ -16,8 +16,6 @@
 // Scattering rate is computed from electric field
 
 G4double G4CMPPhononScatteringRate::Rate(const G4Track& aTrack) const {
-  const_cast<G4CMPPhononScatteringRate*>(this)->LoadDataForTrack(&aTrack);
-
   G4double B = theLattice->GetScatteringConstant();
   G4double Eoverh = GetKineticEnergy(aTrack)/h_Planck;
   

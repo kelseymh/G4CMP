@@ -8,6 +8,8 @@
 ///	   parametrization vs. electric field.
 //
 // $Id$
+//
+// 20170815  Drop call to LoadDataForTrack(); now handled in process.
 
 #include "G4CMPIVRateEdelweiss.hh"
 #include "G4Field.hh"
@@ -25,8 +27,6 @@
 // Scattering rate is computed from electric field
 
 G4double G4CMPIVRateEdelweiss::Rate(const G4Track& aTrack) const {
-  const_cast<G4CMPIVRateEdelweiss*>(this)->LoadDataForTrack(&aTrack);
-
   // Get electric field associated with current volume, if any
   G4FieldManager* fMan =
     aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
