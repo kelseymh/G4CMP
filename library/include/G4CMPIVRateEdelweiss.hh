@@ -8,16 +8,16 @@
 ///	   parametrization vs. electric field.
 //
 // $Id$
+//
+// 20170815  Move G4CMPProcessUtils inheritance to base class
 
 #ifndef G4CMPIVRateEdelweiss_hh
 #define G4CMPIVRateEdelweiss_hh 1
 
 #include "G4CMPVScatteringRate.hh"
-#include "G4CMPProcessUtils.hh"
 
 
-class G4CMPIVRateEdelweiss : public G4CMPVScatteringRate,
-			     public G4CMPProcessUtils {
+class G4CMPIVRateEdelweiss : public G4CMPVScatteringRate {
 public:
   G4CMPIVRateEdelweiss() : G4CMPVScatteringRate("IVEdelweiss") {;}
   virtual ~G4CMPIVRateEdelweiss() {;}
