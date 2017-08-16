@@ -49,7 +49,6 @@ private:
   G4Material* tungsten;
   G4VPhysicalVolume* worldPhys;
   G4double zipThickness; // Useful for geom. and field
-  G4double epotScale;
   G4double voltage;
   G4bool constructed;
   G4String epotFileName;

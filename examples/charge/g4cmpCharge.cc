@@ -11,6 +11,7 @@
 // 20140509  Add conditional code for Geant4 10.0 vs. earlier
 // 20150112  Remove RM->Initialize() to support macro configuration
 // 20160111  Remove check for Geant4 > 10.0 since we hard depend on 10.2+
+// 20170816  Add example-specific configuration manager
 
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
@@ -25,6 +26,7 @@
 
 #include "ChargeActionInitialization.hh"
 #include "ChargeDetectorConstruction.hh"
+#include "ChargeConfigManager.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPPhysicsList.hh"
 
@@ -48,7 +50,8 @@ int main(int argc,char** argv) {
   runManager->SetUserInitialization(new ChargeActionInitialization);
   
   // Create G4CMP configuration manager to ensure macro commands exist
-  G4CMPConfigManager::GetVerboseLevel();
+  G4CMPConfigManager::Instance();
+  ChargeConfigManager::Instance();
   
 #ifdef G4VIS_USE
   // Visualization manager

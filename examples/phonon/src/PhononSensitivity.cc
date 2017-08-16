@@ -5,23 +5,22 @@
 
 #include "PhononSensitivity.hh"
 #include "G4CMPElectrodeHit.hh"
-#include "G4CMPConfigManager.hh"
-#include "G4RunManager.hh"
-#include "G4Run.hh"
 #include "G4Event.hh"
 #include "G4HCofThisEvent.hh"
-#include "G4SDManager.hh"
-#include "G4SystemOfUnits.hh"
-
 #include "G4PhononLong.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
-
+#include "G4Run.hh"
+#include "G4RunManager.hh"
+#include "G4SDManager.hh"
+#include "G4SystemOfUnits.hh"
+#include "PhononConfigManager.hh"
 #include <fstream>
+
 
 PhononSensitivity::PhononSensitivity(G4String name) :
   G4CMPElectrodeSensitivity(name), fileName("") {
-  SetOutputFile(G4CMPConfigManager::GetHitOutput());
+  SetOutputFile(PhononConfigManager::GetHitOutput());
 }
 
 /* Move is disabled for now because old versions of GCC can't move ofstream
