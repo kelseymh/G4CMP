@@ -58,15 +58,17 @@ void G4CMP::RotateToGlobalPosition(const G4VTouchable* touch,
   G4CMPGlobalLocalTransformStore::ToGlobal(touch).ApplyPointTransform(pos);
 }
 
+
+// Get normal to enclosing volume at boundary point
+
 G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step) {
   // Get outward normal using G4Navigator method (more reliable than G4VSolid)
-  G4int navID = G4ParallelWorldProcess::GetHypNavigatorID();
-  std::vector<G4Navigator*>::iterator iNav =
-    G4TransportationManager::GetTransportationManager()
-      ->GetActiveNavigatorsIterator();
+  G4TransportationManager* transMan =
+    G4TransportationManager::GetTransportationManager();
+  G4Navigator* nav = transMan->GetNavigatorForTracking();
 
   G4bool goodNorm;
-  G4ThreeVector surfNorm = iNav[navID]->GetGlobalExitNormal(
+  G4ThreeVector surfNorm = nav->GetGlobalExitNormal(
                                       step.GetPostStepPoint()->GetPosition(),
                                       &goodNorm);
 
@@ -74,11 +76,23 @@ G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step) {
   if (!goodNorm || surfNorm.mag()<0.99) {
     G4VPhysicalVolume* thePrePV = step.GetPreStepPoint()->GetPhysicalVolume();
     G4VPhysicalVolume* thePostPV = step.GetPostStepPoint()->GetPhysicalVolume();
-    G4Exception("G4CMPProcessUtils::GetSurfaceNormal", "Boundary001",
+    G4Exception("G4CMPGeometryUtils::GetSurfaceNormal", "Geometry001",
                 EventMustBeAborted, ("Can't get normal vector of surface between " +
                                     thePrePV->GetName() + " and " +
                                     thePostPV->GetName()+ ".").c_str());
   }
 
   return surfNorm;
+}
+
+
+// Get placement volume at specified global position
+
+G4VPhysicalVolume* G4CMP::GetVolumeAtPoint(const G4ThreeVector& pos) {
+  G4TransportationManager* transMan =
+    G4TransportationManager::GetTransportationManager();
+  G4Navigator* nav = transMan->GetNavigatorForTracking();
+  G4VPhysicalVolume* volume = nav->LocateGlobalPointAndSetup(pos,0,false);
+
+  return volume;
 }

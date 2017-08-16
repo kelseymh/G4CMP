@@ -8,6 +8,8 @@
 //
 // $Id$
 //
+// 20170805  Move GetMeanFreePath() to scattering-rate model
+
 #ifndef G4PhononScattering_h
 #define G4PhononScattering_h 1
 
@@ -15,14 +17,17 @@
 
 class G4PhononScattering : public G4VPhononProcess {
 public:
-  G4PhononScattering(const G4String& processName ="phononScattering" );
+  G4PhononScattering(const G4String& processName="phononScattering");
   virtual ~G4PhononScattering();
 
-  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
-                           
+  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
+
 protected:
-  virtual G4double GetMeanFreePath(const G4Track&, G4double,
-				   G4ForceCondition* );
+  // Keep function here as call-back to avoid getting old toolkit version
+  virtual G4double GetMeanFreePath(const G4Track& trk, G4double prevstep,
+				   G4ForceCondition* cond) {
+    return G4CMPVProcess::GetMeanFreePath(trk, prevstep, cond);
+  }
 
 private:
   // hide assignment operator as private 

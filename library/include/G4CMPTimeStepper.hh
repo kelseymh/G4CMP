@@ -22,10 +22,13 @@ public:
   G4CMPTimeStepper();
   virtual ~G4CMPTimeStepper();
 
+  // No random throw here: MFP and GPIL are fixed lengths
   virtual G4double 
   PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 				       G4double prevStepSize,
-				       G4ForceCondition* condition);
+				       G4ForceCondition* condition) {
+    return GetMeanFreePath(aTrack, prevStepSize, condition);
+  }
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
 					  const G4Step& aStep);
@@ -35,12 +38,7 @@ protected:
   G4double ComputeTimeSteps(const G4Track& aTrack);
   G4double TimeStepInField(G4double Efield, G4double coeff, G4double l0) const;
 
-  virtual G4double GetMeanFreePath(const G4Track& aTrack,
-				   G4double prevStepSize,
-				   G4ForceCondition* condition) {
-    return PostStepGetPhysicalInteractionLength(aTrack, prevStepSize,
-						condition);
-  }
+  virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*);
 
 private:
   //hide assignment operator

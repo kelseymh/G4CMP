@@ -6,6 +6,7 @@
 // $Id: be4e879b33241dd90f04560177057fb1aecebf27 $
 //
 // 20160904  Add electrode pattern to surface configuration
+// 20170721  Surface property owns electrode pattern, deletes at end
 
 #include "ChargeDetectorConstruction.hh"
 #include "ChargeElectrodePattern.hh"
@@ -37,7 +38,7 @@
 
 ChargeDetectorConstruction::ChargeDetectorConstruction() :
 
-  sensitivity(nullptr), electrode(nullptr), topSurfProp(nullptr),
+  sensitivity(nullptr),  topSurfProp(nullptr),
   botSurfProp(nullptr), wallSurfProp(nullptr),
   latManager(G4LatticeManager::GetLatticeManager()),
   fEMField(nullptr), liquidHelium(nullptr), germanium(nullptr),
@@ -176,17 +177,15 @@ void ChargeDetectorConstruction::SetupGeometry()
 
   // Define surface properties. Only should be done once
   if (!constructed) {
-    electrode = new ChargeElectrodePattern;
-
     topSurfProp = new G4CMPSurfaceProperty("topSurfProp",
                                            1., 1., 0., 0.,
                                            0.22, 1., 0., 0.);
-    topSurfProp->SetChargeElectrode(electrode);
+    topSurfProp->SetChargeElectrode(new ChargeElectrodePattern);
 
     botSurfProp = new G4CMPSurfaceProperty("botSurfProp",
                                            1., 1., 0., 0.,
                                            0.22, 1., 0., 0.);
-    botSurfProp->SetChargeElectrode(electrode);
+    botSurfProp->SetChargeElectrode(new ChargeElectrodePattern);
 
     wallSurfProp = new G4CMPSurfaceProperty("wallSurfProp",
                                             1., 1., 0., 0.,

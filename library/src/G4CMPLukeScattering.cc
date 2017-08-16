@@ -14,11 +14,15 @@
 // 20160830  Replace direct use of G4CMP_MAKE_PHONONS with ChooseWeight
 // 20161114  Use new DriftTrackInfo
 // 20170602  Use G4CMPUtils for track identity functions
+// 20170802  Use G4CMP_LUKE_SAMPLE biasing with ChooseWeight()
+// 20170805  Use scattering-rate model
 
 #include "G4CMPLukeScattering.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPLukeEmissionRate.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -42,6 +46,8 @@
 G4CMPLukeScattering::G4CMPLukeScattering(G4VProcess* stepper)
   : G4CMPVDriftProcess("G4CMPLukeScattering", fLukeScattering),
     stepLimiter(stepper) {
+  UseRateModel(new G4CMPLukeEmissionRate);
+
 #ifdef G4CMP_DEBUG
   output.open("LukePhononEnergies");
   if (!output.good()) {
@@ -60,65 +66,19 @@ G4CMPLukeScattering::~G4CMPLukeScattering() {
 
 // Physics
 
-G4double 
-G4CMPLukeScattering::GetMeanFreePath(const G4Track& aTrack, G4double,
-                                     G4ForceCondition* condition) {
-  *condition = Forced;		// In order to recompute MFP after TimeStepper
-
-  auto trackInfo = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack);
-  const G4LatticePhysical* lat = trackInfo->Lattice();
-  G4double kmag = 0.; G4double l0 = 0.; G4double mass = 0.;
-  if (G4CMP::IsElectron(aTrack)) {
-    kmag = lat->MapV_elToK_HV(GetValleyIndex(aTrack),
-                              GetLocalVelocityVector(aTrack)).mag();
-    l0 = lat->GetElectronScatter();
-    mass = lat->GetElectronMass();
-  } else if (G4CMP::IsHole(aTrack)) {
-    kmag = GetLocalWaveVector(aTrack).mag();
-    l0 = lat->GetHoleScatter();
-    mass = lat->GetHoleMass();
-  } else {
-    G4Exception("G4CMPLukeScattering::GetMeanFreePath", "Luke001",
-                EventMustBeAborted, "Unknown charge carrier");
-  }
-
-  G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
-  G4double velocity = GetVelocity(aTrack);
-
-  if (verboseLevel > 1) {
-    G4cout << "LukeScattering v = " << velocity/m*s << " kmag = " << kmag*m
-	   << G4endl;
-  }
-
-  if (kmag <= kSound) return DBL_MAX;
-  
-  // Time step corresponding to Mach number (avg. time between radiations)
-  G4double dtau = ChargeCarrierTimeStep(kmag/kSound, l0);
-  G4double mfp = dtau * velocity;
-
-  if (verboseLevel > 1) {
-    G4cout << "LukeScattering Time Step = " << dtau << "\n"
-           << "LukeScattering MFP = " << mfp << G4endl;
-  }
-
-  return mfp;
-}
-
-
 G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
                                                      const G4Step& aStep) {
   aParticleChange.Initialize(aTrack); 
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
-  // Do nothing other than re-calculate mfp when step limit reached or leaving
-  // volume
   if (verboseLevel > 1) {
     G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
            << postStepPoint->GetProcessDefinedStep()->GetProcessName()
            << G4endl;
   }
 
-  // Do nothing other than re-calculate mfp when step limit reached or leaving volume
+  // Do nothing other than re-calculate mfp when step limit reached or
+  // leaving volume
   if (postStepPoint->GetStepStatus()==fGeomBoundary ||
       postStepPoint->GetProcessDefinedStep()==stepLimiter) {
     return &aParticleChange;
@@ -192,7 +152,9 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Create real phonon to be propagated, with random polarization
   // If phonon is not created, register the energy as deposited
-  G4double weight = G4CMP::ChoosePhononWeight();
+  G4double weight =
+    G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
+
   if (weight > 0.) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 

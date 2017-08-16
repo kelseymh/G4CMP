@@ -7,6 +7,7 @@
 // 20161115 Initial commit - R. Agnese
 // 20170620 M. Kelsey -- Replace PV arg with Touchable, for transforms
 // 20170629 M. Kelsey -- Add volume name to "no lattice" error messages.
+// 20170721 M. Kelsey -- Check volume in AdjustSecondaryPosition.
 
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPDriftHole.hh"
@@ -40,7 +41,7 @@ G4Track* G4CMP::CreateSecondary(const G4Track& track,
   }
 
   if (G4CMP::IsChargeCarrier(pd)) {
-    const G4LatticePhysical* lat = GetTrackInfo<G4CMPDriftTrackInfo>(track)->Lattice();
+    const G4LatticePhysical* lat = G4CMP::GetLattice(track);
     return CreateChargeCarrier(track.GetTouchable(), G4int(pd->GetPDGCharge()/eplus),
                                ChooseValley(lat), energy, track.GetGlobalTime(),
                                waveVec, track.GetPosition());
@@ -173,23 +174,39 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
 
 G4ThreeVector G4CMP::AdjustSecondaryPosition(const G4VTouchable* touch,
 					     G4ThreeVector pos) {
+  // Clearance is the minimum distance where a position is guaranteed Inside
+  const G4double clearance = 1e-7*mm;
+
   // If the step is near a boundary, create the secondary in the initial volume
-  G4Navigator* nav = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+  G4VPhysicalVolume* pv = touch->GetVolume();
+  G4ThreadLocalStatic auto latMan = G4LatticeManager::GetLatticeManager();
+  G4LatticePhysical* lat = latMan->GetLattice(pv);
 
-  // Safety is the distance to a boundary
-  G4double safety = nav->ComputeSafety(pos);
+  if (!lat) {		// No lattice in touchable's volume, try pos instead
+    pv = G4CMP::GetVolumeAtPoint(pos);
+    lat = latMan->GetLattice(pv);
 
-  // Tolerance is the error in deciding which volume a track is in
-  G4double kCarTolerance = G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
-
-  // If the distance to an edge is within error, we might accidentally get placed
-  // in the next volume. Instead, let's scoot a bit away from the edge.
-  if (safety <= kCarTolerance) {
-    G4ThreeVector norm = touch->GetVolume()->GetLogicalVolume()->GetSolid()
-                         ->SurfaceNormal(GetLocalPosition(touch, pos));
-    RotateToGlobalDirection(touch, norm);
-    pos += (safety - kCarTolerance * (1.001)) * norm;
+    if (!lat) {
+      G4ExceptionDescription msg;
+      msg << "Position " << pos << " not associated with valid volume.";
+      G4Exception("G4CMP::CreateSecondary", "Secondary008",
+		  EventMustBeAborted, msg);
+      return pos;
+    }
   }
 
+  // Work in local coordinates, adjusting position to be clear of surface
+  RotateToLocalPosition(touch, pos);
+
+  G4VSolid* solid = pv->GetLogicalVolume()->GetSolid();
+  G4ThreeVector norm = solid->SurfaceNormal(pos);
+
+  while (solid->Inside(pos) != kInside ||
+	 solid->DistanceToOut(pos,norm) < clearance) {
+    pos -= norm*clearance;
+    norm = solid->SurfaceNormal(pos);	// Nearest surface may change
+  }
+
+  RotateToGlobalPosition(touch, pos);
   return pos;
 }

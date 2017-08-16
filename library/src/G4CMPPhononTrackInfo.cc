@@ -12,14 +12,15 @@
 // $Id$
 //
 // 20161111 Initial commit - R. Agnese
+// 20170728 M. Kelsey -- Replace "k" function args with "theK" (-Wshadow)
 
 #include "G4CMPPhononTrackInfo.hh"
 
 //G4Allocator<G4CMPPhononTrackInfo> G4CMPPhononTrackInfoAllocator;
 
 G4CMPPhononTrackInfo::G4CMPPhononTrackInfo(const G4LatticePhysical* lat,
-                                           G4ThreeVector k) :
-                                           G4CMPVTrackInfo(lat), waveVec(k) {}
+                                           G4ThreeVector theK)
+  : G4CMPVTrackInfo(lat), waveVec(theK) {;}
 
 void G4CMPPhononTrackInfo::Print() const {
 //TODO

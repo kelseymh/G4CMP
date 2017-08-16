@@ -16,6 +16,7 @@
 // 20160906  Make most functions const, provide casting function for matTable
 // 20161114  Use G4CMPVTrackInfo
 // 20170710  Look for skin surface (LV) if border surface not found
+// 20170713  Report undefined surfaces only once per job, not a failure
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -70,7 +71,7 @@ G4bool G4CMPBoundaryUtils::IsGoodBoundary(const G4Step& aStep) {
      : G4CMP::IsPhonon(pd) ? G4CMPConfigManager::GetMaxPhononBounces() : -1);
 
   if (buVerboseLevel>1) {
-    G4cout << procName << "::LoadDataForStep maxRefl " << maximumReflections
+    G4cout << procName << "::IsGoodBoundary maxRefl " << maximumReflections
 	   << G4endl;
   }
 
@@ -125,27 +126,36 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
 }
 
 G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
+  surfProp = nullptr;				// Avoid stale cache!
+  matTable = nullptr;
+  electrode = nullptr;
+  
   // Look for specific surface between pre- and post-step points first
   G4LogicalSurface* surface = G4LogicalBorderSurface::GetSurface(prePV, postPV);
   if (!surface) {			// Then for generic pre-setp surface
     surface = G4LogicalSkinSurface::GetSurface(prePV->GetLogicalVolume());
   }
 
-  if (!surface) {
+  // Report missing surface once per boundary
+  if ((hasSurface.find(BoundaryPV(prePV,postPV)) == hasSurface.end())
+      && !surface) {
     G4Exception((procName+"::GetSurfaceProperty").c_str(), "Boundary001",
-                EventMustBeAborted, ("No surface defined between " +
-                                    prePV->GetName() + " and " +
-                                    postPV->GetName() + ".").c_str());
-    return false;
+                JustWarning, ("No surface defined between " +
+			      prePV->GetName() + " and " +
+			      postPV->GetName()).c_str());
   }
+
+  hasSurface[BoundaryPV(prePV,postPV)] = false;	// Remember this boundary
+
+  if (!surface) return true;			// Can handle undefined surfaces
 
   G4SurfaceProperty* baseSP = surface->GetSurfaceProperty();
   if (!baseSP) {
     G4Exception((procName+"::GetSurfaceProperty").c_str(),
-		"Boundary002", EventMustBeAborted,
+		"Boundary002", JustWarning,
 		("No surface property defined for "+surface->GetName()).c_str()
 		);
-    return false;
+    return true;			// Can handle undefined surfaces
   }
 
   // Verify that surface property is G4CMP compatible
@@ -154,7 +164,7 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
     G4Exception((procName+"::GetSurfaceProperty").c_str(),
 		"Boundary003", EventMustBeAborted,
 		"Surface property is not G4CMP compatible");
-    return false;
+    return false;			// Badly defined, not undefined!
   }
     
   // Extract particle-specific information for later
@@ -171,14 +181,16 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
 
   if (!matTable) {
     G4Exception((procName+"::GetSurfaceProperty").c_str(),
-		"Boundary004", EventMustBeAborted,
-		(pd->GetParticleName()+" has no material properties").c_str()
+		"Boundary004", JustWarning,
+		(pd->GetParticleName()+" has no surface properties").c_str()
 		);
-    return false;
+    return true;			// Can handle undefined surfaces
   }
 
   // Initialize electrode for current track
   if (electrode) electrode->LoadDataForTrack(aStep.GetTrack());
+
+  hasSurface[BoundaryPV(prePV,postPV)] = true;	// Record good surface defined
 
   return true;
 }
@@ -194,7 +206,9 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
 
   if (!IsGoodBoundary(aStep)) return;		// May have been done already
 
-  if (electrode && electrode->IsNearElectrode(aStep)) {
+  if (!matTable) {
+    DoSimpleKill(aTrack, aStep, aParticleChange);
+  } else if (electrode && electrode->IsNearElectrode(aStep)) {
     electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
   } else if (AbsorbTrack(aTrack, aStep)) {
     DoAbsorption(aTrack, aStep, aParticleChange);
@@ -268,7 +282,7 @@ void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
 }
 
 void G4CMPBoundaryUtils::DoSimpleKill(const G4Track& /*aTrack*/,
-              const G4Step& /*aStep*/,
+				      const G4Step& /*aStep*/,
 				      G4ParticleChange& aParticleChange) {
   if (buVerboseLevel>1) G4cout << procName << ": Track killed" << G4endl;
 
@@ -279,7 +293,8 @@ void
 G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
 				   const G4Step& aStep,
 				   G4ParticleChange& aParticleChange) {
-  if (buVerboseLevel>1) G4cout << procName << ": Track transmitted" << G4endl;
+  if (buVerboseLevel>1) 
+    G4cout << procName << ": Track transmission requested" << G4endl;
 
   DoSimpleKill(aTrack, aStep, aParticleChange);
 }

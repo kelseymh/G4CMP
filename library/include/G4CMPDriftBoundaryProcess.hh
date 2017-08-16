@@ -22,6 +22,8 @@
 //           should only need to implement absorb/reflect/transmit functions.
 // 20160903  Add inheritance from G4CMPBoundaryUtils, remove redundant functions
 // 20160906  Follow constness of G4CMPBoundaryUtils
+// 20170731  Split electron, hole reflection into utility functions
+// 20170802  Add EnergyPartition to handle phonon production
 
 #ifndef G4CMPDriftBoundaryProcess_h
 #define G4CMPDriftBoundaryProcess_h 1
@@ -29,11 +31,14 @@
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPBoundaryUtils.hh"
 
+class G4CMPEnergyPartition;
+
 
 class G4CMPDriftBoundaryProcess : public G4CMPVDriftProcess,
 				  public G4CMPBoundaryUtils {
 public:
   G4CMPDriftBoundaryProcess(const G4String& name = "G4CMPChargeBoundary");
+  virtual ~G4CMPDriftBoundaryProcess();
 
   virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& track,
                                                    G4double previousStepSize,
@@ -53,7 +58,15 @@ protected:
   virtual void DoReflection(const G4Track& aTrack,const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
+  virtual void DoReflectionElectron(const G4Track& aTrack,const G4Step& aStep,
+				    G4ParticleChange& aParticleChange);
+
+  virtual void DoReflectionHole(const G4Track& aTrack,const G4Step& aStep,
+				G4ParticleChange& aParticleChange);
+
 private:
+  G4CMPEnergyPartition* partitioner;
+
   // No copying/moving
   G4CMPDriftBoundaryProcess(G4CMPDriftBoundaryProcess&);
   G4CMPDriftBoundaryProcess(G4CMPDriftBoundaryProcess&&);
@@ -61,4 +74,4 @@ private:
   G4CMPDriftBoundaryProcess& operator=(const G4CMPDriftBoundaryProcess&&);
 };
 
-#endif
+#endif	/* G4CMPDriftBoundaryProcess_h */

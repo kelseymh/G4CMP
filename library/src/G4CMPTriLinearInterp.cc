@@ -113,7 +113,7 @@ void G4CMPTriLinearInterp::BuildTetraMesh() {
          << difftime(fin, start) << " seconds." << G4endl;
 }
 
-G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& point,
+G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& pt,
                                         const G4int id) {
   //static map<G4int, G4int> qhull2x;
   if (qhull2x.count(id)) {
@@ -123,26 +123,26 @@ G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& point,
   G4int min = 0, max = X.size()-1, mid = X.size()/2;
   G4int d = 0;
   while(true) {
-    if (X[mid][0] == point[0]) {
+    if (X[mid][0] == pt[0]) {
       d = 0;
-      while(X[mid+d][0] == point[0] || X[mid-d][0] == point[0]) {
-        if (X[mid+d][0] == point[0] && X[mid+d][1] == point[1] && X[mid+d][2] == point[2]) {
+      while(X[mid+d][0] == pt[0] || X[mid-d][0] == pt[0]) {
+        if (X[mid+d][0] == pt[0] && X[mid+d][1] == pt[1] && X[mid+d][2] == pt[2]) {
           qhull2x[id] = mid+d;
           return mid + d;
-        } else if (X[mid-d][0] == point[0] && X[mid-d][1] == point[1] && X[mid-d][2] == point[2]) {
+        } else if (X[mid-d][0] == pt[0] && X[mid-d][1] == pt[1] && X[mid-d][2] == pt[2]) {
           qhull2x[id] = mid-d;
           return mid - d;
         }
         ++d;
       }
-      while(X[mid-d][0] == point[0]) {
-        if (X[mid-d][0] == point[0] && X[mid-d][1] == point[1] && X[mid-d][2] == point[2]) {
+      while(X[mid-d][0] == pt[0]) {
+        if (X[mid-d][0] == pt[0] && X[mid-d][1] == pt[1] && X[mid-d][2] == pt[2]) {
           qhull2x[id] = mid-d;
           return mid - d;
         }
         ++d;
       }
-    } else if (X[mid][0] < point[0]) {
+    } else if (X[mid][0] < pt[0]) {
       min = mid + 1;
       mid = min + (G4int)ceil((max - min)/2.);
     } else {
@@ -188,14 +188,14 @@ G4ThreeVector G4CMPTriLinearInterp::GetGrad(const G4double pos[3]) const {
   return cachedGrad;
 }
 
-void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bary[4]) const {
+void G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[4], G4double bary[4]) const {
   const G4double maxError = -1e-10;
   G4int minBaryIdx;
   G4double bestBary[4];
   G4int bestTet = -1;
   if (TetraIdx == -1) TetraIdx = 0;
   for (size_t count = 0; count < Tetrahedra.size(); ++count) {
-    Cart2Bary(point,bary);
+    Cart2Bary(pt,bary);
 
     if (bary[3] >= maxError && bary[2] >= maxError 
         && bary[1] >= maxError && bary[0] >= maxError) //bary[3] more likely to be bad.
@@ -218,18 +218,18 @@ void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bar
     TetraIdx = Neighbors[TetraIdx][minBaryIdx];
     if (TetraIdx == -1) {
       G4cout << "G4CMPTriLinearInterp::FindTetrahedron: Point outside of hull! Check your results." <<G4endl;
-      G4cout << "point[0] = " << point[0]/m << " m; point[1] = " << point[1]/m
-             << " m; point[2] = " << point[2]/m << " m;" << G4endl;
+      G4cout << "pt[0] = " << pt[0]/m << " m; pt[1] = " << pt[1]/m
+             << " m; pt[2] = " << pt[2]/m << " m;" << G4endl;
       return;
     }
   }
 
   TetraIdx = bestTet;
-  Cart2Bary(point,bary);
+  Cart2Bary(pt,bary);
   /*G4cout << "G4CMPTriLinearInterp::FindTetrahedron: "
          << "Tetrahedron not found! Using best tetrahedron." << G4endl;
-  G4cout << "point[0] = " << point[0] << "; point[1] = " << point[1] 
-         << "; point[2] = " << point[2] << ";" << G4endl;
+  G4cout << "pt[0] = " << pt[0] << "; pt[1] = " << pt[1] 
+         << "; pt[2] = " << pt[2] << ";" << G4endl;
   G4cout << "Best Tetrahedron's barycentric coordinates: " << G4endl;
   G4cout << "bary[0] = " << bary[0] << "; bary[1] = " << bary[1] 
          << "; bary[2] = " << bary[2] << "; bary[3] = " << bary[3] << ";" 
@@ -237,7 +237,7 @@ void G4CMPTriLinearInterp::FindTetrahedron(const G4double point[4], G4double bar
          */
 }
 
-void G4CMPTriLinearInterp::Cart2Bary(const G4double point[4], G4double bary[4]) const {
+void G4CMPTriLinearInterp::Cart2Bary(const G4double pt[4], G4double bary[4]) const {
   G4double T[3][3];
   G4double invT[3][3];
 
@@ -248,9 +248,9 @@ void G4CMPTriLinearInterp::Cart2Bary(const G4double point[4], G4double bary[4]) 
   MatInv(T, invT);
 
   for(G4int k=0; k<3; ++k)
-    bary[k] = invT[k][0]*(point[0] - X[Tetrahedra[TetraIdx][3]][0]) +
-              invT[k][1]*(point[1] - X[Tetrahedra[TetraIdx][3]][1]) +
-              invT[k][2]*(point[2] - X[Tetrahedra[TetraIdx][3]][2]);
+    bary[k] = invT[k][0]*(pt[0] - X[Tetrahedra[TetraIdx][3]][0]) +
+              invT[k][1]*(pt[1] - X[Tetrahedra[TetraIdx][3]][1]) +
+              invT[k][2]*(pt[2] - X[Tetrahedra[TetraIdx][3]][2]);
 
   bary[3] = 1.0 - bary[0] - bary[1] - bary[2];
 }

@@ -7,84 +7,84 @@
 /g4cmp/voltage 0.01 volt
 /g4cmp/HitsFile epos_0.01v-{G4CMP_HIT_SUFFIX}.txt
 /run/initialize
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 0.1 volt
 /g4cmp/HitsFile epos_0.1v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 1 volt
 /g4cmp/HitsFile epos_1v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 1.5 volt
 /g4cmp/HitsFile epos_1.5v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 2 volt
 /g4cmp/HitsFile epos_2v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 2.5 volt
 /g4cmp/HitsFile epos_2.5v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 3 volt
 /g4cmp/HitsFile epos_3v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 3.5 volt
 /g4cmp/HitsFile epos_3.5v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 4 volt
 /g4cmp/HitsFile epos_4v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 4.5 volt
 /g4cmp/HitsFile epos_4.5v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 5 volt
 /g4cmp/HitsFile epos_5v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 5.5 volt
 /g4cmp/HitsFile epos_5.5v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 6 volt
 /g4cmp/HitsFile epos_6v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 8 volt
 /g4cmp/HitsFile epos_8v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 10 volt
 /g4cmp/HitsFile epos_10v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 12 volt
 /g4cmp/HitsFile epos_12v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 14 volt
 /g4cmp/HitsFile epos_14v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 15 volt
 /g4cmp/HitsFile epos_15v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 20 volt
 /g4cmp/HitsFile epos_20v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 25 volt
 /g4cmp/HitsFile epos_25v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50
 
 /g4cmp/voltage 30 volt
 /g4cmp/HitsFile epos_30v-{G4CMP_HIT_SUFFIX}.txt
-/run/beamOn 10
+/run/beamOn 50

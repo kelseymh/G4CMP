@@ -7,6 +7,8 @@
 /// \brief Enumerator and support functions for lattice symmetry groups
 //
 // $Id$
+//
+// 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm" (-Wshadow)
 
 #include "G4CMPCrystalGroup.hh"
 #include "G4PhysicalConstants.hh"
@@ -16,7 +18,7 @@
 // Some input angles may be ignored, depending on crystal symmetry
 
 void G4CMPCrystalGroup::Set(G4CMPCrystalGroup::Bravais grp,
-			    G4double alpha, G4double beta, G4double gamma) {
+			    G4double al, G4double bt, G4double gm) {
   group = grp;
   switch (group) {
   case amorphous:
@@ -24,9 +26,9 @@ void G4CMPCrystalGroup::Set(G4CMPCrystalGroup::Bravais grp,
   case tetragonal:
   case orthorhombic: SetCartesian(); break;
   case hexagonal:    SetHexagonal(); break;
-  case monoclinic:   SetMonoclinic(alpha); break;
-  case rhombohedral: SetRhombohedral(alpha); break;
-  case triclinic:    SetTriclinic(alpha, beta, gamma); break;
+  case monoclinic:   SetMonoclinic(al); break;
+  case rhombohedral: SetRhombohedral(al); break;
+  case triclinic:    SetTriclinic(al, bt, gm); break;
   default:
     G4ExceptionDescription msg;
     msg << "Unrecognized crystal group " << group;
@@ -57,14 +59,14 @@ void G4CMPCrystalGroup::SetMonoclinic(G4double angle) {
   axis[2].rotateX(angle-halfpi);	// Z-Y opening angle
 }
  
-void G4CMPCrystalGroup::SetTriclinic(G4double alpha, G4double beta,
-				     G4double gamma) {
+void G4CMPCrystalGroup::SetTriclinic(G4double al, G4double bt,
+				     G4double gm) {
   SetCartesian();
-  axis[1].rotateZ(gamma-halfpi);	// X-Y opening angle
+  axis[1].rotateZ(gm-halfpi);	// X-Y opening angle
 
   // Z' axis computed by hand to get both opening angles right
   // X'.Z' = cos(alpha), Y'.Z' = cos(beta), solve for Z' components
-  G4double ca=cos(alpha), cb=cos(beta), cg=cos(gamma), sg=sin(gamma);
+  G4double ca=cos(al), cb=cos(bt), cg=cos(gm), sg=sin(gm);
   G4double x3=ca, y3=(cb-ca*cg)/sg, z3=sqrt(1.-x3*x3-y3*y3);
   axis[2].set(x3, y3, z3);
 }

@@ -12,6 +12,7 @@
 //
 // 20170524  Add constructor and accessor for position argument
 // 20170525  Add "rule of five" copy/move operators
+// 20170802  Add constructor and accessor for volume argument, particle change
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -26,12 +27,15 @@ class G4Material;
 class G4ParticleDefinition;
 class G4PrimaryParticle;
 class G4Track;
+class G4VParticleChange;
+class G4VPhysicalVolume;
 
 
 class G4CMPEnergyPartition : public G4CMPProcessUtils {
 public:
   G4CMPEnergyPartition(G4Material* mat=0, G4LatticePhysical* lat=0);
-  G4CMPEnergyPartition(const G4ThreeVector& pos);
+  explicit G4CMPEnergyPartition(const G4VPhysicalVolume* volume);
+  explicit G4CMPEnergyPartition(const G4ThreeVector& pos);
 
   virtual ~G4CMPEnergyPartition();
 
@@ -44,11 +48,14 @@ public:
   // Set debugging output
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
-  // Material is needed for (Z,A) in Lindhard scaling
-  void SetMaterial(G4Material* mat) { material = mat; }
+  // Placement volume may be used to get material and lattice
+  void UseVolume(const G4VPhysicalVolume* volume);
 
   // Position may be used to get material and lattice from geometry
   void UsePosition(const G4ThreeVector& pos);
+
+  // Material is needed for (Z,A) in Lindhard scaling
+  void SetMaterial(G4Material* mat) { material = mat; }
 
   // Specify particle type (PDG), total and NIEL energy deposit
   void DoPartition(G4int PDGcode, G4double energy, G4double eNIEL);
@@ -67,8 +74,12 @@ public:
 
   // Return either primary or secondary particles from partitioning
   void GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const;
-  void GetSecondaries(std::vector<G4Track*>& secondaries) const;
-  
+
+  void GetSecondaries(std::vector<G4Track*>& secondaries,
+		      G4double trkWeight=1.) const;
+
+  void GetSecondaries(G4VParticleChange* aParticleChange) const;
+
   // Fraction of total energy deposit in material which goes to e/h pairs
   G4double LindhardScalingFactor(G4double energy) const;
 

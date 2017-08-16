@@ -14,9 +14,14 @@
 // 20140331  Add required process subtype code
 // 20160624  Use GetTrackInfo() accessor
 // 20161114  Use new PhononTrackInfo
-// 20170620  FOllow interface changes in G4CMPSecondaryUtils
+// 20170620  Follow interface changes in G4CMPSecondaryUtils
+// 20170801  Protect PostStepDoIt() from being called at boundary
+// 20170802  Use G4CMP_DOWN_SAMPLE biasing with ChooseWeight(), move outside
+//		of sub-functions.
+// 20170805  Replace GetMeanFreePath() with scattering-rate model
 
 #include "G4CMPPhononTrackInfo.hh"
+#include "G4CMPDownconversionRate.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -35,37 +40,36 @@
 #include <cmath>
 
 
-
 G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   : G4VPhononProcess(aName, fPhononDownconversion),
-    fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.) {;}
+    fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.) {
+  UseRateModel(new G4CMPDownconversionRate);
 
-G4PhononDownconversion::~G4PhononDownconversion() {;}
+#ifdef G4CMP_DEBUG
+  output.open("phonon_downsampling_stats", std::ios_base::app);
+  if (output.good()) {
+    output << "First Daughter Theta,Second Daughter Theta,First Daughter Energy [eV],Second Daughter Energy [eV],"
+              "Decay Branch,First Daughter Weight,Second Daughter Weight,Parent Weight,"
+              "Number of Outgoing Tracks,Parent Energy [eV]\n";
+  } else {
+    G4cerr << "Could not open phonon debugging output file!" << G4endl;}
+#endif
+  }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-G4double G4PhononDownconversion::GetMeanFreePath(const G4Track& aTrack,
-						 G4double /*previousStepSize*/,
-						 G4ForceCondition* condition) {
-  //Determines mean free path for longitudinal phonons to split
-  G4double A = theLattice->GetAnhDecConstant();
-  G4double Eoverh = GetKineticEnergy(aTrack)/h_Planck;
-  
-  //Calculate mean free path for anh. decay
-  G4double mfp = aTrack.GetVelocity()/(Eoverh*Eoverh*Eoverh*Eoverh*Eoverh*A);
-
-  if (verboseLevel > 1)
-    G4cout << "G4PhononDownconversion::GetMeanFreePath = " << mfp << G4endl;
-  
-  *condition = NotForced;
-  return mfp;
+G4PhononDownconversion::~G4PhononDownconversion() {
+#ifdef G4CMP_DEBUG
+  output.close();
+#endif
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-
 G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
-							 const G4Step&) {
+							 const G4Step& aStep) {
+  if (aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
+  }
+    
   aParticleChange.Initialize(aTrack);
 
   // Obtain dynamical constants from this volume's lattice
@@ -80,9 +84,18 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
   if (G4UniformRand()>0.740) MakeLTSecondaries(aTrack);
   else MakeTTSecondaries(aTrack);
 
-  aParticleChange.ProposeEnergy(0.);
-  aParticleChange.ProposeTrackStatus(fStopAndKill);    
-       
+#ifdef G4CMP_DEBUG
+  output << aTrack.GetWeight() << ','
+         << aParticleChange.GetNumberOfSecondaries() << ','
+         << aTrack.GetKineticEnergy()/eV << G4endl;
+#endif
+
+  // Only kill the track if downconversion actually happened
+  if (aParticleChange.GetNumberOfSecondaries() > 0) {
+    aParticleChange.ProposeEnergy(0.);
+    aParticleChange.ProposeTrackStatus(fStopAndKill);    
+  }
+
   return &aParticleChange;
 }
 
@@ -181,44 +194,53 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   dir2 = dir2.rotate(dir2.orthogonal(),-theta2).rotate(dir2,ph);
 
   G4double E=GetKineticEnergy(aTrack);
-  G4double Esec1 = x*E, Esec2 = E-Esec1;
+  G4double Esec1 = x*E;
+  G4double Esec2 = E-Esec1;
+
+  // Make FT or ST phonons (0. means no longitudinal)
+  G4int mode1 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
+						theLattice->GetFTDOS());
 
   // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization1 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
-					   theLattice->GetFTDOS());
-
-  // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
-					   theLattice->GetFTDOS());
+  G4int mode2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
+						theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors
-  // Always produce one of the secondaries. The other will be produced
-  // based on track biasing values.
-  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization1,
-                                       dir1, Esec1, aTrack.GetGlobalTime(),
+  // Always produce the secondaries.
+  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode1,
+				      dir1, Esec1, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
-  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization2,
+  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode2,
                                       dir2, Esec2, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
 
   // Pick which secondary gets the weight randomly
-  if (G4UniformRand() < 0.5) {
-    std::swap(sec1, sec2);
-  }
+#ifdef G4CMP_DEBUG
+  output << theta1 << ',' << theta2 << ','
+	 << sec1->GetKineticEnergy()/eV << ','
+	 << sec2->GetKineticEnergy()/eV << ',';
+#endif
 
-  G4double weight1 = aTrack.GetWeight();
-  G4double weight2 = weight1 * G4CMP::ChoosePhononWeight();
-  if (weight2 > 0.) { // Produce both daughters
+  G4double bias = G4CMPConfigManager::GetDownconversionSampling();
+  G4double weight = G4CMP::ChoosePhononWeight(bias);
+  if (weight > 0.) {				// Produce both daughters
     aParticleChange.SetSecondaryWeightByProcess(true);
-    sec1->SetWeight(weight1); // Default weight
-    sec2->SetWeight(weight2);
+    sec1->SetWeight(aTrack.GetWeight()*weight); // Default weight
+    sec2->SetWeight(aTrack.GetWeight()*weight);
+#ifdef G4CMP_DEBUG
+    output << "TT" << ',' << sec1->GetWeight() << ','
+	   << sec2->GetWeight() << ',';
+#endif
 
     aParticleChange.SetNumberOfSecondaries(2);
     aParticleChange.AddSecondary(sec2);
     aParticleChange.AddSecondary(sec1);
-  } else { // Only produce one daughter
-    aParticleChange.SetNumberOfSecondaries(1);
-    aParticleChange.AddSecondary(sec1);
+  } else {			// Produce no daughters
+    delete sec1;		// It would be better not to create/delete
+    delete sec2;
+#ifdef G4CMP_DEBUG
+    output << "TT" << ',' << 0 << ',' << 0 << ',';
+#endif
   }
 }
 
@@ -233,6 +255,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   G4double upperBound=1;
   G4double lowerBound=(d-1)/(d+1);
   
+  /*
   //Use MC method to generate point from distribution:
   //if a random point on the energy-probability plane is
   //smaller that the curve of the probability density,
@@ -243,6 +266,18 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   while(p >= GetLTDecayProb(d, x)) {
     x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
     p = 4.0*G4UniformRand(); 		     //4.0 is about the max in the PDF
+  }
+  */
+
+  G4double u = G4UniformRand();
+  G4double x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
+  G4double q = 0;
+  if (x <= upperBound && x >= lowerBound) q = 1/(upperBound-lowerBound);
+  while (u >= GetLTDecayProb(d, x)/(2.8/(upperBound-lowerBound))) {
+    u = G4UniformRand();
+    x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
+    if (x <= upperBound && x >= lowerBound) q = 1/(upperBound-lowerBound);
+    else q = 0;
   }
 
   //using energy fraction x to calculate daughter phonon directions
@@ -256,38 +291,51 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   dir2 = dir2.rotate(dir2.orthogonal(),-thetaT).rotate(dir2,ph);
 
   G4double E=GetKineticEnergy(aTrack);
-  G4double Esec1 = x*E, Esec2 = E-Esec1;
+  G4double Esec1 = x*E;
+  G4double Esec2 = E-Esec1;
 
   // First secondary is longitudnal
-  int polarization1 = G4PhononPolarization::Long;
+  int mode1 = G4PhononPolarization::Long;
 
   // Make FT or ST phonon (0. means no longitudinal)
-  G4int polarization2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
-					   theLattice->GetFTDOS());
+  G4int mode2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
+						theLattice->GetFTDOS());
 
   // Construct the secondaries and set their wavevectors
   // Always produce the L mode phonon. Produce T mode phonon based on
   // biasing.
-  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization1,
+  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode1,
 				      dir1, Esec1, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
-  G4double weight1 = aTrack.GetWeight();
-  G4double weight2 = weight1 * G4CMP::ChoosePhononWeight();
-  if (weight2 > 0.) { // Produce both daughters
-    G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization2,
-					dir2, Esec2, aTrack.GetGlobalTime(),
-					aTrack.GetPosition());
+  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode2,
+                                      dir2, Esec2, aTrack.GetGlobalTime(),
+                                      aTrack.GetPosition());
 
+#ifdef G4CMP_DEBUG
+  output << thetaL << ',' << thetaT << ',' << sec1->GetKineticEnergy()/eV
+	 << ',' << sec2->GetKineticEnergy()/eV << ',';
+#endif
+
+  G4double bias = G4CMPConfigManager::GetDownconversionSampling();
+  G4double weight = G4CMP::ChoosePhononWeight(bias);
+  if (weight > 0.) {				// Produce both daughters
     aParticleChange.SetSecondaryWeightByProcess(true);
-    sec1->SetWeight(weight1); // Default weight
-    sec2->SetWeight(weight2);
+    sec1->SetWeight(aTrack.GetWeight()/bias);
+    sec2->SetWeight(aTrack.GetWeight()/bias);
+#ifdef G4CMP_DEBUG
+    output << "LT" << ',' << sec1->GetWeight() << ','
+	   << sec2->GetWeight() << ',';
+#endif
 
     aParticleChange.SetNumberOfSecondaries(2);
     aParticleChange.AddSecondary(sec2);
     aParticleChange.AddSecondary(sec1);
-  } else { // Only produce L mode daughter
-    aParticleChange.SetNumberOfSecondaries(1);
-    aParticleChange.AddSecondary(sec1);
+  } else {			// Produce no daughters
+    delete sec1;		// It would be better not to create/delete
+    delete sec2;
+#ifdef G4CMP_DEBUG
+    output << "LT" << ',' << 0 << ',' << 0 << ',';
+#endif
   }
 }
 

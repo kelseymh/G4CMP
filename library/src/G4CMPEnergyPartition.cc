@@ -13,11 +13,15 @@
 // 20160830  Apply production biasing for primaries and secondaries
 // 20160830  Fix 'A' parameter in Lindhard to convert from g/mole units.
 // 20170524  Add constructor and accessor for position argument
+// 20170728  Forgot to assign material to data member in ctor.
+// 20170731  Move point-to-volume conversion to G4CMPGeometryUtils.
+// 20170802  Add constructor and accessor for volume argument, particle change
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4DynamicParticle.hh"
@@ -30,6 +34,7 @@
 #include "G4RandomDirection.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4TransportationManager.hh"
+#include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
 #include <cmath>
@@ -40,10 +45,15 @@
 
 G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
-  : G4CMPProcessUtils(), material(0), holeFraction(0.5),
+  : G4CMPProcessUtils(), material(mat), holeFraction(0.5),
     verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
     nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
   SetLattice(lat);
+}
+
+G4CMPEnergyPartition::G4CMPEnergyPartition(const G4VPhysicalVolume* volume)
+  : G4CMPEnergyPartition() {
+  UseVolume(volume);
 }
 
 G4CMPEnergyPartition::G4CMPEnergyPartition(const G4ThreeVector& pos)
@@ -56,18 +66,18 @@ G4CMPEnergyPartition::~G4CMPEnergyPartition() {;}
 
 // Extract material and lattice information from geometry
 
-void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
-  G4TransportationManager* transMan =
-    G4TransportationManager::GetTransportationManager();
-  G4Navigator* nav = transMan->GetNavigatorForTracking();
-  G4VPhysicalVolume* volume = nav->LocateGlobalPointAndSetup(pos,0,false);
+void G4CMPEnergyPartition::UseVolume(const G4VPhysicalVolume* volume) {
+  FindLattice(volume);
+  SetMaterial(volume->GetLogicalVolume()->GetMaterial());
+}
 
+void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
+  G4VPhysicalVolume* volume = G4CMP::GetVolumeAtPoint(pos);
   if (verboseLevel) 
     G4cout << "G4CMPEnergyPartition: " << pos << " in volume "
 	   << volume->GetName() << G4endl;
 
-  FindLattice(volume);
-  SetMaterial(volume->GetLogicalVolume()->GetMaterial());
+  UseVolume(volume);
 }
 
 
@@ -270,8 +280,11 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
 }
 
 void G4CMPEnergyPartition::
-GetSecondaries(std::vector<G4Track*>& secondaries) const {
-  if (verboseLevel) G4cout << "G4CMPEnergyPartition::GetSecondaries" << G4endl;
+GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
+  if (verboseLevel) {
+    G4cout << "G4CMPEnergyPartition::GetSecondaries, parent weight "
+	   << trkWeight << G4endl;
+  }
 
   secondaries.clear();
   secondaries.reserve(particles.size());
@@ -288,7 +301,7 @@ GetSecondaries(std::vector<G4Track*>& secondaries) const {
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
 
-    weight = G4CMP::ChooseWeight(p.pd);
+    weight = trkWeight * G4CMP::ChooseWeight(p.pd);
     if (weight == 0.) continue;
 
     theSec = G4CMP::CreateSecondary(*GetCurrentTrack(), p.pd, p.dir, p.ekin);
@@ -306,3 +319,23 @@ GetSecondaries(std::vector<G4Track*>& secondaries) const {
 
   secondaries.shrink_to_fit();		// Reduce footprint if biasing done
 }
+
+void G4CMPEnergyPartition::
+GetSecondaries(G4VParticleChange* aParticleChange) const {
+  if (verboseLevel) {
+    G4cout << "G4CMPEnergyPartition::GetSecondaries into ParticleChange"
+	   << G4endl;
+  }
+
+  std::vector<G4Track*> secondaries;	// Can we make this a mutable buffer?
+  GetSecondaries(secondaries, aParticleChange->GetWeight());
+
+  aParticleChange->SetNumberOfSecondaries(secondaries.size());
+  aParticleChange->SetSecondaryWeightByProcess(true);
+  
+  while (!secondaries.empty()) {	// Move entries from list to tracking
+    aParticleChange->AddSecondary(secondaries.back());
+    secondaries.pop_back();
+  }
+}
+

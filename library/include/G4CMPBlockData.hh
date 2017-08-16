@@ -8,7 +8,7 @@
 template <class T> class G4CMPBlockData {
 public:
   G4CMPBlockData();
-  G4CMPBlockData(size_t rows, size_t ncols, const T& val = T(0));
+  G4CMPBlockData(size_t nrows, size_t ncols, const T& val = T(0));
   G4CMPBlockData(const std::vector<T>& vec, size_t ncols);
   explicit G4CMPBlockData(const std::vector<T>& vec);
   G4CMPBlockData(const G4CMPBlockData<T> &rhs);

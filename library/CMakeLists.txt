@@ -104,6 +104,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigManager.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigMessenger.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPCrystalGroup.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDownconversionRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftBoundaryProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftElectron.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftHole.cc
@@ -118,16 +119,19 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFieldManager.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGeometryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGlobalLocalTransformStore.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateEdelweiss.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPKaplanQP.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLocalElectroMagField.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeEmissionRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMeshElectricField.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMessengerBase.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononBoundaryProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinTable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinematics.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononScatteringRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononTrackInfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysics.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysicsList.cc
@@ -166,6 +170,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPCrystalGroup.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDownconversionRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftElectron.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftHole.hh
@@ -180,10 +185,12 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldManager.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGeometryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGlobalLocalTransformStore.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateEdelweiss.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPKaplanQP.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLocalElectroMagField.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeEmissionRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.icc
@@ -193,6 +200,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinematics.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononScatteringRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononTrackInfo.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysics.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysicsList.hh
@@ -211,6 +219,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVDriftProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVElectrodePattern.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVScatteringRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVTrackInfo.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticeLogical.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4LatticeManager.hh

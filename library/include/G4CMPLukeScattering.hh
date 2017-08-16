@@ -10,6 +10,7 @@
 //
 // 20150111  New base class for both electron and hole Luke processes
 // 20160110  Remerge the electron and hole subclasses into one class
+// 20170805  Remove GetMeanFreePath() function to scattering-rate model
 
 #ifndef G4CMPLukeScattering_h
 #define G4CMPLukeScattering_h 1
@@ -30,9 +31,6 @@ public:
   virtual ~G4CMPLukeScattering();
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
-
-protected:
-  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
 private:
   // hide assignment operator as private
