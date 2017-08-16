@@ -8,6 +8,7 @@
 // 20170620 M. Kelsey -- Replace PV arg with Touchable, for transforms
 // 20170629 M. Kelsey -- Add volume name to "no lattice" error messages.
 // 20170721 M. Kelsey -- Check volume in AdjustSecondaryPosition.
+// 20170815 M. Kelsey -- Move AdjustSecondaryPosition to GeometryUtils
 
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPDriftHole.hh"
@@ -80,7 +81,7 @@ G4Track* G4CMP::CreatePhonon(const G4VTouchable* touch, G4int polarization,
   RotateToGlobalDirection(touch, vgroup);
 
   auto sec = new G4Track(new G4DynamicParticle(thePhonon, vgroup, energy),
-                         time, AdjustSecondaryPosition(touch, pos));
+                         time, G4CMP::ApplySurfaceClearance(touch, pos));
 
   // Store wavevector in auxiliary info for track
   AttachTrackInfo(sec, GetGlobalDirection(touch, waveVec));
@@ -161,52 +162,10 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
 
   auto secDP = new G4DynamicParticle(theCarrier, v_unit, carrierEnergy, carrierMass);
 
-  auto sec = new G4Track(secDP, time, AdjustSecondaryPosition(touch, pos));
+  auto sec = new G4Track(secDP, time, G4CMP::ApplySurfaceClearance(touch, pos));
 
   // Store wavevector in auxiliary info for track
   G4CMP::AttachTrackInfo(sec, valley);
 
   return sec;
-}
-
-
-// NOTE:  Passed by value because making a temporary anyway
-
-G4ThreeVector G4CMP::AdjustSecondaryPosition(const G4VTouchable* touch,
-					     G4ThreeVector pos) {
-  // Clearance is the minimum distance where a position is guaranteed Inside
-  const G4double clearance = 1e-7*mm;
-
-  // If the step is near a boundary, create the secondary in the initial volume
-  G4VPhysicalVolume* pv = touch->GetVolume();
-  G4ThreadLocalStatic auto latMan = G4LatticeManager::GetLatticeManager();
-  G4LatticePhysical* lat = latMan->GetLattice(pv);
-
-  if (!lat) {		// No lattice in touchable's volume, try pos instead
-    pv = G4CMP::GetVolumeAtPoint(pos);
-    lat = latMan->GetLattice(pv);
-
-    if (!lat) {
-      G4ExceptionDescription msg;
-      msg << "Position " << pos << " not associated with valid volume.";
-      G4Exception("G4CMP::CreateSecondary", "Secondary008",
-		  EventMustBeAborted, msg);
-      return pos;
-    }
-  }
-
-  // Work in local coordinates, adjusting position to be clear of surface
-  RotateToLocalPosition(touch, pos);
-
-  G4VSolid* solid = pv->GetLogicalVolume()->GetSolid();
-  G4ThreeVector norm = solid->SurfaceNormal(pos);
-
-  while (solid->Inside(pos) != kInside ||
-	 solid->DistanceToOut(pos,norm) < clearance) {
-    pos -= norm*clearance;
-    norm = solid->SurfaceNormal(pos);	// Nearest surface may change
-  }
-
-  RotateToGlobalPosition(touch, pos);
-  return pos;
 }

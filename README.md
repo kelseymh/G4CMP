@@ -55,6 +55,7 @@ developers should check the source code in
 | ------------------------| ----------------------------- | ----------------------------------------|
 | G4LATTICEDATA           | /g4cmp/LatticeData	          | Directory with lattice configs          |
 | G4CMP\_DEBUG	           | /g4cmp/verbose <L> >0:        | Enable diagnostic messages              |
+| G4CMP\_CLEARANCE [L]     | /g4cmp/clearance <L> mm       | Minimum distance of tracks from boundaries |
 | G4CMP\_VOLTAGE [V]       | /g4cmp/voltage <V>	volt !=0:  | Apply uniform +Z voltage                |
 | G4CMP\_EPOT\_FILE [F]     | /g4cmp/EPotFile <F> V=0:      | Read mesh field file "F"                |
 | G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEPot <M> V=0:     | Scale the potentials in EPotFile by factor m|

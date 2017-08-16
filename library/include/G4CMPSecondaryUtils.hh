@@ -11,6 +11,7 @@
 //
 // 20161115 Initial commit - R. Agnese
 // 20170620 M. Kelsey -- Replace PV arg with Touchable, for transforms
+// 20170815 M. Kelsey -- Move AdjustSecondaryPosition to GeometryUtils
 
 #ifndef G4CMPSecondaryUtils_hh
 #define G4CMPSecondaryUtils_hh 1
@@ -20,7 +21,6 @@
 
 class G4ParticleDefinition;
 class G4Track;
-class G4VPhysicalVolume;
 class G4VTouchable;
 
 
@@ -42,10 +42,6 @@ namespace G4CMP {
 			       G4int valley, G4double time,
 			       const G4ThreeVector& p,
 			       const G4ThreeVector& pos);
-
-  // NOTE:  Passed by value because making a temporary anyway
-  G4ThreeVector AdjustSecondaryPosition(const G4VTouchable* touch,
-					G4ThreeVector pos);
 }
 
 #endif	/* G4CMPSecondaryUtils_hh */

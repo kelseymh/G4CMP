@@ -24,6 +24,7 @@
 // 20160901  Add parameters to set minimum energy for phonons, charges
 // 20170525  Block 'rule of five' copy/move semantics, as singleton
 // 20170802  Add separate scaling factors for Luke and downconversion
+// 20170815  Add parameter for required clearance from volume surfaces
 
 #include "globals.hh"
 #include "G4RunManager.hh"
@@ -46,6 +47,7 @@ public:
   static G4int GetMillerH()		 { return Instance()->millerH; }
   static G4int GetMillerK()		 { return Instance()->millerK; }
   static G4int GetMillerL()		 { return Instance()->millerL; }
+  static G4double GetSurfaceClearance()  { return Instance()->clearance; }
   static G4double GetVoltage()           { return Instance()->voltage; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetMinPhononEnergy()   { return Instance()->EminPhonons; }
@@ -69,6 +71,7 @@ public:
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
   static void SetMaxChargeBounces(G4int value) { Instance()->ehBounces = value; }
   static void SetMaxPhononBounces(G4int value) { Instance()->pBounces = value; }
+  static void SetSurfaceClearance(G4double value) { Instance()->clearance = value; }
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
   static void SetMinPhononEnergy(G4double value) { Instance()->EminPhonons = value; }
   static void SetMinChargeEnergy(G4double value) { Instance()->EminCharges = value; }
@@ -111,6 +114,7 @@ private:
 
 private:
   G4double voltage;	// Uniform field voltage ($G4CMP_VOLTAGE)
+  G4double clearance;	// Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
   G4double stepScale;	// Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double genPhonons;	// Rate to create primary phonons ($G4CMP_MAKE_PHONONS)
   G4double genCharges;	// Rate to create primary e/h pairs ($G4CMP_MAKE_CHARGES)
