@@ -6,12 +6,14 @@
 // $Id$
 //
 // Create particles and physics processes for phonons and charge carriers
-// Usage:  [physics-list]->AddPhysics(new G4CMPPhysics(<verbose>));
+// Usage:  [physics-list]->AddPhysics(new G4CMPPhysics);
 //
 // 20160901  M. Kelsey -- Add minimum-energy cut process
 // 20161219  M. Kelsey -- Use particle table iterator directly
+// 20170817  M. Kelsey -- Get verbosity from configuration
 
 #include "G4CMPPhysics.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
@@ -30,6 +32,13 @@
 #include "G4PhononTransSlow.hh"
 #include "G4ProcessManager.hh"
 
+
+// Constructor sets global verbosity
+
+G4CMPPhysics::G4CMPPhysics(const G4String& name)
+  : G4VPhysicsConstructor(name) {
+  SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
+}
 
 // Create phonon and charage carrier particles for later use
 
@@ -56,15 +65,17 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* eLimit  = new G4CMPEnergyLimiter;
 
   // Set process verbosity to match physics list, for diagnostics
-  phScat->SetVerboseLevel(verboseLevel);
-  phRefl->SetVerboseLevel(verboseLevel);
-  phDown->SetVerboseLevel(verboseLevel);
-  tmStep->SetVerboseLevel(verboseLevel);
-  driftB->SetVerboseLevel(verboseLevel);
-  ivScat->SetVerboseLevel(verboseLevel);
-  luke->SetVerboseLevel(verboseLevel);
-  recomb->SetVerboseLevel(verboseLevel);
-  eLimit->SetVerboseLevel(verboseLevel);
+  if (verboseLevel>0) {
+    phScat->SetVerboseLevel(verboseLevel);
+    phRefl->SetVerboseLevel(verboseLevel);
+    phDown->SetVerboseLevel(verboseLevel);
+    tmStep->SetVerboseLevel(verboseLevel);
+    driftB->SetVerboseLevel(verboseLevel);
+    ivScat->SetVerboseLevel(verboseLevel);
+    luke->SetVerboseLevel(verboseLevel);
+    recomb->SetVerboseLevel(verboseLevel);
+    eLimit->SetVerboseLevel(verboseLevel);
+  }
 
   G4ParticleDefinition* particle = 0;	// Reusable buffer for convenience
 
