@@ -41,12 +41,12 @@ G4CMPDriftRecombinationProcess::GetMeanFreePath(const G4Track&, G4double,
 
 G4VParticleChange* 
 G4CMPDriftRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
-					     const G4Step&) {
+					     const G4Step& aStep) {
   aParticleChange.Initialize(aTrack);
 
   // If the particle has not come to rest, do nothing
   if (aTrack.GetTrackStatus() != fStopButAlive) {
-    return &aParticleChange;
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
   if (verboseLevel > 1) {
@@ -72,5 +72,7 @@ G4CMPDriftRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+  ClearNumberOfInteractionLengthLeft();		// All processes should do this!
   return &aParticleChange;
 }

@@ -20,17 +20,15 @@
 //		of sub-functions.
 // 20170805  Replace GetMeanFreePath() with scattering-rate model
 
+#include "G4PhononDownconversion.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPDownconversionRate.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
-#include "G4PhononDownconversion.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
-#include "G4PhononTransFast.hh"
-#include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
@@ -66,12 +64,14 @@ G4PhononDownconversion::~G4PhononDownconversion() {
 
 G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
 							 const G4Step& aStep) {
-  if (aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+  aParticleChange.Initialize(aTrack);
+
+  // Only longitudinal phonons decay, and not at a boundary
+  if (aTrack.GetDefinition() != G4PhononLong::Definition() ||
+      aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
     return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
   }
     
-  aParticleChange.Initialize(aTrack);
-
   // Obtain dynamical constants from this volume's lattice
   fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
   fGamma  = theLattice->GetGamma() / (1e11*pascal);
@@ -102,8 +102,11 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4bool G4PhononDownconversion::IsApplicable(const G4ParticleDefinition& aPD) {
-  //Only L-phonons decay
+  // Only L-phonons decay
+  /***** , but need to check actively changing phonon type
   return (&aPD==G4PhononLong::PhononDefinition());
+  *****/
+  return G4VPhononProcess::IsApplicable(aPD);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

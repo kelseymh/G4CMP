@@ -81,7 +81,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // leaving volume
   if (postStepPoint->GetStepStatus()==fGeomBoundary ||
       postStepPoint->GetProcessDefinedStep()==stepLimiter) {
-    return &aParticleChange;
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack);
@@ -175,6 +175,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   MakeGlobalRecoil(k_recoil);		// Converts wavevector to momentum
   FillParticleChange(GetValleyIndex(aTrack), k_recoil);
-  ResetNumberOfInteractionLengthLeft();
+
+  ClearNumberOfInteractionLengthLeft();
   return &aParticleChange;
 }

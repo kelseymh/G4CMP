@@ -72,7 +72,8 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
 
   aParticleChange.Initialize(aTrack);
-  if (!IsGoodBoundary(aStep)) return &aParticleChange;
+  if (!IsGoodBoundary(aStep))
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 
   if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
@@ -88,6 +89,8 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   ApplyBoundaryAction(aTrack, aStep, aParticleChange);
+
+  ClearNumberOfInteractionLengthLeft();		// All processes should do this!
   return &aParticleChange;
 }
 
