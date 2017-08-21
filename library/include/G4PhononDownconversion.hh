@@ -44,7 +44,8 @@ private:
   void MakeLTSecondaries(const G4Track&);
 
 private:
-  double fBeta, fGamma, fLambda, fMu;	// Local buffers for calculations
+  G4double fBeta, fGamma, fLambda, fMu;	// Local buffers for calculations
+  G4double fvLvT;			// Ratio of sound speeds
 
   // hide assignment operator as private 
   G4PhononDownconversion(G4PhononDownconversion&);

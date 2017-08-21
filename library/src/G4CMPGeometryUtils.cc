@@ -10,12 +10,19 @@
 //
 // 20161107  Rob Agnese
 // 20170605  Pass touchable from track, not just local PV
+// 20170815  Move AdjustSecondaryPosition to here as ApplySurfaceClearance
 
 #include "G4CMPGeometryUtils.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPGlobalLocalTransformStore.hh"
-#include "G4ParallelWorldProcess.hh"
+#include "G4LatticeManager.hh"
+#include "G4LatticePhysical.hh"
+#include "G4LogicalVolume.hh"
+#include "G4Navigator.hh"
 #include "G4Step.hh"
 #include "G4TransportationManager.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4VSolid.hh"
 
 
 G4ThreeVector G4CMP::GetLocalDirection(const G4VTouchable* touch,
@@ -96,3 +103,46 @@ G4VPhysicalVolume* G4CMP::GetVolumeAtPoint(const G4ThreeVector& pos) {
 
   return volume;
 }
+
+
+// Adjust specified position to avoid surface of current (touchable) volume
+
+G4ThreeVector G4CMP::ApplySurfaceClearance(const G4VTouchable* touch,
+					   G4ThreeVector pos) {
+  // Clearance is the minimum distance where a position is guaranteed Inside
+  const G4double clearance = G4CMPConfigManager::GetSurfaceClearance();
+
+  // If the step is near a boundary, create the secondary in the initial volume
+  G4VPhysicalVolume* pv = touch->GetVolume();
+  G4ThreadLocalStatic auto latMan = G4LatticeManager::GetLatticeManager();
+  G4LatticePhysical* lat = latMan->GetLattice(pv);
+
+  if (!lat) {		// No lattice in touchable's volume, try pos instead
+    pv = G4CMP::GetVolumeAtPoint(pos);
+    lat = latMan->GetLattice(pv);
+
+    if (!lat) {
+      G4ExceptionDescription msg;
+      msg << "Position " << pos << " not associated with valid volume.";
+      G4Exception("G4CMP::CreateSecondary", "Secondary008",
+		  EventMustBeAborted, msg);
+      return pos;
+    }
+  }
+
+  // Work in local coordinates, adjusting position to be clear of surface
+  RotateToLocalPosition(touch, pos);
+
+  G4VSolid* solid = pv->GetLogicalVolume()->GetSolid();
+  G4ThreeVector norm = solid->SurfaceNormal(pos);
+
+  while (solid->Inside(pos) != kInside ||
+	 solid->DistanceToOut(pos,norm) < clearance) {
+    pos -= norm*clearance;
+    norm = solid->SurfaceNormal(pos);	// Nearest surface may change
+  }
+
+  RotateToGlobalPosition(touch, pos);
+  return pos;
+}
+

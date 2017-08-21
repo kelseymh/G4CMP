@@ -55,6 +55,7 @@ developers should check the source code in
 | ------------------------| ----------------------------- | ----------------------------------------|
 | G4LATTICEDATA           | /g4cmp/LatticeData	          | Directory with lattice configs          |
 | G4CMP\_DEBUG	           | /g4cmp/verbose <L> >0:        | Enable diagnostic messages              |
+| G4CMP\_CLEARANCE [L]     | /g4cmp/clearance <L> mm       | Minimum distance of tracks from boundaries |
 | G4CMP\_VOLTAGE [V]       | /g4cmp/voltage <V>	volt !=0:  | Apply uniform +Z voltage                |
 | G4CMP\_EPOT\_FILE [F]     | /g4cmp/EPotFile <F> V=0:      | Read mesh field file "F"                |
 | G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEPot <M> V=0:     | Scale the potentials in EPotFile by factor m|
@@ -281,12 +282,14 @@ the crystal system.
 | dyn    | beta gamma lambda mu | All four params | Pa, GPa            |
 | scat    | B         | isotope scattering rate   | second^3 (s3)      |
 | decay   | A         | anharmonic decay rate     | second^4 (s4)      |
+| decayTT | frac      | Fraction of L->TT decays  |                    |
 | LDOS    | frac      | longitudnal density of states | sum to unity   |
 | STDOS   | frac      | slow-transverse density of states |            |
 | FTDOS   | frac      | fast-transverse density of states |            |
 | Debye   | val       | Debye energy for phonon primaries | E, T, Hz   |
 | **Charge carrier parameters** |
 | vsound  | Vlong     | sound speed (longitudinal) | m/s               |
+| vtrans  | Vtrans    | sound speed (transverse)   | m/s               |
 | bandgap | val       | Bandgap energy             | energy (eV)       |
 | pairEnergy | val    | Energy taken by e-h pair   | energy (eV)       |
 | fanoFactor | val    | Spread of e-h pair energy  |                   |

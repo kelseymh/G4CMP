@@ -7,6 +7,7 @@ stiffness 4 4  67 GPa
 dyn -73.2 -70.8 37.6 56.1 GPa
 scat 3.67e-41 s3
 decay 1.6456e-54 s4
+decayTT 0.74
 # From S. Tamura et al., PRB44(7), 1991
 LDOS 0.097834
 STDOS 0.53539
@@ -16,7 +17,8 @@ Debye 2 THz		# Can also use temperature or energy
 bandgap 0.74 eV
 pairEnergy 2.96 eV
 fanoFactor 0.1057
-vsound 5324.2077 m/s
+vsound 5324.2077 m/s	# Longitudinal sound speed
+vtrans 3258.7879 m/s	# Transverse sound speed
 l0_e 257 um
 l0_h 108 um
 #hole and electron masses taken from Robert's thesis
@@ -26,7 +28,7 @@ valley  -45 35.2644 90 deg
 valley   45 35.2644 90 deg
 valley  135 35.2644 90 deg
 valley -135 35.2644 90 deg
-# Intervalley scattering
+# Intervalley scattering (Edelweiss model)
 ivField 217 V/m
 ivRate 6.72e-2 Hz
 ivPower 3.24		# used in sqrt(field^ivPower)

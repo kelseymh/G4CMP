@@ -23,6 +23,7 @@
 // 20160830  Add command to scale production of e/h pairs, like phonons
 // 20160901  Add commands to set minimum energy for phonons, charges
 // 20170802  Add commands for separate Luke, downconversion scaing
+// 20170815  Add command to set volume surface clearance
 
 #include "G4UImessenger.hh"
 
@@ -60,6 +61,7 @@ private:
   G4UIcmdWithAnInteger* ehBounceCmd;
   G4UIcmdWithAnInteger* pBounceCmd;
   G4UIcmdWithADoubleAndUnit* voltageCmd;
+  G4UIcmdWithADoubleAndUnit* clearCmd;
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
   G4UIcmdWithADouble* minstepCmd;

@@ -19,6 +19,7 @@
 // 20170802  Use G4CMP_DOWN_SAMPLE biasing with ChooseWeight(), move outside
 //		of sub-functions.
 // 20170805  Replace GetMeanFreePath() with scattering-rate model
+// 20170821  Move hard-coded constants to lattice configuration
 
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPDownconversionRate.hh"
@@ -42,7 +43,7 @@
 
 G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   : G4VPhononProcess(aName, fPhononDownconversion),
-    fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.) {
+    fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.), fvLvT(1.) {
   UseRateModel(new G4CMPDownconversionRate);
 
 #ifdef G4CMP_DEBUG
@@ -52,9 +53,10 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
               "Decay Branch,First Daughter Weight,Second Daughter Weight,Parent Weight,"
               "Number of Outgoing Tracks,Parent Energy [eV]\n";
   } else {
-    G4cerr << "Could not open phonon debugging output file!" << G4endl;}
-#endif
+    G4cerr << "Could not open phonon debugging output file!" << G4endl;
   }
+#endif
+}
 
 G4PhononDownconversion::~G4PhononDownconversion() {
 #ifdef G4CMP_DEBUG
@@ -78,11 +80,14 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
   fLambda = theLattice->GetLambda() / (1e11*pascal);
   fMu     = theLattice->GetMu() / (1e11*pascal);
 
+  fvLvT = theLattice->GetSoundSpeed() / theLattice->GetTransverseSoundSpeed();
+
   //Destroy the parent phonon and create the daughter phonons.
   //74% chance that daughter phonons are both transverse
   //26% Transverse and Longitudinal
-  if (G4UniformRand()>0.740) MakeLTSecondaries(aTrack);
-  else MakeTTSecondaries(aTrack);
+  const G4double fracTT = theLattice->GetAnhTTFrac();
+  if (G4UniformRand() <= fracTT) MakeTTSecondaries(aTrack);
+  else MakeLTSecondaries(aTrack);
 
 #ifdef G4CMP_DEBUG
   output << aTrack.GetWeight() << ','
@@ -162,10 +167,8 @@ inline double G4PhononDownconversion::MakeTTDeviation(double d, double x) const 
 //Generate daughter phonons from L->T+T process
    
 void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
-  //d is the velocity ratio vL/vT
-  G4double d=1.6338;
-  G4double upperBound=(1+(1/d))/2;
-  G4double lowerBound=(1-(1/d))/2;
+  G4double upperBound=(1+(1/fvLvT))/2;
+  G4double lowerBound=(1-(1/fvLvT))/2;
 
   //Use MC method to generate point from distribution:
   //if a random point on the energy-probability plane is
@@ -174,14 +177,14 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   //x=fraction of parent phonon energy in first T phonon
   G4double x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
   G4double p = 1.5*G4UniformRand();
-  while(p >= GetTTDecayProb(d, x*d)) {
+  while(p >= GetTTDecayProb(fvLvT, x*fvLvT)) {
     x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
     p = 1.5*G4UniformRand(); 
   }
   
   //using energy fraction x to calculate daughter phonon directions
-  G4double theta1=MakeTTDeviation(d, x);
-  G4double theta2=MakeTTDeviation(d, 1-x);
+  G4double theta1=MakeTTDeviation(fvLvT, x);
+  G4double theta2=MakeTTDeviation(fvLvT, 1-x);
   G4ThreeVector dir1=G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack)->k();
   G4ThreeVector dir2=dir1;
 
@@ -250,10 +253,8 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
 //Generate daughter phonons from L->L'+T process
    
 void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
-  //d is the velocity ratio vL/v
-  G4double d=1.6338;
   G4double upperBound=1;
-  G4double lowerBound=(d-1)/(d+1);
+  G4double lowerBound=(fvLvT-1)/(fvLvT+1);
   
   /*
   //Use MC method to generate point from distribution:
@@ -263,7 +264,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   //x=fraction of parent phonon energy in L phonon
   G4double x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
   G4double p = 4.0*G4UniformRand();
-  while(p >= GetLTDecayProb(d, x)) {
+  while(p >= GetLTDecayProb(fvLvT, x)) {
     x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
     p = 4.0*G4UniformRand(); 		     //4.0 is about the max in the PDF
   }
@@ -273,7 +274,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   G4double x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
   G4double q = 0;
   if (x <= upperBound && x >= lowerBound) q = 1/(upperBound-lowerBound);
-  while (u >= GetLTDecayProb(d, x)/(2.8/(upperBound-lowerBound))) {
+  while (u >= GetLTDecayProb(fvLvT, x)/(2.8/(upperBound-lowerBound))) {
     u = G4UniformRand();
     x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
     if (x <= upperBound && x >= lowerBound) q = 1/(upperBound-lowerBound);
@@ -281,8 +282,8 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   }
 
   //using energy fraction x to calculate daughter phonon directions
-  G4double thetaL=MakeLDeviation(d, x);
-  G4double thetaT=MakeTDeviation(d, x);
+  G4double thetaL=MakeLDeviation(fvLvT, x);
+  G4double thetaT=MakeTDeviation(fvLvT, x);
   G4ThreeVector dir1=G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack)->k();
   G4ThreeVector dir2=dir1;
 

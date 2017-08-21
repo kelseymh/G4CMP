@@ -18,6 +18,7 @@
 // 20160624  Add command to select KV lookup tables vs. calculator
 // 20160830  Add command to scale production of e/h pairs, like phonons
 // 20170802  Add commands for separate Luke, downconversion scaing
+// 20170815  Add command to set volume surface clearance
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -36,7 +37,7 @@
 
 G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : theManager(mgr), localCmdDir(false), cmdDir(0), verboseCmd(0),
-    ehBounceCmd(0), pBounceCmd(0), voltageCmd(0), minEPhononCmd(0),
+    ehBounceCmd(0), pBounceCmd(0), voltageCmd(0), clearCmd(0), minEPhononCmd(0),
     minEChargeCmd(0), minstepCmd(0), makePhononCmd(0), makeChargeCmd(0),
     lukePhononCmd(0), downconvCmd(0), 
     escaleCmd(0), fileCmd(0), dirCmd(0), hitsCmd(0), millerCmd(0),
@@ -54,6 +55,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   voltageCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("voltage",
 				"Set voltage for uniform electric field");
   voltageCmd->SetUnitCategory("Electric potential");
+
+  clearCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("clearance",
+	      "Minimum distance from volume boundaries for new tracks");
+  clearCmd->SetUnitCategory("Length");
 
   minstepCmd = CreateCommand<G4UIcmdWithADouble>("minimumStep",
 			 "Set fraction of L0 for charge carrier minimum step");
@@ -111,6 +116,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete ehBounceCmd; ehBounceCmd=0;
   delete pBounceCmd; pBounceCmd=0;
   delete voltageCmd; voltageCmd=0;
+  delete clearCmd; clearCmd=0;
   delete minEPhononCmd; minEPhononCmd=0;
   delete minEChargeCmd; minEChargeCmd=0;
   delete minstepCmd; minstepCmd=0;
@@ -170,6 +176,9 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
 
   if (cmd == voltageCmd)
     theManager->SetVoltage(voltageCmd->GetNewDoubleValue(value));
+
+  if (cmd == clearCmd)
+    theManager->SetSurfaceClearance(clearCmd->GetNewDoubleValue(value));
 
   if (cmd == escaleCmd)
     theManager->SetEPotScale(escaleCmd->GetNewDoubleValue(value));

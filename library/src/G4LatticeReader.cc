@@ -25,6 +25,7 @@
 // 20160701  Withdraw seting basis vectors, set crystal symmetry instead
 // 20160727  Use G4CMP-specific units; allow multiple units for Debye energy
 // 20160802  Use hep_pascal for pressure (Windows compatibility)
+// 20170821  Add transverse sound speed, L->TT fraction
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -172,10 +173,12 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "ldos")       pLattice->SetLDOS(fValue);
   else if (name == "stdos")      pLattice->SetSTDOS(fValue);
   else if (name == "ftdos")      pLattice->SetFTDOS(fValue);
+  else if (name == "decaytt")    pLattice->SetAnhTTFrac(fValue);
   else if (name == "bandgap")    pLattice->SetBandGapEnergy(fValue*ProcessUnits("Energy"));
   else if (name == "pairenergy") pLattice->SetPairProductionEnergy(fValue*ProcessUnits("Energy"));
   else if (name == "fanofactor") pLattice->SetFanoFactor(fValue);
   else if (name == "vsound")     pLattice->SetSoundSpeed(fValue*ProcessUnits("Velocity"));
+  else if (name == "vtrans")     pLattice->SetTransverseSoundSpeed(fValue*ProcessUnits("Velocity"));
   else if (name == "escat")      pLattice->SetElectronScatter(fValue*ProcessUnits("Length"));
   else if (name == "l0_e")       pLattice->SetElectronScatter(fValue*ProcessUnits("Length"));
   else if (name == "hscat")      pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
