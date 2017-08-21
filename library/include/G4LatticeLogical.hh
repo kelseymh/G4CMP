@@ -27,6 +27,7 @@
 // 20160727  Store Debye energy for phonon primaries, support different access
 // 20170523  Add interface for axis vector of valleys
 // 20170525  Add "rule of five" copy/move semantics
+// 20170821  Add transverse sound speed, L->TT fraction
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -137,6 +138,7 @@ public:
   void SetMu(G4double Mu) { fMu = Mu; }
   void SetScatteringConstant(G4double b) { fB=b; }
   void SetAnhDecConstant(G4double a) { fA=a; }
+  void SetAnhTTFrac(G4double f) { fTTFrac=f; }
   void SetLDOS(G4double LDOS) { fLDOS=LDOS; }
   void SetSTDOS(G4double STDOS) { fSTDOS=STDOS; }
   void SetFTDOS(G4double FTDOS) { fFTDOS=FTDOS; }
@@ -151,6 +153,7 @@ public:
   G4double GetMu() const { return fMu; }
   G4double GetScatteringConstant() const { return fB; }
   G4double GetAnhDecConstant() const { return fA; }
+  G4double GetAnhTTFrac() const { return fTTFrac; }
   G4double GetLDOS() const { return fLDOS; }
   G4double GetSTDOS() const { return fSTDOS; }
   G4double GetFTDOS() const { return fFTDOS; }
@@ -161,6 +164,7 @@ public:
   void SetPairProductionEnergy(G4double pp) { fPairEnergy = pp; }
   void SetFanoFactor(G4double f) { fFanoFactor = f; }
   void SetSoundSpeed(G4double v) { fVSound = v; }
+  void SetTransverseSoundSpeed(G4double v) { fVTrans = v; }
   void SetHoleScatter(G4double l0) { fL0_h = l0; }
   void SetHoleMass(G4double hmass) { fHoleMass = hmass; }
   void SetElectronScatter(G4double l0) { fL0_e = l0; }
@@ -171,6 +175,7 @@ public:
   G4double GetPairProductionEnergy() const      { return fPairEnergy; }
   G4double GetFanoFactor() const                { return fFanoFactor; }
   G4double GetSoundSpeed() const                { return fVSound; }
+  G4double GetTransverseSoundSpeed() const      { return fVTrans; }
   G4double GetHoleScatter() const               { return fL0_h; }
   G4double GetHoleMass() const                  { return fHoleMass; }
   G4double GetElectronScatter() const           { return fL0_e; }
@@ -248,10 +253,12 @@ private:
   G4double fLDOS;    // Density of states for L-phonons
   G4double fSTDOS;   // Density of states for ST-phonons
   G4double fFTDOS;   // Density of states for FT-phonons
+  G4double fTTFrac;  // Fraction of anharmonic decays L -> TT
   G4double fBeta, fGamma, fLambda, fMu; // dynamical constants for material
   G4double fDebye;   // Debye energy, for partitioning primary phonons
 
   G4double fVSound;	// Speed of sound (longitudinal phonon)
+  G4double fVTrans;	// Speed of sound (transverse phonon)
   G4double fL0_e;	// Scattering length for electrons
   G4double fL0_h;	// Scattering length for holes
 

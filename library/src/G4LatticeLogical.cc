@@ -27,6 +27,7 @@
 // 20170523  Add interface for axis vector of valleys
 // 20170525  Add "rule of five" copy/move semantics
 // 20170527  Drop unnecessary <fstream>
+// 20170821  Add transverse sound speed, L->TT fraction
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -46,9 +47,9 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
   : verboseLevel(0), fName(name), fDensity(0.),
     fElasticity{}, fElReduced{}, fHasElasticity(false),
     fpPhononKin(0), fpPhononTable(0),
-    fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0),
+    fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
-    fVSound(0.), fL0_e(0.), fL0_h(0.), 
+    fVSound(0.), fVTrans(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),
     fHoleMass(mElectron), fElectronMass(mElectron),
     fMassTensor(G4Rep3x3(mElectron,0.,0.,0.,mElectron,0.,0.,0.,mElectron)),
@@ -90,12 +91,14 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fLDOS = rhs.fLDOS;
   fSTDOS = rhs.fSTDOS;
   fFTDOS = rhs.fFTDOS;
+  fTTFrac = rhs.fTTFrac;
   fBeta = rhs.fBeta;
   fGamma = rhs.fGamma;
   fLambda = rhs.fLambda;
   fMu = rhs.fMu;
   fDebye = rhs.fDebye;
   fVSound = rhs.fVSound;
+  fVTrans = rhs.fVTrans;
   fL0_e = rhs.fL0_e;
   fL0_h = rhs.fL0_h;
   fHoleMass = rhs.fHoleMass;
@@ -661,7 +664,8 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
   os << "# Phonon propagation parameters"
      << "\ndyn " << fBeta/GPa << " " << fGamma/GPa  << " "
      << fLambda/GPa  << " " << fMu/GPa << " GPa"
-     << "\nscat " << fB/s3 << " s3" << " decay " << fA/s4 << " s4" 
+     << "\nscat " << fB/s3 << " s3" << " decay " << fA/s4 << " s4"
+     << "\ndecayTT " << fTTFrac
      << "\nLDOS " << fLDOS << " STDOS " << fSTDOS << " FTDOS " << fFTDOS
      << "\nDebye " << fDebye/eV << " eV"
      << std::endl;
@@ -671,6 +675,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\npairEnergy " << fPairEnergy/eV << " eV"
      << "\nfanoFactor " << fFanoFactor
      << "\nvsound " << fVSound/(m/s) << " m/s"
+     << "\nvtrans " << fVTrans/(m/s) << " m/s"
      << "\nl0_e " << fL0_e/um << " um"
      << "\nl0_h " << fL0_h/um << " um"
      << std::endl;

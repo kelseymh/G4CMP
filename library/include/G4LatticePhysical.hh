@@ -21,6 +21,7 @@
 // 20160608  Drop (theta,phi) lattice orientation function.
 // 20170523  Add interface for axis vector of valleys
 // 20170525  Drop empty destructor to allow default "rule of five" semantics
+// 20170821  Add transverse sound speed, L->TT fraction
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -85,6 +86,7 @@ public:
   // Phonon propagation parameters
   G4double GetScatteringConstant() const { return fLattice->GetScatteringConstant(); }
   G4double GetAnhDecConstant() const { return fLattice->GetAnhDecConstant(); }
+  G4double GetAnhTTFrac() const      { return fLattice->GetAnhTTFrac(); }
   G4double GetLDOS() const           { return fLattice->GetLDOS(); }
   G4double GetSTDOS() const          { return fLattice->GetSTDOS(); }
   G4double GetFTDOS() const          { return fLattice->GetFTDOS(); }
@@ -99,6 +101,7 @@ public:
   G4double GetPairProductionEnergy() const { return fLattice->GetPairProductionEnergy(); }
   G4double GetFanoFactor() const      { return fLattice->GetFanoFactor(); }
   G4double GetSoundSpeed() const      { return fLattice->GetSoundSpeed(); }
+  G4double GetTransverseSoundSpeed() const { return fLattice->GetTransverseSoundSpeed(); }
   G4double GetElectronScatter() const { return fLattice->GetElectronScatter(); }
   G4double GetHoleScatter() const     { return fLattice->GetHoleScatter(); }
 
