@@ -16,7 +16,7 @@ Debye 15 THz		# Can also use temperature or energy
 bandgap 1.17 eV
 pairEnergy 3.81 eV
 fanoFactor 0.15
-vsound 9000.0 m/s	# (approximate)
+vsound 9000 m/s		# Longitudinal sound speed
 l0_e 16.9e-6 m
 l0_h 7.5e-6 m
 #hole and electron masses taken from Robert's thesis
@@ -25,13 +25,13 @@ emass 0.91 0.19 0.19	# per m(electron)
 valley   0  0 90 deg
 valley  90  0 90 deg
 valley   0 90 90 deg
-# Intervalley scattering (matrix elements) -- COPIED FROM GERMANIUM!
-alpha 0.3 /eV
-acDeform 11 eV
-opDeform 3e10 2e9 eV
-opEnergy 27.3e-3 10.3e-3 eV
-neutDens 1e11 /cm3
-epsilon 16.2
+# Intervalley scattering (matrix elements)
+alpha 0.5 /eV
+acDeform 6.6 eV
+opDeform 3e10 2e9 eV		# COPIED FROM Ge
+opEnergy 27.3e-3 10.3e-3 eV	# COPIED FROM Ge
+neutDens 1e11 /cm3		# COPIED FROM Ge
+epsilon 11.68
 # Intervalley scattering (Edelweiss model)
 ivField 217 V/m
 ivRate 6.72e-2 Hz	# Ge rate, these are not tuned for Si

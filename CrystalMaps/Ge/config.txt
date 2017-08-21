@@ -16,7 +16,7 @@ Debye 2 THz		# Can also use temperature or energy
 bandgap 0.74 eV
 pairEnergy 2.96 eV
 fanoFactor 0.1057
-vsound 5324.2077 m/s
+vsound 5324.2077 m/s	# Longitudinal sound speed
 l0_e 257 um
 l0_h 108 um
 #hole and electron masses taken from Robert's thesis
