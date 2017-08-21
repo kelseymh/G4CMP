@@ -44,6 +44,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
+    IVEdelweiss(getenv("G4CMP_IV_EDELWEISS")?atoi(getenv("G4CMP_IV_EDELWEISS")):0),
     EPot_file(getenv("G4CMP_EPOT_FILE")?getenv("G4CMP_EPOT_FILE"):""),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     Hit_file(getenv("G4CMP_HIT_FILE")?getenv("G4CMP_HIT_FILE"):"g4cmp_hits.txt"),

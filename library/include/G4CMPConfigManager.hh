@@ -23,6 +23,7 @@
 // 20160830  Add parameter to scale production of e/h pairs, like phonons
 // 20160901  Add parameters to set minimum energy for phonons, charges
 // 20170525  Block 'rule of five' copy/move semantics, as singleton
+// 20170821  Add parameter to select Edelweiss IV scattering model
 
 #include "globals.hh"
 #include "G4RunManager.hh"
@@ -57,6 +58,7 @@ public:
   static const G4String& GetHitOutput()  { return Instance()->Hit_file; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
+  static G4bool UseIVEdelweiss()	 { return Instance()->IVEdelweiss; }
 
   static void GetMillerOrientation(G4int& h, G4int& k, G4int& l) {
     h = Instance()->millerH; k = Instance()->millerK; l = Instance()->millerL;
@@ -74,6 +76,7 @@ public:
   static void SetGenCharges(G4double value) { Instance()->genCharges = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
+  static void UseIVEdelweiss(G4bool value) { Instance()->IVEdelweiss = value; }
 
   // These settings require the geometry to be rebuilt
   static void SetVoltage(G4double value)
@@ -123,6 +126,7 @@ private:
   G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits
                         // ($G4CMP_FANO_ENABLED)
+  G4bool IVEdelweiss;	// Use Edelweiss model for IV rate ($G4CMP_IV_EDELWEISS)
   G4String EPot_file;	// Name of E-field file ($G4CMP_EPOT_FILE)
   G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
   G4String Hit_file;	// Output file of e/h hits ($G4CMP_HIT_FILE)

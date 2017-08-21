@@ -17,6 +17,7 @@
 // 20160518  Add commands for Miller orientation, phonon bounces
 // 20160624  Add command to select KV lookup tables vs. calculator
 // 20160830  Add command to scale production of e/h pairs, like phonons
+// 20170821  Add command to select Edelweiss IV scattering model
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -38,7 +39,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     ehBounceCmd(0), pBounceCmd(0), voltageCmd(0), minEPhononCmd(0),
     minEChargeCmd(0), minstepCmd(0), makePhononCmd(0), makeChargeCmd(0),
     escaleCmd(0), fileCmd(0), dirCmd(0), hitsCmd(0), millerCmd(0),
-    kvmapCmd(0) {
+    kvmapCmd(0), fanoStatsCmd(0), ivEdelCmd(0) {
   CreateDirectory("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library");
 
@@ -95,6 +96,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   fanoStatsCmd = CreateCommand<G4UIcmdWithABool>("enableFanoStatistics",
            "Modify input ionization energy according to Fano statistics.");
   fanoStatsCmd->SetDefaultValue(true);
+
+  ivEdelCmd = CreateCommand<G4UIcmdWithABool>("useEdelweissIVRate",
+           "Use Edelweiss parametrization for IV scattering rate.");
+  ivEdelCmd->SetDefaultValue(true);
 }
 
 
@@ -175,5 +180,6 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
 
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));
+  if (cmd == ivEdelCmd) theManager->UseIVEdelweiss(StoB(value));
 }
 

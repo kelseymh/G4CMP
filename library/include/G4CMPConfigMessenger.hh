@@ -22,6 +22,7 @@
 // 20160624  Add command to select KV lookup tables vs. calculator
 // 20160830  Add command to scale production of e/h pairs, like phonons
 // 20160901  Add commands to set minimum energy for phonons, charges
+// 20170821  Add command to select Edelweiss IV scattering model
 
 #include "G4UImessenger.hh"
 
@@ -71,6 +72,7 @@ private:
   G4UIcmdWithAString* millerCmd;	// Will parse out three integers
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;
+  G4UIcmdWithABool*   ivEdelCmd;
 
 private:
   G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden
