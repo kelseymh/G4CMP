@@ -282,12 +282,14 @@ the crystal system.
 | dyn    | beta gamma lambda mu | All four params | Pa, GPa            |
 | scat    | B         | isotope scattering rate   | second^3 (s3)      |
 | decay   | A         | anharmonic decay rate     | second^4 (s4)      |
+| decayTT | frac      | Fraction of L->TT decays  |                    |
 | LDOS    | frac      | longitudnal density of states | sum to unity   |
 | STDOS   | frac      | slow-transverse density of states |            |
 | FTDOS   | frac      | fast-transverse density of states |            |
 | Debye   | val       | Debye energy for phonon primaries | E, T, Hz   |
 | **Charge carrier parameters** |
 | vsound  | Vlong     | sound speed (longitudinal) | m/s               |
+| vtrans  | Vtrans    | sound speed (transverse)   | m/s               |
 | bandgap | val       | Bandgap energy             | energy (eV)       |
 | pairEnergy | val    | Energy taken by e-h pair   | energy (eV)       |
 | fanoFactor | val    | Spread of e-h pair energy  |                   |
