@@ -26,6 +26,7 @@
 // 20160727  Use G4CMP-specific units; allow multiple units for Debye energy
 // 20160802  Use hep_pascal for pressure (Windows compatibility)
 // 20170810  Processing IV scattering matrix terms, allow "/eV" type units
+// 20170821  For deformation potentials, specify eV/cm units.
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -45,8 +46,7 @@
 
 G4LatticeReader::G4LatticeReader(G4int vb)
   : verboseLevel(vb?vb:G4CMPConfigManager::GetVerboseLevel()),
-    psLatfile(0), pLattice(0),
-    fToken(""), fValue(0.), f3Vec(0.,0.,0.),
+    psLatfile(0), pLattice(0), fToken(""), fValue(0.), f3Vec(0.,0.,0.),
     fDataDir(G4CMPConfigManager::GetLatticeDir()),
     mElectron(electron_mass_c2/c_squared) {
   G4CMPUnitsTable::Init();	// Ensures thread-by-thread initialization
@@ -369,7 +369,7 @@ G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
 G4bool G4LatticeReader::ProcessDeformation() {
   if (verboseLevel>1) G4cout << " ProcessDeformation" << G4endl;
 
-  G4bool okay = ProcessList("Energy");
+  G4bool okay = ProcessList("Energy/Length");
   if (okay) pLattice->SetOpticalDeform(fList);
 
   return okay;
@@ -408,8 +408,8 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
   fUnits    = G4UnitDefinition::GetValueOf(fUnitName);
   fUnitCat  = G4UnitDefinition::GetCategory(fUnitName);
 
-  // If actual category doesn't match expected, throw exception
-  if (!unitcat.contains(fUnitCat)) {
+  // Ensure that units properly match user-requested categories
+  if (fUnitCat.empty() || !unitcat.contains(fUnitCat)) {
     G4ExceptionDescription msg;
     msg << "Expected " << unitcat << " units, got " << fUnitName << " ("
 	<< fUnitCat << ")";

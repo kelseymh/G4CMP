@@ -29,7 +29,7 @@ valley -135 35.2644 90 deg
 # Intervalley scattering (matrix elements)
 alpha 0.3 /eV
 acDeform 11 eV
-opDeform 3e10 2e9 eV
+opDeform 3e10 2e9 eV/cm
 opEnergy 27.3e-3 10.3e-3 eV
 neutDens 1e11 /cm3
 epsilon 16.2

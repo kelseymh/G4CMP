@@ -28,7 +28,7 @@ valley   0 90 90 deg
 # Intervalley scattering (matrix elements)
 alpha 0.5 /eV
 acDeform 6.6 eV
-opDeform 3e10 2e9 eV		# COPIED FROM Ge
+opDeform 3e10 2e9 eV/cm		# COPIED FROM Ge
 opEnergy 27.3e-3 10.3e-3 eV	# COPIED FROM Ge
 neutDens 1e11 /cm3		# COPIED FROM Ge
 epsilon 11.68
