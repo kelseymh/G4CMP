@@ -9,6 +9,7 @@
 // $Id$
 //
 // 20170815  Drop call to LoadDataForTrack(); now handled in process.
+// 20170820  Compute rate for L-type phonons; otherwise return 0.
 
 #include "G4CMPDownconversionRate.hh"
 #include "G4LatticePhysical.hh"

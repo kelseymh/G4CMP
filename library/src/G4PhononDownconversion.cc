@@ -19,6 +19,7 @@
 // 20170802  Use G4CMP_DOWN_SAMPLE biasing with ChooseWeight(), move outside
 //		of sub-functions.
 // 20170805  Replace GetMeanFreePath() with scattering-rate model
+// 20170820  Compute MFP for all phonon types, check for L-type in PostStep
 
 #include "G4PhononDownconversion.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -69,7 +70,7 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
   // Only longitudinal phonons decay, and not at a boundary
   if (aTrack.GetDefinition() != G4PhononLong::Definition() ||
       aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
-    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
+    return &aParticleChange;		// Don't reset interaction length!
   }
     
   // Obtain dynamical constants from this volume's lattice
