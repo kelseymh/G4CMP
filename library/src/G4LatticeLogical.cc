@@ -28,6 +28,7 @@
 // 20170525  Add "rule of five" copy/move semantics
 // 20170527  Drop unnecessary <fstream>
 // 20170810  Add parameters for IV scattering matrix terms
+// 20170821  Add support for separate D0 and D1 optical deformation potentials
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -117,11 +118,14 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fValleyAxis = rhs.fValleyAxis;
   fAlpha = rhs.fAlpha;
   fAcDeform = rhs.fAcDeform;
-  fOpDeform = rhs.fOpDeform;
-  fOpEnergy = rhs.fOpEnergy;
   fIVField = rhs.fIVField;
   fIVRate = rhs.fIVRate;
   fIVExponent = rhs.fIVExponent;
+
+  for (G4int i=0; i<2; i++) {
+    fOpDeform[i] = rhs.fOpDeform[i];
+    fOpEnergy[i] = rhs.fOpEnergy[i];
+  }
 
   if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
   if (!rhs.fpPhononTable) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
@@ -714,9 +718,15 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nepsilon " << fPermittivity
      << "\nneutDens " << fNImpurity * cm3 << " /cm3"
      << "\nacDeform " << fAcDeform/eV << " eV"
-     << "\nopDeform "; DumpList(os, fOpDeform, "eV");
-  os << "\nopEnergy "; DumpList(os, fOpEnergy, "eV");
-  os << std::endl;
+     << std::endl;
+
+  for (G4int i=0; i<2; i++) {
+    if (!fOpDeform[i].empty()) {
+      os << " op" << i << "Deform "; DumpList(os, fOpDeform[i], "eV");
+      os << " op" << i << "Energy "; DumpList(os, fOpEnergy[i], "eV");
+      os << std::endl;
+    }
+  }
 
   os << "# Edelweiss intervalley scattering parameters"
      << "\nivField " << fIVField/(volt/m) << " V/m"

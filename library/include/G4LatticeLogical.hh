@@ -220,8 +220,14 @@ public:
 
   void SetAlpha(G4double v)	       { fAlpha = v; }
   void SetAcousticDeform(G4double v)   { fAcDeform = v; }
-  void SetOpticalDeform(const std::vector<G4double>& vlist) {fOpDeform = vlist;}
-  void SetOpticalEnergy(const std::vector<G4double>& vlist) {fOpEnergy = vlist;}
+
+  // Optical intervalley scattering may use D0 or D1 deformation potentials
+  void SetOpticalDeform(G4int i, const std::vector<G4double>& vlist) {
+    if (i>=0 && i<2) fOpDeform[i] = vlist;
+  }
+  void SetOpticalEnergy(G4int i, const std::vector<G4double>& vlist) {
+    if (i>=0 && i<2) fOpEnergy[i] = vlist;
+  }
 
   G4double GetIVField() const          { return fIVField; }
   G4double GetIVRate() const           { return fIVRate; }
@@ -229,12 +235,18 @@ public:
 
   G4double GetAlpha() const	       { return fAlpha; }
   G4double GetAcousticDeform() const { return fAcDeform; }
-  G4int    GetNOptical() const { return (G4int)fOpDeform.size(); }
-  G4double GetOpticalDeform(G4int i) const {
-    return (i>=0 && i<GetNOptical()) ? fOpDeform[i] : 0.;
+
+  // Optical intervalley scattering may use D0 or D1 deformation potentials
+  G4int    GetNOptical(G4int i) const {
+    return (i>=0 && i<2) ? (G4int)fOpDeform[i].size() : 0;
   }
-  G4double GetOpticalEnergy(G4int i) const {
-    return (i>=0 && i<GetNOptical()) ? fOpEnergy[i] : 0.;
+
+  G4double GetOpticalDeform(G4int i, G4int j) const {
+    return (j>=0 && j<GetNOptical(i)) ? fOpDeform[i][j] : 0.;
+  }
+
+  G4double GetOpticalEnergy(G4int i, G4int j) const {
+    return (j>=0 && j<GetNOptical(i)) ? fOpEnergy[i][j] : 0.;
   }
 
 private:
@@ -301,8 +313,8 @@ private:
 
   G4double fAlpha;			// Non-parabolicity of -ve potential
   G4double fAcDeform;		 	// Deformation potential for acoustic IV
-  std::vector<G4double> fOpDeform;	// Deformation potentials for optical IV
-  std::vector<G4double> fOpEnergy;	// Energy thresholds for optical IV
+  std::vector<G4double> fOpDeform[2];	// D0, D1 potentials for optical IV
+  std::vector<G4double> fOpEnergy[2];	// D0, D1 thresholds for optical IV
 
   G4double fIVField;		 // Edelweiss field scale for IV scattering
   G4double fIVRate;		 // Edelweiss rate factor for IV scattering

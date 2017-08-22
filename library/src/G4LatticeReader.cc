@@ -26,7 +26,8 @@
 // 20160727  Use G4CMP-specific units; allow multiple units for Debye energy
 // 20160802  Use hep_pascal for pressure (Windows compatibility)
 // 20170810  Processing IV scattering matrix terms, allow "/eV" type units
-// 20170821  For deformation potentials, specify eV/cm units.
+// 20170821  For deformation potentials, specify eV/cm units; use regex match
+//		for multiple optical IV potentials
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -39,6 +40,7 @@
 #include "G4UnitsTable.hh"
 #include <fstream>
 #include <limits>
+#include <regex>
 #include <stdlib.h>
 
 
@@ -141,8 +143,12 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "emass")    return ProcessMassTensor();	// e- mass eigenvalues
   if (fToken == "valley")   return ProcessEulerAngles(fToken); // e- drift dirs
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
-  if (fToken == "opdeform") return ProcessDeformation();// IV scatter params
-  if (fToken == "openergy") return ProcessThresholds();
+
+  if (std::regex_match(fToken, std::regex("op[01]?deform")))
+    return ProcessDeformation(fToken);
+  if (std::regex_match(fToken, std::regex("op[01]?energy")))
+    return ProcessThresholds(fToken);
+
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
                             return ProcessCrystalGroup(fToken);
 
@@ -366,20 +372,26 @@ G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
 
 // Read deformation potentials and thresholds for optical IV scattering
 
-G4bool G4LatticeReader::ProcessDeformation() {
-  if (verboseLevel>1) G4cout << " ProcessDeformation" << G4endl;
+G4bool G4LatticeReader::ProcessDeformation(const G4String& name) {
+  if (verboseLevel>1) G4cout << " ProcessDeformation " << name << G4endl;
 
-  G4bool okay = ProcessList("Energy/Length");
-  if (okay) pLattice->SetOpticalDeform(fList);
+  // NOTE:  Name string may be "op#deform" or "opdeform" (defaults to 0)
+  G4int index = (name(2)=='d') ? 0 : (name(2)-'0');
+
+  G4bool okay = ProcessList("Energy/Length,Energy");
+  if (okay) pLattice->SetOpticalDeform(index,fList);
 
   return okay;
 }
 
-G4bool G4LatticeReader::ProcessThresholds() {
-  if (verboseLevel>1) G4cout << " ProcessThresholds" << G4endl;
+G4bool G4LatticeReader::ProcessThresholds(const G4String& name) {
+  if (verboseLevel>1) G4cout << " ProcessThresholds " << name << G4endl;
+
+  // NOTE:  Name string may be "op#energy" or "openergy" (defaults to 0)
+  G4int index = (name(2)=='e') ? 0 : (name(2)-'0');
 
   G4bool okay = ProcessList("Energy");
-  if (okay) pLattice->SetOpticalEnergy(fList);
+  if (okay) pLattice->SetOpticalEnergy(index,fList);
 
   return okay;
 }

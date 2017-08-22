@@ -18,10 +18,42 @@
 class G4CMPInterValleyRate : public G4CMPVScatteringRate,
 			     public G4CMPProcessUtils {
 public:
-  G4CMPInterValleyRate() : G4CMPVScatteringRate("InterValley") {;}
+  G4CMPInterValleyRate()
+    : G4CMPVScatteringRate("InterValley"),
+      hbar_sq(CLHEP::hbar_Planck*CLHEP::hbar_Planck), hbar_4th(hbar_sq*hbar_sq),
+      m_electron(CLHEP::electron_mass_c2/CLHEP::c_squared),
+      vTrk(0.), eTrk(0.), density(0.), kT(0.), alpha(0.), nValley(0),
+      m_DOS(0.), m_DOS3half(0.) {;}
+
   virtual ~G4CMPInterValleyRate() {;}
 
   virtual G4double Rate(const G4Track& aTrack) const;
+
+  // Initialize numerical parameters below
+  virtual void LoadDataForTrack(const G4Track* track);
+
+protected:
+  G4double acousticRate() const;	// Acoustic intravalley rate
+  G4double opticalD0Rate() const;	// Optical intervalley D0 rate
+  G4double opticalD1Rate() const;	// Optical intervalley D1 rate
+  G4double scatterRate() const;		// Neutral impurity scattering
+
+private:
+  // Useful numerical parameters for computing individual rates
+  const G4double hbar_sq;
+  const G4double hbar_4th;
+  const G4double m_electron;
+
+  // Kinematic parameters set by Rate()
+  mutable G4double vTrk;	// Track velocity
+  mutable G4double eTrk;	// Track kinetic energy
+
+  G4double density;		// Crystal density (from G4Material)
+  G4double kT;			// Crystal temperature * k_B
+  G4double alpha;		// Non-parabolicity parameter
+  G4int    nValley;		// Number of final-state valleys (N-1)
+  G4double m_DOS;		// Electron "density of states" average mass
+  G4double m_DOS3half;		// m_DOS ^ (3/2)
 };
 
 #endif	/* G4CMPInterValleyRate_hh */

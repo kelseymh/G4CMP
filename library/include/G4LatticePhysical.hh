@@ -135,9 +135,13 @@ public:
 
   G4double GetAlpha() const      { return fLattice->GetAlpha(); }
   G4double GetAcousticDeform() const { return fLattice->GetAcousticDeform(); }
-  G4int    GetNOptical() const { return fLattice->GetNOptical(); }
-  G4double GetOpticalDeform(G4int i) const { return fLattice->GetOpticalDeform(i); }
-  G4double GetOpticalEnergy(G4int i) const { return fLattice->GetOpticalEnergy(i); }
+
+  // Optical intervalley scattering may use D0 or D1 deformation potentials
+  G4int    GetNOptical(G4int i) const { return fLattice->GetNOptical(i); }
+  G4double GetOpticalDeform(G4int i, G4int j) const
+    { return fLattice->GetOpticalDeform(i,j); }
+  G4double GetOpticalEnergy(G4int i, G4int j) const
+    { return fLattice->GetOpticalEnergy(i,j); }
 
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;
