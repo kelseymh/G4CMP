@@ -18,7 +18,6 @@
 
 #include "G4CMPVProcess.hh"
 
-class G4ForceCondition;
 class G4ParticleDefinition;
 class G4Step;
 class G4Track;

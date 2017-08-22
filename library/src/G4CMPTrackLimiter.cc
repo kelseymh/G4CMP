@@ -33,7 +33,7 @@ G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
 G4double G4CMPTrackLimiter::
 PostStepGetPhysicalInteractionLength(const G4Track& track, G4double,
                                      G4ForceCondition* condition) {
-  *condition = (BelowEnergyCut(track) ? Forced : NotForced);
+  *condition = Forced;
   return DBL_MAX;
 }
 
