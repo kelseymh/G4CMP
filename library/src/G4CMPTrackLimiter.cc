@@ -49,6 +49,9 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
 
   // Ensure that track is still in original, valid volume
   if (EscapedFromVolume(step)) {
+    G4Exception("G4CMPTrackLimiter", "Limit001", JustWarning,
+		"Killing track escaped from original volume.");
+
     aParticleChange.SetNumberOfSecondaries(0);	// Don't launch bad tracks!
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
