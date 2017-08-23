@@ -43,9 +43,7 @@ protected:
 
   G4bool EscapedFromVolume(const G4Step& step) const;
 
-  virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*) {
-    return DBL_MAX;
-  }
+  virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*);
 
 private:
   G4CMPTrackLimiter(const G4CMPTrackLimiter&);	// Copying is forbidden

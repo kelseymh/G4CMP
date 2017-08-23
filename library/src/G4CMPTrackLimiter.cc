@@ -30,19 +30,28 @@ G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
 
 // Force killing if below cut
 
-G4double G4CMPTrackLimiter::
-PostStepGetPhysicalInteractionLength(const G4Track& track, G4double,
-                                     G4ForceCondition* condition) {
-  *condition = Forced;
+G4double G4CMPTrackLimiter::GetMeanFreePath(const G4Track&, G4double,
+					    G4ForceCondition* condition) {
+  *condition = StronglyForced;	// Ensures execution even with other Forced
   return DBL_MAX;
+}
+
+G4double G4CMPTrackLimiter::
+PostStepGetPhysicalInteractionLength(const G4Track& trk, G4double sl,
+				     G4ForceCondition* condition) {
+  return GetMeanFreePath(trk, sl, condition);	// No GPIL handling needed
 }
 
 G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
                                                     const G4Step& step) {
   aParticleChange.Initialize(track);
 
+  if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+
   // Apply minimum energy cut to kill tracks with NIEL deposit
   if (BelowEnergyCut(track)) {
+    if (verboseLevel>2) G4cout << " track below minimum energy." << G4endl;
+
     aParticleChange.ProposeNonIonizingEnergyDeposit(track.GetKineticEnergy());
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
@@ -73,6 +82,13 @@ G4bool G4CMPTrackLimiter::BelowEnergyCut(const G4Track& track) const {
 G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
   G4VPhysicalVolume* prePV  = step.GetPreStepPoint()->GetPhysicalVolume();
   G4VPhysicalVolume* postPV = step.GetPostStepPoint()->GetPhysicalVolume();
+
+  if (verboseLevel>2) {
+    G4cout << " prePV " << prePV->GetName()
+	   << " postPV " << postPV->GetName()
+	   << " status " << step.GetPostStepPoint()->GetStepStatus()
+	   << G4endl;
+  }
 
   // Track is NOT at a boundary, is stepping outside volume, or already escaped
   return ( (step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary) &&
