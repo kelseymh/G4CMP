@@ -18,6 +18,7 @@
 
 class ChargeConfigManager;
 class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWithADouble;
 class G4UIcmdWithAString;
 class G4UIcommand;
 
@@ -32,6 +33,7 @@ public:
 private:
   ChargeConfigManager* theManager;
   G4UIcmdWithADoubleAndUnit* voltageCmd;
+  G4UIcmdWithADouble* escaleCmd;
   G4UIcmdWithAString* fileCmd;
   G4UIcmdWithAString* hitsCmd;
   G4UIcmdWithAString* millerCmd;	// Will parse out three integers

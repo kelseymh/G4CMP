@@ -25,6 +25,7 @@
 // 20170802  Add commands for separate Luke, downconversion scaing
 // 20170815  Add command to set volume surface clearance
 // 20170816  Remove directory and command handlers; G4UImessenger does it!
+// 20170823  Move geometry-specific commands to examples
 
 #include "G4UImessenger.hh"
 
@@ -58,7 +59,6 @@ private:
   G4UIcmdWithADouble* makeChargeCmd;
   G4UIcmdWithADouble* lukePhononCmd;
   G4UIcmdWithADouble* downconvCmd;
-  G4UIcmdWithADouble* escaleCmd;
   G4UIcmdWithAString* dirCmd;
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;

@@ -25,7 +25,7 @@
 // 20170525  Block 'rule of five' copy/move semantics, as singleton
 // 20170802  Add separate scaling factors for Luke and downconversion
 // 20170815  Add parameter for required clearance from volume surfaces
-// 20170816  Remove geometry-specific parameters; implement in examples
+// 20170823  Remove geometry-specific parameters; implement in examples
 
 #include "globals.hh"
 
@@ -55,7 +55,6 @@ public:
   static G4double GetGenCharges()        { return Instance()->genCharges; }
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
   static G4double GetDownconversionSampling() { return Instance()->downSample; }
-  static G4double GetEPotScale()         { return Instance()->epotScale; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
 
   // Change values (e.g., via Messenger)
@@ -74,9 +73,6 @@ public:
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
 
   // These settings require the geometry to be rebuilt
-  static void SetEPotScale(G4double value)
-    { Instance()->epotScale = value; UpdateGeometry(); }
-
   static void SetLatticeDir(const G4String& dir)
     { Instance()->LatticeDir=dir; UpdateGeometry(); }
 
@@ -105,7 +101,6 @@ private:
   G4double downSample;  // Rate to apply downconversion ($G4CMP_DOWN_SAMPLE)
   G4double EminPhonons;	// Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	// Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
-  G4double epotScale;	// Scale factor for EPot ($G4CMP_EPOT_SCALE)
   G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits
                         // ($G4CMP_FANO_ENABLED)

@@ -31,9 +31,10 @@ ChargeConfigManager* ChargeConfigManager::Instance() {
 
 ChargeConfigManager::ChargeConfigManager()
   : voltage(getenv("G4CMP_VOLTAGE")?strtod(getenv("G4CMP_VOLTAGE"),0)*volt:0.),
-    millerH(0), millerK(0), millerL(0),
+    epotScale(getenv("G4CMP_EPOT_SCALE")?strtod(getenv("G4CMP_EPOT_SCALE"),0):1.),
     EPot_file(getenv("G4CMP_EPOT_FILE")?getenv("G4CMP_EPOT_FILE"):""),
     Hit_file(getenv("G4CMP_HIT_FILE")?getenv("G4CMP_HIT_FILE"):"charge_hits.txt"),
+    millerH(0), millerK(0), millerL(0),
     messenger(new ChargeConfigMessenger(this)) {;}
 
 ChargeConfigManager::~ChargeConfigManager() {

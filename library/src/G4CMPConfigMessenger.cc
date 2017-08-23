@@ -20,6 +20,7 @@
 // 20170802  Add commands for separate Luke, downconversion scaing
 // 20170815  Add command to set volume surface clearance
 // 20170816  Remove directory and command handlers; G4UImessenger does it!
+// 20170823  Move geometry-specific commands to examples
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -37,7 +38,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 		  "User configuration for G4CMP phonon/charge carrier library"),
     theManager(mgr), verboseCmd(0), ehBounceCmd(0), pBounceCmd(0), clearCmd(0),
     minEPhononCmd(0), minEChargeCmd(0), minstepCmd(0), makePhononCmd(0),
-    makeChargeCmd(0), lukePhononCmd(0), downconvCmd(0), escaleCmd(0),
+    makeChargeCmd(0), lukePhononCmd(0), downconvCmd(0),
     dirCmd(0), kvmapCmd(0), fanoStatsCmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
@@ -77,9 +78,6 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   pBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("phononBounces",
 		  "Maximum number of reflections allowed for phonons");
 
-  escaleCmd = CreateCommand<G4UIcmdWithADouble>("scaleEPot",
-		"Set a scale factor for voltages in EPot electric field file");
-
   kvmapCmd = CreateCommand<G4UIcmdWithABool>("useKVsolver",
 			     "Use eigenvector solver for K-Vg conversion");
   kvmapCmd->SetParameterName("lookup",true,false);
@@ -103,7 +101,6 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete makeChargeCmd; makeChargeCmd=0;
   delete lukePhononCmd; lukePhononCmd=0;
   delete downconvCmd; downconvCmd=0;
-  delete escaleCmd; escaleCmd=0;
   delete dirCmd; dirCmd=0;
   delete kvmapCmd; kvmapCmd=0;
   delete fanoStatsCmd; fanoStatsCmd=0;
@@ -131,9 +128,6 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
 
   if (cmd == minEChargeCmd)
     theManager->SetMinChargeEnergy(minEChargeCmd->GetNewDoubleValue(value));
-
-  if (cmd == escaleCmd)
-    theManager->SetEPotScale(escaleCmd->GetNewDoubleValue(value));
 
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));

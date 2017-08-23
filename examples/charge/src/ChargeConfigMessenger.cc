@@ -23,11 +23,14 @@
 
 ChargeConfigMessenger::ChargeConfigMessenger(ChargeConfigManager* mgr)
   : G4UImessenger("/g4cmp/", "User configuration for G4CMP phonon example"),
-    theManager(mgr), voltageCmd(0), fileCmd(0), hitsCmd(0),
+    theManager(mgr), voltageCmd(0), escaleCmd(0), fileCmd(0), hitsCmd(0),
     millerCmd(0) {
   voltageCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("voltage",
 				"Set voltage for uniform electric field");
   voltageCmd->SetUnitCategory("Electric potential");
+
+  escaleCmd = CreateCommand<G4UIcmdWithADouble>("scaleEPot",
+		"Set a scale factor for voltages in EPot electric field file");
 
   fileCmd = CreateCommand<G4UIcmdWithAString>("EPotFile",
 			      "Set filename for non-uniform electric field");
@@ -43,6 +46,7 @@ ChargeConfigMessenger::ChargeConfigMessenger(ChargeConfigManager* mgr)
 
 ChargeConfigMessenger::~ChargeConfigMessenger() {
   delete voltageCmd; voltageCmd=0;
+  delete escaleCmd; escaleCmd=0;
   delete fileCmd; fileCmd=0;
   delete hitsCmd; hitsCmd=0;
   delete millerCmd; millerCmd=0;
@@ -57,6 +61,9 @@ void ChargeConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
 
   if (cmd == voltageCmd)
     theManager->SetVoltage(voltageCmd->GetNewDoubleValue(value));
+
+  if (cmd == escaleCmd)
+    theManager->SetEPotScale(escaleCmd->GetNewDoubleValue(value));
 
   if (cmd == millerCmd) {		// Special, takes three integer args
     G4Tokenizer split(value);

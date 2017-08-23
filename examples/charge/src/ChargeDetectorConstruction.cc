@@ -45,7 +45,7 @@ ChargeDetectorConstruction::ChargeDetectorConstruction() :
   latManager(G4LatticeManager::GetLatticeManager()),
   fEMField(nullptr), liquidHelium(nullptr), germanium(nullptr),
   aluminum(nullptr), tungsten(nullptr), worldPhys(nullptr),
-  zipThickness(2.54*cm), voltage(0.), constructed(false),
+  zipThickness(2.54*cm), epotScale(0.), voltage(0.), constructed(false),
   epotFileName(""), outputFileName("")
 {
   /* Default initialization does not leave object in usable state.
@@ -75,6 +75,7 @@ G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
 
     // Only regenerate E field if it has changed since last construction.
     if (epotFileName != ChargeConfigManager::GetEPotFile() ||
+        epotScale != ChargeConfigManager::GetEPotScale() ||
         voltage != ChargeConfigManager::GetVoltage()) {
        delete fEMField; fEMField = nullptr;
     }
@@ -94,6 +95,7 @@ G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
 
   // Store current values in order to identify changes above
   voltage = ChargeConfigManager::GetVoltage();
+  epotScale = ChargeConfigManager::GetEPotScale();
   epotFileName = ChargeConfigManager::GetEPotFile();
   outputFileName = ChargeConfigManager::GetHitOutput();
 
@@ -219,7 +221,7 @@ void ChargeDetectorConstruction::AttachField(G4LogicalVolume* lv)
 {
   if (!fEMField) { // Only create field if one doesn't exist.
     if (!epotFileName.empty()) {
-      fEMField = new G4CMPMeshElectricField(epotFileName);
+      fEMField = new G4CMPMeshElectricField(epotFileName, epotScale);
     } else {
       G4double fieldMag = -voltage/zipThickness;
       fEMField = new G4UniformElectricField(fieldMag*G4ThreeVector(0., 0., 1.));

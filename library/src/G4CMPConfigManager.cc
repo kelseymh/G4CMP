@@ -17,7 +17,7 @@
 // 20161028  Drop default filename for EPot (mesh) field
 // 20170802  Add separate scaling factors for Luke and downconversion
 // 20170815  Add parameter for required clearance from volume surfaces
-// 20170816  Remove geometry-specific parameters; implement in examples
+// 20170823  Remove geometry-specific parameters; implement in examples
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -48,7 +48,6 @@ G4CMPConfigManager::G4CMPConfigManager()
     downSample(getenv("G4CMP_DOWN_SAMPLE")?strtod(getenv("G4CMP_DOWN_SAMPLE"),0):1.),
     EminPhonons(getenv("G4CMP_EMIN_PHONONS")?strtod(getenv("G4CMP_EMIN_PHONONS"),0)*eV:0.),
     EminCharges(getenv("G4CMP_EMIN_CHARGES")?strtod(getenv("G4CMP_EMIN_CHARGES"),0)*eV:0.),
-    epotScale(getenv("G4CMP_EPOT_SCALE")?strtod(getenv("G4CMP_EPOT_SCALE"),0):1.),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
     messenger(new G4CMPConfigMessenger(this)) {
