@@ -73,6 +73,7 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector pfinal = GetGlobalMomentum(aTrack);
   FillParticleChange(GetValleyIndex(aTrack), pfinal);
 
+  ClearNumberOfInteractionLengthLeft();		// All processes must do this!
   return &aParticleChange;
 }
 

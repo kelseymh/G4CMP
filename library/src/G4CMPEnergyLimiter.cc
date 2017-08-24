@@ -55,5 +55,6 @@ G4VParticleChange* G4CMPEnergyLimiter::PostStepDoIt(const G4Track& track,
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
 
+  ClearNumberOfInteractionLengthLeft();		// All processes should do this!
   return &aParticleChange;
 }
