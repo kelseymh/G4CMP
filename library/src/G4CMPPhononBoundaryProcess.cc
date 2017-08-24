@@ -110,8 +110,12 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4int pol = GetPolarization(aStep.GetTrack());
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
-  if (verboseLevel>2)
-    G4cout << " Old momentum direction " << waveVector.unit() << G4endl;
+  if (verboseLevel>2) {
+    G4cout << " Surface normal outward   " << surfNorm
+	   << "\n Old wavevector direction " << waveVector.unit() 
+	   << "\n Old momentum direction   " << aTrack.GetMomentumDirection()
+	   << G4endl;
+  }
 
   G4double specProb = GetMaterialProperty("specProb");
   G4ThreeVector reflectedKDir;
@@ -127,11 +131,14 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
                                           reflectedKDir, surfNorm));
 
-  if (verboseLevel>2)
-    G4cout << " New momentum direction " << reflectedKDir << G4endl;
-
   G4ThreeVector vdir = theLattice->MapKtoVDir(pol, reflectedKDir);
   G4double v = theLattice->MapKtoV(pol, reflectedKDir);
+
+  if (verboseLevel>2) {
+    G4cout << " New wavevector direction " << reflectedKDir
+	   << "\n New momentum direction   " << vdir << G4endl;
+  }
+
   trackInfo->SetWaveVector(reflectedKDir);
   particleChange.ProposeVelocity(v);
   particleChange.ProposeMomentumDirection(vdir);

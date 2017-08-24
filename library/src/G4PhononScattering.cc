@@ -41,9 +41,20 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
 						     const G4Step& aStep) {
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   if (postStepPoint->GetStepStatus()==fGeomBoundary) {
-    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
+    return &aParticleChange;			// Don't want to reset IL
   }
-  
+
+  if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+  if (verboseLevel>1) {
+    G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
+    G4cout << " Track " << aTrack.GetDefinition()->GetParticleName()
+	   << " vol " << aTrack.GetTouchable()->GetVolume()->GetName()
+	   << " prePV " << preStepPoint->GetPhysicalVolume()->GetName()
+	   << " postPV " << postStepPoint->GetPhysicalVolume()->GetName()
+	   << " step-length " << aStep.GetStepLength()
+	   << G4endl;
+  }
+
   //Initialize particle change
   aParticleChange.Initialize(aTrack);
   
@@ -53,8 +64,19 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
 					  theLattice->GetSTDOS(),
 					  theLattice->GetFTDOS());
 
+  if (verboseLevel>1) {
+    G4cout << " Changing to "
+	   << G4PhononPolarization::Get(polarization)->GetParticleName() << " "
+	   << " toward " << newDir << G4endl;
+  }
+
   // Generate the new track after scattering
   // FIXME:  If polarization state is the same, just step the track!
+  if (verboseLevel) {
+    G4cout << " Creating secondary using touchable for "
+	   << aTrack.GetTouchable()->GetVolume()->GetName() << G4endl;
+  }
+
   G4Track* sec =
     G4CMP::CreatePhonon(aTrack.GetTouchable(), polarization, newDir,
                         GetKineticEnergy(aTrack), aTrack.GetGlobalTime(),
