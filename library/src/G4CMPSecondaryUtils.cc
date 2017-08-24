@@ -63,6 +63,7 @@ G4Track* G4CMP::CreatePhonon(const G4VTouchable* touch, G4int polarization,
   if (!lat) {
     G4Exception("G4CMP::CreatePhonon", "Secondary002", EventMustBeAborted,
                 ("No lattice for volume "+vol->GetName()).c_str());
+    return nullptr;
   }
 
   if (polarization == G4PhononPolarization::UNKNOWN) {		// Choose value
@@ -102,11 +103,13 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
   if (!lat) {
     G4Exception("G4CMP::CreateChargeCarrier", "Secondary003", EventMustBeAborted,
                 ("No lattice for volume "+vol->GetName()).c_str());
+    return nullptr;
   }
 
   if (charge != 1 && charge != -1) {
     G4Exception("G4CMP::CreateChargeCarrier", "Secondary004", EventMustBeAborted,
                 "Invalid charge for charge carrier.");
+    return nullptr;
   }
 
   if (charge == 1) { // Hole
@@ -134,11 +137,13 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
   if (!lat) {
     G4Exception("G4CMP::CreateChargeCarrier", "Secondary006", EventMustBeAborted,
                 ("No lattice for volume "+vol->GetName()).c_str());
+    return nullptr;
   }
 
   if (charge != 1 && charge != -1) {
     G4Exception("G4CMP::CreateChargeCarrier", "Secondary007", EventMustBeAborted,
                 "Invalid charge for charge carrier.");
+    return nullptr;
   }
 
   G4ParticleDefinition* theCarrier = nullptr;

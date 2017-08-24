@@ -50,9 +50,20 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
   
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   if (postStepPoint->GetStepStatus()==fGeomBoundary) {
-    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
+    return &aParticleChange;			// Don't want to reset IL
   }
-  
+
+  if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+  if (verboseLevel>1) {
+    G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
+    G4cout << " Track " << aTrack.GetDefinition()->GetParticleName()
+	   << " vol " << aTrack.GetTouchable()->GetVolume()->GetName()
+	   << " prePV " << preStepPoint->GetPhysicalVolume()->GetName()
+	   << " postPV " << postStepPoint->GetPhysicalVolume()->GetName()
+	   << " step-length " << aStep.GetStepLength()
+	   << G4endl;
+  }
+
   // Randomly generate a new direction and polarization state
   G4ThreeVector newK = G4RandomDirection();
   G4int mode = G4CMP::ChoosePhononPolarization(theLattice->GetLDOS(),
