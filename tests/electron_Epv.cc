@@ -19,7 +19,7 @@
 using namespace std;
 
 
-int main(int argc, char* argv[]) {
+int main(/*int argc, char* argv[]*/) {
   G4Material* ge = new G4Material("Ge", 32., 72.630*g/mole, 5.323*g/cm3,
 				  kStateSolid);
   G4LatticeLogical* lattice =

@@ -38,7 +38,7 @@ void fromValleyFrame(G4LatticePhysical* lat, G4int iv, G4ThreeVector vec) {
 }
 
 
-int main(int argc, char* argv[]) {
+int main(/*int argc, char* argv[]*/) {
   // Materials available
   G4Material* ge = new G4Material("Ge", 32., 72.630*g/mole, 5.323*g/cm3,
                                   kStateSolid);
@@ -67,12 +67,10 @@ int main(int argc, char* argv[]) {
     G4LatticeManager::GetLatticeManager()->LoadLattice(pvGe, "Ge");
   G4cout << "Germainum lattice:\n" << *geLat << G4endl;
 
-  /***
   G4LatticePhysical* siLat =
     G4LatticeManager::GetLatticeManager()->LoadLattice(pvSi, "Si");
   siLat->SetVerboseLevel(1);
   G4cout << "Silicon lattice:\n" << *siLat << G4endl;
-  ***/
 
   geLat->SetVerboseLevel(1);
 

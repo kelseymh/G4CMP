@@ -127,8 +127,7 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 // May convert recombination into phonon
 
 void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
-                                             const G4Step& aStep,
-                                             G4ParticleChange&) {
+                                             const G4Step&, G4ParticleChange&) {
   // Charge carrier gets killed and its energy goes into phonons.
   if (verboseLevel>1) {
     G4cout << GetProcessName() << "::DoAbsorption: Track absorbed" << G4endl;
@@ -180,8 +179,8 @@ DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
   if (verboseLevel>2) {
     G4StepPoint* preP = aStep.GetPreStepPoint();
     G4StepPoint* postP = aStep.GetPostStepPoint();
-    G4VPhysicalVolume* prePV = preP->GetPhysicalVolume();
-    G4VPhysicalVolume* postPV = postP->GetPhysicalVolume();
+    prePV = preP->GetPhysicalVolume();
+    postPV = postP->GetPhysicalVolume();
 
     G4VSolid* preSolid = prePV->GetLogicalVolume()->GetSolid();
     G4ThreeVector prePos = preP->GetPosition();
@@ -236,7 +235,7 @@ DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
 }
 
 void G4CMPDriftBoundaryProcess::
-DoReflectionHole(const G4Track& aTrack, const G4Step& aStep,
+DoReflectionHole(const G4Track& /*aTrack*/, const G4Step& aStep,
 		 G4ParticleChange& /*aParticleChange*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Hole reflected" << G4endl;
