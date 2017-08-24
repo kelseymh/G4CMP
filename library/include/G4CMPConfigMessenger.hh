@@ -24,6 +24,8 @@
 // 20160901  Add commands to set minimum energy for phonons, charges
 // 20170802  Add commands for separate Luke, downconversion scaing
 // 20170815  Add command to set volume surface clearance
+// 20170816  Remove directory and command handlers; G4UImessenger does it!
+// 20170823  Move geometry-specific commands to examples
 
 #include "G4UImessenger.hh"
 
@@ -43,24 +45,12 @@ public:
 
   void SetNewValue(G4UIcommand* cmd, G4String value);
 
-protected:
-  // Create or access directory path common to all commands
-  void CreateDirectory(const char* path, const char* desc);
-
-  // Create G4UIcommand (arbitrary subclass) within current command path
-  template <class T>
-  T* CreateCommand(const G4String& commandName, const G4String& description);
-
 private:
   G4CMPConfigManager* theManager;
-
-  G4bool localCmdDir;		// Flag if directory was created or found
-  G4UIdirectory* cmdDir;
 
   G4UIcmdWithAnInteger* verboseCmd;
   G4UIcmdWithAnInteger* ehBounceCmd;
   G4UIcmdWithAnInteger* pBounceCmd;
-  G4UIcmdWithADoubleAndUnit* voltageCmd;
   G4UIcmdWithADoubleAndUnit* clearCmd;
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
@@ -69,11 +59,7 @@ private:
   G4UIcmdWithADouble* makeChargeCmd;
   G4UIcmdWithADouble* lukePhononCmd;
   G4UIcmdWithADouble* downconvCmd;
-  G4UIcmdWithADouble* escaleCmd;
-  G4UIcmdWithAString* fileCmd;
   G4UIcmdWithAString* dirCmd;
-  G4UIcmdWithAString* hitsCmd;
-  G4UIcmdWithAString* millerCmd;	// Will parse out three integers
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;
 
@@ -81,7 +67,5 @@ private:
   G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden
   G4CMPConfigMessenger& operator=(const G4CMPConfigMessenger&);
 };
-
-#include "G4CMPConfigMessenger.icc"
 
 #endif /* G4CMPConfigMessenger_hh */

@@ -89,7 +89,13 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
                                                const G4Step& aStep) const {
   G4double absMinK = GetMaterialProperty("absMinK");
   G4ThreeVector k = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack)->k();
-  
+
+  if (verboseLevel>1) {
+    G4cout << GetProcessName() << "::AbsorbTrack() k " << k
+	   << " k_perp " << k*G4CMP::GetSurfaceNormal(aStep)
+	   << " vs. absMinK " << absMinK << G4endl;
+  }
+
   return (G4CMPBoundaryUtils::AbsorbTrack(aTrack,aStep) &&
     k*G4CMP::GetSurfaceNormal(aStep) > absMinK);
 }

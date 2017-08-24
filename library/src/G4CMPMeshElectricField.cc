@@ -13,6 +13,7 @@
 //
 // 20150122  Use verboseLevel instead of compiler flag for debugging; move
 //	     vector_comp into class (static).
+// 20170823  Add scaling factor as optional constructor argument.
 
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPConfigManager.hh"
@@ -24,9 +25,10 @@
 using std::vector;
 
 
-G4CMPMeshElectricField::G4CMPMeshElectricField(const G4String& EPotFileName)
+G4CMPMeshElectricField::
+G4CMPMeshElectricField(const G4String& EPotFileName, G4double Vscale)
   : G4ElectricField() {
-  BuildInterp(EPotFileName);
+  BuildInterp(EPotFileName, Vscale);
 }
 
 G4CMPMeshElectricField::G4CMPMeshElectricField(const G4CMPMeshElectricField &p)
@@ -42,9 +44,8 @@ G4CMPMeshElectricField& G4CMPMeshElectricField::operator=(const G4CMPMeshElectri
 }
 
 
-void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName) {
-  G4double VScale = G4CMPConfigManager::GetEPotScale();
-
+void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName,
+					 G4double VScale) {
   if (G4CMPConfigManager::GetVerboseLevel() > 0) {
     G4cout << "G4CMPMeshElectricField::Constructor: Creating Electric Field " 
 	   << EPotFileName;

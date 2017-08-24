@@ -32,7 +32,9 @@ endif()
 # Build stuff
 #
 set(phonon_SOURCES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononActionInitialization.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononActionInitialization.cc 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononConfigManager.cc 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononConfigMessenger.cc 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononDetectorConstruction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononPrimaryGeneratorAction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononSensitivity.cc

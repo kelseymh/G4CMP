@@ -18,9 +18,7 @@
 
 class G4CMPPhysics : public G4VPhysicsConstructor {
 public:
-  G4CMPPhysics(const G4String& name="G4CMPPhysics")
-    : G4VPhysicsConstructor(name) {;}
-  
+  G4CMPPhysics(const G4String& name="G4CMPPhysics");
   virtual ~G4CMPPhysics() {;}
   
 public:

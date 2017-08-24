@@ -7,13 +7,14 @@
 //
 // 20160904  Add electrode pattern to surface configuration
 // 20170721  Surface property owns electrode pattern, deletes at end
+// 20170816  Field configuraiton parameters moved to local configuration
 
 #include "ChargeDetectorConstruction.hh"
+#include "ChargeConfigManager.hh"
 #include "ChargeElectrodePattern.hh"
 #include "ChargeElectrodeSensitivity.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4LogicalBorderSurface.hh"
-#include "G4CMPConfigManager.hh"
 #include "G4CMPFieldManager.hh"
 #include "G4CMPMeshElectricField.hh"
 #include "G4Box.hh"
@@ -25,6 +26,7 @@
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
+#include "G4RunManager.hh"
 #include "G4SDManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Tubs.hh"
@@ -70,34 +72,36 @@ G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
       G4LogicalVolumeStore::GetInstance()->Clean();
       G4SolidStore::GetInstance()->Clean();
     }
-    // Only regenerate E field if it has changed since last construction.
-    if (epotFileName != G4CMPConfigManager::GetEPotFile() ||
-        epotScale != G4CMPConfigManager::GetEPotScale() ||
-        voltage != G4CMPConfigManager::GetVoltage()) {
 
-        epotFileName = G4CMPConfigManager::GetEPotFile();
-        epotScale = G4CMPConfigManager::GetEPotScale();
-        voltage = G4CMPConfigManager::GetVoltage();
+    // Only regenerate E field if it has changed since last construction.
+    if (epotFileName != ChargeConfigManager::GetEPotFile() ||
+        epotScale != ChargeConfigManager::GetEPotScale() ||
+        voltage != ChargeConfigManager::GetVoltage()) {
        delete fEMField; fEMField = nullptr;
     }
+
     // Sensitivity doesn't need to ever be deleted, just updated.
-    if (outputFileName != G4CMPConfigManager::GetHitOutput()) {
-      outputFileName = G4CMPConfigManager::GetHitOutput();
-      sensitivity->SetOutputFile(outputFileName);
+    if (outputFileName != ChargeConfigManager::GetHitOutput()) {
+      outputFileName = ChargeConfigManager::GetHitOutput();
+      if (sensitivity) sensitivity->SetOutputFile(outputFileName);
     }
+
     // Have to completely remove all lattices to avoid warning on reconstruction
     latManager->Reset();
-    // Clear all LogicalSurfaces
-    // NOTE: No need to redefine the G4CMPSurfaceProperties
+    // Clear all LogicalSurfaces; no need to redfine SurfaceProperty
     G4LogicalBorderSurface::CleanSurfaceTable();
-  } else { // First setup of geometry
-    epotScale = G4CMPConfigManager::GetEPotScale();
-    voltage = G4CMPConfigManager::GetVoltage();
-    epotFileName = G4CMPConfigManager::GetEPotFile();
-    outputFileName = G4CMPConfigManager::GetHitOutput();
   }
+
+
+  // Store current values in order to identify changes above
+  voltage = ChargeConfigManager::GetVoltage();
+  epotScale = ChargeConfigManager::GetEPotScale();
+  epotFileName = ChargeConfigManager::GetEPotFile();
+  outputFileName = ChargeConfigManager::GetHitOutput();
+
   DefineMaterials();
   SetupGeometry();
+
   constructed = true;
   return worldPhys;
 }
@@ -217,7 +221,7 @@ void ChargeDetectorConstruction::AttachField(G4LogicalVolume* lv)
 {
   if (!fEMField) { // Only create field if one doesn't exist.
     if (!epotFileName.empty()) {
-      fEMField = new G4CMPMeshElectricField(epotFileName);
+      fEMField = new G4CMPMeshElectricField(epotFileName, epotScale);
     } else {
       G4double fieldMag = -voltage/zipThickness;
       fEMField = new G4UniformElectricField(fieldMag*G4ThreeVector(0., 0., 1.));

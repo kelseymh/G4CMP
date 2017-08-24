@@ -7,6 +7,8 @@
 /// \brief Alternate G4CMP/charge example, demonstrating phonon, e/h production
 //
 // $Id$
+//
+// 20170816  Add example-specific configuration manager
 
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
@@ -21,6 +23,7 @@
 
 #include "ChargeActionInitialization.hh"
 #include "ChargeDetectorConstruction.hh"
+#include "ChargeConfigManager.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPPhysics.hh"
 #include "G4CMPStackingAction.hh"
@@ -47,7 +50,8 @@ int main(int argc,char** argv) {
   runManager->SetUserInitialization(new ChargeActionInitialization);
   
   // Create G4CMP configuration manager to ensure macro commands exist
-  G4CMPConfigManager::GetVerboseLevel();
+  G4CMPConfigManager::Instance();
+  ChargeConfigManager::Instance();
   
 #ifdef G4VIS_USE
   // Visualization manager
