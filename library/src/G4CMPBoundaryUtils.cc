@@ -204,8 +204,6 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
 					G4ParticleChange& aParticleChange) {
   aParticleChange.Initialize(aTrack);
 
-  if (!IsGoodBoundary(aStep)) return;		// May have been done already
-
   if (!matTable) {
     DoSimpleKill(aTrack, aStep, aParticleChange);
   } else if (electrode && electrode->IsNearElectrode(aStep)) {

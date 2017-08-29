@@ -14,6 +14,7 @@
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPUtils.hh"
 #include "G4CMPVTrackInfo.hh"
@@ -113,13 +114,7 @@ G4bool G4CMP::HasTrackInfo(const G4Track& track) {
 
 G4LatticePhysical* G4CMP::GetLattice(const G4Track& track) {
   G4VPhysicalVolume* trkvol = track.GetVolume();
-
-  if (!trkvol) {		// Primary tracks may not have volumes yet
-    G4TransportationManager* transMan =
-      G4TransportationManager::GetTransportationManager();
-    G4Navigator* nav = transMan->GetNavigatorForTracking();
-    trkvol = nav->LocateGlobalPointAndSetup(track.GetPosition());
-  }
+  if (!trkvol) trkvol = G4CMP::GetVolumeAtPoint(track.GetPosition());
 
   return G4LatticeManager::GetLatticeManager()->GetLattice(trkvol);
 }
