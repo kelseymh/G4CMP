@@ -34,6 +34,8 @@ endif()
 
 set(charge_SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeActionInitialization.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeConfigManager.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeConfigMessenger.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeDetectorConstruction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeElectrodePattern.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeElectrodeSensitivity.cc

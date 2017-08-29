@@ -60,7 +60,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   if (postStepPoint->GetStepStatus()==fGeomBoundary) {
-    return &aParticleChange;
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
   // Get track's energy in current valley
@@ -78,6 +78,6 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   // Adjust track kinematics for new valley
   FillParticleChange(valley, p);
 
-  ResetNumberOfInteractionLengthLeft();    
+  ClearNumberOfInteractionLengthLeft();    
   return &aParticleChange;
 }

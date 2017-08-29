@@ -4,6 +4,8 @@
 \***********************************************************************/
 
 // $Id$
+//
+// 20170822 M. Kelsey -- Rename EnergyLimiter to TrackLimiter
 
 #ifndef G4CMPProcessSubType_hh
 #define G4CMPProcessSubType_hh 1
@@ -20,7 +22,7 @@ enum G4CMPProcessSubType {
   fChargeBoundary,
   fTimeStepper,
   fSecondaryProduction,
-  fEnergyLimiter,
+  fTrackLimiter,
   fChargeRecombine
 };
 

@@ -21,6 +21,7 @@
 // 20160903  Migrate to use G4CMPBoundaryUtils for most functionality
 // 20160906  Follow constness of G4CMPBoundaryUtils
 // 20161114  Use new G4CMPPhononTrackInfo
+// 20170829  Add detailed diagnostics to identify boundary issues
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -71,7 +72,8 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
 
   aParticleChange.Initialize(aTrack);
-  if (!IsGoodBoundary(aStep)) return &aParticleChange;
+  if (!IsGoodBoundary(aStep))
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 
   if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
@@ -81,6 +83,8 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   ApplyBoundaryAction(aTrack, aStep, aParticleChange);
+
+  ClearNumberOfInteractionLengthLeft();		// All processes should do this!
   return &aParticleChange;
 }
 
@@ -89,7 +93,13 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
                                                const G4Step& aStep) const {
   G4double absMinK = GetMaterialProperty("absMinK");
   G4ThreeVector k = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack)->k();
-  
+
+  if (verboseLevel>1) {
+    G4cout << GetProcessName() << "::AbsorbTrack() k " << k
+	   << "\n k_perp " << k*G4CMP::GetSurfaceNormal(aStep)
+	   << " vs. absMinK " << absMinK << G4endl;
+  }
+
   return (G4CMPBoundaryUtils::AbsorbTrack(aTrack,aStep) &&
     k*G4CMP::GetSurfaceNormal(aStep) > absMinK);
 }
@@ -105,33 +115,59 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
            << trackInfo->ReflectionCount() << " times." << G4endl;
   }
 
-  // FIXME:  waveVector and reflectedKDir need to handle local/global rotations!
   G4ThreeVector waveVector = trackInfo->k();
   G4int pol = GetPolarization(aStep.GetTrack());
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
-  if (verboseLevel>2)
-    G4cout << " Old momentum direction " << waveVector.unit() << G4endl;
+  if (verboseLevel>2) {
+    G4cout << " Surface normal outward   " << surfNorm
+	   << "\n Old wavevector direction " << waveVector.unit() 
+	   << "\n Old momentum direction   " << aTrack.GetMomentumDirection()
+	   << G4endl;
+  }
 
   G4double specProb = GetMaterialProperty("specProb");
+
   G4ThreeVector reflectedKDir;
   do {
-    reflectedKDir = waveVector.unit();
     if (G4UniformRand() < specProb) {
       // Specular reflecton reverses momentum along normal
-      G4double momNorm = reflectedKDir * surfNorm;
-      reflectedKDir -= 2. * momNorm * surfNorm;
+      reflectedKDir = waveVector.unit();
+      G4double kPerp = reflectedKDir * surfNorm;
+      reflectedKDir -= 2.*kPerp * surfNorm;
     } else {
       reflectedKDir = G4CMP::LambertReflection(surfNorm);
     }
   } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
                                           reflectedKDir, surfNorm));
 
-  if (verboseLevel>2)
-    G4cout << " New momentum direction " << reflectedKDir << G4endl;
-
   G4ThreeVector vdir = theLattice->MapKtoVDir(pol, reflectedKDir);
   G4double v = theLattice->MapKtoV(pol, reflectedKDir);
+
+  if (verboseLevel>2) {
+    G4cout << " New wavevector direction " << reflectedKDir
+	   << "\n New momentum direction   " << vdir << G4endl;
+  }
+
+  // SANITY CHECK:  Project a 1 um step in the new direction, see if it
+  // is still in the correct (pre-step) volume.
+
+  if (verboseLevel>2) {
+    G4ThreeVector pos = aStep.GetPostStepPoint()->GetPosition();
+    G4ThreeVector stepPos = pos + .1*mm * vdir;
+
+    G4cout << " New travel direction " << vdir
+	   << "\n from " << pos << "\n   to " << stepPos << G4endl;
+
+    G4ThreeVector stepLocal = GetLocalPosition(stepPos);
+    G4VSolid* solid = aStep.GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();
+
+    EInside place = solid->Inside(stepLocal);
+    G4cout << " After trial step, " << (place==kInside ? "inside"
+					: place==kOutside ? "OUTSIDE"
+					: "on surface") << G4endl;
+  }
+
   trackInfo->SetWaveVector(reflectedKDir);
   particleChange.ProposeVelocity(v);
   particleChange.ProposeMomentumDirection(vdir);

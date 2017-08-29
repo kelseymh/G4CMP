@@ -11,6 +11,7 @@
 // 20140509  Add conditional code for Geant4 10.0 vs. earlier
 // 20150112  Remove RM->Initialize() call to allow macro configuration
 // 20160111  Remove Geant4 version check since we now hard depend on 10.2+
+// 20170816  Add example-specific configuration manager
 
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
@@ -25,6 +26,7 @@
 
 #include "G4CMPPhysicsList.hh"
 #include "G4CMPConfigManager.hh"
+#include "PhononConfigManager.hh"
 #include "PhononActionInitialization.hh"
 #include "PhononDetectorConstruction.hh"
 
@@ -47,8 +49,9 @@ int main(int argc,char** argv)
  //
  runManager->SetUserInitialization(new PhononActionInitialization);
 
- // Create G4CMP configuration manager to ensure macro commands exist
- G4CMPConfigManager::GetVerboseLevel();
+ // Create configuration managers to ensure macro commands exist
+ G4CMPConfigManager::Instance();
+ PhononConfigManager::Instance();
 
 #ifdef G4VIS_USE
  // Visualization manager

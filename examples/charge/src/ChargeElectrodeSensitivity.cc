@@ -3,9 +3,13 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+// $Id$
+//
+// 20170816  Output file name moved to example-specific configuration
+
 #include "ChargeElectrodeSensitivity.hh"
+#include "ChargeConfigManager.hh"
 #include "ChargeFETDigitizerModule.hh"
-#include "G4CMPConfigManager.hh"
 #include "G4CMPUtils.hh"
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -23,7 +27,7 @@ ChargeElectrodeSensitivity::ChargeElectrodeSensitivity(G4String name) :
   G4CMPElectrodeSensitivity(name),
   FET(new ChargeFETDigitizerModule("FETSim")),
   fileName("") {
-  SetOutputFile(G4CMPConfigManager::GetHitOutput());
+  SetOutputFile(ChargeConfigManager::GetHitOutput());
 }
 
 /* Move is disabled for now because old versions of GCC can't move ofstream

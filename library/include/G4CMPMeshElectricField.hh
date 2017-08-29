@@ -12,6 +12,7 @@
 // and voltage in volts.
 //
 // 20150122  Move vector_comp into class definition as static function.
+// 20170823  Add scaling factor as optional constructor argument.
 
 #ifndef G4CMPMeshElectricField_h 
 #define G4CMPMeshElectricField_h 1
@@ -23,7 +24,7 @@
 
 class G4CMPMeshElectricField : public G4ElectricField {
 public:
-  G4CMPMeshElectricField(const G4String& EPotFileName);
+  G4CMPMeshElectricField(const G4String& EPotFileName, G4double Vscale=1.);
   virtual ~G4CMPMeshElectricField() {;}
 
   virtual void GetFieldValue(const G4double Point[3], G4double *Efield) const;
@@ -41,7 +42,7 @@ public:
 
 private:
   G4CMPTriLinearInterp Interp;
-  void BuildInterp(const G4String& EPotFileName);
+  void BuildInterp(const G4String& EPotFileName, G4double Vscale=1.);
 };
 
 #endif	/* G4CMPMeshElectricField_h */

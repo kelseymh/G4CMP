@@ -19,19 +19,19 @@
 // 20170802  Use G4CMP_DOWN_SAMPLE biasing with ChooseWeight(), move outside
 //		of sub-functions.
 // 20170805  Replace GetMeanFreePath() with scattering-rate model
+// 20170820  Compute MFP for all phonon types, check for L-type in PostStep
 // 20170821  Move hard-coded constants to lattice configuration
+// 20170824  Add diagnostic output
 
+#include "G4PhononDownconversion.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPDownconversionRate.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
-#include "G4PhononDownconversion.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
-#include "G4PhononTransFast.hh"
-#include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
@@ -68,12 +68,30 @@ G4PhononDownconversion::~G4PhononDownconversion() {
 
 G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
 							 const G4Step& aStep) {
-  if (aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
-    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
-  }
-    
   aParticleChange.Initialize(aTrack);
 
+  if (aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+    return &aParticleChange;			// Don't want to reset IL
+  }
+
+  if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+  if (verboseLevel>1) {
+    G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
+    G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
+    G4cout << " Track " << aTrack.GetDefinition()->GetParticleName()
+	   << " vol " << aTrack.GetTouchable()->GetVolume()->GetName()
+	   << " prePV " << preStepPoint->GetPhysicalVolume()->GetName()
+	   << " postPV " << postStepPoint->GetPhysicalVolume()->GetName()
+	   << " step-length " << aStep.GetStepLength()
+	   << G4endl;
+  }
+
+  // Only longitudinal phonons decay, and not at a boundary
+  if (aTrack.GetDefinition() != G4PhononLong::Definition() ||
+      aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+    return &aParticleChange;		// Don't reset interaction length!
+  }
+    
   // Obtain dynamical constants from this volume's lattice
   fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
   fGamma  = theLattice->GetGamma() / (1e11*pascal);
@@ -107,8 +125,11 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4bool G4PhononDownconversion::IsApplicable(const G4ParticleDefinition& aPD) {
-  //Only L-phonons decay
+  // Only L-phonons decay
+  /***** , but need to check actively changing phonon type
   return (&aPD==G4PhononLong::PhononDefinition());
+  *****/
+  return G4VPhononProcess::IsApplicable(aPD);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -208,8 +229,21 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   G4int mode2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
 						theLattice->GetFTDOS());
 
+  if (verboseLevel>1) {
+    G4cout << " MakeTTSecondaries: "
+	   << G4PhononPolarization::Get(mode1)->GetParticleName() << " "
+	   << Esec1/eV << " eV toward " << dir1 << " ; "
+	   << G4PhononPolarization::Get(mode2)->GetParticleName() << " "
+	   << Esec2/eV << " eV toward " << dir2 << G4endl;
+  }
+
   // Construct the secondaries and set their wavevectors
   // Always produce the secondaries.
+  if (verboseLevel) {
+    G4cout << " Creating secondaries using touchable for "
+	   << aTrack.GetTouchable()->GetVolume()->GetName() << G4endl;
+  }
+
   G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode1,
 				      dir1, Esec1, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
@@ -302,9 +336,15 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   G4int mode2 = G4CMP::ChoosePhononPolarization(0., theLattice->GetSTDOS(),
 						theLattice->GetFTDOS());
 
+  if (verboseLevel>1) {
+    G4cout << " MakeLTSecondaries: "
+	   << G4PhononPolarization::Get(mode1)->GetParticleName() << " "
+	   << Esec1/eV << " eV toward " << dir1 << " ; "
+	   << G4PhononPolarization::Get(mode2)->GetParticleName() << " "
+	   << Esec2/eV << " eV toward " << dir2 << G4endl;
+  }
+
   // Construct the secondaries and set their wavevectors
-  // Always produce the L mode phonon. Produce T mode phonon based on
-  // biasing.
   G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode1,
 				      dir1, Esec1, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());

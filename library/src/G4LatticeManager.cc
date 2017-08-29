@@ -17,6 +17,7 @@
 // 20160615  Set name of G4LatticeLogical to match config directory
 // 20160826  Get default verbosity from envvar
 // 20170527  Drop unnecessary <fstream>
+// 20170817  Increase verbosity cut on informational messages
 
 #include "G4LatticeManager.hh"
 #include "G4CMPConfigManager.hh"
@@ -208,7 +209,7 @@ G4bool G4LatticeManager::RegisterLattice(const G4VPhysicalVolume* Vol,
 G4LatticeLogical* G4LatticeManager::GetLattice(const G4Material* Mat) const {
   LatticeMatMap::const_iterator latFind = fLLatticeList.find(Mat);
   if (latFind != fLLatticeList.end()) {
-    if (verboseLevel)
+    if (verboseLevel>2)
       G4cout << "G4LatticeManager::GetLattice found " << latFind->second
 	     << " for " << (Mat?Mat->GetName():"NULL") << "." << G4endl;
     return latFind->second;
@@ -229,7 +230,7 @@ G4LatticePhysical*
 G4LatticeManager::GetLattice(const G4VPhysicalVolume* Vol) const {
   LatticeVolMap::const_iterator latFind = fPLatticeList.find(Vol);
   if (latFind != fPLatticeList.end()) {
-    if (verboseLevel)
+    if (verboseLevel>2)
       G4cout << "G4LatticeManager::GetLattice found " << latFind->second
 	     << " for " << (Vol?Vol->GetName():"default") << "." << G4endl;
     return latFind->second;
@@ -266,7 +267,7 @@ G4double G4LatticeManager::MapKtoV(const G4VPhysicalVolume* Vol,
 				 G4int polarizationState,
 				 const G4ThreeVector & k) const {
   G4LatticePhysical* theLattice = GetLattice(Vol);
-  if (verboseLevel)
+  if (verboseLevel>2)
     G4cout << "G4LatticeManager::MapKtoV using lattice " << theLattice
 	   << G4endl;
 
@@ -284,7 +285,7 @@ G4ThreeVector G4LatticeManager::MapKtoVDir(const G4VPhysicalVolume* Vol,
 					   G4int polarizationState,
 					   const G4ThreeVector & k) const {
   G4LatticePhysical* theLattice = GetLattice(Vol);
-  if (verboseLevel)
+  if (verboseLevel>2)
     G4cout << "G4LatticeManager::MapKtoVDir using lattice " << theLattice
 	   << G4endl;
 

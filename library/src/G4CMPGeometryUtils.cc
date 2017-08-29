@@ -66,30 +66,19 @@ void G4CMP::RotateToGlobalPosition(const G4VTouchable* touch,
 }
 
 
-// Get normal to enclosing volume at boundary point
+// Get normal to enclosing volume at boundary point in global coordinates
 
 G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step) {
-  // Get outward normal using G4Navigator method (more reliable than G4VSolid)
-  G4TransportationManager* transMan =
-    G4TransportationManager::GetTransportationManager();
-  G4Navigator* nav = transMan->GetNavigatorForTracking();
+  const G4VTouchable* preTouch = step.GetPreStepPoint()->GetTouchable();
+  G4VSolid* preSolid = preTouch->GetVolume()->GetLogicalVolume()->GetSolid();
 
-  G4bool goodNorm;
-  G4ThreeVector surfNorm = nav->GetGlobalExitNormal(
-                                      step.GetPostStepPoint()->GetPosition(),
-                                      &goodNorm);
+  G4ThreeVector pos = step.GetPostStepPoint()->GetPosition();
+  RotateToLocalPosition(preTouch, pos);
 
-  // FIXME:  Sometimes G4Navigator fails, but still returns "good"
-  if (!goodNorm || surfNorm.mag()<0.99) {
-    G4VPhysicalVolume* thePrePV = step.GetPreStepPoint()->GetPhysicalVolume();
-    G4VPhysicalVolume* thePostPV = step.GetPostStepPoint()->GetPhysicalVolume();
-    G4Exception("G4CMPGeometryUtils::GetSurfaceNormal", "Geometry001",
-                EventMustBeAborted, ("Can't get normal vector of surface between " +
-                                    thePrePV->GetName() + " and " +
-                                    thePostPV->GetName()+ ".").c_str());
-  }
-
-  return surfNorm;
+  G4ThreeVector norm = preSolid->SurfaceNormal(pos);
+  RotateToGlobalPosition(preTouch, norm);
+  
+  return norm;
 }
 
 

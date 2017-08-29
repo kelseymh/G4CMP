@@ -113,7 +113,6 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEigenSolver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeHit.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeSensitivity.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEnergyLimiter.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEnergyPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEqEMField.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFieldManager.cc
@@ -127,7 +126,6 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeEmissionRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMeshElectricField.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMessengerBase.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononBoundaryProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinTable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinematics.cc
@@ -141,6 +139,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPStackingAction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSurfaceProperty.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTimeStepper.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTrackLimiter.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTrackUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTriLinearInterp.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPUnitsTable.cc
@@ -168,7 +167,6 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBoundaryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigManager.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPCrystalGroup.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDownconversionRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftBoundaryProcess.hh
@@ -179,7 +177,6 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEigenSolver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeHit.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeSensitivity.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEnergyLimiter.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEnergyPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEqEMField.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldManager.hh
@@ -195,8 +192,6 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMeshElectricField.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMessengerBase.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMessengerBase.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinematics.hh
@@ -211,6 +206,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPStackingAction.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSurfaceProperty.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTimeStepper.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTrackLimiter.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTrackUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTrackUtils.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTriLinearInterp.hh
