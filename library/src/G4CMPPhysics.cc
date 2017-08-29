@@ -11,19 +11,20 @@
 // 20160901  M. Kelsey -- Add minimum-energy cut process
 // 20161219  M. Kelsey -- Use particle table iterator directly
 // 20170817  M. Kelsey -- Get verbosity from configuration
+// 20170822  M. Kelsey -- Rename EnergyLimiter to TrackLimiter
 
 #include "G4CMPPhysics.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
-#include "G4CMPEnergyLimiter.hh"
+#include "G4CMPDriftRecombinationProcess.hh"
 #include "G4CMPInterValleyScattering.hh"
+#include "G4CMPLukeScattering.hh"
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPTimeStepper.hh"
-#include "G4CMPLukeScattering.hh"
-#include "G4CMPDriftRecombinationProcess.hh"
+#include "G4CMPTrackLimiter.hh"
 #include "G4ParticleTable.hh"
 #include "G4PhononDownconversion.hh"
 #include "G4PhononLong.hh"
@@ -62,7 +63,7 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* ivScat  = new G4CMPInterValleyScattering;
   G4VProcess* luke    = new G4CMPLukeScattering(tmStep);
   G4VProcess* recomb  = new G4CMPDriftRecombinationProcess;
-  G4VProcess* eLimit  = new G4CMPEnergyLimiter;
+  G4VProcess* eLimit  = new G4CMPTrackLimiter;
 
   // Set process verbosity to match physics list, for diagnostics
   if (verboseLevel>0) {

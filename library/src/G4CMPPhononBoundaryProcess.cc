@@ -21,6 +21,7 @@
 // 20160903  Migrate to use G4CMPBoundaryUtils for most functionality
 // 20160906  Follow constness of G4CMPBoundaryUtils
 // 20161114  Use new G4CMPPhononTrackInfo
+// 20170829  Add detailed diagnostics to identify boundary issues
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -151,7 +152,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // SANITY CHECK:  Project a 1 um step in the new direction, see if it
   // is still in the correct (pre-step) volume.
 
-  if (verboseLevel>1) {
+  if (verboseLevel>2) {
     G4ThreeVector pos = aStep.GetPostStepPoint()->GetPosition();
     G4ThreeVector stepPos = pos + .1*mm * vdir;
 
