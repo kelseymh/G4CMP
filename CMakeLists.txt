@@ -31,9 +31,10 @@ endif()
 #
 option(BUILD_G4CMP_TOOLS "Build utility and support programs.  Default: ON" ON)
 option(BUILD_G4CMP_TESTS "Build unit tests for classes.  Default: OFF" OFF)
-option(BUILD_ALL_EXAMPLES "Build phonon and charge examples. Default: OFF" OFF)
+option(BUILD_ALL_EXAMPLES "Build phonon, charge and sensor examples. Default: OFF" OFF)
 option(BUILD_PHONON_EXAMPLE "Build phonon example. Default: OFF" OFF)
 option(BUILD_CHARGE_EXAMPLE "Build charge example. Default: OFF" OFF)
+option(BUILD_SENSOR_EXAMPLE "Build sensor example. Default: OFF" OFF)
 
 #-----------------------------------------------------------------------------
 # Add subdirectories based on options selected
@@ -47,6 +48,10 @@ endif()
 
 if(BUILD_ALL_EXAMPLES OR BUILD_CHARGE_EXAMPLE)
     add_subdirectory(examples/charge)
+endif()
+
+if(BUILD_ALL_EXAMPLES OR BUILD_SENSOR_EXAMPLE)
+    add_subdirectory(examples/sensors)
 endif()
 
 if (BUILD_G4CMP_TOOLS)
