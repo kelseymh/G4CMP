@@ -26,6 +26,7 @@
 // 20170802  Add separate scaling factors for Luke and downconversion
 // 20170815  Add parameter for required clearance from volume surfaces
 // 20170823  Remove geometry-specific parameters; implement in examples
+// 20170830  Add flag to create e/h pairs in "cloud" surround location
 
 #include "globals.hh"
 
@@ -47,6 +48,7 @@ public:
   static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
+  static G4bool CreateChargeCloud()      { return Instance()->chargeCloud; }
   static G4double GetSurfaceClearance()  { return Instance()->clearance; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetMinPhononEnergy()   { return Instance()->EminPhonons; }
@@ -71,6 +73,7 @@ public:
   static void SetDownconversionSampling(G4double value) { Instance()->downSample = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
+  static void CreateChargeCloud(G4bool value) { Instance()->chargeCloud = value; }
 
   // These settings require the geometry to be rebuilt
   static void SetLatticeDir(const G4String& dir)
@@ -104,7 +107,7 @@ private:
   G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits
                         // ($G4CMP_FANO_ENABLED)
-
+  G4bool chargeCloud;   // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD)
   G4CMPConfigMessenger* messenger;
 };
 

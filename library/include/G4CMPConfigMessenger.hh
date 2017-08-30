@@ -26,6 +26,7 @@
 // 20170815  Add command to set volume surface clearance
 // 20170816  Remove directory and command handlers; G4UImessenger does it!
 // 20170823  Move geometry-specific commands to examples
+// 20170830  Add command to set flag for producing e/h "cloud"
 
 #include "G4UImessenger.hh"
 
@@ -62,6 +63,7 @@ private:
   G4UIcmdWithAString* dirCmd;
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;
+  G4UIcmdWithABool*   ehCloudCmd;
 
 private:
   G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden

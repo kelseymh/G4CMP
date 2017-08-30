@@ -67,6 +67,8 @@ developers should check the source code in
 | G4CMP\_EMIN\_PHONONS [E]  | /g4cmp/minEPhonons <E> eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges <E> eV     | Minimum energy to track charges         |
 | G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t|f]      | Use eigensolver for K-Vg mapping        |
+| G4CMP\_FANO\_ENABLED  | /g4cmp/enableFanoStatistics [t|f] | Modify ionization deposit according to Fano factor |
+| G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t|f] | Create charges in sphere around location |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation h k l      | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
 | G4CMP\_MILLER\_L          |                               |                                         |

@@ -50,6 +50,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     EminCharges(getenv("G4CMP_EMIN_CHARGES")?strtod(getenv("G4CMP_EMIN_CHARGES"),0)*eV:0.),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
+    chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
     messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 }
