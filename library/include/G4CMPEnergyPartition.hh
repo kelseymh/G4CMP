@@ -13,6 +13,7 @@
 // 20170524  Add constructor and accessor for position argument
 // 20170525  Add "rule of five" copy/move operators
 // 20170802  Add constructor and accessor for volume argument, particle change
+// 20170830  Add function to compute downsampling factors for input energy
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -79,6 +80,9 @@ public:
 		      G4double trkWeight=1.) const;
 
   void GetSecondaries(G4VParticleChange* aParticleChange) const;
+
+  // Assign energy-dependent sampling factors for phonons and charge carriers
+  void ComputeDownsampling(G4double eIon, G4double eNIEL);
 
   // Fraction of total energy deposit in material which goes to e/h pairs
   G4double LindhardScalingFactor(G4double energy) const;

@@ -16,6 +16,7 @@
 // 20170728  Forgot to assign material to data member in ctor.
 // 20170731  Move point-to-volume conversion to G4CMPGeometryUtils.
 // 20170802  Add constructor and accessor for volume argument, particle change
+// 20170830  Use downsampling energy scale parameter in DoPartition()
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPConfigManager.hh"
@@ -158,15 +159,49 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
 // Generate charge carriers and phonons according to uniform phase space
 
 void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
+  G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
+
   if (verboseLevel>1) {
     G4cout << "G4CMPEnergyPartition::DoPartition: eIon " << eIon/MeV
-     << " MeV; eNIEL " << eNIEL/MeV << " MeV" << G4endl;
+	   << " MeV, eNIEL " << eNIEL/MeV << " MeV" << G4endl;
   }
 
   particles.clear();		// Discard previous results
 
+  // Apply downsampling if total energy is above scale
+  if (samplingScale > 0.) ComputeDownsampling(eIon, eNIEL);
+
   GenerateCharges(eIon);
   GeneratePhonons(eNIEL + chargeEnergyLeft);
+}
+
+void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
+  G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
+  if (samplingScale <= 0.) return;		// Avoid unnecessary work
+
+  if (verboseLevel>1) {
+    G4cout << "G4CMPEnergyPartition::ComputeDownsampling: scale "
+	   << samplingScale/eV << " eV" << G4endl;
+  }
+
+  G4double phononSamp = (eNIEL>samplingScale) ? samplingScale/eNIEL : 1.;
+  if (verboseLevel>2)
+    G4cout << " Downsample " << phononSamp << " for primary phonons" << G4endl;
+
+  G4CMPConfigManager::SetGenPhonons(phononSamp);
+
+  G4double chargeSamp = (eIon>samplingScale)? samplingScale/eIon : 1.;
+  if (verboseLevel>2)
+    G4cout << " Downsample " << chargeSamp << " for primary charges" << G4endl;
+
+  G4CMPConfigManager::SetGenCharges(chargeSamp);
+
+  // FIXME:  Want to estimate # Luke phonons per charge carrier
+  G4double lukeSamp = chargeSamp;
+  if (verboseLevel>2)
+    G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
+
+  G4CMPConfigManager::SetLukeSampling(lukeSamp);
 }
 
 void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
