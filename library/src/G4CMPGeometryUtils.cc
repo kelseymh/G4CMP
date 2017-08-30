@@ -76,7 +76,7 @@ G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step) {
   RotateToLocalPosition(preTouch, pos);
 
   G4ThreeVector norm = preSolid->SurfaceNormal(pos);
-  RotateToGlobalPosition(preTouch, norm);
+  RotateToGlobalDirection(preTouch, norm);
   
   return norm;
 }
