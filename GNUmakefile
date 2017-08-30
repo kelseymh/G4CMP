@@ -64,7 +64,7 @@ tools.% \
 library.% :
 	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
 
-phonon charge : library
+phonon charge sensors : library
 	-@$(MAKE) -C examples/$@
 
 phonon.% \
