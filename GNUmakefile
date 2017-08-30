@@ -8,6 +8,7 @@
 # Move individual examples to "examples/" directory, add tools and tests
 # Move QHull down to library/ directory; update tar-ball generator
 # Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
+# Add new "sensors" example directory
 
 .PHONY : library phonon charge tests tools	# Targets named for directory
 .PHONY : all lib dist clean qhull examples
@@ -24,6 +25,7 @@ help :
 	 echo "examples      Builds all examples, plus library if needed" ;\
 	 echo "phonon        Builds pure phonon example" ;\
 	 echo "charge        Builds charge-carrier (e-/h) example" ;\
+	 echo "sensors       Builds FET digitization sensor example" ;\
 	 echo "tools         Builds support utilities (lookup table maker)" ;\
 	 echo "tests         Builds small test programs for classes" ;\
 	 echo "clean         Remove libraries and examples" ;\
@@ -40,7 +42,7 @@ help :
 
 all : lib examples tests tools
 lib : library
-examples : phonon charge
+examples : phonon charge sensors
 
 clean :		# FIXME: This doesn't work as dependencies
 	-$(MAKE) tests.clean
@@ -62,17 +64,19 @@ tools.% \
 library.% :
 	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
 
-phonon charge : library
+phonon charge sensors : library
 	-@$(MAKE) -C examples/$@
 
 phonon.% \
-charge.% :
+charge.% \
+sensors.% :
 	-$(MAKE) -C examples/$(basename $@) $(subst .,,$(suffix $@))
 
 # FIXME: These should work with dependencies, but don't
 examples.% :
 	-$(MAKE) phonon.$(subst .,,$(suffix $@))
 	-$(MAKE) charge.$(subst .,,$(suffix $@))
+	-$(MAKE) sensors.$(subst .,,$(suffix $@))
 
 tests : tests.all
 tools : tools.all

@@ -39,8 +39,6 @@ set(charge_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeDetectorConstruction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeElectrodePattern.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeElectrodeSensitivity.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerModule.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargeFETDigitizerMessenger.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ChargePrimaryGeneratorAction.cc
     )
 
@@ -70,15 +68,6 @@ set(charge_MACROS
     ${CMAKE_CURRENT_SOURCE_DIR}/movie.loop
     )
 
-set(fet_CONFIGS
-    ${CMAKE_CURRENT_SOURCE_DIR}/config/ConstantsFET
-    ${CMAKE_CURRENT_SOURCE_DIR}/config/FETTemplates
-    ${CMAKE_CURRENT_SOURCE_DIR}/config/EpotRamoChan1
-    ${CMAKE_CURRENT_SOURCE_DIR}/config/EpotRamoChan2
-    ${CMAKE_CURRENT_SOURCE_DIR}/config/EpotRamoChan3
-    ${CMAKE_CURRENT_SOURCE_DIR}/config/EpotRamoChan4
-    )
-
 if(USE_GEANT4_STATIC_LIBS)
     add_library(G4cmpCharge STATIC ${charge_SOURCES})
 else()
@@ -94,13 +83,8 @@ target_link_libraries(g4cmpCharge chargeLib)
 add_executable(g4cmpIonize g4cmpIonize.cc)
 target_link_libraries(g4cmpIonize chargeLib)
 
-add_executable(g4cmpFETSim g4cmpFETSim.cc)
-target_link_libraries(g4cmpFETSim chargeLib)
-
 install(TARGETS chargeLib DESTINATION lib)
 install(TARGETS g4cmpCharge DESTINATION bin)
 install(TARGETS g4cmpIonize DESTINATION bin)
-install(TARGETS g4cmpFETSim DESTINATION bin)
 install(FILES ${charge_EPOT_FILES} DESTINATION share/G4CMP/EPotFiles COMPONENT config)
 install(FILES ${charge_MACROS} DESTINATION share/G4CMP/macros/g4cmpCharge)
-install(FILES ${fet_CONFIGS} DESTINATION config/G4CMP/FETSim)

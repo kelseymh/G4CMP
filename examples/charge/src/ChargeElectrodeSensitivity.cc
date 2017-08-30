@@ -6,10 +6,10 @@
 // $Id$
 //
 // 20170816  Output file name moved to example-specific configuration
+// 20170830  Remove FET simulation
 
 #include "ChargeElectrodeSensitivity.hh"
 #include "ChargeConfigManager.hh"
-#include "ChargeFETDigitizerModule.hh"
 #include "G4CMPUtils.hh"
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -24,32 +24,9 @@
 #include <fstream>
 
 ChargeElectrodeSensitivity::ChargeElectrodeSensitivity(G4String name) :
-  G4CMPElectrodeSensitivity(name),
-  FET(new ChargeFETDigitizerModule("FETSim")),
-  fileName("") {
+  G4CMPElectrodeSensitivity(name), fileName("") {
   SetOutputFile(ChargeConfigManager::GetHitOutput());
 }
-
-/* Move is disabled for now because old versions of GCC can't move ofstream
-ChargeElectrodeSensitivity::ChargeElectrodeSensitivity(ChargeElectrodeSensitivity&& in) :
-  G4CMPElectrodeSensitivity(std::move(in)), FET(std::move(in.FET)),
-  output(std::move(in.output)),
-  fileName(std::move(in.fileName)) {
-}
-
-ChargeElectrodeSensitivity& ChargeElectrodeSensitivity::operator=(ChargeElectrodeSensitivity&& in) {
-  // Move all base mebers
-  G4CMPElectrodeSensitivity::operator=(std::move(in));
-
-  // Our members
-  FET = std::move(in.FET);
-  output.close();
-  output = std::move(in.output);
-  fileName = in.fileName;
-
-  return *this;
-}
-*/
 
 ChargeElectrodeSensitivity::~ChargeElectrodeSensitivity() {
   if (output.is_open()) output.close();
@@ -85,7 +62,6 @@ void ChargeElectrodeSensitivity::EndOfEvent(G4HCofThisEvent* HCE) {
              << hit->GetFinalTime()/ns << '\n';
     }
   }
-  FET->Digitize();
 }
 
 void ChargeElectrodeSensitivity::SetOutputFile(const G4String &fn) {
