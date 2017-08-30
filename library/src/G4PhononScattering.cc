@@ -72,8 +72,8 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
 
   if (verboseLevel>1) {
     G4cout << " Changing to "
-	   << G4PhononPolarization::Get(polarization)->GetParticleName() << " "
-	   << " toward " << newDir << G4endl;
+	   << G4PhononPolarization::Get(mode)->GetParticleName() << " "
+	   << " toward " << newK << G4endl;
   }
 
   // Replace track's particle type according to new polarization
