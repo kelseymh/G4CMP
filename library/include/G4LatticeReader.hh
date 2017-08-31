@@ -65,8 +65,8 @@ protected:
   G4bool ProcessDebyeLevel();			// Frequency or temperature
   G4bool ProcessStiffness();			// Elasticity matrix element
   G4bool ProcessEulerAngles(const G4String& name);	// Drift directions
-  G4bool ProcessDeformation(const G4String& name);	// Optical IV potentials
-  G4bool ProcessThresholds(const G4String& name);	// Optical IV thresholds
+  G4bool ProcessDeformation();			// IV deformation potentials
+  G4bool ProcessThresholds();			// IV energy thresholds
   G4bool SkipComments();			// Everything after '#'
 
   // Read expected dimensions for value from file, return scale factor

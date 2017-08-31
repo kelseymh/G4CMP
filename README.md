@@ -294,10 +294,8 @@ the crystal system.
 | neutDens | N        | Number density of neutron impurities | /volume |
 | alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
 | acDeform | val      | Acoustic deformation potential | energy (eV)   |
-| op0Deform | val val ... | Optical D0 deformation potentials | eV/cm  |
-| op0Energy | val val ... | Optical D0 phonon thresholds | energy (eV) |
-| op1Deform | val val ... | Optical D1 deformation potentials | eV     |
-| op1Energy | val val ... | Optical D1 phonon thresholds | energy (eV) |
+| ivDeform | val val ... | Optical deformation potentials | eV/cm  |
+| ivEnergy | val val ... | Optical phonon thresholds | energy (eV) |
 | ** InterValley scattering with Edelweiss model ** |
 | ivField | E0        | Edelweiss intervalley scattering  | V/m        |
 | ivRate  | freq      | Intervalley scattering rate       | Hz         |

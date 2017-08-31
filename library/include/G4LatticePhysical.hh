@@ -105,6 +105,7 @@ public:
   G4double GetPairProductionEnergy() const { return fLattice->GetPairProductionEnergy(); }
   G4double GetFanoFactor() const      { return fLattice->GetFanoFactor(); }
   G4double GetSoundSpeed() const      { return fLattice->GetSoundSpeed(); }
+  G4double GetTransverseSoundSpeed() const { return fLattice->GetTransverseSoundSpeed(); }
   G4double GetElectronScatter() const { return fLattice->GetElectronScatter(); }
   G4double GetHoleScatter() const     { return fLattice->GetHoleScatter(); }
 
@@ -137,11 +138,9 @@ public:
   G4double GetAcousticDeform() const { return fLattice->GetAcousticDeform(); }
 
   // Optical intervalley scattering may use D0 or D1 deformation potentials
-  G4int    GetNOptical(G4int i) const { return fLattice->GetNOptical(i); }
-  G4double GetOpticalDeform(G4int i, G4int j) const
-    { return fLattice->GetOpticalDeform(i,j); }
-  G4double GetOpticalEnergy(G4int i, G4int j) const
-    { return fLattice->GetOpticalEnergy(i,j); }
+  G4int    GetNIVDeform() const { return fLattice->GetNIVDeform(); }
+  G4double GetIVDeform(G4int i) const { return fLattice->GetIVDeform(i); }
+  G4double GetIVEnergy(G4int i) const { return fLattice->GetIVEnergy(i); }
 
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;

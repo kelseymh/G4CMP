@@ -9,6 +9,8 @@
 // $Id$
 //
 // 20170821  Follow Aubry-Fortuna (2005) for separate D0 and D1 scattering
+// 20170830  Follow Jacoboni, with unified D0/D1 expression and units; drop
+//		acoustic rate, as it is _intra_valley.
 
 #include "G4CMPInterValleyRate.hh"
 #include "G4LatticePhysical.hh"
@@ -29,9 +31,12 @@ void G4CMPInterValleyRate::LoadDataForTrack(const G4Track* track) {
   // Should temperature be a lattice configuration?
   kT = k_Boltzmann * 0.015*kelvin;
 
+  uSound = (2.*theLattice->GetTransverseSoundSpeed()
+	    + theLattice->GetSoundSpeed()) / 3.;
+
   density = theLattice->GetDensity();
   alpha = theLattice->GetAlpha();
-  nValley = theLattice->NumberOfValleys()-1;
+  nValley = 2*theLattice->NumberOfValleys()-1;		// From symmetry
 
   m_DOS = theLattice->GetElectronDOSMass();
   m_DOS3half = sqrt(m_DOS*m_DOS*m_DOS);
@@ -44,19 +49,15 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
   const_cast<G4CMPInterValleyRate*>(this)->LoadDataForTrack(&aTrack);
 
   // Initialize numerical buffers
-  vTrk = GetVelocity(aTrack);		  // Track kinematics
   eTrk = GetKineticEnergy(aTrack);
 
-  G4double arate = acousticRate();
-  if (verboseLevel>2) G4cout << " Acoustic phonon rate " <<  arate << G4endl;
-
-  G4double orate = opticalD0Rate() + opticalD1Rate();
-  if (verboseLevel>2) G4cout << " Optical Phonon rate " << orate << G4endl;
+  G4double orate = opticalRate();
+  if (verboseLevel>2) G4cout << " Phonon rate " << orate << G4endl;
  
   G4double nrate = scatterRate();
   if (verboseLevel>2) G4cout << " Neutral Impurities " << nrate << G4endl;
 
-  G4double rate = nrate + orate + arate;
+  G4double rate = nrate + orate;
   if (verboseLevel>1) G4cout << "IV rate = " << rate/hertz << " Hz" << G4endl;
   return rate;
 }
@@ -67,23 +68,22 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
 G4double G4CMPInterValleyRate::acousticRate() const {
   G4double D_ac  = theLattice->GetAcousticDeform();
   G4double D_ac_sq = D_ac*D_ac;
-  G4double vTrk_sq = vTrk*vTrk;
 
   return ( sqrt(2)*kT * m_DOS3half * D_ac_sq *
 	   sqrt(eTrk*(1+alpha*eTrk))*(1+2*alpha*eTrk)
-	   / (pi*hbar_4th*density*vTrk_sq) );
+	   / (pi*hbar_4th*density*uSound*uSound) );
 }
 
-G4double G4CMPInterValleyRate::opticalD0Rate() const {
-  G4double totalD0 = 0.;
+G4double G4CMPInterValleyRate::opticalRate() const {
+  G4double total = 0.;
 
-  G4int N_op = theLattice->GetNOptical(0);
+  G4int N_op = theLattice->GetNIVDeform();
   for (G4int i = 0; i<N_op; i++) {
-    G4double Emin_op = theLattice->GetOpticalEnergy(0,i);
+    G4double Emin_op = theLattice->GetIVEnergy(i);
     if (eTrk <= Emin_op) continue;		// Apply threshold behaviour
 
     G4double dE = eTrk - Emin_op;		// Energy above threshold
-    G4double D_op = theLattice->GetOpticalDeform(0,i);
+    G4double D_op = theLattice->GetIVDeform(i);
     G4double D_op_sq = D_op*D_op;
 
     G4double orate = ( nValley * kT * m_DOS3half * D_op_sq *
@@ -91,43 +91,17 @@ G4double G4CMPInterValleyRate::opticalD0Rate() const {
 		       / (sqrt(2)*pi*hbar_sq*density*Emin_op) );
 
     if (verboseLevel>2)
-      G4cout << " D0 phonon rate [" << i << "] " << orate << G4endl;
+      G4cout << " optical phonon rate [" << i << "] " << orate << G4endl;
 
-    totalD0 += orate;
+    total += orate;
   }
 
-  return totalD0;
-}
-
-G4double G4CMPInterValleyRate::opticalD1Rate() const {
-  G4double totalD1 = 0.;
-
-  G4int N_op = theLattice->GetNOptical(1);
-  for (G4int i = 0; i<N_op; i++) {
-    G4double Emin_op = theLattice->GetOpticalEnergy(1,i);
-    if (eTrk <= Emin_op) continue;		// Apply threshold behaviour
-
-    G4double dE = eTrk - Emin_op;		// Energy above threshold
-    G4double D_op = theLattice->GetOpticalDeform(1,i);
-    G4double D_op_sq = D_op*D_op;
-
-    G4double orate = ( sqrt(2)*nValley * m_DOS*m_DOS3half * D_op_sq *
-		       sqrt(dE*(1 + alpha*dE))*(1 + 2*alpha*dE) *
-		       (dE*(1+alpha*dE) + (1+alpha*eTrk))
-		       / (pi*hbar_4th*density*Emin_op) );
-
-    if (verboseLevel>2)
-      G4cout << " D1 phonon rate [" << i << "] " << orate << G4endl;
-
-    totalD1 += orate;
-  }
-
-  return totalD1;
+  return total;
 }
 
 G4double G4CMPInterValleyRate::scatterRate() const {
   G4double n_I = theLattice->GetImpurities();		// Number density
-  G4double epsilon_r = theLattice->GetPermittivity();	// Relative
+  G4double epsilon_r = theLattice->GetPermittivity();	// Dielectric constant
   G4double E_T = 0.75*eV * (m_DOS/m_electron) / epsilon_r;
   
   return ( 4*sqrt(2)* n_I * hbar_sq * sqrt(eTrk)

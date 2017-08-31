@@ -17,6 +17,7 @@ bandgap 1.17 eV
 pairEnergy 3.81 eV
 fanoFactor 0.15
 vsound 9000 m/s		# Longitudinal sound speed
+vtrans 5400 m/s        # Transverse sound speed
 l0_e 16.9e-6 m
 l0_h 7.5e-6 m
 #hole and electron masses taken from Robert's thesis
@@ -28,10 +29,8 @@ valley   0 90 90 deg
 # Intervalley scattering (matrix elements)
 alpha 0.5 /eV
 acDeform 6.6 eV
-op0Deform 3.4e8 3.4e8 eV/cm	# Aubry-Fortuna (2005)
-op0Energy 63.2e-3 46.3e-3 eV
-op1Deform 3.0 3.0 3.0 eV
-op1Energy 11.4e-3 18.8e-3 21.9e-3 eV
+ivDeform 0.5e8 0.8e8 11e8 0.3e8 2e8 2e8 eV/cm		# Jacoboni & Reggiani
+ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV
 neutDens 1e11 /cm3
 epsilon 11.68
 # Intervalley scattering (Edelweiss model)

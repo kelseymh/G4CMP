@@ -168,6 +168,7 @@ public:
   void SetPairProductionEnergy(G4double pp) { fPairEnergy = pp; }
   void SetFanoFactor(G4double f) { fFanoFactor = f; }
   void SetSoundSpeed(G4double v) { fVSound = v; }
+  void SetTransverseSoundSpeed(G4double v) { fVTrans = v; }
   void SetHoleScatter(G4double l0) { fL0_h = l0; }
   void SetHoleMass(G4double hmass) { fHoleMass = hmass; }
   void SetElectronScatter(G4double l0) { fL0_e = l0; }
@@ -178,6 +179,7 @@ public:
   G4double GetPairProductionEnergy() const      { return fPairEnergy; }
   G4double GetFanoFactor() const                { return fFanoFactor; }
   G4double GetSoundSpeed() const                { return fVSound; }
+  G4double GetTransverseSoundSpeed() const      { return fVSound; }
   G4double GetHoleScatter() const               { return fL0_h; }
   G4double GetHoleMass() const                  { return fHoleMass; }
   G4double GetElectronScatter() const           { return fL0_e; }
@@ -220,14 +222,8 @@ public:
 
   void SetAlpha(G4double v)	       { fAlpha = v; }
   void SetAcousticDeform(G4double v)   { fAcDeform = v; }
-
-  // Optical intervalley scattering may use D0 or D1 deformation potentials
-  void SetOpticalDeform(G4int i, const std::vector<G4double>& vlist) {
-    if (i>=0 && i<2) fOpDeform[i] = vlist;
-  }
-  void SetOpticalEnergy(G4int i, const std::vector<G4double>& vlist) {
-    if (i>=0 && i<2) fOpEnergy[i] = vlist;
-  }
+  void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
+  void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
 
   G4double GetIVField() const          { return fIVField; }
   G4double GetIVRate() const           { return fIVRate; }
@@ -235,18 +231,12 @@ public:
 
   G4double GetAlpha() const	       { return fAlpha; }
   G4double GetAcousticDeform() const { return fAcDeform; }
-
-  // Optical intervalley scattering may use D0 or D1 deformation potentials
-  G4int    GetNOptical(G4int i) const {
-    return (i>=0 && i<2) ? (G4int)fOpDeform[i].size() : 0;
+  G4int    GetNIVDeform() const { return (G4int)fIVDeform.size(); }
+  G4double GetIVDeform(G4int i) const {
+    return (i>=0 && i<GetNIVDeform()) ? fIVDeform[i] : 0.;
   }
-
-  G4double GetOpticalDeform(G4int i, G4int j) const {
-    return (j>=0 && j<GetNOptical(i)) ? fOpDeform[i][j] : 0.;
-  }
-
-  G4double GetOpticalEnergy(G4int i, G4int j) const {
-    return (j>=0 && j<GetNOptical(i)) ? fOpEnergy[i][j] : 0.;
+  G4double GetIVEnergy(G4int i) const {
+    return (i>=0 && i<GetNIVDeform()) ? fIVEnergy[i] : 0.;
   }
 
 private:
@@ -293,6 +283,7 @@ private:
   G4double fDebye;   // Debye energy, for partitioning primary phonons
 
   G4double fVSound;	// Speed of sound (longitudinal phonon)
+  G4double fVTrans;	// Speed of sound (transverse phonon)
   G4double fL0_e;	// Scattering length for electrons
   G4double fL0_h;	// Scattering length for holes
 
@@ -313,8 +304,8 @@ private:
 
   G4double fAlpha;			// Non-parabolicity of -ve potential
   G4double fAcDeform;		 	// Deformation potential for acoustic IV
-  std::vector<G4double> fOpDeform[2];	// D0, D1 potentials for optical IV
-  std::vector<G4double> fOpEnergy[2];	// D0, D1 thresholds for optical IV
+  std::vector<G4double> fIVDeform;	// D0, D1 potentials for optical IV
+  std::vector<G4double> fIVEnergy;	// D0, D1 thresholds for optical IV
 
   G4double fIVField;		 // Edelweiss field scale for IV scattering
   G4double fIVRate;		 // Edelweiss rate factor for IV scattering

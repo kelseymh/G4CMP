@@ -51,7 +51,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fpPhononKin(0), fpPhononTable(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
-    fVSound(0.), fL0_e(0.), fL0_h(0.), 
+    fVSound(0.), fVTrans(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),
     fHoleMass(mElectron), fElectronMass(mElectron), fElectronMDOS(mElectron),
     fBandGap(0.), fPairEnergy(0.), fFanoFactor(1.),
@@ -102,6 +102,7 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fMu = rhs.fMu;
   fDebye = rhs.fDebye;
   fVSound = rhs.fVSound;
+  fVTrans = rhs.fVTrans;
   fL0_e = rhs.fL0_e;
   fL0_h = rhs.fL0_h;
   fHoleMass = rhs.fHoleMass;
@@ -118,14 +119,11 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fValleyAxis = rhs.fValleyAxis;
   fAlpha = rhs.fAlpha;
   fAcDeform = rhs.fAcDeform;
+  fIVDeform = rhs.fIVDeform;
+  fIVEnergy = rhs.fIVEnergy;
   fIVField = rhs.fIVField;
   fIVRate = rhs.fIVRate;
   fIVExponent = rhs.fIVExponent;
-
-  for (G4int i=0; i<2; i++) {
-    fOpDeform[i] = rhs.fOpDeform[i];
-    fOpEnergy[i] = rhs.fOpEnergy[i];
-  }
 
   if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
   if (!rhs.fpPhononTable) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
@@ -718,15 +716,9 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nepsilon " << fPermittivity
      << "\nneutDens " << fNImpurity * cm3 << " /cm3"
      << "\nacDeform " << fAcDeform/eV << " eV"
-     << std::endl;
-
-  for (G4int i=0; i<2; i++) {
-    if (!fOpDeform[i].empty()) {
-      os << " op" << i << "Deform "; DumpList(os, fOpDeform[i], "eV");
-      os << " op" << i << "Energy "; DumpList(os, fOpEnergy[i], "eV");
-      os << std::endl;
-    }
-  }
+     << "\n ivDeform "; DumpList(os, fIVDeform, "eV/cm");
+  os << "\n ivEnergy "; DumpList(os, fIVEnergy, "eV");
+  os << std::endl;
 
   os << "# Edelweiss intervalley scattering parameters"
      << "\nivField " << fIVField/(volt/m) << " V/m"
