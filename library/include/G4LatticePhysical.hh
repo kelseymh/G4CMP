@@ -21,6 +21,7 @@
 // 20160608  Drop (theta,phi) lattice orientation function.
 // 20170523  Add interface for axis vector of valleys
 // 20170525  Drop empty destructor to allow default "rule of five" semantics
+// 20170810  Add call-throughs for new IV scattering parameters
 // 20170821  Add transverse sound speed, L->TT fraction
 
 #ifndef G4LatticePhysical_h
@@ -80,6 +81,11 @@ public:
 public:  
   const G4LatticeLogical* GetLattice() const { return fLattice; }
 
+  // Call through to get material properties
+  G4double GetDensity() const { return fLattice->GetDensity(); }
+  G4double GetImpurities() const { return fLattice->GetImpurities(); }
+  G4double GetPermittivity() const { return fLattice->GetPermittivity(); }
+
   // Call through to get crystal basis vectors
   const G4ThreeVector& GetBasis(G4int i) const { return fLattice->GetBasis(i); }
 
@@ -108,6 +114,7 @@ public:
   // Charge carriers have effective mass
   G4double GetHoleMass() const { return fLattice->GetHoleMass(); }
   G4double GetElectronMass() const { return fLattice->GetElectronMass(); }
+  G4double GetElectronDOSMass() const { return fLattice->GetElectronDOSMass(); }
   G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const {
     return fLattice->GetElectronEffectiveMass(iv, p);
   }
@@ -128,6 +135,14 @@ public:
   G4double GetIVField() const    { return fLattice->GetIVField(); }
   G4double GetIVRate() const     { return fLattice->GetIVRate(); }
   G4double GetIVExponent() const { return fLattice->GetIVExponent(); }
+
+  G4double GetAlpha() const      { return fLattice->GetAlpha(); }
+  G4double GetAcousticDeform() const { return fLattice->GetAcousticDeform(); }
+
+  // Optical intervalley scattering may use D0 or D1 deformation potentials
+  G4int    GetNIVDeform() const { return fLattice->GetNIVDeform(); }
+  G4double GetIVDeform(G4int i) const { return fLattice->GetIVDeform(i); }
+  G4double GetIVEnergy(G4int i) const { return fLattice->GetIVEnergy(i); }
 
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;

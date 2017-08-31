@@ -20,6 +20,7 @@
 // 20170802  Add commands for separate Luke, downconversion scaing
 // 20170815  Add command to set volume surface clearance
 // 20170816  Remove directory and command handlers; G4UImessenger does it!
+// 20170821  Add command to select Edelweiss IV scattering model
 // 20170823  Move geometry-specific commands to examples
 // 20170830  Add command for downsampling energy scale parameter
 
@@ -40,7 +41,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     theManager(mgr), verboseCmd(0), ehBounceCmd(0), pBounceCmd(0), clearCmd(0),
     minEPhononCmd(0), minEChargeCmd(0), minstepCmd(0), makePhononCmd(0),
     makeChargeCmd(0), lukePhononCmd(0), downconvCmd(0),
-    dirCmd(0), kvmapCmd(0), fanoStatsCmd(0) {
+    dirCmd(0), kvmapCmd(0), fanoStatsCmd(0), ivEdelCmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
 
@@ -98,6 +99,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   fanoStatsCmd = CreateCommand<G4UIcmdWithABool>("enableFanoStatistics",
            "Modify input ionization energy according to Fano statistics.");
   fanoStatsCmd->SetDefaultValue(true);
+
+  ivEdelCmd = CreateCommand<G4UIcmdWithABool>("useEdelweissIVRate",
+           "Use Edelweiss parametrization for IV scattering rate.");
+  ivEdelCmd->SetDefaultValue(true);
 }
 
 
@@ -147,4 +152,5 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
 
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));
+  if (cmd == ivEdelCmd) theManager->UseIVEdelweiss(StoB(value));
 }

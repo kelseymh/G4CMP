@@ -25,6 +25,7 @@
 // 20170525  Block 'rule of five' copy/move semantics, as singleton
 // 20170802  Add separate scaling factors for Luke and downconversion
 // 20170815  Add parameter for required clearance from volume surfaces
+// 20170821  Add parameter to select Edelweiss IV scattering model
 // 20170823  Remove geometry-specific parameters; implement in examples
 // 20170830  Add downsampling energy scale parameter
 
@@ -58,6 +59,9 @@ public:
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
   static G4double GetDownconversionSampling() { return Instance()->downSample; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
+  static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
+  static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
+  static G4bool UseIVEdelweiss()	 { return Instance()->IVEdelweiss; }
 
   // Change values (e.g., via Messenger)
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
@@ -74,6 +78,7 @@ public:
   static void SetDownconversionSampling(G4double value) { Instance()->downSample = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
+  static void UseIVEdelweiss(G4bool value) { Instance()->IVEdelweiss = value; }
 
   // These settings require the geometry to be rebuilt
   static void SetLatticeDir(const G4String& dir)
@@ -108,6 +113,8 @@ private:
   G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits
                         // ($G4CMP_FANO_ENABLED)
+  G4bool IVEdelweiss;	// Use Edelweiss model for IV rate ($G4CMP_IV_EDELWEISS)
+  G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
 
   G4CMPConfigMessenger* messenger;
 };

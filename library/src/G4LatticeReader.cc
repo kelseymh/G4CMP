@@ -25,6 +25,9 @@
 // 20160701  Withdraw seting basis vectors, set crystal symmetry instead
 // 20160727  Use G4CMP-specific units; allow multiple units for Debye energy
 // 20160802  Use hep_pascal for pressure (Windows compatibility)
+// 20170810  Processing IV scattering matrix terms, allow "/eV" type units
+// 20170821  For deformation potentials, specify eV/cm units; use regex match
+//		for multiple optical IV potentials
 // 20170821  Add transverse sound speed, L->TT fraction
 
 #include "G4LatticeReader.hh"
@@ -38,6 +41,7 @@
 #include "G4UnitsTable.hh"
 #include <fstream>
 #include <limits>
+#include <regex>
 #include <stdlib.h>
 
 
@@ -45,8 +49,7 @@
 
 G4LatticeReader::G4LatticeReader(G4int vb)
   : verboseLevel(vb?vb:G4CMPConfigManager::GetVerboseLevel()),
-    psLatfile(0), pLattice(0),
-    fToken(""), fValue(0.), f3Vec(0.,0.,0.),
+    psLatfile(0), pLattice(0), fToken(""), fValue(0.), f3Vec(0.,0.,0.),
     fDataDir(G4CMPConfigManager::GetLatticeDir()),
     mElectron(electron_mass_c2/c_squared) {
   G4CMPUnitsTable::Init();	// Ensures thread-by-thread initialization
@@ -141,6 +144,8 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "emass")    return ProcessMassTensor();	// e- mass eigenvalues
   if (fToken == "valley")   return ProcessEulerAngles(fToken); // e- drift dirs
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
+  if (fToken == "ivdeform") return ProcessDeformation(); // D0, D1 potentials
+  if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
 
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
                             return ProcessCrystalGroup(fToken);
@@ -162,7 +167,8 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   if (verboseLevel>1) G4cout << " ProcessValue " << fValue << G4endl;
 
   G4bool good = true;
-       if (name == "beta")       pLattice->SetBeta(fValue*ProcessUnits("Pressure"));
+  if      (name == "alpha")      pLattice->SetAlpha(fValue*ProcessUnits("Energy"));
+  else if (name == "beta")       pLattice->SetBeta(fValue*ProcessUnits("Pressure"));
   else if (name == "gamma")      pLattice->SetGamma(fValue*ProcessUnits("Pressure"));
   else if (name == "lambda")     pLattice->SetLambda(fValue*ProcessUnits("Pressure"));
   else if (name == "mu")         pLattice->SetMu(fValue*ProcessUnits("Pressure"));
@@ -177,6 +183,8 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "bandgap")    pLattice->SetBandGapEnergy(fValue*ProcessUnits("Energy"));
   else if (name == "pairenergy") pLattice->SetPairProductionEnergy(fValue*ProcessUnits("Energy"));
   else if (name == "fanofactor") pLattice->SetFanoFactor(fValue);
+  else if (name == "neutdens")   pLattice->SetImpurities(fValue*ProcessUnits("Volume"));
+  else if (name == "epsilon")    pLattice->SetPermittivity(fValue);
   else if (name == "vsound")     pLattice->SetSoundSpeed(fValue*ProcessUnits("Velocity"));
   else if (name == "vtrans")     pLattice->SetTransverseSoundSpeed(fValue*ProcessUnits("Velocity"));
   else if (name == "escat")      pLattice->SetElectronScatter(fValue*ProcessUnits("Length"));
@@ -184,6 +192,7 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "hscat")      pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
   else if (name == "l0_h")       pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
   else if (name == "hmass")      pLattice->SetHoleMass(fValue*mElectron);
+  else if (name == "acdeform")   pLattice->SetAcousticDeform(fValue*ProcessUnits("Energy"));
   else if (name == "ivfield")    pLattice->SetIVField(fValue*ProcessUnits("Electric field"));
   else if (name == "ivrate")     pLattice->SetIVRate(fValue*ProcessUnits("Frequency"));
   else if (name == "ivpower")    pLattice->SetIVExponent(fValue);
@@ -196,6 +205,31 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   return good;
 }
 
+// Process list of values with associated unit
+
+G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
+  if (verboseLevel>1) G4cout << " ProcessList " << unitcat << G4endl;
+
+  // Prepare input buffers for reading multiple values, up to unit string
+  fList.clear();
+
+  G4String token;
+  char* eonum = 0;	// Will point to end of valid number string (NUL)
+  do {
+    *psLatfile >> token;
+    fValue = strtod(token.c_str(), &eonum);
+    if (*eonum == '\0') fList.push_back(fValue);
+  } while (psLatfile->good() && *eonum == '\0');
+
+  ProcessUnits(token, unitcat);		// Non-numeric token is trailing unit
+  for (size_t i=0; i<fList.size(); i++) fList[i] *= fUnits;
+
+  return psLatfile->good();
+}
+
+
+// Process specific parameters with unique formats
+
 G4bool G4LatticeReader::ProcessConstants() {
   G4double beta=0., gamma=0., lambda=0., mu=0.;
   *psLatfile >> beta >> gamma >> lambda >> mu;
@@ -203,20 +237,18 @@ G4bool G4LatticeReader::ProcessConstants() {
 
   if (verboseLevel>1)
     G4cout << " ProcessConstants " << beta << " " << gamma
-	   << " " << lambda << " " << mu << " " << fUnitName << G4endl;
+           << " " << lambda << " " << mu << " " << fUnitName << G4endl;
 
   pLattice->SetDynamicalConstants(beta*fUnits, gamma*fUnits, lambda*fUnits,
-				  mu*fUnits);
+                                  mu*fUnits);
 
   return psLatfile->good();
 }
-
 
 // Read lattice constants and angles for specified symmetry
 
 G4bool G4LatticeReader::ProcessCrystalGroup(const G4String& name) {
   if (verboseLevel>1) G4cout << " ProcessCrystalGroup " << name << G4endl;
-
 
   // Input buffers for reading; different crystals need different data
   G4double a=0., b=0., c=0., alpha=0., beta=0., gamma=0.;
@@ -338,14 +370,32 @@ G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
   return psLatfile->good();
 }
 
+// Read deformation potentials and thresholds for IV scattering
+
+G4bool G4LatticeReader::ProcessDeformation() {
+  if (verboseLevel>1) G4cout << " ProcessDeformation " << G4endl;
+
+  G4bool okay = ProcessList("Energy/Length");
+  if (okay) pLattice->SetIVDeform(fList);
+
+  return okay;
+}
+
+G4bool G4LatticeReader::ProcessThresholds() {
+  if (verboseLevel>1) G4cout << " ProcessThresholds " << G4endl;
+
+  G4bool okay = ProcessList("Energy");
+  if (okay) pLattice->SetIVEnergy(fList);
+
+  return okay;
+}
+
 
 // Read expected dimensions for value from file, return scale factor
 // Input argument "unitcat" may be comma-delimited list of categories
 
 G4double G4LatticeReader::ProcessUnits(const G4String& unitcat) {
   *psLatfile >> fUnitName;
-  if (verboseLevel>1) G4cout << " ProcessUnits " << fUnitName << G4endl;
-
   return ProcessUnits(fUnitName, unitcat);
 }
 
@@ -354,13 +404,18 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
   if (verboseLevel>1)
     G4cout << " ProcessUnits " << unit << " " << unitcat << G4endl;
 
-  // Do processing -- invalid input string will cause fatal exception
+  // Look for leading "/" for inverse units (density, per eV, etc.)
+  G4bool inverse = (unit(0)=='/');
+  
   fUnitName = unit;
+  if (inverse) fUnitName = fUnitName(1,unit.length()-1);
+
+  // Do processing -- invalid input string will cause fatal exception
   fUnits    = G4UnitDefinition::GetValueOf(fUnitName);
   fUnitCat  = G4UnitDefinition::GetCategory(fUnitName);
 
-  // If actual category doesn't match expected, throw exception
-  if (!unitcat.contains(fUnitCat)) {
+  // Ensure that units properly match user-requested categories
+  if (fUnitCat.empty() || !unitcat.contains(fUnitCat)) {
     G4ExceptionDescription msg;
     msg << "Expected " << unitcat << " units, got " << fUnitName << " ("
 	<< fUnitCat << ")";
@@ -369,5 +424,5 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
     return 0.;
   }
 
-  return fUnits;	// Return value for convenient inlining
+  return inverse ? 1./fUnits : fUnits;	// Return value for convenient inlining
 }

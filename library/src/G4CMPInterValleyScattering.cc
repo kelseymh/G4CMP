@@ -19,9 +19,13 @@
 // 20161114  Use G4CMPDriftTrackInfo
 // 20170602  Use G4CMPUtils for particle identity checks
 // 20170802  Remove MFP calculation; use scattering-rate model
+// 20170809  Replace Edelweiss rate with physical (matrix element) model
+// 20170821  Use configuration flag to choose Edelweiss vs. physical rate
 
 #include "G4CMPInterValleyScattering.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPInterValleyRate.hh"
 #include "G4CMPIVRateEdelweiss.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -34,7 +38,10 @@
 
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()
   : G4CMPVDriftProcess("G4CMPInterValleyScattering", fInterValleyScattering) {
-  UseRateModel(new G4CMPIVRateEdelweiss);
+  if (G4CMPConfigManager::UseIVEdelweiss()) 
+    UseRateModel(new G4CMPIVRateEdelweiss);
+  else
+    UseRateModel(new G4CMPInterValleyRate);
 }
 
 G4CMPInterValleyScattering::~G4CMPInterValleyScattering() {;}

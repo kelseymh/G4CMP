@@ -27,6 +27,8 @@
 // 20170523  Add interface for axis vector of valleys
 // 20170525  Add "rule of five" copy/move semantics
 // 20170527  Drop unnecessary <fstream>
+// 20170810  Add parameters for IV scattering matrix terms
+// 20170821  Add support for separate D0 and D1 optical deformation potentials
 // 20170821  Add transverse sound speed, L->TT fraction
 
 #include "G4LatticeLogical.hh"
@@ -44,17 +46,19 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4LatticeLogical::G4LatticeLogical(const G4String& name)
-  : verboseLevel(0), fName(name), fDensity(0.),
+  : verboseLevel(0), fName(name), fDensity(0.), fNImpurity(0.),
+    fPermittivity(1.),
     fElasticity{}, fElReduced{}, fHasElasticity(false),
     fpPhononKin(0), fpPhononTable(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
     fVSound(0.), fVTrans(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),
-    fHoleMass(mElectron), fElectronMass(mElectron),
+    fHoleMass(mElectron), fElectronMass(mElectron), fElectronMDOS(mElectron),
+    fBandGap(0.), fPairEnergy(0.), fFanoFactor(1.),
     fMassTensor(G4Rep3x3(mElectron,0.,0.,0.,mElectron,0.,0.,0.,mElectron)),
     fMassInverse(G4Rep3x3(1/mElectron,0.,0.,0.,1/mElectron,0.,0.,0.,1/mElectron)),
-    fIVField(0.), fIVRate(0.), fIVExponent(0.) {
+    fAlpha(0.), fAcDeform(0.), fIVField(0.), fIVRate(0.), fIVExponent(0.) {
   for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
     for (G4int j=0; j<KVBINS; j++) {
       for (G4int k=0; k<KVBINS; k++) {
@@ -85,6 +89,8 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fCrystal = rhs.fCrystal;
   std::copy(rhs.fBasis, rhs.fBasis+3, fBasis);
   fDensity = rhs.fDensity;
+  fNImpurity = rhs.fNImpurity;
+  fPermittivity = rhs.fPermittivity;
   fHasElasticity = rhs.fHasElasticity;
   fA = rhs.fA;
   fB = rhs.fB;
@@ -103,6 +109,7 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fL0_h = rhs.fL0_h;
   fHoleMass = rhs.fHoleMass;
   fElectronMass = rhs.fElectronMass;
+  fElectronMDOS = rhs.fElectronMDOS;
   fBandGap = rhs.fBandGap;
   fPairEnergy = rhs.fPairEnergy;
   fFanoFactor = rhs.fFanoFactor;
@@ -112,6 +119,10 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fMInvRatioSqrt = rhs.fMInvRatioSqrt;
   fValley = rhs.fValley;
   fValleyAxis = rhs.fValleyAxis;
+  fAlpha = rhs.fAlpha;
+  fAcDeform = rhs.fAcDeform;
+  fIVDeform = rhs.fIVDeform;
+  fIVEnergy = rhs.fIVEnergy;
   fIVField = rhs.fIVField;
   fIVRate = rhs.fIVRate;
   fIVExponent = rhs.fIVExponent;
@@ -575,6 +586,9 @@ void G4LatticeLogical::FillMassInfo() {
   fElectronMass = 3. / ( 1./fMassTensor.xx() + 1./fMassTensor.yy()
 			 + 1./fMassTensor.zz() );  
 
+  // Density of states effective mass, used for intervalley scattering
+  fElectronMDOS = cbrt(fMassTensor.xx()*fMassTensor.yy()*fMassTensor.zz());
+
   // 1/m mass tensor used for k and v calculations in valley coordinates
   fMassInverse.set(G4Rep3x3(1./fMassTensor.xx(), 0., 0.,
 			    0., 1./fMassTensor.yy(), 0.,
@@ -691,6 +705,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << " " << fMassInverse.zz()*mElectron
      << " * 1/m(electron)" << std::endl
      << "# Herring-Vogt scalar mass: " << fElectronMass/mElectron << std::endl
+     << "# Density of states mass: " << fElectronMDOS/mElectron << std::endl
      << "# sqrt(tensor/scalar): " << fMassRatioSqrt.xx()
      << " " << fMassRatioSqrt.yy()
      << " " << fMassRatioSqrt.zz()
@@ -701,6 +716,15 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
   }
 
   os << "# Intervalley scattering parameters"
+     << "\nalpha " << fAlpha*eV << " /eV"
+     << "\nepsilon " << fPermittivity
+     << "\nneutDens " << fNImpurity * cm3 << " /cm3"
+     << "\nacDeform " << fAcDeform/eV << " eV"
+     << "\n ivDeform "; DumpList(os, fIVDeform, "eV/cm");
+  os << "\n ivEnergy "; DumpList(os, fIVEnergy, "eV");
+  os << std::endl;
+
+  os << "# Edelweiss intervalley scattering parameters"
      << "\nivField " << fIVField/(volt/m) << " V/m"
      << "\nivRate " << fIVRate/hertz << " Hz"
      << "\nivPower " << fIVExponent << std::endl;
@@ -780,4 +804,19 @@ void G4LatticeLogical::DumpCrystalInfo(std::ostream& os) const {
 void G4LatticeLogical::DumpCpq(std::ostream& os, G4int p, G4int q) const {
   os << "Cpq " << p << " " << q << " " << GetCpq(p,q)/GPa << " GPa"
      << std::endl;
+}
+
+// Print out list of values scaled by specified unit
+
+void G4LatticeLogical::DumpList(std::ostream& os,
+				const std::vector<G4double>& vlist,
+				const G4String& unit) const {
+  if (vlist.empty()) return;		// Avoid unnecessary work
+
+  G4double uval = G4UnitDefinition::GetValueOf(unit);
+  for (size_t i=0; i<vlist.size(); i++) {
+    os << vlist[i]/uval << " ";
+  }
+
+  os << unit;
 }

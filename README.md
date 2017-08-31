@@ -68,6 +68,8 @@ developers should check the source code in
 | G4CMP\_EMIN\_PHONONS [E]  | /g4cmp/minEPhonons <E> eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges <E> eV     | Minimum energy to track charges         |
 | G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t|f]      | Use eigensolver for K-Vg mapping        |
+| G4CMP\_FANO\_ENABLED  | /g4cmp/enableFanoStatistics [t|f] | Apply Fano statistics to input ionization |
+| G4CMP\_IV\_EDELWEISS  | /g4cmp/useIVEdelweiss [t|f]       | Use Edelweiss intervalley rate parametrization |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation h k l      | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
 | G4CMP\_MILLER\_L          |                               |                                         |
@@ -311,6 +313,14 @@ the crystal system.
 | hmass   | m_h       | effective mass of hole   | electron mass ratio |
 | emass   | m_xx m_yy m_zz | electron mass tensor | (same)             |
 | valley  | theta phi psi unit | Euler angles     | angle (deg/rad)    |
+| ** InterValley scattering with matrix elements ** |
+| epsilon | e/e0      | Relative permittivity     |                    |
+| neutDens | N        | Number density of neutron impurities | /volume |
+| alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
+| acDeform | val      | Acoustic deformation potential | energy (eV)   |
+| ivDeform | val val ... | Optical deformation potentials | eV/cm  |
+| ivEnergy | val val ... | Optical phonon thresholds | energy (eV) |
+| ** InterValley scattering with Edelweiss model ** |
 | ivField | E0        | Edelweiss intervalley scattering  | V/m        |
 | ivRate  | freq      | Intervalley scattering rate       | Hz         |
 | ivPower | val       | Power law [sqrt(field^ivPower)]   | none       |
