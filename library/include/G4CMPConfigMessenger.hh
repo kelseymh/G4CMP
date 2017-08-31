@@ -26,6 +26,7 @@
 // 20170815  Add command to set volume surface clearance
 // 20170816  Remove directory and command handlers; G4UImessenger does it!
 // 20170823  Move geometry-specific commands to examples
+// 20170830  Add command to set downsampling energy scale
 
 #include "G4UImessenger.hh"
 
@@ -54,6 +55,7 @@ private:
   G4UIcmdWithADoubleAndUnit* clearCmd;
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
+  G4UIcmdWithADoubleAndUnit* sampleECmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;
