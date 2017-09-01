@@ -12,11 +12,9 @@
 #define G4CMPInterValleyRate_hh 1
 
 #include "G4CMPVScatteringRate.hh"
-#include "G4CMPProcessUtils.hh"
 
 
-class G4CMPInterValleyRate : public G4CMPVScatteringRate,
-			     public G4CMPProcessUtils {
+class G4CMPInterValleyRate : public G4CMPVScatteringRate {
 public:
   G4CMPInterValleyRate()
     : G4CMPVScatteringRate("InterValley"),

@@ -47,8 +47,6 @@ public:
   static G4int GetVerboseLevel()         { return Instance()->verbose; }
   static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
   static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
-  static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
-  static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
   static G4double GetSurfaceClearance()  { return Instance()->clearance; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetMinPhononEnergy()   { return Instance()->EminPhonons; }
@@ -114,7 +112,6 @@ private:
   G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits
                         // ($G4CMP_FANO_ENABLED)
   G4bool IVEdelweiss;	// Use Edelweiss model for IV rate ($G4CMP_IV_EDELWEISS)
-  G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
 
   G4CMPConfigMessenger* messenger;
 };
