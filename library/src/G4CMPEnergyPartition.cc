@@ -16,6 +16,8 @@
 // 20170728  Forgot to assign material to data member in ctor.
 // 20170731  Move point-to-volume conversion to G4CMPGeometryUtils.
 // 20170802  Add constructor and accessor for volume argument, particle change
+// 20170830  Use downsampling energy scale parameter in DoPartition()
+// 20170901  Add support for putting primaries directly into event
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPConfigManager.hh"
@@ -25,12 +27,14 @@
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4DynamicParticle.hh"
+#include "G4Event.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
 #include "G4Navigator.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PrimaryParticle.hh"
+#include "G4PrimaryVertex.hh"
 #include "G4RandomDirection.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4TransportationManager.hh"
@@ -236,7 +240,7 @@ void G4CMPEnergyPartition::AddPhonon(G4double ePhon) {
 }
 
 
-// Return either primary or secondary particles from partitioning
+// Return primary particles from partitioning as list
 
 void G4CMPEnergyPartition::
 GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
@@ -279,6 +283,64 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
   primaries.shrink_to_fit();		// Reduce footprint if biasing done
 }
 
+// Return primary particles from partitioning directly into event
+
+void G4CMPEnergyPartition::
+GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
+	     G4int maxPerVertex) const {
+  if (verboseLevel) {
+    G4cout << "G4CMPEnergyPartition::GetPrimaries @ " << pos
+	   << " up to " << maxPerVertex << " per vertex" << G4endl;
+  }
+
+  std::vector<G4PrimaryParticle*> primaries;	// Can we make this mutable?
+  GetPrimaries(primaries);
+
+  G4double chargeEtot = 0.;		// Cumulative buffers for diagnostics
+  G4double phononEtot = 0.;
+  G4double bandgap = GetLattice()->GetBandGapEnergy()/2.;
+
+  G4PrimaryVertex* vertex = CreateVertex(event, pos, time);
+
+  for (size_t i=0; i<primaries.size(); i++) {
+    // Change vertices if current one is full
+    if (maxPerVertex>0 && vertex->GetNumberOfParticle() > maxPerVertex) {
+      vertex = CreateVertex(event, pos, time);
+    }
+
+    vertex->SetPrimary(primaries[i]);		// Add primary to vertex
+
+    // Accumulate results for diagnostic output
+    if (verboseLevel>2) {
+      const G4ParticleDefinition* pd = primaries[i]->GetParticleDefinition();
+      G4double ekin = primaries[i]->GetKineticEnergy();
+      G4double weight = primaries[i]->GetWeight();
+      if (G4CMP::IsPhonon(pd)) phononEtot += ekin * weight;
+      if (G4CMP::IsChargeCarrier(pd)) chargeEtot += (ekin + bandgap) * weight;
+    }
+  }
+
+  if (verboseLevel>2) {
+    G4cout << "Energy in electron-hole pairs " << chargeEtot/keV << " keV\n"
+           << "Energy in phonons " << phononEtot/keV << " keV\n"
+	   << "Primary particles " << primaries.size()
+	   << " in " << event->GetNumberOfPrimaryVertex() << " vertices"
+           << G4endl;
+  }
+}
+
+G4PrimaryVertex* 
+G4CMPEnergyPartition::CreateVertex(G4Event* evt, const G4ThreeVector& pos,
+				   G4double time) const {
+  G4PrimaryVertex* vertex = new G4PrimaryVertex(pos, time);
+  evt->AddPrimaryVertex(vertex);
+
+  return vertex;
+}
+
+
+// Return secondary particles from partitioning as list
+
 void G4CMPEnergyPartition::
 GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
   if (verboseLevel) {
@@ -319,6 +381,8 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
 
   secondaries.shrink_to_fit();		// Reduce footprint if biasing done
 }
+
+// Return secondary particles from partitioning directly into event
 
 void G4CMPEnergyPartition::
 GetSecondaries(G4VParticleChange* aParticleChange) const {
