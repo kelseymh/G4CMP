@@ -1,0 +1,11 @@
+/run/initialize
+
+/process/inactivate phononScattering
+/process/inactivate phononDownconversion
+
+/g4cmp/phononBounces 10000000
+
+/tracking/verbose 1
+/gun/energy 2.7e-3 eV
+/gun/number 1
+/run/beamOn 100
