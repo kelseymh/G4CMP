@@ -20,7 +20,7 @@
 // 20160624  Use GetTrackInfo() accessor
 // 20161114  Use new G4CMPDriftTrackInfo
 // 20170602  Use G4CMPUtils for track identity functions
-// 20170806  Swap GPIL and MFP functins to work with G4CMPVProcess base
+// 20170806  Swap GPIL and MFP functions to work with G4CMPVProcess base
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -28,11 +28,15 @@
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4CMPVProcess.hh"
+#include "G4CMPVScatteringRate.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4ProcessManager.hh"
+#include "G4ProcessVector.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 #include "G4UserLimits.hh"
@@ -43,9 +47,43 @@
 G4CMPTimeStepper::G4CMPTimeStepper()
   : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper) {;}
 
-
 G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
+
+// Get scattering rates from current track's processes
+
+void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
+  G4CMPProcessUtils::LoadDataForTrack(aTrack);	// Common configuration
+
+  lukeRate = ivRate = nullptr;			// Discard previous versions
+
+  // Pointers can't be null since track has at least this process!
+  const G4ProcessVector* pvec =
+    aTrack->GetDefinition()->GetProcessManager()->GetPostStepProcessVector();
+
+  if (verboseLevel>2)
+    G4cout << "TimeStepper scanning " << pvec->size() << " processes"
+	   << " for " << aTrack->GetDefinition()->GetParticleName() << G4endl;
+
+  for (G4int i=0; i<pvec->size(); i++) {
+    const G4CMPVProcess* cmpProc = dynamic_cast<G4CMPVProcess*>((*pvec)[i]);
+    if (!cmpProc) continue;
+
+    const G4String& pname = cmpProc->GetProcessName();
+    if (verboseLevel>2) G4cout << pname << G4endl;
+
+    if (pname == "G4CMPLukeScattering")      lukeRate = cmpProc->GetRateModel();
+    if (pname == "G4CMPInterValleyScattering") ivRate = cmpProc->GetRateModel();
+  }
+
+  if (verboseLevel>1) {
+    G4cout << "TimeStepper Found" << (lukeRate?" lukeRate":"")
+	   << (ivRate?" ivRate":"") << G4endl;
+  }
+}
+
+
+// Compute fixed "minimum distance" to avoid accelerating past Luke or IV
 
 G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 					   G4ForceCondition* cond) {
@@ -55,18 +93,18 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double v = GetVelocity(aTrack);
 
   if (verboseLevel > 1) {
-    if (aTrack.GetParticleDefinition() == G4CMPDriftElectron::Definition())
-      G4cout << "TS elec = " << (v*dt)/m << G4endl;
-    else
-      G4cout << "TS hole = " << (v*dt)/m << G4endl;
+    G4cout << "TS " << (IsElectron()?"elec":"hole") << " = " << (v*dt)/m
+	   << " m" << G4endl;
   }
 
   return v*dt;
 }
 
 
+// At end of step, recompute kinematics; important for electrons
+
 G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
-						  const G4Step& /*aStep*/) {
+						  const G4Step& aStep) {
   aParticleChange.Initialize(aTrack);
 
   // Adjust mass and kinetic energy using end-of-step momentum
@@ -76,6 +114,7 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
   ClearNumberOfInteractionLengthLeft();		// All processes must do this!
   return &aParticleChange;
 }
+
 
 // Compute dt_e, dt_h and valley rotations at current location
 
@@ -107,6 +146,7 @@ G4double G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
   G4ThreeVector Efield(fieldVal[3], fieldVal[4], fieldVal[5]);
   return TimeStepInField(Efield.mag()/10., timeStepParam, l0);
 }
+
 
 // Compute time step for electrons or holes, pre-simplified expression
 
