@@ -1,4 +1,13 @@
 /tracking/verbose 1
 /gun/number 1
+/g4cmp/voltage 10. volt
+/g4cmp/producePhonons 0.
+/g4cmp/sampleLuke 0.
+
 /run/initialize
+
+/process/setVerbose 1 G4CMPInterValleyScattering
+/process/setVerbose 1 G4CMPLukeScattering
+/process/setVerbose 1 G4CMPTimeStepper
+
 /run/beamOn 1
