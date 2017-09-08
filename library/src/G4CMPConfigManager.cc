@@ -19,6 +19,7 @@
 // 20170815  Add parameter for required clearance from volume surfaces
 // 20170823  Remove geometry-specific parameters; implement in examples
 // 20170830  Add downsampling energy scale parameter
+// 20170908  G4CMP-118:  Use Edelweiss IV rate by default
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -52,7 +53,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     EminCharges(getenv("G4CMP_EMIN_CHARGES")?strtod(getenv("G4CMP_EMIN_CHARGES"),0)*eV:0.),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
-    IVEdelweiss(getenv("G4CMP_IV_EDELWEISS")?atoi(getenv("G4CMP_IV_EDELWEISS")):0),
+    IVEdelweiss(getenv("G4CMP_IV_EDELWEISS")?atoi(getenv("G4CMP_IV_EDELWEISS")):1),
     messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 }

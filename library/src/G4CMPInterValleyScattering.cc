@@ -59,13 +59,13 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack); 
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
-  // Do nothing when step limit reached or leaving volume
-  if (verboseLevel > 0) {
+  if (verboseLevel > 1) {
     G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
 	   << postStepPoint->GetProcessDefinedStep()->GetProcessName()
 	   << G4endl;
   }
 
+  // Don't do anything at a volume boundary
   if (postStepPoint->GetStepStatus()==fGeomBoundary) {
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }

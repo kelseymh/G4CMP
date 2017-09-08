@@ -50,7 +50,10 @@ void G4CMPVProcess::UseRateModel(G4CMPVScatteringRate* model) {
 void G4CMPVProcess::StartTracking(G4Track* track) {
   G4VProcess::StartTracking(track);	// Apply base class actions
   LoadDataForTrack(track);
-  if (rateModel) rateModel->LoadDataForTrack(track);
+  if (rateModel) {
+    rateModel->SetVerboseLevel(verboseLevel);
+    rateModel->LoadDataForTrack(track);
+  }
 }
 
 void G4CMPVProcess::EndTracking() {
@@ -70,9 +73,9 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double vtrk = IsChargeCarrier() ? GetVelocity(aTrack) : aTrack.GetVelocity();
   G4double mfp  = rate>0. ? vtrk/rate : DBL_MAX;
 
-  if (verboseLevel>1) {
+  if (verboseLevel) {
     G4cout << GetProcessName() << " rate = " << rate/hertz << " Hz"
-	   << " Vtrk = " << vtrk << " m/s"
+	   << " Vtrk = " << vtrk/(m/s) << " m/s"
 	   << " MFP = " << mfp/m << " m" << G4endl;
   }
 
