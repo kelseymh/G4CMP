@@ -10,6 +10,7 @@
 //
 // 20170601  New abstract base class for all G4CMP processes
 // 20170802  Add registration of external scattering rate (MFP) model
+// 20170905  Add accessors to get currentlty active scattering rate
 
 #ifndef G4CMPVProcess_h
 #define G4CMPVProcess_h 1
@@ -29,6 +30,8 @@ public:
   // Register utility class for computing scattering rate for MFP
   // NOTE:  Takes ownership of model for deletion
   void UseRateModel(G4CMPVScatteringRate* model);
+  const G4CMPVScatteringRate* GetRateModel() const { return rateModel; }
+        G4CMPVScatteringRate* GetRateModel()       { return rateModel; }
 
   // Initialize track/volume information (lattice, wavevector, etc.)
   // NOTE:  Subclasses must call back to these base implementations!
