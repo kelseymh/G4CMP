@@ -1,6 +1,10 @@
 /tracking/verbose 0
 /gun/number 100
 /g4cmp/voltage 0.01 volt
+
+/g4cmp/producePhonons 0.
+/g4cmp/sampleLuke 0.
+
 /run/initialize
 /vis/open OGL
 /vis/viewer/set/upVector 1 0 0
