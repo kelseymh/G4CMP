@@ -50,12 +50,14 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
 
   // Initialize numerical buffers
   eTrk = GetKineticEnergy(aTrack);
+  if (verboseLevel>1)
+    G4cout << "G4CMPInterValleyRate eTrk " << eTrk/eV << " eV" << G4endl;
 
   G4double orate = opticalRate();
-  if (verboseLevel>2) G4cout << " Phonon rate " << orate << G4endl;
+  if (verboseLevel>2) G4cout << "IV phonons  " << orate/hertz << " Hz" << G4endl;
  
   G4double nrate = scatterRate();
-  if (verboseLevel>2) G4cout << " Neutral Impurities " << nrate << G4endl;
+  if (verboseLevel>2) G4cout << "IV neutrals " << nrate/hertz << " Hz" << G4endl;
 
   G4double rate = nrate + orate;
   if (verboseLevel>1) G4cout << "IV rate = " << rate/hertz << " Hz" << G4endl;
@@ -69,29 +71,32 @@ G4double G4CMPInterValleyRate::acousticRate() const {
   G4double D_ac  = theLattice->GetAcousticDeform();
   G4double D_ac_sq = D_ac*D_ac;
 
-  return ( sqrt(2)*kT * m_DOS3half * D_ac_sq *
-	   sqrt(eTrk*(1+alpha*eTrk))*(1+2*alpha*eTrk)
+  return ( sqrt(2)*kT * m_DOS3half * D_ac_sq * energyFunc(eTrk)
 	   / (pi*hbar_4th*density*uSound*uSound) );
 }
 
 G4double G4CMPInterValleyRate::opticalRate() const {
-  G4double total = 0.;
+   // FIXME:  Rate should not have 'kT', but leaving it out ruins drift curve
+  G4double scale = nValley*/*kT**/m_DOS3half / (sqrt(2)*pi*hbar_sq*density);
 
+  G4double total = 0.;
   G4int N_op = theLattice->GetNIVDeform();
   for (G4int i = 0; i<N_op; i++) {
     G4double Emin_op = theLattice->GetIVEnergy(i);
     if (eTrk <= Emin_op) continue;		// Apply threshold behaviour
 
-    G4double dE = eTrk - Emin_op;		// Energy above threshold
     G4double D_op = theLattice->GetIVDeform(i);
-    G4double D_op_sq = D_op*D_op;
+    G4double oscale = scale * D_op*D_op / Emin_op;
 
-    G4double orate = ( nValley * kT * m_DOS3half * D_op_sq *
-		       sqrt(dE*(1 + alpha*dE))*(1 + 2*alpha*dE)
-		       / (sqrt(2)*pi*hbar_sq*density*Emin_op) );
+    G4double Efunc = energyFunc(eTrk-Emin_op);	// Energy above threshold
 
-    if (verboseLevel>2)
-      G4cout << " optical phonon rate [" << i << "] " << orate << G4endl;
+    G4double orate = oscale * Efunc;
+
+    if (verboseLevel>2) {
+      G4cout << " oscale[" << i << "] " << oscale << " Efunc " << Efunc
+	     << "\n phonon rate [" << i << "] " << orate/hertz << " Hz"
+	     << G4endl;
+    }
 
     total += orate;
   }

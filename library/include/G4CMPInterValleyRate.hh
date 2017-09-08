@@ -35,6 +35,10 @@ protected:
   G4double opticalRate() const;		// Optical intervalley D0, D1 rate
   G4double scatterRate() const;		// Neutral impurity scattering
 
+  G4double energyFunc(G4double E) const {	// Energy dependence of rates
+    return sqrt(E*(1+alpha*E))*(1+2*alpha*E);
+  }
+
 private:
   // Useful numerical parameters for computing individual rates
   const G4double hbar_sq;
