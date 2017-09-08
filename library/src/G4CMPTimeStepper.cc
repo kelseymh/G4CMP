@@ -21,6 +21,8 @@
 // 20161114  Use new G4CMPDriftTrackInfo
 // 20170602  Use G4CMPUtils for track identity functions
 // 20170806  Swap GPIL and MFP functions to work with G4CMPVProcess base
+// 20170905  Cache Luke and IV rate models in local LoadDataFromTrack()
+// 20170908  Remove "/10." rescaling of field when computing steps
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -84,20 +86,53 @@ void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
 
 
 // Compute fixed "minimum distance" to avoid accelerating past Luke or IV
+#include "G4DynamicParticle.hh"
 
 G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 					   G4ForceCondition* cond) {
+  /*** 
+  static G4bool first = true;
+  if (first) {
+    G4cout << "TSreport Process Chg E[eV] v[m/s] k[1/m] Rate[Hz]" << G4endl;
+    first = false;
+  }
+  
+  G4cout << "TSreport Luke"
+	 << " " << aTrack.GetDynamicParticle()->GetCharge()/eplus
+	 << " " << GetKineticEnergy(aTrack)/eV
+	 << " " << v/(m/s) << " " << GetLocalWaveVector(aTrack).mag()*m
+	 << " " << lukeRate->Rate(aTrack)/hertz << G4endl;
+  
+  if (IsElectron()) {
+    G4cout << "TSreport IV"
+	   << " " << aTrack.GetDynamicParticle()->GetCharge()/eplus
+	   << " " << GetKineticEnergy(aTrack)/eV
+	   << " " << v/(m/s) << " " << GetLocalWaveVector(aTrack).mag()*m
+	   << " " << ivRate->Rate(aTrack)/hertz << G4endl;
+  }      
+  ***/
+
   *cond = NotForced;
 
   G4double dt = ComputeTimeSteps(aTrack);
   G4double v = GetVelocity(aTrack);
 
-  if (verboseLevel > 1) {
-    G4cout << "TS " << (IsElectron()?"elec":"hole") << " = " << (v*dt)/m
+  G4double mfp = v*dt;
+  G4double vsound = theLattice->GetSoundSpeed();
+
+  G4double vscale = 1.;
+  if (v < vsound) vscale = std::max(0.3,(vsound-v)/vsound);
+
+  if (verboseLevel>1) G4cout << "TS rescaling MFP by " << vscale << G4endl;
+
+  mfp *= vscale;
+
+  if (verboseLevel) {
+    G4cout << "TS " << (IsElectron()?"elec":"hole") << " = " << mfp/m
 	   << " m" << G4endl;
   }
 
-  return v*dt;
+  return mfp;
 }
 
 
@@ -144,7 +179,7 @@ G4double G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
   field->GetFieldValue(position,fieldVal);
 
   G4ThreeVector Efield(fieldVal[3], fieldVal[4], fieldVal[5]);
-  return TimeStepInField(Efield.mag()/10., timeStepParam, l0);
+  return TimeStepInField(Efield.mag(), timeStepParam, l0);
 }
 
 
