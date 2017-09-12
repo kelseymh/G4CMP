@@ -10,6 +10,7 @@
 // 20140418  Remove local valley transforms; use lattice functions
 // 20150112  Drop redundant IsApplicable (identical to base version)
 // 20170905  Cache Luke and IV rate models in local LoadDataFromTrack()
+// 20170908  Drop "time step" functions, use rate models as estimators
 
 #ifndef G4CMPTimeStepper_h
 #define G4CMPTimeStepper_h 1
@@ -40,12 +41,27 @@ public:
 					  const G4Step& aStep);
 
 protected:  
-  // Compute dt_e, dt_h, and valley rotations at current location
-  G4double ComputeTimeSteps(const G4Track& aTrack);
-  G4double TimeStepInField(G4double Efield, G4double coeff, G4double l0) const;
-
   virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*);
 
+  const G4double minStep;		// Minimum global step length 
+
+  // Maximum rate for other processes, given track kinematics
+  G4double MaxRate(const G4Track& aTrack) const;
+
+  // Distance from current position to Luke threshold (turn-on)
+  G4double StepToLuke(const G4Track& aTrack) const;
+
+  // Energy increase due to field at current location
+  G4double FieldMagnitude(const G4Track& aTrack) const;
+  G4double EnergyStep(const G4Track& aTrack, G4double step) const;
+
+  // Compute track kinematics applying field acceleration
+  void AdjustKinematics(const G4Track& aTrack, G4double deltaE);
+  void CopyTrack(const G4Track& aTrack);
+  G4Track* tempTrack;
+
+  // Get scattering rates for other charge-carrier processes
+  void ReportRates(const G4Track& aTrack);
   const G4CMPVScatteringRate* lukeRate;		// Rate models for current track
   const G4CMPVScatteringRate* ivRate;
 

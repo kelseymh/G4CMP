@@ -47,9 +47,12 @@
 #include <math.h>
 
 G4CMPTimeStepper::G4CMPTimeStepper()
-  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper) {;}
+  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), minStep(1e-3*mm),
+    tempTrack(nullptr), lukeRate(nullptr), ivRate(nullptr) {;}
 
-G4CMPTimeStepper::~G4CMPTimeStepper() {;}
+G4CMPTimeStepper::~G4CMPTimeStepper() {
+  delete tempTrack;
+}
 
 
 // Get scattering rates from current track's processes
@@ -90,46 +93,43 @@ void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
 
 G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 					   G4ForceCondition* cond) {
-  /*** 
-  static G4bool first = true;
-  if (first) {
-    G4cout << "TSreport Process Chg E[eV] v[m/s] k[1/m] Rate[Hz]" << G4endl;
-    first = false;
-  }
-  
-  G4cout << "TSreport Luke"
-	 << " " << aTrack.GetDynamicParticle()->GetCharge()/eplus
-	 << " " << GetKineticEnergy(aTrack)/eV
-	 << " " << v/(m/s) << " " << GetLocalWaveVector(aTrack).mag()*m
-	 << " " << lukeRate->Rate(aTrack)/hertz << G4endl;
-  
-  if (IsElectron()) {
-    G4cout << "TSreport IV"
-	   << " " << aTrack.GetDynamicParticle()->GetCharge()/eplus
-	   << " " << GetKineticEnergy(aTrack)/eV
-	   << " " << v/(m/s) << " " << GetLocalWaveVector(aTrack).mag()*m
-	   << " " << ivRate->Rate(aTrack)/hertz << G4endl;
-  }      
-  ***/
+  if (verboseLevel == -1) ReportRates(aTrack);	// SPECIAL FLAG TO REPORT
 
   *cond = NotForced;
 
-  G4double dt = ComputeTimeSteps(aTrack);
-  G4double v = GetVelocity(aTrack);
+  G4double vtrk = GetVelocity(aTrack);
 
-  G4double mfp = v*dt;
-  G4double vsound = theLattice->GetSoundSpeed();
+  // Get step length due to fastest process
+  G4double mfp0 = MaxRate(aTrack)/vtrk;
 
-  G4double vscale = 1.;
-  if (v < vsound) vscale = std::max(0.3,(vsound-v)/vsound);
+  if (verboseLevel>1) {
+    G4cout << "TS Vtrk " << vtrk/(m/s) << " m/s mfp0 " << mfp0/m << " m"
+	   << G4endl;
+  }
 
-  if (verboseLevel>1) G4cout << "TS rescaling MFP by " << vscale << G4endl;
+  // Find distance to Luke threshold given E-field
+  G4double mfp1 = StepToLuke(aTrack);
+  if (verboseLevel>1 && mfp1>0.)
+    G4cout << "TS Luke threshold mfp1 " << mfp1/m << " m" << G4endl;
 
-  mfp *= vscale;
+  // Get energy difference at end of MFP step if nothing happens
+  G4double deltaE = EnergyStep(aTrack, std::min(minStep, mfp0));
+  AdjustKinematics(aTrack, deltaE);
+
+  // Estimate new step length using new kinematics
+  G4double mfp2 = MaxRate(*tempTrack)/GetVelocity(*tempTrack);
+
+  if (verboseLevel>1) {
+    G4cout << " TS deltaE " << deltaE/eV << " eV mfp2 " << mfp2/m << " m"
+	   << G4endl;
+  }
+
+  // Take shortest distance
+  G4double mfp = std::max(minStep, std::min(std::min(mfp0, mfp1), mfp2));
 
   if (verboseLevel) {
-    G4cout << "TS " << (IsElectron()?"elec":"hole") << " = " << mfp/m
-	   << " m" << G4endl;
+    G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
+	   << " MFP = " << mfp/m << " m" << G4endl;
   }
 
   return mfp;
@@ -151,43 +151,144 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 }
 
 
-// Compute dt_e, dt_h and valley rotations at current location
+// Get maximum rate for other processes at given kinematics
 
-G4double G4CMPTimeStepper::ComputeTimeSteps(const G4Track& aTrack) {
-  G4double timeStepParam = 0.; G4double l0 = 0.;
-  if (G4CMP::IsElectron(aTrack)) {
-    timeStepParam = 28.0;
-    l0 = theLattice->GetElectronScatter();
-  } else if (G4CMP::IsHole(&aTrack)) {
-    timeStepParam = 14.72;
-    l0 = theLattice->GetHoleScatter();
-  } else {
-    // TODO: Write an exception
+G4double G4CMPTimeStepper::MaxRate(const G4Track& aTrack) const {
+  G4double lrate = lukeRate ? lukeRate->Rate(aTrack) : 0.;
+  G4double irate = ivRate ? ivRate->Rate(aTrack) : 0.;
+
+  if (verboseLevel>2) {
+    G4cout << "G4CMPTimeStepper::MaxRate luke " << lrate/hertz << " iv "
+	   << irate/hertz << " Hz" << G4endl;
   }
 
+  return std::max(lrate,irate);
+}
+
+
+// Get distance from current position to Luke threshold (turn-on)
+
+G4double G4CMPTimeStepper::StepToLuke(const G4Track& aTrack) const {
+  if (!lukeRate) return 0.;			// Avoid unnecessary work
+  if (lukeRate->Rate(aTrack) > 0.) return 0.;	// Already above threshold
+
+  G4double Efield = FieldMagnitude(aTrack);
+  if (Efield <= 0.) return 0.;			// No field, no acceleration
+
+  // Luke minimum threshold occurs at sound speed in material
+  G4double vsound = theLattice->GetSoundSpeed();
+  G4ThreeVector v_el = vsound * GetLocalVelocityVector(aTrack).unit();
+  G4double Esound = theLattice->MapV_elToEkin(GetValleyIndex(aTrack), v_el);
+
+  G4double deltaE = Esound - GetKineticEnergy(aTrack);	// Energy difference
+
+  if (verboseLevel>2) {
+    G4cout << "G4CMPTimeStepper::StepToLuke field " << Efield/(volt/cm)
+	   << " V/cm Esound " << Esound/eV << " deltaE " << deltaE/eV << " eV"
+	   << G4endl;
+  }
+
+  return deltaE / Efield;		     // Acceleration distance needed
+}
+
+
+// Get local electric field magnitude (dV/dx) for computing energy step
+
+G4double G4CMPTimeStepper::FieldMagnitude(const G4Track& aTrack) const {
   G4FieldManager* fMan =
     aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
-  if (!fMan || !fMan->DoesFieldExist()) {	// No field, no special action
-    return ChargeCarrierTimeStep(0., l0);
-  }
-
+  if (!fMan || !fMan->DoesFieldExist()) return 0.;  // No field, no acceleration
+ 
   G4double position[4] = { 4*0. };
   GetLocalPosition(aTrack, position);
-
+ 
   const G4Field* field = fMan->GetDetectorField();
   G4double fieldVal[6];
   field->GetFieldValue(position,fieldVal);
 
   G4ThreeVector Efield(fieldVal[3], fieldVal[4], fieldVal[5]);
-  return TimeStepInField(Efield.mag(), timeStepParam, l0);
+  return Efield.mag();
 }
 
 
-// Compute time step for electrons or holes, pre-simplified expression
+// Get energy increase due to field at track position
 
-G4double G4CMPTimeStepper::TimeStepInField(G4double Emag, G4double coeff, G4double l0) const {
-  // Maximum "Mach number" (carrier speed vs. sound) at specified field
-  G4double maxMach = coeff * pow(Emag*(m/volt), 1./3.);
+G4double 
+G4CMPTimeStepper::EnergyStep(const G4Track& aTrack, G4double step) const {
+  if (verboseLevel>1)
+    G4cout << "G4CMPTimeStepper::EnergyStep dx " << step/mm << " mm" << G4endl;
 
-  return (0.5 * ChargeCarrierTimeStep(maxMach, l0));
+  G4double Emag = FieldMagnitude(aTrack);
+  if (verboseLevel>2) G4cout << " deltaE " << Emag*step/eV << " eV" << G4endl;
+
+  return Emag * step;
+}
+
+
+// Compute track kinematics applying field acceleration
+
+void 
+G4CMPTimeStepper::AdjustKinematics(const G4Track& aTrack, G4double deltaE) {
+  if (verboseLevel > 1)
+    G4cout << "G4CMPTimeStepper::AdjustKinematics dE " << deltaE/eV << " eV"
+	   << G4endl;
+
+  // Duplicate current kinematics into track for rate estimation
+  CopyTrack(aTrack);
+
+  // Convert new kinetic energy to new velocity (c.f. MapV_elToEkin)
+  G4double newEkin = GetKineticEnergy(aTrack) + deltaE;
+  G4double meff =
+    theLattice->GetElectronEffectiveMass(GetCurrentValley(),
+					 GetLocalMomentum(aTrack));
+  G4double newVtrk = sqrt(2.*newEkin*meff);
+
+  tempTrack->SetKineticEnergy(newEkin);
+  tempTrack->SetVelocity(newVtrk);
+}
+
+
+// Duplicate track information for step evaluation
+
+void G4CMPTimeStepper::CopyTrack(const G4Track& aTrack) {
+  delete tempTrack;
+  tempTrack = new G4Track(aTrack);
+  tempTrack->SetTouchableHandle(aTrack.GetTouchableHandle());
+  tempTrack->SetNextTouchableHandle(aTrack.GetNextTouchableHandle());
+  tempTrack->SetOriginTouchableHandle(aTrack.GetOriginTouchableHandle());
+
+  G4int infoID = G4CMPConfigManager::GetPhysicsModelID();
+  auto info = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack);
+
+  G4CMPDriftTrackInfo* tempInfo =
+    new G4CMPDriftTrackInfo(info->Lattice(), info->ValleyIndex());
+
+  tempTrack->SetAuxiliaryTrackInformation(infoID, tempInfo);
+}
+
+
+// Report Luke and IV rates for diagnostics
+
+void G4CMPTimeStepper::ReportRates(const G4Track& aTrack) {
+  static G4bool first = true;
+  if (first) {
+    G4cout << "TSreport Process Chg E[eV] v[m/s] k[1/m] Rate[Hz]" << G4endl;
+    first = false;
+  }
+  
+  G4cout << "TSreport Luke"
+	 << " " << aTrack.GetDynamicParticle()->GetCharge()/eplus
+	 << " " << GetKineticEnergy(aTrack)/eV
+	 << " " << GetVelocity(aTrack)/(m/s)
+	 << " " << GetLocalWaveVector(aTrack).mag()*m
+	 << " " << lukeRate->Rate(aTrack)/hertz << G4endl;
+  
+  if (IsElectron()) {
+    G4cout << "TSreport IV"
+	   << " " << aTrack.GetDynamicParticle()->GetCharge()/eplus
+	   << " " << GetKineticEnergy(aTrack)/eV
+	   << " " << GetVelocity(aTrack)/(m/s)
+	   << " " << GetLocalWaveVector(aTrack).mag()*m
+	   << " " << ivRate->Rate(aTrack)/hertz << G4endl;
+  }      
 }
