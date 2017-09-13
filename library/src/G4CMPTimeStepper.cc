@@ -28,10 +28,12 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4CMPVProcess.hh"
 #include "G4CMPVScatteringRate.hh"
+#include "G4DynamicParticle.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
 #include "G4LatticePhysical.hh"
@@ -47,7 +49,7 @@
 #include <math.h>
 
 G4CMPTimeStepper::G4CMPTimeStepper()
-  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), minStep(1e-3*mm),
+  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), minStep(0.1*mm),
     tempTrack(nullptr), lukeRate(nullptr), ivRate(nullptr) {;}
 
 G4CMPTimeStepper::~G4CMPTimeStepper() {
@@ -89,7 +91,6 @@ void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
 
 
 // Compute fixed "minimum distance" to avoid accelerating past Luke or IV
-#include "G4DynamicParticle.hh"
 
 G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 					   G4ForceCondition* cond) {
@@ -100,7 +101,8 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double vtrk = GetVelocity(aTrack);
 
   // Get step length due to fastest process
-  G4double mfp0 = MaxRate(aTrack)/vtrk;
+  G4double rate0 = MaxRate(aTrack);
+  G4double mfp0 = rate0>0. ? vtrk/rate0 : minStep;
 
   if (verboseLevel>1) {
     G4cout << "TS Vtrk " << vtrk/(m/s) << " m/s mfp0 " << mfp0/m << " m"
@@ -109,22 +111,24 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
   // Find distance to Luke threshold given E-field
   G4double mfp1 = StepToLuke(aTrack);
-  if (verboseLevel>1 && mfp1>0.)
+  if (mfp1 <= 0.) mfp1 = minStep;	// Keep a minimum if above threshold
+
+  if (verboseLevel>1)
     G4cout << "TS Luke threshold mfp1 " << mfp1/m << " m" << G4endl;
 
-  // Get energy difference at end of MFP step if nothing happens
-  G4double deltaE = EnergyStep(aTrack, std::min(minStep, mfp0));
+  // Estimate kinematics at end of MFP step if nothing else happens
+  G4double deltaE = EnergyStep(aTrack, std::min(mfp0, mfp1));
   AdjustKinematics(aTrack, deltaE);
 
-  // Estimate new step length using new kinematics
-  G4double mfp2 = MaxRate(*tempTrack)/GetVelocity(*tempTrack);
+  // Estimate (presumably shorter) step length from accelerated kinematics
+  G4double rate2 = MaxRate(*tempTrack);
+  G4double mfp2 = rate2>0. ? GetVelocity(*tempTrack)/rate2 : minStep;
 
   if (verboseLevel>1) {
-    G4cout << " TS deltaE " << deltaE/eV << " eV mfp2 " << mfp2/m << " m"
-	   << G4endl;
+    G4cout << " TS energy step mfp2 " << mfp2/m << " m" << G4endl;
   }
 
-  // Take shortest distance
+  // Take shortest distance or minimum step length
   G4double mfp = std::max(minStep, std::min(std::min(mfp0, mfp1), mfp2));
 
   if (verboseLevel) {
@@ -172,7 +176,7 @@ G4double G4CMPTimeStepper::StepToLuke(const G4Track& aTrack) const {
   if (!lukeRate) return 0.;			// Avoid unnecessary work
   if (lukeRate->Rate(aTrack) > 0.) return 0.;	// Already above threshold
 
-  G4double Efield = FieldMagnitude(aTrack);
+  G4double Efield = G4CMP::GetFieldAtPosition(aTrack).mag();
   if (Efield <= 0.) return 0.;			// No field, no acceleration
 
   // Luke minimum threshold occurs at sound speed in material
@@ -192,25 +196,6 @@ G4double G4CMPTimeStepper::StepToLuke(const G4Track& aTrack) const {
 }
 
 
-// Get local electric field magnitude (dV/dx) for computing energy step
-
-G4double G4CMPTimeStepper::FieldMagnitude(const G4Track& aTrack) const {
-  G4FieldManager* fMan =
-    aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
-  if (!fMan || !fMan->DoesFieldExist()) return 0.;  // No field, no acceleration
- 
-  G4double position[4] = { 4*0. };
-  GetLocalPosition(aTrack, position);
- 
-  const G4Field* field = fMan->GetDetectorField();
-  G4double fieldVal[6];
-  field->GetFieldValue(position,fieldVal);
-
-  G4ThreeVector Efield(fieldVal[3], fieldVal[4], fieldVal[5]);
-  return Efield.mag();
-}
-
-
 // Get energy increase due to field at track position
 
 G4double 
@@ -218,7 +203,7 @@ G4CMPTimeStepper::EnergyStep(const G4Track& aTrack, G4double step) const {
   if (verboseLevel>1)
     G4cout << "G4CMPTimeStepper::EnergyStep dx " << step/mm << " mm" << G4endl;
 
-  G4double Emag = FieldMagnitude(aTrack);
+  G4double Emag = G4CMP::GetFieldAtPosition(aTrack).mag();
   if (verboseLevel>2) G4cout << " deltaE " << Emag*step/eV << " eV" << G4endl;
 
   return Emag * step;

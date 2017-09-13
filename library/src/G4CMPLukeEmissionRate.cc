@@ -9,8 +9,10 @@
 // $Id$
 //
 // 20170815  Drop call to LoadDataForTrack(); now handled in process.
+// 20170913  Check for electric field; compute "rate" to get up to Vsound
 
 #include "G4CMPLukeEmissionRate.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhysicalConstants.hh"
@@ -47,8 +49,6 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
 
   G4double kSound = theLattice->GetSoundSpeed() * mass / hbar_Planck;
 
-  if (kmag <= kSound) return 0.;
-  
   // Time step corresponding to Mach number (avg. time between radiations)
-  return 1./ChargeCarrierTimeStep(kmag/kSound, l0);
+  return (kmag > kSound) ? 1./ChargeCarrierTimeStep(kmag/kSound, l0) : 0.;
 }
