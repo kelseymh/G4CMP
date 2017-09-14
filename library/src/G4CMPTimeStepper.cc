@@ -49,7 +49,7 @@
 #include <math.h>
 
 G4CMPTimeStepper::G4CMPTimeStepper()
-  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), minStep(0.1*mm),
+  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), minStep(0.01*mm),
     tempTrack(nullptr), lukeRate(nullptr), ivRate(nullptr) {;}
 
 G4CMPTimeStepper::~G4CMPTimeStepper() {
@@ -98,6 +98,10 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
   *cond = NotForced;
 
+  // SPECIAL:  If no electric field, no need to limit steps
+  if (G4CMP::GetFieldAtPosition(aTrack).mag() <= 0.) return DBL_MAX;
+
+  // Evaluate different step lengths to avoid overrunning process thresholds
   G4double vtrk = GetVelocity(aTrack);
 
   // Get step length due to fastest process
@@ -129,7 +133,7 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   }
 
   // Take shortest distance or minimum step length
-  G4double mfp = std::max(minStep, std::min(std::min(mfp0, mfp1), mfp2));
+  G4double mfp = std::max(minStep, 0.3*std::min(std::min(mfp0, mfp1), mfp2));
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
