@@ -43,7 +43,7 @@ public:
 protected:  
   virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*);
 
-  const G4double minStep;		// Minimum global step length 
+  G4double maxStep;			// Maximum allowed step length 
 
   // Maximum rate for other processes, given track kinematics
   G4double MaxRate(const G4Track& aTrack) const;

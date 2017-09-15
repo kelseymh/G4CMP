@@ -49,7 +49,7 @@
 #include <math.h>
 
 G4CMPTimeStepper::G4CMPTimeStepper()
-  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), minStep(0.01*mm),
+  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), maxStep(0.),
     tempTrack(nullptr), lukeRate(nullptr), ivRate(nullptr) {;}
 
 G4CMPTimeStepper::~G4CMPTimeStepper() {
@@ -61,6 +61,16 @@ G4CMPTimeStepper::~G4CMPTimeStepper() {
 
 void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
   G4CMPProcessUtils::LoadDataForTrack(aTrack);	// Common configuration
+
+  // Use maximum step length scaled to "scattering length"
+  // NOTE:  Use of MinStepScale double-counts with G4CMPVDriftProcess!
+  maxStep = 0.05; /* G4CMPConfigManager::GetMinStepScale(); */
+  maxStep *= (IsElectron() ? theLattice->GetElectronScatter()
+	      : theLattice->GetHoleScatter());
+
+  if (verboseLevel>2)
+    G4cout << "TimeStepper maxStep " << maxStep/mm << " mm for "
+	   << aTrack->GetDefinition()->GetParticleName() << G4endl;
 
   lukeRate = ivRate = nullptr;			// Discard previous versions
 
@@ -106,7 +116,7 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
   // Get step length due to fastest process
   G4double rate0 = MaxRate(aTrack);
-  G4double mfp0 = rate0>0. ? vtrk/rate0 : minStep;
+  G4double mfp0 = rate0>0. ? vtrk/rate0 : DBL_MAX;
 
   if (verboseLevel>1) {
     G4cout << "TS Vtrk " << vtrk/(m/s) << " m/s mfp0 " << mfp0/m << " m"
@@ -115,25 +125,28 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
   // Find distance to Luke threshold given E-field
   G4double mfp1 = StepToLuke(aTrack);
-  if (mfp1 <= 0.) mfp1 = minStep;	// Keep a minimum if above threshold
+  if (mfp1 <= 1e-9*m) mfp1 = DBL_MAX;	// Keep a minimum if above threshold
 
   if (verboseLevel>1)
     G4cout << "TS Luke threshold mfp1 " << mfp1/m << " m" << G4endl;
-
+  /***
   // Estimate kinematics at end of MFP step if nothing else happens
-  G4double deltaE = EnergyStep(aTrack, std::min(mfp0, mfp1));
+  G4double deltaE = EnergyStep(aTrack, std::min(maxStep, std::min(mfp0, mfp1)));
   AdjustKinematics(aTrack, deltaE);
 
   // Estimate (presumably shorter) step length from accelerated kinematics
   G4double rate2 = MaxRate(*tempTrack);
-  G4double mfp2 = rate2>0. ? GetVelocity(*tempTrack)/rate2 : minStep;
+  G4double mfp2 = rate2>0. ? GetVelocity(*tempTrack)/rate2 : DBL_MAX;
 
   if (verboseLevel>1) {
     G4cout << " TS energy step mfp2 " << mfp2/m << " m" << G4endl;
   }
+  ***/
+  G4double mfp2 = maxStep/0.3;
 
   // Take shortest distance or minimum step length
-  G4double mfp = std::max(minStep, 0.3*std::min(std::min(mfp0, mfp1), mfp2));
+  G4double mfp = 0.3*std::min(std::min(mfp0, mfp1), mfp2);
+  if (maxStep > 0.) mfp = std::min(mfp, maxStep);
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")

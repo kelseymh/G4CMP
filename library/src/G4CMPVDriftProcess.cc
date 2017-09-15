@@ -72,30 +72,16 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
                                                              previousStepSize,
                                                              condition);
 
-  const G4double scale = G4CMPConfigManager::GetMinStepScale();
+  G4double minLength = G4CMPConfigManager::GetMinStepScale();
+  minLength *= (IsElectron() ? theLattice->GetElectronScatter()
+		: theLattice->GetHoleScatter());
 
-  if (scale > 0.) {
-    G4double l0 = 0.;
-    if (G4CMP::IsElectron(track)) {
-      l0 = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(track)->Lattice()->GetElectronScatter();
-    } else if (G4CMP::IsHole(track)) {
-      l0 = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(track)->Lattice()->GetHoleScatter();
-    } else {
-      G4Exception("G4CMPVDriftProcess::FillParticleChange", "DriftProcess002",
-                  EventMustBeAborted, "Unknown charge carrier");
-    }
-
-    G4double minLength = scale * l0;
-
-    if (verboseLevel > 1) {
-      G4cout << GetProcessName() << "::PostStepGPIL: minLength " << minLength
-	     << " trueLength " << trueLength << G4endl;
-    }
-
-    return minLength<trueLength ? trueLength : minLength;
+  if (verboseLevel > 1) {
+    G4cout << GetProcessName() << "::PostStepGPIL: minLength " << minLength
+	   << " trueLength " << trueLength << G4endl;
   }
-
-  return trueLength;
+  
+  return minLength<trueLength ? trueLength : minLength;
 }
 
 
