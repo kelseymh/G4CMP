@@ -23,6 +23,7 @@
 // 20170806  Swap GPIL and MFP functions to work with G4CMPVProcess base
 // 20170905  Cache Luke and IV rate models in local LoadDataFromTrack()
 // 20170908  Remove "/10." rescaling of field when computing steps
+// 20170919  Use rate threshold interface to define alternate step lengths
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -113,6 +114,7 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
   // Evaluate different step lengths to avoid overrunning process thresholds
   G4double vtrk = GetVelocity(aTrack);
+  G4double ekin = GetKineticEnergy(aTrack);
 
   // Get step length due to fastest process
   G4double rate0 = MaxRate(aTrack);
@@ -123,29 +125,22 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 	   << G4endl;
   }
 
-  // Find distance to Luke threshold given E-field
-  G4double mfp1 = StepToLuke(aTrack);
-  if (mfp1 <= 1e-9*m) mfp1 = DBL_MAX;	// Keep a minimum if above threshold
+  // Find distance to Luke threshold
+  G4double mfp1 = lukeRate ? EnergyStep(lukeRate->Threshold(ekin)) : DBL_MAX;
+  if (mfp1 <= 1e-9*m) mfp1 = DBL_MAX;	// Avoid steps getting "too short"
 
   if (verboseLevel>1)
     G4cout << "TS Luke threshold mfp1 " << mfp1/m << " m" << G4endl;
-  /***
-  // Estimate kinematics at end of MFP step if nothing else happens
-  G4double deltaE = EnergyStep(aTrack, std::min(maxStep, std::min(mfp0, mfp1)));
-  AdjustKinematics(aTrack, deltaE);
 
-  // Estimate (presumably shorter) step length from accelerated kinematics
-  G4double rate2 = MaxRate(*tempTrack);
-  G4double mfp2 = rate2>0. ? GetVelocity(*tempTrack)/rate2 : DBL_MAX;
+  // Find distance to IV scattering threshold 
+  G4double mfp2 = ivRate ? EnergyStep(ivRate->Threshold(ekin)) : DBL_MAX;
+  if (mfp2 <= 1e-9*m) mfp2 = DBL_MAX;	// Avoid steps getting "too short"
 
-  if (verboseLevel>1) {
-    G4cout << " TS energy step mfp2 " << mfp2/m << " m" << G4endl;
-  }
-  ***/
-  G4double mfp2 = maxStep/0.3;
+  if (verboseLevel>1 && ivRate)
+    G4cout << "TS IV threshold mfp2 " << mfp2/m << " m" << G4endl;
 
   // Take shortest distance or minimum step length
-  G4double mfp = 0.3*std::min(std::min(mfp0, mfp1), mfp2);
+  G4double mfp = std::min(std::min(mfp0, mfp1), mfp2);
   if (maxStep > 0.) mfp = std::min(mfp, maxStep);
 
   if (verboseLevel) {
@@ -187,56 +182,21 @@ G4double G4CMPTimeStepper::MaxRate(const G4Track& aTrack) const {
 }
 
 
-// Get distance from current position to Luke threshold (turn-on)
+// Get step length in E-field needed to reach specified energy
 
-G4double G4CMPTimeStepper::StepToLuke(const G4Track& aTrack) const {
-  if (!lukeRate) return 0.;			// Avoid unnecessary work
-
-  G4double Efield = G4CMP::GetFieldAtPosition(aTrack).mag();
-  if (Efield <= 0.) return 0.;			// No field, no acceleration
-
-  G4double Ethreshold = lukeRate->Threshold(GetKineticEnergy(aTrack));
-  if (Ethreshold <= 0.) return 0.;		// Already above threshold
-
-  G4double deltaE = Ethreshold - GetKineticEnergy(aTrack);
-  return deltaE / Efield;		     // Acceleration distance needed
-}
-
-
-// Get energy increase due to field at track position
-
-G4double 
-G4CMPTimeStepper::EnergyStep(const G4Track& aTrack, G4double step) const {
+G4double G4CMPTimeStepper::EnergyStep(G4double Efinal) const {
   if (verboseLevel>1)
-    G4cout << "G4CMPTimeStepper::EnergyStep dx " << step/mm << " mm" << G4endl;
+    G4cout << "G4CMPTimeStepper::EnergyStep " << Efinal/eV << " eV" << G4endl;
 
-  G4double Emag = G4CMP::GetFieldAtPosition(aTrack).mag();
-  if (verboseLevel>2) G4cout << " deltaE " << Emag*step/eV << " eV" << G4endl;
+  const G4Track* trk = GetCurrentTrack();
 
-  return Emag * step;
-}
+  G4double Emag = G4CMP::GetFieldAtPosition(*trk).mag();
+  if (Emag <= 0.) return DBL_MAX;		// No field, no acceleration
 
+  G4double Ekin = GetKineticEnergy(trk);
+  if (Ekin > Efinal) return DBL_MAX;		// Already over threshold
 
-// Compute track kinematics applying field acceleration
-
-void 
-G4CMPTimeStepper::AdjustKinematics(const G4Track& aTrack, G4double deltaE) {
-  if (verboseLevel > 1)
-    G4cout << "G4CMPTimeStepper::AdjustKinematics dE " << deltaE/eV << " eV"
-	   << G4endl;
-
-  // Duplicate current kinematics into track for rate estimation
-  CopyTrack(aTrack);
-
-  // Convert new kinetic energy to new velocity (c.f. MapV_elToEkin)
-  G4double newEkin = GetKineticEnergy(aTrack) + deltaE;
-  G4double meff =
-    theLattice->GetElectronEffectiveMass(GetCurrentValley(),
-					 GetLocalMomentum(aTrack));
-  G4double newVtrk = sqrt(2.*newEkin*meff);
-
-  tempTrack->SetKineticEnergy(newEkin);
-  tempTrack->SetVelocity(newVtrk);
+  return (Efinal-Ekin)/Emag;
 }
 
 
