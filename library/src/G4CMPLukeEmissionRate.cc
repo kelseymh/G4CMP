@@ -60,9 +60,27 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
 G4double G4CMPLukeEmissionRate::Threshold(G4double Eabove) const {
   const G4Track* trk = GetCurrentTrack();	// For convenience below
 
+  G4ThreeVector vtrk = GetLocalVelocityVector(trk);
   G4double vsound = theLattice->GetSoundSpeed();
-  G4ThreeVector v_el = vsound * GetLocalVelocityVector(trk).unit();
+  G4ThreeVector v_el = vsound * vtrk.unit();
   G4double Esound = theLattice->MapV_elToEkin(GetValleyIndex(trk), v_el);
+
+  if (verboseLevel>2) {
+    G4cout << "G4CMPLukeEmissionRate::Threshold vtrk " << vtrk.mag()/(m/s)
+	   << " vsound " << vsound/(m/s) << " m/s" << G4endl;
+  }
+
+  // Thresholds or pseudothresholds at Esound, 5*Es, 10*Es, etc.
+  const G4double eStep = 25.;
+  G4double ratio = Eabove/Esound;
+  if (ratio > 1.) {
+    if (verboseLevel>2) {
+      G4cout << " Scaling Esound " << Esound/eV << " eV times "
+	     << std::ceil(ratio/eStep)*eStep << G4endl;
+    }
+
+    Esound *= std::ceil(ratio/eStep)*eStep;
+  }
 
   return (Eabove < Esound) ? Esound : 0.;	// No thresholds above sound
 }
