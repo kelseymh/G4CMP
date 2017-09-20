@@ -105,7 +105,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
 
   // Sanity check: this should have been done in MFP already
-  if (kmag <= kSound) return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+  if (kmag <= kSound) return &aParticleChange;
 
   if (verboseLevel > 1) {
     G4cout << "p (post-step) = " << postStepPoint->GetMomentum()

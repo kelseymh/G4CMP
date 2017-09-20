@@ -7,6 +7,8 @@
 /// \brief Compute electron intervalley scattering rate using matrix elements
 //
 // $Id$
+//
+// 20170919  Add interface for threshold identification
 
 #ifndef G4CMPInterValleyRate_hh
 #define G4CMPInterValleyRate_hh 1
@@ -26,6 +28,8 @@ public:
   virtual ~G4CMPInterValleyRate() {;}
 
   virtual G4double Rate(const G4Track& aTrack) const;
+
+  virtual G4double Threshold(G4double Eabove=0.) const;
 
   // Initialize numerical parameters below
   virtual void LoadDataForTrack(const G4Track* track);

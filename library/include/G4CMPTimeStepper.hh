@@ -48,14 +48,10 @@ protected:
   // Maximum rate for other processes, given track kinematics
   G4double MaxRate(const G4Track& aTrack) const;
 
-  // Find distance in E-field to get to Luke threshold (Vsound)
-  G4double StepToLuke(const G4Track& aTrack) const;
-
-  // Energy increase due to field at current location
-  G4double EnergyStep(const G4Track& aTrack, G4double step) const;
+  // Step length in E-field needed to reach specified energy
+  G4double EnergyStep(G4double Efinal) const;
 
   // Compute track kinematics applying field acceleration
-  void AdjustKinematics(const G4Track& aTrack, G4double deltaE);
   void CopyTrack(const G4Track& aTrack);
   G4Track* tempTrack;
 
