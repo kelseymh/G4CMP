@@ -11,6 +11,7 @@
 // 20170821  Follow Aubry-Fortuna (2005) for separate D0 and D1 scattering
 // 20170830  Follow Jacoboni, with unified D0/D1 expression and units; drop
 //		acoustic rate, as it is _intra_valley.
+// 20170919  Add interface for threshold identification
 
 #include "G4CMPInterValleyRate.hh"
 #include "G4LatticePhysical.hh"
@@ -111,4 +112,20 @@ G4double G4CMPInterValleyRate::scatterRate() const {
   
   return ( 4*sqrt(2)* n_I * hbar_sq * sqrt(eTrk)
 	   / (m_DOS3half * (eTrk+E_T)) );
+}
+
+
+// Identify next energy threshold (if any) above specified input
+
+G4double G4CMPInterValleyRate::Threshold(G4double Eabove) const {
+  // Get list of all energy thresholds and sort
+  std::vector<G4double> E_op = theLattice->GetIVEnergy();
+  if (E_op.empty()) return 0.;
+
+  // Put energies in order, find nearest entry above input value
+  std::sort(E_op.begin(), E_op.end());
+  std::vector<G4double>::const_iterator thresh =
+    std::upper_bound(E_op.begin(), E_op.end(), Eabove);
+
+  return (thresh == E_op.end() ? 0. : *thresh);
 }

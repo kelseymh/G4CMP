@@ -191,24 +191,14 @@ G4double G4CMPTimeStepper::MaxRate(const G4Track& aTrack) const {
 
 G4double G4CMPTimeStepper::StepToLuke(const G4Track& aTrack) const {
   if (!lukeRate) return 0.;			// Avoid unnecessary work
-  if (lukeRate->Rate(aTrack) > 0.) return 0.;	// Already above threshold
 
   G4double Efield = G4CMP::GetFieldAtPosition(aTrack).mag();
   if (Efield <= 0.) return 0.;			// No field, no acceleration
 
-  // Luke minimum threshold occurs at sound speed in material
-  G4double vsound = theLattice->GetSoundSpeed();
-  G4ThreeVector v_el = vsound * GetLocalVelocityVector(aTrack).unit();
-  G4double Esound = theLattice->MapV_elToEkin(GetValleyIndex(aTrack), v_el);
+  G4double Ethreshold = lukeRate->Threshold(GetKineticEnergy(aTrack));
+  if (Ethreshold <= 0.) return 0.;		// Already above threshold
 
-  G4double deltaE = Esound - GetKineticEnergy(aTrack);	// Energy difference
-
-  if (verboseLevel>2) {
-    G4cout << "G4CMPTimeStepper::StepToLuke field " << Efield/(volt/cm)
-	   << " V/cm Esound " << Esound/eV << " deltaE " << deltaE/eV << " eV"
-	   << G4endl;
-  }
-
+  G4double deltaE = Ethreshold - GetKineticEnergy(aTrack);
   return deltaE / Efield;		     // Acceleration distance needed
 }
 

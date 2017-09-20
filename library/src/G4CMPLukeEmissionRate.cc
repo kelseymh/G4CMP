@@ -10,6 +10,7 @@
 //
 // 20170815  Drop call to LoadDataForTrack(); now handled in process.
 // 20170913  Check for electric field; compute "rate" to get up to Vsound
+// 20170917  Add interface for threshold identification
 
 #include "G4CMPLukeEmissionRate.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -51,4 +52,17 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
 
   // Time step corresponding to Mach number (avg. time between radiations)
   return (kmag > kSound) ? 1./ChargeCarrierTimeStep(kmag/kSound, l0) : 0.;
+}
+
+
+// Energy threshold occurs at sound speed in material
+
+G4double G4CMPLukeEmissionRate::Threshold(G4double Eabove) const {
+  const G4Track* trk = GetCurrentTrack();	// For convenience below
+
+  G4double vsound = theLattice->GetSoundSpeed();
+  G4ThreeVector v_el = vsound * GetLocalVelocityVector(trk).unit();
+  G4double Esound = theLattice->MapV_elToEkin(GetValleyIndex(trk), v_el);
+
+  return (Eabove < Esound) ? Esound : 0.;	// No thresholds above sound
 }

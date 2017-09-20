@@ -13,6 +13,7 @@
 ///	   process should be forced.
 //
 // 20170815  Inherit from G4CMPProcessUtils here, instead of in subclasses
+// 20170919  Add "threshold finder" interface, for use with IV and Luke
 
 #ifndef G4CMPVScatteringRate_hh
 #define G4CMPVScatteringRate_hh 1
@@ -38,6 +39,9 @@ public:
 
   // Additional interface which call back to above; should not be overridden
   G4double Rate(const G4Track* aTrack) const { return Rate(*aTrack); }
+
+  // Interface to identify energy thresholds (for IV, Luke subclasses)
+  virtual G4double Threshold(G4double Eabove=0.) const { return 0.; }
 
   // Flag if interaction should be forced (subclasses should set flag)
 
