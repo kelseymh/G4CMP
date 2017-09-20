@@ -41,7 +41,7 @@ public:
   G4double Rate(const G4Track* aTrack) const { return Rate(*aTrack); }
 
   // Interface to identify energy thresholds (for IV, Luke subclasses)
-  virtual G4double Threshold(G4double Eabove=0.) const { return 0.; }
+  virtual G4double Threshold(G4double /*Eabove*/=0.) const { return 0.; }
 
   // Flag if interaction should be forced (subclasses should set flag)
 
