@@ -98,6 +98,13 @@ void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
     G4cout << "TimeStepper Found" << (lukeRate?" lukeRate":"")
 	   << (ivRate?" ivRate":"") << G4endl;
   }
+
+  // Adjust rate models to keep highest verbosity level
+  if (lukeRate && lukeRate->GetVerboseLevel() < verboseLevel)
+    const_cast<G4CMPVScatteringRate*>(lukeRate)->SetVerboseLevel(verboseLevel);
+
+  if (ivRate && ivRate->GetVerboseLevel() < verboseLevel)
+    const_cast<G4CMPVScatteringRate*>(ivRate)->SetVerboseLevel(verboseLevel);
 }
 
 
@@ -185,9 +192,6 @@ G4double G4CMPTimeStepper::MaxRate(const G4Track& aTrack) const {
 // Get step length in E-field needed to reach specified energy
 
 G4double G4CMPTimeStepper::EnergyStep(G4double Efinal) const {
-  if (verboseLevel>1)
-    G4cout << "G4CMPTimeStepper::EnergyStep " << Efinal/eV << " eV" << G4endl;
-
   const G4Track* trk = GetCurrentTrack();
 
   G4double Emag = G4CMP::GetFieldAtPosition(*trk).mag();
@@ -196,7 +200,13 @@ G4double G4CMPTimeStepper::EnergyStep(G4double Efinal) const {
   G4double Ekin = GetKineticEnergy(trk);
   if (Ekin > Efinal) return DBL_MAX;		// Already over threshold
 
-  return (Efinal-Ekin)/Emag;
+  if (verboseLevel>1) {
+    G4cout << "G4CMPTimeStepper::EnergyStep from " << Ekin/eV
+	   << " to " << Efinal/eV << " eV" << G4endl;
+  }
+
+  // Add 20% rescaling to account for electron valley systematics
+  return 1.2*(Efinal-Ekin)/Emag;
 }
 
 
