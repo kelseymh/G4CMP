@@ -29,6 +29,7 @@
 // 20170525  Add "rule of five" copy/move semantics
 // 20170810  Add parameters for IV scattering matrix terms
 // 20170821  Add transverse sound speed, L->TT fraction
+// 20170919  Add access to full lists of IV scattering matrix terms
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -235,6 +236,8 @@ public:
   G4double GetAlpha() const	       { return fAlpha; }
   G4double GetAcousticDeform() const { return fAcDeform; }
   G4int    GetNIVDeform() const { return (G4int)fIVDeform.size(); }
+  const std::vector<G4double>& GetIVDeform() const { return fIVDeform; }
+  const std::vector<G4double>& GetIVEnergy() const { return fIVEnergy; }
   G4double GetIVDeform(G4int i) const {
     return (i>=0 && i<GetNIVDeform()) ? fIVDeform[i] : 0.;
   }

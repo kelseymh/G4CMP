@@ -23,6 +23,7 @@
 // 20170525  Drop empty destructor to allow default "rule of five" semantics
 // 20170810  Add call-throughs for new IV scattering parameters
 // 20170821  Add transverse sound speed, L->TT fraction
+// 20170919  Add access to full lists of IV scattering matrix terms
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -143,6 +144,8 @@ public:
   G4int    GetNIVDeform() const { return fLattice->GetNIVDeform(); }
   G4double GetIVDeform(G4int i) const { return fLattice->GetIVDeform(i); }
   G4double GetIVEnergy(G4int i) const { return fLattice->GetIVEnergy(i); }
+  const std::vector<G4double>& GetIVDeform() const { return fLattice->GetIVDeform(); }
+  const std::vector<G4double>& GetIVEnergy() const { return fLattice->GetIVEnergy(); }
 
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;
