@@ -65,21 +65,22 @@ G4double G4CMPLukeEmissionRate::Threshold(G4double Eabove) const {
   G4ThreeVector v_el = vsound * vtrk.unit();
   G4double Esound = theLattice->MapV_elToEkin(GetValleyIndex(trk), v_el);
 
-  if (verboseLevel>2) {
+  if (verboseLevel>1) {
     G4cout << "G4CMPLukeEmissionRate::Threshold vtrk " << vtrk.mag()/(m/s)
-	   << " vsound " << vsound/(m/s) << " m/s" << G4endl;
+	   << " vsound " << vsound/(m/s) << " m/s Esound " << Esound/eV
+	   << " eV" << G4endl;
   }
 
-  // Thresholds or pseudothresholds at Esound, 5*Es, 10*Es, etc.
+  // Thresholds or pseudothresholds at multiples of Esound
   const G4double eStep = 25.;
   G4double ratio = Eabove/Esound;
   if (ratio > 1.) {
-    if (verboseLevel>2) {
-      G4cout << " Scaling Esound " << Esound/eV << " eV times "
-	     << std::ceil(ratio/eStep)*eStep << G4endl;
-    }
+    ratio += (std::fmod(ratio,eStep)<0.95) ? 0. : eStep;  // Avoid Zeno paradox
+    ratio = std::ceil(ratio/eStep) * eStep;
 
-    Esound *= std::ceil(ratio/eStep)*eStep;
+    if (verboseLevel>2) G4cout << " scaling by " << ratio << G4endl;
+    
+    Esound *= ratio;
   }
 
   return (Eabove < Esound) ? Esound : 0.;	// No thresholds above sound
