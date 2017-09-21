@@ -43,17 +43,11 @@ public:
 protected:  
   virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*);
 
-  G4double maxStep;			// Maximum allowed step length 
-
   // Maximum rate for other processes, given track kinematics
   G4double MaxRate(const G4Track& aTrack) const;
 
   // Step length in E-field needed to reach specified energy
   G4double EnergyStep(G4double Efinal) const;
-
-  // Compute track kinematics applying field acceleration
-  void CopyTrack(const G4Track& aTrack);
-  G4Track* tempTrack;
 
   // Get scattering rates for other charge-carrier processes
   void ReportRates(const G4Track& aTrack);

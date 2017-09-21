@@ -50,28 +50,16 @@
 #include <math.h>
 
 G4CMPTimeStepper::G4CMPTimeStepper()
-  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), maxStep(0.),
-    tempTrack(nullptr), lukeRate(nullptr), ivRate(nullptr) {;}
+  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper),
+    lukeRate(nullptr), ivRate(nullptr) {;}
 
-G4CMPTimeStepper::~G4CMPTimeStepper() {
-  delete tempTrack;
-}
+G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
 
 // Get scattering rates from current track's processes
 
 void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
   G4CMPProcessUtils::LoadDataForTrack(aTrack);	// Common configuration
-
-  // Use maximum step length scaled to "scattering length"
-  // NOTE:  Use of MinStepScale double-counts with G4CMPVDriftProcess!
-  maxStep = 0.05; /* G4CMPConfigManager::GetMinStepScale(); */
-  maxStep *= (IsElectron() ? theLattice->GetElectronScatter()
-	      : theLattice->GetHoleScatter());
-
-  if (verboseLevel>2)
-    G4cout << "TimeStepper maxStep " << maxStep/mm << " mm for "
-	   << aTrack->GetDefinition()->GetParticleName() << G4endl;
 
   lukeRate = ivRate = nullptr;			// Discard previous versions
 
@@ -146,9 +134,8 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   if (verboseLevel>1 && ivRate)
     G4cout << "TS IV threshold mfp2 " << mfp2/m << " m" << G4endl;
 
-  // Take shortest distance or minimum step length
+  // Take shortest distance from above options
   G4double mfp = std::min(std::min(mfp0, mfp1), mfp2);
-  if (maxStep > 0.) mfp = std::min(mfp, maxStep);
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
@@ -207,25 +194,6 @@ G4double G4CMPTimeStepper::EnergyStep(G4double Efinal) const {
 
   // Add 20% rescaling to account for electron valley systematics
   return 1.2*(Efinal-Ekin)/Emag;
-}
-
-
-// Duplicate track information for step evaluation
-
-void G4CMPTimeStepper::CopyTrack(const G4Track& aTrack) {
-  delete tempTrack;
-  tempTrack = new G4Track(aTrack);
-  tempTrack->SetTouchableHandle(aTrack.GetTouchableHandle());
-  tempTrack->SetNextTouchableHandle(aTrack.GetNextTouchableHandle());
-  tempTrack->SetOriginTouchableHandle(aTrack.GetOriginTouchableHandle());
-
-  G4int infoID = G4CMPConfigManager::GetPhysicsModelID();
-  auto info = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack);
-
-  G4CMPDriftTrackInfo* tempInfo =
-    new G4CMPDriftTrackInfo(info->Lattice(), info->ValleyIndex());
-
-  tempTrack->SetAuxiliaryTrackInformation(infoID, tempInfo);
 }
 
 
