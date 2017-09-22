@@ -25,7 +25,9 @@
 // 20170802  Add commands for separate Luke, downconversion scaing
 // 20170815  Add command to set volume surface clearance
 // 20170816  Remove directory and command handlers; G4UImessenger does it!
+// 20170821  Add command to select Edelweiss IV scattering model
 // 20170823  Move geometry-specific commands to examples
+// 20170830  Add command to set downsampling energy scale
 
 #include "G4UImessenger.hh"
 
@@ -54,6 +56,7 @@ private:
   G4UIcmdWithADoubleAndUnit* clearCmd;
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
+  G4UIcmdWithADoubleAndUnit* sampleECmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;
@@ -62,6 +65,7 @@ private:
   G4UIcmdWithAString* dirCmd;
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;
+  G4UIcmdWithABool*   ivEdelCmd;
 
 private:
   G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden

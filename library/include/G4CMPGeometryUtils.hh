@@ -15,12 +15,14 @@
 // 20170605  Pass touchable from track, not just local PV
 // 20170731  Add utility to get volume at (global) position
 // 20170815  Add utility to shift position to avoid volume surfaces
+// 20170913  Add utility to get electric field at (global) position
 
 #include "G4ThreeVector.hh"
 
 class G4VPhysicalVolume;
 class G4VTouchable;
 class G4Step;
+class G4Track;
 
 
 namespace G4CMP {
@@ -54,6 +56,12 @@ namespace G4CMP {
 
   G4ThreeVector ApplySurfaceClearance(const G4VTouchable* touch,
 				      G4ThreeVector pos);
+
+  G4ThreeVector GetFieldAtPosition(const G4VTouchable* touch,
+				   G4ThreeVector pos);	// By value for rotation
+
+  G4ThreeVector GetFieldAtPosition(const G4Track& track);
+  G4ThreeVector GetFieldAtPosition(const G4Step& step);
 }
 
 #endif	/* G4CMPGeometryUtils_hh */

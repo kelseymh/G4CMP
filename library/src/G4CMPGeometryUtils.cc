@@ -11,15 +11,19 @@
 // 20161107  Rob Agnese
 // 20170605  Pass touchable from track, not just local PV
 // 20170815  Move AdjustSecondaryPosition to here as ApplySurfaceClearance
+// 20170913  Add utility to get electric field at (global) position
 
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGlobalLocalTransformStore.hh"
+#include "G4Field.hh"
+#include "G4FieldManager.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Navigator.hh"
 #include "G4Step.hh"
+#include "G4Track.hh"
 #include "G4TransportationManager.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VSolid.hh"
@@ -135,3 +139,37 @@ G4ThreeVector G4CMP::ApplySurfaceClearance(const G4VTouchable* touch,
   return pos;
 }
 
+
+// Get electric field at specified position (track or step)
+
+namespace {
+  G4ThreeVector origin(0.,0.,0.);	// For convenience below
+}
+
+G4ThreeVector G4CMP::GetFieldAtPosition(const G4Step& step) {
+  return GetFieldAtPosition(*(step.GetTrack()));
+}
+
+G4ThreeVector G4CMP::GetFieldAtPosition(const G4Track& track) {
+  return GetFieldAtPosition(track.GetTouchable(), track.GetPosition());
+}
+
+G4ThreeVector G4CMP::GetFieldAtPosition(const G4VTouchable* touch,
+					G4ThreeVector pos) {
+  G4FieldManager* fMan = 0;
+  if (touch) {
+    fMan = touch->GetVolume()->GetLogicalVolume()->GetFieldManager();
+  } else {		// Get field from volume at input position
+    fMan = GetVolumeAtPoint(pos)->GetLogicalVolume()->GetFieldManager();
+  }
+
+  if (!fMan || !fMan->DoesFieldExist()) return origin;
+
+  RotateToLocalPosition(touch, pos);
+  G4double position[4] = { pos[0], pos[1], pos[2], 0. };
+
+  G4double fieldVal[6];
+  fMan->GetDetectorField()->GetFieldValue(position, fieldVal);
+
+  return G4ThreeVector(fieldVal[3], fieldVal[4], fieldVal[5]);
+}

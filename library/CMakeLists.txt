@@ -119,6 +119,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGeometryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGlobalLocalTransformStore.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateEdelweiss.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPKaplanQP.cc
@@ -183,6 +184,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGeometryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGlobalLocalTransformStore.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateEdelweiss.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPKaplanQP.hh

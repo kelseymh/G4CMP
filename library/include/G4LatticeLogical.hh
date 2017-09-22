@@ -27,7 +27,9 @@
 // 20160727  Store Debye energy for phonon primaries, support different access
 // 20170523  Add interface for axis vector of valleys
 // 20170525  Add "rule of five" copy/move semantics
+// 20170810  Add parameters for IV scattering matrix terms
 // 20170821  Add transverse sound speed, L->TT fraction
+// 20170919  Add access to full lists of IV scattering matrix terms
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -112,8 +114,14 @@ public:
 
   // Physical parameters of lattice (density, elasticity)
   void SetDensity(G4double val) { fDensity = val; }
-
   G4double GetDensity() const { return fDensity; }
+
+  void SetImpurities(G4double val) { fNImpurity = val; }
+  G4double GetImpurities() const { return fNImpurity; }
+
+  void SetPermittivity(G4double val) { fPermittivity = val; }
+  G4double GetPermittivity() const { return fPermittivity; }
+
   const Elasticity& GetElasticity() const { return fElasticity; }
   G4double GetCijkl(G4int i, G4int j, G4int k, G4int l) const {
     return fElasticity[i][j][k][l];
@@ -180,6 +188,7 @@ public:
   G4double GetHoleMass() const                  { return fHoleMass; }
   G4double GetElectronScatter() const           { return fL0_e; }
   G4double GetElectronMass() const 		{ return fElectronMass; }
+  G4double GetElectronDOSMass() const 		{ return fElectronMDOS; }
   const G4RotationMatrix& GetMassTensor() const { return fMassTensor; }
   const G4RotationMatrix& GetMInvTensor() const { return fMassInverse; }
   const G4RotationMatrix& GetSqrtTensor() const { return fMassRatioSqrt; }
@@ -206,14 +215,35 @@ public:
   // Print out elasticity tensor element with units, in C11-C66 notation
   void DumpCpq(std::ostream& os, G4int p, G4int q) const;
 
-  // Parameters for electron intervalley scattering
-  void SetIVField(G4double v)    { fIVField = v; }
-  void SetIVRate(G4double v)     { fIVRate = v; }
-  void SetIVExponent(G4double v) { fIVExponent = v; }
+  // Print out list of values, scaled by unit
+  void DumpList(std::ostream& os, const std::vector<G4double>& vlist,
+		const G4String& unit) const;
 
-  G4double GetIVField() const    { return fIVField; }
-  G4double GetIVRate() const     { return fIVRate; }
-  G4double GetIVExponent() const { return fIVExponent; }
+  // Parameters for electron intervalley scattering (Edelweiss, matrix elem.)
+  void SetIVField(G4double v)          { fIVField = v; }
+  void SetIVRate(G4double v)           { fIVRate = v; }
+  void SetIVExponent(G4double v)       { fIVExponent = v; }
+
+  void SetAlpha(G4double v)	       { fAlpha = v; }
+  void SetAcousticDeform(G4double v)   { fAcDeform = v; }
+  void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
+  void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
+
+  G4double GetIVField() const          { return fIVField; }
+  G4double GetIVRate() const           { return fIVRate; }
+  G4double GetIVExponent() const       { return fIVExponent; }
+
+  G4double GetAlpha() const	       { return fAlpha; }
+  G4double GetAcousticDeform() const { return fAcDeform; }
+  G4int    GetNIVDeform() const { return (G4int)fIVDeform.size(); }
+  const std::vector<G4double>& GetIVDeform() const { return fIVDeform; }
+  const std::vector<G4double>& GetIVEnergy() const { return fIVEnergy; }
+  G4double GetIVDeform(G4int i) const {
+    return (i>=0 && i<GetNIVDeform()) ? fIVDeform[i] : 0.;
+  }
+  G4double GetIVEnergy(G4int i) const {
+    return (i>=0 && i<GetNIVDeform()) ? fIVEnergy[i] : 0.;
+  }
 
 private:
   void CheckBasis();	// Initialize or complete (via cross) basis vectors
@@ -238,6 +268,8 @@ private:
   G4CMPCrystalGroup fCrystal;		    // Symmetry group, axis unit vectors
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
   G4double fDensity;			    // Material density (natural units)
+  G4double fNImpurity;			    // Neutral impurity number density
+  G4double fPermittivity;		    // Material epsilon/epsilon0 
   Elasticity fElasticity;	    	    // Full 4D elasticity tensor
   ReducedElasticity fElReduced;		    // Reduced 2D elasticity tensor
   G4bool fHasElasticity;		    // Flag valid elasticity tensors
@@ -265,6 +297,8 @@ private:
   const G4double mElectron;	 // Free electron mass (without G4's c^2)
   G4double fHoleMass;		 // Effective mass of +ve carrier
   G4double fElectronMass;	 // Effective mass (scalar) of -ve carrier
+  G4double fElectronMDOS;	 // Density of states weighed -ve carrier mass
+
   G4double fBandGap;	 // Minimum band gap energy
   G4double fPairEnergy;   // electron-hole pair production average energy
   G4double fFanoFactor;   // Fano factor (duh)
@@ -275,9 +309,14 @@ private:
   std::vector<G4RotationMatrix> fValley; // Electron transport directions
   std::vector<G4ThreeVector> fValleyAxis;
 
-  G4double fIVField;		 // Transverse field for intervalley scattering
-  G4double fIVRate;		 // Scale factor for IV scattering MFP
-  G4double fIVExponent;		 // Power law for E-field in IV scattering
+  G4double fAlpha;			// Non-parabolicity of -ve potential
+  G4double fAcDeform;		 	// Deformation potential for acoustic IV
+  std::vector<G4double> fIVDeform;	// D0, D1 potentials for optical IV
+  std::vector<G4double> fIVEnergy;	// D0, D1 thresholds for optical IV
+
+  G4double fIVField;		 // Edelweiss field scale for IV scattering
+  G4double fIVRate;		 // Edelweiss rate factor for IV scattering
+  G4double fIVExponent;		 // Edelweiss power law for E-field in IV
 };
 
 // Write lattice structure to output stream

@@ -20,7 +20,9 @@
 // 20170802  Add commands for separate Luke, downconversion scaing
 // 20170815  Add command to set volume surface clearance
 // 20170816  Remove directory and command handlers; G4UImessenger does it!
+// 20170821  Add command to select Edelweiss IV scattering model
 // 20170823  Move geometry-specific commands to examples
+// 20170830  Add command for downsampling energy scale parameter
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -39,7 +41,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     theManager(mgr), verboseCmd(0), ehBounceCmd(0), pBounceCmd(0), clearCmd(0),
     minEPhononCmd(0), minEChargeCmd(0), minstepCmd(0), makePhononCmd(0),
     makeChargeCmd(0), lukePhononCmd(0), downconvCmd(0),
-    dirCmd(0), kvmapCmd(0), fanoStatsCmd(0) {
+    dirCmd(0), kvmapCmd(0), fanoStatsCmd(0), ivEdelCmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
 
@@ -53,6 +55,17 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   minstepCmd = CreateCommand<G4UIcmdWithADouble>("minimumStep",
 			 "Set fraction of L0 for charge carrier minimum step");
+
+  sampleECmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("samplingEnergy",
+			"Energy scale above which events/hits are downsampled");
+  sampleECmd->SetGuidance("Below this energy, Geant4 energy deposits are");
+  sampleECmd->SetGuidance("fully converted to charge carriers and phonons");
+  sampleECmd->SetGuidance("by EnergyPartition.  Above, the conversion is");
+  sampleECmd->SetGuidance("scaled by the ratio of this parameter to the G4");
+  sampleECmd->SetGuidance("energy deposit.  This parameter overrides the");
+  sampleECmd->SetGuidance("sampling rates 'producePhonons', 'produceCharges',");
+  sampleECmd->SetGuidance("and 'sampleLuke'.");
+  sampleECmd->SetUnitCategory("Energy");
 
   makePhononCmd = CreateCommand<G4UIcmdWithADouble>("producePhonons",
 		    "Set rate of production of primary phonons");
@@ -86,6 +99,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   fanoStatsCmd = CreateCommand<G4UIcmdWithABool>("enableFanoStatistics",
            "Modify input ionization energy according to Fano statistics.");
   fanoStatsCmd->SetDefaultValue(true);
+
+  ivEdelCmd = CreateCommand<G4UIcmdWithABool>("useEdelweissIVRate",
+           "Use Edelweiss parametrization for IV scattering rate.");
+  ivEdelCmd->SetDefaultValue(true);
 }
 
 
@@ -96,6 +113,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete clearCmd; clearCmd=0;
   delete minEPhononCmd; minEPhononCmd=0;
   delete minEChargeCmd; minEChargeCmd=0;
+  delete sampleECmd; sampleECmd=0;
   delete minstepCmd; minstepCmd=0;
   delete makePhononCmd; makePhononCmd=0;
   delete makeChargeCmd; makeChargeCmd=0;
@@ -129,6 +147,10 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == minEChargeCmd)
     theManager->SetMinChargeEnergy(minEChargeCmd->GetNewDoubleValue(value));
 
+  if (cmd == sampleECmd)
+    theManager->SetSamplingEnergy(sampleECmd->GetNewDoubleValue(value));
+
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));
+  if (cmd == ivEdelCmd) theManager->UseIVEdelweiss(StoB(value));
 }

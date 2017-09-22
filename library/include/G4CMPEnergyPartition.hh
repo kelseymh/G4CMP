@@ -13,6 +13,8 @@
 // 20170524  Add constructor and accessor for position argument
 // 20170525  Add "rule of five" copy/move operators
 // 20170802  Add constructor and accessor for volume argument, particle change
+// 20170830  Add function to compute downsampling factors for input energy
+// 20170901  Add support for putting primaries directly into event
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -22,10 +24,12 @@
 #include "G4ThreeVector.hh"
 #include <vector>
 
+class G4Event;
 class G4LatticePhysical;
 class G4Material;
 class G4ParticleDefinition;
 class G4PrimaryParticle;
+class G4PrimaryVertex;
 class G4Track;
 class G4VParticleChange;
 class G4VPhysicalVolume;
@@ -75,10 +79,16 @@ public:
   // Return either primary or secondary particles from partitioning
   void GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const;
 
+  void GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
+		    G4int maxVertex=100000) const;
+
   void GetSecondaries(std::vector<G4Track*>& secondaries,
 		      G4double trkWeight=1.) const;
 
   void GetSecondaries(G4VParticleChange* aParticleChange) const;
+
+  // Assign energy-dependent sampling factors for phonons and charge carriers
+  void ComputeDownsampling(G4double eIon, G4double eNIEL);
 
   // Fraction of total energy deposit in material which goes to e/h pairs
   G4double LindhardScalingFactor(G4double energy) const;
@@ -92,6 +102,9 @@ protected:
 
   void GeneratePhonons(G4double energy);
   void AddPhonon(G4double ePhon);
+
+  G4PrimaryVertex* CreateVertex(G4Event* event, const G4ThreeVector& pos,
+				G4double time) const;
 
 protected:
   G4Material* material;		// To get (Z,A) for Lindhard scaling

@@ -64,9 +64,12 @@ developers should check the source code in
 | G4CMP\_MAKE\_CHARGES [R]  | /g4cmp/produceCharges <R>     | Fraction of charge pairs from energy deposit |
 | G4CMP\_LUKE\_SAMPLE [R]   | /g4cmp/sampleLuke <R>         | Fraction of generated Luke phonons |
 | G4CMP\_DOWN\_SAMPLE [R]   | /g4cmp/downconvertPhonons <R> | Fraction of natural phonon downconversions |
+| G4CMP\_SAMPLE\_ENERGY [E] | /g4cmp/samplingEnergy <E> eV  | Energy above which to downsample |
 | G4CMP\_EMIN\_PHONONS [E]  | /g4cmp/minEPhonons <E> eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges <E> eV     | Minimum energy to track charges         |
 | G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t|f]      | Use eigensolver for K-Vg mapping        |
+| G4CMP\_FANO\_ENABLED  | /g4cmp/enableFanoStatistics [t|f] | Apply Fano statistics to input ionization |
+| G4CMP\_IV\_EDELWEISS  | /g4cmp/useEdelweissIVRate [t|f]   | Use Edelweiss intervalley rate parametrization |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation h k l      | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
 | G4CMP\_MILLER\_L          |                               |                                         |
@@ -110,6 +113,18 @@ Generating seconary phonons can significantly slow down the simulation, so
 each of these processes has analogous environment variables,
 `$G4CMP\_LUKE\_SAMPLE` and `$G4CMP\_DOWN\_SAMPLE`, respectively, defined
 with rates (R) as above.
+
+For simulations which generate primary phonons and charge carriers from
+Geant4 energy deposition (using `G4CMPEnergyPartition`), the above
+environment variables may be replaced with a sampling "energy scale,"
+`$G4CMP\_SAMPLE\_ENERGY`.  This parameter is applied to each energy deposit,
+and to ionization or NIEL energy separately.  If the energy deposit is below
+the scale, then no biasing will be done (the scale factors will all be set
+to 1.).  Above the energy scale setting, the scale factors will be set
+according to E_scale_/E_deposit_.  Presently, the Luke-emission biasing will
+be set to the primary charge bias; what should be done is to use voltage and
+geometry information to estimate the maximum energy emitted in Luke phonons
+and use that instead.
 
 For phonon propagation, a set of lookup tables to convert wavevector (phase
 velocity) direction to group velocity are provided in the lattice
@@ -298,6 +313,14 @@ the crystal system.
 | hmass   | m_h       | effective mass of hole   | electron mass ratio |
 | emass   | m_xx m_yy m_zz | electron mass tensor | (same)             |
 | valley  | theta phi psi unit | Euler angles     | angle (deg/rad)    |
+| ** InterValley scattering with matrix elements ** |
+| epsilon | e/e0      | Relative permittivity     |                    |
+| neutDens | N        | Number density of neutron impurities | /volume |
+| alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
+| acDeform | val      | Acoustic deformation potential | energy (eV)   |
+| ivDeform | val val ... | Optical deformation potentials | eV/cm  |
+| ivEnergy | val val ... | Optical phonon thresholds | energy (eV) |
+| ** InterValley scattering with Edelweiss model ** |
 | ivField | E0        | Edelweiss intervalley scattering  | V/m        |
 | ivRate  | freq      | Intervalley scattering rate       | Hz         |
 | ivPower | val       | Power law [sqrt(field^ivPower)]   | none       |

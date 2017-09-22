@@ -16,6 +16,7 @@
 // 20170602  Use G4CMPUtils for track identity functions
 // 20170802  Use G4CMP_LUKE_SAMPLE biasing with ChooseWeight()
 // 20170805  Use scattering-rate model
+// 20170907  Make process non-forced; check only for boundary crossing
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -77,10 +78,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
            << G4endl;
   }
 
-  // Do nothing other than re-calculate mfp when step limit reached or
-  // leaving volume
-  if (postStepPoint->GetStepStatus()==fGeomBoundary ||
-      postStepPoint->GetProcessDefinedStep()==stepLimiter) {
+  // Don't do anything at a volume boundary
+  if (postStepPoint->GetStepStatus()==fGeomBoundary) {
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
@@ -99,6 +98,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   } else {
     G4Exception("G4CMPLukeScattering::PostStepDoIt", "Luke002",
                 EventMustBeAborted, "Unknown charge carrier");
+    return &aParticleChange;
   }
 
   G4double kmag = ktrk.mag();

@@ -25,7 +25,9 @@
 // 20170525  Block 'rule of five' copy/move semantics, as singleton
 // 20170802  Add separate scaling factors for Luke and downconversion
 // 20170815  Add parameter for required clearance from volume surfaces
+// 20170821  Add parameter to select Edelweiss IV scattering model
 // 20170823  Remove geometry-specific parameters; implement in examples
+// 20170830  Add downsampling energy scale parameter
 
 #include "globals.hh"
 
@@ -45,17 +47,19 @@ public:
   static G4int GetVerboseLevel()         { return Instance()->verbose; }
   static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
   static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
-  static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
-  static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
   static G4double GetSurfaceClearance()  { return Instance()->clearance; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetMinPhononEnergy()   { return Instance()->EminPhonons; }
   static G4double GetMinChargeEnergy()   { return Instance()->EminCharges; }
+  static G4double GetSamplingEnergy()    { return Instance()->sampleEnergy; }
   static G4double GetGenPhonons()        { return Instance()->genPhonons; }
   static G4double GetGenCharges()        { return Instance()->genCharges; }
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
   static G4double GetDownconversionSampling() { return Instance()->downSample; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
+  static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
+  static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
+  static G4bool UseIVEdelweiss()	 { return Instance()->IVEdelweiss; }
 
   // Change values (e.g., via Messenger)
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
@@ -65,12 +69,14 @@ public:
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
   static void SetMinPhononEnergy(G4double value) { Instance()->EminPhonons = value; }
   static void SetMinChargeEnergy(G4double value) { Instance()->EminCharges = value; }
+  static void SetSamplingEnergy(G4double value) { Instance()->sampleEnergy = value; }
   static void SetGenPhonons(G4double value) { Instance()->genPhonons = value; }
   static void SetGenCharges(G4double value) { Instance()->genCharges = value; }
   static void SetLukeSampling(G4double value) { Instance()->lukeSample = value; }
   static void SetDownconversionSampling(G4double value) { Instance()->downSample = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
+  static void UseIVEdelweiss(G4bool value) { Instance()->IVEdelweiss = value; }
 
   // These settings require the geometry to be rebuilt
   static void SetLatticeDir(const G4String& dir)
@@ -95,6 +101,7 @@ private:
   G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
   G4double clearance;	// Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
   G4double stepScale;	// Fraction of l0 for steps ($G4CMP_MIN_STEP)
+  G4double sampleEnergy; // Energy above which to do sampling ($G4CMP_SAMPLE_ENERGY)
   G4double genPhonons;	// Rate to create primary phonons ($G4CMP_MAKE_PHONONS)
   G4double genCharges;	// Rate to create primary e/h pairs ($G4CMP_MAKE_CHARGES)
   G4double lukeSample;  // Rate to create Luke phonons ($G4CMP_LUKE_SAMPLE)
@@ -104,6 +111,7 @@ private:
   G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits
                         // ($G4CMP_FANO_ENABLED)
+  G4bool IVEdelweiss;	// Use Edelweiss model for IV rate ($G4CMP_IV_EDELWEISS)
 
   G4CMPConfigMessenger* messenger;
 };
