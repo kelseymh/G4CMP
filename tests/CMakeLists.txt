@@ -37,3 +37,6 @@ target_link_libraries(g4cmpEFieldTest G4cmp)
 
 add_executable(phononKinematics phononKinematics.cc)
 target_link_libraries(phononKinematics G4cmp)
+
+add_executable(testChargeCloud testChargeCloud.cc)
+target_link_libraries(testChargeCloud G4cmp)
