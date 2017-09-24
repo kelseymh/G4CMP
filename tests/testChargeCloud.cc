@@ -21,18 +21,81 @@
 #include <stdlib.h>
 #include <vector>
 
+// Global variables for use in tests
+
+namespace {
+  G4CMPChargeCloud* cloud = 0;
+  G4int nErrors = 0;		// Increment counter at failed checks
+}
+
+
+// Test cloud generation at specific location
+
+void testCloud(G4int n, const G4ThreeVector& pos) {
+  std::vector<G4ThreeVector> points;
+  G4ThreeVector min, max;
+  G4double ri, rsum, r2sum, ravg, rrms;
+
+  points = cloud->Generate(n, pos);
+
+  G4cout << " generated " << points.size() << " points" << G4endl;
+
+  if (points.size() != (size_t)n) {
+    G4cerr << " WRONG NUMBER OF POINTS" << G4endl;
+    nErrors++;
+  }
+
+  // Find boundaries of good sphere for validation
+  min.set(1.*km,1.*km,1.*km);
+  max.set(-1.*km,-1.*km,-1*km);
+  rsum = r2sum = 0.;
+
+  for (size_t i=0; i<points.size(); i++) {
+    ri = (points[i]-pos).mag();
+    rsum += ri;
+    r2sum += ri*ri;
+
+    if (points[i].x() < min.x()) min.setX(points[i].x());
+    if (points[i].y() < min.y()) min.setY(points[i].y());
+    if (points[i].z() < min.z()) min.setZ(points[i].z());
+    if (points[i].x() > max.x()) max.setX(points[i].x());
+    if (points[i].y() > max.y()) max.setY(points[i].y());
+    if (points[i].z() > max.z()) max.setZ(points[i].z());
+  }
+
+  ravg = rsum/points.size();
+  rrms = sqrt(r2sum/points.size() - ravg*ravg);
+  G4cout << " at " << pos << " points span " << min/mm << " to "
+	 << max/mm << " mm\n Ravg " << ravg/nm << " rms " << rrms/nm
+	 << " nm" << G4endl;
+
+  G4double rcloud = cloud->GetRadius(n);
+
+  if ((min-pos).x() < -rcloud ||
+      (min-pos).y() < -rcloud ||
+      (min-pos).z() < -rcloud ||
+      (max-pos).x() > rcloud ||
+      (max-pos).y() > rcloud ||
+      (max-pos).z() > rcloud) {
+    G4cerr << " POINTS GENERATED OUTSIDE RADIUS" << G4endl;
+    nErrors++;
+  }
+}
+
+
+// Main test is here
 
 int main(int argc, char* argv[]) {
   if (argc < 3) {
-    G4cerr << "Usage: " << argv[0] << " <N> <Lattice>" << G4endl;
+    G4cerr << "Usage: " << argv[0] << " <N> <Lattice> [verbose]" << G4endl;
     ::exit(1);
   }
-
-  G4int nErrors = 0;			// Increment counter at sanity checks
 
   G4int npoints = atoi(argv[1]);
   G4String lname = argv[2];
   G4String mname = "G4_"+lname;
+
+  G4int verbose = (argc>3) ? atoi(argv[3]) : 0;
 
   G4Material* mat = G4NistManager::Instance()->FindOrBuildMaterial(mname);
   G4LatticeLogical* lat = G4LatticeManager::Instance()->LoadLattice(mat,lname);
@@ -40,68 +103,20 @@ int main(int argc, char* argv[]) {
   // MUST USE 'new', SO THAT G4SolidStore CAN DELETE
   G4Tubs* crystal = new G4Tubs("GeCrystal", 0., 5.*cm, 1.*cm, 0., 360.*deg);
 
-  G4CMPChargeCloud cloud(lat, crystal);
-  cloud.SetVerboseLevel(2);
+  cloud = new G4CMPChargeCloud(lat, crystal);
+  cloud->SetVerboseLevel(verbose);
 
-  G4double rcloud = cloud.GetRadius(npoints);
+  G4double rcloud = cloud->GetRadius(npoints);
 
-  G4cout << "G4CMPChargeCloud " << npoints << " e/h radius " << rcloud/nm
-	 << " nm" << G4endl;
-
-  std::vector<G4ThreeVector> points;
+  G4cout << "G4CMPChargeCloud " << npoints << " e/h radius "
+	 << rcloud/nm << " nm" << G4endl;
 
   // Generate points in bulk of crystal (no boundary effects)
-  G4ThreeVector center(0.,0.,0.);
-  points = cloud.Generate(npoints, center);
-
-  G4cout << " generated " << points.size() << " points" << G4endl;
-
-  if (points.size() != (size_t)npoints) {
-    G4cerr << " WRONG NUMBER OF POINTS" << G4endl;
-    nErrors++;
-  }
-
-  // Find boundaries of good sphere for validation
-  G4ThreeVector min(1.*km,1.*km,1.*km), max(-1.*km,-1.*km,-1*km);
-  for (size_t i=0; i<points.size(); i++) {
-    if (points[i].x() < min.x()) min.setX(points[i].x());
-    if (points[i].y() < min.y()) min.setY(points[i].y());
-    if (points[i].z() < min.z()) min.setZ(points[i].z());
-    if (points[i].x() > max.x()) max.setX(points[i].x());
-    if (points[i].y() > max.y()) max.setY(points[i].y());
-    if (points[i].z() > max.z()) max.setZ(points[i].z());
-  }
-
-  G4cout << " at " << center << " points span " << min/nm << " to "
-	 << max/nm << " nm" << G4endl;
-
-  if (min.x() < -rcloud || min.y() < -rcloud || min.z() < -rcloud ||
-      max.x() > rcloud || max.y() > rcloud || max.z() > rcloud) {
-    G4cerr << " POINTS GENERATED OUTSIDE RADIUS" << G4endl;
-    nErrors++;
-  }
+  testCloud(npoints, G4ThreeVector(0.,0.,0.));
 
   // Generate points close to corner (top face and side effects)
-  G4ThreeVector edge(0., 5.*cm - rcloud/2., 1.*cm - rcloud/2.);
-  points = cloud.Generate(npoints, edge);
+  testCloud(npoints, G4ThreeVector(0., 5.*cm-rcloud/2., 1.*cm-rcloud/2.));
 
-  // Find boundaries of good sphere for validation
-  min.set(1.*km,1.*km,1.*km); max.set(-1.*km,-1.*km,-1*km);
-  for (size_t i=0; i<points.size(); i++) {
-    if (points[i].x() < min.x()) min.setX(points[i].x());
-    if (points[i].y() < min.y()) min.setY(points[i].y());
-    if (points[i].z() < min.z()) min.setZ(points[i].z());
-    if (points[i].x() > max.x()) max.setX(points[i].x());
-    if (points[i].y() > max.y()) max.setY(points[i].y());
-    if (points[i].z() > max.z()) max.setZ(points[i].z());
-  }
-
-  G4cout << " at " << center << " points span " << min/nm << " to "
-	 << max/nm << " nm" << G4endl;
-  if (max.x() > 5.*cm || max.y() > 5.*cm || max.z() > 1.*cm) {
-    G4cerr << " POINTS GENERATED OUTSIDE VOLUME" << G4endl;
-    nErrors++;
-  }
-
+  delete cloud;		// Clean up memory at end
   ::exit(nErrors);
 }

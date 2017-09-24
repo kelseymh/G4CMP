@@ -75,7 +75,7 @@ G4CMPChargeCloud::Generate(G4int npos, const G4ThreeVector& center) {
   G4double radius = GetRadius(npos);	// Radius of cloud for average density
 
   for (G4int i=0; i<npos; i++) {
-    theCloud.push_back(GeneratePoint(radius));
+    theCloud.push_back(GeneratePoint(radius)+center);
     if (theSolid) AdjustToVolume(theCloud.back());
   }
 
@@ -92,7 +92,7 @@ G4double G4CMPChargeCloud::GetRadius(G4int npos) const {
 				    theLattice->GetBasis(2).mag())
 		      : 1.*nm*nm*nm );		// No lattice, use 1 nm^3
 
-  if (verboseLevel>1) {
+  if (verboseLevel>2) {
     G4cout << "Lattice " << theLattice->GetName() << " has basis vectors"
 	   << " with lengths " << theLattice->GetBasis(0).mag()/nm
 	   << " " << theLattice->GetBasis(1).mag()/nm
@@ -102,7 +102,7 @@ G4double G4CMPChargeCloud::GetRadius(G4int npos) const {
   // FIXME:  Set unit cell occupancy from lattice symmetry group
   const G4double AtomsPerCell = 8;
 
-  G4double length = cbrt(cellVol*AtomsPerCell/npos);	// Number of cells
+  G4double length = cbrt(cellVol*npos/AtomsPerCell);	// Number of cells
 
   if (verboseLevel>1) {
     G4cout << "G4CMPChargeCloud unit cell " << cbrt(cellVol)/nm << " nm "
