@@ -14,12 +14,14 @@
 // $Id$
 
 #include "G4CMPChargeCloud.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
 #include "G4RandomDirection.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VSolid.hh"
+#include "G4VTouchable.hh"
 #include "Randomize.hh"
 #include <math.h>
 
@@ -28,7 +30,7 @@
 
 G4CMPChargeCloud::G4CMPChargeCloud(const G4LatticeLogical* lat,
 				   const G4VSolid* solid)
-  : verboseLevel(0), theLattice(lat), theSolid(solid) {;}
+  : verboseLevel(0), theLattice(lat), theSolid(solid), theTouchable(nullptr) {;}
 
 G4CMPChargeCloud::G4CMPChargeCloud(const G4LatticePhysical* lat,
 				   const G4VSolid* solid)
@@ -39,7 +41,7 @@ G4CMPChargeCloud::G4CMPChargeCloud(const G4VSolid* solid)
 
 G4CMPChargeCloud::G4CMPChargeCloud(const G4LatticeLogical* lat,
 				   const G4VPhysicalVolume* vol)
-  : verboseLevel(0), theLattice(lat) {
+  : verboseLevel(0), theLattice(lat), theTouchable(nullptr) {
   UseVolume(vol);
 }
 
@@ -52,6 +54,27 @@ G4CMPChargeCloud::G4CMPChargeCloud(const G4VPhysicalVolume* vol)
 
 G4CMPChargeCloud::~G4CMPChargeCloud() {;}
 
+G4CMPChargeCloud::G4CMPChargeCloud(const G4LatticeLogical* lat,
+				   const G4VTouchable* touch)
+  : verboseLevel(0), theLattice(lat) {
+  SetTouchable(touch);
+}
+
+G4CMPChargeCloud::G4CMPChargeCloud(const G4LatticePhysical* lat,
+				   const G4VTouchable* touch)
+  : G4CMPChargeCloud(lat->GetLattice(), touch) {;}
+
+G4CMPChargeCloud::G4CMPChargeCloud(const G4VTouchable* touch)
+  : G4CMPChargeCloud((const G4LatticeLogical*)nullptr, touch) {;}
+
+
+// Store touchable (transform) and volume shape
+
+void G4CMPChargeCloud::SetTouchable(const G4VTouchable* touch) {
+  theTouchable = touch;
+  UseVolume(touch ? touch->GetVolume() : nullptr);
+}
+
 
 // Extract shape from placement volume
 
@@ -61,13 +84,16 @@ void G4CMPChargeCloud::UseVolume(const G4VPhysicalVolume* vol) {
 
 
 // Fill list of positions around specified center, within optional volume
+// If user specified G4VTouchable, coordinates are all global
 
 const std::vector<G4ThreeVector>& 
-G4CMPChargeCloud::Generate(G4int npos, const G4ThreeVector& center) {
+G4CMPChargeCloud::Generate(G4int npos, G4ThreeVector center) {
   if (verboseLevel) {
     G4cout << "G4CMPChargeCloud::Generate " << npos << " @ " << center
 	   << G4endl;
   }
+
+  if (theTouchable) G4CMP::RotateToLocalPosition(theTouchable, center);
 
   theCloud.clear();
   theCloud.reserve(npos);
@@ -76,7 +102,10 @@ G4CMPChargeCloud::Generate(G4int npos, const G4ThreeVector& center) {
 
   for (G4int i=0; i<npos; i++) {
     theCloud.push_back(GeneratePoint(radius)+center);
-    if (theSolid) AdjustToVolume(theCloud.back());
+    if (theSolid) AdjustToVolume(theCloud.back());	// Checkout boundaries
+
+    if (theTouchable)
+      G4CMP::RotateToGlobalPosition(theTouchable, theCloud.back());
   }
 
   return theCloud;
