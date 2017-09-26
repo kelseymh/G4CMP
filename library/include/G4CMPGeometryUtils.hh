@@ -15,6 +15,7 @@
 // 20170605  Pass touchable from track, not just local PV
 // 20170731  Add utility to get volume at (global) position
 // 20170815  Add utility to shift position to avoid volume surfaces
+// 20170925  Add utility to create touchable at (global) position
 
 #include "G4ThreeVector.hh"
 
@@ -51,6 +52,9 @@ namespace G4CMP {
   G4ThreeVector GetSurfaceNormal(const G4Step& step);
 
   G4VPhysicalVolume* GetVolumeAtPoint(const G4ThreeVector& pos);
+
+  // NOTE:  Transfers ownership to client
+  G4VTouchable* CreateTouchableAtPoint(const G4ThreeVector& pos);
 
   G4ThreeVector ApplySurfaceClearance(const G4VTouchable* touch,
 				      G4ThreeVector pos);

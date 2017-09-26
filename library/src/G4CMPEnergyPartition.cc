@@ -18,8 +18,10 @@
 // 20170802  Add constructor and accessor for volume argument, particle change
 // 20170830  Use downsampling energy scale parameter in DoPartition()
 // 20170901  Add support for putting primaries directly into event
+// 20170925  Add support for distributing charges around position
 
 #include "G4CMPEnergyPartition.hh"
+#include "G4CMPChargeCloud.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
@@ -51,6 +53,7 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), material(mat), holeFraction(0.5),
     verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
+    cloud(new G4CMPChargeCloud),
     nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
   SetLattice(lat);
 }
@@ -65,7 +68,9 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(const G4ThreeVector& pos)
   UsePosition(pos);
 }
 
-G4CMPEnergyPartition::~G4CMPEnergyPartition() {;}
+G4CMPEnergyPartition::~G4CMPEnergyPartition() {
+  delete cloud; cloud=0;
+}
 
 
 // Extract material and lattice information from geometry
@@ -73,6 +78,7 @@ G4CMPEnergyPartition::~G4CMPEnergyPartition() {;}
 void G4CMPEnergyPartition::UseVolume(const G4VPhysicalVolume* volume) {
   FindLattice(volume);
   SetMaterial(volume->GetLogicalVolume()->GetMaterial());
+  cloud->UseVolume(volume);
 }
 
 void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
@@ -168,6 +174,7 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
   }
 
   particles.clear();		// Discard previous results
+  nPairs = nPhonons = 0;
 
   GenerateCharges(eIon);
   GeneratePhonons(eNIEL + chargeEnergyLeft);
@@ -300,12 +307,29 @@ GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
   G4double phononEtot = 0.;
   G4double bandgap = GetLattice()->GetBandGapEnergy()/2.;
 
-  G4PrimaryVertex* vertex = CreateVertex(event, pos, time);
+  // Generate charge carriers in region around track position
+  G4bool doCloud = G4CMPConfigManager::CreateChargeCloud();	// Convenience
+  if (doCloud) {
+    cloud->SetVerboseLevel(verboseLevel);
+    cloud->SetTouchable(G4CMP::CreateTouchableAtPoint(pos));
+    cloud->Generate(2*nPairs, pos);
+  }
 
+  // Buffer for active vertices, for use with charge cloud
+  std::map<G4int, G4PrimaryVertex*> activeVtx;
+
+  G4int ichg = 0;		// Counter to track charge cloud entries
   for (size_t i=0; i<primaries.size(); i++) {
-    // Change vertices if current one is full
-    if (maxPerVertex>0 && vertex->GetNumberOfParticle() > maxPerVertex) {
-      vertex = CreateVertex(event, pos, time);
+    G4bool qcloud = doCloud && !G4CMP::IsPhonon(primaries[i]->GetG4code());
+    G4int chgbin = qcloud ? cloud->GetPositionBin(ichg++) : -1;
+
+    G4PrimaryVertex*& vertex = activeVtx[chgbin];	// Ref for convenience
+
+    // Create new vertex at pos if needed, or if current one is full
+    if (!vertex ||
+	(maxPerVertex>0 && vertex->GetNumberOfParticle()>maxPerVertex)) {
+      G4ThreeVector binpos = chgbin>=0 ? cloud->GetBinCenter(chgbin) : pos;
+      vertex = CreateVertex(event, binpos, time);
     }
 
     vertex->SetPrimary(primaries[i]);		// Add primary to vertex
@@ -351,6 +375,14 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
   secondaries.clear();
   secondaries.reserve(particles.size());
 
+  // Generate charge carriers in region around track position
+  G4bool doCloud = G4CMPConfigManager::CreateChargeCloud();	// Convenience
+  if (doCloud) {
+    cloud->SetVerboseLevel(verboseLevel);
+    cloud->SetTouchable(GetCurrentTouchable());
+    cloud->Generate(2*nPairs, GetCurrentTrack()->GetPosition());
+  }
+
   if (verboseLevel>1) {
     G4cout << " processing " << particles.size()
 	   << " bias " << G4CMPConfigManager::GetGenPhonons() << " phonons"
@@ -360,6 +392,8 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
 
   G4double weight = 0.;
   G4Track* theSec = 0;
+  G4int ichg = 0;			// Index to deal with charge cloud
+
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
 
@@ -369,6 +403,10 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
     theSec = G4CMP::CreateSecondary(*GetCurrentTrack(), p.pd, p.dir, p.ekin);
     theSec->SetWeight(weight);
     secondaries.push_back(theSec);
+
+    // Adjust positions of charges according to generated distribution
+    if (doCloud && G4CMP::IsChargeCarrier(theSec))
+      theSec->SetPosition(cloud->GetPosition(ichg++));
 
     if (verboseLevel==3) {
       G4cout << i << " : " << p.pd->GetParticleName() << " " << p.ekin/eV

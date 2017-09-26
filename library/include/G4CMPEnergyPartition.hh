@@ -15,6 +15,7 @@
 // 20170802  Add constructor and accessor for volume argument, particle change
 // 20170830  Add function to compute downsampling factors for input energy
 // 20170901  Add support for putting primaries directly into event
+// 20170925  Add support for distributing charges around position
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -24,6 +25,7 @@
 #include "G4ThreeVector.hh"
 #include <vector>
 
+class G4CMPChargeCloud;
 class G4Event;
 class G4LatticePhysical;
 class G4Material;
@@ -107,6 +109,8 @@ protected:
   G4Material* material;		// To get (Z,A) for Lindhard scaling
   G4double holeFraction;	// Energy from e/h pair taken by hole (50%)
   G4int verboseLevel;		// Higher numbers give more details
+
+  G4CMPChargeCloud* cloud;	// Distribute e/h around central position
 
   size_t nPairs;		// Estimated number of pairs to produce
   G4double chargeEnergyLeft;	// Energy to partition into e/h pairs

@@ -15,6 +15,8 @@
 ///   coordinates.
 ///
 // $Id$
+//
+// 20170925  Add direct access to individual positions in cloud, binning
 
 #ifndef G4CMPChargeCloud_hh
 #define G4CMPChargeCloud_hh 1
@@ -35,13 +37,7 @@ public:
   G4CMPChargeCloud(const G4LatticeLogical* lat=0, const G4VSolid* solid=0);
   G4CMPChargeCloud(const G4LatticePhysical* lat, const G4VSolid* solid);
   explicit G4CMPChargeCloud(const G4VSolid* solid);
-
-  G4CMPChargeCloud(const G4LatticeLogical* lat, const G4VPhysicalVolume* vol);
-  G4CMPChargeCloud(const G4LatticePhysical* lat, const G4VPhysicalVolume* vol);
   explicit G4CMPChargeCloud(const G4VPhysicalVolume* vol);
-
-  G4CMPChargeCloud(const G4LatticeLogical* lat, const G4VTouchable* touch);
-  G4CMPChargeCloud(const G4LatticePhysical* lat, const G4VTouchable* touch);
   explicit G4CMPChargeCloud(const G4VTouchable* touch);
 
   virtual ~G4CMPChargeCloud();
@@ -52,23 +48,31 @@ public:
 
   void SetLattice(const G4LatticeLogical* lat) { theLattice = lat; }
   void SetLattice(const G4LatticePhysical* lat);
+  const G4LatticeLogical* GetLattice() const { return theLattice; }
 
   void SetTouchable(const G4VTouchable* touch);
+  const G4VTouchable* GetTouchable() const { return theTouchable; }
+
   void UseVolume(const G4VPhysicalVolume* vol);
   void SetShape(const G4VSolid* solid) { theSolid = solid; }
+  const G4VSolid* GetShape() const { return theSolid; }
 
   // Fill list of positions around specified center, within optional volume
-  const std::vector<G4ThreeVector>& Generate(G4int npos, G4ThreeVector center);
+  virtual const std::vector<G4ThreeVector>& Generate(G4int npos,
+						     G4ThreeVector center);
   // NOTE:  Pass-by-value to allow global-to-local transform if necessary
 
   // Get previously filled list of positions
   const std::vector<G4ThreeVector>& GetCloud() const { return theCloud; }
+  const G4ThreeVector& GetPosition(G4int i) const { return theCloud[i]; }
+  const G4int GetPositionBin(G4int i) const { return theCloudBins[i]; }
+  G4ThreeVector GetBinCenter(G4int ibin) const;
 
   // Compute approximate radius of sphere to contain points
-  G4double GetRadius(G4int npos) const;
+  virtual G4double GetRadius(G4int npos) const;
 
   // Generate point randomly in sphere of given radius
-  G4ThreeVector GeneratePoint(G4double rmax) const;
+  virtual G4ThreeVector GeneratePoint(G4double rmax) const;
 
   // Adjust specified point to be inside volume
   void AdjustToVolume(G4ThreeVector& point) const;
@@ -78,9 +82,15 @@ protected:
   const G4LatticeLogical* theLattice;	// For crystal structure
   const G4VSolid* theSolid;		// For bounding surfaces
   const G4VTouchable* theTouchable;	// For local-global coordinates
+  mutable G4double avgLatticeSpacing;	// Cubic approximation (GetRadius sets)
+
+  // Convert local position to bin index (pass-by-value for use as temporary)
+  G4int GetBinIndex(G4ThreeVector localPos) const;
 
 private:
   std::vector<G4ThreeVector> theCloud;	// Buffer to carry generated points
+  G4ThreeVector localCenter;		// Local center point of distribution
+  std::vector<G4int> theCloudBins;	// Buffer for bin indices at points
 };
 
 #endif	/* G4CMPChargeCloud_hh */

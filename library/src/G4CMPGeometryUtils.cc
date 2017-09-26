@@ -11,6 +11,7 @@
 // 20161107  Rob Agnese
 // 20170605  Pass touchable from track, not just local PV
 // 20170815  Move AdjustSecondaryPosition to here as ApplySurfaceClearance
+// 20170925  Add utility to create touchable at (global) position
 
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -20,9 +21,11 @@
 #include "G4LogicalVolume.hh"
 #include "G4Navigator.hh"
 #include "G4Step.hh"
+#include "G4TouchableHistory.hh"
 #include "G4TransportationManager.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VSolid.hh"
+#include "G4VTouchable.hh"
 
 
 G4ThreeVector G4CMP::GetLocalDirection(const G4VTouchable* touch,
@@ -91,6 +94,33 @@ G4VPhysicalVolume* G4CMP::GetVolumeAtPoint(const G4ThreeVector& pos) {
   G4VPhysicalVolume* volume = nav->LocateGlobalPointAndSetup(pos,0,false);
 
   return volume;
+}
+
+
+// Get touchable (geometry tree path) for specified global position
+
+G4VTouchable* G4CMP::CreateTouchableAtPoint(const G4ThreeVector& pos) {
+  G4VTouchable* touchable = new G4TouchableHistory;
+
+  G4TransportationManager* transMan =
+    G4TransportationManager::GetTransportationManager();
+  G4Navigator* nav = transMan->GetNavigatorForTracking();
+
+  nav->LocateGlobalPointAndUpdateTouchable(pos, touchable, false);
+
+  // Sanity check: touchable's volume should match GetVolumeAtPoint()
+#ifdef G4CMP_DEBUG
+  if (touchable->GetVolume() != GetVolumeAtPoint(pos)) {
+    G4ExceptionDescription msg;
+    msg << "Position " << pos << " returns different results for touchable"
+	<< " (" << touchable->GetVolume()->GetName() << ") vs. GetVolume"
+	<< " (" << GetVolumeAtPoint(pos)->GetName() << ")" << G4endl;
+    G4Exception("G4CMP::CreateTouchableAtPoint", "Geometry008",
+		EventMustBeAborted, msg);
+  }
+#endif
+
+  return touchable;
 }
 
 

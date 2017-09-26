@@ -32,11 +32,7 @@ namespace {
 // Test cloud generation at specific location
 
 void testCloud(G4int n, const G4ThreeVector& pos) {
-  std::vector<G4ThreeVector> points;
-  G4ThreeVector min, max;
-  G4double ri, rsum, r2sum, ravg, rrms;
-
-  points = cloud->Generate(n, pos);
+  const std::vector<G4ThreeVector>& points = cloud->Generate(n, pos);
 
   G4cout << " generated " << points.size() << " points" << G4endl;
 
@@ -46,12 +42,16 @@ void testCloud(G4int n, const G4ThreeVector& pos) {
   }
 
   // Find boundaries of good sphere for validation
-  min.set(1.*km,1.*km,1.*km);
-  max.set(-1.*km,-1.*km,-1*km);
-  rsum = r2sum = 0.;
+  G4ThreeVector min(1.*km,1.*km,1.*km);
+  G4ThreeVector max(-1.*km,-1.*km,-1*km);
+  G4int maxbin = -1;
+  G4double rsum=0., r2sum=0.;
 
   for (size_t i=0; i<points.size(); i++) {
-    ri = (points[i]-pos).mag();
+    G4int ibin = cloud->GetPositionBin(i);
+    if (ibin > maxbin) maxbin = ibin;
+
+    G4double ri = (points[i]-pos).mag();
     rsum += ri;
     r2sum += ri*ri;
 
@@ -63,11 +63,11 @@ void testCloud(G4int n, const G4ThreeVector& pos) {
     if (points[i].z() > max.z()) max.setZ(points[i].z());
   }
 
-  ravg = rsum/points.size();
-  rrms = sqrt(r2sum/points.size() - ravg*ravg);
+  G4double ravg = rsum/points.size();
+  G4double rrms = sqrt(r2sum/points.size() - ravg*ravg);
   G4cout << " at " << pos << " points span " << min/mm << " to "
-	 << max/mm << " mm\n Ravg " << ravg/nm << " rms " << rrms/nm
-	 << " nm" << G4endl;
+	 << max/mm << " mm\n Ravg " << ravg/nm << " rms " << rrms/nm << " nm"
+	 << "\n Maximum bin (zzzyyyxxx) " << maxbin << G4endl;
 
   G4double rcloud = cloud->GetRadius(n);
 
