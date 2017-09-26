@@ -32,8 +32,10 @@
 
 G4CMPChargeCloud::G4CMPChargeCloud(const G4LatticeLogical* lat,
 				   const G4VSolid* solid)
-  : verboseLevel(0), theLattice(lat), theSolid(solid),
-    theTouchable(nullptr), avgLatticeSpacing(0.) {;}
+  : verboseLevel(0), theLattice(0), theSolid(solid),
+    theTouchable(nullptr), avgLatticeSpacing(0.), radiusScale(0.) {
+  SetLattice(lat);
+}
 
 G4CMPChargeCloud::G4CMPChargeCloud(const G4LatticePhysical* lat,
 				   const G4VSolid* solid)
@@ -55,6 +57,26 @@ G4CMPChargeCloud::G4CMPChargeCloud(const G4VTouchable* touch)
 G4CMPChargeCloud::~G4CMPChargeCloud() {;}
 
 
+// Store lattice and compute derived quantities
+
+void G4CMPChargeCloud::SetLattice(const G4LatticePhysical* lat) {
+  SetLattice(lat ? lat->GetLattice() : nullptr);
+}
+
+void G4CMPChargeCloud::SetLattice(const G4LatticeLogical* lat) {
+  theLattice = lat;
+
+  // Equivalent cubic unit cell dimensions regardless of crystal group
+  avgLatticeSpacing = !lat ? 1.*nm : cbrt(lat->GetBasis(0).mag() *
+					  lat->GetBasis(1).mag() *
+					  lat->GetBasis(2).mag());
+
+  radiusScale = avgLatticeSpacing/4.;	// 8 atoms per unit cell, r = a0/2.
+
+  binSpacing = 4.*avgLatticeSpacing;	// Box sizes for collecting primaries
+}
+
+
 // Store touchable (transform) and volume shape
 
 void G4CMPChargeCloud::SetTouchable(const G4VTouchable* touch) {
@@ -66,10 +88,10 @@ void G4CMPChargeCloud::SetTouchable(const G4VTouchable* touch) {
 // Extract shape from placement volume
 
 void G4CMPChargeCloud::UseVolume(const G4VPhysicalVolume* vol) {
-  G4LatticePhysical* plat =  G4LatticeManager::Instance()->GetLattice(vol);
-  theLattice = plat ? plat->GetLattice() : nullptr;
-  theSolid = vol ? vol->GetLogicalVolume()->GetSolid() : nullptr;
   theTouchable = nullptr;
+  SetShape(vol ? vol->GetLogicalVolume()->GetSolid() : nullptr);
+
+  SetLattice(G4LatticeManager::Instance()->GetLattice(vol));
 }
 
 
@@ -111,34 +133,16 @@ G4CMPChargeCloud::Generate(G4int npos, G4ThreeVector center) {
 // Compute radius of cloud for average density matching unit cell
 
 G4double G4CMPChargeCloud::GetRadius(G4int npos) const {
-  // FIXME:  Approximate unit cell as cubic for now
-  G4double cellVol = (theLattice ? (theLattice->GetBasis(0).mag() *
-				    theLattice->GetBasis(1).mag() *
-				    theLattice->GetBasis(2).mag())
-		      : 1.*nm*nm*nm );		// No lattice, use 1 nm^3
-
-  avgLatticeSpacing = cbrt(cellVol);		// Cache size for bin index
-
-  if (verboseLevel>2) {
-    G4cout << "Lattice " << theLattice->GetName() << " has basis vectors"
-	   << " with lengths " << theLattice->GetBasis(0).mag()/nm
-	   << " " << theLattice->GetBasis(1).mag()/nm
-	   << " " << theLattice->GetBasis(2).mag()/nm << " nm" << G4endl;
-  }
-
-  // FIXME:  Set unit cell occupancy from lattice symmetry group
-  const G4double AtomsPerCell = 8;
-
   // Charge cloud must be at least a full unit cell in size
-  G4double length = std::max(avgLatticeSpacing,cbrt(cellVol*npos/AtomsPerCell));
+  G4double rmax = std::max(avgLatticeSpacing, radiusScale*cbrt(npos));
 
   if (verboseLevel>1) {
     G4cout << "G4CMPChargeCloud unit cell " << avgLatticeSpacing/nm << " nm "
-	   << " diameter " << length/nm << " nm for " << npos << " charges"
+	   << " radius " << rmax/nm << " nm for " << npos << " charges"
 	   << G4endl;
   }
 
-  return length/2.;		// Radius is half of cubic side length
+  return rmax;
 }
 
 
@@ -178,14 +182,14 @@ G4int G4CMPChargeCloud::GetBinIndex(G4ThreeVector pos) const {
   // NOTE:  Argument passed by value for use in computations below
 
   // Indices are counted in 4-cell steps from (-,-,-) corner
-  G4double bin = 4.*avgLatticeSpacing;
   G4double rcloud = GetRadius((G4int)theCloud.size());
 
   // Convert local position in volume to bin index (w/(0,0,0) at bin center)
   pos -= localCenter;
-  pos += G4ThreeVector(rcloud+bin/2.,rcloud+bin/2.,rcloud+bin/2.);
+  pos += G4ThreeVector(rcloud+binSpacing/2., rcloud+binSpacing/2.,
+		       rcloud+binSpacing/2.);
 
-  pos /= bin;
+  pos /= binSpacing;
 
   // Bin index (ijk) allows up to 64 billion unit cells in cloud
   return (int(pos.z())*1000 + int(pos.y()))*1000 + int(pos.x());
@@ -193,12 +197,11 @@ G4int G4CMPChargeCloud::GetBinIndex(G4ThreeVector pos) const {
 
 G4ThreeVector G4CMPChargeCloud::GetBinCenter(G4int ibin) const {
   // Indices are counted in 4-cell steps from (-,-,-) corner
-  G4double bin = 4.*avgLatticeSpacing;
   G4double rcloud = GetRadius((G4int)theCloud.size());
 
-  G4ThreeVector pbin((ibin%1000 - 0.5)*bin - rcloud,
-		     ((ibin/1000)%1000 - 0.5)*bin - rcloud,
-		     (ibin/1000000 - 0.5)*bin - rcloud);
+  G4ThreeVector pbin((ibin%1000 - 0.5)*binSpacing - rcloud,
+		     ((ibin/1000)%1000 - 0.5)*binSpacing - rcloud,
+		     (ibin/1000000 - 0.5)*binSpacing - rcloud);
   pbin += localCenter;
 
   return pbin;

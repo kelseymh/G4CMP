@@ -46,7 +46,7 @@ public:
   void SetVerboseLevel(G4int vb) { verboseLevel=vb; }
   G4int GetVerboseLevel() const { return verboseLevel; }
 
-  void SetLattice(const G4LatticeLogical* lat) { theLattice = lat; }
+  void SetLattice(const G4LatticeLogical* lat);
   void SetLattice(const G4LatticePhysical* lat);
   const G4LatticeLogical* GetLattice() const { return theLattice; }
 
@@ -82,7 +82,9 @@ protected:
   const G4LatticeLogical* theLattice;	// For crystal structure
   const G4VSolid* theSolid;		// For bounding surfaces
   const G4VTouchable* theTouchable;	// For local-global coordinates
-  mutable G4double avgLatticeSpacing;	// Cubic approximation (GetRadius sets)
+  G4double avgLatticeSpacing;		// Cubic approximation from lattice
+  G4double radiusScale;			// Cloud radius per e/h pair (cbrt)
+  G4double binSpacing;			// Bin size for primary clumping
 
   // Convert local position to bin index (pass-by-value for use as temporary)
   G4int GetBinIndex(G4ThreeVector localPos) const;
