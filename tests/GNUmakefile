@@ -2,9 +2,10 @@
 # $Id: bb6e2ce10a89515fa367d15dcff13f8b03e7a4c3 $
 #
 # 20160609  Support different executables by looking at target name
+# 20170923  Add testChargeCloud
 
 TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup \
-	g4cmpEFieldTest phononKinematics
+	g4cmpEFieldTest phononKinematics testChargeCloud
 .PHONY : $(TESTS)
 
 ifndef G4CMP_NAME
@@ -18,6 +19,7 @@ help :			# First target, in case user just types "make"
 	@echo "testCrystalGroup : Validate non-orthogonal crystal axes"
 	@echo "g4cmpEFieldTest : Validate COMSOL field file in rectangular box"
 	@echo "phononKinematics : Generate Si kinematics and plot"
+	@echo "testChargeCloude : Validate performance of G4CMPChargeCloud"
 	@echo
 	@echo Please specify which one to build as your make target, or \"all\"
 
