@@ -69,7 +69,7 @@ void testCloud(G4int n, const G4ThreeVector& pos) {
 	 << max/mm << " mm\n Ravg " << ravg/nm << " rms " << rrms/nm << " nm"
 	 << "\n Maximum bin (zzzyyyxxx) " << maxbin << G4endl;
 
-  G4double rcloud = cloud->GetRadius(n);
+  G4double rcloud = cloud->GetRadius();		// Radius used to generate
 
   if ((min-pos).x() < -rcloud ||
       (min-pos).y() < -rcloud ||
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
   cloud = new G4CMPChargeCloud(lat, crystal);
   cloud->SetVerboseLevel(verbose);
 
-  G4double rcloud = cloud->GetRadius(npoints);
+  G4double rcloud = cloud->ComputeRadius(npoints);
 
   G4cout << "G4CMPChargeCloud " << npoints << " e/h radius "
 	 << rcloud/nm << " nm" << G4endl;

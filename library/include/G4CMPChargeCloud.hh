@@ -58,18 +58,22 @@ public:
   const G4VSolid* GetShape() const { return theSolid; }
 
   // Fill list of positions around specified center, within optional volume
-  virtual const std::vector<G4ThreeVector>& Generate(G4int npos,
-						     G4ThreeVector center);
-  // NOTE:  Pass-by-value to allow global-to-local transform if necessary
+  virtual const std::vector<G4ThreeVector>& 
+  Generate(G4int npos, const G4ThreeVector& center);
 
-  // Get previously filled list of positions
+  // Get constituents and parameters of generated distribution
   const std::vector<G4ThreeVector>& GetCloud() const { return theCloud; }
   const G4ThreeVector& GetPosition(G4int i) const { return theCloud[i]; }
+
+  const std::vector<G4int>& GetCloudBins() const { return theCloudBins; }
   const G4int GetPositionBin(G4int i) const { return theCloudBins[i]; }
   G4ThreeVector GetBinCenter(G4int ibin) const;
 
-  // Compute approximate radius of sphere to contain points
-  virtual G4double GetRadius(G4int npos) const;
+  G4double GetRadius() const { return cloudRadius; }
+  const G4ThreeVector& GetCenter() const { return localCenter; }
+
+  // Compute maximum radius of sphere to contain points
+  virtual G4double ComputeRadius(G4int npos) const;
 
   // Generate point randomly in sphere of given radius
   virtual G4ThreeVector GeneratePoint(G4double rmax) const;
@@ -91,6 +95,7 @@ protected:
 
 private:
   std::vector<G4ThreeVector> theCloud;	// Buffer to carry generated points
+  G4double cloudRadius;			// Radius used to generate distribution
   G4ThreeVector localCenter;		// Local center point of distribution
   std::vector<G4int> theCloudBins;	// Buffer for bin indices at points
 };

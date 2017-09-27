@@ -32,8 +32,8 @@
 
 G4CMPChargeCloud::G4CMPChargeCloud(const G4LatticeLogical* lat,
 				   const G4VSolid* solid)
-  : verboseLevel(0), theLattice(0), theSolid(solid),
-    theTouchable(nullptr), avgLatticeSpacing(0.), radiusScale(0.) {
+  : verboseLevel(0), theLattice(0), theSolid(solid), theTouchable(nullptr),
+    avgLatticeSpacing(0.), radiusScale(0.), binSpacing(0.), cloudRadius(0.) {
   SetLattice(lat);
 }
 
@@ -99,31 +99,37 @@ void G4CMPChargeCloud::UseVolume(const G4VPhysicalVolume* vol) {
 // If user specified G4VTouchable, coordinates are all global
 
 const std::vector<G4ThreeVector>& 
-G4CMPChargeCloud::Generate(G4int npos, G4ThreeVector center) {
+G4CMPChargeCloud::Generate(G4int npos, const G4ThreeVector& center) {
+  localCenter = center;
+  if (theTouchable) G4CMP::RotateToLocalPosition(theTouchable, localCenter);
+
+  cloudRadius = ComputeRadius(npos);	// Radius of cloud for average density
+
   if (verboseLevel) {
     G4cout << "G4CMPChargeCloud::Generate " << npos << " @ " << center
-	   << G4endl;
+	   << " radius " << cloudRadius/nm << " bins "
+	   << binSpacing/nm << " nm" << G4endl;
   }
-
-  if (theTouchable) G4CMP::RotateToLocalPosition(theTouchable, center);
-  localCenter = center;
 
   theCloud.clear();
   theCloud.reserve(npos);
 
   theCloudBins.clear();
-  theCloudBins.resize(npos);
-
-  G4double radius = GetRadius(npos);	// Radius of cloud for average density
+  theCloudBins.reserve(npos);
 
   for (G4int i=0; i<npos; i++) {
-    theCloud.push_back(GeneratePoint(radius)+center);
+    theCloud.push_back(GeneratePoint(cloudRadius)+localCenter);
     if (theSolid) AdjustToVolume(theCloud.back());	// Checkout boundaries
 
-    theCloudBins[i] = GetBinIndex(theCloud.back());	// Store bin index
+    theCloudBins.push_back(GetBinIndex(theCloud.back()));
 
     if (theTouchable)
       G4CMP::RotateToGlobalPosition(theTouchable, theCloud.back());
+
+    if (verboseLevel>2) {
+      G4cout << " point " << i << " @ " << theCloud.back() << " in bin "
+	     << theCloudBins.back() << G4endl;
+    }
   }
 
   return theCloud;
@@ -132,7 +138,7 @@ G4CMPChargeCloud::Generate(G4int npos, G4ThreeVector center) {
 
 // Compute radius of cloud for average density matching unit cell
 
-G4double G4CMPChargeCloud::GetRadius(G4int npos) const {
+G4double G4CMPChargeCloud::ComputeRadius(G4int npos) const {
   // Charge cloud must be at least a full unit cell in size
   G4double rmax = std::max(avgLatticeSpacing, radiusScale*cbrt(npos));
 
@@ -181,13 +187,10 @@ void G4CMPChargeCloud::AdjustToVolume(G4ThreeVector& point) const {
 G4int G4CMPChargeCloud::GetBinIndex(G4ThreeVector pos) const {
   // NOTE:  Argument passed by value for use in computations below
 
-  // Indices are counted in 4-cell steps from (-,-,-) corner
-  G4double rcloud = GetRadius((G4int)theCloud.size());
-
   // Convert local position in volume to bin index (w/(0,0,0) at bin center)
   pos -= localCenter;
-  pos += G4ThreeVector(rcloud+binSpacing/2., rcloud+binSpacing/2.,
-		       rcloud+binSpacing/2.);
+  pos += G4ThreeVector(cloudRadius+binSpacing/2., cloudRadius+binSpacing/2.,
+		       cloudRadius+binSpacing/2.);
 
   pos /= binSpacing;
 
@@ -196,12 +199,9 @@ G4int G4CMPChargeCloud::GetBinIndex(G4ThreeVector pos) const {
 }
 
 G4ThreeVector G4CMPChargeCloud::GetBinCenter(G4int ibin) const {
-  // Indices are counted in 4-cell steps from (-,-,-) corner
-  G4double rcloud = GetRadius((G4int)theCloud.size());
-
-  G4ThreeVector pbin((ibin%1000 - 0.5)*binSpacing - rcloud,
-		     ((ibin/1000)%1000 - 0.5)*binSpacing - rcloud,
-		     (ibin/1000000 - 0.5)*binSpacing - rcloud);
+  G4ThreeVector pbin((ibin%1000 - 0.5)*binSpacing - cloudRadius,
+		     ((ibin/1000)%1000 - 0.5)*binSpacing - cloudRadius,
+		     (ibin/1000000 - 0.5)*binSpacing - cloudRadius);
   pbin += localCenter;
 
   return pbin;
