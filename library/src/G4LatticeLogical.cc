@@ -30,6 +30,7 @@
 // 20170810  Add parameters for IV scattering matrix terms
 // 20170821  Add support for separate D0 and D1 optical deformation potentials
 // 20170821  Add transverse sound speed, L->TT fraction
+// 20170923  Do NOT force basis vectors to unit(); they encode cell spacing
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -218,14 +219,9 @@ void G4LatticeLogical::Initialize(const G4String& newName) {
 /////////////////////////////////////////////////////////////
 void G4LatticeLogical::CheckBasis() {
   static const G4ThreeVector origin(0.,0.,0.);
-  if (fBasis[0].isNear(origin,1e-6)) fBasis[0].set(1.,0.,0.);
-  if (fBasis[1].isNear(origin,1e-6)) fBasis[1].set(0.,1.,0.);
-  if (fBasis[2].isNear(origin,1e-6)) fBasis[2] = fBasis[0].cross(fBasis[1]);
-
-  // Ensure that all basis vectors are unit
-  fBasis[0].setMag(1.);
-  fBasis[1].setMag(1.);
-  fBasis[2].setMag(1.);
+  if (fBasis[0].isNear(origin,1e-9)) fBasis[0].set(1.,0.,0.);
+  if (fBasis[1].isNear(origin,1e-9)) fBasis[1].set(0.,1.,0.);
+  if (fBasis[2].isNear(origin,1e-9)) fBasis[2] = fBasis[0].cross(fBasis[1]);
 
   if (fBasis[0].cross(fBasis[1]).dot(fBasis[2]) < 0.) {
     G4cerr << "ERROR G4LatticeLogical has a left-handed basis!" << G4endl;

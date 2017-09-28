@@ -101,6 +101,7 @@ target_link_libraries(qhullcpp qhull_p)
 
 set(library_SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBoundaryUtils.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPChargeCloud.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigManager.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigMessenger.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPCrystalGroup.cc
@@ -166,6 +167,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBoundaryUtils.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPChargeCloud.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigManager.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPConfigMessenger.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPCrystalGroup.hh

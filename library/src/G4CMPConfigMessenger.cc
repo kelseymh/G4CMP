@@ -23,6 +23,7 @@
 // 20170821  Add command to select Edelweiss IV scattering model
 // 20170823  Move geometry-specific commands to examples
 // 20170830  Add command for downsampling energy scale parameter
+// 20170830  Add command to set flag for producing e/h "cloud"
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -41,7 +42,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     theManager(mgr), verboseCmd(0), ehBounceCmd(0), pBounceCmd(0), clearCmd(0),
     minEPhononCmd(0), minEChargeCmd(0), minstepCmd(0), makePhononCmd(0),
     makeChargeCmd(0), lukePhononCmd(0), downconvCmd(0),
-    dirCmd(0), kvmapCmd(0), fanoStatsCmd(0), ivEdelCmd(0) {
+    dirCmd(0), kvmapCmd(0), fanoStatsCmd(0), ivEdelCmd(0), ehCloudCmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
 
@@ -103,6 +104,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   ivEdelCmd = CreateCommand<G4UIcmdWithABool>("useEdelweissIVRate",
            "Use Edelweiss parametrization for IV scattering rate.");
   ivEdelCmd->SetDefaultValue(true);
+
+  ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
+       "Produce e/h pairs in cloud surrounding energy deposit position");
+  ehCloudCmd->SetDefaultValue(true);
 }
 
 
@@ -122,6 +127,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete dirCmd; dirCmd=0;
   delete kvmapCmd; kvmapCmd=0;
   delete fanoStatsCmd; fanoStatsCmd=0;
+  delete ehCloudCmd; ehCloudCmd=0;
 }
 
 
@@ -153,4 +159,5 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));
   if (cmd == ivEdelCmd) theManager->UseIVEdelweiss(StoB(value));
+  if (cmd == ehCloudCmd) theManager->CreateChargeCloud(StoB(value));
 }

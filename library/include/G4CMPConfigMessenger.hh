@@ -28,6 +28,7 @@
 // 20170821  Add command to select Edelweiss IV scattering model
 // 20170823  Move geometry-specific commands to examples
 // 20170830  Add command to set downsampling energy scale
+// 20170830  Add command to set flag for producing e/h "cloud"
 
 #include "G4UImessenger.hh"
 
@@ -66,6 +67,7 @@ private:
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;
   G4UIcmdWithABool*   ivEdelCmd;
+  G4UIcmdWithABool*   ehCloudCmd;
 
 private:
   G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden
