@@ -9,6 +9,7 @@
 // 20170629 M. Kelsey -- Add volume name to "no lattice" error messages.
 // 20170721 M. Kelsey -- Check volume in AdjustSecondaryPosition.
 // 20170815 M. Kelsey -- Move AdjustSecondaryPosition to GeometryUtils
+// 20170928 M. Kelsey -- Replace "polarization" with "mode"
 
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPDriftHole.hh"
@@ -54,7 +55,7 @@ G4Track* G4CMP::CreateSecondary(const G4Track& track,
   return nullptr;
 }
 
-G4Track* G4CMP::CreatePhonon(const G4VTouchable* touch, G4int polarization,
+G4Track* G4CMP::CreatePhonon(const G4VTouchable* touch, G4int mode,
                              const G4ThreeVector& waveVec,
                              G4double energy, G4double time, const G4ThreeVector& pos) {
   G4VPhysicalVolume* vol = touch->GetVolume();
@@ -66,17 +67,17 @@ G4Track* G4CMP::CreatePhonon(const G4VTouchable* touch, G4int polarization,
     return nullptr;
   }
 
-  if (polarization == G4PhononPolarization::UNKNOWN) {		// Choose value
-    polarization = ChoosePhononPolarization(lat);
+  if (mode == G4PhononPolarization::UNKNOWN) {		// Choose value
+    mode = ChoosePhononPolarization(lat);
   }
 
-  G4ThreeVector vgroup = lat->MapKtoVDir(polarization, waveVec);
+  G4ThreeVector vgroup = lat->MapKtoVDir(mode, waveVec);
   if (std::fabs(vgroup.mag()-1.) > 0.01) {
     G4cerr << "WARNING: vgroup not a unit vector: " << vgroup
      << " length " << vgroup.mag() << G4endl;
   }
 
-  G4ParticleDefinition* thePhonon = G4PhononPolarization::Get(polarization);
+  G4ParticleDefinition* thePhonon = G4PhononPolarization::Get(mode);
 
   // Secondaries are (usually) created at the current track coordinates
   RotateToGlobalDirection(touch, vgroup);
@@ -87,7 +88,7 @@ G4Track* G4CMP::CreatePhonon(const G4VTouchable* touch, G4int polarization,
   // Store wavevector in auxiliary info for track
   AttachTrackInfo(sec, GetGlobalDirection(touch, waveVec));
 
-  sec->SetVelocity(lat->MapKtoV(polarization, waveVec));
+  sec->SetVelocity(lat->MapKtoV(mode, waveVec));
   sec->UseGivenVelocity(true);
 
   return sec;

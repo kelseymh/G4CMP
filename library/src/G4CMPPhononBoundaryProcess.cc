@@ -22,6 +22,7 @@
 // 20160906  Follow constness of G4CMPBoundaryUtils
 // 20161114  Use new G4CMPPhononTrackInfo
 // 20170829  Add detailed diagnostics to identify boundary issues
+// 20170928  Replace "pol" with "mode" for phonons
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -116,7 +117,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   G4ThreeVector waveVector = trackInfo->k();
-  G4int pol = GetPolarization(aStep.GetTrack());
+  G4int mode = GetPolarization(aStep.GetTrack());
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   if (verboseLevel>2) {
@@ -138,11 +139,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     } else {
       reflectedKDir = G4CMP::LambertReflection(surfNorm);
     }
-  } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
+  } while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
                                           reflectedKDir, surfNorm));
 
-  G4ThreeVector vdir = theLattice->MapKtoVDir(pol, reflectedKDir);
-  G4double v = theLattice->MapKtoV(pol, reflectedKDir);
+  G4ThreeVector vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
+  G4double v = theLattice->MapKtoV(mode, reflectedKDir);
 
   if (verboseLevel>2) {
     G4cout << " New wavevector direction " << reflectedKDir

@@ -83,10 +83,9 @@ void G4CMPPhononKinematics::computeKinematics(const G4ThreeVector& n_dir) {
     // calculate desired quantities that will populate lookup table.
     // Must map the G4PhononPolarization indices to the eigen indices from
     // the solver.
-    size_t idx = mode ==
-      G4PhononPolarization::Long ? longIdx :
-                                   mode == G4PhononPolarization::TransFast ?
-                                                    fastTransIdx : slowTransIdx;
+    size_t idx = (mode == G4PhononPolarization::Long ? longIdx :
+		  mode == G4PhononPolarization::TransFast ? fastTransIdx :
+		  slowTransIdx);
     vphase[mode] = sqrt(eigenSys.d[idx]);
     slowness[mode] = n_dir.unit()/vphase[mode];
     polarization[mode].set(eigenSys.z[G4ThreeVector::X][idx],

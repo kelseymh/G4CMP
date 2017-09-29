@@ -19,6 +19,7 @@
 // 20160829 Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 // 20170620 Drop obsolete SetTransforms() call
 // 20170624 Clean up track initialization
+// 20170928 Replace "polarization" with "mode"
 
 #include "G4CMPStackingAction.hh"
 
@@ -98,22 +99,22 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
 void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
   // Get wavevector associated with track
   G4ThreeVector k = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(*aTrack)->k();
-  G4int pol = GetPolarization(aTrack);
+  G4int mode = GetPolarization(aTrack);
 
   // Compute direction of propagation from wave vector
   // Geant4 thinks that momentum and velocity point in same direction,
   // momentumDir here actually means velocity direction.
-  G4ThreeVector momentumDir = theLattice->MapKtoVDir(pol, k);
+  G4ThreeVector momentumDir = theLattice->MapKtoVDir(mode, k);
 
   if (momentumDir.mag() < 0.9) {
-    G4cerr << " track mode " << pol << " k " << k << G4endl;
+    G4cerr << " track mode " << mode << " k " << k << G4endl;
     G4Exception("G4CMPStackingAction::SetPhononVelocity", "Lattice010",
 		FatalException, "KtoVDir failed to return unit vector");
     return;
   }
 
   //Compute true velocity of propagation
-  G4double velocity = theLattice->MapKtoV(pol, k);
+  G4double velocity = theLattice->MapKtoV(mode, k);
   
   // Cast to non-const pointer so we can adjust non-standard kinematics
   G4Track* theTrack = const_cast<G4Track*>(aTrack);

@@ -12,6 +12,7 @@
 //
 // 20170602  Provide call-by-reference versions of track identity functions
 // 20170802  Provide scale factor argument to ChooseWeight functions
+// 20170928  Replace "polarization" with "mode"
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -193,9 +194,9 @@ G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
 // Check that phonon is properly directed from the volume surface
 
 G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
-                                     G4int polarization,
+                                     G4int mode,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
-  G4ThreeVector vDir = lattice->MapKtoVDir(polarization, waveVector);
+  G4ThreeVector vDir = lattice->MapKtoVDir(mode, waveVector);
   return vDir.dot(surfNorm) < 0.0;
 }

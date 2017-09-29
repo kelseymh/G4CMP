@@ -12,6 +12,7 @@
 //
 // 20170602  Provide call-by-reference versions of track identity functions
 // 20170802  Provide scale factor argument to ChooseWeight functions
+// 20170928  Replace "polarization" with "mode"
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -72,8 +73,7 @@ namespace G4CMP {
   G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
 
   // Test that a phonon's wave vector relates to an inward velocity.
-  G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice,
-                                G4int polarization,
+  G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm);
 }

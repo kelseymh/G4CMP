@@ -24,8 +24,8 @@ G4int G4PhononPolarization::Get(const G4ParticleDefinition* aPD) {
   return UNKNOWN;
 }
 
-G4ParticleDefinition* G4PhononPolarization::Get(G4int pol) {
-  switch (pol) {
+G4ParticleDefinition* G4PhononPolarization::Get(G4int mode) {
+  switch (mode) {
   case Long:      return G4PhononLong::Definition(); break;
   case TransSlow: return G4PhononTransSlow::Definition(); break;
   case TransFast: return G4PhononTransFast::Definition(); break;
@@ -36,14 +36,14 @@ G4ParticleDefinition* G4PhononPolarization::Get(G4int pol) {
 }
 
 // Returns full particle name (convenience funciton)
-const G4String& G4PhononPolarization::Name(G4int pol) {
+const G4String& G4PhononPolarization::Name(G4int mode) {
   static const G4String empty;
-  return (pol>=Long && pol<NUM_MODES) ? Get(pol)->GetParticleName() : empty;
+  return (mode>=Long && mode<NUM_MODES) ? Get(mode)->GetParticleName() : empty;
 }
 
 // Returns short affix (L, ST, FT)
-const char* G4PhononPolarization::Label(G4int pol) {
-  switch (pol) {
+const char* G4PhononPolarization::Label(G4int mode) {
+  switch (mode) {
   case Long:      return "L"; break;
   case TransSlow: return "ST"; break;
   case TransFast: return "LT"; break;
