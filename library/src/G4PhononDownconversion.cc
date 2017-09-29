@@ -22,6 +22,7 @@
 // 20170820  Compute MFP for all phonon types, check for L-type in PostStep
 // 20170821  Move hard-coded constants to lattice configuration
 // 20170824  Add diagnostic output
+// 20170928  Hide "output" usage behind verbosity check, as well as G4CMP_DEBUG
 
 #include "G4PhononDownconversion.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -47,13 +48,15 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   UseRateModel(new G4CMPDownconversionRate);
 
 #ifdef G4CMP_DEBUG
-  output.open("phonon_downsampling_stats", std::ios_base::app);
-  if (output.good()) {
-    output << "First Daughter Theta,Second Daughter Theta,First Daughter Energy [eV],Second Daughter Energy [eV],"
-              "Decay Branch,First Daughter Weight,Second Daughter Weight,Parent Weight,"
-              "Number of Outgoing Tracks,Parent Energy [eV]\n";
-  } else {
-    G4cerr << "Could not open phonon debugging output file!" << G4endl;
+  if (verboseLevel) {
+    output.open("phonon_downsampling_stats", std::ios_base::app);
+    if (output.good()) {
+      output << "First Daughter Theta,Second Daughter Theta,First Daughter Energy [eV],Second Daughter Energy [eV],"
+	"Decay Branch,First Daughter Weight,Second Daughter Weight,Parent Weight,"
+	"Number of Outgoing Tracks,Parent Energy [eV]\n";
+    } else {
+      G4cerr << "Could not open phonon debugging output file!" << G4endl;
+    }
   }
 #endif
 }
@@ -253,9 +256,11 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
 
   // Pick which secondary gets the weight randomly
 #ifdef G4CMP_DEBUG
-  output << theta1 << ',' << theta2 << ','
-	 << sec1->GetKineticEnergy()/eV << ','
-	 << sec2->GetKineticEnergy()/eV << ',';
+  if (output.good()) {
+    output << theta1 << ',' << theta2 << ','
+	   << sec1->GetKineticEnergy()/eV << ','
+	   << sec2->GetKineticEnergy()/eV << ',';
+  }
 #endif
 
   G4double bias = G4CMPConfigManager::GetDownconversionSampling();
@@ -265,8 +270,10 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
     sec1->SetWeight(aTrack.GetWeight()*weight); // Default weight
     sec2->SetWeight(aTrack.GetWeight()*weight);
 #ifdef G4CMP_DEBUG
-    output << "TT" << ',' << sec1->GetWeight() << ','
-	   << sec2->GetWeight() << ',';
+    if (output.good()) {
+      output << "TT" << ',' << sec1->GetWeight() << ','
+	     << sec2->GetWeight() << ',';
+    }
 #endif
 
     aParticleChange.SetNumberOfSecondaries(2);
@@ -276,7 +283,9 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
     delete sec1;		// It would be better not to create/delete
     delete sec2;
 #ifdef G4CMP_DEBUG
-    output << "TT" << ',' << 0 << ',' << 0 << ',';
+    if (output.good()) {
+      output << "TT" << ',' << 0 << ',' << 0 << ',';
+    }
 #endif
   }
 }
@@ -353,8 +362,10 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
                                       aTrack.GetPosition());
 
 #ifdef G4CMP_DEBUG
-  output << thetaL << ',' << thetaT << ',' << sec1->GetKineticEnergy()/eV
-	 << ',' << sec2->GetKineticEnergy()/eV << ',';
+  if (output.good()) {
+    output << thetaL << ',' << thetaT << ',' << sec1->GetKineticEnergy()/eV
+	   << ',' << sec2->GetKineticEnergy()/eV << ',';
+  }
 #endif
 
   G4double bias = G4CMPConfigManager::GetDownconversionSampling();
@@ -364,8 +375,10 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
     sec1->SetWeight(aTrack.GetWeight()/bias);
     sec2->SetWeight(aTrack.GetWeight()/bias);
 #ifdef G4CMP_DEBUG
-    output << "LT" << ',' << sec1->GetWeight() << ','
-	   << sec2->GetWeight() << ',';
+    if (output.good()) {
+      output << "LT" << ',' << sec1->GetWeight() << ','
+	     << sec2->GetWeight() << ',';
+    }
 #endif
 
     aParticleChange.SetNumberOfSecondaries(2);
@@ -375,7 +388,9 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
     delete sec1;		// It would be better not to create/delete
     delete sec2;
 #ifdef G4CMP_DEBUG
-    output << "LT" << ',' << 0 << ',' << 0 << ',';
+    if (output.good()) {
+      output << "LT" << ',' << 0 << ',' << 0 << ',';
+    }
 #endif
   }
 }
