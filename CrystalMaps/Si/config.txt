@@ -35,6 +35,7 @@ ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV
 neutDens 1e11 /cm3
 epsilon 11.68
 # Intervalley scattering (Edelweiss model)
-ivField 217 V/m
-ivRate 6.72e-2 Hz	# Ge rate, these are not tuned for Si
-ivPower 3.24		# used in sqrt(field^ivPower)
+ivField 3395  V/m
+ivRate 3.5e-20 s	#Fitted to Stanford test devices
+ivPower 7.47		# used in sqrt(field^ivPower)
+
