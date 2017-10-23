@@ -36,6 +36,6 @@ neutDens 1e11 /cm3
 epsilon 11.68
 # Intervalley scattering (Edelweiss model)
 ivField 3395  V/m
-ivRate 3.5e-20 s	#Fitted to Stanford test devices
+ivRate 3.5e-20 Hz	# Fitted to Stanford test devices
 ivPower 7.47		# used in sqrt(field^ivPower)
 
