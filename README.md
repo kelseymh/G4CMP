@@ -13,7 +13,7 @@ electron-hole pairs through solid crystals such as germanium.
 
 This product includes software developed by Members of the Geant4 
 Collaboration ( http://cern.ch/geant4 ). A copy of the Geant4 license is
-included at `G4CMP/Geant4\_LICENSE.html`.
+included at `G4CMP/Geant4_LICENSE.html`.
 
 This product ships an unaltered copy of Qhull source code. This is so that
 we may compile and link the code in an unsupported way. The Qhull license
@@ -29,12 +29,12 @@ Users must have a recent (10.2 or later) version of GEANT4 installed and
 configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See GEANT4's
 documentation for further instructions.).
 
-Add the G4CMP environment variables using the `g4cmp\_env.csh` or `...sh`
+Add the G4CMP environment variables using the `g4cmp_env.csh` or `...sh`
 scripts found in the G4CMP installation directory (see below for build and
 installation procedures):
 
-	source g4cmp\_env.csh		# For CSH/TCSH users
-	. g4cmp\_env.sh			# For SH/BASH users
+	source g4cmp_env.csh		# For CSH/TCSH users
+	. g4cmp_env.sh			# For SH/BASH users
 
 This must be done before building or running executables.
 
@@ -54,36 +54,36 @@ developers should check the source code in
 | Environment variable    | Macro command                 | Value/action                            |
 | ------------------------| ----------------------------- | ----------------------------------------|
 | G4LATTICEDATA           | /g4cmp/LatticeData	          | Directory with lattice configs          |
-| G4CMP\_DEBUG	           | /g4cmp/verbose <L> >0:        | Enable diagnostic messages              |
-| G4CMP\_CLEARANCE [L]     | /g4cmp/clearance <L> mm       | Minimum distance of tracks from boundaries |
-| G4CMP\_VOLTAGE [V]       | /g4cmp/voltage <V>	volt !=0:  | Apply uniform +Z voltage                |
-| G4CMP\_EPOT\_FILE [F]     | /g4cmp/EPotFile <F> V=0:      | Read mesh field file "F"                |
-| G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEPot <M> V=0:     | Scale the potentials in EPotFile by factor m|
-| G4CMP\_MIN\_STEP [S]      | /g4cmp/minimumStep <S> S>0:   | Force minimum step S\*L0                |
-| G4CMP\_MAKE\_PHONONS [R]  | /g4cmp/producePhonons <R>     | Fraction of phonons from energy deposit   |
-| G4CMP\_MAKE\_CHARGES [R]  | /g4cmp/produceCharges <R>     | Fraction of charge pairs from energy deposit |
-| G4CMP\_LUKE\_SAMPLE [R]   | /g4cmp/sampleLuke <R>         | Fraction of generated Luke phonons |
-| G4CMP\_DOWN\_SAMPLE [R]   | /g4cmp/downconvertPhonons <R> | Fraction of natural phonon downconversions |
-| G4CMP\_SAMPLE\_ENERGY [E] | /g4cmp/samplingEnergy <E> eV  | Energy above which to downsample |
-| G4CMP\_EMIN\_PHONONS [E]  | /g4cmp/minEPhonons <E> eV     | Minimum energy to track phonons         |
-| G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges <E> eV     | Minimum energy to track charges         |
-| G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t|f]      | Use eigensolver for K-Vg mapping        |
-| G4CMP\_FANO\_ENABLED  | /g4cmp/enableFanoStatistics [t|f] | Apply Fano statistics to input ionization |
-| G4CMP\_IV\_EDELWEISS  | /g4cmp/useEdelweissIVRate [t|f]   | Use Edelweiss intervalley rate parametrization |
-| G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t|f] | Create charges in sphere around location |
-| G4CMP\_MILLER\_H          | /g4cmp/orientation h k l      | Miller indices for lattice orientation  |
+| G4CMP\_DEBUG	           | /g4cmp/verbose [L] >0:        | Enable diagnostic messages              |
+| G4CMP\_CLEARANCE [L]     | /g4cmp/clearance [L] mm       | Minimum distance of tracks from boundaries |
+| G4CMP\_VOLTAGE [V]       | /g4cmp/voltage [V]	volt !=0:  | Apply uniform +Z voltage                |
+| G4CMP\_EPOT\_FILE [F]     | /g4cmp/EPotFile [F] V=0:      | Read mesh field file "F"                |
+| G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEPot [M] V=0:     | Scale the potentials in EPotFile by factor m|
+| G4CMP\_MIN\_STEP [S]      | /g4cmp/minimumStep [S] S>0:   | Force minimum step S\*L0                |
+| G4CMP\_MAKE\_PHONONS [R]  | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
+| G4CMP\_MAKE\_CHARGES [R]  | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
+| G4CMP\_LUKE\_SAMPLE [R]   | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
+| G4CMP\_DOWN\_SAMPLE [R]   | /g4cmp/downconvertPhonons [R] | Fraction of natural phonon downconversions |
+| G4CMP\_SAMPLE\_ENERGY [E] | /g4cmp/samplingEnergy [E] eV  | Energy above which to downsample |
+| G4CMP\_EMIN\_PHONONS [E]  | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
+| G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
+| G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
+| G4CMP\_FANO\_ENABLED  | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
+| G4CMP\_IV\_EDELWEISS  | /g4cmp/useEdelweissIVRate [t\|f]   | Use Edelweiss intervalley rate parametrization |
+| G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t\|f] | Create charges in sphere around location |
+| G4CMP\_MILLER\_H          | /g4cmp/orientation [h] [k] [l] | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
 | G4CMP\_MILLER\_L          |                               |                                         |
-| G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces          | Maximum e/h reflections                 |
-| G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces          | Maximum phonon reflections              |
-| G4CMP\_HIT\_FILE [F]	    | /g4cmp/HitsFile <F>           | Write e/h hit locations to "F"          |
+| G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces [N]      | Maximum e/h reflections                 |
+| G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces [N]      | Maximum phonon reflections              |
+| G4CMP\_HIT\_FILE [F]	    | /g4cmp/HitsFile [F]           | Write e/h hit locations to "F"          |
 
 The default lattice orientation is to be aligned with the associated
 G4VSolid coordinate system.  A different orientation can be specified by
-setting the Miller indices (hkl) with `$G4CMP\_MILLER\_H`, `\_K`, and
-`\_L`.
+setting the Miller indices (hkl) with `$G4CMP_MILLER_H`, `_K`, and
+`_L`.
 
-The environment variable `$G4CMP\_MAKE\_CHARGES` controls the rate (R) as a
+The environment variable `$G4CMP_MAKE_CHARGES` controls the rate (R) as a
 fraction of total interactions, at which electron-hole pairs are produced
 by energy partitioning.  Secondaries will be
 produced with a track weight set to 1/R:
@@ -96,7 +96,7 @@ When secondary phonons are not produced, the equivalent energy is recorded as
 non-ionizing energy loss (NIEL) on the track.  Generating seconary phonons
 will significantly slow down the simulation.
 
-The environment variable `$G4CMP\_MAKE\_PHONONS` controls the rate (R) as a
+The environment variable `$G4CMP_MAKE_PHONONS` controls the rate (R) as a
 fraction of total interactions, at which "primary" phonons are produced (by
 energy partitioning or recombination).  Secondaries will be produced with a
 track weight set to 1/R:
@@ -112,13 +112,13 @@ Secondary phonons may be produced either by downconversion of higher energy
 phonons, or by emission of Luke-Neganov phonons from charge carriers.
 Generating seconary phonons can significantly slow down the simulation, so
 each of these processes has analogous environment variables,
-`$G4CMP\_LUKE\_SAMPLE` and `$G4CMP\_DOWN\_SAMPLE`, respectively, defined
+`$G4CMP_LUKE_SAMPLE` and `$G4CMP_DOWN_SAMPLE`, respectively, defined
 with rates (R) as above.
 
 For simulations which generate primary phonons and charge carriers from
 Geant4 energy deposition (using `G4CMPEnergyPartition`), the above
 environment variables may be replaced with a sampling "energy scale,"
-`$G4CMP\_SAMPLE\_ENERGY`.  This parameter is applied to each energy deposit,
+`$G4CMP_SAMPLE_ENERGY`.  This parameter is applied to each energy deposit,
 and to ionization or NIEL energy separately.  If the energy deposit is below
 the scale, then no biasing will be done (the scale factors will all be set
 to 1.).  Above the energy scale setting, the scale factors will be set
@@ -130,20 +130,20 @@ and use that instead.
 For phonon propagation, a set of lookup tables to convert wavevector (phase
 velocity) direction to group velocity are provided in the lattice
 configuration file (see below).  The environment variable
-`$G4CMP\_USE\_KVSOLVER` controls whether the eigenvalue solver should be
+`$G4CMP_USE_KVSOLVER` controls whether the eigenvalue solver should be
 used directly for these calculations, instead of the lookup tables.  The
 eigensolver imposes a factor of three penalty in CPU time, with the benefit
 of maximum accuracy in phonon kinematics.
 
 Three optional environment variables are used to configure the electric
-field across the germanium crystal.  `$G4CMP\_VOLTAGE` specifies the voltage
+field across the germanium crystal.  `$G4CMP_VOLTAGE` specifies the voltage
 across the crystal, used to generate a uniform electric field (no edge or
 corner effects) from the bottom to the top face.  If the voltage is zero
-(the default), then `$G4CMP\_EPOT\_FILE` specifies the name of the mesh
+(the default), then `$G4CMP_EPOT_FILE` specifies the name of the mesh
 electric field field to be loaded for the g4cmpCharge test job.  There is no
 default file.
 
-For developers, there is a preprocessor flag (`make G4CMP\_DEBUG=1`) which may
+For developers, there is a preprocessor flag (`make G4CMP_DEBUG=1`) which may
 be set before building the libraries.  This variable will turn on some
 additional diagnostic output files which may be of interest.
 
@@ -195,7 +195,7 @@ to be built, use the following command
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} ../G4CMP
 
 If you want to install to a local path, rather than system-wide, use the
-`-DCMAKE\_INSTALL\_PREFIX=/path/to/install` option.
+`-DCMAKE_INSTALL_PREFIX=/path/to/install` option.
 
 If you want to build an example application,
 
@@ -215,7 +215,7 @@ the install prefix rather than running the binaries from the build directory
     make install
 
 Once theinstall step is completed, the /path/to/install/share/G4CMP/
-directory will contain copies of the `g4cmp\_env.csh` and `...sh` scripts
+directory will contain copies of the `g4cmp_env.csh` and `...sh` scripts
 discussed above.  These copies should be sourced in order to correctly
 locate the installed libraries and header files.
 
@@ -314,14 +314,14 @@ the crystal system.
 | hmass   | m_h       | effective mass of hole   | electron mass ratio |
 | emass   | m_xx m_yy m_zz | electron mass tensor | (same)             |
 | valley  | theta phi psi unit | Euler angles     | angle (deg/rad)    |
-| ** InterValley scattering with matrix elements ** |
+| **InterValley scattering with matrix elements** |
 | epsilon | e/e0      | Relative permittivity     |                    |
 | neutDens | N        | Number density of neutron impurities | /volume |
 | alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
 | acDeform | val      | Acoustic deformation potential | energy (eV)   |
 | ivDeform | val val ... | Optical deformation potentials | eV/cm  |
 | ivEnergy | val val ... | Optical phonon thresholds | energy (eV) |
-| ** InterValley scattering with Edelweiss model ** |
+| **InterValley scattering with Edelweiss model** |
 | ivField | E0        | Edelweiss intervalley scattering  | V/m        |
 | ivRate  | freq      | Intervalley scattering rate       | Hz         |
 | ivPower | val       | Power law [sqrt(field^ivPower)]   | none       |
