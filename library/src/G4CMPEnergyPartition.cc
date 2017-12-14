@@ -19,6 +19,7 @@
 // 20170830  Use downsampling energy scale parameter in DoPartition()
 // 20170901  Add support for putting primaries directly into event
 // 20170925  Add support for distributing charges around position
+// 20171213  Apply downsampling up front, to initial generated Data objects
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -53,8 +54,8 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), material(mat), holeFraction(0.5),
     verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
-    cloud(new G4CMPChargeCloud),
-    nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
+    cloud(new G4CMPChargeCloud), nCharges(0), nPairs(0),
+    chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
   SetLattice(lat);
 }
 
@@ -183,6 +184,8 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
 
   GenerateCharges(eIon);
   GeneratePhonons(eNIEL + chargeEnergyLeft);
+
+  particles.shrink_to_fit();	// Reduce size to match generated particles
 }
 
 void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
@@ -190,7 +193,7 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
   if (samplingScale <= 0.) return;		// Avoid unnecessary work
 
   if (verboseLevel>1) {
-    G4cout << "G4CMPEnergyPartition::ComputeDownsampling: scale "
+    G4cout << "G4CMPEnergyPartition::ComputeDownsampling: scale energy to "
 	   << samplingScale/eV << " eV" << G4endl;
   }
 
@@ -227,15 +230,22 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
                 // which would cause particles.reserve() to crash
   }
   
-  particles.reserve(particles.size() + 2*nPairs);
-
-  if (verboseLevel>1)
+  G4double scale = G4CMPConfigManager::GetGenCharges();
+  if (verboseLevel>1) {
     G4cout << " eMeas " << eMeas/MeV << " MeV => " << nPairs << " pairs"
-	   << G4endl;
+	   << " downsample " << scale << G4endl;
+  }
 
+  particles.reserve(particles.size() + int(2.2*scale*nPairs));	// 10% overhead
+
+  nCharges = 0;
   chargeEnergyLeft = eMeas;
   while (chargeEnergyLeft > ePair) {
-    AddChargePair(ePair);
+    if (G4UniformRand() < scale) {		// Downsample up front
+      AddChargePair(ePair);
+      nCharges++;
+    }
+
     chargeEnergyLeft -= ePair;
   }
 
@@ -258,15 +268,18 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   G4double ePhon = theLattice->GetDebyeEnergy(); // TODO: No fluctuations yet!
 
   nPhonons = std::ceil(energy / ePhon);		// Average number of phonons
-  particles.reserve(particles.size() + nPhonons);
 
-  if (verboseLevel>1)
+  G4double scale = G4CMPConfigManager::GetGenPhonons();
+  if (verboseLevel>1) {
     G4cout << " ePhon " << ePhon/eV << " eV => " << nPhonons << " phonons"
-	   << G4endl;
+	   << " downsample " << scale << G4endl;
+  }
+
+  particles.reserve(particles.size() + int(1.1*scale*nPhonons)); // 10% overhead
 
   phononEnergyLeft = energy;
   while (phononEnergyLeft > ePhon) {
-    AddPhonon(ePhon);
+    if (G4UniformRand() < scale) AddPhonon(ePhon);	// Downsample up front
     phononEnergyLeft -= ePhon;
   }
 
@@ -290,38 +303,33 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
   primaries.clear();
   primaries.reserve(particles.size());
 
-  if (verboseLevel>1) {
-    G4cout << " processing " << particles.size()
-	   << " bias " << G4CMPConfigManager::GetGenPhonons() << " phonons"
-	   << " bias " << G4CMPConfigManager::GetGenCharges() << " e/h pairs"
-	   << G4endl;
-  }
+  if (verboseLevel>1) G4cout << " processing " << particles.size() << G4endl;
 
-  G4double weight = 0.;
+  G4double scale = 0.;
   G4PrimaryParticle* thePrim = 0;
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
 
-    weight = G4CMP::ChooseWeight(p.pd);
-    if (weight == 0.) continue; // Biasing rejected particle creation
+    // Random throws were already done in Generate() functions
+    scale = (G4CMP::IsPhonon(p.pd) ? G4CMPConfigManager::GetGenPhonons()
+	     : G4CMPConfigManager::GetGenCharges());
 
     thePrim = new G4PrimaryParticle();
     thePrim->SetParticleDefinition(p.pd);
     thePrim->SetMomentumDirection(p.dir);
     thePrim->SetKineticEnergy(p.ekin);
-    thePrim->SetWeight(weight);
+    thePrim->SetWeight(1./scale);
     primaries.push_back(thePrim);
 
     if (verboseLevel==3) {
       G4cout << i << " : " << p.pd->GetParticleName() << " " << p.ekin/eV
-	           << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
+	     << " eV along " << p.dir << " (w " << 1./scale << ")"
+	     << G4endl;
     } else if (verboseLevel>3) {
       G4cout << i << " : ";
       thePrim->Print();
     }
   }
-
-  primaries.shrink_to_fit();		// Reduce footprint if biasing done
 }
 
 // Return primary particles from partitioning directly into event
@@ -346,7 +354,7 @@ GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
   if (doCloud) {
     cloud->SetVerboseLevel(verboseLevel);
     cloud->SetTouchable(G4CMP::CreateTouchableAtPoint(pos));
-    cloud->Generate(2*nPairs, pos);
+    cloud->Generate(nCharges, pos);
   }
 
   // Buffer for active vertices, for use with charge cloud
@@ -414,28 +422,24 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
   if (doCloud) {
     cloud->SetVerboseLevel(verboseLevel);
     cloud->SetTouchable(GetCurrentTouchable());
-    cloud->Generate(2*nPairs, GetCurrentTrack()->GetPosition());
+    cloud->Generate(nCharges, GetCurrentTrack()->GetPosition());
   }
 
-  if (verboseLevel>1) {
-    G4cout << " processing " << particles.size()
-	   << " bias " << G4CMPConfigManager::GetGenPhonons() << " phonons"
-	   << " bias " << G4CMPConfigManager::GetGenCharges() << " e/h pairs"
-	   << G4endl;
-  }
+  if (verboseLevel>1) G4cout << " processing " << particles.size() << G4endl;
 
-  G4double weight = 0.;
+  G4double scale = 0.;
   G4Track* theSec = 0;
   G4int ichg = 0;			// Index to deal with charge cloud
 
   for (size_t i=0; i<particles.size(); i++) {
     const Data& p = particles[i];	// For convenience below
 
-    weight = trkWeight * G4CMP::ChooseWeight(p.pd);
-    if (weight == 0.) continue;
+    // Random throws were already done in Generate() functions
+    scale = (G4CMP::IsPhonon(p.pd) ? G4CMPConfigManager::GetGenPhonons()
+	     : G4CMPConfigManager::GetGenCharges());
 
     theSec = G4CMP::CreateSecondary(*GetCurrentTrack(), p.pd, p.dir, p.ekin);
-    theSec->SetWeight(weight);
+    theSec->SetWeight(1./scale);
     secondaries.push_back(theSec);
 
     // Adjust positions of charges according to generated distribution
@@ -444,7 +448,8 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
 
     if (verboseLevel==3) {
       G4cout << i << " : " << p.pd->GetParticleName() << " " << p.ekin/eV
-	           << " eV along " << p.dir << " (w " << weight << ")" << G4endl;
+	     << " eV along " << p.dir << " (w " << 1./scale << ")"
+	     << G4endl;
     } else if (verboseLevel>3) {
       G4cout << i << " : ";
       theSec->GetDynamicParticle()->DumpInfo();
