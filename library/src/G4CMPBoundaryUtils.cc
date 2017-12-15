@@ -117,8 +117,8 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
   if (buVerboseLevel>1) {
     G4cout <<   "  PreStep volume: " << prePV->GetName() << " @ "
 	   << aStep.GetPreStepPoint()->GetPosition()
-	   << "\n PostStep volume: " << postPV->GetName() << " @ "
-	   << aStep.GetPostStepPoint()->GetPosition()
+	   << "\n PostStep volume: " << (postPV?postPV->GetName():"OutOfWorld")
+	   << " @ " << aStep.GetPostStepPoint()->GetPosition()
 	   << G4endl;
   }
 

@@ -85,7 +85,7 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
 
   if (verboseLevel>2) {
     G4cout << " prePV " << prePV->GetName()
-	   << " postPV " << postPV->GetName()
+	   << " postPV " << (postPV?postPV->GetName():"OutOfWorld")
 	   << " status " << step.GetPostStepPoint()->GetStepStatus()
 	   << G4endl;
   }

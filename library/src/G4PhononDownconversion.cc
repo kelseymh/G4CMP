@@ -73,14 +73,15 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
 							 const G4Step& aStep) {
   aParticleChange.Initialize(aTrack);
 
-  if (aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+  G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
+  if (postStepPoint->GetStepStatus() == fGeomBoundary ||
+      postStepPoint->GetStepStatus() == fWorldBoundary) {
     return &aParticleChange;			// Don't want to reset IL
   }
 
   if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
   if (verboseLevel>1) {
     G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
-    G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
     G4cout << " Track " << aTrack.GetDefinition()->GetParticleName()
 	   << " vol " << aTrack.GetTouchable()->GetVolume()->GetName()
 	   << " prePV " << preStepPoint->GetPhysicalVolume()->GetName()
@@ -89,9 +90,8 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
 	   << G4endl;
   }
 
-  // Only longitudinal phonons decay, and not at a boundary
-  if (aTrack.GetDefinition() != G4PhononLong::Definition() ||
-      aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary) {
+  // Only longitudinal phonons decay
+  if (aTrack.GetDefinition() != G4PhononLong::Definition()) {
     return &aParticleChange;		// Don't reset interaction length!
   }
     
