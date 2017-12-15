@@ -130,17 +130,29 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4double specProb = GetMaterialProperty("specProb");
 
   G4ThreeVector reflectedKDir;
-  do {
-    if (G4UniformRand() < specProb) {
-      // Specular reflecton reverses momentum along normal
-      reflectedKDir = waveVector.unit();
-      G4double kPerp = reflectedKDir * surfNorm;
-      reflectedKDir -= 2.*kPerp * surfNorm;
-    } else {
+  if (G4UniformRand() < specProb) {
+    // Specular reflecton reverses momentum along normal
+    reflectedKDir = waveVector.unit();
+    G4double kPerp = reflectedKDir * surfNorm;
+    reflectedKDir -= 2.*kPerp * surfNorm;
+  } else {
+    // Lambertian distribution may produce outward wavevector
+    const G4int maxTries = 1000;
+    G4int nTries = 0;
+    do {
       reflectedKDir = G4CMP::LambertReflection(surfNorm);
-    }
-  } while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
-                                          reflectedKDir, surfNorm));
+    } while (nTries++ < maxTries &&
+	     !G4CMP::PhononVelocityIsInward(theLattice, mode,
+					    reflectedKDir, surfNorm));
+  }
+
+  // If reflection failed, report problem and kill the track
+  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
+    G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
+		JustWarning, "Phonon reflection failed");
+    DoSimpleKill(aTrack, aStep, aParticleChange);
+    return;
+  }
 
   G4ThreeVector vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
   G4double v = theLattice->MapKtoV(mode, reflectedKDir);
