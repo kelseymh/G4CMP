@@ -14,6 +14,7 @@
 // 20150528  Pass verbosity through to field computation classes
 // 20161114  Use new G4CMPDriftTrackInfo
 // 20170801  Count consecutive null lattice pointers for reflection steps
+// 20180201  Add G4MagIntegratorDriver.hh, needed with Geant4 10.4.
 
 #include "G4CMPFieldManager.hh"
 #include "G4CMPConfigManager.hh"
@@ -28,6 +29,7 @@
 #include "G4ElectroMagneticField.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
+#include "G4MagIntegratorDriver.hh"
 #include "G4MagIntegratorStepper.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PhysicalConstants.hh"
