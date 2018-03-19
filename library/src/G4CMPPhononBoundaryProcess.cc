@@ -121,10 +121,18 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   if (verboseLevel>2) {
-    G4cout << " Surface normal outward   " << surfNorm
-	   << "\n Old wavevector direction " << waveVector.unit() 
+    G4cout << " Old wavevector direction " << waveVector.unit() 
 	   << "\n Old momentum direction   " << aTrack.GetMomentumDirection()
 	   << G4endl;
+  }
+
+  // Check whether step has proper boundary-stopped geometry
+  G4ThreeVector surfacePoint;
+  if (!CheckStepBoundary(aStep, surfacePoint)) {
+    if (verboseLevel>2)
+      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
+
+    particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
   }
 
   G4double specProb = GetMaterialProperty("specProb");
@@ -166,11 +174,10 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // is still in the correct (pre-step) volume.
 
   if (verboseLevel>2) {
-    G4ThreeVector pos = aStep.GetPostStepPoint()->GetPosition();
-    G4ThreeVector stepPos = pos + .1*mm * vdir;
+    G4ThreeVector stepPos = surfacePoint + .1*mm * vdir;
 
     G4cout << " New travel direction " << vdir
-	   << "\n from " << pos << "\n   to " << stepPos << G4endl;
+	   << "\n from " << surfacePoint << "\n   to " << stepPos << G4endl;
 
     G4ThreeVector stepLocal = GetLocalPosition(stepPos);
     G4VSolid* solid = aStep.GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();

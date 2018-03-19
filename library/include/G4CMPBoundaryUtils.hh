@@ -17,6 +17,8 @@
 // 20170525  Add default "rule of five" copy/move operators (no owned pointers)
 // 20170627  Make electrode pointer non-const, for initialization
 // 20170713  Add registry to keep track of missing-surface warnings
+// 20171215  Change 'CheckStepStatus()' to 'IsBoundaryStep()', add function
+//	     to validate step trajectory to boundary.
 
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
@@ -52,6 +54,11 @@ public:
   // Check whether this step is at a good boundary for processing
   virtual G4bool IsGoodBoundary(const G4Step& aStep);
 
+  // Check whether end of step is actually on surface of volume
+  // "surfacePoint" returns post-step position, or computed surface point
+  virtual G4bool CheckStepBoundary(const G4Step& aStep,
+				   G4ThreeVector& surfacePoint);
+
   // Implements PostStepDoIt() in a common way; processes should call through
   virtual void ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
 				   G4ParticleChange& aParticleChange);
@@ -74,7 +81,7 @@ public:
 			      G4ParticleChange& aParticleChange);
 
 protected:
-  G4bool CheckStepStatus(const G4Step& aStep);
+  G4bool IsBounaryStep(const G4Step& aStep);
   G4bool GetBoundingVolumes(const G4Step& aStep);
   G4bool GetSurfaceProperty(const G4Step& aStep);
 
