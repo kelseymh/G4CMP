@@ -114,11 +114,12 @@ protected:
   G4int verboseLevel;		// Higher numbers give more details
 
   G4CMPChargeCloud* cloud;	// Distribute e/h around central position
+  size_t nCharges;		// Actual (downsampled) number of e+h for cloud
 
-  size_t nPairs;		// Estimated number of pairs to produce
+  size_t nPairs;		// True number of pairs (no downsampling)
   G4double chargeEnergyLeft;	// Energy to partition into e/h pairs
 
-  size_t nPhonons;		// Estimated number of phonons to produce
+  size_t nPhonons;		// True number of phonons (no downsampling)
   G4double phononEnergyLeft;	// Energy to partition into phonons
 
   struct Data {

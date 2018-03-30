@@ -13,6 +13,7 @@
 // 20160906  Follow constness of G4CMPBoundaryUtils
 // 20170620  Follow interface changes in G4CMPUtils, G4CMPSecondaryUtils
 // 20170802  M. Kelsey -- Replace phonon production with G4CMPEnergyPartition
+// 20171215  Replace boundary-point check with CheckStepBoundary()
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -169,37 +170,20 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
 void G4CMPDriftBoundaryProcess::
 DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
-		     G4ParticleChange& /*aParticleChange*/) {
+		     G4ParticleChange& particleChange) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Electron reflected" << G4endl;
 
   // Get outward normal from current volume
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
-  if (verboseLevel>2) {
-    G4StepPoint* preP = aStep.GetPreStepPoint();
-    G4StepPoint* postP = aStep.GetPostStepPoint();
-    prePV = preP->GetPhysicalVolume();
-    postPV = postP->GetPhysicalVolume();
+  // Check whether step has proper boundary-stopped geometry
+  G4ThreeVector surfacePoint;
+  if (!CheckStepBoundary(aStep, surfacePoint)) {
+    if (verboseLevel>2)
+      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
 
-    G4VSolid* preSolid = prePV->GetLogicalVolume()->GetSolid();
-    G4ThreeVector prePos = preP->GetPosition();
-    G4CMP::RotateToLocalPosition(preP->GetTouchable(), prePos);
-
-    G4cout << " Sanity check: surfNorm " << surfNorm
-	   << " Normal using prePV " << preSolid->SurfaceNormal(prePos)
-	   << G4endl;
-
-    // Transform postStep location to preStep coordinate system
-    G4ThreeVector postPosInPre = postP->GetPosition();
-    G4CMP::RotateToLocalPosition(preP->GetTouchable(), postPosInPre);
-    EInside postIn = preSolid->Inside(postPosInPre);
-
-    G4cout << " postStep @ " << postPosInPre << " in prePV coords"
-	   << "\n Is postStep location outside of preStep Volume? "
-	   << (postIn==kOutside ? "outside" :
-	       postIn==kInside  ? "inside" :
-	       postIn==kSurface ? "surface" : "INVALID") << G4endl;
+    particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
   }
 
   G4ThreeVector vel = GetGlobalVelocityVector(aTrack);

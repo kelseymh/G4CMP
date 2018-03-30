@@ -31,6 +31,7 @@
 // 20170821  Add support for separate D0 and D1 optical deformation potentials
 // 20170821  Add transverse sound speed, L->TT fraction
 // 20170923  Do NOT force basis vectors to unit(); they encode cell spacing
+// 20170928  Replace "polarizationState" with "mode"
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -312,31 +313,31 @@ void G4LatticeLogical::FillMaps() {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-//Given the phonon wave vector k and polarizationState(0=LON, 1=FT, 2=ST), 
+//Given the phonon wave vector k and mode(0=LON, 1=FT, 2=ST), 
 //returns phonon group velocity vector
 
-G4ThreeVector G4LatticeLogical::MapKtoVg(G4int polarizationState,
+G4ThreeVector G4LatticeLogical::MapKtoVg(G4int mode,
 					 const G4ThreeVector& k) const {
   return ( (fpPhononKin && G4CMPConfigManager::UseKVSolver())
-	   ? ComputeKtoVg(polarizationState,k)
-	   : LookupKtoVg(polarizationState,k) );
+	   ? ComputeKtoVg(mode,k)
+	   : LookupKtoVg(mode,k) );
 }
 
-G4ThreeVector G4LatticeLogical::ComputeKtoVg(G4int polarizationState,
+G4ThreeVector G4LatticeLogical::ComputeKtoVg(G4int mode,
 					     const G4ThreeVector& k) const {  
   if (!fpPhononKin) {
     G4Exception("G4LatticeLogical::ComputeKtoV", "Lattice001",
 		RunMustBeAborted, "Phonon kinematics not available.");
   }
 
-  return fpPhononKin->getGroupVelocity(polarizationState,k);
+  return fpPhononKin->getGroupVelocity(mode,k);
 }
 
-G4ThreeVector G4LatticeLogical::LookupKtoVg(G4int polarizationState,
+G4ThreeVector G4LatticeLogical::LookupKtoVg(G4int mode,
 					    const G4ThreeVector& k) const {  
   if (fpPhononTable)
-    return (fpPhononTable->interpGroupVelocity(polarizationState, k.unit())*
-	    fpPhononTable->interpGroupVelocity_N(polarizationState, k.unit()).unit()
+    return (fpPhononTable->interpGroupVelocity(mode, k.unit())*
+	    fpPhononTable->interpGroupVelocity_N(mode, k.unit()).unit()
 	    );
 
   G4int iTheta, iPhi;		// Bin indices
@@ -348,15 +349,15 @@ G4ThreeVector G4LatticeLogical::LookupKtoVg(G4int polarizationState,
   }
 
   /**** Returns direct bin value
-  const G4ThreeVector& vdir = fKVMap[polarizationState][iTheta][iPhi];
+  const G4ThreeVector& vdir = fKVMap[mode][iTheta][iPhi];
   ****/
 
   // Bilinear interpolation using the four corner bins (i,j) to (i+1,j+1)
   G4ThreeVector vdir =
-    ( (1.-dTheta)*(1.-dPhi)*fKVMap[polarizationState][iTheta][iPhi] +
-      dTheta*(1.-dPhi)*fKVMap[polarizationState][iTheta+1][iPhi] +
-      (1.-dTheta)*dPhi*fKVMap[polarizationState][iTheta][iPhi+1] +
-      dTheta*dPhi*fKVMap[polarizationState][iTheta+1][iPhi+1] );
+    ( (1.-dTheta)*(1.-dPhi)*fKVMap[mode][iTheta][iPhi] +
+      dTheta*(1.-dPhi)*fKVMap[mode][iTheta+1][iPhi] +
+      (1.-dTheta)*dPhi*fKVMap[mode][iTheta][iPhi+1] +
+      dTheta*dPhi*fKVMap[mode][iTheta+1][iPhi+1] );
 
   if (verboseLevel>1) {
     G4cout << "G4LatticeLogical::MapKtoVDir theta,phi="

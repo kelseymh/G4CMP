@@ -30,6 +30,7 @@
 // 20170810  Add parameters for IV scattering matrix terms
 // 20170821  Add transverse sound speed, L->TT fraction
 // 20170919  Add access to full lists of IV scattering matrix terms
+// 20170928  Replace "pol" with "mode" for phonon states
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -75,14 +76,14 @@ public:
 
   // Get group velocity magnitude, direction for input polarization and wavevector
   // NOTE:  Wavevector must be in lattice symmetry frame (X == symmetry axis)
-  virtual G4ThreeVector MapKtoVg(G4int pol, const G4ThreeVector& k) const;
+  virtual G4ThreeVector MapKtoVg(G4int mode, const G4ThreeVector& k) const;
 
-  virtual G4double MapKtoV(G4int pol, const G4ThreeVector& k) const {
-    return MapKtoVg(pol,k).mag();
+  virtual G4double MapKtoV(G4int mode, const G4ThreeVector& k) const {
+    return MapKtoVg(mode,k).mag();
   }
 
-  virtual G4ThreeVector MapKtoVDir(G4int pol, const G4ThreeVector& k) const {
-    return MapKtoVg(pol,k).unit();
+  virtual G4ThreeVector MapKtoVDir(G4int mode, const G4ThreeVector& k) const {
+    return MapKtoVg(mode,k).unit();
   }
 
   // Convert between electron momentum and valley velocity or HV wavevector
@@ -256,10 +257,10 @@ private:
 			G4double& dTheta, G4double& dPhi) const;
 
   // Use lookup table to get group velocity for phonons
-  G4ThreeVector LookupKtoVg(G4int pol, const G4ThreeVector& k) const;
+  G4ThreeVector LookupKtoVg(G4int mode, const G4ThreeVector& k) const;
 
   // Use direct calculation to get group velocity for phonons
-  G4ThreeVector ComputeKtoVg(G4int pol, const G4ThreeVector& k) const;
+  G4ThreeVector ComputeKtoVg(G4int mode, const G4ThreeVector& k) const;
 
 private:
   G4int verboseLevel;			    // Enable diagnostic output

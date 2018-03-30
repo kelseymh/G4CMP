@@ -12,7 +12,7 @@
 // 20161115 Initial commit - R. Agnese
 // 20170620 M. Kelsey -- Replace PV arg with Touchable, for transforms
 // 20170815 M. Kelsey -- Move AdjustSecondaryPosition to GeometryUtils
-
+// 20170928 M. Kelsey -- Replace "polarization" with "mode"
 #ifndef G4CMPSecondaryUtils_hh
 #define G4CMPSecondaryUtils_hh 1
 
@@ -29,7 +29,7 @@ namespace G4CMP {
 			   const G4ThreeVector& waveVec,
 			   G4double energy);
 
-  G4Track* CreatePhonon(const G4VTouchable* touch, G4int polarization,
+  G4Track* CreatePhonon(const G4VTouchable* touch, G4int mode,
 			const G4ThreeVector& waveVec, G4double energy,
 			G4double time, const G4ThreeVector& pos);
   

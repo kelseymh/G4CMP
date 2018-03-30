@@ -17,6 +17,8 @@
 // 20161114  Use G4CMPVTrackInfo
 // 20170710  Look for skin surface (LV) if border surface not found
 // 20170713  Report undefined surfaces only once per job, not a failure
+// 20171215  Change 'CheckStepStatus()' to 'IsBoundaryStep()', add function
+//	     to validate step trajectory to boundary.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -75,14 +77,14 @@ G4bool G4CMPBoundaryUtils::IsGoodBoundary(const G4Step& aStep) {
 	   << G4endl;
   }
 
-  return (CheckStepStatus(aStep) &&
+  return (IsBounaryStep(aStep) &&
 	  GetBoundingVolumes(aStep) &&
 	  GetSurfaceProperty(aStep));
 }
 
-G4bool G4CMPBoundaryUtils::CheckStepStatus(const G4Step& aStep) {
+G4bool G4CMPBoundaryUtils::IsBounaryStep(const G4Step& aStep) {
   if (buVerboseLevel>1) {
-    G4cout << procName << "::CheckStepStatus status "
+    G4cout << procName << "::IsBounaryStep status "
 	   << aStep.GetPostStepPoint()->GetStepStatus()
 	   << " length " << aStep.GetStepLength() << G4endl;
   }
@@ -117,8 +119,8 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
   if (buVerboseLevel>1) {
     G4cout <<   "  PreStep volume: " << prePV->GetName() << " @ "
 	   << aStep.GetPreStepPoint()->GetPosition()
-	   << "\n PostStep volume: " << postPV->GetName() << " @ "
-	   << aStep.GetPostStepPoint()->GetPosition()
+	   << "\n PostStep volume: " << (postPV?postPV->GetName():"OutOfWorld")
+	   << " @ " << aStep.GetPostStepPoint()->GetPosition()
 	   << G4endl;
   }
 
@@ -193,6 +195,63 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
   hasSurface[BoundaryPV(prePV,postPV)] = true;	// Record good surface defined
 
   return true;
+}
+
+
+// Check whether end of step is actually on surface of volume
+// "surfacePoint" returns post-step position, or computed surface point
+
+G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
+					     G4ThreeVector& surfacePoint) {
+  G4StepPoint* preP = aStep.GetPreStepPoint();
+  G4StepPoint* postP = aStep.GetPostStepPoint();
+  GetBoundingVolumes(aStep);
+  surfacePoint = postP->GetPosition();		// Correct if valid boundary
+
+  // Get pre- and post-step positions in pre-step volume coordinates
+  G4VSolid* preSolid = prePV->GetLogicalVolume()->GetSolid();
+
+  G4ThreeVector prePos = preP->GetPosition();
+  G4CMP::RotateToLocalPosition(preP->GetTouchable(), prePos);
+
+  G4ThreeVector postPos = surfacePoint;
+  G4CMP::RotateToLocalPosition(preP->GetTouchable(), postPos);
+
+  if (buVerboseLevel>2) {
+    G4cout << "CheckStepBoundary: in prePV (" << prePV->GetName() << ") frame"
+	   << "\n  preStep @ " << prePos << "\n postStep @ " << postPos
+	   << G4endl;
+  }
+
+  // Verify that post-step position is on surface of volume
+  EInside postIn = preSolid->Inside(postPos);
+
+  if (buVerboseLevel>2) {
+    G4cout << "\n Is postStep location on surface of preStep Volume? "
+	   << (postIn==kOutside ? "outside" :
+	       postIn==kInside  ? "inside" :
+	       postIn==kSurface ? "surface" : "INVALID") << G4endl;
+  }
+
+  // If post-step position not proper surface point, compute intersection
+  if (postIn != kSurface) {
+    G4ThreeVector along = (postPos-prePos).unit();	// Trajectory direction
+    surfacePoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
+
+    // Double check calculation -- point "must" now be on surface!
+    if (preSolid->Inside(surfacePoint) != kSurface) {
+      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
+		  "Boundary005", EventMustBeAborted,
+		  "Boundary-limited step cannot find boundary surface point"
+		  );
+      return false;
+    }
+
+    // Move surface point to world coordinate system
+    G4CMP::RotateToGlobalPosition(preP->GetTouchable(), surfacePoint);
+  }
+
+  return (postIn == kSurface);
 }
 
 

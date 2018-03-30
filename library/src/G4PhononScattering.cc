@@ -49,7 +49,8 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
   aParticleChange.Initialize(aTrack);
   
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
-  if (postStepPoint->GetStepStatus()==fGeomBoundary) {
+  if (postStepPoint->GetStepStatus()==fGeomBoundary ||
+      postStepPoint->GetStepStatus()==fWorldBoundary) {
     return &aParticleChange;			// Don't want to reset IL
   }
 

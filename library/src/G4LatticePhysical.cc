@@ -20,6 +20,7 @@
 // 20160517  Replace unit vectors with CLHEP built-in values
 // 20160608  Drop (theta,phi) lattice orientation function.
 // 20170525  Drop empty destructor to allow default "rule of five" semantics
+// 20170928  Replce "polarizationState" with "mode"
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -102,23 +103,21 @@ G4LatticePhysical::RotateToSolid(G4ThreeVector& dir) const {
 ///////////////////////////////
 //Loads the group velocity in m/s
 /////////////////////////////
-G4double G4LatticePhysical::MapKtoV(G4int polarizationState,
-				    G4ThreeVector k) const {
+G4double G4LatticePhysical::MapKtoV(G4int mode, G4ThreeVector k) const {
   if (verboseLevel>1) G4cout << "G4LatticePhysical::MapKtoV " << k << G4endl;
 
   RotateToLattice(k);
-  return fLattice->MapKtoV(polarizationState, k);
+  return fLattice->MapKtoV(mode, k);
 }
 
 ///////////////////////////////
 //Loads the normalized direction vector along VG
 ///////////////////////////////
-G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int polarizationState,
-					    G4ThreeVector k) const {
+G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int mode, G4ThreeVector k) const {
   if (verboseLevel>1) G4cout << "G4LatticePhysical::MapKtoVDir " << k << G4endl;
 
   RotateToLattice(k);
-  G4ThreeVector VG = fLattice->MapKtoVDir(polarizationState, k);  
+  G4ThreeVector VG = fLattice->MapKtoVDir(mode, k);  
 
   return RotateToSolid(VG);
 }

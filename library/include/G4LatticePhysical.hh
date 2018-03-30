@@ -24,6 +24,7 @@
 // 20170810  Add call-throughs for new IV scattering parameters
 // 20170821  Add transverse sound speed, L->TT fraction
 // 20170919  Add access to full lists of IV scattering matrix terms
+// 20170928  Replace "pol" with "mode" for phonon states
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -59,8 +60,8 @@ public:
   // Convert input wave vector and polarization to group velocity
   // NOTE:  Input vector must be in local (G4VSolid) coordinate system
   // NOTE:  Pass vector by value to allow in-situ rotations
-  G4double      MapKtoV(G4int pol, G4ThreeVector k) const;
-  G4ThreeVector MapKtoVDir(G4int pol, G4ThreeVector k) const;
+  G4double      MapKtoV(G4int mode, G4ThreeVector k) const;
+  G4ThreeVector MapKtoVDir(G4int mode, G4ThreeVector k) const;
 
   // Convert between electron momentum and valley velocity or HV wavevector
   // NOTE:  Input vector must be in local (G4VSolid) coordinate system

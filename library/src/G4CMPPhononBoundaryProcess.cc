@@ -22,6 +22,7 @@
 // 20160906  Follow constness of G4CMPBoundaryUtils
 // 20161114  Use new G4CMPPhononTrackInfo
 // 20170829  Add detailed diagnostics to identify boundary issues
+// 20170928  Replace "pol" with "mode" for phonons
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -116,33 +117,53 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   G4ThreeVector waveVector = trackInfo->k();
-  G4int pol = GetPolarization(aStep.GetTrack());
+  G4int mode = GetPolarization(aStep.GetTrack());
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   if (verboseLevel>2) {
-    G4cout << " Surface normal outward   " << surfNorm
-	   << "\n Old wavevector direction " << waveVector.unit() 
+    G4cout << " Old wavevector direction " << waveVector.unit() 
 	   << "\n Old momentum direction   " << aTrack.GetMomentumDirection()
 	   << G4endl;
+  }
+
+  // Check whether step has proper boundary-stopped geometry
+  G4ThreeVector surfacePoint;
+  if (!CheckStepBoundary(aStep, surfacePoint)) {
+    if (verboseLevel>2)
+      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
+
+    particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
   }
 
   G4double specProb = GetMaterialProperty("specProb");
 
   G4ThreeVector reflectedKDir;
-  do {
-    if (G4UniformRand() < specProb) {
-      // Specular reflecton reverses momentum along normal
-      reflectedKDir = waveVector.unit();
-      G4double kPerp = reflectedKDir * surfNorm;
-      reflectedKDir -= 2.*kPerp * surfNorm;
-    } else {
+  if (G4UniformRand() < specProb) {
+    // Specular reflecton reverses momentum along normal
+    reflectedKDir = waveVector.unit();
+    G4double kPerp = reflectedKDir * surfNorm;
+    reflectedKDir -= 2.*kPerp * surfNorm;
+  } else {
+    // Lambertian distribution may produce outward wavevector
+    const G4int maxTries = 1000;
+    G4int nTries = 0;
+    do {
       reflectedKDir = G4CMP::LambertReflection(surfNorm);
-    }
-  } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
-                                          reflectedKDir, surfNorm));
+    } while (nTries++ < maxTries &&
+	     !G4CMP::PhononVelocityIsInward(theLattice, mode,
+					    reflectedKDir, surfNorm));
+  }
 
-  G4ThreeVector vdir = theLattice->MapKtoVDir(pol, reflectedKDir);
-  G4double v = theLattice->MapKtoV(pol, reflectedKDir);
+  // If reflection failed, report problem and kill the track
+  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
+    G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
+		JustWarning, "Phonon reflection failed");
+    DoSimpleKill(aTrack, aStep, aParticleChange);
+    return;
+  }
+
+  G4ThreeVector vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
+  G4double v = theLattice->MapKtoV(mode, reflectedKDir);
 
   if (verboseLevel>2) {
     G4cout << " New wavevector direction " << reflectedKDir
@@ -153,11 +174,10 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // is still in the correct (pre-step) volume.
 
   if (verboseLevel>2) {
-    G4ThreeVector pos = aStep.GetPostStepPoint()->GetPosition();
-    G4ThreeVector stepPos = pos + .1*mm * vdir;
+    G4ThreeVector stepPos = surfacePoint + .1*mm * vdir;
 
     G4cout << " New travel direction " << vdir
-	   << "\n from " << pos << "\n   to " << stepPos << G4endl;
+	   << "\n from " << surfacePoint << "\n   to " << stepPos << G4endl;
 
     G4ThreeVector stepLocal = GetLocalPosition(stepPos);
     G4VSolid* solid = aStep.GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();

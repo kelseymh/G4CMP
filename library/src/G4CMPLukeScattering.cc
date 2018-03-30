@@ -17,6 +17,7 @@
 // 20170802  Use G4CMP_LUKE_SAMPLE biasing with ChooseWeight()
 // 20170805  Use scattering-rate model
 // 20170907  Make process non-forced; check only for boundary crossing
+// 20170928  Hide "output" usage behind verbosity check, as well as G4CMP_DEBUG
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -50,10 +51,12 @@ G4CMPLukeScattering::G4CMPLukeScattering(G4VProcess* stepper)
   UseRateModel(new G4CMPLukeEmissionRate);
 
 #ifdef G4CMP_DEBUG
-  output.open("LukePhononEnergies");
-  if (!output.good()) {
-    G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
-		FatalException, "Unable to open LukePhononEnergies");
+  if (verboseLevel) {
+    output.open("LukePhononEnergies");
+    if (!output.good()) {
+      G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
+		  FatalException, "Unable to open LukePhononEnergies");
+    }
   }
 #endif
 }
@@ -135,7 +138,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4double Ephonon = MakePhononEnergy(kmag, kSound, theta_phonon);
 #ifdef G4CMP_DEBUG
-  output << Ephonon/eV << G4endl;
+  if (output.good()) output << Ephonon/eV << G4endl;
 #endif
 
   // Get recoil wavevector, convert to new momentum

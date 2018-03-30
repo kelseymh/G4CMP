@@ -18,6 +18,7 @@
 // 20160826  Get default verbosity from envvar
 // 20170527  Drop unnecessary <fstream>
 // 20170817  Increase verbosity cut on informational messages
+// 20170928  Replace "polarizationState" with "mode"
 
 #include "G4LatticeManager.hh"
 #include "G4CMPConfigManager.hh"
@@ -260,35 +261,34 @@ G4bool G4LatticeManager::HasLattice(const G4Material* Mat) const {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 //Given the phonon wave vector k, phonon physical volume Vol 
-//and polarizationState(0=LON, 1=FT, 2=ST), 
+//and mode(0=LON, 1=FT, 2=ST), 
 //returns phonon velocity in m/s
 
-G4double G4LatticeManager::MapKtoV(const G4VPhysicalVolume* Vol,
-				 G4int polarizationState,
-				 const G4ThreeVector & k) const {
+G4double G4LatticeManager::MapKtoV(const G4VPhysicalVolume* Vol, G4int mode,
+				   const G4ThreeVector & k) const {
   G4LatticePhysical* theLattice = GetLattice(Vol);
   if (verboseLevel>2)
     G4cout << "G4LatticeManager::MapKtoV using lattice " << theLattice
 	   << G4endl;
 
   // If no lattice available, use generic "speed of sound"
-  return theLattice ? theLattice->MapKtoV(polarizationState, k) : 300.*m/s;
+  return theLattice ? theLattice->MapKtoV(mode, k) : 300.*m/s;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 // Given the phonon wave vector k, phonon physical volume Vol 
-// and polarizationState(0=LON, 1=FT, 2=ST), 
+// and mode(0=LON, 1=FT, 2=ST), 
 // returns phonon propagation direction as dimensionless unit vector
 
-G4ThreeVector G4LatticeManager::MapKtoVDir(const G4VPhysicalVolume* Vol,
-					   G4int polarizationState,
-					   const G4ThreeVector & k) const {
+G4ThreeVector 
+G4LatticeManager::MapKtoVDir(const G4VPhysicalVolume* Vol, G4int mode,
+			     const G4ThreeVector & k) const {
   G4LatticePhysical* theLattice = GetLattice(Vol);
   if (verboseLevel>2)
     G4cout << "G4LatticeManager::MapKtoVDir using lattice " << theLattice
 	   << G4endl;
 
   // If no lattice available, propagate along input wavevector
-  return theLattice ? theLattice->MapKtoVDir(polarizationState, k) : k.unit();
+  return theLattice ? theLattice->MapKtoVDir(mode, k) : k.unit();
 }
