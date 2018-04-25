@@ -16,6 +16,8 @@
 // 20170830  Add function to compute downsampling factors for input energy
 // 20170901  Add support for putting primaries directly into event
 // 20170925  Add support for distributing charges around position
+// 20180424  Need default ctor for Data to support vector::resize()
+// 20180425  Add minimum particle generation for downsampling
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -109,9 +111,10 @@ protected:
 				G4double time) const;
 
 protected:
+  G4int verboseLevel;		// Higher numbers give more details
   G4Material* material;		// To get (Z,A) for Lindhard scaling
   G4double holeFraction;	// Energy from e/h pair taken by hole (50%)
-  G4int verboseLevel;		// Higher numbers give more details
+  G4int nParticlesMinimum;	// Minimum production when downsampling
 
   G4CMPChargeCloud* cloud;	// Distribute e/h around central position
   size_t nCharges;		// Actual (downsampled) number of e+h for cloud
@@ -122,11 +125,13 @@ protected:
   size_t nPhonons;		// True number of phonons (no downsampling)
   G4double phononEnergyLeft;	// Energy to partition into phonons
 
+  static const G4ThreeVector origin;
   struct Data {
     G4ParticleDefinition* pd;
     G4ThreeVector dir;
     G4double ekin;
 
+    Data() : pd(0), ekin(0.) {;}	// Default ctor for vector::resize()
     Data(G4ParticleDefinition* part, const G4ThreeVector& d, G4double E)
       : pd(part), dir(d), ekin(E) {;}
   };
