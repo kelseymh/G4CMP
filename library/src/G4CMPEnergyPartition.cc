@@ -234,7 +234,7 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   }
   
   // Only apply downsampling to sufficiently large statistics
-  G4double scale = (nPairs<nParticlesMinimum ? 1.
+  G4double scale = (nPairs<=nParticlesMinimum ? 1.
 		    : G4CMPConfigManager::GetGenCharges());
 
   if (verboseLevel>1) {
@@ -250,7 +250,9 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
 
   // For downsampling, ensure that there are sufficient charge pairs
   while (nCharges < scale*nPairs) {
-    if (nCharges > 0) particles.resize(particles.size()-nCharges);
+    if (nCharges > 0)
+      particles.erase(particles.end()-2*nCharges, particles.end());
+
     chargeEnergyLeft = eMeas;
     nCharges = 0;
 
@@ -290,7 +292,7 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   ePhon = energy / nPhonons;			// Split energy evenly to all
 
   // Only apply downsampling to sufficiently large statistics
-  G4double scale = (nPhonons<nParticlesMinimum ? 1.
+  G4double scale = (nPhonons<=nParticlesMinimum ? 1.
 		    : G4CMPConfigManager::GetGenPhonons());
 
   if (verboseLevel>1) {
@@ -303,7 +305,9 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   // For downsampling, ensure that there are sufficient phonons
   size_t nGenPhonons = 0;
   while (nGenPhonons < scale*nPhonons/2) {
-    if (nGenPhonons > 0) particles.resize(particles.size()-nGenPhonons);
+    if (nGenPhonons > 0)
+      particles.erase(particles.end()-nGenPhonons, particles.end());
+
     phononEnergyLeft = energy;
     nGenPhonons = 0;
     
