@@ -22,6 +22,7 @@
 // 20171213  Apply downsampling up front, to initial generated Data objects
 // 20180424  Count actual number of tracks produced during downsampling,
 //		set their weights to the ratio of true/produced.
+// 20180503  Protect against negative "energy left".
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -184,6 +185,7 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
   // Apply downsampling if total energy is above scale
   if (samplingScale > 0.) ComputeDownsampling(eIon, eNIEL);
 
+  chargeEnergyLeft = 0.;
   GenerateCharges(eIon);
   GeneratePhonons(eNIEL + chargeEnergyLeft);
 
@@ -229,8 +231,8 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   if (eMeas > 0) {
     nPairs = std::floor(eMeas / ePair);   // Average number of e/h pairs
   } else {
-    nPairs = 0; // This prevents nPairs from blowing up when assigned as a negative number
-                // which would cause particles.reserve() to crash
+    eMeas = 0.;
+    nPairs = 0; // This prevents nPairs from blowing up when negative
   }
   
   // Only apply downsampling to sufficiently large statistics
@@ -268,6 +270,8 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
     if (verboseLevel>2)
       G4cout << " generated " << nCharges << " e-h pairs" << G4endl;
   }	// while (nCharges==0
+
+  if (chargeEnergyLeft < 0.) chargeEnergyLeft = 0.;	// Avoid round-offs
 
   if (verboseLevel>1) G4cout << " " << chargeEnergyLeft << " excess" << G4endl;
 }
