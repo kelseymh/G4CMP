@@ -5,7 +5,7 @@
 # 20170923  Add testChargeCloud
 
 TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup \
-	g4cmpEFieldTest phononKinematics testChargeCloud
+	g4cmpEFieldTest phononKinematics testChargeCloud testPartition
 .PHONY : $(TESTS)
 
 ifndef G4CMP_NAME
