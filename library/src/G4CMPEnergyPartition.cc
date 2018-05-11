@@ -23,6 +23,7 @@
 // 20180424  Count actual number of tracks produced during downsampling,
 //		set their weights to the ratio of true/produced.
 // 20180503  Protect against negative "energy left".
+// 20180511  Protect GetSecondaries()/GetPrimaries() from zero generated.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -353,8 +354,8 @@ GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const {
 
   // Get number of generated phonons to compute weight below
   size_t nGenPhonons = particles.size() - 2*nCharges;
-  G4double phononWt = G4double(nPhonons)/nGenPhonons;
-  G4double chargeWt = G4double(nPairs)/nCharges;
+  G4double phononWt = nGenPhonons>0 ? G4double(nPhonons)/nGenPhonons : 0.;
+  G4double chargeWt = nCharges>0 ? G4double(nPairs)/nCharges : 0.;
 
   G4double weight = 0.;
   G4PrimaryParticle* thePrim = 0;
@@ -479,8 +480,8 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
 
   // Get number of generated phonons to compute weight below
   size_t nGenPhonons = particles.size() - 2*nCharges;
-  G4double phononWt = G4double(nPhonons)/nGenPhonons;
-  G4double chargeWt = G4double(nPairs)/nCharges;
+  G4double phononWt = nGenPhonons>0 ? G4double(nPhonons)/nGenPhonons : 0.;
+  G4double chargeWt = nCharges>0 ? G4double(nPairs)/nCharges : 0.;
 
   G4double weight = 0.;
   G4Track* theSec = 0;
