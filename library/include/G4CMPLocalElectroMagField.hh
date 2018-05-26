@@ -7,6 +7,8 @@
 //
 // Wrapper class for G4ElectroMagneticField objects which handles transforming
 // between global and local coordinates for input and output queries.
+//
+// 20180525  Provide accessor to underlying (local coordinate) field.
 
 #ifndef G4CMPLocalElectroMagField_hh
 #define G4CMPLocalElectroMagField_hh 1
@@ -43,6 +45,10 @@ public:
   // This function transforms Point[0..2] to local coordinates on input,
   // and Field[0..2], Field[3..5] from local to global coordinate on output
   virtual void GetFieldValue(const G4double Point[4], G4double *BEfield) const;
+
+  // Provide client code with access to original local-coordinate field
+  // This is mainly useful for field subclasses with extended interfaces
+  const G4ElectroMagneticField* GetLocalField() const { return localField; }
 
 protected:
   void GetLocalPoint(const G4double Point[4]) const;
