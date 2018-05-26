@@ -202,27 +202,35 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
 	   << samplingScale/eV << " eV" << G4endl;
   }
 
-  G4double phononSamp = (eNIEL>samplingScale) ? samplingScale/eNIEL : 1.;
-  if (verboseLevel>2)
-    G4cout << " Downsample " << phononSamp << " for primary phonons" << G4endl;
+  // Compute phonon scaling factor only if not fully suppressed
+  if (G4CMPConfigManager::GetGenPhonons() > 0.) {
+    G4double phononSamp = (eNIEL>samplingScale) ? samplingScale/eNIEL : 1.;
+    if (verboseLevel>2)
+      G4cout << " Downsample " << phononSamp << " primary phonons" << G4endl;
 
-  G4CMPConfigManager::SetGenPhonons(phononSamp);
+    G4CMPConfigManager::SetGenPhonons(phononSamp);
+  }
 
-  G4double chargeSamp = (eIon>samplingScale)? samplingScale/eIon : 1.;
-  if (verboseLevel>2)
-    G4cout << " Downsample " << chargeSamp << " for primary charges" << G4endl;
+  // Compute charge scaling factor only if not fully suppressed
+  if (G4CMPConfigManager::GetGenCharges() > 0.) {
+    G4double chargeSamp = (eIon>samplingScale)? samplingScale/eIon : 1.;
+    if (verboseLevel>2)
+      G4cout << " Downsample " << chargeSamp << " primary charges" << G4endl;
+    
+    G4CMPConfigManager::SetGenCharges(chargeSamp);
 
-  G4CMPConfigManager::SetGenCharges(chargeSamp);
-
-  // FIXME:  Want to estimate # Luke phonons per charge carrier
-  G4double lukeSamp = chargeSamp;
-  if (verboseLevel>2)
-    G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
-
-  G4CMPConfigManager::SetLukeSampling(lukeSamp);
+    // FIXME:  Want to estimate # Luke phonons per charge carrier
+    G4double lukeSamp = chargeSamp;
+    if (verboseLevel>2)
+      G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
+    
+    G4CMPConfigManager::SetLukeSampling(lukeSamp);
+  }
 }
 
 void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
+  if (G4CMPConfigManager::GetGenCharges() <= 0.) return;	// Suppressed
+
   if (verboseLevel)
     G4cout << " GenerateCharges " << energy/MeV << " MeV" << G4endl;
 
@@ -288,6 +296,8 @@ void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
 }
 
 void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
+  if (G4CMPConfigManager::GetGenPhonons() <= 0.) return;	// Suppressed
+
   if (verboseLevel)
     G4cout << " GeneratePhonons " << energy/MeV << " MeV" <<  G4endl;
 
