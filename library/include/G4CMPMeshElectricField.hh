@@ -38,7 +38,7 @@ public:
 
   // Sorting operator (compares x, y, z in sequence)
   static G4bool vector_comp(const std::array<G4double, 4>& p1,
-          const std::array<G4double, 4>& p2);
+			    const std::array<G4double, 4>& p2);
 
 private:
   G4CMPTriLinearInterp Interp;

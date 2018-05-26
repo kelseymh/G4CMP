@@ -14,6 +14,7 @@
 // 20150122  Use verboseLevel instead of compiler flag for debugging; move
 //	     vector_comp into class (static).
 // 20170823  Add scaling factor as optional constructor argument.
+// 20180525  Use new "quiet" argument to suppress "outside of hull" warnings
 
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPConfigManager.hh"
@@ -108,7 +109,7 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName,
 
 void G4CMPMeshElectricField::GetFieldValue(const G4double Point[3],
 				     G4double *Efield) const {
-  G4ThreeVector InterpField = Interp.GetGrad(Point);
+  G4ThreeVector InterpField = Interp.GetGrad(Point,true);	// No messages
   for (size_t i = 0; i < 3; ++i) {
     Efield[i] = 0.0;
     Efield[3+i] = -1 * InterpField[i];
@@ -117,7 +118,7 @@ void G4CMPMeshElectricField::GetFieldValue(const G4double Point[3],
 
 
 G4double G4CMPMeshElectricField::GetPotential(const G4double Point[3]) const {
-  return Interp.GetValue(Point);
+  return Interp.GetValue(Point);		// Allow "outside hull" messages
 }
 
 

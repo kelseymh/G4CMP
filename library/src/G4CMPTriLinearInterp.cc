@@ -4,6 +4,9 @@
 \***********************************************************************/
 
 // $Id$
+//
+// 20180525  Protect against "outside of hull" by testing TetraIdx returns;
+//	provide "quiet" flag to suppress "outside of hull" messages.
 
 #include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
@@ -152,9 +155,10 @@ G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& pt,
   }
 }
 
-G4double G4CMPTriLinearInterp::GetValue(const G4double pos[3]) const {
+G4double 
+G4CMPTriLinearInterp::GetValue(const G4double pos[3], G4bool quiet) const {
   G4double bary[4];
-  FindTetrahedron(&pos[0], bary);
+  FindTetrahedron(&pos[0], bary, quiet);
   staleCache = true;
     
   if (TetraIdx == -1)
@@ -166,15 +170,16 @@ G4double G4CMPTriLinearInterp::GetValue(const G4double pos[3]) const {
            V[Tetrahedra[TetraIdx][3]] * bary[3]);    
 }
 
-G4ThreeVector G4CMPTriLinearInterp::GetGrad(const G4double pos[3]) const {
+G4ThreeVector 
+G4CMPTriLinearInterp::GetGrad(const G4double pos[3], G4bool quiet) const {
   G4double bary[4];
   G4int oldIdx = TetraIdx;
-  FindTetrahedron(pos, bary);
+  FindTetrahedron(pos, bary, quiet);
 
-  if (TetraIdx == -1)
+  if (TetraIdx == -1) {
     for (size_t i = 0; i < 3; ++i)
       cachedGrad[i] = 0;
-  if (TetraIdx != oldIdx || staleCache) {
+  } else if (TetraIdx != oldIdx || staleCache) {
     G4double ET[4][3];
     BuildT4x3(ET);
     for (size_t i = 0; i < 3; ++i) {
@@ -188,7 +193,9 @@ G4ThreeVector G4CMPTriLinearInterp::GetGrad(const G4double pos[3]) const {
   return cachedGrad;
 }
 
-void G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[4], G4double bary[4]) const {
+void 
+G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[4], G4double bary[4],
+				      G4bool quiet) const {
   const G4double maxError = -1e-10;
   G4int minBaryIdx;
   G4double bestBary[4];
@@ -217,9 +224,12 @@ void G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[4], G4double bary[4
 
     TetraIdx = Neighbors[TetraIdx][minBaryIdx];
     if (TetraIdx == -1) {
-      G4cout << "G4CMPTriLinearInterp::FindTetrahedron: Point outside of hull! Check your results." <<G4endl;
-      G4cout << "pt[0] = " << pt[0]/m << " m; pt[1] = " << pt[1]/m
-             << " m; pt[2] = " << pt[2]/m << " m;" << G4endl;
+      if (!quiet) {
+	G4cerr << "G4CMPTriLinearInterp::FindTetrahedron: Point outside of hull! Check your results."
+	       << "\n pt[0] = " << pt[0]/m << " m; pt[1] = " << pt[1]/m
+	       << " m; pt[2] = " << pt[2]/m << " m;" << G4endl;
+      }
+
       return;
     }
   }
