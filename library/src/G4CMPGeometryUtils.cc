@@ -168,38 +168,3 @@ G4ThreeVector G4CMP::ApplySurfaceClearance(const G4VTouchable* touch,
   RotateToGlobalPosition(touch, pos);
   return pos;
 }
-
-
-// Get electric field at specified position (track or step)
-
-namespace {
-  G4ThreeVector origin(0.,0.,0.);	// For convenience below
-}
-
-G4ThreeVector G4CMP::GetFieldAtPosition(const G4Step& step) {
-  return GetFieldAtPosition(*(step.GetTrack()));
-}
-
-G4ThreeVector G4CMP::GetFieldAtPosition(const G4Track& track) {
-  return GetFieldAtPosition(track.GetTouchable(), track.GetPosition());
-}
-
-G4ThreeVector G4CMP::GetFieldAtPosition(const G4VTouchable* touch,
-					G4ThreeVector pos) {
-  G4FieldManager* fMan = 0;
-  if (touch) {
-    fMan = touch->GetVolume()->GetLogicalVolume()->GetFieldManager();
-  } else {		// Get field from volume at input position
-    fMan = GetVolumeAtPoint(pos)->GetLogicalVolume()->GetFieldManager();
-  }
-
-  if (!fMan || !fMan->DoesFieldExist()) return origin;
-
-  RotateToLocalPosition(touch, pos);
-  G4double position[4] = { pos[0], pos[1], pos[2], 0. };
-
-  G4double fieldVal[6];
-  fMan->GetDetectorField()->GetFieldValue(position, fieldVal);
-
-  return G4ThreeVector(fieldVal[3], fieldVal[4], fieldVal[5]);
-}

@@ -16,6 +16,7 @@
 // 20170801  Count consecutive null lattice pointers for reflection steps
 // 20180201  Add G4MagIntegratorDriver.hh, needed with Geant4 10.4.
 // 20180319  Don't delete theDriver; done by G4ChordFinder.
+// 20180711  Attach local geometry shape to field
 
 #include "G4CMPFieldManager.hh"
 #include "G4CMPConfigManager.hh"
@@ -30,6 +31,7 @@
 #include "G4ElectroMagneticField.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
+#include "G4LogicalVolume.hh"
 #include "G4MagIntegratorDriver.hh"
 #include "G4MagIntegratorStepper.hh"
 #include "G4ParticleDefinition.hh"
@@ -38,6 +40,9 @@
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4VSolid.hh"
+#include "G4VTouchable.hh"
 
 
 // Constructors and destructor
@@ -125,6 +130,8 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
       G4cout << " translation " << trans << " rotation " << *rot << G4endl;
     }
 
+    myDetectorField->SetGeometry(aTrack->GetTouchable()->GetVolume()->
+				 GetLogicalVolume()->GetSolid());
     myDetectorField->SetTransforms(localToGlobal);
     theEqMotion->SetTransforms(localToGlobal);
   }

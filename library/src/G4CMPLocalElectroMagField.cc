@@ -7,8 +7,14 @@
 //
 // Wrapper class for G4ElectroMagneticField objects which handles transforming
 // between global and local coordinates for input and output queries.
+//
+// 20180711  Provide interpolator to return potential at point in volume,
+//	       assuming "mid-plane" is at ground.
 
 #include "G4CMPLocalElectroMagField.hh"
+#include "G4CMPMeshElectricField.hh"
+#include "G4UniformElectricField.hh"
+#include "G4VSolid.hh"
 #include <algorithm>
 
 // Specify local-to-global transformation before field call
@@ -59,4 +65,38 @@ CopyLocalToGlobalVector(G4int index, G4double* gbl) const {
   gbl[index+0] = vec.x();
   gbl[index+1] = vec.y();
   gbl[index+2] = vec.z();
+}
+
+
+// This function takes a GLOBAL position and returns the potential at
+// that point, using the stored volume to integrate up to the surfaces.
+
+G4double G4CMPLocalElectroMagField::
+GetPotential(const G4double Point[4]) const {
+  GetLocalPoint(Point);
+
+  // Mesh field can return potential directly; no work needed
+  const G4CMPMeshElectricField* mfield =
+    dynamic_cast<const G4CMPMeshElectricField*>(localField);
+  if (mfield) return mfield->GetPotential(localP);
+
+  if (!theSolid) return 0.;		// Can't integrate without boundaries
+
+  // Uniform field doesn't require stepwise integration
+  const G4UniformElectricField* ufield =
+    dynamic_cast<const G4UniformElectricField*>(localField);
+  if (ufield) {
+    ufield->GetFieldValue(localP, localF);
+    G4ThreeVector evec(localF[3],localF[4],localF[5]);
+    G4ThreeVector pos(localP[0],localP[1],localP[2]);
+
+    G4ThreeVector e0 = evec.unit();
+    G4double toVpos = theSolid->DistanceToOut(pos, -e0);
+    G4double toVneg = theSolid->DistanceToOut(pos, e0);
+
+    return 0.5*(toVpos-toVneg)*evec.mag();	// [-V/2,V/2] interpolation
+  }
+
+  // Arbitrary field configurations must be integrated
+  return 0.;
 }

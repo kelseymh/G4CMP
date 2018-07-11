@@ -24,11 +24,13 @@
 // 20170905  Cache Luke and IV rate models in local LoadDataFromTrack()
 // 20170908  Remove "/10." rescaling of field when computing steps
 // 20170919  Use rate threshold interface to define alternate step lengths
+// 20180711  Move field access to G4CMPFieldUtils
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPFieldUtils.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
