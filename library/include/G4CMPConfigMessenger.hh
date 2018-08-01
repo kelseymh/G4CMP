@@ -64,9 +64,9 @@ private:
   G4UIcmdWithADouble* lukePhononCmd;
   G4UIcmdWithADouble* downconvCmd;
   G4UIcmdWithAString* dirCmd;
+  G4UIcmdWithAString* ivRateModelCmd;
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;
-  G4UIcmdWithABool*   ivEdelCmd;
   G4UIcmdWithABool*   ehCloudCmd;
 
 private:

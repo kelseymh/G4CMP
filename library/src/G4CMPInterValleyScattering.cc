@@ -1,7 +1,7 @@
 /***********************************************************************\
  * This software is licensed under the terms of the GNU General Public *
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
-\***********************************************************************/
+ \***********************************************************************/
 
 // $Id$
 //
@@ -37,54 +37,57 @@
 #include <math.h>
 
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()
-  : G4CMPVDriftProcess("G4CMPInterValleyScattering", fInterValleyScattering) {
-  if (G4CMPConfigManager::UseIVEdelweiss()) 
-    UseRateModel(new G4CMPIVRateEdelweiss);
-  else
-    UseRateModel(new G4CMPInterValleyRate);
-}
+        : G4CMPVDriftProcess("G4CMPInterValleyScattering", fInterValleyScattering) {
+                G4String model = G4CMPConfigManager::GetIVRateModel();
+                if(model == "IVRate"){
+                        UseRateModel(new G4CMPInterValleyRate);
+                }else{
+                        // Default = "Edelweis"
+                        UseRateModel(new G4CMPIVRateEdelweiss);
+                }
+        }
 
 G4CMPInterValleyScattering::~G4CMPInterValleyScattering() {;}
 
 
 G4bool 
 G4CMPInterValleyScattering::IsApplicable(const G4ParticleDefinition& aPD) {
-  return G4CMP::IsElectron(&aPD);
+        return G4CMP::IsElectron(&aPD);
 }
 
 
 G4VParticleChange* 
 G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
-					 const G4Step& aStep) {
-  aParticleChange.Initialize(aTrack); 
-  G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
-  
-  if (verboseLevel > 1) {
-    G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
-	   << postStepPoint->GetProcessDefinedStep()->GetProcessName()
-	   << G4endl;
-  }
+                const G4Step& aStep) {
+        aParticleChange.Initialize(aTrack); 
+        G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
 
-  // Don't do anything at a volume boundary
-  if (postStepPoint->GetStepStatus()==fGeomBoundary) {
-    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-  }
+        if (verboseLevel > 1) {
+                G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
+                        << postStepPoint->GetProcessDefinedStep()->GetProcessName()
+                        << G4endl;
+        }
 
-  // Get track's energy in current valley
-  G4ThreeVector p = GetLocalMomentum(aTrack);
-  G4int valley = GetValleyIndex(aTrack);
-  p = theLattice->MapPtoK_valley(valley, p); // p is actually k now
+        // Don't do anything at a volume boundary
+        if (postStepPoint->GetStepStatus()==fGeomBoundary) {
+                return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+        }
 
-  // picking a new valley at random if IV-scattering process was triggered
-  valley = ChangeValley(valley);
-  G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
+        // Get track's energy in current valley
+        G4ThreeVector p = GetLocalMomentum(aTrack);
+        G4int valley = GetValleyIndex(aTrack);
+        p = theLattice->MapPtoK_valley(valley, p); // p is actually k now
 
-  p = theLattice->MapK_valleyToP(valley, p); // p is p again
-  RotateToGlobalDirection(p);
+        // picking a new valley at random if IV-scattering process was triggered
+        valley = ChangeValley(valley);
+        G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
 
-  // Adjust track kinematics for new valley
-  FillParticleChange(valley, p);
+        p = theLattice->MapK_valleyToP(valley, p); // p is p again
+        RotateToGlobalDirection(p);
 
-  ClearNumberOfInteractionLengthLeft();    
-  return &aParticleChange;
+        // Adjust track kinematics for new valley
+        FillParticleChange(valley, p);
+
+        ClearNumberOfInteractionLengthLeft();    
+        return &aParticleChange;
 }
