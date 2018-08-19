@@ -224,9 +224,10 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
     if (G4CMPConfigManager::GetLukeSampling() > 0.) {
       // FIXME: These should move to G4CMPConfigManager
       const G4double maxPhononWeight = 8000.;	// From TES saturation
-      const G4double minLukeSample = 0.1;	// ~10 phonons per volt/chcarge
+      const G4double minLukeSample = 0.05;	// ~5 phonons per volt/chcarge
 
-      G4double lukeSamp = std::max(1./(maxPhononWeight*chargeSamp),minLukeSample);
+      G4double lukeSamp = std::max(std::min(1., minLukeSample/chargeSamp),
+				   1./(maxPhononWeight*chargeSamp));
       if (verboseLevel>2)
 	G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
     
