@@ -25,6 +25,7 @@
 // 20180503  Protect against negative "energy left".
 // 20180511  Protect GetSecondaries()/GetPrimaries() from zero generated.
 // 20180801  Add weighting bounds for computing Luke-phonon sampling.
+// 20180827  Add flag to suppress use of downsampling energy scale
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -59,8 +60,8 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
     material(mat), holeFraction(0.5), nParticlesMinimum(10),
-    cloud(new G4CMPChargeCloud), nCharges(0), nPairs(0),
-    chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
+    applyDownsampling(true), cloud(new G4CMPChargeCloud), nCharges(0),
+    nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
   SetLattice(lat);
 }
 
@@ -174,8 +175,6 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
 // Generate charge carriers and phonons according to uniform phase space
 
 void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
-  G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
-
   if (verboseLevel>1) {
     G4cout << "G4CMPEnergyPartition::DoPartition: eIon " << eIon/MeV
 	   << " MeV, eNIEL " << eNIEL/MeV << " MeV" << G4endl;
@@ -184,8 +183,8 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
   particles.clear();		// Discard previous results
   nPairs = nPhonons = 0;
 
-  // Apply downsampling if total energy is above scale
-  if (samplingScale > 0.) ComputeDownsampling(eIon, eNIEL);
+  // Apply downsampling if requested
+  if (applyDownsampling) ComputeDownsampling(eIon, eNIEL);
 
   chargeEnergyLeft = 0.;
   GenerateCharges(eIon);
