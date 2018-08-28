@@ -5,6 +5,7 @@
 
 // 20170620  M. Kelsey -- Follow interface changes in G4CMPSecondaryUtils
 // 20170802  M. Kelsey -- Replace phonon production with G4CMPEnergyPartition
+// 20180827  M. Kelsey -- Prevent partitioner from recomputing sampling factors
 
 #include "G4CMPDriftRecombinationProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -23,7 +24,9 @@
 
 G4CMPDriftRecombinationProcess::
 G4CMPDriftRecombinationProcess(const G4String &name, G4CMPProcessSubType type)
-  : G4CMPVDriftProcess(name, type), partitioner(new G4CMPEnergyPartition) {;}
+  : G4CMPVDriftProcess(name, type), partitioner(new G4CMPEnergyPartition) {
+  partitioner->UseDownsampling(false);		// Apply preset scaling factors
+}
 
 G4CMPDriftRecombinationProcess::~G4CMPDriftRecombinationProcess() {
   delete partitioner;

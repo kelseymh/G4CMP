@@ -18,6 +18,7 @@
 // 20170925  Add support for distributing charges around position
 // 20180424  Need default ctor for Data to support vector::resize()
 // 20180425  Add minimum particle generation for downsampling
+// 20180827  Add flag to suppress use of downsampling energy scale
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -55,6 +56,10 @@ public:
 
   // Set debugging output
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+
+  // Toggle whether or not to apply downsampling scale calculations
+  void UseDownsampling(G4bool value) { applyDownsampling = value; }
+  G4bool UseDownsampling() const { return applyDownsampling; }
 
   // Placement volume may be used to get material and lattice
   void UseVolume(const G4VPhysicalVolume* volume);
@@ -115,6 +120,7 @@ protected:
   G4Material* material;		// To get (Z,A) for Lindhard scaling
   G4double holeFraction;	// Energy from e/h pair taken by hole (50%)
   G4int nParticlesMinimum;	// Minimum production when downsampling
+  G4bool applyDownsampling;	// Flag whether to do downsampling calcualtions
 
   G4CMPChargeCloud* cloud;	// Distribute e/h around central position
   size_t nCharges;		// Actual (downsampled) number of e+h for cloud
