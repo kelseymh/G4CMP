@@ -26,6 +26,7 @@
 // 20180511  Protect GetSecondaries()/GetPrimaries() from zero generated.
 // 20180801  Add weighting bounds for computing Luke-phonon sampling.
 // 20180827  Add flag to suppress use of downsampling energy scale
+// 20180828  BUG FIX:  GetSecondaries() was not using trkWeight
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -511,7 +512,7 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
     weight = (G4CMP::IsPhonon(p.pd) ? phononWt : chargeWt);
 
     theSec = G4CMP::CreateSecondary(*GetCurrentTrack(), p.pd, p.dir, p.ekin);
-    theSec->SetWeight(weight);
+    theSec->SetWeight(trkWeight*weight);
     secondaries.push_back(theSec);
 
     // Adjust positions of charges according to generated distribution

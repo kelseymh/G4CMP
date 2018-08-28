@@ -158,11 +158,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // If phonon is not created, register the energy as deposited
   G4double weight =
     G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
-  if (verboseLevel>1) {
-    G4cout << " Luke sampling @ " << G4CMPConfigManager::GetLukeSampling()
-	   << " got wt " << weight << G4endl;
-  }
-
   if (weight > 0.) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
@@ -175,7 +170,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     phonon->SetWeight(aTrack.GetWeight() * weight);
     if (verboseLevel>1) {
       G4cout << "phonon wt " << phonon->GetWeight()
-	     << " : track wt " << aTrack.GetWeight()
+	     << " : track " << aTrack.GetTrackID()
+	     << " wt " << aTrack.GetWeight()
 	     << "  thrown wt " << weight << G4endl;
     }
 
