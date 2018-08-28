@@ -223,7 +223,7 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
     // Compute Luke scaling factor only if not fully suppressed or forced
     if (G4CMPConfigManager::GetLukeSampling() > 0.) {
       // FIXME: These should move to G4CMPConfigManager
-      const G4double minLukeSample = 0.10;	// ~12 phonons per volt/chcarge
+      const G4double minLukeSample = 0.05;	// ~6 phonons per volt/chcarge
 
       G4double lukeSamp = std::min(1., minLukeSample/chargeSamp);
       if (verboseLevel>2)
