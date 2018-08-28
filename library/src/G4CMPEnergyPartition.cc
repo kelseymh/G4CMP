@@ -24,6 +24,7 @@
 //		set their weights to the ratio of true/produced.
 // 20180503  Protect against negative "energy left".
 // 20180511  Protect GetSecondaries()/GetPrimaries() from zero generated.
+// 20180801  Add weighting bounds for computing Luke-phonon sampling.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -219,12 +220,17 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
     
     G4CMPConfigManager::SetGenCharges(chargeSamp);
 
-    // FIXME:  Want to estimate # Luke phonons per charge carrier
-    G4double lukeSamp = chargeSamp;
-    if (verboseLevel>2)
-      G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
+    // Compute Luke scaling factor only if not fully suppressed or forced
+    if (G4CMPConfigManager::GetLukeSampling() > 0.) {
+      // FIXME: These should move to G4CMPConfigManager
+      const G4double minLukeSample = 0.05;	// ~6 phonons per volt/chcarge
+
+      G4double lukeSamp = std::min(1., minLukeSample/chargeSamp);
+      if (verboseLevel>2)
+	G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
     
-    G4CMPConfigManager::SetLukeSampling(lukeSamp);
+      G4CMPConfigManager::SetLukeSampling(lukeSamp);
+    }
   }
 }
 
@@ -341,6 +347,8 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
     if (verboseLevel>2)
       G4cout << " generated " << nGenPhonons << " phonons" << G4endl;
   }	// while (nGenPhonons
+
+  if (nGenPhonons == nPhonons+1) nPhonons++;	// Pick up residual phonon
 }
 
 void G4CMPEnergyPartition::AddPhonon(G4double ePhon) {
