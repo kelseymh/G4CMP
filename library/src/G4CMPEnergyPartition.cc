@@ -24,6 +24,9 @@
 //		set their weights to the ratio of true/produced.
 // 20180503  Protect against negative "energy left".
 // 20180511  Protect GetSecondaries()/GetPrimaries() from zero generated.
+// 20180801  Add weighting bounds for computing Luke-phonon sampling.
+// 20180827  Add flag to suppress use of downsampling energy scale
+// 20180828  BUG FIX:  GetSecondaries() was not using trkWeight
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -58,8 +61,8 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
     material(mat), holeFraction(0.5), nParticlesMinimum(10),
-    cloud(new G4CMPChargeCloud), nCharges(0), nPairs(0),
-    chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
+    applyDownsampling(true), cloud(new G4CMPChargeCloud), nCharges(0),
+    nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
   SetLattice(lat);
 }
 
@@ -173,8 +176,6 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
 // Generate charge carriers and phonons according to uniform phase space
 
 void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
-  G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
-
   if (verboseLevel>1) {
     G4cout << "G4CMPEnergyPartition::DoPartition: eIon " << eIon/MeV
 	   << " MeV, eNIEL " << eNIEL/MeV << " MeV" << G4endl;
@@ -183,8 +184,8 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
   particles.clear();		// Discard previous results
   nPairs = nPhonons = 0;
 
-  // Apply downsampling if total energy is above scale
-  if (samplingScale > 0.) ComputeDownsampling(eIon, eNIEL);
+  // Apply downsampling if requested
+  if (applyDownsampling) ComputeDownsampling(eIon, eNIEL);
 
   chargeEnergyLeft = 0.;
   GenerateCharges(eIon);
@@ -219,12 +220,17 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
     
     G4CMPConfigManager::SetGenCharges(chargeSamp);
 
-    // FIXME:  Want to estimate # Luke phonons per charge carrier
-    G4double lukeSamp = chargeSamp;
-    if (verboseLevel>2)
-      G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
+    // Compute Luke scaling factor only if not fully suppressed or forced
+    if (G4CMPConfigManager::GetLukeSampling() > 0.) {
+      // FIXME: These should move to G4CMPConfigManager
+      const G4double minLukeSample = 0.05;	// ~6 phonons per volt/chcarge
+
+      G4double lukeSamp = std::min(1., minLukeSample/chargeSamp);
+      if (verboseLevel>2)
+	G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
     
-    G4CMPConfigManager::SetLukeSampling(lukeSamp);
+      G4CMPConfigManager::SetLukeSampling(lukeSamp);
+    }
   }
 }
 
@@ -341,6 +347,8 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
     if (verboseLevel>2)
       G4cout << " generated " << nGenPhonons << " phonons" << G4endl;
   }	// while (nGenPhonons
+
+  if (nGenPhonons == nPhonons+1) nPhonons++;	// Pick up residual phonon
 }
 
 void G4CMPEnergyPartition::AddPhonon(G4double ePhon) {
@@ -504,7 +512,7 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
     weight = (G4CMP::IsPhonon(p.pd) ? phononWt : chargeWt);
 
     theSec = G4CMP::CreateSecondary(*GetCurrentTrack(), p.pd, p.dir, p.ekin);
-    theSec->SetWeight(weight);
+    theSec->SetWeight(trkWeight*weight);
     secondaries.push_back(theSec);
 
     // Adjust positions of charges according to generated distribution

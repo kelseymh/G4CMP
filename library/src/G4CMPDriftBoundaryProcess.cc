@@ -14,6 +14,7 @@
 // 20170620  Follow interface changes in G4CMPUtils, G4CMPSecondaryUtils
 // 20170802  M. Kelsey -- Replace phonon production with G4CMPEnergyPartition
 // 20171215  Replace boundary-point check with CheckStepBoundary()
+// 20180827  M. Kelsey -- Prevent partitioner from recomputing sampling factors
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -43,7 +44,9 @@
 
 G4CMPDriftBoundaryProcess::G4CMPDriftBoundaryProcess(const G4String& name)
   : G4CMPVDriftProcess(name, fChargeBoundary), G4CMPBoundaryUtils(this),
-    partitioner(new G4CMPEnergyPartition) {;}
+    partitioner(new G4CMPEnergyPartition) {
+  partitioner->UseDownsampling(false);		// Apply preset scaling factors
+}
 
 G4CMPDriftBoundaryProcess::~G4CMPDriftBoundaryProcess() {
   delete partitioner;

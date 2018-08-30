@@ -18,6 +18,7 @@
 // 20170805  Use scattering-rate model
 // 20170907  Make process non-forced; check only for boundary crossing
 // 20170928  Hide "output" usage behind verbosity check, as well as G4CMP_DEBUG
+// 20180827  Add debugging output with weight calculation.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -157,7 +158,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // If phonon is not created, register the energy as deposited
   G4double weight =
     G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
-
   if (weight > 0.) {
     MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
 
@@ -168,6 +168,12 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
                                           aTrack.GetPosition());
     // Secondary's weight has to be multiplicative with its parent's
     phonon->SetWeight(aTrack.GetWeight() * weight);
+    if (verboseLevel>1) {
+      G4cout << "phonon wt " << phonon->GetWeight()
+	     << " : track " << aTrack.GetTrackID()
+	     << " wt " << aTrack.GetWeight()
+	     << "  thrown wt " << weight << G4endl;
+    }
 
     aParticleChange.SetSecondaryWeightByProcess(true);
     aParticleChange.SetNumberOfSecondaries(1);
