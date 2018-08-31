@@ -103,7 +103,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   ivRateModelCmd = CreateCommand<G4UIcmdWithAString>("IVRateModel",
            "Set the model for IV scattering rate.");
-  ivRateModelCmd->SetDefaultValue("Edelweiss");
+  ivRateModelCmd->SetDefaultValue("Quadratic");
 
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
        "Produce e/h pairs in cloud surrounding energy deposit position");

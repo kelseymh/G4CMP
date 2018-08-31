@@ -1,17 +1,4 @@
-/***********************************************************************\
- * This software is licensed under the terms of the GNU General Public *
- * License version 3 or later. See G4CMP/LICENSE for the full license. *
-\***********************************************************************/
-
-/// \file library/src/G4CMPIVRateEdelweiss.cc
-/// \brief Compute electron intervalley scattering rate using Edelweiss
-///	   parametrization vs. electric field.
-//
-// $Id$
-//
-// 20170815  Drop call to LoadDataForTrack(); now handled in process.
-
-#include "G4CMPIVRateEdelweiss.hh"
+#include "G4CMPIVRateLinear.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
 #include "G4LatticePhysical.hh"
@@ -22,11 +9,11 @@
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
 #include <math.h>
-
+#include <iostream>
 
 // Scattering rate is computed from electric field
 
-G4double G4CMPIVRateEdelweiss::Rate(const G4Track& aTrack) const {
+G4double G4CMPIVRateLinear::Rate(const G4Track& aTrack) const {
   // Get electric field associated with current volume, if any
   G4FieldManager* fMan =
     aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
@@ -58,16 +45,18 @@ G4double G4CMPIVRateEdelweiss::Rate(const G4Track& aTrack) const {
   fieldVector *= GetValley(aTrack);
   fieldVector *= theLattice->GetSqrtInvTensor();
   fieldVector /= volt/m;			// Strip units for MFP below
-
   if (verboseLevel > 1) {
     G4cout << " in HV space " << fieldVector*0.01 << " ("
 	   << fieldVector.mag()*0.01 << ") V/cm" << G4endl;
   }
+    //Compute mean free path 
+   G4double gamma1 = theLattice->GetIVRate1() / (pow(100,theLattice->GetIVExponent()));
+   G4double rate = theLattice->GetIVRate() + (gamma1*
+    pow(fieldVector.mag(), theLattice->GetIVExponent()));
 
-  // Compute mean free path per Edelweiss LTD-14 paper
-  G4double E_0 = theLattice->GetIVField() / (volt/m);
-  G4double rate = theLattice->GetIVRate() *
-    pow((E_0*E_0 + fieldVector.mag2()), theLattice->GetIVExponent()/2.0);
+  //G4double rate = theLattice->GetIVRate();
+  std::cout << "Rate" << rate/hertz << std::endl;
+  std::cout << "E" << fieldVector.mag() << std::endl;
 
   if (verboseLevel > 1) G4cout << "IV rate = " << rate/hertz << " Hz" << G4endl;
   return rate;

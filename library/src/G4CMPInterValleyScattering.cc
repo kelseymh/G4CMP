@@ -21,12 +21,14 @@
 // 20170802  Remove MFP calculation; use scattering-rate model
 // 20170809  Replace Edelweiss rate with physical (matrix element) model
 // 20170821  Use configuration flag to choose Edelweiss vs. physical rate
+// 20180831  Change G4CMPInterValleyScattering to use Lin. and Quad. models
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPInterValleyRate.hh"
-#include "G4CMPIVRateEdelweiss.hh"
+#include "G4CMPIVRateQuadratic.hh"
+#include "G4CMPIVRateLinear.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4LatticePhysical.hh"
@@ -41,9 +43,11 @@ G4CMPInterValleyScattering::G4CMPInterValleyScattering()
                 G4String model = G4CMPConfigManager::GetIVRateModel();
                 if(model == "IVRate"){
                         UseRateModel(new G4CMPInterValleyRate);
+                }else if(model == "Linear"){
+                        UseRateModel(new G4CMPIVRateLinear);
                 }else{
-                        // Default = "Edelweis"
-                        UseRateModel(new G4CMPIVRateEdelweiss);
+                        // Default = "Quadratic"
+                        UseRateModel(new G4CMPIVRateQuadratic);
                 }
         }
 

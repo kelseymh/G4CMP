@@ -29,7 +29,7 @@
 // 20170821  For deformation potentials, specify eV/cm units; use regex match
 //		for multiple optical IV potentials
 // 20170821  Add transverse sound speed, L->TT fraction
-
+// 20180815  F. Insulla -- Added IVRateQuad
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPCrystalGroup.hh"
@@ -196,7 +196,10 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "ivfield")    pLattice->SetIVField(fValue*ProcessUnits("Electric field"));
   else if (name == "ivrate")     pLattice->SetIVRate(fValue*ProcessUnits("Frequency"));
   else if (name == "ivpower")    pLattice->SetIVExponent(fValue);
+  else if (name == "ivpowerquad") pLattice->SetIVExponentQuad(fValue);
   else if (name == "ivexponent") pLattice->SetIVExponent(fValue);
+  else if (name == "ivratequad") pLattice->SetIVRateQuad(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivrate1") pLattice->SetIVRate1(fValue*ProcessUnits("Frequency"));
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;

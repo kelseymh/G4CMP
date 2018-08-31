@@ -224,6 +224,9 @@ public:
   void SetIVField(G4double v)          { fIVField = v; }
   void SetIVRate(G4double v)           { fIVRate = v; }
   void SetIVExponent(G4double v)       { fIVExponent = v; }
+  void SetIVExponentQuad(G4double v)       { fIVExponentQuad = v; }
+  void SetIVRateQuad(G4double v)       { fIVRateQuad = v; }
+  void SetIVRate1(G4double v)          { fIVRate1 = v; }
 
   void SetAlpha(G4double v)	       { fAlpha = v; }
   void SetAcousticDeform(G4double v)   { fAcDeform = v; }
@@ -233,6 +236,9 @@ public:
   G4double GetIVField() const          { return fIVField; }
   G4double GetIVRate() const           { return fIVRate; }
   G4double GetIVExponent() const       { return fIVExponent; }
+  G4double GetIVExponentQuad() const       { return fIVExponentQuad; }
+  G4double GetIVRateQuad() const           { return fIVRateQuad; }
+  G4double GetIVRate1() const           { return fIVRate1; }
 
   G4double GetAlpha() const	       { return fAlpha; }
   G4double GetAcousticDeform() const { return fAcDeform; }
@@ -316,8 +322,11 @@ private:
   std::vector<G4double> fIVEnergy;	// D0, D1 thresholds for optical IV
 
   G4double fIVField;		 // Edelweiss field scale for IV scattering
-  G4double fIVRate;		 // Edelweiss rate factor for IV scattering
+  G4double fIVRate;		 // Edelweiss rate factor first linear term for IV scattering
   G4double fIVExponent;		 // Edelweiss power law for E-field in IV
+  G4double fIVExponentQuad;		 // Edelweiss power law for E-field in IV
+  G4double fIVRateQuad;		 // Edelweiss rate factor quadratic term for IV scattering
+  G4double fIVRate1;		 // Edelweiss rate factor second linear term for IV scattering
 };
 
 // Write lattice structure to output stream

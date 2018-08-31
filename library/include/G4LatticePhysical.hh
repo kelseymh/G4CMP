@@ -137,6 +137,9 @@ public:
   G4double GetIVField() const    { return fLattice->GetIVField(); }
   G4double GetIVRate() const     { return fLattice->GetIVRate(); }
   G4double GetIVExponent() const { return fLattice->GetIVExponent(); }
+  G4double GetIVExponentQuad() const { return fLattice->GetIVExponentQuad(); }
+  G4double GetIVRateQuad() const     { return fLattice->GetIVRateQuad(); }
+  G4double GetIVRate1() const     { return fLattice->GetIVRate1(); }
 
   G4double GetAlpha() const      { return fLattice->GetAlpha(); }
   G4double GetAcousticDeform() const { return fLattice->GetAcousticDeform(); }
