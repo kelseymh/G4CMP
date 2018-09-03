@@ -27,6 +27,7 @@
 // 20180801  Add weighting bounds for computing Luke-phonon sampling.
 // 20180827  Add flag to suppress use of downsampling energy scale
 // 20180828  BUG FIX:  GetSecondaries() was not using trkWeight
+// 20180831  Fix compiler warnings when comparing nParticlesMinimum
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -223,7 +224,7 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
     // Compute Luke scaling factor only if not fully suppressed or forced
     if (G4CMPConfigManager::GetLukeSampling() > 0.) {
       // FIXME: These should move to G4CMPConfigManager
-      const G4double minLukeSample = 0.05;	// ~6 phonons per volt/chcarge
+      const G4double minLukeSample = 0.01;	// ~6 phonons per volt/chcarge
 
       G4double lukeSamp = std::min(1., minLukeSample/chargeSamp);
       if (verboseLevel>2)
@@ -251,7 +252,7 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   }
   
   // Only apply downsampling to sufficiently large statistics
-  G4double scale = (nPairs<=nParticlesMinimum ? 1.
+  G4double scale = ((G4int)nPairs<=nParticlesMinimum ? 1.
 		    : G4CMPConfigManager::GetGenCharges());
 
   if (verboseLevel>1) {
@@ -313,7 +314,7 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   ePhon = energy / nPhonons;			// Split energy evenly to all
 
   // Only apply downsampling to sufficiently large statistics
-  G4double scale = (nPhonons<=nParticlesMinimum ? 1.
+  G4double scale = ((G4int)nPhonons<=nParticlesMinimum ? 1.
 		    : G4CMPConfigManager::GetGenPhonons());
 
   if (verboseLevel>1) {

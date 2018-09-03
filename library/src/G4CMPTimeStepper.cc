@@ -24,6 +24,7 @@
 // 20170905  Cache Luke and IV rate models in local LoadDataFromTrack()
 // 20170908  Remove "/10." rescaling of field when computing steps
 // 20170919  Use rate threshold interface to define alternate step lengths
+// 20180831  Fix compiler warning with PostStepDoIt() arguments
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -149,7 +150,7 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 // At end of step, recompute kinematics; important for electrons
 
 G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
-						  const G4Step& aStep) {
+						  const G4Step& /*aStep*/) {
   aParticleChange.Initialize(aTrack);
 
   // Adjust mass and kinetic energy using end-of-step momentum
