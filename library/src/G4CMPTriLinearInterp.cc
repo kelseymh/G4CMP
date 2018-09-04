@@ -7,37 +7,58 @@
 //
 // 20180525  Protect against "outside of hull" by testing TetraIdx returns;
 //	provide "quiet" flag to suppress "outside of hull" messages.
+// 20180904  Add constructor to directly load mesh definitions
 
 #include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
 #include "libqhullcpp/QhullFacetList.h"
 #include "libqhullcpp/QhullFacetSet.h"
 #include "libqhullcpp/QhullVertexSet.h"
-#include "Randomize.hh"
-#include "G4SystemOfUnits.hh"
-#include <iostream>
+#include <algorithm>
 #include <ctime>
-#include <map>
-#include <array>
+#include <iostream>
 
 using namespace orgQhull;
 using std::map;
 using std::vector;
 
+// Constructors to load mesh and possibly re-triangulate
+
 G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<point >& xyz,
 					   const vector<G4double>& v)
-  : X(xyz), V(v), TetraIdx(0), staleCache(true) {
-  BuildTetraMesh();
-}
+  : G4CMPTriLinearInterp() { UseMesh(xyz, v); }
 
-void 
-G4CMPTriLinearInterp::UseMesh(const std::vector<point > &xyz,
-                  const std::vector<G4double>& v) {
+G4CMPTriLinearInterp::
+G4CMPTriLinearInterp(const vector<point >& xyz, const vector<G4double>& v,
+		     const std::vector<std::array<G4int,4> >& tetra)
+  : G4CMPTriLinearInterp() { UseMesh(xyz, v, tetra); }
+
+
+
+// Load new mesh object and possibly re-triangulate
+
+void G4CMPTriLinearInterp::UseMesh(const std::vector<point > &xyz,
+				   const std::vector<G4double>& v) {
+  staleCache = true;
   X = xyz;
   V = v;
   BuildTetraMesh();
   TetraIdx = 0;
 }
+
+void G4CMPTriLinearInterp::UseMesh(const std::vector<point>& xyz,
+				   const std::vector<G4double>& v,
+			   const std::vector<std::array<G4int,4> >& tetra) {
+  staleCache = true;
+  X = xyz;
+  V = v;
+  Tetrahedra = tetra;
+  FillNeighbors();
+  TetraIdx = 0;
+}
+
+
+// Generate new Delaunay triagulation for current mesh of points
 
 void G4CMPTriLinearInterp::BuildTetraMesh() {
   time_t start, fin;
@@ -116,9 +137,10 @@ void G4CMPTriLinearInterp::BuildTetraMesh() {
          << difftime(fin, start) << " seconds." << G4endl;
 }
 
+// Get index of specified mesh point (no interpolation!)
+
 G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& pt,
-                                        const G4int id) {
-  //static map<G4int, G4int> qhull2x;
+                                        const G4int id) const {
   if (qhull2x.count(id)) {
     return qhull2x[id];
   }
@@ -154,6 +176,73 @@ G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& pt,
     }
   }
 }
+
+
+// Process list of defined tetrahedra and build table of neighbors
+
+void G4CMPTriLinearInterp::FillNeighbors() {
+  time_t start, fin;
+  G4cout << "G4CMPTriLinearInterp::Constructor: Building Neighbors Table..."
+         << G4endl;
+  std::time(&start);
+
+  G4int Ntet = Tetrahedra.size();		// Avoid counting in loop
+  Neighbors.clear();
+  Neighbors.resize(Ntet, {{-1,-1,-1,-1}});	// Pre-allocate space
+
+  for (G4int i=0; i<Ntet; i++) {
+    Neighbors[i][0] =
+      FindTetraID({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][2]}}, i);
+
+    Neighbors[i][1] =
+      FindTetraID({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][3]}}, i);
+
+    Neighbors[i][2] =
+      FindTetraID({{Tetrahedra[i][0],Tetrahedra[i][2],Tetrahedra[i][3]}}, i);
+
+    Neighbors[i][3] =
+      FindTetraID({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][2]}}, i);
+  }
+
+  std::time(&fin);
+  G4cout << "G4CMPTriLinearInterp::Constructor: Took "
+         << difftime(fin, start) << " seconds." << G4endl;
+}
+
+// Locate other tetrahedron with specified face (exclude "skip" index)
+// NOTE: "face" passed by value to allow sorting from smallest to largest
+
+G4int G4CMPTriLinearInterp::FindTetraID(std::array<G4int,3> face,
+					G4int skip) const {
+  std::sort(face.begin(), face.end());	// Put indices in order for testing
+
+  G4int ntet = Tetrahedra.size();	// Brute force linear search
+  std::array<G4int,3> tface;		// Reusable buffer for tetrahedra faces
+  for (G4int itet=0; itet<ntet; itet++) {
+    if (itet == skip) continue;
+    
+    tface = {{Tetrahedra[itet][0],Tetrahedra[itet][1],Tetrahedra[itet][2]}};
+    std::sort(tface.begin(), tface.end());
+    if (tface == face) return itet;	// Found matching face!
+
+    tface = {{Tetrahedra[itet][0],Tetrahedra[itet][1],Tetrahedra[itet][3]}};
+    std::sort(tface.begin(), tface.end());
+    if (tface == face) return itet;	// Found matching face!
+
+    tface = {{Tetrahedra[itet][0],Tetrahedra[itet][2],Tetrahedra[itet][3]}};
+    std::sort(tface.begin(), tface.end());
+    if (tface == face) return itet;	// Found matching face!
+
+    tface = {{Tetrahedra[itet][1],Tetrahedra[itet][2],Tetrahedra[itet][3]}};
+    std::sort(tface.begin(), tface.end());
+    if (tface == face) return itet;	// Found matching face!
+  }
+
+  return -1;				// No match; face is on outer hull
+}
+
+
+// Evaluate mesh at arbitrary location, returning potential or gradient
 
 G4double 
 G4CMPTriLinearInterp::GetValue(const G4double pos[3], G4bool quiet) const {
@@ -226,8 +315,8 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[4], G4double bary[4],
     if (TetraIdx == -1) {
       if (!quiet) {
 	G4cerr << "G4CMPTriLinearInterp::FindTetrahedron: Point outside of hull! Check your results."
-	       << "\n pt[0] = " << pt[0]/m << " m; pt[1] = " << pt[1]/m
-	       << " m; pt[2] = " << pt[2]/m << " m;" << G4endl;
+	       << "\n pt[0] = " << pt[0] << " pt[1] = " << pt[1]
+	       << " pt[2] = " << pt[2] << G4endl;
       }
 
       return;
