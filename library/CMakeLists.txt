@@ -238,6 +238,7 @@ set(config_FILES
     ${PROJECT_SOURCE_DIR}/g4cmp_env.sh
     ${PROJECT_SOURCE_DIR}/g4cmp_env.csh
     ${PROJECT_SOURCE_DIR}/G4CMPOrdParamTable.txt
+    ${PROJECT_SOURCE_DIR}/g4cmp.gmk
     )
 
 if(USE_GEANT4_STATIC_LIBS)
