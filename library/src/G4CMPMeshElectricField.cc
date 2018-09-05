@@ -15,16 +15,18 @@
 //	     vector_comp into class (static).
 // 20170823  Add scaling factor as optional constructor argument.
 // 20180525  Use new "quiet" argument to suppress "outside of hull" warnings
+// 20180904  Add constructor to take precreated mesh and tetrahedra.
 
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4SystemOfUnits.hh"
-#include <vector>
 #include <fstream>
-#include <array>
 
+using std::array;
 using std::vector;
 
+
+// Constructors
 
 G4CMPMeshElectricField::
 G4CMPMeshElectricField(const G4String& EPotFileName, G4double Vscale)
@@ -32,10 +34,19 @@ G4CMPMeshElectricField(const G4String& EPotFileName, G4double Vscale)
   BuildInterp(EPotFileName, Vscale);
 }
 
+G4CMPMeshElectricField::
+G4CMPMeshElectricField(const vector<array<G4double,3> >& xyz,
+		       const vector<G4double>& v,
+		       const vector<array<G4int,4> >& tetra)
+  : G4ElectricField() {
+  BuildInterp(xyz, v, tetra);
+}
+
 G4CMPMeshElectricField::G4CMPMeshElectricField(const G4CMPMeshElectricField &p)
   : G4ElectricField(p), Interp(p.Interp) {;}
 
-G4CMPMeshElectricField& G4CMPMeshElectricField::operator=(const G4CMPMeshElectricField &p) {
+G4CMPMeshElectricField& 
+G4CMPMeshElectricField::operator=(const G4CMPMeshElectricField &p) {
   if (this != &p) {				// Only copy if not self
     G4ElectricField::operator=(p);		// Call through to base
     Interp = p.Interp;
@@ -55,9 +66,9 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName,
     G4cout << G4endl;
   }
 
-  vector<std::array<G4double, 4> > tempX;
+  vector<array<G4double,4> > tempX;
 
-  std::array<G4double, 4> temp = {{ 0, 0, 0, 0 }};
+  array<G4double,4> temp = {{ 0, 0, 0, 0 }};
   G4double x,y,z,v;
 
   G4double vmin=99999., vmax=-99999.;
@@ -92,7 +103,7 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName,
 
   std::sort(tempX.begin(),tempX.end(), vector_comp);
 
-  vector<std::array<G4double, 3> > X(tempX.size(), {{0,0,0}});
+  vector<array<G4double, 3> > X(tempX.size(), {{0,0,0}});
   vector<G4double> V(tempX.size(),0);
 
   for (size_t ii = 0; ii < tempX.size(); ++ii)
@@ -122,8 +133,8 @@ G4double G4CMPMeshElectricField::GetPotential(const G4double Point[3]) const {
 }
 
 
-G4bool G4CMPMeshElectricField::vector_comp(const std::array<G4double, 4>& p1,
-                                           const std::array<G4double, 4>& p2) {
+G4bool G4CMPMeshElectricField::vector_comp(const array<G4double,4>& p1,
+                                           const array<G4double,4>& p2) {
   if (p1[0] < p2[0])
     return true;
   else if (p2[0] < p1[0])
