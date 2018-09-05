@@ -51,20 +51,30 @@ ifneq (,$(wildcard include)$(wildcard src))
 
 $(G4TARGET) : lib
 clean ::
-	@rm -f  $(G4WORKDIR)/lib/$(G4SYSTEM)/lib$(name).*
+	@rm -rf $(G4WORKDIR)/lib/$(G4SYSTEM)/lib$(name).*
 endif
 
 # Configure compiling and linking flags before binmake.gmk
 
-LDFLAGS := -L$(G4WORKDIR)/lib/$(G4SYSTEM)
+ifndef G4CMPLIB
+  G4CMPLIB := $(G4WORKDIR)/lib/$(G4SYSTEM)
+endif
+
+LDFLAGS := -L$(G4CMPLIB)
 ifdef G4RUNPATHOPTION
-  LDFLAGS += $(G4RUNPATHOPTION)$(G4WORKDIR)/lib/$(G4SYSTEM)
+  LDFLAGS += $(strip $(G4RUNPATHOPTION)),$(G4CMPLIB)
+  LDFLAGS += $(strip $(G4RUNPATHOPTION)),$(G4LIB)/$(G4SYSTEM)
 endif
 
 EXTRALIBS += -lG4cmp -lqhullcpp -lqhullstatic_p
 
-G4CMP_FLAGS := -I$(G4CMPINSTALL)/library/include \
-	-I$(G4CMPINSTALL)/qhull-2012.1/src -Dqh_QHpointer
+ifndef G4CMPINCLUDE
+  G4CMPINCLUDE := $(G4CMPINSTALL)/library/include
+
+endif
+
+G4CMP_FLAGS := -I$(G4CMPINCLUDE) \
+	-I$(G4CMPINSTALL)/library/qhull-2012.1/src -Dqh_QHpointer
 
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
