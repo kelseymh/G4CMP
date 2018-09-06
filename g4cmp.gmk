@@ -70,7 +70,6 @@ EXTRALIBS += -lG4cmp -lqhullcpp -lqhullstatic_p
 
 ifndef G4CMPINCLUDE
   G4CMPINCLUDE := $(G4CMPINSTALL)/library/include
-
 endif
 
 G4CMP_FLAGS := -I$(G4CMPINCLUDE) \
