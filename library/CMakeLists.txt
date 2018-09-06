@@ -94,10 +94,15 @@ endif()
 set_target_properties(qhullcpp PROPERTIES
     COMPILE_DEFINITIONS "qh_QHpointer"
     VERSION 6.3.1.1494)
+
+add_library(qhullstatic_p STATIC ${libqhull_SOURCES})
+set_target_properties(qhullstatic_p PROPERTIES
+    COMPILE_DEFINITIONS "qh_QHpointer"
+    VERSION 6.3.1.1494)
     
 # For some reason, OSX likes it if I link these libraries before linking
 # them all at the end.
-target_link_libraries(qhullcpp qhull_p)
+target_link_libraries(qhullcpp qhull_p qhullstatic_p)
 
 set(library_SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBoundaryUtils.cc
@@ -239,6 +244,7 @@ set(config_FILES
     ${PROJECT_SOURCE_DIR}/g4cmp_env.csh
     ${PROJECT_SOURCE_DIR}/G4CMPOrdParamTable.txt
     ${PROJECT_SOURCE_DIR}/g4cmp.gmk
+    ${PROJECT_SOURCE_DIR}/FindGeant4.cmake
     )
 
 if(USE_GEANT4_STATIC_LIBS)
@@ -249,7 +255,7 @@ endif()
 target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp)
 set_target_properties(G4cmp PROPERTIES COMPILE_DEFINITIONS "qh_QHpointer")
 
-install(TARGETS G4cmp qhullcpp qhull_p DESTINATION lib)
+install(TARGETS G4cmp qhullcpp qhull_p qhullstatic_p DESTINATION lib)
 install(FILES ${library_HEADERS} DESTINATION include/G4CMP)
 install(FILES ${config_FILES} DESTINATION share/G4CMP COMPONENT config)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/CrystalMaps DESTINATION share/G4CMP COMPONENT config)

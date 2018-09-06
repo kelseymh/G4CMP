@@ -1,9 +1,18 @@
+cmake_minimum_required(VERSION 3.11)
+
+#----------------------------------------------------------------------------
+# Find G4CMP package -- NOTE: Assumes user has run g4cmp_env.*sh script!
+#
+set(CMAKE_PREFIX_PATH $ENV{G4CMPINSTALL}/../..)
+find_package(G4CMP)
+
 #----------------------------------------------------------------------------
 # Find Geant4 package
 # NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
 #
-if(NOT Geant4_FOUND)
-    include(${PROJECT_SOURCE_DIR}/FindGeant4.cmake)
+find_package(Geant4)
+if (NOT Geant4_FOUND)
+    include(${G4CMP_SHAREDIR}/FindGeant4.cmake)
 endif()
 
 #----------------------------------------------------------------------------
@@ -11,7 +20,8 @@ endif()
 # NOTE: Need to include G4CMP directories before G4.
 #
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/library/include)
+include_directories(${G4CMP_INCLUDE_DIRS})
+include(${G4CMP_USE_FILE})
 include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
@@ -45,9 +55,9 @@ if(USE_GEANT4_STATIC_LIBS)
 else()
     add_library(phononLib SHARED ${phonon_SOURCES})
 endif()
-set_target_properties(phononLib PROPERTIES OUTPUT_NAME G4cmpPhonon)
+set_target_properties(phononLib PROPERTIES OUTPUT_NAME g4cmpPhonon)
 
-target_link_libraries(phononLib G4cmp)
+target_link_libraries(phononLib ${G4CMP_LIBRARIES} ${Geant4_LIBRARIES})
 
 add_executable(g4cmpPhonon g4cmpPhonon.cc)
 target_link_libraries(g4cmpPhonon phononLib)

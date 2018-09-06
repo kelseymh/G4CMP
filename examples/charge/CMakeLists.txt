@@ -1,7 +1,16 @@
+cmake_minimum_required(VERSION 3.11)
+
+#----------------------------------------------------------------------------
+# Find G4CMP package -- NOTE: Assumes user has run g4cmp_env.*sh script!
+#
+set(CMAKE_PREFIX_PATH $ENV{G4CMPINSTALL}/../..)
+find_package(G4CMP)
+
 #----------------------------------------------------------------------------
 # Find Geant4 package
 # NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
 #
+find_package(Geant4)
 if(NOT Geant4_FOUND)
     include(${PROJECT_SOURCE_DIR}/FindGeant4.cmake)
 endif()
@@ -11,7 +20,8 @@ endif()
 # NOTE: Need to include G4CMP directories before G4.
 #
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/library/include)
+include_directories(${G4CMP_INCLUDE_DIRS})
+include(${G4CMP_USE_FILE})
 include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
@@ -69,13 +79,13 @@ set(charge_MACROS
     )
 
 if(USE_GEANT4_STATIC_LIBS)
-    add_library(G4cmpCharge STATIC ${charge_SOURCES})
+    add_library(chargeLib STATIC ${charge_SOURCES})
 else()
     add_library(chargeLib SHARED ${charge_SOURCES})
 endif()
-set_target_properties(chargeLib PROPERTIES OUTPUT_NAME G4cmpCharge)
+set_target_properties(chargeLib PROPERTIES OUTPUT_NAME g4cmpCharge)
     
-target_link_libraries(chargeLib G4cmp)
+target_link_libraries(chargeLib  ${G4CMP_LIBRARIES} ${Geant4_LIBRARIES})
 
 add_executable(g4cmpCharge g4cmpCharge.cc)
 target_link_libraries(g4cmpCharge chargeLib)
@@ -86,5 +96,5 @@ target_link_libraries(g4cmpIonize chargeLib)
 install(TARGETS chargeLib DESTINATION lib)
 install(TARGETS g4cmpCharge DESTINATION bin)
 install(TARGETS g4cmpIonize DESTINATION bin)
-install(FILES ${charge_EPOT_FILES} DESTINATION share/G4CMP/EPotFiles COMPONENT config)
-install(FILES ${charge_MACROS} DESTINATION share/G4CMP/macros/g4cmpCharge)
+install(FILES ${charge_EPOT_FILES} DESTINATION EPotFiles COMPONENT config)
+install(FILES ${charge_MACROS} DESTINATION macros/g4cmpCharge)
