@@ -19,6 +19,7 @@
 #include <iostream>
 
 using namespace orgQhull;
+using std::array;
 using std::map;
 using std::vector;
 
@@ -30,15 +31,15 @@ G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<point >& xyz,
 
 G4CMPTriLinearInterp::
 G4CMPTriLinearInterp(const vector<point >& xyz, const vector<G4double>& v,
-		     const std::vector<std::array<G4int,4> >& tetra)
+		     const vector<array<G4int,4> >& tetra)
   : G4CMPTriLinearInterp() { UseMesh(xyz, v, tetra); }
 
 
 
 // Load new mesh object and possibly re-triangulate
 
-void G4CMPTriLinearInterp::UseMesh(const std::vector<point > &xyz,
-				   const std::vector<G4double>& v) {
+void G4CMPTriLinearInterp::UseMesh(const vector<point > &xyz,
+				   const vector<G4double>& v) {
   staleCache = true;
   X = xyz;
   V = v;
@@ -46,9 +47,9 @@ void G4CMPTriLinearInterp::UseMesh(const std::vector<point > &xyz,
   TetraIdx = 0;
 }
 
-void G4CMPTriLinearInterp::UseMesh(const std::vector<point>& xyz,
-				   const std::vector<G4double>& v,
-			   const std::vector<std::array<G4int,4> >& tetra) {
+void G4CMPTriLinearInterp::UseMesh(const vector<point>& xyz,
+				   const vector<G4double>& v,
+				   const vector<array<G4int,4> >& tetra) {
   staleCache = true;
   X = xyz;
   V = v;
@@ -96,8 +97,8 @@ void G4CMPTriLinearInterp::BuildTetraMesh() {
   QhullSet<QhullVertex>::iterator vItr;
   map<G4int, G4int> ID2Idx;
   G4int numTet = 0, j;
-  vector<std::array<G4int, 4> > tmpTetrahedra(hull.facetCount(), {{0,0,0,0}});
-  vector<std::array<G4int, 4> > tmpNeighbors(hull.facetCount(), {{-1,-1,-1,-1}});
+  vector<array<G4int, 4> > tmpTetrahedra(hull.facetCount(), {{0,0,0,0}});
+  vector<array<G4int, 4> > tmpNeighbors(hull.facetCount(), {{-1,-1,-1,-1}});
   for (fItr = hull.facetList().begin();fItr != hull.facetList().end(); fItr++) {
     facet = *fItr;
     if (!facet.isUpperDelaunay()) {
@@ -181,64 +182,96 @@ G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& pt,
 // Process list of defined tetrahedra and build table of neighbors
 
 void G4CMPTriLinearInterp::FillNeighbors() {
+  G4cout << "G4CMPTriLinearInterp::FillNeighbors" << G4endl;
+
   time_t start, fin;
-  G4cout << "G4CMPTriLinearInterp::Constructor: Building Neighbors Table..."
-         << G4endl;
   std::time(&start);
 
-  G4int Ntet = Tetrahedra.size();		// Avoid counting in loop
+  // Put the tetrahedra vertices, then the whole list, in indexed order
+  for (auto iTetra: Tetrahedra) std::sort(iTetra.begin(), iTetra.end());
+  std::sort(Tetrahedra.begin(), Tetrahedra.end());
+
+  G4int Ntet = Tetrahedra.size();		// For convenience below
+
   Neighbors.clear();
   Neighbors.resize(Ntet, {{-1,-1,-1,-1}});	// Pre-allocate space
 
+  // For each tetrahedron, find another which shares three corners
   for (G4int i=0; i<Ntet; i++) {
     Neighbors[i][0] =
-      FindTetraID({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][2]}}, i);
+      FindNeighbor({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][2]}}, i);
 
     Neighbors[i][1] =
-      FindTetraID({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][3]}}, i);
+      FindNeighbor({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][3]}}, i);
 
     Neighbors[i][2] =
-      FindTetraID({{Tetrahedra[i][0],Tetrahedra[i][2],Tetrahedra[i][3]}}, i);
+      FindNeighbor({{Tetrahedra[i][0],Tetrahedra[i][2],Tetrahedra[i][3]}}, i);
 
     Neighbors[i][3] =
-      FindTetraID({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][2]}}, i);
+      FindNeighbor({{Tetrahedra[i][1],Tetrahedra[i][2],Tetrahedra[i][3]}}, i);
   }
 
   std::time(&fin);
-  G4cout << "G4CMPTriLinearInterp::Constructor: Took "
+  G4cout << "G4CMPTriLinearInterp::FillNeighbors: Took "
          << difftime(fin, start) << " seconds." << G4endl;
 }
 
-// Locate other tetrahedron with specified face (exclude "skip" index)
-// NOTE: "face" passed by value to allow sorting from smallest to largest
+// Locate other tetrahedron with specified face (excluding "skip" tetrahedron)
 
-G4int G4CMPTriLinearInterp::FindTetraID(std::array<G4int,3> face,
+G4int G4CMPTriLinearInterp::FindNeighbor(const array<G4int,3>& facet,
 					G4int skip) const {
-  std::sort(face.begin(), face.end());	// Put indices in order for testing
+  G4int result = -1;
+  result = FindTetraID({{-1,facet[0],facet[1],facet[2]}}, skip);
+  if (result >= 0) return result;	// Successful match
 
-  G4int ntet = Tetrahedra.size();	// Brute force linear search
-  std::array<G4int,3> tface;		// Reusable buffer for tetrahedra faces
-  for (G4int itet=0; itet<ntet; itet++) {
-    if (itet == skip) continue;
-    
-    tface = {{Tetrahedra[itet][0],Tetrahedra[itet][1],Tetrahedra[itet][2]}};
-    std::sort(tface.begin(), tface.end());
-    if (tface == face) return itet;	// Found matching face!
+  result = FindTetraID({{facet[0],-1,facet[1],facet[2]}}, skip);
+  if (result >= 0) return result;	// Successful match
 
-    tface = {{Tetrahedra[itet][0],Tetrahedra[itet][1],Tetrahedra[itet][3]}};
-    std::sort(tface.begin(), tface.end());
-    if (tface == face) return itet;	// Found matching face!
+  result = FindTetraID({{facet[0],facet[1],-1,facet[2]}}, skip);
+  if (result >= 0) return result;	// Successful match
 
-    tface = {{Tetrahedra[itet][0],Tetrahedra[itet][2],Tetrahedra[itet][3]}};
-    std::sort(tface.begin(), tface.end());
-    if (tface == face) return itet;	// Found matching face!
+  result = FindTetraID({{facet[0],facet[1],facet[2],-1}}, skip);
+  return result;			// If this one failed, they all failed
+}
 
-    tface = {{Tetrahedra[itet][1],Tetrahedra[itet][2],Tetrahedra[itet][3]}};
-    std::sort(tface.begin(), tface.end());
-    if (tface == face) return itet;	// Found matching face!
+// Sorting function is like array sort, but allows for wildcards (val < 0)
+
+inline
+G4bool vertexSort(size_t i, const array<G4int,4>& a, const array<G4int,4>& b) {
+  return ( (i < 4) &&					// Terminate recursion
+	   ( (a[i]>=0 && a[i]<b[i]) ||			// No wildcard less-than
+	     ( (a[i]<0 || b[i]<0 || a[i]==b[i]) &&	// Wild or equal AND
+	       vertexSort(i+1,a,b) ) )			// Next vertex
+	   );
+}
+
+inline
+G4bool tetraSort(const array<G4int,4>& a, const array<G4int,4>& b) {
+  return vertexSort(0,a,b);		// Sort on vertex indices recursively
+}
+
+// Locate other tetrahedron with given vertices (excluding "skip" tetrahedron)
+// "Wild" means that at least one vertex may be "-1", which matches anything
+
+G4int G4CMPTriLinearInterp::FindTetraID(const array<G4int,4>& wildTetra,
+					G4int skip) const {
+  const auto start  = Tetrahedra.begin();
+  const auto finish = Tetrahedra.end();
+
+  // Search from first up to "lowest" match
+  auto match = lower_bound(start, finish, wildTetra, tetraSort);
+
+  // Search from lowest match up to end
+  if (match != finish &&  G4int(match-start) == skip) {
+    match = std::lower_bound(++match, finish, wildTetra, tetraSort);
   }
 
-  return -1;				// No match; face is on outer hull
+  // Unsuccessful search
+  if (match == finish || G4int(match-start) == skip) return -1;
+
+  // Test for tetrahedron 'equality' (match vertices and wildcard)
+  return ( (tetraSort(*match,wildTetra) || tetraSort(wildTetra,*match)) ? -1
+	   : G4int(match-start) );
 }
 
 
@@ -246,7 +279,7 @@ G4int G4CMPTriLinearInterp::FindTetraID(std::array<G4int,3> face,
 
 G4double 
 G4CMPTriLinearInterp::GetValue(const G4double pos[3], G4bool quiet) const {
-  G4double bary[4];
+  G4double bary[4] = { 0. };
   FindTetrahedron(&pos[0], bary, quiet);
   staleCache = true;
     
@@ -261,7 +294,7 @@ G4CMPTriLinearInterp::GetValue(const G4double pos[3], G4bool quiet) const {
 
 G4ThreeVector 
 G4CMPTriLinearInterp::GetGrad(const G4double pos[3], G4bool quiet) const {
-  G4double bary[4];
+  G4double bary[4] = { 0. };
   G4int oldIdx = TetraIdx;
   FindTetrahedron(pos, bary, quiet);
 
@@ -287,19 +320,20 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[4], G4double bary[4],
 				      G4bool quiet) const {
   const G4double maxError = -1e-10;
   G4int minBaryIdx;
-  G4double bestBary[4];
+  G4double bestBary[4] = { 0. };
   G4int bestTet = -1;
   if (TetraIdx == -1) TetraIdx = 0;
   for (size_t count = 0; count < Tetrahedra.size(); ++count) {
     Cart2Bary(pt,bary);
 
-    if (bary[3] >= maxError && bary[2] >= maxError 
-        && bary[1] >= maxError && bary[0] >= maxError) //bary[3] more likely to be bad.
+    if (bary[3] >= maxError && bary[2] >= maxError &&
+	bary[1] >= maxError && bary[0] >= maxError) //bary[3] more likely to be bad.
       return;
-    else if (bary[0]*bary[0] + bary[1]*bary[1] + bary[2]*bary[2] + bary[3]*bary[3]
-            < bestBary[0]*bestBary[0] + bestBary[1]*bestBary[1] 
-              + bestBary[2]*bestBary[2] + bestBary[3]*bestBary[3]
-            || count == 0) {
+    else if ( (bary[0]*bary[0] + bary[1]*bary[1] +
+	       bary[2]*bary[2] + bary[3]*bary[3]) < 
+	      (bestBary[0]*bestBary[0] + bestBary[1]*bestBary[1] +
+	       bestBary[2]*bestBary[2] + bestBary[3]*bestBary[3])
+	      || count == 0) {
       for (G4int i = 0; i < 4; ++i)
         bestBary[i] = bary[i];
 
@@ -308,8 +342,7 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[4], G4double bary[4],
 
     minBaryIdx = 0;
     for (G4int i = 1; i < 4; ++i)
-      if (bary[i] < bary[minBaryIdx])
-        minBaryIdx = i;
+      if (bary[i] < bary[minBaryIdx]) minBaryIdx = i;
 
     TetraIdx = Neighbors[TetraIdx][minBaryIdx];
     if (TetraIdx == -1) {
@@ -321,7 +354,7 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[4], G4double bary[4],
 
       return;
     }
-  }
+  }	// for (size_t count=0 ...
 
   TetraIdx = bestTet;
   Cart2Bary(pt,bary);

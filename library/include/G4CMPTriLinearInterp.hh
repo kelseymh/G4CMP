@@ -57,11 +57,12 @@ private:
   void BuildTetraMesh();	// Builds mesh from pre-initialized 'X' array
   void FillNeighbors();		// Generate Neighbors table from tetrahedra
 
+  G4int FindNeighbor(const std::array<G4int,3>& facet, G4int skip) const;
+  G4int FindTetraID(const std::array<G4int,4>& wildTetra, G4int skip) const;
+
   void FindTetrahedron(const G4double point[4], G4double bary[4],
 		       G4bool quiet=false) const;
   G4int FindPointID(const std::vector<G4double>& point, const G4int id) const;
-  G4int FindTetraID(std::array<G4int,3> face, G4int skip) const;
-  // NOTE: Pass by value to allow sorting indices for match
 
   void Cart2Bary(const G4double point[4], G4double bary[4]) const;
   void BuildT4x3(G4double ET[4][3]) const;
