@@ -21,7 +21,9 @@
 using namespace orgQhull;
 using std::array;
 using std::map;
+using std::sort;
 using std::vector;
+
 
 // Constructors to load mesh and possibly re-triangulate
 
@@ -179,6 +181,34 @@ G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& pt,
 }
 
 
+// Tetrahedra sort functions, labelled for each facet option
+
+namespace {
+  G4bool tLess012(const array<G4int,4>& a, const array<G4int,4>& b) {
+    return ( a[0]<b[0] ||
+	     (a[0]==b[0] && (a[1]<b[1] ||
+			     (a[1]==b[1] && a[2]<b[2]))) );
+  }
+  
+  G4bool tLess013(const array<G4int,4>& a, const array<G4int,4>& b) {
+    return ( a[0]<b[0] ||
+	     (a[0]==b[0] && (a[1]<b[1] ||
+			     (a[1]==b[1] && a[3]<b[3]))) );
+  }
+  
+  G4bool tLess023(const array<G4int,4>& a, const array<G4int,4>& b) {
+    return ( a[0]<b[0] ||
+	     (a[0]==b[0] && (a[2]<b[2] ||
+			     (a[2]==b[2] && a[3]<b[3]))) );
+  }
+  
+  G4bool tLess123(const array<G4int,4>& a, const array<G4int,4>& b) {
+    return ( a[1]<b[1] ||
+	     (a[1]==b[1] && (a[2]<b[2] ||
+			     (a[2]==b[2] && a[3]<b[3]))) );
+  }
+}
+
 // Process list of defined tetrahedra and build table of neighbors
 
 void G4CMPTriLinearInterp::FillNeighbors() {
@@ -188,8 +218,14 @@ void G4CMPTriLinearInterp::FillNeighbors() {
   std::time(&start);
 
   // Put the tetrahedra vertices, then the whole list, in indexed order
-  for (auto iTetra: Tetrahedra) std::sort(iTetra.begin(), iTetra.end());
-  std::sort(Tetrahedra.begin(), Tetrahedra.end());
+  for (auto& iTetra: Tetrahedra) sort(iTetra.begin(), iTetra.end());
+  sort(Tetrahedra.begin(), Tetrahedra.end());
+
+  // Duplicate list sorted on facets (triplets of vertices)
+  Tetra012 = Tetrahedra; sort(Tetra012.begin(), Tetra012.end(), tLess012);
+  Tetra013 = Tetrahedra; sort(Tetra013.begin(), Tetra013.end(), tLess013);
+  Tetra023 = Tetrahedra; sort(Tetra023.begin(), Tetra023.end(), tLess023);
+  Tetra123 = Tetrahedra; sort(Tetra123.begin(), Tetra123.end(), tLess123);
 
   G4int Ntet = Tetrahedra.size();		// For convenience below
 
@@ -198,22 +234,17 @@ void G4CMPTriLinearInterp::FillNeighbors() {
 
   // For each tetrahedron, find another which shares three corners
   for (G4int i=0; i<Ntet; i++) {
-    Neighbors[i][0] =
-      FindNeighbor({{Tetrahedra[i][1],Tetrahedra[i][2],Tetrahedra[i][3]}}, i);
-
-    Neighbors[i][1] =
-      FindNeighbor({{Tetrahedra[i][0],Tetrahedra[i][2],Tetrahedra[i][3]}}, i);
-
-    Neighbors[i][2] =
-      FindNeighbor({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][3]}}, i);
-
-    Neighbors[i][3] =
-      FindNeighbor({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][2]}}, i);
+    const auto& iTet = Tetrahedra[i];
+    Neighbors[i][0] = FindNeighbor({{iTet[1],iTet[2],iTet[3]}}, i);
+    Neighbors[i][1] = FindNeighbor({{iTet[0],iTet[2],iTet[3]}}, i);
+    Neighbors[i][2] = FindNeighbor({{iTet[0],iTet[1],iTet[3]}}, i);
+    Neighbors[i][3] = FindNeighbor({{iTet[0],iTet[1],iTet[2]}}, i);
   }
 
   std::time(&fin);
   G4cout << "G4CMPTriLinearInterp::FillNeighbors: Took "
          << difftime(fin, start) << " seconds." << G4endl;
+
 }
 
 // Locate other tetrahedron with specified face (excluding "skip" tetrahedron)
@@ -221,57 +252,42 @@ void G4CMPTriLinearInterp::FillNeighbors() {
 G4int G4CMPTriLinearInterp::FindNeighbor(const array<G4int,3>& facet,
 					G4int skip) const {
   G4int result = -1;
-  result = FindTetraID({{-1,facet[0],facet[1],facet[2]}}, skip);
+  result = FindTetraID(Tetra123, {{-1,facet[0],facet[1],facet[2]}}, skip, tLess123);
   if (result >= 0) return result;	// Successful match
 
-  result = FindTetraID({{facet[0],-1,facet[1],facet[2]}}, skip);
+  result = FindTetraID(Tetra023, {{facet[0],-1,facet[1],facet[2]}}, skip, tLess023);
   if (result >= 0) return result;	// Successful match
 
-  result = FindTetraID({{facet[0],facet[1],-1,facet[2]}}, skip);
+  result = FindTetraID(Tetra013, {{facet[0],facet[1],-1,facet[2]}}, skip, tLess013);
   if (result >= 0) return result;	// Successful match
 
-  result = FindTetraID({{facet[0],facet[1],facet[2],-1}}, skip);
+  result = FindTetraID(Tetra012, {{facet[0],facet[1],facet[2],-1}}, skip, tLess012);
   return result;			// If this one failed, they all failed
-}
-
-// Sorting function is like array sort, but allows for wildcards (val < 0)
-
-inline
-G4bool vertexSort(size_t i, const array<G4int,4>& a, const array<G4int,4>& b) {
-  return ( (i < 4) &&					// Terminate recursion
-	   ( (a[i]>=0 && a[i]<b[i]) ||			// No wildcard less-than
-	     ( (a[i]<0 || b[i]<0 || a[i]==b[i]) &&	// Wild or equal AND
-	       vertexSort(i+1,a,b) ) )			// Next vertex
-	   );
-}
-
-inline
-G4bool tetraSort(const array<G4int,4>& a, const array<G4int,4>& b) {
-  return vertexSort(0,a,b);		// Sort on vertex indices recursively
 }
 
 // Locate other tetrahedron with given vertices (excluding "skip" tetrahedron)
 // "Wild" means that at least one vertex may be "-1", which matches anything
 
-G4int G4CMPTriLinearInterp::FindTetraID(const array<G4int,4>& wildTetra,
-					G4int skip) const {
-  const auto start  = Tetrahedra.begin();
-  const auto finish = Tetrahedra.end();
+G4int G4CMPTriLinearInterp::
+FindTetraID(const vector<array<G4int,4> >& tetras,
+	    const array<G4int,4>& wildTetra, G4int skip,
+	    G4CMPTriLinearInterp::TetraComp tLess) const {
+  const auto start  = tetras.begin();
+  const auto finish = tetras.end();
 
-  // Search from first up to "lowest" match
-  auto match = lower_bound(start, finish, wildTetra, tetraSort);
+  // Shared facet (if any) will always be adjacent in sorted table
+  auto match = lower_bound(start, finish, wildTetra, tLess);
+  if (match == finish) return -1;		// No match at all? PROBLEM!
 
-  // Search from lowest match up to end
-  if (match != finish &&  G4int(match-start) == skip) {
-    match = std::lower_bound(++match, finish, wildTetra, tetraSort);
+  G4int index = (lower_bound(Tetrahedra.begin(),Tetrahedra.end(),*match)
+		 - Tetrahedra.begin());
+  if (index == skip) {				// Move to adjacent entry
+    index = (lower_bound(Tetrahedra.begin(),Tetrahedra.end(),*(++match))
+	     - Tetrahedra.begin());
   }
 
-  // Unsuccessful search
-  if (match == finish || G4int(match-start) == skip) return -1;
-
-  // Test for tetrahedron 'equality' (match vertices and wildcard)
-  return ( (tetraSort(*match,wildTetra) || tetraSort(wildTetra,*match)) ? -1
-	   : G4int(match-start) );
+  // Test for equality (not < nor >), return index or failure
+  return (!tLess(*match,wildTetra) && !tLess(wildTetra,*match)) ? index : -1;
 }
 
 

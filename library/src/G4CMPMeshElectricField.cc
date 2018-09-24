@@ -16,9 +16,11 @@
 // 20170823  Add scaling factor as optional constructor argument.
 // 20180525  Use new "quiet" argument to suppress "outside of hull" warnings
 // 20180904  Add constructor to take precreated mesh and tetrahedra.
+// 20180924  TriLinearInterp should be a pointer, to break dependency.
 
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4CMPTriLinearInterp.hh"
 #include "G4SystemOfUnits.hh"
 #include <fstream>
 
@@ -30,7 +32,7 @@ using std::vector;
 
 G4CMPMeshElectricField::
 G4CMPMeshElectricField(const G4String& EPotFileName, G4double Vscale)
-  : G4ElectricField() {
+  : G4ElectricField(), Interp(new G4CMPTriLinearInterp) {
   BuildInterp(EPotFileName, Vscale);
 }
 
@@ -38,23 +40,33 @@ G4CMPMeshElectricField::
 G4CMPMeshElectricField(const vector<array<G4double,3> >& xyz,
 		       const vector<G4double>& v,
 		       const vector<array<G4int,4> >& tetra)
-  : G4ElectricField() {
+  : G4ElectricField(), Interp(new G4CMPTriLinearInterp) {
   BuildInterp(xyz, v, tetra);
 }
 
 G4CMPMeshElectricField::G4CMPMeshElectricField(const G4CMPMeshElectricField &p)
-  : G4ElectricField(p), Interp(p.Interp) {;}
+  : G4ElectricField(p), Interp(new G4CMPTriLinearInterp(*p.Interp)) {;}
 
 G4CMPMeshElectricField& 
 G4CMPMeshElectricField::operator=(const G4CMPMeshElectricField &p) {
   if (this != &p) {				// Only copy if not self
     G4ElectricField::operator=(p);		// Call through to base
-    Interp = p.Interp;
+    *Interp = *p.Interp;
   }
 
   return *this;
 }
 
+G4CMPMeshElectricField::~G4CMPMeshElectricField() {
+  delete Interp;
+}
+
+void G4CMPMeshElectricField::
+BuildInterp(const std::vector<std::array<G4double,3> >& xyz,
+	    const std::vector<G4double>& v,
+	    const std::vector<std::array<G4int,4> >& tetra) {
+  Interp->UseMesh(xyz, v, tetra);
+}
 
 void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName,
 					 G4double VScale) {
@@ -114,13 +126,13 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName,
     V[ii] = tempX[ii][3];
   }
 
-  Interp.UseMesh(X, V);
+  Interp->UseMesh(X, V);
 }
 
 
 void G4CMPMeshElectricField::GetFieldValue(const G4double Point[3],
 				     G4double *Efield) const {
-  G4ThreeVector InterpField = Interp.GetGrad(Point,true);	// No messages
+  G4ThreeVector InterpField = Interp->GetGrad(Point,true);	// No messages
   for (size_t i = 0; i < 3; ++i) {
     Efield[i] = 0.0;
     Efield[3+i] = -1 * InterpField[i];
@@ -129,7 +141,7 @@ void G4CMPMeshElectricField::GetFieldValue(const G4double Point[3],
 
 
 G4double G4CMPMeshElectricField::GetPotential(const G4double Point[3]) const {
-  return Interp.GetValue(Point);		// Allow "outside hull" messages
+  return Interp->GetValue(Point);		// Allow "outside hull" messages
 }
 
 

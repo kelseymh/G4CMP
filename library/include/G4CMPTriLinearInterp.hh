@@ -47,19 +47,30 @@ public:
 private:
   std::vector<point > X;
   std::vector<G4double> V;
-  std::vector<std::array<G4int, 4> > Tetrahedra;
-  std::vector<std::array<G4int, 4> > Neighbors;
+  std::vector<std::array<G4int,4> > Tetrahedra;
+  std::vector<std::array<G4int,4> > Neighbors;
   mutable std::map<G4int,G4int> qhull2x;
   mutable G4int TetraIdx;
   mutable G4ThreeVector cachedGrad;
   mutable G4bool staleCache;
 
+  std::vector<std::array<G4int,4> > Tetra012;	// Duplicate tetrahedra lists
+  std::vector<std::array<G4int,4> > Tetra013;	// Sorted on vertex triplets
+  std::vector<std::array<G4int,4> > Tetra023;
+  std::vector<std::array<G4int,4> > Tetra123;
+
   void BuildTetraMesh();	// Builds mesh from pre-initialized 'X' array
   void FillNeighbors();		// Generate Neighbors table from tetrahedra
 
-  G4int FindNeighbor(const std::array<G4int,3>& facet, G4int skip) const;
-  G4int FindTetraID(const std::array<G4int,4>& wildTetra, G4int skip) const;
+  // Function pointer for comparison operator to use search for facets
+  using TetraComp = G4bool(*)(const std::array<G4int,4>&,
+			      const std::array<G4int,4>&);
 
+  G4int FindNeighbor(const std::array<G4int,3>& facet, G4int skip) const;
+  G4int FindTetraID(const std::vector<std::array<G4int,4> >& tetras,
+		    const std::array<G4int,4>& wildTetra, G4int skip,
+		    TetraComp tLess) const;
+		    
   void FindTetrahedron(const G4double point[4], G4double bary[4],
 		       G4bool quiet=false) const;
   G4int FindPointID(const std::vector<G4double>& point, const G4int id) const;
@@ -69,5 +80,13 @@ private:
   G4double Det3(const G4double matrix[3][3]) const;
   void MatInv(const G4double matrix[3][3], G4double result[3][3]) const;
 };
+
+// SPECIAL:  Provide a way to write out array data directly (not in STL!)
+
+template <typename T, size_t N>
+inline std::ostream& operator<<(std::ostream& os, const std::array<T,N>& arr) {
+  for (const T& ai: arr) os << ai << " ";
+  return os;
+}
 
 #endif

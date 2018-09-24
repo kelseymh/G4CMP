@@ -14,15 +14,18 @@
 // 20150122  Move vector_comp into class definition as static function.
 // 20170823  Add scaling factor as optional constructor argument.
 // 20180904  Add constructor to take precreated mesh and tetrahedra.
+// 20180924  TriLinearInterp should be a pointer, to break dependency.
 
 #ifndef G4CMPMeshElectricField_h 
 #define G4CMPMeshElectricField_h 1
 
-#include "G4CMPTriLinearInterp.hh"
 #include "G4ElectricField.hh"
 #include "G4ThreeVector.hh"
 #include <array>
 #include <vector>
+
+class G4CMPTriLinearInterp;
+
 
 class G4CMPMeshElectricField : public G4ElectricField {
 public:
@@ -32,7 +35,7 @@ public:
 			 const std::vector<G4double>& v,
 			 const std::vector<std::array<G4int,4> >& tetra);
 
-  virtual ~G4CMPMeshElectricField() {;}
+  virtual ~G4CMPMeshElectricField();
 
   virtual void GetFieldValue(const G4double Point[3], G4double *Efield) const;
 
@@ -48,15 +51,13 @@ public:
 			    const std::array<G4double, 4>& p2);
 
 private:
-  G4CMPTriLinearInterp Interp;
+  G4CMPTriLinearInterp* Interp;
 
   void BuildInterp(const G4String& EPotFileName, G4double Vscale=1.);
 
   void BuildInterp(const std::vector<std::array<G4double,3> >& xyz,
 		   const std::vector<G4double>& v,
-		   const std::vector<std::array<G4int,4> >& tetra) {
-    Interp.UseMesh(xyz, v, tetra);
-  }
+		   const std::vector<std::array<G4int,4> >& tetra);
 };
 
 #endif	/* G4CMPMeshElectricField_h */
