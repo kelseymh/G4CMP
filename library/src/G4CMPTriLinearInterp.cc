@@ -199,16 +199,16 @@ void G4CMPTriLinearInterp::FillNeighbors() {
   // For each tetrahedron, find another which shares three corners
   for (G4int i=0; i<Ntet; i++) {
     Neighbors[i][0] =
-      FindNeighbor({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][2]}}, i);
+      FindNeighbor({{Tetrahedra[i][1],Tetrahedra[i][2],Tetrahedra[i][3]}}, i);
 
     Neighbors[i][1] =
-      FindNeighbor({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][3]}}, i);
-
-    Neighbors[i][2] =
       FindNeighbor({{Tetrahedra[i][0],Tetrahedra[i][2],Tetrahedra[i][3]}}, i);
 
+    Neighbors[i][2] =
+      FindNeighbor({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][3]}}, i);
+
     Neighbors[i][3] =
-      FindNeighbor({{Tetrahedra[i][1],Tetrahedra[i][2],Tetrahedra[i][3]}}, i);
+      FindNeighbor({{Tetrahedra[i][0],Tetrahedra[i][1],Tetrahedra[i][2]}}, i);
   }
 
   std::time(&fin);
