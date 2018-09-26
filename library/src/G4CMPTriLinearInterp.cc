@@ -8,6 +8,7 @@
 // 20180525  Protect against "outside of hull" by testing TetraIdx returns;
 //	provide "quiet" flag to suppress "outside of hull" messages.
 // 20180904  Add constructor to directly load mesh definitions
+// 20180925  Protect memory corruption in passing point coordinates.
 
 #include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
@@ -212,7 +213,8 @@ namespace {
 // Process list of defined tetrahedra and build table of neighbors
 
 void G4CMPTriLinearInterp::FillNeighbors() {
-  G4cout << "G4CMPTriLinearInterp::FillNeighbors" << G4endl;
+  G4cout << "G4CMPTriLinearInterp::FillNeighbors (" << Tetrahedra.size()
+	 << " tetrahedra)" << G4endl;
 
   time_t start, fin;
   std::time(&start);
@@ -243,7 +245,8 @@ void G4CMPTriLinearInterp::FillNeighbors() {
 
   std::time(&fin);
   G4cout << "G4CMPTriLinearInterp::FillNeighbors: Took "
-         << difftime(fin, start) << " seconds." << G4endl;
+         << difftime(fin, start) << " seconds for " << Neighbors.size()
+	 << " entries." << G4endl;
 
 }
 
@@ -332,40 +335,39 @@ G4CMPTriLinearInterp::GetGrad(const G4double pos[3], G4bool quiet) const {
 }
 
 void 
-G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[4], G4double bary[4],
+G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
 				      G4bool quiet) const {
-  const G4double maxError = -1e-10;
-  G4int minBaryIdx;
-  G4double bestBary[4] = { 0. };
+  const G4double barySafety = -1e-10;	// Deal with points close to facets
+
+  G4int minBaryIdx = -1;
+
+  G4double bestBary = 0.;	// Norm of barycentric coordinates (below)
   G4int bestTet = -1;
   if (TetraIdx == -1) TetraIdx = 0;
   for (size_t count = 0; count < Tetrahedra.size(); ++count) {
-    Cart2Bary(pt,bary);
+    Cart2Bary(pt,bary);		// Get barycentric coord in current tetrahedron
 
-    if (bary[3] >= maxError && bary[2] >= maxError &&
-	bary[1] >= maxError && bary[0] >= maxError) //bary[3] more likely to be bad.
-      return;
-    else if ( (bary[0]*bary[0] + bary[1]*bary[1] +
-	       bary[2]*bary[2] + bary[3]*bary[3]) < 
-	      (bestBary[0]*bestBary[0] + bestBary[1]*bestBary[1] +
-	       bestBary[2]*bestBary[2] + bestBary[3]*bestBary[3])
-	      || count == 0) {
-      for (G4int i = 0; i < 4; ++i)
-        bestBary[i] = bary[i];
+    // Point is inside current tetrahedron (TetraIdx)
+    if (std::all_of(bary, bary+4,
+		    [barySafety](G4double b){return b>=barySafety;})) return;
 
-      bestTet = TetraIdx;
+    // Evaluate barycentric distance from current tetrahedron
+    if (BaryNorm(bary) < bestBary || count == 0) {	// Getting closer
+      bestBary = BaryNorm(bary);
+      bestTet  = TetraIdx;
     }
 
     minBaryIdx = 0;
-    for (G4int i = 1; i < 4; ++i)
+    for (G4int i=1; i<4; ++i)
       if (bary[i] < bary[minBaryIdx]) minBaryIdx = i;
 
     TetraIdx = Neighbors[TetraIdx][minBaryIdx];
     if (TetraIdx == -1) {
       if (!quiet) {
-	G4cerr << "G4CMPTriLinearInterp::FindTetrahedron: Point outside of hull! Check your results."
-	       << "\n pt[0] = " << pt[0] << " pt[1] = " << pt[1]
-	       << " pt[2] = " << pt[2] << G4endl;
+	G4cerr << "G4CMPTriLinearInterp::FindTetrahedron:"
+	       << " Point outside of hull! Check your results."
+	       << "\n pt = " << pt[0] << " " << pt[1] << " " << pt[2]
+	       << G4endl;
       }
 
       return;
@@ -385,7 +387,7 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[4], G4double bary[4],
          */
 }
 
-void G4CMPTriLinearInterp::Cart2Bary(const G4double pt[4], G4double bary[4]) const {
+void G4CMPTriLinearInterp::Cart2Bary(const G4double pt[3], G4double bary[4]) const {
   G4double T[3][3];
   G4double invT[3][3];
 
@@ -401,6 +403,10 @@ void G4CMPTriLinearInterp::Cart2Bary(const G4double pt[4], G4double bary[4]) con
               invT[k][2]*(pt[2] - X[Tetrahedra[TetraIdx][3]][2]);
 
   bary[3] = 1.0 - bary[0] - bary[1] - bary[2];
+}
+
+G4double G4CMPTriLinearInterp::BaryNorm(G4double bary[4]) const {
+  return (bary[0]*bary[0]+bary[1]*bary[1]+bary[2]*bary[2]+bary[3]*bary[3]);
 }
 
 void G4CMPTriLinearInterp::BuildT4x3(G4double ET[4][3]) const {

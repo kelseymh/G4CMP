@@ -76,6 +76,7 @@ private:
   G4int FindPointID(const std::vector<G4double>& point, const G4int id) const;
 
   void Cart2Bary(const G4double point[4], G4double bary[4]) const;
+  G4double BaryNorm(G4double bary[4]) const;
   void BuildT4x3(G4double ET[4][3]) const;
   G4double Det3(const G4double matrix[3][3]) const;
   void MatInv(const G4double matrix[3][3], G4double result[3][3]) const;
