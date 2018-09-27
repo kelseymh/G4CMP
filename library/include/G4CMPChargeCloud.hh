@@ -17,6 +17,7 @@
 // $Id$
 //
 // 20170925  Add direct access to individual positions in cloud, binning
+// 20180831  Fix compiler warning on GetPositionBin()
 
 #ifndef G4CMPChargeCloud_hh
 #define G4CMPChargeCloud_hh 1
@@ -66,7 +67,7 @@ public:
   const G4ThreeVector& GetPosition(G4int i) const { return theCloud[i]; }
 
   const std::vector<G4int>& GetCloudBins() const { return theCloudBins; }
-  const G4int GetPositionBin(G4int i) const { return theCloudBins[i]; }
+  G4int GetPositionBin(G4int i) const { return theCloudBins[i]; }
   G4ThreeVector GetBinCenter(G4int ibin) const;
 
   G4double GetRadius() const { return cloudRadius; }

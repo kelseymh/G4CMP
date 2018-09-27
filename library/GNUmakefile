@@ -24,6 +24,9 @@ G4CMP_FLAGS += -I./include -I$(G4CMPINSTALL)/library/qhull-2012.1/src \
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
 endif
+ifdef G4CMPTLI_DEBUG
+  G4CMP_FLAGS += -DG4CMPTLI_DEBUG
+endif
 
 CPPFLAGS := $(G4CMP_FLAGS) $(CPPFLAGS)		# Prepend for right load order
 
