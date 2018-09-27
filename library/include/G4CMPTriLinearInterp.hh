@@ -8,6 +8,7 @@
 // 20170525  Drop unnecessary empty destructor ("rule of five" pattern)
 // 20180525  Add "quiet" flag to suppress "outside of hull" messages
 // 20180904  Add constructor to directly load mesh definitions
+// 20180926  Add functions to write points, tetrahedra etc. to files
 
 #ifndef G4CMPTriLinearInterp_h 
 #define G4CMPTriLinearInterp_h 
@@ -43,7 +44,10 @@ public:
   // Evaluate mesh at arbitrary location, optionally suppressing errors
   G4double GetValue(const G4double pos[3], G4bool quiet=false) const;
   G4ThreeVector GetGrad(const G4double pos[3], G4bool quiet=false) const;
-  
+
+  void SavePoints(const G4String& fname) const;
+  void SaveTetra(const G4String& fname) const;
+
 private:
   std::vector<point > X;
   std::vector<G4double> V;

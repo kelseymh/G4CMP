@@ -9,6 +9,7 @@
 //	provide "quiet" flag to suppress "outside of hull" messages.
 // 20180904  Add constructor to directly load mesh definitions
 // 20180925  Protect memory corruption in passing point coordinates.
+// 20180926  Add diagnostic output for debugging field problems.
 
 #include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
@@ -17,6 +18,7 @@
 #include "libqhullcpp/QhullVertexSet.h"
 #include <algorithm>
 #include <ctime>
+#include <fstream>
 #include <iostream>
 
 using namespace orgQhull;
@@ -47,7 +49,10 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point > &xyz,
   X = xyz;
   V = v;
   BuildTetraMesh();
-  TetraIdx = 0;
+  TetraIdx = -1;
+#ifdef G4CMPTLI_DEBUG
+  SavePoints("TLI_points.dat"); SaveTetra("TLI_tetra.dat");
+#endif
 }
 
 void G4CMPTriLinearInterp::UseMesh(const vector<point>& xyz,
@@ -58,7 +63,10 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point>& xyz,
   V = v;
   Tetrahedra = tetra;
   FillNeighbors();
-  TetraIdx = 0;
+  TetraIdx = -1;
+#ifdef G4CMPTLI_DEBUG
+  SavePoints("TLI_points.dat"); SaveTetra("TLI_tetra.dat");
+#endif
 }
 
 
@@ -343,9 +351,23 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
 
   G4double bestBary = 0.;	// Norm of barycentric coordinates (below)
   G4int bestTet = -1;
+
   if (TetraIdx == -1) TetraIdx = 0;
+
+#ifdef G4CMPTLI_DEBUG
+  G4cout << "FindTetrahedron pt " << pt[0] << " " << pt[1] << " " << pt[2]
+	 << "\n starting from TetraIdx " << TetraIdx << G4endl;
+#endif
+
   for (size_t count = 0; count < Tetrahedra.size(); ++count) {
     Cart2Bary(pt,bary);		// Get barycentric coord in current tetrahedron
+
+#ifdef G4CMPTLI_DEBUG
+    G4cout << " Loop " << count << ": Tetra " << TetraIdx << ": "
+	   << Tetrahedra[TetraIdx] << "\n bary " << bary[0] << " " << bary[1]
+	   << " " << bary[2] << " " << bary[3] << " norm " << BaryNorm(bary)
+	   << G4endl;
+#endif
 
     // Point is inside current tetrahedron (TetraIdx)
     if (std::all_of(bary, bary+4,
@@ -355,6 +377,10 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
     if (BaryNorm(bary) < bestBary || count == 0) {	// Getting closer
       bestBary = BaryNorm(bary);
       bestTet  = TetraIdx;
+#ifdef G4CMPTLI_DEBUG
+      G4cout << " New bestTet " << bestTet << " bestBary = " << bestBary
+	     << G4endl;
+#endif
     }
 
     // Point is outside current tetrahedron; shift to nearest neighbor
@@ -363,28 +389,28 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
       if (bary[i] < bary[minBaryIdx]) minBaryIdx = i;
 
     TetraIdx = Neighbors[TetraIdx][minBaryIdx];
+
+#ifdef G4CMPTLI_DEBUG
+    G4cout << " minBaryIdx " << minBaryIdx << ": moved to neighbor tetra "
+	   << TetraIdx << G4endl;
+#endif
     if (TetraIdx == -1) {
       if (!quiet) {
 	G4cerr << "G4CMPTriLinearInterp::FindTetrahedron:"
 	       << " Point outside of hull!\n pt = "
 	       << pt[0] << " " << pt[1] << " " << pt[2] << G4endl;
       }
-
       return;
     }
   }	// for (size_t count=0 ...
 
   TetraIdx = bestTet;
   Cart2Bary(pt,bary);
-  /*G4cout << "G4CMPTriLinearInterp::FindTetrahedron: "
-         << "Tetrahedron not found! Using best tetrahedron." << G4endl;
-  G4cout << "pt[0] = " << pt[0] << "; pt[1] = " << pt[1] 
-         << "; pt[2] = " << pt[2] << ";" << G4endl;
-  G4cout << "Best Tetrahedron's barycentric coordinates: " << G4endl;
-  G4cout << "bary[0] = " << bary[0] << "; bary[1] = " << bary[1] 
-         << "; bary[2] = " << bary[2] << "; bary[3] = " << bary[3] << ";" 
+#ifdef G4CMPTLI_DEBUG
+  G4cout << "Tetrahedron not found! Using bestTet " << bestTet << " bary "
+	 << bary[0] << " " << bary[1] << " " << bary[2] << " " << bary[3]
          << G4endl;
-         */
+#endif
 }
 
 void G4CMPTriLinearInterp::Cart2Bary(const G4double pt[3], G4double bary[4]) const {
@@ -443,4 +469,24 @@ void G4CMPTriLinearInterp::MatInv(const G4double matrix[3][3], G4double result[3
   result[0][2] = (matrix[0][1]*matrix[1][2] - matrix[1][1]*matrix[0][2])/determ;
   result[1][2] = (matrix[1][0]*matrix[0][2] - matrix[0][0]*matrix[1][2])/determ;
   result[2][2] = (matrix[0][0]*matrix[1][1] - matrix[1][0]*matrix[0][1])/determ;
+}
+
+
+// Write data blocks to output file: points and values
+
+void G4CMPTriLinearInterp::SavePoints(const G4String& fname) const {
+  G4cout << "Writing points and values to " << fname << G4endl;
+  std::ofstream save(fname);
+  for (size_t i=0; i<X.size(); i++) {
+    save << X[i][0] << " " << X[i][1] << " " << X[i][2] << " " << V[i]
+	 << std::endl;
+  }
+}
+
+void G4CMPTriLinearInterp::SaveTetra(const G4String& fname) const {
+  G4cout << "Writing tetrahedra and neighbors to " << fname << G4endl;
+  std::ofstream save(fname);
+    for (size_t i=0; i<Tetrahedra.size(); i++) {
+      save << Tetrahedra[i] << "        " << Neighbors[i] << std::endl;
+  }
 }
