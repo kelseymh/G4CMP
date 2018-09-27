@@ -8,7 +8,8 @@
 // 20170525  Drop unnecessary empty destructor ("rule of five" pattern)
 // 20180525  Add "quiet" flag to suppress "outside of hull" messages
 // 20180904  Add constructor to directly load mesh definitions
-// 20180926  Add functions to write points, tetrahedra etc. to files
+// 20180926  Add functions to write points, tetrahedra etc. to files.
+//		Add starting index for tetrahedral traversal
 
 #ifndef G4CMPTriLinearInterp_h 
 #define G4CMPTriLinearInterp_h 
@@ -57,6 +58,7 @@ private:
   mutable G4int TetraIdx;
   mutable G4ThreeVector cachedGrad;
   mutable G4bool staleCache;
+  G4int TetraStart;				// Start of tetrahedral searches
 
   std::vector<std::array<G4int,4> > Tetra012;	// Duplicate tetrahedra lists
   std::vector<std::array<G4int,4> > Tetra013;	// Sorted on vertex triplets
@@ -74,7 +76,8 @@ private:
   G4int FindTetraID(const std::vector<std::array<G4int,4> >& tetras,
 		    const std::array<G4int,4>& wildTetra, G4int skip,
 		    TetraComp tLess) const;
-		    
+  G4int FirstInteriorTetra();	// Lowest tetra index with all facets shared
+
   void FindTetrahedron(const G4double point[4], G4double bary[4],
 		       G4bool quiet=false) const;
   G4int FindPointID(const std::vector<G4double>& point, const G4int id) const;

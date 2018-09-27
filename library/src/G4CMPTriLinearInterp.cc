@@ -10,6 +10,7 @@
 // 20180904  Add constructor to directly load mesh definitions
 // 20180925  Protect memory corruption in passing point coordinates.
 // 20180926  Add diagnostic output for debugging field problems.
+//		Add starting index for tetrahedral traversal
 
 #include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
@@ -50,6 +51,8 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point > &xyz,
   V = v;
   BuildTetraMesh();
   TetraIdx = -1;
+  TetraStart = FirstInteriorTetra();
+
 #ifdef G4CMPTLI_DEBUG
   SavePoints("TLI_points.dat"); SaveTetra("TLI_tetra.dat");
 #endif
@@ -64,6 +67,8 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point>& xyz,
   Tetrahedra = tetra;
   FillNeighbors();
   TetraIdx = -1;
+  TetraStart = FirstInteriorTetra();
+
 #ifdef G4CMPTLI_DEBUG
   SavePoints("TLI_points.dat"); SaveTetra("TLI_tetra.dat");
 #endif
@@ -302,6 +307,19 @@ FindTetraID(const vector<array<G4int,4> >& tetras,
 }
 
 
+// Return index of tetrahedron with all facets shared, to start FindTetra()
+
+G4int G4CMPTriLinearInterp::FirstInteriorTetra() {
+  G4int minIndex = Neighbors.size()/4;
+
+  for (G4int i=0; i<(G4int)Neighbors.size(); i++) {
+    if (Neighbors[i][0]>minIndex && Neighbors[i][1]>minIndex &&
+	Neighbors[i][2]>minIndex && Neighbors[i][3]>minIndex) return i;
+  }
+
+  return Neighbors.size()/2;
+}
+
 // Evaluate mesh at arbitrary location, returning potential or gradient
 
 G4double 
@@ -310,13 +328,13 @@ G4CMPTriLinearInterp::GetValue(const G4double pos[3], G4bool quiet) const {
   FindTetrahedron(&pos[0], bary, quiet);
   staleCache = true;
     
-  if (TetraIdx == -1)
-    return 0;
-  else
+  if (TetraIdx == -1) return 0;
+  else {
     return(V[Tetrahedra[TetraIdx][0]] * bary[0] +
            V[Tetrahedra[TetraIdx][1]] * bary[1] +
            V[Tetrahedra[TetraIdx][2]] * bary[2] +
            V[Tetrahedra[TetraIdx][3]] * bary[3]);    
+  }
 }
 
 G4ThreeVector 
@@ -352,7 +370,7 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
   G4double bestBary = 0.;	// Norm of barycentric coordinates (below)
   G4int bestTet = -1;
 
-  if (TetraIdx == -1) TetraIdx = 0;
+  if (TetraIdx == -1) TetraIdx = TetraStart;
 
 #ifdef G4CMPTLI_DEBUG
   G4cout << "FindTetrahedron pt " << pt[0] << " " << pt[1] << " " << pt[2]
