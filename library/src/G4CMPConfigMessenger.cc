@@ -103,6 +103,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   ivRateModelCmd = CreateCommand<G4UIcmdWithAString>("IVRateModel",
            "Set the model for IV scattering rate.");
+  ivRateModelCmd->SetGuidance("IVRate	  : Scattering matrix calculation");
+  ivRateModelCmd->SetGuidance("Linear	  : Gamma0 + Gamma * E^x");
+  ivRateModelCmd->SetGuidance("Quadratic  : Gamma * sqrt[(E0^2 + E^2)^x]");
+  ifRateModelCmd->SetCandidates("IVRate Linear Quadratic");
   ivRateModelCmd->SetDefaultValue("Quadratic");
 
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",

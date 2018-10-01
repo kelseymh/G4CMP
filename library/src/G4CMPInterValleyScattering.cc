@@ -39,17 +39,17 @@
 #include <math.h>
 
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()
-        : G4CMPVDriftProcess("G4CMPInterValleyScattering", fInterValleyScattering) {
-                G4String model = G4CMPConfigManager::GetIVRateModel();
-                if(model == "IVRate"){
-                        UseRateModel(new G4CMPInterValleyRate);
-                }else if(model == "Linear"){
-                        UseRateModel(new G4CMPIVRateLinear);
-                }else{
-                        // Default = "Quadratic"
-                        UseRateModel(new G4CMPIVRateQuadratic);
-                }
-        }
+  : G4CMPVDriftProcess("G4CMPInterValleyScattering", fInterValleyScattering) {
+  G4String model = G4CMPConfigManager::GetIVRateModel();
+       if (model(0) == 'Q') UseRateModel(new G4CMPIVRateQuadratic);
+  else if (model(0) == 'L') UseRateModel(new G4CMPIVRateLinear);
+  else if (model(0) == 'I') UseRateModel(new G4CMPInterValleyRate);
+  else {
+    G4cerr << GetProcessName() << " ERROR: Unrecognized rate model " << model
+	   << G4endl;
+    UseRateModel(new G4CMPIVRateQuadratic);		// Default
+  }
+}
 
 G4CMPInterValleyScattering::~G4CMPInterValleyScattering() {;}
 
@@ -67,14 +67,14 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
         G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
 
         if (verboseLevel > 1) {
-                G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
-                        << postStepPoint->GetProcessDefinedStep()->GetProcessName()
-                        << G4endl;
+	  G4cout << GetProcessName() << "::PostStepDoIt: Step limited by "
+		 << postStepPoint->GetProcessDefinedStep()->GetProcessName()
+		 << G4endl;
         }
 
         // Don't do anything at a volume boundary
         if (postStepPoint->GetStepStatus()==fGeomBoundary) {
-                return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+	  return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
         }
 
         // Get track's energy in current valley
