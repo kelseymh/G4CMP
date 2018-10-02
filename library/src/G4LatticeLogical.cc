@@ -37,6 +37,7 @@
 // 20180831  IVFiled, IVRate, IVRate1, IVRateQuad, IVExponentQuad, and IVExponent represent 
 //           E0(Eq.1), Gamma0 (Eq.2), Gamma1 (Eq.2), Gamma0 (Eq.1), alpha (Eq.1), alpha (Eq.2)
 //           from arXiv:1807.07986
+
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4CMPPhononKinTable.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -65,7 +66,8 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fMassTensor(G4Rep3x3(mElectron,0.,0.,0.,mElectron,0.,0.,0.,mElectron)),
     fMassInverse(G4Rep3x3(1/mElectron,0.,0.,0.,1/mElectron,0.,0.,0.,1/mElectron)),
     fAlpha(0.), fAcDeform(0.), 
-    fIVField(0.), fIVRate(0.), fIVExponent(0.), fIVExponentQuad(0.), fIVRateQuad(0.), fIVRate1(0.) {
+    fIVQuadField(0.), fIVQuadRate(0.), fIVQuadExponent(0.),
+    fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.) {
   for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
     for (G4int j=0; j<KVBINS; j++) {
       for (G4int k=0; k<KVBINS; k++) {
@@ -130,12 +132,12 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fAcDeform = rhs.fAcDeform;
   fIVDeform = rhs.fIVDeform;
   fIVEnergy = rhs.fIVEnergy;
-  fIVField = rhs.fIVField;
-  fIVRate = rhs.fIVRate;
-  fIVExponent = rhs.fIVExponent;
-  fIVExponentQuad = rhs.fIVExponentQuad;
-  fIVRateQuad = rhs.fIVRateQuad;
-  fIVRate1 = rhs.fIVRateQuad;
+  fIVQuadField = rhs.fIVQuadField;
+  fIVQuadRate = rhs.fIVQuadRate;
+  fIVQuadExponent = rhs.fIVQuadExponent;
+  fIVLinExponent = rhs.fIVLinExponent;
+  fIVLinRate0 = rhs.fIVLinRate0;
+  fIVLinRate1 = rhs.fIVLinRate1;
   if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
   if (!rhs.fpPhononTable) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
 
@@ -728,18 +730,15 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
   os << "\n ivEnergy "; DumpList(os, fIVEnergy, "eV");
   os << std::endl;
 
-  G4String model = G4CMPConfigManager::GetIVRateModel();
-  if(model=="Quadratic"){
-     os << "# Quadratic intervalley scattering parameters"
-        << "\nivField " << fIVField/(volt/m) << " V/m"
-        << "\nivRateQuad " << fIVRateQuad/hertz << " Hz"
-        << "\nivPower " << fIVExponent << std::endl;
-  }else if(model == "Linear"){
-     os << "# Linear intervalley scattering parameters"
-        << "\nivRate " << fIVRate/hertz << " Hz"
-        << "\nivPower " << fIVExponent
-        << "\nivRate1 " << fIVRate1/hertz << " Hz" << std::endl;
-  }
+  os << "# Quadratic intervalley scattering parameters"
+     << "\nivQuadRate " << fIVQuadRate/hertz << " Hz"
+     << "\nivQuadField " << fIVQuadField/(volt/m) << " V/m"
+     << "\nivQuadPower " << fIVQuadExponent << std::endl;
+
+  os << "# Linear intervalley scattering parameters"
+     << "\nivLinRate0 " << fIVLinRate0/hertz << " Hz"
+     << "\nivLinRate1 " << fIVLinRate1/hertz << " Hz" 
+     << "\nivLinPower " << fIVLinExponent << std::endl;
 }
 
 // Print out Euler angles of requested valley

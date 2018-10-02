@@ -1,3 +1,16 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+
+/// \file library/src/G4CMPIVRateQuadratic.cc
+/// \brief Compute electron intervalley scattering rate using linear
+///	   power-law parametrization vs. electric field.
+//
+// $Id$
+//
+// 20181001  Use systematic names for IV rate parameters
+
 #include "G4CMPIVRateLinear.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
@@ -44,19 +57,16 @@ G4double G4CMPIVRateLinear::Rate(const G4Track& aTrack) const {
   theLattice->RotateToLattice(fieldVector);
   fieldVector *= GetValley(aTrack);
   fieldVector *= theLattice->GetSqrtInvTensor();
-  fieldVector /= volt/m;			// Strip units for MFP below
+  fieldVector /= volt/cm;			// Strip units for MFP below
   if (verboseLevel > 1) {
-    G4cout << " in HV space " << fieldVector*0.01 << " ("
-	   << fieldVector.mag()*0.01 << ") V/cm" << G4endl;
+    G4cout << " in HV space " << fieldVector << " ("
+	   << fieldVector.mag() << ") V/cm" << G4endl;
   }
-    //Compute mean free path 
-   G4double gamma1 = theLattice->GetIVRate1() / (pow(100,theLattice->GetIVExponent()));
-   G4double rate = theLattice->GetIVRate() + (gamma1*
-    pow(fieldVector.mag(), theLattice->GetIVExponent()));
 
-  //G4double rate = theLattice->GetIVRate();
-  std::cout << "Rate" << rate/hertz << std::endl;
-  std::cout << "E" << fieldVector.mag() << std::endl;
+  // Compute mean free path -- NOTE FIELD UNITS ARE V/cm HERE
+  G4double rate = theLattice->GetIVLinRate0() +
+    theLattice->GetIVLinRate1() * pow(fieldVector.mag(),
+				      theLattice->GetIVLinExponent());
 
   if (verboseLevel > 1) G4cout << "IV rate = " << rate/hertz << " Hz" << G4endl;
   return rate;

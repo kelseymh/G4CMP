@@ -30,6 +30,8 @@
 //		for multiple optical IV potentials
 // 20170821  Add transverse sound speed, L->TT fraction
 // 20180815  F. Insulla -- Added IVRateQuad
+// 20181001  M. Kelsey -- Clarify IV rate parameters systematically
+
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPCrystalGroup.hh"
@@ -193,13 +195,14 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "l0_h")       pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
   else if (name == "hmass")      pLattice->SetHoleMass(fValue*mElectron);
   else if (name == "acdeform")   pLattice->SetAcousticDeform(fValue*ProcessUnits("Energy"));
-  else if (name == "ivfield")    pLattice->SetIVField(fValue*ProcessUnits("Electric field"));
-  else if (name == "ivrate")     pLattice->SetIVRate(fValue*ProcessUnits("Frequency"));
-  else if (name == "ivpower")    pLattice->SetIVExponent(fValue);
-  else if (name == "ivpowerquad") pLattice->SetIVExponentQuad(fValue);
-  else if (name == "ivexponent") pLattice->SetIVExponent(fValue);
-  else if (name == "ivratequad") pLattice->SetIVRateQuad(fValue*ProcessUnits("Frequency"));
-  else if (name == "ivrate1") pLattice->SetIVRate1(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivquadfield") pLattice->SetIVQuadField(fValue*ProcessUnits("Electric field"));
+  else if (name == "ivquadrate")  pLattice->SetIVQuadRate(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivquadpower") pLattice->SetIVQuadExponent(fValue);
+  else if (name == "ivquadexponent") pLattice->SetIVQuadExponent(fValue);
+  else if (name == "ivlinrate0") pLattice->SetIVLinRate0(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivlinrate1") pLattice->SetIVLinRate1(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivlinpower") pLattice->SetIVLinExponent(fValue);
+  else if (name == "ivlinexponent") pLattice->SetIVLinExponent(fValue);
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;

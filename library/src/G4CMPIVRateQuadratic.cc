@@ -10,6 +10,7 @@
 // $Id$
 //
 // 20170815  Drop call to LoadDataForTrack(); now handled in process.
+// 20181001  Use systematic names for IV rate parameters
 
 #include "G4CMPIVRateQuadratic.hh"
 #include "G4Field.hh"
@@ -64,12 +65,11 @@ G4double G4CMPIVRateQuadratic::Rate(const G4Track& aTrack) const {
 	   << fieldVector.mag()*0.01 << ") V/cm" << G4endl;
   }
 
-  // Compute mean free 
-  G4double E_0 = theLattice->GetIVField() / (volt/m);
-  G4double rate = theLattice->GetIVRateQuad() *
-    pow((E_0*E_0 + fieldVector.mag2()), theLattice->GetIVExponentQuad()/2.0);
-  std::cout << "Rate" << rate/hertz << std::endl;
-  std::cout << "E" << fieldVector.mag() << std::endl;
+  // Compute mean free path; field vector units are V/m below
+  G4double E_0 = theLattice->GetIVQuadField() / (volt/m);
+  G4double rate = theLattice->GetIVQuadRate() *
+    pow((E_0*E_0 + fieldVector.mag2()), theLattice->GetIVQuadExponent()/2.0);
+
   if (verboseLevel > 1) G4cout << "IV rate = " << rate/hertz << " Hz" << G4endl;
   return rate;
 }
