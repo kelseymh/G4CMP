@@ -56,42 +56,42 @@ G4CMPInterValleyScattering::~G4CMPInterValleyScattering() {;}
 
 G4bool 
 G4CMPInterValleyScattering::IsApplicable(const G4ParticleDefinition& aPD) {
-        return G4CMP::IsElectron(&aPD);
+  return G4CMP::IsElectron(&aPD);
 }
 
 
 G4VParticleChange* 
 G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
-                const G4Step& aStep) {
-        aParticleChange.Initialize(aTrack); 
-        G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
-
-        if (verboseLevel > 1) {
-	  G4cout << GetProcessName() << "::PostStepDoIt: Step limited by "
-		 << postStepPoint->GetProcessDefinedStep()->GetProcessName()
-		 << G4endl;
-        }
-
-        // Don't do anything at a volume boundary
-        if (postStepPoint->GetStepStatus()==fGeomBoundary) {
-	  return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-        }
-
-        // Get track's energy in current valley
-        G4ThreeVector p = GetLocalMomentum(aTrack);
-        G4int valley = GetValleyIndex(aTrack);
-        p = theLattice->MapPtoK_valley(valley, p); // p is actually k now
-
-        // picking a new valley at random if IV-scattering process was triggered
-        valley = ChangeValley(valley);
-        G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
-
-        p = theLattice->MapK_valleyToP(valley, p); // p is p again
-        RotateToGlobalDirection(p);
-
-        // Adjust track kinematics for new valley
-        FillParticleChange(valley, p);
-
-        ClearNumberOfInteractionLengthLeft();    
-        return &aParticleChange;
+					 const G4Step& aStep) {
+  aParticleChange.Initialize(aTrack); 
+  G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
+  
+  if (verboseLevel > 1) {
+    G4cout << GetProcessName() << "::PostStepDoIt: Step limited by "
+	   << postStepPoint->GetProcessDefinedStep()->GetProcessName()
+	   << G4endl;
+  }
+  
+  // Don't do anything at a volume boundary
+  if (postStepPoint->GetStepStatus()==fGeomBoundary) {
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+  }
+  
+  // Get track's energy in current valley
+  G4ThreeVector p = GetLocalMomentum(aTrack);
+  G4int valley = GetValleyIndex(aTrack);
+  p = theLattice->MapPtoK_valley(valley, p); // p is actually k now
+  
+  // picking a new valley at random if IV-scattering process was triggered
+  valley = ChangeValley(valley);
+  G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
+  
+  p = theLattice->MapK_valleyToP(valley, p); // p is p again
+  RotateToGlobalDirection(p);
+  
+  // Adjust track kinematics for new valley
+  FillParticleChange(valley, p);
+  
+  ClearNumberOfInteractionLengthLeft();    
+  return &aParticleChange;
 }
