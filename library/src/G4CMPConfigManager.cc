@@ -20,6 +20,7 @@
 // 20170823  Remove geometry-specific parameters; implement in examples
 // 20170830  Add downsampling energy scale parameter
 // 20170908  G4CMP-118:  Use Edelweiss IV rate by default
+// 20180801  G4CMP-143:  Change IV rate from bool to str, Edelweiss->Quadratic
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
