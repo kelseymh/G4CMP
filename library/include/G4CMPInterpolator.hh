@@ -3,6 +3,7 @@
 //
 //  20160610  Extracted from old G4CMPNR.hh
 //  20160628  Active code moved from .hh to .cc
+//  20181010  Address compiler warnings; define virtual dtors
 
 #ifndef _G4CMPInterpolator_hh
 #define _G4CMPInterpolator_hh
@@ -21,7 +22,8 @@ struct G4CMPVInterpolator {
   vector<double> xx, yy;
 
   G4CMPVInterpolator(const vector<double>& x, const vector<double>& y, int m);
-    
+  virtual ~G4CMPVInterpolator() {;}
+
   virtual double interp(double x) {
     int jlo = cor ? hunt(x) : locate(x);
     return rawinterp(jlo,x);
@@ -38,6 +40,7 @@ struct G4CMPVInterpolator {
 struct G4CMPLinearInterp : G4CMPVInterpolator {
   G4CMPLinearInterp(const vector<double> &xv, const vector<double> &yv)
     : G4CMPVInterpolator(xv,yv,2)  {}
+  virtual ~G4CMPLinearInterp() {;}
 
   virtual double rawinterp(int j, double x);
 };
@@ -52,8 +55,9 @@ struct G4CMPBiLinearInterp {
   
   G4CMPBiLinearInterp(const vector<double> &x1v, const vector<double> &x2v,
 		      const matrix<double> &ym)
-    : m(x1v.size()), n(x2v.size()), y(ym), x1terp(x1v,x1v), x2terp(x2v,x2v) {}
-    
+    : m(x1v.size()), n(x2v.size()), y(ym), x1terp(x1v,x1v), x2terp(x2v,x2v) {;}
+  virtual ~G4CMPBiLinearInterp() {;}
+
   G4CMPBiLinearInterp& operator=(const G4CMPBiLinearInterp& oldBI);
     
   virtual double interp(double x1p, double x2p);
