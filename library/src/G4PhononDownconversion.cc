@@ -94,7 +94,7 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
   if (aTrack.GetDefinition() != G4PhononLong::Definition()) {
     return &aParticleChange;		// Don't reset interaction length!
   }
-    
+
   // Obtain dynamical constants from this volume's lattice
   fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
   fGamma  = theLattice->GetGamma() / (1e11*pascal);
@@ -119,7 +119,7 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
   // Only kill the track if downconversion actually happened
   if (aParticleChange.GetNumberOfSecondaries() > 0) {
     aParticleChange.ProposeEnergy(0.);
-    aParticleChange.ProposeTrackStatus(fStopAndKill);    
+    aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
 
   return &aParticleChange;
@@ -148,7 +148,7 @@ inline double G4PhononDownconversion::GetLTDecayProb(double d, double x) const {
 
 //probability density of energy distribution of T-phonon in L->T+T process
 
-inline double G4PhononDownconversion::GetTTDecayProb(double d, double x) const {  
+inline double G4PhononDownconversion::GetTTDecayProb(double d, double x) const {
   //dynamic constants from Tamura, PRL31, 1985
   G4double A = 0.5*(1-d*d)*(fBeta+fLambda+(1+d*d)*(fGamma+fMu));
   G4double B = fBeta+fLambda+2*d*d*(fGamma+fMu);
@@ -172,7 +172,7 @@ inline double G4PhononDownconversion::MakeLDeviation(double d, double x) const {
 
 inline double G4PhononDownconversion::MakeTDeviation(double d, double x) const {
   //change in T-phonon propagation direction after decay (L->L+T process)
-  
+
   return std::acos((1-x*x+d*d*(1-x)*(1-x))/(2*d*(1-x)));
 }
 
@@ -189,7 +189,7 @@ inline double G4PhononDownconversion::MakeTTDeviation(double d, double x) const 
 
 
 //Generate daughter phonons from L->T+T process
-   
+
 void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   G4double upperBound=(1+(1/fvLvT))/2;
   G4double lowerBound=(1-(1/fvLvT))/2;
@@ -203,9 +203,9 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   G4double p = 1.5*G4UniformRand();
   while(p >= GetTTDecayProb(fvLvT, x*fvLvT)) {
     x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
-    p = 1.5*G4UniformRand(); 
+    p = 1.5*G4UniformRand();
   }
-  
+
   //using energy fraction x to calculate daughter phonon directions
   G4double theta1=MakeTTDeviation(fvLvT, x);
   G4double theta2=MakeTTDeviation(fvLvT, 1-x);
@@ -215,7 +215,7 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   // FIXME:  These extra randoms change timing and causting outputs of example!
   //G4ThreeVector ran = G4RandomDirection();	// FIXME: Drop this line
   // Is this issue fixed by dropping the above line?
-  
+
   G4double ph=G4UniformRand()*twopi;
   dir1 = dir1.rotate(dir1.orthogonal(),theta1).rotate(dir1, ph);
   dir2 = dir2.rotate(dir2.orthogonal(),-theta2).rotate(dir2,ph);
@@ -294,11 +294,11 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
 
 
 //Generate daughter phonons from L->L'+T process
-   
+
 void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   G4double upperBound=1;
   G4double lowerBound=(fvLvT-1)/(fvLvT+1);
-  
+
   /*
   //Use MC method to generate point from distribution:
   //if a random point on the energy-probability plane is
@@ -396,4 +396,3 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
