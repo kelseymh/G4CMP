@@ -7,11 +7,11 @@
 /// \brief Implementation of the G4PhononReflection class
 //
 // This process handles the interaction of phonons with
-// boundaries. Implementation of this class is highly 
+// boundaries. Implementation of this class is highly
 // geometry dependent.Currently, phonons are killed when
-// they reach a boundary. If the other side of the 
+// they reach a boundary. If the other side of the
 // boundary was Al, a hit is registered.
-//  
+//
 // $Id$
 //
 // 20131115  Throw exception if track's polarization state is invalid.
@@ -45,6 +45,7 @@
 #include "G4VParticleChange.hh"
 #include "G4LogicalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
+#include "G4PhononDownconversion.hh"
 #include "Randomize.hh"
 
 
@@ -105,6 +106,23 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
     k*G4CMP::GetSurfaceNormal(aStep) > absMinK);
 }
 
+void G4CMPPhononBoundaryProcess::
+DoSurfaceDownconversion(const G4Track& aTrack, const G4Step& aStep,
+    G4ParticleChange& particleChange) {
+      auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
+
+      if (verboseLevel>1) {
+        G4cout << GetProcessName() << ": Track downconverted at surface "
+               << G4endl;
+      }
+      G4VParticleChange* downconversionProduct =
+          G4PhononDownconversion::PostStepDoIt(aTrack, aStep);
+          // Questions to ask Mike:
+          // What is a particle change object??
+          // Questions: This builds secondaries. How do I access secondaries
+          // and now change their wavevectors according to lambertian?
+          // What information should go on the verbose level?
+    }
 
 void G4CMPPhononBoundaryProcess::
 DoReflection(const G4Track& aTrack, const G4Step& aStep,
@@ -121,7 +139,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   if (verboseLevel>2) {
-    G4cout << " Old wavevector direction " << waveVector.unit() 
+    G4cout << " Old wavevector direction " << waveVector.unit()
 	   << "\n Old momentum direction   " << aTrack.GetMomentumDirection()
 	   << G4endl;
   }
