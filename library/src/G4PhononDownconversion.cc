@@ -100,7 +100,7 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
                        G4CMPAnharmonicDecay::DoDecay(aTrack, aStep,
                                                      aParticleChange);
 
-  return newParticleChange;
+  return decayParticleChange;
   /*
   // Obtain dynamical constants from this volume's lattice
   fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
