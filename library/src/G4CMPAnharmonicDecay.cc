@@ -1,6 +1,6 @@
 /* Anharmonic Decay utility class */
 
-#include "G4PhononDownconversion.hh"
+#include "G4CMPAnharmonicDecay.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPDownconversionRate.hh"
 #include "G4CMPSecondaryUtils.hh"
@@ -15,12 +15,11 @@
 #include "G4SystemOfUnits.hh"
 #include "G4VParticleChange.hh"
 #include "Randomize.hh"
-#include "G4G4CMPAnharmonicDecay.hh"
 #include <cmath>
 
 
-G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
-                              G4ParticleChange* aChange) {
+G4VParticleChange* G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
+                              G4ParticleChange aParticleChange) {
   // Obtain dynamical constants from this volume's lattice
   fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
   fGamma  = theLattice->GetGamma() / (1e11*pascal);

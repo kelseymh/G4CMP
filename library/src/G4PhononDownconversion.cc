@@ -39,6 +39,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4VParticleChange.hh"
 #include "Randomize.hh"
+#include "G4CMPAnharmonicDecay.hh"
 #include <cmath>
 
 
@@ -95,6 +96,12 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
     return &aParticleChange;		// Don't reset interaction length!
   }
 
+  G4G4VParticleChange* decayParticleChange =
+                       G4CMPAnharmonicDecay::DoDecay(aTrack, aStep,
+                                                     aParticleChange);
+
+  return newParticleChange;
+  /*
   // Obtain dynamical constants from this volume's lattice
   fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
   fGamma  = theLattice->GetGamma() / (1e11*pascal);
@@ -122,7 +129,7 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
 
-  return &aParticleChange;
+  return &aParticleChange;*/
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -141,7 +148,8 @@ G4bool G4PhononDownconversion::IsApplicable(const G4ParticleDefinition& aPD) {
 
 inline double G4PhononDownconversion::GetLTDecayProb(double d, double x) const {
   //d=delta= ratio of group velocities vl/vt and x is the fraction of energy in the longitudinal mode, i.e. x=EL'/EL
-  return (1/(x*x))*(1-x*x)*(1-x*x)*((1+x)*(1+x)-d*d*((1-x)*(1-x)))*(1+x*x-d*d*(1-x)*(1-x))*(1+x*x-d*d*(1-x)*(1-x));
+  return G4CMPAnharmonicDecay::GetLTDecayProb(d, x);
+  //return (1/(x*x))*(1-x*x)*(1-x*x)*((1+x)*(1+x)-d*d*((1-x)*(1-x)))*(1+x*x-d*d*(1-x)*(1-x))*(1+x*x-d*d*(1-x)*(1-x));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -150,12 +158,15 @@ inline double G4PhononDownconversion::GetLTDecayProb(double d, double x) const {
 
 inline double G4PhononDownconversion::GetTTDecayProb(double d, double x) const {
   //dynamic constants from Tamura, PRL31, 1985
+  return G4CMPAnharmonicDecay::GetTTDecayProb(d, x);
+  /*
   G4double A = 0.5*(1-d*d)*(fBeta+fLambda+(1+d*d)*(fGamma+fMu));
   G4double B = fBeta+fLambda+2*d*d*(fGamma+fMu);
   G4double C = fBeta + fLambda + 2*(fGamma+fMu);
   G4double D = (1-d*d)*(2*fBeta+4*fGamma+fLambda+3*fMu);
 
   return (A+B*d*x-B*x*x)*(A+B*d*x-B*x*x)+(C*x*(d-x)-D/(d-x)*(x-d-(1-d*d)/(4*x)))*(C*x*(d-x)-D/(d-x)*(x-d-(1-d*d)/(4*x)));
+ */
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -163,8 +174,8 @@ inline double G4PhononDownconversion::GetTTDecayProb(double d, double x) const {
 
 inline double G4PhononDownconversion::MakeLDeviation(double d, double x) const {
   //change in L'-phonon propagation direction after decay
-
-  return std::acos((1+(x*x)-((d*d)*(1-x)*(1-x)))/(2*x));
+  return G4CMPAnharmonicDecay::MakeLDeviation(d, x);
+  //return std::acos((1+(x*x)-((d*d)*(1-x)*(1-x)))/(2*x));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -172,8 +183,8 @@ inline double G4PhononDownconversion::MakeLDeviation(double d, double x) const {
 
 inline double G4PhononDownconversion::MakeTDeviation(double d, double x) const {
   //change in T-phonon propagation direction after decay (L->L+T process)
-
-  return std::acos((1-x*x+d*d*(1-x)*(1-x))/(2*d*(1-x)));
+  return G4CMPAnharmonicDecay::MakeTDeviation(d, x);
+  //return std::acos((1-x*x+d*d*(1-x)*(1-x))/(2*d*(1-x)));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -181,8 +192,8 @@ inline double G4PhononDownconversion::MakeTDeviation(double d, double x) const {
 
 inline double G4PhononDownconversion::MakeTTDeviation(double d, double x) const {
   //change in T-phonon propagation direction after decay (L->T+T process)
-
-  return std::acos((1-d*d*(1-x)*(1-x)+d*d*x*x)/(2*d*x));
+  return G4CMPAnharmonicDecay::MakeTTDeviation(d, x);
+  //return std::acos((1-d*d*(1-x)*(1-x)+d*d*x*x)/(2*d*x));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -191,7 +202,10 @@ inline double G4PhononDownconversion::MakeTTDeviation(double d, double x) const 
 //Generate daughter phonons from L->T+T process
 
 void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
-  G4double upperBound=(1+(1/fvLvT))/2;
+
+  G4CMPAnharmonicDecay::MakeTTSecondaries(aTrack, aParticleChange);
+
+  /*G4double upperBound=(1+(1/fvLvT))/2;
   G4double lowerBound=(1-(1/fvLvT))/2;
 
   //Use MC method to generate point from distribution:
@@ -287,7 +301,7 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
       output << "TT" << ',' << 0 << ',' << 0 << ',';
     }
 #endif
-  }
+  }*/
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -296,6 +310,9 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
 //Generate daughter phonons from L->L'+T process
 
 void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
+
+  G4CMPAnharmonicDecay::MakeLTSecondaries(aTrack, aParticleChange);
+  /*
   G4double upperBound=1;
   G4double lowerBound=(fvLvT-1)/(fvLvT+1);
 
@@ -311,7 +328,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
     x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
     p = 4.0*G4UniformRand(); 		     //4.0 is about the max in the PDF
   }
-  */
+
 
   G4double u = G4UniformRand();
   G4double x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
@@ -392,7 +409,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
       output << "LT" << ',' << 0 << ',' << 0 << ',';
     }
 #endif
-  }
+}*/
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

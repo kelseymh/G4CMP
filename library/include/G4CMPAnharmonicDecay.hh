@@ -20,8 +20,8 @@ private:
   inline double MakeTTDeviation(G4double, G4double) const;
   inline double MakeTDeviation(G4double, G4double) const;
 
-  void MakeTTSecondaries(const G4Track&);
-  void MakeLTSecondaries(const G4Track&);
+  void MakeTTSecondaries(const G4Track&, G4ParticleChange);
+  void MakeLTSecondaries(const G4Track&, G4ParticleChange);
 
   G4double fBeta, fGamma, fLambda, fMu; // Local buffers for calculations
   G4double fvLvT; // Ratio of sound speeds
