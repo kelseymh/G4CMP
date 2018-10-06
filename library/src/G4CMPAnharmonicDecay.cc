@@ -116,7 +116,8 @@ inline double G4CMPAnharmonicDecay::MakeTTDeviation(double d, double x) const {
 
 //Generate daughter phonons from L->T+T process
 
-void G4CMPAnharmonicDecay::MakeTTSecondaries(const G4Track& aTrack) {
+void G4CMPAnharmonicDecay::MakeTTSecondaries(const G4Track& aTrack,
+                                             G4ParticleChange aParticleChange) {
   G4double upperBound=(1+(1/fvLvT))/2;
   G4double lowerBound=(1-(1/fvLvT))/2;
 
@@ -220,7 +221,8 @@ void G4CMPAnharmonicDecay::MakeTTSecondaries(const G4Track& aTrack) {
 
 //Generate daughter phonons from L->L'+T process
 
-void G4CMPAnharmonicDecay::MakeLTSecondaries(const G4Track& aTrack) {
+void G4CMPAnharmonicDecay::MakeLTSecondaries(const G4Track& aTrack,
+                                             G4ParticleChange aParticleChange) {
   G4double upperBound=1;
   G4double lowerBound=(fvLvT-1)/(fvLvT+1);
 
