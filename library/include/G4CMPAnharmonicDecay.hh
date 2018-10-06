@@ -1,16 +1,17 @@
 /* Header File for AnharmonicDecay utility class */
 
-# ifndef G4CMPAnharmonicDecay_h
-# define G4CMPAnharmonicDecay_h
+#ifndef G4CMPAnharmonicDecay_h
+#define G4CMPAnharmonicDecay_h
 
-# include "G4CMPProcessUtils.hh"
+#include "G4CMPProcessUtils.hh"
 
 class G4CMPAnharmonicDecay : public G4CMPProcessUtils {
 public:
   G4CMPAnharmonicDecay();
-  virtual ~G4G4CMPProcessUtils();
+  virtual ~G4CMPAnharmonicDecay();
   virtual G4VParticleChange* DoDecay(const G4Track&, const G4Step&,
-                                    G4ParticleChange);
+                                    G4ParticleChange*);
+  virtual G4bool IsApplicable(const G4ParticleDefinition&);
 
 private:
   inline double GetLTDecayProb(G4double, G4double) const;
