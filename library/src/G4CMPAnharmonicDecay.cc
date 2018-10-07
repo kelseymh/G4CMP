@@ -17,8 +17,24 @@
 #include "Randomize.hh"
 #include <cmath>
 
+G4CMPAnharmonicDecay::G4CMPAnharmonicDecay(const G4String& aName)
+  : fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.), fvLvT(1.) {
 
-G4VParticleChange* G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
+#ifdef G4CMP_DEBUG
+  if (verboseLevel) {
+    output.open("phonon_downsampling_stats", std::ios_base::app);
+    if (output.good()) {
+      output << "First Daughter Theta,Second Daughter Theta,First Daughter Energy [eV],Second Daughter Energy [eV],"
+	"Decay Branch,First Daughter Weight,Second Daughter Weight,Parent Weight,"
+	"Number of Outgoing Tracks,Parent Energy [eV]\n";
+    } else {
+      G4cerr << "Could not open phonon debugging output file!" << G4endl;
+    }
+  }
+#endif
+}
+
+void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
                               G4ParticleChange aParticleChange) {
   // Obtain dynamical constants from this volume's lattice
   fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
@@ -46,20 +62,9 @@ G4VParticleChange* G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4
     aParticleChange.ProposeEnergy(0.);
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
-
-  return &aParticleChange
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-G4bool G4PhononDownconversion::IsApplicable(const G4ParticleDefinition& aPD) {
-  // Only L-phonons decay
-  /***** , but need to check actively changing phonon type
-  return (&aPD==G4PhononLong::PhononDefinition());
-  *****/
-  return G4VPhononProcess::IsApplicable(aPD);
-}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
