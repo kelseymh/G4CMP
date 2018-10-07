@@ -26,7 +26,7 @@ public:
   virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& track,
                                                 G4double previousStepSize,
                                                 G4ForceCondition* condition);
-  
+
   virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
                                           const G4Step& aStep);
 
@@ -47,6 +47,9 @@ private:
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&&);
   G4CMPPhononBoundaryProcess& operator=(const G4CMPPhononBoundaryProcess&);
   G4CMPPhononBoundaryProcess& operator=(const G4CMPPhononBoundaryProcess&&);
+	const G4double BoundaryAnharmonicProb(const G4Track&);
+	const G4double BoundarySpecularProb(const G4double);
+	const G4double BoundaryLambertianProb(const G4double); 
 };
 
 #endif	/* G4CMPPhononBoundaryProcess_h */
