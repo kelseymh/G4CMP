@@ -45,9 +45,10 @@
 
 G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   : G4VPhononProcess(aName, fPhononDownconversion),
-    fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.), fvLvT(1.) {
+    anharmonicDecay(new G4CMPAnharmonicDecay()) {
   UseRateModel(new G4CMPDownconversionRate);
 
+  G4CMPAnharmonicDecay anharmonicDecay =
 #ifdef G4CMP_DEBUG
   if (verboseLevel) {
     output.open("phonon_downsampling_stats", std::ios_base::app);
@@ -63,6 +64,7 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
 }
 
 G4PhononDownconversion::~G4PhononDownconversion() {
+  delete anharmonicDecay;
 #ifdef G4CMP_DEBUG
   output.close();
 #endif

@@ -15,6 +15,8 @@
 
 #include "G4VPhononProcess.hh"
 
+class G4G4CMPAnharmonicDecay;
+
 class G4PhononDownconversion : public G4VPhononProcess {
 public:
   G4PhononDownconversion(const G4String& processName ="phononDownconversion");
@@ -33,7 +35,7 @@ protected:
 
 
 private:
-
+  G4CMPAnharmonicDecay* anharmonicDecay;
   // hide assignment operator as private
   G4PhononDownconversion(G4PhononDownconversion&);
   G4PhononDownconversion& operator=(const G4PhononDownconversion& right);

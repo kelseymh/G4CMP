@@ -9,9 +9,8 @@ class G4CMPAnharmonicDecay : public G4CMPProcessUtils {
 public:
   G4CMPAnharmonicDecay();
   virtual ~G4CMPAnharmonicDecay();
-  virtual G4VParticleChange* DoDecay(const G4Track&, const G4Step&,
+  virtual void DoDecay(const G4Track&, const G4Step&,
                                     G4ParticleChange*);
-  virtual G4bool IsApplicable(const G4ParticleDefinition&);
 
 private:
   inline double GetLTDecayProb(G4double, G4double) const;
