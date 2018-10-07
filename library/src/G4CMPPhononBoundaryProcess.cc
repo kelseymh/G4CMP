@@ -147,11 +147,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // Empirical functions may lead to non normalised probabilities.
   // Normalise here.
 
-  G4double totalProb = specProb + diffuseProb + downconversionProb;
+  G4double norm = specProb + diffuseProb + downconversionProb;
 
-  specProb = specProb / totalProb;
-  diffuseProb = diffuseProb / totalProb;
-  downconversionProb = downconversionProb / totalProb;
+  specProb /= norm;
+  diffuseProb /= norm;
+  downconversionProb /= norm;
 
   G4ThreeVector reflectedKDir;
 
