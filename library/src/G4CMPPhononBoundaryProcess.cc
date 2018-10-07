@@ -139,30 +139,10 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   G4double Eoverh = GetKineticEnergy(aTrack)/h_Planck;
   G4double EoverhGHz = Eoverh * 1e-9;
-  //G4double specProb = GetMaterialProperty("specProb");
 
-  G4double specProb;
-  G4double diffuseProb;
-  G4double downconversionProb;
-
-  // 520 GHz is where probabilities are undefined, just use previous
-  // probabilities assuming no downconversion.
-  // 350 GHz unphysical cutoff, probably should define this as some variable
-  if (EoverhGHz > 520) {
-    specProb = GetMaterialProperty("specProb");
-    downconversionProb = 0.0;
-    diffuseProb = 1.0 - specProb;
-  }
-  else if (EoverhGHz > 350) {
-    specProb = BoundarySpecularProb(350);
-    diffuseProb = BoundaryLambertianProb(350);
-    downconversionProb = BoundaryAnharmonicProb(350);
-    specProb = 1 - diffuseProb - downconversionProb;
-  } else {
-    specProb = BoundarySpecularProb(EoverhGHz);
-    diffuseProb = BoundaryLambertianProb(EoverhGHz);
-    downconversionProb = BoundaryAnharmonicProb(EoverhGHz);
-  }
+  G4double specProb = BoundarySpecularProb(EoverhGHz);
+  G4double diffuseProb = BoundaryLambertianProb(EoverhGHz);
+  G4double downconversionProb = BoundaryAnharmonicProb(EoverGHz);
 
   // Empirical functions may lead to non normalised probabilities.
   // Normalise here.
@@ -180,14 +160,12 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   if (random < downconversionProb) {
     /* Do Downconversion */
 
-  } else if (downconversionProb <= random &&
-             random < downconversionProb + specProb) {
+  } else if (random < downconversionProb + specProb) {
     // Specular reflecton reverses momentum along normal
     reflectedKDir = waveVector.unit();
     G4double kPerp = reflectedKDir * surfNorm;
     reflectedKDir -= 2.*kPerp * surfNorm;
   } else {
-    /**/
     // Lambertian distribution may produce outward wavevector
     const G4int maxTries = 1000;
     G4int nTries = 0;
@@ -197,21 +175,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
        !G4CMP::PhononVelocityIsInward(theLattice, mode,
               reflectedKDir, surfNorm));
   }
-  /*if (G4UniformRand() < specProb) {
-    // Specular reflecton reverses momentum along normal
-    reflectedKDir = waveVector.unit();
-    G4double kPerp = reflectedKDir * surfNorm;
-    reflectedKDir -= 2.*kPerp * surfNorm;
-  } else {
-    // Lambertian distribution may produce outward wavevector
-    const G4int maxTries = 1000;
-    G4int nTries = 0;
-    do {
-      reflectedKDir = G4CMP::LambertReflection(surfNorm);
-    } while (nTries++ < maxTries &&
-	     !G4CMP::PhononVelocityIsInward(theLattice, mode,
-					    reflectedKDir, surfNorm));
-  }*/
 
   // If reflection failed, report problem and kill the track
   if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
@@ -254,10 +217,28 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
 
 G4double G4CMPPhononBoundaryProcess::BoundaryAnharmonicProb(const G4double f_GHz) {
+
+  // 520 GHz is where probabilities are undefined, just use previous
+  // probabilities assuming no downconversion.
+  // 350 GHz unphysical cutoff, probably should define this as some variable
+  if (f_GHz > 520) {
+    return 0.0;
+  } else if (f_GHz >= 350) {
+    return 1.51e-14 * (350 * 350 * 350 * 350 * 350);
+  }
   return 1.51e-14 * (f_GHz * f_GHz * f_GHz * f_GHz * f_GHz);
 }
 
 G4double G4CMPPhononBoundaryProcess::BoundarySpecularProb(const G4double f_GHz) {
+  if (f_GHz > 520) {
+    return GetMaterialProperty("specProb");
+  } else if (f_GHz >= 350) {
+    return 2.9e-13 * (350 * 350 * 350 * 350) +
+           3.1e-9 * (350 * 350 * 350) -
+           3.21e-6 * (350 * 350) -
+           2.03e-4 * 350 +
+           0.928;
+  }
   return 2.9e-13 * (f_GHz * f_GHz * f_GHz * f_GHz) +
          3.1e-9 * (f_GHz * f_GHz * f_GHz) -
          3.21e-6 * (f_GHz * f_GHz) -
@@ -266,6 +247,15 @@ G4double G4CMPPhononBoundaryProcess::BoundarySpecularProb(const G4double f_GHz) 
 }
 
 G4double G4CMPPhononBoundaryProcess::BoundaryLambertianProb(const G4double f_GHz) {
+  if (f_GHz > 520) {
+    return 1 - GetMaterialProperty("specProb");
+  } else if (f_GHz >= 350) {
+    return -2.98e-11 * (350 * 350 * 350 * 350) +
+           1.71e-8 * (350 * 350 * 350) -
+           2.47e-6 * (350 * 350) +
+           7.83e-4 * 350 +
+           5.88e-2;
+  }
   return -2.98e-11 * (f_GHz * f_GHz * f_GHz * f_GHz) +
          1.71e-8 * (f_GHz * f_GHz * f_GHz) -
          2.47e-6 * (f_GHz * f_GHz) +
