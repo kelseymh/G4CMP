@@ -138,7 +138,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   G4double Eoverh = GetKineticEnergy(aTrack)/h_Planck;
-  G4double EoverhGHz = Eoverh * 1e-9;
+  G4double EoverhGHz = Eoverh * ns;
 
   G4double specProb = BoundarySpecularProb(EoverhGHz);
   G4double diffuseProb = BoundaryLambertianProb(EoverhGHz);
@@ -220,19 +220,14 @@ G4double G4CMPPhononBoundaryProcess::BoundaryAnharmonicProb(const G4double f_GHz
 
   // 520 GHz is where probabilities are undefined, just use previous
   // probabilities assuming no downconversion.
-  if (f_GHz > 520) {
-    return 0.0;
-  }
+  if (f_GHz > 520) return 0.0;
   return 1.51e-14 * (f_GHz * f_GHz * f_GHz * f_GHz * f_GHz);
 }
 
 G4double G4CMPPhononBoundaryProcess::BoundarySpecularProb(const G4double f_GHz) {
-    // 350 GHz unphysical cutoff, probably should define this as some variable
-  if (f_GHz > 520) {
-    return GetMaterialProperty("specProb");
-  } else if (f_GHz >= 350) {
-    return 1 - BoundaryLambertianProb(350) - BoundaryAnharmonicProb(f_GHz);
-  }
+  // 350 GHz unphysical cutoff, probably should define this as some variable
+  if (f_GHz > 520) return GetMaterialProperty("specProb");
+  if (f_GHz >= 350) return 1 - BoundaryLambertianProb(350) - BoundaryAnharmonicProb(f_GHz);
   return 2.9e-13 * (f_GHz * f_GHz * f_GHz * f_GHz) +
          3.1e-9 * (f_GHz * f_GHz * f_GHz) -
          3.21e-6 * (f_GHz * f_GHz) -
@@ -241,11 +236,8 @@ G4double G4CMPPhononBoundaryProcess::BoundarySpecularProb(const G4double f_GHz) 
 }
 
 G4double G4CMPPhononBoundaryProcess::BoundaryLambertianProb(const G4double f_GHz) {
-  if (f_GHz > 520) {
-    return 1 - GetMaterialProperty("specProb");
-  } else if (f_GHz >= 350) {
-    f_GHz = 350;
-  }
+  if (f_GHz > 520) return 1 - GetMaterialProperty("specProb");
+  if (f_GHz >= 350) f_GHz = 350;
   return -2.98e-11 * (f_GHz * f_GHz * f_GHz * f_GHz) +
          1.71e-8 * (f_GHz * f_GHz * f_GHz) -
          2.47e-6 * (f_GHz * f_GHz) +
