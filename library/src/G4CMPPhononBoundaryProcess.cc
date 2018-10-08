@@ -220,7 +220,6 @@ G4double G4CMPPhononBoundaryProcess::BoundaryAnharmonicProb(const G4double f_GHz
 
   // 520 GHz is where probabilities are undefined, just use previous
   // probabilities assuming no downconversion.
-  // 350 GHz unphysical cutoff, probably should define this as some variable
   if (f_GHz > 520) {
     return 0.0;
   }
@@ -228,6 +227,7 @@ G4double G4CMPPhononBoundaryProcess::BoundaryAnharmonicProb(const G4double f_GHz
 }
 
 G4double G4CMPPhononBoundaryProcess::BoundarySpecularProb(const G4double f_GHz) {
+    // 350 GHz unphysical cutoff, probably should define this as some variable
   if (f_GHz > 520) {
     return GetMaterialProperty("specProb");
   } else if (f_GHz >= 350) {
