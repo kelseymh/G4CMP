@@ -223,8 +223,6 @@ G4double G4CMPPhononBoundaryProcess::BoundaryAnharmonicProb(const G4double f_GHz
   // 350 GHz unphysical cutoff, probably should define this as some variable
   if (f_GHz > 520) {
     return 0.0;
-  } else if (f_GHz >= 350) {
-    return 1.51e-14 * (350 * 350 * 350 * 350 * 350);
   }
   return 1.51e-14 * (f_GHz * f_GHz * f_GHz * f_GHz * f_GHz);
 }
@@ -233,11 +231,7 @@ G4double G4CMPPhononBoundaryProcess::BoundarySpecularProb(const G4double f_GHz) 
   if (f_GHz > 520) {
     return GetMaterialProperty("specProb");
   } else if (f_GHz >= 350) {
-    return 2.9e-13 * (350 * 350 * 350 * 350) +
-           3.1e-9 * (350 * 350 * 350) -
-           3.21e-6 * (350 * 350) -
-           2.03e-4 * 350 +
-           0.928;
+    return 1 - BoundaryLambertianProb(350) - BoundaryAnharmonicProb(f_GHz);
   }
   return 2.9e-13 * (f_GHz * f_GHz * f_GHz * f_GHz) +
          3.1e-9 * (f_GHz * f_GHz * f_GHz) -
@@ -250,11 +244,7 @@ G4double G4CMPPhononBoundaryProcess::BoundaryLambertianProb(const G4double f_GHz
   if (f_GHz > 520) {
     return 1 - GetMaterialProperty("specProb");
   } else if (f_GHz >= 350) {
-    return -2.98e-11 * (350 * 350 * 350 * 350) +
-           1.71e-8 * (350 * 350 * 350) -
-           2.47e-6 * (350 * 350) +
-           7.83e-4 * 350 +
-           5.88e-2;
+    f_GHz = 350;
   }
   return -2.98e-11 * (f_GHz * f_GHz * f_GHz * f_GHz) +
          1.71e-8 * (f_GHz * f_GHz * f_GHz) -
