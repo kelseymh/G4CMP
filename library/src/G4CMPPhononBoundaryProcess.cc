@@ -159,6 +159,16 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   if (random < downconversionProb) {
     /* Do Downconversion */
+    G4G4CMPAnharmonicDecay::DoDecay(aTrack, aStep, particleChange);
+    G4Track* sec1 = particleChange.GetSecondary(0);
+    G4Track* sec2 = particleChange.GetSecondary(1);
+
+    G4ThreeVector vec1 = GetLambertianVector(surfNorm);
+    G4ThreeVector vec2 = GetLambertianVector(surfNorm);
+
+    sec1->SetMomentumDirection(vec1);
+    sec2->SetMomentumDirection(vec2);
+    return;
 
   } else if (random < downconversionProb + specProb) {
     // Specular reflecton reverses momentum along normal
@@ -166,14 +176,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     G4double kPerp = reflectedKDir * surfNorm;
     reflectedKDir -= 2.*kPerp * surfNorm;
   } else {
-    // Lambertian distribution may produce outward wavevector
-    const G4int maxTries = 1000;
-    G4int nTries = 0;
-    do {
-      reflectedKDir = G4CMP::LambertReflection(surfNorm);
-    } while (nTries++ < maxTries &&
-       !G4CMP::PhononVelocityIsInward(theLattice, mode,
-              reflectedKDir, surfNorm));
+    reflectedKDir = GetLambertianVector(surfNorm);
   }
 
   // If reflection failed, report problem and kill the track
@@ -215,7 +218,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   particleChange.ProposeMomentumDirection(vdir);
 }
 
-
 G4double G4CMPPhononBoundaryProcess::BoundaryAnharmonicProb(const G4double f_GHz) {
 
   // 520 GHz is where probabilities are undefined, just use previous
@@ -243,4 +245,16 @@ G4double G4CMPPhononBoundaryProcess::BoundaryLambertianProb(const G4double f_GHz
          2.47e-6 * (f_GHz * f_GHz) +
          7.83e-4 * f_GHz +
          5.88e-2;
+}
+
+G4ThreeVector G4CMPPhononBoundaryProcess::GetLambertianVector(G4ThreeVector surfaceNorm) {
+  const G4int maxTries = 1000;
+  G4int nTries = 0;
+  do {
+    reflectedKDir = G4CMP::LambertReflection(surfNorm);
+  } while (nTries++ < maxTries &&
+     !G4CMP::PhononVelocityIsInward(theLattice, mode,
+            reflectedKDir, surfNorm));
+
+  return reflectedKDir;
 }
