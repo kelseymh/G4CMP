@@ -25,6 +25,7 @@
 // 20170928  Replace "pol" with "mode" for phonons
 
 #include "G4CMPPhononBoundaryProcess.hh"
+#include "G4CMPAnharmonicDecay.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -32,21 +33,16 @@
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4ExceptionSeverity.hh"
-#include "G4GeometryTolerance.hh"
-#include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4Navigator.hh"
-#include "G4ParallelWorldProcess.hh"
+#include "G4ParticleChange.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
-#include "G4TransportationManager.hh"
 #include "G4VParticleChange.hh"
-#include "G4LogicalSurface.hh"
-#include "G4LogicalBorderSurface.hh"
-#include "G4CMPAnharmonicDecay.hh"
+#include "G4VSolid.hh"
 #include "Randomize.hh"
 
 
@@ -110,7 +106,7 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 
 void G4CMPPhononBoundaryProcess::
 DoReflection(const G4Track& aTrack, const G4Step& aStep,
-       G4ParticleChange& particleChange) {
+	     G4ParticleChange& particleChange) {
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
 
   if (verboseLevel>1) {
@@ -137,12 +133,10 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
   }
 
-  G4double Eoverh = GetKineticEnergy(aTrack)/h_Planck;
-  G4double EoverhGHz = Eoverh * ns;
-
-  G4double specProb = BoundarySpecularProb(EoverhGHz);
-  G4double diffuseProb = BoundaryLambertianProb(EoverhGHz);
-  G4double downconversionProb = BoundaryAnharmonicProb(EoverGHz);
+  G4double EoverhGHz = GetKineticEnergy(aTrack)/h_Planck * ns;
+  G4double specProb = SpecularProb(EoverhGHz);
+  G4double diffuseProb = DiffuseProb(EoverhGHz);
+  G4double downconversionProb = AnharmonicProb(EoverhGHz);
 
   // Empirical functions may lead to non normalised probabilities.
   // Normalise here.
@@ -155,11 +149,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   G4ThreeVector reflectedKDir;
 
-  G4double random = G4G4UniformRand();
+  G4double random = G4UniformRand();
 
   if (random < downconversionProb) {
     /* Do Downconversion */
-    G4G4CMPAnharmonicDecay::DoDecay(aTrack, aStep, particleChange);
+    G4CMPAnharmonicDecay::DoDecay(aTrack, aStep, particleChange);
     G4Track* sec1 = particleChange.GetSecondary(0);
     G4Track* sec2 = particleChange.GetSecondary(1);
 
@@ -218,7 +212,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   particleChange.ProposeMomentumDirection(vdir);
 }
 
-G4double G4CMPPhononBoundaryProcess::BoundaryAnharmonicProb(const G4double f_GHz) {
+
+// Probabilities for different kinds of reflections
+
+G4double 
+G4CMPPhononBoundaryProcess::AnharmonicProb(G4double f_GHz) const {
 
   // 520 GHz is where probabilities are undefined, just use previous
   // probabilities assuming no downconversion.
@@ -226,10 +224,10 @@ G4double G4CMPPhononBoundaryProcess::BoundaryAnharmonicProb(const G4double f_GHz
   return 1.51e-14 * (f_GHz * f_GHz * f_GHz * f_GHz * f_GHz);
 }
 
-G4double G4CMPPhononBoundaryProcess::BoundarySpecularProb(const G4double f_GHz) {
+G4double G4CMPPhononBoundaryProcess::SpecularProb(G4double f_GHz) const {
   // 350 GHz unphysical cutoff, probably should define this as some variable
   if (f_GHz > 520) return GetMaterialProperty("specProb");
-  if (f_GHz >= 350) return 1 - BoundaryLambertianProb(350) - BoundaryAnharmonicProb(f_GHz);
+  if (f_GHz >= 350) return 1. - DiffuseProb(350) - AnharmonicProb(f_GHz);
   return 2.9e-13 * (f_GHz * f_GHz * f_GHz * f_GHz) +
          3.1e-9 * (f_GHz * f_GHz * f_GHz) -
          3.21e-6 * (f_GHz * f_GHz) -
@@ -237,8 +235,8 @@ G4double G4CMPPhononBoundaryProcess::BoundarySpecularProb(const G4double f_GHz) 
          0.928;
 }
 
-G4double G4CMPPhononBoundaryProcess::BoundaryLambertianProb(const G4double f_GHz) {
-  if (f_GHz > 520) return 1 - GetMaterialProperty("specProb");
+G4double G4CMPPhononBoundaryProcess::DiffuseProb(G4double f_GHz) const {
+  if (f_GHz > 520) return 1. - GetMaterialProperty("specProb");
   if (f_GHz >= 350) f_GHz = 350;
   return -2.98e-11 * (f_GHz * f_GHz * f_GHz * f_GHz) +
          1.71e-8 * (f_GHz * f_GHz * f_GHz) -
@@ -247,14 +245,15 @@ G4double G4CMPPhononBoundaryProcess::BoundaryLambertianProb(const G4double f_GHz
          5.88e-2;
 }
 
-G4ThreeVector G4CMPPhononBoundaryProcess::GetLambertianVector(G4ThreeVector surfaceNorm) {
+G4ThreeVector G4CMPPhononBoundaryProcess::
+GetLambertianVector(const G4ThreeVector& surfNorm) const {
   const G4int maxTries = 1000;
   G4int nTries = 0;
   do {
     reflectedKDir = G4CMP::LambertReflection(surfNorm);
   } while (nTries++ < maxTries &&
-     !G4CMP::PhononVelocityIsInward(theLattice, mode,
-            reflectedKDir, surfNorm));
+	   !G4CMP::PhononVelocityIsInward(theLattice, mode,
+					  reflectedKDir, surfNorm));
 
   return reflectedKDir;
 }

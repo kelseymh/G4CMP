@@ -2,23 +2,22 @@
 
 #include "G4CMPAnharmonicDecay.hh"
 #include "G4CMPPhononTrackInfo.hh"
-#include "G4CMPDownconversionRate.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4LatticePhysical.hh"
+#include "G4ParticleChange.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4VParticleChange.hh"
 #include "Randomize.hh"
 #include <cmath>
 
-G4CMPAnharmonicDecay::G4CMPAnharmonicDecay(const G4String& aName)
-  : fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.), fvLvT(1.) {
+G4CMPAnharmonicDecay::G4CMPAnharmonicDecay(G4int vb)
+  : verboseLevel(vb), fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.), fvLvT(1.) {
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel) {
@@ -35,7 +34,7 @@ G4CMPAnharmonicDecay::G4CMPAnharmonicDecay(const G4String& aName)
 }
 
 void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
-                              G4ParticleChange aParticleChange) {
+				   G4ParticleChange& aParticleChange) {
   // Obtain dynamical constants from this volume's lattice
   fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
   fGamma  = theLattice->GetGamma() / (1e11*pascal);
@@ -48,8 +47,8 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
   //74% chance that daughter phonons are both transverse
   //26% Transverse and Longitudinal
   const G4double fracTT = theLattice->GetAnhTTFrac();
-  if (G4UniformRand() <= fracTT) MakeTTSecondaries(aTrack);
-  else MakeLTSecondaries(aTrack);
+  if (G4UniformRand() <= fracTT) MakeTTSecondaries(aTrack, aParticleChange);
+  else MakeLTSecondaries(aTrack, aParticleChange);
 
 #ifdef G4CMP_DEBUG
   output << aTrack.GetWeight() << ','
@@ -70,7 +69,7 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
 
 //probability density of energy distribution of L'-phonon in L->L'+T process
 
-inline double G4CMPAnharmonicDecay::GetLTDecayProb(double d, double x) const {
+G4double G4CMPAnharmonicDecay::GetLTDecayProb(G4double d, G4double x) const {
   //d=delta= ratio of group velocities vl/vt and x is the fraction of energy in the longitudinal mode, i.e. x=EL'/EL
   return (1/(x*x))*(1-x*x)*(1-x*x)*((1+x)*(1+x)-d*d*((1-x)*(1-x)))*(1+x*x-d*d*(1-x)*(1-x))*(1+x*x-d*d*(1-x)*(1-x));
 }
@@ -79,7 +78,7 @@ inline double G4CMPAnharmonicDecay::GetLTDecayProb(double d, double x) const {
 
 //probability density of energy distribution of T-phonon in L->T+T process
 
-inline double G4CMPAnharmonicDecay::GetTTDecayProb(double d, double x) const {
+G4double G4CMPAnharmonicDecay::GetTTDecayProb(G4double d, G4double x) const {
   //dynamic constants from Tamura, PRL31, 1985
   G4double A = 0.5*(1-d*d)*(fBeta+fLambda+(1+d*d)*(fGamma+fMu));
   G4double B = fBeta+fLambda+2*d*d*(fGamma+fMu);
@@ -91,8 +90,7 @@ inline double G4CMPAnharmonicDecay::GetTTDecayProb(double d, double x) const {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-
-inline double G4CMPAnharmonicDecay::MakeLDeviation(double d, double x) const {
+G4double G4CMPAnharmonicDecay::MakeLDeviation(G4double d, G4double x) const {
   //change in L'-phonon propagation direction after decay
 
   return std::acos((1+(x*x)-((d*d)*(1-x)*(1-x)))/(2*x));
@@ -100,8 +98,7 @@ inline double G4CMPAnharmonicDecay::MakeLDeviation(double d, double x) const {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-
-inline double G4CMPAnharmonicDecay::MakeTDeviation(double d, double x) const {
+G4double G4CMPAnharmonicDecay::MakeTDeviation(G4double d, G4double x) const {
   //change in T-phonon propagation direction after decay (L->L+T process)
 
   return std::acos((1-x*x+d*d*(1-x)*(1-x))/(2*d*(1-x)));
@@ -109,8 +106,7 @@ inline double G4CMPAnharmonicDecay::MakeTDeviation(double d, double x) const {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-
-inline double G4CMPAnharmonicDecay::MakeTTDeviation(double d, double x) const {
+G4double G4CMPAnharmonicDecay::MakeTTDeviation(G4double d, G4double x) const {
   //change in T-phonon propagation direction after decay (L->T+T process)
 
   return std::acos((1-d*d*(1-x)*(1-x)+d*d*x*x)/(2*d*x));
@@ -121,8 +117,8 @@ inline double G4CMPAnharmonicDecay::MakeTTDeviation(double d, double x) const {
 
 //Generate daughter phonons from L->T+T process
 
-void G4CMPAnharmonicDecay::MakeTTSecondaries(const G4Track& aTrack,
-                                             G4ParticleChange aParticleChange) {
+void G4CMPAnharmonicDecay::
+MakeTTSecondaries(const G4Track& aTrack, G4ParticleChange& aParticleChange) {
   G4double upperBound=(1+(1/fvLvT))/2;
   G4double lowerBound=(1-(1/fvLvT))/2;
 
@@ -226,8 +222,8 @@ void G4CMPAnharmonicDecay::MakeTTSecondaries(const G4Track& aTrack,
 
 //Generate daughter phonons from L->L'+T process
 
-void G4CMPAnharmonicDecay::MakeLTSecondaries(const G4Track& aTrack,
-                                             G4ParticleChange aParticleChange) {
+void G4CMPAnharmonicDecay::
+MakeLTSecondaries(const G4Track& aTrack, G4ParticleChange& aParticleChange) {
   G4double upperBound=1;
   G4double lowerBound=(fvLvT-1)/(fvLvT+1);
 
