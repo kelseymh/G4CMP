@@ -41,16 +41,18 @@ protected:
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
+  // Compute probabilities for different reflection actions
+  G4double AnharmonicProb(G4double) const;
+  G4double SpecularProb(G4double) const;
+  G4double DiffuseProb(G4double) const;
+  G4ThreeVector GetLambertianVector(const G4ThreeVector&) const;
+
 private:
   // hide assignment operator as private
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&);
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&&);
   G4CMPPhononBoundaryProcess& operator=(const G4CMPPhononBoundaryProcess&);
   G4CMPPhononBoundaryProcess& operator=(const G4CMPPhononBoundaryProcess&&);
-	const G4double BoundaryAnharmonicProb(const G4Track&);
-	const G4double BoundarySpecularProb(const G4double);
-	const G4double BoundaryLambertianProb(const G4double);
-	G4ThreeVector GetLambertianVector(G4ThreeVector);
 };
 
 #endif	/* G4CMPPhononBoundaryProcess_h */
