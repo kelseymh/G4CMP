@@ -23,6 +23,7 @@
 // 20170821  Move hard-coded constants to lattice configuration
 // 20170824  Add diagnostic output
 // 20170928  Hide "output" usage behind verbosity check, as well as G4CMP_DEBUG
+// 20181010  J. Singh -- Move functionality to G4CMPAnharmonicDecay.
 
 #include "G4PhononDownconversion.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -47,26 +48,10 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   : G4VPhononProcess(aName, fPhononDownconversion),
     anharmonicDecay(new G4CMPAnharmonicDecay()) {
   UseRateModel(new G4CMPDownconversionRate);
-
-#ifdef G4CMP_DEBUG
-  if (verboseLevel) {
-    output.open("phonon_downsampling_stats", std::ios_base::app);
-    if (output.good()) {
-      output << "First Daughter Theta,Second Daughter Theta,First Daughter Energy [eV],Second Daughter Energy [eV],"
-	"Decay Branch,First Daughter Weight,Second Daughter Weight,Parent Weight,"
-	"Number of Outgoing Tracks,Parent Energy [eV]\n";
-    } else {
-      G4cerr << "Could not open phonon debugging output file!" << G4endl;
-    }
-  }
-#endif
 }
 
 G4PhononDownconversion::~G4PhononDownconversion() {
   delete anharmonicDecay;
-#ifdef G4CMP_DEBUG
-  output.close();
-#endif
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

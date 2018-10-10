@@ -23,6 +23,7 @@
 // 20161114  Use new G4CMPPhononTrackInfo
 // 20170829  Add detailed diagnostics to identify boundary issues
 // 20170928  Replace "pol" with "mode" for phonons
+// 20181010  J. Singh -- Use new G4CMPAnharmonicDecay for boundary decays
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -46,9 +47,18 @@
 #include "Randomize.hh"
 
 
+// Constructor and destructor
+
 G4CMPPhononBoundaryProcess::G4CMPPhononBoundaryProcess(const G4String& aName)
   : G4VPhononProcess(aName, fPhononReflection), G4CMPBoundaryUtils(this),
-  anharmonicDecay(new G4CMPAnharmonicDecay()) {;}
+    anharmonicDecay(new G4CMPAnharmonicDecay(verboseLevel)) {;}
+
+G4CMPPhononBoundaryProcess::~G4CMPPhononBoundaryProcess() {
+  delete anharmonicDecay;
+}
+
+
+// Compute and return step length
 
 G4double G4CMPPhononBoundaryProcess::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
@@ -64,6 +74,8 @@ G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track& /*aTrack*/,
   return DBL_MAX;
 }
 
+
+// Process action
 
 G4VParticleChange*
 G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,

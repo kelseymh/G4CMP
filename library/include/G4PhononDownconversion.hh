@@ -9,6 +9,7 @@
 // $Id$
 //
 // 20170805  Replace GetMeanFreePath() with scattering-rate model
+// 20181010  J. Singh -- Move functionality to G4CMPAnharmonicDecay.
 
 #ifndef G4PhononDownconversion_h
 #define G4PhononDownconversion_h 1
@@ -16,6 +17,7 @@
 #include "G4VPhononProcess.hh"
 
 class G4CMPAnharmonicDecay;
+
 
 class G4PhononDownconversion : public G4VPhononProcess {
 public:
@@ -33,16 +35,12 @@ protected:
     return G4CMPVProcess::GetMeanFreePath(trk, prevstep, cond);
   }
 
-
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
+
   // hide assignment operator as private
   G4PhononDownconversion(G4PhononDownconversion&);
   G4PhononDownconversion& operator=(const G4PhononDownconversion& right);
-
-#ifdef G4CMP_DEBUG
-  std::ofstream output;
-#endif
 };
 
 #endif	/* G4PhononDownconversion_h */

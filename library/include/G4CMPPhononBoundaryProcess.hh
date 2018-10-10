@@ -10,6 +10,7 @@
 //
 // 20160903  Add inheritance from G4CMPBoundaryUtils, remove redundant functions
 // 20160906  Follow constness of G4CMPBoundaryUtils
+// 20181010  J. Singh -- Use new G4CMPAnharmonicDecay for boundary decays
 
 #ifndef G4CMPPhononBoundaryProcess_h
 #define G4CMPPhononBoundaryProcess_h 1
@@ -23,6 +24,8 @@ class G4CMPPhononBoundaryProcess : public G4VPhononProcess,
 				   public G4CMPBoundaryUtils {
 public:
   G4CMPPhononBoundaryProcess(const G4String& processName="G4CMPPhononBoundary");
+
+  virtual ~G4CMPPhononBoundaryProcess();
 
   virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& track,
                                                 G4double previousStepSize,
@@ -49,13 +52,13 @@ protected:
   G4ThreeVector GetLambertianVector(const G4ThreeVector&, G4int) const;
 
 private:
+  G4CMPAnharmonicDecay* anharmonicDecay;
+
   // hide assignment operator as private
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&);
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&&);
   G4CMPPhononBoundaryProcess& operator=(const G4CMPPhononBoundaryProcess&);
   G4CMPPhononBoundaryProcess& operator=(const G4CMPPhononBoundaryProcess&&);
-
-	G4CMPAnharmonicDecay* anharmonicDecay;
 };
 
 #endif	/* G4CMPPhononBoundaryProcess_h */
