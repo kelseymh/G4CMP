@@ -48,7 +48,6 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
     anharmonicDecay(new G4CMPAnharmonicDecay()) {
   UseRateModel(new G4CMPDownconversionRate);
 
-  G4CMPAnharmonicDecay anharmonicDecay =
 #ifdef G4CMP_DEBUG
   if (verboseLevel) {
     output.open("phonon_downsampling_stats", std::ios_base::app);
@@ -98,7 +97,7 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
     return &aParticleChange;		// Don't reset interaction length!
   }
 
-  G4CMPAnharmonicDecay::DoDecay(aTrack, aStep, aParticleChange);
+  anharmonicDecay->DoDecay(aTrack, aStep, aParticleChange);
 
   return &aParticleChange;
 }

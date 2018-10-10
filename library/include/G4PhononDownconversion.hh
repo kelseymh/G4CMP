@@ -15,7 +15,7 @@
 
 #include "G4VPhononProcess.hh"
 
-class G4G4CMPAnharmonicDecay;
+class G4CMPAnharmonicDecay;
 
 class G4PhononDownconversion : public G4VPhononProcess {
 public:

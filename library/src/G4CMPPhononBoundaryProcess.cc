@@ -47,7 +47,8 @@
 
 
 G4CMPPhononBoundaryProcess::G4CMPPhononBoundaryProcess(const G4String& aName)
-  : G4VPhononProcess(aName, fPhononReflection), G4CMPBoundaryUtils(this) {;}
+  : G4VPhononProcess(aName, fPhononReflection), G4CMPBoundaryUtils(this),
+  anharmonicDecay(new G4CMPAnharmonicDecay()) {;}
 
 G4double G4CMPPhononBoundaryProcess::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
@@ -153,12 +154,12 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   if (random < downconversionProb) {
     /* Do Downconversion */
-    G4CMPAnharmonicDecay::DoDecay(aTrack, aStep, particleChange);
+    anharmonicDecay->DoDecay(aTrack, aStep, particleChange);
     G4Track* sec1 = particleChange.GetSecondary(0);
     G4Track* sec2 = particleChange.GetSecondary(1);
 
-    G4ThreeVector vec1 = GetLambertianVector(surfNorm);
-    G4ThreeVector vec2 = GetLambertianVector(surfNorm);
+    G4ThreeVector vec1 = GetLambertianVector(surfNorm, mode);
+    G4ThreeVector vec2 = GetLambertianVector(surfNorm, mode);
 
     sec1->SetMomentumDirection(vec1);
     sec2->SetMomentumDirection(vec2);
@@ -170,7 +171,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     G4double kPerp = reflectedKDir * surfNorm;
     reflectedKDir -= 2.*kPerp * surfNorm;
   } else {
-    reflectedKDir = GetLambertianVector(surfNorm);
+    reflectedKDir = GetLambertianVector(surfNorm, mode);
   }
 
   // If reflection failed, report problem and kill the track
@@ -215,7 +216,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
 // Probabilities for different kinds of reflections
 
-G4double 
+G4double
 G4CMPPhononBoundaryProcess::AnharmonicProb(G4double f_GHz) const {
 
   // 520 GHz is where probabilities are undefined, just use previous
@@ -246,7 +247,8 @@ G4double G4CMPPhononBoundaryProcess::DiffuseProb(G4double f_GHz) const {
 }
 
 G4ThreeVector G4CMPPhononBoundaryProcess::
-GetLambertianVector(const G4ThreeVector& surfNorm) const {
+GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {
+  G4ThreeVector reflectedKDir;
   const G4int maxTries = 1000;
   G4int nTries = 0;
   do {

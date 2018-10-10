@@ -17,6 +17,7 @@
 #include "G4VPhononProcess.hh"
 #include "G4CMPBoundaryUtils.hh"
 
+class G4CMPAnharmonicDecay;
 
 class G4CMPPhononBoundaryProcess : public G4VPhononProcess,
 				   public G4CMPBoundaryUtils {
@@ -45,7 +46,7 @@ protected:
   G4double AnharmonicProb(G4double) const;
   G4double SpecularProb(G4double) const;
   G4double DiffuseProb(G4double) const;
-  G4ThreeVector GetLambertianVector(const G4ThreeVector&) const;
+  G4ThreeVector GetLambertianVector(const G4ThreeVector&, G4int) const;
 
 private:
   // hide assignment operator as private
@@ -53,6 +54,8 @@ private:
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&&);
   G4CMPPhononBoundaryProcess& operator=(const G4CMPPhononBoundaryProcess&);
   G4CMPPhononBoundaryProcess& operator=(const G4CMPPhononBoundaryProcess&&);
+
+	G4CMPAnharmonicDecay* anharmonicDecay;
 };
 
 #endif	/* G4CMPPhononBoundaryProcess_h */
