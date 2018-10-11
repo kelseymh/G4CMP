@@ -24,6 +24,7 @@
 // 20170824  Add diagnostic output
 // 20170928  Hide "output" usage behind verbosity check, as well as G4CMP_DEBUG
 // 20181010  J. Singh -- Move functionality to G4CMPAnharmonicDecay.
+// 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
 
 #include "G4PhononDownconversion.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -44,6 +45,10 @@
 #include <cmath>
 
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Constructor and destructor 
+
 G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   : G4VPhononProcess(aName, fPhononDownconversion),
     anharmonicDecay(new G4CMPAnharmonicDecay()) {
@@ -53,6 +58,16 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
 G4PhononDownconversion::~G4PhononDownconversion() {
   delete anharmonicDecay;
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Configure for current track including AnharmonicDecay utility
+
+void G4PhononDownconversion::LoadDataForTrack(const G4Track* track) {
+  G4CMPProcessUtils::LoadDataForTrack(track);
+  anharmonicDecay->LoadDataForTrack(track);
+}
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 

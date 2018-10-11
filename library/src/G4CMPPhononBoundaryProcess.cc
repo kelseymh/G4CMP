@@ -24,6 +24,7 @@
 // 20170829  Add detailed diagnostics to identify boundary issues
 // 20170928  Replace "pol" with "mode" for phonons
 // 20181010  J. Singh -- Use new G4CMPAnharmonicDecay for boundary decays
+// 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -55,6 +56,14 @@ G4CMPPhononBoundaryProcess::G4CMPPhononBoundaryProcess(const G4String& aName)
 
 G4CMPPhononBoundaryProcess::~G4CMPPhononBoundaryProcess() {
   delete anharmonicDecay;
+}
+
+
+// Configure for current track including AnharmonicDecay utility
+
+void G4CMPPhononBoundaryProcess::LoadDataForTrack(const G4Track* track) {
+  G4CMPProcessUtils::LoadDataForTrack(track);
+  anharmonicDecay->LoadDataForTrack(track);
 }
 
 

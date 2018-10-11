@@ -10,6 +10,7 @@
 //
 // 20170805  Replace GetMeanFreePath() with scattering-rate model
 // 20181010  J. Singh -- Move functionality to G4CMPAnharmonicDecay.
+// 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
 
 #ifndef G4PhononDownconversion_h
 #define G4PhononDownconversion_h 1
@@ -23,10 +24,15 @@ class G4PhononDownconversion : public G4VPhononProcess {
 public:
   G4PhononDownconversion(const G4String& processName ="phononDownconversion");
   virtual ~G4PhononDownconversion();
-  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
 
   // Only longitudinal phonons decay (L -> L' T, or L -> T T')
   virtual G4bool IsApplicable(const G4ParticleDefinition&);
+
+  // Configure for current track including AnharmonicDecay utility
+  virtual void LoadDataForTrack(const G4Track* track);
+
+  // Perform downconversion using AnharmonicDecay utility
+  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
 
 protected:
   // Keep function here as call-back to avoid getting old toolkit version
