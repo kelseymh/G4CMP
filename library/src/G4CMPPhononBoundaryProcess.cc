@@ -175,6 +175,10 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     sec1->SetMomentumDirection(vec1);
     sec2->SetMomentumDirection(vec2);
+
+    if (verboseLevel > 1) {
+      G4cout << "Anharmonic Decay at boundary." << G4endl;
+    }
     return;
 
   } else if (random < downconversionProb + specProb) {

@@ -14,7 +14,7 @@ class G4Track;
 class G4CMPAnharmonicDecay : public G4CMPProcessUtils {
 public:
   G4CMPAnharmonicDecay(G4int vb=0);
-  virtual ~G4CMPAnharmonicDecay();
+  virtual ~G4CMPAnharmonicDecay() {;}
 
   void SetVerboseLevel(G4int vb) { verboseLevel = vb;}
   G4int GetVerboseLevel() const { return verboseLevel; }
