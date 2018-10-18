@@ -173,6 +173,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   G4double random = G4UniformRand();
 
+  G4cout << "Surface Downconversion Probability: " << downconversionProb << G4endl;
+  G4cout << "Random: " << random << G4endl;
   if (random < downconversionProb) {
     /* Do Downconversion */
     anharmonicDecay->DoDecay(aTrack, aStep, particleChange);
@@ -188,6 +190,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     if (verboseLevel > 1) {
       G4cout << "Anharmonic Decay at boundary." << G4endl;
     }
+    G4cout << "Anharmonic Case Activated" << G4endl;
     return;
 
   } else if (random < downconversionProb + specProb) {
