@@ -7,11 +7,11 @@
 /// \brief Implementation of the G4PhononReflection class
 //
 // This process handles the interaction of phonons with
-// boundaries. Implementation of this class is highly 
+// boundaries. Implementation of this class is highly
 // geometry dependent.Currently, phonons are killed when
-// they reach a boundary. If the other side of the 
+// they reach a boundary. If the other side of the
 // boundary was Al, a hit is registered.
-//  
+//
 // $Id$
 //
 // 20131115  Throw exception if track's polarization state is invalid.
@@ -23,8 +23,11 @@
 // 20161114  Use new G4CMPPhononTrackInfo
 // 20170829  Add detailed diagnostics to identify boundary issues
 // 20170928  Replace "pol" with "mode" for phonons
+// 20181010  J. Singh -- Use new G4CMPAnharmonicDecay for boundary decays
+// 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
 
 #include "G4CMPPhononBoundaryProcess.hh"
+#include "G4CMPAnharmonicDecay.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -32,24 +35,39 @@
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4ExceptionSeverity.hh"
-#include "G4GeometryTolerance.hh"
-#include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4Navigator.hh"
-#include "G4ParallelWorldProcess.hh"
+#include "G4ParticleChange.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4Step.hh"
+#include "G4Track.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
-#include "G4TransportationManager.hh"
 #include "G4VParticleChange.hh"
-#include "G4LogicalSurface.hh"
-#include "G4LogicalBorderSurface.hh"
+#include "G4VSolid.hh"
 #include "Randomize.hh"
 
 
+// Constructor and destructor
+
 G4CMPPhononBoundaryProcess::G4CMPPhononBoundaryProcess(const G4String& aName)
-  : G4VPhononProcess(aName, fPhononReflection), G4CMPBoundaryUtils(this) {;}
+  : G4VPhononProcess(aName, fPhononReflection), G4CMPBoundaryUtils(this),
+    anharmonicDecay(new G4CMPAnharmonicDecay(verboseLevel)) {;}
+
+G4CMPPhononBoundaryProcess::~G4CMPPhononBoundaryProcess() {
+  delete anharmonicDecay;
+}
+
+
+// Configure for current track including AnharmonicDecay utility
+
+void G4CMPPhononBoundaryProcess::LoadDataForTrack(const G4Track* track) {
+  G4CMPProcessUtils::LoadDataForTrack(track);
+  anharmonicDecay->LoadDataForTrack(track);
+}
+
+
+// Compute and return step length
 
 G4double G4CMPPhononBoundaryProcess::
 PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
@@ -65,6 +83,8 @@ G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track& /*aTrack*/,
   return DBL_MAX;
 }
 
+
+// Process action
 
 G4VParticleChange*
 G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
@@ -108,7 +128,7 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 
 void G4CMPPhononBoundaryProcess::
 DoReflection(const G4Track& aTrack, const G4Step& aStep,
-       G4ParticleChange& particleChange) {
+	     G4ParticleChange& particleChange) {
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
 
   if (verboseLevel>1) {
@@ -121,7 +141,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   if (verboseLevel>2) {
-    G4cout << " Old wavevector direction " << waveVector.unit() 
+    G4cout << " Old wavevector direction " << waveVector.unit()
 	   << "\n Old momentum direction   " << aTrack.GetMomentumDirection()
 	   << G4endl;
   }
@@ -135,23 +155,51 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
   }
 
-  G4double specProb = GetMaterialProperty("specProb");
+  G4double EoverhGHz = GetKineticEnergy(aTrack)/h_Planck * ns;
+  G4double specProb = SpecularProb(EoverhGHz);
+  G4double diffuseProb = DiffuseProb(EoverhGHz);
+  G4double downconversionProb = AnharmonicProb(EoverhGHz);
+
+  // Empirical functions may lead to non normalised probabilities.
+  // Normalise here.
+
+  G4double norm = specProb + diffuseProb + downconversionProb;
+
+  specProb /= norm;
+  diffuseProb /= norm;
+  downconversionProb /= norm;
 
   G4ThreeVector reflectedKDir;
-  if (G4UniformRand() < specProb) {
+
+  G4double random = G4UniformRand();
+
+  G4cout << "Surface Downconversion Probability: " << downconversionProb << G4endl;
+  G4cout << "Random: " << random << G4endl;
+  if (random < downconversionProb) {
+    /* Do Downconversion */
+    anharmonicDecay->DoDecay(aTrack, aStep, particleChange);
+    G4Track* sec1 = particleChange.GetSecondary(0);
+    G4Track* sec2 = particleChange.GetSecondary(1);
+
+    G4ThreeVector vec1 = GetLambertianVector(surfNorm, mode);
+    G4ThreeVector vec2 = GetLambertianVector(surfNorm, mode);
+
+    sec1->SetMomentumDirection(vec1);
+    sec2->SetMomentumDirection(vec2);
+
+    if (verboseLevel > 1) {
+      G4cout << "Anharmonic Decay at boundary." << G4endl;
+    }
+    G4cout << "Anharmonic Case Activated" << G4endl;
+    return;
+
+  } else if (random < downconversionProb + specProb) {
     // Specular reflecton reverses momentum along normal
     reflectedKDir = waveVector.unit();
     G4double kPerp = reflectedKDir * surfNorm;
     reflectedKDir -= 2.*kPerp * surfNorm;
   } else {
-    // Lambertian distribution may produce outward wavevector
-    const G4int maxTries = 1000;
-    G4int nTries = 0;
-    do {
-      reflectedKDir = G4CMP::LambertReflection(surfNorm);
-    } while (nTries++ < maxTries &&
-	     !G4CMP::PhononVelocityIsInward(theLattice, mode,
-					    reflectedKDir, surfNorm));
+    reflectedKDir = GetLambertianVector(surfNorm, mode);
   }
 
   // If reflection failed, report problem and kill the track
@@ -191,4 +239,51 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   trackInfo->SetWaveVector(reflectedKDir);
   particleChange.ProposeVelocity(v);
   particleChange.ProposeMomentumDirection(vdir);
+}
+
+
+// Probabilities for different kinds of reflections
+
+G4double
+G4CMPPhononBoundaryProcess::AnharmonicProb(G4double f_GHz) const {
+
+  // 520 GHz is where probabilities are undefined, just use previous
+  // probabilities assuming no downconversion.
+  if (f_GHz > 520) return 0.0;
+  return 1.51e-14 * (f_GHz * f_GHz * f_GHz * f_GHz * f_GHz);
+}
+
+G4double G4CMPPhononBoundaryProcess::SpecularProb(G4double f_GHz) const {
+  // 350 GHz unphysical cutoff, probably should define this as some variable
+  if (f_GHz > 520) return GetMaterialProperty("specProb");
+  if (f_GHz >= 350) return 1. - DiffuseProb(350) - AnharmonicProb(f_GHz);
+  return 2.9e-13 * (f_GHz * f_GHz * f_GHz * f_GHz) +
+         3.1e-9 * (f_GHz * f_GHz * f_GHz) -
+         3.21e-6 * (f_GHz * f_GHz) -
+         2.03e-4 * f_GHz +
+         0.928;
+}
+
+G4double G4CMPPhononBoundaryProcess::DiffuseProb(G4double f_GHz) const {
+  if (f_GHz > 520) return 1. - GetMaterialProperty("specProb");
+  if (f_GHz >= 350) f_GHz = 350;
+  return -2.98e-11 * (f_GHz * f_GHz * f_GHz * f_GHz) +
+         1.71e-8 * (f_GHz * f_GHz * f_GHz) -
+         2.47e-6 * (f_GHz * f_GHz) +
+         7.83e-4 * f_GHz +
+         5.88e-2;
+}
+
+G4ThreeVector G4CMPPhononBoundaryProcess::
+GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {
+  G4ThreeVector reflectedKDir;
+  const G4int maxTries = 1000;
+  G4int nTries = 0;
+  do {
+    reflectedKDir = G4CMP::LambertReflection(surfNorm);
+  } while (nTries++ < maxTries &&
+	   !G4CMP::PhononVelocityIsInward(theLattice, mode,
+					  reflectedKDir, surfNorm));
+
+  return reflectedKDir;
 }
