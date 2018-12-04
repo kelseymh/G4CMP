@@ -173,9 +173,14 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   G4double random = G4UniformRand();
 
-  G4cout << "Surface Downconversion Probability: " << downconversionProb << G4endl;
-  G4cout << "Random: " << random << G4endl;
+  if (verboseLevel > 1) {
+    G4cout << "Surface Downconversion Probability: " << downconversionProb
+	   << "\nRandom: " << random << G4endl;
+  }
+
   if (random < downconversionProb) {
+    if (verboseLevel > 1) G4cout << "Anharmonic Decay at boundary." << G4endl;
+
     /* Do Downconversion */
     anharmonicDecay->DoDecay(aTrack, aStep, particleChange);
     G4Track* sec1 = particleChange.GetSecondary(0);
@@ -187,12 +192,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     sec1->SetMomentumDirection(vec1);
     sec2->SetMomentumDirection(vec2);
 
-    if (verboseLevel > 1) {
-      G4cout << "Anharmonic Decay at boundary." << G4endl;
-    }
-    G4cout << "Anharmonic Case Activated" << G4endl;
     return;
-
   } else if (random < downconversionProb + specProb) {
     // Specular reflecton reverses momentum along normal
     reflectedKDir = waveVector.unit();
