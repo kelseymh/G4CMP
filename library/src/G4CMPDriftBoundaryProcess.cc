@@ -35,7 +35,6 @@
 #include "G4StepPoint.hh"
 #include "G4StepStatus.hh"
 #include "G4Track.hh"
-#include "G4TransportationManager.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VSolid.hh"
