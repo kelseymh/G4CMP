@@ -20,10 +20,8 @@
 #include "G4CMPVTrackInfo.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4Navigator.hh"
 #include "G4RandomDirection.hh"
 #include "G4Track.hh"
-#include "G4TransportationManager.hh"
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
 

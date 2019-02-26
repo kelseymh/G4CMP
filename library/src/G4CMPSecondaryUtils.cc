@@ -28,7 +28,6 @@
 #include "G4SystemOfUnits.hh"
 #include "G4Threading.hh"
 #include "G4Track.hh"
-#include "G4TransportationManager.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VTouchable.hh"
 
