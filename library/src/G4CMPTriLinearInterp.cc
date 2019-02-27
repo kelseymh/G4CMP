@@ -11,6 +11,7 @@
 // 20180925  Protect memory corruption in passing point coordinates.
 // 20180926  Add diagnostic output for debugging field problems.
 //		Add starting index for tetrahedral traversal
+// 20190226  Provide accessor to replace potentials at mesh points
 
 #include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
@@ -68,6 +69,24 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point>& xyz,
   FillNeighbors();
   TetraIdx = -1;
   TetraStart = FirstInteriorTetra();
+
+#ifdef G4CMPTLI_DEBUG
+  SavePoints("TLI_points.dat"); SaveTetra("TLI_tetra.dat");
+#endif
+}
+
+
+// Replace values at mesh points without rebuilding tables
+
+void G4CMPTriLinearInterp::UseValues(const std::vector<G4double>& v) {
+  if (v.size() != V.size()) {
+    G4cerr << "G4CMPTriLinearInterp::UseValues ERROR Input vector v does"
+	   << " not match existing mesh." << G4endl;
+    return;
+  }
+
+  staleCache = true;
+  V = v;
 
 #ifdef G4CMPTLI_DEBUG
   SavePoints("TLI_points.dat"); SaveTetra("TLI_tetra.dat");
