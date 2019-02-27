@@ -10,6 +10,7 @@
 // 20180904  Add constructor to directly load mesh definitions
 // 20180926  Add functions to write points, tetrahedra etc. to files.
 //		Add starting index for tetrahedral traversal
+// 20190226  Provide accessor to replace potentials at mesh points
 
 #ifndef G4CMPTriLinearInterp_h 
 #define G4CMPTriLinearInterp_h 
@@ -41,6 +42,9 @@ public:
 
   void UseMesh(const std::vector<point>& xyz, const std::vector<G4double>& v,
 	       const std::vector<std::array<G4int,4> >& tetra);
+
+  // Replace values at mesh points without rebuilding tables
+  void UseValues(const std::vector<G4double>& v);
 
   // Evaluate mesh at arbitrary location, optionally suppressing errors
   G4double GetValue(const G4double pos[3], G4bool quiet=false) const;
