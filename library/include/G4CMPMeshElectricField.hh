@@ -15,6 +15,7 @@
 // 20170823  Add scaling factor as optional constructor argument.
 // 20180904  Add constructor to take precreated mesh and tetrahedra.
 // 20180924  TriLinearInterp should be a pointer, to break dependency.
+// 20190226  Provide access to TriLinearInterp object, and ctor assignment
 
 #ifndef G4CMPMeshElectricField_h 
 #define G4CMPMeshElectricField_h 1
@@ -35,16 +36,22 @@ public:
 			 const std::vector<G4double>& v,
 			 const std::vector<std::array<G4int,4> >& tetra);
 
+  G4CMPMeshElectricField(const G4CMPTriLinearInterp& tli);
+
+  // Copy constructor and assignment operator
+  G4CMPMeshElectricField(const G4CMPMeshElectricField &p);
+  G4CMPMeshElectricField& operator=(const G4CMPMeshElectricField &p);
+
   virtual ~G4CMPMeshElectricField();
 
+  // Returns field vector(s) at location, required by base class
   virtual void GetFieldValue(const G4double Point[3], G4double *Efield) const;
 
   // Call through to interpolator (e.g., for use with FET code)
   virtual G4double GetPotential(const G4double Point[3]) const;
 
-  // Copy constructor and assignment operator
-  G4CMPMeshElectricField(const G4CMPMeshElectricField &p);
-  G4CMPMeshElectricField& operator=(const G4CMPMeshElectricField &p);
+  // Get access to mesh interpolator for client access or copying
+  const G4CMPTriLinearInterp* GetInterpolator() const { return Interp; }
 
   // Sorting operator (compares x, y, z in sequence)
   static G4bool vector_comp(const std::array<G4double, 4>& p1,

@@ -17,6 +17,7 @@
 // 20180525  Use new "quiet" argument to suppress "outside of hull" warnings
 // 20180904  Add constructor to take precreated mesh and tetrahedra.
 // 20180924  TriLinearInterp should be a pointer, to break dependency.
+// 20190226  Provide access to TriLinearInterp object, and ctor assignment
 
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPConfigManager.hh"
@@ -46,6 +47,9 @@ G4CMPMeshElectricField(const vector<array<G4double,3> >& xyz,
 
 G4CMPMeshElectricField::G4CMPMeshElectricField(const G4CMPMeshElectricField &p)
   : G4ElectricField(p), Interp(new G4CMPTriLinearInterp(*p.Interp)) {;}
+
+G4CMPMeshElectricField::G4CMPMeshElectricField(const G4CMPTriLinearInterp& tli)
+  : G4ElectricField(), Interp(new G4CMPTriLinearInterp(tli)) {;}
 
 G4CMPMeshElectricField& 
 G4CMPMeshElectricField::operator=(const G4CMPMeshElectricField &p) {
