@@ -495,6 +495,38 @@ G4double G4CMPTriLinearInterp::Det3(const G4double matrix[3][3]) const {
 
 void G4CMPTriLinearInterp::MatInv(const G4double matrix[3][3], G4double result[3][3]) const {
   G4double determ = Det3(matrix);
+  if (!(determ == determ)) {
+    G4cerr << "WARNING MatInv got NaN determ!"
+	   <<"\n " << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2]
+	   <<"\n " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2]
+	   <<"\n " << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2]
+	   << G4endl;
+
+    for (size_t i=0; i<3; i++) {
+      for (size_t j=0; j<3; j++) {
+	result[i][j] = 0.;
+      }
+    }
+
+    return;
+  }
+
+  if (fabs(determ) < 1e-9) {
+    G4cerr << "WARNING MatInv got determ " << determ << ": zero result from"
+	   <<"\n " << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2]
+	   <<"\n " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2]
+	   <<"\n " << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2]
+	   << G4endl;
+
+    for (size_t i=0; i<3; i++) {
+      for (size_t j=0; j<3; j++) {
+	result[i][j] = 0.;
+      }
+    }
+
+    return;
+  }
+
   result[0][0] = (matrix[1][1]*matrix[2][2] - matrix[1][2]*matrix[2][1])/determ;
   result[1][0] = (matrix[1][2]*matrix[2][0] - matrix[1][0]*matrix[2][2])/determ;
   result[2][0] = (matrix[1][0]*matrix[2][1] - matrix[1][1]*matrix[2][0])/determ;
