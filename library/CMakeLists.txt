@@ -113,6 +113,7 @@ set_target_properties(qhullstatic_p PROPERTIES
 target_link_libraries(qhullcpp qhull_p qhullstatic_p)
 
 set(library_SOURCES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBiLinearInterp.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBoundaryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPChargeCloud.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPConfigManager.cc
@@ -177,6 +178,7 @@ set(library_SOURCES
     )
  
 set(library_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBiLinearInterp.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBoundaryUtils.hh

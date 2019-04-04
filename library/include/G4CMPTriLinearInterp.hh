@@ -11,6 +11,7 @@
 // 20180926  Add functions to write points, tetrahedra etc. to files.
 //		Add starting index for tetrahedral traversal
 // 20190226  Provide accessor to replace potentials at mesh points
+// 20190404  Change "point" to "point3d" to make way for 2D interpolator.
 
 #ifndef G4CMPTriLinearInterp_h 
 #define G4CMPTriLinearInterp_h 
@@ -21,7 +22,7 @@
 #include <map>
 #include <array>
 
-using point = std::array<G4double, 3>;
+using point3d = std::array<G4double, 3>;
 
 class G4CMPTriLinearInterp {
 public:
@@ -29,18 +30,18 @@ public:
   G4CMPTriLinearInterp() : TetraIdx(0), staleCache(true) {;}
 
   // Mesh coordinates and values only; uses QHull to generate triangulation
-  G4CMPTriLinearInterp(const std::vector<point>& xyz,
+  G4CMPTriLinearInterp(const std::vector<point3d>& xyz,
 		       const std::vector<G4double>& v);
 
   // Mesh points and pre-defined triangulation
-  G4CMPTriLinearInterp(const std::vector<point>& xyz,
+  G4CMPTriLinearInterp(const std::vector<point3d>& xyz,
 		       const std::vector<G4double>& v,
 		       const std::vector<std::array<G4int,4> >& tetra);
 
   // User initialization or re-initialization
-  void UseMesh(const std::vector<point>& xyz, const std::vector<G4double>& v);
+  void UseMesh(const std::vector<point3d>& xyz, const std::vector<G4double>& v);
 
-  void UseMesh(const std::vector<point>& xyz, const std::vector<G4double>& v,
+  void UseMesh(const std::vector<point3d>& xyz, const std::vector<G4double>& v,
 	       const std::vector<std::array<G4int,4> >& tetra);
 
   // Replace values at mesh points without rebuilding tables
@@ -54,7 +55,7 @@ public:
   void SaveTetra(const G4String& fname) const;
 
 private:
-  std::vector<point > X;
+  std::vector<point3d > X;
   std::vector<G4double> V;
   std::vector<std::array<G4int,4> > Tetrahedra;
   std::vector<std::array<G4int,4> > Neighbors;

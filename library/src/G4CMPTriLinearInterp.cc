@@ -12,6 +12,7 @@
 // 20180926  Add diagnostic output for debugging field problems.
 //		Add starting index for tetrahedral traversal
 // 20190226  Provide accessor to replace potentials at mesh points
+// 20190404  Change "point" to "point3d" to make way for 2D interpolator.
 
 #include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
@@ -32,12 +33,12 @@ using std::vector;
 
 // Constructors to load mesh and possibly re-triangulate
 
-G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<point >& xyz,
+G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<point3d>& xyz,
 					   const vector<G4double>& v)
   : G4CMPTriLinearInterp() { UseMesh(xyz, v); }
 
 G4CMPTriLinearInterp::
-G4CMPTriLinearInterp(const vector<point >& xyz, const vector<G4double>& v,
+G4CMPTriLinearInterp(const vector<point3d>& xyz, const vector<G4double>& v,
 		     const vector<array<G4int,4> >& tetra)
   : G4CMPTriLinearInterp() { UseMesh(xyz, v, tetra); }
 
@@ -45,7 +46,7 @@ G4CMPTriLinearInterp(const vector<point >& xyz, const vector<G4double>& v,
 
 // Load new mesh object and possibly re-triangulate
 
-void G4CMPTriLinearInterp::UseMesh(const vector<point > &xyz,
+void G4CMPTriLinearInterp::UseMesh(const vector<point3d> &xyz,
 				   const vector<G4double>& v) {
   staleCache = true;
   X = xyz;
@@ -59,7 +60,7 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point > &xyz,
 #endif
 }
 
-void G4CMPTriLinearInterp::UseMesh(const vector<point>& xyz,
+void G4CMPTriLinearInterp::UseMesh(const vector<point3d>& xyz,
 				   const vector<G4double>& v,
 				   const vector<array<G4int,4> >& tetra) {
   staleCache = true;
