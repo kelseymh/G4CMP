@@ -65,7 +65,7 @@ protected:
   // Internal drivers for lookup tables
   double interpolateEven(double theta, double phi, int MODE, int TYPE_OUT,
 			 bool SILENT=true);
-  double interpolateEven(G4CMPBiLinearInterp& grid, double theta, double phi);
+  double interpolateEven(G4CMPGridInterp& grid, double theta, double phi);
 
 private:
   G4double thetaMin, thetaMax, thetaStep;   // Range and steps for wavevector
@@ -77,13 +77,13 @@ private:
   void setUpDataVectors();
   void generateLookupTable();
   void generateMultiEvenTable();
-  G4CMPBiLinearInterp generateEvenTable(int MODE, DataTypes TYPE_OUT);
+  G4CMPGridInterp generateEvenTable(int MODE, DataTypes TYPE_OUT);
   void clearQuantityMap();
 
 private:
   G4CMPPhononKinematics* mapper;	// Not owned; client responsibility
   G4bool lookupReady;			// Flag once tables are filled
-  vector<vector<G4CMPBiLinearInterp> > quantityMap;
+  vector<vector<G4CMPGridInterp> > quantityMap;
   vector<vector<vector<double> > > lookupData;
 };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
