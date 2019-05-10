@@ -6,6 +6,7 @@
 // $Id$
 //
 // 20190404  Adapted from BiLinearInterp for use with 2D triangular mesh
+// 20190508  Move some 2D/3D common features to new base class
 
 #include "G4CMPBiLinearInterp.hh"
 #include <algorithm>
@@ -23,16 +24,15 @@ using std::vector;
 
 G4CMPBiLinearInterp::
 G4CMPBiLinearInterp(const vector<point2d>& xy, const vector<G4double>& v,
-		    const vector<array<G4int,3> >& tetra)
+		    const vector<tetra2d>& tetra)
   : G4CMPBiLinearInterp() { UseMesh(xy, v, tetra); }
-
 
 
 // Load new mesh object and build list of neighbors
 
 void G4CMPBiLinearInterp::UseMesh(const vector<point2d>& xy,
 				  const vector<G4double>& v,
-				  const vector<array<G4int,3> >& tetra) {
+				  const vector<tetra2d>& tetra) {
   staleCache = true;
   X = xy;
   V = v;
@@ -47,36 +47,18 @@ void G4CMPBiLinearInterp::UseMesh(const vector<point2d>& xy,
 }
 
 
-// Replace values at mesh points without rebuilding tables
-
-void G4CMPBiLinearInterp::UseValues(const std::vector<G4double>& v) {
-  if (v.size() != V.size()) {
-    G4cerr << "G4CMPBiLinearInterp::UseValues ERROR Input vector v does"
-	   << " not match existing mesh." << G4endl;
-    return;
-  }
-
-  staleCache = true;
-  V = v;
-
-#ifdef G4CMPTLI_DEBUG
-  SavePoints("BLI_points.dat"); SaveTetra("BLI_tetra.dat");
-#endif
-}
-
-
 // Tetrahedra sort functions, labelled for each facet option
 
 namespace {
-  G4bool tLess01(const array<G4int,3>& a, const array<G4int,3>& b) {
+  G4bool tLess01(const tetra2d& a, const tetra2d& b) {
     return ( a[0]<b[0] || (a[0]==b[0] && a[1]<b[1]) );
   }
   
-  G4bool tLess02(const array<G4int,3>& a, const array<G4int,3>& b) {
+  G4bool tLess02(const tetra2d& a, const tetra2d& b) {
     return ( a[0]<b[0] || (a[0]==b[0] && a[2]<b[2]) );
   }
   
-  G4bool tLess12(const array<G4int,3>& a, const array<G4int,3>& b) {
+  G4bool tLess12(const tetra2d& a, const tetra2d& b) {
     return ( a[1]<b[1] || (a[1]==b[1] && a[2]<b[2]) );
   }
 }
@@ -138,8 +120,7 @@ G4int G4CMPBiLinearInterp::FindNeighbor(const array<G4int,2>& edge,
 // "Wild" means that at least one vertex may be "-1", which matches anything
 
 G4int G4CMPBiLinearInterp::
-FindTetraID(const vector<array<G4int,3> >& tetras,
-	    const array<G4int,3>& wildTetra, G4int skip,
+FindTetraID(const vector<tetra2d>& tetras, const tetra2d& wildTetra, G4int skip,
 	    G4CMPBiLinearInterp::TetraComp tLess) const {
   const auto start  = tetras.begin();
   const auto finish = tetras.end();
@@ -189,16 +170,14 @@ G4CMPBiLinearInterp::GetValue(const G4double pos[2], G4bool quiet) const {
   }
 }
 
-G4TwoVector 
+G4ThreeVector 
 G4CMPBiLinearInterp::GetGrad(const G4double pos[2], G4bool quiet) const {
   G4double bary[3] = { 0. };
   G4int oldIdx = TetraIdx;
   FindTetrahedron(pos, bary, quiet);
 
-  if (TetraIdx == -1) {
-    for (size_t i=0; i<2; ++i)
-      cachedGrad[i] = 0;
-  } else if (TetraIdx != oldIdx || staleCache) {
+  if (TetraIdx == -1) cachedGrad.set(0.,0.,0.);
+  else if (TetraIdx != oldIdx || staleCache) {
     G4double ET[3][2];
     BuildT3x2(ET);
     for (size_t i=0; i<2; ++i) {
@@ -206,8 +185,10 @@ G4CMPBiLinearInterp::GetGrad(const G4double pos[2], G4bool quiet) const {
                       V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
                       V[Tetrahedra[TetraIdx][2]]*ET[2][i];
     }
+    cachedGrad[2] = 0.;
     staleCache = false;
   }
+
   return cachedGrad;
 }
 

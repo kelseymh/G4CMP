@@ -13,6 +13,7 @@
 //		Add starting index for tetrahedral traversal
 // 20190226  Provide accessor to replace potentials at mesh points
 // 20190404  Change "point" to "point3d" to make way for 2D interpolator.
+// 20190508  Move some 2D/3D common features to new base class
 
 #include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
@@ -39,7 +40,7 @@ G4CMPTriLinearInterp::G4CMPTriLinearInterp(const vector<point3d>& xyz,
 
 G4CMPTriLinearInterp::
 G4CMPTriLinearInterp(const vector<point3d>& xyz, const vector<G4double>& v,
-		     const vector<array<G4int,4> >& tetra)
+		     const vector<tetra3d>& tetra)
   : G4CMPTriLinearInterp() { UseMesh(xyz, v, tetra); }
 
 
@@ -62,7 +63,7 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point3d> &xyz,
 
 void G4CMPTriLinearInterp::UseMesh(const vector<point3d>& xyz,
 				   const vector<G4double>& v,
-				   const vector<array<G4int,4> >& tetra) {
+				   const vector<tetra3d>& tetra) {
   staleCache = true;
   X = xyz;
   V = v;
@@ -70,24 +71,6 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point3d>& xyz,
   FillNeighbors();
   TetraIdx = -1;
   TetraStart = FirstInteriorTetra();
-
-#ifdef G4CMPTLI_DEBUG
-  SavePoints("TLI_points.dat"); SaveTetra("TLI_tetra.dat");
-#endif
-}
-
-
-// Replace values at mesh points without rebuilding tables
-
-void G4CMPTriLinearInterp::UseValues(const std::vector<G4double>& v) {
-  if (v.size() != V.size()) {
-    G4cerr << "G4CMPTriLinearInterp::UseValues ERROR Input vector v does"
-	   << " not match existing mesh." << G4endl;
-    return;
-  }
-
-  staleCache = true;
-  V = v;
 
 #ifdef G4CMPTLI_DEBUG
   SavePoints("TLI_points.dat"); SaveTetra("TLI_tetra.dat");
@@ -218,25 +201,25 @@ G4int G4CMPTriLinearInterp::FindPointID(const vector<G4double>& pt,
 // Tetrahedra sort functions, labelled for each facet option
 
 namespace {
-  G4bool tLess012(const array<G4int,4>& a, const array<G4int,4>& b) {
+  G4bool tLess012(const tetra3d& a, const tetra3d& b) {
     return ( a[0]<b[0] ||
 	     (a[0]==b[0] && (a[1]<b[1] ||
 			     (a[1]==b[1] && a[2]<b[2]))) );
   }
   
-  G4bool tLess013(const array<G4int,4>& a, const array<G4int,4>& b) {
+  G4bool tLess013(const tetra3d& a, const tetra3d& b) {
     return ( a[0]<b[0] ||
 	     (a[0]==b[0] && (a[1]<b[1] ||
 			     (a[1]==b[1] && a[3]<b[3]))) );
   }
   
-  G4bool tLess023(const array<G4int,4>& a, const array<G4int,4>& b) {
+  G4bool tLess023(const tetra3d& a, const tetra3d& b) {
     return ( a[0]<b[0] ||
 	     (a[0]==b[0] && (a[2]<b[2] ||
 			     (a[2]==b[2] && a[3]<b[3]))) );
   }
   
-  G4bool tLess123(const array<G4int,4>& a, const array<G4int,4>& b) {
+  G4bool tLess123(const tetra3d& a, const tetra3d& b) {
     return ( a[1]<b[1] ||
 	     (a[1]==b[1] && (a[2]<b[2] ||
 			     (a[2]==b[2] && a[3]<b[3]))) );
@@ -305,8 +288,7 @@ G4int G4CMPTriLinearInterp::FindNeighbor(const array<G4int,3>& facet,
 // "Wild" means that at least one vertex may be "-1", which matches anything
 
 G4int G4CMPTriLinearInterp::
-FindTetraID(const vector<array<G4int,4> >& tetras,
-	    const array<G4int,4>& wildTetra, G4int skip,
+FindTetraID(const vector<tetra3d>& tetras, const tetra3d& wildTetra, G4int skip,
 	    G4CMPTriLinearInterp::TetraComp tLess) const {
   const auto start  = tetras.begin();
   const auto finish = tetras.end();
@@ -363,10 +345,8 @@ G4CMPTriLinearInterp::GetGrad(const G4double pos[3], G4bool quiet) const {
   G4int oldIdx = TetraIdx;
   FindTetrahedron(pos, bary, quiet);
 
-  if (TetraIdx == -1) {
-    for (size_t i = 0; i < 3; ++i)
-      cachedGrad[i] = 0;
-  } else if (TetraIdx != oldIdx || staleCache) {
+  if (TetraIdx == -1) cachedGrad.set(0.,0.,0.);
+  else if (TetraIdx != oldIdx || staleCache) {
     G4double ET[4][3];
     BuildT4x3(ET);
     for (size_t i = 0; i < 3; ++i) {
@@ -377,6 +357,7 @@ G4CMPTriLinearInterp::GetGrad(const G4double pos[3], G4bool quiet) const {
     }
     staleCache = false;
   }
+
   return cachedGrad;
 }
 

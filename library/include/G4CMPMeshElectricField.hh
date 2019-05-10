@@ -16,27 +16,45 @@
 // 20180904  Add constructor to take precreated mesh and tetrahedra.
 // 20180924  TriLinearInterp should be a pointer, to break dependency.
 // 20190226  Provide access to TriLinearInterp object, and ctor assignment
+// 20190509  Migrate to 2D/3D mesh base class, handle dimensional reduction
 
 #ifndef G4CMPMeshElectricField_h 
 #define G4CMPMeshElectricField_h 1
 
+#include "geomdefs.hh"
 #include "G4ElectricField.hh"
 #include "G4ThreeVector.hh"
 #include <array>
 #include <vector>
 
+class G4CMPBiLinearInterp;
 class G4CMPTriLinearInterp;
+class G4CMPVMeshInterpolator;
 
 
 class G4CMPMeshElectricField : public G4ElectricField {
 public:
   G4CMPMeshElectricField(const G4String& EPotFileName, G4double Vscale=1.);
 
+  // Constructor for predefined 3D mesh table
   G4CMPMeshElectricField(const std::vector<std::array<G4double,3> >& xyz,
 			 const std::vector<G4double>& v,
 			 const std::vector<std::array<G4int,4> >& tetra);
 
+  // Constructor for predefined 2D mesh table with specified coordinates
+  G4CMPMeshElectricField(const std::vector<std::array<G4double,2> >& xy,
+			 const std::vector<G4double>& v,
+			 const std::vector<std::array<G4int,3> >& tetra,
+			 EAxis xdim=kXAxis, EAxis ydim=kYAxis);
+
+  // Copy previously constructed mesh interpolator
   G4CMPMeshElectricField(const G4CMPTriLinearInterp& tli);
+
+  G4CMPMeshElectricField(const G4CMPBiLinearInterp& bli,
+			 EAxis xdim=kXAxis, EAxis ydim=kYAxis);
+
+  G4CMPMeshElectricField(const G4CMPVMeshInterpolator* mesh,
+			 EAxis xdim=kXAxis, EAxis ydim=kYAxis);
 
   // Copy constructor and assignment operator
   G4CMPMeshElectricField(const G4CMPMeshElectricField &p);
@@ -51,20 +69,31 @@ public:
   virtual G4double GetPotential(const G4double Point[3]) const;
 
   // Get access to mesh interpolator for client access or copying
-  const G4CMPTriLinearInterp* GetInterpolator() const { return Interp; }
+  const G4CMPVMeshInterpolator* GetInterpolator() const { return Interp; }
 
   // Sorting operator (compares x, y, z in sequence)
   static G4bool vector_comp(const std::array<G4double, 4>& p1,
 			    const std::array<G4double, 4>& p2);
 
 private:
-  G4CMPTriLinearInterp* Interp;
+  G4CMPVMeshInterpolator* Interp;
+  EAxis xCoord, yCoord;			// 2D coordinates for projection
 
   void BuildInterp(const G4String& EPotFileName, G4double Vscale=1.);
 
+  // Construct 3D mesh interpolator
   void BuildInterp(const std::vector<std::array<G4double,3> >& xyz,
 		   const std::vector<G4double>& v,
 		   const std::vector<std::array<G4int,4> >& tetra);
+
+  // Construct 2D mesh interpolator
+  void BuildInterp(const std::vector<std::array<G4double,2> >& xy,
+		   const std::vector<G4double>& v,
+		   const std::vector<std::array<G4int,3> >& tetra);
+
+  // Convert between 3D and 2D coordinates (Expand needs to know location)
+  void Project2D(const G4double Point[3], G4double Project[2]) const;
+  void Expand2Dat(const G4double Point[3], G4ThreeVector& Efield) const;
 };
 
 #endif	/* G4CMPMeshElectricField_h */
