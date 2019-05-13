@@ -18,6 +18,7 @@
 // 20180904  Add constructor to take precreated mesh and tetrahedra.
 // 20180924  TriLinearInterp should be a pointer, to break dependency.
 // 20190226  Provide access to TriLinearInterp object, and ctor assignment
+// 20190513  Provide support for 2D (e.g., axisymmetric) and 3D meshes.
 
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPBiLinearInterp.hh"
@@ -39,14 +40,20 @@ G4CMPMeshElectricField(const G4String& EPotFileName, G4double Vscale)
   BuildInterp(EPotFileName, Vscale);
 }
 
-// Constructor for predefined 3D mesh table
+// Constructor for predefined 3D mesh table (or 2D projective mesh)
 
 G4CMPMeshElectricField::
 G4CMPMeshElectricField(const vector<array<G4double,3> >& xyz,
 		       const vector<G4double>& v,
-		       const vector<array<G4int,4> >& tetra)
-  : G4ElectricField(), Interp(0), xCoord(kUndefined), yCoord(kUndefined) {
-  BuildInterp(xyz, v, tetra);
+		       const vector<array<G4int,4> >& tetra,
+		       EAxis xdim, EAxis ydim)
+  : G4ElectricField(), Interp(0), xCoord(xdim), yCoord(xdim) {
+  if (xdim == kUndefined) {	// Assume true 3D Cartesian mesh
+    BuildInterp(xyz, v, tetra);
+  } else {			// Projected 2D mesh with specified coordinates
+    Interp = new G4CMPBiLinearInterp;
+    Interp->UseMesh(xyz, v, tetra);		// Will trim off third dimension
+  }
 }
 
 // Constructor for predefined 2D mesh table with specified coordinates

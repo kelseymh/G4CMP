@@ -17,9 +17,6 @@
 #include <map>
 #include <array>
 
-using point2d = std::array<G4double,2>;
-using tetra2d = std::array<G4int,3>;
-
 
 class G4CMPBiLinearInterp : public G4CMPVMeshInterpolator {
 public:
@@ -31,6 +28,11 @@ public:
 		      const std::vector<G4double>& v,
 		      const std::vector<tetra2d>& tetra);
 
+  // Allow use of 3D inputs, which get collapsed to 2D internals
+  G4CMPBiLinearInterp(const std::vector<point3d>& xyz,
+		      const std::vector<G4double>& v,
+		      const std::vector<tetra3d>& tetra);
+
   // Cloning function to allow making type-matched copies
   virtual G4CMPVMeshInterpolator* Clone() const {
     return new G4CMPBiLinearInterp(X, V, Tetrahedra);
@@ -39,6 +41,9 @@ public:
   // User initialization or re-initialization
   void UseMesh(const std::vector<point2d>& xy, const std::vector<G4double>& v,
 	       const std::vector<tetra2d>& tetra);
+
+  void UseMesh(const std::vector<point3d>& xyz, const std::vector<G4double>& v,
+	       const std::vector<tetra3d>& tetra);
 
   // Evaluate mesh at arbitrary location, optionally suppressing errors
   G4double GetValue(const G4double pos[], G4bool quiet=false) const;
@@ -62,6 +67,9 @@ private:
   std::vector<tetra2d> Tetra12;
 
   void FillNeighbors();		// Generate Neighbors table from tetrahedra
+
+  void Compress3DPoints(const std::vector<point3d>& xyz);
+  void Compress3DTetras(const std::vector<tetra3d>& tetra);
 
   // Function pointer for comparison operator to use search for facets
   using TetraComp = G4bool(*)(const tetra2d&, const tetra2d&);

@@ -20,12 +20,17 @@ using std::sort;
 using std::vector;
 
 
-// Constructors to load mesh and possibly re-triangulate
+// Constructors to load mesh from external construction
 
 G4CMPBiLinearInterp::
 G4CMPBiLinearInterp(const vector<point2d>& xy, const vector<G4double>& v,
 		    const vector<tetra2d>& tetra)
   : G4CMPBiLinearInterp() { UseMesh(xy, v, tetra); }
+
+G4CMPBiLinearInterp::
+G4CMPBiLinearInterp(const vector<point3d>& xyz, const vector<G4double>& v,
+		    const vector<tetra3d>& tetra)
+  : G4CMPBiLinearInterp() { UseMesh(xyz, v, tetra); }
 
 
 // Load new mesh object and build list of neighbors
@@ -44,6 +49,44 @@ void G4CMPBiLinearInterp::UseMesh(const vector<point2d>& xy,
 #ifdef G4CMPTLI_DEBUG
   SavePoints("BLI_points.dat"); SaveTetra("BLI_tetra.dat");
 #endif
+}
+
+// Load new mesh object using external 3D tables, for client convenience
+
+void G4CMPBiLinearInterp::UseMesh(const vector<point3d>& xyz,
+				  const vector<G4double>& v,
+				  const vector<tetra3d>& tetra) {
+  staleCache = true;
+  Compress3DPoints(xyz);
+  Compress3DTetras(tetra);
+  V = v;
+  FillNeighbors();
+  TetraIdx = -1;
+  TetraStart = FirstInteriorTetra();
+
+#ifdef G4CMPTLI_DEBUG
+  SavePoints("BLI_points.dat"); SaveTetra("BLI_tetra.dat");
+#endif
+}
+
+
+
+// Compress external 3D tables to 2D version (for client convenience)
+
+void G4CMPBiLinearInterp::Compress3DPoints(const std::vector<point3d>& xyz) {
+  X.clear();
+  X.reserve(xyz.size());
+
+  std::transform(xyz.begin(), xyz.end(), X.begin(),
+		 [](const point3d& p3d){return point2d{p3d[0],p3d[1]};});
+}
+
+void G4CMPBiLinearInterp::Compress3DTetras(const std::vector<tetra3d>& tetra) {
+  Tetrahedra.clear();
+  Tetrahedra.reserve(tetra.size());
+
+  std::transform(tetra.begin(), tetra.end(), Tetrahedra.begin(),
+		 [](const tetra3d& t3d){return tetra2d{t3d[0],t3d[1],t3d[2]};});
 }
 
 
@@ -67,7 +110,7 @@ namespace {
 
 void G4CMPBiLinearInterp::FillNeighbors() {
   G4cout << "G4CMPBiLinearInterp::FillNeighbors (" << Tetrahedra.size()
-	 << " tetrahedra)" << G4endl;
+	 << " triangles)" << G4endl;
 
   time_t start, fin;
   std::time(&start);

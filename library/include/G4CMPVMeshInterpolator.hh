@@ -19,6 +19,12 @@
 #include <array>
 #include <vector>
 
+// Convenient abbreviations, available to subclasses and client code
+using point2d = std::array<G4double,2>;
+using point3d = std::array<G4double,3>;
+using tetra2d = std::array<G4int,3>;
+using tetra3d = std::array<G4int,4>;
+
 
 class G4CMPVMeshInterpolator {
 protected:
@@ -39,13 +45,13 @@ public:
 
   // Replace existing mesh vectors and tetrahedra table
   // NOTE: Both 2D and 3D versions are give, subclasses should implement one
-  void UseMesh(const std::vector<std::array<G4double,3> >& /*xyz*/,
+  void UseMesh(const std::vector<point3d>& /*xyz*/,
 	       const std::vector<G4double>& /*v*/,
-	       const std::vector<std::array<G4int,4> >& /*tetra*/) {;}
+	       const std::vector<tetra3d>& /*tetra*/) {;}
 
-  void UseMesh(const std::vector<std::array<G4double,2> >& /*xyz*/,
+  void UseMesh(const std::vector<point2d>& /*xy*/,
 	       const std::vector<G4double>& /*v*/,
-	       const std::vector<std::array<G4int,3> >& /*tetra*/) {;}
+	       const std::vector<tetra2d>& /*tetra*/) {;}
 
   // Evaluate mesh at arbitrary location, optionally suppressing errors
   virtual G4double GetValue(const G4double pos[], G4bool quiet=false) const = 0;

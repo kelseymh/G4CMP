@@ -23,8 +23,6 @@
 #include <map>
 #include <array>
 
-using point3d = std::array<G4double,3>;
-using tetra3d = std::array<G4int,4>;
 
 class G4CMPTriLinearInterp : public G4CMPVMeshInterpolator {
 public:

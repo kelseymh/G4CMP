@@ -36,10 +36,11 @@ class G4CMPMeshElectricField : public G4ElectricField {
 public:
   G4CMPMeshElectricField(const G4String& EPotFileName, G4double Vscale=1.);
 
-  // Constructor for predefined 3D mesh table
+  // Constructor for predefined 3D mesh table, or 2D with extra components
   G4CMPMeshElectricField(const std::vector<std::array<G4double,3> >& xyz,
 			 const std::vector<G4double>& v,
-			 const std::vector<std::array<G4int,4> >& tetra);
+			 const std::vector<std::array<G4int,4> >& tetra,
+			 EAxis xdim=kUndefined, EAxis ydim=kUndefined);
 
   // Constructor for predefined 2D mesh table with specified coordinates
   G4CMPMeshElectricField(const std::vector<std::array<G4double,2> >& xy,
