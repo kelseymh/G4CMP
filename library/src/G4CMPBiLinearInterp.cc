@@ -75,7 +75,7 @@ void G4CMPBiLinearInterp::UseMesh(const vector<point3d>& xyz,
 
 void G4CMPBiLinearInterp::Compress3DPoints(const std::vector<point3d>& xyz) {
   X.clear();
-  X.reserve(xyz.size());
+  X.resize(xyz.size());
 
   std::transform(xyz.begin(), xyz.end(), X.begin(),
 		 [](const point3d& p3d){return point2d{p3d[0],p3d[1]};});
@@ -83,7 +83,7 @@ void G4CMPBiLinearInterp::Compress3DPoints(const std::vector<point3d>& xyz) {
 
 void G4CMPBiLinearInterp::Compress3DTetras(const std::vector<tetra3d>& tetra) {
   Tetrahedra.clear();
-  Tetrahedra.reserve(tetra.size());
+  Tetrahedra.resize(tetra.size());
 
   std::transform(tetra.begin(), tetra.end(), Tetrahedra.begin(),
 		 [](const tetra3d& t3d){return tetra2d{t3d[0],t3d[1],t3d[2]};});

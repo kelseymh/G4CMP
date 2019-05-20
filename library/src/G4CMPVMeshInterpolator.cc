@@ -17,7 +17,7 @@
 // Replace values at mesh points without rebuilding tables
 
 void G4CMPVMeshInterpolator::UseValues(const std::vector<G4double>& v) {
-  if (v.size() != V.size()) {
+  if (!V.empty() && v.size() != V.size()) {
     G4cerr << "G4CMPVMeshInterpolator::UseValues ERROR Input vector v does"
 	   << " not match existing mesh V." << G4endl;
     return;
