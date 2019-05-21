@@ -57,7 +57,8 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point3d> &xyz,
   TetraStart = FirstInteriorTetra();
 
 #ifdef G4CMPTLI_DEBUG
-  SavePoints("TLI_points.dat"); SaveTetra("TLI_tetra.dat");
+  SavePoints(savePrefix+"_points.dat");
+  SaveTetra(savePrefix+"_tetra.dat");
 #endif
 }
 
@@ -73,7 +74,8 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point3d>& xyz,
   TetraStart = FirstInteriorTetra();
 
 #ifdef G4CMPTLI_DEBUG
-  SavePoints("TLI_points.dat"); SaveTetra("TLI_tetra.dat");
+  SavePoints(savePrefix+"_points.dat");
+  SaveTetra(savePrefix+"_tetra.dat");
 #endif
 }
 
@@ -529,7 +531,7 @@ void G4CMPTriLinearInterp::SavePoints(const G4String& fname) const {
   G4cout << "Writing points and values to " << fname << G4endl;
   std::ofstream save(fname);
   for (size_t i=0; i<X.size(); i++) {
-    save << X[i][0] << " " << X[i][1] << " " << X[i][2] << " " << V[i]
+    save << X[i] << " " << V[i]
 	 << std::endl;
   }
 }

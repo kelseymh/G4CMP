@@ -25,5 +25,9 @@ void G4CMPVMeshInterpolator::UseValues(const std::vector<G4double>& v) {
 
   staleCache = true;
   V = v;
+
+#ifdef G4CMPTLI_DEBUG
+  SavePoints(savePrefix+"_points.dat");
+#endif
 }
 

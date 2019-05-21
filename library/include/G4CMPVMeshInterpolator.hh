@@ -29,7 +29,8 @@ using tetra3d = std::array<G4int,4>;
 class G4CMPVMeshInterpolator {
 protected:
   // This class CANNOT be instantiated directly!
-  G4CMPVMeshInterpolator() : TetraIdx(0), staleCache(true) {;}
+  G4CMPVMeshInterpolator(const G4String& prefix)
+    : TetraIdx(0), staleCache(true), TetraStart(0), savePrefix(prefix) {;}
 
 public:
   virtual ~G4CMPVMeshInterpolator() {;}
@@ -69,7 +70,7 @@ protected:		// Data members available to subclasses directly
   mutable G4bool staleCache;		// Flag if cache must be discarded
   G4int TetraStart;			// Start of tetrahedral searches
 
-  
+  G4String savePrefix;			// for use in debugging, SaveXxx()
 };
 
 // SPECIAL:  Provide a way to write out array data directly (not in STL!)

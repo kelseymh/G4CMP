@@ -21,7 +21,7 @@
 class G4CMPBiLinearInterp : public G4CMPVMeshInterpolator {
 public:
   // Uninitialized version; user MUST call UseMesh()
-  G4CMPBiLinearInterp() : G4CMPVMeshInterpolator() {;}
+  G4CMPBiLinearInterp() : G4CMPVMeshInterpolator("BLI") {;}
 
   // Mesh points and pre-defined triangulation
   G4CMPBiLinearInterp(const std::vector<point2d>& xy,
@@ -54,7 +54,6 @@ public:
 
 private:
   std::vector<point2d > X;
-  std::vector<G4double> V;
   std::vector<tetra2d> Tetrahedra;	// For 2D, these are triangles!
   std::vector<tetra2d> Neighbors;
   mutable G4int TetraIdx;

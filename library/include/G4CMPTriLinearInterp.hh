@@ -27,7 +27,7 @@
 class G4CMPTriLinearInterp : public G4CMPVMeshInterpolator {
 public:
   // Uninitialized version; user MUST call UseMesh()
-  G4CMPTriLinearInterp() : G4CMPVMeshInterpolator() {;}
+  G4CMPTriLinearInterp() : G4CMPVMeshInterpolator("TRI") {;}
 
   // Mesh coordinates and values only; uses QHull to generate triangulation
   G4CMPTriLinearInterp(const std::vector<point3d>& xyz,
