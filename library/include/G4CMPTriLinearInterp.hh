@@ -11,74 +11,75 @@
 // 20180926  Add functions to write points, tetrahedra etc. to files.
 //		Add starting index for tetrahedral traversal
 // 20190226  Provide accessor to replace potentials at mesh points
+// 20190404  Change "point" to "point3d" to make way for 2D interpolator.
+// 20190508  Move some 2D/3D common features to new base class
 
 #ifndef G4CMPTriLinearInterp_h 
 #define G4CMPTriLinearInterp_h 
 
-#include "globals.hh"
+#include "G4CMPVMeshInterpolator.hh"
 #include "G4ThreeVector.hh"
 #include <vector>
 #include <map>
 #include <array>
 
-using point = std::array<G4double, 3>;
 
-class G4CMPTriLinearInterp {
+class G4CMPTriLinearInterp : public G4CMPVMeshInterpolator {
 public:
   // Uninitialized version; user MUST call UseMesh()
-  G4CMPTriLinearInterp() : TetraIdx(0), staleCache(true) {;}
+  G4CMPTriLinearInterp() : G4CMPVMeshInterpolator("TRI") {;}
 
   // Mesh coordinates and values only; uses QHull to generate triangulation
-  G4CMPTriLinearInterp(const std::vector<point>& xyz,
+  G4CMPTriLinearInterp(const std::vector<point3d>& xyz,
 		       const std::vector<G4double>& v);
 
   // Mesh points and pre-defined triangulation
-  G4CMPTriLinearInterp(const std::vector<point>& xyz,
+  G4CMPTriLinearInterp(const std::vector<point3d>& xyz,
 		       const std::vector<G4double>& v,
-		       const std::vector<std::array<G4int,4> >& tetra);
+		       const std::vector<tetra3d>& tetra);
+
+  // Cloning function to allow making type-matched copies
+  virtual G4CMPVMeshInterpolator* Clone() const {
+    return new G4CMPTriLinearInterp(X, V, Tetrahedra);
+  }
 
   // User initialization or re-initialization
-  void UseMesh(const std::vector<point>& xyz, const std::vector<G4double>& v);
+  void UseMesh(const std::vector<point3d>& xyz, const std::vector<G4double>& v);
 
-  void UseMesh(const std::vector<point>& xyz, const std::vector<G4double>& v,
-	       const std::vector<std::array<G4int,4> >& tetra);
-
-  // Replace values at mesh points without rebuilding tables
-  void UseValues(const std::vector<G4double>& v);
+  void UseMesh(const std::vector<point3d>& xyz,
+	       const std::vector<G4double>& v,
+	       const std::vector<tetra3d>& tetra);
 
   // Evaluate mesh at arbitrary location, optionally suppressing errors
-  G4double GetValue(const G4double pos[3], G4bool quiet=false) const;
-  G4ThreeVector GetGrad(const G4double pos[3], G4bool quiet=false) const;
+  G4double GetValue(const G4double pos[], G4bool quiet=false) const;
+  G4ThreeVector GetGrad(const G4double pos[], G4bool quiet=false) const;
 
   void SavePoints(const G4String& fname) const;
   void SaveTetra(const G4String& fname) const;
 
 private:
-  std::vector<point > X;
-  std::vector<G4double> V;
-  std::vector<std::array<G4int,4> > Tetrahedra;
-  std::vector<std::array<G4int,4> > Neighbors;
-  mutable std::map<G4int,G4int> qhull2x;
-  mutable G4int TetraIdx;
-  mutable G4ThreeVector cachedGrad;
-  mutable G4bool staleCache;
-  G4int TetraStart;				// Start of tetrahedral searches
+  std::vector<point3d > X;
+  std::vector<tetra3d> Tetrahedra;
+  std::vector<tetra3d> Neighbors;
 
-  std::vector<std::array<G4int,4> > Tetra012;	// Duplicate tetrahedra lists
-  std::vector<std::array<G4int,4> > Tetra013;	// Sorted on vertex triplets
-  std::vector<std::array<G4int,4> > Tetra023;
-  std::vector<std::array<G4int,4> > Tetra123;
+  mutable std::map<G4int,G4int> qhull2x;	// Used by QHull for meshing
+  mutable G4ThreeVector cachedGrad;
+
+  // Lists of tetrahedra with shared vertices, for generating neighbors table
+  std::vector<tetra3d> Tetra012;	// Duplicate tetrahedra lists
+  std::vector<tetra3d> Tetra013;	// Sorted on vertex triplets
+  std::vector<tetra3d> Tetra023;
+  std::vector<tetra3d> Tetra123;
 
   void BuildTetraMesh();	// Builds mesh from pre-initialized 'X' array
   void FillNeighbors();		// Generate Neighbors table from tetrahedra
 
   // Function pointer for comparison operator to use search for facets
-  using TetraComp = G4bool(*)(const std::array<G4int,4>&,
-			      const std::array<G4int,4>&);
+  using TetraComp = G4bool(*)(const tetra3d&, const tetra3d&);
 
   G4int FindNeighbor(const std::array<G4int,3>& facet, G4int skip) const;
-  G4int FindTetraID(const std::vector<std::array<G4int,4> >& tetras,
-		    const std::array<G4int,4>& wildTetra, G4int skip,
+  G4int FindTetraID(const std::vector<tetra3d>& tetras,
+		    const tetra3d& wildTetra, G4int skip,
 		    TetraComp tLess) const;
   G4int FirstInteriorTetra();	// Lowest tetra index with all facets shared
 
@@ -93,12 +94,4 @@ private:
   void MatInv(const G4double matrix[3][3], G4double result[3][3]) const;
 };
 
-// SPECIAL:  Provide a way to write out array data directly (not in STL!)
-
-template <typename T, size_t N>
-inline std::ostream& operator<<(std::ostream& os, const std::array<T,N>& arr) {
-  for (const T& ai: arr) os << ai << " ";
-  return os;
-}
-
-#endif
+#endif	/* G4CMPTriLinearInterp */

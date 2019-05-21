@@ -48,17 +48,17 @@ struct G4CMPLinearInterp : G4CMPVInterpolator {
 
 
 // ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; interp_2d.h ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-struct G4CMPBiLinearInterp {
+struct G4CMPGridInterp {
   int m,n;
   matrix<double> y;
   G4CMPLinearInterp x1terp, x2terp;
   
-  G4CMPBiLinearInterp(const vector<double> &x1v, const vector<double> &x2v,
+  G4CMPGridInterp(const vector<double> &x1v, const vector<double> &x2v,
 		      const matrix<double> &ym)
     : m(x1v.size()), n(x2v.size()), y(ym), x1terp(x1v,x1v), x2terp(x2v,x2v) {;}
-  virtual ~G4CMPBiLinearInterp() {;}
+  virtual ~G4CMPGridInterp() {;}
 
-  G4CMPBiLinearInterp& operator=(const G4CMPBiLinearInterp& oldBI);
+  G4CMPGridInterp& operator=(const G4CMPGridInterp& oldBI);
     
   virtual double interp(double x1p, double x2p);
 };
