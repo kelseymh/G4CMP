@@ -35,8 +35,7 @@ using std::vector;
 
 G4CMPMeshElectricField::
 G4CMPMeshElectricField(const G4String& EPotFileName, G4double Vscale)
-  : G4ElectricField(), Interp(new G4CMPTriLinearInterp),
-    xCoord(kUndefined), yCoord(kUndefined) {
+  : G4ElectricField(), Interp(0), xCoord(kUndefined), yCoord(kUndefined) {
   BuildInterp(EPotFileName, Vscale);
 }
 
@@ -47,7 +46,7 @@ G4CMPMeshElectricField(const vector<array<G4double,3> >& xyz,
 		       const vector<G4double>& v,
 		       const vector<array<G4int,4> >& tetra,
 		       EAxis xdim, EAxis ydim)
-  : G4ElectricField(), Interp(0), xCoord(xdim), yCoord(xdim) {
+  : G4ElectricField(), Interp(0), xCoord(xdim), yCoord(ydim) {
   if (xdim == kUndefined) {	// Assume true 3D Cartesian mesh
     BuildInterp(xyz, v, tetra);
   } else {			// Projected 2D mesh with specified coordinates
@@ -123,6 +122,68 @@ BuildInterp(const std::vector<std::array<G4double,2> >& xy,
 	    const std::vector<std::array<G4int,3> >& tetra) {
   if (!Interp) Interp = new G4CMPBiLinearInterp;
   Interp->UseMesh(xy, v, tetra);
+}
+
+
+// Construct mesh from 3D input file
+
+void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName,
+                                        G4double VScale) {
+  if (G4CMPConfigManager::GetVerboseLevel() > 0) {
+    G4cout << "G4CMPMeshElectricField::Constructor: Creating Electric Field " 
+          << EPotFileName;
+
+    if (VScale != 1.) G4cout << " rescaled by " << VScale;
+    G4cout << G4endl;
+  }
+
+  vector<array<G4double,4> > tempX;
+  array<G4double,4> temp = {{ 0, 0, 0, 0 }};
+  G4double x,y,z,v;
+ 
+  G4double vmin=99999., vmax=-99999.;
+  std::ifstream epotFile(EPotFileName);
+  if (!epotFile.good()) {
+    G4ExceptionDescription msg;
+    msg << "Unable to open " << EPotFileName;
+    G4Exception("G4CMPMeshElectricField::BuildInterp", "G4CMPEM001",
+               FatalException, msg);
+    return;
+  }
+
+  while (epotFile.good() && !epotFile.eof()) {
+    epotFile >> x >> y >> z >> v;
+    temp[0] = x*m;
+    temp[1] = y*m;
+    temp[2] = z*m;
+    temp[3] = v*volt * VScale;
+    tempX.push_back(temp);
+
+    if (temp[3]<vmin) vmin = temp[3];
+    if (temp[3]>vmax) vmax = temp[3];
+  }
+  epotFile.close();
+
+  if (G4CMPConfigManager::GetVerboseLevel() > 1) {
+    G4cout << " Voltage from " << vmin/volt << " to " << vmax/volt << " V"
+          << G4endl;
+  }
+
+  std::sort(tempX.begin(),tempX.end(), vector_comp);
+ 
+  vector<array<G4double,3> > X(tempX.size(), {{0,0,0}});
+  vector<G4double> V(tempX.size(),0);
+  for (size_t ii = 0; ii < tempX.size(); ++ii)
+  {
+    X[ii][0] = tempX[ii][0];
+    X[ii][1] = tempX[ii][1];
+    X[ii][2] = tempX[ii][2];
+    V[ii] = tempX[ii][3];
+  }
+ 
+  if (Interp) delete Interp;
+  Interp = new G4CMPTriLinearInterp;
+  ((G4CMPTriLinearInterp*)Interp)->UseMesh(X, V);
 }
 
 
