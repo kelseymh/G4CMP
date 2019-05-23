@@ -35,8 +35,7 @@ using std::vector;
 
 G4CMPMeshElectricField::
 G4CMPMeshElectricField(const G4String& EPotFileName, G4double Vscale)
-  : G4ElectricField(), Interp(new G4CMPTriLinearInterp),
-    xCoord(kUndefined), yCoord(kUndefined) {
+  : G4ElectricField(), Interp(0), xCoord(kUndefined), yCoord(kUndefined) {
   BuildInterp(EPotFileName, Vscale);
 }
 
@@ -47,7 +46,7 @@ G4CMPMeshElectricField(const vector<array<G4double,3> >& xyz,
 		       const vector<G4double>& v,
 		       const vector<array<G4int,4> >& tetra,
 		       EAxis xdim, EAxis ydim)
-  : G4ElectricField(), Interp(0), xCoord(xdim), yCoord(xdim) {
+  : G4ElectricField(), Interp(0), xCoord(xdim), yCoord(ydim) {
   if (xdim == kUndefined) {	// Assume true 3D Cartesian mesh
     BuildInterp(xyz, v, tetra);
   } else {			// Projected 2D mesh with specified coordinates
@@ -182,7 +181,9 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName,
     V[ii] = tempX[ii][3];
   }
  
-  Interp->UseMesh(X, V);
+  if (Interp) delete Interp;
+  Interp = new G4CMPTriLinearInterp;
+  ((G4CMPTriLinearInterp*)Interp)->UseMesh(X, V);
 }
 
 
