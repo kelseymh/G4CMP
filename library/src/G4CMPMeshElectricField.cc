@@ -204,7 +204,7 @@ void G4CMPMeshElectricField::Expand2Dat(const G4double Point[3],
 
   // Cylindrical field around Z axis is easy
   if (xCoord == kRho && yCoord == kZAxis)
-    Efield.setRhoPhiZ(xval, pos.phi(), pos.z());
+    Efield.setRhoPhiZ(xval, pos.phi(), yval);
 
   // Cylindrical fields around other axes are more complicated
   if (xCoord == kRho && yCoord == kXAxis) {
