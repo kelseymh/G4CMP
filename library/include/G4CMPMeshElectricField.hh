@@ -17,6 +17,7 @@
 // 20180924  TriLinearInterp should be a pointer, to break dependency.
 // 20190226  Provide access to TriLinearInterp object, and ctor assignment
 // 20190509  Migrate to 2D/3D mesh base class, handle dimensional reduction
+// 20190612  Mesh pointer ctor should set axes to kUndefined
 
 #ifndef G4CMPMeshElectricField_h 
 #define G4CMPMeshElectricField_h 1
@@ -55,7 +56,7 @@ public:
 			 EAxis xdim=kXAxis, EAxis ydim=kYAxis);
 
   G4CMPMeshElectricField(const G4CMPVMeshInterpolator* mesh,
-			 EAxis xdim=kXAxis, EAxis ydim=kYAxis);
+			 EAxis xdim=kUndefined, EAxis ydim=kUndefined);
 
   // Copy constructor and assignment operator
   G4CMPMeshElectricField(const G4CMPMeshElectricField &p);
