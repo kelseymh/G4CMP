@@ -1,8 +1,9 @@
 #----------------------------------------------------------------------------
 # G4CMP-specific command-line options (i.e., -DXYZ=ON or -DXYZ=OFF
 #
-set(G4CMP_DEBUG AUTO CACHE STRING "Enable debugging blocks and verbosity")
-set_property(G4CMP_DEBUG PROPERTY STRINGS "" 0 1 2 3 4)
+
+set(G4CMP_DEBUG "" CACHE STRING "Enable debugging blocks and verbosity")
+set_property(CACHE G4CMP_DEBUG PROPERTY STRINGS "" 0 1 2 3 4)
 
 option(G4CMPTLI_DEBUG "Enable debugging of TriLinearInterp" OFF)
 
@@ -271,10 +272,10 @@ if(NOT G4CMP_DEBUG STREQUAL "")
     set(LibDefs "${LibDefs};G4CMP_DEBUG=${G4CMP_DEBUG}")
 endif()
 if(G4CMPTLI_DEBUG)
-    set(LibDefs "${LibDefs};G4CMPTLI_DEBUG")
+    set(LibDefs "${LibDefs};G4CMPTLI_DEBUG=1")
 endif()
 
-set_target_properties(G4cmp PROPERTIES COMPILE_DEFINITIONS ${LibDefs})
+target_compile_definitions(G4cmp PUBLIC ${LibDefs})
 
 install(TARGETS G4cmp qhullcpp qhull_p qhullstatic_p DESTINATION lib)
 install(FILES ${library_HEADERS} DESTINATION include/G4CMP)
