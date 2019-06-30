@@ -14,6 +14,7 @@
 // 20190226  Provide accessor to replace potentials at mesh points
 // 20190404  Change "point" to "point3d" to make way for 2D interpolator.
 // 20190508  Move some 2D/3D common features to new base class
+// 20190630  Have MatInv() return error (false), catch up calling chain.
 
 #include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
@@ -350,14 +351,16 @@ G4CMPTriLinearInterp::GetGrad(const G4double pos[3], G4bool quiet) const {
   if (TetraIdx == -1) cachedGrad.set(0.,0.,0.);
   else if (TetraIdx != oldIdx || staleCache) {
     G4double ET[4][3];
-    BuildT4x3(ET);
-    for (size_t i = 0; i < 3; ++i) {
-      cachedGrad[i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
-                      V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
-                      V[Tetrahedra[TetraIdx][2]]*ET[2][i] +
-                      V[Tetrahedra[TetraIdx][3]]*ET[3][i];
+    if (!BuildT4x3(ET)) cachedGrad.set(0.,0.,0.);	// Failed MatInv()
+    else {
+      for (size_t i = 0; i < 3; ++i) {
+	cachedGrad[i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
+                        V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
+                        V[Tetrahedra[TetraIdx][2]]*ET[2][i] +
+                        V[Tetrahedra[TetraIdx][3]]*ET[3][i];
+      }
+      staleCache = false;
     }
-    staleCache = false;
   }
 
   return cachedGrad;
@@ -381,7 +384,16 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
 #endif
 
   for (size_t count = 0; count < Tetrahedra.size(); ++count) {
-    Cart2Bary(pt,bary);		// Get barycentric coord in current tetrahedron
+    if (!Cart2Bary(pt,bary)) {	// Get barycentric coord in current tetrahedron
+      if (!quiet) {
+	G4cerr << "G4CMPTriLinearInterp::FindTetrahedron:"
+	       << " Cart2Bary() failed for pt = "
+	       << pt[0] << " " << pt[1] << " " << pt[2] << G4endl;
+      }
+
+      TetraIdx = -1;
+      return;
+    }
 
 #ifdef G4CMPTLI_DEBUG
     G4cout << " Loop " << count << ": Tetra " << TetraIdx << ": "
@@ -426,7 +438,8 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
   }	// for (size_t count=0 ...
 
   TetraIdx = bestTet;
-  Cart2Bary(pt,bary);
+  Cart2Bary(pt,bary);		// Don't need to check return; succeeded above
+
 #ifdef G4CMPTLI_DEBUG
   G4cout << "Tetrahedron not found! Using bestTet " << bestTet << " bary "
 	 << bary[0] << " " << bary[1] << " " << bary[2] << " " << bary[3]
@@ -434,41 +447,57 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
 #endif
 }
 
-void G4CMPTriLinearInterp::Cart2Bary(const G4double pt[3], G4double bary[4]) const {
+G4bool
+G4CMPTriLinearInterp::Cart2Bary(const G4double pt[3], G4double bary[4]) const {
   G4double T[3][3];
   G4double invT[3][3];
 
   for(G4int dim=0; dim<3; ++dim)
     for(G4int vert=0; vert<3; ++vert)
-      T[dim][vert] = X[Tetrahedra[TetraIdx][vert]][dim] - X[Tetrahedra[TetraIdx][3]][dim];
+      T[dim][vert] = (X[Tetrahedra[TetraIdx][vert]][dim]
+		      - X[Tetrahedra[TetraIdx][3]][dim]);
 
-  MatInv(T, invT);
+  G4bool goodInv = MatInv(T, invT);
 
-  for(G4int k=0; k<3; ++k)
+  for(G4int k=0; k<3; ++k) {
     bary[k] = invT[k][0]*(pt[0] - X[Tetrahedra[TetraIdx][3]][0]) +
               invT[k][1]*(pt[1] - X[Tetrahedra[TetraIdx][3]][1]) +
               invT[k][2]*(pt[2] - X[Tetrahedra[TetraIdx][3]][2]);
+  }
 
   bary[3] = 1.0 - bary[0] - bary[1] - bary[2];
+
+  return goodInv;
 }
 
 G4double G4CMPTriLinearInterp::BaryNorm(G4double bary[4]) const {
   return (bary[0]*bary[0]+bary[1]*bary[1]+bary[2]*bary[2]+bary[3]*bary[3]);
 }
 
-void G4CMPTriLinearInterp::BuildT4x3(G4double ET[4][3]) const {
+G4bool G4CMPTriLinearInterp::BuildT4x3(G4double ET[4][3]) const {
   G4double T[3][3];
   G4double Tinv[3][3];
-  for(G4int dim=0; dim<3; ++dim)
-    for(G4int vert=0; vert<3; ++vert)
-      T[dim][vert] = X[Tetrahedra[TetraIdx][vert]][dim] - X[Tetrahedra[TetraIdx][3]][dim];
+  for (G4int dim=0; dim<3; ++dim)
+    for (G4int vert=0; vert<3; ++vert)
+      T[dim][vert] = (X[Tetrahedra[TetraIdx][vert]][dim]
+		      - X[Tetrahedra[TetraIdx][3]][dim]);
 
-  MatInv(T, Tinv);
-  for(G4int i = 0; i < 3; ++i) {
-    for(G4int j = 0; j < 3; ++j)
-      ET[i][j] = Tinv[i][j];
-    ET[3][i] = -Tinv[0][i] - Tinv[1][i] - Tinv[2][i];
+  G4bool goodInv = MatInv(T, Tinv);
+  if (goodInv) {
+    for (G4int i=0; i<3; ++i) {
+      for (G4int j=0; j<3; ++j)
+	ET[i][j] = Tinv[i][j];
+      ET[3][i] = -Tinv[0][i] - Tinv[1][i] - Tinv[2][i];
+    }
+  } else {
+    for (G4int i=0; i<4; ++i) {
+      for (G4int j=0; j<3; ++j) {
+	ET[i][j] = 0.;
+      }
+    }
   }
+
+  return goodInv;
 }
 
 G4double G4CMPTriLinearInterp::Det3(const G4double matrix[3][3]) const {
@@ -477,14 +506,17 @@ G4double G4CMPTriLinearInterp::Det3(const G4double matrix[3][3]) const {
         +matrix[0][2]*(matrix[1][0]*matrix[2][1]-matrix[2][0]*matrix[1][1]));
 }
 
-void G4CMPTriLinearInterp::MatInv(const G4double matrix[3][3], G4double result[3][3]) const {
+G4bool G4CMPTriLinearInterp::MatInv(const G4double matrix[3][3],
+				    G4double result[3][3]) const {
   G4double determ = Det3(matrix);
-  if (!(determ == determ)) {
-    G4cerr << "WARNING MatInv got NaN determ!"
-	   <<"\n " << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2]
+  if (!(determ == determ) || fabs(determ) < 1e-9) {
+    G4cerr << "WARNING MatInv got determ " << determ << " zero result" << G4endl;
+#ifdef G4CMPTLI_DEBUG
+    G4cerr << " "  << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2]
 	   <<"\n " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2]
 	   <<"\n " << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2]
 	   << G4endl;
+#endif
 
     for (size_t i=0; i<3; i++) {
       for (size_t j=0; j<3; j++) {
@@ -492,23 +524,7 @@ void G4CMPTriLinearInterp::MatInv(const G4double matrix[3][3], G4double result[3
       }
     }
 
-    return;
-  }
-
-  if (fabs(determ) < 1e-9) {
-    G4cerr << "WARNING MatInv got determ " << determ << ": zero result from"
-	   <<"\n " << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2]
-	   <<"\n " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2]
-	   <<"\n " << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2]
-	   << G4endl;
-
-    for (size_t i=0; i<3; i++) {
-      for (size_t j=0; j<3; j++) {
-	result[i][j] = 0.;
-      }
-    }
-
-    return;
+    return false;
   }
 
   result[0][0] = (matrix[1][1]*matrix[2][2] - matrix[1][2]*matrix[2][1])/determ;
@@ -522,6 +538,8 @@ void G4CMPTriLinearInterp::MatInv(const G4double matrix[3][3], G4double result[3
   result[0][2] = (matrix[0][1]*matrix[1][2] - matrix[1][1]*matrix[0][2])/determ;
   result[1][2] = (matrix[1][0]*matrix[0][2] - matrix[0][0]*matrix[1][2])/determ;
   result[2][2] = (matrix[0][0]*matrix[1][1] - matrix[1][0]*matrix[0][1])/determ;
+
+  return true;
 }
 
 

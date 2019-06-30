@@ -13,6 +13,7 @@
 // 20190226  Provide accessor to replace potentials at mesh points
 // 20190404  Change "point" to "point3d" to make way for 2D interpolator.
 // 20190508  Move some 2D/3D common features to new base class
+// 20190630  Have MatInv() return error (false), catch up calling chain.
 
 #ifndef G4CMPTriLinearInterp_h 
 #define G4CMPTriLinearInterp_h 
@@ -87,11 +88,11 @@ private:
 		       G4bool quiet=false) const;
   G4int FindPointID(const std::vector<G4double>& point, const G4int id) const;
 
-  void Cart2Bary(const G4double point[4], G4double bary[4]) const;
+  G4bool Cart2Bary(const G4double point[4], G4double bary[4]) const;
+  G4bool BuildT4x3(G4double ET[4][3]) const;
+  G4bool MatInv(const G4double matrix[3][3], G4double result[3][3]) const;
   G4double BaryNorm(G4double bary[4]) const;
-  void BuildT4x3(G4double ET[4][3]) const;
   G4double Det3(const G4double matrix[3][3]) const;
-  void MatInv(const G4double matrix[3][3], G4double result[3][3]) const;
 };
 
 #endif	/* G4CMPTriLinearInterp */
