@@ -7,6 +7,7 @@
 //
 // 20190404  Adapted from TriLinearInterp for use with 2D triangular mesh
 // 20190508  Move some 2D/3D common features to new base class
+// 20190630  Have MatInv() return error (false), catch up calling chain.
 
 #ifndef G4CMPBiLinearInterp_h 
 #define G4CMPBiLinearInterp_h 
@@ -82,11 +83,11 @@ private:
   void FindTetrahedron(const G4double point[2], G4double bary[3],
 		       G4bool quiet=false) const;
 
-  void Cart2Bary(const G4double point[2], G4double bary[3]) const;
+  G4bool Cart2Bary(const G4double point[2], G4double bary[3]) const;
+  G4bool BuildT3x2(G4double ET[3][2]) const;
+  G4bool MatInv(const G4double matrix[2][2], G4double result[2][2]) const;
   G4double BaryNorm(G4double bary[3]) const;
-  void BuildT3x2(G4double ET[3][2]) const;
   G4double Det2(const G4double matrix[2][2]) const;
-  void MatInv(const G4double matrix[2][2], G4double result[2][2]) const;
 };
 
 #endif	/* G4CMPBiLinearInterp */
