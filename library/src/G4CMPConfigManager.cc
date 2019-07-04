@@ -20,6 +20,7 @@
 // 20170823  Remove geometry-specific parameters; implement in examples
 // 20170830  Add downsampling energy scale parameter
 // 20170908  G4CMP-118:  Use Edelweiss IV rate by default
+// 20180801  G4CMP-143:  Change IV rate from bool to str, Edelweiss->Quadratic
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -42,6 +43,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     ehBounces(getenv("G4CMP_EH_BOUNCES")?atoi(getenv("G4CMP_EH_BOUNCES")):1),
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
+    IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):"Quadratic"),
     clearance(getenv("G4CMP_CLEARANCE")?strtod(getenv("G4CMP_CLEARANCE"),0)*mm:1e-6*mm),
     stepScale(getenv("G4CMP_MIN_STEP")?strtod(getenv("G4CMP_MIN_STEP"),0):-1.),
     sampleEnergy(getenv("G4CMP_SAMPLE_ENERGY")?strtod(getenv("G4CMP_SAMPLE_ENERGY"),0):-1.),
@@ -53,7 +55,6 @@ G4CMPConfigManager::G4CMPConfigManager()
     EminCharges(getenv("G4CMP_EMIN_CHARGES")?strtod(getenv("G4CMP_EMIN_CHARGES"),0)*eV:0.),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
-    IVEdelweiss(getenv("G4CMP_IV_EDELWEISS")?atoi(getenv("G4CMP_IV_EDELWEISS")):1),
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
     messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");

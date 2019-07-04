@@ -31,6 +31,9 @@
 // 20170821  Add transverse sound speed, L->TT fraction
 // 20170919  Add access to full lists of IV scattering matrix terms
 // 20170928  Replace "pol" with "mode" for phonon states
+// 20180815  F. Insulla -- Added IVRateQuad
+// 20181001  M. Kelsey -- Clarify IV rate parameters systematically
+// 20190704  M. Kelsey -- Add IV rate function selector for material
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -220,21 +223,33 @@ public:
   void DumpList(std::ostream& os, const std::vector<G4double>& vlist,
 		const G4String& unit) const;
 
-  // Parameters for electron intervalley scattering (Edelweiss, matrix elem.)
-  void SetIVField(G4double v)          { fIVField = v; }
-  void SetIVRate(G4double v)           { fIVRate = v; }
-  void SetIVExponent(G4double v)       { fIVExponent = v; }
+  // Parameters for electron intervalley scattering (Edelweiss, Linear, matrix)
+  void SetIVModel(const G4String& v) { fIVModel = v; }
 
-  void SetAlpha(G4double v)	       { fAlpha = v; }
-  void SetAcousticDeform(G4double v)   { fAcDeform = v; }
+  void SetIVQuadField(G4double v)    { fIVQuadField = v; }
+  void SetIVQuadRate(G4double v)     { fIVQuadRate = v; }
+  void SetIVQuadExponent(G4double v) { fIVQuadExponent = v; }
+
+  void SetIVLinRate0(G4double v)     { fIVLinRate0 = v; }
+  void SetIVLinRate1(G4double v)     { fIVLinRate1 = v; }
+  void SetIVLinExponent(G4double v)  { fIVLinExponent = v; }
+
+  void SetAlpha(G4double v)	     { fAlpha = v; }
+  void SetAcousticDeform(G4double v) { fAcDeform = v; }
   void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
 
-  G4double GetIVField() const          { return fIVField; }
-  G4double GetIVRate() const           { return fIVRate; }
-  G4double GetIVExponent() const       { return fIVExponent; }
+  const G4String& GetIVModel() const { return fIVModel; }
 
-  G4double GetAlpha() const	       { return fAlpha; }
+  G4double GetIVQuadField() const    { return fIVQuadField; }
+  G4double GetIVQuadRate() const     { return fIVQuadRate; }
+  G4double GetIVQuadExponent() const { return fIVQuadExponent; }
+
+  G4double GetIVLinRate0() const     { return fIVLinRate0; }
+  G4double GetIVLinRate1() const     { return fIVLinRate1; }
+  G4double GetIVLinExponent() const  { return fIVLinExponent; }
+
+  G4double GetAlpha() const	     { return fAlpha; }
   G4double GetAcousticDeform() const { return fAcDeform; }
   G4int    GetNIVDeform() const { return (G4int)fIVDeform.size(); }
   const std::vector<G4double>& GetIVDeform() const { return fIVDeform; }
@@ -315,9 +330,14 @@ private:
   std::vector<G4double> fIVDeform;	// D0, D1 potentials for optical IV
   std::vector<G4double> fIVEnergy;	// D0, D1 thresholds for optical IV
 
-  G4double fIVField;		 // Edelweiss field scale for IV scattering
-  G4double fIVRate;		 // Edelweiss rate factor for IV scattering
-  G4double fIVExponent;		 // Edelweiss power law for E-field in IV
+  G4double fIVQuadField;	 // Edelweiss field scale for IV scattering
+  G4double fIVQuadRate;		 // Edelweiss rate factor for IV scattering
+  G4double fIVQuadExponent;	 // Edelweiss power law for E-field in IV
+  G4double fIVLinExponent;	 // Power law for linear scaled IV scattering
+  G4double fIVLinRate0;		 // Constant rate for linear scaled IV scat.
+  G4double fIVLinRate1;		 // Linear rate for linear scaled IV scat.
+
+  G4String fIVModel;		 // Name of IV rate function to be used
 };
 
 // Write lattice structure to output stream

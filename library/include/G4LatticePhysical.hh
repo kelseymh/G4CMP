@@ -25,6 +25,9 @@
 // 20170821  Add transverse sound speed, L->TT fraction
 // 20170919  Add access to full lists of IV scattering matrix terms
 // 20170928  Replace "pol" with "mode" for phonon states
+// 20180831  Add accessors for linear IV rate, change Edelweiss names
+// 20181001  M. Kelsey -- Clarify IV rate parameters systematically
+// 20190704  M. Kelsey -- Add IV rate function selector for material
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -133,12 +136,18 @@ public:
   const G4RotationMatrix& GetValley(G4int iv) const { return fLattice->GetValley(iv); }
   const G4ThreeVector& GetValleyAxis(G4int iv) const { return fLattice->GetValleyAxis(iv); }
 
-  // Parameters for electron intervalley scattering
-  G4double GetIVField() const    { return fLattice->GetIVField(); }
-  G4double GetIVRate() const     { return fLattice->GetIVRate(); }
-  G4double GetIVExponent() const { return fLattice->GetIVExponent(); }
+  // Parameters for electron intervalley scattering (Edelweiss, linear, matrix)
+  const G4String& GetIVModel() const { return fLattice->GetIVModel(); }
 
-  G4double GetAlpha() const      { return fLattice->GetAlpha(); }
+  G4double GetIVQuadField() const    { return fLattice->GetIVQuadField(); }
+  G4double GetIVQuadRate() const     { return fLattice->GetIVQuadRate(); }
+  G4double GetIVQuadExponent() const { return fLattice->GetIVQuadExponent(); }
+
+  G4double GetIVLinRate0() const    { return fLattice->GetIVLinRate0(); }
+  G4double GetIVLinRate1() const    { return fLattice->GetIVLinRate1(); }
+  G4double GetIVLinExponent() const { return fLattice->GetIVLinExponent(); }
+
+  G4double GetAlpha() const          { return fLattice->GetAlpha(); }
   G4double GetAcousticDeform() const { return fLattice->GetAcousticDeform(); }
 
   // Optical intervalley scattering may use D0 or D1 deformation potentials
