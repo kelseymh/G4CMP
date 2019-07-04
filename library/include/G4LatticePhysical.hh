@@ -27,6 +27,7 @@
 // 20170928  Replace "pol" with "mode" for phonon states
 // 20180831  Add accessors for linear IV rate, change Edelweiss names
 // 20181001  M. Kelsey -- Clarify IV rate parameters systematically
+// 20190704  M. Kelsey -- Add IV rate function selector for material
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -136,6 +137,8 @@ public:
   const G4ThreeVector& GetValleyAxis(G4int iv) const { return fLattice->GetValleyAxis(iv); }
 
   // Parameters for electron intervalley scattering (Edelweiss, linear, matrix)
+  const G4String& GetIVModel() const { return fLattice->GetIVModel(); }
+
   G4double GetIVQuadField() const    { return fLattice->GetIVQuadField(); }
   G4double GetIVQuadRate() const     { return fLattice->GetIVQuadRate(); }
   G4double GetIVQuadExponent() const { return fLattice->GetIVQuadExponent(); }

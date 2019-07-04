@@ -22,6 +22,7 @@
 // 20170809  Replace Edelweiss rate with physical (matrix element) model
 // 20170821  Use configuration flag to choose Edelweiss vs. physical rate
 // 20180831  Change G4CMPInterValleyScattering to use Lin. and Quad. models
+// 20190704  Add selection of rate model by name, and material specific
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -38,27 +39,59 @@
 #include "G4VParticleChange.hh"
 #include <math.h>
 
+
+// Construcor and destructor
+
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()
   : G4CMPVDriftProcess("G4CMPInterValleyScattering", fInterValleyScattering) {
-  G4String model = G4CMPConfigManager::GetIVRateModel();
-       if (model(0) == 'Q') UseRateModel(new G4CMPIVRateQuadratic);
-  else if (model(0) == 'L') UseRateModel(new G4CMPIVRateLinear);
-  else if (model(0) == 'I') UseRateModel(new G4CMPInterValleyRate);
-  else {
-    G4cerr << GetProcessName() << " ERROR: Unrecognized rate model " << model
-	   << G4endl;
-    UseRateModel(new G4CMPIVRateQuadratic);		// Default
-  }
+  UseRateModel(G4CMPConfigManager::GetIVRateModel());
 }
 
 G4CMPInterValleyScattering::~G4CMPInterValleyScattering() {;}
 
+
+// Only electrons have physical valleys associated with them
 
 G4bool 
 G4CMPInterValleyScattering::IsApplicable(const G4ParticleDefinition& aPD) {
   return G4CMP::IsElectron(&aPD);
 }
 
+
+// Select different rate models by string (globally or by material)
+
+void G4CMPInterValleyScattering::UseRateModel(const G4String& model) {
+  if (!model.empty() && model == modelName) return;	// Already in use
+
+  if (model.empty()) {			// Fall back to global configuration
+    UseRateModel(G4CMPConfigManager::GetIVRateModel());
+    return;
+  }
+
+  modelName = model;
+
+       if (model(0) == 'Q') UseRateModel(new G4CMPIVRateQuadratic);
+  else if (model(0) == 'L') UseRateModel(new G4CMPIVRateLinear);
+  else if (model(0) == 'I') UseRateModel(new G4CMPInterValleyRate);
+  else {
+    G4cerr << GetProcessName() << " ERROR: Unrecognized rate model " << model
+	   << G4endl;
+    UseRateModel("Quadratic");
+  }
+}
+
+
+// Switch rate models if necessary based on material
+
+G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
+						     G4double prevStep,
+						     G4ForceCondition* cond) {
+  UseRateModel(theLattice->GetIVModel());	// Use current material's rate
+  return G4CMPVProcess::GetMeanFreePath(track, prevStep, cond);
+}
+
+
+// Perform scattering action
 
 G4VParticleChange* 
 G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 

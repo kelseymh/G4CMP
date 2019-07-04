@@ -33,6 +33,7 @@
 // 20170928  Replace "pol" with "mode" for phonon states
 // 20180815  F. Insulla -- Added IVRateQuad
 // 20181001  M. Kelsey -- Clarify IV rate parameters systematically
+// 20190704  M. Kelsey -- Add IV rate function selector for material
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -223,6 +224,8 @@ public:
 		const G4String& unit) const;
 
   // Parameters for electron intervalley scattering (Edelweiss, Linear, matrix)
+  void SetIVModel(const G4String& v) { fIVModel = v; }
+
   void SetIVQuadField(G4double v)    { fIVQuadField = v; }
   void SetIVQuadRate(G4double v)     { fIVQuadRate = v; }
   void SetIVQuadExponent(G4double v) { fIVQuadExponent = v; }
@@ -235,6 +238,8 @@ public:
   void SetAcousticDeform(G4double v) { fAcDeform = v; }
   void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
+
+  const G4String& GetIVModel() const { return fIVModel; }
 
   G4double GetIVQuadField() const    { return fIVQuadField; }
   G4double GetIVQuadRate() const     { return fIVQuadRate; }
@@ -331,6 +336,8 @@ private:
   G4double fIVLinExponent;	 // Power law for linear scaled IV scattering
   G4double fIVLinRate0;		 // Constant rate for linear scaled IV scat.
   G4double fIVLinRate1;		 // Linear rate for linear scaled IV scat.
+
+  G4String fIVModel;		 // Name of IV rate function to be used
 };
 
 // Write lattice structure to output stream

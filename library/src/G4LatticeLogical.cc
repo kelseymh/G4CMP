@@ -34,9 +34,10 @@
 // 20170928  Replace "polarizationState" with "mode"
 // 20180829  Add to Dump to print correct IVRate variables depending on model
 // 20180830  Create variables IVRate1 IVRateQuad IVExponentQuad used in IVrate calculation 
-// 20180831  IVFiled, IVRate, IVRate1, IVRateQuad, IVExponentQuad, and IVExponent represent 
+// 20180831  IVField, IVRate, IVRate1, IVRateQuad, IVExponentQuad, and IVExponent represent 
 //           E0(Eq.1), Gamma0 (Eq.2), Gamma1 (Eq.2), Gamma0 (Eq.1), alpha (Eq.1), alpha (Eq.2)
 //           from arXiv:1807.07986
+// 20190704  M. Kelsey -- Add IV rate function selector for material
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -54,8 +55,7 @@
 
 G4LatticeLogical::G4LatticeLogical(const G4String& name)
   : verboseLevel(0), fName(name), fDensity(0.), fNImpurity(0.),
-    fPermittivity(1.),
-    fElasticity{}, fElReduced{}, fHasElasticity(false),
+    fPermittivity(1.), fElasticity{}, fElReduced{}, fHasElasticity(false),
     fpPhononKin(0), fpPhononTable(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
@@ -67,7 +67,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fMassInverse(G4Rep3x3(1/mElectron,0.,0.,0.,1/mElectron,0.,0.,0.,1/mElectron)),
     fAlpha(0.), fAcDeform(0.), 
     fIVQuadField(0.), fIVQuadRate(0.), fIVQuadExponent(0.),
-    fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.) {
+    fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.), fIVModel("") {
   for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
     for (G4int j=0; j<KVBINS; j++) {
       for (G4int k=0; k<KVBINS; k++) {
@@ -138,6 +138,8 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fIVLinExponent = rhs.fIVLinExponent;
   fIVLinRate0 = rhs.fIVLinRate0;
   fIVLinRate1 = rhs.fIVLinRate1;
+  fIVModel = rhs.fIVModel;
+
   if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
   if (!rhs.fpPhononTable) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
 
@@ -726,8 +728,8 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nepsilon " << fPermittivity
      << "\nneutDens " << fNImpurity * cm3 << " /cm3"
      << "\nacDeform " << fAcDeform/eV << " eV"
-     << "\n ivDeform "; DumpList(os, fIVDeform, "eV/cm");
-  os << "\n ivEnergy "; DumpList(os, fIVEnergy, "eV");
+     << "\nivDeform "; DumpList(os, fIVDeform, "eV/cm");
+  os << "\nivEnergy "; DumpList(os, fIVEnergy, "eV");
   os << std::endl;
 
   os << "# Quadratic intervalley scattering parameters"
@@ -739,6 +741,8 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nivLinRate0 " << fIVLinRate0/hertz << " Hz"
      << "\nivLinRate1 " << fIVLinRate1/hertz << " Hz" 
      << "\nivLinPower " << fIVLinExponent << std::endl;
+
+  if (!fIVModel.empty()) os << "ivModel " << fIVModel << std::endl;
 }
 
 // Print out Euler angles of requested valley
