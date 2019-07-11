@@ -19,6 +19,7 @@
 // 20180424  Need default ctor for Data to support vector::resize()
 // 20180425  Add minimum particle generation for downsampling
 // 20180827  Add flag to suppress use of downsampling energy scale
+// 20190711  Add support for selectable NIEL partition functions
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -29,6 +30,7 @@
 #include <vector>
 
 class G4CMPChargeCloud;
+class G4CMPVNIELPartition;
 class G4Event;
 class G4LatticePhysical;
 class G4Material;
@@ -56,6 +58,9 @@ public:
 
   // Set debugging output
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+
+  // Assign non-default Lindhard (non-ionizing) scaling function
+  void UseNIELPartition(G4CMPVNIELPartition* niel);
 
   // Toggle whether or not to apply downsampling scale calculations
   void UseDownsampling(G4bool value) { applyDownsampling = value; }
@@ -117,6 +122,9 @@ protected:
 
 protected:
   G4int verboseLevel;		// Higher numbers give more details
+
+  G4CMPVNIELPartition* nielFunc;	// Function to compute Lindhard scaling
+
   G4Material* material;		// To get (Z,A) for Lindhard scaling
   G4double holeFraction;	// Energy from e/h pair taken by hole (50%)
   G4int nParticlesMinimum;	// Minimum production when downsampling

@@ -28,6 +28,7 @@
 // 20180827  Add flag to suppress use of downsampling energy scale
 // 20180828  BUG FIX:  GetSecondaries() was not using trkWeight
 // 20180831  Fix compiler warnings when comparing nParticlesMinimum
+// 20190711  Add support for selectable NIEL partition functions
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -35,8 +36,10 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPGeometryUtils.hh"
+#include "G4CMPLewinSmithNIEL.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4CMPVNIELPartition.hh"
 #include "G4DynamicParticle.hh"
 #include "G4Event.hh"
 #include "G4LatticePhysical.hh"
@@ -59,6 +62,7 @@
 G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
+    nielFunc(new G4CMPLewinSmithNIEL),
     material(mat), holeFraction(0.5), nParticlesMinimum(10),
     applyDownsampling(true), cloud(new G4CMPChargeCloud), nCharges(0),
     nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
@@ -76,7 +80,16 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(const G4ThreeVector& pos)
 }
 
 G4CMPEnergyPartition::~G4CMPEnergyPartition() {
+  delete nielFunc; nielFunc=0;
   delete cloud; cloud=0;
+}
+
+
+// Assign non-default Lindhard (non-ionizing) scaling function
+
+void G4CMPEnergyPartition::UseNIELPartition(G4CMPVNIELPartition* niel) {
+  delete nielFunc;		// Avoid memory leaks
+  nielFunc = niel;
 }
 
 
@@ -102,33 +115,12 @@ void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
 
 G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
   if (!material) {
-    static G4bool report = true;
-    if (report) {
-      G4cerr << "G4CMPEnergyPartition: No material configured" << G4endl;
-      report = false;
-    }
+    G4Exception("G4CMPEnergyPartition", "G4CMP1000", RunMustBeAborted,
+		"No material configured for energy partition");
     return 1.;
   }
 
-  const G4double Z=material->GetZ(), A=material->GetA()/(g/mole);
-
-  if (verboseLevel>1) {
-    G4cout << " LindhardScalingFactor " << E << " for (Z,A) " << Z
-	   << " " << A << G4endl;
-  }
-
-  // From Lewin and Smith, 1996
-  G4double epsilon = 0.0115 * E * std::pow(Z, -7./3.);
-  G4double k = 0.133 * std::pow(Z, 2./3.) / std::sqrt(A);
-  G4double h = (0.7*std::pow(epsilon,0.6) + 3.*std::pow(epsilon,0.15)
-		+ epsilon);
-
-  if (verboseLevel>2) {
-    G4cout << " eps " << epsilon << " k " << k << " h " << h << " : "
-	   << k*h / (1.+k*h) << G4endl;
-  }
-
-  return (k*h / (1.+k*h));
+  return nielFunc(E, material);		// No projectile information
 }
 
 
