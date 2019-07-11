@@ -30,10 +30,12 @@
 // 20170830  Add downsampling energy scale parameter
 // 20170830  Add flag to create e/h pairs in "cloud" surround location
 // 20180801  Change IVEdelweiss flag to string IVRateModel.
+// 20190711  G4CMP-158:  Add functions to select NIEL yield functions
 
 #include "globals.hh"
 
 class G4CMPConfigMessenger;
+class G4CMPVNIELPartition;
 
 
 class G4CMPConfigManager {
@@ -63,8 +65,10 @@ public:
   static G4double GetDownconversionSampling() { return Instance()->downSample; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel()	 { return Instance()->IVRateModel; }
-  
-  // Change values (e.g., via Messenger)
+
+  static const G4CMPVNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
+
+  // Change values (e.g., via Messenger) -- pass strings by value for toLower()
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
   static void SetMaxChargeBounces(G4int value) { Instance()->ehBounces = value; }
   static void SetMaxPhononBounces(G4int value) { Instance()->pBounces = value; }
@@ -81,7 +85,11 @@ public:
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
   static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
   static void CreateChargeCloud(G4bool value) { Instance()->chargeCloud = value; }
-  
+
+  // Constructor will call by-string function to map name to class
+  static void SetNIELPartition(G4String value);		// Implemented in .cc
+  static void SetNIELPartition(G4CMPVNIELPartition* niel) { Instance()->nielPartition = niel; }
+
   // These settings require the geometry to be rebuilt
   static void SetLatticeDir(const G4String& dir)
   { Instance()->LatticeDir=dir; UpdateGeometry(); }
@@ -116,7 +124,10 @@ private:
   G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
   G4bool chargeCloud;   // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
-  G4CMPConfigMessenger* messenger;
+
+  G4CMPVNIELPartition* nielPartition;	// Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
+
+  G4CMPConfigMessenger* messenger;	// User interface (UI) commands
 };
 
 #endif	/* G4CMPConfigManager_hh */

@@ -21,9 +21,13 @@
 // 20170830  Add downsampling energy scale parameter
 // 20170908  G4CMP-118:  Use Edelweiss IV rate by default
 // 20180801  G4CMP-143:  Change IV rate from bool to str, Edelweiss->Quadratic
+// 20190711  G4CMP-158:  Add functions to select NIEL yield functions
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
+#include "G4CMPLewinSmithNIEL.hh"
+#include "G4CMPLindhardNIEL.hh"
+#include "G4CMPVNIELPartition.hh"
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
 #include <stdlib.h>
@@ -58,6 +62,11 @@ G4CMPConfigManager::G4CMPConfigManager()
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
     messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
+
+  if (getenv("G4CMP_NIEL_FUNCTION"))
+    SetNIELPartition(getenv("G4CMP_NIEL_FUNCTION"));
+  else
+    SetNIELPartition(new G4CMPLewinSmithNIEL);
 }
 
 G4CMPConfigManager::~G4CMPConfigManager() {

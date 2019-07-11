@@ -28,7 +28,7 @@
 // 20180827  Add flag to suppress use of downsampling energy scale
 // 20180828  BUG FIX:  GetSecondaries() was not using trkWeight
 // 20180831  Fix compiler warnings when comparing nParticlesMinimum
-// 20190711  Add support for selectable NIEL partition functions
+// 20190711  Use selectable NIEL partition function, via ConfigManager.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -36,7 +36,6 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPGeometryUtils.hh"
-#include "G4CMPLewinSmithNIEL.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4CMPVNIELPartition.hh"
@@ -62,7 +61,6 @@
 G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
-    nielFunc(new G4CMPLewinSmithNIEL),
     material(mat), holeFraction(0.5), nParticlesMinimum(10),
     applyDownsampling(true), cloud(new G4CMPChargeCloud), nCharges(0),
     nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
@@ -80,16 +78,7 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(const G4ThreeVector& pos)
 }
 
 G4CMPEnergyPartition::~G4CMPEnergyPartition() {
-  delete nielFunc; nielFunc=0;
   delete cloud; cloud=0;
-}
-
-
-// Assign non-default Lindhard (non-ionizing) scaling function
-
-void G4CMPEnergyPartition::UseNIELPartition(G4CMPVNIELPartition* niel) {
-  delete nielFunc;		// Avoid memory leaks
-  nielFunc = niel;
 }
 
 
@@ -120,7 +109,8 @@ G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
     return 1.;
   }
 
-  return nielFunc(E, material);		// No projectile information
+  G4CMPVNIELPartition* nielFunc = G4CMPConfigManager::GetNIELPartition();
+  return nielFunc->PartitionNIEL(E, material);	// No projectile information
 }
 
 
