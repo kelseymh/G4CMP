@@ -86,9 +86,8 @@ public:
   static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
   static void CreateChargeCloud(G4bool value) { Instance()->chargeCloud = value; }
 
-  // Constructor will call by-string function to map name to class
-  static void SetNIELPartition(G4String value);
-  static void SetNIELPartition(G4VNIELPartition* niel);
+  static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
+  static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
 
   // These settings require the geometry to be rebuilt
   static void SetLatticeDir(const G4String& dir)
@@ -104,7 +103,11 @@ private:
   G4CMPConfigManager& operator=(G4CMPConfigManager&&) = delete;
   
   static G4CMPConfigManager* theInstance;
-  
+
+  // Constructor will call by-string function to map name to class
+  void setNIEL(G4String value);
+  void setNIEL(G4VNIELPartition* niel);
+
 private:
   G4int verbose;	// Global verbosity (all processes, lattices)
   G4int fPhysicsModelID; // ID key to get aux. track info.

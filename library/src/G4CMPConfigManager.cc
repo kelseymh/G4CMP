@@ -60,13 +60,13 @@ G4CMPConfigManager::G4CMPConfigManager()
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
-    messenger(new G4CMPConfigMessenger(this)) {
+    nielPartition(0), messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 
-  if (getenv("G4CMP_NIEL_FUNCTION"))
-    SetNIELPartition(getenv("G4CMP_NIEL_FUNCTION"));
-  else
-    SetNIELPartition(new G4CMPLewinSmithNIEL);
+  if (getenv("G4CMP_NIEL_FUNCTION")) 
+    setNIEL(getenv("G4CMP_NIEL_FUNCTION"));
+  else 
+    setNIEL(new G4CMPLewinSmithNIEL);
 }
 
 G4CMPConfigManager::~G4CMPConfigManager() {
@@ -83,13 +83,13 @@ void G4CMPConfigManager::UpdateGeometry() {
 
 // Convert input name string to NIEL partitioning function
 
-void G4CMPConfigManager::SetNIELPartition(G4String name) {
+void G4CMPConfigManager::setNIEL(G4String name) {
   name.toLower();
-  if (name(0,3) == "lin") SetNIELPartition(new G4CMPLindhardNIEL);
-  if (name(0,3) == "lew") SetNIELPartition(new G4CMPLewinSmithNIEL);
+  if (name(0,3) == "lin") setNIEL(new G4CMPLindhardNIEL);
+  if (name(0,3) == "lew") setNIEL(new G4CMPLewinSmithNIEL);
 }
 
-void G4CMPConfigManager::SetNIELPartition(G4VNIELPartition* niel) {
-  delete Instance()->nielPartition;
-  Instance()->nielPartition = niel;
+void G4CMPConfigManager::setNIEL(G4VNIELPartition* niel) {
+  delete nielPartition;
+  nielPartition = niel;
 }
