@@ -16,8 +16,8 @@
 
 #include "globals.hh"
 #include "G4CMPLindhardNIEL.hh"
+#include "G4ExceptionSeverity.hh"
 #include "G4Material.hh"
-#include "G4Exception.hh"
 #include "G4Pow.hh"
 #include "G4SystemOfUnits.hh"
 #include <algorithm>
@@ -48,7 +48,7 @@ PartitionNIEL(G4double energy, const G4Material *material, G4double z1,
 
   const G4Element *element = material->GetElement(maxindex);
   G4double z2 = element->GetZ();
-  G4double a2 = element->GetA()/(g/mole)
+  G4double a2 = element->GetA()/(g/mole);
         
   G4double zpow = g4pow->Z23(z1) + g4pow->Z23(z2);
   G4double asum = a1+a2;

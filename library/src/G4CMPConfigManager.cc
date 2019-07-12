@@ -27,7 +27,7 @@
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPLewinSmithNIEL.hh"
 #include "G4CMPLindhardNIEL.hh"
-#include "G4CMPVNIELPartition.hh"
+#include "G4VNIELPartition.hh"
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
 #include <stdlib.h>
@@ -78,4 +78,18 @@ G4CMPConfigManager::~G4CMPConfigManager() {
 
 void G4CMPConfigManager::UpdateGeometry() {
   G4RunManager::GetRunManager()->ReinitializeGeometry(true);
+}
+
+
+// Convert input name string to NIEL partitioning function
+
+void G4CMPConfigManager::SetNIELPartition(G4String name) {
+  name.toLower();
+  if (name(0,3) == "lin") SetNIELPartition(new G4CMPLindhardNIEL);
+  if (name(0,3) == "lew") SetNIELPartition(new G4CMPLewinSmithNIEL);
+}
+
+void G4CMPConfigManager::SetNIELPartition(G4VNIELPartition* niel) {
+  delete Instance()->nielPartition;
+  Instance()->nielPartition = niel;
 }

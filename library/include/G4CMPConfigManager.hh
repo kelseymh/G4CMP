@@ -35,7 +35,7 @@
 #include "globals.hh"
 
 class G4CMPConfigMessenger;
-class G4CMPVNIELPartition;
+class G4VNIELPartition;
 
 
 class G4CMPConfigManager {
@@ -66,7 +66,7 @@ public:
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel()	 { return Instance()->IVRateModel; }
 
-  static const G4CMPVNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
+  static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
   // Change values (e.g., via Messenger) -- pass strings by value for toLower()
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
@@ -87,8 +87,8 @@ public:
   static void CreateChargeCloud(G4bool value) { Instance()->chargeCloud = value; }
 
   // Constructor will call by-string function to map name to class
-  static void SetNIELPartition(G4String value);		// Implemented in .cc
-  static void SetNIELPartition(G4CMPVNIELPartition* niel) { Instance()->nielPartition = niel; }
+  static void SetNIELPartition(G4String value);
+  static void SetNIELPartition(G4VNIELPartition* niel);
 
   // These settings require the geometry to be rebuilt
   static void SetLatticeDir(const G4String& dir)
@@ -125,7 +125,7 @@ private:
   G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
   G4bool chargeCloud;   // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
 
-  G4CMPVNIELPartition* nielPartition;	// Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
+  G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
 
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands
 };

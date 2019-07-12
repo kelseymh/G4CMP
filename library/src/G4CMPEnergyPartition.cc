@@ -38,7 +38,7 @@
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
-#include "G4CMPVNIELPartition.hh"
+#include "G4VNIELPartition.hh"
 #include "G4DynamicParticle.hh"
 #include "G4Event.hh"
 #include "G4LatticePhysical.hh"
@@ -109,7 +109,7 @@ G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
     return 1.;
   }
 
-  G4CMPVNIELPartition* nielFunc = G4CMPConfigManager::GetNIELPartition();
+  const G4VNIELPartition* nielFunc = G4CMPConfigManager::GetNIELPartition();
   return nielFunc->PartitionNIEL(E, material);	// No projectile information
 }
 

@@ -15,8 +15,8 @@
 
 #include "globals.hh"
 #include "G4CMPLewinSmithNIEL.hh"
+#include "G4ExceptionSeverity.hh"
 #include "G4Material.hh"
-#include "G4Exception.hh"
 #include "G4Pow.hh"
 #include "G4SystemOfUnits.hh"
 #include <algorithm>
@@ -45,8 +45,8 @@ PartitionNIEL(G4double energy, const G4Material *material, G4double /*Zin*/,
 
   // From Lewin and Smith, 1996
   // NOTE:  Avoiding use of std::pow for Z^(-7/3) and Z^(2/3) below
-  G4double z23 = G4Pow->Z23(Z);
-  G4double epsilon = 0.0115 * E / (Z*z23*z23);		// * Z^(-7/3)
+  G4double z23 = g4pow->Z23(Z);
+  G4double epsilon = 0.0115 * energy / (Z*z23*z23);	// * Z^(-7/3)
   G4double k = 0.133 * z23 / std::sqrt(A);
   G4double h = (0.7*std::pow(epsilon,0.6) + 3.*std::pow(epsilon,0.15)
 		+ epsilon);

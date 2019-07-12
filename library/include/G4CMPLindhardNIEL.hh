@@ -14,13 +14,16 @@
 //
 // 20190711  Michael Kelsey
 
-#include "G4CMPVNIELPartition.hh"
+#ifndef G4CMPLindhardNIEL_hh
+#define G4CMPLindhardNIEL_hh 1
+
+#include "G4VNIELPartition.hh"
 
 
-class G4CMPLindhardNIEL : public G4CMPVNIELPartition {
+class G4CMPLindhardNIEL : public G4VNIELPartition {
 public:
-  G4LindhardNIEL() {;}
-  virtual ~G4LindhardNIEL() {;}
+  G4CMPLindhardNIEL() {;}
+  virtual ~G4CMPLindhardNIEL() {;}
   
   // return the fraction of the specified energy which will be deposited as NIEL
   // if an incoming particle with z1, a1 is stopped in the specified material

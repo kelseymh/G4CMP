@@ -3,8 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/include/G4CMPVNIELPartition.hh
-/// \brief Definition of the G4CMPVNIELPartition base class
+/// \file library/include/G4VNIELPartition.hh
+/// \brief Definition of the G4VNIELPartition base class
 ///
 /// Abstract base class to define a "partition function" for non-ionizing
 /// energy loss (NIEL) in material, which subclasses must implement.
@@ -14,15 +14,15 @@
 //
 // 20190711  Michael Kelsey
 
-#ifndef G4CMPVNIELPartition_hh
-#define G4CMPVNIELPartition_hh 1
+#ifndef G4VNIELPartition_hh
+#define G4VNIELPartition_hh 1
 
 #include "G4Types.hh"
 
 class G4Material;
 
 
-class G4CMPVNIELPartition {
+class G4VNIELPartition {
 public:
   G4VNIELPartition() {;}
   virtual ~G4VNIELPartition() {;}
