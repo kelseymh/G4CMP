@@ -24,6 +24,7 @@
 // 20170823  Move geometry-specific commands to examples
 // 20170830  Add command for downsampling energy scale parameter
 // 20170830  Add command to set flag for producing e/h "cloud"
+// 20190711  Add command to select non-ionizing energy loss function
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -109,6 +110,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   ivRateModelCmd->SetCandidates("IVRate Linear Quadratic");
   ivRateModelCmd->SetDefaultValue("Quadratic");
 
+  nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
+	       "Select calculation for non-ionizing energy loss (NIEL)");
+  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew");
+
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
        "Produce e/h pairs in cloud surrounding energy deposit position");
   ehCloudCmd->SetDefaultValue(true);
@@ -133,6 +138,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete fanoStatsCmd; fanoStatsCmd=0;
   delete ehCloudCmd; ehCloudCmd=0;
   delete ivRateModelCmd; ivRateModelCmd=0;
+  delete nielPartitionCmd; nielPartitionCmd=0;
 }
 
 
@@ -164,5 +170,6 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));
   if (cmd == ivRateModelCmd) theManager->SetIVRateModel(value);
+  if (cmd == nielPartitionCmd) theManager->SetNIELPartition(value);
   if (cmd == ehCloudCmd) theManager->CreateChargeCloud(StoB(value));
 }

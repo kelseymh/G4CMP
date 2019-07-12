@@ -29,6 +29,7 @@
 // 20170823  Move geometry-specific commands to examples
 // 20170830  Add command to set downsampling energy scale
 // 20170830  Add command to set flag for producing e/h "cloud"
+// 20190711  Add command to select non-ionizing energy loss function
 
 #include "G4UImessenger.hh"
 
@@ -65,6 +66,7 @@ private:
   G4UIcmdWithADouble* downconvCmd;
   G4UIcmdWithAString* dirCmd;
   G4UIcmdWithAString* ivRateModelCmd;
+  G4UIcmdWithAString* nielPartitionCmd;
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;
   G4UIcmdWithABool*   ehCloudCmd;
