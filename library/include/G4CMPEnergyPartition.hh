@@ -19,6 +19,7 @@
 // 20180424  Need default ctor for Data to support vector::resize()
 // 20180425  Add minimum particle generation for downsampling
 // 20180827  Add flag to suppress use of downsampling energy scale
+// 20190714  Pass particle information through to NuclearRecoil, Lindhard
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -74,10 +75,7 @@ public:
   void DoPartition(G4int PDGcode, G4double energy, G4double eNIEL);
 
   // Nuclear recoil deposit uses Lindhard scale factor for e/h vs. phonons
-  void NuclearRecoil(G4double energy) {
-    G4double lind = LindhardScalingFactor(energy);
-    DoPartition(energy*lind, energy*(1.-lind));
-  }
+  void NuclearRecoil(G4double energy, G4double Z, G4double A);
 
   // Pure ionization produces no phonons
   void Ionization(G4double energy) { DoPartition(energy, 0.); }
@@ -100,7 +98,8 @@ public:
   void ComputeDownsampling(G4double eIon, G4double eNIEL);
 
   // Fraction of total energy deposit in material which goes to e/h pairs
-  G4double LindhardScalingFactor(G4double energy) const;
+  G4double LindhardScalingFactor(G4double energy, G4double Z=0,
+				 G4double A=0) const;
 
   // Portion of ionization energy which goes to e/h pairs (Fano factor)
   G4double MeasuredChargeEnergy(G4double eTrue) const;
