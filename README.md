@@ -69,7 +69,8 @@ developers should check the source code in
 | G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
 | G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED  | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
-| G4CMP\_IV\_RATE_MODEL | /g4cmp/IVRateModel [IVRate|Linear|Quadratic] | Select intervalley rate parametrization |
+| G4CMP\_IV\_RATE_MODEL | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
+| G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [LewinSmith\|Lindhard] | Select NIEL partitioning function |
 | G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t\|f] | Create charges in sphere around location |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation [h] [k] [l] | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |

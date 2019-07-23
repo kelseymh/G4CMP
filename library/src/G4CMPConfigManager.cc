@@ -21,9 +21,13 @@
 // 20170830  Add downsampling energy scale parameter
 // 20170908  G4CMP-118:  Use Edelweiss IV rate by default
 // 20180801  G4CMP-143:  Change IV rate from bool to str, Edelweiss->Quadratic
+// 20190711  G4CMP-158:  Add functions to select NIEL yield functions
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
+#include "G4CMPLewinSmithNIEL.hh"
+#include "G4CMPLindhardNIEL.hh"
+#include "G4VNIELPartition.hh"
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
 #include <stdlib.h>
@@ -56,8 +60,13 @@ G4CMPConfigManager::G4CMPConfigManager()
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
-    messenger(new G4CMPConfigMessenger(this)) {
+    nielPartition(0), messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
+
+  if (getenv("G4CMP_NIEL_FUNCTION")) 
+    setNIEL(getenv("G4CMP_NIEL_FUNCTION"));
+  else 
+    setNIEL(new G4CMPLewinSmithNIEL);
 }
 
 G4CMPConfigManager::~G4CMPConfigManager() {
@@ -69,4 +78,18 @@ G4CMPConfigManager::~G4CMPConfigManager() {
 
 void G4CMPConfigManager::UpdateGeometry() {
   G4RunManager::GetRunManager()->ReinitializeGeometry(true);
+}
+
+
+// Convert input name string to NIEL partitioning function
+
+void G4CMPConfigManager::setNIEL(G4String name) {
+  name.toLower();
+  if (name(0,3) == "lin") setNIEL(new G4CMPLindhardNIEL);
+  if (name(0,3) == "lew") setNIEL(new G4CMPLewinSmithNIEL);
+}
+
+void G4CMPConfigManager::setNIEL(G4VNIELPartition* niel) {
+  delete nielPartition;
+  nielPartition = niel;
 }

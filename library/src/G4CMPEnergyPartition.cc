@@ -28,6 +28,8 @@
 // 20180827  Add flag to suppress use of downsampling energy scale
 // 20180828  BUG FIX:  GetSecondaries() was not using trkWeight
 // 20180831  Fix compiler warnings when comparing nParticlesMinimum
+// 20190711  Use selectable NIEL partition function, via ConfigManager.
+// 20190714  Convert PDGcode to Z and A (in amu) for use with NIEL function.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -37,12 +39,16 @@
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4VNIELPartition.hh"
 #include "G4DynamicParticle.hh"
 #include "G4Event.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4ParticleTable.hh"
 #include "G4PhononPolarization.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4PrimaryParticle.hh"
 #include "G4PrimaryVertex.hh"
 #include "G4RandomDirection.hh"
@@ -100,35 +106,16 @@ void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
 
 // Fraction of total energy deposit in material which goes to e/h pairs
 
-G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
+G4double G4CMPEnergyPartition::
+LindhardScalingFactor(G4double E, G4double Z, G4double A) const {
   if (!material) {
-    static G4bool report = true;
-    if (report) {
-      G4cerr << "G4CMPEnergyPartition: No material configured" << G4endl;
-      report = false;
-    }
+    G4Exception("G4CMPEnergyPartition", "G4CMP1000", RunMustBeAborted,
+		"No material configured for energy partition");
     return 1.;
   }
 
-  const G4double Z=material->GetZ(), A=material->GetA()/(g/mole);
-
-  if (verboseLevel>1) {
-    G4cout << " LindhardScalingFactor " << E << " for (Z,A) " << Z
-	   << " " << A << G4endl;
-  }
-
-  // From Lewin and Smith, 1996
-  G4double epsilon = 0.0115 * E * std::pow(Z, -7./3.);
-  G4double k = 0.133 * std::pow(Z, 2./3.) / std::sqrt(A);
-  G4double h = (0.7*std::pow(epsilon,0.6) + 3.*std::pow(epsilon,0.15)
-		+ epsilon);
-
-  if (verboseLevel>2) {
-    G4cout << " eps " << epsilon << " k " << k << " h " << h << " : "
-	   << k*h / (1.+k*h) << G4endl;
-  }
-
-  return (k*h / (1.+k*h));
+  const G4VNIELPartition* nielFunc = G4CMPConfigManager::GetNIELPartition();
+  return nielFunc->PartitionNIEL(E, material, Z, A);
 }
 
 
@@ -161,10 +148,18 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
   // User specified phonon energy directly; assume it is correct
   if (eNIEL > 0.) DoPartition(energy-eNIEL, eNIEL);
   else {
-    if (PDGcode == 2112 || PDGcode > 10000) {	// Neutron or nucleus
-      if (verboseLevel>1)
-        G4cout << " Nuclear Recoil: type = " << PDGcode << G4endl;
-      NuclearRecoil(energy);
+    if (PDGcode == 2112 || PDGcode > 10000) {		// Neutron or nucleus
+      // Convert input PDG code to Z and A (in amu, not nucleon count)
+      G4ParticleDefinition* proj =
+	G4ParticleTable::GetParticleTable()->FindParticle(PDGcode);
+      G4double Z=proj->GetAtomicNumber(), A=proj->GetPDGMass()/amu;
+      
+      if (verboseLevel>1) {
+        G4cout << " Nuclear Recoil: type " << PDGcode << " Z " << Z
+	       << " A " << A << G4endl;
+      }
+
+      NuclearRecoil(energy, Z, A);
     } else {
       Ionization(energy);
     }
@@ -192,6 +187,18 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
 
   particles.shrink_to_fit();	// Reduce size to match generated particles
 }
+
+
+// Generate primary phonons from energy deposit using Lindhard scaling
+
+void G4CMPEnergyPartition::
+NuclearRecoil(G4double energy, G4double Z, G4double A) {
+  G4double lind = LindhardScalingFactor(energy, Z, A);
+  DoPartition(energy*lind, energy*(1.-lind));
+}
+
+
+// Generate charge carriers and phonons with maximum energy scaling
 
 void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
   G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
