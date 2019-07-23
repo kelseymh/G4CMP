@@ -38,6 +38,7 @@
 //           E0(Eq.1), Gamma0 (Eq.2), Gamma1 (Eq.2), Gamma0 (Eq.1), alpha (Eq.1), alpha (Eq.2)
 //           from arXiv:1807.07986
 // 20190704  M. Kelsey -- Add IV rate function selector for material
+// 20190723  M. Kelsey -- Include valley axis as comment in dump
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -721,6 +722,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
 
   for (size_t i=0; i<NumberOfValleys(); i++) {
     DumpValley(os, i);
+    os << "\t# Along axis " << GetValleyAxis(i) << std::endl;
   }
 
   os << "# Intervalley scattering parameters"
@@ -753,7 +755,7 @@ void G4LatticeLogical::DumpValley(std::ostream& os, G4int iv) const {
   os << "valley " << fValley[iv].phi()/deg
      << " " << fValley[iv].theta()/deg
      << " " << fValley[iv].psi()/deg
-     << " deg" << std::endl;
+     << " deg";
 }
 
 // Print out crystal symmetry information
