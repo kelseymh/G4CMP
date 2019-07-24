@@ -107,7 +107,9 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 
   if (G4CMPConfigManager::GetVerboseLevel() > 2) {
     G4cout << "G4CMPEqEMField: @ (" << y[0] << "," << y[1] << "," << y[2]
-	   << ")\n p (" << y[3] << "," << y[4] << "," << y[5]
+	   << "\n (q,m) " << fCharge/eplus << " "
+	   << fMass*c_squared/electron_mass_c2 << " m_e; valley " << valleyIndex
+	   << "\n p (" << y[3] << "," << y[4] << "," << y[5]
 	   << ")\n Efield " << Efield.mag() << " " << Efield
      << "\n retForce " << forceEffective.mag() << " " << forceEffective
 	   << "\n TOF " << vinv << " vdir " << v.unit() << G4endl;
