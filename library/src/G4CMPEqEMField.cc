@@ -107,12 +107,13 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 
   if (G4CMPConfigManager::GetVerboseLevel() > 2) {
     G4cout << "G4CMPEqEMField: @ (" << y[0] << "," << y[1] << "," << y[2]
-	   << "\n (q,m) " << fCharge/eplus << " "
+	   << ") mm\n (q,m) " << fCharge/eplus << " "
 	   << fMass*c_squared/electron_mass_c2 << " m_e; valley " << valleyIndex
-	   << "\n p (" << y[3] << "," << y[4] << "," << y[5]
-	   << ")\n Efield " << Efield.mag() << " " << Efield
-     << "\n retForce " << forceEffective.mag() << " " << forceEffective
-	   << "\n TOF " << vinv << " vdir " << v.unit() << G4endl;
+	   << "\n pc (" << y[3] << "," << y[4] << "," << y[5] << ") MeV"
+	   << "\n Efield " << Efield.mag()/(volt/cm) << " " << Efield/(volt/cm)
+	   << " V/cm\n retForce " << forceEffective.mag()/(eV/m)
+	   << " " << forceEffective/(eV/m) << " eV/m"
+	   << "\n TOF " << vinv/(ns/mm) << " ns/mm vdir " << v.unit() << G4endl;
   }
 
   dydx[0] = v.x()*vinv;		// Velocity direction
