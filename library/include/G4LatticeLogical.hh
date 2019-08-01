@@ -34,6 +34,8 @@
 // 20180815  F. Insulla -- Added IVRateQuad
 // 20181001  M. Kelsey -- Clarify IV rate parameters systematically
 // 20190704  M. Kelsey -- Add IV rate function selector for material
+// 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value,
+//		precompute valley inverse transforms
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -91,20 +93,19 @@ public:
 
   // Convert between electron momentum and valley velocity or HV wavevector
   // NOTE:  Input vector must be in lattice symmetry frame (X == symmetry axis)
-  // NOTE:  Pass by value below to avoid creating temporary vectors
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
   G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
-  G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
-  G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
-  G4ThreeVector MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_HVtoK(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_valleyToP(G4int ivalley, G4ThreeVector k) const;
+  G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const;
 
   // Apply energy relationships for electron transport
-  G4double MapPtoEkin(G4int ivalley, G4ThreeVector p_e) const;
-  G4double MapV_elToEkin(G4int ivalley, G4ThreeVector v_e) const;
+  G4double MapPtoEkin(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4double MapV_elToEkin(G4int ivalley, const G4ThreeVector& v_e) const;
 
   // Configure crystal symmetry group and lattice spacing/angles
   void SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a, G4double b,
@@ -204,10 +205,13 @@ public:
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley);
   void AddValley(G4double phi, G4double theta, G4double psi);
-  void ClearValleys() { fValley.clear(); fValleyAxis.clear(); }
+  void ClearValleys() {
+    fValley.clear(); fValleyInv.clear();fValleyAxis.clear();
+  }
 
   size_t NumberOfValleys() const { return fValley.size(); }
   const G4RotationMatrix& GetValley(G4int iv) const;
+  const G4RotationMatrix& GetValleyInv(G4int iv) const;
   const G4ThreeVector& GetValleyAxis(G4int iv) const;
 
   // Print out Euler angles of requested valley
@@ -280,6 +284,7 @@ private:
 private:
   G4int verboseLevel;			    // Enable diagnostic output
   G4String fName;			    // Name of lattice for messages
+  mutable G4ThreeVector tempvec;	    // Buffer for MapAtoB() calculations
 
   G4CMPCrystalGroup fCrystal;		    // Symmetry group, axis unit vectors
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
@@ -323,6 +328,7 @@ private:
   G4RotationMatrix fMassRatioSqrt;       // SQRT of tensor/scalar ratio
   G4RotationMatrix fMInvRatioSqrt;       // SQRT of scalar/tensor ratio
   std::vector<G4RotationMatrix> fValley; // Electron transport directions
+  std::vector<G4RotationMatrix> fValleyInv;
   std::vector<G4ThreeVector> fValleyAxis;
 
   G4double fAlpha;			// Non-parabolicity of -ve potential

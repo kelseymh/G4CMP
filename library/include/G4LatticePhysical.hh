@@ -28,6 +28,7 @@
 // 20180831  Add accessors for linear IV rate, change Edelweiss names
 // 20181001  M. Kelsey -- Clarify IV rate parameters systematically
 // 20190704  M. Kelsey -- Add IV rate function selector for material
+// 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -62,26 +63,24 @@ public:
 
   // Convert input wave vector and polarization to group velocity
   // NOTE:  Input vector must be in local (G4VSolid) coordinate system
-  // NOTE:  Pass vector by value to allow in-situ rotations
-  G4double      MapKtoV(G4int mode, G4ThreeVector k) const;
-  G4ThreeVector MapKtoVDir(G4int mode, G4ThreeVector k) const;
+  G4double      MapKtoV(G4int mode, const G4ThreeVector& k) const;
+  G4ThreeVector MapKtoVDir(G4int mode, const G4ThreeVector& k) const;
 
   // Convert between electron momentum and valley velocity or HV wavevector
   // NOTE:  Input vector must be in local (G4VSolid) coordinate system
-  // NOTE:  Pass vector by value to allow in-situ rotations
-  G4ThreeVector MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const;
-  G4ThreeVector MapV_elToP(G4int ivalley, G4ThreeVector v_el) const;
-  G4ThreeVector MapV_elToK_HV(G4int ivalley, G4ThreeVector v_el) const;
-  G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
-  G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
-  G4ThreeVector MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_HVtoK(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_valleyToP(G4int ivalley, G4ThreeVector k) const;
+  G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
+  G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
+  G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const;
 
   // Apply energy relationships for electron transport
-  G4double MapPtoEkin(G4int ivalley, G4ThreeVector p_e) const;
-  G4double MapV_elToEkin(G4int ivalley, G4ThreeVector v_e) const;
+  G4double MapPtoEkin(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4double MapV_elToEkin(G4int ivalley, const G4ThreeVector& v_e) const;
 
 public:  
   const G4LatticeLogical* GetLattice() const { return fLattice; }
@@ -162,6 +161,7 @@ public:
 
 private:
   G4int verboseLevel;			// Enable diagnostic output
+  mutable G4ThreeVector tempvec;	// Buffer for MapAtoB() calculations
 
   const G4LatticeLogical* fLattice;	// Underlying lattice parameters
   G4RotationMatrix fOrient;		// Rotate geometry into lattice frame
