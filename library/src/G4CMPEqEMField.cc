@@ -100,10 +100,14 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
    * This transformation picks up units of 1/mass and 1/c.
    * But, before we transform momentum, it needs to be in local coordinates.
    */
+  const_cast<G4LatticePhysical*>(theLattice)->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
+
   fGlobalToLocal.ApplyAxisTransform(force);
   G4ThreeVector forceEffective = theLattice->MapPtoV_el(valleyIndex, force);
   forceEffective *= fMass * vinv * c_squared;
   fLocalToGlobal.ApplyAxisTransform(forceEffective);
+
+  const_cast<G4LatticePhysical*>(theLattice)->SetVerboseLevel(0);
 
   if (G4CMPConfigManager::GetVerboseLevel() > 2) {
     G4cout << "G4CMPEqEMField: @ (" << y[0] << "," << y[1] << "," << y[2]
