@@ -17,6 +17,8 @@
 // 20140501  Fix sign flip in electron charge calculation.
 // 20141217  Avoid floating-point division by using vinv = 1/v.mag()
 // 20150528  Add debugging output
+// 20190802  Check if field is aligned or anti-aligned with valley, apply
+//	     transform to valley axis "closest" to field direction.
 
 #include "G4CMPEqEMField.hh"
 #include "G4CMPConfigManager.hh"
@@ -103,8 +105,18 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   const_cast<G4LatticePhysical*>(theLattice)->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
 
   fGlobalToLocal.ApplyAxisTransform(force);
+
+  /* Transform should be done with field aligned to valley axis.  If field
+   * is antiparallel, apply flip before and after transform
+   */
+  G4bool flipE = (force.dot(theLattice->GetValleyAxis(valleyIndex)) < 0.);
+  if (flipE) force = -force;
   G4ThreeVector forceEffective = theLattice->MapPtoV_el(valleyIndex, force);
   forceEffective *= fMass * vinv * c_squared;
+  if (flipE) forceEffective = -forceEffective;
+
+  /* Restore effective force to global coordinates for G4Transporation
+   */
   fLocalToGlobal.ApplyAxisTransform(forceEffective);
 
   const_cast<G4LatticePhysical*>(theLattice)->SetVerboseLevel(0);
