@@ -69,7 +69,8 @@ developers should check the source code in
 | G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
 | G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED  | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
-| G4CMP\_IV\_EDELWEISS  | /g4cmp/useEdelweissIVRate [t\|f]   | Use Edelweiss intervalley rate parametrization |
+| G4CMP\_IV\_RATE_MODEL | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
+| G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [LewinSmith\|Lindhard] | Select NIEL partitioning function |
 | G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t\|f] | Create charges in sphere around location |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation [h] [k] [l] | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
@@ -319,9 +320,13 @@ the crystal system.
 | neutDens | N        | Number density of neutron impurities | /volume |
 | alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
 | acDeform | val      | Acoustic deformation potential | energy (eV)   |
-| ivDeform | val val ... | Optical deformation potentials | eV/cm  |
-| ivEnergy | val val ... | Optical phonon thresholds | energy (eV) |
-| **InterValley scattering with Edelweiss model** |
-| ivField | E0        | Edelweiss intervalley scattering  | V/m        |
-| ivRate  | freq      | Intervalley scattering rate       | Hz         |
-| ivPower | val       | Power law [sqrt(field^ivPower)]   | none       |
+| ivDeform | val val ... | Optical deformation potentials | eV/cm      |
+| ivEnergy | val val ... | Optical phonon thresholds     | energy (eV) |
+| **InterValley scattering  (Linear and Quadratic Models) ** |
+| ivModel     | name | IVRate (matrix), Linear or Quadratic   | string |
+| ivLinRate0  | val | Constant term in linear IV expression   | Hz     |
+| ivLinRate1  | val | Linear term in linear IV expression     | Hz     |
+| ivLinPower  | exp | Exponent: rate = Rate0 + Rate1* E^exp   | none   |
+| ivQuadRate  | val | Coefficient for quadratic IV expression | Hz     |
+| ivQuadField | val | Minimum field for quadratic IV expression | V/m  |
+| ivQuadPower | exp | Exponent: rate = Rate*(E^2-Field^2)^(exp/2) | none |

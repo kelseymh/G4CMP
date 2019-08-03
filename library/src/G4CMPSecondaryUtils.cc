@@ -153,7 +153,7 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
   if (charge == 1) {
     theCarrier    = G4CMPDriftHole::Definition();
     carrierMass   = lat->GetHoleMass();
-    carrierEnergy = 0.5 * p.mag2() / carrierMass;	// Non-relativistic
+    carrierEnergy = 0.5 * p.mag2() / carrierMass;  // Non-relativistic
     v_unit = p.unit();
   } else {
     theCarrier    = G4CMPDriftElectron::Definition();
@@ -165,7 +165,9 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
     v_unit = v_local.unit();
   }
 
-  auto secDP = new G4DynamicParticle(theCarrier, v_unit, carrierEnergy, carrierMass);
+  // NOTE:  We use true mass unts: convert e.g. MeV/c^2 to MeV here
+  auto secDP = new G4DynamicParticle(theCarrier, v_unit, carrierEnergy,
+				     carrierMass*c_squared);
 
   auto sec = new G4Track(secDP, time, G4CMP::ApplySurfaceClearance(touch, pos));
 

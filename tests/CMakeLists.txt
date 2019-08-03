@@ -40,3 +40,6 @@ target_link_libraries(phononKinematics G4cmp)
 
 add_executable(testChargeCloud testChargeCloud.cc)
 target_link_libraries(testChargeCloud G4cmp)
+
+add_executable(testPartition testPartition.cc)
+target_link_libraries(testPartition G4cmp)

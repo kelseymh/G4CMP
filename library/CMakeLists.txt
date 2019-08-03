@@ -134,11 +134,14 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFieldManager.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGeometryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGlobalLocalTransformStore.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateEdelweiss.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateLinear.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateQuadratic.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPKaplanQP.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLewinSmithNIEL.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLindhardNIEL.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLocalElectroMagField.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeEmissionRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeScattering.cc
@@ -163,6 +166,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVDriftProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVElectrodePattern.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVMeshInterpolator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVTrackInfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeLogical.cc
@@ -175,7 +179,6 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransFast.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVMeshInterpolator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VPhononProcess.cc
     )
  
@@ -202,11 +205,14 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldManager.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGeometryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGlobalLocalTransformStore.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateEdelweiss.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateLinear.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateQuadratic.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPKaplanQP.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLewinSmithNIEL.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLindhardNIEL.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLocalElectroMagField.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeEmissionRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeScattering.hh
@@ -249,6 +255,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransFast.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
     )
 
