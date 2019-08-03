@@ -102,24 +102,21 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
    * This transformation picks up units of 1/mass and 1/c.
    * But, before we transform momentum, it needs to be in local coordinates.
    */
-  const_cast<G4LatticePhysical*>(theLattice)->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
-
   fGlobalToLocal.ApplyAxisTransform(force);
 
   /* Transform should be done with field aligned to valley axis.  If field
-   * is antiparallel, apply flip before and after transform
+   * is antiparallel, apply flip before transform.  This is equivalent to
+   * applying the transform in the antiparallel valley (i.e., no reversing
+   * flip afterward is required).
    */
-  G4bool flipE = (force.dot(theLattice->GetValleyAxis(valleyIndex)) < 0.);
-  if (flipE) force = -force;
+  if (force.dot(theLattice->GetValleyAxis(valleyIndex)) < 0.) force = -force;
+
   G4ThreeVector forceEffective = theLattice->MapPtoV_el(valleyIndex, force);
   forceEffective *= fMass * vinv * c_squared;
-  if (flipE) forceEffective = -forceEffective;
 
   /* Restore effective force to global coordinates for G4Transporation
    */
   fLocalToGlobal.ApplyAxisTransform(forceEffective);
-
-  const_cast<G4LatticePhysical*>(theLattice)->SetVerboseLevel(0);
 
   if (G4CMPConfigManager::GetVerboseLevel() > 2) {
     G4cout << "G4CMPEqEMField: @ (" << y[0] << "," << y[1] << "," << y[2]
