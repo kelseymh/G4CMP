@@ -28,7 +28,8 @@
 // 20180831  Add accessors for linear IV rate, change Edelweiss names
 // 20181001  M. Kelsey -- Clarify IV rate parameters systematically
 // 20190704  M. Kelsey -- Add IV rate function selector for material
-// 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value
+// 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value;
+//		add pass through call to GetValleyInv().
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -132,8 +133,9 @@ public:
   size_t NumberOfValleys() const { return fLattice->NumberOfValleys(); }
 
   // FIXME:  Should valley matrix be rotated from internal to local coordinates?
-  const G4RotationMatrix& GetValley(G4int iv) const { return fLattice->GetValley(iv); }
-  const G4ThreeVector& GetValleyAxis(G4int iv) const { return fLattice->GetValleyAxis(iv); }
+  const G4RotationMatrix& GetValley(G4int iv) const    { return fLattice->GetValley(iv); }
+  const G4RotationMatrix& GetValleyInv(G4int iv) const { return fLattice->GetValleyInv(iv); }
+  const G4ThreeVector& GetValleyAxis(G4int iv) const   { return fLattice->GetValleyAxis(iv); }
 
   // Parameters for electron intervalley scattering (Edelweiss, linear, matrix)
   const G4String& GetIVModel() const { return fLattice->GetIVModel(); }
