@@ -41,6 +41,8 @@
 // 20190723  M. Kelsey -- Include valley axis as comment in dump
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value,
 //		precompute valley inverse transforms
+// 20190806  M. Kelsey -- Compute L0_e,h from deformation potential, if not
+//		provided in configuration.
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -226,6 +228,10 @@ void G4LatticeLogical::Initialize(const G4String& newName) {
 
   // Populate phonon lookup tables if not read from files
   FillMaps();
+
+  // Compute scattering lengths if not provided experimentally in config
+  if (fL0_e <= 0.) fL0_e = FillScatteringLength(fElectronMass);
+  if (fL0_h <= 0.) fL0_h = FillScatteringLength(fHoleMass);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -324,6 +330,22 @@ void G4LatticeLogical::FillMaps() {
     G4cout << "G4LatticeLogical::FillMaps populated " << KVBINS
 	   << " bins in theta and phi for all polarizations." << G4endl;
   }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Compute scattering length L_0 = pi hbar^4 rho / 2 m^3 C^2,
+// where C is deformation potential, m is scalar mass
+
+G4double G4LatticeLogical::FillScatteringLength(G4double mass) {
+  if (mass <= 0. || fAcDeform <= 0.) {
+    G4Exception("G4LatticeLogical::FillScatteringLength", "Lattice002",
+		RunMustBeAborted, "Scattering length cannot be computed.");
+    return 0.;
+  }
+
+  return ( pi * hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck * fDensity
+	   / (2. * mass*mass*mass * fAcDeform*fAcDeform) );
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

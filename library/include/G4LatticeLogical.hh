@@ -36,6 +36,7 @@
 // 20190704  M. Kelsey -- Add IV rate function selector for material
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value,
 //		precompute valley inverse transforms
+// 20190806  M. Kelsey -- Add function to compute scattering length.
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -270,6 +271,9 @@ private:
   void FillElasticity();	// Unpack reduced Cij into full Cijlk
   void FillMaps();	// Populate lookup tables using kinematics calculator
   void FillMassInfo();	// Called from SetMassTensor() to compute derived forms
+
+  // Compute scattering length from crystal properties, if fL0_e,h not set
+  G4double FillScatteringLength(G4double mass);
 
   // Get theta, phi bins and offsets for interpolation
   G4bool FindLookupBins(const G4ThreeVector& k, G4int& iTheta, G4int& iPhi,
