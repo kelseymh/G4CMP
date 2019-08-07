@@ -155,10 +155,10 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
   }
 
-  G4double EoverhGHz = GetKineticEnergy(aTrack)/h_Planck * ns;
-  G4double specProb = SpecularProb(EoverhGHz);
-  G4double diffuseProb = DiffuseProb(EoverhGHz);
-  G4double downconversionProb = AnharmonicProb(EoverhGHz);
+  G4double freq = GetKineticEnergy(aTrack)/h_Planck;	// E = hf, f = E/h
+  G4double specProb = surfProp->SpecularReflProb(freq);
+  G4double diffuseProb = surfProp->DiffuseReflProb(freq);
+  G4double downconversionProb = surfProp->AnharmonicReflProb(freq);
 
   // Empirical functions may lead to non normalised probabilities.
   // Normalise here.
@@ -242,37 +242,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 }
 
 
-// Probabilities for different kinds of reflections
-
-G4double
-G4CMPPhononBoundaryProcess::AnharmonicProb(G4double f_GHz) const {
-
-  // 520 GHz is where probabilities are undefined, just use previous
-  // probabilities assuming no downconversion.
-  if (f_GHz > 520) return 0.0;
-  return 1.51e-14 * (f_GHz * f_GHz * f_GHz * f_GHz * f_GHz);
-}
-
-G4double G4CMPPhononBoundaryProcess::SpecularProb(G4double f_GHz) const {
-  // 350 GHz unphysical cutoff, probably should define this as some variable
-  if (f_GHz > 520) return GetMaterialProperty("specProb");
-  if (f_GHz >= 350) return 1. - DiffuseProb(350) - AnharmonicProb(f_GHz);
-  return 2.9e-13 * (f_GHz * f_GHz * f_GHz * f_GHz) +
-         3.1e-9 * (f_GHz * f_GHz * f_GHz) -
-         3.21e-6 * (f_GHz * f_GHz) -
-         2.03e-4 * f_GHz +
-         0.928;
-}
-
-G4double G4CMPPhononBoundaryProcess::DiffuseProb(G4double f_GHz) const {
-  if (f_GHz > 520) return 1. - GetMaterialProperty("specProb");
-  if (f_GHz >= 350) f_GHz = 350;
-  return -2.98e-11 * (f_GHz * f_GHz * f_GHz * f_GHz) +
-         1.71e-8 * (f_GHz * f_GHz * f_GHz) -
-         2.47e-6 * (f_GHz * f_GHz) +
-         7.83e-4 * f_GHz +
-         5.88e-2;
-}
+// Generate diffuse reflection according to 1/cos distribution
 
 G4ThreeVector G4CMPPhononBoundaryProcess::
 GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {

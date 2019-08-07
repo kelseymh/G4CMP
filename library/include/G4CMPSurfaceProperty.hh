@@ -8,12 +8,15 @@
 // 20160831  M. Kelsey -- Add optional electrode geometry class
 // 20170525  M. Kelsey -- Add default "rule of five" copy/move operators
 // 20170627  M. Kelsey -- Return non-const pointers, for functional use
+// 20190806  M. Kelsey -- Add local data for frequency-dependent scattering
+//		probabilities, and computation functions.
 
 #ifndef G4CMPSurfaceProperty_h
 #define G4CMPSurfaceProperty_h 1
 
 #include "G4SurfaceProperty.hh"
 #include "G4MaterialPropertiesTable.hh"
+#include <vector>
 
 class G4CMPVElectrodePattern;
 
@@ -77,6 +80,31 @@ public:
   void FillPhononMaterialPropertiesTable(G4double pAbsProb,  G4double pReflProb,
                                          G4double pSpecProb, G4double pMinK);
 
+  // Accessors to fill phonon surface interaction parametrizations
+  void AddSurfaceAnharmonicCutoff(G4double freqMax) { anharmonicMaxFreq = freqMax; }
+  void AddSurfaceDiffuseCutoff(G4double freqDiff) { diffuseMaxFreq = freqDiff; }
+
+  // For polynomial coeffients, units can be factored out and passed separately
+  void AddSurfaceAnharmonicCoeffs(const std::vector<G4double>& coeff,
+				  G4double freqUnits=0.) {
+    SaveCoeffs(anharmonicCoeffs, coeff, freqUnits);
+  }
+
+  void AddDiffuseReflectionCoeffs(const std::vector<G4double>& coeff,
+				  G4double freqUnits=0.) {
+    SaveCoeffs(diffuseCoeffs, coeff, freqUnits);
+  }
+
+  void AddSpecularReflectionCoeffs(const std::vector<G4double>& coeff,
+				   G4double freqUnits=0.) {
+    SaveCoeffs(specularCoeffs, coeff, freqUnits);
+  }
+
+  // Functions to compute reflection probabilities vs. frequency
+  G4double AnharmonicReflProb(G4double freq) const;
+  G4double DiffuseReflProb(G4double freq) const;
+  G4double SpecularReflProb(G4double freq) const;
+
   // Complex electrode geometries
   void SetChargeElectrode(G4CMPVElectrodePattern* cel);
   void SetPhononElectrode(G4CMPVElectrodePattern* pel);
@@ -88,15 +116,30 @@ public:
   virtual void DumpInfo() const;	// To be implemented
 
 protected:
+  // These args should be const, but G4MaterialPropertiesTables is silly.
+  G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
+  G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
+
+  void SaveCoeffs(std::vector<G4double>& buffer,
+		  const std::vector<G4double>& coeff, G4double units);
+
+  G4double ExpandCoeffsPoly(G4double freq, const std::vector<G4double>& coeff) const;
+
+protected:
   G4MaterialPropertiesTable theChargeMatPropTable;
   G4MaterialPropertiesTable thePhononMatPropTable;
 
   G4CMPVElectrodePattern* theChargeElectrode;
   G4CMPVElectrodePattern* thePhononElectrode;
 
-  // These args should be const, but G4MaterialPropertiesTables is silly.
-  G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
-  G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
+  // Frequency dependent phonon surface scattering parameters
+  G4double anharmonicMaxFreq;		// Max frequency for anharmonic decay
+  G4double diffuseMaxFreq;		// Limit frqeuency for diffuse scatter
+
+  // Polynomial coefficients in frequency for each kind of scattering
+  std::vector<G4double> anharmonicCoeffs;
+  std::vector<G4double> diffuseCoeffs;
+  std::vector<G4double> specularCoeffs;
 };
 
 #endif

@@ -49,10 +49,6 @@ protected:
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
-  // Compute probabilities for different reflection actions
-  G4double AnharmonicProb(G4double) const;
-  G4double SpecularProb(G4double) const;
-  G4double DiffuseProb(G4double) const;
   G4ThreeVector GetLambertianVector(const G4ThreeVector&, G4int) const;
 
 private:
