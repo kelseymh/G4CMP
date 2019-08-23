@@ -22,6 +22,7 @@
 // 20170525  Drop empty destructor to allow default "rule of five" semantics
 // 20170928  Replce "polarizationState" with "mode"
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value
+// 20190822  C. Stanford -- Change rotateY in SetMillerOrientation to rotateX
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -75,12 +76,12 @@ void G4LatticePhysical::SetMillerOrientation(G4int h, G4int k, G4int l,
 
   // Aligns geometry +Z axis with lattice (hkl) normal
   fOrient = G4RotationMatrix::IDENTITY;
-  fOrient.rotateZ(rot).rotateY(norm.theta()).rotateZ(norm.phi());
+  fOrient.rotateZ(rot).rotateX(norm.theta()).rotateZ(norm.phi());
   fInverse = fOrient.inverse();
 
   if (verboseLevel>1) G4cout << " fOrient = " << fOrient << G4endl;
 
-  // FIXME:  Is this equivalent to (phi,theta,rot) Euler angles???
+  // FIXME:  Is this equivalent to (phi,theta,rot) Euler angles? A: No, the equivalent would be fOrient.set(-rot,-norm.theta(),-norm.phi());
 }
 
 
