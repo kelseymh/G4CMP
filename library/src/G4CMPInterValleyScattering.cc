@@ -69,15 +69,14 @@ void G4CMPInterValleyScattering::UseRateModel(const G4String& model) {
   }
 
   modelName = model;
-  UseRateModel(new G4CMPIVRateLinear);
-  //      if (model(0) == 'Q') UseRateModel(new G4CMPIVRateQuadratic);
-  // else if (model(0) == 'L') UseRateModel(new G4CMPIVRateLinear);
-  // else if (model(0) == 'I') UseRateModel(new G4CMPInterValleyRate);
-  // else {
-  //   G4cerr << GetProcessName() << " ERROR: Unrecognized rate model " << model
-  // 	   << G4endl;
-  //   UseRateModel("Quadratic");
-  // }
+       if (model(0) == 'Q') UseRateModel(new G4CMPIVRateQuadratic);
+  else if (model(0) == 'L') UseRateModel(new G4CMPIVRateLinear);
+  else if (model(0) == 'I') UseRateModel(new G4CMPInterValleyRate);
+  else {
+    G4cerr << GetProcessName() << " ERROR: Unrecognized rate model " << model
+  	   << G4endl;
+    UseRateModel("Quadratic");
+  }
 }
 
 
