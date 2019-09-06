@@ -11,6 +11,7 @@
 // 20170601  New abstract base class for all G4CMP processes
 // 20170802  Add registration of external scattering rate (MFP) model
 // 20170815  Call through to scattering-rate LoadDataForTrack()
+// 20190906  Bug fix in UseRateModel(), check for good pointer, not null
 
 #include "G4CMPVProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -38,10 +39,14 @@ G4CMPVProcess::~G4CMPVProcess() {
 // NOTE:  Takes ownership of model for deletion; deletes any previous version
 
 void G4CMPVProcess::UseRateModel(G4CMPVScatteringRate* model) {
-  if (!model) model->SetVerboseLevel(verboseLevel);
+  if (model == rateModel) return;		// Nothing to change
 
   if (rateModel) delete rateModel;		// Avoid memory leaks!
   rateModel = model;
+
+  // Ensure that rate model is syncronized with process state
+  rateModel->SetVerboseLevel(verboseLevel);
+  if (GetCurrentTrack()) rateModel->LoadDataForTrack(GetCurrentTrack());
 }
 
 
