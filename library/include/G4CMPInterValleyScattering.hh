@@ -9,6 +9,7 @@
 // 20140418  Drop valley transforms; get from lattice
 // 20170802  Remove MFP calculation; use scattering-rate model
 // 20190704  Add selection of rate model by name, and material specific
+// 20190906  For rate model selection, pass string by value
 
 #ifndef G4CMPInterValleyScattering_h
 #define G4CMPInterValleyScattering_h 1
@@ -24,7 +25,7 @@ public:
 
   // Select different rate models by string (globally or by material)
   using G4CMPVProcess::UseRateModel;		// Avoid function hiding
-  void UseRateModel(const G4String& model);	// Non-virtual to use in ctor
+  void UseRateModel(G4String model);		// Non-virtual to use in ctor
 
   // Do scattering action here
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);

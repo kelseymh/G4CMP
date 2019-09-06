@@ -60,7 +60,9 @@ G4CMPInterValleyScattering::IsApplicable(const G4ParticleDefinition& aPD) {
 
 // Select different rate models by string (globally or by material)
 
-void G4CMPInterValleyScattering::UseRateModel(const G4String& model) {
+void G4CMPInterValleyScattering::UseRateModel(G4String model) {
+  model.toLower();
+
   if (!model.empty() && model == modelName) return;	// Already in use
 
   if (model.empty()) {			// Fall back to global configuration
@@ -68,16 +70,16 @@ void G4CMPInterValleyScattering::UseRateModel(const G4String& model) {
     return;
   }
 
-  modelName = model;
-
-       if (model(0) == 'Q') UseRateModel(new G4CMPIVRateQuadratic);
-  else if (model(0) == 'L') UseRateModel(new G4CMPIVRateLinear);
-  else if (model(0) == 'I') UseRateModel(new G4CMPInterValleyRate);
+       if (model(0) == 'q') UseRateModel(new G4CMPIVRateQuadratic);
+  else if (model(0) == 'l') UseRateModel(new G4CMPIVRateLinear);
+  else if (model(0) == 'i') UseRateModel(new G4CMPInterValleyRate);
   else {
-    G4cerr << GetProcessName() << " ERROR: Unrecognized rate model " << model
-	   << G4endl;
+    G4cerr << GetProcessName() << " ERROR: Unrecognized rate model '"
+	   << model << "'.  Using 'quadratic'." << G4endl;
     UseRateModel("Quadratic");
   }
+
+  modelName = model;
 }
 
 
