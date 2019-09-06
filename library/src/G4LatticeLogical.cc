@@ -41,6 +41,7 @@
 // 20190723  M. Kelsey -- Include valley axis as comment in dump
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value,
 //		precompute valley inverse transforms
+// 20190906  M. Kelsey -- Default IV rate model to G4CMPConfigManager value.
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -70,7 +71,8 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fMassInverse(G4Rep3x3(1/mElectron,0.,0.,0.,1/mElectron,0.,0.,0.,1/mElectron)),
     fAlpha(0.), fAcDeform(0.), 
     fIVQuadField(0.), fIVQuadRate(0.), fIVQuadExponent(0.),
-    fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.), fIVModel("") {
+    fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.),
+    fIVModel(G4CMPConfigManager::GetIVRateModel()) {
   for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
     for (G4int j=0; j<KVBINS; j++) {
       for (G4int k=0; k<KVBINS; k++) {
