@@ -25,6 +25,8 @@
 // 20170908  Remove "/10." rescaling of field when computing steps
 // 20170919  Use rate threshold interface to define alternate step lengths
 // 20180831  Fix compiler warning with PostStepDoIt() arguments
+// 20190906  Provide functions to externally set rate models, move process
+//		lookup functionality to G4CMP(Track)Utils.
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -62,26 +64,17 @@ G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
   G4CMPProcessUtils::LoadDataForTrack(aTrack);	// Common configuration
 
-  lukeRate = ivRate = nullptr;			// Discard previous versions
+  // Get rate model for Luke phonon emission from process
+  const G4CMPVProcess* lukeProc =
+    dynamic_cast<G4CMPVProcess*>(G4CMP::FindProcess(aTrack,
+						    "G4CMPLukeScattering"));
+  lukeRate = lukeProc ? lukeProc->GetRateModel() : nullptr;
 
-  // Pointers can't be null since track has at least this process!
-  const G4ProcessVector* pvec =
-    aTrack->GetDefinition()->GetProcessManager()->GetPostStepProcessVector();
-
-  if (verboseLevel>2)
-    G4cout << "TimeStepper scanning " << pvec->size() << " processes"
-	   << " for " << aTrack->GetDefinition()->GetParticleName() << G4endl;
-
-  for (G4int i=0; i<pvec->size(); i++) {
-    const G4CMPVProcess* cmpProc = dynamic_cast<G4CMPVProcess*>((*pvec)[i]);
-    if (!cmpProc) continue;
-
-    const G4String& pname = cmpProc->GetProcessName();
-    if (verboseLevel>2) G4cout << pname << G4endl;
-
-    if (pname == "G4CMPLukeScattering")      lukeRate = cmpProc->GetRateModel();
-    if (pname == "G4CMPInterValleyScattering") ivRate = cmpProc->GetRateModel();
-  }
+  // get rate model for intervalley scattering from process
+  const G4CMPVProcess* ivProc =
+    dynamic_cast<G4CMPVProcess*>(G4CMP::FindProcess(aTrack,
+					    "G4CMPInterValleyScattering"));
+  ivRate = ivProc ? ivProc->GetRateModel() : nullptr;
 
   if (verboseLevel>1) {
     G4cout << "TimeStepper Found" << (lukeRate?" lukeRate":"")

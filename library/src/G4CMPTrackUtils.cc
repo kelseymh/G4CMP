@@ -10,6 +10,7 @@
 // $Id$
 //
 // 20170621 M. Kelsey -- Non-templated utility functions
+// 20190906 M. Kelsey -- Add function to look up process for track
 
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -116,3 +117,15 @@ G4LatticePhysical* G4CMP::GetLattice(const G4Track& track) {
 
   return G4LatticeManager::GetLatticeManager()->GetLattice(trkvol);
 }
+
+
+// Look up process by name associated with track
+
+G4VProcess* G4CMP::FindProcess(const G4Track* track, const G4String& pname) {
+  return (track ? G4CMP::FindProcess(*track, pname) : 0);
+}
+
+G4VProcess* G4CMP::FindProcess(const G4Track& track, const G4String& pname) {
+  return G4CMP::FindProcess(track.GetDefinition(), pname);
+}
+

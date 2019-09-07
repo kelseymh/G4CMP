@@ -13,6 +13,7 @@
 // 20170602  Provide call-by-reference versions of track identity functions
 // 20170802  Provide scale factor argument to ChooseWeight functions
 // 20170928  Replace "polarization" with "mode"
+// 20190906  M. Kelsey -- Add function to look up process for track
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -23,7 +24,10 @@
 #include "G4ParticleDefinition.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4ProcessManager.hh"
+#include "G4ProcessVector.hh"
 #include "G4Track.hh"
+#include "G4VProcess.hh"
 #include "Randomize.hh"
 
 
@@ -199,4 +203,20 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      const G4ThreeVector& surfNorm) {
   G4ThreeVector vDir = lattice->MapKtoVDir(mode, waveVector);
   return vDir.dot(surfNorm) < 0.0;
+}
+
+
+// Search particle's processes for specified name
+
+G4VProcess*
+G4CMP::FindProcess(const G4ParticleDefinition* pd, const G4String& pname) {
+  G4ProcessVector* pvec = pd->GetProcessManager()->GetProcessList();
+  if (!pvec) return 0;
+
+  for (G4int i=0; i<pvec->size(); i++) {
+    G4VProcess* proc = (*pvec)[i];
+    if (proc && proc->GetProcessName() == pname) return proc;
+  }
+
+  return 0;			// No match found
 }
