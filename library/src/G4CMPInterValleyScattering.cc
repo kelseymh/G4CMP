@@ -23,6 +23,7 @@
 // 20170821  Use configuration flag to choose Edelweiss vs. physical rate
 // 20180831  Change G4CMPInterValleyScattering to use Lin. and Quad. models
 // 20190704  Add selection of rate model by name, and material specific
+// 20190906  Push selected rate model back to G4CMPTimeStepper for consistency
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -30,6 +31,7 @@
 #include "G4CMPInterValleyRate.hh"
 #include "G4CMPIVRateQuadratic.hh"
 #include "G4CMPIVRateLinear.hh"
+#include "G4CMPTimeStepper.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4LatticePhysical.hh"
@@ -60,24 +62,29 @@ G4CMPInterValleyScattering::IsApplicable(const G4ParticleDefinition& aPD) {
 
 // Select different rate models by string (globally or by material)
 
-void G4CMPInterValleyScattering::UseRateModel(const G4String& model) {
-  if (!model.empty() && model == modelName) return;	// Already in use
+void G4CMPInterValleyScattering::UseRateModel(G4String model) {
+  if (model.empty()) {			// No argument, initialize w/global
+    if (GetRateModel()) return;		// Do not change existing model
+    model = G4CMPConfigManager::GetIVRateModel();
+  }
 
-  if (model.empty()) {			// Fall back to global configuration
-    UseRateModel(G4CMPConfigManager::GetIVRateModel());
-    return;
+  model.toLower();
+  if (model == modelName) return;	// Requested model already in use
+
+  // Select from valid names; fall back to Quadratic if invalid name specified
+       if (model(0) == 'q') UseRateModel(new G4CMPIVRateQuadratic);
+  else if (model(0) == 'l') UseRateModel(new G4CMPIVRateLinear);
+  else if (model(0) == 'i') UseRateModel(new G4CMPInterValleyRate);
+  else {
+    G4cerr << GetProcessName() << " ERROR: Unrecognized rate model '"
+	   << model << "'" << G4endl;
+    if (!GetRateModel()) UseRateModel("Quadratic");
   }
 
   modelName = model;
 
-       if (model(0) == 'Q') UseRateModel(new G4CMPIVRateQuadratic);
-  else if (model(0) == 'L') UseRateModel(new G4CMPIVRateLinear);
-  else if (model(0) == 'I') UseRateModel(new G4CMPInterValleyRate);
-  else {
-    G4cerr << GetProcessName() << " ERROR: Unrecognized rate model " << model
-	   << G4endl;
-    UseRateModel("Quadratic");
-  }
+  // Ensure that TimeStepper process is given new model
+  PushModelToTimeStepper();
 }
 
 
@@ -127,4 +134,18 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   
   ClearNumberOfInteractionLengthLeft();    
   return &aParticleChange;
+}
+
+
+// Ensure the same rate model is used here and in G4CMPTimeStepper
+
+void G4CMPInterValleyScattering::PushModelToTimeStepper() {
+  if (verboseLevel>1)
+    G4cout << GetProcessName() << "::PushModelToTimeStepper" << G4endl;
+
+  G4CMPTimeStepper* tsProc =
+    dynamic_cast<G4CMPTimeStepper*>(G4CMP::FindProcess(GetCurrentTrack(),
+						       "G4CMPTimeStepper"));
+
+  if (tsProc) tsProc->UseIVRateModel(GetRateModel());
 }
