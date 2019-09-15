@@ -23,6 +23,7 @@
 // 20170821  Use configuration flag to choose Edelweiss vs. physical rate
 // 20180831  Change G4CMPInterValleyScattering to use Lin. and Quad. models
 // 20190704  Add selection of rate model by name, and material specific
+// 20190904  C. Stanford -- Add 50% momentum flip (see G4CMP-168)
 // 20190906  Push selected rate model back to G4CMPTimeStepper for consistency
 
 #include "G4CMPInterValleyScattering.hh"
@@ -125,10 +126,15 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   // picking a new valley at random if IV-scattering process was triggered
   valley = ChangeValley(valley);
   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
-  
+
   p = theLattice->MapK_valleyToP(valley, p); // p is p again
   RotateToGlobalDirection(p);
   
+  // There's a 50% chance that the charge jumped into the antivalley rather
+  // than the primary valley. If so, its momentum needs to be reversed to 
+  // preserve symmetry.
+  if (G4UniformRand()>0.5) p = -p;
+
   // Adjust track kinematics for new valley
   FillParticleChange(valley, p);
   
