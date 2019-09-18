@@ -247,6 +247,27 @@ void G4CMPMeshElectricField::Project2D(const G4double Point[3],
   case kPhi:	  Project[1] = pos.phi(); break;
   default: ;
   }
+
+  if (G4CMPConfigManager::GetVerboseLevel() > 2) {
+    // FIXME:  Cheap hack should be replaced by utility function
+    const char* xname = (xCoord==kXAxis    ? "kXAxis" :
+			 xCoord==kYAxis    ? "kYAxis" :
+			 xCoord==kZAxis    ? "kZAxis" :
+			 xCoord==kRho      ? "kRho" :
+			 xCoord==kRadial3D ? "kRadial3D" :
+			 xCoord==kPhi      ? "kPhi" : "UNKNOWN");
+
+    const char* yname = (yCoord==kXAxis    ? "kXAxis" :
+			 yCoord==kYAxis    ? "kYAxis" :
+			 yCoord==kZAxis    ? "kZAxis" :
+			 yCoord==kRho      ? "kRho" :
+			 yCoord==kRadial3D ? "kRadial3D" :
+			 yCoord==kPhi      ? "kPhi" : "UNKNOWN");
+
+    G4cout << "Project2D Point " << pos << " onto axes " << xname << " "
+	   << yname << " : (" << Project[0] << "," << Project[1] << ")"
+	   << G4endl;
+  }
 }
 
 void G4CMPMeshElectricField::Expand2Dat(const G4double Point[3],
