@@ -19,6 +19,7 @@
 // 20180924  TriLinearInterp should be a pointer, to break dependency.
 // 20190226  Provide access to TriLinearInterp object, and ctor assignment
 // 20190513  Provide support for 2D (e.g., axisymmetric) and 3D meshes.
+// 20190919  BUG FIX:  2D project functions need 'break' in switch statements.
 
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPBiLinearInterp.hh"
@@ -228,22 +229,22 @@ void G4CMPMeshElectricField::Project2D(const G4double Point[3],
   Project[0] = Project[1] = 0.;
   
   switch (xCoord) {
-  case kXAxis:    Project[0] = Point[0];
-  case kYAxis:    Project[0] = Point[1];
-  case kZAxis:    Project[0] = Point[2];
-  case kRho:      Project[0] = pos.rho();
-  case kRadial3D: Project[0] = pos.r();
-  case kPhi:	  Project[0] = pos.phi();
+  case kXAxis:    Project[0] = Point[0];  break;
+  case kYAxis:    Project[0] = Point[1];  break;
+  case kZAxis:    Project[0] = Point[2];  break;
+  case kRho:      Project[0] = pos.rho(); break;
+  case kRadial3D: Project[0] = pos.r();   break;
+  case kPhi:	  Project[0] = pos.phi(); break;
   default: ;
   }
   
   switch (yCoord) {
-  case kXAxis:    Project[1] = Point[0];
-  case kYAxis:    Project[1] = Point[1];
-  case kZAxis:    Project[1] = Point[2];
-  case kRho:      Project[1] = pos.rho();
-  case kRadial3D: Project[1] = pos.r();
-  case kPhi:	  Project[1] = pos.phi();
+  case kXAxis:    Project[1] = Point[0];  break;
+  case kYAxis:    Project[1] = Point[1];  break;
+  case kZAxis:    Project[1] = Point[2];  break;
+  case kRho:      Project[1] = pos.rho(); break;
+  case kRadial3D: Project[1] = pos.r();   break;
+  case kPhi:	  Project[1] = pos.phi(); break;
   default: ;
   }
 }
