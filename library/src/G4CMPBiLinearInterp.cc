@@ -226,12 +226,14 @@ G4CMPBiLinearInterp::GetGrad(const G4double pos[2], G4bool quiet) const {
   else if (TetraIdx != oldIdx || staleCache) {
     G4double ET[3][2];
     if (!BuildT3x2(ET)) cachedGrad.set(0.,0.,0.);	// Failed MatInv()
-    for (size_t i=0; i<2; ++i) {
-      cachedGrad[i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
-                      V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
-                      V[Tetrahedra[TetraIdx][2]]*ET[2][i];
+    else {
+      for (size_t i=0; i<2; ++i) {
+	cachedGrad[i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
+	                V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
+	                V[Tetrahedra[TetraIdx][2]]*ET[2][i];
+      }
+      cachedGrad[2] = 0.;
     }
-    cachedGrad[2] = 0.;
     staleCache = false;
   }
 
