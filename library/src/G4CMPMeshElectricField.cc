@@ -51,8 +51,7 @@ G4CMPMeshElectricField(const vector<array<G4double,3> >& xyz,
   if (xdim == kUndefined) {	// Assume true 3D Cartesian mesh
     BuildInterp(xyz, v, tetra);
   } else {			// Projected 2D mesh with specified coordinates
-    Interp = new G4CMPBiLinearInterp;
-    Interp->UseMesh(xyz, v, tetra);		// Will trim off third dimension
+    Interp = new G4CMPBiLinearInterp(xyz, v, tetra);
   }
 }
 
@@ -113,16 +112,16 @@ void G4CMPMeshElectricField::
 BuildInterp(const std::vector<std::array<G4double,3> >& xyz,
 	    const std::vector<G4double>& v,
 	    const std::vector<std::array<G4int,4> >& tetra) {
-  if (!Interp) Interp = new G4CMPTriLinearInterp;
-  Interp->UseMesh(xyz, v, tetra);
+  if (!Interp) Interp = new G4CMPTriLinearInterp(xyz, v, tetra);
+  else ((G4CMPTriLinearInterp*)Interp)->UseMesh(xyz, v, tetra);
 }
 
 void G4CMPMeshElectricField::
 BuildInterp(const std::vector<std::array<G4double,2> >& xy,
 	    const std::vector<G4double>& v,
 	    const std::vector<std::array<G4int,3> >& tetra) {
-  if (!Interp) Interp = new G4CMPBiLinearInterp;
-  Interp->UseMesh(xy, v, tetra);
+  if (!Interp) Interp = new G4CMPBiLinearInterp(xy, v, tetra);
+  else ((G4CMPBiLinearInterp*)Interp)->UseMesh(xy, v, tetra);
 }
 
 
@@ -183,8 +182,7 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName,
   }
  
   if (Interp) delete Interp;
-  Interp = new G4CMPTriLinearInterp;
-  ((G4CMPTriLinearInterp*)Interp)->UseMesh(X, V);
+  Interp = new G4CMPTriLinearInterp(X, V);
 }
 
 
@@ -221,6 +219,15 @@ G4double G4CMPMeshElectricField::GetPotential(const G4double Point[3]) const {
 
 // Convert between 3D and 2D coordinates for projected meshes
 
+namespace {
+  const char* AxisName(EAxis axis) {	// Convenience function for debugging
+    return (axis==kXAxis    ? "kXAxis"    : axis==kYAxis ? "kYAxis" :
+	    axis==kZAxis    ? "kZAxis"    : axis==kRho   ? "kRho" :
+	    axis==kRadial3D ? "kRadial3D" : axis==kPhi   ? "kPhi" :
+	    "UNKNOWN");
+  }
+}
+
 void G4CMPMeshElectricField::Project2D(const G4double Point[3],
 				       G4double Project[2]) const {
   static G4ThreeVector pos;		// Reusable buffer for convenience
@@ -249,24 +256,9 @@ void G4CMPMeshElectricField::Project2D(const G4double Point[3],
   }
 
   if (G4CMPConfigManager::GetVerboseLevel() > 2) {
-    // FIXME:  Cheap hack should be replaced by utility function
-    const char* xname = (xCoord==kXAxis    ? "kXAxis" :
-			 xCoord==kYAxis    ? "kYAxis" :
-			 xCoord==kZAxis    ? "kZAxis" :
-			 xCoord==kRho      ? "kRho" :
-			 xCoord==kRadial3D ? "kRadial3D" :
-			 xCoord==kPhi      ? "kPhi" : "UNKNOWN");
-
-    const char* yname = (yCoord==kXAxis    ? "kXAxis" :
-			 yCoord==kYAxis    ? "kYAxis" :
-			 yCoord==kZAxis    ? "kZAxis" :
-			 yCoord==kRho      ? "kRho" :
-			 yCoord==kRadial3D ? "kRadial3D" :
-			 yCoord==kPhi      ? "kPhi" : "UNKNOWN");
-
-    G4cout << "Project2D Point " << pos << " onto axes " << xname << " "
-	   << yname << " : (" << Project[0] << "," << Project[1] << ")"
-	   << G4endl;
+    G4cout << "Project2D Point " << pos << " onto axes " << AxisName(xCoord)
+	   << " " << AxisName(yCoord) << " : (" << Project[0] << ","
+	   << Project[1] << ")" << G4endl;
   }
 }
 
