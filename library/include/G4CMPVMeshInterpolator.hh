@@ -68,6 +68,7 @@ protected:		// Data members available to subclasses directly
 
   mutable G4int TetraIdx;		// Last tetrahedral index used
   mutable G4bool staleCache;		// Flag if cache must be discarded
+  mutable G4ThreeVector cachedGrad;
   G4int TetraStart;			// Start of tetrahedral searches
 
   G4String savePrefix;			// for use in debugging, SaveXxx()
