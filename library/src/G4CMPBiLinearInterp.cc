@@ -292,7 +292,7 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
 
     // Point is outside current tetrahedron; shift to nearest neighbor
     minBaryIdx = 0;
-    for (G4int i=1; i<4; ++i)
+    for (G4int i=1; i<3; ++i)
       if (bary[i] < bary[minBaryIdx]) minBaryIdx = i;
 
     TetraIdx = Neighbors[TetraIdx][minBaryIdx];
