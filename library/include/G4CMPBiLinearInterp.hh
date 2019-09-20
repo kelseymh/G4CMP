@@ -57,13 +57,9 @@ private:
   std::vector<point2d > X;
   std::vector<tetra2d> Tetrahedra;	// For 2D, these are triangles!
   std::vector<tetra2d> Neighbors;
-  mutable G4int TetraIdx;
-  mutable G4ThreeVector cachedGrad;
-  mutable G4bool staleCache;
-  G4int TetraStart;				// Start of tetrahedral searches
 
-  std::vector<tetra2d> Tetra01;	// Duplicate tetrahedra lists
-  std::vector<tetra2d> Tetra02;	// Sorted on vertex triplets
+  std::vector<tetra2d> Tetra01;		// Duplicate tetrahedra lists
+  std::vector<tetra2d> Tetra02;		// Sorted on vertex triplets
   std::vector<tetra2d> Tetra12;
 
   void FillNeighbors();		// Generate Neighbors table from tetrahedra

@@ -64,7 +64,6 @@ private:
   std::vector<tetra3d> Neighbors;
 
   mutable std::map<G4int,G4int> qhull2x;	// Used by QHull for meshing
-  mutable G4ThreeVector cachedGrad;
 
   // Lists of tetrahedra with shared vertices, for generating neighbors table
   std::vector<tetra3d> Tetra012;	// Duplicate tetrahedra lists

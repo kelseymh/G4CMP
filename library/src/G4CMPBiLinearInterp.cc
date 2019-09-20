@@ -226,12 +226,14 @@ G4CMPBiLinearInterp::GetGrad(const G4double pos[2], G4bool quiet) const {
   else if (TetraIdx != oldIdx || staleCache) {
     G4double ET[3][2];
     if (!BuildT3x2(ET)) cachedGrad.set(0.,0.,0.);	// Failed MatInv()
-    for (size_t i=0; i<2; ++i) {
-      cachedGrad[i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
-                      V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
-                      V[Tetrahedra[TetraIdx][2]]*ET[2][i];
+    else {
+      for (size_t i=0; i<2; ++i) {
+	cachedGrad[i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
+	                V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
+	                V[Tetrahedra[TetraIdx][2]]*ET[2][i];
+      }
+      cachedGrad[2] = 0.;
     }
-    cachedGrad[2] = 0.;
     staleCache = false;
   }
 
@@ -260,7 +262,7 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
       if (!quiet) {
 	G4cerr << "G4CMPBiLinearInterp::FindTetrahedron:"
 	       << " Cart2Bary() failed for pt = "
-	       << pt[0] << " " << pt[1] << " " << pt[2] << G4endl;
+	       << pt[0] << " " << pt[1] << G4endl;
       }
 
       TetraIdx = -1;
@@ -290,7 +292,7 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
 
     // Point is outside current tetrahedron; shift to nearest neighbor
     minBaryIdx = 0;
-    for (G4int i=1; i<4; ++i)
+    for (G4int i=1; i<3; ++i)
       if (bary[i] < bary[minBaryIdx]) minBaryIdx = i;
 
     TetraIdx = Neighbors[TetraIdx][minBaryIdx];
@@ -335,7 +337,7 @@ Cart2Bary(const G4double pt[2], G4double bary[3]) const {
     bary[k] = invT[k][0]*(pt[0] - X[Tetrahedra[TetraIdx][2]][0]) +
               invT[k][1]*(pt[1] - X[Tetrahedra[TetraIdx][2]][1]);
 
-  bary[2] = 1.0 - bary[0] - bary[1] - bary[2];
+  bary[2] = 1.0 - bary[0] - bary[1];
 
   return goodInv;
 }
@@ -371,11 +373,11 @@ G4bool G4CMPBiLinearInterp::BuildT3x2(G4double ET[3][2]) const {
 }
 
 G4double G4CMPBiLinearInterp::Det2(const G4double matrix[2][2]) const {
-  return(matrix[0][0]*matrix[1][1] - matrix[0][1]*matrix[1][0]);
+  return (matrix[0][0]*matrix[1][1] - matrix[0][1]*matrix[1][0]);
 }
 
 G4bool G4CMPBiLinearInterp::MatInv(const G4double matrix[2][2],
-				 G4double result[2][2]) const {
+				   G4double result[2][2]) const {
   G4double determ = Det2(matrix);
   if (!(determ == determ) || fabs(determ) < 1e-9) {
     G4cerr << "WARNING MatInv got determ " << determ << " zero result" << G4endl;
