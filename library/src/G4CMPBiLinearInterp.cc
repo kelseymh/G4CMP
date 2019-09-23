@@ -8,6 +8,7 @@
 // 20190404  Adapted from BiLinearInterp for use with 2D triangular mesh
 // 20190508  Move some 2D/3D common features to new base class
 // 20190630  Have MatInv() return error (false), catch up calling chain.
+// 20190923  Add constructor with neighbors table, use with Clone().
 
 #include "G4CMPBiLinearInterp.hh"
 #include <algorithm>
@@ -27,6 +28,11 @@ G4CMPBiLinearInterp::
 G4CMPBiLinearInterp(const vector<point2d>& xy, const vector<G4double>& v,
 		    const vector<tetra2d>& tetra)
   : G4CMPBiLinearInterp() { UseMesh(xy, v, tetra); }
+
+G4CMPBiLinearInterp::
+G4CMPBiLinearInterp(const vector<point2d>& xy, const vector<G4double>& v,
+		    const vector<tetra2d>& tetra, const vector<tetra2d>& nbors)
+  : G4CMPBiLinearInterp() { UseMesh(xy, v, tetra, nbors); }
 
 G4CMPBiLinearInterp::
 G4CMPBiLinearInterp(const vector<point3d>& xyz, const vector<G4double>& v,
@@ -52,6 +58,27 @@ void G4CMPBiLinearInterp::UseMesh(const vector<point2d>& xy,
   SaveTetra(savePrefix+"_tetra.dat");
 #endif
 }
+
+// Load new mesh object with pre-built list of neighbors
+
+void G4CMPBiLinearInterp::UseMesh(const vector<point2d>& xy,
+				  const vector<G4double>& v,
+				  const vector<tetra2d>& tetra,
+				  const vector<tetra2d>& nbors) {
+  staleCache = true;
+  X = xy;
+  V = v;
+  Tetrahedra = tetra;
+  Neighbors = nbors;
+  TetraIdx = -1;
+  TetraStart = FirstInteriorTetra();
+
+#ifdef G4CMPTLI_DEBUG
+  SavePoints(savePrefix+"_points.dat");
+  SaveTetra(savePrefix+"_tetra.dat");
+#endif
+}
+
 
 // Load new mesh object using external 3D tables, for client convenience
 

@@ -15,6 +15,7 @@
 // 20190404  Change "point" to "point3d" to make way for 2D interpolator.
 // 20190508  Move some 2D/3D common features to new base class
 // 20190630  Have MatInv() return error (false), catch up calling chain.
+// 20190923  Add constructor with neighbors table, use with Clone().
 
 #include "G4CMPTriLinearInterp.hh"
 #include "libqhullcpp/Qhull.h"
@@ -44,6 +45,10 @@ G4CMPTriLinearInterp(const vector<point3d>& xyz, const vector<G4double>& v,
 		     const vector<tetra3d>& tetra)
   : G4CMPTriLinearInterp() { UseMesh(xyz, v, tetra); }
 
+G4CMPTriLinearInterp::
+G4CMPTriLinearInterp(const vector<point3d>& xyz, const vector<G4double>& v,
+		     const vector<tetra3d>& tetra, const vector<tetra3d>& nbors)
+  : G4CMPTriLinearInterp() { UseMesh(xyz, v, tetra, nbors); }
 
 
 // Load new mesh object and possibly re-triangulate
@@ -71,6 +76,24 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point3d>& xyz,
   V = v;
   Tetrahedra = tetra;
   FillNeighbors();
+  TetraIdx = -1;
+  TetraStart = FirstInteriorTetra();
+
+#ifdef G4CMPTLI_DEBUG
+  SavePoints(savePrefix+"_points.dat");
+  SaveTetra(savePrefix+"_tetra.dat");
+#endif
+}
+
+void G4CMPTriLinearInterp::UseMesh(const vector<point3d>& xyz,
+				   const vector<G4double>& v,
+				   const vector<tetra3d>& tetra,
+				   const vector<tetra3d>& nbors) {
+  staleCache = true;
+  X = xyz;
+  V = v;
+  Tetrahedra = tetra;
+  Neighbors = nbors;
   TetraIdx = -1;
   TetraStart = FirstInteriorTetra();
 

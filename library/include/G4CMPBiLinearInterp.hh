@@ -8,6 +8,7 @@
 // 20190404  Adapted from TriLinearInterp for use with 2D triangular mesh
 // 20190508  Move some 2D/3D common features to new base class
 // 20190630  Have MatInv() return error (false), catch up calling chain.
+// 20190923  Add constructor with neighbors table, use with Clone().
 
 #ifndef G4CMPBiLinearInterp_h 
 #define G4CMPBiLinearInterp_h 
@@ -29,6 +30,11 @@ public:
 		      const std::vector<G4double>& v,
 		      const std::vector<tetra2d>& tetra);
 
+  G4CMPBiLinearInterp(const std::vector<point2d>& xy,
+		      const std::vector<G4double>& v,
+		      const std::vector<tetra2d>& tetra,
+		      const std::vector<tetra2d>& nbors);
+
   // Allow use of 3D inputs, which get collapsed to 2D internals
   G4CMPBiLinearInterp(const std::vector<point3d>& xyz,
 		      const std::vector<G4double>& v,
@@ -36,12 +42,16 @@ public:
 
   // Cloning function to allow making type-matched copies
   virtual G4CMPVMeshInterpolator* Clone() const {
-    return new G4CMPBiLinearInterp(X, V, Tetrahedra);
+    return new G4CMPBiLinearInterp(X, V, Tetrahedra, Neighbors);
   }
 
   // User initialization or re-initialization
   void UseMesh(const std::vector<point2d>& xy, const std::vector<G4double>& v,
 	       const std::vector<tetra2d>& tetra);
+
+  void UseMesh(const std::vector<point2d>& xy, const std::vector<G4double>& v,
+	       const std::vector<tetra2d>& tetra,
+	       const std::vector<tetra2d>& nbors);
 
   void UseMesh(const std::vector<point3d>& xyz, const std::vector<G4double>& v,
 	       const std::vector<tetra3d>& tetra);
