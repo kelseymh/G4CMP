@@ -19,6 +19,7 @@
 // 20180924  TriLinearInterp should be a pointer, to break dependency.
 // 20190226  Provide access to TriLinearInterp object, and ctor assignment
 // 20190513  Provide support for 2D (e.g., axisymmetric) and 3D meshes.
+// 20190919  BUG FIX:  2D project functions need 'break' in switch statements.
 
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPBiLinearInterp.hh"
@@ -50,8 +51,7 @@ G4CMPMeshElectricField(const vector<array<G4double,3> >& xyz,
   if (xdim == kUndefined) {	// Assume true 3D Cartesian mesh
     BuildInterp(xyz, v, tetra);
   } else {			// Projected 2D mesh with specified coordinates
-    Interp = new G4CMPBiLinearInterp;
-    Interp->UseMesh(xyz, v, tetra);		// Will trim off third dimension
+    Interp = new G4CMPBiLinearInterp(xyz, v, tetra);
   }
 }
 
@@ -112,16 +112,16 @@ void G4CMPMeshElectricField::
 BuildInterp(const std::vector<std::array<G4double,3> >& xyz,
 	    const std::vector<G4double>& v,
 	    const std::vector<std::array<G4int,4> >& tetra) {
-  if (!Interp) Interp = new G4CMPTriLinearInterp;
-  Interp->UseMesh(xyz, v, tetra);
+  if (!Interp) Interp = new G4CMPTriLinearInterp(xyz, v, tetra);
+  else ((G4CMPTriLinearInterp*)Interp)->UseMesh(xyz, v, tetra);
 }
 
 void G4CMPMeshElectricField::
 BuildInterp(const std::vector<std::array<G4double,2> >& xy,
 	    const std::vector<G4double>& v,
 	    const std::vector<std::array<G4int,3> >& tetra) {
-  if (!Interp) Interp = new G4CMPBiLinearInterp;
-  Interp->UseMesh(xy, v, tetra);
+  if (!Interp) Interp = new G4CMPBiLinearInterp(xy, v, tetra);
+  else ((G4CMPBiLinearInterp*)Interp)->UseMesh(xy, v, tetra);
 }
 
 
@@ -182,8 +182,7 @@ void G4CMPMeshElectricField::BuildInterp(const G4String& EPotFileName,
   }
  
   if (Interp) delete Interp;
-  Interp = new G4CMPTriLinearInterp;
-  ((G4CMPTriLinearInterp*)Interp)->UseMesh(X, V);
+  Interp = new G4CMPTriLinearInterp(X, V);
 }
 
 
@@ -220,6 +219,15 @@ G4double G4CMPMeshElectricField::GetPotential(const G4double Point[3]) const {
 
 // Convert between 3D and 2D coordinates for projected meshes
 
+namespace {
+  const char* AxisName(EAxis axis) {	// Convenience function for debugging
+    return (axis==kXAxis    ? "kXAxis"    : axis==kYAxis ? "kYAxis" :
+	    axis==kZAxis    ? "kZAxis"    : axis==kRho   ? "kRho" :
+	    axis==kRadial3D ? "kRadial3D" : axis==kPhi   ? "kPhi" :
+	    "UNKNOWN");
+  }
+}
+
 void G4CMPMeshElectricField::Project2D(const G4double Point[3],
 				       G4double Project[2]) const {
   static G4ThreeVector pos;		// Reusable buffer for convenience
@@ -228,23 +236,29 @@ void G4CMPMeshElectricField::Project2D(const G4double Point[3],
   Project[0] = Project[1] = 0.;
   
   switch (xCoord) {
-  case kXAxis:    Project[0] = Point[0];
-  case kYAxis:    Project[0] = Point[1];
-  case kZAxis:    Project[0] = Point[2];
-  case kRho:      Project[0] = pos.rho();
-  case kRadial3D: Project[0] = pos.r();
-  case kPhi:	  Project[0] = pos.phi();
+  case kXAxis:    Project[0] = Point[0];  break;
+  case kYAxis:    Project[0] = Point[1];  break;
+  case kZAxis:    Project[0] = Point[2];  break;
+  case kRho:      Project[0] = pos.rho(); break;
+  case kRadial3D: Project[0] = pos.r();   break;
+  case kPhi:	  Project[0] = pos.phi(); break;
   default: ;
   }
   
   switch (yCoord) {
-  case kXAxis:    Project[1] = Point[0];
-  case kYAxis:    Project[1] = Point[1];
-  case kZAxis:    Project[1] = Point[2];
-  case kRho:      Project[1] = pos.rho();
-  case kRadial3D: Project[1] = pos.r();
-  case kPhi:	  Project[1] = pos.phi();
+  case kXAxis:    Project[1] = Point[0];  break;
+  case kYAxis:    Project[1] = Point[1];  break;
+  case kZAxis:    Project[1] = Point[2];  break;
+  case kRho:      Project[1] = pos.rho(); break;
+  case kRadial3D: Project[1] = pos.r();   break;
+  case kPhi:	  Project[1] = pos.phi(); break;
   default: ;
+  }
+
+  if (G4CMPConfigManager::GetVerboseLevel() > 2) {
+    G4cout << "Project2D Point " << pos << " onto axes " << AxisName(xCoord)
+	   << " " << AxisName(yCoord) << " : (" << Project[0] << ","
+	   << Project[1] << ")" << G4endl;
   }
 }
 

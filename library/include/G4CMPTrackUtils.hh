@@ -12,6 +12,7 @@
 // 20161111 Initial commit - R. Agnese
 // 20170621 M. Kelsey -- Add non-templated utility functions, support both
 //		pointer and reference arguments
+// 20190906 M. Kelsey -- Add function to look up process for track
 
 #include "globals.hh"
 #include "G4ThreeVector.hh"
@@ -21,6 +22,7 @@ class G4CMPPhononTrackInfo;
 class G4CMPVTrackInfo;
 class G4LatticePhysical;
 class G4Track;
+class G4VProcess;
 
 
 namespace G4CMP {
@@ -49,6 +51,10 @@ namespace G4CMP {
 
   // Get physical lattice associated with track
   G4LatticePhysical* GetLattice(const G4Track& track);
+
+  // Look up process by name associated with track
+  G4VProcess* FindProcess(const G4Track* track, const G4String& pname);
+  G4VProcess* FindProcess(const G4Track& track, const G4String& pname);
 }
 
 #include "G4CMPTrackUtils.icc"

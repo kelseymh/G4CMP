@@ -19,6 +19,7 @@
 // 20170907  Make process non-forced; check only for boundary crossing
 // 20170928  Hide "output" usage behind verbosity check, as well as G4CMP_DEBUG
 // 20180827  Add debugging output with weight calculation.
+// 20190816  Add flag to track secondary phonons immediately (c.f. G4Cerenkov)
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -48,7 +49,7 @@
 
 G4CMPLukeScattering::G4CMPLukeScattering(G4VProcess* stepper)
   : G4CMPVDriftProcess("G4CMPLukeScattering", fLukeScattering),
-    stepLimiter(stepper) {
+    stepLimiter(stepper), secondariesFirst(true) {
   UseRateModel(new G4CMPLukeEmissionRate);
 
 #ifdef G4CMP_DEBUG
@@ -178,6 +179,10 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     aParticleChange.SetSecondaryWeightByProcess(true);
     aParticleChange.SetNumberOfSecondaries(1);
     aParticleChange.AddSecondary(phonon);
+
+    // If user wants to track phonons immediately, put track back on stack
+    if (secondariesFirst && aTrack.GetTrackStatus() == fAlive)
+      aParticleChange.ProposeTrackStatus(fSuspend);
   } else {
     aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
   }

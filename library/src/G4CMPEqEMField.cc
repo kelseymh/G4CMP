@@ -103,18 +103,11 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   theLattice->RotateToLattice(force);
 
   /* Since F is proportional to dp, it must transform like momentum.
-   * Transform should be done with field aligned to valley axis.  Applying
-   * inverse transform is equivalent to transforming into the antiparallel
-   * valley.
    */
   const G4RotationMatrix& vToN = theLattice->GetValley(valleyIndex);
   const G4RotationMatrix& nToV = theLattice->GetValleyInv(valleyIndex);
 
-  if (force.dot(theLattice->GetValleyAxis(valleyIndex)) >= 0.)
-    force = nToV*(theLattice->GetMInvTensor()*(vToN*force));
-  else
-    force = vToN*(theLattice->GetMInvTensor()*(nToV*force));
-
+  force = nToV*(theLattice->GetMInvTensor()*(vToN*force));
   force *= fMass * vinv * c_light;
   theLattice->RotateToSolid(force);
 
