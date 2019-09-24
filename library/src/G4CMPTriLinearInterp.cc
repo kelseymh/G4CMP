@@ -15,9 +15,11 @@
 // 20190404  Change "point" to "point3d" to make way for 2D interpolator.
 // 20190508  Move some 2D/3D common features to new base class
 // 20190630  Have MatInv() return error (false), catch up calling chain.
+// 20190921  Improve debugging messages, verbose error reports.
 // 20190923  Add constructor with neighbors table, use with Clone().
 
 #include "G4CMPTriLinearInterp.hh"
+#include "G4CMPConfigManager.hh"
 #include "libqhullcpp/Qhull.h"
 #include "libqhullcpp/QhullFacetList.h"
 #include "libqhullcpp/QhullFacetSet.h"
@@ -402,8 +404,10 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
   if (TetraIdx == -1) TetraIdx = TetraStart;
 
 #ifdef G4CMPTLI_DEBUG
-  G4cout << "FindTetrahedron pt " << pt[0] << " " << pt[1] << " " << pt[2]
-	 << "\n starting from TetraIdx " << TetraIdx << G4endl;
+  if (G4CMPConfigManager::GetVerboseLevel() > 1) {
+    G4cout << "FindTetrahedron pt " << pt[0] << " " << pt[1] << " " << pt[2]
+	   << "\n starting from TetraIdx " << TetraIdx << G4endl;
+  }
 #endif
 
   for (size_t count = 0; count < Tetrahedra.size(); ++count) {
@@ -412,6 +416,20 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
 	G4cerr << "G4CMPTriLinearInterp::FindTetrahedron:"
 	       << " Cart2Bary() failed for pt = "
 	       << pt[0] << " " << pt[1] << " " << pt[2] << G4endl;
+
+#ifdef G4CMPTLI_DEBUG
+	G4cerr << " in tetra " << TetraIdx
+	       << " neighbors " << Neighbors[TetraIdx] << ":"
+	       << "\n " << Tetrahedra[TetraIdx][0]
+	       << ": " << X[Tetrahedra[TetraIdx][0]]
+	       << "\n " << Tetrahedra[TetraIdx][1]
+	       << ": " << X[Tetrahedra[TetraIdx][1]]
+	       << "\n " << Tetrahedra[TetraIdx][2]
+	       << ": " << X[Tetrahedra[TetraIdx][2]]
+	       << "\n " << Tetrahedra[TetraIdx][3]
+	       << ": " << X[Tetrahedra[TetraIdx][3]]
+	       << G4endl;
+#endif
       }
 
       TetraIdx = -1;
@@ -419,10 +437,12 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
     }
 
 #ifdef G4CMPTLI_DEBUG
-    G4cout << " Loop " << count << ": Tetra " << TetraIdx << ": "
-	   << Tetrahedra[TetraIdx] << "\n bary " << bary[0] << " " << bary[1]
-	   << " " << bary[2] << " " << bary[3] << " norm " << BaryNorm(bary)
-	   << G4endl;
+    if (G4CMPConfigManager::GetVerboseLevel() > 2) {
+      G4cout << " Loop " << count << ": Tetra " << TetraIdx << ": "
+	     << Tetrahedra[TetraIdx] << "\n bary " << bary[0] << " " << bary[1]
+	     << " " << bary[2] << " " << bary[3] << " norm " << BaryNorm(bary)
+	     << G4endl;
+    }
 #endif
 
     // Point is inside current tetrahedron (TetraIdx)
@@ -434,8 +454,10 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
       bestBary = BaryNorm(bary);
       bestTet  = TetraIdx;
 #ifdef G4CMPTLI_DEBUG
-      G4cout << " New bestTet " << bestTet << " bestBary = " << bestBary
-	     << G4endl;
+      if (G4CMPConfigManager::GetVerboseLevel() > 2) {
+	G4cout << " New bestTet " << bestTet << " bestBary = " << bestBary
+	       << G4endl;
+      }
 #endif
     }
 
@@ -444,29 +466,52 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
     for (G4int i=1; i<4; ++i)
       if (bary[i] < bary[minBaryIdx]) minBaryIdx = i;
 
-    TetraIdx = Neighbors[TetraIdx][minBaryIdx];
-
-#ifdef G4CMPTLI_DEBUG
-    G4cout << " minBaryIdx " << minBaryIdx << ": moved to neighbor tetra "
-	   << TetraIdx << G4endl;
-#endif
+    G4int newTetraIdx = Neighbors[TetraIdx][minBaryIdx];
     if (TetraIdx == -1) {
       if (!quiet) {
 	G4cerr << "G4CMPTriLinearInterp::FindTetrahedron:"
 	       << " Point outside of hull!\n pt = "
 	       << pt[0] << " " << pt[1] << " " << pt[2] << G4endl;
+
+#ifdef G4CMPTLI_DEBUG
+	G4cerr << " from tetra " << TetraIdx
+	       << " neighbors " << Neighbors[TetraIdx] << ":"
+	       << "\n " << Tetrahedra[TetraIdx][0]
+	       << ": " << X[Tetrahedra[TetraIdx][0]]
+	       << "\n " << Tetrahedra[TetraIdx][1]
+	       << ": " << X[Tetrahedra[TetraIdx][1]]
+	       << "\n " << Tetrahedra[TetraIdx][2]
+	       << ": " << X[Tetrahedra[TetraIdx][2]]
+	       << "\n " << Tetrahedra[TetraIdx][3]
+	       << ": " << X[Tetrahedra[TetraIdx][3]]
+	       << G4endl;
+#endif
       }
+
+      TetraIdx = -1;		// Avoids continuing after this
       return;
     }
+
+    TetraIdx = newTetraIdx;
+
+#ifdef G4CMPTLI_DEBUG
+    if (G4CMPConfigManager::GetVerboseLevel() > 2) {
+      G4cout << " minBaryIdx " << minBaryIdx << ": moved to neighbor tetra "
+	     << TetraIdx << G4endl;
+    }
+#endif
+
   }	// for (size_t count=0 ...
 
   TetraIdx = bestTet;
   Cart2Bary(pt,bary);		// Don't need to check return; succeeded above
 
 #ifdef G4CMPTLI_DEBUG
-  G4cout << "Tetrahedron not found! Using bestTet " << bestTet << " bary "
-	 << bary[0] << " " << bary[1] << " " << bary[2] << " " << bary[3]
-         << G4endl;
+  if (G4CMPConfigManager::GetVerboseLevel() > 1) {
+    G4cout << "Tetrahedron not found! Using bestTet " << bestTet << " bary "
+	   << bary[0] << " " << bary[1] << " " << bary[2] << " " << bary[3]
+	   << G4endl;
+  }
 #endif
 }
 
@@ -535,10 +580,12 @@ G4bool G4CMPTriLinearInterp::MatInv(const G4double matrix[3][3],
   if (!(determ == determ) || fabs(determ) < 1e-9) {
     G4cerr << "WARNING MatInv got determ " << determ << " zero result" << G4endl;
 #ifdef G4CMPTLI_DEBUG
-    G4cerr << " "  << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2]
-	   <<"\n " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2]
-	   <<"\n " << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2]
-	   << G4endl;
+    if (G4CMPConfigManager::GetVerboseLevel() > 2) {
+      G4cerr << " "  <<matrix[0][0] << " " <<matrix[0][1] << " " <<matrix[0][2]
+	     <<"\n " <<matrix[1][0] << " " <<matrix[1][1] << " " <<matrix[1][2]
+	     <<"\n " <<matrix[2][0] << " " <<matrix[2][1] << " " <<matrix[2][2]
+	     << G4endl;
+    }
 #endif
 
     for (size_t i=0; i<3; i++) {
