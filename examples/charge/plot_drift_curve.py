@@ -24,13 +24,17 @@ files = glob.glob(''.join(('epos_*', suffix, '.txt')))
 
 # File names should all look like: "epos_###v-" + suffix + ".txt",
 # where ### can represent any number of digits, with or without a decimal
-field = [float(e)/(2.0*dx)  # convert to volt/cm
-         for e in [txt[5:txt.find(''.join(('v-', suffix, '.txt')))]
-         for txt in files]]
+###field = [float(e)/(2.0*dx)  # convert to volt/cm
+###         for e in [txt[5:txt.find(''.join(('v-', suffix, '.txt')))]
+###         for txt in files]]
 
+field = []
 dt_e = []
 dt_h = []
 for file in files:
+    vstr = file[5:file.find(''.join(('v-', suffix, '.txt')))]
+    volt = float(vstr)/(2.0*dx)
+
     temp_h = 0.0
     temp_e = 0.0
     count_e = 0
@@ -46,8 +50,11 @@ for file in files:
                 count_e += 1
                 temp_e += (float(line["Final Time [ns]"]) - 
                           float(line["Start Time [ns]"])) * 1e-9
-    dt_h.append(temp_h/float(count_h))
-    dt_e.append(temp_e/float(count_e))
+
+    if (count_e > 0) and (count_h > 0):
+        field.append(volt)
+        dt_h.append(temp_h/float(count_h))
+        dt_e.append(temp_e/float(count_e))
 
 speed_h = [dx/t/1e5 for t in dt_h]  # convert to km/s
 speed_e = [dx/t/1e5 for t in dt_e]  # convert to km/s
@@ -55,10 +62,12 @@ speed_e = [dx/t/1e5 for t in dt_e]  # convert to km/s
 plt.plot(field, speed_e, 'rs', label='G4CMP Electrons')
 plt.plot(field, speed_h, 'ro', label='G4CMP Holes')
 plt.legend(loc='upper left', fancybox=True, shadow=True)
+plt.xscale("log")
+plt.yscale("log")
 plt.xlabel("Electric Field [V/cm]")
 plt.ylabel("Drift Speed [km/s]")
 #plt.ylim([5, 45])
-plt.title("Charge Drift Speeds in Germanium")
-plt.savefig(''.join(('Charge_Drift_Speed_', suffix, '.png')))
+plt.title("Charge Drift Speeds in Silicon")
+plt.savefig(''.join(('Charge_Drift_Speed_', suffix, '_log.png')))
 
 exit(0)

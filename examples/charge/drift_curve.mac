@@ -4,6 +4,10 @@
 
 /control/getEnv G4CMP_HIT_SUFFIX
 
+# Suppress phonon tracking to speed up simulation; same charge kinematics
+/g4cmp/sampleLuke 0.
+/g4cmp/producePhonons 0.
+
 /g4cmp/voltage 0.01 volt
 /g4cmp/HitsFile epos_0.01v-{G4CMP_HIT_SUFFIX}.txt
 /run/initialize
