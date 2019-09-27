@@ -110,12 +110,12 @@ void ChargeDetectorConstruction::DefineMaterials() {
   G4NistManager* nistManager = G4NistManager::Instance();
 
   liquidHelium = nistManager->FindOrBuildMaterial("G4_AIR"); //FIXME
-  germanium = nistManager->FindOrBuildMaterial("G4_Ge");
+  germanium = nistManager->FindOrBuildMaterial("G4_Si");
   aluminum = nistManager->FindOrBuildMaterial("G4_Al");
   tungsten = nistManager->FindOrBuildMaterial("G4_W");
 
   // Attach lattice information for germanium
-  latManager->LoadLattice(germanium, "Ge");
+  latManager->LoadLattice(germanium, "Si");
 }
 
 void ChargeDetectorConstruction::SetupGeometry()
