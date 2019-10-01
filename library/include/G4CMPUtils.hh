@@ -13,6 +13,7 @@
 // 20170602  Provide call-by-reference versions of track identity functions
 // 20170802  Provide scale factor argument to ChooseWeight functions
 // 20170928  Replace "polarization" with "mode"
+// 20190906  Add function to get process associated with particle
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -25,6 +26,7 @@ class G4LatticePhysical;
 class G4ParticleDefinition;
 class G4Step;
 class G4Track;
+class G4VProcess;
 
 
 namespace G4CMP {
@@ -76,6 +78,9 @@ namespace G4CMP {
   G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm);
+
+  // Search particle's processes for specified name
+  G4VProcess* FindProcess(const G4ParticleDefinition* pd, const G4String& pname);
 }
 
 #endif	/* G4CMPUtils_hh */

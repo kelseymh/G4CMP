@@ -14,6 +14,7 @@
 // 20190404  Change "point" to "point3d" to make way for 2D interpolator.
 // 20190508  Move some 2D/3D common features to new base class
 // 20190630  Have MatInv() return error (false), catch up calling chain.
+// 20190923  Add constructor with neighbors table, use with Clone().
 
 #ifndef G4CMPTriLinearInterp_h 
 #define G4CMPTriLinearInterp_h 
@@ -39,17 +40,25 @@ public:
 		       const std::vector<G4double>& v,
 		       const std::vector<tetra3d>& tetra);
 
+  G4CMPTriLinearInterp(const std::vector<point3d>& xyz,
+		       const std::vector<G4double>& v,
+		       const std::vector<tetra3d>& tetra,
+		       const std::vector<tetra3d>& nbors);
+
   // Cloning function to allow making type-matched copies
   virtual G4CMPVMeshInterpolator* Clone() const {
-    return new G4CMPTriLinearInterp(X, V, Tetrahedra);
+    return new G4CMPTriLinearInterp(X, V, Tetrahedra, Neighbors);
   }
 
   // User initialization or re-initialization
   void UseMesh(const std::vector<point3d>& xyz, const std::vector<G4double>& v);
 
-  void UseMesh(const std::vector<point3d>& xyz,
-	       const std::vector<G4double>& v,
+  void UseMesh(const std::vector<point3d>& xyz, const std::vector<G4double>& v,
 	       const std::vector<tetra3d>& tetra);
+
+  void UseMesh(const std::vector<point3d>& xyz, const std::vector<G4double>& v,
+	       const std::vector<tetra3d>& tetra,
+	       const std::vector<tetra3d>& nbors);
 
   // Evaluate mesh at arbitrary location, optionally suppressing errors
   G4double GetValue(const G4double pos[], G4bool quiet=false) const;
@@ -64,7 +73,6 @@ private:
   std::vector<tetra3d> Neighbors;
 
   mutable std::map<G4int,G4int> qhull2x;	// Used by QHull for meshing
-  mutable G4ThreeVector cachedGrad;
 
   // Lists of tetrahedra with shared vertices, for generating neighbors table
   std::vector<tetra3d> Tetra012;	// Duplicate tetrahedra lists

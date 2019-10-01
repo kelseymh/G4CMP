@@ -11,6 +11,7 @@
 // 20150112  Drop redundant IsApplicable (identical to base version)
 // 20170905  Cache Luke and IV rate models in local LoadDataFromTrack()
 // 20170908  Drop "time step" functions, use rate models as estimators
+// 20190906  Provide functions to externally set rate models
 
 #ifndef G4CMPTimeStepper_h
 #define G4CMPTimeStepper_h 1
@@ -40,6 +41,10 @@ public:
   virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
 					  const G4Step& aStep);
 
+  // Allow external process to supply rate model
+  void UseLukeRateModel(const G4CMPVScatteringRate* aRate) { lukeRate = aRate; }
+  void UseIVRateModel(const G4CMPVScatteringRate* aRate)   { ivRate = aRate; }
+
 protected:  
   virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*);
 
@@ -51,7 +56,9 @@ protected:
 
   // Get scattering rates for other charge-carrier processes
   void ReportRates(const G4Track& aTrack);
-  const G4CMPVScatteringRate* lukeRate;		// Rate models for current track
+
+  // Pointers may be changed from Use functions
+  const G4CMPVScatteringRate* lukeRate;
   const G4CMPVScatteringRate* ivRate;
 
 private:
