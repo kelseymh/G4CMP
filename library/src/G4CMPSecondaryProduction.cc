@@ -13,12 +13,14 @@
 //
 // 20150306  Michael Kelsey
 // 20160825  Replace implementation with use of G4CMPEnergyPartition
+// 20191007  All normal G4 tracks should be used, not just charged.
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPProcessSubType.hh"
+#include "G4CMPUtils.hh"
 #include "G4IonisParamMat.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
@@ -55,9 +57,8 @@ G4CMPSecondaryProduction::~G4CMPSecondaryProduction() {
 // Applies to all charged, non-resonance particles except the drift charges
 
 G4bool G4CMPSecondaryProduction::IsApplicable(const G4ParticleDefinition& pd) {
-  return (pd.GetPDGCharge() != 0 && !pd.IsShortLived() &&
-	  &pd != G4CMPDriftElectron::Definition() &&
-	  &pd != G4CMPDriftHole::Definition());
+  return (!pd.IsShortLived() && !G4CMP::IsPhonon(pd) &&
+	  !G4CMP::IsChargeCarrier(pd) );
 }
 
 
