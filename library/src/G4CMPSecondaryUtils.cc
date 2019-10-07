@@ -43,8 +43,10 @@ G4Track* G4CMP::CreateSecondary(const G4Track& track,
 
   if (G4CMP::IsChargeCarrier(pd)) {
     const G4LatticePhysical* lat = G4CMP::GetLattice(track);
+    G4int valley = G4CMP::IsElectron(pd) ? ChooseValley(lat) : -1;
+
     return CreateChargeCarrier(track.GetTouchable(), G4int(pd->GetPDGCharge()/eplus),
-                               ChooseValley(lat), energy, track.GetGlobalTime(),
+                               valley, energy, track.GetGlobalTime(),
                                waveVec, track.GetPosition());
   }
 
@@ -173,6 +175,12 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
 
   // Store wavevector in auxiliary info for track
   G4CMP::AttachTrackInfo(sec, valley);
+
+  // Temporary warning about hole valleys
+  if (valley >= 0 && G4CMP::IsHole(theCarrier)) {
+    G4Exception("G4CMP::CreateChargeCarrier", "Secondary010", JustWarning,
+		"Hole has been assigned a valley index.");
+  }
 
   return sec;
 }
