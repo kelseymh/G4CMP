@@ -103,6 +103,8 @@ void G4CMPSecondaryProduction::AddSecondaries(const G4Step& stepData) {
   G4double eTotal = stepData.GetTotalEnergyDeposit();
   G4double eNIEL  = stepData.GetNonIonizingEnergyDeposit();
 
+  if (eTotal <= 0. && eNIEL <= 0.) return;	// Avoid unncessary work
+
   if (verboseLevel) {
     G4cout << " AddSecondaries " << eTotal/eV << " eV"
 	   << " (" << eNIEL << " NIEL)" << G4endl;
