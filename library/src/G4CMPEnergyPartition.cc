@@ -30,6 +30,7 @@
 // 20180831  Fix compiler warnings when comparing nParticlesMinimum
 // 20190711  Use selectable NIEL partition function, via ConfigManager.
 // 20190714  Convert PDGcode to Z and A (in amu) for use with NIEL function.
+// 20191009  Produce charge pairs below pair-energy, down to bandgap.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -246,11 +247,15 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   if (verboseLevel)
     G4cout << " GenerateCharges " << energy/MeV << " MeV" << G4endl;
 
+  G4double eBand = theLattice->GetBandGapEnergy();
   G4double ePair = theLattice->GetPairProductionEnergy();
   G4double eMeas = MeasuredChargeEnergy(energy);	// Applies Fano factor
 
   if (eMeas > 0) {
     nPairs = std::floor(eMeas / ePair);   // Average number of e/h pairs
+
+    // Below pair energy, can still get single charge from bandgap excitation
+    if ((eMeas-nPairs*ePair) > eBand) nPairs++;
   } else {
     eMeas = 0.;
     nPairs = 0; // This prevents nPairs from blowing up when negative
@@ -287,6 +292,12 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
 
       chargeEnergyLeft -= ePair;
     }	// while (chargeEnergyLeft
+
+    if (chargeEnergyLeft > 1.01*eBand) {  // Final charge pair from bandgap
+      AddChargePair(1.01*eBand);	   // Ensure non-zero visible energy
+      nCharges++;
+      chargeEnergyLeft -= 1.01*eBand;
+    }
 
     if (verboseLevel>2)
       G4cout << " generated " << nCharges << " e-h pairs" << G4endl;
