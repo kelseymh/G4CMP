@@ -247,7 +247,7 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   if (verboseLevel)
     G4cout << " GenerateCharges " << energy/MeV << " MeV" << G4endl;
 
-  G4double eBand = theLattice->GetBandGapEnergy();
+  G4double eBand = 1.01*theLattice->GetBandGapEnergy(); // Force visible energy
   G4double ePair = theLattice->GetPairProductionEnergy();
   G4double eMeas = MeasuredChargeEnergy(energy);	// Applies Fano factor
 
@@ -293,10 +293,10 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
       chargeEnergyLeft -= ePair;
     }	// while (chargeEnergyLeft
 
-    if (chargeEnergyLeft > 1.01*eBand) {  // Final charge pair from bandgap
-      AddChargePair(1.01*eBand);	   // Ensure non-zero visible energy
+    if (chargeEnergyLeft > eBand) {  // Final charge pair from bandgap
+      AddChargePair(eBand);
       nCharges++;
-      chargeEnergyLeft -= 1.01*eBand;
+      chargeEnergyLeft -= eBand;
     }
 
     if (verboseLevel>2)
