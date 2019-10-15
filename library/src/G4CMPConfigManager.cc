@@ -22,6 +22,7 @@
 // 20170908  G4CMP-118:  Use Edelweiss IV rate by default
 // 20180801  G4CMP-143:  Change IV rate from bool to str, Edelweiss->Quadratic
 // 20190711  G4CMP-158:  Add functions to select NIEL yield functions
+// 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -54,7 +55,6 @@ G4CMPConfigManager::G4CMPConfigManager()
     genPhonons(getenv("G4CMP_MAKE_PHONONS")?strtod(getenv("G4CMP_MAKE_PHONONS"),0):1.),
     genCharges(getenv("G4CMP_MAKE_CHARGES")?strtod(getenv("G4CMP_MAKE_CHARGES"),0):1.),
     lukeSample(getenv("G4CMP_LUKE_SAMPLE")?strtod(getenv("G4CMP_LUKE_SAMPLE"),0):1.),
-    downSample(getenv("G4CMP_DOWN_SAMPLE")?strtod(getenv("G4CMP_DOWN_SAMPLE"),0):1.),
     EminPhonons(getenv("G4CMP_EMIN_PHONONS")?strtod(getenv("G4CMP_EMIN_PHONONS"),0)*eV:0.),
     EminCharges(getenv("G4CMP_EMIN_CHARGES")?strtod(getenv("G4CMP_EMIN_CHARGES"),0)*eV:0.),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),

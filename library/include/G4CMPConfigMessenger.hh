@@ -30,6 +30,7 @@
 // 20170830  Add command to set downsampling energy scale
 // 20170830  Add command to set flag for producing e/h "cloud"
 // 20190711  Add command to select non-ionizing energy loss function
+// 20191014  Drop command for anharmonic decay sampling.
 
 #include "G4UImessenger.hh"
 
@@ -63,7 +64,6 @@ private:
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;
   G4UIcmdWithADouble* lukePhononCmd;
-  G4UIcmdWithADouble* downconvCmd;
   G4UIcmdWithAString* dirCmd;
   G4UIcmdWithAString* ivRateModelCmd;
   G4UIcmdWithAString* nielPartitionCmd;
