@@ -63,7 +63,6 @@ developers should check the source code in
 | G4CMP\_MAKE\_PHONONS [R]  | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
 | G4CMP\_MAKE\_CHARGES [R]  | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
 | G4CMP\_LUKE\_SAMPLE [R]   | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
-| G4CMP\_DOWN\_SAMPLE [R]   | /g4cmp/downconvertPhonons [R] | Fraction of natural phonon downconversions |
 | G4CMP\_SAMPLE\_ENERGY [E] | /g4cmp/samplingEnergy [E] eV  | Energy above which to downsample |
 | G4CMP\_EMIN\_PHONONS [E]  | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
@@ -112,9 +111,8 @@ non-ionizing energy loss (NIEL) on the track.
 Secondary phonons may be produced either by downconversion of higher energy
 phonons, or by emission of Luke-Neganov phonons from charge carriers.
 Generating seconary phonons can significantly slow down the simulation, so
-each of these processes has analogous environment variables,
-`$G4CMP_LUKE_SAMPLE` and `$G4CMP_DOWN_SAMPLE`, respectively, defined
-with rates (R) as above.
+the `LukeScattering` process has an analogous environment variable,
+`$G4CMP_LUKE_SAMPLE`, defined with rate (R) as above.
 
 For simulations which generate primary phonons and charge carriers from
 Geant4 energy deposition (using `G4CMPEnergyPartition`), the above

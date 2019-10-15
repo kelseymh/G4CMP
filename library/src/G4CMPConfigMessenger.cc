@@ -25,6 +25,7 @@
 // 20170830  Add command for downsampling energy scale parameter
 // 20170830  Add command to set flag for producing e/h "cloud"
 // 20190711  Add command to select non-ionizing energy loss function
+// 20191014  Drop command for anharmonic decay sampling.
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -42,7 +43,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 		  "User configuration for G4CMP phonon/charge carrier library"),
     theManager(mgr), verboseCmd(0), ehBounceCmd(0), pBounceCmd(0), clearCmd(0),
     minEPhononCmd(0), minEChargeCmd(0), minstepCmd(0), makePhononCmd(0),
-    makeChargeCmd(0), lukePhononCmd(0), downconvCmd(0),
+    makeChargeCmd(0), lukePhononCmd(0),
     dirCmd(0), ivRateModelCmd(0), kvmapCmd(0), fanoStatsCmd(0), ehCloudCmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
@@ -77,9 +78,6 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   lukePhononCmd = CreateCommand<G4UIcmdWithADouble>("sampleLuke",
 		    "Set rate of Luke actual phonon production");
-
-  downconvCmd = CreateCommand<G4UIcmdWithADouble>("downconvertPhonons",
-		  "Set scale factor for rate of phonon downconversion process");
 
   minEPhononCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("minEPhonons",
           "Minimum energy for creating or tracking phonons");
@@ -132,7 +130,6 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete makePhononCmd; makePhononCmd=0;
   delete makeChargeCmd; makeChargeCmd=0;
   delete lukePhononCmd; lukePhononCmd=0;
-  delete downconvCmd; downconvCmd=0;
   delete dirCmd; dirCmd=0;
   delete kvmapCmd; kvmapCmd=0;
   delete fanoStatsCmd; fanoStatsCmd=0;
@@ -150,7 +147,6 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == makePhononCmd) theManager->SetGenPhonons(StoD(value));
   if (cmd == makeChargeCmd) theManager->SetGenCharges(StoD(value));
   if (cmd == lukePhononCmd) theManager->SetLukeSampling(StoD(value));
-  if (cmd == downconvCmd) theManager->SetDownconversionSampling(StoD(value));
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
   if (cmd == dirCmd) theManager->SetLatticeDir(value);

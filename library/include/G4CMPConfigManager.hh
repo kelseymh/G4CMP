@@ -31,6 +31,7 @@
 // 20170830  Add flag to create e/h pairs in "cloud" surround location
 // 20180801  Change IVEdelweiss flag to string IVRateModel.
 // 20190711  G4CMP-158:  Add functions to select NIEL yield functions
+// 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 
 #include "globals.hh"
 
@@ -62,7 +63,6 @@ public:
   static G4double GetGenPhonons()        { return Instance()->genPhonons; }
   static G4double GetGenCharges()        { return Instance()->genCharges; }
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
-  static G4double GetDownconversionSampling() { return Instance()->downSample; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel()	 { return Instance()->IVRateModel; }
 
@@ -80,7 +80,6 @@ public:
   static void SetGenPhonons(G4double value) { Instance()->genPhonons = value; }
   static void SetGenCharges(G4double value) { Instance()->genCharges = value; }
   static void SetLukeSampling(G4double value) { Instance()->lukeSample = value; }
-  static void SetDownconversionSampling(G4double value) { Instance()->downSample = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
   static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
@@ -121,7 +120,6 @@ private:
   G4double genPhonons;	// Rate to create primary phonons ($G4CMP_MAKE_PHONONS)
   G4double genCharges;	// Rate to create primary e/h pairs ($G4CMP_MAKE_CHARGES)
   G4double lukeSample;  // Rate to create Luke phonons ($G4CMP_LUKE_SAMPLE)
-  G4double downSample;  // Rate to apply downconversion ($G4CMP_DOWN_SAMPLE)
   G4double EminPhonons;	// Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	// Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
   G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
