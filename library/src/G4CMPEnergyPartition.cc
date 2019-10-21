@@ -31,6 +31,7 @@
 // 20190711  Use selectable NIEL partition function, via ConfigManager.
 // 20190714  Convert PDGcode to Z and A (in amu) for use with NIEL function.
 // 20191009  Produce charge pairs below pair-energy, down to bandgap.
+// 20191017  Fix PDGcode usage for nuclei to look up in G4IonTable.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -43,9 +44,11 @@
 #include "G4VNIELPartition.hh"
 #include "G4DynamicParticle.hh"
 #include "G4Event.hh"
+#include "G4IonTable.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
+#include "G4Neutron.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
 #include "G4PhononPolarization.hh"
@@ -149,17 +152,23 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
   // User specified phonon energy directly; assume it is correct
   if (eNIEL > 0.) DoPartition(energy-eNIEL, eNIEL);
   else {
-    if (PDGcode == 2112 || PDGcode > 10000) {		// Neutron or nucleus
-      // Convert input PDG code to Z and A (in amu, not nucleon count)
-      G4ParticleDefinition* proj =
-	G4ParticleTable::GetParticleTable()->FindParticle(PDGcode);
-      G4double Z=proj->GetAtomicNumber(), A=proj->GetPDGMass()/amu;
+    G4ParticleDefinition* proj = 0;	// To get nuclear recoil info
+
+    if (PDGcode == 2112)		// Neutron; treat as nuclear particle
+      proj = G4Neutron::Definition();
+    else if (PDGcode > 1000000000)	// Geant4 native nucleus encoding
+      proj = G4IonTable::GetIonTable()->GetIon(PDGcode);
+    else if (PDGcode > 10000)		// Nucleus pseudo-code, AAAZZZ
+      proj = G4IonTable::GetIonTable()->GetIon(PDGcode%1000, PDGcode/1000);
+
+    if (proj) {
+      G4double Z=proj->GetAtomicNumber(), A=proj->GetPDGMass()/amu_c2;
       
       if (verboseLevel>1) {
         G4cout << " Nuclear Recoil: type " << PDGcode << " Z " << Z
 	       << " A " << A << G4endl;
       }
-
+      
       NuclearRecoil(energy, Z, A);
     } else {
       Ionization(energy);

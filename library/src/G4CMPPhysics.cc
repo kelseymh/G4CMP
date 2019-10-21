@@ -12,6 +12,7 @@
 // 20161219  M. Kelsey -- Use particle table iterator directly
 // 20170817  M. Kelsey -- Get verbosity from configuration
 // 20170822  M. Kelsey -- Rename EnergyLimiter to TrackLimiter
+// 20191017  M. Kelsey -- Add GenericIon to support energy partitioner
 
 #include "G4CMPPhysics.hh"
 #include "G4CMPConfigManager.hh"
@@ -25,6 +26,7 @@
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPTrackLimiter.hh"
+#include "G4GenericIon.hh"
 #include "G4ParticleTable.hh"
 #include "G4PhononDownconversion.hh"
 #include "G4PhononLong.hh"
@@ -49,6 +51,7 @@ void G4CMPPhysics::ConstructParticle() {
   G4PhononLong::Definition();
   G4PhononTransFast::Definition();
   G4PhononTransSlow::Definition();
+  G4GenericIon::Definition();
 }
 
 // Add physics processes to appropriate particles
