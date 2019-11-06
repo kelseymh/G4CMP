@@ -41,7 +41,11 @@ protected:
 private:
   G4String modelName;		// Last chosen rate model, to avoid memory churn
 
-  void PushModelToTimeStepper();	// Ensure model is used for stepping
+  // Ensure that current rate model is used for step-limiting
+  void PushModelToTimeStepper();
+
+  // Ensure that momentum is aligned with electric field
+  void ApplyMomentumFlip(G4ThreeVector& pdir) const;
 
 private:
   //hide assignment operator as private

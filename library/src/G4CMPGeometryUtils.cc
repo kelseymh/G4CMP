@@ -14,6 +14,7 @@
 // 20170913  Add utility to get electric field at (global) position
 // 20170925  Add utility to create touchable at (global) position
 // 20190226  Use local instance of G4Navigator to avoid corrupting tracking
+// 20191106  G4Field takes global position, not local, as input
 
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -204,7 +205,6 @@ G4ThreeVector G4CMP::GetFieldAtPosition(const G4VTouchable* touch,
 
   if (!fMan || !fMan->DoesFieldExist()) return origin;
 
-  RotateToLocalPosition(touch, pos);
   G4double position[4] = { pos[0], pos[1], pos[2], 0. };
 
   G4double fieldVal[6];

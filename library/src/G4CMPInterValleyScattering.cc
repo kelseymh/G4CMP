@@ -25,20 +25,25 @@
 // 20190704  Add selection of rate model by name, and material specific
 // 20190904  C. Stanford -- Add 50% momentum flip (see G4CMP-168)
 // 20190906  Push selected rate model back to G4CMPTimeStepper for consistency
+// 20191106  Replace momentum flip with alignment to electric field
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPInterValleyRate.hh"
 #include "G4CMPIVRateQuadratic.hh"
 #include "G4CMPIVRateLinear.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4DynamicParticle.hh"
 #include "G4LatticePhysical.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4ThreeVector.hh"
+#include "G4Track.hh"
 #include "G4VParticleChange.hh"
 #include <math.h>
 
@@ -129,17 +134,37 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
   p = theLattice->MapK_valleyToP(valley, p); // p is p again
   RotateToGlobalDirection(p);
-  
-  // There's a 50% chance that the charge jumped into the antivalley rather
-  // than the primary valley. If so, its momentum needs to be reversed to 
-  // preserve symmetry.
-  if (G4UniformRand()>0.5) p = -p;
+
+  // Chosen valley may be in direction opposite local electric field.  If
+  // so, momentum direction needs to be flipped to preserve alignment.
+  ApplyMomentumFlip(p);
 
   // Adjust track kinematics for new valley
   FillParticleChange(valley, p);
   
   ClearNumberOfInteractionLengthLeft();    
   return &aParticleChange;
+}
+
+
+// Compare momentum diretion with field vector, flip if necessary
+
+void 
+G4CMPInterValleyScattering::ApplyMomentumFlip(G4ThreeVector& pdir) const {
+  // Get electric field associated with current volume, if any
+  G4ThreeVector fieldVector = G4CMP::GetFieldAtPosition(*GetCurrentTrack());
+
+  if (verboseLevel > 1) {
+    G4cout << "IV global position " << GetCurrentTrack()->GetPosition()
+	   << "\n field direction " << fieldVector.unit()
+	   << " vs. momentum " << pdir.unit() << G4endl;
+  }
+
+  // Check if momentum is aligned along field force direction
+  G4double charge = GetCurrentTrack()->GetDynamicParticle()->GetCharge()/eplus;
+  G4double align = pdir.dot(fieldVector) * charge;
+
+  if (align < 0.) pdir = -pdir;
 }
 
 

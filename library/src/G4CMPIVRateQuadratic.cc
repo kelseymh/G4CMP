@@ -11,10 +11,10 @@
 //
 // 20170815  Drop call to LoadDataForTrack(); now handled in process.
 // 20181001  Use systematic names for IV rate parameters
+// 20191106  Replace field management stuff with GetFieldAtPosition().
 
 #include "G4CMPIVRateQuadratic.hh"
-#include "G4Field.hh"
-#include "G4FieldManager.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
 #include "G4RotationMatrix.hh"
@@ -25,29 +25,16 @@
 #include <math.h>
 #include <iostream>
 
+
 // Scattering rate is computed from electric field
 
 G4double G4CMPIVRateQuadratic::Rate(const G4Track& aTrack) const {
   // Get electric field associated with current volume, if any
-  G4FieldManager* fMan =
-    aTrack.GetVolume()->GetLogicalVolume()->GetFieldManager();
-  
-  // If there is no field, there is no IV scattering... but then there
-  // is no e-h transport either...
-  if (!fMan || !fMan->DoesFieldExist()) return 0.;
-
-  G4double posVec[4] = { 4*0. };
-  GetLocalPosition(aTrack, posVec);
-
-  const G4Field* field = fMan->GetDetectorField();
-  G4double fieldValue[6];
-  field->GetFieldValue(posVec,fieldValue);
-
-  G4ThreeVector fieldVector(fieldValue[3], fieldValue[4], fieldValue[5]);
+  G4ThreeVector fieldVector = G4CMP::GetFieldAtPosition(aTrack);
 
   if (verboseLevel > 1) {
-    G4cout << "IV local position (" << posVec[0] << "," << posVec[1] << ","
-	   << posVec[2] << ")\n field " << fieldVector/volt*cm << " V/cm"
+    G4cout << "IV global position " << aTrack.GetPosition()
+	   << "\n field " << fieldVector/volt*cm << " V/cm"
 	   << "\n magnitude " << fieldVector.mag()/volt*cm << " V/cm toward "
 	   << fieldVector.cosTheta() << " z" << G4endl;
   }
@@ -59,7 +46,7 @@ G4double G4CMPIVRateQuadratic::Rate(const G4Track& aTrack) const {
   fieldVector *= GetValley(aTrack);
   fieldVector *= theLattice->GetSqrtInvTensor();
   fieldVector /= volt/m;			// Strip units for MFP below
-
+  
   if (verboseLevel > 1) {
     G4cout << " in HV space " << fieldVector*0.01 << " ("
 	   << fieldVector.mag()*0.01 << ") V/cm" << G4endl;
