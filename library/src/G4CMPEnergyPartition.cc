@@ -32,7 +32,7 @@
 // 20190714  Convert PDGcode to Z and A (in amu) for use with NIEL function.
 // 20191009  Produce charge pairs below pair-energy, down to bandgap.
 // 20191017  Fix PDGcode usage for nuclei to look up in G4IonTable.
-
+// 20191106  Protect against exactly zero energy passed to GeneratePhonons()
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
 #include "G4CMPConfigManager.hh"
@@ -329,6 +329,10 @@ void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
 
 void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   if (G4CMPConfigManager::GetGenPhonons() <= 0.) return;	// Suppressed
+  if (energy <= 0.) {				// Avoid unnecessary work
+    nPhonons = 0;
+    return;
+  }
 
   if (verboseLevel)
     G4cout << " GeneratePhonons " << energy/MeV << " MeV" <<  G4endl;
