@@ -42,6 +42,7 @@
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value,
 //		precompute valley inverse transforms
 // 20190906  M. Kelsey -- Default IV rate model to G4CMPConfigManager value.
+// 20191119  M. Kelsey -- Add IV rate ceiling for extrapolative models
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -71,7 +72,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fMassInverse(G4Rep3x3(1/mElectron,0.,0.,0.,1/mElectron,0.,0.,0.,1/mElectron)),
     fAlpha(0.), fAcDeform(0.), 
     fIVQuadField(0.), fIVQuadRate(0.), fIVQuadExponent(0.),
-    fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.),
+    fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.), fIVMaxRate(0.),
     fIVModel(G4CMPConfigManager::GetIVRateModel()) {
   for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
     for (G4int j=0; j<KVBINS; j++) {
@@ -144,6 +145,7 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fIVLinExponent = rhs.fIVLinExponent;
   fIVLinRate0 = rhs.fIVLinRate0;
   fIVLinRate1 = rhs.fIVLinRate1;
+  fIVMaxRate = rhs.fIVMaxRate;
   fIVModel = rhs.fIVModel;
 
   if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
@@ -772,6 +774,9 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nivLinRate0 " << fIVLinRate0/hertz << " Hz"
      << "\nivLinRate1 " << fIVLinRate1/hertz << " Hz" 
      << "\nivLinPower " << fIVLinExponent << std::endl;
+
+  if (fIVMaxRate > 0.)
+    os << "ivMaxRate " << fIVMaxRate/hertz << " Hz" << G4endl;
 
   if (!fIVModel.empty()) os << "ivModel " << fIVModel << std::endl;
 }

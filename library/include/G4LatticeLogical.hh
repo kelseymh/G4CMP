@@ -36,6 +36,7 @@
 // 20190704  M. Kelsey -- Add IV rate function selector for material
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value,
 //		precompute valley inverse transforms
+// 20191119  M. Kelsey -- Add IV rate ceiling for extrapolative models
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -243,6 +244,8 @@ public:
   void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
 
+  void SetIVMaxRate(G4double v)      { fIVMaxRate = v; }
+
   const G4String& GetIVModel() const { return fIVModel; }
 
   G4double GetIVQuadField() const    { return fIVQuadField; }
@@ -264,6 +267,8 @@ public:
   G4double GetIVEnergy(G4int i) const {
     return (i>=0 && i<GetNIVDeform()) ? fIVEnergy[i] : 0.;
   }
+
+  G4double GetIVMaxRate() const       { return fIVMaxRate; }
 
 private:
   void CheckBasis();	// Initialize or complete (via cross) basis vectors
@@ -342,6 +347,7 @@ private:
   G4double fIVLinExponent;	 // Power law for linear scaled IV scattering
   G4double fIVLinRate0;		 // Constant rate for linear scaled IV scat.
   G4double fIVLinRate1;		 // Linear rate for linear scaled IV scat.
+  G4double fIVMaxRate;		 // Maximum rate for extrapolated IV models
 
   G4String fIVModel;		 // Name of IV rate function to be used
 };

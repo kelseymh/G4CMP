@@ -54,6 +54,12 @@ G4double G4CMPIVRateLinear::Rate(const G4Track& aTrack) const {
     theLattice->GetIVLinRate1() * pow(fieldVector.mag(),
 				      theLattice->GetIVLinExponent());
 
-  if (verboseLevel > 1) G4cout << "IV rate = " << rate/hertz << " Hz" << G4endl;
-  return rate;
+  G4double maxRate = theLattice->GetIVMaxRate();
+
+  if (verboseLevel > 1) {
+    G4cout << "IV rate = " << rate/hertz << " Hz"
+	   << " vs. max " << maxRate/hertz << G4endl;
+  }
+
+  return std::min(rate, maxRate);
 }

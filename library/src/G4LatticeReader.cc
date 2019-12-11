@@ -32,6 +32,7 @@
 // 20180815  F. Insulla -- Added IVRateQuad
 // 20181001  M. Kelsey -- Clarify IV rate parameters systematically
 // 20190704  M. Kelsey -- Add 'ivModel' to set default IV function by material
+// 20191119  M. Kelsey -- Add 'ivMaxRate' to set ceiling for extrapolations
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -206,6 +207,7 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "ivlinrate1") pLattice->SetIVLinRate1(fValue*ProcessUnits("Frequency"));
   else if (name == "ivlinpower") pLattice->SetIVLinExponent(fValue);
   else if (name == "ivlinexponent") pLattice->SetIVLinExponent(fValue);
+  else if (name == "ivmaxrate")  pLattice->SetIVMaxRate(fValue*ProcessUnits("Frequency"));
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;

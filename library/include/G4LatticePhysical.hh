@@ -30,6 +30,7 @@
 // 20190704  M. Kelsey -- Add IV rate function selector for material
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value;
 //		add pass through call to GetValleyInv().
+// 20191119  M. Kelsey -- Add pass through call for IV rate ceiling
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -139,6 +140,8 @@ public:
 
   // Parameters for electron intervalley scattering (Edelweiss, linear, matrix)
   const G4String& GetIVModel() const { return fLattice->GetIVModel(); }
+
+  G4double GetIVMaxRate() const      { return fLattice->GetIVMaxRate(); }
 
   G4double GetIVQuadField() const    { return fLattice->GetIVQuadField(); }
   G4double GetIVQuadRate() const     { return fLattice->GetIVQuadRate(); }
