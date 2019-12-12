@@ -35,9 +35,16 @@ ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV
 neutDens 1e11 /cm3
 epsilon 11.68
 # Intervalley scattering (Linear and Quadratic models)
-ivLinRate0  9.8e6 Hz	# Fitted to Stanford test devices
-ivLinRate1  34.1 Hz	# Fitted to Stanford test devices
-ivLinPower  4.02	# Rate = ivLinRate0 + ivLinRate1 * E^ivLinPower
+###ivLinRate0  9.8e6 Hz	# Fitted to Stanford test devices
+###ivLinRate1  34.1 Hz	# Fitted to Stanford test devices
+###ivLinPower  4.02	# Rate = ivLinRate0 + ivLinRate1 * E^ivLinPower
+# Values from G4CMP-144
+ivModel Linear
+ivLinRate0  1.5e6 Hz    # Fitted to Stanford test devices
+ivLinRate1  1.5 Hz      # Fitted to Stanford test devices
+ivLinPower  4.0         # Rate = ivLinRate0 + ivLinRate1 * E^ivLinPower
+
 ivQuadRate  3.5e-20 Hz	# Fitted to Stanford test devices
 ivQuadField 3395 V/m	# Fitted to Stanford test divices
 ivQuadPower 7.47	# Rate = sqrt((E^2-QuadField^2)^ivPower)
+ivMaxRate 50 MHz	# Maximum IV rate, ~ vsound/(5*L0_e)

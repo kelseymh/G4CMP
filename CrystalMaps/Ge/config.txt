@@ -39,3 +39,4 @@ epsilon 16.2
 ivQuadRate 6.72e-2 Hz	# From Edelweiss Collaboration
 ivQuadField 217 V/m	# From Edelweiss Collaboration
 ivQuadPower 3.24	# Rate = sqrt((E^2-QuadField^2)^ivPower)
+ivMaxRate 21 MHz	# Maximum IV rate, ~ vsound/L0_e
