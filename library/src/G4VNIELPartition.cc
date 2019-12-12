@@ -16,7 +16,6 @@
 
 #include "G4VNIELPartition.hh"
 #include "G4Element.hh"
-#include "G4Exception.hh"
 #include "G4Material.hh"
 
 
