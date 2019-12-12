@@ -12,6 +12,7 @@
 // $Id$
 //
 // 20190711  Michael Kelsey
+// 20191211  BUG FIX: Use base class function to get Z,A of compound materials
 
 #include "globals.hh"
 #include "G4CMPLewinSmithNIEL.hh"
@@ -41,7 +42,7 @@ PartitionNIEL(G4double energy, const G4Material *material, G4double /*Zin*/,
   G4Pow* g4pow = G4Pow::GetInstance();		// Fast, tabulated x^(2/3) etc.
 
   // Effective (weighted average) properties of material
-  const G4double Z=material->GetZ(), A=material->GetA()/(g/mole);
+  const G4double Z=GetEffectiveZ(material), A=GetEffectiveA(material)/(g/mole);
 
   // From Lewin and Smith, 1996
   // NOTE:  Avoiding use of std::pow for Z^(-7/3) and Z^(2/3) below

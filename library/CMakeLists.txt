@@ -179,6 +179,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransFast.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VNIELPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VPhononProcess.cc
     )
  
