@@ -467,7 +467,7 @@ G4CMPTriLinearInterp::FindTetrahedron(const G4double pt[3], G4double bary[4],
       if (bary[i] < bary[minBaryIdx]) minBaryIdx = i;
 
     G4int newTetraIdx = Neighbors[TetraIdx][minBaryIdx];
-    if (TetraIdx == -1) {
+    if (newTetraIdx == -1) {
       if (!quiet) {
 	G4cerr << "G4CMPTriLinearInterp::FindTetrahedron:"
 	       << " Point outside of hull!\n pt = "
