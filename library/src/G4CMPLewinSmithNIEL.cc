@@ -13,6 +13,7 @@
 //
 // 20190711  Michael Kelsey
 // 20191211  BUG FIX: Use base class function to get Z,A of compound materials
+// 20200128  Make units explicit in calculation, use G4Pow consistently.
 
 #include "globals.hh"
 #include "G4CMPLewinSmithNIEL.hh"
@@ -47,10 +48,10 @@ PartitionNIEL(G4double energy, const G4Material *material, G4double /*Zin*/,
   // From Lewin and Smith, 1996
   // NOTE:  Avoiding use of std::pow for Z^(-7/3) and Z^(2/3) below
   G4double z23 = g4pow->Z23(Z);
-  G4double epsilon = 0.0115 * energy / (Z*z23*z23);	// * Z^(-7/3)
+  G4double epsilon = 11.5/keV * energy / (Z*z23*z23);	// * Z^(-7/3)
   G4double k = 0.133 * z23 / std::sqrt(A);
-  G4double h = (0.7*std::pow(epsilon,0.6) + 3.*std::pow(epsilon,0.15)
+  G4double h = (0.7*g4pow->powA(epsilon,0.6) + 3.*g4pow->powA(epsilon,0.15)
 		+ epsilon);
 
-  return (k*h / (1.+k*h));
+  return (k*h / (1.+k*h));			// Returns EM fraction
 }
