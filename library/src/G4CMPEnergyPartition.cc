@@ -135,6 +135,9 @@ G4double G4CMPEnergyPartition::MeasuredChargeEnergy(G4double eTrue) const {
 
   G4double sigmaE = std::sqrt(eTrue * theLattice->GetFanoFactor()
                               * theLattice->GetPairProductionEnergy());
+  if (verboseLevel>1) 
+    G4cout << "Using sigma " << sigmaE/eV << " eV for Fano noise." << G4endl;
+
   return G4RandGauss::shoot(eTrue, sigmaE);
 }
 
@@ -204,6 +207,8 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
 void G4CMPEnergyPartition::
 NuclearRecoil(G4double energy, G4double Z, G4double A) {
   G4double lind = LindhardScalingFactor(energy, Z, A);
+  if (verboseLevel>1) G4cout << " Lindard partition factor " << lind << G4endl;
+
   DoPartition(energy*lind, energy*(1.-lind));
 }
 

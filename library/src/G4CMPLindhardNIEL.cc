@@ -13,6 +13,7 @@
 // $Id$
 //
 // 20190711  Michael Kelsey
+// 20200128  Make units explicit in calculation, use G4Pow consistently.
 
 #include "globals.hh"
 #include "G4CMPLindhardNIEL.hh"
@@ -53,13 +54,13 @@ PartitionNIEL(G4double energy, const G4Material *material, G4double z1,
   G4double zpow = g4pow->Z23(z1) + g4pow->Z23(z2);
   G4double asum = a1+a2;
         
-  G4double el = 30.724*z1*z2*std::sqrt(zpow)*asum/a2;
+  G4double el = 30.724*eV * z1*z2*std::sqrt(zpow)*asum/a2;
   G4double fl = (0.0793*g4pow->Z23(z1)*std::sqrt(z2*asum*asum*asum/(a1*a1*a1*a2))
-		 / std::pow(zpow, 0.75));
-  G4double eps = (energy/eV) / el;
+		 / g4pow->powA(zpow, 0.75));
+  G4double eps = energy / el;
 
-  G4double denom = 1. + fl*(eps + 3.4008*std::pow(eps, 0.16667)
-			    + 0.40244*std::pow(eps, 0.75));
+  G4double denom = 1. + fl*(eps + 3.4008*g4pow->powA(eps, 0.16667)
+			    + 0.40244*g4pow->powA(eps, 0.75));
 
-  return 1.0/denom;
+  return 1.0/denom;		// CHECK: Is this returning EM fraction?
 }
