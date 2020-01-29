@@ -10,6 +10,7 @@
 # Use G4CMPINSTALL instead of ".." to find includes
 # Move QHull building under library
 # Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
+# Ensure that G4LIBDIR is set correctly, overriding common.gmk.
 
 name := G4cmp
 
@@ -31,7 +32,7 @@ endif
 CPPFLAGS := $(G4CMP_FLAGS) $(CPPFLAGS)		# Prepend for right load order
 
 # Library goes into user's G4WORKDIR, not into system install
-G4LIBDIR := $(G4WORKDIR)/lib/$(G4SYSTEM)
+override G4LIBDIR := $(G4WORKDIR)/lib/$(G4SYSTEM)
 
 .PHONY : lib clean
 
