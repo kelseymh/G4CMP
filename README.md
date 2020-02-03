@@ -167,6 +167,15 @@ The libraries (libg4cmp.so and libqhull.so) will be written to your
 `$G4WORKDIR/lib/$G4SYSTEM/` directory, just like any other Geant4 example or
 user code, and should be found automatically when linking an application.
 
+*NOTE*:  If you want debugging symbols included with the G4CMP library, you
+need to build with the G4DEBUG environment or Make variable set:
+
+	export G4DEBUG=1
+or
+	setenv G4DEBUG 1
+or
+	make library G4DEBUG=1
+
 With the library built, any of the three demonstration programs (phonon,
 charge) may be built as a normal GEANT4 user application.
 From the top-level directory, use the command
@@ -196,6 +205,9 @@ to be built, use the following command
 If you want to install to a local path, rather than system-wide, use the
 `-DCMAKE_INSTALL_PREFIX=/path/to/install` option.
 
+*NOTE*:  If you want debugging symbols included with the G4CMP library, you
+need to include the `-DCMAKE_BUILD_TYPE=Debug` option.
+
 If you want to build an example application,
 
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DBUILD_CHARGE_EXAMPLE=ON ../G4CMP
@@ -213,7 +225,7 @@ the install prefix rather than running the binaries from the build directory
 
     make install
 
-Once theinstall step is completed, the /path/to/install/share/G4CMP/
+Once the install step is completed, the /path/to/install/share/G4CMP/
 directory will contain copies of the `g4cmp_env.csh` and `...sh` scripts
 discussed above.  These copies should be sourced in order to correctly
 locate the installed libraries and header files.
