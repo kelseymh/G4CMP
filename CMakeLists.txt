@@ -67,19 +67,15 @@ endif()
 
 set(version_FILE .g4cmp-version)
 
-add_custom_target(version ALL
-    DEPENDS ${version_FILE}
-    )
-
 find_program(SH sh HINTS /bin)
-add_custom_command(OUTPUT ${version_FILE}
+add_custom_target(version ALL
     COMMENT Building version identification file
     VERBATIM			# Allows for parentheses and redirection below
     COMMAND ${CMAKE_COMMAND} -E env ${SH}
         -c "(cd ${PROJECT_SOURCE_DIR}; git describe) > ${version_FILE}"
     )
 
-install(FILES ${version_FILE} DESTINATION share/G4CMP COMPONENT config)
+install(FILES ${PROJECT_BINARY_DIR}/${version_FILE} DESTINATION share/G4CMP COMPONENT config)
 
 #-----------------------------------------------------------------------------
 # Install CMake config files
