@@ -69,6 +69,13 @@ void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
     G4cout << "G4CMPSecondaryProduction::LoadDataForTrack" << G4endl;
 
   SetCurrentTrack(track);
+
+  // Skip further configuration if not active volume
+  if (!G4LatticeManager::GetLatticeManager()->HasLattice(GetCurrentVolume())) {
+    theLattice = 0;
+    return;
+  }
+
   SetLattice(track);
 
   *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;

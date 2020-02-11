@@ -9,6 +9,7 @@
 # Move QHull down to library/ directory; update tar-ball generator
 # Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 # Add new "sensors" example directory
+# Add top-level ".g4cmp-version" file to track as-built tag/SHA
 
 .PHONY : library phonon charge tests tools	# Targets named for directory
 .PHONY : all lib dist clean qhull examples
@@ -52,11 +53,20 @@ clean :		# FIXME: This doesn't work as dependencies
 
 dist : g4cmp.tgz
 
+# Version identification file (found under .../share in CMake build
+
+G4CMP_VERSION := .g4cmp-version
+
+.PHONY : version
+version :
+	@[ -d .git ] && git describe > $(G4CMP_VERSION)
+
 # Directory targets
 
 export G4CMP_DEBUG		# Turns on debugging output
 
 library :
+	-$(MAKE) version
 	-$(MAKE) -C $@
 
 tests.% \
@@ -84,7 +94,9 @@ tools : tools.all
 # Make source code distribution (construct using symlinks and tar -h)
 
 g4cmp.tgz : clean
-	@mkdir G4CMP ;\
+	-$(MAKE) version
+	@/bin/rm -rf G4CMP ;\
+	 mkdir G4CMP ;\
 	 ln -s ../README.md ../LICENSE G4CMP ;\
 	 ln -s ../CMakeLists.txt ../cmake G4CMP ;\
 	 ln -s ../GNUmakefile ../g4cmp.gmk G4CMP ;\
@@ -92,5 +104,6 @@ g4cmp.tgz : clean
 	 ln -s ../G4CMPOrdParamTable.txt G4CMP ;\
 	 ln -s ../library ../examples ../tests ../tools G4CMP ;\
 	 ln -s ../CrystalMaps G4CMP ;\
-	 gtar -hzc --exclude '.*' -f $@ G4CMP ;\
+	 ln -s  ../$(G4CMP_VERSION) G4CMP ;\
+	 gtar -hzc -f $@ G4CMP ;\
 	 /bin/rm -rf G4CMP

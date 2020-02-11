@@ -32,6 +32,7 @@
 // 20180801  Change IVEdelweiss flag to string IVRateModel.
 // 20190711  G4CMP-158:  Add functions to select NIEL yield functions
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
+// 20200211  G4CMP-191:  Add version identification from .g4cmp-version
 
 #include "globals.hh"
 
@@ -44,6 +45,9 @@ public:
   static G4CMPConfigManager* Instance();
   ~G4CMPConfigManager();	// Must be public for end-of-job cleanup
   
+  // Access G4CMP as-built version number
+  static const G4String& Version()      { return Instance()->version; }
+
   // Access G4CMP's physics ID for aux. track information
   // FIXME: This maybe should go in G4CMPVProcess when it exists.
   static G4int GetPhysicsModelID()      { return Instance()->fPhysicsModelID; }
@@ -64,7 +68,7 @@ public:
   static G4double GetGenCharges()        { return Instance()->genCharges; }
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
-  static const G4String& GetIVRateModel()	 { return Instance()->IVRateModel; }
+  static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
 
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
@@ -103,6 +107,9 @@ private:
   
   static G4CMPConfigManager* theInstance;
 
+  // Constructor will call function to read .g4cmp-version file
+  void setVersion();
+
   // Constructor will call by-string function to map name to class
   void setNIEL(G4String value);
   void setNIEL(G4VNIELPartition* niel);
@@ -112,6 +119,7 @@ private:
   G4int fPhysicsModelID; // ID key to get aux. track info.
   G4int ehBounces;	// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
   G4int pBounces;	// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
+  G4String version;	// Version name string extracted from .g4cmp-version
   G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
   G4String IVRateModel;	// Model for IV rate ($G4CMP_IV_RATE_MODEL)
   G4double clearance;	// Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)

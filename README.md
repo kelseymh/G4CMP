@@ -167,6 +167,15 @@ The libraries (libg4cmp.so and libqhull.so) will be written to your
 `$G4WORKDIR/lib/$G4SYSTEM/` directory, just like any other Geant4 example or
 user code, and should be found automatically when linking an application.
 
+*NOTE*:  If you want debugging symbols included with the G4CMP library, you
+need to build with the G4DEBUG environment or Make variable set:
+
+	export G4DEBUG=1
+or
+	setenv G4DEBUG 1
+or
+	make library G4DEBUG=1
+
 With the library built, any of the three demonstration programs (phonon,
 charge) may be built as a normal GEANT4 user application.
 From the top-level directory, use the command
@@ -196,6 +205,9 @@ to be built, use the following command
 If you want to install to a local path, rather than system-wide, use the
 `-DCMAKE_INSTALL_PREFIX=/path/to/install` option.
 
+*NOTE*:  If you want debugging symbols included with the G4CMP library, you
+need to include the `-DCMAKE_BUILD_TYPE=Debug` option.
+
 If you want to build an example application,
 
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DBUILD_CHARGE_EXAMPLE=ON ../G4CMP
@@ -213,7 +225,7 @@ the install prefix rather than running the binaries from the build directory
 
     make install
 
-Once theinstall step is completed, the /path/to/install/share/G4CMP/
+Once the install step is completed, the /path/to/install/share/G4CMP/
 directory will contain copies of the `g4cmp_env.csh` and `...sh` scripts
 discussed above.  These copies should be sourced in order to correctly
 locate the installed libraries and header files.
@@ -224,6 +236,18 @@ G4CMP is an application library, which can be linked into a user's Geant4
 application in order to provide phonon and charge carrier transport in
 crystals.  Users must reference G4CMP in their application build in order to
 utilize these features.  
+
+After running one of the setup scripts mentioned above (`g4cmp_env.csh` or
+`g4cmp_env.sh`), several environment variables will be defined to support
+linking G4CMP into your applications:
+
+| Environment variable | Meaning              |  Value in Make build | Value in CMake build |
+| ---------------------| ---------------------| ---------------------|----------------------|
+| G4CMPINSTALL | Path to g4cmp_env.* scripts  | <path-to-G4CMP> | $CMAKE_INSTALL_PREFIX/share/G4CMP |
+| G4CMPLIB | Directory containing libG4cmp.so | $G4WORKDIR/lib/$G4SYSTEM | $G4CMPINSTALL/lib |
+| G4CMPINCLUDE | Path to library/include      | $G4INSTALL/library/include | $CMAKE_INSTALL_PREFIX/include |
+| G4LATTICEDATA | Path to CrytalMaps directory | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
+| G4ORDPARAMTABLE | Geant4 process registration file | $G4INSTALL/G4CMPOrdParamTable.txt | $G4INSTALL/G4CMPOrdParamTable.txt |
 
 If you have a simple Makefile build system (GMake), the following two lines,
 or an appropriate variation on them, should be sufficient:
@@ -239,6 +263,23 @@ add the following two actions, before referencing Geant4:
 
     find_package(G4CMP REQUIRED)
     include(${G4CMP_USE_FILE})
+
+
+## Versioning Information
+
+G4CMP provides somewhat limited access to version information at run time.
+
+Since the package is primarily distributed through GitHub, users can query
+the state of their local clone at the command line, using `git describe` to
+get back a string such as "G4CMP-190" or "g4cmp-V07-02-02".
+
+For static (tar-ball) distributions, the Git state at the time the tar-ball
+was created (using the `make dist` target) will be stored in a file named
+`.g4cmp-version`.  This same file will be created as part of the build
+process using either Make or CMake (see above).
+
+At runtime, the version string will be available through a call to
+`G4CMPConfigManager::Version()`.
 
 
 ## Defining the Crystal Dynamics
