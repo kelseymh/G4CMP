@@ -237,6 +237,18 @@ application in order to provide phonon and charge carrier transport in
 crystals.  Users must reference G4CMP in their application build in order to
 utilize these features.  
 
+After running one of the setup scripts mentioned above (`g4cmp_env.csh` or
+`g4cmp_env.sh`), several environment variables will be defined to support
+linking G4CMP into your applications:
+
+| Environment variable | Meaning              |  Value in Make build | Value in CMake build |
+| ---------------------| ---------------------| ---------------------|----------------------|
+| G4CMPINSTALL | Path to g4cmp_env.* scripts  | <path-to-G4CMP> | $CMAKE_INSTALL_PREFIX/share/G4CMP |
+| G4CMPLIB | Directory containing libG4cmp.so | $G4WORKDIR/lib/$G4SYSTEM | $G4CMPINSTALL/lib |
+| G4CMPINCLUDE | Path to library/include      | $G4INSTALL/library/include | $CMAKE_INSTALL_PREFIX/include |
+| G4LATTICEDATA | Path to CrytalMaps directory | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
+| G4ORDPARAMTABLE | Geant4 process registration file | $G4INSTALL/G4CMPOrdParamTable.txt | $G4INSTALL/G4CMPOrdParamTable.txt |
+
 If you have a simple Makefile build system (GMake), the following two lines,
 or an appropriate variation on them, should be sufficient:
 
@@ -251,6 +263,23 @@ add the following two actions, before referencing Geant4:
 
     find_package(G4CMP REQUIRED)
     include(${G4CMP_USE_FILE})
+
+
+## Versioning Information
+
+G4CMP provides somewhat limited access to version information at run time.
+
+Since the package is primarily distributed through GitHub, users can query
+the state of their local clone at the command line, using `git describe` to
+get back a string such as "G4CMP-190" or "g4cmp-V07-02-02".
+
+For static (tar-ball) distributions, the Git state at the time the tar-ball
+was created (using the `make dist` target) will be stored in a file named
+`.g4cmp-version`.  This same file will be created as part of the build
+process using either Make or CMake (see above).
+
+At runtime, the version string will be available through a call to
+`G4CMPConfigManager::Version()`.
 
 
 ## Defining the Crystal Dynamics
