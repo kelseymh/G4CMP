@@ -23,6 +23,7 @@
 // 20180801  G4CMP-143:  Change IV rate from bool to str, Edelweiss->Quadratic
 // 20190711  G4CMP-158:  Add functions to select NIEL yield functions
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
+// 20200211  G4CMP-191:  Add version identification from .g4cmp-version
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -31,6 +32,7 @@
 #include "G4VNIELPartition.hh"
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
+#include <fstream>
 #include <stdlib.h>
 
 
@@ -63,6 +65,8 @@ G4CMPConfigManager::G4CMPConfigManager()
     nielPartition(0), messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 
+  setVersion();
+
   if (getenv("G4CMP_NIEL_FUNCTION")) 
     setNIEL(getenv("G4CMP_NIEL_FUNCTION"));
   else 
@@ -78,6 +82,17 @@ G4CMPConfigManager::~G4CMPConfigManager() {
 
 void G4CMPConfigManager::UpdateGeometry() {
   G4RunManager::GetRunManager()->ReinitializeGeometry(true);
+}
+
+
+// Read version tag at build time from generated .g4cmp-version file
+
+void G4CMPConfigManager::setVersion() {
+  G4String dir = getenv("G4CMPINSTALL") ? getenv("G4CMPINSTALL") : ".";
+
+  std::ifstream ver(dir+"/.g4cmp-version");
+  if (ver.good()) ver >> version;
+  else version = "";
 }
 
 
