@@ -26,6 +26,7 @@
 // 20170830  Add command to set flag for producing e/h "cloud"
 // 20190711  Add command to select non-ionizing energy loss function
 // 20191014  Drop command for anharmonic decay sampling.
+// 20200211  Add command to report version from .g4cmp-version
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -34,6 +35,7 @@
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithoutParameter.hh"
 
 
 // Constructor and destructor
@@ -47,6 +49,9 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     dirCmd(0), ivRateModelCmd(0), kvmapCmd(0), fanoStatsCmd(0), ehCloudCmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
+
+  versionCmd = CreateCommand<G4UIcmdWithoutParameter>("version",
+					    "Report G4CMP version string");
 
   dirCmd = CreateCommand<G4UIcmdWithAString>("LatticeData",
 			     "Set directory for lattice configuration files");
@@ -120,6 +125,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
 G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete verboseCmd; verboseCmd=0;
+  delete versionCmd; versionCmd=0;
   delete ehBounceCmd; ehBounceCmd=0;
   delete pBounceCmd; pBounceCmd=0;
   delete clearCmd; clearCmd=0;
@@ -168,4 +174,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == ivRateModelCmd) theManager->SetIVRateModel(value);
   if (cmd == nielPartitionCmd) theManager->SetNIELPartition(value);
   if (cmd == ehCloudCmd) theManager->CreateChargeCloud(StoB(value));
+
+  if (cmd == versionCmd)
+    G4cout << "G4CMP version: " << theManager->Version() << G4endl;
 }

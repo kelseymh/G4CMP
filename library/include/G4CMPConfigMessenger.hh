@@ -31,6 +31,7 @@
 // 20170830  Add command to set flag for producing e/h "cloud"
 // 20190711  Add command to select non-ionizing energy loss function
 // 20191014  Drop command for anharmonic decay sampling.
+// 20200211  Add command to report version from .g4cmp-version
 
 #include "G4UImessenger.hh"
 
@@ -40,6 +41,7 @@ class G4UIcmdWithAnInteger;
 class G4UIcmdWithADouble;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithAString;
+class G4UIcmdWithoutParameter;
 class G4UIcommand;
 
 
@@ -53,6 +55,7 @@ public:
 private:
   G4CMPConfigManager* theManager;
 
+  G4UIcmdWithoutParameter* versionCmd;
   G4UIcmdWithAnInteger* verboseCmd;
   G4UIcmdWithAnInteger* ehBounceCmd;
   G4UIcmdWithAnInteger* pBounceCmd;
