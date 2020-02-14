@@ -16,6 +16,8 @@
 // 20170801  Count consecutive null lattice pointers for reflection steps
 // 20180201  Add G4MagIntegratorDriver.hh, needed with Geant4 10.4.
 // 20180319  Don't delete theDriver; done by G4ChordFinder.
+// 20200213  In ConfigureForTrack, check if registered field is wrapped in
+//		G4CMPLocalEMField; apply wrapping if needed.
 
 #include "G4CMPFieldManager.hh"
 #include "G4CMPConfigManager.hh"
@@ -44,9 +46,12 @@
 
 G4CMPFieldManager::G4CMPFieldManager(G4ElectroMagneticField *detectorField)
   : G4FieldManager(new G4CMPLocalElectroMagField(detectorField)),
-    myDetectorField(new G4CMPLocalElectroMagField(detectorField)),
-    stepperVars(8), stepperLength(1e-9*mm),
+    myDetectorField(0), stepperVars(8), stepperLength(1e-9*mm),
     latticeNulls(0), maxLatticeNulls(3) {
+  // Same pointer, but non-const for use in ConfigureForTrack()
+  G4Field* baseField = const_cast<G4Field*>(GetDetectorField());
+  myDetectorField = dynamic_cast<G4CMPLocalElectroMagField*>(baseField);
+
   CreateTransport();
 }
 
@@ -58,7 +63,6 @@ G4CMPFieldManager::G4CMPFieldManager(G4CMPLocalElectroMagField *detectorField)
 }
 
 G4CMPFieldManager::~G4CMPFieldManager() {
-  delete myDetectorField;   myDetectorField=0;
   delete theEqMotion;       theEqMotion=0;
   delete theStepper;        theStepper=0;
   delete theChordFinder;    theChordFinder=0;
@@ -87,6 +91,29 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
 	   << aTrack->GetTrackID() << "/" << aTrack->GetCurrentStepNumber()
 	   << " @ " << aTrack->GetPosition() << " in "
 	   << aTrack->GetVolume()->GetName() << G4endl;
+  }
+
+  // Ensure that field is properly wrapped for global/local coordinates
+  if (!dynamic_cast<const G4CMPLocalElectroMagField*>(GetDetectorField())) {
+    if (G4CMPConfigManager::GetVerboseLevel()) {
+      G4cout << " Registered field not local.  Wrapping in G4CMPLocalEMField."
+	     << G4endl;
+    }
+
+    const G4ElectroMagneticField* baseField =
+      dynamic_cast<const G4ElectroMagneticField*>(GetDetectorField());
+    if (!baseField) {
+      G4ExceptionDescription msg;
+      msg << "Field attached to volume " << aTrack->GetVolume()->GetName()
+	  << " not G4ElectroMagneticField.";
+
+      G4Exception("G4CMPFieldManager::ConfigureForTrack", "FieldMan003",
+		  FatalException, msg);
+      return;
+    }
+
+    myDetectorField = new G4CMPLocalElectroMagField(baseField);
+    ChangeDetectorField(myDetectorField);
   }
 
   // Configure equation of motion with physical lattice
