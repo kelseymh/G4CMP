@@ -113,6 +113,8 @@ set_target_properties(qhullstatic_p PROPERTIES
 # them all at the end.
 target_link_libraries(qhullcpp qhull_p qhullstatic_p)
 
+add_definitions(-DG4DIGI_ALLOC_EXPORT)		## Needed for hits collection
+
 set(library_SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBiLinearInterp.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBoundaryUtils.cc
