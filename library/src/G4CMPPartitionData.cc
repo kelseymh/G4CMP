@@ -19,6 +19,10 @@
 #include "G4SystemOfUnits.hh"
 
 
+// Initialize allocator
+
+G4ThreadLocal G4Allocator<G4CMPPartitionData>* G4CMPPartitionData_Allocator=0;
+
 // Report contents for diagnostic purposes
 
 void G4CMPPartitionData::Print() {	// FIXME: Base class is non-const

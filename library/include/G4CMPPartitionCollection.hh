@@ -42,11 +42,9 @@ public:
 // Data and memory management
 
 #if defined G4DIGI_ALLOC_EXPORT
-  extern G4DLLEXPORT 
-  G4ThreadLocal G4Allocator<G4CMPPartitionCollection>* G4CMPPartColl_Allocator;
+  extern G4DLLEXPORT G4ThreadLocal G4Allocator<G4CMPPartitionCollection>* G4CMPPartColl_Allocator;
 #else
-  extern G4DLLIMPORT 
-  G4ThreadLocal G4Allocator<G4CMPPartitionCollection>* G4CMPPartColl_Allocator;
+  extern G4DLLIMPORT G4ThreadLocal G4Allocator<G4CMPPartitionCollection>* G4CMPPartColl_Allocator;
 #endif
 
 // Allocation operators should be inlined for efficiency

@@ -11,9 +11,15 @@
 //
 // 20200217  Michael Kelsey (TAMU) <kelsey@slac.stanford.edu>
 
+#include "G4CMPPartitionCollection.hh"
+
 
 // Initialize hardcoded names for collection
 
-static const char* G4CMPPartitionCollection::sdName  = "G4CMP";
-static const char* G4CMPPartitionCollection::colName = "G4CMPPartition";
-static const char* G4CMPPartitionCollection::keyName = "G4CMP/G4CMPPartition";
+const char* G4CMPPartitionCollection::sdName  = "G4CMP";
+const char* G4CMPPartitionCollection::colName = "G4CMPPartition";
+const char* G4CMPPartitionCollection::keyName = "G4CMP/G4CMPPartition";
+
+// Initialize allocator
+
+G4ThreadLocal G4Allocator<G4CMPPartitionCollection>* G4CMPPartColl_Allocator=0;
