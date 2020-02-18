@@ -220,6 +220,8 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMeshElectricField.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPartitionCollection.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPartitionData.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinematics.hh
