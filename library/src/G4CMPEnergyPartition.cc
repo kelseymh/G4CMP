@@ -33,17 +33,22 @@
 // 20191009  Produce charge pairs below pair-energy, down to bandgap.
 // 20191017  Fix PDGcode usage for nuclei to look up in G4IonTable.
 // 20191106  Protect against exactly zero energy passed to GeneratePhonons()
+// 20200217  Fill new 'hit' container with generated parameters
+
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPGeometryUtils.hh"
+#include "G4CMPPartitionCollection.hh"
+#include "G4CMPPartitionData.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4VNIELPartition.hh"
 #include "G4DynamicParticle.hh"
 #include "G4Event.hh"
+#include "G4HCofThisEvent.hh"
 #include "G4IonTable.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
@@ -56,6 +61,8 @@
 #include "G4PrimaryParticle.hh"
 #include "G4PrimaryVertex.hh"
 #include "G4RandomDirection.hh"
+#include "G4RunManager.hh"
+#include "G4SDManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
@@ -71,7 +78,8 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
   : G4CMPProcessUtils(), verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
     material(mat), holeFraction(0.5), nParticlesMinimum(10),
     applyDownsampling(true), cloud(new G4CMPChargeCloud), nCharges(0),
-    nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
+    nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.),
+    summary(0) {
   SetLattice(lat);
 }
 
@@ -87,6 +95,7 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(const G4ThreeVector& pos)
 
 G4CMPEnergyPartition::~G4CMPEnergyPartition() {
   delete cloud; cloud=0;
+  // NOTE: "summary" is owned by G4Event/G4HitsCollection, do not delete
 }
 
 
@@ -105,6 +114,44 @@ void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
 	   << volume->GetName() << G4endl;
 
   UseVolume(volume);
+}
+
+
+// Create summary data container and put into event "hits" collection
+
+G4CMPPartitionData* G4CMPEnergyPartition::CreateSummary() {
+  if (verboseLevel) G4cout << "G4CMPEnergyPartition::CreateSummary" << G4endl;
+  
+  G4CMPPartitionCollection* collection = FindCollection();
+  summary = new G4CMPPartitionData;	// Ownership transfers to G4Event
+
+  collection->insert(summary);
+  if (verboseLevel>2) {
+    G4cout << " Collection " << collection->GetName() << " contains "
+	   << collection->GetSize() << " summaries" << G4endl;
+  }
+
+  return summary;
+}
+
+G4CMPPartitionCollection* G4CMPEnergyPartition::FindCollection() {
+  if (verboseLevel) G4cout << "G4CMPEnergyPartition::FindCollection" << G4endl;
+
+  const G4Event* evt = G4RunManager::GetRunManager()->GetCurrentEvent();
+
+  G4HCofThisEvent* HCE = evt->GetHCofThisEvent();
+  if (!HCE) HCE = G4SDManager::GetSDMpointer()->PrepareNewEvent();
+
+  // Find collection in current event, or create and register it
+  G4int HCID = G4SDManager::GetSDMpointer()->GetCollectionID(G4CMPPartitionCollection::keyName);
+  G4CMPPartitionCollection* theCollection =
+    dynamic_cast<G4CMPPartitionCollection*>(HCE->GetHC(HCID));
+  if (!theCollection) {
+    theCollection = new G4CMPPartitionCollection();
+    HCE->AddHitsCollection(HCID, theCollection);
+  }
+
+  return theCollection;
 }
 
 
@@ -191,6 +238,13 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
   particles.clear();		// Discard previous results
   nPairs = nPhonons = 0;
 
+  // Set up summary information block in event
+  CreateSummary();
+  summary->totalEnergy = eIon+eNIEL;
+  summary->truedEdx = eIon;
+  summary->trueNIEL = eNIEL;
+  summary->lindhardYield = eIon / (eIon+eNIEL);
+
   // Apply downsampling if requested
   if (applyDownsampling) ComputeDownsampling(eIon, eNIEL);
 
@@ -199,6 +253,8 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
   GeneratePhonons(eNIEL + chargeEnergyLeft);
 
   particles.shrink_to_fit();	// Reduce size to match generated particles
+
+  if (verboseLevel) summary->Print();
 }
 
 
@@ -274,7 +330,7 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
     eMeas = 0.;
     nPairs = 0; // This prevents nPairs from blowing up when negative
   }
-  
+
   // Only apply downsampling to sufficiently large statistics
   G4double scale = ((G4int)nPairs<=nParticlesMinimum ? 1.
 		    : G4CMPConfigManager::GetGenCharges());
@@ -316,6 +372,11 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
     if (verboseLevel>2)
       G4cout << " generated " << nCharges << " e-h pairs" << G4endl;
   }	// while (nCharges==0
+
+  // Store generated information in summary block
+  summary->chargeEnergy = energy;
+  summary->chargeGenerated = eMeas;
+  summary->numberOfPairs = nCharges;		// Number after downsampling
 
   if (chargeEnergyLeft < 0.) chargeEnergyLeft = 0.;	// Avoid round-offs
 
@@ -359,6 +420,7 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   particles.reserve(particles.size() + int(1.1*scale*nPhonons)); // 10% overhead
 
   // For downsampling, ensure that there are sufficient phonons
+  G4double genEnergy = 0.;	// Energy sum without reweighting
   size_t nGenPhonons = 0;
   while (nGenPhonons < scale*nPhonons/2) {
     if (nGenPhonons > 0)
@@ -370,6 +432,7 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
     while (phononEnergyLeft >= ePhon) {
       if (G4UniformRand()<scale) {	// Apply downsampling up front
 	AddPhonon(ePhon);
+	genEnergy += ePhon;
 	nGenPhonons++;
       }
       
@@ -384,6 +447,11 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   }	// while (nGenPhonons
 
   if (nGenPhonons == nPhonons+1) nPhonons++;	// Pick up residual phonon
+
+  // Store generated information in summary block
+  summary->phononEnergy = energy;
+  summary->phononGenerated = genEnergy;		// Raw, not reweighted
+  summary->numberOfPhonons = nGenPhonons;
 }
 
 void G4CMPEnergyPartition::AddPhonon(G4double ePhon) {

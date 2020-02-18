@@ -20,6 +20,7 @@
 // 20180425  Add minimum particle generation for downsampling
 // 20180827  Add flag to suppress use of downsampling energy scale
 // 20190714  Pass particle information through to NuclearRecoil, Lindhard
+// 20200218  Support writing DoPartion() internals to event summary data
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -30,6 +31,8 @@
 #include <vector>
 
 class G4CMPChargeCloud;
+class G4CMPPartitionCollection;
+class G4CMPPartitionData;
 class G4Event;
 class G4LatticePhysical;
 class G4Material;
@@ -114,6 +117,10 @@ protected:
   G4PrimaryVertex* CreateVertex(G4Event* event, const G4ThreeVector& pos,
 				G4double time) const;
 
+  // Create buffer in event to save DoPartition() computations
+  G4CMPPartitionData* CreateSummary();
+  G4CMPPartitionCollection* FindCollection();
+
 protected:
   G4int verboseLevel;		// Higher numbers give more details
 
@@ -130,6 +137,8 @@ protected:
 
   size_t nPhonons;		// True number of phonons (no downsampling)
   G4double phononEnergyLeft;	// Energy to partition into phonons
+
+  G4CMPPartitionData* summary;	// Summary block, saved to G4HitsCollection
 
   static const G4ThreeVector origin;
   struct Data {
