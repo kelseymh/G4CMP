@@ -11,17 +11,26 @@
 //
 // 20200217  Michael Kelsey (TAMU) <kelsey@slac.stanford.edu>
 
+#ifndef G4CMPPartitionCollection_hh
+#define G4CMPPartitionCollection_hh 1
+
 #include "G4THitsCollection.hh"
 #include "G4Allocator.hh"
 #include "G4CMPPartitionData.hh"
+
 
 // Provide convenient name for hits container within collection
 typedef std::vector<G4CMPPartitionData*> G4CMPPartitionVector;
 
 class G4CMPPartitionCollection : public G4THitsCollection<G4CMPPartitionData> {
+public:		// Provide references to hardcoded names for client code
+  static const char* sdName;	// "G4CMP"
+  static const char* colName;	// "G4CMPPartition"
+  static const char* keyName;	// "G4CMP/G4CMPPartition"
+
 public:
   G4CMPPartitionCollection()
-    : G4THitsCollection<G4CMPPartitionData>("G4CMP","G4CMP") {;}
+    : G4THitsCollection<G4CMPPartitionData>(sdName,colName) {;}
   virtual ~G4CMPPartitionCollection() {;}
 
   // Memory allocation using G4Allocator<>; implemented below

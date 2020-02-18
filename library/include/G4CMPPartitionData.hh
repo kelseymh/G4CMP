@@ -31,21 +31,25 @@ public:
   inline void* operator new(size_t);
   inline void  operator delete(void*);
 
+  virtual void Print();		// FIXME:  Base class version is non-const
+
 public:		// Simple container, provide direct access to information
-  G4double trueEnergy;		// Input total energy deposited (dE/dx)
+  G4double totalEnergy;		// Input total energy deposited in event
+  G4double truedEdx;		// Input ionizing energy (dE/dx) deposited
   G4double trueNIEL;		// Input non-ionizing energy deposited
-  G4double lindhardYield;	// Computed value, or 1 - NIEL/Energy
+  G4double lindhardYield;	// dEdx/Energy (computed by Lindhard function)
   G4double phononEnergy;	// Energy assigned for primary phonons
   G4double phononGenerated;	// Weighed sum of generated primary phonons
+  G4int numberOfPhonons;	// Number of phonons created (downsampled)
   G4double chargeEnergy;	// Energy assigned to charge carriers
   G4double chargeGenerated;	// Fano-fluctuated energy in charge carriers
   G4int numberOfPairs;		// Number of e/h pairs created (downsampled)
 
 public:
   G4CMPPartitionData(const G4CMPPartitionData&) = default;
-  G4CMPPartitionData(G4CMPPartitionData&& = default;
+  G4CMPPartitionData(G4CMPPartitionData&&) = default;
   G4CMPPartitionData& operator=(const G4CMPPartitionData&) = default;
-  G4CMPPartitionData& operator=(G4CMPPartitionData&& = default;
+  G4CMPPartitionData& operator=(G4CMPPartitionData&&) = default;
 };
 
 
