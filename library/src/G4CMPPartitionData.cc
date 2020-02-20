@@ -23,6 +23,13 @@
 
 G4ThreadLocal G4Allocator<G4CMPPartitionData>* G4CMPPartitionData_Allocator=0;
 
+// Constructor must initialize everything to zero
+
+G4CMPPartitionData::G4CMPPartitionData()
+  : G4VHit(), totalEnergy(0.), truedEdx(0.), trueNIEL(0.), lindhardYield(0.),
+    FanoFactor(0.), chargeEnergy(0.), chargeGenerated(0.), numberOfPairs(0),
+    phononEnergy(0.), phononGenerated(0.), numberOfPhonons(0) {;}
+
 // Report contents for diagnostic purposes
 
 void G4CMPPartitionData::Print() {	// FIXME: Base class is non-const
@@ -31,11 +38,12 @@ void G4CMPPartitionData::Print() {	// FIXME: Base class is non-const
 	 << "\n Ionization energy (dE/dx) " << truedEdx/eV << " eV"
 	 << "\n Non-ionizing energy " << trueNIEL/eV << " eV"
 	 << "\n Lindhard yield " << lindhardYield
+	 << "\n True charge energy " << chargeEnergy/eV << " eV"
+	 << "\n Fano factor " << FanoFactor
+	 << "\n Generated charge energy " << chargeGenerated/eV << " eV"
+	 << "\n Number of charge pairs " << numberOfPairs
 	 << "\n True phonon energy " << phononEnergy/eV << " eV"
 	 << "\n Generated phonon energy " << phononGenerated/eV << " eV"
-	 << "\n Number of phonons" << numberOfPhonons
-	 << "\n True charge energy " << chargeEnergy/eV << " eV"
-	 << "\n Generated charge energy " << chargeGenerated/eV << " eV"
-	 << "\n Number of charge pairs" << numberOfPairs
+	 << "\n Number of phonons " << numberOfPhonons
 	 << G4endl;
 }

@@ -24,7 +24,7 @@
 
 class G4CMPPartitionData : public G4VHit {
 public:
-  G4CMPPartitionData() : G4VHit() {;}
+  G4CMPPartitionData();
   virtual ~G4CMPPartitionData() {;}
 
   // Memory allocation using G4Allocator<>; implemented below
@@ -38,12 +38,13 @@ public:		// Simple container, provide direct access to information
   G4double truedEdx;		// Input ionizing energy (dE/dx) deposited
   G4double trueNIEL;		// Input non-ionizing energy deposited
   G4double lindhardYield;	// dEdx/Energy (computed by Lindhard function)
-  G4double phononEnergy;	// Energy assigned for primary phonons
-  G4double phononGenerated;	// Weighed sum of generated primary phonons
-  G4int numberOfPhonons;	// Number of phonons created (downsampled)
+  G4double FanoFactor;		// Fano factor for charge production
   G4double chargeEnergy;	// Energy assigned to charge carriers
   G4double chargeGenerated;	// Fano-fluctuated energy in charge carriers
   G4int numberOfPairs;		// Number of e/h pairs created (downsampled)
+  G4double phononEnergy;	// Energy assigned for primary phonons
+  G4double phononGenerated;	// Weighed sum of generated primary phonons
+  G4int numberOfPhonons;	// Number of phonons created (downsampled)
 
 public:
   G4CMPPartitionData(const G4CMPPartitionData&) = default;

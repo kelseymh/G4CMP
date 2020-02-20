@@ -34,6 +34,7 @@
 // 20191017  Fix PDGcode usage for nuclei to look up in G4IonTable.
 // 20191106  Protect against exactly zero energy passed to GeneratePhonons()
 // 20200217  Fill new 'hit' container with generated parameters
+// 20200219  Replace use of G4HitsCollection with singleton data container
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -41,8 +42,8 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPGeometryUtils.hh"
-#include "G4CMPPartitionCollection.hh"
 #include "G4CMPPartitionData.hh"
+#include "G4CMPPartitionSummary.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4VNIELPartition.hh"
@@ -122,36 +123,15 @@ void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
 G4CMPPartitionData* G4CMPEnergyPartition::CreateSummary() {
   if (verboseLevel) G4cout << "G4CMPEnergyPartition::CreateSummary" << G4endl;
   
-  G4CMPPartitionCollection* collection = FindCollection();
-  summary = new G4CMPPartitionData;	// Ownership transfers to G4Event
+  summary = new G4CMPPartitionData;	// Ownership transfers to container
+  G4CMPPartitionSummary::Insert(summary);
 
-  collection->insert(summary);
   if (verboseLevel>2) {
-    G4cout << " Collection " << collection->GetName() << " contains "
-	   << collection->GetSize() << " summaries" << G4endl;
+    G4cout << " Partition summary contains "
+	   << G4CMPPartitionSummary::Entries() << " records" << G4endl;
   }
 
   return summary;
-}
-
-G4CMPPartitionCollection* G4CMPEnergyPartition::FindCollection() {
-  if (verboseLevel) G4cout << "G4CMPEnergyPartition::FindCollection" << G4endl;
-
-  const G4Event* evt = G4RunManager::GetRunManager()->GetCurrentEvent();
-
-  G4HCofThisEvent* HCE = evt->GetHCofThisEvent();
-  if (!HCE) HCE = G4SDManager::GetSDMpointer()->PrepareNewEvent();
-
-  // Find collection in current event, or create and register it
-  G4int HCID = G4SDManager::GetSDMpointer()->GetCollectionID(G4CMPPartitionCollection::keyName);
-  G4CMPPartitionCollection* theCollection =
-    dynamic_cast<G4CMPPartitionCollection*>(HCE->GetHC(HCID));
-  if (!theCollection) {
-    theCollection = new G4CMPPartitionCollection();
-    HCE->AddHitsCollection(HCID, theCollection);
-  }
-
-  return theCollection;
 }
 
 
@@ -177,8 +157,12 @@ G4double G4CMPEnergyPartition::MeasuredChargeEnergy(G4double eTrue) const {
   // Std deviation of energy distribution
 
   if (!G4CMPConfigManager::FanoStatisticsEnabled()) {
+    summary->FanoFactor = 0.;
     return eTrue;
   }
+
+  // Store Fano factor from material for reference
+  summary->FanoFactor = theLattice->GetFanoFactor();
 
   G4double sigmaE = std::sqrt(eTrue * theLattice->GetFanoFactor()
                               * theLattice->GetPairProductionEnergy());

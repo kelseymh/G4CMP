@@ -31,7 +31,6 @@
 #include <vector>
 
 class G4CMPChargeCloud;
-class G4CMPPartitionCollection;
 class G4CMPPartitionData;
 class G4Event;
 class G4LatticePhysical;
@@ -117,9 +116,8 @@ protected:
   G4PrimaryVertex* CreateVertex(G4Event* event, const G4ThreeVector& pos,
 				G4double time) const;
 
-  // Create buffer in event to save DoPartition() computations
+  // Create buffer save DoPartition() computations
   G4CMPPartitionData* CreateSummary();
-  G4CMPPartitionCollection* FindCollection();
 
 protected:
   G4int verboseLevel;		// Higher numbers give more details
