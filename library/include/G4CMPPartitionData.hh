@@ -43,7 +43,7 @@ public:		// Simple container, provide direct access to information
   G4double chargeGenerated;	// Fano-fluctuated energy in charge carriers
   G4int numberOfPairs;		// Number of e/h pairs created (downsampled)
   G4double phononEnergy;	// Energy assigned for primary phonons
-  G4double phononGenerated;	// Weighed sum of generated primary phonons
+  G4double phononGenerated;	// Raw sum of generated phonons (downsampled)
   G4int numberOfPhonons;	// Number of phonons created (downsampled)
 
 public:

@@ -44,10 +44,11 @@ public:
   static size_t Entries() { return Instance()->summary.size(); }
 
   // Erase all entries in table
-  static void Clear();
+  static void Clear() { Instance()->clear(); }
 
 private:
   G4CMPPartitionSummary() {;}
+  void clear();				// Deletes existing table entries
 
   G4CMPPartitionVector summary;		// Filled by client code
 };

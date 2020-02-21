@@ -21,13 +21,13 @@ G4CMPPartitionSummary* G4CMPPartitionSummary::Instance() {
   return theInstance.Instance();
 }
 
-G4CMPPartitionSummary::~G4CMPPartitionSummary() {
-  Clear();
-}
+// NOTE:  Data blocks use G4Allocator<>, which are deleted before TLSingletons
+
+G4CMPPartitionSummary::~G4CMPPartitionSummary() {;}
 
 // Delete previously collected data
 
-void G4CMPPartitionSummary::Clear() {
-  for (auto& x: Instance()->summary) { delete x; x=0; }
-  Instance()->summary.clear();
+void G4CMPPartitionSummary::clear() {
+  for (auto& x: summary) { delete x; x=0; }
+  summary.clear();
 }
