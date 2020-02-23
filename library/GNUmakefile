@@ -11,6 +11,7 @@
 # Move QHull building under library
 # Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 # Ensure that G4LIBDIR is set correctly, overriding common.gmk.
+# Add -DG4DIGI_ALLOC_EXPORT flag to support new hits collection
 
 name := G4cmp
 
@@ -21,7 +22,7 @@ endif
 include $(G4INSTALL)/config/architecture.gmk
 
 G4CMP_FLAGS += -I./include -I$(G4CMPINSTALL)/library/qhull-2012.1/src \
-	-I$(G4INCLUDE) -Dqh_QHpointer 
+	-I$(G4INCLUDE) -Dqh_QHpointer -DG4DIGI_ALLOC_EXPORT
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
 endif

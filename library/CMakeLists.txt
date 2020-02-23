@@ -113,6 +113,8 @@ set_target_properties(qhullstatic_p PROPERTIES
 # them all at the end.
 target_link_libraries(qhullcpp qhull_p qhullstatic_p)
 
+add_definitions(-DG4DIGI_ALLOC_EXPORT)		## Needed for hits collection
+
 set(library_SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBiLinearInterp.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBoundaryUtils.cc
@@ -146,6 +148,9 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeEmissionRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMeshElectricField.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPartitionCollection.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPartitionData.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPartitionSummary.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononBoundaryProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinTable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinematics.cc
@@ -220,6 +225,9 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMeshElectricField.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPartitionCollection.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPartitionData.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPartitionSummary.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinematics.hh

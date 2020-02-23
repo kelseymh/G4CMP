@@ -20,6 +20,8 @@
 // 20180425  Add minimum particle generation for downsampling
 // 20180827  Add flag to suppress use of downsampling energy scale
 // 20190714  Pass particle information through to NuclearRecoil, Lindhard
+// 20200218  Support writing DoPartion() internals to event summary data
+// 20200222  Add control flag to turn off creating summary data
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -30,6 +32,7 @@
 #include <vector>
 
 class G4CMPChargeCloud;
+class G4CMPPartitionData;
 class G4Event;
 class G4LatticePhysical;
 class G4Material;
@@ -57,6 +60,10 @@ public:
 
   // Set debugging output
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+
+  // Enable or disable summary data collection
+  void FillSummary(G4bool fill) { fillSummaryData = fill; }
+  G4bool FillingSummary() const { return fillSummaryData; }
 
   // Toggle whether or not to apply downsampling scale calculations
   void UseDownsampling(G4bool value) { applyDownsampling = value; }
@@ -114,8 +121,12 @@ protected:
   G4PrimaryVertex* CreateVertex(G4Event* event, const G4ThreeVector& pos,
 				G4double time) const;
 
+  // Create buffer save DoPartition() computations
+  G4CMPPartitionData* CreateSummary();
+
 protected:
   G4int verboseLevel;		// Higher numbers give more details
+  G4bool fillSummaryData;	// Fill G4CMPPartitionSummary if set
 
   G4Material* material;		// To get (Z,A) for Lindhard scaling
   G4double holeFraction;	// Energy from e/h pair taken by hole (50%)
@@ -130,6 +141,8 @@ protected:
 
   size_t nPhonons;		// True number of phonons (no downsampling)
   G4double phononEnergyLeft;	// Energy to partition into phonons
+
+  G4CMPPartitionData* summary;	// Summary block, saved to G4HitsCollection
 
   static const G4ThreeVector origin;
   struct Data {
