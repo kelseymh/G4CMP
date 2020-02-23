@@ -35,6 +35,7 @@
 // 20191106  Protect against exactly zero energy passed to GeneratePhonons()
 // 20200217  Fill new 'hit' container with generated parameters
 // 20200219  Replace use of G4HitsCollection with singleton data container
+// 20200222  Add control flag to turn off creating summary data
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -77,6 +78,7 @@
 G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
+    fillSummaryData(false), 
     material(mat), holeFraction(0.5), nParticlesMinimum(10),
     applyDownsampling(true), cloud(new G4CMPChargeCloud), nCharges(0),
     nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.),
@@ -122,7 +124,12 @@ void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
 
 G4CMPPartitionData* G4CMPEnergyPartition::CreateSummary() {
   if (verboseLevel) G4cout << "G4CMPEnergyPartition::CreateSummary" << G4endl;
-  
+
+  if (!fillSummaryData) {		// No collection, just keep local
+    if (!summary) summary = new G4CMPPartitionData;
+    return summary;
+  }
+
   summary = new G4CMPPartitionData;	// Ownership transfers to container
   G4CMPPartitionSummary::Insert(summary);
 

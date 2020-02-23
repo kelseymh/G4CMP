@@ -14,6 +14,7 @@
 // 20150306  Michael Kelsey
 // 20160825  Replace implementation with use of G4CMPEnergyPartition
 // 20191007  All normal G4 tracks should be used, not just charged.
+// 20200222  Enable collection of EnergyPartition summary data.
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPEnergyPartition.hh"
@@ -47,6 +48,7 @@ G4CMPSecondaryProduction::G4CMPSecondaryProduction()
   : G4VContinuousProcess("G4CMPSecondaryProduction", fPhonon),
     partitioner(new G4CMPEnergyPartition) {
   SetProcessSubType(fSecondaryProduction);
+  partitioner->FillSummary(true);	// Collect partition summary data
 }
 
 G4CMPSecondaryProduction::~G4CMPSecondaryProduction() {

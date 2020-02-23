@@ -21,6 +21,7 @@
 // 20180827  Add flag to suppress use of downsampling energy scale
 // 20190714  Pass particle information through to NuclearRecoil, Lindhard
 // 20200218  Support writing DoPartion() internals to event summary data
+// 20200222  Add control flag to turn off creating summary data
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -59,6 +60,10 @@ public:
 
   // Set debugging output
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+
+  // Enable or disable summary data collection
+  void FillSummary(G4bool fill) { fillSummaryData = fill; }
+  G4bool FillingSummary() const { return fillSummaryData; }
 
   // Toggle whether or not to apply downsampling scale calculations
   void UseDownsampling(G4bool value) { applyDownsampling = value; }
@@ -121,6 +126,7 @@ protected:
 
 protected:
   G4int verboseLevel;		// Higher numbers give more details
+  G4bool fillSummaryData;	// Fill G4CMPPartitionSummary if set
 
   G4Material* material;		// To get (Z,A) for Lindhard scaling
   G4double holeFraction;	// Energy from e/h pair taken by hole (50%)
