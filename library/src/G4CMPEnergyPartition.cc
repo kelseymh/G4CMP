@@ -36,6 +36,7 @@
 // 20200217  Fill new 'hit' container with generated parameters
 // 20200219  Replace use of G4HitsCollection with singleton data container
 // 20200222  Add control flag to turn off creating summary data
+// 20200316  Improve calculations of charge and phonon energy summaries
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -364,14 +365,16 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
       G4cout << " generated " << nCharges << " e-h pairs" << G4endl;
   }	// while (nCharges==0
 
-  // Store generated information in summary block
-  summary->chargeEnergy = energy;
-  summary->chargeGenerated = eMeas;
-  summary->numberOfPairs = nCharges;		// Number after downsampling
-
   if (chargeEnergyLeft < 0.) chargeEnergyLeft = 0.;	// Avoid round-offs
 
   if (verboseLevel>1) G4cout << " " << chargeEnergyLeft << " excess" << G4endl;
+
+  // Store generated information in summary block
+  summary->chargeEnergy = energy;
+  summary->chargeFano = eMeas;
+  summary->chargeGenerated = eMeas-chargeEnergyLeft;
+  summary->numberOfPairs = nCharges;		// Number after downsampling
+
 }
 
 void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
@@ -440,8 +443,8 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   if (nGenPhonons == nPhonons+1) nPhonons++;	// Pick up residual phonon
 
   // Store generated information in summary block
-  summary->phononEnergy = energy;
-  summary->phononGenerated = genEnergy;		// Raw, not reweighted
+  summary->phononGenerated = energy;
+  summary->phononEnergy = summary->totalEnergy - summary->chargeEnergy;
   summary->numberOfPhonons = nGenPhonons;
 }
 
@@ -504,6 +507,12 @@ GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
     G4cout << "G4CMPEnergyPartition::GetPrimaries @ " << pos
 	   << " up to " << maxPerVertex << " per vertex" << G4endl;
   }
+
+  // Store position information in summary block
+  summary->position[0] = pos[0];
+  summary->position[1] = pos[1];
+  summary->position[2] = pos[2];
+  summary->position[3] = time;
 
   std::vector<G4PrimaryParticle*> primaries;	// Can we make this mutable?
   GetPrimaries(primaries);
@@ -577,6 +586,13 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
 	   << trkWeight << G4endl;
   }
 
+  // Store position information in summary block
+  summary->position[0] = GetCurrentTrack()->GetPosition()[0];
+  summary->position[1] = GetCurrentTrack()->GetPosition()[1];
+  summary->position[2] = GetCurrentTrack()->GetPosition()[2];
+  summary->position[3] = GetCurrentTrack()->GetGlobalTime();
+
+  // Pre-allocate buffer for secondaries
   secondaries.clear();
   secondaries.reserve(particles.size());
 
