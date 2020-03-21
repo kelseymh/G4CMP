@@ -25,7 +25,7 @@ license can be found at `G4CMP/LICENSE`.
 
 ## User Environment
 
-Users must have a recent (10.2 or later) version of GEANT4 installed and
+Users must have a recent (10.4 or later) version of GEANT4 installed and
 configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See GEANT4's
 documentation for further instructions.).
 

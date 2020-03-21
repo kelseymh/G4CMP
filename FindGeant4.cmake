@@ -18,8 +18,8 @@ if(USE_GEANT4_STATIC_LIBS)
     list(APPEND COMPONENTS static)
 endif()
 
-# G4CMP Requires G4 version 10.2 or greater.
-find_package(Geant4 10.2 REQUIRED ${COMPONENTS})
+# G4CMP Requires G4 version 10.4 or greater.
+find_package(Geant4 10.4 REQUIRED ${COMPONENTS})
 
 # Geant4 version 10+, I think, requires C++11, but we'll check just in case.
 if(Geant4_CXXSTD STREQUAL "c++98")
