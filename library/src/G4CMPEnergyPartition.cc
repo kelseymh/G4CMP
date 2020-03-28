@@ -239,10 +239,11 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
 	   << " MeV, eNIEL " << eNIEL/MeV << " MeV" << G4endl;
   }
 
-  if (eIon <= 0. || eNIEL < 0.) {
+  if (eIon+eNIEL <= 0. || eIon< 0. || eNIEL < 0.) {
     G4ExceptionDescription msg;
     msg << "Invalid energy input:";
-    if (eIon <= 0.) msg << " eIon " << eIon/eV << " eV";
+    if (eIon+eNIEL <= 0.) msg << " eTotal " << (eIon+eNIEL)/eV << " eV";
+    if (eIon < 0.) msg << " eIon " << eIon/eV << " eV";
     if (eNIEL < 0.) msg << " NIEL " << eNIEL/eV << " eV";
 
     G4Exception("G4CMPEnergyPartition::DoPartition", "Partition001",
