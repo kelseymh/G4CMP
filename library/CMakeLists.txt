@@ -185,6 +185,8 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VNIELPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VPhononProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftImpactProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftTrappingProcess.cc
     )
  
 set(library_HEADERS
@@ -264,6 +266,8 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftImpactProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftTrappingProcess.h
     )
 
 set(config_FILES
