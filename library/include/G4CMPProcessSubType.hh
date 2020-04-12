@@ -24,8 +24,7 @@ enum G4CMPProcessSubType {
   fSecondaryProduction,
   fTrackLimiter,
   fChargeRecombine,
-  fImpact,
-  fTrapping
+  fImpactIonization,
 };
 
 #endif	/* G4CMPProcessSubType_hh */

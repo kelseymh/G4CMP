@@ -12,7 +12,7 @@
 // 20170905  Cache Luke and IV rate models in local LoadDataFromTrack()
 // 20170908  Drop "time step" functions, use rate models as estimators
 // 20190906  Provide functions to externally set rate models
-// 20200331  G4CMP-195/196: Added impact ionization and trapping
+// 20200331  G4CMP-196: Added impact ionization mean free path
 
 #ifndef G4CMPTimeStepper_h
 #define G4CMPTimeStepper_h 1
@@ -62,7 +62,6 @@ protected:
   const G4CMPVScatteringRate* lukeRate;
   const G4CMPVScatteringRate* ivRate;
   G4double impactLength;
-  G4double trappingLength;
 
 private:
   //hide assignment operator

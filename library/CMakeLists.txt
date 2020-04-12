@@ -126,6 +126,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftBoundaryProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftElectron.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftHole.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftImpactProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftRecombinationProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftTrackInfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEigenSolver.cc
@@ -185,8 +186,6 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VNIELPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VPhononProcess.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftImpactProcess.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftTrappingProcess.cc
     )
  
 set(library_HEADERS
@@ -202,6 +201,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftElectron.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftHole.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftImpactProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftRecombinationProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftTrackInfo.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEigenSolver.hh
@@ -266,8 +266,6 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftImpactProcess.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftTrappingProcess.h
     )
 
 set(config_FILES

@@ -13,7 +13,7 @@
 // 20170817  M. Kelsey -- Get verbosity from configuration
 // 20170822  M. Kelsey -- Rename EnergyLimiter to TrackLimiter
 // 20191017  M. Kelsey -- Add GenericIon to support energy partitioner
-// 20200331  G4CMP-195/196: Added impact ionization and trapping
+// 20200331  G4CMP-196: Added impact ionization process
 
 #include "G4CMPPhysics.hh"
 #include "G4CMPConfigManager.hh"
@@ -22,7 +22,6 @@
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftRecombinationProcess.hh"
 #include "G4CMPDriftImpactProcess.hh"
-#include "G4CMPDriftTrappingProcess.hh"
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPPhononBoundaryProcess.hh"
@@ -70,8 +69,7 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* luke    = new G4CMPLukeScattering(tmStep);
   G4VProcess* recomb  = new G4CMPDriftRecombinationProcess;
   G4VProcess* eLimit  = new G4CMPTrackLimiter;
-  G4VProcess* trapping = new G4CMPDriftImpactProcess;
-  G4VProcess* impact   = new G4CMPDriftTrappingProcess;
+  G4VProcess* impact  = new G4CMPDriftImpactProcess;
 
 
   // Set process verbosity to match physics list, for diagnostics
@@ -86,7 +84,6 @@ void G4CMPPhysics::ConstructProcess() {
     recomb->SetVerboseLevel(verboseLevel);
     eLimit->SetVerboseLevel(verboseLevel);
     impact->SetVerboseLevel(verboseLevel);
-    trapping->SetVerboseLevel(verboseLevel);
   }
 
   G4ParticleDefinition* particle = 0;	// Reusable buffer for convenience
@@ -118,7 +115,6 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(recomb, particle);
   RegisterProcess(eLimit, particle);
   RegisterProcess(impact, particle);
-  RegisterProcess(trapping, particle);
 
   particle = G4CMPDriftHole::Definition();
   RegisterProcess(tmStep, particle);
@@ -127,7 +123,6 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(recomb, particle);
   RegisterProcess(eLimit, particle);
   RegisterProcess(impact, particle);
-  RegisterProcess(trapping, particle);
 
   AddSecondaryProduction();
 }

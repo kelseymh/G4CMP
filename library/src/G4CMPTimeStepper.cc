@@ -27,7 +27,7 @@
 // 20180831  Fix compiler warning with PostStepDoIt() arguments
 // 20190906  Provide functions to externally set rate models, move process
 //		lookup functionality to G4CMP(Track)Utils.
-// 20200331  G4CMP-195/196: Added impact ionization and trapping
+// 20200331  G4CMP-196: Added impact ionization mean free path
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -55,7 +55,7 @@
 
 G4CMPTimeStepper::G4CMPTimeStepper()
   : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper),
-    lukeRate(nullptr), ivRate(nullptr), impactLength(), trappingLength(0.) {;}
+    lukeRate(nullptr), ivRate(nullptr), impactLength(0.) {;}
 
 G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
@@ -78,17 +78,15 @@ void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
   ivRate = ivProc ? ivProc->GetRateModel() : nullptr;
 
   // get impact ionization mean free path
-  impactLength = 0; // CS TODO: How to access the impactLength set by the ConfigManager?
-
-  // get trapping mean free path
-  trappingLength = 0; // CS TODO: How to access the trappingLength set by the ConfigManager?
+  impactLength = (IsElectron() ? G4CMPConfigManager::GetImpactLengthElectrons()
+		  : IsHole()   ? G4CMPConfigManager::GetImpactLengthHoles()
+		  : DBL_MAX);
 
   if (verboseLevel>1) {
     G4cout << "TimeStepper Found" 
 	   << (lukeRate?" lukeRate":"")
 	   << (ivRate?" ivRate":"") 
 	   << (impactLength?" impactLength":"") 
-	   << (trappingLength?" trappingLength":"") 
 	   << G4endl;
   }
 
@@ -144,17 +142,10 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   if (mfp3 <= 1e-9*m) mfp3 = DBL_MAX;	// Avoid steps getting "too short"
 
   if (verboseLevel>1 && impactLength)
-    G4cout << "TS IV threshold mfp3 " << mfp3/m << " m" << G4endl;
-
-  // Find distance to IV scattering threshold 
-  G4double mfp4 = trappingLength ? trappingLength : DBL_MAX;
-  if (mfp4 <= 1e-9*m) mfp4 = DBL_MAX;	// Avoid steps getting "too short"
-
-  if (verboseLevel>1 && trappingLength)
-    G4cout << "TS IV threshold mfp4 " << mfp4/m << " m" << G4endl;
+    G4cout << "TS impact ionization mfp3 " << mfp3/m << " m" << G4endl;
 
   // Take shortest distance from above options
-  G4double mfp = std::min({mfp0, mfp1, mfp2, mfp3, mfp4});
+  G4double mfp = std::min({mfp0, mfp1, mfp2, mfp3});
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
