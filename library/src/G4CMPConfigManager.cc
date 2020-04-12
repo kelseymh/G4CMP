@@ -26,7 +26,6 @@
 // 20200211  G4CMP-191:  Add version identification from .g4cmp-version
 // 20200331  G4CMP-195/196: Added impact ionization and trapping
 
-
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPLewinSmithNIEL.hh"
@@ -53,8 +52,6 @@ G4CMPConfigManager::G4CMPConfigManager()
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):"Quadratic"),
-    impactLengthElectrons(getenv("G4CMP_IMPACT_LENGTH_ELECTRONS")?strtod(getenv("G4CMP_IMPACT_LENGTH_ELECTRONS"),0):0),
-    impactLengthHoles(getenv("G4CMP_IMPACT_LENGTH_HOLES")?strtod(getenv("G4CMP_IMPACT_LENGTH_HOLES"),0):0),
     trappingLengthElectrons(getenv("G4CMP_TRAPPING_LENGTH_ELECTRONS")?strtod(getenv("G4CMP_TRAPPING_LENGTH_ELECTRONS"),0):0),
     trappingLengthHoles(getenv("G4CMP_TRAPPING_LENGTH_HOLES")?strtod(getenv("G4CMP_TRAPPING_LENGTH_HOLES"),0):0),
     clearance(getenv("G4CMP_CLEARANCE")?strtod(getenv("G4CMP_CLEARANCE"),0)*mm:1e-6*mm),

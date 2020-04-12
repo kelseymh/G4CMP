@@ -6,6 +6,7 @@
 // $Id$
 //
 // 20170822 M. Kelsey -- Rename EnergyLimiter to TrackLimiter
+// 20200331 C. Stanford (G4CMP-195/196):  Add Trapping and Impact subtypes
 
 #ifndef G4CMPProcessSubType_hh
 #define G4CMPProcessSubType_hh 1
@@ -24,8 +25,8 @@ enum G4CMPProcessSubType {
   fSecondaryProduction,
   fTrackLimiter,
   fChargeRecombine,
-  fImpact,
-  fTrapping
+  fImpactIonization,
+  fChargeTrapping
 };
 
 #endif	/* G4CMPProcessSubType_hh */
