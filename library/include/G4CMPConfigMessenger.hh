@@ -32,6 +32,7 @@
 // 20190711  Add command to select non-ionizing energy loss function
 // 20191014  Drop command for anharmonic decay sampling.
 // 20200211  Add command to report version from .g4cmp-version
+// 20200411  G4CMP-195: Add commands to set charge trapping MFPs
 
 #include "G4UImessenger.hh"
 
@@ -63,6 +64,8 @@ private:
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
   G4UIcmdWithADoubleAndUnit* sampleECmd;
+  G4UIcmdWithADoubleAndUnit* trapEMFPCmd;
+  G4UIcmdWithADoubleAndUnit* trapHMFPCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;
