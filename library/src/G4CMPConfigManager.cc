@@ -34,6 +34,7 @@
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
 #include <fstream>
+#include <float.h>
 #include <stdlib.h>
 
 
@@ -52,8 +53,8 @@ G4CMPConfigManager::G4CMPConfigManager()
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):"Quadratic"),
-    impactLengthElectrons(getenv("G4CMP_IMPACT_LENGTH_ELECTRONS")?strtod(getenv("G4CMP_IMPACT_LENGTH_ELECTRONS"),0):0),
-    impactLengthHoles(getenv("G4CMP_IMPACT_LENGTH_HOLES")?strtod(getenv("G4CMP_IMPACT_LENGTH_HOLES"),0):0),
+    impactLengthElectrons(getenv("G4CMP_IMPACT_LENGTH_ELECTRONS")?strtod(getenv("G4CMP_IMPACT_LENGTH_ELECTRONS"),0)*mm:DBL_MAX),
+    impactLengthHoles(getenv("G4CMP_IMPACT_LENGTH_HOLES")?strtod(getenv("G4CMP_IMPACT_LENGTH_HOLES"),0)*mm:DBL_MAX),
     clearance(getenv("G4CMP_CLEARANCE")?strtod(getenv("G4CMP_CLEARANCE"),0)*mm:1e-6*mm),
     stepScale(getenv("G4CMP_MIN_STEP")?strtod(getenv("G4CMP_MIN_STEP"),0):-1.),
     sampleEnergy(getenv("G4CMP_SAMPLE_ENERGY")?strtod(getenv("G4CMP_SAMPLE_ENERGY"),0):-1.),
