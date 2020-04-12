@@ -4,6 +4,9 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(G4CMP)
 
+# User can provide version string in case build is not from Git source
+set(G4CMP_VERSION "" CACHE STRING "G4CMP Version Tag to be used")
+
 #----------------------------------------------------------------------------
 # Find Geant4 package
 # NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
@@ -72,7 +75,8 @@ add_custom_target(version ALL
     COMMENT Building version identification file
     VERBATIM			# Allows for parentheses and redirection below
     COMMAND ${CMAKE_COMMAND} -E env ${SH}
-        -c "(cd ${PROJECT_SOURCE_DIR}; git describe) > ${version_FILE}"
+        -c "(cd ${PROJECT_SOURCE_DIR};\
+        [ -d .git ] && git describe || echo ${G4CMP_VERSION}) > ${version_FILE}"
     )
 
 install(FILES ${PROJECT_BINARY_DIR}/${version_FILE} DESTINATION share/G4CMP COMPONENT config)
