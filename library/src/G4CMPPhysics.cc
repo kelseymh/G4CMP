@@ -14,6 +14,8 @@
 // 20170822  M. Kelsey -- Rename EnergyLimiter to TrackLimiter
 // 20191017  M. Kelsey -- Add GenericIon to support energy partitioner
 // 20200331  G4CMP-196: Added impact ionization process
+// 20200426  G4CMP-196: Change "impact" to "trap ionization", separate
+//		process instances for each beam/trap type.
 
 #include "G4CMPPhysics.hh"
 #include "G4CMPConfigManager.hh"
@@ -21,7 +23,7 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftRecombinationProcess.hh"
-#include "G4CMPDriftImpactProcess.hh"
+#include "G4CMPDriftTrapIonization.hh"
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPPhononBoundaryProcess.hh"
@@ -69,8 +71,15 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* luke    = new G4CMPLukeScattering(tmStep);
   G4VProcess* recomb  = new G4CMPDriftRecombinationProcess;
   G4VProcess* eLimit  = new G4CMPTrackLimiter;
-  G4VProcess* impact  = new G4CMPDriftImpactProcess;
 
+  // NOTE: Trap ionization needs separate instances for each particle type
+  G4ParticleDefinition* edrift = G4CMPDriftElectron::Definition();
+  G4ParticleDefinition* hdrift = G4CMPDriftHole::Definition();
+
+  G4VProcess* eeTrpI = new G4CMPDriftTrapIonization(edrift, edrift);
+  G4VProcess* ehTrpI = new G4CMPDriftTrapIonization(edrift, hdrift);
+  G4VProcess* heTrpI = new G4CMPDriftTrapIonization(hdrift, edrift);
+  G4VProcess* hhTrpI = new G4CMPDriftTrapIonization(hdrift, hdrift);
 
   // Set process verbosity to match physics list, for diagnostics
   if (verboseLevel>0) {
@@ -83,7 +92,10 @@ void G4CMPPhysics::ConstructProcess() {
     luke->SetVerboseLevel(verboseLevel);
     recomb->SetVerboseLevel(verboseLevel);
     eLimit->SetVerboseLevel(verboseLevel);
-    impact->SetVerboseLevel(verboseLevel);
+    eeTrpI->SetVerboseLevel(verboseLevel);
+    ehTrpI->SetVerboseLevel(verboseLevel);
+    heTrpI->SetVerboseLevel(verboseLevel);
+    hhTrpI->SetVerboseLevel(verboseLevel);
   }
 
   G4ParticleDefinition* particle = 0;	// Reusable buffer for convenience
@@ -107,22 +119,24 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(phRefl, particle);
   RegisterProcess(eLimit, particle);
 
-  particle = G4CMPDriftElectron::Definition();
+  particle = edrift;
   RegisterProcess(tmStep, particle);
   RegisterProcess(luke, particle);
   RegisterProcess(ivScat, particle);
   RegisterProcess(driftB, particle);
   RegisterProcess(recomb, particle);
   RegisterProcess(eLimit, particle);
-  RegisterProcess(impact, particle);
+  RegisterProcess(eeTrpI, particle);	// e- projectile on both traps
+  RegisterProcess(ehTrpI, particle);
 
-  particle = G4CMPDriftHole::Definition();
+  particle = hdrift;
   RegisterProcess(tmStep, particle);
   RegisterProcess(luke, particle);
   RegisterProcess(driftB, particle);
   RegisterProcess(recomb, particle);
   RegisterProcess(eLimit, particle);
-  RegisterProcess(impact, particle);
+  RegisterProcess(heTrpI, particle);	// h+ projectile on both traps
+  RegisterProcess(hhTrpI, particle);
 
   AddSecondaryProduction();
 }

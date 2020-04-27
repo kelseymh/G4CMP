@@ -34,6 +34,7 @@
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 // 20200211  G4CMP-191:  Add version identification from .g4cmp-version
 // 20200331  G4CMP-196:  Add impact ionization mean free path
+// 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
 
 #include "globals.hh"
 
@@ -70,8 +71,10 @@ public:
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
-  static const G4double& GetImpactLengthElectrons()   { return Instance()->impactLengthElectrons; }
-  static const G4double& GetImpactLengthHoles()       { return Instance()->impactLengthHoles; }
+  static const G4double& GetEeTrapIonMFP() { return Instance()->eeTrapIonMFP; }
+  static const G4double& GetEhTrapIonMFP() { return Instance()->ehTrapIonMFP; }
+  static const G4double& GetHeTrapIonMFP() { return Instance()->heTrapIonMFP; }
+  static const G4double& GetHhTrapIonMFP() { return Instance()->hhTrapIonMFP; }
 
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
@@ -89,11 +92,12 @@ public:
   static void SetLukeSampling(G4double value) { Instance()->lukeSample = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
-  static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
-  static void SetImpactLengthElectrons(G4double value) { Instance()->impactLengthElectrons = value; }
-  static void SetImpactLengthHoles(G4double value) { Instance()->impactLengthHoles = value; }
-  static void Set(G4String value) { Instance()->IVRateModel = value; }
   static void CreateChargeCloud(G4bool value) { Instance()->chargeCloud = value; }
+  static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
+  static void SetEeTrapIonMFP(G4double value) { Instance()->eeTrapIonMFP = value; }
+  static void SetEhTrapIonMFP(G4double value) { Instance()->ehTrapIonMFP = value; }
+  static void SetHeTrapIonMFP(G4double value) { Instance()->heTrapIonMFP = value; }
+  static void SetHhTrapIonMFP(G4double value) { Instance()->hhTrapIonMFP = value; }
 
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
   static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
@@ -121,26 +125,28 @@ private:
   void setNIEL(G4VNIELPartition* niel);
 
 private:
-  G4int verbose;	// Global verbosity (all processes, lattices)
+  G4int verbose;	 // Global verbosity (all processes, lattices)
   G4int fPhysicsModelID; // ID key to get aux. track info.
-  G4int ehBounces;	// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
-  G4int pBounces;	// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
-  G4String version;	// Version name string extracted from .g4cmp-version
-  G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
-  G4String IVRateModel;	// Model for IV rate ($G4CMP_IV_RATE_MODEL)
-  G4double impactLengthElectrons;   // Mean free path for electron-electron impact ionization 
-  G4double impactLengthHoles;       // Mean free path for hole-hole impact ionization
-  G4double clearance;	// Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
-  G4double stepScale;	// Fraction of l0 for steps ($G4CMP_MIN_STEP)
+  G4int ehBounces;	 // Maximum e/h reflections ($G4CMP_EH_BOUNCES)
+  G4int pBounces;	 // Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
+  G4String version;	 // Version name string extracted from .g4cmp-version
+  G4String LatticeDir;	 // Lattice data directory ($G4LATTICEDATA)
+  G4String IVRateModel;	 // Model for IV rate ($G4CMP_IV_RATE_MODEL)
+  G4double eeTrapIonMFP; // Mean free path for e- on e-trap ionization ($G4CMP_EETRAPION_MFP)
+  G4double ehTrapIonMFP; // Mean free path for e- on h-trap ionization ($G4CMP_EHTRAPION_MFP)
+  G4double heTrapIonMFP; // Mean free path for h+ on e-trap ionization ($G4CMP_HETRAPION_MFP)
+  G4double hhTrapIonMFP; // Mean free path for h+ on h-trap ionization ($G4CMP_HHTRAPION_MFP)
+  G4double clearance;	 // Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
+  G4double stepScale;	 // Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double sampleEnergy; // Energy above which to do sampling ($G4CMP_SAMPLE_ENERGY)
-  G4double genPhonons;	// Rate to create primary phonons ($G4CMP_MAKE_PHONONS)
-  G4double genCharges;	// Rate to create primary e/h pairs ($G4CMP_MAKE_CHARGES)
-  G4double lukeSample;  // Rate to create Luke phonons ($G4CMP_LUKE_SAMPLE)
-  G4double EminPhonons;	// Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
-  G4double EminCharges;	// Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
-  G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
-  G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
-  G4bool chargeCloud;   // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
+  G4double genPhonons;	 // Rate to create primary phonons ($G4CMP_MAKE_PHONONS)
+  G4double genCharges;	 // Rate to create primary e/h pairs ($G4CMP_MAKE_CHARGES)
+  G4double lukeSample;   // Rate to create Luke phonons ($G4CMP_LUKE_SAMPLE)
+  G4double EminPhonons;	 // Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
+  G4double EminCharges;	 // Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
+  G4bool useKVsolver;	 // Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
+  G4bool fanoEnabled;	 // Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
+  G4bool chargeCloud;    // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
 
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
 

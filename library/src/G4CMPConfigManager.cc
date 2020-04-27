@@ -25,6 +25,7 @@
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 // 20200211  G4CMP-191:  Add version identification from .g4cmp-version
 // 20200331  G4CMP-196:  Add impact ionization mean free path
+// 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -53,8 +54,10 @@ G4CMPConfigManager::G4CMPConfigManager()
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):"Quadratic"),
-    impactLengthElectrons(getenv("G4CMP_IMPACT_LENGTH_ELECTRONS")?strtod(getenv("G4CMP_IMPACT_LENGTH_ELECTRONS"),0)*mm:DBL_MAX),
-    impactLengthHoles(getenv("G4CMP_IMPACT_LENGTH_HOLES")?strtod(getenv("G4CMP_IMPACT_LENGTH_HOLES"),0)*mm:DBL_MAX),
+    eeTrapIonMFP(getenv("G4CMP_EETRAPION_MFP")?strtod(getenv("G4CMP_EETRAPION_MFP"),0)*mm:DBL_MAX),
+    ehTrapIonMFP(getenv("G4CMP_EHTRAPION_MFP")?strtod(getenv("G4CMP_EHTRAPION_MFP"),0)*mm:DBL_MAX),
+    heTrapIonMFP(getenv("G4CMP_HETRAPION_MFP")?strtod(getenv("G4CMP_HETRAPION_MFP"),0)*mm:DBL_MAX),
+    hhTrapIonMFP(getenv("G4CMP_HHTRAPION_MFP")?strtod(getenv("G4CMP_HHTRAPION_MFP"),0)*mm:DBL_MAX),
     clearance(getenv("G4CMP_CLEARANCE")?strtod(getenv("G4CMP_CLEARANCE"),0)*mm:1e-6*mm),
     stepScale(getenv("G4CMP_MIN_STEP")?strtod(getenv("G4CMP_MIN_STEP"),0):-1.),
     sampleEnergy(getenv("G4CMP_SAMPLE_ENERGY")?strtod(getenv("G4CMP_SAMPLE_ENERGY"),0):-1.),

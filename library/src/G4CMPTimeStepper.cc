@@ -28,11 +28,13 @@
 // 20190906  Provide functions to externally set rate models, move process
 //		lookup functionality to G4CMP(Track)Utils.
 // 20200331  G4CMP-196: Added impact ionization mean free path
+// 20200426  G4CMP-196: Use static function in TrapIonization for MFPs
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPDriftTrapIonization.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -55,7 +57,7 @@
 
 G4CMPTimeStepper::G4CMPTimeStepper()
   : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper),
-    lukeRate(nullptr), ivRate(nullptr), impactLength(0.) {;}
+    lukeRate(nullptr), ivRate(nullptr), trapIonLength(0.) {;}
 
 G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
@@ -77,16 +79,18 @@ void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
 					    "G4CMPInterValleyScattering"));
   ivRate = ivProc ? ivProc->GetRateModel() : nullptr;
 
-  // get impact ionization mean free path
-  impactLength = (IsElectron() ? G4CMPConfigManager::GetImpactLengthElectrons()
-		  : IsHole()   ? G4CMPConfigManager::GetImpactLengthHoles()
-		  : DBL_MAX);
+  // get charge-trap ionization mean free path
+  G4double eTrapIonMFP = G4CMPDriftTrapIonization::
+    GetMeanFreePath(GetCurrentParticle(), G4CMPDriftElectron::Definition());
+  G4double hTrapIonMFP = G4CMPDriftTrapIonization::
+    GetMeanFreePath(GetCurrentParticle(), G4CMPDriftHole::Definition());
+  trapIonLength = std::min(eTrapIonMFP, hTrapIonMFP);
 
   if (verboseLevel>1) {
     G4cout << "TimeStepper Found" 
 	   << (lukeRate?" lukeRate":"")
 	   << (ivRate?" ivRate":"") 
-	   << (impactLength?" impactLength":"") 
+	   << (trapIonLength?" trapIonLength":"") 
 	   << G4endl;
   }
 
@@ -138,11 +142,10 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
     G4cout << "TS IV threshold mfp2 " << mfp2/m << " m" << G4endl;
 
   // Find distance to impact ionization
-  G4double mfp3 = impactLength ? impactLength : DBL_MAX;
-  if (mfp3 <= 1e-9*m) mfp3 = DBL_MAX;	// Avoid steps getting "too short"
+  G4double mfp3 = trapIonLength;
 
-  if (verboseLevel>1 && impactLength)
-    G4cout << "TS impact ionization mfp3 " << mfp3/m << " m" << G4endl;
+  if (verboseLevel>1)
+    G4cout << "TS trap ionization mfp3 " << mfp3/m << " m" << G4endl;
 
   // Take shortest distance from above options
   G4double mfp = std::min({mfp0, mfp1, mfp2, mfp3});
