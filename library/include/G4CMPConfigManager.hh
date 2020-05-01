@@ -35,6 +35,8 @@
 // 20200211  G4CMP-191:  Add version identification from .g4cmp-version
 // 20200331  G4CMP-196:  Add impact ionization mean free path
 // 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
+// 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
+//		"hTrap" -> "ATrap".
 
 #include "globals.hh"
 
@@ -71,10 +73,10 @@ public:
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
-  static const G4double& GetEeTrapIonMFP() { return Instance()->eeTrapIonMFP; }
-  static const G4double& GetEhTrapIonMFP() { return Instance()->ehTrapIonMFP; }
-  static const G4double& GetHeTrapIonMFP() { return Instance()->heTrapIonMFP; }
-  static const G4double& GetHhTrapIonMFP() { return Instance()->hhTrapIonMFP; }
+  static const G4double& GetEDTrapIonMFP() { return Instance()->eDTrapIonMFP; }
+  static const G4double& GetEATrapIonMFP() { return Instance()->eATrapIonMFP; }
+  static const G4double& GetHDTrapIonMFP() { return Instance()->hDTrapIonMFP; }
+  static const G4double& GetHATrapIonMFP() { return Instance()->hATrapIonMFP; }
 
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
@@ -94,10 +96,10 @@ public:
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
   static void CreateChargeCloud(G4bool value) { Instance()->chargeCloud = value; }
   static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
-  static void SetEeTrapIonMFP(G4double value) { Instance()->eeTrapIonMFP = value; }
-  static void SetEhTrapIonMFP(G4double value) { Instance()->ehTrapIonMFP = value; }
-  static void SetHeTrapIonMFP(G4double value) { Instance()->heTrapIonMFP = value; }
-  static void SetHhTrapIonMFP(G4double value) { Instance()->hhTrapIonMFP = value; }
+  static void SetEDTrapIonMFP(G4double value) { Instance()->eDTrapIonMFP = value; }
+  static void SetEATrapIonMFP(G4double value) { Instance()->eATrapIonMFP = value; }
+  static void SetHDTrapIonMFP(G4double value) { Instance()->hDTrapIonMFP = value; }
+  static void SetHATrapIonMFP(G4double value) { Instance()->hATrapIonMFP = value; }
 
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
   static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
@@ -132,10 +134,10 @@ private:
   G4String version;	 // Version name string extracted from .g4cmp-version
   G4String LatticeDir;	 // Lattice data directory ($G4LATTICEDATA)
   G4String IVRateModel;	 // Model for IV rate ($G4CMP_IV_RATE_MODEL)
-  G4double eeTrapIonMFP; // Mean free path for e- on e-trap ionization ($G4CMP_EETRAPION_MFP)
-  G4double ehTrapIonMFP; // Mean free path for e- on h-trap ionization ($G4CMP_EHTRAPION_MFP)
-  G4double heTrapIonMFP; // Mean free path for h+ on e-trap ionization ($G4CMP_HETRAPION_MFP)
-  G4double hhTrapIonMFP; // Mean free path for h+ on h-trap ionization ($G4CMP_HHTRAPION_MFP)
+  G4double eDTrapIonMFP; // Mean free path for e- on e-trap ionization ($G4CMP_EETRAPION_MFP)
+  G4double eATrapIonMFP; // Mean free path for e- on h-trap ionization ($G4CMP_EHTRAPION_MFP)
+  G4double hDTrapIonMFP; // Mean free path for h+ on e-trap ionization ($G4CMP_HETRAPION_MFP)
+  G4double hATrapIonMFP; // Mean free path for h+ on h-trap ionization ($G4CMP_HHTRAPION_MFP)
   G4double clearance;	 // Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
   G4double stepScale;	 // Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double sampleEnergy; // Energy above which to do sampling ($G4CMP_SAMPLE_ENERGY)

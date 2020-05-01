@@ -34,6 +34,8 @@
 // 20200211  Add command to report version from .g4cmp-version
 // 20200411  G4CMP-196: Add commands to set impact ionization MFPs
 // 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
+// 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
+//		"hTrap" -> "ATrap".
 
 #include "G4UImessenger.hh"
 
@@ -65,10 +67,10 @@ private:
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
   G4UIcmdWithADoubleAndUnit* sampleECmd;
-  G4UIcmdWithADoubleAndUnit* eeTrapionMFPCmd;
-  G4UIcmdWithADoubleAndUnit* ehTrapionMFPCmd;
-  G4UIcmdWithADoubleAndUnit* heTrapionMFPCmd;
-  G4UIcmdWithADoubleAndUnit* hhTrapionMFPCmd;
+  G4UIcmdWithADoubleAndUnit* eDTrapIonMFPCmd;
+  G4UIcmdWithADoubleAndUnit* eATrapIonMFPCmd;
+  G4UIcmdWithADoubleAndUnit* hDTrapIonMFPCmd;
+  G4UIcmdWithADoubleAndUnit* hATrapIonMFPCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;

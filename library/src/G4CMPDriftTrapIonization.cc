@@ -20,11 +20,20 @@
 #include <vector>
 
 
-// For constructor, return single-letter abbreviation for particle
+// For constructor, return abbreviation for particles, traps
 
 namespace {
   const char* pdLetter(const G4ParticleDefinition* pd) {
     return (G4CMP::IsElectron(pd) ? "e" : G4CMP::IsHole(pd) ? "h" : "x");
+  }
+
+  const char* trapLetter(const G4ParticleDefinition* pd) {
+    return (G4CMP::IsElectron(pd) ? "D" : G4CMP::IsHole(pd) ? "A" : "X");
+  }
+
+  G4CMPProcessSubType subtype(const G4ParticleDefinition* pd) {
+    return (G4CMP::IsElectron(pd) ? fDTrapIonization :
+	    G4CMP::IsHole(pd) ? fATrapIonization : fG4CMPProcess);
   }
 }
 
@@ -33,8 +42,8 @@ namespace {
 G4CMPDriftTrapIonization::
 G4CMPDriftTrapIonization(G4ParticleDefinition* impactPD,
 			 G4ParticleDefinition* trapPD, const G4String &name)
-  : G4CMPVDriftProcess(pdLetter(impactPD)+(pdLetter(trapPD)+name),
-		       fTrapIonization), impactType(impactPD),
+  : G4CMPVDriftProcess(pdLetter(impactPD)+(trapLetter(trapPD)+name),
+		       subtype(trapPD)), impactType(impactPD),
     trapType(trapPD) {;}
 
 G4CMPDriftTrapIonization::~G4CMPDriftTrapIonization() {;}
@@ -46,12 +55,12 @@ G4double G4CMPDriftTrapIonization::
 GetMeanFreePath(const G4ParticleDefinition* impactPD,
 		const G4ParticleDefinition* trapPD) {
   if (G4CMP::IsElectron(impactPD)) {
-    return (G4CMP::IsElectron(trapPD) ? G4CMPConfigManager::GetEeTrapIonMFP() :
-	    G4CMP::IsHole(trapPD) ? G4CMPConfigManager::GetEhTrapIonMFP() :
+    return (G4CMP::IsElectron(trapPD) ? G4CMPConfigManager::GetEDTrapIonMFP() :
+	    G4CMP::IsHole(trapPD) ? G4CMPConfigManager::GetEATrapIonMFP() :
 	    DBL_MAX);
   } else if (G4CMP::IsHole(impactPD)) {
-    return (G4CMP::IsElectron(trapPD) ? G4CMPConfigManager::GetHeTrapIonMFP() :
-	    G4CMP::IsHole(trapPD) ? G4CMPConfigManager::GetHhTrapIonMFP() :
+    return (G4CMP::IsElectron(trapPD) ? G4CMPConfigManager::GetHDTrapIonMFP() :
+	    G4CMP::IsHole(trapPD) ? G4CMPConfigManager::GetHATrapIonMFP() :
 	    DBL_MAX);
   } else {
     // FIXME:  Show we throw an exception here, or just return?
