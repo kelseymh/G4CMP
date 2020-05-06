@@ -28,12 +28,14 @@
 // 20190906  Provide functions to externally set rate models, move process
 //		lookup functionality to G4CMP(Track)Utils.
 // 20200331  C. Stanford (G4CMP-195): Added charge trapping
+// 20200504  M. Kelsey (G4CMP-195):  Get trapping MFPs from process
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPDriftTrappingProcess.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -80,9 +82,7 @@ void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
 
   // get charge trapping mean free path
   trappingLength =
-    (IsElectron() ? G4CMPConfigManager::GetTrappingLengthElectrons()
-     : IsHole()   ? G4CMPConfigManager::GetTrappingLengthHoles()
-     : DBL_MAX);
+    G4CMPDriftTrappingProcess::GetMeanFreePath(GetCurrentParticle());
 
   if (verboseLevel>1) {
     G4cout << "TimeStepper Found" 
@@ -139,8 +139,8 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   if (verboseLevel>1 && ivRate)
     G4cout << "TS IV threshold mfp2 " << mfp2/m << " m" << G4endl;
 
-  // Find distance to charge trapping threshold 
-  G4double mfp4 = trappingLength ? trappingLength : DBL_MAX;
+  // Find MFP for charge trapping
+  G4double mfp4 = trappingLength;
   if (mfp4 <= 1e-9*m) mfp4 = DBL_MAX;	// Avoid steps getting "too short"
 
   if (verboseLevel>1 && trappingLength)

@@ -28,6 +28,7 @@
 // 20191014  Drop command for anharmonic decay sampling.
 // 20200211  Add command to report version from .g4cmp-version
 // 20200411  G4CMP-195: Add commands to set charge trapping MFPs
+// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -116,12 +117,12 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   ivRateModelCmd->SetCandidates("IVRate Linear Quadratic");
   ivRateModelCmd->SetDefaultValue("Quadratic");
 
-  trapEMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("electronTrappingLength",
-	   "Mean free path for trapping of electrons by impurities");
+  trapEMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("eTrappingMFP",
+	   "Mean free path for trapping of electrons by D-type impurities");
   trapEMFPCmd->SetUnitCategory("Length");
 
-  trapHMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("holeTrappingLength",
-	   "Mean free path for trapping of holes by impurities");
+  trapHMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("hTrappingMFP",
+	   "Mean free path for trapping of holes by A-type impurities");
   trapHMFPCmd->SetUnitCategory("Length");
 
   nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
@@ -183,10 +184,10 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
     theManager->SetSamplingEnergy(sampleECmd->GetNewDoubleValue(value));
 
   if (cmd == trapEMFPCmd)
-    theManager->SetTrappingLengthElectrons(trapEMFPCmd->GetNewDoubleValue(value));
+    theManager->SetETrappingMFP(trapEMFPCmd->GetNewDoubleValue(value));
 
   if (cmd == trapHMFPCmd)
-    theManager->SetTrappingLengthHoles(trapHMFPCmd->GetNewDoubleValue(value));
+    theManager->SetHTrappingMFP(trapHMFPCmd->GetNewDoubleValue(value));
 
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));

@@ -25,6 +25,7 @@
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 // 20200211  G4CMP-191:  Add version identification from .g4cmp-version
 // 20200331  G4CMP-195:  Add charge trapping mean free paths
+// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -53,8 +54,8 @@ G4CMPConfigManager::G4CMPConfigManager()
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):"Quadratic"),
-    trappingLengthElectrons(getenv("G4CMP_TRAPPING_LENGTH_ELECTRONS")?strtod(getenv("G4CMP_TRAPPING_LENGTH_ELECTRONS"),0)*mm:DBL_MAX),
-    trappingLengthHoles(getenv("G4CMP_TRAPPING_LENGTH_HOLES")?strtod(getenv("G4CMP_TRAPPING_LENGTH_HOLES"),0)*mm:DBL_MAX),
+    eTrapMFP(getenv("G4CMP_ETRAPPING_MFP")?strtod(getenv("G4CMP_ETRAPPING_MFP"),0)*mm:DBL_MAX),
+    hTrapMFP(getenv("G4CMP_HTRAPPING_MFP")?strtod(getenv("G4CMP_HTRAPPING_MFP"),0)*mm:DBL_MAX),
     clearance(getenv("G4CMP_CLEARANCE")?strtod(getenv("G4CMP_CLEARANCE"),0)*mm:1e-6*mm),
     stepScale(getenv("G4CMP_MIN_STEP")?strtod(getenv("G4CMP_MIN_STEP"),0):-1.),
     sampleEnergy(getenv("G4CMP_SAMPLE_ENERGY")?strtod(getenv("G4CMP_SAMPLE_ENERGY"),0):-1.),
