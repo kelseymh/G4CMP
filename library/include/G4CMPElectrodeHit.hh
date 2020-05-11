@@ -3,6 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+// 20200510  M. Kelsey -- G4CMP-201: Allocator must be thread-local
+
 #ifndef G4CMPElectrodeHit_h
 #define G4CMPElectrodeHit_h 1
 
@@ -68,7 +70,7 @@ private:
 
 typedef G4THitsCollection<G4CMPElectrodeHit> G4CMPElectrodeHitsCollection;
 
-extern G4Allocator<G4CMPElectrodeHit> G4CMPElectrodeHitAllocator;
+extern G4ThreadLocal G4Allocator<G4CMPElectrodeHit> G4CMPElectrodeHitAllocator;
 
 inline void* G4CMPElectrodeHit::operator new(size_t) {
   void* aHit;
