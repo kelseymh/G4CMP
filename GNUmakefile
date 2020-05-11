@@ -10,6 +10,11 @@
 # Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 # Add new "sensors" example directory
 # Add top-level ".g4cmp-version" file to track as-built tag/SHA
+# Add Geant4 version checking
+# Manually set version with G4CMP_VERSION=xxx if Git not available
+
+# G4CMP requires Geant4 10.4 or later
+g4min := 10.4
 
 .PHONY : library phonon charge tests tools	# Targets named for directory
 .PHONY : all lib dist clean qhull examples
@@ -17,8 +22,8 @@
 # Initial target provides guidance if user tries bare |make|
 help :
 	@echo "G4CMP/GNUmakefile: Drives building library and demos" ;\
-	 echo "User must have configured their environment for GEANT4," ;\
-	 echo "using the geant4make.sh or .csh script." ;\
+	 echo "User must have configured their environment for GEANT4" ;\
+	 echo "$(g4min) or later, using the geant4make.sh or .csh script." ;\
 	 echo ;\
 	 echo "Targets available:" ;\
 	 echo "all           Builds everything: library and examples" ;\
@@ -55,11 +60,12 @@ dist : g4cmp.tgz
 
 # Version identification file (found under .../share in CMake build
 
-G4CMP_VERSION := .g4cmp-version
+G4CMP_VERSION_FILE := .g4cmp-version
 
 .PHONY : version
 version :
-	@[ -d .git ] && git describe > $(G4CMP_VERSION)
+	@([ -d .git ] && git describe || echo $(G4CMP_VERSION)) \
+	   > $(G4CMP_VERSION_FILE)
 
 # Directory targets
 
@@ -107,3 +113,10 @@ g4cmp.tgz : clean
 	 ln -s  ../$(G4CMP_VERSION) G4CMP ;\
 	 gtar -hzc -f $@ G4CMP ;\
 	 /bin/rm -rf G4CMP
+
+# Check for minimum Geant4 version (set at top of file)
+
+g4ver := $(shell geant4-config --version)
+ifneq ($(g4min), $(firstword $(sort $(g4min) $(g4ver))))
+  $(error Geant4 $(g4min) or later required.  Using $(g4ver))
+endif

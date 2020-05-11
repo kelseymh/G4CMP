@@ -37,6 +37,7 @@
 // 20200219  Replace use of G4HitsCollection with singleton data container
 // 20200222  Add control flag to turn off creating summary data
 // 20200316  Improve calculations of charge and phonon energy summaries
+// 20200328  Protect against invalid energy inputs
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -191,6 +192,17 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
 	   << G4endl;
   }
 
+  if (energy <= 0. || eNIEL < 0.) {
+    G4ExceptionDescription msg;
+    msg << "Invalid energy input:";
+    if (energy <= 0.) msg << " energy " << energy/eV << " eV";
+    if (eNIEL < 0.) msg << " NIEL " << eNIEL/eV << " eV";
+
+    G4Exception("G4CMPEnergyPartition::DoPartition", "Partition001",
+		EventMustBeAborted, msg);
+    return;
+  }
+
   // User specified phonon energy directly; assume it is correct
   if (eNIEL > 0.) DoPartition(energy-eNIEL, eNIEL);
   else {
@@ -225,6 +237,18 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
   if (verboseLevel>1) {
     G4cout << "G4CMPEnergyPartition::DoPartition: eIon " << eIon/MeV
 	   << " MeV, eNIEL " << eNIEL/MeV << " MeV" << G4endl;
+  }
+
+  if (eIon+eNIEL <= 0. || eIon< 0. || eNIEL < 0.) {
+    G4ExceptionDescription msg;
+    msg << "Invalid energy input:";
+    if (eIon+eNIEL <= 0.) msg << " eTotal " << (eIon+eNIEL)/eV << " eV";
+    if (eIon < 0.) msg << " eIon " << eIon/eV << " eV";
+    if (eNIEL < 0.) msg << " NIEL " << eNIEL/eV << " eV";
+
+    G4Exception("G4CMPEnergyPartition::DoPartition", "Partition001",
+		EventMustBeAborted, msg);
+    return;
   }
 
   particles.clear();		// Discard previous results

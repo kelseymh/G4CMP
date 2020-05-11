@@ -25,7 +25,7 @@ license can be found at `G4CMP/LICENSE`.
 
 ## User Environment
 
-Users must have a recent (10.2 or later) version of GEANT4 installed and
+Users must have a recent (10.4 or later) version of GEANT4 installed and
 configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See GEANT4's
 documentation for further instructions.).
 
@@ -176,6 +176,12 @@ or
 or
 	make library G4DEBUG=1
 
+*NOTE*:  If your source directory was not cloned from GitHub (specifically,
+if it does not contain `.git/`) you may need to specify a version string for
+identify the G4CMP version at runtime.  Use `G4CMP_VERSION=X.Y.Z` on the
+Make command line for this purpose.  If `.git/` is available, the option
+will be ignored.
+
 With the library built, any of the three demonstration programs (phonon,
 charge) may be built as a normal GEANT4 user application.
 From the top-level directory, use the command
@@ -207,6 +213,12 @@ If you want to install to a local path, rather than system-wide, use the
 
 *NOTE*:  If you want debugging symbols included with the G4CMP library, you
 need to include the `-DCMAKE_BUILD_TYPE=Debug` option.
+
+*NOTE*:  If your source directory was not cloned from GitHub (specifically,
+if it does not contain `.git/`) you may need to specify a version string for
+identify the G4CMP version at runtime.  Use the `-DG4CMP_VERSION=X.Y.Z`
+option for this purpose.  If `.git/` is available, the option will be
+ignored.
 
 If you want to build an example application,
 
