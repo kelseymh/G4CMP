@@ -18,6 +18,7 @@
 // 20190226  Provide access to TriLinearInterp object, and ctor assignment
 // 20190509  Migrate to 2D/3D mesh base class, handle dimensional reduction
 // 20190612  Mesh pointer ctor should set axes to kUndefined
+// 20200520  For thread-safety, move reusable "pos" buffer here
 
 #ifndef G4CMPMeshElectricField_h 
 #define G4CMPMeshElectricField_h 1
@@ -96,6 +97,9 @@ private:
   // Convert between 3D and 2D coordinates (Expand needs to know location)
   void Project2D(const G4double Point[3], G4double Project[2]) const;
   void Expand2Dat(const G4double Point[3], G4ThreeVector& Efield) const;
+
+private:
+  mutable G4ThreeVector pos_;		// Reusale buffer for calculations
 };
 
 #endif	/* G4CMPMeshElectricField_h */

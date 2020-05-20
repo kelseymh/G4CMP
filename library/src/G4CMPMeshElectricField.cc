@@ -20,6 +20,7 @@
 // 20190226  Provide access to TriLinearInterp object, and ctor assignment
 // 20190513  Provide support for 2D (e.g., axisymmetric) and 3D meshes.
 // 20190919  BUG FIX:  2D project functions need 'break' in switch statements.
+// 20200519  Move local "static" buffers to class for thread safety.
 
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPBiLinearInterp.hh"
@@ -230,8 +231,7 @@ namespace {
 
 void G4CMPMeshElectricField::Project2D(const G4double Point[3],
 				       G4double Project[2]) const {
-  static G4ThreeVector pos;		// Reusable buffer for convenience
-  pos.set(Point[0],Point[1],Point[2]);
+  pos_.set(Point[0],Point[1],Point[2]);
 
   Project[0] = Project[1] = 0.;
   
@@ -239,9 +239,9 @@ void G4CMPMeshElectricField::Project2D(const G4double Point[3],
   case kXAxis:    Project[0] = Point[0];  break;
   case kYAxis:    Project[0] = Point[1];  break;
   case kZAxis:    Project[0] = Point[2];  break;
-  case kRho:      Project[0] = pos.rho(); break;
-  case kRadial3D: Project[0] = pos.r();   break;
-  case kPhi:	  Project[0] = pos.phi(); break;
+  case kRho:      Project[0] = pos_.rho(); break;
+  case kRadial3D: Project[0] = pos_.r();   break;
+  case kPhi:	  Project[0] = pos_.phi(); break;
   default: ;
   }
   
@@ -249,14 +249,14 @@ void G4CMPMeshElectricField::Project2D(const G4double Point[3],
   case kXAxis:    Project[1] = Point[0];  break;
   case kYAxis:    Project[1] = Point[1];  break;
   case kZAxis:    Project[1] = Point[2];  break;
-  case kRho:      Project[1] = pos.rho(); break;
-  case kRadial3D: Project[1] = pos.r();   break;
-  case kPhi:	  Project[1] = pos.phi(); break;
+  case kRho:      Project[1] = pos_.rho(); break;
+  case kRadial3D: Project[1] = pos_.r();   break;
+  case kPhi:	  Project[1] = pos_.phi(); break;
   default: ;
   }
 
   if (G4CMPConfigManager::GetVerboseLevel() > 2) {
-    G4cout << "Project2D Point " << pos << " onto axes " << AxisName(xCoord)
+    G4cout << "Project2D Point " << pos_ << " onto axes " << AxisName(xCoord)
 	   << " " << AxisName(yCoord) << " : (" << Project[0] << ","
 	   << Project[1] << ")" << G4endl;
   }
@@ -264,8 +264,7 @@ void G4CMPMeshElectricField::Project2D(const G4double Point[3],
 
 void G4CMPMeshElectricField::Expand2Dat(const G4double Point[3],
 					G4ThreeVector& Efield) const {
-  static G4ThreeVector pos;		// Reusable buffer for convenience
-  pos.set(Point[0],Point[1],Point[2]);
+  pos_.set(Point[0],Point[1],Point[2]);
 
   G4double xval = Efield.x(), yval = Efield.y();
 
@@ -275,20 +274,20 @@ void G4CMPMeshElectricField::Expand2Dat(const G4double Point[3],
   if (xCoord == kYAxis && yCoord == kZAxis) Efield.set(0., xval, yval);
 
   // Radial field (e.g., spherical electrode) is easy
-  if (xCoord == kRadial3D) Efield.setRThetaPhi(xval, pos.theta(), pos.phi());
+  if (xCoord == kRadial3D) Efield.setRThetaPhi(xval, pos_.theta(), pos_.phi());
 
   // Cylindrical field around Z axis is easy
   if (xCoord == kRho && yCoord == kZAxis)
-    Efield.setRhoPhiZ(xval, pos.phi(), yval);
+    Efield.setRhoPhiZ(xval, pos_.phi(), yval);
 
   // Cylindrical fields around other axes are more complicated
   if (xCoord == kRho && yCoord == kXAxis) {
-    G4double phiYZ = atan2(pos.z(), pos.y());
+    G4double phiYZ = atan2(pos_.z(), pos_.y());
     Efield.set(yval, xval*cos(phiYZ), xval*sin(phiYZ));
   }
   
   if (xCoord == kRho && yCoord == kYAxis) {
-    G4double phiZX = atan2(pos.x(), pos.z());
+    G4double phiZX = atan2(pos_.x(), pos_.z());
     Efield.set(xval*sin(phiZX), yval, xval*cos(phiZX));
   }
 }
