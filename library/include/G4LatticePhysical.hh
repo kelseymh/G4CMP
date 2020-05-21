@@ -30,6 +30,8 @@
 // 20190704  M. Kelsey -- Add IV rate function selector for material
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value;
 //		add pass through call to GetValleyInv().
+// 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
+//		return thread-local instance.
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -162,9 +164,14 @@ public:
   void Dump(std::ostream& os) const;
 
 private:
-  G4int verboseLevel;			// Enable diagnostic output
-  mutable G4ThreeVector tempvec;	// Buffer for MapAtoB() calculations
+  // Create a thread-local buffer to use with MapAtoB() functions
+  inline G4ThreeVector& tempvec() const {
+    static G4ThreadLocal G4ThreeVector tempvec;
+    return tempvec;
+  }
 
+private:
+  G4int verboseLevel;			// Enable diagnostic output
   const G4LatticeLogical* fLattice;	// Underlying lattice parameters
   G4RotationMatrix fOrient;		// Rotate geometry into lattice frame
   G4RotationMatrix fInverse;
