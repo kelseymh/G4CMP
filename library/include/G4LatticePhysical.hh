@@ -166,8 +166,9 @@ public:
 private:
   // Create a thread-local buffer to use with MapAtoB() functions
   inline G4ThreeVector& tempvec() const {
-    static G4ThreadLocal G4ThreeVector tempvec;
-    return tempvec;
+    static G4ThreadLocal G4ThreeVector* tempvec=0;
+    if (!tempvec) tempvec = new G4ThreeVector;
+    return *tempvec;
   }
 
 private:
