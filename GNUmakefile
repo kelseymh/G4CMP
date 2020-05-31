@@ -12,6 +12,7 @@
 # Add top-level ".g4cmp-version" file to track as-built tag/SHA
 # Add Geant4 version checking
 # Manually set version with G4CMP_VERSION=xxx if Git not available
+# Add pass-through of thread-safety "code sanitizer" flags
 
 # G4CMP requires Geant4 10.4 or later
 g4min := 10.4
@@ -42,7 +43,8 @@ help :
 	 echo "For developers ONLY, make a distribution tar-ball:" ;\
 	 echo "dist          Builds a tar ball of the code, excluding .git/" ;\
 	 echo ;\
-	 echo "For step-by-step debugging, set G4CMP_DEBUG=1"
+	 echo "For step-by-step debugging, set G4CMP_DEBUG=1";\
+	 echo "For thread-safety checking, set G4CMP_USE_SANITIZER=1"
 
 # User targets
 
@@ -70,6 +72,8 @@ version :
 # Directory targets
 
 export G4CMP_DEBUG		# Turns on debugging output
+export G4CMP_USE_SANITIZER	# Enables multithread checking
+export G4CMP_SANITIZER_TYPE
 
 library :
 	-$(MAKE) version
