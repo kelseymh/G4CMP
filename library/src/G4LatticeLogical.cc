@@ -42,6 +42,8 @@
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value,
 //		precompute valley inverse transforms
 // 20190906  M. Kelsey -- Default IV rate model to G4CMPConfigManager value.
+// 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
+//		return thread-local instance.
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -456,9 +458,9 @@ G4LatticeLogical::MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const 
     G4cout << "G4LatticeLogical::MapPtoK " << ivalley << " " << p_e
 	   << G4endl;
 
-  tempvec = p_e;
-  tempvec /= hbarc;				// Convert to wavevector
-  return tempvec.transform(GetValley(ivalley));	// Rotate into valley frame
+  tempvec() = p_e;
+  tempvec() /= hbarc;				// Convert to wavevector
+  return tempvec().transform(GetValley(ivalley));	// Rotate into valley frame
 }
 
 G4ThreeVector 
@@ -467,9 +469,9 @@ G4LatticeLogical::MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const {
     G4cout << "G4LatticeLogical::MapPtoK_HV " << ivalley << " " << p_e
 	   << G4endl;
 
-  tempvec = p_e;
-  tempvec.transform(GetValley(ivalley));	// Rotate into valley frame
-  return GetSqrtInvTensor() * tempvec/hbarc;	// Herring-Vogt transformation
+  tempvec() = p_e;
+  tempvec().transform(GetValley(ivalley));	// Rotate into valley frame
+  return GetSqrtInvTensor() * tempvec()/hbarc;	// Herring-Vogt transformation
 }
 
 G4ThreeVector 
@@ -487,10 +489,10 @@ G4LatticeLogical::MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const {
     G4cout << "G4LatticeLogical::MapK_HVtoK " << ivalley << " " << k_HV
      << G4endl;
 
-  tempvec = k_HV;
-  tempvec *= GetSqrtTensor();			// From Herring-Vogt to valley
-  tempvec.transform(GetValleyInv(ivalley));	// Rotate out of valley
-  return tempvec;
+  tempvec() = k_HV;
+  tempvec() *= GetSqrtTensor();			// From Herring-Vogt to valley
+  tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
+  return tempvec();
 }
 
 G4ThreeVector 
@@ -499,11 +501,11 @@ G4LatticeLogical::MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const {
     G4cout << "G4LatticeLogical::MapK_HVtoP " << ivalley << " " << k_HV
 	   << G4endl;
 
-  tempvec = k_HV;
-  tempvec *= GetSqrtTensor();			// From Herring-Vogt to valley 
-  tempvec.transform(GetValleyInv(ivalley));	// Rotate out of valley
-  tempvec *= hbarc;			// Convert wavevector to momentum
-  return tempvec;
+  tempvec() = k_HV;
+  tempvec() *= GetSqrtTensor();			// From Herring-Vogt to valley 
+  tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
+  tempvec() *= hbarc;			// Convert wavevector to momentum
+  return tempvec();
 }
 
 G4ThreeVector 
@@ -512,10 +514,10 @@ G4LatticeLogical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
     G4cout << "G4LatticeLogical::MapK_valleyToP " << ivalley << " " << k
 	   << G4endl;
 
-  tempvec = k;
-  tempvec.transform(GetValleyInv(ivalley));	// Rotate out of valley
-  tempvec *= hbarc;			// Convert wavevector to momentum
-  return tempvec;
+  tempvec() = k;
+  tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
+  tempvec() *= hbarc;			// Convert wavevector to momentum
+  return tempvec();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -527,13 +529,13 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapPtoEkin " << iv << " " << p << G4endl;
 
-  tempvec = p;
-  tempvec.transform(GetValley(iv));		// Rotate to valley frame
+  tempvec() = p;
+  tempvec().transform(GetValley(iv));		// Rotate to valley frame
 
   // Compute kinetic energy component by component, then sum
-  return (0.5/c_squared) * (tempvec.x()*tempvec.x()*fMassInverse.xx() +
-			    tempvec.y()*tempvec.y()*fMassInverse.yy() +
-			    tempvec.z()*tempvec.z()*fMassInverse.zz());
+  return (0.5/c_squared) * (tempvec().x()*tempvec().x()*fMassInverse.xx() +
+			    tempvec().y()*tempvec().y()*fMassInverse.yy() +
+			    tempvec().z()*tempvec().z()*fMassInverse.zz());
 }
 
 G4double
@@ -541,13 +543,13 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapV_elToEkin " << iv << " " << v << G4endl;
 
-  tempvec = v;
-  tempvec.transform(GetValley(iv));			// Rotate to valley frame
+  tempvec() = v;
+  tempvec().transform(GetValley(iv));			// Rotate to valley frame
 
   // Compute kinetic energy component by component, then sum
-  return 0.5 * (tempvec.x()*tempvec.x()*fMassTensor.xx() +
-		tempvec.y()*tempvec.y()*fMassTensor.yy() +
-		tempvec.z()*tempvec.z()*fMassTensor.zz());
+  return 0.5 * (tempvec().x()*tempvec().x()*fMassTensor.xx() +
+		tempvec().y()*tempvec().y()*fMassTensor.yy() +
+		tempvec().z()*tempvec().z()*fMassTensor.zz());
 }
 
 // Compute effective "scalar" electron mass to match energy/momentum relation

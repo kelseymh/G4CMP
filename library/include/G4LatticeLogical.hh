@@ -282,10 +282,16 @@ private:
   G4ThreeVector ComputeKtoVg(G4int mode, const G4ThreeVector& k) const;
 
 private:
+  // Create a thread-local buffer to use with MapAtoB() functions
+  inline G4ThreeVector& tempvec() const {
+    static G4ThreadLocal G4ThreeVector* tempvec=0;
+    if (!tempvec) tempvec = new G4ThreeVector;
+    return *tempvec;
+  }
+
+private:
   G4int verboseLevel;			    // Enable diagnostic output
   G4String fName;			    // Name of lattice for messages
-  mutable G4ThreeVector tempvec;	    // Buffer for MapAtoB() calculations
-
   G4CMPCrystalGroup fCrystal;		    // Symmetry group, axis unit vectors
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
   G4double fDensity;			    // Material density (natural units)

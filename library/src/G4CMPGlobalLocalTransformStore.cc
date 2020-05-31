@@ -15,17 +15,17 @@
 // 20170605  Pass touchable from track, not just local volume
 // 20170721  BUG FIX:  NavHistory indexed in opposite direction from Touchable
 // 20170728  BUG FIX:  NavHistory returns global-to-local transform.
+// 20200519  Convert to thread-local singleton (for use by worker threads)
 
 #include "G4CMPGlobalLocalTransformStore.hh"
-
 #include "G4NavigationHistory.hh"
 #include "G4VTouchable.hh"
 
 
 G4CMPGlobalLocalTransformStore&
 G4CMPGlobalLocalTransformStore::Instance() {
-  static G4CMPGlobalLocalTransformStore instance;
-  return instance;
+  static G4ThreadLocalSingleton<G4CMPGlobalLocalTransformStore> instance;
+  return *(instance.Instance());	// G4TLSing returns pointer
 }
 
 const G4AffineTransform&

@@ -24,6 +24,7 @@
 // 20190711  G4CMP-158:  Add functions to select NIEL yield functions
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 // 20200211  G4CMP-191:  Add version identification from .g4cmp-version
+// 20200530  G4CMP-202:  Provide separate master and worker instances
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -32,18 +33,30 @@
 #include "G4VNIELPartition.hh"
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Threading.hh"
 #include <fstream>
 #include <stdlib.h>
 
 
-// Constructor and Singleton Initializer
-
-G4CMPConfigManager* G4CMPConfigManager::theInstance = 0;
+// Singleton Initializers for master and worker threads
 
 G4CMPConfigManager* G4CMPConfigManager::Instance() {
-  if (!theInstance) theInstance = new G4CMPConfigManager;
+  static const G4CMPConfigManager* masterInstance = 0;
+  static G4ThreadLocal G4CMPConfigManager* theInstance = 0;
+
+  if (!theInstance) {
+    if (!G4Threading::IsWorkerThread()) {	// Master or sequential
+      theInstance = new G4CMPConfigManager;
+      masterInstance = theInstance;
+    } else {					// Workers copy from master
+      theInstance = new G4CMPConfigManager(*masterInstance);
+    }
+  }
+
   return theInstance;
 }
+
+// Object constructor
 
 G4CMPConfigManager::G4CMPConfigManager()
   : verbose(getenv("G4CMP_DEBUG")?atoi(getenv("G4CMP_DEBUG")):0),
@@ -76,6 +89,21 @@ G4CMPConfigManager::G4CMPConfigManager()
 G4CMPConfigManager::~G4CMPConfigManager() {
   delete messenger; messenger=0;
 }
+
+// Duplicate existing (master) instances; don't need to check envvars
+
+G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
+  : verbose(master.verbose), fPhysicsModelID(master.fPhysicsModelID), 
+    ehBounces(master.ehBounces), pBounces(master.pBounces), 
+    version(master.version), LatticeDir(master.LatticeDir), 
+    IVRateModel(master.IVRateModel), clearance(master.clearance), 
+    stepScale(master.stepScale), sampleEnergy(master.sampleEnergy), 
+    genPhonons(master.genPhonons), genCharges(master.genCharges), 
+    lukeSample(master.lukeSample), EminPhonons(master.EminPhonons), 
+    EminCharges(master.EminCharges), useKVsolver(master.useKVsolver), 
+    fanoEnabled(master.fanoEnabled), chargeCloud(master.chargeCloud), 
+    nielPartition(master.nielPartition),
+    messenger(new G4CMPConfigMessenger(this)) {;}
 
 
 // Trigger rebuild of geometry if parameters change

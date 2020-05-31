@@ -27,6 +27,7 @@
 // 20180831  Fix compiler warning with PostStepDoIt() arguments
 // 20190906  Provide functions to externally set rate models, move process
 //		lookup functionality to G4CMP(Track)Utils.
+// 20200520  "First report" flag must be thread-local.
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPDriftElectron.hh"
@@ -194,7 +195,7 @@ G4double G4CMPTimeStepper::EnergyStep(G4double Efinal) const {
 // Report Luke and IV rates for diagnostics
 
 void G4CMPTimeStepper::ReportRates(const G4Track& aTrack) {
-  static G4bool first = true;
+  static G4ThreadLocal G4bool first = true;
   if (first) {
     G4cout << "TSreport Process Chg E[eV] v[m/s] k[1/m] Rate[Hz]" << G4endl;
     first = false;
