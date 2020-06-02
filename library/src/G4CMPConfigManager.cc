@@ -25,6 +25,10 @@
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 // 20200211  G4CMP-191:  Add version identification from .g4cmp-version
 // 20200331  G4CMP-195:  Add charge trapping mean free paths
+// 20200331  G4CMP-196:  Add impact ionization mean free path
+// 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
+// 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
+//		"hTrap" -> "ATrap".
 // 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 // 20200530  G4CMP-202:  Provide separate master and worker instances
 
@@ -69,6 +73,10 @@ G4CMPConfigManager::G4CMPConfigManager()
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):"Quadratic"),
     eTrapMFP(getenv("G4CMP_ETRAPPING_MFP")?strtod(getenv("G4CMP_ETRAPPING_MFP"),0)*mm:DBL_MAX),
     hTrapMFP(getenv("G4CMP_HTRAPPING_MFP")?strtod(getenv("G4CMP_HTRAPPING_MFP"),0)*mm:DBL_MAX),
+    eDTrapIonMFP(getenv("G4CMP_EDTRAPION_MFP")?strtod(getenv("G4CMP_EDTRAPION_MFP"),0)*mm:DBL_MAX),
+    eATrapIonMFP(getenv("G4CMP_EATRAPION_MFP")?strtod(getenv("G4CMP_EATRAPION_MFP"),0)*mm:DBL_MAX),
+    hDTrapIonMFP(getenv("G4CMP_HDTRAPION_MFP")?strtod(getenv("G4CMP_HDTRAPION_MFP"),0)*mm:DBL_MAX),
+    hATrapIonMFP(getenv("G4CMP_HATRAPION_MFP")?strtod(getenv("G4CMP_HATRAPION_MFP"),0)*mm:DBL_MAX),
     clearance(getenv("G4CMP_CLEARANCE")?strtod(getenv("G4CMP_CLEARANCE"),0)*mm:1e-6*mm),
     stepScale(getenv("G4CMP_MIN_STEP")?strtod(getenv("G4CMP_MIN_STEP"),0):-1.),
     sampleEnergy(getenv("G4CMP_SAMPLE_ENERGY")?strtod(getenv("G4CMP_SAMPLE_ENERGY"),0):-1.),

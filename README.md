@@ -68,9 +68,13 @@ developers should check the source code in
 | G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
 | G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED  | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
-| G4CMP\_IV\_RATE_MODEL | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
+| G4CMP\_IV\_RATE\_MODEL | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
 | G4CMP\_TRAPPING\_LENGTH\_ELECTRONS | /g4cmp/electronTrappingLength [L] mm |  Mean free path before charge trapping |
 | G4CMP\_TRAPPING\_LENGTH\_HOLES | /g4cmp/holeTrappingLength [L] mm | Mean free path before charge trapping |
+| G4CMP\_EDTRAPION\_MFP | /g4cmp/eDTrapIonizationMFP [L] mm | MFP for e-trap ionization by e- |
+| G4CMP\_EATRAPION\_MFP | /g4cmp/eATrapIonizationMFP [L] mm | MFP for h-trap ionization by e- |
+| G4CMP\_HDTRAPION\_MFP | /g4cmp/hDTrapIonizationMFP [L] mm | MFP for e-trap ionization by h+ |
+| G4CMP\_HATRAPION\_MFP | /g4cmp/hATrapIonizationMFP [L] mm | MFP for h-trap ionization by h+ |
 | G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [LewinSmith\|Lindhard] | Select NIEL partitioning function |
 | G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t\|f] | Create charges in sphere around location |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation [h] [k] [l] | Miller indices for lattice orientation  |

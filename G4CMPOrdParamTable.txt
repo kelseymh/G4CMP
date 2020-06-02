@@ -62,4 +62,6 @@ TimeStepper                 11     307     -1        -1     1000 0
 G4CMPSecondaryProduction    11     308     -1        -1     1000 0
 EnergyLimiter               11     309     -1        -1     1000 0
 ChargeRecombine             11     310     -1        -1     1000 0
+DTrapIonization             11     311     -1        -1     1000 0
+ATrapIonization             11     312     -1        -1     1000 0
 ChargeTrapping              11     313     -1        -1     1000 0
