@@ -41,7 +41,9 @@ public:
 
   // Subclasses MUST implement this to make thread-local copies
   // NOTE: This default is NOT THREAD SAFE; it reproduces old behaviour
-  virtual G4CMPVElectrodePattern* Clone() const { return this; }
+  virtual G4CMPVElectrodePattern* Clone() const {
+    return const_cast<G4CMPVElectrodePattern*>(this);
+  }
 
   // Subclasses may use verbosity level for diagnostics
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
