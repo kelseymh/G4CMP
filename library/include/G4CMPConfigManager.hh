@@ -33,6 +33,8 @@
 // 20190711  G4CMP-158:  Add functions to select NIEL yield functions
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 // 20200211  G4CMP-191:  Add version identification from .g4cmp-version
+// 20200331  G4CMP-195:  Add chage trapping MFP
+// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 // 20200530  G4CMP-202:  Provide separate master and worker instances
 
 #include "globals.hh"
@@ -72,6 +74,8 @@ public:
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
+  static const G4double& GetETrappingMFP() { return Instance()->eTrapMFP; }
+  static const G4double& GetHTrappingMFP() { return Instance()->hTrapMFP; }
 
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
@@ -90,6 +94,9 @@ public:
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
   static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
+  static void SetETrappingMFP(G4double value) { Instance()->eTrapMFP = value; }
+  static void SetHTrappingMFP(G4double value) { Instance()->hTrapMFP = value; }
+  static void Set(G4String value) { Instance()->IVRateModel = value; }
   static void CreateChargeCloud(G4bool value) { Instance()->chargeCloud = value; }
 
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
@@ -125,6 +132,8 @@ private:
   G4String version;	// Version name string extracted from .g4cmp-version
   G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
   G4String IVRateModel;	// Model for IV rate ($G4CMP_IV_RATE_MODEL)
+  G4double eTrapMFP;	// Mean free path for electron trapping
+  G4double hTrapMFP;	// Mean free path for hole trapping
   G4double clearance;	// Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
   G4double stepScale;	// Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double sampleEnergy; // Energy above which to do sampling ($G4CMP_SAMPLE_ENERGY)

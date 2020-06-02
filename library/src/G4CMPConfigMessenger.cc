@@ -27,6 +27,8 @@
 // 20190711  Add command to select non-ionizing energy loss function
 // 20191014  Drop command for anharmonic decay sampling.
 // 20200211  Add command to report version from .g4cmp-version
+// 20200411  G4CMP-195: Add commands to set charge trapping MFPs
+// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -43,10 +45,12 @@
 G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : G4UImessenger("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library"),
-    theManager(mgr), verboseCmd(0), ehBounceCmd(0), pBounceCmd(0), clearCmd(0),
-    minEPhononCmd(0), minEChargeCmd(0), minstepCmd(0), makePhononCmd(0),
-    makeChargeCmd(0), lukePhononCmd(0),
-    dirCmd(0), ivRateModelCmd(0), kvmapCmd(0), fanoStatsCmd(0), ehCloudCmd(0) {
+    theManager(mgr), versionCmd(0), verboseCmd(0), ehBounceCmd(0),
+    pBounceCmd(0), clearCmd(0), minEPhononCmd(0), minEChargeCmd(0),
+    sampleECmd(0), trapEMFPCmd(0), trapHMFPCmd(0), minstepCmd(0),
+    makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
+    ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0), fanoStatsCmd(0),
+    ehCloudCmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
 
@@ -113,6 +117,14 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   ivRateModelCmd->SetCandidates("IVRate Linear Quadratic");
   ivRateModelCmd->SetDefaultValue("Quadratic");
 
+  trapEMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("eTrappingMFP",
+	   "Mean free path for trapping of electrons by D-type impurities");
+  trapEMFPCmd->SetUnitCategory("Length");
+
+  trapHMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("hTrappingMFP",
+	   "Mean free path for trapping of holes by A-type impurities");
+  trapHMFPCmd->SetUnitCategory("Length");
+
   nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
 	       "Select calculation for non-ionizing energy loss (NIEL)");
   nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew");
@@ -132,6 +144,8 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete minEPhononCmd; minEPhononCmd=0;
   delete minEChargeCmd; minEChargeCmd=0;
   delete sampleECmd; sampleECmd=0;
+  delete trapEMFPCmd; trapEMFPCmd=0;
+  delete trapHMFPCmd; trapHMFPCmd=0;
   delete minstepCmd; minstepCmd=0;
   delete makePhononCmd; makePhononCmd=0;
   delete makeChargeCmd; makeChargeCmd=0;
@@ -168,6 +182,12 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
 
   if (cmd == sampleECmd)
     theManager->SetSamplingEnergy(sampleECmd->GetNewDoubleValue(value));
+
+  if (cmd == trapEMFPCmd)
+    theManager->SetETrappingMFP(trapEMFPCmd->GetNewDoubleValue(value));
+
+  if (cmd == trapHMFPCmd)
+    theManager->SetHTrappingMFP(trapHMFPCmd->GetNewDoubleValue(value));
 
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));

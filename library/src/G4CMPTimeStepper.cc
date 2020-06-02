@@ -27,12 +27,16 @@
 // 20180831  Fix compiler warning with PostStepDoIt() arguments
 // 20190906  Provide functions to externally set rate models, move process
 //		lookup functionality to G4CMP(Track)Utils.
+// 20200331  C. Stanford (G4CMP-195): Added charge trapping
+// 20200504  M. Kelsey (G4CMP-195):  Get trapping MFPs from process
 // 20200520  "First report" flag must be thread-local.
 
 #include "G4CMPTimeStepper.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPDriftTrappingProcess.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -55,7 +59,7 @@
 
 G4CMPTimeStepper::G4CMPTimeStepper()
   : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper),
-    lukeRate(nullptr), ivRate(nullptr) {;}
+    lukeRate(nullptr), ivRate(nullptr), trappingLength(0.) {;}
 
 G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
@@ -77,9 +81,16 @@ void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
 					    "G4CMPInterValleyScattering"));
   ivRate = ivProc ? ivProc->GetRateModel() : nullptr;
 
+  // get charge trapping mean free path
+  trappingLength =
+    G4CMPDriftTrappingProcess::GetMeanFreePath(GetCurrentParticle());
+
   if (verboseLevel>1) {
-    G4cout << "TimeStepper Found" << (lukeRate?" lukeRate":"")
-	   << (ivRate?" ivRate":"") << G4endl;
+    G4cout << "TimeStepper Found" 
+	   << (lukeRate?" lukeRate":"")
+	   << (ivRate?" ivRate":"") 
+	   << (trappingLength?" trappingLength":"") 
+	   << G4endl;
   }
 
   // Adjust rate models to keep highest verbosity level
@@ -129,8 +140,15 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   if (verboseLevel>1 && ivRate)
     G4cout << "TS IV threshold mfp2 " << mfp2/m << " m" << G4endl;
 
+  // Find MFP for charge trapping
+  G4double mfp4 = trappingLength;
+  if (mfp4 <= 1e-9*m) mfp4 = DBL_MAX;	// Avoid steps getting "too short"
+
+  if (verboseLevel>1 && trappingLength)
+    G4cout << "TS trapping MFP mfp4 " << mfp4/m << " m" << G4endl;
+
   // Take shortest distance from above options
-  G4double mfp = std::min(std::min(mfp0, mfp1), mfp2);
+  G4double mfp = std::min({mfp0, mfp1, mfp2, mfp4});
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
