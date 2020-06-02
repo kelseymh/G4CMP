@@ -22,6 +22,8 @@
 // 20170525  Drop empty destructor to allow default "rule of five" semantics
 // 20170928  Replce "polarizationState" with "mode"
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value
+// 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
+//		return thread-local instance.
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -107,8 +109,8 @@ G4LatticePhysical::RotateToSolid(G4ThreeVector& dir) const {
 G4double G4LatticePhysical::MapKtoV(G4int mode, const G4ThreeVector& k) const {
   if (verboseLevel>1) G4cout << "G4LatticePhysical::MapKtoV " << k << G4endl;
 
-  RotateToLattice(tempvec=k);
-  return fLattice->MapKtoV(mode, tempvec);
+  RotateToLattice(tempvec()=k);
+  return fLattice->MapKtoV(mode, tempvec());
 }
 
 ///////////////////////////////
@@ -117,8 +119,8 @@ G4double G4LatticePhysical::MapKtoV(G4int mode, const G4ThreeVector& k) const {
 G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int mode, const G4ThreeVector& k) const {
   if (verboseLevel>1) G4cout << "G4LatticePhysical::MapKtoVDir " << k << G4endl;
 
-  RotateToLattice(tempvec=k);
-  G4ThreeVector VG = fLattice->MapKtoVDir(mode, tempvec);  
+  RotateToLattice(tempvec()=k);
+  G4ThreeVector VG = fLattice->MapKtoVDir(mode, tempvec());  
 
   return RotateToSolid(VG);
 }
@@ -129,16 +131,16 @@ G4double G4LatticePhysical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapPtoEkin " << iv << " " << p << G4endl;
 
-  RotateToLattice(tempvec=p);
-  return fLattice->MapPtoEkin(iv, tempvec);
+  RotateToLattice(tempvec()=p);
+  return fLattice->MapPtoEkin(iv, tempvec());
 }
 
 G4double G4LatticePhysical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapV_elToEkin " << iv << " " << v << G4endl;
 
-  RotateToLattice(tempvec=v);
-  return fLattice->MapV_elToEkin(iv, tempvec);
+  RotateToLattice(tempvec()=v);
+  return fLattice->MapV_elToEkin(iv, tempvec());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -151,9 +153,9 @@ G4LatticePhysical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
     G4cout << "G4LatticePhysical::MapPtoV_el " << ivalley << " " << p_e
 	   << G4endl;
 
-  RotateToLattice(tempvec=p_e);
-  tempvec = fLattice->MapPtoV_el(ivalley, tempvec);
-  return RotateToSolid(tempvec);
+  RotateToLattice(tempvec()=p_e);
+  tempvec() = fLattice->MapPtoV_el(ivalley, tempvec());
+  return RotateToSolid(tempvec());
 }
 
 G4ThreeVector 
@@ -162,9 +164,9 @@ G4LatticePhysical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
     G4cout << "G4LatticePhysical::MapV_elRoP " << ivalley << " " << v_e
 	   << G4endl;
 
-  RotateToLattice(tempvec=v_e);
-  tempvec = fLattice->MapV_elToP(ivalley, tempvec);
-  return RotateToSolid(tempvec);
+  RotateToLattice(tempvec()=v_e);
+  tempvec() = fLattice->MapV_elToP(ivalley, tempvec());
+  return RotateToSolid(tempvec());
 }
 
 G4ThreeVector
@@ -173,9 +175,9 @@ G4LatticePhysical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_e) const 
     G4cout << "G4LatticePhysical::MapV_elToK_HV " << ivalley << " " << v_e
      << G4endl;
 
-  RotateToLattice(tempvec=v_e);
-  tempvec = fLattice->MapV_elToK_HV(ivalley, tempvec);
-  return RotateToSolid(tempvec);
+  RotateToLattice(tempvec()=v_e);
+  tempvec() = fLattice->MapV_elToK_HV(ivalley, tempvec());
+  return RotateToSolid(tempvec());
 }
 
 G4ThreeVector 
@@ -184,9 +186,9 @@ G4LatticePhysical::MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const
     G4cout << "G4LatticePhysical::MapPtoK " << ivalley << " " << p_e
 	   << G4endl;
 
-  RotateToLattice(tempvec=p_e);
-  tempvec = fLattice->MapPtoK_valley(ivalley, tempvec);
-  return RotateToSolid(tempvec);
+  RotateToLattice(tempvec()=p_e);
+  tempvec() = fLattice->MapPtoK_valley(ivalley, tempvec());
+  return RotateToSolid(tempvec());
 }
 
 G4ThreeVector 
@@ -195,9 +197,9 @@ G4LatticePhysical::MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const {
     G4cout << "G4LatticePhysical::MapPtoK_HV " << ivalley << " " << p_e
 	   << G4endl;
 
-  RotateToLattice(tempvec=p_e);
-  tempvec = fLattice->MapPtoK_HV(ivalley, tempvec);
-  return RotateToSolid(tempvec);
+  RotateToLattice(tempvec()=p_e);
+  tempvec() = fLattice->MapPtoK_HV(ivalley, tempvec());
+  return RotateToSolid(tempvec());
 }
 
 G4ThreeVector 
@@ -206,9 +208,9 @@ G4LatticePhysical::MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) c
     G4cout << "G4LatticePhysical::MapK_HVtoP " << ivalley << " " << k_HV
 	   << G4endl;
 
-  RotateToLattice(tempvec=k_HV);
-  tempvec = fLattice->MapK_HVtoK_valley(ivalley, tempvec);
-  return RotateToSolid(tempvec);
+  RotateToLattice(tempvec()=k_HV);
+  tempvec() = fLattice->MapK_HVtoK_valley(ivalley, tempvec());
+  return RotateToSolid(tempvec());
 }
 
 G4ThreeVector
@@ -217,9 +219,9 @@ G4LatticePhysical::MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const {
     G4cout << "G4LatticePhysical::MapK_HVtoK " << ivalley << " " << k_HV
      << G4endl;
 
-  RotateToLattice(tempvec=k_HV);
-  tempvec = fLattice->MapK_HVtoK(ivalley, tempvec);
-  return RotateToSolid(tempvec);
+  RotateToLattice(tempvec()=k_HV);
+  tempvec() = fLattice->MapK_HVtoK(ivalley, tempvec());
+  return RotateToSolid(tempvec());
 }
 
 
@@ -229,9 +231,9 @@ G4LatticePhysical::MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const {
     G4cout << "G4LatticePhysical::MapK_HVtoP " << ivalley << " " << k_HV
 	   << G4endl;
 
-  RotateToLattice(tempvec=k_HV);
-  tempvec = fLattice->MapK_HVtoP(ivalley, tempvec);
-  return RotateToSolid(tempvec);
+  RotateToLattice(tempvec()=k_HV);
+  tempvec() = fLattice->MapK_HVtoP(ivalley, tempvec());
+  return RotateToSolid(tempvec());
 }
 
 G4ThreeVector 
@@ -240,9 +242,9 @@ G4LatticePhysical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
     G4cout << "G4LatticePhysical::MapK_valleyToP " << ivalley << " " << k
 	   << G4endl;
 
-  RotateToLattice(tempvec=k);
-  tempvec = fLattice->MapK_valleyToP(ivalley, tempvec);
-  return RotateToSolid(tempvec);
+  RotateToLattice(tempvec()=k);
+  tempvec() = fLattice->MapK_valleyToP(ivalley, tempvec());
+  return RotateToSolid(tempvec());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

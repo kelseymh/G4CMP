@@ -167,7 +167,7 @@ The libraries (libg4cmp.so and libqhull.so) will be written to your
 `$G4WORKDIR/lib/$G4SYSTEM/` directory, just like any other Geant4 example or
 user code, and should be found automatically when linking an application.
 
-*NOTE*:  If you want debugging symbols included with the G4CMP library, you
+If you want debugging symbols included with the G4CMP library, you
 need to build with the G4DEBUG environment or Make variable set:
 
 	export G4DEBUG=1
@@ -175,6 +175,16 @@ or
 	setenv G4DEBUG 1
 or
 	make library G4DEBUG=1
+
+If you want to enable "sanitizing" options with the library, to look for
+memory leaks, thread collisions etc., you may set the options
+G4CMP_USE_SANITIZER and G4CMP_SANITIZER_TYPE (default is "thread"):
+
+	export G4CMP_USE_SANITIZER=1
+or
+	setenv G4CMP_USE_SANITIZER 1
+or
+	make library G4CMP_USE_SANITIZER=1
 
 *NOTE*:  If your source directory was not cloned from GitHub (specifically,
 if it does not contain `.git/`) you may need to specify a version string for
@@ -211,8 +221,14 @@ to be built, use the following command
 If you want to install to a local path, rather than system-wide, use the
 `-DCMAKE_INSTALL_PREFIX=/path/to/install` option.
 
-*NOTE*:  If you want debugging symbols included with the G4CMP library, you
+If you want debugging symbols included with the G4CMP library, you
 need to include the `-DCMAKE_BUILD_TYPE=Debug` option.
+
+If you want to enable "sanitizing" options with the library, to look for
+memory leaks, thread collisions etc., you may set the options
+`-DG4CMP_USE_SANITIZER=ON` and (optionally) `-DG4CMP_SANITIZER_TYPE=value`
+(default is "thread", other values may be "memory", "address", or "leak").
+If you do this, we recommend using the "Debug" build type.
 
 *NOTE*:  If your source directory was not cloned from GitHub (specifically,
 if it does not contain `.git/`) you may need to specify a version string for

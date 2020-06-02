@@ -33,6 +33,7 @@
 // 20190711  G4CMP-158:  Add functions to select NIEL yield functions
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 // 20200211  G4CMP-191:  Add version identification from .g4cmp-version
+// 20200530  G4CMP-202:  Provide separate master and worker instances
 
 #include "globals.hh"
 
@@ -42,9 +43,11 @@ class G4VNIELPartition;
 
 class G4CMPConfigManager {
 public:
+  // Thread-specific instance for use with Get/Set functions
   static G4CMPConfigManager* Instance();
+
   ~G4CMPConfigManager();	// Must be public for end-of-job cleanup
-  
+
   // Access G4CMP as-built version number
   static const G4String& Version()      { return Instance()->version; }
 
@@ -99,14 +102,14 @@ public:
   static void UpdateGeometry();
   
 private:
-  G4CMPConfigManager();		// Singleton: only constructed on request
-  G4CMPConfigManager(const G4CMPConfigManager&) = delete;
+  G4CMPConfigManager();		// Singleton: only constructed in master thread
+  G4CMPConfigManager(const G4CMPConfigManager&);	// To clone from master
+
+  // Suppress moving and assignment operations; cloning is done above
   G4CMPConfigManager(G4CMPConfigManager&&) = delete;
   G4CMPConfigManager& operator=(const G4CMPConfigManager&) = delete;
   G4CMPConfigManager& operator=(G4CMPConfigManager&&) = delete;
   
-  static G4CMPConfigManager* theInstance;
-
   // Constructor will call function to read .g4cmp-version file
   void setVersion();
 

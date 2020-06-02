@@ -8,10 +8,18 @@
 // 20160831  M. Kelsey -- Add optional electrode geometry class
 // 20160907  M. Kelsey -- Protect against (allowed!) null electrode pointers
 // 20170627  M. Kelsey -- Take ownership of electrode pointers and delete
+// 20200601  G4CMP-206: Need thread-local copies of electrode pointers
 
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPVElectrodePattern.hh"
+#include "G4AutoLock.hh"
+#include "G4Threading.hh"
+#include <stdexcept>	      // std::out_of_range
 
+
+namespace {
+  G4Mutex elMutex = G4MUTEX_INITIALIZER;     // For thread protection
+}
 
 // Constructors and destructor
 
@@ -46,6 +54,13 @@ G4CMPSurfaceProperty::~G4CMPSurfaceProperty() {
   // Delete electrodes associated with this surface
   delete theChargeElectrode; theChargeElectrode=0;
   delete thePhononElectrode; thePhononElectrode=0;
+
+  // Delete all of the registered worker electrodes
+  for (auto& celkv: workerChargeElectrode) { delete celkv.second; }
+  workerChargeElectrode.clear();
+
+  for (auto& pelkv: workerPhononElectrode) { delete pelkv.second; }
+  workerPhononElectrode.clear();
 }
 
 G4bool G4CMPSurfaceProperty::operator==(const G4SurfaceProperty& right) const {
@@ -131,6 +146,39 @@ void G4CMPSurfaceProperty::SetChargeElectrode(G4CMPVElectrodePattern* cel) {
 void G4CMPSurfaceProperty::SetPhononElectrode(G4CMPVElectrodePattern* pel) {
   thePhononElectrode = pel;
   if (pel) thePhononElectrode->UseSurfaceTable(&thePhononMatPropTable);
+}
+
+
+// Master thread can get original electrode; worker threads need local copies
+
+G4CMPVElectrodePattern* G4CMPSurfaceProperty::GetChargeElectrode() const {
+  if (!G4Threading::IsWorkerThread()) return theChargeElectrode;
+
+  if (theChargeElectrode) {
+    G4int id = G4Threading::G4GetThreadId();
+    try { return workerChargeElectrode.at(id); }
+    catch (std::out_of_range&) {
+      G4AutoLock l(&elMutex);
+      return (workerChargeElectrode[id] = theChargeElectrode->Clone());
+    }
+  }
+
+  return 0;
+}
+
+G4CMPVElectrodePattern* G4CMPSurfaceProperty::GetPhononElectrode() const {
+  if (!G4Threading::IsWorkerThread()) return thePhononElectrode;
+
+  if (thePhononElectrode) {
+    G4int id = G4Threading::G4GetThreadId();
+    try { return workerPhononElectrode.at(id); }
+    catch (std::out_of_range&) {
+      G4AutoLock l(&elMutex);
+      return (workerPhononElectrode[id] = thePhononElectrode->Clone());
+    }
+  }
+
+  return 0;
 }
 
 

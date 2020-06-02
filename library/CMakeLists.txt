@@ -8,6 +8,24 @@ set_property(CACHE G4CMP_DEBUG PROPERTY STRINGS "" 0 1 2 3 4)
 option(G4CMPTLI_DEBUG "Enable debugging of TriLinearInterp" OFF)
 
 #----------------------------------------------------------------------------
+# Sanitize Multithreaded code
+# Use -DG4CMP_USE_SANITIZER=ON to enable "-fsanitize=thread" on compilation.
+# Use -DG4CMP_SANITIZER_TYPE=thread (or memory, address, leak)
+#
+# Adapted rom Jonathan Madsen, LBL
+#
+option(G4CMP_USE_SANITIZER "Enable -fsanitize=\${G4CMP_SANITIZER_TYPE}" OFF)
+
+# the type of sanitizer to use, e.g. thread, memory, address, leak
+set(G4CMP_SANITIZER_TYPE "thread" CACHE STRING "-fsanitize=<TYPE>")
+set_property(CACHE G4CMP_SANITIZER_TYPE PROPERTY
+	     STRINGS "" "thread" "memory" "address" "leak")
+
+if(G4CMP_USE_SANITIZER)
+   set(G4CMP_FLAGS_SANITIZE "-fno-omit-frame-pointer" "-fsanitize=${G4CMP_SANITIZER_TYPE}")
+endif()
+
+#----------------------------------------------------------------------------
 # Find Geant4 package
 # NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
 #
@@ -279,7 +297,8 @@ if(USE_GEANT4_STATIC_LIBS)
 else()
     add_library(G4cmp SHARED ${library_SOURCES})
 endif()
-target_link_libraries(G4cmp ${Geant4_LIBRARIES} qhullcpp)
+
+target_link_libraries(G4cmp PUBLIC ${Geant4_LIBRARIES} qhullcpp)
 
 set(LibDefs "qh_QHpointer")
 if(NOT G4CMP_DEBUG STREQUAL "")
@@ -290,6 +309,12 @@ if(G4CMPTLI_DEBUG)
 endif()
 
 target_compile_definitions(G4cmp PUBLIC ${LibDefs})
+
+if(G4CMP_USE_SANITIZER)
+    target_compile_options(G4cmp INTERFACE ${G4CMP_FLAGS_SANITIZE})
+    set_property(TARGET G4cmp PROPERTY
+        INTERFACE_LINK_OPTIONS ${G4CMP_FLAGS_SANITIZE})
+endif()
 
 install(TARGETS G4cmp qhullcpp qhull_p qhullstatic_p DESTINATION lib)
 install(FILES ${library_HEADERS} DESTINATION include/G4CMP)
