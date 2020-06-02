@@ -40,7 +40,8 @@ public:
   G4CMPVElectrodePattern& operator=(G4CMPVElectrodePattern&&) = default;
 
   // Subclasses MUST implement this to make thread-local copies
-  virtual G4CMPVElectrodePattern* Clone() const = 0;
+  // NOTE: This default is NOT THREAD SAFE; it reproduces old behaviour
+  virtual G4CMPVElectrodePattern* Clone() const { return this; }
 
   // Subclasses may use verbosity level for diagnostics
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
