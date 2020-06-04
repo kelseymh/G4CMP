@@ -6,6 +6,7 @@
 // 20200331  G4CMP-196: Added impact ionization process
 // 20200426  G4CMP-196: Change name to TrapIonization, specify beam and trap
 //		particle types
+// 20200604  G4CMP-208: Comment out unused function arguments
 
 #include "G4CMPDriftTrapIonization.hh"
 #include "G4CMPConfigManager.hh"
@@ -69,16 +70,18 @@ GetMeanFreePath(const G4ParticleDefinition* impactPD,
   return DBL_MAX;	// Should never get here
 }
 
-G4double G4CMPDriftTrapIonization::GetMeanFreePath(const G4Track&, G4double,
-						   G4ForceCondition* cond) {
+G4double 
+G4CMPDriftTrapIonization::GetMeanFreePath(const G4Track&, G4double,
+					  G4ForceCondition* /*cond*/) {
   return GetMeanFreePath(impactType, trapType);
 }
 
 
 // Process action
 
-G4VParticleChange* G4CMPDriftTrapIonization::PostStepDoIt(const G4Track& aTrack,
-							  const G4Step& aStep) {
+G4VParticleChange* 
+G4CMPDriftTrapIonization::PostStepDoIt(const G4Track& aTrack,
+				       const G4Step& /*aStep*/) {
   aParticleChange.Initialize(aTrack);
 
   if (verboseLevel > 1) {
