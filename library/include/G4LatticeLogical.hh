@@ -36,6 +36,7 @@
 // 20190704  M. Kelsey -- Add IV rate function selector for material
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value,
 //		precompute valley inverse transforms
+// 20200608  Fix -Wshadow warnings from tempvec
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -284,9 +285,9 @@ private:
 private:
   // Create a thread-local buffer to use with MapAtoB() functions
   inline G4ThreeVector& tempvec() const {
-    static G4ThreadLocal G4ThreeVector* tempvec=0;
-    if (!tempvec) tempvec = new G4ThreeVector;
-    return *tempvec;
+    static G4ThreadLocal G4ThreeVector* v=0;
+    if (!v) v = new G4ThreeVector;
+    return *v;
   }
 
 private:
