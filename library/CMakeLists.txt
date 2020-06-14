@@ -223,7 +223,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftTrapIonization.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftRecombinationProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftTrackInfo.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftTrappingProcess.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftTrappingProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEigenSolver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeHit.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeSensitivity.hh
