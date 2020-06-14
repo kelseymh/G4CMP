@@ -32,6 +32,7 @@
 // 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 // 20200530  G4CMP-202:  Provide separate master and worker instances
 // 20200614  G4CMP-211:  Add functionality to print settings
+// 20200614  G4CMP-210:  Add missing initializers to copy constructor
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -112,7 +113,10 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
   : verbose(master.verbose), fPhysicsModelID(master.fPhysicsModelID), 
     ehBounces(master.ehBounces), pBounces(master.pBounces), 
     version(master.version), LatticeDir(master.LatticeDir), 
-    IVRateModel(master.IVRateModel), clearance(master.clearance), 
+    IVRateModel(master.IVRateModel), eTrapMFP(master.eTrapMFP),
+    hTrapMFP(master.hTrapMFP), eDTrapIonMFP(master.eDTrapIonMFP),
+    eATrapIonMFP(master.eATrapIonMFP), hDTrapIonMFP(master.hDTrapIonMFP),
+    hATrapIonMFP(master.hATrapIonMFP), clearance(master.clearance), 
     stepScale(master.stepScale), sampleEnergy(master.sampleEnergy), 
     genPhonons(master.genPhonons), genCharges(master.genCharges), 
     lukeSample(master.lukeSample), EminPhonons(master.EminPhonons), 
