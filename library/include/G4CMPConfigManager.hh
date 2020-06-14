@@ -40,8 +40,10 @@
 //		"hTrap" -> "ATrap".
 // 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 // 20200530  G4CMP-202:  Provide separate master and worker instances
+// 20200614  G4CMP-211:  Add functionality to print settings
 
 #include "globals.hh"
+#include <iosfwd>
 
 class G4CMPConfigMessenger;
 class G4VNIELPartition;
@@ -119,7 +121,11 @@ public:
   { Instance()->LatticeDir=dir; UpdateGeometry(); }
   
   static void UpdateGeometry();
-  
+
+  // Print out all configuration settings
+  static void Print(std::ostream& os) { Instance()->printConfig(os); }
+  void printConfig(std::ostream& os) const;
+
 private:
   G4CMPConfigManager();		// Singleton: only constructed in master thread
   G4CMPConfigManager(const G4CMPConfigManager&);	// To clone from master
@@ -128,7 +134,7 @@ private:
   G4CMPConfigManager(G4CMPConfigManager&&) = delete;
   G4CMPConfigManager& operator=(const G4CMPConfigManager&) = delete;
   G4CMPConfigManager& operator=(G4CMPConfigManager&&) = delete;
-  
+
   // Constructor will call function to read .g4cmp-version file
   void setVersion();
 
@@ -166,5 +172,12 @@ private:
 
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands
 };
+
+// Report configuration parameter values
+inline 
+std::ostream& operator<<(std::ostream& os, const G4CMPConfigManager& config) {
+  config.printConfig(os);
+  return os;
+}
 
 #endif	/* G4CMPConfigManager_hh */

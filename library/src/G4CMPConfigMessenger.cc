@@ -33,6 +33,7 @@
 // 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
 //		"hTrap" -> "ATrap".
 // 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
+// 20200614  G4CMP-211:  Add functionality to print settings
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -49,7 +50,7 @@
 G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : G4UImessenger("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library"),
-    theManager(mgr), versionCmd(0), verboseCmd(0), ehBounceCmd(0),
+    theManager(mgr), versionCmd(0), printCmd(0), verboseCmd(0), ehBounceCmd(0),
     pBounceCmd(0), clearCmd(0), minEPhononCmd(0), minEChargeCmd(0),
     sampleECmd(0), trapEMFPCmd(0), trapHMFPCmd(0), eDTrapIonMFPCmd(0),
     eATrapIonMFPCmd(0), hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), minstepCmd(0),
@@ -58,6 +59,9 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     ehCloudCmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
+
+  printCmd = CreateCommand<G4UIcmdWithoutParameter>("printConfig",
+				    "Report G4CMP configuration settings");
 
   versionCmd = CreateCommand<G4UIcmdWithoutParameter>("version",
 					    "Report G4CMP version string");
@@ -157,6 +161,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
 
 G4CMPConfigMessenger::~G4CMPConfigMessenger() {
+  delete printCmd; printCmd=0;
   delete verboseCmd; verboseCmd=0;
   delete versionCmd; versionCmd=0;
   delete ehBounceCmd; ehBounceCmd=0;
@@ -234,4 +239,6 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
 
   if (cmd == versionCmd)
     G4cout << "G4CMP version: " << theManager->Version() << G4endl;
+
+  if (cmd == printCmd) G4cout << *theManager << G4endl;
 }

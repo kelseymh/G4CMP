@@ -31,6 +31,7 @@
 //		"hTrap" -> "ATrap".
 // 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 // 20200530  G4CMP-202:  Provide separate master and worker instances
+// 20200614  G4CMP-211:  Add functionality to print settings
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -41,6 +42,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4Threading.hh"
 #include <fstream>
+#include <iostream>
+#include <typeinfo>
 #include <float.h>
 #include <stdlib.h>
 
@@ -148,4 +151,37 @@ void G4CMPConfigManager::setNIEL(G4String name) {
 void G4CMPConfigManager::setNIEL(G4VNIELPartition* niel) {
   delete nielPartition;
   nielPartition = niel;
+}
+
+
+// Report configuration setting for diagnostics
+
+void G4CMPConfigManager::printConfig(std::ostream& os) const {
+  os << "G4CMPConfigManager for G4CMP Version " << version
+     << "\nG4LATTICEDATA " << LatticeDir
+     << "\nG4CMP_DEBUG " << verbose
+     << "\nG4CMP_EH_BOUNCES " << ehBounces
+     << "\nG4CMP_PHON_BOUNCES " << pBounces
+     << "\nG4CMP_IV_RATE_MODEL " << IVRateModel
+     << "\nG4CMP_ETRAPPING_MFP " << eTrapMFP
+     << "\nG4CMP_HTRAPPING_MFP " << hTrapMFP
+     << "\nG4CMP_EDTRAPION_MFP " << eDTrapIonMFP
+     << "\nG4CMP_EATRAPION_MFP " << eATrapIonMFP
+     << "\nG4CMP_HDTRAPION_MFP " << hDTrapIonMFP
+     << "\nG4CMP_HATRAPION_MFP " << hATrapIonMFP
+     << "\nG4CMP_CLEARANCE " << clearance
+     << "\nG4CMP_MIN_STEP " << stepScale
+     << "\nG4CMP_SAMPLE_ENERGY " << sampleEnergy
+     << "\nG4CMP_MAKE_PHONONS " << genPhonons
+     << "\nG4CMP_MAKE_CHARGES " << genCharges
+     << "\nG4CMP_LUKE_SAMPLE " << lukeSample
+     << "\nG4CMP_EMIN_PHONONS " << EminPhonons
+     << "\nG4CMP_EMIN_CHARGES " << EminCharges
+     << "\nG4CMP_USE_KVSOLVER " << useKVsolver
+     << "\nG4CMP_FANO_ENABLED " << fanoEnabled
+     << "\nG4CMP_CHARGE_CLOUD " << chargeCloud
+     << "\nG4CMP_NIEL_FUNCTION "
+     << (nielPartition ? typeid(*nielPartition).name() : "---")
+     << "\nfPhysicsModelID " << fPhysicsModelID
+     << std::endl;
 }

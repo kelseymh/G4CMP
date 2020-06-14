@@ -37,6 +37,7 @@
 // 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
 // 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
 //		"hTrap" -> "ATrap".
+// 20200614  G4CMP-211:  Add functionality to print settings
 
 #include "G4UImessenger.hh"
 
@@ -61,6 +62,7 @@ private:
   G4CMPConfigManager* theManager;
 
   G4UIcmdWithoutParameter* versionCmd;
+  G4UIcmdWithoutParameter* printCmd;
   G4UIcmdWithAnInteger* verboseCmd;
   G4UIcmdWithAnInteger* ehBounceCmd;
   G4UIcmdWithAnInteger* pBounceCmd;
