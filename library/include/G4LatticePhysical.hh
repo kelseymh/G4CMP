@@ -32,6 +32,7 @@
 //		add pass through call to GetValleyInv().
 // 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
 //		return thread-local instance.
+// 20200608  Fix -Wshadow warnings from tempvec
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -166,9 +167,9 @@ public:
 private:
   // Create a thread-local buffer to use with MapAtoB() functions
   inline G4ThreeVector& tempvec() const {
-    static G4ThreadLocal G4ThreeVector* tempvec=0;
-    if (!tempvec) tempvec = new G4ThreeVector;
-    return *tempvec;
+    static G4ThreadLocal G4ThreeVector* v=0;
+    if (!v) v = new G4ThreeVector;
+    return *v;
   }
 
 private:

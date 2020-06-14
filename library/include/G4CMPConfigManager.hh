@@ -33,9 +33,17 @@
 // 20190711  G4CMP-158:  Add functions to select NIEL yield functions
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 // 20200211  G4CMP-191:  Add version identification from .g4cmp-version
+// 20200331  G4CMP-195:  Add chage trapping MFP
+// 20200331  G4CMP-196:  Add impact ionization mean free path
+// 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
+// 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
+//		"hTrap" -> "ATrap".
+// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 // 20200530  G4CMP-202:  Provide separate master and worker instances
+// 20200614  G4CMP-211:  Add functionality to print settings
 
 #include "globals.hh"
+#include <iosfwd>
 
 class G4CMPConfigMessenger;
 class G4VNIELPartition;
@@ -72,6 +80,12 @@ public:
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
+  static const G4double& GetETrappingMFP() { return Instance()->eTrapMFP; }
+  static const G4double& GetHTrappingMFP() { return Instance()->hTrapMFP; }
+  static const G4double& GetEDTrapIonMFP() { return Instance()->eDTrapIonMFP; }
+  static const G4double& GetEATrapIonMFP() { return Instance()->eATrapIonMFP; }
+  static const G4double& GetHDTrapIonMFP() { return Instance()->hDTrapIonMFP; }
+  static const G4double& GetHATrapIonMFP() { return Instance()->hATrapIonMFP; }
 
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
@@ -92,6 +106,13 @@ public:
   static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
   static void CreateChargeCloud(G4bool value) { Instance()->chargeCloud = value; }
 
+  static void SetETrappingMFP(G4double value) { Instance()->eTrapMFP = value; }
+  static void SetHTrappingMFP(G4double value) { Instance()->hTrapMFP = value; }
+  static void SetEDTrapIonMFP(G4double value) { Instance()->eDTrapIonMFP = value; }
+  static void SetEATrapIonMFP(G4double value) { Instance()->eATrapIonMFP = value; }
+  static void SetHDTrapIonMFP(G4double value) { Instance()->hDTrapIonMFP = value; }
+  static void SetHATrapIonMFP(G4double value) { Instance()->hATrapIonMFP = value; }
+
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
   static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
 
@@ -100,7 +121,11 @@ public:
   { Instance()->LatticeDir=dir; UpdateGeometry(); }
   
   static void UpdateGeometry();
-  
+
+  // Print out all configuration settings
+  static void Print(std::ostream& os) { Instance()->printConfig(os); }
+  void printConfig(std::ostream& os) const;
+
 private:
   G4CMPConfigManager();		// Singleton: only constructed in master thread
   G4CMPConfigManager(const G4CMPConfigManager&);	// To clone from master
@@ -109,7 +134,7 @@ private:
   G4CMPConfigManager(G4CMPConfigManager&&) = delete;
   G4CMPConfigManager& operator=(const G4CMPConfigManager&) = delete;
   G4CMPConfigManager& operator=(G4CMPConfigManager&&) = delete;
-  
+
   // Constructor will call function to read .g4cmp-version file
   void setVersion();
 
@@ -118,28 +143,41 @@ private:
   void setNIEL(G4VNIELPartition* niel);
 
 private:
-  G4int verbose;	// Global verbosity (all processes, lattices)
+  G4int verbose;	 // Global verbosity (all processes, lattices)
   G4int fPhysicsModelID; // ID key to get aux. track info.
   G4int ehBounces;	// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
   G4int pBounces;	// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
   G4String version;	// Version name string extracted from .g4cmp-version
   G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
   G4String IVRateModel;	// Model for IV rate ($G4CMP_IV_RATE_MODEL)
-  G4double clearance;	// Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
-  G4double stepScale;	// Fraction of l0 for steps ($G4CMP_MIN_STEP)
+  G4double eTrapMFP;	// Mean free path for electron trapping
+  G4double hTrapMFP;	// Mean free path for hole trapping
+  G4double eDTrapIonMFP; // Mean free path for e- on e-trap ionization ($G4CMP_EETRAPION_MFP)
+  G4double eATrapIonMFP; // Mean free path for e- on h-trap ionization ($G4CMP_EHTRAPION_MFP)
+  G4double hDTrapIonMFP; // Mean free path for h+ on e-trap ionization ($G4CMP_HETRAPION_MFP)
+  G4double hATrapIonMFP; // Mean free path for h+ on h-trap ionization ($G4CMP_HHTRAPION_MFP)
+  G4double clearance;	 // Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
+  G4double stepScale;	 // Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double sampleEnergy; // Energy above which to do sampling ($G4CMP_SAMPLE_ENERGY)
-  G4double genPhonons;	// Rate to create primary phonons ($G4CMP_MAKE_PHONONS)
-  G4double genCharges;	// Rate to create primary e/h pairs ($G4CMP_MAKE_CHARGES)
-  G4double lukeSample;  // Rate to create Luke phonons ($G4CMP_LUKE_SAMPLE)
-  G4double EminPhonons;	// Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
-  G4double EminCharges;	// Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
-  G4bool useKVsolver;	// Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
-  G4bool fanoEnabled;	// Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
-  G4bool chargeCloud;   // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
+  G4double genPhonons;	 // Rate to create primary phonons ($G4CMP_MAKE_PHONONS)
+  G4double genCharges;	 // Rate to create primary e/h pairs ($G4CMP_MAKE_CHARGES)
+  G4double lukeSample;   // Rate to create Luke phonons ($G4CMP_LUKE_SAMPLE)
+  G4double EminPhonons;	 // Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
+  G4double EminCharges;	 // Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
+  G4bool useKVsolver;	 // Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
+  G4bool fanoEnabled;	 // Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
+  G4bool chargeCloud;    // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
 
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
 
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands
 };
+
+// Report configuration parameter values
+inline 
+std::ostream& operator<<(std::ostream& os, const G4CMPConfigManager& config) {
+  config.printConfig(os);
+  return os;
+}
 
 #endif	/* G4CMPConfigManager_hh */

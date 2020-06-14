@@ -24,6 +24,7 @@
 // 20170824  Add diagnostic output
 // 20170928  Hide "output" usage behind verbosity check, as well as G4CMP_DEBUG
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
+// 20200604  G4CMP-208:  Report accept-reject values of u,x,q for debugging.
 
 #include "G4PhononDownconversion.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -300,6 +301,10 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
     x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
     if (x <= upperBound && x >= lowerBound) q = 1/(upperBound-lowerBound);
     else q = 0;
+  }
+
+  if (verboseLevel>2) {
+    G4cout << "Accept-reject got u " << u << " x " << x << " q " << q << G4endl;
   }
 
   //using energy fraction x to calculate daughter phonon directions

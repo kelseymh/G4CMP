@@ -24,7 +24,15 @@
 // 20190711  G4CMP-158:  Add functions to select NIEL yield functions
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 // 20200211  G4CMP-191:  Add version identification from .g4cmp-version
+// 20200331  G4CMP-195:  Add charge trapping mean free paths
+// 20200331  G4CMP-196:  Add impact ionization mean free path
+// 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
+// 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
+//		"hTrap" -> "ATrap".
+// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 // 20200530  G4CMP-202:  Provide separate master and worker instances
+// 20200614  G4CMP-211:  Add functionality to print settings
+// 20200614  G4CMP-210:  Add missing initializers to copy constructor
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -35,6 +43,9 @@
 #include "G4SystemOfUnits.hh"
 #include "G4Threading.hh"
 #include <fstream>
+#include <iostream>
+#include <typeinfo>
+#include <float.h>
 #include <stdlib.h>
 
 
@@ -64,6 +75,12 @@ G4CMPConfigManager::G4CMPConfigManager()
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):"Quadratic"),
+    eTrapMFP(getenv("G4CMP_ETRAPPING_MFP")?strtod(getenv("G4CMP_ETRAPPING_MFP"),0)*mm:DBL_MAX),
+    hTrapMFP(getenv("G4CMP_HTRAPPING_MFP")?strtod(getenv("G4CMP_HTRAPPING_MFP"),0)*mm:DBL_MAX),
+    eDTrapIonMFP(getenv("G4CMP_EDTRAPION_MFP")?strtod(getenv("G4CMP_EDTRAPION_MFP"),0)*mm:DBL_MAX),
+    eATrapIonMFP(getenv("G4CMP_EATRAPION_MFP")?strtod(getenv("G4CMP_EATRAPION_MFP"),0)*mm:DBL_MAX),
+    hDTrapIonMFP(getenv("G4CMP_HDTRAPION_MFP")?strtod(getenv("G4CMP_HDTRAPION_MFP"),0)*mm:DBL_MAX),
+    hATrapIonMFP(getenv("G4CMP_HATRAPION_MFP")?strtod(getenv("G4CMP_HATRAPION_MFP"),0)*mm:DBL_MAX),
     clearance(getenv("G4CMP_CLEARANCE")?strtod(getenv("G4CMP_CLEARANCE"),0)*mm:1e-6*mm),
     stepScale(getenv("G4CMP_MIN_STEP")?strtod(getenv("G4CMP_MIN_STEP"),0):-1.),
     sampleEnergy(getenv("G4CMP_SAMPLE_ENERGY")?strtod(getenv("G4CMP_SAMPLE_ENERGY"),0):-1.),
@@ -96,7 +113,10 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
   : verbose(master.verbose), fPhysicsModelID(master.fPhysicsModelID), 
     ehBounces(master.ehBounces), pBounces(master.pBounces), 
     version(master.version), LatticeDir(master.LatticeDir), 
-    IVRateModel(master.IVRateModel), clearance(master.clearance), 
+    IVRateModel(master.IVRateModel), eTrapMFP(master.eTrapMFP),
+    hTrapMFP(master.hTrapMFP), eDTrapIonMFP(master.eDTrapIonMFP),
+    eATrapIonMFP(master.eATrapIonMFP), hDTrapIonMFP(master.hDTrapIonMFP),
+    hATrapIonMFP(master.hATrapIonMFP), clearance(master.clearance), 
     stepScale(master.stepScale), sampleEnergy(master.sampleEnergy), 
     genPhonons(master.genPhonons), genCharges(master.genCharges), 
     lukeSample(master.lukeSample), EminPhonons(master.EminPhonons), 
@@ -135,4 +155,37 @@ void G4CMPConfigManager::setNIEL(G4String name) {
 void G4CMPConfigManager::setNIEL(G4VNIELPartition* niel) {
   delete nielPartition;
   nielPartition = niel;
+}
+
+
+// Report configuration setting for diagnostics
+
+void G4CMPConfigManager::printConfig(std::ostream& os) const {
+  os << "G4CMPConfigManager for G4CMP Version " << version
+     << "\nG4LATTICEDATA " << LatticeDir
+     << "\nG4CMP_DEBUG " << verbose
+     << "\nG4CMP_EH_BOUNCES " << ehBounces
+     << "\nG4CMP_PHON_BOUNCES " << pBounces
+     << "\nG4CMP_IV_RATE_MODEL " << IVRateModel
+     << "\nG4CMP_ETRAPPING_MFP " << eTrapMFP
+     << "\nG4CMP_HTRAPPING_MFP " << hTrapMFP
+     << "\nG4CMP_EDTRAPION_MFP " << eDTrapIonMFP
+     << "\nG4CMP_EATRAPION_MFP " << eATrapIonMFP
+     << "\nG4CMP_HDTRAPION_MFP " << hDTrapIonMFP
+     << "\nG4CMP_HATRAPION_MFP " << hATrapIonMFP
+     << "\nG4CMP_CLEARANCE " << clearance
+     << "\nG4CMP_MIN_STEP " << stepScale
+     << "\nG4CMP_SAMPLE_ENERGY " << sampleEnergy
+     << "\nG4CMP_MAKE_PHONONS " << genPhonons
+     << "\nG4CMP_MAKE_CHARGES " << genCharges
+     << "\nG4CMP_LUKE_SAMPLE " << lukeSample
+     << "\nG4CMP_EMIN_PHONONS " << EminPhonons
+     << "\nG4CMP_EMIN_CHARGES " << EminCharges
+     << "\nG4CMP_USE_KVSOLVER " << useKVsolver
+     << "\nG4CMP_FANO_ENABLED " << fanoEnabled
+     << "\nG4CMP_CHARGE_CLOUD " << chargeCloud
+     << "\nG4CMP_NIEL_FUNCTION "
+     << (nielPartition ? typeid(*nielPartition).name() : "---")
+     << "\nfPhysicsModelID " << fPhysicsModelID
+     << std::endl;
 }

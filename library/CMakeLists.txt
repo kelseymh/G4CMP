@@ -144,8 +144,10 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftBoundaryProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftElectron.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftHole.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftTrapIonization.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftRecombinationProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftTrackInfo.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPDriftTrappingProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEigenSolver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeHit.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeSensitivity.cc
@@ -218,8 +220,10 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftElectron.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftHole.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftTrapIonization.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftRecombinationProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftTrackInfo.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPDriftTrappingProcess.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEigenSolver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeHit.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeSensitivity.hh
