@@ -64,8 +64,17 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
                 "Insufficient info in MaterialPropertiesTable.");
   }
 
-  // FIXME:  Don't keep the pointer; copy the info to data members instead
-  filmProperties = prop;
+  // Extract values from table here for convenience in functions
+  if (filmProperties != prop) {
+    filmThickness = filmProperties->GetConstProperty("filmThickness");
+    gapEnergy = filmProperties->GetConstProperty("gapEnergy");
+    lowQPLimit = prop->ConstPropertyExists("lowQPLimit");
+    phononLifetime = filmProperties->GetConstProperty("phononLifetime");
+    phononLifetimeSlope = filmProperties->GetConstProperty("phononLifetimeSlope");
+    vSound = filmProperties->GetConstProperty("vSound");
+    
+    filmProperties = prop;
+  }
 }
 
 
@@ -98,9 +107,6 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
     return 0.;
   }
 
-  G4double gapEnergy  = filmProperties->GetConstProperty("gapEnergy");
-  G4double lowQPLimit = filmProperties->GetConstProperty("lowQPLimit");
-
   // Phonon goes into superconductor and gets partitioned into
   // quasiparticles, new phonons, and absorbed energy
   G4double EDep = 0.;
@@ -112,12 +118,12 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
       // Partition the phonons' energies into quasi-particles according to
       // a PDF defined in CalcQPEnergies().
       // NOTE: Both energy vectors mutate.
-      EDep += CalcQPEnergies(gapEnergy, lowQPLimit, phonEnergies, qpEnergies);
+      EDep += CalcQPEnergies(phonEnergies, qpEnergies);
     }
     if (qpEnergies.size() > 0) {
       // Quasiparticles can also excite phonons.
       // NOTE: Both energy vectors mutate.
-      EDep += CalcPhononEnergies(gapEnergy, lowQPLimit, phonEnergies, qpEnergies);
+      EDep += CalcPhononEnergies(phonEnergies, qpEnergies);
     }
     if (phonEnergies.size() > 0) {
       // Some phonons will escape back into the crystal.
@@ -136,22 +142,15 @@ G4double G4CMPKaplanQP::CalcEscapeProbability(G4double energy,
 	   << " " << thicknessFrac << G4endl;
   }
 
-  // Grab all necessary properties from the material.
-  G4double gapEnergy = filmProperties->GetConstProperty("gapEnergy");
-  G4double phononLifetime = filmProperties->GetConstProperty("phononLifetime");
-  G4double phononLifetimeSlope = filmProperties->GetConstProperty("phononLifetimeSlope");
-  G4double vSound = filmProperties->GetConstProperty("vSound");
-  G4double thickness = filmProperties->GetConstProperty("filmThickness");
-
+  // Compute energy-dependent mean free path for phonons in film
   G4double mfp = vSound * phononLifetime /
                  (1. + phononLifetimeSlope * (energy/gapEnergy - 2.));
 
-  return std::exp(-2.* thicknessFrac * thickness/mfp);
+  return std::exp(-2.* thicknessFrac * filmThickness/mfp);
 }
 
 G4double 
-G4CMPKaplanQP::CalcQPEnergies(G4double gapEnergy, G4double lowQPLimit,
-			      std::vector<G4double>& phonEnergies,
+G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
 			      std::vector<G4double>& qpEnergies) const {
   if (verboseLevel>1) {
     G4cout << "G4CMPKaplanQP::CalcQPEnergies " << gapEnergy << " "
@@ -161,7 +160,7 @@ G4CMPKaplanQP::CalcQPEnergies(G4double gapEnergy, G4double lowQPLimit,
   // Each phonon gives all of its energy to the qp pair it breaks.
   G4double EDep = 0.;
   for (G4double E: phonEnergies) {
-    G4double qpE = QPEnergyRand(gapEnergy, E);
+    G4double qpE = QPEnergyRand(E);
     if (verboseLevel>2) G4cout << " phononE " << E << " qpE " << qpE << G4endl;
 
     if (qpE >= lowQPLimit*gapEnergy) {
@@ -187,8 +186,7 @@ G4CMPKaplanQP::CalcQPEnergies(G4double gapEnergy, G4double lowQPLimit,
 
 
 G4double 
-G4CMPKaplanQP::CalcPhononEnergies(G4double gapEnergy, G4double lowQPLimit,
-				  std::vector<G4double>& phonEnergies,
+G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
 				  std::vector<G4double>& qpEnergies) const {
   if (verboseLevel>1) {
     G4cout << "G4CMPKaplanQP::CalcPhononEnergies " << gapEnergy << " "
@@ -204,7 +202,7 @@ G4CMPKaplanQP::CalcPhononEnergies(G4double gapEnergy, G4double lowQPLimit,
     if (verboseLevel>2) G4cout << " qpE " << E;		// Report before change
 
     // NOTE: E mutates in PhononEnergyRand.
-    G4double phonE = PhononEnergyRand(gapEnergy, E);
+    G4double phonE = PhononEnergyRand(E);
     if (verboseLevel>2) G4cout << " phononE " << phonE << " E " << E << G4endl;
 
     if (phonE >= 2.0*gapEnergy) {
@@ -253,8 +251,7 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
   phonEnergies.swap(newPhonEnergies);
 }
 
-G4double 
-G4CMPKaplanQP::QPEnergyRand(G4double gapEnergy, G4double Energy) const {
+G4double G4CMPKaplanQP::QPEnergyRand(G4double Energy) const {
   // PDF is not integrable, so we can't do an inverse transform sampling.
   // Instead, we'll do a rejection method.
   //
@@ -320,8 +317,7 @@ G4CMPKaplanQP::QPEnergyRand(G4double gapEnergy, G4double Energy) const {
 }
 
 // NOTE:  Input "Energy" value is replaced with E-phononE on return
-G4double 
-G4CMPKaplanQP::PhononEnergyRand(G4double gapEnergy, G4double& Energy) const {
+G4double G4CMPKaplanQP::PhononEnergyRand(G4double& Energy) const {
   // PDF is not integrable, so we can't do an inverse transform sampling.
   // Instead, we'll do a rejection method.
   //

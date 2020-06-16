@@ -58,16 +58,12 @@ protected:
 
   // Model the phonons (phonEnergies) breaking Cooper pairs into quasiparticles
   // (qpEnergies).
-  G4double CalcQPEnergies(G4double gapEnergy,
-			  G4double lowQPLimit,
-			  std::vector<G4double>& phonEnergies,
+  G4double CalcQPEnergies(std::vector<G4double>& phonEnergies,
 			  std::vector<G4double>& qpEnergies) const;
   
   // Model the quasiparticles (qpEnergies) emitting phonons (phonEnergies) in
   // the superconductor.
-  G4double CalcPhononEnergies(G4double gapEnergy,
-			      G4double lowQPLimit,
-			      std::vector<G4double>& phonEnergies,
+  G4double CalcPhononEnergies(std::vector<G4double>& phonEnergies,
 			      std::vector<G4double>& qpEnergies) const;
   
   // Calculate energies of phonon tracks that have reentered the crystal.
@@ -75,16 +71,22 @@ protected:
 				   std::vector<G4double>& reflectedEnergies) const;
   
   // Compute quasiparticle energy distribution from broken Cooper pair.
-  G4double QPEnergyRand(G4double gapEnergy, G4double Energy) const;
+  G4double QPEnergyRand(G4double Energy) const;
   
   // Compute phonon energy distribution from quasiparticle in superconductor.
   // NOTE:  Input "Energy" value is replaced with E-phononE on return
-  G4double PhononEnergyRand(G4double gapEnergy, G4double& Energy) const;
+  G4double PhononEnergyRand(G4double& Energy) const;
 
 private:
   G4int verboseLevel;		// For diagnostic messages
 
   G4MaterialPropertiesTable* filmProperties;
+  G4double filmThickness;	// Quantities extracted from properties table
+  G4double gapEnergy;
+  G4double lowQPLimit;
+  G4double phononLifetime;
+  G4double phononLifetimeSlope;
+  G4double vSound;
 };
 
 #endif	/* G4CMPKaplanQP_hh */
