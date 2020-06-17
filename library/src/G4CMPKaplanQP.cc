@@ -17,7 +17,9 @@
 #include "G4CMPKaplanQP.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4MaterialPropertiesTable.hh"
+#include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
+#include <numeric>
 
 
 // Global function for Kaplan quasiparticle downconversion.  Retained here
@@ -134,7 +136,17 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
     }
   }
 
-  if (verboseLevel>1) G4cout << " Absorbed " << EDep << G4endl;
+  // Sanity check -- Reflected + Absorbed should equal input
+  G4double ERefl = std::accumulate(reflectedEnergies.begin(),
+				   reflectedEnergies.end(), 0.);
+  if (verboseLevel>1)
+    G4cout << " Reflected " << ERefl << "\n Absorbed " << EDep << G4endl;
+
+  if (fabs(energy-ERefl+EDep)/energy > 1e-3) {
+    G4cerr << "WARNING G4CMPKaplanQP lost " << (energy-ERefl+EDep)/eV << " eV"
+	   << G4endl;
+  }
+
   return EDep;
 }
 
