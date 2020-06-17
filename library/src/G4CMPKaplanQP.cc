@@ -66,12 +66,12 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
 
   // Extract values from table here for convenience in functions
   if (filmProperties != prop) {
-    filmThickness = filmProperties->GetConstProperty("filmThickness");
-    gapEnergy = filmProperties->GetConstProperty("gapEnergy");
-    lowQPLimit = prop->ConstPropertyExists("lowQPLimit");
-    phononLifetime = filmProperties->GetConstProperty("phononLifetime");
-    phononLifetimeSlope = filmProperties->GetConstProperty("phononLifetimeSlope");
-    vSound = filmProperties->GetConstProperty("vSound");
+    filmThickness =       prop->GetConstProperty("filmThickness");
+    gapEnergy =           prop->GetConstProperty("gapEnergy");
+    lowQPLimit =          prop->GetConstProperty("lowQPLimit");
+    phononLifetime =      prop->GetConstProperty("phononLifetime");
+    phononLifetimeSlope = prop->GetConstProperty("phononLifetimeSlope");
+    vSound =              prop->GetConstProperty("vSound");
     
     filmProperties = prop;
   }
@@ -103,6 +103,8 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
 
   // If phonon is not absorbed, reflect it back with no deposition
   if (energy <= 2.0*gapEnergy && G4UniformRand() <= phononEscapeProb) {
+    if (verboseLevel>1) G4cout << " Not absorbed." << G4endl;
+
     reflectedEnergies.push_back(energy);
     return 0.;
   }
@@ -132,19 +134,25 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
     }
   }
 
+  if (verboseLevel>1) G4cout << " Absorbed " << EDep << G4endl;
   return EDep;
 }
 
 G4double G4CMPKaplanQP::CalcEscapeProbability(G4double energy,
 					      G4double thicknessFrac) const {
   if (verboseLevel>1) {
-    G4cout << "G4CMPKaplanQP::CalcEscapeProbability " << energy
-	   << " " << thicknessFrac << G4endl;
+    G4cout << "G4CMPKaplanQP::CalcEscapeProbability E " << energy
+	   << " thickFrac " << thicknessFrac << G4endl;
   }
 
   // Compute energy-dependent mean free path for phonons in film
   G4double mfp = vSound * phononLifetime /
                  (1. + phononLifetimeSlope * (energy/gapEnergy - 2.));
+
+  if (verboseLevel>2) {
+    G4cout << " mfp " << mfp << " returning "
+	   << std::exp(-2.* thicknessFrac * filmThickness/mfp) << G4endl;
+  }
 
   return std::exp(-2.* thicknessFrac * filmThickness/mfp);
 }
@@ -153,8 +161,8 @@ G4double
 G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
 			      std::vector<G4double>& qpEnergies) const {
   if (verboseLevel>1) {
-    G4cout << "G4CMPKaplanQP::CalcQPEnergies " << gapEnergy << " "
-	   << lowQPLimit << G4endl;
+    G4cout << "G4CMPKaplanQP::CalcQPEnergies QPcut " << lowQPLimit*gapEnergy
+	   << G4endl;
   }
 
   // Each phonon gives all of its energy to the qp pair it breaks.
@@ -189,8 +197,8 @@ G4double
 G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
 				  std::vector<G4double>& qpEnergies) const {
   if (verboseLevel>1) {
-    G4cout << "G4CMPKaplanQP::CalcPhononEnergies " << gapEnergy << " "
-	   << lowQPLimit << G4endl;
+    G4cout << "G4CMPKaplanQP::CalcPhononEnergies 2*gap " << 2.*gapEnergy
+	   << " QPcut " << lowQPLimit*gapEnergy << G4endl;
   }
 
   // NOTE: Phonons with low energy will not be seen by the detector, so we
