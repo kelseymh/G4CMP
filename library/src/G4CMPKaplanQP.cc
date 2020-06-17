@@ -142,7 +142,7 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   if (verboseLevel>1)
     G4cout << " Reflected " << ERefl << "\n Absorbed " << EDep << G4endl;
 
-  if (fabs(energy-ERefl+EDep)/energy > 1e-3) {
+  if (fabs(energy-ERefl-EDep)/energy > 1e-3) {
     G4cerr << "WARNING G4CMPKaplanQP lost " << (energy-ERefl+EDep)/eV << " eV"
 	   << G4endl;
   }
