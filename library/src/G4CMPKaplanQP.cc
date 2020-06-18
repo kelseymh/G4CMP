@@ -12,6 +12,8 @@
 //
 // 20200616  M. Kelsey -- Reimplement as class, keeping "KaplanPhononQP"
 //		interface for migration.
+// 20200618  G4CMP-212: Add optional parameter for below-bandgap phonons
+//		to be absorbed in the superconducting film.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -42,7 +44,9 @@ G4double G4CMP::KaplanPhononQP(G4double energy,
 // Class constructor
 
 G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
-  : verboseLevel(vb), filmProperties(0) {
+  : verboseLevel(vb), filmProperties(0), filmThickness(0.), gapEnergy(0.),
+    lowQPLimit(0.), subgapAbsorption(0.), phononLifetime(0.),
+    phononLifetimeSlope(0.), vSound(0.) {
   SetFilmProperties(prop);
 }
 
@@ -62,7 +66,8 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
         prop->ConstPropertyExists("phononLifetimeSlope") &&
         prop->ConstPropertyExists("vSound") &&
         prop->ConstPropertyExists("filmThickness"))) {
-    G4Exception("G4CMP::KaplanPhononQP()", "G4CMP002", RunMustBeAborted,
+    G4Exception("G4CMPKaplanQP::SetFilmProperties()", "G4CMP002",
+		RunMustBeAborted,
                 "Insufficient info in MaterialPropertiesTable.");
   }
 
@@ -74,7 +79,10 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
     phononLifetime =      prop->GetConstProperty("phononLifetime");
     phononLifetimeSlope = prop->GetConstProperty("phononLifetimeSlope");
     vSound =              prop->GetConstProperty("vSound");
-    
+
+    subgapAbsorption = (prop->ConstPropertyExists("subgapAbsorption")
+			? prop->GetConstProperty("subgapAbsorption") : 0.);
+
     filmProperties = prop;
   }
 }
@@ -88,11 +96,16 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
 
 G4double G4CMPKaplanQP::
 AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
+  if (!filmProperties) {
+    G4Exception("G4CMPKaplanQP::AbsorbPhonon()", "G4CMP001",
+                RunMustBeAborted, "Null MaterialPropertiesTable vector.");
+  }
+
   if (verboseLevel)
     G4cout << "G4CMPKaplanQP::AbsorbPhonon " << energy << G4endl;
 
   if (reflectedEnergies.size() > 0) {
-    G4Exception("G4CMP::KaplanPhononQP()", "G4CMP007", JustWarning,
+    G4Exception("G4CMPKaplanQP::AbsorbPhonon", "G4CMP007", JustWarning,
                 "Passed a nonempty reflectedEnergies vector.");
     // FIXME: Should we discard previous contents?
   }
@@ -158,6 +171,8 @@ G4double G4CMPKaplanQP::CalcEscapeProbability(G4double energy,
   }
 
   // Compute energy-dependent mean free path for phonons in film
+  if (gapEnergy <= 0.) return 1.;
+
   G4double mfp = vSound * phononLifetime /
                  (1. + phononLifetimeSlope * (energy/gapEnergy - 2.));
 
@@ -213,8 +228,6 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
 	   << " QPcut " << lowQPLimit*gapEnergy << G4endl;
   }
 
-  // NOTE: Phonons with low energy will not be seen by the detector, so we
-  // don't record those energies and just "lose" those phonons.
   // Have a reference in for loop b/c qp doesn't give all of its energy away.
   G4double EDep = 0.;
   std::vector<G4double> newQPEnergies;
@@ -226,12 +239,18 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
     if (verboseLevel>2) G4cout << " phononE " << phonE << " E " << E << G4endl;
 
     if (phonE >= 2.0*gapEnergy) {
-      if (verboseLevel>2) G4cout << " Storing phonE in phonEnergies" << G4endl;
+      if (verboseLevel>2) G4cout << " Store phonE in phonEnergies" << G4endl;
+      phonEnergies.push_back(phonE);
+    } else if (G4UniformRand() < subgapAbsorption) {
+      if (verboseLevel>2) G4cout << " Deposit phonE as heat" << G4endl;
+      EDep += phonE;
+    } else {
+      if (verboseLevel>2) G4cout << " Return phonE for reflection" << G4endl;
       phonEnergies.push_back(phonE);
     }
 
     if (E >= lowQPLimit*gapEnergy) {
-      if (verboseLevel>2) G4cout << " Storing E in qpEnergies" << G4endl;
+      if (verboseLevel>2) G4cout << " Store E in qpEnergies" << G4endl;
       newQPEnergies.push_back(E);
     } else {
       EDep += E;

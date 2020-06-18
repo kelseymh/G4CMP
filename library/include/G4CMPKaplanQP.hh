@@ -12,6 +12,8 @@
 //
 // 20200616  M. Kelsey -- Reimplement as class, keeping "KaplanPhononQP"
 //		interface for migration.
+// 20200618  G4CMP-212: Add optional parameter for below-bandgap phonons
+//		to be absorbed in the superconducting film.
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
@@ -82,11 +84,12 @@ private:
 
   G4MaterialPropertiesTable* filmProperties;
   G4double filmThickness;	// Quantities extracted from properties table
-  G4double gapEnergy;
-  G4double lowQPLimit;
-  G4double phononLifetime;
-  G4double phononLifetimeSlope;
-  G4double vSound;
+  G4double gapEnergy;		// Bandgap energy (delta)
+  G4double lowQPLimit;		// Minimum X*delta to keep as a quasiparticle
+  G4double subgapAbsorption;	// Probability to absorb energy below bandgap
+  G4double phononLifetime;	// Lifetime of phonons in film at 2*delta
+  G4double phononLifetimeSlope;	// Energy dependence of phonon lifetime
+  G4double vSound;		// Speed of sound in film
 };
 
 #endif	/* G4CMPKaplanQP_hh */
