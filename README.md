@@ -403,3 +403,62 @@ the crystal system.
 | ivQuadRate  | val | Coefficient for quadratic IV expression | Hz     |
 | ivQuadField | val | Minimum field for quadratic IV expression | V/m  |
 | ivQuadPower | exp | Exponent: rate = Rate*(E^2-Field^2)^(exp/2) | none |
+
+
+## Surface Interactions
+
+Transport of both phonons and charge carriers will involve interactions at
+the surface of a crystal volume.  The "boundary processes" are modelled on
+Geant4's optical physics process, and support reflection, transmission (from
+one lattice-equipped volume to another), and absorption with configurable
+probabilities.
+
+User applications should use the `G4CMPSurfaceProperty` class, or an
+application-specific subclass.  This class has `G4MaterialPropertiesTable`
+objects for phonons and charges seaprately; the base class constructor takes
+a long list of arguments to fill those tables with common parameters:
+
+  G4CMPSurfaceProperty(const G4String& name,
+                       G4double qAbsProb, // Prob. to absorb charge carrier
+                       G4double qReflProb, // If not absorbed, prob to reflect
+                       G4double eMinK, //Min wave number to absorb electron
+                       G4double hMinK, //Min wave number to absorb hole
+                       G4double pAbsProb, // Prob. to absorb phonon
+                       G4double pReflProb, // If not absorbed, prob to reflect
+                       G4double pSpecProb, //Prob. of specular reflection
+                       G4double pMinK, //Min wave number to absorb phonon
+                       G4SurfaceType stype = dielectric_dielectric);
+
+These parameters are sufficient to model absorption or reflection of both
+charges and phonons at the surface of a crystal.  User applications may
+choose to define both skin surfaces (for bare crystal substrates) and border
+surfaces (with associated sensor/device volumes attached to the crystal)
+with different property parameters.
+
+User applications with active sensors for either phonons or charges (or
+both), should define a subclass of `G4CMPVElectrodePattern` for each of
+those sensors (only one sensor per surface).  If the sensors require
+additional parameters, those should be assigned to the material properties
+table that goes with the surface above.
+
+Phonon sensors typically involve a superconducting film to couple the
+substrate to a sensor (SQUID, TES, etc.).  The `G4CMPKaplanQP` class
+provides a parametric model for that coupling, implmenting Kaplan's model
+for energy exchange between phonons and quasiparticles from broken Cooper
+pairs.  This class expects to find the following material properties defined
+for the metal film (defined using the function
+`G4MaterialPropertyTable::SetConstProperty("key", value);`).
+
+| Property Key     | Definition                  | Example value (Al) |
+|------------------|-----------------------------|--------------------|
+| filmThickness    | Thickness of film           | 600.*nm            |
+| gapEnergy        | Bandgap of film material    | 347.43e-6*eV       |
+| lowQPLimit       | Minimum bandgap multiple for quasiparticles | 3. |
+| phononLifetime   | Phonon lifetime in film at 2*bandgap | 242.*ps   |
+| phononLifetimeSlope | Lifetime dependence vs. energy | 0.29         |
+| vSound           | Speed of sound in film      | 3.26*km/s          |
+| subgapAbsorption | Probably to absorb energy below 2*bandgap | 0.   |
+
+The last parameter is optional.  It only apples if there is a sensor
+involved which is sensitive to heat energy, in which case phonons below
+2.*bandgap energy should be treated as directly absorbed.
