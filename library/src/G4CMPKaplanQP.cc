@@ -45,7 +45,7 @@ G4double G4CMP::KaplanPhononQP(G4double energy,
 
 G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
   : verboseLevel(vb), filmProperties(0), filmThickness(0.), gapEnergy(0.),
-    lowQPLimit(0.), subgapAbsorption(0.), phononLifetime(0.),
+    lowQPLimit(3.), subgapAbsorption(0.), phononLifetime(0.),
     phononLifetimeSlope(0.), vSound(0.) {
   SetFilmProperties(prop);
 }
@@ -61,7 +61,6 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
   // Check that the MaterialPropertiesTable has everything we need. If it came
   // from a G4CMPSurfaceProperty, then it will be fine.
   if (!(prop->ConstPropertyExists("gapEnergy") &&
-        prop->ConstPropertyExists("lowQPLimit") &&
         prop->ConstPropertyExists("phononLifetime") &&
         prop->ConstPropertyExists("phononLifetimeSlope") &&
         prop->ConstPropertyExists("vSound") &&
@@ -75,10 +74,12 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
   if (filmProperties != prop) {
     filmThickness =       prop->GetConstProperty("filmThickness");
     gapEnergy =           prop->GetConstProperty("gapEnergy");
-    lowQPLimit =          prop->GetConstProperty("lowQPLimit");
     phononLifetime =      prop->GetConstProperty("phononLifetime");
     phononLifetimeSlope = prop->GetConstProperty("phononLifetimeSlope");
     vSound =              prop->GetConstProperty("vSound");
+
+    lowQPLimit =       (prop->ConstPropertyExists("lowQPLimit")
+			? prop->GetConstProperty("lowQPLimit") : 3.);
 
     subgapAbsorption = (prop->ConstPropertyExists("subgapAbsorption")
 			? prop->GetConstProperty("subgapAbsorption") : 0.);
