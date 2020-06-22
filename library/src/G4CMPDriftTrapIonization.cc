@@ -12,7 +12,6 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
-#include "G4Exception.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4RandomDirection.hh"
