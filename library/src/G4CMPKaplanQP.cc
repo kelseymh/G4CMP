@@ -18,6 +18,8 @@
 //		apply to initial reflection condition for low-energy phonons.
 // 20200626  G4CMP-216: In CalcQPEnergies, check for below-bandgap phonons,
 //		and save them on phonon list for later re-emission.
+// 20200627  In *EnergyRand(), move PDF expressions to functions; eliminate
+//		mutation of E argument in PhononEnergyRand().
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -262,7 +264,9 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
 
     // NOTE: E mutates in PhononEnergyRand.
     G4double phonE = PhononEnergyRand(E);
-    if (verboseLevel>2) G4cout << " phononE " << phonE << " E " << E << G4endl;
+    G4double qpE = E - phonE;
+    if (verboseLevel>2)
+      G4cout << " phononE " << phonE << " qpE " << qpE << G4endl;
 
     if (IsSubgap(phonE)) {
       EDep += CalcSubgapAbsorption(phonE, phonEnergies);
@@ -271,11 +275,11 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
       phonEnergies.push_back(phonE);
     }
 
-    if (E >= lowQPLimit*gapEnergy) {
+    if (qpE >= lowQPLimit*gapEnergy) {
       if (verboseLevel>2) G4cout << " Store E in qpEnergies" << G4endl;
-      newQPEnergies.push_back(E);
+      newQPEnergies.push_back(qpE);
     } else {
-      EDep += E;
+      EDep += qpE;
     }
   }	// for (E: ...)
 
@@ -361,30 +365,26 @@ G4double G4CMPKaplanQP::QPEnergyRand(G4double Energy) const {
   const G4double BUFF = 1000.;
   G4double xmin = gapEnergy + (Energy-2.*gapEnergy)/BUFF;
   G4double xmax = gapEnergy + (Energy-2.*gapEnergy)*(BUFF-1.)/BUFF;
+  G4double ymax = QPEnergyPDF(Energy, xmin);
 
-  G4double ymax = (xmin*(Energy-xmin) + gapEnergy*gapEnergy)
-                  /
-                  sqrt((xmin*xmin - gapEnergy*gapEnergy) *
-                       ((Energy-xmin)*(Energy-xmin) - gapEnergy*gapEnergy));
-
-  G4double ytest = G4UniformRand()*ymax;
-  G4double xtest = G4UniformRand()*(xmax-xmin) + xmin;
-  while (ytest > (xtest*(Energy-xtest) + gapEnergy*gapEnergy)
-                  /
-                  sqrt((xtest*xtest - gapEnergy*gapEnergy) *
-                       ((Energy-xtest)*(Energy-xtest) - gapEnergy*gapEnergy))) {
+  G4double xtest=0., ytest=ymax;
+  do {
     ytest = G4UniformRand()*ymax;
     xtest = G4UniformRand()*(xmax-xmin) + xmin;
-  }
+  } while (ytest > QPEnergyPDF(Energy, xtest));
 
   return xtest;
 }
 
+G4double G4CMPKaplanQP::QPEnergyPDF(G4double E, G4double x) const {
+  const G4double gapsq = gapEnergy*gapEnergy;
+  return ( (x*(E-x) + gapsq) / sqrt((x*x-gapsq) * ((E-x)*(E-x)-gapsq)) );
+}
+
 
 // Compute phonon energy distribution from quasiparticle in superconductor.
-// NOTE:  Input "Energy" value is replaced with E-phononE on return
 
-G4double G4CMPKaplanQP::PhononEnergyRand(G4double& Energy) const {
+G4double G4CMPKaplanQP::PhononEnergyRand(G4double Energy) const {
   // PDF is not integrable, so we can't do an inverse transform sampling.
   // Instead, we'll do a rejection method.
   //
@@ -396,21 +396,18 @@ G4double G4CMPKaplanQP::PhononEnergyRand(G4double& Energy) const {
   const G4double BUFF = 1000.;
   G4double xmin = gapEnergy + gapEnergy/BUFF;
   G4double xmax = Energy;
+  G4double ymax = PhononEnergyPDF(Energy, xmin);
 
-  G4double ymax = (xmin*(Energy-xmin)*(Energy-xmin) *
-                    (xmin-gapEnergy*gapEnergy/Energy)) /
-                  sqrt(xmin*xmin - gapEnergy*gapEnergy);
-
-  G4double ytest = G4UniformRand()*ymax;
-  G4double xtest = G4UniformRand()*(xmax-xmin) + xmin;
-  while (ytest > (xtest*(Energy-xtest)*(Energy-xtest) *
-                    (xtest-gapEnergy*gapEnergy/Energy)) /
-                  sqrt(xtest*xtest - gapEnergy*gapEnergy)) {
+  G4double xtest=0., ytest=ymax;
+  do {
     ytest = G4UniformRand()*ymax;
     xtest = G4UniformRand()*(xmax-xmin) + xmin;
-  }
+  } while (ytest > PhononEnergyPDF(Energy, xtest));
 
-  G4double phononE = Energy - xtest;
-  Energy = xtest;
-  return phononE;
+  return Energy-xtest;
+}
+
+G4double G4CMPKaplanQP::PhononEnergyPDF(G4double E, G4double x) const {
+  const G4double gapsq = gapEnergy*gapEnergy;
+  return ( x*(E-x)*(E-x) * (x-gapsq/E) / sqrt(x*x - gapsq) );
 }

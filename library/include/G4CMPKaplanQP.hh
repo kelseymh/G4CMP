@@ -15,6 +15,8 @@
 // 20200618  G4CMP-212: Add optional parameter for below-bandgap phonons
 //		to be absorbed in the superconducting film.
 // 20200626  G4CMP-215: Add function to encapsulate below-bandgap absorption.
+// 20200627  In *EnergyRand(), move PDF expressions to functions; eliminate
+//		mutation of E argument in PhononEnergyRand().
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
@@ -80,10 +82,11 @@ protected:
 
   // Compute quasiparticle energy distribution from broken Cooper pair.
   G4double QPEnergyRand(G4double Energy) const;
+  G4double QPEnergyPDF(G4double E, G4double x) const;
   
   // Compute phonon energy distribution from quasiparticle in superconductor.
-  // NOTE:  Input "Energy" value is replaced with E-phononE on return
-  G4double PhononEnergyRand(G4double& Energy) const;
+  G4double PhononEnergyRand(G4double Energy) const;
+  G4double PhononEnergyPDF(G4double E, G4double x) const;
 
   // Encapsulate below-bandgap logic
   G4bool IsSubgap(G4double energy) const { return energy < 2.*gapEnergy; }
