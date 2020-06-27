@@ -14,6 +14,10 @@
 //		interface for migration.
 // 20200618  G4CMP-212: Add optional parameter for below-bandgap phonons
 //		to be absorbed in the superconducting film.
+// 20200626  G4CMP-215: Add function to encapsulate below-bandgap absorption,
+//		apply to initial reflection condition for low-energy phonons.
+// 20200626  G4CMP-216: In CalcQPEnergies, check for below-bandgap phonons,
+//		and save them on phonon list for later re-emission.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -115,10 +119,11 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   // assuming it goes exactly along the thickness direction, which is an
   // approximation.
   G4double frac = 2.0;
-  G4double phononEscapeProb = CalcEscapeProbability(energy, frac);
 
   // If phonon is not absorbed, reflect it back with no deposition
-  if (energy <= 2.0*gapEnergy && G4UniformRand() <= phononEscapeProb) {
+  if (energy <= 2.0*gapEnergy) {
+    return CalcSubgapAbsorption(energy, reflectedEnergies);
+  } else if (G4UniformRand() <= CalcEscapeProbability(energy, frac)) {
     if (verboseLevel>1) G4cout << " Not absorbed." << G4endl;
 
     reflectedEnergies.push_back(energy);
@@ -164,6 +169,10 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   return EDep;
 }
 
+
+// Compute the probability of phonon reentering the crystal without breaking
+// any Cooper pairs.
+
 G4double G4CMPKaplanQP::CalcEscapeProbability(G4double energy,
 					      G4double thicknessFrac) const {
   if (verboseLevel>1) {
@@ -185,6 +194,10 @@ G4double G4CMPKaplanQP::CalcEscapeProbability(G4double energy,
   return std::exp(-2.* thicknessFrac * filmThickness/mfp);
 }
 
+
+// Model the phonons (phonEnergies) breaking Cooper pairs into quasiparticles
+// (qpEnergies).
+
 G4double 
 G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
 			      std::vector<G4double>& qpEnergies) const {
@@ -193,9 +206,17 @@ G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
 	   << G4endl;
   }
 
-  // Each phonon gives all of its energy to the qp pair it breaks.
+  // Phonons above the bandgap give all of its energy to the qp pair it breaks.
   G4double EDep = 0.;
-  for (G4double E: phonEnergies) {
+  std::vector<G4double> newPhonEnergies;
+
+  for (G4double& E: phonEnergies) {
+    if (IsSubgap(E)) {
+      if (verboseLevel>2) G4cout << " Skipping phononE " << E << G4endl;
+      newPhonEnergies.push_back(E);
+      continue;
+    }
+
     G4double qpE = QPEnergyRand(E);
     if (verboseLevel>2) G4cout << " phononE " << E << " qpE " << qpE << G4endl;
 
@@ -212,14 +233,18 @@ G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
     } else {
       EDep += E-qpE;
     }
-  }
+  }	// for (E: ...)
 
-  phonEnergies.clear();		// All phonons have been processed
+  if (verboseLevel>1)
+    G4cout << " replacing phonEnergies, returning EDep " << EDep << G4endl;
 
-  if (verboseLevel>1) G4cout << " returning EDep " << EDep << G4endl;
+  phonEnergies.swap(newPhonEnergies);
   return EDep;
 }
 
+
+// Model the quasiparticles (qpEnergies) emitting phonons (phonEnergies) in
+// the superconductor.
 
 G4double 
 G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
@@ -239,14 +264,10 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
     G4double phonE = PhononEnergyRand(E);
     if (verboseLevel>2) G4cout << " phononE " << phonE << " E " << E << G4endl;
 
-    if (phonE >= 2.0*gapEnergy) {
-      if (verboseLevel>2) G4cout << " Store phonE in phonEnergies" << G4endl;
-      phonEnergies.push_back(phonE);
-    } else if (G4UniformRand() < subgapAbsorption) {
-      if (verboseLevel>2) G4cout << " Deposit phonE as heat" << G4endl;
-      EDep += phonE;
+    if (IsSubgap(phonE)) {
+      EDep += CalcSubgapAbsorption(phonE, phonEnergies);
     } else {
-      if (verboseLevel>2) G4cout << " Return phonE for reflection" << G4endl;
+      if (verboseLevel>2) G4cout << " Store phonE in phonEnergies" << G4endl;
       phonEnergies.push_back(phonE);
     }
 
@@ -256,7 +277,7 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
     } else {
       EDep += E;
     }
-  }
+  }	// for (E: ...)
 
   if (verboseLevel>1)
     G4cout << " replacing qpEnergies, returning EDep " << EDep << G4endl;
@@ -264,6 +285,9 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
   qpEnergies.swap(newQPEnergies);
   return EDep;
 }
+
+
+// Calculate energies of phonon tracks that have reentered the crystal.
 
 void G4CMPKaplanQP::
 CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
@@ -276,6 +300,13 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
   for (G4double E : phonEnergies) {
     if (verboseLevel>2) G4cout << " phononE " << E << G4endl;
 
+    // Phonons below the bandgap are unconditionally reflected
+    if (IsSubgap(E)) {
+      if (verboseLevel>2) G4cout << " phononE got reflected" << G4endl;
+      reflectedEnergies.push_back(E);
+      continue;
+    }
+
     // frac = 1.5 for phonons headed away from the subst. 0.5 for toward.
     // This assumes that, on average, the phonons are spawned at the center
     // of the superconductor, which is likely not true.
@@ -287,9 +318,33 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
       if (verboseLevel>2) G4cout << " phononE stays in film" << G4endl;
       newPhonEnergies.push_back(E);
     }
-  }
+  }	// for (E: ...)
+
   phonEnergies.swap(newPhonEnergies);
 }
+
+
+// Compute probability of absorbing phonon below Cooper-pair breaking
+
+G4double 
+G4CMPKaplanQP::CalcSubgapAbsorption(G4double energy,
+				    std::vector<G4double>& keepEnergies) const {
+  if (G4UniformRand() < subgapAbsorption) {
+    if (verboseLevel>2)
+      G4cout << " Deposit phonon " << energy << " as heat" << G4endl;
+
+    return energy;
+  } else {
+    if (verboseLevel>2)
+      G4cout << " Record phonon " << energy << " for processing" << G4endl;
+
+    keepEnergies.push_back(energy);
+    return 0.;
+  }
+}
+
+
+// Compute quasiparticle energy distribution from broken Cooper pair.
 
 G4double G4CMPKaplanQP::QPEnergyRand(G4double Energy) const {
   // PDF is not integrable, so we can't do an inverse transform sampling.
@@ -323,40 +378,12 @@ G4double G4CMPKaplanQP::QPEnergyRand(G4double Energy) const {
   }
 
   return xtest;
-/*
-  // PDF is not integrable, so we can't do an inverse transform sampling.
-  // PDF is shaped like a capital U, so a rejection method would be slow.
-  // Let's numerically calculate a CDF and throw a random to find E.
-
-  const G4int BINS = 1000;
-  G4double energyArr[BINS];
-  G4double cdf[BINS];
-  G4double pdfSum = 0.;
-  for (size_t i = 0; i < BINS; ++i) {
-    // Add 1 to i so first bin doesn't give zero denominator in pdfSum
-    // Add 1 to BINS so last bin doesn't give zero denominator in pdfSum
-    energyArr[i] = gapEnergy + (Energy-2.*gapEnergy) * (i+1.)/(BINS+1.);
-    pdfSum += (energyArr[i]*(Energy - energyArr[i]) + gapEnergy*gapEnergy)
-              /
-              sqrt((energyArr[i]*energyArr[i] - gapEnergy*gapEnergy) *
-                   ((Energy - energyArr[i])*(Energy - energyArr[i]) -
-                    gapEnergy*gapEnergy));
-    cdf[i] = pdfSum;
-  }
-
-  G4double u = G4UniformRand();
-
-  size_t index = 0;
-  for (; index < BINS; ++index) { //Combine normalization and search loops
-    if (cdf[index]/pdfSum >= u)
-      break;
-  }
-
-  return energyArr[index];
-*/
 }
 
+
+// Compute phonon energy distribution from quasiparticle in superconductor.
 // NOTE:  Input "Energy" value is replaced with E-phononE on return
+
 G4double G4CMPKaplanQP::PhononEnergyRand(G4double& Energy) const {
   // PDF is not integrable, so we can't do an inverse transform sampling.
   // Instead, we'll do a rejection method.

@@ -14,6 +14,7 @@
 //		interface for migration.
 // 20200618  G4CMP-212: Add optional parameter for below-bandgap phonons
 //		to be absorbed in the superconducting film.
+// 20200626  G4CMP-215: Add function to encapsulate below-bandgap absorption.
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
@@ -71,13 +72,21 @@ protected:
   // Calculate energies of phonon tracks that have reentered the crystal.
   void CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
 				   std::vector<G4double>& reflectedEnergies) const;
-  
+
+  // Compute probability of absorbing phonon below Cooper-pair breaking
+  // NOTE:  Function should ONLY be called for energy < 2.*gapEnergy
+  G4double CalcSubgapAbsorption(G4double energy,
+				std::vector<G4double>& keepEnergies) const;
+
   // Compute quasiparticle energy distribution from broken Cooper pair.
   G4double QPEnergyRand(G4double Energy) const;
   
   // Compute phonon energy distribution from quasiparticle in superconductor.
   // NOTE:  Input "Energy" value is replaced with E-phononE on return
   G4double PhononEnergyRand(G4double& Energy) const;
+
+  // Encapsulate below-bandgap logic
+  G4bool IsSubgap(G4double energy) const { return energy < 2.*gapEnergy; }
 
 private:
   G4int verboseLevel;		// For diagnostic messages
