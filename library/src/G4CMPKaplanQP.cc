@@ -20,6 +20,8 @@
 //		and save them on phonon list for later re-emission.
 // 20200627  In *EnergyRand(), move PDF expressions to functions; eliminate
 //		mutation of E argument in PhononEnergyRand().
+// 20200629  G4CMP-217: QPs below lowQPLimit should radiate phonon energy
+//		down to gapEnergy before absorption.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -225,6 +227,10 @@ G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
     if (qpE >= lowQPLimit*gapEnergy) {
       if (verboseLevel>2) G4cout << " Storing qpE in qpEnergies" << G4endl;
       qpEnergies.push_back(qpE);
+    } else if (qpE > gapEnergy) {
+      if (verboseLevel>2) G4cout << " Radiating qpE to gapEnergy" << G4endl;
+      EDep += CalcSubgapAbsorption(qpE-gapEnergy, newPhonEnergies);
+      EDep += gapEnergy;
     } else {
       EDep += qpE;
     }
@@ -232,6 +238,10 @@ G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
     if (E-qpE >= lowQPLimit*gapEnergy) {
       if (verboseLevel>2) G4cout << " Storing E-qpE in qpEnergies" << G4endl;
       qpEnergies.push_back(E-qpE);
+    } else if (E-qpE > gapEnergy) {
+      if (verboseLevel>2) G4cout << " Radiating E-qpE to gapEnergy" << G4endl;
+      EDep += CalcSubgapAbsorption(E-qpE-gapEnergy, newPhonEnergies);
+      EDep += gapEnergy;
     } else {
       EDep += E-qpE;
     }
