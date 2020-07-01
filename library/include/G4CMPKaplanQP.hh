@@ -17,6 +17,8 @@
 // 20200626  G4CMP-215: Add function to encapsulate below-bandgap absorption.
 // 20200627  In *EnergyRand(), move PDF expressions to functions; eliminate
 //		mutation of E argument in PhononEnergyRand().
+// 20200701  G4CMP-217: New function to handle QP energy absorption below
+//		minimum for QP -> phonon -> new QP pair chain (3*bandgap).
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
@@ -79,6 +81,12 @@ protected:
   // NOTE:  Function should ONLY be called for energy < 2.*gapEnergy
   G4double CalcSubgapAbsorption(G4double energy,
 				std::vector<G4double>& keepEnergies) const;
+
+  // Handle absorption of quasiparticle energies below Cooper-pair breaking
+  // If qpEnergy < 3*Delta, radiate a phonon, absorb bandgap minimum
+  G4double CalcQPAbsorption(G4double energy,
+			    std::vector<G4double>& phonEnergies,
+			    std::vector<G4double>& qpEnergies) const;
 
   // Compute quasiparticle energy distribution from broken Cooper pair.
   G4double QPEnergyRand(G4double Energy) const;

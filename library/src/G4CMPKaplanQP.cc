@@ -21,7 +21,8 @@
 // 20200627  In *EnergyRand(), move PDF expressions to functions; eliminate
 //		mutation of E argument in PhononEnergyRand().
 // 20200629  G4CMP-217: QPs below lowQPLimit should radiate phonon energy
-//		down to gapEnergy before absorption.
+//		down to gapEnergy before absorption.  Encapsulate this in
+//		a function.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -125,7 +126,7 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   G4double frac = 2.0;
 
   // If phonon is not absorbed, reflect it back with no deposition
-  if (energy <= 2.0*gapEnergy) {
+  if (IsSubgap(energy)) {
     return CalcSubgapAbsorption(energy, reflectedEnergies);
   } else if (G4UniformRand() <= CalcEscapeProbability(energy, frac)) {
     if (verboseLevel>1) G4cout << " Not absorbed." << G4endl;
@@ -214,7 +215,7 @@ G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
   G4double EDep = 0.;
   std::vector<G4double> newPhonEnergies;
 
-  for (G4double& E: phonEnergies) {
+  for (const G4double& E: phonEnergies) {
     if (IsSubgap(E)) {
       if (verboseLevel>2) G4cout << " Skipping phononE " << E << G4endl;
       newPhonEnergies.push_back(E);
@@ -224,27 +225,8 @@ G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
     G4double qpE = QPEnergyRand(E);
     if (verboseLevel>2) G4cout << " phononE " << E << " qpE " << qpE << G4endl;
 
-    if (qpE >= lowQPLimit*gapEnergy) {
-      if (verboseLevel>2) G4cout << " Storing qpE in qpEnergies" << G4endl;
-      qpEnergies.push_back(qpE);
-    } else if (qpE > gapEnergy) {
-      if (verboseLevel>2) G4cout << " Radiating qpE to gapEnergy" << G4endl;
-      EDep += CalcSubgapAbsorption(qpE-gapEnergy, newPhonEnergies);
-      EDep += gapEnergy;
-    } else {
-      EDep += qpE;
-    }
-
-    if (E-qpE >= lowQPLimit*gapEnergy) {
-      if (verboseLevel>2) G4cout << " Storing E-qpE in qpEnergies" << G4endl;
-      qpEnergies.push_back(E-qpE);
-    } else if (E-qpE > gapEnergy) {
-      if (verboseLevel>2) G4cout << " Radiating E-qpE to gapEnergy" << G4endl;
-      EDep += CalcSubgapAbsorption(E-qpE-gapEnergy, newPhonEnergies);
-      EDep += gapEnergy;
-    } else {
-      EDep += E-qpE;
-    }
+    EDep += CalcQPAbsorption(qpE, newPhonEnergies, qpEnergies);
+    EDep += CalcQPAbsorption(E-qpE, newPhonEnergies, qpEnergies);
   }	// for (E: ...)
 
   if (verboseLevel>1)
@@ -269,10 +251,9 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
   // Have a reference in for loop b/c qp doesn't give all of its energy away.
   G4double EDep = 0.;
   std::vector<G4double> newQPEnergies;
-  for (G4double& E: qpEnergies) {
+  for (const G4double& E: qpEnergies) {
     if (verboseLevel>2) G4cout << " qpE " << E;		// Report before change
 
-    // NOTE: E mutates in PhononEnergyRand.
     G4double phonE = PhononEnergyRand(E);
     G4double qpE = E - phonE;
     if (verboseLevel>2)
@@ -285,12 +266,7 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
       phonEnergies.push_back(phonE);
     }
 
-    if (qpE >= lowQPLimit*gapEnergy) {
-      if (verboseLevel>2) G4cout << " Store E in qpEnergies" << G4endl;
-      newQPEnergies.push_back(qpE);
-    } else {
-      EDep += qpE;
-    }
+    EDep += CalcQPAbsorption(qpE, phonEnergies, newQPEnergies);
   }	// for (E: ...)
 
   if (verboseLevel>1)
@@ -311,7 +287,7 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
 
   // There is a 50% chance that a phonon is headed away from (toward) substrate
   std::vector<G4double> newPhonEnergies;
-  for (G4double E : phonEnergies) {
+  for (const G4double& E: phonEnergies) {
     if (verboseLevel>2) G4cout << " phononE " << E << G4endl;
 
     // Phonons below the bandgap are unconditionally reflected
@@ -357,6 +333,29 @@ G4CMPKaplanQP::CalcSubgapAbsorption(G4double energy,
   }
 }
 
+
+// Handle absorption of quasiparticle energies below Cooper-pair breaking
+// If qpEnergy < 3*Delta, radiate a phonon, absorb bandgap minimum
+
+G4double 
+G4CMPKaplanQP::CalcQPAbsorption(G4double qpE,
+				std::vector<G4double>& phonEnergies,
+				std::vector<G4double>& qpEnergies) const {
+  G4double EDep = 0.;		// Energy lost by this QP into the film
+
+  if (qpE >= lowQPLimit*gapEnergy) {
+    if (verboseLevel>2) G4cout << " Storing qpE in qpEnergies" << G4endl;
+    qpEnergies.push_back(qpE);
+  } else if (qpE > gapEnergy) {
+    if (verboseLevel>2) G4cout << " Reducing qpE to gapEnergy" << G4endl;
+    EDep += CalcSubgapAbsorption(qpE-gapEnergy, phonEnergies);
+    EDep += gapEnergy;
+  } else {
+    EDep += qpE;
+  }
+
+  return EDep;
+}
 
 // Compute quasiparticle energy distribution from broken Cooper pair.
 
