@@ -207,6 +207,8 @@ FindTetraID(const vector<tetra2d>& tetras, const tetra2d& wildTetra, G4int skip,
   G4int index = (lower_bound(Tetrahedra.begin(),Tetrahedra.end(),*match)
 		 - Tetrahedra.begin());
   if (index == skip) {				// Move to adjacent entry
+    if (match == finish-1) return -1;		// Nothing left to search
+
     index = (lower_bound(Tetrahedra.begin(),Tetrahedra.end(),*(++match))
 	     - Tetrahedra.begin());
   }
