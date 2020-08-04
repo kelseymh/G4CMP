@@ -11,6 +11,7 @@
 // 20150111  New base class for both electron and hole Luke processes
 // 20160110  Remerge the electron and hole subclasses into one class
 // 20170805  Remove GetMeanFreePath() function to scattering-rate model
+// 20190816  Add flag to track secondary phonons immediately (c.f. G4Cerenkov)
 
 #ifndef G4CMPLukeScattering_h
 #define G4CMPLukeScattering_h 1
@@ -32,12 +33,18 @@ public:
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
+  // Pause current particle tracking, track secondary phonons instead
+  void SetTrackSecondariesFirst(const G4bool val) { secondariesFirst = val; }
+  G4bool GetTrackSecondariesFirst() const { return secondariesFirst; }
+
 private:
   // hide assignment operator as private
   G4CMPLukeScattering(G4CMPLukeScattering&);
   G4CMPLukeScattering& operator=(const G4CMPLukeScattering& right);
 
   G4VProcess* stepLimiter;
+  G4bool secondariesFirst;
+
 #ifdef G4CMP_DEBUG
   std::ofstream output;
 #endif

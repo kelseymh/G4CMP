@@ -24,6 +24,20 @@
 //		set their weights to the ratio of true/produced.
 // 20180503  Protect against negative "energy left".
 // 20180511  Protect GetSecondaries()/GetPrimaries() from zero generated.
+// 20180801  Add weighting bounds for computing Luke-phonon sampling.
+// 20180827  Add flag to suppress use of downsampling energy scale
+// 20180828  BUG FIX:  GetSecondaries() was not using trkWeight
+// 20180831  Fix compiler warnings when comparing nParticlesMinimum
+// 20190711  Use selectable NIEL partition function, via ConfigManager.
+// 20190714  Convert PDGcode to Z and A (in amu) for use with NIEL function.
+// 20191009  Produce charge pairs below pair-energy, down to bandgap.
+// 20191017  Fix PDGcode usage for nuclei to look up in G4IonTable.
+// 20191106  Protect against exactly zero energy passed to GeneratePhonons()
+// 20200217  Fill new 'hit' container with generated parameters
+// 20200219  Replace use of G4HitsCollection with singleton data container
+// 20200222  Add control flag to turn off creating summary data
+// 20200316  Improve calculations of charge and phonon energy summaries
+// 20200328  Protect against invalid energy inputs
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -31,20 +45,29 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPGeometryUtils.hh"
+#include "G4CMPPartitionData.hh"
+#include "G4CMPPartitionSummary.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4VNIELPartition.hh"
 #include "G4DynamicParticle.hh"
 #include "G4Event.hh"
+#include "G4HCofThisEvent.hh"
+#include "G4IonTable.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
-#include "G4Navigator.hh"
+#include "G4Neutron.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4ParticleTable.hh"
 #include "G4PhononPolarization.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4PrimaryParticle.hh"
 #include "G4PrimaryVertex.hh"
 #include "G4RandomDirection.hh"
+#include "G4RunManager.hh"
+#include "G4SDManager.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4TransportationManager.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
@@ -57,9 +80,11 @@
 G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
+    fillSummaryData(false), 
     material(mat), holeFraction(0.5), nParticlesMinimum(10),
-    cloud(new G4CMPChargeCloud), nCharges(0), nPairs(0),
-    chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.) {
+    applyDownsampling(true), cloud(new G4CMPChargeCloud), nCharges(0),
+    nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.),
+    summary(0) {
   SetLattice(lat);
 }
 
@@ -75,6 +100,7 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(const G4ThreeVector& pos)
 
 G4CMPEnergyPartition::~G4CMPEnergyPartition() {
   delete cloud; cloud=0;
+  // NOTE: "summary" is owned by G4Event/G4HitsCollection, do not delete
 }
 
 
@@ -96,37 +122,40 @@ void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
 }
 
 
+// Create summary data container and put into event "hits" collection
+
+G4CMPPartitionData* G4CMPEnergyPartition::CreateSummary() {
+  if (verboseLevel) G4cout << "G4CMPEnergyPartition::CreateSummary" << G4endl;
+
+  if (!fillSummaryData) {		// No collection, just keep local
+    if (!summary) summary = new G4CMPPartitionData;
+    return summary;
+  }
+
+  summary = new G4CMPPartitionData;	// Ownership transfers to container
+  G4CMPPartitionSummary::Insert(summary);
+
+  if (verboseLevel>2) {
+    G4cout << " Partition summary contains "
+	   << G4CMPPartitionSummary::Entries() << " records" << G4endl;
+  }
+
+  return summary;
+}
+
+
 // Fraction of total energy deposit in material which goes to e/h pairs
 
-G4double G4CMPEnergyPartition::LindhardScalingFactor(G4double E) const {
+G4double G4CMPEnergyPartition::
+LindhardScalingFactor(G4double E, G4double Z, G4double A) const {
   if (!material) {
-    static G4bool report = true;
-    if (report) {
-      G4cerr << "G4CMPEnergyPartition: No material configured" << G4endl;
-      report = false;
-    }
+    G4Exception("G4CMPEnergyPartition", "G4CMP1000", RunMustBeAborted,
+		"No material configured for energy partition");
     return 1.;
   }
 
-  const G4double Z=material->GetZ(), A=material->GetA()/(g/mole);
-
-  if (verboseLevel>1) {
-    G4cout << " LindhardScalingFactor " << E << " for (Z,A) " << Z
-	   << " " << A << G4endl;
-  }
-
-  // From Lewin and Smith, 1996
-  G4double epsilon = 0.0115 * E * std::pow(Z, -7./3.);
-  G4double k = 0.133 * std::pow(Z, 2./3.) / std::sqrt(A);
-  G4double h = (0.7*std::pow(epsilon,0.6) + 3.*std::pow(epsilon,0.15)
-		+ epsilon);
-
-  if (verboseLevel>2) {
-    G4cout << " eps " << epsilon << " k " << k << " h " << h << " : "
-	   << k*h / (1.+k*h) << G4endl;
-  }
-
-  return (k*h / (1.+k*h));
+  const G4VNIELPartition* nielFunc = G4CMPConfigManager::GetNIELPartition();
+  return nielFunc->PartitionNIEL(E, material, Z, A);
 }
 
 
@@ -137,11 +166,18 @@ G4double G4CMPEnergyPartition::MeasuredChargeEnergy(G4double eTrue) const {
   // Std deviation of energy distribution
 
   if (!G4CMPConfigManager::FanoStatisticsEnabled()) {
+    summary->FanoFactor = 0.;
     return eTrue;
   }
 
+  // Store Fano factor from material for reference
+  summary->FanoFactor = theLattice->GetFanoFactor();
+
   G4double sigmaE = std::sqrt(eTrue * theLattice->GetFanoFactor()
                               * theLattice->GetPairProductionEnergy());
+  if (verboseLevel>1) 
+    G4cout << "Using sigma " << sigmaE/eV << " eV for Fano noise." << G4endl;
+
   return G4RandGauss::shoot(eTrue, sigmaE);
 }
 
@@ -156,13 +192,38 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
 	   << G4endl;
   }
 
+  if (energy <= 0. || eNIEL < 0.) {
+    G4ExceptionDescription msg;
+    msg << "Invalid energy input:";
+    if (energy <= 0.) msg << " energy " << energy/eV << " eV";
+    if (eNIEL < 0.) msg << " NIEL " << eNIEL/eV << " eV";
+
+    G4Exception("G4CMPEnergyPartition::DoPartition", "Partition001",
+		EventMustBeAborted, msg);
+    return;
+  }
+
   // User specified phonon energy directly; assume it is correct
   if (eNIEL > 0.) DoPartition(energy-eNIEL, eNIEL);
   else {
-    if (PDGcode == 2112 || PDGcode > 10000) {	// Neutron or nucleus
-      if (verboseLevel>1)
-        G4cout << " Nuclear Recoil: type = " << PDGcode << G4endl;
-      NuclearRecoil(energy);
+    G4ParticleDefinition* proj = 0;	// To get nuclear recoil info
+
+    if (PDGcode == 2112)		// Neutron; treat as nuclear particle
+      proj = G4Neutron::Definition();
+    else if (PDGcode > 1000000000)	// Geant4 native nucleus encoding
+      proj = G4IonTable::GetIonTable()->GetIon(PDGcode);
+    else if (PDGcode > 10000)		// Nucleus pseudo-code, AAAZZZ
+      proj = G4IonTable::GetIonTable()->GetIon(PDGcode%1000, PDGcode/1000);
+
+    if (proj) {
+      G4double Z=proj->GetAtomicNumber(), A=proj->GetPDGMass()/amu_c2;
+      
+      if (verboseLevel>1) {
+        G4cout << " Nuclear Recoil: type " << PDGcode << " Z " << Z
+	       << " A " << A << G4endl;
+      }
+      
+      NuclearRecoil(energy, Z, A);
     } else {
       Ionization(energy);
     }
@@ -173,25 +234,58 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
 // Generate charge carriers and phonons according to uniform phase space
 
 void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
-  G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
-
   if (verboseLevel>1) {
     G4cout << "G4CMPEnergyPartition::DoPartition: eIon " << eIon/MeV
 	   << " MeV, eNIEL " << eNIEL/MeV << " MeV" << G4endl;
   }
 
+  if (eIon+eNIEL <= 0. || eIon< 0. || eNIEL < 0.) {
+    G4ExceptionDescription msg;
+    msg << "Invalid energy input:";
+    if (eIon+eNIEL <= 0.) msg << " eTotal " << (eIon+eNIEL)/eV << " eV";
+    if (eIon < 0.) msg << " eIon " << eIon/eV << " eV";
+    if (eNIEL < 0.) msg << " NIEL " << eNIEL/eV << " eV";
+
+    G4Exception("G4CMPEnergyPartition::DoPartition", "Partition001",
+		EventMustBeAborted, msg);
+    return;
+  }
+
   particles.clear();		// Discard previous results
   nPairs = nPhonons = 0;
 
-  // Apply downsampling if total energy is above scale
-  if (samplingScale > 0.) ComputeDownsampling(eIon, eNIEL);
+  // Set up summary information block in event
+  CreateSummary();
+  summary->totalEnergy = eIon+eNIEL;
+  summary->truedEdx = eIon;
+  summary->trueNIEL = eNIEL;
+  summary->lindhardYield = eIon / (eIon+eNIEL);
+
+  // Apply downsampling if requested
+  if (applyDownsampling) ComputeDownsampling(eIon, eNIEL);
 
   chargeEnergyLeft = 0.;
   GenerateCharges(eIon);
   GeneratePhonons(eNIEL + chargeEnergyLeft);
 
   particles.shrink_to_fit();	// Reduce size to match generated particles
+
+  if (verboseLevel) summary->Print();
 }
+
+
+// Generate primary phonons from energy deposit using Lindhard scaling
+
+void G4CMPEnergyPartition::
+NuclearRecoil(G4double energy, G4double Z, G4double A) {
+  G4double lind = LindhardScalingFactor(energy, Z, A);
+  if (verboseLevel>1) G4cout << " Lindard partition factor " << lind << G4endl;
+
+  DoPartition(energy*lind, energy*(1.-lind));
+}
+
+
+// Generate charge carriers and phonons with maximum energy scaling
 
 void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
   G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
@@ -219,12 +313,17 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
     
     G4CMPConfigManager::SetGenCharges(chargeSamp);
 
-    // FIXME:  Want to estimate # Luke phonons per charge carrier
-    G4double lukeSamp = chargeSamp;
-    if (verboseLevel>2)
-      G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
+    // Compute Luke scaling factor only if not fully suppressed or forced
+    if (G4CMPConfigManager::GetLukeSampling() > 0.) {
+      // FIXME: These should move to G4CMPConfigManager
+      const G4double minLukeSample = 0.01;	// ~6 phonons per volt/chcarge
+
+      G4double lukeSamp = std::min(1., minLukeSample/chargeSamp);
+      if (verboseLevel>2)
+	G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
     
-    G4CMPConfigManager::SetLukeSampling(lukeSamp);
+      G4CMPConfigManager::SetLukeSampling(lukeSamp);
+    }
   }
 }
 
@@ -234,18 +333,22 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   if (verboseLevel)
     G4cout << " GenerateCharges " << energy/MeV << " MeV" << G4endl;
 
+  G4double eBand = 1.01*theLattice->GetBandGapEnergy(); // Force visible energy
   G4double ePair = theLattice->GetPairProductionEnergy();
   G4double eMeas = MeasuredChargeEnergy(energy);	// Applies Fano factor
 
   if (eMeas > 0) {
     nPairs = std::floor(eMeas / ePair);   // Average number of e/h pairs
+
+    // Below pair energy, can still get single charge from bandgap excitation
+    if ((eMeas-nPairs*ePair) > eBand) nPairs++;
   } else {
     eMeas = 0.;
     nPairs = 0; // This prevents nPairs from blowing up when negative
   }
-  
+
   // Only apply downsampling to sufficiently large statistics
-  G4double scale = (nPairs<=nParticlesMinimum ? 1.
+  G4double scale = ((G4int)nPairs<=nParticlesMinimum ? 1.
 		    : G4CMPConfigManager::GetGenCharges());
 
   if (verboseLevel>1) {
@@ -276,6 +379,12 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
       chargeEnergyLeft -= ePair;
     }	// while (chargeEnergyLeft
 
+    if (chargeEnergyLeft > eBand) {  // Final charge pair from bandgap
+      AddChargePair(eBand);
+      nCharges++;
+      chargeEnergyLeft -= eBand;
+    }
+
     if (verboseLevel>2)
       G4cout << " generated " << nCharges << " e-h pairs" << G4endl;
   }	// while (nCharges==0
@@ -283,6 +392,13 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   if (chargeEnergyLeft < 0.) chargeEnergyLeft = 0.;	// Avoid round-offs
 
   if (verboseLevel>1) G4cout << " " << chargeEnergyLeft << " excess" << G4endl;
+
+  // Store generated information in summary block
+  summary->chargeEnergy = energy;
+  summary->chargeFano = eMeas;
+  summary->chargeGenerated = eMeas-chargeEnergyLeft;
+  summary->numberOfPairs = nCharges;		// Number after downsampling
+
 }
 
 void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
@@ -297,6 +413,10 @@ void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
 
 void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   if (G4CMPConfigManager::GetGenPhonons() <= 0.) return;	// Suppressed
+  if (energy <= 0.) {				// Avoid unnecessary work
+    nPhonons = 0;
+    return;
+  }
 
   if (verboseLevel)
     G4cout << " GeneratePhonons " << energy/MeV << " MeV" <<  G4endl;
@@ -307,7 +427,7 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   ePhon = energy / nPhonons;			// Split energy evenly to all
 
   // Only apply downsampling to sufficiently large statistics
-  G4double scale = (nPhonons<=nParticlesMinimum ? 1.
+  G4double scale = ((G4int)nPhonons<=nParticlesMinimum ? 1.
 		    : G4CMPConfigManager::GetGenPhonons());
 
   if (verboseLevel>1) {
@@ -318,6 +438,7 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   particles.reserve(particles.size() + int(1.1*scale*nPhonons)); // 10% overhead
 
   // For downsampling, ensure that there are sufficient phonons
+  G4double genEnergy = 0.;	// Energy sum without reweighting
   size_t nGenPhonons = 0;
   while (nGenPhonons < scale*nPhonons/2) {
     if (nGenPhonons > 0)
@@ -329,6 +450,7 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
     while (phononEnergyLeft >= ePhon) {
       if (G4UniformRand()<scale) {	// Apply downsampling up front
 	AddPhonon(ePhon);
+	genEnergy += ePhon;
 	nGenPhonons++;
       }
       
@@ -341,6 +463,13 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
     if (verboseLevel>2)
       G4cout << " generated " << nGenPhonons << " phonons" << G4endl;
   }	// while (nGenPhonons
+
+  if (nGenPhonons == nPhonons+1) nPhonons++;	// Pick up residual phonon
+
+  // Store generated information in summary block
+  summary->phononGenerated = energy;
+  summary->phononEnergy = summary->totalEnergy - summary->chargeEnergy;
+  summary->numberOfPhonons = nGenPhonons;
 }
 
 void G4CMPEnergyPartition::AddPhonon(G4double ePhon) {
@@ -402,6 +531,12 @@ GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
     G4cout << "G4CMPEnergyPartition::GetPrimaries @ " << pos
 	   << " up to " << maxPerVertex << " per vertex" << G4endl;
   }
+
+  // Store position information in summary block
+  summary->position[0] = pos[0];
+  summary->position[1] = pos[1];
+  summary->position[2] = pos[2];
+  summary->position[3] = time;
 
   std::vector<G4PrimaryParticle*> primaries;	// Can we make this mutable?
   GetPrimaries(primaries);
@@ -475,6 +610,13 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
 	   << trkWeight << G4endl;
   }
 
+  // Store position information in summary block
+  summary->position[0] = GetCurrentTrack()->GetPosition()[0];
+  summary->position[1] = GetCurrentTrack()->GetPosition()[1];
+  summary->position[2] = GetCurrentTrack()->GetPosition()[2];
+  summary->position[3] = GetCurrentTrack()->GetGlobalTime();
+
+  // Pre-allocate buffer for secondaries
   secondaries.clear();
   secondaries.reserve(particles.size());
 
@@ -504,7 +646,7 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
     weight = (G4CMP::IsPhonon(p.pd) ? phononWt : chargeWt);
 
     theSec = G4CMP::CreateSecondary(*GetCurrentTrack(), p.pd, p.dir, p.ekin);
-    theSec->SetWeight(weight);
+    theSec->SetWeight(trkWeight*weight);
     secondaries.push_back(theSec);
 
     // Adjust positions of charges according to generated distribution

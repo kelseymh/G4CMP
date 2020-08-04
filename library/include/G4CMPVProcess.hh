@@ -11,6 +11,7 @@
 // 20170601  New abstract base class for all G4CMP processes
 // 20170802  Add registration of external scattering rate (MFP) model
 // 20170905  Add accessors to get currentlty active scattering rate
+// 20190906  Add function to initialize rate model after LoadDataForTrack
 
 #ifndef G4CMPVProcess_h
 #define G4CMPVProcess_h 1
@@ -39,6 +40,8 @@ public:
   virtual void EndTracking();
 
 protected:
+  void ConfigureRateModel();		// Subclasses can call this directly
+
   // Uses scattering model to compute MFP; subclasses may override
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 

@@ -17,7 +17,7 @@
 #include "G4SystemOfUnits.hh"
 
 
-G4Allocator<G4CMPElectrodeHit> G4CMPElectrodeHitAllocator;
+G4ThreadLocal G4Allocator<G4CMPElectrodeHit> G4CMPElectrodeHitAllocator;
 
 G4CMPElectrodeHit::G4CMPElectrodeHit() {}
 

@@ -7,6 +7,7 @@ library/qhull-2012.1/lib/
 *.swn
 *.o
 *.log
+.g4cmp-version
 CMakeLists.txt.user*
 epositions.txt
 *.png

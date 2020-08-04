@@ -21,6 +21,7 @@
 //		define additional units for solid state physics use
 // 20170525  Implement 'rule of five' with default copy/move semantics
 // 20170810  Add utility function to process list of values with unit.
+// 20190704  Add utility function to process string/name argument
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
@@ -58,6 +59,7 @@ protected:
   G4bool ProcessToken();
   G4bool ProcessValue(const G4String& name);	// Single numerical parameter
   G4bool ProcessList(const G4String& unitcat);	// List of parameters with unit
+  G4bool ProcessString(const G4String& name);	// Single string parameter
 
   G4bool ProcessConstants();			// Four dynamical constants
   G4bool ProcessMassTensor();			// Electron mass tensor

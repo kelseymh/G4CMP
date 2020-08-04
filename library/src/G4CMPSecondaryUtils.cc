@@ -28,7 +28,6 @@
 #include "G4SystemOfUnits.hh"
 #include "G4Threading.hh"
 #include "G4Track.hh"
-#include "G4TransportationManager.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VTouchable.hh"
 
@@ -44,8 +43,10 @@ G4Track* G4CMP::CreateSecondary(const G4Track& track,
 
   if (G4CMP::IsChargeCarrier(pd)) {
     const G4LatticePhysical* lat = G4CMP::GetLattice(track);
+    G4int valley = G4CMP::IsElectron(pd) ? ChooseValley(lat) : -1;
+
     return CreateChargeCarrier(track.GetTouchable(), G4int(pd->GetPDGCharge()/eplus),
-                               ChooseValley(lat), energy, track.GetGlobalTime(),
+                               valley, energy, track.GetGlobalTime(),
                                waveVec, track.GetPosition());
   }
 
@@ -154,7 +155,7 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
   if (charge == 1) {
     theCarrier    = G4CMPDriftHole::Definition();
     carrierMass   = lat->GetHoleMass();
-    carrierEnergy = 0.5 * p.mag2() / carrierMass;	// Non-relativistic
+    carrierEnergy = 0.5 * p.mag2() / carrierMass;  // Non-relativistic
     v_unit = p.unit();
   } else {
     theCarrier    = G4CMPDriftElectron::Definition();
@@ -166,12 +167,20 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
     v_unit = v_local.unit();
   }
 
-  auto secDP = new G4DynamicParticle(theCarrier, v_unit, carrierEnergy, carrierMass);
+  // NOTE:  We use true mass unts: convert e.g. MeV/c^2 to MeV here
+  auto secDP = new G4DynamicParticle(theCarrier, v_unit, carrierEnergy,
+				     carrierMass*c_squared);
 
   auto sec = new G4Track(secDP, time, G4CMP::ApplySurfaceClearance(touch, pos));
 
   // Store wavevector in auxiliary info for track
   G4CMP::AttachTrackInfo(sec, valley);
+
+  // Temporary warning about hole valleys
+  if (valley >= 0 && G4CMP::IsHole(theCarrier)) {
+    G4Exception("G4CMP::CreateChargeCarrier", "Secondary010", JustWarning,
+		"Hole has been assigned a valley index.");
+  }
 
   return sec;
 }

@@ -18,6 +18,10 @@
 // 20170925  Add support for distributing charges around position
 // 20180424  Need default ctor for Data to support vector::resize()
 // 20180425  Add minimum particle generation for downsampling
+// 20180827  Add flag to suppress use of downsampling energy scale
+// 20190714  Pass particle information through to NuclearRecoil, Lindhard
+// 20200218  Support writing DoPartion() internals to event summary data
+// 20200222  Add control flag to turn off creating summary data
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -28,6 +32,7 @@
 #include <vector>
 
 class G4CMPChargeCloud;
+class G4CMPPartitionData;
 class G4Event;
 class G4LatticePhysical;
 class G4Material;
@@ -56,6 +61,14 @@ public:
   // Set debugging output
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
+  // Enable or disable summary data collection
+  void FillSummary(G4bool fill) { fillSummaryData = fill; }
+  G4bool FillingSummary() const { return fillSummaryData; }
+
+  // Toggle whether or not to apply downsampling scale calculations
+  void UseDownsampling(G4bool value) { applyDownsampling = value; }
+  G4bool UseDownsampling() const { return applyDownsampling; }
+
   // Placement volume may be used to get material and lattice
   void UseVolume(const G4VPhysicalVolume* volume);
 
@@ -69,10 +82,7 @@ public:
   void DoPartition(G4int PDGcode, G4double energy, G4double eNIEL);
 
   // Nuclear recoil deposit uses Lindhard scale factor for e/h vs. phonons
-  void NuclearRecoil(G4double energy) {
-    G4double lind = LindhardScalingFactor(energy);
-    DoPartition(energy*lind, energy*(1.-lind));
-  }
+  void NuclearRecoil(G4double energy, G4double Z, G4double A);
 
   // Pure ionization produces no phonons
   void Ionization(G4double energy) { DoPartition(energy, 0.); }
@@ -95,7 +105,8 @@ public:
   void ComputeDownsampling(G4double eIon, G4double eNIEL);
 
   // Fraction of total energy deposit in material which goes to e/h pairs
-  G4double LindhardScalingFactor(G4double energy) const;
+  G4double LindhardScalingFactor(G4double energy, G4double Z=0,
+				 G4double A=0) const;
 
   // Portion of ionization energy which goes to e/h pairs (Fano factor)
   G4double MeasuredChargeEnergy(G4double eTrue) const;
@@ -110,11 +121,17 @@ protected:
   G4PrimaryVertex* CreateVertex(G4Event* event, const G4ThreeVector& pos,
 				G4double time) const;
 
+  // Create buffer save DoPartition() computations
+  G4CMPPartitionData* CreateSummary();
+
 protected:
   G4int verboseLevel;		// Higher numbers give more details
+  G4bool fillSummaryData;	// Fill G4CMPPartitionSummary if set
+
   G4Material* material;		// To get (Z,A) for Lindhard scaling
   G4double holeFraction;	// Energy from e/h pair taken by hole (50%)
   G4int nParticlesMinimum;	// Minimum production when downsampling
+  G4bool applyDownsampling;	// Flag whether to do downsampling calcualtions
 
   G4CMPChargeCloud* cloud;	// Distribute e/h around central position
   size_t nCharges;		// Actual (downsampled) number of e+h for cloud
@@ -124,6 +141,8 @@ protected:
 
   size_t nPhonons;		// True number of phonons (no downsampling)
   G4double phononEnergyLeft;	// Energy to partition into phonons
+
+  G4CMPPartitionData* summary;	// Summary block, saved to G4HitsCollection
 
   static const G4ThreeVector origin;
   struct Data {

@@ -31,6 +31,12 @@
 // 20170821  Add transverse sound speed, L->TT fraction
 // 20170919  Add access to full lists of IV scattering matrix terms
 // 20170928  Replace "pol" with "mode" for phonon states
+// 20180815  F. Insulla -- Added IVRateQuad
+// 20181001  M. Kelsey -- Clarify IV rate parameters systematically
+// 20190704  M. Kelsey -- Add IV rate function selector for material
+// 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value,
+//		precompute valley inverse transforms
+// 20200608  Fix -Wshadow warnings from tempvec
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -88,20 +94,19 @@ public:
 
   // Convert between electron momentum and valley velocity or HV wavevector
   // NOTE:  Input vector must be in lattice symmetry frame (X == symmetry axis)
-  // NOTE:  Pass by value below to avoid creating temporary vectors
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
   G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
-  G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
-  G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
-  G4ThreeVector MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_HVtoK(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_valleyToP(G4int ivalley, G4ThreeVector k) const;
+  G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const;
 
   // Apply energy relationships for electron transport
-  G4double MapPtoEkin(G4int ivalley, G4ThreeVector p_e) const;
-  G4double MapV_elToEkin(G4int ivalley, G4ThreeVector v_e) const;
+  G4double MapPtoEkin(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4double MapV_elToEkin(G4int ivalley, const G4ThreeVector& v_e) const;
 
   // Configure crystal symmetry group and lattice spacing/angles
   void SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a, G4double b,
@@ -201,10 +206,13 @@ public:
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley);
   void AddValley(G4double phi, G4double theta, G4double psi);
-  void ClearValleys() { fValley.clear(); fValleyAxis.clear(); }
+  void ClearValleys() {
+    fValley.clear(); fValleyInv.clear();fValleyAxis.clear();
+  }
 
   size_t NumberOfValleys() const { return fValley.size(); }
   const G4RotationMatrix& GetValley(G4int iv) const;
+  const G4RotationMatrix& GetValleyInv(G4int iv) const;
   const G4ThreeVector& GetValleyAxis(G4int iv) const;
 
   // Print out Euler angles of requested valley
@@ -220,21 +228,33 @@ public:
   void DumpList(std::ostream& os, const std::vector<G4double>& vlist,
 		const G4String& unit) const;
 
-  // Parameters for electron intervalley scattering (Edelweiss, matrix elem.)
-  void SetIVField(G4double v)          { fIVField = v; }
-  void SetIVRate(G4double v)           { fIVRate = v; }
-  void SetIVExponent(G4double v)       { fIVExponent = v; }
+  // Parameters for electron intervalley scattering (Edelweiss, Linear, matrix)
+  void SetIVModel(const G4String& v) { fIVModel = v; }
 
-  void SetAlpha(G4double v)	       { fAlpha = v; }
-  void SetAcousticDeform(G4double v)   { fAcDeform = v; }
+  void SetIVQuadField(G4double v)    { fIVQuadField = v; }
+  void SetIVQuadRate(G4double v)     { fIVQuadRate = v; }
+  void SetIVQuadExponent(G4double v) { fIVQuadExponent = v; }
+
+  void SetIVLinRate0(G4double v)     { fIVLinRate0 = v; }
+  void SetIVLinRate1(G4double v)     { fIVLinRate1 = v; }
+  void SetIVLinExponent(G4double v)  { fIVLinExponent = v; }
+
+  void SetAlpha(G4double v)	     { fAlpha = v; }
+  void SetAcousticDeform(G4double v) { fAcDeform = v; }
   void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
 
-  G4double GetIVField() const          { return fIVField; }
-  G4double GetIVRate() const           { return fIVRate; }
-  G4double GetIVExponent() const       { return fIVExponent; }
+  const G4String& GetIVModel() const { return fIVModel; }
 
-  G4double GetAlpha() const	       { return fAlpha; }
+  G4double GetIVQuadField() const    { return fIVQuadField; }
+  G4double GetIVQuadRate() const     { return fIVQuadRate; }
+  G4double GetIVQuadExponent() const { return fIVQuadExponent; }
+
+  G4double GetIVLinRate0() const     { return fIVLinRate0; }
+  G4double GetIVLinRate1() const     { return fIVLinRate1; }
+  G4double GetIVLinExponent() const  { return fIVLinExponent; }
+
+  G4double GetAlpha() const	     { return fAlpha; }
   G4double GetAcousticDeform() const { return fAcDeform; }
   G4int    GetNIVDeform() const { return (G4int)fIVDeform.size(); }
   const std::vector<G4double>& GetIVDeform() const { return fIVDeform; }
@@ -263,9 +283,16 @@ private:
   G4ThreeVector ComputeKtoVg(G4int mode, const G4ThreeVector& k) const;
 
 private:
+  // Create a thread-local buffer to use with MapAtoB() functions
+  inline G4ThreeVector& tempvec() const {
+    static G4ThreadLocal G4ThreeVector* v=0;
+    if (!v) v = new G4ThreeVector;
+    return *v;
+  }
+
+private:
   G4int verboseLevel;			    // Enable diagnostic output
   G4String fName;			    // Name of lattice for messages
-
   G4CMPCrystalGroup fCrystal;		    // Symmetry group, axis unit vectors
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
   G4double fDensity;			    // Material density (natural units)
@@ -308,6 +335,7 @@ private:
   G4RotationMatrix fMassRatioSqrt;       // SQRT of tensor/scalar ratio
   G4RotationMatrix fMInvRatioSqrt;       // SQRT of scalar/tensor ratio
   std::vector<G4RotationMatrix> fValley; // Electron transport directions
+  std::vector<G4RotationMatrix> fValleyInv;
   std::vector<G4ThreeVector> fValleyAxis;
 
   G4double fAlpha;			// Non-parabolicity of -ve potential
@@ -315,9 +343,14 @@ private:
   std::vector<G4double> fIVDeform;	// D0, D1 potentials for optical IV
   std::vector<G4double> fIVEnergy;	// D0, D1 thresholds for optical IV
 
-  G4double fIVField;		 // Edelweiss field scale for IV scattering
-  G4double fIVRate;		 // Edelweiss rate factor for IV scattering
-  G4double fIVExponent;		 // Edelweiss power law for E-field in IV
+  G4double fIVQuadField;	 // Edelweiss field scale for IV scattering
+  G4double fIVQuadRate;		 // Edelweiss rate factor for IV scattering
+  G4double fIVQuadExponent;	 // Edelweiss power law for E-field in IV
+  G4double fIVLinExponent;	 // Power law for linear scaled IV scattering
+  G4double fIVLinRate0;		 // Constant rate for linear scaled IV scat.
+  G4double fIVLinRate1;		 // Linear rate for linear scaled IV scat.
+
+  G4String fIVModel;		 // Name of IV rate function to be used
 };
 
 // Write lattice structure to output stream

@@ -5,16 +5,17 @@
 # Usage: source g4cmp_env.csh
 #
 # 20170509  Define G4CMPLIB and G4CMPINCLUDE relative to G4CMPINSTALL
+# 20180917  Fix initialization of G4CMPINSTALL to use absolute path
+# 20200719  Set undefined *LD_LIBRARY_PATH
 
 # Identify location of script from user command (c.f. geant4make.csh)
 
 if (! $?G4CMPINSTALL) then
-  unset g4cmp_dir
-
   set ARGS = ($_)		# Pull directory from terminal command
   if ("$ARGS" != "") then
     if ("$ARGS[2]" =~ */g4cmp_env.csh) then
-      setenv G4CMPINSTALL `dirname $ARGS[2]`
+      set g4cmp_dir = `dirname $ARGS[2]`
+      setenv G4CMPINSTALL `cd $g4cmp_dir; pwd`
     endif
   endif
 
@@ -23,10 +24,13 @@ if (! $?G4CMPINSTALL) then
       setenv G4CMPINSTALL `pwd`
     else if ("$1" != "") then	# TCSH allows arguments to source
       if (-e $1/g4cmp_env.csh) then
+        set g4cmp_dir = `cd $1; pwd`
         setenv G4CMPINSTALL $1
       endif
     endif
   endif
+
+  unset g4cmp_dir
 endif
 
 # Ensure that G4CMP installation is known
@@ -46,15 +50,21 @@ else if (`dirname $G4CMPINSTALL|xargs basename` == "share") then
   set topdir = `dirname $G4CMPINSTALL|xargs dirname`
   setenv G4CMPLIB     $topdir/lib
   setenv G4CMPINCLUDE $topdir/include/G4CMP
+  unset topdir
 endif
 
 # Extend library path to include G4CMP library location
 
 if ($?LD_LIBRARY_PATH) then
   setenv LD_LIBRARY_PATH ${G4CMPLIB}:$LD_LIBRARY_PATH
+else
+  setenv LD_LIBRARY_PATH ${G4CMPLIB}
 endif
+
 if ($?DYLD_LIBRARY_PATH) then
   setenv DYLD_LIBRARY_PATH ${G4CMPLIB}:$DYLD_LIBRARY_PATH
+else
+  setenv DYLD_LIBRARY_PATH ${G4CMPLIB}
 endif
 
 # Assign environment variables for runtime configuraiton

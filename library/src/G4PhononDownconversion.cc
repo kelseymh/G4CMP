@@ -23,6 +23,8 @@
 // 20170821  Move hard-coded constants to lattice configuration
 // 20170824  Add diagnostic output
 // 20170928  Hide "output" usage behind verbosity check, as well as G4CMP_DEBUG
+// 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
+// 20200604  G4CMP-208:  Report accept-reject values of u,x,q for debugging.
 
 #include "G4PhononDownconversion.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -51,9 +53,10 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   if (verboseLevel) {
     output.open("phonon_downsampling_stats", std::ios_base::app);
     if (output.good()) {
-      output << "First Daughter Theta,Second Daughter Theta,First Daughter Energy [eV],Second Daughter Energy [eV],"
-	"Decay Branch,First Daughter Weight,Second Daughter Weight,Parent Weight,"
-	"Number of Outgoing Tracks,Parent Energy [eV]\n";
+      output << "First Daughter Theta,Second Daughter Theta,First Daughter"
+	     << " Energy [eV],Second Daughter Energy [eV],Decay Branch,"
+	     << "Parent Weight,Number of Outgoing Tracks,Parent Energy [eV]"
+	     << std::endl;
     } else {
       G4cerr << "Could not open phonon debugging output file!" << G4endl;
     }
@@ -254,7 +257,6 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
                                       dir2, Esec2, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
 
-  // Pick which secondary gets the weight randomly
 #ifdef G4CMP_DEBUG
   if (output.good()) {
     output << theta1 << ',' << theta2 << ','
@@ -263,35 +265,12 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   }
 #endif
 
-  G4double bias = G4CMPConfigManager::GetDownconversionSampling();
-  G4double weight = G4CMP::ChoosePhononWeight(bias);
-  if (weight > 0.) {				// Produce both daughters
-    aParticleChange.SetSecondaryWeightByProcess(true);
-    sec1->SetWeight(aTrack.GetWeight()*weight); // Default weight
-    sec2->SetWeight(aTrack.GetWeight()*weight);
-#ifdef G4CMP_DEBUG
-    if (output.good()) {
-      output << "TT" << ',' << sec1->GetWeight() << ','
-	     << sec2->GetWeight() << ',';
-    }
-#endif
-
-    aParticleChange.SetNumberOfSecondaries(2);
-    aParticleChange.AddSecondary(sec2);
-    aParticleChange.AddSecondary(sec1);
-  } else {			// Produce no daughters
-    delete sec1;		// It would be better not to create/delete
-    delete sec2;
-#ifdef G4CMP_DEBUG
-    if (output.good()) {
-      output << "TT" << ',' << 0 << ',' << 0 << ',';
-    }
-#endif
-  }
+  aParticleChange.SetNumberOfSecondaries(2);
+  aParticleChange.AddSecondary(sec2);
+  aParticleChange.AddSecondary(sec1);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
 
 //Generate daughter phonons from L->L'+T process
    
@@ -322,6 +301,10 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
     x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
     if (x <= upperBound && x >= lowerBound) q = 1/(upperBound-lowerBound);
     else q = 0;
+  }
+
+  if (verboseLevel>2) {
+    G4cout << "Accept-reject got u " << u << " x " << x << " q " << q << G4endl;
   }
 
   //using energy fraction x to calculate daughter phonon directions
@@ -368,31 +351,9 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
   }
 #endif
 
-  G4double bias = G4CMPConfigManager::GetDownconversionSampling();
-  G4double weight = G4CMP::ChoosePhononWeight(bias);
-  if (weight > 0.) {				// Produce both daughters
-    aParticleChange.SetSecondaryWeightByProcess(true);
-    sec1->SetWeight(aTrack.GetWeight()/bias);
-    sec2->SetWeight(aTrack.GetWeight()/bias);
-#ifdef G4CMP_DEBUG
-    if (output.good()) {
-      output << "LT" << ',' << sec1->GetWeight() << ','
-	     << sec2->GetWeight() << ',';
-    }
-#endif
-
-    aParticleChange.SetNumberOfSecondaries(2);
-    aParticleChange.AddSecondary(sec2);
-    aParticleChange.AddSecondary(sec1);
-  } else {			// Produce no daughters
-    delete sec1;		// It would be better not to create/delete
-    delete sec2;
-#ifdef G4CMP_DEBUG
-    if (output.good()) {
-      output << "LT" << ',' << 0 << ',' << 0 << ',';
-    }
-#endif
-  }
+  aParticleChange.SetNumberOfSecondaries(2);
+  aParticleChange.AddSecondary(sec2);
+  aParticleChange.AddSecondary(sec1);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

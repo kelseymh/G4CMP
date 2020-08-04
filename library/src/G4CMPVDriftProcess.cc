@@ -95,7 +95,7 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
   if (IsElectron()) {
     v = GetGlobalDirection(theLattice->MapPtoV_el(ivalley, GetLocalDirection(p)));
   } else if (IsHole()) {
-    v = p*c_light/mass;
+    v = p*c_light/mass;		// p and mass in MeV, not MeV/c, MeV/c^2
   } else {
     G4Exception("G4CMPVDriftProcess::FillParticleChange", "DriftProcess001",
     EventMustBeAborted, "Unknown charge carrier");

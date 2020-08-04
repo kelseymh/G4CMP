@@ -29,6 +29,15 @@
 // 20170823  Move geometry-specific commands to examples
 // 20170830  Add command to set downsampling energy scale
 // 20170830  Add command to set flag for producing e/h "cloud"
+// 20190711  Add command to select non-ionizing energy loss function
+// 20191014  Drop command for anharmonic decay sampling.
+// 20200211  Add command to report version from .g4cmp-version
+// 20200411  G4CMP-195: Add commands to set charge trapping MFPs
+// 20200411  G4CMP-196: Add commands to set impact ionization MFPs
+// 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
+// 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
+//		"hTrap" -> "ATrap".
+// 20200614  G4CMP-211:  Add functionality to print settings
 
 #include "G4UImessenger.hh"
 
@@ -38,6 +47,7 @@ class G4UIcmdWithAnInteger;
 class G4UIcmdWithADouble;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithAString;
+class G4UIcmdWithoutParameter;
 class G4UIcommand;
 
 
@@ -51,6 +61,8 @@ public:
 private:
   G4CMPConfigManager* theManager;
 
+  G4UIcmdWithoutParameter* versionCmd;
+  G4UIcmdWithoutParameter* printCmd;
   G4UIcmdWithAnInteger* verboseCmd;
   G4UIcmdWithAnInteger* ehBounceCmd;
   G4UIcmdWithAnInteger* pBounceCmd;
@@ -58,15 +70,21 @@ private:
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
   G4UIcmdWithADoubleAndUnit* sampleECmd;
+  G4UIcmdWithADoubleAndUnit* trapEMFPCmd;
+  G4UIcmdWithADoubleAndUnit* trapHMFPCmd;
+  G4UIcmdWithADoubleAndUnit* eDTrapIonMFPCmd;
+  G4UIcmdWithADoubleAndUnit* eATrapIonMFPCmd;
+  G4UIcmdWithADoubleAndUnit* hDTrapIonMFPCmd;
+  G4UIcmdWithADoubleAndUnit* hATrapIonMFPCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;
   G4UIcmdWithADouble* lukePhononCmd;
-  G4UIcmdWithADouble* downconvCmd;
   G4UIcmdWithAString* dirCmd;
+  G4UIcmdWithAString* ivRateModelCmd;
+  G4UIcmdWithAString* nielPartitionCmd;
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;
-  G4UIcmdWithABool*   ivEdelCmd;
   G4UIcmdWithABool*   ehCloudCmd;
 
 private:

@@ -47,7 +47,7 @@ void G4CMPPhononKinTable::initialize() {
 void G4CMPPhononKinTable::clearQuantityMap() {
   // common technique to free up the memory of a vector:
   quantityMap.clear(); // this alone actually does not free up the memory
-  vector<vector<G4CMPBiLinearInterp> > newVec;
+  vector<vector<G4CMPGridInterp> > newVec;
   quantityMap.swap(newVec);
 
   lookupReady = false;
@@ -146,8 +146,8 @@ void G4CMPPhononKinTable::generateLookupTable() {
 
 /* given the (pointer to the) evenly spaced interpolation grid
    generated previously, this method returns an interpolated value for
-   the data type already built into the G4CMPBiLinearInterp structure */
-double G4CMPPhononKinTable::interpolateEven(G4CMPBiLinearInterp& grid,
+   the data type already built into the G4CMPGridInterp structure */
+double G4CMPPhononKinTable::interpolateEven(G4CMPGridInterp& grid,
 					    double theta, double phi) {
     // check that the n values we're interpolating at are possible:
   if (!goodBin(theta,phi)) {
@@ -186,7 +186,7 @@ double G4CMPPhononKinTable::interpolateEven(double theta, double phi, int MODE,
 
 /* sets up JUST ONE interpolation table for N_X and N_Y, which are evenly spaced.
    Aphi one kind of data (TYPE_OUT) can be read off of this table */
-G4CMPBiLinearInterp 
+G4CMPGridInterp 
 G4CMPPhononKinTable::generateEvenTable(int MODE,
 				     G4CMPPhononKinTable::DataTypes TYPE_OUT) {
   /* set up the two vectors of input components (N_X and N_Y) which
@@ -237,21 +237,21 @@ G4CMPPhononKinTable::generateEvenTable(int MODE,
   }
 
   // create and return interpolation data structure, the output of this method
-  return G4CMPBiLinearInterp(x1, x2, dataVals);
+  return G4CMPGridInterp(x1, x2, dataVals);
 }
 
 /* a method for setting up a vector of interpolation grids - it does
    so by calling the single grid constructor maphi times. While this is
    certainly not the absolute most efficient method concievable, the
    gains in efficiency that might be made are not terribly
-   significant. Output is a vector of vectors of G4CMPBiLinearInterps, with the
+   significant. Output is a vector of vectors of G4CMPGridInterps, with the
    first index specifying mode, and the 2nd data type, as ususal */
 void G4CMPPhononKinTable::generateMultiEvenTable() {
   clearQuantityMap();
 
   for (int mode = 0; mode < G4PhononPolarization::NUM_MODES; mode++) {
     // create 2nd level vectors:
-    vector<G4CMPBiLinearInterp> subTable;
+    vector<G4CMPGridInterp> subTable;
     for (int dType = 0; dType < NUM_DATA_TYPES; dType++)
       // make individual tables:
       subTable.push_back(generateEvenTable(mode, (DataTypes)dType));

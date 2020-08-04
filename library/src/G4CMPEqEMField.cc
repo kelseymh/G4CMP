@@ -17,6 +17,8 @@
 // 20140501  Fix sign flip in electron charge calculation.
 // 20141217  Avoid floating-point division by using vinv = 1/v.mag()
 // 20150528  Add debugging output
+// 20190802  Check if field is aligned or anti-aligned with valley, apply
+//	     transform to valley axis "closest" to field direction.
 
 #include "G4CMPEqEMField.hh"
 #include "G4CMPConfigManager.hh"
@@ -28,7 +30,7 @@
 G4CMPEqEMField::G4CMPEqEMField(G4ElectroMagneticField *emField,
 			       const G4LatticePhysical* lattice)
   : G4EqMagElectricField(emField), theLattice(lattice), fCharge(0.),
-    valleyIndex(-1) {;}
+    fMass(0.), valleyIndex(-1) {;}
 
 
 // Replace physical lattice if track has changed volumes
@@ -96,29 +98,40 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 
   G4ThreeVector Efield(field[3], field[4], field[5]);
   G4ThreeVector force = fCharge * Efield;
-  /* Since F is proportional to dp, it will transform like momentum.
-   * This transformation picks up units of 1/mass and 1/c.
-   * But, before we transform momentum, it needs to be in local coordinates.
-   */
+
   fGlobalToLocal.ApplyAxisTransform(force);
-  G4ThreeVector forceEffective = theLattice->MapPtoV_el(valleyIndex, force);
-  forceEffective *= fMass * vinv * c_squared;
-  fLocalToGlobal.ApplyAxisTransform(forceEffective);
+  theLattice->RotateToLattice(force);
+
+  /* Since F is proportional to dp, it must transform like momentum.
+   */
+  const G4RotationMatrix& vToN = theLattice->GetValley(valleyIndex);
+  const G4RotationMatrix& nToV = theLattice->GetValleyInv(valleyIndex);
+
+  force = nToV*(theLattice->GetMInvTensor()*(vToN*force));
+  force *= fMass * vinv * c_light;
+  theLattice->RotateToSolid(force);
+
+  /* Restore effective force to global coordinates for G4Transporation
+   */
+  fLocalToGlobal.ApplyAxisTransform(force);
 
   if (G4CMPConfigManager::GetVerboseLevel() > 2) {
     G4cout << "G4CMPEqEMField: @ (" << y[0] << "," << y[1] << "," << y[2]
-	   << ")\n p (" << y[3] << "," << y[4] << "," << y[5]
-	   << ")\n Efield " << Efield.mag() << " " << Efield
-     << "\n retForce " << forceEffective.mag() << " " << forceEffective
-	   << "\n TOF " << vinv << " vdir " << v.unit() << G4endl;
+	   << ") mm\n (q,m) " << fCharge/eplus << " "
+	   << fMass*c_squared/electron_mass_c2 << " m_e; valley " << valleyIndex
+	   << "\n pc (" << y[3] << "," << y[4] << "," << y[5] << ") MeV"
+	   << "\n Efield " << Efield.mag()/(volt/cm) << " " << Efield/(volt/cm)
+	   << " V/cm\n force " << force.mag()/(eV/m) << " " << force/(eV/m)
+	   << " eV/m\n TOF " << vinv/(ns/mm) << " ns/mm vdir " << v.unit()
+	   << G4endl;
   }
 
   dydx[0] = v.x()*vinv;		// Velocity direction
   dydx[1] = v.y()*vinv;
   dydx[2] = v.z()*vinv;
-  dydx[3] = forceEffective.x();	// Applied force
-  dydx[4] = forceEffective.y();
-  dydx[5] = forceEffective.z();
+  dydx[3] = force.x();		// Applied force in H-V space
+  dydx[4] = force.y();
+  dydx[5] = force.z();
   dydx[6] = 0.;			// not used
   dydx[7] = vinv;		// Lab Time of flight (sec/mm)
 }

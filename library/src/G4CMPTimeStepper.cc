@@ -24,13 +24,24 @@
 // 20170905  Cache Luke and IV rate models in local LoadDataFromTrack()
 // 20170908  Remove "/10." rescaling of field when computing steps
 // 20170919  Use rate threshold interface to define alternate step lengths
-// 20180711  Move field access to G4CMPFieldUtils
+// 20180831  Fix compiler warning with PostStepDoIt() arguments
+// 20190906  Provide functions to externally set rate models, move process
+//		lookup functionality to G4CMP(Track)Utils.
+// 20200331  C. Stanford (G4CMP-195): Added charge trapping
+// 20200331  G4CMP-196: Added impact ionization mean free path
+// 20200426  G4CMP-196: Use static function in TrapIonization for MFPs
+// 20200504  M. Kelsey (G4CMP-195):  Get trapping MFPs from process
+// 20200520  "First report" flag must be thread-local.
+// 20200804  Move field access to G4CMPFieldUtils
 
 #include "G4CMPTimeStepper.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPFieldUtils.hh"
+#include "G4CMPDriftTrappingProcess.hh"
+#include "G4CMPDriftTrapIonization.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -52,8 +63,8 @@
 #include <math.h>
 
 G4CMPTimeStepper::G4CMPTimeStepper()
-  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper),
-    lukeRate(nullptr), ivRate(nullptr) {;}
+  : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), lukeRate(nullptr),
+    ivRate(nullptr), trappingLength(0.), trapIonLength(0.) {;}
 
 G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
@@ -63,30 +74,36 @@ G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
   G4CMPProcessUtils::LoadDataForTrack(aTrack);	// Common configuration
 
-  lukeRate = ivRate = nullptr;			// Discard previous versions
+  // Get rate model for Luke phonon emission from process
+  const G4CMPVProcess* lukeProc =
+    dynamic_cast<G4CMPVProcess*>(G4CMP::FindProcess(aTrack,
+						    "G4CMPLukeScattering"));
+  lukeRate = lukeProc ? lukeProc->GetRateModel() : nullptr;
 
-  // Pointers can't be null since track has at least this process!
-  const G4ProcessVector* pvec =
-    aTrack->GetDefinition()->GetProcessManager()->GetPostStepProcessVector();
+  // get rate model for intervalley scattering from process
+  const G4CMPVProcess* ivProc =
+    dynamic_cast<G4CMPVProcess*>(G4CMP::FindProcess(aTrack,
+					    "G4CMPInterValleyScattering"));
+  ivRate = ivProc ? ivProc->GetRateModel() : nullptr;
 
-  if (verboseLevel>2)
-    G4cout << "TimeStepper scanning " << pvec->size() << " processes"
-	   << " for " << aTrack->GetDefinition()->GetParticleName() << G4endl;
+  // get charge trapping mean free path
+  trappingLength =
+    G4CMPDriftTrappingProcess::GetMeanFreePath(GetCurrentParticle());
 
-  for (G4int i=0; i<pvec->size(); i++) {
-    const G4CMPVProcess* cmpProc = dynamic_cast<G4CMPVProcess*>((*pvec)[i]);
-    if (!cmpProc) continue;
-
-    const G4String& pname = cmpProc->GetProcessName();
-    if (verboseLevel>2) G4cout << pname << G4endl;
-
-    if (pname == "G4CMPLukeScattering")      lukeRate = cmpProc->GetRateModel();
-    if (pname == "G4CMPInterValleyScattering") ivRate = cmpProc->GetRateModel();
-  }
+  // get charge-trap ionization mean free path
+  G4double eTrapIonMFP = G4CMPDriftTrapIonization::
+    GetMeanFreePath(GetCurrentParticle(), G4CMPDriftElectron::Definition());
+  G4double hTrapIonMFP = G4CMPDriftTrapIonization::
+    GetMeanFreePath(GetCurrentParticle(), G4CMPDriftHole::Definition());
+  trapIonLength = std::min(eTrapIonMFP, hTrapIonMFP);
 
   if (verboseLevel>1) {
-    G4cout << "TimeStepper Found" << (lukeRate?" lukeRate":"")
-	   << (ivRate?" ivRate":"") << G4endl;
+    G4cout << "TimeStepper Found" 
+	   << (lukeRate?" lukeRate":"")
+	   << (ivRate?" ivRate":"") 
+	   << (trappingLength?" trappingLength":"") 
+	   << (trapIonLength?" trapIonLength":"") 
+	   << G4endl;
   }
 
   // Adjust rate models to keep highest verbosity level
@@ -136,8 +153,21 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   if (verboseLevel>1 && ivRate)
     G4cout << "TS IV threshold mfp2 " << mfp2/m << " m" << G4endl;
 
+  // Find distance to impact ionization
+  G4double mfp3 = trapIonLength;
+
+  if (verboseLevel>1)
+    G4cout << "TS trap ionization mfp3 " << mfp3/m << " m" << G4endl;
+
+  // Find MFP for charge trapping
+  G4double mfp4 = trappingLength;
+  if (mfp4 <= 1e-9*m) mfp4 = DBL_MAX;	// Avoid steps getting "too short"
+
+  if (verboseLevel>1 && trappingLength)
+    G4cout << "TS trapping MFP mfp4 " << mfp4/m << " m" << G4endl;
+
   // Take shortest distance from above options
-  G4double mfp = std::min(std::min(mfp0, mfp1), mfp2);
+  G4double mfp = std::min({mfp0, mfp1, mfp2, mfp3, mfp4});
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
@@ -151,7 +181,7 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 // At end of step, recompute kinematics; important for electrons
 
 G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
-						  const G4Step& aStep) {
+						  const G4Step& /*aStep*/) {
   aParticleChange.Initialize(aTrack);
 
   // Adjust mass and kinetic energy using end-of-step momentum
@@ -202,7 +232,7 @@ G4double G4CMPTimeStepper::EnergyStep(G4double Efinal) const {
 // Report Luke and IV rates for diagnostics
 
 void G4CMPTimeStepper::ReportRates(const G4Track& aTrack) {
-  static G4bool first = true;
+  static G4ThreadLocal G4bool first = true;
   if (first) {
     G4cout << "TSreport Process Chg E[eV] v[m/s] k[1/m] Rate[Hz]" << G4endl;
     first = false;

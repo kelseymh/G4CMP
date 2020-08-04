@@ -7,6 +7,7 @@
 //			true valley-frame and G4 effective-mass.
 //
 // 20141216  Michael Kelsey
+// 20200604  G4CMP-208: Eliminate "unused variable" warnings with output flag
 
 #include "G4LatticeLogical.hh"
 #include "G4LatticeManager.hh"
@@ -17,6 +18,8 @@
 #include <iostream>
 #include <iomanip>
 using namespace std;
+
+const G4bool longOutput=false;
 
 
 int main(/*int argc, char* argv[]*/) {
@@ -37,11 +40,12 @@ int main(/*int argc, char* argv[]*/) {
   G4ThreeVector k_elec, p_elec, v_elec, kdir, pdir, vdir;
 
   // Set up output file for import to Excel
-  /*****
-  cout << "kmag\t\tk/ks\tp(eV)\tth(deg)\t E(ueV)\tmeff\tv(km/s)\tveff\tvG4"
-       << endl;
-  *****/
-  cout << "Kx\tKy\tKz\tPx\tPy\tPz\tVx\tVy\tVz" << endl;
+  if (longOutput) {
+    cout << "kmag\t\tk/ks\tp(eV)\tth(deg)\t E(ueV)\tmeff\tv(km/s)\tveff\tvG4"
+	 << endl;
+  } else {
+    cout << "Kx\tKy\tKz\tPx\tPy\tPz\tVx\tVy\tVz" << endl;
+  }
 
   // Loop over wavevectors up to "Mach 4"
   for (G4double mach=0.05; mach<=4.; mach += 0.05) {
@@ -76,25 +80,26 @@ int main(/*int argc, char* argv[]*/) {
 	}
 	
 	// Report kinematics
-	/*****
-	      cout << fixed
-	      << setw(8) << setprecision(2) << kel << "\t" << mach
-	      << "\t" << setprecision(4) << p_elec.mag()/(1e-6*MeV)
-	      << "\t" << setw(2) << setprecision(0) << thdeg
-	      << "\t" << setw(7) << setprecision(3) << Ekin*1e12/MeV
-	      << "\t" << setprecision(5) << meff*c_squared/electron_mass_c2
-	      << "\t" << setprecision(4) << vtrue/(km/s)
-	      << "\t" << setprecision(4) << veff/(km/s)
-	      << "\t" << setprecision(4) << vG4Track/(km/s) << endl;
-	*****/
-	kdir = k_elec.unit();
-	pdir = p_elec.unit();
-	vdir = v_elec.unit();
-	cout << fixed << setprecision(4)
-	     << kdir.x() << "\t" << kdir.y() << "\t" << kdir.z()
-	     << "\t" << pdir.x() << "\t" << pdir.y() << "\t" << pdir.z()
-	     << "\t" << vdir.x() << "\t" << vdir.y() << "\t" << vdir.z()
-	     << endl;
+	if (longOutput) {
+	  cout << fixed
+	       << setw(8) << setprecision(2) << kel << "\t" << mach
+	       << "\t" << setprecision(4) << p_elec.mag()/(1e-6*MeV)
+	       << "\t" << setw(2) << setprecision(0) << thdeg
+	       << "\t" << setw(7) << setprecision(3) << Ekin*1e12/MeV
+	       << "\t" << setprecision(5) << meff*c_squared/electron_mass_c2
+	       << "\t" << setprecision(4) << vtrue/(km/s)
+	       << "\t" << setprecision(4) << veff/(km/s)
+	       << "\t" << setprecision(4) << vG4Track/(km/s) << endl;
+	} else {
+	  kdir = k_elec.unit();
+	  pdir = p_elec.unit();
+	  vdir = v_elec.unit();
+	  cout << fixed << setprecision(4)
+	       << kdir.x() << "\t" << kdir.y() << "\t" << kdir.z()
+	       << "\t" << pdir.x() << "\t" << pdir.y() << "\t" << pdir.z()
+	       << "\t" << vdir.x() << "\t" << vdir.y() << "\t" << vdir.z()
+	       << endl;
+	}
       }	/* phideg */
     }	/* thdeg */
   }	/* mach */

@@ -25,6 +25,14 @@
 // 20170821  Add transverse sound speed, L->TT fraction
 // 20170919  Add access to full lists of IV scattering matrix terms
 // 20170928  Replace "pol" with "mode" for phonon states
+// 20180831  Add accessors for linear IV rate, change Edelweiss names
+// 20181001  M. Kelsey -- Clarify IV rate parameters systematically
+// 20190704  M. Kelsey -- Add IV rate function selector for material
+// 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value;
+//		add pass through call to GetValleyInv().
+// 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
+//		return thread-local instance.
+// 20200608  Fix -Wshadow warnings from tempvec
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -59,26 +67,24 @@ public:
 
   // Convert input wave vector and polarization to group velocity
   // NOTE:  Input vector must be in local (G4VSolid) coordinate system
-  // NOTE:  Pass vector by value to allow in-situ rotations
-  G4double      MapKtoV(G4int mode, G4ThreeVector k) const;
-  G4ThreeVector MapKtoVDir(G4int mode, G4ThreeVector k) const;
+  G4double      MapKtoV(G4int mode, const G4ThreeVector& k) const;
+  G4ThreeVector MapKtoVDir(G4int mode, const G4ThreeVector& k) const;
 
   // Convert between electron momentum and valley velocity or HV wavevector
   // NOTE:  Input vector must be in local (G4VSolid) coordinate system
-  // NOTE:  Pass vector by value to allow in-situ rotations
-  G4ThreeVector MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const;
-  G4ThreeVector MapV_elToP(G4int ivalley, G4ThreeVector v_el) const;
-  G4ThreeVector MapV_elToK_HV(G4int ivalley, G4ThreeVector v_el) const;
-  G4ThreeVector MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const;
-  G4ThreeVector MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const;
-  G4ThreeVector MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_HVtoK(G4int ivalley, G4ThreeVector k_HV) const;
-  G4ThreeVector MapK_valleyToP(G4int ivalley, G4ThreeVector k) const;
+  G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
+  G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
+  G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const;
+  G4ThreeVector MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const;
 
   // Apply energy relationships for electron transport
-  G4double MapPtoEkin(G4int ivalley, G4ThreeVector p_e) const;
-  G4double MapV_elToEkin(G4int ivalley, G4ThreeVector v_e) const;
+  G4double MapPtoEkin(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4double MapV_elToEkin(G4int ivalley, const G4ThreeVector& v_e) const;
 
 public:  
   const G4LatticeLogical* GetLattice() const { return fLattice; }
@@ -130,15 +136,22 @@ public:
   size_t NumberOfValleys() const { return fLattice->NumberOfValleys(); }
 
   // FIXME:  Should valley matrix be rotated from internal to local coordinates?
-  const G4RotationMatrix& GetValley(G4int iv) const { return fLattice->GetValley(iv); }
-  const G4ThreeVector& GetValleyAxis(G4int iv) const { return fLattice->GetValleyAxis(iv); }
+  const G4RotationMatrix& GetValley(G4int iv) const    { return fLattice->GetValley(iv); }
+  const G4RotationMatrix& GetValleyInv(G4int iv) const { return fLattice->GetValleyInv(iv); }
+  const G4ThreeVector& GetValleyAxis(G4int iv) const   { return fLattice->GetValleyAxis(iv); }
 
-  // Parameters for electron intervalley scattering
-  G4double GetIVField() const    { return fLattice->GetIVField(); }
-  G4double GetIVRate() const     { return fLattice->GetIVRate(); }
-  G4double GetIVExponent() const { return fLattice->GetIVExponent(); }
+  // Parameters for electron intervalley scattering (Edelweiss, linear, matrix)
+  const G4String& GetIVModel() const { return fLattice->GetIVModel(); }
 
-  G4double GetAlpha() const      { return fLattice->GetAlpha(); }
+  G4double GetIVQuadField() const    { return fLattice->GetIVQuadField(); }
+  G4double GetIVQuadRate() const     { return fLattice->GetIVQuadRate(); }
+  G4double GetIVQuadExponent() const { return fLattice->GetIVQuadExponent(); }
+
+  G4double GetIVLinRate0() const    { return fLattice->GetIVLinRate0(); }
+  G4double GetIVLinRate1() const    { return fLattice->GetIVLinRate1(); }
+  G4double GetIVLinExponent() const { return fLattice->GetIVLinExponent(); }
+
+  G4double GetAlpha() const          { return fLattice->GetAlpha(); }
   G4double GetAcousticDeform() const { return fLattice->GetAcousticDeform(); }
 
   // Optical intervalley scattering may use D0 or D1 deformation potentials
@@ -152,8 +165,15 @@ public:
   void Dump(std::ostream& os) const;
 
 private:
-  G4int verboseLevel;			// Enable diagnostic output
+  // Create a thread-local buffer to use with MapAtoB() functions
+  inline G4ThreeVector& tempvec() const {
+    static G4ThreadLocal G4ThreeVector* v=0;
+    if (!v) v = new G4ThreeVector;
+    return *v;
+  }
 
+private:
+  G4int verboseLevel;			// Enable diagnostic output
   const G4LatticeLogical* fLattice;	// Underlying lattice parameters
   G4RotationMatrix fOrient;		// Rotate geometry into lattice frame
   G4RotationMatrix fInverse;

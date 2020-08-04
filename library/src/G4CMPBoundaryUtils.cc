@@ -36,15 +36,14 @@
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
 #include "G4LogicalSurface.hh"
-#include "G4Navigator.hh"
 #include "G4ParticleChange.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4Track.hh"
-#include "G4TransportationManager.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VProcess.hh"
+#include "G4VSolid.hh"
 
 
 // Constructor and destructor
