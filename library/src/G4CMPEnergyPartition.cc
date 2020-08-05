@@ -38,12 +38,14 @@
 // 20200222  Add control flag to turn off creating summary data
 // 20200316  Improve calculations of charge and phonon energy summaries
 // 20200328  Protect against invalid energy inputs
+// 20200805  Use electric field in volume to estimate Luke gain, sampling
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPFieldUtils.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPartitionData.hh"
 #include "G4CMPPartitionSummary.hh"
@@ -80,8 +82,8 @@
 G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
-    fillSummaryData(false), 
-    material(mat), holeFraction(0.5), nParticlesMinimum(10),
+    fillSummaryData(false), material(mat), biasVoltage(0.), 
+    holeFraction(0.5), nParticlesMinimum(10),
     applyDownsampling(true), cloud(new G4CMPChargeCloud), nCharges(0),
     nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.),
     summary(0) {
@@ -115,10 +117,22 @@ void G4CMPEnergyPartition::UseVolume(const G4VPhysicalVolume* volume) {
 void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
   G4VPhysicalVolume* volume = G4CMP::GetVolumeAtPoint(pos);
   if (verboseLevel) 
-    G4cout << "G4CMPEnergyPartition: " << pos << " in volume "
+    G4cout << "G4CMPEnergyPartition: " << pos << " at volume "
 	   << volume->GetName() << G4endl;
 
   UseVolume(volume);
+  SetBiasVoltage(pos);
+}
+
+void G4CMPEnergyPartition::SetBiasVoltage(const G4ThreeVector& pos) {
+  G4VTouchable* touch = G4CMP::CreateTouchableAtPoint(pos);
+  biasVoltage = G4CMP::GetBiasThroughPosition(touch, pos);
+
+  if (verboseLevel) {
+    G4cout << "G4CMPEnergyPartition: est. " << biasVoltage/volt << " V"
+	   << " across " << touch->GetVolume()->GetName() << " @ " << pos
+	   << G4endl;
+  }
 }
 
 
@@ -313,12 +327,16 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
     
     G4CMPConfigManager::SetGenCharges(chargeSamp);
 
-    // Compute Luke scaling factor only if not fully suppressed or forced
+    // Compute Luke scaling factor only if not fully suppressed
     if (G4CMPConfigManager::GetLukeSampling() > 0.) {
-      // FIXME: These should move to G4CMPConfigManager
-      const G4double minLukeSample = 0.01;	// ~6 phonons per volt/chcarge
+      // Downsample amplification (bias) using sampling scale
+      G4double biasSamp = 1.;
+      if (fabs(biasVoltage)>0.)
+	biasSamp = std::min(1., (samplingScale/eV)/fabs(biasVoltage/volt));
 
-      G4double lukeSamp = std::min(1., minLukeSample/chargeSamp);
+      // Limit number of Luke phonons to about 1 per volt
+      G4double lukeSamp = biasSamp * theLattice->GetDebyeEnergy()/eV;
+
       if (verboseLevel>2)
 	G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
     
