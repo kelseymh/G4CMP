@@ -39,6 +39,11 @@ namespace G4CMP {
 
   G4double GetPotentialAtVertex(const G4Track& track);
 
+  // Estimate bias across volume through _global_ coordinate
+  // NOTE:  Doesn't integrate field, just uses local magnitude, direction
+  G4double GetBiasThroughPosition(const G4VTouchable* touch,
+				  const G4ThreeVector& pos);
+
   // Return field handler if available for volume
   const G4CMPLocalElectroMagField* GetLocalField(const G4LogicalVolume* vol);
   const G4CMPMeshElectricField* GetMeshField(const G4LogicalVolume* vol);

@@ -46,12 +46,9 @@ G4ThreeVector G4CMP::GetFieldAtPosition(const G4Track& track) {
 
 G4ThreeVector G4CMP::GetFieldAtPosition(const G4VTouchable* touch,
 					const G4ThreeVector& pos) {
-  const G4FieldManager* fMan = 0;
-  if (touch) {
-    fMan = touch->GetVolume()->GetLogicalVolume()->GetFieldManager();
-  } else {		// Get field from volume at input position
-    fMan = GetVolumeAtPoint(pos)->GetLogicalVolume()->GetFieldManager();
-  }
+  const G4LogicalVolume* vol = (touch ? touch->GetVolume()->GetLogicalVolume()
+				: GetVolumeAtPoint(pos)->GetLogicalVolume());
+  const G4FieldManager* fMan = vol->GetFieldManager();
 
   if (!fMan || !fMan->DoesFieldExist()) return origin;
 
@@ -111,6 +108,28 @@ G4double G4CMP::GetPotentialAtPosition(const G4VTouchable* touch,
 
   // Arbitrary field configurations must be integrated
   return 0.;
+}
+
+
+// Estimate bias across volume using input position as reference
+// NOTE:  This doesn't integrate field, just uses local magnitude, direction
+
+G4double G4CMP::GetBiasThroughPosition(const G4VTouchable* touch,
+				       const G4ThreeVector& pos) {
+  G4ThreeVector field = GetFieldAtPosition(touch, pos);
+  if (field.isNear(origin)) return 0.;		// No field, no bias estimate
+
+  const G4LogicalVolume* vol = (touch ? touch->GetVolume()->GetLogicalVolume()
+				: GetVolumeAtPoint(pos)->GetLogicalVolume());
+  G4VSolid* shape = vol->GetSolid();
+
+  // Thickness of volume through point along local field direction
+  // NOTE: This is only valid for uniform or near-uniform fields
+  G4ThreeVector e0 = field.unit();
+  G4double thick = shape->DistanceToOut(pos,-e0) + shape->DistanceToOut(pos,e0);
+
+  // Arbitrary field configurations should be integrated along lines
+  return field.mag() * thick;
 }
 
 
