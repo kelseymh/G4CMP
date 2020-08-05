@@ -2,6 +2,8 @@
 library/qhull-2012.1/bin/
 library/qhull-2012.1/lib/
 *~
+\#*#
+.#*
 *.swp
 *.swo
 *.swn
