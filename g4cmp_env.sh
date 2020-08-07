@@ -6,6 +6,7 @@
 #
 # 20161006  Add G4WORKDIR to (DY)LD_LIBRARY_PATH
 # 20170509  Define G4CMPLIB and G4CMPINCLUDE relative to G4CMPINSTALL
+# 20200719  Set undefined *LD_LIBRARY_PATH; use $() in place of ``
 
 # Identify location of script from user command (c.f. geant4make.sh)
 
@@ -31,16 +32,16 @@ fi
 if [ -r $G4CMPINSTALL/README.md ]; then
   export G4CMPLIB=$G4WORKDIR/lib/$G4SYSTEM
   export G4CMPINCLUDE=$G4CMPINSTALL/library/include
-elif [ `dirname $G4CMPINSTALL|xargs basename` = "share" ]; then
-  topdir=`dirname $G4CMPINSTALL|xargs dirname`
+elif [ $(basename $(dirname $G4CMPINSTALL)) = "share" ]; then
+  topdir=$(dirname $(dirname $G4CMPINSTALL))
   export G4CMPLIB=$topdir/lib
   export G4CMPINCLUDE=$topdir/include/G4CMP
 fi
 
 # Extend library path to include G4CMP library location
 
-[ -n "$LD_LIBRARY_PATH" ]   && export LD_LIBRARY_PATH=${G4CMPLIB}:$LD_LIBRARY_PATH
-[ -n "$DYLD_LIBRARY_PATH" ] && export DYLD_LIBRARY_PATH=${G4CMPLIB}:$DYLD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${G4CMPLIB}${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=${G4CMPLIB}${DYLD_LIBRARY_PATH:+:}$DYLD_LIBRARY_PATH
 
 # Assign environment variables for runtime configuraiton
 
