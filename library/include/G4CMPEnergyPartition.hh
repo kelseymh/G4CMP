@@ -22,6 +22,7 @@
 // 20190714  Pass particle information through to NuclearRecoil, Lindhard
 // 20200218  Support writing DoPartion() internals to event summary data
 // 20200222  Add control flag to turn off creating summary data
+// 20200805  Add bias across volume to estimate Luke gain downsampling
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -78,6 +79,10 @@ public:
   // Material is needed for (Z,A) in Lindhard scaling
   void SetMaterial(G4Material* mat) { material = mat; }
 
+  // Bias voltage may be used to estimate energy from Luke gain
+  void SetBiasVoltage(G4double v) { biasVoltage = v; }
+  void SetBiasVoltage(const G4ThreeVector& pos);
+
   // Specify particle type (PDG), total and NIEL energy deposit
   void DoPartition(G4int PDGcode, G4double energy, G4double eNIEL);
 
@@ -129,6 +134,7 @@ protected:
   G4bool fillSummaryData;	// Fill G4CMPPartitionSummary if set
 
   G4Material* material;		// To get (Z,A) for Lindhard scaling
+  G4double biasVoltage;		// Bias across volume for Luke downsampling
   G4double holeFraction;	// Energy from e/h pair taken by hole (50%)
   G4int nParticlesMinimum;	// Minimum production when downsampling
   G4bool applyDownsampling;	// Flag whether to do downsampling calcualtions

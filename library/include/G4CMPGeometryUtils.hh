@@ -64,12 +64,6 @@ namespace G4CMP {
 
   G4ThreeVector ApplySurfaceClearance(const G4VTouchable* touch,
 				      G4ThreeVector pos);
-
-  G4ThreeVector GetFieldAtPosition(const G4VTouchable* touch,
-				   G4ThreeVector pos);	// By value for rotation
-
-  G4ThreeVector GetFieldAtPosition(const G4Track& track);
-  G4ThreeVector GetFieldAtPosition(const G4Step& step);
 }
 
 #endif	/* G4CMPGeometryUtils_hh */

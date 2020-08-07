@@ -32,13 +32,14 @@
 // 20200426  G4CMP-196: Use static function in TrapIonization for MFPs
 // 20200504  M. Kelsey (G4CMP-195):  Get trapping MFPs from process
 // 20200520  "First report" flag must be thread-local.
-
+// 20200804  Move field access to G4CMPFieldUtils
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPFieldUtils.hh"
 #include "G4CMPDriftTrappingProcess.hh"
 #include "G4CMPDriftTrapIonization.hh"
 #include "G4CMPGeometryUtils.hh"
