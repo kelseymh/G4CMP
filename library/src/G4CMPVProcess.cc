@@ -81,6 +81,7 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double rate = rateModel ? rateModel->Rate(aTrack) : 0.;
   G4double vtrk = IsChargeCarrier() ? GetVelocity(aTrack) : aTrack.GetVelocity();
   G4double mfp  = rate>0. ? vtrk/rate : DBL_MAX;
+  if (mfp < 1e-9*m) mfp = 1e-9*m;	// TESTING: Minimum step length
 
   if (verboseLevel) {
     G4cout << GetProcessName() << " rate = " << rate/hertz << " Hz"
