@@ -45,7 +45,7 @@ void G4CMP::AttachTrackInfo(const G4Track& track) {
 }
 
 
-// Create and initialize kinematics container for phonon track
+// Create and initialize kinematics container for charged track
 
 void G4CMP::AttachTrackInfo(const G4Track* track, G4int valley) {
   if (track) AttachTrackInfo(*track, valley);
@@ -63,7 +63,7 @@ void G4CMP::AttachTrackInfo(const G4Track& track, G4int valley) {
 }
 
 
-// Create and initialize kinematics container for charged track
+// Create and initialize kinematics container for phonon track
 
 void G4CMP::AttachTrackInfo(const G4Track* track, const G4ThreeVector& kdir) {
   if (track) AttachTrackInfo(*track, kdir);
