@@ -9,7 +9,9 @@
 // 20190508  Move some 2D/3D common features to new base class
 // 20190630  Have MatInv() return error (false), catch up calling chain.
 // 20190923  Add constructor with neighbors table, use with Clone().
-
+// 20200907  Add BuildTInverse() function to precompute invT for Cart2Bary().
+//             Add "quiet" argument to MatInv to suppress warnings.
+ 
 #ifndef G4CMPBiLinearInterp_h 
 #define G4CMPBiLinearInterp_h 
 
@@ -19,6 +21,10 @@
 #include <map>
 #include <array>
 
+// Convenient abbreviations, available to subclasses and client code
+using mat2x2 = std::array<std::array<G4double,2>,2>;
+using mat3x2 = std::array<std::array<G4double,2>,3>;
+ 
 
 class G4CMPBiLinearInterp : public G4CMPVMeshInterpolator {
 public:
@@ -64,15 +70,18 @@ public:
   void SaveTetra(const G4String& fname) const;
 
 private:
-  std::vector<point2d > X;
+  std::vector<point2d> X;
   std::vector<tetra2d> Tetrahedra;	// For 2D, these are triangles!
   std::vector<tetra2d> Neighbors;
+  std::vector<mat2x2> TInverse;		// Matrix for barycenter calculation
+  std::vector<G4bool> TInvGood;		// Flags for noninvertible matrix
 
   std::vector<tetra2d> Tetra01;		// Duplicate tetrahedra lists
   std::vector<tetra2d> Tetra02;		// Sorted on vertex triplets
   std::vector<tetra2d> Tetra12;
 
   void FillNeighbors();		// Generate Neighbors table from tetrahedra
+  void BuildTInverse();		// Compute inverse matrices for Cart2Bary()
 
   void Compress3DPoints(const std::vector<point3d>& xyz);
   void Compress3DTetras(const std::vector<tetra3d>& tetra);
@@ -90,10 +99,10 @@ private:
 		       G4bool quiet=false) const;
 
   G4bool Cart2Bary(const G4double point[2], G4double bary[3]) const;
-  G4bool BuildT3x2(G4double ET[3][2]) const;
-  G4bool MatInv(const G4double matrix[2][2], G4double result[2][2]) const;
+  G4bool BuildT3x2(mat3x2& ET) const;
+  G4bool MatInv(const mat2x2& matrix, mat2x2& result, G4bool quiet=false) const;
   G4double BaryNorm(G4double bary[3]) const;
-  G4double Det2(const G4double matrix[2][2]) const;
+  G4double Det2(const mat2x2& matrix) const;
 };
 
 #endif	/* G4CMPBiLinearInterp */
