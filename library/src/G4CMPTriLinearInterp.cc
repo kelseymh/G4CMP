@@ -19,6 +19,7 @@
 // 20190923  Add constructor with neighbors table, use with Clone().
 // 20200907  Add BuildTInverse() function to precompute invT for Cart2Bary().
 //		Use in Cart2Bary() and BuildT4x3() to reduce tracking time.
+// 20200908  In MatInv(), clear result first, use new matrix printing.
 
 #include "G4CMPTriLinearInterp.hh"
 #include "G4CMPConfigManager.hh"
@@ -616,12 +617,16 @@ G4bool G4CMPTriLinearInterp::BuildT4x3(mat4x3& ET) const {
 
 G4double G4CMPTriLinearInterp::Det3(const mat3x3& matrix) const {
   return(matrix[0][0]*(matrix[1][1]*matrix[2][2]-matrix[2][1]*matrix[1][2])
-        -matrix[0][1]*(matrix[1][0]*matrix[2][2]-matrix[2][0]*matrix[1][2])
+        +matrix[0][1]*(matrix[1][2]*matrix[2][0]-matrix[2][2]*matrix[1][0])
         +matrix[0][2]*(matrix[1][0]*matrix[2][1]-matrix[2][0]*matrix[1][1]));
 }
 
 G4bool G4CMPTriLinearInterp::MatInv(const mat3x3& matrix, mat3x3& result,
 				    G4bool quiet) const {
+  // Clear any previous result
+  std::for_each(result.begin(), result.end(), [](point3d& r){r.fill(0.);});
+
+  // Get determinant and report failure
   G4double determ = Det3(matrix);
   if (!(determ == determ) || fabs(determ) < 1e-9) {
     if (!quiet) {
@@ -629,16 +634,10 @@ G4bool G4CMPTriLinearInterp::MatInv(const mat3x3& matrix, mat3x3& result,
 	     << G4endl;
 
 #ifdef G4CMPTLI_DEBUG
-      if (G4CMPConfigManager::GetVerboseLevel() > 1) {
-	G4cerr << " "  <<matrix[0][0] << " " <<matrix[0][1] << " " <<matrix[0][2]
-	       <<"\n " <<matrix[1][0] << " " <<matrix[1][1] << " " <<matrix[1][2]
-	       <<"\n " <<matrix[2][0] << " " <<matrix[2][1] << " " <<matrix[2][2]
-	       << G4endl;
-      }
+      if (G4CMPConfigManager::GetVerboseLevel() > 1) G4cerr << matrix;
 #endif
     }
 
-    result = {{ {0.,0.,0}, {0.,0.,0}, {0.,0.,0} }};
     return false;
   }
 

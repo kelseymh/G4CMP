@@ -10,6 +10,8 @@
 // use of a single pointer with a type selected at runtime for the field
 // model.  The actual interpolation functionality is implemented entirely
 // in the concrete subclasses.
+//
+// 20200908  Add operator<<() to print matrices (array of array)
 
 #ifndef G4CMPVMeshInterpolator_h 
 #define G4CMPVMeshInterpolator_h 
@@ -45,7 +47,7 @@ public:
   // Subclasses MUST implement these functions for their dimensionality
 
   // Replace existing mesh vectors and tetrahedra table
-  // NOTE: Both 2D and 3D versions are give, subclasses should implement one
+  // NOTE: Both 2D and 3D versions are given, subclasses should implement one
   void UseMesh(const std::vector<point3d>& /*xyz*/,
 	       const std::vector<G4double>& /*v*/,
 	       const std::vector<tetra3d>& /*tetra*/) {;}
@@ -74,11 +76,18 @@ protected:		// Data members available to subclasses directly
   G4String savePrefix;			// for use in debugging, SaveXxx()
 };
 
-// SPECIAL:  Provide a way to write out array data directly (not in STL!)
+// SPECIAL:  Provide a way to write out array/matrix data directly (not in STL!)
 
 template <typename T, size_t N>
 inline std::ostream& operator<<(std::ostream& os, const std::array<T,N>& arr) {
   for (const T& ai: arr) os << ai << " ";
+  return os;
+}
+
+template <typename T, size_t M, size_t N>
+inline std::ostream& 
+operator<<(std::ostream& os, const std::array<std::array<T,N>,M>& mat) {
+  for (const auto& ai: mat) os << " " << ai << "\n";
   return os;
 }
 

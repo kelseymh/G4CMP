@@ -12,7 +12,8 @@
 // 20190923  Add constructor with neighbors table, use with Clone().
 // 20200907  Add BuildTInverse() function to precompute invT for Cart2Bary().
 //             Use in Cart2Bary() and BuildT4x3() to reduce tracking time.
- 
+// 20200908  In MatInv(), clear result first, use new matrix printing.
+
 #include "G4CMPBiLinearInterp.hh"
 #include "G4CMPConfigManager.hh"
 #include <algorithm>
@@ -492,6 +493,10 @@ G4double G4CMPBiLinearInterp::Det2(const mat2x2& matrix) const {
 
 G4bool G4CMPBiLinearInterp::MatInv(const mat2x2& matrix, mat2x2& result,
 				   G4bool quiet) const {
+  // Clear any previous result
+  std::for_each(result.begin(), result.end(), [](point2d& r){r.fill(0.);});
+
+  // Get determinant and report failure
   G4double determ = Det2(matrix);
   if (!(determ == determ) || fabs(determ) < 1e-9) {
     if (!quiet) {
@@ -499,15 +504,10 @@ G4bool G4CMPBiLinearInterp::MatInv(const mat2x2& matrix, mat2x2& result,
 	     << G4endl;
 
 #ifdef G4CMPTLI_DEBUG
-      if (G4CMPConfigManager::GetVerboseLevel() > 2) {
-	G4cerr << " "   << matrix[0][0] << " " << matrix[0][1]
-	       << "\n " << matrix[1][0] << " " << matrix[1][1]
-	       << G4endl;
-      }
+      if (G4CMPConfigManager::GetVerboseLevel() > 1) G4cerr << matrix;
 #endif
     }
 
-    result = {{ {0.,0.}, {0.,0.} }};
     return false;
   }
 
