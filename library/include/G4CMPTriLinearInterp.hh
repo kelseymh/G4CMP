@@ -17,6 +17,7 @@
 // 20190923  Add constructor with neighbors table, use with Clone().
 // 20200907  Add BuildTInverse() function to precompute invT for Cart2Bary().
 //		Add "quiet" argument to MatInv to suppress warnings.
+// 20200908  Replace four-arg ctor and UseMesh() with copy constructor.
 
 #ifndef G4CMPTriLinearInterp_h 
 #define G4CMPTriLinearInterp_h 
@@ -45,25 +46,18 @@ public:
 		       const std::vector<G4double>& v,
 		       const std::vector<tetra3d>& tetra);
 
-  G4CMPTriLinearInterp(const std::vector<point3d>& xyz,
-		       const std::vector<G4double>& v,
-		       const std::vector<tetra3d>& tetra,
-		       const std::vector<tetra3d>& nbors);
-
   // Cloning function to allow making type-matched copies
   virtual G4CMPVMeshInterpolator* Clone() const {
-    return new G4CMPTriLinearInterp(X, V, Tetrahedra, Neighbors);
+    return new G4CMPTriLinearInterp(*this);
   }
+
+  G4CMPTriLinearInterp(const G4CMPTriLinearInterp& rhs);
 
   // User initialization or re-initialization
   void UseMesh(const std::vector<point3d>& xyz, const std::vector<G4double>& v);
 
   void UseMesh(const std::vector<point3d>& xyz, const std::vector<G4double>& v,
 	       const std::vector<tetra3d>& tetra);
-
-  void UseMesh(const std::vector<point3d>& xyz, const std::vector<G4double>& v,
-	       const std::vector<tetra3d>& tetra,
-	       const std::vector<tetra3d>& nbors);
 
   // Evaluate mesh at arbitrary location, optionally suppressing errors
   G4double GetValue(const G4double pos[], G4bool quiet=false) const;

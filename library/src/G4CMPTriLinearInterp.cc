@@ -20,6 +20,7 @@
 // 20200907  Add BuildTInverse() function to precompute invT for Cart2Bary().
 //		Use in Cart2Bary() and BuildT4x3() to reduce tracking time.
 // 20200908  In MatInv(), clear result first, use new matrix printing.
+//		Replace four-arg ctor and UseMesh() with copy constructor.
 
 #include "G4CMPTriLinearInterp.hh"
 #include "G4CMPConfigManager.hh"
@@ -50,10 +51,26 @@ G4CMPTriLinearInterp(const vector<point3d>& xyz, const vector<G4double>& v,
 		     const vector<tetra3d>& tetra)
   : G4CMPTriLinearInterp() { UseMesh(xyz, v, tetra); }
 
-G4CMPTriLinearInterp::
-G4CMPTriLinearInterp(const vector<point3d>& xyz, const vector<G4double>& v,
-		     const vector<tetra3d>& tetra, const vector<tetra3d>& nbors)
-  : G4CMPTriLinearInterp() { UseMesh(xyz, v, tetra, nbors); }
+// Copy constructor used by Clone() function
+
+G4CMPTriLinearInterp::G4CMPTriLinearInterp(const G4CMPTriLinearInterp& rhs)
+  : G4CMPTriLinearInterp() {
+  X = rhs.X;
+  V = rhs.V;
+  Tetrahedra = rhs.Tetrahedra;
+  Neighbors = rhs.Neighbors;
+  TInverse = rhs.TInverse;
+  TInvGood = rhs.TInvGood;
+
+  Tetra012 = rhs.Tetra012;	// Not really needed, but for completeness
+  Tetra013 = rhs.Tetra013;
+  Tetra023 = rhs.Tetra023;
+  Tetra123 = rhs.Tetra123;
+
+  staleCache = true;
+  TetraIdx = -1;
+  TetraStart = rhs.TetraStart;
+}
 
 
 // Load new mesh object and possibly re-triangulate
@@ -83,26 +100,6 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point3d>& xyz,
   V = v;
   Tetrahedra = tetra;
   FillNeighbors();
-  BuildTInverse();
-
-  TetraIdx = -1;
-  TetraStart = FirstInteriorTetra();
-
-#ifdef G4CMPTLI_DEBUG
-  SavePoints(savePrefix+"_points.dat");
-  SaveTetra(savePrefix+"_tetra.dat");
-#endif
-}
-
-void G4CMPTriLinearInterp::UseMesh(const vector<point3d>& xyz,
-				   const vector<G4double>& v,
-				   const vector<tetra3d>& tetra,
-				   const vector<tetra3d>& nbors) {
-  staleCache = true;
-  X = xyz;
-  V = v;
-  Tetrahedra = tetra;
-  Neighbors = nbors;
   BuildTInverse();
 
   TetraIdx = -1;

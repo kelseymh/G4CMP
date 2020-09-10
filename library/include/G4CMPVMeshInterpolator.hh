@@ -32,7 +32,7 @@ class G4CMPVMeshInterpolator {
 protected:
   // This class CANNOT be instantiated directly!
   G4CMPVMeshInterpolator(const G4String& prefix)
-    : TetraIdx(0), staleCache(true), TetraStart(0), savePrefix(prefix) {;}
+    : TetraIdx(-1), staleCache(true), TetraStart(-1), savePrefix(prefix) {;}
 
 public:
   virtual ~G4CMPVMeshInterpolator() {;}

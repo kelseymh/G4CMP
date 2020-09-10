@@ -13,6 +13,7 @@
 // 20200907  Add BuildTInverse() function to precompute invT for Cart2Bary().
 //             Use in Cart2Bary() and BuildT4x3() to reduce tracking time.
 // 20200908  In MatInv(), clear result first, use new matrix printing.
+//		Replace four-arg ctor and UseMesh() with copy constructor.
 
 #include "G4CMPBiLinearInterp.hh"
 #include "G4CMPConfigManager.hh"
@@ -35,14 +36,29 @@ G4CMPBiLinearInterp(const vector<point2d>& xy, const vector<G4double>& v,
   : G4CMPBiLinearInterp() { UseMesh(xy, v, tetra); }
 
 G4CMPBiLinearInterp::
-G4CMPBiLinearInterp(const vector<point2d>& xy, const vector<G4double>& v,
-		    const vector<tetra2d>& tetra, const vector<tetra2d>& nbors)
-  : G4CMPBiLinearInterp() { UseMesh(xy, v, tetra, nbors); }
-
-G4CMPBiLinearInterp::
 G4CMPBiLinearInterp(const vector<point3d>& xyz, const vector<G4double>& v,
 		    const vector<tetra3d>& tetra)
   : G4CMPBiLinearInterp() { UseMesh(xyz, v, tetra); }
+
+// Copy constructor used by Clone() function
+
+G4CMPBiLinearInterp::G4CMPBiLinearInterp(const G4CMPBiLinearInterp& rhs)
+  : G4CMPBiLinearInterp() {
+  X = rhs.X;
+  V = rhs.V;
+  Tetrahedra = rhs.Tetrahedra;
+  Neighbors = rhs.Neighbors;
+  TInverse = rhs.TInverse;
+  TInvGood = rhs.TInvGood;
+
+  Tetra01 = rhs.Tetra01;	// Not really needed, but for completeness
+  Tetra02 = rhs.Tetra02;
+  Tetra12 = rhs.Tetra12;
+
+  staleCache = true;
+  TetraIdx = -1;
+  TetraStart = rhs.TetraStart;
+}
 
 
 // Load new mesh object and build list of neighbors
@@ -55,28 +71,6 @@ void G4CMPBiLinearInterp::UseMesh(const vector<point2d>& xy,
   V = v;
   Tetrahedra = tetra;
   FillNeighbors();
-  BuildTInverse();
-
-  TetraIdx = -1;
-  TetraStart = FirstInteriorTetra();
-
-#ifdef G4CMPTLI_DEBUG
-  SavePoints(savePrefix+"_points.dat");
-  SaveTetra(savePrefix+"_tetra.dat");
-#endif
-}
-
-// Load new mesh object with pre-built list of neighbors
-
-void G4CMPBiLinearInterp::UseMesh(const vector<point2d>& xy,
-				  const vector<G4double>& v,
-				  const vector<tetra2d>& tetra,
-				  const vector<tetra2d>& nbors) {
-  staleCache = true;
-  X = xy;
-  V = v;
-  Tetrahedra = tetra;
-  Neighbors = nbors;
   BuildTInverse();
 
   TetraIdx = -1;
