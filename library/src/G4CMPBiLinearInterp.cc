@@ -345,6 +345,7 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
   }
 #endif
 
+  // Loop is used to limit search time, does not index tetrahedra
   for (size_t count = 0; count < Tetrahedra.size(); ++count) {
     if (!Cart2Bary(pt,bary)) {	// Get barycentric coord in current tetrahedron
       if (!quiet) {
@@ -353,21 +354,13 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
 	       << pt[0] << " " << pt[1] << G4endl;
 
 #ifdef G4CMPTLI_DEBUG
-	G4cerr << " in tetra " << TetraIdx
-	       << " neighbors " << Neighbors[TetraIdx] << ":"
-	       << "\n " << Tetrahedra[TetraIdx][0]
-	       << ": " << X[Tetrahedra[TetraIdx][0]]
-	       << "\n " << Tetrahedra[TetraIdx][1]
-	       << ": " << X[Tetrahedra[TetraIdx][1]]
-	       << "\n " << Tetrahedra[TetraIdx][2]
-	       << ": " << X[Tetrahedra[TetraIdx][2]]
-	       << G4endl;
+	PrintTetra(G4cerr, TetraIdx);
 #endif
-      }
+      }	// if (!quiet)
 
       TetraIdx = -1;
       return;
-    }
+    }	// if (!Cart2bary())
 
 #ifdef G4CMPTLI_DEBUG
     if (G4CMPConfigManager::GetVerboseLevel() > 2) {
@@ -383,8 +376,9 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
 		    [barySafety](G4double b){return b>=barySafety;})) return;
 
     // Evaluate barycentric distance from current tetrahedron
-    if (BaryNorm(bary) < bestBary || count == 0) {	// Getting closer
-      bestBary = BaryNorm(bary);
+    G4double newNorm = BaryNorm(bary);
+    if (newNorm < bestBary || count == 0) {	// Getting closer
+      bestBary = newNorm;
       bestTet  = TetraIdx;
 #ifdef G4CMPTLI_DEBUG
       if (G4CMPConfigManager::GetVerboseLevel() > 2) {
@@ -395,33 +389,23 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
     }
 
     // Point is outside current tetrahedron; shift to nearest neighbor
-    minBaryIdx = 0;
-    for (G4int i=1; i<3; ++i)
-      if (bary[i] < bary[minBaryIdx]) minBaryIdx = i;
+    minBaryIdx = std::min_element(bary, bary+4) - bary;
 
     G4int newTetraIdx = Neighbors[TetraIdx][minBaryIdx];
-    if (newTetraIdx == -1) {
+    if (newTetraIdx == -1) {   // Fell off edge of world
       if (!quiet) {
 	G4cerr << "G4CMPBiLinearInterp::FindTetrahedron:"
 	       << " Point outside of hull!\n pt = "
 	       << pt[0] << " " << pt[1] << G4endl;
 
 #ifdef G4CMPTLI_DEBUG
-	G4cerr << " from tetra " << TetraIdx
-	       << " neighbors " << Neighbors[TetraIdx] << ":"
-	       << "\n " << Tetrahedra[TetraIdx][0]
-	       << ": " << X[Tetrahedra[TetraIdx][0]]
-	       << "\n " << Tetrahedra[TetraIdx][1]
-	       << ": " << X[Tetrahedra[TetraIdx][1]]
-	       << "\n " << Tetrahedra[TetraIdx][2]
-	       << ": " << X[Tetrahedra[TetraIdx][2]]
-	       << G4endl;
+	PrintTetra(G4cerr, TetraIdx);
 #endif
       }
 
       TetraIdx = -1;		// Avoids continuing after this
       return;
-    }
+    }	// if (newTetraIdx == -1)
 
     TetraIdx = newTetraIdx;
 
@@ -451,12 +435,14 @@ Cart2Bary(const G4double pt[2], G4double bary[3]) const {
   const tetra2d& tetra = Tetrahedra[TetraIdx]; // For convenience below
   const mat2x2& invT = TInverse[TetraIdx];
   
-  // FIXME: Why do we compute this if the inversion failed?
-  for(G4int k=0; k<2; ++k)
-    bary[k] = invT[k][0]*(pt[0] - X[tetra[2]][0]) +
-              invT[k][1]*(pt[1] - X[tetra[2]][1]);
-
-  bary[2] = 1.0 - bary[0] - bary[1];
+  if (TInvGood[TetraIdx]) {
+    bary[2] = 1.0;
+    for(G4int k=0; k<2; ++k) {
+      bary[k] = (invT[k][0]*(pt[0] - X[tetra[2]][0]) +
+		 invT[k][1]*(pt[1] - X[tetra[2]][1]) );
+      bary[2] -= bary[k];
+    }
+  }
 
   return TInvGood[TetraIdx];
 }
@@ -532,4 +518,15 @@ void G4CMPBiLinearInterp::SaveTetra(const G4String& fname) const {
     for (size_t i=0; i<Tetrahedra.size(); i++) {
       save << Tetrahedra[i] << "        " << Neighbors[i] << std::endl;
   }
+}
+
+
+// Print out tetrahedral information with coordinates
+
+void G4CMPBiLinearInterp::PrintTetra(std::ostream& os, G4int iTetra) const {
+  os << " from tetra " << iTetra << " neighbors " << Neighbors[iTetra] << ":"
+     << "\n " << Tetrahedra[iTetra][0] << ": " << X[Tetrahedra[iTetra][0]]
+     << "\n " << Tetrahedra[iTetra][1] << ": " << X[Tetrahedra[iTetra][1]]
+     << "\n " << Tetrahedra[iTetra][2] << ": " << X[Tetrahedra[iTetra][2]]
+     << G4endl;
 }

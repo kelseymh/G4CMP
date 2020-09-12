@@ -97,6 +97,9 @@ private:
   G4bool MatInv(const mat2x2& matrix, mat2x2& result, G4bool quiet=false) const;
   G4double BaryNorm(G4double bary[3]) const;
   G4double Det2(const mat2x2& matrix) const;
+
+  // Dump tetrahedron information (neighbors and vertices)
+  void PrintTetra(std::ostream& os, G4int iTetra) const;
 };
 
 #endif	/* G4CMPBiLinearInterp */
