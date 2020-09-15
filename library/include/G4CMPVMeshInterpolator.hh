@@ -10,6 +10,9 @@
 // use of a single pointer with a type selected at runtime for the field
 // model.  The actual interpolation functionality is implemented entirely
 // in the concrete subclasses.
+//
+// 20200908  Add operator<<() to print matrices (array of array)
+// 20200914  Drop cachedGrad, staleCache; subclasses will precompute field.
 
 #ifndef G4CMPVMeshInterpolator_h 
 #define G4CMPVMeshInterpolator_h 
@@ -30,7 +33,7 @@ class G4CMPVMeshInterpolator {
 protected:
   // This class CANNOT be instantiated directly!
   G4CMPVMeshInterpolator(const G4String& prefix)
-    : TetraIdx(0), staleCache(true), TetraStart(0), savePrefix(prefix) {;}
+    : TetraIdx(-1), TetraStart(-1), savePrefix(prefix) {;}
 
 public:
   virtual ~G4CMPVMeshInterpolator() {;}
@@ -45,7 +48,7 @@ public:
   // Subclasses MUST implement these functions for their dimensionality
 
   // Replace existing mesh vectors and tetrahedra table
-  // NOTE: Both 2D and 3D versions are give, subclasses should implement one
+  // NOTE: Both 2D and 3D versions are given, subclasses should implement one
   void UseMesh(const std::vector<point3d>& /*xyz*/,
 	       const std::vector<G4double>& /*v*/,
 	       const std::vector<tetra3d>& /*tetra*/) {;}
@@ -63,22 +66,30 @@ public:
   virtual void SaveTetra(const G4String& fname) const = 0;
 
 protected:		// Data members available to subclasses directly
+  virtual void FillGradients() = 0;	// Subclasses MUST implement this
+
   std::vector<G4double> V;		// Values at mesh points
+  std::vector<G4ThreeVector> Grad;	// Gradients across tetrahedra
   // NOTE: Subclasses must define dimensional mesh coords and tetrahera
 
   mutable G4int TetraIdx;		// Last tetrahedral index used
-  mutable G4bool staleCache;		// Flag if cache must be discarded
-  mutable G4ThreeVector cachedGrad;
   G4int TetraStart;			// Start of tetrahedral searches
 
   G4String savePrefix;			// for use in debugging, SaveXxx()
 };
 
-// SPECIAL:  Provide a way to write out array data directly (not in STL!)
+// SPECIAL:  Provide a way to write out array/matrix data directly (not in STL!)
 
 template <typename T, size_t N>
 inline std::ostream& operator<<(std::ostream& os, const std::array<T,N>& arr) {
   for (const T& ai: arr) os << ai << " ";
+  return os;
+}
+
+template <typename T, size_t M, size_t N>
+inline std::ostream& 
+operator<<(std::ostream& os, const std::array<std::array<T,N>,M>& mat) {
+  for (const auto& ai: mat) os << " " << ai << "\n";
   return os;
 }
 
