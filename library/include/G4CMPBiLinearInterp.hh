@@ -64,6 +64,9 @@ public:
   void SavePoints(const G4String& fname) const;
   void SaveTetra(const G4String& fname) const;
 
+protected:
+  void FillGradients();		// Compute gradient (field) at each tetrahedron
+
 private:
   std::vector<point2d> X;
   std::vector<tetra2d> Tetrahedra;	// For 2D, these are triangles!
@@ -77,7 +80,7 @@ private:
   std::vector<tetra2d> Tetra12;
 
   void FillNeighbors();		// Generate Neighbors table from tetrahedra
-  void BuildTInverse();		// Compute inverse matrices for Cart2Bary()
+  void FillTInverse();		// Compute inverse matrices for Cart2Bary()
 
   void Compress3DPoints(const std::vector<point3d>& xyz);
   void Compress3DTetras(const std::vector<tetra3d>& tetra);

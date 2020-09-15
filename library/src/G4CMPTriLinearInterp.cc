@@ -21,7 +21,8 @@
 //		Use in Cart2Bary() and BuildT4x3() to reduce tracking time.
 // 20200908  In MatInv(), clear result first, use new matrix printing.
 //		Replace four-arg ctor and UseMesh() with copy constructor.
-// 20200914  Include TExtend precalculation in BuildTInverse action.
+// 20200914  Include TExtend precalculation in FillTInverse action,
+//		gradient (field) precalc in UseMesh functions.
 
 #include "G4CMPTriLinearInterp.hh"
 #include "G4CMPConfigManager.hh"
@@ -58,6 +59,7 @@ G4CMPTriLinearInterp::G4CMPTriLinearInterp(const G4CMPTriLinearInterp& rhs)
   : G4CMPTriLinearInterp() {
   X = rhs.X;
   V = rhs.V;
+  Grad = rhs.Grad;
   Tetrahedra = rhs.Tetrahedra;
   Neighbors = rhs.Neighbors;
   TInverse = rhs.TInverse;
@@ -81,7 +83,8 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point3d> &xyz,
   X = xyz;
   V = v;
   BuildTetraMesh();
-  BuildTInverse();
+  FillTInverse();
+  FillGradients();
 
   TetraIdx = -1;
   TetraStart = FirstInteriorTetra();
@@ -99,7 +102,8 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point3d>& xyz,
   V = v;
   Tetrahedra = tetra;
   FillNeighbors();
-  BuildTInverse();
+  FillTInverse();
+  FillGradients();
 
   TetraIdx = -1;
   TetraStart = FirstInteriorTetra();
@@ -346,9 +350,9 @@ FindTetraID(const vector<tetra3d>& tetras, const tetra3d& wildTetra, G4int skip,
 
 // Compute matrices used in tetrahedral barycentric coordinate calculation
 
-void G4CMPTriLinearInterp::BuildTInverse() {
+void G4CMPTriLinearInterp::FillTInverse() {
 #ifdef G4CMPTLI_DEBUG
-  G4cout << "G4CMPTriLinearInterp::BuildTInverse (" << Tetrahedra.size()
+  G4cout << "G4CMPTriLinearInterp::FillTInverse (" << Tetrahedra.size()
 	 << " tetrahedra)" << G4endl;
 
   time_t start, fin;
@@ -390,8 +394,49 @@ void G4CMPTriLinearInterp::BuildTInverse() {
 
 #ifdef G4CMPTLI_DEBUG
   std::time(&fin);
-  G4cout << "G4CMPTriLinearInterp::BuildTInverse: Took "
+  G4cout << "G4CMPTriLinearInterp::FillTInverse: Took "
          << difftime(fin, start) << " seconds for " << TInverse.size()
+	 << " entries." << G4endl;
+#endif
+}
+
+
+// Compute field (gradient) across each tetrahedron
+
+void G4CMPTriLinearInterp::FillGradients() {
+#ifdef G4CMPTLI_DEBUG
+  G4cout << "G4CMPTriLinearInterp::FillGradients (" << Tetrahedra.size()
+	 << " tetrahedra)" << G4endl;
+
+  time_t start, fin;
+  std::time(&start);
+#endif
+
+  size_t ntet = Tetrahedra.size();
+  Grad.resize(ntet);		    // Avoid reallocation inside loop
+
+  for (size_t itet=0; itet<ntet; itet++) {
+    const tetra3d& tetra = Tetrahedra[itet];  // For convenience below
+    const mat4x3& ET = TExtend[itet];
+
+    Grad[itet].set((V[tetra[0]]*ET[0][0] + V[tetra[1]]*ET[1][0] +
+		    V[tetra[2]]*ET[2][0] + V[tetra[3]]*ET[3][0]),
+		   (V[tetra[0]]*ET[0][1] + V[tetra[1]]*ET[1][1] +
+		    V[tetra[2]]*ET[2][1] + V[tetra[3]]*ET[3][1]),
+		   (V[tetra[0]]*ET[0][2] + V[tetra[1]]*ET[1][2] +
+		    V[tetra[2]]*ET[2][2] + V[tetra[3]]*ET[3][2])
+		   );
+#ifdef G4CMPTLI_DEBUG
+    if (G4CMPConfigManager::GetVerboseLevel() > 1) {
+      G4cout << " Computed Grad[" << itet << "]: " << Grad[itet] << G4endl;
+    }
+#endif
+  }	// for (itet...
+
+#ifdef G4CMPTLI_DEBUG
+  std::time(&fin);
+  G4cout << "G4CMPTriLinearInterp::FillGradients: Took "
+         << difftime(fin, start) << " seconds for " << Grad.size()
 	 << " entries." << G4endl;
 #endif
 }
@@ -431,7 +476,9 @@ G4CMPTriLinearInterp::GetGrad(const G4double pos[3], G4bool quiet) const {
 
   G4double bary[4] = { 0. };
   FindTetrahedron(pos, bary, quiet);
+  return (TetraIdx<0. ? zero : Grad[TetraIdx]);
 
+  //*** DELETE CODE BELOW ***
   if (TetraIdx<0 || !TInvGood[TetraIdx]) return zero;
 
   const mat4x3& ET = TExtend[TetraIdx];		// For convenience below

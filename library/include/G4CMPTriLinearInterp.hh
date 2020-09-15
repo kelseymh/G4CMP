@@ -67,6 +67,9 @@ public:
   void SavePoints(const G4String& fname) const;
   void SaveTetra(const G4String& fname) const;
 
+protected:
+  void FillGradients();		// Compute gradient (field) at each tetrahedron
+
 private:
   std::vector<point3d> X;
   std::vector<tetra3d> Tetrahedra;
@@ -85,7 +88,7 @@ private:
 
   void BuildTetraMesh();	// Builds mesh from pre-initialized 'X' array
   void FillNeighbors();		// Generate Neighbors table from tetrahedra
-  void BuildTInverse();		// Compute inverse matrices for Cart2Bary()
+  void FillTInverse();		// Compute inverse matrices for Cart2Bary()
 
   // Function pointer for comparison operator to use search for facets
   using TetraComp = G4bool(*)(const tetra3d&, const tetra3d&);

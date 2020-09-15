@@ -10,6 +10,8 @@
 // use of a single pointer with a type selected at runtime for the field
 // model.  The actual interpolation functionality is implemented entirely
 // in the concrete subclasses.
+//
+// 20200914  Add function call to precompute potential gradients (field)
 
 #include "G4CMPVMeshInterpolator.hh"
 
@@ -24,6 +26,7 @@ void G4CMPVMeshInterpolator::UseValues(const std::vector<G4double>& v) {
   }
 
   V = v;
+  FillGradients();	// Will call subclass implementation
 
 #ifdef G4CMPTLI_DEBUG
   SavePoints(savePrefix+"_points.dat");

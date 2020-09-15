@@ -66,7 +66,10 @@ public:
   virtual void SaveTetra(const G4String& fname) const = 0;
 
 protected:		// Data members available to subclasses directly
+  virtual void FillGradients() = 0;	// Subclasses MUST implement this
+
   std::vector<G4double> V;		// Values at mesh points
+  std::vector<G4ThreeVector> Grad;	// Gradients across tetrahedra
   // NOTE: Subclasses must define dimensional mesh coords and tetrahera
 
   mutable G4int TetraIdx;		// Last tetrahedral index used
