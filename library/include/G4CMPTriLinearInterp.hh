@@ -18,6 +18,7 @@
 // 20200907  Add BuildTInverse() function to precompute invT for Cart2Bary().
 //		Add "quiet" argument to MatInv to suppress warnings.
 // 20200908  Replace four-arg ctor and UseMesh() with copy constructor.
+// 20200914  Include gradient precalculation in BuildTInverse action.
 
 #ifndef G4CMPTriLinearInterp_h 
 #define G4CMPTriLinearInterp_h 
@@ -71,6 +72,7 @@ private:
   std::vector<tetra3d> Tetrahedra;
   std::vector<tetra3d> Neighbors;
   std::vector<mat3x3> TInverse;		// Matrix for barycenter calculation
+  std::vector<mat4x3> TExtend;		// Matrix for gradient calculation
   std::vector<G4bool> TInvGood;		// Flags for noninvertible matrix
 
   mutable std::map<G4int,G4int> qhull2x;	// Used by QHull for meshing
@@ -99,7 +101,7 @@ private:
   G4int FindPointID(const std::vector<G4double>& point, const G4int id) const;
 
   G4bool Cart2Bary(const G4double point[3], G4double bary[4]) const;
-  G4bool BuildT4x3(mat4x3& ET) const;
+  G4bool BuildT4x3(size_t itet, mat4x3& ET) const;
 
   G4bool MatInv(const mat3x3& matrix, mat3x3& result, G4bool quiet=false) const;
   G4double BaryNorm(G4double bary[4]) const;

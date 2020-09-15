@@ -14,6 +14,7 @@
 //             Use in Cart2Bary() and BuildT4x3() to reduce tracking time.
 // 20200908  In MatInv(), clear result first, use new matrix printing.
 //		Replace four-arg ctor and UseMesh() with copy constructor.
+// 20200914  Include TExtend precalculation in BuildTInverse action.
 
 #include "G4CMPBiLinearInterp.hh"
 #include "G4CMPConfigManager.hh"
@@ -50,12 +51,12 @@ G4CMPBiLinearInterp::G4CMPBiLinearInterp(const G4CMPBiLinearInterp& rhs)
   Neighbors = rhs.Neighbors;
   TInverse = rhs.TInverse;
   TInvGood = rhs.TInvGood;
+  TExtend  = rhs.TExtend;
 
   Tetra01 = rhs.Tetra01;	// Not really needed, but for completeness
   Tetra02 = rhs.Tetra02;
   Tetra12 = rhs.Tetra12;
 
-  staleCache = true;
   TetraIdx = -1;
   TetraStart = rhs.TetraStart;
 }
@@ -66,7 +67,6 @@ G4CMPBiLinearInterp::G4CMPBiLinearInterp(const G4CMPBiLinearInterp& rhs)
 void G4CMPBiLinearInterp::UseMesh(const vector<point2d>& xy,
 				  const vector<G4double>& v,
 				  const vector<tetra2d>& tetra) {
-  staleCache = true;
   X = xy;
   V = v;
   Tetrahedra = tetra;
@@ -88,7 +88,6 @@ void G4CMPBiLinearInterp::UseMesh(const vector<point2d>& xy,
 void G4CMPBiLinearInterp::UseMesh(const vector<point3d>& xyz,
 				  const vector<G4double>& v,
 				  const vector<tetra3d>& tetra) {
-  staleCache = true;
   Compress3DPoints(xyz);
   Compress3DTetras(tetra);
   V = v;
@@ -234,21 +233,21 @@ void G4CMPBiLinearInterp::BuildTInverse() {
 
   size_t ntet = Tetrahedra.size();
   TInverse.resize(ntet);		    // Avoid reallocation inside loop
+  TExtend.resize(ntet);
   TInvGood.resize(ntet, false);
 
   mat2x2 T;
   for (size_t itet=0; itet<ntet; itet++) {
+    const tetra2d& tetra = Tetrahedra[itet];	// For convenience below
 #ifdef G4CMPTLI_DEBUG
     if (G4CMPConfigManager::GetVerboseLevel() > 1) {
-      G4cout << " Processing Tetrahedra[" << itet << "]: " << Tetrahedra[itet]
-	     << G4endl;
+      G4cout << " Processing Tetrahedra[" << itet << "]: " << tetra << G4endl;
     }
 #endif
 
     for (G4int dim=0; dim<2; ++dim) {
       for (G4int vert=0; vert<2; ++vert) {
-	T[dim][vert] = (X[Tetrahedra[itet][vert]][dim]
-			- X[Tetrahedra[itet][3]][dim]);
+	T[dim][vert] = (X[tetra[vert]][dim] - X[tetra[2]][dim]);
       }
     }
 
@@ -257,12 +256,11 @@ void G4CMPBiLinearInterp::BuildTInverse() {
     if (!TInvGood[itet]) {
       G4cerr << "ERROR: Non-invertible matrix " << itet << " with " << G4endl;
       for (G4int i=0; i<3; i++) {
-	G4cerr << " " << Tetrahedra[itet][i] << " @ "
-	       << X[Tetrahedra[itet][i]] << G4endl;
+	G4cerr << " " << tetra[i] << " @ " << X[tetra[i]] << G4endl;
       }
     }
 #endif
-  }
+  }	// for (itet...
 
 #ifdef G4CMPTLI_DEBUG
   std::time(&fin);
@@ -279,8 +277,8 @@ G4int G4CMPBiLinearInterp::FirstInteriorTetra() {
   G4int minIndex = Neighbors.size()/4;
 
   for (G4int i=0; i<(G4int)Neighbors.size(); i++) {
-    if (Neighbors[i][0]>minIndex && Neighbors[i][1]>minIndex &&
-	Neighbors[i][2]>minIndex) return i;
+    if (*std::min_element(Neighbors[i].begin(), Neighbors[i].end())>minIndex)
+      return i;
   }
 
   return Neighbors.size()/2;
@@ -292,38 +290,32 @@ G4double
 G4CMPBiLinearInterp::GetValue(const G4double pos[2], G4bool quiet) const {
   G4double bary[3] = { 0. };
   FindTetrahedron(&pos[0], bary, quiet);
-  staleCache = true;
     
   if (TetraIdx == -1) return 0;
-  else {
-    return(V[Tetrahedra[TetraIdx][0]] * bary[0] +
-           V[Tetrahedra[TetraIdx][1]] * bary[1] +
-           V[Tetrahedra[TetraIdx][2]] * bary[2]);    
-  }
+
+  return(V[Tetrahedra[TetraIdx][0]] * bary[0] +
+	 V[Tetrahedra[TetraIdx][1]] * bary[1] +
+	 V[Tetrahedra[TetraIdx][2]] * bary[2]);    
 }
 
 G4ThreeVector 
 G4CMPBiLinearInterp::GetGrad(const G4double pos[2], G4bool quiet) const {
+  static const G4ThreeVector zero(0.,0.,0.);	// For failure returns
+
   G4double bary[3] = { 0. };
-  G4int oldIdx = TetraIdx;
   FindTetrahedron(pos, bary, quiet);
 
-  if (TetraIdx == -1) cachedGrad.set(0.,0.,0.);
-  else if (TetraIdx != oldIdx || staleCache) {
-    mat3x2 ET;
-    if (!BuildT3x2(ET)) cachedGrad.set(0.,0.,0.);	// Failed MatInv()
-    else {
-      for (size_t i=0; i<2; ++i) {
-	cachedGrad[i] = V[Tetrahedra[TetraIdx][0]]*ET[0][i] +
-	                V[Tetrahedra[TetraIdx][1]]*ET[1][i] +
-	                V[Tetrahedra[TetraIdx][2]]*ET[2][i];
-      }
-      cachedGrad[2] = 0.;
-    }
-    staleCache = false;
-  }
+  if (TetraIdx<0 || !TInvGood[TetraIdx]) return zero;
 
-  return cachedGrad;
+  const mat3x2& ET = TExtend[TetraIdx];		// For convenience below
+  const tetra2d& tetra = Tetrahedra[TetraIdx];
+
+  return G4ThreeVector((V[tetra[0]]*ET[0][0] + V[tetra[1]]*ET[1][0] +
+			V[tetra[2]]*ET[2][0]),
+		       (V[tetra[0]]*ET[0][1] + V[tetra[1]]*ET[1][1] +
+			V[tetra[2]]*ET[2][1]),
+		       0.
+		       );
 }
 
 void 
@@ -380,6 +372,7 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
     if (newNorm < bestBary || count == 0) {	// Getting closer
       bestBary = newNorm;
       bestTet  = TetraIdx;
+
 #ifdef G4CMPTLI_DEBUG
       if (G4CMPConfigManager::GetVerboseLevel() > 2) {
 	G4cout << " New bestTet " << bestTet << " bestBary = " << bestBary
@@ -419,10 +412,10 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
   }	// for (size_t count=0 ...
 
   TetraIdx = bestTet;
-  Cart2Bary(pt,bary);		// Don't need to check return; succeeded above
 
 #ifdef G4CMPTLI_DEBUG
   if (G4CMPConfigManager::GetVerboseLevel() > 1) {
+    Cart2Bary(pt,bary);
     G4cout << "Tetrahedron not found! Using bestTet " << bestTet << " bary "
 	   << bary[0] << " " << bary[1] << " " << bary[2]
 	   << G4endl;
@@ -430,8 +423,8 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
 #endif
 }
 
-G4bool G4CMPBiLinearInterp::
-Cart2Bary(const G4double pt[2], G4double bary[3]) const {
+G4bool 
+G4CMPBiLinearInterp::Cart2Bary(const G4double pt[2], G4double bary[3]) const {
   const tetra2d& tetra = Tetrahedra[TetraIdx]; // For convenience below
   const mat2x2& invT = TInverse[TetraIdx];
   
@@ -451,20 +444,17 @@ G4double G4CMPBiLinearInterp::BaryNorm(G4double bary[3]) const {
   return (bary[0]*bary[0]+bary[1]*bary[1]+bary[2]*bary[2]);
 }
 
-G4bool G4CMPBiLinearInterp::BuildT3x2(mat3x2& ET) const {
-  if (TInvGood[TetraIdx]) {
-    const mat2x2& invT = TInverse[TetraIdx];   // For convenience below
-    for (G4int i=0; i<2; ++i) {
-      for (G4int j=0; j<2; ++j) {
-	ET[i][j] = invT[i][j];
-      }
-      ET[2][i] = -invT[0][i] - invT[1][i];
+G4bool G4CMPBiLinearInterp::BuildT3x2(size_t itet, mat3x2& ET) const {
+  // NOTE:  If matrix inversion failed, invT is set to all zeros
+  const mat2x2& invT = TInverse[itet];   // For convenience below
+  for (G4int i=0; i<2; ++i) {
+    for (G4int j=0; j<2; ++j) {
+      ET[i][j] = invT[i][j];
     }
-  } else {
-    ET = {{ {0.,0.}, {0.,0.}, {0.,0.} }};
+    ET[2][i] = -invT[0][i] - invT[1][i];
   }
 
-  return TInvGood[TetraIdx];
+  return TInvGood[itet];
 }
 
 G4double G4CMPBiLinearInterp::Det2(const mat2x2& matrix) const {

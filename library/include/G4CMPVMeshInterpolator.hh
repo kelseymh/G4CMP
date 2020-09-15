@@ -12,6 +12,7 @@
 // in the concrete subclasses.
 //
 // 20200908  Add operator<<() to print matrices (array of array)
+// 20200914  Drop cachedGrad, staleCache; subclasses will precompute field.
 
 #ifndef G4CMPVMeshInterpolator_h 
 #define G4CMPVMeshInterpolator_h 
@@ -32,7 +33,7 @@ class G4CMPVMeshInterpolator {
 protected:
   // This class CANNOT be instantiated directly!
   G4CMPVMeshInterpolator(const G4String& prefix)
-    : TetraIdx(-1), staleCache(true), TetraStart(-1), savePrefix(prefix) {;}
+    : TetraIdx(-1), TetraStart(-1), savePrefix(prefix) {;}
 
 public:
   virtual ~G4CMPVMeshInterpolator() {;}
@@ -69,8 +70,6 @@ protected:		// Data members available to subclasses directly
   // NOTE: Subclasses must define dimensional mesh coords and tetrahera
 
   mutable G4int TetraIdx;		// Last tetrahedral index used
-  mutable G4bool staleCache;		// Flag if cache must be discarded
-  mutable G4ThreeVector cachedGrad;
   G4int TetraStart;			// Start of tetrahedral searches
 
   G4String savePrefix;			// for use in debugging, SaveXxx()
