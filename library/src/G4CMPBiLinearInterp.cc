@@ -15,6 +15,7 @@
 // 20200908  In MatInv(), clear result first, use new matrix printing.
 //		Replace four-arg ctor and UseMesh() with copy constructor.
 // 20200914  Include TExtend precalculation in FillTInverse action.
+// 20201002  Report tetrahedra errors during FillTInverse() initialization.
 
 #include "G4CMPBiLinearInterp.hh"
 #include "G4CMPConfigManager.hh"
@@ -255,14 +256,14 @@ void G4CMPBiLinearInterp::FillTInverse() {
     }
 
     TInvGood[itet] = MatInv(T, TInverse[itet], true);
-#ifdef G4CMPTLI_DEBUG
+    BuildT3x2(itet, TExtend[itet]);
+
     if (!TInvGood[itet]) {
       G4cerr << "ERROR: Non-invertible matrix " << itet << " with " << G4endl;
       for (G4int i=0; i<3; i++) {
 	G4cerr << " " << tetra[i] << " @ " << X[tetra[i]] << G4endl;
       }
     }
-#endif
   }	// for (itet...
 
 #ifdef G4CMPTLI_DEBUG
@@ -347,19 +348,6 @@ G4CMPBiLinearInterp::GetGrad(const G4double pos[2], G4bool quiet) const {
   G4double bary[3] = { 0. };
   FindTetrahedron(pos, bary, quiet);
   return (TetraIdx<0. ? zero : Grad[TetraIdx]);
-
-  //*** DELETE CODE BELOW ***
-  if (TetraIdx<0 || !TInvGood[TetraIdx]) return zero;
-
-  const mat3x2& ET = TExtend[TetraIdx];		// For convenience below
-  const tetra2d& tetra = Tetrahedra[TetraIdx];
-
-  return G4ThreeVector((V[tetra[0]]*ET[0][0] + V[tetra[1]]*ET[1][0] +
-			V[tetra[2]]*ET[2][0]),
-		       (V[tetra[0]]*ET[0][1] + V[tetra[1]]*ET[1][1] +
-			V[tetra[2]]*ET[2][1]),
-		       0.
-		       );
 }
 
 void 
