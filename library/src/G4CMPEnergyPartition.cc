@@ -39,6 +39,7 @@
 // 20200316  Improve calculations of charge and phonon energy summaries
 // 20200328  Protect against invalid energy inputs
 // 20200805  Use electric field in volume to estimate Luke gain, sampling
+// 20201011  Implement realistic energy sharing between electron and hole
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -83,7 +84,7 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
     fillSummaryData(false), material(mat), biasVoltage(0.), 
-    holeFraction(0.5), nParticlesMinimum(10),
+    nParticlesMinimum(10),
     applyDownsampling(true), cloud(new G4CMPChargeCloud), nCharges(0),
     nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.),
     summary(0) {
@@ -345,6 +346,9 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
   }
 }
 
+
+// Convert available energy into electron-pairs
+
 void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   if (G4CMPConfigManager::GetGenCharges() <= 0.) return;	// Suppressed
 
@@ -421,13 +425,54 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
 
 void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
   G4double eFree = ePair - theLattice->GetBandGapEnergy(); // TODO: Is this right?
+  G4double eHole = ShareChargeEnergy(eFree);
+  G4double eElec = eFree - eHole;
 
   particles.push_back(Data(G4CMPDriftElectron::Definition(),G4RandomDirection(),
-			   (1.-holeFraction)*eFree));
+			   eElec));
 
   particles.push_back(Data(G4CMPDriftHole::Definition(), G4RandomDirection(),
-			   holeFraction*eFree));
+			   eHole));
 }
+
+// Divide energy between electron and hole, https://arxiv.org/abs/2004.10709
+
+G4double G4CMPEnergyPartition::ShareChargeEnergy(G4double eFree) {
+  if (eFree <= 0.) return 0.;		// No energy, so no computing needed
+
+  // Alpha is exponent for sharing: alpha->0 puts all energy in one
+  // alpha=1 is flat probably distribution for splitting (0 to 1)
+  // alpha->+infy splits energy equally between electron and hole
+
+  const G4double alphaMax = 10.;	// This moves to G4CMPConfigManager
+
+  G4double eRes = (theLattice->GetPairProductionEnergy()
+		   - theLattice->GetBandGapEnergy());
+
+  G4double alpha = 0.;
+  if (eFree > eRes) {
+    G4double x = eRes/eFree;
+    alpha = 1. / sqrt(x*x/(alphaMax*alphaMax) + (1.-x*x)*(1.-x*x));
+  }
+
+  // P(f|a) = (2/B(a)) f^(a−1) (1−f)^(a−1)
+  // where B(a) = Gamma(a)^2/Gamma(2a)
+  G4double lnBeta = 2.*lgamma(alpha) - lgamma(2.*alpha);
+  G4double pmax = exp(lnBeta)/2.;
+
+  // Use accept-reject loop to pick a value for the energy fraction
+  G4double frac = 0.5, pfrac = 1.;
+  do {
+    frac = G4UniformRand();
+    // FIXME: Can we do this more efficiently or more safely?
+    pfrac = std::pow(frac, alpha-1.) * std::pow(1.-frac, alpha-1.);
+  } while (pmax*G4UniformRand() > pfrac);
+
+  return frac*eFree;
+}
+
+
+// Convert available energy into primary phonons
 
 void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   if (G4CMPConfigManager::GetGenPhonons() <= 0.) return;	// Suppressed
