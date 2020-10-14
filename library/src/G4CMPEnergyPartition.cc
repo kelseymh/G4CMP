@@ -39,6 +39,7 @@
 // 20200316  Improve calculations of charge and phonon energy summaries
 // 20200328  Protect against invalid energy inputs
 // 20200805  Use electric field in volume to estimate Luke gain, sampling
+// 20201013  Implement Fano fluctuations as applying to Npair, not Emeas
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -73,6 +74,7 @@
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
+#include "CLHEP/Random/RandBinomial.h"
 #include <cmath>
 #include <vector>
 
@@ -175,24 +177,41 @@ LindhardScalingFactor(G4double E, G4double Z, G4double A) const {
 
 // Apply Fano factor to convert true energy deposition to random pairs
 
-G4double G4CMPEnergyPartition::MeasuredChargeEnergy(G4double eTrue) const {
-  // Fano noise changes the measured charge energy
-  // Std deviation of energy distribution
+G4double G4CMPEnergyPartition::MeasuredChargePairs(G4double eTrue) const {
+  G4double Ntrue = eTrue/theLattice->GetPairProductionEnergy();
 
+  // Fano noise changes the number of generated charges
   if (!G4CMPConfigManager::FanoStatisticsEnabled()) {
     summary->FanoFactor = 0.;
-    return eTrue;
+    return Ntrue;
   }
 
   // Store Fano factor from material for reference
   summary->FanoFactor = theLattice->GetFanoFactor();
 
-  G4double sigmaE = std::sqrt(eTrue * theLattice->GetFanoFactor()
-                              * theLattice->GetPairProductionEnergy());
-  if (verboseLevel>1) 
-    G4cout << "Using sigma " << sigmaE/eV << " eV for Fano noise." << G4endl;
+  if (Ntrue < 3.) return Ntrue;		// Don't fluctuate quantized region
 
-  return G4RandGauss::shoot(eTrue, sigmaE);
+  if (Ntrue < 20.) {
+    G4double binProb = 1. - summary->FanoFactor;	// Binomial probability
+    G4double binMean = Ntrue / summary->FanoFactor;
+
+    if (verboseLevel>1) {
+      G4cout << "Using binomial n " << binMean << " p " << binProb
+	     << " for Fano noise." << G4endl;
+    }
+
+    // FIXME: Want to interpolate floor(binMean), ceil(binMean) binomials
+    // See https://www.slac.stanford.edu/exp/cdms/ScienceResults/DataReleases/20190401_HVeV_Run1/HVeV_R1_Data_Release_20190401.pdf
+
+    return CLHEP::RandBinomial::shoot(int(binMean), binProb);
+  }
+
+  G4double sigmaN = std::sqrt(summary->FanoFactor * Ntrue);
+  if (verboseLevel>1) 
+    G4cout << "Using mean " << Ntrue << " sigma " << sigmaN
+	   << " for Fano noise." << G4endl;
+
+  return G4RandGauss::shoot(Ntrue, sigmaN);
 }
 
 
@@ -353,16 +372,13 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
 
   G4double eBand = 1.01*theLattice->GetBandGapEnergy(); // Force visible energy
   G4double ePair = theLattice->GetPairProductionEnergy();
-  G4double eMeas = MeasuredChargeEnergy(energy);	// Applies Fano factor
 
-  if (eMeas > 0) {
-    nPairs = std::floor(eMeas / ePair);   // Average number of e/h pairs
-
-    // Below pair energy, can still get single charge from bandgap excitation
-    if ((eMeas-nPairs*ePair) > eBand) nPairs++;
+  // Use Fano factor to determine generated number of charge pairs
+  if (energy > eBand) {
+    nPairs = MeasuredChargePairs(energy);
+    ePair = energy/nPairs;
   } else {
-    eMeas = 0.;
-    nPairs = 0; // This prevents nPairs from blowing up when negative
+    nPairs = 0;
   }
 
   // Only apply downsampling to sufficiently large statistics
@@ -370,11 +386,11 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
 		    : G4CMPConfigManager::GetGenCharges());
 
   if (verboseLevel>1) {
-    G4cout << " eMeas " << eMeas/MeV << " MeV => " << nPairs << " pairs"
+    G4cout << " nPairs " << nPairs << " ==> ePair " << ePair/eV << " eV"
 	   << " downsample " << scale << G4endl;
   }
 
-  chargeEnergyLeft = eMeas;
+  chargeEnergyLeft = energy;		// Initialize for failure case
   nCharges = 0;
   if (nPairs == 0) return;		// No charges could be produced
 
@@ -382,10 +398,11 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
 
   // For downsampling, ensure that there are sufficient charge pairs
   while (nCharges < scale*nPairs) {
+    // Initialize everything for next sampling attempt
     if (nCharges > 0)
       particles.erase(particles.end()-2*nCharges, particles.end());
 
-    chargeEnergyLeft = eMeas;
+    chargeEnergyLeft = energy;
     nCharges = 0;
 
     while (chargeEnergyLeft >= ePair) {
@@ -413,10 +430,9 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
 
   // Store generated information in summary block
   summary->chargeEnergy = energy;
-  summary->chargeFano = eMeas;
-  summary->chargeGenerated = eMeas-chargeEnergyLeft;
+  summary->chargeFano = nPairs*theLattice->GetPairProductionEnergy();
+  summary->chargeGenerated = energy-chargeEnergyLeft;
   summary->numberOfPairs = nCharges;		// Number after downsampling
-
 }
 
 void G4CMPEnergyPartition::AddChargePair(G4double ePair) {
