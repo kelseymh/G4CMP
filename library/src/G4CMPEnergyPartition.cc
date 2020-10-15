@@ -183,7 +183,7 @@ G4double G4CMPEnergyPartition::MeasuredChargePairs(G4double eTrue) const {
   // Fano noise changes the number of generated charges
   if (!G4CMPConfigManager::FanoStatisticsEnabled()) {
     summary->FanoFactor = 0.;
-    return Ntrue;
+    return std::ceil(Ntrue);
   }
 
   // Store Fano factor from material for reference
@@ -211,7 +211,7 @@ G4double G4CMPEnergyPartition::MeasuredChargePairs(G4double eTrue) const {
     G4cout << "Using mean " << Ntrue << " sigma " << sigmaN
 	   << " for Fano noise." << G4endl;
 
-  return G4RandGauss::shoot(Ntrue, sigmaN);
+  return std::ceil(G4RandGauss::shoot(Ntrue, sigmaN));
 }
 
 
