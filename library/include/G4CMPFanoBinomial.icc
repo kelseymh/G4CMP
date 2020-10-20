@@ -1,0 +1,58 @@
+// -*- C++ -*-
+// 
+// -----------------------------------------------------------------------
+//                         --- FanoBinomial ---
+//                 inlined functions implementation file
+// -----------------------------------------------------------------------
+// Inspired by Geant4's RandBinomial.icc to provide functionality for a
+// binomial distribution with a Fano factor. 
+// =======================================================================
+// 20201019  Michael Kelsey (TAMU)
+// =======================================================================
+
+#include "CLHEP/Utility/memory.h"
+
+
+namespace G4CMP {
+
+inline FanoBinomial::FanoBinomial(CLHEP::HepRandomEngine & anEngine,
+				  double mean, double stdDev )
+  : HepRandom(), localEngine(&anEngine, CLHEP::do_nothing_deleter()),
+    defaultMean(mean), defaultStdDev(stdDev) {;}
+
+inline FanoBinomial::FanoBinomial(CLHEP::HepRandomEngine * anEngine,
+				  double mean, double stdDev )
+  : HepRandom(), localEngine(anEngine),
+    defaultMean(mean), defaultStdDev(stdDev) {}
+
+inline double FanoBinomial::shoot( CLHEP::HepRandomEngine *anEngine,
+				   double mean, double stdDev ) {
+  return genBinomial( anEngine, mean, stdDev );
+}
+
+inline double FanoBinomial::shoot( double mean, double stdDev ) {
+  CLHEP::HepRandomEngine *anEngine = HepRandom::getTheEngine();
+  return genBinomial( anEngine, mean, stdDev );
+}
+
+inline double FanoBinomial::operator()() {
+  return fire();
+}
+
+inline double FanoBinomial::operator()( double mean, double stdDev ) {
+  return fire( mean, stdDev );
+}
+
+inline double FanoBinomial::fire( double mean, double stdDev ) {
+  return genBinomial( localEngine.get(), mean, stdDev );
+}
+
+inline double FanoBinomial::fire() {
+  return fire( defaultMean, defaultStdDev );
+}
+
+inline void FanoBinomial::fireArray( const int size, double* vect ) {
+  return fireArray(size, vect, defaultMean, defaultStdDev);
+}
+
+}  // namespace G4CMP

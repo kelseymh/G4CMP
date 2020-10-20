@@ -153,6 +153,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeSensitivity.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEnergyPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEqEMField.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFanoBinomial.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFieldManager.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFieldUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGeometryUtils.cc
@@ -230,6 +231,8 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeSensitivity.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEnergyPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEqEMField.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFanoBinomial.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFanoBinomial.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldManager.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGeometryUtils.hh

@@ -40,12 +40,14 @@
 // 20200328  Protect against invalid energy inputs
 // 20200805  Use electric field in volume to estimate Luke gain, sampling
 // 20201013  Implement Fano fluctuations as applying to Npair, not Emeas
+// 20201020  Use "interpolation" to match input Fano factor and mean Npair
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPFanoBinomial.hh"
 #include "G4CMPFieldUtils.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPartitionData.hh"
@@ -178,6 +180,9 @@ LindhardScalingFactor(G4double E, G4double Z, G4double A) const {
 // Apply Fano factor to convert true energy deposition to random pairs
 
 G4double G4CMPEnergyPartition::MeasuredChargePairs(G4double eTrue) const {
+  if (eTrue < theLattice->GetBandGapEnergy()) return 0.;
+  if (eTrue <= theLattice->GetPairProductionEnergy()) return 1.;
+
   G4double Ntrue = eTrue/theLattice->GetPairProductionEnergy();
 
   // Fano noise changes the number of generated charges
@@ -189,29 +194,19 @@ G4double G4CMPEnergyPartition::MeasuredChargePairs(G4double eTrue) const {
   // Store Fano factor from material for reference
   summary->FanoFactor = theLattice->GetFanoFactor();
 
-  if (Ntrue < 3.) return Ntrue;		// Don't fluctuate quantized region
+  G4double binProb = 1. - summary->FanoFactor;	// Binomial probability
+  G4double binMean = Ntrue / summary->FanoFactor;
 
-  if (Ntrue < 20.) {
-    G4double binProb = 1. - summary->FanoFactor;	// Binomial probability
-    G4double binMean = Ntrue / summary->FanoFactor;
-
-    if (verboseLevel>1) {
-      G4cout << "Using binomial n " << binMean << " p " << binProb
-	     << " for Fano noise." << G4endl;
-    }
-
-    // FIXME: Want to interpolate floor(binMean), ceil(binMean) binomials
-    // See https://www.slac.stanford.edu/exp/cdms/ScienceResults/DataReleases/20190401_HVeV_Run1/HVeV_R1_Data_Release_20190401.pdf
-
-    return CLHEP::RandBinomial::shoot(int(binMean), binProb);
+  if (verboseLevel>1) {
+    G4cout << "Using binomial n " << binMean << " p " << binProb
+	   << " for Fano noise." << G4endl;
   }
 
-  G4double sigmaN = std::sqrt(summary->FanoFactor * Ntrue);
-  if (verboseLevel>1) 
-    G4cout << "Using mean " << Ntrue << " sigma " << sigmaN
-	   << " for Fano noise." << G4endl;
+  // FIXME: Should we just use Gaussian for large N?  If so, how large?
 
-  return std::ceil(G4RandGauss::shoot(Ntrue, sigmaN));
+  // Interpolated binominals to reproduce preset Fano factor
+  // See https://www.slac.stanford.edu/exp/cdms/ScienceResults/DataReleases/20190401_HVeV_Run1/HVeV_R1_Data_Release_20190401.pdf
+  return G4CMP::FanoBinomial::shoot(binMean, binProb);
 }
 
 
