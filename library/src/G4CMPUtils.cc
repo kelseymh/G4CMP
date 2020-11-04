@@ -213,7 +213,7 @@ G4CMP::FindProcess(const G4ParticleDefinition* pd, const G4String& pname) {
   G4ProcessVector* pvec = pd->GetProcessManager()->GetProcessList();
   if (!pvec) return 0;
 
-  for (G4int i=0; i<pvec->size(); i++) {
+  for (size_t i=0; i<pvec->size(); i++) {
     G4VProcess* proc = (*pvec)[i];
     if (proc && proc->GetProcessName() == pname) return proc;
   }
