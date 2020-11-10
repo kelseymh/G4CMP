@@ -20,6 +20,9 @@
 // 20170928  Hide "output" usage behind verbosity check, as well as G4CMP_DEBUG
 // 20180827  Add debugging output with weight calculation.
 // 20190816  Add flag to track secondary phonons immediately (c.f. G4Cerenkov)
+// 20201109  Modify debugging output file with additional information, move
+//		debugging output creation to PostStepDoIt to allows settting
+//		process verbosity via macro commands.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -51,21 +54,11 @@ G4CMPLukeScattering::G4CMPLukeScattering(G4VProcess* stepper)
   : G4CMPVDriftProcess("G4CMPLukeScattering", fLukeScattering),
     stepLimiter(stepper), secondariesFirst(true) {
   UseRateModel(new G4CMPLukeEmissionRate);
-
-#ifdef G4CMP_DEBUG
-  if (verboseLevel) {
-    output.open("LukePhononEnergies");
-    if (!output.good()) {
-      G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
-		  FatalException, "Unable to open LukePhononEnergies");
-    }
-  }
-#endif
 }
 
 G4CMPLukeScattering::~G4CMPLukeScattering() {
 #ifdef G4CMP_DEBUG
-  output.close();
+  if (output.is_open()) output.close();
 #endif
 }
 
@@ -88,6 +81,20 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
+#ifdef G4CMP_DEBUG
+  if (verboseLevel && !output.is_open()) {
+    output.open("LukePhononEnergies");
+    if (!output.good()) {
+      G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
+		  FatalException, "Unable to open LukePhononEnergies");
+    }
+
+    output << "Track Energy [eV],WaveVector,Phonon Theta,Phonon Energy [eV],"
+	   << "Recoil WaveVector,Final Energy [eV]" << std::endl;
+  }
+#endif
+
+  // Collect ancillary information needed for kinematics
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack);
   const G4LatticePhysical* lat = trackInfo->Lattice();
 
@@ -108,6 +115,11 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4double kmag = ktrk.mag();
   G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
+
+#ifdef G4CMP_DEBUG
+  if (output.good())
+    output << GetKineticEnergy(aTrack)/eV << "," << kmag << ",";
+#endif
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
@@ -139,9 +151,14 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   qvec.rotate(kdir, phi_phonon);
 
   G4double Ephonon = MakePhononEnergy(kmag, kSound, theta_phonon);
-#ifdef G4CMP_DEBUG
-  if (output.good()) output << Ephonon/eV << G4endl;
-#endif
+
+  // Sanity check for phonon production: can't exceed charge's energy
+  if (Ephonon >= GetKineticEnergy(aTrack)) {
+    G4cerr << GetProcessName() << "ERROR: Phonon production Ephonon "
+	   << Ephonon/eV << " eV exceeds charge carrier energy "
+	   << GetKineticEnergy(aTrack)/eV << " eV" << G4endl;
+    return &aParticleChange;
+  }
 
   // Get recoil wavevector, convert to new momentum
   G4ThreeVector k_recoil = ktrk - qvec;
@@ -154,6 +171,13 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
            << "\nk_recoil-mag = " << k_recoil.mag()
            << G4endl;
   }
+
+#ifdef G4CMP_DEBUG
+  if (output.good()) {
+    output << theta_phonon << "," << Ephonon/eV << "," << k_recoil.mag() << ",";
+  }
+#endif
+
 
   // Create real phonon to be propagated, with random polarization
   // If phonon is not created, register the energy as deposited
@@ -189,6 +213,10 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   MakeGlobalRecoil(k_recoil);		// Converts wavevector to momentum
   FillParticleChange(GetValleyIndex(aTrack), k_recoil);
+
+#ifdef G4CMP_DEBUG
+  if (output.good()) output << aParticleChange.GetEnergy()/eV << std::endl;
+#endif
 
   ClearNumberOfInteractionLengthLeft();
   return &aParticleChange;

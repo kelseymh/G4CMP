@@ -12,6 +12,7 @@
 // 20160110  Remerge the electron and hole subclasses into one class
 // 20170805  Remove GetMeanFreePath() function to scattering-rate model
 // 20190816  Add flag to track secondary phonons immediately (c.f. G4Cerenkov)
+// 20201109  Drop G4CMP_DEBUG protection here, to avoid client rebuilding
 
 #ifndef G4CMPLukeScattering_h
 #define G4CMPLukeScattering_h 1
@@ -45,9 +46,7 @@ private:
   G4VProcess* stepLimiter;
   G4bool secondariesFirst;
 
-#ifdef G4CMP_DEBUG
-  std::ofstream output;
-#endif
+  std::ofstream output;		// Only used for G4CMP_DEBUG debugging
 };
 
 #endif	/* G4CMPLukeScattering */
