@@ -9,6 +9,7 @@
 // $Id$
 //
 // 20170805  Replace GetMeanFreePath() with scattering-rate model
+// 20201109  Drop G4CMP_DEBUG protection here, to avoid client rebuilding
 
 #ifndef G4PhononDownconversion_h
 #define G4PhononDownconversion_h 1
@@ -51,9 +52,7 @@ private:
   G4PhononDownconversion(G4PhononDownconversion&);
   G4PhononDownconversion& operator=(const G4PhononDownconversion& right);
 
-#ifdef G4CMP_DEBUG
   std::ofstream output;
-#endif
 };
 
 #endif	/* G4PhononDownconversion_h */

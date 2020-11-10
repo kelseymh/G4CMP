@@ -25,6 +25,8 @@
 // 20170928  Hide "output" usage behind verbosity check, as well as G4CMP_DEBUG
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 // 20200604  G4CMP-208:  Report accept-reject values of u,x,q for debugging.
+// 20201109  Move debugging output creation to PostStepDoIt to allows settting
+//		process verbosity via macro commands.
 
 #include "G4PhononDownconversion.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -48,10 +50,21 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   : G4VPhononProcess(aName, fPhononDownconversion),
     fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.), fvLvT(1.) {
   UseRateModel(new G4CMPDownconversionRate);
+}
 
+G4PhononDownconversion::~G4PhononDownconversion() {
 #ifdef G4CMP_DEBUG
-  if (verboseLevel) {
-    output.open("phonon_downsampling_stats", std::ios_base::app);
+  if (output.good()) output.close();
+#endif
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4VParticleChange* G4PhononDownconversion::PostStepDoIt(const G4Track& aTrack,
+							const G4Step& aStep) {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel && !output.is_open()) {
+    output.open("phonon_downconv_stats");
     if (output.good()) {
       output << "First Daughter Theta,Second Daughter Theta,First Daughter"
 	     << " Energy [eV],Second Daughter Energy [eV],Decay Branch,"
@@ -62,18 +75,7 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
     }
   }
 #endif
-}
 
-G4PhononDownconversion::~G4PhononDownconversion() {
-#ifdef G4CMP_DEBUG
-  output.close();
-#endif
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
-							 const G4Step& aStep) {
   aParticleChange.Initialize(aTrack);
 
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
@@ -261,11 +263,11 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   if (output.good()) {
     output << theta1 << ',' << theta2 << ','
 	   << sec1->GetKineticEnergy()/eV << ','
-	   << sec2->GetKineticEnergy()/eV << ',';
+	   << sec2->GetKineticEnergy()/eV << ',' << "TT,";
   }
 #endif
 
-  aParticleChange.SetNumberOfSecondaries(2);
+ aParticleChange.SetNumberOfSecondaries(2);
   aParticleChange.AddSecondary(sec2);
   aParticleChange.AddSecondary(sec1);
 }
@@ -347,7 +349,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
 #ifdef G4CMP_DEBUG
   if (output.good()) {
     output << thetaL << ',' << thetaT << ',' << sec1->GetKineticEnergy()/eV
-	   << ',' << sec2->GetKineticEnergy()/eV << ',';
+	   << ',' << sec2->GetKineticEnergy()/eV << ',' << "LT,";
   }
 #endif
 
