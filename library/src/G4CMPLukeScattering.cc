@@ -89,8 +89,9 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 		  FatalException, "Unable to open LukePhononEnergies");
     }
 
-    output << "Track Energy [eV],WaveVector,Phonon Theta,Phonon Energy [eV],"
-	   << "Recoil WaveVector,Final Energy [eV]" << std::endl;
+    output << "Track Type,Track Energy [eV],WaveVector,Phonon Theta,"
+	   << "Phonon Energy [eV],Recoil WaveVector,Final Energy [eV]"
+	   << std::endl;
   }
 #endif
 
@@ -115,11 +116,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4double kmag = ktrk.mag();
   G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
-
-#ifdef G4CMP_DEBUG
-  if (output.good())
-    output << GetKineticEnergy(aTrack)/eV << "," << kmag << ",";
-#endif
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
@@ -174,10 +170,12 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
 #ifdef G4CMP_DEBUG
   if (output.good()) {
-    output << theta_phonon << "," << Ephonon/eV << "," << k_recoil.mag() << ",";
+    output << aTrack.GetDefinition()->GetParticleName() << ","
+	   << GetKineticEnergy(aTrack)/eV << "," << kmag << ","
+	   << theta_phonon << "," << Ephonon/eV << "," << k_recoil.mag()
+	   << ",";
   }
 #endif
-
 
   // Create real phonon to be propagated, with random polarization
   // If phonon is not created, register the energy as deposited
