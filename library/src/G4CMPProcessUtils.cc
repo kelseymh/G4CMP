@@ -403,7 +403,7 @@ void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
 G4double G4CMPProcessUtils::MakePhononTheta(G4double k, G4double ks) const {
   G4double u = G4UniformRand();
   G4double v = ks/k;
-  G4double base = (u-1) * (3*v - 3*v*v + v*v*v - 1);
+  G4double base = (1-u) * (1 - 3*v + 3*v*v - v*v*v); 	// (1-u)*(1-v)^3
   if (base < 0.0) return 0;
   
   G4double operand = v + pow(base, 1.0/3.0);   
@@ -416,7 +416,11 @@ G4double G4CMPProcessUtils::MakePhononTheta(G4double k, G4double ks) const {
 
 G4double G4CMPProcessUtils::MakePhononEnergy(G4double k, G4double ks,
 					     G4double th_phonon) const {
-  return 2.*(k*cos(th_phonon)-ks) * theLattice->GetSoundSpeed() * hbar_Planck;
+  return MakePhononEnergy(2.*(k*cos(th_phonon)-ks));
+}
+
+G4double G4CMPProcessUtils::MakePhononEnergy(G4double q) const {
+  return q * theLattice->GetSoundSpeed() * hbar_Planck;
 }
 
 // Compute direction angle for recoiling charge carrier
