@@ -19,6 +19,8 @@
 // 20170713  Report undefined surfaces only once per job, not a failure
 // 20171215  Change 'CheckStepStatus()' to 'IsBoundaryStep()', add function
 //	     to validate step trajectory to boundary.
+// 20201112  Add warning message to base DoTransmission() function (c.f.
+//	     warning message in base DoReflection()).
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -315,6 +317,7 @@ void G4CMPBoundaryUtils::DoAbsorption(const G4Track& aTrack,
   G4double ekin = procUtils->GetKineticEnergy(aTrack);
   aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
   aParticleChange.ProposeTrackStatus(fStopAndKill);
+  aParticleChange.ProposeEnergy(0.);
 }
 
 void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
@@ -349,7 +352,11 @@ void
 G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
 				   const G4Step& aStep,
 				   G4ParticleChange& aParticleChange) {
-  if (buVerboseLevel>1) 
+  G4cerr << procName << " WARNING!  G4CMPBoundaryUtils::DoTransmission invoked."
+	 << "\n Process should have overridden this version!"
+	 << "  Track will be killed as leaving volume" << G4endl;
+
+  if (buVerboseLevel>1)
     G4cout << procName << ": Track transmission requested" << G4endl;
 
   DoSimpleKill(aTrack, aStep, aParticleChange);
