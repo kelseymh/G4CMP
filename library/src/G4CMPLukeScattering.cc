@@ -123,14 +123,19 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (verboseLevel > 1) {
     G4cout << "p (post-step) = " << postStepPoint->GetMomentum()
 	   << "\np_mag = " << postStepPoint->GetMomentum().mag()
-	   << "\nktrk = " << ktrk
-     << "\nkmag = " << kmag << " k/ks = " << kmag/kSound
-     << "\nacos(ks/k) = " << acos(kSound/kmag) << G4endl;
+	   << "\nktrk = " << ktrk << " kmag = " << kmag
+	   << "\nk/ks = " << kmag/kSound
+	   << " acos(ks/k) = " << acos(kSound/kmag) << G4endl;
   }
 
   G4double theta_phonon = MakePhononTheta(kmag, kSound);
   G4double phi_phonon   = G4UniformRand()*twopi;
   G4double q = 2*(kmag*cos(theta_phonon)-kSound);
+
+  if (verboseLevel > 1) {
+    G4cout << "theta_phonon = " << theta_phonon
+           << " phi_phonon = " << phi_phonon << " q = " << q << G4endl;
+  }
 
   // Sanity check for phonon production: should be forward, like Cherenkov
   if (theta_phonon>acos(kSound/kmag) || theta_phonon>halfpi) {
@@ -146,7 +151,21 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   qvec.rotate(kdir.orthogonal(), theta_phonon);
   qvec.rotate(kdir, phi_phonon);
 
-  G4double Ephonon = MakePhononEnergy(kmag, kSound, theta_phonon);
+  if (verboseLevel > 1) {
+    G4cout << "qvec = " << qvec
+	   << "\nktrk.qvec = " << ktrk.dot(qvec)/(kmag*q)
+	   << " ktr-qvec angle " << acos(ktrk.dot(qvec)/(kmag*q))
+           << G4endl;
+  }
+
+  // Get recoil wavevector, convert to new momentum
+  G4ThreeVector k_recoil = ktrk - qvec;
+
+  // Phonon vector and energy should be in local frame, not H-V
+  if (IsElectron()) 
+    qvec = lat->MapK_HVtoK(GetValleyIndex(aTrack), qvec);
+
+  G4double Ephonon = MakePhononEnergy(qvec.mag());
 
   // Sanity check for phonon production: can't exceed charge's energy
   if (Ephonon >= GetKineticEnergy(aTrack)) {
@@ -156,15 +175,11 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     return &aParticleChange;
   }
 
-  // Get recoil wavevector, convert to new momentum
-  G4ThreeVector k_recoil = ktrk - qvec;
-
   if (verboseLevel > 1) {
-    G4cout << "theta_phonon = " << theta_phonon
-           << " phi_phonon = " << phi_phonon
-           << "\nq = " << q << "\nqvec = " << qvec << "\nEphonon = " << Ephonon
+    G4cout << "q(HV) = " << q << " q(local) = " << qvec.mag()
+	   << "\nEphonon = " << Ephonon
            << "\nk_recoil = " << k_recoil
-           << "\nk_recoil-mag = " << k_recoil.mag()
+           << " k_recoil-mag = " << k_recoil.mag()
            << G4endl;
   }
 
