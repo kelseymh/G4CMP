@@ -19,6 +19,9 @@
 // 20170713  Report undefined surfaces only once per job, not a failure
 // 20171215  Change 'CheckStepStatus()' to 'IsBoundaryStep()', add function
 //	     to validate step trajectory to boundary.
+// 20201112  Add warning message to base DoTransmission() function (c.f.
+//	     warning message in base DoReflection()).  Pass verbosity through
+//	     to electrode.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -137,8 +140,10 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
     surface = G4LogicalSkinSurface::GetSurface(prePV->GetLogicalVolume());
   }
 
+  BoundaryPV bound(prePV,postPV);	// Avoid multiple temporaries below
+
   // Report missing surface once per boundary
-  if ((hasSurface.find(BoundaryPV(prePV,postPV)) == hasSurface.end())
+  if ((hasSurface.find(bound) == hasSurface.end())
       && !surface) {
     G4Exception((procName+"::GetSurfaceProperty").c_str(), "Boundary001",
                 JustWarning, ("No surface defined between " +
@@ -146,7 +151,7 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
 			      postPV->GetName()).c_str());
   }
 
-  hasSurface[BoundaryPV(prePV,postPV)] = false;	// Remember this boundary
+  hasSurface[bound] = false;		// Remember this boundary
 
   if (!surface) return true;			// Can handle undefined surfaces
 
@@ -189,9 +194,12 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
   }
 
   // Initialize electrode for current track
-  if (electrode) electrode->LoadDataForTrack(aStep.GetTrack());
+  if (electrode) {
+    electrode->SetVerboseLevel(buVerboseLevel);
+    electrode->LoadDataForTrack(aStep.GetTrack());
+  }
 
-  hasSurface[BoundaryPV(prePV,postPV)] = true;	// Record good surface defined
+  hasSurface[bound] = true;		// Record good surface defined
 
   return true;
 }
@@ -315,6 +323,7 @@ void G4CMPBoundaryUtils::DoAbsorption(const G4Track& aTrack,
   G4double ekin = procUtils->GetKineticEnergy(aTrack);
   aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
   aParticleChange.ProposeTrackStatus(fStopAndKill);
+  aParticleChange.ProposeEnergy(0.);
 }
 
 void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
@@ -349,7 +358,11 @@ void
 G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
 				   const G4Step& aStep,
 				   G4ParticleChange& aParticleChange) {
-  if (buVerboseLevel>1) 
+  G4cerr << procName << " WARNING!  G4CMPBoundaryUtils::DoTransmission invoked."
+	 << "\n Process should have overridden this version!"
+	 << "  Track will be killed as leaving volume" << G4endl;
+
+  if (buVerboseLevel>1)
     G4cout << procName << ": Track transmission requested" << G4endl;
 
   DoSimpleKill(aTrack, aStep, aParticleChange);

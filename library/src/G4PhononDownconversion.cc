@@ -25,6 +25,8 @@
 // 20170928  Hide "output" usage behind verbosity check, as well as G4CMP_DEBUG
 // 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
 // 20200604  G4CMP-208:  Report accept-reject values of u,x,q for debugging.
+// 20201109  Move debugging output creation to PostStepDoIt to allows settting
+//		process verbosity via macro commands.
 
 #include "G4PhononDownconversion.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -32,6 +34,7 @@
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4ExceptionSeverity.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
@@ -48,10 +51,21 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
   : G4VPhononProcess(aName, fPhononDownconversion),
     fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.), fvLvT(1.) {
   UseRateModel(new G4CMPDownconversionRate);
+}
 
+G4PhononDownconversion::~G4PhononDownconversion() {
 #ifdef G4CMP_DEBUG
-  if (verboseLevel) {
-    output.open("phonon_downsampling_stats", std::ios_base::app);
+  if (output.good()) output.close();
+#endif
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4VParticleChange* G4PhononDownconversion::PostStepDoIt(const G4Track& aTrack,
+							const G4Step& aStep) {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel && !output.is_open()) {
+    output.open("phonon_downconv_stats");
     if (output.good()) {
       output << "First Daughter Theta,Second Daughter Theta,First Daughter"
 	     << " Energy [eV],Second Daughter Energy [eV],Decay Branch,"
@@ -62,18 +76,7 @@ G4PhononDownconversion::G4PhononDownconversion(const G4String& aName)
     }
   }
 #endif
-}
 
-G4PhononDownconversion::~G4PhononDownconversion() {
-#ifdef G4CMP_DEBUG
-  output.close();
-#endif
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
-							 const G4Step& aStep) {
   aParticleChange.Initialize(aTrack);
 
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
@@ -122,7 +125,20 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt( const G4Track& aTrack,
   // Only kill the track if downconversion actually happened
   if (aParticleChange.GetNumberOfSecondaries() > 0) {
     aParticleChange.ProposeEnergy(0.);
-    aParticleChange.ProposeTrackStatus(fStopAndKill);    
+    aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+#ifdef G4CMP_DEBUG
+    // Sanity check for energy conservation
+    G4double Edecay = (aParticleChange.GetSecondary(0)->GetKineticEnergy() +
+		       aParticleChange.GetSecondary(1)->GetKineticEnergy());
+    if (Edecay != aTrack.GetKineticEnergy()) {
+      G4ExceptionDescription msg;
+      msg << "Energy non-conservation: track " << aTrack.GetKineticEnergy()/eV
+	  << " eV, decay products " << Edecay/eV << " eV";
+
+      G4Exception(GetProcessName().c_str(), "Downconv001", JustWarning, msg);
+    }
+#endif
   }
 
   return &aParticleChange;
@@ -239,7 +255,7 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
     G4cout << " MakeTTSecondaries: "
 	   << G4PhononPolarization::Get(mode1)->GetParticleName() << " "
 	   << Esec1/eV << " eV toward " << dir1 << " ; "
-	   << G4PhononPolarization::Get(mode2)->GetParticleName() << " "
+ 	   << G4PhononPolarization::Get(mode2)->GetParticleName() << " "
 	   << Esec2/eV << " eV toward " << dir2 << G4endl;
   }
 
@@ -261,11 +277,11 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
   if (output.good()) {
     output << theta1 << ',' << theta2 << ','
 	   << sec1->GetKineticEnergy()/eV << ','
-	   << sec2->GetKineticEnergy()/eV << ',';
+	   << sec2->GetKineticEnergy()/eV << ',' << "TT,";
   }
 #endif
 
-  aParticleChange.SetNumberOfSecondaries(2);
+ aParticleChange.SetNumberOfSecondaries(2);
   aParticleChange.AddSecondary(sec2);
   aParticleChange.AddSecondary(sec1);
 }
@@ -347,7 +363,7 @@ void G4PhononDownconversion::MakeLTSecondaries(const G4Track& aTrack) {
 #ifdef G4CMP_DEBUG
   if (output.good()) {
     output << thetaL << ',' << thetaT << ',' << sec1->GetKineticEnergy()/eV
-	   << ',' << sec2->GetKineticEnergy()/eV << ',';
+	   << ',' << sec2->GetKineticEnergy()/eV << ',' << "LT,";
   }
 #endif
 
