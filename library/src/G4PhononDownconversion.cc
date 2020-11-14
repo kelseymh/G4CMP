@@ -34,6 +34,7 @@
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4ExceptionSeverity.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
@@ -124,7 +125,20 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt(const G4Track& aTrack,
   // Only kill the track if downconversion actually happened
   if (aParticleChange.GetNumberOfSecondaries() > 0) {
     aParticleChange.ProposeEnergy(0.);
-    aParticleChange.ProposeTrackStatus(fStopAndKill);    
+    aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+#ifdef G4CMP_DEBUG
+    // Sanity check for energy conservation
+    G4double Edecay = (aParticleChange.GetSecondary(0)->GetKineticEnergy() +
+		       aParticleChange.GetSecondary(1)->GetKineticEnergy());
+    if (Edecay != aTrack.GetKineticEnergy()) {
+      G4ExceptionDescription msg;
+      msg << "Energy non-conservation: track " << aTrack.GetKineticEnergy()/eV
+	  << " eV, decay products " << Edecay/eV << " eV";
+
+      G4Exception(GetProcessName().c_str(), "Downconv001", JustWarning, msg);
+    }
+#endif
   }
 
   return &aParticleChange;
@@ -241,7 +255,7 @@ void G4PhononDownconversion::MakeTTSecondaries(const G4Track& aTrack) {
     G4cout << " MakeTTSecondaries: "
 	   << G4PhononPolarization::Get(mode1)->GetParticleName() << " "
 	   << Esec1/eV << " eV toward " << dir1 << " ; "
-	   << G4PhononPolarization::Get(mode2)->GetParticleName() << " "
+ 	   << G4PhononPolarization::Get(mode2)->GetParticleName() << " "
 	   << Esec2/eV << " eV toward " << dir2 << G4endl;
   }
 
