@@ -23,6 +23,7 @@
 // 20201109  Modify debugging output file with additional information, move
 //		debugging output creation to PostStepDoIt to allows settting
 //		process verbosity via macro commands.
+// 20201112  For electrons, transform phonon qvec from H-V to lab frame.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -99,11 +100,13 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack);
   const G4LatticePhysical* lat = trackInfo->Lattice();
 
+  G4int iValley = GetValleyIndex(aTrack);	// Doesn't change valley
+
+  // FIXME: Should we be using track (pre-step) or post-step velocity?
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
   if (IsElectron()) {
-    ktrk = lat->MapV_elToK_HV(GetValleyIndex(aTrack),
-                              GetLocalVelocityVector(aTrack));
+    ktrk = lat->MapV_elToK_HV(iValley, GetLocalVelocityVector(aTrack));
     mass = lat->GetElectronMass();
   } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
@@ -162,8 +165,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector k_recoil = ktrk - qvec;
 
   // Phonon vector and energy should be in local frame, not H-V
-  if (IsElectron()) 
-    qvec = lat->MapK_HVtoK(GetValleyIndex(aTrack), qvec);
+  if (IsElectron()) qvec = lat->MapK_HVtoK(iValley, qvec);
 
   G4double Ephonon = MakePhononEnergy(qvec.mag());
 
@@ -178,8 +180,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (verboseLevel > 1) {
     G4cout << "q(HV) = " << q << " q(local) = " << qvec.mag()
 	   << "\nEphonon = " << Ephonon
-           << "\nk_recoil = " << k_recoil
-           << " k_recoil-mag = " << k_recoil.mag()
+           << "\nk_recoil(HV) = " << k_recoil
+           << " k_recoil(HV)-mag = " << k_recoil.mag()
            << G4endl;
   }
 
@@ -225,7 +227,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   MakeGlobalRecoil(k_recoil);		// Converts wavevector to momentum
-  FillParticleChange(GetValleyIndex(aTrack), k_recoil);
+  FillParticleChange(iValley, k_recoil);
 
 #ifdef G4CMP_DEBUG
   if (output.good()) output << aParticleChange.GetEnergy()/eV << std::endl;
