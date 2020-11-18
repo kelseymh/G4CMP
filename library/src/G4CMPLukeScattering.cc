@@ -102,7 +102,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4int iValley = GetValleyIndex(aTrack);	// Doesn't change valley
 
-  // FIXME: Should we be using track (pre-step) or post-step velocity?
+  // NOTE: Track kinematics include post-step acceleration from E-field
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
   if (IsElectron()) {
