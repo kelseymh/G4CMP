@@ -117,6 +117,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     return &aParticleChange;
   }
 
+  G4ThreeVector kdir = ktrk.unit();
   G4double kmag = ktrk.mag();
   G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
 
@@ -131,52 +132,73 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	   << " acos(ks/k) = " << acos(kSound/kmag) << G4endl;
   }
 
-  G4double theta_phonon = MakePhononTheta(kmag, kSound);
-  G4double phi_phonon   = G4UniformRand()*twopi;
-  G4double q = 2*(kmag*cos(theta_phonon)-kSound);
+  // Final state kinematics, generated in accept/reject loop below
+  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0;
+  G4ThreeVector qvec, k_recoil;			// Outgoing wave vectors
 
-  if (verboseLevel > 1) {
-    G4cout << "theta_phonon = " << theta_phonon
-           << " phi_phonon = " << phi_phonon << " q = " << q << G4endl;
+  // Iterate to avoid non-physical phonon emission
+  const G4int maxThrows = 100;		// Avoids potential infinite loop
+  G4bool goodThrow = false;
+  G4int iThrow = 0;
+  while (!goodThrow && iThrow++ < maxThrows) {
+    theta_phonon = MakePhononTheta(kmag, kSound);
+    phi_phonon   = G4UniformRand()*twopi;
+    q = 2*(kmag*cos(theta_phonon)-kSound);
+
+    if (verboseLevel > 1) {
+      G4cout << "theta_phonon = " << theta_phonon
+	     << " phi_phonon = " << phi_phonon << " q = " << q << G4endl;
+    }
+    
+    // Sanity check for phonon production: should be forward, like Cherenkov
+    if (theta_phonon>acos(kSound/kmag) || theta_phonon>halfpi) {
+      if (verboseLevel > 1) {
+	G4cerr << GetProcessName() << ": Phonon production theta_phonon "
+	       << theta_phonon << " exceeds cone angle " << acos(kSound/kmag)
+	       << G4endl;
+      }
+
+      continue;			// Try again
+    }
+    
+    // Generate phonon momentum vector
+    qvec = q*kdir;
+    qvec.rotate(kdir.orthogonal(), theta_phonon);
+    qvec.rotate(kdir, phi_phonon);
+    
+    if (verboseLevel > 1) {
+      G4cout << "qvec = " << qvec
+	     << "\nktrk.qvec = " << ktrk.dot(qvec)/(kmag*q)
+	     << " ktr-qvec angle " << acos(ktrk.dot(qvec)/(kmag*q))
+	     << G4endl;
+    }
+    
+    // Get recoil wavevector, convert to new momentum
+    k_recoil = ktrk - qvec;
+    
+    MakeLocalPhononK(qvec);  		// Convert phonon vector to real space
+    Ephonon = MakePhononEnergy(qvec.mag());
+    
+    // Sanity check for phonon production: can't exceed charge's energy
+    if (Ephonon >= GetKineticEnergy(aTrack)) {
+      if (verboseLevel>1) {
+	G4cerr << GetProcessName() << ": Phonon production Ephonon "
+	       << Ephonon/eV << " eV exceeds charge carrier energy "
+	       << GetKineticEnergy(aTrack)/eV << " eV" << G4endl;
+      }
+
+      continue;			// Try again
+    }
+
+    goodThrow = true;		// Nothing failed, get out of loop
+  }	// while (goodThrow...)
+
+  if (!goodThrow) {
+    G4cerr << GetProcessName() << " ERROR: Unable to generate phonon" << G4endl;
+    return &aParticleChange;	// Unable to generate phonon
   }
 
-  // Sanity check for phonon production: should be forward, like Cherenkov
-  if (theta_phonon>acos(kSound/kmag) || theta_phonon>halfpi) {
-    G4cerr << GetProcessName() << " ERROR: Phonon production theta_phonon "
-           << theta_phonon << " exceeds cone angle " << acos(kSound/kmag)
-           << G4endl;
-    return &aParticleChange;
-  }
-  
-  // Generate phonon momentum vector
-  G4ThreeVector kdir = ktrk.unit();
-  G4ThreeVector qvec = q*kdir;
-  qvec.rotate(kdir.orthogonal(), theta_phonon);
-  qvec.rotate(kdir, phi_phonon);
-
-  if (verboseLevel > 1) {
-    G4cout << "qvec = " << qvec
-	   << "\nktrk.qvec = " << ktrk.dot(qvec)/(kmag*q)
-	   << " ktr-qvec angle " << acos(ktrk.dot(qvec)/(kmag*q))
-           << G4endl;
-  }
-
-  // Get recoil wavevector, convert to new momentum
-  G4ThreeVector k_recoil = ktrk - qvec;
-
-  // Phonon vector and energy should be in local frame, not H-V
-  if (IsElectron()) qvec = lat->MapK_HVtoK(iValley, qvec);
-
-  G4double Ephonon = MakePhononEnergy(qvec.mag());
-
-  // Sanity check for phonon production: can't exceed charge's energy
-  if (Ephonon >= GetKineticEnergy(aTrack)) {
-    G4cerr << GetProcessName() << "ERROR: Phonon production Ephonon "
-	   << Ephonon/eV << " eV exceeds charge carrier energy "
-	   << GetKineticEnergy(aTrack)/eV << " eV" << G4endl;
-    return &aParticleChange;
-  }
-
+  // Report phonon emission results
   if (verboseLevel > 1) {
     G4cout << "q(HV) = " << q << " q(local) = " << qvec.mag()
 	   << "\nEphonon = " << Ephonon
@@ -199,11 +221,9 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double weight =
     G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
   if (weight > 0.) {
-    MakeGlobalPhononK(qvec);  		// Convert phonon vector to real space
-
     G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetTouchable(),
                                           G4PhononPolarization::UNKNOWN,
-                                          qvec,Ephonon,
+                                          qvec, Ephonon,
                                           aTrack.GetGlobalTime(),
                                           aTrack.GetPosition());
     // Secondary's weight has to be multiplicative with its parent's
