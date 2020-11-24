@@ -34,6 +34,7 @@
 // 20170620  Drop local caching of transforms; call through to G4CMPUtils.
 // 20170806  Move ChargeCarrierTimeStep() here from DriftProcess.
 // 20201111  Add MakePhononEnergy() which takes wave vector directly
+// 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -222,7 +223,7 @@ public:
   void MakeLocalPhononK(G4ThreeVector& kphonon) const;
   void MakeGlobalPhononK(G4ThreeVector& kphonon) const;
 
-  void MakeGlobalRecoil(G4ThreeVector& kphonon) const;
+  void MakeGlobalRecoil(G4ThreeVector& krecoil) const;
 
   // Compute time between scatters/emissions for moving charge carrier
   // Parameters are "Mach number" (ratio to sound speed) and scattering length

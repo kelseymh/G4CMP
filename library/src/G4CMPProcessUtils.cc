@@ -36,6 +36,7 @@
 // 20170620  Drop local caching of transforms; call through to G4CMPUtils.
 // 20170621  Drop local initialization of TrackInfo; StackingAction only
 // 20170624  Improve initialization from track, use Navigator to infer volume
+// 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -384,17 +385,18 @@ void G4CMPProcessUtils::MakeGlobalPhononK(G4ThreeVector& kphonon) const {
   RotateToGlobalDirection(kphonon);
 }
 
-void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
+void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& krecoil) const {
+  // Convert recoil wave vector to momentum in local frame 
   if (IsElectron()) {
-    kphonon = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),kphonon);
+    krecoil = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),krecoil);
   } else if (IsHole()) {
-    kphonon *= hbarc;
+    krecoil *= hbarc;
   } else {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess006",
                 EventMustBeAborted, "Unknown charge carrier");
   }
 
-  RotateToGlobalDirection(kphonon);
+  RotateToGlobalDirection(krecoil);
 }
 
 

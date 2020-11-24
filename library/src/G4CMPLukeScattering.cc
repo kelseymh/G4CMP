@@ -24,6 +24,8 @@
 //		debugging output creation to PostStepDoIt to allows settting
 //		process verbosity via macro commands.
 // 20201112  For electrons, transform phonon qvec from H-V to lab frame.
+// 20201119  Put kinematics selection in accept/reject loop insted of quitting.
+// 20201124  Include track momenta (before and after) in diagnostic output.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -90,11 +92,15 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 		  FatalException, "Unable to open LukePhononEnergies");
     }
 
-    output << "Track Type,Track Energy [eV],WaveVector,Phonon Theta,"
-	   << "Phonon Energy [eV],Recoil WaveVector,Final Energy [eV]"
+    output << "Track Type,Track Energy [eV],Track Momentum [eV],WaveVector,"
+	   << "Phonon Theta,Phonon Energy [eV],Recoil WaveVector,"
+	   << "Final Energy [eV],Final Momentum [eV]"
 	   << std::endl;
   }
 #endif
+
+  // For convenience in diagnostic output below
+  const G4String& trkName = aTrack.GetDefinition()->GetParticleName();
 
   // Collect ancillary information needed for kinematics
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack);
@@ -103,6 +109,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4int iValley = GetValleyIndex(aTrack);	// Doesn't change valley
 
   // NOTE: Track kinematics include post-step acceleration from E-field
+  G4ThreeVector ptrk = GetLocalMomentum(aTrack);
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
   if (IsElectron()) {
@@ -125,8 +132,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (kmag <= kSound) return &aParticleChange;
 
   if (verboseLevel > 1) {
-    G4cout << "p (post-step) = " << postStepPoint->GetMomentum()
-	   << "\np_mag = " << postStepPoint->GetMomentum().mag()
+    G4cout << "p (post-step) = " << GetGlobalMomentum(aTrack)
+	   << "\np_mag = " << GetGlobalMomentum(aTrack).mag()
 	   << "\nktrk = " << ktrk << " kmag = " << kmag
 	   << "\nk/ks = " << kmag/kSound
 	   << " acos(ks/k) = " << acos(kSound/kmag) << G4endl;
@@ -134,7 +141,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Final state kinematics, generated in accept/reject loop below
   G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0;
-  G4ThreeVector qvec, k_recoil;			// Outgoing wave vectors
+  G4ThreeVector qvec, k_recoil, precoil;	// Outgoing wave vectors
 
   // Iterate to avoid non-physical phonon emission
   const G4int maxThrows = 100;		// Avoids potential infinite loop
@@ -152,8 +159,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     
     // Sanity check for phonon production: should be forward, like Cherenkov
     if (theta_phonon>acos(kSound/kmag) || theta_phonon>halfpi) {
-      if (verboseLevel > 1) {
-	G4cerr << GetProcessName() << ": Phonon production theta_phonon "
+      if (verboseLevel) {
+	G4cerr << GetProcessName() << " TRY AGAIN: theta_phonon "
 	       << theta_phonon << " exceeds cone angle " << acos(kSound/kmag)
 	       << G4endl;
       }
@@ -173,7 +180,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	     << G4endl;
     }
     
-    // Get recoil wavevector, convert to new momentum
+    // Get recoil wavevector (in HV frame), convert to new momentum
     k_recoil = ktrk - qvec;
     
     MakeLocalPhononK(qvec);  		// Convert phonon vector to real space
@@ -181,9 +188,9 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     
     // Sanity check for phonon production: can't exceed charge's energy
     if (Ephonon >= GetKineticEnergy(aTrack)) {
-      if (verboseLevel>1) {
-	G4cerr << GetProcessName() << ": Phonon production Ephonon "
-	       << Ephonon/eV << " eV exceeds charge carrier energy "
+      if (verboseLevel) {
+	G4cerr << GetProcessName() << " TRY AGAIN: Ephonon "
+	       << Ephonon/eV << " eV exceeds " << trkName << " energy "
 	       << GetKineticEnergy(aTrack)/eV << " eV" << G4endl;
       }
 
@@ -209,8 +216,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
 #ifdef G4CMP_DEBUG
   if (output.good()) {
-    output << aTrack.GetDefinition()->GetParticleName() << ","
-	   << GetKineticEnergy(aTrack)/eV << "," << kmag << ","
+    output << trkName << "," << GetKineticEnergy(aTrack)/eV << ","
+	   << GetLocalMomentum(aTrack).mag()/eV << "," << kmag << ","
 	   << theta_phonon << "," << Ephonon/eV << "," << k_recoil.mag()
 	   << ",";
   }
@@ -250,7 +257,10 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   FillParticleChange(iValley, k_recoil);
 
 #ifdef G4CMP_DEBUG
-  if (output.good()) output << aParticleChange.GetEnergy()/eV << std::endl;
+  if (output.good()) {
+    output << aParticleChange.GetEnergy()/eV << "," << k_recoil.mag()/eV
+	   << std::endl;
+  }
 #endif
 
   ClearNumberOfInteractionLengthLeft();
