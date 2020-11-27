@@ -43,3 +43,6 @@ target_link_libraries(testChargeCloud G4cmp)
 
 add_executable(testPartition testPartition.cc)
 target_link_libraries(testPartition G4cmp)
+
+add_executable(testHVtransform testHVtransform.cc)
+target_link_libraries(testHVtransform G4cmp)
