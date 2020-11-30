@@ -30,6 +30,17 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 #----------------------------------------------------------------------------
+# Utility function to define simple executables in subdirectories
+#
+function(make_binaries)
+    foreach(bin IN LISTS ARGV)
+        add_executable(${bin} ${bin}.cc)
+        target_link_libraries(${bin} G4cmp)
+	install(TARGETS ${bin} DESTINATION bin)
+    endforeach()
+endfunction()
+
+#----------------------------------------------------------------------------
 # Options to build examples and other directories
 #
 option(BUILD_G4CMP_TOOLS "Build utility and support programs.  Default: ON" ON)
@@ -45,24 +56,33 @@ option(BUILD_SENSOR_EXAMPLE "Build sensor example. Default: OFF" OFF)
 # Always build the library
 add_subdirectory(library)
 
-if(BUILD_ALL_EXAMPLES OR BUILD_PHONON_EXAMPLE)
-    add_subdirectory(examples/phonon)
-endif()
-
-if(BUILD_ALL_EXAMPLES OR BUILD_CHARGE_EXAMPLE)
-    add_subdirectory(examples/charge)
-endif()
-
-if(BUILD_ALL_EXAMPLES OR BUILD_SENSOR_EXAMPLE)
-    add_subdirectory(examples/sensors)
-endif()
-
 if (BUILD_G4CMP_TOOLS)
     add_subdirectory(tools)
 endif()
 
 if (BUILD_G4CMP_TESTS)
     add_subdirectory(tests)
+endif()
+
+#-----------------------------------------------------------------------------
+# Examples: built using extra 'make' targets; flags include with 'all'
+#
+
+if(0)	# TEMPORARILY DISABLE EXAMPLES
+add_custom_target(examples $<BUILD_ALL_EXAMPLES:ALL>
+    DEPENDS phonon charge sensor)
+
+add_custom_target(phonon $<$<OR:BUILD_ALL_EXAMPLES,BUILD_PHONON_EXAMPLE>:ALL>)
+add_subdirectory(examples/phonon EXCLUDE_FROM_ALL)
+add_dependencies(phonon install examples/phonon)
+
+add_custom_target(charge $<$<OR:BUILD_ALL_EXAMPLES,BUILD_CHARGE_EXAMPLE>:ALL>)
+add_subdirectory(examples/charge EXCLUDE_FROM_ALL)
+add_dependencies(charge install examples/charge)
+
+add_custom_target(sensor $<$<OR:BUILD_ALL_EXAMPLES,BUILD_SENSOR_EXAMPLE>:ALL>)
+add_subdirectory(examples/sensor EXCLUDE_FROM_ALL)
+add_dependencies(sensor install examples/sensor)
 endif()
 
 #-----------------------------------------------------------------------------
