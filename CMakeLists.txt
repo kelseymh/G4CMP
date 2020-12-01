@@ -45,15 +45,11 @@ endfunction()
 #
 option(BUILD_G4CMP_TOOLS "Build utility and support programs.  Default: ON" ON)
 option(BUILD_G4CMP_TESTS "Build unit tests for classes.  Default: OFF" OFF)
-option(BUILD_ALL_EXAMPLES "Build phonon, charge and sensor examples. Default: OFF" OFF)
-option(BUILD_PHONON_EXAMPLE "Build phonon example. Default: OFF" OFF)
-option(BUILD_CHARGE_EXAMPLE "Build charge example. Default: OFF" OFF)
-option(BUILD_SENSOR_EXAMPLE "Build sensor example. Default: OFF" OFF)
+option(INSTALL_EXAMPLES "Copy examples directories to installation area. Default: OFF" OFF)
 
 #-----------------------------------------------------------------------------
 # Add subdirectories based on options selected
 #
-# Always build the library
 add_subdirectory(library)
 
 if (BUILD_G4CMP_TOOLS)
@@ -65,29 +61,8 @@ if (BUILD_G4CMP_TESTS)
 endif()
 
 #-----------------------------------------------------------------------------
-# Examples: built using extra 'make' targets; flags include with 'all'
-#
-
-if(0)	# TEMPORARILY DISABLE EXAMPLES
-add_custom_target(examples $<BUILD_ALL_EXAMPLES:ALL>
-    DEPENDS phonon charge sensor)
-
-add_custom_target(phonon $<$<OR:BUILD_ALL_EXAMPLES,BUILD_PHONON_EXAMPLE>:ALL>)
-add_subdirectory(examples/phonon EXCLUDE_FROM_ALL)
-add_dependencies(phonon install examples/phonon)
-
-add_custom_target(charge $<$<OR:BUILD_ALL_EXAMPLES,BUILD_CHARGE_EXAMPLE>:ALL>)
-add_subdirectory(examples/charge EXCLUDE_FROM_ALL)
-add_dependencies(charge install examples/charge)
-
-add_custom_target(sensor $<$<OR:BUILD_ALL_EXAMPLES,BUILD_SENSOR_EXAMPLE>:ALL>)
-add_subdirectory(examples/sensor EXCLUDE_FROM_ALL)
-add_dependencies(sensor install examples/sensor)
-endif()
-
-#-----------------------------------------------------------------------------
 # Create a version file as part of the "make all" procedure
-
+#
 set(version_FILE .g4cmp-version)
 
 find_program(SH sh HINTS /bin)
@@ -99,7 +74,8 @@ add_custom_target(version ALL
         [ -d .git ] && git describe || echo ${G4CMP_VERSION}) > ${version_FILE}"
     )
 
-install(FILES ${PROJECT_BINARY_DIR}/${version_FILE} DESTINATION share/G4CMP COMPONENT config)
+install(FILES ${PROJECT_BINARY_DIR}/${version_FILE} DESTINATION share/G4CMP
+        COMPONENT config)
 
 #-----------------------------------------------------------------------------
 # Install CMake config files
@@ -108,3 +84,11 @@ install(FILES ${PROJECT_SOURCE_DIR}/cmake/G4CMPConfig.cmake
         DESTINATION cmake)
 install(FILES ${PROJECT_SOURCE_DIR}/cmake/UseG4CMP.cmake
         DESTINATION cmake)
+
+#-----------------------------------------------------------------------------
+# Install example applications if requested
+#
+if(INSTALL_EXAMPLES)
+    install(DIRECTORY examples DESTINATION . COMPONENT examples
+	    PATTERN ".git" EXCLUDE)
+endif()
