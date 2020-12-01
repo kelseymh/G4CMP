@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.11)
+project(g4cmpSensor)
+
 #----------------------------------------------------------------------------
 # Find Geant4 package
 # NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
