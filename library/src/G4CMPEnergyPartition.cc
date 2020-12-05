@@ -41,6 +41,8 @@
 // 20200805  Use electric field in volume to estimate Luke gain, sampling
 // 20201013  Implement Fano fluctuations as applying to Npair, not Emeas
 // 20201020  Use "interpolation" to match input Fano factor and mean Npair
+// 20201205  Use ApplySurfaceClearance() for primary production, to avoid
+//		creating particles which escape from volume.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -574,12 +576,16 @@ GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
   G4double phononEtot = 0.;
   G4double bandgap = GetLattice()->GetBandGapEnergy()/2.;
 
+  // Get volume touchable at point and enforce "IsInside()" position
+  G4VTouchable* touch = G4CMP::CreateTouchableAtPoint(pos);
+  G4ThreeVector newpos = G4CMP::ApplySurfaceClearance(touch, pos);
+
   // Generate charge carriers in region around track position
   G4bool doCloud = G4CMPConfigManager::CreateChargeCloud();	// Convenience
   if (doCloud) {
     cloud->SetVerboseLevel(verboseLevel);
-    cloud->SetTouchable(G4CMP::CreateTouchableAtPoint(pos));
-    cloud->Generate(nCharges, pos);
+    cloud->SetTouchable(touch);
+    cloud->Generate(nCharges, newpos);
   }
 
   // Buffer for active vertices, for use with charge cloud
@@ -595,8 +601,8 @@ GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
     // Create new vertex at pos if needed, or if current one is full
     if (!vertex ||
 	(maxPerVertex>0 && vertex->GetNumberOfParticle()>maxPerVertex)) {
-      G4ThreeVector binpos = chgbin>=0 ? cloud->GetBinCenter(chgbin) : pos;
-      vertex = CreateVertex(event, binpos, time);
+      G4ThreeVector binpos = chgbin>=0 ? cloud->GetBinCenter(chgbin) : newpos;
+      vertex = CreateVertex(event, newpos, time);
     }
 
     vertex->SetPrimary(primaries[i]);		// Add primary to vertex
