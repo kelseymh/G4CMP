@@ -23,9 +23,9 @@
 // 20201109  Modify debugging output file with additional information, move
 //		debugging output creation to PostStepDoIt to allows settting
 //		process verbosity via macro commands.
-// 20201112  For electrons, transform phonon qvec from H-V to lab frame.
 // 20201119  Put kinematics selection in accept/reject loop insted of quitting.
 // 20201124  Include track momenta (before and after) in diagnostic output.
+// 20201207  For electrons, add energy conservation check in accept/reject.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -144,7 +144,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector qvec, k_recoil, precoil;	// Outgoing wave vectors
 
   // Iterate to avoid non-physical phonon emission
-  const G4int maxThrows = 100;		// Avoids potential infinite loop
+  const G4int maxThrows = 1000;		// Avoids potential infinite loop
   G4bool goodThrow = false;
   G4int iThrow = 0;
   while (!goodThrow && iThrow++ < maxThrows) {
@@ -183,10 +183,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     // Get recoil wavevector (in HV frame), convert to new momentum
     k_recoil = ktrk - qvec;
     
-    MakeLocalPhononK(qvec);  		// Convert phonon vector to real space
-    Ephonon = MakePhononEnergy(qvec.mag());
-    
     // Sanity check for phonon production: can't exceed charge's energy
+    Ephonon = MakePhononEnergy(qvec.mag());
     if (Ephonon >= GetKineticEnergy(aTrack)) {
       if (verboseLevel) {
 	G4cerr << GetProcessName() << " TRY AGAIN: Ephonon "
@@ -197,12 +195,32 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
       continue;			// Try again
     }
 
+    // Sanity check for electrons: recoil energy must be smaller
+    if (IsElectron()) {
+      precoil = lat->MapK_HVtoP(iValley, k_recoil);
+      G4double Efinal = lat->MapPtoEkin(iValley, precoil)+Ephonon;
+      if (Efinal > GetKineticEnergy(aTrack)) {
+	if (verboseLevel) {
+	  G4cerr << GetProcessName() << " TRY AGAIN: E(recoil+phonon) "
+		 << Efinal/eV << " eV exceeds "
+		 << trkName << " energy " << GetKineticEnergy(aTrack)/eV
+		 << " eV" << G4endl;
+	}
+	
+	continue;			// Try again
+      }
+    }
+
     goodThrow = true;		// Nothing failed, get out of loop
   }	// while (goodThrow...)
 
   if (!goodThrow) {
-    G4cerr << GetProcessName() << " ERROR: Unable to generate phonon" << G4endl;
+    G4cerr << GetProcessName() << " ERROR: Unable to generate phonon after "
+	   << iThrow << " attempts" << G4endl;
     return &aParticleChange;	// Unable to generate phonon
+  } else if (verboseLevel && iThrow>1) {
+    G4cout << GetProcessName() << " " << trkName << " phonon required "
+	   << iThrow << " attempts" << G4endl;
   }
 
   // Report phonon emission results
