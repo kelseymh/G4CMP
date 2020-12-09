@@ -108,6 +108,10 @@ if(USE_GEANT4_STATIC_LIBS)
     add_library(qhull_p STATIC ${libqhull_SOURCES})
 else()
     add_library(qhull_p SHARED ${libqhull_SOURCES})
+    if(APPLE)
+        set_property(TARGET qhull_p
+	    APPEND PROPERTY INSTALL_RPATH "@loader_path")
+    endif()
 endif()
 set_target_properties(qhull_p PROPERTIES
     COMPILE_DEFINITIONS "qh_QHpointer"
@@ -117,6 +121,10 @@ if(USE_GEANT4_STATIC_LIBS)
     add_library(qhullcpp STATIC ${libqhullcpp_SOURCES})
 else()
     add_library(qhullcpp SHARED ${libqhullcpp_SOURCES})
+    if(APPLE)
+        set_property(TARGET qhullcpp
+	    APPEND PROPERTY INSTALL_RPATH "@loader_path")
+    endif()
 endif()
 set_target_properties(qhullcpp PROPERTIES
     COMPILE_DEFINITIONS "qh_QHpointer"
@@ -305,6 +313,10 @@ if(USE_GEANT4_STATIC_LIBS)
     add_library(G4cmp STATIC ${library_SOURCES})
 else()
     add_library(G4cmp SHARED ${library_SOURCES})
+    if(APPLE)
+        set_property(TARGET G4cmp
+	    APPEND PROPERTY INSTALL_RPATH "@loader_path")
+    endif()
 endif()
 
 target_link_libraries(G4cmp PUBLIC ${Geant4_LIBRARIES} qhullcpp)
