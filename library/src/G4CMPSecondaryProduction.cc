@@ -103,7 +103,7 @@ G4CMPSecondaryProduction::AlongStepDoIt(const G4Track& track,
   AddSecondaries(stepData);
 
   // If requested (default), process new secondaries immediately
-  if (secondariesFirst && aTrack.GetTrackStatus() == fAlive)
+  if (secondariesFirst && track.GetTrackStatus() == fAlive)
     aParticleChange.ProposeTrackStatus(fSuspend);
 
   // NOTE:  This process does NOT change the track's momentum or energy
