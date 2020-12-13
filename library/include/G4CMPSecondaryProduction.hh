@@ -12,6 +12,7 @@
 //
 // 20150310  Michael Kelsey
 // 20160825  Replace implementation with use of G4CMPEnergyPartition
+// 20201207  Add flag to suspend parent track for secondary processing.
 
 #ifndef G4CMPSecondaryProduction_hh
 #define G4CMPSecondaryProduction_hh 1
@@ -45,6 +46,9 @@ public:
   // Overload G4CMPProcessUtils function to fill energy parameters
   virtual void LoadDataForTrack(const G4Track* track);
 
+  // Configurable flag to suspend parent track and process secondaries
+  void ProcessSecondariesFirst(G4bool val=true) { secondariesFirst = val; }
+
 protected:
   // Calculate step limit for Along Step (not needed here)
   virtual G4double GetContinuousStepLimit(const G4Track&, G4double, G4double,
@@ -58,9 +62,10 @@ public:
   static size_t RandomIndex(size_t imax);	// Used to randomize secondaries
 
 private:
-  G4CMPEnergyPartition* partitioner;		// Creates secondary kinematics
-  std::vector<G4Track*> theSecs;		// List of created secondaries
-  std::vector<G4ThreeVector> posSecs;		// Positions along trajectory
+  G4CMPEnergyPartition* partitioner;	// Creates secondary kinematics
+  std::vector<G4Track*> theSecs;	// List of created secondaries
+  std::vector<G4ThreeVector> posSecs;	// Positions along trajectory
+  G4bool secondariesFirst;		// Process secondaries immediately
 
   // No copying allowed
   G4CMPSecondaryProduction(const G4CMPSecondaryProduction& right);
