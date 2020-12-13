@@ -36,6 +36,7 @@
 // 20170620  Drop local caching of transforms; call through to G4CMPUtils.
 // 20170621  Drop local initialization of TrackInfo; StackingAction only
 // 20170624  Improve initialization from track, use Navigator to infer volume
+// 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -384,17 +385,18 @@ void G4CMPProcessUtils::MakeGlobalPhononK(G4ThreeVector& kphonon) const {
   RotateToGlobalDirection(kphonon);
 }
 
-void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
+void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& krecoil) const {
+  // Convert recoil wave vector to momentum in local frame 
   if (IsElectron()) {
-    kphonon = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),kphonon);
+    krecoil = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),krecoil);
   } else if (IsHole()) {
-    kphonon *= hbarc;
+    krecoil *= hbarc;
   } else {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess006",
                 EventMustBeAborted, "Unknown charge carrier");
   }
 
-  RotateToGlobalDirection(kphonon);
+  RotateToGlobalDirection(krecoil);
 }
 
 
@@ -403,7 +405,7 @@ void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
 G4double G4CMPProcessUtils::MakePhononTheta(G4double k, G4double ks) const {
   G4double u = G4UniformRand();
   G4double v = ks/k;
-  G4double base = (u-1) * (3*v - 3*v*v + v*v*v - 1);
+  G4double base = (1-u) * (1 - 3*v + 3*v*v - v*v*v); 	// (1-u)*(1-v)^3
   if (base < 0.0) return 0;
   
   G4double operand = v + pow(base, 1.0/3.0);   
@@ -416,7 +418,11 @@ G4double G4CMPProcessUtils::MakePhononTheta(G4double k, G4double ks) const {
 
 G4double G4CMPProcessUtils::MakePhononEnergy(G4double k, G4double ks,
 					     G4double th_phonon) const {
-  return 2.*(k*cos(th_phonon)-ks) * theLattice->GetSoundSpeed() * hbar_Planck;
+  return MakePhononEnergy(2.*(k*cos(th_phonon)-ks));
+}
+
+G4double G4CMPProcessUtils::MakePhononEnergy(G4double q) const {
+  return q * theLattice->GetSoundSpeed() * hbar_Planck;
 }
 
 // Compute direction angle for recoiling charge carrier

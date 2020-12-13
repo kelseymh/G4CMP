@@ -33,6 +33,8 @@
 // 20170603  Drop deprecated functions; don't deprecate transforms.
 // 20170620  Drop local caching of transforms; call through to G4CMPUtils.
 // 20170806  Move ChargeCarrierTimeStep() here from DriftProcess.
+// 20201111  Add MakePhononEnergy() which takes wave vector directly
+// 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -213,6 +215,7 @@ public:
   // Generate direction angle for phonon generated in Luke scattering
   G4double MakePhononTheta(G4double k, G4double ks) const;
   G4double MakePhononEnergy(G4double k, G4double ks, G4double th_phonon) const;
+  G4double MakePhononEnergy(G4double q) const;
 
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
@@ -220,7 +223,7 @@ public:
   void MakeLocalPhononK(G4ThreeVector& kphonon) const;
   void MakeGlobalPhononK(G4ThreeVector& kphonon) const;
 
-  void MakeGlobalRecoil(G4ThreeVector& kphonon) const;
+  void MakeGlobalRecoil(G4ThreeVector& krecoil) const;
 
   // Compute time between scatters/emissions for moving charge carrier
   // Parameters are "Mach number" (ratio to sound speed) and scattering length
