@@ -131,7 +131,7 @@ G4VParticleChange* G4PhononDownconversion::PostStepDoIt(const G4Track& aTrack,
     // Sanity check for energy conservation
     G4double Edecay = (aParticleChange.GetSecondary(0)->GetKineticEnergy() +
 		       aParticleChange.GetSecondary(1)->GetKineticEnergy());
-    if (Edecay != aTrack.GetKineticEnergy()) {
+    if (fabs(Edecay-aTrack.GetKineticEnergy()) > 1e-9) {
       G4ExceptionDescription msg;
       msg << "Energy non-conservation: track " << aTrack.GetKineticEnergy()/eV
 	  << " eV, decay products " << Edecay/eV << " eV";
