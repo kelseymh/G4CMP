@@ -23,14 +23,13 @@ namespace G4CMP {
 
 class FanoBinomial : public CLHEP::HepRandom {
 public:
-  inline FanoBinomial ( CLHEP::HepRandomEngine& anEngine, double mean=0.,
-			double stdDev=1. );
-  inline FanoBinomial ( CLHEP::HepRandomEngine* anEngine, double mean=0.,
-			double stdDev=1. );
+  inline FanoBinomial ( CLHEP::HepRandomEngine& anEngine, double nTrue=0.,
+			double fano=1. );
+  inline FanoBinomial ( CLHEP::HepRandomEngine* anEngine, double nTrue=0.,
+			double fano=1. );
   // These constructors should be used to instantiate a Fano-factor binomial
   // distribution object defining a local engine for it.  The Fano factor
-  // F = stdDev^2 / mean.  If stdDev == sqrt(mean), or mean=0., the generator
-  // will revert to RandPoisson. 
+  // F = stdDev^2 / mean.
   // The static generator will be skipped using the non-static methods
   // defined below.
   // If the engine is passed by pointer the corresponding engine object
@@ -43,10 +42,10 @@ public:
 
   // Static methods to shoot random values using the static generator
 
-  static  inline double shoot( double mean, double stdDev );
+  static  inline double shoot( double mean, double fano );
 
   static  void shootArray ( const int size, double* vect,
-                            double mean=0.0, double stdDev=1.0 );
+                            double mean=0.0, double fano=1.0 );
 
   //  Static methods to shoot random values using a given engine
   //  by-passing the static generator.
@@ -54,25 +53,25 @@ public:
   static  double shoot( CLHEP::HepRandomEngine* anEngine );
 
   static  inline double shoot( CLHEP::HepRandomEngine* anEngine, 
-			       double mean, double stdDev );
+			       double mean, double fano );
 
   static  void shootArray ( CLHEP::HepRandomEngine* anEngine, const int size,
                             double* vect, double mean=0.0,
-                            double stdDev=1.0 );
+                            double fano=1.0 );
 
   //  Methods using the localEngine to shoot random values, by-passing
   //  the static generator.
 
   inline double fire();
 
-  double fire( double mean, double stdDev );
+  double fire( double mean, double fano );
   
   void fireArray ( const int size, double* vect);
   void fireArray ( const int size, double* vect,
-                   double mean, double stdDev );
+                   double mean, double fano );
 
   inline double operator()();
-  inline double operator()( double mean, double stdDev );
+  inline double operator()( double mean, double fano );
 
   // Save and restore to/from streams
   
@@ -87,15 +86,15 @@ public:
 
 private:
   static double genBinomial( CLHEP::HepRandomEngine *anEngine,
-			     double mean, double stdDev );
+			     double mean, double fano );
 
   static double pdfBinomial(long x, long n, double p);
 
-  static long Choose(long n, long x);
+  static double Choose(long n, long x);
 
   std::shared_ptr<CLHEP::HepRandomEngine> localEngine;
   double defaultMean;
-  double defaultStdDev;
+  double defaultFano;
 };
 
 }	// namespace G4CMP
