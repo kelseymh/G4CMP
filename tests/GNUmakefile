@@ -6,7 +6,7 @@
 
 TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup \
 	g4cmpEFieldTest phononKinematics testChargeCloud testPartition \
-	testHVtransform
+	testHVtransform testFanoFactor
 .PHONY : $(TESTS)
 
 ifndef G4CMP_NAME
@@ -22,6 +22,7 @@ help :			# First target, in case user just types "make"
 	@echo "phononKinematics : Generate Si kinematics and plot"
 	@echo "testChargeCloud  : Validate performance of G4CMPChargeCloud"
 	@echo "testHVtransform  : Check lattice transforms and inversions"
+	@echo "testFanoFactor   : Verify Fano fluctuations given mean, F"
 	@echo
 	@echo Please specify which one to build as your make target, or \"all\"
 
