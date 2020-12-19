@@ -196,19 +196,16 @@ G4double G4CMPEnergyPartition::MeasuredChargePairs(G4double eTrue) const {
   // Store Fano factor from material for reference
   summary->FanoFactor = theLattice->GetFanoFactor();
 
-  G4double binProb = 1. - summary->FanoFactor;	// Binomial probability
-  G4double binMean = Ntrue / summary->FanoFactor;
-
   if (verboseLevel>1) {
-    G4cout << "Using binomial n " << binMean << " p " << binProb
-	   << " for Fano noise." << G4endl;
+    G4cout << "Using Ntrue " << Ntrue << " and F "  << summary->FanoFactor
+	   << " for Fano binomial" << G4endl;
   }
 
   // FIXME: Should we just use Gaussian for large N?  If so, how large?
 
   // Interpolated binominals to reproduce preset Fano factor
   // See https://www.slac.stanford.edu/exp/cdms/ScienceResults/DataReleases/20190401_HVeV_Run1/HVeV_R1_Data_Release_20190401.pdf
-  return G4CMP::FanoBinomial::shoot(binMean, binProb);
+  return G4CMP::FanoBinomial::shoot(Ntrue, summary->FanoFactor);
 }
 
 
