@@ -5,7 +5,8 @@
 # 20170923  Add testChargeCloud
 
 TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup \
-	g4cmpEFieldTest phononKinematics testChargeCloud testPartition
+	g4cmpEFieldTest phononKinematics testChargeCloud testPartition \
+	testHVtransform testFanoFactor
 .PHONY : $(TESTS)
 
 ifndef G4CMP_NAME
@@ -17,9 +18,11 @@ help :			# First target, in case user just types "make"
 	@echo "luke_dist     : Generate tab-delimited file of phonon kinematics"
 	@echo "testBlockData : Demonstrate use of data container"
 	@echo "testCrystalGroup : Validate non-orthogonal crystal axes"
-	@echo "g4cmpEFieldTest : Validate COMSOL field file in rectangular box"
+	@echo "g4cmpEFieldTest  : Validate COMSOL field file in rectangular box"
 	@echo "phononKinematics : Generate Si kinematics and plot"
-	@echo "testChargeCloude : Validate performance of G4CMPChargeCloud"
+	@echo "testChargeCloud  : Validate performance of G4CMPChargeCloud"
+	@echo "testHVtransform  : Check lattice transforms and inversions"
+	@echo "testFanoFactor   : Verify Fano fluctuations given mean, F"
 	@echo
 	@echo Please specify which one to build as your make target, or \"all\"
 

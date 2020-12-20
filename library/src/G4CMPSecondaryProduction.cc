@@ -15,6 +15,7 @@
 // 20160825  Replace implementation with use of G4CMPEnergyPartition
 // 20191007  All normal G4 tracks should be used, not just charged.
 // 20200222  Enable collection of EnergyPartition summary data.
+// 20201207  Suspend parent track so that secondaries get processed first.
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPEnergyPartition.hh"
@@ -46,7 +47,7 @@
 
 G4CMPSecondaryProduction::G4CMPSecondaryProduction()
   : G4VContinuousProcess("G4CMPSecondaryProduction", fPhonon),
-    partitioner(new G4CMPEnergyPartition) {
+    partitioner(new G4CMPEnergyPartition), secondariesFirst(true) {
   SetProcessSubType(fSecondaryProduction);
   partitioner->FillSummary(true);	// Collect partition summary data
 }
@@ -100,6 +101,10 @@ G4CMPSecondaryProduction::AlongStepDoIt(const G4Track& track,
   if (verboseLevel) G4cout << GetProcessName() << "::AlongStepDoIt" << G4endl;
 
   AddSecondaries(stepData);
+
+  // If requested (default), process new secondaries immediately
+  if (secondariesFirst && track.GetTrackStatus() == fAlive)
+    aParticleChange.ProposeTrackStatus(fSuspend);
 
   // NOTE:  This process does NOT change the track's momentum or energy
   return &aParticleChange;

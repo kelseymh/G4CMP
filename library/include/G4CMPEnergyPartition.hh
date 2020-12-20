@@ -113,8 +113,8 @@ public:
   G4double LindhardScalingFactor(G4double energy, G4double Z=0,
 				 G4double A=0) const;
 
-  // Portion of ionization energy which goes to e/h pairs (Fano factor)
-  G4double MeasuredChargeEnergy(G4double eTrue) const;
+  // Number of e/h pairs to generate including Fano fluctuations
+  G4double MeasuredChargePairs(G4double eTrue) const;
 
 protected:
   void GenerateCharges(G4double energy);

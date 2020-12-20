@@ -14,9 +14,7 @@ include_directories(${PROJECT_SOURCE_DIR}/library/include)
 include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
-# Executables
+# Executables are single-file builds, with no associated local library
+# NOTE: Add names of binaries to list
 #
-# NOTE: Tools do not need RPATH modification because they don't get installed.
-add_executable(g4cmpKVtables g4cmpKVtables.cc)
-target_link_libraries(g4cmpKVtables G4cmp)
-
+make_binaries("g4cmpKVtables")

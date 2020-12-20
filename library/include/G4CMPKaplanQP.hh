@@ -19,11 +19,13 @@
 //		mutation of E argument in PhononEnergyRand().
 // 20200701  G4CMP-217: New function to handle QP energy absorption below
 //		minimum for QP -> phonon -> new QP pair chain (3*bandgap).
+// 20201109  Add diagnostic text file (like downconversion and Luke).
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
 
 #include "G4Types.hh"
+#include <fstream>
 #include <vector>
 
 class G4MaterialPropertiesTable;
@@ -43,7 +45,7 @@ namespace G4CMP {
 class G4CMPKaplanQP {
 public:
   G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb=0);
-  virtual ~G4CMPKaplanQP() {;}
+  virtual ~G4CMPKaplanQP();
 
   // Turn on diagnostic messages
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
@@ -110,6 +112,8 @@ private:
   G4double phononLifetime;	// Lifetime of phonons in film at 2*delta
   G4double phononLifetimeSlope;	// Energy dependence of phonon lifetime
   G4double vSound;		// Speed of sound in film
+
+  mutable std::ofstream output;		// Diagnostic output under G4CMP_DEBUG
 };
 
 #endif	/* G4CMPKaplanQP_hh */

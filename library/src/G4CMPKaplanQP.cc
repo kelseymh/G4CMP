@@ -23,6 +23,7 @@
 // 20200629  G4CMP-217: QPs below lowQPLimit should radiate phonon energy
 //		down to gapEnergy before absorption.  Encapsulate this in
 //		a function.
+// 20201109  Add diagnostic text file (like downconversion and Luke).
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -50,13 +51,19 @@ G4double G4CMP::KaplanPhononQP(G4double energy,
 }
 
 
-// Class constructor
+// Class constructor and destructor
 
 G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
   : verboseLevel(vb), filmProperties(0), filmThickness(0.), gapEnergy(0.),
     lowQPLimit(3.), subgapAbsorption(0.), phononLifetime(0.),
     phononLifetimeSlope(0.), vSound(0.) {
   SetFilmProperties(prop);
+}
+
+G4CMPKaplanQP::~G4CMPKaplanQP() {
+#ifdef G4CMP_DEBUG
+  if (output.is_open()) output.close();
+#endif
 }
 
 // Configure thin film (QET, metalization, etc.) for phonon absorption
@@ -120,6 +127,16 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
     // FIXME: Should we discard previous contents?
   }
 
+#ifdef G4CMP_DEBUG
+  if (!output.good()) {
+    output.open("kaplanqp_stats");
+    if (output.good()) {
+      output << "Incident Energy [eV],Absorbed Energy [eV],"
+	     << "Reflected Energy [eV],Reflected Phonons" << std::endl;
+    }
+  }
+#endif
+
   // For the phonon to not break a Cooper pair, it must go 2*thickness,
   // assuming it goes exactly along the thickness direction, which is an
   // approximation.
@@ -163,13 +180,22 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   // Sanity check -- Reflected + Absorbed should equal input
   G4double ERefl = std::accumulate(reflectedEnergies.begin(),
 				   reflectedEnergies.end(), 0.);
-  if (verboseLevel>1)
-    G4cout << " Reflected " << ERefl << "\n Absorbed " << EDep << G4endl;
+  if (verboseLevel>1) {
+    G4cout << " Reflected " << ERefl << " (" << reflectedEnergies.size()
+	   << ")\n Absorbed " << EDep << G4endl;
+  }
 
   if (fabs(energy-ERefl-EDep)/energy > 1e-3) {
     G4cerr << "WARNING G4CMPKaplanQP missing " << (energy-ERefl-EDep)/eV
 	   << " eV" << G4endl;
   }
+
+#ifdef G4CMP_DEBUG
+  if (output.good()) {
+    output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
+	   << reflectedEnergies.size() << std::endl;
+  }
+#endif
 
   return EDep;
 }

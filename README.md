@@ -198,23 +198,9 @@ identify the G4CMP version at runtime.  Use `G4CMP_VERSION=X.Y.Z` on the
 Make command line for this purpose.  If `.git/` is available, the option
 will be ignored.
 
-With the library built, any of the three demonstration programs (phonon,
-charge) may be built as a normal GEANT4 user application.
-From the top-level directory, use the command
-
-	make examples
-
-to build them all, or
-
-	make <name>
-
-to build just one (where <name> is the directory name of interest).  The
-executables will be named `g4cmpPhonon` and `g4cmpCharge`, respectively, and
-will be written to `$G4WORKDIR/bin/$G4SYSTEM/`.
-
 ### Building with CMake
 
-Create a build directory outside of the source tree,
+Create a build directory outside of the source tree, such as
 
     mkdir /path/to/G4CMP/../G4CMP-build
     cd /path/to/G4CMP-build
@@ -224,7 +210,8 @@ to be built, use the following command
 
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} ../G4CMP
 
-If you want to install to a local path, rather than system-wide, use the
+By default, CMake will install a software package under /usr/local.  If you
+want to install to a local path, rather than system-wide, use the
 `-DCMAKE_INSTALL_PREFIX=/path/to/install` option.
 
 If you want debugging symbols included with the G4CMP library, you
@@ -242,20 +229,17 @@ identify the G4CMP version at runtime.  Use the `-DG4CMP_VERSION=X.Y.Z`
 option for this purpose.  If `.git/` is available, the option will be
 ignored.
 
-If you want to build an example application,
+If you want to copy the example applications (see below) to the installation
+area, use the option `-DINSTALL_EXAMPLES=ON` (for all examples):
 
-    cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DBUILD_CHARGE_EXAMPLE=ON ../G4CMP
+    cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DINSTALL_EXAMPLES=ON ../G4CMP
 
-If you want to build all examples,
-
-    cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DBUILD_ALL_EXAMPLES=ON ../G4CMP
-
-Then simply run the `make` command in the build directory
+Once you've configured the build with `cmake` and option flags, run the
+`make` command in the build directory
 
     make
 
-While it's not strictly necessary, we strongly recommend installing G4CMP to 
-the install prefix rather than running the binaries from the build directory
+and transfer the successfully build libraries to your installation area
 
     make install
 
@@ -297,6 +281,49 @@ add the following two actions, before referencing Geant4:
 
     find_package(G4CMP REQUIRED)
     include(${G4CMP_USE_FILE})
+
+
+## Application Examples
+
+In addition to the library, G4CMP is distributed with an `examples`
+directory containing three simple applications to demonstrate features of
+the library.  
+
+* The `phonon` example shows phonon transport and scattering, including
+downconversion and mode mixing, in a cylindrical crystal.
+
+* The `charge` example shows electron and hole transport with NTL ("Luke")
+emission of phonons and intervalley scattering.
+
+* The `sensor` example shows how to configure the geometry to collect and
+record phonon energy by absorption on superconducting TES-style surface
+sensors.
+
+Users may copy any of the individual example directories to their own work
+area and adapt them as necessary, or use them as inspiration in developing a
+more complex experimental model application.
+
+### Building Examples In Situ
+
+If the G4CMP libraries are being built with Make, any of the three
+demonstration programs (phonon, charge) may be built as a normal GEANT4 user
+application directly from the package top-level directory.  Use the command
+
+	make examples
+
+to build them all, or
+
+	make <name>
+
+to build just one (where <name> is the directory name of interest).  The
+executables will be named `g4cmpPhonon` and `g4cmpCharge`, respectively, and
+will be written to `$G4WORKDIR/bin/$G4SYSTEM/`.
+
+### Building Examples With CMake
+
+Each example has been set up as a standalone "project" for CMake.  Copy the
+example directory, and use `cmake` with `-D` options to set up and build the
+example.
 
 
 ## Versioning Information
