@@ -71,7 +71,8 @@ public:
   G4ThreeVector MapKtoVDir(G4int mode, const G4ThreeVector& k) const;
 
   // Convert between electron momentum and valley velocity or HV wavevector
-  // NOTE:  Input vector must be in local (G4VSolid) coordinate system
+  // NOTE:  p or v_el vector must be in local (G4VSolid) coordinate system
+  // NOTE:  K_HV vector must be in valley internal coordinate system
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
   G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;

@@ -35,6 +35,7 @@
 // 20170806  Move ChargeCarrierTimeStep() here from DriftProcess.
 // 20201111  Add MakePhononEnergy() which takes wave vector directly
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
+// 20201223  Add FindNearestValley() function to align electron momentum.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -212,6 +213,17 @@ public:
   // Generate random valley for charge carrier
   G4int ChangeValley(G4int valley) const;	// Excludes input valley
 
+  // Find valley which aligns most closely with _local_ direction vector
+  // NOTE: Passed by value to allow for internal manipulation
+  G4int FindNearestValley(G4ThreeVector dir) const;
+  G4int FindNearestValley(const G4Track& track) const;
+  G4int FindNearestValley(const G4Track* track) const {
+    return (track ? FindNearestValley(*track) : -1);
+  }
+  G4int FindNearestValley() const {		// Use current track
+    return FindNearestValley(currentTrack);
+  }
+
   // Generate direction angle for phonon generated in Luke scattering
   G4double MakePhononTheta(G4double k, G4double ks) const;
   G4double MakePhononEnergy(G4double k, G4double ks, G4double th_phonon) const;
@@ -220,9 +232,7 @@ public:
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
 
-  void MakeLocalPhononK(G4ThreeVector& kphonon) const;
-  void MakeGlobalPhononK(G4ThreeVector& kphonon) const;
-
+  // Convert K_HV wave vector to track momentum
   void MakeGlobalRecoil(G4ThreeVector& krecoil) const;
 
   // Compute time between scatters/emissions for moving charge carrier
