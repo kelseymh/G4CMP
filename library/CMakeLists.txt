@@ -328,7 +328,7 @@ endif()
 if(G4CMPTLI_DEBUG)
     set(LibDefs "${LibDefs};G4CMPTLI_DEBUG=1")
 endif()
-if(NOT GEANT4_USE_SYSTEM_CLHEP)
+if(Geant4_builtin_clhep_FOUND)
     SET(LibDefs "${LibDefs};G4LIB_USE_CLHEP=1")
 endif()
 
