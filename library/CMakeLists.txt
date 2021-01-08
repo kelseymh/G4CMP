@@ -328,6 +328,9 @@ endif()
 if(G4CMPTLI_DEBUG)
     set(LibDefs "${LibDefs};G4CMPTLI_DEBUG=1")
 endif()
+if(NOT GEANT4_USE_SYSTEM_CLHEP)
+    SET(LibDefs "${LibDefs};G4LIB_USE_CLHEP=1")
+endif()
 
 target_compile_definitions(G4cmp PUBLIC ${LibDefs})
 
