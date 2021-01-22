@@ -10,10 +10,11 @@
 // 20201213  Replace "stdDev" argument with Fano factor
 // 20201218  Improve computing steps to avoid loss of precision, apply
 //	       cutoff for binomial -> Gaussian limit.
+// 20210107  CLHEP's DoubConv.* header file has different names in CLHEP
+//		distribution vs. Geant4 internal subset.
 // =======================================================================
 
 #include "G4CMPFanoBinomial.hh"
-#include "CLHEP/Random/DoubConv.h"
 #include "CLHEP/Random/RandBinomial.h"
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -21,6 +22,12 @@
 #include <cfloat>	// for DBL_MAX
 #include <cmath>	// for exp()
 #include <iostream>
+
+#ifdef G4LIB_USE_CLHEP	// Handle inconsistent naming of this one CLHEP file
+#include "CLHEP/Random/DoubConv.h"
+#else
+#include "CLHEP/Random/DoubConv.hh"
+#endif
 
 using CLHEP::HepRandomEngine;
 using CLHEP::DoubConv;
