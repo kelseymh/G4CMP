@@ -304,7 +304,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   RotateToGlobalDirection(precoil);	// Update track in world coordinates
-  FillParticleChange(newValley, Erecoil, precoil);
+  FillParticleChange(newValley, precoil);
 
 #ifdef G4CMP_DEBUG
   if (output.good()) {
