@@ -10,6 +10,7 @@
 // $Id$
 //
 // 20200219  Michael Kelsey (TAMU) <kelsey@slac.stanford.edu>
+// 20210131  Move Insert() to .cc file, add clear() action on new event
 
 #ifndef G4CMPPartitionSummary_hh
 #define G4CMPPartitionSummary_hh 1
@@ -30,9 +31,7 @@ public:
   virtual ~G4CMPPartitionSummary();
 
   // Add a new record to the summary table
-  static void Insert(G4CMPPartitionData* data) {
-    Instance()->summary.push_back(data);
-  }
+  static void Insert(G4CMPPartitionData* data) { Instance()->insert(data); }
 
   // Retrieve specific entry from summary table
   static G4CMPPartitionData* Get(G4int i) { return Instance()->summary[i]; }
@@ -47,10 +46,14 @@ public:
   static void Clear() { Instance()->clear(); }
 
 private:
-  G4CMPPartitionSummary() {;}
+  G4CMPPartitionSummary() : currentEvent(-1) {;}
   void clear();				// Deletes existing table entries
+  void insert(G4CMPPartitionData* data); // Adds new record to table
+  G4int getEventID();			// Get current event ID
+  G4bool isNewEvent();			// Check if new event was started
 
   G4CMPPartitionVector summary;		// Filled by client code
+  G4int currentEvent;			// Keep track of event in progress
 };
 
 #endif	/* G4CMPPartitionSummary_hh */

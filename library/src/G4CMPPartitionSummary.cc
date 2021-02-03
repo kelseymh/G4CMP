@@ -12,6 +12,8 @@
 // 20200219  Michael Kelsey (TAMU) <kelsey@slac.stanford.edu>
 
 #include "G4CMPPartitionSummary.hh"
+#include "G4Event.hh"
+#include "G4RunManager.hh"
 
 
 // Singleton construction
@@ -30,4 +32,25 @@ G4CMPPartitionSummary::~G4CMPPartitionSummary() {;}
 void G4CMPPartitionSummary::clear() {
   for (auto& x: summary) { delete x; x=0; }
   summary.clear();
+}
+
+// Add new data record to collection, or restart if new event
+
+void G4CMPPartitionSummary::insert(G4CMPPartitionData* data) {
+  if (isNewEvent()) {			// Clean up previous event's data
+    clear();
+    currentEvent = getEventID();
+  }
+
+  if (data) summary.push_back(data);	// Only store valid data records
+}
+
+// Determine whether a new event has started
+
+G4int G4CMPPartitionSummary::getEventID() {
+  return G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+}
+
+G4bool G4CMPPartitionSummary::isNewEvent() {
+  return (getEventID() != currentEvent);
 }
