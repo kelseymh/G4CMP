@@ -16,6 +16,7 @@
 // 20191007  All normal G4 tracks should be used, not just charged.
 // 20200222  Enable collection of EnergyPartition summary data.
 // 20201207  Suspend parent track so that secondaries get processed first.
+// 20210203  G4CMP-241 : Process must run after PostStepDoIt, not AlongStep.
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPEnergyPartition.hh"
@@ -46,9 +47,8 @@
 // Constructor and destructor
 
 G4CMPSecondaryProduction::G4CMPSecondaryProduction()
-  : G4VContinuousProcess("G4CMPSecondaryProduction", fPhonon),
+  : G4CMPVProcess("G4CMPSecondaryProduction", fSecondaryProduction),
     partitioner(new G4CMPEnergyPartition), secondariesFirst(true) {
-  SetProcessSubType(fSecondaryProduction);
   partitioner->FillSummary(true);	// Collect partition summary data
 }
 
@@ -90,15 +90,15 @@ void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
 // Use previously computed energy loss to generate secondaries
 
 G4VParticleChange* 
-G4CMPSecondaryProduction::AlongStepDoIt(const G4Track& track,
-					const G4Step& stepData) {
+G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
+				       const G4Step& stepData) {
   aParticleChange.Initialize(track); 
   LoadDataForTrack(&track);
 
   // Only apply to tracks while they are in lattice-configured volumes
   if (!theLattice) return &aParticleChange;
 
-  if (verboseLevel) G4cout << GetProcessName() << "::AlongStepDoIt" << G4endl;
+  if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
   AddSecondaries(stepData);
 
@@ -188,14 +188,13 @@ void G4CMPSecondaryProduction::GeneratePositions(const G4Step& stepData,
 }
 
 
-// Calculate step limit for Along Step (not needed here)
+// Process must be applied to all tracks at the end of their step
 
 G4double 
-G4CMPSecondaryProduction::GetContinuousStepLimit(const G4Track& /*aTrack*/,
-						 G4double  /*previousStepSize*/,
-						 G4double  /*currentMinimumStep*/,
-						 G4double& /*currentSafety*/) {
-  return DBL_MAX;	// This should prevent step-limiting here
+G4CMPSecondaryProduction::GetMeanFreePath(const G4Track& aTrack, G4double,
+					  G4ForceCondition* condition) {
+  *condition = StronglyForced;
+  return DBL_MAX;
 }
 
 

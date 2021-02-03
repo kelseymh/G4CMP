@@ -256,6 +256,9 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
       Ionization(energy);
     }
   }
+
+  // After summary block created above, record particle type
+  if (summary) summary->PDGcode = PDGcode;
 }
 
 
