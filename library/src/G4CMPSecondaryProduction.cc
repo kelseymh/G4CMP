@@ -191,7 +191,7 @@ void G4CMPSecondaryProduction::GeneratePositions(const G4Step& stepData,
 // Process must be applied to all tracks at the end of their step
 
 G4double 
-G4CMPSecondaryProduction::GetMeanFreePath(const G4Track& aTrack, G4double,
+G4CMPSecondaryProduction::GetMeanFreePath(const G4Track&, G4double,
 					  G4ForceCondition* condition) {
   *condition = StronglyForced;
   return DBL_MAX;
