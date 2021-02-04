@@ -14,6 +14,7 @@
 //
 // 20200218  Michael Kelsey (TAMU) <kelsey@slac.stanford.edu>
 // 20200316  Add hit position; improve energy quantity calculations.
+// 20210202  Add particle type (PDGcode) to be filled from original track
 
 #include "globals.hh"
 #include "G4CMPPartitionData.hh"
@@ -27,7 +28,7 @@ G4ThreadLocal G4Allocator<G4CMPPartitionData>* G4CMPPartitionData_Allocator=0;
 // Constructor must initialize everything to zero
 
 G4CMPPartitionData::G4CMPPartitionData()
-  : G4VHit(), totalEnergy(0.), truedEdx(0.),
+  : G4VHit(), PDGcode(0), totalEnergy(0.), truedEdx(0.),
     trueNIEL(0.), lindhardYield(0.), FanoFactor(0.), chargeEnergy(0.),
     chargeFano(0.), chargeGenerated(0.), numberOfPairs(0), phononEnergy(0.),
     phononGenerated(0.), numberOfPhonons(0) {
@@ -37,8 +38,8 @@ G4CMPPartitionData::G4CMPPartitionData()
 // Report contents for diagnostic purposes
 
 void G4CMPPartitionData::Print() {	// FIXME: Base class is non-const
-  G4cout << "G4CMPPartitionData:"
-	 << "\n Total energy deposit " << totalEnergy/eV << " eV"
+  G4cout << "G4CMPPartitionData (particle type " << PDGcode << "):"
+         << "\n Total energy deposit " << totalEnergy/eV << " eV"
 	 << "\n Position (" << position[0]/mm << "," << position[1]/mm
 	 << "," << position[2]/mm << ") mm " << position[3]/ns << " ns"
 	 << "\n Ionization energy (dE/dx) " << truedEdx/eV << " eV"

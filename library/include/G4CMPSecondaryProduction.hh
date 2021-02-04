@@ -13,12 +13,12 @@
 // 20150310  Michael Kelsey
 // 20160825  Replace implementation with use of G4CMPEnergyPartition
 // 20201207  Add flag to suspend parent track for secondary processing.
+// 20210203  G4CMP-241 : Process must run after PostStepDoIt, not AlongStep.
 
 #ifndef G4CMPSecondaryProduction_hh
 #define G4CMPSecondaryProduction_hh 1
 
-#include "G4VContinuousProcess.hh"
-#include "G4CMPProcessUtils.hh"
+#include "G4CMPVProcess.hh"
 #include "G4ThreeVector.hh"
 #include <vector>
 
@@ -30,8 +30,7 @@ class G4Track;
 class G4VParticleChange;
 
 
-class G4CMPSecondaryProduction : public G4VContinuousProcess,
-				 public G4CMPProcessUtils {
+class G4CMPSecondaryProduction : public G4CMPVProcess {
 public:
   G4CMPSecondaryProduction();
   virtual ~G4CMPSecondaryProduction();
@@ -40,7 +39,7 @@ public:
   virtual G4bool IsApplicable(const G4ParticleDefinition&);
 
   // Generate secondaries based on already-computed energy loss
-  virtual G4VParticleChange* AlongStepDoIt(const G4Track& track,
+  virtual G4VParticleChange* PostStepDoIt(const G4Track& track,
 					   const G4Step& stepData);
 
   // Overload G4CMPProcessUtils function to fill energy parameters
@@ -50,9 +49,8 @@ public:
   void ProcessSecondariesFirst(G4bool val=true) { secondariesFirst = val; }
 
 protected:
-  // Calculate step limit for Along Step (not needed here)
-  virtual G4double GetContinuousStepLimit(const G4Track&, G4double, G4double,
-					  G4double&);
+  // Step limit for PostStep (sets process Forced for all tracks)
+  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
 protected:
   void AddSecondaries(const G4Step& stepData);

@@ -14,6 +14,7 @@
 //
 // 20200217  Michael Kelsey (TAMU) <kelsey@slac.stanford.edu>
 // 20200316  Add hit position; improve energy quantity calculations.
+// 20210202  Add particle type (PDGcode) to be filled from original track
 
 #ifndef G4CMPPartitionData_hh
 #define G4CMPPartitionData_hh 1
@@ -35,6 +36,7 @@ public:
   virtual void Print();		// FIXME:  Base class version is non-const
 
 public:		// Simple container, provide direct access to information
+  G4int    PDGcode;		// Particle type which produced energy deposit
   G4double totalEnergy;		// Input total energy deposited in event
   G4double position[4];		// Location and time of energy deposit
   G4double truedEdx;		// Input ionizing energy (dE/dx) deposited
@@ -44,10 +46,10 @@ public:		// Simple container, provide direct access to information
   G4double chargeEnergy;	// Energy assigned to charge carriers
   G4double chargeFano;		// Fano-fluctuated energy in charge carriers
   G4double chargeGenerated;	// Energy actually converted to charge carriers
-  G4int numberOfPairs;		// Number of e/h pairs created (downsampled)
+  G4int    numberOfPairs;	// Number of e/h pairs created (downsampled)
   G4double phononEnergy;	// Energy assigned for primary phonons
   G4double phononGenerated;	// Weighted sum of generated phonons
-  G4int numberOfPhonons;	// Number of phonons created (downsampled)
+  G4int    numberOfPhonons;	// Number of phonons created (downsampled)
 
 public:
   G4CMPPartitionData(const G4CMPPartitionData&) = default;
