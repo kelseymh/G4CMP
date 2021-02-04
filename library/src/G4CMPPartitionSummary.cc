@@ -13,7 +13,7 @@
 
 #include "G4CMPPartitionSummary.hh"
 #include "G4Event.hh"
-#include "G4RunManager.hh"
+#include "G4EventManager.hh"
 
 
 // Singleton construction
@@ -48,7 +48,8 @@ void G4CMPPartitionSummary::insert(G4CMPPartitionData* data) {
 // Determine whether a new event has started
 
 G4int G4CMPPartitionSummary::getEventID() {
-  return G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+  const G4Event* event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
+  return (event ? event->GetEventID() : -1);
 }
 
 G4bool G4CMPPartitionSummary::isNewEvent() {
