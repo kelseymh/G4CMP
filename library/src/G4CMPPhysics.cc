@@ -17,6 +17,7 @@
 // 20200331  G4CMP-196: Added impact ionization process
 // 20200426  G4CMP-196: Change "impact" to "trap ionization", separate
 //		process instances for each beam/trap type.
+// 20210203  G4CMP-241: SecondaryProduction must be last PostStep process.
 
 #include "G4CMPPhysics.hh"
 #include "G4CMPConfigManager.hh"
@@ -160,8 +161,7 @@ void G4CMPPhysics::AddSecondaryProduction() {
     G4ParticleDefinition* particle = pIter->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
     if (maker->IsApplicable(*particle)) { 
-      pmanager->AddProcess(maker);
-      pmanager->SetProcessOrderingToLast(maker, idxAlongStep);
+      pmanager->AddDiscreteProcess(maker, ordLast);
     }
   }
 }
