@@ -10,10 +10,12 @@
 // 20201213  Replace "stdDev" argument with Fano factor
 // 20201218  Improve computing steps to avoid loss of precision, apply
 //	       cutoff for binomial -> Gaussian limit.
+// 20210107  CLHEP's DoubConv.* header file has different names in CLHEP
+//		distribution vs. Geant4 internal subset.
+// 20210123  Strip all use of DoubConv (broken for us in CLHEP 2.4.4.1)
 // =======================================================================
 
 #include "G4CMPFanoBinomial.hh"
-#include "CLHEP/Random/DoubConv.h"
 #include "CLHEP/Random/RandBinomial.h"
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -23,7 +25,6 @@
 #include <iostream>
 
 using CLHEP::HepRandomEngine;
-using CLHEP::DoubConv;
 
 
 namespace G4CMP {
@@ -135,13 +136,10 @@ double FanoBinomial::Choose(long n, long x) {
 
 std::ostream & FanoBinomial::put ( std::ostream & os ) const {
   int pr=os.precision(20);
-  std::vector<unsigned long> t(2);
   os << " " << name() << "\n";
   os << "Uvec" << "\n";
-  t = DoubConv::dto2longs(defaultMean);
-  os << defaultMean << " " << t[0] << " " << t[1] << std::endl;
-  t = DoubConv::dto2longs(defaultFano);
-  os << defaultFano << " " << t[0] << " " << t[1] << std::endl;
+  os << defaultMean << std::endl;
+  os << defaultFano << std::endl;
   os.precision(pr);
   return os;
 }
@@ -160,8 +158,7 @@ std::istream & FanoBinomial::get ( std::istream & is ) {
   }
   if (CLHEP::possibleKeywordInput(is, "Uvec", defaultMean)) {
     std::vector<unsigned long> t(2);
-    is >> defaultMean >> t[0] >> t[1]; defaultMean = DoubConv::longs2double(t);
-    is >> defaultFano >> t[0] >> t[1]; defaultFano = DoubConv::longs2double(t);
+    is >> defaultMean >> defaultFano;
     return is;
   }
   // is >> defaultMean encompassed by possibleKeywordInput

@@ -43,6 +43,7 @@
 // 20201020  Use "interpolation" to match input Fano factor and mean Npair
 // 20201205  Use ApplySurfaceClearance() for primary production, to avoid
 //		creating particles which escape from volume.
+// 20210202  in DoPartition(PDGcode, ...) store particle type in summary.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -255,6 +256,9 @@ void G4CMPEnergyPartition::DoPartition(G4int PDGcode, G4double energy,
       Ionization(energy);
     }
   }
+
+  // After summary block created above, record particle type
+  if (summary) summary->PDGcode = PDGcode;
 }
 
 
@@ -641,6 +645,10 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
     G4cout << "G4CMPEnergyPartition::GetSecondaries, parent weight "
 	   << trkWeight << G4endl;
   }
+
+  // If particle type not already set, get it from the current track
+  if (summary->PDGcode == 0)
+    summary->PDGcode = GetCurrentParticle()->GetPDGEncoding();
 
   // Store position information in summary block
   summary->position[0] = GetCurrentTrack()->GetPosition()[0];
