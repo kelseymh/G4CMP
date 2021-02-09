@@ -216,6 +216,11 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	       << ErecNew/eV << " eV" << G4endl;
 
 	Erecoil = ErecNew;
+
+	// Rescale phonon to enforce energy conservation; breaks momentum
+	G4double Escale = (GetKineticEnergy(aTrack)-Erecoil) / Ephonon;
+	qvec *= Escale;
+	Ephonon *= Escale;
       }
 
       G4double Efinal = Erecoil + Ephonon;
@@ -256,8 +261,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Report phonon emission results
   if (verboseLevel > 1) {
-    G4cout << "q(HV) = " << q << " q(local) = " << qvec.mag()
-	   << "\nEphonon = " << Ephonon
+    G4cout << "q = " << q << " |qvec| = " << qvec.mag()
+	   << " Ephonon = " << Ephonon
            << "\nk_recoil(HV) = " << k_recoil
            << " k_recoil(HV)-mag = " << k_recoil.mag()
 	   << " newValley = " << newValley
