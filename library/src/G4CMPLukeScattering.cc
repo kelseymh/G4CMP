@@ -26,6 +26,10 @@
 // 20201119  Put kinematics selection in accept/reject loop insted of quitting.
 // 20201124  Include track momenta (before and after) in diagnostic output.
 // 20201207  For electrons, add energy conservation check in accept/reject.
+// 20210225  Improve kinematics: do not transform the phonon vector.  Leave
+//		in place code for electrons to assign final-state to valley
+//		closest to momentum direction.  Commented out now, as it leads
+//		to non-physical reduction of total Luke emission.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -205,6 +209,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
     // Sanity check for electrons: recoil energy must be smaller
     if (IsElectron()) {
+      /***** Leave code in place for future tuning of IV scattering
       // See if momentum should be kicked into new valley
       newValley = FindNearestValley(precoil);
 
@@ -222,6 +227,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	qvec *= Escale;
 	Ephonon *= Escale;
       }
+      *****/
 
       G4double Efinal = Erecoil + Ephonon;
       G4double DeltaE = Efinal - GetKineticEnergy(aTrack);
