@@ -37,6 +37,7 @@
 // 20170621  Drop local initialization of TrackInfo; StackingAction only
 // 20170624  Improve initialization from track, use Navigator to infer volume
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
+// 20201223  Add FindNearestValley() function to align electron momentum.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -64,9 +65,10 @@
 #include "G4RandomDirection.hh"
 #include "G4VTouchable.hh"
 #include "Randomize.hh"
-
 #include "G4GeometryTolerance.hh"
 #include "G4VSolid.hh"
+#include <set>
+
 
 // Constructor and destructor
 
@@ -371,19 +373,8 @@ G4int G4CMPProcessUtils::ChoosePhononPolarization() const {
                                          theLattice->GetFTDOS());
 }
 
-void G4CMPProcessUtils::MakeLocalPhononK(G4ThreeVector& kphonon) const {
-  if (IsElectron()) {
-    kphonon = theLattice->MapK_HVtoK(GetValleyIndex(GetCurrentTrack()), kphonon);
-  } else if (!IsHole()) {
-    G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess005",
-                EventMustBeAborted, "Unknown charge carrier");
-  }
-}
 
-void G4CMPProcessUtils::MakeGlobalPhononK(G4ThreeVector& kphonon) const {
-  MakeLocalPhononK(kphonon);
-  RotateToGlobalDirection(kphonon);
-}
+// Convert K_HV wave vector to track momentum
 
 void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& krecoil) const {
   // Convert recoil wave vector to momentum in local frame 
@@ -460,6 +451,33 @@ const G4RotationMatrix&
 G4CMPProcessUtils::GetValley(const G4Track& track) const {
   G4int iv = GetValleyIndex(track);
   return (iv>=0 ? theLattice->GetValley(iv) : G4RotationMatrix::IDENTITY);
+}
+
+// Find valley which aligns most closely with _local_ direction vector
+G4int G4CMPProcessUtils::FindNearestValley(const G4Track& track) const {
+  return (G4CMP::IsElectron(track) ? FindNearestValley(GetLocalMomentum(track))
+	  : -1);
+}
+
+// NOTE:  Direction vector must be passed in _local_ coordinate system
+G4int G4CMPProcessUtils::FindNearestValley(G4ThreeVector dir) const {
+  dir.setR(1.);
+  theLattice->RotateToLattice(dir);
+
+  std::set<G4int> bestValley;	// Collect all best matches for later choice
+  G4double align, bestAlign = -1.;
+  for (size_t i=0; i<theLattice->NumberOfValleys(); i++) {
+    align = fabs(theLattice->GetValleyAxis(i).dot(dir)); // Both unit vectors
+    if (align > bestAlign) {
+      bestValley.clear();
+      bestAlign = align;
+    }
+    if (align >= bestAlign) bestValley.insert(i);
+  }
+
+  // Return best alignment, or pick from ambiguous choices
+  return ( (bestValley.size() == 1) ? *bestValley.begin()
+	   : int(bestValley.size()*G4UniformRand()) );
 }
 
 

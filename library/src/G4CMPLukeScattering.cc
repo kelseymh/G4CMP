@@ -26,6 +26,10 @@
 // 20201119  Put kinematics selection in accept/reject loop insted of quitting.
 // 20201124  Include track momenta (before and after) in diagnostic output.
 // 20201207  For electrons, add energy conservation check in accept/reject.
+// 20210225  Improve kinematics: do not transform the phonon vector.  Leave
+//		in place code for electrons to assign final-state to valley
+//		closest to momentum direction.  Commented out now, as it leads
+//		to non-physical reduction of total Luke emission.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -140,8 +144,9 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   // Final state kinematics, generated in accept/reject loop below
-  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0;
+  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0, Erecoil=0;
   G4ThreeVector qvec, k_recoil, precoil;	// Outgoing wave vectors
+  G4int newValley = iValley;			// Test for valley change
 
   // Iterate to avoid non-physical phonon emission
   const G4int maxThrows = 1000;		// Avoids potential infinite loop
@@ -180,9 +185,16 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	     << G4endl;
     }
     
-    // Get recoil wavevector (in HV frame), convert to new momentum
+    // Get recoil wavevector (in HV frame), convert to new local momentum
     k_recoil = ktrk - qvec;
-    
+    if (IsHole()) {
+      precoil = k_recoil * hbarc;
+      Erecoil = precoil.mag2() / (2.*lat->GetHoleMass());
+    } else {
+      precoil = lat->MapK_HVtoP(iValley, k_recoil);
+      Erecoil = lat->MapPtoEkin(iValley, precoil);
+    }
+
     // Sanity check for phonon production: can't exceed charge's energy
     Ephonon = MakePhononEnergy(qvec.mag());
     if (Ephonon >= GetKineticEnergy(aTrack)) {
@@ -197,17 +209,47 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
     // Sanity check for electrons: recoil energy must be smaller
     if (IsElectron()) {
-      precoil = lat->MapK_HVtoP(iValley, k_recoil);
-      G4double Efinal = lat->MapPtoEkin(iValley, precoil)+Ephonon;
-      if (Efinal > GetKineticEnergy(aTrack)) {
+      /***** Leave code in place for future tuning of IV scattering
+      // See if momentum should be kicked into new valley
+      newValley = FindNearestValley(precoil);
+
+      if (verboseLevel && iValley != newValley) {
+	G4double ErecNew = lat->MapPtoEkin(newValley, precoil);
+
+	G4cout << " MOVED valley " << iValley << " to " << newValley
+	       << " Erecoil : original " << Erecoil/eV << " new "
+	       << ErecNew/eV << " eV" << G4endl;
+
+	Erecoil = ErecNew;
+
+	// Rescale phonon to enforce energy conservation; breaks momentum
+	G4double Escale = (GetKineticEnergy(aTrack)-Erecoil) / Ephonon;
+	qvec *= Escale;
+	Ephonon *= Escale;
+      }
+      *****/
+
+      G4double Efinal = Erecoil + Ephonon;
+      G4double DeltaE = Efinal - GetKineticEnergy(aTrack);
+
+      // If too much outgoing energy, throw again
+      if (DeltaE > 1e-9) {
 	if (verboseLevel) {
-	  G4cerr << GetProcessName() << " TRY AGAIN: E(recoil+phonon) "
-		 << Efinal/eV << " eV exceeds "
-		 << trkName << " energy " << GetKineticEnergy(aTrack)/eV
-		 << " eV" << G4endl;
+	  G4cerr << " TRY AGAIN: E(recoil+phonon) " << Efinal/eV << " eV"
+		 << " too large by " << DeltaE/eV << G4endl;
 	}
 	
-	continue;			// Try again
+	continue;
+      }
+
+      // If too little outgoing energy, rescale momentum to balance
+      if (DeltaE < -1e-9) {
+	if (verboseLevel) {
+	  G4cerr << " ECONS: E(recoil+phonon) " << Efinal/eV << " eV"
+		 << " too small by " << DeltaE/eV << G4endl;
+	}
+
+	
       }
     }
 
@@ -225,10 +267,11 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Report phonon emission results
   if (verboseLevel > 1) {
-    G4cout << "q(HV) = " << q << " q(local) = " << qvec.mag()
-	   << "\nEphonon = " << Ephonon
+    G4cout << "q = " << q << " |qvec| = " << qvec.mag()
+	   << " Ephonon = " << Ephonon
            << "\nk_recoil(HV) = " << k_recoil
            << " k_recoil(HV)-mag = " << k_recoil.mag()
+	   << " newValley = " << newValley
            << G4endl;
   }
 
@@ -271,12 +314,12 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
   }
 
-  MakeGlobalRecoil(k_recoil);		// Converts wavevector to momentum
-  FillParticleChange(iValley, k_recoil);
+  RotateToGlobalDirection(precoil);	// Update track in world coordinates
+  FillParticleChange(newValley, precoil);
 
 #ifdef G4CMP_DEBUG
   if (output.good()) {
-    output << aParticleChange.GetEnergy()/eV << "," << k_recoil.mag()/eV
+    output << aParticleChange.GetEnergy()/eV << "," << precoil.mag()/eV
 	   << std::endl;
   }
 #endif
