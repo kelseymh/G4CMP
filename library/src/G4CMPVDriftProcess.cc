@@ -19,6 +19,7 @@
 // 20161114  Use new G4CMPDriftTrackInfo
 // 20170601  Inherit from new G4CMPVProcess, which provides G4CMPProcessUtils
 // 20170620  Follow interface changes in G4CMPProcessUtils
+// 20201231  FillParticleChange() should also reset valley index if requested
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -109,11 +110,11 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
 
 // Fill ParticleChange mass for electron charge carrier with given energy
 
-// FIXME: Remove this trivial method, or at least remove the first parameter
-// from its signature.
 void 
-G4CMPVDriftProcess::FillParticleChange(G4int /*ivalley*/, G4double Ekin,
+G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
              const G4ThreeVector& v) {
+  G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(GetCurrentTrack())->SetValleyIndex(ivalley);
+
   aParticleChange.ProposeMomentumDirection(v.unit());
   aParticleChange.ProposeEnergy(Ekin);
 }

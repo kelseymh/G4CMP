@@ -99,6 +99,7 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
                                     G4int valley, G4double Ekin, G4double time,
                                     const G4ThreeVector& pdir,
                                     const G4ThreeVector& pos) {
+
   G4VPhysicalVolume* vol = touch->GetVolume();
   G4ThreadLocalStatic auto latMan = G4LatticeManager::GetLatticeManager();
   G4LatticePhysical* lat = latMan->GetLattice(vol);
@@ -108,25 +109,21 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
     return nullptr;
   }
 
-  if (charge != 1 && charge != -1) {
+  G4ThreeVector p = pdir;
+  if (charge == 1) { 			// Hole
+    p *= std::sqrt(2.*Ekin*lat->GetHoleMass());
+  } else if (charge == -1) {		// Electron
+    G4double k_HVmag = std::sqrt(2.*Ekin*lat->GetElectronMass()) / hbar_Planck;
+    G4ThreeVector k_HVdir = lat->MapV_elToK_HV(valley, pdir).unit();
+    p = lat->MapK_HVtoP(valley, k_HVmag * k_HVdir);
+  } else {
     G4Exception("G4CMP::CreateChargeCarrier", "Secondary004", EventMustBeAborted,
                 "Invalid charge for charge carrier.");
     return nullptr;
   }
 
-  if (charge == 1) { // Hole
-    G4double pmag = std::sqrt(2. * Ekin * lat->GetHoleMass());
-    return CreateChargeCarrier(touch, charge, valley, time, pmag * pdir, pos);
-  } else if (charge == -1) { // Electron
-    G4double k_HVmag = std::sqrt(2. * Ekin * lat->GetElectronMass()) / hbar_Planck;
-    G4ThreeVector k_HVdir = lat->MapV_elToK_HV(valley, pdir).unit();
-    G4ThreeVector p = lat->MapK_HVtoP(valley, k_HVmag * k_HVdir);
-    return CreateChargeCarrier(touch, charge, valley, time, p, pos);
-  }
 
-  G4Exception("G4CMP::CreateChargeCarrier", "Secondary005", EventMustBeAborted,
-              "Couldn't recognize charge carrier.");
-  return nullptr;
+  return CreateChargeCarrier(touch, charge, valley, time, p, pos);
 }
 
 G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
