@@ -41,6 +41,7 @@
 // 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 // 20200530  G4CMP-202:  Provide separate master and worker instances
 // 20200614  G4CMP-211:  Add functionality to print settings
+// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 
 #include "globals.hh"
 #include <iosfwd>
@@ -78,6 +79,7 @@ public:
   static G4double GetGenPhonons()        { return Instance()->genPhonons; }
   static G4double GetGenCharges()        { return Instance()->genCharges; }
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
+  static G4double GetComboStepLength()   { return Instance()->combineSteps; }
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
   static const G4double& GetETrappingMFP() { return Instance()->eTrapMFP; }
@@ -101,6 +103,7 @@ public:
   static void SetGenPhonons(G4double value) { Instance()->genPhonons = value; }
   static void SetGenCharges(G4double value) { Instance()->genCharges = value; }
   static void SetLukeSampling(G4double value) { Instance()->lukeSample = value; }
+  static void SetComboStepLength(G4double value) { Instance()->combineSteps = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
   static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
@@ -162,6 +165,7 @@ private:
   G4double genPhonons;	 // Rate to create primary phonons ($G4CMP_MAKE_PHONONS)
   G4double genCharges;	 // Rate to create primary e/h pairs ($G4CMP_MAKE_CHARGES)
   G4double lukeSample;   // Rate to create Luke phonons ($G4CMP_LUKE_SAMPLE)
+  G4double combineSteps; // Maximum length to merge track steps ($G4CMP_COMBINE_STEPLEN)
   G4double EminPhonons;	 // Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	 // Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
   G4bool useKVsolver;	 // Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)

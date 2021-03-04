@@ -33,6 +33,7 @@
 // 20200530  G4CMP-202:  Provide separate master and worker instances
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20200614  G4CMP-210:  Add missing initializers to copy constructor
+// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -87,6 +88,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     genPhonons(getenv("G4CMP_MAKE_PHONONS")?strtod(getenv("G4CMP_MAKE_PHONONS"),0):1.),
     genCharges(getenv("G4CMP_MAKE_CHARGES")?strtod(getenv("G4CMP_MAKE_CHARGES"),0):1.),
     lukeSample(getenv("G4CMP_LUKE_SAMPLE")?strtod(getenv("G4CMP_LUKE_SAMPLE"),0):1.),
+    combineSteps(getenv("G4CMP_COMBINE_STEPLEN")?strtod(getenv("G4CMP_COMBINE_STEPLEN"),0):0.),
     EminPhonons(getenv("G4CMP_EMIN_PHONONS")?strtod(getenv("G4CMP_EMIN_PHONONS"),0)*eV:0.),
     EminCharges(getenv("G4CMP_EMIN_CHARGES")?strtod(getenv("G4CMP_EMIN_CHARGES"),0)*eV:0.),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
@@ -119,10 +121,10 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     hATrapIonMFP(master.hATrapIonMFP), clearance(master.clearance), 
     stepScale(master.stepScale), sampleEnergy(master.sampleEnergy), 
     genPhonons(master.genPhonons), genCharges(master.genCharges), 
-    lukeSample(master.lukeSample), EminPhonons(master.EminPhonons), 
-    EminCharges(master.EminCharges), useKVsolver(master.useKVsolver), 
-    fanoEnabled(master.fanoEnabled), chargeCloud(master.chargeCloud), 
-    nielPartition(master.nielPartition),
+    lukeSample(master.lukeSample), combineSteps(master.combineSteps),
+    EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
+    useKVsolver(master.useKVsolver), fanoEnabled(master.fanoEnabled),
+    chargeCloud(master.chargeCloud), nielPartition(master.nielPartition),
     messenger(new G4CMPConfigMessenger(this)) {;}
 
 
@@ -179,6 +181,7 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\nG4CMP_MAKE_PHONONS " << genPhonons
      << "\nG4CMP_MAKE_CHARGES " << genCharges
      << "\nG4CMP_LUKE_SAMPLE " << lukeSample
+     << "\nG4CMP_COMBINE_STEPLEN " << combineSteps
      << "\nG4CMP_EMIN_PHONONS " << EminPhonons
      << "\nG4CMP_EMIN_CHARGES " << EminCharges
      << "\nG4CMP_USE_KVSOLVER " << useKVsolver

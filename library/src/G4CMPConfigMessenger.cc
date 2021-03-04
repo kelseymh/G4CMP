@@ -34,6 +34,7 @@
 //		"hTrap" -> "ATrap".
 // 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 // 20200614  G4CMP-211:  Add functionality to print settings
+// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -52,8 +53,9 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 		  "User configuration for G4CMP phonon/charge carrier library"),
     theManager(mgr), versionCmd(0), printCmd(0), verboseCmd(0), ehBounceCmd(0),
     pBounceCmd(0), clearCmd(0), minEPhononCmd(0), minEChargeCmd(0),
-    sampleECmd(0), trapEMFPCmd(0), trapHMFPCmd(0), eDTrapIonMFPCmd(0),
-    eATrapIonMFPCmd(0), hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), minstepCmd(0),
+    sampleECmd(0), comboStepCmd(0), trapEMFPCmd(0), trapHMFPCmd(0),
+    eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0), hDTrapIonMFPCmd(0),
+    hATrapIonMFPCmd(0), minstepCmd(0),
     makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
     ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0), fanoStatsCmd(0),
     ehCloudCmd(0) {
@@ -99,9 +101,15 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   minEPhononCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("minEPhonons",
           "Minimum energy for creating or tracking phonons");
+  minEPhononCmd->SetUnitCategory("Energy");
 
   minEChargeCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("minECharges",
           "Minimum energy for creating or tracking charge carriers");
+  minEChargeCmd->SetUnitCategory("Energy");
+
+  comboStepCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("combiningStepLength",
+	  "Maximum track step-length to merge energy deposit for partitioning");
+  comboStepCmd->SetUnitCategory("Length");
 
   ehBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("chargeBounces",
 		  "Maximum number of reflections allowed for charge carriers");
@@ -170,6 +178,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete minEPhononCmd; minEPhononCmd=0;
   delete minEChargeCmd; minEChargeCmd=0;
   delete sampleECmd; sampleECmd=0;
+  delete comboStepCmd; comboStepCmd=0;
   delete trapEMFPCmd; trapEMFPCmd=0;
   delete trapHMFPCmd; trapHMFPCmd=0;
   delete eDTrapIonMFPCmd; eDTrapIonMFPCmd=0;
@@ -212,6 +221,9 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
 
   if (cmd == sampleECmd)
     theManager->SetSamplingEnergy(sampleECmd->GetNewDoubleValue(value));
+
+  if (cmd == comboStepCmd)
+    theManager->SetComboStepLength(comboStepCmd->GetNewDoubleValue(value));
 
   if (cmd == trapEMFPCmd)
     theManager->SetETrappingMFP(trapEMFPCmd->GetNewDoubleValue(value));
