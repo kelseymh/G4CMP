@@ -104,16 +104,32 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
   // Only apply to tracks while they are in lattice-configured volumes
   if (!theLattice) return &aParticleChange;
 
+  // Skip steps with no energy deposit
+  if (stepData.GetTotalEnergyDeposit() <= 0. &&
+      stepData.GetNonIonizingEnergyDeposit() <= 0.) return &aParticleChange;
+
   if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
+  // Get configuration for how to merge steps
   combiningStepLength = G4CMPConfigManager::GetComboStepLength();
 
   // Check if current hit should be accumulated
   G4bool usedStep = DoAddStep(stepData);
-  if (usedStep) accumulator->Add(stepData);
+  if (usedStep) {
+    if (verboseLevel>1) {
+      G4cout << " accumulating step"
+	     << " @ " << stepData.GetPostStepPoint()->GetPosition()
+	     << " Edep " << stepData.GetTotalEnergyDeposit()/eV << " eV"
+	     << " Eniel " << stepData.GetNonIonizingEnergyDeposit()/eV << " eV"
+	     << G4endl;
+    }
+
+    accumulator->Add(stepData);
+  }
 
   // Check if effective hit should be generated
-  if (DoSecondaries(stepData)) {
+  G4bool generated = DoSecondaries(stepData);
+  if (generated) {
     AddSecondaries();
     accumulator->Clear();
   }
@@ -122,7 +138,7 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
   if (!usedStep) accumulator->Add(stepData);
 
   // If requested (default), process new secondaries immediately
-  if (secondariesFirst && track.GetTrackStatus() == fAlive)
+  if (generated && secondariesFirst && track.GetTrackStatus() == fAlive)
     aParticleChange.ProposeTrackStatus(fSuspend);
 
   // NOTE:  This process does NOT change the track's momentum or energy
@@ -136,6 +152,16 @@ G4bool G4CMPSecondaryProduction::DoAddStep(const G4Step& stepData) {
   G4StepStatus  sStatus = stepData.GetPostStepPoint()->GetStepStatus();
   G4TrackStatus tStatus = stepData.GetTrack()->GetTrackStatus();
 
+  if (verboseLevel>1) {
+    G4cout << " DoAddStep:"
+	   << " nsteps==0 ? " << (accumulator->nsteps==0)
+	   << "\n stepLen ? " << (stepData.GetStepLength()<combiningStepLength)
+	   << "\n boundary ? " << (sStatus == fGeomBoundary ||
+				   sStatus == fWorldBoundary)
+	   << "\n stopped ? " << (tStatus != fAlive)
+	   << " : tStatus " << tStatus << G4endl;
+  }
+
   return (accumulator->nsteps == 0 ||	// First step always goes in
 	  stepData.GetStepLength() < combiningStepLength ||
 	  sStatus == fGeomBoundary || sStatus == fWorldBoundary ||
@@ -147,6 +173,16 @@ G4bool G4CMPSecondaryProduction::DoAddStep(const G4Step& stepData) {
 G4bool G4CMPSecondaryProduction::DoSecondaries(const G4Step& stepData) {
   G4StepStatus  sStatus = stepData.GetPostStepPoint()->GetStepStatus();
   G4TrackStatus tStatus = stepData.GetTrack()->GetTrackStatus();
+
+  if (verboseLevel>1) {
+    G4cout << " DoSecondaries:"
+	   << " nsteps>0 ? " << (accumulator->nsteps>0)
+	   << "\n stepLen ? " << (stepData.GetStepLength()>=combiningStepLength)
+	   << "\n boundary ? " << (sStatus == fGeomBoundary ||
+				   sStatus == fWorldBoundary)
+	   << "\n stopped ? " << (tStatus != fAlive)
+	   << " : tStatus " << tStatus << G4endl;
+  }
 
   return (accumulator->nsteps > 0 &&	// Don't process empty accumulator
 	  (stepData.GetStepLength() >= combiningStepLength ||
@@ -165,8 +201,8 @@ void G4CMPSecondaryProduction::AddSecondaries() {
   if (eTotal <= 0. && eNIEL <= 0.) return;	// Avoid unncessary work
 
   if (verboseLevel) {
-    G4cout << " AddSecondaries " << eTotal/eV << " eV"
-	   << " (" << eNIEL << " NIEL)" << G4endl;
+    G4cout << " AddSecondaries from " << accumulator->nsteps << " steps "
+	   << eTotal/eV << " eV" << " (" << eNIEL << " NIEL)" << G4endl;
   }
 
   // Configure energy partitioning for EM, nuclear, or pre-determined energy
