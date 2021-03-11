@@ -64,6 +64,8 @@ developers should check the source code in
 | G4CMP\_MAKE\_CHARGES [R]  | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
 | G4CMP\_LUKE\_SAMPLE [R]   | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
 | G4CMP\_SAMPLE\_ENERGY [E] | /g4cmp/samplingEnergy [E] eV  | Energy above which to downsample |
+| G4CMP\_COMBINE\_STEPLEN [L] | /g4cmp/combiningStepLength [L] mm | Combine
+hits below step length |
 | G4CMP\_EMIN\_PHONONS [E]  | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
 | G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
@@ -131,6 +133,13 @@ according to E_scale_/E_deposit_.  Presently, the Luke-emission biasing will
 be set to the primary charge bias; what should be done is to use voltage and
 geometry information to estimate the maximum energy emitted in Luke phonons
 and use that instead.
+
+The parameter `$G4CMP_COMBINE_STEPLEN` (`/g4cmp/combiningStepLength`)
+specifies a minimum step length for individual `G4CMPEnergyPartition` hits.
+Shorter contiguous steps by a track will be consolidated into one hit, which
+will then be processed with sampling as described above.  When combined with
+Geant4's built in secondary production cuts, this should improve runtime
+performance substantially.
 
 For phonon propagation, a set of lookup tables to convert wavevector (phase
 velocity) direction to group velocity are provided in the lattice

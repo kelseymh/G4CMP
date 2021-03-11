@@ -14,6 +14,7 @@
 // 20160825  Replace implementation with use of G4CMPEnergyPartition
 // 20201207  Add flag to suspend parent track for secondary processing.
 // 20210203  G4CMP-241 : Process must run after PostStepDoIt, not AlongStep.
+// 20210303  G4CMP-243 : Consolidate nearby steps into one effective hit.
 
 #ifndef G4CMPSecondaryProduction_hh
 #define G4CMPSecondaryProduction_hh 1
@@ -23,6 +24,7 @@
 #include <vector>
 
 class G4CMPEnergyPartition;
+class G4CMPStepAccumulator;
 class G4DynamicParticle;
 class G4ParticleDefinition;
 class G4Step;
@@ -46,24 +48,34 @@ public:
   virtual void LoadDataForTrack(const G4Track* track);
 
   // Configurable flag to suspend parent track and process secondaries
-  void ProcessSecondariesFirst(G4bool val=true) { secondariesFirst = val; }
+  void ProcessSecondariesFirst(G4bool val) { secondariesFirst = val; }
+  G4bool ProcessSecondariesFirst() const { return secondariesFirst; }
+
+  // Configurable parameter to specify how to consolidate steps
+  void SetCombiningStepLength(G4double val) { combiningStepLength = val; }
+  G4bool GetCombiningStepLength() const { return combiningStepLength; }
 
 protected:
   // Step limit for PostStep (sets process Forced for all tracks)
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
 protected:
-  void AddSecondaries(const G4Step& stepData);
-  void GeneratePositions(const G4Step& stepData, size_t npos);
+  G4bool DoAddStep(const G4Step& stepData);	// Should step be accumulated?
+  G4bool DoSecondaries(const G4Step& stepData);	// Should accum. be processed?
+
+  void AddSecondaries();		// Convert accumulator with partitioner
+  void GeneratePositions(size_t npos);	// Use accumulator hit range
 
 public:
   static size_t RandomIndex(size_t imax);	// Used to randomize secondaries
 
 private:
+  G4CMPStepAccumulator* accumulator;	// Sums multiple steps along track
   G4CMPEnergyPartition* partitioner;	// Creates secondary kinematics
   std::vector<G4Track*> theSecs;	// List of created secondaries
   std::vector<G4ThreeVector> posSecs;	// Positions along trajectory
   G4bool secondariesFirst;		// Process secondaries immediately
+  G4double combiningStepLength;		// Steps within which to accumulate
 
   // No copying allowed
   G4CMPSecondaryProduction(const G4CMPSecondaryProduction& right);

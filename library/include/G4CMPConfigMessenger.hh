@@ -38,6 +38,7 @@
 // 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
 //		"hTrap" -> "ATrap".
 // 20200614  G4CMP-211:  Add functionality to print settings
+// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 
 #include "G4UImessenger.hh"
 
@@ -70,6 +71,7 @@ private:
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
   G4UIcmdWithADoubleAndUnit* sampleECmd;
+  G4UIcmdWithADoubleAndUnit* comboStepCmd;
   G4UIcmdWithADoubleAndUnit* trapEMFPCmd;
   G4UIcmdWithADoubleAndUnit* trapHMFPCmd;
   G4UIcmdWithADoubleAndUnit* eDTrapIonMFPCmd;
