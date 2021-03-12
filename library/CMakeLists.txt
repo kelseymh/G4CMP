@@ -191,6 +191,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSecondaryProduction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSecondaryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPStackingAction.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPStepAccumulator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSurfaceProperty.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTimeStepper.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPTrackLimiter.cc
@@ -273,6 +274,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSecondaryProduction.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSecondaryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPStackingAction.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPStepAccumulator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSurfaceProperty.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTimeStepper.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPTrackLimiter.hh
