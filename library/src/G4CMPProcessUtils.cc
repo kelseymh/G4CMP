@@ -38,6 +38,7 @@
 // 20170624  Improve initialization from track, use Navigator to infer volume
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 // 20201223  Add FindNearestValley() function to align electron momentum.
+// 20210318  In LoadDataForTrack, kill a bad track, not the whole event.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -87,9 +88,15 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   SetLattice(track);
 
   if (!theLattice) {
+    G4String msg = ("No lattice found for volume "
+		    + track->GetVolume()->GetName()
+		    + "; track will be killed");
     G4Exception("G4CMPProcessUtils::LoadDataForTrack", "Utils001",
-		EventMustBeAborted, ("No lattice found for volume"
-				     + track->GetVolume()->GetName()).c_str());
+		JustWarning, msg);
+
+    // Force track to be killed immediately
+    const_cast<G4Track*>(track)->SetTrackStatus(fStopAndKill);
+
     return;	// No lattice, no special actions possible
   }
 
