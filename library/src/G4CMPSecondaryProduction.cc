@@ -18,12 +18,14 @@
 // 20201207  Suspend parent track so that secondaries get processed first.
 // 20210203  G4CMP-241 : Process must run after PostStepDoIt, not AlongStep.
 // 20210303  G4CMP-243 : Consolidate nearby steps into one effective hit.
+// 20210318  G4CMP-245 : Enforce clearance from crystal surfaces.
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPEnergyPartition.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPProcessSubType.hh"
 #include "G4CMPStepAccumulator.hh"
 #include "G4CMPUtils.hh"
@@ -219,7 +221,7 @@ void G4CMPSecondaryProduction::AddSecondaries() {
 
   // Distribute generated particles along (straight line) trajectory
   for (size_t i=0; i<theSecs.size(); i++) {
-    theSecs[i]->SetPosition(posSecs[i]);
+    theSecs[i]->SetPosition(SurfaceClearance(posSecs[i]));
     aParticleChange.AddSecondary(theSecs[i]);
 
     if (verboseLevel>2) {
@@ -263,6 +265,14 @@ void G4CMPSecondaryProduction::GeneratePositions(size_t nsec) {
     lastPos += substep*tdir;
     posSecs.push_back(lastPos);
   }
+}
+
+
+// Ensure that secondaries all start inside volume
+
+G4ThreeVector 
+G4CMPSecondaryProduction::SurfaceClearance(const G4ThreeVector& pos) {
+  return G4CMP::ApplySurfaceClearance(GetCurrentTouchable(), pos);
 }
 
 
