@@ -21,11 +21,13 @@
 // 20190513  Provide support for 2D (e.g., axisymmetric) and 3D meshes.
 // 20190919  BUG FIX:  2D project functions need 'break' in switch statements.
 // 20200519  Move local "static" buffers to class for thread safety.
+// 20210323  For 2D radial fields, need to manually protect rho < 0.
 
 #include "G4CMPMeshElectricField.hh"
 #include "G4CMPBiLinearInterp.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPTriLinearInterp.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include <fstream>
 
@@ -274,11 +276,17 @@ void G4CMPMeshElectricField::Expand2Dat(const G4double Point[3],
   if (xCoord == kYAxis && yCoord == kZAxis) Efield.set(0., xval, yval);
 
   // Radial field (e.g., spherical electrode) is easy
-  if (xCoord == kRadial3D) Efield.setRThetaPhi(xval, pos_.theta(), pos_.phi());
+  // NOTE: CLHEP doesn't like R<0; flip angles manually to compensate
+  if (xCoord == kRadial3D) {
+    Efield.setRThetaPhi(fabs(xval), xval<0?pi-pos_.theta():pos_.theta(),
+			pos_.phi()+(xval<0?pi:0.));
+  }
 
   // Cylindrical field around Z axis is easy
-  if (xCoord == kRho && yCoord == kZAxis)
-    Efield.setRhoPhiZ(xval, pos_.phi(), yval);
+  // NOTE: CLHEP doesn't like R<0; flip angle manually to compensate
+  if (xCoord == kRho && yCoord == kZAxis) {
+    Efield.setRhoPhiZ(fabs(xval), pos_.phi()+(xval<0?pi:0.), yval);
+  }
 
   // Cylindrical fields around other axes are more complicated
   if (xCoord == kRho && yCoord == kXAxis) {
