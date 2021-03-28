@@ -15,6 +15,7 @@
 // 20200217  Michael Kelsey (TAMU) <kelsey@slac.stanford.edu>
 // 20200316  Add hit position; improve energy quantity calculations.
 // 20210202  Add particle type (PDGcode) to be filled from original track
+// 20210327  Add downsampling factors
 
 #ifndef G4CMPPartitionData_hh
 #define G4CMPPartitionData_hh 1
@@ -50,7 +51,11 @@ public:		// Simple container, provide direct access to information
   G4double phononEnergy;	// Energy assigned for primary phonons
   G4double phononGenerated;	// Weighted sum of generated phonons
   G4int    numberOfPhonons;	// Number of phonons created (downsampled)
-
+  G4double samplingEnergy;	// Energy-based downsampling scale
+  G4double samplingCharges;	// Downsampling for charge pairs
+  G4double samplingPhonons;	// Downsampling for direct phonons
+  G4double samplingLuke;	// Downsampling for Luke phonons
+  
 public:
   G4CMPPartitionData(const G4CMPPartitionData&) = default;
   G4CMPPartitionData(G4CMPPartitionData&&) = default;
