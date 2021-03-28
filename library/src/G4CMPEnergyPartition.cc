@@ -294,7 +294,11 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
 
   // Apply downsampling if requested
   if (applyDownsampling) ComputeDownsampling(eIon, eNIEL);
-
+  summary->samplingEnergy  = G4CMPConfigManager::GetSamplingEnergy();
+  summary->samplingCharges = G4CMPConfigManager::GetGenCharges();
+  summary->samplingPhonons = G4CMPConfigManager::GetGenPhonons();
+  summary->samplingLuke    = G4CMPConfigManager::GetLukeSampling();
+  
   chargeEnergyLeft = 0.;
   GenerateCharges(eIon);
   GeneratePhonons(eNIEL + chargeEnergyLeft);
@@ -347,14 +351,11 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
 
   // Compute Luke scaling factor only if not fully suppressed
   if (G4CMPConfigManager::GetLukeSampling() > 0.) {
-    // Estimate generated Luke phonon energy from bias and charge pairs
-    G4double ePair = theLattice->GetPairProductionEnergy();
-    G4double eLuke = (samplingScale/ePair)*fabs(biasVoltage)*eplus;
+    G4double voltage = int(fabs(biasVoltage)/volt);
+    G4double lukeSamp = (eV/samplingScale)*(1./(voltage+1.));
+    lukeSamp *= 10.;		// Above gives about 3 phonons per track
 
-    // Limit number of Luke phonons to sampling energy, 5 phonons/volt
-    G4double lukeSamp = (eLuke>samplingScale)? samplingScale/eLuke : 1.;
-    lukeSamp *= std::min(1., 5.*theLattice->GetDebyeEnergy()/eV);
-
+    lukeSamp = std::min(lukeSamp,1.);
     if (verboseLevel>2)
       G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
     
