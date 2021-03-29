@@ -44,7 +44,7 @@
 // 20201205  Use ApplySurfaceClearance() for primary production, to avoid
 //		creating particles which escape from volume.
 // 20210202  in DoPartition(PDGcode, ...) store particle type in summary.
-
+// 20210328  Split ComputeDownsampling() into individual computation functions  
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
 #include "G4CMPConfigManager.hh"
@@ -331,37 +331,64 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
 	   << samplingScale/eV << " eV" << G4endl;
   }
 
-  // Compute phonon scaling factor only if not fully suppressed
-  if (G4CMPConfigManager::GetGenPhonons() > 0.) {
-    G4double phononSamp = (eNIEL>samplingScale) ? samplingScale/eNIEL : 1.;
-    if (verboseLevel>2)
-      G4cout << " Downsample " << phononSamp << " primary phonons" << G4endl;
-
-    G4CMPConfigManager::SetGenPhonons(phononSamp);
-  }
-
-  // Compute charge scaling factor only if not fully suppressed
-  if (G4CMPConfigManager::GetGenCharges() > 0.) {
-    G4double chargeSamp = (eIon>samplingScale)? samplingScale/eIon : 1.;
-    if (verboseLevel>2)
-      G4cout << " Downsample " << chargeSamp << " primary charges" << G4endl;
-    
-    G4CMPConfigManager::SetGenCharges(chargeSamp);
-  }
-
-  // Compute Luke scaling factor only if not fully suppressed
-  if (G4CMPConfigManager::GetLukeSampling() > 0.) {
-    G4double voltage = int(fabs(biasVoltage)/volt);
-    G4double lukeSamp = (eV/samplingScale)*(1./(voltage+1.));
-    lukeSamp *= 10.;		// Above gives about 3 phonons per track
-
-    lukeSamp = std::min(lukeSamp,1.);
-    if (verboseLevel>2)
-      G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
-    
-    G4CMPConfigManager::SetLukeSampling(lukeSamp);
-  }
+  ComputeChargeSampling(eIon);
+  ComputePhononSampling(eNIEL);
+  ComputeLukeSampling();
 }
+
+// Compute phonon scaling factor only if not fully suppressed
+// NOTE: Phonon sampling done to get same number as charge pairs
+
+void
+G4CMPEnergyPartition::ComputePhononSampling(G4double eNIEL) {
+  G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
+  if (samplingScale <= 0.) return;		// No downsampling computation
+  if (G4CMPConfigManager::GetGenPhonons() <= 0.) return;
+  
+  G4double phononScale = (samplingScale * theLattice->GetDebyeEnergy()
+			  / theLattice->GetPairProductionEnergy());
+  G4double phononSamp = (eNIEL>phononScale) ? phononScale/eNIEL : 1.;
+  if (verboseLevel>2)
+    G4cout << " Downsample " << phononSamp << " primary phonons" << G4endl;
+  
+  G4CMPConfigManager::SetGenPhonons(phononSamp);
+}
+
+// Compute charge scaling factor only if not fully suppressed
+
+void
+G4CMPEnergyPartition::ComputeChargeSampling(G4double eIon) {
+  G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
+  if (samplingScale <= 0.) return;		// No downsampling computation
+  if (G4CMPConfigManager::GetGenCharges() <= 0.) return;
+  
+  G4double chargeSamp = (eIon>samplingScale)? samplingScale/eIon : 1.;
+  if (verboseLevel>2)
+    G4cout << " Downsample " << chargeSamp << " primary charges" << G4endl;
+  
+  G4CMPConfigManager::SetGenCharges(chargeSamp);
+}
+
+// Compute Luke scaling factor only if not fully suppressed
+
+void G4CMPEnergyPartition::ComputeLukeSampling() {
+  G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
+  if (samplingScale <= 0.) return;		// No downsampling computation
+  if (G4CMPConfigManager::GetLukeSampling() <= 0.) return;
+  
+  G4double voltage = int(fabs(biasVoltage)/volt);
+  G4double lukeSamp = (eV/samplingScale)*(1./(voltage+1.));
+  lukeSamp *= 10.;		// Above gives about 3 phonons per track
+  
+  lukeSamp = std::min(lukeSamp,1.);
+  if (verboseLevel>2)
+    G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
+  
+  G4CMPConfigManager::SetLukeSampling(lukeSamp);
+}
+
+
+// Divide ionization energy into electron/hole pairs, with Fano fluctuations
 
 void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   if (G4CMPConfigManager::GetGenCharges() <= 0.) return;	// Suppressed
