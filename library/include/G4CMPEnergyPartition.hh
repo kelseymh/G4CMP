@@ -23,6 +23,7 @@
 // 20200218  Support writing DoPartion() internals to event summary data
 // 20200222  Add control flag to turn off creating summary data
 // 20200805  Add bias across volume to estimate Luke gain downsampling
+// 20210328  Split ComputeDownsampling() into individual computation functions
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -108,7 +109,10 @@ public:
 
   // Assign energy-dependent sampling factors for phonons and charge carriers
   void ComputeDownsampling(G4double eIon, G4double eNIEL);
-
+  void ComputeChargeSampling(G4double eIon);
+  void ComputePhononSampling(G4double eNIEL);
+  void ComputeLukeSampling();
+  
   // Fraction of total energy deposit in material which goes to e/h pairs
   G4double LindhardScalingFactor(G4double energy, G4double Z=0,
 				 G4double A=0) const;
