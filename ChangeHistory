@@ -6,7 +6,19 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-03-31  g4cmp-V07-01-01 New release with improved downsampling to reduce
+                        memory footprint, bug fixes for E-field model and
+                        surface hits.
 2021-03-31  G4CMP-248 : Create this ChangeHistory file.
+2021-03-28  G4CMP-249 : Apply direct-phonon downsampling in recombination
+                        processes.
+2021-03-28  G4CMP-250 : Add downsampling factors to G4CMPPartitionData.
+2021-03-28  G4CMP-247 : Simplify Luke downsampling and make more agressive
+                        for high-voltage simulations. 
+2021-03-23  G4CMP-245 : Ensure that G4CMPSecondaryProduction avoids surface
+                        positions.
+2021-03-23  G4CMP-246 : Protect radial field interpolation against negative
+                        rho component, for use with external CLHEP library.
 
 2021-03-11  g4cmp-V07-10-00 New release including G4CMP-243 hit-merging.
 2021-03-11  G4CMP-243 : Consolidate short-length Geant4 steps into single,
