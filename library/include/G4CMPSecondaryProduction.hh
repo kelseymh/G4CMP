@@ -15,6 +15,7 @@
 // 20201207  Add flag to suspend parent track for secondary processing.
 // 20210203  G4CMP-241 : Process must run after PostStepDoIt, not AlongStep.
 // 20210303  G4CMP-243 : Consolidate nearby steps into one effective hit.
+// 20210318  G4CMP-245 : Enforce clearance from crystal surfaces.
 
 #ifndef G4CMPSecondaryProduction_hh
 #define G4CMPSecondaryProduction_hh 1
@@ -65,6 +66,9 @@ protected:
 
   void AddSecondaries();		// Convert accumulator with partitioner
   void GeneratePositions(size_t npos);	// Use accumulator hit range
+
+  // Adjust position to be enforced inside current volume
+  G4ThreeVector SurfaceClearance(const G4ThreeVector& pos);
 
 public:
   static size_t RandomIndex(size_t imax);	// Used to randomize secondaries
