@@ -13,6 +13,7 @@
 // 20210107  CLHEP's DoubConv.* header file has different names in CLHEP
 //		distribution vs. Geant4 internal subset.
 // 20210123  Strip all use of DoubConv (broken for us in CLHEP 2.4.4.1)
+// 20210412  Restrict Plo and Phi to be unit probability.
 // =======================================================================
 
 #include "G4CMPFanoBinomial.hh"
@@ -84,19 +85,19 @@ double FanoBinomial::genBinomial( HepRandomEngine *anEngine, double mean,
   long nlo = std::floor(ntry);		
   long nhi = std::ceil(ntry);
 
-  double Plo = mean/nlo;
-  double Phi = mean/nhi;
+  double Plo = std::min(mean/nlo, 1.);
+  double Phi = std::min(mean/nhi, 1.);
   double dP = (prob - Plo)/(Phi - Plo);
 
-  // Accept-reject loop to pick a result with interpolated probability
-  double pdfMax = pdfBinomial(long(nhi*prob), nlo, Plo);
+  // Peak of PDF distribution is at the mean, either below or above
+  double pdfMax = std::max(pdfBinomial(std::floor(mean), nlo, Plo),
+			   pdfBinomial(std::ceil(mean), nlo, Plo));
 
-  long pick;
-  double pickP;
+  // Accept-reject loop to pick a result with interpolated probability
+  long pick=0.;
+  double pickP=1.;
   do {
     pick = long(anEngine->flat()*(nhi+1));
-    //*** pick = CLHEP::RandBinomial::shoot(anEngine, nhi, prob);
-
     pickP = ( pdfBinomial(pick, nlo, Plo)*(1.-dP)
 	      + pdfBinomial(pick, nhi, Phi)*dP );
     pickP /= pdfMax;
