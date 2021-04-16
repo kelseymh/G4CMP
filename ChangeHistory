@@ -6,6 +6,9 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-04-13  G4CMP-253 : Protect FanoBinomial from unphysical Plo>1 when
+                        1<mean<2.
+
 2021-03-31  g4cmp-V07-01-01 New release with improved downsampling to reduce
                         memory footprint, bug fixes for E-field model and
                         surface hits.
