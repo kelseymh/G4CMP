@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-05-13  G4CMP-258 : Ensure that secondary weights are propagated with
+                        G4CMPSecondaryProduction.
 2021-04-13  G4CMP-253 : Protect FanoBinomial from unphysical Plo>1 when
                         1<mean<2.
 

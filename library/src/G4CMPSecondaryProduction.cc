@@ -19,6 +19,7 @@
 // 20210203  G4CMP-241 : Process must run after PostStepDoIt, not AlongStep.
 // 20210303  G4CMP-243 : Consolidate nearby steps into one effective hit.
 // 20210318  G4CMP-245 : Enforce clearance from crystal surfaces.
+// 20210513  G4CMP-258 : Ensure that track weights are used with secondaries.
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPConfigManager.hh"
@@ -218,6 +219,7 @@ void G4CMPSecondaryProduction::AddSecondaries() {
 
   if (verboseLevel>1) G4cout << " Adding " << nsec << " secondaries" << G4endl;
   aParticleChange.SetNumberOfSecondaries(nsec);
+  aParticleChange.SetSecondaryWeightByProcess(true);
 
   // Distribute generated particles along (straight line) trajectory
   for (size_t i=0; i<theSecs.size(); i++) {
@@ -230,7 +232,9 @@ void G4CMPSecondaryProduction::AddSecondaries() {
 	     << aSec->GetParticleDefinition()->GetParticleName()
 	     << " " << aSec->GetKineticEnergy()/eV << " eV "
 	     << " along " << aSec->GetMomentumDirection()
-	     << " @ " << aSec->GetPosition() << G4endl;
+	     << " @ " << aSec->GetPosition()
+	     << " (wt " << aSec->GetWeight() << ")"
+	     << G4endl;
     }
   }
 }
