@@ -727,7 +727,8 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
 	     << G4endl;
     } else if (verboseLevel>3) {
       G4cout << i << " : ";
-      theSec->GetDynamicParticle()->DumpInfo();
+      theSec->GetDynamicParticle()->DumpInfo();	// G4Track has no dump function
+      G4cout << "   Track Weight = " << theSec->GetWeight() << G4endl;
     }
   }
 
