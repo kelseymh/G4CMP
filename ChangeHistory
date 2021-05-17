@@ -6,7 +6,14 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
-2021-03-31  g4cmp-V07-01-01 New release with improved downsampling to reduce
+2021-05-17  g4cmp-V07-10-02 New release with important bug fix to secondary
+                        weights from downsampling, and Fano factor fix.
+2021-05-13  G4CMP-258 : Ensure that secondary weights are propagated with
+                        G4CMPSecondaryProduction.
+2021-04-13  G4CMP-253 : Protect FanoBinomial from unphysical Plo>1 when
+                        1<mean<2.
+
+2021-03-31  g4cmp-V07-10-01 New release with improved downsampling to reduce
                         memory footprint, bug fixes for E-field model and
                         surface hits.
 2021-03-31  G4CMP-248 : Create this ChangeHistory file.
