@@ -10,6 +10,7 @@
 // 20170721 M. Kelsey -- Check volume in AdjustSecondaryPosition.
 // 20170815 M. Kelsey -- Move AdjustSecondaryPosition to GeometryUtils
 // 20170928 M. Kelsey -- Replace "polarization" with "mode"
+// 20210518 M. Kelsey -- Protect new secondaries from production cuts
 
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPDriftHole.hh"
@@ -85,6 +86,7 @@ G4Track* G4CMP::CreatePhonon(const G4VTouchable* touch, G4int mode,
 
   auto sec = new G4Track(new G4DynamicParticle(thePhonon, vgroup, energy),
                          time, G4CMP::ApplySurfaceClearance(touch, pos));
+  sec->SetGoodForTrackingFlag(true);	// Protect against production cuts
 
   // Store wavevector in auxiliary info for track
   AttachTrackInfo(sec, GetGlobalDirection(touch, waveVec));
@@ -169,6 +171,7 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
 				     carrierMass*c_squared);
 
   auto sec = new G4Track(secDP, time, G4CMP::ApplySurfaceClearance(touch, pos));
+  sec->SetGoodForTrackingFlag(true);	// Protect against production cuts
 
   // Store wavevector in auxiliary info for track
   G4CMP::AttachTrackInfo(sec, valley);
