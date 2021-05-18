@@ -6,6 +6,9 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-05-18  G4CMP-252 : Apply GoodForTracking() to all secondaries to
+                        protect against production cuts.
+
 2021-05-17  g4cmp-V07-10-02 New release with important bug fix to secondary
                         weights from downsampling, and Fano factor fix.
 2021-05-13  G4CMP-258 : Ensure that secondary weights are propagated with
