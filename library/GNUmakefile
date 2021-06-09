@@ -14,6 +14,7 @@
 # Add -DG4DIGI_ALLOC_EXPORT flag to support new hits collection
 # Add G4CMP_USE_SANITIZER, G4CMP_SANITIZER_TYPE for thread-safety checking
 # Add G4LIB_USE_CLHEP to distinguish G4's DoubConv.h from CLHEP's DoubConv.hh
+# Use G4DEBUG to select optimization level; include debugging symbols always
 
 name := G4cmp
 
@@ -41,6 +42,11 @@ ifdef G4LIB_USE_CLHEP				# Using internal CLHEP sources
 endif
 
 CPPFLAGS := $(G4CMP_FLAGS) $(CPPFLAGS)		# Prepend for right load order
+ifdef G4DEBUG
+  CXXFLAGS += -g -Og
+else
+  CXXFLAGS += -O2 -g
+endif
 
 # Library goes into user's G4WORKDIR, not into system install
 override G4LIBDIR := $(G4WORKDIR)/lib/$(G4SYSTEM)
