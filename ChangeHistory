@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-06-08  g4cmp-V07-10-03 New release with important bug fix to process
+			G4CMPSecondaryProduction, and secondary protection.
 2021-06-08  G4CMP-260 : Fix logic in G4CMPSecondaryProduction to correctly
 			process steps where no energy was deposited.
 2021-06-08  G4CMP-261 : Build with optimization and debugging symbols in Make.
