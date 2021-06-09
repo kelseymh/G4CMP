@@ -16,6 +16,7 @@
 // 20210203  G4CMP-241 : Process must run after PostStepDoIt, not AlongStep.
 // 20210303  G4CMP-243 : Consolidate nearby steps into one effective hit.
 // 20210318  G4CMP-245 : Enforce clearance from crystal surfaces.
+// 20210608  G4CMP-260 : Add function to identify steps with energy deposit.
 
 #ifndef G4CMPSecondaryProduction_hh
 #define G4CMPSecondaryProduction_hh 1
@@ -61,8 +62,9 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
 protected:
-  G4bool DoAddStep(const G4Step& stepData);	// Should step be accumulated?
-  G4bool DoSecondaries(const G4Step& stepData);	// Should accum. be processed?
+  G4bool DoAddStep(const G4Step& stepData) const;	// Accumulate step?
+  G4bool HasEnergy(const G4Step& stepData) const;	// Does step deposit?
+  G4bool DoSecondaries(const G4Step& stepData) const;	// Ready to process?
 
   void AddSecondaries();		// Convert accumulator with partitioner
   void GeneratePositions(size_t npos);	// Use accumulator hit range
