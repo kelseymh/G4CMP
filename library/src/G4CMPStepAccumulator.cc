@@ -9,18 +9,24 @@
 ///     phonon and charge carrier secondaries.
 //
 // 20210303  Michael Kelsey
+// 20210608  Reset trackID in Clear(), check for matching eventID, and report
+//	       rollover errors for track or event changes.
 
 #include "globals.hh"
 #include "G4CMPStepAccumulator.hh"
+#include "G4Event.hh"
 #include "G4ParticleDefinition.hh"
+#include "G4RunManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 
 
 // Reset accumulator for new track
 
 void G4CMPStepAccumulator::Clear() {
+  eventID = trackID = -1;
   nsteps = 0;
   pd = 0;
   Edep = Eniel = 0.;
@@ -32,13 +38,29 @@ void G4CMPStepAccumulator::Clear() {
 // Extract relevant information from step
 
 void G4CMPStepAccumulator::Add(const G4Step& step) {
-  const G4Track* track = step.GetTrack();
-
+  // If event ID has changed discard previous data and report error
+  G4int thisEvt = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+  if (eventID >=0 && eventID != thisEvt) {
+    G4cerr << "ERROR G4CMPStepAccumulator rolled over between events "
+	   << eventID << " and " << thisEvt << G4endl
+	   << " Energy " << Edep/eV << " eV, NIEL " << Eniel/eV << " eV"
+	   << " lost from previous event." << G4endl;
+    Clear();
+  }
+  
   // If track type or track ID has changed, discard previous data
-  if (trackID != track->GetTrackID() ||
-      pd != track->GetParticleDefinition()) Clear();
-
+  const G4Track* track = step.GetTrack();
+  if (trackID >= 0 && (trackID != track->GetTrackID() ||
+		       pd != track->GetParticleDefinition())) {
+    G4cerr << "ERROR G4CMPStepAccumulator rolled over between tracks "
+	   << trackID << " and " << track->GetTrackID() << G4endl
+           << " Energy " << Edep/eV << " eV, NIEL " << Eniel/eV << " eV"
+           << " lost from previous track." << G4endl;
+    Clear();
+  }
+  
   if (nsteps == 0) {
+    eventID = thisEvt;
     trackID = track->GetTrackID();
     pd = track->GetParticleDefinition();
     start = step.GetPreStepPoint()->GetPosition();

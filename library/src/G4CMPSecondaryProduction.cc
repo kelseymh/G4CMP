@@ -20,6 +20,8 @@
 // 20210303  G4CMP-243 : Consolidate nearby steps into one effective hit.
 // 20210318  G4CMP-245 : Enforce clearance from crystal surfaces.
 // 20210513  G4CMP-258 : Ensure that track weights are used with secondaries.
+// 20210608  G4CMP-260 : Improve logic to collect steps and process hits in
+//	       cases where a step doesn't have energy deposited.
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPConfigManager.hh"
@@ -107,10 +109,6 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
   // Only apply to tracks while they are in lattice-configured volumes
   if (!theLattice) return &aParticleChange;
 
-  // Skip steps with no energy deposit
-  if (stepData.GetTotalEnergyDeposit() <= 0. &&
-      stepData.GetNonIonizingEnergyDeposit() <= 0.) return &aParticleChange;
-
   if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
   // Get configuration for how to merge steps
@@ -127,7 +125,8 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
 	     << G4endl;
     }
 
-    accumulator->Add(stepData);
+    // Accumulate steps with non-zero energy deposit
+    if (HasEnergy(stepData)) accumulator->Add(stepData);
   }
 
   // Check if effective hit should be generated
@@ -138,7 +137,7 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
   }
 
   // If step wasn't added above, add it here for next time
-  if (!usedStep) accumulator->Add(stepData);
+  if (!usedStep && HasEnergy(stepData)) accumulator->Add(stepData);
 
   // If requested (default), process new secondaries immediately
   if (generated && secondariesFirst && track.GetTrackStatus() == fAlive)
@@ -151,7 +150,7 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
 
 // Decide if current step should be added to the accumulator
 
-G4bool G4CMPSecondaryProduction::DoAddStep(const G4Step& stepData) {
+G4bool G4CMPSecondaryProduction::DoAddStep(const G4Step& stepData) const {
   G4StepStatus  sStatus = stepData.GetPostStepPoint()->GetStepStatus();
   G4TrackStatus tStatus = stepData.GetTrack()->GetTrackStatus();
 
@@ -171,9 +170,23 @@ G4bool G4CMPSecondaryProduction::DoAddStep(const G4Step& stepData) {
 	  tStatus != fAlive);		// Stopping tracks must be caught
 }
 
+// Check if step includes any energy deposit
+
+G4bool G4CMPSecondaryProduction::HasEnergy(const G4Step& stepData) const {
+  G4double Edep  = stepData.GetTotalEnergyDeposit();
+  G4double Eniel = stepData.GetNonIonizingEnergyDeposit();
+
+  if (verboseLevel>1) {
+    G4cout << " HasEnergy: Edep " << Edep/eV << " eV"
+	   << " Eniel " << Eniel/eV << " eV" << G4endl;
+  }
+
+  return (Edep>0. || Eniel>0.);
+}
+
 // Decide if accumulator should be converted to secondaries
 
-G4bool G4CMPSecondaryProduction::DoSecondaries(const G4Step& stepData) {
+G4bool G4CMPSecondaryProduction::DoSecondaries(const G4Step& stepData) const {
   G4StepStatus  sStatus = stepData.GetPostStepPoint()->GetStepStatus();
   G4TrackStatus tStatus = stepData.GetTrack()->GetTrackStatus();
 
@@ -205,7 +218,7 @@ void G4CMPSecondaryProduction::AddSecondaries() {
 
   if (verboseLevel) {
     G4cout << " AddSecondaries from " << accumulator->nsteps << " steps "
-	   << eTotal/eV << " eV" << " (" << eNIEL << " NIEL)" << G4endl;
+	   << eTotal/eV << " eV" << " (" << eNIEL/eV << " NIEL)" << G4endl;
   }
 
   // Configure energy partitioning for EM, nuclear, or pre-determined energy

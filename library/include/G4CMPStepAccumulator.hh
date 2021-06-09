@@ -9,6 +9,8 @@
 ///     phonon and charge carrier secondaries.
 //
 // 20210303  Michael Kelsey
+// 20210608  Ensure that all values are initialized in constructor; add
+//	       eventID to avoid rollover between events.
 
 #ifndef G4CMPStepAccumulator_hh
 #define G4CMPStepAccumulator_hh 1
@@ -22,7 +24,7 @@ class G4Step;
 
 class G4CMPStepAccumulator {
 public:
-  G4CMPStepAccumulator() : nsteps(0) {;}
+  G4CMPStepAccumulator() { Clear(); }
   ~G4CMPStepAccumulator() {;}
 
   // Extract relevant information from step
@@ -33,8 +35,9 @@ public:
   void Clear();
 
 public:		// Data values are public for more convenient access
-  G4int nsteps;			  // Accumulated steps so far
+  G4int eventID;		  // Event ID for sanity checking in Add()
   G4int trackID;		  // Track ID for sanity checking in Add()
+  G4int nsteps;			  // Accumulated steps so far
   const G4ParticleDefinition* pd; // Particle type (should match all steps)
   G4double Edep;		  // Sum of GetTotalEnergyDeposit()
   G4double Eniel;		  // Sum of GetNonIonizingEnergyDeposit()
