@@ -22,6 +22,8 @@
 // 20210513  G4CMP-258 : Ensure that track weights are used with secondaries.
 // 20210608  G4CMP-260 : Improve logic to collect steps and process hits in
 //	       cases where a step doesn't have energy deposited.
+// 20210610  G4CMP-262 : Handle step accumulation including track suspension,
+//	       by keeping a map of accumulators by track ID
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPConfigManager.hh"
@@ -32,6 +34,7 @@
 #include "G4CMPProcessSubType.hh"
 #include "G4CMPStepAccumulator.hh"
 #include "G4CMPUtils.hh"
+#include "G4Event.hh"
 #include "G4IonisParamMat.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
@@ -40,6 +43,7 @@
 #include "G4ParticleDefinition.hh"
 #include "G4ProcessType.hh"
 #include "G4RandomDirection.hh"
+#include "G4RunManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
@@ -56,14 +60,14 @@
 
 G4CMPSecondaryProduction::G4CMPSecondaryProduction()
   : G4CMPVProcess("G4CMPSecondaryProduction", fSecondaryProduction),
-    accumulator(new G4CMPStepAccumulator),
     partitioner(new G4CMPEnergyPartition),
-    secondariesFirst(true), combiningStepLength(0.) {
+    secondariesFirst(true), combiningStepLength(0.), accumulator(0),
+    currentEventID(-1) {
   partitioner->FillSummary(true);	// Collect partition summary data
 }
 
 G4CMPSecondaryProduction::~G4CMPSecondaryProduction() {
-  delete accumulator;
+  trackAccum.clear();
   delete partitioner;
 }
 
@@ -82,6 +86,14 @@ void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
   if (verboseLevel>1)
     G4cout << "G4CMPSecondaryProduction::LoadDataForTrack" << G4endl;
 
+  // If new event, clear out any existing accumulators
+  G4int thisEvent = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+  if (thisEvent != currentEventID) {
+    if (verboseLevel>1) G4cout << " New event: clearing accumulators" << G4endl;
+    trackAccum.clear();
+    currentEventID = thisEvent;
+  }
+
   SetCurrentTrack(track);
 
   // Skip further configuration if not active volume
@@ -92,6 +104,10 @@ void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
 
   SetLattice(track);
 
+  // Direct step accumulator to work with current track
+  accumulator = &trackAccum[track->GetTrackID()];
+
+  // Set up energy partitioning to work with current track and volume
   *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
   partitioner->UseVolume(GetCurrentVolume());
   partitioner->SetVerboseLevel(verboseLevel);

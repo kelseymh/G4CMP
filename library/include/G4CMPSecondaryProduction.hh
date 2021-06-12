@@ -17,16 +17,19 @@
 // 20210303  G4CMP-243 : Consolidate nearby steps into one effective hit.
 // 20210318  G4CMP-245 : Enforce clearance from crystal surfaces.
 // 20210608  G4CMP-260 : Add function to identify steps with energy deposit.
+// 20210610  G4CMP-262 : Handle step accumulation including track suspension,
+//	       by keeping a map of accumulators by track ID
 
 #ifndef G4CMPSecondaryProduction_hh
 #define G4CMPSecondaryProduction_hh 1
 
 #include "G4CMPVProcess.hh"
+#include "G4CMPStepAccumulator.hh"
 #include "G4ThreeVector.hh"
+#include <map>
 #include <vector>
 
 class G4CMPEnergyPartition;
-class G4CMPStepAccumulator;
 class G4DynamicParticle;
 class G4ParticleDefinition;
 class G4Step;
@@ -76,12 +79,16 @@ public:
   static size_t RandomIndex(size_t imax);	// Used to randomize secondaries
 
 private:
-  G4CMPStepAccumulator* accumulator;	// Sums multiple steps along track
   G4CMPEnergyPartition* partitioner;	// Creates secondary kinematics
   std::vector<G4Track*> theSecs;	// List of created secondaries
   std::vector<G4ThreeVector> posSecs;	// Positions along trajectory
   G4bool secondariesFirst;		// Process secondaries immediately
   G4double combiningStepLength;		// Steps within which to accumulate
+
+  // Collection of accumulators for individual tracks in event
+  std::map<G4int, G4CMPStepAccumulator> trackAccum;
+  G4CMPStepAccumulator* accumulator;	// Sums multiple steps along track
+  G4int currentEventID;			// Remember event for clearing accums
 
   // No copying allowed
   G4CMPSecondaryProduction(const G4CMPSecondaryProduction& right);
