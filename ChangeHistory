@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-07-06  G4CMP-263 : TEMPORARY Set Luke scaling manually with downsampling.
+
 2021-06-08  g4cmp-V07-10-04 New release with additional bug fix to step
 			accumulation in G4CMPSecondaryProduction.
 2021-06-10  G4CMP-262 : Handle suspended tracks properly for step accumulation.

@@ -219,8 +219,11 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == minEChargeCmd)
     theManager->SetMinChargeEnergy(minEChargeCmd->GetNewDoubleValue(value));
 
-  if (cmd == sampleECmd)
+  // TEMPORARY: If sampling energy is set and Luke=1., set Luke=-1.
+  if (cmd == sampleECmd) {
     theManager->SetSamplingEnergy(sampleECmd->GetNewDoubleValue(value));
+    if (theManager->GetLukeSampling() == 1.) theManager->SetLukeSampling(-1.);
+  }
 
   if (cmd == comboStepCmd)
     theManager->SetComboStepLength(comboStepCmd->GetNewDoubleValue(value));
