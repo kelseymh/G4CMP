@@ -71,8 +71,8 @@ hits below step length |
 | G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED  | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
 | G4CMP\_IV\_RATE\_MODEL | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
-| G4CMP\_TRAPPING\_LENGTH\_ELECTRONS | /g4cmp/electronTrappingLength [L] mm |  Mean free path before charge trapping |
-| G4CMP\_TRAPPING\_LENGTH\_HOLES | /g4cmp/holeTrappingLength [L] mm | Mean free path before charge trapping |
+| G4CMP\_ETRAPPING\_MFP | /g4cmp/eTrappingMFP [L] mm        | Mean free path for electron trapping |
+| G4CMP\_HTRAPPING\_MFP | /g4cmp/hTrappingMFP [L] mm        | Mean free path for charge hole trapping |
 | G4CMP\_EDTRAPION\_MFP | /g4cmp/eDTrapIonizationMFP [L] mm | MFP for e-trap ionization by e- |
 | G4CMP\_EATRAPION\_MFP | /g4cmp/eATrapIonizationMFP [L] mm | MFP for h-trap ionization by e- |
 | G4CMP\_HDTRAPION\_MFP | /g4cmp/hDTrapIonizationMFP [L] mm | MFP for e-trap ionization by h+ |
