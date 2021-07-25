@@ -45,6 +45,8 @@
 //		creating particles which escape from volume.
 // 20210202  in DoPartition(PDGcode, ...) store particle type in summary.
 // 20210328  Split ComputeDownsampling() into individual computation functions  
+// 20210706  Add flag to control whether ComputeLukeSampling() is used.
+
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
 #include "G4CMPConfigManager.hh"
@@ -86,6 +88,11 @@
 
 // Constructors and destructor
 
+// TEMPORARY:  Flag to either compute Luke sampling, or use preset value
+namespace {
+  G4double lukeDownsampling = true;
+}
+
 G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
 					   G4LatticePhysical* lat)
   : G4CMPProcessUtils(), verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
@@ -95,6 +102,9 @@ G4CMPEnergyPartition::G4CMPEnergyPartition(G4Material* mat,
     nPairs(0), chargeEnergyLeft(0.), nPhonons(0), phononEnergyLeft(0.),
     summary(0) {
   SetLattice(lat);
+
+  // TEMPORARY: If user set Luke sampling negative, we compute it below
+  lukeDownsampling = (G4CMPConfigManager::GetLukeSampling() < 0.);
 }
 
 G4CMPEnergyPartition::G4CMPEnergyPartition(const G4VPhysicalVolume* volume)
@@ -374,7 +384,7 @@ G4CMPEnergyPartition::ComputeChargeSampling(G4double eIon) {
 void G4CMPEnergyPartition::ComputeLukeSampling() {
   G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
   if (samplingScale <= 0.) return;		// No downsampling computation
-  if (G4CMPConfigManager::GetLukeSampling() <= 0.) return;
+  if (!lukeDownsampling) return;		// User preset a fixed fraction
   
   G4double voltage = int(fabs(biasVoltage)/volt);
   G4double lukeSamp = (eV/samplingScale)*(1./(voltage+1.));
