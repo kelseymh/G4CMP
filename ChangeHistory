@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-07-28  g4cmp-V07-10-05 New release with ability to override Luke phonon
+			sampling with energy downsampling.
 2021-07-25  G4CMP-267 : Fix ion-trap parameter names in README.
 2021-07-25  G4CMP-263 : Set Luke scaling manually with downsampling.
 
