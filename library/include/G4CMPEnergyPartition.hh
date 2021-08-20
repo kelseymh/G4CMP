@@ -24,6 +24,8 @@
 // 20200222  Add control flag to turn off creating summary data
 // 20200805  Add bias across volume to estimate Luke gain downsampling
 // 20210328  Split ComputeDownsampling() into individual computation functions
+// 20210820  Rename particle count data member for clarity, add counts for
+//		after downsampling.  Store weight for each particle in "Data".
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -122,10 +124,10 @@ public:
 
 protected:
   void GenerateCharges(G4double energy);
-  void AddChargePair(G4double ePair);
+  void AddChargePair(G4double ePair, G4double wt);
 
   void GeneratePhonons(G4double energy);
-  void AddPhonon(G4double ePhon);
+  void AddPhonon(G4double ePhon, G4double wt);
 
   G4PrimaryVertex* CreateVertex(G4Event* event, const G4ThreeVector& pos,
 				G4double time) const;
@@ -144,12 +146,13 @@ protected:
   G4bool applyDownsampling;	// Flag whether to do downsampling calcualtions
 
   G4CMPChargeCloud* cloud;	// Distribute e/h around central position
-  size_t nCharges;		// Actual (downsampled) number of e+h for cloud
 
-  size_t nPairs;		// True number of pairs (no downsampling)
+  size_t nPairsTrue;		// True number of pairs (no downsampling)
+  size_t nPairsGen;		// Number of pairs after downsampling
   G4double chargeEnergyLeft;	// Energy to partition into e/h pairs
 
-  size_t nPhonons;		// True number of phonons (no downsampling)
+  size_t nPhononsTrue;		// True number of phonons (no downsampling)
+  size_t nPhononsGen;		// Number of direct phonons after downsampling
   G4double phononEnergyLeft;	// Energy to partition into phonons
 
   G4CMPPartitionData* summary;	// Summary block, saved to G4HitsCollection
@@ -159,10 +162,11 @@ protected:
     G4ParticleDefinition* pd;
     G4ThreeVector dir;
     G4double ekin;
+    G4double wt;
 
-    Data() : pd(0), ekin(0.) {;}	// Default ctor for vector::resize()
-    Data(G4ParticleDefinition* part, const G4ThreeVector& d, G4double E)
-      : pd(part), dir(d), ekin(E) {;}
+    Data() : pd(0), ekin(0.), wt(0.) {;}	// Default ctor for vector::resize()
+    Data(G4ParticleDefinition* part, const G4ThreeVector& d, G4double E,
+	 G4double w) : pd(part), dir(d), ekin(E), wt(w) {;}
   };
     
   std::vector<Data> particles;	// Combined phonons and charge carriers
