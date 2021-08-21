@@ -48,7 +48,8 @@
 // 20210706  Add flag to control whether ComputeLukeSampling() is used.
 // 20210820  Apply downsampling deterministically, not in loop over tracks,
 //		rename particle count data member for clarity.  Store weight
-//		for each particle in internall "Data" buffer.
+//		for each particle in internal "Data" buffer.  Store both true
+//		and downsampled particle counts in summary buffer.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -391,7 +392,7 @@ void G4CMPEnergyPartition::ComputeLukeSampling() {
   if (samplingScale <= 0.) return;		// No downsampling computation
   if (!lukeDownsampling) return;		// User preset a fixed fraction
   
-  G4double voltage = int(fabs(biasVoltage)/volt);
+  G4double voltage = fabs(biasVoltage)/volt;
   G4double lukeSamp = (eV/samplingScale)*(1./(voltage+1.));
   lukeSamp *= 10.;		// Above gives about 3 phonons per track
   
@@ -454,7 +455,8 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   summary->chargeEnergy = energy;
   summary->chargeFano = nPairsTrue*theLattice->GetPairProductionEnergy();
   summary->chargeGenerated = ePair*nPairsGen/scale;
-  summary->numberOfPairs = nPairsGen;		// Number after downsampling
+  summary->truePairs = nPairsTrue;
+  summary->numberOfPairs = nPairsGen;
   summary->samplingCharges = scale;		// Store actual sampling used
 }
 
@@ -509,7 +511,8 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   // Store generated information in summary block
   summary->phononEnergy = energy;
   summary->phononGenerated = ePhon*nPhononsGen/scale;
-  summary->numberOfPhonons = nPhononsGen;	// Numer after downsampling
+  summary->truePhonons = nPhononsTrue;
+  summary->numberOfPhonons = nPhononsGen;
   summary->samplingPhonons = scale;		// Store actual sampling used
 }
 

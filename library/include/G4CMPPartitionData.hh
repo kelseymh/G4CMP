@@ -16,6 +16,7 @@
 // 20200316  Add hit position; improve energy quantity calculations.
 // 20210202  Add particle type (PDGcode) to be filled from original track
 // 20210327  Add downsampling factors
+// 20210820  Add true number of charge pairs and phonons before downsampling
 
 #ifndef G4CMPPartitionData_hh
 #define G4CMPPartitionData_hh 1
@@ -47,9 +48,11 @@ public:		// Simple container, provide direct access to information
   G4double chargeEnergy;	// Energy assigned to charge carriers
   G4double chargeFano;		// Fano-fluctuated energy in charge carriers
   G4double chargeGenerated;	// Energy actually converted to charge carriers
+  G4int    truePairs;		// Number of e/h pairs after Fano fluctuations
   G4int    numberOfPairs;	// Number of e/h pairs created (downsampled)
   G4double phononEnergy;	// Energy assigned for primary phonons
   G4double phononGenerated;	// Weighted sum of generated phonons
+  G4int    truePhonons;		// Number of Debye phonons from energy deposit
   G4int    numberOfPhonons;	// Number of phonons created (downsampled)
   G4double samplingEnergy;	// Energy-based downsampling scale
   G4double samplingCharges;	// Downsampling for charge pairs
