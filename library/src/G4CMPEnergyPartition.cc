@@ -50,6 +50,7 @@
 //		rename particle count data member for clarity.  Store weight
 //		for each particle in internal "Data" buffer.  Store both true
 //		and downsampled particle counts in summary buffer.
+// 20210820  Add estimate of NTL (Luke) emission energy to summary buffer.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -397,9 +398,11 @@ void G4CMPEnergyPartition::ComputeLukeSampling() {
   lukeSamp *= 10.;		// Above gives about 3 phonons per track
   
   lukeSamp = std::min(lukeSamp,1.);
-  if (verboseLevel>2)
-    G4cout << " Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
-  
+  if (verboseLevel>2) {
+    G4cout << " bias " << voltage << " V, scale " << samplingScale/eV << " eV"
+	   << "\n Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
+  }
+
   G4CMPConfigManager::SetLukeSampling(lukeSamp);
 }
 
@@ -458,6 +461,15 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   summary->truePairs = nPairsTrue;
   summary->numberOfPairs = nPairsGen;
   summary->samplingCharges = scale;		// Store actual sampling used
+
+  // Estimate NTL (Luke) phonon emission from charge pairs
+  // Assumes symmetry: each charge pair covers the full voltage bias
+  if (verboseLevel>1) {
+    G4cout << " estimating Luke emission for " << nPairsGen/scale
+	   << " e-h pairs across " << biasVoltage/volt << " V" << G4endl;
+  }
+
+  summary->lukeEnergyEst = eplus*nPairsGen/scale * abs(biasVoltage);
 }
 
 void G4CMPEnergyPartition::AddChargePair(G4double ePair, G4double wt) {

@@ -17,6 +17,7 @@
 // 20210202  Add particle type (PDGcode) to be filled from original track
 // 20210327  Add downsampling factors
 // 20210820  Add true number of charge pairs and phonons before downsampling
+// 20210820  Add estimate of NTL (Luke) emission energy
 
 #ifndef G4CMPPartitionData_hh
 #define G4CMPPartitionData_hh 1
@@ -50,6 +51,7 @@ public:		// Simple container, provide direct access to information
   G4double chargeGenerated;	// Energy actually converted to charge carriers
   G4int    truePairs;		// Number of e/h pairs after Fano fluctuations
   G4int    numberOfPairs;	// Number of e/h pairs created (downsampled)
+  G4double lukeEnergyEst;	// Estimated energy from NTL (Luke) phonons
   G4double phononEnergy;	// Energy assigned for primary phonons
   G4double phononGenerated;	// Weighted sum of generated phonons
   G4int    truePhonons;		// Number of Debye phonons from energy deposit
