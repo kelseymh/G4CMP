@@ -9,6 +9,7 @@
 // and standard deviation of output, to compare with input arguments.
 //
 // 20201213  Michael Kelsey
+// 20210818  Add report of range of values
 
 #include "globals.hh"
 #include "G4CMPFanoBinomial.hh"
@@ -22,10 +23,14 @@
 
 void testFanoBinomial(double Ntrue, double Fano, G4int Ntrial) {
   G4double nthrow, mean=0., var=0.;
+  G4double fbmin=DBL_MAX, fbmax=-DBL_MAX;
   for (G4int i=0; i<Ntrial; i++) {
     nthrow = G4CMP::FanoBinomial::shoot(Ntrue, Fano);
     mean += nthrow;
     var += nthrow*nthrow;
+
+    if (nthrow < fbmin) fbmin = nthrow;
+    if (nthrow > fbmax) fbmax = nthrow;
   }
 
   mean /= Ntrial;
@@ -35,6 +40,7 @@ void testFanoBinomial(double Ntrue, double Fano, G4int Ntrial) {
 
   G4cout << "G4CMPFanoBinomial " << Ntrial << " throws:"
 	 << " mean " << mean << " sigma " << sqrt(var) << " Fano " << fanoEst
+	 << "\n range " << fbmin << " to " << fbmax
 	 << G4endl;
 }
 
@@ -188,20 +194,22 @@ void testAcceptReject(double Ntrue, double Fano, G4int Ntrial) {
 int main(int argc, char* argv[]) {
   // Get required arguments, or report usage and exit
   if (argc < 3) {
-    G4cerr << "Usage: testFanoFactor Ntrue Fano\n\n"
-	   << "Arguments: Ntrue is expected number of charge pairs, Fano"
-	   << " is Fano factor for material.\n"
+    G4cerr << "Usage: testFanoFactor Ntrue Fano [Nthrow]\n\n"
+	   << "Arguments: Ntrue is expected number of charge pairs\n"
+	   << "           Fano is Fano factor for material.\n"
+	   << "           Nthrow is number of samples to generate.\n\n"
 	   << "Code returns mean, sigma and computed Fano factor from"
-	   << " 1000000 throws of G4CMPFanoBinomial." << G4endl;
+	   << " Nthrow (10000) throws of\n G4CMPFanoBinomial." << G4endl;
     ::exit(1);
   }
 
   G4double Ntrue = strtod(argv[1],0);
   G4double Fano  = strtod(argv[2],0);
+  G4int Nthrow = (argc>3) ? atoi(argv[3]) : 10000;
 
-  G4cout << argv[0] << " " << Ntrue << " " << Fano << G4endl;
+  G4cout << argv[0] << " " << Ntrue << " " << Fano << " " << Nthrow << G4endl;
   //*** testPdfBinomial(Ntrue, Fano);
   //*** testInterp(Ntrue, Fano);
-  //*** testAcceptReject(Ntrue, Fano, 10000);
-  testFanoBinomial(Ntrue, Fano, 10000);
+  //*** testAcceptReject(Ntrue, Fano, Nthrow);
+  testFanoBinomial(Ntrue, Fano, Nthrow);
 }

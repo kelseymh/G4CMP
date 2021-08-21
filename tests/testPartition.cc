@@ -9,6 +9,10 @@
 // and lattice directory.  Geant4 material will be set as "G4_<Lattice>".
 //
 // NOTE: 10 keV energy deposit should produce ~3400 e/h pairs
+//
+// 20210818  Expand test results to cover Fano disabled, downsampling, add
+//		output reporting full range (min to max) of track counts.
+// 20210820  Add bias voltage by hand to test Luke energy estimator.
 
 #include "globals.hh"
 #include "G4CMPEnergyPartition.hh"
@@ -45,16 +49,13 @@ struct EPartInfo {
 
 // Test partitioning system one time
 
-EPartInfo testPartition(G4double Ehit, G4double Esamp) {
-  g4cmp->SetSamplingEnergy(Esamp);
+EPartInfo testPartition(G4double Ehit) {
   partition->DoPartition(Ehit, 0.);
 
   std::vector<G4PrimaryParticle*> prim;
   partition->GetPrimaries(prim);
 
-  EPartInfo result{0.,0.,0.,0.,0,0};
-  result.Ehit = Ehit;
-  result.Esamp = Esamp;
+  EPartInfo result{Ehit, g4cmp->GetSamplingEnergy(), 0., 0., 0, 0};
 
   for (size_t i=0; i<prim.size(); i++) {
     const G4ParticleDefinition* pd = prim[i]->GetParticleDefinition();
@@ -62,12 +63,12 @@ EPartInfo testPartition(G4double Ehit, G4double Esamp) {
     G4double E = prim[i]->GetKineticEnergy();
 
     if (G4CMP::IsPhonon(pd)) {
-      result.Nphon += wt;
+      result.Nphon++;
       result.Ephon += E*wt;
     }
 
     if (G4CMP::IsChargeCarrier(pd)) {
-      result.Nchg += wt;
+      result.Nchg++;
       result.Echg += E*wt;
     }
   }
@@ -104,20 +105,25 @@ int main(int argc, char* argv[]) {
 
   lattice = G4LatticeManager::Instance()->LoadLattice(pv,lname);
 
-  partition = new G4CMPEnergyPartition(mat, lattice);
+  g4cmp->SetSamplingEnergy(Esamp);
+  g4cmp->SetLukeSampling(-1.);			// Let partitioner do scaling
+
+  partition = new G4CMPEnergyPartition(pv);
   partition->SetVerboseLevel(verbose);
+  partition->SetBiasVoltage(50.*volt);		// For testing Luke sampling
 
   G4double bandgap = lattice->GetBandGapEnergy();
 
   G4double E=0., Esum=0., Esum2=0.;	// Sum and sum of squares for RMS
-  G4double N, Nsum=0., Nsum2=0.;
+  G4double N, Nsum=0., Nsum2=0., Nchg=0., Nchg2=0.;
+  G4double Nmin=DBL_MAX, Nmax=-DBL_MAX;
 
   G4int nTest=1000;
   for (G4int i=0; i<nTest; i++) {
-    EPartInfo iTest = testPartition(Ehit, Esamp);
+    EPartInfo iTest = testPartition(Ehit);
 
     if (verbose) {
-      G4cout << i << " : " << iTest.Nchg << " e/h " << iTest.Echg/keV << " keV"
+      G4cout << i << "\t" << iTest.Nchg << " e/h " << iTest.Echg/keV << " keV"
 	     << " + bandgaps " << iTest.Nchg*bandgap/2./keV << " keV"
 	     << " " << iTest.Nphon << " phonons " << iTest.Ephon/keV << " keV"
 	     << G4endl;
@@ -125,15 +131,37 @@ int main(int argc, char* argv[]) {
 
     E = iTest.Echg+iTest.Ephon; Esum += E; Esum2 += E*E;
     N = iTest.Nchg+iTest.Nphon; Nsum += N; Nsum2 += N*N;
+    Nchg += iTest.Nchg; Nchg2 += iTest.Nchg*iTest.Nchg;
+
+    if (iTest.Nchg<Nmin) Nmin = iTest.Nchg;
+    if (iTest.Nchg>Nmax) Nmax = iTest.Nchg;
   }
 
   Esum /= nTest; Esum2 /= nTest;
   Nsum /= nTest; Nsum2 /= nTest;
+  Nchg /= nTest; Nchg2 /= nTest;
 
   G4double E_SD = sqrt(fabs(Esum2 - Esum*Esum));
   G4double N_SD = sqrt(fabs(Nsum2 - Nsum*Nsum));
+  G4double Q_SD = sqrt(fabs(Nchg2 - Nchg*Nchg));
 
-  G4cout << " Ehit " << Ehit/keV << " keV "
-	 << "   <N> = " << Nsum << " +/- " << N_SD
-	 << "   <E> = " << Esum/keV << " +/- " << E_SD << " keV" << G4endl;
+  G4double Nexp = 2.*Ehit/lattice->GetPairProductionEnergy();
+  G4double Nsig = (g4cmp->FanoStatisticsEnabled() 
+		   ? sqrt(Nexp*lattice->GetFanoFactor()) : 0.);
+
+  // With downsampling, the number expecting should be reduced by scale
+  if (Esamp > 0 && Ehit > Esamp) {
+    Nexp *= Esamp/Ehit;
+    Nsig *= Esamp/Ehit;
+  }
+
+  G4cout << " Ehit " << Ehit/keV << " keV expect "
+	 << Nexp << " +/- " << Nsig << " tracks"
+	 << " (" << lattice->GetLattice()->GetName()
+	 << " Epair " << lattice->GetPairProductionEnergy()/eV << " eV)"
+	 << "\n                 <Nchg> = " << Nchg << " +/- " << Q_SD
+	 << " range " << Nmin << " to " << Nmax
+	 << "\n <E> = " << Esum/keV << " +/- " << E_SD << " keV"
+	 << " + bandgaps " << Nchg*bandgap/2./keV
+	 << " = " << (Esum+Nchg*bandgap/2.)/keV << " keV " << G4endl;
 }
