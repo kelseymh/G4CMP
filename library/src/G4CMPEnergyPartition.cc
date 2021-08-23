@@ -207,7 +207,7 @@ G4double G4CMPEnergyPartition::MeasuredChargePairs(G4double eTrue) const {
   // Fano noise changes the number of generated charges
   if (!G4CMPConfigManager::FanoStatisticsEnabled()) {
     summary->FanoFactor = 0.;
-    return std::ceil(Ntrue);
+    return std::round(Ntrue);
   }
 
   // Store Fano factor from material for reference
@@ -436,7 +436,7 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   }
 
   // Compute number of pairs to generate, adjust sampling scale to match
-  nPairsGen = std::ceil(scale*nPairsTrue);
+  nPairsGen = std::round(scale*nPairsTrue);
   scale = double(nPairsGen)/nPairsTrue;
 
   if (nPairsTrue == 0) return;		// No charges could be produced
@@ -507,7 +507,7 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   }
 
   // Compute number of phonons to generate, adjust sampling scale to match
-  nPhononsGen = std::ceil(scale*nPhononsTrue);
+  nPhononsGen = std::round(scale*nPhononsTrue);
   scale = double(nPhononsGen)/nPhononsTrue;
 
   if (nPhononsTrue == 0) return;		// No charges could be produced
