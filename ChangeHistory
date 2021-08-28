@@ -6,6 +6,10 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-08-28  g4cmp-V07-10-06 New release with better downsampling method, and
+			additional dignostic parameters.
+2021-08-28  feature/LukeDebug: Add addition track information to debugging
+			file LukePhononEnergies in G4CMPLukeScattering.
 2021-08-20  G4CMP-271 : Estimate NTL charge amplification, put in summary data.
 2021-08-20  G4CMP-270 : Apply downsampling deterministically (N = Ntrue*scale)
 			Add pre-downsampling particle counts to summary data.
