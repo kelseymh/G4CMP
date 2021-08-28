@@ -96,8 +96,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 		  FatalException, "Unable to open LukePhononEnergies");
     }
 
-    output << "Track Type,Track Energy [eV],Track Momentum [eV],WaveVector,"
-	   << "Phonon Theta,Phonon Energy [eV],Recoil WaveVector,"
+    output << "Track ID, Track Type,Track Weight,Track Energy [eV],Track Momentum [eV],WaveVector,"
+	   << "Phonon Theta,Phonon Energy [eV],Phonon Weight,Recoil WaveVector,"
 	   << "Final Energy [eV],Final Momentum [eV]"
 	   << std::endl;
   }
@@ -277,10 +277,10 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
 #ifdef G4CMP_DEBUG
   if (output.good()) {
-    output << trkName << "," << GetKineticEnergy(aTrack)/eV << ","
+    output << aTrack.GetTrackID() << "," << trkName << ","
+	   << aTrack.GetWeight() << "," << GetKineticEnergy(aTrack)/eV << ","
 	   << GetLocalMomentum(aTrack).mag()/eV << "," << kmag << ","
-	   << theta_phonon << "," << Ephonon/eV << "," << k_recoil.mag()
-	   << ",";
+	   << theta_phonon << "," << Ephonon/eV << ",";
   }
 #endif
 
@@ -319,7 +319,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
 #ifdef G4CMP_DEBUG
   if (output.good()) {
-    output << aParticleChange.GetEnergy()/eV << "," << precoil.mag()/eV
+    output << aTrack.GetWeight()*weight << "," << k_recoil.mag() << ","
+	   << aParticleChange.GetEnergy()/eV << "," << precoil.mag()/eV
 	   << std::endl;
   }
 #endif
