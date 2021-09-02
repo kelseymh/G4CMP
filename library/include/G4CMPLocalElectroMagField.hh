@@ -11,6 +11,7 @@
 // 20180525  Provide accessor to underlying (local coordinate) field.
 // 20180711  Store local geometry associated with field, and accessor to
 //		optionally interpolate potential
+// 20210902  Add verbosity flag set in constructing client code
 
 #ifndef G4CMPLocalElectroMagField_hh
 #define G4CMPLocalElectroMagField_hh 1
@@ -24,14 +25,15 @@ class G4VSolid;
 class G4CMPLocalElectroMagField : public G4ElectroMagneticField {
 public:
   G4CMPLocalElectroMagField(const G4ElectroMagneticField* theField)
-    : G4ElectroMagneticField(), localField(theField), theSolid(0) {;}
+    : G4ElectroMagneticField(), localField(theField), theSolid(0),
+      verboseLevel(0) {;}
 
   virtual ~G4CMPLocalElectroMagField() {;}
 
   G4CMPLocalElectroMagField(const G4CMPLocalElectroMagField& rhs)
     : G4ElectroMagneticField(rhs), localField(rhs.localField),
       theSolid(rhs.theSolid), fLocalToGlobal(rhs.fLocalToGlobal),
-      fGlobalToLocal(rhs.fGlobalToLocal) {;}
+      fGlobalToLocal(rhs.fGlobalToLocal), verboseLevel(rhs.verboseLevel) {;}
 
   G4CMPLocalElectroMagField& operator=(const G4CMPLocalElectroMagField& rhs) {
     G4ElectroMagneticField::operator=(rhs);
@@ -39,9 +41,14 @@ public:
     theSolid = rhs.theSolid;
     fLocalToGlobal = rhs.fLocalToGlobal;
     fGlobalToLocal = rhs.fGlobalToLocal;
+    verboseLevel = rhs.verboseLevel;
 
     return *this;
   }
+
+  // Turn on diagnostic output
+  void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+  G4int GetverboseLevel() const { return verboseLevel; }
 
   // Specify volume and local-to-global transformation before field call
   // Typically, this will be called from FieldManager::ConfigureForTrack()
@@ -74,6 +81,8 @@ private:
   const G4VSolid* theSolid;		// Shape to which field is attached
   G4AffineTransform fLocalToGlobal;
   G4AffineTransform fGlobalToLocal;
+
+  G4int verboseLevel;			// For diagnostic output
 
   mutable G4ThreeVector vec;		// Internal buffers to reduce memory
   mutable G4double localP[4];

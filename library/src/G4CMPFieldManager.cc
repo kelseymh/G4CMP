@@ -19,6 +19,8 @@
 // 20200213  In ConfigureForTrack, check if registered field is wrapped in
 //		G4CMPLocalEMField; apply wrapping if needed.
 // 20200804  Attach local geometry shape to field
+// 20210901  Add local verbosity flag for reporting diagnostics, pass through
+//		to G4CMPLocalEMField.
 
 #include "G4CMPFieldManager.hh"
 #include "G4CMPConfigManager.hh"
@@ -49,21 +51,27 @@
 
 // Constructors and destructor
 
-G4CMPFieldManager::G4CMPFieldManager(G4ElectroMagneticField *detectorField)
+G4CMPFieldManager::G4CMPFieldManager(G4ElectroMagneticField *detectorField,
+				     G4int vb)
   : G4FieldManager(new G4CMPLocalElectroMagField(detectorField)),
+    verboseLevel(vb==0?G4CMPConfigManager::GetVerboseLevel():vb),
     myDetectorField(0), stepperVars(8), stepperLength(1e-9*mm),
     latticeNulls(0), maxLatticeNulls(3) {
   // Same pointer, but non-const for use in ConfigureForTrack()
   G4Field* baseField = const_cast<G4Field*>(GetDetectorField());
   myDetectorField = dynamic_cast<G4CMPLocalElectroMagField*>(baseField);
+  if (myDetectorField) myDetectorField->SetVerboseLevel(verboseLevel);
 
   CreateTransport();
 }
 
-G4CMPFieldManager::G4CMPFieldManager(G4CMPLocalElectroMagField *detectorField)
-  : G4FieldManager(detectorField), myDetectorField(detectorField),
-    stepperVars(8), stepperLength(1e-9*mm),
+G4CMPFieldManager::G4CMPFieldManager(G4CMPLocalElectroMagField *detectorField,
+				     G4int vb)
+  : G4FieldManager(detectorField),
+    verboseLevel(vb==0?G4CMPConfigManager::GetVerboseLevel():vb),
+    myDetectorField(detectorField), stepperVars(8), stepperLength(1e-9*mm),
     latticeNulls(0), maxLatticeNulls(3) {
+  if (myDetectorField) myDetectorField->SetVerboseLevel(verboseLevel);
   CreateTransport();
 }
 
@@ -83,15 +91,15 @@ void G4CMPFieldManager::CreateTransport() {
   theChordFinder = new G4ChordFinder(theDriver);
   SetChordFinder(theChordFinder);
 
-  theDriver->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
-  theChordFinder->SetVerbose(G4CMPConfigManager::GetVerboseLevel());
+  theDriver->SetVerboseLevel(verboseLevel);
+  theChordFinder->SetVerbose(verboseLevel);
 }
 
 
 // Run-time Configuration
 
 void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
-  if (G4CMPConfigManager::GetVerboseLevel()) {
+  if (verboseLevel) {
     G4cout << "G4CMPFieldManager::ConfigureForTrack "
 	   << aTrack->GetTrackID() << "/" << aTrack->GetCurrentStepNumber()
 	   << " @ " << aTrack->GetPosition() << " in "
@@ -100,7 +108,7 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
 
   // Ensure that field is properly wrapped for global/local coordinates
   if (!dynamic_cast<const G4CMPLocalElectroMagField*>(GetDetectorField())) {
-    if (G4CMPConfigManager::GetVerboseLevel()) {
+    if (verboseLevel) {
       G4cout << " Registered field not local.  Wrapping in G4CMPLocalEMField."
 	     << G4endl;
     }
@@ -118,6 +126,8 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
     }
 
     myDetectorField = new G4CMPLocalElectroMagField(baseField);
+    myDetectorField->SetVerboseLevel(verboseLevel);
+
     ChangeDetectorField(myDetectorField);
   }
 
@@ -153,8 +163,15 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
     const G4ThreeVector& trans  = aTrack->GetTouchable()->GetTranslation();
     G4AffineTransform localToGlobal(rot, trans);
 
-    if (G4CMPConfigManager::GetVerboseLevel() > 1) {
-      G4cout << " translation " << trans << " rotation " << *rot << G4endl;
+    if (verboseLevel > 1) {
+      G4cout << " volume " << aTrack->GetVolume()->GetName() << " has"
+	     << " translation " << trans << " rotation " << *rot << G4endl;
+
+      if (verboseLevel > 2) {
+	G4cout << " localToGlobal moves (1,1,1) to "
+	       << localToGlobal.TransformPoint(G4ThreeVector(1,1,1))
+	       << G4endl;
+      }
     }
 
     myDetectorField->SetGeometry(aTrack->GetTouchable()->GetVolume()->

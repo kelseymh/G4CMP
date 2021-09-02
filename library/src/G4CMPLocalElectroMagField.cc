@@ -48,6 +48,11 @@ void G4CMPLocalElectroMagField::GetLocalPoint(const G4double Point[4]) const {
   vec.set(Point[0], Point[1], Point[2]);
   fGlobalToLocal.ApplyPointTransform(vec);
 
+  if (verboseLevel>2) {
+    G4cout << "G4CMPLocalElectroMagField::GetLocalPoint (" << Point[0]
+	   << "," << Point[1] << "," << Point[2] << ") -> " << vec << G4endl;
+  }
+
   // Fill local point buffer and initialize field
   localP[0] = vec.x();
   localP[1] = vec.y();
@@ -61,6 +66,12 @@ void G4CMPLocalElectroMagField::
 CopyLocalToGlobalVector(G4int index, G4double* gbl) const {
   vec.set(localF[index+0], localF[index+1], localF[index+2]);
   fLocalToGlobal.ApplyAxisTransform(vec);
+
+  if (verboseLevel>2) {
+    G4cout << "G4CMPLocalElectroMagField::CopyLocalToGlobalVector " << index
+	   << " (" << localF[index+0] << "," << localF[index+1] << ","
+	   << localF[index+2] << ") -> " << vec << G4endl;
+  }
 
   gbl[index+0] = vec.x();
   gbl[index+1] = vec.y();
