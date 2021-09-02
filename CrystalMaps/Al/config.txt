@@ -1,0 +1,44 @@
+# Crystal parameters/ Work In progress
+cubic 4.046 Ang		# (Lattice constant)
+stiffness 1 1 104 GPa	# C11, de Jong, M., Chen, W., Angsten, T. et al. Sci Data 2, 150009 (2015).
+stiffness 1 2  73 GPa	# C12
+stiffness 4 4  32 GPa	# C44
+# Phonon parameters
+dyn -93.5 -90.9 66.4 25.4 GPa
+scat 2.37e-42 s3
+decay 3.98e-54 s4
+decayTT 0.74
+# From S. Tamura et al., PRB44(7), 1991
+LDOS  0.093
+STDOS 0.531
+FTDOS 0.376
+Debye 428 K		# Can also use temperature or energy
+# Charge carrier parameters
+bandgap 0.0034 eV
+pairEnergy 3.81 eV
+fanoFactor 0.12
+vsound 6420 m/s		# Longitudinal sound speed
+vtrans 5000 m/s		# Transverse sound speed
+l0_e 16.9e-6 m #16.9e-5 m # 8e-6 m #16.9e-6 m
+l0_h 7.5e-5 m
+#hole and electron masses taken from Robert's thesis
+hmass 0.90		# per m(electron)
+emass 0.4 0.93 0.82	# per m(electron)
+valley   0  0  0 deg
+valley   90 90 0 deg
+valley   0 -90 -90 deg
+# Intervalley scattering (matrix elements) //Not changed yet
+alpha 0.5 /eV
+acDeform 6.6 eV
+ivDeform 0.5e8 0.8e8 11e8 0.3e8 2e8 2e8 eV/cm		# Jacoboni & Reggiani
+ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV
+neutDens 1e11 /cm3
+epsilon 11.68
+# Intervalley scattering (Linear and Quadratic models)
+ivModel Linear
+ivLinRate0  1.5e6 Hz	# Fitted to Stanford test devices
+ivLinRate1  1.5 Hz	# Fitted to Stanford test devices
+ivLinPower  4.0		# Rate = ivLinRate0 + ivLinRate1 * E^ivLinPower
+ivQuadRate  3.5e-20 Hz	# Fitted to Stanford test devices
+ivQuadField 3395 V/m	# Fitted to Stanford test divices
+ivQuadPower 7.47	# Rate = sqrt((E^2-QuadField^2)^ivPower)
