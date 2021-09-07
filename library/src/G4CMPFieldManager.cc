@@ -57,6 +57,9 @@ G4CMPFieldManager::G4CMPFieldManager(G4ElectroMagneticField *detectorField,
     verboseLevel(vb==0?G4CMPConfigManager::GetVerboseLevel():vb),
     myDetectorField(0), stepperVars(8), stepperLength(1e-9*mm),
     latticeNulls(0), maxLatticeNulls(3) {
+  if (verboseLevel)
+    G4cout << "G4CMPFieldManager wrapped global field in LocalEMField." << G4endl;
+
   // Same pointer, but non-const for use in ConfigureForTrack()
   G4Field* baseField = const_cast<G4Field*>(GetDetectorField());
   myDetectorField = dynamic_cast<G4CMPLocalElectroMagField*>(baseField);
@@ -71,6 +74,9 @@ G4CMPFieldManager::G4CMPFieldManager(G4CMPLocalElectroMagField *detectorField,
     verboseLevel(vb==0?G4CMPConfigManager::GetVerboseLevel():vb),
     myDetectorField(detectorField), stepperVars(8), stepperLength(1e-9*mm),
     latticeNulls(0), maxLatticeNulls(3) {
+  if (verboseLevel)
+    G4cout << "G4CMPFieldManager provided with wrapped LocalEMField." << G4endl;
+
   if (myDetectorField) myDetectorField->SetVerboseLevel(verboseLevel);
   CreateTransport();
 }
@@ -165,13 +171,8 @@ void G4CMPFieldManager::ConfigureForTrack(const G4Track* aTrack) {
 
     if (verboseLevel > 1) {
       G4cout << " volume " << aTrack->GetVolume()->GetName() << " has"
-	     << " translation " << trans << " rotation " << *rot << G4endl;
-
-      if (verboseLevel > 2) {
-	G4cout << " localToGlobal moves (1,1,1) to "
-	       << localToGlobal.TransformPoint(G4ThreeVector(1,1,1))
-	       << G4endl;
-      }
+	     << " trans " << trans << " rot " << rot->delta()/deg
+	     << " deg about " << rot->axis() << G4endl;
     }
 
     myDetectorField->SetGeometry(aTrack->GetTouchable()->GetVolume()->

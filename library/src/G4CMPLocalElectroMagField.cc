@@ -21,8 +21,23 @@
 // Typically, this will be called from FieldManager::ConfigureForTrack()
 
 void G4CMPLocalElectroMagField::SetTransforms(const G4AffineTransform& lToG) {
+  if (verboseLevel>2) {
+    G4cout << "LocalEMField::SetTransforms ltoG "
+	   << " trans " << lToG.NetTranslation() << " rot "
+	   << lToG.NetRotation().delta()/CLHEP::deg << " deg about "
+	   << lToG.NetRotation().axis() << G4endl;
+  }
+
   fGlobalToLocal = fLocalToGlobal = lToG;
   fGlobalToLocal.Invert();
+
+  if (verboseLevel>2) {
+    G4ThreeVector glob111 = G4ThreeVector(1,1,1);
+    G4ThreeVector loc111 = fGlobalToLocal.TransformPoint(glob111);
+    G4cout << " gToL moves " << glob111 << " -> " << loc111 << G4endl
+	   << " lToG moves " << loc111*10. << " -> "
+	   << fLocalToGlobal.TransformPoint(loc111*10.) << G4endl;
+  }
 }
 
 
@@ -46,10 +61,13 @@ void G4CMPLocalElectroMagField::GetFieldValue(const G4double Point[4],
 
 void G4CMPLocalElectroMagField::GetLocalPoint(const G4double Point[4]) const {
   vec.set(Point[0], Point[1], Point[2]);
+  if (verboseLevel>2)
+    G4cout << "LocalEMField::GetLocalPoint vec " << vec << G4endl;
+
   fGlobalToLocal.ApplyPointTransform(vec);
 
   if (verboseLevel>2) {
-    G4cout << "G4CMPLocalElectroMagField::GetLocalPoint (" << Point[0]
+    G4cout << "LocalEMField::GetLocalPoint (" << Point[0]
 	   << "," << Point[1] << "," << Point[2] << ") -> " << vec << G4endl;
   }
 
@@ -68,7 +86,7 @@ CopyLocalToGlobalVector(G4int index, G4double* gbl) const {
   fLocalToGlobal.ApplyAxisTransform(vec);
 
   if (verboseLevel>2) {
-    G4cout << "G4CMPLocalElectroMagField::CopyLocalToGlobalVector " << index
+    G4cout << "LocalEMField::CopyLocalToGlobalVector " << index
 	   << " (" << localF[index+0] << "," << localF[index+1] << ","
 	   << localF[index+2] << ") -> " << vec << G4endl;
   }
@@ -89,7 +107,14 @@ GetPotential(const G4double Point[4]) const {
   // Mesh field can return potential directly; no work needed
   const G4CMPMeshElectricField* mfield =
     dynamic_cast<const G4CMPMeshElectricField*>(localField);
-  if (mfield) return mfield->GetPotential(localP);
+  if (mfield) {
+    if (verboseLevel>2) {
+      G4cout << "LocalEMField::GetPotential mesh returns " 
+	     << mfield->GetPotential(localP) << G4endl;
+    }
+
+    return mfield->GetPotential(localP);
+  }
 
   if (!theSolid) return 0.;		// Can't integrate without boundaries
 
@@ -104,6 +129,14 @@ GetPotential(const G4double Point[4]) const {
     G4ThreeVector e0 = evec.unit();
     G4double toVpos = theSolid->DistanceToOut(pos, -e0);
     G4double toVneg = theSolid->DistanceToOut(pos, e0);
+
+    if (verboseLevel>2) {
+      G4cout << "LocalEMField::GetPotential pos " << pos << " e0 " << e0
+	     << " toVpos " << toVpos << " toVneg " << toVneg
+	     << " emag " << evec.mag()
+	     << " : V = " << 0.5*(toVpos-toVneg)*evec.mag()
+	     << G4endl;
+    }
 
     return 0.5*(toVpos-toVneg)*evec.mag();	// [-V/2,V/2] interpolation
   }
