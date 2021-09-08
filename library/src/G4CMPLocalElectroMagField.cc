@@ -61,9 +61,6 @@ void G4CMPLocalElectroMagField::GetFieldValue(const G4double Point[4],
 
 void G4CMPLocalElectroMagField::GetLocalPoint(const G4double Point[4]) const {
   vec.set(Point[0], Point[1], Point[2]);
-  if (verboseLevel>2)
-    G4cout << "LocalEMField::GetLocalPoint vec " << vec << G4endl;
-
   fGlobalToLocal.ApplyPointTransform(vec);
 
   if (verboseLevel>2) {
