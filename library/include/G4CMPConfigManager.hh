@@ -42,6 +42,7 @@
 // 20200530  G4CMP-202:  Provide separate master and worker instances
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
+// 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
 
 #include "globals.hh"
 #include <iosfwd>
@@ -68,6 +69,7 @@ public:
   static G4int GetVerboseLevel()         { return Instance()->verbose; }
   static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
   static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
+  static G4int GetMaxLukePhonons()       { return Instance()->maxLukePhonons; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
   static G4bool CreateChargeCloud()      { return Instance()->chargeCloud; }
@@ -95,6 +97,7 @@ public:
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
   static void SetMaxChargeBounces(G4int value) { Instance()->ehBounces = value; }
   static void SetMaxPhononBounces(G4int value) { Instance()->pBounces = value; }
+  static void SetMaxLukePhonons(G4int value) { Instance()->maxLukePhonons = value; }
   static void SetSurfaceClearance(G4double value) { Instance()->clearance = value; }
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
   static void SetMinPhononEnergy(G4double value) { Instance()->EminPhonons = value; }
@@ -150,6 +153,7 @@ private:
   G4int fPhysicsModelID; // ID key to get aux. track info.
   G4int ehBounces;	// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
   G4int pBounces;	// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
+  G4int maxLukePhonons; // Approx. Luke phonon limit ($G4MP_MAX_LUKE)
   G4String version;	// Version name string extracted from .g4cmp-version
   G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
   G4String IVRateModel;	// Model for IV rate ($G4CMP_IV_RATE_MODEL)

@@ -392,14 +392,21 @@ void G4CMPEnergyPartition::ComputeLukeSampling() {
   G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
   if (samplingScale <= 0.) return;		// No downsampling computation
   if (!lukeDownsampling) return;		// User preset a fixed fraction
-  
+
+  // Expect about 600 Luke phonons per e/h pair per volt
+  // At ~30 e/h pairs per 100 eV, lukeSamp gives about 100 phonons/event
   G4double voltage = fabs(biasVoltage)/volt;
   G4double lukeSamp = (eV/samplingScale)*(1./(voltage+1.));
-  lukeSamp *= 10.;		// Above gives about 3 phonons per track
+
+  // Scales to user-desired "maximum" (approximate) number of Luke phonons
+  G4int maxCount = G4CMPConfigManager::GetMaxLukePhonons();
+  if (maxCount <= 0.) maxCount = 10000.;
+  lukeSamp *= maxCount/100.;
   
   lukeSamp = std::min(lukeSamp,1.);
   if (verboseLevel>2) {
     G4cout << " bias " << voltage << " V, scale " << samplingScale/eV << " eV"
+	   << " maxCount " << maxCount << " phonons desired"
 	   << "\n Downsample " << lukeSamp << " Luke-phonon emission" << G4endl;
   }
 
