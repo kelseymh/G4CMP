@@ -39,6 +39,7 @@
 //		"hTrap" -> "ATrap".
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
+// 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
 
 #include "G4UImessenger.hh"
 
@@ -67,6 +68,7 @@ private:
   G4UIcmdWithAnInteger* verboseCmd;
   G4UIcmdWithAnInteger* ehBounceCmd;
   G4UIcmdWithAnInteger* pBounceCmd;
+  G4UIcmdWithAnInteger* maxLukeCmd;
   G4UIcmdWithADoubleAndUnit* clearCmd;
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
