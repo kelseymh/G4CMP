@@ -51,6 +51,8 @@
 //		for each particle in internal "Data" buffer.  Store both true
 //		and downsampled particle counts in summary buffer.
 // 20210820  Add estimate of NTL (Luke) emission energy to summary buffer.
+// 20210915  Change ComputeLukeDownsampling() to use new parameter requesting
+//		specific number of NTL phonons; estimated using nPairs.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -393,17 +395,16 @@ void G4CMPEnergyPartition::ComputeLukeSampling() {
   if (samplingScale <= 0.) return;		// No downsampling computation
   if (!lukeDownsampling) return;		// User preset a fixed fraction
 
-  // Expect about 600 Luke phonons per e/h pair per volt
-  // At ~30 e/h pairs per 100 eV, lukeSamp gives about 100 phonons/event
+  // Expect about 600 Luke phonons, ~ 1 meV each, per e/h pair per volt
   G4double voltage = fabs(biasVoltage)/volt;
-  G4double lukeSamp = (eV/samplingScale)*(1./(voltage+1.));
+  G4double npair = samplingScale / theLattice->GetPairProductionEnergy();
+  G4double nluke = npair * (voltage+1.) * 1000;	// ~1,000 per volt per pair
 
   // Scales to user-desired "maximum" (approximate) number of Luke phonons
   G4int maxCount = G4CMPConfigManager::GetMaxLukePhonons();
   if (maxCount <= 0.) maxCount = 10000.;
-  lukeSamp *= maxCount/100.;
+  G4double lukeSamp = std::min(maxCount/nluke, 1.);
   
-  lukeSamp = std::min(lukeSamp,1.);
   if (verboseLevel>2) {
     G4cout << " bias " << voltage << " V, scale " << samplingScale/eV << " eV"
 	   << " maxCount " << maxCount << " phonons desired"
