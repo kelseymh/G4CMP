@@ -395,7 +395,8 @@ void G4CMPEnergyPartition::ComputeLukeSampling() {
   if (samplingScale <= 0.) return;		// No downsampling computation
   if (!lukeDownsampling) return;		// User preset a fixed fraction
 
-  // Expect about 600 Luke phonons, ~ 2 meV each, per e/h pair per volt
+  // Expect about 500 Luke phonons, ~ 2 meV each, per e/h pair per volt
+  // Note: number varies with material, this estmate is best for germanium
   G4double voltage = fabs(biasVoltage)/volt;
   G4double npair = samplingScale / theLattice->GetPairProductionEnergy();
   G4double nluke = npair * (voltage+1.) * 500;	// <E> ~ 2 meV 
