@@ -351,7 +351,7 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
     
     ComputeChargeSampling(eIon);
     ComputePhononSampling(eNIEL);
-    ComputeLukeSampling();
+    ComputeLukeSampling(eIon);
     return;
   }
 
@@ -416,7 +416,7 @@ G4CMPEnergyPartition::ComputeChargeSampling(G4double eIon) {
 
 // Compute Luke scaling factor only if not fully suppressed
 
-void G4CMPEnergyPartition::ComputeLukeSampling() {
+void G4CMPEnergyPartition::ComputeLukeSampling(G4double eIon) {
   G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
   if (samplingScale <= 0.) return;		// No downsampling computation
   if (!lukeDownsampling) return;		// User preset a fixed fraction
@@ -424,7 +424,8 @@ void G4CMPEnergyPartition::ComputeLukeSampling() {
   // Expect about 500 Luke phonons, ~ 2 meV each, per e/h pair per volt
   // Note: number varies with material, this estmate is best for germanium
   G4double voltage = fabs(biasVoltage)/volt;
-  G4double npair = samplingScale / theLattice->GetPairProductionEnergy();
+  G4double npair = ( std::min(samplingScale, eIon)
+		     / theLattice->GetPairProductionEnergy() );
   G4double nluke = npair * (voltage+1.) * 500;	// <E> ~ 2 meV 
 
   // Scales to user-desired "maximum" (approximate) number of Luke phonons
