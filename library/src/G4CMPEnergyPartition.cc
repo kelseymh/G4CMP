@@ -343,16 +343,42 @@ NuclearRecoil(G4double energy, G4double Z, G4double A) {
 
 void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
   G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
-  if (samplingScale <= 0.) return;		// Avoid unnecessary work
-
-  if (verboseLevel>1) {
-    G4cout << "G4CMPEnergyPartition::ComputeDownsampling: scale energy to "
-	   << samplingScale/eV << " eV" << G4endl;
+  if (samplingScale > 0.) {
+    if (verboseLevel>1) {
+      G4cout << "G4CMPEnergyPartition::ComputeDownsampling: scale energy to "
+	     << samplingScale/eV << " eV" << G4endl;
+    }
+    
+    ComputeChargeSampling(eIon);
+    ComputePhononSampling(eNIEL);
+    ComputeLukeSampling();
+    return;
   }
 
-  ComputeChargeSampling(eIon);
-  ComputePhononSampling(eNIEL);
-  ComputeLukeSampling();
+  G4double maxLukeCount = G4CMPConfigManager::GetMaxLukePhonons();
+  if (maxLukeCount > 0.) {
+    if (verboseLevel>1) {
+      G4cout << "G4CMPEnergyPartition::ComputeDownsampling: restrict Luke"
+	     << " phonons to ~" << maxLukeCount << " per event" << G4endl;
+    }
+    
+    G4double voltage = fabs(biasVoltage);
+    G4double eLuke = eIon*eplus*voltage/theLattice->GetPairProductionEnergy();
+
+    // Expect about 500 Luke phonons, ~ 2 meV each, per e/h pair per volt
+    // Note: number varies with material, this estmate is best for germanium
+    G4double nluke = eLuke/eV * 500;
+    G4double lukeSamp = std::min(maxLukeCount/nluke, 1.);
+  
+    if (verboseLevel>2) {
+      G4cout << " bias " << voltage << " V"
+	     << " maxCount " << maxLukeCount << " phonons desired"
+	     << "\n Downsample " << lukeSamp << " Luke-phonon emission"
+	     << G4endl;
+    }
+
+    G4CMPConfigManager::SetLukeSampling(lukeSamp);
+  }
 }
 
 // Compute phonon scaling factor only if not fully suppressed
