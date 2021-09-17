@@ -136,11 +136,24 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (kmag <= kSound) return &aParticleChange;
 
   if (verboseLevel > 1) {
-    G4cout << "p (post-step) = " << GetGlobalMomentum(aTrack)
-	   << "\np_mag = " << GetGlobalMomentum(aTrack).mag()
-	   << "\nktrk = " << ktrk << " kmag = " << kmag
-	   << "\nk/ks = " << kmag/kSound
-	   << " acos(ks/k) = " << acos(kSound/kmag) << G4endl;
+    G4cout << "p_global = " << GetGlobalMomentum(aTrack)
+	   << " p_mag " << GetGlobalMomentum(aTrack).mag() << G4endl
+	   << " p_local = " << ptrk << " p_mag " << ptrk.mag() << G4endl;
+
+    if (IsElectron()) {
+      G4ThreeVector kvalley = theLattice->MapPtoK_valley(iValley, ptrk);
+      G4ThreeVector pvalley = kvalley * hbarc;
+      G4cout << " valley " << iValley << " along "
+	     << theLattice->GetValleyAxis(iValley) << G4endl
+	     << " p_valley = " << pvalley << " p_mag " << pvalley.mag()
+	     << G4endl
+	     << " k_valley = " << kvalley << " k_mag " << kvalley.mag()
+	     << G4endl;
+    }
+
+    G4cout << " ktrk = " << ktrk << " kmag " << kmag << G4endl
+	   << " k/ks = " << kmag/kSound << " acos(ks/k) = " << acos(kSound/kmag)
+	   << G4endl;
   }
 
   // Final state kinematics, generated in accept/reject loop below
@@ -158,7 +171,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     q = 2*(kmag*cos(theta_phonon)-kSound);
 
     if (verboseLevel > 1) {
-      G4cout << "theta_phonon = " << theta_phonon
+      G4cout << " theta_phonon = " << theta_phonon
 	     << " phi_phonon = " << phi_phonon << " q = " << q << G4endl;
     }
     
@@ -179,8 +192,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     qvec.rotate(kdir, phi_phonon);
     
     if (verboseLevel > 1) {
-      G4cout << "qvec = " << qvec
-	     << "\nktrk.qvec = " << ktrk.dot(qvec)/(kmag*q)
+      G4cout << " qvec = " << qvec << G4endl
+	     << " ktrk.qvec = " << ktrk.dot(qvec)/(kmag*q)
 	     << " ktr-qvec angle " << acos(ktrk.dot(qvec)/(kmag*q))
 	     << G4endl;
     }
@@ -195,6 +208,22 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
       Erecoil = lat->MapPtoEkin(iValley, precoil);
     }
 
+    if (verboseLevel > 1) {
+      G4cout << "k_recoil = " << k_recoil << " k_mag " << k_recoil.mag()
+	     << G4endl;
+      
+      if (IsElectron()) {
+	G4ThreeVector kvalley = theLattice->MapK_HVtoK_valley(iValley, k_recoil);
+	G4ThreeVector pvalley = kvalley * hbarc;
+	
+	G4cout << "k_valley = " << kvalley << " k_mag " << kvalley.mag() << G4endl
+	       << "p_valley = " << pvalley << " p_mag " << pvalley.mag() << G4endl;
+      }
+      
+      G4cout << "p_recoil = " << precoil << " p_mag " << precoil.mag() << G4endl
+	     << "E_recoil = " << Erecoil/eV << " eV" << G4endl;
+    }
+    
     // Sanity check for phonon production: can't exceed charge's energy
     Ephonon = MakePhononEnergy(qvec.mag());
     if (Ephonon >= GetKineticEnergy(aTrack)) {
