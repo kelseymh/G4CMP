@@ -113,7 +113,7 @@ public:
   void ComputeDownsampling(G4double eIon, G4double eNIEL);
   void ComputeChargeSampling(G4double eIon);
   void ComputePhononSampling(G4double eNIEL);
-  void ComputeLukeSampling();
+  void ComputeLukeSampling(G4double eIon);
   
   // Fraction of total energy deposit in material which goes to e/h pairs
   G4double LindhardScalingFactor(G4double energy, G4double Z=0,

@@ -13,6 +13,7 @@
 // 20170815  Call through to scattering-rate LoadDataForTrack()
 // 20190906  Bug fix in UseRateModel(), check for good pointer, not null;
 //		Add function to initialize rate model after LoadDataForTrack
+// 20210915  Change diagnostic output to verbose=3 or higher.
 
 #include "G4CMPVProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -82,7 +83,7 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double vtrk = IsChargeCarrier() ? GetVelocity(aTrack) : aTrack.GetVelocity();
   G4double mfp  = rate>0. ? vtrk/rate : DBL_MAX;
 
-  if (verboseLevel) {
+  if (verboseLevel>2) {
     G4cout << GetProcessName() << " rate = " << rate/hertz << " Hz"
 	   << " Vtrk = " << vtrk/(m/s) << " m/s"
 	   << " MFP = " << mfp/m << " m" << G4endl;
