@@ -349,8 +349,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 #ifdef G4CMP_DEBUG
   if (output.good()) {
     output << aTrack.GetWeight()*weight << "," << k_recoil.mag() << ","
-	   << aParticleChange.GetEnergy()/eV << "," << precoil.mag()/eV
-	   << std::endl;
+	   << Erecoil/eV << "," << precoil.mag()/eV << std::endl;
   }
 #endif
 
