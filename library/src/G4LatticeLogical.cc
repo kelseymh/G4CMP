@@ -428,6 +428,14 @@ G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
+
+  if (verboseLevel>1) {
+    G4cout << " p (valley) " << vToN*p_e << G4endl
+	   << " V_el (valley) " << GetMInvTensor()*(vToN*p_e/c_light) << G4endl
+	   << " returning " << nToV*(GetMInvTensor()*(vToN*p_e/c_light))
+	   << G4endl;
+  }
+
   return nToV*(GetMInvTensor()*(vToN*p_e/c_light));
 }
 
@@ -439,6 +447,14 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
+
+  if (verboseLevel>1) {
+    G4cout << " V_el (valley) " << vToN*v_e << G4endl
+	   << " p (valley) " << GetMassTensor()*(vToN*v_e*c_light) << G4endl
+	   << " returning " << nToV*(GetMassTensor()*(vToN*v_e*c_light))
+	   << G4endl;
+  }
+
   return nToV*(GetMassTensor()*(vToN*v_e*c_light));
 }
 
@@ -449,7 +465,16 @@ G4LatticeLogical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector &v_e) const {
      << G4endl;
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
-  return GetSqrtInvTensor()*GetMassTensor()*vToN*v_e/hbar_Planck;
+
+  if (verboseLevel>1) {
+    G4cout << " V_el (valley) " << vToN*v_e << G4endl
+	   << " K=mv/hbar (valley) " << GetMassTensor()*(vToN*v_e/hbar_Planck)
+	   << G4endl << " returning "
+	   << GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck))
+	   << G4endl;
+  }
+
+  return GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck));
 }
 
 G4ThreeVector 
@@ -471,6 +496,9 @@ G4LatticeLogical::MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const {
 
   tempvec() = p_e;
   tempvec().transform(GetValley(ivalley));	// Rotate into valley frame
+
+  if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
+
   return GetSqrtInvTensor() * tempvec()/hbarc;	// Herring-Vogt transformation
 }
 
@@ -491,7 +519,12 @@ G4LatticeLogical::MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const {
 
   tempvec() = k_HV;
   tempvec() *= GetSqrtTensor();			// From Herring-Vogt to valley
+  if (verboseLevel>1) G4cout << " K (valley) " << tempvec() << G4endl;
+
   tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
+
+  if (verboseLevel>1) G4cout << " returning " << tempvec() << G4endl;
+
   return tempvec();
 }
 
@@ -503,7 +536,11 @@ G4LatticeLogical::MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const {
 
   tempvec() = k_HV;
   tempvec() *= GetSqrtTensor();			// From Herring-Vogt to valley 
+  if (verboseLevel>1) G4cout << " K (valley) " << tempvec() << G4endl;
+
   tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
+  if (verboseLevel>1) G4cout << " K (lattice) " << tempvec() << G4endl;
+
   tempvec() *= hbarc;			// Convert wavevector to momentum
   return tempvec();
 }
@@ -516,6 +553,8 @@ G4LatticeLogical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
 
   tempvec() = k;
   tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
+  if (verboseLevel>1) G4cout << " K (lattice) " << tempvec() << G4endl;
+
   tempvec() *= hbarc;			// Convert wavevector to momentum
   return tempvec();
 }
@@ -531,6 +570,7 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
 
   tempvec() = p;
   tempvec().transform(GetValley(iv));		// Rotate to valley frame
+  if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
 
   // Compute kinetic energy component by component, then sum
   return (0.5/c_squared) * (tempvec().x()*tempvec().x()*fMassInverse.xx() +
@@ -544,7 +584,8 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
     G4cout << "G4LatticeLogical::MapV_elToEkin " << iv << " " << v << G4endl;
 
   tempvec() = v;
-  tempvec().transform(GetValley(iv));			// Rotate to valley frame
+  tempvec().transform(GetValley(iv));		// Rotate to valley frame
+  if (verboseLevel>1) G4cout << " V_el (valley) " << tempvec() << G4endl;
 
   // Compute kinetic energy component by component, then sum
   return 0.5 * (tempvec().x()*tempvec().x()*fMassTensor.xx() +
@@ -559,7 +600,7 @@ G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
 					   const G4ThreeVector& p) const {
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::GetElectronEffectiveMass " << iv
-	   << " " << p << G4endl;
+	   << " " << p << " p2 = " << p.mag2() << G4endl;
 
   return 0.5*p.mag2()/c_squared/MapPtoEkin(iv,p);	// Non-relativistic
 }
