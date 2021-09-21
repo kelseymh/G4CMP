@@ -5,6 +5,8 @@
 // Options: -v N	Set vebosity to N: 1 = print errors, 2 = print all
 //
 // 20201127  Michael Kelsey
+// 20210921  Look at step-wise transforms (global-local-lattice-valley-HV)
+//		as used, for instance, in G4CMPEqEMField.
 
 #include "globals.hh"
 #include "G4CMPConfigManager.hh"
@@ -130,6 +132,68 @@ G4int testHVpolar(G4double costh) {
 }
 
 
+// Apply lattice-to-valley transforms individually, compare with expectations
+
+G4int testValleyAxis(G4int iv) {
+  const G4LatticeLogical* lat = getLattice();	// Germanium
+  if (iv < 0 || iv >= lat->NumberOfValleys()) return 1000;
+
+  G4int ndiff=0;
+
+  G4ThreeVector xhat(1,0,0);	    // Valley axis specifies local X direction
+
+  G4ThreeVector axis = lat->GetValleyAxis(iv);
+  if (verbose) G4cout << "Valley " << iv << " axis " << axis << G4endl;
+  
+  G4ThreeVector vhat = lat->GetValley(iv)*axis;	// SHOULD EQUAL xhat
+  G4double xvdot = xhat.dot(vhat);
+  if (bigDiff(xvdot)) ndiff++;
+  if (showDiff(xvdot)) {
+    G4cout << "GetValley(iv)*axis " << vhat << " vs xhat = " << xvdot << G4endl;
+  }
+  
+  G4ThreeVector vloc = lat->GetValleyInv(iv)*xhat;	// SHOULD EQUAL axis
+  G4double avdot = axis.dot(vloc);
+  if (bigDiff(avdot)) ndiff++;
+  if (showDiff(avdot)) {
+    G4cout << "GetValleyInv(iv)*xhat " << vloc << " vs axis = " << avdot << G4endl;
+  }
+
+  return ndiff;
+}
+
+// Apply valley transform to Zhat (e.g. E-field) show result
+
+G4int testZhatValley(G4int iv) {
+  const G4LatticeLogical* lat = getLattice();	// Germanium
+  if (iv < 0 || iv >= lat->NumberOfValleys()) return 1000;
+
+  G4int ndiff = 0;
+
+  G4ThreeVector zhat(0,0,1);		// Typical E-field in experiments
+  G4ThreeVector zvalley = lat->GetValley(iv)*zhat;
+
+  if (verbose)
+    G4cout << "Valley " << iv << " zhat looks like " << zvalley << G4endl;
+
+  return ndiff;
+}
+
+G4int testValleys() {
+  const G4LatticeLogical* lat = getLattice();	// Germanium
+
+  // Valley axes should all be along (+-1, +-1, +-1)
+  G4int ndiff=0;
+  for (size_t iv=0; iv<lat->NumberOfValleys(); iv++) {
+    if (verbose) G4cout << G4endl;		// Spacing between tests
+    ndiff += testValleyAxis(iv) + testZhatValley(iv);
+  }
+
+  return ndiff;
+}
+
+
+
 // MAIN PROGRAM
 
 int main(int argc, char* argv[]) {
@@ -151,6 +215,9 @@ int main(int argc, char* argv[]) {
   for (G4double costh=1.; costh>=-1; costh-=0.2) {
     ndiff += testHVpolar(costh);
   }
+
+  // Check valley axes and to-from valley transforms
+  ndiff += testValleys();
 
   return ndiff;		// 0 is successful validation
 }
