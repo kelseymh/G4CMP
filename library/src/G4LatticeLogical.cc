@@ -675,7 +675,7 @@ void G4LatticeLogical::FillMassInfo() {
 
 void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
   if (verboseLevel>1) {
-    G4cout << "G4LatticeLogical::AddValley " << psi << " " << theta
+    G4cout << "G4LatticeLogical::AddValley " << phi << " " << theta
 	   << " " << psi << " rad" << G4endl;
   }
 
