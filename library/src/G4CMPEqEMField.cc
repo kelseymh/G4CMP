@@ -19,6 +19,7 @@
 // 20150528  Add debugging output
 // 20190802  Check if field is aligned or anti-aligned with valley, apply
 //	     transform to valley axis "closest" to field direction.
+// 20210922  Field transformation should be Herring-Vogt, with SqrtInvTensor.
 
 #include "G4CMPEqEMField.hh"
 #include "G4CMPConfigManager.hh"
@@ -89,9 +90,6 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   /* This part is confusing. "Momentum" reported by G4 is not really the
    * momentum for charge carriers with valleys. It's just the velocity times
    * the defined scalar mass.
-   *
-   * So we need to calculate the true dp/dx, and then transform it into dv/dx
-   * and then multiply that by the mass to get this "psuedomomentum."
    */
   G4ThreeVector v = G4ThreeVector(y[3], y[4], y[5])/fMass/c_light;
   G4double vinv = 1./v.mag();
@@ -107,8 +105,8 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   const G4RotationMatrix& vToN = theLattice->GetValley(valleyIndex);
   const G4RotationMatrix& nToV = theLattice->GetValleyInv(valleyIndex);
 
-  force = nToV*(theLattice->GetMInvTensor()*(vToN*force));
-  force *= fMass * vinv * c_light;
+  force = nToV*(theLattice->GetSqrtInvTensor()*(vToN*force));
+  force *= vinv * c_light;
   theLattice->RotateToSolid(force);
 
   /* Restore effective force to global coordinates for G4Transporation
