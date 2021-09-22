@@ -200,16 +200,22 @@ G4int testZminvValley(G4int iv) {
   G4ThreeVector zhat(0,0,1);		// Typical E-field in experiments
   G4ThreeVector zvalley = lat->GetValley(iv)*zhat;
   G4ThreeVector vvalley = lat->GetMInvTensor()*zvalley * lat->GetElectronMass();
+  G4ThreeVector vHV = lat->GetSqrtInvTensor()*zvalley;
 
-  if (verbose)
-    G4cout << "Valley " << iv << " zhat/M looks like " << vvalley << G4endl;
+  if (verbose) {
+    G4cout << "Valley " << iv << " zhat/M     " << vvalley << G4endl
+	   << "Valley " << iv << " zhat/sqrtM " << vHV << G4endl;
+  }
 
   // Rotate transformed vector back into lattice frame
-  G4ThreeVector vlat = lat->GetValleyInv(iv)*vvalley;
-  if (zhat.dot(vlat) < 0.) ndiff++;
-
+  G4ThreeVector vlat = lat->GetValleyInv(iv)*vHV;
   if (verbose)
-    G4cout << " rotated back to lattice, vlat " << vlat << G4endl;
+    G4cout << " rotated vHV back to lattice, vlat " << vlat << G4endl;
+
+  G4double ediff = vlat.mag() - zhat.mag();
+  if (zhat.dot(vlat) < 0. || bigDiff(ediff)) ndiff++;
+  if (showDiff(ediff))
+    G4cout << " Vector magnitude changed by " << ediff << G4endl;
 
   return ndiff;
 }
