@@ -176,17 +176,54 @@ G4int testZhatValley(G4int iv) {
   if (verbose)
     G4cout << "Valley " << iv << " zhat looks like " << zvalley << G4endl;
 
+  // Inverse transform should recover original zhat
+  G4ThreeVector zloc = lat->GetValleyInv(iv)*zvalley;
+  G4double zdiff = zhat.dot(zloc);
+  ndiff += bigDiff(zdiff);
+
+  if (showDiff(zdiff)) {
+    G4cout << " inverse transform gives " << zloc << " vs zhat " << zdiff
+	   << G4endl;
+  }
+
+  return ndiff;
+}
+
+// Apply valley transform to Zhat along with 1/minv momentum transform
+
+G4int testZminvValley(G4int iv) {
+  const G4LatticeLogical* lat = getLattice();	// Germanium
+  if (iv < 0 || iv >= lat->NumberOfValleys()) return 1000;
+
+  G4int ndiff = 0;
+
+  G4ThreeVector zhat(0,0,1);		// Typical E-field in experiments
+  G4ThreeVector zvalley = lat->GetValley(iv)*zhat;
+  G4ThreeVector vvalley = lat->GetMInvTensor()*zvalley * lat->GetElectronMass();
+
+  if (verbose)
+    G4cout << "Valley " << iv << " zhat/M looks like " << vvalley << G4endl;
+
+  // Rotate transformed vector back into lattice frame
+  G4ThreeVector vlat = lat->GetValleyInv(iv)*vvalley;
+  if (zhat.dot(vlat) < 0.) ndiff++;
+
+  if (verbose)
+    G4cout << " rotated back to lattice, vlat " << vlat << G4endl;
+
   return ndiff;
 }
 
 G4int testValleys() {
   const G4LatticeLogical* lat = getLattice();	// Germanium
 
-  // Valley axes should all be along (+-1, +-1, +-1)
+  // Germanium valley axes should all be along (+-1, +-1, +-1)
   G4int ndiff=0;
   for (size_t iv=0; iv<lat->NumberOfValleys(); iv++) {
     if (verbose) G4cout << G4endl;		// Spacing between tests
-    ndiff += testValleyAxis(iv) + testZhatValley(iv);
+    ndiff += testValleyAxis(iv);
+    ndiff += testZhatValley(iv);
+    ndiff += testZminvValley(iv);
   }
 
   return ndiff;
