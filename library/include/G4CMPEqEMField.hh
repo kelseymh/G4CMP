@@ -17,6 +17,7 @@
 //	     run-time configuration argument.
 // 20140404  Drop unnecessary data members, using functions in G4LatticePhysical
 // 20170525  Add default "rule of five" copy/move operators
+// 20210920  Add verbosity with access to be used by G4CMPFieldManager
 
 #ifndef G4CMPEqEMField_hh
 #define G4CMPEqEMField_hh
@@ -42,6 +43,9 @@ public:
   G4CMPEqEMField& operator=(const G4CMPEqEMField&) = default;
   G4CMPEqEMField& operator=(G4CMPEqEMField&&) = default;
 
+  // Turn on diagnostic messages (warning, this makes huge output files!)
+  void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+
   // Replace physical lattice if track has changed volumes
   // NOTE:  Returns TRUE if lattice was actually changed
   G4bool ChangeLattice(const G4LatticePhysical* lattice);
@@ -65,6 +69,7 @@ public:
   
 private:
   const G4LatticePhysical* theLattice;
+  G4int verboseLevel;			// For diagnostic messages
 
   G4double fCharge;	       		// Same as base class fElectrMagCof
   G4double fMass;	       		// Same as base class fElectrMagCof
