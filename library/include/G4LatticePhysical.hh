@@ -33,6 +33,7 @@
 // 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
 //		return thread-local instance.
 // 20200608  Fix -Wshadow warnings from tempvec
+// 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -51,7 +52,10 @@ public:
   G4LatticePhysical(const G4LatticeLogical* Lat,
 		    G4int h=0, G4int k=0, G4int l=0, G4double rot=0.);
 
-  void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+  void SetVerboseLevel(G4int vb) const {
+    verboseLevel = vb;
+    if (fLattice) fLattice->SetVerboseLevel(vb);
+  }
 
   // Specific material lattice for this physical instance
   void SetLatticeLogical(const G4LatticeLogical* Lat) { fLattice = Lat; }
@@ -174,7 +178,7 @@ private:
   }
 
 private:
-  G4int verboseLevel;			// Enable diagnostic output
+  mutable G4int verboseLevel;		// Enable diagnostic output
   const G4LatticeLogical* fLattice;	// Underlying lattice parameters
   G4RotationMatrix fOrient;		// Rotate geometry into lattice frame
   G4RotationMatrix fInverse;

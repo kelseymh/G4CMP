@@ -97,6 +97,7 @@ void G4CMPFieldManager::CreateTransport() {
   theChordFinder = new G4ChordFinder(theDriver);
   SetChordFinder(theChordFinder);
 
+  theEqMotion->SetVerboseLevel(verboseLevel);
   theDriver->SetVerboseLevel(verboseLevel);
   theChordFinder->SetVerbose(verboseLevel);
 }
