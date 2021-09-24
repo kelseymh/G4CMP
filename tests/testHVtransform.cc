@@ -136,7 +136,7 @@ G4int testHVpolar(G4double costh) {
 
 G4int testValleyAxis(G4int iv) {
   const G4LatticeLogical* lat = getLattice();	// Germanium
-  if (iv < 0 || iv >= lat->NumberOfValleys()) return 1000;
+  if (iv < 0 || iv >= (G4int)lat->NumberOfValleys()) return 1000;
 
   G4int ndiff=0;
 
@@ -162,11 +162,41 @@ G4int testValleyAxis(G4int iv) {
   return ndiff;
 }
 
+// Test off-axis transforms out of valley frame (see G4CMP-279)
+
+G4int testValleyOffAxis(G4int iv) {
+  const G4LatticeLogical* lat = getLattice();	// Germanium
+  if (iv < 0 || iv >= (G4int)lat->NumberOfValleys()) return 1000;
+
+  G4int ndiff = 0;
+
+  G4ThreeVector axis = lat->GetValleyAxis(iv);
+
+  // Start in valley frame, along Z with some axial component
+  G4ThreeVector xzvalley(0.2,0.,0.98); xzvalley.setMag(1.);
+  G4double xzvAngle = atan2(xzvalley.z(),xzvalley.x());
+  if (verbose) {
+    G4cout << "Valley " << iv << " xzv " << xzvalley << " angle "
+	   << xzvAngle/deg << " deg to axis" << G4endl;
+  }
+
+  G4ThreeVector xzvLat = lat->GetValleyInv(iv)*xzvalley;
+  G4double xzlAngle = acos(axis.dot(xzvLat));
+  if (verbose) {
+    G4cout << " in lattice becomes " << xzvLat << " angle " << xzlAngle/deg
+	   << " deg to axis " << G4endl;
+  }
+
+  if (bigDiff(xzlAngle-xzvAngle)) ndiff++;
+
+  return ndiff;
+}
+
 // Apply valley transform to Zhat (e.g. E-field) show result
 
 G4int testZhatValley(G4int iv) {
   const G4LatticeLogical* lat = getLattice();	// Germanium
-  if (iv < 0 || iv >= lat->NumberOfValleys()) return 1000;
+  if (iv < 0 || iv >= (G4int)lat->NumberOfValleys()) return 1000;
 
   G4int ndiff = 0;
 
@@ -193,7 +223,7 @@ G4int testZhatValley(G4int iv) {
 
 G4int testZminvValley(G4int iv) {
   const G4LatticeLogical* lat = getLattice();	// Germanium
-  if (iv < 0 || iv >= lat->NumberOfValleys()) return 1000;
+  if (iv < 0 || iv >= (G4int)lat->NumberOfValleys()) return 1000;
 
   G4int ndiff = 0;
 
@@ -220,6 +250,67 @@ G4int testZminvValley(G4int iv) {
   return ndiff;
 }
 
+// Apply valley transform to Yhat (e.g. E-field in tilted frame) show result
+
+G4int testYhatValley(G4int iv) {
+  const G4LatticeLogical* lat = getLattice();	// Germanium
+  if (iv < 0 || iv >= (G4int)lat->NumberOfValleys()) return 1000;
+
+  G4int ndiff = 0;
+
+  G4ThreeVector yhat(0,1,0);		// Typical E-field in experiments
+  G4ThreeVector yvalley = lat->GetValley(iv)*yhat;
+
+  if (verbose)
+    G4cout << "Valley " << iv << " yhat looks like " << yvalley << G4endl;
+
+  // Inverse transform should recover original yhat
+  G4ThreeVector yloc = lat->GetValleyInv(iv)*yvalley;
+  G4double ydiff = yhat.dot(yloc);
+  ndiff += bigDiff(ydiff);
+
+  if (showDiff(ydiff)) {
+    G4cout << " inverse transform gives " << yloc << " vs yhat " << ydiff
+	   << G4endl;
+  }
+
+  return ndiff;
+}
+
+// Apply valley transform to Yhat along with 1/minv momentum transform
+
+G4int testYminvValley(G4int iv) {
+  const G4LatticeLogical* lat = getLattice();	// Germanium
+  if (iv < 0 || iv >= (G4int)lat->NumberOfValleys()) return 1000;
+
+  G4int ndiff = 0;
+
+  G4ThreeVector yhat(0,1,0);		// Typical E-field in experiments
+  G4ThreeVector yvalley = lat->GetValley(iv)*yhat;
+  G4ThreeVector vvalley = lat->GetMInvTensor()*yvalley * lat->GetElectronMass();
+  G4ThreeVector vHV = lat->GetSqrtInvTensor()*yvalley;
+
+  if (verbose) {
+    G4cout << "Valley " << iv << " yhat/M     " << vvalley << G4endl
+	   << "Valley " << iv << " yhat/sqrtM " << vHV << G4endl;
+  }
+
+  // Rotate transformed vector back into lattice frame
+  G4ThreeVector vlat = lat->GetValleyInv(iv)*vHV;
+  if (verbose)
+    G4cout << " rotated vHV back to lattice, vlat " << vlat << G4endl;
+
+  G4double ediff = vlat.mag() - yhat.mag();
+  if (yhat.dot(vlat) < 0. || bigDiff(ediff)) ndiff++;
+  if (showDiff(ediff))
+    G4cout << " Vector magnitude changed by " << ediff << G4endl;
+
+  return ndiff;
+}
+
+
+// Test various transforms involving individual valleys
+
 G4int testValleys() {
   const G4LatticeLogical* lat = getLattice();	// Germanium
 
@@ -228,13 +319,15 @@ G4int testValleys() {
   for (size_t iv=0; iv<lat->NumberOfValleys(); iv++) {
     if (verbose) G4cout << G4endl;		// Spacing between tests
     ndiff += testValleyAxis(iv);
+    ndiff += testValleyOffAxis(iv);
     ndiff += testZhatValley(iv);
     ndiff += testZminvValley(iv);
+    ndiff += testYhatValley(iv);
+    ndiff += testYminvValley(iv);
   }
 
   return ndiff;
 }
-
 
 
 // MAIN PROGRAM
