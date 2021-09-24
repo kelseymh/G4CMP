@@ -22,6 +22,7 @@
 // 20201112  Add warning message to base DoTransmission() function (c.f.
 //	     warning message in base DoReflection()).  Pass verbosity through
 //	     to electrode.
+// 20210923  Use >= in maximum reflections check.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -309,7 +310,7 @@ G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) const {
   trackInfo->IncrementReflectionCount();
 
   return (maximumReflections >= 0 &&
-    trackInfo->ReflectionCount() > static_cast<size_t>(maximumReflections));
+    trackInfo->ReflectionCount() >= static_cast<size_t>(maximumReflections));
 }
 
 

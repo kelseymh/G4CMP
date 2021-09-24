@@ -105,7 +105,24 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   const G4RotationMatrix& vToN = theLattice->GetValley(valleyIndex);
   const G4RotationMatrix& nToV = theLattice->GetValleyInv(valleyIndex);
 
+<<<<<<< Updated upstream
   force = nToV*(theLattice->GetSqrtInvTensor()*(vToN*force));
+=======
+#ifdef G4CMPDEBUG
+  if (verboseLevel > 2) {
+    G4cout << " q*E (lattice) " << force/(eV/m) << G4endl
+	   << " q*E (valley) " << vToN*force/(eV/m) << G4endl
+	   << " q*E/sqrt(m-tensor) " << theLattice->GetSqrtInvTensor()*(vToN*force)/(eV/m)
+	   << G4endl;
+  }
+#endif
+
+  force = nToV*(theLattice->GetSqrtInvTensor()*(vToN*force));
+#ifdef G4CMPDEBUG
+  if (verboseLevel > 2) G4cout << " q*E/m (lattice) " << force/(eV/m) << G4endl;
+#endif
+
+>>>>>>> Stashed changes
   force *= vinv * c_light;
   theLattice->RotateToSolid(force);
 
