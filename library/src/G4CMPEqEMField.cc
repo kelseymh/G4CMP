@@ -20,6 +20,7 @@
 // 20190802  Check if field is aligned or anti-aligned with valley, apply
 //	     transform to valley axis "closest" to field direction.
 // 20210921  Add detailed debugging output, protected with G4CMP_DEBUG flag
+// 20210922  Field transformation should be Herring-Vogt, with SqrtInvTensor.
 
 #include "G4CMPEqEMField.hh"
 #include "G4CMPConfigManager.hh"
@@ -101,9 +102,6 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   /* This part is confusing. "Momentum" reported by G4 is not really the
    * momentum for charge carriers with valleys. It's just the velocity times
    * the defined scalar mass.
-   *
-   * So we need to calculate the true dp/dx, and then transform it into dv/dx
-   * and then multiply that by the mass to get this "pseudomomentum."
    */
   G4ThreeVector v = G4ThreeVector(y[3], y[4], y[5])/fMass/c_light;
   G4double vinv = 1./v.mag();
@@ -138,17 +136,17 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   if (verboseLevel > 2) {
     G4cout << " q*E (lattice) " << force/(eV/m) << G4endl
 	   << " q*E (valley) " << vToN*force/(eV/m) << G4endl
-	   << " q*E/m-tensor " << theLattice->GetMInvTensor()*(vToN*force)/(eV/m)
+	   << " q*E/sqrt(m-tensor) " << theLattice->GetSqrtInvTensor()*(vToN*force)/(eV/m)
 	   << G4endl;
   }
 #endif
 
-  force = nToV*(theLattice->GetMInvTensor()*(vToN*force));
+  force = nToV*(theLattice->GetSqrtInvTensor()*(vToN*force));
 #ifdef G4CMPDEBUG
   if (verboseLevel > 2) G4cout << " q*E/m (lattice) " << force/(eV/m) << G4endl;
 #endif
 
-  force *= fMass * vinv * c_light;
+  force *= vinv * c_light;
   theLattice->RotateToSolid(force);
 
 #ifdef G4CMPDEBUG
