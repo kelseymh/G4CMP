@@ -33,6 +33,7 @@
 // 20200504  M. Kelsey (G4CMP-195):  Get trapping MFPs from process
 // 20200520  "First report" flag must be thread-local.
 // 20200804  Move field access to G4CMPFieldUtils
+// 20210923  Ensure that rate calculations are initialized for track
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
@@ -79,12 +80,16 @@ void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
     dynamic_cast<G4CMPVProcess*>(G4CMP::FindProcess(aTrack,
 						    "G4CMPLukeScattering"));
   lukeRate = lukeProc ? lukeProc->GetRateModel() : nullptr;
+  if (lukeRate)
+    const_cast<G4CMPVScatteringRate*>(lukeRate)->LoadDataForTrack(aTrack);
 
   // get rate model for intervalley scattering from process
   const G4CMPVProcess* ivProc =
     dynamic_cast<G4CMPVProcess*>(G4CMP::FindProcess(aTrack,
 					    "G4CMPInterValleyScattering"));
   ivRate = ivProc ? ivProc->GetRateModel() : nullptr;
+  if (ivRate) 
+    const_cast<G4CMPVScatteringRate*>(ivRate)->LoadDataForTrack(aTrack);
 
   // get charge trapping mean free path
   trappingLength =

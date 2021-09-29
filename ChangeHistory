@@ -6,6 +6,16 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-09-29  g4cmp-V07-11-00 Better coordinate and electric field transforms,
+			additional downsampling control, and improved
+			diagnostic messages.
+2021-09-28  G4CMP-279 : Apply proper Herring-Vogt transform in EqEMField.
+2021-09-22  G4CMP-278 : Add lattice/valley frame testing to testHVtransform.
+2021-09-19  G4CMP-277 : Store computed Erecoil properly in LukePhononEnergies.
+2021-09-10  G4CMP-272 : Use numerical limit on Luke phonons for downsampling.
+2021-09-08  G4CMP-275 : IVRate calculations must use global field position.
+2021-09-02  G4CMP-273 : Add verbosity control to FieldManager, LocalEMField.
+
 2021-08-28  g4cmp-V07-10-06 New release with better downsampling method, and
 			additional dignostic parameters.
 2021-08-28  feature/LukeDebug: Add addition track information to debugging

@@ -37,6 +37,7 @@
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value,
 //		precompute valley inverse transforms
 // 20200608  Fix -Wshadow warnings from tempvec
+// 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -69,7 +70,7 @@ public:
   G4LatticeLogical& operator=(G4LatticeLogical&& rhs);
 
   // Run-time configuration
-  void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+  void SetVerboseLevel(G4int vb) const { verboseLevel = vb; }
 
   void SetName(const G4String& name) { fName = name; }
   const G4String& GetName() const { return fName; }
@@ -291,7 +292,7 @@ private:
   }
 
 private:
-  G4int verboseLevel;			    // Enable diagnostic output
+  mutable G4int verboseLevel;		    // Enable diagnostic output
   G4String fName;			    // Name of lattice for messages
   G4CMPCrystalGroup fCrystal;		    // Symmetry group, axis unit vectors
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices

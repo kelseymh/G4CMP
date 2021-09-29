@@ -135,12 +135,28 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
 
+  // *** TURN ON LATTICE VERBOSITY
+  const_cast<G4LatticePhysical*>(lat)->SetVerboseLevel(verboseLevel);
+
   if (verboseLevel > 1) {
-    G4cout << "p (post-step) = " << GetGlobalMomentum(aTrack)
-	   << "\np_mag = " << GetGlobalMomentum(aTrack).mag()
-	   << "\nktrk = " << ktrk << " kmag = " << kmag
-	   << "\nk/ks = " << kmag/kSound
-	   << " acos(ks/k) = " << acos(kSound/kmag) << G4endl;
+    G4ThreeVector p_global = GetGlobalMomentum(aTrack);
+    G4cout << "p_global = " << p_global << " p_mag " << p_global.mag() << G4endl
+	   << " p_local = " << ptrk << " p_mag " << ptrk.mag() << G4endl;
+
+    if (IsElectron()) {
+      G4ThreeVector kvalley = theLattice->MapPtoK_valley(iValley, ptrk);
+      G4ThreeVector pvalley = kvalley * hbarc;
+      G4cout << " valley " << iValley << " along "
+	     << theLattice->GetValleyAxis(iValley) << G4endl
+	     << " p_valley = " << pvalley << " p_mag " << pvalley.mag()
+	     << G4endl
+	     << " k_valley = " << kvalley << " k_mag " << kvalley.mag()
+	     << G4endl;
+    }
+
+    G4cout << " ktrk = " << ktrk << " kmag " << kmag << G4endl
+	   << " k/ks = " << kmag/kSound << " acos(ks/k) = " << acos(kSound/kmag)
+	   << G4endl;
   }
 
   // Final state kinematics, generated in accept/reject loop below
@@ -158,7 +174,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     q = 2*(kmag*cos(theta_phonon)-kSound);
 
     if (verboseLevel > 1) {
-      G4cout << "theta_phonon = " << theta_phonon
+      G4cout << " theta_phonon = " << theta_phonon
 	     << " phi_phonon = " << phi_phonon << " q = " << q << G4endl;
     }
     
@@ -179,14 +195,27 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     qvec.rotate(kdir, phi_phonon);
     
     if (verboseLevel > 1) {
-      G4cout << "qvec = " << qvec
-	     << "\nktrk.qvec = " << ktrk.dot(qvec)/(kmag*q)
+      G4cout << " qvec = " << qvec << G4endl
+	     << " ktrk.qvec = " << ktrk.dot(qvec)/(kmag*q)
 	     << " ktr-qvec angle " << acos(ktrk.dot(qvec)/(kmag*q))
 	     << G4endl;
     }
     
     // Get recoil wavevector (in HV frame), convert to new local momentum
     k_recoil = ktrk - qvec;
+    if (verboseLevel > 1) {
+      G4cout << "k_recoil = " << k_recoil << " k_mag " << k_recoil.mag()
+	     << G4endl;
+      
+      if (IsElectron()) {
+	G4ThreeVector kvalley = theLattice->MapK_HVtoK_valley(iValley, k_recoil);
+	G4ThreeVector pvalley = kvalley * hbarc;
+	
+	G4cout << "k_valley = " << kvalley << " k_mag " << kvalley.mag() << G4endl
+	       << "p_valley = " << pvalley << " p_mag " << pvalley.mag() << G4endl;
+      }
+    }
+
     if (IsHole()) {
       precoil = k_recoil * hbarc;
       Erecoil = precoil.mag2() / (2.*lat->GetHoleMass());
@@ -195,6 +224,11 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
       Erecoil = lat->MapPtoEkin(iValley, precoil);
     }
 
+    if (verboseLevel > 1) {
+      G4cout << "p_recoil = " << precoil << " p_mag " << precoil.mag() << G4endl
+	     << "E_recoil = " << Erecoil/eV << " eV" << G4endl;
+    }
+    
     // Sanity check for phonon production: can't exceed charge's energy
     Ephonon = MakePhononEnergy(qvec.mag());
     if (Ephonon >= GetKineticEnergy(aTrack)) {
@@ -320,10 +354,12 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 #ifdef G4CMP_DEBUG
   if (output.good()) {
     output << aTrack.GetWeight()*weight << "," << k_recoil.mag() << ","
-	   << aParticleChange.GetEnergy()/eV << "," << precoil.mag()/eV
-	   << std::endl;
+	   << Erecoil/eV << "," << precoil.mag()/eV << std::endl;
   }
 #endif
+
+  // *** TURN OFF LATTICE VERBOSITY
+  const_cast<G4LatticePhysical*>(lat)->SetVerboseLevel(0);
 
   ClearNumberOfInteractionLengthLeft();
   return &aParticleChange;
