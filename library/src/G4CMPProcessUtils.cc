@@ -39,6 +39,9 @@
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 // 20201223  Add FindNearestValley() function to align electron momentum.
 // 20210318  In LoadDataForTrack, kill a bad track, not the whole event.
+// 20211001  "Reverse" Get*VelocityVector() and Get*Momentum() functions, so
+//	     that G4Track::GetMomentum() is used even for electrons, and
+//	     velocity is calculated from that.  Use internal vector buffer.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -114,12 +117,12 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
       G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(*track);
 
     // Set momentum direction using already provided wavevector
-    G4ThreeVector kdir = trackInfo->k();
+    tempvec = trackInfo->k();
 
     const G4ParticleDefinition* pd = track->GetParticleDefinition();
     G4Track* tmp_track = const_cast<G4Track*>(track);
     tmp_track->SetMomentumDirection(
-      theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), kdir));
+      theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), tempvec));
   }
 }
 
@@ -233,46 +236,44 @@ G4ThreeVector G4CMPProcessUtils::GetLocalPosition(const G4Track& track) const {
 
 void G4CMPProcessUtils::GetLocalPosition(const G4Track& track,
 					 G4double pos[3]) const {
-  G4ThreeVector tpos = GetLocalPosition(track);
-  pos[0] = tpos.x();
-  pos[1] = tpos.y();
-  pos[2] = tpos.z();
+  tempvec = GetLocalPosition(track);
+  pos[0] = tempvec.x();
+  pos[1] = tempvec.y();
+  pos[2] = tempvec.z();
 }
 
 G4ThreeVector G4CMPProcessUtils::GetLocalMomentum(const G4Track& track) const {
-  if (G4CMP::IsElectron(track)) {
-    return theLattice->MapV_elToP(GetValleyIndex(track),
-                                  GetLocalVelocityVector(track));
-  } else if (G4CMP::IsHole(track)) {
-    return GetLocalDirection(track.GetMomentum());
-  } else {
-    G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
-                EventMustBeAborted, "Unknown charge carrier");
-    return G4ThreeVector();
-  }
+  return GetLocalDirection(track.GetMomentum());
 }
 
 void G4CMPProcessUtils::GetLocalMomentum(const G4Track& track, 
 					 G4double mom[3]) const {
-  G4ThreeVector tmom = GetLocalMomentum(track);
-  mom[0] = tmom.x();
-  mom[1] = tmom.y();
-  mom[2] = tmom.z();
+  tempvec = GetLocalMomentum(track);
+  mom[0] = tempvec.x();
+  mom[1] = tempvec.y();
+  mom[2] = tempvec.z();
 }
 
 G4ThreeVector 
 G4CMPProcessUtils::GetLocalVelocityVector(const G4Track& track) const {
-  G4ThreeVector vel = track.CalculateVelocity() * track.GetMomentumDirection();
-  RotateToLocalDirection(vel);
+  G4ThreeVector vel;
+
+  if (G4CMP::IsElectron(track)) {
+    vel = theLattice->MapPtoV_el(GetValleyIndex(track),GetLocalMomentum(track));
+  } else {
+    vel = track.CalculateVelocity() * track.GetMomentumDirection();
+    RotateToLocalDirection(vel);
+  }
+
   return vel;
 }
 
 void G4CMPProcessUtils::GetLocalVelocityVector(const G4Track &track,
                                                G4double vel[]) const {
-  G4ThreeVector v_local = GetLocalVelocityVector(track);
-  vel[0] = v_local.x();
-  vel[1] = v_local.y();
-  vel[2] = v_local.z();
+  tempvec = GetLocalVelocityVector(track);
+  vel[0] = tempvec.x();
+  vel[1] = tempvec.y();
+  vel[2] = tempvec.z();
 }
 
 G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const {
@@ -295,60 +296,41 @@ G4CMPProcessUtils::GetGlobalPosition(const G4Track& track) const {
 
 void G4CMPProcessUtils::GetGlobalPosition(const G4Track& track,
            G4double pos[3]) const {
-  G4ThreeVector tpos = GetGlobalPosition(track);
-  pos[0] = tpos.x();
-  pos[1] = tpos.y();
-  pos[2] = tpos.z();
+  tempvec = GetGlobalPosition(track);
+  pos[0] = tempvec.x();
+  pos[1] = tempvec.y();
+  pos[2] = tempvec.z();
 }
 
 G4ThreeVector 
 G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
-  if (G4CMP::IsElectron(track)) {
-    G4ThreeVector p = theLattice->MapV_elToP(GetValleyIndex(track),
-                                             GetLocalVelocityVector(track));
-    RotateToGlobalDirection(p);
-    return p;
-  } else if (G4CMP::IsHole(track)) {
-    return track.GetMomentum();
-  } else {
-    G4Exception("G4CMPProcessUtils::GetGlobalMomentum", "DriftProcess003",
-                EventMustBeAborted, "Unknown charge carrier");
-    return G4ThreeVector();
-  }
+  return track.GetMomentum();
 }
 
 void G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track,
 					  G4double mom[3]) const {
-  G4ThreeVector tmom = GetGlobalMomentum(track);
-  mom[0] = tmom.x();
-  mom[1] = tmom.y();
-  mom[2] = tmom.z();
+  tempvec = GetGlobalMomentum(track);
+  mom[0] = tempvec.x();
+  mom[1] = tempvec.y();
+  mom[2] = tempvec.z();
 }
 
-G4ThreeVector G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track& track) const {
-  return track.CalculateVelocity() * track.GetMomentumDirection();
+G4ThreeVector 
+G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track& track) const {
+  tempvec = GetLocalVelocityVector(track);
+  RotateToGlobalDirection(tempvec);
+  return tempvec;
 }
 
 void G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track &track, G4double vel[]) const {
-  G4ThreeVector v_local = GetGlobalVelocityVector(track);
-  vel[0] = v_local.x();
-  vel[1] = v_local.y();
-  vel[2] = v_local.z();
+  tempvec = GetGlobalVelocityVector(track);
+  vel[0] = tempvec.x();
+  vel[1] = tempvec.y();
+  vel[2] = tempvec.z();
 }
 
 G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
-  if (G4CMP::IsElectron(track)) {
-    return theLattice->MapV_elToEkin(GetValleyIndex(track),
-                                     GetLocalVelocityVector(track));
-  } else if (G4CMP::IsHole(track)) {
-    return track.GetKineticEnergy();
-  } else if (G4CMP::IsPhonon(track)) {
-    return track.GetKineticEnergy();
-  } else {
-    G4Exception("G4CMPProcessUtils::GetKineticEnergy", "G4CMPProcess004",
-                EventMustBeAborted, "Unknown condensed matter particle");
-    return 0.0;
-  }
+  return track.GetKineticEnergy();
 }
 
 // Return particle type for currently active track [set in LoadDataForTrack()]
