@@ -36,6 +36,7 @@
 // 20201111  Add MakePhononEnergy() which takes wave vector directly
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 // 20201223  Add FindNearestValley() function to align electron momentum.
+// 20211001  Add reusable G4ThreeVector buffer for internal calculations.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -252,6 +253,8 @@ protected:
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking
   const G4VPhysicalVolume* currentVolume;
+
+  mutable G4ThreeVector tempvec;	// Not static; each instance unique
 };
 
 #endif	/* G4CMPProcessUtils_hh */
