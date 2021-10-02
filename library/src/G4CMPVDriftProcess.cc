@@ -90,31 +90,25 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
 
 void 
 G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
-  G4double mass = GetCurrentTrack()->GetDynamicParticle()->GetMass();
+  // Compute kinetic energy from momentum for electrons or holes
+  G4double energy =
+    (IsElectron() ? theLattice->MapPtoEkin(ivalley, GetLocalDirection(p))
+     : p.mag2()/(2.*GetCurrentTrack()->GetDynamicParticle()->GetMass()) );
 
-  G4ThreeVector v;
-  if (IsElectron()) {
-    v = GetGlobalDirection(theLattice->MapPtoV_el(ivalley, GetLocalDirection(p)));
-  } else if (IsHole()) {
-    v = p*c_light/mass;		// p and mass in MeV, not MeV/c, MeV/c^2
-  } else {
-    G4Exception("G4CMPVDriftProcess::FillParticleChange", "DriftProcess001",
-    EventMustBeAborted, "Unknown charge carrier");
-  }
-
-  // Non-relativistic, but "mass" is mc^2
-  G4double energy = 0.5*mass*v.mag2()/c_squared;
-
-  FillParticleChange(ivalley, energy, v);
+  FillParticleChange(ivalley, energy, p);
 }
 
 // Fill ParticleChange mass for electron charge carrier with given energy
 
-void 
-G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
-             const G4ThreeVector& v) {
+void G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
+					    const G4ThreeVector& v) {
   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(GetCurrentTrack())->SetValleyIndex(ivalley);
 
   aParticleChange.ProposeMomentumDirection(v.unit());
   aParticleChange.ProposeEnergy(Ekin);
+
+  if (IsElectron()) {		// Geant4 wants mc^2, not plain mass
+    G4double meff = theLattice->GetElectronEffectiveMass(ivalley,v)*c_squared;
+    aParticleChange.ProposeMass(meff);
+  }
 }
