@@ -129,10 +129,7 @@ void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
 // Assign electron to valley nearest to momentum direction
 
 void G4CMPStackingAction::AssignNearestValley(const G4Track* aTrack) const {
-  G4ThreeVector pdir = aTrack->GetMomentumDirection();
-  RotateToLocalDirection(pdir);
-
-  G4int valley = FindNearestValley(pdir);
+  G4int valley = FindNearestValley(aTrack);
 
   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(*aTrack)->SetValleyIndex(valley);
 }
