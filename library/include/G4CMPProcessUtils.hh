@@ -37,6 +37,7 @@
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 // 20201223  Add FindNearestValley() function to align electron momentum.
 // 20211001  Add reusable G4ThreeVector buffer for internal calculations.
+// 20211001  FindNearestValley(dir) can pass by reference.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -215,8 +216,7 @@ public:
   G4int ChangeValley(G4int valley) const;	// Excludes input valley
 
   // Find valley which aligns most closely with _local_ direction vector
-  // NOTE: Passed by value to allow for internal manipulation
-  G4int FindNearestValley(G4ThreeVector dir) const;
+  G4int FindNearestValley(const G4ThreeVector& dir) const;
   G4int FindNearestValley(const G4Track& track) const;
   G4int FindNearestValley(const G4Track* track) const {
     return (track ? FindNearestValley(*track) : -1);

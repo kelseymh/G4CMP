@@ -42,6 +42,7 @@
 // 20211001  "Reverse" Get*VelocityVector() and Get*Momentum() functions, so
 //	     that G4Track::GetMomentum() is used even for electrons, and
 //	     velocity is calculated from that.  Use internal vector buffer.
+// 20211002  FindNearestValley() implementation moved to G4CMPGeometryUtils.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -449,24 +450,8 @@ G4int G4CMPProcessUtils::FindNearestValley(const G4Track& track) const {
 }
 
 // NOTE:  Direction vector must be passed in _local_ coordinate system
-G4int G4CMPProcessUtils::FindNearestValley(G4ThreeVector dir) const {
-  dir.setR(1.);
-  theLattice->RotateToLattice(dir);
-
-  std::set<G4int> bestValley;	// Collect all best matches for later choice
-  G4double align, bestAlign = -1.;
-  for (size_t i=0; i<theLattice->NumberOfValleys(); i++) {
-    align = fabs(theLattice->GetValleyAxis(i).dot(dir)); // Both unit vectors
-    if (align > bestAlign) {
-      bestValley.clear();
-      bestAlign = align;
-    }
-    if (align >= bestAlign) bestValley.insert(i);
-  }
-
-  // Return best alignment, or pick from ambiguous choices
-  return ( (bestValley.size() == 1) ? *bestValley.begin()
-	   : int(bestValley.size()*G4UniformRand()) );
+G4int G4CMPProcessUtils::FindNearestValley(const G4ThreeVector& dir) const {
+  return G4CMP::FindNearestValley(theLattice, dir);
 }
 
 
