@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-10-01  G4CMP-281 : Create secondary electrons with correct momentum, mass.
 2021-10-01  G4CMP-283 : Recompute electron dynamical mass for G4ParticleChange.
 2021-10-01  G4CMP-282 : Don't alter assigned kinetic energy of new tracks.
 2021-10-01  G4CMP-276 : For electrons, store momentum and energy in G4Track.

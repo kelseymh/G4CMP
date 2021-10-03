@@ -13,6 +13,8 @@
 // 20170620 M. Kelsey -- Replace PV arg with Touchable, for transforms
 // 20170815 M. Kelsey -- Move AdjustSecondaryPosition to GeometryUtils
 // 20170928 M. Kelsey -- Replace "polarization" with "mode"
+// 20211001 M. Kelsey -- Collapse layered CreateChargeCarrier functions
+
 #ifndef G4CMPSecondaryUtils_hh
 #define G4CMPSecondaryUtils_hh 1
 
@@ -36,11 +38,6 @@ namespace G4CMP {
   G4Track* CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
 			       G4int valley, G4double Ekin, G4double time,
 			       const G4ThreeVector& pdir,
-			       const G4ThreeVector& pos);
-
-  G4Track* CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
-			       G4int valley, G4double time,
-			       const G4ThreeVector& p,
 			       const G4ThreeVector& pos);
 }
 
