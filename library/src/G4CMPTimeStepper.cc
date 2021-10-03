@@ -189,9 +189,13 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 						  const G4Step& /*aStep*/) {
   aParticleChange.Initialize(aTrack);
 
-  // Adjust mass and kinetic energy using end-of-step momentum
-  G4ThreeVector pfinal = GetGlobalMomentum(aTrack);
-  FillParticleChange(GetValleyIndex(aTrack), pfinal);
+  // Adjust dynamical mass for electrons using end-of-step momentum direction
+  if (IsElectron()) {
+    G4ThreeVector pfinal = GetLocalMomentum(aTrack);
+    G4double meff = theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack),
+							 pfinal);
+    aParticleChange.ProposeMass(meff*c_squared);
+  }
 
   ClearNumberOfInteractionLengthLeft();		// All processes must do this!
   return &aParticleChange;
