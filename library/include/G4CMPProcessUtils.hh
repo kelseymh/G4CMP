@@ -38,6 +38,7 @@
 // 20201223  Add FindNearestValley() function to align electron momentum.
 // 20211001  Add reusable G4ThreeVector buffer for internal calculations.
 // 20211001  FindNearestValley(dir) can pass by reference.
+// 20211003  Add track touchable as data member, to create if needed
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -246,13 +247,15 @@ protected:
   const G4Track* GetCurrentTrack() const { return currentTrack; }
   const G4VPhysicalVolume* GetCurrentVolume() const { return currentVolume; }
   const G4ParticleDefinition* GetCurrentParticle() const;
-  const G4VTouchable* GetCurrentTouchable() const;
+  const G4VTouchable* GetCurrentTouchable() const { return currentTouch; }
 
   G4int GetCurrentValley() const { return GetValleyIndex(currentTrack); }
 
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking
   const G4VPhysicalVolume* currentVolume;
+  const G4VTouchable* currentTouch;	// From track or created locally
+  G4bool createdTouch;			// Flag if touchable should be deleted
 
   mutable G4ThreeVector tempvec;	// Not static; each instance unique
 };

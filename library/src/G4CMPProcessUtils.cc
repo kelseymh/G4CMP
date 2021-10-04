@@ -43,6 +43,7 @@
 //	     that G4Track::GetMomentum() is used even for electrons, and
 //	     velocity is calculated from that.  Use internal vector buffer.
 // 20211002  FindNearestValley() implementation moved to G4CMPGeometryUtils.
+// 20211003  Add track touchable as data member, to create if needed
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -78,10 +79,12 @@
 // Constructor and destructor
 
 G4CMPProcessUtils::G4CMPProcessUtils()
-  : theLattice(nullptr), currentTrack(nullptr), currentVolume(nullptr) {
-}
+  : theLattice(nullptr), currentTrack(nullptr), currentVolume(nullptr),
+    currentTouch(nullptr), createdTouch(false) {;}
 
-G4CMPProcessUtils::~G4CMPProcessUtils() {;}
+G4CMPProcessUtils::~G4CMPProcessUtils() {
+  if (createdTouch) delete currentTouch;
+}
 
 
 // Initialization for current track
@@ -152,11 +155,18 @@ G4bool G4CMPProcessUtils::IsChargeCarrier() const {
 void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
   currentTrack = track;
   currentVolume = track ? track->GetVolume() : nullptr;
+  currentTouch = track ? track->GetTouchable() : nullptr;
+  createdTouch = false;
 
   if (!track) return;		// Avoid unnecessry work
 
   if (!currentVolume) {		// Primary tracks may not have volumes yet
     currentVolume = G4CMP::GetVolumeAtPoint(track->GetPosition());
+  }
+
+  if (!currentTouch) {		// Primary tracks may not have touchables yet
+    currentTouch = G4CMP::CreateTouchableAtPoint(track->GetPosition());
+    createdTouch = true;
   }
 }
 
@@ -185,6 +195,9 @@ void G4CMPProcessUtils::ReleaseTrack() {
   currentTrack = nullptr;
   currentVolume = nullptr;
   theLattice = nullptr;
+
+  if (createdTouch) delete currentTouch;
+  currentTouch = nullptr;
 }
 
 
@@ -338,13 +351,6 @@ G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
 
 const G4ParticleDefinition* G4CMPProcessUtils::GetCurrentParticle() const {
   return (currentTrack ? currentTrack->GetParticleDefinition() : 0);
-}
-
-
-// Return touchable for currently active track for transforms
-
-const G4VTouchable* G4CMPProcessUtils::GetCurrentTouchable() const {
-  return (currentTrack ? currentTrack->GetTouchable() : 0);
 }
 
 
