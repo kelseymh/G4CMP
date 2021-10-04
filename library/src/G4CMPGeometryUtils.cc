@@ -20,8 +20,6 @@
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGlobalLocalTransformStore.hh"
-#include "G4Field.hh"
-#include "G4FieldManager.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
