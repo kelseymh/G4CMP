@@ -23,6 +23,7 @@
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PhononPolarization.hh"
+#include "G4CMPBogoliubov.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4ProcessManager.hh"
 #include "G4ProcessVector.hh"
@@ -122,6 +123,22 @@ G4bool G4CMP::IsChargeCarrier(const G4ParticleDefinition& pd) {
 
 G4bool G4CMP::IsChargeCarrier(const G4ParticleDefinition* pd) {
   return (IsElectron(pd) || IsHole(pd));
+}
+
+G4bool G4CMP::IsQuasiparticle(const G4Track& track) {
+  return IsQuasiparticle(track.GetParticleDefinition());
+}
+
+G4bool G4CMP::IsQuasiparticle(const G4Track* track) {
+  return (track!=0 && IsQuasiparticle(*track));
+}
+
+G4bool G4CMP::IsQuasiparticle(const G4ParticleDefinition& pd) {
+  return IsQuasiparticle(&pd);
+}
+
+G4bool G4CMP::IsQuasiparticle(const G4ParticleDefinition* pd) {
+  return (pd == G4CMPBogoliubov::Definition());
 }
 
 

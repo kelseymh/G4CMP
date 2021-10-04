@@ -79,6 +79,7 @@ public:
   G4bool IsElectron() const;
   G4bool IsHole() const;
   G4bool IsChargeCarrier() const;
+  G4bool IsQuasiparticle() const;
 
   // Set configuration manually, without a track
   virtual void FindLattice(const G4VPhysicalVolume* volume);

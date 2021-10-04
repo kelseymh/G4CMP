@@ -43,6 +43,7 @@
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPBogoliubov.hh"
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -140,6 +141,10 @@ G4bool G4CMPProcessUtils::IsHole() const {
 
 G4bool G4CMPProcessUtils::IsChargeCarrier() const {
   return G4CMP::IsChargeCarrier(currentTrack);
+}
+
+G4bool G4CMPProcessUtils::IsQuasiparticle() const {
+  return G4CMP::IsQuasiparticle(currentTrack);
 }
 
 
@@ -245,6 +250,8 @@ G4ThreeVector G4CMPProcessUtils::GetLocalMomentum(const G4Track& track) const {
                                   GetLocalVelocityVector(track));
   } else if (G4CMP::IsHole(track)) {
     return GetLocalDirection(track.GetMomentum());
+  } else if (G4CMP::IsQuasiparticle(track)) {
+    return 0; //Do nothing for right now
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -280,6 +287,8 @@ G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const 
     return GetLocalMomentum(track) / hbarc;
   } else if (G4CMP::IsPhonon(track)) {
     return G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track)->k();
+  } else if (G4CMP::IsQuasiparticle(track)) {
+    return 0; //Do nothing for right now
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalWaveVector", "DriftProcess002",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -310,6 +319,8 @@ G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
     return p;
   } else if (G4CMP::IsHole(track)) {
     return track.GetMomentum();
+  } else if (G4CMP::IsQuasiparticle(track)) {
+    return 0; //Do nothing for right now
   } else {
     G4Exception("G4CMPProcessUtils::GetGlobalMomentum", "DriftProcess003",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -344,6 +355,8 @@ G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
     return track.GetKineticEnergy();
   } else if (G4CMP::IsPhonon(track)) {
     return track.GetKineticEnergy();
+  } else if (G4CMP::IsQuasiparticle(track)) {
+    return 0; //Do nothing for right now
   } else {
     G4Exception("G4CMPProcessUtils::GetKineticEnergy", "G4CMPProcess004",
                 EventMustBeAborted, "Unknown condensed matter particle");
@@ -389,6 +402,8 @@ void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& krecoil) const {
     krecoil = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),krecoil);
   } else if (IsHole()) {
     krecoil *= hbarc;
+  } else if (G4CMP::IsQuasiparticle(track)) {
+    return 0; //Do nothing for right now
   } else {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess006",
                 EventMustBeAborted, "Unknown charge carrier");
