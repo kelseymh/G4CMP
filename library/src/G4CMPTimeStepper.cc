@@ -195,6 +195,13 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
     G4double meff = theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack),
 							 pfinal);
     aParticleChange.ProposeMass(meff*c_squared);
+
+    if (verboseLevel) {
+      G4cout << GetProcessName() << " Ekin " << GetKineticEnergy(aTrack)/eV
+	     << " eV p " << GetGlobalMomentum(aTrack)/eV << " eV "
+	     << " m(eff) " << meff*c_squared/electron_mass_c2 << " m_e"
+	     << G4endl;
+    }
   }
 
   ClearNumberOfInteractionLengthLeft();		// All processes must do this!
