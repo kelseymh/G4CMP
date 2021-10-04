@@ -64,7 +64,8 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   G4ClassificationOfNewTrack classification = fUrgent;
 
   // Don't do anything to ordinary G4 tracks
-  if (!IsPhonon() && !IsChargeCarrier()) return classification;
+  if (!G4CMP::IsPhonon(aTrack) && !G4CMP::IsChargeCarrier(aTrack))
+    return classification;
 
   // Configure utility functions for current track (do NOT use LoadDataForTrack)
   SetCurrentTrack(aTrack);
