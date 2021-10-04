@@ -186,7 +186,7 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 // At end of step, recompute kinematics; important for electrons
 
 G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
-						  const G4Step& /*aStep*/) {
+						  const G4Step& aStep) {
   aParticleChange.Initialize(aTrack);
 
   // Adjust dynamical mass for electrons using end-of-step momentum direction
@@ -196,10 +196,31 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 							 pfinal);
     aParticleChange.ProposeMass(meff*c_squared);
 
+    // Report basic kinematics
     if (verboseLevel) {
       G4cout << GetProcessName() << " Ekin " << GetKineticEnergy(aTrack)/eV
-	     << " eV p " << GetGlobalMomentum(aTrack)/eV << " eV "
-	     << " m(eff) " << meff*c_squared/electron_mass_c2 << " m_e"
+	     << " eV, m " << meff*c_squared/electron_mass_c2 << " m_e,"
+	     << " p " << GetGlobalMomentum(aTrack)/eV << " eV"
+	     << G4endl;
+    }
+
+    // Report electric field info (not valid if LukeScattering enabled)
+    if (verboseLevel>1) {
+      const G4StepPoint* pre = aStep.GetPreStepPoint();
+      G4double E0 = pre->GetKineticEnergy();
+      G4ThreeVector p0 = pre->GetMomentum();
+      G4ThreeVector pos0 = pre->GetPosition();
+      G4ThreeVector posf = aTrack.GetPosition();
+      G4ThreeVector field = G4CMP::GetFieldAtPosition(aTrack);
+
+      G4cout << " pre-step Ekin " << E0/eV << " eV, p0 " << p0/eV << " eV"
+	     << G4endl
+	     << " E-field " << field/(volt/m) << " " << field.mag()/(volt/m)
+	     << " V/m" << G4endl
+	     << " dz " << (posf.z()-pos0.z())/mm << " mm,"
+	     << " dV " << field.dot(posf-pos0)/volt << " V" << G4endl
+	     << " dE " << (GetKineticEnergy(aTrack)-E0)/eV << " eV,"
+	     << " dP " << (pfinal-p0)/eV << " eV "
 	     << G4endl;
     }
   }
