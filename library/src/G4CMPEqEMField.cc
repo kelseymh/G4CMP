@@ -136,10 +136,10 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 #endif
 
   // Rotate force into and out of valley frame, applying Herring-Vogt transform
-  const G4RotationMatrix& vToN = theLattice->GetValley(valleyIndex);
-  const G4RotationMatrix& nToV = theLattice->GetValleyInv(valleyIndex);
+  const G4RotationMatrix& nToV = theLattice->GetValley(valleyIndex);
+  const G4RotationMatrix& vToN = theLattice->GetValleyInv(valleyIndex);
 
-  Efield.transform(vToN);			// Rotate to valley
+  Efield.transform(nToV);			// Rotate to valley
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) G4cout << " Field (valley) " << Efield/(eV/m) << G4endl;
 #endif
@@ -149,12 +149,12 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   if (verboseLevel>2) G4cout << " Field (H-V) " << Efield/(eV/m) << G4endl;
 #endif
 
-  Efield.transform(nToV);			// Back to lattice
+  Efield.transform(vToN);			// Back to lattice
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) G4cout << " Field (H-V, lattice) " << Efield/(eV/m) << G4endl;
 #endif
 
-  theLattice->RotateToSolid(Efield);
+  theLattice->RotateToSolid(Efield);		// Back to crystal frame
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) G4cout << " Field (H-V, local) " << Efield/(eV/m) << G4endl;
 #endif
