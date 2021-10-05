@@ -251,7 +251,7 @@ G4ThreeVector G4CMPProcessUtils::GetLocalMomentum(const G4Track& track) const {
   } else if (G4CMP::IsHole(track)) {
     return GetLocalDirection(track.GetMomentum());
   } else if (G4CMP::IsQuasiparticle(track)) {
-    return 0; //Do nothing for right now
+    return G4ThreeVector(); //Do nothing for right now
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalMomentum()", "DriftProcess001",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -288,7 +288,7 @@ G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const 
   } else if (G4CMP::IsPhonon(track)) {
     return G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track)->k();
   } else if (G4CMP::IsQuasiparticle(track)) {
-    return 0; //Do nothing for right now
+    return G4ThreeVector(); //Do nothing for right now
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalWaveVector", "DriftProcess002",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -320,7 +320,7 @@ G4CMPProcessUtils::GetGlobalMomentum(const G4Track& track) const {
   } else if (G4CMP::IsHole(track)) {
     return track.GetMomentum();
   } else if (G4CMP::IsQuasiparticle(track)) {
-    return 0; //Do nothing for right now
+    return G4ThreeVector(); //Do nothing for right now
   } else {
     G4Exception("G4CMPProcessUtils::GetGlobalMomentum", "DriftProcess003",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -402,8 +402,9 @@ void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& krecoil) const {
     krecoil = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),krecoil);
   } else if (IsHole()) {
     krecoil *= hbarc;
-  } else if (G4CMP::IsQuasiparticle(track)) {
-    return 0; //Do nothing for right now
+  } else if (IsQuasiparticle()) {
+    G4Exception("G4CMPProcessUtils::MakeGlobalRecoil", "DriftProcess006",
+                EventMustBeAborted, "QP"); //Do nothing for right now
   } else {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess006",
                 EventMustBeAborted, "Unknown charge carrier");

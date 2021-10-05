@@ -34,14 +34,18 @@ G4CMPBogoliubov* G4CMPBogoliubov::Definition()
   //  stable         lifetime    decay table 
   //  shortlived      subType    anti_encoding
   anInstance = new G4ParticleDefinition(
-                 name,         0.0*meV,       0.0*meV,         0.0,
+                 name,         0.0*MeV,       0.0*MeV,         0.0,
                     1,               0,             0,
                     0,               0,             0,
-             "BogoliubovQP",               0,             0,         0,
+             "lepton",               0,             0,         0,
                  true,             0.0,          NULL,
-                false,        NULL,       0
+                false,        "BogoliubovQP",       0
              );
   }
   theInstance = reinterpret_cast<G4CMPBogoliubov*>(anInstance);
   return theInstance;
+}
+
+G4CMPBogoliubov* G4CMPBogoliubov::BogoliubovQPDefinition(){
+  return Definition();
 }

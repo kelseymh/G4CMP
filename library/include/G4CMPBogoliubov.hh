@@ -13,9 +13,9 @@
 #define G4CMPBogoliubov_h 1
 
 #include "globals.hh"
-/#include "G4ParticleDefinition.hh"
+#include "G4ParticleDefinition.hh"
 
-class G4CMPBogoliubovon : public G4ParticleDefinition {
+class G4CMPBogoliubov : public G4ParticleDefinition {
 private:
   static G4CMPBogoliubov* theInstance;
 
