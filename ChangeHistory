@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-10-06  G4CMP-286 : Use true momentum, compute velocity in G4EqEMField.
 2021-10-01  G4CMP-285 : G4CMPTimeStepper should set electron dynamical mass.
 2021-10-01  G4CMP-281 : Create secondary electrons with correct momentum, mass.
 2021-10-01  G4CMP-283 : Recompute electron dynamical mass for G4ParticleChange.
