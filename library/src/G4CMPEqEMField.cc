@@ -23,6 +23,8 @@
 // 20210922  Field transformation should be Herring-Vogt, with SqrtInvTensor.
 // 20211004  Compute velocity from true momentum, local-to-global as needed.
 //		Clarify field transform and force calculation.
+// 20211007  Insert debugging output for each step of E-field transformation.
+// 20211012  Apply scale factor to conserve energy averaged over many electrons
 
 #include "G4CMPEqEMField.hh"
 #include "G4CMPConfigManager.hh"
@@ -74,9 +76,17 @@ void G4CMPEqEMField::SetValley(size_t ivalley) {
 void G4CMPEqEMField::SetChargeMomentumMass(G4ChargeState particleCharge,
 					   G4double MomentumXc,
 					   G4double mass) {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>2) {
+    G4cout << "G4CMPEqEMField::SetChargeMomentumMass "
+	   << particleCharge.GetCharge() << " " << MomentumXc << " MeV "
+	   << mass/electron_mass_c2 << " m_e" << G4endl;
+  }
+#endif
+
   G4EqMagElectricField::SetChargeMomentumMass(particleCharge, MomentumXc, mass);
   fCharge = particleCharge.GetCharge() * eplus;
-  fMass = mass/c_squared;
+  fMass = mass;
 }
 
 
@@ -91,48 +101,54 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
     return;
   }
 
+  // Get kinematics into more usable form
+  pos.set(y[0],y[1],y[2]);			// Position
+  mom.set(y[3],y[4],y[5]);			// Momentum
+  Efield.set(field[3],field[4],field[5]);	// Electric field
+  G4double Emag = Efield.mag();
+
+  G4ThreeVector Etrue = Efield;
+
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
-    G4cout << "G4CMPEqEMField"
-	   << " @ (" << y[0] << "," << y[1] << "," << y[2] << ") mm" << G4endl
+    G4cout << "G4CMPEqEMField" << " @ " << pos << " mm" << G4endl
 	   << " (q,m) " << fCharge/eplus << " e+ "
-	   << fMass*c_squared/electron_mass_c2 << " m_e"
-	   << " valley " << valleyIndex << G4endl;
+	   << fMass/electron_mass_c2 << " m_e"
+	   << " valley " << valleyIndex << G4endl
+	   << " pc " << mom << " " << mom.mag() << " MeV" << G4endl;
   }
 #endif
 
-  /* "Momentum" reported by G4 is the true momentum.  Should it be changed
-   * to true velocity using the inverse-mass tensor?
+  /* "Momentum" reported by G4 is the true momentum.
    */
-  G4ThreeVector plocal = G4ThreeVector(y[3],y[4],y[5]);
-  fGlobalToLocal.ApplyAxisTransform(plocal);
+  vel = mom;
+  vel /= fMass/c_light;		// v = pc/c / mc^2/c^2 = pc/(mc^2/c)
+  G4double vinv = 1./vel.mag();
 
-  G4ThreeVector v = theLattice->MapPtoV_el(valleyIndex, plocal);
-  fLocalToGlobal.ApplyAxisTransform(v);
-  G4double vinv = 1./v.mag();
-
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>2) {
-    G4cout << " pc (" << y[3] << "," << y[4] << "," << y[5] << ") MeV" << G4endl
-	   << " v " << v/(km/s) << " km/s " << G4endl
-	   << " TOF (1/v) " << vinv/(ns/mm) << " ns/mm"
-	   << " c/v " << vinv*c_light << G4endl;
-  }
-#endif
-
-  G4ThreeVector Efield(field[3], field[4], field[5]);
+  momdir = vel.unit();
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
-    G4cout << " E-field " << Efield/(volt/cm) << " " << Efield.mag()/(volt/cm)
-	   << " V/cm" << G4endl;
+    G4cout << " v " << vel/(km/s) << " " << vel.mag()/(km/s) << " km/s"
+	   << G4endl << " TOF (1/v) " << vinv/(ns/mm) << " ns/mm"
+	   << " c/v " << vinv*c_light << G4endl
+	   << " E-field         " << Efield/(volt/cm) << " "
+	   << Emag/(volt/cm) << " V/cm" << G4endl;
   }
 #endif
 
   fGlobalToLocal.ApplyAxisTransform(Efield);
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>2)
+    G4cout << " Field (loc)     " << Efield/(volt/cm) << " "
+	   << Efield.mag()/(volt/cm) << G4endl;
+#endif
+
   theLattice->RotateToLattice(Efield);
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2) G4cout << " Field (lattice) " << Efield/(eV/m) << G4endl;
+  if (verboseLevel>2)
+    G4cout << " Field (lat)     " << Efield/(volt/cm) << " "
+	   << Efield.mag()/(volt/cm) << G4endl;
 #endif
 
   // Rotate force into and out of valley frame, applying Herring-Vogt transform
@@ -141,46 +157,65 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 
   Efield.transform(nToV);			// Rotate to valley
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2) G4cout << " Field (valley) " << Efield/(eV/m) << G4endl;
+  if (verboseLevel>2)
+    G4cout << " Field (val)     " << Efield/(volt/cm) << " "
+	   << Efield.mag()/(volt/cm) << G4endl;
 #endif
 
   Efield *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2) G4cout << " Field (H-V) " << Efield/(eV/m) << G4endl;
+  if (verboseLevel>2)
+    G4cout << " Field (H-V)     " << Efield/(volt/cm) << " "
+	   << Efield.mag()/(volt/cm) << G4endl;
+#endif
+
+  // Restore original E-field magnitude for energy balance
+  Efield.setR(Emag);
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>2)
+    G4cout << "Field (H-V norm) " << Efield/(volt/cm) << " "
+	   << Efield.mag()/(volt/cm) << G4endl;
 #endif
 
   Efield.transform(vToN);			// Back to lattice
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2) G4cout << " Field (H-V, lattice) " << Efield/(eV/m) << G4endl;
+  if (verboseLevel>2)
+    G4cout << " Field (H-V lat) " << Efield/(volt/cm) << " "
+	   << Efield.mag()/(volt/cm) << G4endl;
 #endif
 
   theLattice->RotateToSolid(Efield);		// Back to crystal frame
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2) G4cout << " Field (H-V, local) " << Efield/(eV/m) << G4endl;
+  if (verboseLevel>2)
+    G4cout << " Field (H-V loc) " << Efield/(volt/cm) << " "
+	   << Efield.mag()/(volt/cm) << G4endl;
 #endif
 
   // Restore field to global coordinate frame for G4Transporation
   fLocalToGlobal.ApplyAxisTransform(Efield);
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2) G4cout << " Field (H-V, global) " << Efield/(eV/m) << G4endl;
+  if (verboseLevel>2)
+    G4cout << " Field (H-V glb) " << Efield/(volt/cm) << " "
+	   << Efield.mag()/(volt/cm) << G4endl;
 #endif
 
-  // Force = qE/beta
+  // Force = qE/beta, with scale factor to conserve energy on average
   G4ThreeVector& force = Efield;	// Name change without copying
   force *= fCharge*vinv*c_light;
+  force *= 1. - 0.1/(Emag*cm/volt);	// Scale factor to conserve energy
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
-    G4cout << " q*Ec/v (global) " << force/(eV/m) << " " << force.mag()/(eV/m)
+    G4cout << " q*Ec/v (scaled) " << force/(eV/m) << " " << force.mag()/(eV/m)
 	   << " eV/m" << G4endl;
   }
 #endif
 
   // Populate output buffer
-  dydx[0] = v.x()*vinv;		// Velocity direction
-  dydx[1] = v.y()*vinv;
-  dydx[2] = v.z()*vinv;
-  dydx[3] = force.x();		// Applied force in H-V, global coordinates
+  dydx[0] = momdir.x();		// Momentum direction
+  dydx[1] = momdir.y();
+  dydx[2] = momdir.z();
+  dydx[3] = force.x();		// Effective force in H-V, global coordinates
   dydx[4] = force.y();
   dydx[5] = force.z();
   dydx[6] = 0.;			// not used
