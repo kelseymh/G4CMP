@@ -21,6 +21,7 @@
 // 20200804  Attach local geometry shape to field
 // 20210901  Add local verbosity flag for reporting diagnostics, pass through
 //		to G4CMPLocalEMField.
+// 20211010  "stepperLength" is suppsed to be in units of time, not distance?
 
 #include "G4CMPFieldManager.hh"
 #include "G4CMPConfigManager.hh"
@@ -55,7 +56,7 @@ G4CMPFieldManager::G4CMPFieldManager(G4ElectroMagneticField *detectorField,
 				     G4int vb)
   : G4FieldManager(new G4CMPLocalElectroMagField(detectorField)),
     verboseLevel(vb==0?G4CMPConfigManager::GetVerboseLevel():vb),
-    myDetectorField(0), stepperVars(8), stepperLength(1e-9*mm),
+    myDetectorField(0), stepperVars(8), stepperLength(1*um),
     latticeNulls(0), maxLatticeNulls(3) {
   if (verboseLevel)
     G4cout << "G4CMPFieldManager wrapped global field in LocalEMField." << G4endl;
@@ -72,7 +73,7 @@ G4CMPFieldManager::G4CMPFieldManager(G4CMPLocalElectroMagField *detectorField,
 				     G4int vb)
   : G4FieldManager(detectorField),
     verboseLevel(vb==0?G4CMPConfigManager::GetVerboseLevel():vb),
-    myDetectorField(detectorField), stepperVars(8), stepperLength(1e-9*mm),
+    myDetectorField(detectorField), stepperVars(8), stepperLength(1*um),
     latticeNulls(0), maxLatticeNulls(3) {
   if (verboseLevel)
     G4cout << "G4CMPFieldManager provided with wrapped LocalEMField." << G4endl;
@@ -100,6 +101,10 @@ void G4CMPFieldManager::CreateTransport() {
   theEqMotion->SetVerboseLevel(verboseLevel);
   theDriver->SetVerboseLevel(verboseLevel);
   theChordFinder->SetVerbose(verboseLevel);
+
+  SetMinimumEpsilonStep(1e-6);
+  SetMaximumEpsilonStep(1e-6);
+  SetDeltaOneStep(10*nm);
 }
 
 
