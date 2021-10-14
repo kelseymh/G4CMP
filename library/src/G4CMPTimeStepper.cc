@@ -190,7 +190,7 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack);
 
   // Adjust dynamical mass for electrons using end-of-step momentum direction
-    G4ThreeVector plocal = GetLocalMomentum(aTrack);
+  G4ThreeVector plocal = GetLocalMomentum(aTrack);
   G4double meff = IsHole() ? theLattice->GetHoleMass()
     : theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack), plocal);
 
@@ -199,38 +199,46 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
   // Report basic kinematics
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
-	   << " Ekin " << GetKineticEnergy(aTrack)/eV
-	   << " eV, m " << meff*c_squared/electron_mass_c2 << " m_e,"
-	   << " p " << GetGlobalMomentum(aTrack)/eV << " eV"
+	   << " Ekin " << GetKineticEnergy(aTrack)/eV << " eV,"
+	   << " m " << meff*c_squared/electron_mass_c2 << " m_e," << G4endl
+	   << " p " << GetGlobalMomentum(aTrack)/eV << " "
+	   << GetGlobalMomentum(aTrack).mag()/eV << " eV"
 	   << G4endl;
   }
   
   // Report electric field info (not valid if LukeScattering enabled)
   if (verboseLevel>1) {
     const G4StepPoint* pre = aStep.GetPreStepPoint();
+    const G4StepPoint* post = aStep.GetPostStepPoint();
     G4double E0 = pre->GetKineticEnergy();
+    G4double Ef = post->GetKineticEnergy();
     G4ThreeVector p0 = pre->GetMomentum();
+    G4ThreeVector pf = post->GetMomentum();
     G4ThreeVector pos0 = pre->GetPosition();
-    G4ThreeVector posf = aTrack.GetPosition();
-    G4ThreeVector field = G4CMP::GetFieldAtPosition(aTrack);
+    G4ThreeVector posf = post->GetPosition();
 
-    G4ThreeVector deltaP = GetGlobalMomentum(aTrack)-p0;
-    G4double deltaE = GetKineticEnergy(aTrack)-E0;
+    G4ThreeVector field = G4CMP::GetFieldAtPosition(aTrack.GetTouchable(),pos0);
+    G4ThreeVector deltaP = pf-p0;
+    G4double deltaE = Ef-E0;
     G4double deltaV = field.dot(posf-pos0);	// Voltage drop
-    G4double EvsV = deltaE - (IsElectron()?-1:1)*deltaV;
 
-    G4cout << " pre-step Ekin " << E0/eV << " eV, p0 " << p0/eV << " eV"
-	   << G4endl
+    G4cout << " pre-step @ " << pos0 << G4endl << "   E " << E0/eV << " eV,"
+	   << " p0 " << p0/eV << " " << p0.mag()/eV << " eV" << G4endl
+	   << " post-step @ " << posf << G4endl << "   E " << Ef/eV << " eV,"
+	   << " pf " << pf/eV << " " << pf.mag()/eV << " eV" << G4endl
 	   << " E-field " << field/(volt/m) << " " << field.mag()/(volt/m)
 	   << " V/m" << G4endl
-	   << " dz " << (posf.z()-pos0.z())/mm << " mm,"
-	   << " dV " << deltaV/volt << " V" << G4endl
-	   << " dE " << deltaE/eV << " eV, dP " << deltaP/eV << " eV "
+	   << " dPos " << posf-pos0 << " " << (posf-pos0).mag()/mm << " mm,"
+	   << G4endl
+	   << " dV = field.dPos " << deltaV/volt << " V,"
+	   << " dE " << deltaE/eV << " eV" << G4endl
+	   << " dP " << deltaP/eV << " " << deltaP.mag()/eV << " eV"
 	   << G4endl;
 
+    G4double EvsV = deltaE - (IsElectron()?-1:1)*deltaV;
     if (fabs(EvsV) > 1e-12) {
       G4cout << "*** Energy-voltage mismatch: |dE-qdV| " << EvsV/eV
-	     << " > 1e-12" << G4endl;
+	     << " > 1e-6 eV" << G4endl;
     }
   }
 
