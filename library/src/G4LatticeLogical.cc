@@ -44,6 +44,7 @@
 // 20190906  M. Kelsey -- Default IV rate model to G4CMPConfigManager value.
 // 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
 //		return thread-local instance.
+// 20211021  Wrap verbose output in #ifdef G4CMP_DEBUG for performace
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -378,12 +379,14 @@ G4ThreeVector G4LatticeLogical::LookupKtoVg(G4int mode,
       (1.-dTheta)*dPhi*fKVMap[mode][iTheta][iPhi+1] +
       dTheta*dPhi*fKVMap[mode][iTheta+1][iPhi+1] );
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
     G4cout << "G4LatticeLogical::MapKtoVDir theta,phi="
 	   << k.theta() << " " << k.phi()
 	   << " : ith,iph " << iTheta << " " << iPhi
 	   << " : dir " << vdir << G4endl;
   }
+#endif
 
   return vdir;
 }
@@ -422,50 +425,61 @@ G4LatticeLogical::FindLookupBins(const G4ThreeVector& k,
 
 G4ThreeVector 
 G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapPtoV_el " << ivalley << " " << p_e
 	   << G4endl;
+#endif
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
     G4cout << " p (valley) " << vToN*p_e << G4endl
 	   << " V_el (valley) " << GetMInvTensor()*(vToN*p_e/c_light) << G4endl
 	   << " returning " << nToV*(GetMInvTensor()*(vToN*p_e/c_light))
 	   << G4endl;
   }
+#endif
 
   return nToV*(GetMInvTensor()*(vToN*p_e/c_light));
 }
 
 G4ThreeVector 
 G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapV_elToP " << ivalley << " " << v_e
 	   << G4endl;
+#endif
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
     G4cout << " V_el (valley) " << vToN*v_e << G4endl
 	   << " p (valley) " << GetMassTensor()*(vToN*v_e*c_light) << G4endl
 	   << " returning " << nToV*(GetMassTensor()*(vToN*v_e*c_light))
 	   << G4endl;
   }
+#endif
 
   return nToV*(GetMassTensor()*(vToN*v_e*c_light));
 }
 
 G4ThreeVector
 G4LatticeLogical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector &v_e) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapV_elToK_HV " << ivalley << " " << v_e
      << G4endl;
+#endif
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
     G4cout << " V_el (valley) " << vToN*v_e << G4endl
 	   << " K=mv/hbar (valley) " << GetMassTensor()*(vToN*v_e/hbar_Planck)
@@ -473,15 +487,18 @@ G4LatticeLogical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector &v_e) const {
 	   << GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck))
 	   << G4endl;
   }
+#endif
 
   return GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck));
 }
 
 G4ThreeVector 
 G4LatticeLogical::MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapPtoK " << ivalley << " " << p_e
 	   << G4endl;
+#endif
 
   tempvec() = p_e;
   tempvec() /= hbarc;				// Convert to wavevector
@@ -490,56 +507,74 @@ G4LatticeLogical::MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const 
 
 G4ThreeVector 
 G4LatticeLogical::MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapPtoK_HV " << ivalley << " " << p_e
 	   << G4endl;
+#endif
 
   tempvec() = p_e;
   tempvec().transform(GetValley(ivalley));	// Rotate into valley frame
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
+#endif
 
   return GetSqrtInvTensor() * tempvec()/hbarc;	// Herring-Vogt transformation
 }
 
 G4ThreeVector 
 G4LatticeLogical::MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapK_HVtoK_valley " << ivalley << " " << k_HV
 	   << G4endl;
+#endif
 
   return GetSqrtTensor() * k_HV;
 }
 
 G4ThreeVector
 G4LatticeLogical::MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapK_HVtoK " << ivalley << " " << k_HV
      << G4endl;
+#endif
 
   tempvec() = k_HV;
   tempvec() *= GetSqrtTensor();			// From Herring-Vogt to valley
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " K (valley) " << tempvec() << G4endl;
+#endif
 
   tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " returning " << tempvec() << G4endl;
+#endif
 
   return tempvec();
 }
 
 G4ThreeVector 
 G4LatticeLogical::MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapK_HVtoP " << ivalley << " " << k_HV
 	   << G4endl;
+#endif
 
   tempvec() = k_HV;
   tempvec() *= GetSqrtTensor();			// From Herring-Vogt to valley 
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " K (valley) " << tempvec() << G4endl;
+#endif
 
   tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " K (lattice) " << tempvec() << G4endl;
+#endif
 
   tempvec() *= hbarc;			// Convert wavevector to momentum
   return tempvec();
@@ -547,13 +582,17 @@ G4LatticeLogical::MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const {
 
 G4ThreeVector 
 G4LatticeLogical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapK_valleyToP " << ivalley << " " << k
 	   << G4endl;
+#endif
 
   tempvec() = k;
   tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " K (lattice) " << tempvec() << G4endl;
+#endif
 
   tempvec() *= hbarc;			// Convert wavevector to momentum
   return tempvec();
@@ -565,12 +604,16 @@ G4LatticeLogical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
 
 G4double  
 G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapPtoEkin " << iv << " " << p << G4endl;
+#endif
 
   tempvec() = p;
   tempvec().transform(GetValley(iv));		// Rotate to valley frame
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
+#endif
 
   // Compute kinetic energy component by component, then sum
   return (0.5/c_squared) * (tempvec().x()*tempvec().x()*fMassInverse.xx() +
@@ -580,12 +623,16 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
 
 G4double
 G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapV_elToEkin " << iv << " " << v << G4endl;
+#endif
 
   tempvec() = v;
   tempvec().transform(GetValley(iv));		// Rotate to valley frame
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " V_el (valley) " << tempvec() << G4endl;
+#endif
 
   // Compute kinetic energy component by component, then sum
   return 0.5 * (tempvec().x()*tempvec().x()*fMassTensor.xx() +
@@ -598,9 +645,11 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
 G4double 
 G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
 					   const G4ThreeVector& p) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::GetElectronEffectiveMass " << iv
 	   << " " << p << " p2 = " << p.mag2() << G4endl;
+#endif
 
   return 0.5*p.mag2()/c_squared/MapPtoEkin(iv,p);	// Non-relativistic
 }
@@ -704,34 +753,48 @@ void G4LatticeLogical::AddValley(const G4RotationMatrix& valley) {
 // Transform for drifting-electron valleys in momentum space
 
 const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << "G4LatticeLogical::GetValley " << iv << G4endl;
+#endif
 
   if (iv >=0 && iv < (G4int)NumberOfValleys()) return fValley[iv];
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel)
     G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
+#endif
+
   return G4RotationMatrix::IDENTITY;
 }
 
 const G4RotationMatrix& G4LatticeLogical::GetValleyInv(G4int iv) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::GetValleyInv " << iv << G4endl;
+#endif
 
   if (iv >=0 && iv < (G4int)NumberOfValleys()) return fValleyInv[iv];
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel)
     G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
+#endif
+
   return G4RotationMatrix::IDENTITY;
 }
 
 const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::GetValleyAxis " << iv << G4endl;
+#endif
 
   if (iv >=0 && iv < (G4int)NumberOfValleys()) return fValleyAxis[iv];
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel)
     G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
+#endif
 
   static const G4ThreeVector nullVec(0.,0.,0.);
   return nullVec;
