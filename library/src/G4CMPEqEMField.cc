@@ -107,7 +107,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   Efield.set(field[3],field[4],field[5]);	// Electric field
   G4double Emag = Efield.mag();
 
-  G4ThreeVector Etrue = Efield;
+  force = Efield;	// Apply transforms here so Efield stays original
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
@@ -137,72 +137,65 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   }
 #endif
 
-  fGlobalToLocal.ApplyAxisTransform(Efield);
+  fGlobalToLocal.ApplyAxisTransform(force);
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
-    G4cout << " Field (loc)     " << Efield/(volt/cm) << " "
-	   << Efield.mag()/(volt/cm) << G4endl;
+    G4cout << " Field (loc)     " << force/(volt/cm) << " "
+	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
-  theLattice->RotateToLattice(Efield);
+  theLattice->RotateToLattice(force);
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
-    G4cout << " Field (lat)     " << Efield/(volt/cm) << " "
-	   << Efield.mag()/(volt/cm) << G4endl;
+    G4cout << " Field (lat)     " << force/(volt/cm) << " "
+	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
   // Rotate force into and out of valley frame, applying Herring-Vogt transform
   const G4RotationMatrix& nToV = theLattice->GetValley(valleyIndex);
   const G4RotationMatrix& vToN = theLattice->GetValleyInv(valleyIndex);
 
-  Efield.transform(nToV);			// Rotate to valley
+  force.transform(nToV);			// Rotate to valley
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
-    G4cout << " Field (val)     " << Efield/(volt/cm) << " "
-	   << Efield.mag()/(volt/cm) << G4endl;
+    G4cout << " Field (val)     " << force/(volt/cm) << " "
+	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
-  Efield *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
+  force *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
-    G4cout << " Field (H-V)     " << Efield/(volt/cm) << " "
-	   << Efield.mag()/(volt/cm) << G4endl;
+    G4cout << " Field (H-V)     " << force/(volt/cm) << " "
+	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
-  // Restore original E-field magnitude for energy balance
-  Efield.setR(Emag);
+  force.transform(vToN);			// Back to lattice
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
-    G4cout << "Field (H-V norm) " << Efield/(volt/cm) << " "
-	   << Efield.mag()/(volt/cm) << G4endl;
+    G4cout << " Field (H-V lat) " << force/(volt/cm) << " "
+	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
-  Efield.transform(vToN);			// Back to lattice
+  theLattice->RotateToSolid(force);		// Back to crystal frame
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
-    G4cout << " Field (H-V lat) " << Efield/(volt/cm) << " "
-	   << Efield.mag()/(volt/cm) << G4endl;
-#endif
-
-  theLattice->RotateToSolid(Efield);		// Back to crystal frame
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>2)
-    G4cout << " Field (H-V loc) " << Efield/(volt/cm) << " "
-	   << Efield.mag()/(volt/cm) << G4endl;
+    G4cout << " Field (H-V loc) " << force/(volt/cm) << " "
+	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
   // Restore field to global coordinate frame for G4Transporation
-  fLocalToGlobal.ApplyAxisTransform(Efield);
+  fLocalToGlobal.ApplyAxisTransform(force);
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
-    G4cout << " Field (H-V glb) " << Efield/(volt/cm) << " "
-	   << Efield.mag()/(volt/cm) << G4endl;
+    G4cout << " Field (H-V glb) " << force/(volt/cm) << " "
+	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
-  // Force = qE/beta, with scale factor to conserve energy on average
-  G4ThreeVector& force = Efield;	// Name change without copying
+  // Force = qE/beta, rescaled so magnitude corresponds to voltage drop
+  G4double voltageDrop = fabs(Efield.dot(force)/force.mag());
+  force.setMag(voltageDrop);
+
   force *= fCharge*vinv*c_light;
-  force *= 1. - 0.1/(Emag*cm/volt);	// Scale factor to conserve energy
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
