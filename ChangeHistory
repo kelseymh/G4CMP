@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2021-10-31  g4cmp-V07-12-00 Add track/step indices to G4CMPPartitionData.
 2021-10-30  G4CMP-287 : Add track and step information to G4CMPPartitionData.
 
 2021-09-29  g4cmp-V07-11-00 Better coordinate and electric field transforms,
