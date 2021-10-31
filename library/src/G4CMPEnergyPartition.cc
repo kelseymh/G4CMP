@@ -53,6 +53,7 @@
 // 20210820  Add estimate of NTL (Luke) emission energy to summary buffer.
 // 20210915  Change ComputeLukeDownsampling() to use new parameter requesting
 //		specific number of NTL phonons; estimated using nPairs.
+// 20211030  Add track and step summary information to support data analysis
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -706,6 +707,9 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
   summary->position[1] = GetCurrentTrack()->GetPosition()[1];
   summary->position[2] = GetCurrentTrack()->GetPosition()[2];
   summary->position[3] = GetCurrentTrack()->GetGlobalTime();
+
+  summary->trackID = GetCurrentTrack()->GetTrackID();
+  summary->stepID  = GetCurrentTrack()->GetCurrentStepNumber();
 
   // Pre-allocate buffer for secondaries
   secondaries.clear();

@@ -18,6 +18,7 @@
 // 20210327  Add downsampling factors
 // 20210820  Add true number of charge pairs and phonons before downsampling
 // 20210820  Add estimate of NTL (Luke) emission energy
+// 20211030  Add track and step information to support data analysis
 
 #ifndef G4CMPPartitionData_hh
 #define G4CMPPartitionData_hh 1
@@ -40,6 +41,8 @@ public:
 
 public:		// Simple container, provide direct access to information
   G4int    PDGcode;		// Particle type which produced energy deposit
+  G4int    trackID;		// Track and step indices for data correlation
+  G4int    stepID;
   G4double totalEnergy;		// Input total energy deposited in event
   G4double position[4];		// Location and time of energy deposit
   G4double truedEdx;		// Input ionizing energy (dE/dx) deposited

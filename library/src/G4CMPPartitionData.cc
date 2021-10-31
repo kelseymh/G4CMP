@@ -18,6 +18,7 @@
 // 20210327  Add downsampling factors for diagnostics
 // 20210820  Add true number of charge pairs and phonons before downsampling
 // 20210820  Add estimate of NTL (Luke) emission energy
+// 20211030  Add track and step information to support data analysis
 
 #include "globals.hh"
 #include "G4CMPPartitionData.hh"
@@ -31,7 +32,7 @@ G4ThreadLocal G4Allocator<G4CMPPartitionData>* G4CMPPartitionData_Allocator=0;
 // Constructor must initialize everything to zero
 
 G4CMPPartitionData::G4CMPPartitionData()
-  : G4VHit(), PDGcode(0), totalEnergy(0.), truedEdx(0.),
+  : G4VHit(), PDGcode(0), trackID(0), stepID(0), totalEnergy(0.), truedEdx(0.),
     trueNIEL(0.), lindhardYield(0.), FanoFactor(0.), chargeEnergy(0.),
     chargeFano(0.), chargeGenerated(0.), truePairs(0), numberOfPairs(0),
     lukeEnergyEst(0.),
@@ -44,7 +45,8 @@ G4CMPPartitionData::G4CMPPartitionData()
 // Report contents for diagnostic purposes
 
 void G4CMPPartitionData::Print() {	// FIXME: Base class is non-const
-  G4cout << "G4CMPPartitionData (particle type " << PDGcode << "):"
+  G4cout << "G4CMPPartitionData (particle type " << PDGcode << ","
+	 << " track/step " << trackID << "/" << stepID << "):"
          << "\n Total energy deposit " << totalEnergy/eV << " eV"
 	 << "\n Position (" << position[0]/mm << "," << position[1]/mm
 	 << "," << position[2]/mm << ") mm " << position[3]/ns << " ns"
