@@ -71,6 +71,7 @@ public:
 
   // Run-time configuration
   void SetVerboseLevel(G4int vb) const { verboseLevel = vb; }
+  G4int GetVerboseLevel() const { return verboseLevel; }
 
   void SetName(const G4String& name) { fName = name; }
   const G4String& GetName() const { return fName; }

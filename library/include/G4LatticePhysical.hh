@@ -57,6 +57,8 @@ public:
     if (fLattice) fLattice->SetVerboseLevel(vb);
   }
 
+  G4int GetVerboseLevel() const { return verboseLevel; }
+
   // Specific material lattice for this physical instance
   void SetLatticeLogical(const G4LatticeLogical* Lat) { fLattice = Lat; }
 
