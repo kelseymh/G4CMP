@@ -162,7 +162,9 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
-  force *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
+  force *= theLattice->GetMInvTensor();
+  force *= theLattice->GetElectronMass();
+  //***force *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
     G4cout << " Field (H-V)     " << force/(volt/cm) << " "
@@ -191,10 +193,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
-  // Force = qE/beta, rescaled so magnitude corresponds to voltage drop
-  G4double voltageDrop = fabs(Efield.dot(force)/force.mag());
-  force.setMag(voltageDrop);
-
+  // Force = qE/beta
   force *= fCharge*vinv*c_light;
 
 #ifdef G4CMP_DEBUG
