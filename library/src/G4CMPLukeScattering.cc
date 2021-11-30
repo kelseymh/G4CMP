@@ -135,12 +135,9 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
 
-  // *** TURN ON LATTICE VERBOSITY
-  const_cast<G4LatticePhysical*>(lat)->SetVerboseLevel(verboseLevel);
-
   if (verboseLevel > 1) {
-    G4ThreeVector p_global = GetGlobalMomentum(aTrack);
-    G4cout << "p_global = " << p_global << " p_mag " << p_global.mag() << G4endl
+    G4cout << "p_global = " << GetGlobalMomentum(aTrack)
+	   << " p_mag " << GetGlobalMomentum(aTrack).mag() << G4endl
 	   << " p_local = " << ptrk << " p_mag " << ptrk.mag() << G4endl;
 
     if (IsElectron()) {
@@ -203,6 +200,14 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     
     // Get recoil wavevector (in HV frame), convert to new local momentum
     k_recoil = ktrk - qvec;
+    if (IsHole()) {
+      precoil = k_recoil * hbarc;
+      Erecoil = precoil.mag2() / (2.*lat->GetHoleMass());
+    } else {
+      precoil = lat->MapK_HVtoP(iValley, k_recoil);
+      Erecoil = lat->MapPtoEkin(iValley, precoil);
+    }
+
     if (verboseLevel > 1) {
       G4cout << "k_recoil = " << k_recoil << " k_mag " << k_recoil.mag()
 	     << G4endl;
@@ -214,17 +219,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	G4cout << "k_valley = " << kvalley << " k_mag " << kvalley.mag() << G4endl
 	       << "p_valley = " << pvalley << " p_mag " << pvalley.mag() << G4endl;
       }
-    }
-
-    if (IsHole()) {
-      precoil = k_recoil * hbarc;
-      Erecoil = precoil.mag2() / (2.*lat->GetHoleMass());
-    } else {
-      precoil = lat->MapK_HVtoP(iValley, k_recoil);
-      Erecoil = lat->MapPtoEkin(iValley, precoil);
-    }
-
-    if (verboseLevel > 1) {
+      
       G4cout << "p_recoil = " << precoil << " p_mag " << precoil.mag() << G4endl
 	     << "E_recoil = " << Erecoil/eV << " eV" << G4endl;
     }
@@ -357,9 +352,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	   << Erecoil/eV << "," << precoil.mag()/eV << std::endl;
   }
 #endif
-
-  // *** TURN OFF LATTICE VERBOSITY
-  const_cast<G4LatticePhysical*>(lat)->SetVerboseLevel(0);
 
   ClearNumberOfInteractionLengthLeft();
   return &aParticleChange;
