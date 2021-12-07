@@ -23,10 +23,13 @@
 //	     warning message in base DoReflection()).  Pass verbosity through
 //	     to electrode.
 // 20210923  Use >= in maximum reflections check.
+// 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGeometryUtils.hh"
+#include "G4CMPLogicalBorderSurface.hh"
+#include "G4CMPLogicalSkinSurface.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPVTrackInfo.hh"
@@ -37,8 +40,6 @@
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4LogicalBorderSurface.hh"
-#include "G4LogicalSkinSurface.hh"
 #include "G4LogicalSurface.hh"
 #include "G4ParticleChange.hh"
 #include "G4ParticleDefinition.hh"
@@ -136,9 +137,10 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
   electrode = nullptr;
   
   // Look for specific surface between pre- and post-step points first
-  G4LogicalSurface* surface = G4LogicalBorderSurface::GetSurface(prePV, postPV);
+  G4LogicalSurface* surface =
+    G4CMPLogicalBorderSurface::GetSurface(prePV, postPV);
   if (!surface) {			// Then for generic pre-setp surface
-    surface = G4LogicalSkinSurface::GetSurface(prePV->GetLogicalVolume());
+    surface = G4CMPLogicalSkinSurface::GetSurface(prePV->GetLogicalVolume());
   }
 
   BoundaryPV bound(prePV,postPV);	// Avoid multiple temporaries below
