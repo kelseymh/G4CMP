@@ -24,6 +24,8 @@
 //	       cases where a step doesn't have energy deposited.
 // 20210610  G4CMP-262 : Handle step accumulation including track suspension,
 //	       by keeping a map of accumulators by track ID
+// 20220216  G4CMP-290 : Only spread secondaries along trajectory for charged
+//	       tracks; neutrals get everything at endpoint.
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPConfigManager.hh"
@@ -134,7 +136,8 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
   G4bool usedStep = DoAddStep(stepData);
   if (usedStep) {
     if (verboseLevel>1) {
-      G4cout << " accumulating step"
+      G4cout << " accumulating track " << track.GetTrackID()
+	     << " step " << track.GetCurrentStepNumber()
 	     << " @ " << stepData.GetPostStepPoint()->GetPosition()
 	     << " Edep " << stepData.GetTotalEnergyDeposit()/eV << " eV"
 	     << " Eniel " << stepData.GetNonIonizingEnergyDeposit()/eV << " eV"
@@ -241,10 +244,23 @@ void G4CMPSecondaryProduction::AddSecondaries() {
   G4int ptype = accumulator->pd->GetPDGEncoding();
   partitioner->DoPartition(ptype, eTotal, eNIEL);
   partitioner->GetSecondaries(theSecs);
-  std::random_shuffle(theSecs.begin(), theSecs.end(), RandomIndex);
 
   size_t nsec = theSecs.size();
-  GeneratePositions(nsec);
+  if (nsec == 0) {				// Avoid unnecessary work
+    if (verboseLevel>1) G4cout << " No secondaries generated." << G4endl;
+    return;
+  }
+
+  // Charged particles have energy spread along trajectory, from dE/dx
+  if (accumulator->pd->GetPDGCharge() != 0) {
+    if (verboseLevel>2)
+      G4cout << " Charged track; spreading dE/dx along trajectory" << G4endl;
+
+    std::random_shuffle(theSecs.begin(), theSecs.end(), RandomIndex);
+    GeneratePositions(nsec, accumulator->start, accumulator->end);
+  } else {
+    GeneratePositions(nsec, accumulator->end, accumulator->end);
+  }
 
   if (verboseLevel>1) G4cout << " Adding " << nsec << " secondaries" << G4endl;
   aParticleChange.SetNumberOfSecondaries(nsec);
@@ -272,11 +288,21 @@ void G4CMPSecondaryProduction::AddSecondaries() {
 // Generate intermediate points along step trajectory (straight line!)
 // NOTE:  For MSC type deposition, these points ought to be a random walk
 
-void G4CMPSecondaryProduction::GeneratePositions(size_t nsec) {
+void G4CMPSecondaryProduction::GeneratePositions(size_t nsec,
+						 const G4ThreeVector& start,
+						 const G4ThreeVector& end) {
   if (verboseLevel>1) G4cout << " GeneratePositions " << nsec << G4endl;
 
+  posSecs.clear();
+
+  // If everything happens at a point, just fill the position vector
+  if (start == end) {
+    posSecs.resize(nsec, end);
+    return;
+  }
+
   // Get average distance between secondaries along (straight) trajectory
-  G4ThreeVector traj = accumulator->end - accumulator->start;
+  G4ThreeVector traj = end - start;
   G4ThreeVector tdir = traj.unit();
 
   G4double length = traj.mag();
@@ -288,11 +314,10 @@ void G4CMPSecondaryProduction::GeneratePositions(size_t nsec) {
 	   << ": steps " << dl << " +- " << sigl << " mm" << G4endl;
   }
 
-  posSecs.clear();
-  posSecs.reserve(nsec);
+  posSecs.reserve(nsec);	// Avoid re-allocation memory churn
 
   G4double substep = 0.;
-  G4ThreeVector lastPos = accumulator->start;
+  G4ThreeVector lastPos = start;
   for (size_t i=0; i<nsec; i++) {
     substep = G4RandGauss::shoot(dl, sigl);
     lastPos += substep*tdir;
