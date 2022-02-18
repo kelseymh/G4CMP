@@ -19,6 +19,7 @@
 // 20210608  G4CMP-260 : Add function to identify steps with energy deposit.
 // 20210610  G4CMP-262 : Handle step accumulation including track suspension,
 //	       by keeping a map of accumulators by track ID
+// 20220216  G4CMP-290 : Add start/end arguments to GeneratePositions().
 
 #ifndef G4CMPSecondaryProduction_hh
 #define G4CMPSecondaryProduction_hh 1
@@ -70,7 +71,10 @@ protected:
   G4bool DoSecondaries(const G4Step& stepData) const;	// Ready to process?
 
   void AddSecondaries();		// Convert accumulator with partitioner
-  void GeneratePositions(size_t npos);	// Use accumulator hit range
+
+  // Create secondaries along the specified trajectory
+  void GeneratePositions(size_t npos, const G4ThreeVector& start,
+			 const G4ThreeVector& end);
 
   // Adjust position to be enforced inside current volume
   G4ThreeVector SurfaceClearance(const G4ThreeVector& pos);

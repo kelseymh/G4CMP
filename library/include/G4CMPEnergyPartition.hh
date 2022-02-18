@@ -26,6 +26,7 @@
 // 20210328  Split ComputeDownsampling() into individual computation functions
 // 20210820  Rename particle count data member for clarity, add counts for
 //		after downsampling.  Store weight for each particle in "Data".
+// 20220216  Add interface to do partitioning directly from StepAccumulator.
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -37,6 +38,7 @@
 
 class G4CMPChargeCloud;
 class G4CMPPartitionData;
+class G4CMPStepAccumulator;
 class G4Event;
 class G4LatticePhysical;
 class G4Material;
@@ -88,6 +90,9 @@ public:
 
   // Specify particle type (PDG), total and NIEL energy deposit
   void DoPartition(G4int PDGcode, G4double energy, G4double eNIEL);
+
+  // Specify container with information from one or more G4 steps
+  void DoPartition(const G4CMPStepAccumulator* accumulator);
 
   // Nuclear recoil deposit uses Lindhard scale factor for e/h vs. phonons
   void NuclearRecoil(G4double energy, G4double Z, G4double A);
