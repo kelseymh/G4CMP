@@ -54,6 +54,7 @@
 // 20210915  Change ComputeLukeDownsampling() to use new parameter requesting
 //		specific number of NTL phonons; estimated using nPairs.
 // 20211030  Add track and step summary information to support data analysis
+// 20220216  Add interface to do partitioning directly from StepAccumulator.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -66,6 +67,7 @@
 #include "G4CMPPartitionData.hh"
 #include "G4CMPPartitionSummary.hh"
 #include "G4CMPSecondaryUtils.hh"
+#include "G4CMPStepAccumulator.hh"
 #include "G4CMPUtils.hh"
 #include "G4VNIELPartition.hh"
 #include "G4DynamicParticle.hh"
@@ -226,6 +228,30 @@ G4double G4CMPEnergyPartition::MeasuredChargePairs(G4double eTrue) const {
   // Interpolated binominals to reproduce preset Fano factor
   // See https://www.slac.stanford.edu/exp/cdms/ScienceResults/DataReleases/20190401_HVeV_Run1/HVeV_R1_Data_Release_20190401.pdf
   return G4CMP::FanoBinomial::shoot(Ntrue, summary->FanoFactor);
+}
+
+
+// Generate charge carriers and phonons, depending on interaction type
+
+void 
+G4CMPEnergyPartition::DoPartition(const G4CMPStepAccumulator* steps) {
+  if (!steps) return;		// Avoid unnecessary work
+
+  if (verboseLevel) {
+    G4cout << "G4CMPEnergyPartition::DoPartition steps" << G4endl
+	   << *steps << G4endl;
+  }
+
+  DoPartition(steps->pd->GetPDGEncoding(), steps->Edep, steps->Eniel);
+
+  // Store position information in summary block
+  summary->position[0] = steps->end[0];
+  summary->position[1] = steps->end[1];
+  summary->position[2] = steps->end[2];
+  summary->position[3] = GetCurrentTrack()->GetGlobalTime();
+
+  summary->trackID = steps->trackID;
+  summary->stepID  = steps->stepID;
 }
 
 
