@@ -6,9 +6,10 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2022-02-17  g4cmp-V07-12-02 Improvements to SecondaryProduction for photons.
 2022-02-17  G4CMP-290 : Combine steps into "hits" in StepAccumulator, using
 			energy-weighted centroid of endpoints; do not use
-			start point for phonon energy deposits (they do not
+			start point for photon energy deposits (they do not
 			have continuous dE/dx along step).
 
 2021-11-30  g4cmp-V07-12-01 Revert field and LukeScattering changes (V07-11-00).
