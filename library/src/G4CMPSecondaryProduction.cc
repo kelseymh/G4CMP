@@ -174,7 +174,7 @@ G4bool G4CMPSecondaryProduction::DoAddStep(const G4Step& stepData) const {
   G4TrackStatus tStatus = stepData.GetTrack()->GetTrackStatus();
 
   if (verboseLevel>1) {
-    G4cout << " DoAddStep:"
+    G4cout << " DoAddStep returns OR of the following: "
 	   << " nsteps==0 ? " << (accumulator->nsteps==0)
 	   << "\n stepLen ? " << (stepData.GetStepLength()<combiningStepLength)
 	   << "\n boundary ? " << (sStatus == fGeomBoundary ||
@@ -210,7 +210,7 @@ G4bool G4CMPSecondaryProduction::DoSecondaries(const G4Step& stepData) const {
   G4TrackStatus tStatus = stepData.GetTrack()->GetTrackStatus();
 
   if (verboseLevel>1) {
-    G4cout << " DoSecondaries:"
+    G4cout << " DoSecondaries return nsteps and OR of everything else:"
 	   << " nsteps>0 ? " << (accumulator->nsteps>0)
 	   << "\n stepLen ? " << (stepData.GetStepLength()>=combiningStepLength)
 	   << "\n boundary ? " << (sStatus == fGeomBoundary ||
@@ -230,19 +230,18 @@ G4bool G4CMPSecondaryProduction::DoSecondaries(const G4Step& stepData) const {
 // Use energy loss to generate phonons and charge carriers along path
 
 void G4CMPSecondaryProduction::AddSecondaries() {
+  if (verboseLevel) {
+    G4cout << "G4CMPSecondaryProduction::AddSecondaries\n"
+	   << *accumulator << G4endl;
+  }
+
   G4double eTotal = accumulator->Edep;
   G4double eNIEL  = accumulator->Eniel;
 
   if (eTotal <= 0. && eNIEL <= 0.) return;	// Avoid unncessary work
 
-  if (verboseLevel) {
-    G4cout << " AddSecondaries from " << accumulator->nsteps << " steps "
-	   << eTotal/eV << " eV" << " (" << eNIEL/eV << " NIEL)" << G4endl;
-  }
-
-  // Configure energy partitioning for EM, nuclear, or pre-determined energy
-  G4int ptype = accumulator->pd->GetPDGEncoding();
-  partitioner->DoPartition(ptype, eTotal, eNIEL);
+  // Process recorded energy deposit(s) into phonons and charge carriers
+  partitioner->DoPartition(accumulator);
   partitioner->GetSecondaries(theSecs);
 
   size_t nsec = theSecs.size();

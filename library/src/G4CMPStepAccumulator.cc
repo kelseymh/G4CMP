@@ -68,14 +68,21 @@ void G4CMPStepAccumulator::Add(const G4Step& step) {
     start = step.GetPreStepPoint()->GetPosition();
   }
 
-  // Accumulate energy from current step
+  // Update step information
   nsteps++;
   stepID = track->GetCurrentStepNumber();
+
+  // Compute energy-weighted centroid of step endpoints
+  G4double stepEdep = step.GetTotalEnergyDeposit();
+  const G4ThreeVector& stepEnd = step.GetPostStepPoint()->GetPosition();
+
+  ((end *= Edep) += stepEnd*stepEdep) /= (Edep+stepEdep);
+  // NOTE: Using accumulators above as lvalues to avoid creating temporaries
+  // Equivalent to: end = (end*Edep + stepEnd*stepEdep)/(Edep+stepEdep);
+
+  // Accumulate total energy of steps
   Edep  += step.GetTotalEnergyDeposit();
   Eniel += step.GetNonIonizingEnergyDeposit();
-
-  // Move endpoint to current step
-  end = step.GetPostStepPoint()->GetPosition();
 }
 
 
