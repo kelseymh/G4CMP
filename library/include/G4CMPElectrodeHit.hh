@@ -4,6 +4,7 @@
 \***********************************************************************/
 
 // 20200510  M. Kelsey -- G4CMP-201: Allocator must be thread-local
+// 20220222  G4CMP-289 -- Thread-local allocator must be a pointer.
 
 #ifndef G4CMPElectrodeHit_h
 #define G4CMPElectrodeHit_h 1
@@ -70,16 +71,16 @@ private:
 
 typedef G4THitsCollection<G4CMPElectrodeHit> G4CMPElectrodeHitsCollection;
 
-extern G4ThreadLocal G4Allocator<G4CMPElectrodeHit> G4CMPElectrodeHitAllocator;
+extern G4ThreadLocal G4Allocator<G4CMPElectrodeHit>* G4CMPElectrodeHitAllocator;
 
 inline void* G4CMPElectrodeHit::operator new(size_t) {
-  void* aHit;
-  aHit = (void*)G4CMPElectrodeHitAllocator.MallocSingle();
-  return aHit;
+  if (!G4CMPElectrodeHitAllocator)
+    G4CMPElectrodeHitAllocator = new G4Allocator<G4CMPElectrodeHit>;
+  return (void*)G4CMPElectrodeHitAllocator->MallocSingle();
 }
 
 inline void G4CMPElectrodeHit::operator delete(void* aHit) {
-  G4CMPElectrodeHitAllocator.FreeSingle((G4CMPElectrodeHit*) aHit);
+  G4CMPElectrodeHitAllocator->FreeSingle((G4CMPElectrodeHit*) aHit);
 }
 
 #endif	/* G4CMPElectrodeHit_h */
