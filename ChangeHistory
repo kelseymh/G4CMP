@@ -13,6 +13,20 @@ ticket identifier, "G4CMP-nnn".
 2021-10-01  G4CMP-282 : Don't alter assigned kinetic energy of new tracks.
 2021-10-01  G4CMP-276 : For electrons, store momentum and energy in G4Track.
 
+2022-02-24  G4CMP-289 : Fix G4CMPElectrodeHit for proper multithreaded use.
+
+2022-02-17  g4cmp-V07-12-02 Improvements to SecondaryProduction for photons.
+2022-02-17  G4CMP-290 : Combine steps into "hits" in StepAccumulator, using
+			energy-weighted centroid of endpoints; do not use
+			start point for photon energy deposits (they do not
+			have continuous dE/dx along step).
+
+2021-11-30  g4cmp-V07-12-01 Revert field and LukeScattering changes (V07-11-00).
+2021-11-29  G4CMP-288 : Undo G4CMP-279, G4CMP-277 below to restore Luke action.
+
+2021-10-31  g4cmp-V07-12-00 Add track/step indices to G4CMPPartitionData.
+2021-10-30  G4CMP-287 : Add track and step information to G4CMPPartitionData.
+
 2021-09-29  g4cmp-V07-11-00 Better coordinate and electric field transforms,
 			additional downsampling control, and improved
 			diagnostic messages.
