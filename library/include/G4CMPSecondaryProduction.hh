@@ -61,6 +61,8 @@ public:
   void SetCombiningStepLength(G4double val) { combiningStepLength = val; }
   G4bool GetCombiningStepLength() const { return combiningStepLength; }
 
+  G4CMPStepAccumulator* GetAccumulator() const { return accumulator; }
+
 protected:
   // Step limit for PostStep (sets process Forced for all tracks)
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);

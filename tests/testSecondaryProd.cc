@@ -109,9 +109,9 @@ void ConstructGeometry() {
   G4LogicalVolume* lv = new G4LogicalVolume(crystal, mat, crystal->GetName());
   volume = new G4PVPlacement(0,G4ThreeVector(), lv, lv->GetName(), 0,false,1);
   // NOTE: This PV is acting as the world volume
-  // We will also need to create a G4TouchableHistory for it
+  // We will also need to create a G4TouchableHistory for it 
 
-  lattice = G4LatticeManager::Instance()->LoadLattice(pv,lname);
+  lattice = G4LatticeManager::Instance()->LoadLattice(volume,lname);
 }
 
 
@@ -138,7 +138,7 @@ G4bool LoadTrackInfo(const G4String& trackFile, G4Track& theTrack,
 		     std::map<G4int, G4Step>& theSteps) {
   std::ifstream trackData(trackFile);
   if (!trackData) {
-    G4cerr << "ERROR opening " << trackData << G4endl;
+    G4cerr << "ERROR opening " << trackFile << G4endl; //TrackData to TraceFile?
     return false;
   }
 
@@ -167,8 +167,8 @@ void PrepareTrack(G4Track& theTrack, const std::pair<G4int,G4Step>& stepData) {
   G4int stepID = stepData.first;
   const G4Step& aStep = stepData.second;
 
-  G4cout << " step " << theTrack->GetTrackID() << "/" << stepID
-	 << " @ " << aStep->GetPostStepPoint()->GetPosition() << G4endl;
+  G4cout << " step " << theTrack.GetTrackID() << "/" << stepID
+	 << " @ " << aStep.GetPostStepPoint()->GetPosition() << G4endl;
   
   // Copy post-step information into track
 
@@ -183,8 +183,8 @@ G4bool AnalyzeResults(const G4Track& theTrack, const G4Step& aStep) {
   const G4CMPStepAccumulator* theHit = theProcess.GetAccumulator();
 
   // Verify that accumulator includes current step, and show content
-  if (theHit->trackID == theTrack->GetTrackID() &&
-      theHit->stepID == theTrack->GetCurrentStepNumber()) {
+  if (theHit->trackID == theTrack.GetTrackID() &&
+      theHit->stepID == theTrack.GetCurrentStepNumber()) {
     G4cout << *theHit << G4endl;
   } else {
     G4cerr << "ERROR StepAccumulator does not match track state!" << G4endl
@@ -231,7 +231,7 @@ int main(int argc, char* argv[]) {
   // Set up the G4CMP framework, with tracking volume and lattice
   ConstructGeometry();
 
-  theProcess.SetCombiningLength(combLen);
+  theProcess.SetCombiningStepLength(combLen);
 
   G4cout << " processing track " << theTrack.GetTrackID() << " with "
 	 << theSteps.size() << " recorded steps" << G4endl;
@@ -241,6 +241,7 @@ int main(int argc, char* argv[]) {
   G4int nerrors = 0;
   for (const auto& stepData: theSteps) {
     PrepareTrack(theTrack, stepData);
+    const G4Step& aStep = stepData.second;
     pchange = theProcess.PostStepDoIt(theTrack, aStep);
     if (!AnalyzeResults(theTrack, aStep)) nerrors++;
   }
