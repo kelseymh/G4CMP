@@ -55,6 +55,7 @@
 //		specific number of NTL phonons; estimated using nPairs.
 // 20211030  Add track and step summary information to support data analysis
 // 20220216  Add interface to do partitioning directly from StepAccumulator.
+// 20220228  In GetSecondaries(), don't overwrite previously set position info.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -728,15 +729,17 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
   if (summary->PDGcode == 0)
     summary->PDGcode = GetCurrentParticle()->GetPDGEncoding();
 
-  // Store position information in summary block
-  summary->position[0] = GetCurrentTrack()->GetPosition()[0];
-  summary->position[1] = GetCurrentTrack()->GetPosition()[1];
-  summary->position[2] = GetCurrentTrack()->GetPosition()[2];
-  summary->position[3] = GetCurrentTrack()->GetGlobalTime();
-
-  summary->trackID = GetCurrentTrack()->GetTrackID();
-  summary->stepID  = GetCurrentTrack()->GetCurrentStepNumber();
-
+  // Store position information in summary block, if not already done
+  if (summary->trackID == 0) {
+    summary->position[0] = GetCurrentTrack()->GetPosition()[0];
+    summary->position[1] = GetCurrentTrack()->GetPosition()[1];
+    summary->position[2] = GetCurrentTrack()->GetPosition()[2];
+    summary->position[3] = GetCurrentTrack()->GetGlobalTime();
+    
+    summary->trackID = GetCurrentTrack()->GetTrackID();
+    summary->stepID  = GetCurrentTrack()->GetCurrentStepNumber();
+  }
+  
   // Pre-allocate buffer for secondaries
   secondaries.clear();
   secondaries.reserve(particles.size());
