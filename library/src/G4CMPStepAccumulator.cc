@@ -11,6 +11,7 @@
 // 20210303  Michael Kelsey
 // 20210608  Reset trackID in Clear(), check for matching eventID, and report
 //	       rollover errors for track or event changes.
+// 20220216  Add "stepID" to provide full identification.  Add printout.
 
 #include "globals.hh"
 #include "G4CMPStepAccumulator.hh"
@@ -21,12 +22,13 @@
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
+#include <iostream>
 
 
 // Reset accumulator for new track
 
 void G4CMPStepAccumulator::Clear() {
-  eventID = trackID = -1;
+  eventID = trackID = stepID = -1;
   nsteps = 0;
   pd = 0;
   Edep = Eniel = 0.;
@@ -66,11 +68,31 @@ void G4CMPStepAccumulator::Add(const G4Step& step) {
     start = step.GetPreStepPoint()->GetPosition();
   }
 
-  // Accumulate energy from current step
+  // Update step information
   nsteps++;
+  stepID = track->GetCurrentStepNumber();
+
+  // Compute energy-weighted centroid of step endpoints
+  G4double stepEdep = step.GetTotalEnergyDeposit();
+  const G4ThreeVector& stepEnd = step.GetPostStepPoint()->GetPosition();
+
+  ((end *= Edep) += stepEnd*stepEdep) /= (Edep+stepEdep);
+  // NOTE: Using accumulators above as lvalues to avoid creating temporaries
+  // Equivalent to: end = (end*Edep + stepEnd*stepEdep)/(Edep+stepEdep);
+
+  // Accumulate total energy of steps
   Edep  += step.GetTotalEnergyDeposit();
   Eniel += step.GetNonIonizingEnergyDeposit();
+}
 
-  // Move endpoint to current step
-  end = step.GetPostStepPoint()->GetPosition();
+
+// Dump content for diagnostics
+
+void G4CMPStepAccumulator::Print(std::ostream& os) const {
+  os << "G4CMPStepAccumulator event " << eventID
+     << " " << (pd?pd->GetParticleName():"")
+     << " track " << trackID << "/" << stepID
+     << "\n " << nsteps << " steps from " << start << " to " << end
+     << "\n deposited " << Edep/eV << " eV, " << Eniel/eV << " eV NIEL"
+     << std::endl;
 }
