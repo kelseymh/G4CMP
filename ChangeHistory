@@ -6,13 +6,14 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
-2021-10-06  G4CMP-286 : Use true momentum, compute velocity in G4EqEMField.
+2022-03-08  G4CMP-286 : Use true momentum, split out transforms in EqEMField.
 2021-10-01  G4CMP-285 : G4CMPTimeStepper should set electron dynamical mass.
 2021-10-01  G4CMP-281 : Create secondary electrons with correct momentum, mass.
 2021-10-01  G4CMP-283 : Recompute electron dynamical mass for G4ParticleChange.
 2021-10-01  G4CMP-282 : Don't alter assigned kinetic energy of new tracks.
 2021-10-01  G4CMP-276 : For electrons, store momentum and energy in G4Track.
 
+2022-03-02  g4cmp-V07-12-03 Fix combined-hit position, electrode-hit allocator.
 2022-02-24  G4CMP-289 : Fix G4CMPElectrodeHit for proper multithreaded use.
 
 2022-02-17  g4cmp-V07-12-02 Improvements to SecondaryProduction for photons.
