@@ -47,6 +47,7 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <fstream>
+#include <sstream>
 #include <vector>
 
 
@@ -119,8 +120,31 @@ void ConstructGeometry() {
 
 G4bool InitializeTrack(std::istream& trackData, G4Track& theTrack) {
   if (!trackData.good()) return false;
+  unsigned int dataSize = 20;
 
   // Read track data from current (first) line of file
+  std::string line;
+  std::vector<double> dataVector;
+  for(; std::getline(trackData, line);) {
+    std::stringstream ss;
+    ss << line; //get every line
+    std::string tmp="";
+    double data;
+    while(!ss.eof()) {
+      ss >> tmp;
+      if(std::stringstream(tmp)>>data){dataVector.push_back(data);} //put every number in line into vector
+    }
+    if(dataVector.size() < dataSize){dataVector.clear();}
+    else {break;} // take first line as row that has appropriate number of data members.
+  }
+  //Populate Track ?
+  const G4int ID = 0;
+  //const G4double* momentum = {dataVector[15],dataVector[16],dataVector[17]};
+  const G4double KE = dataVector[5];
+  theTrack.SetTrackID(ID);
+  theTrack.SetKineticEnergy(KE);
+   
+
 
   return true;
 }
@@ -221,6 +245,9 @@ int main(int argc, char* argv[]) {
   if (combLen > 0.) {
     G4cout << " with hit-combining " << G4BestUnit(combLen, "Length")
 	   << G4endl;
+  }
+  else {
+    G4cout << " without hit-combining " << G4endl;
   }
 
   // Load data from input file first
