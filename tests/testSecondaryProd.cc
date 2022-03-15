@@ -50,7 +50,6 @@
 #include <sstream>
 #include <vector>
 
-
 // Print help information
 
 void Usage() {
@@ -115,37 +114,41 @@ void ConstructGeometry() {
   lattice = G4LatticeManager::Instance()->LoadLattice(volume,lname);
 }
 
-
-// Read track information file and initialize track and steps list
-
-G4bool InitializeTrack(std::istream& trackData, G4Track& theTrack) {
+G4bool readLine(std::istream& trackData, std::vector<G4double>& dataVector, unsigned int linenum=0) {
   if (!trackData.good()) return false;
-  unsigned int dataSize = 20;
+ 
+  //Goto line
+  
+  std::string line;  
+  std::stringstream ss;
+  for(unsigned int i=0; std::getline(trackData,line) && i < linenum - 1; i++)
 
-  // Read track data from current (first) line of file
-  std::string line;
-  std::vector<double> dataVector;
-  for(; std::getline(trackData, line);) {
-    std::stringstream ss;
-    ss << line; //get every line
-    std::string tmp="";
-    double data;
-    while(!ss.eof()) {
-      ss >> tmp;
-      if(std::stringstream(tmp)>>data){dataVector.push_back(data);} //put every number in line into vector
-    }
-    if(dataVector.size() < dataSize){dataVector.clear();}
-    else {break;} // take first line as row that has appropriate number of data members.
+  // get line and pop vector
+  ss << line; //get line
+  std::string tmp="";
+  double data;
+  while(!ss.eof()) {
+    ss >> tmp;
+    if(std::stringstream(tmp)>>data){dataVector.push_back(data);} //put every number in line into vector
   }
-  //Populate Track ?
-  const G4int ID = 0;
-  //const G4double* momentum = {dataVector[15],dataVector[16],dataVector[17]};
-  const G4double KE = dataVector[5];
-  theTrack.SetTrackID(ID);
-  theTrack.SetKineticEnergy(KE);
-   
+  return true;
+}
 
+G4bool InitializeTrack(std::istream& trackData, G4Track& theTrack, unsigned int linenum = 0) {
+  if (!trackData.good()) return false;
+  std::vector<G4double> data;
 
+  // Read track data from track line of file
+  readLine(trackData, data, linenum);
+  
+  // Populate Track
+  // trackID particleName X Y Z Ekin PX PY PZ
+  theTrack.SetTrackID((G4int) data.at(0));
+  theTrack.SetKineticEnergy(data.at(5));
+  theTrack.SetParentID((G4int) data.at(1));
+  theTrack.SetPosition(G4ThreeVector(data.at(2), data.at(3), data.at(4)));
+  const G4ThreeVector momentum = G4ThreeVector(data.at(6), data.at(7), data.at(8)); 
+  theTrack.SetMomentumDirection(momentum.unit());
   return true;
 }
 
