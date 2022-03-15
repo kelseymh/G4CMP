@@ -139,7 +139,7 @@ G4bool InitializeTrack(std::istream& trackData, G4Track& theTrack, unsigned int 
   std::vector<G4double> data;
 
   // Read track data from track line of file
-  readLine(trackData, data, linenum);
+  if(!readLine(trackData, data, linenum)) return false;
   
   // Populate Track
   // trackID particleName X Y Z Ekin PX PY PZ
@@ -157,7 +157,33 @@ G4bool LoadNextStep(std::istream& trackData,
   if (!trackData.good()) return false;
 
   // NOTE: If input file ends with carriage return, may read a blank line
+  std::vector<G4double> data;
+  if(!readLine(trackData, data)) return false; //Get step data
 
+  // stepID Xi Yi Zi Ti KEi PXi PYi PZi Xf Yf Zf Tf KEf PXf PYf PZf
+  // PreStepPoint
+  G4StepPoint* preStep;
+  preStep->SetPosition(G4ThreeVector(data.at(1), data.at(2), data.at(3)));
+  preStep->SetGlobalTime(data.at(4));
+  preStep->SetKineticEnergy(data.at(5));
+  G4ThreeVector preMom = G4ThreeVector(data.at(6), data.at(7), data.at(8)); 
+  preStep->SetMomentumDirection(preMom.unit());
+
+  // PostStepPoint
+  G4StepPoint* postStep;
+  postStep->SetPosition(G4ThreeVector(data.at(9), data.at(10), data.at(11)));
+  postStep->SetGlobalTime(data.at(12));
+  postStep->SetKineticEnergy(data.at(13));
+  const G4ThreeVector postMom = G4ThreeVector(data.at(14), data.at(15), data.at(16)); 
+  postStep->SetMomentumDirection(postMom.unit());
+
+  // Populate Step
+  G4Step aStep; 
+  aStep.SetPreStepPoint(preStep);
+  aStep.SetPostStepPoint(postStep);
+
+  theSteps.insert(std::pair<G4int, G4Step>((G4int) data.at(0), aStep));
+  
   return true;
 }
 
@@ -198,6 +224,8 @@ void PrepareTrack(G4Track& theTrack, const std::pair<G4int,G4Step>& stepData) {
 	 << " @ " << aStep.GetPostStepPoint()->GetPosition() << G4endl;
   
   // Copy post-step information into track
+
+  
 
 }
 
