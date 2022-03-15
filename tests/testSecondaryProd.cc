@@ -162,7 +162,7 @@ G4bool LoadNextStep(std::istream& trackData,
 
   // stepID Xi Yi Zi Ti KEi PXi PYi PZi Xf Yf Zf Tf KEf PXf PYf PZf
   // PreStepPoint
-  G4StepPoint* preStep;
+  G4StepPoint* preStep = new G4StepPoint();
   preStep->SetPosition(G4ThreeVector(data.at(1), data.at(2), data.at(3)));
   preStep->SetGlobalTime(data.at(4));
   preStep->SetKineticEnergy(data.at(5));
@@ -170,7 +170,7 @@ G4bool LoadNextStep(std::istream& trackData,
   preStep->SetMomentumDirection(preMom.unit());
 
   // PostStepPoint
-  G4StepPoint* postStep;
+  G4StepPoint* postStep = new G4StepPoint();
   postStep->SetPosition(G4ThreeVector(data.at(9), data.at(10), data.at(11)));
   postStep->SetGlobalTime(data.at(12));
   postStep->SetKineticEnergy(data.at(13));
@@ -224,6 +224,12 @@ void PrepareTrack(G4Track& theTrack, const std::pair<G4int,G4Step>& stepData) {
 	 << " @ " << aStep.GetPostStepPoint()->GetPosition() << G4endl;
   
   // Copy post-step information into track
+  const G4StepPoint* postStep = aStep.GetPostStepPoint();
+  
+  theTrack.SetTrackID((G4int) stepID);
+  theTrack.SetKineticEnergy(postStep->GetKineticEnergy());
+  theTrack.SetPosition(postStep->GetPosition()); 
+  theTrack.SetMomentumDirection(postStep->GetMomentumDirection());
 
   
 
