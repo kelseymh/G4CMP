@@ -28,6 +28,7 @@
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPUtils.hh"
+#include "G4CMPPartitionSummary.hh"
 #include "G4Delete.hh"
 #include "G4DynamicParticle.hh"
 #include "G4LatticeManager.hh"
@@ -231,6 +232,10 @@ void PrepareTrack(G4Track& theTrack, const std::pair<G4int,G4Step>& stepData) {
   theTrack.SetPosition(postStep->GetPosition()); 
   theTrack.SetMomentumDirection(postStep->GetMomentumDirection());
 
+  // Point Track and Steps to each other ??
+  theTrack.SetStep(&aStep);
+  
+
   
 
 }
@@ -256,6 +261,7 @@ G4bool AnalyzeResults(const G4Track& theTrack, const G4Step& aStep) {
   }
 
   // Retrieve partition info, see if matches current step
+  
 
 
   return resultGood;
