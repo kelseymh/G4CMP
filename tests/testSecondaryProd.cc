@@ -79,6 +79,8 @@ namespace {
   G4LatticePhysical* lattice = 0;
   G4PVPlacement* volume = 0;
   G4CMPSecondaryProduction theProcess;
+  G4CMPPartitionSummary* partSum = G4CMPPartitionSummary::Instance();
+  static G4int cacheSize = 0;
 }
 
 // Extract command-line arguments
@@ -182,6 +184,7 @@ G4bool LoadNextStep(std::istream& trackData,
   G4Step aStep; 
   aStep.SetPreStepPoint(preStep);
   aStep.SetPostStepPoint(postStep);
+  if (theSteps.empty()) {aStep.SetFirstStepFlag();}
 
   theSteps.insert(std::pair<G4int, G4Step>((G4int) data.at(0), aStep));
   
@@ -227,13 +230,15 @@ void PrepareTrack(G4Track& theTrack, const std::pair<G4int,G4Step>& stepData) {
   // Copy post-step information into track
   const G4StepPoint* postStep = aStep.GetPostStepPoint();
   
-  theTrack.SetTrackID((G4int) stepID);
+  //theTrack.SetTrackID((G4int) stepID);
   theTrack.SetKineticEnergy(postStep->GetKineticEnergy());
   theTrack.SetPosition(postStep->GetPosition()); 
   theTrack.SetMomentumDirection(postStep->GetMomentumDirection());
 
   // Point Track and Steps to each other ??
   theTrack.SetStep(&aStep);
+
+  theTrack.IncrementCurrentStepNumber();
   
 
   
@@ -261,11 +266,21 @@ G4bool AnalyzeResults(const G4Track& theTrack, const G4Step& aStep) {
   }
 
   // Retrieve partition info, see if matches current step
+  if (cacheSize != theHit->stepID) {
+    cacheSize = theHit->stepID; // to continue counting error
+    resultGood = false;
+  }
+  else {
+    const G4CMPPartitionData* lastEntry = partSum->Get((G4int) partSum->Entries() - 1);
+    if (aStep.GetTotalEnergyDeposit() != lastEntry->totalEnergy) {resultGood = false;} //?
+    cacheSize++;
+  }
+    
   
-
-
   return resultGood;
 }
+
+
 
 
 // MAIN PROGRAM
