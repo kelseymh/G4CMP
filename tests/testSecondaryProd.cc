@@ -124,7 +124,7 @@ G4bool readLine(std::istream& trackData, std::vector<G4double>& dataVector, unsi
   
   std::string line;  
   std::stringstream ss;
-  for(unsigned int i=0; std::getline(trackData,line) && i < linenum - 1; i++)
+  for(unsigned int i=0; std::getline(trackData,line) && i < linenum + 1; i++)
 
   // get line and pop vector
   ss << line; //get line
