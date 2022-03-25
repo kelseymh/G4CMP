@@ -50,7 +50,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-
+#include <utility>
 // Print help information
 
 void Usage() {
@@ -122,11 +122,14 @@ G4bool readLine(std::istream& trackData, std::vector<G4double>& dataVector, unsi
  
   //Goto line
   
-  std::string line;  
+  std::string line = "";  
   std::stringstream ss;
-  for(unsigned int i=0; std::getline(trackData,line) && i < linenum + 1; i++)
+  //for(unsigned int i=0; std::getline(trackData,line) && i < linenum + 1; i++)
+  //	if(i < linenum) {line = "";}
+  std::getline(trackData,line);
 
   // get line and pop vector
+  //G4cout << line << G4endl;
   ss << line; //get line
   std::string tmp="";
   double data;
@@ -158,10 +161,13 @@ G4bool InitializeTrack(std::istream& trackData, G4Track& theTrack, unsigned int 
 G4bool LoadNextStep(std::istream& trackData,
 		    std::map<G4int, G4Step>& theSteps) {
   if (!trackData.good()) return false;
+  //G4cout << "Loading step: " << theSteps.size() << G4endl;
 
   // NOTE: If input file ends with carriage return, may read a blank line
   std::vector<G4double> data;
   if(!readLine(trackData, data)) return false; //Get step data
+  if(data.size() == 0) return true;
+  //G4cout << "Read line" << G4endl;
 
   // stepID Xi Yi Zi Ti KEi PXi PYi PZi Xf Yf Zf Tf KEf PXf PYf PZf
   // PreStepPoint
@@ -220,9 +226,10 @@ G4bool LoadTrackInfo(const G4String& trackFile, G4Track& theTrack,
 
 // Update track contents with information from step
 
-void PrepareTrack(G4Track& theTrack, const std::pair<G4int,G4Step>& stepData) {
-  G4int stepID = stepData.first;
-  const G4Step& aStep = stepData.second;
+void PrepareTrack(G4Track& theTrack, const G4int stepID, const G4Step& aStep) {
+  G4cout << "In track" << G4endl;
+  //G4int stepID = stepData.first;
+  //const G4Step& aStep = stepData.second;
 
   G4cout << " step " << theTrack.GetTrackID() << "/" << stepID
 	 << " @ " << aStep.GetPostStepPoint()->GetPosition() << G4endl;
@@ -312,6 +319,7 @@ int main(int argc, char* argv[]) {
   G4Track theTrack;
   std::map<G4int, G4Step> theSteps;
   if (!LoadTrackInfo(trackFile, theTrack, theSteps)) return 2;
+  //G4cout << "Track Loaded" << G4endl;
 
   // Set up the G4CMP framework, with tracking volume and lattice
   ConstructGeometry();
@@ -321,14 +329,16 @@ int main(int argc, char* argv[]) {
   G4cout << " processing track " << theTrack.GetTrackID() << " with "
 	 << theSteps.size() << " recorded steps" << G4endl;
 
-  G4VParticleChange* pchange=0;
 
   G4int nerrors = 0;
   for (const auto& stepData: theSteps) {
-    PrepareTrack(theTrack, stepData);
-    const G4Step& aStep = stepData.second;
-    pchange = theProcess.PostStepDoIt(theTrack, aStep);
-    if (!AnalyzeResults(theTrack, aStep)) nerrors++;
+    G4cout << "Preparing Track: " << stepData.first << G4endl;
+    PrepareTrack(theTrack, stepData.first, stepData.second);
+    //const G4Step& aStep = stepData.second;
+    G4cout << "PostStep" << G4endl;
+    G4VParticleChange* pchange = theProcess.PostStepDoIt(theTrack, stepData.second);
+    G4cout << "Analyze" << G4endl;
+    if (!AnalyzeResults(theTrack, stepData.second)) nerrors++;
   }
 
   G4cout << "Processing complete with " << nerrors << " errors" << G4endl;
