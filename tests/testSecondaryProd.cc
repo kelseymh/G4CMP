@@ -181,12 +181,12 @@ G4bool LoadNextStep(std::istream& trackData,
   postStep->SetMomentumDirection(postMom.unit());
 
   // Populate Step
-  G4Step aStep; 
+  G4Step& aStep = theSteps[data[0]]; 
   aStep.SetPreStepPoint(preStep);
   aStep.SetPostStepPoint(postStep);
   if (theSteps.empty()) {aStep.SetFirstStepFlag();}
 
-  theSteps.insert(std::pair<G4int, G4Step>((G4int) data.at(0), aStep));
+  //theSteps.insert(std::pair<G4int, G4Step>((G4int) data.at(0), aStep));
   
   return true;
 }
