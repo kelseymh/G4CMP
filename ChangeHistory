@@ -11,6 +11,7 @@ their applications to replace current usage of G4LogicalBorderSurface or
 G4LogicalSkinSurface with G4CMPLogical*Surface.  The constructor arguments
 and configuration of the new objects do not need to be modified.
 
+2022-03-30  g4cmp-V08-00-00 Define and use G4CMPLogical*Surface classes.
 2022-03-30  G4CMP-259 : Implement G4CMP surface classes to avoid conflict
 			with G4 optical processes.
 
