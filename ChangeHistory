@@ -6,7 +6,12 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
-2021-12-07  G4CMP-259 : Implement G4CMP surface classes to avoid conflict
+NOTE: This is a breaking change to the G4CMP package.  Users must modify
+their applications to replace current usage of G4LogicalBorderSurface or
+G4LogicalSkinSurface with G4CMPLogical*Surface.  The constructor arguments
+and configuration of the new objects do not need to be modified.
+
+2022-03-30  G4CMP-259 : Implement G4CMP surface classes to avoid conflict
 			with G4 optical processes.
 
 2021-11-30  g4cmp-V07-12-01 Revert field and LukeScattering changes (V07-11-00).
