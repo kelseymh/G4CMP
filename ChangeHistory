@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2022-03-31  G4CMP-294 : Check null pointer is G4CMP*Surface::GetSurface().
+
 NOTE: This is a breaking change to the G4CMP package.  Users must modify
 their applications to replace current usage of G4LogicalBorderSurface or
 G4LogicalSkinSurface with G4CMPLogical*Surface.  The constructor arguments

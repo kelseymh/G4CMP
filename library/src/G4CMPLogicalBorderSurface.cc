@@ -11,6 +11,8 @@
 // of two physical volumes.
 //
 // Adapted from G4LogicalBorderSurface for phonon/charge carrier transport
+//
+// 20220331  G4CMP-294:  Protect against null surfaceTable pointer
 
 #include "G4CMPLogicalBorderSurface.hh"
 #include "G4Exception.hh"
@@ -64,8 +66,8 @@ void G4CMPLogicalBorderSurface::RemoveFromTable() {
 }
 
 void G4CMPLogicalBorderSurface::AddToTable() {
-  if (surfaceTable)
-    (*surfaceTable)[G4CMPLogicalBorderKey(Volume1,Volume2)] = this;
+  if (!surfaceTable) GetSurfaceTable();
+  (*surfaceTable)[G4CMPLogicalBorderKey(Volume1,Volume2)] = this;
 }
 
 
@@ -74,6 +76,8 @@ void G4CMPLogicalBorderSurface::AddToTable() {
 G4CMPLogicalBorderSurface* 
 G4CMPLogicalBorderSurface::GetSurface(const G4VPhysicalVolume* vol1,
 				      const G4VPhysicalVolume* vol2) {
+  if (!surfaceTable) return 0;
+
   G4CMPLogicalBorderKey key(vol1,vol2);
   G4CMPLogicalBorderTable::iterator entry = surfaceTable->find(key);
   return (entry != surfaceTable->end() ? entry->second : 0);
