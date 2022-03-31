@@ -18,6 +18,7 @@
 // 20200426  G4CMP-196: Change "impact" to "trap ionization", separate
 //		process instances for each beam/trap type.
 // 20210203  G4CMP-241: SecondaryProduction must be last PostStep process.
+// 20220331  G4CMP-293: Replace RegisterProcess() with local AddG4CMPProcess().
 
 #include "G4CMPPhysics.hh"
 #include "G4CMPConfigManager.hh"
@@ -85,67 +86,58 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* heTrpI = new G4CMPDriftTrapIonization(hdrift, edrift);
   G4VProcess* hhTrpI = new G4CMPDriftTrapIonization(hdrift, hdrift);
 
-  // Set process verbosity to match physics list, for diagnostics
-  if (verboseLevel>0) {
-    phScat->SetVerboseLevel(verboseLevel);
-    phRefl->SetVerboseLevel(verboseLevel);
-    phDown->SetVerboseLevel(verboseLevel);
-    tmStep->SetVerboseLevel(verboseLevel);
-    driftB->SetVerboseLevel(verboseLevel);
-    ivScat->SetVerboseLevel(verboseLevel);
-    luke->SetVerboseLevel(verboseLevel);
-    recomb->SetVerboseLevel(verboseLevel);
-    eLimit->SetVerboseLevel(verboseLevel);
-    trapping->SetVerboseLevel(verboseLevel);
-    eeTrpI->SetVerboseLevel(verboseLevel);
-    ehTrpI->SetVerboseLevel(verboseLevel);
-    heTrpI->SetVerboseLevel(verboseLevel);
-    hhTrpI->SetVerboseLevel(verboseLevel);
-  }
-
-  G4ParticleDefinition* particle = 0;	// Reusable buffer for convenience
-
   // Add processes only to locally known particles
+  G4ParticleDefinition* particle = 0;
+
   particle = G4PhononLong::PhononDefinition();
-  RegisterProcess(phScat, particle);
-  RegisterProcess(phDown, particle);
-  RegisterProcess(phRefl, particle);
-  RegisterProcess(eLimit, particle);
+  AddG4CMPProcess(phScat, particle);
+  AddG4CMPProcess(phDown, particle);
+  AddG4CMPProcess(phRefl, particle);
+  AddG4CMPProcess(eLimit, particle);
 
   particle = G4PhononTransSlow::PhononDefinition();
-  RegisterProcess(phScat, particle);
-  RegisterProcess(phDown, particle);
-  RegisterProcess(phRefl, particle);
-  RegisterProcess(eLimit, particle);
+  AddG4CMPProcess(phScat, particle);
+  AddG4CMPProcess(phDown, particle);
+  AddG4CMPProcess(phRefl, particle);
+  AddG4CMPProcess(eLimit, particle);
 
   particle = G4PhononTransFast::PhononDefinition();
-  RegisterProcess(phScat, particle);
-  RegisterProcess(phDown, particle);
-  RegisterProcess(phRefl, particle);
-  RegisterProcess(eLimit, particle);
+  AddG4CMPProcess(phScat, particle);
+  AddG4CMPProcess(phDown, particle);
+  AddG4CMPProcess(phRefl, particle);
+  AddG4CMPProcess(eLimit, particle);
 
   particle = edrift;
-  RegisterProcess(tmStep, particle);
-  RegisterProcess(luke, particle);
-  RegisterProcess(ivScat, particle);
-  RegisterProcess(driftB, particle);
-  RegisterProcess(recomb, particle);
-  RegisterProcess(eLimit, particle);
-  RegisterProcess(trapping, particle);
-  RegisterProcess(eeTrpI, particle);	// e- projectile on both traps
-  RegisterProcess(ehTrpI, particle);
+  AddG4CMPProcess(tmStep, particle);
+  AddG4CMPProcess(luke, particle);
+  AddG4CMPProcess(ivScat, particle);
+  AddG4CMPProcess(driftB, particle);
+  AddG4CMPProcess(recomb, particle);
+  AddG4CMPProcess(eLimit, particle);
+  AddG4CMPProcess(trapping, particle);
+  AddG4CMPProcess(eeTrpI, particle);	// e- projectile on both traps
+  AddG4CMPProcess(ehTrpI, particle);
 
   particle = hdrift;
-  RegisterProcess(tmStep, particle);
-  RegisterProcess(luke, particle);
-  RegisterProcess(driftB, particle);
-  RegisterProcess(recomb, particle);
-  RegisterProcess(eLimit, particle);
-  RegisterProcess(trapping, particle);
-  RegisterProcess(heTrpI, particle);	// h+ projectile on both traps
-  RegisterProcess(hhTrpI, particle);
+  AddG4CMPProcess(tmStep, particle);
+  AddG4CMPProcess(luke, particle);
+  AddG4CMPProcess(driftB, particle);
+  AddG4CMPProcess(recomb, particle);
+  AddG4CMPProcess(eLimit, particle);
+  AddG4CMPProcess(trapping, particle);
+  AddG4CMPProcess(heTrpI, particle);	// h+ projectile on both traps
+  AddG4CMPProcess(hhTrpI, particle);
 
   AddSecondaryProduction();
+}
+
+
+// Register G4CMP processes here, instead of using G4CMPOrdParamTable.txt
+
+void G4CMPPhysics::AddG4CMPProcess(G4VProcess* proc, G4ParticleDefinition* pd) {
+  // Set process verbosity to match physics list, for diagnostics
+  proc->SetVerboseLevel(verboseLevel);
+  pd->GetProcessManager()->AddDiscreteProcess(proc, ordLast);
 }
 
 
@@ -153,15 +145,11 @@ void G4CMPPhysics::ConstructProcess() {
 
 void G4CMPPhysics::AddSecondaryProduction() {
   G4VProcess* maker = new G4CMPSecondaryProduction;
-  maker->SetVerboseLevel(verboseLevel);
 
   auto pIter = G4ParticleTable::GetParticleTable()->GetIterator();
   pIter->reset();
   while ((*pIter)()) {
     G4ParticleDefinition* particle = pIter->value();
-    G4ProcessManager* pmanager = particle->GetProcessManager();
-    if (maker->IsApplicable(*particle)) { 
-      pmanager->AddDiscreteProcess(maker, ordLast);
-    }
+    if (maker->IsApplicable(*particle)) AddG4CMPProcess(maker, particle); 
   }
 }

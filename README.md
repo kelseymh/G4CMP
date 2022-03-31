@@ -275,7 +275,6 @@ linking G4CMP into your applications:
 | G4CMPLIB | Directory containing libG4cmp.so | $G4WORKDIR/lib/$G4SYSTEM | $G4CMPINSTALL/lib |
 | G4CMPINCLUDE | Path to library/include      | $G4INSTALL/library/include | $CMAKE_INSTALL_PREFIX/include |
 | G4LATTICEDATA | Path to CrytalMaps directory | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
-| G4ORDPARAMTABLE | Geant4 process registration file | $G4INSTALL/G4CMPOrdParamTable.txt | $G4INSTALL/G4CMPOrdParamTable.txt |
 
 If you have a simple Makefile build system (GMake), the following two lines,
 or an appropriate variation on them, should be sufficient:
