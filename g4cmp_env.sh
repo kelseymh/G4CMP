@@ -7,6 +7,7 @@
 # 20161006  Add G4WORKDIR to (DY)LD_LIBRARY_PATH
 # 20170509  Define G4CMPLIB and G4CMPINCLUDE relative to G4CMPINSTALL
 # 20200719  Set undefined *LD_LIBRARY_PATH; use $() in place of ``
+# 20220331  G4CMP-293: Remove G4CMPORDPARAMTABLE; not using RegisterProcess()
 
 # Identify location of script from user command (c.f. geant4make.sh)
 
@@ -46,4 +47,3 @@ export DYLD_LIBRARY_PATH=${G4CMPLIB}${DYLD_LIBRARY_PATH:+:}$DYLD_LIBRARY_PATH
 # Assign environment variables for runtime configuraiton
 
 export G4LATTICEDATA=$G4CMPINSTALL/CrystalMaps
-export G4ORDPARAMTABLE=$G4CMPINSTALL/G4CMPOrdParamTable.txt
