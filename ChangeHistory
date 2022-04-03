@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2022-04-02  G4CMP-294 : Check null pointer is G4CMP*Surface::GetSurface().
 2022-03-31  G4CMP-293 : Remove G4CMPOrdParamTable.txt; use simple process
 			registration directly to particles instead.  Table
 			content is very dependent on physics list used and
