@@ -77,11 +77,16 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
   minLength *= (IsElectron() ? theLattice->GetElectronScatter()
 		: theLattice->GetHoleScatter());
 
+  G4double ekin = GetKineticEnergy(track);
+  energyStepMFP = rateModel ? EnergyStep(rateModel ->Threshold(ekin)) : DBL_MAX;
+  if (energyStepMFP  <= 1e-9*m) energyStepMFP = DBL_MAX;
+
   if (verboseLevel > 1) {
     G4cout << GetProcessName() << "::PostStepGPIL: minLength " << minLength
-	   << " trueLength " << trueLength << G4endl;
+	   << " trueLength " << trueLength << " energyStepMFP " << energyStepMFP << G4endl;
   }
   
+  trueLength = energyStepMFP<trueLength ? energyStepMFP : trueLength;
   return minLength<trueLength ? trueLength : minLength;
 }
 
