@@ -46,6 +46,9 @@ protected:
   void FillParticleChange(G4int ivalley, G4double Ekin,
               const G4ThreeVector& v);
 
+  // Step length in E-field needed to reach specified energy
+  G4double EnergyStep(G4double Efinal) const;
+
 private:
   // hide assignment operators as private 
   G4CMPVDriftProcess(G4CMPVDriftProcess&);

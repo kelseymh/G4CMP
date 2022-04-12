@@ -42,6 +42,10 @@
 #include "G4Track.hh"
 #include "Randomize.hh"
 
+#include "G4CMPFieldUtils.hh"
+#include "G4CMPProcessUtils.hh"
+#include "G4CMPVScatteringRate.hh"
+
 
 // Constructor and destructor
 // NOTE:  Initial values are arbitrary and non-physical
@@ -77,11 +81,17 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
   minLength *= (IsElectron() ? theLattice->GetElectronScatter()
 		: theLattice->GetHoleScatter());
 
+  G4double ekin = GetKineticEnergy(track);
+  G4CMPVScatteringRate* processRate = GetRateModel();
+  G4double energyStepMFP = processRate ? EnergyStep(processRate->Threshold(ekin)) : DBL_MAX;
+  if (energyStepMFP  <= 1e-9*m) energyStepMFP = 1e-9*m;
+
   if (verboseLevel > 1) {
     G4cout << GetProcessName() << "::PostStepGPIL: minLength " << minLength
-	   << " trueLength " << trueLength << G4endl;
+	   << " trueLength " << trueLength << " energyStepMFP " << energyStepMFP << G4endl;
   }
   
+  trueLength = energyStepMFP<trueLength ? energyStepMFP : trueLength;
   return minLength<trueLength ? trueLength : minLength;
 }
 
@@ -112,4 +122,22 @@ void G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
 							 GetLocalDirection(v));
     aParticleChange.ProposeMass(meff*c_squared);
   }
+}
+
+G4double G4CMPVDriftProcess::EnergyStep(G4double Efinal) const {
+  const G4Track* trk = GetCurrentTrack();
+
+  G4double Emag = G4CMP::GetFieldAtPosition(*trk).mag();
+  if (Emag <= 0.) return DBL_MAX;		// No field, no acceleration
+
+  G4double Ekin = GetKineticEnergy(trk);
+  if (Ekin > Efinal) return DBL_MAX;		// Already over threshold
+
+  if (verboseLevel>1) {
+    G4cout << "G4CMPTimeStepper::EnergyStep from " << Ekin/eV
+	   << " to " << Efinal/eV << " eV" << G4endl;
+  }
+
+  // Add 20% rescaling to account for electron valley systematics
+  return 1.2*(Efinal-Ekin)/Emag;
 }
