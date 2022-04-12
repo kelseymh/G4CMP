@@ -179,7 +179,7 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 	   << " MFP = " << mfp/m << " m" << G4endl;
   }
 
-  return DBL_MAX;
+  return mfp;
 }
 
 
