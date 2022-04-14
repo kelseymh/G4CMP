@@ -11,6 +11,8 @@
 // volume.
 //
 // Adapted from G4LogicalSkinSurface for phonon/charge carrier transport
+//
+// 20220331  G4CMP-294:  Protect against null surfaceTable pointer
 
 #include"G4CMPLogicalSkinSurface.hh"
 #include "G4LogicalVolume.hh"
@@ -59,7 +61,8 @@ void G4CMPLogicalSkinSurface::RemoveFromTable() {
 }
 
 void G4CMPLogicalSkinSurface::AddToTable() {
-  if (surfaceTable) (*surfaceTable)[LogVolume] = this;
+  if (!surfaceTable) GetSurfaceTable();
+  (*surfaceTable)[LogVolume] = this;
 }
 
 
@@ -67,6 +70,8 @@ void G4CMPLogicalSkinSurface::AddToTable() {
 
 G4CMPLogicalSkinSurface* 
 G4CMPLogicalSkinSurface::GetSurface(const G4LogicalVolume* vol) {
+  if (!surfaceTable) return 0;
+
   G4CMPLogicalSkinTable::iterator entry = surfaceTable->find(vol);
   return (entry != surfaceTable->end() ? entry->second : 0);
 }
