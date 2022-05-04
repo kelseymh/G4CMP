@@ -144,18 +144,22 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 	   << G4endl;
   }
 
+  G4double MINstep = G4CMPConfigManager::GetMinStepScale();
+  MINstep *= (IsElectron() ? theLattice->GetElectronScatter()
+		: theLattice->GetHoleScatter());
+
   // Find distance to Luke threshold
   G4double mfp1 = lukeRate ? EnergyStep(lukeRate->Threshold(ekin)) : DBL_MAX;
-  if (mfp1 <= 1e-9*m) mfp1 = DBL_MAX;	// Avoid steps getting "too short"
+  if (mfp1 <= MINstep) mfp1 = MINstep;	// Avoid steps getting "too short"
 
   if (verboseLevel>1)
     G4cout << "TS Luke threshold mfp1 " << mfp1/m << " m" << G4endl;
 
   // Find distance to IV scattering threshold 
   G4double mfp2 = ivRate ? EnergyStep(ivRate->Threshold(ekin)) : DBL_MAX;
-  if (mfp2 <= 1e-9*m) mfp2 = DBL_MAX;	// Avoid steps getting "too short"
+  if (mfp2 <= MINstep) mfp2 = MINstep;	// Avoid steps getting "too short"
 
-  if (verboseLevel>1 && ivRate)
+  if (verboseLevel>1)
     G4cout << "TS IV threshold mfp2 " << mfp2/m << " m" << G4endl;
 
   // Find distance to impact ionization
@@ -166,12 +170,18 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
   // Find MFP for charge trapping
   G4double mfp4 = trappingLength;
-  if (mfp4 <= 1e-9*m) mfp4 = DBL_MAX;	// Avoid steps getting "too short"
+  if (mfp4 <= MINstep) mfp4 = MINstep;	// Avoid steps getting "too short"
 
   if (verboseLevel>1 && trappingLength)
     G4cout << "TS trapping MFP mfp4 " << mfp4/m << " m" << G4endl;
 
   // Take shortest distance from above options
+  if (mfp0<0) mfp0 = DBL_MAX;
+  if (mfp1<0) mfp1 = DBL_MAX;
+  if (mfp2<0) mfp2 = DBL_MAX;
+  if (mfp3<0) mfp3 = DBL_MAX;
+  if (mfp4<0) mfp4 = DBL_MAX;
+
   G4double mfp = std::min({mfp0, mfp1, mfp2, mfp3, mfp4});
 
   if (verboseLevel) {
