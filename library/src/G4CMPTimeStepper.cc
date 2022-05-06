@@ -144,9 +144,12 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 	   << G4endl;
   }
 
+
   G4double MINstep = G4CMPConfigManager::GetMinStepScale();
   MINstep *= (IsElectron() ? theLattice->GetElectronScatter()
 		: theLattice->GetHoleScatter());
+
+  if (MINstep<0) MINstep = 1e-9*m;
 
   // Find distance to Luke threshold
   G4double mfp1 = lukeRate ? EnergyStep(lukeRate->Threshold(ekin)) : DBL_MAX;
@@ -176,11 +179,7 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
     G4cout << "TS trapping MFP mfp4 " << mfp4/m << " m" << G4endl;
 
   // Take shortest distance from above options
-  if (mfp0<0) mfp0 = DBL_MAX;
-  if (mfp1<0) mfp1 = DBL_MAX;
-  if (mfp2<0) mfp2 = DBL_MAX;
-  if (mfp3<0) mfp3 = DBL_MAX;
-  if (mfp4<0) mfp4 = DBL_MAX;
+
 
   G4double mfp = std::min({mfp0, mfp1, mfp2, mfp3, mfp4});
 
