@@ -45,6 +45,7 @@
 #include "G4ThreeVector.hh"
 #include "G4Tubs.hh"
 #include "G4UnitsTable.hh"
+#include <G4VUserPhysicsList.hh>
 #include <algorithm>
 #include <stdlib.h>
 #include <fstream>
@@ -148,13 +149,24 @@ G4bool InitializeTrack(std::istream& trackData, G4Track& theTrack, unsigned int 
   if(!readLine(trackData, data, linenum)) return false;
   
   // Populate Track
-  // trackID particleName X Y Z Ekin PX PY PZ
+  // trackID particleName X Y Z Ekin PX PY PZ T
+  const G4ThreeVector pos = G4ThreeVector(data.at(2), data.at(3), data.at(4));
+  const G4ThreeVector momentum = G4ThreeVector(data.at(6), data.at(7), data.at(8)); 
+
+  G4ParticleDefinition* particle =  G4ParticleTable::GetParticleTable()->FindParticle(data[1]);
+  G4Track newTrack = G4Track(new G4DynamicParticle(particle, momentum),
+                         data[9], pos);
+
+  theTrack.CopyTrackInfo(newTrack);
+
+  theTrack.SetMomentumDirection(momentum.unit());
   theTrack.SetTrackID((G4int) data.at(0));
   theTrack.SetKineticEnergy(data.at(5));
   theTrack.SetParentID((G4int) data.at(1));
-  theTrack.SetPosition(G4ThreeVector(data.at(2), data.at(3), data.at(4)));
-  const G4ThreeVector momentum = G4ThreeVector(data.at(6), data.at(7), data.at(8)); 
-  theTrack.SetMomentumDirection(momentum.unit());
+  theTrack.SetPosition(pos);
+
+
+
   return true;
 }
 
@@ -243,7 +255,7 @@ void PrepareTrack(G4Track& theTrack, const G4int stepID, const G4Step& aStep) {
   theTrack.SetMomentumDirection(postStep->GetMomentumDirection());
 
   // Point Track and Steps to each other ??
-  theTrack.SetStep(&aStep);
+  //theTrack.SetStep(&aStep);
 
   theTrack.IncrementCurrentStepNumber();
   
@@ -316,7 +328,8 @@ int main(int argc, char* argv[]) {
   }
 
   // Load data from input file first
-  G4Track theTrack;
+  
+  G4Track theTrack;//(new G4DynamicParticle(), 0., G4ThreeVector(0.,0.,0.));
   std::map<G4int, G4Step> theSteps;
   if (!LoadTrackInfo(trackFile, theTrack, theSteps)) return 2;
   //G4cout << "Track Loaded" << G4endl;
