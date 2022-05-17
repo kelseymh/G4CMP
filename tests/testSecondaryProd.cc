@@ -45,7 +45,8 @@
 #include "G4ThreeVector.hh"
 #include "G4Tubs.hh"
 #include "G4UnitsTable.hh"
-#include <G4VUserPhysicsList.hh>
+#include <G4Electron.hh>
+#include <G4Gamma.hh>
 #include <algorithm>
 #include <stdlib.h>
 #include <fstream>
@@ -141,6 +142,17 @@ G4bool readLine(std::istream& trackData, std::vector<G4double>& dataVector, unsi
   return true;
 }
 
+G4ParticleDefinition* FindParticle(G4int pdgCode) {
+  switch (pdgCode) {
+  case 11: return G4Electron::Definition(); break;
+  case 22: return G4Gamma::Definition(); break;
+  default: break;
+  }
+
+  G4cerr << "FindParticle PDG code " << pdgCode << " not available." << G4endl;
+  return 0;
+}
+
 G4bool InitializeTrack(std::istream& trackData, G4Track& theTrack, unsigned int linenum = 0) {
   if (!trackData.good()) return false;
   std::vector<G4double> data;
@@ -153,7 +165,7 @@ G4bool InitializeTrack(std::istream& trackData, G4Track& theTrack, unsigned int 
   const G4ThreeVector pos = G4ThreeVector(data.at(2), data.at(3), data.at(4));
   const G4ThreeVector momentum = G4ThreeVector(data.at(6), data.at(7), data.at(8)); 
 
-  G4ParticleDefinition* particle =  G4ParticleTable::GetParticleTable()->FindParticle(data[1]);
+  G4ParticleDefinition* particle = FindParticle(data[1]);
   G4Track newTrack = G4Track(new G4DynamicParticle(particle, momentum),
                          data[9], pos);
 
@@ -165,8 +177,7 @@ G4bool InitializeTrack(std::istream& trackData, G4Track& theTrack, unsigned int 
   theTrack.SetParentID((G4int) data.at(1));
   theTrack.SetPosition(pos);
 
-
-
+  //Test to make sure it got dynamic particle
   return true;
 }
 
@@ -258,10 +269,6 @@ void PrepareTrack(G4Track& theTrack, const G4int stepID, const G4Step& aStep) {
   //theTrack.SetStep(&aStep);
 
   theTrack.IncrementCurrentStepNumber();
-  
-
-  
-
 }
 
 
