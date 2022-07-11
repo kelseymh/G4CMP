@@ -92,8 +92,8 @@ double G4CMPLinearInterp::rawinterp(int j, double x) {
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 // ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; interp_2d.h ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-G4CMPBiLinearInterp& 
-G4CMPBiLinearInterp::operator=(const G4CMPBiLinearInterp& oldBI) {
+G4CMPGridInterp& 
+G4CMPGridInterp::operator=(const G4CMPGridInterp& oldBI) {
   if (this != &oldBI) {
     m = oldBI.m;
     n = oldBI.n;
@@ -104,7 +104,7 @@ G4CMPBiLinearInterp::operator=(const G4CMPBiLinearInterp& oldBI) {
   return *this;
 }
     
-double G4CMPBiLinearInterp::interp(double x1p, double x2p) {
+double G4CMPGridInterp::interp(double x1p, double x2p) {
   int i,j;
   double yy, t, u;
   i = x1terp.cor ? x1terp.hunt(x1p) : x1terp.locate(x1p);

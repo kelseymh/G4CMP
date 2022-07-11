@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.0)
+project(g4cmpPhonon)
 
 #----------------------------------------------------------------------------
 # Find G4CMP package -- NOTE: Assumes user has run g4cmp_env.*sh script!

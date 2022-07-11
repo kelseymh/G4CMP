@@ -15,6 +15,7 @@
 // 20170802  M. Kelsey -- Replace phonon production with G4CMPEnergyPartition
 // 20171215  Replace boundary-point check with CheckStepBoundary()
 // 20180827  M. Kelsey -- Prevent partitioner from recomputing sampling factors
+// 20210328  Modify above; compute direct-phonon sampling factor here
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -28,14 +29,12 @@
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4LogicalBorderSurface.hh"
 #include "G4ParallelWorldProcess.hh"
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4StepStatus.hh"
 #include "G4Track.hh"
-#include "G4TransportationManager.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VSolid.hh"
@@ -138,15 +137,18 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   }
 
   *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
+  partitioner->SetVerboseLevel(verboseLevel);
   partitioner->UseVolume(aTrack.GetVolume());
 
-  G4double eKin = GetKineticEnergy(aTrack);
+  G4double eAbs = GetKineticEnergy(aTrack);
 
-  partitioner->DoPartition(0., eKin);
+  // Compute direct-phonon downsampling here
+  partitioner->ComputePhononSampling(eAbs);
+  partitioner->DoPartition(0., eAbs);
   partitioner->GetSecondaries(&aParticleChange);
 
   if (aParticleChange.GetNumberOfSecondaries() == 0) {	// Record energy release
-    aParticleChange.ProposeNonIonizingEnergyDeposit(eKin);
+    aParticleChange.ProposeNonIonizingEnergyDeposit(eAbs);
   }
 
   aParticleChange.ProposeEnergy(0.);

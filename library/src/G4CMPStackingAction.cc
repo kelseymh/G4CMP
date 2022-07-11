@@ -31,7 +31,6 @@
 #include "G4CMPUtils.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4Navigator.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhononTrackMap.hh"
@@ -43,11 +42,7 @@
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "G4TrackStatus.hh"
-#include "G4TransportationManager.hh"
-#include "G4TouchableHistory.hh"
-#include "G4TouchableHistoryHandle.hh"
 #include "G4VPhysicalVolume.hh"
-#include "G4VTouchable.hh"
 #include "Randomize.hh"
 
 

@@ -6,6 +6,7 @@
 # 20160518  Use G4CMPINSTALL instead of ".." to find things
 # 20160829  Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
 # 20161007  Handle multiple executable names with common local library
+# 20200531  Add support for thread-safety "code sanitizer" flags
 
 # Default targets
 .PHONY: all lib bin $(G4CMP_NAME)
@@ -77,6 +78,10 @@ G4CMP_FLAGS := -I$(G4CMPINCLUDE) \
 
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
+endif
+ifdef G4CMP_USE_SANITIZER
+  G4CMP_SANITIZER_TYPE := thread		# User can override w/envvar
+  G4CMP_FLAGS += -fno-omit-frame-pointer -fsanitize=$(G4CMP_SANITIZER_TYPE)
 endif
 
 include $(G4INSTALL)/config/binmake.gmk

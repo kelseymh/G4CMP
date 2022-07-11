@@ -19,6 +19,14 @@
 // 20180424  Need default ctor for Data to support vector::resize()
 // 20180425  Add minimum particle generation for downsampling
 // 20180827  Add flag to suppress use of downsampling energy scale
+// 20190714  Pass particle information through to NuclearRecoil, Lindhard
+// 20200218  Support writing DoPartion() internals to event summary data
+// 20200222  Add control flag to turn off creating summary data
+// 20200805  Add bias across volume to estimate Luke gain downsampling
+// 20210328  Split ComputeDownsampling() into individual computation functions
+// 20210820  Rename particle count data member for clarity, add counts for
+//		after downsampling.  Store weight for each particle in "Data".
+// 20220216  Add interface to do partitioning directly from StepAccumulator.
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -29,6 +37,8 @@
 #include <vector>
 
 class G4CMPChargeCloud;
+class G4CMPPartitionData;
+class G4CMPStepAccumulator;
 class G4Event;
 class G4LatticePhysical;
 class G4Material;
@@ -57,6 +67,10 @@ public:
   // Set debugging output
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
+  // Enable or disable summary data collection
+  void FillSummary(G4bool fill) { fillSummaryData = fill; }
+  G4bool FillingSummary() const { return fillSummaryData; }
+
   // Toggle whether or not to apply downsampling scale calculations
   void UseDownsampling(G4bool value) { applyDownsampling = value; }
   G4bool UseDownsampling() const { return applyDownsampling; }
@@ -70,14 +84,18 @@ public:
   // Material is needed for (Z,A) in Lindhard scaling
   void SetMaterial(G4Material* mat) { material = mat; }
 
+  // Bias voltage may be used to estimate energy from Luke gain
+  void SetBiasVoltage(G4double v) { biasVoltage = v; }
+  void SetBiasVoltage(const G4ThreeVector& pos);
+
   // Specify particle type (PDG), total and NIEL energy deposit
   void DoPartition(G4int PDGcode, G4double energy, G4double eNIEL);
 
+  // Specify container with information from one or more G4 steps
+  void DoPartition(const G4CMPStepAccumulator* accumulator);
+
   // Nuclear recoil deposit uses Lindhard scale factor for e/h vs. phonons
-  void NuclearRecoil(G4double energy) {
-    G4double lind = LindhardScalingFactor(energy);
-    DoPartition(energy*lind, energy*(1.-lind));
-  }
+  void NuclearRecoil(G4double energy, G4double Z, G4double A);
 
   // Pure ionization produces no phonons
   void Ionization(G4double energy) { DoPartition(energy, 0.); }
@@ -98,48 +116,62 @@ public:
 
   // Assign energy-dependent sampling factors for phonons and charge carriers
   void ComputeDownsampling(G4double eIon, G4double eNIEL);
-
+  void ComputeChargeSampling(G4double eIon);
+  void ComputePhononSampling(G4double eNIEL);
+  void ComputeLukeSampling(G4double eIon);
+  
   // Fraction of total energy deposit in material which goes to e/h pairs
-  G4double LindhardScalingFactor(G4double energy) const;
+  G4double LindhardScalingFactor(G4double energy, G4double Z=0,
+				 G4double A=0) const;
 
-  // Portion of ionization energy which goes to e/h pairs (Fano factor)
-  G4double MeasuredChargeEnergy(G4double eTrue) const;
+  // Number of e/h pairs to generate including Fano fluctuations
+  G4double MeasuredChargePairs(G4double eTrue) const;
 
 protected:
   void GenerateCharges(G4double energy);
-  void AddChargePair(G4double ePair);
+  void AddChargePair(G4double ePair, G4double wt);
 
   void GeneratePhonons(G4double energy);
-  void AddPhonon(G4double ePhon);
+  void AddPhonon(G4double ePhon, G4double wt);
 
   G4PrimaryVertex* CreateVertex(G4Event* event, const G4ThreeVector& pos,
 				G4double time) const;
 
+  // Create buffer save DoPartition() computations
+  G4CMPPartitionData* CreateSummary();
+
 protected:
   G4int verboseLevel;		// Higher numbers give more details
+  G4bool fillSummaryData;	// Fill G4CMPPartitionSummary if set
+
   G4Material* material;		// To get (Z,A) for Lindhard scaling
+  G4double biasVoltage;		// Bias across volume for Luke downsampling
   G4double holeFraction;	// Energy from e/h pair taken by hole (50%)
   G4int nParticlesMinimum;	// Minimum production when downsampling
   G4bool applyDownsampling;	// Flag whether to do downsampling calcualtions
 
   G4CMPChargeCloud* cloud;	// Distribute e/h around central position
-  size_t nCharges;		// Actual (downsampled) number of e+h for cloud
 
-  size_t nPairs;		// True number of pairs (no downsampling)
+  size_t nPairsTrue;		// True number of pairs (no downsampling)
+  size_t nPairsGen;		// Number of pairs after downsampling
   G4double chargeEnergyLeft;	// Energy to partition into e/h pairs
 
-  size_t nPhonons;		// True number of phonons (no downsampling)
+  size_t nPhononsTrue;		// True number of phonons (no downsampling)
+  size_t nPhononsGen;		// Number of direct phonons after downsampling
   G4double phononEnergyLeft;	// Energy to partition into phonons
+
+  G4CMPPartitionData* summary;	// Summary block, saved to G4HitsCollection
 
   static const G4ThreeVector origin;
   struct Data {
     G4ParticleDefinition* pd;
     G4ThreeVector dir;
     G4double ekin;
+    G4double wt;
 
-    Data() : pd(0), ekin(0.) {;}	// Default ctor for vector::resize()
-    Data(G4ParticleDefinition* part, const G4ThreeVector& d, G4double E)
-      : pd(part), dir(d), ekin(E) {;}
+    Data() : pd(0), ekin(0.), wt(0.) {;}	// Default ctor for vector::resize()
+    Data(G4ParticleDefinition* part, const G4ThreeVector& d, G4double E,
+	 G4double w) : pd(part), dir(d), ekin(E), wt(w) {;}
   };
     
   std::vector<Data> particles;	// Combined phonons and charge carriers

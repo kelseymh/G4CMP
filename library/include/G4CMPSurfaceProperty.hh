@@ -10,6 +10,7 @@
 // 20170627  M. Kelsey -- Return non-const pointers, for functional use
 // 20190806  M. Kelsey -- Add local data for frequency-dependent scattering
 //		probabilities, and computation functions.
+// 20200601  G4CMP-206: Need thread-local copies of electrode pointers
 
 #ifndef G4CMPSurfaceProperty_h
 #define G4CMPSurfaceProperty_h 1
@@ -17,6 +18,8 @@
 #include "G4SurfaceProperty.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include <vector>
+#include <map>
+
 
 class G4CMPVElectrodePattern;
 
@@ -109,9 +112,9 @@ public:
   void SetChargeElectrode(G4CMPVElectrodePattern* cel);
   void SetPhononElectrode(G4CMPVElectrodePattern* pel);
 
-  G4CMPVElectrodePattern* GetChargeElectrode() const { return theChargeElectrode; }
-  G4CMPVElectrodePattern* GetPhononElectrode() const { return thePhononElectrode; }
-
+  // Accessors, used by worker threads
+  G4CMPVElectrodePattern* GetChargeElectrode() const;
+  G4CMPVElectrodePattern* GetPhononElectrode() const;
 
   virtual void DumpInfo() const;	// To be implemented
 
@@ -140,6 +143,14 @@ protected:
   std::vector<G4double> anharmonicCoeffs;
   std::vector<G4double> diffuseCoeffs;
   std::vector<G4double> specularCoeffs;
+
+  // These lists will be pre-allocated, with values entered by thread
+  mutable std::map<G4int, G4CMPVElectrodePattern*> workerChargeElectrode;
+  mutable std::map<G4int, G4CMPVElectrodePattern*> workerPhononElectrode;
+
+  // These args should be const, but G4MaterialPropertiesTables is silly.
+  G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
+  G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
 };
 
 #endif

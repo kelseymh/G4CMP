@@ -10,6 +10,11 @@
 # Use G4CMPINSTALL instead of ".." to find includes
 # Move QHull building under library
 # Drop G4CMP_SET_ELECTRON_MASS code blocks; not physical
+# Ensure that G4LIBDIR is set correctly, overriding common.gmk.
+# Add -DG4DIGI_ALLOC_EXPORT flag to support new hits collection
+# Add G4CMP_USE_SANITIZER, G4CMP_SANITIZER_TYPE for thread-safety checking
+# Add G4LIB_USE_CLHEP to distinguish G4's DoubConv.h from CLHEP's DoubConv.hh
+# Use G4DEBUG to select optimization level; include debugging symbols always
 
 name := G4cmp
 
@@ -20,18 +25,31 @@ endif
 include $(G4INSTALL)/config/architecture.gmk
 
 G4CMP_FLAGS += -I./include -I$(G4CMPINSTALL)/library/qhull-2012.1/src \
-	-I$(G4INCLUDE) -Dqh_QHpointer 
+	-I$(G4INCLUDE) -Dqh_QHpointer -DG4DIGI_ALLOC_EXPORT
+
 ifdef G4CMP_DEBUG
   G4CMP_FLAGS += -DG4CMP_DEBUG
 endif
 ifdef G4CMPTLI_DEBUG
   G4CMP_FLAGS += -DG4CMPTLI_DEBUG
 endif
+ifdef G4CMP_USE_SANITIZER
+  G4CMP_SANITIZER_TYPE := thread		# User can override w/envvar
+  G4CMP_FLAGS += -fno-omit-frame-pointer -fsanitize=$(G4CMP_SANITIZER_TYPE)
+endif
+ifdef G4LIB_USE_CLHEP				# Using internal CLHEP sources
+  G4CMP_FLAGS += -DG4LIB_USE_CLHEP
+endif
 
 CPPFLAGS := $(G4CMP_FLAGS) $(CPPFLAGS)		# Prepend for right load order
+ifdef G4DEBUG
+  CXXFLAGS += -g -Og
+else
+  CXXFLAGS += -O2 -g
+endif
 
 # Library goes into user's G4WORKDIR, not into system install
-G4LIBDIR := $(G4WORKDIR)/lib/$(G4SYSTEM)
+override G4LIBDIR := $(G4WORKDIR)/lib/$(G4SYSTEM)
 
 .PHONY : lib clean
 

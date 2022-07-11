@@ -24,6 +24,18 @@
 // 20170823  Move geometry-specific commands to examples
 // 20170830  Add command for downsampling energy scale parameter
 // 20170830  Add command to set flag for producing e/h "cloud"
+// 20190711  Add command to select non-ionizing energy loss function
+// 20191014  Drop command for anharmonic decay sampling.
+// 20200211  Add command to report version from .g4cmp-version
+// 20200411  G4CMP-195: Add commands to set charge trapping MFPs
+// 20200411  G4CMP-196: Add commands to set impact ionization MFPs
+// 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
+// 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
+//		"hTrap" -> "ATrap".
+// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
+// 20200614  G4CMP-211:  Add functionality to print settings
+// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
+// 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -32,6 +44,7 @@
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithoutParameter.hh"
 
 
 // Constructor and destructor
@@ -39,12 +52,22 @@
 G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : G4UImessenger("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library"),
-    theManager(mgr), verboseCmd(0), ehBounceCmd(0), pBounceCmd(0), clearCmd(0),
-    minEPhononCmd(0), minEChargeCmd(0), minstepCmd(0), makePhononCmd(0),
-    makeChargeCmd(0), lukePhononCmd(0), downconvCmd(0),
-    dirCmd(0), kvmapCmd(0), fanoStatsCmd(0), ivEdelCmd(0), ehCloudCmd(0) {
+    theManager(mgr), versionCmd(0), printCmd(0), verboseCmd(0), ehBounceCmd(0),
+    pBounceCmd(0), maxLukeCmd(0), clearCmd(0), minEPhononCmd(0),
+    minEChargeCmd(0), sampleECmd(0), comboStepCmd(0), trapEMFPCmd(0),
+    trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
+    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), minstepCmd(0),
+    makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
+    ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0), fanoStatsCmd(0),
+    ehCloudCmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
+
+  printCmd = CreateCommand<G4UIcmdWithoutParameter>("printConfig",
+				    "Report G4CMP configuration settings");
+
+  versionCmd = CreateCommand<G4UIcmdWithoutParameter>("version",
+					    "Report G4CMP version string");
 
   dirCmd = CreateCommand<G4UIcmdWithAString>("LatticeData",
 			     "Set directory for lattice configuration files");
@@ -77,14 +100,22 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   lukePhononCmd = CreateCommand<G4UIcmdWithADouble>("sampleLuke",
 		    "Set rate of Luke actual phonon production");
 
-  downconvCmd = CreateCommand<G4UIcmdWithADouble>("downconvertPhonons",
-		  "Set scale factor for rate of phonon downconversion process");
+  maxLukeCmd = CreateCommand<G4UIcmdWithAnInteger>("maxLukePhonons",
+		   "Set 'maximum' number of Luke phonons produced per event");
+  maxLukeCmd->SetGuidance("This is a soft maximum, estimated from the bias");
+  maxLukeCmd->SetGuidance("voltage of the device and the downsampling scale");
 
   minEPhononCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("minEPhonons",
           "Minimum energy for creating or tracking phonons");
+  minEPhononCmd->SetUnitCategory("Energy");
 
   minEChargeCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("minECharges",
           "Minimum energy for creating or tracking charge carriers");
+  minEChargeCmd->SetUnitCategory("Energy");
+
+  comboStepCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("combiningStepLength",
+	  "Maximum track step-length to merge energy deposit for partitioning");
+  comboStepCmd->SetUnitCategory("Length");
 
   ehBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("chargeBounces",
 		  "Maximum number of reflections allowed for charge carriers");
@@ -101,9 +132,41 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
            "Modify input ionization energy according to Fano statistics.");
   fanoStatsCmd->SetDefaultValue(true);
 
-  ivEdelCmd = CreateCommand<G4UIcmdWithABool>("useEdelweissIVRate",
-           "Use Edelweiss parametrization for IV scattering rate.");
-  ivEdelCmd->SetDefaultValue(true);
+  ivRateModelCmd = CreateCommand<G4UIcmdWithAString>("IVRateModel",
+           "Set the model for IV scattering rate.");
+  ivRateModelCmd->SetGuidance("IVRate	  : Scattering matrix calculation");
+  ivRateModelCmd->SetGuidance("Linear	  : Gamma0 + Gamma * E^x");
+  ivRateModelCmd->SetGuidance("Quadratic  : Gamma * sqrt[(E0^2 + E^2)^x]");
+  ivRateModelCmd->SetCandidates("IVRate Linear Quadratic");
+  ivRateModelCmd->SetDefaultValue("Quadratic");
+
+  trapEMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("eTrappingMFP",
+	   "Mean free path for trapping of electrons by D-type impurities");
+  trapEMFPCmd->SetUnitCategory("Length");
+
+  trapHMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("hTrappingMFP",
+	   "Mean free path for trapping of holes by A-type impurities");
+  trapHMFPCmd->SetUnitCategory("Length");
+
+  eDTrapIonMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("eDTrapIonizationMFP",
+	   "Mean free path for e-trap ionization by electrons");
+  eDTrapIonMFPCmd->SetUnitCategory("Length");
+
+  eATrapIonMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("eATrapIonizationMFP",
+	   "Mean free path for h-trap ionization by electrons");
+  eATrapIonMFPCmd->SetUnitCategory("Length");
+
+  hDTrapIonMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("hDTrapIonizationMFP",
+	   "Mean free path for e-trap ionization by holes");
+  hDTrapIonMFPCmd->SetUnitCategory("Length");
+
+  hATrapIonMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("hATrapIonizationMFP",
+	   "Mean free path for h-trap ionization by holes");
+  hATrapIonMFPCmd->SetUnitCategory("Length");
+
+  nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
+	       "Select calculation for non-ionizing energy loss (NIEL)");
+  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew");
 
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
        "Produce e/h pairs in cloud surrounding energy deposit position");
@@ -112,22 +175,33 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
 
 G4CMPConfigMessenger::~G4CMPConfigMessenger() {
+  delete printCmd; printCmd=0;
   delete verboseCmd; verboseCmd=0;
+  delete versionCmd; versionCmd=0;
   delete ehBounceCmd; ehBounceCmd=0;
   delete pBounceCmd; pBounceCmd=0;
+  delete maxLukeCmd; maxLukeCmd=0;
   delete clearCmd; clearCmd=0;
   delete minEPhononCmd; minEPhononCmd=0;
   delete minEChargeCmd; minEChargeCmd=0;
   delete sampleECmd; sampleECmd=0;
+  delete comboStepCmd; comboStepCmd=0;
+  delete trapEMFPCmd; trapEMFPCmd=0;
+  delete trapHMFPCmd; trapHMFPCmd=0;
+  delete eDTrapIonMFPCmd; eDTrapIonMFPCmd=0;
+  delete eATrapIonMFPCmd; eATrapIonMFPCmd=0;
+  delete hDTrapIonMFPCmd; hDTrapIonMFPCmd=0;
+  delete hATrapIonMFPCmd; hATrapIonMFPCmd=0;
   delete minstepCmd; minstepCmd=0;
   delete makePhononCmd; makePhononCmd=0;
   delete makeChargeCmd; makeChargeCmd=0;
   delete lukePhononCmd; lukePhononCmd=0;
-  delete downconvCmd; downconvCmd=0;
   delete dirCmd; dirCmd=0;
   delete kvmapCmd; kvmapCmd=0;
   delete fanoStatsCmd; fanoStatsCmd=0;
   delete ehCloudCmd; ehCloudCmd=0;
+  delete ivRateModelCmd; ivRateModelCmd=0;
+  delete nielPartitionCmd; nielPartitionCmd=0;
 }
 
 
@@ -139,7 +213,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == makePhononCmd) theManager->SetGenPhonons(StoD(value));
   if (cmd == makeChargeCmd) theManager->SetGenCharges(StoD(value));
   if (cmd == lukePhononCmd) theManager->SetLukeSampling(StoD(value));
-  if (cmd == downconvCmd) theManager->SetDownconversionSampling(StoD(value));
+  if (cmd == maxLukeCmd) theManager->SetMaxLukePhonons(StoI(value));
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
@@ -153,11 +227,41 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == minEChargeCmd)
     theManager->SetMinChargeEnergy(minEChargeCmd->GetNewDoubleValue(value));
 
-  if (cmd == sampleECmd)
+  // TEMPORARY: If sampling energy is set and Luke=1., set Luke=-1.
+  if (cmd == sampleECmd) {
     theManager->SetSamplingEnergy(sampleECmd->GetNewDoubleValue(value));
+    if (theManager->GetLukeSampling() == 1.) theManager->SetLukeSampling(-1.);
+  }
+
+  if (cmd == comboStepCmd)
+    theManager->SetComboStepLength(comboStepCmd->GetNewDoubleValue(value));
+
+  if (cmd == trapEMFPCmd)
+    theManager->SetETrappingMFP(trapEMFPCmd->GetNewDoubleValue(value));
+
+  if (cmd == trapHMFPCmd)
+    theManager->SetHTrappingMFP(trapHMFPCmd->GetNewDoubleValue(value));
+
+  if (cmd == eDTrapIonMFPCmd)
+    theManager->SetEDTrapIonMFP(eDTrapIonMFPCmd->GetNewDoubleValue(value));
+
+  if (cmd == eATrapIonMFPCmd)
+    theManager->SetEATrapIonMFP(eATrapIonMFPCmd->GetNewDoubleValue(value));
+
+  if (cmd == hDTrapIonMFPCmd)
+    theManager->SetHDTrapIonMFP(hDTrapIonMFPCmd->GetNewDoubleValue(value));
+
+  if (cmd == hATrapIonMFPCmd)
+    theManager->SetHATrapIonMFP(hATrapIonMFPCmd->GetNewDoubleValue(value));
 
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));
-  if (cmd == ivEdelCmd) theManager->UseIVEdelweiss(StoB(value));
+  if (cmd == ivRateModelCmd) theManager->SetIVRateModel(value);
+  if (cmd == nielPartitionCmd) theManager->SetNIELPartition(value);
   if (cmd == ehCloudCmd) theManager->CreateChargeCloud(StoB(value));
+
+  if (cmd == versionCmd)
+    G4cout << "G4CMP version: " << theManager->Version() << G4endl;
+
+  if (cmd == printCmd) G4cout << *theManager << G4endl;
 }

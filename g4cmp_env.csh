@@ -6,6 +6,8 @@
 #
 # 20170509  Define G4CMPLIB and G4CMPINCLUDE relative to G4CMPINSTALL
 # 20180917  Fix initialization of G4CMPINSTALL to use absolute path
+# 20200719  Set undefined *LD_LIBRARY_PATH
+# 20220331  G4CMP-293: Remove G4CMPORDPARAMTABLE; not using RegisterProcess()
 
 # Identify location of script from user command (c.f. geant4make.csh)
 
@@ -56,12 +58,16 @@ endif
 
 if ($?LD_LIBRARY_PATH) then
   setenv LD_LIBRARY_PATH ${G4CMPLIB}:$LD_LIBRARY_PATH
+else
+  setenv LD_LIBRARY_PATH ${G4CMPLIB}
 endif
+
 if ($?DYLD_LIBRARY_PATH) then
   setenv DYLD_LIBRARY_PATH ${G4CMPLIB}:$DYLD_LIBRARY_PATH
+else
+  setenv DYLD_LIBRARY_PATH ${G4CMPLIB}
 endif
 
 # Assign environment variables for runtime configuraiton
 
 setenv G4LATTICEDATA   $G4CMPINSTALL/CrystalMaps
-setenv G4ORDPARAMTABLE $G4CMPINSTALL/G4CMPOrdParamTable.txt

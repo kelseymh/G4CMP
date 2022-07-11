@@ -10,6 +10,8 @@
 // $Id$
 //
 // 20170621 M. Kelsey -- Non-templated utility functions
+// 20190906 M. Kelsey -- Add function to look up process for track
+// 20200829 M. Kelsey -- Don't override initial direction of phonons
 
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -20,12 +22,8 @@
 #include "G4CMPVTrackInfo.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4Navigator.hh"
-#include "G4RandomDirection.hh"
 #include "G4Track.hh"
-#include "G4TransportationManager.hh"
 #include "G4VPhysicalVolume.hh"
-#include "Randomize.hh"
 
 
 // Use assigned particle type in track to set up initial TrackInfo
@@ -38,7 +36,8 @@ void G4CMP::AttachTrackInfo(const G4Track& track) {
   if (HasTrackInfo(track)) return;		// Don't replace existing!
 
   if (IsPhonon(track)) {
-    AttachTrackInfo(track, G4RandomDirection());
+    // Use track's initial momentum as wavevector direction
+    AttachTrackInfo(track, track.GetMomentumDirection());
   } else if (IsChargeCarrier(track)) {
     G4int valley = IsElectron(track) ? ChooseValley(GetLattice(track)) : -1;
     AttachTrackInfo(track, valley);
@@ -46,7 +45,7 @@ void G4CMP::AttachTrackInfo(const G4Track& track) {
 }
 
 
-// Create and initialize kinematics container for phonon track
+// Create and initialize kinematics container for charged track
 
 void G4CMP::AttachTrackInfo(const G4Track* track, G4int valley) {
   if (track) AttachTrackInfo(*track, valley);
@@ -64,7 +63,7 @@ void G4CMP::AttachTrackInfo(const G4Track& track, G4int valley) {
 }
 
 
-// Create and initialize kinematics container for charged track
+// Create and initialize kinematics container for phonon track
 
 void G4CMP::AttachTrackInfo(const G4Track* track, const G4ThreeVector& kdir) {
   if (track) AttachTrackInfo(*track, kdir);
@@ -118,3 +117,15 @@ G4LatticePhysical* G4CMP::GetLattice(const G4Track& track) {
 
   return G4LatticeManager::GetLatticeManager()->GetLattice(trkvol);
 }
+
+
+// Look up process by name associated with track
+
+G4VProcess* G4CMP::FindProcess(const G4Track* track, const G4String& pname) {
+  return (track ? G4CMP::FindProcess(*track, pname) : 0);
+}
+
+G4VProcess* G4CMP::FindProcess(const G4Track& track, const G4String& pname) {
+  return G4CMP::FindProcess(track.GetDefinition(), pname);
+}
+

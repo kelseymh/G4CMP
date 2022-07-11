@@ -19,10 +19,17 @@
 // 20170713  Report undefined surfaces only once per job, not a failure
 // 20171215  Change 'CheckStepStatus()' to 'IsBoundaryStep()', add function
 //	     to validate step trajectory to boundary.
+// 20201112  Add warning message to base DoTransmission() function (c.f.
+//	     warning message in base DoReflection()).  Pass verbosity through
+//	     to electrode.
+// 20210923  Use >= in maximum reflections check.
+// 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGeometryUtils.hh"
+#include "G4CMPLogicalBorderSurface.hh"
+#include "G4CMPLogicalSkinSurface.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPVTrackInfo.hh"
@@ -33,18 +40,15 @@
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4LogicalBorderSurface.hh"
-#include "G4LogicalSkinSurface.hh"
 #include "G4LogicalSurface.hh"
-#include "G4Navigator.hh"
 #include "G4ParticleChange.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4Track.hh"
-#include "G4TransportationManager.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VProcess.hh"
+#include "G4VSolid.hh"
 
 
 // Constructor and destructor
@@ -133,13 +137,16 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
   electrode = nullptr;
   
   // Look for specific surface between pre- and post-step points first
-  G4LogicalSurface* surface = G4LogicalBorderSurface::GetSurface(prePV, postPV);
+  G4LogicalSurface* surface =
+    G4CMPLogicalBorderSurface::GetSurface(prePV, postPV);
   if (!surface) {			// Then for generic pre-setp surface
-    surface = G4LogicalSkinSurface::GetSurface(prePV->GetLogicalVolume());
+    surface = G4CMPLogicalSkinSurface::GetSurface(prePV->GetLogicalVolume());
   }
 
+  BoundaryPV bound(prePV,postPV);	// Avoid multiple temporaries below
+
   // Report missing surface once per boundary
-  if ((hasSurface.find(BoundaryPV(prePV,postPV)) == hasSurface.end())
+  if ((hasSurface.find(bound) == hasSurface.end())
       && !surface) {
     G4Exception((procName+"::GetSurfaceProperty").c_str(), "Boundary001",
                 JustWarning, ("No surface defined between " +
@@ -147,7 +154,7 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
 			      postPV->GetName()).c_str());
   }
 
-  hasSurface[BoundaryPV(prePV,postPV)] = false;	// Remember this boundary
+  hasSurface[bound] = false;		// Remember this boundary
 
   if (!surface) return true;			// Can handle undefined surfaces
 
@@ -190,9 +197,12 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
   }
 
   // Initialize electrode for current track
-  if (electrode) electrode->LoadDataForTrack(aStep.GetTrack());
+  if (electrode) {
+    electrode->SetVerboseLevel(buVerboseLevel);
+    electrode->LoadDataForTrack(aStep.GetTrack());
+  }
 
-  hasSurface[BoundaryPV(prePV,postPV)] = true;	// Record good surface defined
+  hasSurface[bound] = true;		// Record good surface defined
 
   return true;
 }
@@ -302,7 +312,7 @@ G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) const {
   trackInfo->IncrementReflectionCount();
 
   return (maximumReflections >= 0 &&
-    trackInfo->ReflectionCount() > static_cast<size_t>(maximumReflections));
+    trackInfo->ReflectionCount() >= static_cast<size_t>(maximumReflections));
 }
 
 
@@ -316,6 +326,7 @@ void G4CMPBoundaryUtils::DoAbsorption(const G4Track& aTrack,
   G4double ekin = procUtils->GetKineticEnergy(aTrack);
   aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
   aParticleChange.ProposeTrackStatus(fStopAndKill);
+  aParticleChange.ProposeEnergy(0.);
 }
 
 void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
@@ -350,7 +361,11 @@ void
 G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
 				   const G4Step& aStep,
 				   G4ParticleChange& aParticleChange) {
-  if (buVerboseLevel>1) 
+  G4cerr << procName << " WARNING!  G4CMPBoundaryUtils::DoTransmission invoked."
+	 << "\n Process should have overridden this version!"
+	 << "  Track will be killed as leaving volume" << G4endl;
+
+  if (buVerboseLevel>1)
     G4cout << procName << ": Track transmission requested" << G4endl;
 
   DoSimpleKill(aTrack, aStep, aParticleChange);

@@ -13,6 +13,7 @@
 // 20170815  Move AdjustSecondaryPosition to here as ApplySurfaceClearance
 // 20170913  Add utility to get electric field at (global) position
 // 20170925  Add utility to create touchable at (global) position
+// 20190226  Use local instance of G4Navigator to avoid corrupting tracking
 
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -89,15 +90,27 @@ G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step) {
 }
 
 
+// Create non-tracking Navigator for use with position finding below
+
+G4Navigator* G4CMP::GetNavigator() {
+  static G4ThreadLocal G4Navigator* theNavigator = 0;
+  if (!theNavigator) theNavigator = new G4Navigator;
+
+  // Make sure current world volume is the one in use  
+  G4VPhysicalVolume* theWorld =
+    G4TransportationManager::GetTransportationManager()->
+      GetNavigatorForTracking()->GetWorldVolume();
+
+  if (theNavigator->GetWorldVolume() != theWorld)
+    theNavigator->SetWorldVolume(theWorld);
+
+  return theNavigator;
+}
+
 // Get placement volume at specified global position
 
 G4VPhysicalVolume* G4CMP::GetVolumeAtPoint(const G4ThreeVector& pos) {
-  G4TransportationManager* transMan =
-    G4TransportationManager::GetTransportationManager();
-  G4Navigator* nav = transMan->GetNavigatorForTracking();
-  G4VPhysicalVolume* volume = nav->LocateGlobalPointAndSetup(pos,0,false);
-
-  return volume;
+  return GetNavigator()->LocateGlobalPointAndSetup(pos,0,false);
 }
 
 
@@ -106,11 +119,7 @@ G4VPhysicalVolume* G4CMP::GetVolumeAtPoint(const G4ThreeVector& pos) {
 G4VTouchable* G4CMP::CreateTouchableAtPoint(const G4ThreeVector& pos) {
   G4VTouchable* touchable = new G4TouchableHistory;
 
-  G4TransportationManager* transMan =
-    G4TransportationManager::GetTransportationManager();
-  G4Navigator* nav = transMan->GetNavigatorForTracking();
-
-  nav->LocateGlobalPointAndUpdateTouchable(pos, touchable, false);
+  GetNavigator()->LocateGlobalPointAndUpdateTouchable(pos, touchable, false);
 
   // Sanity check: touchable's volume should match GetVolumeAtPoint()
 #ifdef G4CMP_DEBUG
@@ -167,39 +176,4 @@ G4ThreeVector G4CMP::ApplySurfaceClearance(const G4VTouchable* touch,
 
   RotateToGlobalPosition(touch, pos);
   return pos;
-}
-
-
-// Get electric field at specified position (track or step)
-
-namespace {
-  G4ThreeVector origin(0.,0.,0.);	// For convenience below
-}
-
-G4ThreeVector G4CMP::GetFieldAtPosition(const G4Step& step) {
-  return GetFieldAtPosition(*(step.GetTrack()));
-}
-
-G4ThreeVector G4CMP::GetFieldAtPosition(const G4Track& track) {
-  return GetFieldAtPosition(track.GetTouchable(), track.GetPosition());
-}
-
-G4ThreeVector G4CMP::GetFieldAtPosition(const G4VTouchable* touch,
-					G4ThreeVector pos) {
-  G4FieldManager* fMan = 0;
-  if (touch) {
-    fMan = touch->GetVolume()->GetLogicalVolume()->GetFieldManager();
-  } else {		// Get field from volume at input position
-    fMan = GetVolumeAtPoint(pos)->GetLogicalVolume()->GetFieldManager();
-  }
-
-  if (!fMan || !fMan->DoesFieldExist()) return origin;
-
-  RotateToLocalPosition(touch, pos);
-  G4double position[4] = { pos[0], pos[1], pos[2], 0. };
-
-  G4double fieldVal[6];
-  fMan->GetDetectorField()->GetFieldValue(position, fieldVal);
-
-  return G4ThreeVector(fieldVal[3], fieldVal[4], fieldVal[5]);
 }

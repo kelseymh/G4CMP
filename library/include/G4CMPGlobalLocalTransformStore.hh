@@ -16,10 +16,12 @@
 //
 // 20161102  Rob Agnese
 // 20170605  Pass touchable from track, not just local PV
+// 20200519  Convert to thread-local singleton (for use by worker threads)
 
 #include "G4AffineTransform.hh"
-#include "unordered_map"
+#include "G4ThreadLocalSingleton.hh"
 #include <cstdint>
+#include <unordered_map>
 
 class G4VTouchable;
 
@@ -32,6 +34,8 @@ public:
   static void Reset();
   
 private:
+  friend class G4ThreadLocalSingleton<G4CMPGlobalLocalTransformStore>;
+
   G4CMPGlobalLocalTransformStore() = default;
   static G4CMPGlobalLocalTransformStore& Instance();
   

@@ -3,6 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+// 20220222  G4CMP-289 -- Thread-local allocator must be a pointer.
+
 #include "G4CMPElectrodeHit.hh"
 
 #include "G4ios.hh"
@@ -17,7 +19,7 @@
 #include "G4SystemOfUnits.hh"
 
 
-G4Allocator<G4CMPElectrodeHit> G4CMPElectrodeHitAllocator;
+G4ThreadLocal G4Allocator<G4CMPElectrodeHit>* G4CMPElectrodeHitAllocator=0;
 
 G4CMPElectrodeHit::G4CMPElectrodeHit() {}
 

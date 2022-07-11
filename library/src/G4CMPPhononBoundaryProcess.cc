@@ -36,6 +36,7 @@
 #include "G4CMPUtils.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticePhysical.hh"
+#include "G4ParallelWorldProcess.hh"
 #include "G4ParticleChange.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4Step.hh"

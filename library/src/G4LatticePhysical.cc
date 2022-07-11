@@ -21,6 +21,9 @@
 // 20160608  Drop (theta,phi) lattice orientation function.
 // 20170525  Drop empty destructor to allow default "rule of five" semantics
 // 20170928  Replce "polarizationState" with "mode"
+// 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value
+// 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
+//		return thread-local instance.
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -103,41 +106,53 @@ G4LatticePhysical::RotateToSolid(G4ThreeVector& dir) const {
 ///////////////////////////////
 //Loads the group velocity in m/s
 /////////////////////////////
-G4double G4LatticePhysical::MapKtoV(G4int mode, G4ThreeVector k) const {
+G4double G4LatticePhysical::MapKtoV(G4int mode, const G4ThreeVector& k) const {
   if (verboseLevel>1) G4cout << "G4LatticePhysical::MapKtoV " << k << G4endl;
 
-  RotateToLattice(k);
-  return fLattice->MapKtoV(mode, k);
+  RotateToLattice(tempvec()=k);
+  return fLattice->MapKtoV(mode, tempvec());
 }
 
 ///////////////////////////////
 //Loads the normalized direction vector along VG
 ///////////////////////////////
-G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int mode, G4ThreeVector k) const {
+G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int mode, const G4ThreeVector& k) const {
   if (verboseLevel>1) G4cout << "G4LatticePhysical::MapKtoVDir " << k << G4endl;
 
-  RotateToLattice(k);
-  G4ThreeVector VG = fLattice->MapKtoVDir(mode, k);  
+  RotateToLattice(tempvec()=k);
+  G4ThreeVector VG = fLattice->MapKtoVDir(mode, tempvec());  
 
   return RotateToSolid(VG);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4double G4LatticePhysical::MapPtoEkin(G4int iv, G4ThreeVector p) const {
+G4double G4LatticePhysical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapPtoEkin " << iv << " " << p << G4endl;
 
-  RotateToLattice(p);
-  return fLattice->MapPtoEkin(iv, p);
+  RotateToLattice(tempvec()=p);
+  if (verboseLevel>1) {
+    G4cout << " in lattice frame " << tempvec() << G4endl
+	   << " returning Ekin " << fLattice->MapPtoEkin(iv, tempvec())
+	   << G4endl;
+  }
+
+  return fLattice->MapPtoEkin(iv, tempvec());
 }
 
-G4double G4LatticePhysical::MapV_elToEkin(G4int iv, G4ThreeVector v) const {
+G4double G4LatticePhysical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapV_elToEkin " << iv << " " << v << G4endl;
 
-  RotateToLattice(v);
-  return fLattice->MapV_elToEkin(iv, v);
+  RotateToLattice(tempvec()=v);
+  if (verboseLevel>1) {
+    G4cout << " in lattice frame " << tempvec() << G4endl
+	   << " returning Ekin " << fLattice->MapV_elToEkin(iv, tempvec())
+	   << G4endl;
+  }
+
+  return fLattice->MapV_elToEkin(iv, tempvec());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -145,103 +160,135 @@ G4double G4LatticePhysical::MapV_elToEkin(G4int iv, G4ThreeVector v) const {
 // Convert electron momentum to valley velocity, wavevector, and HV vector
 
 G4ThreeVector 
-G4LatticePhysical::MapPtoV_el(G4int ivalley, G4ThreeVector p_e) const {
+G4LatticePhysical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapPtoV_el " << ivalley << " " << p_e
 	   << G4endl;
 
-  RotateToLattice(p_e);
-  p_e = fLattice->MapPtoV_el(ivalley, p_e);	// Overwrite to avoid temporary
-  return RotateToSolid(p_e);
+  RotateToLattice(tempvec()=p_e);
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+
+  tempvec() = fLattice->MapPtoV_el(ivalley, tempvec());
+  if (verboseLevel>1) G4cout << " V_el (lattice) " << tempvec() << G4endl;
+
+  return RotateToSolid(tempvec());
 }
 
 G4ThreeVector 
-G4LatticePhysical::MapV_elToP(G4int ivalley, G4ThreeVector v_e) const {
+G4LatticePhysical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
   if (verboseLevel>1)
-    G4cout << "G4LatticePhysical::MapV_elRoP " << ivalley << " " << v_e
+    G4cout << "G4LatticePhysical::MapV_elToP " << ivalley << " " << v_e
 	   << G4endl;
 
-  RotateToLattice(v_e);
-  v_e = fLattice->MapV_elToP(ivalley, v_e);	// Overwrite to avoid temporary
-  return RotateToSolid(v_e);
+  RotateToLattice(tempvec()=v_e);
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+
+  tempvec() = fLattice->MapV_elToP(ivalley, tempvec());
+  if (verboseLevel>1) G4cout << " p (lattice) " << tempvec() << G4endl;
+
+  return RotateToSolid(tempvec());
 }
 
+// NOTE:  K_HV vector returned in valley internal coordinate system
 G4ThreeVector
-G4LatticePhysical::MapV_elToK_HV(G4int ivalley, G4ThreeVector v_e) const {
+G4LatticePhysical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_e) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapV_elToK_HV " << ivalley << " " << v_e
      << G4endl;
 
-  RotateToLattice(v_e);
-  v_e = fLattice->MapV_elToK_HV(ivalley, v_e);	// Overwrite to avoid temporary
-  return RotateToSolid(v_e);
+  RotateToLattice(tempvec()=v_e);
+  if (verboseLevel>1) {
+    G4cout << " in lattice frame " << tempvec() << G4endl
+	   << " returning K_HV " << fLattice->MapV_elToK_HV(ivalley, tempvec())
+	   << G4endl;
+  }
+
+  return fLattice->MapV_elToK_HV(ivalley, tempvec());
 }
 
 G4ThreeVector 
-G4LatticePhysical::MapPtoK_valley(G4int ivalley, G4ThreeVector p_e) const {
+G4LatticePhysical::MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapPtoK " << ivalley << " " << p_e
 	   << G4endl;
 
-  RotateToLattice(p_e);
-  p_e = fLattice->MapPtoK_valley(ivalley, p_e);	// Overwrite to avoid temporary
-  return RotateToSolid(p_e);
+  RotateToLattice(tempvec()=p_e);
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+
+  tempvec() = fLattice->MapPtoK_valley(ivalley, tempvec());
+  if (verboseLevel>1) G4cout << " K_valley (lattice) " << tempvec() << G4endl;
+
+  return RotateToSolid(tempvec());
 }
 
+// NOTE:  K_HV vector returned in valley internal coordinate system
 G4ThreeVector 
-G4LatticePhysical::MapPtoK_HV(G4int ivalley, G4ThreeVector p_e) const {
+G4LatticePhysical::MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapPtoK_HV " << ivalley << " " << p_e
 	   << G4endl;
 
-  RotateToLattice(p_e);
-  p_e = fLattice->MapPtoK_HV(ivalley, p_e);	// Overwrite to avoid temporary
-  return RotateToSolid(p_e);
+  RotateToLattice(tempvec()=p_e);
+  if (verboseLevel>1) {
+    G4cout << " in lattice frame " << tempvec() << G4endl
+	   << " returning K_HV " << fLattice->MapPtoK_HV(ivalley, tempvec())
+	   << G4endl;
+  }
+
+  return fLattice->MapPtoK_HV(ivalley, tempvec());
 }
 
+// NOTE:  K_HV vector must be in valley internal coordinate system
 G4ThreeVector 
-G4LatticePhysical::MapK_HVtoK_valley(G4int ivalley, G4ThreeVector k_HV) const {
+G4LatticePhysical::MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const {
   if (verboseLevel>1)
-    G4cout << "G4LatticePhysical::MapK_HVtoP " << ivalley << " " << k_HV
+    G4cout << "G4LatticePhysical::MapK_HVtoK_valley " << ivalley << " " << k_HV
 	   << G4endl;
 
-  RotateToLattice(k_HV);
-  k_HV = fLattice->MapK_HVtoK_valley(ivalley, k_HV);
-  return RotateToSolid(k_HV);
+  tempvec() = fLattice->MapK_HVtoK_valley(ivalley, k_HV);
+  if (verboseLevel>1) G4cout << " K_valley (lattice) " << tempvec() << G4endl;
+
+  return RotateToSolid(tempvec());
 }
 
+// NOTE:  K_HV vector must be in valley internal coordinate system
 G4ThreeVector
-G4LatticePhysical::MapK_HVtoK(G4int ivalley, G4ThreeVector k_HV) const {
+G4LatticePhysical::MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapK_HVtoK " << ivalley << " " << k_HV
-     << G4endl;
+	   << G4endl;
 
-  RotateToLattice(k_HV);
-  k_HV = fLattice->MapK_HVtoK(ivalley, k_HV);	// Overwrite to avoid temporary
-  return RotateToSolid(k_HV);
+  tempvec() = fLattice->MapK_HVtoK(ivalley, k_HV);
+  if (verboseLevel>1) G4cout << " K (lattice) " << tempvec() << G4endl;
+
+  return RotateToSolid(tempvec());
 }
 
-
+// NOTE:  K_HV vector must be in valley internal coordinate system
 G4ThreeVector 
-G4LatticePhysical::MapK_HVtoP(G4int ivalley, G4ThreeVector k_HV) const {
+G4LatticePhysical::MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapK_HVtoP " << ivalley << " " << k_HV
 	   << G4endl;
 
-  RotateToLattice(k_HV);
-  k_HV = fLattice->MapK_HVtoP(ivalley, k_HV);	// Overwrite to avoid temporary
-  return RotateToSolid(k_HV);
+  tempvec() = fLattice->MapK_HVtoP(ivalley, k_HV);
+  if (verboseLevel>1) G4cout << " p (lattice) " << tempvec() << G4endl;
+
+
+  return RotateToSolid(tempvec());
 }
 
 G4ThreeVector 
-G4LatticePhysical::MapK_valleyToP(G4int ivalley, G4ThreeVector k) const {
+G4LatticePhysical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
   if (verboseLevel>1)
     G4cout << "G4LatticePhysical::MapK_valleyToP " << ivalley << " " << k
 	   << G4endl;
 
-  RotateToLattice(k);
-  k = fLattice->MapK_valleyToP(ivalley, k);	// Overwrite to avoid temporary
-  return RotateToSolid(k);
+  RotateToLattice(tempvec()=k);
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+
+  tempvec() = fLattice->MapK_valleyToP(ivalley, tempvec());
+  return RotateToSolid(tempvec());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

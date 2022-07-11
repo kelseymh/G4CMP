@@ -6,6 +6,7 @@
 // 20170620  M. Kelsey -- Follow interface changes in G4CMPSecondaryUtils
 // 20170802  M. Kelsey -- Replace phonon production with G4CMPEnergyPartition
 // 20180827  M. Kelsey -- Prevent partitioner from recomputing sampling factors
+// 20210328  Modify above; compute direct-phonon sampling factor here
 
 #include "G4CMPDriftRecombinationProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -60,6 +61,7 @@ G4CMPDriftRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
+  partitioner->SetVerboseLevel(verboseLevel);
   partitioner->UseVolume(aTrack.GetVolume());
 
   // FIXME: Each charge carrier is independent, so it only gives back 0.5 times
@@ -67,6 +69,7 @@ G4CMPDriftRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
   // tracks and giving back the band gap. Maybe there is a better way?
   G4double ePot = 0.5 * theLattice->GetBandGapEnergy();
 
+  partitioner->ComputePhononSampling(ePot);
   partitioner->DoPartition(0., ePot);
   partitioner->GetSecondaries(&aParticleChange);
 

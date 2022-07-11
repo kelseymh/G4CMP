@@ -13,6 +13,7 @@
 // 20160906  M. Kelsey -- Add function handle constness of material table
 // 20170525  M. Kelsey -- Add "rule of five" default copy/move operators
 // 20170627  M. Kelsey -- Inherit from G4CMPProcessUtils
+// 20200601  G4CMP-207: Require Clone() functions from sublcasses for copying
 
 #ifndef G4CMPVElectrodePattern_h
 #define G4CMPVElectrodePattern_h 1
@@ -38,6 +39,12 @@ public:
   G4CMPVElectrodePattern& operator=(const G4CMPVElectrodePattern&) = default;
   G4CMPVElectrodePattern& operator=(G4CMPVElectrodePattern&&) = default;
 
+  // Subclasses MUST implement this to make thread-local copies
+  // NOTE: This default is NOT THREAD SAFE; it reproduces old behaviour
+  virtual G4CMPVElectrodePattern* Clone() const {
+    return const_cast<G4CMPVElectrodePattern*>(this);
+  }
+
   // Subclasses may use verbosity level for diagnostics
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
@@ -59,7 +66,7 @@ protected:
   G4double GetMaterialProperty(const G4String& key) const;
 
   G4int verboseLevel;
-  G4MaterialPropertiesTable* theSurfaceTable;
+  G4MaterialPropertiesTable* theSurfaceTable;	// Not owned, can't be const
 };
 
 #endif	/* G4CMPVElectrodePattern_h */

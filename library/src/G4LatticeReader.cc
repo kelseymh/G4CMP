@@ -29,6 +29,9 @@
 // 20170821  For deformation potentials, specify eV/cm units; use regex match
 //		for multiple optical IV potentials
 // 20170821  Add transverse sound speed, L->TT fraction
+// 20180815  F. Insulla -- Added IVRateQuad
+// 20181001  M. Kelsey -- Clarify IV rate parameters systematically
+// 20190704  M. Kelsey -- Add 'ivModel' to set default IV function by material
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -146,6 +149,7 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
   if (fToken == "ivdeform") return ProcessDeformation(); // D0, D1 potentials
   if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
+  if (fToken == "ivmodel")  return ProcessString(fToken);  // IV rate function
 
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
                             return ProcessCrystalGroup(fToken);
@@ -164,7 +168,8 @@ G4bool G4LatticeReader::SkipComments() {
 
 G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   *psLatfile >> fValue;
-  if (verboseLevel>1) G4cout << " ProcessValue " << fValue << G4endl;
+  if (verboseLevel>1)
+    G4cout << " ProcessValue " << name << " " << fValue << G4endl;
 
   G4bool good = true;
   if      (name == "alpha")      pLattice->SetAlpha(fValue*ProcessUnits("Energy"));
@@ -193,10 +198,33 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "l0_h")       pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
   else if (name == "hmass")      pLattice->SetHoleMass(fValue*mElectron);
   else if (name == "acdeform")   pLattice->SetAcousticDeform(fValue*ProcessUnits("Energy"));
-  else if (name == "ivfield")    pLattice->SetIVField(fValue*ProcessUnits("Electric field"));
-  else if (name == "ivrate")     pLattice->SetIVRate(fValue*ProcessUnits("Frequency"));
-  else if (name == "ivpower")    pLattice->SetIVExponent(fValue);
-  else if (name == "ivexponent") pLattice->SetIVExponent(fValue);
+  else if (name == "ivquadfield") pLattice->SetIVQuadField(fValue*ProcessUnits("Electric field"));
+  else if (name == "ivquadrate")  pLattice->SetIVQuadRate(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivquadpower") pLattice->SetIVQuadExponent(fValue);
+  else if (name == "ivquadexponent") pLattice->SetIVQuadExponent(fValue);
+  else if (name == "ivlinrate0") pLattice->SetIVLinRate0(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivlinrate1") pLattice->SetIVLinRate1(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivlinpower") pLattice->SetIVLinExponent(fValue);
+  else if (name == "ivlinexponent") pLattice->SetIVLinExponent(fValue);
+  else {
+    G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
+    good = false;
+  }
+
+  return good;
+}
+
+// Read string value from file, store based on input string name
+
+G4bool G4LatticeReader::ProcessString(const G4String& name) {
+  G4String arg;
+  *psLatfile >> arg;
+
+  if (verboseLevel>1)
+    G4cout << " ProcessString " << name << " " << arg << G4endl;
+
+  G4bool good = true;
+  if (name == "ivmodel") pLattice->SetIVModel(arg);
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;

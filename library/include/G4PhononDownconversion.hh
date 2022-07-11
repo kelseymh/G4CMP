@@ -11,6 +11,7 @@
 // 20170805  Replace GetMeanFreePath() with scattering-rate model
 // 20181010  J. Singh -- Move functionality to G4CMPAnharmonicDecay.
 // 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
+// 20201109  Drop G4CMP_DEBUG protection here, to avoid client rebuilding
 
 #ifndef G4PhononDownconversion_h
 #define G4PhononDownconversion_h 1
@@ -47,6 +48,8 @@ private:
   // hide assignment operator as private
   G4PhononDownconversion(G4PhononDownconversion&);
   G4PhononDownconversion& operator=(const G4PhononDownconversion& right);
+
+  std::ofstream output;
 };
 
 #endif	/* G4PhononDownconversion_h */

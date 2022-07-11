@@ -36,6 +36,9 @@
 // 20170620  Drop local caching of transforms; call through to G4CMPUtils.
 // 20170621  Drop local initialization of TrackInfo; StackingAction only
 // 20170624  Improve initialization from track, use Navigator to infer volume
+// 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
+// 20201223  Add FindNearestValley() function to align electron momentum.
+// 20210318  In LoadDataForTrack, kill a bad track, not the whole event.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -49,7 +52,6 @@
 #include "G4DynamicParticle.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4Navigator.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParallelWorldProcess.hh"
 #include "G4PhononLong.hh"
@@ -61,13 +63,13 @@
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
-#include "G4TransportationManager.hh"
 #include "G4RandomDirection.hh"
 #include "G4VTouchable.hh"
 #include "Randomize.hh"
-
 #include "G4GeometryTolerance.hh"
 #include "G4VSolid.hh"
+#include <set>
+
 
 // Constructor and destructor
 
@@ -86,9 +88,15 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   SetLattice(track);
 
   if (!theLattice) {
+    G4String msg = ("No lattice found for volume "
+		    + track->GetVolume()->GetName()
+		    + "; track will be killed");
     G4Exception("G4CMPProcessUtils::LoadDataForTrack", "Utils001",
-		EventMustBeAborted, ("No lattice found for volume"
-				     + track->GetVolume()->GetName()).c_str());
+		JustWarning, msg);
+
+    // Force track to be killed immediately
+    const_cast<G4Track*>(track)->SetTrackStatus(fStopAndKill);
+
     return;	// No lattice, no special actions possible
   }
 
@@ -372,31 +380,21 @@ G4int G4CMPProcessUtils::ChoosePhononPolarization() const {
                                          theLattice->GetFTDOS());
 }
 
-void G4CMPProcessUtils::MakeLocalPhononK(G4ThreeVector& kphonon) const {
-  if (IsElectron()) {
-    kphonon = theLattice->MapK_HVtoK(GetValleyIndex(GetCurrentTrack()), kphonon);
-  } else if (!IsHole()) {
-    G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess005",
-                EventMustBeAborted, "Unknown charge carrier");
-  }
-}
 
-void G4CMPProcessUtils::MakeGlobalPhononK(G4ThreeVector& kphonon) const {
-  MakeLocalPhononK(kphonon);
-  RotateToGlobalDirection(kphonon);
-}
+// Convert K_HV wave vector to track momentum
 
-void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
+void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& krecoil) const {
+  // Convert recoil wave vector to momentum in local frame 
   if (IsElectron()) {
-    kphonon = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),kphonon);
+    krecoil = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),krecoil);
   } else if (IsHole()) {
-    kphonon *= hbarc;
+    krecoil *= hbarc;
   } else {
     G4Exception("G4CMPProcessUtils::MakeGlobalPhonon", "DriftProcess006",
                 EventMustBeAborted, "Unknown charge carrier");
   }
 
-  RotateToGlobalDirection(kphonon);
+  RotateToGlobalDirection(krecoil);
 }
 
 
@@ -405,7 +403,7 @@ void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& kphonon) const {
 G4double G4CMPProcessUtils::MakePhononTheta(G4double k, G4double ks) const {
   G4double u = G4UniformRand();
   G4double v = ks/k;
-  G4double base = (u-1) * (3*v - 3*v*v + v*v*v - 1);
+  G4double base = (1-u) * (1 - 3*v + 3*v*v - v*v*v); 	// (1-u)*(1-v)^3
   if (base < 0.0) return 0;
   
   G4double operand = v + pow(base, 1.0/3.0);   
@@ -418,7 +416,11 @@ G4double G4CMPProcessUtils::MakePhononTheta(G4double k, G4double ks) const {
 
 G4double G4CMPProcessUtils::MakePhononEnergy(G4double k, G4double ks,
 					     G4double th_phonon) const {
-  return 2.*(k*cos(th_phonon)-ks) * theLattice->GetSoundSpeed() * hbar_Planck;
+  return MakePhononEnergy(2.*(k*cos(th_phonon)-ks));
+}
+
+G4double G4CMPProcessUtils::MakePhononEnergy(G4double q) const {
+  return q * theLattice->GetSoundSpeed() * hbar_Planck;
 }
 
 // Compute direction angle for recoiling charge carrier
@@ -456,6 +458,33 @@ const G4RotationMatrix&
 G4CMPProcessUtils::GetValley(const G4Track& track) const {
   G4int iv = GetValleyIndex(track);
   return (iv>=0 ? theLattice->GetValley(iv) : G4RotationMatrix::IDENTITY);
+}
+
+// Find valley which aligns most closely with _local_ direction vector
+G4int G4CMPProcessUtils::FindNearestValley(const G4Track& track) const {
+  return (G4CMP::IsElectron(track) ? FindNearestValley(GetLocalMomentum(track))
+	  : -1);
+}
+
+// NOTE:  Direction vector must be passed in _local_ coordinate system
+G4int G4CMPProcessUtils::FindNearestValley(G4ThreeVector dir) const {
+  dir.setR(1.);
+  theLattice->RotateToLattice(dir);
+
+  std::set<G4int> bestValley;	// Collect all best matches for later choice
+  G4double align, bestAlign = -1.;
+  for (size_t i=0; i<theLattice->NumberOfValleys(); i++) {
+    align = fabs(theLattice->GetValleyAxis(i).dot(dir)); // Both unit vectors
+    if (align > bestAlign) {
+      bestValley.clear();
+      bestAlign = align;
+    }
+    if (align >= bestAlign) bestValley.insert(i);
+  }
+
+  // Return best alignment, or pick from ambiguous choices
+  return ( (bestValley.size() == 1) ? *bestValley.begin()
+	   : int(bestValley.size()*G4UniformRand()) );
 }
 
 
