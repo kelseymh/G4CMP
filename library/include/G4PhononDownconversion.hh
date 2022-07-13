@@ -26,6 +26,9 @@ public:
   G4PhononDownconversion(const G4String& processName ="phononDownconversion");
   virtual ~G4PhononDownconversion();
 
+  // Pass verbosity through to decay utility
+  virtual void SetVerboseLevel(G4int vb);
+
   // Only longitudinal phonons decay (L -> L' T, or L -> T T')
   virtual G4bool IsApplicable(const G4ParticleDefinition&);
 
@@ -48,8 +51,6 @@ private:
   // hide assignment operator as private
   G4PhononDownconversion(G4PhononDownconversion&);
   G4PhononDownconversion& operator=(const G4PhononDownconversion& right);
-
-  std::ofstream output;
 };
 
 #endif	/* G4PhononDownconversion_h */

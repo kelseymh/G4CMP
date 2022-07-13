@@ -13,10 +13,10 @@ class G4Track;
 
 class G4CMPAnharmonicDecay : public G4CMPProcessUtils {
 public:
-  G4CMPAnharmonicDecay(G4int vb=0);
+  G4CMPAnharmonicDecay(const G4VProcess* theProcess);
   virtual ~G4CMPAnharmonicDecay() {;}
 
-  void SetVerboseLevel(G4int vb) { verboseLevel = vb;}
+  void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
   G4int GetVerboseLevel() const { return verboseLevel; }
 
   void DoDecay(const G4Track&, const G4Step&, G4ParticleChange&);
@@ -32,6 +32,8 @@ private:
   void MakeLTSecondaries(const G4Track&, G4ParticleChange&);
 
   G4int verboseLevel;			// For diagnostic output
+  G4String procName;			// Process name for diagnostics
+
   G4double fBeta, fGamma, fLambda, fMu; // Local buffers for decay parameters
   G4double fvLvT; 			// Ratio of sound speeds
 

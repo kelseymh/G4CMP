@@ -5,6 +5,8 @@
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4Exception.hh"
+#include "G4ExceptionSeverity.hh"
 #include "G4LatticePhysical.hh"
 #include "G4ParticleChange.hh"
 #include "G4PhononLong.hh"
@@ -13,15 +15,20 @@
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4VProcess.hh"
 #include "Randomize.hh"
 #include <cmath>
 
-G4CMPAnharmonicDecay::G4CMPAnharmonicDecay(G4int vb)
-  : verboseLevel(vb), fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.), fvLvT(1.) {
+G4CMPAnharmonicDecay::G4CMPAnharmonicDecay(const G4VProcess* theProcess)
+  : verboseLevel(theProcess?theProcess->GetVerboseLevel():0),
+    procName(theProcess?theProcess->GetProcessName():"G4CMPAnharmonicDecay"),
+    fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.), fvLvT(1.) {;}
 
+void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
+				   G4ParticleChange& aParticleChange) {
 #ifdef G4CMP_DEBUG
-  if (verboseLevel) {
-    output.open("phonon_downsampling_stats", std::ios_base::app);
+  if (verboseLevel && !output.is_open()) {
+    output.open("phonon_downconv_stats", std::ios_base::app);
     if (output.good()) {
       output << "First Daughter Theta,Second Daughter Theta,First Daughter Energy [eV],Second Daughter Energy [eV],"
 	"Decay Branch,First Daughter Weight,Second Daughter Weight,Parent Weight,"
@@ -31,10 +38,6 @@ G4CMPAnharmonicDecay::G4CMPAnharmonicDecay(G4int vb)
     }
   }
 #endif
-}
-
-void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
-				   G4ParticleChange& aParticleChange) {
   // Obtain dynamical constants from this volume's lattice
   fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
   fGamma  = theLattice->GetGamma() / (1e11*pascal);
@@ -60,6 +63,19 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
   if (aParticleChange.GetNumberOfSecondaries() > 0) {
     aParticleChange.ProposeEnergy(0.);
     aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+#ifdef G4CMP_DEBUG
+    // Sanity check for energy conservation
+    G4double Edecay = (aParticleChange.GetSecondary(0)->GetKineticEnergy() +
+		       aParticleChange.GetSecondary(1)->GetKineticEnergy());
+    if (fabs(Edecay-aTrack.GetKineticEnergy()) > 1e-9) {
+      G4ExceptionDescription msg;
+      msg << "Energy non-conservation: track " << aTrack.GetKineticEnergy()/eV
+	  << " eV, decay products " << Edecay/eV << " eV";
+
+      G4Exception(procName.c_str(), "Downconv001", JustWarning, msg);
+    }
+#endif
   }
 }
 
@@ -191,31 +207,9 @@ MakeTTSecondaries(const G4Track& aTrack, G4ParticleChange& aParticleChange) {
   }
 #endif
 
-  G4double bias = G4CMPConfigManager::GetDownconversionSampling();
-  G4double weight = G4CMP::ChoosePhononWeight(bias);
-  if (weight > 0.) {				// Produce both daughters
-    aParticleChange.SetSecondaryWeightByProcess(true);
-    sec1->SetWeight(aTrack.GetWeight()*weight); // Default weight
-    sec2->SetWeight(aTrack.GetWeight()*weight);
-#ifdef G4CMP_DEBUG
-    if (output.good()) {
-      output << "TT" << ',' << sec1->GetWeight() << ','
-	     << sec2->GetWeight() << ',';
-    }
-#endif
-
-    aParticleChange.SetNumberOfSecondaries(2);
-    aParticleChange.AddSecondary(sec2);
-    aParticleChange.AddSecondary(sec1);
-  } else {			// Produce no daughters
-    delete sec1;		// It would be better not to create/delete
-    delete sec2;
-#ifdef G4CMP_DEBUG
-    if (output.good()) {
-      output << "TT" << ',' << 0 << ',' << 0 << ',';
-    }
-#endif
-  }
+  aParticleChange.SetNumberOfSecondaries(2);
+  aParticleChange.AddSecondary(sec2);
+  aParticleChange.AddSecondary(sec1);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -296,31 +290,9 @@ MakeLTSecondaries(const G4Track& aTrack, G4ParticleChange& aParticleChange) {
   }
 #endif
 
-  G4double bias = G4CMPConfigManager::GetDownconversionSampling();
-  G4double weight = G4CMP::ChoosePhononWeight(bias);
-  if (weight > 0.) {				// Produce both daughters
-    aParticleChange.SetSecondaryWeightByProcess(true);
-    sec1->SetWeight(aTrack.GetWeight()/bias);
-    sec2->SetWeight(aTrack.GetWeight()/bias);
-#ifdef G4CMP_DEBUG
-    if (output.good()) {
-      output << "LT" << ',' << sec1->GetWeight() << ','
-	     << sec2->GetWeight() << ',';
-    }
-#endif
-
-    aParticleChange.SetNumberOfSecondaries(2);
-    aParticleChange.AddSecondary(sec2);
-    aParticleChange.AddSecondary(sec1);
-  } else {			// Produce no daughters
-    delete sec1;		// It would be better not to create/delete
-    delete sec2;
-#ifdef G4CMP_DEBUG
-    if (output.good()) {
-      output << "LT" << ',' << 0 << ',' << 0 << ',';
-    }
-#endif
-  }
+  aParticleChange.SetNumberOfSecondaries(2);
+  aParticleChange.AddSecondary(sec2);
+  aParticleChange.AddSecondary(sec1);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...
