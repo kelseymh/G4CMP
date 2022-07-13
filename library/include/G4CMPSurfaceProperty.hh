@@ -149,8 +149,8 @@ protected:
   mutable std::map<G4int, G4CMPVElectrodePattern*> workerPhononElectrode;
 
   // These args should be const, but G4MaterialPropertiesTables is silly.
-  G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
-  G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
+//   G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
+//   G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
 };
 
 #endif
