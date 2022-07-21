@@ -244,8 +244,9 @@ identify the G4CMP version at runtime.  Use the `-DG4CMP_VERSION=X.Y.Z`
 option for this purpose.  If `.git/` is available, the option will be
 ignored.
 
-If you want to copy the example applications (see below) to the installation
-area, use the option `-DINSTALL_EXAMPLES=ON` (for all examples):
+If you want to copy the examples directories (see below) to the installation
+area, use the option `-DINSTALL_EXAMPLES=ON` (for all examples). Each example
+has been set up as a standalone "project" for CMake and can be configured via:
 
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DINSTALL_EXAMPLES=ON ../G4CMP
 
