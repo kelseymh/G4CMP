@@ -13,9 +13,10 @@
 // Adapted from G4LogicalBorderSurface for phonon/charge carrier transport
 //
 // 20220331  G4CMP-294:  Protect against null surfaceTable pointer
+// 20220718  G4CMP-306:  Ensure build compatibility with Geant4-10.04
 
 #include "G4CMPLogicalBorderSurface.hh"
-#include "G4Exception.hh"
+#include "G4ExceptionSeverity.hh"
 #include "G4LogicalSurface.hh"
 #include "G4VPhysicalVolume.hh"
 

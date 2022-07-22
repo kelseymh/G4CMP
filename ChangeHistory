@@ -6,6 +6,11 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2022-07-22  G4CMP-303 : Fix compilation of G4CMP examples using CMake.
+2022-07-18  G4CMP-306 : Ensure build compatibility with Geant4 10.4.
+2022-07-14  G4CMP-305 : Update README.md file with Geant4 10.x restriction.
+2022-07-14  G4CMP-302 : Add CONTRIBUTING.md file.
+
 2022-04-14  g4cmp-V08-00-01 Bug fixes for new surface classes; process table.
 2022-04-02  G4CMP-294 : Check null pointer is G4CMP*Surface::GetSurface().
 2022-03-31  G4CMP-293 : Remove G4CMPOrdParamTable.txt; use simple process
