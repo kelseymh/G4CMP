@@ -34,6 +34,7 @@
 // 20200520  "First report" flag must be thread-local.
 // 20200804  Move field access to G4CMPFieldUtils
 // 20210923  Ensure that rate calculations are initialized for track
+// 20220504  E. Michaud -- Change DBL_MAX to minStep, remove negative MFPs
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
