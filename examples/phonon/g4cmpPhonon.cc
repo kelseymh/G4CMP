@@ -12,22 +12,17 @@
 // 20150112  Remove RM->Initialize() call to allow macro configuration
 // 20160111  Remove Geant4 version check since we now hard depend on 10.2+
 // 20170816  Add example-specific configuration manager
+// 20220718  Remove obsolete pre-processor macros G4VIS_USE and G4UI_USE
 
 #include "G4RunManager.hh"
-#include "G4UImanager.hh"
-
-#ifdef G4VIS_USE
-#include "G4VisExecutive.hh"
-#endif
-
-#ifdef G4UI_USE
 #include "G4UIExecutive.hh"
-#endif
+#include "G4UImanager.hh"
+#include "G4VisExecutive.hh"
 
 #include "G4CMPPhysicsList.hh"
 #include "G4CMPConfigManager.hh"
-#include "PhononConfigManager.hh"
 #include "PhononActionInitialization.hh"
+#include "PhononConfigManager.hh"
 #include "PhononDetectorConstruction.hh"
 
 int main(int argc,char** argv)
@@ -44,7 +39,7 @@ int main(int argc,char** argv)
  G4VUserPhysicsList* physics = new G4CMPPhysicsList();
  physics->SetCuts();
  runManager->SetUserInitialization(physics);
-    
+ 
  // Set user action classes (different for Geant4 10.0)
  //
  runManager->SetUserInitialization(new PhononActionInitialization);
@@ -53,24 +48,20 @@ int main(int argc,char** argv)
  G4CMPConfigManager::Instance();
  PhononConfigManager::Instance();
 
-#ifdef G4VIS_USE
  // Visualization manager
  //
  G4VisManager* visManager = new G4VisExecutive;
  visManager->Initialize();
-#endif
-    
+ 
  // Get the pointer to the User Interface manager
  //
  G4UImanager* UImanager = G4UImanager::GetUIpointer();  
 
  if (argc==1)   // Define UI session for interactive mode
  {
-#ifdef G4UI_USE
       G4UIExecutive * ui = new G4UIExecutive(argc,argv);
       ui->SessionStart();
       delete ui;
-#endif
  }
  else           // Batch mode
  {
@@ -79,9 +70,7 @@ int main(int argc,char** argv)
    UImanager->ApplyCommand(command+fileName);
  }
 
-#ifdef G4VIS_USE
  delete visManager;
-#endif
  delete runManager;
 
  return 0;
