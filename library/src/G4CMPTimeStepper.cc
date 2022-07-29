@@ -35,6 +35,8 @@
 // 20200804  Move field access to G4CMPFieldUtils
 // 20210923  Ensure that rate calculations are initialized for track
 // 20220504  E. Michaud -- Change DBL_MAX to minStep, remove negative MFPs
+// 20220729  M. Kelsey -- EnergyStep() has incorrect units for output: should
+//		be delta(E)/(q*V).
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
@@ -240,7 +242,7 @@ G4double G4CMPTimeStepper::EnergyStep(G4double Efinal) const {
   }
 
   // Add 20% rescaling to account for electron valley systematics
-  return 1.2*(Efinal-Ekin)/Emag;
+  return 1.2*(Efinal-Ekin)/(eplus*Emag);
 }
 
 
