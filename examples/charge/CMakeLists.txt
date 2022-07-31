@@ -11,10 +11,7 @@ find_package(G4CMP)
 # Find Geant4 package
 # NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
 #
-find_package(Geant4)
-if(NOT Geant4_FOUND)
-    include(${PROJECT_SOURCE_DIR}/FindGeant4.cmake)
-endif()
+include($ENV{G4CMPINSTALL}/FindGeant4.cmake)
 
 #----------------------------------------------------------------------------
 # Setup include directories and compile definitions

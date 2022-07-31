@@ -29,7 +29,6 @@
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4LogicalBorderSurface.hh"
 #include "G4ParallelWorldProcess.hh"
 #include "G4RandomDirection.hh"
 #include "G4Step.hh"

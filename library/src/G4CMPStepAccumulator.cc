@@ -12,6 +12,7 @@
 // 20210608  Reset trackID in Clear(), check for matching eventID, and report
 //	       rollover errors for track or event changes.
 // 20220216  Add "stepID" to provide full identification.  Add printout.
+// 20220228  Add sanity check that only energy-deposit hits are accumulated.
 
 #include "globals.hh"
 #include "G4CMPStepAccumulator.hh"
@@ -60,7 +61,16 @@ void G4CMPStepAccumulator::Add(const G4Step& step) {
            << " lost from previous track." << G4endl;
     Clear();
   }
-  
+
+  // Should never receive zero-energy step
+  if (step.GetTotalEnergyDeposit() <= 0. &&
+      step.GetNonIonizingEnergyDeposit() <= 0.) {
+    G4cerr << "ERROR G4CMPStepAccumulator received zero-energy step."
+	   << G4endl;
+    return;
+  }
+
+  // Initialize new accumulation
   if (nsteps == 0) {
     eventID = thisEvt;
     trackID = track->GetTrackID();
@@ -79,7 +89,7 @@ void G4CMPStepAccumulator::Add(const G4Step& step) {
   ((end *= Edep) += stepEnd*stepEdep) /= (Edep+stepEdep);
   // NOTE: Using accumulators above as lvalues to avoid creating temporaries
   // Equivalent to: end = (end*Edep + stepEnd*stepEdep)/(Edep+stepEdep);
-
+  
   // Accumulate total energy of steps
   Edep  += step.GetTotalEnergyDeposit();
   Eniel += step.GetNonIonizingEnergyDeposit();
