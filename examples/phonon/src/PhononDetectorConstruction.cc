@@ -162,10 +162,20 @@ void PhononDetectorConstruction::SetupGeometry()
   if (!fConstructed) {
     topSurfProp =new G4CMPSurfaceProperty("TopAlSurf", 1.0, 0.0, 0.0, 0.0,
 					  	       0.3, 1.0, 0.0, 0.0);
+  const G4double GHz = 1e9 * hertz; 
+  //the following coefficients and cutoff values are not well-motivated
+  //the code below is used only to demonstrate how to set these values.
+  const std::vector<G4double> defaultAnhCoeffs = {0, 0, 0, 0, 0, 1.51e-14};
+  const std::vector<G4double> defaultDiffCoeffs = {5.88e-2, 7.83e-4, -2.47e-6, 1.71e-8, -2.98e-11};
+  const std::vector<G4double> defaultSpecCoeffs = {0,928, -2.03e-4, -3.21e-6, 3.1e-9, 2.9e-13};
+  AddScatteringProperties(520, 350, defaultAnhCoeffs, defaultDiffCoeffs, defaultSpecCoeffs, GHz);
+    topSurfProp->AddScatteringProperties(520, 350, AnhCoeffs, DiffCoeffs, SpecCoeffs, GHz);
     botSurfProp = new G4CMPSurfaceProperty("BotAlSurf", 1.0, 0.0, 0.0, 0.0,
                                                         0.3, 1.0, 0.0, 0.0);
+    botSurfProp->AddScatteringProperties(520, 350, AnhCoeffs, DiffCoeffs, SpecCoeffs, GHz);
     wallSurfProp = new G4CMPSurfaceProperty("WallAlSurf", 0.0, 1.0, 0.0, 0.0,
                                                           0.0, 1.0, 0.0, 0.0);
+    wallSurfProp->AddScatteringProperties(520, 350, AnhCoeffs, DiffCoeffs, SpecCoeffs, GHz);
   }
 
   new G4CMPLogicalBorderSurface("iZIPTop", GePhys, aluminumTopPhysical,

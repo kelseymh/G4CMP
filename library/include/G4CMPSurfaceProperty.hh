@@ -118,6 +118,11 @@ public:
 
   virtual void DumpInfo() const;	// To be implemented
 
+  void AddScatteringProperties(G4double AnhCutoff, G4double DiffCutoff, 
+	const std::vector<G4double>& AnhCoeffs, const std::vector<G4double>& DiffCoeffs,
+	const std::vector<G4double>& SpecCoeffs, G4double freqUnits); 
+  //Sets anharmonic, diffuse, and specular reflection properties
+
 protected:
   // These args should be const, but G4MaterialPropertiesTables is silly.
   G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;

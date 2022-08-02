@@ -47,15 +47,16 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
 : G4CMPSurfaceProperty(name, stype) {
   FillChargeMaterialPropertiesTable(qAbsProb, qReflProb, eMinK, hMinK);
   FillPhononMaterialPropertiesTable(pAbsProb, pReflProb, pSpecProb, pMinK);
+}
 
-  // TEMPORARY: Hardcode phonon surface scattering parameters
-  // Are these material dependent?  Are they device dependent?
-  const G4double GHz = 1e9 * hertz;
-  AddSurfaceAnharmonicCutoff(520*GHz);
-  AddSurfaceDiffuseCutoff(350*GHz);
-  AddSurfaceAnharmonicCoeffs({{0,0,0,0,0,1.51e-14}}, GHz);
-  AddDiffuseReflectionCoeffs({{5.88e-2,7.83e-4,-2.47e-6,1.71e-8,-2.98e-11}}, GHz);
-  AddSpecularReflectionCoeffs({{0.928,-2.03e-4,-3.21e-6,3.1e-9,2.9e-13}}, GHz);
+void G4CMPSurfaceProperty::AddScatteringProperties(G4double AnhCutoff, G4double DiffCutoff,
+	const std::vector<G4double>& AnhCoeffs, const std::vector<G4double>& DiffCoeffs,
+	const std::vector<G4double>& SpecCoeffs, G4double freqUnits) {
+	AddSurfaceAnharmonicCutoff(AnhCutoff * freqUnits);
+	AddSurfaceDiffuseCutoff(DiffCutoff * freqUnits);
+	AddSurfaceAnharmonicCoeffs(AnhCoeffs, freqUnits);
+	AddDiffuseReflectionCoeffs(DiffCoeffs, freqUnits);
+	AddSpecularReflectionCoeffs(SpecCoeffs, freqUnits);
 }
 
 G4CMPSurfaceProperty::~G4CMPSurfaceProperty() {
