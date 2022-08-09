@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2022-08-09  G4CMP-152 : Implement surface mediated phonon anharmonic decays,
+			along with frequency-dependent reflection.
 2022-07-31  G4CMP-301 : Fix G4CMPTimeStepper to avoid excessively large steps.
 
 2022-07-23  g4cmp-V08-00-02 Improve CMake build and documentation.
