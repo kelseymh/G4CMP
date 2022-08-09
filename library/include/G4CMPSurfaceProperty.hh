@@ -120,7 +120,8 @@ public:
 
   void AddScatteringProperties(G4double AnhCutoff, G4double DiffCutoff, 
 	const std::vector<G4double>& AnhCoeffs, const std::vector<G4double>& DiffCoeffs,
-	const std::vector<G4double>& SpecCoeffs, G4double freqUnits); 
+	const std::vector<G4double>& SpecCoeffs, G4double AnhFreqUnits, G4double DiffFreqUnits,
+  G4double SpecFreqUnits); 
   //Sets anharmonic, diffuse, and specular reflection properties
 
 protected:

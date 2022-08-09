@@ -51,12 +51,13 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
 
 void G4CMPSurfaceProperty::AddScatteringProperties(G4double AnhCutoff, G4double DiffCutoff,
 	const std::vector<G4double>& AnhCoeffs, const std::vector<G4double>& DiffCoeffs,
-	const std::vector<G4double>& SpecCoeffs, G4double freqUnits) {
-	AddSurfaceAnharmonicCutoff(AnhCutoff * freqUnits);
-	AddSurfaceDiffuseCutoff(DiffCutoff * freqUnits);
-	AddSurfaceAnharmonicCoeffs(AnhCoeffs, freqUnits);
-	AddDiffuseReflectionCoeffs(DiffCoeffs, freqUnits);
-	AddSpecularReflectionCoeffs(SpecCoeffs, freqUnits);
+	const std::vector<G4double>& SpecCoeffs, G4double AnhFreqUnits, G4double DiffFreqUnits,
+  G4double SpecFreqUnits) {
+	AddSurfaceAnharmonicCutoff(AnhCutoff * AnhFreqUnits);
+	AddSurfaceDiffuseCutoff(DiffCutoff * DiffFreqUnits);
+	AddSurfaceAnharmonicCoeffs(AnhCoeffs, AnhFreqUnits);
+	AddDiffuseReflectionCoeffs(DiffCoeffs, DiffFreqUnits);
+	AddSpecularReflectionCoeffs(SpecCoeffs, SpecFreqUnits);
 }
 
 G4CMPSurfaceProperty::~G4CMPSurfaceProperty() {
