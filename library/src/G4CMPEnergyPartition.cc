@@ -352,6 +352,9 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
 
   particles.shrink_to_fit();	// Reduce size to match generated particles
 
+  // Shuffle particles so they can be distributed along trajectories
+  std::random_shuffle(particles.begin(), particles.end(), G4CMP::RandomIndex);
+
   if (verboseLevel) summary->Print();
 }
 
@@ -705,6 +708,56 @@ GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
            << G4endl;
   }
 }
+
+
+// Fill a pre-defined set of positions with primaries (no charge cloud)
+
+void G4CMPEnergyPartition::
+GetPrimaries(G4Event* event, const std::vector<G4ThreeVector>& pos,
+	     G4double time, G4int maxPerVertex) const {
+  if (verboseLevel) {
+    G4cout << "G4CMPEnergyPartition::GetPrimaries across " << pos.size()
+	   << " positions, up to " << maxPerVertex << " per vertex" << G4endl;
+  }
+
+  // Use average position in set for summary
+  size_t npos = pos.size();
+  G4ThreeVector avgpos;
+  for (auto const& ip: pos) avgpos += ip;
+  avgpos /= npos;
+
+  summary->position[0] = avgpos[0];
+  summary->position[1] = avgpos[1];
+  summary->position[2] = avgpos[2];
+  summary->position[3] = time;
+
+  // Create and fill a vertex for each position in set
+  size_t tracksPerPos = GetNumberOfTracks() / npos;
+  size_t extraTracks = GetNumberOfTracks() - (tracksPerPos * npos);
+
+  std::vector<G4PrimaryParticle*> primaries;	// Can we make this mutable?
+  GetPrimaries(primaries);
+
+  size_t iprim = 0;
+  for (size_t i=0; i<npos; i++) {
+    size_t nprim = tracksPerPos + (i<extraTracks?1:0);
+    if (verboseLevel>1)
+      G4cout << " adding " << nprim << " primaries to vertex " << i << G4endl;
+
+    G4PrimaryVertex* vtx = 0;
+
+    for (size_t j=0; j<nprim; j++) {
+      if (!vtx ||
+	  (maxPerVertex>0 && vtx->GetNumberOfParticle()>maxPerVertex)) {
+	vtx = CreateVertex(event, pos[i], time);
+      }
+      vtx->SetPrimary(primaries[iprim++]);
+    }	// for (j
+  }	// for (i
+}
+
+
+// Create primary vertex at specified location for filling
 
 G4PrimaryVertex* 
 G4CMPEnergyPartition::CreateVertex(G4Event* evt, const G4ThreeVector& pos,
