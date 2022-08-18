@@ -56,6 +56,8 @@
 // 20211030  Add track and step summary information to support data analysis
 // 20220216  Add interface to do partitioning directly from StepAccumulator.
 // 20220228  In GetSecondaries(), don't overwrite previously set position info.
+// 20220818  G4CMP-309 -- Don't skip GenerateCharges() or GeneratePhonons() if
+//		zero downsampling; want to get summary data filled every time.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -477,8 +479,6 @@ void G4CMPEnergyPartition::ComputeLukeSampling(G4double eIon) {
 // Divide ionization energy into electron/hole pairs, with Fano fluctuations
 
 void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
-  if (G4CMPConfigManager::GetGenCharges() <= 0.) return;	// Suppressed
-
   if (verboseLevel)
     G4cout << " GenerateCharges " << energy/MeV << " MeV" << G4endl;
 
@@ -504,27 +504,32 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
 
   // Compute number of pairs to generate, adjust sampling scale to match
   nPairsGen = std::round(scale*nPairsTrue);
-  scale = double(nPairsGen)/nPairsTrue;
+  scale = nPairsTrue>0 ? double(nPairsGen)/nPairsTrue : 1.;
 
-  if (nPairsTrue == 0) return;		// No charges could be produced
+  G4double nPairsWeighted = nPairsGen>0 ? nPairsGen/scale : 0.;
 
-  particles.reserve(particles.size() + nPairsGen);
+  // Create requested number of charge pairs with scaling factor
+  if (nPairsGen > 0) {
+    particles.reserve(particles.size() + nPairsGen);
 
-  // Generate number of requested charge pairs, each with same energy
-  for (size_t i=0; i<nPairsGen; i++) AddChargePair(ePair, 1./scale);
-
-  if (verboseLevel>2)
-    G4cout << " generated " << nPairsGen << " e-h pairs" << G4endl;
-
-  chargeEnergyLeft = energy - ePair*nPairsGen/scale;
-  if (chargeEnergyLeft < 0.) chargeEnergyLeft = 0.;	// Avoid round-offs
+    // Generate number of requested charge pairs, each with same energy
+    for (size_t i=0; i<nPairsGen; i++) AddChargePair(ePair, 1./scale);
+    
+    if (verboseLevel>2)
+      G4cout << " generated " << nPairsGen << " e-h pairs" << G4endl;
+    
+    chargeEnergyLeft = energy - ePair*nPairsWeighted;
+    if (chargeEnergyLeft < 0.) chargeEnergyLeft = 0.;	// Avoid round-offs
+  } else {
+    chargeEnergyLeft = 0.;
+  }
 
   if (verboseLevel>1) G4cout << " " << chargeEnergyLeft << " excess" << G4endl;
 
   // Store generated information in summary block
   summary->chargeEnergy = energy;
   summary->chargeFano = nPairsTrue*theLattice->GetPairProductionEnergy();
-  summary->chargeGenerated = ePair*nPairsGen/scale;
+  summary->chargeGenerated = ePair*nPairsWeighted;
   summary->truePairs = nPairsTrue;
   summary->numberOfPairs = nPairsGen;
   summary->samplingCharges = scale;		// Store actual sampling used
@@ -532,11 +537,11 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   // Estimate NTL (Luke) phonon emission from charge pairs
   // Assumes symmetry: each charge pair covers the full voltage bias
   if (verboseLevel>1) {
-    G4cout << " estimating Luke emission for " << nPairsGen/scale
+    G4cout << " estimating Luke emission for " <<nPairsWeighted
 	   << " e-h pairs across " << biasVoltage/volt << " V" << G4endl;
   }
 
-  summary->lukeEnergyEst = eplus*nPairsGen/scale * abs(biasVoltage);
+  summary->lukeEnergyEst = nPairsWeighted * abs(biasVoltage);
 }
 
 void G4CMPEnergyPartition::AddChargePair(G4double ePair, G4double wt) {
@@ -550,7 +555,6 @@ void G4CMPEnergyPartition::AddChargePair(G4double ePair, G4double wt) {
 }
 
 void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
-  if (G4CMPConfigManager::GetGenPhonons() <= 0.) return;	// Suppressed
   if (energy <= 0.) {				// Avoid unnecessary work
     nPhononsTrue = nPhononsGen = 0;
     return;
@@ -575,17 +579,18 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
 
   // Compute number of phonons to generate, adjust sampling scale to match
   nPhononsGen = std::round(scale*nPhononsTrue);
-  scale = double(nPhononsGen)/nPhononsTrue;
+  scale = nPhononsTrue>0 ? double(nPhononsGen)/nPhononsTrue : 1.;
 
-  if (nPhononsTrue == 0) return;		// No charges could be produced
+  // Create requested number of phonons with scaling factor
+  if (nPhononsGen > 0) {
+    particles.reserve(particles.size() + nPhononsGen);
 
-  particles.reserve(particles.size() + nPhononsGen);
-
-  // Generate number of requested charge pairs, each with same energy
-  for (size_t i=0; i<nPhononsGen; i++) AddPhonon(ePhon, 1./scale);
-
-  if (verboseLevel>2)
-    G4cout << " generated " << nPhononsGen << " phonons" << G4endl;
+    // Generate number of requested charge pairs, each with same energy
+    for (size_t i=0; i<nPhononsGen; i++) AddPhonon(ePhon, 1./scale);
+    
+    if (verboseLevel>2)
+      G4cout << " generated " << nPhononsGen << " phonons" << G4endl;
+  }
 
   // Store generated information in summary block
   summary->phononEnergy = energy;
