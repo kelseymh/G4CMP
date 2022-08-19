@@ -494,8 +494,8 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   }
 
   // Only apply downsampling to sufficiently large statistics
-  G4double scale = ((G4int)nPairsTrue<=nParticlesMinimum ? 1.
-		    : G4CMPConfigManager::GetGenCharges());
+  G4double scale = G4CMPConfigManager::GetGenCharges();
+  if (scale>0. && (G4int)nPairsTrue <= nParticlesMinimum) scale = 1.;
 
   if (verboseLevel>1) {
     G4cout << " nPairs " << nPairsTrue << " ==> ePair " << ePair/eV << " eV"
@@ -569,8 +569,8 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   ePhon = energy / nPhononsTrue;		// Split energy evenly to all
 
   // Only apply downsampling to sufficiently large statistics
-  G4double scale = ((G4int)nPhononsTrue<=nParticlesMinimum ? 1.
-		    : G4CMPConfigManager::GetGenPhonons());
+  G4double scale = G4CMPConfigManager::GetGenPhonons();
+  if (scale>0. && (G4int)nPhononsTrue <= nParticlesMinimum) scale = 1.;
 
   if (verboseLevel>1) {
     G4cout << " ePhon " << ePhon/eV << " eV => " << nPhononsTrue << " phonons"
