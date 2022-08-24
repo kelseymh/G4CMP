@@ -12,6 +12,7 @@
 // $Id$
 //
 // 20220815  Michael Kelsey -- Extracted from G4CMPSecondaryProduction
+// 20220821  G4CMP-308 -- Use new G4CMPStepInfo container instead of G4Step
 
 #ifndef G4CMPHitMerging_hh
 #define G4CMPHitMerging_hh 1
@@ -48,7 +49,9 @@ public:
 
   // Incorporate step into consolidated energy depost, generate secondaries
   // Return value indicate if new tracks are ready for use
-  G4bool ProcessStep(const G4Step& stepData);
+  G4bool ProcessStep(const G4CMPStepInfo& stepData);
+  G4bool ProcessStep(const G4Step& step);
+  G4bool ProcessStep(const G4Step* step);
 
   // Transfer generated secondaries into process return object
   void FillOutput(G4VParticleChange* aParticleChange);
@@ -57,9 +60,9 @@ public:
   void FillOutput(G4Event* primaryEvent, G4double time=0.);
 
 protected:
-  G4bool DoAddStep(const G4Step& stepData) const;	// Accumulate step?
-  G4bool HasEnergy(const G4Step& stepData) const;	// Does step deposit?
-  G4bool ReadyForOutput(const G4Step& stepData) const;	// Ready to process?
+  G4bool DoAddStep(const G4CMPStepInfo& step) const;	 // Accumulate step?
+  G4bool HasEnergy(const G4CMPStepInfo& step) const;	 // Does step deposit?
+  G4bool ReadyForOutput(const G4CMPStepInfo& step) const; // Ready to process?
 
   void PrepareOutput();		// Convert accumulator with partitioner
 

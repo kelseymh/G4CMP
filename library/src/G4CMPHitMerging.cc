@@ -12,6 +12,7 @@
 // $Id$
 //
 // 20220815  Michael Kelsey -- Extracted from G4CMPSecondaryProduction
+// 20220821  G4CMP-308 -- Use new G4CMPStepInfo container instead of G4Step
 
 #include "G4CMPHitMerging.hh"
 #include "G4CMPConfigManager.hh"
@@ -91,7 +92,21 @@ void G4CMPHitMerging::LoadDataForTrack(const G4Track* track) {
 
 // Use previously computed energy loss to generate secondaries
 
-G4bool G4CMPHitMerging::ProcessStep(const G4Step& stepData) {
+G4bool G4CMPHitMerging::ProcessStep(const G4Step& step) {
+  if (verboseLevel>1)
+    G4cout << "G4CMPHitMerging::ProcessStep(const G4Step&) " << &step << G4endl;
+
+  return ProcessStep(G4CMPStepInfo(step));
+}
+
+G4bool G4CMPHitMerging::ProcessStep(const G4Step* step) {
+  if (verboseLevel>1)
+    G4cout << "G4CMPHitMerging::ProcessStep(const G4Step*) " << step << G4endl;
+
+  return (step && ProcessStep(*step));
+}
+
+G4bool G4CMPHitMerging::ProcessStep(const G4CMPStepInfo& stepData) {
   readyForOutput = false;		// Default return value is "not ready"
 
   // Only apply to tracks while they are in lattice-configured volumes
@@ -106,11 +121,11 @@ G4bool G4CMPHitMerging::ProcessStep(const G4Step& stepData) {
   G4bool usedStep = DoAddStep(stepData);
   if (usedStep) {
     if (verboseLevel>1) {
-      G4cout << " accumulating track " << GetCurrentTrack()->GetTrackID()
-	     << " step " << GetCurrentTrack()->GetCurrentStepNumber()
-	     << " @ " << stepData.GetPostStepPoint()->GetPosition()
-	     << " Edep " << stepData.GetTotalEnergyDeposit()/eV << " eV"
-	     << " Eniel " << stepData.GetNonIonizingEnergyDeposit()/eV << " eV"
+      G4cout << " accumulating track " << stepData.trackID
+	     << " step " << stepData.stepID
+	     << " @ " << stepData.end
+	     << " Edep " << stepData.Edep/eV << " eV"
+	     << " Eniel " << stepData.Eniel/eV << " eV"
 	     << G4endl;
     }
 
@@ -134,60 +149,55 @@ G4bool G4CMPHitMerging::ProcessStep(const G4Step& stepData) {
 
 // Decide if current step should be added to the accumulator
 
-G4bool G4CMPHitMerging::DoAddStep(const G4Step& stepData) const {
-  G4StepStatus  sStatus = stepData.GetPostStepPoint()->GetStepStatus();
-  G4TrackStatus tStatus = stepData.GetTrack()->GetTrackStatus();
-
+G4bool G4CMPHitMerging::DoAddStep(const G4CMPStepInfo& stepData) const {
+  if (verboseLevel>2) G4cout << " DoAddStep " << stepData << G4endl;
   if (verboseLevel>1) {
     G4cout << " DoAddStep returns OR of the following: "
 	   << " nsteps==0 ? " << (accumulator->nsteps==0)
-	   << "\n stepLen ? " << (stepData.GetStepLength()<combiningStepLength)
-	   << "\n boundary ? " << (sStatus == fGeomBoundary ||
-				   sStatus == fWorldBoundary)
-	   << "\n stopped ? " << (tStatus != fAlive)
-	   << " : tStatus " << tStatus << G4endl;
+	   << "\n stepLen ? " << (stepData.length<combiningStepLength)
+	   << "\n boundary ? " << (stepData.sStatus == fGeomBoundary ||
+				   stepData.sStatus == fWorldBoundary)
+	   << "\n stopped ? " << (stepData.tStatus != fAlive)
+	   << " : tStatus " << stepData.tStatus << G4endl;
   }
 
   return (accumulator->nsteps == 0 ||	// First step always goes in
-	  stepData.GetStepLength() < combiningStepLength ||
-	  sStatus == fGeomBoundary || sStatus == fWorldBoundary ||
-	  tStatus != fAlive);		// Stopping tracks must be caught
+	  stepData.length < combiningStepLength ||
+	  stepData.sStatus == fGeomBoundary ||
+	  stepData.sStatus == fWorldBoundary ||
+	  stepData.tStatus != fAlive);		// Stopping tracks must be caught
 }
 
 // Check if step includes any energy deposit
 
-G4bool G4CMPHitMerging::HasEnergy(const G4Step& stepData) const {
-  G4double Edep  = stepData.GetTotalEnergyDeposit();
-  G4double Eniel = stepData.GetNonIonizingEnergyDeposit();
-
+G4bool G4CMPHitMerging::HasEnergy(const G4CMPStepInfo& stepData) const {
   if (verboseLevel>1) {
-    G4cout << " HasEnergy: Edep " << Edep/eV << " eV"
-	   << " Eniel " << Eniel/eV << " eV" << G4endl;
+    G4cout << " HasEnergy: Edep " << stepData.Edep/eV << " eV"
+	   << " Eniel " << stepData.Eniel/eV << " eV" << G4endl;
   }
 
-  return (Edep>0. || Eniel>0.);
+  return (stepData.Edep>0. || stepData.Eniel>0.);
 }
 
 // Decide if accumulator should be converted to secondaries
 
-G4bool G4CMPHitMerging::ReadyForOutput(const G4Step& stepData) const {
-  G4StepStatus  sStatus = stepData.GetPostStepPoint()->GetStepStatus();
-  G4TrackStatus tStatus = stepData.GetTrack()->GetTrackStatus();
-
+G4bool G4CMPHitMerging::ReadyForOutput(const G4CMPStepInfo& stepData) const {
+  if (verboseLevel>2) G4cout << " ReadyForOutput " << stepData << G4endl;
   if (verboseLevel>1) {
     G4cout << " ReadyForOutput return nsteps and OR of everything else:"
 	   << " nsteps>0 ? " << (accumulator->nsteps>0)
-	   << "\n stepLen ? " << (stepData.GetStepLength()>=combiningStepLength)
-	   << "\n boundary ? " << (sStatus == fGeomBoundary ||
-				   sStatus == fWorldBoundary)
-	   << "\n stopped ? " << (tStatus != fAlive)
-	   << " : tStatus " << tStatus << G4endl;
+	   << "\n stepLen ? " << (stepData.length>=combiningStepLength)
+	   << "\n boundary ? " << (stepData.sStatus == fGeomBoundary ||
+				   stepData.sStatus == fWorldBoundary)
+	   << "\n stopped ? " << (stepData.tStatus != fAlive)
+	   << " : tStatus " << stepData.tStatus << G4endl;
   }
 
   return (accumulator->nsteps > 0 &&	// Don't process empty accumulator
-	  (stepData.GetStepLength() >= combiningStepLength ||
-	   sStatus == fGeomBoundary || sStatus == fWorldBoundary ||
-	   tStatus != fAlive)		// Stopping tracks must be caught
+	  (stepData.length >= combiningStepLength ||
+	   stepData.sStatus == fGeomBoundary ||
+	   stepData.sStatus == fWorldBoundary ||
+	   stepData.tStatus != fAlive)		// Stopping tracks must be caught
 	  );
 }
 

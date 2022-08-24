@@ -33,31 +33,46 @@ G4CMPStepInfo::G4CMPStepInfo(const G4Step* step)
   : trackID(step->GetTrack()->GetTrackID()),
     stepID(step->GetTrack()->GetCurrentStepNumber()),
     pd(step->GetTrack()->GetDefinition()),
+    length(step->GetStepLength()),
     Edep(step->GetTotalEnergyDeposit()),
     Eniel(step->GetNonIonizingEnergyDeposit()),
     start(step->GetPreStepPoint()->GetPosition()),
-    end(step->GetPostStepPoint()->GetPosition()) {;}
+    end(step->GetPostStepPoint()->GetPosition()),
+    tStatus(step->GetTrack()->GetTrackStatus()),
+    sStatus(step->GetPostStepPoint()->GetStepStatus()) {;}
 
 G4CMPStepInfo::G4CMPStepInfo(const G4Step& step)
   : trackID(step.GetTrack()->GetTrackID()),
     stepID(step.GetTrack()->GetCurrentStepNumber()),
     pd(step.GetTrack()->GetDefinition()),
+    length(step.GetStepLength()),
     Edep(step.GetTotalEnergyDeposit()),
     Eniel(step.GetNonIonizingEnergyDeposit()),
     start(step.GetPreStepPoint()->GetPosition()),
-    end(step.GetPostStepPoint()->GetPosition()) {;}
+    end(step.GetPostStepPoint()->GetPosition()),
+    tStatus(step.GetTrack()->GetTrackStatus()),
+    sStatus(step.GetPostStepPoint()->GetStepStatus()) {;}
 
 // Duplicate information from specified other step
+
+G4CMPStepInfo::G4CMPStepInfo(const G4CMPStepInfo& step)
+  : trackID(step.trackID), stepID(step.stepID), pd(step.pd),
+    length(step.length), Edep(step.Edep), Eniel(step.Eniel),
+    start(step.start), end(step.end), tStatus(step.tStatus),
+    sStatus(step.sStatus) {;}
 
 G4CMPStepInfo&
 G4CMPStepInfo::operator=(const G4CMPStepInfo& step) {
   trackID = step.trackID;
   stepID = step.stepID;
   pd = step.pd;
+  length = step.length;
   Edep = step.Edep;
   Eniel = step.Eniel;
   start = step.start;
   end = step.end;
+  tStatus = step.tStatus;
+  sStatus = step.sStatus;
 
   return *this;
 }
@@ -97,7 +112,9 @@ void G4CMPStepAccumulator::Add(const G4CMPStepInfo& step) {
   // Initialize new accumulation
   if (nsteps == 0) {
     eventID = thisEvt;
-    (G4CMPStepInfo)(*this) = step;
+    *(G4CMPStepInfo*)this = step;
+    nsteps = 1;
+    return;
   }
 
   // Update step information
@@ -110,19 +127,24 @@ void G4CMPStepAccumulator::Add(const G4CMPStepInfo& step) {
   // Equivalent to: end = (end*Edep + stepEnd*stepEdep)/(Edep+stepEdep);
   
   // Accumulate total energy of steps
-  Edep  += step.Edep;
-  Eniel += step.Eniel;
+  length += step.length;
+  Edep   += step.Edep;
+  Eniel  += step.Eniel;
 }
 
 
 // Dump content for diagnostics
 
-void G4CMPStepAccumulator::Print(std::ostream& os) const {
-  os << "G4CMPStepAccumulator event " << eventID
+void G4CMPStepInfo::Print(std::ostream& os) const {
+  os << "track " << trackID << "/" << stepID
      << " " << (pd?pd->GetParticleName():"")
-     << " track " << trackID << "/" << stepID
-     << "\n " << nsteps << " steps from " << start << " to " << end
+     << " from " << start << " to " << end
      << "\n deposited " << Edep/eV << " eV, "
-     << Eniel/eV << " eV NIEL"
+     << Eniel/eV << " eV NIEL along " << length/mm << " mm"
      << std::endl;
+}
+
+void G4CMPStepAccumulator::Print(std::ostream& os) const {
+  os << "G4CMPStepAccumulator event " << eventID << " " << nsteps << " steps ";
+  G4CMPStepInfo::Print(os);
 }

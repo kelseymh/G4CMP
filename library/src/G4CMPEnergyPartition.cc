@@ -248,13 +248,15 @@ G4CMPEnergyPartition::DoPartition(const G4CMPStepAccumulator* steps) {
   DoPartition(steps->pd->GetPDGEncoding(), steps->Edep, steps->Eniel);
 
   // Store position information in summary block
-  summary->position[0] = steps->end[0];
-  summary->position[1] = steps->end[1];
-  summary->position[2] = steps->end[2];
-  summary->position[3] = GetCurrentTrack()->GetGlobalTime();
-
-  summary->trackID = steps->trackID;
-  summary->stepID  = steps->stepID;
+  if (summary) {
+    summary->position[0] = steps->end[0];
+    summary->position[1] = steps->end[1];
+    summary->position[2] = steps->end[2];
+    summary->position[3] = GetCurrentTrack()->GetGlobalTime();
+    
+    summary->trackID = steps->trackID;
+    summary->stepID  = steps->stepID;
+  }
 }
 
 
@@ -357,7 +359,7 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
   // Shuffle particles so they can be distributed along trajectories
   std::random_shuffle(particles.begin(), particles.end(), G4CMP::RandomIndex);
 
-  if (verboseLevel) summary->Print();
+  if (verboseLevel && summary) summary->Print();
 }
 
 
@@ -527,21 +529,22 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   if (verboseLevel>1) G4cout << " " << chargeEnergyLeft << " excess" << G4endl;
 
   // Store generated information in summary block
-  summary->chargeEnergy = energy;
-  summary->chargeFano = nPairsTrue*theLattice->GetPairProductionEnergy();
-  summary->chargeGenerated = ePair*nPairsWeighted;
-  summary->truePairs = nPairsTrue;
-  summary->numberOfPairs = nPairsGen;
-  summary->samplingCharges = scale;		// Store actual sampling used
+  if (summary) {
+    summary->chargeEnergy = energy;
+    summary->chargeFano = nPairsTrue*theLattice->GetPairProductionEnergy();
+    summary->chargeGenerated = ePair*nPairsWeighted;
+    summary->truePairs = nPairsTrue;
+    summary->numberOfPairs = nPairsGen;
+    summary->samplingCharges = scale;		// Store actual sampling used
+    summary->lukeEnergyEst = nPairsWeighted * abs(biasVoltage);
+  }
 
   // Estimate NTL (Luke) phonon emission from charge pairs
   // Assumes symmetry: each charge pair covers the full voltage bias
   if (verboseLevel>1) {
-    G4cout << " estimating Luke emission for " <<nPairsWeighted
+    G4cout << " estimating Luke emission for " << nPairsWeighted
 	   << " e-h pairs across " << biasVoltage/volt << " V" << G4endl;
   }
-
-  summary->lukeEnergyEst = nPairsWeighted * abs(biasVoltage);
 }
 
 void G4CMPEnergyPartition::AddChargePair(G4double ePair, G4double wt) {
@@ -593,11 +596,13 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   }
 
   // Store generated information in summary block
-  summary->phononEnergy = energy;
-  summary->phononGenerated = ePhon*nPhononsGen/scale;
-  summary->truePhonons = nPhononsTrue;
-  summary->numberOfPhonons = nPhononsGen;
-  summary->samplingPhonons = scale;		// Store actual sampling used
+  if (summary) {
+    summary->phononEnergy = energy;
+    summary->phononGenerated = ePhon*nPhononsGen/scale;
+    summary->truePhonons = nPhononsTrue;
+    summary->numberOfPhonons = nPhononsGen;
+    summary->samplingPhonons = scale;		// Store actual sampling used
+  }
 }
 
 void G4CMPEnergyPartition::AddPhonon(G4double ePhon, G4double wt) {
@@ -652,10 +657,12 @@ GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
   }
 
   // Store position information in summary block
-  summary->position[0] = pos[0];
-  summary->position[1] = pos[1];
-  summary->position[2] = pos[2];
-  summary->position[3] = time;
+  if (summary) {
+    summary->position[0] = pos[0];
+    summary->position[1] = pos[1];
+    summary->position[2] = pos[2];
+    summary->position[3] = time;
+  }
 
   std::vector<G4PrimaryParticle*> primaries;	// Can we make this mutable?
   GetPrimaries(primaries);
@@ -731,10 +738,12 @@ GetPrimaries(G4Event* event, const std::vector<G4ThreeVector>& pos,
   for (auto const& ip: pos) avgpos += ip;
   avgpos /= npos;
 
-  summary->position[0] = avgpos[0];
-  summary->position[1] = avgpos[1];
-  summary->position[2] = avgpos[2];
-  summary->position[3] = time;
+  if (summary) {
+    summary->position[0] = avgpos[0];
+    summary->position[1] = avgpos[1];
+    summary->position[2] = avgpos[2];
+    summary->position[3] = time;
+  }
 
   // Create and fill a vertex for each position in set
   size_t tracksPerPos = GetNumberOfTracks() / npos;
@@ -784,11 +793,11 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
   }
 
   // If particle type not already set, get it from the current track
-  if (summary->PDGcode == 0)
+  if (summary && summary->PDGcode == 0)
     summary->PDGcode = GetCurrentParticle()->GetPDGEncoding();
 
   // Store position information in summary block, if not already done
-  if (summary->trackID == 0) {
+  if (summary && summary->trackID == 0) {
     summary->position[0] = GetCurrentTrack()->GetPosition()[0];
     summary->position[1] = GetCurrentTrack()->GetPosition()[1];
     summary->position[2] = GetCurrentTrack()->GetPosition()[2];

@@ -18,7 +18,9 @@
 #define G4CMPStepAccumulator_hh 1
 
 #include "G4Types.hh"
+#include "G4StepStatus.hh"
 #include "G4ThreeVector.hh"
+#include "G4TrackStatus.hh"
 #include <iosfwd>
 
 class G4ParticleDefinition;
@@ -27,26 +29,36 @@ class G4Step;
 
 class G4CMPStepInfo {
 public:
-  G4CMPStepInfo() : trackID(-1), stepID(-1), pd(0), Edep(0.), Eniel(0.) {;}
+  G4CMPStepInfo() : trackID(-1), stepID(-1), pd(0), length(0.), Edep(0.),
+		    Eniel(0.), tStatus(fAlive), sStatus(fUndefined) {;}
   G4CMPStepInfo(const G4Step* step);
   G4CMPStepInfo(const G4Step& step);
-  G4CMPStepInfo& operator=(const G4CMPStepInfo& step);
+  G4CMPStepInfo(const G4CMPStepInfo& rhs);
+  virtual G4CMPStepInfo& operator=(const G4CMPStepInfo& step);
 
+  // Reset contents for reusable buffers
   virtual void Clear() {
-    trackID = stepID = -1;
-    pd = 0; Edep = Eniel = 0.;
+    trackID = stepID = -1; pd = 0;
+    length = Edep = Eniel = 0.;
     start.set(0,0,0); end.set(0,0,0);
+    tStatus = fAlive;
+    sStatus = fUndefined;
   }
+
+  // Dump content for diagnostics
+  virtual void Print(std::ostream& os) const;
 
 public:
   G4int trackID;		  // Track ID for sanity checking in Add()
   G4int stepID;		  	  // Step ID of last step accumulated
   const G4ParticleDefinition* pd; // Particle type (should match all steps)
+  G4double length;		  // Length of step, as reported by G4Step
   G4double Edep;		  // Sum of GetTotalEnergyDeposit()
   G4double Eniel;		  // Sum of GetNonIonizingEnergyDeposit()
   G4ThreeVector start;	  	  // PreStep position of first hit
   G4ThreeVector end;		  // PostStep position of last hit
-
+  G4TrackStatus tStatus;	  // Current status of step and track
+  G4StepStatus sStatus;
 };
 
 class G4CMPStepAccumulator : public G4CMPStepInfo {
@@ -69,6 +81,14 @@ public:
   G4int nsteps;			// Accumulated steps so far
   G4int eventID;		// Current event ID for sanity checking in Add()
 };
+
+// Output operators
+
+inline 
+std::ostream& operator<<(std::ostream& os, const G4CMPStepInfo& step) {
+  step.Print(os);
+  return os;
+}
 
 inline 
 std::ostream& operator<<(std::ostream& os, const G4CMPStepAccumulator& accum) {

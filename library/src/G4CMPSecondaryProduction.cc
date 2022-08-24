@@ -86,16 +86,19 @@ void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
 
 G4VParticleChange* 
 G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
-				       const G4Step& stepData) {
+				       const G4Step& step) {
   aParticleChange.Initialize(track); 
   LoadDataForTrack(&track);
 
   // Only apply to tracks while they are in lattice-configured volumes
   if (!theLattice) return &aParticleChange;
 
-  if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+  if (verboseLevel) {
+    G4cout << GetProcessName() << "::PostStepDoIt track " << &track
+	   << " step " << &step << G4endl;
+  }
 
-  if (mergeHits->ProcessStep(stepData))
+  if (mergeHits->ProcessStep(step))
     mergeHits->FillOutput(&aParticleChange);
 
   // If requested (default), process new secondaries immediately
