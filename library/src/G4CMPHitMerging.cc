@@ -76,17 +76,6 @@ void G4CMPHitMerging::LoadDataForTrack(const G4Track* track) {
   }
 
   SetLattice(track);
-
-  // Pick up any changes to combining-length since constructor
-  combiningStepLength = G4CMPConfigManager::GetComboStepLength();
-
-  // Direct step accumulator to work with current track
-  accumulator = &trackAccum[track->GetTrackID()];	// Creates new if needed
-
-  // Set up energy partitioning to work with current track and volume
-  *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
-  partitioner->UseVolume(GetCurrentVolume());
-  partitioner->SetVerboseLevel(verboseLevel);
 }
 
 
@@ -107,12 +96,22 @@ G4bool G4CMPHitMerging::ProcessStep(const G4Step* step) {
 }
 
 G4bool G4CMPHitMerging::ProcessStep(const G4CMPStepInfo& stepData) {
-  readyForOutput = false;		// Default return value is "not ready"
-
   // Only apply to tracks while they are in lattice-configured volumes
-  if (!theLattice) return readyForOutput;
+  readyForOutput = false;
+  if (!theLattice) return false;
 
   if (verboseLevel) G4cout << "G4CMPHitMerging::ProcessStep" << G4endl;
+
+  // Pick up any changes to combining-length since constructor
+  combiningStepLength = G4CMPConfigManager::GetComboStepLength();
+
+  // Direct step accumulator to work with current track
+  accumulator = &trackAccum[stepData.trackID];	// Creates new if needed
+
+  // Set up energy partitioning to work with current track and volume
+  *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
+  partitioner->SetVerboseLevel(verboseLevel);
+  partitioner->UseVolume(GetCurrentVolume());
 
   // Get configuration for how to merge steps
   combiningStepLength = G4CMPConfigManager::GetComboStepLength();

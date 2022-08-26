@@ -31,9 +31,12 @@ class G4CMPStepInfo {
 public:
   G4CMPStepInfo() : trackID(-1), stepID(-1), pd(0), length(0.), Edep(0.),
 		    Eniel(0.), tStatus(fAlive), sStatus(fUndefined) {;}
-  G4CMPStepInfo(const G4Step* step);
-  G4CMPStepInfo(const G4Step& step);
+  explicit G4CMPStepInfo(const G4Step* step);
+  explicit G4CMPStepInfo(const G4Step& step);
   G4CMPStepInfo(const G4CMPStepInfo& rhs);
+
+  virtual ~G4CMPStepInfo() {;}
+
   virtual G4CMPStepInfo& operator=(const G4CMPStepInfo& step);
 
   // Reset contents for reusable buffers
