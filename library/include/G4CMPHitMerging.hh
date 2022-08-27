@@ -13,6 +13,7 @@
 //
 // 20220815  Michael Kelsey -- Extracted from G4CMPSecondaryProduction
 // 20220821  G4CMP-308 -- Use new G4CMPStepInfo container instead of G4Step
+// 20220826  For use with primary generator, need to pass in G4Event*
 
 #ifndef G4CMPHitMerging_hh
 #define G4CMPHitMerging_hh 1
@@ -46,6 +47,9 @@ public:
 
   // Overload G4CMPProcessUtils function to fill energy parameters
   virtual void LoadDataForTrack(const G4Track* track);
+
+  // Register "in process" G4Event*, for use when called from primary generator
+  void ProcessEvent(const G4Event* primaryEvent);
 
   // Incorporate step into consolidated energy depost, generate secondaries
   // Return value indicate if new tracks are ready for use

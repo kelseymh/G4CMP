@@ -21,6 +21,8 @@
 #include "G4CMPStepAccumulator.hh"
 #include "G4CMPUtils.hh"
 #include "G4Event.hh"
+#include "G4Exception.hh"
+#include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PrimaryVertex.hh"
@@ -60,12 +62,7 @@ void G4CMPHitMerging::LoadDataForTrack(const G4Track* track) {
     G4cout << "G4CMPHitMerging::LoadDataForTrack" << G4endl;
 
   // If new event, clear out any existing accumulators
-  G4int thisEvent = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
-  if (thisEvent != currentEventID) {
-    if (verboseLevel>1) G4cout << " New event: clearing accumulators" << G4endl;
-    trackAccum.clear();
-    currentEventID = thisEvent;
-  }
+  ProcessEvent(G4RunManager::GetRunManager()->GetCurrentEvent());
 
   SetCurrentTrack(track);
 
@@ -76,6 +73,35 @@ void G4CMPHitMerging::LoadDataForTrack(const G4Track* track) {
   }
 
   SetLattice(track);
+}
+
+
+// For primary generators, event must be passed in, not available from RM
+
+void G4CMPHitMerging::ProcessEvent(const G4Event* currentEvent) {
+  // If no event available, abort job with explanatory message
+  if (!currentEvent)
+    currentEvent = G4RunManager::GetRunManager()->GetCurrentEvent();
+
+  if (!currentEvent) {
+    currentEventID = -1;
+
+    G4ExceptionDescription msg;
+    msg << "No event available to start processing.  If called from\n"
+	<< "primary generator action, ensure that ProcessEvent() is\n"
+	<< "called with the local G4Event*.";
+    G4Exception("G4CMPHitMerging::ProcessEvent", "Merging001",
+		FatalException, msg);
+    return;
+  }
+		
+  // If new event, clear out any existing accumulators
+  G4int thisEvent = currentEvent->GetEventID();
+  if (thisEvent != currentEventID) {
+    if (verboseLevel>1) G4cout << " New event: clearing accumulators" << G4endl;
+    trackAccum.clear();
+    currentEventID = thisEvent;
+  }
 }
 
 
@@ -239,11 +265,12 @@ void G4CMPHitMerging::PrepareOutput() {
 // Populate particleChange with secondary tracks
 
 void G4CMPHitMerging::FillOutput(G4VParticleChange* aParticleChange) {
-  if (!readyForOutput) return;		// Nothing to be done
+  if (!readyForOutput) return;			// Nothing to be done
 
   partitioner->GetSecondaries(theSecs);
-
   size_t nsec = theSecs.size();
+  if (nsec == 0) return;			// Nothing to be done
+
   if (verboseLevel>1) G4cout << " Adding " << nsec << " secondaries" << G4endl;
 
   aParticleChange->SetNumberOfSecondaries(nsec);
@@ -271,9 +298,11 @@ void G4CMPHitMerging::FillOutput(G4VParticleChange* aParticleChange) {
 // Populate event with primary tracks and vertices
 
 void G4CMPHitMerging::FillOutput(G4Event* primaryEvent, G4double time) {
-  if (!readyForOutput) return;		// Nothing to be done
+  if (!readyForOutput) return;			// Nothing to be done
 
   size_t nprim = partitioner->GetNumberOfTracks();
+  if (nprim == 0) return;			// Nothing to be done
+
   if (verboseLevel>1) G4cout << " Adding " << nprim << " primaries" << G4endl;
 
   size_t npos = posSecs.size();
