@@ -252,7 +252,7 @@ G4CMPEnergyPartition::DoPartition(const G4CMPStepAccumulator* steps) {
     summary->position[0] = steps->end[0];
     summary->position[1] = steps->end[1];
     summary->position[2] = steps->end[2];
-    summary->position[3] = GetCurrentTrack()->GetGlobalTime();
+    summary->position[3] = steps->time;
     
     summary->trackID = steps->trackID;
     summary->stepID  = steps->stepID;
