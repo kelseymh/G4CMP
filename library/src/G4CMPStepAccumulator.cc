@@ -36,6 +36,7 @@ G4CMPStepInfo::G4CMPStepInfo(const G4Step* step)
     length(step->GetStepLength()),
     Edep(step->GetTotalEnergyDeposit()),
     Eniel(step->GetNonIonizingEnergyDeposit()),
+    time(step->GetPostStepPoint()->GetGlobalTime()),
     start(step->GetPreStepPoint()->GetPosition()),
     end(step->GetPostStepPoint()->GetPosition()),
     tStatus(step->GetTrack()->GetTrackStatus()),
@@ -48,6 +49,7 @@ G4CMPStepInfo::G4CMPStepInfo(const G4Step& step)
     length(step.GetStepLength()),
     Edep(step.GetTotalEnergyDeposit()),
     Eniel(step.GetNonIonizingEnergyDeposit()),
+    time(step.GetPostStepPoint()->GetGlobalTime()),
     start(step.GetPreStepPoint()->GetPosition()),
     end(step.GetPostStepPoint()->GetPosition()),
     tStatus(step.GetTrack()->GetTrackStatus()),
@@ -58,8 +60,8 @@ G4CMPStepInfo::G4CMPStepInfo(const G4Step& step)
 G4CMPStepInfo::G4CMPStepInfo(const G4CMPStepInfo& step)
   : trackID(step.trackID), stepID(step.stepID), pd(step.pd),
     length(step.length), Edep(step.Edep), Eniel(step.Eniel),
-    start(step.start), end(step.end), tStatus(step.tStatus),
-    sStatus(step.sStatus) {;}
+    time(step.time), start(step.start), end(step.end),
+    tStatus(step.tStatus), sStatus(step.sStatus) {;}
 
 G4CMPStepInfo&
 G4CMPStepInfo::operator=(const G4CMPStepInfo& step) {
@@ -69,6 +71,7 @@ G4CMPStepInfo::operator=(const G4CMPStepInfo& step) {
   length = step.length;
   Edep = step.Edep;
   Eniel = step.Eniel;
+  time = step.time;
   start = step.start;
   end = step.end;
   tStatus = step.tStatus;
@@ -78,20 +81,23 @@ G4CMPStepInfo::operator=(const G4CMPStepInfo& step) {
 }
 
 
-// Extract relevant information from step
+// Register event being processed (needed with primary generator)
 
-void G4CMPStepAccumulator::Add(const G4CMPStepInfo& step) {
-  // If event ID has changed discard previous data and report error
-  G4int thisEvt = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
-  if (eventID >=0 && eventID != thisEvt) {
+void G4CMPStepAccumulator::ProcessEvent(G4int newEventID) {
+  if (eventID >=0 && eventID != newEventID) {
     G4cerr << "ERROR G4CMPStepAccumulator rolled over between events "
-	   << eventID << " and " << thisEvt << G4endl
+	   << eventID << " and " << newEventID << G4endl
 	   << " Energy " << Edep/eV << " eV,"
 	   << " NIEL " << Eniel/eV << " eV"
 	   << " lost from previous event." << G4endl;
-    Clear();
   }
 
+  Clear(newEventID);
+}
+
+// Extract relevant information from step
+
+void G4CMPStepAccumulator::Add(const G4CMPStepInfo& step) {
   // If track type or track ID has changed, discard previous data
   if (trackID >= 0 && (trackID != step.trackID || pd != step.pd)) {
     G4cerr << "ERROR G4CMPStepAccumulator rolled over between tracks "
@@ -99,7 +105,7 @@ void G4CMPStepAccumulator::Add(const G4CMPStepInfo& step) {
            << " Energy " << Edep/eV << " eV,"
 	   << " NIEL " << Eniel/eV << " eV"
            << " lost from previous track." << G4endl;
-    Clear();
+    Clear(eventID);			// Preserve event ID between tracks
   }
 
   // Should never receive zero-energy step
@@ -111,7 +117,6 @@ void G4CMPStepAccumulator::Add(const G4CMPStepInfo& step) {
 
   // Initialize new accumulation
   if (nsteps == 0) {
-    eventID = thisEvt;
     *(G4CMPStepInfo*)this = step;
     nsteps = 1;
     return;
@@ -120,6 +125,7 @@ void G4CMPStepAccumulator::Add(const G4CMPStepInfo& step) {
   // Update step information
   nsteps++;
   stepID = step.stepID;		// Step ID will always point to last step
+  time = step.time;
 
   // Compute energy-weighted centroid of step endpoints
   ((end *= Edep) += step.end*step.Edep) /= (Edep+step.Edep);

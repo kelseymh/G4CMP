@@ -42,7 +42,7 @@ public:
   // Reset contents for reusable buffers
   virtual void Clear() {
     trackID = stepID = -1; pd = 0;
-    length = Edep = Eniel = 0.;
+    length = Edep = Eniel = time = 0.;
     start.set(0,0,0); end.set(0,0,0);
     tStatus = fAlive;
     sStatus = fUndefined;
@@ -58,6 +58,7 @@ public:
   G4double length;		  // Length of step, as reported by G4Step
   G4double Edep;		  // Sum of GetTotalEnergyDeposit()
   G4double Eniel;		  // Sum of GetNonIonizingEnergyDeposit()
+  G4double time;		  // Ending time of step
   G4ThreeVector start;	  	  // PreStep position of first hit
   G4ThreeVector end;		  // PostStep position of last hit
   G4TrackStatus tStatus;	  // Current status of step and track
@@ -69,6 +70,9 @@ public:
   G4CMPStepAccumulator() : G4CMPStepInfo(), nsteps(0), eventID(-1) {;}
   ~G4CMPStepAccumulator() {;}
 
+  // Register event being processed (needed with primary generator)
+  void ProcessEvent(G4int currentEventID);
+
   // Extract relevant information from step
   void Add(const G4CMPStepInfo& step);
   void Add(const G4Step& step) { Add(G4CMPStepInfo(step)); }
@@ -76,6 +80,7 @@ public:
 
   // Reset accumulator for new track
   virtual void Clear() { G4CMPStepInfo::Clear(); nsteps=0; eventID=-1; }
+  void Clear(G4int newEventID) { Clear(); eventID=newEventID; }
 
   // Dump content for diagnostics
   void Print(std::ostream& os) const;
