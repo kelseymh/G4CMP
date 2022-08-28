@@ -49,7 +49,7 @@ public:
   virtual void LoadDataForTrack(const G4Track* track);
 
   // Register "in process" G4Event*, for use when called from primary generator
-  void ProcessEvent(const G4Event* primaryEvent);
+  void ProcessEvent(const G4Event* primaryEvent=0);
 
   // Incorporate step into consolidated energy depost, generate secondaries
   // Return value indicate if new tracks are ready for use

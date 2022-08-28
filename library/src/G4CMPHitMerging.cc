@@ -13,6 +13,7 @@
 //
 // 20220815  Michael Kelsey -- Extracted from G4CMPSecondaryProduction
 // 20220821  G4CMP-308 -- Use new G4CMPStepInfo container instead of G4Step
+// 20220828  Pass event ID through to accumulator; improve debugging output
 
 #include "G4CMPHitMerging.hh"
 #include "G4CMPConfigManager.hh"
@@ -102,6 +103,13 @@ void G4CMPHitMerging::ProcessEvent(const G4Event* currentEvent) {
     trackAccum.clear();
     currentEventID = thisEvent;
   }
+
+  // Get configuration for how to merge steps
+  combiningStepLength = G4CMPConfigManager::GetComboStepLength();
+  if (verboseLevel>1) {
+    G4cout << " combining steps within " << combiningStepLength << " mm"
+	   << G4endl;
+  }
 }
 
 
@@ -128,11 +136,9 @@ G4bool G4CMPHitMerging::ProcessStep(const G4CMPStepInfo& stepData) {
 
   if (verboseLevel) G4cout << "G4CMPHitMerging::ProcessStep" << G4endl;
 
-  // Pick up any changes to combining-length since constructor
-  combiningStepLength = G4CMPConfigManager::GetComboStepLength();
-
-  // Direct step accumulator to work with current track
+  // Direct step accumulator to work with current track and event
   accumulator = &trackAccum[stepData.trackID];	// Creates new if needed
+  accumulator->ProcessEvent(currentEventID);
 
   // Set up energy partitioning to work with current track and volume
   *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
@@ -179,7 +185,7 @@ G4bool G4CMPHitMerging::DoAddStep(const G4CMPStepInfo& stepData) const {
   if (verboseLevel>1) {
     G4cout << " DoAddStep returns OR of the following: "
 	   << " nsteps==0 ? " << (accumulator->nsteps==0)
-	   << "\n stepLen ? " << (stepData.length<combiningStepLength)
+	   << "\n stepLen< ? " << (stepData.length<combiningStepLength)
 	   << "\n boundary ? " << (stepData.sStatus == fGeomBoundary ||
 				   stepData.sStatus == fWorldBoundary)
 	   << "\n stopped ? " << (stepData.tStatus != fAlive)
@@ -211,7 +217,7 @@ G4bool G4CMPHitMerging::ReadyForOutput(const G4CMPStepInfo& stepData) const {
   if (verboseLevel>1) {
     G4cout << " ReadyForOutput return nsteps and OR of everything else:"
 	   << " nsteps>0 ? " << (accumulator->nsteps>0)
-	   << "\n stepLen ? " << (stepData.length>=combiningStepLength)
+	   << "\n stepLen> ? " << (stepData.length>=combiningStepLength)
 	   << "\n boundary ? " << (stepData.sStatus == fGeomBoundary ||
 				   stepData.sStatus == fWorldBoundary)
 	   << "\n stopped ? " << (stepData.tStatus != fAlive)

@@ -27,6 +27,7 @@
 // 20220216  G4CMP-290 : Only spread secondaries along trajectory for charged
 //	       tracks; neutrals get everything at endpoint.
 // 20220815  G4CMP-308 : Factor step-accumulation procedures to HitMerging.
+// 20220828  Call HitMerging::ProcessEvent() to ensure event ID is set.
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPConfigManager.hh"
@@ -78,6 +79,7 @@ void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
 
   // Configure hit merging
   mergeHits->SetVerboseLevel(verboseLevel);
+  mergeHits->ProcessEvent();
   mergeHits->LoadDataForTrack(track);
 }
 
