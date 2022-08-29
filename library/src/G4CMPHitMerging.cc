@@ -80,6 +80,8 @@ void G4CMPHitMerging::LoadDataForTrack(const G4Track* track) {
 // For primary generators, event must be passed in, not available from RM
 
 void G4CMPHitMerging::ProcessEvent(const G4Event* currentEvent) {
+  verboseLevel = 2;	// *** TEMPORARY TO GET RESTRICTED OUTPUT ***
+
   // If no event available, abort job with explanatory message
   if (!currentEvent)
     currentEvent = G4RunManager::GetRunManager()->GetCurrentEvent();
@@ -237,16 +239,12 @@ G4bool G4CMPHitMerging::ReadyForOutput(const G4CMPStepInfo& stepData) const {
 
 void G4CMPHitMerging::PrepareOutput() {
   if (!readyForOutput) return;			// Not ready to do this
+  if (accumulator->Edep <= 0. && accumulator->Eniel <= 0.) return;
 
   if (verboseLevel) {
-    G4cout << "G4CMPHitMerging::PrepareOutput\n"
+    G4cout << "G4CMPHitMerging::PrepareOutput" << G4endl
 	   << *accumulator << G4endl;
   }
-
-  G4double eTotal = accumulator->Edep;
-  G4double eNIEL  = accumulator->Eniel;
-
-  if (eTotal <= 0. && eNIEL <= 0.) return;	// Avoid unncessary work
 
   // Process recorded energy deposit(s) into phonons and charge carriers
   partitioner->DoPartition(accumulator);
@@ -298,7 +296,7 @@ void G4CMPHitMerging::FillOutput(G4VParticleChange* aParticleChange) {
 	     << " (wt " << aSec->GetWeight() << ")"
 	     << G4endl;
     }
-  }
+  }	// for (i<nsec
 }
 
 // Populate event with primary tracks and vertices
@@ -318,6 +316,51 @@ void G4CMPHitMerging::FillOutput(G4Event* primaryEvent, G4double time) {
   else partitioner->GetPrimaries(primaryEvent, posSecs, time);
 }
 
+
+// Check for any non-empty accumulators, and generate primaries from them
+
+void G4CMPHitMerging::FinishOutput(G4Event* primaryEvent) {
+  if (trackAccum.empty()) return;		// Nothing to be done
+  if (!primaryEvent) return;
+
+  if (primaryEvent->GetEventID() != currentEventID) {
+    G4ExceptionDescription msg;
+    msg << "primaryEvent " << primaryEvent->GetEventID() << " does not"
+	<< " match currentEventID " << currentEventID << ".  Accumulated"
+	<< " hits may be lost.";
+    G4Exception("G4CMPHitMerging::FinishOutput", "Merging002",
+		JustWarning, msg);
+    return;
+  }
+
+  if (verboseLevel) {
+    G4cout << "G4CMPHitMerging::FinishOutput " << primaryEvent->GetEventID()
+	   << G4endl;
+  }
+
+  // Loop over all registered accumulators and flush them to output
+  for (const auto& trkAcc: trackAccum) {
+    FlushAccumulator(trkAcc.first, primaryEvent);
+  }
+}
+
+// Process specified accumulator into new primaries for event
+
+void G4CMPHitMerging::FlushAccumulator(G4int trkID, G4Event* primaryEvent) {
+  accumulator = &trackAccum[trkID];
+  if (accumulator->nsteps == 0) return;		// Nothing to be done
+  
+  if (verboseLevel>1) {
+    G4cout << "G4CMPHitMerging::FlushAccumulator track " << trkID << " with"
+	   << accumulator->nsteps << " steps" << G4endl;
+  }
+    
+  readyForOutput = true;
+  PrepareOutput();
+  FillOutput(primaryEvent, accumulator->time);
+
+  accumulator->Clear();
+}
 
 // Generate intermediate points along step trajectory (straight line!)
 // NOTE:  For MSC type deposition, these points ought to be a random walk
