@@ -14,6 +14,7 @@
 // 20220216  Add "stepID" to provide full identification.  Add printout.
 // 20220228  Add sanity check that only energy-deposit hits are accumulated.
 // 20220821  G4CMP-308 -- Define step-info container to avoid needing G4Step
+// 20220828  Only call Clear() if event ID has changed.
 
 #include "globals.hh"
 #include "G4CMPStepAccumulator.hh"
@@ -84,15 +85,17 @@ G4CMPStepInfo::operator=(const G4CMPStepInfo& step) {
 // Register event being processed (needed with primary generator)
 
 void G4CMPStepAccumulator::ProcessEvent(G4int newEventID) {
-  if (eventID >=0 && eventID != newEventID) {
-    G4cerr << "ERROR G4CMPStepAccumulator rolled over between events "
-	   << eventID << " and " << newEventID << G4endl
-	   << " Energy " << Edep/eV << " eV,"
-	   << " NIEL " << Eniel/eV << " eV"
-	   << " lost from previous event." << G4endl;
-  }
+  if (eventID != newEventID) {
+    if (eventID >= 0) {
+      G4cerr << "ERROR G4CMPStepAccumulator rolled over between events "
+	     << eventID << " and " << newEventID << G4endl
+	     << " Energy " << Edep/eV << " eV,"
+	     << " NIEL " << Eniel/eV << " eV"
+	     << " lost from previous event." << G4endl;
+    }
 
-  Clear(newEventID);
+    Clear(newEventID);
+  }
 }
 
 // Extract relevant information from step
