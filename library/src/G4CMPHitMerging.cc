@@ -80,8 +80,6 @@ void G4CMPHitMerging::LoadDataForTrack(const G4Track* track) {
 // For primary generators, event must be passed in, not available from RM
 
 void G4CMPHitMerging::ProcessEvent(const G4Event* currentEvent) {
-  verboseLevel = 2;	// *** TEMPORARY TO GET RESTRICTED OUTPUT ***
-
   // If no event available, abort job with explanatory message
   if (!currentEvent)
     currentEvent = G4RunManager::GetRunManager()->GetCurrentEvent();
@@ -184,18 +182,21 @@ G4bool G4CMPHitMerging::ProcessStep(const G4CMPStepInfo& stepData) {
 
 G4bool G4CMPHitMerging::DoAddStep(const G4CMPStepInfo& stepData) const {
   if (verboseLevel>2) G4cout << " DoAddStep " << stepData << G4endl;
+
+  G4double distance = (stepData.end - accumulator->end).mag();
+
   if (verboseLevel>1) {
     G4cout << " DoAddStep returns OR of the following: "
-	   << " nsteps==0 ? " << (accumulator->nsteps==0)
-	   << "\n stepLen< ? " << (stepData.length<combiningStepLength)
+	   << "\n nsteps=0 ? " << (accumulator->nsteps==0)
+	   << "\n dist<max ? " << (distance < combiningStepLength)
 	   << "\n boundary ? " << (stepData.sStatus == fGeomBoundary ||
 				   stepData.sStatus == fWorldBoundary)
-	   << "\n stopped ? " << (stepData.tStatus != fAlive)
+	   << "\n stopped  ? " << (stepData.tStatus != fAlive)
 	   << " : tStatus " << stepData.tStatus << G4endl;
   }
 
   return (accumulator->nsteps == 0 ||	// First step always goes in
-	  stepData.length < combiningStepLength ||
+	  distance < combiningStepLength ||
 	  stepData.sStatus == fGeomBoundary ||
 	  stepData.sStatus == fWorldBoundary ||
 	  stepData.tStatus != fAlive);		// Stopping tracks must be caught
@@ -216,18 +217,21 @@ G4bool G4CMPHitMerging::HasEnergy(const G4CMPStepInfo& stepData) const {
 
 G4bool G4CMPHitMerging::ReadyForOutput(const G4CMPStepInfo& stepData) const {
   if (verboseLevel>2) G4cout << " ReadyForOutput " << stepData << G4endl;
+
+  G4double distance = (stepData.end - accumulator->end).mag();
+
   if (verboseLevel>1) {
     G4cout << " ReadyForOutput return nsteps and OR of everything else:"
-	   << " nsteps>0 ? " << (accumulator->nsteps>0)
-	   << "\n stepLen> ? " << (stepData.length>=combiningStepLength)
+	   << "\n nsteps>0 ? " << (accumulator->nsteps>0)
+	   << "\n dist>max ? " << (distance >= combiningStepLength)
 	   << "\n boundary ? " << (stepData.sStatus == fGeomBoundary ||
 				   stepData.sStatus == fWorldBoundary)
-	   << "\n stopped ? " << (stepData.tStatus != fAlive)
+	   << "\n stopped  ? " << (stepData.tStatus != fAlive)
 	   << " : tStatus " << stepData.tStatus << G4endl;
   }
 
   return (accumulator->nsteps > 0 &&	// Don't process empty accumulator
-	  (stepData.length >= combiningStepLength ||
+	  (distance >= combiningStepLength ||
 	   stepData.sStatus == fGeomBoundary ||
 	   stepData.sStatus == fWorldBoundary ||
 	   stepData.tStatus != fAlive)		// Stopping tracks must be caught
