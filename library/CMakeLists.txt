@@ -167,6 +167,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFieldUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGeometryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGlobalLocalTransformStore.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPHitMerging.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateLinear.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateQuadratic.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyRate.cc
@@ -250,6 +251,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGeometryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGlobalLocalTransformStore.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPHitMerging.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateLinear.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateQuadratic.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyRate.hh

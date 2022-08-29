@@ -27,6 +27,8 @@
 // 20210820  Rename particle count data member for clarity, add counts for
 //		after downsampling.  Store weight for each particle in "Data".
 // 20220216  Add interface to do partitioning directly from StepAccumulator.
+// 20220816  Add generated track counts, for convenience before filling
+// 20220816  G4CMP-308 -- Support generating multiple primary positions.
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -107,12 +109,20 @@ public:
   void GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const;
 
   void GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
-		    G4int maxVertex=100000) const;
+		    G4int maxPerVertex=100000) const;
+
+  void GetPrimaries(G4Event* event, const std::vector<G4ThreeVector>& pos,
+		    G4double time, G4int maxPerVertex=100000) const;
 
   void GetSecondaries(std::vector<G4Track*>& secondaries,
 		      G4double trkWeight=1.) const;
 
   void GetSecondaries(G4VParticleChange* aParticleChange) const;
+
+  // Return number of generated tracks, for convenience before filling vectors
+  size_t GetNumberOfPhonons() const { return nPhononsGen; }
+  size_t GetNumberOfCharges() const { return nPairsGen*2; }
+  size_t GetNumberOfTracks() const { return nPhononsGen + nPairsGen*2; }
 
   // Assign energy-dependent sampling factors for phonons and charge carriers
   void ComputeDownsampling(G4double eIon, G4double eNIEL);

@@ -14,6 +14,7 @@
 // 20170802  Provide scale factor argument to ChooseWeight functions
 // 20170928  Replace "polarization" with "mode"
 // 20190906  M. Kelsey -- Add function to look up process for track
+// 20220816  M. Kelsey -- Move RandomIndex here for more general use
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -219,4 +220,11 @@ G4CMP::FindProcess(const G4ParticleDefinition* pd, const G4String& pname) {
   }
 
   return 0;			// No match found
+}
+
+
+// Generate random index for shuffling secondaries
+
+size_t G4CMP::RandomIndex(size_t n) {
+  return (size_t)(n*G4UniformRand());
 }
