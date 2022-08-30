@@ -26,6 +26,7 @@
 // 20181010  J. Singh -- Use new G4CMPAnharmonicDecay for boundary decays
 // 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
 // 20220712  M. Kelsey -- Pass process pointer to G4CMPAnharmonicDecay
+// 20220830  G4CMP-310 -- Flip anharmonic decay daughters to point inward.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -180,6 +181,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 	   << "\nRandom: " << random << G4endl;
   }
 
+  G4String refltype = "";		// For use in failure message if needed
+
   if (random < downconversionProb) {
     if (verboseLevel > 1) G4cout << "Anharmonic Decay at boundary." << G4endl;
 
@@ -200,14 +203,16 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     reflectedKDir = waveVector.unit();
     G4double kPerp = reflectedKDir * surfNorm;
     reflectedKDir -= 2.*kPerp * surfNorm;
+    refltype = "specular";
   } else {
     reflectedKDir = GetLambertianVector(surfNorm, mode);
+    refltype = "diffuse";
   }
 
   // If reflection failed, report problem and kill the track
   if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
-		JustWarning, "Phonon reflection failed");
+		JustWarning, ("Phonon "+refltype+" reflection failed").c_str());
     DoSimpleKill(aTrack, aStep, aParticleChange);
     return;
   }
