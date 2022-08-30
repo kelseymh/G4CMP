@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2022-08-30  g4cmp-V08-01-00 Improve surface-phonon interactions, hit merging.
 2022-08-29  G4CMP-307 : Check if frequency-dependent reflection requested
 			before applying cutoffs.
 2022-08-29  G4CMP-308 : Separate hit-merging to separate utility for use
