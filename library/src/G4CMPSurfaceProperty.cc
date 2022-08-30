@@ -195,29 +195,22 @@ ExpandCoeffsPoly(G4double freq, const std::vector<G4double>& coeff) const {
 }
 
 G4double G4CMPSurfaceProperty::AnharmonicReflProb(G4double freq) const {
-  if (freq > anharmonicMaxFreq) return 0.;
-
-  if (anharmonicCoeffs.empty()) return 0.;
-  
+  if (anharmonicCoeffs.empty() || freq > anharmonicMaxFreq) return 0.;
+ 
   return ExpandCoeffsPoly(freq, anharmonicCoeffs);
 }
 
 G4double G4CMPSurfaceProperty::DiffuseReflProb(G4double freq) const {
-  if (freq > anharmonicMaxFreq)
+  if (diffuseCoeffs.empty() || freq > anharmonicMaxFreq)
     return 1. - thePhononMatPropTable.GetConstProperty("specProb");
 
-  if (freq > diffuseMaxFreq) freq = diffuseMaxFreq;	// Flat response
-
-  if (diffuseCoeffs.empty()) return 1. - thePhononMatPropTable.GetConstProperty("specProb");
-
+  if (freq > diffuseMaxFreq) freq = diffuseMaxFreq;	// Flat plateau
   return ExpandCoeffsPoly(freq, diffuseCoeffs);
 }
 
 G4double G4CMPSurfaceProperty::SpecularReflProb(G4double freq) const {
-  if (freq > diffuseMaxFreq)
+  if (specularCoeffs.empty() || freq > diffuseMaxFreq)
     return 1. - DiffuseReflProb(freq) - AnharmonicReflProb(freq);
-
-  if (specularCoeffs.empty()) return 1. - DiffuseReflProb(freq) - AnharmonicReflProb(freq);
 
   return ExpandCoeffsPoly(freq, specularCoeffs);
 }
