@@ -11,6 +11,7 @@
 // 20190806  M. Kelsey -- Add local data for frequency-dependent scattering
 //		probabilities, and computation functions.
 // 20200601  G4CMP-206: Need thread-local copies of electrode pointers
+// 20220824  R. Cormier -- Default to scalar probs if no polynomials
 
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPVElectrodePattern.hh"
@@ -194,22 +195,21 @@ ExpandCoeffsPoly(G4double freq, const std::vector<G4double>& coeff) const {
 }
 
 G4double G4CMPSurfaceProperty::AnharmonicReflProb(G4double freq) const {
-  if (freq > anharmonicMaxFreq) return 0.;
-
+  if (anharmonicCoeffs.empty() || freq > anharmonicMaxFreq) return 0.;
+ 
   return ExpandCoeffsPoly(freq, anharmonicCoeffs);
 }
 
 G4double G4CMPSurfaceProperty::DiffuseReflProb(G4double freq) const {
-  if (freq > anharmonicMaxFreq)
+  if (diffuseCoeffs.empty() || freq > anharmonicMaxFreq)
     return 1. - thePhononMatPropTable.GetConstProperty("specProb");
 
-  if (freq > diffuseMaxFreq) freq = diffuseMaxFreq;	// Flat response
-
+  if (freq > diffuseMaxFreq) freq = diffuseMaxFreq;	// Flat plateau
   return ExpandCoeffsPoly(freq, diffuseCoeffs);
 }
 
 G4double G4CMPSurfaceProperty::SpecularReflProb(G4double freq) const {
-  if (freq > diffuseMaxFreq)
+  if (specularCoeffs.empty() || freq > diffuseMaxFreq)
     return 1. - DiffuseReflProb(freq) - AnharmonicReflProb(freq);
 
   return ExpandCoeffsPoly(freq, specularCoeffs);
