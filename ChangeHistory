@@ -6,6 +6,56 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2022-04-14  g4cmp-V08-00-01 Bug fixes for new surface classes; process table.
+2022-04-02  G4CMP-294 : Check null pointer is G4CMP*Surface::GetSurface().
+2022-03-31  G4CMP-293 : Remove G4CMPOrdParamTable.txt; use simple process
+			registration directly to particles instead.  Table
+			content is very dependent on physics list used and
+			Geant4 version.
+
+NOTE: This is a breaking change to the G4CMP package.  Users must modify
+their applications to replace current usage of G4LogicalBorderSurface or
+G4LogicalSkinSurface with G4CMPLogical*Surface.  The constructor arguments
+and configuration of the new objects do not need to be modified.
+
+2022-03-30  g4cmp-V08-00-00 Define and use G4CMPLogical*Surface classes.
+2022-03-30  G4CMP-259 : Implement G4CMP surface classes to avoid conflict
+			with G4 optical processes.
+
+2022-03-02  g4cmp-V07-12-03 Fix combined-hit position, electrode-hit allocator.
+2022-02-28  G4CMP-292 : Fix handling of "combined hit" position results.
+2022-02-24  G4CMP-289 : Fix G4CMPElectrodeHit for proper multithreaded use.
+
+2022-02-17  g4cmp-V07-12-02 Improvements to SecondaryProduction for photons.
+2022-02-17  G4CMP-290 : Combine steps into "hits" in StepAccumulator, using
+			energy-weighted centroid of endpoints; do not use
+			start point for photon energy deposits (they do not
+			have continuous dE/dx along step).
+
+2021-11-30  g4cmp-V07-12-01 Revert field and LukeScattering changes (V07-11-00).
+2021-11-29  G4CMP-288 : Undo G4CMP-279, G4CMP-277 below to restore Luke action.
+
+2021-10-31  g4cmp-V07-12-00 Add track/step indices to G4CMPPartitionData.
+2021-10-30  G4CMP-287 : Add track and step information to G4CMPPartitionData.
+
+2021-09-29  g4cmp-V07-11-00 Better coordinate and electric field transforms,
+			additional downsampling control, and improved
+			diagnostic messages.
+2021-09-28  G4CMP-279 : Apply proper Herring-Vogt transform in EqEMField.
+2021-09-22  G4CMP-278 : Add lattice/valley frame testing to testHVtransform.
+2021-09-19  G4CMP-277 : Store computed Erecoil properly in LukePhononEnergies.
+2021-09-10  G4CMP-272 : Use numerical limit on Luke phonons for downsampling.
+2021-09-08  G4CMP-275 : IVRate calculations must use global field position.
+2021-09-02  G4CMP-273 : Add verbosity control to FieldManager, LocalEMField.
+
+2021-08-28  g4cmp-V07-10-06 New release with better downsampling method, and
+			additional dignostic parameters.
+2021-08-28  feature/LukeDebug: Add addition track information to debugging
+			file LukePhononEnergies in G4CMPLukeScattering.
+2021-08-20  G4CMP-271 : Estimate NTL charge amplification, put in summary data.
+2021-08-20  G4CMP-270 : Apply downsampling deterministically (N = Ntrue*scale)
+			Add pre-downsampling particle counts to summary data.
+
 2021-07-28  g4cmp-V07-10-05 New release with ability to override Luke phonon
 			sampling with energy downsampling.
 2021-07-25  G4CMP-267 : Fix ion-trap parameter names in README.

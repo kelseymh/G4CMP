@@ -54,25 +54,26 @@ developers should check the source code in
 | Environment variable    | Macro command                 | Value/action                            |
 | ------------------------| ----------------------------- | ----------------------------------------|
 | G4LATTICEDATA           | /g4cmp/LatticeData	          | Directory with lattice configs          |
-| G4CMP\_DEBUG	           | /g4cmp/verbose [L] >0:        | Enable diagnostic messages              |
-| G4CMP\_CLEARANCE [L]     | /g4cmp/clearance [L] mm       | Minimum distance of tracks from boundaries |
-| G4CMP\_VOLTAGE [V]       | /g4cmp/voltage [V]	volt !=0:  | Apply uniform +Z voltage                |
-| G4CMP\_EPOT\_FILE [F]     | /g4cmp/EPotFile [F] V=0:      | Read mesh field file "F"                |
-| G4CMP\_EPOT\_SCALE [F]    | /g4cmp/scaleEPot [M] V=0:     | Scale the potentials in EPotFile by factor m|
-| G4CMP\_MIN\_STEP [S]      | /g4cmp/minimumStep [S] S>0:   | Force minimum step S\*L0                |
-| G4CMP\_MAKE\_PHONONS [R]  | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
-| G4CMP\_MAKE\_CHARGES [R]  | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
-| G4CMP\_LUKE\_SAMPLE [R]   | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
+| G4CMP\_DEBUG	          | /g4cmp/verbose [L] >0:        | Enable diagnostic messages              |
+| G4CMP\_CLEARANCE [L]    | /g4cmp/clearance [L] mm       | Minimum distance of tracks from boundaries |
+| G4CMP\_VOLTAGE [V]      | /g4cmp/voltage [V]	volt !=0:  | Apply uniform +Z voltage                |
+| G4CMP\_EPOT\_FILE [F]   | /g4cmp/EPotFile [F] V=0:      | Read mesh field file "F"                |
+| G4CMP\_EPOT\_SCALE [F]  | /g4cmp/scaleEPot [M] V=0:     | Scale the potentials in EPotFile by factor m|
+| G4CMP\_MIN\_STEP [S]    | /g4cmp/minimumStep [S] S>0:   | Force minimum step S\*L0                |
+| G4CMP\_MAKE\_PHONONS [R] | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
+| G4CMP\_MAKE\_CHARGES [R] | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
+| G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
+| G4CMP\_MAX\_LUKE [N] | /g4cmp/maxLukePhonons [N] | Soft maximum Luke phonons per event |
 | G4CMP\_SAMPLE\_ENERGY [E] | /g4cmp/samplingEnergy [E] eV  | Energy above which to downsample |
 | G4CMP\_COMBINE\_STEPLEN [L] | /g4cmp/combiningStepLength [L] mm | Combine
 hits below step length |
-| G4CMP\_EMIN\_PHONONS [E]  | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
-| G4CMP\_EMIN\_CHARGES [E]  | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
-| G4CMP\_USE\_KVSOLVER      | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
-| G4CMP\_FANO\_ENABLED  | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
-| G4CMP\_IV\_RATE\_MODEL | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
-| G4CMP\_ETRAPPING\_MFP | /g4cmp/eTrappingMFP [L] mm        | Mean free path for electron trapping |
-| G4CMP\_HTRAPPING\_MFP | /g4cmp/hTrappingMFP [L] mm        | Mean free path for charge hole trapping |
+| G4CMP\_EMIN\_PHONONS [E] | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
+| G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
+| G4CMP\_USE\_KVSOLVER    | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
+| G4CMP\_FANO\_ENABLED    | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
+| G4CMP\_IV\_RATE\_MODEL  | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
+| G4CMP\_ETRAPPING\_MFP   | /g4cmp/eTrappingMFP [L] mm        | Mean free path for electron trapping |
+| G4CMP\_HTRAPPING\_MFP   | /g4cmp/hTrappingMFP [L] mm        | Mean free path for charge hole trapping |
 | G4CMP\_EDTRAPION\_MFP | /g4cmp/eDTrapIonizationMFP [L] mm | MFP for e-trap ionization by e- |
 | G4CMP\_EATRAPION\_MFP | /g4cmp/eATrapIonizationMFP [L] mm | MFP for h-trap ionization by e- |
 | G4CMP\_HDTRAPION\_MFP | /g4cmp/hDTrapIonizationMFP [L] mm | MFP for e-trap ionization by h+ |
@@ -129,10 +130,10 @@ environment variables may be replaced with a sampling "energy scale,"
 and to ionization or NIEL energy separately.  If the energy deposit is below
 the scale, then no biasing will be done (the scale factors will all be set
 to 1.).  Above the energy scale setting, the scale factors will be set
-according to E_scale_/E_deposit_.  Presently, the Luke-emission biasing will
-be set to the primary charge bias; what should be done is to use voltage and
-geometry information to estimate the maximum energy emitted in Luke phonons
-and use that instead.
+according to E_scale_/E_deposit_.  In this mode, an additional sampling
+parameter, `$G4CMP_MAX_LUKE`, may be set.  This sets an approximate maximum
+number of Luke-Neganov phonons to be produced per event; the default is
+about 10,000.
 
 The parameter `$G4CMP_COMBINE_STEPLEN` (`/g4cmp/combiningStepLength`)
 specifies a minimum step length for individual `G4CMPEnergyPartition` hits.
@@ -274,7 +275,6 @@ linking G4CMP into your applications:
 | G4CMPLIB | Directory containing libG4cmp.so | $G4WORKDIR/lib/$G4SYSTEM | $G4CMPINSTALL/lib |
 | G4CMPINCLUDE | Path to library/include      | $G4INSTALL/library/include | $CMAKE_INSTALL_PREFIX/include |
 | G4LATTICEDATA | Path to CrytalMaps directory | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
-| G4ORDPARAMTABLE | Geant4 process registration file | $G4INSTALL/G4CMPOrdParamTable.txt | $G4INSTALL/G4CMPOrdParamTable.txt |
 
 If you have a simple Makefile build system (GMake), the following two lines,
 or an appropriate variation on them, should be sufficient:

@@ -16,6 +16,9 @@
 // 20200316  Add hit position; improve energy quantity calculations.
 // 20210202  Add particle type (PDGcode) to be filled from original track
 // 20210327  Add downsampling factors
+// 20210820  Add true number of charge pairs and phonons before downsampling
+// 20210820  Add estimate of NTL (Luke) emission energy
+// 20211030  Add track and step information to support data analysis
 
 #ifndef G4CMPPartitionData_hh
 #define G4CMPPartitionData_hh 1
@@ -38,6 +41,8 @@ public:
 
 public:		// Simple container, provide direct access to information
   G4int    PDGcode;		// Particle type which produced energy deposit
+  G4int    trackID;		// Track and step indices for data correlation
+  G4int    stepID;
   G4double totalEnergy;		// Input total energy deposited in event
   G4double position[4];		// Location and time of energy deposit
   G4double truedEdx;		// Input ionizing energy (dE/dx) deposited
@@ -47,9 +52,12 @@ public:		// Simple container, provide direct access to information
   G4double chargeEnergy;	// Energy assigned to charge carriers
   G4double chargeFano;		// Fano-fluctuated energy in charge carriers
   G4double chargeGenerated;	// Energy actually converted to charge carriers
+  G4int    truePairs;		// Number of e/h pairs after Fano fluctuations
   G4int    numberOfPairs;	// Number of e/h pairs created (downsampled)
+  G4double lukeEnergyEst;	// Estimated energy from NTL (Luke) phonons
   G4double phononEnergy;	// Energy assigned for primary phonons
   G4double phononGenerated;	// Weighted sum of generated phonons
+  G4int    truePhonons;		// Number of Debye phonons from energy deposit
   G4int    numberOfPhonons;	// Number of phonons created (downsampled)
   G4double samplingEnergy;	// Energy-based downsampling scale
   G4double samplingCharges;	// Downsampling for charge pairs

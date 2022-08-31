@@ -9,10 +9,12 @@
 // $Id: a2016d29cc7d1e75482bfc623a533d20b60390da $
 //
 // 20140321  Drop passing placement transform to G4LatticePhysical
+// 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
 
 #include "PhononDetectorConstruction.hh"
 #include "PhononSensitivity.hh"
 #include "G4CMPElectrodeSensitivity.hh"
+#include "G4CMPLogicalBorderSurface.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4Box.hh"
 #include "G4Colour.hh"
@@ -21,7 +23,7 @@
 #include "G4LatticeLogical.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4LogicalBorderSurface.hh"
+#include "G4CMPLogicalBorderSurface.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeStore.hh"
 #include "G4Material.hh"
@@ -67,7 +69,7 @@ G4VPhysicalVolume* PhononDetectorConstruction::Construct()
     G4LatticeManager::GetLatticeManager()->Reset();
     // Clear all LogicalSurfaces
     // NOTE: No need to redefine the G4CMPSurfaceProperties
-    G4LogicalBorderSurface::CleanSurfaceTable();
+    G4CMPLogicalBorderSurface::CleanSurfaceTable();
   }
 
   DefineMaterials();
@@ -166,11 +168,11 @@ void PhononDetectorConstruction::SetupGeometry()
                                                           0.0, 1.0, 0.0, 0.0);
   }
 
-  new G4LogicalBorderSurface("iZIPTop", GePhys, aluminumTopPhysical,
+  new G4CMPLogicalBorderSurface("iZIPTop", GePhys, aluminumTopPhysical,
                                         topSurfProp);
-  new G4LogicalBorderSurface("iZIPBot", GePhys, aluminumBotPhysical,
+  new G4CMPLogicalBorderSurface("iZIPBot", GePhys, aluminumBotPhysical,
                                         botSurfProp);
-  new G4LogicalBorderSurface("iZIPWall", GePhys, fWorldPhys,
+  new G4CMPLogicalBorderSurface("iZIPWall", GePhys, fWorldPhys,
                                         wallSurfProp);
 
   //                                        

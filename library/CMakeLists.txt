@@ -175,6 +175,8 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLewinSmithNIEL.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLindhardNIEL.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLocalElectroMagField.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLogicalBorderSurface.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLogicalSkinSurface.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeEmissionRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMeshElectricField.cc
@@ -256,6 +258,8 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLewinSmithNIEL.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLindhardNIEL.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLocalElectroMagField.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLogicalBorderSurface.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLogicalSkinSurface.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeEmissionRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPLukeScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.hh
@@ -308,7 +312,6 @@ set(library_HEADERS
 set(config_FILES
     ${PROJECT_SOURCE_DIR}/g4cmp_env.sh
     ${PROJECT_SOURCE_DIR}/g4cmp_env.csh
-    ${PROJECT_SOURCE_DIR}/G4CMPOrdParamTable.txt
     ${PROJECT_SOURCE_DIR}/g4cmp.gmk
     ${PROJECT_SOURCE_DIR}/FindGeant4.cmake
     )

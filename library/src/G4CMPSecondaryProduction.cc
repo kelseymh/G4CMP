@@ -24,6 +24,8 @@
 //	       cases where a step doesn't have energy deposited.
 // 20210610  G4CMP-262 : Handle step accumulation including track suspension,
 //	       by keeping a map of accumulators by track ID
+// 20220216  G4CMP-290 : Only spread secondaries along trajectory for charged
+//	       tracks; neutrals get everything at endpoint.
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPConfigManager.hh"
@@ -134,7 +136,8 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
   G4bool usedStep = DoAddStep(stepData);
   if (usedStep) {
     if (verboseLevel>1) {
-      G4cout << " accumulating step"
+      G4cout << " accumulating track " << track.GetTrackID()
+	     << " step " << track.GetCurrentStepNumber()
 	     << " @ " << stepData.GetPostStepPoint()->GetPosition()
 	     << " Edep " << stepData.GetTotalEnergyDeposit()/eV << " eV"
 	     << " Eniel " << stepData.GetNonIonizingEnergyDeposit()/eV << " eV"
@@ -171,7 +174,7 @@ G4bool G4CMPSecondaryProduction::DoAddStep(const G4Step& stepData) const {
   G4TrackStatus tStatus = stepData.GetTrack()->GetTrackStatus();
 
   if (verboseLevel>1) {
-    G4cout << " DoAddStep:"
+    G4cout << " DoAddStep returns OR of the following: "
 	   << " nsteps==0 ? " << (accumulator->nsteps==0)
 	   << "\n stepLen ? " << (stepData.GetStepLength()<combiningStepLength)
 	   << "\n boundary ? " << (sStatus == fGeomBoundary ||
@@ -207,7 +210,7 @@ G4bool G4CMPSecondaryProduction::DoSecondaries(const G4Step& stepData) const {
   G4TrackStatus tStatus = stepData.GetTrack()->GetTrackStatus();
 
   if (verboseLevel>1) {
-    G4cout << " DoSecondaries:"
+    G4cout << " DoSecondaries return nsteps and OR of everything else:"
 	   << " nsteps>0 ? " << (accumulator->nsteps>0)
 	   << "\n stepLen ? " << (stepData.GetStepLength()>=combiningStepLength)
 	   << "\n boundary ? " << (sStatus == fGeomBoundary ||
@@ -227,24 +230,36 @@ G4bool G4CMPSecondaryProduction::DoSecondaries(const G4Step& stepData) const {
 // Use energy loss to generate phonons and charge carriers along path
 
 void G4CMPSecondaryProduction::AddSecondaries() {
+  if (verboseLevel) {
+    G4cout << "G4CMPSecondaryProduction::AddSecondaries\n"
+	   << *accumulator << G4endl;
+  }
+
   G4double eTotal = accumulator->Edep;
   G4double eNIEL  = accumulator->Eniel;
 
   if (eTotal <= 0. && eNIEL <= 0.) return;	// Avoid unncessary work
 
-  if (verboseLevel) {
-    G4cout << " AddSecondaries from " << accumulator->nsteps << " steps "
-	   << eTotal/eV << " eV" << " (" << eNIEL/eV << " NIEL)" << G4endl;
-  }
-
-  // Configure energy partitioning for EM, nuclear, or pre-determined energy
-  G4int ptype = accumulator->pd->GetPDGEncoding();
-  partitioner->DoPartition(ptype, eTotal, eNIEL);
+  // Process recorded energy deposit(s) into phonons and charge carriers
+  partitioner->DoPartition(accumulator);
   partitioner->GetSecondaries(theSecs);
-  std::random_shuffle(theSecs.begin(), theSecs.end(), RandomIndex);
 
   size_t nsec = theSecs.size();
-  GeneratePositions(nsec);
+  if (nsec == 0) {				// Avoid unnecessary work
+    if (verboseLevel>1) G4cout << " No secondaries generated." << G4endl;
+    return;
+  }
+
+  // Charged particles have energy spread along trajectory, from dE/dx
+  if (accumulator->pd->GetPDGCharge() != 0) {
+    if (verboseLevel>2)
+      G4cout << " Charged track; spreading dE/dx along trajectory" << G4endl;
+
+    std::random_shuffle(theSecs.begin(), theSecs.end(), RandomIndex);
+    GeneratePositions(nsec, accumulator->start, accumulator->end);
+  } else {
+    GeneratePositions(nsec, accumulator->end, accumulator->end);
+  }
 
   if (verboseLevel>1) G4cout << " Adding " << nsec << " secondaries" << G4endl;
   aParticleChange.SetNumberOfSecondaries(nsec);
@@ -272,11 +287,21 @@ void G4CMPSecondaryProduction::AddSecondaries() {
 // Generate intermediate points along step trajectory (straight line!)
 // NOTE:  For MSC type deposition, these points ought to be a random walk
 
-void G4CMPSecondaryProduction::GeneratePositions(size_t nsec) {
+void G4CMPSecondaryProduction::GeneratePositions(size_t nsec,
+						 const G4ThreeVector& start,
+						 const G4ThreeVector& end) {
   if (verboseLevel>1) G4cout << " GeneratePositions " << nsec << G4endl;
 
+  posSecs.clear();
+
+  // If everything happens at a point, just fill the position vector
+  if (start == end) {
+    posSecs.resize(nsec, end);
+    return;
+  }
+
   // Get average distance between secondaries along (straight) trajectory
-  G4ThreeVector traj = accumulator->end - accumulator->start;
+  G4ThreeVector traj = end - start;
   G4ThreeVector tdir = traj.unit();
 
   G4double length = traj.mag();
@@ -288,11 +313,10 @@ void G4CMPSecondaryProduction::GeneratePositions(size_t nsec) {
 	   << ": steps " << dl << " +- " << sigl << " mm" << G4endl;
   }
 
-  posSecs.clear();
-  posSecs.reserve(nsec);
+  posSecs.reserve(nsec);	// Avoid re-allocation memory churn
 
   G4double substep = 0.;
-  G4ThreeVector lastPos = accumulator->start;
+  G4ThreeVector lastPos = start;
   for (size_t i=0; i<nsec; i++) {
     substep = G4RandGauss::shoot(dl, sigl);
     lastPos += substep*tdir;

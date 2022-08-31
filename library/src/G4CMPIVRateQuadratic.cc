@@ -11,6 +11,7 @@
 //
 // 20170815  Drop call to LoadDataForTrack(); now handled in process.
 // 20181001  Use systematic names for IV rate parameters
+// 20210908  Use global track position to query field; configure field.
 
 #include "G4CMPIVRateQuadratic.hh"
 #include "G4Field.hh"
@@ -37,8 +38,9 @@ G4double G4CMPIVRateQuadratic::Rate(const G4Track& aTrack) const {
   if (!fMan || !fMan->DoesFieldExist()) return 0.;
 
   G4double posVec[4] = { 4*0. };
-  GetLocalPosition(aTrack, posVec);
+  GetGlobalPosition(aTrack, posVec);
 
+  fMan->ConfigureForTrack(&aTrack);
   const G4Field* field = fMan->GetDetectorField();
   G4double fieldValue[6];
   field->GetFieldValue(posVec,fieldValue);

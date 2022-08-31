@@ -35,6 +35,7 @@
 // 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
+// 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -52,10 +53,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : G4UImessenger("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library"),
     theManager(mgr), versionCmd(0), printCmd(0), verboseCmd(0), ehBounceCmd(0),
-    pBounceCmd(0), clearCmd(0), minEPhononCmd(0), minEChargeCmd(0),
-    sampleECmd(0), comboStepCmd(0), trapEMFPCmd(0), trapHMFPCmd(0),
-    eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0), hDTrapIonMFPCmd(0),
-    hATrapIonMFPCmd(0), minstepCmd(0),
+    pBounceCmd(0), maxLukeCmd(0), clearCmd(0), minEPhononCmd(0),
+    minEChargeCmd(0), sampleECmd(0), comboStepCmd(0), trapEMFPCmd(0),
+    trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
+    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), minstepCmd(0),
     makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
     ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0), fanoStatsCmd(0),
     ehCloudCmd(0) {
@@ -98,6 +99,11 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   lukePhononCmd = CreateCommand<G4UIcmdWithADouble>("sampleLuke",
 		    "Set rate of Luke actual phonon production");
+
+  maxLukeCmd = CreateCommand<G4UIcmdWithAnInteger>("maxLukePhonons",
+		   "Set 'maximum' number of Luke phonons produced per event");
+  maxLukeCmd->SetGuidance("This is a soft maximum, estimated from the bias");
+  maxLukeCmd->SetGuidance("voltage of the device and the downsampling scale");
 
   minEPhononCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("minEPhonons",
           "Minimum energy for creating or tracking phonons");
@@ -174,6 +180,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete versionCmd; versionCmd=0;
   delete ehBounceCmd; ehBounceCmd=0;
   delete pBounceCmd; pBounceCmd=0;
+  delete maxLukeCmd; maxLukeCmd=0;
   delete clearCmd; clearCmd=0;
   delete minEPhononCmd; minEPhononCmd=0;
   delete minEChargeCmd; minEChargeCmd=0;
@@ -206,6 +213,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == makePhononCmd) theManager->SetGenPhonons(StoD(value));
   if (cmd == makeChargeCmd) theManager->SetGenCharges(StoD(value));
   if (cmd == lukePhononCmd) theManager->SetLukeSampling(StoD(value));
+  if (cmd == maxLukeCmd) theManager->SetMaxLukePhonons(StoI(value));
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
   if (cmd == dirCmd) theManager->SetLatticeDir(value);

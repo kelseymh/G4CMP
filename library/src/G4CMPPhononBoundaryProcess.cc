@@ -41,8 +41,6 @@
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4VParticleChange.hh"
-#include "G4LogicalSurface.hh"
-#include "G4LogicalBorderSurface.hh"
 #include "Randomize.hh"
 
 

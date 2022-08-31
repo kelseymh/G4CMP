@@ -9,12 +9,15 @@
 // Usage:  [physics-list]->AddPhysics(new G4CMPPhysics);
 //
 // 20150309  M. Kelsey -- Add function to find and wrap *Ionisation processes
+// 20220331  G4CMP-293: Local function AddG4CMPProcess() to replace use of
+//		RegisterProcess() and G4CMPOrdParamTable.txt
 
 #ifndef G4CMPPhysics_hh
 #define G4CMPPhysics_hh 1
 
 #include "G4VPhysicsConstructor.hh"
 
+class G4ParticleDefinition;
 
 class G4CMPPhysics : public G4VPhysicsConstructor {
 public:
@@ -26,6 +29,7 @@ public:
   virtual void ConstructProcess();	// Adds processes to physics list
 
 protected:
+  void AddG4CMPProcess(G4VProcess* proc, G4ParticleDefinition* pd);
   void AddSecondaryProduction();	// All charged particles make e/h, phn
 
 private:
