@@ -88,6 +88,7 @@ public:
   static const G4double& GetEATrapIonMFP() { return Instance()->eATrapIonMFP; }
   static const G4double& GetHDTrapIonMFP() { return Instance()->hDTrapIonMFP; }
   static const G4double& GetHATrapIonMFP() { return Instance()->hATrapIonMFP; }
+  static const G4double& GetQPRecombinationMFP() { return Instance()->QPRecombinationMFP; }
 
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
@@ -115,7 +116,7 @@ public:
   static void SetEATrapIonMFP(G4double value) { Instance()->eATrapIonMFP = value; }
   static void SetHDTrapIonMFP(G4double value) { Instance()->hDTrapIonMFP = value; }
   static void SetHATrapIonMFP(G4double value) { Instance()->hATrapIonMFP = value; }
-
+  static void SetQPRecombinationMFP(G4double value) { Instance()->QPRecombinationMFP = value;} 
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
   static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
 
@@ -159,6 +160,7 @@ private:
   G4double eATrapIonMFP; // Mean free path for e- on h-trap ionization ($G4CMP_EHTRAPION_MFP)
   G4double hDTrapIonMFP; // Mean free path for h+ on e-trap ionization ($G4CMP_HETRAPION_MFP)
   G4double hATrapIonMFP; // Mean free path for h+ on h-trap ionization ($G4CMP_HHTRAPION_MFP)
+  G4double QPRecombinationMFP; //mean free path for QP Recombination
   G4double clearance;	 // Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
   G4double stepScale;	 // Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double sampleEnergy; // Energy above which to do sampling ($G4CMP_SAMPLE_ENERGY)

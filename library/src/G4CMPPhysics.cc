@@ -24,6 +24,7 @@
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4CMPBogoliubov.hh"
 #include "G4CMPDriftRecombinationProcess.hh"
 #include "G4CMPDriftTrappingProcess.hh"
 #include "G4CMPDriftTrapIonization.hh"
@@ -40,6 +41,7 @@
 #include "G4PhononScattering.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
+#include "G4CMPQPRecombination.hh"
 #include "G4ProcessManager.hh"
 
 
@@ -59,6 +61,7 @@ void G4CMPPhysics::ConstructParticle() {
   G4PhononTransFast::Definition();
   G4PhononTransSlow::Definition();
   G4GenericIon::Definition();
+  G4CMPBogoliubov::Definition();
 }
 
 // Add physics processes to appropriate particles
@@ -75,6 +78,7 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* recomb  = new G4CMPDriftRecombinationProcess;
   G4VProcess* eLimit  = new G4CMPTrackLimiter;
   G4VProcess* trapping = new G4CMPDriftTrappingProcess;
+  G4VProcess* qpRcmb = new G4CMPQPRecombination;
 
   // NOTE: Trap ionization needs separate instances for each particle type
   G4ParticleDefinition* edrift = G4CMPDriftElectron::Definition();
@@ -101,6 +105,7 @@ void G4CMPPhysics::ConstructProcess() {
     ehTrpI->SetVerboseLevel(verboseLevel);
     heTrpI->SetVerboseLevel(verboseLevel);
     hhTrpI->SetVerboseLevel(verboseLevel);
+    qpRcmb->SetVerboseLevel(verboseLevel);
   }
 
   G4ParticleDefinition* particle = 0;	// Reusable buffer for convenience
@@ -144,6 +149,9 @@ void G4CMPPhysics::ConstructProcess() {
   RegisterProcess(trapping, particle);
   RegisterProcess(heTrpI, particle);	// h+ projectile on both traps
   RegisterProcess(hhTrpI, particle);
+
+  particle = G4CMPBogoliubov::Definition();
+  RegisterProcess(qpRcmb, particle);
 
   AddSecondaryProduction();
 }
