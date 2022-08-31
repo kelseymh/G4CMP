@@ -14,6 +14,7 @@
 // 20170802  Provide scale factor argument to ChooseWeight functions
 // 20170928  Replace "polarization" with "mode"
 // 20190906  Add function to get process associated with particle
+// 20220816  Move RandomIndex function from SecondaryProduction
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -85,6 +86,9 @@ namespace G4CMP {
 
   // Search particle's processes for specified name
   G4VProcess* FindProcess(const G4ParticleDefinition* pd, const G4String& pname);
+
+  // Generate integer random value [0, imax), used to shuffle vectors
+  size_t RandomIndex(size_t imax);
 }
 
 #endif	/* G4CMPUtils_hh */

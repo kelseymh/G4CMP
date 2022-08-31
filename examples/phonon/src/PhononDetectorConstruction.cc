@@ -10,6 +10,7 @@
 //
 // 20140321  Drop passing placement transform to G4LatticePhysical
 // 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
+// 20220809  [ For M. Hui ] -- Add frequency dependent surface properties.
 
 #include "PhononDetectorConstruction.hh"
 #include "PhononSensitivity.hh"
@@ -160,20 +161,40 @@ void PhononDetectorConstruction::SetupGeometry()
   // surface between Al and Ge determines phonon reflection/absorption
 
   if (!fConstructed) {
-    topSurfProp =new G4CMPSurfaceProperty("TopAlSurf", 1.0, 0.0, 0.0, 0.0,
-					  	       0.3, 1.0, 0.0, 0.0);
+    const G4double GHz = 1e9 * hertz; 
+
+    //the following coefficients and cutoff values are not well-motivated
+    //the code below is used only to demonstrate how to set these values.
+    const std::vector<G4double> anhCoeffs = {0, 0, 0, 0, 0, 1.51e-14};
+    const std::vector<G4double> diffCoeffs =
+      {5.88e-2, 7.83e-4, -2.47e-6, 1.71e-8, -2.98e-11};
+    const std::vector<G4double> specCoeffs =
+      {0,928, -2.03e-4, -3.21e-6, 3.1e-9, 2.9e-13};
+
+    const G4double anhCutoff = 520., reflCutoff = 350.;   // Units external
+
+    topSurfProp = new G4CMPSurfaceProperty("TopAlSurf", 1.0, 0.0, 0.0, 0.0,
+					  	        0.3, 1.0, 0.0, 0.0);
+    topSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
+
     botSurfProp = new G4CMPSurfaceProperty("BotAlSurf", 1.0, 0.0, 0.0, 0.0,
-                                                        0.3, 1.0, 0.0, 0.0);
+					   	        0.3, 1.0, 0.0, 0.0);
+    botSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
+
     wallSurfProp = new G4CMPSurfaceProperty("WallAlSurf", 0.0, 1.0, 0.0, 0.0,
-                                                          0.0, 1.0, 0.0, 0.0);
+					    	          0.0, 1.0, 0.0, 0.0);
+    wallSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+					  diffCoeffs, specCoeffs, GHz, GHz,GHz);
   }
 
   new G4CMPLogicalBorderSurface("iZIPTop", GePhys, aluminumTopPhysical,
-                                        topSurfProp);
+				topSurfProp);
   new G4CMPLogicalBorderSurface("iZIPBot", GePhys, aluminumBotPhysical,
-                                        botSurfProp);
+				botSurfProp);
   new G4CMPLogicalBorderSurface("iZIPWall", GePhys, fWorldPhys,
-                                        wallSurfProp);
+				wallSurfProp);
 
   //                                        
   // Visualization attributes

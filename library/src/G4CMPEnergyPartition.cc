@@ -56,6 +56,8 @@
 // 20211030  Add track and step summary information to support data analysis
 // 20220216  Add interface to do partitioning directly from StepAccumulator.
 // 20220228  In GetSecondaries(), don't overwrite previously set position info.
+// 20220818  G4CMP-309 -- Don't skip GenerateCharges() or GeneratePhonons() if
+//		zero downsampling; want to get summary data filled every time.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -246,13 +248,15 @@ G4CMPEnergyPartition::DoPartition(const G4CMPStepAccumulator* steps) {
   DoPartition(steps->pd->GetPDGEncoding(), steps->Edep, steps->Eniel);
 
   // Store position information in summary block
-  summary->position[0] = steps->end[0];
-  summary->position[1] = steps->end[1];
-  summary->position[2] = steps->end[2];
-  summary->position[3] = GetCurrentTrack()->GetGlobalTime();
-
-  summary->trackID = steps->trackID;
-  summary->stepID  = steps->stepID;
+  if (summary) {
+    summary->position[0] = steps->end[0];
+    summary->position[1] = steps->end[1];
+    summary->position[2] = steps->end[2];
+    summary->position[3] = steps->time;
+    
+    summary->trackID = steps->trackID;
+    summary->stepID  = steps->stepID;
+  }
 }
 
 
@@ -352,7 +356,10 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
 
   particles.shrink_to_fit();	// Reduce size to match generated particles
 
-  if (verboseLevel) summary->Print();
+  // Shuffle particles so they can be distributed along trajectories
+  std::random_shuffle(particles.begin(), particles.end(), G4CMP::RandomIndex);
+
+  if (verboseLevel && summary) summary->Print();
 }
 
 
@@ -474,8 +481,6 @@ void G4CMPEnergyPartition::ComputeLukeSampling(G4double eIon) {
 // Divide ionization energy into electron/hole pairs, with Fano fluctuations
 
 void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
-  if (G4CMPConfigManager::GetGenCharges() <= 0.) return;	// Suppressed
-
   if (verboseLevel)
     G4cout << " GenerateCharges " << energy/MeV << " MeV" << G4endl;
 
@@ -491,8 +496,8 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
   }
 
   // Only apply downsampling to sufficiently large statistics
-  G4double scale = ((G4int)nPairsTrue<=nParticlesMinimum ? 1.
-		    : G4CMPConfigManager::GetGenCharges());
+  G4double scale = G4CMPConfigManager::GetGenCharges();
+  if (scale>0. && (G4int)nPairsTrue <= nParticlesMinimum) scale = 1.;
 
   if (verboseLevel>1) {
     G4cout << " nPairs " << nPairsTrue << " ==> ePair " << ePair/eV << " eV"
@@ -501,39 +506,45 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
 
   // Compute number of pairs to generate, adjust sampling scale to match
   nPairsGen = std::round(scale*nPairsTrue);
-  scale = double(nPairsGen)/nPairsTrue;
+  scale = nPairsTrue>0 ? double(nPairsGen)/nPairsTrue : 1.;
 
-  if (nPairsTrue == 0) return;		// No charges could be produced
+  G4double nPairsWeighted = nPairsGen>0 ? nPairsGen/scale : 0.;
 
-  particles.reserve(particles.size() + nPairsGen);
+  // Create requested number of charge pairs with scaling factor
+  if (nPairsGen > 0) {
+    particles.reserve(particles.size() + nPairsGen);
 
-  // Generate number of requested charge pairs, each with same energy
-  for (size_t i=0; i<nPairsGen; i++) AddChargePair(ePair, 1./scale);
-
-  if (verboseLevel>2)
-    G4cout << " generated " << nPairsGen << " e-h pairs" << G4endl;
-
-  chargeEnergyLeft = energy - ePair*nPairsGen/scale;
-  if (chargeEnergyLeft < 0.) chargeEnergyLeft = 0.;	// Avoid round-offs
+    // Generate number of requested charge pairs, each with same energy
+    for (size_t i=0; i<nPairsGen; i++) AddChargePair(ePair, 1./scale);
+    
+    if (verboseLevel>2)
+      G4cout << " generated " << nPairsGen << " e-h pairs" << G4endl;
+    
+    chargeEnergyLeft = energy - ePair*nPairsWeighted;
+    if (chargeEnergyLeft < 0.) chargeEnergyLeft = 0.;	// Avoid round-offs
+  } else {
+    chargeEnergyLeft = 0.;
+  }
 
   if (verboseLevel>1) G4cout << " " << chargeEnergyLeft << " excess" << G4endl;
 
   // Store generated information in summary block
-  summary->chargeEnergy = energy;
-  summary->chargeFano = nPairsTrue*theLattice->GetPairProductionEnergy();
-  summary->chargeGenerated = ePair*nPairsGen/scale;
-  summary->truePairs = nPairsTrue;
-  summary->numberOfPairs = nPairsGen;
-  summary->samplingCharges = scale;		// Store actual sampling used
+  if (summary) {
+    summary->chargeEnergy = energy;
+    summary->chargeFano = nPairsTrue*theLattice->GetPairProductionEnergy();
+    summary->chargeGenerated = ePair*nPairsWeighted;
+    summary->truePairs = nPairsTrue;
+    summary->numberOfPairs = nPairsGen;
+    summary->samplingCharges = scale;		// Store actual sampling used
+    summary->lukeEnergyEst = nPairsWeighted * abs(biasVoltage);
+  }
 
   // Estimate NTL (Luke) phonon emission from charge pairs
   // Assumes symmetry: each charge pair covers the full voltage bias
   if (verboseLevel>1) {
-    G4cout << " estimating Luke emission for " << nPairsGen/scale
+    G4cout << " estimating Luke emission for " << nPairsWeighted
 	   << " e-h pairs across " << biasVoltage/volt << " V" << G4endl;
   }
-
-  summary->lukeEnergyEst = eplus*nPairsGen/scale * abs(biasVoltage);
 }
 
 void G4CMPEnergyPartition::AddChargePair(G4double ePair, G4double wt) {
@@ -547,7 +558,6 @@ void G4CMPEnergyPartition::AddChargePair(G4double ePair, G4double wt) {
 }
 
 void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
-  if (G4CMPConfigManager::GetGenPhonons() <= 0.) return;	// Suppressed
   if (energy <= 0.) {				// Avoid unnecessary work
     nPhononsTrue = nPhononsGen = 0;
     return;
@@ -562,8 +572,8 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   ePhon = energy / nPhononsTrue;		// Split energy evenly to all
 
   // Only apply downsampling to sufficiently large statistics
-  G4double scale = ((G4int)nPhononsTrue<=nParticlesMinimum ? 1.
-		    : G4CMPConfigManager::GetGenPhonons());
+  G4double scale = G4CMPConfigManager::GetGenPhonons();
+  if (scale>0. && (G4int)nPhononsTrue <= nParticlesMinimum) scale = 1.;
 
   if (verboseLevel>1) {
     G4cout << " ePhon " << ePhon/eV << " eV => " << nPhononsTrue << " phonons"
@@ -572,24 +582,27 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
 
   // Compute number of phonons to generate, adjust sampling scale to match
   nPhononsGen = std::round(scale*nPhononsTrue);
-  scale = double(nPhononsGen)/nPhononsTrue;
+  scale = nPhononsTrue>0 ? double(nPhononsGen)/nPhononsTrue : 1.;
 
-  if (nPhononsTrue == 0) return;		// No charges could be produced
+  // Create requested number of phonons with scaling factor
+  if (nPhononsGen > 0) {
+    particles.reserve(particles.size() + nPhononsGen);
 
-  particles.reserve(particles.size() + nPhononsGen);
-
-  // Generate number of requested charge pairs, each with same energy
-  for (size_t i=0; i<nPhononsGen; i++) AddPhonon(ePhon, 1./scale);
-
-  if (verboseLevel>2)
-    G4cout << " generated " << nPhononsGen << " phonons" << G4endl;
+    // Generate number of requested charge pairs, each with same energy
+    for (size_t i=0; i<nPhononsGen; i++) AddPhonon(ePhon, 1./scale);
+    
+    if (verboseLevel>2)
+      G4cout << " generated " << nPhononsGen << " phonons" << G4endl;
+  }
 
   // Store generated information in summary block
-  summary->phononEnergy = energy;
-  summary->phononGenerated = ePhon*nPhononsGen/scale;
-  summary->truePhonons = nPhononsTrue;
-  summary->numberOfPhonons = nPhononsGen;
-  summary->samplingPhonons = scale;		// Store actual sampling used
+  if (summary) {
+    summary->phononEnergy = energy;
+    summary->phononGenerated = ePhon*nPhononsGen/scale;
+    summary->truePhonons = nPhononsTrue;
+    summary->numberOfPhonons = nPhononsGen;
+    summary->samplingPhonons = scale;		// Store actual sampling used
+  }
 }
 
 void G4CMPEnergyPartition::AddPhonon(G4double ePhon, G4double wt) {
@@ -644,10 +657,12 @@ GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
   }
 
   // Store position information in summary block
-  summary->position[0] = pos[0];
-  summary->position[1] = pos[1];
-  summary->position[2] = pos[2];
-  summary->position[3] = time;
+  if (summary) {
+    summary->position[0] = pos[0];
+    summary->position[1] = pos[1];
+    summary->position[2] = pos[2];
+    summary->position[3] = time;
+  }
 
   std::vector<G4PrimaryParticle*> primaries;	// Can we make this mutable?
   GetPrimaries(primaries);
@@ -706,6 +721,58 @@ GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
   }
 }
 
+
+// Fill a pre-defined set of positions with primaries (no charge cloud)
+
+void G4CMPEnergyPartition::
+GetPrimaries(G4Event* event, const std::vector<G4ThreeVector>& pos,
+	     G4double time, G4int maxPerVertex) const {
+  if (verboseLevel) {
+    G4cout << "G4CMPEnergyPartition::GetPrimaries across " << pos.size()
+	   << " positions, up to " << maxPerVertex << " per vertex" << G4endl;
+  }
+
+  // Use average position in set for summary
+  size_t npos = pos.size();
+  G4ThreeVector avgpos;
+  for (auto const& ip: pos) avgpos += ip;
+  avgpos /= npos;
+
+  if (summary) {
+    summary->position[0] = avgpos[0];
+    summary->position[1] = avgpos[1];
+    summary->position[2] = avgpos[2];
+    summary->position[3] = time;
+  }
+
+  // Create and fill a vertex for each position in set
+  size_t tracksPerPos = GetNumberOfTracks() / npos;
+  size_t extraTracks = GetNumberOfTracks() - (tracksPerPos * npos);
+
+  std::vector<G4PrimaryParticle*> primaries;	// Can we make this mutable?
+  GetPrimaries(primaries);
+
+  size_t iprim = 0;
+  for (size_t i=0; i<npos; i++) {
+    size_t nprim = tracksPerPos + (i<extraTracks?1:0);
+    if (verboseLevel>1)
+      G4cout << " adding " << nprim << " primaries to vertex " << i << G4endl;
+
+    G4PrimaryVertex* vtx = 0;
+
+    for (size_t j=0; j<nprim; j++) {
+      if (!vtx ||
+	  (maxPerVertex>0 && vtx->GetNumberOfParticle()>maxPerVertex)) {
+	vtx = CreateVertex(event, pos[i], time);
+      }
+      vtx->SetPrimary(primaries[iprim++]);
+    }	// for (j
+  }	// for (i
+}
+
+
+// Create primary vertex at specified location for filling
+
 G4PrimaryVertex* 
 G4CMPEnergyPartition::CreateVertex(G4Event* evt, const G4ThreeVector& pos,
 				   G4double time) const {
@@ -726,11 +793,11 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
   }
 
   // If particle type not already set, get it from the current track
-  if (summary->PDGcode == 0)
+  if (summary && summary->PDGcode == 0)
     summary->PDGcode = GetCurrentParticle()->GetPDGEncoding();
 
   // Store position information in summary block, if not already done
-  if (summary->trackID == 0) {
+  if (summary && summary->trackID == 0) {
     summary->position[0] = GetCurrentTrack()->GetPosition()[0];
     summary->position[1] = GetCurrentTrack()->GetPosition()[1];
     summary->position[2] = GetCurrentTrack()->GetPosition()[2];

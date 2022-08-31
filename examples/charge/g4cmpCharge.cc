@@ -12,21 +12,16 @@
 // 20150112  Remove RM->Initialize() to support macro configuration
 // 20160111  Remove check for Geant4 > 10.0 since we hard depend on 10.2+
 // 20170816  Add example-specific configuration manager
+// 20220718  Remove obsolete pre-processor macros G4VIS_USE and G4UI_USE
 
 #include "G4RunManager.hh"
-#include "G4UImanager.hh"
-
-#ifdef G4VIS_USE
-#include "G4VisExecutive.hh"
-#endif
-
-#ifdef G4UI_USE
 #include "G4UIExecutive.hh"
-#endif
+#include "G4UImanager.hh"
+#include "G4VisExecutive.hh"
 
 #include "ChargeActionInitialization.hh"
-#include "ChargeDetectorConstruction.hh"
 #include "ChargeConfigManager.hh"
+#include "ChargeDetectorConstruction.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPPhysicsList.hh"
 
@@ -53,32 +48,26 @@ int main(int argc,char** argv) {
   G4CMPConfigManager::Instance();
   ChargeConfigManager::Instance();
   
-#ifdef G4VIS_USE
   // Visualization manager
   //
   G4VisManager* visManager = new G4VisExecutive("quiet");
   visManager->Initialize();
-#endif
   
   // Get the pointer to the User Interface manager
   //
   G4UImanager* UImanager = G4UImanager::GetUIpointer();  
   
   if (argc==1) {   // Define UI session for interactive mode
-#ifdef G4UI_USE
     G4UIExecutive * ui = new G4UIExecutive(argc,argv);
     ui->SessionStart();
     delete ui;
-#endif
   } else {          // Batch mode
     G4String command = "/control/execute ";
     G4String fileName = argv[1];
     UImanager->ApplyCommand(command+fileName);
   }
   
-#ifdef G4VIS_USE
   delete visManager;
-#endif
   delete runManager;
   
   return 0;

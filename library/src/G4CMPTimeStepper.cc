@@ -34,6 +34,11 @@
 // 20200520  "First report" flag must be thread-local.
 // 20200804  Move field access to G4CMPFieldUtils
 // 20210923  Ensure that rate calculations are initialized for track
+// 20220504  E. Michaud -- Change DBL_MAX to minStep, remove negative MFPs
+// 20220729  M. Kelsey -- EnergyStep() has incorrect units for output: should
+//		be delta(E)/(q*V).
+// 20220730  Drop trapping processes, as they have built-in MFPs, and don't
+//		need TimeStepper for energy-dependent calculation.
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
@@ -41,8 +46,6 @@
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPFieldUtils.hh"
-#include "G4CMPDriftTrappingProcess.hh"
-#include "G4CMPDriftTrapIonization.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -65,7 +68,7 @@
 
 G4CMPTimeStepper::G4CMPTimeStepper()
   : G4CMPVDriftProcess("G4CMPTimeStepper", fTimeStepper), lukeRate(nullptr),
-    ivRate(nullptr), trappingLength(0.), trapIonLength(0.) {;}
+    ivRate(nullptr) {;}
 
 G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
@@ -91,23 +94,10 @@ void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
   if (ivRate) 
     const_cast<G4CMPVScatteringRate*>(ivRate)->LoadDataForTrack(aTrack);
 
-  // get charge trapping mean free path
-  trappingLength =
-    G4CMPDriftTrappingProcess::GetMeanFreePath(GetCurrentParticle());
-
-  // get charge-trap ionization mean free path
-  G4double eTrapIonMFP = G4CMPDriftTrapIonization::
-    GetMeanFreePath(GetCurrentParticle(), G4CMPDriftElectron::Definition());
-  G4double hTrapIonMFP = G4CMPDriftTrapIonization::
-    GetMeanFreePath(GetCurrentParticle(), G4CMPDriftHole::Definition());
-  trapIonLength = std::min(eTrapIonMFP, hTrapIonMFP);
-
   if (verboseLevel>1) {
     G4cout << "TimeStepper Found" 
 	   << (lukeRate?" lukeRate":"")
 	   << (ivRate?" ivRate":"") 
-	   << (trappingLength?" trappingLength":"") 
-	   << (trapIonLength?" trapIonLength":"") 
 	   << G4endl;
   }
 
@@ -136,43 +126,27 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double ekin = GetKineticEnergy(aTrack);
 
   // Get step length due to fastest process
-  G4double rate0 = MaxRate(aTrack);
-  G4double mfp0 = rate0>0. ? vtrk/rate0 : DBL_MAX;
+  G4double rate = MaxRate(aTrack);
+  G4double mfpFast = rate>0. ? vtrk/rate : DBL_MAX;
 
   if (verboseLevel>1) {
-    G4cout << "TS Vtrk " << vtrk/(m/s) << " m/s mfp0 " << mfp0/m << " m"
+    G4cout << "TS Vtrk " << vtrk/(m/s) << " m/s mfp0 " << mfpFast/m << " m"
 	   << G4endl;
   }
 
-  // Find distance to Luke threshold
-  G4double mfp1 = lukeRate ? EnergyStep(lukeRate->Threshold(ekin)) : DBL_MAX;
-  if (mfp1 <= 1e-9*m) mfp1 = DBL_MAX;	// Avoid steps getting "too short"
 
+  // Find distance to Luke threshold
+  G4double mfpLuke = DistanceToThreshold(lukeRate, ekin);
   if (verboseLevel>1)
-    G4cout << "TS Luke threshold mfp1 " << mfp1/m << " m" << G4endl;
+    G4cout << "TS Luke threshold mfpLuke " << mfpLuke/m << " m" << G4endl;
 
   // Find distance to IV scattering threshold 
-  G4double mfp2 = ivRate ? EnergyStep(ivRate->Threshold(ekin)) : DBL_MAX;
-  if (mfp2 <= 1e-9*m) mfp2 = DBL_MAX;	// Avoid steps getting "too short"
-
-  if (verboseLevel>1 && ivRate)
-    G4cout << "TS IV threshold mfp2 " << mfp2/m << " m" << G4endl;
-
-  // Find distance to impact ionization
-  G4double mfp3 = trapIonLength;
-
+  G4double mfpIV = DistanceToThreshold(ivRate, ekin);
   if (verboseLevel>1)
-    G4cout << "TS trap ionization mfp3 " << mfp3/m << " m" << G4endl;
-
-  // Find MFP for charge trapping
-  G4double mfp4 = trappingLength;
-  if (mfp4 <= 1e-9*m) mfp4 = DBL_MAX;	// Avoid steps getting "too short"
-
-  if (verboseLevel>1 && trappingLength)
-    G4cout << "TS trapping MFP mfp4 " << mfp4/m << " m" << G4endl;
+    G4cout << "TS IV threshold mfpIV " << mfpIV/m << " m" << G4endl;
 
   // Take shortest distance from above options
-  G4double mfp = std::min({mfp0, mfp1, mfp2, mfp3, mfp4});
+  G4double mfp = std::min({mfpFast, mfpLuke, mfpIV});
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
@@ -213,24 +187,40 @@ G4double G4CMPTimeStepper::MaxRate(const G4Track& aTrack) const {
 }
 
 
+// Get distance due to energy gain to threshold (step) in rate
+
+G4double G4CMPTimeStepper::DistanceToThreshold(const G4CMPVScatteringRate* rate,
+					       G4double Estart) const {
+  if (!rate) return DBL_MAX;		// Skip if no rate model
+
+  // Avoid taking "too short" steps, which causes "stuck tracks"
+  G4double MINstep = G4CMPConfigManager::GetMinStepScale();
+  MINstep *= (IsElectron() ? theLattice->GetElectronScatter()
+		: theLattice->GetHoleScatter());
+
+  if (MINstep<0) MINstep = 1e-6*m;
+
+  return std::max(EnergyStep(Estart, rate->Threshold(Estart)), MINstep);
+}
+
 // Get step length in E-field needed to reach specified energy
 
-G4double G4CMPTimeStepper::EnergyStep(G4double Efinal) const {
+G4double G4CMPTimeStepper::EnergyStep(G4double Estart, G4double Efinal) const {
+  if (Estart > Efinal) return DBL_MAX;		// Already over threshold
+
   const G4Track* trk = GetCurrentTrack();
 
-  G4double Emag = G4CMP::GetFieldAtPosition(*trk).mag();
-  if (Emag <= 0.) return DBL_MAX;		// No field, no acceleration
-
-  G4double Ekin = GetKineticEnergy(trk);
-  if (Ekin > Efinal) return DBL_MAX;		// Already over threshold
+  G4double EMmag = G4CMP::GetFieldAtPosition(*trk).mag();
+  if (EMmag <= 0.) return DBL_MAX;		// No field, no acceleration
 
   if (verboseLevel>1) {
-    G4cout << "G4CMPTimeStepper::EnergyStep from " << Ekin/eV
-	   << " to " << Efinal/eV << " eV" << G4endl;
+    G4cout << "G4CMPTimeStepper::EnergyStep from " << Estart/eV
+	   << " to " << Efinal/eV << " eV : " 
+	   << (Efinal-Estart)/(eplus*EMmag) << " mm" << G4endl;
   }
 
   // Add 20% rescaling to account for electron valley systematics
-  return 1.2*(Efinal-Ekin)/Emag;
+  return 1.2*(Efinal-Estart)/(eplus*EMmag);
 }
 
 
