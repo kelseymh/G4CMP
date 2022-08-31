@@ -16,6 +16,7 @@
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4CMPBogoliubov.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
@@ -183,4 +184,37 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
   }
 
   return sec;
+}
+
+G4Track* G4CMP::CreateQP(const G4VTouchable* touch, G4int charge,
+                                    G4double time,
+                                    const G4ThreeVector& p,
+                                    const G4ThreeVector& pos) {
+  G4VPhysicalVolume* vol = touch->GetVolume();
+  G4ThreadLocalStatic auto latMan = G4LatticeManager::GetLatticeManager();
+  G4LatticePhysical* lat = latMan->GetLattice(vol);
+  if (!lat) {
+    G4Exception("G4CMP::CreateQP", "Secondary011", EventMustBeAborted,
+                ("No lattice for volume "+vol->GetName()).c_str());
+    return nullptr;
+  }
+
+  if (charge != 1) {
+    G4Exception("G4CMP::CreateQP", "Secondary012", EventMustBeAborted,
+                "Invalid charge for charge carrier.");
+    return nullptr;
+  } 
+
+  G4ParticleDefinition* theCarrier = G4CMPBogoliubov::Definition();
+  G4double carrierMass = lat->GetElectronMass();
+  G4double carrierEnergy = 0.5 * p.mag2() / carrierMass;  // Non-relativistic
+  G4ThreeVector v_unit = p.unit();
+
+  auto secDP = new G4DynamicParticle(theCarrier, v_unit, carrierEnergy,
+				     carrierMass*c_squared);
+
+  auto sec = new G4Track(secDP, time, G4CMP::ApplySurfaceClearance(touch, pos));
+  sec->SetGoodForTrackingFlag(true);
+
+return sec;
 }

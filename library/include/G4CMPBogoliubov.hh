@@ -16,17 +16,13 @@
 #include "G4ParticleDefinition.hh"
 
 class G4CMPBogoliubov : public G4ParticleDefinition {
+public:
+  static G4CMPBogoliubov* Definition();
+  static G4CMPBogoliubov* G4CMPBogoliubovDefinition();
+
 private:
   static G4CMPBogoliubov* theInstance;
-
-private:
   G4CMPBogoliubov() {;}
-
-public:
-  virtual ~G4CMPBogoliubov() {;}
-  
-  static G4CMPBogoliubov* Definition();
-  static G4CMPBogoliubov* BogoliubovQPDefinition();
 };
 
 #endif	/* G4CMPBogoliubovon */

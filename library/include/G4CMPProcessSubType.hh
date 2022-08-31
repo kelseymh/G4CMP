@@ -31,7 +31,8 @@ enum G4CMPProcessSubType {
   fChargeRecombine = 310,
   fDTrapIonization = 311,
   fATrapIonization = 312,
-  fChargeTrapping = 313
+  fChargeTrapping = 313,
+  fQPRecombination = 314
 };
 
 #endif	/* G4CMPProcessSubType_hh */

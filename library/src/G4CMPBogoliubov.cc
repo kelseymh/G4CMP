@@ -18,7 +18,7 @@ G4CMPBogoliubov* G4CMPBogoliubov::Definition()
 {
   if (theInstance !=0) return theInstance;
 
-  const G4String name = "BogoliubovQP";
+  const G4String name = "Bogoliubov";
   // search in particle table
   G4ParticleTable* pTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* anInstance = pTable->FindParticle(name);
@@ -39,13 +39,13 @@ G4CMPBogoliubov* G4CMPBogoliubov::Definition()
                     0,               0,             0,
              "lepton",               0,             0,         0,
                  true,             0.0,          NULL,
-                false,        "BogoliubovQP",       0
+                false,        "Bogoliubov",       0
              );
   }
   theInstance = reinterpret_cast<G4CMPBogoliubov*>(anInstance);
   return theInstance;
 }
 
-G4CMPBogoliubov* G4CMPBogoliubov::BogoliubovQPDefinition(){
+G4CMPBogoliubov* G4CMPBogoliubov::G4CMPBogoliubovDefinition(){
   return Definition();
 }

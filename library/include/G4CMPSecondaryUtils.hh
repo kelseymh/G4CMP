@@ -42,6 +42,11 @@ namespace G4CMP {
 			       G4int valley, G4double time,
 			       const G4ThreeVector& p,
 			       const G4ThreeVector& pos);
+
+  G4Track* CreateQP(const G4VTouchable* touch, G4int charge, 
+			       G4double time, 
+			       const G4ThreeVector& p,
+			       const G4ThreeVector& pos);
 }
 
 #endif	/* G4CMPSecondaryUtils_hh */
