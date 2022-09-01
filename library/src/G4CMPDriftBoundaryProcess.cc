@@ -16,6 +16,9 @@
 // 20171215  Replace boundary-point check with CheckStepBoundary()
 // 20180827  M. Kelsey -- Prevent partitioner from recomputing sampling factors
 // 20210328  Modify above; compute direct-phonon sampling factor here
+// 20220901  As MapPtoK_valley now returns k in the lattice frame, added
+//    rotate the k vector in the PostStepDoIt verbosity level 1 to avoid
+//    unwanted confusion.
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -82,9 +85,10 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
   if (verboseLevel>2) {
     if (IsElectron()) {
+      G4ThreeVector kvalley = theLattice->MapPtoK_valley(GetValleyIndex(aTrack),
+				   GetLocalMomentum(aTrack));
       G4cout << " K_valley (" << GetValleyIndex(aTrack) << ") direction: "
-	     << theLattice->MapPtoK_valley(GetValleyIndex(aTrack),
-				   GetLocalMomentum(aTrack)).unit()
+	     << theLattice->RotateToSolid(kvalley).unit()
 	     << G4endl;
     }
     G4cout << " K direction: " << GetLocalWaveVector(aTrack).unit()

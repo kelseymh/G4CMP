@@ -30,6 +30,9 @@
 //		in place code for electrons to assign final-state to valley
 //		closest to momentum direction.  Commented out now, as it leads
 //		to non-physical reduction of total Luke emission.
+// 20220901  As MapPtoK_valley now returns k in the lattice frame, added
+//    rotate the k vector in the PostStepDoIt verbosity level 1 to avoid
+//    unwanted confusion.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -154,6 +157,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
     if (IsElectron()) {
       G4ThreeVector kvalley = theLattice->MapPtoK_valley(iValley, ptrk);
+      kvalley = theLattice->RotateToSolid(kvalley);
       G4ThreeVector pvalley = kvalley * hbarc;
       G4cout << " valley " << iValley << " along "
 	     << theLattice->GetValleyAxis(iValley) << G4endl

@@ -25,6 +25,8 @@
 // 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
 //		return thread-local instance.
 // 20211021  Wrap verbose output in #ifdef G4CMP_DEBUG for performace
+// 20220901  MapK_valleyToP now expects a k in the lattice frame
+//    and MapPtoK_valley returns k in lattice frame (used to be solid frame)
 
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
@@ -253,7 +255,7 @@ G4LatticePhysical::MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const
   if (verboseLevel>1) G4cout << " K_valley (lattice) " << tempvec() << G4endl;
 #endif
 
-  return RotateToSolid(tempvec());
+  return tempvec();
 }
 
 // NOTE:  K_HV vector returned in valley internal coordinate system
@@ -336,7 +338,7 @@ G4LatticePhysical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
 	   << G4endl;
 #endif
 
-  RotateToLattice(tempvec()=k);
+  tempvec()=k;
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
 #endif
