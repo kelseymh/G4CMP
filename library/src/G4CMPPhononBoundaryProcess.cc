@@ -26,7 +26,7 @@
 // 20181010  J. Singh -- Use new G4CMPAnharmonicDecay for boundary decays
 // 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
 // 20220712  M. Kelsey -- Pass process pointer to G4CMPAnharmonicDecay
-// 20220830  G4CMP-310 -- Flip anharmonic decay daughters to point inward.
+// 20220905  G4CMP-310 -- Add increments of kPerp to avoid bad reflections.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -209,6 +209,19 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
       G4cout << " specular reflection with normal " << surfNorm
 	     << "\n Perpendicular wavevector " << kPerp*surfNorm
 	     << " (mag " << kPerp << ")" << G4endl;
+    }
+    
+    if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
+      G4int nperp = 0;
+      while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
+	reflectedKDir -= kPerp * surfNorm;
+	nperp++;
+      }
+      
+      if (nperp>0 && verboseLevel) {
+	G4cout << " adjusted specular reflection with " << nperp
+	       << " steps of kPerp " << kPerp << G4endl;
+      }
     }
   } else {
     reflectedKDir = GetLambertianVector(surfNorm, mode);
