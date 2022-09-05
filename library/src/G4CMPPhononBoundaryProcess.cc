@@ -144,7 +144,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   if (verboseLevel>2) {
-    G4cout << " Old wavevector direction " << waveVector.unit()
+    G4cout << "\n Old wavevector direction " << waveVector.unit()
 	   << "\n Old momentum direction   " << aTrack.GetMomentumDirection()
 	   << G4endl;
   }
@@ -176,15 +176,15 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   G4double random = G4UniformRand();
 
-  if (verboseLevel > 1) {
+  if (verboseLevel > 2) {
     G4cout << "Surface Downconversion Probability: " << downconversionProb
-	   << "\nRandom: " << random << G4endl;
+	   << " random: " << random << G4endl;
   }
 
   G4String refltype = "";		// For use in failure message if needed
 
   if (random < downconversionProb) {
-    if (verboseLevel > 1) G4cout << "Anharmonic Decay at boundary." << G4endl;
+    if (verboseLevel > 2) G4cout << " Anharmonic Decay at boundary." << G4endl;
 
     /* Do Downconversion */
     anharmonicDecay->DoDecay(aTrack, aStep, particleChange);
@@ -204,9 +204,23 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     G4double kPerp = reflectedKDir * surfNorm;
     reflectedKDir -= 2.*kPerp * surfNorm;
     refltype = "specular";
+
+    if (verboseLevel>2) {
+      G4cout << " specular reflection with normal " << surfNorm
+	     << "\n Perpendicular wavevector " << kPerp*surfNorm
+	     << " (mag " << kPerp << ")" << G4endl;
+    }
   } else {
     reflectedKDir = GetLambertianVector(surfNorm, mode);
     refltype = "diffuse";
+  }
+
+  G4ThreeVector vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
+  G4double v = theLattice->MapKtoV(mode, reflectedKDir);
+
+  if (verboseLevel>2) {
+    G4cout << "\n New wavevector direction " << reflectedKDir
+	   << "\n New momentum direction   " << vdir << G4endl;
   }
 
   // If reflection failed, report problem and kill the track
@@ -217,19 +231,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     return;
   }
 
-  G4ThreeVector vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
-  G4double v = theLattice->MapKtoV(mode, reflectedKDir);
-
-  if (verboseLevel>2) {
-    G4cout << " New wavevector direction " << reflectedKDir
-	   << "\n New momentum direction   " << vdir << G4endl;
-  }
-
   // SANITY CHECK:  Project a 1 um step in the new direction, see if it
   // is still in the correct (pre-step) volume.
 
   if (verboseLevel>2) {
-    G4ThreeVector stepPos = surfacePoint + .1*mm * vdir;
+    G4ThreeVector stepPos = surfacePoint + 1*um * vdir;
 
     G4cout << " New travel direction " << vdir
 	   << "\n from " << surfacePoint << "\n   to " << stepPos << G4endl;
