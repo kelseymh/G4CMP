@@ -272,18 +272,19 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   
   olddir = theLattice->MapKtoVDir(mode, reflectedKDir);
   G4double kstep = 0.1*kPerp;
-  G4int nstep = 0.;
+  G4int nstep = 0, nflip = 0;
   while (fabs(kstep) > 1e-6 && fabs(nstep*kstep)<1. && 
 	 !G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
     newdir = theLattice->MapKtoVDir(mode, reflectedKDir);
-    if (newdir*surfNorm > olddir*surfNorm) {
+    if (newdir*surfNorm > olddir*surfNorm && nflip<5) {
       if (verboseLevel>2) {
 	G4cout << " Reflected wv pushing momentum outward:"
 	       << " newdir*surfNorm = " << newdir*surfNorm
 	       << G4endl;
       }
       
-      kstep = -0.5*kstep;
+      kstep = -kstep;
+      nflip++;
     }
     
     (reflectedKDir -= kstep*surfNorm).setMag(1.);
@@ -292,8 +293,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   } 
   
   if (nstep>0 && verboseLevel) {
-    G4cout << " adjusted specular reflection with " << nstep
-	   << " steps from kPerp " << kPerp << G4endl;
+    G4cout << " adjusted specular reflection with " << nstep << " steps"
+	   << " (" << nflip << " flips) kPerp " << kPerp << G4endl;
   }
 
   return reflectedKDir;
