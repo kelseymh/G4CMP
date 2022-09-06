@@ -12,6 +12,7 @@
 // 20160906  Follow constness of G4CMPBoundaryUtils
 // 20181010  J. Singh -- Use new G4CMPAnharmonicDecay for boundary decays
 // 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
+// 20220906  M. Kelsey -- Encapsulate specular reflection in function.
 
 #ifndef G4CMPPhononBoundaryProcess_h
 #define G4CMPPhononBoundaryProcess_h 1
@@ -49,7 +50,12 @@ protected:
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
-  G4ThreeVector GetLambertianVector(const G4ThreeVector&, G4int) const;
+  G4ThreeVector GetReflectedVector(const G4ThreeVector& waveVector, 
+				   const G4ThreeVector& surfNorm,
+				   G4int mode) const;
+
+  G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm,
+				    G4int mode) const;
 
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;

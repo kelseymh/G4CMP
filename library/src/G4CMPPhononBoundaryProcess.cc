@@ -199,30 +199,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     return;
   } else if (random < downconversionProb + specProb) {
-    // Specular reflecton reverses momentum along normal
-    reflectedKDir = waveVector.unit();
-    G4double kPerp = reflectedKDir * surfNorm;
-    reflectedKDir -= 2.*kPerp * surfNorm;
+    reflectedKDir = GetReflectedVector(waveVector, surfNorm, mode);
     refltype = "specular";
-
-    if (verboseLevel>2) {
-      G4cout << " specular reflection with normal " << surfNorm
-	     << "\n Perpendicular wavevector " << kPerp*surfNorm
-	     << " (mag " << kPerp << ")" << G4endl;
-    }
-    
-    if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
-      G4int nperp = 0;
-      while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
-	reflectedKDir -= kPerp * surfNorm;
-	nperp++;
-      }
-      
-      if (nperp>0 && verboseLevel) {
-	G4cout << " adjusted specular reflection with " << nperp
-	       << " steps of kPerp " << kPerp << G4endl;
-      }
-    }
   } else {
     reflectedKDir = GetLambertianVector(surfNorm, mode);
     refltype = "diffuse";
@@ -265,6 +243,60 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   trackInfo->SetWaveVector(reflectedKDir);
   particleChange.ProposeVelocity(v);
   particleChange.ProposeMomentumDirection(vdir);
+}
+
+
+// Generate specular reflection corrected for momentum dispersion
+
+G4ThreeVector G4CMPPhononBoundaryProcess::
+GetReflectedVector(const G4ThreeVector& waveVector,
+		   const G4ThreeVector& surfNorm, G4int mode) const {
+  // Specular reflecton should reverses momentum along normal
+  G4ThreeVector reflectedKDir = waveVector.unit();
+  G4double kPerp = reflectedKDir * surfNorm;
+  (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);
+  
+  if (verboseLevel>2) {
+    G4cout << " specular reflection with normal " << surfNorm
+	   << "\n Perpendicular wavevector " << kPerp*surfNorm
+	   << " (mag " << kPerp << ")" << G4endl;
+  }
+  
+  if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm))
+    return reflectedKDir;
+
+  // Reflection didn't work as expected, need to correct   
+
+  // Watch how momentum direction changes with each kPerp step
+  G4ThreeVector olddir, newdir;
+  
+  olddir = theLattice->MapKtoVDir(mode, reflectedKDir);
+  G4double kstep = 0.1*kPerp;
+  G4int nstep = 0.;
+  while (fabs(kstep) > 1e-6 && fabs(nstep*kstep)<1. && 
+	 !G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
+    newdir = theLattice->MapKtoVDir(mode, reflectedKDir);
+    if (newdir*surfNorm > olddir*surfNorm) {
+      if (verboseLevel>2) {
+	G4cout << " Reflected wv pushing momentum outward:"
+	       << " newdir*surfNorm = " << newdir*surfNorm
+	       << G4endl;
+      }
+      
+      kstep = -0.5*kstep;
+    }
+    
+    (reflectedKDir -= kstep*surfNorm).setMag(1.);
+    olddir = newdir;
+    nstep++;
+  } 
+  
+  if (nstep>0 && verboseLevel) {
+    G4cout << " adjusted specular reflection with " << nstep
+	   << " steps from kPerp " << kPerp << G4endl;
+  }
+
+  return reflectedKDir;
 }
 
 
