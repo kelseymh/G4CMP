@@ -25,6 +25,8 @@
 //		Clarify field transform and force calculation.
 // 20211007  Insert debugging output for each step of E-field transformation.
 // 20211012  Apply scale factor to conserve energy averaged over many electrons
+// 20220907  Multiply force by fMass instead of theLattice->GetElectronMass()
+//		as the latter is not the mass that is being reported to Geant4
 
 #include "G4CMPEqEMField.hh"
 #include "G4CMPConfigManager.hh"
@@ -163,7 +165,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 #endif
 
   force *= theLattice->GetMInvTensor();
-  force *= theLattice->GetElectronMass();
+  force *= fMass;
   //***force *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
