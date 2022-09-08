@@ -1,4 +1,11 @@
-/* Anharmonic Decay utility class */
+/// \file library/src/G4CMPAnharmonicDecay.cc
+/// \brief Implementation of phonon anharmonic decay, as separate utility
+///        outside of decay process.
+//
+// $Id$
+//
+// 20220907  G4CMP-316 -- Pass track into CreatePhonon instead of touchable.
+//		Check for null pointers from secondaries.
 
 #include "G4CMPAnharmonicDecay.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -191,12 +198,18 @@ MakeTTSecondaries(const G4Track& aTrack, G4ParticleChange& aParticleChange) {
 	   << aTrack.GetTouchable()->GetVolume()->GetName() << G4endl;
   }
 
-  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode1,
+  G4Track* sec1 = G4CMP::CreatePhonon(aTrack, mode1,
 				      dir1, Esec1, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
-  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode2,
+  G4Track* sec2 = G4CMP::CreatePhonon(aTrack, mode2,
                                       dir2, Esec2, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
+
+  if (!sec1 || !sec2) {
+    G4Exception("G4CMPAnharmonicDecay::MakeTTSecondaries", "Downconv002",
+		JustWarning, "Error creating secondaries");
+    return;
+  }
 
   // Pick which secondary gets the weight randomly
 #ifdef G4CMP_DEBUG
@@ -276,12 +289,18 @@ MakeLTSecondaries(const G4Track& aTrack, G4ParticleChange& aParticleChange) {
   }
 
   // Construct the secondaries and set their wavevectors
-  G4Track* sec1 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode1,
+  G4Track* sec1 = G4CMP::CreatePhonon(aTrack, mode1,
 				      dir1, Esec1, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
-  G4Track* sec2 = G4CMP::CreatePhonon(aTrack.GetTouchable(), mode2,
+  G4Track* sec2 = G4CMP::CreatePhonon(aTrack, mode2,
                                       dir2, Esec2, aTrack.GetGlobalTime(),
                                       aTrack.GetPosition());
+
+  if (!sec1 || !sec2) {
+    G4Exception("G4CMPAnharmonicDecay::MakeLTSecondaries", "Downconv003",
+		JustWarning, "Error creating secondaries");
+    return;
+  }
 
 #ifdef G4CMP_DEBUG
   if (output.good()) {

@@ -30,6 +30,7 @@
 //		in place code for electrons to assign final-state to valley
 //		closest to momentum direction.  Commented out now, as it leads
 //		to non-physical reduction of total Luke emission.
+// 20220907  G4CMP-316 -- Pass track into CreatePhonon instead of touchable.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -318,8 +319,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double weight =
     G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
   if (weight > 0.) {
-    G4Track* phonon = G4CMP::CreatePhonon(aTrack.GetTouchable(),
-                                          G4PhononPolarization::UNKNOWN,
+    G4Track* phonon = G4CMP::CreatePhonon(aTrack,
+					  G4PhononPolarization::UNKNOWN,
                                           qvec, Ephonon,
                                           aTrack.GetGlobalTime(),
                                           aTrack.GetPosition());
