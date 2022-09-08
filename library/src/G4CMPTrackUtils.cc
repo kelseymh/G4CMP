@@ -12,6 +12,7 @@
 // 20170621 M. Kelsey -- Non-templated utility functions
 // 20190906 M. Kelsey -- Add function to look up process for track
 // 20200829 M. Kelsey -- Don't override initial direction of phonons
+// 20220907 G4CMP-316 -- Try using pre-step point to find lattice volume
 
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -114,6 +115,11 @@ G4bool G4CMP::HasTrackInfo(const G4Track& track) {
 G4LatticePhysical* G4CMP::GetLattice(const G4Track& track) {
   G4VPhysicalVolume* trkvol = track.GetVolume();
   if (!trkvol) trkvol = G4CMP::GetVolumeAtPoint(track.GetPosition());
+
+  if (!G4LatticeManager::GetLatticeManager()->HasLattice(trkvol)
+      && track.GetStep()) {
+    trkvol = track.GetStep()->GetPreStepPoint()->GetPhysicalVolume();
+  }
 
   return G4LatticeManager::GetLatticeManager()->GetLattice(trkvol);
 }
