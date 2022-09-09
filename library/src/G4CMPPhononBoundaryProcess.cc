@@ -26,6 +26,7 @@
 // 20181010  J. Singh -- Use new G4CMPAnharmonicDecay for boundary decays
 // 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
 // 20220712  M. Kelsey -- Pass process pointer to G4CMPAnharmonicDecay
+// 20220905  G4CMP-310 -- Add increments of kPerp to avoid bad reflections.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -143,7 +144,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   if (verboseLevel>2) {
-    G4cout << " Old wavevector direction " << waveVector.unit()
+    G4cout << "\n Old wavevector direction " << waveVector.unit()
 	   << "\n Old momentum direction   " << aTrack.GetMomentumDirection()
 	   << G4endl;
   }
@@ -175,13 +176,15 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   G4double random = G4UniformRand();
 
-  if (verboseLevel > 1) {
+  if (verboseLevel > 2) {
     G4cout << "Surface Downconversion Probability: " << downconversionProb
-	   << "\nRandom: " << random << G4endl;
+	   << " random: " << random << G4endl;
   }
 
+  G4String refltype = "";		// For use in failure message if needed
+
   if (random < downconversionProb) {
-    if (verboseLevel > 1) G4cout << "Anharmonic Decay at boundary." << G4endl;
+    if (verboseLevel > 2) G4cout << " Anharmonic Decay at boundary." << G4endl;
 
     /* Do Downconversion */
     anharmonicDecay->DoDecay(aTrack, aStep, particleChange);
@@ -196,35 +199,34 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     return;
   } else if (random < downconversionProb + specProb) {
-    // Specular reflecton reverses momentum along normal
-    reflectedKDir = waveVector.unit();
-    G4double kPerp = reflectedKDir * surfNorm;
-    reflectedKDir -= 2.*kPerp * surfNorm;
+    reflectedKDir = GetReflectedVector(waveVector, surfNorm, mode);
+    refltype = "specular";
   } else {
     reflectedKDir = GetLambertianVector(surfNorm, mode);
-  }
-
-  // If reflection failed, report problem and kill the track
-  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
-    G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
-		JustWarning, "Phonon reflection failed");
-    DoSimpleKill(aTrack, aStep, aParticleChange);
-    return;
+    refltype = "diffuse";
   }
 
   G4ThreeVector vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
   G4double v = theLattice->MapKtoV(mode, reflectedKDir);
 
   if (verboseLevel>2) {
-    G4cout << " New wavevector direction " << reflectedKDir
+    G4cout << "\n New wavevector direction " << reflectedKDir
 	   << "\n New momentum direction   " << vdir << G4endl;
+  }
+
+  // If reflection failed, report problem and kill the track
+  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
+    G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
+		JustWarning, ("Phonon "+refltype+" reflection failed").c_str());
+    DoSimpleKill(aTrack, aStep, aParticleChange);
+    return;
   }
 
   // SANITY CHECK:  Project a 1 um step in the new direction, see if it
   // is still in the correct (pre-step) volume.
 
   if (verboseLevel>2) {
-    G4ThreeVector stepPos = surfacePoint + .1*mm * vdir;
+    G4ThreeVector stepPos = surfacePoint + 1*um * vdir;
 
     G4cout << " New travel direction " << vdir
 	   << "\n from " << surfacePoint << "\n   to " << stepPos << G4endl;
@@ -241,6 +243,61 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   trackInfo->SetWaveVector(reflectedKDir);
   particleChange.ProposeVelocity(v);
   particleChange.ProposeMomentumDirection(vdir);
+}
+
+
+// Generate specular reflection corrected for momentum dispersion
+
+G4ThreeVector G4CMPPhononBoundaryProcess::
+GetReflectedVector(const G4ThreeVector& waveVector,
+		   const G4ThreeVector& surfNorm, G4int mode) const {
+  // Specular reflecton should reverses momentum along normal
+  G4ThreeVector reflectedKDir = waveVector.unit();
+  G4double kPerp = reflectedKDir * surfNorm;
+  (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);
+  
+  if (verboseLevel>2) {
+    G4cout << " specular reflection with normal " << surfNorm
+	   << "\n Perpendicular wavevector " << kPerp*surfNorm
+	   << " (mag " << kPerp << ")" << G4endl;
+  }
+  
+  if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm))
+    return reflectedKDir;
+
+  // Reflection didn't work as expected, need to correct   
+
+  // Watch how momentum direction changes with each kPerp step
+  G4ThreeVector olddir, newdir;
+  
+  olddir = theLattice->MapKtoVDir(mode, reflectedKDir);
+  G4double kstep = 0.1*kPerp;
+  G4int nstep = 0, nflip = 0;
+  while (fabs(kstep) > 1e-6 && fabs(nstep*kstep)<1. && 
+	 !G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
+    newdir = theLattice->MapKtoVDir(mode, reflectedKDir);
+    if (newdir*surfNorm > olddir*surfNorm && nflip<5) {
+      if (verboseLevel>2) {
+	G4cout << " Reflected wv pushing momentum outward:"
+	       << " newdir*surfNorm = " << newdir*surfNorm
+	       << G4endl;
+      }
+      
+      kstep = -kstep;
+      nflip++;
+    }
+    
+    (reflectedKDir -= kstep*surfNorm).setMag(1.);
+    olddir = newdir;
+    nstep++;
+  } 
+  
+  if (nstep>0 && verboseLevel) {
+    G4cout << " adjusted specular reflection with " << nstep << " steps"
+	   << " (" << nflip << " flips) kPerp " << kPerp << G4endl;
+  }
+
+  return reflectedKDir;
 }
 
 
