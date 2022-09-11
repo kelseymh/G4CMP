@@ -27,6 +27,7 @@
 // 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
 // 20220712  M. Kelsey -- Pass process pointer to G4CMPAnharmonicDecay
 // 20220905  G4CMP-310 -- Add increments of kPerp to avoid bad reflections.
+// 20220910  G4CMP-299 -- Use fabs(k) in absorption test.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -120,12 +121,12 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 
   if (verboseLevel>1) {
     G4cout << GetProcessName() << "::AbsorbTrack() k " << k
-	   << "\n k_perp " << k*G4CMP::GetSurfaceNormal(aStep)
+	   << "\n |k_perp| " << fabs(k*G4CMP::GetSurfaceNormal(aStep))
 	   << " vs. absMinK " << absMinK << G4endl;
   }
 
   return (G4CMPBoundaryUtils::AbsorbTrack(aTrack,aStep) &&
-    k*G4CMP::GetSurfaceNormal(aStep) > absMinK);
+	  fabs(k*G4CMP::GetSurfaceNormal(aStep)) > absMinK);
 }
 
 
