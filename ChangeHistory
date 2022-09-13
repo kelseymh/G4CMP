@@ -6,7 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
-2022-09-10  G4CMP-299 : Use fabs(kPerp) to test aabsorption with absMinK.
+2022-09-13  G4CMP-299 : Use fabs(kPerp) to test aabsorption with absMinK.
+2022-09-13  G4CMP-321 : Restore LoadDataForTrack in SecondaryProd::PostStepDoIt
 2022-09-09  G4CMP-310 : Protect specular reflection from outgoing momentum.
 2022-09-07  G4CMP-316 : Pass track into SecondaryUtils Create*() functions.
 

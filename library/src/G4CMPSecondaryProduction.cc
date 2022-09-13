@@ -92,6 +92,7 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
   aParticleChange.Initialize(track); 
 
   // Only apply to tracks while they are in lattice-configured volumes
+  LoadDataForTrack(&track);
   if (!theLattice) return &aParticleChange;
 
   if (verboseLevel) {
