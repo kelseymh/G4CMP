@@ -13,6 +13,7 @@
 //	       eventID to avoid rollover between events.
 // 20220216  Add "stepID" to provide full identification.  Add printout.
 // 20220821  G4CMP-308 -- Define step-info container to avoid needing G4Step
+// 20220914  G4CMP-322 -- Add explicit Accumulator::operator=()
 
 #ifndef G4CMPStepAccumulator_hh
 #define G4CMPStepAccumulator_hh 1
@@ -37,7 +38,7 @@ public:
 
   virtual ~G4CMPStepInfo() {;}
 
-  virtual G4CMPStepInfo& operator=(const G4CMPStepInfo& step);
+  G4CMPStepInfo& operator=(const G4CMPStepInfo& step);
 
   // Reset contents for reusable buffers
   virtual void Clear() {
@@ -69,6 +70,13 @@ class G4CMPStepAccumulator : public G4CMPStepInfo {
 public:
   G4CMPStepAccumulator() : G4CMPStepInfo(), nsteps(0), eventID(-1) {;}
   ~G4CMPStepAccumulator() {;}
+
+  G4CMPStepAccumulator& operator=(const G4CMPStepAccumulator& rhs) {
+    nsteps = rhs.nsteps;
+    eventID = rhs.eventID;
+    G4CMPStepInfo::operator=(rhs);
+    return *this;
+  }
 
   // Register event being processed (needed with primary generator)
   void ProcessEvent(G4int currentEventID);
