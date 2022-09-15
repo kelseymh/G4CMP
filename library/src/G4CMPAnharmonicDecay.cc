@@ -6,6 +6,7 @@
 //
 // 20220907  G4CMP-316 -- Pass track into CreatePhonon instead of touchable.
 //		Check for null pointers from secondaries.
+// 20220914  G4CMP-322 -- Address compiler warnings for unused arguments.
 
 #include "G4CMPAnharmonicDecay.hh"
 #include "G4CMPPhononTrackInfo.hh"
@@ -31,7 +32,7 @@ G4CMPAnharmonicDecay::G4CMPAnharmonicDecay(const G4VProcess* theProcess)
     procName(theProcess?theProcess->GetProcessName():"G4CMPAnharmonicDecay"),
     fBeta(0.), fGamma(0.), fLambda(0.), fMu(0.), fvLvT(1.) {;}
 
-void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
+void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step&,
 				   G4ParticleChange& aParticleChange) {
 #ifdef G4CMP_DEBUG
   if (verboseLevel && !output.is_open()) {
@@ -150,12 +151,12 @@ MakeTTSecondaries(const G4Track& aTrack, G4ParticleChange& aParticleChange) {
   //smaller that the curve of the probability density,
   //then accept that point.
   //x=fraction of parent phonon energy in first T phonon
-  G4double x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
-  G4double p = 1.5*G4UniformRand();
-  while(p >= GetTTDecayProb(fvLvT, x*fvLvT)) {
+  G4double x=0, p=0;
+  do {
     x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
     p = 1.5*G4UniformRand();
-  }
+  } while (p >= GetTTDecayProb(fvLvT, x*fvLvT));
+
 
   //using energy fraction x to calculate daughter phonon directions
   G4double theta1=MakeTTDeviation(fvLvT, x);
@@ -234,30 +235,12 @@ MakeLTSecondaries(const G4Track& aTrack, G4ParticleChange& aParticleChange) {
   G4double upperBound=1;
   G4double lowerBound=(fvLvT-1)/(fvLvT+1);
 
-  /*
-  //Use MC method to generate point from distribution:
-  //if a random point on the energy-probability plane is
-  //smaller that the curve of the probability density,
-  //then accept that point.
-  //x=fraction of parent phonon energy in L phonon
-  G4double x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
-  G4double p = 4.0*G4UniformRand();
-  while(p >= GetLTDecayProb(fvLvT, x)) {
-    x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
-    p = 4.0*G4UniformRand(); 		     //4.0 is about the max in the PDF
-  }
-  */
-
-  G4double u = G4UniformRand();
-  G4double x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
-  G4double q = 0;
-  if (x <= upperBound && x >= lowerBound) q = 1/(upperBound-lowerBound);
-  while (u >= GetLTDecayProb(fvLvT, x)/(2.8/(upperBound-lowerBound))) {
+  G4double u=0, x=0;
+  do {
     u = G4UniformRand();
     x = G4UniformRand()*(upperBound-lowerBound) + lowerBound;
-    if (x <= upperBound && x >= lowerBound) q = 1/(upperBound-lowerBound);
-    else q = 0;
-  }
+  } while (u >= GetLTDecayProb(fvLvT, x)/(2.8/(upperBound-lowerBound)));
+
 
   //using energy fraction x to calculate daughter phonon directions
   G4double thetaL=MakeLDeviation(fvLvT, x);

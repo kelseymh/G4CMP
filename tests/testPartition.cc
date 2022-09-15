@@ -13,6 +13,7 @@
 // 20210818  Expand test results to cover Fano disabled, downsampling, add
 //		output reporting full range (min to max) of track counts.
 // 20210820  Add bias voltage by hand to test Luke energy estimator.
+// 20220914  G4CMP-322 -- Include N_SD in reporting output.
 
 #include "globals.hh"
 #include "G4CMPEnergyPartition.hh"
@@ -156,7 +157,7 @@ int main(int argc, char* argv[]) {
   }
 
   G4cout << " Ehit " << Ehit/keV << " keV expect "
-	 << Nexp << " +/- " << Nsig << " tracks"
+	 << Nexp << " +/- " << Nsig << " tracks (N_SD = " << N_SD << ")"
 	 << " (" << lattice->GetLattice()->GetName()
 	 << " Epair " << lattice->GetPairProductionEnergy()/eV << " eV)"
 	 << "\n                 <Nchg> = " << Nchg << " +/- " << Q_SD
