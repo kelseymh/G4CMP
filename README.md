@@ -494,13 +494,14 @@ for the metal film (defined using the function
 | Property Key     | Definition                  | Example value (Al) |
 |------------------|-----------------------------|--------------------|
 | filmThickness    | Thickness of film           | 600.*nm            |
-| gapEnergy        | Bandgap of film material    | 347.43e-6*eV       |
+| gapEnergy        | Bandgap of film material    | 173.715e-6*eV      |
 | lowQPLimit       | Minimum bandgap multiple for quasiparticles | 3. |
 | phononLifetime   | Phonon lifetime in film at 2*bandgap | 242.*ps   |
 | phononLifetimeSlope | Lifetime dependence vs. energy | 0.29         |
 | vSound           | Speed of sound in film      | 3.26*km/s          |
-| subgapAbsorption | Probably to absorb energy below 2*bandgap | 0.   |
+| subgapAbsorption | Probability to absorb energy below 2*bandgap | 0. |
 
-The last parameter is optional.  It only apples if there is a sensor
+The last parameter is optional.  It only applies if there is a sensor
 involved which is sensitive to heat energy, in which case phonons below
-2.*bandgap energy should be treated as directly absorbed.
+2.*bandgap energy should be treated as directly absorbed with the specified
+probability.
