@@ -211,29 +211,30 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
 
 // Thermal distributions, useful for handling phonon thermalization
 
-G4double MaxwellBoltzmannPDF(G4double temperature, G4double energy) {
-  if (temperature <= 0.) return 0.;		// At 0K, nothing is thermal
+G4double G4CMP::MaxwellBoltzmannPDF(G4double temperature, G4double energy) {
+  if (temperature <= 0.) return (energy == 0. ? 1. : 0.);
 
   const G4double kT = k_Boltzmann*temperature;
 
-  // This is a true PDF, normalized to unit integral
-  return energy * exp(-energy/kT) / sqrt(halfpi*kT*kT*kT);
+  // This should be a true PDF, normalized to unit integral
+  // NOTE: coefficient usually has kT^-(3/2), but extra 1/kT makes units
+  return 2.*sqrt(energy/(pi*kT)) * exp(-energy/kT);
 }
 
-G4bool IsThermalized(G4double temperature, G4double energy) {
+G4bool G4CMP::IsThermalized(G4double temperature, G4double energy) {
   return (G4UniformRand() < MaxwellBoltzmannPDF(temperature,energy));
 }
 
-G4bool IsThermalized(G4double energy) {
+G4bool G4CMP::IsThermalized(G4double energy) {
   return IsThermalized(G4CMPConfigManager::GetTemperature(), energy);
 }
 
-G4bool IsThermalized(const G4LatticePhysical* lattice, G4double energy) {
+G4bool G4CMP::IsThermalized(const G4LatticePhysical* lattice, G4double energy) {
   return (lattice ? IsThermalized(lattice->GetTemperature(), energy)
 	  : IsThermalized(energy) );		// Fall back to global temp.
 }
 
-G4bool IsThermalized(const G4Track* track) {
+G4bool G4CMP::IsThermalized(const G4Track* track) {
   if (!track) return false;
   return IsThermalized(G4CMP::GetLattice(*track), track->GetKineticEnergy());
 }
