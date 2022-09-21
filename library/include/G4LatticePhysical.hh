@@ -34,6 +34,8 @@
 //		return thread-local instance.
 // 20200608  Fix -Wshadow warnings from tempvec
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
+// 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
+//		Also, add long missing accessors for Miller orientation
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -64,6 +66,9 @@ public:
   // Miller orientation aligns lattice normal (hkl) with geometry +Z
   void SetMillerOrientation(G4int h, G4int k, G4int l, G4double rot=0.);
 
+  // Set temperature of volume/lattice for use with thermalization processes
+  void SetTemperature(G4double temp) { fTemperature = temp; }
+
   // Rotate input vector between lattice and solid orientations
   // Returns new vector value for convenience
   const G4ThreeVector& RotateToLattice(G4ThreeVector& dir) const;
@@ -93,6 +98,15 @@ public:
 
 public:  
   const G4LatticeLogical* GetLattice() const { return fLattice; }
+
+  // Return Miller orientation
+  G4double GetRotation() const { return fRot; }
+  G4ThreeVector GetMillerIndices() const {
+    return G4ThreeVector(hMiller, kMiller, lMiller);
+  }
+
+  // Return temperature assigned to lattice/volume, or global setting
+  G4double GetTemperature() const;
 
   // Call through to get material properties
   G4double GetDensity() const { return fLattice->GetDensity(); }
@@ -184,6 +198,7 @@ private:
   G4RotationMatrix fInverse;
   G4int hMiller, kMiller, lMiller;	// Save Miller indices for dumps
   G4double fRot;
+  G4double fTemperature;		// Temperature assigned to volume
 };
 
 // Write lattice structure to output stream
