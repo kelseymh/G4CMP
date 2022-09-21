@@ -15,12 +15,14 @@
 // 20170928  Replace "polarization" with "mode"
 // 20190906  M. Kelsey -- Add function to look up process for track
 // 20220816  M. Kelsey -- Move RandomIndex here for more general use
+// 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPElectrodeHit.hh"
+#include "G4CMPTrackUtils.hh"
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PhononPolarization.hh"
@@ -204,6 +206,36 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      const G4ThreeVector& surfNorm) {
   G4ThreeVector vDir = lattice->MapKtoVDir(mode, waveVector);
   return vDir.dot(surfNorm) < 0.0;
+}
+
+
+// Thermal distributions, useful for handling phonon thermalization
+
+G4double MaxwellBoltzmannPDF(G4double temperature, G4double energy) {
+  if (temperature <= 0.) return 0.;		// At 0K, nothing is thermal
+
+  const G4double kT = k_Boltzmann*temperature;
+
+  // This is a true PDF, normalized to unit integral
+  return energy * exp(-energy/kT) / sqrt(halfpi*kT*kT*kT);
+}
+
+G4bool IsThermalized(G4double temperature, G4double energy) {
+  return (G4UniformRand() < MaxwellBoltzmannPDF(temperature,energy));
+}
+
+G4bool IsThermalized(G4double energy) {
+  return IsThermalized(G4CMPConfigManager::GetTemperature(), energy);
+}
+
+G4bool IsThermalized(const G4LatticePhysical* lattice, G4double energy) {
+  return (lattice ? IsThermalized(lattice->GetTemperature(), energy)
+	  : IsThermalized(energy) );		// Fall back to global temp.
+}
+
+G4bool IsThermalized(const G4Track* track) {
+  if (!track) return false;
+  return IsThermalized(G4CMP::GetLattice(*track), track->GetKineticEnergy());
 }
 
 
