@@ -40,6 +40,7 @@
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
+// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
 
 #include "G4UImessenger.hh"
 
@@ -80,6 +81,7 @@ private:
   G4UIcmdWithADoubleAndUnit* eATrapIonMFPCmd;
   G4UIcmdWithADoubleAndUnit* hDTrapIonMFPCmd;
   G4UIcmdWithADoubleAndUnit* hATrapIonMFPCmd;
+  G4UIcmdWithADoubleAndUnit* tempCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;

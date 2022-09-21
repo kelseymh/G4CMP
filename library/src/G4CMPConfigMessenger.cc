@@ -36,6 +36,7 @@
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
+// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -56,7 +57,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     pBounceCmd(0), maxLukeCmd(0), clearCmd(0), minEPhononCmd(0),
     minEChargeCmd(0), sampleECmd(0), comboStepCmd(0), trapEMFPCmd(0),
     trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
-    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), minstepCmd(0),
+    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), tempCmd(0), minstepCmd(0),
     makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
     ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0), fanoStatsCmd(0),
     ehCloudCmd(0) {
@@ -164,6 +165,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 	   "Mean free path for h-trap ionization by holes");
   hATrapIonMFPCmd->SetUnitCategory("Length");
 
+  tempCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("temperature",
+	   "Temperature to be used for device, substrate, sensors, etc.");
+  hATrapIonMFPCmd->SetUnitCategory("Temperature");
+
   nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
 	       "Select calculation for non-ionizing energy loss (NIEL)");
   nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew");
@@ -192,6 +197,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete eATrapIonMFPCmd; eATrapIonMFPCmd=0;
   delete hDTrapIonMFPCmd; hDTrapIonMFPCmd=0;
   delete hATrapIonMFPCmd; hATrapIonMFPCmd=0;
+  delete tempCmd; tempCmd=0;
   delete minstepCmd; minstepCmd=0;
   delete makePhononCmd; makePhononCmd=0;
   delete makeChargeCmd; makeChargeCmd=0;
@@ -253,6 +259,9 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
 
   if (cmd == hATrapIonMFPCmd)
     theManager->SetHATrapIonMFP(hATrapIonMFPCmd->GetNewDoubleValue(value));
+
+  if (cmd == tempCmd)
+    theManager->SetTemperature(tempCmd->GetNewDoubleValue(value));
 
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));

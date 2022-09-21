@@ -65,6 +65,8 @@ developers should check the source code in
 | G4CMP\_EPOT\_FILE [F]   | /g4cmp/EPotFile [F] V=0:      | Read mesh field file "F"                |
 | G4CMP\_EPOT\_SCALE [F]  | /g4cmp/scaleEPot [M] V=0:     | Scale the potentials in EPotFile by factor m|
 | G4CMP\_MIN\_STEP [S]    | /g4cmp/minimumStep [S] S>0:   | Force minimum step S\*L0                |
+| G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces [N]      | Maximum e/h reflections                 |
+| G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces [N]      | Maximum phonon reflections              |
 | G4CMP\_MAKE\_PHONONS [R] | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
 | G4CMP\_MAKE\_CHARGES [R] | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
 | G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
@@ -83,13 +85,12 @@ hits below step length |
 | G4CMP\_EATRAPION\_MFP | /g4cmp/eATrapIonizationMFP [L] mm | MFP for h-trap ionization by e- |
 | G4CMP\_HDTRAPION\_MFP | /g4cmp/hDTrapIonizationMFP [L] mm | MFP for e-trap ionization by h+ |
 | G4CMP\_HATRAPION\_MFP | /g4cmp/hATrapIonizationMFP [L] mm | MFP for h-trap ionization by h+ |
+| G4CMP\_TEMPERATURE   | /g4cmp/temperature [T] K | Device/substrate/etc. temperature |
 | G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [LewinSmith\|Lindhard] | Select NIEL partitioning function |
 | G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t\|f] | Create charges in sphere around location |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation [h] [k] [l] | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
 | G4CMP\_MILLER\_L          |                               |                                         |
-| G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces [N]      | Maximum e/h reflections                 |
-| G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces [N]      | Maximum phonon reflections              |
 | G4CMP\_HIT\_FILE [F]	    | /g4cmp/HitsFile [F]           | Write e/h hit locations to "F"          |
 
 The default lattice orientation is to be aligned with the associated

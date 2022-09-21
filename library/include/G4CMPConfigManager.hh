@@ -43,6 +43,7 @@
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
+// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
 
 #include "globals.hh"
 #include <iosfwd>
@@ -82,14 +83,16 @@ public:
   static G4double GetGenCharges()        { return Instance()->genCharges; }
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
   static G4double GetComboStepLength()   { return Instance()->combineSteps; }
+  static G4double GetETrappingMFP()      { return Instance()->eTrapMFP; }
+  static G4double GetHTrappingMFP()      { return Instance()->hTrapMFP; }
+  static G4double GetEDTrapIonMFP()      { return Instance()->eDTrapIonMFP; }
+  static G4double GetEATrapIonMFP()      { return Instance()->eATrapIonMFP; }
+  static G4double GetHDTrapIonMFP()      { return Instance()->hDTrapIonMFP; }
+  static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
+  static G4double GetTemperature()       { return Instance()->temperature; }
+
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
-  static const G4double& GetETrappingMFP() { return Instance()->eTrapMFP; }
-  static const G4double& GetHTrappingMFP() { return Instance()->hTrapMFP; }
-  static const G4double& GetEDTrapIonMFP() { return Instance()->eDTrapIonMFP; }
-  static const G4double& GetEATrapIonMFP() { return Instance()->eATrapIonMFP; }
-  static const G4double& GetHDTrapIonMFP() { return Instance()->hDTrapIonMFP; }
-  static const G4double& GetHATrapIonMFP() { return Instance()->hATrapIonMFP; }
 
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
@@ -118,6 +121,7 @@ public:
   static void SetEATrapIonMFP(G4double value) { Instance()->eATrapIonMFP = value; }
   static void SetHDTrapIonMFP(G4double value) { Instance()->hDTrapIonMFP = value; }
   static void SetHATrapIonMFP(G4double value) { Instance()->hATrapIonMFP = value; }
+  static void SetTemperature(G4double value)  { Instance()->temperature = value; }
 
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
   static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
@@ -163,6 +167,7 @@ private:
   G4double eATrapIonMFP; // Mean free path for e- on h-trap ionization ($G4CMP_EHTRAPION_MFP)
   G4double hDTrapIonMFP; // Mean free path for h+ on e-trap ionization ($G4CMP_HETRAPION_MFP)
   G4double hATrapIonMFP; // Mean free path for h+ on h-trap ionization ($G4CMP_HHTRAPION_MFP)
+  G4double temperature;  // Temperature of device, substrate, sensors, etc.
   G4double clearance;	 // Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
   G4double stepScale;	 // Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double sampleEnergy; // Energy above which to do sampling ($G4CMP_SAMPLE_ENERGY)
