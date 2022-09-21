@@ -306,9 +306,10 @@ G4LatticePhysical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
 // Dump contained logical lattice with volume information
 
 void G4LatticePhysical::Dump(std::ostream& os) const {
-  os << "# Physical lattice (hkl) = "
-     << hMiller << " " << kMiller << " " << lMiller
-     << " rotation " << fRot/deg << " deg\n"
-     << "# Logical lattice:\n" << *fLattice << std::endl;
+  os << "# Physical lattice:"
+     << " (hkl) = " << hMiller << " " << kMiller << " " << lMiller
+     << " rotation " << fRot/deg << " deg"
+     << " @ " << fTemperature/kelvin << " K"
+     << "\n# Logical lattice:\n" << *fLattice << std::endl;
 }
 
