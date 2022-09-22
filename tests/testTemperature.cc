@@ -25,6 +25,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4Tubs.hh"
 #include <stdlib.h>
+#include <string>
+#include <vector>
 
 
 // Global variables for use in tests
@@ -70,8 +72,28 @@ int main(int argc, char* argv[]) {
   lattice->SetTemperature(temp);
   if (verbose) lattice->Dump(G4cout);
 
+  G4double Etemp = k_Boltzmann*temp;	// Convert temperature to energy
+
+  // Draw a text picture of the PDF from 0 to 10 kT, 20 rows x 60 values
+  if (verbose) {
+    std::vector<std::string> graph(20, std::string(60,' '));
+    for (G4int i=0; i<60; i++) {
+      G4double Ei = Etemp * i/6.;
+      G4double pdf = G4CMP::MaxwellBoltzmannPDF(temp, Ei);
+      G4double pdfj = std::min(int((1.-pdf)*20),19);	// Rows from top down
+      if (verbose>1) {
+	G4cout << " col " << i << " (" << Ei/eV << " eV) has "
+	       << " pdf " << pdf << " = row " << pdfj << G4endl;
+      }
+
+      graph[pdfj][i] = '*';
+    }
+    
+    for (const auto& line : graph) G4cout << " | " << line << G4endl;
+    G4cout << " +-" << std::string(60,'-') << G4endl;
+  }
+
   // Calculate a few points, make sure lattice temperature is set
-  G4double Etemp = k_Boltzmann*temp;
   G4double pdfTemp = G4CMP::MaxwellBoltzmannPDF(temp, Etemp);
   G4double pdfLat = G4CMP::MaxwellBoltzmannPDF(lattice->GetTemperature(), Etemp);
   G4double pdfHalf = G4CMP::MaxwellBoltzmannPDF(temp, Etemp/2.);
