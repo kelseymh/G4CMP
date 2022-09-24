@@ -83,6 +83,8 @@ namespace G4CMP {
 
   // Thermal distributions, useful for handling phonon thermalization
   G4double MaxwellBoltzmannPDF(G4double temperature, G4double energy);
+  G4double ChooseThermalEnergy(G4double temperature);
+  G4double ChooseThermalEnergy(const G4LatticePhysical* lattice);
 
   G4bool IsThermalized(G4double temperature, G4double energy);
   G4bool IsThermalized(G4double energy);	// Use G4CMPConfigManager temp.

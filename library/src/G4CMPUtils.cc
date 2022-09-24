@@ -216,10 +216,33 @@ G4double G4CMP::MaxwellBoltzmannPDF(G4double temperature, G4double energy) {
 
   const G4double kT = k_Boltzmann*temperature;
 
+  // NOTE: coefficient usually has kT^-(3/2), but extra 1/kT makes units
+  const G4double mbCoeff = 2. * sqrt(energy/(pi*kT));
+
   // This should be a true PDF, normalized to unit integral
   // NOTE: coefficient usually has kT^-(3/2), but extra 1/kT makes units
-  return 2.*sqrt(energy/(pi*kT)) * exp(-energy/kT);
+  return mbCoeff * exp(-energy/kT);
 }
+
+G4double G4CMP::ChooseThermalEnergy(G4double temperature) {
+  // FIXME: With inverse CDF, we could do a simple direct throw
+  // return G4CMP::MaxwellBoltzmannInvCDF(temperature, G4UniformRand());
+
+  // Use accept-reject iteration with a tanh "inverse CDF" for simplicity
+  G4double kT = k_Boltzmann*temperature;
+  G4double x, trialE;
+  do {
+    x = G4UniformRand();
+    trialE = log((3.+x)/(1.-x)) + kT;		// arctanh with shifts
+  } while (!IsThermalized(temperature, trialE));
+
+  return trialE;
+}
+
+G4double G4CMP::ChooseThermalEnergy(const G4LatticePhysical* lattice) {
+  return lattice ? ChooseThermalEnergy(lattice->GetTemperature()) : 0.;
+}
+
 
 G4bool G4CMP::IsThermalized(G4double temperature, G4double energy) {
   return (G4UniformRand() < MaxwellBoltzmannPDF(temperature,energy));
