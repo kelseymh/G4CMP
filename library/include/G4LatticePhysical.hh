@@ -45,6 +45,8 @@
 #include "G4ThreeVector.hh"
 #include <iosfwd>
 
+#define G4CMP_HAS_TEMPERATURE	/* G4CMP-319 -- New feature for user code */
+
 
 class G4LatticePhysical {
 public:
