@@ -35,6 +35,7 @@
 // 20200614  G4CMP-210:  Add missing initializers to copy constructor
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
+// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -84,6 +85,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     eATrapIonMFP(getenv("G4CMP_EATRAPION_MFP")?strtod(getenv("G4CMP_EATRAPION_MFP"),0)*mm:DBL_MAX),
     hDTrapIonMFP(getenv("G4CMP_HDTRAPION_MFP")?strtod(getenv("G4CMP_HDTRAPION_MFP"),0)*mm:DBL_MAX),
     hATrapIonMFP(getenv("G4CMP_HATRAPION_MFP")?strtod(getenv("G4CMP_HATRAPION_MFP"),0)*mm:DBL_MAX),
+    temperature(getenv("G4CMP_TEMPERATURE")?strtod(getenv("G4CMP_TEMPERATURE"),0)*kelvin:0.),
     clearance(getenv("G4CMP_CLEARANCE")?strtod(getenv("G4CMP_CLEARANCE"),0)*mm:1e-6*mm),
     stepScale(getenv("G4CMP_MIN_STEP")?strtod(getenv("G4CMP_MIN_STEP"),0):-1.),
     sampleEnergy(getenv("G4CMP_SAMPLE_ENERGY")?strtod(getenv("G4CMP_SAMPLE_ENERGY"),0):-1.),
@@ -120,7 +122,8 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     IVRateModel(master.IVRateModel), eTrapMFP(master.eTrapMFP),
     hTrapMFP(master.hTrapMFP), eDTrapIonMFP(master.eDTrapIonMFP),
     eATrapIonMFP(master.eATrapIonMFP), hDTrapIonMFP(master.hDTrapIonMFP),
-    hATrapIonMFP(master.hATrapIonMFP), clearance(master.clearance), 
+    hATrapIonMFP(master.hATrapIonMFP),
+    temperature(master.temperature), clearance(master.clearance), 
     stepScale(master.stepScale), sampleEnergy(master.sampleEnergy), 
     genPhonons(master.genPhonons), genCharges(master.genCharges), 
     lukeSample(master.lukeSample), combineSteps(master.combineSteps),
@@ -171,21 +174,22 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\nG4CMP_EH_BOUNCES " << ehBounces
      << "\nG4CMP_PHON_BOUNCES " << pBounces
      << "\nG4CMP_IV_RATE_MODEL " << IVRateModel
-     << "\nG4CMP_ETRAPPING_MFP " << eTrapMFP
-     << "\nG4CMP_HTRAPPING_MFP " << hTrapMFP
-     << "\nG4CMP_EDTRAPION_MFP " << eDTrapIonMFP
-     << "\nG4CMP_EATRAPION_MFP " << eATrapIonMFP
-     << "\nG4CMP_HDTRAPION_MFP " << hDTrapIonMFP
-     << "\nG4CMP_HATRAPION_MFP " << hATrapIonMFP
-     << "\nG4CMP_CLEARANCE " << clearance
+     << "\nG4CMP_ETRAPPING_MFP " << eTrapMFP/mm << " (mm)"
+     << "\nG4CMP_HTRAPPING_MFP " << hTrapMFP/mm << " (mm)"
+     << "\nG4CMP_EDTRAPION_MFP " << eDTrapIonMFP/mm << " (mm)"
+     << "\nG4CMP_EATRAPION_MFP " << eATrapIonMFP/mm << " (mm)"
+     << "\nG4CMP_HDTRAPION_MFP " << hDTrapIonMFP/mm << " (mm)"
+     << "\nG4CMP_HATRAPION_MFP " << hATrapIonMFP/mm << " (mm)"
+     << "\nG4CMP_TEMPERATURE " << temperature/kelvin << " (K)"
+     << "\nG4CMP_CLEARANCE " << clearance/mm << " (mm)"
      << "\nG4CMP_MIN_STEP " << stepScale
      << "\nG4CMP_SAMPLE_ENERGY " << sampleEnergy
      << "\nG4CMP_MAKE_PHONONS " << genPhonons
      << "\nG4CMP_MAKE_CHARGES " << genCharges
      << "\nG4CMP_LUKE_SAMPLE " << lukeSample
-     << "\nG4CMP_COMBINE_STEPLEN " << combineSteps
-     << "\nG4CMP_EMIN_PHONONS " << EminPhonons
-     << "\nG4CMP_EMIN_CHARGES " << EminCharges
+     << "\nG4CMP_COMBINE_STEPLEN " << combineSteps/mm << " (mm)"
+     << "\nG4CMP_EMIN_PHONONS " << EminPhonons/eV << " (eV)"
+     << "\nG4CMP_EMIN_CHARGES " << EminCharges/eV << " (eV)"
      << "\nG4CMP_USE_KVSOLVER " << useKVsolver
      << "\nG4CMP_FANO_ENABLED " << fanoEnabled
      << "\nG4CMP_CHARGE_CLOUD " << chargeCloud
