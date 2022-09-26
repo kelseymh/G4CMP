@@ -27,19 +27,19 @@ or ionization detectors[.](https://arxiv.org/pdf/1403.4984.pdf)
 
 [//]: # (For second source: section 4. For last source: section 1)
 
-## [Release Notes](https://github.com/kelseymh/G4CMP/blob/master/ChangeHistory)
+## [Release Notes](../ChangeHistory)
 
-## [Installation](https://github.com/kelseymh/G4CMP#building-the-package)
+## [Installation](../README.md#building-the-package)
 
-## [Examples](https://github.com/kelseymh/G4CMP#application-examples)
+## [Examples](../README.md#application-examples)
 
 ## Settings and Usage
 
-### [User Environment](https://github.com/kelseymh/G4CMP#user-environment)
+### [User Environment](../README.md#user-environment)
 
-### [Defining Crystal Dynamics](https://github.com/kelseymh/G4CMP#defining-the-crystal-dynamics)
+### [Defining Crystal Dynamics](../README.md#defining-the-crystal-dynamics)
 
-### [Surface Interactions](https://github.com/kelseymh/G4CMP#surface-interactions)
+### [Surface Interactions](../README.md#surface-interactions)
 
 ## Testing
 
@@ -49,7 +49,7 @@ Not Currently Available
 
 No documentation Currently Available
 
-## Crystal Physics
+## Condensed Matter Physics
 
 Some things G4CMP models:
 
@@ -60,7 +60,7 @@ by accelerated carriers.
 ### Crystal Lattices
 
 G4CMP comes with configuration data for germanium and silicon crystals in the
-package itself using the G4LogicalLattice and G4PhysicalLattice classes; these
+package itself using the G4LatticeLogical and G4LatticePhysical classes; these
 are found in the CrystalMaps directory, where users can also define crystals of
 other materials.
 These config.txt files are plain text with names, values, and units. User
@@ -194,7 +194,7 @@ are attachable to individual detector volumes may be implemented in the future.
 
 #### Impurity Trap Reionization
 
-Trap Reionization is essentially the inverse of trapping. Tracks can interact
+Trap reionization is essentially the inverse of trapping. Tracks can interact
 with traps that have immobilized a charge, releasing charges. When this occurs
 at a shallow (~meV) depth, the bandgap energy is not absorbed.
 
@@ -284,8 +284,8 @@ Further, ions (including alpha particles) induce motion in nearby atoms in the
 lattice. This results in Non-ionizing energy loss (NIEL) and athermal phonons,
 each with a Debye energy in the tens of meV.
 
-G4CMP addresses these issues via the G4CMPSecondaryProduction and
-G4CMPEnergyPartition classes, allowing for charge tracking at the lower energy
+G4CMP addresses these issues via the G4CMPSecondaryProduction process and
+G4CMPEnergyPartition class, allowing for charge tracking at the lower energy
 levels used in low-temperature measurement that is otherwise impossible in
 Geant4.
 
@@ -297,11 +297,11 @@ atoms. The ionization yield is computed by taking $ dE/dx $ as a fraction of the
 total. G4CMP does this in its code for ion hits, but it is now done
 automatically in Geant4 10.7: the issue is addressed via forward-compatibility,
 because G4CMP will not recalculate the yield in the case of non-zero NIEL. This
-process remains in the G4CMPLindhardNIEL and G4CMPLewinSmithNIEL classes.
+calculation remains in the G4CMPLindhardNIEL and G4CMPLewinSmithNIEL classes.
 
 [//]: # (ibid, slide 49)
 
-## QET Physics
+## Phonon Sensor Physics
 
 G4CMP is primarily used for simulations in the material of a detector crystal,
 but it also supports some methods and classes for simulating detector response
@@ -348,14 +348,3 @@ loop ends when the available phonon energy is zero. This model is not suitable
 for “bare” films that lack an attached energy absorber.
 
 [//]: # (ibid, slide 51)
-
-### Phonon Readout Model
-
-Phonon energy deposits are collected in time bins resulting in a matching
-readout. Coupled differential equations model the electrothermal response of
-TESes, the bias current, indicative (SQUID) coupling, and other phenomena. CVODE
-(from LLNL) is used to solve for current output in each time bin, while
-configuration files specify detector components and characteristics including
-heat flow, resistances, inductances, TESes per channel, and others.
-
-[//]: # (ibid, slide 52)
