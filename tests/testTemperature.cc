@@ -60,9 +60,9 @@ void DrawPDF(G4double temp, G4int verbose) {
 
   G4double kT = k_Boltzmann*temp;	// Convert temperature to energy
 
-  std::vector<std::string> graph(20, std::string(60,' '));
-  for (G4int i=0; i<60; i++) {
-    G4double Ei = kT * i/6.;
+  std::vector<std::string> graph(20, std::string(75,' '));
+  for (G4int i=0; i<75; i++) {
+    G4double Ei = kT * i/7.5;
     G4double pdf = G4CMP::MaxwellBoltzmannPDF(temp, Ei);
     G4double pdfj = std::min(int((1.-pdf)*20),19);	// Rows from top down
     if (verbose>1) {
@@ -74,8 +74,54 @@ void DrawPDF(G4double temp, G4int verbose) {
   }
   
   G4cout << "\nMaxwell-Boltzmann PDF for " << temp/kelvin << " K" << G4endl;
-  for (const auto& line : graph) G4cout << "\t| " << line << G4endl;
-  G4cout << "\t+-" << std::string(60,'-') << G4endl;
+  for (const auto& line : graph) G4cout << " | " << line << G4endl;
+  G4cout << " +-" << std::string(75,'-') << G4endl;
+}
+
+void ThrowEnergies(G4double temp, G4int verbose) {
+  G4double kT = k_Boltzmann*temp;	// Convert temperature to energy
+
+  G4double Ebin = kT/7.5;		// 75 bins from 0 to 10*kT
+  std::map<G4int,G4int> energy;		// Primitive histogram, energy bins
+
+  G4int Nthrow = 50000;
+  for (G4int i=0; i<Nthrow; i++) {	// Throw energy points to fill hist
+    G4double E = G4CMP::ChooseThermalEnergy(temp);
+    G4double j = int(E/Ebin);
+    energy[j]++;			// Creates new bin, increments
+    if (verbose>1) {
+      G4cout << " Throw " << i << " E = " << E/eV << " eV,"
+	     << " bin " << j << " has " << energy[j] << " entries"
+	     << G4endl;
+    }
+  }
+
+  // Generate text-based histogram of what got chosen
+  G4int iMax = -1;
+  for (const auto& Ei: energy) iMax = std::max(iMax, Ei.second);
+
+  G4int yScale = iMax/19;		// Rescale so max bin fills plot
+
+  std::vector<std::string> graph(20, std::string(75,' '));
+  for (const auto& Ei: energy) {
+    G4int i = Ei.first; if (i>74) continue;
+    G4int n = Ei.second;
+    G4int j = n/yScale;
+    G4double jFrac = double(n%yScale)/yScale;
+
+    if (verbose>1) {
+      G4cout << " col " << i << " (" << (i+0.5)*Ebin/eV << " eV) has "
+	     << " N " << n << " = row " << j << G4endl;
+    }
+
+    graph[19-j][i] = (jFrac<0.5 ? '.' : ':');
+  }
+  
+  G4cout << "\n" << Nthrow << " random energies for " << temp/kelvin << " K"
+	 << G4endl;
+  for (const auto& line : graph) G4cout << " | " << line << G4endl;
+  G4cout << " +-" << std::string(75,'-') << G4endl;
+
 }
 
 G4double IntegratePDF(G4double temp) {
@@ -110,6 +156,7 @@ int main(int argc, char* argv[]) {
 
   // Draw a text picture of the PDF from 0 to 10 kT, 20 rows x 60 values
   DrawPDF(temp, verbose);
+  ThrowEnergies(temp, verbose);
 
   // Calculate a few points, make sure lattice temperature is set
   G4double pdfTemp = G4CMP::MaxwellBoltzmannPDF(temp, kT);

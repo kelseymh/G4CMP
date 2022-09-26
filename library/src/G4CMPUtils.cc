@@ -228,12 +228,10 @@ G4double G4CMP::ChooseThermalEnergy(G4double temperature) {
   // FIXME: With inverse CDF, we could do a simple direct throw
   // return G4CMP::MaxwellBoltzmannInvCDF(temperature, G4UniformRand());
 
-  // Use accept-reject iteration with a tanh "inverse CDF" for simplicity
   G4double kT = k_Boltzmann*temperature;
-  G4double x, trialE;
+  G4double trialE;
   do {
-    x = G4UniformRand();
-    trialE = log((3.+x)/(1.-x)) + kT;		// arctanh with shifts
+    trialE = G4UniformRand() * 10.*kT;		// Uniform spread in E
   } while (!IsThermalized(temperature, trialE));
 
   return trialE;
