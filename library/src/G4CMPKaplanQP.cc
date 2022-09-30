@@ -59,7 +59,7 @@ G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
   : verboseLevel(vb), filmProperties(0), filmThickness(0.), gapEnergy(0.),
     lowQPLimit(3.), subgapAbsorption(0.), absorberGap(0.),
     phononLifetime(0.), phononLifetimeSlope(0.), vSound(0.) {
-  if (!prop) SetFilmProperties(prop);
+  if (prop) SetFilmProperties(prop);
 }
 
 G4CMPKaplanQP::~G4CMPKaplanQP() {
