@@ -149,7 +149,7 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   G4double frac = 2.0;
 
   // If phonon is not absorbed, reflect it back with no deposition
-  if (DirectAbsorb(energy)) {
+  if (IsSubgap(energy)) {
     G4double EDep = CalcSubgapAbsorption(energy, reflectedEnergies);
     if (EDep>0.) ReportAbsorption(energy, EDep, reflectedEnergies);
 
@@ -208,13 +208,19 @@ ReportAbsorption(G4double energy, G4double EDep,
 		 const std::vector<G4double>& reflectedEnergies) const {
   if (!output.good()) return;
 
-#ifdef G4CMP_DEBUG
   G4double ERefl = std::accumulate(reflectedEnergies.begin(),
 				   reflectedEnergies.end(), 0.);
-  
+
+#ifdef G4CMP_DEBUG
   output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
 	 << reflectedEnergies.size() << std::endl;
 #endif
+  
+  if (verboseLevel>2) {
+    G4cout << " Phonon " << energy/eV << " deposited " << EDep/eV
+	   << " reflected " << ERefl/eV << " as " << reflectedEnergies.size()
+	   << " new phonons" << G4endl;
+  }
 }
 
 // Compute the probability of phonon reentering the crystal without breaking
@@ -302,7 +308,7 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
     if (verboseLevel>2)
       G4cout << " phononE " << phonE << " qpE " << qpE << G4endl;
 
-    if (DirectAbsorb(phonE)) {
+    if (IsSubgap(phonE)) {
       EDep += CalcSubgapAbsorption(phonE, phonEnergies);
     } else {
       if (verboseLevel>2) G4cout << " Store phonE in phonEnergies" << G4endl;
@@ -362,18 +368,25 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
 G4double 
 G4CMPKaplanQP::CalcSubgapAbsorption(G4double energy,
 				    std::vector<G4double>& keepEnergies) const {
+  if (energy < 2.*absorberGap) {	// Below absorber should just be killed
+    if (verboseLevel>2)
+      G4cout << " Kill phonon " << energy << " below absorber gap" << G4endl;
+    
+    return 0.;
+  }
+  
   if (G4UniformRand() < subgapAbsorption) {
     if (verboseLevel>2)
       G4cout << " Deposit phonon " << energy << " as heat" << G4endl;
 
     return energy;
-  } else {
-    if (verboseLevel>2)
-      G4cout << " Record phonon " << energy << " for processing" << G4endl;
-
-    keepEnergies.push_back(energy);
-    return 0.;
   }
+  
+  if (verboseLevel>2)
+    G4cout << " Record phonon " << energy << " for processing" << G4endl;
+
+  keepEnergies.push_back(energy);
+  return 0.;
 }
 
 
