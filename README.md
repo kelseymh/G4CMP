@@ -501,8 +501,11 @@ for the metal film (defined using the function
 | phononLifetimeSlope | Lifetime dependence vs. energy | 0.29         |
 | vSound           | Speed of sound in film      | 3.26*km/s          |
 | subgapAbsorption | Probability to absorb energy below 2*bandgap | 0. |
+| absorberGap      | Bandgap of energy absorber  | 15e-6*eV (tungsten) |
 
-The last parameter is optional.  It only applies if there is a sensor
-involved which is sensitive to heat energy, in which case phonons below
-2.*bandgap energy should be treated as directly absorbed with the specified
-probability.
+The `subgapAbsorption` parameter is optional.  It only applies if there is a
+sensor involved which is sensitive to heat energy, in which case phonons
+below 2.*bandgap energy, and above 2.*absorberGap energy, should be treated
+as directly absorbed with the specified probability.  In this case, we
+recommend that user applications also set `/g4cmp/minEPhonons` to
+2.*absorberGap, to avoid excessive CPU from tracking unmeasurable phonons.
