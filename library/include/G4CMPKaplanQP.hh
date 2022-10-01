@@ -123,6 +123,10 @@ protected:
     return (IsSubgap(energy) && energy > 2.*absorberGap);
   }
 
+  // Write summary of interaction to output "kaplanqp_stats" file
+  void ReportAbsorption(G4double energy, G4double EDep,
+			const std::vector<G4double>& reflectedEnergies) const;
+
 private:
   G4int verboseLevel;		// For diagnostic messages
 

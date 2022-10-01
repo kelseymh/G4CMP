@@ -150,10 +150,12 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
 
   // If phonon is not absorbed, reflect it back with no deposition
   if (DirectAbsorb(energy)) {
-    return CalcSubgapAbsorption(energy, reflectedEnergies);
+    G4double EDep = CalcSubgapAbsorption(energy, reflectedEnergies);
+    if (EDep>0.) ReportAbsorption(energy, EDep, reflectedEnergies);
+
+    return EDep;
   } else if (G4UniformRand() <= CalcEscapeProbability(energy, frac)) {
     if (verboseLevel>1) G4cout << " Not absorbed." << G4endl;
-
     reflectedEnergies.push_back(energy);
     return 0.;
   }
@@ -183,6 +185,8 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
     }
   }
 
+  ReportAbsorption(energy, EDep, reflectedEnergies);
+
   // Sanity check -- Reflected + Absorbed should equal input
   G4double ERefl = std::accumulate(reflectedEnergies.begin(),
 				   reflectedEnergies.end(), 0.);
@@ -196,16 +200,22 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
 	   << " eV" << G4endl;
   }
 
-#ifdef G4CMP_DEBUG
-  if (output.good()) {
-    output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
-	   << reflectedEnergies.size() << std::endl;
-  }
-#endif
-
   return EDep;
 }
 
+void G4CMPKaplanQP::
+ReportAbsorption(G4double energy, G4double EDep,
+		 const std::vector<G4double>& reflectedEnergies) const {
+  if (!output.good()) return;
+
+#ifdef G4CMP_DEBUG
+  G4double ERefl = std::accumulate(reflectedEnergies.begin(),
+				   reflectedEnergies.end(), 0.);
+  
+  output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
+	 << reflectedEnergies.size() << std::endl;
+#endif
+}
 
 // Compute the probability of phonon reentering the crystal without breaking
 // any Cooper pairs.
