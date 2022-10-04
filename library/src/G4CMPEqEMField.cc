@@ -165,7 +165,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 #endif
 
   force *= theLattice->GetMInvTensor();
-  force *= fMass;
+  force *= theLattice->GetElectronMass();
   //***force *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
