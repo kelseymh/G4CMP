@@ -185,6 +185,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPartitionData.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPartitionSummary.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononBoundaryProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononElectrode.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinTable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinematics.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononScatteringRate.cc
@@ -271,6 +272,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPartitionData.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPartitionSummary.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononElectrode.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinematics.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononScatteringRate.hh
