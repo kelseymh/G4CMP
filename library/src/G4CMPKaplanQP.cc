@@ -24,6 +24,8 @@
 //		down to gapEnergy before absorption.  Encapsulate this in
 //		a function.
 // 20201109  Add diagnostic text file (like downconversion and Luke).
+// 20220928  G4CMP-323: Add bandgap of secondary absorber (quasiparticle trap)
+// 		Drop requirement for material properties table at runtime.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -55,9 +57,9 @@ G4double G4CMP::KaplanPhononQP(G4double energy,
 
 G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
   : verboseLevel(vb), filmProperties(0), filmThickness(0.), gapEnergy(0.),
-    lowQPLimit(3.), subgapAbsorption(0.), phononLifetime(0.),
-    phononLifetimeSlope(0.), vSound(0.) {
-  SetFilmProperties(prop);
+    lowQPLimit(3.), subgapAbsorption(0.), absorberGap(0.),
+    phononLifetime(0.), phononLifetimeSlope(0.), vSound(0.) {
+  if (prop) SetFilmProperties(prop);
 }
 
 G4CMPKaplanQP::~G4CMPKaplanQP() {
@@ -100,6 +102,9 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
     subgapAbsorption = (prop->ConstPropertyExists("subgapAbsorption")
 			? prop->GetConstProperty("subgapAbsorption") : 0.);
 
+    absorberGap =      (prop->ConstPropertyExists("absorberGap")
+			? prop->GetConstProperty("absorberGap") : 0.);
+
     filmProperties = prop;
   }
 }
@@ -113,9 +118,10 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
 
 G4double G4CMPKaplanQP::
 AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
-  if (!filmProperties) {
+  // FIXME: Make the properties table optional, but check if all data filled
+  if (!ParamsReady()) {
     G4Exception("G4CMPKaplanQP::AbsorbPhonon()", "G4CMP001",
-                RunMustBeAborted, "Null MaterialPropertiesTable vector.");
+                RunMustBeAborted, "Thin film parameters not properly set.");
   }
 
   if (verboseLevel)
@@ -144,10 +150,12 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
 
   // If phonon is not absorbed, reflect it back with no deposition
   if (IsSubgap(energy)) {
-    return CalcSubgapAbsorption(energy, reflectedEnergies);
+    G4double EDep = CalcSubgapAbsorption(energy, reflectedEnergies);
+    if (EDep>0.) ReportAbsorption(energy, EDep, reflectedEnergies);
+
+    return EDep;
   } else if (G4UniformRand() <= CalcEscapeProbability(energy, frac)) {
     if (verboseLevel>1) G4cout << " Not absorbed." << G4endl;
-
     reflectedEnergies.push_back(energy);
     return 0.;
   }
@@ -177,6 +185,8 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
     }
   }
 
+  ReportAbsorption(energy, EDep, reflectedEnergies);
+
   // Sanity check -- Reflected + Absorbed should equal input
   G4double ERefl = std::accumulate(reflectedEnergies.begin(),
 				   reflectedEnergies.end(), 0.);
@@ -190,16 +200,28 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
 	   << " eV" << G4endl;
   }
 
-#ifdef G4CMP_DEBUG
-  if (output.good()) {
-    output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
-	   << reflectedEnergies.size() << std::endl;
-  }
-#endif
-
   return EDep;
 }
 
+void G4CMPKaplanQP::
+ReportAbsorption(G4double energy, G4double EDep,
+		 const std::vector<G4double>& reflectedEnergies) const {
+  if (!output.good()) return;
+
+  G4double ERefl = std::accumulate(reflectedEnergies.begin(),
+				   reflectedEnergies.end(), 0.);
+
+#ifdef G4CMP_DEBUG
+  output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
+	 << reflectedEnergies.size() << std::endl;
+#endif
+  
+  if (verboseLevel>2) {
+    G4cout << " Phonon " << energy/eV << " deposited " << EDep/eV
+	   << " reflected " << ERefl/eV << " as " << reflectedEnergies.size()
+	   << " new phonons" << G4endl;
+  }
+}
 
 // Compute the probability of phonon reentering the crystal without breaking
 // any Cooper pairs.
@@ -211,9 +233,10 @@ G4double G4CMPKaplanQP::CalcEscapeProbability(G4double energy,
 	   << " thickFrac " << thicknessFrac << G4endl;
   }
 
-  // Compute energy-dependent mean free path for phonons in film
-  if (gapEnergy <= 0.) return 1.;
+  if (gapEnergy <= 0.) return 1.;	// Skip phonons which can't be absorbed
+  if (IsSubgap(energy)) return 1.;
 
+  // Compute energy-dependent mean free path for phonons in film
   G4double mfp = vSound * phononLifetime /
                  (1. + phononLifetimeSlope * (energy/gapEnergy - 2.));
 
@@ -345,18 +368,25 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
 G4double 
 G4CMPKaplanQP::CalcSubgapAbsorption(G4double energy,
 				    std::vector<G4double>& keepEnergies) const {
+  if (energy < 2.*absorberGap) {	// Below absorber should just be killed
+    if (verboseLevel>2)
+      G4cout << " Kill phonon " << energy << " below absorber gap" << G4endl;
+    
+    return 0.;
+  }
+  
   if (G4UniformRand() < subgapAbsorption) {
     if (verboseLevel>2)
       G4cout << " Deposit phonon " << energy << " as heat" << G4endl;
 
     return energy;
-  } else {
-    if (verboseLevel>2)
-      G4cout << " Record phonon " << energy << " for processing" << G4endl;
-
-    keepEnergies.push_back(energy);
-    return 0.;
   }
+  
+  if (verboseLevel>2)
+    G4cout << " Record phonon " << energy << " for processing" << G4endl;
+
+  keepEnergies.push_back(energy);
+  return 0.;
 }
 
 

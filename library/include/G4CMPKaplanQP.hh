@@ -20,6 +20,9 @@
 // 20200701  G4CMP-217: New function to handle QP energy absorption below
 //		minimum for QP -> phonon -> new QP pair chain (3*bandgap).
 // 20201109  Add diagnostic text file (like downconversion and Luke).
+// 20220928  G4CMP-323: Add bandgap of secondary absorber (quasiparticle trap)
+//		Add direct-setting functions for configuration parameters,
+//		and function to test whether parameters have been set.
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
@@ -51,15 +54,31 @@ public:
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
   G4int GetVerboseLevel() const { return verboseLevel; }
 
-  // Configure thin film (QET, metalization, etc.) for phonon absorption
-  void SetFilmProperties(G4MaterialPropertiesTable* prop);
-
   // Do absorption on sensor/metalization film
   // Returns absorbed energy, fills list of re-emitted phonons
   G4double AbsorbPhonon(G4double energy,
 			std::vector<G4double>& reflectedEnergies) const;
 
+  // Configure thin film (QET, metalization, etc.) for phonon absorption
+  void SetFilmProperties(G4MaterialPropertiesTable* prop);
+
+  // Alternative configuration without properties table
+  void SetFilmThickness(G4double value)       { filmThickness = value; }
+  void SetGapEnergy(G4double value)           { gapEnergy = value; }
+  void SetLowQPLimit(G4double value)          { lowQPLimit = value; }
+  void SetSubgapAbsorption(G4double value)    { subgapAbsorption = value; }
+  void SetAbsorberGap(G4double value)         { absorberGap = value; }
+  void SetPhononLifetime(G4double value)      { phononLifetime = value; }
+  void SetPhononLifetimeSlope(G4double value) { phononLifetimeSlope = value; }
+  void SetVSound(G4double value)              { vSound = value; }
+
 protected:
+  // Check that the five required parameters are set to meaningful values
+  G4bool ParamsReady() const {
+    return (filmThickness > 0. && gapEnergy >= 0. && vSound > 0. &&
+	    phononLifetime > 0. && phononLifetimeSlope >= 0.);
+  }
+
   // Compute the probability of a phonon reentering the crystal without breaking
   // any Cooper pairs.
   G4double CalcEscapeProbability(G4double energy,
@@ -99,7 +118,14 @@ protected:
   G4double PhononEnergyPDF(G4double E, G4double x) const;
 
   // Encapsulate below-bandgap logic
-  G4bool IsSubgap(G4double energy) const { return energy < 2.*gapEnergy; }
+  G4bool IsSubgap(G4double energy) const { return (energy < 2.*gapEnergy); }
+  G4bool DirectAbsorb(G4double energy) const {
+    return (IsSubgap(energy) && energy > 2.*absorberGap);
+  }
+
+  // Write summary of interaction to output "kaplanqp_stats" file
+  void ReportAbsorption(G4double energy, G4double EDep,
+			const std::vector<G4double>& reflectedEnergies) const;
 
 private:
   G4int verboseLevel;		// For diagnostic messages
@@ -109,6 +135,7 @@ private:
   G4double gapEnergy;		// Bandgap energy (delta)
   G4double lowQPLimit;		// Minimum X*delta to keep as a quasiparticle
   G4double subgapAbsorption;	// Probability to absorb energy below bandgap
+  G4double absorberGap;		// Bandgap of secondary absorber material
   G4double phononLifetime;	// Lifetime of phonons in film at 2*delta
   G4double phononLifetimeSlope;	// Energy dependence of phonon lifetime
   G4double vSound;		// Speed of sound in film
