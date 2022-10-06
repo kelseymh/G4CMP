@@ -228,6 +228,7 @@ AttachPhononSensor(G4CMPSurfaceProperty *surfProp) {
 
   // Properties must be added to existing surface-property table
   auto sensorProp = surfProp->GetPhononMaterialPropertiesTablePointer();
+  sensorProp->AddConstProperty("filmAbsorption", 0.20);    // True sensor area
   sensorProp->AddConstProperty("filmThickness", 600.*nm);
   sensorProp->AddConstProperty("gapEnergy", 173.715e-6*eV);
   sensorProp->AddConstProperty("lowQPLimit", 3.);
