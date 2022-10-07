@@ -83,14 +83,12 @@ AbsorbAtElectrode(const G4Track& track, const G4Step& step,
 
   // Create KaplanQP simulator if not already available
   if (!kaplanQP) {
-    G4MaterialPropertiesTable* ncTable =
-      const_cast<G4MaterialPropertiesTable*>(theSurfaceTable);
-
     // Pass temperture through to KaplanQP if no already included
-    if (!ncTable->ConstPropertyExists("temperature"))
-      ncTable->AddConstProperty("temperature", theLattice->GetTemperature());
+    if (!theSurfaceTable->ConstPropertyExists("temperature"))
+      theSurfaceTable->AddConstProperty("temperature",
+					theLattice->GetTemperature());
 
-    kaplanQP = new G4CMPKaplanQP(ncTable, verboseLevel);
+    kaplanQP = new G4CMPKaplanQP(theSurfaceTable, verboseLevel);
   }
 
   // Transfer phonon energy into superconducting film
