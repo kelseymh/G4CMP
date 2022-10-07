@@ -8,17 +8,21 @@
 /// \file  library/src/G4CMPVElectrodePattern.cc
 /// \brief Abstract base class to define complex electrode layouts
 //
+// 20221006  G4CMP-330 -- Pass lattice temperature through to sensors
 
 #include "G4CMPVElectrodePattern.hh"
+#include "G4LatticePhysical.hh"
 #include "G4MaterialPropertiesTable.hh"
 
 
-// Handles casting table to non-const for access
+// Transfer lattice temperature into properties table if not already set
 
-G4double
-G4CMPVElectrodePattern::GetMaterialProperty(const G4String& key) const {
-  G4MaterialPropertiesTable* ncTable =
-    const_cast<G4MaterialPropertiesTable*>(theSurfaceTable);
+void G4CMPVElectrodePattern::
+UseSurfaceTable(G4MaterialPropertiesTable* surfProp) {
+  theSurfaceTable = surfProp;
 
-  return ncTable->GetConstProperty(key);
+  if (theLattice && !theSurfaceTable->ConstPropertyExists("temperature"))
+    theSurfaceTable->AddConstProperty("temperature",
+				      theLattice->GetTemperature());
 }
+

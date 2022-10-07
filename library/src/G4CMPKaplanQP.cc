@@ -7,6 +7,22 @@
 /// \brief Grouping of free standing functions that relate to the
 /// creation and energy calculations of quasi-particle downconversion
 /// by phonons breaking Cooper pairs in superconductors.
+///
+/// If the thin-film parameters are set from a MaterialPropertiesTable,
+/// the table must contain the first five of the following entries:
+///
+/// | Property Key        | Definition                   | Example value (Al) |
+/// |---------------------|------------------------------|--------------------|
+/// | filmThickness       | Thickness of film            | 600.*nm            |
+/// | vSound              | Speed of sound in film       | 3.26*km/s          |
+/// | gapEnergy           | Bandgap of film material     | 173.715e-6*eV      |
+/// | phononLifetime      | Phonon lifetime at 2*bandgap | 242.*ps            |
+/// | phononLifetimeSlope | Lifetime vs. energy          | 0.29               |
+/// |                     |                              |                    |
+/// | lowQPLimit          | Minimum bandgap multiple     | 3.                 |
+/// | subgapAbsorption    | Absorption below 2*bandgap   | 0.03 (optional)    |
+/// | absorperGap         | Bandgap of "subgap absorber" | 15e-6*eV (W)       |
+/// | temperature         | Temperature of film          | 0.05e-3*K          |
 //
 // $Id$
 //
@@ -26,6 +42,7 @@
 // 20201109  Add diagnostic text file (like downconversion and Luke).
 // 20220928  G4CMP-323: Add bandgap of secondary absorber (quasiparticle trap)
 // 		Drop requirement for material properties table at runtime.
+// 20221006  G4CMP-330: Add temperature parameter with setter.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -58,7 +75,7 @@ G4double G4CMP::KaplanPhononQP(G4double energy,
 G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
   : verboseLevel(vb), filmProperties(0), filmThickness(0.), gapEnergy(0.),
     lowQPLimit(3.), subgapAbsorption(0.), absorberGap(0.),
-    phononLifetime(0.), phononLifetimeSlope(0.), vSound(0.) {
+    phononLifetime(0.), phononLifetimeSlope(0.), vSound(0.), temperature(0.) {
   if (prop) SetFilmProperties(prop);
 }
 
@@ -104,6 +121,9 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
 
     absorberGap =      (prop->ConstPropertyExists("absorberGap")
 			? prop->GetConstProperty("absorberGap") : 0.);
+
+    temperature =      (prop->ConstPropertyExists("temperature")
+			? prop->GetConstProperty("temperature") : 0.);
 
     filmProperties = prop;
   }

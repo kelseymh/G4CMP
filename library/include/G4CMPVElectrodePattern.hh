@@ -49,9 +49,7 @@ public:
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
   // Local copy of properties stored automatically by G4CMPSurfaceProperty
-  void UseSurfaceTable(G4MaterialPropertiesTable* surfProp) {
-    theSurfaceTable = surfProp;
-  }
+  void UseSurfaceTable(G4MaterialPropertiesTable* surfProp);
 
   // Subclass MUST implement this to return true/false depending on position
   virtual G4bool IsNearElectrode(const G4Step& aStep) const = 0;
@@ -62,11 +60,14 @@ public:
                                  G4ParticleChange&) const {;}
 
 protected:
-  // Handles casting table to non-const for access
-  G4double GetMaterialProperty(const G4String& key) const;
+  G4double GetMaterialProperty(const G4String& key) const {
+    return theSurfaceTable->GetConstProperty(key);
+  }
 
   G4int verboseLevel;
-  G4MaterialPropertiesTable* theSurfaceTable;	// Not owned, can't be const
+
+  // NOTE: "mutable" because some read functionality is only non-const
+  mutable G4MaterialPropertiesTable* theSurfaceTable;
 };
 
 #endif	/* G4CMPVElectrodePattern_h */
