@@ -4,31 +4,35 @@
 \***********************************************************************/
 
 // $Id$
-// class G4CMPPhononElectrode, subclass of G4CMPVElectrodePattern
-//
-// Class description:
-//
-// This provides an interface to G4CMPKaplanQP, to simulate the response
-// of a phonon energy-absorbing electrode made of a thin-film superconductor.
-//
-// The associated border surface must have a G4MaterialPropertiesTable
-// registered, containing at least all the following parameters (see also
-// README.md):
-//
-// | Property Key        | Definition                   | Example value (Al) |
-// |---------------------|------------------------------|--------------------|
-// | filmThickness       | Thickness of film            | 600.*nm            |
-// | gapEnergy           | Bandgap of film material     | 173.715e-6*eV      |
-// | lowQPLimit          | Minimum bandgap multiple     | 3.                 |
-// | phononLifetime      | Phonon lifetime at 2*bandgap | 242.*ps            |
-// | phononLifetimeSlope | Lifetime vs. energy          | 0.29               |
-// | vSound              | Speed of sound in film       | 3.26*km/s          |
-//
-// In addition, for sensors containing a "direct absorber" (such as a TES),
-// The property key "subgapAbsorption" may be set with the probability to
-// directly absorb phonons below 2*bandgap.
+/// \file library/src/G4CMPPhononElectrode.cc
+/// \brief class G4CMPPhononElectrode, subclass of G4CMPVElectrodePattern
+///
+/// This provides an interface to G4CMPKaplanQP, to simulate the response
+/// of a phonon energy-absorbing electrode made of a thin-film superconductor.
+///
+/// The associated border surface must have a G4MaterialPropertiesTable
+/// registered, containing at least all the following parameters (see also
+/// README.md):
+///
+/// | Property Key        | Definition                   | Example value (Al) |
+/// |---------------------|------------------------------|--------------------|
+/// | filmThickness       | Thickness of film            | 600.*nm            |
+/// | gapEnergy           | Bandgap of film material     | 173.715e-6*eV      |
+/// | phononLifetime      | Phonon lifetime at 2*bandgap | 242.*ps            |
+/// | phononLifetimeSlope | Lifetime vs. energy          | 0.29               |
+/// | vSound              | Speed of sound in film       | 3.26*km/s          |
+/// |                     |                              |                    |
+/// | lowQPLimit          | Minimum bandgap multiple     | 3.                 |
+/// | subgapAbsorption    | Absorption below 2*bandgap   | 0.03 (optional)    |
+/// | absorperGap         | Bandgap of "subgap absorber" | 15e-6*eV (W)       |
+/// | temperature         | Temperature of film          | 0.05e-3*K          |
+///
+/// In addition, for sensors containing a "direct absorber" (such as a TES),
+/// The property key "subgapAbsorption" may be set with the probability to
+/// directly absorb phonons below 2*bandgap.
 // 
 // 20221006  M. Kelsey -- Adapted from SuperCDMS simulation version
+// 20221006  G4CMP-330 -- Add lattice temperature to properties table
 
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -81,6 +85,11 @@ AbsorbAtElectrode(const G4Track& track, const G4Step& step,
   if (!kaplanQP) {
     G4MaterialPropertiesTable* ncTable =
       const_cast<G4MaterialPropertiesTable*>(theSurfaceTable);
+
+    // Pass temperture through to KaplanQP if no already included
+    if (!ncTable->ConstPropertyExists("temperature"))
+      ncTable->AddConstProperty("temperature", theLattice->GetTemperature());
+
     kaplanQP = new G4CMPKaplanQP(ncTable, verboseLevel);
   }
 
