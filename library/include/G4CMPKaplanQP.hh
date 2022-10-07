@@ -7,6 +7,22 @@
 /// \brief Grouping of free standing functions that relate to the
 /// creation and energy calculations of quasi-particle downconversion
 /// by phonons breaking Cooper pairs in superconductors.
+///
+/// If the thin-film parameters are set from a MaterialPropertiesTable,
+/// the table must contain the first five of the following entries:
+///
+/// | Property Key        | Definition                   | Example value (Al) |
+/// |---------------------|------------------------------|--------------------|
+/// | filmThickness       | Thickness of film            | 600.*nm            |
+/// | vSound              | Speed of sound in film       | 3.26*km/s          |
+/// | gapEnergy           | Bandgap of film material     | 173.715e-6*eV      |
+/// | phononLifetime      | Phonon lifetime at 2*bandgap | 242.*ps            |
+/// | phononLifetimeSlope | Lifetime vs. energy          | 0.29               |
+/// |                     |                              |                    |
+/// | lowQPLimit          | Minimum bandgap multiple     | 3.                 |
+/// | subgapAbsorption    | Absorption below 2*bandgap   | 0.03 (optional)    |
+/// | absorperGap         | Bandgap of "subgap absorber" | 15e-6*eV (W)       |
+/// | temperature         | Temperature of film          | 0.05e-3*K          |
 //
 // $Id$
 //
@@ -23,6 +39,7 @@
 // 20220928  G4CMP-323: Add bandgap of secondary absorber (quasiparticle trap)
 //		Add direct-setting functions for configuration parameters,
 //		and function to test whether parameters have been set.
+// 20221006  G4CMP-330: Add temperature parameter with Set function.
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
@@ -58,6 +75,9 @@ public:
   // Returns absorbed energy, fills list of re-emitted phonons
   G4double AbsorbPhonon(G4double energy,
 			std::vector<G4double>& reflectedEnergies) const;
+
+  // Set temperature for use by thermalization functions
+  void SetTemperature(G4double temp) { temperature = temp; }
 
   // Configure thin film (QET, metalization, etc.) for phonon absorption
   void SetFilmProperties(G4MaterialPropertiesTable* prop);
@@ -139,6 +159,7 @@ private:
   G4double phononLifetime;	// Lifetime of phonons in film at 2*delta
   G4double phononLifetimeSlope;	// Energy dependence of phonon lifetime
   G4double vSound;		// Speed of sound in film
+  G4double temperature;		// Ambient temperature of film (from lattice)
 
   mutable std::ofstream output;		// Diagnostic output under G4CMP_DEBUG
 };
