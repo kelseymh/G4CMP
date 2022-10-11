@@ -480,9 +480,9 @@ with different property parameters.
 
 User applications with active sensors for either phonons or charges (or
 both), should define a subclass of `G4CMPVElectrodePattern` for each of
-those sensors (only one sensor per surface).  If the sensors require
-additional parameters, those should be assigned to the material properties
-table that goes with the surface above.
+those sensors.  If the sensors require additional parameters, those should
+be assigned to the material properties table that goes with the surface
+above.  See below for a discussion of `G4CMPPhononElectrode`.
 
 Phonon sensors typically involve a superconducting film to couple the
 substrate to a sensor (SQUID, TES, etc.).  The `G4CMPKaplanQP` class
@@ -506,3 +506,19 @@ The last parameter is optional.  It only applies if there is a sensor
 involved which is sensitive to heat energy, in which case phonons below
 2.*bandgap energy should be treated as directly absorbed with the specified
 probability.
+
+A concrete "electrode" class, `G4CMPPhononElectrode`, is provided for simple
+access to `G4CMPKaplanQP` from user applications.  An instance of
+`G4CMPPhononElectrode` should be registered to the `G4CMPSurfaceProperty`
+associated with the phonon sensors' surface.  The material properties listed
+above should be registered into the surface's material property table, via
+`G4CMPSurfaceProperty::GetPhononMaterialPropertiesTablePointer()`; this
+table will be passed into `G4CMPKaplanQP` automatically when it is
+registered.  
+
+`G4CMPPhononElectrode` also supports an additional material property,
+"filmAbsorption", to specify the "conversion efficiency" for phonons
+incident on the registered sensor.  This assumes that the sensor is
+implemented as a dedicated volume with an associated border surface.  If
+individual sensor shapes are not implemented, this parameter may also
+include geometric coverage.
