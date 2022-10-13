@@ -27,6 +27,7 @@
 // 20211012  Apply scale factor to conserve energy averaged over many electrons
 // 20220907  Multiply force by fMass instead of theLattice->GetElectronMass()
 //		as the latter is not the mass that is being reported to Geant4
+// 20221013  Momentum to velocity conversion is in the form of p=Mv (not p=mv)
 
 #include "G4CMPEqEMField.hh"
 #include "G4CMPConfigManager.hh"
@@ -123,8 +124,8 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 
   /* "Momentum" reported by G4 is the true momentum.
    */
-  vel = mom;
-  vel /= fMass/c_light;		// v = pc/c / mc^2/c^2 = pc/(mc^2/c)
+  vel = mom*c_light; // v = pc/c / mc^2/c^2 = pc/(mc^2/c)
+  vel *= theLattice->GetMInvTensor();
   G4double vinv = 1./vel.mag();
 
   momdir = vel.unit();
@@ -165,7 +166,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 #endif
 
   force *= theLattice->GetMInvTensor();
-  force *= theLattice->GetElectronMass();
+  force *= fMass;
   //***force *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
