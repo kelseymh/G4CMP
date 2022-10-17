@@ -36,6 +36,7 @@
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
+// 20221014  G4CMP-334:  Add maxLukePhonons to printout; show macro commands
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -117,7 +118,8 @@ G4CMPConfigManager::~G4CMPConfigManager() {
 
 G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
   : verbose(master.verbose), fPhysicsModelID(master.fPhysicsModelID), 
-    ehBounces(master.ehBounces), pBounces(master.pBounces), 
+    ehBounces(master.ehBounces), pBounces(master.pBounces),
+    maxLukePhonons(master.maxLukePhonons),
     version(master.version), LatticeDir(master.LatticeDir), 
     IVRateModel(master.IVRateModel), eTrapMFP(master.eTrapMFP),
     hTrapMFP(master.hTrapMFP), eDTrapIonMFP(master.eDTrapIonMFP),
@@ -169,32 +171,34 @@ void G4CMPConfigManager::setNIEL(G4VNIELPartition* niel) {
 
 void G4CMPConfigManager::printConfig(std::ostream& os) const {
   os << "G4CMPConfigManager for G4CMP Version " << version
-     << "\nG4LATTICEDATA " << LatticeDir
-     << "\nG4CMP_DEBUG " << verbose
-     << "\nG4CMP_EH_BOUNCES " << ehBounces
-     << "\nG4CMP_PHON_BOUNCES " << pBounces
-     << "\nG4CMP_IV_RATE_MODEL " << IVRateModel
-     << "\nG4CMP_ETRAPPING_MFP " << eTrapMFP/mm << " (mm)"
-     << "\nG4CMP_HTRAPPING_MFP " << hTrapMFP/mm << " (mm)"
-     << "\nG4CMP_EDTRAPION_MFP " << eDTrapIonMFP/mm << " (mm)"
-     << "\nG4CMP_EATRAPION_MFP " << eATrapIonMFP/mm << " (mm)"
-     << "\nG4CMP_HDTRAPION_MFP " << hDTrapIonMFP/mm << " (mm)"
-     << "\nG4CMP_HATRAPION_MFP " << hATrapIonMFP/mm << " (mm)"
-     << "\nG4CMP_TEMPERATURE " << temperature/kelvin << " (K)"
-     << "\nG4CMP_CLEARANCE " << clearance/mm << " (mm)"
-     << "\nG4CMP_MIN_STEP " << stepScale
-     << "\nG4CMP_SAMPLE_ENERGY " << sampleEnergy
-     << "\nG4CMP_MAKE_PHONONS " << genPhonons
-     << "\nG4CMP_MAKE_CHARGES " << genCharges
-     << "\nG4CMP_LUKE_SAMPLE " << lukeSample
-     << "\nG4CMP_COMBINE_STEPLEN " << combineSteps/mm << " (mm)"
-     << "\nG4CMP_EMIN_PHONONS " << EminPhonons/eV << " (eV)"
-     << "\nG4CMP_EMIN_CHARGES " << EminCharges/eV << " (eV)"
-     << "\nG4CMP_USE_KVSOLVER " << useKVsolver
-     << "\nG4CMP_FANO_ENABLED " << fanoEnabled
-     << "\nG4CMP_CHARGE_CLOUD " << chargeCloud
-     << "\nG4CMP_NIEL_FUNCTION "
-     << (nielPartition ? typeid(*nielPartition).name() : "---")
      << "\nfPhysicsModelID " << fPhysicsModelID
+     << "\n/g4cmp/LatticeData " << LatticeDir << "\t# G4LATTICEDATA"
+     << "\n/g4cmp/verbose " << verbose << "\t\t\t\t# G4CMP_DEBUG"
+     << "\n/g4cmp/chargeBounces " << ehBounces << "\t\t\t\t# G4CMP_EH_BOUNCES"
+     << "\n/g4cmp/phononBounces " << pBounces << "\t\t\t# G4CMP_PHON_BOUNCES"
+     << "\n/g4cmp/IVRateModel " << IVRateModel << "\t\t\t# G4CMP_IV_RATE_MODEL"
+     << "\n/g4cmp/eTrappingMFP " << eTrapMFP/mm << " mm\t\t# G4CMP_ETRAPPING_MFP"
+     << "\n/g4cmp/hTrappingMFP " << hTrapMFP/mm << " mm\t\t# G4CMP_HTRAPPING_MFP"
+     << "\n/g4cmp/eDTrapIonizationMFP " << eDTrapIonMFP/mm << " mm\t# G4CMP_EDTRAPION_MFP"
+     << "\n/g4cmp/eATrapIonizationMFP " << eATrapIonMFP/mm << " mm\t# G4CMP_EATRAPION_MFP"
+     << "\n/g4cmp/hDTrapIonizationMFP " << hDTrapIonMFP/mm << " mm\t# G4CMP_HDTRAPION_MFP"
+     << "\n/g4cmp/hATrapIonizationMFP " << hATrapIonMFP/mm << " mm\t# G4CMP_HATRAPION_MFP"
+     << "\n/g4cmp/temperature " << temperature/kelvin << " K\t\t\t\t# G4CMP_TEMPERATURE"
+     << "\n/g4cmp/clearance " << clearance/mm << " mm\t\t\t# G4CMP_CLEARANCE"
+     << "\n/g4cmp/minimumStep " << stepScale << "\t\t\t\t# G4CMP_MIN_STEP"
+     << "\n/g4cmp/samplingEnergy " << sampleEnergy << "\t\t\t# G4CMP_SAMPLE_ENERGY"
+     << "\n/g4cmp/producePhonons " << genPhonons << "\t\t\t\t# G4CMP_MAKE_PHONONS"
+     << "\n/g4cmp/produceCharges " << genCharges << "\t\t\t\t# G4CMP_MAKE_CHARGES"
+     << "\n/g4cmp/sampleLuke " << lukeSample << "\t\t\t\t# G4CMP_LUKE_SAMPLE"
+     << "\n/g4cmp/maxLukePhonons " << maxLukePhonons << "\t\t\t# G4CMP_MAX_LUKE"
+     << "\n/g4cmp/combiningStepLength " << combineSteps/mm << " mm\t\t\t# G4CMP_COMBINE_STEPLEN"
+     << "\n/g4cmp/minEPhonons " << EminPhonons/eV << " eV\t\t\t\t# G4CMP_EMIN_PHONONS"
+     << "\n/g4cmp/minECharges " << EminCharges/eV << " eV\t\t\t\t# G4CMP_EMIN_CHARGES"
+     << "\n/g4cmp/useKVsolver " << useKVsolver << "\t\t\t\t# G4CMP_USE_KVSOLVER"
+     << "\n/g4cmp/enableFanoStatistics " << fanoEnabled << "\t\t\t# G4CMP_FANO_ENABLED"
+     << "\n/g4cmp/createChargeCloud " << chargeCloud << "\t\t\t# G4CMP_CHARGE_CLOUD"
+     << "\n/g4cmp/NIELPartition "
+     << (nielPartition ? typeid(*nielPartition).name() : "---")
+     << "\t# G4CMP_NIEL_FUNCTION "
      << std::endl;
 }
