@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2022-10-16  G4CMP-334 : Improve output of /g4cmp/printConfig.
 2022-10-06  G4CMP-255 : Add phonon sensor electrode class, update example.
 2022-09-21  G4CMP-319 : Add temperature parameter and thermal distribution.
 2022-09-14  G4CMP-322 : Address compiler warnings which have accumulated.
