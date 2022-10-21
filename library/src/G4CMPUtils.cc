@@ -32,7 +32,7 @@
 #include "G4Track.hh"
 #include "G4VProcess.hh"
 #include "Randomize.hh"
-
+#include <cmath>
 
 // Select phonon mode using density of states in material
 
@@ -260,6 +260,21 @@ G4bool G4CMP::IsThermalized(const G4Track* track) {
   return IsThermalized(G4CMP::GetLattice(*track), track->GetKineticEnergy());
 }
 
+//Fermi and Bose distrubutions
+G4double Bose(G4double temperature, G4double energy) {//bose distribution
+
+    return 1./(exp(energy / k_Boltzmann / temperature) - 1.);
+}
+
+G4double Fermi(G4double temperature, G4double energy) {//fermi distribution
+
+    return 1./(exp(energy / k_Boltzmann / temperature) + 1.);
+}
+
+//superconducting gap temp dependence
+G4double Gap(G4double temperature, G4double Gap0, G4double Tc) {
+  return 1.74*sqrt(1- temperature/Tc);
+}
 
 // Search particle's processes for specified name
 

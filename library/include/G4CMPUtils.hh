@@ -92,6 +92,13 @@ namespace G4CMP {
   G4bool IsThermalized(const G4Track* track);
   inline G4bool IsThermalized(const G4Track& t) { return IsThermalized(&t); }
 
+  //Fermi and Bose distributions, usefull for quasiparticle rates
+  G4double Bose(G4double temperature, G4double energy);
+  G4double Fermi(G4double temperature, G4double energy);
+
+  //Gap temp dependence
+  G4double Gap(G4double temperature, G4double Gap0, G4double Tc);
+
   // Search particle's processes for specified name
   G4VProcess* FindProcess(const G4ParticleDefinition* pd, const G4String& pname);
 
