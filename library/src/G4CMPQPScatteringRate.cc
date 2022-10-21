@@ -40,6 +40,9 @@ G4double G4CMPQPScatteringRate::Scattering_Emmision(G4double qp_E, G4double x, G
   G4complex<G4double> comp_part(  ((qp_E - x)*(qp_E - x)) / ((qp_E - x)*(qp_E - x) - Gap(T,Gap0,Tc)*Gap(T,Gap0,Tc)), 0);
   G4double comp_real = sqrt(comp_part).real(); 
 
+ return b*x*x* comp_real * (1 - Gap(T, Gap0, Tc)*Gap(T, Gap0, Tc)/qp_E/(qp_E - x)) * (Bose(T, x) + 1) * (1 - Fermi(T, qp_E - x));
+ 
+}
 G4double Scattering_Absorption(G4double qp_E, G4double x, G4double T, G4double Tc, G4double Gap0, G4double b) {
   G4complex<G4double> comp_part(  ((qp_E + x)*(qp_E + x)) / ((qp_E + x)*(qp_E + x) - Gap(T,Gap0,Tc)*Gap(T,Gap0,Tc)), 0);
   G4double comp_real = sqrt(comp_part).real();
@@ -70,14 +73,4 @@ G4double G4CMPQPScatteringRate::Numeric_Integral(int N_emm, int N_abs, G4double 
 
   return sum_emm+sum_abs;
 }
-
-  
-
-
-
-
-
-
-
-  
 
