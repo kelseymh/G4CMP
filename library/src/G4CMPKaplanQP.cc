@@ -24,6 +24,7 @@
 //		down to gapEnergy before absorption.  Encapsulate this in
 //		a function.
 // 20201109  Add diagnostic text file (like downconversion and Luke).
+// 20221025  Protect diagnostic text file with verbosity inside G4CMP_DEBUG
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -128,12 +129,15 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   }
 
 #ifdef G4CMP_DEBUG
-  if (!output.good()) {
+  if (verboseLevel && !output.is_open()) {
     output.open("kaplanqp_stats");
-    if (output.good()) {
-      output << "Incident Energy [eV],Absorbed Energy [eV],"
-	     << "Reflected Energy [eV],Reflected Phonons" << std::endl;
+    if (!output.good()) {
+      G4Exception("G4CMPKaplanQP", "G4CMP008",
+		  FatalException, "Unable to open LukePhononEnergies");
     }
+
+    output << "Incident Energy [eV],Absorbed Energy [eV],"
+	   << "Reflected Energy [eV],Reflected Phonons" << std::endl;
   }
 #endif
 
