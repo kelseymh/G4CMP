@@ -8,17 +8,19 @@
 //
 // $Id: 4c06153e9ea08f2a90b22c53e5c39bde4b847c07 $
 //
+// 20221006  M. Kelsey -- Remove "IsField" flag, unnecessary with phonons.
+//		Add material properties for aluminum phonon sensors
 
 #ifndef PhononDetectorConstruction_h
 #define PhononDetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
-#include "globals.hh"
 
 class G4Material;
 class G4VPhysicalVolume;
 class G4CMPSurfaceProperty;
 class G4CMPElectrodeSensitivity;
+
 
 class PhononDetectorConstruction : public G4VUserDetectorConstruction {
 public:
@@ -31,7 +33,8 @@ public:
 private:
   void DefineMaterials();
   void SetupGeometry();
-  
+  void AttachPhononSensor(G4CMPSurfaceProperty* surfProp);
+
 private:
   G4Material* fLiquidHelium;
   G4Material* fGermanium;
@@ -42,11 +45,8 @@ private:
   G4CMPSurfaceProperty* botSurfProp;
   G4CMPSurfaceProperty* wallSurfProp;
   G4CMPElectrodeSensitivity* electrodeSensitivity;
-  G4bool fConstructed;
-  G4bool fIfField;
-  
-public:
-  inline void Field(G4bool bl) { fIfField = bl; }
+
+  G4bool fConstructed;		// Flag to not re-recreate surface properties
 };
 
 #endif

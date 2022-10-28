@@ -65,6 +65,8 @@ developers should check the source code in
 | G4CMP\_EPOT\_FILE [F]   | /g4cmp/EPotFile [F] V=0:      | Read mesh field file "F"                |
 | G4CMP\_EPOT\_SCALE [F]  | /g4cmp/scaleEPot [M] V=0:     | Scale the potentials in EPotFile by factor m|
 | G4CMP\_MIN\_STEP [S]    | /g4cmp/minimumStep [S] S>0:   | Force minimum step S\*L0                |
+| G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces [N]      | Maximum e/h reflections                 |
+| G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces [N]      | Maximum phonon reflections              |
 | G4CMP\_MAKE\_PHONONS [R] | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
 | G4CMP\_MAKE\_CHARGES [R] | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
 | G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
@@ -83,13 +85,12 @@ hits below step length |
 | G4CMP\_EATRAPION\_MFP | /g4cmp/eATrapIonizationMFP [L] mm | MFP for h-trap ionization by e- |
 | G4CMP\_HDTRAPION\_MFP | /g4cmp/hDTrapIonizationMFP [L] mm | MFP for e-trap ionization by h+ |
 | G4CMP\_HATRAPION\_MFP | /g4cmp/hATrapIonizationMFP [L] mm | MFP for h-trap ionization by h+ |
+| G4CMP\_TEMPERATURE   | /g4cmp/temperature [T] K | Device/substrate/etc. temperature |
 | G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [LewinSmith\|Lindhard] | Select NIEL partitioning function |
 | G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t\|f] | Create charges in sphere around location |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation [h] [k] [l] | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
 | G4CMP\_MILLER\_L          |                               |                                         |
-| G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces [N]      | Maximum e/h reflections                 |
-| G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces [N]      | Maximum phonon reflections              |
 | G4CMP\_HIT\_FILE [F]	    | /g4cmp/HitsFile [F]           | Write e/h hit locations to "F"          |
 
 The default lattice orientation is to be aligned with the associated
@@ -479,9 +480,9 @@ with different property parameters.
 
 User applications with active sensors for either phonons or charges (or
 both), should define a subclass of `G4CMPVElectrodePattern` for each of
-those sensors (only one sensor per surface).  If the sensors require
-additional parameters, those should be assigned to the material properties
-table that goes with the surface above.
+those sensors.  If the sensors require additional parameters, those should
+be assigned to the material properties table that goes with the surface
+above.  See below for a discussion of `G4CMPPhononElectrode`.
 
 Phonon sensors typically involve a superconducting film to couple the
 substrate to a sensor (SQUID, TES, etc.).  The `G4CMPKaplanQP` class
@@ -494,13 +495,30 @@ for the metal film (defined using the function
 | Property Key     | Definition                  | Example value (Al) |
 |------------------|-----------------------------|--------------------|
 | filmThickness    | Thickness of film           | 600.*nm            |
-| gapEnergy        | Bandgap of film material    | 347.43e-6*eV       |
+| gapEnergy        | Bandgap of film material    | 173.715e-6*eV      |
 | lowQPLimit       | Minimum bandgap multiple for quasiparticles | 3. |
 | phononLifetime   | Phonon lifetime in film at 2*bandgap | 242.*ps   |
 | phononLifetimeSlope | Lifetime dependence vs. energy | 0.29         |
 | vSound           | Speed of sound in film      | 3.26*km/s          |
-| subgapAbsorption | Probably to absorb energy below 2*bandgap | 0.   |
+| subgapAbsorption | Probability to absorb energy below 2*bandgap | 0. |
 
-The last parameter is optional.  It only apples if there is a sensor
+The last parameter is optional.  It only applies if there is a sensor
 involved which is sensitive to heat energy, in which case phonons below
-2.*bandgap energy should be treated as directly absorbed.
+2.*bandgap energy should be treated as directly absorbed with the specified
+probability.
+
+A concrete "electrode" class, `G4CMPPhononElectrode`, is provided for simple
+access to `G4CMPKaplanQP` from user applications.  An instance of
+`G4CMPPhononElectrode` should be registered to the `G4CMPSurfaceProperty`
+associated with the phonon sensors' surface.  The material properties listed
+above should be registered into the surface's material property table, via
+`G4CMPSurfaceProperty::GetPhononMaterialPropertiesTablePointer()`; this
+table will be passed into `G4CMPKaplanQP` automatically when it is
+registered.  
+
+`G4CMPPhononElectrode` also supports an additional material property,
+"filmAbsorption", to specify the "conversion efficiency" for phonons
+incident on the registered sensor.  This assumes that the sensor is
+implemented as a dedicated volume with an associated border surface.  If
+individual sensor shapes are not implemented, this parameter may also
+include geometric coverage.
