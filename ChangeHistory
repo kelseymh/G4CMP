@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2022-11-01  G4CMP-339 : Split G4CMP_DEBUG to separate CMake option.
+
 2022-10-27  g4cmp-V08-02-00 Improvements for future KaplanQP, bug fixes.
 2022-10-25  G4CMP-335 : Rethrow from FanoBinomial if nPairs=0 returned.
 2022-10-25  G4CMP-337 : Suppress kaplanqp_status output with verbose flag.
