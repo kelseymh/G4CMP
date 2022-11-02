@@ -3,6 +3,26 @@
 Run this script after the phononKinematics test binary to plot the resulting
 slowness surfaces and group velocities.
 """
+
+# Get command line arguments first, with a usage line
+
+import os, sys
+from optparse import OptionParser
+
+parser = OptionParser("Usage: %prog [options] Material (Ge or Si)")
+parser.add_option("-v", "--velocity",
+                  choices=("group_vel","phase_vel","slowness"),
+                  default="all")
+parser.add_option("-p", "--phonon",
+                  choices=("long","trans_fast","trans_slow"),
+                  default="all")
+
+(opt, mat) = parser.parse_args();
+if len(args)!=1 or not args in ['Ge','Si']:
+    parser.error("Material must be specified as Ge or Si.")
+
+# Configure consistent format for all plots
+
 import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
@@ -29,32 +49,24 @@ def do_plot(data, label, units, size, color, filename):
     plt.savefig(filename, format='png')
     plt.clf()
 
-# Load up the data 
-# commented lines remove any negative values, so we can just
-# plot octant 1
-long = np.genfromtxt('phonon_group_vel_long', delimiter=',')
-ft = np.genfromtxt('phonon_group_vel_trans_fast', delimiter=',')
-st = np.genfromtxt('phonon_group_vel_trans_slow', delimiter=',')
+def make_plot(material, velname, modename):
+    label = { "group_vel": "vg", "phase_vel": "vp", "slowness" : "s" }
+    scale = { "group_vel": 1000, "phase_vel": 1000, "slowness" : 1/1000 }
+    units = { "group_vel": "km/s", "phase_vel": "km/s", "slowness" : "s/km" }
+    color = { "long": "b", "trans_fast": "g", "trans_slow", "r" }
+    size = 1
 
-s = 1 # marker size
-do_plot(long/1000, 'vg', 'km/s', s, 'b', 'phonon_group_vel_long.png')
-do_plot(ft/1000, 'vg', 'km/s', s, 'g', 'phonon_group_vel_fast_trans.png')
-do_plot(st/1000, 'vg', 'km/s', s, 'r', 'phonon_group_vel_slow_trans.png')
+    fname = f'{material}_{velname}_{modename}'
+    vdata = np.genfromtxt(fname, delimiter=',')
 
-# Do the same for phase velocity
-long = np.genfromtxt('phonon_phase_vel_long', delimiter=',')
-ft = np.genfromtxt('phonon_phase_vel_trans_fast', delimiter=',')
-st = np.genfromtxt('phonon_phase_vel_trans_slow', delimiter=',')
+    do_plot(data=vdata*scale[velname], label=label[velname],
+            units=units[velname], size=size, color=color[modename],
+            filename=f'{fname}.png')
 
-do_plot(long/1000, 'vp', 'km/s', s, 'b', 'phonon_phase_vel_long.png')
-do_plot(ft/1000, 'vp', 'km/s', s, 'g', 'phonon_phase_vel_fast_trans.png')
-do_plot(st/1000, 'vp', 'km/s', s, 'r', 'phonon_phase_vel_slow_trans.png')
+# Process all the data
 
-# Do the same for slowness surfaces
-long = np.genfromtxt('phonon_slowness_long', delimiter=',')
-ft = np.genfromtxt('phonon_slowness_trans_fast', delimiter=',')
-st = np.genfromtxt('phonon_slowness_trans_slow', delimiter=',')
-
-do_plot(long*1000, 's', 's/km', s, 'b', 'phonon_slowness_long.png')
-do_plot(ft*1000, 's', 's/km', s, 'g', 'phonon_slowness_fast_trans.png')
-do_plot(st*1000, 's', 's/km', s, 'r', 'phonon_slowness_slow_trans.png')
+for vel in opt.velocity.choices:
+    if opt.velocity == vel or opt.velocity == None:
+        for mode in opt.phonon.choices:
+            if opt.phonon == mode or opt.phonon == None:
+                make_plot(mat, vel, mode)
