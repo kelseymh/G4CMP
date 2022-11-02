@@ -8,13 +8,16 @@
  *
  * 20170527  Abort job if output files can't be opened
  * 20170620  Change 'is_good()' to 'good()'
+ * 20221102  Fix units of slowness output; expand to write phase velocities.
  */
 
 #include "G4CMPPhononKinematics.hh"
 #include "G4LatticeLogical.hh"
-#include "G4LatticeReader.hh"
-#include "G4NistManager.hh"
+#include "G4LatticeManager.hh"
 #include "G4Material.hh"
+#include "G4NistManager.hh"
+#include "G4PhononPolarization.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include <fstream>
 #include <assert.h>
@@ -22,73 +25,54 @@
 using CLHEP::pi;
 
 void print_usage() {
-    G4cout << "Usage: phononKinematics <path to Si/config.txt>" << G4endl;
+    G4cout << "Usage: phononKinematics <Ge|Si>" << G4endl;
 }
 
 void useG4CMPSolver(G4LatticeLogical* lattice) {
+  // Configure arrays indexed on phonon mode to make
+  G4String suffix[] = { "long", "trans_slow", "trans_fast" };
+  G4int nmode = G4PhononPolarization::NUM_MODES;
+
+  G4String veltype[] = { "group_vel", "phase_vel", "slowness" };
+  G4double velunit[] = { m/s,         m/s,         s/m        };
+  G4int nvel = sizeof(veltype)/sizeof(G4String);
+
+  std::ofstream veldata;	// Reuse this for each output file
+
+  const G4double nbin = 100.;	// Number of angular bins to store
+  
   G4CMPPhononKinematics solver(lattice);
+  G4ThreeVector kdir, vel;
 
-  std::ofstream slowness_trans_slow("phonon_slowness_trans_slow");
-  assert(slowness_trans_slow.good());
+  // Loop over modes and velocity types (entries in switch MUST MATCH veltype)
+  for (G4int mode=0; mode<nmode; mode++) {
+    for (G4int vtype=0; vtype<nvel; vtype++) {
+      G4String fname = "phonon_"+veltype[vtype]+"_"+suffix[mode];
+      veldata.open(fname);
+      assert(veldata.good());
 
-  std::ofstream slowness_trans_fast("phonon_slowness_trans_fast");
-  assert(slowness_trans_fast.good());
+      G4cout << "Filling " << fname << " ..." << G4endl;
 
-  std::ofstream slowness_longi("phonon_slowness_longi");
-  assert(slowness_longi.good());
+      for (G4double theta=0; theta < halfpi; theta += halfpi/nbin) {
+	for (G4double phi=0; phi < halfpi; phi += halfpi/nbin) {
+	  kdir.setRThetaPhi(1., theta, phi);
 
-  std::ofstream trans_slow("phonon_group_vel_trans_slow");
-  assert(trans_slow.good());
+	  switch (vtype) {	// These MUST MATCH veltype name order
+	  case 0: vel = solver.getGroupVelocity(mode, kdir); break;
+	  case 1: vel = solver.getPhaseSpeed(mode, kdir)*kdir; break;
+	  case 2: vel = solver.getSlowness(mode, kdir); break;
+	  default: G4cerr << "Invalid vtype " << vtype << G4endl; ::exit(1);
+	  }
 
-  std::ofstream trans_fast("phonon_group_vel_trans_fast");
-  assert(trans_fast.good());
+	  vel /= velunit[vtype];	// Prepare with units for output file
 
-  std::ofstream longi("phonon_group_vel_long");
-  assert(longi.good());
+	  veldata << vel.x() << ", " << vel.y() << ", " << vel.z() << G4endl;
+	}	// for (G4double phi
+      }		// for (G4double theta
 
-
-  G4ThreeVector kdir(1., 0, 0);
-  for (G4double theta = 0; theta < pi / 2.; theta += pi / 200.) {
-    for (G4double phi = 0; phi < pi / 2.; phi += pi / 200.) {
-      kdir.setRThetaPhi(1., theta, phi);
-
-      G4ThreeVector vg =
-        solver.getGroupVelocity(G4PhononPolarization::TransFast, kdir);
-      G4ThreeVector vp =
-        solver.getSlowness(G4PhononPolarization::TransFast, kdir);
-      trans_fast << vg.x()/m*s << ", "
-                 << vg.y()/m*s << ", "
-                 << vg.z()/m*s << G4endl;
-      slowness_trans_fast << vp.x()/m*s << ", "
-                          << vp.y()/m*s << ", "
-                          << vp.z()/m*s << G4endl;
-
-      vg = solver.getGroupVelocity(G4PhononPolarization::TransSlow, kdir);
-      vp = solver.getSlowness(G4PhononPolarization::TransSlow, kdir);
-      trans_slow << vg.x()/m*s << ", "
-                 << vg.y()/m*s << ", "
-                 << vg.z()/m*s << G4endl;
-      slowness_trans_slow << vp.x()/m*s << ", "
-                          << vp.y()/m*s << ", "
-                          << vp.z()/m*s << G4endl;
-
-      vg = solver.getGroupVelocity(G4PhononPolarization::Long, kdir);
-      vp = solver.getSlowness(G4PhononPolarization::Long, kdir);
-      longi << vg.x()/m*s << ", "
-            << vg.y()/m*s << ", "
-            << vg.z()/m*s << G4endl;
-      slowness_longi << vp.x()/m*s << ", "
-                     << vp.y()/m*s << ", "
-                     << vp.z()/m*s << G4endl;
-    }
-  }
-
-  slowness_trans_fast.close();
-  slowness_trans_slow.close();
-  slowness_longi.close();
-  trans_fast.close();
-  trans_slow.close();
-  longi.close();
+      veldata.close();
+    }		// for (G4int vtype
+  }		// for (G4int mode
 }
 
 int main(int argc, char** argv) {
@@ -97,12 +81,12 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  const G4String filename = argv[1];
-  G4Material* silicon = G4NistManager::Instance()->FindOrBuildMaterial("G4_Si");
+  const G4String matname = argv[1];
+  G4Material* mat = G4NistManager::Instance()->FindOrBuildMaterial("G4_"+matname);
+  assert(mat);
 
-  G4LatticeLogical* lattice = G4LatticeReader().MakeLattice(filename);
-  lattice->SetDensity(silicon->GetDensity());
-  lattice->Initialize();
+  G4LatticeLogical* lattice = G4LatticeManager::Instance()->LoadLattice(mat, matname);
+  assert(lattice);
 
   useG4CMPSolver(lattice);
 
