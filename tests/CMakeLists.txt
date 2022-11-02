@@ -21,3 +21,6 @@ make_binaries("electron_Epv" "latticeVecs" "luke_dist" "testBlockData"
               "testCrystalGroup" "g4cmpEFieldTest" "phononKinematics"
               "testChargeCloud" "testPartition" "testHVtransform"
               "testFanoFactor testTemperature" )
+
+install(FILES "plot_test_phonon_kinematics_py" DESTINATION ${PROJECT_BINARY_DIR}
+	COMPONENT binaries)
