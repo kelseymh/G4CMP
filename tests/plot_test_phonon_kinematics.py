@@ -53,7 +53,7 @@ def make_plot(material, velname, modename):
     label = { "group_vel": "vg", "phase_vel": "vp", "slowness" : "s" }
     scale = { "group_vel": 1000, "phase_vel": 1000, "slowness" : 1/1000 }
     units = { "group_vel": "km/s", "phase_vel": "km/s", "slowness" : "s/km" }
-    color = { "long": "b", "trans_fast": "g", "trans_slow", "r" }
+    color = { "long": "b", "trans_fast": "g", "trans_slow": "r" }
     size = 1
 
     fname = f'{material}_{velname}_{modename}'
