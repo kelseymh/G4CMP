@@ -47,7 +47,7 @@ void useG4CMPSolver(G4LatticeLogical* lattice) {
   // Loop over modes and velocity types (entries in switch MUST MATCH veltype)
   for (G4int mode=0; mode<nmode; mode++) {
     for (G4int vtype=0; vtype<nvel; vtype++) {
-      G4String fname = "phonon_"+veltype[vtype]+"_"+suffix[mode];
+      G4String fname = lattice->GetName()+"_phonon_"+veltype[vtype]+"_"+suffix[mode];
       veldata.open(fname);
       assert(veldata.good());
 
