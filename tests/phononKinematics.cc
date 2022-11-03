@@ -9,6 +9,7 @@
  * 20170527  Abort job if output files can't be opened
  * 20170620  Change 'is_good()' to 'good()'
  * 20221102  Fix units of slowness output; expand to write phase velocities.
+ *		Generate points in cos(theta) steps, not theta.
  */
 
 #include "G4CMPPhononKinematics.hh"
@@ -53,8 +54,12 @@ void useG4CMPSolver(G4LatticeLogical* lattice) {
 
       G4cout << "Filling " << fname << " ..." << G4endl;
 
-      for (G4double theta=0; theta < halfpi; theta += halfpi/nbin) {
-	for (G4double phi=0; phi < halfpi; phi += halfpi/nbin) {
+      // Uniform steps in theta, adjust phi steps for uniform display
+      for (G4double theta=0.; theta < halfpi; theta += halfpi/nbin) {
+	G4double phibin = ceil(nbin*sin(theta));	// More phi at bottom
+	for (G4double phi=0; phi < halfpi; phi += halfpi/phibin) {
+	  if (theta == 0. && phi > 0.) break;	// Only need one point at pole
+	  
 	  kdir.setRThetaPhi(1., theta, phi);
 
 	  switch (vtype) {	// These MUST MATCH veltype name order

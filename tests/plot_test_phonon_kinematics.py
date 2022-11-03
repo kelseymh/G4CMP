@@ -6,20 +6,23 @@ slowness surfaces and group velocities.
 
 # Get command line arguments first, with a usage line
 
+veltypes  = ("group_vel", "phase_vel", "slowness")
+modetypes = ("long", "trans_fast", "trans_slow")
+
 import os, sys
 from optparse import OptionParser
 
 parser = OptionParser("Usage: %prog [options] Material (Ge or Si)")
-parser.add_option("-v", "--velocity",
-                  choices=("group_vel","phase_vel","slowness"),
-                  default="all")
-parser.add_option("-p", "--phonon",
-                  choices=("long","trans_fast","trans_slow"),
-                  default="all")
+parser.add_option("-v", "--velocity", choices=veltypes, default=None,
+                  help=f"VELOCITY={veltypes}")
+parser.add_option("-p", "--phonon", choices=modetypes, default=None,
+                  help=f"PHONON={modetypes}")
 
-(opt, mat) = parser.parse_args();
-if len(args)!=1 or not args in ['Ge','Si']:
+(opt, arg) = parser.parse_args();
+if len(arg)!=1 or not arg[0] in ['Ge','Si']:
     parser.error("Material must be specified as Ge or Si.")
+
+mat = arg[0]
 
 # Configure consistent format for all plots
 
@@ -41,11 +44,6 @@ def do_plot(data, label, units, size, color, filename):
     ax.set_xlabel(f'${label}_x$ [{units}]')
     ax.set_ylabel(f'${label}_y$ [{units}]')
     ax.set_zlabel(f'${label}_z$ [{units}]')
-    #ax.set_xlim([0, 5])
-    #ax.set_ylim([0, 5])
-    #ax.set_zlim([0, 5])
-    #[t.set_rotation(10) for t in ax.get_yticklabels()]
-    #[t.set_rotation(-30) for t in ax.get_xticklabels()]
     plt.savefig(filename, format='png')
     plt.clf()
 
@@ -56,17 +54,17 @@ def make_plot(material, velname, modename):
     color = { "long": "b", "trans_fast": "g", "trans_slow": "r" }
     size = 1
 
-    fname = f'{material}_{velname}_{modename}'
+    fname = f'{material}_phonon_{velname}_{modename}'
     vdata = np.genfromtxt(fname, delimiter=',')
 
-    do_plot(data=vdata*scale[velname], label=label[velname],
+    do_plot(data=vdata/scale[velname], label=label[velname],
             units=units[velname], size=size, color=color[modename],
             filename=f'{fname}.png')
 
 # Process all the data
 
-for vel in opt.velocity.choices:
+for vel in veltypes:
     if opt.velocity == vel or opt.velocity == None:
-        for mode in opt.phonon.choices:
+        for mode in modetypes:
             if opt.phonon == mode or opt.phonon == None:
                 make_plot(mat, vel, mode)
