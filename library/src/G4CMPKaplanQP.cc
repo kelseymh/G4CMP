@@ -448,7 +448,7 @@ G4CMPKaplanQP::CalcQPAbsorption(G4double qpE,
 // Handle quasiparticle energy-dependent absorption efficiency
 
 G4double G4CMPKaplanQP::CalcQPEfficiency(G4double qpE) const {
-    G4double eff = absorberEff + absorberEffSlope * qpE;
+    G4double eff = absorberEff + absorberEffSlope * qpE/gapEnergy;
 
   if (verboseLevel>2) {
     G4cout << " CalcQPEfficiency " << eff << G4endl;

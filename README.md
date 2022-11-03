@@ -507,9 +507,11 @@ for the metal film (defined using the function
 | absorberEffSlope | Efficiency dependence vs. energy  | 0.              |
 | temperature      | Temperature of film         | 0.05e-3*K          |
 
-The `subgapAbsorption` parameter is optional.  It only applies if there is a
+The last five  parameters are optional. They only apply if there is a
 sensor involved which is sensitive to heat energy, in which case phonons
 below 2.*bandgap energy, and above 2.*absorberGap energy, should be treated
-as directly absorbed with the specified probability.  In this case, we
-recommend that user applications also set `/g4cmp/minEPhonons` to
-2.*absorberGap, to avoid excessive CPU from tracking unmeasurable phonons.
+as directly absorbed with the specified 'subgapAbsorption'. In this case,
+we recommend that user applications also set `/g4cmp/minEPhonons` to 2.*absorberGap,
+to avoid excessive CPU from tracking unmeasurable phonons. Quasiparticles
+in a sensor are subject to a baseline absorption efficiency 'absorbedEff'
+and energy-dependent efficiency modification 'absorberEffSlope'.
