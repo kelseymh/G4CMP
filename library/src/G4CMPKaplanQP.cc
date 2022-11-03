@@ -454,7 +454,7 @@ G4double G4CMPKaplanQP::CalcQPEfficiency(G4double qpE) const {
     G4cout << " CalcQPEfficiency " << eff << G4endl;
   }
 
-  return std::min(eff, 1.);
+  return std::max(0., std::min(eff, 1.));
 }
 
 
