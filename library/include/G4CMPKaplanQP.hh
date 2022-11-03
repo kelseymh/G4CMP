@@ -88,15 +88,18 @@ public:
   void SetLowQPLimit(G4double value)          { lowQPLimit = value; }
   void SetSubgapAbsorption(G4double value)    { subgapAbsorption = value; }
   void SetAbsorberGap(G4double value)         { absorberGap = value; }
+  void SetAbsorberEff(G4double value)         { absorberEff = value; }
+  void SetAbsorberEffSlope(G4double value)    { absorberEffSlope = value; }
   void SetPhononLifetime(G4double value)      { phononLifetime = value; }
   void SetPhononLifetimeSlope(G4double value) { phononLifetimeSlope = value; }
   void SetVSound(G4double value)              { vSound = value; }
 
 protected:
-  // Check that the five required parameters are set to meaningful values
+  // Check that the seven required parameters are set to meaningful values
   G4bool ParamsReady() const {
     return (filmThickness > 0. && gapEnergy >= 0. && vSound > 0. &&
-	    phononLifetime > 0. && phononLifetimeSlope >= 0.);
+	    phononLifetime > 0. && phononLifetimeSlope >= 0. && 
+	    absorberEff > 0. && absorberEffSlope >= 0.);
   }
 
   // Compute the probability of a phonon reentering the crystal without breaking
@@ -128,6 +131,9 @@ protected:
   G4double CalcQPAbsorption(G4double energy,
 			    std::vector<G4double>& phonEnergies,
 			    std::vector<G4double>& qpEnergies) const;
+			    
+  // Handle quasiparticle energy-dependent absorption efficiency
+  G4double CalcQPEfficiency(G4double qpE) const;
 
   // Compute quasiparticle energy distribution from broken Cooper pair.
   G4double QPEnergyRand(G4double Energy) const;
@@ -156,6 +162,8 @@ private:
   G4double lowQPLimit;		// Minimum X*delta to keep as a quasiparticle
   G4double subgapAbsorption;	// Probability to absorb energy below bandgap
   G4double absorberGap;		// Bandgap of secondary absorber material
+  G4double absorberEff;     // Quasiparticle absorption efficiency
+  G4double absorberEffSlope;     // Energy dependence of qp absorption efficiency
   G4double phononLifetime;	// Lifetime of phonons in film at 2*delta
   G4double phononLifetimeSlope;	// Energy dependence of phonon lifetime
   G4double vSound;		// Speed of sound in film

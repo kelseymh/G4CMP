@@ -75,8 +75,8 @@ G4double G4CMP::KaplanPhononQP(G4double energy,
 G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
   : verboseLevel(vb), filmProperties(0), filmThickness(0.), gapEnergy(0.),
     lowQPLimit(3.), subgapAbsorption(0.), absorberGap(0.),
-    phononLifetime(0.), phononLifetimeSlope(0.), vSound(0.), temperature(0.), 
-    absorberEff(0.), absorberEffSlope(0.) {
+    absorberEff(0.), absorberEffSlope(0.), phononLifetime(0.), 
+    phononLifetimeSlope(0.), vSound(0.), temperature(0.) {
   if (prop) SetFilmProperties(prop);
 }
 
@@ -116,7 +116,7 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
     phononLifetimeSlope = prop->GetConstProperty("phononLifetimeSlope");
     vSound =              prop->GetConstProperty("vSound");
     absorberEff =         prop->GetConstProperty("absorberEff");
-    absorberEffSlope =     prop->GetConstProperty("absorberEffSlope");
+    absorberEffSlope =    prop->GetConstProperty("absorberEffSlope");
 
     lowQPLimit =       (prop->ConstPropertyExists("lowQPLimit")
 			? prop->GetConstProperty("lowQPLimit") : 3.);
@@ -443,12 +443,11 @@ G4CMPKaplanQP::CalcQPAbsorption(G4double qpE,
 
 // Handle quasiparticle energy-dependent absorption efficiency
 
-G4double
-G4CMPKaplanQP::CalcQPEfficiency(G4double qpE) const{
+G4double G4CMPKaplanQP::CalcQPEfficiency(G4double qpE) const {
     G4double eff = absorberEff + absorberEffSlope * qpE;
 
   if (verboseLevel>2) {
-    G4cout << " efficiency " << eff << G4endl;
+    G4cout << " CalcQPEfficiency " << eff << G4endl;
   }
 
   return std::min(eff, 1.);
