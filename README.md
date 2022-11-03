@@ -500,8 +500,12 @@ for the metal film (defined using the function
 | phononLifetime   | Phonon lifetime in film at 2*bandgap | 242.*ps   |
 | phononLifetimeSlope | Lifetime dependence vs. energy | 0.29         |
 | vSound           | Speed of sound in film      | 3.26*km/s          |
-| subgapAbsorption | Probability to absorb energy below 2*bandgap | 0. |
-| absorberGap      | Bandgap of energy absorber  | 15e-6*eV (tungsten) |
+| lowQPLimit       | Minimum bandgap multiple    | 3.                 |
+| subgapAbsorption | Probability to absorb energy below 2*bandgap | 0.03 (optional) |
+| absorberGap      | Bandgap of "subgap absorber"  | 15e-6*eV (tungsten) |
+| absorberEff      | Quasiparticle absorption efficiency  | 0.3          |
+| absorberEffSlope | Efficiency dependence vs. energy  | 0.              |
+| temperature      | Temperature of film         | 0.05e-3*K          |
 
 The `subgapAbsorption` parameter is optional.  It only applies if there is a
 sensor involved which is sensitive to heat energy, in which case phonons

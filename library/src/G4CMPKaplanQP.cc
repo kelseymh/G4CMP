@@ -21,7 +21,9 @@
 /// |                     |                              |                    |
 /// | lowQPLimit          | Minimum bandgap multiple     | 3.                 |
 /// | subgapAbsorption    | Absorption below 2*bandgap   | 0.03 (optional)    |
-/// | absorperGap         | Bandgap of "subgap absorber" | 15e-6*eV (W)       |
+/// | absorberGap         | Bandgap of "subgap absorber" | 15e-6*eV (W)       |
+/// | absorberEff	  | QP absorption efficiency     | 0.3   	      |
+/// | absorberEffSlope    | Efficiency vs. energy        | 0.                 |
 /// | temperature         | Temperature of film          | 0.05e-3*K          |
 //
 // $Id$
@@ -99,8 +101,6 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
   if (!(prop->ConstPropertyExists("gapEnergy") &&
         prop->ConstPropertyExists("phononLifetime") &&
         prop->ConstPropertyExists("phononLifetimeSlope") &&
-        prop->ConstPropertyExists("absorberEff") &&
-        prop->ConstPropertyExists("absorberEffSlope") &&
         prop->ConstPropertyExists("vSound") &&
         prop->ConstPropertyExists("filmThickness"))) {
     G4Exception("G4CMPKaplanQP::SetFilmProperties()", "G4CMP002",
@@ -115,8 +115,12 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
     phononLifetime =      prop->GetConstProperty("phononLifetime");
     phononLifetimeSlope = prop->GetConstProperty("phononLifetimeSlope");
     vSound =              prop->GetConstProperty("vSound");
-    absorberEff =         prop->GetConstProperty("absorberEff");
-    absorberEffSlope =    prop->GetConstProperty("absorberEffSlope");
+
+    absorberEff =      (prop->GetConstProperty("absorberEff")
+			  ? prop->GetConstProperty("absorberEff") : 1.);
+
+    absorberEffSlope = (prop->GetConstProperty("absorberEffSlope")
+			  ? prop->GetConstProperty("absorberEffSlope"): 0.);
 
     lowQPLimit =       (prop->ConstPropertyExists("lowQPLimit")
 			? prop->GetConstProperty("lowQPLimit") : 3.);

@@ -25,6 +25,8 @@
 /// | lowQPLimit          | Minimum bandgap multiple     | 3.                 |
 /// | subgapAbsorption    | Absorption below 2*bandgap   | 0.03 (optional)    |
 /// | absorperGap         | Bandgap of "subgap absorber" | 15e-6*eV (W)       |
+/// | absorberEff	  | QP absorption efficiency     | 0.3                |
+/// | absorberEffSlope    | Efficiency vs. energy        | 0.                 |
 /// | temperature         | Temperature of film          | 0.05e-3*K          |
 ///
 /// In addition, for sensors containing a "direct absorber" (such as a TES),
