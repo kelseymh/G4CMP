@@ -43,9 +43,9 @@ endif
 
 CPPFLAGS := $(G4CMP_FLAGS) $(CPPFLAGS)		# Prepend for right load order
 ifdef G4DEBUG
-  CXXFLAGS += -g -Og
+  CXXFLAGS += -Og -g -pipe	# ??What does the "-pipe" flag actually do??
 else
-  CXXFLAGS += -O2 -g
+  CXXFLAGS += -O2 -g -pipe
 endif
 
 # Library goes into user's G4WORKDIR, not into system install
