@@ -4,13 +4,13 @@
 # 20160609  Support different executables by looking at target name
 # 20170923  Add testChargeCloud
 # 20220921  G4CMP-319 -- Add testTemperature
-# 20221102  G4CMP-340 -- Copy plotting utility to bin directory
+# 20221104  G4CMP-340 -- Move phononKinematics to tools/ directory
 
 TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup \
-	g4cmpEFieldTest phononKinematics testChargeCloud testPartition \
+	g4cmpEFieldTest testChargeCloud testPartition \
 	testHVtransform testFanoFactor testTemperature
 
-.PHONY : $(TESTS) plot_test_phonon_kinematics.py
+.PHONY : $(TESTS)
 
 ifndef G4CMP_NAME
 help :			# First target, in case user just types "make"
@@ -22,7 +22,6 @@ help :			# First target, in case user just types "make"
 	@echo "testBlockData : Demonstrate use of data container"
 	@echo "testCrystalGroup : Validate non-orthogonal crystal axes"
 	@echo "g4cmpEFieldTest  : Validate COMSOL field file in rectangular box"
-	@echo "phononKinematics : Generate Si kinematics and plot"
 	@echo "testChargeCloud  : Validate performance of G4CMPChargeCloud"
 	@echo "testHVtransform  : Check lattice transforms and inversions"
 	@echo "testFanoFactor   : Verify Fano fluctuations given mean, F"
@@ -30,17 +29,13 @@ help :			# First target, in case user just types "make"
 	@echo
 	@echo Please specify which one to build as your make target, or \"all\"
 
-all : $(TESTS) plot_test_phonon_kinematics.py
+all : $(TESTS)
 
 $(TESTS) :
 	@$(MAKE) G4CMP_NAME=$@ bin
 
-plot_test_phonon_kinematics.py : 
-	@/bin/cp -f $@ $(G4WORKDIR)/bin/$(G4SYSTEM)/$@
-
 clean :
 	@for t in $(TESTS) ; do $(MAKE) G4CMP_NAME=$$t clean; done
-	@/bin/rm f $(G4WORKDIR)/bin/$(G4SYSTEM)/plot_test_phonon_kinematics.py
 else
 include $(G4CMPINSTALL)/g4cmp.gmk
 endif
