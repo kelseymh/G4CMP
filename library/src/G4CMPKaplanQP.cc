@@ -116,10 +116,10 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
     phononLifetimeSlope = prop->GetConstProperty("phononLifetimeSlope");
     vSound =              prop->GetConstProperty("vSound");
 
-    absorberEff =      (prop->GetConstExists("absorberEff")
+    absorberEff =      (prop->ConstPropertyExists("absorberEff")
 			  ? prop->GetConstProperty("absorberEff") : 1.);
 
-    absorberEffSlope = (prop->GetConstExists("absorberEffSlope")
+    absorberEffSlope = (prop->ConstPropertyExists("absorberEffSlope")
 			  ? prop->GetConstProperty("absorberEffSlope"): 0.);
 
     lowQPLimit =       (prop->ConstPropertyExists("lowQPLimit")
