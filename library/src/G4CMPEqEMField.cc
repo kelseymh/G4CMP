@@ -84,6 +84,7 @@ void G4CMPEqEMField::SetChargeMomentumMass(G4ChargeState particleCharge,
     G4cout << "G4CMPEqEMField::SetChargeMomentumMass "
 	   << particleCharge.GetCharge() << " " << MomentumXc << " MeV "
 	   << mass/electron_mass_c2 << " m_e" << G4endl;
+      //<< "mass : " << mass << " mass/c2 : " << mass/c_squared <<  G4endl;
   }
 #endif
 
@@ -111,6 +112,8 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   G4double Emag = Efield.mag();
 
   force = Efield;	// Apply transforms here so Efield stays original
+  G4ThreeVector forces= Efield;
+  forces.set(0,1e-6,1e-6);
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
@@ -118,7 +121,11 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 	   << " (q,m) " << fCharge/eplus << " e+ "
 	   << fMass/electron_mass_c2 << " m_e"
 	   << " valley " << valleyIndex << G4endl
-	   << " pc " << mom << " " << mom.mag() << " MeV" << G4endl;
+	   << " pc " << mom << " " << mom.mag() << " MeV" << G4endl
+       << " fMass : " << fMass <<  " , fMass/c2 : " << fMass/c_squared <<  G4endl;
+      // << " electronmass_c2 : " << electron_mass_c2 << " , electon_mass : " << electron_mass_c2/c_squared << G4endl
+       //<< " theLattice->GetElectronMass() : " << theLattice->GetElectronMass() << " , lattice_emass*c2 : " << theLattice->GetElectronMass()*c_squared << G4endl 
+      // << " fCharge : " << fCharge << " , eplus : " << eplus << G4endl;
   }
 #endif
 
@@ -135,74 +142,195 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
     G4cout << " v " << vel/(km/s) << " " << vel.mag()/(km/s) << " km/s"
 	   << G4endl << " TOF (1/v) " << vinv/(ns/mm) << " ns/mm"
 	   << " c/v " << vinv*c_light << G4endl
+      // << "c : " << c_light << " , c_2 : " << c_squared << G4endl
+      // << "MInvTensor : " << theLattice->GetMInvTensor() << G4endl
+      // << "SqrtInvTensor : " << theLattice->GetSqrtInvTensor() << G4endl
 	   << " E-field         " << Efield/(volt/cm) << " "
 	   << Emag/(volt/cm) << " V/cm" << G4endl;
+      
   }
 #endif
 
   fGlobalToLocal.ApplyAxisTransform(force);
+  fGlobalToLocal.ApplyAxisTransform(forces);
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2)
+  if (verboseLevel>2) {
     G4cout << " Field (loc)     " << force/(volt/cm) << " "
 	   << force.mag()/(volt/cm) << G4endl;
+    G4cout << " Fields (loc)     " << forces/(volt/cm) << " "
+	   << forces.mag()/(volt/cm) << G4endl;
+  }
 #endif
 
   theLattice->RotateToLattice(force);
+  theLattice->RotateToLattice(forces);
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2)
+  if (verboseLevel>2) {
     G4cout << " Field (lat)     " << force/(volt/cm) << " "
 	   << force.mag()/(volt/cm) << G4endl;
+        G4cout << " Fields (lat)     " << forces/(volt/cm) << " "
+	   << forces.mag()/(volt/cm) << G4endl; 
+  }
 #endif
 
   // Rotate force into and out of valley frame, applying Herring-Vogt transform
   const G4RotationMatrix& nToV = theLattice->GetValley(valleyIndex);
   const G4RotationMatrix& vToN = theLattice->GetValleyInv(valleyIndex);
+    
+  const G4RotationMatrix& valley0 = theLattice->GetValley(0);
+  const G4RotationMatrix& valley0inv = theLattice->GetValleyInv(0);
+    
+  const G4RotationMatrix& valley1 = theLattice->GetValley(1);
+  const G4RotationMatrix& valley1inv = theLattice->GetValleyInv(1);
+ 
+  const G4RotationMatrix& valley2 = theLattice->GetValley(2);
+  const G4RotationMatrix& valley2inv = theLattice->GetValleyInv(2);
+    
+  const G4RotationMatrix& valley3 = theLattice->GetValley(3);
+  const G4RotationMatrix& valley3inv = theLattice->GetValleyInv(3);
 
   force.transform(nToV);			// Rotate to valley
+    
+  G4ThreeVector force0=forces;
+  G4ThreeVector force1=forces;
+  G4ThreeVector force2=forces;
+  G4ThreeVector force3=forces;
+      
+  force0.transform(valley0);
+  force1.transform(valley1);
+  force2.transform(valley2);
+  force3.transform(valley3);
+    
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2)
-    G4cout << " Field (val)     " << force/(volt/cm) << " "
+  if (verboseLevel>2) {
+      
+    G4cout << "nToV : " << nToV << G4endl  
+       << " Field (val)     " << force/(volt/cm) << " "
 	   << force.mag()/(volt/cm) << G4endl;
+         G4cout  << " Field0 (val)     " << force0/(volt/cm) << " "
+	   << force0.mag()/(volt/cm) << G4endl;
+         G4cout  << " Field1 (val)     " << force1/(volt/cm) << " "
+	   << force1.mag()/(volt/cm) << G4endl;
+         G4cout  << " Field2 (val)     " << force2/(volt/cm) << " "
+	   << force2.mag()/(volt/cm) << G4endl;
+         G4cout  << " Field3 (val)     " << force3/(volt/cm) << " "
+	   << force3.mag()/(volt/cm) << G4endl;
+  }
 #endif
 
   force *= theLattice->GetMInvTensor();
-  force *= fMass;
+  force *= theLattice->GetElectronMass();
+  force0 *= theLattice->GetMInvTensor();
+  force0 *= theLattice->GetElectronMass();
+  force1 *= theLattice->GetMInvTensor();
+  force1 *= theLattice->GetElectronMass();
+  force2 *= theLattice->GetMInvTensor();
+  force2 *= theLattice->GetElectronMass();
+  force3 *= theLattice->GetMInvTensor();
+  force3 *= theLattice->GetElectronMass();
+    //force *= fMass;
   //***force *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2)
+  if (verboseLevel>2) {
     G4cout << " Field (H-V)     " << force/(volt/cm) << " "
 	   << force.mag()/(volt/cm) << G4endl;
+              G4cout << " Field0 (H-V)     " << force0/(volt/cm) << " "
+	   << force0.mag()/(volt/cm) << G4endl;
+              G4cout << " Field1 (H-V)     " << force1/(volt/cm) << " "
+	   << force1.mag()/(volt/cm) << G4endl;
+              G4cout << " Field2 (H-V)     " << force2/(volt/cm) << " "
+	   << force2.mag()/(volt/cm) << G4endl;
+          G4cout << " Field3 (H-V)     " << force3/(volt/cm) << " "
+	   << force3.mag()/(volt/cm) << G4endl;
+      G4cout << "nVoT : " << vToN << G4endl;
+  }
 #endif
 
   force.transform(vToN);			// Back to lattice
+    
+  force0.transform(valley0inv);
+  force1.transform(valley1inv);
+  force2.transform(valley2inv);
+  force3.transform(valley3inv);
+    
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2)
+  if (verboseLevel>2) {
     G4cout << " Field (H-V lat) " << force/(volt/cm) << " "
 	   << force.mag()/(volt/cm) << G4endl;
+        G4cout << " Field0 (H-V lat) " << force0/(volt/cm) << " "
+	   << force0.mag()/(volt/cm) << G4endl;
+            G4cout << " Field1 (H-V lat) " << force1/(volt/cm) << " "
+	   << force1.mag()/(volt/cm) << G4endl;
+            G4cout << " Field2 (H-V lat) " << force2/(volt/cm) << " "
+	   << force2.mag()/(volt/cm) << G4endl;
+            G4cout << " Field3 (H-V lat) " << force3/(volt/cm) << " "
+	   << force3.mag()/(volt/cm) << G4endl;
+  }
 #endif
 
   theLattice->RotateToSolid(force);		// Back to crystal frame
+    
+  theLattice->RotateToSolid(force0);
+  theLattice->RotateToSolid(force1);
+  theLattice->RotateToSolid(force2);
+  theLattice->RotateToSolid(force3);
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2)
+  if (verboseLevel>2) {
     G4cout << " Field (H-V loc) " << force/(volt/cm) << " "
 	   << force.mag()/(volt/cm) << G4endl;
+        G4cout << " Field0 (H-V loc) " << force0/(volt/cm) << " "
+	  << force0.mag()/(volt/cm) << G4endl;
+        G4cout << " Field1 (H-V loc) " << force1/(volt/cm) << " "
+	  << force1.mag()/(volt/cm) << G4endl;
+        G4cout << " Field2 (H-V loc) " << force2/(volt/cm) << " "
+	  << force2.mag()/(volt/cm) << G4endl;
+        G4cout << " Field3 (H-V loc) " << force3/(volt/cm) << " "
+	  << force3.mag()/(volt/cm) << G4endl;
+  }
 #endif
 
   // Restore field to global coordinate frame for G4Transporation
   fLocalToGlobal.ApplyAxisTransform(force);
+    fLocalToGlobal.ApplyAxisTransform(force0);
+    fLocalToGlobal.ApplyAxisTransform(force1);
+    fLocalToGlobal.ApplyAxisTransform(force2);
+    fLocalToGlobal.ApplyAxisTransform(force3);
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>2)
+  if (verboseLevel>2) {
     G4cout << " Field (H-V glb) " << force/(volt/cm) << " "
 	   << force.mag()/(volt/cm) << G4endl;
+        G4cout << " Field0 (H-V glb) " << force0/(volt/cm) << " "
+	   << force0.mag()/(volt/cm) << G4endl;
+            G4cout << " Field1 (H-V glb) " << force1/(volt/cm) << " "
+	   << force1.mag()/(volt/cm) << G4endl;
+            G4cout << " Field2 (H-V glb) " << force2/(volt/cm) << " "
+	   << force2.mag()/(volt/cm) << G4endl;
+            G4cout << " Field3 (H-V glb) " << force3/(volt/cm) << " "
+	   << force3.mag()/(volt/cm) << G4endl;
+    
+    }
 #endif
 
   // Force = qE/beta
   force *= fCharge*vinv*c_light;
 
+    
+
+    
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
     G4cout << " q*Ec/v (scaled) " << force/(eV/m) << " " << force.mag()/(eV/m)
 	   << " eV/m" << G4endl;
+    G4cout << "valley0 : " << valley0 << G4endl;
+    G4cout << "valley0inv : " << valley0inv << G4endl;
+    G4cout << "valley1 : " << valley1 << G4endl;
+    G4cout << "valley1inv : " << valley1inv << G4endl;
+    G4cout << "valley2 : " << valley2 << G4endl;
+    G4cout << "valley2inv : " << valley2inv << G4endl;
+    G4cout << "valley3 : " << valley3 << G4endl;
+    G4cout << "valley3inv : " << valley3inv << G4endl;
+ 
+     
   }
 #endif
 
