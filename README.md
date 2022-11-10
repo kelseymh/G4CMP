@@ -198,6 +198,17 @@ or
 or
 	make library G4DEBUG=1
 
+If you want to enable additional diagnostics in some processes, including
+writing out statistics files, build with the G4CMP_DEBUG environment or Make
+variable set.  Note that this is not compatible with running multiple worker
+threads.
+
+	export G4CMP_DEBUG=1
+or
+	setenv G4CMP_DEBUG 1
+or
+	make library G4CMP_DEBUG=1
+
 If you want to enable "sanitizing" options with the library, to look for
 memory leaks, thread collisions etc., you may set the options
 G4CMP_USE_SANITIZER and G4CMP_SANITIZER_TYPE (default is "thread"):
@@ -232,6 +243,10 @@ want to install to a local path, rather than system-wide, use the
 
 If you want debugging symbols included with the G4CMP library, you
 need to include the `-DCMAKE_BUILD_TYPE=Debug` option.
+
+If you want to enable additional diagnostics in some processes, including
+writing out statistics files, include the `-DG4CMP_DEBUG=1` option.  Note
+that this is not compatible with running multiple worker threads.
 
 If you want to enable "sanitizing" options with the library, to look for
 memory leaks, thread collisions etc., you may set the options
