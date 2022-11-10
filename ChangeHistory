@@ -6,7 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
-2022-11-01  G4CMP-339 : Split G4CMP_DEBUG to separate CMake option.
+2022-11-10  G4CMP-339 : Split G4CMP_DEBUG to separate CMake option.  Remove
+			local overrides of CMAKE_CXX_FLAGS etc.
 2022-11-03  G4CMP-341 : Swap order of -Og/-g flags in GNUmakefile.  Remove
 			G4CMP_DEBUG from G4CMPAnharmonicDecay.hh.
 
