@@ -1,5 +1,7 @@
 /* Header File for AnharmonicDecay utility class */
 
+// 20221103  Drop G4CMP_DEBUG protection here, to avoid client rebuilding
+
 #ifndef G4CMPAnharmonicDecay_h
 #define G4CMPAnharmonicDecay_h
 
@@ -37,9 +39,7 @@ private:
   G4double fBeta, fGamma, fLambda, fMu; // Local buffers for decay parameters
   G4double fvLvT; 			// Ratio of sound speeds
 
-#ifdef G4CMP_DEBUG
-  std::ofstream output;
-#endif
+  std::ofstream output;			// Only used for G4CMP_DEBUG debugging
 };
 
 #endif /* G4CMPAnharmonicDecay_h */
