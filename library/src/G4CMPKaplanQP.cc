@@ -45,6 +45,7 @@
 // 20220928  G4CMP-323: Add bandgap of secondary absorber (quasiparticle trap)
 // 		Drop requirement for material properties table at runtime.
 // 20221006  G4CMP-330: Add temperature parameter with setter.
+// 20221102  G4CMP-314: Add energy dependent efficiency for QP absorption.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -216,17 +217,14 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
 
   ReportAbsorption(energy, EDep, reflectedEnergies);
 
-  // Sanity check -- Reflected + Absorbed should equal input
+  // Sanity check -- Reflected + Absorbed should equal input for eff==1.
   G4double ERefl = std::accumulate(reflectedEnergies.begin(),
 				   reflectedEnergies.end(), 0.);
   if (verboseLevel>1) {
-    G4cout << " Reflected " << ERefl << " (" << reflectedEnergies.size()
-	   << ")\n Absorbed " << EDep << G4endl;
-
- 	 if (fabs(energy-ERefl-EDep)/energy > 1e-3) {
-   	 G4cerr << "WARNING G4CMPKaplanQP lost " << (energy-ERefl-EDep)/eV
-	  	 << " eV" << G4endl;
- 	 }
+    G4cout << " Reflected " << ERefl/eV << " eV"
+	   << " (" << reflectedEnergies.size() << ")" << G4endl
+	   << " Absorbed " << EDep/eV
+	   << " Lost " << (energy-ERefl-EDep)/eV << " eV" << G4endl;
    }
 
   return EDep;
