@@ -500,12 +500,18 @@ for the metal film (defined using the function
 | phononLifetime   | Phonon lifetime in film at 2*bandgap | 242.*ps   |
 | phononLifetimeSlope | Lifetime dependence vs. energy | 0.29         |
 | vSound           | Speed of sound in film      | 3.26*km/s          |
-| subgapAbsorption | Probability to absorb energy below 2*bandgap | 0. |
-| absorberGap      | Bandgap of energy absorber  | 15e-6*eV (tungsten) |
+| lowQPLimit       | Minimum bandgap multiple    | 3.                 |
+| subgapAbsorption | Probability to absorb energy below 2*bandgap | 0.03 (optional) |
+| absorberGap      | Bandgap of "subgap absorber"  | 15e-6*eV (tungsten) |
+| absorberEff      | Quasiparticle absorption efficiency  | 0.3          |
+| absorberEffSlope | Efficiency dependence vs. energy  | 0.              |
+| temperature      | Temperature of film         | 0.05e-3*K          |
 
-The `subgapAbsorption` parameter is optional.  It only applies if there is a
+The last five  parameters are optional. They only apply if there is a
 sensor involved which is sensitive to heat energy, in which case phonons
 below 2.*bandgap energy, and above 2.*absorberGap energy, should be treated
-as directly absorbed with the specified probability.  In this case, we
-recommend that user applications also set `/g4cmp/minEPhonons` to
-2.*absorberGap, to avoid excessive CPU from tracking unmeasurable phonons.
+as directly absorbed with the specified 'subgapAbsorption'. In this case,
+we recommend that user applications also set `/g4cmp/minEPhonons` to 2.*absorberGap,
+to avoid excessive CPU from tracking unmeasurable phonons. Quasiparticles
+in a sensor are subject to a baseline absorption efficiency 'absorbedEff'
+and energy-dependent efficiency modification 'absorberEffSlope'.
