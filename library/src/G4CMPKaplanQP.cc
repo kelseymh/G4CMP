@@ -47,6 +47,7 @@
 // 20221006  G4CMP-330: Add temperature parameter with setter.
 // 20221102  G4CMP-314: Add energy dependent efficiency for QP absorption.
 // 20221116  G4CMP-343: Phonons which don't escape should be killed (dropped).
+//		Subgap phonons should use MFP escape probability.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -253,7 +254,6 @@ G4double G4CMPKaplanQP::CalcEscapeProbability(G4double energy,
   }
 
   if (gapEnergy <= 0.) return 1.;	// Skip phonons which can't be absorbed
-  if (IsSubgap(energy)) return 1.;
 
   // Compute energy-dependent mean free path for phonons in film
   G4double mfp = vSound * phononLifetime /
@@ -365,6 +365,8 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
     if (G4UniformRand() < CalcEscapeProbability(E, frac)) {
       if (verboseLevel>2) G4cout << " phononE got reflected" << G4endl;
       reflectedEnergies.push_back(E);
+    } else if (!IsSubgap(E)) {
+      newPhonEnergies.push_back(E);
     }
   }	// for (E: ...)
 
