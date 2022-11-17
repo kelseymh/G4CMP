@@ -46,6 +46,7 @@
 // 		Drop requirement for material properties table at runtime.
 // 20221006  G4CMP-330: Add temperature parameter with setter.
 // 20221102  G4CMP-314: Add energy dependent efficiency for QP absorption.
+// 20221116  G4CMP-343: Phonons which don't escape should be killed (dropped).
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -217,36 +218,27 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
 
   ReportAbsorption(energy, EDep, reflectedEnergies);
 
-  // Sanity check -- Reflected + Absorbed should equal input for eff==1.
-  G4double ERefl = std::accumulate(reflectedEnergies.begin(),
-				   reflectedEnergies.end(), 0.);
-  if (verboseLevel>1) {
-    G4cout << " Reflected " << ERefl/eV << " eV"
-	   << " (" << reflectedEnergies.size() << ")" << G4endl
-	   << " Absorbed " << EDep/eV
-	   << " Lost " << (energy-ERefl-EDep)/eV << " eV" << G4endl;
-   }
-
   return EDep;
 }
 
 void G4CMPKaplanQP::
 ReportAbsorption(G4double energy, G4double EDep,
 		 const std::vector<G4double>& reflectedEnergies) const {
-  if (!output.good()) return;
-
   G4double ERefl = std::accumulate(reflectedEnergies.begin(),
 				   reflectedEnergies.end(), 0.);
 
 #ifdef G4CMP_DEBUG
-  output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
-	 << reflectedEnergies.size() << std::endl;
+  if (output.good()) {
+    output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
+	   << reflectedEnergies.size() << std::endl;
+  }
 #endif
   
-  if (verboseLevel>2) {
+  if (verboseLevel>1) {
     G4cout << " Phonon " << energy/eV << " deposited " << EDep/eV
 	   << " reflected " << ERefl/eV << " as " << reflectedEnergies.size()
-	   << " new phonons" << G4endl;
+	   << " new phonons " << (energy-ERefl-EDep)/eV << " eV lost"
+	   << G4endl;
   }
 }
 
@@ -366,13 +358,6 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
   for (const G4double& E: phonEnergies) {
     if (verboseLevel>2) G4cout << " phononE " << E << G4endl;
 
-    // Phonons below the bandgap are unconditionally reflected
-    if (IsSubgap(E)) {
-      if (verboseLevel>2) G4cout << " phononE got reflected" << G4endl;
-      reflectedEnergies.push_back(E);
-      continue;
-    }
-
     // frac = 1.5 for phonons headed away from the subst. 0.5 for toward.
     // This assumes that, on average, the phonons are spawned at the center
     // of the superconductor, which is likely not true.
@@ -380,9 +365,6 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
     if (G4UniformRand() < CalcEscapeProbability(E, frac)) {
       if (verboseLevel>2) G4cout << " phononE got reflected" << G4endl;
       reflectedEnergies.push_back(E);
-    } else {
-      if (verboseLevel>2) G4cout << " phononE stays in film" << G4endl;
-      newPhonEnergies.push_back(E);
     }
   }	// for (E: ...)
 
