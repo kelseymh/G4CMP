@@ -365,7 +365,7 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
     if (G4UniformRand() < CalcEscapeProbability(E, frac)) {
       if (verboseLevel>2) G4cout << " phononE got reflected" << G4endl;
       reflectedEnergies.push_back(E);
-    } else if (!IsSubgap(E)) {
+    } else if (G4CMPConfigManager::KeepKaplanPhonons() || !IsSubgap(E)) {
       newPhonEnergies.push_back(E);
     }
   }	// for (E: ...)
