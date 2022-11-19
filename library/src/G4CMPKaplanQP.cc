@@ -48,6 +48,8 @@
 // 20221102  G4CMP-314: Add energy dependent efficiency for QP absorption.
 // 20221116  G4CMP-343: Phonons which don't escape should be killed (dropped).
 //		Subgap phonons should use MFP escape probability.
+// 20221118  G4CMP-346: Use "2D" path length with MFP calculation, rather
+//		than simple 1D approximation
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -358,10 +360,13 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
   for (const G4double& E: phonEnergies) {
     if (verboseLevel>2) G4cout << " phononE " << E << G4endl;
 
-    // frac = 1.5 for phonons headed away from the subst. 0.5 for toward.
+    // 1.5 for phonons headed away from the subst. 0.5 for toward.
     // This assumes that, on average, the phonons are spawned at the center
     // of the superconductor, which is likely not true.
-    G4double frac = (G4UniformRand() < 0.5 ? 0.5 : 1.5);
+    // 1/cos(th) scales the thickness for a random direction
+    G4double frac = ( (G4UniformRand()<0.5 ? 0.5 : 1.5)
+		       / cos(G4UniformRand()*1.47) );	// up to cos(th) = 0.1
+
     if (G4UniformRand() < CalcEscapeProbability(E, frac)) {
       if (verboseLevel>2) G4cout << " phononE got reflected" << G4endl;
       reflectedEnergies.push_back(E);
