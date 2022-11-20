@@ -131,6 +131,7 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     lukeSample(master.lukeSample), combineSteps(master.combineSteps),
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
     useKVsolver(master.useKVsolver), fanoEnabled(master.fanoEnabled),
+    kaplanKeepPh(master.kaplanKeepPh),
     chargeCloud(master.chargeCloud), nielPartition(master.nielPartition),
     messenger(new G4CMPConfigMessenger(this)) {;}
 
@@ -194,6 +195,7 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\nG4CMP_EMIN_CHARGES " << EminCharges/eV << " (eV)"
      << "\nG4CMP_USE_KVSOLVER " << useKVsolver
      << "\nG4CMP_FANO_ENABLED " << fanoEnabled
+     << "\nG4CMP_KAPLAN_KEEP " << kaplanKeepPh
      << "\nG4CMP_CHARGE_CLOUD " << chargeCloud
      << "\nG4CMP_NIEL_FUNCTION "
      << (nielPartition ? typeid(*nielPartition).name() : "---")
