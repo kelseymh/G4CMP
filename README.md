@@ -78,6 +78,7 @@ hits below step length |
 | G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
 | G4CMP\_USE\_KVSOLVER    | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED    | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
+| G4CMP\_KAPLAN\_KEEP     | /g4cmp/kaplanKeepPhonons [t\|f] | Reflect or iterate all phonons in KaplanQP |
 | G4CMP\_IV\_RATE\_MODEL  | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
 | G4CMP\_ETRAPPING\_MFP   | /g4cmp/eTrappingMFP [L] mm        | Mean free path for electron trapping |
 | G4CMP\_HTRAPPING\_MFP   | /g4cmp/hTrappingMFP [L] mm        | Mean free path for charge hole trapping |
@@ -513,5 +514,10 @@ below 2.*bandgap energy, and above 2.*absorberGap energy, should be treated
 as directly absorbed with the specified 'subgapAbsorption'. In this case,
 we recommend that user applications also set `/g4cmp/minEPhonons` to 2.*absorberGap,
 to avoid excessive CPU from tracking unmeasurable phonons. Quasiparticles
-in a sensor are subject to a baseline absorption efficiency 'absorbedEff'
+in a sensor are subject to a baseline absorption efficiency 'absorberEff'
 and energy-dependent efficiency modification 'absorberEffSlope'.
+
+The `G4CMPKaplanQP` process also respects the global setting
+`kaplanKeepPhonons`.  If this is set true, then all internal phonons
+produced in the film will be either re-emitted into the substrate, or
+iterated to produce multiple quasiparticles for energy collection.

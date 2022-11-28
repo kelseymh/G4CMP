@@ -36,6 +36,7 @@
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -97,6 +98,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     EminCharges(getenv("G4CMP_EMIN_CHARGES")?strtod(getenv("G4CMP_EMIN_CHARGES"),0)*eV:0.),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
+    kaplanKeepPh(getenv("G4CMP_KAPLAN_KEEP")?atoi(getenv("G4CMP_KAPLAN_KEEP")):false),
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
     nielPartition(0), messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
@@ -129,6 +131,7 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     lukeSample(master.lukeSample), combineSteps(master.combineSteps),
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
     useKVsolver(master.useKVsolver), fanoEnabled(master.fanoEnabled),
+    kaplanKeepPh(master.kaplanKeepPh),
     chargeCloud(master.chargeCloud), nielPartition(master.nielPartition),
     messenger(new G4CMPConfigMessenger(this)) {;}
 
@@ -192,6 +195,7 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\nG4CMP_EMIN_CHARGES " << EminCharges/eV << " (eV)"
      << "\nG4CMP_USE_KVSOLVER " << useKVsolver
      << "\nG4CMP_FANO_ENABLED " << fanoEnabled
+     << "\nG4CMP_KAPLAN_KEEP " << kaplanKeepPh
      << "\nG4CMP_CHARGE_CLOUD " << chargeCloud
      << "\nG4CMP_NIEL_FUNCTION "
      << (nielPartition ? typeid(*nielPartition).name() : "---")
