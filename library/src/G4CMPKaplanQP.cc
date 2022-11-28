@@ -202,9 +202,15 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   // Phonon goes into superconductor and gets partitioned into
   // quasiparticles, new phonons, and absorbed energy
   G4double EDep = 0.;
-
   std::vector<G4double> qpEnergies;
-  std::vector<G4double> phonEnergies{energy};
+
+  // Divide incident phonon according to maximum QP energy
+  G4int nQPpairs = std::ceil(energy/(2.*highQPLimit*gapEnergy));
+  std::vector<G4double> phonEnergies(nQPpairs, energy/nQPpairs);
+
+  if (verboseLevel>1)
+    G4cout << " divided into " << nQPpairs << " QP pairs" << G4endl;
+
   while (qpEnergies.size() > 0 || phonEnergies.size() > 0) {
     if (phonEnergies.size() > 0) {
       // Partition the phonons' energies into quasi-particles according to
