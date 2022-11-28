@@ -19,7 +19,8 @@
 /// | phononLifetime      | Phonon lifetime at 2*bandgap | 242.*ps            |
 /// | phononLifetimeSlope | Lifetime vs. energy          | 0.29               |
 /// |                     |                              |                    |
-/// | lowQPLimit          | Minimum bandgap multiple     | 3.                 |
+/// | lowQPLimit          | Minimum QP energy to radiate phonons | 3.         |
+/// | highQPLimit         | Maximum energy to create QPs | 10.                |
 /// | subgapAbsorption    | Absorption below 2*bandgap   | 0.03 (optional)    |
 /// | absorberGap         | Bandgap of "subgap absorber" | 15e-6*eV (W)       |
 /// | absorberEff	  | QP absorption efficiency     | 0.3   	      |
@@ -50,6 +51,7 @@
 //		Subgap phonons should use MFP escape probability.
 // 20221118  G4CMP-346: Use "2D" path length with MFP calculation, rather
 //		than simple 1D approximation
+// 20221127  G4CMP-347: Add highQPLimit to split incident phonons
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -81,7 +83,7 @@ G4double G4CMP::KaplanPhononQP(G4double energy,
 
 G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
   : verboseLevel(vb), filmProperties(0), filmThickness(0.), gapEnergy(0.),
-    lowQPLimit(3.), subgapAbsorption(0.), absorberGap(0.),
+    lowQPLimit(3.), highQPLimit(10.), subgapAbsorption(0.), absorberGap(0.),
     absorberEff(0.), absorberEffSlope(0.), phononLifetime(0.), 
     phononLifetimeSlope(0.), vSound(0.), temperature(0.) {
   if (prop) SetFilmProperties(prop);
@@ -129,6 +131,9 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
 
     lowQPLimit =       (prop->ConstPropertyExists("lowQPLimit")
 			? prop->GetConstProperty("lowQPLimit") : 3.);
+
+    highQPLimit =      (prop->ConstPropertyExists("highQPLimit")
+			? prop->GetConstProperty("highQPLimit") : 10.);
 
     subgapAbsorption = (prop->ConstPropertyExists("subgapAbsorption")
 			? prop->GetConstProperty("subgapAbsorption") : 0.);
