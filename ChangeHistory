@@ -9,6 +9,7 @@ ticket identifier, "G4CMP-nnn".
 * NOTE: Add subtasks of G4CMP-325 to list below, below the G4CMP-325 entry *
 
 2022-11-27  G4CMP-325 : Improve physical modeling of absorption in KaplanQP.
+2022-11-28  G4CMP-347 : Split high energy phonons into multiple QP pairs.
 2022-11-27  G4CMP-343 : Phonon re-emission should kill failed escapes.
 2022-11-18  G4CMP-346 : Phonon path length in KaplanQP should be angular.
 2022-11-12  G4CMP-314 : Add quasiparticle absorption efficiency to KaplanQP.
