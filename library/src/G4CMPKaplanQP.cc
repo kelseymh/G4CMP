@@ -83,7 +83,7 @@ G4double G4CMP::KaplanPhononQP(G4double energy,
 
 G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
   : verboseLevel(vb), filmProperties(0), filmThickness(0.), gapEnergy(0.),
-    lowQPLimit(3.), highQPLimit(10.), subgapAbsorption(0.), absorberGap(0.),
+    lowQPLimit(3.), highQPLimit(0.), subgapAbsorption(0.), absorberGap(0.),
     absorberEff(0.), absorberEffSlope(0.), phononLifetime(0.), 
     phononLifetimeSlope(0.), vSound(0.), temperature(0.) {
   if (prop) SetFilmProperties(prop);
@@ -133,7 +133,7 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
 			? prop->GetConstProperty("lowQPLimit") : 3.);
 
     highQPLimit =      (prop->ConstPropertyExists("highQPLimit")
-			? prop->GetConstProperty("highQPLimit") : 10.);
+			? prop->GetConstProperty("highQPLimit") : 0.);
 
     subgapAbsorption = (prop->ConstPropertyExists("subgapAbsorption")
 			? prop->GetConstProperty("subgapAbsorption") : 0.);
@@ -204,11 +204,12 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   G4double EDep = 0.;
   std::vector<G4double> qpEnergies;
 
-  // Divide incident phonon according to maximum QP energy
-  G4int nQPpairs = std::ceil(energy/(2.*highQPLimit*gapEnergy));
+  // Divide incident phonon according to maximum QP energy (or no split)
+  G4int nQPpairs =
+    (highQPLimit>0. ? std::ceil(energy/(2.*highQPLimit*gapEnergy)) : 1);
   std::vector<G4double> phonEnergies(nQPpairs, energy/nQPpairs);
 
-  if (verboseLevel>1)
+  if (verboseLevel>1 && nQPpairs>1)
     G4cout << " divided into " << nQPpairs << " QP pairs" << G4endl;
 
   while (qpEnergies.size() > 0 || phonEnergies.size() > 0) {
