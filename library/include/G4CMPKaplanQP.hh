@@ -19,7 +19,8 @@
 /// | phononLifetime      | Phonon lifetime at 2*bandgap | 242.*ps            |
 /// | phononLifetimeSlope | Lifetime vs. energy          | 0.29               |
 /// |                     |                              |                    |
-/// | lowQPLimit          | Minimum bandgap multiple     | 3.                 |
+/// | lowQPLimit          | Minimum QP energy to radiate phonons | 3.         |
+/// | highQPLimit         | Maximum energy to create QPs | 10.                |
 /// | subgapAbsorption    | Absorption below 2*bandgap   | 0.03 (optional)    |
 /// | absorberGap         | Bandgap of "subgap absorber" | 15e-6*eV (W)       |
 /// | absorberEff         | QP absorption efficiency     | 0.3                |
@@ -42,6 +43,8 @@
 //		Add direct-setting functions for configuration parameters,
 //		and function to test whether parameters have been set.
 // 20221006  G4CMP-330: Add temperature parameter with Set function.
+// 20221102  G4CMP-314: Add energy dependent efficiency for QP absorption.
+// 20221127  G4CMP-347: Add highQPLimit to split incident phonons
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
@@ -58,6 +61,7 @@ class G4MaterialPropertiesTable;
 // of the superconductor, we return the total energy deposited as well
 // as fill a vector of energies that correspond to newly created phonons
 // that are emitted back into the crystal.
+
 namespace G4CMP {
   G4double KaplanPhononQP(G4double energy,
 			  G4MaterialPropertiesTable* prop,
@@ -88,6 +92,7 @@ public:
   void SetFilmThickness(G4double value)       { filmThickness = value; }
   void SetGapEnergy(G4double value)           { gapEnergy = value; }
   void SetLowQPLimit(G4double value)          { lowQPLimit = value; }
+  void SetHighQPLimit(G4double value)         { highQPLimit = value; }
   void SetSubgapAbsorption(G4double value)    { subgapAbsorption = value; }
   void SetAbsorberGap(G4double value)         { absorberGap = value; }
   void SetAbsorberEff(G4double value)         { absorberEff = value; }
@@ -161,6 +166,7 @@ private:
   G4double filmThickness;	// Quantities extracted from properties table
   G4double gapEnergy;		// Bandgap energy (delta)
   G4double lowQPLimit;		// Minimum X*delta to keep as a quasiparticle
+  G4double highQPLimit;		// Maximum X*delta to create QP from phonon
   G4double subgapAbsorption;	// Probability to absorb energy below bandgap
   G4double absorberGap;		// Bandgap of secondary absorber material
   G4double absorberEff;         // Quasiparticle absorption efficiency
