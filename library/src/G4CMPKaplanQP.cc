@@ -52,10 +52,12 @@
 // 20221118  G4CMP-346: Use "2D" path length with MFP calculation, rather
 //		than simple 1D approximation
 // 20221127  G4CMP-347: Add highQPLimit to split incident phonons
+// 20221130  G4CMP-324: Use temperature to discard lowest energy phonons
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4CMPUtils.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
@@ -371,6 +373,9 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
   std::vector<G4double> newPhonEnergies;
   for (const G4double& E: phonEnergies) {
     if (verboseLevel>2) G4cout << " phononE " << E << G4endl;
+
+    // Test for thermalization; thermal phonons are dropped from consideration
+    if (G4CMP::IsThermalized(temperature, E)) continue;
 
     // 1.5 for phonons headed away from the subst. 0.5 for toward.
     // This assumes that, on average, the phonons are spawned at the center
