@@ -202,17 +202,10 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   if (DoDirectAbsorption(energy)) {
     ReportAbsorption(energy, energy, reflectedEnergies);
     return energy;
-  } else if (G4UniformRand() <= CalcEscapeProbability(energy, frac)) {
+  } else if (IsSubgap(energy) ||
+	     G4UniformRand() <= CalcEscapeProbability(energy, frac)) {
     if (verboseLevel>1) G4cout << " Incident phonon reflected." << G4endl;
     reflectedEnergies.push_back(energy);
-    return 0.;
-  } else if (IsSubgap(energy)) {	// Discard failed subgap phonons
-    if (verboseLevel>1) {
-      G4cout << " Incident phonon " << (keepAllPhonons?"reflected.":"killed.")
-	     << G4endl;
-    }
-
-    if (keepAllPhonons) reflectedEnergies.push_back(energy);
     return 0.;
   }
 
