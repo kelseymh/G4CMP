@@ -53,6 +53,7 @@
 //		than simple 1D approximation
 // 20221127  G4CMP-347: Add highQPLimit to split incident phonons
 // 20221130  G4CMP-324: Use temperature to discard lowest energy phonons
+// 20221201  G4CMP-345: Test all incident phonons for "direct absorption."
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -85,7 +86,7 @@ G4double G4CMP::KaplanPhononQP(G4double energy,
 
 G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
   : verboseLevel(vb), filmProperties(0), filmThickness(0.), gapEnergy(0.),
-    lowQPLimit(3.), highQPLimit(0.), subgapAbsorption(0.), absorberGap(0.),
+    lowQPLimit(3.), highQPLimit(0.), directAbsorption(0.), absorberGap(0.),
     absorberEff(0.), absorberEffSlope(0.), phononLifetime(0.), 
     phononLifetimeSlope(0.), vSound(0.), temperature(0.) {
   if (prop) SetFilmProperties(prop);
@@ -137,8 +138,12 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
     highQPLimit =      (prop->ConstPropertyExists("highQPLimit")
 			? prop->GetConstProperty("highQPLimit") : 0.);
 
-    subgapAbsorption = (prop->ConstPropertyExists("subgapAbsorption")
-			? prop->GetConstProperty("subgapAbsorption") : 0.);
+    // Backward compatible -- support both old "subgap" and new "direct" names
+    directAbsorption = (prop->ConstPropertyExists("directAbsorption")
+			? prop->GetConstProperty("directAbsorption")
+			: (prop->ConstPropertyExists("subgapAbsorption")
+			   ? prop->GetConstProperty("subgapAbsorption") : 0.)
+			);
 
     absorberGap =      (prop->ConstPropertyExists("absorberGap")
 			? prop->GetConstProperty("absorberGap") : 0.);
@@ -189,21 +194,19 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   // approximation.
   G4double frac = 2.0;
 
-  // If phonon is not absorbed, reflect it back with no deposition
-  if (IsSubgap(energy)) {
-    G4double EDep = CalcSubgapAbsorption(energy, reflectedEnergies);
-    if (EDep>0.) ReportAbsorption(energy, EDep, reflectedEnergies);
-
+  // Test for direct collection on absorber (TES), then for reflection
+  G4double EDep = CalcDirectAbsorption(energy, reflectedEnergies);
+  if (EDep>0.) {
+    ReportAbsorption(energy, EDep, reflectedEnergies);
     return EDep;
   } else if (G4UniformRand() <= CalcEscapeProbability(energy, frac)) {
     if (verboseLevel>1) G4cout << " Not absorbed." << G4endl;
     reflectedEnergies.push_back(energy);
     return 0.;
-  }
+  } else if (IsSubgap(energy)) return 0.;	// Kill subgaps that failed
 
   // Phonon goes into superconductor and gets partitioned into
   // quasiparticles, new phonons, and absorbed energy
-  G4double EDep = 0.;
   std::vector<G4double> qpEnergies;
 
   // Divide incident phonon according to maximum QP energy (or no split)
@@ -344,7 +347,7 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
       G4cout << " phononE " << phonE << " qpE " << qpE << G4endl;
 
     if (IsSubgap(phonE)) {
-      EDep += CalcSubgapAbsorption(phonE, phonEnergies);
+      EDep += CalcDirectAbsorption(phonE, phonEnergies);
     } else {
       if (verboseLevel>2) G4cout << " Store phonE in phonEnergies" << G4endl;
       phonEnergies.push_back(phonE);
@@ -399,7 +402,7 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
 // Compute probability of absorbing phonon below Cooper-pair breaking
 
 G4double 
-G4CMPKaplanQP::CalcSubgapAbsorption(G4double energy,
+G4CMPKaplanQP::CalcDirectAbsorption(G4double energy,
 				    std::vector<G4double>& keepEnergies) const {
   if (energy < 2.*absorberGap) {	// Below absorber should just be killed
     if (verboseLevel>2)
@@ -408,7 +411,7 @@ G4CMPKaplanQP::CalcSubgapAbsorption(G4double energy,
     return 0.;
   }
   
-  if (G4UniformRand() < subgapAbsorption) {
+  if (G4UniformRand() < directAbsorption) {
     if (verboseLevel>2)
       G4cout << " Deposit phonon " << energy << " as heat" << G4endl;
 
@@ -439,7 +442,7 @@ G4CMPKaplanQP::CalcQPAbsorption(G4double qpE,
     qpEnergies.push_back(qpE);
   } else if (qpE > gapEnergy) {
     if (verboseLevel>2) G4cout << " Reducing qpE to gapEnergy" << G4endl;
-    EDep += CalcSubgapAbsorption(qpE-gapEnergy, phonEnergies);
+    EDep += CalcDirectAbsorption(qpE-gapEnergy, phonEnergies);
     EDep += gapEnergy;
   } else {
     EDep += qpE;
