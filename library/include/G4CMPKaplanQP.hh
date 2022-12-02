@@ -45,7 +45,8 @@
 // 20221006  G4CMP-330: Add temperature parameter with Set function.
 // 20221102  G4CMP-314: Add energy dependent efficiency for QP absorption.
 // 20221127  G4CMP-347: Add highQPLimit to split incident phonons
-// 20221201  G4CMP-345: Rename "CalcSubgapAbs" to "CalcDirectAbs".
+// 20221201  G4CMP-345: Rename "CalcSubgapAbs" to "CalcDirectAbs", split into
+//		new DoDirectAbsorption() boolean test.
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
@@ -130,6 +131,7 @@ protected:
 				   std::vector<G4double>& reflectedEnergies) const;
 
   // Compute probability of phonon collection directly on absorber (TES)
+  G4bool DoDirectAbsorption(G4double energy) const;
   G4double CalcDirectAbsorption(G4double energy,
 				std::vector<G4double>& keepEnergies) const;
 
@@ -161,7 +163,8 @@ protected:
 			const std::vector<G4double>& reflectedEnergies) const;
 
 private:
-  G4int verboseLevel;		// For diagnostic messages
+  G4int verboseLevel;			// For diagnostic messages
+  mutable G4bool keepAllPhonons;	// Copy of flag KeepKaplanPhonons()
 
   G4MaterialPropertiesTable* filmProperties;
   G4double filmThickness;	// Quantities extracted from properties table

@@ -85,7 +85,8 @@ G4double G4CMP::KaplanPhononQP(G4double energy,
 // Class constructor and destructor
 
 G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
-  : verboseLevel(vb), filmProperties(0), filmThickness(0.), gapEnergy(0.),
+  : verboseLevel(vb), keepAllPhonons(true),
+    filmProperties(0), filmThickness(0.), gapEnergy(0.),
     lowQPLimit(3.), highQPLimit(0.), directAbsorption(0.), absorberGap(0.),
     absorberEff(0.), absorberEffSlope(0.), phononLifetime(0.), 
     phononLifetimeSlope(0.), vSound(0.), temperature(0.) {
@@ -189,24 +190,35 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   }
 #endif
 
+  // Flag for whether internal phonons can be killed or not
+  keepAllPhonons = G4CMPConfigManager::KeepKaplanPhonons();
+
   // For the phonon to not break a Cooper pair, it must go 2*thickness,
   // assuming it goes exactly along the thickness direction, which is an
   // approximation.
   G4double frac = 2.0;
 
   // Test for direct collection on absorber (TES), then for reflection
-  G4double EDep = CalcDirectAbsorption(energy, reflectedEnergies);
-  if (EDep>0.) {
-    ReportAbsorption(energy, EDep, reflectedEnergies);
-    return EDep;
+  if (DoDirectAbsorption(energy)) {
+    ReportAbsorption(energy, energy, reflectedEnergies);
+    return energy;
   } else if (G4UniformRand() <= CalcEscapeProbability(energy, frac)) {
-    if (verboseLevel>1) G4cout << " Not absorbed." << G4endl;
+    if (verboseLevel>1) G4cout << " Incident phonon reflected." << G4endl;
     reflectedEnergies.push_back(energy);
     return 0.;
-  } else if (IsSubgap(energy)) return 0.;	// Kill subgaps that failed
+  } else if (IsSubgap(energy)) {	// Discard failed subgap phonons
+    if (verboseLevel>1) {
+      G4cout << " Incident phonon " << (keepAllPhonons?"reflected.":"killed.")
+	     << G4endl;
+    }
+
+    if (keepAllPhonons) reflectedEnergies.push_back(energy);
+    return 0.;
+  }
 
   // Phonon goes into superconductor and gets partitioned into
   // quasiparticles, new phonons, and absorbed energy
+  G4double EDep = 0.;
   std::vector<G4double> qpEnergies;
 
   // Divide incident phonon according to maximum QP energy (or no split)
@@ -253,12 +265,20 @@ ReportAbsorption(G4double energy, G4double EDep,
 	   << reflectedEnergies.size() << std::endl;
   }
 #endif
-  
+
+  G4double delta = energy-ERefl-EDep;
+  if (fabs(delta) < 1e-20) delta = 0.;	// Suppress floating-point fluctuation
+
   if (verboseLevel>1) {
     G4cout << " Phonon " << energy/eV << " deposited " << EDep/eV
 	   << " reflected " << ERefl/eV << " as " << reflectedEnergies.size()
-	   << " new phonons " << (energy-ERefl-EDep)/eV << " eV lost"
+	   << " new phonons " << delta/eV << " eV lost"
 	   << G4endl;
+  }
+
+  if (delta < 0.) {		// Actual energy excess
+    G4cerr << "WARNING G4CMPKaplanQP has excess " << delta/eV << " eV"
+	   << " above incident phonon." << G4endl;
   }
 }
 
@@ -279,8 +299,9 @@ G4double G4CMPKaplanQP::CalcEscapeProbability(G4double energy,
                  (1. + phononLifetimeSlope * (energy/gapEnergy - 2.));
 
   if (verboseLevel>2) {
-    G4cout << " mfp " << mfp << " returning "
-	   << std::exp(-2.* thicknessFrac * filmThickness/mfp) << G4endl;
+    G4cout << " mfp " << mfp << " path " << thicknessFrac*filmThickness
+	   << " returning "
+	   << std::exp(-2.*thicknessFrac*filmThickness/mfp) << G4endl;
   }
 
   return std::exp(-2.* thicknessFrac * filmThickness/mfp);
@@ -310,7 +331,10 @@ G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
     }
 
     G4double qpE = QPEnergyRand(E);
-    if (verboseLevel>2) G4cout << " phononE " << E << " qpE " << qpE << G4endl;
+    if (verboseLevel>2) {
+      G4cout << " phononE " << E << " qpE1 " << qpE << " qpE2 " << E-qpE
+	     << G4endl;
+    }
 
     EDep += CalcQPAbsorption(qpE, newPhonEnergies, qpEnergies);
     EDep += CalcQPAbsorption(E-qpE, newPhonEnergies, qpEnergies);
@@ -390,7 +414,7 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
     if (G4UniformRand() < CalcEscapeProbability(E, frac)) {
       if (verboseLevel>2) G4cout << " phononE got reflected" << G4endl;
       reflectedEnergies.push_back(E);
-    } else if (G4CMPConfigManager::KeepKaplanPhonons() || !IsSubgap(E)) {
+    } else if (keepAllPhonons || !IsSubgap(E)) {
       newPhonEnergies.push_back(E);
     }
   }	// for (E: ...)
@@ -401,25 +425,33 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
 
 // Compute probability of absorbing phonon below Cooper-pair breaking
 
-G4double 
-G4CMPKaplanQP::CalcDirectAbsorption(G4double energy,
-				    std::vector<G4double>& keepEnergies) const {
+G4bool G4CMPKaplanQP::DoDirectAbsorption(G4double energy) const {
+  if (verboseLevel>1) {
+    G4cout << "G4CMPKaplanQP::DoDirectAbsorption E " << energy
+	   << " directAbs " << directAbsorption << G4endl;
+  }
+
   if (energy < 2.*absorberGap) {	// Below absorber should just be killed
     if (verboseLevel>2)
       G4cout << " Kill phonon " << energy << " below absorber gap" << G4endl;
-    
-    return 0.;
+    return false;
   }
   
   if (G4UniformRand() < directAbsorption) {
     if (verboseLevel>2)
       G4cout << " Deposit phonon " << energy << " as heat" << G4endl;
-
-    return energy;
+    return true;
   }
   
   if (verboseLevel>2)
     G4cout << " Record phonon " << energy << " for processing" << G4endl;
+  return false;
+}
+
+G4double 
+G4CMPKaplanQP::CalcDirectAbsorption(G4double energy,
+				    std::vector<G4double>& keepEnergies) const {
+  if (DoDirectAbsorption(energy)) return energy;
 
   keepEnergies.push_back(energy);
   return 0.;
@@ -455,13 +487,14 @@ G4CMPKaplanQP::CalcQPAbsorption(G4double qpE,
 // Handle quasiparticle energy-dependent absorption efficiency
 
 G4double G4CMPKaplanQP::CalcQPEfficiency(G4double qpE) const {
-    G4double eff = absorberEff + absorberEffSlope * qpE/gapEnergy;
+  G4double eff = absorberEff + absorberEffSlope * qpE/gapEnergy;
+  eff = std::max(0., std::min(eff, 1.));
 
   if (verboseLevel>2) {
-    G4cout << " CalcQPEfficiency " << eff << G4endl;
+    G4cout << " CalcQPEfficiency qpE " << qpE << " eff " << eff << G4endl;
   }
 
-  return std::max(0., std::min(eff, 1.));
+  return eff;
 }
 
 
