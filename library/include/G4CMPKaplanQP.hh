@@ -45,6 +45,8 @@
 // 20221006  G4CMP-330: Add temperature parameter with Set function.
 // 20221102  G4CMP-314: Add energy dependent efficiency for QP absorption.
 // 20221127  G4CMP-347: Add highQPLimit to split incident phonons
+// 20221201  G4CMP-345: Rename "CalcSubgapAbs" to "CalcDirectAbs", split into
+//		new DoDirectAbsorption() boolean test.
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
@@ -93,7 +95,8 @@ public:
   void SetGapEnergy(G4double value)           { gapEnergy = value; }
   void SetLowQPLimit(G4double value)          { lowQPLimit = value; }
   void SetHighQPLimit(G4double value)         { highQPLimit = value; }
-  void SetSubgapAbsorption(G4double value)    { subgapAbsorption = value; }
+  void SetSubgapAbsorption(G4double value)    { directAbsorption = value; }
+  void SetDirectAbsorption(G4double value)    { directAbsorption = value; }
   void SetAbsorberGap(G4double value)         { absorberGap = value; }
   void SetAbsorberEff(G4double value)         { absorberEff = value; }
   void SetAbsorberEffSlope(G4double value)    { absorberEffSlope = value; }
@@ -127,9 +130,9 @@ protected:
   void CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
 				   std::vector<G4double>& reflectedEnergies) const;
 
-  // Compute probability of absorbing phonon below Cooper-pair breaking
-  // NOTE:  Function should ONLY be called for energy < 2.*gapEnergy
-  G4double CalcSubgapAbsorption(G4double energy,
+  // Compute probability of phonon collection directly on absorber (TES)
+  G4bool DoDirectAbsorption(G4double energy) const;
+  G4double CalcDirectAbsorption(G4double energy,
 				std::vector<G4double>& keepEnergies) const;
 
   // Handle absorption of quasiparticle energies below Cooper-pair breaking
@@ -160,14 +163,15 @@ protected:
 			const std::vector<G4double>& reflectedEnergies) const;
 
 private:
-  G4int verboseLevel;		// For diagnostic messages
+  G4int verboseLevel;			// For diagnostic messages
+  mutable G4bool keepAllPhonons;	// Copy of flag KeepKaplanPhonons()
 
   G4MaterialPropertiesTable* filmProperties;
   G4double filmThickness;	// Quantities extracted from properties table
   G4double gapEnergy;		// Bandgap energy (delta)
   G4double lowQPLimit;		// Minimum X*delta to keep as a quasiparticle
   G4double highQPLimit;		// Maximum X*delta to create QP from phonon
-  G4double subgapAbsorption;	// Probability to absorb energy below bandgap
+  G4double directAbsorption;	// Probability to collect energy directly (TES)
   G4double absorberGap;		// Bandgap of secondary absorber material
   G4double absorberEff;         // Quasiparticle absorption efficiency
   G4double absorberEffSlope;    // Energy dependence of qp absorption efficiency
