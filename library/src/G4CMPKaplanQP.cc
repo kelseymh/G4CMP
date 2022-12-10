@@ -54,6 +54,7 @@
 // 20221127  G4CMP-347: Add highQPLimit to split incident phonons
 // 20221130  G4CMP-324: Use temperature to discard lowest energy phonons
 // 20221201  G4CMP-345: Test all incident phonons for "direct absorption."
+// 20221209  G4CMP-348: Remove now-extraneous factor of 2 in EscapeProbability
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -194,9 +195,8 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   keepAllPhonons = G4CMPConfigManager::KeepKaplanPhonons();
 
   // For the phonon to not break a Cooper pair, it must go 2*thickness,
-  // assuming it goes exactly along the thickness direction, which is an
-  // approximation.
-  G4double frac = 2.0;
+  // with an additional factor of 2. added to average over incident angles.
+  G4double frac = 4.;
 
   // Test for direct collection on absorber (TES), then for reflection
   if (DoDirectAbsorption(energy)) {
@@ -290,14 +290,14 @@ G4double G4CMPKaplanQP::CalcEscapeProbability(G4double energy,
   // Compute energy-dependent mean free path for phonons in film
   G4double mfp = vSound * phononLifetime /
                  (1. + phononLifetimeSlope * (energy/gapEnergy - 2.));
+  G4double path = thicknessFrac * filmThickness;
 
   if (verboseLevel>2) {
-    G4cout << " mfp " << mfp << " path " << thicknessFrac*filmThickness
-	   << " returning "
+    G4cout << " mfp " << mfp << " path " << path << " returning "
 	   << std::exp(-2.*thicknessFrac*filmThickness/mfp) << G4endl;
   }
 
-  return std::exp(-2.* thicknessFrac * filmThickness/mfp);
+  return std::exp(-path/mfp);
 }
 
 
