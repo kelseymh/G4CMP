@@ -30,6 +30,11 @@
 //		in place code for electrons to assign final-state to valley
 //		closest to momentum direction.  Commented out now, as it leads
 //		to non-physical reduction of total Luke emission.
+// 20221210  Fix loss of significance on Ephonon: Ephonon now is being
+// 		calculated from Erecoil instead of qvec to avoid loss of
+// 		significance.
+// 20221210  Fix to where Erecoil mass was not being multiplied by c_squared
+// 		for Holes, resulting into wrong units.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -227,7 +232,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
     if (IsHole()) {
       precoil = k_recoil * hbarc;
-      Erecoil = precoil.mag2() / (2.*mass);
+      Erecoil = precoil.mag2() / (2.*mass*c_squared);
     } else {
       precoil = lat->MapK_HVtoP(iValley, k_recoil);
       Erecoil = lat->MapPtoEkin(iValley, precoil);
@@ -238,7 +243,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	     << "E_recoil = " << Erecoil/eV << " eV" << G4endl;
     }
     
-    Ephonon = MakePhononEnergy(qvec.mag());
+    Ephonon = GetKineticEnergy(aTrack) - Erecoil;
     if (verboseLevel > 1) {
       G4cout << " E_phonon = " << Ephonon/eV << " eV" << G4endl;
     }
