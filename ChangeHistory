@@ -6,6 +6,9 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2022-12-14  g4cmp-V08-02-02 Fix units error with hATrapIonizationMFP command.
+2022-12-14  G4CMP-350 : Bug fix G4CMP-319, restore correct units for trap MFP.
+
 2022-11-11  g4cmp-V08-02-01 Fixes for debug builds, better phonon velocity plots
 2022-11-10  G4CMP-339 : Split G4CMP_DEBUG to separate CMake option.  Remove
 			local overrides of CMAKE_CXX_FLAGS etc.
