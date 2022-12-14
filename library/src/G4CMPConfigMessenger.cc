@@ -37,6 +37,7 @@
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
+// 20221214  G4CMP-350:  Bug fix for new temperature setting units.
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -167,7 +168,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   tempCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("temperature",
 	   "Temperature to be used for device, substrate, sensors, etc.");
-  hATrapIonMFPCmd->SetUnitCategory("Temperature");
+  tempCmd->SetUnitCategory("Temperature");
 
   nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
 	       "Select calculation for non-ionizing energy loss (NIEL)");
