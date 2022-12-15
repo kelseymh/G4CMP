@@ -13,6 +13,7 @@
 # Add Geant4 version checking
 # Manually set version with G4CMP_VERSION=xxx if Git not available
 # Add pass-through of thread-safety "code sanitizer" flags
+# Split XXX.% targets to ensure everything gets built properly
 
 # G4CMP requires Geant4 10.4 or later
 g4min := 10.4
@@ -79,9 +80,13 @@ library :
 	-$(MAKE) version
 	-$(MAKE) -C $@
 
-tests.% \
-tools.% \
 library.% :
+	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
+
+tests.% :
+	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
+
+tools.% :
 	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
 
 phonon charge sensors : library

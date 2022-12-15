@@ -199,6 +199,17 @@ or
 or
 	make library G4DEBUG=1
 
+If you want to enable additional diagnostics in some processes, including
+writing out statistics files, build with the G4CMP_DEBUG environment or Make
+variable set.  Note that this is not compatible with running multiple worker
+threads.
+
+	export G4CMP_DEBUG=1
+or
+	setenv G4CMP_DEBUG 1
+or
+	make library G4CMP_DEBUG=1
+
 If you want to enable "sanitizing" options with the library, to look for
 memory leaks, thread collisions etc., you may set the options
 G4CMP_USE_SANITIZER and G4CMP_SANITIZER_TYPE (default is "thread"):
@@ -233,6 +244,10 @@ want to install to a local path, rather than system-wide, use the
 
 If you want debugging symbols included with the G4CMP library, you
 need to include the `-DCMAKE_BUILD_TYPE=Debug` option.
+
+If you want to enable additional diagnostics in some processes, including
+writing out statistics files, include the `-DG4CMP_DEBUG=1` option.  Note
+that this is not compatible with running multiple worker threads.
 
 If you want to enable "sanitizing" options with the library, to look for
 memory leaks, thread collisions etc., you may set the options
@@ -481,9 +496,9 @@ with different property parameters.
 
 User applications with active sensors for either phonons or charges (or
 both), should define a subclass of `G4CMPVElectrodePattern` for each of
-those sensors (only one sensor per surface).  If the sensors require
-additional parameters, those should be assigned to the material properties
-table that goes with the surface above.
+those sensors.  If the sensors require additional parameters, those should
+be assigned to the material properties table that goes with the surface
+above.  See below for a discussion of `G4CMPPhononElectrode`.
 
 Phonon sensors typically involve a superconducting film to couple the
 substrate to a sensor (SQUID, TES, etc.).  The `G4CMPKaplanQP` class
@@ -522,3 +537,19 @@ The `G4CMPKaplanQP` process also respects the global setting
 `kaplanKeepPhonons`.  If this is set true, then all internal phonons
 produced in the film will be either re-emitted into the substrate, or
 iterated to produce multiple quasiparticles for energy collection.
+
+A concrete "electrode" class, `G4CMPPhononElectrode`, is provided for simple
+access to `G4CMPKaplanQP` from user applications.  An instance of
+`G4CMPPhononElectrode` should be registered to the `G4CMPSurfaceProperty`
+associated with the phonon sensors' surface.  The material properties listed
+above should be registered into the surface's material property table, via
+`G4CMPSurfaceProperty::GetPhononMaterialPropertiesTablePointer()`; this
+table will be passed into `G4CMPKaplanQP` automatically when it is
+registered.  
+
+`G4CMPPhononElectrode` also supports an additional material property,
+"filmAbsorption", to specify the "conversion efficiency" for phonons
+incident on the registered sensor.  This assumes that the sensor is
+implemented as a dedicated volume with an associated border surface.  If
+individual sensor shapes are not implemented, this parameter may also
+include geometric coverage.

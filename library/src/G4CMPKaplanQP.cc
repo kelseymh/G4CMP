@@ -46,6 +46,7 @@
 // 20220928  G4CMP-323: Add bandgap of secondary absorber (quasiparticle trap)
 // 		Drop requirement for material properties table at runtime.
 // 20221006  G4CMP-330: Add temperature parameter with setter.
+// 20221025  Protect diagnostic text file with verbosity inside G4CMP_DEBUG
 // 20221102  G4CMP-314: Add energy dependent efficiency for QP absorption.
 // 20221116  G4CMP-343: Phonons which don't escape should be killed (dropped).
 //		Subgap phonons should use MFP escape probability.
@@ -182,12 +183,15 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   }
 
 #ifdef G4CMP_DEBUG
-  if (!output.good()) {
+  if (verboseLevel && !output.is_open()) {
     output.open("kaplanqp_stats");
-    if (output.good()) {
-      output << "Incident Energy [eV],Absorbed Energy [eV],"
-	     << "Reflected Energy [eV],Reflected Phonons" << std::endl;
+    if (!output.good()) {
+      G4Exception("G4CMPKaplanQP", "G4CMP008",
+		  FatalException, "Unable to open LukePhononEnergies");
     }
+
+    output << "Incident Energy [eV],Absorbed Energy [eV],"
+	   << "Reflected Energy [eV],Reflected Phonons" << std::endl;
   }
 #endif
 

@@ -21,6 +21,20 @@ ticket identifier, "G4CMP-nnn".
 
 * NOTE: Add subtasks of G4CMP-325 to list above, below the G4CMP-325 entry *
 
+2022-12-14  g4cmp-V08-02-02 Fix units error with hATrapIonizationMFP command.
+2022-12-14  G4CMP-350 : Bug fix G4CMP-319, restore correct units for trap MFP.
+
+2022-11-11  g4cmp-V08-02-01 Fixes for debug builds, better phonon velocity plots
+2022-11-10  G4CMP-339 : Split G4CMP_DEBUG to separate CMake option.  Remove
+			local overrides of CMAKE_CXX_FLAGS etc.
+2022-11-03  G4CMP-341 : Swap order of -Og/-g flags in GNUmakefile.  Remove
+			G4CMP_DEBUG from G4CMPAnharmonicDecay.hh.
+2022-11-02  G4CMP-340 : Fix phononKinematics slowness units, add phase velocity.
+
+2022-10-27  g4cmp-V08-02-00 Improvements for future KaplanQP, bug fixes.
+2022-10-25  G4CMP-335 : Rethrow from FanoBinomial if nPairs=0 returned.
+2022-10-25  G4CMP-337 : Suppress kaplanqp_status output with verbose flag.
+2022-10-16  G4CMP-334 : Improve output of /g4cmp/printConfig.
 2022-10-06  G4CMP-255 : Add phonon sensor electrode class, update example.
 2022-09-21  G4CMP-319 : Add temperature parameter and thermal distribution.
 2022-09-14  G4CMP-322 : Address compiler warnings which have accumulated.

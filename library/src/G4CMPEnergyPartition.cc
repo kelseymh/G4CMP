@@ -58,6 +58,7 @@
 // 20220228  In GetSecondaries(), don't overwrite previously set position info.
 // 20220818  G4CMP-309 -- Don't skip GenerateCharges() or GeneratePhonons() if
 //		zero downsampling; want to get summary data filled every time.
+// 20221025  G4CMP-335 -- Skip and rethrow nPairs=0 returned from FanoBinomial.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -226,11 +227,16 @@ G4double G4CMPEnergyPartition::MeasuredChargePairs(G4double eTrue) const {
 	   << " for Fano binomial" << G4endl;
   }
 
-  // FIXME: Should we just use Gaussian for large N?  If so, how large?
-
   // Interpolated binominals to reproduce preset Fano factor
   // See https://www.slac.stanford.edu/exp/cdms/ScienceResults/DataReleases/20190401_HVeV_Run1/HVeV_R1_Data_Release_20190401.pdf
-  return G4CMP::FanoBinomial::shoot(Ntrue, summary->FanoFactor);
+  G4double tryPairs;
+  G4int maxThrow=1000;
+  do {
+    tryPairs = G4CMP::FanoBinomial::shoot(Ntrue, summary->FanoFactor);
+  } while (tryPairs<1. && --maxThrow);
+  if (tryPairs==0) tryPairs = Ntrue;		// Didn't get good throw
+
+  return tryPairs;
 }
 
 

@@ -8,6 +8,14 @@ project(G4CMP)
 set(G4CMP_VERSION "" CACHE STRING "G4CMP Version Tag to be used")
 
 #----------------------------------------------------------------------------
+# Option to include additional diagnostic output
+#
+option(G4CMP_DEBUG "Include diagnostic output from processes.  Default: OFF" OFF)
+if (G4CMP_DEBUG)
+    set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DG4CMP_DEBUG=1")
+endif()
+
+#----------------------------------------------------------------------------
 # Find Geant4 package
 # NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
 #
@@ -17,12 +25,7 @@ include(FindGeant4.cmake)
 # Set up compiler flags for various build types
 #
 # Always need to build against C++11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS_DEV "${CMAKE_CXX_FLAGS} -g -p -O2 -Wall -Wextra -Wshadow -Wpedantic")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -p -DG4CMP_DEBUG=1")
-set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_MINSIZEREL}")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -pipe")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -pipe -p")
+set(CMAKE_CXX_STANDARD 11)
 
 # Set default build type as "Release"
 if (NOT CMAKE_BUILD_TYPE)
