@@ -233,7 +233,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
     if (IsHole()) {
       precoil = k_recoil * hbarc;
-      Erecoil = precoil.mag2() / (2.*mass*c_squared);
+      G4Double massc2 = mass*c_squared;
+      Erecoil = sqrt(precoil.mag2() + massc2 * massc2) - massc2;
     } else {
       precoil = lat->MapK_HVtoP(iValley, k_recoil);
       Erecoil = lat->MapPtoEkin(iValley, precoil);
@@ -311,6 +312,12 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (Ephonon < 0 || Erecoil < 0) {
     G4cout << " E_track " << Etrk/eV << " eV"
 	   << " mass " << mass*c_squared/electron_mass_c2 << " m_e"
+	   << G4endl;
+
+    G4double CEtrk = 0.;
+    CEtrk = sqrt(ptrk * ptrk + mass*c_squared*mass*c_squared) - mass*c_squared;
+
+    G4cout << " Calculated E_track " << CEtrk/eV << " eV"
 	   << G4endl;
 
     G4ThreeVector p_global = GetGlobalMomentum(aTrack);
@@ -394,7 +401,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   RotateToGlobalDirection(precoil);	// Update track in world coordinates
-  FillParticleChange(newValley, precoil);
+  FillParticleChange(newValley, Erecoil, precoil);
 
 #ifdef G4CMP_DEBUG
   if (output.good()) {

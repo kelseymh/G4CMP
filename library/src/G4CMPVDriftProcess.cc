@@ -91,10 +91,13 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
 void 
 G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
   // Compute kinetic energy from momentum for electrons or holes
-  G4double energy =
-    (IsElectron() ? theLattice->MapPtoEkin(ivalley, GetLocalDirection(p))
-     : p.mag2()/(2.*GetCurrentTrack()->GetDynamicParticle()->GetMass()) );
-
+  G4double energy = 0.;
+  if (IsElectron()){
+    energy = theLattice->MapPtoEkin(ivalley, GetLocalDirection(p));
+  } else {
+    G4double massc2 = GetCurrentTrack()->GetDynamicParticle()->GetMass()*c_squared;
+    energy = sqrt(p.mag2() + massc2*massc2) - massc2;
+  }
   FillParticleChange(ivalley, energy, p);
 }
 
