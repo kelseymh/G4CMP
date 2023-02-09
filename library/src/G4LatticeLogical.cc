@@ -614,11 +614,17 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
 #endif
-
+  G4double Xmom_squared = tempvec().x()*tempvec().x();
+  G4double Ymom_squared = tempvec().y()*tempvec().y();
+  G4double Zmom_squared = tempvec().z()*tempvec().z();
   // Compute kinetic energy component by component, then sum
-  return (0.5/c_squared) * (tempvec().x()*tempvec().x()*fMassInverse.xx() +
-			    tempvec().y()*tempvec().y()*fMassInverse.yy() +
-			    tempvec().z()*tempvec().z()*fMassInverse.zz());
+  return ((0.5/c_squared) * (Xmom_squared*fMassInverse.xx() +
+			    Ymom_squared*fMassInverse.yy() +
+			    Zmom_squared*fMassInverse.zz())) +
+          ((GetMInvTensor()/(8*c_squared*c_squared*c_squared)) * (
+          Xmom_squared*Xmom_squared*fMassInverse.xx() +
+          Ymom_squared.y()*Ymom_squared*fMassInverse.yy() +
+          Zmom_squared*Zmom_squared*fMassInverse.zz()));
 }
 
 G4double
