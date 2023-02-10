@@ -7,6 +7,9 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
 [ Modifications included on branch G4CMP-276: ]
+2023-02-10  G4CMP-351 : Change energy-momentum expressions from newtonian to 
+            relativistic/post-newtonian in LukeScattering, LatticeLogical, 
+            and DriftProcess.
 2022-12-10  G4CMP-349 : Ephonon being calculated from Erecoil in LukeScattering.
 2022-03-08  G4CMP-286 : Use true momentum, split out transforms in EqEMField.
 2021-10-01  G4CMP-285 : G4CMPTimeStepper should set electron dynamical mass.

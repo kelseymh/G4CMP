@@ -20,6 +20,7 @@
 // 20170601  Inherit from new G4CMPVProcess, which provides G4CMPProcessUtils
 // 20170620  Follow interface changes in G4CMPProcessUtils
 // 20201231  FillParticleChange() should also reset valley index if requested
+// 20230210  I. Ataee -- Change energy-momentum relation to relativistic in FillParticleChange
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -95,7 +96,8 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
   if (IsElectron()){
     energy = theLattice->MapPtoEkin(ivalley, GetLocalDirection(p));
   } else {
-    G4double massc2 = GetCurrentTrack()->GetDynamicParticle()->GetMass()*c_squared;
+    // Geant4 returns the mass in energy units, with the c_squared already included
+    G4double massc2 = GetCurrentTrack()->GetDynamicParticle()->GetMass();
     energy = sqrt(p.mag2() + massc2*massc2) - massc2;
   }
   FillParticleChange(ivalley, energy, p);

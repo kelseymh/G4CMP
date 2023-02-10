@@ -45,7 +45,8 @@
 // 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
 //		return thread-local instance.
 // 20211021  Wrap verbose output in #ifdef G4CMP_DEBUG for performace
-
+// 20230210  I. Ataee -- Add post-newtonian correction to the MapPtoEkin and MapV_elToEkin
+// 20230210  I. Ataee -- Change effective mass tensor to use relativistic expressions
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4CMPPhononKinTable.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -621,7 +622,7 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   return ((0.5/c_squared) * (Xmom_squared*fMassInverse.xx() +
 			    Ymom_squared*fMassInverse.yy() +
 			    Zmom_squared*fMassInverse.zz())) +
-          ((1/(8*c_squared*c_squared*c_squared)) * (
+          ((1/(8*c_squared*c_squared*c_squared)) * ( //Post newtonian correction
           Xmom_squared*Xmom_squared
           *fMassInverse.xx()*fMassInverse.xx()*fMassInverse.xx() +
           Ymom_squared*Ymom_squared
@@ -643,10 +644,20 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
   if (verboseLevel>1) G4cout << " V_el (valley) " << tempvec() << G4endl;
 #endif
 
+  G4double Xvel_squared = tempvec().x()*tempvec().x();
+  G4double Yvel_squared = tempvec().y()*tempvec().y();
+  G4double Zvel_squared = tempvec().z()*tempvec().z();
   // Compute kinetic energy component by component, then sum
-  return 0.5 * (tempvec().x()*tempvec().x()*fMassTensor.xx() +
-		tempvec().y()*tempvec().y()*fMassTensor.yy() +
-		tempvec().z()*tempvec().z()*fMassTensor.zz());
+  return ((0.5) * (Xvel_squared*fMassInverse.xx() +
+          Yvel_squared*fMassInverse.yy() +
+          Zvel_squared*fMassInverse.zz())) +
+          ((1/8.) * ( //Post newtonian correction
+          Xvel_squared*Xvel_squared
+          *fMassInverse.xx()*fMassInverse.xx()*fMassInverse.xx() +
+          Yvel_squared*Yvel_squared
+          *fMassInverse.yy()*fMassInverse.yy()*fMassInverse.yy() +
+          Zvel_squared*Zvel_squared
+          *fMassInverse.zz()*fMassInverse.zz()*fMassInverse.zz()));
 }
 
 // Compute effective "scalar" electron mass to match energy/momentum relation
@@ -660,7 +671,9 @@ G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
 	   << " " << p << " p2 = " << p.mag2() << G4endl;
 #endif
 
-  return 0.5*p.mag2()/c_squared/MapPtoEkin(iv,p);	// Non-relativistic
+  G4double Ekin = MapPtoEkin(iv,p);
+  // return 0.5*p.mag2()/c_squared/MapPtoEkin(iv,p);	// Non-relativistic
+  return (Ekin*Ekin-p.mag2())/(2.*Ekin*c_squared);		// Relativistic
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
