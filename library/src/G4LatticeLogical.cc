@@ -621,10 +621,13 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   return ((0.5/c_squared) * (Xmom_squared*fMassInverse.xx() +
 			    Ymom_squared*fMassInverse.yy() +
 			    Zmom_squared*fMassInverse.zz())) +
-          ((GetMInvTensor()/(8*c_squared*c_squared*c_squared)) * (
-          Xmom_squared*Xmom_squared*fMassInverse.xx() +
-          Ymom_squared*Ymom_squared*fMassInverse.yy() +
-          Zmom_squared*Zmom_squared*fMassInverse.zz()));
+          ((1/(8*c_squared*c_squared*c_squared)) * (
+          Xmom_squared*Xmom_squared
+          *fMassInverse.xx()*fMassInverse.xx()*fMassInverse.xx() +
+          Ymom_squared*Ymom_squared
+          *fMassInverse.yy()*fMassInverse.yy()*fMassInverse.yy() +
+          Zmom_squared*Zmom_squared
+          *fMassInverse.zz()*fMassInverse.zz()*fMassInverse.zz()));
 }
 
 G4double
