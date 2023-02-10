@@ -233,7 +233,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
     if (IsHole()) {
       precoil = k_recoil * hbarc;
-      G4Double massc2 = mass*c_squared;
+      G4double massc2 = mass*c_squared;
       Erecoil = sqrt(precoil.mag2() + massc2 * massc2) - massc2;
     } else {
       precoil = lat->MapK_HVtoP(iValley, k_recoil);
