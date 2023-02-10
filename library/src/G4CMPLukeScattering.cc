@@ -123,12 +123,15 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector ptrk = GetLocalMomentum(aTrack);
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
+  G4double Etrk = 0.;
   if (IsElectron()) {
     ktrk = lat->MapPtoK_HV(iValley, ptrk);
-    mass = lat->GetElectronMass();
+    mass = lat->GetElectronEffectiveMass(iValley, ptrk);
+    Etrk = lat->MapPtoEkin(iValley, ptrk);
   } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
     mass = lat->GetHoleMass();
+    Etrk = GetKineticEnergy(aTrack);
   } else {
     G4Exception("G4CMPLukeScattering::PostStepDoIt", "Luke002",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -147,7 +150,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   lat->SetVerboseLevel(verboseLevel);
 
   if (verboseLevel > 1) {
-    G4cout << " E_track " << GetKineticEnergy(aTrack)/eV << " eV"
+    G4cout << " E_track " << Etrk/eV << " eV"
 	   << " mass " << mass*c_squared/electron_mass_c2 << " m_e"
 	   << G4endl;
 
@@ -243,7 +246,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	     << "E_recoil = " << Erecoil/eV << " eV" << G4endl;
     }
     
-    Ephonon = GetKineticEnergy(aTrack) - Erecoil;
+    Ephonon = Etrk - Erecoil;
     if (verboseLevel > 1) {
       G4cout << " E_phonon = " << Ephonon/eV << " eV" << G4endl;
     }
@@ -300,6 +303,52 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Report phonon emission results
   if (verboseLevel > 1) {
+    G4cout << "q = " << q << " |qvec| " << qvec.mag() << G4endl
+	   << " Ephonon = " << Ephonon/eV << " eV" << G4endl
+           << " k_recoil(HV) = " << k_recoil << " " << k_recoil.mag()
+	   << " newValley = " << newValley
+           << G4endl;
+  }
+
+  if (Ephonon < 0 || Erecoil < 0) {
+    G4cout << " E_track " << Etrk/eV << " eV"
+	   << " mass " << mass*c_squared/electron_mass_c2 << " m_e"
+	   << G4endl;
+
+    G4ThreeVector p_global = GetGlobalMomentum(aTrack);
+    G4cout << "p_global = " << p_global/eV << " " << p_global.mag()/eV << " eV"
+	   << G4endl
+	   << " p_local = " << ptrk/eV << " " << ptrk.mag()/eV<< " eV"
+	   << G4endl;
+
+    if (IsElectron()) {
+      G4ThreeVector kvalley = theLattice->MapPtoK_valley(iValley, ptrk);
+      G4ThreeVector pvalley = kvalley * hbarc;
+      G4cout << " valley " << iValley << " along "
+	     << theLattice->GetValleyAxis(iValley) << G4endl
+	     << " p_valley = " << pvalley/eV << " " << pvalley.mag()/eV
+	     << " eV" << G4endl
+	     << " k_valley = " << kvalley/eV << " " << kvalley.mag()/eV
+	     << " eV" << G4endl;
+    }
+
+    G4cout << " ktrk = " << ktrk << " kmag " << kmag << G4endl
+	   << " k/ks = " << kmag/kSound << " acos(ks/k) = " << acos(kSound/kmag)
+	   << G4endl;
+    
+    G4cout << " theta_phonon = " << theta_phonon
+	     << " phi_phonon = " << phi_phonon << " q = " << q << G4endl;
+
+    G4cout << " qvec = " << qvec << G4endl
+	     << " ktrk.qvec = " << ktrk.dot(qvec)/(kmag*q)
+	     << " ktr-qvec angle " << acos(ktrk.dot(qvec)/(kmag*q))
+	     << G4endl;
+
+    G4cout << "k_recoil = " << k_recoil << " " << k_recoil.mag() << G4endl;
+    
+    G4cout << "p_recoil = " << precoil/eV << " " << precoil.mag()/eV << G4endl
+        << "E_recoil = " << Erecoil/eV << " eV" << G4endl;
+    
     G4cout << "q = " << q << " |qvec| " << qvec.mag() << G4endl
 	   << " Ephonon = " << Ephonon/eV << " eV" << G4endl
            << " k_recoil(HV) = " << k_recoil << " " << k_recoil.mag()
