@@ -650,8 +650,8 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
   // Compute kinetic energy component by component, then sum
   return ((0.5) * (Xvel_squared*fMassTensor.xx() +
           Yvel_squared*fMassTensor.yy() +
-          Zvel_squared*fMassTensor.zz())) -
-          ((1/(8*c_squared)) * ( //Post newtonian correction
+          Zvel_squared*fMassTensor.zz())) +
+          ((3/(8*c_squared)) * ( //Post newtonian correction
           Xvel_squared*Xvel_squared*fMassTensor.xx() +
           Yvel_squared*Yvel_squared*fMassTensor.yy() +
           Zvel_squared*Zvel_squared*fMassTensor.zz()));
