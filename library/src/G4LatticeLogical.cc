@@ -654,7 +654,7 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
           ((1/8.) * ( //Post newtonian correction
           Xvel_squared*Xvel_squared*fMassTensor.xx() +
           Yvel_squared*Yvel_squared*fMassTensor.yy() +
-          Zvel_squared*Zvel_squared*fMassTensor.zz());
+          Zvel_squared*Zvel_squared*fMassTensor.zz()));
 }
 
 // Compute effective "scalar" electron mass to match energy/momentum relation
