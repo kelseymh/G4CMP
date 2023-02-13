@@ -651,7 +651,7 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
   return ((0.5) * (Xvel_squared*fMassInverse.xx() +
           Yvel_squared*fMassInverse.yy() +
           Zvel_squared*fMassInverse.zz())) -
-          ((1/8.) * ( //Post newtonian correction
+          ((1/(8*c_squared)) * ( //Post newtonian correction
           Xvel_squared*Xvel_squared*fMassTensor.xx() +
           Yvel_squared*Yvel_squared*fMassTensor.yy() +
           Zvel_squared*Zvel_squared*fMassTensor.zz()));
