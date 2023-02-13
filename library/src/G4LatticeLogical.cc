@@ -670,7 +670,7 @@ G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
 
   G4double Ekin = MapPtoEkin(iv,p);
   // return 0.5*p.mag2()/c_squared/MapPtoEkin(iv,p);	// Non-relativistic
-  return (Ekin*Ekin-p.mag2())/(2.*Ekin*c_squared);		// Relativistic
+  return (p.mag2()-Ekin*Ekin)/(2.*Ekin*c_squared);		// Relativistic
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
