@@ -123,13 +123,15 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector ptrk = GetLocalMomentum(aTrack);
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
-  G4double Etrk = GetKineticEnergy(aTrack);
+  G4double Etrk = 0.;
   if (IsElectron()) {
     ktrk = lat->MapPtoK_HV(iValley, ptrk);
     mass = lat->GetElectronEffectiveMass(iValley, ptrk);
+    Etrk = lat->MapPtoEkin(iValley, ptrk);
   } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
     mass = lat->GetHoleMass();
+    Etrk = GetKineticEnergy(aTrack);
   } else {
     G4Exception("G4CMPLukeScattering::PostStepDoIt", "Luke002",
                 EventMustBeAborted, "Unknown charge carrier");
