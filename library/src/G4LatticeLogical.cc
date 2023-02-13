@@ -621,7 +621,7 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   // Compute kinetic energy component by component, then sum
   return ((0.5/c_squared) * (Xmom_squared*fMassInverse.xx() +
 			    Ymom_squared*fMassInverse.yy() +
-			    Zmom_squared*fMassInverse.zz())) +
+			    Zmom_squared*fMassInverse.zz())) -
           ((1/(8*c_squared*c_squared*c_squared)) * ( //Post newtonian correction
           Xmom_squared*Xmom_squared
           *fMassInverse.xx()*fMassInverse.xx()*fMassInverse.xx() +
@@ -650,14 +650,11 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
   // Compute kinetic energy component by component, then sum
   return ((0.5) * (Xvel_squared*fMassInverse.xx() +
           Yvel_squared*fMassInverse.yy() +
-          Zvel_squared*fMassInverse.zz())) +
+          Zvel_squared*fMassInverse.zz())) -
           ((1/8.) * ( //Post newtonian correction
-          Xvel_squared*Xvel_squared
-          *fMassInverse.xx()*fMassInverse.xx()*fMassInverse.xx() +
-          Yvel_squared*Yvel_squared
-          *fMassInverse.yy()*fMassInverse.yy()*fMassInverse.yy() +
-          Zvel_squared*Zvel_squared
-          *fMassInverse.zz()*fMassInverse.zz()*fMassInverse.zz()));
+          Xvel_squared*Xvel_squared*fMassTensor.xx() +
+          Yvel_squared*Yvel_squared*fMassTensor.yy() +
+          Zvel_squared*Zvel_squared*fMassTensor.zz());
 }
 
 // Compute effective "scalar" electron mass to match energy/momentum relation
