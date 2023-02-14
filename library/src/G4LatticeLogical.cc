@@ -618,17 +618,21 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   G4double Xmom_squared = tempvec().x()*tempvec().x();
   G4double Ymom_squared = tempvec().y()*tempvec().y();
   G4double Zmom_squared = tempvec().z()*tempvec().z();
+
+  G4double mixx3 = fMassInverse.xx()*fMassInverse.xx()*fMassInverse.xx();
+  G4double miyy3 = fMassInverse.yy()*fMassInverse.yy()*fMassInverse.yy();
+  G4double mizz3 = fMassInverse.zz()*fMassInverse.zz()*fMassInverse.zz();
+
   // Compute kinetic energy component by component, then sum
-  return ((0.5/c_squared) * (Xmom_squared*fMassInverse.xx() +
-			    Ymom_squared*fMassInverse.yy() +
-			    Zmom_squared*fMassInverse.zz())) -
-          ((1/(8*c_squared*c_squared*c_squared)) * ( //Post newtonian correction
-          Xmom_squared*Xmom_squared
-          *fMassInverse.xx()*fMassInverse.xx()*fMassInverse.xx() +
-          Ymom_squared*Ymom_squared
-          *fMassInverse.yy()*fMassInverse.yy()*fMassInverse.yy() +
-          Zmom_squared*Zmom_squared
-          *fMassInverse.zz()*fMassInverse.zz()*fMassInverse.zz()));
+  return ( ((0.5/c_squared) * (Xmom_squared*fMassInverse.xx() +
+			       Ymom_squared*fMassInverse.yy() +
+			       Zmom_squared*fMassInverse.zz())) +
+	   // Post newtonian correction p^4/8c^6 to get relativistic Ekin
+	   ((0.125/(c_squared*c_squared*c_squared))
+	    * (Xmom_squared*Xmom_squared*mixx3 +
+	       Ymom_squared*Ymom_squared*miyy3 + 
+	       Zmom_squared*Zmom_squared*mizz3))
+	   );
 }
 
 G4double
@@ -647,14 +651,17 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
   G4double Xvel_squared = tempvec().x()*tempvec().x();
   G4double Yvel_squared = tempvec().y()*tempvec().y();
   G4double Zvel_squared = tempvec().z()*tempvec().z();
+
   // Compute kinetic energy component by component, then sum
-  return ((0.5) * (Xvel_squared*fMassTensor.xx() +
-          Yvel_squared*fMassTensor.yy() +
-          Zvel_squared*fMassTensor.zz())) +
-          ((3/(8*c_squared)) * ( //Post newtonian correction
-          Xvel_squared*Xvel_squared*fMassTensor.xx() +
-          Yvel_squared*Yvel_squared*fMassTensor.yy() +
-          Zvel_squared*Zvel_squared*fMassTensor.zz()));
+  return ( 0.5 * (Xvel_squared*fMassTensor.xx() +
+		  Yvel_squared*fMassTensor.yy() +
+		  Zvel_squared*fMassTensor.zz()) +
+	   // Post newtonian correction 3mv^4/8c^2 to get relativistic energy
+	   (0.375/c_squared *
+	    (Xvel_squared*Xvel_squared*fMassTensor.xx() +
+	     Yvel_squared*Yvel_squared*fMassTensor.yy() +
+	     Zvel_squared*Zvel_squared*fMassTensor.zz()) )
+	   );
 }
 
 // Compute effective "scalar" electron mass to match energy/momentum relation
@@ -669,8 +676,8 @@ G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
 #endif
 
   G4double Ekin = MapPtoEkin(iv,p);
-  // return 0.5*p.mag2()/c_squared/MapPtoEkin(iv,p);	// Non-relativistic
-  return (p.mag2()-Ekin*Ekin)/(2.*Ekin*c_squared);		// Relativistic
+  return 0.5*p.mag2()/c_squared/Ekin;		// Non-relativistic
+  // return (p.mag2()-Ekin*Ekin)/(2.*Ekin*c_squared);	// Relativistic
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
