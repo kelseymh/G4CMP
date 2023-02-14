@@ -434,6 +434,8 @@ G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
+  // G4double mass = GetElectronEffectiveMass(ivalley, p_e);
+  // G4double gamma = sqrt(1+p_e.mag2()/mass/mass/c_squared/c_squared);
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
@@ -445,6 +447,7 @@ G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
 #endif
 
   return nToV*(GetMInvTensor()*(vToN*p_e/c_light));
+  // return nToV*(GetMInvTensor()*(vToN*p_e/c_light/gamma));
 }
 
 G4ThreeVector 
@@ -457,6 +460,7 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
+  // G4double gamma = 1/sqrt(1-v_e.mag2()/c_squared/c_squared);
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
@@ -468,6 +472,7 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
 #endif
 
   return nToV*(GetMassTensor()*(vToN*v_e*c_light));
+  // return nToV*(GetMassTensor()*gamma*(vToN*v_e*c_light));
 }
 
 G4ThreeVector
@@ -479,6 +484,7 @@ G4LatticeLogical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector &v_e) const {
 #endif
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
+  // G4double gamma = 1/sqrt(1-v_e.mag2()/c_squared/c_squared)
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
@@ -491,6 +497,7 @@ G4LatticeLogical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector &v_e) const {
 #endif
 
   return GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck));
+  // return GetSqrtInvTensor()*(GetMassTensor()*gamma*(vToN*v_e/hbar_Planck));
 }
 
 G4ThreeVector 
@@ -626,7 +633,7 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   // Compute kinetic energy component by component, then sum
   return ( ((0.5/c_squared) * (Xmom_squared*fMassInverse.xx() +
 			       Ymom_squared*fMassInverse.yy() +
-			       Zmom_squared*fMassInverse.zz())) +
+			       Zmom_squared*fMassInverse.zz())) -
 	   // Post newtonian correction p^4/8c^6 to get relativistic Ekin
 	   ((0.125/(c_squared*c_squared*c_squared))
 	    * (Xmom_squared*Xmom_squared*mixx3 +
@@ -657,7 +664,7 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
 		  Yvel_squared*fMassTensor.yy() +
 		  Zvel_squared*fMassTensor.zz()) +
 	   // Post newtonian correction 3mv^4/8c^2 to get relativistic energy
-	   (0.375/c_squared *
+	   ((0.375/c_squared) *
 	    (Xvel_squared*Xvel_squared*fMassTensor.xx() +
 	     Yvel_squared*Yvel_squared*fMassTensor.yy() +
 	     Zvel_squared*Zvel_squared*fMassTensor.zz()) )
