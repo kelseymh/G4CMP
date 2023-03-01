@@ -1,5 +1,9 @@
-/// \file library/include/G4CMPQPScatteringRate.hh
-/// \brief Compute rate for quasiparticle scattering
+/***********************************************************************\
+ *  This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+// \file library/include/G4CMPQPScatteringRate.hh
+// \brief Compute rate for quasiparticle scattering
 
 
 #ifndef G4CMPQPScatteringRate_hh
