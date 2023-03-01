@@ -1,5 +1,11 @@
-/// \file library/src/G4CMPQPRecombinationRate.cc
-///// \brief Compute rate for quasiparticle recombination
+/***********************************************************************\
+ *This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+// \file library/src/G4CMPQPRecombinationRate.cc
+// \brief Compute rate for quasiparticle recombination
+
+// $Id$
 
 
 #include "G4CMPQPScatteringRate.hh"
