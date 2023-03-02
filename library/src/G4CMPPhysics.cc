@@ -18,6 +18,7 @@
 // 20200426  G4CMP-196: Change "impact" to "trap ionization", separate
 //		process instances for each beam/trap type.
 // 20210203  G4CMP-241: SecondaryProduction must be last PostStep process.
+// 20220831  G4CMP-219: Add Bogoliubov QPs, QP recombination process
 // 20220331  G4CMP-293: Replace RegisterProcess() with local AddG4CMPProcess().
 
 #include "G4CMPPhysics.hh"
@@ -61,8 +62,9 @@ void G4CMPPhysics::ConstructParticle() {
   G4PhononLong::Definition();
   G4PhononTransFast::Definition();
   G4PhononTransSlow::Definition();
-  G4GenericIon::Definition();
   G4CMPBogoliubov::Definition();
+
+  G4GenericIon::Definition();		// Needed for SecondaryProduction
 }
 
 // Add physics processes to appropriate particles
@@ -152,7 +154,7 @@ void G4CMPPhysics::ConstructProcess() {
   AddG4CMPProcess(hhTrpI, particle);
 
   particle = G4CMPBogoliubov::Definition();
-  RegisterProcess(qpRcmb, particle);
+  AddG4CMPProcess(qpRcmb, particle);
 
   AddSecondaryProduction();
 }
