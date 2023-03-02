@@ -3,6 +3,9 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+// 20230301  Remove static GetMeanFreePath() function; causes compiler issues.
+//	       Add missing "override" modifiers.
+
 #ifndef G4CMPQPRecombination_h
 #define G4CMPQPRecombination_h 1
 
@@ -21,17 +24,16 @@ public:
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&) override;
 
-  virtual bool IsApplicable(const G4ParticleDefinition&);
+  virtual bool IsApplicable(const G4ParticleDefinition&) override;
 
   G4CMPQPRecombination(G4CMPQPRecombination&) = delete;
   G4CMPQPRecombination(G4CMPQPRecombination&&) = delete;
   G4CMPQPRecombination& operator=(const G4CMPQPRecombination&) = delete;
   G4CMPQPRecombination& operator=(const G4CMPQPRecombination&&) = delete;
 
-  static G4double GetMeanFreePath(const G4ParticleDefinition* pd);
-
 protected:
-  virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
+  virtual G4double GetMeanFreePath(const G4Track&, G4double,
+				   G4ForceCondition*) override;
 
 private:
 

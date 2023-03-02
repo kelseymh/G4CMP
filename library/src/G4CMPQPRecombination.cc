@@ -1,8 +1,9 @@
 /***********************************************************************\
- *  * This software is licensed under the terms of the GNU General Public *
- *   * License version 3 or later. See G4CMP/LICENSE for the full license. *
- *   \***********************************************************************/
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
 
+// 20230301  Remove static GetMeanFreePath() function; causes compiler issues.
 
 #include "G4CMPQPRecombination.hh"
 #include "G4CMPConfigManager.hh"
@@ -19,31 +20,14 @@ G4CMPQPRecombination::G4CMPQPRecombination()
     //UseRateModel(G4CMPConfigManager::GetQPRecombinationMFP());
 }
 
-
-
 G4CMPQPRecombination::~G4CMPQPRecombination() {;}
 
 
-G4double 
-G4CMPQPRecombination::GetMeanFreePath(const G4ParticleDefinition* pd) {
-  return (G4CMP::IsQuasiparticle(pd) ? G4CMPConfigManager::GetQPRecombinationMFP()
-	  : DBL_MAX);
+G4double G4CMPQPRecombination::GetMeanFreePath(const G4Track& aTrack, G4double,
+					       G4ForceCondition*) {
+  return (G4CMP::IsQuasiparticle(aTrack)
+	  ? G4CMPConfigManager::GetQPRecombinationMFP() : DBL_MAX);
 }
-
-G4double G4CMPQPRecombination::GetMeanFreePath(const G4Track&, G4double,
-						    G4ForceCondition*) {
-  return GetMeanFreePath(GetCurrentParticle());
-}
-
-/*
-G4double 
-G4CMPQPRecombination::GetMeanFreePath(const G4Track&, G4double,
-						G4ForceCondition* cond) {
-    *cond = Forced;
-    return DBL_MAX;
-}*/
-
-
 
 G4bool 
 G4CMPQPRecombination::IsApplicable(const G4ParticleDefinition& aPD) {
@@ -51,8 +35,7 @@ G4CMPQPRecombination::IsApplicable(const G4ParticleDefinition& aPD) {
 }
 
 G4VParticleChange* 
-G4CMPQPRecombination::PostStepDoIt(const G4Track& aTrack,
-					     const G4Step& aStep) {
+G4CMPQPRecombination::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep) {
     aParticleChange.Initialize(aTrack);
 
     //once QP has travelled, recombines with another QP
