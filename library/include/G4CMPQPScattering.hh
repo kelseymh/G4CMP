@@ -20,7 +20,7 @@ public:
   using G4CMPVProcess::UseRateModel;            // Avoid function hiding
   void UseRateModel(G4double model);            // Non-virtual to use in ctor
 
-  virtual bool IsApplicable(const G4ParticleDefinition&);
+  virtual bool IsApplicable(const G4ParticleDefinition&) override;
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&) override;
 
