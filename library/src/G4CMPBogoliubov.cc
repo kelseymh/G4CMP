@@ -1,13 +1,13 @@
 /***********************************************************************\
- *  * This software is licensed under the terms of the GNU General Public *
- *   * License version 3 or later. See G4CMP/LICENSE for the full license. *
- *   \***********************************************************************/
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
 
-/// \file particles/phonons/src/G4PhononTransFast.cc
-///// \brief Implementation of the G4PhononTransFast class
-////
-//// $Id$
-//
+/// \file library/src/G4CMPBogoliubov.cc
+/// \brief Implementation of the G4CMPBogoliubov class
+///
+/// $Id$
+
 #include "G4CMPBogoliubov.hh"
 #include "G4ParticleTable.hh"
 #include "G4SystemOfUnits.hh"

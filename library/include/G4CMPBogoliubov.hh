@@ -1,13 +1,13 @@
 /***********************************************************************\
- *  * This software is licensed under the terms of the GNU General Public *
- *   * License version 3 or later. See G4CMP/LICENSE for the full license. *
- *   \***********************************************************************/
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
 
 ///
-///// \brief Definition of the G4CMPBogoliubovon class for quasiparticle tracking
-////
-//// $Id$
-////
+/// \brief Definition of the G4CMPBogoliubovon class for quasiparticle tracking
+///
+/// $Id$
+///
 
 #ifndef G4CMPBogoliubov_h
 #define G4CMPBogoliubov_h 1
@@ -25,4 +25,4 @@ private:
   G4CMPBogoliubov() {;}
 };
 
-#endif	/* G4CMPBogoliubovon */
+#endif	/* G4CMPBogoliubov_h */
