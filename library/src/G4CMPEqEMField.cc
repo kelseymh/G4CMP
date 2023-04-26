@@ -118,14 +118,23 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 	   << " pc " << mom << " " << mom.mag() << " MeV" << G4endl;
   }
 #endif
-
+  // G4double Energy = std::sqrt( y[3]*y[3]+y[4]*y[4]+y[5]*y[5] + fMass*fMass );
+  // G4double MEff = theLattice->GetElectronEffectiveMass(valleyIndex, mom);
+  // mom = mom.unit() * std::sqrt(Energy*(Energy+2.*fMass));
   /* "Momentum" reported by G4 is the true momentum.
    */
-  vel = mom;
-  vel /= fMass/c_light;		// v = pc/c / mc^2/c^2 = pc/(mc^2/c)
+
+  // G4cout << " pc " << mom << " " << mom.mag() << " MeV" << G4endl;
+  theLattice->RotateToLattice(mom);
+  vel = theLattice->MapPtoV_el(valleyIndex, mom);
+  theLattice->RotateToSolid(vel);
+  // vel /= fMass/c_light;		// v = pc/c / mc^2/c^2 = pc/(mc^2/c)
   G4double vinv = 1./vel.mag();
 
   momdir = vel.unit();
+
+  // G4cout << " v " << vel/(km/s) << " " << vel.mag()/(km/s) << " km/s"
+  //   << G4endl << " TOF (1/v) " << vinv/(ns/mm) << " ns/mm";
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
@@ -163,7 +172,8 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 #endif
 
   force *= theLattice->GetMInvTensor();
-  force *= theLattice->GetElectronMass();
+  //Make sure magnitude of force is conserved
+  force *= fMass;
   //***force *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
