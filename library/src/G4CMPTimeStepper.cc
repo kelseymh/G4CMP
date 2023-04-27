@@ -169,10 +169,10 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
   G4double meff = IsHole() ? theLattice->GetHoleMass()
     : theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack), p);
 
-  G4double mass = aTrack.GetDynamicParticle()->GetMass()
+  G4double mass = aTrack.GetDynamicParticle()->GetMass();
   G4double gamma = sqrt(1. + p.mag2()/(mass*mass*c_squared*c_squared));
   G4ThreeVector vlocal = p;
-  vlocal /= (aTrack.GetDynamicParticle()->GetMass()/c_light);
+  vlocal /= (mass*gamma/c_light);
   p = GetGlobalDirection(theLattice->MapV_elToP(GetValleyIndex(aTrack), vlocal));
 
   if (IsElectron()) aParticleChange.ProposeEnergy(theLattice->MapV_elToEkin(GetValleyIndex(aTrack), vlocal));
