@@ -125,9 +125,9 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
    */
 
   // G4cout << " pc " << mom << " " << mom.mag() << " MeV" << G4endl;
-  theLattice->RotateToLattice(mom);
+  fGlobalToLocal.ApplyAxisTransform(mom);
   vel = theLattice->MapPtoV_el(valleyIndex, mom);
-  theLattice->RotateToSolid(vel);
+  fLocalToGlobal.ApplyAxisTransform(vel);
   // vel /= fMass/c_light;		// v = pc/c / mc^2/c^2 = pc/(mc^2/c)
   G4double vinv = 1./vel.mag();
 
