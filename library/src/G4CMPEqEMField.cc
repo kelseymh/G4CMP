@@ -206,6 +206,8 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   // Force = qE/beta
   force *= fCharge*vinv*c_light;
 
+  G4cout << "force " << force << " mom " << mom << " vinv " << vinv << G4endl;
+
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
     G4cout << " q*Ec/v (scaled) " << force/(eV/m) << " " << force.mag()/(eV/m)

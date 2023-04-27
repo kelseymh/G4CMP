@@ -174,10 +174,14 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector vlocal = p;
   vlocal /= (mass*gamma/c_light);
   p = GetGlobalDirection(theLattice->MapV_elToP(GetValleyIndex(aTrack), vlocal));
+  G4double ekin = theLattice->MapV_elToEkin(GetValleyIndex(aTrack), vlocal);
 
-  if (IsElectron()) aParticleChange.ProposeEnergy(theLattice->MapV_elToEkin(GetValleyIndex(aTrack), vlocal));
+  if (IsElectron()) aParticleChange.ProposeEnergy(ekin);
   if (IsElectron()) aParticleChange.ProposeMomentumDirection(p.unit());
   if (IsElectron()) aParticleChange.ProposeMass(meff*c_squared);
+
+  G4cout << "mass " << mass << " meff " << meff << " gamma " << gamma << G4endl;
+  G4cout << "p " << p << " v " << vlocal << "energy " << ekin << G4endl;
 
   // Report basic kinematics
   if (verboseLevel) {
