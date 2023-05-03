@@ -12,6 +12,7 @@
 //		probabilities, and computation functions.
 // 20200601  G4CMP-206: Need thread-local copies of electrode pointers
 // 20220824  R. Cormier -- Default to scalar probs if no polynomials
+// 20230429  G4CMP-357: Move mutex in GetXyzElectrode() to avoid data race.
 
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPVElectrodePattern.hh"
@@ -222,10 +223,10 @@ G4CMPVElectrodePattern* G4CMPSurfaceProperty::GetChargeElectrode() const {
   if (!G4Threading::IsWorkerThread()) return theChargeElectrode;
 
   if (theChargeElectrode) {
+    G4AutoLock l(&elMutex);
     G4int id = G4Threading::G4GetThreadId();
     try { return workerChargeElectrode.at(id); }
     catch (std::out_of_range&) {
-      G4AutoLock l(&elMutex);
       return (workerChargeElectrode[id] = theChargeElectrode->Clone());
     }
   }
@@ -237,10 +238,10 @@ G4CMPVElectrodePattern* G4CMPSurfaceProperty::GetPhononElectrode() const {
   if (!G4Threading::IsWorkerThread()) return thePhononElectrode;
 
   if (thePhononElectrode) {
+    G4AutoLock l(&elMutex);
     G4int id = G4Threading::G4GetThreadId();
     try { return workerPhononElectrode.at(id); }
     catch (std::out_of_range&) {
-      G4AutoLock l(&elMutex);
       return (workerPhononElectrode[id] = thePhononElectrode->Clone());
     }
   }
