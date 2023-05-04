@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2023-05-04  g4cmp-V08-02-03 BUG FIX for data race in G4CMPSurfaceProperty.
 2023-04-29  G4CMP-357 : Data race in G4CMPSurfaceProperty::GetXyzElectrode().
 
 2022-12-14  g4cmp-V08-02-02 Fix units error with hATrapIonizationMFP command.
