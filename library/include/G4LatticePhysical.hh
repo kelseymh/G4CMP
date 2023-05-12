@@ -81,6 +81,8 @@ public:
   // NOTE:  K_HV vector must be in valley internal coordinate system
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
+  G4ThreeVector MapP_QToP(G4int ivalley, G4double m, const G4ThreeVector& P_Q) const;
+  G4ThreeVector MapPToP_Q(G4int ivalley, G4double m, const G4ThreeVector& P) const;
   G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
   G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;

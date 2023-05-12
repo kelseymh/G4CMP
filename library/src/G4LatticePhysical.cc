@@ -214,6 +214,26 @@ G4LatticePhysical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
   return RotateToSolid(tempvec());
 }
 
+G4ThreeVector 
+G4LatticePhysical::MapPToP_Q(G4int ivalley, G4double m, const G4ThreeVector& P) const {
+
+  RotateToLattice(tempvec()=P);
+
+  tempvec() = fLattice->MapPToP_Q(ivalley, m, tempvec());
+
+  return RotateToSolid(tempvec());
+}
+
+G4ThreeVector 
+G4LatticePhysical::MapP_QToP(G4int ivalley, G4double m, const G4ThreeVector& P_Q) const {
+
+  RotateToLattice(tempvec()=P_Q);
+
+  tempvec() = fLattice->MapP_QToP(ivalley, m, tempvec());
+
+  return RotateToSolid(tempvec());
+}
+
 // NOTE:  K_HV vector returned in valley internal coordinate system
 G4ThreeVector
 G4LatticePhysical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_e) const {
