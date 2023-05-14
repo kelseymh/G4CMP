@@ -13,6 +13,7 @@
 // 20170805  Remove GetMeanFreePath() function to scattering-rate model
 // 20190816  Add flag to track secondary phonons immediately (c.f. G4Cerenkov)
 // 20201109  Drop G4CMP_DEBUG protection here, to avoid client rebuilding
+// 20230514 M. Kelsey -- Rename G4CMPVTrackInfo to G4CMPTrackInfo (not virtual)
 
 #ifndef G4CMPLukeScattering_h
 #define G4CMPLukeScattering_h 1

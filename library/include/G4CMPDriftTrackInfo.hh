@@ -12,11 +12,12 @@
 // $Id$
 //
 // 20161111 Initial commit - R. Agnese
+// 20230514 M. Kelsey -- Rename G4CMPVTrackInfo to G4CMPTrackInfo (not virtual)
 
 #ifndef G4CMPDriftTrackInfo_hh
 #define G4CMPDriftTrackInfo_hh 1
 
-#include "G4CMPVTrackInfo.hh"
+#include "G4CMPTrackInfo.hh"
 /*
 #include "G4Allocator.hh"
 
@@ -25,7 +26,7 @@ class G4CMPDriftTrackInfo;
 extern G4Allocator<G4CMPDriftTrackInfo> G4CMPDriftTrackInfoAllocator;
 */
 
-class G4CMPDriftTrackInfo: public G4CMPVTrackInfo {
+class G4CMPDriftTrackInfo: public G4CMPTrackInfo {
 public:
   G4CMPDriftTrackInfo() = delete;
   G4CMPDriftTrackInfo(const G4LatticePhysical* lat, G4int valIdx);

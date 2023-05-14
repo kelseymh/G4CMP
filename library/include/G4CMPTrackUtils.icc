@@ -12,9 +12,10 @@
 // 20161111 Initial commit - R. Agnese
 // 20170313 static_assert() first arg must be wrapped in parentheses
 // 20170622 Make AttachTrackInfo non-templated, move to .cc file
+// 20230514 M. Kelsey -- Rename G4CMPVTrackInfo to G4CMPTrackInfo (not virtual)
 
 #include "G4CMPConfigManager.hh"
-#include "G4CMPVTrackInfo.hh"
+#include "G4CMPTrackInfo.hh"
 #include "G4Track.hh"
 #include <assert.h>
 #include <type_traits>
@@ -25,9 +26,9 @@ template<class T> T* G4CMP::GetTrackInfo(const G4Track* track) {
 }
 
 template<class T> T* G4CMP::GetTrackInfo(const G4Track& track) {
-  static_assert((std::is_base_of<G4CMPVTrackInfo,T>::value ||
-		 std::is_same<G4CMPVTrackInfo,T>::value),
-                "Generic type must be a strict subtype of G4CMPVTrackInfo.");
+  static_assert((std::is_base_of<G4CMPTrackInfo,T>::value ||
+		 std::is_same<G4CMPTrackInfo,T>::value),
+                "Generic type must be a strict subtype of G4CMPTrackInfo.");
 
   return dynamic_cast<T*>(track.GetAuxiliaryTrackInformation(
                             G4CMPConfigManager::GetPhysicsModelID()));

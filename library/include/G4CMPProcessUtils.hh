@@ -36,6 +36,7 @@
 // 20201111  Add MakePhononEnergy() which takes wave vector directly
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 // 20201223  Add FindNearestValley() function to align electron momentum.
+// 20230514 M. Kelsey -- Rename G4CMPVTrackInfo to G4CMPTrackInfo (not virtual)
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -48,7 +49,7 @@
 
 class G4CMPDriftTrackInfo;
 class G4CMPPhononTrackInfo;
-class G4CMPVTrackInfo;
+class G4CMPTrackInfo;
 class G4LatticePhysical;
 class G4ParticleDefinition;
 class G4VPhysicalVolume;

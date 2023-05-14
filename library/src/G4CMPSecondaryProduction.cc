@@ -28,6 +28,7 @@
 //	       tracks; neutrals get everything at endpoint.
 // 20220815  G4CMP-308 : Factor step-accumulation procedures to HitMerging.
 // 20220828  Call HitMerging::ProcessEvent() to ensure event ID is set.
+// 20230514  G4CMP-219 : Add quaisparticles to IsApplicable() exclusion.
 
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPConfigManager.hh"
@@ -57,7 +58,7 @@ G4CMPSecondaryProduction::~G4CMPSecondaryProduction() {
 
 G4bool G4CMPSecondaryProduction::IsApplicable(const G4ParticleDefinition& pd) {
   return (!pd.IsShortLived() && !G4CMP::IsPhonon(pd) &&
-	  !G4CMP::IsChargeCarrier(pd) );
+	  !G4CMP::IsChargeCarrier(pd) && !G4CMP::IsQuasiparticle(pd));
 }
 
 

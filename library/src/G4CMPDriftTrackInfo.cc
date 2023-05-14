@@ -12,6 +12,7 @@
 // $Id$
 //
 // 20161111 Initial commit - R. Agnese
+// 20230514 M. Kelsey -- Rename G4CMPVTrackInfo to G4CMPTrackInfo (not virtual)
 
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4LatticePhysical.hh"
@@ -21,7 +22,7 @@
 
 G4CMPDriftTrackInfo::G4CMPDriftTrackInfo(const G4LatticePhysical* lat,
                                          G4int valIdx) :
-                                         G4CMPVTrackInfo(lat) {
+                                         G4CMPTrackInfo(lat) {
   SetValleyIndex(valIdx);
 }
 

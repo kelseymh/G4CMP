@@ -12,6 +12,7 @@
 // 20170621 M. Kelsey -- Non-templated utility functions
 // 20190906 M. Kelsey -- Add function to look up process for track
 // 20200829 M. Kelsey -- Don't override initial direction of phonons
+// 20230514 M. Kelsey -- Rename G4CMPVTrackInfo to G4CMPTrackInfo (not virtual)
 
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -19,7 +20,7 @@
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPUtils.hh"
-#include "G4CMPVTrackInfo.hh"
+#include "G4CMPTrackInfo.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4Track.hh"
@@ -41,6 +42,9 @@ void G4CMP::AttachTrackInfo(const G4Track& track) {
   } else if (IsChargeCarrier(track)) {
     G4int valley = IsElectron(track) ? ChooseValley(GetLattice(track)) : -1;
     AttachTrackInfo(track, valley);
+  } else if (IsQuasiparticle(track)) {
+    // Use base class directly, no additional information
+    AttachTrackInfo(track, new G4CMPTrackInfo(GetLattice(track)));
   }
 }
 
@@ -54,7 +58,7 @@ void G4CMP::AttachTrackInfo(const G4Track* track, G4int valley) {
 void G4CMP::AttachTrackInfo(const G4Track& track, G4int valley) {
   if (!IsChargeCarrier(track)) {
     G4Exception("G4CMP::AttachTrackInfo", "Utils003", JustWarning,
-		"Cannot associate valley with phonon track.");
+		"Cannot associate valley with non-charge track.");
     AttachTrackInfo(track);		// Do default phonon attachment
     return;
   }
@@ -83,11 +87,11 @@ void G4CMP::AttachTrackInfo(const G4Track& track, const G4ThreeVector& kdir) {
 
 // Attach already created container to track, must be of G4CMP type
 
-void G4CMP::AttachTrackInfo(const G4Track* track, G4CMPVTrackInfo* trackInfo) {
+void G4CMP::AttachTrackInfo(const G4Track* track, G4CMPTrackInfo* trackInfo) {
   if (track) AttachTrackInfo(*track, trackInfo);
 }
 
-void G4CMP::AttachTrackInfo(const G4Track& track, G4CMPVTrackInfo* trackInfo) {
+void G4CMP::AttachTrackInfo(const G4Track& track, G4CMPTrackInfo* trackInfo) {
   if (nullptr == trackInfo) return;
 
   track.SetAuxiliaryTrackInformation(G4CMPConfigManager::GetPhysicsModelID(),
@@ -105,7 +109,7 @@ G4bool G4CMP::HasTrackInfo(const G4Track& track) {
   G4VAuxiliaryTrackInformation* info = 
     track.GetAuxiliaryTrackInformation(G4CMPConfigManager::GetPhysicsModelID());
 
-  return (nullptr != dynamic_cast<G4CMPVTrackInfo*>(info));
+  return (nullptr != dynamic_cast<G4CMPTrackInfo*>(info));
 }
 
 

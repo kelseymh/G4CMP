@@ -13,11 +13,12 @@
 //
 // 20161111 Initial commit - R. Agnese
 // 20170728 M. Kelsey -- Replace "k" function args with "theK" (-Wshadow)
+// 20230514 M. Kelsey -- Rename G4CMPVTrackInfo to G4CMPTrackInfo (not virtual)
 
 #ifndef G4CMPPhononTrackInfo_hh
 #define G4CMPPhononTrackInfo_hh 1
 
-#include "G4CMPVTrackInfo.hh"
+#include "G4CMPTrackInfo.hh"
 #include "G4ThreeVector.hh"
 
 /* NOTE: Avoiding use of G4Allocator for performance reasons
@@ -27,7 +28,7 @@ extern G4Allocator<G4CMPPhononTrackInfo> G4CMPPhononTrackInfoAllocator;
 */
 
 
-class G4CMPPhononTrackInfo : public G4CMPVTrackInfo {
+class G4CMPPhononTrackInfo : public G4CMPTrackInfo {
 public:
   G4CMPPhononTrackInfo() = delete;
   G4CMPPhononTrackInfo(const G4LatticePhysical* lat, G4ThreeVector k);
