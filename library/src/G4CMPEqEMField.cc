@@ -122,7 +122,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   /* "Momentum" reported by G4 is the true momentum.
    */
   vel = mom;
-  vel /= fMass/c_light;		// v = pc/c / mc^2/c^2 = pc/(mc^2/c)
+  vel /=sqrt(mom.mag2() + fMass*fMass)/c_light; // v=pc^2/E = (gamma mvc^2) / (gamma mc^2) = v
   G4double vinv = 1./vel.mag();
 
   momdir = vel.unit();
