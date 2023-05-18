@@ -128,7 +128,7 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   }
 
 #ifdef G4CMP_DEBUG
-  if (!output.good()) {
+  if (verboseLevel && !output.good()) {
     output.open("kaplanqp_stats");
     if (output.good()) {
       output << "Incident Energy [eV],Absorbed Energy [eV],"
