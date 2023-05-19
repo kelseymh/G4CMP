@@ -476,21 +476,21 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
 }
 
 G4ThreeVector 
-G4LatticeLogical::MapPToP_Q(G4int ivalley, G4double m, const G4ThreeVector& P) const {
+G4LatticeLogical::MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const {
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
 
-  return nToV*(GetMassTensor()*(vToN*P/m));
+  return nToV*(GetMassTensor()*(vToN*P*c_squared/electron_mass_c2));
 }
 
 G4ThreeVector 
-G4LatticeLogical::MapP_QToP(G4int ivalley, G4double m, const G4ThreeVector& P_Q) const {
+G4LatticeLogical::MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const {
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
 
-  return nToV*(GetMInvTensor()*(vToN*P_Q*m));
+  return nToV*(GetMInvTensor()*(vToN*P_Q*electron_mass_c2/c_squared));
 }
 
 G4ThreeVector
@@ -629,7 +629,7 @@ G4LatticeLogical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
 // Apply energy-momentum relationship for electron transport
 
 G4double  
-G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
+G4LatticeLogical::MapP_QtoEkin(G4int iv, const G4ThreeVector& p) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapPtoEkin " << iv << " " << p << G4endl;
@@ -659,10 +659,33 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
 	//        Ymom_squared*Ymom_squared*miyy3 + 
 	//        Zmom_squared*Zmom_squared*mizz3))
 	//    );
-
+  // E = ½M-1p_Q2 = ½M-1(p_Q2c2)/c2
   return ( ((0.5/c_squared) * (Xmom_squared*fMassInverse.xx() +
 			       Ymom_squared*fMassInverse.yy() +
 			       Zmom_squared*fMassInverse.zz()))
+	   );
+}
+
+G4double  
+G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapPtoEkin " << iv << " " << p << G4endl;
+#endif
+
+  tempvec() = p;
+  tempvec().transform(GetValley(iv));		// Rotate to valley frame
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
+#endif
+
+  G4double Xmom_squared = tempvec().x()*tempvec().x();
+  G4double Ymom_squared = tempvec().y()*tempvec().y();
+  G4double Zmom_squared = tempvec().z()*tempvec().z();
+  // E = ½MP2/m2 = ½M(P2c2)/m2c2 = ½c2M(P2c2)/m2c4
+  return ( ((0.5*c_squared/(electron_mass_c2*electron_mass_c2)) * (Xmom_squared*fMassTensor.xx() +
+			       Ymom_squared*fMassTensor.yy() +
+			       Zmom_squared*fMassTensor.zz()))
 	   );
 }
 
@@ -710,13 +733,7 @@ G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
     G4cout << "G4LatticeLogical::GetElectronEffectiveMass " << iv
 	   << " " << p << " p2 = " << p.mag2() << G4endl;
 #endif
-  tempvec() = p;
-  tempvec().transform(GetValley(iv));
-
-  G4double Ekin = (0.5/c_squared) * 
-            (tempvec().x()*tempvec().x()*fMassInverse.xx() +
-			       tempvec().y()*tempvec().y()*fMassInverse.yy() +
-			       tempvec().z()*tempvec().z()*fMassInverse.zz());
+  G4double Ekin = MapPtoEkin(iv, p);
   return 0.5*p.mag2()/c_squared/Ekin;		// Non-relativistic
   // return (p.mag2()-Ekin*Ekin)/(2.*Ekin*c_squared);	// Relativistic
 }

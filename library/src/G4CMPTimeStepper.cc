@@ -165,27 +165,17 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 
   // Adjust dynamical mass for electrons using end-of-step momentum direction
   G4ThreeVector p = aStep.GetPostStepPoint()->GetMomentum();
+  p = GetLocalDirection(aStep.GetPostStepPoint()->GetMomentum());
 
-  G4double mass = aStep.GetPostStepPoint()->GetMass()/c_squared;
-  // G4double gamma = sqrt(1. + p.mag2()/(mass*mass*c_squared*c_squared));
-  // G4ThreeVector vlocal = p;
-  // vlocal /= (mass*gamma/c_light);
-  p = GetLocalDirection(p);
-  G4ThreeVector p_Q = theLattice->MapPToP_Q(GetValleyIndex(aTrack), mass, p);
-  G4double ekin = theLattice->MapPtoEkin(GetValleyIndex(aTrack), p_Q);
+  G4double ekin = theLattice->MapPtoEkin(GetValleyIndex(aTrack), p);
 
-  G4double meff = IsHole() ? theLattice->GetHoleMass()
-    : theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack), p_Q);
+  // G4double meff = IsHole() ? theLattice->GetHoleMass()
+  //   : theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack), p);
 
-  p_Q = GetGlobalDirection(p_Q);
-  p = GetGlobalDirection(p);
+  G4double meff = (p.mag2()-ekin*ekin)/(2.*ekin*c_squared);
 
   if (IsElectron()) aParticleChange.ProposeEnergy(ekin);
-  if (IsElectron()) aParticleChange.ProposeMomentumDirection(p_Q.unit());
   if (IsElectron()) aParticleChange.ProposeMass(meff*c_squared);
-
-  G4cout << "mass " << mass << " meff " << meff << G4endl;
-  G4cout << "p " << p << " p_Q " << p_Q << "energy " << ekin << G4endl;
 
   // Report basic kinematics
   if (verboseLevel) {

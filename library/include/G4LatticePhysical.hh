@@ -81,8 +81,8 @@ public:
   // NOTE:  K_HV vector must be in valley internal coordinate system
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
-  G4ThreeVector MapP_QToP(G4int ivalley, G4double m, const G4ThreeVector& P_Q) const;
-  G4ThreeVector MapPToP_Q(G4int ivalley, G4double m, const G4ThreeVector& P) const;
+  G4ThreeVector MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const;
+  G4ThreeVector MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const;
   G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
   G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;
@@ -132,9 +132,7 @@ public:
   G4double GetHoleMass() const { return fLattice->GetHoleMass(); }
   G4double GetElectronMass() const { return fLattice->GetElectronMass(); }
   G4double GetElectronDOSMass() const { return fLattice->GetElectronDOSMass(); }
-  G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const {
-    return fLattice->GetElectronEffectiveMass(iv, p);
-  }
+  G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const;
 
   const G4RotationMatrix& GetMassTensor() const { return fLattice->GetMassTensor(); }
   const G4RotationMatrix& GetMInvTensor() const { return fLattice->GetMInvTensor(); }

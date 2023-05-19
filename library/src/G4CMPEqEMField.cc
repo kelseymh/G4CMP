@@ -124,20 +124,13 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   /* "Momentum" reported by G4 is the true momentum.
    */
 
-  // G4cout << " pc " << mom << " " << mom.mag() << " MeV" << G4endl;
-  // fGlobalToLocal.ApplyAxisTransform(mom);
-  // vel = theLattice->MapPtoV_el(valleyIndex, mom);
-  // fLocalToGlobal.ApplyAxisTransform(vel);
-  fGlobalToLocal.ApplyAxisTransform(mom);
-  G4ThreeVector realmom = theLattice->MapP_QToP(valleyIndex, fMass/c_squared, mom);
-  fLocalToGlobal.ApplyAxisTransform(realmom);
-  vel = realmom/(fMass/c_light);		// v = pc/c / mc^2/c^2 = pc/(mc^2/c)
+  // mom = gamma*vel*mass -> vel = mom/(gamma*mass)
+  G4double gamma = std::sqrt(1. + mom.mag2()/(electron_mass_c2*electron_mass_c2));
+  vel = mom;
+  vel *= c_light/(electron_mass_c2*gamma);		// v*gamma = p/m = pc/c / mc^2/c^2 = pc/(mc^2/c)
   G4double vinv = 1./vel.mag();
 
   momdir = vel.unit();
-
-  // G4cout << " v " << vel/(km/s) << " " << vel.mag()/(km/s) << " km/s"
-  //   << G4endl << " TOF (1/v) " << vinv/(ns/mm) << " ns/mm";
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
@@ -175,9 +168,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 #endif
 
   force *= theLattice->GetMInvTensor();
-  //Make sure magnitude of force is conserved
   force *= electron_mass_c2/c_squared;
-  //***force *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
     G4cout << " Field (H-V)     " << force/(volt/cm) << " "
@@ -206,11 +197,8 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
-  // Force = qE/beta
-  // force *= fCharge*vinv*c_light;
-  force *= fCharge;
-
-  G4cout << "force " << force << " mom " << mom << " vinv " << vinv << " mass" << fMass << G4endl;
+  // dp/ds = qE/beta
+  force *= fCharge*vinv*c_light;;
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {

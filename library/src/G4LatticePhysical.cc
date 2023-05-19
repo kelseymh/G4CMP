@@ -215,21 +215,21 @@ G4LatticePhysical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
 }
 
 G4ThreeVector 
-G4LatticePhysical::MapPToP_Q(G4int ivalley, G4double m, const G4ThreeVector& P) const {
+G4LatticePhysical::MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const {
 
   RotateToLattice(tempvec()=P);
 
-  tempvec() = fLattice->MapPToP_Q(ivalley, m, tempvec());
+  tempvec() = fLattice->MapPToP_Q(ivalley, tempvec());
 
   return RotateToSolid(tempvec());
 }
 
 G4ThreeVector 
-G4LatticePhysical::MapP_QToP(G4int ivalley, G4double m, const G4ThreeVector& P_Q) const {
+G4LatticePhysical::MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const {
 
   RotateToLattice(tempvec()=P_Q);
 
-  tempvec() = fLattice->MapP_QToP(ivalley, m, tempvec());
+  tempvec() = fLattice->MapP_QToP(ivalley, tempvec());
 
   return RotateToSolid(tempvec());
 }
@@ -363,6 +363,15 @@ G4LatticePhysical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
 
   tempvec() = fLattice->MapK_valleyToP(ivalley, tempvec());
   return RotateToSolid(tempvec());
+}
+
+G4double 
+G4LatticePhysical::GetElectronEffectiveMass(G4int iv,
+					   const G4ThreeVector& p) const {
+
+  RotateToLattice(tempvec()=p);
+
+  return fLattice->GetElectronEffectiveMass(iv, tempvec());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

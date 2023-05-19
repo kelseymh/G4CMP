@@ -98,8 +98,8 @@ public:
   // NOTE:  Input vector must be in lattice symmetry frame (X == symmetry axis)
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
-  G4ThreeVector MapP_QToP(G4int ivalley, G4double m, const G4ThreeVector& P_Q) const;
-  G4ThreeVector MapPToP_Q(G4int ivalley, G4double m, const G4ThreeVector& P) const;
+  G4ThreeVector MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const;
+  G4ThreeVector MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const;
   G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
   G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;
@@ -110,6 +110,7 @@ public:
 
   // Apply energy relationships for electron transport
   G4double MapPtoEkin(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4double MapP_QtoEkin(G4int ivalley, const G4ThreeVector& p_e) const;
   G4double MapV_elToEkin(G4int ivalley, const G4ThreeVector& v_e) const;
 
   // Configure crystal symmetry group and lattice spacing/angles
