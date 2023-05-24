@@ -683,7 +683,7 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   G4double Ymom_squared = tempvec().y()*tempvec().y();
   G4double Zmom_squared = tempvec().z()*tempvec().z();
   // E = ½MP2/m2 = ½M(P2c2)/m2c2 = ½c2M(P2c2)/m2c4
-  return ( ((0.5*c_squared/(electron_mass_c2*electron_mass_c2)) * (Xmom_squared*fMassTensor.xx() +
+  return ( ((c_squared/(2*electron_mass_c2*electron_mass_c2)) * (Xmom_squared*fMassTensor.xx() +
 			       Ymom_squared*fMassTensor.yy() +
 			       Zmom_squared*fMassTensor.zz()))
 	   );
@@ -734,7 +734,7 @@ G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
 	   << " " << p << " p2 = " << p.mag2() << G4endl;
 #endif
   G4double Ekin = MapPtoEkin(iv, p);
-  return 0.5*p.mag2()/c_squared/Ekin;		// Non-relativistic
+  return p.mag2()/(2*c_squared*Ekin);		// Non-relativistic
   // return (p.mag2()-Ekin*Ekin)/(2.*Ekin*c_squared);	// Relativistic
 }
 
