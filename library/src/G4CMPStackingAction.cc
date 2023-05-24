@@ -20,9 +20,10 @@
 // 20170620 Drop obsolete SetTransforms() call
 // 20170624 Clean up track initialization
 // 20170928 Replace "polarization" with "mode"
+// 20230524 G4CMP-359: Do not overwrite kinetic energy of primaries; use
+//	      Herring-Vogt effective mass for electrons
 
 #include "G4CMPStackingAction.hh"
-
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftTrackInfo.hh"
@@ -77,11 +78,7 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
 
     // Fill kinematic data for new track (secondaries will have this done)
     if (IsPhonon()) SetPhononVelocity(aTrack);
-
-    if (IsChargeCarrier()) {
-      SetChargeCarrierMass(aTrack);
-      if (IsElectron()) SetElectronEnergy(aTrack);
-    }
+    if (IsChargeCarrier()) SetChargeCarrierMass(aTrack);
   }
 
   ReleaseTrack();
@@ -124,11 +121,16 @@ void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
 // Set dynamical mass of charge carrier to scalar value for material
 
 void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
-  // Get effective mass for charge carrier
-  G4double mass = aTrack->GetDefinition()->GetPDGMass();
+  // Get effective mass for charge carrier (convert to G4CMP [M] units)
+  G4double mass = aTrack->GetDefinition()->GetPDGMass()/c_squared;
 
-  if (G4CMP::IsHole(aTrack))     mass = theLattice->GetHoleMass();
-  if (G4CMP::IsElectron(aTrack)) mass = theLattice->GetElectronMass();	// H-V scalar
+  if (IsHole()) mass = theLattice->GetHoleMass();
+
+  if (IsElectron()) {
+    G4ThreeVector pdir = aTrack->GetMomentumDirection();
+    RotateToLocalDirection(pdir);
+    mass = theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack), pdir);
+  }
 
   // Cast to non-const pointer so we can change the effective mass
   G4DynamicParticle* dynp =
