@@ -39,6 +39,7 @@
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 // 20201223  Add FindNearestValley() function to align electron momentum.
 // 20210318  In LoadDataForTrack, kill a bad track, not the whole event.
+// 20230524  Expand GetCurrentTouchable() to create one for new tracks
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -361,7 +362,14 @@ const G4ParticleDefinition* G4CMPProcessUtils::GetCurrentParticle() const {
 // Return touchable for currently active track for transforms
 
 const G4VTouchable* G4CMPProcessUtils::GetCurrentTouchable() const {
-  return (currentTrack ? currentTrack->GetTouchable() : 0);
+  if (!currentTrack) return 0;
+
+  const G4VTouchable* touch = currentTrack->GetTouchable();
+
+  if (!touch)				// FIXME: This is a memory leak!
+    touch = G4CMP::CreateTouchableAtPoint(currentTrack->GetPosition());
+
+  return touch;
 }
 
 
