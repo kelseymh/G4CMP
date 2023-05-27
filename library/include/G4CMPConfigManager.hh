@@ -43,6 +43,7 @@
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
+// 20230527  G4CMP-295:  Add parameters for minimum, maximum step length (mm)
 
 #include "globals.hh"
 #include <iosfwd>
@@ -75,6 +76,8 @@ public:
   static G4bool CreateChargeCloud()      { return Instance()->chargeCloud; }
   static G4double GetSurfaceClearance()  { return Instance()->clearance; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
+  static G4double GetMinimumStep()	 { return Instance()->minimumStep; }
+  static G4double GetMaximumStep()	 { return Instance()->maximumStep; }
   static G4double GetMinPhononEnergy()   { return Instance()->EminPhonons; }
   static G4double GetMinChargeEnergy()   { return Instance()->EminCharges; }
   static G4double GetSamplingEnergy()    { return Instance()->sampleEnergy; }
@@ -100,6 +103,8 @@ public:
   static void SetMaxLukePhonons(G4int value) { Instance()->maxLukePhonons = value; }
   static void SetSurfaceClearance(G4double value) { Instance()->clearance = value; }
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
+  static void SetMinimumStep(G4double value)  { Instance()->minimumStep=value; }
+  static void SetMaximumStep(G4double value)  { Instance()->maximumStep=value; }
   static void SetMinPhononEnergy(G4double value) { Instance()->EminPhonons = value; }
   static void SetMinChargeEnergy(G4double value) { Instance()->EminCharges = value; }
   static void SetSamplingEnergy(G4double value) { Instance()->sampleEnergy = value; }
@@ -164,7 +169,9 @@ private:
   G4double hDTrapIonMFP; // Mean free path for h+ on e-trap ionization ($G4CMP_HETRAPION_MFP)
   G4double hATrapIonMFP; // Mean free path for h+ on h-trap ionization ($G4CMP_HHTRAPION_MFP)
   G4double clearance;	 // Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
-  G4double stepScale;	 // Fraction of l0 for steps ($G4CMP_MIN_STEP)
+  G4double stepScale;	 // Fraction of l0 for steps ($G4CMP_MIN_STEP_SCALE)
+  G4double minimumStep;	 // Minimum step length ($G4CMP_MIN_STEP_MM)
+  G4double maximumStep;	 // Minimum step length ($G4CMP_MAX_STEP_MM)
   G4double sampleEnergy; // Energy above which to do sampling ($G4CMP_SAMPLE_ENERGY)
   G4double genPhonons;	 // Rate to create primary phonons ($G4CMP_MAKE_PHONONS)
   G4double genCharges;	 // Rate to create primary e/h pairs ($G4CMP_MAKE_CHARGES)

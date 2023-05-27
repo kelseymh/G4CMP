@@ -35,6 +35,7 @@
 // 20200614  G4CMP-210:  Add missing initializers to copy constructor
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
+// 20230527  G4CMP-295:  Add parameters for minimum, maximum step length (mm)
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -85,7 +86,9 @@ G4CMPConfigManager::G4CMPConfigManager()
     hDTrapIonMFP(getenv("G4CMP_HDTRAPION_MFP")?strtod(getenv("G4CMP_HDTRAPION_MFP"),0)*mm:DBL_MAX),
     hATrapIonMFP(getenv("G4CMP_HATRAPION_MFP")?strtod(getenv("G4CMP_HATRAPION_MFP"),0)*mm:DBL_MAX),
     clearance(getenv("G4CMP_CLEARANCE")?strtod(getenv("G4CMP_CLEARANCE"),0)*mm:1e-6*mm),
-    stepScale(getenv("G4CMP_MIN_STEP")?strtod(getenv("G4CMP_MIN_STEP"),0):-1.),
+    stepScale(getenv("G4CMP_MIN_STEP_SCALE")?strtod(getenv("G4CMP_MIN_STEP_SCALE"),0):-1.),
+    minimumStep(getenv("G4CMP_MIN_STEP_MM")?strtod(getenv("G4CMP_MIN_STEP_MM"),0)*mm:-1.),
+    maximumStep(getenv("G4CMP_MAX_STEP_MM")?strtod(getenv("G4CMP_MAX_STEP_MM"),0)*mm:-1.),
     sampleEnergy(getenv("G4CMP_SAMPLE_ENERGY")?strtod(getenv("G4CMP_SAMPLE_ENERGY"),0):-1.),
     genPhonons(getenv("G4CMP_MAKE_PHONONS")?strtod(getenv("G4CMP_MAKE_PHONONS"),0):1.),
     genCharges(getenv("G4CMP_MAKE_CHARGES")?strtod(getenv("G4CMP_MAKE_CHARGES"),0):1.),
@@ -121,7 +124,8 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     hTrapMFP(master.hTrapMFP), eDTrapIonMFP(master.eDTrapIonMFP),
     eATrapIonMFP(master.eATrapIonMFP), hDTrapIonMFP(master.hDTrapIonMFP),
     hATrapIonMFP(master.hATrapIonMFP), clearance(master.clearance), 
-    stepScale(master.stepScale), sampleEnergy(master.sampleEnergy), 
+    stepScale(master.stepScale), minimumStep(master.minimumStep),
+    maximumStep(master.maximumStep), sampleEnergy(master.sampleEnergy), 
     genPhonons(master.genPhonons), genCharges(master.genCharges), 
     lukeSample(master.lukeSample), combineSteps(master.combineSteps),
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
@@ -178,7 +182,9 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\nG4CMP_HDTRAPION_MFP " << hDTrapIonMFP
      << "\nG4CMP_HATRAPION_MFP " << hATrapIonMFP
      << "\nG4CMP_CLEARANCE " << clearance
-     << "\nG4CMP_MIN_STEP " << stepScale
+     << "\nG4CMP_MIN_STEP_SCALE " << stepScale
+     << "\nG4CMP_MIN_STEP_MM " << minimumStep/mm
+     << "\nG4CMP_MAX_STEP_MM " << maximumStep/mm
      << "\nG4CMP_SAMPLE_ENERGY " << sampleEnergy
      << "\nG4CMP_MAKE_PHONONS " << genPhonons
      << "\nG4CMP_MAKE_CHARGES " << genCharges

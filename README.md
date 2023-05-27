@@ -59,7 +59,9 @@ developers should check the source code in
 | G4CMP\_VOLTAGE [V]      | /g4cmp/voltage [V]	volt !=0:  | Apply uniform +Z voltage                |
 | G4CMP\_EPOT\_FILE [F]   | /g4cmp/EPotFile [F] V=0:      | Read mesh field file "F"                |
 | G4CMP\_EPOT\_SCALE [F]  | /g4cmp/scaleEPot [M] V=0:     | Scale the potentials in EPotFile by factor m|
-| G4CMP\_MIN\_STEP [S]    | /g4cmp/minimumStep [S] S>0:   | Force minimum step S\*L0                |
+| G4CMP\_MIN\_STEP\_SCALE [S] | /g4cmp/stepScale [S] S>0:   | Force minimum step S\*L0 *DEPRECATED* |
+| G4CMP\_MIN\_STEP\_MM [S] | /g4cmp/minimumStep [S] mm | Force minimum step length |
+| G4CMP\_MAX\_STEP\_MM [S] | /g4cmp/maximumStep [S] mm | Force maximum step length |
 | G4CMP\_MAKE\_PHONONS [R] | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
 | G4CMP\_MAKE\_CHARGES [R] | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
 | G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |

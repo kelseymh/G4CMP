@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2023-05-27  G4CMP-295 : TimeStepper to enforce max step only, better min steps.
+
 2022-03-08  G4CMP-286 : Use true momentum, split out transforms in EqEMField.
 2021-10-01  G4CMP-285 : G4CMPTimeStepper should set electron dynamical mass.
 2021-10-01  G4CMP-281 : Create secondary electrons with correct momentum, mass.

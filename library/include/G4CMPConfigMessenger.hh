@@ -40,6 +40,8 @@
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
+// 20230527  G4CMP-295:  Add parameters for minimum, maximum step length (mm)
+//		Flag "stepScale" as deprecated command
 
 #include "G4UImessenger.hh"
 
@@ -69,7 +71,9 @@ private:
   G4UIcmdWithAnInteger* ehBounceCmd;
   G4UIcmdWithAnInteger* pBounceCmd;
   G4UIcmdWithAnInteger* maxLukeCmd;
-  G4UIcmdWithADoubleAndUnit* clearCmd;
+  G4UIcmdWithADoubleAndUnit* clearCmd; 
+  G4UIcmdWithADoubleAndUnit* minStepCmd;
+  G4UIcmdWithADoubleAndUnit* maxStepCmd; 
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
   G4UIcmdWithADoubleAndUnit* sampleECmd;
@@ -80,7 +84,7 @@ private:
   G4UIcmdWithADoubleAndUnit* eATrapIonMFPCmd;
   G4UIcmdWithADoubleAndUnit* hDTrapIonMFPCmd;
   G4UIcmdWithADoubleAndUnit* hATrapIonMFPCmd;
-  G4UIcmdWithADouble* minstepCmd;
+  G4UIcmdWithADouble* stepScaleCmd;	// *** DEPRECATED ***
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;
   G4UIcmdWithADouble* lukePhononCmd;

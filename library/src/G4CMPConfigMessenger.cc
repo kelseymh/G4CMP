@@ -36,6 +36,8 @@
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
+// 20230527  G4CMP-295:  Add parameters for minimum, maximum step length (mm)
+//		Flag "stepScale" as deprecated command
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -53,10 +55,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : G4UImessenger("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library"),
     theManager(mgr), versionCmd(0), printCmd(0), verboseCmd(0), ehBounceCmd(0),
-    pBounceCmd(0), maxLukeCmd(0), clearCmd(0), minEPhononCmd(0),
-    minEChargeCmd(0), sampleECmd(0), comboStepCmd(0), trapEMFPCmd(0),
-    trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
-    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), minstepCmd(0),
+    pBounceCmd(0), maxLukeCmd(0), clearCmd(0), minStepCmd(0), maxStepCmd(0),
+    minEPhononCmd(0), minEChargeCmd(0), sampleECmd(0), comboStepCmd(0),
+    trapEMFPCmd(0), trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
+    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), stepScaleCmd(0),
     makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
     ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0), fanoStatsCmd(0),
     ehCloudCmd(0) {
@@ -77,8 +79,17 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 	      "Minimum distance from volume boundaries for new tracks");
   clearCmd->SetUnitCategory("Length");
 
-  minstepCmd = CreateCommand<G4UIcmdWithADouble>("minimumStep",
-			 "Set fraction of L0 for charge carrier minimum step");
+  stepScaleCmd = CreateCommand<G4UIcmdWithADouble>("stepScale",
+	 "Set fraction of L0 for charge carrier minimum step (DEPRECATED)");
+  stepScaleCmd->SetGuidance("WARNING: This command is deprecated.");
+
+  minStepCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("minimumStep",
+			       "Set minimum step length for charge carriers");
+  minStepCmd->SetUnitCategory("Length");
+
+  maxStepCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("maximumStep",
+			       "Set maximum step length for charge carriers");
+  maxStepCmd->SetUnitCategory("Length");
 
   sampleECmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("samplingEnergy",
 			"Energy scale above which events/hits are downsampled");
@@ -192,7 +203,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete eATrapIonMFPCmd; eATrapIonMFPCmd=0;
   delete hDTrapIonMFPCmd; hDTrapIonMFPCmd=0;
   delete hATrapIonMFPCmd; hATrapIonMFPCmd=0;
-  delete minstepCmd; minstepCmd=0;
+  delete stepScaleCmd; stepScaleCmd=0;
   delete makePhononCmd; makePhononCmd=0;
   delete makeChargeCmd; makeChargeCmd=0;
   delete lukePhononCmd; lukePhononCmd=0;
@@ -209,17 +220,22 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
 
 void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == verboseCmd) theManager->SetVerboseLevel(StoI(value));
-  if (cmd == minstepCmd) theManager->SetMinStepScale(StoD(value));
+  if (cmd == dirCmd) theManager->SetLatticeDir(value);
   if (cmd == makePhononCmd) theManager->SetGenPhonons(StoD(value));
   if (cmd == makeChargeCmd) theManager->SetGenCharges(StoD(value));
   if (cmd == lukePhononCmd) theManager->SetLukeSampling(StoD(value));
   if (cmd == maxLukeCmd) theManager->SetMaxLukePhonons(StoI(value));
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
-  if (cmd == dirCmd) theManager->SetLatticeDir(value);
 
   if (cmd == clearCmd)
     theManager->SetSurfaceClearance(clearCmd->GetNewDoubleValue(value));
+
+  if (cmd == minStepCmd)
+    theManager->SetMinimumStep(minStepCmd->GetNewDoubleValue(value));
+
+  if (cmd == maxStepCmd)
+    theManager->SetMaximumStep(maxStepCmd->GetNewDoubleValue(value));
 
   if (cmd == minEPhononCmd)
     theManager->SetMinPhononEnergy(minEPhononCmd->GetNewDoubleValue(value));
@@ -259,6 +275,14 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == ivRateModelCmd) theManager->SetIVRateModel(value);
   if (cmd == nielPartitionCmd) theManager->SetNIELPartition(value);
   if (cmd == ehCloudCmd) theManager->CreateChargeCloud(StoB(value));
+
+  if (cmd == stepScaleCmd) {
+    G4cerr << "WARNING: " << cmd->GetCommandName() << " is deprecated."
+	   << "Use minimumStep, maximumStep with units instead."
+	   << G4endl;
+
+    theManager->SetMinStepScale(StoD(value));
+  }
 
   if (cmd == versionCmd)
     G4cout << "G4CMP version: " << theManager->Version() << G4endl;
