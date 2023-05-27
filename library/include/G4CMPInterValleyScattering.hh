@@ -11,6 +11,7 @@
 // 20190704  Add selection of rate model by name, and material specific
 // 20190906  For rate model selection, pass string by value
 // 20190906  Push selected rate model back to G4CMPTimeStepper for consistency
+// 20230527  G4CMP-295:  Remove passing rate models to TimeStepper
 
 #ifndef G4CMPInterValleyScattering_h
 #define G4CMPInterValleyScattering_h 1
@@ -40,8 +41,6 @@ protected:
 
 private:
   G4String modelName;		// Last chosen rate model, to avoid memory churn
-
-  void PushModelToTimeStepper();	// Ensure model is used for stepping
 
 private:
   //hide assignment operator as private

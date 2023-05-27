@@ -25,6 +25,7 @@
 // 20190704  Add selection of rate model by name, and material specific
 // 20190904  C. Stanford -- Add 50% momentum flip (see G4CMP-168)
 // 20190906  Push selected rate model back to G4CMPTimeStepper for consistency
+// 20230527  G4CMP-295:  Remove passing rate models to TimeStepper
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -32,7 +33,6 @@
 #include "G4CMPInterValleyRate.hh"
 #include "G4CMPIVRateQuadratic.hh"
 #include "G4CMPIVRateLinear.hh"
-#include "G4CMPTimeStepper.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4LatticePhysical.hh"
@@ -83,9 +83,6 @@ void G4CMPInterValleyScattering::UseRateModel(G4String model) {
   }
 
   modelName = model;
-
-  // Ensure that TimeStepper process is given new model
-  PushModelToTimeStepper();
 }
 
 
@@ -140,18 +137,4 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   
   ClearNumberOfInteractionLengthLeft();    
   return &aParticleChange;
-}
-
-
-// Ensure the same rate model is used here and in G4CMPTimeStepper
-
-void G4CMPInterValleyScattering::PushModelToTimeStepper() {
-  if (verboseLevel>1)
-    G4cout << GetProcessName() << "::PushModelToTimeStepper" << G4endl;
-
-  G4CMPTimeStepper* tsProc =
-    dynamic_cast<G4CMPTimeStepper*>(G4CMP::FindProcess(GetCurrentTrack(),
-						       "G4CMPTimeStepper"));
-
-  if (tsProc) tsProc->UseIVRateModel(GetRateModel());
 }
