@@ -20,15 +20,18 @@
 // 20170601  Inherit from new G4CMPVProcess, which provides G4CMPProcessUtils
 // 20170620  Follow interface changes in G4CMPProcessUtils
 // 20201231  FillParticleChange() should also reset valley index if requested
+// 20230527  G4CMP-295: Adjust base class interaction length parameters if
+//	        minimum path length used.
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPConfigManager.hh"
-#include "G4CMPDriftElectron.hh"
-#include "G4CMPDriftHole.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4CMPFieldUtils.hh"
+#include "G4CMPProcessUtils.hh"
+#include "G4CMPVScatteringRate.hh"
 #include "G4DynamicParticle.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
@@ -41,11 +44,8 @@
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "Randomize.hh"
-
-#include "G4CMPFieldUtils.hh"
-#include "G4CMPProcessUtils.hh"
-#include "G4CMPVScatteringRate.hh"
-
+#include <algorithm>
+#include <initializer_list>
 
 // Constructor and destructor
 // NOTE:  Initial values are arbitrary and non-physical
@@ -72,27 +72,42 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
                       const G4Track& track,
                       G4double previousStepSize,
                       G4ForceCondition* condition) {
+  // Get desired step length computed from MFP and number of ILs
   G4double trueLength =
     G4VDiscreteProcess::PostStepGetPhysicalInteractionLength(track,
                                                              previousStepSize,
                                                              condition);
 
-  G4double minLength = G4CMPConfigManager::GetMinStepScale();
-  minLength *= (IsElectron() ? theLattice->GetElectronScatter()
-		: theLattice->GetHoleScatter());
-
+  // Check for upcoming energy threshold in rate
   G4double ekin = GetKineticEnergy(track);
   G4CMPVScatteringRate* processRate = GetRateModel();
-  G4double energyStepMFP = processRate ? EnergyStep(processRate->Threshold(ekin)) : DBL_MAX;
-  if (energyStepMFP  <= 1e-9*m) energyStepMFP = 1e-9*m;
+  G4double energyStep = (processRate ? EnergyStep(processRate->Threshold(ekin))
+			 : -1.);
+
+  // Get configured minimum step (zero if not configured)
+  G4double minLength = G4CMPConfigManager::GetMinimumStep();
 
   if (verboseLevel > 1) {
-    G4cout << GetProcessName() << "::PostStepGPIL: minLength " << minLength
-	   << " trueLength " << trueLength << " energyStepMFP " << energyStepMFP << G4endl;
+    G4cout << GetProcessName() << "::PostStepGPIL:"
+	   << " trueLength " << trueLength/mm << " mm"
+	   << " minLength " << minLength/mm << " mm"
+	   << " energyStep " << energyStep/mm << " mm" << G4endl;
   }
-  
-  trueLength = energyStepMFP<trueLength ? energyStepMFP : trueLength;
-  return minLength<trueLength ? trueLength : minLength;
+
+  // If desired step is shorter than cutoff, force process now
+  if (minLength > 0. && trueLength < minLength) {
+    theNumberOfInteractionLengthLeft = 0.;	// Assert that we've reached end
+    return 0.;
+  }
+
+  // If threshold happens before desired step, override IL, #IL, step length
+  if (energyStep > 0. && energyStep < trueLength) {
+    theNumberOfInteractionLengthLeft = 1.;
+    currentInteractionLength = energyStep;
+    return energyStep;
+  }
+
+  return trueLength;		// Nothing special, use Geant4 step
 }
 
 
@@ -127,17 +142,18 @@ void G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
 G4double G4CMPVDriftProcess::EnergyStep(G4double Efinal) const {
   const G4Track* trk = GetCurrentTrack();
 
-  G4double Emag = G4CMP::GetFieldAtPosition(*trk).mag();
-  if (Emag <= 0.) return DBL_MAX;		// No field, no acceleration
+  // NOTE: Assumes particle travels along local field line
+  G4double EField = G4CMP::GetFieldAtPosition(*trk).mag();
+  if (EField <= 0.) return -1.;			// No field, no acceleration
 
   G4double Ekin = GetKineticEnergy(trk);
-  if (Ekin > Efinal) return DBL_MAX;		// Already over threshold
+  if (Ekin > Efinal) return -1.;		// Already over threshold
 
   if (verboseLevel>1) {
-    G4cout << "G4CMPTimeStepper::EnergyStep from " << Ekin/eV
+    G4cout << "G4CMPVDriftProcess::EnergyStep from " << Ekin/eV
 	   << " to " << Efinal/eV << " eV" << G4endl;
   }
 
-  // Add 20% rescaling to account for electron valley systematics
-  return 1.2*(Efinal-Ekin)/Emag;
+  // Add 20% rescaling to account for electron oblique propagation
+  return 1.2*(Efinal-Ekin)/EField;
 }
