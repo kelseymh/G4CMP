@@ -645,25 +645,27 @@ G4LatticeLogical::MapP_QtoEkin(G4int iv, const G4ThreeVector& p) const {
   G4double Ymom_squared = tempvec().y()*tempvec().y();
   G4double Zmom_squared = tempvec().z()*tempvec().z();
 
-  // G4double mixx3 = fMassInverse.xx()*fMassInverse.xx()*fMassInverse.xx();
-  // G4double miyy3 = fMassInverse.yy()*fMassInverse.yy()*fMassInverse.yy();
-  // G4double mizz3 = fMassInverse.zz()*fMassInverse.zz()*fMassInverse.zz();
+  G4double mixx3 = fMassInverse.xx()*fMassInverse.xx()*fMassInverse.xx();
+  G4double miyy3 = fMassInverse.yy()*fMassInverse.yy()*fMassInverse.yy();
+  G4double mizz3 = fMassInverse.zz()*fMassInverse.zz()*fMassInverse.zz();
 
-  // // Compute kinetic energy component by component, then sum
+  // Compute kinetic energy component by component, then sum
+  return (((0.5/c_squared)*(
+      Xmom_squared*fMassInverse.xx() +
+		  Ymom_squared*fMassInverse.yy() +
+		  Zmom_squared*fMassInverse.zz()
+    )) -
+	   // Post newtonian correction p^4/8c^6 to get relativistic Ekin
+	  ((0.125/(c_squared*c_squared*c_squared))*(
+      Xmom_squared*Xmom_squared*mixx3 +
+	    Ymom_squared*Ymom_squared*miyy3 + 
+	    Zmom_squared*Zmom_squared*mizz3
+    )));
+  // // E = ½M-1p_Q2 = ½M-1(p_Q2c2)/c2
   // return ( ((0.5/c_squared) * (Xmom_squared*fMassInverse.xx() +
 	// 		       Ymom_squared*fMassInverse.yy() +
-	// 		       Zmom_squared*fMassInverse.zz())) -
-	//    // Post newtonian correction p^4/8c^6 to get relativistic Ekin
-	//    ((0.125/(c_squared*c_squared*c_squared))
-	//     * (Xmom_squared*Xmom_squared*mixx3 +
-	//        Ymom_squared*Ymom_squared*miyy3 + 
-	//        Zmom_squared*Zmom_squared*mizz3))
+	// 		       Zmom_squared*fMassInverse.zz()))
 	//    );
-  // E = ½M-1p_Q2 = ½M-1(p_Q2c2)/c2
-  return ( ((0.5/c_squared) * (Xmom_squared*fMassInverse.xx() +
-			       Ymom_squared*fMassInverse.yy() +
-			       Zmom_squared*fMassInverse.zz()))
-	   );
 }
 
 G4double  
@@ -682,11 +684,31 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   G4double Xmom_squared = tempvec().x()*tempvec().x();
   G4double Ymom_squared = tempvec().y()*tempvec().y();
   G4double Zmom_squared = tempvec().z()*tempvec().z();
-  // E = ½MP2/m2 = ½M(P2c2)/m2c2 = ½c2M(P2c2)/m2c4
-  return ( ((c_squared/(2*electron_mass_c2*electron_mass_c2)) * (Xmom_squared*fMassTensor.xx() +
-			       Ymom_squared*fMassTensor.yy() +
-			       Zmom_squared*fMassTensor.zz()))
-	   );
+
+  return sqrt(c_squared*(
+      Xmom_squared*fMassTensor.xx() +
+      Ymom_squared*fMassTensor.yy() +
+      Zmom_squared*fMassTensor.zz())/electron_mass_c2 + 
+    electron_mass_c2*electron_mass_c2) - electron_mass_c2;
+
+  // // Compute kinetic energy component by component, then sum
+  // return (((c_squared/(2*electron_mass_c2*electron_mass_c2))*(
+  //     Xmom_squared*fMassTensor.xx() +
+	// 	  Ymom_squared*fMassTensor.yy() +
+	// 	  Zmom_squared*fMassTensor.zz()
+  //   )) -
+	//    // Post newtonian correction p^4/8c^6 to get relativistic Ekin
+	//   ((c_squared/(8*electron_mass_c2*electron_mass_c2*electron_mass_c2*electron_mass_c2))*(
+  //     Xmom_squared*Xmom_squared*fMassTensor.xx() +
+	//     Ymom_squared*Ymom_squared*fMassTensor.yy() + 
+	//     Zmom_squared*Zmom_squared*fMassTensor.zz()
+  //   )));
+
+  // // E = ½MP2/m2 = ½M(P2c2)/m2c2 = ½c2M(P2c2)/m2c4
+  // return ( ((c_squared/(2*electron_mass_c2*electron_mass_c2)) * (Xmom_squared*fMassTensor.xx() +
+	// 		       Ymom_squared*fMassTensor.yy() +
+	// 		       Zmom_squared*fMassTensor.zz()))
+	//    );
 }
 
 G4double
@@ -734,8 +756,8 @@ G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
 	   << " " << p << " p2 = " << p.mag2() << G4endl;
 #endif
   G4double Ekin = MapPtoEkin(iv, p);
-  return p.mag2()/(2*c_squared*Ekin);		// Non-relativistic
-  // return (p.mag2()-Ekin*Ekin)/(2.*Ekin*c_squared);	// Relativistic
+  // return p.mag2()/(2*c_squared*Ekin);		// Non-relativistic
+  return (p.mag2()-Ekin*Ekin)/(2.*Ekin*c_squared);	// Relativistic
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

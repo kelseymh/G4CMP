@@ -169,10 +169,8 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 
   G4double ekin = theLattice->MapPtoEkin(GetValleyIndex(aTrack), p);
 
-  // G4double meff = IsHole() ? theLattice->GetHoleMass()
-  //   : theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack), p);
-
-  G4double meff = (p.mag2()-ekin*ekin)/(2.*ekin*c_squared);
+  G4double meff = IsHole() ? theLattice->GetHoleMass()
+    : theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack), p);
 
   if (IsElectron()) aParticleChange.ProposeEnergy(ekin);
   if (IsElectron()) aParticleChange.ProposeMass(meff*c_squared);
