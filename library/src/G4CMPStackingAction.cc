@@ -22,6 +22,7 @@
 // 20170928 Replace "polarization" with "mode"
 // 20211001 Remove electron energy adjustment; set mass instead.
 //		Assign electron valley nearest to momentum direction.
+// 20230531 Must pass track pointer into IsPhonon(), IsChargeCarrier().
 
 #include "G4CMPStackingAction.hh"
 
@@ -64,8 +65,9 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   G4ClassificationOfNewTrack classification = fUrgent;
 
   // Don't do anything to ordinary G4 tracks
-  if (!IsPhonon() && !IsChargeCarrier()) return classification;
-
+  if (!G4CMP::IsPhonon(aTrack) && !G4CMP::IsChargeCarrier(aTrack))
+    return classification;
+  
   // Configure utility functions for current track (do NOT use LoadDataForTrack)
   SetCurrentTrack(aTrack);
   SetLattice(aTrack);
