@@ -143,12 +143,14 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
   if (!G4CMP::IsChargeCarrier(aTrack)) return;
 
   G4int iv = GetCurrentValley();
-  G4ThreeVector pdir = aTrack->GetMomentum();
-  
+  G4ThreeVector pdir = aTrack->GetMomentumDirection();
+  G4double ekin = aTrack->GetKineticEnergy();
+  G4ThreeVector p = theLattice->MapEkintoP(iv,GetLocalDirection(pdir),ekin);
+
   G4double mass = 
     G4CMP::IsHole(aTrack) ? theLattice->GetHoleMass() :
     G4CMP::IsElectron(aTrack) ? 
-    theLattice->GetElectronEffectiveMass(iv,GetLocalDirection(pdir)) :
+    theLattice->GetElectronEffectiveMass(iv,p) :
     aTrack->GetDynamicParticle()->GetMass()/c_squared;
 
   // Cast to non-const pointer so we can change the effective mass

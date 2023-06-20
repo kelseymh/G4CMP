@@ -668,6 +668,17 @@ G4LatticeLogical::MapP_QtoEkin(G4int iv, const G4ThreeVector& p) const {
 	//    );
 }
 
+G4ThreeVector
+G4LatticeLogical::MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double Ekin) const {
+  tempvec() = pdir;
+  tempvec().transform(GetValley(iv));
+  G4double bandP = (fMassTensor.xx()*tempvec().x()*tempvec().x() +
+    fMassTensor.yy()*tempvec().y()*tempvec().y() +
+    fMassTensor.zz()*tempvec().z()*tempvec().z());
+  G4double PMag = sqrt(electron_mass_c2*(Ekin*Ekin+2.*Ekin*electron_mass_c2)/(bandP*c_squared));
+  return pdir*PMag;
+}
+
 G4double  
 G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
 #ifdef G4CMP_DEBUG
@@ -681,14 +692,15 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
 #endif
 
-  G4double Xmom_squared = tempvec().x()*tempvec().x();
-  G4double Ymom_squared = tempvec().y()*tempvec().y();
-  G4double Zmom_squared = tempvec().z()*tempvec().z();
+  // G4double Xmom_squared = tempvec().x()*tempvec().x();
+  // G4double Ymom_squared = tempvec().y()*tempvec().y();
+  // G4double Zmom_squared = tempvec().z()*tempvec().z();
+  // G4double electron_mass_c2_squared = electron_mass_c2*electron_mass_c2;
 
-  return sqrt(c_squared*(
-      Xmom_squared*fMassTensor.xx() +
-      Ymom_squared*fMassTensor.yy() +
-      Zmom_squared*fMassTensor.zz())/electron_mass_c2 + 
+  return sqrt((
+      tempvec().x()*tempvec().x()*fMassTensor.xx() +
+      tempvec().y()*tempvec().y()*fMassTensor.yy() +
+      tempvec().z()*tempvec().z()*fMassTensor.zz())/mElectron + 
     electron_mass_c2*electron_mass_c2) - electron_mass_c2;
 
   // // Compute kinetic energy component by component, then sum

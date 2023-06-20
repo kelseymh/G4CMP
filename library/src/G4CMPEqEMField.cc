@@ -118,18 +118,13 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 	   << " pc " << mom << " " << mom.mag() << " MeV" << G4endl;
   }
 #endif
-  // G4double Energy = std::sqrt( y[3]*y[3]+y[4]*y[4]+y[5]*y[5] + fMass*fMass );
-  // G4double MEff = theLattice->GetElectronEffectiveMass(valleyIndex, mom);
-  // mom = mom.unit() * std::sqrt(Energy*(Energy+2.*fMass));
-  /* "Momentum" reported by G4 is the true momentum.
-   */
 
-  G4double gamma = std::sqrt(1. + mom.mag2()/(electron_mass_c2*electron_mass_c2));
+  momdir = mom.unit();
+
+  fGlobalToLocal.ApplyAxisTransform(mom);
+  G4double Energy = theLattice->MapPtoEkin(valleyIndex,mom) + electron_mass_c2;
   vel = mom;
-  vel *= c_light/(fMass*gamma);		// v = p/m = pc/c / mc^2/c^2 = pc/(mc^2/c)
-  G4double vinv = 1./vel.mag();
-
-  momdir = vel.unit();
+  vel *= c_light/Energy;		// v = pc^2/E
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
@@ -167,7 +162,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 #endif
 
   force *= theLattice->GetMInvTensor();
-  force *= fMass/c_squared;
+  force *= electron_mass_c2/c_squared;
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
     G4cout << " Field (H-V)     " << force/(volt/cm) << " "
@@ -196,7 +191,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
-  // dp/ds = qE/beta
+  // dp/ds = (dF/dt)*(dt/ds) = qE/beta
   force *= fCharge*vinv*c_light;
 
 #ifdef G4CMP_DEBUG

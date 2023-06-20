@@ -164,16 +164,17 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack);
 
   // Adjust dynamical mass for electrons using end-of-step momentum direction
-  G4ThreeVector p = aStep.GetPostStepPoint()->GetMomentum();
-  p = GetLocalDirection(aStep.GetPostStepPoint()->GetMomentum());
+  G4ThreeVector p = GetLocalDirection(aStep.GetPostStepPoint()->GetMomentum());
 
   G4double ekin = theLattice->MapPtoEkin(GetValleyIndex(aTrack), p);
 
   G4double meff = IsHole() ? theLattice->GetHoleMass()
     : theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack), p);
 
-  if (IsElectron()) aParticleChange.ProposeEnergy(ekin);
-  if (IsElectron()) aParticleChange.ProposeMass(meff*c_squared);
+  if (IsElectron()) {
+    aParticleChange.ProposeEnergy(ekin);
+    aParticleChange.ProposeMass(meff*c_squared);
+  };
 
   // Report basic kinematics
   if (verboseLevel) {

@@ -132,6 +132,13 @@ G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int mode, const G4ThreeVector& k) 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+G4ThreeVector
+G4LatticePhysical::MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double Ekin) const {
+  RotateToLattice(tempvec()=pdir);
+  G4ThreeVector p = fLattice->MapEkintoP(iv, tempvec(), Ekin);
+  return RotateToSolid(p);
+}
+
 G4double G4LatticePhysical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
