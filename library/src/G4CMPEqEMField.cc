@@ -125,6 +125,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   G4double Energy = theLattice->MapPtoEkin(valleyIndex,mom) + electron_mass_c2;
   vel = mom;
   vel *= c_light/Energy;		// v = pc^2/E
+  G4double vinv = 1./vel.mag();
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
