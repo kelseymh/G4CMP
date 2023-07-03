@@ -120,13 +120,13 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4int iValley = GetValleyIndex(aTrack);	// Doesn't change valley
 
   // NOTE: Track kinematics include post-step acceleration from E-field
-  G4ThreeVector ptrk = GetLocalMomentum(aTrack);
+  G4ThreeVector ptrk = GetLocalDirection(aStep.GetPostStepPoint()->GetMomentum());
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
   G4double Etrk = 0.;
   if (IsElectron()) {
     ktrk = lat->MapPtoK_HV(iValley, ptrk);
-    mass = lat->GetElectronEffectiveMass(iValley, ptrk);
+    mass = electron_mass_c2/c_squared;
     Etrk = lat->MapPtoEkin(iValley, ptrk);
   } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
@@ -140,7 +140,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4ThreeVector kdir = ktrk.unit();
   G4double kmag = ktrk.mag();
-  G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
+  G4double gammaSound = 1/sqrt(1.-lat->GetSoundSpeed()*lat->GetSoundSpeed()/c_squared);
+  G4double kSound = gammaSound * lat->GetSoundSpeed() * mass / hbar_Planck;
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
