@@ -38,6 +38,8 @@
 //		precompute valley inverse transforms
 // 20200608  Fix -Wshadow warnings from tempvec
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
+// 20230702  I. Ataee -- Add methods for relationship between quasi-momentum
+//		(p_Q) and expectation value of momentum (p).
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -98,6 +100,8 @@ public:
   // NOTE:  Input vector must be in lattice symmetry frame (X == symmetry axis)
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
+  G4ThreeVector MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const;
+  G4ThreeVector MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const;
   G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
   G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;
@@ -105,9 +109,11 @@ public:
   G4ThreeVector MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const;
   G4ThreeVector MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const;
   G4ThreeVector MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const;
+  G4ThreeVector MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double Ekin) const;
 
   // Apply energy relationships for electron transport
   G4double MapPtoEkin(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4double MapP_QtoEkin(G4int ivalley, const G4ThreeVector& p_e) const;
   G4double MapV_elToEkin(G4int ivalley, const G4ThreeVector& v_e) const;
 
   // Configure crystal symmetry group and lattice spacing/angles
