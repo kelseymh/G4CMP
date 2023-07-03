@@ -38,6 +38,8 @@
 //		precompute valley inverse transforms
 // 20200608  Fix -Wshadow warnings from tempvec
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
+// 20230702  I. Ataee -- Add methods for relationship between quasi-momentum
+//		(p_Q) and expectation value of momentum (p).
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h

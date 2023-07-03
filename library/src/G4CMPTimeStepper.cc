@@ -39,6 +39,9 @@
 //		be delta(E)/(q*V).
 // 20220730  Drop trapping processes, as they have built-in MFPs, and don't
 //		need TimeStepper for energy-dependent calculation.
+// 20230702  I. Ataee -- Add energy recalculations in PostStepDoIt to correct
+//		the energy change after each step under voltage and account for band 
+//		structure effects.
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"

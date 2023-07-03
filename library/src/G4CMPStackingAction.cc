@@ -22,6 +22,8 @@
 // 20170928 Replace "polarization" with "mode"
 // 20211001 Remove electron energy adjustment; set mass instead.
 //		Assign electron valley nearest to momentum direction.
+// 20230702 I. Ataee -- Corrections to effective mass calculations
+//		for new charge carriers.
 
 #include "G4CMPStackingAction.hh"
 

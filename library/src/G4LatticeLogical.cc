@@ -47,6 +47,11 @@
 // 20211021  Wrap verbose output in #ifdef G4CMP_DEBUG for performace
 // 20230210  I. Ataee -- Add post-newtonian correction to the MapPtoEkin and MapV_elToEkin
 // 20230210  I. Ataee -- Change effective mass tensor to use relativistic expressions
+// 20230702  I. Ataee -- Change velocity, momentum, energy, and wavevector relationships to
+//		correctly reflect the physics of the band structure relativistically. Also, introduced
+//		the quasti-momentum p_Q and its relationship with the expectation value of momentum
+//		<p> (transport momentum).
+
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
 #include "G4CMPPhononKinTable.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -431,23 +436,11 @@ G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
     G4cout << "G4LatticeLogical::MapPtoV_el " << ivalley << " " << p_e
 	   << G4endl;
 #endif
-
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
-  G4double mass = GetElectronEffectiveMass(ivalley, p_e);
-  G4double gamma = sqrt(1+p_e.mag2()/mass/mass/c_squared/c_squared);
+  G4cout << "Classical Velocity: " << nToV*(GetMInvTensor()*(vToN*p_e/c_light)) << " - Relativistic Velocity: " << p_e*c_light/(MapPtoEkin(ivalley,p_e) + electron_mass_c2) << G4endl;
 
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) {
-    G4cout << " p (valley) " << vToN*p_e << G4endl
-	   << " V_el (valley) " << GetMInvTensor()*(vToN*p_e/c_light) << G4endl
-	   << " returning " << nToV*(GetMInvTensor()*(vToN*p_e/c_light))
-	   << G4endl;
-  }
-#endif
-
-  // return nToV*(GetMInvTensor()*(vToN*p_e/c_light));
-  return nToV*(GetMInvTensor()*(vToN*p_e/c_light/gamma));
+  return p_e*c_light/(MapPtoEkin(ivalley,p_e) + electron_mass_c2);
 }
 
 G4ThreeVector 
@@ -458,21 +451,14 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
 	   << G4endl;
 #endif
 
-  const G4RotationMatrix& vToN = GetValley(ivalley);
-  const G4RotationMatrix& nToV = GetValleyInv(ivalley);
-  G4double gamma = 1/sqrt(1-v_e.mag2()/c_squared);
-
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) {
-    G4cout << " V_el (valley) " << vToN*v_e << G4endl
-	   << " p (valley) " << GetMassTensor()*(vToN*v_e*c_light) << G4endl
-	   << " returning " << nToV*(GetMassTensor()*(vToN*v_e*c_light))
-	   << G4endl;
-  }
-#endif
-
-  // return nToV*(GetMassTensor()*(vToN*v_e*c_light));
-  return nToV*(GetMassTensor()*(vToN*v_e*c_light*gamma));
+  tempvec() = v_e;
+  tempvec().transform(GetValley(ivalley));
+  G4double bandV = (fMassTensor.xx()*tempvec().x()*tempvec().x() +
+  fMassTensor.yy()*tempvec().y()*tempvec().y() +
+  fMassTensor.zz()*tempvec().z()*tempvec().z());
+  G4double gamma = 1/sqrt(1-bandV/electron_mass_c2);
+  G4cout << "gamma = " << gamma << " - velocity = " << v_e << " - speed of light = " << c_light << G4endl;
+  return gamma*electron_mass_c2*v_e/c_light;
 }
 
 G4ThreeVector 
@@ -514,7 +500,9 @@ G4LatticeLogical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector &v_e) const {
   }
 #endif
 
-  return GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck));
+  tempvec() = MapV_elToP(ivalley, v_e);
+  return MapPtoK_HV(ivalley, tempvec());
+  // return GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck));
   // return GetSqrtInvTensor()*(GetMassTensor()*gamma*(vToN*v_e/hbar_Planck));
 }
 
@@ -526,7 +514,7 @@ G4LatticeLogical::MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const 
 	   << G4endl;
 #endif
 
-  tempvec() = p_e;
+  tempvec() = MapPToP_Q(ivalley, p_e);
   tempvec() /= hbarc;				// Convert to wavevector
   return tempvec().transform(GetValley(ivalley));	// Rotate into valley frame
 }
@@ -539,7 +527,7 @@ G4LatticeLogical::MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const {
 	   << G4endl;
 #endif
 
-  tempvec() = p_e;
+  tempvec() = MapPToP_Q(ivalley, p_e);
   tempvec().transform(GetValley(ivalley));	// Rotate into valley frame
 
 #ifdef G4CMP_DEBUG
@@ -603,7 +591,7 @@ G4LatticeLogical::MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const {
 #endif
 
   tempvec() *= hbarc;			// Convert wavevector to momentum
-  return tempvec();
+  return MapP_QToP(ivalley, tempvec());
 }
 
 G4ThreeVector 
@@ -621,7 +609,7 @@ G4LatticeLogical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
 #endif
 
   tempvec() *= hbarc;			// Convert wavevector to momentum
-  return tempvec();
+  return MapP_QToP(ivalley, tempvec());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -635,37 +623,7 @@ G4LatticeLogical::MapP_QtoEkin(G4int iv, const G4ThreeVector& p) const {
     G4cout << "G4LatticeLogical::MapPtoEkin " << iv << " " << p << G4endl;
 #endif
 
-  tempvec() = p;
-  tempvec().transform(GetValley(iv));		// Rotate to valley frame
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
-#endif
-
-  G4double Xmom_squared = tempvec().x()*tempvec().x();
-  G4double Ymom_squared = tempvec().y()*tempvec().y();
-  G4double Zmom_squared = tempvec().z()*tempvec().z();
-
-  G4double mixx3 = fMassInverse.xx()*fMassInverse.xx()*fMassInverse.xx();
-  G4double miyy3 = fMassInverse.yy()*fMassInverse.yy()*fMassInverse.yy();
-  G4double mizz3 = fMassInverse.zz()*fMassInverse.zz()*fMassInverse.zz();
-
-  // Compute kinetic energy component by component, then sum
-  return (((0.5/c_squared)*(
-      Xmom_squared*fMassInverse.xx() +
-		  Ymom_squared*fMassInverse.yy() +
-		  Zmom_squared*fMassInverse.zz()
-    )) -
-	   // Post newtonian correction p^4/8c^6 to get relativistic Ekin
-	  ((0.125/(c_squared*c_squared*c_squared))*(
-      Xmom_squared*Xmom_squared*mixx3 +
-	    Ymom_squared*Ymom_squared*miyy3 + 
-	    Zmom_squared*Zmom_squared*mizz3
-    )));
-  // // E = ½M-1p_Q2 = ½M-1(p_Q2c2)/c2
-  // return ( ((0.5/c_squared) * (Xmom_squared*fMassInverse.xx() +
-	// 		       Ymom_squared*fMassInverse.yy() +
-	// 		       Zmom_squared*fMassInverse.zz()))
-	//    );
+  return MapPtoEkin(iv, MapP_QToP(iv, p));
 }
 
 G4ThreeVector
@@ -692,35 +650,12 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
 #endif
 
-  // G4double Xmom_squared = tempvec().x()*tempvec().x();
-  // G4double Ymom_squared = tempvec().y()*tempvec().y();
-  // G4double Zmom_squared = tempvec().z()*tempvec().z();
-  // G4double electron_mass_c2_squared = electron_mass_c2*electron_mass_c2;
-
   return sqrt((
       tempvec().x()*tempvec().x()*fMassTensor.xx() +
       tempvec().y()*tempvec().y()*fMassTensor.yy() +
       tempvec().z()*tempvec().z()*fMassTensor.zz())/mElectron + 
     electron_mass_c2*electron_mass_c2) - electron_mass_c2;
 
-  // // Compute kinetic energy component by component, then sum
-  // return (((c_squared/(2*electron_mass_c2*electron_mass_c2))*(
-  //     Xmom_squared*fMassTensor.xx() +
-	// 	  Ymom_squared*fMassTensor.yy() +
-	// 	  Zmom_squared*fMassTensor.zz()
-  //   )) -
-	//    // Post newtonian correction p^4/8c^6 to get relativistic Ekin
-	//   ((c_squared/(8*electron_mass_c2*electron_mass_c2*electron_mass_c2*electron_mass_c2))*(
-  //     Xmom_squared*Xmom_squared*fMassTensor.xx() +
-	//     Ymom_squared*Ymom_squared*fMassTensor.yy() + 
-	//     Zmom_squared*Zmom_squared*fMassTensor.zz()
-  //   )));
-
-  // // E = ½MP2/m2 = ½M(P2c2)/m2c2 = ½c2M(P2c2)/m2c4
-  // return ( ((c_squared/(2*electron_mass_c2*electron_mass_c2)) * (Xmom_squared*fMassTensor.xx() +
-	// 		       Ymom_squared*fMassTensor.yy() +
-	// 		       Zmom_squared*fMassTensor.zz()))
-	//    );
 }
 
 G4double
@@ -730,31 +665,7 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
     G4cout << "G4LatticeLogical::MapV_elToEkin " << iv << " " << v << G4endl;
 #endif
 
-  tempvec() = v;
-  tempvec().transform(GetValley(iv));		// Rotate to valley frame
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) G4cout << " V_el (valley) " << tempvec() << G4endl;
-#endif
-
-  G4double Xvel_squared = tempvec().x()*tempvec().x();
-  G4double Yvel_squared = tempvec().y()*tempvec().y();
-  G4double Zvel_squared = tempvec().z()*tempvec().z();
-
-  // // Compute kinetic energy component by component, then sum
-  // return ( 0.5 * (Xvel_squared*fMassTensor.xx() +
-	// 	  Yvel_squared*fMassTensor.yy() +
-	// 	  Zvel_squared*fMassTensor.zz()) +
-	//    // Post newtonian correction 3mv^4/8c^2 to get relativistic energy
-	//    ((0.375/c_squared) *
-	//     (Xvel_squared*Xvel_squared*fMassTensor.xx() +
-	//      Yvel_squared*Yvel_squared*fMassTensor.yy() +
-	//      Zvel_squared*Zvel_squared*fMassTensor.zz()) )
-	//    );
-
-  return ( 0.5 * (Xvel_squared*fMassTensor.xx() +
-		  Yvel_squared*fMassTensor.yy() +
-		  Zvel_squared*fMassTensor.zz())
-	   );
+  return MapPtoEkin(iv, MapV_elToP(iv, v));
 }
 
 // Compute effective "scalar" electron mass to match energy/momentum relation

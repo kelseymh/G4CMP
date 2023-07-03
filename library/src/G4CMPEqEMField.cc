@@ -25,6 +25,12 @@
 //		Clarify field transform and force calculation.
 // 20211007  Insert debugging output for each step of E-field transformation.
 // 20211012  Apply scale factor to conserve energy averaged over many electrons
+// 20230702  I. Ataee -- Correct the vlocity calculation in EvaluateRhsGivenB
+// 20230702  I. Ataee -- Correct the force calculation in EvaluateRhsGivenB to
+//		correctly reflect the band structure physics in Geant4 calculations. Note
+//		that these changes will give correct position and velocity vectors, but
+//		not the correct energy. The energy is being corrected in the PostStepDoIt
+//		method of each process separately.
 
 #include "G4CMPEqEMField.hh"
 #include "G4CMPConfigManager.hh"
