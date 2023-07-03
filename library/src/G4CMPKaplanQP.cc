@@ -56,6 +56,7 @@
 // 20221130  G4CMP-324: Use temperature to discard lowest energy phonons
 // 20221201  G4CMP-345: Test all incident phonons for "direct absorption."
 // 20221209  G4CMP-348: Remove now-extraneous factor of 2 in EscapeProbability
+// 20230626  Initialize absorberEff to 1. in constructor (G4CMP-314).
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -90,7 +91,7 @@ G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
   : verboseLevel(vb), keepAllPhonons(true),
     filmProperties(0), filmThickness(0.), gapEnergy(0.),
     lowQPLimit(3.), highQPLimit(0.), directAbsorption(0.), absorberGap(0.),
-    absorberEff(0.), absorberEffSlope(0.), phononLifetime(0.), 
+    absorberEff(1.), absorberEffSlope(0.), phononLifetime(0.), 
     phononLifetimeSlope(0.), vSound(0.), temperature(0.) {
   if (prop) SetFilmProperties(prop);
 }
