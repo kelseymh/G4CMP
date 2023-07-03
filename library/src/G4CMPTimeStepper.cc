@@ -39,6 +39,9 @@
 //		be delta(E)/(q*V).
 // 20220730  Drop trapping processes, as they have built-in MFPs, and don't
 //		need TimeStepper for energy-dependent calculation.
+// 20230702  I. Ataee -- Add energy recalculations in PostStepDoIt to correct
+//		the energy change after each step under voltage and account for band 
+//		structure effects.
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
@@ -164,11 +167,17 @@ G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack);
 
   // Adjust dynamical mass for electrons using end-of-step momentum direction
-  G4ThreeVector plocal = GetLocalMomentum(aTrack);
-  G4double meff = IsHole() ? theLattice->GetHoleMass()
-    : theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack), plocal);
+  G4ThreeVector p = GetLocalDirection(aStep.GetPostStepPoint()->GetMomentum());
 
-  if (IsElectron()) aParticleChange.ProposeMass(meff*c_squared);
+  G4double ekin = theLattice->MapPtoEkin(GetValleyIndex(aTrack), p);
+
+  G4double meff = IsHole() ? theLattice->GetHoleMass()
+    : theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack), p);
+
+  if (IsElectron()) {
+    aParticleChange.ProposeEnergy(ekin);
+    aParticleChange.ProposeMass(meff*c_squared);
+  };
 
   // Report basic kinematics
   if (verboseLevel) {

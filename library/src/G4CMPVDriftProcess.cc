@@ -113,8 +113,7 @@ void G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
   aParticleChange.ProposeEnergy(Ekin);
 
   if (IsElectron()) {		// Geant4 wants mc^2, not plain mass
-    G4double meff = theLattice->GetElectronEffectiveMass(ivalley,
-							 GetLocalDirection(v));
+    G4double meff = theLattice->GetElectronEffectiveMass(ivalley,GetLocalDirection(v));
     aParticleChange.ProposeMass(meff*c_squared);
   }
 }
