@@ -438,7 +438,6 @@ G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
 #endif
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
-  G4cout << "Classical Velocity: " << nToV*(GetMInvTensor()*(vToN*p_e/c_light)) << " - Relativistic Velocity: " << p_e*c_light/(MapPtoEkin(ivalley,p_e) + electron_mass_c2) << G4endl;
 
   return p_e*c_light/(MapPtoEkin(ivalley,p_e) + electron_mass_c2);
 }
@@ -457,7 +456,6 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
   fMassTensor.yy()*tempvec().y()*tempvec().y() +
   fMassTensor.zz()*tempvec().z()*tempvec().z());
   G4double gamma = 1/sqrt(1-bandV/electron_mass_c2);
-  G4cout << "gamma = " << gamma << " - velocity = " << v_e << " - speed of light = " << c_light << G4endl;
   return gamma*electron_mass_c2*v_e/c_light;
 }
 
