@@ -130,11 +130,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   fGlobalToLocal.ApplyAxisTransform(mom);
   G4double Energy = theLattice->MapPtoEkin(valleyIndex,mom) + electron_mass_c2;
   vel = mom;
-<<<<<<< HEAD
-  vel /=sqrt(mom.mag2() + fMass*fMass)/c_light; // v=pc^2/E = (gamma mvc^2) / (gamma mc^2) = v
-=======
   vel *= c_light/Energy;		// v = pc^2/E
->>>>>>> G4CMP-352-TEMP
   G4double vinv = 1./vel.mag();
 
 #ifdef G4CMP_DEBUG
