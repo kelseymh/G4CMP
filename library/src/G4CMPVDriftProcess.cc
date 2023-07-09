@@ -168,8 +168,8 @@ G4double G4CMPVDriftProcess::EnergyStep(G4double Efinal) const {
   G4double Ekin = GetKineticEnergy(trk);
   if (Ekin > Efinal) return -1.;		// Already over threshold
 
-  G4double EField = G4CMP::GetFieldAtPosition(*trk).mag();
-  if (EField <= 0.) return -1.;			// No field, no acceleration
+  G4ThreeVector EField = G4CMP::GetFieldAtPosition(*trk);
+  if (EField.mag() <= 0.) return -1.;		// No field, no acceleration
 
   if (verboseLevel>1) {
     G4cout << "G4CMPVDriftProcess::EnergyStep from " << Ekin/eV
