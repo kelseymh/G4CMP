@@ -70,6 +70,13 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   *cond = NotForced;
 
   G4double maxStep = G4CMPConfigManager::GetMaximumStep();
+
+  G4ThreadLocal static G4bool first=true;
+  if (verboseLevel>1 && first) {
+    G4cout << "G4CMPTimeStepper::GetMFP using maxStep " << maxStep << G4endl;
+    first = false;
+  }
+  
   return (maxStep>0. ? maxStep : DBL_MAX);
 }
 

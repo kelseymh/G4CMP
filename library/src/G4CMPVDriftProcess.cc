@@ -47,6 +47,7 @@
 #include <algorithm>
 #include <initializer_list>
 
+
 // Constructor and destructor
 // NOTE:  Initial values are arbitrary and non-physical
 G4CMPVDriftProcess::G4CMPVDriftProcess(const G4String& processName,
@@ -94,20 +95,33 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
 	   << " energyStep " << energyStep/mm << " mm" << G4endl;
   }
 
-  // If desired step is shorter than cutoff, force process now
-  if (minLength > 0. && trueLength < minLength) {
-    theNumberOfInteractionLengthLeft = 0.;	// Assert that we've reached end
-    return 0.;
-  }
-
+  G4double useStep = trueLength;
   // If threshold happens before desired step, override IL, #IL, step length
   if (energyStep > 0. && energyStep < trueLength) {
-    theNumberOfInteractionLengthLeft = 1.;
-    currentInteractionLength = energyStep;
-    return energyStep;
+    if (verboseLevel > 2)
+      G4cout << " using threshold at " << energyStep/mm << " mm" << G4endl;
+    
+    useStep = energyStep;
+  }
+  
+  // FIXME: What happens if energyStep < minLength?  Should we be
+  //        just returning std::max() of the three?
+
+  // If desired step is shorter than cutoff, force process now
+  if (minLength > 0. && useStep < minLength) {
+    if (verboseLevel > 2) {
+      G4cout << " step length " << useStep/mm << " mm shorter than minimum."
+	     << " Using minLength" << G4endl;
+    }
+
+    useStep = minLength;
   }
 
-  return trueLength;		// Nothing special, use Geant4 step
+
+  if (verboseLevel > 2)
+    G4cout << " returning step length " << useStep/mm << " mm" << G4endl;
+  
+  return useStep;
 }
 
 
@@ -139,21 +153,44 @@ void G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
   }
 }
 
+
+// Compute path length corresponding to energy gain up to Efile
+// NOTE:  Energy gain only happens in presence of electric field
+
 G4double G4CMPVDriftProcess::EnergyStep(G4double Efinal) const {
   const G4Track* trk = GetCurrentTrack();
 
-  // NOTE: Assumes particle travels along local field line
-  G4double EField = G4CMP::GetFieldAtPosition(*trk).mag();
-  if (EField <= 0.) return -1.;			// No field, no acceleration
-
   G4double Ekin = GetKineticEnergy(trk);
   if (Ekin > Efinal) return -1.;		// Already over threshold
+
+  G4double EField = G4CMP::GetFieldAtPosition(*trk).mag();
+  if (EField <= 0.) return -1.;			// No field, no acceleration
 
   if (verboseLevel>1) {
     G4cout << "G4CMPVDriftProcess::EnergyStep from " << Ekin/eV
 	   << " to " << Efinal/eV << " eV" << G4endl;
   }
 
-  // Add 20% rescaling to account for electron oblique propagation
-  return 1.2*(Efinal-Ekin)/EField;
+  // Estimate distance to gain energy assuming local field is constant
+  G4double distance = (Efinal-Ekin) / EField.mag();
+
+  // For electron, take into account oblique propagation for path length
+  if (IsElectron()) {	
+    G4ThreeVector valley = theLattice->GetValleyAxis(GetCurrentValley());
+    theLattice->RotateToSolid(valley);	// From lattice frame to local volume
+    RotateToGlobalDirection(valley);	// from local to global coordinates
+
+    G4double costh = fabs(valley.dot(EField.unit()));
+
+    if (verboseLevel>2) {
+      G4cout << " electron: field is at cos(theta) " << costh << " to"
+	     << " current valley." << G4endl;
+    }
+
+    // Avoid singularity if field is perpendicular to valley
+    if (costh > 1e-3) distance /= costh;
+  }
+
+  // Add a fraction to get _past_ threshold, avoid Zeno's paradox
+  return 1.05*distance;
 }
