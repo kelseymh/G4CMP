@@ -25,6 +25,12 @@
 //		Clarify field transform and force calculation.
 // 20211007  Insert debugging output for each step of E-field transformation.
 // 20211012  Apply scale factor to conserve energy averaged over many electrons
+// 20230702  I. Ataee -- Correct the vlocity calculation in EvaluateRhsGivenB
+// 20230702  I. Ataee -- Correct the force calculation in EvaluateRhsGivenB to
+//		correctly reflect the band structure physics in Geant4 calculations. Note
+//		that these changes will give correct position and velocity vectors, but
+//		not the correct energy. The energy is being corrected in the PostStepDoIt
+//		method of each process separately.
 
 #include "G4CMPEqEMField.hh"
 #include "G4CMPConfigManager.hh"
@@ -119,13 +125,13 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   }
 #endif
 
-  /* "Momentum" reported by G4 is the true momentum.
-   */
-  vel = mom;
-  vel /= fMass/c_light;		// v = pc/c / mc^2/c^2 = pc/(mc^2/c)
-  G4double vinv = 1./vel.mag();
+  momdir = mom.unit();
 
-  momdir = vel.unit();
+  fGlobalToLocal.ApplyAxisTransform(mom);
+  G4double Energy = theLattice->MapPtoEkin(valleyIndex,mom) + electron_mass_c2;
+  vel = mom;
+  vel *= c_light/Energy;		// v = pc^2/E
+  G4double vinv = 1./vel.mag();
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
@@ -163,8 +169,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 #endif
 
   force *= theLattice->GetMInvTensor();
-  force *= theLattice->GetElectronMass();
-  //***force *= theLattice->GetSqrtInvTensor();	// Herring-Vogt transform
+  force *= electron_mass_c2/c_squared;
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
     G4cout << " Field (H-V)     " << force/(volt/cm) << " "
@@ -193,7 +198,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
-  // Force = qE/beta
+  // dp/ds = (dF/dt)*(dt/ds) = qE/beta
   force *= fCharge*vinv*c_light;
 
 #ifdef G4CMP_DEBUG

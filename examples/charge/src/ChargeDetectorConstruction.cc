@@ -7,14 +7,15 @@
 //
 // 20160904  Add electrode pattern to surface configuration
 // 20170721  Surface property owns electrode pattern, deletes at end
-// 20170816  Field configuraiton parameters moved to local configuration
+// 20170816  Field configuration parameters moved to local configuration
+// 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
 
 #include "ChargeDetectorConstruction.hh"
 #include "ChargeConfigManager.hh"
 #include "ChargeElectrodePattern.hh"
 #include "ChargeElectrodeSensitivity.hh"
 #include "G4CMPSurfaceProperty.hh"
-#include "G4LogicalBorderSurface.hh"
+#include "G4CMPLogicalBorderSurface.hh"
 #include "G4CMPFieldManager.hh"
 #include "G4CMPMeshElectricField.hh"
 #include "G4Box.hh"
@@ -89,7 +90,7 @@ G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
     // Have to completely remove all lattices to avoid warning on reconstruction
     latManager->Reset();
     // Clear all LogicalSurfaces; no need to redfine SurfaceProperty
-    G4LogicalBorderSurface::CleanSurfaceTable();
+    G4CMPLogicalBorderSurface::CleanSurfaceTable();
   }
 
 
@@ -197,13 +198,13 @@ void ChargeDetectorConstruction::SetupGeometry()
   }
 
   // Add surfaces between Ge-Al, and Ge-World
-  new G4LogicalBorderSurface("iZIPTop", germaniumPhysical, aluminumTopPhys,
+  new G4CMPLogicalBorderSurface("iZIPTop", germaniumPhysical, aluminumTopPhys,
                              topSurfProp);
 
-  new G4LogicalBorderSurface("iZIPBot", germaniumPhysical, aluminumBotPhys,
+  new G4CMPLogicalBorderSurface("iZIPBot", germaniumPhysical, aluminumBotPhys,
                              botSurfProp);
 
-  new G4LogicalBorderSurface("iZIPWall", germaniumPhysical, worldPhys,
+  new G4CMPLogicalBorderSurface("iZIPWall", germaniumPhysical, worldPhys,
                              wallSurfProp);
 
   // detector -- Note : Aluminum electrode sensitivity is attached to Germanium

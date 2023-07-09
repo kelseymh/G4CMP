@@ -8,6 +8,11 @@ ticket identifier, "G4CMP-nnn".
 
 2023-05-27  G4CMP-295 : TimeStepper to enforce max step only, better min steps.
 
+[ Modifications included on branch G4CMP-276: ]
+2023-07-09  G4CMP-352 : Use relativistic band-structure kinematics in
+	    	      	EqEMField and LatticeLogical. Use quasi-momentum for k.
+2023-02-10  G4CMP-351 : Change Electron Mass to Effective Mass in LukeScattering.
+2022-12-10  G4CMP-349 : Ephonon being calculated from Erecoil in LukeScattering.
 2022-03-08  G4CMP-286 : Use true momentum, split out transforms in EqEMField.
 2021-10-01  G4CMP-285 : G4CMPTimeStepper should set electron dynamical mass.
 2021-10-01  G4CMP-281 : Create secondary electrons with correct momentum, mass.
@@ -15,7 +20,33 @@ ticket identifier, "G4CMP-nnn".
 2021-10-01  G4CMP-282 : Don't alter assigned kinetic energy of new tracks.
 2021-10-01  G4CMP-276 : For electrons, store momentum and energy in G4Track.
 
+[ Main line "develop" ChangeHistory: ]
+2022-07-31  G4CMP-301 : Fix G4CMPTimeStepper to avoid excessively large steps.
+
+2022-07-23  g4cmp-V08-00-02 Improve CMake build and documentation.
+2022-07-22  G4CMP-303 : Fix compilation of G4CMP examples using CMake.
+2022-07-18  G4CMP-306 : Ensure build compatibility with Geant4 10.4.
+2022-07-14  G4CMP-305 : Update README.md file with Geant4 10.x restriction.
+2022-07-14  G4CMP-302 : Add CONTRIBUTING.md file.
+
+2022-04-14  g4cmp-V08-00-01 Bug fixes for new surface classes; process table.
+2022-04-02  G4CMP-294 : Check null pointer is G4CMP*Surface::GetSurface().
+2022-03-31  G4CMP-293 : Remove G4CMPOrdParamTable.txt; use simple process
+			registration directly to particles instead.  Table
+			content is very dependent on physics list used and
+			Geant4 version.
+
+NOTE: This is a breaking change to the G4CMP package.  Users must modify
+their applications to replace current usage of G4LogicalBorderSurface or
+G4LogicalSkinSurface with G4CMPLogical*Surface.  The constructor arguments
+and configuration of the new objects do not need to be modified.
+
+2022-03-30  g4cmp-V08-00-00 Define and use G4CMPLogical*Surface classes.
+2022-03-30  G4CMP-259 : Implement G4CMP surface classes to avoid conflict
+			with G4 optical processes.
+
 2022-03-02  g4cmp-V07-12-03 Fix combined-hit position, electrode-hit allocator.
+2022-02-28  G4CMP-292 : Fix handling of "combined hit" position results.
 2022-02-24  G4CMP-289 : Fix G4CMPElectrodeHit for proper multithreaded use.
 
 2022-02-17  g4cmp-V07-12-02 Improvements to SecondaryProduction for photons.

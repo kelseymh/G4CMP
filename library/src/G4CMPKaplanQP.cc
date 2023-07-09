@@ -24,6 +24,7 @@
 //		down to gapEnergy before absorption.  Encapsulate this in
 //		a function.
 // 20201109  Add diagnostic text file (like downconversion and Luke).
+// 20230709  Suppress 'kaplanqp_stats' output unless verbose 2+.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -128,7 +129,7 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   }
 
 #ifdef G4CMP_DEBUG
-  if (!output.good()) {
+  if (verboseLevel>1 && !output.good()) {
     output.open("kaplanqp_stats");
     if (output.good()) {
       output << "Incident Energy [eV],Absorbed Energy [eV],"
@@ -191,7 +192,7 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   }
 
 #ifdef G4CMP_DEBUG
-  if (output.good()) {
+  if (verboseLevel >1 && output.good()) {
     output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
 	   << reflectedEnergies.size() << std::endl;
   }

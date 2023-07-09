@@ -134,7 +134,7 @@ G4Track* G4CMP::CreateChargeCarrier(const G4VTouchable* touch, G4int charge,
   } else {
     theCarrier  = G4CMPDriftElectron::Definition();
     G4ThreeVector plocal = G4CMP::GetLocalDirection(touch,pdir);
-    carrierMass = lat->GetElectronEffectiveMass(valley, plocal); 
+    carrierMass = lat->GetElectronEffectiveMass(valley, plocal);
   }
 
   // NOTE:  G4CMP uses true mass unts: convert MeV/c^2 to MeV for Geant4

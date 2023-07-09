@@ -25,9 +25,14 @@ license can be found at `G4CMP/LICENSE`.
 
 ## User Environment
 
-Users must have a recent (10.4 or later) version of GEANT4 installed and
+Users must have a recent (10.4 through 10.7) version of GEANT4 installed and
 configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See GEANT4's
 documentation for further instructions.).
+
+**NOTE** The relase of Geant4 Version 11 introduced substantial and breaking
+  changes to many Geant4 interface classes.  We are maintaining G4CMP under
+  ==Geant4 Version 10== (through 10.7) to ensure compatibility with our
+  major experimental users.
 
 Add the G4CMP environment variables using the `g4cmp_env.csh` or `...sh`
 scripts found in the G4CMP installation directory (see below for build and
@@ -235,14 +240,15 @@ memory leaks, thread collisions etc., you may set the options
 (default is "thread", other values may be "memory", "address", or "leak").
 If you do this, we recommend using the "Debug" build type.
 
-*NOTE*:  If your source directory was not cloned from GitHub (specifically,
+**NOTE**:  If your source directory was not cloned from GitHub (specifically,
 if it does not contain `.git/`) you may need to specify a version string for
 identify the G4CMP version at runtime.  Use the `-DG4CMP_VERSION=X.Y.Z`
 option for this purpose.  If `.git/` is available, the option will be
 ignored.
 
-If you want to copy the example applications (see below) to the installation
-area, use the option `-DINSTALL_EXAMPLES=ON` (for all examples):
+If you want to copy the examples directories (see below) to the installation
+area, use the option `-DINSTALL_EXAMPLES=ON` (for all examples). Each example
+has been set up as a standalone "project" for CMake and can be configured via:
 
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DINSTALL_EXAMPLES=ON ../G4CMP
 
@@ -277,7 +283,6 @@ linking G4CMP into your applications:
 | G4CMPLIB | Directory containing libG4cmp.so | $G4WORKDIR/lib/$G4SYSTEM | $G4CMPINSTALL/lib |
 | G4CMPINCLUDE | Path to library/include      | $G4INSTALL/library/include | $CMAKE_INSTALL_PREFIX/include |
 | G4LATTICEDATA | Path to CrytalMaps directory | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
-| G4ORDPARAMTABLE | Geant4 process registration file | $G4INSTALL/G4CMPOrdParamTable.txt | $G4INSTALL/G4CMPOrdParamTable.txt |
 
 If you have a simple Makefile build system (GMake), the following two lines,
 or an appropriate variation on them, should be sufficient:

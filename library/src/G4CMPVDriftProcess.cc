@@ -20,6 +20,8 @@
 // 20170601  Inherit from new G4CMPVProcess, which provides G4CMPProcessUtils
 // 20170620  Follow interface changes in G4CMPProcessUtils
 // 20201231  FillParticleChange() should also reset valley index if requested
+// 20230210  I. Ataee -- Change energy-momentum relation to relativistic in
+//		FillParticleChange
 // 20230527  G4CMP-295: Adjust base class interaction length parameters if
 //	        minimum path length used.
 
@@ -130,10 +132,14 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
 void 
 G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
   // Compute kinetic energy from momentum for electrons or holes
-  G4double energy =
-    (IsElectron() ? theLattice->MapPtoEkin(ivalley, GetLocalDirection(p))
-     : p.mag2()/(2.*GetCurrentTrack()->GetDynamicParticle()->GetMass()) );
-
+  G4double energy = 0.;
+  if (IsElectron()){
+    energy = theLattice->MapPtoEkin(ivalley, GetLocalDirection(p));
+  } else {
+    // Geant4 returns the mass in energy units, with the c_squared already included
+    G4double massc2 = GetCurrentTrack()->GetDynamicParticle()->GetMass();
+    energy = sqrt(p.mag2() + massc2*massc2) - massc2;
+  }
   FillParticleChange(ivalley, energy, p);
 }
 
@@ -147,8 +153,7 @@ void G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
   aParticleChange.ProposeEnergy(Ekin);
 
   if (IsElectron()) {		// Geant4 wants mc^2, not plain mass
-    G4double meff = theLattice->GetElectronEffectiveMass(ivalley,
-							 GetLocalDirection(v));
+    G4double meff = theLattice->GetElectronEffectiveMass(ivalley,GetLocalDirection(v));
     aParticleChange.ProposeMass(meff*c_squared);
   }
 }

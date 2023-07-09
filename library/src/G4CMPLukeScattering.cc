@@ -30,6 +30,11 @@
 //		in place code for electrons to assign final-state to valley
 //		closest to momentum direction.  Commented out now, as it leads
 //		to non-physical reduction of total Luke emission.
+// 20221210  Fix loss of significance on Ephonon: Ephonon now is being
+// 		calculated from Erecoil instead of qvec to avoid loss of
+// 		significance.
+// 20221210  Fix to where Erecoil mass was not being multiplied by c_squared
+// 		for Holes, resulting into wrong units.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -118,12 +123,15 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector ptrk = GetLocalMomentum(aTrack);
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
+  G4double Etrk = 0.;
   if (IsElectron()) {
     ktrk = lat->MapPtoK_HV(iValley, ptrk);
-    mass = lat->GetElectronMass();
+    mass = lat->GetElectronEffectiveMass(iValley, ptrk);
+    Etrk = lat->MapPtoEkin(iValley, ptrk);
   } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
     mass = lat->GetHoleMass();
+    Etrk = GetKineticEnergy(aTrack);
   } else {
     G4Exception("G4CMPLukeScattering::PostStepDoIt", "Luke002",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -142,7 +150,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   lat->SetVerboseLevel(verboseLevel);
 
   if (verboseLevel > 1) {
-    G4cout << " E_track " << GetKineticEnergy(aTrack)/eV << " eV"
+    G4cout << " E_track " << Etrk/eV << " eV"
 	   << " mass " << mass*c_squared/electron_mass_c2 << " m_e"
 	   << G4endl;
 
@@ -227,7 +235,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
     if (IsHole()) {
       precoil = k_recoil * hbarc;
-      Erecoil = precoil.mag2() / (2.*mass);
+      G4double massc2 = mass*c_squared;
+      Erecoil = sqrt(precoil.mag2() + massc2 * massc2) - massc2;
     } else {
       precoil = lat->MapK_HVtoP(iValley, k_recoil);
       Erecoil = lat->MapPtoEkin(iValley, precoil);
@@ -238,7 +247,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	     << "E_recoil = " << Erecoil/eV << " eV" << G4endl;
     }
     
-    Ephonon = MakePhononEnergy(qvec.mag());
+    Ephonon = Etrk - Erecoil;
     if (verboseLevel > 1) {
       G4cout << " E_phonon = " << Ephonon/eV << " eV" << G4endl;
     }
@@ -342,7 +351,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   RotateToGlobalDirection(precoil);	// Update track in world coordinates
-  FillParticleChange(newValley, precoil);
+  FillParticleChange(newValley, Erecoil, precoil);
 
 #ifdef G4CMP_DEBUG
   if (output.good()) {

@@ -22,6 +22,8 @@
 // 20170928 Replace "polarization" with "mode"
 // 20211001 Remove electron energy adjustment; set mass instead.
 //		Assign electron valley nearest to momentum direction.
+// 20230702 I. Ataee -- Corrections to effective mass calculations
+//		for new charge carriers.
 
 #include "G4CMPStackingAction.hh"
 
@@ -144,11 +146,13 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
 
   G4int iv = GetCurrentValley();
   G4ThreeVector pdir = aTrack->GetMomentumDirection();
-  RotateToLocalDirection(pdir);
-  
+  G4double ekin = aTrack->GetKineticEnergy();
+  G4ThreeVector p = theLattice->MapEkintoP(iv,GetLocalDirection(pdir),ekin);
+
   G4double mass = 
     G4CMP::IsHole(aTrack) ? theLattice->GetHoleMass() :
-    G4CMP::IsElectron(aTrack) ? theLattice->GetElectronEffectiveMass(iv,pdir) :
+    G4CMP::IsElectron(aTrack) ? 
+    theLattice->GetElectronEffectiveMass(iv,p) :
     aTrack->GetDynamicParticle()->GetMass()/c_squared;
 
   // Cast to non-const pointer so we can change the effective mass

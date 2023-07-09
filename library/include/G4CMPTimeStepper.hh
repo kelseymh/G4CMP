@@ -15,6 +15,8 @@
 // 20200331  C. Stanford (G4CMP-195): Added charge trapping
 // 20200331  G4CMP-196: Added impact ionization mean free path
 // 20200426  G4CMP-196: Change "impact" name to "trapIon"
+// 20220730  G4CMP-301: Drop trapping processes, as they have built-in MFPs,
+//		don't need TimeStepper for energy-dependent calculation.
 // 20230527  Drop competitive MFP calculation; use this process to enforce
 //	       a maximum allowed step length, to support mass recalculation.
 
