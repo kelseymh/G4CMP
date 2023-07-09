@@ -132,6 +132,13 @@ G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int mode, const G4ThreeVector& k) 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+G4ThreeVector
+G4LatticePhysical::MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double Ekin) const {
+  RotateToLattice(tempvec()=pdir);
+  G4ThreeVector p = fLattice->MapEkintoP(iv, tempvec(), Ekin);
+  return RotateToSolid(p);
+}
+
 G4double G4LatticePhysical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
@@ -210,6 +217,26 @@ G4LatticePhysical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " p (lattice) " << tempvec() << G4endl;
 #endif
+
+  return RotateToSolid(tempvec());
+}
+
+G4ThreeVector 
+G4LatticePhysical::MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const {
+
+  RotateToLattice(tempvec()=P);
+
+  tempvec() = fLattice->MapPToP_Q(ivalley, tempvec());
+
+  return RotateToSolid(tempvec());
+}
+
+G4ThreeVector 
+G4LatticePhysical::MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const {
+
+  RotateToLattice(tempvec()=P_Q);
+
+  tempvec() = fLattice->MapP_QToP(ivalley, tempvec());
 
   return RotateToSolid(tempvec());
 }
@@ -343,6 +370,15 @@ G4LatticePhysical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
 
   tempvec() = fLattice->MapK_valleyToP(ivalley, tempvec());
   return RotateToSolid(tempvec());
+}
+
+G4double 
+G4LatticePhysical::GetElectronEffectiveMass(G4int iv,
+					   const G4ThreeVector& p) const {
+
+  RotateToLattice(tempvec()=p);
+
+  return fLattice->GetElectronEffectiveMass(iv, tempvec());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
