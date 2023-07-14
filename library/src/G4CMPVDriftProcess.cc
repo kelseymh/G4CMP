@@ -110,10 +110,19 @@ void G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(GetCurrentTrack())->SetValleyIndex(ivalley);
 
   aParticleChange.ProposeMomentumDirection(v.unit());
-  aParticleChange.ProposeEnergy(Ekin);
+  currentEkin = Ekin;
+  aParticleChange.ProposeEnergy(currentEkin);
 
   if (IsElectron()) {		// Geant4 wants mc^2, not plain mass
     G4double meff = theLattice->GetElectronEffectiveMass(ivalley,GetLocalDirection(v));
     aParticleChange.ProposeMass(meff*c_squared);
   }
+}
+
+// Initializing ParticleChange and setting up the correct energy and
+// effective for the charge carrier
+
+void G4CMPVDriftProcess::InitializeParticleChange(G4int ivalley, const G4Track& track) {
+  aParticleChange.Initialize(track);
+  FillParticleChange(ivalley, track.GetMomentum());
 }

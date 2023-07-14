@@ -46,6 +46,12 @@ protected:
   void FillParticleChange(G4int ivalley, G4double Ekin,
               const G4ThreeVector& v);
 
+  // Initializing ParticleChange and setting up the correct energy and
+  // effective for the charge carrier
+  void InitializeParticleChange(G4int ivalley, const G4Track& track);
+
+  G4double currentEkin;	// Caching the current track kinetic energy
+
 private:
   // hide assignment operators as private 
   G4CMPVDriftProcess(G4CMPVDriftProcess&);

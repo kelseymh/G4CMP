@@ -81,7 +81,7 @@ G4CMPLukeScattering::~G4CMPLukeScattering() {
 
 G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
                                                      const G4Step& aStep) {
-  aParticleChange.Initialize(aTrack); 
+  InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
   if (verboseLevel > 1) {
@@ -140,8 +140,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4ThreeVector kdir = ktrk.unit();
   G4double kmag = ktrk.mag();
-  G4double gammaSound = 1/sqrt(1.-lat->GetSoundSpeed()*lat->GetSoundSpeed()/c_squared);
-  G4double kSound = gammaSound * lat->GetSoundSpeed() * mass / hbar_Planck;
+  G4ThreeVector vSound = lat->GetSoundSpeed()*kdir;
+  G4double kSound = (lat->MapV_elToK_HV(iValley,vSound)).mag();
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;

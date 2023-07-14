@@ -149,7 +149,8 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
     G4cout << "TS IV threshold mfpIV " << mfpIV/m << " m" << G4endl;
 
   // Take shortest distance from above options
-  G4double mfp = std::min({mfpFast, mfpLuke, mfpIV});
+  // G4double mfp = std::min({mfpFast, mfpLuke, mfpIV});
+  G4double mfp = std::min({1e-6*m, mfpFast, mfpLuke, mfpIV});
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
@@ -164,26 +165,12 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
 G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 						  const G4Step& aStep) {
-  aParticleChange.Initialize(aTrack);
-
-  // Adjust dynamical mass for electrons using end-of-step momentum direction
-  G4ThreeVector p = GetLocalDirection(aStep.GetPostStepPoint()->GetMomentum());
-
-  G4double ekin = theLattice->MapPtoEkin(GetValleyIndex(aTrack), p);
-
-  G4double meff = IsHole() ? theLattice->GetHoleMass()
-    : theLattice->GetElectronEffectiveMass(GetValleyIndex(aTrack), p);
-
-  if (IsElectron()) {
-    aParticleChange.ProposeEnergy(ekin);
-    aParticleChange.ProposeMass(meff*c_squared);
-  };
+  InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
 
   // Report basic kinematics
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
-	   << " Ekin " << GetKineticEnergy(aTrack)/eV << " eV,"
-	   << " m " << meff*c_squared/electron_mass_c2 << " m_e," << G4endl
+	   << " Ekin " << GetKineticEnergy(aTrack)/eV << " eV," << G4endl
 	   << " p " << GetGlobalMomentum(aTrack)/eV << " "
 	   << GetGlobalMomentum(aTrack).mag()/eV << " eV"
 	   << G4endl;
