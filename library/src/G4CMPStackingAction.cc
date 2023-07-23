@@ -20,6 +20,9 @@
 // 20170620 Drop obsolete SetTransforms() call
 // 20170624 Clean up track initialization
 // 20170928 Replace "polarization" with "mode"
+// 20211001 Remove electron energy adjustment; set mass instead.
+//		Assign electron valley nearest to momentum direction.
+// 20230531 Must pass track pointer into IsPhonon(), IsChargeCarrier().
 
 #include "G4CMPStackingAction.hh"
 
@@ -61,12 +64,16 @@ G4ClassificationOfNewTrack
 G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   G4ClassificationOfNewTrack classification = fUrgent;
 
+  // Don't do anything to ordinary G4 tracks
+  if (!G4CMP::IsPhonon(aTrack) && !G4CMP::IsChargeCarrier(aTrack))
+    return classification;
+  
   // Configure utility functions for current track (do NOT use LoadDataForTrack)
   SetCurrentTrack(aTrack);
   SetLattice(aTrack);
 
-  // If phonon or charge carrier is not in a lattice-enabled volume, kill it
-  if ((IsPhonon() || IsChargeCarrier()) && !theLattice) {
+  // If not in a lattice-enabled volume, kill track immediately
+  if (!theLattice) {
     ReleaseTrack();
     return fKill;
   }
@@ -79,8 +86,8 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
     if (IsPhonon()) SetPhononVelocity(aTrack);
 
     if (IsChargeCarrier()) {
+      AssignNearestValley(aTrack);
       SetChargeCarrierMass(aTrack);
-      if (IsElectron()) SetElectronEnergy(aTrack);
     }
   }
 
@@ -121,39 +128,33 @@ void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
+// Assign electron to valley nearest to momentum direction
+
+void G4CMPStackingAction::AssignNearestValley(const G4Track* aTrack) const {
+  G4int valley = FindNearestValley(aTrack);
+
+  G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(*aTrack)->SetValleyIndex(valley);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 // Set dynamical mass of charge carrier to scalar value for material
 
 void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
-  // Get effective mass for charge carrier
-  G4double mass = aTrack->GetDefinition()->GetPDGMass();
+  if (!G4CMP::IsChargeCarrier(aTrack)) return;
 
-  if (G4CMP::IsHole(aTrack))     mass = theLattice->GetHoleMass();
-  if (G4CMP::IsElectron(aTrack)) mass = theLattice->GetElectronMass();	// H-V scalar
+  G4int iv = GetCurrentValley();
+  G4ThreeVector pdir = aTrack->GetMomentumDirection();
+  RotateToLocalDirection(pdir);
+  
+  G4double mass = 
+    G4CMP::IsHole(aTrack) ? theLattice->GetHoleMass() :
+    G4CMP::IsElectron(aTrack) ? theLattice->GetElectronEffectiveMass(iv,pdir) :
+    aTrack->GetDynamicParticle()->GetMass()/c_squared;
 
   // Cast to non-const pointer so we can change the effective mass
   G4DynamicParticle* dynp =
     const_cast<G4DynamicParticle*>(aTrack->GetDynamicParticle());
 
   dynp->SetMass(mass*c_squared);	// Converts to Geant4 [M]=[E] units
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-// Set G4Track energy to correctly calculate velocity
-
-void G4CMPStackingAction::SetElectronEnergy(const G4Track* aTrack) const {
-  G4int valley = G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(*aTrack)->ValleyIndex();
-  G4double E = aTrack->GetKineticEnergy();
-  G4double kmag_HV = std::sqrt(2. * E * theLattice->GetElectronMass()) /
-                     hbar_Planck;
-  G4ThreeVector kdir_HV = theLattice->MapV_elToK_HV(valley,
-                                                    aTrack->GetMomentumDirection());
-
-  G4ThreeVector p = theLattice->MapK_HVtoP(valley, kmag_HV * kdir_HV.unit());
-  G4ThreeVector vTrue = theLattice->MapPtoV_el(valley, p);
-  // Set fake E that yeilds correct v
-  (const_cast<G4Track*>(aTrack))->SetKineticEnergy(0.5 *
-                                                   aTrack->GetDynamicParticle()->GetMass() /
-                                                   c_squared *
-                                                   vTrue.mag2());
 }
