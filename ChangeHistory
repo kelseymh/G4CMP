@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2023-07-22  g4cmp-V08-03-00 Take primary track energy as fixed input.
 2023-05-31  G4CMP-360 : Bug fix G4CMP-359, use correct track type functions.
 2023-05-24  G4CMP-359 : Do not overwrite kinetic energy for primary tracks.
 
