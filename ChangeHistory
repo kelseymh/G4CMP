@@ -6,9 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
-* NOTE: Add subtasks of G4CMP-325 to list below, below the G4CMP-325 entry *
-
-2023-06-27  G4CMP-325 : Improve physical modeling of absorption in KaplanQP.
+2023-07-25  G4CMP-325 : Improve physical modeling of absorption in KaplanQP.
 2022-12-09  G4CMP-348 : Remove now-extraneous factor of 2 in EscapeProbability.
 2022-12-01  G4CMP-345 : Apply "subgapAbsorption" to all phonons.
 2022-11-30  G4CMP-324 : Remove thermal phonons from KaplanQP.
@@ -18,8 +16,6 @@ ticket identifier, "G4CMP-nnn".
 2022-11-12  G4CMP-314 : Add quasiparticle absorption efficiency to KaplanQP.
 2022-10-06  G4CMP-330 : Add temperature parameter to KaplanQP, prop table.
 2022-09-28  G4CMP-323 : Add secondary absorber bandgap for G4CMPKaplanQP.
-
-* NOTE: Add subtasks of G4CMP-325 to list above, below the G4CMP-325 entry *
 
 2022-12-14  g4cmp-V08-02-02 Fix units error with hATrapIonizationMFP command.
 2022-12-14  G4CMP-350 : Bug fix G4CMP-319, restore correct units for trap MFP.
