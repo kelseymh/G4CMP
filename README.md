@@ -78,6 +78,7 @@ hits below step length |
 | G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
 | G4CMP\_USE\_KVSOLVER    | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED    | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
+| G4CMP\_KAPLAN\_KEEP     | /g4cmp/kaplanKeepPhonons [t\|f] | Reflect or iterate all phonons in KaplanQP |
 | G4CMP\_IV\_RATE\_MODEL  | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
 | G4CMP\_ETRAPPING\_MFP   | /g4cmp/eTrappingMFP [L] mm        | Mean free path for electron trapping |
 | G4CMP\_HTRAPPING\_MFP   | /g4cmp/hTrappingMFP [L] mm        | Mean free path for charge hole trapping |
@@ -515,12 +516,27 @@ for the metal film (defined using the function
 | phononLifetime   | Phonon lifetime in film at 2*bandgap | 242.*ps   |
 | phononLifetimeSlope | Lifetime dependence vs. energy | 0.29         |
 | vSound           | Speed of sound in film      | 3.26*km/s          |
-| subgapAbsorption | Probability to absorb energy below 2*bandgap | 0. |
+| lowQPLimit       | Minimum QP energy to radiate phonons | 3.        |
+| highQPLimit      | Maximum energy to create QPs | 10.               |
+| subgapAbsorption | Probability to absorb energy below 2*bandgap | 0.03 (optional) |
+| absorberGap      | Bandgap of "subgap absorber"  | 15e-6*eV (tungsten) |
+| absorberEff      | Quasiparticle absorption efficiency  | 0.3          |
+| absorberEffSlope | Efficiency dependence vs. energy  | 0.              |
+| temperature      | Temperature of film         | 0.05e-3*K          |
 
-The last parameter is optional.  It only applies if there is a sensor
-involved which is sensitive to heat energy, in which case phonons below
-2.*bandgap energy should be treated as directly absorbed with the specified
-probability.
+The last five  parameters are optional. They only apply if there is a
+sensor involved which is sensitive to heat energy, in which case phonons
+below 2.*bandgap energy, and above 2.*absorberGap energy, should be treated
+as directly absorbed with the specified 'subgapAbsorption'. In this case,
+we recommend that user applications also set `/g4cmp/minEPhonons` to 2.*absorberGap,
+to avoid excessive CPU from tracking unmeasurable phonons. Quasiparticles
+in a sensor may be subject to a baseline absorption efficiency 'absorberEff'
+and energy-dependent efficiency modification 'absorberEffSlope'.
+
+The `G4CMPKaplanQP` process also respects the global setting
+`kaplanKeepPhonons`.  If this is set true, then all internal phonons
+produced in the film will be either re-emitted into the substrate, or
+iterated to produce multiple quasiparticles for energy collection.
 
 A concrete "electrode" class, `G4CMPPhononElectrode`, is provided for simple
 access to `G4CMPKaplanQP` from user applications.  An instance of

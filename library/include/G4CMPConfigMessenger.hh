@@ -41,6 +41,7 @@
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
 
 #include "G4UImessenger.hh"
 
@@ -91,6 +92,7 @@ private:
   G4UIcmdWithAString* nielPartitionCmd;
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;
+  G4UIcmdWithABool*   kaplanKeepCmd;
   G4UIcmdWithABool*   ehCloudCmd;
 
 private:

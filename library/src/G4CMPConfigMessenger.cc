@@ -37,6 +37,7 @@
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
 // 20221214  G4CMP-350:  Bug fix for new temperature setting units.
 
 #include "G4CMPConfigMessenger.hh"
@@ -61,7 +62,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), tempCmd(0), minstepCmd(0),
     makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
     ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0), fanoStatsCmd(0),
-    ehCloudCmd(0) {
+    kaplanKeepCmd(0), ehCloudCmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
 
@@ -132,6 +133,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   fanoStatsCmd = CreateCommand<G4UIcmdWithABool>("enableFanoStatistics",
            "Modify input ionization energy according to Fano statistics.");
+  fanoStatsCmd->SetParameterName("enable",true,false);
   fanoStatsCmd->SetDefaultValue(true);
 
   ivRateModelCmd = CreateCommand<G4UIcmdWithAString>("IVRateModel",
@@ -176,7 +178,13 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
        "Produce e/h pairs in cloud surrounding energy deposit position");
+  ehCloudCmd->SetParameterName("enable",true,false);
   ehCloudCmd->SetDefaultValue(true);
+
+  kaplanKeepCmd = CreateCommand<G4UIcmdWithABool>("kaplanKeepPhonons",
+       "Preserve all intermediate phonons in G4CMPKaplanQP (no killing)");
+  kaplanKeepCmd->SetParameterName("enable",true,false);
+  kaplanKeepCmd->SetDefaultValue(true);
 }
 
 
@@ -206,6 +214,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete dirCmd; dirCmd=0;
   delete kvmapCmd; kvmapCmd=0;
   delete fanoStatsCmd; fanoStatsCmd=0;
+  delete kaplanKeepCmd; kaplanKeepCmd=0;
   delete ehCloudCmd; ehCloudCmd=0;
   delete ivRateModelCmd; ivRateModelCmd=0;
   delete nielPartitionCmd; nielPartitionCmd=0;
@@ -266,6 +275,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
 
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));
+  if (cmd == kaplanKeepCmd) theManager->KeepKaplanPhonons(StoB(value));
   if (cmd == ivRateModelCmd) theManager->SetIVRateModel(value);
   if (cmd == nielPartitionCmd) theManager->SetNIELPartition(value);
   if (cmd == ehCloudCmd) theManager->CreateChargeCloud(StoB(value));
