@@ -44,6 +44,7 @@
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
 
 #include "globals.hh"
 #include <iosfwd>
@@ -73,6 +74,7 @@ public:
   static G4int GetMaxLukePhonons()       { return Instance()->maxLukePhonons; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
+  static G4bool KeepKaplanPhonons()      { return Instance()->kaplanKeepPh; }
   static G4bool CreateChargeCloud()      { return Instance()->chargeCloud; }
   static G4double GetSurfaceClearance()  { return Instance()->clearance; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
@@ -112,6 +114,7 @@ public:
   static void SetComboStepLength(G4double value) { Instance()->combineSteps = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
+  static void KeepKaplanPhonons(G4bool value) { Instance()->kaplanKeepPh = value; }
   static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
   static void CreateChargeCloud(G4bool value) { Instance()->chargeCloud = value; }
 
@@ -179,6 +182,7 @@ private:
   G4double EminCharges;	 // Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
   G4bool useKVsolver;	 // Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	 // Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
+  G4bool kaplanKeepPh;   // Emit or iterate over all phonons in KaplanQP ($G4CMP_KAPLAN_KEEP)
   G4bool chargeCloud;    // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
 
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
