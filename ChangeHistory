@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2023-07-28  g4cmp-V08-04-00 Provide option for more realistic KaplanQP model.
 2023-07-25  G4CMP-325 : Improve physical modeling of absorption in KaplanQP.
 2022-12-09  G4CMP-348 : Remove now-extraneous factor of 2 in EscapeProbability.
 2022-12-01  G4CMP-345 : Apply "subgapAbsorption" to all phonons.
