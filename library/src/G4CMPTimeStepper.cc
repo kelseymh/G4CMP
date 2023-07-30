@@ -121,6 +121,8 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
   *cond = NotForced;
 
+  if (aTrack.GetCurrentStepNumber() == 1) return 1e-12*m;
+
   // SPECIAL:  If no electric field, no need to limit steps
   if (G4CMP::GetFieldAtPosition(aTrack).mag() <= 0.) return DBL_MAX;
 
@@ -150,7 +152,9 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
   // Take shortest distance from above options
   // G4double mfp = std::min({mfpFast, mfpLuke, mfpIV});
-  G4double mfp = std::min({1e-6*m, mfpFast, mfpLuke, mfpIV});
+  G4double trackP = aTrack.GetMomentum().mag()/eV;
+  G4double genericmfp = std::max(1e-10*m * (trackP*trackP), 1e-10*m);
+  G4double mfp = std::min({genericmfp, 1e-6*m, mfpFast, mfpLuke, mfpIV});
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
