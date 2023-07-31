@@ -23,6 +23,7 @@
 #include "G4Material.hh"
 #include "G4Pow.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4LewinSmithNIEL.hh"
 #include <algorithm>
 #include <cmath>
 

@@ -20,7 +20,6 @@
 #define G4CMPImpactTunlNIEL_hh 1
 
 #include "G4VNIELPartition.hh"
-#include "G4LewinSmithNIEL.hh"
 
 
 class G4CMPImpactTunlNIEL : public G4VNIELPartition {
