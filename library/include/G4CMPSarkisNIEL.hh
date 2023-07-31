@@ -12,7 +12,6 @@
 //
 // 20190711  Michael Kelsey
 
-// potential problem1. This ionization model was obtained from the ionization yield measurements in Silicon ONLY.
 
 #include "globals.hh"
 #include "G4CMPSarkisNIEL.hh"
