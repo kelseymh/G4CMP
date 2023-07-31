@@ -42,6 +42,8 @@
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPLewinSmithNIEL.hh"
 #include "G4CMPLindhardNIEL.hh"
+#include "G4CMPImpactTunlNIEL.hh"
+#include "G4CMPSarkisNIEL.hh"
 #include "G4VNIELPartition.hh"
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
@@ -159,6 +161,8 @@ void G4CMPConfigManager::setNIEL(G4String name) {
   name.toLower();
   if (name(0,3) == "lin") setNIEL(new G4CMPLindhardNIEL);
   if (name(0,3) == "lew") setNIEL(new G4CMPLewinSmithNIEL);
+  if (name(0,3) == "imp") setNIEL(new G4CMPImpactTunlNIEL);
+  if (name(0,3) == "sar") setNIEL(new G4CMPSarkisNIEL);
 }
 
 void G4CMPConfigManager::setNIEL(G4VNIELPartition* niel) {

@@ -12,9 +12,9 @@
 //
 // 20190711  Michael Kelsey
 
-// potential problem1. This ionization model was obtained from the ionization yield measurements in Silicon ONLY.
+// This ionization model was obtained from the ionization yield measurements in Silicon ONLY and it deos not have (Z,A) dependence. It may not give the correct values for other materials.
 
-// potential problem2. The model is obtained in the range of 100 eV to 10 keV. What about energies>10 keV? My first choice would be Lindhard since it works very well above 10 keV but we could give the option to the user to decide which model to use above 10 keV
+// The model is obtained in the range of 100 eV to 10 keV. Above 10 keV, Lindhard model will be used.
 
 #ifndef G4CMPImpactTunlNIEL_hh
 #define G4CMPImpactTunlNIEL_hh 1

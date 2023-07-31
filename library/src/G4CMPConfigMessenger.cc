@@ -172,7 +172,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
 	       "Select calculation for non-ionizing energy loss (NIEL)");
-  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew");
+  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew IMPACT Impact impact ImpactTunl impacttunl Imp imp Sarkis sarkis Sar sar");
 
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
        "Produce e/h pairs in cloud surrounding energy deposit position");
