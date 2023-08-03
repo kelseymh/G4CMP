@@ -140,8 +140,15 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4ThreeVector kdir = ktrk.unit();
   G4double kmag = ktrk.mag();
-  G4ThreeVector vSound = lat->GetSoundSpeed()*kdir;
-  G4double kSound = (lat->MapV_elToK_HV(iValley,vSound)).mag();
+  G4double kSound = 0.;
+  if (IsElectron()) {
+    G4ThreeVector vSound = lat->GetSoundSpeed()*kdir;
+    kSound = (lat->MapV_elToK_HV(iValley,vSound)).mag();
+  }
+  else{
+    G4double gammaSound = 1/sqrt(1.-lat->GetSoundSpeed()*lat->GetSoundSpeed()/c_squared);
+    kSound = gammaSound * lat->GetSoundSpeed() * mass / hbar_Planck;
+  }
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
