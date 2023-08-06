@@ -10,7 +10,7 @@
 //
 // $Id$
 //
-// 20190711  Michael Kelsey
+// 20230721  David Sadek - University of Florida (david.sadek@ufl.edu)
 
 
 // potential problem2. The model is obtained in the range of 100 eV to 10 keV. What about energies>10 keV? My first choice would be Lindhard since it works very well above 10 keV but we could give the option to the user to decide which model to use above 10 keV

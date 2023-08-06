@@ -38,6 +38,7 @@
 // 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
 // 20221214  G4CMP-350:  Bug fix for new temperature setting units.
+// 20230831  G4CMP-362:  Add short names for IMPACT and Sarkis ionization models for /g4cmp/NIELPartition [name] UI
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -172,7 +173,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
 	       "Select calculation for non-ionizing energy loss (NIEL)");
-  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew IMPACT Impact impact ImpactTunl impacttunl Imp imp Sarkis sarkis Sar sar");
+  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew IMPACT Impact impact ImpactTunl impacttunl Sarkis sarkis Sar sar");
 
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
        "Produce e/h pairs in cloud surrounding energy deposit position");

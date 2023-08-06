@@ -6,11 +6,11 @@
 /// \file library/include/G4CMPImpactTUNLNIEL.hh
 /// \brief Non-ionizing energy loss calculation from IMPACT@TUNL 2023.
 ///
-/// Computation of NIEL using the empirical model extracted from the ionization yield measurements according to IMPACT@TUNL 2023.  Link to the paper:https://arxiv.org/abs/2303.02196.
+/// Computation of NIEL using the empirical model extracted from the IMPACT@TUNL ionization yield measurements.  Link to the paper:https://arxiv.org/abs/2303.02196.
 //
 // $Id$
 //
-// 20190711  Michael Kelsey
+// 20230721  David Sadek  University of Florida (david.sadek@ufl.edu)
 
 // This ionization model was obtained from the ionization yield measurements in Silicon ONLY and it deos not have (Z,A) dependence. It may not give the correct values for other materials.
 
@@ -34,7 +34,9 @@
 
 G4CMPImpactTunlNIEL::G4CMPImpactTunlNIEL(){
     G4Exception("G4CMPImpactTunlNIEL", "G4CMP1003", JustWarning,
-                "The IMPACT@TUNL ionization yield model was obtained embirically ONLY for Silicon and may not give the correct values for other materials.");
+                "The IMPACT@TUNL ionization yield model was obtained empirically ONLY for Silicon and may not give the correct values for other materials.");
+    G4Exception("G4CMPImpactTunlNIEL", "G4CMP1004", JustWarning,
+                "This model is obtained in the range of 100 eV to 10 keV. Above 10 keV, Lindhard model will be used.");
 }
 
 

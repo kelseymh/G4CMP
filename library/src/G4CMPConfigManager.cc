@@ -37,6 +37,7 @@
 // 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
 // 20221014  G4CMP-334:  Add maxLukePhonons to printout; show macro commands
+// 20230831  G4CMP-362:  Add short names for IMPACT and Sarkis ionization models 
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -161,7 +162,7 @@ void G4CMPConfigManager::setNIEL(G4String name) {
   name.toLower();
   if (name(0,3) == "lin") setNIEL(new G4CMPLindhardNIEL);
   if (name(0,3) == "lew") setNIEL(new G4CMPLewinSmithNIEL);
-  if (name(0,3) == "imp") setNIEL(new G4CMPImpactTunlNIEL);
+  if (name(0,6) == "impact") setNIEL(new G4CMPImpactTunlNIEL);
   if (name(0,3) == "sar") setNIEL(new G4CMPSarkisNIEL);
 }
 
