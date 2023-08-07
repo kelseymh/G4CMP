@@ -40,6 +40,7 @@
 // 20201223  Add FindNearestValley() function to align electron momentum.
 // 20210318  In LoadDataForTrack, kill a bad track, not the whole event.
 // 20230524  Expand GetCurrentTouchable() to create one for new tracks
+// 20230807  Multiplied ChargeCarrierTimeStep by mach to get the correct luke scattering rate
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -504,5 +505,6 @@ G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
   const G4double velLong = theLattice->GetSoundSpeed();
 
   const G4double tstep = 3.*l0/velLong;
-  return (mach<1.) ? tstep : tstep*mach*mach/((mach-1)*(mach-1)*(mach-1));
+  return (mach<1.) ? tstep : tstep*mach*mach/((mach-1)*(mach-1)*(mach-1)); // Luke scattering rate = 1/ChargeCarrierTimeStep = 1/(tsep*mach*mach/((mach-1)*(mach-1)*(mach-1))) =  velLong/(3*l0) * kSound^2/kMag^2 * (Kmag/kSound -1)^3 = velLong/(3*l0) * kMag/kSound * (1 - kSound/kMag)^3
+  
 }
