@@ -505,6 +505,17 @@ G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
   const G4double velLong = theLattice->GetSoundSpeed();
 
   const G4double tstep = 3.*l0/velLong;
-  return (mach<1.) ? tstep : tstep*mach*mach/((mach-1)*(mach-1)*(mach-1)); // Luke scattering rate = 1/ChargeCarrierTimeStep = 1/(tsep*mach*mach/((mach-1)*(mach-1)*(mach-1))) =  velLong/(3*l0) * kSound^2/kMag^2 * (Kmag/kSound -1)^3 = velLong/(3*l0) * kMag/kSound * (1 - kSound/kMag)^3
+  return (mach<1.) ? tstep : tstep*mach*mach/((mach-1)*(mach-1)*(mach-1)); 
+  
+/*  1/Tau = velLong/(3*l0) * kmag/ksound * (1 - ksound/kmag)^3
+          = velLong/(3*l0) * ksound^2/kmag^2 * (kmag/ksound - 1)^3
+          = (1-ksound/kmag)^3 / (3*l0)/velLong) / (kmag^2/ksound^2)
+          = (1-mach)^3 / (tstep * mach^2)
+          = 1 / (tstep * mach^2 * (1/(1-mach)^3)) 
+          = 1/ChargeCarrierTimeStep
+                     
+ChargeCarrierTimeStep= tstep * mach^2 * (1/(1-mach)^3)
+          
+*/
   
 }
