@@ -10,7 +10,7 @@
 /// both the material properties and the projectile mass and charge.
 /// May be registered by client code into G4CMPEnergyPartition.
 //
-// $Id: f0c0565bb0017e10c7335239b21f1db24e702161 $
+// $Id: 34f7dfc91d9fd89dfa5cdbc779d9b07091151283 $
 //
 // 20190711  Michael Kelsey
 // 20200128  Make units explicit in calculation, use G4Pow consistently.
@@ -45,11 +45,11 @@ PartitionNIEL(G4double energy, const G4Material *material, G4double z1,
         
   const G4double* atomDensities = material->GetVecNbOfAtomsPerVolume();
   size_t maxindex = (std::max_element(atomDensities, atomDensities+nMatElements)
-		     - atomDensities);
+		     - atomDensities);  // Find the index of the element with the max density
 
-  const G4Element *element = material->GetElement(maxindex);
+  const G4Element *element = material->GetElement(maxindex); //Get the element with the max density
   G4double z2 = element->GetZ();
-  G4double a2 = element->GetA()/(g/mole);
+  G4double a2 = element->GetA()/(g/mole); // Get A and convert it to gram
         
   G4double zpow = g4pow->Z23(z1) + g4pow->Z23(z2);
   G4double asum = a1+a2;

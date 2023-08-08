@@ -8,33 +8,63 @@
 ///
 /// Link to the paper:https://journals.aps.org/pra/abstract/10.1103/PhysRevA.107.062811.
 //
-// $Id$
-//
+
 // 20230721  David Sadek - University of Florida (david.sadek@ufl.edu)
 
-
-// potential problem2. The model is obtained in the range of 100 eV to 10 keV. What about energies>10 keV? My first choice would be Lindhard since it works very well above 10 keV but we could give the option to the user to decide which model to use above 10 keV
-
-#ifndef G4CMPSarkisNIEL_hh
-#define G4CMPSarkisNIEL_hh 1
-
-#include "G4VNIELPartition.hh"
+// This ionization model was obtained from the Sarkis paper referenced above for Silicon ONLY so it deos not have (Z,A) dependence. The code will check the effective Z and A of the input material, if the effZ and effA are within +/-1 of Silicon Z and A, the Sarkis model will be used, else, Lindhard(LewinSmith) model will be used for NIEL calculations.
 
 
+// The model is obtained in the range of ~50 eV to 3 MeV above which Lindahard(LewinSmith) model will be used for NIEL calculations
 
-class G4CMPSarkisNIEL : public G4VNIELPartition {
-public:
-  G4CMPSarkisNIEL() {;}
-  virtual ~G4CMPSarkisNIEL() {;}
-  
-  // return the fraction of the specified energy which will be deposited as NIEL
-  // if an incoming particle with z1, a1 is stopped in the specified material
-  // a1 is in atomic mass units, energy in native G4 energy units.
-  //
-  G4double YieldInterp
-  virtual G4double 
-  PartitionNIEL(G4double energy, const G4Material *material, G4double Zin=0.,
-		G4double Ain=0.) const;
-};
 
-#endif	/* G4CMPSarkisNIEL_hh */
+#include "globals.hh"
+#include "G4CMPSarkisNIEL.hh"
+#include "G4ExceptionSeverity.hh"
+#include "G4Material.hh"
+#include "G4Pow.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4InterpolationManager.hh"
+#include "G4DataInterpolation.hh"
+#include <algorithm>
+#include <cmath>
+
+
+// G4CMPSarkisNIEL::G4CMPSarkisNIEL(){
+//     G4Exception("G4CMPImpactTunlNIEL", "G4CMP1003", JustWarning,
+//                 "This model is obtained in the range of 50 eV to 3 MeV. Above 3 MeV, Lindhard model will be used.");
+// }
+
+G4CMPSarkisNIEL::G4CMPSarkisNIEL() :  SiZ(14.0), SiA(28.09) {}
+
+
+G4double G4CMPSarkisNIEL::
+PartitionNIEL(G4double energy, const G4Material *material,G4double Zin=0.,
+		G4double Ain=0.) const {
+  if (!material) {
+    G4Exception("G4CMPSarkisNIEL", "G4CMP1000", FatalErrorInArgument,
+		  "No material passed to partition function");
+    return 1.;		// Won't get here after FATAL error
+  } 
+  // Get effective Z,A of the material
+  const G4double Z = GetEffectiveZ(material);
+  const G4double A = GetEffectiveA(material) / (g / mole);
+    
+  // Check if the material is silicon or similar (within +-1 of Z and A of silicon)
+    
+  if (G4doubleabs(Z - SiZ) <= 1.0 && G4doubleabs(A - SiA) <= 1.0) {
+      G4Exception("G4CMPImpactTunlNIEL", "G4CMP1005", JustWarning,
+                  "Sarkis model is obtained in the range of 50 eV to 3 MeV. Above 3 MeV, Lindhard model will be used.");
+    
+    // Sarkis model below 3 MeV 
+    if (energy <= 3 * MeV) {
+        // Sarkis model function
+        return Y;
+    // Lindhard model above 3 MeV
+    } else {
+        return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
+    }
+  } else {
+      G4Exception("G4CMPImpactTunlNIEL", "G4CMP1004", JustWarning, "The input material is not Silicon. The Lindhard model will be used for NIEL calculation.");
+      return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
+  }
+}
