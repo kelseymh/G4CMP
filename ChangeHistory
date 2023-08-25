@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2023-08-24  G4CMP-377 : Withdraw G4CMP-359/360, retstore energy conservation.
 2023-08-08  G4CMP-373 : Fix long-standing bug in NTL emission rate.
 
 2023-07-28  g4cmp-V08-04-00 Provide option for more realistic KaplanQP model.
