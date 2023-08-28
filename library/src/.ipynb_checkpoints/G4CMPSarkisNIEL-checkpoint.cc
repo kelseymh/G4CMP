@@ -25,21 +25,20 @@
 #include "G4SystemOfUnits.hh"
 #include "G4InterpolationManager.hh"
 #include "G4DataInterpolation.hh"
+#include <fstream>
 #include <algorithm>
 #include <cmath>
 
 
-// G4CMPSarkisNIEL::G4CMPSarkisNIEL(){
-//     G4Exception("G4CMPImpactTunlNIEL", "G4CMP1003", JustWarning,
-//                 "This model is obtained in the range of 50 eV to 3 MeV. Above 3 MeV, Lindhard model will be used.");
-// }
-
-G4CMPSarkisNIEL::G4CMPSarkisNIEL() :  SiZ(14.0), SiA(28.09) {}
+G4CMPSarkisNIEL::G4CMPSarkisNIEL() :  SiZ(14.0), SiA(28.09), fDataDir(G4CMPConfigManager::GetLatticeDir()) {
+    
+    lVector = G4PhysicsLinearVector(false);
+}
 
 
 G4double G4CMPSarkisNIEL::
-PartitionNIEL(G4double energy, const G4Material *material,G4double Zin=0.,
-		G4double Ain=0.) const {
+PartitionNIEL(G4double energy, const G4Material *material,G4double Zin = 0.,
+		G4double Ain = 0.) const {
   if (!material) {
     G4Exception("G4CMPSarkisNIEL", "G4CMP1000", FatalErrorInArgument,
 		  "No material passed to partition function");
@@ -58,7 +57,12 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double Zin=0.,
     // Sarkis model below 3 MeV 
     if (energy <= 3 * MeV) {
         // Sarkis model function
-        return Y;
+        fData = fDataDir + "/NIEL/SarkisSiIonYield.txt";                // full path to the data file
+        inputFile.Open(fData)                                           // open the data file
+        lVector.Retrieve(inputFile, false);                             // load the data from the text file
+        
+        return lVector.Value(energy, idx);                             // do the interpolation and return the yield value
+        
     // Lindhard model above 3 MeV
     } else {
         return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);

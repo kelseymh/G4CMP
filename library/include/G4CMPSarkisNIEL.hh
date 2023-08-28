@@ -21,6 +21,7 @@
 
 #include "G4CMPLewinSmithNIEL.hh"
 
+#include "G4PhysicsLinearVector.hh"
 
 
 class G4CMPSarkisNIEL : public G4CMPLewinSmithNIEL {
@@ -32,14 +33,19 @@ public:
   // if an incoming particle with z1, a1 is stopped in the specified material
   // a1 is in atomic mass units, energy in native G4 energy units.
   //
-  G4double YieldInterp
   virtual G4double 
-  PartitionNIEL(G4double energy, const G4Material *material, G4double Zin=0.,
-		G4double Ain=0.) const;
+  PartitionNIEL(G4double energy, const G4Material * material, G4double Zin = 0.,
+		G4double Ain = 0.) const;
     
 private:
     const G4double SiZ;
     const G4double SiA;
+    const G4String fDataDir;
+    const G4String fData;
+    std::ifstream inputFile;
+    G4PhysicsLinearVector lVector;
+    std::size_t idx = 0;
+    
 };
 
 #endif	/* G4CMPSarkisNIEL_hh */
