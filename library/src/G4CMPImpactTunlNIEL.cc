@@ -6,14 +6,21 @@
 /// \file library/include/G4CMPImpactTUNLNIEL.hh
 /// \brief Non-ionizing energy loss calculation from IMPACT@TUNL 2023.
 ///
-/// Computation of NIEL using the empirical model extracted from the IMPACT@TUNL ionization yield measurements.  Link to the paper:https://arxiv.org/abs/2303.02196.
+/// Computation of NIEL using the empirical model extracted from the
+/// IMPACT@TUNL ionization yield measurements.  
+/// Link to the paper:https://arxiv.org/abs/2303.02196.
 //
 
-// 20230721  David Sadek  University of Florida (david.sadek@ufl.edu)
+// 20230721  David Sadek - University of Florida (david.sadek@ufl.edu)
 
-// This ionization model was obtained from the ionization yield measurements in Silicon ONLY and it deos not have (Z,A) dependence. The code will check the effective Z and A of the input material, the effZ and effA are within +/-1 of Silicon Z and A, the Impact model will be used, else, Lindhard(LewinSmith) model will be used for NIEL calculations. 
+// This ionization model was obtained from the ionization yield measurements
+// in Silicon ONLY and it deos not have (Z,A) dependence. The code will check
+// the effective Z and A of the input material, the effZ and effA are
+// within +/-1 of Silicon Z and A, the Impact model will be used, else,
+// Lindhard(LewinSmith) model will be used for NIEL calculations. 
 
-// The model is obtained in the range of 100 eV to 10 keV. Above 10 keV, Lindhard(LewinSmith) model will be used.
+// The model is obtained in the range of 100 eV to 10 keV.
+// Above 10 keV, Lindhard(LewinSmith) model will be used.
 
 
 #include "globals.hh"
