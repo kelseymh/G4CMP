@@ -12,6 +12,7 @@
 // 20181001  Use systematic names for IV rate parameters
 // 20210908  Use global track position to query field; configure field.
 // 20211003  Use encapsulated G4CMPFieldUtils to get field.
+// 20230829  Rotated E-field to local frame first and changed Mass Multiplication in HV transformation
 
 #include "G4CMPIVRateLinear.hh"
 #include "G4CMPFieldUtils.hh"
@@ -22,6 +23,7 @@
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
+#include "G4PhysicalConstants.hh"
 #include <math.h>
 #include <iostream>
 
@@ -40,9 +42,11 @@ G4double G4CMPIVRateLinear::Rate(const G4Track& aTrack) const {
   // Find E-field in HV space: in lattice frame, rotate into valley,
   // then apply HV tansform.
   // NOTE:  Separate steps to avoid matrix-matrix multiplications
+  RotateToLocalDirection(fieldVector);
   theLattice->RotateToLattice(fieldVector);
   fieldVector *= GetValley(aTrack);
-  fieldVector *= theLattice->GetSqrtInvTensor();
+  fieldVector *= theLattice->GetMInvTensor();
+  fieldVector *= electron_mass_c2/c_squared;
   fieldVector /= volt/cm;			// Strip units for MFP below
   if (verboseLevel > 1) {
     G4cout << " in HV space " << fieldVector << " ("
