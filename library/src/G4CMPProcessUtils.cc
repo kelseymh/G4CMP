@@ -43,6 +43,8 @@
 // 20230807  Multiplied ChargeCarrierTimeStep by mach to get the correct
 //		Luke scattering rate
 // 20230808  Added derivation of ChargeCarrierTimeStep to explain bug fix.
+// 20230831  Remove modifications to ChargeCarrierTimeStep(), they seem to
+//		cause zero-length and NaN steps.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -512,5 +514,6 @@ G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
   const G4double velLong = theLattice->GetSoundSpeed();
 
   const G4double tstep = 3.*l0/velLong;
-  return (mach<1.) ? tstep : tstep*mach*mach/((mach-1)*(mach-1)*(mach-1)); 
+  return (mach<1.) ? tstep : tstep*mach/((mach-1)*(mach-1)*(mach-1));
+  // NOTE: Above numerator should be tstep*mach*mach, but causes problems
 }
