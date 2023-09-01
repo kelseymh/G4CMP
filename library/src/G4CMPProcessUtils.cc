@@ -40,6 +40,11 @@
 // 20201223  Add FindNearestValley() function to align electron momentum.
 // 20210318  In LoadDataForTrack, kill a bad track, not the whole event.
 // 20230524  Expand GetCurrentTouchable() to create one for new tracks
+// 20230807  Multiplied ChargeCarrierTimeStep by mach to get the correct
+//		Luke scattering rate
+// 20230808  Added derivation of ChargeCarrierTimeStep to explain bug fix.
+// 20230831  Remove modifications to ChargeCarrierTimeStep(), they seem to
+//		cause zero-length and NaN steps.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -497,7 +502,12 @@ G4int G4CMPProcessUtils::FindNearestValley(G4ThreeVector dir) const {
 
 
 // Compute characteristic time step for charge carrier
-// Parameters are "Mach number" (ratio with sound speed) and scattering length
+// Rate depends on Mach number (v/vsound = k/ksound) and scattering length l0
+// 1/Tau = velLong/(3*l0) * kmag/ksound * (1 - ksound/kmag)^3
+// Tau   = (3*l0)/velLong * 1/mach * (1 - 1/mach)^-3
+//       = (3*l0)/velLong * 1/mach * [(mach-1)/mach]^-3
+//       = (3*l0)/velLong * mach^3/mach * (mach-1)^-3
+//       = (3*l0)/velLong * mach^2 / (mach-1)^3
 
 G4double 
 G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
@@ -505,4 +515,5 @@ G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
 
   const G4double tstep = 3.*l0/velLong;
   return (mach<1.) ? tstep : tstep*mach/((mach-1)*(mach-1)*(mach-1));
+  // NOTE: Above numerator should be tstep*mach*mach, but causes problems
 }
