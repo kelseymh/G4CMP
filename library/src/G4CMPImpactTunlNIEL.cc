@@ -65,7 +65,7 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double Zin=0.,
         G4double EB = g4pow->powA(energy/(10*keV),B);
         return (Y10*EB); 
     } else {
-        return G4CMPLewinSmithNIEL:PartitionNIEL(energy, material, Zin, Ain);
+        return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
     }
   } else {
       G4Exception("G4CMPImpactTunlNIEL", "G4CMP1004", JustWarning, "The input material is not Silicon. The Lindhard model will be used for NIEL calculation.");
