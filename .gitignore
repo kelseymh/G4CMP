@@ -1,6 +1,7 @@
 # Ignore temporary files produced by qhull build
 library/qhull-2012.1/bin/
 library/qhull-2012.1/lib/
+.DS_Store
 *.ipynb_checkpoints*
 *~
 \#*#
