@@ -32,6 +32,7 @@
 // 20180815  F. Insulla -- Added IVRateQuad
 // 20181001  M. Kelsey -- Clarify IV rate parameters systematically
 // 20190704  M. Kelsey -- Add 'ivModel' to set default IV function by material
+// 20231017  E. Michaud -- Add 'valleyDir' to set rotation matrix with valley's direction instead of euler angles
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -146,6 +147,7 @@ G4bool G4LatticeReader::ProcessToken() {
       fToken == "cij")      return ProcessStiffness();  // Elasticity element
   if (fToken == "emass")    return ProcessMassTensor();	// e- mass eigenvalues
   if (fToken == "valley")   return ProcessEulerAngles(fToken); // e- drift dirs
+  if (fToken == "valleydir")   return ProcessValleyDirection(); // miller indices valley dirs
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
   if (fToken == "ivdeform") return ProcessDeformation(); // D0, D1 potentials
   if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
@@ -392,11 +394,26 @@ G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
     G4cerr << "G4LatticeReader: Unknown rotation matrix " << name << G4endl;
     return false;
   }
-
   G4double degOrRad = ProcessUnits("Angle");
   pLattice->AddValley(phi*degOrRad, theta*degOrRad, psi*degOrRad);
   return psLatfile->good();
 }
+
+
+// Read miller indices (milleri, millerj, millerk) for named rotation matrix
+
+G4bool G4LatticeReader::ProcessValleyDirection() {
+  G4double milleri=0., millerj=0., millerk=0.;
+  *psLatfile >> milleri >> millerj >> millerk;
+  if (verboseLevel>1)
+    G4cout << " ProcessValleyDirection "  << milleri << " " 
+	   << millerj << " " << millerk << G4endl;
+
+  G4ThreeVector valleyDirVec(milleri,millerj,millerk);
+  pLattice->AddValley(valleyDirVec);
+  return psLatfile->good();
+}
+
 
 // Read deformation potentials and thresholds for IV scattering
 

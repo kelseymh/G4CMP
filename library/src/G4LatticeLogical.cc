@@ -44,6 +44,7 @@
 // 20190906  M. Kelsey -- Default IV rate model to G4CMPConfigManager value.
 // 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
 //		return thread-local instance.
+// 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' to compute rotation matrix from valley's direction
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -688,6 +689,47 @@ void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
 
   // NOTE:  Rotation matrices take external vector along valley axis to X-hat
   fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));
+}
+
+// Store drifting-electron valley using valley's direction
+
+void G4LatticeLogical::AddValley(const G4ThreeVector& valleyDirVec) {
+      
+   double vx=valleyDirVec.x();
+   double vy=valleyDirVec.y();
+   double vz=valleyDirVec.z();
+   double a;
+   double b;
+   double c=0;
+   double d;
+   double e;
+    
+   if (vx==0 && vy==0){
+       e=0;
+       b=1;
+       a=1;
+   }
+   
+   else {
+       e=sqrt(1-vz*vz);
+       b=vx/e;
+       a=-vy/e;
+   }
+     
+   d=-vz*b;
+   e=vz*a;
+   
+G4cout << "test12 : " << a << " " << b << " " << c << " " << d << " " << e << G4endl;
+    
+//     G4ThreeVector colx(1,0,0);
+//     G4ThreeVector coly(0,1,0);
+//     G4ThreeVector colz(0,0,1);
+//     //HepRep3x3 test1(aa,aa,aa,aa,aa,aa,aa,aa,aa);
+//     G4RotationMatrix test1(colx,coly,colz);
+    
+    
+//   G4cout << "test : " << test1 <<  G4endl;
+    
 }
 
 // Store rotation matrix and corresponding axis vector for valley

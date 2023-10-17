@@ -67,6 +67,7 @@ protected:
   G4bool ProcessDebyeLevel();			// Frequency or temperature
   G4bool ProcessStiffness();			// Elasticity matrix element
   G4bool ProcessEulerAngles(const G4String& name);	// Drift directions
+  G4bool ProcessValleyDirection();	// Drift directions
   G4bool ProcessDeformation();			// IV deformation potentials
   G4bool ProcessThresholds();			// IV energy thresholds
   G4bool SkipComments();			// Everything after '#'
