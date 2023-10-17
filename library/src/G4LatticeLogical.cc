@@ -703,32 +703,33 @@ void G4LatticeLogical::AddValley(const G4ThreeVector& valleyDirVec) {
    double c=0;
    double d;
    double e;
+   double f;
     
    if (vx==0 && vy==0){
-       e=0;
+       f=0;
        b=1;
-       a=1;
+       a=0;
    }
    
    else {
-       e=sqrt(1-vz*vz);
-       b=vx/e;
-       a=-vy/e;
+       f=sqrt(1-vz*vz);
+       b=vx/f;
+       a=-vy/f;
    }
      
    d=-vz*b;
    e=vz*a;
    
-G4cout << "test12 : " << a << " " << b << " " << c << " " << d << " " << e << G4endl;
+G4cout << "test12 : " << a << " " << b << " " << c << " " << d << " " << e << " " << G4endl;
     
-//     G4ThreeVector colx(1,0,0);
-//     G4ThreeVector coly(0,1,0);
-//     G4ThreeVector colz(0,0,1);
+    G4ThreeVector colx(vx,vy,vz);
+    G4ThreeVector coly(a,b,c);
+    G4ThreeVector colz(d,e,f);
 //     //HepRep3x3 test1(aa,aa,aa,aa,aa,aa,aa,aa,aa);
-//     G4RotationMatrix test1(colx,coly,colz);
+    G4RotationMatrix test1(colx,coly,colz);
     
     
-//   G4cout << "test : " << test1 <<  G4endl;
+  G4cout << "test : " << test1 <<  G4endl;
     
 }
 
