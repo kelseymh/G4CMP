@@ -694,16 +694,22 @@ void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
 // Store drifting-electron valley using valley's direction
 
 void G4LatticeLogical::AddValley(const G4ThreeVector& valleyDirVec) {
+    
+   
       
-   double vx=valleyDirVec.x();
-   double vy=valleyDirVec.y();
-   double vz=valleyDirVec.z();
-   double a;
-   double b;
-   double c=0;
-   double d;
-   double e;
-   double f;
+   long double vx=valleyDirVec.x();
+   long double vy=valleyDirVec.y();
+   long double vz=valleyDirVec.z();
+   long double normval=sqrt(vx*vx+vy*vy+vz*vz);
+   vx=vx/normval;
+   vy=vy/normval;
+   vz=vz/normval;
+   long double a;
+   long double b;
+   long double c=0;
+   long double d;
+   long double e;
+   long double f;
     
    if (vx==0 && vy==0){
        f=0;
@@ -722,9 +728,9 @@ void G4LatticeLogical::AddValley(const G4ThreeVector& valleyDirVec) {
    
 G4cout << "test12 : " << a << " " << b << " " << c << " " << d << " " << e << " " << G4endl;
     
-    G4ThreeVector colx(vx,vy,vz);
-    G4ThreeVector coly(a,b,c);
-    G4ThreeVector colz(d,e,f);
+    G4ThreeVector colx(vx,a,d);
+    G4ThreeVector coly(vy,b,e);
+    G4ThreeVector colz(vz,c,f);
 //     //HepRep3x3 test1(aa,aa,aa,aa,aa,aa,aa,aa,aa);
     G4RotationMatrix test1(colx,coly,colz);
     
