@@ -29,7 +29,7 @@
 #include "G4Material.hh"
 #include "G4Pow.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4LewinSmithNIEL.hh"
+#include "G4CMPLewinSmithNIEL.hh"
 #include <algorithm>
 #include <cmath>
 
