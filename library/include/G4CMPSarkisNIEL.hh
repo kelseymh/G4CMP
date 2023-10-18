@@ -38,8 +38,8 @@ public:
 		G4double Ain = 0.) const;
     
 private:
-    const G4double SiZ;
-    const G4double SiA;
+    const G4double SiZ = 14.0;
+    const G4double SiA = 28.09;
     const G4String fDataDir;
     const G4String fData;
     std::ifstream inputFile;

@@ -39,7 +39,7 @@
 //                 "This model is obtained in the range of 100 eV to 10 keV. Above 10 keV, Lindhard model will be used.");
 // }
 
-G4CMPImpactTunlNIEL::G4CMPImpactTunlNIEL() : B(0.261), Y10(0.302), SiZ(14.0), SiA(28.09) {}
+G4CMPImpactTunlNIEL::G4CMPImpactTunlNIEL() : {}
 
 G4double G4CMPImpactTunlNIEL::
 PartitionNIEL(G4double energy, const G4Material *material,G4double Zin=0.,

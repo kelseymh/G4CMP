@@ -35,7 +35,7 @@
 #include <cmath>
 
 
-G4CMPSarkisNIEL::G4CMPSarkisNIEL() :  SiZ(14.0), SiA(28.09), fDataDir(G4CMPConfigManager::GetLatticeDir()) {
+G4CMPSarkisNIEL::G4CMPSarkisNIEL() : fDataDir(G4CMPConfigManager::GetLatticeDir()) {
     
     lVector = G4PhysicsLinearVector(false);
 }

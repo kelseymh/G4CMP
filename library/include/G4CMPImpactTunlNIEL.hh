@@ -36,10 +36,10 @@ public:
 		G4double Ain=0.) const override;
 
 private:
-    const G4double B; // this is the central value for B=0.261
-    const G4double Y10;
-    const G4double SiZ;
-    const G4double SiA;
+    const G4double B = 0.261; // this is the central value for B=0.261
+    const G4double Y10 = 0.302; // yield at 10 keV
+    const G4double SiZ = 14.0; // Z of Silicon
+    const G4double SiA = 28.09; // A of Silicon
 };
 
 #endif	/* G4CMPImpactTunlNIEL_hh */
