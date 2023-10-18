@@ -694,49 +694,71 @@ void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
 // Store drifting-electron valley using valley's direction
 
 void G4LatticeLogical::AddValley(const G4ThreeVector& valleyDirVec) {
-    
-   
       
-   long double vx=valleyDirVec.x();
-   long double vy=valleyDirVec.y();
-   long double vz=valleyDirVec.z();
-   long double normval=sqrt(vx*vx+vy*vy+vz*vz);
+   // Find the rotation matrix elements. The rows corresponds to the rotated axis direction (first row is vx,vy,vz ; second row is a,b,c and third row is d,e,f)
+   double vx=valleyDirVec.x();
+   double vy=valleyDirVec.y();
+   double vz=valleyDirVec.z();
+   double normval=sqrt(vx*vx+vy*vy+vz*vz); 
    vx=vx/normval;
    vy=vy/normval;
    vz=vz/normval;
-   long double a;
-   long double b;
-   long double c=0;
-   long double d;
-   long double e;
-   long double f;
+   double a;
+   double b;
+   double c=0; //we require the rotated axis to stay in X-Y plane (rotated y axis has no z component)
+   double d;
+   double e;
+   double f; // we require f to be positive  (the rotated z axis has a positive z component)
+   double antia; // find the corresponding anti-valley rotation matrix elements
+   double antib;
+   double antid;
+   double antie;
+   
     
-   if (vx==0 && vy==0){
+   if (vx==0 && vy==0){ // Special case if vx=0 and vy=0, which means f=0. We need to manually define the elements
        f=0;
        b=1;
        a=0;
+       antib=1;
+       antia=0;
    }
    
-   else {
-       f=sqrt(1-vz*vz);
+   else { // We require orthogonality, right-hand system and to bring (vx,vy,vz) to (1,0,0). See Jira G4CMP-381 for more details
+       f=sqrt(1-vz*vz); 
        b=vx/f;
        a=-vy/f;
+       antib=-vx/f;
+       antia=vy/f;
    }
      
    d=-vz*b;
    e=vz*a;
+   antid=vz*antib;
+   antie=-vz*antia;
    
-G4cout << "test12 : " << a << " " << b << " " << c << " " << d << " " << e << " " << G4endl;
+   // Store the valley's rotation matrix columns
+   G4ThreeVector colx(vx,a,d);
+   G4ThreeVector coly(vy,b,e);
+   G4ThreeVector colz(vz,c,f);
     
-    G4ThreeVector colx(vx,a,d);
-    G4ThreeVector coly(vy,b,e);
-    G4ThreeVector colz(vz,c,f);
-//     //HepRep3x3 test1(aa,aa,aa,aa,aa,aa,aa,aa,aa);
-    G4RotationMatrix test1(colx,coly,colz);
+   // Store the anti-valley's rotation matrix columns 
+   G4ThreeVector anticolx(-vx,antia,antid);
+   G4ThreeVector anticoly(-vy,antib,antie);
+   G4ThreeVector anticolz(-vz,c,f); 
     
+    // Store the valley's rotation matrix, its inverse and the valley's direction.
+   fValley.resize(fValley.size()+1);
+   fValley.back().set(colx,coly,colz);
+   fValleyInv.push_back(fValley.back());
+   fValleyInv.back().invert();
+   fValleyAxis.push_back(valleyDirVec/normval);
     
-  G4cout << "test : " << test1 <<  G4endl;
-    
+   // Store the corresponding anti-valley's rotation matrix, its inverse and the anti-valley's direction. 
+   fValley.resize(fValley.size()+1);
+   fValley.back().set(anticolx,anticoly,anticolz);
+   fValleyInv.push_back(fValley.back());
+   fValleyInv.back().invert();
+   fValleyAxis.push_back(-valleyDirVec/normval);    
 }
 
 // Store rotation matrix and corresponding axis vector for valley
