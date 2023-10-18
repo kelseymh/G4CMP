@@ -20,13 +20,12 @@
 #define G4CMPSarkisNIEL_hh 1
 
 #include "G4CMPLewinSmithNIEL.hh"
-
+#include "G4CMPConfigManager.hh"
 #include "G4PhysicsLinearVector.hh"
-
 
 class G4CMPSarkisNIEL : public G4CMPLewinSmithNIEL {
 public:
-  G4CMPSarkisNIEL() {;}
+  G4CMPSarkisNIEL() : fPath(G4CMPConfigManager::GetLatticeDir() + "/NIEL/SarkisSiIonYield.txt") {;} //inputFile.open(fPath)
   virtual ~G4CMPSarkisNIEL() {;}
   
   // return the fraction of the specified energy which will be deposited as NIEL
@@ -35,13 +34,12 @@ public:
   //
   virtual G4double 
   PartitionNIEL(G4double energy, const G4Material * material, G4double Zin = 0.,
-		G4double Ain = 0.) const;
+		G4double Ain = 0.);
     
 private:
     const G4double SiZ = 14.0;
     const G4double SiA = 28.09;
-    const G4String fDataDir;
-    const G4String fData;
+    G4String fPath;                     // full path to the data file
     std::ifstream inputFile;
     G4PhysicsLinearVector lVector;
     std::size_t idx = 0;
