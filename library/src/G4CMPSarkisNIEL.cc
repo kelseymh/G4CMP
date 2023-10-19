@@ -35,15 +35,9 @@
 #include <cmath>
 
 
-// G4CMPSarkisNIEL::G4CMPSarkisNIEL() : fDataDir(G4CMPConfigManager::GetLatticeDir()) {
-    
-//     lVector = G4PhysicsLinearVector(false);
-// }
-
-
 G4double G4CMPSarkisNIEL::
 PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin = 0.*/,
-		G4double /*Ain = 0.*/) {
+		G4double /*Ain = 0.*/) const {
   if (!material) {
     G4Exception("G4CMPSarkisNIEL", "G4CMP1000", FatalErrorInArgument,
 		  "No material passed to partition function");
@@ -56,25 +50,31 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin = 0.*/,
   // Check if the material is silicon or similar (within +-1 of Z and A of silicon)
     
   if (std::abs(Z - SiZ) <= 1.0 && std::abs(A - SiA) <= 1.0) {
+    if (firstCall){
       G4Exception("G4CMPImpactTunlNIEL", "G4CMP1005", JustWarning,
                   "Sarkis model is obtained in the range of 50 eV to 3 MeV. Above 3 MeV, Lindhard model will be used.");
-    
+      firstCall = false;
+    }
     // Sarkis model below 3 MeV 
     if (energy <= 3 * MeV) {
-        // Sarkis model function
-        
-        inputFile.open(fPath);                       // open the data file
-        lVector.Retrieve(inputFile, false);          // load the data from the text file
-        inputFile.close();
-        return lVector.Value(energy, idx);           // do the interpolation and return the yield value
+      // Sarkis model function
+      std::ifstream inputFile;
+      inputFile.open(fPath);                       // open the data file
+      lVector.Retrieve(inputFile, false);          // load the data from the text file
+      inputFile.close();                           // close the data file 
+      return lVector.Value(energy, idx);           // do the interpolation and return the yield value
         
     // Lindhard model above 3 MeV
     } 
     else {
-        return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material);//, Zin, Ain);
-    }
-  } else {
-      G4Exception("G4CMPImpactTunlNIEL", "G4CMP1004", JustWarning, "The input material is not Silicon. The Lindhard model will be used for NIEL calculation.");
       return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material);//, Zin, Ain);
+    }
+  } 
+  else {
+    if (firstCall){
+      G4Exception("G4CMPImpactTunlNIEL", "G4CMP1004", JustWarning, "The input material is not Silicon. The Lindhard model will be used for NIEL calculation.");
+      firstCall = false;
+    }
+    return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material);//, Zin, Ain);
   }
 }

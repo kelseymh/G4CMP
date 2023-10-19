@@ -34,15 +34,16 @@ public:
   //
   virtual G4double 
   PartitionNIEL(G4double energy, const G4Material * material, G4double Zin = 0.,
-		G4double Ain = 0.);
+		G4double Ain = 0.) const override;
     
 private:
     const G4double SiZ = 14.0;
     const G4double SiA = 28.09;
     G4String fPath;                     // full path to the data file
-    std::ifstream inputFile;
-    G4PhysicsLinearVector lVector;
-    std::size_t idx = 0;
+    //std::ifstream inputFile;
+    mutable G4PhysicsLinearVector lVector;
+    mutable std::size_t idx = 0;
+    mutable bool firstCall = true; // A static variable to be used to print a warning message only once if the material passed is not Silicon
     
 };
 

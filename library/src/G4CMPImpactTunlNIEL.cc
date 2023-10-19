@@ -34,11 +34,6 @@
 #include <cmath>
 
 
-// G4CMPImpactTunlNIEL::G4CMPImpactTunlNIEL(){
-//     G4Exception("G4CMPImpactTunlNIEL", "G4CMP1003", JustWarning,
-//                 "This model is obtained in the range of 100 eV to 10 keV. Above 10 keV, Lindhard model will be used.");
-// }
-
 G4double G4CMPImpactTunlNIEL::
 PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin=0.*/,
 		G4double /*Ain=0.*/) const {
@@ -54,19 +49,28 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin=0.*/,
   // Check if the material is silicon or similar (within +-1 of Z and A of silicon)
     
   if (std::abs(Z - SiZ) <= 1.0 && std::abs(A - SiA) <= 1.0) {
-      G4Exception("G4CMPImpactTunlNIEL", "G4CMP1005", JustWarning,
-                  "IMPACT@TUNL model is obtained in the range of 100 eV to 10 keV. Above 10 keV, Lindhard model will be used.");
+    // This is to ensure that the warning message 
+    if (firstCall){
+    G4Exception("G4CMPImpactTunlNIEL", "G4CMP1005", JustWarning,
+      "IMPACT@TUNL model is obtained in the range of 100 eV to 10 keV. Above 10 keV, Lindhard model will be used.");
+      firstCall = false;
+    }
     
     // IMPACT@TUNL model below 10 keV
     G4Pow* g4pow = G4Pow::GetInstance(); 
     if (energy <= 10 * keV) {
-        G4double EB = g4pow->powA(energy/(10*keV),B);
-        return (Y10*EB); 
-    } else {
-        return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material);//, Zin, Ain);
-    }
-  } else {
-      G4Exception("G4CMPImpactTunlNIEL", "G4CMP1004", JustWarning, "The input material is not Silicon. The Lindhard model will be used for NIEL calculation.");
+      G4double EB = g4pow->powA(energy/(10*keV),B);
+      return (Y10*EB); 
+    } 
+    else {
       return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material);//, Zin, Ain);
+    }
+  } 
+  else {
+    if (firstCall){
+      G4Exception("G4CMPImpactTunlNIEL", "G4CMP1004", JustWarning, "The input material is not Silicon. The Lindhard model will be used for NIEL calculation.");
+      firstCall = false;
+    }
+    return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material);//, Zin, Ain);
   }
 }
