@@ -49,7 +49,7 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin = 0.*/,
     
   // Check if the material is silicon or similar (within +-1 of Z and A of silicon)
     
-  if (std::abs(Z - SiZ) <= 1.0 && std::abs(A - SiA) <= 1.0) {
+  if (std::abs(Z - SiZ) < 0.5) {
     if (firstCall){
       G4Exception("G4CMPImpactTunlNIEL", "G4CMP1005", JustWarning,
                   "Sarkis model is obtained in the range of 50 eV to 3 MeV. Above 3 MeV, Lindhard model will be used.");
@@ -58,8 +58,7 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin = 0.*/,
     // Sarkis model below 3 MeV 
     if (energy <= 3 * MeV) {
       // Sarkis model function
-      std::ifstream inputFile;
-      inputFile.open(fPath);                       // open the data file
+      std::ifstream inputFile(fPath);              // open the data file
       lVector.Retrieve(inputFile, false);          // load the data from the text file
       inputFile.close();                           // close the data file 
       return lVector.Value(energy, idx);           // do the interpolation and return the yield value

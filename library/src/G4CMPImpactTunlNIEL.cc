@@ -48,7 +48,7 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin=0.*/,
     
   // Check if the material is silicon or similar (within +-1 of Z and A of silicon)
     
-  if (std::abs(Z - SiZ) <= 1.0 && std::abs(A - SiA) <= 1.0) {
+  if (std::abs(Z - SiZ) <0.5) {
     // This is to ensure that the warning message 
     if (firstCall){
     G4Exception("G4CMPImpactTunlNIEL", "G4CMP1005", JustWarning,
