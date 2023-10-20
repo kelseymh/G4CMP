@@ -170,6 +170,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPHitMerging.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateLinear.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateQuadratic.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPImpactTunlNIEL.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
@@ -193,6 +194,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysics.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysicsList.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPProcessUtils.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSarkisNIEL.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSecondaryProduction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSecondaryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPStackingAction.cc
@@ -255,6 +257,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPHitMerging.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateLinear.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateQuadratic.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPImpactTunlNIEL.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
@@ -281,6 +284,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysicsList.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPProcessSubType.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPProcessUtils.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSarkisNIEL.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSecondaryProduction.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSecondaryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPStackingAction.hh
