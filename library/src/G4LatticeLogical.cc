@@ -695,70 +695,142 @@ void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
 
 void G4LatticeLogical::AddValley(const G4ThreeVector& valleyDirVec) {
       
-   // Find the rotation matrix elements. The rows corresponds to the rotated axis direction (first row is vx,vy,vz ; second row is a,b,c and third row is d,e,f)
-   double vx=valleyDirVec.x();
-   double vy=valleyDirVec.y();
-   double vz=valleyDirVec.z();
-   double normval=sqrt(vx*vx+vy*vy+vz*vz); 
-   vx=vx/normval;
-   vy=vy/normval;
-   vz=vz/normval;
-   double a;
-   double b;
-   double c=0; //we require the rotated axis to stay in X-Y plane (rotated y axis has no z component)
-   double d;
-   double e;
-   double f; // we require f to be positive  (the rotated z axis has a positive z component)
-   double antia; // find the corresponding anti-valley rotation matrix elements
-   double antib;
-   double antid;
-   double antie;
-   
+  // Find the rotation matrix elements. 
+  // The rows correspond to the rotated axis direction (first row is vx,vy,vz ; second row is a,b,c and third row is d,e,f)
     
-   if (vx==0 && vy==0){ // Special case if vx=0 and vy=0, which means f=0. We need to manually define the elements
-       f=0;
-       b=1;
-       a=0;
-       antib=1;
-       antia=0;
-   }
+  // The convention used does not affect HV-transformation. For simplicity, we choose the following conditions :
+  // The rotated y axis must stay in the X-Y plane (c=0)
+  // The rotate Z axis must have positive z component (f>0) 
+  // The three rotated axis should stay normalized : vx^2 + vy^2 + vz^2 = 1 ; a^2 + b^2 = 1 ; d^2 + e^2 + f^2 = 1
+  // And be orthogonal : ad + be = 0 ; avx + bvy = 0 ; dvx + evy + fvz = 0
+  // It must be a right hand coordinate system : (vx,vy,vz) X (a,b,c) = (d,e,f) : d=-vzb ; e=vza ; f=vxb - vya
+    
+  // We first compute f since it needs to be positive and will therefore clear out signs ambiguity 
+  // d^2 + e^2 + f^2 = 1
+  // f^2 = 1 - d^2 - e^2
+  // f^2 = 1 - vz^2 b^2 - vz^2 a^2
+  // f^2 = 1 - vz^2 (b^2 + a^2)
+  // f^2 = 1 - vz^2
+  // f = + sqrt(1 - vz^2)
+    
+    
+  // Then we compute special cases first (vx and vy=0, vx=0 but not vy and vy=0 but not vx).
+    
+  // We start with vx= and vy=0
+  // e=0 and there is only two possible rotation matrix since vz=1 or -1. We manually set the elements to :
+  // b=1 
+  // a=0
+    
+  // If vx=0 but not vy 
+  // a = -e/vy = -sqrt(1-vz^2)/vy = -sqrt(vy^2)/vy = -1 for valleys and 1 for anti-valleys
+  // b=0
+
+  // If vy=0 but not vx 
+  // b = e/vx = sqrt(1-vz^2)/vx = sqrt(vx^2)/vx = 1 for valleys and -1 for anti-valleys
+  // a=0
+    
+    
+  // We go on with "general case" where  vx=!0 and vy!=0
+    
+  // We start by computing b (if vx=!0 and vy!=0) : 
+  // f = vxb - vya
+  // f = vxb - vy (-bvy/vx)
+  // f = b(vx + vy^2/vx)
+  // f = b/vx(vx^2 + vy^2)
+  // b = fvx/(vx^2 + vy^2)
+  // b = fvx/(1 - vz^2)
+  // b = fvx/f^2
+  // b = vx/f
+    
+  // Then we compute a (if vx=!0 and vx!=0) : 
+  // a = -bvy/vx
+  // a = -vxvy/e/vx
+  // a = -vy/e
+    
+    
+  // Finally, we compute d and e which is the same for every case :
+  // d=-vzb
+  // e=vza
+    
+    
+  double vx=valleyDirVec.x();
+  double vy=valleyDirVec.y();
+  double vz=valleyDirVec.z();
+  double normval=sqrt(vx*vx+vy*vy+vz*vz); 
+  vx=vx/normval;
+  vy=vy/normval;
+  vz=vz/normval;
+  double a;
+  double b;
+  double c=0; // rotated y axis must stay in the X-Y plane
+  double d;
+  double e;
+  double f;
+  double antia; // find the corresponding anti-valley rotation matrix elements
+  double antib;
+  double antid;
+  double antie;
    
-   else { // We require orthogonality, right-hand system and to bring (vx,vy,vz) to (1,0,0). See Jira G4CMP-381 for more details
-       f=sqrt(1-vz*vz); 
-       b=vx/f;
-       a=-vy/f;
-       antib=-vx/f;
-       antia=vy/f;
-   }
+  f=sqrt(1-vz*vz); // we ask rotated z axis to point in the +z direction so we take +sqrt()
+    
+  if (vx==0 && vy==0){ // special case if vx=vy=0
+      b=1;
+      a=0;
+      antib=1;
+      antia=0;
+  }
+   
+  else if (vx==0){ // special case if vx=0 but not vy
+      a=-1;
+      b=0;
+      antia=1;
+      antib=0;
+      
+  }
+    
+  else if (vy==0){ // special case if vy= bu not vx
+      a=0;
+      b=1;
+      antia=0;
+      antib=-1;
+      
+  }
+    
+  else {  
+      b=vx/f;
+      a=-vy/f;
+      antib=-vx/f;
+      antia=vy/f;
+  }
      
-   d=-vz*b;
-   e=vz*a;
-   antid=vz*antib;
-   antie=-vz*antia;
+  d=-vz*b;
+  e=vz*a;
+  antid=vz*antib;
+  antie=-vz*antia;
    
-   // Store the valley's rotation matrix columns
-   G4ThreeVector colx(vx,a,d);
-   G4ThreeVector coly(vy,b,e);
-   G4ThreeVector colz(vz,c,f);
+  // Store the valley's rotation matrix columns
+  G4ThreeVector colx(vx,a,d);
+  G4ThreeVector coly(vy,b,e);
+  G4ThreeVector colz(vz,c,f);
     
-   // Store the anti-valley's rotation matrix columns 
-   G4ThreeVector anticolx(-vx,antia,antid);
-   G4ThreeVector anticoly(-vy,antib,antie);
-   G4ThreeVector anticolz(-vz,c,f); 
+  // Store the anti-valley's rotation matrix columns 
+  G4ThreeVector anticolx(-vx,antia,antid);
+  G4ThreeVector anticoly(-vy,antib,antie);
+  G4ThreeVector anticolz(-vz,c,f); 
     
-    // Store the valley's rotation matrix, its inverse and the valley's direction.
-   fValley.resize(fValley.size()+1);
-   fValley.back().set(colx,coly,colz);
-   fValleyInv.push_back(fValley.back());
-   fValleyInv.back().invert();
-   fValleyAxis.push_back(valleyDirVec/normval);
+  // Store the valley's rotation matrix, its inverse and the valley's direction.
+  fValley.resize(fValley.size()+1);
+  fValley.back().set(colx,coly,colz);
+  fValleyInv.push_back(fValley.back());
+  fValleyInv.back().invert();
+  fValleyAxis.push_back(valleyDirVec/normval);
     
-   // Store the corresponding anti-valley's rotation matrix, its inverse and the anti-valley's direction. 
-   fValley.resize(fValley.size()+1);
-   fValley.back().set(anticolx,anticoly,anticolz);
-   fValleyInv.push_back(fValley.back());
-   fValleyInv.back().invert();
-   fValleyAxis.push_back(-valleyDirVec/normval);    
+  // Store the corresponding anti-valley's rotation matrix, its inverse and the anti-valley's direction. 
+  fValley.resize(fValley.size()+1);
+  fValley.back().set(anticolx,anticoly,anticolz);
+  fValleyInv.push_back(fValley.back());
+  fValleyInv.back().invert();
+  fValleyAxis.push_back(-valleyDirVec/normval);    
 }
 
 // Store rotation matrix and corresponding axis vector for valley
