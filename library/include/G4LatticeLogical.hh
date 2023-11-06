@@ -38,7 +38,7 @@
 //		precompute valley inverse transforms
 // 20200608  Fix -Wshadow warnings from tempvec
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
-// 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' to compute rotation matrix from valley's direction
+// 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -208,7 +208,7 @@ public:
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley);
   void AddValley(G4double phi, G4double theta, G4double psi);
-  void AddValley(const G4ThreeVector&);
+  void AddValley(const G4ThreeVector&, G4bool antival=false);
   void ClearValleys() {
     fValley.clear(); fValleyInv.clear();fValleyAxis.clear();
   }
