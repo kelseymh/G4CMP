@@ -5,6 +5,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
+2023-03-01  G4CMP-332 : Added recombination rate for QPs
 
 2023-10-11  G4CMP-362 : Implementation of IMPACT and Sarkis yield models. 
 
