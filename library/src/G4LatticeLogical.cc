@@ -689,109 +689,54 @@ void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
 
   // NOTE:  Rotation matrices take external vector along valley axis to X-hat
   fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));
+   
+for (int i = 0; i < 8; i++) {
+    G4cout << "valley : " << fValley[i] << G4endl;
+}
+    
 }
 
 // Store drifting-electron valley using valley's direction
 
 void G4LatticeLogical::AddValley(const G4ThreeVector& valleyDirVec, G4bool antival) {
       
-  // Find the rotation matrix elements. 
-  // The rows correspond to the rotated axis direction 
-  // First row is vx,vy,vz ; second row is a,b,c and third row is d,e,f
+  // Find the rotation matrix elements
+  // ( [vx,vy,vz],
+  //     [a,b,c],
+  //     [d,e,f] )
     
   // We chose the following convention :
   //  - The rotated y axis must stay in the X-Y plane (c=0)
   //  - Valley's rotated Z axis must have positive z component (f>0) 
-  //  - Anti-valley's rotated Z axis must have positive z component (f>0) 
-  //  - The three rotated axis should stay normalized :
-  //	vx^2 + vy^2 + vz^2 = 1 ; a^2 + b^2 = 1 ; d^2 + e^2 + f^2 = 1
-  //  - And be orthogonal :
-  //	ad + be = 0 ; avx + bvy = 0 ; dvx + evy + fvz = 0
+  //  - Anti-valley's rotated Z axis must have positive z component (f<0) 
+  //  - The three rotated axis should stay normalized and be orthogonal
   //  - It must be a right hand coordinate system :
-  //	(vx,vy,vz) X (a,b,c) = (d,e,f) : d=-vzb ; e=vza ; f=vxb - vya
+  //	(vx,vy,vz) X (a,b,c) = (d,e,f) 
     
-  // We first compute f 
-  // d^2 + e^2 + f^2 = 1
-  // f^2 = 1 - d^2 - e^2
-  // f^2 = 1 - vz^2 b^2 - vz^2 a^2
-  // f^2 = 1 - vz^2 (b^2 + a^2)
-  // f^2 = 1 - vz^2
-  // f = +- sqrt(1 - vz^2)
+  // If vx=0 and/or vy=0, we compute a and b differently
 
-  // We compute b (if vx=!0 and vy!=0) : 
-  // f = vxb - vya
-  // f = vxb - vy (-bvy/vx)
-  // f = b/vx(vx^2 + vy^2)
-  // b = fvx/(vx^2 + vy^2)
-  // b = fvx/(1 - vz^2)
-  // b = vx/f
+  G4ThreeVector& vdir=tempvec();
+  vdir=valleyDirVec.unit();
     
-  // Then we compute a (if vx=!0 and vx!=0) : 
-  // a = -bvy/vx
-  // a = -vxvy/e/vx
-  // a = -vy/e
-
-  // Finally, we compute d and e :
-  // d=-vzb
-  // e=vza 
-    
-  // If vx=0 and/or vy=0, we compute a and b differently.
-
-  tempvec()=valleyDirVec.unit();
-    
-  double vx=tempvec().x();
-  double vy=tempvec().y();
-  double vz=tempvec().z();
+  double vx=vdir.x();
+  double vy=vdir.y();
+  double vz=vdir.z();
   
-  double a;
-  double b;
-  double c=0; // rotated y axis must stay in the X-Y plane
-  double d;
-  double e;
-  double f;
-
-  // rotated z axis points in the +z direction for valleys  
-  f=sqrt(1-vz*vz); 
+  // rotated z axis points in the +z direction for valleys and -z for anti-valleys  
+  G4double f = sqrt(1. - vz*vz) * (antival?-1:1);
     
-  // rotated z axis points in the -z direction for anti-valleys  
-  if (antival==true) {f*=-1;}
-    
-    
-  if (vx==0 && vy==0){ // special case if vx=vy=0
-      b=1;
-      a=0;
-  }
-   
-  else if (vx==0){ // special case if vx=0 but not vy
-      a=-1;
-      b=0;
-  }
-    
-  else if (vy==0){ // special case if vy=0 but not vx
-      a=0;
-      b=1;    
-  }
-    
-  else {  
-      b=vx/f;
-      a=-vy/f;
-  }
+  G4double a = (vy==0 ? 0 : vx==0 ? -1 : -vy/f);
+  G4double b = (vy==0 ? 1 : vx==0 ? 0 : vx/f);
      
-  d=-vz*b;
-  e=vz*a;
-
-  G4Rep3x3 M;
-  M = G4Rep3x3( vx,vy, vz, 
-	a, b, c, 
-	d, e, f );
+  G4double d=-vz*b;
+  G4double e=vz*a;
       
-  // Store the valley's rotation matrix, its inverse and the valley's direction.
+  // Store the valley's rotation matrix, its inverse and the valley's direction
   fValley.resize(fValley.size()+1);
-  fValley.back().set(M);
+  fValley.back().setRows(vdir, G4ThreeVector(a,b,0), G4ThreeVector(d,e,f));
   fValleyInv.push_back(fValley.back());
   fValleyInv.back().invert();
-  fValleyAxis.push_back(tempvec());
-   
+  fValleyAxis.push_back(vdir);  
 }
 
 // Store rotation matrix and corresponding axis vector for valley

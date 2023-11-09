@@ -6,6 +6,9 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2023-08-31  G4CMP-381 : Compute rotation matrices from valley's direction
+			instead of Euler angles. Add anti-valleys.
+
 2023-08-31  g4cmp-V08-04-01 Revert two recent changes to restore NTL energy.
 2023-08-31  G4CMP-380 : Withdraw G4CMP-373, causes zero-length/NaN steps.
 2023-08-24  G4CMP-377 : Withdraw G4CMP-359/360, retstore energy conservation.

@@ -398,6 +398,8 @@ G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
     
   G4double degOrRad = ProcessUnits("Angle");
   pLattice->AddValley(phi*degOrRad, theta*degOrRad, psi*degOrRad);
+  // Anti-valleys
+  pLattice->AddValley(phi*degOrRad+pi, -1*(theta*degOrRad+pi), -psi*degOrRad);
   return psLatfile->good();
 }
 
