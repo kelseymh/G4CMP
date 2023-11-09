@@ -688,12 +688,7 @@ void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
   fValleyInv.back().invert();
 
   // NOTE:  Rotation matrices take external vector along valley axis to X-hat
-  fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));
-   
-for (int i = 0; i < 8; i++) {
-    G4cout << "valley : " << fValley[i] << G4endl;
-}
-    
+  fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));    
 }
 
 // Store drifting-electron valley using valley's direction
