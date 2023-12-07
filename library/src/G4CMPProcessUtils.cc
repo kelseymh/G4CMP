@@ -45,6 +45,7 @@
 // 20230808  Added derivation of ChargeCarrierTimeStep to explain bug fix.
 // 20230831  Remove modifications to ChargeCarrierTimeStep(), they seem to
 //		cause zero-length and NaN steps.
+// 20231207  Remove fabs in FindNearestValley.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -487,7 +488,7 @@ G4int G4CMPProcessUtils::FindNearestValley(G4ThreeVector dir) const {
   std::set<G4int> bestValley;	// Collect all best matches for later choice
   G4double align, bestAlign = -1.;
   for (size_t i=0; i<theLattice->NumberOfValleys(); i++) {
-    align = fabs(theLattice->GetValleyAxis(i).dot(dir)); // Both unit vectors
+    align = theLattice->GetValleyAxis(i).dot(dir); // Both unit vectors
     if (align > bestAlign) {
       bestValley.clear();
       bestAlign = align;
