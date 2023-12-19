@@ -152,6 +152,7 @@ public:
   void SetLambda(G4double Lambda) { fLambda = Lambda; }
   void SetMu(G4double Mu) { fMu = Mu; }
   void SetScatteringConstant(G4double b) { fB=b; }
+  void SetPolycrystalElasticScatterMFP( G4double mfp ){ fElScatMFP = mfp; }
   void SetAnhDecConstant(G4double a) { fA=a; }
   void SetAnhTTFrac(G4double f) { fTTFrac=f; }
   void SetLDOS(G4double LDOS) { fLDOS=LDOS; }
@@ -168,6 +169,7 @@ public:
   G4double GetMu() const { return fMu; }
   G4double GetScatteringConstant() const { return fB; }
   G4double GetAnhDecConstant() const { return fA; }
+  G4double GetPolycrystalElasticScatterMFP() const { return fElScatMFP; }
   G4double GetAnhTTFrac() const { return fTTFrac; }
   G4double GetLDOS() const { return fLDOS; }
   G4double GetSTDOS() const { return fSTDOS; }
@@ -317,6 +319,8 @@ private:
   G4double fTTFrac;  // Fraction of anharmonic decays L -> TT
   G4double fBeta, fGamma, fLambda, fMu; // dynamical constants for material
   G4double fDebye;   // Debye energy, for partitioning primary phonons
+  G4double fElScatMFP; // Characteristic Mean free path for elastic scatters against polycrystalline grain boundaries
+  
 
   G4double fVSound;	// Speed of sound (longitudinal phonon)
   G4double fVTrans;	// Speed of sound (transverse phonon)

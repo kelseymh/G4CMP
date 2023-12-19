@@ -189,6 +189,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinTable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinematics.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononScatteringRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononPolycrystalElasticScatteringRate.cc	
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononTrackInfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysics.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysicsList.cc
@@ -217,6 +218,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononLong.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononPolarization.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononScattering.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononPolycrystalElasticScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransFast.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VNIELPartition.cc
@@ -276,6 +278,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinematics.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononScatteringRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononPolycrystalElasticScatteringRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononTrackInfo.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysics.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysicsList.hh
@@ -307,6 +310,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononLong.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononPolarization.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononScattering.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononPolycrystalElasticScattering.hh	
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransFast.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh

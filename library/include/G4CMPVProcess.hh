@@ -44,7 +44,9 @@ protected:
 
   // Uses scattering model to compute MFP; subclasses may override
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
+  virtual void UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack);
 
+  
 private:
   G4CMPVScatteringRate* rateModel;	// Returns scattering rate in hertz
 

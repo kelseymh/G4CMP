@@ -273,21 +273,37 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
 					G4ParticleChange& aParticleChange) {
   aParticleChange.Initialize(aTrack);
 
+  bool trackedSCResponse = true;
   if (!matTable) {
     DoSimpleKill(aTrack, aStep, aParticleChange);
-  } else if (electrode && electrode->IsNearElectrode(aStep)) {
+  } else if (electrode && electrode->IsNearElectrode(aStep) && !trackedSCResponse) {
     electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
   } else if (AbsorbTrack(aTrack, aStep)) {
+    G4cout << "DoingAbsorption in ApplyBoundaryAction" << G4endl;
     DoAbsorption(aTrack, aStep, aParticleChange);
   } else if (MaximumReflections(aTrack)) {
+    G4cout << "Maximum reflections reached in ApplyBoundaryAction" << G4endl;
     DoSimpleKill(aTrack, aStep, aParticleChange);
   } else if (ReflectTrack(aTrack, aStep)) {
+    G4cout << "Doing reflection in ApplyBoundaryAction" << G4endl;
+    IncrementReflectionCount(aTrack);
     DoReflection(aTrack, aStep, aParticleChange);
   } else {
+    G4cout << "Doing transmission in ApplyBoundaryAction" << G4endl;
     DoTransmission(aTrack, aStep, aParticleChange);
   }
 }
 
+
+//Dedicated function for doing this. I don't think this should exist in the "check" functions, since
+//it will run even if there is no reflection at a surface (i.e. if there is transmission). Putting
+//in own function so that we don't have to spread it among a bunch of derived class functions.
+void G4CMPBoundaryUtils::IncrementReflectionCount(const G4Track& aTrack)
+{
+    auto trackInfo = G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack);
+    trackInfo->IncrementReflectionCount();
+    G4cout << "Incrementing reflection count." << G4endl;
+}
 
 // Default conditions for absorption or reflection
 
@@ -299,7 +315,7 @@ G4bool G4CMPBoundaryUtils::AbsorbTrack(const G4Track&, const G4Step&) const {
   return (G4UniformRand() <= absProb);
 }
 
-G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track&, const G4Step&) const {
+G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track& aTrack, const G4Step&) const {
   G4double reflProb = GetMaterialProperty("reflProb");
   if (buVerboseLevel>2)
     G4cout << " ReflectTrack: reflProb " << reflProb << G4endl;
@@ -309,8 +325,6 @@ G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track&, const G4Step&) const {
 
 G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) const {
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack);
-  trackInfo->IncrementReflectionCount();
-
   return (maximumReflections >= 0 &&
     trackInfo->ReflectionCount() >= static_cast<size_t>(maximumReflections));
 }
@@ -361,6 +375,7 @@ void
 G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
 				   const G4Step& aStep,
 				   G4ParticleChange& aParticleChange) {
+
   G4cerr << procName << " WARNING!  G4CMPBoundaryUtils::DoTransmission invoked."
 	 << "\n Process should have overridden this version!"
 	 << "  Track will be killed as leaving volume" << G4endl;

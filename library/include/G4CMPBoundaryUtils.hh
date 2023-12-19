@@ -87,7 +87,9 @@ protected:
 
   // Does const-casting of matTable for access
   G4double GetMaterialProperty(const G4String& key) const;
-
+  
+  void IncrementReflectionCount(const G4Track& aTrack);
+  
 private:
   G4int buVerboseLevel;			// For local use; name avoids collisions
   G4String procName;

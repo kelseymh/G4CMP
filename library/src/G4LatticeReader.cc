@@ -96,6 +96,8 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
   if (verboseLevel>1)
     G4cout << "G4LatticeReader produced\n" << *pLattice << G4endl;
 
+  G4cout << "REL in MakeLattice at end, get for scat mfp: " << pLattice->GetPolycrystalElasticScatterMFP() << G4endl;
+  
   return pLattice;	// Lattice complete; return pointer with ownership
 }
 
@@ -172,39 +174,40 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
     G4cout << " ProcessValue " << name << " " << fValue << G4endl;
 
   G4bool good = true;
-  if      (name == "alpha")      pLattice->SetAlpha(fValue*ProcessUnits("Energy"));
-  else if (name == "beta")       pLattice->SetBeta(fValue*ProcessUnits("Pressure"));
-  else if (name == "gamma")      pLattice->SetGamma(fValue*ProcessUnits("Pressure"));
-  else if (name == "lambda")     pLattice->SetLambda(fValue*ProcessUnits("Pressure"));
-  else if (name == "mu")         pLattice->SetMu(fValue*ProcessUnits("Pressure"));
-  else if (name == "scat")       pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
-  else if (name == "b")          pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
-  else if (name == "decay")      pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
-  else if (name == "a")          pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
-  else if (name == "ldos")       pLattice->SetLDOS(fValue);
-  else if (name == "stdos")      pLattice->SetSTDOS(fValue);
-  else if (name == "ftdos")      pLattice->SetFTDOS(fValue);
-  else if (name == "decaytt")    pLattice->SetAnhTTFrac(fValue);
-  else if (name == "bandgap")    pLattice->SetBandGapEnergy(fValue*ProcessUnits("Energy"));
-  else if (name == "pairenergy") pLattice->SetPairProductionEnergy(fValue*ProcessUnits("Energy"));
-  else if (name == "fanofactor") pLattice->SetFanoFactor(fValue);
-  else if (name == "neutdens")   pLattice->SetImpurities(fValue*ProcessUnits("Volume"));
-  else if (name == "epsilon")    pLattice->SetPermittivity(fValue);
-  else if (name == "vsound")     pLattice->SetSoundSpeed(fValue*ProcessUnits("Velocity"));
-  else if (name == "vtrans")     pLattice->SetTransverseSoundSpeed(fValue*ProcessUnits("Velocity"));
-  else if (name == "escat")      pLattice->SetElectronScatter(fValue*ProcessUnits("Length"));
-  else if (name == "l0_e")       pLattice->SetElectronScatter(fValue*ProcessUnits("Length"));
-  else if (name == "hscat")      pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
-  else if (name == "l0_h")       pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
-  else if (name == "hmass")      pLattice->SetHoleMass(fValue*mElectron);
-  else if (name == "acdeform")   pLattice->SetAcousticDeform(fValue*ProcessUnits("Energy"));
-  else if (name == "ivquadfield") pLattice->SetIVQuadField(fValue*ProcessUnits("Electric field"));
-  else if (name == "ivquadrate")  pLattice->SetIVQuadRate(fValue*ProcessUnits("Frequency"));
-  else if (name == "ivquadpower") pLattice->SetIVQuadExponent(fValue);
+  if      (name == "alpha")         pLattice->SetAlpha(fValue*ProcessUnits("Energy"));
+  else if (name == "beta")          pLattice->SetBeta(fValue*ProcessUnits("Pressure"));
+  else if (name == "gamma")         pLattice->SetGamma(fValue*ProcessUnits("Pressure"));
+  else if (name == "lambda")        pLattice->SetLambda(fValue*ProcessUnits("Pressure"));
+  else if (name == "mu")            pLattice->SetMu(fValue*ProcessUnits("Pressure"));
+  else if (name == "scat")          pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
+  else if (name == "polycryelmfp") pLattice->SetPolycrystalElasticScatterMFP(fValue*ProcessUnits("Length"));
+  else if (name == "b")             pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
+  else if (name == "decay")         pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
+  else if (name == "a")             pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
+  else if (name == "ldos")          pLattice->SetLDOS(fValue);
+  else if (name == "stdos")         pLattice->SetSTDOS(fValue);
+  else if (name == "ftdos")         pLattice->SetFTDOS(fValue);
+  else if (name == "decaytt")       pLattice->SetAnhTTFrac(fValue);
+  else if (name == "bandgap")       pLattice->SetBandGapEnergy(fValue*ProcessUnits("Energy"));
+  else if (name == "pairenergy")    pLattice->SetPairProductionEnergy(fValue*ProcessUnits("Energy"));
+  else if (name == "fanofactor")    pLattice->SetFanoFactor(fValue);
+  else if (name == "neutdens")      pLattice->SetImpurities(fValue*ProcessUnits("Volume"));
+  else if (name == "epsilon")       pLattice->SetPermittivity(fValue);
+  else if (name == "vsound")        pLattice->SetSoundSpeed(fValue*ProcessUnits("Velocity"));
+  else if (name == "vtrans")        pLattice->SetTransverseSoundSpeed(fValue*ProcessUnits("Velocity"));
+  else if (name == "escat")         pLattice->SetElectronScatter(fValue*ProcessUnits("Length"));
+  else if (name == "l0_e")          pLattice->SetElectronScatter(fValue*ProcessUnits("Length"));
+  else if (name == "hscat")         pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
+  else if (name == "l0_h")          pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
+  else if (name == "hmass")         pLattice->SetHoleMass(fValue*mElectron);
+  else if (name == "acdeform")      pLattice->SetAcousticDeform(fValue*ProcessUnits("Energy"));
+  else if (name == "ivquadfield")   pLattice->SetIVQuadField(fValue*ProcessUnits("Electric field"));
+  else if (name == "ivquadrate")    pLattice->SetIVQuadRate(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivquadpower")   pLattice->SetIVQuadExponent(fValue);
   else if (name == "ivquadexponent") pLattice->SetIVQuadExponent(fValue);
-  else if (name == "ivlinrate0") pLattice->SetIVLinRate0(fValue*ProcessUnits("Frequency"));
-  else if (name == "ivlinrate1") pLattice->SetIVLinRate1(fValue*ProcessUnits("Frequency"));
-  else if (name == "ivlinpower") pLattice->SetIVLinExponent(fValue);
+  else if (name == "ivlinrate0")    pLattice->SetIVLinRate0(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivlinrate1")    pLattice->SetIVLinRate1(fValue*ProcessUnits("Frequency"));
+  else if (name == "ivlinpower")    pLattice->SetIVLinExponent(fValue);
   else if (name == "ivlinexponent") pLattice->SetIVLinExponent(fValue);
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;

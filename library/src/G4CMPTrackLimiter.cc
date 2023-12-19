@@ -30,8 +30,9 @@ G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
 
 // Force killing if below cut
 
-G4double G4CMPTrackLimiter::GetMeanFreePath(const G4Track&, G4double,
+G4double G4CMPTrackLimiter::GetMeanFreePath(const G4Track& aTrack, G4double,
 					    G4ForceCondition* condition) {
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
   *condition = StronglyForced;	// Ensures execution even with other Forced
   return DBL_MAX;
 }
@@ -69,7 +70,7 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
 }
 
 
-// Evaluate current track
+// Evaluate current trackx
 
 G4bool G4CMPTrackLimiter::BelowEnergyCut(const G4Track& track) const {
   G4double ecut =
@@ -83,13 +84,14 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
   G4VPhysicalVolume* prePV  = step.GetPreStepPoint()->GetPhysicalVolume();
   G4VPhysicalVolume* postPV = step.GetPostStepPoint()->GetPhysicalVolume();
 
-  if (verboseLevel>2) {
+  //  if (verboseLevel>2) {
     G4cout << " prePV " << prePV->GetName()
 	   << " postPV " << (postPV?postPV->GetName():"OutOfWorld")
 	   << " status " << step.GetPostStepPoint()->GetStepStatus()
 	   << G4endl;
-  }
+    // }
 
+    G4cout << "GetCurrentVol: " << GetCurrentVolume()->GetName() << G4endl;
   // Track is NOT at a boundary, is stepping outside volume, or already escaped
   return ( (step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary) &&
 	   (postPV != GetCurrentVolume() || prePV != GetCurrentVolume())

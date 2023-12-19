@@ -32,6 +32,7 @@
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4LatticeManager.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPSurfaceProperty.hh"
@@ -50,7 +51,13 @@
 #include "G4VParticleChange.hh"
 #include "G4VSolid.hh"
 #include "Randomize.hh"
-
+#include "G4PhononLong.hh"
+#include "G4PhononTransFast.hh"
+#include "G4PhononTransSlow.hh"
+#include "G4PhononScattering.hh"
+#include "G4PhononPolycrystalElasticScattering.hh"
+#include "G4PhononDownconversion.hh"
+#include "G4CMPTrackLimiter.hh"
 
 // Constructor and destructor
 
@@ -316,4 +323,58 @@ GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {
 					  reflectedKDir, surfNorm));
 
   return reflectedKDir;
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+//Now that we can actually mate two different materials and have phonons propagate
+//between them, we should make a nontrivial phonon doTransmission class.
+void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
+						const G4Step& aStep,
+						G4ParticleChange& aParticleChange) {
+
+  //Generic print
+  if (verboseLevel>1) G4cout << "REL-- Track transmission requested" << G4endl;
+
+  G4cout << "Okay, let's try again. aTrack getposition: " << aTrack.GetPosition() << G4endl;
+  G4cout << "aStep poststepposition: " << aStep.GetPostStepPoint()->GetPosition() << G4endl;
+  G4cout << "Trackutils acquired lattice: " << G4CMP::GetLattice(aTrack) << ", while the next lattice is: " << G4CMP::GetNextLattice(aTrack) << G4endl;
+  
+  
+  //First, check the different materials involved. If one of them does not have a lattice, then something upstream has gone wrong. Scream.
+  //Note that here, we need to use the G4LatticeManager rather than the TrackUtils version of GetLattice() because the trackUtils
+  //version somehow chooses a point that's inside the current (i.e. not the post-step) volume.
+  G4LatticePhysical * latNear = G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPreStepPoint()->GetPhysicalVolume());
+  G4LatticePhysical * latFar = G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume());
+  if( !latNear || !latFar ){
+    G4ExceptionDescription msg;
+    msg << "Expecting to do phonon transmission at interface but one or more lattices splitting the boundary cannot be found.";
+    G4Exception("G4CMPPhononBoundaryProcess::DoTransmission", "PhononBoundary001",FatalException,msg);
+  }
+
+  //Because here it can't hurt?
+  ReloadDataForTrack(&aTrack);
+
+  //SIMPLEST POSSIBLE IMPLEMENTATION -- PHYSICS IS NOT NECESSARILY RIGHT
+  //Now get track info at this point: the k vector, mode, etc.
+  auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
+  G4ThreeVector waveVector = trackInfo->k();
+  G4int mode = GetPolarization(aStep.GetTrack());
+  
+  // Check whether step has proper boundary-stopped geometry
+  G4ThreeVector surfacePoint;
+  if (!CheckStepBoundary(aStep, surfacePoint)) {
+    if (verboseLevel>2)
+      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
+
+    aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
+  }
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
+  G4ThreeVector vdir = theLattice->MapKtoVDir(mode, waveVector);
+  G4double v = theLattice->MapKtoV(mode, waveVector);
+  trackInfo->SetWaveVector(waveVector);
+  aParticleChange.ProposeVelocity(v);
+  aParticleChange.ProposeMomentumDirection(vdir);
+
+  
 }

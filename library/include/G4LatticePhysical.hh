@@ -120,6 +120,7 @@ public:
 
   // Phonon propagation parameters
   G4double GetScatteringConstant() const { return fLattice->GetScatteringConstant(); }
+  G4double GetPolycrystalElasticScatterMFP() const { return fLattice->GetPolycrystalElasticScatterMFP(); }
   G4double GetAnhDecConstant() const { return fLattice->GetAnhDecConstant(); }
   G4double GetAnhTTFrac() const      { return fLattice->GetAnhTTFrac(); }
   G4double GetLDOS() const           { return fLattice->GetLDOS(); }

@@ -113,14 +113,37 @@ G4bool G4CMP::HasTrackInfo(const G4Track& track) {
 // Get physical lattice associated with track
 
 G4LatticePhysical* G4CMP::GetLattice(const G4Track& track) {
+  //  G4cout << "REL-- back here, beginning of getlattice in trackutils." << G4endl;
   G4VPhysicalVolume* trkvol = track.GetVolume();
-  if (!trkvol) trkvol = G4CMP::GetVolumeAtPoint(track.GetPosition());
-
+  if (!trkvol){
+    trkvol = G4CMP::GetVolumeAtPoint(track.GetPosition());
+    //    G4cout << "REL-- Have to use builtin G4CMP utils call to get volume at point... URK" << G4endl;
+  }
+  //G4cout << "REL-- physical volume at track point: " << trkvol->GetName() << G4endl;
+  
   if (!G4LatticeManager::GetLatticeManager()->HasLattice(trkvol)
       && track.GetStep()) {
     trkvol = track.GetStep()->GetPreStepPoint()->GetPhysicalVolume();
   }
 
+  return G4LatticeManager::GetLatticeManager()->GetLattice(trkvol);
+}
+
+
+// REL NB: I think this is no longer used -- keep for a little while to check but then delete!
+// Need to define this for the case where we are transitioning from one lattice to another. Reason is that
+// the above function uses track.GetVolume() whereas what needs to be called is track.GetNextVolume() for
+// conditions where the lattices are not identical (which is I think exclusive to the needs of this tracked
+// film response upgrade).
+G4LatticePhysical* G4CMP::GetNextLattice(const G4Track & track)
+{
+  G4VPhysicalVolume* trkvol = track.GetNextVolume();
+  if (!trkvol) trkvol = G4CMP::GetVolumeAtPoint(track.GetPosition());
+  if (!G4LatticeManager::GetLatticeManager()->HasLattice(trkvol)
+      && track.GetStep()) {
+    //    G4cout << "REL running something not nice in TrackUtils: GetNextLattice." << G4endl;
+    trkvol = track.GetStep()->GetPreStepPoint()->GetPhysicalVolume();
+  }
   return G4LatticeManager::GetLatticeManager()->GetLattice(trkvol);
 }
 

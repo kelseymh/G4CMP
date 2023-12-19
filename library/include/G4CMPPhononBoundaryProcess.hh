@@ -50,6 +50,10 @@ protected:
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
+  virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
+			      G4ParticleChange& aParticleChange);
+
+
   G4ThreeVector GetReflectedVector(const G4ThreeVector& waveVector, 
 				   const G4ThreeVector& surfNorm,
 				   G4int mode) const;
@@ -57,6 +61,7 @@ protected:
   G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm,
 				    G4int mode) const;
 
+  
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
 

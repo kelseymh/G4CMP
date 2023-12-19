@@ -9,8 +9,8 @@ scat 2.43e-42 s3
 decay 7.41e-56 s4
 decayTT 0.74
 # From S. Tamura et al., PRB44(7), 1991
-LDOS  0.01
-STDOS 0.49
+LDOS  0.001
+STDOS 0.499
 FTDOS 0.5
 Debye 15 THz		# Can also use temperature or energy
 # Charge carrier parameters
@@ -42,4 +42,3 @@ ivLinPower  4.0		# Rate = ivLinRate0 + ivLinRate1 * E^ivLinPower
 ivQuadRate  3.5e-20 Hz	# Fitted to Stanford test devices
 ivQuadField 3395 V/m	# Fitted to Stanford test divices
 ivQuadPower 7.47	# Rate = sqrt((E^2-QuadField^2)^ivPower)
-polycryElMfp 10 nm      # Mean free path for polycrystal elastic scattering (characteristic polycrystal length scale)

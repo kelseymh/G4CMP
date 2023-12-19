@@ -63,7 +63,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
   : verboseLevel(0), fName(name), fDensity(0.), fNImpurity(0.),
     fPermittivity(1.), fElasticity{}, fElReduced{}, fHasElasticity(false),
     fpPhononKin(0), fpPhononTable(0),
-    fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0),
+    fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0), fElScatMFP(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
     fVSound(0.), fVTrans(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),

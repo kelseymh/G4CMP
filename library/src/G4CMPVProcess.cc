@@ -20,7 +20,8 @@
 #include "G4CMPVScatteringRate.hh"
 #include "G4ForceCondition.hh"
 #include "G4SystemOfUnits.hh"
-
+#include "G4CMPTrackUtils.hh"
+#include "G4LatticeManager.hh"
 
 // Constructor and destructor
 
@@ -73,16 +74,55 @@ void G4CMPVProcess::ConfigureRateModel() {
 }
 
 
+//This logic block needs to be run in every process's GetMeanFreePath in order to let it know that the lattice has changed.
+//Otherwise the different processes (which inherit from individual/separate instances of the G4CMPProcessUtils class) will
+//see different lattices.
+void G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack)
+{
+  //Always do a check to see if the current lattice stored in this process is equal to the one that represents
+  //the volume that we're in. Note that we can't do this with the "GetLattice()" and "GetNextLattice()" calls
+  //here because at this point in the step, the pre- and post-step points both point to the same volume. Since
+  //GetMeanFreePath is run at the beginning, I think the point at which a boundary interaction is assessed comes
+  //later (hence why we can use that info in PostStepDoIts)
+  if( ((this->theLattice) && G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())) &&
+      (this->theLattice != G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()) ) ){
+
+    //We note that here, even though reloadDataForTrack has the above-mentioned shortcoming at this point in the step,
+    //the critical thing is that we're ALREADY in the next material based on the above conditional. This means that
+    //we can just use either the pre- or post-step point. (Which might argue that we don't even need ReloadDataForTrack
+    //at all...
+    this->LoadDataForTrack(&aTrack);
+    if(rateModel) rateModel->LoadDataForTrack(&aTrack);
+  }
+}
+
 // Compute MFP using track velocity and scattering rate
 
 G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 					G4ForceCondition* condition) {
+
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
+        
+  /*
+  G4cout << "Now in G4CMPVProcess::GetMeanFreePath" << G4endl;
+  G4cout << "this->theLattice: " << this->theLattice << G4endl;
+  G4cout << "GetLattice(aTrack): " << G4CMP::GetLattice(aTrack) << ", nextLattice: " << G4CMP::GetNextLattice(aTrack) << G4endl;
+  G4cout << "track.GetVolume(): " << aTrack.GetVolume()->GetName() << ", track.GetNextVolume(): " << aTrack.GetNextVolume()->GetName() << G4endl;
+  G4cout << "G4LatticeManager::GetLatticeManager()->GetLattice(trkVol) " << G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()) << G4endl;
+  //G4cout << "Noting that we need to reload track data for process." << G4endl;
+  */
+
+  
   *condition = (rateModel && rateModel->IsForced()) ? Forced : NotForced;
 
+
+  
   G4double rate = rateModel ? rateModel->Rate(aTrack) : 0.;
   G4double vtrk = IsChargeCarrier() ? GetVelocity(aTrack) : aTrack.GetVelocity();
   G4double mfp  = rate>0. ? vtrk/rate : DBL_MAX;
 
+  G4cout << "In getMFP, rate of " << this->GetProcessName() << " is: " << rate << G4endl;
+  
   if (verboseLevel>2) {
     G4cout << GetProcessName() << " rate = " << rate/hertz << " Hz"
 	   << " Vtrk = " << vtrk/(m/s) << " m/s"

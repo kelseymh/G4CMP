@@ -86,6 +86,54 @@ G4CMPProcessUtils::G4CMPProcessUtils()
 G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
 
+//REL NB: This is currently not being used -- keeping them in just to make sure I don't need them later...
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+// Any time we go into a new volume, we need to re-establish the lattice that we're
+// dealing with, and update the track parameters accordingly. This is implemented
+// separately from the "LoadDataForTrack" function because if it's like this, it
+// shouldn't break anything that doesn't call it explicitly.
+void G4CMPProcessUtils::ReloadDataForTrack(const G4Track* track) 
+{  
+  //These no longer assume you start and end your track in the
+  //same volume. -- REL
+  SetCurrentTrackInNextVolume(track);
+  SetNextLattice(track);
+
+  //Okay but if there is no lattice then cry
+  if (!theLattice) {
+    G4String msg = ("No lattice found for volume "
+		    + track->GetVolume()->GetName()
+		    + "; track will be killed");
+    G4Exception("G4CMPProcessUtils::LoadDataForTrack", "Utils001",
+		JustWarning, msg);
+
+    // Force track to be killed immediately
+    const_cast<G4Track*>(track)->SetTrackStatus(fStopAndKill);
+    return;	// No lattice, no special actions possible
+  }
+
+  // Sanity check -- track should already have kinematics container
+  if (!G4CMP::HasTrackInfo(track)) {
+    G4Exception("G4CMPProcessUtils::ReloadDataForTrack", "Utils002",
+		JustWarning, "No auxiliary info found for track");    
+    G4CMP::AttachTrackInfo(track);
+  }
+
+  // Since we're working in a derived class, this will only happen if we're looking at phonons. So we can
+  // start doing phonon things. Transfer phonon wavevector into momentum direction for this step
+  G4CMPPhononTrackInfo* trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(*track);
+
+  // Set momentum direction using already provided wavevector
+  G4ThreeVector kdir = trackInfo->k();
+  
+  const G4ParticleDefinition* pd = track->GetParticleDefinition();
+  G4Track* tmp_track = const_cast<G4Track*>(track);
+  tmp_track->SetMomentumDirection(theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), kdir));
+}
+
+
+
+
 // Initialization for current track
 
 void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
@@ -162,10 +210,28 @@ void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
   }
 }
 
+//REL NB: This are currently not being used -- keeping them in just to make sure I don't need them later...
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+// Need to have dedicated inherited versions of these functions so that we can run
+// them in the ReloadDataForTrack. Reason we can't just use the base class is because
+// they don't use the GetNextVolume function, but instead use the "GetVolume" function,
+// which refers to the pre-step point (not what we want)
+void G4CMPProcessUtils::SetCurrentTrackInNextVolume(const G4Track* track) {
+  currentTrack = track;
+  currentVolume = track ? track->GetNextVolume() : nullptr;
+  if (!track) return;		// Avoid unnecessry work
+  if (!currentVolume) {		// Primary tracks may not have volumes yet
+    currentVolume = G4CMP::GetVolumeAtPoint(track->GetPosition());
+  }
+}
+
 void G4CMPProcessUtils::SetLattice(const G4Track* track) {
   theLattice = track ? G4CMP::GetLattice(*track) : nullptr;
 }
 
+void G4CMPProcessUtils::SetNextLattice(const G4Track* track) {
+  theLattice = track ? G4CMP::GetNextLattice(*track) : nullptr;
+}
 
 // Fetch lattice for specified volume, use in subsequent steps
 

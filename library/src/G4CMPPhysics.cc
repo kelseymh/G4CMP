@@ -29,6 +29,7 @@
 #include "G4CMPDriftTrappingProcess.hh"
 #include "G4CMPDriftTrapIonization.hh"
 #include "G4CMPInterValleyScattering.hh"
+#include "G4PhononPolycrystalElasticScattering.hh"
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPSecondaryProduction.hh"
@@ -67,6 +68,7 @@ void G4CMPPhysics::ConstructParticle() {
 void G4CMPPhysics::ConstructProcess() {
   // Only make processes once; will be deleted when physics list goes away
   G4VProcess* phScat  = new G4PhononScattering;
+  G4VProcess* phPolyElScat  = new G4PhononPolycrystalElasticScattering;
   G4VProcess* phRefl  = new G4CMPPhononBoundaryProcess;
   G4VProcess* phDown  = new G4PhononDownconversion;
   G4VProcess* tmStep  = new G4CMPTimeStepper;
@@ -94,19 +96,22 @@ void G4CMPPhysics::ConstructProcess() {
   AddG4CMPProcess(phDown, particle);
   AddG4CMPProcess(phRefl, particle);
   AddG4CMPProcess(eLimit, particle);
+  AddG4CMPProcess(phPolyElScat, particle);
 
   particle = G4PhononTransSlow::PhononDefinition();
   AddG4CMPProcess(phScat, particle);
   AddG4CMPProcess(phDown, particle);
   AddG4CMPProcess(phRefl, particle);
   AddG4CMPProcess(eLimit, particle);
-
+  AddG4CMPProcess(phPolyElScat, particle);
+  
   particle = G4PhononTransFast::PhononDefinition();
   AddG4CMPProcess(phScat, particle);
   AddG4CMPProcess(phDown, particle);
   AddG4CMPProcess(phRefl, particle);
   AddG4CMPProcess(eLimit, particle);
-
+  AddG4CMPProcess(phPolyElScat, particle);
+  
   particle = edrift;
   AddG4CMPProcess(tmStep, particle);
   AddG4CMPProcess(luke, particle);
