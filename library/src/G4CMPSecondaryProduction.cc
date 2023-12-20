@@ -116,8 +116,10 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
 // Process must be applied to all tracks at the end of their step
 
 G4double 
-G4CMPSecondaryProduction::GetMeanFreePath(const G4Track&, G4double,
+G4CMPSecondaryProduction::GetMeanFreePath(const G4Track& aTrack, G4double,
 					  G4ForceCondition* condition) {
+
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
   *condition = StronglyForced;
   return DBL_MAX;
 }

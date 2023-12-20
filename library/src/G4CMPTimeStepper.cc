@@ -114,6 +114,8 @@ void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
 
 G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 					   G4ForceCondition* cond) {
+  
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
   if (verboseLevel == -1) ReportRates(aTrack);	// SPECIAL FLAG TO REPORT
 
   *cond = NotForced;

@@ -62,7 +62,9 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 }
 
 G4double G4CMPDriftBoundaryProcess::
-GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* condition) {
+GetMeanFreePath(const G4Track& aTrack, G4double, G4ForceCondition* condition) {
+
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
   *condition = Forced;
   return DBL_MAX;
 }

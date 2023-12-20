@@ -87,9 +87,12 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
   return GetMeanFreePath(aTrack, previousStepSize, condition);
 }
 
-G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track& /*aTrack*/,
+G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
                                              G4double /*prevStepLength*/,
                                              G4ForceCondition* condition) {
+
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
+  
   *condition = Forced;
   return DBL_MAX;
 }
@@ -160,6 +163,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // Check whether step has proper boundary-stopped geometry
   G4ThreeVector surfacePoint;
   if (!CheckStepBoundary(aStep, surfacePoint)) {
+    G4cout << "REL checking step boundary failed in DoReflection" << G4endl;
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
 
@@ -364,6 +368,7 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
   // Check whether step has proper boundary-stopped geometry
   G4ThreeVector surfacePoint;
   if (!CheckStepBoundary(aStep, surfacePoint)) {
+    G4cout << "REL checking step boundary failed in DoTransmission" << G4endl;
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
 

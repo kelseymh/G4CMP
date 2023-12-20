@@ -83,7 +83,7 @@ void G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack
   //the volume that we're in. Note that we can't do this with the "GetLattice()" and "GetNextLattice()" calls
   //here because at this point in the step, the pre- and post-step points both point to the same volume. Since
   //GetMeanFreePath is run at the beginning, I think the point at which a boundary interaction is assessed comes
-  //later (hence why we can use that info in PostStepDoIts)
+  //later (hence why we can use that info in PostStepDoIts but not here.)
   if( ((this->theLattice) && G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())) &&
       (this->theLattice != G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()) ) ){
 
