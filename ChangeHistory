@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2023-11-22  G4CMP-375 : Remove 50% momentum flip in G4CMPInterValleyScattering.
+2023-11-10  G4CMP-381 : Add valleys and anti-valleys from Miller indices.
 2023-10-11  G4CMP-362 : Implementation of IMPACT and Sarkis yield models. 
 
 2023-08-31  g4cmp-V08-04-01 Revert two recent changes to restore NTL energy.
