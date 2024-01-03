@@ -24,10 +24,10 @@ l0_h 108 um
 #hole and electron masses taken from Robert's thesis
 hmass 0.350		# per m(electron)
 emass 1.588 0.081 0.081	# per m(electron)
-valley  -45 35.2644 90 deg
-valley   45 35.2644 90 deg
-valley  135 35.2644 90 deg
-valley -135 35.2644 90 deg
+valleyDir 1 1 1 
+valleyDir -1 1 1
+valleyDir -1 -1 1
+valleyDir 1 -1 1
 # Intervalley scattering (matrix elements)
 alpha 0.3 /eV
 acDeform 11 eV

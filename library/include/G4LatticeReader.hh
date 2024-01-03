@@ -22,6 +22,7 @@
 // 20170525  Implement 'rule of five' with default copy/move semantics
 // 20170810  Add utility function to process list of values with unit.
 // 20190704  Add utility function to process string/name argument
+// 20231102  Add ProcessValleyDirection()
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
@@ -67,6 +68,7 @@ protected:
   G4bool ProcessDebyeLevel();			// Frequency or temperature
   G4bool ProcessStiffness();			// Elasticity matrix element
   G4bool ProcessEulerAngles(const G4String& name);	// Drift directions
+  G4bool ProcessValleyDirection();		// Drift directions
   G4bool ProcessDeformation();			// IV deformation potentials
   G4bool ProcessThresholds();			// IV energy thresholds
   G4bool SkipComments();			// Everything after '#'

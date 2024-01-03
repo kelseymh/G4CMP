@@ -44,6 +44,7 @@
 // 20190906  M. Kelsey -- Default IV rate model to G4CMPConfigManager value.
 // 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
 //		return thread-local instance.
+// 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -687,7 +688,50 @@ void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
   fValleyInv.back().invert();
 
   // NOTE:  Rotation matrices take external vector along valley axis to X-hat
-  fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));
+  fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));    
+}
+
+// Store drifting-electron valley using valley's direction
+
+void G4LatticeLogical::AddValley(const G4ThreeVector& valleyDirVec, G4bool antival) {
+      
+  // Find the rotation matrix elements
+  // ( [vx,vy,vz],
+  //     [a,b,c],
+  //     [d,e,f] )
+    
+  // We chose the following convention :
+  //  - The rotated y axis must stay in the X-Y plane (c=0)
+  //  - Valley's rotated Z axis must have positive z component (f>0) 
+  //  - Anti-valley's rotated Z axis must have positive z component (f<0) 
+  //  - The three rotated axis should stay normalized and be orthogonal
+  //  - It must be a right hand coordinate system :
+  //	(vx,vy,vz) X (a,b,c) = (d,e,f) 
+    
+  // If vx=0 and/or vy=0, we compute a and b differently
+
+  G4ThreeVector& vdir=tempvec();
+  vdir=valleyDirVec.unit();
+    
+  double vx=vdir.x();
+  double vy=vdir.y();
+  double vz=vdir.z();
+  
+  // rotated z axis points in the +z direction for valleys and -z for anti-valleys  
+  G4double f = sqrt(1. - vz*vz) * (antival?-1:1);
+    
+  G4double a = (vy==0 ? 0 : vx==0 ? -1 : -vy/f);
+  G4double b = (vy==0 ? 1 : vx==0 ? 0 : vx/f);
+     
+  G4double d=-vz*b;
+  G4double e=vz*a;
+      
+  // Store the valley's rotation matrix, its inverse and the valley's direction
+  fValley.resize(fValley.size()+1);
+  fValley.back().setRows(vdir, G4ThreeVector(a,b,0), G4ThreeVector(d,e,f));
+  fValleyInv.push_back(fValley.back());
+  fValleyInv.back().invert();
+  fValleyAxis.push_back(vdir);  
 }
 
 // Store rotation matrix and corresponding axis vector for valley
