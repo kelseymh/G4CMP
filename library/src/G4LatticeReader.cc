@@ -120,12 +120,11 @@ G4bool G4LatticeReader::OpenFile(const G4String& filename) {
       filepath = G4String(sec) + "/" + filename;
       psLatfile->open(filepath);      // Try data directory
       if (psLatfile->good()) {
-        // if (verboseLevel>1) G4cout << " Found file " << filepath << G4endl;
-        G4cout << " Found file " << filepath << G4endl;
+        if (verboseLevel>1) G4cout << " Found file " << filepath << G4endl;
         return true;
       }
       psLatfile->close();
-      sec = strtok(str, ":");
+      sec = strtok(NULL, ":");
     }
     psLatfile->open(filepath);
     if (!psLatfile->good()) {
