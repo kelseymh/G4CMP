@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2024-01-29  G4CMP-390 : Add utility to add track info to partition summary.
+
 2024-01-02  g4cmp-V08-05-00 Improve valley definitions, add heavy-ion models.
 2023-11-22  G4CMP-375 : Remove 50% momentum flip in G4CMPInterValleyScattering.
 2023-11-10  G4CMP-381 : Add valleys and anti-valleys from Miller indices.
