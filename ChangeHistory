@@ -6,10 +6,11 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
+2024-01-31  G4CMP-PR-18 : Added multiple path selection on G4LATTICEDATA variable.
 2024-01-02  g4cmp-V08-05-00 Improve valley definitions, add heavy-ion models.
 2023-11-22  G4CMP-375 : Remove 50% momentum flip in G4CMPInterValleyScattering.
 2023-11-10  G4CMP-381 : Add valleys and anti-valleys from Miller indices.
-2023-10-11  G4CMP-362 : Implementation of IMPACT and Sarkis yield models. 
+2023-10-11  G4CMP-362 : Implementation of IMPACT and Sarkis yield models.
 
 2023-08-31  g4cmp-V08-04-01 Revert two recent changes to restore NTL energy.
 2023-08-31  G4CMP-380 : Withdraw G4CMP-373, causes zero-length/NaN steps.
@@ -159,7 +160,7 @@ and configuration of the new objects do not need to be modified.
                         processes.
 2021-03-28  G4CMP-250 : Add downsampling factors to G4CMPPartitionData.
 2021-03-28  G4CMP-247 : Simplify Luke downsampling and make more agressive
-                        for high-voltage simulations. 
+                        for high-voltage simulations.
 2021-03-23  G4CMP-245 : Ensure that G4CMPSecondaryProduction avoids surface
                         positions.
 2021-03-23  G4CMP-246 : Protect radial field interpolation against negative
@@ -167,66 +168,66 @@ and configuration of the new objects do not need to be modified.
 
 2021-03-11  g4cmp-V07-10-00 New release including G4CMP-243 hit-merging.
 2021-03-11  G4CMP-243 : Consolidate short-length Geant4 steps into single,
-                        larger 'hits' for use by G4CMPEnergyPartition. 
+                        larger 'hits' for use by G4CMPEnergyPartition.
 
 2021-02-27  g4cmp-V07-09-01 Improve momentum and energy balance for electron
                         Lukemission.
 2021-02-27  G4CMP-237 : Improve moemntum and energy balance for electron
-                        Luke emission. 
+                        Luke emission.
 
 2021-02-05  g4cmp-V07-09-00 Bug fixes to handling of G4CMPPartitionSummary
-                        and G4CMPSecondaryProduction. 
+                        and G4CMPSecondaryProduction.
 2021-02-04  G4CMP-241 : Ensure that all energy deposits are properly
-                        processed by G4CMPSecondaryProduction. 
+                        processed by G4CMPSecondaryProduction.
 2021-02-03  G4CMP-239 : Remove use of DoubConv from G4CMPFanoBinomial.
 2021-02-03  G4CMP-240 : Clear G4CMPPartitionSummary at start of new event.
 
 2021-01-22  g4cmp-V07-08-01 Protect against CLHEP DoubConv.h/hh naming
-                        discrepancy, used in G4CMPFanoBinomial. 
+                        discrepancy, used in G4CMPFanoBinomial.
 2021-01-08  G4CMP-238 : Protect G4CMPFanoBinomial frm different filenames
-                        for CLHEP DoubConv.h(hh). 
+                        for CLHEP DoubConv.h(hh).
 
 2020-12-20  g4cmp-V07-08-00 New G4CMP release V07-08-00 with physics fixes:
 2020-12-18  G4CMP-235 : Substantial repairs to new Fano-fluctuation code
-                        (G4CMPFanoBinomial). 
+                        (G4CMPFanoBinomial).
 2020-12-12  G4CMP-231 : Require energy conservation after Luke phonon
-                        emission from electrons. 
+                        emission from electrons.
 2020-12-12  G4CMP-233 : SecondaryProduction pauses parent track when
-                        producing secondaries. 
+                        producing secondaries.
 2020-12-08  G4CMP-232 : Do not build examples as part of CMake; provide new
                         -DINSTALL_EXAMPLES option to copy directories to
-                        installation area. 
+                        installation area.
 2020-12-05  G4CMP-228 : Apply surface clearance when creating primaries in
-                        G4CMPEnergyPartition. 
+                        G4CMPEnergyPartition.
 2020-12-05  G4CMP-226 : Implement proper Fano statistics for electron/hole
-                        production, especially at threshold energies. 
+                        production, especially at threshold energies.
 2020-11-14  G4CMP-230 : Improve diagnostic output from phonon processes.
 
 2020-11-04  g4cmp-V07-07-00 Migrate process loop index to G4 10.6; new
-                        release tag. 
+                        release tag.
 2020-11-04  G4CMP-229 : Migrate process loop index to G4 10.6
 
 2020-10-11  g4cmp-V07-06-03 New release with exposed tetrahedral mesh error
-                        messages. 
+                        messages.
 2020-10-02  G4CMP-227 : Remove G4CMPTLI_DEBUG wrapper around tetrahedra
-                        error messages during initialization. 
+                        error messages during initialization.
 
 2020-09-15  g4cmp-V07-06-02 New release with runtime speed improvements in
-                        mesh electric field. 
+                        mesh electric field.
 2020-09-15  G4CMP-224 : Precompute matrices used in mesh handler to reduce
                         tracking time.  Copy all precomputed matrices as
                         part of Clone() action, to reduce worker thread
-                        initialization time. 
+                        initialization time.
 2020-08-31  g4cmp-V07-06-01 New relase with primary phonons using
                         preassigned momentum, instead of overwriting with
-                        random. 
+                        random.
 2020-08-31  G4CMP-223 : Fix G4CMP::AttachTrackInfo() so new phonons use
                         assigned momentum direction, instead of being
-                        randomized. 
+                        randomized.
 2020-08-07  g4cmp-V07-06-00 Bias voltage accessor, Luke downsampling,
-                        LD_LIBRARY_PATH fix. 
+                        LD_LIBRARY_PATH fix.
 2020-08-07  G4CMP-142 : New functionality to get bias voltage across volume;
-                        use to downsample Luke phonon production. 
+                        use to downsample Luke phonon production.
 2020-07-30  G4CMP-222 : Initialize LD_LIBRARY_PATH even if not already set.
 
 2020-07-05  g4cmp-V07-05-03 New release with phyics improvements to
@@ -241,13 +242,13 @@ and configuration of the new objects do not need to be modified.
                         absorption sensors by G4CMPKaplanQP.
 2020-06-22  G4CMP-212 : Ensure that low-energy packets in G4CMPKaplanCP are
                         recorded as deposits or reflected back into
-                        substrate.  Flag warning if energy is discarded. 
+                        substrate.  Flag warning if energy is discarded.
 
 2020-06-14  g4cmp-V07-05-00 New release with impurity trapping processes for
                         charges, additional fixes for multithreaded
                         running.
 2020-06-14  G4CMP-210 : Add missing initializers to G4CMPConfigManager copy
-                        constructor. 
+                        constructor.
 2020-06-02  G4CMP-196 : Implement ionization of charge-trapping impurities.
 2020-06-02  G4CMP-195 : Implement charge trapping on impurity defects.
 
@@ -261,7 +262,7 @@ and configuration of the new objects do not need to be modified.
 2020-06-01  G4CMP-207 : Require Clone() member function for electrodes.
 2020-05-31  G4CMP-205 : Implement G4CMP_USE_SANITIZER CMake and Make option
                         to set '-fsanitize' compilation flag, for debugging
-                        thread-safety issues. 
+                        thread-safety issues.
 2020-05-30  G4CMP-202 : Ensure thread-safety for job-wide managers and
                         registries.  Replace 'static' reusable buffers with
                         class data members or with 'static G4ThreadLocal'.
@@ -281,12 +282,12 @@ and configuration of the new objects do not need to be modified.
                         energy, to G4CMPPartitionData.
 
 2020-02-24  g4mp-V07-03-00 Update CMakeLists.txto remove unused
-                        G4CMPPartitionCollection filenames. 
+                        G4CMPPartitionCollection filenames.
 2020-02-24  G4CMP-193 : Provide summary data from EnergyPartition actions on
-                        'hits'. 
+                        'hits'.
 
 2020-02-14  g4cmp-V07-02-04 Roll out bug fix for global/local field
-                        coordinates problem. 
+                        coordinates problem.
 2020-02-14  G4CMP-192 : Modify G4CMPFieldManager::ConfigureForTrack() to
                         check whether registered field is properly wrapped
                         in G4CMPLocalElectricField.
@@ -296,7 +297,7 @@ and configuration of the new objects do not need to be modified.
                         G4CMPSecondaryProduction inon-lattice volumes, add
                         version-string recording and access.
 2020-02-11  G4CMP-191 : Provide recording of Git version string at build
-                        time, with accessors in G4CMPConfigManager. 
+                        time, with accessors in G4CMPConfigManager.
 2020-02-03  G4CMP-190 : To avoid 'No lattice for volume' warnings, check for
                         existence of lattice in G4CMPSecondaryProduction
                         before configuring.
@@ -315,11 +316,11 @@ and configuration of the new objects do not need to be modified.
 2019-12-12  g4cmp-V07-02-00 Merge G4CMP-182 and G4CMP-183 into bug-fix
                         release g4cmp-V07-02-00
 2019-12-11  G4CMP-183 : Add G4VNIELPartition functions to computeffective Z
-                        and A of composite materials. 
+                        and A of composite materials.
 2019-11-06  G4CMP-182:  Protect GeneratePhonons() from zero energy input.
 
 2019-10-21  g4cmp-V07-01-01 Fix handling of nucleus energy deposits in
-                        G4CMPEnergyPartition, when 'PDGencoding' is used. 
+                        G4CMPEnergyPartition, when 'PDGencoding' is used.
 2019-10-17  G4CMP-181 : Modify handling of nucleus particle encoding to
                         search G4IonTable; add GenericIon to minimal
                         registered particles in physics builder.
@@ -331,47 +332,47 @@ and configuration of the new objects do not need to be modified.
                         produced down to bandgap; phonon anharmonic decay
                         should not have a sampling fraction.
 2019-10-15  G4CMP-179: Eliminate sampling fraction for phonon anharmonic
-                        decay (downconversion). 
+                        decay (downconversion).
 2019-10-15  G4CMP-178 : In EnergyPartition, support creating e-h pairs below
                         the pairEnergy down to the indirect bandgap, to
-                        match observations. 
+                        match observations.
 2019-10-07  G4CMP-177 : Ensure that G4CMPSecondaryProduction applies to all
                         normal tracks, and doesn't try to create secondaries
-                        if no energy deposit on step. 
+                        if no energy deposit on step.
 2019-10-07  G4CMP-176 : When creating secondary tracks, only choose valley
                         index for electrons, not for holes.
 
 2019-10-01  g4cmp-V07-00-00 Bug fixes for valley transport in high electric
                         fields, 2D mesh interpolation, IV rate model
-                        selection. 
+                        selection.
 2019-09-24  G4CMP-173 : Add mesh interpolator debugging output, protect
                         output within preprocessor blocks with verbose
-                        flag. 
+                        flag.
 2019-09-20  G4CMP-171 : Fix array bounds bugs in BilLinearInterp to improve
-                        running time, produce correct results. 
+                        running time, produce correct results.
 2019-09-18  G4CMP-172 : Fix bug in projecting 3D coordinates to 2D for mesh
-                        field models. 
+                        field models.
 2019-09-15  G4CMP-168 : Ensure that electrons sample both valleys and
                         'antivalleys' during IV scattering.  Results in
                         appropriate propagation of electrons in high E-field
                         along 'average valley' direction.  Fix valley
-                        definitions in Si/config.txt 
+                        definitions in Si/config.txt
 2019-09-11  G4CMP-170 : Fix support for IVModel setting in
-                        CrystalMaps/config.txt files. 
+                        CrystalMaps/config.txt files.
 2019-08-17  G4CMP-169 : Modify LukeScattering to have secondary phonons
                         tracked first.
 
 2019-08-05  g4cmp-V06-00-05 Fix eletron transport by handling parallelism
-                        (or anti-) of E-field with respecto valley axis. 
+                        (or anti-) of E-field with respecto valley axis.
 2019-08-05  G4CMP-161 : Check orientation of E-field with respect to valley
                         when doing transform in G4CMPEqEMField.
 
 2019-08-02  g4cmp-V06-00-04 New public release g4cmp-V06-00-04
 2019-08-01  G4CMP-166 : Replace lattice pass-by-value functions with local
                         work buffer (mutable).  Precompute valley inverse
-                        transforms. 
+                        transforms.
 2019-07-22  G4CMP-158 : Introduce alternative NIEL partition (yield)
-                        functions, selectable in G4CMPConfigManager. 
+                        functions, selectable in G4CMPConfigManager.
 2019-07-04  G4CMP-143 : Support multiple rate models for intervalley scattering.
 2019-06-30  G4CMP-162 : In LinearInterp, have MatInv return boolean
                         success/fail flag, and propagate that flag up to
@@ -383,7 +384,7 @@ and configuration of the new objects do not need to be modified.
                         CMake 3.x versions.
 
 2019-06-12  g4cmp-V06-00-02 Fix defaults in G4CMPMeshElectricField ctor to
-                        properly handle 3D meshing. 
+                        properly handle 3D meshing.
 2019-06-12  G4CMP-159 : Fix defaults in G4CMPMeshElectricField ctor to
                         properly handle 3D meshing.
 
@@ -399,14 +400,14 @@ and configuration of the new objects do not need to be modified.
                         Navigator and use of pre-configured TLI objects in
                         MeshElectricField.
 2019-02-27  G4CMP-156 : Provide access to TLI in MeshField, and ctor to pass
-                        existing TLI. 
+                        existing TLI.
 2019-02-26  G4CMP-155 : Provide static, configured G4Navigator instance for
                         volume-finding.
 
 2018-09-26  g4cmp-V04-02-00 CMake fixes, handle pre-meshedata for
-                        G4CMPMeshElectricField. 
+                        G4CMPMeshElectricField.
 2018-09-25  G4CMP-150: Support passing tetrahedra list to
-                        G4CMPMeshElectricField and G4CMPTriLinearInterp. 
+                        G4CMPMeshElectricField and G4CMPTriLinearInterp.
 2018-09-06  G4CMP-147 : Fix .gmk and CMake support files so that examples
                         can be built 'standalone', to use as templates for
                         independent user applications.
@@ -414,7 +415,7 @@ and configuration of the new objects do not need to be modified.
 2018-08-29  g4cmp-V04-01-02 Bug fixes and improvements to downsampling and
                         weighting.
 2018-08-28  G4CMP-146 : Charge recombination processeshould flag
-                        G4CMPEnergyPartition to not use downsampling. 
+                        G4CMPEnergyPartition to not use downsampling.
 2018-08-27  G4CMP-136 : Improve setting of Luke-phonon sampling factor when
                         downsampling energy scale is used.
 
@@ -431,7 +432,7 @@ and configuration of the new objects do not need to be modified.
                         GetSecondaries().
 
 2018-05-06  g4cmp-V04-01-00 Improve performance and weighting in
-                        G4CMPEnergyPartition. 
+                        G4CMPEnergyPartition.
 2018-05-03  G4CMP-132 : Protect G4CMPEnergyPartition from chargeEnergyLeft < 0.
 2018-04-25  G4CMP-131 : Fix downsampling of G4CMPEnergyPartition: set weights
                         according to number of generated tracks, forbid
@@ -447,7 +448,7 @@ and configuration of the new objects do not need to be modified.
 2017-12-15  G4CMP-126 : Eliminate infinite loop in case of specular phonon
                         reflection.
 2017-12-15  G4CMP-125 : Protect diagnostic messages when postPV is null
-                        (world boundary) 
+                        (world boundary)
 2017-12-14  G4CMP-123 : Apply downsampling in EnergyPartition at first
                         generation, not when converting.
 2017-12-07  G4CMP-124 : Fix markup on README page for argument alternatives
@@ -464,7 +465,7 @@ and configuration of the new objects do not need to be modified.
 2017-09-28  g4cmp-V03-00-00 New biannual release
 2017-09-26  G4CMP-85 : Generate primaries and secondaries in
                         EnergyPartition with charge carriers spread out into
-                        a spherical 'cloud.' 
+                        a spherical 'cloud.'
 2017-09-23  G4CMP-121 : Fix lattice basis vectors to not discard unit spacing.
 
 2017-09-22  g4cmp-V02-03-01 Improve intervalley scattering performance
@@ -474,14 +475,14 @@ and configuration of the new objects do not need to be modified.
                         which new channels with higher rates open.
                         TimeStepper uses the electric field to estimate a
                         free-flight distance corresponding to those energies
-                        and to take a limited step accordingly. 
+                        and to take a limited step accordingly.
 2017-09-20  G4CMP-89 : Add threshold identification interface to rate
-                        models, use in TimeStepper for 'energy steps'. 
+                        models, use in TimeStepper for 'energy steps'.
 2017-09-08  G4CMP-88 : Add Luke and IV rate pointers to TimeStepper; fetch
-                        from current track. 
+                        from current track.
 2017-09-08  G4CMP-118 : Revert default IV rate to Edelweiss calculation,
                         remove extraneous 'kT' factor from
-                        InterValleyRate.cc 
+                        InterValleyRate.cc
 2017-09-01  G4CMP-116 : Put primaries into G4Event in EnergyPartition.
 2017-08-31  G4CMP-18 : Implement physics-based IV scattering rate as default.
 2017-08-31  G4CMP-115 : Provide energy threshold for downsampling.
@@ -491,11 +492,11 @@ and configuration of the new objects do not need to be modified.
 
 2017-08-29  Merge branch 'develop' onto 'master' for new g4cmp-V02-03-00 release
 2017-08-29  G4CMP-114 : Rename EnergyLimiter as TrackLimiter, add some
-                        detailed diagnostics to phonon processes. 
+                        detailed diagnostics to phonon processes.
 2017-08-23  G4CMP-113 : Re-implement G4PhononScattering (mode-mixing) to
                         replace track's G4ParticleDefinition at each
                         scatter.  Ancillary changes to related processes to
-                        deal with actively changing track type. 
+                        deal with actively changing track type.
 2017-08-23  G4CMP-106 : Move geometry-specific parameters out of
                         G4CMPConfigManager (and Messenger) into individual
                         examples.
@@ -525,15 +526,15 @@ and configuration of the new objects do not need to be modified.
                         order of storing into G4CMPGlobalLocalTransformStore.
 2017-07-28  G4CMP-103 : Resolve -Wshadow warnings throughout G4CMP code.
 2017-07-28  G4CMP-74 : Implement process-level biasing for phonon
-                        downconversion. 
+                        downconversion.
 2017-07-27  G4CMP-18 : Bring many recent changes from develop branch into
-                        IVPhysical work. 
+                        IVPhysical work.
 2017-07-21  G4CMP-101 : Don't cache charge electrode.
 2017-07-21  G4CMP-100 : Fix NavigationHistory indexing in TransformStore.
 2017-07-15  G4CMP-99 : Use G4CMP::GetLattice instead of TrackInfo to find
                         track lattice
 2017-07-15  G4CMP-98 : Replace LoadDataForTrack with direct SetCurrentTrack,
-                        SetLattice calls in SecondaryProduction. 
+                        SetLattice calls in SecondaryProduction.
 2017-07-13  G4CMP-95 : Kill particles at boundaries which don't have
                         fully-defined surface properties, allowing event to
                         proceed.
@@ -586,20 +587,20 @@ and configuration of the new objects do not need to be modified.
                         of G4ParticleTable::GetIterator().
 2016-12-13  G4CMP-65 : Remove superfluous ThreadLocal from TriLinearInterp
 2016-12-13  G4CMP-64 : Remove move ctor/assignment from example sensitivities
-                        so it can build with old GCC 
+                        so it can build with old GCC
 2016-12-13  G4CMP-63 : Add necessary #include in charge demo
 2016-12-06  G4CMP-33 : Realistic G4CMPElectrodePattern classes need
-                        G4CMPProcessUtils 
+                        G4CMPProcessUtils
 2016-11-28  G4CMP-62 : increment size of BlockData on certain
-                        operations. Also add useful asserts 
+                        operations. Also add useful asserts
 2016-11-18  G4CMP-61 : Move phonon reflection helpers out of ProcessUtils.
 2016-11-16  G4CMP-60 : Move all secondary creation from ProcessUtils to
                         SecondaryUtils
 2016-11-15  G4CMP-58 : Initial commit for splitting TrackInfo into two
                         concrete types plus one common base. Lattice pointer
-                        is now included in track info. 
+                        is now included in track info.
 2016-11-11  G4CMP-57 : Lifted Kaplan downconversion to G4CMP namespace and
-                        deprecated corresponding methods of ProcessUtils 
+                        deprecated corresponding methods of ProcessUtils
 
 2016-11-08  G4CMP-53 : Create Singleton to cache geometric transforms
 2016-11-08  G4CMP-54 : Give each example its own ElectrodeSensitivity class.
@@ -612,7 +613,7 @@ and configuration of the new objects do not need to be modified.
 2016-10-24  G4CMP-49 : Fix CMake variable bug to include visualizers
 2016-10-18  G4CMP-47 : Remove check for zero step length in BoundaryUtils
 2016-10-18  G4CMP-40 : Only apply secondary biasing to Luke emission and
-                        phonon downconversion. 
+                        phonon downconversion.
 
 2016-10-14  g4cmp-V01-01-00 Prepare new masterelease with recent
                         improvements.
@@ -622,7 +623,7 @@ and configuration of the new objects do not need to be modified.
                         QHull 2015.
 2016-10-10  G4CMP-42 : Make particle transmission default to killing the
                         track. Also update the charge demo to force
-                        reflection when absorption fails. 
+                        reflection when absorption fails.
 2016-10-10  G4CMP-26 : Make sure G4VSolid gets a local position to find the
                         surface normal
 2016-10-10  G4CMP-12 : Finished fixing interface between MeshElectricFields
@@ -641,7 +642,7 @@ and configuration of the new objects do not need to be modified.
 2016-09-07  G4CMP-23 : Use electrode pattern in G4CMPBoundaryUtils for
                         absorption, with charge example demo.
 2016-09-07  G4CMP-26 : Add boundary awareness to CreatePhonon() and
-                        CreateChargeCarrier() 
+                        CreateChargeCarrier()
 2016-09-07  G4CMP-12 : Improve interface between MeshElectricField and
                         TriLinearInterp.
 2016-09-06  G4CMP-9  : Efield caches last lookup for speed.
@@ -654,7 +655,7 @@ and configuration of the new objects do not need to be modified.
                         phonons, charge carriers from energy deposits.
 
 2016-07-20  g4cmp-V00-05-00 Drop external K-Vg lookup tables, support all
-                        symmetry groups; merging branch 'crystalParams' 
+                        symmetry groups; merging branch 'crystalParams'
 
 2016-06-30  g4cmp-V00-04-00 Integrate KVmapper code (eigensolver) into
                         lattice.  Can compute phonon kinematics directly

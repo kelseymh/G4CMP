@@ -29,7 +29,7 @@ Users must have a recent (10.4 through 10.7) version of GEANT4 installed and
 configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See GEANT4's
 documentation for further instructions.).
 
-**NOTE** The relase of Geant4 Version 11 introduced substantial and breaking
+**NOTE** The release of Geant4 Version 11 introduced substantial and breaking
   changes to many Geant4 interface classes.  We are maintaining G4CMP under
   ==Geant4 Version 10== (through 10.7) to ensure compatibility with our
   major experimental users.
@@ -58,7 +58,7 @@ developers should check the source code in
 
 | Environment variable    | Macro command                 | Value/action                            |
 | ------------------------| ----------------------------- | ----------------------------------------|
-| G4LATTICEDATA           | /g4cmp/LatticeData	          | Directory with lattice configs          |
+| G4LATTICEDATA           | /g4cmp/LatticeData	          | Paths with lattice configs          |
 | G4CMP\_DEBUG	          | /g4cmp/verbose [L] >0:        | Enable diagnostic messages              |
 | G4CMP\_CLEARANCE [L]    | /g4cmp/clearance [L] mm       | Minimum distance of tracks from boundaries |
 | G4CMP\_VOLTAGE [V]      | /g4cmp/voltage [V]	volt !=0:  | Apply uniform +Z voltage                |
@@ -126,7 +126,7 @@ non-ionizing energy loss (NIEL) on the track.
 
 Secondary phonons may be produced either by downconversion of higher energy
 phonons, or by emission of Luke-Neganov phonons from charge carriers.
-Generating seconary phonons can significantly slow down the simulation, so
+Generating secondary phonons can significantly slow down the simulation, so
 the `LukeScattering` process has an analogous environment variable,
 `$G4CMP_LUKE_SAMPLE`, defined with rate (R) as above.
 
@@ -172,7 +172,7 @@ additional diagnostic output files which may be of interest.
 ## Building the Package
 
 G4CMP supports building itself with either GNU Make or CMake, and separately
-supports being linked into user applicated with either GNU Make (via
+supports being linked into user applications with either GNU Make (via
 environment variable settings) or CMake.
 
 ### Building with Make
@@ -297,7 +297,7 @@ linking G4CMP into your applications:
 | G4CMPINSTALL | Path to g4cmp_env.* scripts  | <path-to-G4CMP> | $CMAKE_INSTALL_PREFIX/share/G4CMP |
 | G4CMPLIB | Directory containing libG4cmp.so | $G4WORKDIR/lib/$G4SYSTEM | $G4CMPINSTALL/lib |
 | G4CMPINCLUDE | Path to library/include      | $G4INSTALL/library/include | $CMAKE_INSTALL_PREFIX/include |
-| G4LATTICEDATA | Path to CrytalMaps directory | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
+| G4LATTICEDATA | Path(s) to CrystalMaps | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
 
 If you have a simple Makefile build system (GMake), the following two lines,
 or an appropriate variation on them, should be sufficient:
@@ -383,8 +383,20 @@ defined.  These parameters are used by the phonon and charge-carrier
 processes to know how to create, propagate, and scatter the particles
 through the crystal.
 
-Each material's parameters are stored in a subdirectory under CrystalMaps
-(or wherever the envrionment variable `$G4LATTICEDATA` points).  G4CMP is
+Each material's parameters are stored in a subdirectory under `CrystalMaps`; 
+the environment variable used to search for these material configuration files, 
+`$G4LATTICEDATA`, points to this directory by default. Additional paths can be 
+included in this search by appending them to the `$G4LATTICEDATA` variable:
+
+    export G4LATTICEDATA=${G4LATTICEDATA:+$G4LATTICEDATA:}/path/to/more/CrystalMaps
+
+or
+
+    setenv G4LATTICEDATA ${G4LATTICEDATA}:/path/to/more/CrystalMaps
+
+Note that if a material configuration file is found in multiple locations, only 
+the first file found chronologically will be chosen; `G4LATTICEDATA` must be 
+reset in order for conflicting configuration files to be found. G4CMP is
 distributed with germanium and silicon configurations, in `CrystalMaps/Ge/`
 and `CrystalMaps/Si/`, respectively.  We recommend naming additional
 directories by element or material, matching the Geant4 conventions, but
@@ -432,7 +444,7 @@ the crystal system.
 | scat    | B         | isotope scattering rate   | second^3 (s3)      |
 | decay   | A         | anharmonic decay rate     | second^4 (s4)      |
 | decayTT | frac      | Fraction of L->TT decays  |                    |
-| LDOS    | frac      | longitudnal density of states | sum to unity   |
+| LDOS    | frac      | longitudinal density of states | sum to unity   |
 | STDOS   | frac      | slow-transverse density of states |            |
 | FTDOS   | frac      | fast-transverse density of states |            |
 | Debye   | val       | Debye energy for phonon primaries | E, T, Hz   |
@@ -474,7 +486,7 @@ probabilities.
 
 User applications should use the `G4CMPSurfaceProperty` class, or an
 application-specific subclass.  This class has `G4MaterialPropertiesTable`
-objects for phonons and charges seaprately; the base class constructor takes
+objects for phonons and charges separately; the base class constructor takes
 a long list of arguments to fill those tables with common parameters:
 
   G4CMPSurfaceProperty(const G4String& name,
@@ -502,7 +514,7 @@ above.  See below for a discussion of `G4CMPPhononElectrode`.
 
 Phonon sensors typically involve a superconducting film to couple the
 substrate to a sensor (SQUID, TES, etc.).  The `G4CMPKaplanQP` class
-provides a parametric model for that coupling, implmenting Kaplan's model
+provides a parametric model for that coupling, implementing Kaplan's model
 for energy exchange between phonons and quasiparticles from broken Cooper
 pairs.  This class expects to find the following material properties defined
 for the metal film (defined using the function

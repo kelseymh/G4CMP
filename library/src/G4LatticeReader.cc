@@ -7,13 +7,13 @@
 /// \brief Implementation of the G4LatticeReader class
 //
 // NOTE:  This reader class for logical lattices should be moved to
-//    materials/ after the 10.0 release (and this comment removed).
+//	  materials/ after the 10.0 release (and this comment removed).
 // $Id$
 //
 // 20131106  M.Kelsey -- Add const to getenv() to avoid compiler warning.
 // 20131112  Throw exception if input file fails.
 // 20131115  Check file input arguments for maps for validity before use;
-//    move ctor, dtor here; check stream pointer before closing.
+//		move ctor, dtor here; check stream pointer before closing.
 // 20140218  Add support for charge-carrier functionality
 // 20140306  Use Euler angles directly to fill electron valley
 // 20140313  Use diagonal terms directly to fill electron mass tensor
@@ -27,13 +27,14 @@
 // 20160802  Use hep_pascal for pressure (Windows compatibility)
 // 20170810  Processing IV scattering matrix terms, allow "/eV" type units
 // 20170821  For deformation potentials, specify eV/cm units; use regex match
-//    for multiple optical IV potentials
+//		for multiple optical IV potentials
 // 20170821  Add transverse sound speed, L->TT fraction
 // 20180815  F. Insulla -- Added IVRateQuad
 // 20181001  M. Kelsey -- Clarify IV rate parameters systematically
 // 20190704  M. Kelsey -- Add 'ivModel' to set default IV function by material
 // 20231017  E. Michaud -- Add 'valleyDir' to set rotation matrix with valley's
-//     direction instead of euler angles
+//		 direction instead of euler angles
+// 20240131  J. Inman -- Multiple path selection on G4LATTICEDATA variable
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -73,12 +74,12 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
   if (!OpenFile(filename)) {
     G4ExceptionDescription msg;
     msg << "Unable to open " << filename;
-    G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
+		G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
     FatalException, msg);
     return 0;
   }
 
-  pLattice = new G4LatticeLogical;  // Create lattice to be filled
+  pLattice = new G4LatticeLogical;	// Create lattice to be filled
 
   G4bool goodLattice = true;
   while (!psLatfile->eof()) {
@@ -90,7 +91,7 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
     G4ExceptionDescription msg;
     msg << "Error reading lattice from " << filename;
     G4Exception("G4LatticeReader::MakeLattice", "Lattice002",
-    FatalException, msg);
+		FatalException, msg);
     delete pLattice;
     pLattice = 0;
   }
@@ -98,7 +99,7 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
   if (verboseLevel>1)
     G4cout << "G4LatticeReader produced\n" << *pLattice << G4endl;
 
-  return pLattice;  // Lattice complete; return pointer with ownership
+  return pLattice;	// Lattice complete; return pointer with ownership
 }
 
 
@@ -110,21 +111,23 @@ G4bool G4LatticeReader::OpenFile(const G4String& filename) {
 
   G4String filepath = filename;
   psLatfile = new std::ifstream(filepath);
-  if (!psLatfile->good()) {         // Local file not found
-    filepath = fDataDir + "/" + filename;
-    char str[1024];
-    strcpy(str, fDataDir.c_str());
-    char* sec = NULL;
-    sec = strtok(str, ":");
-    while (sec != NULL) {
-      filepath = G4String(sec) + "/" + filename;
-      psLatfile->open(filepath);      // Try data directory
+  if (!psLatfile->good()) { 		// Local file not found
+    G4String data_tok = fDataDir;
+    while (!data_tok.empty()) {
+      const size_t split_pos = data_tok.find(":");
+      G4String sec = data_tok.substr(0, split_pos);
+      filepath = sec + "/" + filename;
+      psLatfile->open(filepath);			// Try data directory
       if (psLatfile->good()) {
         if (verboseLevel>1) G4cout << " Found file " << filepath << G4endl;
         return true;
       }
       psLatfile->close();
-      sec = strtok(NULL, ":");
+      if (data_tok.find(":") == G4String::npos)
+      {
+      	break;
+      }
+      data_tok = data_tok.substr(split_pos + 1, data_tok.length() - split_pos - 1);
     }
     psLatfile->open(filepath);
     if (!psLatfile->good()) {
@@ -151,16 +154,16 @@ void G4LatticeReader::CloseFile() {
 G4bool G4LatticeReader::ProcessToken() {
   fToken = "";
   *psLatfile >> fToken;
-  if (fToken.empty() || psLatfile->eof()) return true;  // End of file reached
+  if (fToken.empty() || psLatfile->eof()) return true;	// End of file reached
 
   if (verboseLevel>1) G4cout << " ProcessToken " << fToken << G4endl;
 
   fToken.toLower();
-  if (fToken.contains('#')) return SkipComments();  // Ignore rest of line
-  if (fToken == "dyn")      return ProcessConstants();  // Dynamical parameters
+  if (fToken.contains('#')) return SkipComments();	// Ignore rest of line
+  if (fToken == "dyn")      return ProcessConstants();	// Dynamical parameters
   if (fToken == "stiffness" ||
       fToken == "cij")      return ProcessStiffness();  // Elasticity element
-  if (fToken == "emass")    return ProcessMassTensor(); // e- mass eigenvalues
+  if (fToken == "emass")    return ProcessMassTensor();	// e- mass eigenvalues
   if (fToken == "valley")   return ProcessEulerAngles(fToken); // e- drift dirs
   if (fToken == "valleydir")return ProcessValleyDirection(); // miller indices valley dirs
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
@@ -168,17 +171,17 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
   if (fToken == "ivmodel")  return ProcessString(fToken);  // IV rate function
 
-  if (G4CMPCrystalGroup::Group(fToken) >= 0)    // Crystal dimensions
+  if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
                             return ProcessCrystalGroup(fToken);
 
-  return ProcessValue(fToken);        // Single numeric value
+  return ProcessValue(fToken);				// Single numeric value
 }
 
 // Eat remainder of line, assuming a '#' token was found
 
 G4bool G4LatticeReader::SkipComments() {
   psLatfile->ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-  return true;    // Never fails
+  return true;		// Never fails
 }
 
 // Read double value from file, store based on name string
@@ -259,14 +262,14 @@ G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
   fList.clear();
 
   G4String token;
-  char* eonum = 0;  // Will point to end of valid number string (NUL)
+  char* eonum = 0;	// Will point to end of valid number string (NUL)
   do {
     *psLatfile >> token;
     fValue = strtod(token.c_str(), &eonum);
     if (*eonum == '\0') fList.push_back(fValue);
   } while (psLatfile->good() && *eonum == '\0');
 
-  ProcessUnits(token, unitcat);   // Non-numeric token is trailing unit
+  ProcessUnits(token, unitcat);		// Non-numeric token is trailing unit
   for (size_t i=0; i<fList.size(); i++) fList[i] *= fUnits;
 
   return psLatfile->good();
@@ -297,25 +300,25 @@ G4bool G4LatticeReader::ProcessCrystalGroup(const G4String& name) {
 
   // Input buffers for reading; different crystals need different data
   G4double a=0., b=0., c=0., alpha=0., beta=0., gamma=0.;
-  G4double lunit=0., degOrRad=0.;   // Length and angle units
+  G4double lunit=0., degOrRad=0.;		// Length and angle units
 
   G4CMPCrystalGroup::Bravais group = G4CMPCrystalGroup::Group(name);
   if (verboseLevel>2) G4cout << " group code " << group << G4endl;
 
   switch (group) {
   case G4CMPCrystalGroup::amorphous:
-    a=b=c=1.; lunit=1.; break;      // No lattice constants
+    a=b=c=1.; lunit=1.; break;			// No lattice constants
   case G4CMPCrystalGroup::cubic:
-    *psLatfile >> a; b=c=a;       // Equal sides, orthogonal
+    *psLatfile >> a; b=c=a;			// Equal sides, orthogonal
     lunit = ProcessUnits("Length");
     break;
   case G4CMPCrystalGroup::tetragonal:
   case G4CMPCrystalGroup::hexagonal:
-    *psLatfile >> a >> c; b=c;      // Two sides, orthogonal
+    *psLatfile >> a >> c; b=c;			// Two sides, orthogonal
     lunit = ProcessUnits("Length");
     break;
   case G4CMPCrystalGroup::orthorhombic:
-    *psLatfile >> a >> b >> c;      // Three sides, orthogonal
+    *psLatfile >> a >> b >> c;			// Three sides, orthogonal
     lunit = ProcessUnits("Length");
     break;
   case G4CMPCrystalGroup::rhombohedral:
@@ -341,13 +344,13 @@ G4bool G4LatticeReader::ProcessCrystalGroup(const G4String& name) {
 
   if (verboseLevel>1) {
     G4cout << " a " << a*lunit/angstrom << " b " << b*lunit/angstrom
-     << " c " << c*lunit/angstrom << " Ang "
-     << " alpha " << alpha/deg << " beta " << beta/deg
-     << " gamma " << gamma/deg << " deg" << G4endl;
+	   << " c " << c*lunit/angstrom << " Ang "
+	   << " alpha " << alpha/deg << " beta " << beta/deg
+	   << " gamma " << gamma/deg << " deg" << G4endl;
   }
 
   pLattice->SetCrystal(group, a*lunit, b*lunit, c*lunit,
-           alpha*degOrRad, beta*degOrRad, gamma*degOrRad);
+		        alpha*degOrRad, beta*degOrRad, gamma*degOrRad);
 
   return psLatfile->good();
 }
@@ -371,8 +374,8 @@ G4bool G4LatticeReader::ProcessDebyeLevel() {
 // Read element of reduced elasticity (stiffness) matrix
 
 G4bool G4LatticeReader::ProcessStiffness() {
-  G4int p=0, q=0; // Indices of reduced matrix
-  G4double value=0.;  // Matrix element in pascals
+  G4int p=0, q=0;	// Indices of reduced matrix
+  G4double value=0.;	// Matrix element in pascals
 
   *psLatfile >> p >> q >> value;
   if (verboseLevel>1)
@@ -390,7 +393,7 @@ G4bool G4LatticeReader::ProcessMassTensor() {
   *psLatfile >> mxx >> myy >> mzz;
   if (verboseLevel>1)
     G4cout << " ProcessMassTensor " << mxx << " " << myy << " " << mzz
-     << G4endl;
+	   << G4endl;
 
   pLattice->SetMassTensor(mxx, myy, mzz);
   return psLatfile->good();
@@ -403,7 +406,7 @@ G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
   *psLatfile >> phi >> theta >> psi;
   if (verboseLevel>1)
     G4cout << " ProcessEulerAngles " << name << " " << phi << " "
-     << theta << " " << psi << G4endl;
+	   << theta << " " << psi << G4endl;
 
   if (name != "valley") {
     G4cerr << "G4LatticeReader: Unknown rotation matrix " << name << G4endl;
@@ -425,7 +428,7 @@ G4bool G4LatticeReader::ProcessValleyDirection() {
   *psLatfile >> milleri >> millerj >> millerk;
   if (verboseLevel>1)
     G4cout << " ProcessValleyDirection "  << milleri << " "
-     << millerj << " " << millerk << G4endl;
+	   << millerj << " " << millerk << G4endl;
 
   G4ThreeVector valleyDirVec(milleri,millerj,millerk);
   pLattice->AddValley(valleyDirVec);
@@ -464,7 +467,7 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unitcat) {
 }
 
 G4double G4LatticeReader::ProcessUnits(const G4String& unit,
-               const G4String& unitcat) {
+				       const G4String& unitcat) {
   if (verboseLevel>1)
     G4cout << " ProcessUnits " << unit << " " << unitcat << G4endl;
 
@@ -482,11 +485,11 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
   if (fUnitCat.empty() || !unitcat.contains(fUnitCat)) {
     G4ExceptionDescription msg;
     msg << "Expected " << unitcat << " units, got " << fUnitName << " ("
-  << fUnitCat << ")";
+	<< fUnitCat << ")";
     G4Exception("G4LatticeReader::ProcessUnits", "Lattice003",
-    FatalException, msg);
+		FatalException, msg);
     return 0.;
   }
 
-  return inverse ? 1./fUnits : fUnits;  // Return value for convenient inlining
+  return inverse ? 1./fUnits : fUnits;	// Return value for convenient inlining
 }
