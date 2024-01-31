@@ -60,6 +60,7 @@
 //		zero downsampling; want to get summary data filled every time.
 // 20221025  G4CMP-335 -- Skip and rethrow nPairs=0 returned from FanoBinomial.
 // 20240105  Add UpdateSummary() function to set position and track info
+// 20240129  In ComputePhononSampling(), generate at least 10k as many phonons
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -414,15 +415,15 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
 }
 
 // Compute phonon scaling factor only if not fully suppressed
-// NOTE: Phonon sampling done to get same number as charge pairs
 
 void
 G4CMPEnergyPartition::ComputePhononSampling(G4double eNIEL) {
   G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
   if (samplingScale <= 0.) return;		// No downsampling computation
   if (G4CMPConfigManager::GetGenPhonons() <= 0.) return;
-  
-  G4double phononScale = (samplingScale * theLattice->GetDebyeEnergy()
+
+  // Set a scaling factor to get 10k times as many phonons as charges  
+  G4double phononScale = (samplingScale * 1e4*theLattice->GetDebyeEnergy()
 			  / theLattice->GetPairProductionEnergy());
   G4double phononSamp = (eNIEL>phononScale) ? phononScale/eNIEL : 1.;
   if (verboseLevel>2)
