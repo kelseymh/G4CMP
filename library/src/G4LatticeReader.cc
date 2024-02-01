@@ -44,6 +44,7 @@
 #include "G4LatticeLogical.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Tokenizer.hh"
 #include "G4UnitsTable.hh"
 #include <fstream>
 #include <limits>
@@ -112,29 +113,19 @@ G4bool G4LatticeReader::OpenFile(const G4String& filename) {
   G4String filepath = filename;
   psLatfile = new std::ifstream(filepath);
   if (!psLatfile->good()) { 		// Local file not found
-    G4String data_tok = fDataDir;
-    while (!data_tok.empty()) {
-      const size_t split_pos = data_tok.find(":");
-      G4String sec = data_tok.substr(0, split_pos);
+    G4Tokenizer nextpath(fDataDir);
+    G4String sec = nextpath(":");
+    while (!sec.isNull()) {
       filepath = sec + "/" + filename;
-      psLatfile->open(filepath);			// Try data directory
+      psLatfile->open(filepath);      // Try data directory
       if (psLatfile->good()) {
         if (verboseLevel>1) G4cout << " Found file " << filepath << G4endl;
         return true;
       }
       psLatfile->close();
-      if (data_tok.find(":") == G4String::npos)
-      {
-      	break;
-      }
-      data_tok = data_tok.substr(split_pos + 1, data_tok.length() - split_pos - 1);
+      sec = nextpath(":");
     }
-    psLatfile->open(filepath);
-    if (!psLatfile->good()) {
-      CloseFile();
-      return false;
-    }
-    if (verboseLevel>1) G4cout << " Found file " << filepath << G4endl;
+    return false;
   }
 
   return true;
