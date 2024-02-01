@@ -29,6 +29,7 @@
 // 20220216  Add interface to do partitioning directly from StepAccumulator.
 // 20220816  Add generated track counts, for convenience before filling
 // 20220816  G4CMP-308 -- Support generating multiple primary positions.
+// 20240105  Add UpdateSummary() function to set position and track info
 
 #ifndef G4CMPEnergyPartition_hh
 #define G4CMPEnergyPartition_hh 1
@@ -104,6 +105,11 @@ public:
 
   // Some processes can specify non-ionizing energy directly
   void DoPartition(G4double eIon, G4double eNIEL);
+
+  // Add hit position and track info from client to summary block
+  void UpdateSummary(const G4ThreeVector& pos, G4double time=0.,
+		     G4int trackID=0, G4int stepID=0) const;
+  // The "const" qualifier shouldn't work if summary is being changed
 
   // Return either primary or secondary particles from partitioning
   void GetPrimaries(std::vector<G4PrimaryParticle*>& primaries) const;
