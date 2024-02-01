@@ -32,8 +32,9 @@
 // 20180815  F. Insulla -- Added IVRateQuad
 // 20181001  M. Kelsey -- Clarify IV rate parameters systematically
 // 20190704  M. Kelsey -- Add 'ivModel' to set default IV function by material
-// 20231017  E. Michaud -- Add 'valleyDir' to set rotation matrix with valley's 
+// 20231017  E. Michaud -- Add 'valleyDir' to set rotation matrix with valley's
 //		 direction instead of euler angles
+// 20240131  J. Inman -- Multiple path selection on G4LATTICEDATA variable
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -43,6 +44,7 @@
 #include "G4LatticeLogical.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Tokenizer.hh"
 #include "G4UnitsTable.hh"
 #include <fstream>
 #include <limits>
@@ -57,7 +59,7 @@ G4LatticeReader::G4LatticeReader(G4int vb)
     psLatfile(0), pLattice(0), fToken(""), fValue(0.), f3Vec(0.,0.,0.),
     fDataDir(G4CMPConfigManager::GetLatticeDir()),
     mElectron(electron_mass_c2/c_squared) {
-  G4CMPUnitsTable::Init();	// Ensures thread-by-thread initialization
+  G4CMPUnitsTable::Init();  // Ensures thread-by-thread initialization
 }
 
 G4LatticeReader::~G4LatticeReader() {
@@ -73,8 +75,8 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
   if (!OpenFile(filename)) {
     G4ExceptionDescription msg;
     msg << "Unable to open " << filename;
-    G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
-		FatalException, msg);
+		G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
+    FatalException, msg);
     return 0;
   }
 
@@ -110,14 +112,20 @@ G4bool G4LatticeReader::OpenFile(const G4String& filename) {
 
   G4String filepath = filename;
   psLatfile = new std::ifstream(filepath);
-  if (!psLatfile->good()) {			// Local file not found
-    filepath = fDataDir + "/" + filename;
-    psLatfile->open(filepath);			// Try data directory
-    if (!psLatfile->good()) {
-      CloseFile();
-      return false;
+  if (!psLatfile->good()) { 		// Local file not found
+    G4Tokenizer nextpath(fDataDir);
+    G4String sec = nextpath(":");
+    while (!sec.isNull()) {
+      filepath = sec + "/" + filename;
+      psLatfile->open(filepath);      // Try data directory
+      if (psLatfile->good()) {
+        if (verboseLevel>1) G4cout << " Found file " << filepath << G4endl;
+        return true;
+      }
+      psLatfile->close();
+      sec = nextpath(":");
     }
-    if (verboseLevel>1) G4cout << " Found file " << filepath << G4endl;
+    return false;
   }
 
   return true;
@@ -292,7 +300,7 @@ G4bool G4LatticeReader::ProcessCrystalGroup(const G4String& name) {
   case G4CMPCrystalGroup::amorphous:
     a=b=c=1.; lunit=1.; break;			// No lattice constants
   case G4CMPCrystalGroup::cubic:
-    *psLatfile >> a; b=c=a; 			// Equal sides, orthogonal
+    *psLatfile >> a; b=c=a;			// Equal sides, orthogonal
     lunit = ProcessUnits("Length");
     break;
   case G4CMPCrystalGroup::tetragonal:
@@ -333,7 +341,7 @@ G4bool G4LatticeReader::ProcessCrystalGroup(const G4String& name) {
   }
 
   pLattice->SetCrystal(group, a*lunit, b*lunit, c*lunit,
-		       alpha*degOrRad, beta*degOrRad, gamma*degOrRad);
+		        alpha*degOrRad, beta*degOrRad, gamma*degOrRad);
 
   return psLatfile->good();
 }
@@ -388,14 +396,14 @@ G4bool G4LatticeReader::ProcessEulerAngles(const G4String& name) {
   G4double phi=0., theta=0., psi=0.;
   *psLatfile >> phi >> theta >> psi;
   if (verboseLevel>1)
-    G4cout << " ProcessEulerAngles " << name << " " << phi << " " 
+    G4cout << " ProcessEulerAngles " << name << " " << phi << " "
 	   << theta << " " << psi << G4endl;
 
   if (name != "valley") {
     G4cerr << "G4LatticeReader: Unknown rotation matrix " << name << G4endl;
     return false;
   }
-    
+
   G4double degOrRad = ProcessUnits("Angle");
   pLattice->AddValley(phi*degOrRad, theta*degOrRad, psi*degOrRad);
   // Anti-valleys
@@ -410,7 +418,7 @@ G4bool G4LatticeReader::ProcessValleyDirection() {
   G4double milleri=0., millerj=0., millerk=0.;
   *psLatfile >> milleri >> millerj >> millerk;
   if (verboseLevel>1)
-    G4cout << " ProcessValleyDirection "  << milleri << " " 
+    G4cout << " ProcessValleyDirection "  << milleri << " "
 	   << millerj << " " << millerk << G4endl;
 
   G4ThreeVector valleyDirVec(milleri,millerj,millerk);
@@ -456,7 +464,7 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
 
   // Look for leading "/" for inverse units (density, per eV, etc.)
   G4bool inverse = (unit(0)=='/');
-  
+
   fUnitName = unit;
   if (inverse) fUnitName = fUnitName(1,unit.length()-1);
 
