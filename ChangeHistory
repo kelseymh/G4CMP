@@ -4,9 +4,9 @@ G4CMP Change History
 Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
-ticket identifier, "G4CMP-nnn".
+ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
-2024-01-31  G4CMP-PR-18 : Added multiple path selection on G4LATTICEDATA variable.
+2024-01-31  PR-18     : Add multiple path selection for G4LATTICEDATA variable.
 2024-01-29  G4CMP-393 : Increase sampled primary phonons to provide statistics.
 2024-01-29  G4CMP-390 : Add utility to add track info to partition summary.
 

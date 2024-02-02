@@ -58,7 +58,7 @@ developers should check the source code in
 
 | Environment variable    | Macro command                 | Value/action                            |
 | ------------------------| ----------------------------- | ----------------------------------------|
-| G4LATTICEDATA           | /g4cmp/LatticeData	          | Paths with lattice configs          |
+| G4LATTICEDATA [P1:P2...] | /g4cmp/LatticeData	[P1:P2:...] | Paths with lattice configs            |
 | G4CMP\_DEBUG	          | /g4cmp/verbose [L] >0:        | Enable diagnostic messages              |
 | G4CMP\_CLEARANCE [L]    | /g4cmp/clearance [L] mm       | Minimum distance of tracks from boundaries |
 | G4CMP\_VOLTAGE [V]      | /g4cmp/voltage [V]	volt !=0:  | Apply uniform +Z voltage                |
