@@ -74,7 +74,7 @@ add_custom_target(version ALL
     VERBATIM			# Allows for parentheses and redirection below
     COMMAND ${CMAKE_COMMAND} -E env ${SH}
         -c "(cd ${PROJECT_SOURCE_DIR};\
-        [ -d .git ] && git describe || echo ${G4CMP_VERSION}) > ${version_FILE}"
+        [ -d .git ] && git describe --always || echo ${G4CMP_VERSION}) > ${version_FILE}"
     )
 
 install(FILES ${PROJECT_BINARY_DIR}/${version_FILE} DESTINATION share/G4CMP

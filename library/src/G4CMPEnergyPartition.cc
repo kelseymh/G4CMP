@@ -59,6 +59,8 @@
 // 20220818  G4CMP-309 -- Don't skip GenerateCharges() or GeneratePhonons() if
 //		zero downsampling; want to get summary data filled every time.
 // 20221025  G4CMP-335 -- Skip and rethrow nPairs=0 returned from FanoBinomial.
+// 20240105  Add UpdateSummary() function to set position and track info
+// 20240129  In ComputePhononSampling(), generate at least 10k as many phonons
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -252,17 +254,7 @@ G4CMPEnergyPartition::DoPartition(const G4CMPStepAccumulator* steps) {
   }
 
   DoPartition(steps->pd->GetPDGEncoding(), steps->Edep, steps->Eniel);
-
-  // Store position information in summary block
-  if (summary) {
-    summary->position[0] = steps->end[0];
-    summary->position[1] = steps->end[1];
-    summary->position[2] = steps->end[2];
-    summary->position[3] = steps->time;
-    
-    summary->trackID = steps->trackID;
-    summary->stepID  = steps->stepID;
-  }
+  UpdateSummary(steps->end, steps->time, steps->trackID, steps->stepID);
 }
 
 
@@ -423,15 +415,15 @@ void G4CMPEnergyPartition::ComputeDownsampling(G4double eIon, G4double eNIEL) {
 }
 
 // Compute phonon scaling factor only if not fully suppressed
-// NOTE: Phonon sampling done to get same number as charge pairs
 
 void
 G4CMPEnergyPartition::ComputePhononSampling(G4double eNIEL) {
   G4double samplingScale = G4CMPConfigManager::GetSamplingEnergy();
   if (samplingScale <= 0.) return;		// No downsampling computation
   if (G4CMPConfigManager::GetGenPhonons() <= 0.) return;
-  
-  G4double phononScale = (samplingScale * theLattice->GetDebyeEnergy()
+
+  // Set a scaling factor to get 10k times as many phonons as charges  
+  G4double phononScale = (samplingScale * 1e4*theLattice->GetDebyeEnergy()
 			  / theLattice->GetPairProductionEnergy());
   G4double phononSamp = (eNIEL>phononScale) ? phononScale/eNIEL : 1.;
   if (verboseLevel>2)
@@ -619,6 +611,29 @@ void G4CMPEnergyPartition::AddPhonon(G4double ePhon, G4double wt) {
 }
 
 
+// Add hit position and track info from client to summary block
+
+void G4CMPEnergyPartition::
+UpdateSummary(const G4ThreeVector& pos, G4double time, G4int trackID,
+	      G4int stepID) const {
+  if (!summary) return;		// Avoid unnecessary work
+
+  if (verboseLevel>1) {
+    G4cout << "G4CMPEnergyPartition::UpdateSummary @ " << pos << " "
+	   << time/ns << " ns, track " << trackID << " step " << stepID
+	   << G4endl;
+  }
+
+  summary->position[0] = pos[0];
+  summary->position[1] = pos[1];
+  summary->position[2] = pos[2];
+  summary->position[3] = time;
+
+  summary->trackID = trackID;
+  summary->stepID = stepID;
+}
+
+
 // Return primary particles from partitioning as list
 
 void G4CMPEnergyPartition::
@@ -663,12 +678,7 @@ GetPrimaries(G4Event* event, const G4ThreeVector& pos, G4double time,
   }
 
   // Store position information in summary block
-  if (summary) {
-    summary->position[0] = pos[0];
-    summary->position[1] = pos[1];
-    summary->position[2] = pos[2];
-    summary->position[3] = time;
-  }
+  UpdateSummary(pos, time);
 
   std::vector<G4PrimaryParticle*> primaries;	// Can we make this mutable?
   GetPrimaries(primaries);
@@ -744,12 +754,7 @@ GetPrimaries(G4Event* event, const std::vector<G4ThreeVector>& pos,
   for (auto const& ip: pos) avgpos += ip;
   avgpos /= npos;
 
-  if (summary) {
-    summary->position[0] = avgpos[0];
-    summary->position[1] = avgpos[1];
-    summary->position[2] = avgpos[2];
-    summary->position[3] = time;
-  }
+  UpdateSummary(avgpos, time);
 
   // Create and fill a vertex for each position in set
   size_t tracksPerPos = GetNumberOfTracks() / npos;
@@ -804,13 +809,10 @@ GetSecondaries(std::vector<G4Track*>& secondaries, G4double trkWeight) const {
 
   // Store position information in summary block, if not already done
   if (summary && summary->trackID == 0) {
-    summary->position[0] = GetCurrentTrack()->GetPosition()[0];
-    summary->position[1] = GetCurrentTrack()->GetPosition()[1];
-    summary->position[2] = GetCurrentTrack()->GetPosition()[2];
-    summary->position[3] = GetCurrentTrack()->GetGlobalTime();
-    
-    summary->trackID = GetCurrentTrack()->GetTrackID();
-    summary->stepID  = GetCurrentTrack()->GetCurrentStepNumber();
+    UpdateSummary(GetCurrentTrack()->GetPosition(),
+		  GetCurrentTrack()->GetGlobalTime(),
+		  GetCurrentTrack()->GetTrackID(),
+		  GetCurrentTrack()->GetCurrentStepNumber());
   }
   
   // Pre-allocate buffer for secondaries
