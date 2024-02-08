@@ -42,6 +42,8 @@
 // 20230702  I. Ataee -- Add energy recalculations in PostStepDoIt to correct
 //		the energy change after each step under voltage and account for band 
 //		structure effects.
+// 20240207  I. Ataee -- Adding a dynamic mfp minimum calculation to account for
+//              current charge momentum to have smaller steps at direction flips
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
