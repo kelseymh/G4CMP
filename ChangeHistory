@@ -7,6 +7,8 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn".
 
 [ Modifications included on branch G4CMP-276: ]
+2024-02-07  G4CMP-369 : Adapting Luke Scattering with the new kinematics.
+	    Modifications to mfp.
 2023-07-02  G4CMP-352 : Correct physics of band structure in EqEMField and
             LatticeLogical. Introduce quasi-momentum p_Q.
 2023-02-10  G4CMP-352 : Use relativistic expressions for MapPtoEkin, electron mass.
