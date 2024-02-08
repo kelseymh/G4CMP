@@ -11,6 +11,7 @@
 // 20170815  Drop call to LoadDataForTrack(); now handled in process.
 // 20170913  Check for electric field; compute "rate" to get up to Vsound
 // 20170917  Add interface for threshold identification
+// 20240207  Replacing wave vector with speed to Emission calculations
 
 #include "G4CMPLukeEmissionRate.hh"
 #include "G4CMPGeometryUtils.hh"
