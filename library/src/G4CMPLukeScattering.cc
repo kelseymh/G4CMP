@@ -35,6 +35,9 @@
 // 		significance.
 // 20221210  Fix to where Erecoil mass was not being multiplied by c_squared
 // 		for Holes, resulting into wrong units.
+// 20240207  Adapting Luke Scattering with new kinematics. Reverting the
+//              use of effective mass for electrons and adding electron mass
+//              back. Adding InitializeParticleChange to get the correct Ekin
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
