@@ -11,6 +11,7 @@
 // 20170815  Drop call to LoadDataForTrack(); now handled in process.
 // 20170913  Check for electric field; compute "rate" to get up to Vsound
 // 20170917  Add interface for threshold identification
+// 20240207  Replacing wave vector with speed to Emission calculations
 
 #include "G4CMPLukeEmissionRate.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -33,25 +34,21 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
     return 0.;
   }
 
-  G4double kmag = 0.; G4double l0 = 0.; G4double mass = 0.;
+  G4double vmag = 0.; G4double l0 = 0.;
+  vmag = GetLocalVelocityVector(aTrack).mag();
   if (G4CMP::IsElectron(aTrack)) {
-    kmag = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
-				     GetLocalVelocityVector(aTrack)).mag();
     l0 = theLattice->GetElectronScatter();
-    mass = theLattice->GetElectronMass();	// Scalar mass
   } else if (G4CMP::IsHole(aTrack)) {
-    kmag = GetLocalWaveVector(aTrack).mag();
     l0 = theLattice->GetHoleScatter();
-    mass = theLattice->GetHoleMass();
   }
 
   if (verboseLevel > 1) 
-    G4cout << "LukeEmissionRate kmag = " << kmag*m << " /m" << G4endl;
+    G4cout << "LukeEmissionRate vmag = " << vmag/(m/s) << " m/s" << G4endl;
 
-  G4double kSound = theLattice->GetSoundSpeed() * mass / hbar_Planck;
+  G4double vsound = theLattice->GetSoundSpeed();
 
   // Time step corresponding to Mach number (avg. time between radiations)
-  return (kmag > kSound) ? 1./ChargeCarrierTimeStep(kmag/kSound, l0) : 0.;
+  return (vmag > vsound) ? 1./ChargeCarrierTimeStep(vmag/vsound, l0) : 0.;
 }
 
 
@@ -63,7 +60,12 @@ G4double G4CMPLukeEmissionRate::Threshold(G4double Eabove) const {
   G4ThreeVector vtrk = GetLocalVelocityVector(trk);
   G4double vsound = theLattice->GetSoundSpeed();
   G4ThreeVector v_el = vsound * vtrk.unit();
-  G4double Esound = theLattice->MapV_elToEkin(GetValleyIndex(trk), v_el);
+  G4double Esound = 0.;
+  if (G4CMP::IsElectron(trk)) {
+    Esound = theLattice->MapV_elToEkin(GetValleyIndex(trk), v_el);
+  } else {
+    Esound = trk->GetKineticEnergy();
+  }
 
   if (verboseLevel>1) {
     G4cout << "G4CMPLukeEmissionRate::Threshold vtrk " << vtrk.mag()/(m/s)

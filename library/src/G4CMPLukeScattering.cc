@@ -35,6 +35,9 @@
 // 		significance.
 // 20221210  Fix to where Erecoil mass was not being multiplied by c_squared
 // 		for Holes, resulting into wrong units.
+// 20240207  Adapting Luke Scattering with new kinematics. Reverting the
+//              use of effective mass for electrons and adding electron mass
+//              back. Adding InitializeParticleChange to get the correct Ekin
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -81,7 +84,7 @@ G4CMPLukeScattering::~G4CMPLukeScattering() {
 
 G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
                                                      const G4Step& aStep) {
-  aParticleChange.Initialize(aTrack); 
+  InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
   if (verboseLevel > 1) {
@@ -120,13 +123,13 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4int iValley = GetValleyIndex(aTrack);	// Doesn't change valley
 
   // NOTE: Track kinematics include post-step acceleration from E-field
-  G4ThreeVector ptrk = GetLocalMomentum(aTrack);
+  G4ThreeVector ptrk = GetLocalDirection(aStep.GetPostStepPoint()->GetMomentum());
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
   G4double Etrk = 0.;
   if (IsElectron()) {
     ktrk = lat->MapPtoK_HV(iValley, ptrk);
-    mass = lat->GetElectronEffectiveMass(iValley, ptrk);
+    mass = electron_mass_c2/c_squared;
     Etrk = lat->MapPtoEkin(iValley, ptrk);
   } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
@@ -140,7 +143,15 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4ThreeVector kdir = ktrk.unit();
   G4double kmag = ktrk.mag();
-  G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
+  G4double kSound = 0.;
+  if (IsElectron()) {
+    G4ThreeVector vSound = lat->GetSoundSpeed()*kdir;
+    kSound = (lat->MapV_elToK_HV(iValley,vSound)).mag();
+  }
+  else{
+    G4double gammaSound = 1/sqrt(1.-lat->GetSoundSpeed()*lat->GetSoundSpeed()/c_squared);
+    kSound = gammaSound * lat->GetSoundSpeed() * mass / hbar_Planck;
+  }
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;

@@ -721,9 +721,10 @@ void G4LatticeLogical::SetMassTensor(const G4RotationMatrix& etens) {
 }
 
 // Compute derived quantities from user-input mass tensor
+// apachepersonal.miun.se/~gorthu/halvledare/Effective%20mass%20in%20semiconductors.htm
 
 void G4LatticeLogical::FillMassInfo() {
-  // Herring-Vogt scalar mass of electron, used for sound speed calcs  
+  // Effective mass for conductivity calculations
   fElectronMass = 3. / ( 1./fMassTensor.xx() + 1./fMassTensor.yy()
 			 + 1./fMassTensor.zz() );  
 
