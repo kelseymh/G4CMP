@@ -171,7 +171,7 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
 G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 						  const G4Step& aStep) {
-  InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
+  InitializeParticleChange(aTrack);
 
   // Report basic kinematics
   if (verboseLevel) {

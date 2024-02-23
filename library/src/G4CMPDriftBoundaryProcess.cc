@@ -220,7 +220,7 @@ DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
     G4cout << " Cross-check new v dir  " << vnew.unit() << G4endl;
   }
   
-  FillParticleChange(GetCurrentValley(), p);	// Handle effective mass, vel
+  FillParticleChange(p);	// Handle effective mass, vel
 }
 
 void G4CMPDriftBoundaryProcess::

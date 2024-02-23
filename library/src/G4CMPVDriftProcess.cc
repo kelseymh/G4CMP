@@ -90,17 +90,18 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
 // Fill ParticleChange energy and mass for electron charge carrier momentum
 
 void 
-G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
+G4CMPVDriftProcess::FillParticleChange(const G4ThreeVector& p) {
   // Compute kinetic energy from momentum for electrons or holes
   G4double energy = 0.;
+  G4int valley = FindNearestValley(GetLocalDirection(p));
   if (IsElectron()){
-    energy = theLattice->MapPtoEkin(ivalley, GetLocalDirection(p));
+    energy = theLattice->MapPtoEkin(valley, GetLocalDirection(p));
   } else {
     // Geant4 returns the mass in energy units, with the c_squared already included
     G4double massc2 = GetCurrentTrack()->GetDynamicParticle()->GetMass();
     energy = sqrt(p.mag2() + massc2*massc2) - massc2;
   }
-  FillParticleChange(ivalley, energy, p);
+  FillParticleChange(valley, energy, p);
 }
 
 // Fill ParticleChange mass for electron charge carrier with given energy
@@ -122,7 +123,7 @@ void G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
 // Initializing ParticleChange and setting up the correct energy and
 // effective for the charge carrier
 
-void G4CMPVDriftProcess::InitializeParticleChange(G4int ivalley, const G4Track& track) {
+void G4CMPVDriftProcess::InitializeParticleChange(const G4Track& track) {
   aParticleChange.Initialize(track);
-  FillParticleChange(ivalley, track.GetMomentum());
+  FillParticleChange(track.GetMomentum());
 }
