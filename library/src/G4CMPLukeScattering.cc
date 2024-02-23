@@ -84,7 +84,7 @@ G4CMPLukeScattering::~G4CMPLukeScattering() {
 
 G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
                                                      const G4Step& aStep) {
-  InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
+  InitializeParticleChange(aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
   if (verboseLevel > 1) {
@@ -361,6 +361,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
   }
 
+  newValley = FindNearestValley(precoil);
   RotateToGlobalDirection(precoil);	// Update track in world coordinates
   FillParticleChange(newValley, Erecoil, precoil);
 

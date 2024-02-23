@@ -40,7 +40,7 @@ public:
 
 protected:
   // Fill ParticleChange energy and mass for charge carrier of given momentum
-  void FillParticleChange(G4int ivalley, const G4ThreeVector& p);
+  void FillParticleChange(const G4ThreeVector& p);
 
   // Fill ParticleChange energy and mass for charge carrier of given energy
   void FillParticleChange(G4int ivalley, G4double Ekin,
@@ -48,7 +48,7 @@ protected:
 
   // Initializing ParticleChange and setting up the correct energy and
   // effective for the charge carrier
-  void InitializeParticleChange(G4int ivalley, const G4Track& track);
+  void InitializeParticleChange(const G4Track& track);
 
   G4double currentEkin;	// Caching the current track kinetic energy
 

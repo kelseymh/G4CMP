@@ -136,7 +136,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   if (G4UniformRand()>0.5) p = -p;
 
   // Adjust track kinematics for new valley
-  FillParticleChange(valley, p);
+  FillParticleChange(p);
   
   ClearNumberOfInteractionLengthLeft();    
   return &aParticleChange;
