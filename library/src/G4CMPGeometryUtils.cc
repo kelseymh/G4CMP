@@ -208,7 +208,7 @@ G4CMP::FindNearestValley(const G4LatticePhysical* lat, G4ThreeVector ldir) {
 
   std::set<G4int> bestValley;	// Collect all best matches for later choice
   G4double align, bestAlign = -1.;
-  G4double k = 0;
+  G4double pq = 0;
   for (size_t i=0; i<lat->NumberOfValleys(); i++) {
     pq = lat->MapPToP_Q(ldir, i);
     pq = pq.unit();
