@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2024-03-06  G4CMP-397 : Add support for registering touchable in ProcessUtils.
+
 2024-02-01  g4cmp-V08-06-00 G4LATTICEDATA search path, better NR phonon stats.
 2024-01-31  PR-18     : Add multiple path selection for G4LATTICEDATA variable.
 2024-01-29  G4CMP-393 : Increase sampled primary phonons to provide statistics.
