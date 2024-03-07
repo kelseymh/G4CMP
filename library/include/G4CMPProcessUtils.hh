@@ -36,6 +36,7 @@
 // 20201111  Add MakePhononEnergy() which takes wave vector directly
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 // 20201223  Add FindNearestValley() function to align electron momentum.
+// 20240303  Add local currentTouchable pointer for non-tracking situations.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -81,9 +82,12 @@ public:
   G4bool IsChargeCarrier() const;
 
   // Set configuration manually, without a track
-  virtual void FindLattice(const G4VPhysicalVolume* volume);
-  virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
-  virtual const G4LatticePhysical* GetLattice() const { return theLattice; }
+  void FindLattice(const G4VPhysicalVolume* volume);
+  void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
+  const G4LatticePhysical* GetLattice() const { return theLattice; }
+
+  void FindTouchable(const G4ThreeVector& pos);
+  void SetTouchable(const G4VTouchable* touch) { currentTouchable = touch; }
 
   // Convert global to local coordinates with respect to current track
   G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const;
@@ -251,6 +255,7 @@ protected:
 
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking
+  const G4VTouchable* currentTouchable;	// May be pre-set for non-tracking
   const G4VPhysicalVolume* currentVolume;
 };
 

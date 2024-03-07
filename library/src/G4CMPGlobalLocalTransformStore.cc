@@ -16,6 +16,7 @@
 // 20170721  BUG FIX:  NavHistory indexed in opposite direction from Touchable
 // 20170728  BUG FIX:  NavHistory returns global-to-local transform.
 // 20200519  Convert to thread-local singleton (for use by worker threads)
+// 20240306  Construct transform from touchable instead of relying on History
 
 #include "G4CMPGlobalLocalTransformStore.hh"
 #include "G4NavigationHistory.hh"
@@ -53,8 +54,7 @@ G4CMPGlobalLocalTransformStore::GetOrBuildTransforms(const G4VTouchable* touch) 
 
   uintptr_t thash = Hash(touch);
   if (Instance().cache.count(thash) == 0) {
-    const G4NavigationHistory* thist = touch->GetHistory();
-    const G4AffineTransform& gToL = thist->GetTransform(thist->GetDepth());
+    G4AffineTransform gToL(touch->GetRotation(), touch->GetTranslation());
     Instance().cache[thash] = Transforms { gToL.Inverse(), gToL };
   }
 

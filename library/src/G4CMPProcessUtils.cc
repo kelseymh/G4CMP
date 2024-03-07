@@ -45,6 +45,7 @@
 // 20230808  Added derivation of ChargeCarrierTimeStep to explain bug fix.
 // 20230831  Remove modifications to ChargeCarrierTimeStep(), they seem to
 //		cause zero-length and NaN steps.
+// 20240303  Add local currentTouchable pointer for non-tracking situations.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -80,8 +81,8 @@
 // Constructor and destructor
 
 G4CMPProcessUtils::G4CMPProcessUtils()
-  : theLattice(nullptr), currentTrack(nullptr), currentVolume(nullptr) {
-}
+  : theLattice(nullptr), currentTrack(nullptr), currentTouchable(nullptr),
+    currentVolume(nullptr) {;}
 
 G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
@@ -153,11 +154,13 @@ G4bool G4CMPProcessUtils::IsChargeCarrier() const {
 
 void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
   currentTrack = track;
+  currentTouchable = nullptr;
   currentVolume = track ? track->GetVolume() : nullptr;
 
   if (!track) return;		// Avoid unnecessry work
 
   if (!currentVolume) {		// Primary tracks may not have volumes yet
+    currentTouchable = G4CMP::CreateTouchableAtPoint(track->GetPosition());
     currentVolume = G4CMP::GetVolumeAtPoint(track->GetPosition());
   }
 }
@@ -186,6 +189,7 @@ void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
 void G4CMPProcessUtils::ReleaseTrack() {
   currentTrack = nullptr;
   currentVolume = nullptr;
+  currentTouchable = nullptr;
   theLattice = nullptr;
 }
 
@@ -366,8 +370,12 @@ const G4ParticleDefinition* G4CMPProcessUtils::GetCurrentParticle() const {
 
 // Return touchable for currently active track for transforms
 
+void G4CMPProcessUtils::FindTouchable(const G4ThreeVector& pos) {
+  currentTouchable = G4CMP::CreateTouchableAtPoint(currentTrack->GetPosition());
+}
+
 const G4VTouchable* G4CMPProcessUtils::GetCurrentTouchable() const {
-  if (!currentTrack) return 0;
+  if (!currentTrack) return currentTouchable;
 
   const G4VTouchable* touch = currentTrack->GetTouchable();
 
