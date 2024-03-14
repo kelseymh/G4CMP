@@ -231,7 +231,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     
     // Get recoil wavevector (in HV frame), convert to new local momentum
     k_recoil = ktrk - qvec;
-    Ephonon = qvec.mag() * hbar_Planck;
+    Ephonon = MakePhononEnergy(qvec.mag());
     Erecoil = Etrk - Ephonon;
 
     if (IsHole()) {
