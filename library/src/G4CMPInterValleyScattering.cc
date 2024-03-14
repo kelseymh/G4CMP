@@ -121,13 +121,13 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   // Get track's energy in current valley
   G4ThreeVector p = GetLocalMomentum(aTrack);
   G4int valley = GetValleyIndex(aTrack);
-  p = theLattice->MapPtoK_valley(valley, p); // p is actually k now
+  p = theLattice->MapPtoK(valley, p); // p is actually k now
   
   // picking a new valley at random if IV-scattering process was triggered
   valley = ChangeValley(valley);
   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
 
-  p = theLattice->MapK_valleyToP(valley, p); // p is p again
+  p = theLattice->MapKtoP(valley, p); // p is p again
   RotateToGlobalDirection(p);
   
   // There's a 50% chance that the charge jumped into the antivalley rather

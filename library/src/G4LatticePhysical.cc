@@ -243,10 +243,10 @@ G4LatticePhysical::MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const {
 
 // NOTE:  K_HV vector returned in valley internal coordinate system
 G4ThreeVector
-G4LatticePhysical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_e) const {
+G4LatticePhysical::MapV_elToK(G4int ivalley, const G4ThreeVector& v_e) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticePhysical::MapV_elToK_HV " << ivalley << " " << v_e
+    G4cout << "G4LatticePhysical::MapV_elToK " << ivalley << " " << v_e
      << G4endl;
 #endif
 
@@ -254,12 +254,12 @@ G4LatticePhysical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_e) const 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
     G4cout << " in lattice frame " << tempvec() << G4endl
-	   << " returning K_HV " << fLattice->MapV_elToK_HV(ivalley, tempvec())
+	   << " returning K_HV " << fLattice->MapV_elToK(ivalley, tempvec())
 	   << G4endl;
   }
 #endif
 
-  return fLattice->MapV_elToK_HV(ivalley, tempvec());
+  return fLattice->MapV_elToK(ivalley, tempvec());
 }
 
 G4ThreeVector 
@@ -335,6 +335,41 @@ G4LatticePhysical::MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const {
   if (verboseLevel>1) G4cout << " K (lattice) " << tempvec() << G4endl;
 #endif
 
+  return RotateToSolid(tempvec());
+}
+
+G4ThreeVector 
+G4LatticePhysical::MapPtoK(G4int ivalley, const G4ThreeVector& p_e) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapPtoK " << ivalley << " " << p_e
+     << G4endl;
+#endif
+  
+  RotateToLattice(tempvec()=p_e);
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+#endif
+  
+  tempvec() = fLattice->MapPtoK(ivalley, tempvec());
+
+  return RotateToSolid(tempvec());
+}
+
+G4ThreeVector 
+G4LatticePhysical::MapKtoP(G4int ivalley, const G4ThreeVector& k) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapKtoP " << ivalley << " " << k
+     << G4endl;
+#endif
+    
+  RotateToLattice(tempvec()=k);
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+#endif
+    
+  tempvec() = fLattice->MapKtoP(ivalley, tempvec());
   return RotateToSolid(tempvec());
 }
 

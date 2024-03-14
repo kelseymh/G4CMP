@@ -82,8 +82,8 @@ G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
   if (verboseLevel>2) {
     if (IsElectron()) {
-      G4cout << " K_valley (" << GetValleyIndex(aTrack) << ") direction: "
-	     << theLattice->MapPtoK_valley(GetValleyIndex(aTrack),
+      G4cout << " K (" << GetValleyIndex(aTrack) << ") direction: "
+	     << theLattice->MapPtoK(GetValleyIndex(aTrack),
 				   GetLocalMomentum(aTrack)).unit()
 	     << G4endl;
     }
