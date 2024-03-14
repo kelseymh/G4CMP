@@ -231,14 +231,14 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     
     // Get recoil wavevector (in HV frame), convert to new local momentum
     k_recoil = ktrk - qvec;
+    Ephonon = qvec.mag() * hbar_Planck;
+    Erecoil = Etrk - Ephonon;
 
     if (IsHole()) {
       precoil = k_recoil * hbarc;
-      G4double massc2 = mass*c_squared;
-      Erecoil = sqrt(precoil.mag2() + massc2 * massc2) - massc2;
     } else {
       precoil = lat->MapKtoP(iValley, k_recoil);
-      Erecoil = lat->MapPtoEkin(iValley, precoil);
+      precoil = lat->MapEkintoP(iValley, precoil, Erecoil);
     }
 
     if (verboseLevel > 1) {
