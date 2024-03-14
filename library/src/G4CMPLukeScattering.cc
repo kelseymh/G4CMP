@@ -128,7 +128,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double mass = 0.;
   G4double Etrk = 0.;
   if (IsElectron()) {
-    ktrk = lat->MapPtoK_HV(iValley, ptrk);
+    ktrk = lat->MapPtoK(iValley, ptrk);
     mass = electron_mass_c2/c_squared;
     Etrk = lat->MapPtoEkin(iValley, ptrk);
   } else if (IsHole()) {
@@ -146,7 +146,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double kSound = 0.;
   if (IsElectron()) {
     G4ThreeVector vSound = lat->GetSoundSpeed()*kdir;
-    kSound = (lat->MapV_elToK_HV(iValley,vSound)).mag();
+    kSound = (lat->MapV_elToK(iValley,vSound)).mag();
   }
   else{
     G4double gammaSound = 1/sqrt(1.-lat->GetSoundSpeed()*lat->GetSoundSpeed()/c_squared);
@@ -172,13 +172,13 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	   << G4endl;
 
     if (IsElectron()) {
-      G4ThreeVector kvalley = theLattice->MapPtoK_valley(iValley, ptrk);
+      G4ThreeVector kvalley = theLattice->MapPtoK(iValley, ptrk);
       G4ThreeVector pvalley = kvalley * hbarc;
       G4cout << " valley " << iValley << " along "
 	     << theLattice->GetValleyAxis(iValley) << G4endl
 	     << " p_valley = " << pvalley/eV << " " << pvalley.mag()/eV
 	     << " eV" << G4endl
-	     << " k_valley = " << kvalley/eV << " " << kvalley.mag()/eV
+	     << " k = " << kvalley/eV << " " << kvalley.mag()/eV
 	     << " eV" << G4endl;
     }
 
@@ -231,25 +231,13 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     
     // Get recoil wavevector (in HV frame), convert to new local momentum
     k_recoil = ktrk - qvec;
-    if (verboseLevel > 1) {
-      G4cout << "k_recoil = " << k_recoil << " " << k_recoil.mag() << G4endl;
-      
-      if (IsElectron()) {
-	G4ThreeVector kvalley = theLattice->MapK_HVtoK_valley(iValley, k_recoil);
-	G4ThreeVector pvalley = kvalley * hbarc;
-	
-	G4cout << "k_valley = " << kvalley << " " << kvalley.mag() << G4endl
-	       << "p_valley = " << pvalley/eV << " " << pvalley.mag()/eV
-	       << " eV" << G4endl;
-      }
-    }
 
     if (IsHole()) {
       precoil = k_recoil * hbarc;
       G4double massc2 = mass*c_squared;
       Erecoil = sqrt(precoil.mag2() + massc2 * massc2) - massc2;
     } else {
-      precoil = lat->MapK_HVtoP(iValley, k_recoil);
+      precoil = lat->MapKtoP(iValley, k_recoil);
       Erecoil = lat->MapPtoEkin(iValley, precoil);
     }
 

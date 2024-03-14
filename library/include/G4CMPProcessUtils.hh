@@ -234,7 +234,7 @@ public:
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
 
-  // Convert K_HV wave vector to track momentum
+  // Convert K wave vector to track momentum
   void MakeGlobalRecoil(G4ThreeVector& krecoil) const;
 
   // Compute time between scatters/emissions for moving charge carrier
