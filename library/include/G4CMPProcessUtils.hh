@@ -86,8 +86,7 @@ public:
   void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
   const G4LatticePhysical* GetLattice() const { return theLattice; }
 
-  void FindTouchable(const G4ThreeVector& pos);
-  void SetTouchable(const G4VTouchable* touch) { currentTouchable = touch; }
+  void SetTouchable(const G4VTouchable* touch);
 
   // Convert global to local coordinates with respect to current track
   G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const;
@@ -255,8 +254,12 @@ protected:
 
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking
-  const G4VTouchable* currentTouchable;	// May be pre-set for non-tracking
   const G4VPhysicalVolume* currentVolume;
+
+  // May be created by GetCurrentTouchable() for internal use with primaries
+  void ClearTouchable() const;
+  mutable const G4VTouchable* currentTouchable;
+  mutable G4bool deleteTouchable;
 };
 
 #endif	/* G4CMPProcessUtils_hh */
