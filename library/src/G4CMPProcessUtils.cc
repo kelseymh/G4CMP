@@ -46,6 +46,8 @@
 // 20230831  Remove modifications to ChargeCarrierTimeStep(), they seem to
 //		cause zero-length and NaN steps.
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
+// 20240402  Drop FindTouchable() function.  Set currentTouchable internally
+//		not available from track, and delete it at end of track.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -81,8 +83,8 @@
 // Constructor and destructor
 
 G4CMPProcessUtils::G4CMPProcessUtils()
-  : theLattice(nullptr), currentTrack(nullptr), currentTouchable(nullptr),
-    currentVolume(nullptr) {;}
+  : theLattice(nullptr), currentTrack(nullptr), currentVolume(nullptr),
+    currentTouchable(nullptr) {;}
 
 G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
@@ -160,8 +162,9 @@ void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
   if (!track) return;		// Avoid unnecessry work
 
   if (!currentVolume) {		// Primary tracks may not have volumes yet
-    currentTouchable = G4CMP::CreateTouchableAtPoint(track->GetPosition());
     currentVolume = G4CMP::GetVolumeAtPoint(track->GetPosition());
+    currentTouchable = G4CMP::CreateTouchableAtPoint(track->GetPosition());
+    deleteTouchable = true;	// Avoid memory leak at end of track
   }
 }
 
@@ -189,8 +192,24 @@ void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
 void G4CMPProcessUtils::ReleaseTrack() {
   currentTrack = nullptr;
   currentVolume = nullptr;
-  currentTouchable = nullptr;
   theLattice = nullptr;
+
+  ClearTouchable();
+}
+
+
+// Register touchable owned by client code
+
+void G4CMPProcessUtils::SetTouchable(const G4VTouchable* touch) {
+  ClearTouchable();
+  currentTouchable = touch;
+  deleteTouchable = false;	// Client code retains ownership
+}
+
+void G4CMPProcessUtils::ClearTouchable() const {
+  if (deleteTouchable) delete currentTouchable;
+  currentTouchable = nullptr;
+  deleteTouchable = false;
 }
 
 
@@ -370,19 +389,18 @@ const G4ParticleDefinition* G4CMPProcessUtils::GetCurrentParticle() const {
 
 // Return touchable for currently active track for transforms
 
-void G4CMPProcessUtils::FindTouchable(const G4ThreeVector& pos) {
-  currentTouchable = G4CMP::CreateTouchableAtPoint(currentTrack->GetPosition());
-}
-
 const G4VTouchable* G4CMPProcessUtils::GetCurrentTouchable() const {
   if (!currentTrack) return currentTouchable;
 
   const G4VTouchable* touch = currentTrack->GetTouchable();
+  if (touch) return touch;
 
-  if (!touch)				// FIXME: This is a memory leak!
-    touch = G4CMP::CreateTouchableAtPoint(currentTrack->GetPosition());
+  // Create a local touchable, to delete at end of track
+  ClearTouchable();
+  currentTouchable = G4CMP::CreateTouchableAtPoint(currentTrack->GetPosition());
+  deleteTouchable = true;
 
-  return touch;
+  return currentTouchable;
 }
 
 
