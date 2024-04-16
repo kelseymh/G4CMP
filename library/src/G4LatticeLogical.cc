@@ -44,7 +44,8 @@
 // 20190906  M. Kelsey -- Default IV rate model to G4CMPConfigManager value.
 // 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
 //		return thread-local instance.
-// 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
+// 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
+// 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -905,11 +906,12 @@ void G4LatticeLogical::DumpCrystalInfo(std::ostream& os) const {
 
   switch (fCrystal.group) {		// Reduced elasticity tensor
   case G4CMPCrystalGroup::tetragonal:
-    DumpCpq(os,1,6);				// Plus all below
+    DumpCpq(os,1,6); [[fallthrough]];			// Plus all below
   case G4CMPCrystalGroup::hexagonal:
     DumpCpq(os,1,3); DumpCpq(os,3,3); DumpCpq(os,6,6);	// Plus all below
+    [[fallthrough]];
   case G4CMPCrystalGroup::cubic:
-    DumpCpq(os,4,4);				// Plus all below
+    DumpCpq(os,4,4); [[fallthrough]];			// Plus all below
   case G4CMPCrystalGroup::amorphous:
     DumpCpq(os,1,1); DumpCpq(os,1,2); break;
   case G4CMPCrystalGroup::rhombohedral:
@@ -918,7 +920,7 @@ void G4LatticeLogical::DumpCrystalInfo(std::ostream& os) const {
     DumpCpq(os,3,3); DumpCpq(os,4,4); DumpCpq(os,6,6); break;
   case G4CMPCrystalGroup::monoclinic:
     DumpCpq(os,1,6); DumpCpq(os,2,6); DumpCpq(os,3,6);	// Plus all below
-    DumpCpq(os,4,5);
+    DumpCpq(os,4,5); [[fallthrough]];
   case G4CMPCrystalGroup::orthorhombic:
     for (int p=1; p<7; p++) {		// Upper corner and lower diagonal
       for (int q=p; q<4; q++) DumpCpq(os,p,q);
