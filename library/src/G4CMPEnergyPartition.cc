@@ -61,6 +61,7 @@
 // 20221025  G4CMP-335 -- Skip and rethrow nPairs=0 returned from FanoBinomial.
 // 20240105  Add UpdateSummary() function to set position and track info
 // 20240129  In ComputePhononSampling(), generate at least 10k as many phonons
+// 20240417  In ComputePhononSampling(), use same energy scale as for charges.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -422,10 +423,8 @@ G4CMPEnergyPartition::ComputePhononSampling(G4double eNIEL) {
   if (samplingScale <= 0.) return;		// No downsampling computation
   if (G4CMPConfigManager::GetGenPhonons() <= 0.) return;
 
-  // Set a scaling factor to get 10k times as many phonons as charges  
-  G4double phononScale = (samplingScale * 1e4*theLattice->GetDebyeEnergy()
-			  / theLattice->GetPairProductionEnergy());
-  G4double phononSamp = (eNIEL>phononScale) ? phononScale/eNIEL : 1.;
+  // Downsample non-ionizing energy the same way we do ionization
+  G4double phononSamp = (eNIEL>samplingScale) ? samplingScale/eNIEL : 1.;
   if (verboseLevel>2)
     G4cout << " Downsample " << phononSamp << " primary phonons" << G4endl;
   
