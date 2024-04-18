@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2024-04-17  G4CMP-400 : Address compiler warnings from more recent GCC's.
+
 2024-04-02  g4cmp-V08-07-01 Fix memory leak caused by new G4CMP-397 feature.
 2024-04-02  G4CMP-399 : Ensure that locally created touchable is deleted.
 
