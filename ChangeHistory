@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2024-04-18  G4CMP-402 : Reduce overhead generaing track positions along steps.
 2024-04-17  G4CMP-401 : Sample primary phonons sensibly, with same energy scale.
 
 2024-04-02  g4cmp-V08-07-01 Fix memory leak caused by new G4CMP-397 feature.

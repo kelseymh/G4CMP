@@ -14,6 +14,9 @@
 // 20220815  Michael Kelsey -- Extracted from G4CMPSecondaryProduction
 // 20220821  G4CMP-308 -- Use new G4CMPStepInfo container instead of G4Step
 // 20220828  Pass event ID through to accumulator; improve debugging output
+// 20240418  For source positions, apply surface clearance just to start
+//	       and end of step, not each point individually.  Don't spread
+//	       out source positions for steps < 100*tolerance.
 
 #include "G4CMPHitMerging.hh"
 #include "G4CMPConfigManager.hh"
@@ -24,6 +27,7 @@
 #include "G4Event.hh"
 #include "G4Exception.hh"
 #include "G4ExceptionSeverity.hh"
+#include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PrimaryVertex.hh"
@@ -374,22 +378,39 @@ void G4CMPHitMerging::GeneratePositions(size_t nsec,
 					const G4ThreeVector& end) {
   if (verboseLevel>1) G4cout << " GeneratePositions " << nsec << G4endl;
 
+  // Ensure that start and end points are both away from volume surface
+  G4ThreeVector tstart = SurfaceClearance(start);
+  G4ThreeVector tend = SurfaceClearance(end);
+
   posSecs.clear();
 
   // If everything happens at a point, just fill the position vector
-  if (start == end) {
-    posSecs.resize(nsec, end);
+  if (tstart == tend) {
+    posSecs.resize(nsec, tend);
     return;
   }
 
   // Get average distance between secondaries along (straight) trajectory
-  G4ThreeVector traj = end - start;
+  G4ThreeVector traj = tend - tstart;
   G4ThreeVector tdir = traj.unit();
 
   G4double length = traj.mag();
   G4double dl = length / G4double(nsec);
   G4double sigl = dl/6.;
 
+  // If step length below tolerance, generate everything at one place
+  const G4double lmin =
+    G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
+  if (length < lmin*100.) {
+    if (verboseLevel>1) {
+      G4cout << " Length " << length/mm << " too short."
+	     << " Generating positions at " << start << G4endl;
+    }
+
+    posSecs.resize(nsec, tstart);
+  }
+
+  // Spread out initial production along step
   if (verboseLevel>1) {
     G4cout << " Choosing positions along " << length/mm << " mm " << tdir
 	   << ": steps " << dl << " +- " << sigl << " mm" << G4endl;
@@ -401,7 +422,7 @@ void G4CMPHitMerging::GeneratePositions(size_t nsec,
   G4ThreeVector lastPos = start;
   for (size_t i=0; i<nsec; i++) {
     substep = G4RandGauss::shoot(dl, sigl);
-    lastPos += SurfaceClearance(substep*tdir);
+    lastPos += substep*tdir;
     
     posSecs.push_back(lastPos);
   }
