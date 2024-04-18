@@ -10,9 +10,9 @@
 /// IMPACT@TUNL ionization yield measurements.  
 /// Link to the paper:https://arxiv.org/abs/2303.02196.
 //
-
 // 20230721  David Sadek - University of Florida (david.sadek@ufl.edu)
 // 20240416  S. Zatschler -- Remove unused const A
+// 20240417  M. Kelsey -- Add check using SiA and A
 
 // This ionization model was obtained from the ionization yield measurements
 // in Silicon ONLY and it does not have (Z,A) dependence. The code will
@@ -36,8 +36,8 @@
 
 
 G4double G4CMPImpactTunlNIEL::
-PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin=0.*/,
-		G4double /*Ain=0.*/) const {
+PartitionNIEL(G4double energy, const G4Material *material,G4double Zin,
+		G4double Ain) const {
   if (!material) {
     G4Exception("G4CMPImpactTunlNIEL", "G4CMP1000", FatalErrorInArgument,
 		  "No material passed to partition function");
@@ -46,11 +46,12 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin=0.*/,
 
   // Get effective Z of the material
   const G4double Z = GetEffectiveZ(material);
-    
+  const G4double A = GetEffectiveA(material);
+
   // Check if the material is silicon or similar
-  if (std::abs(Z - SiZ) <0.5) {
+  if (std::abs(Z-SiZ) < 0.5 || std::abs(A-SiA) < 0.5) {
     // This is to ensure that the warning message 
-    if (firstCall){
+    if (firstCall) {
     G4Exception("G4CMPImpactTunlNIEL", "G4CMP1005", JustWarning,
       "IMPACT@TUNL model is obtained in the range of 100 eV to 10 keV. Above 10 keV, Lindhard model will be used.");
       firstCall = false;
@@ -63,14 +64,14 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin=0.*/,
       return (Y10*EB); 
     } 
     else {
-      return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material);//, Zin, Ain);
+      return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
     }
   } 
   else {
-    if (firstCall){
+    if (firstCall) {
       G4Exception("G4CMPImpactTunlNIEL", "G4CMP1004", JustWarning, "The input material is not Silicon. The Lindhard model will be used for NIEL calculation.");
       firstCall = false;
     }
-    return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material);//, Zin, Ain);
+    return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
   }
 }
