@@ -94,8 +94,8 @@ private:
   G4String fUnitName;		// ... unit string from reading file
   G4String fUnitCat;		// ... G4UnitsCategory of dimensions
 
-  const G4String fDataDir;	// Directory path ($G4LATTICEDATA)
-  const G4double mElectron;	// Electron mass in kilograms
+  G4String fDataDir;		// Directory path ($G4LATTICEDATA)
+  G4double mElectron;		// Electron mass in kilograms
 };
 
 #endif	/* G4LatticeReader_h */
