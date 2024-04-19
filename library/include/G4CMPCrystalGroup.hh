@@ -12,6 +12,7 @@
 // 20160729  M. Kelsey -- Add accessors for unit cell angles
 // 20170525  M. Kelsey -- Add default "rule of five" copy/move operators
 // 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm" (-Wshadow)
+// 20240416  S. Zatschler -- Change function arg "g" to "c" (-Wshadow)
 
 #include "globals.hh"
 #include "G4ThreeVector.hh"
@@ -50,7 +51,7 @@ public:
   G4double gamma() const { return fabs(axis[0].angle(axis[1])); }
 
   // Some parameters may be omitted depending on symmetry
-  void Set(Bravais grp, G4double a=0., G4double b=0., G4double g=0.);
+  void Set(Bravais grp, G4double a=0., G4double b=0., G4double c=0.);
 
   // Copy appropriate elements of Cij matrix based on crystal symmetry
   // NOTE:  Non-const array passed in for modification

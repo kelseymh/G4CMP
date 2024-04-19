@@ -10,16 +10,16 @@
 //
 
 // 20230721  David Sadek - University of Florida (david.sadek@ufl.edu)
+// 20240416  S. Zatschler -- Remove unused const A
 
 // This ionization model was obtained from the Sarkis paper referenced above 
-// for Silicon ONLY so it deos not have (Z,A) dependence. The code will check
-// the effective Z and A of the input material, if the effZ and effA are
-// within +/-1 of Silicon Z and A, the Sarkis model will be used, else,
+// for Silicon ONLY so it doos not have (Z,A) dependence. The code will check
+// the effective Z of the input material. If the effZ is within
+// +/-1 of Silicon Z and A, the Sarkis model will be used, else,
 // Lindhard(LewinSmith) model will be used for NIEL calculations.
 
-
 // The model is obtained in the range of ~50 eV to 3 MeV above which
-// Lindahard(LewinSmith) model will be used for NIEL calculations
+// Lindahard (LewinSmith) model will be used for NIEL calculations
 
 
 #include "globals.hh"
@@ -42,13 +42,12 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin = 0.*/,
     G4Exception("G4CMPSarkisNIEL", "G4CMP1000", FatalErrorInArgument,
 		  "No material passed to partition function");
     return 1.;		// Won't get here after FATAL error
-  } 
-  // Get effective Z,A of the material
+  }
+
+  // Get effective Z of the material
   const G4double Z = GetEffectiveZ(material);
-  const G4double A = GetEffectiveA(material) / (g / mole);
     
-  // Check if the material is silicon or similar (within +-1 of Z and A of silicon)
-    
+  // Check if the material is silicon or similar
   if (std::abs(Z - SiZ) < 0.5) {
     if (firstCall){
       G4Exception("G4CMPImpactTunlNIEL", "G4CMP1005", JustWarning,
