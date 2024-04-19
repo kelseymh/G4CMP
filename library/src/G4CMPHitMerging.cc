@@ -376,7 +376,10 @@ void G4CMPHitMerging::FlushAccumulator(G4int trkID, G4Event* primaryEvent) {
 void G4CMPHitMerging::GeneratePositions(size_t nsec,
 					const G4ThreeVector& start,
 					const G4ThreeVector& end) {
-  if (verboseLevel>1) G4cout << " GeneratePositions " << nsec << G4endl;
+  if (verboseLevel>1) {
+    G4cout << " GeneratePositions " << nsec << " between " << start
+	   << " and " << end << G4endl;
+  }
 
   // Ensure that start and end points are both away from volume surface
   G4ThreeVector tstart = SurfaceClearance(start);
@@ -384,9 +387,9 @@ void G4CMPHitMerging::GeneratePositions(size_t nsec,
 
   posSecs.clear();
 
-  // If everything happens at a point, just fill the position vector
+  // If everything happens at a point, just set one position
   if (tstart == tend) {
-    posSecs.resize(nsec, tend);
+    posSecs.resize(1, tend);
     return;
   }
 
@@ -402,12 +405,11 @@ void G4CMPHitMerging::GeneratePositions(size_t nsec,
   const G4double lmin =
     G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
   if (length < lmin*100.) {
-    if (verboseLevel>1) {
-      G4cout << " Length " << length/mm << " too short."
-	     << " Generating positions at " << start << G4endl;
-    }
+    if (verboseLevel>1)
+      G4cout << " Length " << length/mm << " too short for spread." << G4endl;
 
-    posSecs.resize(nsec, tstart);
+    posSecs.resize(1, tstart);
+    return;
   }
 
   // Spread out initial production along step
