@@ -80,6 +80,12 @@ void G4CMPHitMerging::LoadDataForTrack(const G4Track* track) {
   SetLattice(track);
 }
 
+// Pass client-specified voltage bias through to energy partitioning
+
+void G4CMPHitMerging::SetBiasVoltage(G4double vbias) {
+  partitioner->SetBiasVoltage(vbias);
+}
+
 
 // For primary generators, event must be passed in, not available from RM
 
