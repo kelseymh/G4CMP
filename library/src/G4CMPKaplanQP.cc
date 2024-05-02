@@ -531,12 +531,14 @@ G4double G4CMPKaplanQP::QPEnergyPDF(G4double E, G4double x) const {
 
 
 // Compute phonon energy distribution from quasiparticle in superconductor.
+// NOTE:  Technically, this is the energy of the QP after emission; the
+//        phonon's own energy is Ephonon = Energy - E', below
 
 G4double G4CMPKaplanQP::PhononEnergyRand(G4double Energy) const {
   // PDF is not integrable, so we can't do an inverse transform sampling.
   // Instead, we'll do a rejection method.
   //
-  // PDF(E') = (E'*(Energy-E')*(Energy-E') * (E'-gapEnergy*gapEnergy/Energy))
+  // PDF(E') = ((Energy-E')*(Energy-E') * (E'-gapEnergy*gapEnergy/Energy))
   //           /
   //           sqrt((E'*E' - gapEnergy*gapEnergy);
 
@@ -557,5 +559,5 @@ G4double G4CMPKaplanQP::PhononEnergyRand(G4double Energy) const {
 
 G4double G4CMPKaplanQP::PhononEnergyPDF(G4double E, G4double x) const {
   const G4double gapsq = gapEnergy*gapEnergy;
-  return ( x*(E-x)*(E-x) * (x-gapsq/E) / sqrt(x*x - gapsq) );
+  return ( (E-x)*(E-x) * (x-gapsq/E) / sqrt(x*x - gapsq) );
 }
