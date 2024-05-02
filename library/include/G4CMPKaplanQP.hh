@@ -8,6 +8,10 @@
 /// creation and energy calculations of quasi-particle downconversion
 /// by phonons breaking Cooper pairs in superconductors.
 ///
+/// This code implements a "lumped" version of Kaplan's model for
+/// quasiparticle-phonon interactions in superconducting films,
+/// S.B.Kaplan et al., Phys.Rev.B14 (1976).
+///
 /// If the thin-film parameters are set from a MaterialPropertiesTable,
 /// the table must contain the first five of the following entries:
 ///
@@ -47,6 +51,7 @@
 // 20221127  G4CMP-347: Add highQPLimit to split incident phonons
 // 20221201  G4CMP-345: Rename "CalcSubgapAbs" to "CalcDirectAbs", split into
 //		new DoDirectAbsorption() boolean test.
+// 20240502  G4CMP-379: Add Fermi-Dirac thermal probability for QP energies.
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
@@ -147,7 +152,8 @@ protected:
   // Compute quasiparticle energy distribution from broken Cooper pair.
   G4double QPEnergyRand(G4double Energy) const;
   G4double QPEnergyPDF(G4double E, G4double x) const;
-  
+  G4double ThermalPDF(G4double E) const;
+
   // Compute phonon energy distribution from quasiparticle in superconductor.
   G4double PhononEnergyRand(G4double Energy) const;
   G4double PhononEnergyPDF(G4double E, G4double x) const;

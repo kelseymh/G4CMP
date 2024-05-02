@@ -8,6 +8,10 @@
 /// creation and energy calculations of quasi-particle downconversion
 /// by phonons breaking Cooper pairs in superconductors.
 ///
+/// This code implements a "lumped" version of Kaplan's model for
+/// quasiparticle-phonon interactions in superconducting films,
+/// S.B.Kaplan et al., Phys.Rev.B14 (1976).
+///
 /// If the thin-film parameters are set from a MaterialPropertiesTable,
 /// the table must contain the first five of the following entries:
 ///
@@ -57,12 +61,15 @@
 // 20221201  G4CMP-345: Test all incident phonons for "direct absorption."
 // 20221209  G4CMP-348: Remove now-extraneous factor of 2 in EscapeProbability
 // 20230626  Initialize absorberEff to 1. in constructor (G4CMP-314).
+// 20240502  G4CMP-379: Add fallback use of temperature from ConfigManager.
+//		Add Fermi-Dirac occupation statistics for QP energy spectrum.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPUtils.hh"
 #include "G4MaterialPropertiesTable.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 #include <numeric>
@@ -153,7 +160,8 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
 			? prop->GetConstProperty("absorberGap") : 0.);
 
     temperature =      (prop->ConstPropertyExists("temperature")
-			? prop->GetConstProperty("temperature") : 0.);
+			? prop->GetConstProperty("temperature")
+			: G4CMPConfigManager::GetTemperature() );
 
     filmProperties = prop;
   }
@@ -526,7 +534,14 @@ G4double G4CMPKaplanQP::QPEnergyRand(G4double Energy) const {
 
 G4double G4CMPKaplanQP::QPEnergyPDF(G4double E, G4double x) const {
   const G4double gapsq = gapEnergy*gapEnergy;
-  return ( (x*(E-x) + gapsq) / sqrt((x*x-gapsq) * ((E-x)*(E-x)-gapsq)) );
+  const G4double occupy = 1. - ThermalPDF(E) - ThermalPDF(E-x);
+
+  return ( occupy * (x*(E-x)+gapsq) / sqrt((x*x-gapsq) * ((E-x)*(E-x)-gapsq)) );
+}
+
+G4double G4CMPKaplanQP::ThermalPDF(G4double E) const {
+  const G4double kT = k_Boltzmann*temperature;
+  return ( (temperature > 0.) ? 1./(exp(E/kT)+1.) : 0. );
 }
 
 
