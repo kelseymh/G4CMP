@@ -47,6 +47,7 @@
 // 20221127  G4CMP-347: Add highQPLimit to split incident phonons
 // 20221201  G4CMP-345: Rename "CalcSubgapAbs" to "CalcDirectAbs", split into
 //		new DoDirectAbsorption() boolean test.
+// 20240502  G4CMP-344: Reusable vector buffers to avoid memory churn.
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
@@ -179,6 +180,10 @@ private:
   G4double phononLifetimeSlope;	// Energy dependence of phonon lifetime
   G4double vSound;		// Speed of sound in film
   G4double temperature;		// Ambient temperature of film (from lattice)
+
+  // Temporary buffers for use within processing functions
+  mutable std::vector<G4double> newQPEnergies;
+  mutable std::vector<G4double> newPhonEnergies;
 
   mutable std::ofstream output;		// Diagnostic output under G4CMP_DEBUG
 };

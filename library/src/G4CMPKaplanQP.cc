@@ -57,6 +57,7 @@
 // 20221201  G4CMP-345: Test all incident phonons for "direct absorption."
 // 20221209  G4CMP-348: Remove now-extraneous factor of 2 in EscapeProbability
 // 20230626  Initialize absorberEff to 1. in constructor (G4CMP-314).
+// 20240502  G4CMP-344: Reusable vector buffers to avoid memory churn.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -319,7 +320,7 @@ G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
 
   // Phonons above the bandgap give all of its energy to the qp pair it breaks.
   G4double EDep = 0.;
-  std::vector<G4double> newPhonEnergies;
+  newPhonEnergies.clear();
 
   for (const G4double& E: phonEnergies) {
     if (IsSubgap(E)) {
@@ -359,7 +360,7 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
 
   // Have a reference in for loop b/c qp doesn't give all of its energy away.
   G4double EDep = 0.;
-  std::vector<G4double> newQPEnergies;
+  newQPEnergies.clear();
   for (const G4double& E: qpEnergies) {
     if (verboseLevel>2) G4cout << " qpE " << E;		// Report before change
 
@@ -395,7 +396,7 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
     G4cout << "G4CMPKaplanQP::CalcReflectedPhononEnergies " << G4endl;
 
   // There is a 50% chance that a phonon is headed away from (toward) substrate
-  std::vector<G4double> newPhonEnergies;
+  newPhonEnergies.clear();
   for (const G4double& E: phonEnergies) {
     if (verboseLevel>2) G4cout << " phononE " << E << G4endl;
 
