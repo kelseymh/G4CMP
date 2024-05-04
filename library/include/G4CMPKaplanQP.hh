@@ -182,7 +182,9 @@ private:
   G4double temperature;		// Ambient temperature of film (from lattice)
 
   // Temporary buffers for use within processing functions
-  mutable std::vector<G4double> newQPEnergies;
+  mutable std::vector<G4double> qpEnergyList;	// Active ("final") population
+  mutable std::vector<G4double> phononEnergyList;
+  mutable std::vector<G4double> newQPEnergies;	// Intermediate processing
   mutable std::vector<G4double> newPhonEnergies;
 
   mutable std::ofstream output;		// Diagnostic output under G4CMP_DEBUG

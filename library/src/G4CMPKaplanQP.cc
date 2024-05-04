@@ -218,32 +218,35 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   // Phonon goes into superconductor and gets partitioned into
   // quasiparticles, new phonons, and absorbed energy
   G4double EDep = 0.;
-  std::vector<G4double> qpEnergies;
 
   // Divide incident phonon according to maximum QP energy (or no split)
   G4int nQPpairs =
     (highQPLimit>0. ? std::ceil(energy/(2.*highQPLimit*gapEnergy)) : 1);
-  std::vector<G4double> phonEnergies(nQPpairs, energy/nQPpairs);
+
+  // Initialize event buffers for new processing
+  qpEnergyList.clear();
+  phononEnergyList.clear();
+  phononEnergyList.resize(nQPpairs, energy/nQPpairs);
 
   if (verboseLevel>1 && nQPpairs>1)
     G4cout << " divided into " << nQPpairs << " QP pairs" << G4endl;
 
-  while (qpEnergies.size() > 0 || phonEnergies.size() > 0) {
-    if (phonEnergies.size() > 0) {
+  while (!qpEnergyList.empty() || !phononEnergyList.empty()) {
+    if (!phononEnergyList.empty()) {
       // Partition the phonons' energies into quasi-particles according to
       // a PDF defined in CalcQPEnergies().
       // NOTE: Both energy vectors mutate.
-      EDep += CalcQPEnergies(phonEnergies, qpEnergies);
+      EDep += CalcQPEnergies(phononEnergyList, qpEnergyList);
     }
-    if (qpEnergies.size() > 0) {
+    if (!qpEnergyList.empty()) {
       // Quasiparticles can also excite phonons.
       // NOTE: Both energy vectors mutate.
-      EDep += CalcPhononEnergies(phonEnergies, qpEnergies);
+      EDep += CalcPhononEnergies(phononEnergyList, qpEnergyList);
     }
-    if (phonEnergies.size() > 0) {
+    if (!phononEnergyList.empty()) {
       // Some phonons will escape back into the crystal.
       // NOTE: Both energy vectors mutate.
-      CalcReflectedPhononEnergies(phonEnergies, reflectedEnergies);
+      CalcReflectedPhononEnergies(phononEnergyList, reflectedEnergies);
     }
   }
 
