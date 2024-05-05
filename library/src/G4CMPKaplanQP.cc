@@ -57,6 +57,7 @@
 // 20221201  G4CMP-345: Test all incident phonons for "direct absorption."
 // 20221209  G4CMP-348: Remove now-extraneous factor of 2 in EscapeProbability
 // 20230626  Initialize absorberEff to 1. in constructor (G4CMP-314).
+// 20240502  G4CMP-378: Correct expression for phonon-QP scattering energy.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
