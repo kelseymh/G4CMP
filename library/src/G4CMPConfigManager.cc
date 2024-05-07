@@ -39,7 +39,9 @@
 // 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
 // 20221014  G4CMP-334:  Add maxLukePhonons to printout; show macro commands
 // 20230622  G4CMP-325:  For G4CMP-343 above, default "keep all" flag to TRUE.
-// 20230831  G4CMP-362:  Add short names for IMPACT and Sarkis ionization models 
+// 20230831  G4CMP-362:  Add short names for IMPACT and Sarkis ionization models
+// 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
+
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPLewinSmithNIEL.hh"
@@ -104,6 +106,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
     kaplanKeepPh(getenv("G4CMP_KAPLAN_KEEP")?atoi(getenv("G4CMP_KAPLAN_KEEP")):true),
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
+    recordMinE(getenv("G4CMP_RECORD_EMIN")?atoi(getenv("G4CMP_RECORD_EMIN")):true),
     nielPartition(0), messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 
@@ -136,8 +139,8 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     lukeSample(master.lukeSample), combineSteps(master.combineSteps),
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
     useKVsolver(master.useKVsolver), fanoEnabled(master.fanoEnabled),
-    kaplanKeepPh(master.kaplanKeepPh),
-    chargeCloud(master.chargeCloud), nielPartition(master.nielPartition),
+    kaplanKeepPh(master.kaplanKeepPh), chargeCloud(master.chargeCloud),
+    recordMinE(master.recordMinE), nielPartition(master.nielPartition),
     messenger(new G4CMPConfigMessenger(this)) {;}
 
 
@@ -206,6 +209,7 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/enableFanoStatistics " << fanoEnabled << "\t\t\t# G4CMP_FANO_ENABLED"
      << "\n/g4cmp/kaplanKeepPhonons " << kaplanKeepPh << "\t\t\t# G4CMP_KAPLAN_KEEP "
      << "\n/g4cmp/createChargeCloud " << chargeCloud << "\t\t\t# G4CMP_CHARGE_CLOUD"
+     << "\n/g4cmp/recordMinETracks " << recordMinE << "\t\t\t# G4CMP_RECORD_EMIN"
      << "\n/g4cmp/NIELPartition "
      << (nielPartition ? typeid(*nielPartition).name() : "---")
      << "\t# G4CMP_NIEL_FUNCTION "
