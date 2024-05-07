@@ -31,6 +31,7 @@
 //		closest to momentum direction.  Commented out now, as it leads
 //		to non-physical reduction of total Luke emission.
 // 20220907  G4CMP-316 -- Pass track into CreatePhonon instead of touchable.
+// 20240507  Use proper mass and sound of speed for angular distribution.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -117,21 +118,24 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector ptrk = GetLocalMomentum(aTrack);
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
+  G4double uSound = 0.;
   if (IsElectron()) {
     ktrk = lat->MapV_elToK_HV(iValley, GetLocalVelocityVector(aTrack));
-    mass = lat->GetElectronMass();
+    mass = lat->GetElectronDOSMass();
+    uSound = (2.*lat->GetTransverseSoundSpeed() + lat->GetSoundSpeed()) / 3.;
   } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
     mass = lat->GetHoleMass();
+    uSound = lat->GetSoundSpeed();
   } else {
     G4Exception("G4CMPLukeScattering::PostStepDoIt", "Luke002",
                 EventMustBeAborted, "Unknown charge carrier");
     return &aParticleChange;
   }
-
+        
   G4ThreeVector kdir = ktrk.unit();
   G4double kmag = ktrk.mag();
-  G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
+  G4double kSound = uSound * mass / hbar_Planck;
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;

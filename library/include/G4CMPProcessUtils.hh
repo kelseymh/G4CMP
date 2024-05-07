@@ -37,6 +37,7 @@
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 // 20201223  Add FindNearestValley() function to align electron momentum.
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
+// 20240507 Add sound of speed as argument in ChargeCarrierTimeStep.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -240,7 +241,7 @@ public:
 
   // Compute time between scatters/emissions for moving charge carrier
   // Parameters are "Mach number" (ratio to sound speed) and scattering length
-  G4double ChargeCarrierTimeStep(G4double mach, G4double l0) const;
+  G4double ChargeCarrierTimeStep(G4double mach, G4double l0, G4double uSound) const;
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes
