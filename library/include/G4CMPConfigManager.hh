@@ -45,6 +45,7 @@
 // 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
 // 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
+// 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
 
 #include "globals.hh"
 #include <iosfwd>
@@ -76,6 +77,7 @@ public:
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
   static G4bool KeepKaplanPhonons()      { return Instance()->kaplanKeepPh; }
   static G4bool CreateChargeCloud()      { return Instance()->chargeCloud; }
+  static G4bool RecordMinETracks()       { return Instance()->recordMinE; }
   static G4double GetSurfaceClearance()  { return Instance()->clearance; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetMinPhononEnergy()   { return Instance()->EminPhonons; }
@@ -112,6 +114,7 @@ public:
   static void SetGenCharges(G4double value) { Instance()->genCharges = value; }
   static void SetLukeSampling(G4double value) { Instance()->lukeSample = value; }
   static void SetComboStepLength(G4double value) { Instance()->combineSteps = value; }
+  static void RecordMinETracks(G4bool value) { Instance()->recordMinE = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
   static void KeepKaplanPhonons(G4bool value) { Instance()->kaplanKeepPh = value; }
@@ -184,7 +187,7 @@ private:
   G4bool fanoEnabled;	 // Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
   G4bool kaplanKeepPh;   // Emit or iterate over all phonons in KaplanQP ($G4CMP_KAPLAN_KEEP)
   G4bool chargeCloud;    // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
-
+  G4bool recordMinE;     // Store below-minimum track energy as NIEL when killed
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
 
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands
