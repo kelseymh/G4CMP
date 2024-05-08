@@ -34,13 +34,13 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
     return 0.;
   }
 
-  G4double kmag = 0.; G4double l0 = 0.; G4double mass = 0.; G4double uSound = 0.; G4double massec= 0.;
+  G4double kmag = 0.; G4double l0 = 0.; G4double mass = 0.; G4double uSound = 0.; G4double massDOS= 0.;
   if (G4CMP::IsElectron(aTrack)) {
     kmag = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
 				     GetLocalVelocityVector(aTrack)).mag();
-    l0 = theLattice->GetElectronScatter();
-    mass = theLattice->GetElectronDOSMass();	// Scalar mass
-    massec = theLattice->GetElectronMass();
+    l0 = theLattice->GetElectronScatter(); // should be l0 = pi*hbar^4*rho /(2*massDOS^3*Dac^2)
+    massDOS = theLattice->GetElectronDOSMass(); 
+    mass = sqrt(electron_mass_c2/c_squared*massDOS); //mass in kSound
     uSound = (2.*theLattice->GetTransverseSoundSpeed() + theLattice->GetSoundSpeed()) / 3.;
   } else if (G4CMP::IsHole(aTrack)) {
     kmag = GetLocalWaveVector(aTrack).mag();
@@ -50,12 +50,7 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
   }
 
   if (verboseLevel > 1) 
-    G4cout << "LukeEmissionRate kmag = " << kmag*m << " /m" << G4endl;
-    
-G4cout << "TEST MASSES  " <<  G4endl << "Masse DOS : " << mass << G4endl << "Masse c : " << massec << G4endl; // << "masse electron : " << mass_electron_c2 << G4endl;
-    
-
-    
+    G4cout << "LukeEmissionRate kmag = " << kmag*m << " /m" << G4endl;    
 
   G4double kSound = uSound * mass / hbar_Planck;
 

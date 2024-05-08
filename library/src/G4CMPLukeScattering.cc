@@ -117,11 +117,13 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   // NOTE: Track kinematics include post-step acceleration from E-field
   G4ThreeVector ptrk = GetLocalMomentum(aTrack);
   G4ThreeVector ktrk(0.);
+  G4double massDOS = 0.;
   G4double mass = 0.;
   G4double uSound = 0.;
   if (IsElectron()) {
     ktrk = lat->MapV_elToK_HV(iValley, GetLocalVelocityVector(aTrack));
-    mass = lat->GetElectronDOSMass();
+    massDOS = lat->GetElectronDOSMass();
+    mass = sqrt(electron_mass_c2/c_squared*massDOS);
     uSound = (2.*lat->GetTransverseSoundSpeed() + lat->GetSoundSpeed()) / 3.;
   } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
