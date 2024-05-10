@@ -69,7 +69,7 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
 // Compute components of overall intervalley rate
 
 G4double G4CMPInterValleyRate::acousticRate() const {
-  G4double D_ac  = theLattice->GetAcousticDeform();
+  G4double D_ac  = theLattice->GetElectronAcousticDeform();
   G4double D_ac_sq = D_ac*D_ac;
 
   return ( sqrt(2)*kT * m_DOS3half * D_ac_sq * energyFunc(eTrk)

@@ -38,7 +38,7 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
   if (G4CMP::IsElectron(aTrack)) {
     kmag = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
 				     GetLocalVelocityVector(aTrack)).mag();
-    l0 = theLattice->GetElectronScatter(); // should be l0 = pi*hbar^4*rho /(2*massDOS^3*Dac^2)
+    l0 = theLattice->GetElectronScatter(); 
     massDOS = theLattice->GetElectronDOSMass(); 
     mass = sqrt(electron_mass_c2/c_squared*massDOS); //mass in kSound
     uSound = (2.*theLattice->GetTransverseSoundSpeed() + theLattice->GetSoundSpeed()) / 3.;

@@ -35,6 +35,7 @@
 // 20231017  E. Michaud -- Add 'valleyDir' to set rotation matrix with valley's
 //		 direction instead of euler angles
 // 20240131  J. Inman -- Multiple path selection on G4LATTICEDATA variable
+// 20240510  Add functions to process l0 from physical constants.
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -161,6 +162,8 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "ivdeform") return ProcessDeformation(); // D0, D1 potentials
   if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
   if (fToken == "ivmodel")  return ProcessString(fToken);  // IV rate function
+  if (fToken == "acdeform_e") return Processl0(true);
+  if (fToken == "acdeform_h") return Processl0(false);
 
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
                             return ProcessCrystalGroup(fToken);
@@ -190,6 +193,7 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "mu")         pLattice->SetMu(fValue*ProcessUnits("Pressure"));
   else if (name == "scat")       pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
   else if (name == "b")          pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
+  else if (name == "density")          pLattice->SetDensity(fValue*ProcessUnits("Volumic Mass"));
   else if (name == "decay")      pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
   else if (name == "a")          pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
   else if (name == "ldos")       pLattice->SetLDOS(fValue);
@@ -208,7 +212,6 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "hscat")      pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
   else if (name == "l0_h")       pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
   else if (name == "hmass")      pLattice->SetHoleMass(fValue*mElectron);
-  else if (name == "acdeform")   pLattice->SetAcousticDeform(fValue*ProcessUnits("Energy"));
   else if (name == "ivquadfield") pLattice->SetIVQuadField(fValue*ProcessUnits("Electric field"));
   else if (name == "ivquadrate")  pLattice->SetIVQuadRate(fValue*ProcessUnits("Frequency"));
   else if (name == "ivquadpower") pLattice->SetIVQuadExponent(fValue);
@@ -449,6 +452,26 @@ G4bool G4LatticeReader::ProcessThresholds() {
 }
 
 
+// Calculate electron/hole scattering length for acoustic phonon emission
+
+G4bool G4LatticeReader::Processl0(G4bool IsElec) {
+    G4double acdef=0;
+    *psLatfile >> acdef;
+    if (IsElec) {
+        if (verboseLevel>1) G4cout << " acDeform_e "  << acdef << G4endl;
+        pLattice->SetElectronAcousticDeform(acdef*ProcessUnits("Energy"));
+        pLattice->SetElectronScatter(pLattice->Processl0(IsElec));
+    }
+    else {
+        if (verboseLevel>1) G4cout << " acDeform_h "  << acdef << G4endl;
+        pLattice->SetHoleAcousticDeform(acdef*ProcessUnits("Energy"));
+        pLattice->SetHoleScatter(pLattice->Processl0(IsElec)); 
+    }
+    
+    return psLatfile->good();
+}
+
+
 // Read expected dimensions for value from file, return scale factor
 // Input argument "unitcat" may be comma-delimited list of categories
 
@@ -484,3 +507,4 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
 
   return inverse ? 1./fUnits : fUnits;	// Return value for convenient inlining
 }
+
