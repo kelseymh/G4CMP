@@ -75,7 +75,6 @@ protected:
   G4bool Processl0(G4bool IsElec);			// acoustic scattering length
   G4bool SkipComments();			// Everything after '#'
   
-
   // Read expected dimensions for value from file, return scale factor
   // NOTE: String from file may have leading "/" for inverse units
   // Input argument "unitcat" may be comma-delimited list of categories

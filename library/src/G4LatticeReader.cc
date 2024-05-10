@@ -471,7 +471,6 @@ G4bool G4LatticeReader::Processl0(G4bool IsElec) {
     return psLatfile->good();
 }
 
-
 // Read expected dimensions for value from file, return scale factor
 // Input argument "unitcat" may be comma-delimited list of categories
 
@@ -507,4 +506,3 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
 
   return inverse ? 1./fUnits : fUnits;	// Return value for convenient inlining
 }
-

@@ -41,7 +41,6 @@
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
 // 20240510  Add Processl0(G4 bool).
 
-
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
 
