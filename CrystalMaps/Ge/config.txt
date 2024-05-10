@@ -3,6 +3,7 @@ cubic 5.658 Ang		# (Lattice constant)
 stiffness 1 1 126 GPa	# C11, C12, C44
 stiffness 1 2  44 GPa
 stiffness 4 4  67 GPa
+density 5.323 g/cm3
 # Phonon parameters
 dyn -73.2 -70.8 37.6 56.1 GPa
 scat 3.67e-41 s3
@@ -19,7 +20,7 @@ pairEnergy 2.96 eV
 fanoFactor 0.1057
 vsound 5324.2077 m/s	# Longitudinal sound speed
 vtrans 3258.7879 m/s	# Transverse sound speed
-l0_e 257 um
+#l0_e 257 um
 l0_h 108 um
 #hole and electron masses taken from Robert's thesis
 hmass 0.350		# per m(electron)
@@ -30,7 +31,8 @@ valleyDir -1 -1 1
 valleyDir 1 -1 1
 # Intervalley scattering (matrix elements)
 alpha 0.3 /eV
-acDeform 11 eV
+acDeform_e 11 eV
+acDeform_h 3.4 eV
 ivDeform 3e8 0.2e8 eV/cm		# Jacoboni & Reggiani
 ivEnergy 27.3e-3 10.3e-3 eV
 neutDens 1e11 /cm3

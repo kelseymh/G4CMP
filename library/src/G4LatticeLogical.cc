@@ -46,6 +46,7 @@
 //		return thread-local instance.
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
+// 20240510  Add Processl0(G4 bool).
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -73,7 +74,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fBandGap(0.), fPairEnergy(0.), fFanoFactor(1.),
     fMassTensor(G4Rep3x3(mElectron,0.,0.,0.,mElectron,0.,0.,0.,mElectron)),
     fMassInverse(G4Rep3x3(1/mElectron,0.,0.,0.,1/mElectron,0.,0.,0.,1/mElectron)),
-    fAlpha(0.), fAcDeform(0.), 
+    fAlpha(0.), fAcDeform_e(0.), fAcDeform_h(0.),
     fIVQuadField(0.), fIVQuadRate(0.), fIVQuadExponent(0.),
     fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.),
     fIVModel(G4CMPConfigManager::GetIVRateModel()) {
@@ -139,7 +140,8 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fValleyInv = rhs.fValleyInv;
   fValleyAxis = rhs.fValleyAxis;
   fAlpha = rhs.fAlpha;
-  fAcDeform = rhs.fAcDeform;
+  fAcDeform_e = rhs.fAcDeform_e;
+  fAcDeform_h = rhs.fAcDeform_h;
   fIVDeform = rhs.fIVDeform;
   fIVEnergy = rhs.fIVEnergy;
   fIVQuadField = rhs.fIVQuadField;
@@ -782,6 +784,26 @@ const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
   return nullVec;
 }
 
+// Process scattering length l0_e and l0_h
+
+G4double G4LatticeLogical::Processl0(G4bool IsElec) {
+  G4double mass = 0.;
+  G4double acDeform = 0.;
+      
+  if (IsElec) {
+      mass = GetElectronDOSMass();
+      acDeform = GetElectronAcousticDeform();
+  }
+  else    {
+      mass = GetHoleMass();
+      acDeform = GetHoleAcousticDeform();
+  }
+    
+  G4double l0 = pi*hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck*GetDensity()/2/mass/mass/mass/acDeform/acDeform;
+     
+return l0;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 // Set Debye energy for phonon partitioning from alternative parameters
@@ -789,6 +811,8 @@ const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
 void G4LatticeLogical::SetDebyeFreq(G4double nu) { fDebye = nu*h_Planck; }
 
 void G4LatticeLogical::SetDebyeTemp(G4double temp) { fDebye = temp*k_Boltzmann;}
+
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -846,7 +870,8 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nalpha " << fAlpha*eV << " /eV"
      << "\nepsilon " << fPermittivity
      << "\nneutDens " << fNImpurity * cm3 << " /cm3"
-     << "\nacDeform " << fAcDeform/eV << " eV"
+     << "\nacDeform_e " << fAcDeform_e/eV << " eV"
+     << "\nacDeform_h " << fAcDeform_h/eV << " eV"
      << "\nivDeform "; DumpList(os, fIVDeform, "eV/cm");
   os << "\nivEnergy "; DumpList(os, fIVEnergy, "eV");
   os << std::endl;

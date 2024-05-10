@@ -173,7 +173,8 @@ public:
   G4double GetIVLinExponent() const { return fLattice->GetIVLinExponent(); }
 
   G4double GetAlpha() const          { return fLattice->GetAlpha(); }
-  G4double GetAcousticDeform() const { return fLattice->GetAcousticDeform(); }
+  G4double GetElectronAcousticDeform() const { return fLattice->GetElectronAcousticDeform(); }
+  G4double GetHoleAcousticDeform() const { return fLattice->GetHoleAcousticDeform(); }
 
   // Optical intervalley scattering may use D0 or D1 deformation potentials
   G4int    GetNIVDeform() const { return fLattice->GetNIVDeform(); }

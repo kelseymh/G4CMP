@@ -23,6 +23,7 @@
 // 20170810  Add utility function to process list of values with unit.
 // 20190704  Add utility function to process string/name argument
 // 20231102  Add ProcessValleyDirection()
+// 20240510  Add functions to process l0 from physical constants.
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
@@ -71,7 +72,9 @@ protected:
   G4bool ProcessValleyDirection();		// Drift directions
   G4bool ProcessDeformation();			// IV deformation potentials
   G4bool ProcessThresholds();			// IV energy thresholds
+  G4bool Processl0(G4bool IsElec);			// acoustic scattering length
   G4bool SkipComments();			// Everything after '#'
+  
 
   // Read expected dimensions for value from file, return scale factor
   // NOTE: String from file may have leading "/" for inverse units

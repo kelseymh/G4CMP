@@ -39,6 +39,8 @@
 // 20200608  Fix -Wshadow warnings from tempvec
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
+// 20240510  Add Processl0(G4 bool).
+
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -204,6 +206,9 @@ public:
 
   // Compute "effective mass" for electron to preserve E/p relationship
   G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const;
+    
+  // Compute "l0" for electron and hole
+  G4double Processl0(G4bool IsElec);
 
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley);
@@ -243,7 +248,8 @@ public:
   void SetIVLinExponent(G4double v)  { fIVLinExponent = v; }
 
   void SetAlpha(G4double v)	     { fAlpha = v; }
-  void SetAcousticDeform(G4double v) { fAcDeform = v; }
+  void SetElectronAcousticDeform(G4double v) { fAcDeform_e = v; }
+  void SetHoleAcousticDeform(G4double v) { fAcDeform_h = v; }
   void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
 
@@ -258,7 +264,8 @@ public:
   G4double GetIVLinExponent() const  { return fIVLinExponent; }
 
   G4double GetAlpha() const	     { return fAlpha; }
-  G4double GetAcousticDeform() const { return fAcDeform; }
+  G4double GetElectronAcousticDeform() const { return fAcDeform_e; }
+  G4double GetHoleAcousticDeform() const { return fAcDeform_h; }
   G4int    GetNIVDeform() const { return (G4int)fIVDeform.size(); }
   const std::vector<G4double>& GetIVDeform() const { return fIVDeform; }
   const std::vector<G4double>& GetIVEnergy() const { return fIVEnergy; }
@@ -342,7 +349,8 @@ private:
   std::vector<G4ThreeVector> fValleyAxis;
 
   G4double fAlpha;			// Non-parabolicity of -ve potential
-  G4double fAcDeform;		 	// Deformation potential for acoustic IV
+  G4double fAcDeform_e;		 	// Deformation potential for electron-acoustic phonon
+  G4double fAcDeform_h;		 	// Deformation potential for hole-acoustic phonon
   std::vector<G4double> fIVDeform;	// D0, D1 potentials for optical IV
   std::vector<G4double> fIVEnergy;	// D0, D1 thresholds for optical IV
 
