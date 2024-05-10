@@ -812,8 +812,6 @@ void G4LatticeLogical::SetDebyeFreq(G4double nu) { fDebye = nu*h_Planck; }
 
 void G4LatticeLogical::SetDebyeTemp(G4double temp) { fDebye = temp*k_Boltzmann;}
 
-
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 // Dump structure in format compatible with reading back
