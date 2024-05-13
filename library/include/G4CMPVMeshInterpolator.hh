@@ -13,11 +13,13 @@
 //
 // 20200908  Add operator<<() to print matrices (array of array)
 // 20200914  Drop cachedGrad, staleCache; subclasses will precompute field.
+// 20240507  G4CMP-244: Use G4Cache for live index; allows cross-thread use.
 
 #ifndef G4CMPVMeshInterpolator_h 
 #define G4CMPVMeshInterpolator_h 
 
 #include "G4Types.hh"
+#include "G4Cache.hh"
 #include "G4ThreeVector.hh"
 #include <array>
 #include <vector>
@@ -33,7 +35,7 @@ class G4CMPVMeshInterpolator {
 protected:
   // This class CANNOT be instantiated directly!
   G4CMPVMeshInterpolator(const G4String& prefix)
-    : TetraIdx(-1), TetraStart(-1), savePrefix(prefix) {;}
+    : TetraStart(-1), savePrefix(prefix), TetraIdx(TetraIdxStore.Get()) {;}
 
 public:
   virtual ~G4CMPVMeshInterpolator() {;}
@@ -72,10 +74,13 @@ protected:		// Data members available to subclasses directly
   std::vector<G4ThreeVector> Grad;	// Gradients across tetrahedra
   // NOTE: Subclasses must define dimensional mesh coords and tetrahera
 
-  mutable G4int TetraIdx;		// Last tetrahedral index used
   G4int TetraStart;			// Start of tetrahedral searches
-
   G4String savePrefix;			// for use in debugging, SaveXxx()
+
+  // Per-instance storage to remember last tetrahedron used
+  mutable G4Cache<G4double> TetraIdxStore;
+  G4double& TetraIdx;
+
 };
 
 // SPECIAL:  Provide a way to write out array/matrix data directly (not in STL!)
