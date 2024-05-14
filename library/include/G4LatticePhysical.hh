@@ -78,7 +78,6 @@ public:
 
   // Convert between electron momentum and valley velocity or HV wavevector
   // NOTE:  p or v_el vector must be in local (G4VSolid) coordinate system
-  // NOTE:  K_HV vector must be in valley internal coordinate system
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
   G4ThreeVector MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const;
@@ -86,12 +85,6 @@ public:
   G4ThreeVector MapV_elToK(G4int ivalley, const G4ThreeVector& v_el) const;
   G4ThreeVector MapPtoK(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapKtoP(G4int ivalley, const G4ThreeVector& k) const ;
-  G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
-  G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;
-  G4ThreeVector MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const;
   G4ThreeVector MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double Ekin) const;
 
   // Apply energy relationships for electron transport

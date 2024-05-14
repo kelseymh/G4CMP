@@ -436,8 +436,6 @@ G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
     G4cout << "G4LatticeLogical::MapPtoV_el " << ivalley << " " << p_e
 	   << G4endl;
 #endif
-  const G4RotationMatrix& vToN = GetValley(ivalley);
-  const G4RotationMatrix& nToV = GetValleyInv(ivalley);
 
   return p_e*c_light/(MapPtoEkin(ivalley,p_e) + electron_mass_c2);
 }
@@ -485,9 +483,6 @@ G4LatticeLogical::MapV_elToK(G4int ivalley, const G4ThreeVector &v_e) const {
      << G4endl;
 #endif
 
-  const G4RotationMatrix& vToN = GetValley(ivalley);
-  // G4double gamma = 1/sqrt(1-v_e.mag2()/c_squared/c_squared)
-
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
     G4cout << " V_el (valley) " << vToN*v_e << G4endl
@@ -500,80 +495,13 @@ G4LatticeLogical::MapV_elToK(G4int ivalley, const G4ThreeVector &v_e) const {
 
   tempvec() = MapV_elToP(ivalley, v_e);
   return MapPtoK(ivalley, tempvec());
-  // return GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck));
-  // return GetSqrtInvTensor()*(GetMassTensor()*gamma*(vToN*v_e/hbar_Planck));
-}
-
-G4ThreeVector 
-G4LatticeLogical::MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const {
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapPtoK " << ivalley << " " << p_e
-	   << G4endl;
-#endif
-
-  tempvec() = MapPToP_Q(ivalley, p_e);
-  tempvec() /= hbarc;				// Convert to wavevector
-  return tempvec().transform(GetValley(ivalley));	// Rotate into valley frame
-}
-
-G4ThreeVector 
-G4LatticeLogical::MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const {
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapPtoK_HV " << ivalley << " " << p_e
-	   << G4endl;
-#endif
-
-  tempvec() = MapPToP_Q(ivalley, p_e);
-  tempvec().transform(GetValley(ivalley));	// Rotate into valley frame
-
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
-#endif
-
-  return GetSqrtInvTensor() * tempvec()/hbarc;	// Herring-Vogt transformation
-}
-
-G4ThreeVector 
-G4LatticeLogical::MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const {
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapK_HVtoK_valley " << ivalley << " " << k_HV
-	   << G4endl;
-#endif
-
-  return GetSqrtTensor() * k_HV;
-}
-
-G4ThreeVector
-G4LatticeLogical::MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const {
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapK_HVtoK " << ivalley << " " << k_HV
-     << G4endl;
-#endif
-
-  tempvec() = k_HV;
-  tempvec() *= GetSqrtTensor();			// From Herring-Vogt to valley
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) G4cout << " K (valley) " << tempvec() << G4endl;
-#endif
-
-  tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
-
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) G4cout << " returning " << tempvec() << G4endl;
-#endif
-
-  return tempvec();
 }
 
 G4ThreeVector 
 G4LatticeLogical::MapPtoK(G4int ivalley, const G4ThreeVector& p_e) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapPtoK_HV " << ivalley << " " << p_e
+    G4cout << "G4LatticeLogical::MapPtoK " << ivalley << " " << p_e
 	   << G4endl;
 #endif
 
@@ -598,48 +526,6 @@ G4LatticeLogical::MapKtoP(G4int ivalley, const G4ThreeVector& k) const {
     tempvec() = k;
     tempvec() *= hbarc;			// Convert wavevector to momentum
     return MapP_QToP(ivalley, tempvec());
-}
-
-
-G4ThreeVector 
-G4LatticeLogical::MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const {
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapK_HVtoP " << ivalley << " " << k_HV
-	   << G4endl;
-#endif
-
-  tempvec() = k_HV;
-  tempvec() *= GetSqrtTensor();			// From Herring-Vogt to valley 
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) G4cout << " K (valley) " << tempvec() << G4endl;
-#endif
-
-  tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) G4cout << " K (lattice) " << tempvec() << G4endl;
-#endif
-
-  tempvec() *= hbarc;			// Convert wavevector to momentum
-  return MapP_QToP(ivalley, tempvec());
-}
-
-G4ThreeVector 
-G4LatticeLogical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapK_valleyToP " << ivalley << " " << k
-	   << G4endl;
-#endif
-
-  tempvec() = k;
-  tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) G4cout << " K (lattice) " << tempvec() << G4endl;
-#endif
-
-  tempvec() *= hbarc;			// Convert wavevector to momentum
-  return MapP_QToP(ivalley, tempvec());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

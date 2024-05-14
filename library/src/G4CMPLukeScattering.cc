@@ -84,6 +84,8 @@ G4CMPLukeScattering::~G4CMPLukeScattering() {
 
 G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
                                                      const G4Step& aStep) {
+  // Is the initializer in the correct place or should it be after the
+  // boundary check?
   InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
@@ -246,7 +248,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	     << "E_recoil = " << Erecoil/eV << " eV" << G4endl;
     }
     
-    Ephonon = Etrk - Erecoil;
     if (verboseLevel > 1) {
       G4cout << " E_phonon = " << Ephonon/eV << " eV" << G4endl;
     }
