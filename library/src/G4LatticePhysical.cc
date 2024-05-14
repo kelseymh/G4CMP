@@ -258,7 +258,9 @@ G4LatticePhysical::MapV_elToK(G4int ivalley, const G4ThreeVector& v_e) const {
   }
 #endif
 
-  return RotateToSolid(fLattice->MapV_elToK(ivalley, tempvec()));
+  tempvec() = fLattice->MapV_elToK(ivalley, tempvec())
+
+  return RotateToSolid(tempvec());
 }
 
 G4ThreeVector 
