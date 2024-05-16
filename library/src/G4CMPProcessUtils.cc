@@ -370,12 +370,12 @@ G4int G4CMPProcessUtils::ChoosePhononPolarization() const {
 }
 
 
-// Convert K_HV wave vector to track momentum
+// Convert K wave vector to track momentum
 
 void G4CMPProcessUtils::MakeGlobalRecoil(G4ThreeVector& krecoil) const {
   // Convert recoil wave vector to momentum in local frame 
   if (IsElectron()) {
-    krecoil = theLattice->MapK_HVtoP(GetValleyIndex(GetCurrentTrack()),krecoil);
+    krecoil = theLattice->MapKtoP(GetValleyIndex(GetCurrentTrack()),krecoil);
   } else if (IsHole()) {
     krecoil *= hbarc;
   } else {

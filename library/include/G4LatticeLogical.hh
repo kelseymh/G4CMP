@@ -102,13 +102,9 @@ public:
   G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
   G4ThreeVector MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const;
   G4ThreeVector MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const;
-  G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
-  G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
-  G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;
-  G4ThreeVector MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const;
+  G4ThreeVector MapV_elToK(G4int ivalley, const G4ThreeVector& v_el) const;
+  G4ThreeVector MapPtoK(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapKtoP(G4int ivalley, const G4ThreeVector& k) const ;
   G4ThreeVector MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double Ekin) const;
 
   // Apply energy relationships for electron transport
