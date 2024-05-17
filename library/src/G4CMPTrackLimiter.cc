@@ -10,6 +10,7 @@
 // $Id$
 //
 // 20170822  M. Kelsey -- Add checking on current vs. original volume
+// 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
@@ -48,12 +49,14 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
 
   if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
-  // Apply minimum energy cut to kill tracks with NIEL deposit
+  // Apply minimum energy cut to kill tracks with optional NIEL deposit
   if (BelowEnergyCut(track)) {
     if (verboseLevel>2) G4cout << " track below minimum energy." << G4endl;
 
-    aParticleChange.ProposeNonIonizingEnergyDeposit(track.GetKineticEnergy());
     aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+    if (G4CMPConfigManager::RecordMinETracks())
+      aParticleChange.ProposeNonIonizingEnergyDeposit(track.GetKineticEnergy());
   }
 
   // Ensure that track is still in original, valid volume

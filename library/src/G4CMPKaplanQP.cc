@@ -8,6 +8,10 @@
 /// creation and energy calculations of quasi-particle downconversion
 /// by phonons breaking Cooper pairs in superconductors.
 ///
+/// This code implements a "lumped" version of Kaplan's model for
+/// quasiparticle-phonon interactions in superconducting films,
+/// S.B.Kaplan et al., Phys.Rev.B14 (1976).
+///
 /// If the thin-film parameters are set from a MaterialPropertiesTable,
 /// the table must contain the first five of the following entries:
 ///
@@ -57,12 +61,17 @@
 // 20221201  G4CMP-345: Test all incident phonons for "direct absorption."
 // 20221209  G4CMP-348: Remove now-extraneous factor of 2 in EscapeProbability
 // 20230626  Initialize absorberEff to 1. in constructor (G4CMP-314).
+// 20240502  G4CMP-344: Reusable vector buffers to avoid memory churn.
+// 20240502  G4CMP-378: Correct expression for phonon-QP scattering energy.
+// 20240502  G4CMP-379: Add fallback use of temperature from ConfigManager.
+//		Add Fermi-Dirac occupation statistics for QP energy spectrum.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPUtils.hh"
 #include "G4MaterialPropertiesTable.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 #include <numeric>
@@ -153,7 +162,8 @@ void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
 			? prop->GetConstProperty("absorberGap") : 0.);
 
     temperature =      (prop->ConstPropertyExists("temperature")
-			? prop->GetConstProperty("temperature") : 0.);
+			? prop->GetConstProperty("temperature")
+			: G4CMPConfigManager::GetTemperature() );
 
     filmProperties = prop;
   }
@@ -217,32 +227,35 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   // Phonon goes into superconductor and gets partitioned into
   // quasiparticles, new phonons, and absorbed energy
   G4double EDep = 0.;
-  std::vector<G4double> qpEnergies;
 
   // Divide incident phonon according to maximum QP energy (or no split)
   G4int nQPpairs =
     (highQPLimit>0. ? std::ceil(energy/(2.*highQPLimit*gapEnergy)) : 1);
-  std::vector<G4double> phonEnergies(nQPpairs, energy/nQPpairs);
+
+  // Initialize event buffers for new processing
+  qpEnergyList.clear();
+  phononEnergyList.clear();
+  phononEnergyList.resize(nQPpairs, energy/nQPpairs);
 
   if (verboseLevel>1 && nQPpairs>1)
     G4cout << " divided into " << nQPpairs << " QP pairs" << G4endl;
 
-  while (qpEnergies.size() > 0 || phonEnergies.size() > 0) {
-    if (phonEnergies.size() > 0) {
+  while (!qpEnergyList.empty() || !phononEnergyList.empty()) {
+    if (!phononEnergyList.empty()) {
       // Partition the phonons' energies into quasi-particles according to
       // a PDF defined in CalcQPEnergies().
       // NOTE: Both energy vectors mutate.
-      EDep += CalcQPEnergies(phonEnergies, qpEnergies);
+      EDep += CalcQPEnergies(phononEnergyList, qpEnergyList);
     }
-    if (qpEnergies.size() > 0) {
+    if (!qpEnergyList.empty()) {
       // Quasiparticles can also excite phonons.
       // NOTE: Both energy vectors mutate.
-      EDep += CalcPhononEnergies(phonEnergies, qpEnergies);
+      EDep += CalcPhononEnergies(phononEnergyList, qpEnergyList);
     }
-    if (phonEnergies.size() > 0) {
+    if (!phononEnergyList.empty()) {
       // Some phonons will escape back into the crystal.
       // NOTE: Both energy vectors mutate.
-      CalcReflectedPhononEnergies(phonEnergies, reflectedEnergies);
+      CalcReflectedPhononEnergies(phononEnergyList, reflectedEnergies);
     }
   }
 
@@ -319,7 +332,7 @@ G4CMPKaplanQP::CalcQPEnergies(std::vector<G4double>& phonEnergies,
 
   // Phonons above the bandgap give all of its energy to the qp pair it breaks.
   G4double EDep = 0.;
-  std::vector<G4double> newPhonEnergies;
+  newPhonEnergies.clear();
 
   for (const G4double& E: phonEnergies) {
     if (IsSubgap(E)) {
@@ -359,7 +372,7 @@ G4CMPKaplanQP::CalcPhononEnergies(std::vector<G4double>& phonEnergies,
 
   // Have a reference in for loop b/c qp doesn't give all of its energy away.
   G4double EDep = 0.;
-  std::vector<G4double> newQPEnergies;
+  newQPEnergies.clear();
   for (const G4double& E: qpEnergies) {
     if (verboseLevel>2) G4cout << " qpE " << E;		// Report before change
 
@@ -395,7 +408,7 @@ CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
     G4cout << "G4CMPKaplanQP::CalcReflectedPhononEnergies " << G4endl;
 
   // There is a 50% chance that a phonon is headed away from (toward) substrate
-  std::vector<G4double> newPhonEnergies;
+  newPhonEnergies.clear();
   for (const G4double& E: phonEnergies) {
     if (verboseLevel>2) G4cout << " phononE " << E << G4endl;
 
@@ -526,17 +539,26 @@ G4double G4CMPKaplanQP::QPEnergyRand(G4double Energy) const {
 
 G4double G4CMPKaplanQP::QPEnergyPDF(G4double E, G4double x) const {
   const G4double gapsq = gapEnergy*gapEnergy;
-  return ( (x*(E-x) + gapsq) / sqrt((x*x-gapsq) * ((E-x)*(E-x)-gapsq)) );
+  const G4double occupy = 1. - ThermalPDF(E) - ThermalPDF(E-x);
+
+  return ( occupy * (x*(E-x)+gapsq) / sqrt((x*x-gapsq) * ((E-x)*(E-x)-gapsq)) );
+}
+
+G4double G4CMPKaplanQP::ThermalPDF(G4double E) const {
+  const G4double kT = k_Boltzmann*temperature;
+  return ( (temperature > 0.) ? 1./(exp(E/kT)+1.) : 0. );
 }
 
 
 // Compute phonon energy distribution from quasiparticle in superconductor.
+// NOTE:  Technically, this is the energy of the QP after emission; the
+//        phonon's own energy is Ephonon = Energy - E', below
 
 G4double G4CMPKaplanQP::PhononEnergyRand(G4double Energy) const {
   // PDF is not integrable, so we can't do an inverse transform sampling.
   // Instead, we'll do a rejection method.
   //
-  // PDF(E') = (E'*(Energy-E')*(Energy-E') * (E'-gapEnergy*gapEnergy/Energy))
+  // PDF(E') = ((Energy-E')*(Energy-E') * (E'-gapEnergy*gapEnergy/Energy))
   //           /
   //           sqrt((E'*E' - gapEnergy*gapEnergy);
 
@@ -557,5 +579,5 @@ G4double G4CMPKaplanQP::PhononEnergyRand(G4double Energy) const {
 
 G4double G4CMPKaplanQP::PhononEnergyPDF(G4double E, G4double x) const {
   const G4double gapsq = gapEnergy*gapEnergy;
-  return ( x*(E-x)*(E-x) * (x-gapsq/E) / sqrt(x*x - gapsq) );
+  return ( (E-x)*(E-x) * (x-gapsq/E) / sqrt(x*x - gapsq) );
 }
