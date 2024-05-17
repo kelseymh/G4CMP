@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2024-05-16  g4cmp-V08-10-00 Improvements to KaplanQP and lowest-energy phonons.
 2024-05-06  G4CMP-371 : Add flag to keep or discard below-minimum track energy.
 2024-05-02  G4CMP-379 : Add finite temperature statistics for QP spectrum.
 2024-05-02  G4CMP-378 : Correct expression for phonon-QP scattering energy.
