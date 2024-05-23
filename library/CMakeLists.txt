@@ -142,6 +142,7 @@ target_link_libraries(qhullcpp qhull_p qhullstatic_p)
 add_definitions(-DG4DIGI_ALLOC_EXPORT)		## Needed for hits collection
 
 set(library_SOURCES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPAnharmonicDecay.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBiLinearInterp.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBoundaryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPChargeCloud.cc
@@ -166,8 +167,10 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFieldUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGeometryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPGlobalLocalTransformStore.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPHitMerging.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateLinear.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateQuadratic.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPImpactTunlNIEL.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
@@ -183,6 +186,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPartitionData.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPartitionSummary.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononBoundaryProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononElectrode.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinTable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinematics.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononScatteringRate.cc
@@ -190,6 +194,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysics.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysicsList.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPProcessUtils.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSarkisNIEL.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSecondaryProduction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSecondaryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPStackingAction.cc
@@ -221,6 +226,7 @@ set(library_SOURCES
     )
  
 set(library_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPAnharmonicDecay.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBiLinearInterp.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.icc
@@ -248,8 +254,10 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFieldUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGeometryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPGlobalLocalTransformStore.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPHitMerging.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateLinear.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateQuadratic.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPImpactTunlNIEL.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh
@@ -267,6 +275,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPartitionData.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPartitionSummary.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononElectrode.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinematics.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononScatteringRate.hh
@@ -275,6 +284,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysicsList.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPProcessSubType.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPProcessUtils.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSarkisNIEL.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSecondaryProduction.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSecondaryUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPStackingAction.hh

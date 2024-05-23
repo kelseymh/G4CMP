@@ -43,6 +43,9 @@
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
+// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
+// 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
 
 #include "globals.hh"
 #include <iosfwd>
@@ -72,7 +75,9 @@ public:
   static G4int GetMaxLukePhonons()       { return Instance()->maxLukePhonons; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
+  static G4bool KeepKaplanPhonons()      { return Instance()->kaplanKeepPh; }
   static G4bool CreateChargeCloud()      { return Instance()->chargeCloud; }
+  static G4bool RecordMinETracks()       { return Instance()->recordMinE; }
   static G4double GetSurfaceClearance()  { return Instance()->clearance; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetMinPhononEnergy()   { return Instance()->EminPhonons; }
@@ -82,14 +87,16 @@ public:
   static G4double GetGenCharges()        { return Instance()->genCharges; }
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
   static G4double GetComboStepLength()   { return Instance()->combineSteps; }
+  static G4double GetETrappingMFP()      { return Instance()->eTrapMFP; }
+  static G4double GetHTrappingMFP()      { return Instance()->hTrapMFP; }
+  static G4double GetEDTrapIonMFP()      { return Instance()->eDTrapIonMFP; }
+  static G4double GetEATrapIonMFP()      { return Instance()->eATrapIonMFP; }
+  static G4double GetHDTrapIonMFP()      { return Instance()->hDTrapIonMFP; }
+  static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
+  static G4double GetTemperature()       { return Instance()->temperature; }
+
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
-  static const G4double& GetETrappingMFP() { return Instance()->eTrapMFP; }
-  static const G4double& GetHTrappingMFP() { return Instance()->hTrapMFP; }
-  static const G4double& GetEDTrapIonMFP() { return Instance()->eDTrapIonMFP; }
-  static const G4double& GetEATrapIonMFP() { return Instance()->eATrapIonMFP; }
-  static const G4double& GetHDTrapIonMFP() { return Instance()->hDTrapIonMFP; }
-  static const G4double& GetHATrapIonMFP() { return Instance()->hATrapIonMFP; }
 
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
@@ -107,8 +114,10 @@ public:
   static void SetGenCharges(G4double value) { Instance()->genCharges = value; }
   static void SetLukeSampling(G4double value) { Instance()->lukeSample = value; }
   static void SetComboStepLength(G4double value) { Instance()->combineSteps = value; }
+  static void RecordMinETracks(G4bool value) { Instance()->recordMinE = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
+  static void KeepKaplanPhonons(G4bool value) { Instance()->kaplanKeepPh = value; }
   static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
   static void CreateChargeCloud(G4bool value) { Instance()->chargeCloud = value; }
 
@@ -118,6 +127,7 @@ public:
   static void SetEATrapIonMFP(G4double value) { Instance()->eATrapIonMFP = value; }
   static void SetHDTrapIonMFP(G4double value) { Instance()->hDTrapIonMFP = value; }
   static void SetHATrapIonMFP(G4double value) { Instance()->hATrapIonMFP = value; }
+  static void SetTemperature(G4double value)  { Instance()->temperature = value; }
 
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
   static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
@@ -163,6 +173,7 @@ private:
   G4double eATrapIonMFP; // Mean free path for e- on h-trap ionization ($G4CMP_EHTRAPION_MFP)
   G4double hDTrapIonMFP; // Mean free path for h+ on e-trap ionization ($G4CMP_HETRAPION_MFP)
   G4double hATrapIonMFP; // Mean free path for h+ on h-trap ionization ($G4CMP_HHTRAPION_MFP)
+  G4double temperature;  // Temperature of device, substrate, sensors, etc.
   G4double clearance;	 // Minimum distance of tracks from boundaries ($G4CMP_CLEARANCE)
   G4double stepScale;	 // Fraction of l0 for steps ($G4CMP_MIN_STEP)
   G4double sampleEnergy; // Energy above which to do sampling ($G4CMP_SAMPLE_ENERGY)
@@ -174,8 +185,9 @@ private:
   G4double EminCharges;	 // Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
   G4bool useKVsolver;	 // Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	 // Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
+  G4bool kaplanKeepPh;   // Emit or iterate over all phonons in KaplanQP ($G4CMP_KAPLAN_KEEP)
   G4bool chargeCloud;    // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
-
+  G4bool recordMinE;     // Store below-minimum track energy as NIEL when killed
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
 
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands

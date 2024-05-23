@@ -36,6 +36,11 @@
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
+// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
+// 20221214  G4CMP-350:  Bug fix for new temperature setting units.
+// 20230831  G4CMP-362:  Add short names for IMPACT and Sarkis ionization models
+// 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -56,10 +61,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     pBounceCmd(0), maxLukeCmd(0), clearCmd(0), minEPhononCmd(0),
     minEChargeCmd(0), sampleECmd(0), comboStepCmd(0), trapEMFPCmd(0),
     trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
-    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), minstepCmd(0),
+    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), tempCmd(0), minstepCmd(0),
     makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
     ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0), fanoStatsCmd(0),
-    ehCloudCmd(0) {
+  kaplanKeepCmd(0), ehCloudCmd(0), recordMinECmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
 
@@ -113,6 +118,11 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
           "Minimum energy for creating or tracking charge carriers");
   minEChargeCmd->SetUnitCategory("Energy");
 
+  recordMinECmd = CreateCommand<G4UIcmdWithABool>("recordMinETracks",
+	  "Store NIEL for killed tracks which fall below minimum energy");
+  recordMinECmd->SetParameterName("record",true,false);
+  recordMinECmd->SetDefaultValue(true);
+
   comboStepCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("combiningStepLength",
 	  "Maximum track step-length to merge energy deposit for partitioning");
   comboStepCmd->SetUnitCategory("Length");
@@ -130,6 +140,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   fanoStatsCmd = CreateCommand<G4UIcmdWithABool>("enableFanoStatistics",
            "Modify input ionization energy according to Fano statistics.");
+  fanoStatsCmd->SetParameterName("enable",true,false);
   fanoStatsCmd->SetDefaultValue(true);
 
   ivRateModelCmd = CreateCommand<G4UIcmdWithAString>("IVRateModel",
@@ -164,13 +175,23 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 	   "Mean free path for h-trap ionization by holes");
   hATrapIonMFPCmd->SetUnitCategory("Length");
 
+  tempCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("temperature",
+	   "Temperature to be used for device, substrate, sensors, etc.");
+  tempCmd->SetUnitCategory("Temperature");
+
   nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
 	       "Select calculation for non-ionizing energy loss (NIEL)");
-  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew");
+  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew IMPACT Impact impact ImpactTunl impacttunl Sarkis sarkis Sar sar");
 
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
        "Produce e/h pairs in cloud surrounding energy deposit position");
+  ehCloudCmd->SetParameterName("enable",true,false);
   ehCloudCmd->SetDefaultValue(true);
+
+  kaplanKeepCmd = CreateCommand<G4UIcmdWithABool>("kaplanKeepPhonons",
+       "Preserve all intermediate phonons in G4CMPKaplanQP (no killing)");
+  kaplanKeepCmd->SetParameterName("enable",true,false);
+  kaplanKeepCmd->SetDefaultValue(true);
 }
 
 
@@ -184,6 +205,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete clearCmd; clearCmd=0;
   delete minEPhononCmd; minEPhononCmd=0;
   delete minEChargeCmd; minEChargeCmd=0;
+  delete recordMinECmd; recordMinECmd=0;
   delete sampleECmd; sampleECmd=0;
   delete comboStepCmd; comboStepCmd=0;
   delete trapEMFPCmd; trapEMFPCmd=0;
@@ -192,6 +214,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete eATrapIonMFPCmd; eATrapIonMFPCmd=0;
   delete hDTrapIonMFPCmd; hDTrapIonMFPCmd=0;
   delete hATrapIonMFPCmd; hATrapIonMFPCmd=0;
+  delete tempCmd; tempCmd=0;
   delete minstepCmd; minstepCmd=0;
   delete makePhononCmd; makePhononCmd=0;
   delete makeChargeCmd; makeChargeCmd=0;
@@ -199,6 +222,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete dirCmd; dirCmd=0;
   delete kvmapCmd; kvmapCmd=0;
   delete fanoStatsCmd; fanoStatsCmd=0;
+  delete kaplanKeepCmd; kaplanKeepCmd=0;
   delete ehCloudCmd; ehCloudCmd=0;
   delete ivRateModelCmd; ivRateModelCmd=0;
   delete nielPartitionCmd; nielPartitionCmd=0;
@@ -227,6 +251,8 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == minEChargeCmd)
     theManager->SetMinChargeEnergy(minEChargeCmd->GetNewDoubleValue(value));
 
+  if (cmd == recordMinECmd) theManager->RecordMinETracks(StoB(value));
+
   // TEMPORARY: If sampling energy is set and Luke=1., set Luke=-1.
   if (cmd == sampleECmd) {
     theManager->SetSamplingEnergy(sampleECmd->GetNewDoubleValue(value));
@@ -254,8 +280,12 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == hATrapIonMFPCmd)
     theManager->SetHATrapIonMFP(hATrapIonMFPCmd->GetNewDoubleValue(value));
 
+  if (cmd == tempCmd)
+    theManager->SetTemperature(tempCmd->GetNewDoubleValue(value));
+
   if (cmd == kvmapCmd) theManager->UseKVSolver(StoB(value));
   if (cmd == fanoStatsCmd) theManager->EnableFanoStatistics(StoB(value));
+  if (cmd == kaplanKeepCmd) theManager->KeepKaplanPhonons(StoB(value));
   if (cmd == ivRateModelCmd) theManager->SetIVRateModel(value);
   if (cmd == nielPartitionCmd) theManager->SetNIELPartition(value);
   if (cmd == ehCloudCmd) theManager->CreateChargeCloud(StoB(value));

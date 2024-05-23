@@ -18,6 +18,7 @@ include(${Geant4_USE_FILE})
 # NOTE: Add names of binaries to list
 #
 make_binaries("electron_Epv" "latticeVecs" "luke_dist" "testBlockData"
-              "testCrystalGroup" "g4cmpEFieldTest" "phononKinematics"
+              "testCrystalGroup" "g4cmpEFieldTest"
               "testChargeCloud" "testPartition" "testHVtransform"
-              "testFanoFactor" )
+              "testFanoFactor" "testTemperature" )
+

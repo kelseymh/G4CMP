@@ -73,8 +73,8 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   SetCurrentTrack(aTrack);
   SetLattice(aTrack);
 
-  // If not in a lattice-enabled volume, kill track immediately
-  if (!theLattice) {
+  // If phonon or charge carrier is not in a lattice-enabled volume, kill track immediately
+  if ((IsPhonon() || IsChargeCarrier()) && !theLattice) {
     ReleaseTrack();
     return fKill;
   }

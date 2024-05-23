@@ -1,0 +1,35 @@
+# testConfigs.mac
+#
+# Run with a G4CMP executable to set all config parameters and print them out.
+# This should catch errors where a command name is not properly mapped to a
+# parameter, or where the units have not been properly set.
+
+/g4cmp/verbose 3
+/g4cmp/LatticeData /Some/Random/Path
+/g4cmp/clearance 10 mm
+/g4cmp/minimumStep 50 um
+/g4cmp/samplingEnergy 200 eV
+/g4cmp/producePhonons 0.5
+/g4cmp/produceCharges 0.7
+/g4cmp/sampleLuke 0.001
+/g4cmp/maxLukePhonons 12345
+/g4cmp/minEPhonons 1e-3 eV
+/g4cmp/minECharges 1e-3 eV
+/g4cmp/combiningStepLength 5 mm
+/g4cmp/chargeBounces 789
+/g4cmp/phononBounces 654
+/g4cmp/useKVsolver true
+/g4cmp/enableFanoStatistics true
+/g4cmp/IVRateModel Linear
+/g4cmp/eTrappingMFP 1020 um
+/g4cmp/hTrappingMFP 3040 um
+/g4cmp/eDTrapIonizationMFP 5060 um
+/g4cmp/eATrapIonizationMFP 7080 um
+/g4cmp/hDTrapIonizationMFP 99 mm
+/g4cmp/hATrapIonizationMFP 22 mm
+/g4cmp/temperature 100e-3 K
+/g4cmp/NIELPartition LewinSmith
+/g4cmp/createChargeCloud true
+
+/g4cmp/version
+/g4cmp/printConfig

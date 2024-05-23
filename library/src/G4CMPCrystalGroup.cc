@@ -9,6 +9,7 @@
 // $Id$
 //
 // 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm" (-Wshadow)
+// 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
 
 #include "G4CMPCrystalGroup.hh"
 #include "G4PhysicalConstants.hh"
@@ -78,9 +79,11 @@ void G4CMPCrystalGroup::SetTriclinic(G4double al, G4double bt,
 G4bool G4CMPCrystalGroup::FillElReduced(G4double Cij[6][6]) const {
   switch (group) {
   case amorphous:    Cij[3][3] = 0.5*(Cij[0][0]-Cij[0][1]); // Cubic, C44 set
+                     [[fallthrough]];
   case cubic:        return FillCubic(Cij); break;
   case hexagonal:    Cij[0][5] = 0.;			// Tetragonal, C16=0
                      Cij[4][5] = 0.5*(Cij[0][0] - Cij[0][1]);
+                     [[fallthrough]];
   case tetragonal:   return FillTetragonal(Cij); break;
   case orthorhombic: return FillOrthorhombic(Cij); break;
   case rhombohedral: return FillRhombohedral(Cij); break;

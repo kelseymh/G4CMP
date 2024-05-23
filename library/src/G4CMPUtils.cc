@@ -14,12 +14,15 @@
 // 20170802  Provide scale factor argument to ChooseWeight functions
 // 20170928  Replace "polarization" with "mode"
 // 20190906  M. Kelsey -- Add function to look up process for track
+// 20220816  M. Kelsey -- Move RandomIndex here for more general use
+// 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPElectrodeHit.hh"
+#include "G4CMPTrackUtils.hh"
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PhononPolarization.hh"
@@ -206,6 +209,58 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
 }
 
 
+// Thermal distributions, useful for handling phonon thermalization
+
+G4double G4CMP::MaxwellBoltzmannPDF(G4double temperature, G4double energy) {
+  if (temperature <= 0.) return (energy == 0. ? 1. : 0.);
+
+  const G4double kT = k_Boltzmann*temperature;
+
+  // NOTE: coefficient usually has kT^-(3/2), but extra 1/kT makes units
+  const G4double mbCoeff = 2. * sqrt(energy/(pi*kT));
+
+  // This should be a true PDF, normalized to unit integral
+  // NOTE: coefficient usually has kT^-(3/2), but extra 1/kT makes units
+  return mbCoeff * exp(-energy/kT);
+}
+
+G4double G4CMP::ChooseThermalEnergy(G4double temperature) {
+  // FIXME: With inverse CDF, we could do a simple direct throw
+  // return G4CMP::MaxwellBoltzmannInvCDF(temperature, G4UniformRand());
+
+  G4double kT = k_Boltzmann*temperature;
+  G4double trialE;
+  do {
+    trialE = G4UniformRand() * 10.*kT;		// Uniform spread in E
+  } while (!IsThermalized(temperature, trialE));
+
+  return trialE;
+}
+
+G4double G4CMP::ChooseThermalEnergy(const G4LatticePhysical* lattice) {
+  return lattice ? ChooseThermalEnergy(lattice->GetTemperature()) : 0.;
+}
+
+
+G4bool G4CMP::IsThermalized(G4double temperature, G4double energy) {
+  return (G4UniformRand() < MaxwellBoltzmannPDF(temperature,energy));
+}
+
+G4bool G4CMP::IsThermalized(G4double energy) {
+  return IsThermalized(G4CMPConfigManager::GetTemperature(), energy);
+}
+
+G4bool G4CMP::IsThermalized(const G4LatticePhysical* lattice, G4double energy) {
+  return (lattice ? IsThermalized(lattice->GetTemperature(), energy)
+	  : IsThermalized(energy) );		// Fall back to global temp.
+}
+
+G4bool G4CMP::IsThermalized(const G4Track* track) {
+  if (!track) return false;
+  return IsThermalized(G4CMP::GetLattice(*track), track->GetKineticEnergy());
+}
+
+
 // Search particle's processes for specified name
 
 G4VProcess*
@@ -219,4 +274,11 @@ G4CMP::FindProcess(const G4ParticleDefinition* pd, const G4String& pname) {
   }
 
   return 0;			// No match found
+}
+
+
+// Generate random index for shuffling secondaries
+
+size_t G4CMP::RandomIndex(size_t n) {
+  return (size_t)(n*G4UniformRand());
 }

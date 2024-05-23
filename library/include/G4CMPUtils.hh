@@ -14,6 +14,8 @@
 // 20170802  Provide scale factor argument to ChooseWeight functions
 // 20170928  Replace "polarization" with "mode"
 // 20190906  Add function to get process associated with particle
+// 20220816  Move RandomIndex function from SecondaryProduction
+// 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -79,8 +81,22 @@ namespace G4CMP {
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm);
 
+  // Thermal distributions, useful for handling phonon thermalization
+  G4double MaxwellBoltzmannPDF(G4double temperature, G4double energy);
+  G4double ChooseThermalEnergy(G4double temperature);
+  G4double ChooseThermalEnergy(const G4LatticePhysical* lattice);
+
+  G4bool IsThermalized(G4double temperature, G4double energy);
+  G4bool IsThermalized(G4double energy);	// Use G4CMPConfigManager temp.
+  G4bool IsThermalized(const G4LatticePhysical* lattice, G4double energy);
+  G4bool IsThermalized(const G4Track* track);
+  inline G4bool IsThermalized(const G4Track& t) { return IsThermalized(&t); }
+
   // Search particle's processes for specified name
   G4VProcess* FindProcess(const G4ParticleDefinition* pd, const G4String& pname);
+
+  // Generate integer random value [0, imax), used to shuffle vectors
+  size_t RandomIndex(size_t imax);
 }
 
 #endif	/* G4CMPUtils_hh */

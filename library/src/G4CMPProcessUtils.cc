@@ -44,6 +44,15 @@
 //	     velocity is calculated from that.  Use internal vector buffer.
 // 20211002  FindNearestValley() implementation moved to G4CMPGeometryUtils.
 // 20211003  Add track touchable as data member, to create if needed
+// 20230524  Expand GetCurrentTouchable() to create one for new tracks
+// 20230807  Multiplied ChargeCarrierTimeStep by mach to get the correct
+//		Luke scattering rate
+// 20230808  Added derivation of ChargeCarrierTimeStep to explain bug fix.
+// 20230831  Remove modifications to ChargeCarrierTimeStep(), they seem to
+//		cause zero-length and NaN steps.
+// 20240303  Add local currentTouchable pointer for non-tracking situations.
+// 20240402  Drop FindTouchable() function.  Set currentTouchable internally
+//		not available from track, and delete it at end of track.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -80,11 +89,9 @@
 
 G4CMPProcessUtils::G4CMPProcessUtils()
   : theLattice(nullptr), currentTrack(nullptr), currentVolume(nullptr),
-    currentTouch(nullptr), createdTouch(false) {;}
+    currentTouchable(nullptr) {;}
 
-G4CMPProcessUtils::~G4CMPProcessUtils() {
-  if (createdTouch) delete currentTouch;
-}
+G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
 
 // Initialization for current track
@@ -154,19 +161,15 @@ G4bool G4CMPProcessUtils::IsChargeCarrier() const {
 
 void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
   currentTrack = track;
+  currentTouchable = nullptr;
   currentVolume = track ? track->GetVolume() : nullptr;
-  currentTouch = track ? track->GetTouchable() : nullptr;
-  createdTouch = false;
 
   if (!track) return;		// Avoid unnecessry work
 
   if (!currentVolume) {		// Primary tracks may not have volumes yet
     currentVolume = G4CMP::GetVolumeAtPoint(track->GetPosition());
-  }
-
-  if (!currentTouch) {		// Primary tracks may not have touchables yet
-    currentTouch = G4CMP::CreateTouchableAtPoint(track->GetPosition());
-    createdTouch = true;
+    currentTouchable = G4CMP::CreateTouchableAtPoint(track->GetPosition());
+    deleteTouchable = true;	// Avoid memory leak at end of track
   }
 }
 
@@ -196,8 +199,22 @@ void G4CMPProcessUtils::ReleaseTrack() {
   currentVolume = nullptr;
   theLattice = nullptr;
 
-  if (createdTouch) delete currentTouch;
-  currentTouch = nullptr;
+  ClearTouchable();
+}
+
+
+// Register touchable owned by client code
+
+void G4CMPProcessUtils::SetTouchable(const G4VTouchable* touch) {
+  ClearTouchable();
+  currentTouchable = touch;
+  deleteTouchable = false;	// Client code retains ownership
+}
+
+void G4CMPProcessUtils::ClearTouchable() const {
+  if (deleteTouchable) delete currentTouchable;
+  currentTouchable = nullptr;
+  deleteTouchable = false;
 }
 
 
@@ -354,6 +371,23 @@ const G4ParticleDefinition* G4CMPProcessUtils::GetCurrentParticle() const {
 }
 
 
+// Return touchable for currently active track for transforms
+
+const G4VTouchable* G4CMPProcessUtils::GetCurrentTouchable() const {
+  if (!currentTrack) return currentTouchable;
+
+  const G4VTouchable* touch = currentTrack->GetTouchable();
+  if (touch) return touch;
+
+  // Create a local touchable, to delete at end of track
+  ClearTouchable();
+  currentTouchable = G4CMP::CreateTouchableAtPoint(currentTrack->GetPosition());
+  deleteTouchable = true;
+
+  return currentTouchable;
+}
+
+
 // Access phonon particle-type/polarization indices
 
 G4int G4CMPProcessUtils::GetPolarization(const G4Track& track) const {
@@ -462,7 +496,12 @@ G4int G4CMPProcessUtils::FindNearestValley(const G4ThreeVector& dir) const {
 
 
 // Compute characteristic time step for charge carrier
-// Parameters are "Mach number" (ratio with sound speed) and scattering length
+// Rate depends on Mach number (v/vsound = k/ksound) and scattering length l0
+// 1/Tau = velLong/(3*l0) * kmag/ksound * (1 - ksound/kmag)^3
+// Tau   = (3*l0)/velLong * 1/mach * (1 - 1/mach)^-3
+//       = (3*l0)/velLong * 1/mach * [(mach-1)/mach]^-3
+//       = (3*l0)/velLong * mach^3/mach * (mach-1)^-3
+//       = (3*l0)/velLong * mach^2 / (mach-1)^3
 
 G4double 
 G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
@@ -470,4 +509,5 @@ G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
 
   const G4double tstep = 3.*l0/velLong;
   return (mach<1.) ? tstep : tstep*mach/((mach-1)*(mach-1)*(mach-1));
+  // NOTE: Above numerator should be tstep*mach*mach, but causes problems
 }

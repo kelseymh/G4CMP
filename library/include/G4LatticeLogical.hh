@@ -40,6 +40,7 @@
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
 // 20230702  I. Ataee -- Add methods for relationship between quasi-momentum
 //		(p_Q) and expectation value of momentum (p).
+// 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -210,6 +211,7 @@ public:
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley);
   void AddValley(G4double phi, G4double theta, G4double psi);
+  void AddValley(const G4ThreeVector&, G4bool antival=false);
   void ClearValleys() {
     fValley.clear(); fValleyInv.clear();fValleyAxis.clear();
   }

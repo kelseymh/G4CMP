@@ -3,10 +3,13 @@
 #
 # 20160609  Support different executables by looking at target name
 # 20170923  Add testChargeCloud
+# 20220921  G4CMP-319 -- Add testTemperature
+# 20221104  G4CMP-340 -- Move phononKinematics to tools/ directory
 
 TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup \
-	g4cmpEFieldTest phononKinematics testChargeCloud testPartition \
-	testHVtransform testFanoFactor
+	g4cmpEFieldTest testChargeCloud testPartition \
+	testHVtransform testFanoFactor testTemperature
+
 .PHONY : $(TESTS)
 
 ifndef G4CMP_NAME
@@ -19,10 +22,10 @@ help :			# First target, in case user just types "make"
 	@echo "testBlockData : Demonstrate use of data container"
 	@echo "testCrystalGroup : Validate non-orthogonal crystal axes"
 	@echo "g4cmpEFieldTest  : Validate COMSOL field file in rectangular box"
-	@echo "phononKinematics : Generate Si kinematics and plot"
 	@echo "testChargeCloud  : Validate performance of G4CMPChargeCloud"
 	@echo "testHVtransform  : Check lattice transforms and inversions"
 	@echo "testFanoFactor   : Verify Fano fluctuations given mean, F"
+	@echo "testTemperature  : Exercise thermal distribution functions"
 	@echo
 	@echo Please specify which one to build as your make target, or \"all\"
 

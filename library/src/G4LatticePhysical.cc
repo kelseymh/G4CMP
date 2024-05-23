@@ -25,8 +25,10 @@
 // 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
 //		return thread-local instance.
 // 20211021  Wrap verbose output in #ifdef G4CMP_DEBUG for performace
+// 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 
 #include "G4LatticePhysical.hh"
+#include "G4CMPConfigManager.hh"
 #include "G4LatticeLogical.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RotationMatrix.hh"
@@ -46,13 +48,13 @@ namespace {
 
 G4LatticePhysical::G4LatticePhysical()
   : verboseLevel(0), fLattice(0), hMiller(0), kMiller(0), lMiller(0),
-    fRot(0.) {;}
+    fRot(0.), fTemperature(-1.) {;}
 
 // Set lattice orientation (relative to G4VSolid) with Miller indices
 
 G4LatticePhysical::G4LatticePhysical(const G4LatticeLogical* Lat,
 				     G4int h, G4int k, G4int l, G4double rot)
-  : verboseLevel(0), fLattice(Lat) {
+  : verboseLevel(0), fLattice(Lat), fTemperature(-1.) {
   SetMillerOrientation(h, k, l, rot);
 }
 
@@ -86,6 +88,14 @@ void G4LatticePhysical::SetMillerOrientation(G4int h, G4int k, G4int l,
   // FIXME:  Is this equivalent to (phi,theta,rot) Euler angles???
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Return temperature assigned to lattice/volume, or global parameter
+
+G4double G4LatticePhysical::GetTemperature() const {
+  return (fTemperature < 0. ? G4CMPConfigManager::GetTemperature()
+	  : fTemperature);
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -372,9 +382,10 @@ G4LatticePhysical::GetElectronEffectiveMass(G4int iv,
 // Dump contained logical lattice with volume information
 
 void G4LatticePhysical::Dump(std::ostream& os) const {
-  os << "# Physical lattice (hkl) = "
-     << hMiller << " " << kMiller << " " << lMiller
-     << " rotation " << fRot/deg << " deg\n"
-     << "# Logical lattice:\n" << *fLattice << std::endl;
+  os << "# Physical lattice:"
+     << " (hkl) = " << hMiller << " " << kMiller << " " << lMiller
+     << " rotation " << fRot/deg << " deg"
+     << " @ " << fTemperature/kelvin << " K"
+     << "\n# Logical lattice:\n" << *fLattice << std::endl;
 }
 

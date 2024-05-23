@@ -29,7 +29,7 @@ Users must have a recent (10.4 through 10.7) version of GEANT4 installed and
 configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See GEANT4's
 documentation for further instructions.).
 
-**NOTE** The relase of Geant4 Version 11 introduced substantial and breaking
+**NOTE** The release of Geant4 Version 11 introduced substantial and breaking
   changes to many Geant4 interface classes.  We are maintaining G4CMP under
   ==Geant4 Version 10== (through 10.7) to ensure compatibility with our
   major experimental users.
@@ -58,13 +58,15 @@ developers should check the source code in
 
 | Environment variable    | Macro command                 | Value/action                            |
 | ------------------------| ----------------------------- | ----------------------------------------|
-| G4LATTICEDATA           | /g4cmp/LatticeData	          | Directory with lattice configs          |
+| G4LATTICEDATA [P1:P2...] | /g4cmp/LatticeData	[P1:P2:...] | Paths with lattice configs            |
 | G4CMP\_DEBUG	          | /g4cmp/verbose [L] >0:        | Enable diagnostic messages              |
 | G4CMP\_CLEARANCE [L]    | /g4cmp/clearance [L] mm       | Minimum distance of tracks from boundaries |
 | G4CMP\_VOLTAGE [V]      | /g4cmp/voltage [V]	volt !=0:  | Apply uniform +Z voltage                |
 | G4CMP\_EPOT\_FILE [F]   | /g4cmp/EPotFile [F] V=0:      | Read mesh field file "F"                |
 | G4CMP\_EPOT\_SCALE [F]  | /g4cmp/scaleEPot [M] V=0:     | Scale the potentials in EPotFile by factor m|
 | G4CMP\_MIN\_STEP [S]    | /g4cmp/minimumStep [S] S>0:   | Force minimum step S\*L0                |
+| G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces [N]      | Maximum e/h reflections                 |
+| G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces [N]      | Maximum phonon reflections              |
 | G4CMP\_MAKE\_PHONONS [R] | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
 | G4CMP\_MAKE\_CHARGES [R] | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
 | G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
@@ -74,8 +76,10 @@ developers should check the source code in
 hits below step length |
 | G4CMP\_EMIN\_PHONONS [E] | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
+| G4CMP\_RECORD\_EMIN | /grcmp/recordMinETracks [t\|f]  | Put below-minimum energy to killed track Edeposit |
 | G4CMP\_USE\_KVSOLVER    | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED    | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
+| G4CMP\_KAPLAN\_KEEP     | /g4cmp/kaplanKeepPhonons [t\|f] | Reflect or iterate all phonons in KaplanQP |
 | G4CMP\_IV\_RATE\_MODEL  | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
 | G4CMP\_ETRAPPING\_MFP   | /g4cmp/eTrappingMFP [L] mm        | Mean free path for electron trapping |
 | G4CMP\_HTRAPPING\_MFP   | /g4cmp/hTrappingMFP [L] mm        | Mean free path for charge hole trapping |
@@ -83,13 +87,12 @@ hits below step length |
 | G4CMP\_EATRAPION\_MFP | /g4cmp/eATrapIonizationMFP [L] mm | MFP for h-trap ionization by e- |
 | G4CMP\_HDTRAPION\_MFP | /g4cmp/hDTrapIonizationMFP [L] mm | MFP for e-trap ionization by h+ |
 | G4CMP\_HATRAPION\_MFP | /g4cmp/hATrapIonizationMFP [L] mm | MFP for h-trap ionization by h+ |
+| G4CMP\_TEMPERATURE   | /g4cmp/temperature [T] K | Device/substrate/etc. temperature |
 | G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [LewinSmith\|Lindhard] | Select NIEL partitioning function |
 | G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t\|f] | Create charges in sphere around location |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation [h] [k] [l] | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
 | G4CMP\_MILLER\_L          |                               |                                         |
-| G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces [N]      | Maximum e/h reflections                 |
-| G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces [N]      | Maximum phonon reflections              |
 | G4CMP\_HIT\_FILE [F]	    | /g4cmp/HitsFile [F]           | Write e/h hit locations to "F"          |
 
 The default lattice orientation is to be aligned with the associated
@@ -124,7 +127,7 @@ non-ionizing energy loss (NIEL) on the track.
 
 Secondary phonons may be produced either by downconversion of higher energy
 phonons, or by emission of Luke-Neganov phonons from charge carriers.
-Generating seconary phonons can significantly slow down the simulation, so
+Generating secondary phonons can significantly slow down the simulation, so
 the `LukeScattering` process has an analogous environment variable,
 `$G4CMP_LUKE_SAMPLE`, defined with rate (R) as above.
 
@@ -170,7 +173,7 @@ additional diagnostic output files which may be of interest.
 ## Building the Package
 
 G4CMP supports building itself with either GNU Make or CMake, and separately
-supports being linked into user applicated with either GNU Make (via
+supports being linked into user applications with either GNU Make (via
 environment variable settings) or CMake.
 
 ### Building with Make
@@ -196,6 +199,17 @@ or
 	setenv G4DEBUG 1
 or
 	make library G4DEBUG=1
+
+If you want to enable additional diagnostics in some processes, including
+writing out statistics files, build with the G4CMP_DEBUG environment or Make
+variable set.  Note that this is not compatible with running multiple worker
+threads.
+
+	export G4CMP_DEBUG=1
+or
+	setenv G4CMP_DEBUG 1
+or
+	make library G4CMP_DEBUG=1
 
 If you want to enable "sanitizing" options with the library, to look for
 memory leaks, thread collisions etc., you may set the options
@@ -231,6 +245,10 @@ want to install to a local path, rather than system-wide, use the
 
 If you want debugging symbols included with the G4CMP library, you
 need to include the `-DCMAKE_BUILD_TYPE=Debug` option.
+
+If you want to enable additional diagnostics in some processes, including
+writing out statistics files, include the `-DG4CMP_DEBUG=1` option.  Note
+that this is not compatible with running multiple worker threads.
 
 If you want to enable "sanitizing" options with the library, to look for
 memory leaks, thread collisions etc., you may set the options
@@ -280,7 +298,7 @@ linking G4CMP into your applications:
 | G4CMPINSTALL | Path to g4cmp_env.* scripts  | <path-to-G4CMP> | $CMAKE_INSTALL_PREFIX/share/G4CMP |
 | G4CMPLIB | Directory containing libG4cmp.so | $G4WORKDIR/lib/$G4SYSTEM | $G4CMPINSTALL/lib |
 | G4CMPINCLUDE | Path to library/include      | $G4INSTALL/library/include | $CMAKE_INSTALL_PREFIX/include |
-| G4LATTICEDATA | Path to CrytalMaps directory | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
+| G4LATTICEDATA | Path(s) to CrystalMaps | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
 
 If you have a simple Makefile build system (GMake), the following two lines,
 or an appropriate variation on them, should be sufficient:
@@ -366,8 +384,20 @@ defined.  These parameters are used by the phonon and charge-carrier
 processes to know how to create, propagate, and scatter the particles
 through the crystal.
 
-Each material's parameters are stored in a subdirectory under CrystalMaps
-(or wherever the envrionment variable `$G4LATTICEDATA` points).  G4CMP is
+Each material's parameters are stored in a subdirectory under `CrystalMaps`; 
+the environment variable used to search for these material configuration files, 
+`$G4LATTICEDATA`, points to this directory by default. Additional paths can be 
+included in this search by appending them to the `$G4LATTICEDATA` variable:
+
+    export G4LATTICEDATA=${G4LATTICEDATA:+$G4LATTICEDATA:}/path/to/more/CrystalMaps
+
+or
+
+    setenv G4LATTICEDATA ${G4LATTICEDATA}:/path/to/more/CrystalMaps
+
+Note that if a material configuration file is found in multiple locations, only 
+the first file found chronologically will be chosen; `G4LATTICEDATA` must be 
+reset in order for conflicting configuration files to be found. G4CMP is
 distributed with germanium and silicon configurations, in `CrystalMaps/Ge/`
 and `CrystalMaps/Si/`, respectively.  We recommend naming additional
 directories by element or material, matching the Geant4 conventions, but
@@ -415,7 +445,7 @@ the crystal system.
 | scat    | B         | isotope scattering rate   | second^3 (s3)      |
 | decay   | A         | anharmonic decay rate     | second^4 (s4)      |
 | decayTT | frac      | Fraction of L->TT decays  |                    |
-| LDOS    | frac      | longitudnal density of states | sum to unity   |
+| LDOS    | frac      | longitudinal density of states | sum to unity   |
 | STDOS   | frac      | slow-transverse density of states |            |
 | FTDOS   | frac      | fast-transverse density of states |            |
 | Debye   | val       | Debye energy for phonon primaries | E, T, Hz   |
@@ -457,7 +487,7 @@ probabilities.
 
 User applications should use the `G4CMPSurfaceProperty` class, or an
 application-specific subclass.  This class has `G4MaterialPropertiesTable`
-objects for phonons and charges seaprately; the base class constructor takes
+objects for phonons and charges separately; the base class constructor takes
 a long list of arguments to fill those tables with common parameters:
 
   G4CMPSurfaceProperty(const G4String& name,
@@ -479,13 +509,13 @@ with different property parameters.
 
 User applications with active sensors for either phonons or charges (or
 both), should define a subclass of `G4CMPVElectrodePattern` for each of
-those sensors (only one sensor per surface).  If the sensors require
-additional parameters, those should be assigned to the material properties
-table that goes with the surface above.
+those sensors.  If the sensors require additional parameters, those should
+be assigned to the material properties table that goes with the surface
+above.  See below for a discussion of `G4CMPPhononElectrode`.
 
 Phonon sensors typically involve a superconducting film to couple the
 substrate to a sensor (SQUID, TES, etc.).  The `G4CMPKaplanQP` class
-provides a parametric model for that coupling, implmenting Kaplan's model
+provides a parametric model for that coupling, implementing Kaplan's model
 for energy exchange between phonons and quasiparticles from broken Cooper
 pairs.  This class expects to find the following material properties defined
 for the metal film (defined using the function
@@ -494,13 +524,45 @@ for the metal film (defined using the function
 | Property Key     | Definition                  | Example value (Al) |
 |------------------|-----------------------------|--------------------|
 | filmThickness    | Thickness of film           | 600.*nm            |
-| gapEnergy        | Bandgap of film material    | 347.43e-6*eV       |
+| gapEnergy        | Bandgap of film material    | 173.715e-6*eV      |
 | lowQPLimit       | Minimum bandgap multiple for quasiparticles | 3. |
 | phononLifetime   | Phonon lifetime in film at 2*bandgap | 242.*ps   |
 | phononLifetimeSlope | Lifetime dependence vs. energy | 0.29         |
 | vSound           | Speed of sound in film      | 3.26*km/s          |
-| subgapAbsorption | Probably to absorb energy below 2*bandgap | 0.   |
+| lowQPLimit       | Minimum QP energy to radiate phonons | 3.        |
+| highQPLimit      | Maximum energy to create QPs | 10.               |
+| subgapAbsorption | Probability to absorb energy below 2*bandgap | 0.03 (optional) |
+| absorberGap      | Bandgap of "subgap absorber"  | 15e-6*eV (tungsten) |
+| absorberEff      | Quasiparticle absorption efficiency  | 0.3          |
+| absorberEffSlope | Efficiency dependence vs. energy  | 0.              |
+| temperature      | Temperature of film         | 0.05e-3*K          |
 
-The last parameter is optional.  It only apples if there is a sensor
-involved which is sensitive to heat energy, in which case phonons below
-2.*bandgap energy should be treated as directly absorbed.
+The last five  parameters are optional. They only apply if there is a
+sensor involved which is sensitive to heat energy, in which case phonons
+below 2.*bandgap energy, and above 2.*absorberGap energy, should be treated
+as directly absorbed with the specified 'subgapAbsorption'. In this case,
+we recommend that user applications also set `/g4cmp/minEPhonons` to 2.*absorberGap,
+to avoid excessive CPU from tracking unmeasurable phonons. Quasiparticles
+in a sensor may be subject to a baseline absorption efficiency 'absorberEff'
+and energy-dependent efficiency modification 'absorberEffSlope'.
+
+The `G4CMPKaplanQP` process also respects the global setting
+`kaplanKeepPhonons`.  If this is set true, then all internal phonons
+produced in the film will be either re-emitted into the substrate, or
+iterated to produce multiple quasiparticles for energy collection.
+
+A concrete "electrode" class, `G4CMPPhononElectrode`, is provided for simple
+access to `G4CMPKaplanQP` from user applications.  An instance of
+`G4CMPPhononElectrode` should be registered to the `G4CMPSurfaceProperty`
+associated with the phonon sensors' surface.  The material properties listed
+above should be registered into the surface's material property table, via
+`G4CMPSurfaceProperty::GetPhononMaterialPropertiesTablePointer()`; this
+table will be passed into `G4CMPKaplanQP` automatically when it is
+registered.  
+
+`G4CMPPhononElectrode` also supports an additional material property,
+"filmAbsorption", to specify the "conversion efficiency" for phonons
+incident on the registered sensor.  This assumes that the sensor is
+implemented as a dedicated volume with an associated border surface.  If
+individual sensor shapes are not implemented, this parameter may also
+include geometric coverage.

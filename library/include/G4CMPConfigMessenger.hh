@@ -40,6 +40,9 @@
 // 20200614  G4CMP-211:  Add functionality to print settings
 // 20210303  G4CMP-243:  Add parameter to set step length for merging hits
 // 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
+// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
+// 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
 
 #include "G4UImessenger.hh"
 
@@ -80,6 +83,7 @@ private:
   G4UIcmdWithADoubleAndUnit* eATrapIonMFPCmd;
   G4UIcmdWithADoubleAndUnit* hDTrapIonMFPCmd;
   G4UIcmdWithADoubleAndUnit* hATrapIonMFPCmd;
+  G4UIcmdWithADoubleAndUnit* tempCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;
@@ -89,7 +93,9 @@ private:
   G4UIcmdWithAString* nielPartitionCmd;
   G4UIcmdWithABool*   kvmapCmd;
   G4UIcmdWithABool*   fanoStatsCmd;
+  G4UIcmdWithABool*   kaplanKeepCmd;
   G4UIcmdWithABool*   ehCloudCmd;
+  G4UIcmdWithABool*   recordMinECmd;
 
 private:
   G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden

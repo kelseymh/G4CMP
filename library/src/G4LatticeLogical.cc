@@ -51,6 +51,8 @@
 //		correctly reflect the physics of the band structure relativistically. Also, introduced
 //		the quasti-momentum p_Q and its relationship with the expectation value of momentum
 //		<p> (transport momentum).
+// 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
+// 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -739,7 +741,50 @@ void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
   fValleyInv.back().invert();
 
   // NOTE:  Rotation matrices take external vector along valley axis to X-hat
-  fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));
+  fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));    
+}
+
+// Store drifting-electron valley using valley's direction
+
+void G4LatticeLogical::AddValley(const G4ThreeVector& valleyDirVec, G4bool antival) {
+      
+  // Find the rotation matrix elements
+  // ( [vx,vy,vz],
+  //     [a,b,c],
+  //     [d,e,f] )
+    
+  // We chose the following convention :
+  //  - The rotated y axis must stay in the X-Y plane (c=0)
+  //  - Valley's rotated Z axis must have positive z component (f>0) 
+  //  - Anti-valley's rotated Z axis must have positive z component (f<0) 
+  //  - The three rotated axis should stay normalized and be orthogonal
+  //  - It must be a right hand coordinate system :
+  //	(vx,vy,vz) X (a,b,c) = (d,e,f) 
+    
+  // If vx=0 and/or vy=0, we compute a and b differently
+
+  G4ThreeVector& vdir=tempvec();
+  vdir=valleyDirVec.unit();
+    
+  double vx=vdir.x();
+  double vy=vdir.y();
+  double vz=vdir.z();
+  
+  // rotated z axis points in the +z direction for valleys and -z for anti-valleys  
+  G4double f = sqrt(1. - vz*vz) * (antival?-1:1);
+    
+  G4double a = (vy==0 ? 0 : vx==0 ? -1 : -vy/f);
+  G4double b = (vy==0 ? 1 : vx==0 ? 0 : vx/f);
+     
+  G4double d=-vz*b;
+  G4double e=vz*a;
+      
+  // Store the valley's rotation matrix, its inverse and the valley's direction
+  fValley.resize(fValley.size()+1);
+  fValley.back().setRows(vdir, G4ThreeVector(a,b,0), G4ThreeVector(d,e,f));
+  fValleyInv.push_back(fValley.back());
+  fValleyInv.back().invert();
+  fValleyAxis.push_back(vdir);  
 }
 
 // Store rotation matrix and corresponding axis vector for valley
@@ -927,11 +972,12 @@ void G4LatticeLogical::DumpCrystalInfo(std::ostream& os) const {
 
   switch (fCrystal.group) {		// Reduced elasticity tensor
   case G4CMPCrystalGroup::tetragonal:
-    DumpCpq(os,1,6);				// Plus all below
+    DumpCpq(os,1,6); [[fallthrough]];			// Plus all below
   case G4CMPCrystalGroup::hexagonal:
     DumpCpq(os,1,3); DumpCpq(os,3,3); DumpCpq(os,6,6);	// Plus all below
+    [[fallthrough]];
   case G4CMPCrystalGroup::cubic:
-    DumpCpq(os,4,4);				// Plus all below
+    DumpCpq(os,4,4); [[fallthrough]];			// Plus all below
   case G4CMPCrystalGroup::amorphous:
     DumpCpq(os,1,1); DumpCpq(os,1,2); break;
   case G4CMPCrystalGroup::rhombohedral:
@@ -940,7 +986,7 @@ void G4LatticeLogical::DumpCrystalInfo(std::ostream& os) const {
     DumpCpq(os,3,3); DumpCpq(os,4,4); DumpCpq(os,6,6); break;
   case G4CMPCrystalGroup::monoclinic:
     DumpCpq(os,1,6); DumpCpq(os,2,6); DumpCpq(os,3,6);	// Plus all below
-    DumpCpq(os,4,5);
+    DumpCpq(os,4,5); [[fallthrough]];
   case G4CMPCrystalGroup::orthorhombic:
     for (int p=1; p<7; p++) {		// Upper corner and lower diagonal
       for (int q=p; q<4; q++) DumpCpq(os,p,q);

@@ -10,34 +10,34 @@
 //
 // 20140321  Drop passing placement transform to G4LatticePhysical
 // 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
+// 20220809  [ For M. Hui ] -- Add frequency dependent surface properties.
+// 20221006  Remove unused features; add phonon sensor pad with use of
+//		G4CMPPhononElectrode to demonstrate KaplanQP.
 
 #include "PhononDetectorConstruction.hh"
 #include "PhononSensitivity.hh"
-#include "G4CMPElectrodeSensitivity.hh"
 #include "G4CMPLogicalBorderSurface.hh"
+#include "G4CMPPhononElectrode.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4Box.hh"
 #include "G4Colour.hh"
-#include "G4FieldManager.hh"
 #include "G4GeometryManager.hh"
 #include "G4LatticeLogical.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
-#include "G4CMPLogicalBorderSurface.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeStore.hh"
 #include "G4Material.hh"
+#include "G4MaterialPropertiesTable.hh"
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4RunManager.hh"
 #include "G4SDManager.hh"
 #include "G4SolidStore.hh"
-#include "G4Sphere.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4TransportationManager.hh"
 #include "G4Tubs.hh"
-#include "G4UniformMagField.hh"
 #include "G4UserLimits.hh"
 #include "G4VisAttributes.hh"
 
@@ -47,11 +47,15 @@
 PhononDetectorConstruction::PhononDetectorConstruction()
   : fLiquidHelium(0), fGermanium(0), fAluminum(0), fTungsten(0),
     fWorldPhys(0), topSurfProp(0), botSurfProp(0), wallSurfProp(0),
-    electrodeSensitivity(0), fConstructed(false), fIfField(true) {;}
+    electrodeSensitivity(0), fConstructed(false) {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-PhononDetectorConstruction::~PhononDetectorConstruction() {;}
+PhononDetectorConstruction::~PhononDetectorConstruction() {
+  delete topSurfProp;
+  delete botSurfProp;
+  delete wallSurfProp;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -148,7 +152,7 @@ void PhononDetectorConstruction::SetupGeometry()
     worldLogical,false,1);
 
   //
-  // detector -- Note : Aluminum electrode sensitivity is attached to Germanium 
+  // detector -- Note : "sensitive detector" is attached to Germanium crystal
   //
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   if (!electrodeSensitivity)
@@ -158,22 +162,48 @@ void PhononDetectorConstruction::SetupGeometry()
 
   //
   // surface between Al and Ge determines phonon reflection/absorption
-
+  //
   if (!fConstructed) {
-    topSurfProp =new G4CMPSurfaceProperty("TopAlSurf", 1.0, 0.0, 0.0, 0.0,
-					  	       0.3, 1.0, 0.0, 0.0);
+    const G4double GHz = 1e9 * hertz; 
+
+    //the following coefficients and cutoff values are not well-motivated
+    //the code below is used only to demonstrate how to set these values.
+    const std::vector<G4double> anhCoeffs = {0, 0, 0, 0, 0, 1.51e-14};
+    const std::vector<G4double> diffCoeffs =
+      {5.88e-2, 7.83e-4, -2.47e-6, 1.71e-8, -2.98e-11};
+    const std::vector<G4double> specCoeffs =
+      {0,928, -2.03e-4, -3.21e-6, 3.1e-9, 2.9e-13};
+
+    const G4double anhCutoff = 520., reflCutoff = 350.;   // Units external
+
+    topSurfProp = new G4CMPSurfaceProperty("TopAlSurf", 1.0, 0.0, 0.0, 0.0,
+					  	        0.3, 1.0, 0.0, 0.0);
+    topSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
+    AttachPhononSensor(topSurfProp);
+
     botSurfProp = new G4CMPSurfaceProperty("BotAlSurf", 1.0, 0.0, 0.0, 0.0,
-                                                        0.3, 1.0, 0.0, 0.0);
-    wallSurfProp = new G4CMPSurfaceProperty("WallAlSurf", 0.0, 1.0, 0.0, 0.0,
-                                                          0.0, 1.0, 0.0, 0.0);
+					   	        0.3, 1.0, 0.0, 0.0);
+    botSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
+    AttachPhononSensor(botSurfProp);
+
+    wallSurfProp = new G4CMPSurfaceProperty("WallSurf", 0.0, 1.0, 0.0, 0.0,
+					    	          0.0, 1.0, 0.0, 0.0);
+    wallSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+					  diffCoeffs, specCoeffs, GHz, GHz,GHz);
+
   }
 
-  new G4CMPLogicalBorderSurface("iZIPTop", GePhys, aluminumTopPhysical,
-                                        topSurfProp);
-  new G4CMPLogicalBorderSurface("iZIPBot", GePhys, aluminumBotPhysical,
-                                        botSurfProp);
-  new G4CMPLogicalBorderSurface("iZIPWall", GePhys, fWorldPhys,
-                                        wallSurfProp);
+  //
+  // Separate surfaces for sensors vs. bare sidewall
+  //
+  new G4CMPLogicalBorderSurface("detTop", GePhys, aluminumTopPhysical,
+				topSurfProp);
+  new G4CMPLogicalBorderSurface("detBot", GePhys, aluminumBotPhysical,
+				botSurfProp);
+  new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys,
+				wallSurfProp);
 
   //                                        
   // Visualization attributes
@@ -184,3 +214,30 @@ void PhononDetectorConstruction::SetupGeometry()
   fGermaniumLogical->SetVisAttributes(simpleBoxVisAtt);
   fAluminumLogical->SetVisAttributes(simpleBoxVisAtt);
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Attach material properties and electrode/sensor handler to surface
+
+void PhononDetectorConstruction::
+AttachPhononSensor(G4CMPSurfaceProperty *surfProp) {
+  if (!surfProp) return;		// No surface, nothing to do
+
+  // Specify properties of aluminum sensor, same on both detector faces
+  // See G4CMPPhononElectrode.hh or README.md for property keys
+
+  // Properties must be added to existing surface-property table
+  auto sensorProp = surfProp->GetPhononMaterialPropertiesTablePointer();
+  sensorProp->AddConstProperty("filmAbsorption", 0.20);    // True sensor area
+  sensorProp->AddConstProperty("filmThickness", 600.*nm);
+  sensorProp->AddConstProperty("gapEnergy", 173.715e-6*eV);
+  sensorProp->AddConstProperty("lowQPLimit", 3.);
+  sensorProp->AddConstProperty("phononLifetime", 242.*ps);
+  sensorProp->AddConstProperty("phononLifetimeSlope", 0.29);
+  sensorProp->AddConstProperty("vSound", 3.26*km/s);
+  sensorProp->AddConstProperty("subgapAbsorption", 0.1);
+
+  // Attach electrode object to handle KaplanQP interface
+  surfProp->SetPhononElectrode(new G4CMPPhononElectrode);
+}
+

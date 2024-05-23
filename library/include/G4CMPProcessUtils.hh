@@ -39,6 +39,7 @@
 // 20211001  Add reusable G4ThreeVector buffer for internal calculations.
 // 20211001  FindNearestValley(dir) can pass by reference.
 // 20211003  Add track touchable as data member, to create if needed
+// 20240303  Add local currentTouchable pointer for non-tracking situations.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -84,9 +85,11 @@ public:
   G4bool IsChargeCarrier() const;
 
   // Set configuration manually, without a track
-  virtual void FindLattice(const G4VPhysicalVolume* volume);
-  virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
-  virtual const G4LatticePhysical* GetLattice() const { return theLattice; }
+  void FindLattice(const G4VPhysicalVolume* volume);
+  void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
+  const G4LatticePhysical* GetLattice() const { return theLattice; }
+
+  void SetTouchable(const G4VTouchable* touch);
 
   // Convert global to local coordinates with respect to current track
   G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const;
@@ -247,15 +250,18 @@ protected:
   const G4Track* GetCurrentTrack() const { return currentTrack; }
   const G4VPhysicalVolume* GetCurrentVolume() const { return currentVolume; }
   const G4ParticleDefinition* GetCurrentParticle() const;
-  const G4VTouchable* GetCurrentTouchable() const { return currentTouch; }
+  const G4VTouchable* GetCurrentTouchable() const;
 
   G4int GetCurrentValley() const { return GetValleyIndex(currentTrack); }
 
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking
   const G4VPhysicalVolume* currentVolume;
-  const G4VTouchable* currentTouch;	// From track or created locally
-  G4bool createdTouch;			// Flag if touchable should be deleted
+
+  // May be created by GetCurrentTouchable() for internal use with primaries
+  void ClearTouchable() const;
+  mutable const G4VTouchable* currentTouchable;
+  mutable G4bool deleteTouchable;
 
   mutable G4ThreeVector tempvec;	// Not static; each instance unique
 };
