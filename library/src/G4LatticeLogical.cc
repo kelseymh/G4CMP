@@ -433,8 +433,7 @@ G4ThreeVector
 G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapPtoV_el " << ivalley << " " << p_e
-	   << G4endl;
+    G4cout << "G4LatticeLogical::MapPtoV_el " << ivalley << " " << p_e << G4endl;
 #endif
 
   return p_e*c_light/(MapPtoEkin(ivalley,p_e) + electron_mass_c2);
@@ -444,8 +443,7 @@ G4ThreeVector
 G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapV_elToP " << ivalley << " " << v_e
-	   << G4endl;
+    G4cout << "G4LatticeLogical::MapV_elToP " << ivalley << " " << v_e << G4endl;
 #endif
 
   tempvec() = v_e;
@@ -454,23 +452,49 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
   fMassTensor.yy()*tempvec().y()*tempvec().y() +
   fMassTensor.zz()*tempvec().z()*tempvec().z());
   G4double gamma = 1/sqrt(1-bandV/electron_mass_c2);
+
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) {
+    G4cout << " <v|M|v> " << bandV << G4endl << " gamma " << gamma
+	   << G4endl << " returning " << gamma*electron_mass_c2*v_e/c_light << G4endl;
+  }
+#endif
   return gamma*electron_mass_c2*v_e/c_light;
 }
 
 G4ThreeVector 
 G4LatticeLogical::MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapPToP_Q " << ivalley << " " << P
+	   << G4endl;
+#endif
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
+
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) 
+    G4cout << " P_Q " << nToV*(GetMassTensor()*(vToN*P*c_squared/electron_mass_c2)) << G4endl;
+#endif
 
   return nToV*(GetMassTensor()*(vToN*P*c_squared/electron_mass_c2));
 }
 
 G4ThreeVector 
 G4LatticeLogical::MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapP_QToP " << ivalley << " " << P_Q << G4endl;
+#endif
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
+
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) 
+    G4cout << " P " << nToV*(GetMInvTensor()*(vToN*P_Q*electron_mass_c2/c_squared)) << G4endl;
+#endif
 
   return nToV*(GetMInvTensor()*(vToN*P_Q*electron_mass_c2/c_squared));
 }
@@ -479,8 +503,7 @@ G4ThreeVector
 G4LatticeLogical::MapV_elToK(G4int ivalley, const G4ThreeVector &v_e) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapV_elToK " << ivalley << " " << v_e
-     << G4endl;
+    G4cout << "G4LatticeLogical::MapV_elToK " << ivalley << " " << v_e << G4endl;
 #endif
 
 #ifdef G4CMP_DEBUG
@@ -488,8 +511,7 @@ G4LatticeLogical::MapV_elToK(G4int ivalley, const G4ThreeVector &v_e) const {
     G4cout << " V_el (valley) " << vToN*v_e << G4endl
 	   << " K=mv/hbar (valley) " << GetMassTensor()*(vToN*v_e/hbar_Planck)
 	   << G4endl << " returning "
-	   << GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck))
-	   << G4endl;
+	   << GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck)) << G4endl;
   }
 #endif
 
@@ -501,8 +523,7 @@ G4ThreeVector
 G4LatticeLogical::MapPtoK(G4int ivalley, const G4ThreeVector& p_e) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapPtoK " << ivalley << " " << p_e
-	   << G4endl;
+    G4cout << "G4LatticeLogical::MapPtoK " << ivalley << " " << p_e << G4endl;
 #endif
 
   tempvec() = MapPToP_Q(ivalley, p_e);
@@ -519,12 +540,19 @@ G4ThreeVector
 G4LatticeLogical::MapKtoP(G4int ivalley, const G4ThreeVector& k) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapKtoP " << ivalley << " " << k
-     << G4endl;
+    G4cout << "G4LatticeLogical::MapKtoP " << ivalley << " " << k << G4endl;
 #endif
   
     tempvec() = k;
     tempvec() *= hbarc;			// Convert wavevector to momentum
+
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) {
+    G4cout << " P_Q " << tempvec() << G4endl
+	   << " returning P " << MapP_QToP(ivalley, tempvec()) << G4endl;
+  }
+#endif
+
     return MapP_QToP(ivalley, tempvec());
 }
 
@@ -536,7 +564,14 @@ G4double
 G4LatticeLogical::MapP_QtoEkin(G4int iv, const G4ThreeVector& p) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapPtoEkin " << iv << " " << p << G4endl;
+    G4cout << "G4LatticeLogical::MapP_QtoEkin " << iv << " " << p << G4endl;
+#endif
+
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) {
+    G4cout << " P " << MapP_QToP(iv, p) << G4endl
+	   << " returning Ekin " << MapPtoEkin(iv, MapP_QToP(iv, p)) << G4endl;
+  }
 #endif
 
   return MapPtoEkin(iv, MapP_QToP(iv, p));
@@ -544,12 +579,25 @@ G4LatticeLogical::MapP_QtoEkin(G4int iv, const G4ThreeVector& p) const {
 
 G4ThreeVector
 G4LatticeLogical::MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double Ekin) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapEkintoP " << iv << " " << pdir << " " << Ekin << G4endl;
+#endif
+
   tempvec() = pdir;
   tempvec().transform(GetValley(iv));
   G4double bandP = (fMassTensor.xx()*tempvec().x()*tempvec().x() +
     fMassTensor.yy()*tempvec().y()*tempvec().y() +
     fMassTensor.zz()*tempvec().z()*tempvec().z());
   G4double PMag = sqrt(electron_mass_c2*(Ekin*Ekin+2.*Ekin*electron_mass_c2)/(bandP*c_squared));
+  
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) {
+    G4cout << " <pdir|M|pdir> " << bandP << G4endl << " PMag " << PMag << G4endl 
+    << " returning P " << pdir*PMag << G4endl;
+  }
+#endif
+
   return pdir*PMag;
 }
 
@@ -566,11 +614,20 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
 #endif
 
-  return sqrt((
-      tempvec().x()*tempvec().x()*fMassTensor.xx() +
+  G4double bandP = tempvec().x()*tempvec().x()*fMassTensor.xx() +
       tempvec().y()*tempvec().y()*fMassTensor.yy() +
-      tempvec().z()*tempvec().z()*fMassTensor.zz())/mElectron + 
-    electron_mass_c2*electron_mass_c2) - electron_mass_c2;
+      tempvec().z()*tempvec().z()*fMassTensor.zz();
+
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) {
+    G4cout << " <P|M/m0|P> " << bandP/mElectron << G4endl
+	   << G4endl << " returning Ekin "
+	   << sqrt(bandP/mElectron + electron_mass_c2*electron_mass_c2) - electron_mass_c2
+	   << G4endl;
+  }
+#endif
+
+  return sqrt(bandP/mElectron + electron_mass_c2*electron_mass_c2) - electron_mass_c2;
 
 }
 

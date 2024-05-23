@@ -113,6 +113,10 @@ G4double G4LatticePhysical::MapKtoV(G4int mode, const G4ThreeVector& k) const {
 #endif
 
   RotateToLattice(tempvec()=k);
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+#endif
+
   return fLattice->MapKtoV(mode, tempvec());
 }
 
@@ -125,7 +129,14 @@ G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int mode, const G4ThreeVector& k) 
 #endif
 
   RotateToLattice(tempvec()=k);
-  G4ThreeVector VG = fLattice->MapKtoVDir(mode, tempvec());  
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+#endif
+
+  G4ThreeVector VG = fLattice->MapKtoVDir(mode, tempvec());
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " VDir (lattice) " << tempvec() << G4endl;
+#endif
 
   return RotateToSolid(VG);
 }
@@ -134,8 +145,21 @@ G4ThreeVector G4LatticePhysical::MapKtoVDir(G4int mode, const G4ThreeVector& k) 
 
 G4ThreeVector
 G4LatticePhysical::MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double Ekin) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapEkintoP " << iv << " " << pdir << " " << Ekin << G4endl;
+#endif
+
   RotateToLattice(tempvec()=pdir);
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+#endif
+
   G4ThreeVector p = fLattice->MapEkintoP(iv, tempvec(), Ekin);
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " P (lattice) " << tempvec() << G4endl;
+#endif
+
   return RotateToSolid(p);
 }
 
@@ -223,20 +247,42 @@ G4LatticePhysical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
 
 G4ThreeVector 
 G4LatticePhysical::MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapPToP_Q " << ivalley << " " << P
+	   << G4endl;
+#endif
 
   RotateToLattice(tempvec()=P);
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+#endif
 
   tempvec() = fLattice->MapPToP_Q(ivalley, tempvec());
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " p_q (lattice) " << tempvec() << G4endl;
+#endif
 
   return RotateToSolid(tempvec());
 }
 
 G4ThreeVector 
 G4LatticePhysical::MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::MapP_QToP " << ivalley << " " << P_Q
+	   << G4endl;
+#endif
 
   RotateToLattice(tempvec()=P_Q);
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+#endif
 
   tempvec() = fLattice->MapP_QToP(ivalley, tempvec());
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " p (lattice) " << tempvec() << G4endl;
+#endif
 
   return RotateToSolid(tempvec());
 }
@@ -251,14 +297,13 @@ G4LatticePhysical::MapV_elToK(G4int ivalley, const G4ThreeVector& v_e) const {
 
   RotateToLattice(tempvec()=v_e);
 #ifdef G4CMP_DEBUG
-  if (verboseLevel>1) {
-    G4cout << " in lattice frame " << tempvec() << G4endl
-	   << " returning K " << fLattice->MapV_elToK(ivalley, tempvec())
-	   << G4endl;
-  }
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
 #endif
 
   tempvec() = fLattice->MapV_elToK(ivalley, tempvec());
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " K (lattice) " << tempvec() << G4endl;
+#endif
 
   return RotateToSolid(tempvec());
 }
@@ -277,6 +322,9 @@ G4LatticePhysical::MapPtoK(G4int ivalley, const G4ThreeVector& p_e) const {
 #endif
   
   tempvec() = fLattice->MapPtoK(ivalley, tempvec());
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " k (lattice) " << tempvec() << G4endl;
+#endif
 
   return RotateToSolid(tempvec());
 }
@@ -295,14 +343,26 @@ G4LatticePhysical::MapKtoP(G4int ivalley, const G4ThreeVector& k) const {
 #endif
     
   tempvec() = fLattice->MapKtoP(ivalley, tempvec());
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " p (lattice) " << tempvec() << G4endl;
+#endif
+
   return RotateToSolid(tempvec());
 }
 
 G4double 
 G4LatticePhysical::GetElectronEffectiveMass(G4int iv,
 					   const G4ThreeVector& p) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::GetElectronEffectiveMass " << ivalley 
+    << " " << p << G4endl;
+#endif
 
   RotateToLattice(tempvec()=p);
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+#endif
 
   return fLattice->GetElectronEffectiveMass(iv, tempvec());
 }

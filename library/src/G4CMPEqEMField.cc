@@ -172,21 +172,21 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   force *= electron_mass_c2/c_squared;
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
-    G4cout << " Field (H-V)     " << force/(volt/cm) << " "
+    G4cout << " m0M^-1*E     " << force/(volt/cm) << " "
 	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
   force.transform(vToN);			// Back to lattice
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
-    G4cout << " Field (H-V lat) " << force/(volt/cm) << " "
+    G4cout << " m0M^-1*E (lat) " << force/(volt/cm) << " "
 	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
   theLattice->RotateToSolid(force);		// Back to crystal frame
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
-    G4cout << " Field (H-V loc) " << force/(volt/cm) << " "
+    G4cout << " m0M^-1*E (loc) " << force/(volt/cm) << " "
 	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
@@ -194,7 +194,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   fLocalToGlobal.ApplyAxisTransform(force);
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
-    G4cout << " Field (H-V glb) " << force/(volt/cm) << " "
+    G4cout << " m0M^-1*E (glb) " << force/(volt/cm) << " "
 	   << force.mag()/(volt/cm) << G4endl;
 #endif
 
@@ -203,8 +203,8 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2) {
-    G4cout << " q*Ec/v (scaled) " << force/(eV/m) << " " << force.mag()/(eV/m)
-	   << " eV/m" << G4endl;
+    G4cout << " qm0M^-1*Ec/v (scaled) " << force/(eV/m) 
+     << " " << force.mag()/(eV/m) << " eV/m" << G4endl;
   }
 #endif
 
