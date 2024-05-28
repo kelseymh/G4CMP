@@ -1,0 +1,34 @@
+/run/initialize
+
+# Scene handler
+/vis/open OGL
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointVector 0 0 1
+/vis/viewer/zoom 1.4
+/vis/drawVolume
+
+# for drawing the tracks
+# (if too many tracks cause core dump => storeTrajectory 0)
+/tracking/verbose 2
+/tracking/storeTrajectory 1
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories
+
+# Make phonon polarization modes distinguishable
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
+
+# Write event display to output files for analysis (face and side views)
+/vis/ogl/set/printFilename g4cmpPhonon
+/vis/ogl/set/printMode pixmap
+/vis/ogl/printEPS
+
+/vis/viewer/set/style wireframe #surface
+/vis/viewer/set/hiddenMarker true
+/vis/viewer/set/viewpointThetaPhi 30 150 #90 180
+/vis/viewer/pan 5.0 0 mm
+/vis/viewer/zoom 1
+
+

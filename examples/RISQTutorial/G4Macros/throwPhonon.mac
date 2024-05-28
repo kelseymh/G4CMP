@@ -1,0 +1,50 @@
+/run/initialize
+#
+# Create a scene handler for a specific graphics system
+# (Edit the next line(s) to choose another graphic system)
+#
+/vis/open OGL
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointVector 0 0 1
+/vis/viewer/zoom 1.4
+/vis/drawVolume
+
+# for drawing the tracks
+# (if too many tracks cause core dump => storeTrajectory 0)
+/tracking/verbose 2
+/tracking/storeTrajectory 1
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories
+
+# Make phonon polarization modes distinguishable
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
+
+#Rendering options
+/vis/viewer/set/style wireframe #surface
+/vis/viewer/set/hiddenMarker true
+#/vis/viewer/set/viewpointThetaPhi 30 150 #Nice for orthographic view
+/vis/viewer/set/viewpointThetaPhi 0 90
+/vis/viewer/zoom 1.6
+
+#Some additional useful options for debugging (included for reference)
+#/process/inactivate phononScattering #Kill bc we want lots of energy in our sensor
+#/process/inactivate phononDownconversion # ditto
+
+# Particle generation
+/gps/number 1
+/gps/particle phononL
+/gps/pos/type Point
+/gps/ang/type iso
+/gps/pos/centre 0.0 0.1 0.481 cm # halfway between bottom and top of chip
+/gps/ene/type Mono
+/gps/energy 0.03 eV
+/run/beamOn 1
+
+#Print to an eps file if you'd like (uncomment). Note that Macs no longer don't have builtin viewers for this
+#(but this opens in other apps like TexShop)
+#/vis/ogl/set/printFilename throwPhonon
+#/vis/ogl/set/printMode pixmap
+#/vis/ogl/printEPS
