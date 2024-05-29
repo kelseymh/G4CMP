@@ -98,7 +98,8 @@ What happened in this event? We threw a single longitudinal acoustic phonon of 3
 
 The first meaningful step (Step 1) of our initial longitudinal phonon (phononL) is downconversion, which produces a fast transverse phonon (phononTF) and a slow transverse phonon (phononTS). In the visualization, phononL/phononTF/phononTS are shown in blue/green/red, respectively. A snippet of the phononTS track is also visible: while it cannot itself undergo downconversion, it can undergo isotopic scattering, which it does several times. The transportation step visible is one in which this phonon reflects off the bottom of the chip. We also take a look at the phononTF track produced:
 
-<img width="959" alt="image" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/9fa1c356-2656-4ec8-a7f5-809cc3fb38d0">
+<img width="959" alt="ThrowPhononLaterInPrintout" src="https://github.com/kelseymh/G4CMP/assets/20506221/c0a3ed76-ba4e-43ce-813c-318e821584fc">
+
 
 Here, we notice something similar to the phononTS, but with a downconversion step at the end. Transverse phonons are not allowed to downconvert in G4CMP, the isotopic scattering process enables mode-mixing between phonon polarizations, which is exactly what is happening here: our phononTF changes modes via scattering until it reaches a phononL which then decays prior to another mode change. While this does change the polarization of the phonon under the hood (making the physics correct), this is not easily reflected in the tracking printout.)
 
