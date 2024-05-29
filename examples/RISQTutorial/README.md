@@ -3,14 +3,39 @@ Assembled by Ryan Linehan, linehan3@fnal.gov
 This tutorial is meant to provide a somewhat lengthy introduction to how to use G4CMP for a variety of applications. We focus here on a geometry and a set of analyses that are relevant to the superconducting qubits (QIS) field. 
 
 ## Preliminaries
-While we leave a thorough discussion of the installation procedures to the main G4CMP readme file, it is useful to have a short reminder of this to establish some directory names that we'll use throughout the rest of the tutorial. The 
-Installation, etc
-various directories
-Installing with OGL
 
-Setting up in a new terminal (after installation)
-source geant4.10.07.p04-install/bin/geant4.sh
-source G4CMP_RISQTutorial-install/share/G4CMP/g4cmp_env.sh
+### Installing Geant4 and G4CMP
+While we leave a thorough discussion of the installation procedures to the main G4CMP readme file, it is useful to have a short reminder of this to establish some directory names that we'll use throughout the rest of the tutorial. We'll start with a reminder that in order to run this example, you'll need to install both the geant4 and G4CMP packages. On my machine, each of these has three directories associated with its build: a source directory `XXXXX`, a build directory `XXXXX-build`, and an install directory `XXXXX-install`. On my machine, the base name (`XXXXX`) for my geant4 build is `geant4.10.07.p04`, and the base name for the G4CMP build is `G4CMP_RISQTutorial`. 
+
+ALERT FOR OGL and CXX_STANDARD
+
+### Setting up environment
+Assuming you've built these directories and you're opening up a new terminal, you'll need to source the environmental setup scripts for these:
+```
+source /path/to/geant4.10.07.p04-install/bin/geant4.sh
+source /path/to/G4CMP_RISQTutorial-install/share/G4CMP/g4cmp_env.sh
+```
+Now we can make our example. Copy this tutorial's source directory into a new directory -- I like to copy it outside of the whole G4CMP source directory just to avoid confusion and remember that this is its own executable that needs to be made. Moreover, make build and install directories to accompany it:
+```
+cd /path/to/G4CMP_RISQTutorial 
+cp -r ./examples/RISQTutorial /path/to/
+cd /path/to/
+mkdir RISQTutorial-build
+mkdir RISQTutorial-install
+```
+Now we head into our build directory and run CMake:
+```
+cmake -DCMAKE_INSTALL_PREFIX=/path/to/RISQTutorial-install -DCXX_STANDARD=14 ../RISQTutorial/
+```
+If this runs successfully, we should be able to run make and then make install, and we're done:
+```
+make
+make install
+```
+
+
+
+
 
 
 ## Example 1: Superconducting Qubit Chip Geometry
