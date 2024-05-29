@@ -168,7 +168,7 @@ Now let's actually do some chip characterization. We'll use a new macro for this
 
 Let's go ahead and run this using the following commands:
 ```
-cd RISQTutorial-build
+cd ./path/to/RISQTutorial-build
 ./RISQTutorial ../RISQTutorial/G4Macros/pceStudy.mac
 ```
 If we now look in the output files `RISQTutorial_primary.txt` and `RISQTutorial_hits.txt` we see that there are 200k entries in the former and approximately 200k hits in the latter.
