@@ -220,7 +220,7 @@ PCEStudy("/path/to/RISQTutorial-build/RISQTutorial_primary.txt","/path/to/RISQTu
 ```
 Now, if we look at our hits histogram, we see that the only hits that are registered are those that land within the six qubit islands present in the geometry:
 
-<img width="720" alt="image" src="https://github.com/kelseymh/G4CMP/assets/20506221/c8534396-019e-4518-97a8-0bc2e6f778be">
+<img width="400" alt="image" src="https://github.com/kelseymh/G4CMP/assets/20506221/c8534396-019e-4518-97a8-0bc2e6f778be">
 
 
 With this definition of hits, we can now compute a meaningful phonon collection efficiency for phonons impinging upon the qubit islands. We define efficiency as the fraction of phonon energy emitted that is absorbed into any qubit. To do this as a function of spatial location, we need two histograms: one with total energy emitted as a function of primary XY and one with the total energy absorbed in any qubit as a function of primary XY:
@@ -230,7 +230,7 @@ With this definition of hits, we can now compute a meaningful phonon collection 
 
 From this we can compute a phonon collection efficiency:
 
-<img width="705" alt="image" src="https://github.com/kelseymh/G4CMP/assets/20506221/d3e6658f-fe93-4ed2-81d1-4b6345019e4c">
+<img width="400" alt="image" src="https://github.com/kelseymh/G4CMP/assets/20506221/d3e6658f-fe93-4ed2-81d1-4b6345019e4c">
 
 
 This makes sense: the phonon collection efficiency for relatively large absorption (50%) at superconducting interfaces will imply that only phonons that are relatively close in XY to a qubit island will actually be able to register an absorption in that island. Overall, the PCE looks to be at the O(0.001) level.
