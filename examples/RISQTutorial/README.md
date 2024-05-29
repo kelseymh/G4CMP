@@ -185,11 +185,13 @@ PCEStudy("/path/to/RISQTutorial-build/RISQTutorial_primary.txt","/path/to/RISQTu
 ```
 When this code is done, it should spit out a file called `AnalysisOutput.root`. Let's take a look inside this with our ROOT TBrowser to look at the histograms filled. First, we have a set of cross-checks on the locations of our primary phonons, so that we can ensure we generated the starting distribution correctly:
 
-<img width="1067" alt="PrimariesCrossCheck200k" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/bb3eb309-0cff-40d5-8068-d96c5e5ca563">
+<img width="1067" alt="PrimariesCrossCheck200k" src="https://github.com/kelseymh/G4CMP/assets/20506221/1955ed1f-6b40-480f-8ee1-67900387c27f">
+
 
 These look like they were spawned properly in our chip: they're uniform in X, Y, and Z. Now let's do a cross-check on where our hits are found.
 
-<img width="1178" alt="HitsCrossCheck200k" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/ebcf7827-b166-423b-a704-dd2e8e3a4924">
+<img width="1178" alt="HitsCrossCheck200k" src="https://github.com/kelseymh/G4CMP/assets/20506221/560a93f7-ba56-4f53-86a5-3c84e4994acc">
+
 
 Again, things make sense: phonons are absorbed and create hits across the ground plane as well as on the bottom of the chip where it sits on the copper mount to make contact with the thermal bath. We don't see hits in a few locations, specifically where we have gaps between our wirebond pads and the ground plane. In reality, there are similar regions where our CPWs and qubits are located, but they are too small of features to see given our 200k statistics and this histogram binning.
 
