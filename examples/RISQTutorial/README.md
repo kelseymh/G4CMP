@@ -258,7 +258,9 @@ After a while, it's pretty obvious what's going on here. Even if it weren't for 
 /g4cmp/produceCharges 0.01
 ```
 Here, the arguments give the fraction of recombination-generated phonons, luke-emission-generated phonons, and charge carriers that get created and tracked. We'll start out with just looking for a percent of the charges. Running the macro again, we find:
-<img width="400" alt="BasicMuonOnlyCharges1pct" src="https://github.com/kelseymh/G4CMP/assets/20506221/c02aa606-c4c1-4ef2-9446-98c41fa7245b"><img width="400" alt="BasicMuonOrthographic" src="https://github.com/kelseymh/G4CMP/assets/20506221/56181435-dfd2-49d8-be03-f149105d5d4c">
+
+<img width="400" alt="BasicMuonOnlyCharges1pct" src="https://github.com/kelseymh/G4CMP/assets/20506221/c02aa606-c4c1-4ef2-9446-98c41fa7245b"> <img width="400" alt="BasicMuonOrthographic" src="https://github.com/kelseymh/G4CMP/assets/20506221/56181435-dfd2-49d8-be03-f149105d5d4c">
+
 
 Here, the white track is the muon, the pink tracks are the G4CMPDriftElectrons, and the orange tracks are the G4CMPDriftHoles. As the muon is generated in the top right region of the chip, this is the origin point for the ionization. Let's zoom in and look at what's going on near the muon track:
 
