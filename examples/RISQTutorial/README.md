@@ -93,7 +93,8 @@ This should yield a visualization that looks a bit like this:
 
 What happened in this event? We threw a single longitudinal acoustic phonon of 30 meV from a point midway between the bottom and top of the chip (here at 4.62 mm and 5 mm in Z, respectively), and watched it undergo downconversion, isotopic scattering, and surface scattering. For more detailed information, let's take a look at one of the tracking snippets printed out: 
 
-<img width="955" alt="image" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/b3adb42f-4c63-4937-9d9c-8d2a3d69e350">
+<img width="953" alt="ThrowPhononFirstPrintout" src="https://github.com/kelseymh/G4CMP/assets/20506221/136de436-5a0e-422a-9e82-e535ba9fd9fe">
+
 
 The first meaningful step (Step 1) of our initial longitudinal phonon (phononL) is downconversion, which produces a fast transverse phonon (phononTF) and a slow transverse phonon (phononTS). In the visualization, phononL/phononTF/phononTS are shown in blue/green/red, respectively. A snippet of the phononTS track is also visible: while it cannot itself undergo downconversion, it can undergo isotopic scattering, which it does several times. The transportation step visible is one in which this phonon reflects off the bottom of the chip. We also take a look at the phononTF track produced:
 
