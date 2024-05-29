@@ -258,16 +258,17 @@ After a while, it's pretty obvious what's going on here. Even if it weren't for 
 /g4cmp/produceCharges 0.01
 ```
 Here, the arguments give the fraction of recombination-generated phonons, luke-emission-generated phonons, and charge carriers that get created and tracked. We'll start out with just looking for a percent of the charges. Running the macro again, we find:
-
-<img width="400" alt="BasicMuonOnlyCharges1pct" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/6651f0ab-5ad0-4a49-aa0b-74423159c1b5"> <img width="400" alt="BasicMuonOrthographic" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/ecf49488-7774-4f5a-a248-ccc994957257">
+<img width="400" alt="BasicMuonOnlyCharges1pct" src="https://github.com/kelseymh/G4CMP/assets/20506221/c02aa606-c4c1-4ef2-9446-98c41fa7245b"><img width="400" alt="BasicMuonOrthographic" src="https://github.com/kelseymh/G4CMP/assets/20506221/56181435-dfd2-49d8-be03-f149105d5d4c">
 
 Here, the white track is the muon, the pink tracks are the G4CMPDriftElectrons, and the orange tracks are the G4CMPDriftHoles. As the muon is generated in the top right region of the chip, this is the origin point for the ionization. Let's zoom in and look at what's going on near the muon track:
 
-<img width="400" alt="MuonEventWithZoom" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/aa32418e-d546-4e1e-ae63-2e2e74e7092f">
+<img width="774" alt="MuonEventWithZoom" src="https://github.com/kelseymh/G4CMP/assets/20506221/3df04bcd-7be0-464c-afbd-64d73d372fe1">
+
 
 Here the G4CMPDriftElectrons are undergoing occasional direction changes. If we turn on tracking (`/tracking/verbose 1`) and rerun this, we can see why: 
 
-<img width="954" alt="LukeScattering" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/5def59cc-7005-428a-8eb2-58aebb9e55b1">
+<img width="954" alt="LukeScattering" src="https://github.com/kelseymh/G4CMP/assets/20506221/59fa9b36-00ab-4d18-86d4-7932891ac5e1">
+
 
 Here, the G4CMPDriftElectrons are undergoing Luke phonon emission and radiating phonons, which occurs when G4CMPDriftElectrons have sufficient energy to travel faster than the speed of sound in the substrate. Since we don't see phonons radiated from these scattering points because of our downsampling, let's play around with the downsampling to see if we can confirm this intuition. We choose these somewhat artificial values to see this Luke emission:
 
@@ -277,8 +278,7 @@ Here, the G4CMPDriftElectrons are undergoing Luke phonon emission and radiating 
 /g4cmp/produceCharges 0.00001
 ```
 and, zooming in, we can find what we're looking for -- phonon tracks sprouting out of kinks in G4CMPDriftElectron tracks:
-
-<img width="400" alt="LukeScatteringPhonons" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/b19c4ceb-7f85-41c6-9f84-5780f518933d">
+<img width="400" alt="LukeScatteringPhonons" src="https://github.com/kelseymh/G4CMP/assets/20506221/94e9414e-0055-47be-a668-14c4189d793a">
 
 Okay, so we've confirmed our intuition: when we enable Luke phonon generation, we see them radiated from G4CMPDriftElectrons and G4CMPDriftHoles. 
 
@@ -293,8 +293,7 @@ Zooming out a bit, we can look back a few visualizations and see that G4CMPDrift
 /g4cmp/produceCharges 0.001
 ```
 which give us something like:
-
-<img width="400" alt="RepresentativeEvent" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/a165ff80-45e2-419a-82a9-93d66db846a8">
+<img width="400" alt="RepresentativeEvent" src="https://github.com/kelseymh/G4CMP/assets/20506221/9964ef06-1b53-4660-b1d3-a84b67249eb7">
 
 Now that we have all of our phonons visually represented, we have arrived at an event display that's a little bit more representative of the phonon response of our chip to a muon event (keeping in mind, of course, that we're still suppressing charge and phonons by massive suppression factors).
 
@@ -316,17 +315,15 @@ This time in ROOT, we use a different dedicated function (hey, that's convenient
 AnalyzeMuonEvent("../../RISQTutorial-build/RISQTutorial_primary.txt","../../RISQTutorial-build/RISQTutorial_hits.txt",0.01)
 ```
 where the final argument in the `AnalyzeMuonEvent()` function is the downsampling factor we've applied to the `/g4cmp/produceCharges` command -- it corrects the total in-qubit phonon to more accurately represent what would be present without the downsampling. If we now look in our output root file `AnalysisOutput.root`, we find our desired quantity:
-
-<img width="400" alt="QubitLabels" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/2e8d7d5d-50a4-47c2-927f-3d8d6a7099d6">
-<img width="400" alt="StandardMuonEventOutput" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/b1901175-83e4-4480-b2e5-79ff4b119701">
+<img width="400" alt="QubitLabels" src="https://github.com/kelseymh/G4CMP/assets/20506221/d2b1960d-9fd0-4b01-89d3-2070f53b7de2"> <img width="400" alt="StandardMuonEventOutput" src="https://github.com/kelseymh/G4CMP/assets/20506221/246f9362-4f14-49fe-bdae-bdf70f44f113">
 
 We see that qubit 2 has the largest in-qubit energy by over an order of magnitude -- this makes sense, as this qubit is almost right over the muon track. If we then change our muon location by tweaking the spawn location in our in our `throwMuon.mac` file:
 ```
 /gps/pos/centre 0.0 0.5 0.56 cm
 ```
 we see these relative in-qubit energies shift accordingly:
+<img width="400" alt="CenteredMuonEventQubitLabels" src="https://github.com/kelseymh/G4CMP/assets/20506221/341463fe-00bb-4324-82e0-89dbacd2163e"><img width="400" alt="CenteredMuonEventOutput" src="https://github.com/kelseymh/G4CMP/assets/20506221/09f8f7b0-431a-4692-99a6-d85dab2c97fc">
 
-<img width="400" alt="CenteredMuonEventQubitLabels" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/f21dda45-7044-4981-963b-e950a5ccbe2d"><img width="400" alt="CenteredMuonEventOutput" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/5e06b3aa-d7ce-4acc-b4e0-7921411227ec">
 
 Here, the muon is ACTUALLY right under a qubit, which leads to a significantly higher excess in Qubit 1's energy over that of other qubits. This illustrates that according to G4CMP, we might be able to back out some coarse position information from a muon event if we can reconstruct the in-qubit energy somehow. This is something we can in fact do! For more information, see [this paper](https://arxiv.org/abs/2404.04423).
 
