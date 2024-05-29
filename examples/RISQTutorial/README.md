@@ -109,7 +109,10 @@ fSiNbInterface = new G4CMPSurfaceProperty("SiNbInterface",
 ```
 This line governs much of the physics at the boundary between the silicon substrate and the superconductor. The first four entries after the interface name deal with e/h absorption and reflection -- let's ignore those for now. The last four entries deal with phonon absorption and reflection. In order, the first three entries of those four indicate that we have a 10% probability of phonon absorption at the surface, a 100% probability of reflection if that absorption fails, and if reflection happens, it will happen specularly with a 0% chance.
 
-WARNING ABOUT READING THE USEFUL CODE BLOCK
+> [!IMPORTANT]
+> It's generally a good idea to read through the base G4CMP code to understand how the code works, but it is particularly useful to read through the code governing how boundary parameters you set actually lead to reflection and absorption. The logic blocks governing actions of quanta at boundaries is in the `G4CMPBoundaryUtils::ApplyBoundaryAction()` function as shown below:
+> <img width="629" alt="image" src="https://github.com/kelseymh/G4CMP/assets/20506221/1c6b4ae5-5b14-4ad2-910a-92f280679f73">
+
 
 Let's change our absorption probability from 0.1 to 0.01, to allow our phonon to ricochet around the detector for longer. After doing this, we need to re-make and then rerun:
 ```
@@ -231,7 +234,8 @@ ASIDE ON KAPLANQP
 ## Example 3: Muon Event
 Now that we've got a feel for phonon propagation, let's run an example where we look at the full physics chain of a muon passing through our chip. In these events, the muon will deposit O(several hundred keV) along its path through the chip, producing lots of ionization (electron/hole pairs) and phonons. This example will enable us to explore how G4CMP handles the production and propagation of this ionization, as well as how it produces phonons. We'll use the macro `/path/to/RISQTutorial/G4Macros/throwMuon.mac` to simulate a 4 GeV muon passing through the chip at an angle 14 degrees from the plane of the chip.
 
-LESSON ABOUT PHYSICS LIST
+> [!IMPORTANT]
+> In order to simulate conventional "high-energy" particles like muons in G4CMP where we commonly think about meV-eV scale phenomena, we need to remember to include in our example a physics list that recognizes those. We do this "under the hood" in this example within the RISQTutorial.cc file, and set our main HEP physics list to be FTFP_BERT. See this file for more info.
 
 ### Visualization to Build Intuition
 First, let's just try to visualize this event to help build our intuition. Let's blindly run the macro without modification in an effort to simulate every G4CMPDriftElectron, G4CMPDriftHole, and phonon, and see what happens:
@@ -271,7 +275,9 @@ and, zooming in, we can find what we're looking for -- phonon tracks sprouting o
 
 Okay, so we've confirmed our intuition: when we enable Luke phonon generation, we see them radiated from G4CMPDriftElectrons and G4CMPDriftHoles. 
 
-CHALLENGE: FIGURE OUT WHERE YOU CAN SEE THE SOUND SPEED DEPENDENCE WITHIN G4CMP
+> [!TIP]
+> Homework problem: Can you figure out which piece of code in the G4CMP package handles the modeling of this Luke emission for high-energy G4CMPDriftElectrons?
+
 
 Zooming out a bit, we can look back a few visualizations and see that G4CMPDriftElectrons and G4CMPDriftHoles ultimately free stream to the edges of the chip, which happens once they drop below the energy threshold for Luke emission. In G4CMP, their interactions with the surfaces of the chip are handled in a similar way to phonons: there are coarse absorption and reflection parameters that determine any further propagation. For this example, we're going to simplify and set the absorption parameter for these charge carriers to be 100% at these boundaries. In our simulations, these electrons and holes will therefore stop, shed their kinetic energy as phonons at these interfaces, and then recombine, each giving up one half of the bandgap energy as phonons. We therefore expect to see some phonon generation around the edges of the chip as well. We can check this, by turning on the last of our downsampling parameters:
 ```
@@ -317,5 +323,6 @@ we see these relative in-qubit energies shift accordingly:
 
 Here, the muon is ACTUALLY right under a qubit, which leads to a significantly higher excess in Qubit 1's energy over that of other qubits. This illustrates that according to G4CMP, we might be able to back out some coarse position information from a muon event if we can reconstruct the in-qubit energy somehow. This is something we can in fact do! For more information, see [this paper](https://arxiv.org/abs/2404.04423).
 
-CHALLENGE TO UNDERSTAND WHAT WE'RE DOING IN THE ANALYSIS MACRO
-CHALLENGE FOR TIME DEPENDENCE
+> [!TIP]
+> Homework problem: We're taking a naive sum of all hit energies over time in the above plots. Can you make a plot of the time series of the hits seen by each qubit? Challenge question: how would you go about scaling an "energy-deposited-vs-time" plot to account for the downsampling?
+
