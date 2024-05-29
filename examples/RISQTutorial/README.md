@@ -280,6 +280,7 @@ Here, the G4CMPDriftElectrons are undergoing Luke phonon emission and radiating 
 /g4cmp/produceCharges 0.00001
 ```
 and, zooming in, we can find what we're looking for -- phonon tracks sprouting out of kinks in G4CMPDriftElectron tracks:
+
 <img width="400" alt="LukeScatteringPhonons" src="https://github.com/kelseymh/G4CMP/assets/20506221/94e9414e-0055-47be-a668-14c4189d793a">
 
 Okay, so we've confirmed our intuition: when we enable Luke phonon generation, we see them radiated from G4CMPDriftElectrons and G4CMPDriftHoles. 
@@ -295,6 +296,7 @@ Zooming out a bit, we can look back a few visualizations and see that G4CMPDrift
 /g4cmp/produceCharges 0.001
 ```
 which give us something like:
+
 <img width="400" alt="RepresentativeEvent" src="https://github.com/kelseymh/G4CMP/assets/20506221/9964ef06-1b53-4660-b1d3-a84b67249eb7">
 
 Now that we have all of our phonons visually represented, we have arrived at an event display that's a little bit more representative of the phonon response of our chip to a muon event (keeping in mind, of course, that we're still suppressing charge and phonons by massive suppression factors).
@@ -317,6 +319,7 @@ This time in ROOT, we use a different dedicated function (hey, that's convenient
 AnalyzeMuonEvent("../../RISQTutorial-build/RISQTutorial_primary.txt","../../RISQTutorial-build/RISQTutorial_hits.txt",0.01)
 ```
 where the final argument in the `AnalyzeMuonEvent()` function is the downsampling factor we've applied to the `/g4cmp/produceCharges` command -- it corrects the total in-qubit phonon to more accurately represent what would be present without the downsampling. If we now look in our output root file `AnalysisOutput.root`, we find our desired quantity:
+
 <img width="400" alt="QubitLabels" src="https://github.com/kelseymh/G4CMP/assets/20506221/d2b1960d-9fd0-4b01-89d3-2070f53b7de2"> <img width="400" alt="StandardMuonEventOutput" src="https://github.com/kelseymh/G4CMP/assets/20506221/246f9362-4f14-49fe-bdae-bdf70f44f113">
 
 We see that qubit 2 has the largest in-qubit energy by over an order of magnitude -- this makes sense, as this qubit is almost right over the muon track. If we then change our muon location by tweaking the spawn location in our in our `throwMuon.mac` file:
@@ -324,6 +327,7 @@ We see that qubit 2 has the largest in-qubit energy by over an order of magnitud
 /gps/pos/centre 0.0 0.5 0.56 cm
 ```
 we see these relative in-qubit energies shift accordingly:
+
 <img width="400" alt="CenteredMuonEventQubitLabels" src="https://github.com/kelseymh/G4CMP/assets/20506221/341463fe-00bb-4324-82e0-89dbacd2163e"><img width="400" alt="CenteredMuonEventOutput" src="https://github.com/kelseymh/G4CMP/assets/20506221/09f8f7b0-431a-4692-99a6-d85dab2c97fc">
 
 
