@@ -54,7 +54,7 @@ To see these features, let's run our first macro: `vis.mac`. Since we are alread
 ```
 This should boot up G4CMP into an interactive session, from which you can execute either single commands or, as we do here, macros. Run the following to run `vis.mac`.
 ```
-/control/execute <PATH/TO/SOURCE/DIRECTORY/G4Macros/vis.mac
+/control/execute ../RISQTutorial/G4Macros/vis.mac
 ```
 What you will ideally see (contingent upon which viewing software you have installed) is something like the following:
 <img width="400" alt="FirstVis" src="https://github.com/kelseymh/G4CMP/assets/20506221/4b3cc3e1-7a7d-418c-ba86-a2877d414914">
