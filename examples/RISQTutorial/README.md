@@ -30,7 +30,7 @@ mkdir RISQTutorial-install
 Now we head into our build directory and run CMake:
 ```
 cd RISQTutorial-build
-cmake -DCMAKE_INSTALL_PREFIX=/path/to/RISQTutorial-install -DCXX_STANDARD=14 ../RISQTutorial/
+cmake -DCMAKE_INSTALL_PREFIX=/path/to/RISQTutorial-install -DCMAKE_CXX_STANDARD=14 ../RISQTutorial/
 ```
 If this runs successfully, we should be able to run make and then make install, and we're done:
 ```
