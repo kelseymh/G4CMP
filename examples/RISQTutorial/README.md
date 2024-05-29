@@ -264,7 +264,7 @@ Here, the arguments give the fraction of recombination-generated phonons, luke-e
 
 Here, the white track is the muon, the pink tracks are the G4CMPDriftElectrons, and the orange tracks are the G4CMPDriftHoles. As the muon is generated in the top right region of the chip, this is the origin point for the ionization. Let's zoom in and look at what's going on near the muon track:
 
-<img width="774" alt="MuonEventWithZoom" src="https://github.com/kelseymh/G4CMP/assets/20506221/3df04bcd-7be0-464c-afbd-64d73d372fe1">
+<img width="400" alt="MuonEventWithZoom" src="https://github.com/kelseymh/G4CMP/assets/20506221/3df04bcd-7be0-464c-afbd-64d73d372fe1">
 
 
 Here the G4CMPDriftElectrons are undergoing occasional direction changes. If we turn on tracking (`/tracking/verbose 1`) and rerun this, we can see why: 
