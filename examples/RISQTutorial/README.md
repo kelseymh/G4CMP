@@ -1,5 +1,7 @@
 # RISQ G4CMP Advanced Tutorial 
+
 Assembled by Ryan Linehan, linehan3@fnal.gov
+
 This tutorial is meant to provide a somewhat lengthy introduction to how to use G4CMP for a variety of applications. We focus here on a geometry and a set of analyses that are relevant to the superconducting qubits (QIS) field. 
 
 ## Preliminaries
@@ -7,7 +9,9 @@ This tutorial is meant to provide a somewhat lengthy introduction to how to use 
 ### Installing Geant4 and G4CMP
 While we leave a thorough discussion of the installation procedures to the main G4CMP readme file, it is useful to have a short reminder of this to establish some directory names that we'll use throughout the rest of the tutorial. We'll start with a reminder that in order to run this example, you'll need to install both the geant4 and G4CMP packages. On my machine, each of these has three directories associated with its build: a source directory `XXXXX`, a build directory `XXXXX-build`, and an install directory `XXXXX-install`. On my machine, the base name (`XXXXX`) for my geant4 build is `geant4.10.07.p04`, and the base name for the G4CMP build is `G4CMP_RISQTutorial`. 
 
-ALERT FOR OGL and CXX_STANDARD
+
+> [!IMPORTANT]
+> To streamline your ability to prep for this tutorial, we recommend installing Geant4 with the cmake flags `-DGeant4_INSTALL_DATA=ON` and `-DGeant4_USE_OPENGL_X11=ON`, and to build with C++14. In particular, the OpenGL flag will enable visualization, which we will frequently use. However, if you can successfully run other visualizers like DAWN, those are also perfectly fine.
 
 ### Setting up environment
 Assuming you've built these directories and you're opening up a new terminal, you'll need to source the environmental setup scripts for these:
@@ -25,6 +29,7 @@ mkdir RISQTutorial-install
 ```
 Now we head into our build directory and run CMake:
 ```
+cd RISQTutorial-build
 cmake -DCMAKE_INSTALL_PREFIX=/path/to/RISQTutorial-install -DCXX_STANDARD=14 ../RISQTutorial/
 ```
 If this runs successfully, we should be able to run make and then make install, and we're done:
@@ -32,9 +37,7 @@ If this runs successfully, we should be able to run make and then make install, 
 make
 make install
 ```
-
-
-
+If those build without errors, we should be ready to get started.
 
 
 
