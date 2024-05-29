@@ -151,7 +151,7 @@ In this event we had six phonons create hits on the superconductor and thermal b
 
 The second thing we should do before proceeding to the phonon collection efficiency study is to go back into our detector construction file and set our phonon absorption probability to 0.5. As you might discover, phonons that are allowed to bounce around longer will result in a longer runtime for a given simulation. For the purpose of getting reasonably high stats for this tutorial, we want to limit that a bit. Go ahead and change that back go 0.5, and then remake the example:
 ```
-cd RISQTutorial-build
+cd /path/to/RISQTutorial-build
 make
 make install
 ```
