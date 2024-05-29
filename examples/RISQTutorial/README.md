@@ -207,7 +207,7 @@ This time, let's increase the number of phonons we throw to two million by editi
 ```
 Then let's rerun the macro:
 ```
-cd RISQTutorial-build
+cd /path/to/RISQTutorial-build
 ./RISQTutorial ../RISQTutorial/G4Macros/pceStudy.mac
 ```
 ...and rerun the root analysis...
@@ -219,22 +219,23 @@ PCEStudy("/path/to/RISQTutorial-build/RISQTutorial_primary.txt","/path/to/RISQTu
 ```
 Now, if we look at our hits histogram, we see that the only hits that are registered are those that land within the six qubit islands present in the geometry:
 
-<img width="400" alt="HitsCrossCheck2M_restricted" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/d27c86cf-d196-4992-ba1d-11e3fedcb8d8">
+<img width="720" alt="image" src="https://github.com/kelseymh/G4CMP/assets/20506221/c8534396-019e-4518-97a8-0bc2e6f778be">
+
 
 With this definition of hits, we can now compute a meaningful phonon collection efficiency for phonons impinging upon the qubit islands. We define efficiency as the fraction of phonon energy emitted that is absorbed into any qubit. To do this as a function of spatial location, we need two histograms: one with total energy emitted as a function of primary XY and one with the total energy absorbed in any qubit as a function of primary XY:
 
-<img width="1213" alt="image" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/808a725a-9cd3-4b48-9b2e-739b1c5ca434">
+<img width="1181" alt="ComponentsToPCE" src="https://github.com/kelseymh/G4CMP/assets/20506221/7ac6ef58-dba0-4c98-a3f7-f75cdacdd4e4">
+
 
 From this we can compute a phonon collection efficiency:
 
-<img width="689" alt="image" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/0384f8ee-e06e-4896-ac89-14f2896ae84d">
+<img width="705" alt="image" src="https://github.com/kelseymh/G4CMP/assets/20506221/d3e6658f-fe93-4ed2-81d1-4b6345019e4c">
+
 
 This makes sense: the phonon collection efficiency for relatively large absorption (50%) at superconducting interfaces will imply that only phonons that are relatively close in XY to a qubit island will actually be able to register an absorption in that island. Overall, the PCE looks to be at the O(0.001) level.
 
 > [!TIP]
 > Homework problem: We've made an overall phonon collection efficiency map in this example. Can you make a plot showing the phonon collection efficiency in a single qubit as a function of the phonon spawn point's radial distance from the qubit?
-
-ASIDE ON KAPLANQP
 
 ## Example 3: Muon Event
 Now that we've got a feel for phonon propagation, let's run an example where we look at the full physics chain of a muon passing through our chip. In these events, the muon will deposit O(several hundred keV) along its path through the chip, producing lots of ionization (electron/hole pairs) and phonons. This example will enable us to explore how G4CMP handles the production and propagation of this ionization, as well as how it produces phonons. We'll use the macro `/path/to/RISQTutorial/G4Macros/throwMuon.mac` to simulate a 4 GeV muon passing through the chip at an angle 14 degrees from the plane of the chip.
