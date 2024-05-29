@@ -11,7 +11,7 @@
 
 # for drawing the tracks
 # (if too many tracks cause core dump => storeTrajectory 0)
-/tracking/verbose 0
+/tracking/verbose 2
 /tracking/storeTrajectory 1
 /vis/scene/endOfEventAction accumulate
 /vis/scene/add/trajectories
@@ -26,9 +26,9 @@
 /vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
 /vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
 
-/vis/ogl/set/printFilename g4cmpPhonon
-/vis/ogl/set/printMode pixmap
-/vis/ogl/printEPS
+#/vis/ogl/set/printFilename g4cmpPhonon
+#/vis/ogl/set/printMode pixmap
+#/vis/ogl/printEPS
 
 #Rendering options
 /vis/viewer/set/style wireframe #surface
@@ -39,17 +39,17 @@
 #G4CMP Settings
 /g4cmp/producePhonons 1.0
 /g4cmp/sampleLuke 1.0
-/g4cmp/produceCharges 0.003
+/g4cmp/produceCharges 1.0
 
 # Particle generation
 /gps/number 1
 /gps/particle mu-
 /gps/pos/type Point
-/gps/direction 0 -12 -1
-/gps/pos/centre 0.3 0.5 0.52 cm # A bit above the chip top
+/gps/direction 0 -4 -1
+/gps/pos/centre 0.0 0.5 0.56 cm # A bit above the chip top
 #/gps/pos/centre 0.0 0.1 0.481 cm # halfway between bottom and top of chip (Top of chip is 0.5cm)
 /gps/ene/type Mono
-/gps/energy 1 GeV
+/gps/energy 4 GeV
 /run/beamOn 1
 
 

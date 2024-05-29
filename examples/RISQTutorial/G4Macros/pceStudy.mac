@@ -1,6 +1,6 @@
 /run/initialize
 /tracking/verbose 0
-/run/printProgress 100
+/run/printProgress 1000
 
 # Generate 1 phonon per event. Place uniformly throughout the chip
 /gps/number 1
@@ -21,4 +21,4 @@
 #Select energies
 /gps/ene/type Mono
 /gps/energy 0.004 eV 
-/run/beamOn 2000000
+/run/beamOn 200000

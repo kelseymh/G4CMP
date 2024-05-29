@@ -117,26 +117,25 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
   //the following coefficients and cutoff values are not well-motivated
   //the code below is used only to demonstrate how to set these values.
-  const std::vector<G4double> anhCoeffs = {0,0,0,0,0,0};//{0, 0, 0, 0, 0, 1.51e-14}; //Turn this off temporarily
-  const std::vector<G4double> diffCoeffs = {0,0,0,0,0,0};//{5.88e-2, 7.83e-4, -2.47e-6, 1.71e-8, -2.98e-11}; //Explicitly make this 1 so that there's no mistake, because the way these are accessed is confusing.
-  const std::vector<G4double> specCoeffs = {1,0,0,0,0,0};//{0,928, -2.03e-4, -3.21e-6, 3.1e-9, 2.9e-13}; //Turn this off temporarily
+  const std::vector<G4double> anhCoeffs = {0,0,0,0,0,0};//Turn this off temporarily
+  const std::vector<G4double> diffCoeffs = {1,0,0,0,0,0};//Explicitly make this 1 for now
+  const std::vector<G4double> specCoeffs = {0,0,0,0,0,0};//Turn this off temporarily
   const G4double anhCutoff = 520., reflCutoff = 350.;   // Units external
     
   
-  //These are currently not motivated at all. Need to understand what the parameters are and how to define for these various surfaces.
-  //Only the surfaces facing the silicon are needed, I think, since G4CMP doesn't know how to propagate things in supeconductors.
   //These are just the definitions of the interface TYPES, not the interfaces themselves. These must be called in a set of loops
   //below, and invoke these surface definitions.
   if( !fConstructed ){
     fSiNbInterface = new G4CMPSurfaceProperty("SiNbInterface",
 					      1.0, 0.0, 0.0, 0.0,
-					      0.5, 1.0, 0.0, 0.0);
+					      0.1, 1.0, 0.0, 0.0);
     fSiCopperInterface = new G4CMPSurfaceProperty("SiCopperInterface",
 						  1.0, 0.0, 0.0, 0.0,
 						  1.0, 0.0, 0.0, 0.0 );
     fSiVacuumInterface = new G4CMPSurfaceProperty("SiVacuumInterface",
 						  0.0, 1.0, 0.0, 0.0,
-						  0.0, 1.0, 0.0, 0.0 ); //Want this to kill things for now, so we don't get ANY reflections.
+						  0.0, 1.0, 0.0, 0.0 );
+    
 
     fSiNbInterface->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
 					    diffCoeffs, specCoeffs, GHz, GHz, GHz);  
@@ -203,7 +202,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 							  "SiliconChip_log");
     
   //Now, create a physical volume and G4PVPlacement for storing as the final output
-  G4ThreeVector siliconChipTranslate(0,0,0.5*(dp_housingDimZ - dp_siliconChipDimZ) + dp_eps); //Need to add dp_eps in so that there's not an overlap with the cutout
+  G4ThreeVector siliconChipTranslate(0,0,0.5*(dp_housingDimZ - dp_siliconChipDimZ) + dp_eps); 
   G4VPhysicalVolume * phys_siliconChip = new G4PVPlacement(0,
 							   siliconChipTranslate,
 							   log_siliconChip,
@@ -226,8 +225,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     
   // G4LatticePhysical assigns G4LatticeLogical a physical orientation
   G4LatticePhysical* phys_siliconLattice = new G4LatticePhysical(log_siliconLattice);
-  phys_siliconLattice->SetMillerOrientation(1,0,0); //No idea what this should be yet... Going to keep it unmotivated for now.
-  //phys_siliconLattice->SetMillerOrientation(1,1,0); //No idea what this should be yet... Going to keep it unmotivated for now.
+  phys_siliconLattice->SetMillerOrientation(1,0,0); 
   LM->RegisterLattice(phys_siliconChip,phys_siliconLattice);
 
   //Set up border surfaces
@@ -305,12 +303,12 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 	
       G4ThreeVector transmissionLineTranslate(0,0,0.0);//Since it's within the ground plane exactly; 0.5*(dp_housingDimZ) + dp_eps + dp_groundPlaneDimZ*0.5 ); 
       RISQTutorialTransmissionLine * tLine = new RISQTutorialTransmissionLine(0,
-											      transmissionLineTranslate,
-											      "TransmissionLine",
-											      log_groundPlane,
-											      false,
-											      0,
-											      checkOverlaps);
+									      transmissionLineTranslate,
+									      "TransmissionLine",
+									      log_groundPlane,
+									      false,
+									      0,
+									      checkOverlaps);
       G4LogicalVolume * log_tLine = tLine->GetLogicalVolume();
       G4VPhysicalVolume * phys_tLine = tLine->GetPhysicalVolume();
 
@@ -430,12 +428,12 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
       G4RotationMatrix * rotBottomCenter = new G4RotationMatrix();
       rotBottomCenter->rotateZ(180.*deg);
       RISQTutorialStraightFluxLine * bottomStraightFLine = new RISQTutorialStraightFluxLine(rotBottomCenter,
-													    bottomStraightFluxLineTranslate,
-													    "BottomStraightFluxLine",
-													    log_groundPlane,
-													    false,
-													    0,
-													    checkOverlaps);
+											    bottomStraightFluxLineTranslate,
+											    "BottomStraightFluxLine",
+											    log_groundPlane,
+											    false,
+											    0,
+											    checkOverlaps);
       G4LogicalVolume * log_bottomStraightFline = bottomStraightFLine->GetLogicalVolume();
       G4VPhysicalVolume * phys_bottomStraightFline = bottomStraightFLine->GetPhysicalVolume();
 
@@ -463,12 +461,12 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
       G4RotationMatrix * rotTopLeftCenter = new G4RotationMatrix();
       rotTopLeftCenter->rotateZ(0.*deg);
       RISQTutorialCornerFluxLine * topLeftCornerFLine = new RISQTutorialCornerFluxLine(rotTopLeftCenter,
-												       topLeftCornerFluxLineTranslate,
-												       "GroundPlane_TopLeftCornerFluxLine",
-												       log_groundPlane,
-												       false,
-												       0,
-												       checkOverlaps);
+										       topLeftCornerFluxLineTranslate,
+										       "GroundPlane_TopLeftCornerFluxLine",
+										       log_groundPlane,
+										       false,
+										       0,
+										       checkOverlaps);
 
 
 	
@@ -502,12 +500,12 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
       G4RotationMatrix * rotTopRightCenter = new G4RotationMatrix();
       rotTopRightCenter->rotateY(180.*deg);
       RISQTutorialCornerFluxLine * topRightCornerFLine = new RISQTutorialCornerFluxLine(rotTopRightCenter,
-													topRightCornerFluxLineTranslate,
-													"GroundPlane_TopRightCornerFluxLine",
-													log_groundPlane,
-													false,
-													0,
-													checkOverlaps);
+											topRightCornerFluxLineTranslate,
+											"GroundPlane_TopRightCornerFluxLine",
+											log_groundPlane,
+											false,
+											0,
+											checkOverlaps);
       G4LogicalVolume * log_topRightCornerFline = topRightCornerFLine->GetLogicalVolume();
       G4VPhysicalVolume * phys_topRightCornerFline = topRightCornerFLine->GetPhysicalVolume();
 
@@ -534,12 +532,12 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
       G4RotationMatrix * rotBottomLeftCenter = new G4RotationMatrix();
       rotBottomLeftCenter->rotateX(180.*deg);
       RISQTutorialCornerFluxLine * bottomLeftCornerFLine = new RISQTutorialCornerFluxLine(rotBottomLeftCenter,
-													  bottomLeftCornerFluxLineTranslate,
-													  "BottomLeftCornerFluxLine",
-													  log_groundPlane,
-													  false,
-													  0,
-													  checkOverlaps);
+											  bottomLeftCornerFluxLineTranslate,
+											  "BottomLeftCornerFluxLine",
+											  log_groundPlane,
+											  false,
+											  0,
+											  checkOverlaps);
       G4LogicalVolume * log_bottomLeftCornerFline = bottomLeftCornerFLine->GetLogicalVolume();
       G4VPhysicalVolume * phys_bottomLeftCornerFline = bottomLeftCornerFLine->GetPhysicalVolume();
 
@@ -568,12 +566,12 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
       rotBottomRightCenter->rotateX(180.*deg);
       rotBottomRightCenter->rotateY(180.*deg);
       RISQTutorialCornerFluxLine * bottomRightCornerFLine = new RISQTutorialCornerFluxLine(rotBottomRightCenter,
-													   bottomRightCornerFluxLineTranslate,
-													   "BottomRightCornerFluxLine",
-													   log_groundPlane,
-													   false,
-													   0,
-													   checkOverlaps);
+											   bottomRightCornerFluxLineTranslate,
+											   "BottomRightCornerFluxLine",
+											   log_groundPlane,
+											   false,
+											   0,
+											   checkOverlaps);
       G4LogicalVolume * log_bottomRightCornerFline = bottomRightCornerFLine->GetLogicalVolume();
       G4VPhysicalVolume * phys_bottomRightCornerFline = bottomRightCornerFLine->GetPhysicalVolume();
 
