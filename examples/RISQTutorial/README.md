@@ -140,9 +140,8 @@ The latter should contain the set of "hits" that occur, where phonons are absorb
 
 In this event we had six phonons create hits on the superconductor and thermal bath mounts on the underside of the chip. One useful thing to note is that the energies deposited in these hits are at the few-to-several meV scale. This reflects the characteristic energies of phonons in the ballistic regime in silicon, where boundary scatters occur with significantly higher rates than further downconversion.
 
-
-CHALLENGE/ALERT: CAN YOU COME UP WITH A NICER AND/OR MORE EFFICIENT WAY TO STORE OUTPUT?
-
+> [!TIP]
+> Homework problem: Saving this output in a set of text files isn't the most space-efficient way to store the data we're generating, and it's kind of annoying to have two output files for the same set of events. Can you think of a better way to do this?
 
 The second thing we should do before proceeding to the phonon collection efficiency study is to go back into our detector construction file and set our phonon absorption probability to 0.5. As you might discover, phonons that are allowed to bounce around longer will result in a longer runtime for a given simulation. For the purpose of getting reasonably high stats for this tutorial, we want to limit that a bit. Go ahead and change that back go 0.5, and then remake the example:
 ```
@@ -224,7 +223,8 @@ From this we can compute a phonon collection efficiency:
 
 This makes sense: the phonon collection efficiency for relatively large absorption (50%) at superconducting interfaces will imply that only phonons that are relatively close in XY to a qubit island will actually be able to register an absorption in that island. Overall, the PCE looks to be at the O(0.001) level.
 
-QUESTION: HOW WOULD YOU GO ABOUT MAKING A RADIAL PCE MAP?
+> [!TIP]
+> Homework problem: We've made an overall phonon collection efficiency map in this example. Can you make a plot showing the phonon collection efficiency in a single qubit as a function of the phonon spawn point's radial distance from the qubit?
 
 ASIDE ON KAPLANQP
 
