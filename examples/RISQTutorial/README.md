@@ -138,11 +138,12 @@ What's the right value to use for an absorption probability? This bit of microph
 In short, a naive absorption probability depends on the thickness of the superconducting film, its gap, the phonon energy, and a few other parameters specific to the film material.
 
 Before proceeding, let's do two more things. First, let's take a look at the output of the simulation. This output for this tutorial is contained within two files: `RISQTutorial_primary.txt` and `RISQTutorial_hits.txt`. The former should currently only contain a single line showing information about the single primary phonon thrown: 
-<img width="1169" alt="image" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/271f9709-8a37-4358-a4b4-29eef484ca1c">
+<img width="930" alt="image" src="https://github.com/kelseymh/G4CMP/assets/20506221/2ca178a3-1e9c-4ab4-8812-742b54d7ef39">
 
 The latter should contain the set of "hits" that occur, where phonons are absorbed: 
 
-<img width="1169" alt="image" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/f2aa9268-4929-4bd4-8bef-421b983efbfd">
+<img width="930" alt="image" src="https://github.com/kelseymh/G4CMP/assets/20506221/789b0751-d5e0-4c78-b6e4-cdb07e3d8129">
+
 
 In this event we had six phonons create hits on the superconductor and thermal bath mounts on the underside of the chip. One useful thing to note is that the energies deposited in these hits are at the few-to-several meV scale. This reflects the characteristic energies of phonons in the ballistic regime in silicon, where boundary scatters occur with significantly higher rates than further downconversion.
 
