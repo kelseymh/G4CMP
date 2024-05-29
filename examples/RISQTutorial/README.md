@@ -1,8 +1,9 @@
 # RISQ G4CMP Advanced Tutorial 
 Assembled by Ryan Linehan, linehan3@fnal.gov
-This tutorial is meant to provide 
+This tutorial is meant to provide a somewhat lengthy introduction to how to use G4CMP for a variety of applications. We focus here on a geometry and a set of analyses that are relevant to the superconducting qubits (QIS) field. 
 
 ## Preliminaries
+While we leave a thorough discussion of the installation procedures to the main G4CMP readme file, it is useful to have a short reminder of this to establish some directory names that we'll use throughout the rest of the tutorial. The 
 Installation, etc
 various directories
 Installing with OGL
