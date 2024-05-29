@@ -48,7 +48,7 @@ Let's begin our tutorial by understanding how to build a somewhat complicated de
 * Six control lines, one per qubit, with a wirebond pad, patterned into the ground plane
 * A central transmission line, with in/output wirebond pads, patterned into the ground plane
 * Chip housing, through which the chip is thermalized.
-To see these features, let's run our first macro: `vis.mac`. Navigate to your `RISQTutorial-build` directory, and once it's made, run the executable:
+To see these features, let's run our first macro: `vis.mac`. Since we are already in our `/path/to/RISQTutorial-build` directory, we can just run the executable:
 ```
 ./RISQTutorial
 ```
