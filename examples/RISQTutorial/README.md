@@ -118,7 +118,7 @@ This line governs much of the physics at the boundary between the silicon substr
 
 Let's change our absorption probability from 0.1 to 0.01, to allow our phonon to ricochet around the detector for longer. After doing this, we need to re-make and then rerun:
 ```
-cd RISQTutorial-build
+cd /path/to/RISQTutorial-build
 make
 make install
 ./RISQTutorial
@@ -126,7 +126,8 @@ make install
 ```
 which should yield something like the following visualization:
 
-<img width="400" alt="image" src="https://github.com/relineha/TestRISQTutorial/assets/20506221/7d536656-2994-4594-8199-4b39cde01733">
+<img width="400" alt="ThrowPhonon_pabs1pct" src="https://github.com/kelseymh/G4CMP/assets/20506221/9abd1a7d-a9a3-48c2-9189-4bedc6022021">
+
 
 Phonons now propagate farther in our chip, which makes sense: every time they hit the ground plane or any superconducting structures (which covers much of the top side of the chip) they now only have a 1% of absorption. 
 
