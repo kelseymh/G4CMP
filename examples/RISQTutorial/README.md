@@ -11,7 +11,7 @@ While we leave a thorough discussion of the installation procedures to the main 
 
 
 > [!IMPORTANT]
-> To streamline your ability to prep for this tutorial, we recommend installing Geant4 with the cmake flags `-DGeant4_INSTALL_DATA=ON` and `-DGeant4_USE_OPENGL_X11=ON`, and to build with C++14. In particular, the OpenGL flag will enable visualization, which we will frequently use. However, if you can successfully run other visualizers like DAWN, those are also perfectly fine.
+> To streamline your ability to prep for this tutorial, we recommend installing Geant4 with the cmake flags `-DGEANT4_INSTALL_DATA=ON` and `-DGEANT4_USE_OPENGL_X11=ON`, and to build with C++14. In particular, the OpenGL flag will enable visualization, which we will frequently use. However, if you can successfully run other visualizers like DAWN, those are also perfectly fine.
 
 ### Setting up environment
 Assuming you've built these directories and you're opening up a new terminal, you'll need to source the environmental setup scripts for these:
