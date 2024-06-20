@@ -137,7 +137,20 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
         
   G4ThreeVector kdir = ktrk.unit();
   G4double kmag = ktrk.mag();
-  G4double kSound = uSound * mass / hbar_Planck;
+    
+  G4RotationMatrix massmatrice = theLattice->GetMassTensor();
+  G4double ml = massmatrice.xx();
+  G4double mt = massmatrice.yy();
+  G4double kl = abs(ktrk.x());
+  G4double kt = sqrt(ktrk.y()*ktrk.y() + ktrk.z()*ktrk.z());
+  G4double mq=(ml*(kl*kl/kmag/kmag*1/2+kt*kt/kmag/kmag*1/4)+mt*(1-(kl*kl/kmag/kmag*1/2+kt*kt/kmag/kmag*1/4)));
+    
+ 
+      // G4cout << "mq : " << mq/electron_mass_c2*c_squared << G4endl << ktrk*m << G4endl << kl*m << G4endl << kt*m  << G4endl; 
+    
+    
+  //G4double kSound = uSound * mass / hbar_Planck;
+    G4double kSound = uSound * sqrt(electron_mass_c2/c_squared*mq) / hbar_Planck;
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
