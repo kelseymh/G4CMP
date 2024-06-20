@@ -193,7 +193,7 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "mu")         pLattice->SetMu(fValue*ProcessUnits("Pressure"));
   else if (name == "scat")       pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
   else if (name == "b")          pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
-  else if (name == "density")          pLattice->SetDensity(fValue*ProcessUnits("Volumic Mass"));
+  else if (name == "density")    pLattice->SetDensity(fValue*ProcessUnits("Volumic Mass"));
   else if (name == "decay")      pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
   else if (name == "a")          pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
   else if (name == "ldos")       pLattice->SetLDOS(fValue);

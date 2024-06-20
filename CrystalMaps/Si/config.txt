@@ -20,8 +20,6 @@ pairEnergy 3.81 eV
 fanoFactor 0.15
 vsound 9000 m/s		# Longitudinal sound speed
 vtrans 5400 m/s		# Transverse sound speed
-#l0_e 16.9e-6 m #16.9e-5 m # 8e-6 m #16.9e-6 m
-l0_h 7.5e-5 m
 #hole and electron masses taken from Robert's thesis
 hmass 0.50		# per m(electron)
 emass 0.91 0.19 0.19	# per m(electron)
