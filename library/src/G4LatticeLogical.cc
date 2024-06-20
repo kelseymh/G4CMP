@@ -791,7 +791,7 @@ G4double G4LatticeLogical::Processl0(G4bool IsElec) {
   G4double acDeform = 0.;
       
   if (IsElec) {
-      mass = GetElectronDOSMass();
+      mass = GetElectronMass();
       acDeform = GetElectronAcousticDeform();
   }
   else    {
