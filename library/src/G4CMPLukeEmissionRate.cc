@@ -66,30 +66,30 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
   kt = sqrt(kvec.y()*kvec.y() + kvec.z()*kvec.z());
   mq=(ml*(kl*kl/kmag/kmag*1/2+kt*kt/kmag/kmag*1/4)+mt*(1-(kl*kl/kmag/kmag*1/2+kt*kt/kmag/kmag*1/4)));
     
-  G4double kSound = uSound * sqrt(electron_mass_c2/c_squared*mq) / hbar_Planck;
-  //G4double kSound = uSound * mass / hbar_Planck;
+  //G4double kSound = uSound * sqrt(electron_mass_c2/c_squared*mq) / hbar_Planck;
+  G4double kSound = uSound * mass / hbar_Planck;
     
     
     
         // parabolic, mq case ------------------------------
     
-    G4double qmax = 2/(1-2*alpha*mq*uSound*uSound)*(kmag-kSound*sqrt(1+4*alpha*hbar_Planck*hbar_Planck*kmag*kmag/2/electron_mass_c2*c_squared));
-    G4double rate = mq*sqrt(mq)/sqrt(massDOS)/massDOS*1/l0/kSound/kSound*uSound/8/kmag*(qmax*qmax*qmax/3*sqrt(1+4*alpha*hbar_Planck*hbar_Planck*kmag*kmag/2/electron_mass_c2*c_squared) - 2*alpha*hbar_Planck*uSound/4*qmax*qmax*qmax*qmax*sqrt(mq/electron_mass_c2*c_squared));
+   /* G4double qmax = 2/(1-2*alpha*mq*uSound*uSound)*(kmag-kSound*sqrt(1+4*alpha*hbar_Planck*hbar_Planck*kmag*kmag/2/electron_mass_c2*c_squared));
+    G4double rate = mq*sqrt(mq)/sqrt(massDOS)/massDOS*1/l0/kSound/kSound*uSound/8/kmag*(qmax*qmax*qmax/3*sqrt(1+4*alpha*hbar_Planck*hbar_Planck*kmag*kmag/2/electron_mass_c2*c_squared) - 2*alpha*hbar_Planck*uSound/4*qmax*qmax*qmax*qmax*sqrt(mq/electron_mass_c2*c_squared)); */
     
 
-    // G4cout << "mq : " << mq/electron_mass_c2*c_squared << G4endl << kvec*m << G4endl << kl*m << G4endl << kt*m  << G4endl; 
+   //  G4cout << "mq : " << mq/electron_mass_c2*c_squared << G4endl << kvec*m << G4endl << kl*m << G4endl << kt*m  << G4endl; 
     
     
     
     // Non-parabolic, md case ------------------------------
-//   G4double qmax = 2/(1-2*alpha*massDOS*uSound*uSound)*(kmag-kSound*sqrt(1+4*alpha*hbar_Planck*hbar_Planck*kmag*kmag/2/electron_mass_c2*c_squared));
-//   G4double rate = 1/l0/kSound/kSound*uSound/8/kmag*(qmax*qmax*qmax/3*sqrt(1+4*alpha*hbar_Planck*hbar_Planck*kmag*kmag/2/electron_mass_c2*c_squared) - 2*alpha*hbar_Planck*uSound/4*qmax*qmax*qmax*qmax*sqrt(massDOS/electron_mass_c2*c_squared));
+  G4double qmax = 2/(1-2*alpha*massDOS*uSound*uSound)*(kmag-kSound*sqrt(1+4*alpha*hbar_Planck*hbar_Planck*kmag*kmag/2/electron_mass_c2*c_squared));
+   G4double rate = 1/l0/kSound/kSound*uSound/8/kmag*(qmax*qmax*qmax/3*sqrt(1+4*alpha*hbar_Planck*hbar_Planck*kmag*kmag/2/electron_mass_c2*c_squared) - 2*alpha*hbar_Planck*uSound/4*qmax*qmax*qmax*qmax*sqrt(massDOS/electron_mass_c2*c_squared));
     
     
     
     
     // Print tests ------------------------------
-  /* G4cout << "LukeEmissionRate kmag = " << kmag*m << " /m" << G4endl << "rate : " << rate*s << G4endl << "qmax : " << qmax*m << G4endl  <<  "kseuil : " << kSound*sqrt(1+4*alpha*hbar_Planck*hbar_Planck*kmag*kmag/2/electron_mass_c2*c_squared)*m  << G4endl; */  
+  /* G4cout << "LukeEmissionRate kmag = " << kmag*m << " /m" << G4endl << "rate : " << rate*s << G4endl << "qmax : " << qmax*m << G4endl  <<  "kseuil : " << kSound*sqrt(1+4*alpha*hbar_Planck*hbar_Planck*kmag*kmag/2/electron_mass_c2*c_squared)*m  << G4endl; */
 
 
   // Time step corresponding to Mach number (avg. time between radiations)

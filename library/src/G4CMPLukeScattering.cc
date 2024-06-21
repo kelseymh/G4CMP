@@ -149,8 +149,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
       // G4cout << "mq : " << mq/electron_mass_c2*c_squared << G4endl << ktrk*m << G4endl << kl*m << G4endl << kt*m  << G4endl; 
     
     
-  //G4double kSound = uSound * mass / hbar_Planck;
-    G4double kSound = uSound * sqrt(electron_mass_c2/c_squared*mq) / hbar_Planck;
+  G4double kSound = uSound * mass / hbar_Planck;
+   // G4double kSound = uSound * sqrt(electron_mass_c2/c_squared*mq) / hbar_Planck;
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
