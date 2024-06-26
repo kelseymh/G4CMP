@@ -223,6 +223,15 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VNIELPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VPhononProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4BogoliubovQP.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VBogoliubovQPProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRecombinationProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRecombinationRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRadiatesPhononProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRadiatesPhononRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCPairBreakingProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCPairBreakingRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCUtils.cc
     )
  
 set(library_HEADERS
@@ -315,6 +324,17 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4BogoliubovQP.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VBogoliubovQPProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRecombinationProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRecombinationRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRadiatesPhononProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRadiatesPhononRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCPairBreakingProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCPairBreakingRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCUtils.hh
+
+
     )
 
 set(config_FILES

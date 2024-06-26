@@ -158,7 +158,7 @@ public:
   void SetLDOS(G4double LDOS) { fLDOS=LDOS; }
   void SetSTDOS(G4double STDOS) { fSTDOS=STDOS; }
   void SetFTDOS(G4double FTDOS) { fFTDOS=FTDOS; }
-
+  
   void SetDebyeEnergy(G4double energy) { fDebye = energy; }
   void SetDebyeFreq(G4double nu);
   void SetDebyeTemp(G4double temp);
@@ -176,6 +176,13 @@ public:
   G4double GetFTDOS() const { return fFTDOS; }
   G4double GetDebyeEnergy() const { return fDebye; }
 
+  G4double GetSCDelta0() const { return fSC_Delta0; }
+  G4double GetSCTau0qp() const { return fSC_Tau0_qp; }
+  G4double GetSCTau0ph() const { return fSC_Tau0_ph; }
+  G4double GetSCTcrit() const { return fSC_Tcrit; }
+  G4double GetSCTeff() const { return fSC_Teff; }
+
+  
   // Parameters and structures for charge carrier transport
   void SetBandGapEnergy(G4double bg) { fBandGap = bg; }
   void SetPairProductionEnergy(G4double pp) { fPairEnergy = pp; }
@@ -247,6 +254,15 @@ public:
   void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
 
+  //Set functions for superconductor properties
+  void SetSCDelta0(G4double v)        { fSC_Delta0 = v; }
+  void SetSCTau0qp(G4double v)        { fSC_Tau0_qp = v; }
+  void SetSCTau0ph(G4double v)        { fSC_Tau0_ph = v; }  
+  void SetSCTcrit(G4double v)         { fSC_Tcrit = v; }
+  void SetSCTeff(G4double v)          { fSC_Teff = v; }
+
+
+  
   const G4String& GetIVModel() const { return fIVModel; }
 
   G4double GetIVQuadField() const    { return fIVQuadField; }
@@ -320,7 +336,13 @@ private:
   G4double fBeta, fGamma, fLambda, fMu; // dynamical constants for material
   G4double fDebye;   // Debye energy, for partitioning primary phonons
   G4double fElScatMFP; // Characteristic Mean free path for elastic scatters against polycrystalline grain boundaries
-  
+
+  //Superconducting properties a la Kaplan
+  G4double fSC_Delta0; //SC gap at T=0K
+  G4double fSC_Tau0_qp; //Characteristic lifetime for QPs
+  G4double fSC_Tau0_ph; //Characteristic lifetime for phonons
+  G4double fSC_Tcrit;   //Critical temperature
+  G4double fSC_Teff;    //Effective temperature of the SC
 
   G4double fVSound;	// Speed of sound (longitudinal phonon)
   G4double fVTrans;	// Speed of sound (transverse phonon)

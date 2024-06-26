@@ -130,8 +130,8 @@ public:
   G4double GetGamma() const          { return fLattice->GetGamma(); }
   G4double GetLambda() const         { return fLattice->GetLambda(); }
   G4double GetMu() const             { return fLattice->GetMu(); }
-  G4double GetDebyeEnergy() const    { return fLattice->GetDebyeEnergy(); }
-
+  G4double GetDebyeEnergy() const    { return fLattice->GetDebyeEnergy(); }  
+  
   // Charge carrier propagation parameters
   G4double GetBandGapEnergy() const   { return fLattice->GetBandGapEnergy(); }
   G4double GetPairProductionEnergy() const { return fLattice->GetPairProductionEnergy(); }
@@ -141,6 +141,14 @@ public:
   G4double GetElectronScatter() const { return fLattice->GetElectronScatter(); }
   G4double GetHoleScatter() const     { return fLattice->GetHoleScatter(); }
 
+  // Superconducting properties
+  G4double GetSCDelta0() const { return fLattice->GetSCDelta0(); }
+  G4double GetSCTau0qp() const { return fLattice->GetSCTau0qp(); }
+  G4double GetSCTau0ph() const { return fLattice->GetSCTau0ph(); }
+  G4double GetSCTcrit() const { return fLattice->GetSCTcrit(); }
+  G4double GetSCTeff() const { return fLattice->GetSCTeff(); }
+
+  
   // Charge carriers have effective mass
   G4double GetHoleMass() const { return fLattice->GetHoleMass(); }
   G4double GetElectronMass() const { return fLattice->GetElectronMass(); }
@@ -148,7 +156,7 @@ public:
   G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const {
     return fLattice->GetElectronEffectiveMass(iv, p);
   }
-
+  
   const G4RotationMatrix& GetMassTensor() const { return fLattice->GetMassTensor(); }
   const G4RotationMatrix& GetMInvTensor() const { return fLattice->GetMInvTensor(); }
   const G4RotationMatrix& GetSqrtTensor() const { return fLattice->GetSqrtTensor(); }
@@ -186,6 +194,7 @@ public:
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;
 
+  
 private:
   // Create a thread-local buffer to use with MapAtoB() functions
   inline G4ThreeVector& tempvec() const {

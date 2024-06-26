@@ -22,12 +22,13 @@
 #include "G4SystemOfUnits.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4LatticeManager.hh"
+#include "G4LatticePhysical.hh"
 
 // Constructor and destructor
 
 G4CMPVProcess::G4CMPVProcess(const G4String& processName,
 			     G4CMPProcessSubType stype)
-  : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils(),
+  : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils(), G4CMPSCUtils(),
     rateModel(0) {
   verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   SetProcessSubType(stype);
@@ -77,32 +78,71 @@ void G4CMPVProcess::ConfigureRateModel() {
 //This logic block needs to be run in every process's GetMeanFreePath in order to let it know that the lattice has changed.
 //Otherwise the different processes (which inherit from individual/separate instances of the G4CMPProcessUtils class) will
 //see different lattices.
-void G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack)
+G4bool G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack)
 {
+  G4cout << "REL HereA_G4CMPVProcess: loading data for track after lattice changeover, process: " << this->GetProcessName() << G4endl;
+  G4cout << "Here, track length: " << aTrack.GetTrackLength() << G4endl;
   //Always do a check to see if the current lattice stored in this process is equal to the one that represents
   //the volume that we're in. Note that we can't do this with the "GetLattice()" and "GetNextLattice()" calls
   //here because at this point in the step, the pre- and post-step points both point to the same volume. Since
   //GetMeanFreePath is run at the beginning, I think the point at which a boundary interaction is assessed comes
-  //later (hence why we can use that info in PostStepDoIts but not here.)
-  if( ((this->theLattice) && G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())) &&
-      (this->theLattice != G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()) ) ){
+  //later (hence why we can use that info in PostStepDoIts but not here.) Adding a statement about track length here,
+  //since it seems that when a particle spawns it doesn't necessarily trigger this block, and I think we want it to.
+  if( (((this->theLattice) && G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())) &&
+       (this->theLattice != G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()))) ||
+      aTrack.GetTrackLength() == 0.0 ){
 
+    //REL noting that if physical lattices are not 1:1 with volumes, something may get broken here... Should check a scenario of segmented SC...
+    
     //We note that here, even though reloadDataForTrack has the above-mentioned shortcoming at this point in the step,
     //the critical thing is that we're ALREADY in the next material based on the above conditional. This means that
     //we can just use either the pre- or post-step point. (Which might argue that we don't even need ReloadDataForTrack
     //at all...
     this->LoadDataForTrack(&aTrack);
     if(rateModel) rateModel->LoadDataForTrack(&aTrack);
+    G4cout << "REL G4CMPVProcess: Successfully changed over to a new lattice." << G4endl;
+    return true;
+  }
+  G4cout << "REL G4CMPVProcess: Did not successfully change over to a new lattice." << G4endl;
+  return false;
+}
+
+//This is meant to update superconductor info for both the process and the rate info if we move into a new lattice
+void G4CMPVProcess::UpdateSCAfterLatticeChange()
+{
+  G4cout << "REL HereC_G4CMPVProcess: updating SC after lattice change" << G4endl;
+  
+  //First, determine if the new lattice is a SC. If not, then set the SCUtils info to null for this process  
+  if( (this->theLattice)->GetSCDelta0() <= 0 ){
+    this->SetCurrentSCInfoToNull();
+    if(rateModel) rateModel->SetCurrentSCInfoToNull();
+    return;
+  }
+
+  //If it is a SC, then we should update the SC information for the SC utils class within the base of this
+  //and the base of the rate model. Also, handle the checking/updating of the lookup tables to be used for each
+  //SC.
+  this->LoadLatticeInfoIntoSCUtils(this->theLattice);
+  if( rateModel ){
+    rateModel->LoadLatticeInfoIntoSCUtils(this->theLattice); 
+    rateModel->UpdateLookupTable(this->theLattice);
   }
 }
+
 
 // Compute MFP using track velocity and scattering rate
 
 G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 					G4ForceCondition* condition) {
 
-  UpdateMeanFreePathForLatticeChangeover(aTrack);
-        
+  G4cout << "REL HereB_G4CMPVProcess" << G4endl;
+  
+  //Update lattice information within the process utils 
+  if(UpdateMeanFreePathForLatticeChangeover(aTrack)){
+    UpdateSCAfterLatticeChange();
+    //  UpdateNMInfo
+  }
+
   /*
   G4cout << "Now in G4CMPVProcess::GetMeanFreePath" << G4endl;
   G4cout << "this->theLattice: " << this->theLattice << G4endl;

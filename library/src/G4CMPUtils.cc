@@ -21,6 +21,7 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
+#include "G4BogoliubovQP.hh"
 #include "G4CMPElectrodeHit.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4LatticePhysical.hh"
@@ -93,6 +94,22 @@ G4bool G4CMP::IsElectron(const G4ParticleDefinition& pd) {
 
 G4bool G4CMP::IsElectron(const G4ParticleDefinition* pd) {
   return (pd == G4CMPDriftElectron::Definition());
+}
+
+G4bool G4CMP::IsBogoliubovQP(const G4Track& track) {
+  return IsBogoliubovQP(track.GetParticleDefinition());
+}
+
+G4bool G4CMP::IsBogoliubovQP(const G4Track* track) {
+  return (track!=0 && IsBogoliubovQP(*track));
+}
+
+G4bool G4CMP::IsBogoliubovQP(const G4ParticleDefinition& pd) {
+  return IsBogoliubovQP(&pd);
+}
+
+G4bool G4CMP::IsBogoliubovQP(const G4ParticleDefinition* pd) {
+  return (pd == G4BogoliubovQP::Definition());
 }
 
 G4bool G4CMP::IsHole(const G4Track& track) {

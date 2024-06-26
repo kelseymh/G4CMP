@@ -209,6 +209,11 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "ivlinrate1")    pLattice->SetIVLinRate1(fValue*ProcessUnits("Frequency"));
   else if (name == "ivlinpower")    pLattice->SetIVLinExponent(fValue);
   else if (name == "ivlinexponent") pLattice->SetIVLinExponent(fValue);
+  else if (name == "sc_delta0" )    pLattice->SetSCDelta0(fValue*ProcessUnits("Energy"));
+  else if (name == "sc_tau0_qp" )   pLattice->SetSCTau0qp(fValue*ProcessUnits("Time"));
+  else if (name == "sc_tau0_ph" )   pLattice->SetSCTau0ph(fValue*ProcessUnits("Time"));
+  else if (name == "sc_tcrit" )     pLattice->SetSCTcrit(fValue*ProcessUnits("Temperature"));
+  else if (name == "sc_teff" )      pLattice->SetSCTeff(fValue*ProcessUnits("Temperature"));
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;

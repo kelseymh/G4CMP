@@ -119,7 +119,7 @@ G4double
 G4CMPSecondaryProduction::GetMeanFreePath(const G4Track& aTrack, G4double,
 					  G4ForceCondition* condition) {
 
-  UpdateMeanFreePathForLatticeChangeover(aTrack);
+  G4bool changedLattice = UpdateMeanFreePathForLatticeChangeover(aTrack);
   *condition = StronglyForced;
   return DBL_MAX;
 }

@@ -72,7 +72,7 @@ GetMeanFreePath(const G4ParticleDefinition* impactPD,
 G4double 
 G4CMPDriftTrapIonization::GetMeanFreePath(const G4Track& aTrack, G4double,
 					  G4ForceCondition* /*cond*/) {
-  UpdateMeanFreePathForLatticeChangeover(aTrack);
+  G4bool changedLattice = UpdateMeanFreePathForLatticeChangeover(aTrack);
   return GetMeanFreePath(impactType, trapType);
 }
 
