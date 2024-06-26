@@ -18,6 +18,7 @@
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftTrackInfo.hh"
+#include "G4BogoliubovQP.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
@@ -221,5 +222,28 @@ G4Track* G4CMP::CreateChargeCarrier(const G4Track& track, G4int charge,
 		"Hole has been assigned a valley index.");
   }
 
+  return sec;
+}
+
+
+
+//Here, creating a KaplanSCPhonon rather than an in-substrate phonon. For now, using the group velocity direction as the one
+//input to the phonon velocity. Might need to update this if later we find it's not good. It looks like the secondaries
+//are created with vGroup as the default momentum, so this initially supports this idea.
+G4Track* G4CMP::CreateBogoliubovQP(const G4Track& track,
+				   const G4double energy,
+				   const G4ThreeVector& velocity,
+				   const G4double time,
+				   const G4ThreeVector& pos) {
+  
+  //Get the particle definition
+  G4ParticleDefinition* theBogoliubovQP = G4BogoliubovQP::Definition();
+
+  //May need to do a bit of wiggling to avoid the surface, but we'll test first.
+  auto sec = new G4Track(new G4DynamicParticle(theBogoliubovQP,velocity.unit(),energy),time,pos);  
+
+  sec->SetGoodForTrackingFlag(true);	// Protect against production cuts
+  sec->SetVelocity(velocity.mag());
+  sec->UseGivenVelocity(true);
   return sec;
 }

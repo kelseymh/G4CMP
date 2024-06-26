@@ -19,11 +19,13 @@
 #include "G4VDiscreteProcess.hh"
 #include "G4CMPProcessSubType.hh"
 #include "G4CMPProcessUtils.hh"
+#include "G4CMPSCUtils.hh"
 
 class G4CMPVScatteringRate;
 
 
-class G4CMPVProcess : public G4VDiscreteProcess, public G4CMPProcessUtils {
+class G4CMPVProcess : public G4VDiscreteProcess, public G4CMPProcessUtils,
+		      public G4CMPSCUtils {
 public:
   G4CMPVProcess(const G4String& processName, G4CMPProcessSubType stype);
   virtual ~G4CMPVProcess();
@@ -44,8 +46,8 @@ protected:
 
   // Uses scattering model to compute MFP; subclasses may override
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
-  virtual void UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack);
-
+  virtual G4bool UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack);
+  virtual void UpdateSCAfterLatticeChange();
   
 private:
   G4CMPVScatteringRate* rateModel;	// Returns scattering rate in hertz

@@ -32,7 +32,12 @@ enum G4CMPProcessSubType {
   fDTrapIonization = 311,
   fATrapIonization = 312,
   fChargeTrapping = 313,
-  fPhononPolycrystalElasticScattering = 314
+  fPhononPolycrystalElasticScattering = 314,
+  fQPRecombinationProcess = 315,
+  fSCPairBreakingProcess = 316,
+  fQPRadiatesPhononProcess = 317,
+  fBogoliubovQPRandomWalkBoundary = 318,
+  fBogoliubovQPRandomWalkTransport = 319
 };
 
 #endif	/* G4CMPProcessSubType_hh */

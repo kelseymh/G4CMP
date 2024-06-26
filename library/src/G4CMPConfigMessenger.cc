@@ -56,7 +56,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : G4UImessenger("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library"),
     theManager(mgr), versionCmd(0), printCmd(0), verboseCmd(0), ehBounceCmd(0),
-    pBounceCmd(0), maxLukeCmd(0), clearCmd(0), minEPhononCmd(0),
+    pBounceCmd(0),qpBounceCmd(0), maxLukeCmd(0), clearCmd(0), minEPhononCmd(0),
     minEChargeCmd(0), sampleECmd(0), comboStepCmd(0), trapEMFPCmd(0),
     trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
     hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), tempCmd(0), minstepCmd(0),
@@ -125,6 +125,9 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   pBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("phononBounces",
 		  "Maximum number of reflections allowed for phonons");
+        
+  qpBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("bogoliubovQPBounces",
+                "Maximum number of reflections allowed for bogoliubov QPs");
 
   kvmapCmd = CreateCommand<G4UIcmdWithABool>("useKVsolver",
 			     "Use eigenvector solver for K-Vg conversion");
@@ -194,6 +197,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete versionCmd; versionCmd=0;
   delete ehBounceCmd; ehBounceCmd=0;
   delete pBounceCmd; pBounceCmd=0;
+  delete qpBounceCmd; qpBounceCmd=0;
   delete maxLukeCmd; maxLukeCmd=0;
   delete clearCmd; clearCmd=0;
   delete minEPhononCmd; minEPhononCmd=0;
@@ -232,6 +236,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == maxLukeCmd) theManager->SetMaxLukePhonons(StoI(value));
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
+  if (cmd == qpBounceCmd) theManager->SetMaxBogoliubovQPBounces(StoI(value));
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
 
   if (cmd == clearCmd)

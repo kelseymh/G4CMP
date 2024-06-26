@@ -86,6 +86,7 @@ G4CMPProcessUtils::G4CMPProcessUtils()
 G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
 
+//REL NBNB, 6/25/2024: This DOES seem to get called in DoTransmission in phonon boundary processes... figure out why
 //REL NB: This is currently not being used -- keeping them in just to make sure I don't need them later...
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Any time we go into a new volume, we need to re-establish the lattice that we're
@@ -209,6 +210,7 @@ void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
     currentVolume = G4CMP::GetVolumeAtPoint(track->GetPosition());
   }
 }
+
 
 //REL NB: This are currently not being used -- keeping them in just to make sure I don't need them later...
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -415,6 +417,8 @@ G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
   } else if (G4CMP::IsHole(track)) {
     return track.GetKineticEnergy();
   } else if (G4CMP::IsPhonon(track)) {
+    return track.GetKineticEnergy();
+  } else if (G4CMP::IsBogoliubovQP(track)) {
     return track.GetKineticEnergy();
   } else {
     G4Exception("G4CMPProcessUtils::GetKineticEnergy", "G4CMPProcess004",

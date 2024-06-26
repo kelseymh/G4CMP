@@ -41,22 +41,26 @@ namespace G4CMP {
   G4bool IsElectron(const G4Track* track);
   G4bool IsHole(const G4Track* track);
   G4bool IsChargeCarrier(const G4Track* track);
-
+  G4bool IsBogoliubovQP(const G4Track* track);
+  
   G4bool IsPhonon(const G4Track& track);
   G4bool IsElectron(const G4Track& track);
   G4bool IsHole(const G4Track& track);
   G4bool IsChargeCarrier(const G4Track& track);
-
+  G4bool IsBogoliubovQP(const G4Track& track);
+  
   G4bool IsPhonon(const G4ParticleDefinition* pd);
   G4bool IsElectron(const G4ParticleDefinition* pd);
   G4bool IsHole(const G4ParticleDefinition* pd);
   G4bool IsChargeCarrier(const G4ParticleDefinition* pd);
-
+  G4bool IsBogoliubovQP(const G4ParticleDefinition* pd);
+  
   G4bool IsPhonon(const G4ParticleDefinition& pd);
   G4bool IsElectron(const G4ParticleDefinition& pd);
   G4bool IsHole(const G4ParticleDefinition& pd);
   G4bool IsChargeCarrier(const G4ParticleDefinition& pd);
-
+  G4bool IsBogoliubovQP(const G4ParticleDefinition& pd);
+  
   // Select phonon mode randomly from density of states
   G4int ChoosePhononPolarization(const G4LatticePhysical* lattice);
   G4int ChoosePhononPolarization(G4double Ldos, G4double STdos, G4double FTdos);

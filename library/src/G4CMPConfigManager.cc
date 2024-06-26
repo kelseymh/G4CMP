@@ -79,6 +79,7 @@ G4CMPConfigManager::G4CMPConfigManager()
   : verbose(getenv("G4CMP_DEBUG")?atoi(getenv("G4CMP_DEBUG")):0),
     ehBounces(getenv("G4CMP_EH_BOUNCES")?atoi(getenv("G4CMP_EH_BOUNCES")):1),
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
+    qpBounces(getenv("G4CMP_QP_BOUNCES")?atoi(getenv("G4CMP_QP_BOUNCES")):100),
     maxLukePhonons(getenv("G4MP_MAX_LUKE")?atoi(getenv("G4MP_MAX_LUKE")):-1),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):"Quadratic"),
@@ -121,7 +122,7 @@ G4CMPConfigManager::~G4CMPConfigManager() {
 
 G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
   : verbose(master.verbose), fPhysicsModelID(master.fPhysicsModelID), 
-    ehBounces(master.ehBounces), pBounces(master.pBounces),
+    ehBounces(master.ehBounces), pBounces(master.pBounces),qpBounces(master.qpBounces),
     maxLukePhonons(master.maxLukePhonons),
     version(master.version), LatticeDir(master.LatticeDir), 
     IVRateModel(master.IVRateModel), eTrapMFP(master.eTrapMFP),
@@ -180,6 +181,7 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/verbose " << verbose << "\t\t\t\t# G4CMP_DEBUG"
      << "\n/g4cmp/chargeBounces " << ehBounces << "\t\t\t\t# G4CMP_EH_BOUNCES"
      << "\n/g4cmp/phononBounces " << pBounces << "\t\t\t# G4CMP_PHON_BOUNCES"
+     << "\n/g4cmp/bogoliubovQPBounces " << qpBounces << "\t\t\t# G4CMP_QP_BOUNCES"
      << "\n/g4cmp/IVRateModel " << IVRateModel << "\t\t\t# G4CMP_IV_RATE_MODEL"
      << "\n/g4cmp/eTrappingMFP " << eTrapMFP/mm << " mm\t\t# G4CMP_ETRAPPING_MFP"
      << "\n/g4cmp/hTrappingMFP " << hTrapMFP/mm << " mm\t\t# G4CMP_HTRAPPING_MFP"

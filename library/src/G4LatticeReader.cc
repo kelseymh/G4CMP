@@ -56,6 +56,11 @@ G4LatticeReader::G4LatticeReader(G4int vb)
     fDataDir(G4CMPConfigManager::GetLatticeDir()),
     mElectron(electron_mass_c2/c_squared) {
   G4CMPUnitsTable::Init();	// Ensures thread-by-thread initialization
+  //Defining a new unit defintion to the Units table to handle the units of
+  // the diffusion constant length*length/time
+  new G4UnitDefinition("km2/s","km2/s","Diffusion constant",km2/s);
+  new G4UnitDefinition("m2/s","m2/s","Diffusion constant",m2/s);
+  new G4UnitDefinition("um2/ns","um2/ns","Diffusion constant",um*um/ns);
 }
 
 G4LatticeReader::~G4LatticeReader() {
@@ -209,6 +214,12 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "ivlinrate1")    pLattice->SetIVLinRate1(fValue*ProcessUnits("Frequency"));
   else if (name == "ivlinpower")    pLattice->SetIVLinExponent(fValue);
   else if (name == "ivlinexponent") pLattice->SetIVLinExponent(fValue);
+  else if (name == "sc_delta0" )    pLattice->SetSCDelta0(fValue*ProcessUnits("Energy"));
+  else if (name == "sc_tau0_qp" )   pLattice->SetSCTau0qp(fValue*ProcessUnits("Time"));
+  else if (name == "sc_tau0_ph" )   pLattice->SetSCTau0ph(fValue*ProcessUnits("Time"));
+  else if (name == "sc_tcrit" )     pLattice->SetSCTcrit(fValue*ProcessUnits("Temperature"));
+  else if (name == "sc_teff" )      pLattice->SetSCTeff(fValue*ProcessUnits("Temperature"));
+  else if (name == "sc_dn" )        pLattice->SetSCDn(fValue*ProcessUnits("Diffusion constant"));
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;

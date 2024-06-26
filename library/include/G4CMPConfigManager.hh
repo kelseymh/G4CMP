@@ -71,6 +71,7 @@ public:
   static G4int GetVerboseLevel()         { return Instance()->verbose; }
   static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
   static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
+  static G4int GetMaxBogoliubovQPBounces()     { return Instance()->qpBounces; }
   static G4int GetMaxLukePhonons()       { return Instance()->maxLukePhonons; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
@@ -102,6 +103,7 @@ public:
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
   static void SetMaxChargeBounces(G4int value) { Instance()->ehBounces = value; }
   static void SetMaxPhononBounces(G4int value) { Instance()->pBounces = value; }
+  static void SetMaxBogoliubovQPBounces(G4int value) { Instance()->qpBounces = value; }
   static void SetMaxLukePhonons(G4int value) { Instance()->maxLukePhonons = value; }
   static void SetSurfaceClearance(G4double value) { Instance()->clearance = value; }
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
@@ -160,6 +162,7 @@ private:
   G4int fPhysicsModelID; // ID key to get aux. track info.
   G4int ehBounces;	// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
   G4int pBounces;	// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
+  G4int qpBounces;    // Maximum QP reflections ($G4CMP_QP_BOUNCES)
   G4int maxLukePhonons; // Approx. Luke phonon limit ($G4MP_MAX_LUKE)
   G4String version;	// Version name string extracted from .g4cmp-version
   G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)

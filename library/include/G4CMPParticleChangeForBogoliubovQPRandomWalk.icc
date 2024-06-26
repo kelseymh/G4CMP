@@ -1,0 +1,118 @@
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+//
+/// \file library/include/G4CMPParticleChangeForBogoliubovQPRandomWalk.icc
+/// \brief Implementation inline methods defined in of the G4CMPParticleChangeForBogoliubovQPRandomWalk.hh
+//
+inline
+ void G4CMPParticleChangeForBogoliubovQPRandomWalk::ProposeMomentumDirection(const G4ThreeVector& P)
+{
+  theMomentumDirection = P;
+}
+
+inline
+ void G4CMPParticleChangeForBogoliubovQPRandomWalk::SetProposedMomentumDirection(const G4ThreeVector& P)
+{
+  theMomentumDirection = P;
+}
+
+inline
+ void G4CMPParticleChangeForBogoliubovQPRandomWalk::ProposeMomentumDirection(G4double Px, G4double Py, G4double Pz)
+{
+  theMomentumDirection.setX(Px);
+  theMomentumDirection.setY(Py);
+  theMomentumDirection.setZ(Pz);
+}
+
+inline
+ const G4ThreeVector* G4CMPParticleChangeForBogoliubovQPRandomWalk::GetMomentumDirection() const
+{
+  return &theMomentumDirection;
+}
+
+inline
+ const G4ThreeVector* G4CMPParticleChangeForBogoliubovQPRandomWalk::GetProposedMomentumDirection() const
+{
+  return &theMomentumDirection;
+}
+
+inline
+ void G4CMPParticleChangeForBogoliubovQPRandomWalk::SetProposedPosition(const G4ThreeVector& P)
+{
+  thePosition = P;
+}
+
+inline
+ const G4ThreeVector* G4CMPParticleChangeForBogoliubovQPRandomWalk::GetPosition() const
+{
+  return &thePosition;
+}
+
+inline
+ const G4ThreeVector* G4CMPParticleChangeForBogoliubovQPRandomWalk::GetProposedPosition() const
+{
+  return &thePosition;
+}
+
+inline
+ void G4CMPParticleChangeForBogoliubovQPRandomWalk::ProposePosition(const G4ThreeVector& P)
+{
+  thePosition = P;
+}
+
+inline
+ void G4CMPParticleChangeForBogoliubovQPRandomWalk::ProposeVelocity(const G4double& P)
+{
+  theVelocity = P;
+}
+
+inline
+ const G4double* G4CMPParticleChangeForBogoliubovQPRandomWalk::GetVelocity() const
+{
+  return &theVelocity;
+}
+
+inline
+ const G4double* G4CMPParticleChangeForBogoliubovQPRandomWalk::GetProposedVelocity() const
+{
+  return &theVelocity;
+}
+
+inline
+ void G4CMPParticleChangeForBogoliubovQPRandomWalk::SetProposedVelocity(const G4double& P)
+{
+  theVelocity = P;
+}
+
+inline 
+  void G4CMPParticleChangeForBogoliubovQPRandomWalk::ProposeGlobalTime(G4double t)
+{
+  theTimeChange = (t-theGlobalTime0) + theLocalTime0;
+}
+   
+inline
+ G4double  G4CMPParticleChangeForBogoliubovQPRandomWalk::GetGlobalTime(G4double timeDelay) const
+{
+  //  Convert the time delay to the global time.
+  return theGlobalTime0 + (theTimeChange-theLocalTime0) + timeDelay;
+}
+
+inline 
+  void G4CMPParticleChangeForBogoliubovQPRandomWalk::ProposeLocalTime(G4double t)
+{
+  theTimeChange = t;
+}
+
+inline void G4CMPParticleChangeForBogoliubovQPRandomWalk::Initialize(const G4Track& track)
+{
+  theStatusChange = track.GetTrackStatus();
+  theMomentumDirection = track.GetMomentumDirection();
+  theVelocity = track.GetVelocity();
+  theTimeChange = track.GetLocalTime();
+  theLocalTime0 = track.GetLocalTime();
+  theGlobalTime0 = track.GetGlobalTime();
+
+}
+

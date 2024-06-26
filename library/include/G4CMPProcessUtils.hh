@@ -67,12 +67,12 @@ public:
   G4CMPProcessUtils& operator=(G4CMPProcessUtils&&) = default;
 
   // Configure for current track
-  virtual void ReloadDataForTrack(const G4Track* track);
   virtual void LoadDataForTrack(const G4Track* track);
   virtual void SetCurrentTrack(const G4Track* track);
   virtual void SetLattice(const G4Track* track);
 
   //REL: NB: these are currently no longer used -- kept around for just a bit to make sure we don't need them
+  virtual void ReloadDataForTrack(const G4Track* track); //REL Kill?
   virtual void SetCurrentTrackInNextVolume(const G4Track* track);
   virtual void SetNextLattice(const G4Track* track);
   
