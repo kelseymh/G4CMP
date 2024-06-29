@@ -132,6 +132,9 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double Etrk = 0.;
   if (IsElectron()) {
     ktrk = lat->MapPtoK(iValley, ptrk);
+    // Turning wavevector to spherical frame where electrons act like holes
+    // as the mass is isotropic
+    ktrk = lat->EllipsoidalToSphericalTranformation(iValley, ktrk);
     mass = electron_mass_c2/c_squared;
     Etrk = lat->MapPtoEkin(iValley, ptrk);
   } else if (IsHole()) {
@@ -146,15 +149,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4ThreeVector kdir = ktrk.unit();
   G4double kmag = ktrk.mag();
-  G4double kSound = 0.;
-  if (IsElectron()) {
-    G4ThreeVector vSound = lat->GetSoundSpeed()*kdir;
-    kSound = (lat->MapV_elToK(iValley,vSound)).mag();
-  }
-  else{
-    G4double gammaSound = 1/sqrt(1.-lat->GetSoundSpeed()*lat->GetSoundSpeed()/c_squared);
-    kSound = gammaSound * lat->GetSoundSpeed() * mass / hbar_Planck;
-  }
+  G4double gammaSound = 1/sqrt(1.-lat->GetSoundSpeed()*lat->GetSoundSpeed()/c_squared);
+  G4double kSound = gammaSound * lat->GetSoundSpeed() * mass / hbar_Planck;
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
@@ -235,12 +231,22 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     // Get recoil wavevector (in HV frame), convert to new local momentum
     k_recoil = ktrk - qvec;
     Ephonon = MakePhononEnergy(qvec.mag());
+    // Rotating phonon wavevector out of valley frame into solid frame
+    qvec = qvec.transform(lat->GetValleyInv(iValley));
+    qvec = lat->RotateToSolid(qvec);
+    // Make sure energy is conserved
     Erecoil = Etrk - Ephonon;
 
     if (IsHole()) {
       precoil = k_recoil * hbarc;
     } else {
-      precoil = lat->MapKtoP(iValley, k_recoil);
+      // First transform the recoil wavevector back to the ellipsoidal frame
+      precoil = lat->SphericalToEllipsoidalTranformation(iValley, k_recoil);
+      // Then transform the recoil wavevector to transport momentum
+      precoil = lat->MapKtoP(iValley, precoil);
+      // Energy should be conserved, so we use the precoil to get the direction
+      // of the movement, while the magnitude of the momentum is given by the
+      // Erecoil and direction of the movement and the valley.
       precoil = lat->MapEkintoP(iValley, precoil, Erecoil);
     }
 

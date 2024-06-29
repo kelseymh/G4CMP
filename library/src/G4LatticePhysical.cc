@@ -377,6 +377,37 @@ G4LatticePhysical::GetElectronEffectiveMass(G4int iv,
   return fLattice->GetElectronEffectiveMass(iv, tempvec());
 }
 
+G4ThreeVector
+G4LatticePhysical::EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::EllipsoidalToSphericalTranformation " << ivalley 
+    << " " << v << G4endl;
+#endif
+
+  RotateToLattice(tempvec()=v);
+
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+#endif
+
+  return fLattice->EllipsoidalToSphericalTranformation(iv, tempvec());
+}
+
+// Compute vector in ellipsoidal frame from the spherical frame
+
+G4ThreeVector
+G4LatticePhysical::SphericalToEllipsoidalTranformation(G4int iv, const G4ThreeVector& v) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::SphericalToEllipsoidalTranformation " << ivalley 
+    << " " << v << G4endl;
+#endif
+
+  tempvec() = fLattice->SphericalToEllipsoidalTranformation(iv, v);
+  return RotateToSolid(tempvec());
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 // Dump contained logical lattice with volume information

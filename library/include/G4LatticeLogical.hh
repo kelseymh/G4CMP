@@ -208,6 +208,9 @@ public:
   // Compute "effective mass" for electron to preserve E/p relationship
   G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const;
 
+  G4ThreeVector EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const;
+  G4ThreeVector SphericalToEllipsoidalTranformation(G4int iv, const G4ThreeVector& v) const;
+
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley);
   void AddValley(G4double phi, G4double theta, G4double psi);
