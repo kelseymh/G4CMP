@@ -187,7 +187,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   // Final state kinematics, generated in accept/reject loop below
-  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0, Erecoil=0;
+  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0, Erecoil=0, qmag=0;
   G4ThreeVector qvec, k_recoil, precoil;	// Outgoing wave vectors
   G4int newValley = iValley;			// Test for valley change
 
@@ -230,16 +230,17 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     
     // Get recoil wavevector (in HV frame), convert to new local momentum
     k_recoil = ktrk - qvec;
-    Ephonon = MakePhononEnergy(qvec.mag());
-    // Rotating phonon wavevector out of valley frame into solid frame
-    qvec = qvec.transform(lat->GetValleyInv(iValley));
-    qvec = lat->RotateToSolid(qvec);
+    qmag = qvec.mag();
+    Ephonon = MakePhononEnergy(qmag);
     // Make sure energy is conserved
     Erecoil = Etrk - Ephonon;
 
     if (IsHole()) {
       precoil = k_recoil * hbarc;
     } else {
+      // Rotating phonon wavevector out of valley frame into solid frame
+      qvec = lat->SphericalToEllipsoidalTranformation(iValley, qvec);
+      qvec = qmag * qvec.unit();
       // First transform the recoil wavevector back to the ellipsoidal frame
       precoil = lat->SphericalToEllipsoidalTranformation(iValley, k_recoil);
       // Then transform the recoil wavevector to transport momentum
