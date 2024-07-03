@@ -31,6 +31,8 @@
 //		that these changes will give correct position and velocity vectors, but
 //		not the correct energy. The energy is being corrected in the PostStepDoIt
 //		method of each process separately.
+// 20240703 I. Ataee -- Cleaning up the code and using MapPtoV_el instea of redoing
+//		what it does in the EvaluateRhsGivenB method.
 
 #include "G4CMPEqEMField.hh"
 #include "G4CMPConfigManager.hh"
@@ -111,7 +113,6 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   pos.set(y[0],y[1],y[2]);			// Position
   mom.set(y[3],y[4],y[5]);			// Momentum
   Efield.set(field[3],field[4],field[5]);	// Electric field
-  G4double Emag = Efield.mag();
 
   force = Efield;	// Apply transforms here so Efield stays original
 
@@ -128,9 +129,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
   momdir = mom.unit();
 
   fGlobalToLocal.ApplyAxisTransform(mom);
-  G4double Energy = theLattice->MapPtoEkin(valleyIndex,mom) + electron_mass_c2;
-  vel = mom;
-  vel *= c_light/Energy;		// v = pc^2/E
+  vel = theLattice->MapPtoV_el(valleyIndex,mom);
   G4double vinv = 1./vel.mag();
 
 #ifdef G4CMP_DEBUG
@@ -139,7 +138,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 	   << G4endl << " TOF (1/v) " << vinv/(ns/mm) << " ns/mm"
 	   << " c/v " << vinv*c_light << G4endl
 	   << " E-field         " << Efield/(volt/cm) << " "
-	   << Emag/(volt/cm) << " V/cm" << G4endl;
+	   << Efield.mag()/(volt/cm) << " V/cm" << G4endl;
   }
 #endif
 
