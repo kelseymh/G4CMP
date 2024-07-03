@@ -162,9 +162,7 @@ public:
 
   // These functions only exist to make a uniform interface for getting
   // track info in a G4CMP physics process class.
-  G4double CalculateVelocity(const G4Track& track) const {
-    return track.CalculateVelocity();
-  }
+  G4double CalculateVelocity(const G4Track& track) const;
 
   G4double CalculateVelocity(const G4Track* track) const {
     return CalculateVelocity(*track);
