@@ -5,6 +5,10 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
+2024-07-03  G4CMP-408 : Fixing Luke Scattering to be done in the Spherical frame.
+			Herring-Vogt transformation now uses electron mass. 
+			For electrons CurrentVelocity and GetKineticEnergy 
+			consider the band structure to return correct values.
 2024-05-22  G4CMP-276 : For electrons, store momentum and energy in G4Track.
 2024-05-14  G4CMP-398 : Removing K_HV and K_Valley from the code. Bugfix
 			for Luke Scattering changes introduced in G4CMP-369.
