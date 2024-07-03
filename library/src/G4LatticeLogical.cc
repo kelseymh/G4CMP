@@ -748,9 +748,9 @@ void G4LatticeLogical::FillMassInfo() {
 			    0., 0., 1./fMassTensor.zz()));
 
   // Mass ratio tensor used for scattering and field calculations
-  fMassRatioSqrt.set(G4Rep3x3(sqrt(fMassTensor.xx()/fElectronMass), 0., 0.,
-			      0., sqrt(fMassTensor.yy()/fElectronMass), 0.,
-			      0., 0., sqrt(fMassTensor.zz()/fElectronMass)));
+  fMassRatioSqrt.set(G4Rep3x3(sqrt(fMassTensor.xx()/mElectron), 0., 0.,
+			      0., sqrt(fMassTensor.yy()/mElectron), 0.,
+			      0., 0., sqrt(fMassTensor.zz()/mElectron)));
 
   fMInvRatioSqrt.set(G4Rep3x3(1./fMassRatioSqrt.xx(), 0., 0.,
 			      0., 1./fMassRatioSqrt.yy(), 0.,
