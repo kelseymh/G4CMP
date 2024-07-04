@@ -658,6 +658,40 @@ G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
   return (p.mag2()-Ekin*Ekin)/(2.*Ekin*c_squared);	// Relativistic
 }
 
+// Compute vector in spherical frame from the ellipsoidal fame
+// In spherical frame, mass tensor is isotropic and we can do scatterings the same
+// way as we do for holes
+
+G4ThreeVector
+G4LatticeLogical::EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const {
+  tempvec() = v;
+  // Rotate to valley frame (D)
+  tempvec().transform(GetValley(iv));
+  // Apply Herring-Vogt transformation (TD)
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::EllipsoidalToSphericalTranformation " << iv
+      << " " << v << " returning " << GetSqrtInvTensor()*tempvec() << G4endl;
+#endif
+  return GetSqrtInvTensor()*(tempvec());
+}
+
+// Compute vector in ellipsoidal frame from the spherical frame
+
+G4ThreeVector
+G4LatticeLogical::SphericalToEllipsoidalTranformation(G4int iv, const G4ThreeVector& v) const {
+  // Apply inverse Herring-Vogt transformation (T^-1)
+  tempvec() = GetSqrtTensor()*v;
+  // Rotate to valley frame ((TD)^-1 = D^-1T^-1)
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::SphericalToEllipsoidalTranformation " << iv
+      << " " << v << " returning " << GetValleyInv(iv)*tempvec() << G4endl;
+#endif
+  tempvec().transform(GetValleyInv(iv));
+  return tempvec();
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 // Store electron mass tensor using diagonal elements
@@ -714,9 +748,9 @@ void G4LatticeLogical::FillMassInfo() {
 			    0., 0., 1./fMassTensor.zz()));
 
   // Mass ratio tensor used for scattering and field calculations
-  fMassRatioSqrt.set(G4Rep3x3(sqrt(fMassTensor.xx()/fElectronMass), 0., 0.,
-			      0., sqrt(fMassTensor.yy()/fElectronMass), 0.,
-			      0., 0., sqrt(fMassTensor.zz()/fElectronMass)));
+  fMassRatioSqrt.set(G4Rep3x3(sqrt(fMassTensor.xx()/mElectron), 0., 0.,
+			      0., sqrt(fMassTensor.yy()/mElectron), 0.,
+			      0., 0., sqrt(fMassTensor.zz()/mElectron)));
 
   fMInvRatioSqrt.set(G4Rep3x3(1./fMassRatioSqrt.xx(), 0., 0.,
 			      0., 1./fMassRatioSqrt.yy(), 0.,

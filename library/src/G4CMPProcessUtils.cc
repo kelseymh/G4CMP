@@ -360,8 +360,22 @@ void G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track &track, G4double v
   vel[2] = tempvec.z();
 }
 
+G4double G4CMPProcessUtils::CalculateVelocity(const G4Track& track) const {
+  if (IsElectron()) {
+    G4ThreeVector ptrk = GetLocalMomentum(track);
+    return GetLattice()->MapPtoV_el(GetValleyIndex(track), ptrk).mag();
+  } else {
+    return track.CalculateVelocity();
+  }
+}
+
 G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
-  return track.GetKineticEnergy();
+  if (IsElectron()) {
+    G4ThreeVector ptrk = GetLocalMomentum(track);
+    return GetLattice()->MapPtoEkin(GetValleyIndex(track), ptrk);
+  } else {  
+    return track.GetKineticEnergy();
+  }
 }
 
 // Return particle type for currently active track [set in LoadDataForTrack()]
@@ -508,6 +522,6 @@ G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
   const G4double velLong = theLattice->GetSoundSpeed();
 
   const G4double tstep = 3.*l0/velLong;
-  return (mach<1.) ? tstep : tstep*mach/((mach-1)*(mach-1)*(mach-1));
+  return (mach<1.) ? tstep : tstep*mach*mach/((mach-1)*(mach-1)*(mach-1));
   // NOTE: Above numerator should be tstep*mach*mach, but causes problems
 }

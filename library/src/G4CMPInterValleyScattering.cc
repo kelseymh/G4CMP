@@ -105,7 +105,7 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
 G4VParticleChange* 
 G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
 					 const G4Step& aStep) {
-  aParticleChange.Initialize(aTrack); 
+  InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
   if (verboseLevel > 1) {
