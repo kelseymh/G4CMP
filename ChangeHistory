@@ -5,26 +5,30 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
+
+[ Modifications included on branch G4CMP-276, put subtask tags below it: ]
+2024-07-04  G4CMP-276 : Redesign electron kinematics to follow theory properly.
 2024-07-04  G4CMP-412 : Adapting IV Scattering with Improved Kinematics.
-2024-07-03  G4CMP-408 : Fixing Luke Scattering to be done in the Spherical frame.
+2024-07-03  G4CMP-408 : Fix Luke Scattering to be done in the Spherical frame.
 			Herring-Vogt transformation now uses electron mass. 
 			For electrons CurrentVelocity and GetKineticEnergy 
 			consider the band structure to return correct values.
-2024-07-03  G4CMP-409 : Adding Initialization at the start of IVScattering Process.
-2024-05-22  G4CMP-276 : For electrons, store momentum and energy in G4Track.
+2024-07-03  G4CMP-409 : Add Initialization at the start of IVScattering Process.
 2024-05-14  G4CMP-398 : Removing K_HV and K_Valley from the code. Bugfix
 			for Luke Scattering changes introduced in G4CMP-369.
 2024-02-07  G4CMP-369 : Adapting Luke Scattering with the new kinematics.
 			Modifications to mfp.
 2023-07-09  G4CMP-352 : Use relativistic band-structure kinematics in
 			EqEMField and LatticeLogical. Use quasi-momentum for k.
-2023-02-10  G4CMP-351 : Changing Electron Mass to Effective Mass in LukeScattering.
+2023-02-10  G4CMP-351 : Change Electron to Effective Mass in LukeScattering.
 2022-12-10  G4CMP-349 : Ephonon being calculated from Erecoil in LukeScattering.
 2022-03-08  G4CMP-286 : Use true momentum, split out transforms in EqEMField.
 2021-10-01  G4CMP-285 : G4CMPTimeStepper should set electron dynamical mass.
 2021-10-01  G4CMP-281 : Create secondary electrons with correct momentum, mass.
 2021-10-01  G4CMP-283 : Recompute electron dynamical mass for G4ParticleChange.
 2021-10-01  G4CMP-282 : Don't alter assigned kinetic energy of new tracks.
+
+[ Main line "develop" ChangeHistory; when merging, put develop updates here: ]
 2024-05-16  g4cmp-V08-10-00 Improvements to KaplanQP and lowest-energy phonons.
 2024-05-06  G4CMP-371 : Add flag to keep or discard below-minimum track energy.
 2024-05-02  G4CMP-379 : Add finite temperature statistics for QP spectrum.
