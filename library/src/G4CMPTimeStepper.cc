@@ -152,10 +152,18 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   if (verboseLevel>1)
     G4cout << "TS IV threshold mfpIV " << mfpIV/m << " m" << G4endl;
 
+  // Take smaller steps when charge velocity is low to avoid direction flip errors
+  G4ThreeVector fieldVector = G4CMP::GetFieldAtPosition(aTrack);
+  G4double genericmfp = 0; G4double mass = 0; G4double stopX = 0;
+  if (IsElectron()) {
+    mass = theLattice->GetElectronMass();
+  } else {
+    mass = theLattice->GetHoleMass();
+  }
+  stopX = mass*vtrk/(2*eplus*fieldVector.mag());
+  genericmfp = std::max(stopX/100, 1e-10*m);
+
   // Take shortest distance from above options
-  // G4double mfp = std::min({mfpFast, mfpLuke, mfpIV});
-  G4double trackP = aTrack.GetMomentum().mag()/eV;
-  G4double genericmfp = std::max(1e-10*m * (trackP*trackP), 1e-10*m);
   G4double mfp = std::min({genericmfp, 1e-6*m, mfpFast, mfpLuke, mfpIV});
 
   if (verboseLevel) {

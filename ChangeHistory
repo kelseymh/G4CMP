@@ -8,6 +8,7 @@ ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 [ Modifications included on branch G4CMP-276, put subtask tags below it: ]
 2024-07-04  G4CMP-276 : Redesign electron kinematics to follow theory properly.
+2024-07-04  G4CMP-413 : Adaptive TimeStepper MFP Respecting Velocity
 2024-07-04  G4CMP-412 : Adapting IV Scattering with Improved Kinematics.
 2024-07-03  G4CMP-408 : Fix Luke Scattering to be done in the Spherical frame.
 			Herring-Vogt transformation now uses electron mass. 
