@@ -663,10 +663,39 @@ G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
 // way as we do for holes
 
 G4ThreeVector
-G4LatticeLogical::EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const {
+G4LatticeLogical::RotateToValley(G4int iv, const G4ThreeVector& v) const {
   tempvec() = v;
   // Rotate to valley frame (D)
   tempvec().transform(GetValley(iv));
+
+  #ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::RotateToValley " << iv
+      << " " << v << " returning " << tempvec() << G4endl;
+  #endif
+  
+  return tempvec();
+  }
+
+G4ThreeVector
+G4LatticeLogical::RotateFromValley(G4int iv, const G4ThreeVector& v) const {
+  tempvec() = v;
+  // Rotate from valley frame (D^-1)
+  tempvec().transform(GetValleyInv(iv));
+
+  #ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::RotateFromValley " << iv
+      << " " << v << " returning " << tempvec() << G4endl;
+  #endif
+
+  return tempvec();
+}
+
+G4ThreeVector
+G4LatticeLogical::EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const {
+  // Rotate to valley frame (D)
+  tempvec() = RotateToValley(iv, v);
   // Apply Herring-Vogt transformation (TD)
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
@@ -688,8 +717,7 @@ G4LatticeLogical::SphericalToEllipsoidalTranformation(G4int iv, const G4ThreeVec
     G4cout << "G4LatticeLogical::SphericalToEllipsoidalTranformation " << iv
       << " " << v << " returning " << GetValleyInv(iv)*tempvec() << G4endl;
 #endif
-  tempvec().transform(GetValleyInv(iv));
-  return tempvec();
+  return RotateFromValley(iv, tempvec());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

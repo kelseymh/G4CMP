@@ -378,6 +378,34 @@ G4LatticePhysical::GetElectronEffectiveMass(G4int iv,
 }
 
 G4ThreeVector
+G4LatticePhysical::RotateToValley(G4int iv, const G4ThreeVector& v) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::RotateToValley " << ivalley 
+    << " " << v << G4endl;
+#endif
+  
+    RotateToLattice(tempvec()=v);
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " in lattice frame " << tempvec() << G4endl;
+#endif
+    
+    return fLattice->RotateToValley(iv, tempvec());
+  }
+
+G4ThreeVector
+G4LatticePhysical::RotateFromValley(G4int iv, const G4ThreeVector& v) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticePhysical::SphericalToEllipsoidalTranformation " << ivalley 
+    << " " << v << G4endl;
+#endif
+
+  tempvec() = fLattice->RotateFromValley(iv, v);
+  return RotateToSolid(tempvec());
+}
+
+G4ThreeVector
 G4LatticePhysical::EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)

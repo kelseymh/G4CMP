@@ -5,6 +5,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
+2024-07-04  G4CMP-412 : Adapting IV Scattering with Improved Kinematics.
 2024-07-03  G4CMP-408 : Fixing Luke Scattering to be done in the Spherical frame.
 			Herring-Vogt transformation now uses electron mass. 
 			For electrons CurrentVelocity and GetKineticEnergy 

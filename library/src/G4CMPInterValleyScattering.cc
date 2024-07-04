@@ -123,11 +123,13 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector p = GetLocalMomentum(aTrack);
   G4int valley = GetValleyIndex(aTrack);
   p = theLattice->MapPtoK(valley, p); // p is actually k now
+  p = theLattice->RotateToValley(valley, p);
   
   // picking a new valley at random if IV-scattering process was triggered
   valley = ChangeValley(valley);
   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
 
+  p = theLattice->RotateFromValley(valley, p);
   p = theLattice->MapKtoP(valley, p); // p is p again
   RotateToGlobalDirection(p);
   
