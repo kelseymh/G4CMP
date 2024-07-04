@@ -145,6 +145,8 @@ public:
   G4double GetElectronMass() const { return fLattice->GetElectronMass(); }
   G4double GetElectronDOSMass() const { return fLattice->GetElectronDOSMass(); }
   G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const;
+  G4ThreeVector RotateToValley(G4int iv, const G4ThreeVector& v) const;
+  G4ThreeVector RotateFromValley(G4int iv, const G4ThreeVector& v) const;
   G4ThreeVector EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const;
   G4ThreeVector SphericalToEllipsoidalTranformation(G4int iv, const G4ThreeVector& v) const;
 
