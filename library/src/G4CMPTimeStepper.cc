@@ -154,9 +154,18 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
   // Take shortest distance from above options
   // G4double mfp = std::min({mfpFast, mfpLuke, mfpIV});
-  G4double trackP = aTrack.GetMomentum().mag()/eV;
-  G4double genericmfp = std::max(1e-10*m * (trackP*trackP), 1e-10*m);
+  G4ThreeVector fieldVector = G4CMP::GetFieldAtPosition(aTrack);
+  G4double genericmfp = 0; G4double mass = 0; G4double stopX = 0;
+  if (IsElectron()) {
+    mass = theLattice->GetElectronMass();
+  } else {
+    mass = theLattice->GetHoleMass();
+  }
+  stopX = mass*vtrk/(2*eplus*fieldVector.mag());
+  genericmfp = std::max(stopX/100, 1e-10*m);
   G4double mfp = std::min({genericmfp, 1e-6*m, mfpFast, mfpLuke, mfpIV});
+
+  // G4cout << "mfp = " << mfp/m << " m | genericmfp = " << genericmfp/m << " m | stopX = " << stopX/m << " m" << G4endl;
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
