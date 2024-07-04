@@ -43,11 +43,8 @@ G4double G4CMPIVRateQuadratic::Rate(const G4Track& aTrack) const {
   // Find E-field in HV space: in lattice frame, rotate into valley,
   // then apply HV tansform.
   // NOTE:  Separate steps to avoid matrix-matrix multiplications
-  RotateToLocalDirection(fieldVector);
-  theLattice->RotateToLattice(fieldVector);
-  fieldVector *= GetValley(aTrack);
-  fieldVector *= theLattice->GetMInvTensor();
-  fieldVector *= electron_mass_c2/c_squared;
+  fieldVector = theLattice->EllipsoidalToSphericalTranformation(GetValleyIndex(aTrack), fieldVector);
+  fieldVector *= sqrt(theLattice->GetElectronMass()/(electron_mass_c2/c_squared));
   fieldVector /= volt/m;			// Strip units for MFP below
 
   if (verboseLevel > 1) {
