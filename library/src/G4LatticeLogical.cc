@@ -508,15 +508,6 @@ G4LatticeLogical::MapV_elToK(G4int ivalley, const G4ThreeVector &v_e) const {
     G4cout << "G4LatticeLogical::MapV_elToK " << ivalley << " " << v_e << G4endl;
 #endif
 
-#ifdef G4CMP_DEBUG
-  if (verboseLevel>1) {
-    G4cout << " V_el (valley) " << vToN*v_e << G4endl
-	   << " K=mv/hbar (valley) " << GetMassTensor()*(vToN*v_e/hbar_Planck)
-	   << G4endl << " returning "
-	   << GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck)) << G4endl;
-  }
-#endif
-
   tempvec() = MapV_elToP(ivalley, v_e);
   return MapPtoK(ivalley, tempvec());
 }
