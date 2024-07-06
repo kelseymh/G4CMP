@@ -365,8 +365,8 @@ G4LatticePhysical::GetElectronEffectiveMass(G4int iv,
 					   const G4ThreeVector& p) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticePhysical::GetElectronEffectiveMass " << ivalley 
-    << " " << p << G4endl;
+    G4cout << "G4LatticePhysical::GetElectronEffectiveMass " << iv
+	   << " " << p << G4endl;
 #endif
 
   RotateToLattice(tempvec()=p);
@@ -381,8 +381,8 @@ G4ThreeVector
 G4LatticePhysical::RotateToValley(G4int iv, const G4ThreeVector& v) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticePhysical::RotateToValley " << ivalley 
-    << " " << v << G4endl;
+    G4cout << "G4LatticePhysical::RotateToValley " << iv
+	   << " " << v << G4endl;
 #endif
   
     RotateToLattice(tempvec()=v);
@@ -397,20 +397,20 @@ G4ThreeVector
 G4LatticePhysical::RotateFromValley(G4int iv, const G4ThreeVector& v) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticePhysical::SphericalToEllipsoidalTranformation " << ivalley 
-    << " " << v << G4endl;
+    G4cout << "G4LatticePhysical::RotateFromValley " << iv
+	   << " " << v << G4endl;
 #endif
 
   tempvec() = fLattice->RotateFromValley(iv, v);
   return RotateToSolid(tempvec());
 }
 
-G4ThreeVector
-G4LatticePhysical::EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const {
+G4ThreeVector G4LatticePhysical::
+EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticePhysical::EllipsoidalToSphericalTranformation " << ivalley 
-    << " " << v << G4endl;
+    G4cout << "G4LatticePhysical::EllipsoidalToSphericalTranformation " << iv
+	   << " " << v << G4endl;
 #endif
 
   RotateToLattice(tempvec()=v);
@@ -424,11 +424,11 @@ G4LatticePhysical::EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVe
 
 // Compute vector in ellipsoidal frame from the spherical frame
 
-G4ThreeVector
-G4LatticePhysical::SphericalToEllipsoidalTranformation(G4int iv, const G4ThreeVector& v) const {
+G4ThreeVector G4LatticePhysical::
+SphericalToEllipsoidalTranformation(G4int iv, const G4ThreeVector& v) const {
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticePhysical::SphericalToEllipsoidalTranformation " << ivalley 
+    G4cout << "G4LatticePhysical::SphericalToEllipsoidalTranformation " << iv
     << " " << v << G4endl;
 #endif
 
