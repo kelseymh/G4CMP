@@ -39,11 +39,13 @@
 //		be delta(E)/(q*V).
 // 20220730  Drop trapping processes, as they have built-in MFPs, and don't
 //		need TimeStepper for energy-dependent calculation.
-// 20230702  I. Ataee -- Add energy recalculations in PostStepDoIt to correct
-//		the energy change after each step under voltage and account for band 
-//		structure effects.
-// 20240207  I. Ataee -- Adding a dynamic mfp minimum calculation to account for
-//              current charge momentum to have smaller steps at direction flips
+// 20230702 I. Ataee -- Add energy recalculations in PostStepDoIt to correct
+//		the energy change after each step under voltage and account
+//		for band structure effects.
+// 20240702 I. Ataee -- Adding a dynamic mfp minimum calculation to account
+//              for current charge momentum to have smaller steps at direction
+//              flips
+// 20240712 M. Kelsey -- Protect minimum MFP calculation for zero field.
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
@@ -152,16 +154,17 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   if (verboseLevel>1)
     G4cout << "TS IV threshold mfpIV " << mfpIV/m << " m" << G4endl;
 
-  // Take smaller steps when charge velocity is low to avoid direction flip errors
+  // Take smaller steps when charge velocity is low to avoid direction
+  // flip errors in electric field
+  G4double genericmfp = DBL_MAX;
+
   G4ThreeVector fieldVector = G4CMP::GetFieldAtPosition(aTrack);
-  G4double genericmfp = 0; G4double mass = 0; G4double stopX = 0;
-  if (IsElectron()) {
-    mass = theLattice->GetElectronMass();
-  } else {
-    mass = theLattice->GetHoleMass();
+  if (fieldVector.mag() > 0.) {
+    G4double mass = (IsElectron() ? theLattice->GetElectronMass()
+		     : theLattice->GetHoleMass());
+    G4double stopX = mass*vtrk/(2.*eplus*fieldVector.mag());
+    genericmfp = std::max(stopX/100., 1e-10*m);
   }
-  stopX = mass*vtrk/(2*eplus*fieldVector.mag());
-  genericmfp = std::max(stopX/100, 1e-10*m);
 
   // Take shortest distance from above options
   G4double mfp = std::min({genericmfp, 1e-6*m, mfpFast, mfpLuke, mfpIV});
