@@ -28,7 +28,7 @@
 // 20220712  M. Kelsey -- Pass process pointer to G4CMPAnharmonicDecay
 // 20220905  G4CMP-310 -- Add increments of kPerp to avoid bad reflections.
 // 20220910  G4CMP-299 -- Use fabs(k) in absorption test.
-// 20240716  G4CMP-317 -- Initial implementation of surface displacement.
+// 20240718  G4CMP-317 -- Initial implementation of surface displacement.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
