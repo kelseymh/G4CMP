@@ -212,38 +212,54 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
   G4double v = theLattice->MapKtoV(mode, reflectedKDir);
 
-  // If reflection failed, report problem and kill the track
-  // if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
-  //   G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
-	// 	JustWarning, ("Phonon "+refltype+" reflection failed"+"\nPhonon mode at time of death: "+G4PhononPolarization::Label(mode)).c_str());
-  //   DoSimpleKill(aTrack, aStep, aParticleChange);
-  //   return;
-  // }
-
   // If the reflected wave vector cannot propagate in the bulk
   // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
   // That surface wave will propagate until it reaches a point
   // where the wave vector does have an inwardly directed v⃗g.
-  G4ThreeVector stepSurfNorm = surfNorm;
-  while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,stepSurfNorm)) {
-    // #2 Step along the surface in the tangential direction of k (or v_g)
-    G4ThreeVector stepPos = surfacePoint + 1*um * vdir;
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume->GetSolid();
+  G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
+  G4ThreeVector newNorm = surfNorm;
+  G4ThreeVector oldNorm = newNorm;
+  G4ThreeVector kPerpMag = newNorm * reflectedKDir;
+  G4ThreeVector kPerp = newNorm * kPerp;
+  G4ThreeVector kTan = reflectedKDir - newNorm;
+  G4ThreeVector axis = reflectedKDir;
+  G4double phi = 0.;
+  while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm)) {
+    // Step along the surface in the tangential direction of k (or v_g)
+    stepLocalPos += 1*um * reflectedKDir;
 
-    // #3 Get the local normal at the new surface point
-    G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume->GetSolid();
-    G4ThreeVector stepLocalPos = GetLocalPosition(stepPos);
-    stepSurfNorm = solid->SurfaceNormal(stepLocalPos);
+    // Get the local normal at the new surface point
+    oldNorm = newNorm
+    newNorm = solid->SurfaceNormal(stepLocalPos);
 
-    // #4 Calculate k and v_g using the new local normal
-    reflectedKDir = GetLocalWavevector(stepLocalPos)
-    vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
+    // Get new kPerp (newNorm * kPerpMag)
+    kPerp = newNorm * kPerpMag;
+
+    // Rotate kTan to be perpendicular to new normal
+    axis = oldNorm.cross(newNorm);
+    phi = oldNorm.asimangle(newNorm, axis);
+    newTan = kTan.rotate(axis, phi);
+
+    // Calculate new reflectedKDir (kTan - kPerp)
+    reflectedKDir = kTan - kPerp;
   }
+  // remember that norm always returns positive
 
+  vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
   v = theLattice->MapKtoV(mode, reflectedKDir);
 
   if (verboseLevel>2) {
     G4cout << "\n New wavevector direction " << reflectedKDir
 	   << "\n New momentum direction   " << vdir << G4endl;
+  }
+
+  // If reflection failed, report problem and kill the track
+  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
+    G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
+		JustWarning, ("Phonon "+refltype+" reflection failed"+"\nPhonon mode at time of death: "+G4PhononPolarization::Label(mode)).c_str());
+    DoSimpleKill(aTrack, aStep, aParticleChange);
+    return;
   }
 
   // SANITY CHECK:  Project a 1 um step in the new direction, see if it
