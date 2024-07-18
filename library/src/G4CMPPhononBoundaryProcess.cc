@@ -216,9 +216,10 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
   // That surface wave will propagate until it reaches a point
   // where the wave vector does have an inwardly directed v⃗g.
-  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume->GetSolid();
+  reflectedKDir = RotateToLocalDirection(reflectedKDir);
+  G4ThreeVector newNorm = RotateToLocalDirection(surfNorm);
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
-  G4ThreeVector newNorm = surfNorm;
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume->GetSolid();
   G4ThreeVector oldNorm = newNorm;
   G4ThreeVector kPerpMag = newNorm * reflectedKDir;
   G4ThreeVector kPerp = newNorm * kPerp;
@@ -244,6 +245,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     // Calculate new reflectedKDir (kTan - kPerp)
     reflectedKDir = kTan - kPerp;
   }
+  reflectedKDir = RotateToGlobalDirection(reflectedKDir);
   // remember that norm always returns positive
 
   vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
