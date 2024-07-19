@@ -119,20 +119,83 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
   
-  // Get track's energy in current valley
-  G4ThreeVector p = GetLocalMomentum(aTrack);
-  G4int valley = GetValleyIndex(aTrack);
-  p = theLattice->MapPtoK_valley(valley, p); // p is actually k now
+//   // Get track's energy in current valley
+//   G4ThreeVector p = GetLocalMomentum(aTrack);
+//   G4int valley = GetValleyIndex(aTrack);
+//   p = theLattice->MapPtoK_valley(valley, p); // p is actually k now
   
-  // picking a new valley at random if IV-scattering process was triggered
-  valley = ChangeValley(valley);
-  G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
+//   // picking a new valley at random if IV-scattering process was triggered
+//   valley = ChangeValley(valley);
+//   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
 
-  p = theLattice->MapK_valleyToP(valley, p); // p is p again
-  RotateToGlobalDirection(p);
-  
+//   p = theLattice->MapK_valleyToP(valley, p); // p is p again
+//   RotateToGlobalDirection(p);
+    
+    
+    
+    
+  // Final state kinematics, generated in accept/reject loop below
+  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0, Erecoil=0, Etrk=0;
+  G4ThreeVector qvec, k_recoil, precoil;	// Outgoing wave vectors
+    
+  G4int valley = GetValleyIndex(aTrack);
+    
+  G4ThreeVector ktrk(0.);
+  ktrk = lat->MapV_elToK_HV(iValley, GetLocalVelocityVector(aTrack));
+  G4ThreeVector kdir = ktrk.unit();
+  G4double kmag = ktrk.mag();
+
+  Etrk = GetKineticEnergy(aTrack);
+
+    
+  Ephonon = 5e-3*eV;
+  Erecoil = Etrk - Ephonon;
+    
+  theta_phonon=G4UniformRand()*pi;
+  phi_phonon=G4UniformRand()*twopi;
+    
+  q=(2*kmag*cos(theta_phonon)+sqrt(4*kmag*kmag*cos(theta_phonon)*cos(theta_phonon)-4*(-2*Erecoil*electron_mass_c2/c_squared/hbar_Planck/hbar_Planck)))/2;
+    
+  qvec = q*kdir;
+  qvec.rotate(kdir.orthogonal(), theta_phonon);
+  qvec.rotate(kdir, phi_phonon);
+
+  k_recoil=ktrk-qvec;
+  precoil = lat->MapK_HVtoP(iValley, k_recoil);
+  RotateToGlobalDirection(precoil);	// Update track in world coordinates
+
+  // Create real phonon to be propagated, with random polarization
+  // If phonon is not created, register the energy as deposited
+  G4double weight =
+    G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
+  if (weight > 0.) {
+    G4Track* phonon = G4CMP::CreatePhonon(aTrack,
+					  G4PhononPolarization::UNKNOWN,
+                                          qvec, Ephonon,
+                                          aTrack.GetGlobalTime(),
+                                          aTrack.GetPosition());
+    // Secondary's weight has to be multiplicative with its parent's
+    phonon->SetWeight(aTrack.GetWeight() * weight);
+    if (verboseLevel>1) {
+      G4cout << "phonon wt " << phonon->GetWeight()
+	     << " : track " << aTrack.GetTrackID()
+	     << " wt " << aTrack.GetWeight()
+	     << "  thrown wt " << weight << G4endl;
+    }
+
+    aParticleChange.SetSecondaryWeightByProcess(true);
+    aParticleChange.SetNumberOfSecondaries(1);
+    aParticleChange.AddSecondary(phonon);
+
+    // If user wants to track phonons immediately, put track back on stack
+    if (secondariesFirst && aTrack.GetTrackStatus() == fAlive)
+      aParticleChange.ProposeTrackStatus(fSuspend);
+  } else {
+    aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
+  }
+
   // Adjust track kinematics for new valley
-  FillParticleChange(valley, p);
+  FillParticleChange(valley, precoil);
   
   ClearNumberOfInteractionLengthLeft();    
   return &aParticleChange;

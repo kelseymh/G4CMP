@@ -37,10 +37,11 @@ void G4CMPInterValleyRate::LoadDataForTrack(const G4Track* track) {
 
   density = theLattice->GetDensity();
   alpha = theLattice->GetAlpha();
-  nValley = 2*theLattice->NumberOfValleys()-1;		// From symmetry
+  nValley = theLattice->NumberOfValleys()-1;		// From symmetry
 
   m_DOS = theLattice->GetElectronDOSMass();
   m_DOS3half = sqrt(m_DOS*m_DOS*m_DOS);
+
 }
 
 
@@ -50,7 +51,10 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
   const_cast<G4CMPInterValleyRate*>(this)->LoadDataForTrack(&aTrack);
 
   // Initialize numerical buffers
-  eTrk = GetKineticEnergy(aTrack);
+  //eTrk = GetKineticEnergy(aTrack);
+  eTrk = (-1 + sqrt(1 + 4*alpha*GetKineticEnergy(aTrack)))/2/alpha;
+
+  
   if (verboseLevel>1)
     G4cout << "G4CMPInterValleyRate eTrk " << eTrk/eV << " eV" << G4endl;
 
