@@ -212,45 +212,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
   G4double v = theLattice->MapKtoV(mode, reflectedKDir);
 
-  // If the reflected wave vector cannot propagate in the bulk
-  // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
-  // That surface wave will propagate until it reaches a point
-  // where the wave vector does have an inwardly directed v⃗g.
-  reflectedKDir = RotateToLocalDirection(reflectedKDir);
-  G4ThreeVector newNorm = RotateToLocalDirection(surfNorm);
-  G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
-  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume->GetSolid();
-  G4ThreeVector oldNorm = newNorm;
-  G4ThreeVector kPerpMag = newNorm * reflectedKDir;
-  G4ThreeVector kPerp = newNorm * kPerp;
-  G4ThreeVector kTan = reflectedKDir - newNorm;
-  G4ThreeVector axis = reflectedKDir;
-  G4double phi = 0.;
-  while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm)) {
-    // Step along the surface in the tangential direction of k (or v_g)
-    stepLocalPos += 1*um * reflectedKDir;
-
-    // Get the local normal at the new surface point
-    oldNorm = newNorm
-    newNorm = solid->SurfaceNormal(stepLocalPos);
-
-    // Get new kPerp (newNorm * kPerpMag)
-    kPerp = newNorm * kPerpMag;
-
-    // Rotate kTan to be perpendicular to new normal
-    axis = oldNorm.cross(newNorm);
-    phi = oldNorm.asimangle(newNorm, axis);
-    newTan = kTan.rotate(axis, phi);
-
-    // Calculate new reflectedKDir (kTan - kPerp)
-    reflectedKDir = kTan - kPerp;
-  }
-  reflectedKDir = RotateToGlobalDirection(reflectedKDir);
-  // remember that norm always returns positive
-
-  vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
-  v = theLattice->MapKtoV(mode, reflectedKDir);
-
   if (verboseLevel>2) {
     G4cout << "\n New wavevector direction " << reflectedKDir
 	   << "\n New momentum direction   " << vdir << G4endl;
@@ -309,35 +270,40 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
   // Reflection didn't work as expected, need to correct   
 
-  // Watch how momentum direction changes with each kPerp step
-  G4ThreeVector olddir, newdir;
-  
-  olddir = theLattice->MapKtoVDir(mode, reflectedKDir);
-  G4double kstep = 0.1*kPerp;
-  G4int nstep = 0, nflip = 0;
-  while (fabs(kstep) > 1e-6 && fabs(nstep*kstep)<1. && 
-	 !G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
-    newdir = theLattice->MapKtoVDir(mode, reflectedKDir);
-    if (newdir*surfNorm > olddir*surfNorm && nflip<5) {
-      if (verboseLevel>2) {
-	G4cout << " Reflected wv pushing momentum outward:"
-	       << " newdir*surfNorm = " << newdir*surfNorm
-	       << G4endl;
-      }
-      
-      kstep = -kstep;
-      nflip++;
-    }
-    
-    (reflectedKDir -= kstep*surfNorm).setMag(1.);
-    olddir = newdir;
-    nstep++;
-  } 
-  
-  if (nstep>0 && verboseLevel) {
-    G4cout << " adjusted specular reflection with " << nstep << " steps"
-	   << " (" << nflip << " flips) kPerp " << kPerp << G4endl;
+  // If the reflected wave vector cannot propagate in the bulk
+  // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
+  // That surface wave will propagate until it reaches a point
+  // where the wave vector has an inwardly directed v⃗g.
+  reflectedKDir = RotateToLocalDirection(waveVector);
+  G4ThreeVector newNorm = RotateToLocalDirection(surfNorm);
+  G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume->GetSolid();
+  G4ThreeVector oldNorm = newNorm;
+  G4ThreeVector kPerpMag = newNorm * reflectedKDir;
+  kPerp = newNorm * kPerpMag;
+  G4ThreeVector kTan = reflectedKDir - newNorm;
+  G4ThreeVector axis = reflectedKDir;
+  G4double phi = 0.;
+  while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm)) {
+    // Step along the surface in the tangential direction of k (or v_g)
+    stepLocalPos += 1*um * reflectedKDir;
+
+    // Get the local normal at the new surface point
+    oldNorm = newNorm
+    newNorm = solid->SurfaceNormal(stepLocalPos);
+
+    // Get new kPerp (newNorm * kPerpMag)
+    kPerp = newNorm * kPerpMag;
+
+    // Rotate kTan to be perpendicular to new normal
+    axis = oldNorm.cross(newNorm);
+    phi = oldNorm.asimangle(newNorm, axis);
+    newTan = kTan.rotate(axis, phi);
+
+    // Calculate new reflectedKDir (kTan - kPerp)
+    reflectedKDir = kTan - kPerp;
   }
+  reflectedKDir = RotateToGlobalDirection(reflectedKDir);
 
   return reflectedKDir;
 }
