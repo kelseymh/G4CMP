@@ -7,7 +7,9 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 [ Modifications included on branch G4CMP-276, put subtask tags below it: ]
-2024-07-12  G4CMP-276 : Redesign electron kinematics to follow theory properly.
+2024-07-21  G4CMP-276 : Redesign electron kinematics to follow theory properly.
+2024-07-21  G4CMP-418 : Use electron conductivity mass consistently.
+2024-07-21  G4CMP-417 :	Restore Luke scattering rate from main branch
 2024-07-12  G4CMP-415 : Protect adaptive MFP (G4CMP-414) in zero-field case.
 2024-07-05  G4CMP-414 : Address compiler warnings/errors in debugging code.
 2024-07-04  G4CMP-413 : Adaptive TimeStepper MFP Respecting Velocity
