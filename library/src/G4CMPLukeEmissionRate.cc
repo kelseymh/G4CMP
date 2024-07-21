@@ -45,9 +45,9 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
     // Turning wavevector to spherical frame where electrons act like holes
     // as the mass is isotropic
     ktrk = theLattice->EllipsoidalToSphericalTranformation(iValley, ktrk);
-    mass = electron_mass_c2/c_squared;
+    mass = theLattice->GetElectronMass();
     // The l0 in configuration file is calculated using the conductivity mass
-    l0 = l0*pow(theLattice->GetElectronMass(),3)/(pow(mass,3));
+    // l0 = l0*pow(theLattice->GetElectronMass(),3)/(pow(mass,3));
   } else if (G4CMP::IsHole(aTrack)) {
     l0 = theLattice->GetHoleScatter();
     ktrk = GetLocalWaveVector(aTrack);
@@ -71,7 +71,7 @@ G4double G4CMPLukeEmissionRate::Threshold(G4double Eabove) const {
   G4double vsound = theLattice->GetSoundSpeed();
   G4double Esound = 0.; G4double mass = 0.;
   if (G4CMP::IsElectron(trk)) {
-    mass = electron_mass_c2/c_squared;
+    mass = theLattice->GetElectronMass();
   } else {
     mass = theLattice->GetHoleMass();
   }

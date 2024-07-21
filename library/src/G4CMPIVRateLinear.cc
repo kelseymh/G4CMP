@@ -43,7 +43,7 @@ G4double G4CMPIVRateLinear::Rate(const G4Track& aTrack) const {
   // then apply HV tansform.
   // NOTE:  Separate steps to avoid matrix-matrix multiplications
   fieldVector = theLattice->EllipsoidalToSphericalTranformation(GetValleyIndex(aTrack), fieldVector);
-  fieldVector *= sqrt(theLattice->GetElectronMass()/(electron_mass_c2/c_squared));
+  // fieldVector *= sqrt(theLattice->GetElectronMass()/(electron_mass_c2/c_squared));
   fieldVector /= volt/cm;			// Strip units for MFP below
   if (verboseLevel > 1) {
     G4cout << " in HV space " << fieldVector << " ("

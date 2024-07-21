@@ -438,7 +438,7 @@ G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
     G4cout << "G4LatticeLogical::MapPtoV_el " << ivalley << " " << p_e << G4endl;
 #endif
 
-  return p_e*c_light/(MapPtoEkin(ivalley,p_e) + electron_mass_c2);
+  return p_e*c_light/(MapPtoEkin(ivalley,p_e) + GetElectronMass()*c_squared);
 }
 
 G4ThreeVector 
@@ -453,7 +453,7 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
   G4double bandV = (fMassTensor.xx()*tempvec().x()*tempvec().x() +
   fMassTensor.yy()*tempvec().y()*tempvec().y() +
   fMassTensor.zz()*tempvec().z()*tempvec().z());
-  G4double gamma = 1/sqrt(1-bandV/electron_mass_c2);
+  G4double gamma = 1/sqrt(1-bandV/GetElectronMass()*c_squared);
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
@@ -461,7 +461,7 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
 	   << G4endl << " returning " << gamma*electron_mass_c2*v_e/c_light << G4endl;
   }
 #endif
-  return gamma*electron_mass_c2*v_e/c_light;
+  return gamma*GetElectronMass()*c_light*v_e;
 }
 
 G4ThreeVector 
@@ -480,7 +480,7 @@ G4LatticeLogical::MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const {
     G4cout << " P_Q " << nToV*(GetMassTensor()*(vToN*P*c_squared/electron_mass_c2)) << G4endl;
 #endif
 
-  return nToV*(GetMassTensor()*(vToN*P*c_squared/electron_mass_c2));
+  return nToV*(GetMassTensor()*(vToN*P/GetElectronMass()));
 }
 
 G4ThreeVector 
@@ -498,7 +498,7 @@ G4LatticeLogical::MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const {
     G4cout << " P " << nToV*(GetMInvTensor()*(vToN*P_Q*electron_mass_c2/c_squared)) << G4endl;
 #endif
 
-  return nToV*(GetMInvTensor()*(vToN*P_Q*electron_mass_c2/c_squared));
+  return nToV*(GetMInvTensor()*(vToN*P_Q*GetElectronMass()));
 }
 
 G4ThreeVector
@@ -582,7 +582,7 @@ G4LatticeLogical::MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double
   G4double bandP = (fMassTensor.xx()*tempvec().x()*tempvec().x() +
     fMassTensor.yy()*tempvec().y()*tempvec().y() +
     fMassTensor.zz()*tempvec().z()*tempvec().z());
-  G4double PMag = sqrt(electron_mass_c2*(Ekin*Ekin+2.*Ekin*electron_mass_c2)/(bandP*c_squared));
+  G4double PMag = sqrt(GetElectronMass()*(Ekin*Ekin+2.*Ekin*GetElectronMass()*c_squared)/(bandP));
   
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
@@ -620,7 +620,7 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   }
 #endif
 
-  return sqrt(bandP/mElectron + electron_mass_c2*electron_mass_c2) - electron_mass_c2;
+  return sqrt(bandP/GetElectronMass() + GetElectronMass()*c_squared*GetElectronMass()*c_squared) - GetElectronMass()*c_squared;
 
 }
 
@@ -767,9 +767,9 @@ void G4LatticeLogical::FillMassInfo() {
 			    0., 0., 1./fMassTensor.zz()));
 
   // Mass ratio tensor used for scattering and field calculations
-  fMassRatioSqrt.set(G4Rep3x3(sqrt(fMassTensor.xx()/mElectron), 0., 0.,
-			      0., sqrt(fMassTensor.yy()/mElectron), 0.,
-			      0., 0., sqrt(fMassTensor.zz()/mElectron)));
+  fMassRatioSqrt.set(G4Rep3x3(sqrt(fMassTensor.xx()/fElectronMass), 0., 0.,
+			      0., sqrt(fMassTensor.yy()/fElectronMass), 0.,
+			      0., 0., sqrt(fMassTensor.zz()/fElectronMass)));
 
   fMInvRatioSqrt.set(G4Rep3x3(1./fMassRatioSqrt.xx(), 0., 0.,
 			      0., 1./fMassRatioSqrt.yy(), 0.,

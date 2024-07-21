@@ -522,6 +522,6 @@ G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
   const G4double velLong = theLattice->GetSoundSpeed();
 
   const G4double tstep = 3.*l0/velLong;
-  return (mach<1.) ? tstep : tstep*mach*mach/((mach-1)*(mach-1)*(mach-1));
+  return (mach<1.) ? tstep : tstep*mach/((mach-1)*(mach-1)*(mach-1));
   // NOTE: Above numerator should be tstep*mach*mach, but causes problems
 }

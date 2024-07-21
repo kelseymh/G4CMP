@@ -168,7 +168,7 @@ void G4CMPEqEMField::EvaluateRhsGivenB(const G4double y[],
 #endif
 
   force *= theLattice->GetMInvTensor();
-  force *= electron_mass_c2/c_squared;
+  force *= theLattice->GetElectronMass();
 #ifdef G4CMP_DEBUG
   if (verboseLevel>2)
     G4cout << " m0M^-1*E     " << force/(volt/cm) << " "

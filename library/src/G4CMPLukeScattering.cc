@@ -135,7 +135,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     // Turning wavevector to spherical frame where electrons act like holes
     // as the mass is isotropic
     ktrk = lat->EllipsoidalToSphericalTranformation(iValley, ktrk);
-    mass = electron_mass_c2/c_squared;
+    mass = lat->GetElectronMass();
     Etrk = lat->MapPtoEkin(iValley, ptrk);
   } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
