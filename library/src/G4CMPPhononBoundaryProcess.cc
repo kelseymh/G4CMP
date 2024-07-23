@@ -297,7 +297,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     kPerp = newNorm * kPerpMag;
 
     // Rotate kTan to be perpendicular to new normal
-    axis = oldNorm.cross(newNorm);
+    axis = kTan.cross(oldNorm);
     phi = oldNorm.asimangle(newNorm, axis);
     newTan = kTan.rotate(axis, phi);
 
