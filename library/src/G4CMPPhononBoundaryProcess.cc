@@ -202,7 +202,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     return;
   } else if (random < downconversionProb + specProb) {
-    reflectedKDir = GetReflectedVector(waveVector, surfNorm, mode, surfacePoint);
+    reflectedKDir = GetReflectedVector(waveVector, surfNorm, surfacePoint, mode);
     refltype = "specular";
   } else {
     reflectedKDir = GetLambertianVector(surfNorm, mode);
@@ -253,8 +253,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
 G4ThreeVector G4CMPPhononBoundaryProcess::
 GetReflectedVector(const G4ThreeVector& waveVector,
-		   const G4ThreeVector& surfNorm, G4int mode,
-       const G4ThreeVector& surfacePoint) const {
+		   const G4ThreeVector& surfNorm, const G4ThreeVector& surfacePoint,
+       G4int mode) const {
   // Specular reflecton should reverses momentum along normal
   G4ThreeVector reflectedKDir = waveVector.unit();
   G4double kPerp = reflectedKDir * surfNorm;
