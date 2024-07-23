@@ -280,7 +280,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector newNorm = surfNorm;
   newNorm = RotateToLocalDirection(newNorm);
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
-  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume->GetSolid();
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector oldNorm = newNorm;
   G4double kPerpMag = newNorm * reflectedKDir;
   G4ThreeVector kPerpV = newNorm * kPerpMag;
