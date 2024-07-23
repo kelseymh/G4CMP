@@ -281,7 +281,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume->GetSolid();
   G4ThreeVector oldNorm = newNorm;
   G4ThreeVector kPerpMag = newNorm * reflectedKDir;
-  kPerp = newNorm * kPerpMag;
+  G4ThreeVector kPerpV = newNorm * kPerpMag;
   G4ThreeVector kTan = reflectedKDir - newNorm;
   G4ThreeVector axis = reflectedKDir;
   G4double phi = 0.;
@@ -290,19 +290,19 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     stepLocalPos += 1*um * reflectedKDir;
 
     // Get the local normal at the new surface point
-    oldNorm = newNorm
+    oldNorm = newNorm;
     newNorm = solid->SurfaceNormal(stepLocalPos);
 
-    // Get new kPerp (newNorm * kPerpMag)
-    kPerp = newNorm * kPerpMag;
+    // Get new kPerpV (newNorm * kPerpMag)
+    kPerpV = newNorm * kPerpMag;
 
     // Rotate kTan to be perpendicular to new normal
     axis = kTan.cross(oldNorm);
-    phi = oldNorm.asimangle(newNorm, axis);
-    newTan = kTan.rotate(axis, phi);
+    phi = oldNorm.azimangle(newNorm, axis);
+    kTan = kTan.rotate(axis, phi);
 
-    // Calculate new reflectedKDir (kTan - kPerp)
-    reflectedKDir = kTan - kPerp;
+    // Calculate new reflectedKDir (kTan - kPerpV)
+    reflectedKDir = kTan - kPerpV;
   }
   reflectedKDir = RotateToGlobalDirection(reflectedKDir);
 
