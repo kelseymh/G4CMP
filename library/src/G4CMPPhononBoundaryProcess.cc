@@ -275,8 +275,10 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
   // That surface wave will propagate until it reaches a point
   // where the wave vector has an inwardly directed v⃗g.
-  reflectedKDir = RotateToLocalDirection(waveVector);
-  G4ThreeVector newNorm = RotateToLocalDirection(surfNorm);
+  reflectedKDir = waveVector;
+  reflectedKDir = RotateToLocalDirection(reflectedKDir);
+  G4ThreeVector newNorm = surfNorm;
+  newNorm = RotateToLocalDirection(newNorm);
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume->GetSolid();
   G4ThreeVector oldNorm = newNorm;
