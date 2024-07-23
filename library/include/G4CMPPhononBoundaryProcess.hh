@@ -52,7 +52,7 @@ protected:
 
   G4ThreeVector GetReflectedVector(const G4ThreeVector& waveVector, 
 				   const G4ThreeVector& surfNorm,
-				   G4int mode, const G4ThreeVector surfacePoint) const;
+				   G4int mode, const G4ThreeVector& surfacePoint) const;
 
   G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm,
 				    G4int mode) const;
