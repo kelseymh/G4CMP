@@ -298,13 +298,13 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
     // Rotate kTan to be perpendicular to new normal
     axis = kTan.cross(oldNorm);
-    phi = oldNorm.azimangle(newNorm, axis);
+    phi = oldNorm.azimAngle(newNorm, axis);
     kTan = kTan.rotate(axis, phi);
 
     // Calculate new reflectedKDir (kTan - kPerpV)
     reflectedKDir = kTan - kPerpV;
   }
-  reflectedKDir = RotateToGlobalDirection(reflectedKDir);
+  RotateToGlobalDirection(reflectedKDir);
 
   return reflectedKDir;
 }
