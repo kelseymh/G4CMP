@@ -43,7 +43,10 @@
 #include "G4VParticleChange.hh"
 #include <math.h>
 
-
+#include "G4PhysicalConstants.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4CMPSecondaryUtils.hh"
+#include "G4PhononPolarization.hh"
 // Construcor and destructor
 
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()
@@ -135,35 +138,46 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
     
     
   // Final state kinematics, generated in accept/reject loop below
-  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0, Erecoil=0, Etrk=0;
+  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0, Erecoil=0, Etrk=0, costheta=0;
   G4ThreeVector qvec, k_recoil, precoil;	// Outgoing wave vectors
     
-  G4int valley = GetValleyIndex(aTrack);
+  G4int ivalley = GetValleyIndex(aTrack);
     
   G4ThreeVector ktrk(0.);
-  ktrk = lat->MapV_elToK_HV(iValley, GetLocalVelocityVector(aTrack));
+  ktrk = theLattice->MapV_elToK_HV(ivalley, GetLocalVelocityVector(aTrack));
   G4ThreeVector kdir = ktrk.unit();
   G4double kmag = ktrk.mag();
 
   Etrk = GetKineticEnergy(aTrack);
-
-    
-  Ephonon = 5e-3*eV;
+  Ephonon = 10e-3*eV;
   Erecoil = Etrk - Ephonon;
     
-  theta_phonon=G4UniformRand()*pi;
+    
+  //theta_phonon=G4UniformRand()*pi;
+  costheta=G4UniformRand()*(1-sqrt(Ephonon/Etrk))+sqrt(Ephonon/Etrk);
   phi_phonon=G4UniformRand()*twopi;
     
-  q=(2*kmag*cos(theta_phonon)+sqrt(4*kmag*kmag*cos(theta_phonon)*cos(theta_phonon)-4*(-2*Erecoil*electron_mass_c2/c_squared/hbar_Planck/hbar_Planck)))/2;
+  q=kmag*costheta-kmag*sqrt(costheta*costheta-Ephonon/Etrk);
+    
+    
+
     
   qvec = q*kdir;
-  qvec.rotate(kdir.orthogonal(), theta_phonon);
+  qvec.rotate(kdir.orthogonal(), acos(costheta));
   qvec.rotate(kdir, phi_phonon);
 
   k_recoil=ktrk-qvec;
-  precoil = lat->MapK_HVtoP(iValley, k_recoil);
+  precoil = theLattice->MapK_HVtoP(ivalley, k_recoil);
   RotateToGlobalDirection(precoil);	// Update track in world coordinates
+    
+//     G4cout << "costheta : " << costheta << " Ephonon/Etrk : " << Ephonon/Etrk << G4endl;
+    
+//   G4cout << "qvec : " << qvec << " q_mag : " << q << G4endl
+//       << " Etrk : " << Etrk/eV << " Ephonon : " << Ephonon/eV << " Erecoil : " << Erecoil/eV << G4endl
+//       << "k_recoil " << k_recoil << " precoil : " << precoil << " ktrk : " << ktrk << G4endl;
 
+
+    
   // Create real phonon to be propagated, with random polarization
   // If phonon is not created, register the energy as deposited
   G4double weight =
@@ -194,8 +208,11 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
     aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
   }
 
+
+
+
   // Adjust track kinematics for new valley
-  FillParticleChange(valley, precoil);
+  FillParticleChange(ivalley, precoil);
   
   ClearNumberOfInteractionLengthLeft();    
   return &aParticleChange;

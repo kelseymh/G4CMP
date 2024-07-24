@@ -33,6 +33,10 @@ public:
 
   // Only electrons have physical valleys associated with them
   virtual bool IsApplicable(const G4ParticleDefinition&);
+    
+  // Pause current particle tracking, track secondary phonons instead
+  void SetTrackSecondariesFirst(const G4bool val) { secondariesFirst = val; }
+  G4bool GetTrackSecondariesFirst() const { return secondariesFirst; }
 
 protected:
   // Change registered scattering rate based on material, if necessary
@@ -42,6 +46,8 @@ private:
   G4String modelName;		// Last chosen rate model, to avoid memory churn
 
   void PushModelToTimeStepper();	// Ensure model is used for stepping
+    
+  G4bool secondariesFirst;
 
 private:
   //hide assignment operator as private

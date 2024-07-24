@@ -51,8 +51,8 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
   const_cast<G4CMPInterValleyRate*>(this)->LoadDataForTrack(&aTrack);
 
   // Initialize numerical buffers
-  //eTrk = GetKineticEnergy(aTrack);
-  eTrk = (-1 + sqrt(1 + 4*alpha*GetKineticEnergy(aTrack)))/2/alpha;
+  eTrk = GetKineticEnergy(aTrack);
+  //eTrk = (-1 + sqrt(1 + 4*alpha*GetKineticEnergy(aTrack)))/2/alpha;
 
   
   if (verboseLevel>1)
@@ -81,6 +81,8 @@ G4double G4CMPInterValleyRate::acousticRate() const {
 }
 
 G4double G4CMPInterValleyRate::opticalRate() const {
+   std::vector<G4double> whichrate;
+    
    // FIXME:  Rate should not have 'kT', but leaving it out ruins drift curve
   G4double scale = nValley*/*kT**/m_DOS3half / (sqrt(2)*pi*hbar_sq*density);
 
@@ -103,9 +105,18 @@ G4double G4CMPInterValleyRate::opticalRate() const {
 	     << G4endl;
     }
 
+    whichrate.resize(whichrate.size()+1);
+    whichrate.push_back(orate);
+    G4cout << "whichrate : " << whichrate[i]/hertz  << " size : " << whichrate.size() << G4endl;      
+    
+      
     total += orate;
+  
   }
-
+    
+//     for (G4int i = 0; i<N_op; i++)  {
+//   G4cout << "whichrate : "  << " size : " << whichrate[i] << G4endl; }
+    
   return total;
 }
 
