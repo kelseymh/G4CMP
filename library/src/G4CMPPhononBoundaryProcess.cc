@@ -287,9 +287,11 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector kTan = reflectedKDir - newNorm;
   G4ThreeVector axis = reflectedKDir;
   G4double phi = 0.;
-  while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm)) {
+  const G4int maxAttempts = 1000;
+  G4int nAttempts = 0;
+  while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm) && nAttempts++ < maxAttempts) {
     // Step along the surface in the tangential direction of k (or v_g)
-    stepLocalPos += 1*um * reflectedKDir;
+    stepLocalPos += 1*mm * reflectedKDir;
 
     // Get the local normal at the new surface point
     oldNorm = newNorm;
@@ -307,6 +309,16 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     reflectedKDir = kTan - kPerpV;
   }
   RotateToGlobalDirection(reflectedKDir);
+
+  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir, NewNorm)) {
+    G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
+		JustWarning, ("Phonon displacement failed after" + nAttempts + " attempts.").c_str());
+  }
+  else
+  {
+    G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
+		JustWarning, (nAttempts + " attempts were made.").c_str());
+  }
 
   return reflectedKDir;
 }
