@@ -310,14 +310,14 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   }
   RotateToGlobalDirection(reflectedKDir);
 
-  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir, NewNorm)) {
+  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir, newNorm)) {
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
-		JustWarning, ("Phonon displacement failed after" + nAttempts + " attempts.").c_str());
+		JustWarning, ("Phonon displacement failed after" + std::to_string(nAttempts) + " attempts.").c_str());
   }
   else
   {
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
-		JustWarning, (nAttempts + " attempts were made.").c_str());
+		JustWarning, (std::to_string(nAttempts) + " attempts were made.").c_str());
   }
 
   return reflectedKDir;
