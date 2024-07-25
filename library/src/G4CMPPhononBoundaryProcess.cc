@@ -291,7 +291,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4int nAttempts = 0;
   while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm) && nAttempts++ < maxAttempts) {
     // Step along the surface in the tangential direction of k (or v_g)
-    stepLocalPos += 1*mm * reflectedKDir;
+    stepLocalPos += 1*um * reflectedKDir;
 
     // Get the local normal at the new surface point
     oldNorm = newNorm;
@@ -317,7 +317,10 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   else
   {
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
-		JustWarning, (std::to_string(nAttempts) + " attempts were made.").c_str());
+		JustWarning, (std::to_string(nAttempts) + " attempts were made."
+    + "\nreflectedKDir:\n - X: " + std::to_string(reflectedKDir.getX())
+    + "\n - Y: " + std::to_string(reflectedKDir.getY())
+    + "\n - Z: " + std::to_string(reflectedKDir.getZ())).c_str());
   }
 
   return reflectedKDir;
