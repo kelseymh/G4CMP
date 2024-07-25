@@ -290,15 +290,6 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   const G4int maxAttempts = 1000;
   G4int nAttempts = 0;
 
-  G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
-  JustWarning, (std::to_string(nAttempts) + " attempts were made."
-  + "\nwaveVector:\n - X: " + std::to_string(reflectedKDir.getX())
-  + "\n - Y: " + std::to_string(reflectedKDir.getY())
-  + "\n - Z: " + std::to_string(reflectedKDir.getZ())
-  + "\ninitialGlobalPosition:\n - X: " + std::to_string(stepLocalPos.getX())
-  + "\n - Y: " + std::to_string(stepLocalPos.getY())
-  + "\n - Z: " + std::to_string(stepLocalPos.getZ())).c_str());
-
   while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm) && nAttempts++ < maxAttempts) {
     // Step along the surface in the tangential direction of k (or v_g)
     stepLocalPos += 1*um * reflectedKDir;
@@ -329,6 +320,12 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   {
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
 		JustWarning, (std::to_string(nAttempts) + " attempts were made."
+    + "\nwaveVector:\n - X: " + std::to_string(waveVector.getX())
+    + "\n - Y: " + std::to_string(waveVector.getY())
+    + "\n - Z: " + std::to_string(waveVector.getZ())
+    + "\ninitialGlobalPosition:\n - X: " + std::to_string(surfacePoint.getX())
+    + "\n - Y: " + std::to_string(surfacePoint.getY())
+    + "\n - Z: " + std::to_string(surfacePoint.getZ())
     + "\nreflectedKDir:\n - X: " + std::to_string(reflectedKDir.getX())
     + "\n - Y: " + std::to_string(reflectedKDir.getY())
     + "\n - Z: " + std::to_string(reflectedKDir.getZ())
