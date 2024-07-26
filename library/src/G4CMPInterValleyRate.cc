@@ -81,8 +81,6 @@ G4double G4CMPInterValleyRate::acousticRate() const {
 }
 
 G4double G4CMPInterValleyRate::opticalRate() const {
-   std::vector<G4double> whichrate;
-    
    // FIXME:  Rate should not have 'kT', but leaving it out ruins drift curve
   G4double scale = nValley*/*kT**/m_DOS3half / (sqrt(2)*pi*hbar_sq*density);
 
@@ -91,6 +89,7 @@ G4double G4CMPInterValleyRate::opticalRate() const {
   for (G4int i = 0; i<N_op; i++) {
     G4double Emin_op = theLattice->GetIVEnergy(i);
     if (eTrk <= Emin_op) continue;		// Apply threshold behaviour
+ 
 
     G4double D_op = theLattice->GetIVDeform(i);
     G4double oscale = scale * D_op*D_op / Emin_op;
@@ -104,19 +103,12 @@ G4double G4CMPInterValleyRate::opticalRate() const {
 	     << "\n phonon rate [" << i << "] " << orate/hertz << " Hz"
 	     << G4endl;
     }
-
-    whichrate.resize(whichrate.size()+1);
-    whichrate.push_back(orate);
-    G4cout << "whichrate : " << whichrate[i]/hertz  << " size : " << whichrate.size() << G4endl;      
-    
+         
       
     total += orate;
   
   }
-    
-//     for (G4int i = 0; i<N_op; i++)  {
-//   G4cout << "whichrate : "  << " size : " << whichrate[i] << G4endl; }
-    
+  
   return total;
 }
 

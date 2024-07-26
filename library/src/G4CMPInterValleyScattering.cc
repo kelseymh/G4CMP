@@ -134,11 +134,64 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 //   p = theLattice->MapK_valleyToP(valley, p); // p is p again
 //   RotateToGlobalDirection(p);
     
+  G4double density = theLattice->GetDensity();
+  G4int nValley = theLattice->NumberOfValleys()-1;		// From symmetry
+  G4double m_DOS = theLattice->GetElectronDOSMass();
+  G4double m_DOS3half = sqrt(m_DOS*m_DOS*m_DOS);
+   G4double alpha = theLattice->GetAlpha();
+    G4double Etrk = GetKineticEnergy(aTrack);
     
+  std::vector<G4double> probabilities;
     
+  G4double scale = nValley*/*kT**/m_DOS3half / (sqrt(2)*pi*hbar_Planck*hbar_Planck*density);
+
+  G4double total = 0.;
+  G4int N_op = theLattice->GetNIVDeform();
+  for (G4int i = 0; i<N_op; i++) {
+    G4double Emin_op = theLattice->GetIVEnergy(i);
+    if (Etrk <= Emin_op) {
+        probabilities.push_back(0.); 
+        continue;		// Apply threshold behaviour
+    }
+
+    G4double D_op = theLattice->GetIVDeform(i);
+    G4double oscale = scale * D_op*D_op / Emin_op;
+
+    G4double Efunc = sqrt((Etrk-Emin_op)*(1+alpha*(Etrk-Emin_op)))*(1+2*alpha*(Etrk-Emin_op));
+      
+    G4double orate = oscale * Efunc;
+
+//             G4cout 
+// 	     << "phonon rate [" << i << "] " << orate/hertz << " Hz"
+// 	     << G4endl;
+      
+    probabilities.push_back(orate); 
+    total += orate;     
+  }
     
+ std::vector<G4double> cumulatives(probabilities.size());
+ for (auto& element : probabilities) {
+     element /= total;
+     }
+ 
+  cumulatives[0]=probabilities[0];
+  G4double test = G4UniformRand();
+  G4int Ephononi;
+    
+      for (G4int i = 1; i<probabilities.size(); i++)  {
+cumulatives[i] = probabilities[i-1]+probabilities[i];
+      }
+    
+      for (G4int i = 0; i<cumulatives.size(); i++)  {
+          G4cout << cumulatives[i] << "  " << test <<G4endl;
+if (test < cumulatives[i])  { Ephononi = i; break;
+      }
+      }
+    
+          
+          
   // Final state kinematics, generated in accept/reject loop below
-  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0, Erecoil=0, Etrk=0, costheta=0;
+  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0, Erecoil=0, costheta=0;
   G4ThreeVector qvec, k_recoil, precoil;	// Outgoing wave vectors
     
   G4int ivalley = GetValleyIndex(aTrack);
@@ -149,11 +202,12 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   G4double kmag = ktrk.mag();
 
   Etrk = GetKineticEnergy(aTrack);
-  Ephonon = 10e-3*eV;
+  Ephonon = theLattice->GetIVEnergy(Ephononi);
   Erecoil = Etrk - Ephonon;
     
     
-  //theta_phonon=G4UniformRand()*pi;
+         
+
   costheta=G4UniformRand()*(1-sqrt(Ephonon/Etrk))+sqrt(Ephonon/Etrk);
   phi_phonon=G4UniformRand()*twopi;
     
@@ -170,11 +224,11 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   precoil = theLattice->MapK_HVtoP(ivalley, k_recoil);
   RotateToGlobalDirection(precoil);	// Update track in world coordinates
     
-//     G4cout << "costheta : " << costheta << " Ephonon/Etrk : " << Ephonon/Etrk << G4endl;
+    G4cout << "costheta : " << costheta << " Ephononi : " << Ephononi << G4endl;
     
-//   G4cout << "qvec : " << qvec << " q_mag : " << q << G4endl
-//       << " Etrk : " << Etrk/eV << " Ephonon : " << Ephonon/eV << " Erecoil : " << Erecoil/eV << G4endl
-//       << "k_recoil " << k_recoil << " precoil : " << precoil << " ktrk : " << ktrk << G4endl;
+  G4cout << "qvec : " << qvec << " q_mag : " << q << G4endl
+      << " Etrk : " << Etrk/eV << " Ephonon : " << Ephonon/eV << " Erecoil : " << Erecoil/eV << G4endl
+      << "k_recoil " << k_recoil << " precoil : " << precoil << " ktrk : " << ktrk << G4endl;
 
 
     
@@ -217,6 +271,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   ClearNumberOfInteractionLengthLeft();    
   return &aParticleChange;
 }
+
 
 
 // Ensure the same rate model is used here and in G4CMPTimeStepper
