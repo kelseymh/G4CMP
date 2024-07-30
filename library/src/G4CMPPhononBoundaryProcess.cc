@@ -275,7 +275,6 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
   // That surface wave will propagate until it reaches a point
   // where the wave vector has an inwardly directed v⃗g.
-  reflectedKDir = waveVector;
   RotateToLocalDirection(reflectedKDir);
   G4ThreeVector newNorm = surfNorm;
   RotateToLocalDirection(newNorm);
@@ -312,27 +311,27 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   RotateToGlobalDirection(reflectedKDir);
   RotateToGlobalPosition(stepLocalPos);
 
-  // if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir, newNorm)) {
-  //   G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
-	// 	JustWarning, ("Phonon displacement failed after" + std::to_string(nAttempts) + " attempts.").c_str());
-  // }
-  // else
-  // {
-  //   G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
-	// 	JustWarning, (std::to_string(nAttempts) + " attempts were made."
-  //   + "\nwaveVector:\n - X: " + std::to_string(waveVector.getX())
-  //   + "\n - Y: " + std::to_string(waveVector.getY())
-  //   + "\n - Z: " + std::to_string(waveVector.getZ())
-  //   + "\ninitialGlobalPosition:\n - X: " + std::to_string(surfacePoint.getX())
-  //   + "\n - Y: " + std::to_string(surfacePoint.getY())
-  //   + "\n - Z: " + std::to_string(surfacePoint.getZ())
-  //   + "\nreflectedKDir:\n - X: " + std::to_string(reflectedKDir.getX())
-  //   + "\n - Y: " + std::to_string(reflectedKDir.getY())
-  //   + "\n - Z: " + std::to_string(reflectedKDir.getZ())
-  //   + "\nfinalGlobalPosition:\n - X: " + std::to_string(stepLocalPos.getX())
-  //   + "\n - Y: " + std::to_string(stepLocalPos.getY())
-  //   + "\n - Z: " + std::to_string(stepLocalPos.getZ())).c_str());
-  // }
+  if (verboseLevel > 2) {
+    if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir, newNorm)) {
+      G4cout << "Phonon displacement failed after" << std::to_string(nAttempts) << " attempts.";
+    }
+    else
+    {
+      G4cout << std::to_string(nAttempts) << " attempts were made."
+      << "\nwaveVector:\n - X: " << std::to_string(waveVector.getX())
+      << "\n - Y: " << std::to_string(waveVector.getY())
+      << "\n - Z: " << std::to_string(waveVector.getZ())
+      << "\ninitialGlobalPosition:\n - X: " << std::to_string(surfacePoint.getX())
+      << "\n - Y: " << std::to_string(surfacePoint.getY())
+      << "\n - Z: " << std::to_string(surfacePoint.getZ())
+      << "\nreflectedKDir:\n - X: " << std::to_string(reflectedKDir.getX())
+      << "\n - Y: " << std::to_string(reflectedKDir.getY())
+      << "\n - Z: " << std::to_string(reflectedKDir.getZ())
+      << "\nfinalGlobalPosition:\n - X: " << std::to_string(stepLocalPos.getX())
+      << "\n - Y: " << std::to_string(stepLocalPos.getY())
+      << "\n - Z: " << std::to_string(stepLocalPos.getZ());
+    }
+  }
 
   return reflectedKDir;
 }
