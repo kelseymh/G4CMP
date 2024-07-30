@@ -317,19 +317,11 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     }
     else
     {
-      G4cout << std::to_string(nAttempts) << " attempts were made."
-      << "\nwaveVector:\n - X: " << std::to_string(waveVector.getX())
-      << "\n - Y: " << std::to_string(waveVector.getY())
-      << "\n - Z: " << std::to_string(waveVector.getZ())
-      << "\ninitialGlobalPosition:\n - X: " << std::to_string(surfacePoint.getX())
-      << "\n - Y: " << std::to_string(surfacePoint.getY())
-      << "\n - Z: " << std::to_string(surfacePoint.getZ())
-      << "\nreflectedKDir:\n - X: " << std::to_string(reflectedKDir.getX())
-      << "\n - Y: " << std::to_string(reflectedKDir.getY())
-      << "\n - Z: " << std::to_string(reflectedKDir.getZ())
-      << "\nfinalGlobalPosition:\n - X: " << std::to_string(stepLocalPos.getX())
-      << "\n - Y: " << std::to_string(stepLocalPos.getY())
-      << "\n - Z: " << std::to_string(stepLocalPos.getZ());
+      G4cout << nAttempts << " attempts were made." << G4endl
+      << "  waveVector: " << waveVector << G4endl
+      << "  reflectedKDir: " << reflectedKDir << G4endl
+      << "  initialGlobalPostion: " << surfacePoint << G4endl
+      << "  finalGlobalPosition: " << stepLocalPos << G4endl;
     }
   }
 
