@@ -262,8 +262,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   
   if (verboseLevel>2) {
     G4cout << " specular reflection with normal " << surfNorm
-	   << "\n Perpendicular wavevector " << kPerp*surfNorm
-	   << " (mag " << kPerp << ")" << G4endl;
+     << "\n Perpendicular wavevector " << kPerp*surfNorm
+	   << " (mag " << kPerp << ")"
+     << "Surface point " << surfacePoint << G4endl;
   }
   
   if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm))
@@ -318,10 +319,10 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     else
     {
       G4cout << nAttempts << " attempts were made." << G4endl
-      << "  waveVector: " << waveVector << G4endl
-      << "  reflectedKDir: " << reflectedKDir << G4endl
-      << "  initialGlobalPostion: " << surfacePoint << G4endl
-      << "  finalGlobalPosition: " << stepLocalPos << G4endl;
+       << "  waveVector: " << waveVector << G4endl
+       << "  reflectedKDir: " << reflectedKDir << G4endl
+       << "  initialGlobalPostion: " << surfacePoint << G4endl
+       << "  finalGlobalPosition: " << stepLocalPos << G4endl;
     }
   }
 
