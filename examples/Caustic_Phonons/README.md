@@ -19,8 +19,8 @@ In our simulation, we follow the approach of creating a big detector, because it
 
  The phonon simulation is simple in terms of geometry. The basic elements of the simulation are 
 
-* A sapphire substrate of 4mm x 4mm x 4mm.
-* A big bolometer sensor of 4mm x 4mm x 0.0001 mm (Sensitive part where the phonons are absorbed).
+* A default substrate of 4mm x 4mm x 4mm.
+* A default bolometer sensor of 4mm x 4mm x 0.0001 mm (Sensitive part where the phonons are absorbed).
 * The new config.txt file with all the parameters for the sapphire substrate.
 * The Caustic.mac file to generate 40e+6 phonos with isotropic initial random momentum.
 * The Caustic_plot.root program to plot the caustic pattern for Transverse Slow Phonons, Transverse Fast Phonons, or both together.
@@ -33,6 +33,7 @@ The angle is differents for each material. You need to use the following dimensi
 * LiF 4mm x 4mm x 4mm ```console /gps/pos/centre 0.0 0.0 -0.03 cm ``` , &theta; = 40.0
 * CaF2 4mm x 4mm x 8mm ```console /gps/pos/centre 0.0 0.0 -0.06 cm ``` , &theta; = 23.0
 * CaWO4 9mm x 9mm x 6mm ```console /gps/pos/centre 0.0 0.0 0.0 cm ``` , &theta; = 56.3
+Note.- You must change the dimensions of the Bolomenter for CaWO4 .
 
 # Miller Orientations
 The phonon caustic depends on the orientation of the crystal with the sensor. You can obtain different phonon caustics images by changing the crystal orientation. <br>
