@@ -287,7 +287,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector kTan = reflectedKDir - newNorm;
   G4ThreeVector axis = reflectedKDir;
   G4double phi = 0.;
-  const G4int maxAttempts = 1000;
+  const G4int maxAttempts = 5;
   G4int nAttempts = 0;
 
   while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm) && nAttempts++ < maxAttempts) {
