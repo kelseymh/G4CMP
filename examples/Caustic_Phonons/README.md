@@ -29,7 +29,9 @@ The phonon caustics depends on the angular dimension and the size of the subtrat
 In order to match the experimental angles with the simualtion we need to initialize the initial phonon at difference distance <br> from the top part of the bolometers.
 The angle is differents for each material. You need to use the following dimensions and the initial position of the phonons to reproduce the experimental phonon caustisc.<br> 
 * Sapphire 4mm x 4mm x 4mm, &theta; = 58.0
-  ```console /gps/pos/centre 0.0 0.0 0.08 cm ``` 
+  ```console
+  /gps/pos/centre 0.0 0.0 0.08 cm
+  ``` 
 * GaAs 4mm x 4mm x 4mm ```console /gps/pos/centre 0.0 0.0 0.08 cm ``` , &theta; = 59.04
 * LiF 4mm x 4mm x 4mm ```console /gps/pos/centre 0.0 0.0 -0.03 cm ``` , &theta; = 40.0
 * CaF2 4mm x 4mm x 8mm ```console /gps/pos/centre 0.0 0.0 -0.06 cm ``` , &theta; = 23.0
