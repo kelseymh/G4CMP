@@ -1,0 +1,16 @@
+# Crystal parameters For CaF2 Only I am taking the Stiffness Tensor Properties
+cubic 5.52 Ang		# (Lattice constant)
+stiffness 1 1 174.0 GPa	# C11, C12, C44
+stiffness 1 2  56.0 GPa
+stiffness 4 4  33.93 GPa
+# Phonon parameters
+dyn -95.85 -43.69 65.2 45.15 GPa
+scat 4.83e-42 s3
+decay 6.14e-55 s4
+decayTT 0.75
+#Our paper
+LDOS  0.0819
+STDOS 0.599
+FTDOS 0.318
+vsound 6500 m/s		# Longitudinal sound speed
+vtrans 3980 m/s		# Transverse sound speed
