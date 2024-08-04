@@ -17,6 +17,8 @@
 // 20240418  For source positions, apply surface clearance just to start
 //	       and end of step, not each point individually.  Don't spread
 //	       out source positions for steps < 100*tolerance.
+// 20240731  G4CMP-420 -- Add flag to remember if voltage bias was preset.
+//	       If not preset, then call UsePosition() in ProcessStep().
 
 #include "G4CMPHitMerging.hh"
 #include "G4CMPConfigManager.hh"
@@ -49,7 +51,7 @@
 G4CMPHitMerging::G4CMPHitMerging()
   : G4CMPProcessUtils(), verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
     combiningStepLength(G4CMPConfigManager::GetComboStepLength()),
-    accumulator(0), currentEventID(-1),
+    presetBiasVoltage(false), accumulator(0), currentEventID(-1),
     partitioner(new G4CMPEnergyPartition) {
   partitioner->FillSummary(true);	// Collect partition summary data
 }
@@ -84,6 +86,7 @@ void G4CMPHitMerging::LoadDataForTrack(const G4Track* track) {
 
 void G4CMPHitMerging::SetBiasVoltage(G4double vbias) {
   partitioner->SetBiasVoltage(vbias);
+  presetBiasVoltage = true;
 }
 
 
@@ -153,7 +156,11 @@ G4bool G4CMPHitMerging::ProcessStep(const G4CMPStepInfo& stepData) {
   // Set up energy partitioning to work with current track and volume
   *(G4CMPProcessUtils*)partitioner = *(G4CMPProcessUtils*)this;
   partitioner->SetVerboseLevel(verboseLevel);
-  partitioner->UseVolume(GetCurrentVolume());
+
+  if (presetBiasVoltage)
+    partitioner->UseVolume(GetCurrentVolume());
+  else 
+    partitioner->UsePosition(stepData.end);
 
   // Get configuration for how to merge steps
   combiningStepLength = G4CMPConfigManager::GetComboStepLength();
