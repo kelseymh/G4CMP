@@ -1,31 +1,24 @@
 # Contributing to the G4CMP Package
 
-Last updated 14 July 2022, Michael Kelsey
+Last updated 4 August 2024, Michael Kelsey
 
 
 The "Geant4 Condensed Matter Physics" (G4CMP) package is open source (see
 [LICENSE](LICENSE)), but we are limiting code contributions to registered
 developers from particle physics or related experimental collaborations.  If
 you'd like to contribute, please send an e-mail to the package owner,
-currently Michael Kelsey (Texas A&M) <kelsey AT slac.stanford.edu>.
+currently Michael Kelsey (Texas A&M) <kelsey AT slac.stanford.edu>, to be
+added to the Contributors list for G4CMP.
 
 
 ## Reporting Problems
 
-Until recently, G4CMP has been used primarily (and almost exclusively) by
-the SuperCDMS Collaboration, members of which originally developed G4CMP.
-As a result, we have been using an internal issue tracking system for
-problems, requests, and development work.  We do plan (as of July 2022) to
-migrate this to GitHub issues, pending manpower support to complete that.
-
-CDMS Collaborators should have a SLAC or SLAC Confluence (Crowd) account,
-with their username included in the "cdms-users" Confluence list.  They
-should submit JIRA tickets to the G4CMP project for our attention.
-
-In the mean time, non-CDMS contributors are strongly encouraged to either
-create GitHub issues, or to send e-mail directly to the package owner
-(above).  We apologize for the incovenience and primitiveness of this
-request.
+Until recently, G4CMP has been used primarily (and almost exclusively) by the
+SuperCDMS Collaboration, members of which originally developed G4CMP.  As a
+result, we have been using an internal issue tracking system in JIRA for
+problems, requests, and development work.  We have made this tracking system
+public on the [SLAC JIRA server](https://jira.slac.stanford.edu/browse/G4CMP);
+G4CMP users may apply for a Crowd Account for access.
 
 
 ## Contribution Workflow
@@ -36,6 +29,17 @@ is a single line of development, on the **develop** branch, and a single
 line of tagged "releases" (see below) on the **master** branch.  We are not
 currently planning to rename the latter, to avoid disrupting existing clones
 of the repository out in the world.
+
+
+## External Forks
+
+We would prefer that external forks not be used for submitting software
+changes.  If you have created a fork, please create a JIRA ticket and a
+feature branch within the repository, as discussed below.  We can merge the
+resulting feature branch following our normal workflow.
+
+
+## New Features
 
 Contributors should make a named feature branch in this repository (rather
 than a fork), branching from the HEAD of **develop** branch:
