@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2024-07-31  G4CMP-420 : Ensure that bias is set properly in G4CMPHitMerging.
 2024-07-31  G4CMP-416 : Ionization energy below bandgap should go to phonons.
 
 2024-05-16  g4cmp-V08-10-00 Improvements to KaplanQP and lowest-energy phonons.
