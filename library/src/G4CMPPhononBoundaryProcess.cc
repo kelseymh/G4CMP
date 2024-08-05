@@ -254,17 +254,17 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 G4ThreeVector G4CMPPhononBoundaryProcess::
 GetReflectedVector(const G4ThreeVector& waveVector,
 		   const G4ThreeVector& surfNorm, G4int mode,
-       const G4ThreeVector& surfacePoint) const {
+		   const G4ThreeVector& surfacePoint) const {
   // Specular reflecton should reverses momentum along normal
   G4ThreeVector reflectedKDir = waveVector.unit();
   G4double kPerp = reflectedKDir * surfNorm;
   (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);
   
   if (verboseLevel>2) {
-    G4cout << " specular reflection with normal " << surfNorm
-     << "\n Perpendicular wavevector " << kPerp*surfNorm
+    G4cout << " GetReflectedVector: normal " << surfNorm
+	   << "\n Perpendicular wavevector " << kPerp*surfNorm
 	   << " (mag " << kPerp << ")"
-     << "Surface point " << surfacePoint << G4endl;
+	   << "Surface point " << surfacePoint << G4endl;
   }
   
   if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm))
@@ -276,39 +276,58 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
   // That surface wave will propagate until it reaches a point
   // where the wave vector has an inwardly directed v⃗g.
-  RotateToLocalDirection(reflectedKDir);
+  RotateToLocalDirection(reflectedKDir);	// FIXME: Drop this
   G4ThreeVector newNorm = surfNorm;
-  RotateToLocalDirection(newNorm);
+  RotateToLocalDirection(newNorm);		// FIXME: Drop this
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector oldNorm = newNorm;
   G4double kPerpMag = newNorm * reflectedKDir;
+
+  // FIXME: These three calcs need to be in local coords
   G4ThreeVector kPerpV = newNorm * kPerpMag;
   G4ThreeVector kTan = reflectedKDir - newNorm;
   G4ThreeVector axis = reflectedKDir;
   G4double phi = 0.;
+
+  const G4double searchStep = 1.*um;	// Distance to step each trial
+
   const G4int maxAttempts = 1000;
   G4int nAttempts = 0;
 
-  while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm) && nAttempts++ < maxAttempts) {
+  while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm)
+	 && nAttempts++ < maxAttempts) {
     // Step along the surface in the tangential direction of k (or v_g)
-    stepLocalPos += 1*um * reflectedKDir;
+    stepLocalPos += searchStep * kTan.unit();
+
+    // FIXME: Find point on surface nearest to stepLocalPos, and reset
+
+    // Get rotation axis perpendicular to waveVector-normal plane
+    axis = kTan.cross(kPerpV).unit();
+    if (verboseLevel>3) {
+      G4cout << " GetReflectedVector " << nattempts << ": axis " << axis << G4endl;
+    }
 
     // Get the local normal at the new surface point
-    oldNorm = newNorm;
+    oldNorm = newNorm;	// = GetLocalDirection(newNorm);
     newNorm = solid->SurfaceNormal(stepLocalPos);
 
     // Get new kPerpV (newNorm * kPerpMag)
     kPerpV = newNorm * kPerpMag;
 
     // Rotate kTan to be perpendicular to new normal
-    axis = kTan.cross(oldNorm);
-    phi = oldNorm.azimAngle(newNorm, axis);
-    kTan = kTan.rotate(axis, phi);
+    phi = oldNorm.azimAngle(newNorm, axis);  // Check sign of phi
+    kTan = kTan.rotate(axis, phi);	     // Does this need -phi?
 
     // Calculate new reflectedKDir (kTan - kPerpV)
     reflectedKDir = kTan - kPerpV;
+
+    // FIXME: Convert to global coords by calling GetGlobalDirection()
+    // reflectedKDir = GetGlobalDirection(localReflect);
+    // newNorm = GetGlobalDirection(newNorm);
   }
+
+  // Restore global coordinates to return result for processing
   RotateToGlobalDirection(reflectedKDir);
   RotateToGlobalPosition(stepLocalPos);
 
