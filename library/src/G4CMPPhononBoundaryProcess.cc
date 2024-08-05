@@ -295,6 +295,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   const G4int maxAttempts = 1000;
   G4int nAttempts = 0;
 
+  // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
   while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm)
 	 && nAttempts++ < maxAttempts) {
     // Step along the surface in the tangential direction of k (or v_g)
@@ -331,7 +332,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   RotateToGlobalDirection(reflectedKDir);
   RotateToGlobalPosition(stepLocalPos);
 
-  if (verboseLevel > 1) {
+  if (verboseLevel > 2) {
     if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir, newNorm)) {
       G4cout << "Phonon displacement failed after" << std::to_string(nAttempts) << " attempts.";
     }
