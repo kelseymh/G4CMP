@@ -20,6 +20,7 @@
 // 20170601  Inherit from new G4CMPVProcess, which provides G4CMPProcessUtils
 // 20170620  Follow interface changes in G4CMPProcessUtils
 // 20201231  FillParticleChange() should also reset valley index if requested
+// 20230210  I. Ataee -- Change energy-momentum relation to relativistic in FillParticleChange
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -90,31 +91,38 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
 
 void 
 G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {
-  G4double mass = GetCurrentTrack()->GetDynamicParticle()->GetMass();
-
-  G4ThreeVector v;
-  if (IsElectron()) {
-    v = GetGlobalDirection(theLattice->MapPtoV_el(ivalley, GetLocalDirection(p)));
-  } else if (IsHole()) {
-    v = p*c_light/mass;		// p and mass in MeV, not MeV/c, MeV/c^2
+  // Compute kinetic energy from momentum for electrons or holes
+  G4double energy = 0.;
+  if (IsElectron()){
+    energy = theLattice->MapPtoEkin(ivalley, GetLocalDirection(p));
   } else {
-    G4Exception("G4CMPVDriftProcess::FillParticleChange", "DriftProcess001",
-    EventMustBeAborted, "Unknown charge carrier");
+    // Geant4 returns the mass in energy units, with the c_squared already included
+    G4double massc2 = GetCurrentTrack()->GetDynamicParticle()->GetMass();
+    energy = sqrt(p.mag2() + massc2*massc2) - massc2;
   }
-
-  // Non-relativistic, but "mass" is mc^2
-  G4double energy = 0.5*mass*v.mag2()/c_squared;
-
-  FillParticleChange(ivalley, energy, v);
+  FillParticleChange(ivalley, energy, p);
 }
 
 // Fill ParticleChange mass for electron charge carrier with given energy
 
-void 
-G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
-             const G4ThreeVector& v) {
+void G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
+					    const G4ThreeVector& v) {
   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(GetCurrentTrack())->SetValleyIndex(ivalley);
 
   aParticleChange.ProposeMomentumDirection(v.unit());
-  aParticleChange.ProposeEnergy(Ekin);
+  currentEkin = Ekin;
+  aParticleChange.ProposeEnergy(currentEkin);
+
+  if (IsElectron()) {		// Geant4 wants mc^2, not plain mass
+    G4double meff = theLattice->GetElectronEffectiveMass(ivalley,GetLocalDirection(v));
+    aParticleChange.ProposeMass(meff*c_squared);
+  }
+}
+
+// Initializing ParticleChange and setting up the correct energy and
+// effective for the charge carrier
+
+void G4CMPVDriftProcess::InitializeParticleChange(G4int ivalley, const G4Track& track) {
+  aParticleChange.Initialize(track);
+  FillParticleChange(ivalley, track.GetMomentum());
 }
