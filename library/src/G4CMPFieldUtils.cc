@@ -9,6 +9,7 @@
 // Description: Free standing helper functions for electric field access
 //
 // 20180622  Michael Kelsey
+// 20211005  Add position-only utility (get touchable from position)
 
 #include "G4CMPFieldUtils.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -44,10 +45,19 @@ G4ThreeVector G4CMP::GetFieldAtPosition(const G4Track& track) {
 
 // Get field using _global_ coordinates, for specified volume
 
+G4ThreeVector G4CMP::GetFieldAtPosition(const G4ThreeVector& pos) {
+  return GetFieldAtPosition(GetVolumeAtPoint(pos)->GetLogicalVolume(), pos);
+}
+
 G4ThreeVector G4CMP::GetFieldAtPosition(const G4VTouchable* touch,
 					const G4ThreeVector& pos) {
   const G4LogicalVolume* vol = (touch ? touch->GetVolume()->GetLogicalVolume()
 				: GetVolumeAtPoint(pos)->GetLogicalVolume());
+  return GetFieldAtPosition(vol, pos);
+}
+
+G4ThreeVector G4CMP::GetFieldAtPosition(const G4LogicalVolume* vol,
+					const G4ThreeVector& pos) {
   const G4FieldManager* fMan = vol->GetFieldManager();
 
   if (!fMan || !fMan->DoesFieldExist()) return origin;
@@ -80,11 +90,20 @@ G4double G4CMP::GetPotentialAtVertex(const G4Track& track) {
 
 // Get potential using _global_ coordinates, for specified volume
 
+
+G4double G4CMP::GetPotentialAtPosition(const G4ThreeVector& pos) {
+  return GetPotentialAtPosition(GetVolumeAtPoint(pos)->GetLogicalVolume(), pos);
+}
+
 G4double G4CMP::GetPotentialAtPosition(const G4VTouchable* touch,
 				       const G4ThreeVector& pos) {
   const G4LogicalVolume* vol = (touch ? touch->GetVolume()->GetLogicalVolume()
 				: GetVolumeAtPoint(pos)->GetLogicalVolume());
+  return GetPotentialAtPosition(vol, pos);
+}
 
+G4double G4CMP::GetPotentialAtPosition(const G4LogicalVolume* vol,
+				       const G4ThreeVector& pos) {
   G4double position[4] = { pos[0], pos[1], pos[2], 0. };
 
   // G4CMP special fields can return potential directly
@@ -98,10 +117,16 @@ G4double G4CMP::GetPotentialAtPosition(const G4VTouchable* touch,
     ufield->GetFieldValue(position, be);
     G4ThreeVector evec(be[3],be[4],be[5]);      // Field is same everywhere
 
+    // Need touchable to convert global to local coordinates
+    G4VTouchable* touch = CreateTouchableAtPoint(pos);
+    G4ThreeVector lpos = GetLocalPosition(touch, pos);
+
     G4VSolid* shape = vol->GetSolid();
     G4ThreeVector e0 = evec.unit();
-    G4double toVpos = shape->DistanceToOut(pos, -e0);
-    G4double toVneg = shape->DistanceToOut(pos, e0);
+    G4double toVpos = shape->DistanceToOut(lpos, -e0);
+    G4double toVneg = shape->DistanceToOut(lpos, e0);
+
+    delete touch;		// Avoid memory leaks
 
     return 0.5*(toVpos-toVneg)*evec.mag();	// [-V/2,V/2] interpolation
   }
@@ -116,17 +141,22 @@ G4double G4CMP::GetPotentialAtPosition(const G4VTouchable* touch,
 
 G4double G4CMP::GetBiasThroughPosition(const G4VTouchable* touch,
 				       const G4ThreeVector& pos) {
-  G4ThreeVector field = GetFieldAtPosition(touch, pos);
-  if (field.isNear(origin)) return 0.;		// No field, no bias estimate
-
   const G4LogicalVolume* vol = (touch ? touch->GetVolume()->GetLogicalVolume()
 				: GetVolumeAtPoint(pos)->GetLogicalVolume());
   G4VSolid* shape = vol->GetSolid();
 
   // Thickness of volume through point along local field direction
   // NOTE: This is only valid for uniform or near-uniform fields
+  G4ThreeVector field = GetFieldAtPosition(vol, pos);
   G4ThreeVector e0 = field.unit();
-  G4double thick = shape->DistanceToOut(pos,-e0) + shape->DistanceToOut(pos,e0);
+
+  G4bool deleteTouch=false;
+  if (!touch) touch = CreateTouchableAtPoint(pos), deleteTouch=true;
+
+  G4ThreeVector lpos = GetLocalPosition(touch, pos);
+  G4double thick = shape->DistanceToOut(lpos,-e0)+shape->DistanceToOut(lpos,e0);
+
+  if (deleteTouch) delete touch;	// Avoid memory leaks
 
   // Arbitrary field configurations should be integrated along lines
   return field.mag() * thick;

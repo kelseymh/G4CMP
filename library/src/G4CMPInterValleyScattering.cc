@@ -105,7 +105,7 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
 G4VParticleChange* 
 G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
 					 const G4Step& aStep) {
-  aParticleChange.Initialize(aTrack); 
+  InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
   if (verboseLevel > 1) {
@@ -122,13 +122,15 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   // Get track's energy in current valley
   G4ThreeVector p = GetLocalMomentum(aTrack);
   G4int valley = GetValleyIndex(aTrack);
-  p = theLattice->MapPtoK_valley(valley, p); // p is actually k now
+  p = theLattice->MapPtoK(valley, p); // p is actually k now
+  p = theLattice->RotateToValley(valley, p);
   
   // picking a new valley at random if IV-scattering process was triggered
   valley = ChangeValley(valley);
   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
 
-  p = theLattice->MapK_valleyToP(valley, p); // p is p again
+  p = theLattice->RotateFromValley(valley, p);
+  p = theLattice->MapKtoP(valley, p); // p is p again
   RotateToGlobalDirection(p);
   
   // Adjust track kinematics for new valley
