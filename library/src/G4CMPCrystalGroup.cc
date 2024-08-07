@@ -9,8 +9,9 @@
 // $Id$
 //
 // 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm" (-Wshadow)
-// 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
-
+//I modify to include the option for the case of rhomohedral
+// I Modify the Fill of Rhomobohedral Elastic Constants October 2 2023
+//I Modify all the other Elastic Constant Groups October 23 2023
 #include "G4CMPCrystalGroup.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -54,12 +55,12 @@ void G4CMPCrystalGroup::SetHexagonal() {
 void G4CMPCrystalGroup::SetRhombohedral(G4double angle) {
   SetTriclinic(angle, angle, angle);
 }
- 
+
 void G4CMPCrystalGroup::SetMonoclinic(G4double angle) {
   SetCartesian();
   axis[2].rotateX(angle-halfpi);	// Z-Y opening angle
 }
- 
+
 void G4CMPCrystalGroup::SetTriclinic(G4double al, G4double bt,
 				     G4double gm) {
   SetCartesian();
@@ -79,11 +80,9 @@ void G4CMPCrystalGroup::SetTriclinic(G4double al, G4double bt,
 G4bool G4CMPCrystalGroup::FillElReduced(G4double Cij[6][6]) const {
   switch (group) {
   case amorphous:    Cij[3][3] = 0.5*(Cij[0][0]-Cij[0][1]); // Cubic, C44 set
-                     [[fallthrough]];
   case cubic:        return FillCubic(Cij); break;
   case hexagonal:    Cij[0][5] = 0.;			// Tetragonal, C16=0
                      Cij[4][5] = 0.5*(Cij[0][0] - Cij[0][1]);
-                     [[fallthrough]];
   case tetragonal:   return FillTetragonal(Cij); break;
   case orthorhombic: return FillOrthorhombic(Cij); break;
   case rhombohedral: return FillRhombohedral(Cij); break;
@@ -101,7 +100,7 @@ G4bool G4CMPCrystalGroup::FillCubic(G4double Cij[6][6]) const {
   for (size_t i=0; i<6; i++) {
     for (size_t j=i; j<6; j++) {
       if (i<3 && j<3) Cij[i][j] = (i==j) ? C11 : C12;
-      else if (i==j && i>=3) Cij[i][i] = C44;	    
+      else if (i==j && i>=3) Cij[i][i] = C44;
       else Cij[i][j] = 0.;
     }
   }
@@ -141,15 +140,54 @@ G4bool G4CMPCrystalGroup::FillOrthorhombic(G4double Cij[6][6]) const {
 
 G4bool G4CMPCrystalGroup::FillRhombohedral(G4double Cij[6][6]) const {
   G4double C11=Cij[0][0], C12=Cij[0][1], C13=Cij[0][2], C14=Cij[0][3];
-  G4double C15=Cij[0][4], C33=Cij[2][2], C44=Cij[3][3], C66=0.5*(C11-C12);
+  G4double  C33=Cij[2][2], C44=Cij[3][3], C66=0.5*(C11-C12);
 
   Cij[1][1] = C11;	// Copy small number of individual elements
   Cij[1][2] = C13;
   Cij[1][3] = -C14;
-  Cij[1][4] = -C15;
-  Cij[3][5] = -C15;
+  Cij[1][4] = 0.0;
+  Cij[3][5] = 0.0;
   Cij[4][4] = C44;
   Cij[4][5] = C14;
+//////////////////////// Israel Filling the other terms of the Matirx
+//Cij[1][1] = C11;	// Copy small number of individual elements
+Cij[2][1] = C13;
+Cij[3][1] = -C14;
+Cij[4][1] = -0.0;
+Cij[5][3] = -0.0;
+//Cij[4][4] = C44;
+Cij[5][4] = C14;
+Cij[5][5] = C66;
+
+Cij[3][0]=C14;
+Cij[1][0]=C12;
+Cij[2][0]=C13;
+///////////Filling the other terms of the Matix with zeros
+Cij[0][4]=0.0;
+Cij[0][5]=0.0;
+Cij[4][0]=0.0;
+Cij[5][0]=0.0;
+Cij[2][5]=0.0;
+Cij[5][2]=0.0;
+
+Cij[3][2]=0.0;
+Cij[3][4]=0.0;
+Cij[3][5]=0.0;
+
+Cij[2][3]=0.0;
+Cij[4][3]=0.0;
+Cij[5][3]=0.0;
+
+Cij[4][0]=0.0;
+Cij[4][1]=0.0;
+Cij[4][2]=0.0;
+Cij[4][3]=0.0;
+Cij[2][4]=0.0;
+
+Cij[5][0]=0.0;
+Cij[5][1]=0.0;
+Cij[5][2]=0.0;
+Cij[5][3]=0.0;
 
   // NOTE:  C15 may be zero (c.f. rhombohedral(I) vs. (II))
   return (C11!=0 && C12!=0 && C13!=0 && C14!=0. &&
@@ -214,6 +252,8 @@ G4CMPCrystalGroup::Bravais G4CMPCrystalGroup::Group(const G4String& name) {
   if (name.index("hex")==0) return hexagonal;
   if (name.index("mon")==0) return monoclinic;
   if (name.index("tri")==0) return triclinic;
+	if (name.index("rho")==0) return rhombohedral;
+
 
   return UNKNOWN;	// Failure condition; calling code should test
 }
