@@ -332,7 +332,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
     if (verboseLevel>3) {
       G4cout << "GetReflectedVector:insideLoop" << G4endl
-       << "  attempts: " << nattempts << G4endl
+       << "  attempts: " << nAttempts << G4endl
        << "  axis: " << axis << G4endl
        << "  phi: " << phi << G4endl;
     }
