@@ -309,7 +309,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // FIXME: Find point on surface nearest to stepLocalPos, and reset
 
     // Get rotation axis perpendicular to waveVector-normal plane
-    axis = kPerpV.cross(kTan).unit();
+    axis = kTan.cross(kPerpV).unit();
 
     // Get the local normal at the new surface point
     oldNorm = newNorm;	// = GetLocalDirection(newNorm);
