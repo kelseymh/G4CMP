@@ -262,9 +262,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   
   if (verboseLevel>2) {
     G4cout << " GetReflectedVector: normal " << surfNorm
-	   << "\n Perpendicular wavevector " << kPerp*surfNorm
-	   << " (mag " << kPerp << ")"
-	   << "Surface point " << surfacePoint << G4endl;
+	   << ", perpendicular wavevector " << kPerp*surfNorm
+	   << ", mag (" << kPerp << ")"
+	   << ", surface point " << surfacePoint << G4endl;
   }
   
   if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm))
@@ -331,10 +331,10 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // newNorm = GetGlobalDirection(newNorm);
 
     if (verboseLevel>3) {
-      G4cout << "GetReflectedVector:insideLoop" << G4endl
-       << "  attempts: " << nAttempts << G4endl
-       << "  axis: " << axis << G4endl
-       << "  phi: " << phi << G4endl;
+      G4cout << "GetReflectedVector:insideLoop -> "
+       << "attempts = " << nAttempts
+       << ", axis = " << axis
+       << ", phi = " << phi << G4endl;
     }
   }
 
@@ -344,16 +344,16 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
   if (verboseLevel>2) {
     if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir, newNorm)) {
-      G4cout << "Phonon displacement failed after" << std::to_string(nAttempts) << " attempts.";
+      G4cout << "Phonon displacement failed after" << nAttempts << " attempts.";
     }
     else
     {
-      G4cout << "GetReflectedVector:afterLoop" << G4endl
-       << "  " << nAttempts << " attempts were made." << G4endl
-       << "  waveVector: " << waveVector << G4endl
-       << "  reflectedKDir: " << reflectedKDir << G4endl
-       << "  initialGlobalPostion: " << surfacePoint << G4endl
-       << "  finalGlobalPosition: " << stepLocalPos << G4endl;
+      G4cout << "GetReflectedVector:afterLoop -> "
+       << "attempts = " << nAttempts
+       << ", waveVector = " << waveVector
+       << ", reflectedKDir = " << reflectedKDir
+       << ", initialGlobalPostion = " << surfacePoint
+       << ", finalGlobalPosition = " << stepLocalPos << G4endl;
     }
   }
 
