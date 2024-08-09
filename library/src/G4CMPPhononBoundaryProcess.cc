@@ -276,14 +276,18 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
   // That surface wave will propagate until it reaches a point
   // where the wave vector has an inwardly directed v⃗g.
+  // Don't need to fix anymore, because of fix in while loop conditions
   RotateToLocalDirection(reflectedKDir);	// FIXME: Drop this
   G4ThreeVector newNorm = surfNorm;
+
+  // Don't need to fix anymore, because of fix in while loop conditions
   RotateToLocalDirection(newNorm);		// FIXME: Drop this
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector oldNorm = newNorm;
   G4double kPerpMag = newNorm * reflectedKDir;
 
+  // Don't need to fix anymore, because of fix in while loop conditions
   // FIXME: These three calcs need to be in local coords
   G4ThreeVector kPerpV = newNorm * kPerpMag;
   G4ThreeVector kTan = reflectedKDir - newNorm;
@@ -296,7 +300,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4int nAttempts = 0;
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
-  while (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,newNorm)
+  while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
+   GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm))
 	 && nAttempts++ < maxAttempts) {
     // Step along the surface in the tangential direction of k (or v_g)
     stepLocalPos += searchStep * kTan.unit();
@@ -305,9 +310,6 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
     // Get rotation axis perpendicular to waveVector-normal plane
     axis = kTan.cross(kPerpV).unit();
-    if (verboseLevel>3) {
-      G4cout << " GetReflectedVector " << nattempts << ": axis " << axis << G4endl;
-    }
 
     // Get the local normal at the new surface point
     oldNorm = newNorm;	// = GetLocalDirection(newNorm);
@@ -323,9 +325,17 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // Calculate new reflectedKDir (kTan - kPerpV)
     reflectedKDir = kTan - kPerpV;
 
+    // Don't need to fix anymore, because of fix in while loop conditions
     // FIXME: Convert to global coords by calling GetGlobalDirection()
     // reflectedKDir = GetGlobalDirection(localReflect);
     // newNorm = GetGlobalDirection(newNorm);
+
+    if (verboseLevel>3) {
+      G4cout << "GetReflectedVector:insideLoop" << G4endl
+       << "  attempts: " << nattempts << G4endl
+       << "  axis: " << axis << G4endl
+       << "  phi: " << phi << G4endl;
+    }
   }
 
   // Restore global coordinates to return result for processing
@@ -338,7 +348,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     }
     else
     {
-      G4cout << nAttempts << " attempts were made." << G4endl
+      G4cout << "GetReflectedVector:afterLoop" << G4endl
+       << "  " << nAttempts << " attempts were made." << G4endl
        << "  waveVector: " << waveVector << G4endl
        << "  reflectedKDir: " << reflectedKDir << G4endl
        << "  initialGlobalPostion: " << surfacePoint << G4endl
