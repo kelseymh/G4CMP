@@ -342,7 +342,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   RotateToGlobalDirection(reflectedKDir);
   RotateToGlobalPosition(stepLocalPos);
 
-  if (verboseLevel > 2) {
+  if (verboseLevel>2) {
     if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir, newNorm)) {
       G4cout << "Phonon displacement failed after" << std::to_string(nAttempts) << " attempts.";
     }
