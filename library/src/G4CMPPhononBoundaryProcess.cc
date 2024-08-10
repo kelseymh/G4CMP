@@ -255,18 +255,11 @@ G4ThreeVector G4CMPPhononBoundaryProcess::
 GetReflectedVector(const G4ThreeVector& waveVector,
 		   const G4ThreeVector& surfNorm, G4int mode,
 		   const G4ThreeVector& surfacePoint) const {
-  // Specular reflecton should reverses momentum along normal
+  // Specular reflecton should reverse momentum along normal
   G4ThreeVector reflectedKDir = waveVector.unit();
   G4double kPerp = reflectedKDir * surfNorm;
   (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);
-  
-  if (verboseLevel>2) {
-    G4cout << " GetReflectedVector: normal " << surfNorm
-	   << ", perpendicular wavevector " << kPerp*surfNorm
-	   << ", mag (" << kPerp << ")"
-	   << ", surface point " << surfacePoint << G4endl;
-  }
-  
+   
   if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm))
     return reflectedKDir;
 
@@ -294,7 +287,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector axis = reflectedKDir;
   G4double phi = 0.;
 
-  const G4double searchStep = 1.*um;	// Distance to step each trial
+  const G4double stepSize = 1.*um;	// Distance to step each trial
 
   const G4int maxAttempts = 1000;
   G4int nAttempts = 0;
@@ -304,7 +297,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
    GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm))
 	 && nAttempts++ < maxAttempts) {
     // Step along the surface in the tangential direction of k (or v_g)
-    stepLocalPos += searchStep * kTan.unit();
+    stepLocalPos += stepSize * kTan.unit();
 
     // FIXME: Find point on surface nearest to stepLocalPos, and reset
 
@@ -333,8 +326,15 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     if (verboseLevel>3) {
       G4cout << "GetReflectedVector:insideLoop -> "
        << "attempts = " << nAttempts
-       << ", axis = " << axis
-       << ", phi = " << phi << G4endl;
+       << ", kPerpMag" << kPerpMag
+       << ", stepLocalPos = " << stepLocalPos
+       << ", axis (kPerV cross kTan or visa versa) = " << axis
+       << ", oldNorm = " << oldNorm
+       << ", newNorm = " << newNorm
+       << ", kPerpV (newNorm dot kPerpMag) = " << kPerpV
+       << ", phi (oldNorm azimAngle (newNorm, axis))= " << phi
+       << ", kTan (rotate phi about axis)= " kTan
+       << ", reflectedKDir (kTan - kPerp)= " << reflectedKDir << G4endl;
     }
   }
 
