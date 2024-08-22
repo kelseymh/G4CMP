@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2024-08-22  G4CMP-423 : Avoid wrong volume assignment in G4CMPHitMerging.
+
 2024-08-06  g4cmp-V09-00-00 Theoretically correct electron kinematics.
 2024-07-21  G4CMP-276 : Redesign electron kinematics to follow theory properly.
 2024-07-21  G4CMP-418 : Use electron conductivity mass consistently.
