@@ -16,6 +16,8 @@
 // 20190226  Use local instance of G4Navigator to avoid corrupting tracking
 // 20211001  Add utilities to get lattice from touchable, find valley close
 //		to specified direction.
+// 20240822  Add optional direction vector to GetVolumeAtPoint(), to break
+//		ambiguities with surface points.
 
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -112,6 +114,12 @@ G4Navigator* G4CMP::GetNavigator() {
 
 G4VPhysicalVolume* G4CMP::GetVolumeAtPoint(const G4ThreeVector& pos) {
   return GetNavigator()->LocateGlobalPointAndSetup(pos,0,false);
+}
+
+// Direction vector breaks ambiguity if point is on surface between volumes
+G4VPhysicalVolume* G4CMP::GetVolumeAtPoint(const G4ThreeVector& pos,
+					   const G4ThreeVector& dir) {
+  return GetNavigator()->LocateGlobalPointAndSetup(pos,&dir,false);
 }
 
 

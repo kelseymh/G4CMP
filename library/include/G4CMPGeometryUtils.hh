@@ -20,6 +20,8 @@
 // 20190226  Use local instance of G4Navigator to avoid corrupting tracking
 // 20211001  Add utilities to get lattice from touchable, find valley close
 //		to specified direction.
+// 20240822  Add optional direction vector to GetVolumeAtPoint(), to break
+//		ambiguities with surface points.
 
 #include "G4ThreeVector.hh"
 
@@ -60,7 +62,12 @@ namespace G4CMP {
 
   G4Navigator* GetNavigator();		// Non-tracking for point finding
 
+  // Find physical volume which contains specified point
   G4VPhysicalVolume* GetVolumeAtPoint(const G4ThreeVector& pos);
+
+  // As above, but uses direction vector if point is on surface of volume(s)
+  G4VPhysicalVolume* GetVolumeAtPoint(const G4ThreeVector& pos,
+				      const G4ThreeVector& dir);
 
   // NOTE:  Transfers ownership to client
   G4VTouchable* CreateTouchableAtPoint(const G4ThreeVector& pos);
