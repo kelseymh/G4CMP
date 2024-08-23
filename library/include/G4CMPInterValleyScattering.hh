@@ -37,7 +37,11 @@ public:
   // Pause current particle tracking, track secondary phonons instead
   void SetTrackSecondariesFirst(const G4bool val) { secondariesFirst = val; }
   G4bool GetTrackSecondariesFirst() const { return secondariesFirst; }
+    
 
+  
+ 
+    
 protected:
   // Change registered scattering rate based on material, if necessary
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);

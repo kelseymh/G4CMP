@@ -32,10 +32,12 @@ alpha 0.5 /eV
 acDeform 6.6 eV
 ivDeform 0.5e8 0.8e8 11e8 0.3e8 2e8 2e8 eV/cm		# Jacoboni & Reggiani
 ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV
+ivOrder 2. 2. 3. 2. 3. 3. eV
+ivNV 2. 2. 2. 4. 4. 4. eV
 neutDens 1e11 /cm3
 epsilon 11.68
 # Intervalley scattering (Linear and Quadratic models)
-ivModel Linear
+#ivModel IVRate
 ivLinRate0  1.5e6 Hz	# Fitted to Stanford test devices
 ivLinRate1  1.5 Hz	# Fitted to Stanford test devices
 ivLinPower  4.0		# Rate = ivLinRate0 + ivLinRate1 * E^ivLinPower

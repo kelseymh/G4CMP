@@ -160,6 +160,8 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
   if (fToken == "ivdeform") return ProcessDeformation(); // D0, D1 potentials
   if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
+  if (fToken == "ivorder")  return ProcessIVOrder();  // IV rate order
+  if (fToken == "ivnv")  return ProcessIVNVal();  // IV rate N valley
   if (fToken == "ivmodel")  return ProcessString(fToken);  // IV rate function
 
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
@@ -259,6 +261,8 @@ G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
     fValue = strtod(token.c_str(), &eonum);
     if (*eonum == '\0') fList.push_back(fValue);
   } while (psLatfile->good() && *eonum == '\0');
+    
+//if (unicat=="NoUnits") {return psLatfile->good();}
 
   ProcessUnits(token, unitcat);		// Non-numeric token is trailing unit
   for (size_t i=0; i<fList.size(); i++) fList[i] *= fUnits;
@@ -449,6 +453,76 @@ G4bool G4LatticeReader::ProcessThresholds() {
 }
 
 
+G4bool G4LatticeReader::ProcessIVOrder() {
+  if (verboseLevel>1) G4cout << " ProcessThresholds " << G4endl;
+
+  G4bool okay = ProcessList("Energy");
+  if (okay) pLattice->SetIVOrder(fList);
+
+  return okay;
+
+    
+
+// //       fList.clear();
+
+// //   G4String token;
+// //   char* eonum = 0;	// Will point to end of valid number string (NUL)
+// //   do {
+// //     *psLatfile >> token;
+// //     fValue = strtod(token.c_str(), &eonum);
+// //     if (*eonum == '\0') fList.push_back(fValue);
+// //   } while (psLatfile->good() && *eonum == '\0');
+    
+    
+// //   //G4bool okay = ProcessList("Energy");
+// //   //if (okay) pLattice->SetIVEnergy(fList);
+// //     pLattice->SetIVOrder(fList);
+    
+// //     for (auto& element : fList) {
+// //     G4cout << "fList : " << element << G4endl;
+// //     }
+
+// //   return psLatfile->good();
+    
+}
+
+
+
+G4bool G4LatticeReader::ProcessIVNVal() {
+  if (verboseLevel>1) G4cout << " ProcessThresholds " << G4endl;
+
+  G4bool okay = ProcessList("Energy");
+  if (okay) pLattice->SetIVNVal(fList);
+
+  return okay;
+
+
+// //       fList.clear();
+
+// //   G4String token;
+// //   char* eonum = 0;	// Will point to end of valid number string (NUL)
+// //   do {
+// //     *psLatfile >> token;
+// //     fValue = strtod(token.c_str(), &eonum);
+// //     if (*eonum == '\0') fList.push_back(fValue);
+// //   } while (psLatfile->good() && *eonum == '\0');
+    
+    
+// //   //G4bool okay = ProcessList("Energy");
+// //   //if (okay) pLattice->SetIVEnergy(fList);
+// //     pLattice->SetIVNVal(fList);
+
+// //   return psLatfile->good();
+
+}
+
+
+
+
+
+
+
+
 // Read expected dimensions for value from file, return scale factor
 // Input argument "unitcat" may be comma-delimited list of categories
 
@@ -467,7 +541,13 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
 
   fUnitName = unit;
   if (inverse) fUnitName = fUnitName(1,unit.length()-1);
+    
+//   G4cout << "fUnitName : " << fUnitName << G4endl;
 
+//    if (fUnitName=="nounits") {fUnits=1; 
+//                            return fUnits;  
+//                            } 
+    
   // Do processing -- invalid input string will cause fatal exception
   fUnits    = G4UnitDefinition::GetValueOf(fUnitName);
   fUnitCat  = G4UnitDefinition::GetCategory(fUnitName);

@@ -33,6 +33,11 @@ public:
 
   // Initialize numerical parameters below
   virtual void LoadDataForTrack(const G4Track* track);
+    
+  //G4CMPInterValleyRate& operator=(const G4CMPInterValleyRate& rhs2);  
+  const std::vector<G4double>& GetIVProb() const {return IVprob;} 
+  
+    
 
 protected:
   G4double acousticRate() const;	// Acoustic intravalley rate
@@ -51,6 +56,10 @@ private:
 
   // Kinematic parameters set by Rate()
   mutable G4double eTrk;	// Track kinetic energy
+  mutable G4int ivalley;
+  mutable G4ThreeVector ktrk;
+  mutable G4double kmag;
+  mutable std::vector<G4double> IVprob;
 
   G4double density;		// Crystal density (from G4Material)
   G4double kT;			// Crystal temperature * k_B
@@ -59,6 +68,8 @@ private:
   G4int    nValley;		// Number of final-state valleys (2N-1)
   G4double m_DOS;		// Electron "density of states" average mass
   G4double m_DOS3half;		// m_DOS ^ (3/2)
+    
+    
 };
 
 #endif	/* G4CMPInterValleyRate_hh */
