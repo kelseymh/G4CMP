@@ -41,7 +41,7 @@
 // 20230622  G4CMP-325:  For G4CMP-343 above, default "keep all" flag to TRUE.
 // 20230831  G4CMP-362:  Add short names for IMPACT and Sarkis ionization models
 // 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
-// 20240823  G4CMP-423:  Remove default Quadratic rate model setting.
+// 20240823  G4CMP-422:  Remove default Quadratic rate model setting.
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
