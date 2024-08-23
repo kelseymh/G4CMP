@@ -179,12 +179,12 @@ public:
   G4int    GetNIVDeform() const { return fLattice->GetNIVDeform(); }
   G4double GetIVDeform(G4int i) const { return fLattice->GetIVDeform(i); }
   G4double GetIVEnergy(G4int i) const { return fLattice->GetIVEnergy(i); }
-  G4double GetIVOrder(G4int i) const { return fLattice->GetIVOrder(i); }  
-  G4double GetIVNVal(G4int i) const { return fLattice->GetIVNVal(i); }
+  G4double GetIVtest1(G4int i) const { return fLattice->GetIVtest1(i); }
+  G4double GetIVtest2(G4int i) const { return fLattice->GetIVtest2(i); }
   const std::vector<G4double>& GetIVDeform() const { return fLattice->GetIVDeform(); }
   const std::vector<G4double>& GetIVEnergy() const { return fLattice->GetIVEnergy(); }
-  const std::vector<G4double>& GetIVOrder() const { return fLattice->GetIVOrder(); }
-  const std::vector<G4double>& GetIVNVal() const { return fLattice->GetIVNVal(); }
+  const std::vector<G4double>& GetIVtest1() const { return fLattice->GetIVtest1(); }
+  const std::vector<G4double>& GetIVtest2() const { return fLattice->GetIVtest2(); }
 
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;

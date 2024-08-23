@@ -160,8 +160,8 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
   if (fToken == "ivdeform") return ProcessDeformation(); // D0, D1 potentials
   if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
-  if (fToken == "ivorder")  return ProcessIVOrder();  // IV rate order
-  if (fToken == "ivnv")  return ProcessIVNVal();  // IV rate N valley
+  if (fToken == "ivtest1") return ProcessIVTEST(); // D0, D1 potentials
+  if (fToken == "ivtest2") return ProcessIVTEST2(); // D0, D1 potentials
   if (fToken == "ivmodel")  return ProcessString(fToken);  // IV rate function
 
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
@@ -443,6 +443,24 @@ G4bool G4LatticeReader::ProcessDeformation() {
   return okay;
 }
 
+G4bool G4LatticeReader::ProcessIVTEST() {
+  if (verboseLevel>1) G4cout << " ProcessDeformation " << G4endl;
+
+  G4bool okay = ProcessList("Energy/Length");
+  if (okay) pLattice->SetIVtest1(fList);
+
+  return okay;
+}
+
+G4bool G4LatticeReader::ProcessIVTEST2() {
+  if (verboseLevel>1) G4cout << " ProcessDeformation " << G4endl;
+
+  G4bool okay = ProcessList("Energy/Length");
+  if (okay) pLattice->SetIVtest2(fList);
+
+  return okay;
+}
+
 G4bool G4LatticeReader::ProcessThresholds() {
   if (verboseLevel>1) G4cout << " ProcessThresholds " << G4endl;
 
@@ -452,69 +470,6 @@ G4bool G4LatticeReader::ProcessThresholds() {
   return okay;
 }
 
-
-G4bool G4LatticeReader::ProcessIVOrder() {
-  if (verboseLevel>1) G4cout << " ProcessThresholds " << G4endl;
-
-  G4bool okay = ProcessList("Energy");
-  if (okay) pLattice->SetIVOrder(fList);
-
-  return okay;
-
-    
-
-// //       fList.clear();
-
-// //   G4String token;
-// //   char* eonum = 0;	// Will point to end of valid number string (NUL)
-// //   do {
-// //     *psLatfile >> token;
-// //     fValue = strtod(token.c_str(), &eonum);
-// //     if (*eonum == '\0') fList.push_back(fValue);
-// //   } while (psLatfile->good() && *eonum == '\0');
-    
-    
-// //   //G4bool okay = ProcessList("Energy");
-// //   //if (okay) pLattice->SetIVEnergy(fList);
-// //     pLattice->SetIVOrder(fList);
-    
-// //     for (auto& element : fList) {
-// //     G4cout << "fList : " << element << G4endl;
-// //     }
-
-// //   return psLatfile->good();
-    
-}
-
-
-
-G4bool G4LatticeReader::ProcessIVNVal() {
-  if (verboseLevel>1) G4cout << " ProcessThresholds " << G4endl;
-
-  G4bool okay = ProcessList("Energy");
-  if (okay) pLattice->SetIVNVal(fList);
-
-  return okay;
-
-
-// //       fList.clear();
-
-// //   G4String token;
-// //   char* eonum = 0;	// Will point to end of valid number string (NUL)
-// //   do {
-// //     *psLatfile >> token;
-// //     fValue = strtod(token.c_str(), &eonum);
-// //     if (*eonum == '\0') fList.push_back(fValue);
-// //   } while (psLatfile->good() && *eonum == '\0');
-    
-    
-// //   //G4bool okay = ProcessList("Energy");
-// //   //if (okay) pLattice->SetIVEnergy(fList);
-// //     pLattice->SetIVNVal(fList);
-
-// //   return psLatfile->good();
-
-}
 
 
 
