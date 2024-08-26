@@ -105,8 +105,6 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
 
 // Perform scattering action
 
-<<<<<<< HEAD
-
 
 
 G4VParticleChange*
@@ -267,7 +265,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             }
                 
             }
-            k_recoil = theLattice->SphericalToEllipsoidalTranformation
+            k_recoil = theLattice->SphericalToEllipsoidalTranformation(valley, kHV);
             Precoil = theLattice->MapKtoP(valley, k_recoil);
         }
     }
