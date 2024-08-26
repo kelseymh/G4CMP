@@ -11,6 +11,7 @@
 // 20170815  Drop call to LoadDataForTrack(); now handled in process.
 // 20170913  Check for electric field; compute "rate" to get up to Vsound
 // 20170917  Add interface for threshold identification
+// 20240207  Replacing wave vector with speed to Emission calculations
 
 #include "G4CMPLukeEmissionRate.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -33,24 +34,30 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
     return 0.;
   }
 
-  G4double kmag = 0.; G4double l0 = 0.; G4double mass = 0.;
+  G4double kSound = 0.; G4double mass = 0.; G4double l0 = 0.;
+  G4ThreeVector ktrk(0.);
+  G4double vsound = theLattice->GetSoundSpeed();
+  G4ThreeVector ptrk = GetLocalMomentum(aTrack);
+  G4int iValley = GetValleyIndex(aTrack);
   if (G4CMP::IsElectron(aTrack)) {
-    kmag = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
-				     GetLocalVelocityVector(aTrack)).mag();
     l0 = theLattice->GetElectronScatter();
-    mass = theLattice->GetElectronMass();	// Scalar mass
+    ktrk = theLattice->MapPtoK(iValley, ptrk);
+    // Turning wavevector to spherical frame where electrons act like holes
+    // as the mass is isotropic
+    ktrk = theLattice->EllipsoidalToSphericalTranformation(iValley, ktrk);
+    mass = theLattice->GetElectronMass();
+    // The l0 in configuration file is calculated using the conductivity mass
+    // l0 = l0*pow(theLattice->GetElectronMass(),3)/(pow(mass,3));
   } else if (G4CMP::IsHole(aTrack)) {
-    kmag = GetLocalWaveVector(aTrack).mag();
     l0 = theLattice->GetHoleScatter();
+    ktrk = GetLocalWaveVector(aTrack);
     mass = theLattice->GetHoleMass();
   }
+  G4double kmag = ktrk.mag();
 
-  if (verboseLevel > 1) 
-    G4cout << "LukeEmissionRate kmag = " << kmag*m << " /m" << G4endl;
+  G4double gammaSound = 1/sqrt(1.-vsound*vsound/c_squared);
+  kSound = gammaSound*vsound*mass/hbar_Planck;
 
-  G4double kSound = theLattice->GetSoundSpeed() * mass / hbar_Planck;
-
-  // Time step corresponding to Mach number (avg. time between radiations)
   return (kmag > kSound) ? 1./ChargeCarrierTimeStep(kmag/kSound, l0) : 0.;
 }
 
@@ -62,8 +69,16 @@ G4double G4CMPLukeEmissionRate::Threshold(G4double Eabove) const {
 
   G4ThreeVector vtrk = GetLocalVelocityVector(trk);
   G4double vsound = theLattice->GetSoundSpeed();
-  G4ThreeVector v_el = vsound * vtrk.unit();
-  G4double Esound = theLattice->MapV_elToEkin(GetValleyIndex(trk), v_el);
+  G4double Esound = 0.; G4double mass = 0.;
+  if (G4CMP::IsElectron(trk)) {
+    mass = theLattice->GetElectronMass();
+  } else {
+    mass = theLattice->GetHoleMass();
+  }
+
+  // The sound speed is in the spherical frame, where mass is isotropic
+  G4double gammaSound = 1/sqrt(1.-vsound*vsound/c_squared);
+  Esound = (gammaSound-1)*mass*c_squared;
 
   if (verboseLevel>1) {
     G4cout << "G4CMPLukeEmissionRate::Threshold vtrk " << vtrk.mag()/(m/s)

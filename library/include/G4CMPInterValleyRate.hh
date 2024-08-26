@@ -58,6 +58,7 @@ private:
   mutable G4double eTrk;	// Track kinetic energy
   mutable G4int ivalley;
   mutable G4ThreeVector ktrk;
+  mutable G4ThreeVector kHV;
   mutable G4double kmag;
   mutable std::vector<G4double> IVprob;
 

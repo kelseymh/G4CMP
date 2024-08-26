@@ -1,6 +1,6 @@
 # G4CMP -- Geant4 add-on framework for phonon and charge-carrier physics
 
-    R. Agnese, D. Brandt, M. Kelsey, P. Redl
+    R. Agnese, D. Brandt, M. Kelsey, P. Redl, I Ataee Langroudy
 
 
 This package provide a collection of particle types, physics processes, and
@@ -76,6 +76,7 @@ developers should check the source code in
 hits below step length |
 | G4CMP\_EMIN\_PHONONS [E] | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
+| G4CMP\_RECORD\_EMIN | /grcmp/recordMinETracks [t\|f]  | Put below-minimum energy to killed track Edeposit |
 | G4CMP\_USE\_KVSOLVER    | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED    | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
 | G4CMP\_KAPLAN\_KEEP     | /g4cmp/kaplanKeepPhonons [t\|f] | Reflect or iterate all phonons in KaplanQP |

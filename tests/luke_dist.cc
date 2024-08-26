@@ -48,8 +48,8 @@ int main(/*int argc, char* argv[]*/) {
   G4double dk = 0.1*ksound;
   for (G4double kmag=ksound+dk; kmag<=50*ksound; kmag+=dk) {
     k_HV.setRThetaPhi(kmag, 0., 0.);		// Align wavevector on valley
-    k_valley = lattice->MapK_HVtoK_valley(1, k_HV);
-    p = lattice->MapK_HVtoP(1, k_HV);
+    p = lattice->MapKtoP(1, k_HV);
+    k_valley = lattice->MapPToP_Q(1, p)/hbar_Planck;
 
     G4double thMax = acos(ksound/kmag);		// Maximum emission angle
     for (G4double th=0; th<=thMax; th+=0.1) {
@@ -57,13 +57,13 @@ int main(/*int argc, char* argv[]*/) {
       q_v.setRThetaPhi(q, th, 0.);
 
       if (use_valley) {
-	qMom = lattice->MapK_valleyToP(1, q_v);
+	qMom = q_v*hbar_Planck;
 	k_recoil = k_valley - q_v;
-	p_recoil = lattice->MapK_valleyToP(1, k_recoil);
+	p_recoil = k_recoil*hbar_Planck;
       } else {
-	qMom = lattice->MapK_HVtoP(1, q_v);
+	qMom = lattice->MapKtoP(1, q_v);
 	k_recoil = k_HV - q_v;
-	p_recoil = lattice->MapK_HVtoP(1, k_recoil);
+	p_recoil = lattice->MapKtoP(1, k_recoil);
       }
 
       delta_p = p - qMom;
@@ -72,7 +72,7 @@ int main(/*int argc, char* argv[]*/) {
       G4double Erecoil = 0.5*p_recoil.mag2()/(me_HV*c_squared);
 
       // Kinetic energy in HV space
-      G4ThreeVector p_HV = lattice->MapPtoK_HV(1, p_recoil) * hbar_Planck;
+      G4ThreeVector p_HV = lattice->MapPtoK(1, p_recoil) * hbar_Planck;
       G4double E_HV = 0.5 * p_HV.mag2() / me_HV;
 
       // Kinetic energy using mass tensor on components

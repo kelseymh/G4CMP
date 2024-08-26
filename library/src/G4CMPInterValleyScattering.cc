@@ -105,6 +105,7 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
 
 // Perform scattering action
 
+<<<<<<< HEAD
 
 
 
@@ -141,12 +142,13 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
     G4double Etrk = GetKineticEnergy(aTrack);
     G4int valley = GetValleyIndex(aTrack);
     G4ThreeVector Precoil;
-    G4ThreeVector ktrk = theLattice->MapV_elToK_HV(valley, GetLocalVelocityVector(aTrack));
+    G4ThreeVector ktrk = theLattice->MapV_elToK(valley, GetLocalVelocityVector(aTrack));
+    G4ThreeVector kHV = theLattice->EllipsoidalToSphericalTranformation(valley, ktrk);
     
     G4CMPInterValleyRate* ivpro = dynamic_cast<G4CMPInterValleyRate*>(GetRateModel());
     
     if (ivpro == nullptr) {
-        Precoil = theLattice->MapK_HVtoP(valley, ktrk);
+        Precoil = theLattice->MapKtoP(valley, ktrk);
     }
 
     else if (ivpro != nullptr) {
@@ -161,7 +163,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
         if (total == 0) {
             G4cout << "NO IV Rate " << G4endl;
-            Precoil = theLattice->MapK_HVtoP(valley, ktrk);
+            Precoil = theLattice->MapKtoP(valley, ktrk);
             }
         
         else if (total !=0) {
@@ -188,10 +190,10 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
             // Final state kinematics, generated in accept/reject loop below
             G4double phi_phonon = 0, q = 0, Ephonon = 10e-3*eV, Erecoil = 0, costheta = 0;
-            G4ThreeVector qvec, k_recoil;  // Outgoing wave vectors
+            G4ThreeVector qvec, k_recoilHV, k_recoil;  // Outgoing wave vectors
             
-            G4ThreeVector kdir = ktrk.unit();
-            G4double kmag = ktrk.mag();
+            G4ThreeVector kdir = kHV.unit();
+            G4double kmag = kHV.mag();
             
             Ephonon = theLattice->GetIVEnergy(Ephononi);
             if (Ephonon > Etrk) {Ephonon=0;}
@@ -209,11 +211,18 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             qvec.rotate(kdir.orthogonal(), acos(costheta));
             qvec.rotate(kdir, phi_phonon);
 
-            k_recoil = ktrk - qvec;
-            //Precoil = theLattice->MapK_HVtoP(valley, k_recoil);
+            k_recoilHV = kHV - qvec;
+            
+            
+            
+            
+            
+//             Precoil = theLattice->MapK_HVtoP(valley, k_recoil);
 
-            RotateToGlobalDirection(Precoil);  // Update track in world coordinates
+//             RotateToGlobalDirection(Precoil);  // Update track in world coordinates
 
+                
+                
             
 //             G4cout << "costheta : " << costheta << " Ephononi : " << Ephononi << G4endl;
             
@@ -258,7 +267,8 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             }
                 
             }
-            Precoil = theLattice->MapK_HVtoP(valley, k_recoil);
+            k_recoil = theLattice->SphericalToEllipsoidalTranformation
+            Precoil = theLattice->MapKtoP(valley, k_recoil);
         }
     }
 
@@ -272,6 +282,47 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
     return &aParticleChange;
 }
+    
+    
+// =======
+// G4VParticleChange* 
+// G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
+// 					 const G4Step& aStep) {
+//   InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
+//   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
+  
+//   if (verboseLevel > 1) {
+//     G4cout << GetProcessName() << "::PostStepDoIt: Step limited by "
+// 	   << postStepPoint->GetProcessDefinedStep()->GetProcessName()
+// 	   << G4endl;
+//   }
+  
+//   // Don't do anything at a volume boundary
+//   if (postStepPoint->GetStepStatus()==fGeomBoundary) {
+//     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+//   }
+  
+//   // Get track's energy in current valley
+//   G4ThreeVector p = GetLocalMomentum(aTrack);
+//   G4int valley = GetValleyIndex(aTrack);
+//   p = theLattice->MapPtoK(valley, p); // p is actually k now
+//   p = theLattice->RotateToValley(valley, p);
+  
+//   // picking a new valley at random if IV-scattering process was triggered
+//   valley = ChangeValley(valley);
+//   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
+
+//   p = theLattice->RotateFromValley(valley, p);
+//   p = theLattice->MapKtoP(valley, p); // p is p again
+//   RotateToGlobalDirection(p);
+  
+//   // Adjust track kinematics for new valley
+//   FillParticleChange(valley, p);
+  
+//   ClearNumberOfInteractionLengthLeft();    
+//   return &aParticleChange;
+// >>>>>>> develop
+// }
 
 
 // Ensure the same rate model is used here and in G4CMPTimeStepper

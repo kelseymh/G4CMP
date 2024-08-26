@@ -11,6 +11,7 @@
 
 // 20230721  David Sadek - University of Florida (david.sadek@ufl.edu)
 // 20240416  S. Zatschler -- Remove unused const A
+// 20240705  M. Kelsey -- Restore A, and use it in test to check vs. SiA
 
 // This ionization model was obtained from the Sarkis paper referenced above 
 // for Silicon ONLY so it doos not have (Z,A) dependence. The code will check
@@ -44,12 +45,13 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double /*Zin = 0.*/,
     return 1.;		// Won't get here after FATAL error
   }
 
-  // Get effective Z of the material
+  // Get effective Z,A of the material
   const G4double Z = GetEffectiveZ(material);
+  const G4double A = GetEffectiveA(material);
     
   // Check if the material is silicon or similar
-  if (std::abs(Z - SiZ) < 0.5) {
-    if (firstCall){
+  if (std::abs(Z-SiZ) < 0.5 && std::abs(A-SiA) < 1.) {
+    if (firstCall) {
       G4Exception("G4CMPImpactTunlNIEL", "G4CMP1005", JustWarning,
                   "Sarkis model is obtained in the range of 50 eV to 3 MeV. Above 3 MeV, Lindhard model will be used.");
       firstCall = false;

@@ -62,6 +62,7 @@
 // 20240105  Add UpdateSummary() function to set position and track info
 // 20240129  In ComputePhononSampling(), generate at least 10k as many phonons
 // 20240417  In ComputePhononSampling(), use same energy scale as for charges.
+// 20240731  G4CMP-416 -- eIon below bandgap should be converted to phonons
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -520,7 +521,7 @@ void G4CMPEnergyPartition::GenerateCharges(G4double energy) {
     chargeEnergyLeft = energy - ePair*nPairsWeighted;
     if (chargeEnergyLeft < 0.) chargeEnergyLeft = 0.;	// Avoid round-offs
   } else {
-    chargeEnergyLeft = 0.;
+    chargeEnergyLeft = energy;
   }
 
   if (verboseLevel>1) G4cout << " " << chargeEnergyLeft << " excess" << G4endl;

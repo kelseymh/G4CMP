@@ -25,7 +25,7 @@
 #include "G4EqMagElectricField.hh"
 #include "G4AffineTransform.hh"
 #include "G4LatticePhysical.hh"
-#include "G4RotationMatrix.hh"
+#include "G4ThreeVector.hh"
 
 class G4ElectroMagneticField;
 
@@ -77,6 +77,13 @@ private:
 
   G4AffineTransform fLocalToGlobal;	// Local vs. global coordinates
   G4AffineTransform fGlobalToLocal;
+
+  mutable G4ThreeVector pos;		// Buffers to reduce memory churn
+  mutable G4ThreeVector mom;
+  mutable G4ThreeVector momdir;
+  mutable G4ThreeVector vel;
+  mutable G4ThreeVector Efield;		// True field as three vector
+  mutable G4ThreeVector force;		// force = qE/beta in H-V coordinates
 };
 
 #endif
