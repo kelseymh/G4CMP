@@ -246,8 +246,6 @@ public:
   void SetAcousticDeform(G4double v) { fAcDeform = v; }
   void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
-  void SetIVtest1(const std::vector<G4double>& vlist) { fIVtest1 = vlist; }
-  void SetIVtest2(const std::vector<G4double>& vlist) { fIVtest2 = vlist; }
 
 
   const G4String& GetIVModel() const { return fIVModel; }
@@ -265,19 +263,11 @@ public:
   G4int    GetNIVDeform() const { return (G4int)fIVDeform.size(); }
   const std::vector<G4double>& GetIVDeform() const { return fIVDeform; }
   const std::vector<G4double>& GetIVEnergy() const { return fIVEnergy; }
-  const std::vector<G4double>& GetIVtest1() const { return fIVtest1; }
-  const std::vector<G4double>& GetIVtest2() const { return fIVtest2; }
   G4double GetIVDeform(G4int i) const {
     return (i>=0 && i<GetNIVDeform()) ? fIVDeform[i] : 0.;
   }
   G4double GetIVEnergy(G4int i) const {
     return (i>=0 && i<GetNIVDeform()) ? fIVEnergy[i] : 0.;
-  }
-      G4double GetIVtest1(G4int i) const {
-    return (i>=0 && i<GetNIVDeform()) ? fIVtest1[i] : 0.;
-  }
-     G4double GetIVtest2(G4int i) const {
-    return (i>=0 && i<GetNIVDeform()) ? fIVtest2[i] : 0.;
   }
 
 
@@ -357,8 +347,6 @@ private:
   G4double fAcDeform;		 	// Deformation potential for acoustic IV
   std::vector<G4double> fIVDeform;	// D0, D1 potentials for optical IV
   std::vector<G4double> fIVEnergy;	// D0, D1 thresholds for optical IV
-  std::vector<G4double> fIVtest1;	// iv rate order
-  std::vector<G4double> fIVtest2;	// IV rate N Valleys
 
   G4double fIVQuadField;	 // Edelweiss field scale for IV scattering
   G4double fIVQuadRate;		 // Edelweiss rate factor for IV scattering
