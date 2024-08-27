@@ -269,19 +269,15 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
   // That surface wave will propagate until it reaches a point
   // where the wave vector has an inwardly directed v⃗g.
-  // Don't need to fix anymore, because of fix in while loop conditions
-  RotateToLocalDirection(reflectedKDir);	// FIXME: Drop this
+  RotateToLocalDirection(reflectedKDir);
   G4ThreeVector newNorm = surfNorm;
 
-  // Don't need to fix anymore, because of fix in while loop conditions
-  RotateToLocalDirection(newNorm);		// FIXME: Drop this
+  RotateToLocalDirection(newNorm);	
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector oldNorm = newNorm;
   G4double kPerpMag = newNorm * reflectedKDir;
 
-  // Don't need to fix anymore, because of fix in while loop conditions
-  // FIXME: These three calcs need to be in local coords
   G4ThreeVector kPerpV = newNorm * kPerpMag;
   G4ThreeVector kTan = reflectedKDir - newNorm;
   G4ThreeVector axis = reflectedKDir;
@@ -291,6 +287,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
   const G4int maxAttempts = 1000;
   G4int nAttempts = 0;
+
+  // debugging only DELETE
+  G4ThreeVector oldkTan = kTan;
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
   while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
@@ -311,6 +310,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // Get new kPerpV (newNorm * kPerpMag)
     kPerpV = newNorm * kPerpMag;
 
+    // debuggin gonly DELETE
+    oldkTan = kTan;
+
     // Rotate kTan to be perpendicular to new normal
     phi = oldNorm.azimAngle(newNorm, axis);  // Check sign of phi
     kTan = kTan.rotate(axis, phi);	     // Does this need -phi?
@@ -318,23 +320,19 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // Calculate new reflectedKDir (kTan - kPerpV)
     reflectedKDir = kTan - kPerpV;
 
-    // Don't need to fix anymore, because of fix in while loop conditions
-    // FIXME: Convert to global coords by calling GetGlobalDirection()
-    // reflectedKDir = GetGlobalDirection(localReflect);
-    // newNorm = GetGlobalDirection(newNorm);
-
     if (verboseLevel>3) {
       G4cout << "GetReflectedVector:insideLoop -> "
        << "attempts = " << nAttempts
-       << ", kPerpMag" << kPerpMag
+       << ", kPerpMag = " << kPerpMag
+       << ", oldkTan = "
        << ", stepLocalPos = " << stepLocalPos
-       << ", axis (kPerV cross kTan or visa versa) = " << axis
+       << ", axis (kPerV cross oldkTan or visa versa?) = " << axis
        << ", oldNorm = " << oldNorm
        << ", newNorm = " << newNorm
        << ", kPerpV (newNorm dot kPerpMag) = " << kPerpV
-       << ", phi (oldNorm azimAngle (newNorm, axis))= " << phi
-       << ", kTan (rotate phi about axis)= " kTan
-       << ", reflectedKDir (kTan - kPerp)= " << reflectedKDir << G4endl;
+       << ", phi (oldNorm azimAngle (newNorm, axis)) = " << phi
+       << ", kTan (rotate phi about axis) = " kTan
+       << ", reflectedKDir (kTan - kPerp) = " << reflectedKDir << G4endl;
     }
   }
 
