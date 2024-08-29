@@ -290,6 +290,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
   // debugging only DELETE
   G4ThreeVector oldkTan = kTan;
+  G4ThreeVector oldkPerpV = kPerpV;
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
   while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
@@ -304,14 +305,15 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     axis = kPerpV.cross(kTan).unit();
 
     // Get the local normal at the new surface point
-    oldNorm = newNorm;	// = GetLocalDirection(newNorm);
+    oldNorm = newNorm;
     newNorm = solid->SurfaceNormal(stepLocalPos);
+
+    // debugging only DELETE
+    oldkTan = kTan;
+    oldkPerpV = kPerpV;
 
     // Get new kPerpV (newNorm * kPerpMag)
     kPerpV = newNorm * kPerpMag;
-
-    // debuggin gonly DELETE
-    oldkTan = kTan;
 
     // Rotate kTan to be perpendicular to new normal
     phi = oldNorm.azimAngle(newNorm, axis);  // Check sign of phi
@@ -323,16 +325,17 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     if (verboseLevel>3) {
       G4cout << "GetReflectedVector:insideLoop -> "
        << "attempts = " << nAttempts
-       << ", kPerpMag = " << kPerpMag
-       << ", oldkTan = " << oldkTan
        << ", stepLocalPos = " << stepLocalPos
-       << ", axis (kPerV cross oldkTan or visa versa?) = " << axis
-       << ", oldNorm = " << oldNorm
-       << ", newNorm = " << newNorm
+       << ", axis (oldkPerV cross oldkTan or visa versa?) = " << axis
+       << ", oldkPerpV = " << oldkPerpV
+       << ", oldkTan = " << oldkTan
        << ", kPerpV (newNorm dot kPerpMag) = " << kPerpV
+       << ", newNorm = " << newNorm
+       << ", kPerpMag = " << kPerpMag
        << ", phi (oldNorm azimAngle (newNorm, axis)) = " << phi
+       << ", oldNorm = " << oldNorm
        << ", kTan (rotate by phi about axis) = " << kTan
-       << ", reflectedKDir (kTan - kPerp) = " << reflectedKDir << G4endl;
+       << ", reflectedKDir (kTan - kPerpV) = " << reflectedKDir << G4endl;
     }
   }
 
