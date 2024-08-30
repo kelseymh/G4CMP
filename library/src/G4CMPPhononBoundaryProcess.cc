@@ -336,7 +336,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       G4cout << "GetReflectedVector:insideLoop -> "
        << "attempts = " << nAttempts
        << ", stepLocalPos = " << stepLocalPos
-       << ", axis (oldkPerV cross oldkTan).unit() = " << axis
+       << ", axis (oldkPerpV cross oldkTan).unit() = " << axis
        << ", oldkPerpV = " << oldkPerpV
        << ", oldkTan = " << oldkTan
        << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
