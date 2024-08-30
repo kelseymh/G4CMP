@@ -323,7 +323,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     oldkPerpV = kPerpV;
 
     // Get new kPerpV (newNorm * kPerpMag)
-    kPerpV = kPerpMag.dot(newNorm);
+    kPerpV = kPerpMag * newNorm;
 
     // Rotate kTan to be perpendicular to new normal
     phi = oldNorm.azimAngle(newNorm, axis);  // Check sign of phi
