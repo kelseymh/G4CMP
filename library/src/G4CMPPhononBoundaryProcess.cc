@@ -295,9 +295,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   if (verboseLevel>3) {
     G4cout << "GetReflectedVector:beforeLoop -> "
       << ", stepLocalPos = " << stepLocalPos
-      << ", kPerpV (newNorm dot kPerpMag) = " << kPerpV
+      << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
       << ", newNorm = " << newNorm
-      << ", kPerpMag (newNorm * reflectedKDir) = " << kPerpMag
+      << ", kPerpMag (newNorm dot reflectedKDir) = " << kPerpMag
       << ", reflectedKDir (kTan - kPerpV) = " << reflectedKDir
       << ", kTan (reflectedKDir - reflectedKDir - reflectedKDir * newNorm) = " << kTan << G4endl;
   }
@@ -339,7 +339,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
        << ", axis (oldkPerV cross oldkTan).unit() = " << axis
        << ", oldkPerpV = " << oldkPerpV
        << ", oldkTan = " << oldkTan
-       << ", kPerpV (newNorm dot kPerpMag) = " << kPerpV
+       << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
        << ", newNorm = " << newNorm
        << ", kPerpMag = " << kPerpMag
        << ", phi (oldNorm azimAngle (newNorm, axis)) = " << phi
