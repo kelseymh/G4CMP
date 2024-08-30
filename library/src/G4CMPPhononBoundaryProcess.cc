@@ -296,8 +296,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     G4cout << "GetReflectedVector:beforeLoop -> "
       << ", stepLocalPos = " << stepLocalPos
       << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
-      << ", newNorm = " << newNorm
       << ", kPerpMag (newNorm dot reflectedKDir) = " << kPerpMag
+      << ", newNorm = " << newNorm
       << ", reflectedKDir (kTan - kPerpV) = " << reflectedKDir
       << ", kTan (reflectedKDir - reflectedKDir * newNorm) = " << kTan << G4endl;
   }
@@ -340,8 +340,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
        << ", oldkPerpV = " << oldkPerpV
        << ", oldkTan = " << oldkTan
        << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
-       << ", newNorm = " << newNorm
        << ", kPerpMag = " << kPerpMag
+       << ", newNorm = " << newNorm
        << ", phi (oldNorm azimAngle (newNorm, axis)) = " << phi
        << ", oldNorm = " << oldNorm
        << ", kTan (rotate by phi about axis) = " << kTan
