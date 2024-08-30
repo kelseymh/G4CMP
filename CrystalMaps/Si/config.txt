@@ -35,7 +35,7 @@ ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV
 neutDens 1e11 /cm3
 epsilon 11.68
 # Intervalley scattering (Linear and Quadratic models)
-#ivModel IVRate
+#ivModel Linear
 ivLinRate0  1.5e6 Hz	# Fitted to Stanford test devices
 ivLinRate1  1.5 Hz	# Fitted to Stanford test devices
 ivLinPower  4.0		# Rate = ivLinRate0 + ivLinRate1 * E^ivLinPower

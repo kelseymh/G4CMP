@@ -135,6 +135,8 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
     //   p = theLattice->MapK_valleyToP(valley, p); // p is p again
     //   RotateToGlobalDirection(p);
+    
+   
 
 
     G4double Etrk = GetKineticEnergy(aTrack);
@@ -144,6 +146,8 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
     G4ThreeVector kHV = theLattice->EllipsoidalToSphericalTranformation(valley, ktrk);
     
     G4CMPInterValleyRate* ivpro = dynamic_cast<G4CMPInterValleyRate*>(GetRateModel());
+    
+     G4cout << "ktrk :  " << ktrk << G4endl << "kHV : " << kHV << G4endl << "velocity : " << GetLocalVelocityVector(aTrack)/km*s <<G4endl << "valley : " << valley << G4endl;
     
     if (ivpro == nullptr) {
         Precoil = theLattice->MapKtoP(valley, ktrk);
@@ -210,23 +214,15 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             qvec.rotate(kdir, phi_phonon);
 
             k_recoilHV = kHV - qvec;
-            
-            
-            
-            
-            
-//             Precoil = theLattice->MapK_HVtoP(valley, k_recoil);
-
-//             RotateToGlobalDirection(Precoil);  // Update track in world coordinates
 
                 
                 
             
-//             G4cout << "costheta : " << costheta << " Ephononi : " << Ephononi << G4endl;
+            G4cout << "costheta : " << costheta << " Ephononi : " << Ephononi << G4endl;
             
-//             G4cout << "qvec : " << qvec << " q_mag : " << q << G4endl
-//                    << " Etrk : " << Etrk / eV << " Ephonon : " << Ephonon / eV << " Erecoil : " << Erecoil / eV << G4endl
-//                    << "k_recoil " << k_recoil << " Precoil : " << Precoil << " ktrk : " << ktrk << G4endl;
+            G4cout << "qvec : " << qvec << " q_mag : " << q << G4endl
+                   << " Etrk : " << Etrk / eV << " Ephonon : " << Ephonon / eV << " Erecoil : " << Erecoil / eV << G4endl
+                   << "k_recoilHV " << k_recoilHV << G4endl;
 
             // Create real phonon to be propagated, with random polarization
             // If phonon is not created, register the energy as deposited
@@ -263,10 +259,12 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             } else {
                 aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
             }
+            k_recoil = theLattice->SphericalToEllipsoidalTranformation(valley, kHV); 
+            Precoil = theLattice->MapKtoP(valley, k_recoil);
                 
             }
-            k_recoil = theLattice->SphericalToEllipsoidalTranformation(valley, kHV);
-            Precoil = theLattice->MapKtoP(valley, k_recoil);
+            
+            
         }
     }
 
