@@ -57,6 +57,7 @@
 //		<p> (transport momentum).
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
+// 20240830  E. Michaud -- Fix math error in MapV_elToP
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
