@@ -299,7 +299,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       << ", newNorm = " << newNorm
       << ", reflectedKDir = " << reflectedKDir
       << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
-      << ", kTan (reflectedKDir - reflectedKDir * newNorm) = " << kTan << G4endl;
+      << ", kTan (reflectedKDir - newNorm * reflectedKDir dot newNorm) = " << kTan << G4endl;
   }
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
