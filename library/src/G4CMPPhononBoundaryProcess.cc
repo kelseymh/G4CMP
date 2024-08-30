@@ -291,6 +291,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // debugging only DELETE
   G4ThreeVector oldkTan = kTan;
   G4ThreeVector oldkPerpV = kPerpV;
+  G4ThreeVector oldStepPos = stepLocalPos;
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
   while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
@@ -311,6 +312,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // debugging only DELETE
     oldkTan = kTan;
     oldkPerpV = kPerpV;
+    oldStepPos = stepLocalPos;
 
     // Get new kPerpV (newNorm * kPerpMag)
     kPerpV = newNorm * kPerpMag;
