@@ -313,7 +313,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // debugging only DELETE
     oldkTan = kTan;
     oldkPerpV = kPerpV;
-    oldStepPos = stepLocalPos;
+    oldStepLocalPos = stepLocalPos;
     oldReflectedVector = reflectedVector;
 
     // Get new kPerpV (newNorm * kPerpMag)
@@ -329,6 +329,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     if (verboseLevel>3) {
       G4cout << "GetReflectedVector:insideLoop -> "
        << "attempts = " << nAttempts
+       << ", oldStepLocalPos = " << oldStepLocalPos
        << ", stepLocalPos = " << stepLocalPos
        << ", axis (oldkPerV cross oldkTan or visa versa?) = " << axis
        << ", oldkPerpV = " << oldkPerpV
@@ -339,6 +340,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
        << ", phi (oldNorm azimAngle (newNorm, axis)) = " << phi
        << ", oldNorm = " << oldNorm
        << ", kTan (rotate by phi about axis) = " << kTan
+       << ", oldReflectedKDir = " << oldReflectedKDir
        << ", reflectedKDir (kTan - kPerpV) = " << reflectedKDir << G4endl;
     }
   }
