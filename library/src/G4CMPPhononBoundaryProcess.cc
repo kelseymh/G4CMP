@@ -295,11 +295,11 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   if (verboseLevel>3) {
     G4cout << "GetReflectedVector:beforeLoop -> "
       << ", stepLocalPos = " << stepLocalPos
-      << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
       << ", kPerpMag (newNorm dot reflectedKDir) = " << kPerpMag
       << ", newNorm = " << newNorm
-      << ", kTan (reflectedKDir - reflectedKDir * newNorm) = " << kTan
-      << ", reflectedKDir = " << reflectedKDir << G4endl;
+      << ", reflectedKDir = " << reflectedKDir
+      << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
+      << ", kTan (reflectedKDir - reflectedKDir * newNorm) = " << kTan << G4endl;
   }
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
