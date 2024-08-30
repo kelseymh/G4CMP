@@ -457,7 +457,7 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
   G4double bandV = (fMassTensor.xx()*tempvec().x()*tempvec().x() +
   fMassTensor.yy()*tempvec().y()*tempvec().y() +
   fMassTensor.zz()*tempvec().z()*tempvec().z());
-  G4double gamma = 1/sqrt(1-bandV/GetElectronMass()*c_squared);
+  G4double gamma = 1/sqrt(1-bandV/GetElectronMass()/c_squared);
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
