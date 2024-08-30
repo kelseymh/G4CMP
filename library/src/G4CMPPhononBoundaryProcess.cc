@@ -279,7 +279,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4double kPerpMag = newNorm * reflectedKDir;
 
   G4ThreeVector kPerpV = newNorm * kPerpMag;
-  G4ThreeVector kTan = reflectedKDir - reflectedKDir * newNorm; // used to be reflectedKDir - newNorm
+  G4ThreeVector kTan = reflectedKDir - newNorm; // reflectedKDir - reflectedKDir * newNorm ??
   G4ThreeVector axis = reflectedKDir;
   G4double phi = 0.;
 
@@ -304,7 +304,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
   while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
-   GetGlobalDirection(reflectedVector), GetGlobalDirection(newNorm))
+   GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm))
 	 && nAttempts++ < maxAttempts) {
     // Step along the surface in the tangential direction of k (or v_g)
     stepLocalPos += stepSize * kTan.unit();
