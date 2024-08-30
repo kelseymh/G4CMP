@@ -291,8 +291,16 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // debugging only DELETE
   G4ThreeVector oldkTan = kTan;
   G4ThreeVector oldkPerpV = kPerpV;
-  G4ThreeVector oldStepPos = stepLocalPos;
-  G4ThreeVector oldReflectedVector = reflectedVector;
+
+  if (verboseLevel>3) {
+    G4cout << "GetReflectedVector:beforeLoop -> "
+      << ", stepLocalPos = " << stepLocalPos
+      << ", kPerpV (newNorm dot kPerpMag) = " << kPerpV
+      << ", newNorm = " << newNorm
+      << ", kPerpMag (newNorm * reflectedKDir) = " << kPerpMag
+      << ", reflectedKDir (kTan - kPerpV) = " << reflectedKDir
+      << ", kTan (reflectedKDir - reflectedKDir - reflectedKDir * newNorm) = " << kTan << G4endl;
+  }
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
   while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
@@ -313,8 +321,6 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // debugging only DELETE
     oldkTan = kTan;
     oldkPerpV = kPerpV;
-    oldStepLocalPos = stepLocalPos;
-    oldReflectedVector = reflectedVector;
 
     // Get new kPerpV (newNorm * kPerpMag)
     kPerpV = newNorm * kPerpMag;
@@ -329,9 +335,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     if (verboseLevel>3) {
       G4cout << "GetReflectedVector:insideLoop -> "
        << "attempts = " << nAttempts
-       << ", oldStepLocalPos = " << oldStepLocalPos
        << ", stepLocalPos = " << stepLocalPos
-       << ", axis (oldkPerV cross oldkTan or visa versa?) = " << axis
+       << ", axis (oldkPerV cross oldkTan).unit() = " << axis
        << ", oldkPerpV = " << oldkPerpV
        << ", oldkTan = " << oldkTan
        << ", kPerpV (newNorm dot kPerpMag) = " << kPerpV
@@ -340,7 +345,6 @@ GetReflectedVector(const G4ThreeVector& waveVector,
        << ", phi (oldNorm azimAngle (newNorm, axis)) = " << phi
        << ", oldNorm = " << oldNorm
        << ", kTan (rotate by phi about axis) = " << kTan
-       << ", oldReflectedKDir = " << oldReflectedKDir
        << ", reflectedKDir (kTan - kPerpV) = " << reflectedKDir << G4endl;
     }
   }
