@@ -271,15 +271,15 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // where the wave vector has an inwardly directed v⃗g.
   RotateToLocalDirection(reflectedKDir);
   G4ThreeVector newNorm = surfNorm;
-
   RotateToLocalDirection(newNorm);	
+  
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector oldNorm = newNorm;
   G4double kPerpMag = newNorm * reflectedKDir;
 
   G4ThreeVector kPerpV = newNorm * kPerpMag;
-  G4ThreeVector kTan = reflectedKDir - newNorm;
+  G4ThreeVector kTan = reflectedKDir - reflectedKDir * newNorm; // used to be reflectedKDir - newNorm
   G4ThreeVector axis = reflectedKDir;
   G4double phi = 0.;
 
@@ -292,10 +292,11 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector oldkTan = kTan;
   G4ThreeVector oldkPerpV = kPerpV;
   G4ThreeVector oldStepPos = stepLocalPos;
+  G4ThreeVector oldReflectedVector = reflectedVector;
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
   while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
-   GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm))
+   GetGlobalDirection(reflectedVector), GetGlobalDirection(newNorm))
 	 && nAttempts++ < maxAttempts) {
     // Step along the surface in the tangential direction of k (or v_g)
     stepLocalPos += stepSize * kTan.unit();
@@ -313,6 +314,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     oldkTan = kTan;
     oldkPerpV = kPerpV;
     oldStepPos = stepLocalPos;
+    oldReflectedVector = reflectedVector;
 
     // Get new kPerpV (newNorm * kPerpMag)
     kPerpV = newNorm * kPerpMag;
