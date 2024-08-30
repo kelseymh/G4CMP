@@ -279,7 +279,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4double kPerpMag = reflectedKDir.dot(newNorm);
 
   G4ThreeVector kPerpV = kPerpMag * newNorm;
-  G4ThreeVector kTan = reflectedKDir - newNorm * reflectedKDir.dot(newNorm); // reflectedKDir - reflectedKDir * newNorm ??
+  G4ThreeVector kTan = reflectedKDir - kPerpV;
   G4ThreeVector axis = reflectedKDir;
   G4double phi = 0.;
 
@@ -299,7 +299,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       << ", newNorm = " << newNorm
       << ", reflectedKDir = " << reflectedKDir
       << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
-      << ", kTan (reflectedKDir - newNorm * reflectedKDir dot newNorm) = " << kTan << G4endl;
+      << ", kTan (reflectedKDir - kPerpV) = " << kTan << G4endl;
   }
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
@@ -355,7 +355,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
   if (verboseLevel>2) {
     if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir, newNorm)) {
-      G4cout << "GetReflectedVector:afterLoop -> Phonon displacement failed after " << nAttempts << " attempts.";
+      G4cout << "GetReflectedVector:afterLoop -> Phonon displacement failed after " << nAttempts - 1 << " attempts.";
     }
     else
     {
