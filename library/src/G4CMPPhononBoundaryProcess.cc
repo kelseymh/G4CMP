@@ -355,7 +355,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
   if (verboseLevel>2) {
     if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir, newNorm)) {
-      G4cout << "Phonon displacement failed after" << nAttempts << " attempts.";
+      G4cout << "GetReflectedVector:afterLoop -> Phonon displacement failed after" << nAttempts << " attempts.";
     }
     else
     {
