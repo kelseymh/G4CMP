@@ -276,10 +276,10 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector oldNorm = newNorm;
-  G4double kPerpMag = newNorm * reflectedKDir;
+  G4double kPerpMag = reflectedKDir.dot(newNorm);
 
-  G4ThreeVector kPerpV = newNorm * kPerpMag;
-  G4ThreeVector kTan = reflectedKDir - newNorm; // reflectedKDir - reflectedKDir * newNorm ??
+  G4ThreeVector kPerpV = kPerpMag.dot(newNorm);
+  G4ThreeVector kTan = reflectedKDir - newNorm * reflectedKDir.dot(newNorm); // reflectedKDir - reflectedKDir * newNorm ??
   G4ThreeVector axis = reflectedKDir;
   G4double phi = 0.;
 
@@ -323,7 +323,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     oldkPerpV = kPerpV;
 
     // Get new kPerpV (newNorm * kPerpMag)
-    kPerpV = newNorm * kPerpMag;
+    kPerpV = kPerpMag.dot(newNorm);
 
     // Rotate kTan to be perpendicular to new normal
     phi = oldNorm.azimAngle(newNorm, axis);  // Check sign of phi
