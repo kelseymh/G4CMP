@@ -6,9 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
-2024-05-07  G4CMP-404 : Improve charge carriers-phonons scattering
-
-2024-04-20  G4CMP-403 : Allow clients to pass voltage bias through HitMerging.
+2024-05-07  G4CMP-404 : Improve charge carriers-phonons scattering.
 
 2024-04-29  g4cmp-V08-09-00 Support manual setting of voltage bias for sampling.
 2024-04-20  G4CMP-403 : Allow clients to pass voltage bias through HitMerging.
