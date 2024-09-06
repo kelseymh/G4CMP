@@ -292,6 +292,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // debugging only DELETE
   G4ThreeVector oldkTan = kTan;
   G4ThreeVector oldkPerpV = kPerpV;
+  G4ThreeVector oldstepLocalPos = stepLocalPos;
 
   if (verboseLevel>3) {
     G4cout << "GetReflectedVector:beforeLoop -> "
@@ -313,6 +314,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // Get the local normal at the new surface point
     oldNorm = newNorm;
     newNorm = solid->SurfaceNormal(stepLocalPos);
+
+    // debugging only DELETE
+    oldstepLocalPos = stepLocalPos;
 
     // FIXME: Find point on surface nearest to stepLocalPos, and reset
     surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
@@ -338,6 +342,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     if (verboseLevel>3) {
       G4cout << "GetReflectedVector:insideLoop -> "
        << "attempts = " << nAttempts
+       << ", oldstepLocalPos = " << oldstepLocalPos
+       << ", surfAdjust = " << surfAdjust
        << ", stepLocalPos = " << stepLocalPos
        << ", axis (oldkPerpV cross oldkTan).unit() = " << axis
        << ", oldkPerpV = " << oldkPerpV
