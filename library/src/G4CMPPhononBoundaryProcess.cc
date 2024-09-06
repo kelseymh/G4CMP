@@ -276,11 +276,12 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector oldNorm = newNorm;
+  G4double surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
   G4double kPerpMag = reflectedKDir.dot(newNorm);
 
   G4ThreeVector kPerpV = kPerpMag * newNorm;
   G4ThreeVector kTan = reflectedKDir - kPerpV;
-  G4ThreeVector axis = reflectedKDir;
+  G4ThreeVector axis = kPerpV.cross(kTan).unit();
   G4double phi = 0.;
 
   const G4double stepSize = 1.*um;	// Distance to step each trial
@@ -309,14 +310,16 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // Step along the surface in the tangential direction of k (or v_g)
     stepLocalPos += stepSize * kTan.unit();
 
-    // FIXME: Find point on surface nearest to stepLocalPos, and reset
-
-    // Get rotation axis perpendicular to waveVector-normal plane
-    axis = kPerpV.cross(kTan).unit();
-
     // Get the local normal at the new surface point
     oldNorm = newNorm;
     newNorm = solid->SurfaceNormal(stepLocalPos);
+
+    // FIXME: Find point on surface nearest to stepLocalPos, and reset
+    surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
+    stepLocalPos -= surfAdjust * newNorm;
+
+    // Get rotation axis perpendicular to waveVector-normal plane
+    axis = kPerpV.cross(kTan).unit();
 
     // debugging only DELETE
     oldkTan = kTan;
@@ -326,11 +329,11 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     kPerpV = kPerpMag * newNorm;
 
     // Rotate kTan to be perpendicular to new normal
-    phi = oldNorm.azimAngle(newNorm, axis);  // Check sign of phi
-    kTan = kTan.rotate(axis, phi);	     // Does this need -phi?
+    phi = oldNorm.azimAngle(newNorm, axis);
+    kTan = kTan.rotate(axis, phi);
 
-    // Calculate new reflectedKDir (kTan - kPerpV)
-    reflectedKDir = kTan - kPerpV;
+    // Calculate new reflectedKDir (kTan + kPerpV)
+    reflectedKDir = kTan + kPerpV;
 
     if (verboseLevel>3) {
       G4cout << "GetReflectedVector:insideLoop -> "
@@ -345,7 +348,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
        << ", phi (oldNorm azimAngle (newNorm, axis)) = " << phi
        << ", oldNorm = " << oldNorm
        << ", kTan (rotate by phi about axis) = " << kTan
-       << ", reflectedKDir (kTan - kPerpV) = " << reflectedKDir << G4endl;
+       << ", reflectedKDir (kTan + kPerpV) = " << reflectedKDir << G4endl;
     }
   }
 
