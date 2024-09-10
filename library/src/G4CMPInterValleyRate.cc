@@ -53,13 +53,15 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
   // Initialize numerical buffers
   eTrk = GetKineticEnergy(aTrack);
   //eTrk = (-1 + sqrt(1 + 4*alpha*GetKineticEnergy(aTrack)))/2/alpha;
-  ivalley = GetValleyIndex(aTrack);
-  ktrk = theLattice->MapV_elToK(ivalley, GetLocalVelocityVector(aTrack));
-  kHV = theLattice->EllipsoidalToSphericalTranformation(ivalley, ktrk);
     
+  ivalley = GetValleyIndex(aTrack);
+  ptrk = GetLocalMomentum(aTrack);
+  ktrk = theLattice->MapPtoK(ivalley, ptrk);
+  kHV = theLattice->EllipsoidalToSphericalTranformation(ivalley, ktrk);
   kmag = kHV.mag();
 
-  
+
+    
   if (verboseLevel>1)
     G4cout << "G4CMPInterValleyRate eTrk " << eTrk/eV << " eV" << G4endl;
 
@@ -113,7 +115,7 @@ G4double G4CMPInterValleyRate::opticalRate() const {
     G4double orate = 0.;
     
       
-    G4cout << " iv deform : " << theLattice->GetIVDeform(i)/eV*cm << G4endl;
+    //G4cout << " iv deform : " << theLattice->GetIVDeform(i)/eV*cm << G4endl;
         
       
     G4int nVal=nvalleys[i];

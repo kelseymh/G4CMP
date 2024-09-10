@@ -142,12 +142,16 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
     G4double Etrk = GetKineticEnergy(aTrack);
     G4int valley = GetValleyIndex(aTrack);
     G4ThreeVector Precoil;
-    G4ThreeVector ktrk = theLattice->MapV_elToK(valley, GetLocalVelocityVector(aTrack));
+    G4ThreeVector ptrk = GetLocalMomentum(aTrack);
+    G4ThreeVector ktrk = theLattice->MapPtoK(valley, ptrk);
+    G4ThreeVector ktrk2 = theLattice->MapV_elToK(valley, GetLocalVelocityVector(aTrack));
     G4ThreeVector kHV = theLattice->EllipsoidalToSphericalTranformation(valley, ktrk);
     
     G4CMPInterValleyRate* ivpro = dynamic_cast<G4CMPInterValleyRate*>(GetRateModel());
     
-     G4cout << "ktrk :  " << ktrk << G4endl << "kHV : " << kHV << G4endl << "velocity : " << GetLocalVelocityVector(aTrack)/km*s <<G4endl << "valley : " << valley << G4endl;
+     G4cout << "ktrk1 :  " << ktrk << G4endl << "ktrk2 : " << ktrk2 << G4endl;
+    
+
     
     if (ivpro == nullptr) {
         Precoil = theLattice->MapKtoP(valley, ktrk);
