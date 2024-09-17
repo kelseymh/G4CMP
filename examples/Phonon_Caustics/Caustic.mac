@@ -1,8 +1,9 @@
 # This Macro is to Generate Phonons Caustics patterns
 /run/initialize
+/run/printProgress 100000
 /process/inactivate phononScattering
 /process/inactivate phononDownconversion
-/g4cmp/phononBounces 100
+/g4cmp/phononBounces 3
 #/tracking/verbose 2
 /gps/energy 0.03 eV
 /gps/number 1

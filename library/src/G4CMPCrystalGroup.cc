@@ -141,7 +141,7 @@ G4bool G4CMPCrystalGroup::FillOrthorhombic(G4double Cij[6][6]) const {
 G4bool G4CMPCrystalGroup::FillRhombohedral(G4double Cij[6][6]) const {
   G4double C11=Cij[0][0], C12=Cij[0][1], C13=Cij[0][2], C14=Cij[0][3];
   G4double  C33=Cij[2][2], C44=Cij[3][3], C66=0.5*(C11-C12);
-
+  
   Cij[1][1] = C11;	// Copy small number of individual elements
   Cij[1][2] = C13;
   Cij[1][3] = -C14;
@@ -149,46 +149,47 @@ G4bool G4CMPCrystalGroup::FillRhombohedral(G4double Cij[6][6]) const {
   Cij[3][5] = 0.0;
   Cij[4][4] = C44;
   Cij[4][5] = C14;
-//////////////////////// Israel Filling the other terms of the Matirx
-//Cij[1][1] = C11;	// Copy small number of individual elements
-Cij[2][1] = C13;
-Cij[3][1] = -C14;
-Cij[4][1] = -0.0;
-Cij[5][3] = -0.0;
-//Cij[4][4] = C44;
-Cij[5][4] = C14;
-Cij[5][5] = C66;
 
-Cij[3][0]=C14;
-Cij[1][0]=C12;
-Cij[2][0]=C13;
-///////////Filling the other terms of the Matix with zeros
-Cij[0][4]=0.0;
-Cij[0][5]=0.0;
-Cij[4][0]=0.0;
-Cij[5][0]=0.0;
-Cij[2][5]=0.0;
-Cij[5][2]=0.0;
-
-Cij[3][2]=0.0;
-Cij[3][4]=0.0;
-Cij[3][5]=0.0;
-
-Cij[2][3]=0.0;
-Cij[4][3]=0.0;
-Cij[5][3]=0.0;
-
-Cij[4][0]=0.0;
-Cij[4][1]=0.0;
-Cij[4][2]=0.0;
-Cij[4][3]=0.0;
-Cij[2][4]=0.0;
-
-Cij[5][0]=0.0;
-Cij[5][1]=0.0;
-Cij[5][2]=0.0;
-Cij[5][3]=0.0;
-
+  //Filling the other terms of the matrix, one-by-one (IH)
+  Cij[2][1] = C13;
+  Cij[3][1] = -C14;
+  Cij[4][1] = -0.0;
+  Cij[5][3] = -0.0;
+  Cij[5][4] = C14;
+  Cij[5][5] = C66;
+  
+  Cij[3][0]=C14;
+  Cij[1][0]=C12;
+  Cij[2][0]=C13;
+  
+  ///////////Filling the other terms of the Matix with zeros (on top of those already initialized to zero and then never changed)
+  //May consider removing these statements if they are superfluous
+  Cij[0][4]=0.0;
+  Cij[0][5]=0.0;
+  Cij[4][0]=0.0;
+  Cij[5][0]=0.0;
+  Cij[2][5]=0.0;
+  Cij[5][2]=0.0;
+  
+  Cij[3][2]=0.0;
+  Cij[3][4]=0.0;
+  Cij[3][5]=0.0;
+  
+  Cij[2][3]=0.0;
+  Cij[4][3]=0.0;
+  Cij[5][3]=0.0;
+  
+  Cij[4][0]=0.0;
+  Cij[4][1]=0.0;
+  Cij[4][2]=0.0;
+  Cij[4][3]=0.0;
+  Cij[2][4]=0.0;
+  
+  Cij[5][0]=0.0;
+  Cij[5][1]=0.0;
+  Cij[5][2]=0.0;
+  Cij[5][3]=0.0;
+  
   // NOTE:  C15 may be zero (c.f. rhombohedral(I) vs. (II))
   return (C11!=0 && C12!=0 && C13!=0 && C14!=0. &&
 	  C33!=0. && C44!=0. && C66!=0.);
@@ -252,7 +253,7 @@ G4CMPCrystalGroup::Bravais G4CMPCrystalGroup::Group(const G4String& name) {
   if (name.index("hex")==0) return hexagonal;
   if (name.index("mon")==0) return monoclinic;
   if (name.index("tri")==0) return triclinic;
-	if (name.index("rho")==0) return rhombohedral;
+  if (name.index("rho")==0) return rhombohedral;
 
 
   return UNKNOWN;	// Failure condition; calling code should test
