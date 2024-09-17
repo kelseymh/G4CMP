@@ -18,9 +18,12 @@
 // 20170913  Add utility to get electric field at (global) position
 // 20170925  Add utility to create touchable at (global) position
 // 20190226  Use local instance of G4Navigator to avoid corrupting tracking
+// 20211001  Add utilities to get lattice from touchable, find valley close
+//		to specified direction.
 
 #include "G4ThreeVector.hh"
 
+class G4LatticePhysical;
 class G4Navigator;
 class G4Step;
 class G4Track;
@@ -64,6 +67,14 @@ namespace G4CMP {
 
   G4ThreeVector ApplySurfaceClearance(const G4VTouchable* touch,
 				      G4ThreeVector pos);
+
+  G4LatticePhysical* GetLattice(const G4VTouchable* touch);
+
+  // NOTE:  Direction should be in GLOBAL coordinates, passed with touchable
+  G4int FindNearestValley(const G4VTouchable* touch, G4ThreeVector gdir);
+
+  // NOTE:  Direction should be in LOCAL coordinates, for use with lattice
+  G4int FindNearestValley(const G4LatticePhysical* lat, G4ThreeVector ldir);
 }
 
 #endif	/* G4CMPGeometryUtils_hh */

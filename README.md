@@ -1,6 +1,6 @@
 # G4CMP -- Geant4 add-on framework for phonon and charge-carrier physics
 
-    R. Agnese, D. Brandt, M. Kelsey, P. Redl
+    R. Agnese, D. Brandt, M. Kelsey, P. Redl, I Ataee Langroudy
 
 
 This package provide a collection of particle types, physics processes, and

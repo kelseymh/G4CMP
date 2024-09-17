@@ -36,6 +36,9 @@
 // 20201111  Add MakePhononEnergy() which takes wave vector directly
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 // 20201223  Add FindNearestValley() function to align electron momentum.
+// 20211001  Add reusable G4ThreeVector buffer for internal calculations.
+// 20211001  FindNearestValley(dir) can pass by reference.
+// 20211003  Add track touchable as data member, to create if needed
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
 
 #ifndef G4CMPProcessUtils_hh
@@ -159,9 +162,7 @@ public:
 
   // These functions only exist to make a uniform interface for getting
   // track info in a G4CMP physics process class.
-  G4double CalculateVelocity(const G4Track& track) const {
-    return track.CalculateVelocity();
-  }
+  G4double CalculateVelocity(const G4Track& track) const;
 
   G4double CalculateVelocity(const G4Track* track) const {
     return CalculateVelocity(*track);
@@ -217,8 +218,7 @@ public:
   G4int ChangeValley(G4int valley) const;	// Excludes input valley
 
   // Find valley which aligns most closely with _local_ direction vector
-  // NOTE: Passed by value to allow for internal manipulation
-  G4int FindNearestValley(G4ThreeVector dir) const;
+  G4int FindNearestValley(const G4ThreeVector& dir) const;
   G4int FindNearestValley(const G4Track& track) const;
   G4int FindNearestValley(const G4Track* track) const {
     return (track ? FindNearestValley(*track) : -1);
@@ -235,7 +235,7 @@ public:
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
 
-  // Convert K_HV wave vector to track momentum
+  // Convert K wave vector to track momentum
   void MakeGlobalRecoil(G4ThreeVector& krecoil) const;
 
   // Compute time between scatters/emissions for moving charge carrier
@@ -260,6 +260,7 @@ private:
   void ClearTouchable() const;
   mutable const G4VTouchable* currentTouchable;
   mutable G4bool deleteTouchable;
+  mutable G4ThreeVector tempvec;	// Not static; each instance unique
 };
 
 #endif	/* G4CMPProcessUtils_hh */
