@@ -153,6 +153,9 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fAcDeform = rhs.fAcDeform;
   fIVDeform = rhs.fIVDeform;
   fIVEnergy = rhs.fIVEnergy;
+  fIVNVal = rhs.fIVNVal;
+  fIVOrder = rhs.fIVOrder;
+  fIVTest = rhs.fIVTest;
   fIVQuadField = rhs.fIVQuadField;
   fIVQuadRate = rhs.fIVQuadRate;
   fIVQuadExponent = rhs.fIVQuadExponent;
@@ -973,6 +976,9 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nacDeform " << fAcDeform/eV << " eV"
      << "\nivDeform "; DumpList(os, fIVDeform, "eV/cm");
   os << "\nivEnergy "; DumpList(os, fIVEnergy, "eV");
+  os << "\nivNVal "; DumpList(os, fIVNVal, "eV");
+  os << "\nivOrder "; DumpList(os, fIVOrder, "eV");
+  os << "\nivTest "; DumpList(os, fIVTest, "eV");
   os << std::endl;
 
   os << "# Quadratic intervalley scattering parameters"

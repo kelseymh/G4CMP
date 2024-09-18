@@ -115,8 +115,8 @@ G4double G4CMPInterValleyRate::opticalRate() const {
     G4double orate = 0.;
     
       
-    //G4cout << " iv deform : " << theLattice->GetIVDeform(i)/eV*cm << G4endl;
-        
+    G4cout << " iv deform : " << theLattice->GetIVDeform(i)/eV*cm << G4endl;
+    G4cout << " iv Test : " << theLattice->GetIVTest(i)/eV << G4endl;
       
     G4int nVal=nvalleys[i];
     G4double D_op=ivdeforms[i];

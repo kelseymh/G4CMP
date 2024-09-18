@@ -160,6 +160,9 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
   if (fToken == "ivdeform") return ProcessDeformation(); // D0, D1 potentials
   if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
+  if (fToken == "ivnval") return ProcessIVNVal();  // D0, D1 Emin
+  if (fToken == "ivorder") return ProcessIVOrder();  // D0, D1 Emin
+  if (fToken == "ivtest") return ProcessIVTest();  // D0, D1 Emin
   if (fToken == "ivmodel")  return ProcessString(fToken);  // IV rate function
 
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
@@ -452,6 +455,34 @@ G4bool G4LatticeReader::ProcessThresholds() {
 }
 
 
+G4bool G4LatticeReader::ProcessIVNVal() {
+  if (verboseLevel>1) G4cout << " ProcessIVNVal " << G4endl;
+
+  G4bool okay = ProcessList("Energy");
+  if (okay) pLattice->SetIVNVal(fList);
+
+  return okay;
+}
+
+
+G4bool G4LatticeReader::ProcessIVOrder() {
+  if (verboseLevel>1) G4cout << " ProcessIVOrder " << G4endl;
+
+  G4bool okay = ProcessList("Energy");
+  if (okay) pLattice->SetIVOrder(fList);
+
+  return okay;
+}
+
+
+G4bool G4LatticeReader::ProcessIVTest() {
+  if (verboseLevel>1) G4cout << " ProcessIVTest " << G4endl;
+
+  G4bool okay = ProcessList("Energy");
+  if (okay) pLattice->SetIVTest(fList);
+
+  return okay;
+}
 
 
 
