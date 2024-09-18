@@ -19,6 +19,8 @@
 //	       out source positions for steps < 100*tolerance.
 // 20240731  G4CMP-420 -- Add flag to remember if voltage bias was preset.
 //	       If not preset, then call UsePosition() in ProcessStep().
+// 20240822  G4CMP-423 -- In UsePosition(), take midpoint of step to avoid
+//	       boundary surfaces.
 
 #include "G4CMPHitMerging.hh"
 #include "G4CMPConfigManager.hh"
@@ -160,7 +162,7 @@ G4bool G4CMPHitMerging::ProcessStep(const G4CMPStepInfo& stepData) {
   if (presetBiasVoltage)
     partitioner->UseVolume(GetCurrentVolume());
   else 
-    partitioner->UsePosition(stepData.end);
+    partitioner->UsePosition((stepData.end+stepData.start)/2.);
 
   // Get configuration for how to merge steps
   combiningStepLength = G4CMPConfigManager::GetComboStepLength();
