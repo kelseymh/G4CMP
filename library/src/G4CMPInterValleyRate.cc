@@ -98,8 +98,6 @@ G4double G4CMPInterValleyRate::opticalRate() const {
 //   std::vector<G4int> orders {1,1,0,1,0,0};
 //   std::vector<G4double> ivdeforms {4*eV,4*eV,11e8*eV/cm,4*eV,2e8*eV/cm,2e8*eV/cm};
     
-//   G4cout << "Energy : " << eTrk << G4endl;
-    
   G4double total = 0.;
   G4int N_op = theLattice->GetNIVDeform();
   for (G4int i = 0; i<N_op; i++) {
@@ -112,21 +110,12 @@ G4double G4CMPInterValleyRate::opticalRate() const {
     G4double oscale = 0.;
     G4double scale = 0.;
     G4double Efunc = 0.;
-    G4double orate = 0.;
-    
+    G4double orate = 0.;    
       
-    G4cout << " iv deform : " << theLattice->GetIVDeform(i)/eV*cm << G4endl;
-    G4cout << " iv Test : " << theLattice->GetIVTest(i)/eV << G4endl;
-      
-    G4int nVal=nvalleys[i];
-    G4double D_op=ivdeforms[i];
-    G4double ivorder=orders[i];
-    //G4double D_op = theLattice->GetIVDeform(i);
-    //G4double nVal = theLattice->GetIVNVal(i);
-    //G4double ivorder = theLattice->GetIVOrder(i);
-      
-    
-      
+    G4double D_op = theLattice->GetIVDeform(i);
+    G4double nVal = theLattice->GetIVNVal(i);
+    G4double ivorder = theLattice->GetIVOrder(i);      
+  
     if (ivorder==0) {  
     scale = nVal*/*kT**/m_DOS3half / (sqrt(2)*pi*hbar_sq*density);
     oscale = scale * D_op*D_op / Emin_op;

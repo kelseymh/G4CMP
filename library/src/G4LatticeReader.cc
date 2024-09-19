@@ -51,6 +51,8 @@
 #include <regex>
 #include <stdlib.h>
 
+#include <sstream>
+
 
 // Constructor and destructor
 
@@ -252,20 +254,27 @@ G4bool G4LatticeReader::ProcessString(const G4String& name) {
 G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
   if (verboseLevel>1) G4cout << " ProcessList " << unitcat << G4endl;
 
-  // Prepare input buffers for reading multiple values, up to unit string
+// //   Prepare input buffers for reading multiple values, up to unit string
   fList.clear();
-
   G4String token;
-  char* eonum = 0;	// Will point to end of valid number string (NUL)
-  do {
-    *psLatfile >> token;
-    fValue = strtod(token.c_str(), &eonum);
-    if (*eonum == '\0') fList.push_back(fValue);
-  } while (psLatfile->good() && *eonum == '\0');
+  G4String line;
     
-//if (unicat=="NoUnits") {return psLatfile->good();}
+  if(std::getline(*psLatfile, line)){ 
+      std::istringstream iss(line);  // Separate by line for lines without units
+  
+      while (iss >> token) {
+          char* eonum = nullptr;    // Will point to end of valid number string (NUL)
+          fValue = strtod(token.c_str(), &eonum);
 
-  ProcessUnits(token, unitcat);		// Non-numeric token is trailing unit
+          // Check if the entire token is a valid number
+          if (*eonum == '\0') {fList.push_back(fValue);} 
+          else {break;} // Skip non-numerical tokens
+    } 
+}
+    
+  if (unitcat=="NoUnits") {fUnits=1.;}
+  else {ProcessUnits(token, unitcat);}		// Non-numeric token is trailing unit
+    
   for (size_t i=0; i<fList.size(); i++) fList[i] *= fUnits;
 
   return psLatfile->good();
@@ -458,7 +467,7 @@ G4bool G4LatticeReader::ProcessThresholds() {
 G4bool G4LatticeReader::ProcessIVNVal() {
   if (verboseLevel>1) G4cout << " ProcessIVNVal " << G4endl;
 
-  G4bool okay = ProcessList("Energy");
+  G4bool okay = ProcessList("NoUnits");
   if (okay) pLattice->SetIVNVal(fList);
 
   return okay;
@@ -468,7 +477,7 @@ G4bool G4LatticeReader::ProcessIVNVal() {
 G4bool G4LatticeReader::ProcessIVOrder() {
   if (verboseLevel>1) G4cout << " ProcessIVOrder " << G4endl;
 
-  G4bool okay = ProcessList("Energy");
+  G4bool okay = ProcessList("NoUnits");
   if (okay) pLattice->SetIVOrder(fList);
 
   return okay;
@@ -478,7 +487,7 @@ G4bool G4LatticeReader::ProcessIVOrder() {
 G4bool G4LatticeReader::ProcessIVTest() {
   if (verboseLevel>1) G4cout << " ProcessIVTest " << G4endl;
 
-  G4bool okay = ProcessList("Energy");
+  G4bool okay = ProcessList("NoUnits");
   if (okay) pLattice->SetIVTest(fList);
 
   return okay;
