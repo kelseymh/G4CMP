@@ -73,7 +73,6 @@ protected:
   G4bool ProcessThresholds();			// IV energy thresholds
   G4bool ProcessIVNVal();			// IV N Valleys
   G4bool ProcessIVOrder();			// IV order
-  G4bool ProcessIVTest();			// IV test
   G4bool SkipComments();			// Everything after '#'
 
   // Read expected dimensions for value from file, return scale factor

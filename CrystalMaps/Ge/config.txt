@@ -35,7 +35,6 @@ ivDeform 3e8 0.2e8 eV/cm		# Jacoboni & Reggiani
 ivEnergy 27.3e-3 10.3e-3 eV
 ivNVal 7 7
 ivOrder 0 0 
-ivTest 3.1e-3 3.2e-3 
 neutDens 1e11 /cm3
 epsilon 16.2
 # Intervalley scattering (Edelweiss model)

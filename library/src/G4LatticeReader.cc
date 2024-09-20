@@ -35,6 +35,7 @@
 // 20231017  E. Michaud -- Add 'valleyDir' to set rotation matrix with valley's
 //		 direction instead of euler angles
 // 20240131  J. Inman -- Multiple path selection on G4LATTICEDATA variable
+// 20240920  E. Michaud -- Add 'ProcessIVNVal' and 'ProcessIVOrder' 
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -50,7 +51,6 @@
 #include <limits>
 #include <regex>
 #include <stdlib.h>
-
 #include <sstream>
 
 
@@ -162,9 +162,8 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
   if (fToken == "ivdeform") return ProcessDeformation(); // D0, D1 potentials
   if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
-  if (fToken == "ivnval") return ProcessIVNVal();  // D0, D1 Emin
-  if (fToken == "ivorder") return ProcessIVOrder();  // D0, D1 Emin
-  if (fToken == "ivtest") return ProcessIVTest();  // D0, D1 Emin
+  if (fToken == "ivnval") return ProcessIVNVal();  // IV # final valleys
+  if (fToken == "ivorder") return ProcessIVOrder();  // IV process order
   if (fToken == "ivmodel")  return ProcessString(fToken);  // IV rate function
 
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
@@ -254,7 +253,7 @@ G4bool G4LatticeReader::ProcessString(const G4String& name) {
 G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
   if (verboseLevel>1) G4cout << " ProcessList " << unitcat << G4endl;
 
-// //   Prepare input buffers for reading multiple values, up to unit string
+//   Prepare input buffers for reading multiple values, up to unit string
   fList.clear();
   G4String token;
   G4String line;
@@ -463,6 +462,7 @@ G4bool G4LatticeReader::ProcessThresholds() {
   return okay;
 }
 
+// Read # final valleys and order for IV scattering
 
 G4bool G4LatticeReader::ProcessIVNVal() {
   if (verboseLevel>1) G4cout << " ProcessIVNVal " << G4endl;
@@ -482,21 +482,6 @@ G4bool G4LatticeReader::ProcessIVOrder() {
 
   return okay;
 }
-
-
-G4bool G4LatticeReader::ProcessIVTest() {
-  if (verboseLevel>1) G4cout << " ProcessIVTest " << G4endl;
-
-  G4bool okay = ProcessList("NoUnits");
-  if (okay) pLattice->SetIVTest(fList);
-
-  return okay;
-}
-
-
-
-
-
 
 
 // Read expected dimensions for value from file, return scale factor

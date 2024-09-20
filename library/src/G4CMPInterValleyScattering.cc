@@ -136,7 +136,8 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
     //   p = theLattice->MapK_valleyToP(valley, p); // p is p again
     //   RotateToGlobalDirection(p);
     
-   
+  
+    
 
     G4double Etrk = GetKineticEnergy(aTrack);
     G4int valley = GetValleyIndex(aTrack);
@@ -148,7 +149,6 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
     
     G4CMPInterValleyRate* ivpro = dynamic_cast<G4CMPInterValleyRate*>(GetRateModel());
     
-    G4cout << "Energy poststepdoit : " << Etrk/eV << G4endl;
     
     if (ivpro == nullptr) {
         Precoil = theLattice->MapKtoP(valley, ktrk);
