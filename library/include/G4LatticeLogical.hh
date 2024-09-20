@@ -363,8 +363,8 @@ private:
   G4double fAcDeform;		 	// Deformation potential for acoustic IV
   std::vector<G4double> fIVDeform;	// D0, D1 potentials for IV
   std::vector<G4double> fIVEnergy;	// Phonons energy for IV
-  std::vector<G4double> fIVNVal;	// D0, D1 thresholds for optical IV
-  std::vector<G4double> fIVOrder;	// D0, D1 thresholds for optical IV
+  std::vector<G4double> fIVNVal;	// # final valleys for IV
+  std::vector<G4double> fIVOrder;	// IV order process
 
   G4double fIVQuadField;	 // Edelweiss field scale for IV scattering
   G4double fIVQuadRate;		 // Edelweiss rate factor for IV scattering
