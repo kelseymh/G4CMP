@@ -195,7 +195,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 
 
             // Final state kinematics, generated in accept/reject loop below
-            G4double phi_phonon = 0, q = 0, Ephonon = 10e-3*eV, Erecoil = 0, costheta = 0;
+            G4double phi_phonon = 0, q = 0, Ephonon = 0, Erecoil = 0, costheta = 0;
             G4ThreeVector qvec, k_recoilHV, k_recoil;  // Outgoing wave vectors
             
             G4ThreeVector kdir = kHV.unit();
@@ -263,7 +263,7 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             } else {
                 aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);
             }
-            k_recoil = theLattice->SphericalToEllipsoidalTranformation(valley, kHV); 
+            k_recoil = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoilHV); 
             Precoil = theLattice->MapKtoP(valley, k_recoil);
                 
             }
