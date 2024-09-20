@@ -16,6 +16,7 @@
 //		Replace four-arg ctor and UseMesh() with copy constructor.
 // 20200914  Include TExtend precalculation in FillTInverse action.
 // 20201002  Report tetrahedra errors during FillTInverse() initialization.
+// 20240920  G4CMP-244: Replace TetraIdx with function to access G4Cache.
 
 #include "G4CMPBiLinearInterp.hh"
 #include "G4CMPConfigManager.hh"
@@ -59,7 +60,7 @@ G4CMPBiLinearInterp::G4CMPBiLinearInterp(const G4CMPBiLinearInterp& rhs)
   Tetra02 = rhs.Tetra02;
   Tetra12 = rhs.Tetra12;
 
-  TetraIdx = -1;
+  TetraIdx() = -1;
   TetraStart = rhs.TetraStart;
 }
 
@@ -76,7 +77,7 @@ void G4CMPBiLinearInterp::UseMesh(const vector<point2d>& xy,
   FillTInverse();
   FillGradients();
 
-  TetraIdx = -1;
+  TetraIdx() = -1;
   TetraStart = FirstInteriorTetra();
 
 #ifdef G4CMPTLI_DEBUG
@@ -98,7 +99,7 @@ void G4CMPBiLinearInterp::UseMesh(const vector<point3d>& xyz,
   FillTInverse();
   FillGradients();
 
-  TetraIdx = -1;
+  TetraIdx() = -1;
   TetraStart = FirstInteriorTetra();
 
 #ifdef G4CMPTLI_DEBUG
@@ -334,11 +335,11 @@ G4CMPBiLinearInterp::GetValue(const G4double pos[2], G4bool quiet) const {
   G4double bary[3] = { 0. };
   FindTetrahedron(&pos[0], bary, quiet);
     
-  if (TetraIdx == -1) return 0;
+  if (TetraIdx() == -1) return 0;
 
-  return(V[Tetrahedra[TetraIdx][0]] * bary[0] +
-	 V[Tetrahedra[TetraIdx][1]] * bary[1] +
-	 V[Tetrahedra[TetraIdx][2]] * bary[2]);    
+  return(V[Tetrahedra[TetraIdx()][0]] * bary[0] +
+	 V[Tetrahedra[TetraIdx()][1]] * bary[1] +
+	 V[Tetrahedra[TetraIdx()][2]] * bary[2]);    
 }
 
 G4ThreeVector 
@@ -347,7 +348,7 @@ G4CMPBiLinearInterp::GetGrad(const G4double pos[2], G4bool quiet) const {
 
   G4double bary[3] = { 0. };
   FindTetrahedron(pos, bary, quiet);
-  return (TetraIdx<0. ? zero : Grad[TetraIdx]);
+  return (TetraIdx()<0. ? zero : Grad[TetraIdx()]);
 }
 
 void 
@@ -360,12 +361,12 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
   G4double bestBary = 0.;	// Norm of barycentric coordinates (below)
   G4int bestTet = -1;
 
-  if (TetraIdx == -1) TetraIdx = TetraStart;
+  if (TetraIdx() == -1) TetraIdx() = TetraStart;
 
 #ifdef G4CMPTLI_DEBUG
   if (G4CMPConfigManager::GetVerboseLevel() > 1) {
     G4cout << "FindTetrahedron pt " << pt[0] << " " << pt[1]
-	   << "\n starting from TetraIdx " << TetraIdx << G4endl;
+	   << "\n starting from TetraIdx " << TetraIdx() << G4endl;
   }
 #endif
 
@@ -378,24 +379,24 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
 	       << pt[0] << " " << pt[1] << G4endl;
 
 #ifdef G4CMPTLI_DEBUG
-	PrintTetra(G4cerr, TetraIdx);
+	PrintTetra(G4cerr, TetraIdx());
 #endif
       }	// if (!quiet)
 
-      TetraIdx = -1;
+      TetraIdx() = -1;
       return;
     }	// if (!Cart2bary())
 
 #ifdef G4CMPTLI_DEBUG
     if (G4CMPConfigManager::GetVerboseLevel() > 2) {
-      G4cout << " Loop " << count << ": Tetra " << TetraIdx << ": "
-	     << Tetrahedra[TetraIdx] << "\n bary " << bary[0] << " " << bary[1]
+      G4cout << " Loop " << count << ": Tetra " << TetraIdx() << ": "
+	     << Tetrahedra[TetraIdx()] << "\n bary " << bary[0] << " " << bary[1]
 	     << " " << bary[2] << " norm " << BaryNorm(bary)
 	     << G4endl;
     }
 #endif
 
-    // Point is inside current tetrahedron (TetraIdx)
+    // Point is inside current tetrahedron (TetraIdx())
     if (std::all_of(bary, bary+3,
 		    [barySafety](G4double b){return b>=barySafety;})) return;
 
@@ -403,7 +404,7 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
     G4double newNorm = BaryNorm(bary);
     if (newNorm < bestBary || count == 0) {	// Getting closer
       bestBary = newNorm;
-      bestTet  = TetraIdx;
+      bestTet  = TetraIdx();
 
 #ifdef G4CMPTLI_DEBUG
       if (G4CMPConfigManager::GetVerboseLevel() > 2) {
@@ -416,7 +417,7 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
     // Point is outside current tetrahedron; shift to nearest neighbor
     minBaryIdx = std::min_element(bary, bary+4) - bary;
 
-    G4int newTetraIdx = Neighbors[TetraIdx][minBaryIdx];
+    G4int newTetraIdx = Neighbors[TetraIdx()][minBaryIdx];
     if (newTetraIdx == -1) {   // Fell off edge of world
       if (!quiet) {
 	G4cerr << "G4CMPBiLinearInterp::FindTetrahedron:"
@@ -424,26 +425,26 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
 	       << pt[0] << " " << pt[1] << G4endl;
 
 #ifdef G4CMPTLI_DEBUG
-	PrintTetra(G4cerr, TetraIdx);
+	PrintTetra(G4cerr, TetraIdx());
 #endif
       }
 
-      TetraIdx = -1;		// Avoids continuing after this
+      TetraIdx() = -1;		// Avoids continuing after this
       return;
     }	// if (newTetraIdx == -1)
 
-    TetraIdx = newTetraIdx;
+    TetraIdx() = newTetraIdx;
 
 #ifdef G4CMPTLI_DEBUG
     if (G4CMPConfigManager::GetVerboseLevel() > 2) {
       G4cout << " minBaryIdx " << minBaryIdx << ": moved to neighbor tetra "
-	     << TetraIdx << G4endl;
+	     << TetraIdx() << G4endl;
     }
 #endif
 
   }	// for (size_t count=0 ...
 
-  TetraIdx = bestTet;
+  TetraIdx() = bestTet;
 
 #ifdef G4CMPTLI_DEBUG
   if (G4CMPConfigManager::GetVerboseLevel() > 1) {
@@ -457,10 +458,10 @@ G4CMPBiLinearInterp::FindTetrahedron(const G4double pt[2], G4double bary[3],
 
 G4bool 
 G4CMPBiLinearInterp::Cart2Bary(const G4double pt[2], G4double bary[3]) const {
-  const tetra2d& tetra = Tetrahedra[TetraIdx]; // For convenience below
-  const mat2x2& invT = TInverse[TetraIdx];
+  const tetra2d& tetra = Tetrahedra[TetraIdx()]; // For convenience below
+  const mat2x2& invT = TInverse[TetraIdx()];
   
-  if (TInvGood[TetraIdx]) {
+  if (TInvGood[TetraIdx()]) {
     bary[2] = 1.0;
     for(G4int k=0; k<2; ++k) {
       bary[k] = (invT[k][0]*(pt[0] - X[tetra[2]][0]) +
@@ -469,7 +470,7 @@ G4CMPBiLinearInterp::Cart2Bary(const G4double pt[2], G4double bary[3]) const {
     }
   }
 
-  return TInvGood[TetraIdx];
+  return TInvGood[TetraIdx()];
 }
 
 G4double G4CMPBiLinearInterp::BaryNorm(G4double bary[3]) const {

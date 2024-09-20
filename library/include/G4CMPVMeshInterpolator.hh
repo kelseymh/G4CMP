@@ -14,6 +14,7 @@
 // 20200908  Add operator<<() to print matrices (array of array)
 // 20200914  Drop cachedGrad, staleCache; subclasses will precompute field.
 // 20240507  G4CMP-244: Use G4Cache for live index; allows cross-thread use.
+// 20240920  Replace TetraIdx data member with function to reference cache.
 
 #ifndef G4CMPVMeshInterpolator_h 
 #define G4CMPVMeshInterpolator_h 
@@ -35,7 +36,7 @@ class G4CMPVMeshInterpolator {
 protected:
   // This class CANNOT be instantiated directly!
   G4CMPVMeshInterpolator(const G4String& prefix)
-    : TetraStart(-1), savePrefix(prefix), TetraIdx(TetraIdxStore.Get()) {;}
+    : TetraStart(-1), savePrefix(prefix) {;}
 
 public:
   virtual ~G4CMPVMeshInterpolator() {;}
@@ -79,7 +80,7 @@ protected:		// Data members available to subclasses directly
 
   // Per-instance storage to remember last tetrahedron used
   mutable G4Cache<G4double> TetraIdxStore;
-  G4double& TetraIdx;
+  G4double& TetraIdx() const { return TetraIdxStore.Get(); }
 
 };
 
