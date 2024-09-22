@@ -87,9 +87,7 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point3d> &xyz,
   BuildTetraMesh();
   FillTInverse();
   FillGradients();
-
-  TetraIdx() = -1;
-  TetraStart = FirstInteriorTetra();
+  Initialize();
 
 #ifdef G4CMPTLI_DEBUG
   SavePoints(savePrefix+"_points.dat");
@@ -106,14 +104,26 @@ void G4CMPTriLinearInterp::UseMesh(const vector<point3d>& xyz,
   FillNeighbors();
   FillTInverse();
   FillGradients();
-
-  TetraIdx() = -1;
-  TetraStart = FirstInteriorTetra();
+  Initialize();
 
 #ifdef G4CMPTLI_DEBUG
   SavePoints(savePrefix+"_points.dat");
   SaveTetra(savePrefix+"_tetra.dat");
 #endif
+}
+
+
+// Return index of tetrahedron with all edges shared, to start FindTetra()
+
+G4int G4CMPTriLinearInterp::FirstInteriorTetra() const {
+  G4int minIndex = Neighbors.size()/4;
+
+  for (G4int i=0; i<(G4int)Neighbors.size(); i++) {
+    if (*std::min_element(Neighbors[i].begin(), Neighbors[i].end())>minIndex)
+      return i;
+  }
+
+  return Neighbors.size()/2;
 }
 
 
@@ -441,19 +451,6 @@ void G4CMPTriLinearInterp::FillGradients() {
 #endif
 }
 
-
-// Return index of tetrahedron with all facets shared, to start FindTetra()
-
-G4int G4CMPTriLinearInterp::FirstInteriorTetra() {
-  G4int minIndex = Neighbors.size()/4;
-
-  for (G4int i=0; i<(G4int)Neighbors.size(); i++) {
-    if (*std::min_element(Neighbors[i].begin(), Neighbors[i].end())>minIndex)
-      return i;
-  }
-
-  return Neighbors.size()/2;
-}
 
 // Evaluate mesh at arbitrary location, returning potential or gradient
 

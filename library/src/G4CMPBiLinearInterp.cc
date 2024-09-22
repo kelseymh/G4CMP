@@ -76,9 +76,7 @@ void G4CMPBiLinearInterp::UseMesh(const vector<point2d>& xy,
   FillNeighbors();
   FillTInverse();
   FillGradients();
-
-  TetraIdx() = -1;
-  TetraStart = FirstInteriorTetra();
+  Initialize();
 
 #ifdef G4CMPTLI_DEBUG
   SavePoints(savePrefix+"_points.dat");
@@ -98,9 +96,7 @@ void G4CMPBiLinearInterp::UseMesh(const vector<point3d>& xyz,
   FillNeighbors();
   FillTInverse();
   FillGradients();
-
-  TetraIdx() = -1;
-  TetraStart = FirstInteriorTetra();
+  Initialize();
 
 #ifdef G4CMPTLI_DEBUG
   SavePoints(savePrefix+"_points.dat");
@@ -108,6 +104,19 @@ void G4CMPBiLinearInterp::UseMesh(const vector<point3d>& xyz,
 #endif
 }
 
+
+// Return index of tetrahedron with all edges shared, to start FindTetra()
+
+G4int G4CMPBiLinearInterp::FirstInteriorTetra() const {
+  G4int minIndex = Neighbors.size()/4;
+
+  for (G4int i=0; i<(G4int)Neighbors.size(); i++) {
+    if (*std::min_element(Neighbors[i].begin(), Neighbors[i].end())>minIndex)
+      return i;
+  }
+
+  return Neighbors.size()/2;
+}
 
 
 // Compress external 3D tables to 2D version (for client convenience)
@@ -314,19 +323,6 @@ void G4CMPBiLinearInterp::FillGradients() {
 #endif
 }
 
-
-// Return index of tetrahedron with all edges shared, to start FindTetra()
-
-G4int G4CMPBiLinearInterp::FirstInteriorTetra() {
-  G4int minIndex = Neighbors.size()/4;
-
-  for (G4int i=0; i<(G4int)Neighbors.size(); i++) {
-    if (*std::min_element(Neighbors[i].begin(), Neighbors[i].end())>minIndex)
-      return i;
-  }
-
-  return Neighbors.size()/2;
-}
 
 // Evaluate mesh at arbitrary location, returning potential or gradient
 

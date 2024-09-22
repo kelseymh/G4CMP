@@ -15,6 +15,8 @@
 // 20200914  Drop cachedGrad, staleCache; subclasses will precompute field.
 // 20240507  G4CMP-244: Use G4Cache for live index; allows cross-thread use.
 // 20240920  Replace TetraIdx data member with function to reference cache.
+// 20240921  Add new Initialize() function to ensure that per-thread TetraIdx
+//		is set properly.
 
 #ifndef G4CMPVMeshInterpolator_h 
 #define G4CMPVMeshInterpolator_h 
@@ -60,6 +62,9 @@ public:
 	       const std::vector<G4double>& /*v*/,
 	       const std::vector<tetra2d>& /*tetra*/) {;}
 
+  // Reset TetraIdx before using interpolator
+  void Initialize();
+
   // Evaluate mesh at arbitrary location, optionally suppressing errors
   virtual G4double GetValue(const G4double pos[], G4bool quiet=false) const = 0;
   virtual G4ThreeVector GetGrad(const G4double pos[], G4bool quiet=false) const = 0;
@@ -68,9 +73,13 @@ public:
   virtual void SavePoints(const G4String& fname) const = 0;
   virtual void SaveTetra(const G4String& fname) const = 0;
 
-protected:		// Data members available to subclasses directly
+protected:
   virtual void FillGradients() = 0;	// Subclasses MUST implement this
 
+  // For initialization, find lowest tetra index with all facets shared
+  virtual G4int FirstInteriorTetra() const = 0;	// Subclasses MUST implement
+
+protected:		// Data members available to subclasses directly
   std::vector<G4double> V;		// Values at mesh points
   std::vector<G4ThreeVector> Grad;	// Gradients across tetrahedra
   // NOTE: Subclasses must define dimensional mesh coords and tetrahera
