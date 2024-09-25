@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2024-09-25  g4cmp-V09-01-00 Support sharing mesh fields across threads.
 2024-09-25  G4CMP-430 : Update CONTRIBUTING for ChangeHistory with big tasks.
 2024-09-25  G4CMP-244 : Reduce memory footprint of mesh electric field objects.
 2024-08-22  G4CMP-423 : Avoid wrong volume assignment in G4CMPHitMerging.
