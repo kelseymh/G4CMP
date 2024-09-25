@@ -36,6 +36,7 @@ ivEnergy 27.3e-3 10.3e-3 eV
 neutDens 1e11 /cm3
 epsilon 16.2
 # Intervalley scattering (Edelweiss model)
+ivModel Quadratic
 ivQuadRate 6.72e-2 Hz	# From Edelweiss Collaboration
 ivQuadField 217 V/m	# From Edelweiss Collaboration
 ivQuadPower 3.24	# Rate = sqrt((E^2-QuadField^2)^ivPower)
