@@ -162,7 +162,7 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
   if (fToken == "ivdeform") return ProcessDeformation(); // D0, D1 potentials
   if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
-  if (fToken == "ivnval") return ProcessIVNVal();  // IV # final valleys
+  if (fToken == "ivnvalleys") return ProcessIVNValleys();  // IV # possible final valleys
   if (fToken == "ivorder") return ProcessIVOrder();  // IV process order
   if (fToken == "ivmodel")  return ProcessString(fToken);  // IV rate function
 
@@ -464,11 +464,11 @@ G4bool G4LatticeReader::ProcessThresholds() {
 
 // Read # final valleys and order for IV scattering
 
-G4bool G4LatticeReader::ProcessIVNVal() {
-  if (verboseLevel>1) G4cout << " ProcessIVNVal " << G4endl;
+G4bool G4LatticeReader::ProcessIVNValleys() {
+  if (verboseLevel>1) G4cout << " ProcessIVNValleys " << G4endl;
 
   G4bool okay = ProcessList("NoUnits");
-  if (okay) pLattice->SetIVNVal(fList);
+  if (okay) pLattice->SetIVNValleys(fList);
 
   return okay;
 }

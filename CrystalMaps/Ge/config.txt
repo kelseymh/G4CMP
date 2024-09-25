@@ -33,8 +33,8 @@ alpha 0.3 /eV
 acDeform 11 eV
 ivDeform 3e8 0.2e8 eV/cm		# Jacoboni & Reggiani
 ivEnergy 27.3e-3 10.3e-3 eV
-ivNVal 7 7
-ivOrder 0 0 
+ivNValleys 7 7			# number of possible final valleys
+ivOrder 0 0 			# order of IV process (0th or 1st)
 neutDens 1e11 /cm3
 epsilon 16.2
 # Intervalley scattering (Edelweiss model)

@@ -71,8 +71,8 @@ protected:
   G4bool ProcessValleyDirection();		// Drift directions
   G4bool ProcessDeformation();			// IV deformation potentials
   G4bool ProcessThresholds();			// IV energy thresholds
-  G4bool ProcessIVNVal();			// IV N Valleys
-  G4bool ProcessIVOrder();			// IV order
+  G4bool ProcessIVNValleys();			// IV Number possible final Valleys
+  G4bool ProcessIVOrder();			// IV order process
   G4bool SkipComments();			// Everything after '#'
 
   // Read expected dimensions for value from file, return scale factor

@@ -88,7 +88,7 @@ G4double G4CMPInterValleyRate::acousticRate() const {
 }
 
 G4double G4CMPInterValleyRate::opticalRate() const {
-   // FIXME:  Rate should not have 'kT', but leaving it out ruins drift curve
+
   IVprob = {};
   std::vector<G4int> nvalleys {7,7};
   std::vector<G4int> orders {0,0};
@@ -113,11 +113,12 @@ G4double G4CMPInterValleyRate::opticalRate() const {
     G4double orate = 0.;    
       
     G4double D_op = theLattice->GetIVDeform(i);
-    G4double nVal = theLattice->GetIVNVal(i);
+    G4double nVal = theLattice->GetIVNValleys(i);
     G4double ivorder = theLattice->GetIVOrder(i);      
   
     if (ivorder==0) {  
-    scale = nVal*/*kT**/m_DOS3half / (sqrt(2)*pi*hbar_sq*density);
+    // no kT dependance at ~ mK temperature for IV rate
+    scale = nVal*m_DOS3half / (sqrt(2)*pi*hbar_sq*density);
     oscale = scale * D_op*D_op / Emin_op;
     Efunc = energyFunc(eTrk-Emin_op);	// Energy above threshold
     orate = oscale * Efunc;
@@ -127,7 +128,7 @@ G4double G4CMPInterValleyRate::opticalRate() const {
     if (ivorder==1) {  
     G4double qmax = kmag*(1+sqrt(1-Emin_op/eTrk));
     G4double qmin = kmag*(1-sqrt(1-Emin_op/eTrk));
-    scale = nVal*/*kT**/m_DOS3half*m_DOS / (2*pi*hbar_Planck*density*m_electron*sqrt(m_electron));
+    scale = nVal*m_DOS3half*m_DOS / (2*pi*hbar_Planck*density*m_electron*sqrt(m_electron));
     oscale = scale * D_op*D_op / Emin_op/kmag;
     Efunc = qmax*qmax*qmax*qmax-qmin*qmin*qmin*qmin;	// Energy above threshold
     orate = oscale * Efunc;
