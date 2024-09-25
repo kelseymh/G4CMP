@@ -2,12 +2,17 @@
 
     R. Agnese, D. Brandt, M. Kelsey, P. Redl, I Ataee Langroudy
 
-
 This package provide a collection of particle types, physics processes, and
 supporting utilities to simulate a limited set of solid-state physics
 processes in Geant4.  Developed for the low-temperature community, the
 package support production and propagation of acoustic phonons and
 electron-hole pairs through solid crystals such as germanium.
+
+Website: https://confluence.slac.stanford.edu/browse/G4CMP/
+
+Paper:	https://doi.org/10.1016/j.nima.2023.168473
+	https://arxiv.org/abs/2302.05998
+	https://arxiv.org/abs/1403.4984
 
 ## Software Licenses
 

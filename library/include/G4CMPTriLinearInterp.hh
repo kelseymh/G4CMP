@@ -19,6 +19,7 @@
 //		Add "quiet" argument to MatInv to suppress warnings.
 // 20200908  Replace four-arg ctor and UseMesh() with copy constructor.
 // 20200914  Include gradient precalculation in BuildTInverse action.
+// 20240921  Make FirstInteriorTetra() virtual for use with Initialize()
 
 #ifndef G4CMPTriLinearInterp_h 
 #define G4CMPTriLinearInterp_h 
@@ -70,6 +71,9 @@ public:
 protected:
   void FillGradients();		// Compute gradient (field) at each tetrahedron
 
+  // For initialization, find lowest tetra index with all facets shared
+  virtual G4int FirstInteriorTetra() const;
+
 private:
   std::vector<point3d> X;
   std::vector<tetra3d> Tetrahedra;
@@ -97,7 +101,6 @@ private:
   G4int FindTetraID(const std::vector<tetra3d>& tetras,
 		    const tetra3d& wildTetra, G4int skip,
 		    TetraComp tLess) const;
-  G4int FirstInteriorTetra();	// Lowest tetra index with all facets shared
 
   void FindTetrahedron(const G4double point[3], G4double bary[4],
 		       G4bool quiet=false) const;
