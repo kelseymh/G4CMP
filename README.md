@@ -463,11 +463,11 @@ the crystal system.
 | **InterValley scattering with matrix elements** |
 | epsilon    | e/e0   | Relative permittivity     |                    |
 | neutDens   | N      | Number density of neutron impurities | /volume |
-| alpha      | va     | Non-parabolicity of valleys | energy^-1 (/eV)  |
-| acDeform   | val    | Acoustic deformation potential    | energy (eV)|
-| ivDeform   | val val ... | IV deformation potentials    | eV/cm      |
-| ivEnergy   | val val ... | IV phonon thresholds         | energy (eV)|
-| ivNValleys | val val ... | # possible final valleys     | none       |
+| alpha      | va     | Non-parabolicity of valleys  | energy^-1 (/eV) |
+| acDeform   | val    | Acoustic deformation potential   | energy (eV) |
+| ivDeform   | val val ... | IV deformation potentials   | eV/cm       |
+| ivEnergy   | val val ... | IV phonon thresholds        | energy (eV) |
+| ivNValleys | val val ... | # possible final valleys    | none        |
 | ivOrder    | val val ... | order of IV process (0th or 1st) | none   |
 | **InterValley scattering  (Linear and Quadratic Models) ** |
 | ivModel     | name | IVRate (matrix), Linear or Quadratic   | string |
