@@ -12,7 +12,6 @@
 // 20160729  M. Kelsey -- Add accessors for unit cell angles
 // 20170525  M. Kelsey -- Add default "rule of five" copy/move operators
 // 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm" (-Wshadow)
-// 20240416  S. Zatschler -- Change function arg "g" to "c" (-Wshadow)
 
 #include "globals.hh"
 #include "G4ThreeVector.hh"
@@ -25,7 +24,7 @@ public:
   static const char* Name(Bravais grp);
   static Bravais Group(const G4String& name);	// May return -1 if invalid
 
-public:				// For convenient access to data members 
+public:				// For convenient access to data members
   Bravais group;
   G4ThreeVector axis[3];	// Basis unit vectors in direct orientation
 
@@ -66,6 +65,7 @@ private:
 
   // Separate functions for completing Cij to avoid long spaghetti code
   G4bool FillCubic(G4double Cij[6][6]) const;
+  G4bool FillHexagonal(G4double Cij[6][6]) const;
   G4bool FillTetragonal(G4double Cij[6][6]) const;
   G4bool FillOrthorhombic(G4double Cij[6][6]) const;
   G4bool FillRhombohedral(G4double Cij[6][6]) const;
