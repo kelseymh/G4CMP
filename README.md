@@ -421,7 +421,7 @@ The lattice symmetry is specified by one of the seven crystal systems (or
 "amorphous") followed by the appropriate combination of lattice constant(s)
 and angle(s) needed to specify it uniquely.  The reduced elasticity matrix,
 Cij, must be specified term by term; which components are needed depends on
-the crystal system. 
+the crystal system.
 
 | Keyword | Arguments | Value type(s)             | Units              |
 |---------|-----------|---------------------------|--------------------|
