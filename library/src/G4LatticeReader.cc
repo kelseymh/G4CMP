@@ -35,6 +35,7 @@
 // 20231017  E. Michaud -- Add 'valleyDir' to set rotation matrix with valley's
 //		 direction instead of euler angles
 // 20240131  J. Inman -- Multiple path selection on G4LATTICEDATA variable
+// 20240920  E. Michaud -- Add 'ProcessIVNVal' and 'ProcessIVOrder' 
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -50,6 +51,7 @@
 #include <limits>
 #include <regex>
 #include <stdlib.h>
+#include <sstream>
 
 
 // Constructor and destructor
@@ -160,6 +162,8 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
   if (fToken == "ivdeform") return ProcessDeformation(); // D0, D1 potentials
   if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
+  if (fToken == "ivnvalleys") return ProcessIVNValleys();  // IV # possible final valleys
+  if (fToken == "ivorder") return ProcessIVOrder();  // IV process order
   if (fToken == "ivmodel")  return ProcessString(fToken);  // IV rate function
 
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
@@ -249,20 +253,27 @@ G4bool G4LatticeReader::ProcessString(const G4String& name) {
 G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
   if (verboseLevel>1) G4cout << " ProcessList " << unitcat << G4endl;
 
-  // Prepare input buffers for reading multiple values, up to unit string
+//   Prepare input buffers for reading multiple values, up to unit string
   fList.clear();
-
   G4String token;
-  char* eonum = 0;	// Will point to end of valid number string (NUL)
-  do {
-    *psLatfile >> token;
-    fValue = strtod(token.c_str(), &eonum);
-    if (*eonum == '\0') fList.push_back(fValue);
-  } while (psLatfile->good() && *eonum == '\0');
+  G4String line;
     
-//if (unicat=="NoUnits") {return psLatfile->good();}
+  if(std::getline(*psLatfile, line)){ 
+      std::istringstream iss(line);  // Separate by line for lines without units
+  
+      while (iss >> token) {
+          char* eonum = nullptr;    // Will point to end of valid number string (NUL)
+          fValue = strtod(token.c_str(), &eonum);
 
-  ProcessUnits(token, unitcat);		// Non-numeric token is trailing unit
+          // Check if the entire token is a valid number
+          if (*eonum == '\0') {fList.push_back(fValue);} 
+          else {break;} // Skip non-numerical tokens
+    } 
+}
+    
+  if (unitcat=="NoUnits") {fUnits=1.;}
+  else {ProcessUnits(token, unitcat);}		// Non-numeric token is trailing unit
+    
   for (size_t i=0; i<fList.size(); i++) fList[i] *= fUnits;
 
   return psLatfile->good();
@@ -451,12 +462,26 @@ G4bool G4LatticeReader::ProcessThresholds() {
   return okay;
 }
 
+// Read # final valleys and order for IV scattering
+
+G4bool G4LatticeReader::ProcessIVNValleys() {
+  if (verboseLevel>1) G4cout << " ProcessIVNValleys " << G4endl;
+
+  G4bool okay = ProcessList("NoUnits");
+  if (okay) pLattice->SetIVNValleys(fList);
+
+  return okay;
+}
 
 
+G4bool G4LatticeReader::ProcessIVOrder() {
+  if (verboseLevel>1) G4cout << " ProcessIVOrder " << G4endl;
 
+  G4bool okay = ProcessList("NoUnits");
+  if (okay) pLattice->SetIVOrder(fList);
 
-
-
+  return okay;
+}
 
 
 // Read expected dimensions for value from file, return scale factor

@@ -445,7 +445,7 @@ the crystal system.
 | scat    | B         | isotope scattering rate   | second^3 (s3)      |
 | decay   | A         | anharmonic decay rate     | second^4 (s4)      |
 | decayTT | frac      | Fraction of L->TT decays  |                    |
-| LDOS    | frac      | longitudinal density of states | sum to unity   |
+| LDOS    | frac      | longitudinal density of states | sum to unity  |
 | STDOS   | frac      | slow-transverse density of states |            |
 | FTDOS   | frac      | fast-transverse density of states |            |
 | Debye   | val       | Debye energy for phonon primaries | E, T, Hz   |
@@ -461,12 +461,14 @@ the crystal system.
 | emass   | m_xx m_yy m_zz | electron mass tensor | (same)             |
 | valley  | theta phi psi unit | Euler angles     | angle (deg/rad)    |
 | **InterValley scattering with matrix elements** |
-| epsilon | e/e0      | Relative permittivity     |                    |
-| neutDens | N        | Number density of neutron impurities | /volume |
-| alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
-| acDeform | val      | Acoustic deformation potential | energy (eV)   |
-| ivDeform | val val ... | Optical deformation potentials | eV/cm      |
-| ivEnergy | val val ... | Optical phonon thresholds     | energy (eV) |
+| epsilon    | e/e0   | Relative permittivity     |                    |
+| neutDens   | N      | Number density of neutron impurities | /volume |
+| alpha      | va     | Non-parabolicity of valleys  | energy^-1 (/eV) |
+| acDeform   | val    | Acoustic deformation potential   | energy (eV) |
+| ivDeform   | val val ... | IV deformation potentials   | eV/cm       |
+| ivEnergy   | val val ... | IV phonon thresholds        | energy (eV) |
+| ivNValleys | val val ... | # possible final valleys    | none        |
+| ivOrder    | val val ... | order of IV process (0th or 1st) | none   |
 | **InterValley scattering  (Linear and Quadratic Models) ** |
 | ivModel     | name | IVRate (matrix), Linear or Quadratic   | string |
 | ivLinRate0  | val | Constant term in linear IV expression   | Hz     |
