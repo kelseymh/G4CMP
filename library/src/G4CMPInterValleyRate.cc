@@ -114,7 +114,7 @@ G4double G4CMPInterValleyRate::opticalRate() const {
       
     G4double D_op = theLattice->GetIVDeform(i);
     G4double nVal = theLattice->GetIVNValleys(i);
-    G4double ivorder = theLattice->GetIVOrder(i);      
+    G4double ivorder = theLattice->GetIVOrder(i);
   
     if (ivorder==0) {  
     // no kT dependance at ~ mK temperature for IV rate
