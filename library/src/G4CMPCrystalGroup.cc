@@ -9,9 +9,9 @@
 // $Id$
 //
 // 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm" (-Wshadow)
-//I modify to include the option for the case of rhomohedral
-// I Modify the Fill of Rhomobohedral Elastic Constants October 2 2023
-//I Modify all the other Elastic Constant Groups October 23 2023
+// 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
+// 20240924  I. Hernandez -- Add an if statement to include a rhombohedral Crystal group and filling more explicitly the function G4CMPCrystalGroup::FillOrthorhombic()
+
 #include "G4CMPCrystalGroup.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -141,55 +141,48 @@ G4bool G4CMPCrystalGroup::FillOrthorhombic(G4double Cij[6][6]) const {
 G4bool G4CMPCrystalGroup::FillRhombohedral(G4double Cij[6][6]) const {
   G4double C11=Cij[0][0], C12=Cij[0][1], C13=Cij[0][2], C14=Cij[0][3];
   G4double  C33=Cij[2][2], C44=Cij[3][3], C66=0.5*(C11-C12);
-  
-  Cij[1][1] = C11;	// Copy small number of individual elements
-  Cij[1][2] = C13;
-  Cij[1][3] = -C14;
-  Cij[1][4] = 0.0;
-  Cij[3][5] = 0.0;
-  Cij[4][4] = C44;
-  Cij[4][5] = C14;
-
-  //Filling the other terms of the matrix, one-by-one (IH)
-  Cij[2][1] = C13;
-  Cij[3][1] = -C14;
-  Cij[4][1] = -0.0;
-  Cij[5][3] = -0.0;
-  Cij[5][4] = C14;
-  Cij[5][5] = C66;
-  
-  Cij[3][0]=C14;
-  Cij[1][0]=C12;
-  Cij[2][0]=C13;
-  
-  ///////////Filling the other terms of the Matix with zeros (on top of those already initialized to zero and then never changed)
-  //May consider removing these statements if they are superfluous
+//Filling the other terms of the matrix, one-by-one (IH)
+  //First Row
   Cij[0][4]=0.0;
-  Cij[0][5]=0.0;
-  Cij[4][0]=0.0;
-  Cij[5][0]=0.0;
-  Cij[2][5]=0.0;
-  Cij[5][2]=0.0;
-  
-  Cij[3][2]=0.0;
-  Cij[3][4]=0.0;
-  Cij[3][5]=0.0;
-  
+	Cij[0][5]=0.0;
+
+	//Second Row
+	Cij[1][0]=C12;
+	Cij[1][1]=C11;	// Copy small number of individual elements
+  Cij[1][2]=C13;
+  Cij[1][3]=-C14;
+  Cij[1][4]=0.0;
+	Cij[1][5]=0.0;
+
+	//Third Row
+	Cij[2][0]=C13;
+  Cij[2][1]=C13;
   Cij[2][3]=0.0;
-  Cij[4][3]=0.0;
-  Cij[5][3]=0.0;
-  
-  Cij[4][0]=0.0;
+	Cij[2][4]=0.0;
+  Cij[2][5]=0.0;
+
+	//Four Row
+	Cij[3][0]=C14;
+	Cij[3][1]=-C14;
+  Cij[3][2]=0.0;
+	Cij[3][4]=0.0;
+	Cij[3][5]=0.0;
+
+	// Fifth Row
+	Cij[4][0]=0.0;
   Cij[4][1]=0.0;
   Cij[4][2]=0.0;
   Cij[4][3]=0.0;
-  Cij[2][4]=0.0;
-  
+	Cij[4][4]=C44;
+	Cij[4][5]=C14;
+  // Sixth Row
   Cij[5][0]=0.0;
   Cij[5][1]=0.0;
   Cij[5][2]=0.0;
   Cij[5][3]=0.0;
-  
+  Cij[5][4]=C14;
+  Cij[5][5]=C66;
+
   // NOTE:  C15 may be zero (c.f. rhombohedral(I) vs. (II))
   return (C11!=0 && C12!=0 && C13!=0 && C14!=0. &&
 	  C33!=0. && C44!=0. && C66!=0.);

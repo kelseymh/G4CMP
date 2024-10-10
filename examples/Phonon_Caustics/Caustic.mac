@@ -1,4 +1,5 @@
 # This Macro is to Generate Phonons Caustics patterns
+/run/numberOfThreads 1
 /run/initialize
 /run/printProgress 100000
 /process/inactivate phononScattering

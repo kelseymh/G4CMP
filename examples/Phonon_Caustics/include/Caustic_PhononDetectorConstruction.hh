@@ -32,8 +32,6 @@ private:
   G4Material* fLiquidHelium;
   G4Material* fBolometer;
   G4Material* fAluminum;
-  G4Material* fOxigen;
-  G4Material* fSubstrate;
   G4VPhysicalVolume* fWorldPhys;
   G4CMPSurfaceProperty* topSurfProp;
   G4CMPSurfaceProperty* wallSurfProp;

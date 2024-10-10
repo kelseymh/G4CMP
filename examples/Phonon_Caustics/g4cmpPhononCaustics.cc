@@ -3,8 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file phonon/g4cmpPhonon.cc
-/// \brief Main program of the G4CMP/phonon example
+/// \file Phonon_Caustics/g4cmpPhononCaustics.cc
+/// \brief Main program of the G4CMP/Phonon_Caustics example
 //
 // $Id$
 //
@@ -53,77 +53,7 @@ int main(int argc,char** argv)
  G4VisManager* visManager = new G4VisExecutive;
  visManager->Initialize();
 
- // Get the pointer to the User Interface manager
- //--------------Function to Visualisze the Detector Geometry
-
-///////////////////////////////////////////////
-// G4UImanager* UImanager = G4UImanager::GetUIpointer();
-//
-//      G4UIExecutive * ui = new G4UIExecutive(argc,argv);
-//   //  UImanager->ApplyCommand("/control/execute vis.mac");
-// //  UImanager->ApplyCommand("/run/initialize");
-// // UImanager->ApplyCommand("/gps/number 1");
-// // UImanager->ApplyCommand("/g4cmp/phononBounces 3000");
-// // UImanager->ApplyCommand("/process/inactivate phononScattering");
-// // UImanager->ApplyCommand("/process/setVerbose 0 G4CMPSecondaryProduction");
-// // UImanager->ApplyCommand("/process/inactivate phononDownconversion");
-// // UImanager->ApplyCommand("/gps/energy 0.005 eV");
-// // G4UImanager* UImanager = G4UImanager::GetUIpointer();
-//
-//
-//  UImanager->ApplyCommand("/run/initialize");
-// UImanager->ApplyCommand("/gps/number 1");
-// UImanager->ApplyCommand("/g4cmp/phononBounces 3000");
-// UImanager->ApplyCommand("/process/inactivate phononScattering");
-// UImanager->ApplyCommand("/process/setVerbose 0 G4CMPSecondaryProduction");
-// UImanager->ApplyCommand("/process/inactivate phononDownconversion");
-// UImanager->ApplyCommand("/gps/energy 0.005 eV");
-//
-//
-//  UImanager->ApplyCommand("/gps/ang/type iso");
-// //  UImanager->ApplyCommand("/gps/direction 0 0 1");
-//
-//  UImanager->ApplyCommand("/gps/pos/centre 0.0 0.0 0.0 cm");
-// // UImanager->ApplyCommand("/gps/pos/centre 0.0 0.0 0.0 cm");
-// //
-// //
-// //
-// //
-// UImanager->ApplyCommand("/vis/open OGL 600x600-0+0");
-// // // UImanager->ApplyCommand("/vis/viewer/set/viewpointVector 1 1 1");
-// UImanager->ApplyCommand("/vis/drawVolume");
-// UImanager->ApplyCommand("/vis/viewer/set/autoRefresh true");
-// UImanager->ApplyCommand("/vis/modeling/trajectories/create/drawByParticleID");
-// UImanager->ApplyCommand("/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red");
-// UImanager->ApplyCommand("/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green");
-// //UImanager->ApplyCommand("/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue");
-//  //UImanager->ApplyCommand("/tracking/verbose 2");
-//  UImanager->ApplyCommand("/tracking/storeTrajectory 1");
-//  UImanager->ApplyCommand("/vis/scene/add/trajectories");
-// UImanager->ApplyCommand("/vis/scene/endOfEventAction accumulate 4000");
-//  UImanager->ApplyCommand("/vis/scene/add/hits");
-//
-// //UImanager->ApplyCommand("/tracking/verbose 2 ");
-// // // UImanager->ApplyCommand("/SiliconSixQubitArrayDetectorConstruction/filmAbsorption 0.5 ");
-// // //
-// // //
-// // // //
-// UImanager->ApplyCommand("/vis/scene/add/axes 0 0 0 0.003 m");
-// //
-// UImanager->ApplyCommand("/run/beamOn 4000");
-// // //
-// //
-// // //Make notes for the meetin g
-// //    UImanager->ApplyCommand("/vis/scene/add/trajectories smooth");
-// //    UImanager->ApplyCommand("/vis/scene/endOfEventAction accumulate");
-//
-//
-//     ui->SessionStart();
-
-
-
-
-//////////This Part is to run the Macros
+//This Part is to run the Macros
 
  G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
@@ -144,7 +74,7 @@ int main(int argc,char** argv)
  delete runManager;
 
  return 0;
-///////
+
 
 
 

@@ -7,7 +7,9 @@
 #define Caustic_PhononConfigManager_hh 1
 //20240110 Israel Hernandez -- Illinois Institute of Technology, Quantum Science Center and Fermilab
 
-#include "globals.hh"
+#include "G4Types.hh”
+#include "G4String.hh"
+
 
 class Caustic_PhononConfigMessenger;
 
@@ -38,7 +40,7 @@ private:
   static Caustic_PhononConfigManager* theInstance;
 
 private:
-  G4String Hit_file;	// Output file 
+  G4String Hit_file;	// Output file
 
 
   Caustic_PhononConfigMessenger* messenger;

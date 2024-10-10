@@ -39,8 +39,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 Caustic_PhononDetectorConstruction::Caustic_PhononDetectorConstruction()
-  : fLiquidHelium(0),fBolometer(0),fOxigen(0),fSubstrate(0),
-    fWorldPhys(0), topSurfProp(0), wallSurfProp(0),
+  : fLiquidHelium(0),fBolometer(0),fWorldPhys(0), topSurfProp(0), wallSurfProp(0),
     electrodeSensitivity(0), fConstructed(false) {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -86,12 +85,9 @@ void Caustic_PhononDetectorConstruction::Caustic_DefineMaterials()
   fLiquidHelium = nistManager->FindOrBuildMaterial("G4_AIR"); // to be corrected
   fBolometer = nistManager->FindOrBuildMaterial("G4_Al");
 
-//This lines works for Sapphire
-//
- fOxigen = nistManager->FindOrBuildMaterial("G4_O");
-fSubstrate = new G4Material("fSubstrate", 3.98*g/cm3, 2);
-fSubstrate->AddElement(nistManager->FindOrBuildElement("Al"), 2);
-fSubstrate->AddElement(nistManager->FindOrBuildElement("O"), 3);
+//Defining the materials for phonon propagation.
+ fCrystalMaterial = nistManager->FindOrBuildMaterial("G4_ALUMINUM_OXIDE");
+
 //
 }
 
@@ -110,13 +106,13 @@ void Caustic_PhononDetectorConstruction::Caustic_SetupGeometry()
   fWorldPhys = new G4PVPlacement(0,G4ThreeVector(),worldLogical,"World",0,
                                  false,0);
 
-// Substrate
- G4VSolid* fSubstrateSolid= new G4Box("fSubstrateSolid",0.2*cm,0.2*cm,0.2*cm);
+//The Substrate material where the phonons are propagated
+ G4VSolid* SubstrateSolid= new G4Box("SubstrateSolid",0.2*cm,0.2*cm,0.2*cm);
 
-  G4LogicalVolume* fSubstrateLogical =
-    new G4LogicalVolume(fSubstrateSolid,fSubstrate,"fSubstrateLogical");
+  G4LogicalVolume* SubstrateLogical =
+    new G4LogicalVolume(SubstrateSolid,fCrystalMaterial,"SubstrateLogical");
   G4VPhysicalVolume* SubstratePhys =
-    new G4PVPlacement(0,G4ThreeVector(),fSubstrateLogical,"fSubstratePhysical",
+    new G4PVPlacement(0,G4ThreeVector(),SubstrateLogical,"SubstratePhysical",
                       worldLogical,false,0,checkOverlaps);
 
   //
@@ -127,9 +123,10 @@ void Caustic_PhononDetectorConstruction::Caustic_SetupGeometry()
   //Al2O3 (Sapphire ) is the name of the folder where all the physical properties of the  Substrate are saved
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
   //If you want to see the phonon caustic of other materials only change the name of the latttice .
-  //Example   G4LatticeLogical* GeLogical = LM->LoadLattice(fSubstrate, "Si"); // Here you will see the phonons caustic of Silicon
-  G4LatticeLogical* SubstrateLogical = LM->LoadLattice(fSubstrate, "Al2O3");
-  //G4LatticeLogical* SubstrateLogical = LM->LoadLattice(fSubstrate, "GaAs");// For GaAs
+  //Example   G4LatticeLogical* GeLogical = LM->LoadLattice(fCrystalMaterial, "Si"); // Here you will see the phonons caustic of Silicon
+  //G4LatticeLogical* SubstrateLogical = LM->LoadLattice(fCrystalMaterial, "GaAs");// For GaAs
+  G4LatticeLogical* SubstrateLogical = LM->LoadLattice(fCrystalMaterial, "Al2O3");
+
 
   G4LatticePhysical* SubstratePhysical = new G4LatticePhysical(SubstrateLogical);
 
@@ -143,12 +140,12 @@ void Caustic_PhononDetectorConstruction::Caustic_SetupGeometry()
   //
 
 
-    G4VSolid* fBolometerSolid= new G4Box("fBolometerSolid",0.2*cm,0.2*cm,0.001*cm);
+    G4VSolid* BolometerSolid= new G4Box("BolometerSolid",0.2*cm,0.2*cm,0.001*cm);
 
-  G4LogicalVolume* fBolometerLogical =
-    new G4LogicalVolume(fBolometerSolid,fBolometer,"fBolometerLogical");
-  G4VPhysicalVolume* fBolometerPhysical = new G4PVPlacement(0,
-    G4ThreeVector(0.,0.,0.201*cm), fBolometerLogical, "fBolometerPhysical",
+  G4LogicalVolume* BolometerLogical =
+    new G4LogicalVolume(BolometerSolid,fBolometer,"BolometerLogical");
+  G4VPhysicalVolume* BolometerPhysical = new G4PVPlacement(0,
+    G4ThreeVector(0.,0.,0.201*cm), BolometerLogical, "BolometerPhysical",
     worldLogical,false,0,checkOverlaps);
 
   //
@@ -156,7 +153,7 @@ void Caustic_PhononDetectorConstruction::Caustic_SetupGeometry()
   if (!electrodeSensitivity)
     electrodeSensitivity = new Caustic_PhononSensitivity("PhononElectrode");
   SDman->AddNewDetector(electrodeSensitivity);
-  fSubstrateLogical->SetSensitiveDetector(electrodeSensitivity);
+  SubstrateLogical->SetSensitiveDetector(electrodeSensitivity);
 
   //
   // surface between bolometer and Substrate determines phonon reflection/absorption
@@ -180,7 +177,7 @@ void Caustic_PhononDetectorConstruction::Caustic_SetupGeometry()
   //
   // Separate surfaces for sensors vs. bare sidewall
   //
-  new G4CMPLogicalBorderSurface("detTop", SubstratePhys, fBolometerPhysical,
+  new G4CMPLogicalBorderSurface("detTop", SubstratePhys, BolometerPhysical,
 				topSurfProp);
 
   new G4CMPLogicalBorderSurface("detWall", SubstratePhys, fWorldPhys,
@@ -193,7 +190,6 @@ void Caustic_PhononDetectorConstruction::Caustic_SetupGeometry()
   G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));// Gray Color
   G4VisAttributes* simpleDetectorAtt= new G4VisAttributes(G4Colour(0.0,0.0,1.0));// Blue Color
   simpleBoxVisAtt->SetVisibility(true);
-  fSubstrateLogical->SetVisAttributes(simpleBoxVisAtt);
-  fBolometerLogical->SetVisAttributes(simpleDetectorAtt);
+  SubstrateLogical->SetVisAttributes(simpleBoxVisAtt);
+  BolometerLogical->SetVisAttributes(simpleDetectorAtt);
 }
-
