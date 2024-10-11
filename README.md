@@ -469,7 +469,7 @@ the crystal system.
 | epsilon | e/e0      | Relative permittivity     |                    |
 | neutDens | N        | Number density of neutron impurities | /volume |
 | alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
-| acDeform_e | val | electon acoustic deformation potential | energy (eV)|
+| acDeform_e | val | electron acoustic deformation potential | energy (eV)|
 | acDeform_h | val | hole acoustic deformation potential  | energy (eV)|
 | ivDeform | val val ... | Optical deformation potentials | eV/cm      |
 | ivEnergy | val val ... | Optical phonon thresholds     | energy (eV) |
