@@ -798,13 +798,9 @@ G4double G4LatticeLogical::ComputeL0(G4bool IsElec) {
       mass = GetHoleMass();
       acDeform = GetHoleAcousticDeform();
   }
-   
-    
+ 
   G4double l0 = pi*hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck*fDensity/2/mass/mass/mass/acDeform/acDeform;
-    
-      G4cout << "l0 : " << l0/m << G4endl;  
-
-return l0;
+  return l0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

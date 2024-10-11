@@ -3,7 +3,6 @@ cubic 5.431 Ang		# (Lattice constant)
 stiffness 1 1 165.6 GPa	# C11, C12, C44
 stiffness 1 2  63.9 GPa
 stiffness 4 4  79.5 GPa
-#density 2.335 g/cm3
 # Phonon parameters
 dyn -42.9 -94.5 52.4 68.0 GPa
 scat 2.43e-42 s3
