@@ -46,7 +46,7 @@
 //		return thread-local instance.
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
-// 20240510  Add Processl0(G4 bool).
+// 20240510  Add ProcessL0(G4 bool).
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -786,7 +786,7 @@ const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
 
 // Process scattering length l0_e and l0_h
 
-G4double G4LatticeLogical::Processl0(G4bool IsElec) {
+G4double G4LatticeLogical::ComputeL0(G4bool IsElec) {
   G4double mass = 0.;
   G4double acDeform = 0.;
       
@@ -798,9 +798,12 @@ G4double G4LatticeLogical::Processl0(G4bool IsElec) {
       mass = GetHoleMass();
       acDeform = GetHoleAcousticDeform();
   }
+   
     
-  G4double l0 = pi*hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck*GetDensity()/2/mass/mass/mass/acDeform/acDeform;
-     
+  G4double l0 = pi*hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck*fDensity/2/mass/mass/mass/acDeform/acDeform;
+    
+      G4cout << "l0 : " << l0/m << G4endl;  
+
 return l0;
 }
 

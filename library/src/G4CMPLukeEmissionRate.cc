@@ -38,6 +38,7 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
     kmag = theLattice->MapV_elToK_HV(GetValleyIndex(aTrack),
 				     GetLocalVelocityVector(aTrack)).mag();
     l0 = theLattice->GetElectronScatter();
+      G4cout << "l0 luke : " << l0 << G4endl;
     mass = theLattice->GetElectronMass();	// Scalar mass
   } else if (G4CMP::IsHole(aTrack)) {
     kmag = GetLocalWaveVector(aTrack).mag();

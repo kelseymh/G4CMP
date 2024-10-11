@@ -39,7 +39,7 @@
 // 20200608  Fix -Wshadow warnings from tempvec
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
-// 20240510  Add Processl0(G4 bool).
+// 20240510  Add ComputeL0(G4 bool).
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -207,7 +207,7 @@ public:
   G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const;
     
   // Compute "l0" for electron and hole
-  G4double Processl0(G4bool IsElec);
+  G4double ComputeL0(G4bool IsElec);
 
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley);
