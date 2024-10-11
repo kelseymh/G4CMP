@@ -12,6 +12,7 @@
 // in the concrete subclasses.
 //
 // 20200914  Add function call to precompute potential gradients (field)
+// 20240921  Add new Initialize() function to set tetra index cache
 
 #include "G4CMPVMeshInterpolator.hh"
 
@@ -31,4 +32,12 @@ void G4CMPVMeshInterpolator::UseValues(const std::vector<G4double>& v) {
 #ifdef G4CMPTLI_DEBUG
   SavePoints(savePrefix+"_points.dat");
 #endif
+}
+
+
+// Ensure that cached index is properly set
+
+void G4CMPVMeshInterpolator::Initialize() {
+  TetraIdx() = -1;
+  TetraStart = FirstInteriorTetra();
 }

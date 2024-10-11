@@ -16,6 +16,7 @@
 // 20220826  For use with primary generator, need to pass in G4Event*
 // 20220828  Add interface to process "left over" accumulators to primaries
 // 20240420  Add ability to set voltage bias from client code
+// 20240731  G4CMP-420 -- Add flag to remember if voltage bias was preset.
 
 #ifndef G4CMPHitMerging_hh
 #define G4CMPHitMerging_hh 1
@@ -91,6 +92,7 @@ protected:
 private:
   G4int verboseLevel;			// Select diagnostic message output
   G4double combiningStepLength;		// Steps within which to accumulate
+  G4bool presetBiasVoltage;		// Flag if bias voltage was preset.
   G4bool readyForOutput;		// Flag if hit data ready for use
 
   // Collection of accumulators for individual tracks in event

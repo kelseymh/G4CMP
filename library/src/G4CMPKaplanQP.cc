@@ -61,6 +61,7 @@
 // 20221201  G4CMP-345: Test all incident phonons for "direct absorption."
 // 20221209  G4CMP-348: Remove now-extraneous factor of 2 in EscapeProbability
 // 20230626  Initialize absorberEff to 1. in constructor (G4CMP-314).
+// 20230709  Suppress 'kaplanqp_stats' output unless verbose 2+.
 // 20240502  G4CMP-344: Reusable vector buffers to avoid memory churn.
 // 20240502  G4CMP-378: Correct expression for phonon-QP scattering energy.
 // 20240502  G4CMP-379: Add fallback use of temperature from ConfigManager.
@@ -271,7 +272,7 @@ ReportAbsorption(G4double energy, G4double EDep,
 				   reflectedEnergies.end(), 0.);
 
 #ifdef G4CMP_DEBUG
-  if (output.good()) {
+  if (verboseLevel >1 && output.good()) {
     output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
 	   << reflectedEnergies.size() << std::endl;
   }

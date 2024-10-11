@@ -19,6 +19,7 @@
 // 20190509  Migrate to 2D/3D mesh base class, handle dimensional reduction
 // 20190612  Mesh pointer ctor should set axes to kUndefined
 // 20200520  For thread-safety, move reusable "pos" buffer here
+// 20240921  G4CMP-244: Add non-const access to meshing object.
 
 #ifndef G4CMPMeshElectricField_h 
 #define G4CMPMeshElectricField_h 1
@@ -72,6 +73,7 @@ public:
   virtual G4double GetPotential(const G4double Point[3]) const;
 
   // Get access to mesh interpolator for client access or copying
+        G4CMPVMeshInterpolator* GetInterpolator()       { return Interp; }
   const G4CMPVMeshInterpolator* GetInterpolator() const { return Interp; }
 
   // Sorting operator (compares x, y, z in sequence)
