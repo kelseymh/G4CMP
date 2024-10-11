@@ -469,7 +469,8 @@ the crystal system.
 | epsilon | e/e0      | Relative permittivity     |                    |
 | neutDens | N        | Number density of neutron impurities | /volume |
 | alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
-| acDeform | val      | Acoustic deformation potential | energy (eV)   |
+| acDeform_e | val | electon acoustic deformation potential | energy (eV)|
+| acDeform_h | val | hole acoustic deformation potential  | energy (eV)|
 | ivDeform | val val ... | Optical deformation potentials | eV/cm      |
 | ivEnergy | val val ... | Optical phonon thresholds     | energy (eV) |
 | **InterValley scattering  (Linear and Quadratic Models) ** |
@@ -481,6 +482,10 @@ the crystal system.
 | ivQuadField | val | Minimum field for quadratic IV expression | V/m  |
 | ivQuadPower | exp | Exponent: rate = Rate*(E^2-Field^2)^(exp/2) | none |
 
+The keywords l0_e and l0_h are optional. If they are not specified in
+config.txt, they will be computed from other physical constants. If they 
+are specified in config.txt, the value in config.txt takes precedence over 
+the computed value.
 
 ## Surface Interactions
 

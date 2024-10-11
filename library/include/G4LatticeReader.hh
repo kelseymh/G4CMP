@@ -23,7 +23,6 @@
 // 20170810  Add utility function to process list of values with unit.
 // 20190704  Add utility function to process string/name argument
 // 20231102  Add ProcessValleyDirection()
-// 20240510  Add functions to process l0 from physical constants.
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
