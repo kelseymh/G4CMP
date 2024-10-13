@@ -57,7 +57,7 @@
 //		<p> (transport momentum).
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
-// 20240510  Add ProcessL0(G4 bool).
+// 20240510  E. Michhaud -- Add function to compute L0 from other parameters
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****

@@ -41,7 +41,7 @@
 // 20230702  I. Ataee -- Add methods for relationship between quasi-momentum
 //		(p_Q) and expectation value of momentum (p).
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
-// 20240510  Add ComputeL0(G4 bool).
+// 20240510  E. Michhaud -- Add function to compute L0 from other parameters
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
