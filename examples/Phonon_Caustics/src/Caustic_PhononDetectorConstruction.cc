@@ -145,8 +145,8 @@ G4VSolid* SubstrateSolid= new G4Box("SubstrateSolid",0.2*cm,0.2*cm,0.2*cm);
 
 G4LogicalVolume* BolometerLogical =
   new G4LogicalVolume(BolometerSolid,fBolometer,"BolometerLogical");
-G4VPhysicalVolume* fBolometerPhysical = new G4PVPlacement(0,
-  G4ThreeVector(0.,0.,0.201*cm), BolometerLogical, "fBolometerPhysical",
+G4VPhysicalVolume* BolometerPhysical = new G4PVPlacement(0,
+  G4ThreeVector(0.,0.,0.201*cm), BolometerLogical, "BolometerPhysical",
   worldLogical,false,0,checkOverlaps);
 
 
@@ -179,7 +179,7 @@ G4VPhysicalVolume* fBolometerPhysical = new G4PVPlacement(0,
   //
   // Separate surfaces for sensors vs. bare sidewall
   //
-  new G4CMPLogicalBorderSurface("detTop", SubstratePhys, fBolometerPhysical,
+  new G4CMPLogicalBorderSurface("detTop", SubstratePhys, BolometerPhysical,
 				topSurfProp);
 
   new G4CMPLogicalBorderSurface("detWall", SubstratePhys, fWorldPhys,
