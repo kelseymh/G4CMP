@@ -485,7 +485,7 @@ the crystal system.
 The keywords l0_e and l0_h are optional. If they are not specified in
 config.txt, they will be computed from other physical constants: 
 
-l0 = pi*hbar^4*rho/(2*m^3*Dac^2)
+l0 = pi*hbar^4*density / (2*mass^3*acDeform^2)
 
 If they are specified in config.txt, the value in config.txt takes precedence
 over the computed value.
