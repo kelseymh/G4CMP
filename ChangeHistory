@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2024-10-15  G4CMP-407 : Calculate l0 from physical constants.
 2024-09-25  G4CMP-422 : Allow user to override IV rate model with UI command.
 
 2024-09-25  g4cmp-V09-01-00 Support sharing mesh fields across threads.

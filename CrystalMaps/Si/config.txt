@@ -19,8 +19,6 @@ pairEnergy 3.81 eV
 fanoFactor 0.15
 vsound 9000 m/s		# Longitudinal sound speed
 vtrans 5400 m/s		# Transverse sound speed
-l0_e 16.9e-6 m #16.9e-5 m # 8e-6 m #16.9e-6 m
-l0_h 7.5e-5 m
 #hole and electron masses taken from Robert's thesis
 hmass 0.50		# per m(electron)
 emass 0.91 0.19 0.19	# per m(electron)
@@ -29,7 +27,8 @@ valleyDir 0 1 0
 valleyDir 0 0 1
 # Intervalley scattering (matrix elements)
 alpha 0.5 /eV
-acDeform 6.6 eV
+acDeform_e 9 eV		# Cabrera et al., arxiv(1004.1233), 2010
+acDeform_h 5 eV
 ivDeform 0.5e8 0.8e8 11e8 0.3e8 2e8 2e8 eV/cm		# Jacoboni & Reggiani
 ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV
 neutDens 1e11 /cm3
