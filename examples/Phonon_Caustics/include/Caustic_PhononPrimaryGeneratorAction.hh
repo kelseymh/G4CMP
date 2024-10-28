@@ -4,7 +4,7 @@
 \***********************************************************************/
 
 
-//20240110 Israel Hernandez -- Illinois Institute of Technology, Quantum Science Center and Fermilab
+// 20241024 Israel Hernandez -- IIT, QSC and Fermilab
 
 
 #ifndef Caustic_PhononPrimaryGeneratorAction_h
@@ -28,7 +28,7 @@ public:
     virtual void GeneratePrimaries(G4Event*);
 
   private:
-  
+
     G4GeneralParticleSource *fParticleGun;
 
 };

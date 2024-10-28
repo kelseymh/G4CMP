@@ -3,10 +3,12 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+// 20241024 Israel Hernandez -- IIT, QSC and Fermilab
+
+
 #ifndef Caustic_PhononConfigMessenger_hh
 #define Caustic_PhononConfigMessenger_hh 1
 
-//20240110 Israel Hernandez -- Illinois Institute of Technology, Quantum Science Center and Fermilab
 #include "G4UImessenger.hh"
 #include "G4UIcmdWithADouble.hh"
 

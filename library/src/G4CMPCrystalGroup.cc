@@ -10,8 +10,8 @@
 //
 // 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm" (-Wshadow)
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
-// 20241014  I. Hernandez -- Add an if statement to include a rhombohedral Crystal group.
-//           Filling more explicitly the function G4CMPCrystalGroup::FillOrthorhombic()
+// 20241024  I. Hernandez -- Add an if statement to include a rhombohedral Crystal group
+// 20241024  I. Hernandez -- Fixing the function FillOrthorhombic()
 
 #include "G4CMPCrystalGroup.hh"
 #include "G4PhysicalConstants.hh"
@@ -144,29 +144,30 @@ G4bool G4CMPCrystalGroup::FillOrthorhombic(G4double Cij[6][6]) const {
 G4bool G4CMPCrystalGroup::FillRhombohedral(G4double Cij[6][6]) const {
   G4double C11=Cij[0][0], C12=Cij[0][1], C13=Cij[0][2], C14=Cij[0][3];
   G4double  C33=Cij[2][2], C44=Cij[3][3], C66=0.5*(C11-C12);
-//Filling the second order elastic constant for Rhombohedral I Class with Point group 32, 3m and 3m.
-//Filling explicitly the  36 components of the second order elastic tensor.
+// Filling the second order elastic constant for Rhombohedral I Class with
+// Point group 32, 3m and 3m.
+// Filling explicitly the  36 components of the second order elastic tensor.
 
-  //First Row
+  // First Row
   Cij[0][4]=0.0;
 	Cij[0][5]=0.0;
 
-	//Second Row
+	// Second Row
 	Cij[1][0]=C12;
-	Cij[1][1]=C11;	// Copy small number of individual elements
+	Cij[1][1]=C11;
   Cij[1][2]=C13;
   Cij[1][3]=-C14;
   Cij[1][4]=0.0;
 	Cij[1][5]=0.0;
 
-	//Third Row
+	// Third Row
 	Cij[2][0]=C13;
   Cij[2][1]=C13;
   Cij[2][3]=0.0;
 	Cij[2][4]=0.0;
   Cij[2][5]=0.0;
 
-	//Four Row
+	// Four Row
 	Cij[3][0]=C14;
 	Cij[3][1]=-C14;
   Cij[3][2]=0.0;

@@ -4,9 +4,8 @@
 \***********************************************************************/
 
 
-//20240110 Israel Hernandez -- Illinois Institute of Technology
-//We include the GeneralParticle Source to control the distribution of the Particles
-//The initial population is only to generate the caustic patterns
+// 20241024 Israel Hernandez -- IIT, QSC and Fermilab
+
 #include "Caustic_PhononPrimaryGeneratorAction.hh"
 
 #include "G4Event.hh"
@@ -37,8 +36,9 @@ Caustic_PhononPrimaryGeneratorAction::~Caustic_PhononPrimaryGeneratorAction() {
 
 
 void Caustic_PhononPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
-  //Defining 50% of the initial  population for TransFast and TransSlow phonons, this is only to distinguish the Phonons Caustics
-  //Note.- This is not the initial density of States of the Substrate
+  // Defining 50% of the initial  population for TransFast and TransSlow phonons.
+  // This is only to distinguish the Phonons Caustics
+  // Note.- This is not the initial density of States of the Substrate
   G4double selector = G4UniformRand();
   if (selector<0.5) {
   fParticleGun->SetParticleDefinition(G4PhononTransFast::Definition());
@@ -46,8 +46,9 @@ void Caustic_PhononPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
 }
   else{
   fParticleGun->SetParticleDefinition(G4PhononTransSlow::Definition());
-  // fParticleGun->SetParticleDefinition(G4PhononLong::Definition()); If you are interested in Longitudinal phonons, but their direction does not change too much.
-  //You only need to uncomment and comment on the other fParticleGun.
+  // fParticleGun->SetParticleDefinition(G4PhononLong::Definition());
+  // If you are interested in Longitudinal phonons.
+  // You only need to uncomment and comment on the other fParticleGun.
   }
      fParticleGun->GeneratePrimaryVertex(anEvent);
 }

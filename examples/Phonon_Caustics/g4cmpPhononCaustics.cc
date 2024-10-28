@@ -8,12 +8,6 @@
 //
 // $Id$
 //
-// 20140509  Add conditional code for Geant4 10.0 vs. earlier
-// 20150112  Remove RM->Initialize() call to allow macro configuration
-// 20160111  Remove Geant4 version check since we now hard depend on 10.2+
-// 20170816  Add example-specific configuration manager
-// 20220718  Remove obsolete pre-processor macros G4VIS_USE and G4UI_USE
-
 #include "G4RunManager.hh"
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
@@ -53,7 +47,7 @@ int main(int argc,char** argv)
  G4VisManager* visManager = new G4VisExecutive;
  visManager->Initialize();
 
-//This Part is to run the Macros
+// This Part is to run the Macros
 
  G4UImanager* UImanager = G4UImanager::GetUIpointer();
 

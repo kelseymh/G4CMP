@@ -3,7 +3,7 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-//20240110 Israel Hernandez -- Illinois Institute of Technology, Quantum Science Center and Fermilab
+// 20241024 Israel Hernandez -- IIT, QSC and Fermilab
 
 #ifndef Caustic_PhononActionInitialization_hh
 #define Caustic_PhononActionInitialization_hh 1
@@ -17,4 +17,4 @@ public:
   virtual void Build() const;
 };
 
-#endif	
+#endif

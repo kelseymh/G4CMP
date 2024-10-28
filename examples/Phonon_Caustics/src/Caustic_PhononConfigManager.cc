@@ -3,8 +3,9 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+// 20241024 Israel Hernandez -- IIT, QSC and Fermilab
 
-//20240110 Israel Hernandez -- Illinois Institute of Technology
+
 #include "Caustic_PhononConfigManager.hh"
 #include "Caustic_PhononConfigMessenger.hh"
 #include "G4RunManager.hh"

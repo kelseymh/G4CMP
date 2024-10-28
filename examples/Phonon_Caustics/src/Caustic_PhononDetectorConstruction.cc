@@ -4,8 +4,8 @@
 \***********************************************************************/
 
 
-//
-//20240110 Israel Hernandez -- Illinois Institute of Technology
+
+// 20241024 Israel Hernandez -- IIT, QSC and Fermilab
 
 
 #include "Caustic_PhononDetectorConstruction.hh"
@@ -85,8 +85,9 @@ void Caustic_PhononDetectorConstruction::Caustic_DefineMaterials()
 
   fLiquidHelium = nistManager->FindOrBuildMaterial("G4_AIR"); // to be corrected
   fBolometer = nistManager->FindOrBuildMaterial("G4_Al");
-
-//Defining the materials for phonon propagation.
+//
+// Defining the materials for phonon propagation
+//
  fCrystalMaterial = nistManager->FindOrBuildMaterial("G4_ALUMINUM_OXIDE");
 
 //
@@ -107,7 +108,7 @@ void Caustic_PhononDetectorConstruction::Caustic_SetupGeometry()
   fWorldPhys = new G4PVPlacement(0,G4ThreeVector(),worldLogical,"World",0,
                                  false,0);
 
-//The Substrate material where the phonons are propagated
+// The Substrate material where the phonons are propagated
 G4VSolid* SubstrateSolid= new G4Box("SubstrateSolid",0.2*cm,0.2*cm,0.2*cm);
 
   G4LogicalVolume* SubstrateLogical1 =
@@ -117,15 +118,14 @@ G4VSolid* SubstrateSolid= new G4Box("SubstrateSolid",0.2*cm,0.2*cm,0.2*cm);
                       worldLogical,false,0,checkOverlaps);
 
   //
-  //Substrate lattice information
+  // Substrate lattice information
   //
 
   // G4LatticeManager gives physics processes access to lattices by volume
-  //Al2O3 (Sapphire ) is the name of the folder where all the physical properties of the  Substrate are saved
+  //
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  //If you want to see the phonon caustic of other materials only change the name of the latttice .
-  //Example   G4LatticeLogical* GeLogical = LM->LoadLattice(fCrystalMaterial, "Si"); // Here you will see the phonons caustic of Silicon
-  //G4LatticeLogical* SubstrateLogical = LM->LoadLattice(fCrystalMaterial, "GaAs");// For GaAs
+
+  // G4LatticeLogical* SubstrateLogical = LM->LoadLattice(fCrystalMaterial, "GaAs");
   G4LatticeLogical* SubstrateLogical = LM->LoadLattice(fCrystalMaterial, "Al2O3");
 
 
@@ -136,9 +136,9 @@ G4VSolid* SubstrateSolid= new G4Box("SubstrateSolid",0.2*cm,0.2*cm,0.2*cm);
 
 
   LM->RegisterLattice(SubstratePhys, SubstratePhysical);
-  //
-  // Aluminum . This is where phonon hits are registered (Bolometer)
-  //
+ //
+ // Aluminum . This is where phonon hits are registered (Bolometer)
+ //
 
 
   G4VSolid* BolometerSolid= new G4Box("BolometerSolid",0.2*cm,0.2*cm,0.001*cm);
@@ -158,8 +158,8 @@ G4VPhysicalVolume* BolometerPhysical = new G4PVPlacement(0,
   SubstrateLogical1->SetSensitiveDetector(electrodeSensitivity);
 
   //
-  // surface between bolometer and Substrate determines phonon reflection/absorption
-  // For the Phonon Caustics we want total phonon absorption for the bolometer and the Substrate walls.
+  // Surface between bolometer and Substrate determines phonon reflection/absorption
+  // Here We set 1.0 for total phonon absorption
   //
   if (!fConstructed) {
 
@@ -189,8 +189,8 @@ G4VPhysicalVolume* BolometerPhysical = new G4PVPlacement(0,
   // Visualization attributes
   //
   worldLogical->SetVisAttributes(G4VisAttributes::Invisible);
-  G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));// Gray Color
-  G4VisAttributes* simpleDetectorAtt= new G4VisAttributes(G4Colour(0.0,0.0,1.0));// Blue Color
+  G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
+  G4VisAttributes* simpleDetectorAtt= new G4VisAttributes(G4Colour(0.0,0.0,1.0));
   simpleBoxVisAtt->SetVisibility(true);
   SubstrateLogical1->SetVisAttributes(simpleBoxVisAtt);
   BolometerLogical->SetVisAttributes(simpleDetectorAtt);

@@ -13,7 +13,7 @@
 // 20170525  M. Kelsey -- Add default "rule of five" copy/move operators
 // 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm" (-Wshadow)
 // 20240416  S. Zatschler -- Change function arg "g" to "c" (-Wshadow)
-// 20241014  I. Hernandez -- Add functionality to support hexagonal crystal structure.
+// 20241024  I. Hernandez -- Add functionality to support hexagonal crystal structure.
 
 
 #include "globals.hh"

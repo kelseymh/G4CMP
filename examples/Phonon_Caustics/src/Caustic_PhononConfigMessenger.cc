@@ -4,7 +4,8 @@
 \***********************************************************************/
 
 
-//20240110 Israel Hernandez -- Illinois Institute of Technology
+// 20241024 Israel Hernandez -- IIT, QSC and Fermilab
+
 #include "Caustic_PhononConfigMessenger.hh"
 #include "Caustic_PhononConfigManager.hh"
 #include "G4UIcmdWithAString.hh"
