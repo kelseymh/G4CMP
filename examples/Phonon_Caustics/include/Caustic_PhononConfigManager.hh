@@ -8,7 +8,7 @@
 #ifndef Caustic_PhononConfigManager_hh
 #define Caustic_PhononConfigManager_hh 1
 
-#include "G4Types.hh”
+#include "G4Types.hh"
 #include "G4String.hh"
 
 
