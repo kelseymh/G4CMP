@@ -88,7 +88,7 @@ G4bool Caustic_PhononSensitivity::IsHit(const G4Step* step,
   G4bool correctParticle = particle == G4PhononLong::Definition() ||
                            particle == G4PhononTransFast::Definition() ||
                            particle == G4PhononTransSlow::Definition();
-// Adding the additional condition to save only the phonon that impacts the Aluminum Sensor
+// Saving only the phonon that impacts into the Aluminum Sensor
   G4bool correctStatus = step->GetTrack()->GetTrackStatus() == fStopAndKill &&
                          postStepPoint->GetStepStatus() == fGeomBoundary &&
                          step->GetNonIonizingEnergyDeposit() > 0. && name=="BolometerPhysical";
