@@ -3,7 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-//20240110 Israel Hernandez -- Illinois Institute of Technology
+// 20241024 Israel Hernandez -- IIT, QSC and Fermilab
+
 #include "Caustic_PhononActionInitialization.hh"
 #include "Caustic_PhononPrimaryGeneratorAction.hh"
 #include "G4CMPStackingAction.hh"
