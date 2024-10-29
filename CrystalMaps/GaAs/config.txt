@@ -1,0 +1,22 @@
+# Israel Hernandez Illinois Institute of Technology
+# Quantum Science Center, Fermilab
+# Crystal parameters For GaAS 
+cubic 5.75 Ang		# (Lattice constant) DOI:https://doi.org/10.1103/PhysRevB.32.5245
+stiffness 1 1 121.57 GPa	# C11, C12, C44
+stiffness 1 2  57.4 GPa
+stiffness 4 4  59.5 GPa
+# Phonon parameters  Calculated using these third order elastic constants https://doi.org/10.1063/1.1709955
+dyn -54.71 -67.51 47.2 44.2 GPa
+scat 7.22e-42 s3
+decay 7.778e-55 s4
+decayTT 0.778
+# From S. Tamura et al., PRB44(7), 1991
+LDOS  0.078
+STDOS 0.584
+FTDOS 0.337
+Debye 6.56 THz		#
+vsound 5130.0 m/s		# Longitudinal sound speed DOI:10.1088/0953-8984/10/14/009
+vtrans 3020.0 m/s		# Transverse sound speed
+
+
+

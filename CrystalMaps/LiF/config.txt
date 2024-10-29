@@ -1,0 +1,18 @@
+# Israel Hernandez Illinois Institute of Technology
+# Quantum Science Center, Fermilab
+# Crystal parameters This is for LiF 
+cubic 4.03 Ang		# (Lattice constant)
+stiffness 1 1 111.2 GPa	# C11, C12, C44
+stiffness 1 2  42.0 GPa
+stiffness 4 4  62.8 GPa
+# Phonon parameters
+dyn -83.94 -87.54 30.72 51.5 GPa
+scat 1.17e-42 s3
+decay 5.50e-55 s4
+decayTT 0.68
+LDOS  0.0983
+STDOS 0.5156
+FTDOS 0.386
+Debye 10.73 THz		#
+vsound 7290 m/s		# Longitudinal sound speed
+vtrans 4450 m/s		# Transverse sound speed
