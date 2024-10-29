@@ -5,7 +5,6 @@
 /gps/pos/centre 0.0 0.0 0.0 cm
 /run/numberOfThreads 1
 /run/initialize
-/g4cmp/phononBounces 100
 /process/inactivate phononScattering
 /process/inactivate phononDownconversion
 /run/beamOn 40000000
