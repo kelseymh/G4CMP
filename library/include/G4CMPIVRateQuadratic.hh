@@ -10,6 +10,7 @@
 // $Id$
 //
 // 20170815  Move G4CMPProcessUtils inheritance to base class
+// 20240823  Change name to plain "Quadratic", to match UseRateModel()
 
 #ifndef G4CMPIVRateQuadratic_hh
 #define G4CMPIVRateQuadratic_hh 1
@@ -19,7 +20,7 @@
 
 class G4CMPIVRateQuadratic : public G4CMPVScatteringRate {
 public:
-  G4CMPIVRateQuadratic() : G4CMPVScatteringRate("IVQuadratic") {;}
+  G4CMPIVRateQuadratic() : G4CMPVScatteringRate("Quadratic") {;}
   virtual ~G4CMPIVRateQuadratic() {;}
 
   virtual G4double Rate(const G4Track& aTrack) const;
