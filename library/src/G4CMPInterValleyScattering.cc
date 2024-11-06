@@ -286,14 +286,14 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             k_recoilHV = theLattice->EllipsoidalToSphericalTranformation(valley, k_recoil);
                 
                 
-            G4cout << "valley : " << valley << G4endl;
-            G4cout << "theta_phonon : " << theta_phonon << " phi_phonon : " << phi_phonon << G4endl;
-            G4cout << "ptrk : " << ptrk  << G4endl;
-            G4cout << "Etrk : " << Etrk / eV << " Ephonon : " << Ephonon / eV << " Erecoil : " << Erecoil / eV << G4endl;
-            G4cout << "ktrk : " << ktrk << " ktrk_mag : " << ktrk.mag() << G4endl;
-            G4cout << "kHV : " << kHV << " kHV_mag : " << kmag << G4endl;
-            G4cout << "k_recoil_i : " << k_recoil << " krecoil_mag : " << k_recoil.mag() << G4endl;
-            G4cout << "k_recoilHV : " << k_recoilHV << " k_recoilHV_mag : " << k_recoilHV.mag() << G4endl;   
+//             G4cout << "valley : " << valley << G4endl;
+//             G4cout << "theta_phonon : " << theta_phonon << " phi_phonon : " << phi_phonon << G4endl;
+//             G4cout << "ptrk : " << ptrk  << G4endl;
+//             G4cout << "Etrk : " << Etrk / eV << " Ephonon : " << Ephonon / eV << " Erecoil : " << Erecoil / eV << G4endl;
+//             G4cout << "ktrk : " << ktrk << " ktrk_mag : " << ktrk.mag() << G4endl;
+//             G4cout << "kHV : " << kHV << " kHV_mag : " << kmag << G4endl;
+//             G4cout << "k_recoil_i : " << k_recoil << " krecoil_mag : " << k_recoil.mag() << G4endl;
+//             G4cout << "k_recoilHV : " << k_recoilHV << " k_recoilHV_mag : " << k_recoilHV.mag() << G4endl;   
              
                 
                 
@@ -305,10 +305,10 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             qvec = ktrk - k_recoil;
             q = qvec.mag();    
                 
-            G4cout << "valley : " << valley << " Energytest : " << EnergyTest/eV <<G4endl;
-            G4cout << "k_recoil_f : " << k_recoil << " krecoil_mag : " << k_recoil.mag() << G4endl;
-            G4cout << "qvec : " << qvec << " q_mag : " << q << G4endl;
-            G4cout << "Precoil : " << Precoil  << G4endl;
+//             G4cout << "valley : " << valley << " Energytest : " << EnergyTest/eV <<G4endl;
+//             G4cout << "k_recoil_f : " << k_recoil << " krecoil_mag : " << k_recoil.mag() << G4endl;
+//             G4cout << "qvec : " << qvec << " q_mag : " << q << G4endl;
+//             G4cout << "Precoil : " << Precoil  << G4endl;
                 
 
                 

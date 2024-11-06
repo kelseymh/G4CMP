@@ -134,7 +134,7 @@ G4double G4CMPInterValleyRate::opticalRate() const {
     orate = oscale * Efunc;
     }
       
-      G4cout << " oscale[" << i << "] : " << oscale << " Efunc : " << Efunc << " Etrk : "  << eTrk/eV << " phonon rate [" << i << "] : " << orate/hertz << " Hz" << G4endl;
+     // G4cout << " oscale[" << i << "] : " << oscale << " Efunc : " << Efunc << " Etrk : "  << eTrk/eV << " phonon rate [" << i << "] : " << orate/hertz << " Hz" << G4endl;
       
     if (verboseLevel>2) {
       G4cout << " oscale[" << i << "] " << oscale << " Efunc " << Efunc
