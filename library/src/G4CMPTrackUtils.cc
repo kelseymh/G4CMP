@@ -113,23 +113,24 @@ G4bool G4CMP::HasTrackInfo(const G4Track& track) {
 // Get physical lattice associated with track
 
 G4LatticePhysical* G4CMP::GetLattice(const G4Track& track) {
-  //  G4cout << "REL-- back here, beginning of getlattice in trackutils." << G4endl;
+  G4cout << "REL-- back here, beginning of getlattice in trackutils." << G4endl;
   G4VPhysicalVolume* trkvol = track.GetVolume();
   if (!trkvol){
     trkvol = G4CMP::GetVolumeAtPoint(track.GetPosition());
-    //    G4cout << "REL-- Have to use builtin G4CMP utils call to get volume at point... URK" << G4endl;
+    G4cout << "REL-- Have to use builtin G4CMP utils call to get volume at point... URK: " << trkvol->GetName() << G4endl;
   }
-  //G4cout << "REL-- physical volume at track point: " << trkvol->GetName() << G4endl;
+  G4cout << "REL-- physical volume at track point: " << trkvol->GetName() << G4endl;
   
   if (!G4LatticeManager::GetLatticeManager()->HasLattice(trkvol)
       && track.GetStep()) {
     trkvol = track.GetStep()->GetPreStepPoint()->GetPhysicalVolume();
+    G4cout << "REL-- There is no latticemanager-bonafide lattice for trkVol. Using the track pre-step volume physical volume, " << trkvol->GetName() << " to set the lattice." << G4endl;
   }
 
   return G4LatticeManager::GetLatticeManager()->GetLattice(trkvol);
 }
 
-
+/*
 // REL NB: I think this is no longer used -- keep for a little while to check but then delete!
 // Need to define this for the case where we are transitioning from one lattice to another. Reason is that
 // the above function uses track.GetVolume() whereas what needs to be called is track.GetNextVolume() for
@@ -146,7 +147,7 @@ G4LatticePhysical* G4CMP::GetNextLattice(const G4Track & track)
   }
   return G4LatticeManager::GetLatticeManager()->GetLattice(trkvol);
 }
-
+*/
 
 // Look up process by name associated with track
 

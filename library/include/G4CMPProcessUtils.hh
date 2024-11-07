@@ -72,9 +72,9 @@ public:
   virtual void SetLattice(const G4Track* track);
 
   //REL: NB: these are currently no longer used -- kept around for just a bit to make sure we don't need them
-  virtual void ReloadDataForTrack(const G4Track* track); //REL Kill?
-  virtual void SetCurrentTrackInNextVolume(const G4Track* track);
-  virtual void SetNextLattice(const G4Track* track);
+  //virtual void ReloadDataForTrack(const G4Track* track); //REL Kill?
+  //virtual void SetCurrentTrackInNextVolume(const G4Track* track);
+  //virtual void SetNextLattice(const G4Track* track);
   
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
@@ -87,7 +87,7 @@ public:
 
   // Set configuration manually, without a track
   virtual void FindLattice(const G4VPhysicalVolume* volume);
-  virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
+  virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }// G4cout << "REL G4CMPProcessUtils::SetLattice calls on lattice input, to get lattice: " << theLattice << G4endl; }
   virtual const G4LatticePhysical* GetLattice() const { return theLattice; }
 
   // Convert global to local coordinates with respect to current track

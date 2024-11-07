@@ -110,53 +110,126 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
     return false;
   }
 
-  //REL this needs to be tweaked for phonons coming back in from a different volume...
-  //Right now, IF the lattice update does not happen, volLattice != GetLattice(). But if it does,
-  //then volLattice is going to EQUAL GetLattice() for steps that are inward.
-  //HAVE TO BE CAREFUL HERE, THOUGH -- HOW DOES THIS IMPACT ELECTRONS' BEHAVIORS?
-  // do nothing if the current step is inbound from outside the original volume
-  G4LatticePhysical* volLattice =
-    G4LatticeManager::GetLatticeManager()->GetLattice(postPV); //REL used to be prePV
 
-  //Here, since now the GetMFP function has called a lattice update, procUtils->GetLattice() should just be the "current" lattice we're in.
-  //So we compare to the POST-step point lattice, AND require that the step length is zero (since just the above condition is also satisfied
-  //by tracks that start in one volume and are boundary-limited but finite in extent)
-  G4cout << "REL inside the GetBoundingVolumes function. aStep.GetStepLength() = " << aStep.GetStepLength() << G4endl;
 
-  //Two scenarios: one, in which we have no lattice in the pre-step point. Here, we need the "current" lattice (procUtils->GetLattice)
-  //to be the same as the post-step point for the step (i.e. going back into the substrate)
-  //We also note that the step lengths here are usually zero but sometimes are order of 1E-15, so to head off floating point errors
-  //we're going to use a pm tolerance, which is well below physics scales that are relevant to these kinds of simulations.
-  double stepLengthTolerance = 1E-12 * CLHEP::m; 
+  //Note that since now the GetMFP function has called a lattice update, procUtils->GetLattice() should just be the "current" lattice we're in.
+  //  G4cout << "REL inside the GetBoundingVolumes function. aStep.GetStepLength() = " << aStep.GetStepLength() << G4endl;
+  G4cout << "---- In GetBoundingVolumes: procUtils->GetLattice(): " << procUtils->GetLattice() << ", prePVlattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(prePV) << ", volLattice (postPVLattice): " << G4LatticeManager::GetLatticeManager()->GetLattice(postPV) << G4endl;
+  G4LatticePhysical* volLattice = G4LatticeManager::GetLatticeManager()->GetLattice(postPV);
+
+  //First scenario: we DON'T have a lattice in the pre-step point. This happens at least when we're on the boundary of a lattice and                          
+  //the world. Here the phonon "turns around" in the world volume, in a step that is of negligible length. This negligible length is                          
+  //typically around 1E-15, so to account for these safely we use a tolerance of 1E-12, which is well below the physics scales                                
+  //relevant in these kinds of sims.
+  double stepLengthTolerance = 1E-12 * CLHEP::m;
   if (G4LatticeManager::GetLatticeManager()->GetLattice(prePV) == 0 ){
-    if( volLattice == procUtils->GetLattice() && aStep.GetStepLength() <= stepLengthTolerance ){
-      if (buVerboseLevel>1) {
-	G4cout << procName << ": Track inbound after reflection" << G4endl;
-	G4cout << "volLattice: " << volLattice << ", procUtils->GetLattice(): " << procUtils->GetLattice() << G4endl;
+    G4cout << "---- In GetBoundingVolumes: Current lattice is zero." << G4endl;
+    
+    //First: if the current (i.e. pre-step, procUtils->GetLattice()) lattice is the same as post-step volume lattice.
+    //This occurs, if, for example, the current volume is World/vacuum, and a lattice changeover/update failed in the MFP step because
+    //there is no lattice to update to. Hence, the "current" procUtils->GetLattice() lattice is really the prePV one from the *previous* step.
+    if( volLattice == procUtils->GetLattice() ){
+      G4cout << "----- In GetBoundingVolumes: Current Lattice is equal to post-PV lattice." << G4endl;
+      
+      //If the step length is below tolerance, we need to return false so we don't try to "double-count" the boundary action.
+      //The small step sizes occur when the phonon "turns around" on a boundary with a volume that doesn't have a lattice.
+      if( aStep.GetStepLength() <= stepLengthTolerance ){
+        G4cout << "------ In GetBoundingVolumes: Step length is below step length tolerance." << G4endl;
+        return false;
       }
-      return false;
+      //If the step length is long. I think this can only happen if we're somehow having a long track in a non-lattice volume. For now
+      //we'll keep the control block here just in case (and make it return what would be returned in its absence anyway).
+      else{
+        G4cout << "------ In GetBoundingVolumes: Step length is above step length tolerance." << G4endl;
+        return true; //TBD, but set to be consistent with older version
+      }
+    }
+    //If the current lattice is not equal to the post-step lattice. From a first glance at phonon dynamics I don't think this happens,
+    //but we'll keep the control block here so that if we see it does happen, we can make the call then.
+    else{
+      G4cout << "----- In GetBoundingVolumes: Current Lattice is not equal to post-PV lattice." << G4endl;
+      return true; //TBD, but set to be consistent with older version
     }
   }
-  //Second scenario: we DO have a lattice in the pre-step point. Here, we need the "current" lattice (procUtils->GetLattice())
-  //to be different from the one in the post-step point for the step (i.e. going back into the prior lattice)
+  
+  //Second scenario: we DO have a lattice in the pre-step point. In this case, we have two options. The initial step is one in which
+  //a phonon from lattice 1 is approaching lattice 2, and has a finite step length. Here the "procUtils, current" lattice is the
+  //one from which the phonon is incident, and the "postPV, volLattice" is the one that it is approaching. They are different and
+  //as a result, the internal (second) if statement fires here, and as long as this first step is finite in extent, you run the
+  //logic to see if you do a transmission or reflection, etc.
+  // - For transmission, that's all she wrote: there is no turnaround step, and the phonon is transferred to the next lattice (see
+  //   doTransmission in the phononBoundaryProcess class).  
+  // - For reflection, there is an additional "infinitesimal" step, in which lattice 2 becomes the "current" lattice and lattice 1
+  //   becomes the "far" lattice. The same (second) if statement triggers, but now the step length is tiny, which we can flag. For
+  //   this step, we don't want to trigger any of the doTransmission/doReflection logic (as it would be "double-counting" that physics),
+  //   so we return false. 
   if (G4LatticeManager::GetLatticeManager()->GetLattice(prePV) != 0 ){
-    if( volLattice != procUtils->GetLattice() && aStep.GetStepLength() <= stepLengthTolerance ){
-      if (buVerboseLevel>1) {
-	G4cout << procName << ": Track inbound after reflection" << G4endl;
-	G4cout << "volLattice: " << volLattice << ", procUtils->GetLattice(): " << procUtils->GetLattice() << G4endl;
+    G4cout << "---- In GetBoundingVolumes: Current lattice is not zero." << G4endl;
+    
+    //If the current (i.e. pre-step, procUtils->GetLattice()) lattice is different from the post-step volume lattice, then this is where
+    //some important logic must happen.
+    if( volLattice != procUtils->GetLattice() ){
+      G4cout << "----- In GetBoundingVolumes: Current Lattice ("<< procUtils->GetLattice() << ") is not equal to post-PV lattice (" << volLattice << ")." << G4endl;
+
+      //If the step length is tiny, this means that we're in a "turnaround" step characteristic of reflection back into the lattice
+      //that we approached from. Here we return false so that we don't try to run another boundary process action for this turnaround
+      //step -- that has already been done
+      if( aStep.GetStepLength() <= stepLengthTolerance ){
+        G4cout << "------ In GetBoundingVolumes: Step length is below step length tolerance." << G4endl;
+        return false;
       }
-      return false;
+      //Otherwise, the track is actually moving through a volume before it hits this surface, and it needs to run the logic to see if
+      //it reflects, transmits, etc. Need to return true so that logic can run.
+      else{
+        G4cout << "------ In GetBoundingVolumes: Step length is above step length tolerance." << G4endl; 
+        return true;
+      }
+    }
+    //If the current lattice is NOT different from the post-step lattice, this should have already been covered at the beginning of this
+    //function -- throw an error here.
+    else{
+      G4cout << "\n\n\nREL Current lattice is not different from postPV lattice. This should have been covered already -- figure out why it hasn't.\n\n\n" << G4endl;
+      return false; //TBD
     }
   }
 
-  //  if (buVerboseLevel>1) {
-    G4cout <<   "  PreStep volume: " << prePV->GetName() << " @ "
+
+
+  /*  
+  //REL UPDATED 11/5/2024 -- this original code does not work, because when we inevitably do an update of the lattice in the MFP calculation at any given step,
+  //                         we end up having the volLattice and the procUtils->GetLattice() values be the same even for the turnaround step.
+  //REL 11/5/2024 -- this is the original code. It should still be applicable. The reason is twofold:
+  //1. Before the phonon is transmitted across a boundary, its procUtils->GetLattice() pulls a lattice set by *track* information. As long as
+  //   the phonon is in the original volume (i.e. hasn't been transmitted), the lattice here should remain the same. This holds even for when
+  //   a phonon is hitting a boundary with another lattice that IS well defined. Here, the procUtils->GetLattice() should still return the
+  //   original volume since we haven't used a SetLattice() function that uses the volume-based info.
+  //2. During the transmission process, the procUtils->SetLattice() function is called and the lattice is updated with the new volume. Since
+  //   GetBoundaryVolumes() is called twice per step but both times are BEFORE this setLattice instance, a step with a phonon incident on a
+  //   boundary will not end up thinking the volLattice and procUtils->GetLattice() are different, and won't block any action. In a scenario
+  //   where there's a "reflection" step that is infinitesimal, you've technically hopped over to a new lattice (so the volLattice has changed),
+  //   but since there's no explicit change to the procUtils lattice, it's still the *original* lattice. This allows the following logic to fire,
+  //   and prevent an additional ApplyBoundaryAction for such turnaround steps.
+  G4LatticePhysical* volLattice =
+    G4LatticeManager::GetLatticeManager()->GetLattice(prePV);
+  G4cout << "In G4CMPBoundaryUtils: PreStepPoint: " << prePV->GetName() << ", PostStepPoint: " << postPV->GetName() << G4endl;
+  G4cout << "In G4CMPBoundaryUtils: VolLattice: " << volLattice << ", procUtils->GetLattice(): " << procUtils->GetLattice() << G4endl;
+  if(volLattice != procUtils->GetLattice()){
+    G4cout << "\n\n\n REL THE DEFAULT G4CMPBOUNDARYUTILS::GetBoundingVolumes() flag is firing. WHY NOW?" <<G4endl;
+    if(buVerboseLevel>1){
+      G4cout << procName << ": Track inbound after reflection" << G4endl;
+    }
+    return false;
+  }
+  */
+
+  if (buVerboseLevel>1) {
+    G4cout <<   "  RELPreStep volume: " << prePV->GetName() << " @ "
 	   << aStep.GetPreStepPoint()->GetPosition()
 	   << "\n PostStep volume: " << (postPV?postPV->GetName():"OutOfWorld")
 	   << " @ " << aStep.GetPostStepPoint()->GetPosition()
 	   << G4endl;
-    //}
-
+  }
+  
   return true;
 }
 

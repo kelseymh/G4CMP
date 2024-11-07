@@ -82,6 +82,7 @@ G4bool G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTra
 {
   G4cout << "REL HereA_G4CMPVProcess: loading data for track after lattice changeover, process: " << this->GetProcessName() << G4endl;
   G4cout << "Here, track length: " << aTrack.GetTrackLength() << G4endl;
+  G4cout << "Current lattice a la lattice manager: " << G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()) << G4endl;
   //Always do a check to see if the current lattice stored in this process is equal to the one that represents
   //the volume that we're in. Note that we can't do this with the "GetLattice()" and "GetNextLattice()" calls
   //here because at this point in the step, the pre- and post-step points both point to the same volume. Since
@@ -94,16 +95,12 @@ G4bool G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTra
 
     //REL noting that if physical lattices are not 1:1 with volumes, something may get broken here... Should check a scenario of segmented SC...
     
-    //We note that here, even though reloadDataForTrack has the above-mentioned shortcoming at this point in the step,
-    //the critical thing is that we're ALREADY in the next material based on the above conditional. This means that
-    //we can just use either the pre- or post-step point. (Which might argue that we don't even need ReloadDataForTrack
-    //at all...
     this->LoadDataForTrack(&aTrack);
     if(rateModel) rateModel->LoadDataForTrack(&aTrack);
-    G4cout << "REL G4CMPVProcess: Successfully changed over to a new lattice." << G4endl;
+    G4cout << "REL G4CMPVProcess: Successfully changed over to a new lattice for process " << this->GetProcessName() << G4endl;
     return true;
   }
-  G4cout << "REL G4CMPVProcess: Did not successfully change over to a new lattice." << G4endl;
+  G4cout << "REL G4CMPVProcess: Did not successfully change over to a new lattice for process " << this->GetProcessName() << G4endl;
   return false;
 }
 
@@ -136,11 +133,10 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 					G4ForceCondition* condition) {
 
   G4cout << "REL HereB_G4CMPVProcess" << G4endl;
-  
+
   //Update lattice information within the process utils 
   if(UpdateMeanFreePathForLatticeChangeover(aTrack)){
     UpdateSCAfterLatticeChange();
-    //  UpdateNMInfo
   }
 
   /*

@@ -90,7 +90,7 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
                                              G4double /*prevStepLength*/,
                                              G4ForceCondition* condition) {
-
+  G4cout << "REL GetMFP_G4CMPPhononBoundaryProcess" << G4endl;
   UpdateMeanFreePathForLatticeChangeover(aTrack);
   
   *condition = Forced;
@@ -117,6 +117,8 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
            << "\n P direction: " << aTrack.GetMomentumDirection() << G4endl;
   }
 
+  G4cout << "REL just about to apply boundary action" << G4endl;
+  
   ApplyBoundaryAction(aTrack, aStep, aParticleChange);
 
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
@@ -340,10 +342,9 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
   //Generic print
   if (verboseLevel>1) G4cout << "REL-- Track transmission requested" << G4endl;
 
-  G4cout << "Okay, let's try again. aTrack getposition: " << aTrack.GetPosition() << G4endl;
+  G4cout << "DoTransmision: aTrack getposition: " << aTrack.GetPosition() << G4endl;
   G4cout << "aStep poststepposition: " << aStep.GetPostStepPoint()->GetPosition() << G4endl;
-  G4cout << "Trackutils acquired lattice: " << G4CMP::GetLattice(aTrack) << ", while the next lattice is: " << G4CMP::GetNextLattice(aTrack) << G4endl;
-  
+  G4cout << "Lattice manager current lattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPreStepPoint()->GetPhysicalVolume()) << ", lattice manager post step point lattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()) << G4endl;
   
   //First, check the different materials involved. If one of them does not have a lattice, then something upstream has gone wrong. Scream.
   //Note that here, we need to use the G4LatticeManager rather than the TrackUtils version of GetLattice() because the trackUtils
@@ -355,9 +356,6 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
     msg << "Expecting to do phonon transmission at interface but one or more lattices splitting the boundary cannot be found.";
     G4Exception("G4CMPPhononBoundaryProcess::DoTransmission", "PhononBoundary001",FatalException,msg);
   }
-
-  //Because here it can't hurt?
-  ReloadDataForTrack(&aTrack);
 
   //SIMPLEST POSSIBLE IMPLEMENTATION -- PHYSICS IS NOT NECESSARILY RIGHT
   //Now get track info at this point: the k vector, mode, etc.
@@ -374,6 +372,14 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
 
     aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
   }
+
+  
+  //Since the lattice hasn't changed yet, change it here. (This also happens at the MFP calc point at the beginning of the next step,
+  //but it's nice to have it here so we can use the new lattice info to help figure out vdir, etc.)
+  this->SetLattice(G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()));
+  UpdateSCAfterLatticeChange();
+
+  G4cout << "REL the lattice at the end of doTransmission: " << theLattice << G4endl;
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
   G4ThreeVector vdir = theLattice->MapKtoVDir(mode, waveVector);
   G4double v = theLattice->MapKtoV(mode, waveVector);

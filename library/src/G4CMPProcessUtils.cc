@@ -85,7 +85,7 @@ G4CMPProcessUtils::G4CMPProcessUtils()
 
 G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
-
+/*
 //REL NBNB, 6/25/2024: This DOES seem to get called in DoTransmission in phonon boundary processes... figure out why
 //REL NB: This is currently not being used -- keeping them in just to make sure I don't need them later...
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -131,7 +131,7 @@ void G4CMPProcessUtils::ReloadDataForTrack(const G4Track* track)
   G4Track* tmp_track = const_cast<G4Track*>(track);
   tmp_track->SetMomentumDirection(theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), kdir));
 }
-
+*/
 
 
 
@@ -141,7 +141,7 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
   // WARNING!  This assumes track starts and ends in one single volume!
   SetCurrentTrack(track);
   SetLattice(track);
-
+  
   if (!theLattice) {
     G4String msg = ("No lattice found for volume "
 		    + track->GetVolume()->GetName()
@@ -211,7 +211,7 @@ void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
   }
 }
 
-
+/*
 //REL NB: This are currently not being used -- keeping them in just to make sure I don't need them later...
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Need to have dedicated inherited versions of these functions so that we can run
@@ -226,14 +226,19 @@ void G4CMPProcessUtils::SetCurrentTrackInNextVolume(const G4Track* track) {
     currentVolume = G4CMP::GetVolumeAtPoint(track->GetPosition());
   }
 }
+*/
 
 void G4CMPProcessUtils::SetLattice(const G4Track* track) {
   theLattice = track ? G4CMP::GetLattice(*track) : nullptr;
+  //  G4cout << "REL G4CMPProcessUtils::SetLattice calls on track info, to get lattice: " << theLattice << G4endl;
 }
 
+/*
 void G4CMPProcessUtils::SetNextLattice(const G4Track* track) {
   theLattice = track ? G4CMP::GetNextLattice(*track) : nullptr;
 }
+*/
+
 
 // Fetch lattice for specified volume, use in subsequent steps
 
