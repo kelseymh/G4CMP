@@ -147,6 +147,7 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fIVLinRate0 = rhs.fIVLinRate0;
   fIVLinRate1 = rhs.fIVLinRate1;
   fIVModel = rhs.fIVModel;
+  fElScatMFP = rhs.fElScatMFP;
 
   if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
   if (!rhs.fpPhononTable) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
@@ -763,6 +764,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\ndecayTT " << fTTFrac
      << "\nLDOS " << fLDOS << " STDOS " << fSTDOS << " FTDOS " << fFTDOS
      << "\nDebye " << fDebye/eV << " eV"
+     << "\nElScatMFP " << fElScatMFP/mm << " mm"
      << std::endl;
 
   os << "# Charge carrier propagation parameters"
