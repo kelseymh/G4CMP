@@ -113,6 +113,7 @@ void G4CMPSCUtils::LoadLatticeInfoIntoSCUtils(const G4LatticePhysical * theLat)
   fTau0_ph = theLat->GetSCTau0ph();
   fTcrit = theLat->GetSCTcrit();
   fTeff = theLat->GetSCTeff();
+  fDn = theLat->GetSCDn();
   fGapEnergy = ComputeGapEnergyAtNonzeroT();
 }
 
@@ -126,6 +127,7 @@ void G4CMPSCUtils::SetCurrentSCInfoToNull()
   fTau0_ph = DBL_MAX;
   fTcrit = 0;
   fTeff = -1;
+  fDn = 0;
   fGapEnergy = 0;  
 }
 

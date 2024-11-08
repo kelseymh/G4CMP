@@ -181,6 +181,7 @@ public:
   G4double GetSCTau0ph() const { return fSC_Tau0_ph; }
   G4double GetSCTcrit() const { return fSC_Tcrit; }
   G4double GetSCTeff() const { return fSC_Teff; }
+  G4double GetSCDn() const { return fSC_Dn; }
 
   
   // Parameters and structures for charge carrier transport
@@ -260,7 +261,7 @@ public:
   void SetSCTau0ph(G4double v)        { fSC_Tau0_ph = v; }  
   void SetSCTcrit(G4double v)         { fSC_Tcrit = v; }
   void SetSCTeff(G4double v)          { fSC_Teff = v; }
-
+  void SetSCDn(G4double v)            { fSC_Dn = v; }
 
   
   const G4String& GetIVModel() const { return fIVModel; }
@@ -343,6 +344,7 @@ private:
   G4double fSC_Tau0_ph; //Characteristic lifetime for phonons
   G4double fSC_Tcrit;   //Critical temperature
   G4double fSC_Teff;    //Effective temperature of the SC
+  G4double fSC_Dn;    //Normal state diffusion constant of the SC material
 
   G4double fVSound;	// Speed of sound (longitudinal phonon)
   G4double fVTrans;	// Speed of sound (transverse phonon)

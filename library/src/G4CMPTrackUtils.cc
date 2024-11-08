@@ -26,7 +26,6 @@
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
 
-
 // Use assigned particle type in track to set up initial TrackInfo
 
 void G4CMP::AttachTrackInfo(const G4Track* track) {
@@ -42,6 +41,8 @@ void G4CMP::AttachTrackInfo(const G4Track& track) {
   } else if (IsChargeCarrier(track)) {
     G4int valley = IsElectron(track) ? ChooseValley(GetLattice(track)) : -1;
     AttachTrackInfo(track, valley);
+  }else if (IsBogoliubovQP(track)){
+      AttachTrackInfo(track, new G4CMPVTrackInfo(GetLattice(track)));
   }
 }
 

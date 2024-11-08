@@ -71,7 +71,8 @@ protected:
   G4double fSoundSpeed;
   G4double fTcrit;
   G4double fTeff;
-  
+  G4double fDn;
+    
   //Computed parameters
   G4double fGapEnergy;
 

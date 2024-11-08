@@ -86,6 +86,7 @@ G4CMPProcessUtils::G4CMPProcessUtils()
 G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
 /*
+
 //REL NBNB, 6/25/2024: This DOES seem to get called in DoTransmission in phonon boundary processes... figure out why
 //REL NB: This is currently not being used -- keeping them in just to make sure I don't need them later...
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -212,6 +213,7 @@ void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
 }
 
 /*
+
 //REL NB: This are currently not being used -- keeping them in just to make sure I don't need them later...
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Need to have dedicated inherited versions of these functions so that we can run

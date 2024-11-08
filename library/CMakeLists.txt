@@ -232,6 +232,9 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCPairBreakingProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCPairBreakingRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCUtils.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRandomWalkBoundary.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPParticleChangeForBogoliubovQPRandomWalk.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRandomWalkTransport.cc
     )
  
 set(library_HEADERS
@@ -333,8 +336,9 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCPairBreakingProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCPairBreakingRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCUtils.hh
-
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRandomWalkBoundary.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPParticleChangeForBogoliubovQPRandomWalk.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRandomWalkTransport.hh
     )
 
 set(config_FILES

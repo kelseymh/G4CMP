@@ -83,6 +83,7 @@ G4bool G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTra
   G4cout << "REL HereA_G4CMPVProcess: loading data for track after lattice changeover, process: " << this->GetProcessName() << G4endl;
   G4cout << "Here, track length: " << aTrack.GetTrackLength() << G4endl;
   G4cout << "Current lattice a la lattice manager: " << G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()) << G4endl;
+    
   //Always do a check to see if the current lattice stored in this process is equal to the one that represents
   //the volume that we're in. Note that we can't do this with the "GetLattice()" and "GetNextLattice()" calls
   //here because at this point in the step, the pre- and post-step points both point to the same volume. Since
@@ -94,11 +95,12 @@ G4bool G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTra
       aTrack.GetTrackLength() == 0.0 ){
 
     //REL noting that if physical lattices are not 1:1 with volumes, something may get broken here... Should check a scenario of segmented SC...
-    
+      
     this->LoadDataForTrack(&aTrack);
     if(rateModel) rateModel->LoadDataForTrack(&aTrack);
     G4cout << "REL G4CMPVProcess: Successfully changed over to a new lattice for process " << this->GetProcessName() << G4endl;
     return true;
+      
   }
   G4cout << "REL G4CMPVProcess: Did not successfully change over to a new lattice for process " << this->GetProcessName() << G4endl;
   return false;
@@ -125,6 +127,7 @@ void G4CMPVProcess::UpdateSCAfterLatticeChange()
     rateModel->UpdateLookupTable(this->theLattice);
   }
 }
+
 
 
 // Compute MFP using track velocity and scattering rate
@@ -157,7 +160,7 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double vtrk = IsChargeCarrier() ? GetVelocity(aTrack) : aTrack.GetVelocity();
   G4double mfp  = rate>0. ? vtrk/rate : DBL_MAX;
 
-  G4cout << "In getMFP, rate of " << this->GetProcessName() << " is: " << rate << G4endl;
+//  G4cout << "In getMFP, rate of " << this->GetProcessName() << " is: " << rate << G4endl;
   
   if (verboseLevel>2) {
     G4cout << GetProcessName() << " rate = " << rate/hertz << " Hz"

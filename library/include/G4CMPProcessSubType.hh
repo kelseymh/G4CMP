@@ -35,7 +35,9 @@ enum G4CMPProcessSubType {
   fPhononPolycrystalElasticScattering = 314,
   fQPRecombinationProcess = 315,
   fSCPairBreakingProcess = 316,
-  fQPRadiatesPhononProcess = 317
+  fQPRadiatesPhononProcess = 317,
+  fBogoliubovQPRandomWalkBoundary = 318,
+  fBogoliubovQPRandomWalkTransport = 319
 };
 
 #endif	/* G4CMPProcessSubType_hh */

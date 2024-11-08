@@ -34,7 +34,7 @@ namespace {
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4SurfaceType stype)
   : G4SurfaceProperty(name, stype), theChargeElectrode(0),
-    thePhononElectrode(0), anharmonicMaxFreq(0.), diffuseMaxFreq(0.) {;}
+    thePhononElectrode(0), theBogoliubovQPElectrode(0), anharmonicMaxFreq(0.), diffuseMaxFreq(0.) {;}
 
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4double qAbsProb,
@@ -45,10 +45,13 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4double pReflProb,
                                            G4double pSpecProb,
                                            G4double pMinK,
-                                           G4SurfaceType stype)
+                                           G4SurfaceType stype,
+                                           G4double qpAbsProb,
+                                           G4double qpReflProb)
 : G4CMPSurfaceProperty(name, stype) {
   FillChargeMaterialPropertiesTable(qAbsProb, qReflProb, eMinK, hMinK);
   FillPhononMaterialPropertiesTable(pAbsProb, pReflProb, pSpecProb, pMinK);
+  FillBogoliubovQPMaterialPropertiesTable(qpAbsProb, qpReflProb);
 }
 
 void G4CMPSurfaceProperty::AddScatteringProperties(G4double AnhCutoff, G4double DiffCutoff,
@@ -73,6 +76,7 @@ G4CMPSurfaceProperty::~G4CMPSurfaceProperty() {
   // Delete electrodes associated with this surface
   delete theChargeElectrode; theChargeElectrode=0;
   delete thePhononElectrode; thePhononElectrode=0;
+  delete theBogoliubovQPElectrode; theBogoliubovQPElectrode=0;
 
   // Delete all of the registered worker electrodes
   for (auto& celkv: workerChargeElectrode) { delete celkv.second; }
@@ -80,6 +84,9 @@ G4CMPSurfaceProperty::~G4CMPSurfaceProperty() {
 
   for (auto& pelkv: workerPhononElectrode) { delete pelkv.second; }
   workerPhononElectrode.clear();
+    
+  for (auto& qpelkv: workerBogoliubovQPElectrode) { delete qpelkv.second; }
+  workerBogoliubovQPElectrode.clear();
 }
 
 G4bool G4CMPSurfaceProperty::operator==(const G4SurfaceProperty& right) const {
@@ -103,10 +110,21 @@ void G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable(
 
 void G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable(
                             G4MaterialPropertiesTable* mpt) {
-  if (IsValidChargePropTable(*mpt)) {
+  if (IsValidPhononPropTable(*mpt)) {
     thePhononMatPropTable = *mpt;
   } else {
     G4Exception("G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable",
+                "detector002", RunMustBeAborted,
+                "Tried to set properties table to one that is not valid.");
+  }
+}
+
+void G4CMPSurfaceProperty::SetBogoliubovQPMaterialPropertiesTable(
+                            G4MaterialPropertiesTable* mpt) {
+  if (IsValidBogoliubovQPPropTable(*mpt)) {
+    theBogoliubovQPMatPropTable = *mpt;
+  } else {
+    G4Exception("G4CMPSurfaceProperty::SetBogoliubovQPMaterialPropertiesTable",
                 "detector002", RunMustBeAborted,
                 "Tried to set properties table to one that is not valid.");
   }
@@ -125,10 +143,21 @@ void G4CMPSurfaceProperty::SetChargeMaterialPropertiesTable(
 
 void G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable(
   G4MaterialPropertiesTable& mpt) {
-  if (IsValidChargePropTable(mpt)) {
+  if (IsValidPhononPropTable(mpt)) {
     thePhononMatPropTable = mpt;
   } else {
     G4Exception("G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable",
+                "detector004", RunMustBeAborted,
+                "Tried to set properties table to one that is not valid.");
+  }
+}
+
+void G4CMPSurfaceProperty::SetBogoliubovQPMaterialPropertiesTable(
+  G4MaterialPropertiesTable& mpt) {
+  if (IsValidBogoliubovQPPropTable(mpt)) {
+    theBogoliubovQPMatPropTable = mpt;
+  } else {
+    G4Exception("G4CMPSurfaceProperty::SetBogoliubovQPMaterialPropertiesTable",
                 "detector004", RunMustBeAborted,
                 "Tried to set properties table to one that is not valid.");
   }
@@ -154,6 +183,12 @@ void G4CMPSurfaceProperty::FillPhononMaterialPropertiesTable(G4double pAbsProb,
   thePhononMatPropTable.AddConstProperty("absMinK", pMinK);
 }
 
+void G4CMPSurfaceProperty::FillBogoliubovQPMaterialPropertiesTable(G4double qpAbsProb,
+                                                             G4double qpReflProb) {
+  theBogoliubovQPMatPropTable.AddConstProperty("absProb", qpAbsProb);
+  theBogoliubovQPMatPropTable.AddConstProperty("reflProb", qpReflProb);
+}
+
 
 // Complex electrode geometries
 
@@ -167,6 +202,10 @@ void G4CMPSurfaceProperty::SetPhononElectrode(G4CMPVElectrodePattern* pel) {
   if (pel) thePhononElectrode->UseSurfaceTable(&thePhononMatPropTable);
 }
 
+void G4CMPSurfaceProperty::SetBogoliubovQPElectrode(G4CMPVElectrodePattern* qpel) {
+  theBogoliubovQPElectrode = qpel;
+  if (qpel) theBogoliubovQPElectrode->UseSurfaceTable(&theBogoliubovQPMatPropTable);
+}
 
 // Frequency dependent phonon surface scattering probabilities
 
@@ -249,6 +288,20 @@ G4CMPVElectrodePattern* G4CMPSurfaceProperty::GetPhononElectrode() const {
   return 0;
 }
 
+G4CMPVElectrodePattern* G4CMPSurfaceProperty::GetBogoliubovQPElectrode() const {
+  if (!G4Threading::IsWorkerThread()) return theBogoliubovQPElectrode;
+
+  if (theBogoliubovQPElectrode) {
+    G4AutoLock l(&elMutex);
+    G4int id = G4Threading::G4GetThreadId();
+    try { return workerBogoliubovQPElectrode.at(id); }
+    catch (std::out_of_range&) {
+      return (workerBogoliubovQPElectrode[id] = theBogoliubovQPElectrode->Clone());
+    }
+  }
+
+  return 0;
+}
 
 // Report configuration parameters for diagnostics
 
@@ -256,6 +309,7 @@ void G4CMPSurfaceProperty::DumpInfo() const {
   // FIXME:  Stupid Tables don't have any const accessors!
   const_cast<G4MaterialPropertiesTable*>(&theChargeMatPropTable)->DumpTable();
   const_cast<G4MaterialPropertiesTable*>(&thePhononMatPropTable)->DumpTable();
+  const_cast<G4MaterialPropertiesTable*>(&theBogoliubovQPMatPropTable)->DumpTable();
 }
 
 G4bool G4CMPSurfaceProperty::
@@ -276,4 +330,12 @@ IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const {
           propTab.ConstPropertyExists("reflProb") &&
           propTab.ConstPropertyExists("specProb") &&
           propTab.ConstPropertyExists("absMinK"));
+}
+
+G4bool G4CMPSurfaceProperty::
+IsValidBogoliubovQPPropTable(G4MaterialPropertiesTable& propTab) const {
+  // A property table is valid for us if it at least contains all of the
+  // properties that we require.
+  return (propTab.ConstPropertyExists("absProb") &&
+          propTab.ConstPropertyExists("reflProb"));
 }

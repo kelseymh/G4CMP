@@ -74,13 +74,14 @@ G4bool G4CMPBoundaryUtils::IsGoodBoundary(const G4Step& aStep) {
   const G4ParticleDefinition* pd = aStep.GetTrack()->GetParticleDefinition();
   maximumReflections = 
     (G4CMP::IsChargeCarrier(pd) ? G4CMPConfigManager::GetMaxChargeBounces()
-     : G4CMP::IsPhonon(pd) ? G4CMPConfigManager::GetMaxPhononBounces() : -1);
+     : G4CMP::IsPhonon(pd) ? G4CMPConfigManager::GetMaxPhononBounces()
+     : G4CMP::IsBogoliubovQP(pd) ? G4CMPConfigManager::GetMaxBogoliubovQPBounces() : -1);
 
   if (buVerboseLevel>1) {
     G4cout << procName << "::IsGoodBoundary maxRefl " << maximumReflections
 	   << G4endl;
   }
-
+    
   return (IsBounaryStep(aStep) &&
 	  GetBoundingVolumes(aStep) &&
 	  GetSurfaceProperty(aStep));
@@ -227,6 +228,8 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
 	   << aStep.GetPreStepPoint()->GetPosition()
 	   << "\n PostStep volume: " << (postPV?postPV->GetName():"OutOfWorld")
 	   << " @ " << aStep.GetPostStepPoint()->GetPosition()
+       << "\n PreStep momentum direction"<< aStep.GetPreStepPoint()->GetMomentumDirection()
+       << "\n PostStep momentum direction"<< aStep.GetPostStepPoint()->GetMomentumDirection()
 	   << G4endl;
   }
   
@@ -289,7 +292,10 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
     matTable = surfProp->GetPhononMaterialPropertiesTablePointer();
     electrode = surfProp->GetPhononElectrode();
   }
-
+  if (G4CMP::IsBogoliubovQP(pd)) {
+    matTable = surfProp->GetBogoliubovQPMaterialPropertiesTablePointer();
+    electrode = surfProp->GetBogoliubovQPElectrode();
+  }
   if (!matTable) {
     G4Exception((procName+"::GetSurfaceProperty").c_str(),
 		"Boundary004", JustWarning,
@@ -337,7 +343,7 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 
   // Verify that post-step position is on surface of volume
   EInside postIn = preSolid->Inside(postPos);
-  G4cout << "postIn (in CheckStepBoundary): " << postIn << G4endl;
+//  G4cout << "postIn (in CheckStepBoundary): " << postIn << G4endl;
 
   
   if (buVerboseLevel>2) {
@@ -353,8 +359,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
     surfacePoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
 
     // Double check calculation -- point "must" now be on surface!
-    G4cout << "REL preSolid->Inside(surfacePoint): " << preSolid->Inside(surfacePoint) << G4endl;
-    G4cout << "REL kInside: " << kInside << ", kSurface: " << kSurface << ", kOutside: " << kOutside << G4endl;
+//    G4cout << "REL preSolid->Inside(surfacePoint): " << preSolid->Inside(surfacePoint) << G4endl;
+//    G4cout << "REL kInside: " << kInside << ", kSurface: " << kSurface << ", kOutside: " << kOutside << G4endl;
     if (preSolid->Inside(surfacePoint) != kSurface) {
       G4Exception((procName+"::CheckBoundaryPoint").c_str(),
 		  "Boundary005", EventMustBeAborted,
@@ -369,7 +375,6 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 
   return (postIn == kSurface);
 }
-
 
 // Implement PostStepDoIt() in a common way; processes should call through
 
@@ -408,23 +413,22 @@ void G4CMPBoundaryUtils::IncrementReflectionCount(const G4Track& aTrack)
 {
     auto trackInfo = G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack);
     trackInfo->IncrementReflectionCount();
-    G4cout << "Incrementing reflection count." << G4endl;
 }
 
 // Default conditions for absorption or reflection
 
 G4bool G4CMPBoundaryUtils::AbsorbTrack(const G4Track&, const G4Step&) const {
   G4double absProb = GetMaterialProperty("absProb");
-  if (buVerboseLevel>2)
-    G4cout << " AbsorbTrack: absProb " << absProb << G4endl;
+    
+  if (buVerboseLevel>2) G4cout << " AbsorbTrack: absProb " << absProb << G4endl;
 
   return (G4UniformRand() <= absProb);
 }
 
 G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track& aTrack, const G4Step&) const {
   G4double reflProb = GetMaterialProperty("reflProb");
-  if (buVerboseLevel>2)
-    G4cout << " ReflectTrack: reflProb " << reflProb << G4endl;
+    
+  if (buVerboseLevel>2) G4cout << " ReflectTrack: reflProb " << reflProb << G4endl;
 
   return (G4UniformRand() <= reflProb);
 }
@@ -434,7 +438,6 @@ G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) const {
   return (maximumReflections >= 0 &&
     trackInfo->ReflectionCount() >= static_cast<size_t>(maximumReflections));
 }
-
 
 // Simple absorption deposits non-ionizing energy
 
@@ -491,7 +494,6 @@ G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
 
   DoSimpleKill(aTrack, aStep, aParticleChange);
 }
-
 
 // Access information from materials table even when const
 

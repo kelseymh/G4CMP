@@ -70,6 +70,7 @@ private:
   G4UIcmdWithAnInteger* verboseCmd;
   G4UIcmdWithAnInteger* ehBounceCmd;
   G4UIcmdWithAnInteger* pBounceCmd;
+  G4UIcmdWithAnInteger* qpBounceCmd;
   G4UIcmdWithAnInteger* maxLukeCmd;
   G4UIcmdWithADoubleAndUnit* clearCmd;
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
