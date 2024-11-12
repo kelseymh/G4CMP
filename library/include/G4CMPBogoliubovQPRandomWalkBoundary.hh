@@ -19,21 +19,21 @@ class G4CMPBogoliubovQPRandomWalkBoundary : public G4CMPVProcess,
 				   public G4CMPBoundaryUtils {
 public:
   G4CMPBogoliubovQPRandomWalkBoundary(const G4String& processName="G4CMPBogoliubovQPRandomWalkBoundary");
-
+  
   virtual ~G4CMPBogoliubovQPRandomWalkBoundary();
 
-//  // Configure for current track including AnharmonicDecay utility
-//  virtual void LoadDataForTrack(const G4Track* track);
+  //  // Configure for current track including AnharmonicDecay utility
+  //  virtual void LoadDataForTrack(const G4Track* track);
   virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& track,
-                                                G4double previousStepSize,
-                                                G4ForceCondition* condition);
+							G4double previousStepSize,
+							G4ForceCondition* condition);
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
                                           const G4Step& aStep);
                     
                        
- G4bool CheckQPVolumes(const G4Step& aStep);
- G4bool IsValidQPVolume(G4VPhysicalVolume* volume);
+  G4bool CheckQPVolumes(const G4Step& aStep);
+  G4bool IsValidQPVolume(G4VPhysicalVolume* volume);
 
 protected:
   virtual G4double GetMeanFreePath(const G4Track& aTrack,
@@ -45,16 +45,18 @@ protected:
   virtual void DoAbsorption(const G4Track& aTrack, const G4Step& aStep, G4ParticleChange& aParticleChange);
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep, G4ParticleChange& aParticleChange);
   virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep, G4ParticleChange& aParticleChange);
-                       
-   //Boolean to indicate whether the pre/post-step volumes have valid material properties for QP transport
-   G4bool preQPVolume;
-   G4bool postQPVolume;
-   //save pre and post SC gap as member data if not valid QP transport region then set parameter to DBL_MAX -> QPs will never have enough energy to transport into the material
-   G4double preSCGap;
-   G4double postSCGap;
+
+  G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm) const;
+  
+  //Boolean to indicate whether the pre/post-step volumes have valid material properties for QP transport
+  G4bool preQPVolume;
+  G4bool postQPVolume;
+  //save pre and post SC gap as member data if not valid QP transport region then set parameter to DBL_MAX -> QPs will never have enough energy to transport into the material
+  G4double preSCGap;
+  G4double postSCGap;
    
-   G4String procName;
-   G4CMPProcessUtils* procUtils;
+  G4String procName;
+  G4CMPProcessUtils* procUtils;
    
 private:
 

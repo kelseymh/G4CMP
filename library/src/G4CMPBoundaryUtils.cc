@@ -111,8 +111,6 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
     return false;
   }
 
-
-
   //Note that since now the GetMFP function has called a lattice update, procUtils->GetLattice() should just be the "current" lattice we're in.
   //  G4cout << "REL inside the GetBoundingVolumes function. aStep.GetStepLength() = " << aStep.GetStepLength() << G4endl;
   G4cout << "---- In GetBoundingVolumes: procUtils->GetLattice(): " << procUtils->GetLattice() << ", prePVlattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(prePV) << ", volLattice (postPVLattice): " << G4LatticeManager::GetLatticeManager()->GetLattice(postPV) << G4endl;
@@ -194,35 +192,6 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
     }
   }
 
-
-
-  /*  
-  //REL UPDATED 11/5/2024 -- this original code does not work, because when we inevitably do an update of the lattice in the MFP calculation at any given step,
-  //                         we end up having the volLattice and the procUtils->GetLattice() values be the same even for the turnaround step.
-  //REL 11/5/2024 -- this is the original code. It should still be applicable. The reason is twofold:
-  //1. Before the phonon is transmitted across a boundary, its procUtils->GetLattice() pulls a lattice set by *track* information. As long as
-  //   the phonon is in the original volume (i.e. hasn't been transmitted), the lattice here should remain the same. This holds even for when
-  //   a phonon is hitting a boundary with another lattice that IS well defined. Here, the procUtils->GetLattice() should still return the
-  //   original volume since we haven't used a SetLattice() function that uses the volume-based info.
-  //2. During the transmission process, the procUtils->SetLattice() function is called and the lattice is updated with the new volume. Since
-  //   GetBoundaryVolumes() is called twice per step but both times are BEFORE this setLattice instance, a step with a phonon incident on a
-  //   boundary will not end up thinking the volLattice and procUtils->GetLattice() are different, and won't block any action. In a scenario
-  //   where there's a "reflection" step that is infinitesimal, you've technically hopped over to a new lattice (so the volLattice has changed),
-  //   but since there's no explicit change to the procUtils lattice, it's still the *original* lattice. This allows the following logic to fire,
-  //   and prevent an additional ApplyBoundaryAction for such turnaround steps.
-  G4LatticePhysical* volLattice =
-    G4LatticeManager::GetLatticeManager()->GetLattice(prePV);
-  G4cout << "In G4CMPBoundaryUtils: PreStepPoint: " << prePV->GetName() << ", PostStepPoint: " << postPV->GetName() << G4endl;
-  G4cout << "In G4CMPBoundaryUtils: VolLattice: " << volLattice << ", procUtils->GetLattice(): " << procUtils->GetLattice() << G4endl;
-  if(volLattice != procUtils->GetLattice()){
-    G4cout << "\n\n\n REL THE DEFAULT G4CMPBOUNDARYUTILS::GetBoundingVolumes() flag is firing. WHY NOW?" <<G4endl;
-    if(buVerboseLevel>1){
-      G4cout << procName << ": Track inbound after reflection" << G4endl;
-    }
-    return false;
-  }
-  */
-
   if (buVerboseLevel>1) {
     G4cout <<   "  RELPreStep volume: " << prePV->GetName() << " @ "
 	   << aStep.GetPreStepPoint()->GetPosition()
@@ -287,7 +256,6 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
     matTable = surfProp->GetChargeMaterialPropertiesTablePointer();
     electrode = surfProp->GetChargeElectrode();
   }
-
   if (G4CMP::IsPhonon(pd)) {
     matTable = surfProp->GetPhononMaterialPropertiesTablePointer();
     electrode = surfProp->GetPhononElectrode();

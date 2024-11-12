@@ -351,7 +351,7 @@ G4VParticleChange*
 G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G4Step&)
 {
   fParticleChange.Initialize(track);
-  ReloadDataForTrack(&track);
+  //ReloadDataForTrack(&track); //REL commenting this out because I no longer use this function and it will be deleted from the final branch
   return &fParticleChange;
 }
 

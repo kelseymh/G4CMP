@@ -40,10 +40,9 @@ public:
                        G4double pReflProb, // If not absorbed, prob to reflect
                        G4double pSpecProb, //Prob. of specular reflection
                        G4double pMinK, //Min wave number to absorb phonon
-                       G4SurfaceType stype = dielectric_dielectric,
-                       G4double qpAbsProb=0,// Prob. to absorb a bogoliubov QP
-                       G4double qpReflProb=1); // Prob. to reflect a bogoliubov QP
-                                               //Note 1-qpAbsProb-qpReflProb is the probability for the QP to transport
+		       G4double qpAbsProb = 0.0, //Prob. to absorb a bogoliubov QP
+		       G4double qpReflProb = 1.0, //Prob to reflect a bogoliubov QP (Note 1-qpAbsProb-qpReflProb is the probability for the QP to transport)
+                       G4SurfaceType stype = dielectric_dielectric);
 
   virtual ~G4CMPSurfaceProperty();
 

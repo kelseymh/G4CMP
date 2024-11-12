@@ -41,8 +41,8 @@ void G4CMP::AttachTrackInfo(const G4Track& track) {
   } else if (IsChargeCarrier(track)) {
     G4int valley = IsElectron(track) ? ChooseValley(GetLattice(track)) : -1;
     AttachTrackInfo(track, valley);
-  }else if (IsBogoliubovQP(track)){
-      AttachTrackInfo(track, new G4CMPVTrackInfo(GetLattice(track)));
+  } else if (IsBogoliubovQP(track)){
+    AttachTrackInfo(track, new G4CMPVTrackInfo(GetLattice(track)));
   }
 }
 
@@ -81,6 +81,8 @@ void G4CMP::AttachTrackInfo(const G4Track& track, const G4ThreeVector& kdir) {
   
   AttachTrackInfo(track, new G4CMPPhononTrackInfo(GetLattice(track), kdir));
 }
+
+
 
 
 // Attach already created container to track, must be of G4CMP type

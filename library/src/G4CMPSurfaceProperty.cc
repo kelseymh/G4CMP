@@ -45,9 +45,9 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4double pReflProb,
                                            G4double pSpecProb,
                                            G4double pMinK,
-                                           G4SurfaceType stype,
-                                           G4double qpAbsProb,
-                                           G4double qpReflProb)
+					   G4double qpAbsProb,
+					   G4double qpReflProb,
+                                           G4SurfaceType stype)
 : G4CMPSurfaceProperty(name, stype) {
   FillChargeMaterialPropertiesTable(qAbsProb, qReflProb, eMinK, hMinK);
   FillPhononMaterialPropertiesTable(pAbsProb, pReflProb, pSpecProb, pMinK);
