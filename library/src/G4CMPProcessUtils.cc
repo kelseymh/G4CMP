@@ -198,6 +198,10 @@ G4bool G4CMPProcessUtils::IsChargeCarrier() const {
   return G4CMP::IsChargeCarrier(currentTrack);
 }
 
+G4bool G4CMPProcessUtils::IsBogoliubovQP() const {
+  return G4CMP::IsBogoliubovQP(currentTrack);
+}
+
 
 // Cache volume associated with tracking, using Navigator if necessary
 

@@ -226,10 +226,9 @@ G4Track* G4CMP::CreateChargeCarrier(const G4Track& track, G4int charge,
 }
 
 
-
-//Here, creating a KaplanSCPhonon rather than an in-substrate phonon. For now, using the group velocity direction as the one
-//input to the phonon velocity. Might need to update this if later we find it's not good. It looks like the secondaries
-//are created with vGroup as the default momentum, so this initially supports this idea.
+//Here, function to create a BogoliubovQP given an input track, energy, velocity, time, and position.
+//We attach track info to this at this point, which should create new track info for this QP since this
+//is the first time it's seeing that function run.
 G4Track* G4CMP::CreateBogoliubovQP(const G4Track& track,
 				   const G4double energy,
 				   const G4ThreeVector& velocity,
@@ -242,6 +241,9 @@ G4Track* G4CMP::CreateBogoliubovQP(const G4Track& track,
   //May need to do a bit of wiggling to avoid the surface, but we'll test first.
   auto sec = new G4Track(new G4DynamicParticle(theBogoliubovQP,velocity.unit(),energy),time,pos);  
 
+  //Attach info in auxiliary info for track
+  G4CMP::AttachTrackInfo(sec);
+  
   sec->SetGoodForTrackingFlag(true);	// Protect against production cuts
   sec->SetVelocity(velocity.mag());
   sec->UseGivenVelocity(true);

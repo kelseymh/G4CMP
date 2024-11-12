@@ -65,8 +65,8 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   SetCurrentTrack(aTrack);
   SetLattice(aTrack);
 
-  // If phonon or charge carrier is not in a lattice-enabled volume, kill it
-  if ((IsPhonon() || IsChargeCarrier()) && !theLattice) {
+  // If phonon, charge carrier, or BogoliubovQP is not in a lattice-enabled volume, kill it
+  if ((IsPhonon() || IsChargeCarrier() || IsBogoliubovQP()) && !theLattice) {
     ReleaseTrack();
     return fKill;
   }
@@ -81,6 +81,9 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
     if (IsChargeCarrier()) {
       SetChargeCarrierMass(aTrack);
       if (IsElectron()) SetElectronEnergy(aTrack);
+    }
+    if (IsBogoliubovQP()) {
+      SetBogoliubovQPKinematics(aTrack);
     }
   }
 
@@ -137,6 +140,7 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
   dynp->SetMass(mass*c_squared);	// Converts to Geant4 [M]=[E] units
 }
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 // Set G4Track energy to correctly calculate velocity
@@ -156,4 +160,12 @@ void G4CMPStackingAction::SetElectronEnergy(const G4Track* aTrack) const {
                                                    aTrack->GetDynamicParticle()->GetMass() /
                                                    c_squared *
                                                    vTrue.mag2());
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+// Initialize Bogoliubov QP kinematics upon creation
+void G4CMPStackingAction::SetBogoliubovQPKinematics(const G4Track* aTrack) const
+{
+  //I think I should put something here? Not exactly sure what, though.
 }

@@ -33,7 +33,8 @@ protected:
 
   void SetChargeCarrierMass(const G4Track* theTrack) const;
   void SetElectronEnergy(const G4Track* aTrack) const;
-
+  void SetBogoliubovQPKinematics(const G4Track* aTrack) const;
+  
 public:
   G4CMPStackingAction(const G4CMPStackingAction&) = default;
   G4CMPStackingAction(G4CMPStackingAction&&) = default;

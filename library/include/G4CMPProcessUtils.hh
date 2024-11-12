@@ -84,7 +84,8 @@ public:
   G4bool IsElectron() const;
   G4bool IsHole() const;
   G4bool IsChargeCarrier() const;
-
+  G4bool IsBogoliubovQP() const;
+  
   // Set configuration manually, without a track
   virtual void FindLattice(const G4VPhysicalVolume* volume);
   virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }// G4cout << "REL G4CMPProcessUtils::SetLattice calls on lattice input, to get lattice: " << theLattice << G4endl; }
