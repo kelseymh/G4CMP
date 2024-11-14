@@ -76,21 +76,28 @@ G4bool G4CMPBogoliubovQPRandomWalkBoundary::IsValidQPVolume(G4VPhysicalVolume* v
   //Get the lattices from the physical volumes
   //Lattice manager
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
+
   //first lets just check if the volume has a lattice
   if (LM->HasLattice(volume)){
-    //Now check if it the lattice has a nonzero Gap and Diffusion constant
+
+    //Now we need to check to understand if this lattice is one in which QPs can realistically exist.
+    //Philosophically, I think that since we're in the boundary process, I don't want to have/make
+    //reference to the parameters needed purely by any of the other processes, like the ElScatMFP,
+    //Teff, Tau0_qp, Tau0_ph, or Dn. So here, we check to see that the Tcrit and Gap0Energy are both set
+    //to something reasonable. In the absence of other processes which we should be able to turn off,
+    //this function should still run.
     G4LatticePhysical* theLat;
     theLat = LM->GetLattice(volume);
     G4double Gap0Energy = theLat->GetSCDelta0();
-    G4double Dn = theLat->GetSCDn();
-    if ((Dn!=0) && (Gap0Energy!=0)){
-      //Then this is a valid QP lattice
-      return true;
-    }else{	  
-      return false;
-    }
-  }else{
-    //Volume does not have a lattice -> is not a valid QP volume
+    G4double Tcrit = theLat->GetSCTcrit();
+    
+    //If all of these are adjusted from their default values, then this is a valid lattice for QPs to live in
+    if( (Gap0Energy != 0) && (Tcrit != 0.0) ){ return true; }
+    else{ return false; }    
+  }
+
+  //If the volume does not have a lattice, then this is not a valid QP volume
+  else{
     return false;
   }
 }
@@ -170,7 +177,10 @@ G4bool G4CMPBogoliubovQPRandomWalkBoundary::ReflectTrack(const G4Track& aTrack, 
   if (!postQPVolume) reflProb =1;
   //    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside ReflectTack! reflection prob :  " <<reflProb << G4endl;
   // Check superconducting gap of the next volume compared to QP energy
+  //G4cout << "REL ReflectTrack: postQPVolume " << postQPVolume << G4endl;
+  //G4cout << "REL  ReflectTrack: reflProb " << reflProb << G4endl;
   G4double Eqp = procUtils->GetKineticEnergy(aTrack);
+  //G4cout << "REL ReflectTrack: postSCGap: " << postSCGap << ", qp energy: " << Eqp << G4endl;
   if (Eqp<postSCGap) reflProb = 1;
   return (G4UniformRand() <= reflProb);
 }
@@ -287,33 +297,44 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission(const G4Track& aTrack,
   if (verboseLevel>1){
     G4cout << procName << ": Track transmission requested" << G4endl;
   }
+
+  //Double-check that you have a proper QP volume in the post-step point. This should never pass, but is a failure mode we should monitor for
+  //a bit during debugging.
   if (!postQPVolume){ //REL should this be a "(!postQPVolume)"? I'm changing it to that.
     G4cout << "Killing QP inside DoTransmission - postQPVolume is not valid should have been caught in ReflectTrack()!" << G4endl;
+    G4ExceptionDescription msg;
+    msg << "Noticed that the post-step volume isn't a good QP volume. There is a bug somewhere that needs to be fixed.";
+    G4Exception("G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission", "BogoliubovQPRandomWalkBoundary001",
+		JustWarning, msg);
     DoSimpleKill(aTrack, aStep, aParticleChange);
   }
-  // Check superconducting gap of the next volume compared to QP energy
+  
+  // Check superconducting gap of the next volume compared to QP energy. This shouldn't be an issue, but is a
+  // good way to catch bugs in the short-term.
   G4double Eqp = procUtils->GetKineticEnergy(aTrack);
-  if (Eqp>=postSCGap){
-    G4cout << "REL Eqp: " << Eqp << " is less than postSCGap: " << postSCGap << G4endl;
-    // Check whether step has proper boundary-stopped geometry
-    G4ThreeVector surfacePoint;
-    if (!CheckStepBoundary(aStep, surfacePoint)) {
-      G4cout << "REL checking step boundary failed in DoTransmission" << G4endl;
-      if (verboseLevel>2)
-	G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-
-      aParticleChange.ProposePosition(surfacePoint);    // IS THIS CORRECT?!?
-    }
-
-    //Since the lattice hasn't changed yet, change it here. (This also happens at the MFP calc point at the beginning of the next step,
-    //but it's nice to have it here so we can use the new lattice info to help figure out vdir, etc.)
-    this->SetLattice(G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()));
-    UpdateSCAfterLatticeChange();
-    
-    G4ThreeVector vdir = aTrack.GetMomentumDirection();
-    aParticleChange.ProposeMomentumDirection(vdir);
-  }else{
-    G4cout << "Killing QP inside DoTransmission - QP energy not enough energy to transport into volume should have been caught in ReflectTrack()" << G4endl;
+  if (Eqp<postSCGap){   
+    G4ExceptionDescription msg;
+    msg << "Noticed that the QP energy, " << Eqp << " is less than the postSCGap, " << postSCGap << ". There is a bug somewhere that needs to be fixed.";
+    G4Exception("G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission", "BogoliubovQPRandomWalkBoundary002",
+		JustWarning, msg);
     DoSimpleKill(aTrack, aStep, aParticleChange);
-  }  
+  }
+    
+  // Check whether step has proper boundary-stopped geometry
+  G4ThreeVector surfacePoint;
+  if (!CheckStepBoundary(aStep, surfacePoint)) {
+    G4cout << "REL checking step boundary failed in DoTransmission" << G4endl;
+    if (verboseLevel>2)
+      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
+    
+    aParticleChange.ProposePosition(surfacePoint);    // IS THIS CORRECT?!?
+  }
+
+  //Since the lattice hasn't changed yet, change it here. (This also happens at the MFP calc point at the beginning of the next step,
+  //but it's nice to have it here so we can use the new lattice info to help figure out vdir, etc.)
+  this->SetLattice(G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()));
+  UpdateSCAfterLatticeChange();
+    
+  G4ThreeVector vdir = aTrack.GetMomentumDirection();
+  aParticleChange.ProposeMomentumDirection(vdir);
 }

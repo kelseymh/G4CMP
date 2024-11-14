@@ -101,6 +101,8 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
   if (verboseLevel>1)
     G4cout << "G4LatticeReader produced\n" << *pLattice << G4endl;
 
+  CheckLatticeForCompleteness();
+  
   G4cout << "REL in MakeLattice at end, get for scat mfp: " << pLattice->GetPolycrystalElasticScatterMFP() << G4endl;
   
   return pLattice;	// Lattice complete; return pointer with ownership
@@ -468,4 +470,40 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
   }
 
   return inverse ? 1./fUnits : fUnits;	// Return value for convenient inlining
+}
+
+//This checks the results of the created lattice to understand if all relevant parameters
+//have been added. We can put whatever we want here, but for now I want to say that if
+//any of the superconductor lattice parameters have been added, we want to make sure that
+//all of them have, and alert users that if that isn't true, then functions downstream
+//may behave in weird ways. Is there a better place for this function or is it okay here?
+void G4LatticeReader::CheckLatticeForCompleteness()
+{
+  bool anySCParameterPresent = false;
+  
+  //Check to see if any of the SC parameters are not at their default values, i.e. if they have been set.
+  if( pLattice->GetSCTau0qp() != DBL_MAX ||
+      pLattice->GetSCTau0ph() != DBL_MAX ||
+      pLattice->GetSCTcrit() != 0. ||
+      pLattice->GetSCTeff() != 0. ||
+      pLattice->GetSCDn() != 0. ||
+      pLattice->GetSCDelta0() != 0. ||
+      pLattice->GetPolycrystalElasticScatterMFP() != DBL_MAX ){
+    
+    //If one of these is set, check to see if any of them are NOT set.
+    if( pLattice->GetSCTau0qp() == DBL_MAX ||
+	pLattice->GetSCTau0ph() == DBL_MAX ||
+	pLattice->GetSCTcrit() == 0. ||
+	pLattice->GetSCTeff() == 0. ||
+	pLattice->GetSCDn() == 0. ||
+	pLattice->GetSCDelta0() == 0. ||
+	pLattice->GetPolycrystalElasticScatterMFP() == DBL_MAX ){
+
+      //Throw a warning that there are outstanding SC parameters that are not set.
+      G4ExceptionDescription msg;
+      msg << "Noticed that one or more superconducting film lattice parameters are set in a config file, but that one or more are also missing.";
+      G4Exception("G4LatticeReader::CheckLatticeForCompleteness", "Lattice004",
+		  JustWarning, msg);
+    }
+  }  
 }

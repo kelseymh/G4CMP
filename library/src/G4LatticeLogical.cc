@@ -63,7 +63,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
   : verboseLevel(0), fName(name), fDensity(0.), fNImpurity(0.),
     fPermittivity(1.), fElasticity{}, fElReduced{}, fHasElasticity(false),
     fpPhononKin(0), fpPhononTable(0),
-    fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0), fElScatMFP(0),
+    fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0), fElScatMFP(DBL_MAX),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
     fVSound(0.), fVTrans(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),
@@ -74,7 +74,8 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fAlpha(0.), fAcDeform(0.), 
     fIVQuadField(0.), fIVQuadRate(0.), fIVQuadExponent(0.),
     fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.),
-    fIVModel(G4CMPConfigManager::GetIVRateModel()) {
+    fIVModel(G4CMPConfigManager::GetIVRateModel()), fSC_Delta0(0.),
+    fSC_Tau0_qp(DBL_MAX), fSC_Tau0_ph(DBL_MAX), fSC_Tcrit(0.), fSC_Teff(0.), fSC_Dn(0.) {
   for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
     for (G4int j=0; j<KVBINS; j++) {
       for (G4int k=0; k<KVBINS; k++) {

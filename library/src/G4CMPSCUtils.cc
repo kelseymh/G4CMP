@@ -113,7 +113,13 @@ void G4CMPSCUtils::LoadLatticeInfoIntoSCUtils(const G4LatticePhysical * theLat)
   fTau0_ph = theLat->GetSCTau0ph();
   fTcrit = theLat->GetSCTcrit();
   fTeff = theLat->GetSCTeff();
-  fDn = theLat->GetSCDn();
+
+  //REL. I think (?) we may want to move this one out to be in a dedicated rate process attached to the transport class.
+  //It seems like it's somewhat specific to a single process. Ask Eric. I think what I want in here are parameters that are
+  //useful for more than one class. This one seems a bit like the polycrystal elastic scattering mfp, which doesn't need to
+  //be updated here because it's handled in the lattice itself and isn't part of any intensive calculations that need doing.
+  fDn = theLat->GetSCDn();    
+  
   fGapEnergy = ComputeGapEnergyAtNonzeroT();
 }
 
@@ -126,7 +132,7 @@ void G4CMPSCUtils::SetCurrentSCInfoToNull()
   fTau0_qp = DBL_MAX;
   fTau0_ph = DBL_MAX;
   fTcrit = 0;
-  fTeff = -1;
+  fTeff = 0;
   fDn = 0;
   fGapEnergy = 0;  
 }
