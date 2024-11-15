@@ -1,0 +1,23 @@
+# Israel Hernandez Illinois Institute of Technology
+# Quantum Science Center, Fermilab
+# Crystal parameters Stiffness Constants Values from DOI:https://doi.org/10.1103/PhysRevB.29.2190
+rhombohedral 4.778 Ang 120 deg  # (Lattice constant)
+stiffness 1 1 495.0 GPa # C11, C12, C44
+stiffness 1 2  161.0 GPa
+stiffness 1 3  111.1 GPa
+stiffness 1 4  -22.7 GPa
+stiffness 3 3  499.9 GPa
+stiffness 4 4  147.7 GPa
+stiffness 6 6  166.7 GPa
+# Phonon parameters
+dyn -27.02 -152.8 139.8 166.24 GPa #Simulating Phonon Propagation in New Materials(Working on the Paper)
+scat 0.025e-42 s3 #Sapphire # DOI:https://doi.org/10.1016/S0921-4526(02)00581-1
+decay 12.7e-55 s4 #Decay Rate Sapphire #Simulating Phonon Propagation in New Materials(Working on the Paper)
+decayTT 0.67
+LDOS 0.137
+STDOS 0.511
+FTDOS 0.351
+Debye 8.41 THz 
+vsound 11200.0 m/s	# Longitudinal sound speed DOI:https://doi.org/10.1103/PhysRevB.29.2190
+vtrans 6040.0 m/s	# Transverse sound speed DOI:https://doi.org/10.1103/PhysRevB.29.2190
+

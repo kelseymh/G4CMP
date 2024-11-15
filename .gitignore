@@ -16,3 +16,4 @@ CMakeLists.txt.user*
 epositions.txt
 *.png
 *__pycache__*
+.vscode

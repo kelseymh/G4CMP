@@ -1,13 +1,18 @@
 # G4CMP -- Geant4 add-on framework for phonon and charge-carrier physics
 
-    R. Agnese, D. Brandt, M. Kelsey, P. Redl
-
+    R. Agnese, D. Brandt, M. Kelsey, P. Redl, I Ataee Langroudy
 
 This package provide a collection of particle types, physics processes, and
 supporting utilities to simulate a limited set of solid-state physics
 processes in Geant4.  Developed for the low-temperature community, the
 package support production and propagation of acoustic phonons and
 electron-hole pairs through solid crystals such as germanium.
+
+Website: https://confluence.slac.stanford.edu/browse/G4CMP/
+
+Paper:	https://doi.org/10.1016/j.nima.2023.168473
+	https://arxiv.org/abs/2302.05998
+	https://arxiv.org/abs/1403.4984
 
 ## Software Licenses
 
@@ -464,7 +469,8 @@ the crystal system.
 | epsilon | e/e0      | Relative permittivity     |                    |
 | neutDens | N        | Number density of neutron impurities | /volume |
 | alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
-| acDeform | val      | Acoustic deformation potential | energy (eV)   |
+| acDeform_e | val | electron acoustic deformation potential | energy (eV)|
+| acDeform_h | val | hole acoustic deformation potential  | energy (eV)|
 | ivDeform | val val ... | Optical deformation potentials | eV/cm      |
 | ivEnergy | val val ... | Optical phonon thresholds     | energy (eV) |
 | **InterValley scattering  (Linear and Quadratic Models) ** |
@@ -476,6 +482,13 @@ the crystal system.
 | ivQuadField | val | Minimum field for quadratic IV expression | V/m  |
 | ivQuadPower | exp | Exponent: rate = Rate*(E^2-Field^2)^(exp/2) | none |
 
+The keywords l0_e and l0_h are optional. If they are not specified in
+config.txt, they will be computed from other physical constants: 
+
+l0 = pi*hbar^4*density / (2*mass^3*acDeform^2)
+
+If they are specified in config.txt, the value in config.txt takes precedence
+over the computed value.
 
 ## Surface Interactions
 
