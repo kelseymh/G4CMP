@@ -185,11 +185,10 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             G4int Ephononi = 0;
 
             for (size_t i = 1; i < probabilities.size(); i++) {
-                cumulatives[i] = probabilities[i - 1] + probabilities[i];
+                cumulatives[i] = cumulatives[i - 1] + probabilities[i];
             }
 
             for (size_t i = 0; i < cumulatives.size(); i++) {
-                //G4cout << "cumulatives : " << cumulatives[i] << "  " << ivrandom << G4endl;
                 if (ivrandom < cumulatives[i]) {
                     Ephononi = i;
                     break;
@@ -197,47 +196,6 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             }
 
             
-//             // Final state kinematics, generated in accept/reject loop below
-//             G4double phi_phonon = 0, q = 0, Ephonon = 0, Erecoil = 0, costheta = 0;
-//             G4ThreeVector qvec, k_recoilHV, k_recoil;  // Outgoing wave vectors
-            
-//             G4ThreeVector kdir = kHV.unit();
-//             G4double kmag = kHV.mag();
-            
-//             Ephonon = theLattice->GetIVEnergy(Ephononi);
-//             if (Ephonon > Etrk) {Ephonon=0;}
-            
-//             Erecoil = Etrk - Ephonon;
-
-//             costheta = G4UniformRand() * (1 - sqrt(Ephonon / Etrk)) + sqrt(Ephonon / Etrk);
-//             phi_phonon = G4UniformRand() * twopi;
-            
-            
-
-//             q = kmag * costheta - kmag * sqrt(costheta * costheta - Ephonon / Etrk);
-
-//             qvec = q * kdir;
-//             qvec.rotate(kdir.orthogonal(), acos(costheta));
-//             qvec.rotate(kdir, phi_phonon);
-
-//             k_recoilHV = kHV - qvec;
-
-            
-             
-//             G4cout << "costheta : " << costheta << " Ephononi : " << Ephononi << G4endl;
-            
-//             G4cout << "qvec : " << qvec << " q_mag : " << q << G4endl
-//                    << " Etrk : " << Etrk / eV << " Ephonon : " << Ephonon / eV << " Erecoil : " << Erecoil / eV << G4endl
-//                    << "k_recoilHV " << k_recoilHV << G4endl;           
-            
-            
-            
-            
-            
-            
-            
-            
-  
             
             G4double Etrk = GetKineticEnergy(aTrack);
             G4double Ephonon = theLattice->GetIVEnergy(Ephononi);
@@ -248,75 +206,100 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             
 
             // Create real phonon to be propagated, with random polarization
-            // If phonon is not created, register the energy as deposited
+
             if (Ephonon!=0) {
             
-                
             G4ThreeVector ktrk = theLattice->MapPtoK(valley, ptrk);
             G4ThreeVector kHV = theLattice->EllipsoidalToSphericalTranformation(valley, ktrk);
             
-            
-            // Final state kinematics, generated in accept/reject loop below
             G4double phi_phonon = 0, q = 0, Erecoil = 0, costheta = 0, theta_phonon = 0;
-            G4ThreeVector qvec, k_recoilHV, k_recoil;  // Outgoing wave vectors
+            G4ThreeVector qvec, k_recoilHV, k_recoil; 
             
             k_recoil = kHV;
             G4double kmag = kHV.mag();
-            
-
+            G4ThreeVector kdir = kHV.unit();
             
             Erecoil = Etrk - Ephonon;
             
               
-            
+
+                
+                
+// computed k*' method 
+                
+//             costheta = G4UniformRand() * (1 - sqrt(Ephonon / Etrk)) + sqrt(Ephonon / Etrk);
+//             phi_phonon = G4UniformRand() * twopi;
+                
+//             if (G4UniformRand() <0.5) {
+//                 q = kmag * costheta - kmag * sqrt(costheta * costheta - Ephonon / Etrk);}
+        
+//             else {
+//                 q = kmag * costheta + kmag * sqrt(costheta * costheta - Ephonon / Etrk);}
+           
+
+//             qvec = q * kdir;
+//             qvec.rotate(kdir.orthogonal(), acos(costheta));
+//             qvec.rotate(kdir, phi_phonon);
+
+//             k_recoilHV = kHV - qvec;    
+                
+//              k_recoil  = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoilHV);
+                
+                
+                
+                
+// random k*' method                
+                
+            costheta = 1 -2*G4UniformRand();
             theta_phonon = G4UniformRand() * twopi;
-            phi_phonon = G4UniformRand() * twopi;
+            phi_phonon = G4UniformRand() * twopi;      
              
-            k_recoil.rotate(k_recoil.orthogonal(), theta_phonon);
+            k_recoil.rotate(k_recoil.orthogonal(), acos(costheta));
             k_recoil.rotate(k_recoil, phi_phonon);
-            
             k_recoil  = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoil);
+                
+                
+                
+                
+                
             
             Precoil = theLattice->MapKtoP(valley, k_recoil);
-            
             Precoil = theLattice->MapEkintoP(valley, Precoil.unit(),Erecoil);
-            
             k_recoil = theLattice->MapPtoK(valley, Precoil);
-            
             k_recoilHV = theLattice->EllipsoidalToSphericalTranformation(valley, k_recoil);
                 
                 
-//             G4cout << "valley : " << valley << G4endl;
+//             G4cout << "valley : " << valley << " : " << theLattice->GetValley(valley) << G4endl;
 //             G4cout << "theta_phonon : " << theta_phonon << " phi_phonon : " << phi_phonon << G4endl;
 //             G4cout << "ptrk : " << ptrk  << G4endl;
 //             G4cout << "Etrk : " << Etrk / eV << " Ephonon : " << Ephonon / eV << " Erecoil : " << Erecoil / eV << G4endl;
 //             G4cout << "ktrk : " << ktrk << " ktrk_mag : " << ktrk.mag() << G4endl;
-//             G4cout << "kHV : " << kHV << " kHV_mag : " << kmag << G4endl;
+//             G4cout << "kHV : " << kHV << " kHV_mag : " << kmag << "ktrck direction : " << ktrk.unit() << G4endl;
 //             G4cout << "k_recoil_i : " << k_recoil << " krecoil_mag : " << k_recoil.mag() << G4endl;
 //             G4cout << "k_recoilHV : " << k_recoilHV << " k_recoilHV_mag : " << k_recoilHV.mag() << G4endl;   
              
                 
                 
-            valley = ChangeValley(valley);
-                
+            valley = ChangeValley(valley);       
             k_recoil = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoilHV); 
+                
+            G4ThreeVector k0 = theLattice->RotateFromValley(valley, G4ThreeVector(1,0,0));
+            if (k_recoil*k0/k_recoil.mag()/k0.mag() <0) {k_recoil=k_recoil*-1;}
+                
             Precoil = theLattice->MapKtoP(valley, k_recoil);
             G4double EnergyTest= theLattice->MapPtoEkin(valley,Precoil);
             qvec = ktrk - k_recoil;
             q = qvec.mag();    
                 
-//             G4cout << "valley : " << valley << " Energytest : " << EnergyTest/eV <<G4endl;
-//             G4cout << "k_recoil_f : " << k_recoil << " krecoil_mag : " << k_recoil.mag() << G4endl;
+
+                
+//             G4cout << "valley : " << valley <<  " : " << theLattice->GetValley(valley) << " Energytest : " << EnergyTest/eV <<G4endl;
+//             G4cout << "k_recoil_f : " << k_recoil << " krecoil_mag : " << k_recoil.mag() << "krecoil direction : " << k_recoil.unit()  << G4endl;
 //             G4cout << "qvec : " << qvec << " q_mag : " << q << G4endl;
-//             G4cout << "Precoil : " << Precoil  << G4endl;
-                
-
-                
-                
-                
-
-                
-                
+//             G4cout << "Precoil : " << Precoil  << G4endl;  
+//             G4cout << G4endl <<  "ktrk direction : " << ktrk.unit() << G4endl << "krecoil direction : " << k_recoil.unit()  << G4endl;
+        
+                    
             
             G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
             

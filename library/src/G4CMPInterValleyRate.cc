@@ -90,13 +90,8 @@ G4double G4CMPInterValleyRate::acousticRate() const {
 G4double G4CMPInterValleyRate::opticalRate() const {
 
   IVprob = {};
-  std::vector<G4int> nvalleys {7,7};
-  std::vector<G4int> orders {0,0};
-  std::vector<G4double> ivdeforms {3e8*eV/cm,0.2e8*eV/cm};
-    
-//   std::vector<G4int> nvalleys {1,1,1,4,4,4};
-//   std::vector<G4int> orders {1,1,0,1,0,0};
-//   std::vector<G4double> ivdeforms {4*eV,4*eV,11e8*eV/cm,4*eV,2e8*eV/cm,2e8*eV/cm};
+
+  std::vector<G4double> ivdeforms {4*eV,4*eV,11e8*eV/cm,4*eV,2e8*eV/cm,2e8*eV/cm};
     
   G4double total = 0.;
   G4int N_op = theLattice->GetNIVDeform();
@@ -129,13 +124,15 @@ G4double G4CMPInterValleyRate::opticalRate() const {
     G4double qmax = kmag*(1+sqrt(1-Emin_op/eTrk));
     G4double qmin = kmag*(1-sqrt(1-Emin_op/eTrk));
     scale = nVal*m_DOS3half*m_DOS / (2*pi*hbar_Planck*density*m_electron*sqrt(m_electron));
-    oscale = scale * D_op*D_op / Emin_op/kmag;
+    //oscale = scale * D_op*D_op / Emin_op/kmag;
+    oscale = scale * ivdeforms[i]*ivdeforms[i] / Emin_op/kmag;
     Efunc = qmax*qmax*qmax*qmax-qmin*qmin*qmin*qmin;	// Energy above threshold
     orate = oscale * Efunc;
     }
       
-     // G4cout << " oscale[" << i << "] : " << oscale << " Efunc : " << Efunc << " Etrk : "  << eTrk/eV << " phonon rate [" << i << "] : " << orate/hertz << " Hz" << G4endl;
+//       G4cout << " oscale[" << i << "] : " << oscale << " Efunc : " << Efunc << " Etrk : "  << eTrk/eV << " phonon rate [" << i << "] : " << orate/hertz << " Hz" << G4endl;
       
+//       
     if (verboseLevel>2) {
       G4cout << " oscale[" << i << "] " << oscale << " Efunc " << Efunc
 	     << "\n phonon rate [" << i << "] " << orate/hertz << " Hz"
