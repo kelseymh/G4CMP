@@ -36,7 +36,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Constructor
 G4CMPBogoliubovQPRandomWalkBoundary::G4CMPBogoliubovQPRandomWalkBoundary(const G4String& aName)
-  : G4CMPVProcess(aName, fBogoliubovQPRandomWalkBoundary),G4CMPBoundaryUtils(this),procName("G4CMPBogloliubovQPRandomWalkBoundary")
+  : G4VBogoliubovQPProcess(aName, fBogoliubovQPRandomWalkBoundary),G4CMPBoundaryUtils(this),procName("G4CMPBogloliubovQPRandomWalkBoundary")
 {
 }
 
@@ -63,15 +63,30 @@ G4double G4CMPBogoliubovQPRandomWalkBoundary::GetMeanFreePath(const G4Track& aTr
 							      G4double /*prevStepLength*/,
 							      G4ForceCondition* condition)
 {
-  UpdateMeanFreePathForLatticeChangeover(aTrack);  
+  //Update the lattice so that this process knows about any changes
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
+
+  //Use information about the lattice to determine if the BogoliubovQP has been spawned in a self-consistent way. If it's not
+  //self-consistent on step 1, then throw a fatal exception.
+  double eKin = aTrack.GetKineticEnergy();
+  G4VPhysicalVolume * currentVol = aTrack.GetVolume();
+  G4double stepNumber = aTrack.GetCurrentStepNumber();
+  if( !IsValidQPVolume(currentVol,eKin) && stepNumber == 1 ){
+    G4ExceptionDescription msg;
+    msg << "Noticed that for the first step, our QP is either not in a superconductor or that the QP energy, " << eKin << " is less than the current volume's gap. You're spawning a quasiparticle either with too low an energy or in the wrong spot for physical accuracy.";
+    G4Exception("G4CMPBogoliubovQPRandomWalkBoundary::GetMeanFreePath", "BogoliubovQPRandomWalkBoundary001",FatalException, msg);
+  }
+  
   *condition = Forced;
   return DBL_MAX;
 }
 
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-//Checks to see if the current volume is a valid one in which QPs may live.
-G4bool G4CMPBogoliubovQPRandomWalkBoundary::IsValidQPVolume(G4VPhysicalVolume* volume)
+//Checks to see if the current volume is a valid one in which QPs may live. The second and third arguments are used
+//when we want to check to see if a QP initialized has an energy consistent with a SC volume that it's placed in.
+G4bool G4CMPBogoliubovQPRandomWalkBoundary::IsValidQPVolume(G4VPhysicalVolume* volume, G4double qpEKin )
 {
   //Get the lattices from the physical volumes
   //Lattice manager
@@ -90,10 +105,20 @@ G4bool G4CMPBogoliubovQPRandomWalkBoundary::IsValidQPVolume(G4VPhysicalVolume* v
     theLat = LM->GetLattice(volume);
     G4double Gap0Energy = theLat->GetSCDelta0();
     G4double Tcrit = theLat->GetSCTcrit();
+
+    //First, if the gap energy is zero or Tcrit is zero, then these are still their default values. Throw a false
+    if( Gap0Energy == 0.0 || Tcrit == 0.0 ) return false;
+
+    //Here we ask if we want to do an energy check. It's worth noting that comparisons of the QP energy and gap are also handled
+    //elsewhere in this code, but they only run during PostStepDoIt, which assumes that the QP has been "approved" within the volume
+    //it's currently in. However, we need a cross-check to make sure that the QP is okay to even exist before the physics process
+    //competition runs. For example, we need something to check if a QP-as-spawned is physically achievable within the volume in which
+    //it's spawned. This is the "energy check" bit. Putting this in this function just in case we want to use it for future cross-checks,
+    //even though it's meant primarily to go with the initialization step.
     
-    //If all of these are adjusted from their default values, then this is a valid lattice for QPs to live in
-    if( (Gap0Energy != 0) && (Tcrit != 0.0) ){ return true; }
-    else{ return false; }    
+    //If our gap energy is somehow above our qp's kinetic energy, then something is amiss. Flag this.
+    if( Gap0Energy > qpEKin ){ return false; }
+    else{ return true; }
   }
 
   //If the volume does not have a lattice, then this is not a valid QP volume
@@ -109,25 +134,31 @@ G4bool G4CMPBogoliubovQPRandomWalkBoundary::IsValidQPVolume(G4VPhysicalVolume* v
 // return true.
 G4bool G4CMPBogoliubovQPRandomWalkBoundary::CheckQPVolumes(const G4Step& aStep)
 {
-  preSCGap = DBL_MAX;
-  postSCGap = DBL_MAX;
+  //preSCGap = DBL_MAX; REL 11/28/2024
+  //postSCGap = DBL_MAX; REL 11/28/2024
   //Check if pre/post step volumes have valid QP volumes
   //Get the lattices from the physical volumes
   //Lattice manager
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  preQPVolume = IsValidQPVolume(aStep.GetPreStepPoint()->GetPhysicalVolume());
+  G4double qpEKin = aStep.GetTrack()->GetKineticEnergy();
+  preQPVolume = IsValidQPVolume(aStep.GetPreStepPoint()->GetPhysicalVolume(),qpEKin);
+
+  /* REL 11/28/2024
   if (preQPVolume){
     //Gap is not stored in in a matieral properties table but in the lattice itself
     G4LatticePhysical* preLattice = LM->GetLattice(aStep.GetPreStepPoint()->GetPhysicalVolume());
     preSCGap = preLattice->GetSCDelta0();
   }
+  */
   
-  postQPVolume = IsValidQPVolume(aStep.GetPostStepPoint()->GetPhysicalVolume());
-  if (postQPVolume){
+  postQPVolume = IsValidQPVolume(aStep.GetPostStepPoint()->GetPhysicalVolume(),qpEKin);
+
+  /*if (postQPVolume){ REL 11/28/2024
     //Gap is not stored in in a matieral properties table but in the lattice itself
     G4LatticePhysical* postLattice = LM->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume());
     postSCGap = postLattice->GetSCDelta0();
   }
+  */
   return (preQPVolume || postQPVolume);
 }
 
@@ -179,9 +210,9 @@ G4bool G4CMPBogoliubovQPRandomWalkBoundary::ReflectTrack(const G4Track& aTrack, 
   // Check superconducting gap of the next volume compared to QP energy
   //G4cout << "REL ReflectTrack: postQPVolume " << postQPVolume << G4endl;
   //G4cout << "REL  ReflectTrack: reflProb " << reflProb << G4endl;
-  G4double Eqp = procUtils->GetKineticEnergy(aTrack);
+  //G4double Eqp = procUtils->GetKineticEnergy(aTrack); REL 11/28/2024
   //G4cout << "REL ReflectTrack: postSCGap: " << postSCGap << ", qp energy: " << Eqp << G4endl;
-  if (Eqp<postSCGap) reflProb = 1;
+  //if (Eqp<postSCGap) reflProb = 1; REL 11/28/2024
   return (G4UniformRand() <= reflProb);
 }
 
@@ -195,6 +226,7 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoAbsorption(const G4Track& aTrack,
   // this needs to be customized for QP dynamics ...
   if (verboseLevel>1) G4cout << procName << ": Track absorbed" << G4endl;
   G4double ekin = procUtils->GetKineticEnergy(aTrack);
+  G4cout << "REL: in doabsorption, ekin: " << ekin << " for QP." << G4endl;
   aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
   aParticleChange.ProposeTrackStatus(fStopAndKill);
   aParticleChange.ProposeEnergy(0.);
@@ -300,25 +332,27 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission(const G4Track& aTrack,
 
   //Double-check that you have a proper QP volume in the post-step point. This should never pass, but is a failure mode we should monitor for
   //a bit during debugging.
-  if (!postQPVolume){ //REL should this be a "(!postQPVolume)"? I'm changing it to that.
+  if (!postQPVolume){ 
     G4cout << "Killing QP inside DoTransmission - postQPVolume is not valid should have been caught in ReflectTrack()!" << G4endl;
     G4ExceptionDescription msg;
     msg << "Noticed that the post-step volume isn't a good QP volume. There is a bug somewhere that needs to be fixed.";
-    G4Exception("G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission", "BogoliubovQPRandomWalkBoundary001",
+    G4Exception("G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission", "BogoliubovQPRandomWalkBoundary002",
 		JustWarning, msg);
     DoSimpleKill(aTrack, aStep, aParticleChange);
   }
-  
+
+  /*
   // Check superconducting gap of the next volume compared to QP energy. This shouldn't be an issue, but is a
   // good way to catch bugs in the short-term.
   G4double Eqp = procUtils->GetKineticEnergy(aTrack);
   if (Eqp<postSCGap){   
     G4ExceptionDescription msg;
     msg << "Noticed that the QP energy, " << Eqp << " is less than the postSCGap, " << postSCGap << ". There is a bug somewhere that needs to be fixed.";
-    G4Exception("G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission", "BogoliubovQPRandomWalkBoundary002",
+    G4Exception("G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission", "BogoliubovQPRandomWalkBoundary003",
 		JustWarning, msg);
     DoSimpleKill(aTrack, aStep, aParticleChange);
   }
+  */
     
   // Check whether step has proper boundary-stopped geometry
   G4ThreeVector surfacePoint;
