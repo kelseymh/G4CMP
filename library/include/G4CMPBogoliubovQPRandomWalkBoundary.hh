@@ -52,9 +52,6 @@ protected:
   //Boolean to indicate whether the pre/post-step volumes have valid material properties for QP transport
   G4bool preQPVolume;
   G4bool postQPVolume;
-  //save pre and post SC gap as member data if not valid QP transport region then set parameter to DBL_MAX -> QPs will never have enough energy to transport into the material
-  //  G4double preSCGap;REL 11/28/2024
-  //G4double postSCGap; REL 11/28/2024
    
   G4String procName;
   G4CMPProcessUtils* procUtils;
