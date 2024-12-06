@@ -281,6 +281,15 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
   //Specular
   else{
 
+    //Check to make sure we're on a volume boundary before attempting reflection.
+    G4ThreeVector surfacePoint;
+    if (!CheckStepBoundary(aStep, surfacePoint)) {
+      G4cout << "REL checking step boundary failed in DoReflection" << G4endl;
+      if (verboseLevel>2)
+	G4cout << " Boundary point moved to " << surfacePoint << G4endl;
+      aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
+    }
+    
     if (verboseLevel>1) {
       G4cout << procName << ": Track reflected "
 	     << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
@@ -289,11 +298,15 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
   
     G4ThreeVector pdir = aTrack.GetMomentumDirection();
     //    G4ThreeVector pdir = aStep.GetPreStepPoint()->GetMomentumDirection();
-    if (verboseLevel>2) G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection initial direction  " <<pdir << G4endl;
+    //    if (verboseLevel>2)
+    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection initial direction  " <<pdir << G4endl;    
+    
     G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);    // Outward normal
+    G4cout << "REL norm is " << norm.x() << ", " << norm.y() << ", " << norm.z() << G4endl;
     pdir -= 2.*(pdir.dot(norm))*norm;            // Reverse along normal
 
-    if (verboseLevel>2)G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection reflected direction  " <<pdir << G4endl;
+    //if (verboseLevel>2)
+    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection reflected direction  " <<pdir << G4endl;
     
     aParticleChange.ProposeMomentumDirection(pdir);
   }
