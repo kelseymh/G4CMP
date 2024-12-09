@@ -75,7 +75,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fIVQuadField(0.), fIVQuadRate(0.), fIVQuadExponent(0.),
     fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.),
     fIVModel(G4CMPConfigManager::GetIVRateModel()), fSC_Delta0(0.),
-    fSC_Tau0_qp(DBL_MAX), fSC_Tau0_ph(DBL_MAX), fSC_Tcrit(0.), fSC_Teff(0.), fSC_Dn(0.) {
+    fSC_Tau0_qp(DBL_MAX), fSC_Tau0_ph(DBL_MAX), fSC_Tcrit(0.), fSC_Teff(0.), fSC_Dn(0.), fSC_QPLocalTrappingMFP(DBL_MAX) {
   for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
     for (G4int j=0; j<KVBINS; j++) {
       for (G4int k=0; k<KVBINS; k++) {
@@ -149,7 +149,15 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fIVLinRate1 = rhs.fIVLinRate1;
   fIVModel = rhs.fIVModel;
   fElScatMFP = rhs.fElScatMFP;
-
+  fSC_Delta0 = rhs.fSC_Delta0;
+  fSC_Tau0_qp = rhs.fSC_Tau0_qp;
+  fSC_Tau0_ph = rhs.fSC_Tau0_ph;
+  fSC_Tcrit = rhs.fSC_Tcrit;
+  fSC_Teff = rhs.fSC_Teff;
+  fSC_Dn = rhs.fSC_Dn;
+  fSC_QPLocalTrappingMFP = rhs.fSC_QPLocalTrappingMFP;
+  
+  
   if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
   if (!rhs.fpPhononTable) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
 
@@ -767,6 +775,17 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nDebye " << fDebye/eV << " eV"
      << "\nElScatMFP " << fElScatMFP/mm << " mm"
      << std::endl;
+
+  os << "# Quasiparticle and superconductor parameters"
+     << "\nsc_delta0 " << fSC_Delta0/eV << " eV"
+     << "\nsc_tau0_qp " << fSC_Tau0_qp/ns << " ns"
+     << "\nsc_tau0_ph " << fSC_Tau0_ph/ns << " ns"
+     << "\nsc_tcrit " << fSC_Tcrit/kelvin << " K"
+     << "\nsc_teff " << fSC_Teff/kelvin << " K"
+     << "\nsc_dn " << fSC_Dn/um/um/s << " um^2/s"
+     << "\nsc_qptrapmfp " << fSC_QPLocalTrappingMFP/um << " um"
+     << std::endl;
+
 
   os << "# Charge carrier propagation parameters"
      << "\nbandgap " << fBandGap/eV << " eV"

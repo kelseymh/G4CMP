@@ -222,6 +222,7 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "sc_tcrit" )     pLattice->SetSCTcrit(fValue*ProcessUnits("Temperature"));
   else if (name == "sc_teff" )      pLattice->SetSCTeff(fValue*ProcessUnits("Temperature"));
   else if (name == "sc_dn" )        pLattice->SetSCDn(fValue*ProcessUnits("Diffusion constant"));
+  else if (name == "sc_qptrapmfp" ) pLattice->SetSCQPLocalTrappingMFP(fValue*ProcessUnits("Length"));
     
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
@@ -488,7 +489,8 @@ void G4LatticeReader::CheckLatticeForCompleteness()
       pLattice->GetSCTeff() != 0. ||
       pLattice->GetSCDn() != 0. ||
       pLattice->GetSCDelta0() != 0. ||
-      pLattice->GetPolycrystalElasticScatterMFP() != DBL_MAX ){
+      pLattice->GetPolycrystalElasticScatterMFP() != DBL_MAX ||
+      pLattice->GetSCQPLocalTrappingMFP() != DBL_MAX ){
     
     //If one of these is set, check to see if any of them are NOT set.
     if( pLattice->GetSCTau0qp() == DBL_MAX ||
@@ -497,7 +499,8 @@ void G4LatticeReader::CheckLatticeForCompleteness()
 	pLattice->GetSCTeff() == 0. ||
 	pLattice->GetSCDn() == 0. ||
 	pLattice->GetSCDelta0() == 0. ||
-	pLattice->GetPolycrystalElasticScatterMFP() == DBL_MAX ){
+	pLattice->GetPolycrystalElasticScatterMFP() == DBL_MAX ||
+	pLattice->GetSCQPLocalTrappingMFP() == DBL_MAX ){
 
       //Throw a warning that there are outstanding SC parameters that are not set.
       G4ExceptionDescription msg;
