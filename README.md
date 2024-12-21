@@ -10,8 +10,9 @@ electron-hole pairs through solid crystals such as germanium.
 
 Website: https://confluence.slac.stanford.edu/browse/G4CMP/
 
-Paper:	https://doi.org/10.1016/j.nima.2023.168473
+Papers:	https://doi.org/10.1016/j.nima.2023.168473
 	https://arxiv.org/abs/2302.05998
+	https://arxiv.org/abs/2408.04732
 	https://arxiv.org/abs/1403.4984
 
 ## Software Licenses
@@ -383,6 +384,8 @@ At runtime, the version string will be available through a call to
 
 ## Defining the Crystal Dynamics
 
+See also https://confluence.slac.stanford.edu/display/G4CMP/Adding+Materials+to+G4CMP
+
 In a user's application, each active G4CMP material (e.g., germanium
 crystals or diamonds) must have a collection of dynamical parameters
 defined.  These parameters are used by the phonon and charge-carrier
@@ -403,10 +406,25 @@ or
 Note that if a material configuration file is found in multiple locations, only 
 the first file found chronologically will be chosen; `G4LATTICEDATA` must be 
 reset in order for conflicting configuration files to be found. G4CMP is
-distributed with germanium and silicon configurations, in `CrystalMaps/Ge/`
-and `CrystalMaps/Si/`, respectively.  We recommend naming additional
-directories by element or material, matching the Geant4 conventions, but
-this is not required or enforced.
+distributed with seven predefined materials, under the CrystalMaps
+directory:
+
+| Material          | Directory          |
+|-------------------|--------------------|
+| Germanium         | CrystalMaps/Ge/    |
+| Silicon           | CrystalMaps/Si/    |
+| Sapphire          | CrystalMaps/Al2O3/ |
+| Calcium fluoride  | CrysalMaps/CaF2/   |
+| Calcium tungstate | CrystalMaps/CaWO4/ |
+| Gallium arsenide  | CrystalMaps/GaAs/  |
+| Lithium fluoride  | CrystalMaps/LiF/   |
+
+The last five currently only have phonon transport parameters defined; work
+is in progress to handle conduction band charge production where appropriate.  
+
+If you create local definitions, we recommend naming additional directories
+by element or material, matching the Geant4 conventions, but this is not
+required or enforced.
 
 The parameter definition file is config.txt.  Each line starts with a
 keyword, followed by one or more values.  Any line which starts with "#" is
@@ -558,6 +576,8 @@ we recommend that user applications also set `/g4cmp/minEPhonons` to 2.*absorber
 to avoid excessive CPU from tracking unmeasurable phonons. Quasiparticles
 in a sensor may be subject to a baseline absorption efficiency 'absorberEff'
 and energy-dependent efficiency modification 'absorberEffSlope'.
+
+See also https://confluence.slac.stanford.edu/display/G4CMP/G4CMPKaplanQP+Algorithm
 
 The `G4CMPKaplanQP` process also respects the global setting
 `kaplanKeepPhonons`.  If this is set true, then all internal phonons
