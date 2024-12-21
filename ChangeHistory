@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2024-12-21  G4CMP-436 : Bug fix for LinhardNIEL to return ionization yield.
 2024-12-21  G4CMP-437 : Update README.md file with new materials information.
 
 2024-10-29  g4cmp-V09-03-00 New phonon materials: Al2O3, CaF2, CaWO4, GaAs, LiF
