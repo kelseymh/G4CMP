@@ -39,6 +39,8 @@
 // 20240207  Adapting Luke Scattering with new kinematics. Reverting the
 //              use of effective mass for electrons and adding electron mass
 //              back. Adding InitializeParticleChange to get the correct Ekin
+// 20241223  G4CMP-419 -- Create separate debugging file per worker thread;
+//		add EventID column to debugging output.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -50,12 +52,14 @@
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4DynamicParticle.hh"
+#include "G4Event.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
+#include "G4RunManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
@@ -103,13 +107,13 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel && !output.is_open()) {
-    output.open("LukePhononEnergies");
+    output.open(G4CMP::DebuggingFileThread("LukePhononEnergies"));
     if (!output.good()) {
       G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
 		  FatalException, "Unable to open LukePhononEnergies");
     }
 
-    output << "Track ID, Track Type,Track Weight,Track Energy [eV],Track Momentum [eV],WaveVector,"
+    output << "Event ID,Track ID,Track Type,Track Weight,Track Energy [eV],Track Momentum [eV],WaveVector,"
 	   << "Phonon Theta,Phonon Energy [eV],Phonon Weight,Recoil WaveVector,"
 	   << "Final Energy [eV],Final Momentum [eV]"
 	   << std::endl;
@@ -321,7 +325,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
 #ifdef G4CMP_DEBUG
   if (output.good()) {
-    output << aTrack.GetTrackID() << "," << trkName << ","
+    output << G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() << ","
+	   << aTrack.GetTrackID() << "," << trkName << ","
 	   << aTrack.GetWeight() << "," << GetKineticEnergy(aTrack)/eV << ","
 	   << GetLocalMomentum(aTrack).mag()/eV << "," << kmag << ","
 	   << theta_phonon << "," << Ephonon/eV << ",";
