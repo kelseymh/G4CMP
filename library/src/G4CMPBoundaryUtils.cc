@@ -283,9 +283,10 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
   return true;
 }
 
-
+/*
 // Check whether end of step is actually on surface of volume
-// "surfacePoint" returns post-step position, or computed surface point
+// "surfacePoint" returns post-step position, or computed surface point.
+// This is the older version of this function (kept temporarily for debugging -- REL)
 
 G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 					     G4ThreeVector& surfacePoint) {
@@ -343,6 +344,308 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 
   return (postIn == kSurface);
 }
+*/
+
+
+// Check whether end of step is actually on surface of volume
+// "surfacePoint" returns post-step position, or computed surface point. Extra logic being added
+// in trackedFilmResponse is the folowing (and is hopefully sufficiently general...):
+// 1. Check pre-PV and post-PV volumes to see if it's on either volume's surface.
+// 2. If it is, then no action is needed -- can return true.
+// 3. If it's not, then figure out which surface is closer to the current point (using DistanceToIn/DistanceToOut),
+//    and then do the calculation that is currently done there.
+
+G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
+					     G4ThreeVector& surfacePoint) {
+  G4StepPoint* preP = aStep.GetPreStepPoint();
+  G4StepPoint* postP = aStep.GetPostStepPoint();
+  GetBoundingVolumes(aStep); 
+  surfacePoint = postP->GetPosition();		// Correct if valid boundary
+
+  
+  // Get pre- and post-step positions in pre-step volume coordinates
+  G4VSolid* preSolid = prePV->GetLogicalVolume()->GetSolid();
+  G4ThreeVector prePos = preP->GetPosition();
+  G4ThreeVector postPos = surfacePoint;
+  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- postPos, pre-rotation = " << postPos << G4endl;
+  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- surfacePoint, pre-rotation = " << surfacePoint << G4endl;
+  G4CMP::RotateToLocalPosition(preP->GetTouchable(), prePos);
+  G4CMP::RotateToLocalPosition(preP->GetTouchable(), postPos);
+  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- postPos, post-rotation = " << postPos << G4endl;
+  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- surfacePoint, post-rotation = " << surfacePoint << G4endl;
+  
+  //Get pre- and post-step positions in post-step volume coordinates (for good measure)
+  G4VSolid* postSolid = postPV->GetLogicalVolume()->GetSolid();
+  G4ThreeVector prePos_postPV = preP->GetPosition();
+  G4ThreeVector postPos_postPV = surfacePoint;
+  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- postPos_postPV, pre-rotation = " << postPos_postPV << G4endl;
+  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- surfacePoint, pre-rotation = " << surfacePoint << G4endl;
+  G4CMP::RotateToLocalPosition(postP->GetTouchable(), prePos_postPV);
+  G4CMP::RotateToLocalPosition(postP->GetTouchable(), postPos_postPV);
+  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- postPos_postPV, post-rotation = " << postPos_postPV << G4endl;
+  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- surfacePoint, post-rotation = " << surfacePoint << G4endl;
+
+  
+  if (buVerboseLevel>2) {
+    G4cout << "CheckStepBoundary: in prePV (" << prePV->GetName() << ") frame"
+	   << "\n  preStep @ " << prePos << "\n postStep @ " << postPos
+	   << G4endl;
+    G4cout << "CheckStepBoundary: in postPV (" << postPV->GetName() << ") frame"
+	   << "\n  preStep @ " << prePos_postPV << "\n postStep @ " << postPos_postPV
+	   << G4endl;
+  }
+
+  // Verify that post-step position is on surface of volume. Check both the mother and daughter
+  // volumes, since we may have nested geometry.
+  EInside postIn = preSolid->Inside(postPos);
+  EInside postIn_postPV = postSolid->Inside(postPos_postPV);
+  
+  if (buVerboseLevel>2) {
+    G4cout << "\n Is postStep location on surface of preStep Volume? "
+	   << (postIn==kOutside ? "outside" :
+	       postIn==kInside  ? "inside" :
+	       postIn==kSurface ? "surface" : "INVALID") << G4endl;
+    G4cout << "\n Is postStep location on surface of postStepVolume? "
+	   << (postIn_postPV==kOutside ? "outside" :
+	       postIn_postPV==kInside  ? "inside" :
+	       postIn_postPV==kSurface ? "surface" : "INVALID") << G4endl;
+  }
+
+  // If post-step position is on the post-PV boundary OR if post-step position is on the pre-PV boundary,
+  // then we can return true.
+  if( postIn == kSurface || postIn_postPV == kSurface ){
+    return true;
+  }
+  
+  //Otherwise, we need a bit of logic to handle the adjustment, since it's not obvious which boundary it should be targeting.
+  //REL: This is really nasty. Can we do the following logicking in a way that's more transparent? Basically, need to:
+  //1. Identify which volume (pre/post-PV) is internal to the other
+  //2. Identify where the post-step point is relative to the volumes
+  //3. Identify which volume (pre/post-PV) is closer to the post-step point
+  //Unfortunately this gives a nested loop with 2^3 potential options, which is gross and error-prone. Is there a nicer way to
+  //get this information so we can do the adjustments if we're not on a surface?
+  
+  
+  //---------------------------------------------------------------------------------------------------------------------
+  //If we're outside the pre-step volume, check whether we're inside or outside the post-step volume
+  if( postIn == kOutside ){
+
+    //-------------------------------
+    //If we're also outside the post-step volume, uhhhhh... where are we?
+    if( postIn_postPV == kOutside ){
+      G4Exception((procName+"::CheckStepBoundary").c_str(),"Boundary00X",JustWarning,
+		  ("Post-step point is somehow outside both the pre-step volume, " +
+		   prePV->GetName() +
+		   " and the post-step volume, " +
+		   postPV->GetName()).c_str());
+      return false;
+    }
+
+    //-------------------------------
+    //Otherwise, we're outside pre-step volume and inside the post-step volume -- this is sensible if:
+    //1. The pre-step volume is the daughter volume, the post-step volume is the mother volume, and the point is between the two boundaries...
+    //2. ...or if the volumes are not nested (i.e. neither is a daughter of the other)
+    else if( postIn_postPV == kInside ){
+
+      //Here, compare how far inside the post-step volume we are with how far outside the pre-step volume we are.
+      //Not using "along" vector here for simplicity
+      G4double pre_distToIn = preSolid->DistanceToIn(postPos);
+      G4double post_distToOut = postSolid->DistanceToOut(postPos_postPV);
+
+      //------------
+      //We're closer to the pre-step volume's surface than the post-step volume's surface.
+      if( fabs(post_distToOut) > fabs(pre_distToIn) ){
+
+	//Put point onto the pre-step volume surface, now using the distanceToIn with the right direction.
+	//The post-step point is outside the pre-PV and "along" points out. Need to subtract off outward vector (hence minus sign)
+	G4ThreeVector along = (postPos-prePos).unit(); // Trajectory direction	
+	surfacePoint = postPos - fabs(preSolid->DistanceToIn(postPos,along)) * along; 
+
+	//Check that the surface point is good (now that we've modified it, it's in the local coordinate system)
+	if (preSolid->Inside(surfacePoint) != kSurface) {
+	  G4Exception((procName+"::CheckBoundaryPoint").c_str(),
+		      "Boundary00X", EventMustBeAborted,
+		      "Boundary-limited step cannot find boundary surface point"
+		      );
+	  return false;
+	}
+	//Rotate back to global using rotation of the pre-step volume
+	G4CMP::RotateToGlobalPosition(preP->GetTouchable(), surfacePoint);
+      }
+
+      //------------
+      //We're closer to the post-step volume's surface than the pre-step volume's surface, so do the calculation in the post-step volume's coords
+      else{
+
+	//Put point onto the post-step volume surface.
+	//We're inside the post-PV volume and the along vector points out. Add a positive along vector to get to extrenal boundary
+	G4ThreeVector along = (postPos_postPV-prePos_postPV).unit(); // Trajectory direction	
+	surfacePoint = postPos_postPV + fabs(postSolid->DistanceToOut(postPos_postPV,along)) * along; 
+	
+	//Check that the surface point is good (now that we've modified it, it's in the local coordinate system)
+	if (postSolid->Inside(surfacePoint) != kSurface) {
+	  G4Exception((procName+"::CheckBoundaryPoint").c_str(),
+		      "Boundary00X", EventMustBeAborted,
+		      "Boundary-limited step cannot find boundary surface point"
+		      );
+	  return false;
+	}
+
+	//Rotate back to global using rotation of the post-step volume
+	G4CMP::RotateToGlobalPosition(postP->GetTouchable(), surfacePoint);
+      }
+	
+    }
+
+    //-------------------------------
+    //If neither of these get flagged, then we should have something invalid, since boundary cases should have been caught higher up.
+    else{
+      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
+		  "Boundary00X", EventMustBeAborted,
+		  "Somehow the post-step point for this step is neither inside, outside, or on the surface of the post-step volume."
+		  );
+      return false;
+    }
+  }
+
+  //---------------------------------------------------------------------------------------------------------------------
+  //If we're inside the pre-step point's volume, then do a check
+  else if( postIn == kInside ){
+
+    //-------------------------------
+    //This condition makes sense in the following scenarios:
+    //1. The pre-step volume is the mother volume, the post-step volume is the daughter, and the post step point is
+    //   inside the former but outside the latter
+    //2. The two volumes are not mothers/daughters of each other (i.e. same level of the heirarchy)
+    if( postIn_postPV == kOutside ){
+
+      //Here, compare how far inside the post-step volume we are with how far outside the pre-step volume we are.
+      G4double pre_distToOut = preSolid->DistanceToOut(postPos);
+      G4double post_distToIn = postSolid->DistanceToIn(postPos_postPV);
+
+      //------------
+      //If we're closer to the pre-step volume, then put the point on that surface      
+      if( fabs(pre_distToOut) < fabs(post_distToIn) ){
+
+	//Put point onto the pre-step volume surface
+	//We're inside the pre-step volume and want to get closer to its surface. Along step points inward, but we want to go outward. Need a minus.
+	G4ThreeVector along = (postPos-prePos).unit(); // Trajectory direction points in the direction of the step
+	surfacePoint = postPos - fabs(preSolid->DistanceToOut(postPos,along)) * along; 
+
+	//Check that the surface point is good (now that we've modified it, it's in the local coordinate system)
+	if (preSolid->Inside(surfacePoint) != kSurface) {
+	  G4Exception((procName+"::CheckBoundaryPoint").c_str(),
+		      "Boundary00X", EventMustBeAborted,
+		      "Boundary-limited step cannot find boundary surface point"
+		      );
+	  return false;
+	}
+
+	//Rotate back to global using rotation of the post-step volume
+	G4CMP::RotateToGlobalPosition(preP->GetTouchable(), surfacePoint);
+	
+      }
+      //------------
+      //If we're closer to the post-step volume, then put the point on that surface.
+      else{
+
+	//Put point onto the post-step volume surface
+	//We're outside the post-step volume and want to get closer to its surface. Along step points inward. Need a plus.
+	G4ThreeVector along = (postPos_postPV-prePos_postPV).unit(); // Trajectory direction	
+	surfacePoint = postPos_postPV + fabs(postSolid->DistanceToIn(postPos_postPV,along)) * along; 
+
+	//Check that the surface point is good (now that we've modified it, it's in the local coordinate system)
+	if (postSolid->Inside(surfacePoint) != kSurface) {
+	  G4Exception((procName+"::CheckBoundaryPoint").c_str(),
+		      "Boundary00X", EventMustBeAborted,
+		      "Boundary-limited step cannot find boundary surface point"
+		      );
+	  return false;
+	}
+
+	//Rotate back to global using rotation of the post-step volume
+	G4CMP::RotateToGlobalPosition(postP->GetTouchable(), surfacePoint);
+      }	
+    }
+
+    //-------------------------------
+    //This condition makes sense (I think?) if the post-step point is within the daughter volume (it's therefore inside both mother and daughter volumes)
+    else if( postIn_postPV == kInside ){
+
+      //Since we still don't know which is the daughter, we again have to run a conditional. See which one has a closer boundary (in any direction)
+      G4double pre_distToOut = preSolid->DistanceToOut(postPos);
+      G4double post_distToOut = postSolid->DistanceToOut(postPos_postPV);
+
+      //Here, the post-PV is internal to the pre-PV
+      if( fabs(pre_distToOut) > fabs(post_distToOut) ){
+
+	//Put the point on the post-PV volume, since it's smaller/internal
+	//We're inside the post-step volume, which is inside the pre-step volume, and want to land on the post-step surface. Along step points inward. Need
+	//a minus to get to post-step surface.
+	G4ThreeVector along = (postPos_postPV-prePos_postPV).unit(); // Trajectory direction	
+	surfacePoint = postPos_postPV - fabs(postSolid->DistanceToOut(postPos_postPV,along)) * along;
+
+	//Check that the surface point is good (now that we've modified it, it's in the local coordinate system)
+	if (postSolid->Inside(surfacePoint) != kSurface) {
+	  G4Exception((procName+"::CheckBoundaryPoint").c_str(),
+		      "Boundary00X", EventMustBeAborted,
+		      "Boundary-limited step cannot find boundary surface point"
+		      );
+	  return false;
+	}
+
+	//Rotate back to global using rotation of the post-step volume
+	G4CMP::RotateToGlobalPosition(postP->GetTouchable(), surfacePoint);
+      }
+      //Here, the pre-PV is internal to the post-PV
+      else{
+	
+	//Put the point on the pre-PV volume, since it's smaller/internal
+	//We're inside the pre-step volume, which is inside the post-step volume, and want to land on the pre-step surface. Along step points outward. Need
+	//a plus to get to pre-step surface.
+	G4ThreeVector along = (postPos-prePos).unit(); // Trajectory direction	
+	surfacePoint = postPos + fabs(preSolid->DistanceToOut(postPos,along)) * along; 
+
+	//Check that the surface point is good (now that we've modified it, it's in the local coordinate system)
+	if (preSolid->Inside(surfacePoint) != kSurface) {
+	  G4Exception((procName+"::CheckBoundaryPoint").c_str(),
+		      "Boundary00X", EventMustBeAborted,
+		      "Boundary-limited step cannot find boundary surface point"
+		      );
+	  return false;
+	}
+
+	//Rotate back to global using rotation of the post-step volume
+	G4CMP::RotateToGlobalPosition(preP->GetTouchable(), surfacePoint);
+      }
+    }
+    //-------------------------------
+    //If neither of these get flagged, then we should have something invalid, since boundary cases should have been caught higher up.
+    else{
+      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
+		  "Boundary00X", EventMustBeAborted,
+		  "Somehow the post-step point for this step is neither inside, outside, or on the surface of the post-step volume."
+		  );
+      return false;
+    }
+  }
+
+  //---------------------------------------------------------------------------------------------------------------------
+  //Otherwise, we have an invalid thing?
+  else{    
+    G4Exception((procName+"::CheckBoundaryPoint").c_str(),
+		"Boundary00X", EventMustBeAborted,
+		"Somehow the post-step point for this step is neither inside, outside, or on the boundary of the pre-step volume."
+		);
+    return false;
+  }
+  
+	    
+  //If we reach this point, we can return true
+  return true;
+}
+
+
 
 // Implement PostStepDoIt() in a common way; processes should call through
 
@@ -468,3 +771,5 @@ G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
 G4double G4CMPBoundaryUtils::GetMaterialProperty(const G4String& key) const {
   return const_cast<G4MaterialPropertiesTable*>(matTable)->GetConstProperty(key);
 }
+
+

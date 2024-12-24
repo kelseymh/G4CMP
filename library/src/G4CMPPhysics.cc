@@ -50,6 +50,7 @@
 #include "G4CMPBogoliubovQPRadiatesPhononProcess.hh"
 #include "G4CMPBogoliubovQPRandomWalkBoundary.hh"
 #include "G4CMPBogoliubovQPRandomWalkTransport.hh"
+#include "G4CMPBogoliubovQPLocalTrappingProcess.hh"
 
 // Constructor sets global verbosity
 
@@ -83,6 +84,7 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* bogQPRad = new G4CMPBogoliubovQPRadiatesPhononProcess;
   G4VProcess* bogQPRefl = new G4CMPBogoliubovQPRandomWalkBoundary;
   G4VProcess* bogQPTrans = new G4CMPBogoliubovQPRandomWalkTransport;
+  G4VProcess* bogQPTrap = new G4CMPBogoliubovQPLocalTrappingProcess;
   G4VProcess* tmStep  = new G4CMPTimeStepper;
   G4VProcess* driftB  = new G4CMPDriftBoundaryProcess;
   G4VProcess* ivScat  = new G4CMPInterValleyScattering;
@@ -107,6 +109,7 @@ void G4CMPPhysics::ConstructProcess() {
   AddG4CMPProcess(bogQPRad,particle);
   AddG4CMPProcess(bogQPRecomb,particle);
   AddG4CMPProcess(bogQPRefl,particle);
+  AddG4CMPProcess(bogQPTrap,particle);
   //EY since QP transport is not a discrete process adding to process manager directly
   particle->GetProcessManager()->AddProcess(bogQPTrans,ordInActive,ordDefault,ordLast);
     

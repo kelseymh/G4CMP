@@ -148,6 +148,7 @@ public:
   G4double GetSCTcrit() const { return fLattice->GetSCTcrit(); }
   G4double GetSCTeff() const { return fLattice->GetSCTeff(); }
   G4double GetSCDn() const { return fLattice->GetSCDn(); }
+  G4double GetSCQPLocalTrappingMFP() const { return fLattice->GetSCQPLocalTrappingMFP(); }
   
   // Charge carriers have effective mass
   G4double GetHoleMass() const { return fLattice->GetHoleMass(); }

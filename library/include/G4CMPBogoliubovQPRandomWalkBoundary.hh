@@ -9,14 +9,14 @@
 #ifndef G4CMPBogoliubovQPRandomWalkBoundary_h
 #define G4CMPBogoliubovQPRandomWalkBoundary_h 1
 
-#include "G4CMPVProcess.hh"
+#include "G4VBogoliubovQPProcess.hh"
 #include "G4CMPSCUtils.hh"
 #include "G4CMPBoundaryUtils.hh"
 
 class G4CMPProcessUtils;
 
-class G4CMPBogoliubovQPRandomWalkBoundary : public G4CMPVProcess,
-				   public G4CMPBoundaryUtils {
+class G4CMPBogoliubovQPRandomWalkBoundary : public G4VBogoliubovQPProcess,
+					    public G4CMPBoundaryUtils {
 public:
   G4CMPBogoliubovQPRandomWalkBoundary(const G4String& processName="G4CMPBogoliubovQPRandomWalkBoundary");
   
@@ -33,7 +33,8 @@ public:
                     
                        
   G4bool CheckQPVolumes(const G4Step& aStep);
-  G4bool IsValidQPVolume(G4VPhysicalVolume* volume);
+  G4bool IsValidQPVolume(G4VPhysicalVolume* volume,
+			 G4double qpEKin );
 
 protected:
   virtual G4double GetMeanFreePath(const G4Track& aTrack,
@@ -51,9 +52,6 @@ protected:
   //Boolean to indicate whether the pre/post-step volumes have valid material properties for QP transport
   G4bool preQPVolume;
   G4bool postQPVolume;
-  //save pre and post SC gap as member data if not valid QP transport region then set parameter to DBL_MAX -> QPs will never have enough energy to transport into the material
-  G4double preSCGap;
-  G4double postSCGap;
    
   G4String procName;
   G4CMPProcessUtils* procUtils;
