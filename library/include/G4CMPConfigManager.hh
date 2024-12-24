@@ -30,22 +30,23 @@
 // 20170830  Add downsampling energy scale parameter
 // 20170830  Add flag to create e/h pairs in "cloud" surround location
 // 20180801  Change IVEdelweiss flag to string IVRateModel.
-// 20190711  G4CMP-158:  Add functions to select NIEL yield functions
-// 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
-// 20200211  G4CMP-191:  Add version identification from .g4cmp-version
-// 20200331  G4CMP-195:  Add chage trapping MFP
-// 20200331  G4CMP-196:  Add impact ionization mean free path
+// 20190711  G4CMP-158: Add functions to select NIEL yield functions
+// 20191014  G4CMP-179: Drop sampling of anharmonic decay (downconversion)
+// 20200211  G4CMP-191: Add version identification from .g4cmp-version
+// 20200331  G4CMP-195: Add chage trapping MFP
+// 20200331  G4CMP-196: Add impact ionization mean free path
 // 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
 // 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
 //		"hTrap" -> "ATrap".
-// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
-// 20200530  G4CMP-202:  Provide separate master and worker instances
-// 20200614  G4CMP-211:  Add functionality to print settings
-// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
-// 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
-// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
-// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
-// 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
+// 20200504  G4CMP-195: Reduce length of charge-trapping parameter names
+// 20200530  G4CMP-202: Provide separate master and worker instances
+// 20200614  G4CMP-211: Add functionality to print settings
+// 20210303  G4CMP-243: Add parameter to set step length for merging hits
+// 20210910  G4CMP-272: Add parameter to set number of downsampled Luke phonons
+// 20220921  G4CMP-319: Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
+// 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
+// 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
 
 #include "globals.hh"
 #include <iosfwd>
@@ -97,6 +98,7 @@ public:
 
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
+  static const G4String& GetLukeDebugFile() { return Instance()->lukeFilename; }
 
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
@@ -128,6 +130,8 @@ public:
   static void SetHDTrapIonMFP(G4double value) { Instance()->hDTrapIonMFP = value; }
   static void SetHATrapIonMFP(G4double value) { Instance()->hATrapIonMFP = value; }
   static void SetTemperature(G4double value)  { Instance()->temperature = value; }
+
+  static void SetLukeDebugFile(const G4String& value) { Instance()->lukeFilename = value; }
 
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
   static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
@@ -161,14 +165,15 @@ private:
 private:
   G4int verbose;	 // Global verbosity (all processes, lattices)
   G4int fPhysicsModelID; // ID key to get aux. track info.
-  G4int ehBounces;	// Maximum e/h reflections ($G4CMP_EH_BOUNCES)
-  G4int pBounces;	// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
-  G4int maxLukePhonons; // Approx. Luke phonon limit ($G4MP_MAX_LUKE)
-  G4String version;	// Version name string extracted from .g4cmp-version
-  G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
-  G4String IVRateModel;	// Model for IV rate ($G4CMP_IV_RATE_MODEL)
-  G4double eTrapMFP;	// Mean free path for electron trapping
-  G4double hTrapMFP;	// Mean free path for hole trapping
+  G4int ehBounces;	 // Maximum e/h reflections ($G4CMP_EH_BOUNCES)
+  G4int pBounces;	 // Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
+  G4int maxLukePhonons;  // Approx. Luke phonon limit ($G4MP_MAX_LUKE)
+  G4String version;	 // Version name string extracted from .g4cmp-version
+  G4String LatticeDir;	 // Lattice data directory ($G4LATTICEDATA)
+  G4String IVRateModel;	 // Model for IV rate ($G4CMP_IV_RATE_MODEL)
+  G4String lukeFilename; // Filename for LukeScattering debugging output
+  G4double eTrapMFP;	 // Mean free path for electron trapping
+  G4double hTrapMFP;	 // Mean free path for hole trapping
   G4double eDTrapIonMFP; // Mean free path for e- on e-trap ionization ($G4CMP_EETRAPION_MFP)
   G4double eATrapIonMFP; // Mean free path for e- on h-trap ionization ($G4CMP_EHTRAPION_MFP)
   G4double hDTrapIonMFP; // Mean free path for h+ on e-trap ionization ($G4CMP_HETRAPION_MFP)
