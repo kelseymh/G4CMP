@@ -41,6 +41,8 @@
 //              back. Adding InitializeParticleChange to get the correct Ekin
 // 20241223  G4CMP-419 -- Create separate debugging file per worker thread;
 //		add EventID column to debugging output.
+// 20241224  G4CMP-419 -- Drop requirement for G4CMP_DEBUG preprocessor flag.
+//		Users can enable debugging output file with verbosity.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -79,9 +81,7 @@ G4CMPLukeScattering::G4CMPLukeScattering(G4VProcess* stepper)
 }
 
 G4CMPLukeScattering::~G4CMPLukeScattering() {
-#ifdef G4CMP_DEBUG
   if (output.is_open()) output.close();
-#endif
 }
 
 
@@ -105,7 +105,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
-#ifdef G4CMP_DEBUG
   if (verboseLevel && !output.is_open()) {
     output.open(G4CMP::DebuggingFileThread("LukePhononEnergies"));
     if (!output.good()) {
@@ -118,7 +117,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	   << "Final Energy [eV],Final Momentum [eV]"
 	   << std::endl;
   }
-#endif
 
   // For convenience in diagnostic output below
   const G4String& trkName = aTrack.GetDefinition()->GetParticleName();
@@ -323,7 +321,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
            << G4endl;
   }
 
-#ifdef G4CMP_DEBUG
   if (output.good()) {
     output << G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() << ","
 	   << aTrack.GetTrackID() << "," << trkName << ","
@@ -331,7 +328,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	   << GetLocalMomentum(aTrack).mag()/eV << "," << kmag << ","
 	   << theta_phonon << "," << Ephonon/eV << ",";
   }
-#endif
 
   // Create real phonon to be propagated, with random polarization
   // If phonon is not created, register the energy as deposited
@@ -366,12 +362,10 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   RotateToGlobalDirection(precoil);	// Update track in world coordinates
   FillParticleChange(newValley, Erecoil, precoil);
 
-#ifdef G4CMP_DEBUG
   if (output.good()) {
     output << aTrack.GetWeight()*weight << "," << k_recoil.mag() << ","
 	   << Erecoil/eV << "," << precoil.mag()/eV << std::endl;
   }
-#endif
 
   // *** TURN OFF LATTICE VERBOSITY
   lat->SetVerboseLevel(latVerbose);
