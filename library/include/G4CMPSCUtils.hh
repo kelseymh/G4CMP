@@ -15,6 +15,7 @@
 #include "G4ThreeVector.hh"
 #include <map>
 #include <utility>
+#include <vector>
 
 class G4LatticePhysical;
 
