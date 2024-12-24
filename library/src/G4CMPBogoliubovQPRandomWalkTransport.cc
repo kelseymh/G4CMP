@@ -164,24 +164,38 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
         
         //Calculate the energy dependent diffusion constant
         G4double E_ratio = fGapEnergy/energy;
+//        G4cout << "Energy QP : " << energy <<G4endl;
+//        G4cout << "Material gap : " << fGapEnergy <<G4endl;
+//        G4cout << "E_ratio : " << E_ratio <<G4endl;
+//        G4cout << "Normal State Diffusion Constant : " << fDn <<G4endl;
         G4double E_ratio2 = pow(E_ratio,2.0);
         fDiffConst = fDn*sqrt(1-E_ratio2);
-        
+//        G4cout << "QP effective Diffusion constant : " << fDiffConst <<G4endl;
+
         //Want to update update time step to be half of the phonon
         //scattering lifetime - estimate from Eq.5 in Saving paper Martinis 2021
         G4double E_ratio_diff = energy/fGapEnergy - 1;
         proposedTimeStep = 0.5*fTau0_qp/(1.8*pow(E_ratio_diff,3));
         
         //Time step is set by the current minimum process else it is half the scattering rate
+//        G4cout << "Time step from pathlength and velocity : " << (fPathLength/velocity)*ns <<G4endl;
+//        G4cout << "Track local time : " << track.GetLocalTime()*ns <<G4endl;
+//        G4cout << "Track global time : " << track.GetLocalTime()*ns <<G4endl;
         fTimeStep = std::min(proposedTimeStep, fPathLength/velocity);
+        
+//        G4cout << "Taken time step : " << fTimeStep*ns <<G4endl;
         
         //Now we can calculate the std of the guassian for the RW
         G4double sigma = sqrt(2.0*fDiffConst*fTimeStep);
         
         G4RandGauss* gauss_dist = new G4RandGauss(G4Random::getTheEngine(),0.0,sigma);
         
-        fStepX = gauss_dist->shoot();
-        fStepY = gauss_dist->shoot();
+//        fStepX = gauss_dist->shoot();
+//        fStepY = gauss_dist->shoot();
+        
+        fStepX = gauss_dist->fire();
+        fStepY = gauss_dist->fire();
+
         
         fPathLength = sqrt((fStepX*fStepX+fStepY*fStepY));
         //If the walker is on the boundary we want to make sure that
@@ -277,7 +291,10 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
   // Check if the particle met conditions to do random walk from GPIL command
   if(!isActive) {
     fPathLength = stepLength;
-      
+    G4cout << "Step is not active" << G4endl;
+    G4cout << "Particle path length: " << fPathLength <<G4endl;
+    G4cout << "Particle velocity: " << velocity <<G4endl;
+    G4cout << "Time Step : " << fPathLength/velocity <<G4endl;
   } else {
     // Particle did meet conditions to undergo RW
     // Update relevant particle changes
@@ -334,13 +351,17 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
     }
     //the proposed local time is not updated by the UpdateAlongStep method in the particle change class
     // - > this is likely not needed and updated by the G4Transportation class
-    fParticleChange.ProposeLocalTime(track.GetLocalTime() + fPathLength/velocity);
+    fParticleChange.ProposeLocalTime(fPathLength/velocity);
   }
   if(fPositionChanged){
       fParticleChange.ProposePosition(fNewPosition);
   }
     
   fParticleChange.ProposeTrueStepLength(fPathLength);
+    
+//  G4cout << "Particle path length: " << fPathLength <<G4endl;
+//  G4cout << "Particle velocity: " << velocity <<G4endl;
+//  G4cout << "Time Step : " << fPathLength/velocity <<G4endl;
     
   return &fParticleChange;
 }

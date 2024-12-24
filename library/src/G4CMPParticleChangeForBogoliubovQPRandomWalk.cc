@@ -88,6 +88,12 @@ G4Step* G4CMPParticleChangeForBogoliubovQPRandomWalk::UpdateStepForAlongStep(G4S
   // update velocity
   pPostStepPoint->SetVelocity(theVelocity);
     
+  //update the local time of the particle
+  pPostStepPoint->SetLocalTime(pPostStepPoint->GetLocalTime()+theTimeChange);
+        
+  //update the Global time of the particle
+  pPostStepPoint->SetGlobalTime(pPostStepPoint->GetGlobalTime()+theTimeChange);
+    
   return pStep;
 }
 
@@ -104,7 +110,13 @@ G4Step* G4CMPParticleChangeForBogoliubovQPRandomWalk::UpdateStepForPostStep(G4St
     
   // update velocity
   pPostStepPoint->SetVelocity(theVelocity);
-    
+
+  //update the local time of the particle
+  pPostStepPoint->SetLocalTime(pPostStepPoint->GetLocalTime()+theTimeChange);
+      
+  //update the Global time of the particle
+  pPostStepPoint->SetGlobalTime(pPostStepPoint->GetGlobalTime()+theTimeChange);
+
   return pStep;
 }
 
