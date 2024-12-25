@@ -106,10 +106,11 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   if (verboseLevel && !output.is_open()) {
-    output.open(G4CMP::DebuggingFileThread("LukePhononEnergies"));
+    const G4String& debugfile = G4CMPConfigManager::GetLukeDebugFile();
+    output.open(G4CMP::DebuggingFileThread(debugfile));
     if (!output.good()) {
       G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
-		  FatalException, "Unable to open LukePhononEnergies");
+		  FatalException, ("Unable to open "+debugfile).c_str());
     }
 
     output << "Event ID,Track ID,Track Type,Track Weight,Track Energy [eV],Track Momentum [eV],WaveVector,"
