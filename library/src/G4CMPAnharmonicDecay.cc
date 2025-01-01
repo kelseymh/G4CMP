@@ -7,12 +7,15 @@
 // 20220907  G4CMP-316 -- Pass track into CreatePhonon instead of touchable.
 //		Check for null pointers from secondaries.
 // 20220914  G4CMP-322 -- Address compiler warnings for unused arguments.
+// 20241223  G4CMP-419 -- Create separate debugging file per worker thread;
+//		add EventID column to debugging output.
 
 #include "G4CMPAnharmonicDecay.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4Event.hh"
 #include "G4Exception.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticePhysical.hh"
@@ -21,6 +24,7 @@
 #include "G4PhononPolarization.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
+#include "G4RunManager.hh"
 #include "G4Step.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4VProcess.hh"
@@ -36,11 +40,14 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step&,
 				   G4ParticleChange& aParticleChange) {
 #ifdef G4CMP_DEBUG
   if (verboseLevel && !output.is_open()) {
-    output.open("phonon_downconv_stats", std::ios_base::app);
+    output.open(G4CMP::DebuggingFileThread("phonon_downconv_stats"));
     if (output.good()) {
-      output << "First Daughter Theta,Second Daughter Theta,First Daughter Energy [eV],Second Daughter Energy [eV],"
-	"Decay Branch,First Daughter Weight,Second Daughter Weight,Parent Weight,"
-	"Number of Outgoing Tracks,Parent Energy [eV]\n";
+      output << "EventID,TrackID,First Daughter Theta,Second Daughter Theta,"
+	     << "First Daughter Energy [eV],Second Daughter Energy [eV],"
+	     << "Decay Branch,First Daughter Weight,Second Daughter Weight,"
+	     << "Parent Weight,Number of Outgoing Tracks,Parent Energy [eV]\n"
+	     << G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() << ','
+	     << aTrack.GetTrackID() << ',';
     } else {
       G4cerr << "Could not open phonon debugging output file!" << G4endl;
     }
@@ -62,9 +69,11 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step&,
   else MakeLTSecondaries(aTrack, aParticleChange);
 
 #ifdef G4CMP_DEBUG
-  output << aTrack.GetWeight() << ','
-         << aParticleChange.GetNumberOfSecondaries() << ','
-         << aTrack.GetKineticEnergy()/eV << G4endl;
+  if (output.good()) {
+    output << aTrack.GetWeight() << ','
+	   << aParticleChange.GetNumberOfSecondaries() << ','
+	   << aTrack.GetKineticEnergy()/eV << G4endl;
+  }
 #endif
 
   // Only kill the track if downconversion actually happened
