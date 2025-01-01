@@ -7,7 +7,7 @@
 // 20220907  G4CMP-316 -- Pass track into CreatePhonon instead of touchable.
 //		Check for null pointers from secondaries.
 // 20220914  G4CMP-322 -- Address compiler warnings for unused arguments.
-// 20241223  G4CMP-419 -- Create separate debugging file per worker thread;
+// 20250101  G4CMP-440 -- Create separate debugging file per worker thread;
 //		add EventID column to debugging output.
 
 #include "G4CMPAnharmonicDecay.hh"
@@ -72,7 +72,7 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step&,
   if (output.good()) {
     output << aTrack.GetWeight() << ','
 	   << aParticleChange.GetNumberOfSecondaries() << ','
-	   << aTrack.GetKineticEnergy()/eV << G4endl;
+	   << aTrack.GetKineticEnergy()/eV << std::endl;
   }
 #endif
 
