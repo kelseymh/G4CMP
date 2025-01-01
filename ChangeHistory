@@ -7,6 +7,7 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 2025-01-01  G4CMP-440 : Improve multithreaded use of AnharmonicDecay debug file.
+2025-01-01  G4CMP-439 : Improve multithreaded use of KaplanQP debug file.
 2024-12-23  G4CMP-419 : Improve multithreaded use of LukeScattering debug file.
 2024-12-21  G4CMP-437 : Update README.md file with new materials information.
 
