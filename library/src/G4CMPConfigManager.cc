@@ -19,29 +19,30 @@
 // 20170815  Add parameter for required clearance from volume surfaces
 // 20170823  Remove geometry-specific parameters; implement in examples
 // 20170830  Add downsampling energy scale parameter
-// 20170908  G4CMP-118:  Use Edelweiss IV rate by default
-// 20180801  G4CMP-143:  Change IV rate from bool to str, Edelweiss->Quadratic
-// 20190711  G4CMP-158:  Add functions to select NIEL yield functions
-// 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
-// 20200211  G4CMP-191:  Add version identification from .g4cmp-version
-// 20200331  G4CMP-195:  Add charge trapping mean free paths
-// 20200331  G4CMP-196:  Add impact ionization mean free path
+// 20170908  G4CMP-118: Use Edelweiss IV rate by default
+// 20180801  G4CMP-143: Change IV rate from bool to str, Edelweiss->Quadratic
+// 20190711  G4CMP-158: Add functions to select NIEL yield functions
+// 20191014  G4CMP-179: Drop sampling of anharmonic decay (downconversion)
+// 20200211  G4CMP-191: Add version identification from .g4cmp-version
+// 20200331  G4CMP-195: Add charge trapping mean free paths
+// 20200331  G4CMP-196: Add impact ionization mean free path
 // 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
 // 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
 //		"hTrap" -> "ATrap".
-// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
-// 20200530  G4CMP-202:  Provide separate master and worker instances
-// 20200614  G4CMP-211:  Add functionality to print settings
-// 20200614  G4CMP-210:  Add missing initializers to copy constructor
-// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
-// 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
-// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
-// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
-// 20221014  G4CMP-334:  Add maxLukePhonons to printout; show macro commands
-// 20230622  G4CMP-325:  For G4CMP-343 above, default "keep all" flag to TRUE.
-// 20230831  G4CMP-362:  Add short names for IMPACT and Sarkis ionization models
-// 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
-// 20240823  G4CMP-422:  Remove default Quadratic rate model setting.
+// 20200504  G4CMP-195: Reduce length of charge-trapping parameter names
+// 20200530  G4CMP-202: Provide separate master and worker instances
+// 20200614  G4CMP-211: Add functionality to print settings
+// 20200614  G4CMP-210: Add missing initializers to copy constructor
+// 20210303  G4CMP-243: Add parameter to set step length for merging hits
+// 20210910  G4CMP-272: Add parameter to set number of downsampled Luke phonons
+// 20220921  G4CMP-319: Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
+// 20221014  G4CMP-334: Add maxLukePhonons to printout; show macro commands
+// 20230622  G4CMP-325: For G4CMP-343 above, default "keep all" flag to TRUE.
+// 20230831  G4CMP-362: Add short names for IMPACT and Sarkis ionization models
+// 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
+// 20240823  G4CMP-422: Remove default Quadratic rate model setting.
+// 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -87,6 +88,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     maxLukePhonons(getenv("G4MP_MAX_LUKE")?atoi(getenv("G4MP_MAX_LUKE")):-1),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):""),
+    lukeFilename(getenv("G4CMP_LUKE_FILE")?getenv("G4CMP_LUKE_FILE"):"LukePhononEnergies"),
     eTrapMFP(getenv("G4CMP_ETRAPPING_MFP")?strtod(getenv("G4CMP_ETRAPPING_MFP"),0)*mm:DBL_MAX),
     hTrapMFP(getenv("G4CMP_HTRAPPING_MFP")?strtod(getenv("G4CMP_HTRAPPING_MFP"),0)*mm:DBL_MAX),
     eDTrapIonMFP(getenv("G4CMP_EDTRAPION_MFP")?strtod(getenv("G4CMP_EDTRAPION_MFP"),0)*mm:DBL_MAX),
@@ -130,7 +132,8 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     ehBounces(master.ehBounces), pBounces(master.pBounces),
     maxLukePhonons(master.maxLukePhonons),
     version(master.version), LatticeDir(master.LatticeDir), 
-    IVRateModel(master.IVRateModel), eTrapMFP(master.eTrapMFP),
+    IVRateModel(master.IVRateModel), lukeFilename(master.lukeFilename),
+    eTrapMFP(master.eTrapMFP),
     hTrapMFP(master.hTrapMFP), eDTrapIonMFP(master.eDTrapIonMFP),
     eATrapIonMFP(master.eATrapIonMFP), hDTrapIonMFP(master.hDTrapIonMFP),
     hATrapIonMFP(master.hATrapIonMFP),
@@ -189,6 +192,7 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/chargeBounces " << ehBounces << "\t\t\t\t# G4CMP_EH_BOUNCES"
      << "\n/g4cmp/phononBounces " << pBounces << "\t\t\t# G4CMP_PHON_BOUNCES"
      << "\n/g4cmp/IVRateModel " << IVRateModel << "\t\t\t# G4CMP_IV_RATE_MODEL"
+     << "\n/g4cmp/LukeDebugFile " << lukeFilename << "\t\t\t# G4CMP_LUKE_FILE"
      << "\n/g4cmp/eTrappingMFP " << eTrapMFP/mm << " mm\t\t# G4CMP_ETRAPPING_MFP"
      << "\n/g4cmp/hTrappingMFP " << hTrapMFP/mm << " mm\t\t# G4CMP_HTRAPPING_MFP"
      << "\n/g4cmp/eDTrapIonizationMFP " << eDTrapIonMFP/mm << " mm\t# G4CMP_EDTRAPION_MFP"

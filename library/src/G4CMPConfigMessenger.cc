@@ -32,15 +32,16 @@
 // 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
 // 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
 //		"hTrap" -> "ATrap".
-// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
-// 20200614  G4CMP-211:  Add functionality to print settings
-// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
-// 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
-// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
-// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
-// 20221214  G4CMP-350:  Bug fix for new temperature setting units.
-// 20230831  G4CMP-362:  Add short names for IMPACT and Sarkis ionization models
-// 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
+// 20200504  G4CMP-195: Reduce length of charge-trapping parameter names
+// 20200614  G4CMP-211: Add functionality to print settings
+// 20210303  G4CMP-243: Add parameter to set step length for merging hits
+// 20210910  G4CMP-272: Add parameter for soft maximum Luke phonons per event
+// 20220921  G4CMP-319: Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
+// 20221214  G4CMP-350: Bug fix for new temperature setting units.
+// 20230831  G4CMP-362: Add short names for IMPACT and Sarkis ionization models
+// 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
+// 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -63,8 +64,8 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
     hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), tempCmd(0), minstepCmd(0),
     makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
-    ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0), fanoStatsCmd(0),
-  kaplanKeepCmd(0), ehCloudCmd(0), recordMinECmd(0) {
+    lukeFileCmd(0), ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0),
+    fanoStatsCmd(0), kaplanKeepCmd(0), ehCloudCmd(0), recordMinECmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
 
@@ -179,6 +180,9 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 	   "Temperature to be used for device, substrate, sensors, etc.");
   tempCmd->SetUnitCategory("Temperature");
 
+  lukeFileCmd = CreateCommand<G4UIcmdWithAString>("LukeDebugFile",
+	  "Filename to use for dumping debugging output from LukeScattering");
+
   nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
 	       "Select calculation for non-ionizing energy loss (NIEL)");
   nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew IMPACT Impact impact ImpactTunl impacttunl Sarkis sarkis Sar sar");
@@ -224,6 +228,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete fanoStatsCmd; fanoStatsCmd=0;
   delete kaplanKeepCmd; kaplanKeepCmd=0;
   delete ehCloudCmd; ehCloudCmd=0;
+  delete lukeFileCmd; lukeFileCmd=0;
   delete ivRateModelCmd; ivRateModelCmd=0;
   delete nielPartitionCmd; nielPartitionCmd=0;
 }
@@ -241,6 +246,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
+  if (cmd == lukeFileCmd) theManager->SetLukeDebugFile(value);
 
   if (cmd == clearCmd)
     theManager->SetSurfaceClearance(clearCmd->GetNewDoubleValue(value));
