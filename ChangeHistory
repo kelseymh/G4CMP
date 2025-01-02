@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-01-01  G4CMP-438 : Follow Geant4 10-Series model for Phonon_Caustics SD.
 2025-01-01  G4CMP-434 : Improve multithreaded use of Phonon_Caustics example.
 2025-01-01  G4CMP-440 : Improve multithreaded use of AnharmonicDecay debug file.
 2025-01-01  G4CMP-439 : Improve multithreaded use of KaplanQP debug file.
