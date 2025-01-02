@@ -4,6 +4,7 @@
 \***********************************************************************/
 
 // 20241024 Israel Hernandez -- IIT, QSC and Fermilab
+// 20250101 Michael Kelsey -- Instantiate SD in ConstructSDandField()
 
 #ifndef Caustic_PhononDetectorConstruction_h
 #define Caustic_PhononDetectorConstruction_h 1
@@ -23,17 +24,18 @@ public:
 
 public:
   virtual G4VPhysicalVolume* Construct();
+  virtual void ConstructSDandField();
 
 private:
   void Caustic_DefineMaterials();
   void Caustic_SetupGeometry();
-
 
 private:
   G4Material* fLiquidHelium;
   G4Material* fBolometer;
   G4Material* fCrystalMaterial;
   G4VPhysicalVolume* fWorldPhys;
+  G4LogicalVolume* fpSubstrateLV;
   G4CMPSurfaceProperty* topSurfProp;
   G4CMPSurfaceProperty* wallSurfProp;
   G4CMPElectrodeSensitivity* electrodeSensitivity;
