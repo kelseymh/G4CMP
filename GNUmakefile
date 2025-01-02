@@ -14,12 +14,14 @@
 # Manually set version with G4CMP_VERSION=xxx if Git not available
 # Add pass-through of thread-safety "code sanitizer" flags
 # Split XXX.% targets to ensure everything gets built properly
+# Add new Phonon_Caustics example, using "caustics" as the target name
 
 # G4CMP requires Geant4 10.4 or later
 g4min := 10.4
 
-.PHONY : library phonon charge tests tools	# Targets named for directory
-.PHONY : all lib dist clean qhull examples
+.PHONY : library examples tests tools	# Targets named for directory
+.PHONY : phonon charge sensors caustics
+.PHONY : all lib dist clean qhull
 
 # Initial target provides guidance if user tries bare |make|
 help :
@@ -34,6 +36,7 @@ help :
 	 echo "phonon        Builds pure phonon example" ;\
 	 echo "charge        Builds charge-carrier (e-/h) example" ;\
 	 echo "sensors       Builds FET digitization sensor example" ;\
+	 echo "caustics      Builds Phonon_Caustics example" ;\
 	 echo "tools         Builds support utilities (lookup table maker)" ;\
 	 echo "tests         Builds small test programs for classes" ;\
 	 echo "clean         Remove libraries and examples" ;\
@@ -51,7 +54,7 @@ help :
 
 all : lib examples tests tools
 lib : library
-examples : phonon charge sensors
+examples : phonon charge sensors caustics
 
 clean :		# FIXME: This doesn't work as dependencies
 	-$(MAKE) tests.clean
@@ -92,16 +95,23 @@ tools.% :
 phonon charge sensors : library
 	-@$(MAKE) -C examples/$@
 
+caustics : library
+	-@$(MAKE) -C examples/Phonon_Caustics
+
 phonon.% \
 charge.% \
 sensors.% :
 	-$(MAKE) -C examples/$(basename $@) $(subst .,,$(suffix $@))
+
+caustics.% :
+	-$(MAKE) -C examples/Phonon_Caustics $(subst .,,$(suffix $@))
 
 # FIXME: These should work with dependencies, but don't
 examples.% :
 	-$(MAKE) phonon.$(subst .,,$(suffix $@))
 	-$(MAKE) charge.$(subst .,,$(suffix $@))
 	-$(MAKE) sensors.$(subst .,,$(suffix $@))
+	-$(MAKE) Phonon_Caustics.$(subst .,,$(suffix $@))
 
 tests : tests.all
 tools : tools.all
