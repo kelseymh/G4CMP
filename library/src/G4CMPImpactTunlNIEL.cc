@@ -22,9 +22,7 @@
 // 20230721  David Sadek - University of Florida (david.sadek@ufl.edu)
 // 20240416  S. Zatschler -- Remove unused const A
 // 20240417  M. Kelsey -- Add check using SiA and A
-// 20250102  M. Kelsey -- Fix placement of warning messages, replace
-//		inappropriate "static call" to LewinSmith model with proper
-//		object instantiation.
+// 20250102  M. Kelsey -- Fix placement of warning messages.
 
 #include "globals.hh"
 #include "G4CMPImpactTunlNIEL.hh"
@@ -32,7 +30,6 @@
 #include "G4Material.hh"
 #include "G4Pow.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4CMPLewinSmithNIEL.hh"
 #include <algorithm>
 #include <cmath>
 
@@ -51,7 +48,7 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double Zin,
   const G4double A = GetEffectiveA(material);
 
   // Check if the material is silicon or similar
-  if (std::abs(Z-SiZ) < 0.5 || std::abs(A-SiA) < 0.5) {
+  if (std::abs(Z-SiZ) < 0.5 || std::abs(A/(g/mole)-SiA) < 0.5) {
     // IMPACT@TUNL model below 10 keV, a simple power law in energy
     G4Pow* g4pow = G4Pow::GetInstance(); 
     if (energy <= 10.*keV) {
@@ -63,13 +60,17 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double Zin,
 		    "IMPACT@TUNL model is obtained in the range of 100 eV to 10 keV.\nAbove 10 keV, LewinSmith model will be used.");
 	firstCall = false;
       }
-      return G4CMPLewinSmithNIEL().PartitionNIEL(energy, material, Zin, Ain);
+      return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
     }
   } else {
     if (firstCall) {
-      G4Exception("G4CMPImpactTunlNIEL", "G4CMP1004", JustWarning, "The input material is not Silicon.\nThe LewinSmith model will be used for NIEL calculation.");
+      G4cerr << "Z " << Z << " vs SiZ " << SiZ << ", A " << A/(g/mole)
+	     << " vs " << " SiA " << SiA << G4endl;
+
+      G4Exception("G4CMPImpactTunlNIEL", "G4CMP1004", JustWarning,
+		  "The input material is not Silicon.\nThe LewinSmith model will be used for NIEL calculation.");
       firstCall = false;
     }
-    return G4CMPLewinSmithNIEL().PartitionNIEL(energy, material, Zin, Ain);
+    return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
   }
 }

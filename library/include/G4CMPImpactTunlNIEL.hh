@@ -21,11 +21,13 @@
 /// keV, Lindhard(LewinSmith) model will be used.
 //
 // 20230721  David Sadek - University of Florida (david.sadek@ufl.edu)
+// 20250102  M. Kelsey -- SiA should be in amu's (g/mol)
 
 #ifndef G4CMPImpactTunlNIEL_hh
 #define G4CMPImpactTunlNIEL_hh 1
 
 #include "G4CMPLewinSmithNIEL.hh"
+
 
 class G4CMPImpactTunlNIEL : public G4CMPLewinSmithNIEL {
 public:
@@ -44,11 +46,12 @@ private:
   // A least-square fit is applied to the results on the ring detectors with 
   // an empirically chosen power-law function Y(Er)=Y10(Er/10000)^B
 
-    const G4double B = 0.261; // Best fit value +0.017, -0.011
-    const G4double Y10 = 0.302; // yield at 10 keV
-    const G4double SiZ = 14.0; // Z of Silicon
-    const G4double SiA = 28.09; // A of Silicon
-    mutable bool firstCall = true; // A static variable to be used to print a warning message only once if the material passed is not Silicon
+  const G4double B = 0.261;	// Best fit value +0.017, -0.011
+  const G4double Y10 = 0.302;	// yield at 10 keV
+  const G4double SiZ = 14.0;	// Z of Silicon
+  const G4double SiA = 28.09;	// A of Silicon
+
+  mutable bool firstCall = true; 	// Print warning messages only once
 };
 
 #endif	/* G4CMPImpactTunlNIEL_hh */
