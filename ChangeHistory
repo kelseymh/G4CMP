@@ -6,7 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
-2025-01-02  G4CMP-436 : Bug fix for LinhardNIEL to return ionization yield.
+2025-01-02  G4CMP-436 : Bug fix for LindhardNIEL to return ionization yield.
 2025-01-02  G4CMP-442 : Fix SarkisNIEL warning messages and text file input.
 2025-01-02  G4CMP-441 : Move ImpactTunlNIEL warning messages to correct places.
 2024-12-21  G4CMP-437 : Update README.md file with new materials information.

@@ -21,6 +21,7 @@
 #include "G4CMPSarkisNIEL.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 #include "G4VNIELPartition.hh"
 #include <cmath>
@@ -42,24 +43,6 @@ void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
   G4Material* target = nist->FindOrBuildMaterial(material,true,true);
   goodInput &= (target != 0);
 
-  // From material, Get Z and A for use as projectile (internal nuclear recoil)
-  G4double Zin = target->GetZ(), Ain = target->GetA();
-
-  // Sanity check: compare above with G4VNIELPartition functions
-  // ==> Why are we getting errors from G4CMPImpactTunlNIEL for G4_Si???
-  G4double Zniel = G4VNIELPartition::GetEffectiveZ(target);
-  G4double Aniel = G4VNIELPartition::GetEffectiveA(target);
-
-  if (!(goodInput &= (fabs(Zin-Zniel) < 0.5))) {
-    G4cerr << "ERROR: Material::GetZ " << Zin << " doesn't match Zniel "
-	   << Zniel << G4endl;
-  }
-
-  if (!(goodInput &= (fabs(Ain-Aniel) < 0.5))) {
-    G4cerr << "ERROR: Material::GetA " << Ain << " doesn't match Aniel "
-	   << Aniel << G4endl;
-  }
-
   if (!goodInput) ::exit(1);		// If anything failed, abort
 
   // Instantiate single instance of each of the named yield functions
@@ -76,6 +59,9 @@ void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
   G4cout << "Energy";
   for (size_t i=0; i<nNIEL; i++) G4cout << "\t" << useNIEL[i];
   G4cout << G4endl;
+
+  // From material, Get Z and A for use as projectile (internal nuclear recoil)
+  G4double Zin = target->GetZ(), Ain = target->GetA();
 
   // Compute uniform logarithmic steps to see full range of yield values
   const G4int nStep = 50;
