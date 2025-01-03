@@ -54,12 +54,6 @@ G4CMPSarkisNIEL::G4CMPSarkisNIEL() {
 
   lVector.SetSpline(true);		// Ensure that we can interpolate
   lVector.FillSecondDerivatives();
-
-  G4cout << "G4CMPSarkisNIEL constructor:" << G4endl
-	 << "lVector has " << lVector.GetVectorLength() << " entries,"
-	 << " min energy " << lVector.GetLowEdgeEnergy(0)
-	 << " max energy " << lVector.GetMaxEnergy() << " (no units!)"
-	 << G4endl;
 }
 
 G4double G4CMPSarkisNIEL::
