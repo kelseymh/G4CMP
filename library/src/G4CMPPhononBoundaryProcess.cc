@@ -256,9 +256,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 		   const G4ThreeVector& surfNorm, G4int mode,
 		   const G4ThreeVector& surfacePoint) const {
   // Specular reflecton should reverse momentum along normal
-  G4ThreeVector reflectedKDir = waveVector.unit();
-  G4double kPerp = reflectedKDir * surfNorm;
-  (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);
+  G4ThreeVector reflectedKDir = waveVector.unit();	// Unit vector of initial k-vector (before reflection)
+  G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm. Must be >= 0 at this stage
+  (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);	// Law of reflections. reflectedKDir is now inward
    
   if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm))
     return reflectedKDir;
@@ -269,19 +269,19 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
   // That surface wave will propagate until it reaches a point
   // where the wave vector has an inwardly directed v⃗g.
-  RotateToLocalDirection(reflectedKDir);
-  G4ThreeVector newNorm = surfNorm;
-  RotateToLocalDirection(newNorm);	
+  RotateToLocalDirection(reflectedKDir);	// Put reflectedKDir in local frame
+  G4ThreeVector newNorm = surfNorm;		// Initial normal at point of reflection
+  RotateToLocalDirection(newNorm);		// Rotate norm to local frame
   
-  G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
-  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
-  G4ThreeVector oldNorm = newNorm;
-  G4double surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
-  G4double kPerpMag = reflectedKDir.dot(newNorm);
+  G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);			// Get local coor on surface
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();		// Obtain detector solid object
+  G4ThreeVector oldNorm = newNorm;						// Save previous norm for debugging
+  G4double surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);		// Find the distance from point to surface along norm (- means inward)
+  G4double kPerpMag = reflectedKDir.dot(newNorm);				// Must be <=0; reflectedKDir is inward and norm is outward
 
-  G4ThreeVector kPerpV = kPerpMag * newNorm;
-  G4ThreeVector kTan = reflectedKDir - kPerpV;
-  G4ThreeVector axis = kPerpV.cross(kTan).unit();
+  G4ThreeVector kPerpV = kPerpMag * newNorm;		// Get perpendicular component of reflected k (negative implied in kPerpMag for inward pointing)
+  G4ThreeVector kTan = reflectedKDir - kPerpV;		// Get kTan: reflectedKDir = kPerpV + kTan
+  G4ThreeVector axis = kPerpV.cross(kTan).unit();	// Get axis prep to both kTan and kPerpV to rotate about
   G4double phi = 0.;
 
   const G4double stepSize = 1.*um;	// Distance to step each trial
@@ -294,6 +294,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector oldkPerpV = kPerpV;
   G4ThreeVector oldstepLocalPos = stepLocalPos;
 
+  // FIXME: Need defined units
   if (verboseLevel>3) {
     G4cout << "GetReflectedVector:beforeLoop -> "
       << ", stepLocalPos = " << stepLocalPos
@@ -309,18 +310,18 @@ GetReflectedVector(const G4ThreeVector& waveVector,
    GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm))
 	 && nAttempts++ < maxAttempts) {
     // Step along the surface in the tangential direction of k (or v_g)
-    stepLocalPos += stepSize * kTan.unit();
+    stepLocalPos += stepSize * kTan.unit();	// Step along kTan direction - this point is now outside the detector
 
     // Get the local normal at the new surface point
-    oldNorm = newNorm;
-    newNorm = solid->SurfaceNormal(stepLocalPos);
+    oldNorm = newNorm;					// Save normal at old position
+    newNorm = solid->SurfaceNormal(stepLocalPos);	// Get new normal at new position
 
     // debugging only DELETE
-    oldstepLocalPos = stepLocalPos;
+    oldstepLocalPos = stepLocalPos;			// Save old position on detector
 
     // FIXME: Find point on surface nearest to stepLocalPos, and reset
-    surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
-    stepLocalPos -= surfAdjust * newNorm;
+    surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);	// Get distance along normal from new position back to detector surface
+    stepLocalPos -= surfAdjust * newNorm;			// Adjust position to be back on detector surface
 
     // Get rotation axis perpendicular to waveVector-normal plane
     axis = kPerpV.cross(kTan).unit();
@@ -330,17 +331,22 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     oldkPerpV = kPerpV;
 
     // Get new kPerpV (newNorm * kPerpMag)
-    kPerpV = kPerpMag * newNorm;
+    kPerpV = kPerpMag * newNorm;	// Get perpendicular component of reflected k w/ new norm (negative implied in kPerpMag for inward pointing)
 
     // Rotate kTan to be perpendicular to new normal
-    phi = oldNorm.azimAngle(newNorm, axis);
-    kTan = kTan.rotate(axis, phi);
+    phi = oldNorm.azimAngle(newNorm, axis);	// Angle bewteen oldNorm and newNorm
+    kTan = kTan.rotate(axis, phi);		// Rotate kTan by the angular distance between oldNorm and newNorm
 
     // Calculate new reflectedKDir (kTan + kPerpV)
     reflectedKDir = kTan + kPerpV;
 
+    // Debugging: Can be removed?
+    G4ThreeVector vDir = theLattice->MapKtoVDir(mode, GetGlobalDirection(reflectedKDir));
+
+    // FIXME: Need defined units
     if (verboseLevel>3) {
-      G4cout << "GetReflectedVector:insideLoop -> "
+      G4cout << " "
+       << "GetReflectedVector:insideLoop -> "
        << "attempts = " << nAttempts
        << ", oldstepLocalPos = " << oldstepLocalPos
        << ", surfAdjust = " << surfAdjust
@@ -354,7 +360,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
        << ", phi (oldNorm azimAngle (newNorm, axis)) = " << phi
        << ", oldNorm = " << oldNorm
        << ", kTan (rotate by phi about axis) = " << kTan
-       << ", reflectedKDir (kTan + kPerpV) = " << reflectedKDir << G4endl;
+       << ", reflectedKDir (kTan + kPerpV) = " << reflectedKDir
+       << ", Phonon mode = " << G4PhononPolarization::Label(mode)
+       << ", New group velocity: " << vDir << G4endl;
     }
   }
 
