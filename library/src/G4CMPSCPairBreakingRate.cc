@@ -70,7 +70,7 @@ std::vector<std::vector<G4double> > G4CMPSCPairBreakingRate::ComputeNormalizedTa
     //Initially, going to try this without specifying units -- shouuuuuld be fine but if there are problems this is the first place to debug.
     //Note that in what follows, omega indicates the QP energy integrated over.
     double prefactor = 4 * pi / hbar_Planck ; //Missing a factor of Alpha2 because it cancels later
-    int nW = 10000;
+    int nW = 20000;
     double minomega = fGapEnergy;
     double maxomega = phononEnergy - fGapEnergy;
     double deltaomega = (maxomega - minomega) / ((double)nW);

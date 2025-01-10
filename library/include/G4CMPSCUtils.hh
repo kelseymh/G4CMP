@@ -47,11 +47,12 @@ protected:
   G4double FermiFactor(G4double energy, G4double temperature);
   G4double BoseFactor(G4double energy, G4double temperature);
   G4double GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhononEnergy, G4String particleInQuestion, G4double energy ) const;
+  G4double ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit, double gap0Energy) const;
   
 private:
 
   //These run fully internally -- can be private
-  G4double ComputeGapEnergyAtNonzeroT();
+  G4double ComputeCurrentGapEnergyAtNonzeroT();
 
 
   

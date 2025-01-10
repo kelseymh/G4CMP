@@ -18,6 +18,9 @@
 #include "G4VParticleChange.hh"
 #include "G4RandomDirection.hh"
 #include "G4CMPSecondaryUtils.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4LatticePhysical.hh"
+#include "G4LatticeManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Constructor and destructor 
@@ -60,6 +63,7 @@ G4VParticleChange* G4CMPSCPairBreakingProcess::PostStepDoIt(const G4Track& aTrac
   //   the effective temperature we're at.
   double phononEnergy = aTrack.GetKineticEnergy();
   std::pair<G4double,G4double> QPenergies = FetchQPEnergies(phononEnergy);
+  G4cout << "REL -- energy of QP 1: " << QPenergies.first << ", energy of QP 2: " << QPenergies.second << G4endl;
   
   //3. Using the two above-computed energies, generate the two secondaries (G4BogoliubovQPs) we want.
   GenerateBogoliubovQPPair(QPenergies,aTrack,aStep);
@@ -124,8 +128,10 @@ G4double G4CMPSCPairBreakingProcess::QPEnergyRand(G4double Energy) const
   // E' = fGapEnergy and E' = Energy - fGapEnergy
   
   // Add buffer so first/last bins don't give zero denominator in pdfSum
+
+  G4cout << "REL -- fGapEnergy is: " << fGapEnergy / CLHEP::eV << " eV." << G4endl;
   
-  const G4double BUFF = 10000.; //REL used to be 1000
+  const G4double BUFF = 100000.; //REL used to be 1000, then 10000 (12/20/24)
   G4double xmin = fGapEnergy + (Energy - 2. * fGapEnergy) / BUFF;
   G4double xmax = fGapEnergy + (Energy - 2. * fGapEnergy) * (BUFF - 1.) / BUFF;
   G4double ymax = QPEnergyPDF(Energy, xmin);
@@ -166,9 +172,11 @@ void G4CMPSCPairBreakingProcess::GenerateBogoliubovQPPair(std::pair<G4double,G4d
   //a special technique to handle that diffusion (and its competition with other QP processes).
   double vel1Mag = 1E-18 * CLHEP::m / CLHEP::s;
   double vel2Mag = 2E-18 * CLHEP::m / CLHEP::s; //Use this to clearly define QP ID for ID'ing which QP undergoes recombination, in case tracking IDs are weird REL
+  //Edit: apparently I shouldn't set these velocities explicitly -- need to amend above two lines once we merge with Eric's bit (REL)
     
   //Create direction vectors for the QPs
   //For lack of something more physical, (i.e. just to test for now), we make random
+  //Given that the QPs propagate diffusively anyway, I'm not sure we need anything much better than this.
   G4ThreeVector vel1 = G4RandomDirection()*vel1Mag;
   G4ThreeVector vel2 = G4RandomDirection()*vel2Mag;
   
@@ -193,6 +201,24 @@ void G4CMPSCPairBreakingProcess::GenerateBogoliubovQPPair(std::pair<G4double,G4d
 //Pass-through to G4CMPVProcess class
 G4double G4CMPSCPairBreakingProcess::GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond)
 {
-  return G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
-}
+  G4double mfpBase = G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
 
+  //Here, before we try to run this, check to see if all of the relevant crystal parameters are defined. If they aren't,
+  //throw an exception.
+  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
+  G4LatticePhysical* theLat;
+  G4VPhysicalVolume* volume = trk.GetVolume();
+  theLat = LM->GetLattice(volume);
+  G4double Gap0Energy = theLat->GetSCDelta0();
+  G4double Tcrit = theLat->GetSCTcrit();
+  G4double Teff = theLat->GetSCTeff();
+  G4double Tau0ph = theLat->GetSCTau0ph();
+  if( Gap0Energy == 0.0 || Tcrit == 0.0 || Teff >= Tcrit || Teff == 0.0 || Tau0ph == DBL_MAX ){
+    G4ExceptionDescription msg;
+    msg << "Noticed that in the mean free path calculation step for the pairbreaking process, you have incorrectly defined or omitted the Gap0Energy parameter, the Tcrit parameter, the Teff parameter, or the Tau0ph parameter. In other words, you don't have enough input information in your config.txt file to run the pairbreaking physics correctly.";
+    G4Exception("G4CMPSCPairbreakingProcess::GetMeanFreePath", "SCPairbreaking002",FatalException, msg);
+  }
+
+  //If we don't trigger that exception, continue.
+  return mfpBase;
+}

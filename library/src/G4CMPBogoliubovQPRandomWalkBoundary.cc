@@ -74,7 +74,7 @@ G4double G4CMPBogoliubovQPRandomWalkBoundary::GetMeanFreePath(const G4Track& aTr
   if( stepNumber == 1 ){
     if( !IsValidQPVolume(currentVol,eKin) ){
       G4ExceptionDescription msg;
-      msg << "Noticed that for the first step, our QP is either not in a superconductor or that the QP energy, " << eKin << " is less than the current volume's gap. You're spawning a quasiparticle either with too low an energy or in the wrong spot for physical accuracy.";
+      msg << "Noticed that for the first step, our QP is either not in a superconductor or that the QP energy, " << eKin / eV << " eV, is less than the current volume's gap. You're spawning a quasiparticle either with too low an energy or in the wrong spot for physical accuracy.";
       G4Exception("G4CMPBogoliubovQPRandomWalkBoundary::GetMeanFreePath", "BogoliubovQPRandomWalkBoundary001",FatalException, msg);
     }
   }
@@ -111,10 +111,15 @@ G4bool G4CMPBogoliubovQPRandomWalkBoundary::IsValidQPVolume(G4VPhysicalVolume* v
   theLat = LM->GetLattice(volume);
   G4double Gap0Energy = theLat->GetSCDelta0();
   G4double Tcrit = theLat->GetSCTcrit();
+  G4double Teff = theLat->GetSCTeff();
   if( Gap0Energy == 0.0 || Tcrit == 0.0 ) return false;
+
+  //Calculate the nonzero-temperature gap from these using the SCUtils class.
+  G4double GapEnergy = ComputeTestGapEnergyAtNonzeroT(Teff,Tcrit,Gap0Energy);
+  G4cout << "REL -- in G4CMPBogoliubovQPRandomWalkBoundary::IsValidQPVolume(): gapEnergy is " << GapEnergy / CLHEP::eV << " eV" << G4endl;
   
   //Condition 3
-  if( Gap0Energy > qpEKin ){ return false; }
+  if( GapEnergy > qpEKin ){ return false; }
   
   //If we pass all of these, return true
   return true;

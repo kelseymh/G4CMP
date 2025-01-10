@@ -86,11 +86,11 @@ G4CMPSCUtils::G4CMPSCUtils()
   SetCurrentSCInfoToNull();
 
   //These are for setting ranges in our lookup tables. Not sure what the best bounds
-  //are here yet, but tbd
+  //are here yet, but tbd. Note: NEED TO SET THESE HIGHER THAN THE MAX EXPECTED PHONON ENERGY, OR RATES WILL BE WRONG.
   fMinPhononEnergyDivGap = 2.0;
-  fMaxPhononEnergyDivGap = 20.0;
+  fMaxPhononEnergyDivGap = 60.0; //Was 20
   fMinQPEnergyDivGap = 1.0;
-  fMaxQPEnergyDivGap = 20.0;
+  fMaxQPEnergyDivGap = 60.0; //Was 20
   
   //Load "dimensionless" parameters that are universal to all BCS superconductors
   //  LoadGapEnergyTemperatureDependence();
@@ -120,7 +120,7 @@ void G4CMPSCUtils::LoadLatticeInfoIntoSCUtils(const G4LatticePhysical * theLat)
   //be updated here because it's handled in the lattice itself and isn't part of any intensive calculations that need doing.
   fDn = theLat->GetSCDn();    
   
-  fGapEnergy = ComputeGapEnergyAtNonzeroT();
+  fGapEnergy = ComputeCurrentGapEnergyAtNonzeroT();
 }
 
 
@@ -140,14 +140,14 @@ void G4CMPSCUtils::SetCurrentSCInfoToNull()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Take the gap energy at T=0, combine with knowledge of Teff/Tcrit, and compute a temperature-dependent gap.
-G4double G4CMPSCUtils::ComputeGapEnergyAtNonzeroT()
+G4double G4CMPSCUtils::ComputeCurrentGapEnergyAtNonzeroT()
 {
   //Here, we use a simplified assumption, which is that the gap is that corresponding to T=Teff.
   double TeffDivTcrit = fTeff/fTcrit;
   if( TeffDivTcrit >=1 ){
     G4ExceptionDescription msg;
     msg << "Attempting to compute gap energy at Teff=" << fTeff << " while Tcrit=" << fTcrit << ". Whatever you think is superconducting is now not superconducting... Something might be wrong!";
-    G4Exception("G4CMPSCUtils::ComputeGapEnergyAtNonzeroT", "G4CMPSCUtils001",JustWarning, msg);
+    G4Exception("G4CMPSCUtils::ComputeCurrentGapEnergyAtNonzeroT", "G4CMPSCUtils001",JustWarning, msg);
     return 0;
   }
   else{
@@ -160,6 +160,35 @@ G4double G4CMPSCUtils::ComputeGapEnergyAtNonzeroT()
       }
     }
     return (fGap0Energy*gapFactor);
+  }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+//In some cases, we actually want to be able to compute the gap at a nonzero T for volumes that the particle undergoing
+//a process (which derives from this class) hasn't entered yet, but needs to check. (Ex: QPs checking gap of nearby volume to
+//determine if transmission occurs). Since that Teff/Tcrit info hasn't been loaded into the internal data members here,
+//we want a version of the above function that can be callable externally given an "external" gap, Teff, and Tcrit
+G4double G4CMPSCUtils::ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit, double gap0Energy) const
+{
+  //Here, we use a simplified assumption, which is that the gap is that corresponding to T=Teff.
+  double TeffDivTcrit = Teff/Tcrit;
+  if( TeffDivTcrit >=1 ){
+    G4ExceptionDescription msg;
+    msg << "Attempting to compute test gap energy at Teff=" << Teff << " while Tcrit=" << Tcrit << ". Whatever you think is superconducting is now not superconducting... Something might be wrong!";
+    G4Exception("G4CMPSCUtils::ComputeTestGapEnergyAtNonzeroT", "G4CMPSCUtils002",JustWarning, msg);
+    return 0;
+  }
+  else{
+    //Now actually do the lookup. Assuming we're only establishing a temperature once per instantiation of a new SC, we only have to do this once.
+    //To make it straightforward, we can do a loop (but this is a place where we can refine for speed, REL). We also can use the internal
+    //fGapEnergyTempDependence because it's normalized, and is instantiated the same regardless of what the fTeff and fTcrit are
+    double gapFactor = 0;
+    for( int iT = 0; iT < fGapEnergyTempDependenceBins-1; ++iT ){
+      if( (Teff/Tcrit) >= fGapEnergyTempDependence[iT][0] && (Teff/Tcrit) < fGapEnergyTempDependence[iT+1][0] ){
+	gapFactor = fGapEnergyTempDependence[iT][1];
+      }
+    }
+    return (gap0Energy*gapFactor);
   }
 }
 

@@ -19,7 +19,7 @@ G4double G4CMPPhononPolycrystalElasticScatteringRate::Rate(const G4Track& aTrack
   G4double scatMeanFreePath = theLattice->GetPolycrystalElasticScatterMFP();
   G4double scatMeanFreePath2 = theLattice->GetScatteringConstant();
 
-  G4cout << "Scat mean free path: " << scatMeanFreePath << ", while scattering constant: " << scatMeanFreePath2 << G4endl;
+  G4cout << "Scat mean free path: " << scatMeanFreePath << ", while scattering constant: " << scatMeanFreePath2 << G4endl; //REL probably should remove reference to scattering constant here (among other things)
   G4cout << "LDOS: " << theLattice->GetLDOS() << G4endl;
   
   //Some safeguards for cases where we don't want this to trigger (because it'll
