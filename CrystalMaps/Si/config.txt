@@ -34,6 +34,8 @@ ivDeform 0.5e8 0.8e8 11e8 0.3e8 2e8 2e8 eV/cm		# Jacoboni & Reggiani
 ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV
 ivNValleys 1 1 1 4 4 4			# number of possible final valleys
 ivOrder 1 1 0 1 0 0			# order of IV process (0th or 1st)
+ivFGScat g g g f f f			# f or g-type IV scattering
+ivPhoMode TA LA LO TA LA TO			# IV scattering phonon mode
 neutDens 1e11 /cm3
 epsilon 11.68
 # Intervalley scattering (Linear and Quadratic models)

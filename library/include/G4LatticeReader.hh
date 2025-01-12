@@ -73,6 +73,8 @@ protected:
   G4bool ProcessThresholds();			// IV energy thresholds
   G4bool ProcessIVNValleys();			// IV Number possible final Valleys
   G4bool ProcessIVOrder();			// IV order process
+  G4bool ProcessIVFGScattering();			// IV f or g-type scattering
+  G4bool ProcessIVPhononMode();			// IV scattering phonon mode
   G4bool SkipComments();			// Everything after '#'
 
   // Read expected dimensions for value from file, return scale factor
@@ -90,6 +92,7 @@ private:
   G4String fToken;		// Reusable buffers for reading file
   G4double fValue;		// ... floating point data value
   std::vector<G4double> fList;	// ... list of floating point values
+  std::vector<G4String> fStrList;	// ... list of string values
   G4RotationMatrix fMatrix;	// ... 3x3 matrix for mass, drift valleys
   G4ThreeVector f3Vec;		// ... three-vector for mass
   G4double fUnits;		// ... dimensional unit scale factor

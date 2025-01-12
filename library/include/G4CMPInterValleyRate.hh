@@ -22,8 +22,8 @@ public:
     : G4CMPVScatteringRate("InterValley"),
       hbar_sq(CLHEP::hbar_Planck*CLHEP::hbar_Planck), hbar_4th(hbar_sq*hbar_sq),
       m_electron(CLHEP::electron_mass_c2/CLHEP::c_squared),
-      eTrk(0.), density(0.), kT(0.), uSound(0.), alpha(0.), nValley(0),
-      m_DOS(0.), m_DOS3half(0.) {;}
+      eTrk(0.), density(0.), uSound(0.), alpha(0.),
+      m_DOS(0.), m_DOS3half(0.), latconst(0.,0.,0.) {;}
 
   virtual ~G4CMPInterValleyRate() {;}
 
@@ -40,7 +40,6 @@ public:
     
 
 protected:
-  G4double acousticRate() const;	// Acoustic intravalley rate
   G4double opticalRate() const;		// Optical intervalley D0, D1 rate
   G4double scatterRate() const;		// Neutral impurity scattering
 
@@ -56,22 +55,20 @@ private:
 
   // Kinematic parameters set by Rate()
   mutable G4double eTrk;	// Track kinetic energy
-  mutable G4int ivalley;
-  mutable G4ThreeVector ptrk;
-  mutable G4ThreeVector ktrk;
-  mutable G4ThreeVector kHV;
-  mutable G4double kmag;
-  mutable std::vector<G4double> IVprob;
+  mutable G4int ivalley;	// Valley's index
+  mutable G4ThreeVector ptrk;	// Local momentum
+  mutable G4ThreeVector ktrk;	// Local quasi-momentum
+  mutable G4ThreeVector kHV;	// quasi-momentum in HV frame
+  mutable G4double kmag;	// magnitude of kHV
+  mutable std::vector<G4double> IVprob; 	// Store IV rates
 
   G4double density;		// Crystal density (from G4Material)
-  G4double kT;			// Crystal temperature * k_B
   G4double uSound;		// Average sound speed for acoustic rate
   G4double alpha;		// Non-parabolicity parameter
-  G4int    nValley;		// Number of final-state valleys (2N-1)
   G4double m_DOS;		// Electron "density of states" average mass
   G4double m_DOS3half;		// m_DOS ^ (3/2)
-    
-    
+  G4ThreeVector latconst;		// Lattice constant
+  
 };
 
 #endif	/* G4CMPInterValleyRate_hh */

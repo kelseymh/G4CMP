@@ -131,6 +131,7 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fBeta = rhs.fBeta;
   fGamma = rhs.fGamma;
   fLambda = rhs.fLambda;
+  fLatConst = rhs.fLatConst;
   fMu = rhs.fMu;
   fDebye = rhs.fDebye;
   fVSound = rhs.fVSound;
@@ -156,6 +157,8 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fIVEnergy = rhs.fIVEnergy;
   fIVNValleys = rhs.fIVNValleys;
   fIVOrder = rhs.fIVOrder;
+  fIVFGScattering = rhs.fIVFGScattering;
+  fIVPhononMode = rhs.fIVPhononMode;
   fIVQuadField = rhs.fIVQuadField;
   fIVQuadRate = rhs.fIVQuadRate;
   fIVQuadExponent = rhs.fIVQuadExponent;
@@ -222,7 +225,6 @@ void G4LatticeLogical::SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a,
   fBasis[1] = b*fCrystal.axis[1];
   fBasis[2] = c*fCrystal.axis[2];
 }
-
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 

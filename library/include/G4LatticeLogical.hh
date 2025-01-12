@@ -122,6 +122,10 @@ public:
     static const G4ThreeVector nullVec(0.,0.,0.);
     return (i>=0 && i<3 ? fBasis[i] : nullVec);
   }
+    
+  // Get lattice constants
+  void SetLatConst(const G4ThreeVector& v) { fLatConst = v; }
+  const G4ThreeVector& GetLatConst() const { return fLatConst; }
 
   // Physical parameters of lattice (density, elasticity)
   void SetDensity(G4double val) { fDensity = val; }
@@ -256,6 +260,8 @@ public:
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
   void SetIVNValleys(const std::vector<G4double>& vlist) { fIVNValleys = vlist; }
   void SetIVOrder(const std::vector<G4double>& vlist) { fIVOrder = vlist; }
+  void SetIVFGScattering(const std::vector<G4String>& vlist) { fIVFGScattering = vlist; }
+  void SetIVPhononMode(const std::vector<G4String>& vlist) { fIVPhononMode = vlist; }
 
   const G4String& GetIVModel() const { return fIVModel; }
 
@@ -274,6 +280,8 @@ public:
   const std::vector<G4double>& GetIVEnergy() const { return fIVEnergy; }
   const std::vector<G4double>& GetIVNValleys() const { return fIVNValleys; }
   const std::vector<G4double>& GetIVOrder() const { return fIVOrder; }
+  const std::vector<G4String>& GetIVFGScattering() const { return fIVFGScattering; }
+  const std::vector<G4String>& GetIVPhononMode() const { return fIVPhononMode; }
   G4double GetIVDeform(G4int i) const {
     return (i>=0 && i<GetNIVDeform()) ? fIVDeform[i] : 0.;
   }
@@ -285,6 +293,12 @@ public:
   }
   G4double GetIVOrder(G4int i) const {
     return (i>=0 && i<GetNIVDeform()) ? fIVOrder[i] : 0.;
+  }
+  G4String GetIVFGScattering(G4int i) const {
+    return (i>=0 && i<GetNIVDeform()) ? fIVFGScattering[i] : 0.;
+  }
+  G4String GetIVPhononMode(G4int i) const {
+    return (i>=0 && i<GetNIVDeform()) ? fIVPhononMode[i] : 0.;
   }
 
 private:
@@ -316,6 +330,7 @@ private:
   G4String fName;			    // Name of lattice for messages
   G4CMPCrystalGroup fCrystal;		    // Symmetry group, axis unit vectors
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
+  G4ThreeVector fLatConst;		    // Lattice constant
   G4double fDensity;			    // Material density (natural units)
   G4double fNImpurity;			    // Neutral impurity number density
   G4double fPermittivity;		    // Material epsilon/epsilon0 
@@ -365,6 +380,8 @@ private:
   std::vector<G4double> fIVEnergy;	// Phonons energy for IV
   std::vector<G4double> fIVNValleys;	// # final valleys for IV
   std::vector<G4double> fIVOrder;	// IV order process
+  std::vector<G4String> fIVFGScattering;	// IV f or g-type scattering
+  std::vector<G4String> fIVPhononMode;	// IV scattering phonon mode
 
   G4double fIVQuadField;	 // Edelweiss field scale for IV scattering
   G4double fIVQuadRate;		 // Edelweiss rate factor for IV scattering

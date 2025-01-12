@@ -469,6 +469,8 @@ the crystal system.
 | ivEnergy   | val val ... | IV phonon thresholds        | energy (eV) |
 | ivNValleys | val val ... | # possible final valleys    | none        |
 | ivOrder    | val val ... | order of IV process (0th or 1st) | none   |
+| ivFGScat   | str str ... | f or g-type IV scatterging.      | none   |
+| ivPhoMode    | str str ... | IV scattering phonon mode.     | none   |
 | **InterValley scattering  (Linear and Quadratic Models) ** |
 | ivModel     | name | IVRate (matrix), Linear or Quadratic   | string |
 | ivLinRate0  | val | Constant term in linear IV expression   | Hz     |
