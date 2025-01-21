@@ -18,8 +18,10 @@
 #include "G4VParticleChange.hh"
 #include "G4RandomDirection.hh"
 #include "G4CMPUtils.hh"
+#include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4CMPSecondaryUtils.hh"
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Constructor and destructor 
@@ -49,7 +51,7 @@ G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4
   
   //Pseudocode
   //1. Determine if we're on a boundary surface. If we are, kill the event -- if the code is working properly, this should
-  //   basically never happen...
+  //   basically never happen... REL May need to revisit this. I think it's still true but will have to check against the QP transport stuff.
   G4StepPoint * postStepPoint = aStep.GetPostStepPoint();
   if (postStepPoint->GetStepStatus() == fGeomBoundary ||
       postStepPoint->GetStepStatus() == fWorldBoundary) {
@@ -69,10 +71,10 @@ G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4
   GenerateRadiatedPhonon(radiatedPhonEnergy,aTrack,aStep);
   aParticleChange.ProposeEnergy((qpEnergy-radiatedPhonEnergy));
 
-  //4. Now we do the artificial setting of the phonon's velocity and momentum direction again. These lines are aphysical but
+  //4. Now we do the artificial setting of the QP's velocity and momentum direction again. These lines are aphysical but
   //   are okay because we are going to have to do the QP diffusion modeling in a hacky way anyway...
   aParticleChange.ProposeMomentumDirection(momDir);
-  aParticleChange.ProposeVelocity(velocity); //Hopefully this still continues to not give problems...
+  aParticleChange.ProposeVelocity(velocity); 
 
   //4. Do the clear interaction lengths thing because we do still have a particle here.
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
@@ -156,5 +158,25 @@ G4double G4CMPBogoliubovQPRadiatesPhononProcess::PhononEnergyPDF(G4double E, G4d
 //Pass-through to G4CMPVProcess class
 G4double G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond)
 {
-  return G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
+  //Need this to come first, so that it actually attempts a superconductor update.
+  G4double mfpBase = G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
+
+  //Here, before we try to run this, check to see if all of the relevant crystal parameters are defined. If they aren't,
+  //throw an exception.
+  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
+  G4LatticePhysical* theLat;
+  G4VPhysicalVolume* volume = trk.GetVolume();
+  theLat = LM->GetLattice(volume);
+  G4double Gap0Energy = theLat->GetSCDelta0();
+  G4double Tcrit = theLat->GetSCTcrit();
+  G4double Teff = theLat->GetSCTeff();
+  G4double Tau0qp = theLat->GetSCTau0qp();  
+  if( Gap0Energy == 0.0 || Tcrit == 0.0 || Teff >= Tcrit || Teff == 0.0 || Tau0qp == DBL_MAX ){
+    G4ExceptionDescription msg;
+    msg << "Noticed that in the mean free path calculation step for the QP-radiates-phonon process, you have incorrectly defined or omitted the Gap0Energy parameter, the Tcrit parameter, the Teff parameter, or the Tau0qp parameter. In other words, you don't have enough input information in your config.txt file to run the phonon radiation physics correctly.";
+    G4Exception("G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath", "BogoliubovQPRadiatesPhonon003",FatalException, msg);
+  }
+
+  //If we don't trigger that exception, continue.
+  return mfpBase;
 }

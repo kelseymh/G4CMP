@@ -80,7 +80,7 @@ protected:
 
   //-------------------------------------------
   //Parameters for defining the various lookup tables needed by this class. 
-  enum{ fPhononEnergyBins=1000, fQPEnergyBins=1000, fGapEnergyTempDependenceBins=53 };			 
+  enum{ fPhononEnergyBins=2000, fQPEnergyBins=2000, fGapEnergyTempDependenceBins=53 }; //Originally 1000,1000,53
   G4double fMinPhononEnergyDivGap;
   G4double fMaxPhononEnergyDivGap;
   G4double fMinQPEnergyDivGap;

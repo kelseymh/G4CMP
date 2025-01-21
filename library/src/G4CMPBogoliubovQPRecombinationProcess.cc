@@ -62,14 +62,15 @@ G4VParticleChange* G4CMPBogoliubovQPRecombinationProcess::PostStepDoIt(const G4T
   //2. Determine if this QP is actually going to produce a phonon upon recombination -- to conserve energy,
   //   we have to restrict ourselves to only producing new 2Delta phonons from half of the QPs, since we're
   //   assuming recombination happens with a bath of ambient QPs that already exist independently of the scatter
-  //   Here, we cheat and use velocity, which is set up to be either 1E-18 or 2E-18 -- velocity is useless anyway because
-  //   our QP transport is going to have to be a special thing anyway.
-  G4double vel = aTrack.GetVelocity() / (CLHEP::m / CLHEP::s);
+  //   Here, since QPs in any scenario other than a manual creation will be produced in pairs which should have
+  //   adjacent track IDs (always), we only produce phonons if the track ID is even. So here, let's find our track
+  //   id.
+  G4int trackID = aTrack.GetTrackID();
 
-  //2. If the velocity is 1E-18, then recombine and produce a phonon. Probably a better way to sense this
-  if( vel / 1E-18 < 1.5 ){
-
-    G4cout << "REL testing logic for recombination. Vel: " << vel << G4endl;
+  //2. If the track is odd, then create recombination phonon
+  if( trackID % 2 == 1 ){
+    
+    G4cout << "REL testing logic for recombination. TrackID, " << trackID << ", is odd, so a phonon is generated." << G4endl;
     
     //Make the energy of the new photon something simplistic for now: gap energy plus energy of this QP.
     G4double newPhonEnergy = fGapEnergy + GetKineticEnergy(aTrack);
@@ -78,6 +79,7 @@ G4VParticleChange* G4CMPBogoliubovQPRecombinationProcess::PostStepDoIt(const G4T
   
   //3. Otherwise, recombine and just kill it
   else{
+    G4cout << "REL testing logic for recombination. TrackID, " << trackID << ", is even, and so no phonons are generated." << G4endl;
     aParticleChange.ProposeEnergy(0.);
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }

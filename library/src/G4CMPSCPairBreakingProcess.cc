@@ -168,17 +168,20 @@ void G4CMPSCPairBreakingProcess::GenerateBogoliubovQPPair(std::pair<G4double,G4d
   double energy1 = QPEnergies.first;
   double energy2 = QPEnergies.second;
 
+
   //For QPs, velocity needs to be artificially small. This is because QPs diffuse rather than propagate ballistically in most SC media, and we need
   //a special technique to handle that diffusion (and its competition with other QP processes).
-  double vel1Mag = 1E-18 * CLHEP::m / CLHEP::s;
-  double vel2Mag = 2E-18 * CLHEP::m / CLHEP::s; //Use this to clearly define QP ID for ID'ing which QP undergoes recombination, in case tracking IDs are weird REL
+  //double vel1Mag = 1E-18 * CLHEP::m / CLHEP::s;
+  //double vel2Mag = 2E-18 * CLHEP::m / CLHEP::s; //Use this to clearly define QP ID for ID'ing which QP undergoes recombination, in case tracking IDs are weird REL
   //Edit: apparently I shouldn't set these velocities explicitly -- need to amend above two lines once we merge with Eric's bit (REL)
     
   //Create direction vectors for the QPs
   //For lack of something more physical, (i.e. just to test for now), we make random
   //Given that the QPs propagate diffusively anyway, I'm not sure we need anything much better than this.
-  G4ThreeVector vel1 = G4RandomDirection()*vel1Mag;
-  G4ThreeVector vel2 = G4RandomDirection()*vel2Mag;
+  //G4ThreeVector vel1 = G4RandomDirection()*vel1Mag;
+  //G4ThreeVector vel2 = G4RandomDirection()*vel2Mag;
+  G4ThreeVector vel1 = G4RandomDirection();
+  G4ThreeVector vel2 = G4RandomDirection();
   
   // Construct the secondaries and set their attributes. Hopefully we don't have to muck with the time here.
   G4Track* sec1 = G4CMP::CreateBogoliubovQP(aTrack, energy1, vel1, aTrack.GetGlobalTime(),aTrack.GetPosition());

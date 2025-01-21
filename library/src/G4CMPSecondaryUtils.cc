@@ -245,7 +245,7 @@ G4Track* G4CMP::CreateBogoliubovQP(const G4Track& track,
   G4CMP::AttachTrackInfo(sec);
   
   sec->SetGoodForTrackingFlag(true);	// Protect against production cuts
-  sec->SetVelocity(velocity.mag());
-  sec->UseGivenVelocity(true);
+  //sec->SetVelocity(velocity.mag()); //REL 1/20/2025 -- need to cut this out to get us back to consistent behavior driven by 100 GeV mass.
+  //sec->UseGivenVelocity(true);
   return sec;
 }

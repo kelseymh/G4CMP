@@ -58,9 +58,10 @@ std::vector<std::vector<G4double> > G4CMPBogoliubovQPRecombinationRate::ComputeN
     G4double prefactor = 2*pi / hbar_Planck / (1-FermiFactor(qpEnergy,fTeff));
 
     //Now do an integral over Omega, phonon energy
-    int nW = 1000000;
+    int nW = 10000; //earlier was 1000000, but this was taking a loooong time
     double minOmega = qpEnergy + fGapEnergy; //Minimum you can get is QP energy + another QP at gap edge
-    double maxOmega = 1 * CLHEP::eV; // Go up to 1 eV
+    //double maxOmega = 1 * CLHEP::eV; // Go up to 1 eV //REL this was what we had before...
+    double maxOmega = fGapEnergy * fMaxQPEnergyDivGap * 10; //Somewhat arbitrary, but just "high" -- is supposed to represent infinity
     double deltaOmega = (maxOmega - minOmega) / ((double)nW);
     double integral = 0;
     for( int iW = 0; iW < nW; ++iW ){

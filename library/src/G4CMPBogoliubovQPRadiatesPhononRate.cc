@@ -58,7 +58,7 @@ std::vector<std::vector<G4double> > G4CMPBogoliubovQPRadiatesPhononRate::Compute
     G4double prefactor = 2*pi / hbar_Planck / (1-FermiFactor(qpEnergy,fTeff)); //Removing Z0 since it's canceled later
     
     //Now do an integral over Omega, phonon energy
-    int nW = 1000; //Default is 10k
+    int nW = 10000; //Default is 10k
     G4double minOmega = 0;
     G4double maxOmega = qpEnergy - fGapEnergy;
     G4double deltaOmega = (maxOmega - minOmega) / ((double)nW);

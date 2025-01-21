@@ -271,10 +271,40 @@ G4double G4CMPSCUtils::GetTauAsAFunctionOfEnergy( const std::vector<std::vector<
 
   //Now we do the guess. Note that this currently doesn't interpolate -- it just selects a single bin. REL Using the additional info
   //provided by the energy column, we should interpolate for best results.
+  //As a good reminder, the min and max are taken to be the "bookends" to the energy range, but the actual bin/array values are
+  //associated with energies that are offset by 0.5*deltaE (where deltaE is whatever width goes into that energy range corresponding
+  //to the required binning). This is done to prevent any energy bins being exactly at the gap. (This maaaay not be 100% necessary,
+  //but I'll need to rethink about it.)
   else{
-    double deltaE = (maxE-minE)/((double)nE);
+    double deltaE = tauVsPhononEnergy[1][0]-tauVsPhononEnergy[0][0];
     int binGuess = floor((energy-minE) / deltaE);
-    return tauVsPhononEnergy[binGuess][1];
+
+    //If our bin guess is the final bin, then just use that bin value. We'll accept a single edge case here.
+    if( binGuess == tauVsPhononEnergy.size()-1 ){
+      return tauVsPhononEnergy[binGuess][1];
+    }
+    //Otherwise, try to interpolate.
+    else{
+    
+      //Can compute the slope using the energy column and nearby bin values. Compute deltaE from these 
+      double lowerE = tauVsPhononEnergy[binGuess][0];
+      double upperE = tauVsPhononEnergy[binGuess+1][0];
+      double lowerTau = tauVsPhononEnergy[binGuess][1];
+      double upperTau = tauVsPhononEnergy[binGuess+1][1];
+
+      
+      //Cross-check. Noting that here, again, the E values of the array bins are set in the *middle* of the bins. So since our bin guess
+      //uses a floor mechanism considering the whole range and deltaE, we have to shift down in energy by 0.5 deltaE for this
+      if( energy >= upperE-0.5*deltaE || energy < lowerE-0.5*deltaE ){
+	G4ExceptionDescription msg;
+	msg << "During interpolation in lookup table step, we're somehow off-by-one in our energy bin... A calculation is being done wrong. Investigate. Energy: " << energy << ", UpperE: " << upperE << ", lowerE: " << lowerE;
+	G4Exception("G4CMPSCUtils::GetTauAsAFunctionOfEnergy", "G4CMPSCUtils005",FatalException, msg);
+      }
+      
+      double slope = (upperTau-lowerTau)/(upperE-lowerE);
+      double interpolatedVal = lowerTau + slope*(energy-lowerE);
+      return interpolatedVal;
+    }
   }
 }
 
