@@ -911,6 +911,18 @@ const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
   return nullVec;
 }
 
+void DeformationPotentialUnits(const std::vector<G4double>& ivrateorder) {
+//G4ThreeVector testlat = GetLatConst();
+G4cout << "Lattice constant : " << G4endl;
+// std::vector<G4double> testivdeform = GetIVDeform();
+//             for (size_t i = 1; i < ivrateorder.size(); i++) {
+            
+//             G4cout << "i : " << i  << " ivorder : " << ivrateorder[i]  << " fIVdeform[i] : " << testivdeform[i] << G4endl;
+            
+//                 if (ivrateorder[i]==1) {testivdeform[i]=testivdeform[i]*testlat.x();}
+//             }
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 // Set Debye energy for phonon partitioning from alternative parameters

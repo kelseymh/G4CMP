@@ -253,6 +253,8 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 //             G4cout << "k_recoil_i : " << k_recoil << " krecoil_mag : " << k_recoil.mag() << G4endl;
 //             G4cout << "k_recoilHV : " << k_recoilHV << " k_recoilHV_mag : " << k_recoilHV.mag() << G4endl;   
              
+     
+                
                 
 
             // Choose new valley
@@ -306,13 +308,16 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   
             
             // Create real phonon to be propagated, with chosen polarization 
-            G4int phononmode=0;		// Set default LA phonon mode 
+            G4int phononmode=G4PhononPolarization::Long;		// Set default LA phonon mode 
             G4String phononbranch=
                 theLattice->GetIVPhononMode(Ephononi);	// Get phonon mode 
             
-            // If phonon mode is LO or TO -> LA 
-            if (phononbranch="TA") { phononmode=1; }	// Change phonon mode to TA
-                 
+            // If phonon mode is TA -> FT or ST 
+            if (phononbranch="TA") { phononmode=G4CMP::ChoosePhononPolarization(
+                0,theLattice->GetSTDOS(),theLattice->GetFTDOS()); }
+            
+            // If phonon mode is LO or TO keep -> LA 
+               
             G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
                 
             G4double weight =

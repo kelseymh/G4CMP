@@ -250,35 +250,6 @@ G4bool G4LatticeReader::ProcessString(const G4String& name) {
   return good;
 }
 
-
-// // Process list of strings
-
-// G4bool G4LatticeReader::ProcessStringList() {
-//   if (verboseLevel>1) G4cout << " ProcessStringList "  << G4endl;
-
-// //   Prepare input buffers for reading multiple values, up to unit string
-//   fStrList.clear();
-//   G4String token;
-//   G4String line;
-    
-//   if(std::getline(*psLatfile, line)){ 
-//       std::istringstream iss(line);  // Separate by line for strings
-      
-//       G4cout << "line : " << line << G4endl;
-  
-//       while (iss >> token) {
-          
-//           if (token == '#') {break;} 
-//           fStrList.push_back(token);
-          
-//                         G4cout << "token str : " << token << " token type : " << typeid(token).name() << G4endl;
-              
-//           }
-//     }
-
-//   return psLatfile->good();
-// }
-
 // Process list of values with associated unit
 
 G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
@@ -295,6 +266,7 @@ G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
   
       while (iss >> token) {
           
+          // If list of strings
           if (unitcat=="String") { 
              if (token == '#') {break;} 
              fStrList.push_back(token);
@@ -311,7 +283,6 @@ G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
               
           }
     }
-
     
   if (unitcat!="String") { 
 
@@ -531,7 +502,10 @@ G4bool G4LatticeReader::ProcessIVOrder() {
   if (verboseLevel>1) G4cout << " ProcessIVOrder " << G4endl;
 
   G4bool okay = ProcessList("NoUnits");
-  if (okay) pLattice->SetIVOrder(fList);
+  if (okay) { 
+      pLattice->SetIVOrder(fList);
+      //pLattice->DeformationPotentialUnits(fList);     
+  }
 
   return okay;
 }
