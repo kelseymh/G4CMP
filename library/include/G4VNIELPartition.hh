@@ -14,6 +14,7 @@
 //
 // 20190711  Michael Kelsey
 // 20191211  Add functions to compute effective Z and A of composite material
+// 20250102  Make effective Z,A functions public and static, for user access
 
 #ifndef G4VNIELPartition_hh
 #define G4VNIELPartition_hh 1
@@ -35,9 +36,10 @@ public:
   PartitionNIEL(G4double energy, const G4Material *material, G4double Zin=0.,
 		G4double Ain=0.) const = 0;
 
-protected:
-  G4double GetEffectiveZ(const G4Material *material) const;
-  G4double GetEffectiveA(const G4Material *material) const;
+public:
+  // Users may use these as alternatives to G4Material::GetZ(), GetA()
+  static G4double GetEffectiveZ(const G4Material *material);
+  static G4double GetEffectiveA(const G4Material *material);
 };
 
 #endif	/* G4CMPVNIELPartition_hh */
