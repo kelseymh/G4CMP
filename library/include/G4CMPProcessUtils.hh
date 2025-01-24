@@ -40,6 +40,8 @@
 // 20211001  FindNearestValley(dir) can pass by reference.
 // 20211003  Add track touchable as data member, to create if needed
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
+// 20250124  Add FillParticleChange() to update trackInfo with k and 
+//    particleChange with corresponding momentum and group velocity.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -74,6 +76,10 @@ public:
   virtual void LoadDataForTrack(const G4Track* track);
   virtual void SetCurrentTrack(const G4Track* track);
   virtual void SetLattice(const G4Track* track);
+
+  // Update particleChange's wavevector, group velocity, and momentum
+  void FillParticleChange(G4ParticleChange& particleChange,
+              const G4Track& track, const G4ThreeVector& wavevector)
 
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base

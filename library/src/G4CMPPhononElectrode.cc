@@ -35,6 +35,7 @@
 // 
 // 20221006  M. Kelsey -- Adapted from SuperCDMS simulation version
 // 20221006  G4CMP-330 -- Add lattice temperature to properties table
+// 20250124  G4CMP-447 -- Add FillParticleChange() to update phonon track info
 
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -191,7 +192,7 @@ ProcessReflection(const G4Track& track, const G4Step& step,
   if (verboseLevel>1)
     G4cout << " Phonon reflected from QET toward " << reflectedKDir << G4endl;
 
-  particleChange.ProposeMomentumDirection(reflectedKDir);
+  FillParticleChange(particleChange, track, reflectedKDir)
 
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track);
   trackInfo->IncrementReflectionCount();

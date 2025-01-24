@@ -249,9 +249,9 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 					: "on surface") << G4endl;
   }
 
-  trackInfo->SetWaveVector(reflectedKDir);
-  particleChange.ProposeVelocity(v);
-  particleChange.ProposeMomentumDirection(vdir);
+  // Update trackInfo wavevector and particleChange's group velocity and momentum direction
+  // reflectedKDir is in global coordinates here - no conversion needed
+  FillParticleChange(particleChange, aTrack, reflectedKDir)
 }
 
 
