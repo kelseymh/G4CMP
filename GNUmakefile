@@ -14,7 +14,7 @@
 # Manually set version with G4CMP_VERSION=xxx if Git not available
 # Add pass-through of thread-safety "code sanitizer" flags
 # Split XXX.% targets to ensure everything gets built properly
-# Add new Phonon_Caustics example, using "caustics" as the target name
+# Add new caustics example
 
 # G4CMP requires Geant4 10.4 or later
 g4min := 10.4
@@ -36,7 +36,7 @@ help :
 	 echo "phonon        Builds pure phonon example" ;\
 	 echo "charge        Builds charge-carrier (e-/h) example" ;\
 	 echo "sensors       Builds FET digitization sensor example" ;\
-	 echo "caustics      Builds Phonon_Caustics example" ;\
+	 echo "caustics      Builds example to show phonon caustics picture" ;\
 	 echo "tools         Builds support utilities (lookup table maker)" ;\
 	 echo "tests         Builds small test programs for classes" ;\
 	 echo "clean         Remove libraries and examples" ;\
@@ -52,9 +52,10 @@ help :
 
 # User targets
 
+EXAMPLES := phonon charge sensors caustics
 all : lib examples tests tools
 lib : library
-examples : phonon charge sensors caustics
+examples : $(EXAMPLES)
 
 clean :		# FIXME: This doesn't work as dependencies
 	-$(MAKE) tests.clean
@@ -92,26 +93,21 @@ tests.% :
 tools.% :
 	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
 
-phonon charge sensors : library
+$(EXAMPLES) : library
+	@echo Building examples/$@
 	-@$(MAKE) -C examples/$@
 
-caustics : library
-	-@$(MAKE) -C examples/Phonon_Caustics
-
+# FIXME: How to use $(EXAMPLES) here, attaching the pattern automatically?
 phonon.% \
 charge.% \
-sensors.% :
-	-$(MAKE) -C examples/$(basename $@) $(subst .,,$(suffix $@))
-
+sensors.% \
 caustics.% :
-	-$(MAKE) -C examples/Phonon_Caustics $(subst .,,$(suffix $@))
+	-$(MAKE) -C examples/$(basename $@) $(subst .,,$(suffix $@))
 
 # FIXME: These should work with dependencies, but don't
 examples.% :
-	-$(MAKE) phonon.$(subst .,,$(suffix $@))
-	-$(MAKE) charge.$(subst .,,$(suffix $@))
-	-$(MAKE) sensors.$(subst .,,$(suffix $@))
-	-$(MAKE) Phonon_Caustics.$(subst .,,$(suffix $@))
+	for ex in $(EXAMPLES); do
+	  -$(MAKE) $${ex}.$(subst .,,$(suffix $@))
 
 tests : tests.all
 tools : tools.all
