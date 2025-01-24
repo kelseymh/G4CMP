@@ -44,11 +44,12 @@
 #include "G4ParticleChange.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4RunManager.hh"
 #include "G4Step.hh"
-#include "G4Track.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
+#include "G4Track.hh"
 #include "G4VParticleChange.hh"
 #include "G4VSolid.hh"
 #include "Randomize.hh"
@@ -102,7 +103,12 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   if (!IsGoodBoundary(aStep))
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 
-  if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
+  if (verboseLevel>1) {
+    G4cout << GetProcessName() << "::PostStepDoIt "
+           << "Event " << G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID()
+           << " Track " << aTrack.GetTrackID() << " Step " << aTrack.GetCurrentStepNumber()
+           << G4endl;
+  }
 
   if (verboseLevel>2) {
     G4cout << " K direction: " << GetLocalWaveVector(aTrack).unit()
