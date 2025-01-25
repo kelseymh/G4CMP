@@ -14,7 +14,6 @@
 class G4Material;
 class G4VPhysicalVolume;
 class G4CMPSurfaceProperty;
-class G4CMPElectrodeSensitivity;
 
 
 class Caustic_PhononDetectorConstruction : public G4VUserDetectorConstruction {
@@ -38,7 +37,6 @@ private:
   G4LogicalVolume* fpSubstrateLV;
   G4CMPSurfaceProperty* topSurfProp;
   G4CMPSurfaceProperty* wallSurfProp;
-  G4CMPElectrodeSensitivity* electrodeSensitivity;
 
   G4bool fConstructed;		// Flag to not re-recreate surface properties
 };

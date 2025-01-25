@@ -41,7 +41,7 @@
 Caustic_PhononDetectorConstruction::Caustic_PhononDetectorConstruction()
 : fLiquidHelium(0),fBolometer(0),fCrystalMaterial(0),
   fWorldPhys(0), fpSubstrateLV(0), topSurfProp(0), wallSurfProp(0),
-  electrodeSensitivity(0), fConstructed(false) {;}
+  fConstructed(false) {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -83,11 +83,12 @@ G4VPhysicalVolume* Caustic_PhononDetectorConstruction::Construct()
 
 void Caustic_PhononDetectorConstruction::ConstructSDandField() {
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
-  if (!electrodeSensitivity)
-    electrodeSensitivity = new Caustic_PhononSensitivity("PhononElectrode");
-  SDman->AddNewDetector(electrodeSensitivity);
 
-  fpSubstrateLV->SetSensitiveDetector(electrodeSensitivity);
+  Caustic_PhononSensitivity* electrodeSD
+    = new Caustic_PhononSensitivity("PhononElectrode");
+
+  SDman->AddNewDetector(electrodeSD);
+  fpSubstrateLV->SetSensitiveDetector(electrodeSD);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
