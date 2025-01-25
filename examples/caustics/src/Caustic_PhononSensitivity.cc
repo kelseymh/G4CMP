@@ -4,10 +4,11 @@
 \***********************************************************************/
 
 // 20241024 Israel Hernandez -- IIT, QSC and Fermilab
-
+// 20250101 M. Kelsey -- G4CMP-434: Make output file thread-safe
 
 #include "Caustic_PhononSensitivity.hh"
 #include "G4CMPElectrodeHit.hh"
+#include "G4CMPUtils.hh"
 #include "G4Event.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4PhononLong.hh"
@@ -22,7 +23,7 @@
 
 Caustic_PhononSensitivity::Caustic_PhononSensitivity(G4String name) :
   G4CMPElectrodeSensitivity(name), fileName("") {
-  SetOutputFile(Caustic_PhononConfigManager::GetHitOutput());
+  SetOutputFile(G4CMP::DebuggingFileThread(Caustic_PhononConfigManager::GetHitOutput()));
 }
 
 
@@ -31,7 +32,7 @@ Caustic_PhononSensitivity::~Caustic_PhononSensitivity() {
   if (output.is_open()) output.close();
   if (!output.good()) {
     G4cerr << "Error closing output file, " << fileName << ".\n"
-           << "Expect bad things like loss of data.";
+           << "Expect bad things like loss of data." << G4endl;
   }
 }
 
@@ -45,11 +46,12 @@ void Caustic_PhononSensitivity::EndOfEvent(G4HCofThisEvent* HCE) {
   if (output.good()) {
     // Saving in a txt file the Final Phonon Position.
     for (G4CMPElectrodeHit* hit : *hitVec) {
-        output << hit->GetParticleName() << '\t'
-        << hit->GetFinalPosition().getX()/m << '\t'
-        << hit->GetFinalPosition().getY()/m << '\t'
-        << hit->GetFinalPosition().getZ()/m << '\n';
-
+      output << runMan->GetCurrentEvent()->GetEventID() << '\t'
+	     << hit->GetTrackID() << '\t'
+	     << hit->GetParticleName() << '\t'
+	     << hit->GetFinalPosition().getX()/m << '\t'
+	     << hit->GetFinalPosition().getY()/m << '\t'
+	     << hit->GetFinalPosition().getZ()/m << std::endl;
     }
   }
 }
