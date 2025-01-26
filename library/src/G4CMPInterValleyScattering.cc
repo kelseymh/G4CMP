@@ -201,34 +201,34 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
                 
 // computed k*' method 
                 
-//             costheta = G4UniformRand() * (1 - sqrt(Ephonon / Etrk)) + sqrt(Ephonon / Etrk);
-//             phi_phonon = G4UniformRand() * twopi;
+            costheta = G4UniformRand() * (1 - sqrt(Ephonon / Etrk)) + sqrt(Ephonon / Etrk);
+            phi_phonon = G4UniformRand() * twopi;
                 
-//             if (G4UniformRand() <0.5) {
-//                 q = kmag * costheta - kmag * sqrt(costheta * costheta - Ephonon / Etrk);}
+            if (G4UniformRand() <0.5) {
+                q = kmag * costheta - kmag * sqrt(costheta * costheta - Ephonon / Etrk);}
         
-//             else {
-//                 q = kmag * costheta + kmag * sqrt(costheta * costheta - Ephonon / Etrk);}
+            else {
+                q = kmag * costheta + kmag * sqrt(costheta * costheta - Ephonon / Etrk);}
            
-//             qvec = q * kdir;
-//             qvec.rotate(kdir.orthogonal(), acos(costheta));
-//             qvec.rotate(kdir, phi_phonon);
+            qvec = q * kdir;
+            qvec.rotate(kdir.orthogonal(), acos(costheta));
+            qvec.rotate(kdir, phi_phonon);
 
-//             k_recoilHV = kHV - qvec;     
-//             k_recoil  = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoilHV);
+            k_recoilHV = kHV - qvec;     
+            k_recoil  = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoilHV);
                 
                 
                 
                 
 // random k*' method                
                 
-            costheta = 1 -2*G4UniformRand();
-            theta_phonon = G4UniformRand() * twopi;
-            phi_phonon = G4UniformRand() * twopi;      
+//             costheta = 1 -2*G4UniformRand();
+//             theta_phonon = G4UniformRand() * twopi;
+//             phi_phonon = G4UniformRand() * twopi;      
              
-            k_recoil.rotate(k_recoil.orthogonal(), acos(costheta));
-            k_recoil.rotate(k_recoil, phi_phonon);
-            k_recoil  = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoil);
+//             k_recoil.rotate(k_recoil.orthogonal(), acos(costheta));
+//             k_recoil.rotate(k_recoil, phi_phonon);
+//             k_recoil  = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoil);
                 
                 
                 

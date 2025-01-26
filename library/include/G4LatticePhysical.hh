@@ -194,9 +194,6 @@ public:
   const std::vector<G4double>& GetIVOrder() const { return fLattice->GetIVOrder(); }
   const std::vector<G4String>& GetIVFGScattering() const { return fLattice->GetIVFGScattering(); }
   const std::vector<G4String>& GetIVPhononMode() const { return fLattice->GetIVPhononMode(); }
-
-//   // Convert eV/cm to eV for deformation potentials
-//   G4double DeformationPotentialeV_cmToeV(G4double D) const { return fLattice->DeformationPotentialeV_cmToeV(D); }  
     
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;

@@ -23,7 +23,7 @@ public:
       hbar_sq(CLHEP::hbar_Planck*CLHEP::hbar_Planck), hbar_4th(hbar_sq*hbar_sq),
       m_electron(CLHEP::electron_mass_c2/CLHEP::c_squared),
       eTrk(0.), density(0.), uSound(0.), alpha(0.),
-      m_DOS(0.), m_DOS3half(0.), latconst(0.,0.,0.) {;}
+      m_DOS(0.), m_DOS3half(0.) {;}
 
   virtual ~G4CMPInterValleyRate() {;}
 
@@ -67,7 +67,6 @@ private:
   G4double alpha;		// Non-parabolicity parameter
   G4double m_DOS;		// Electron "density of states" average mass
   G4double m_DOS3half;		// m_DOS ^ (3/2)
-  G4ThreeVector latconst;		// Lattice constant
   
 };
 

@@ -37,7 +37,7 @@ void G4CMPInterValleyRate::LoadDataForTrack(const G4Track* track) {
 
   m_DOS = theLattice->GetElectronDOSMass();
   m_DOS3half = sqrt(m_DOS*m_DOS*m_DOS);
-  latconst = theLattice->GetLatConst();
+
 }
 
 
@@ -105,13 +105,13 @@ G4double G4CMPInterValleyRate::opticalRate() const {
     if (ivorder==1) {  
         G4double qmax = kmag*(1+sqrt(1-Emin_iv/eTrk));		// maximum phonon momentum
         G4double qmin = kmag*(1-sqrt(1-Emin_iv/eTrk));		// minimum phonon momentum
-        scale = m_DOS3half*m_DOS * nVal * D_iv*D_iv*latconst.x()*latconst.x()
+        scale = m_DOS3half*m_DOS * nVal * D_iv*D_iv
             /(2*pi*hbar_Planck*density*m_electron*sqrt(m_electron)*Emin_iv*kmag);
         Efunc = qmax*qmax*qmax*qmax-qmin*qmin*qmin*qmin;
         orate = scale * Efunc;
     }
       
-//       G4cout << " scale[" << i << "] : " << scale << " Efunc : " << Efunc << " Etrk : "  << eTrk/eV << " phonon rate [" << i << "] : " << orate/hertz << " Hz" << G4endl;
+      G4cout << " scale[" << i << "] : " << scale << " Efunc : " << Efunc << " Etrk : "  << eTrk/eV << " phonon rate [" << i << "] : " << orate/hertz << " Hz" << G4endl;
       
 //       
     if (verboseLevel>2) {

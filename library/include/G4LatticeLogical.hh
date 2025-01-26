@@ -231,7 +231,7 @@ public:
   const G4ThreeVector& GetValleyAxis(G4int iv) const;
     
   // Convert eV/cm to eV for 1st order IV deformation potentials
-  void DeformationPotentialUnits(const std::vector<G4double>& ivrateorder);
+  void ConverteVcmToeV(const std::vector<G4double>& ivrateorder);
 
   // Print out Euler angles of requested valley
   void DumpValley(std::ostream& os, G4int iv) const;

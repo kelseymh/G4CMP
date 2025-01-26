@@ -504,7 +504,7 @@ G4bool G4LatticeReader::ProcessIVOrder() {
   G4bool okay = ProcessList("NoUnits");
   if (okay) { 
       pLattice->SetIVOrder(fList);
-      //pLattice->DeformationPotentialUnits(fList);     
+      pLattice->ConverteVcmToeV(fList);     
   }
 
   return okay;

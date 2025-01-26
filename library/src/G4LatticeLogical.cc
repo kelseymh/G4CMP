@@ -861,6 +861,25 @@ void G4LatticeLogical::AddValley(const G4RotationMatrix& valley) {
   fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));
 }
 
+void G4LatticeLogical::ConverteVcmToeV(const std::vector<G4double>& ivrateorder) {
+
+std::vector<G4double> ivdeformtest = GetIVDeform();
+G4ThreeVector latticeconstant = GetLatConst();
+
+for (size_t i = 0; i < ivrateorder.size(); i++) {
+    G4cout << "iv deforme test : " << ivrateorder[i] << G4endl;
+    
+    if (ivrateorder[i] == 1) {
+    G4cout << "test : " << ivdeformtest[i]/eV*cm << G4endl;
+    ivdeformtest[i]=ivdeformtest[i]*latticeconstant.x();
+    }
+    
+    SetIVDeform(ivdeformtest);
+}
+
+
+}
+
 // Transform for drifting-electron valleys in momentum space
 
 const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
@@ -909,18 +928,6 @@ const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
 
   static const G4ThreeVector nullVec(0.,0.,0.);
   return nullVec;
-}
-
-void DeformationPotentialUnits(const std::vector<G4double>& ivrateorder) {
-//G4ThreeVector testlat = GetLatConst();
-G4cout << "Lattice constant : " << G4endl;
-// std::vector<G4double> testivdeform = GetIVDeform();
-//             for (size_t i = 1; i < ivrateorder.size(); i++) {
-            
-//             G4cout << "i : " << i  << " ivorder : " << ivrateorder[i]  << " fIVdeform[i] : " << testivdeform[i] << G4endl;
-            
-//                 if (ivrateorder[i]==1) {testivdeform[i]=testivdeform[i]*testlat.x();}
-//             }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
