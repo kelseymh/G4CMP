@@ -872,11 +872,9 @@ for (size_t i = 0; i < ivrateorder.size(); i++) {
     if (ivrateorder[i] == 1) {
     G4cout << "test : " << ivdeformtest[i]/eV*cm << G4endl;
     ivdeformtest[i]=ivdeformtest[i]*latticeconstant.x();
-    }
-    
-    SetIVDeform(ivdeformtest);
+    }    
 }
-
+SetIVDeform(ivdeformtest);
 
 }
 
