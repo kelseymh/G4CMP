@@ -53,6 +53,8 @@
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
 // 20240402  Drop FindTouchable() function.  Set currentTouchable internally
 //		not available from track, and delete it at end of track.
+// 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
+// 20250129  Rotate Vg in FillParticleChange() to global coordinates.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -189,6 +191,26 @@ void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
   if (!theLattice) {
     G4cerr << "WARNING: No lattice for volume " << volume->GetName() << G4endl;
   }
+}
+
+
+// Fill ParticleChange wavevector and group velocity for a given wavevector
+// Wavevector is expected to be in the global coordinate frame
+void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
+            const G4Track& track, const G4ThreeVector& wavevector) const {
+  // Get phonon mode from track
+  G4int mode = GetPolarization(track);
+
+  // Get Vg from global wavevector
+  G4ThreeVector vDir = theLattice->MapKtoVDir(mode, GetLocalDirection(wavevector));
+  G4double v = theLattice->MapKtoV(mode, GetLocalDirection(wavevector));
+
+  // Update trackInfo and particleChange
+  auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track);
+  trackInfo->SetWaveVector(wavevector);
+  particleChange.ProposeVelocity(v);
+  RotateToGlobalDirection(vDir);
+  particleChange.ProposeMomentumDirection(vDir);
 }
 
 

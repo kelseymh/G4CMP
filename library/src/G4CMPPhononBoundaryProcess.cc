@@ -29,6 +29,7 @@
 // 20220905  G4CMP-310 -- Add increments of kPerp to avoid bad reflections.
 // 20220910  G4CMP-299 -- Use fabs(k) in absorption test.
 // 20240718  G4CMP-317 -- Initial implementation of surface displacement.
+// 20250124  G4CMP-447 -- Use FillParticleChange() to update wavevector and Vg.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -215,8 +216,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     refltype = "diffuse";
   }
 
-  G4ThreeVector vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
-  G4double v = theLattice->MapKtoV(mode, reflectedKDir);
+  // Update trackInfo wavevector and particleChange's group velocity and momentum direction
+  // reflectedKDir is in global coordinates here - no conversion needed
+  FillParticleChange(particleChange, aTrack, reflectedKDir);
+
+  G4ThreeVector vdir = *particleChange.GetMomentumDirection();
 
   if (verboseLevel>2) {
     G4cout << "\n New wavevector direction " << reflectedKDir
@@ -248,10 +252,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 					: place==kOutside ? "OUTSIDE"
 					: "on surface") << G4endl;
   }
-
-  trackInfo->SetWaveVector(reflectedKDir);
-  particleChange.ProposeVelocity(v);
-  particleChange.ProposeMomentumDirection(vdir);
 }
 
 
