@@ -53,8 +53,7 @@
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
 // 20240402  Drop FindTouchable() function.  Set currentTouchable internally
 //		not available from track, and delete it at end of track.
-// 20250124  Add FillParticleChange() to update trackInfo with k and 
-//    particleChange with corresponding momentum and group velocity.
+// 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -193,6 +192,7 @@ void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
   }
 }
 
+
 // Fill ParticleChange wavevector and group velocity for a given wavevector
 // Wavevector is expected to be in the global coordinate frame
 void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
@@ -210,6 +210,7 @@ void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
   particleChange.ProposeVelocity(v);
   particleChange.ProposeMomentumDirection(vDir);
 }
+
 
 // Delete current configuration before new track starts
 

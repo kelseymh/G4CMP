@@ -40,8 +40,7 @@
 // 20211001  FindNearestValley(dir) can pass by reference.
 // 20211003  Add track touchable as data member, to create if needed
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
-// 20250124  Add FillParticleChange() to update trackInfo with k and 
-//    particleChange with corresponding momentum and group velocity.
+// 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1

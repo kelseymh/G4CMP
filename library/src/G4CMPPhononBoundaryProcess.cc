@@ -29,6 +29,7 @@
 // 20220905  G4CMP-310 -- Add increments of kPerp to avoid bad reflections.
 // 20220910  G4CMP-299 -- Use fabs(k) in absorption test.
 // 20240718  G4CMP-317 -- Initial implementation of surface displacement.
+// 20250124  G4CMP-447 -- Use FillParticleChange() to update wavevector and Vg.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
