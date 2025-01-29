@@ -208,6 +208,7 @@ void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track);
   trackInfo->SetWaveVector(wavevector);
   particleChange.ProposeVelocity(v);
+  vDir = RotateToGlobalDirection(vDir);
   particleChange.ProposeMomentumDirection(vDir);
 }
 
