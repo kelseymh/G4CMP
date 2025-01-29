@@ -216,7 +216,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     refltype = "diffuse";
   }
 
-  G4ThreeVector vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
+  // Update trackInfo wavevector and particleChange's group velocity and momentum direction
+  // reflectedKDir is in global coordinates here - no conversion needed
+  FillParticleChange(particleChange, aTrack, reflectedKDir);
+
+  G4ThreeVector vdir = *particleChange.GetMomentumDirection();
 
   if (verboseLevel>2) {
     G4cout << "\n New wavevector direction " << reflectedKDir
@@ -248,10 +252,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 					: place==kOutside ? "OUTSIDE"
 					: "on surface") << G4endl;
   }
-
-  // Update trackInfo wavevector and particleChange's group velocity and momentum direction
-  // reflectedKDir is in global coordinates here - no conversion needed
-  FillParticleChange(particleChange, aTrack, reflectedKDir);
 }
 
 
