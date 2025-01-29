@@ -6,8 +6,11 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+*** ADD NEW TAG MESSAGES BELOW G4CMP-317 LINE, UPDATE DATE OF G4CMP-317 ***
+2025-01-29  G4CMP-317 : Implement surface 'displacement' for phonon reflection.
 2025-01-24  G4CMP-447 : Add utility method to update a phonon's trackInfo and
-						particleChange with wavevector and Vg.
+                        particleChange with wavevector and Vg.
+*** DO NOT ADD ANY TAG MESSAGES BELOW THIS LINE ***
 
 2024-10-29  g4cmp-V09-03-00 New phonon materials: Al2O3, CaF2, CaWO4, GaAs, LiF
 2024-10-24  G4CMP-387 : Incorporating five new materials into the CrystalMaps
