@@ -54,6 +54,7 @@
 // 20240402  Drop FindTouchable() function.  Set currentTouchable internally
 //		not available from track, and delete it at end of track.
 // 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
+// 20250129  Rotate Vg in FillParticleChange() to global coordinates.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -208,7 +209,7 @@ void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track);
   trackInfo->SetWaveVector(wavevector);
   particleChange.ProposeVelocity(v);
-  vDir = RotateToGlobalDirection(vDir);
+  RotateToGlobalDirection(vDir);
   particleChange.ProposeMomentumDirection(vDir);
 }
 

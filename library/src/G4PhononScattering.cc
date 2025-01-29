@@ -91,10 +91,10 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
   }
 
   // Update particleChange with new wavevector and Vg
-  FillParticleChange(aParticleChange, aTrack, newK)
+  FillParticleChange(aParticleChange, aTrack, newK);
 
   if (verboseLevel>1)
-    G4cout << " new vgrp " << particleChange.GetVelocity() << " along " << *particleChange.GetMomentumDirection() << G4endl;
+    G4cout << " new vgrp " << aParticleChange.GetVelocity() << " along " << *aParticleChange.GetMomentumDirection() << G4endl;
 
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
   return &aParticleChange;
