@@ -216,7 +216,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   G4ThreeVector vdir = theLattice->MapKtoVDir(mode, reflectedKDir);
-  G4double v = theLattice->MapKtoV(mode, reflectedKDir);
 
   if (verboseLevel>2) {
     G4cout << "\n New wavevector direction " << reflectedKDir
@@ -251,7 +250,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   // Update trackInfo wavevector and particleChange's group velocity and momentum direction
   // reflectedKDir is in global coordinates here - no conversion needed
-  FillParticleChange(particleChange, aTrack, reflectedKDir)
+  FillParticleChange(particleChange, aTrack, reflectedKDir);
 }
 
 

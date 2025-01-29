@@ -59,6 +59,7 @@ class G4LatticePhysical;
 class G4ParticleDefinition;
 class G4VPhysicalVolume;
 class G4VTouchable;
+class G4ParticleChange;
 
 
 class G4CMPProcessUtils {
@@ -79,7 +80,7 @@ public:
 
   // Update particleChange's wavevector, group velocity, and momentum
   void FillParticleChange(G4ParticleChange& particleChange,
-              const G4Track& track, const G4ThreeVector& wavevector)
+              const G4Track& track, const G4ThreeVector& wavevector) const;
 
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base

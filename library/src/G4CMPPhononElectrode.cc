@@ -189,10 +189,13 @@ ProcessReflection(const G4Track& track, const G4Step& step,
   } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
 					  reflectedKDir, surfNorm));
 
-  if (verboseLevel>1)
-    G4cout << " Phonon reflected from QET toward " << reflectedKDir << G4endl;
+  FillParticleChange(particleChange, track, reflectedKDir);
 
-  FillParticleChange(particleChange, track, reflectedKDir)
+  if (verboseLevel>1){
+    G4cout << " Phonon reflected from QET with: Wavevector " << reflectedKDir
+    << ", Momentum " << *particleChange.GetMomentumDirection()
+    << ", Velocity " << particleChange.GetVelocity() << G4endl;
+  }
 
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track);
   trackInfo->IncrementReflectionCount();
