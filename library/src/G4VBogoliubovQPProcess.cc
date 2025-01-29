@@ -18,10 +18,20 @@
 #include "G4PhononLong.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
-
+#include "G4RandomDirection.hh"
 
 // Only applies to the known phonon polarization states
 
 G4bool G4VBogoliubovQPProcess::IsApplicable(const G4ParticleDefinition& aPD) {
   return G4CMP::IsBogoliubovQP(&aPD);
+}
+
+//This standardizes the directionality of the final state momenta for all QP particles, assuming an XY-oriented film. This should be run at the end
+//of all postStepDoIts for all pure discrete BogoliubovQP processes.
+G4bool G4VBogoliubovQPProcess::RandomizeFinalStateMomentumDirectionInXY()
+{
+  G4ThreeVector returnDir = G4RandomDirection();
+  returnDir.setZ(0);
+  aParticleChange.ProposeMomentumDirection(returnDir.unit());
+  return true;
 }

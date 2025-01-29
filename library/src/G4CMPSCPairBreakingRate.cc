@@ -17,6 +17,10 @@ G4double G4CMPSCPairBreakingRate::Rate(const G4Track& aTrack) const
 {
   G4cout << "REL HereA_SCPairBreakingRate" << G4endl;
   G4cout << "REL SCDelta for this lattice: " << (this->GetLattice())->GetSCDelta0() << G4endl;
+  if( !CheckToSeeSCParametersSet() ){ return 0; }
+  
+  //Boolean for checking to see if we're trying to access below our minimum energy (in the case of a turnaround step)
+  bool thisEnergyBelowUsableRange = false;
   
   //Need to check to see if the current lattice has a gap (i.e. IS a superconductor). If not, then we need return infinite for
   //this process, since it can in principle/code it can still run in the non-SC crystals.
@@ -26,11 +30,38 @@ G4double G4CMPSCPairBreakingRate::Rate(const G4Track& aTrack) const
     //Compute tau for pairbreaking, and invert for rate
     G4double energy = GetKineticEnergy(aTrack);
     G4cout << "REL HereAB_SCPairBreakingRate" << G4endl;
-    G4double tau_pairbreaking = fTau0_ph*GetTauAsAFunctionOfEnergy(fCurrentNormalizedTauPairBreakingVsEnergy,"Phonon",energy);
+    G4double tau_pairbreaking = fTau0_ph*GetTauAsAFunctionOfEnergy(fCurrentNormalizedTauPairBreakingVsEnergy,"Phonon",energy,thisEnergyBelowUsableRange);
     G4cout << "REL HereB_SCPairBreakingRate" << G4endl;
     return (1.0/tau_pairbreaking);
   }
 }
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+//This is meant to ensure that when we attempt to calculate a rate, we actually have
+//the correct parameters set for this material, so that we exercise some control over
+//the rate calculation.
+bool G4CMPSCPairBreakingRate::CheckToSeeSCParametersSet() const
+{
+  //Check for the gap0energy, Tcrit, Teff, and Tau0qp. If all of these aren't set, return false.
+  //However, if any subset of them are set, then throw a flag--means that someone may just have forgot
+  //one of them.
+  if( fGap0Energy==0 || fTau0_ph == DBL_MAX || fTcrit == 0 || fTeff == 0 ){
+    //Means the whole material likely not set -- this is sometimes expected during normal operation, so don't worry too much here.
+    if( fGap0Energy==0 && fTau0_ph == DBL_MAX && fTcrit == 0 && fTeff == 0 ){
+      return false;
+    }
+    //Means that the material is partially set -- this is probably a mistake
+    else{
+      G4ExceptionDescription msg;
+      msg << "Noticed that in the rate calculation step for the SC Pairbreaking process, you have incorrectly defined or omitted the Gap0Energy parameter, the Tcrit parameter, the Teff parameter, or the Tau0ph parameter. In other words, you don't have enough input information in your config.txt file to run the pairbreaking physics correctly.";
+      G4Exception("G4CMPSCPairbreakingRate::CheckToSeeSCParametersSet", "SCPairbreakingRate001",JustWarning, msg);
+      return false;
+    }
+  }
+  return true;
+}
+
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

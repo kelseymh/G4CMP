@@ -23,6 +23,7 @@
 
 class G4Navigator;
 class G4Step;
+class G4StepPoint;
 class G4Track;
 class G4VPhysicalVolume;
 class G4VTouchable;
@@ -54,6 +55,7 @@ namespace G4CMP {
 			      G4ThreeVector& pos);
   
   G4ThreeVector GetSurfaceNormal(const G4Step& step);
+  //G4ThreeVector GetSurfaceNormal(const G4StepPoint* stepPoint, const G4ThreeVector& guessedDirection );
 
   G4Navigator* GetNavigator();		// Non-tracking for point finding
 

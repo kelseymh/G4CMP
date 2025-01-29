@@ -16,15 +16,49 @@
 // Recombination rate is computed using energy and the G4SCUtils class, upon which this is based
 G4double G4CMPBogoliubovQPRecombinationRate::Rate(const G4Track& aTrack) const
 {
+  //Put checks to see if parameters are defined HERE -- this happens before the calls to the vector but has access to tau0_qp, etc.
+  if( !CheckToSeeSCParametersSet() ) return 0;
+
+  //Boolean for checking to see if we're trying to access below our minimum energy (in the case of a turnaround step)
+  bool thisEnergyBelowUsableRange = false;
+  
   G4cout << "REL in BogoliubovQPRecombination rate Rate function." << G4endl;
   //Compute tau for recombination, and invert for rate
   G4double energy = GetKineticEnergy(aTrack);
-  G4cout << "REL HereA in BogoliubovRecombination Rate" << G4endl;
-  G4double tau_recombination = fTau0_qp*(this->GetTauAsAFunctionOfEnergy(fCurrentNormalizedTauRecombinationVsEnergy,"BogoliubovQP",energy));
+  G4cout << "REL HereA in BogoliubovRecombination Rate" << G4endl;  
+  G4double tau_recombination = fTau0_qp*(this->GetTauAsAFunctionOfEnergy(fCurrentNormalizedTauRecombinationVsEnergy,"BogoliubovQP",energy,thisEnergyBelowUsableRange));
+  if( thisEnergyBelowUsableRange ){
+    G4cout << "--> REL: In Rate calculation for QPRadiatesPhonon, this energy " << energy << " is below the usable range. Returning a zero rate." << G4endl;
+    return 0;
+  }
   G4cout << "REL HereB in BogoliubovRecombination Rate" << G4endl;
   return (1.0/tau_recombination);
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+//This is meant to ensure that when we attempt to calculate a rate, we actually have
+//the correct parameters set for this material, so that we exercise some control over
+//the rate calculation.
+bool G4CMPBogoliubovQPRecombinationRate::CheckToSeeSCParametersSet() const
+{
+  //Check for the gap0energy, Tcrit, Teff, and Tau0qp. If all of these aren't set, return false.
+  //However, if any subset of them are set, then throw a flag--means that someone may just have forgot
+  //one of them.
+  if( fGap0Energy==0 || fTau0_qp == DBL_MAX || fTcrit == 0 || fTeff == 0 ){
+    //Means the whole material likely not set -- this is sometimes expected during normal operation, so don't worry too much here.
+    if( fGap0Energy==0 && fTau0_qp == DBL_MAX && fTcrit == 0 && fTeff == 0 ){
+      return false;
+    }
+    //Means that the material is partially set -- this is probably a mistake
+    else{
+      G4ExceptionDescription msg;
+      msg << "Noticed that in the rate calculation step for the QP recombination process, you have incorrectly defined or omitted the Gap0Energy parameter, the Tcrit parameter, the Teff parameter, or the Tau0qp parameter. In other words, you don't have enough input information in your config.txt file to run the recombination physics correctly.";
+      G4Exception("G4CMPBogoliubovQPRecombinationRate::CheckToSeeSCParametersSet", "BogoliubovQPRecombinationRate001",JustWarning, msg);
+      return false;
+    }
+  }
+  return true;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // If we arrive in a new lattice, either compute the recombination and then update the lookup table, or update
@@ -50,6 +84,7 @@ std::vector<std::vector<G4double> > G4CMPBogoliubovQPRecombinationRate::ComputeN
   std::vector<std::vector<G4double> > output;
   G4double deltaQPEnergyDivGap = (fMaxQPEnergyDivGap - fMinQPEnergyDivGap) / ((double)fQPEnergyBins);
 
+  
   //Loop over all QP energy bins, and create a normalized tau for each of them
   for( int iB = 0; iB < fQPEnergyBins; ++iB ){
     

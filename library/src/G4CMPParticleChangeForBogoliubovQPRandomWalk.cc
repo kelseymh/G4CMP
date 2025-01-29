@@ -76,9 +76,14 @@ G4Step* G4CMPParticleChangeForBogoliubovQPRandomWalk::UpdateStepForAlongStep(G4S
   pStep->SetStepLength(theTrueStepLength);
   theStatusChange = pStep->GetTrack()->GetTrackStatus();
 
+  G4cout << "REL In UpdateStepForAlongStep, trueStepLength is: " << theTrueStepLength << ", and statusChange is: " << theStatusChange << G4endl;
+  
+  
   // Multiple scattering calculates the final state of the particle
   G4StepPoint* pPostStepPoint = pStep->GetPostStepPoint();
+  G4cout << "REL At the beginning of the updatestepForAlongStep process, the step status is: " << pPostStepPoint->GetStepStatus() << G4endl;
 
+  
   // update  momentum direction
   pPostStepPoint->SetMomentumDirection(theMomentumDirection);
 
@@ -93,15 +98,19 @@ G4Step* G4CMPParticleChangeForBogoliubovQPRandomWalk::UpdateStepForAlongStep(G4S
         
   //update the Global time of the particle
   pPostStepPoint->SetGlobalTime(pPostStepPoint->GetGlobalTime()+theTimeChange);
-    
+
+  G4cout << "REL At the end of the updatestepForAlongStep process, the step status is: " << pPostStepPoint->GetStepStatus() << G4endl;
+  
   return pStep;
 }
 
 G4Step* G4CMPParticleChangeForBogoliubovQPRandomWalk::UpdateStepForPostStep(G4Step* pStep)
-{
+{  
   // Multiple scattering calculates the final state of the particle
   G4StepPoint* pPostStepPoint = pStep->GetPostStepPoint();
 
+  G4cout << "REL At the beginning of the updatestepForPostStep process, the step status is: " << pPostStepPoint->GetStepStatus() << G4endl;
+  
   // update  momentum direction
   pPostStepPoint->SetMomentumDirection(theMomentumDirection);
 

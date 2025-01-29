@@ -47,7 +47,6 @@
 #include "G4CMPSCPairBreakingProcess.hh"
 #include "G4CMPBogoliubovQPRecombinationProcess.hh"
 #include "G4CMPBogoliubovQPRadiatesPhononProcess.hh"
-#include "G4CMPBogoliubovQPRadiatesPhononProcess.hh"
 #include "G4CMPBogoliubovQPRandomWalkBoundary.hh"
 #include "G4CMPBogoliubovQPRandomWalkTransport.hh"
 #include "G4CMPBogoliubovQPLocalTrappingProcess.hh"

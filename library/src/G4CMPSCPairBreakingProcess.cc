@@ -204,24 +204,5 @@ void G4CMPSCPairBreakingProcess::GenerateBogoliubovQPPair(std::pair<G4double,G4d
 //Pass-through to G4CMPVProcess class
 G4double G4CMPSCPairBreakingProcess::GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond)
 {
-  G4double mfpBase = G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
-
-  //Here, before we try to run this, check to see if all of the relevant crystal parameters are defined. If they aren't,
-  //throw an exception.
-  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  G4LatticePhysical* theLat;
-  G4VPhysicalVolume* volume = trk.GetVolume();
-  theLat = LM->GetLattice(volume);
-  G4double Gap0Energy = theLat->GetSCDelta0();
-  G4double Tcrit = theLat->GetSCTcrit();
-  G4double Teff = theLat->GetSCTeff();
-  G4double Tau0ph = theLat->GetSCTau0ph();
-  if( Gap0Energy == 0.0 || Tcrit == 0.0 || Teff >= Tcrit || Teff == 0.0 || Tau0ph == DBL_MAX ){
-    G4ExceptionDescription msg;
-    msg << "Noticed that in the mean free path calculation step for the pairbreaking process, you have incorrectly defined or omitted the Gap0Energy parameter, the Tcrit parameter, the Teff parameter, or the Tau0ph parameter. In other words, you don't have enough input information in your config.txt file to run the pairbreaking physics correctly.";
-    G4Exception("G4CMPSCPairbreakingProcess::GetMeanFreePath", "SCPairbreaking002",FatalException, msg);
-  }
-
-  //If we don't trigger that exception, continue.
-  return mfpBase;
+  return G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
 }

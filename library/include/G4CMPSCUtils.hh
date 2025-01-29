@@ -46,7 +46,7 @@ protected:
   //Since now rate classes and processes are actually the ones doing the calculation, we need to make these protected instead of private
   G4double FermiFactor(G4double energy, G4double temperature);
   G4double BoseFactor(G4double energy, G4double temperature);
-  G4double GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhononEnergy, G4String particleInQuestion, G4double energy ) const;
+  G4double GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhononEnergy, G4String particleInQuestion, G4double energy, G4bool & thisEnergyBelowUsableRange ) const;
   G4double ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit, double gap0Energy) const;
   
 private:

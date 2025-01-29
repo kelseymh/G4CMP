@@ -81,7 +81,7 @@ G4bool G4CMPBoundaryUtils::IsGoodBoundary(const G4Step& aStep) {
     G4cout << procName << "::IsGoodBoundary maxRefl " << maximumReflections
 	   << G4endl;
   }
-    
+
   return (IsBounaryStep(aStep) &&
 	  GetBoundingVolumes(aStep) &&
 	  GetSurfaceProperty(aStep));
@@ -94,6 +94,8 @@ G4bool G4CMPBoundaryUtils::IsBounaryStep(const G4Step& aStep) {
 	   << " length " << aStep.GetStepLength() << G4endl;
   }
 
+  G4cout << "In IsBounaryStep, REL the step status is " << aStep.GetPostStepPoint()->GetStepStatus() << G4endl;
+  
   // do nothing if the current step is not limited by a volume boundary,
   // or if it is the returning "null step" after a reflection
   return aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary;
@@ -108,6 +110,7 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
       G4cerr << procName << " ERROR: fGeomBoundary status set, but"
 	     << " pre- and post-step volumes are identical!" << G4endl;
     }
+    G4cout << "REL In GetBoundingVolumes, prePV and postPV are the same" << G4endl;
     return false;
   }
 
@@ -122,18 +125,18 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
   //relevant in these kinds of sims.
   double stepLengthTolerance = 1E-12 * CLHEP::m;
   if (G4LatticeManager::GetLatticeManager()->GetLattice(prePV) == 0 ){
-    G4cout << "---- In GetBoundingVolumes: Current lattice is zero." << G4endl;
+    G4cout << "---- In GetBoundingVolumes: prePV lattice is zero." << G4endl;
     
     //First: if the current (i.e. pre-step, procUtils->GetLattice()) lattice is the same as post-step volume lattice.
     //This occurs, if, for example, the current volume is World/vacuum, and a lattice changeover/update failed in the MFP step because
     //there is no lattice to update to. Hence, the "current" procUtils->GetLattice() lattice is really the prePV one from the *previous* step.
     if( volLattice == procUtils->GetLattice() ){
-      G4cout << "----- In GetBoundingVolumes: Current Lattice is equal to post-PV lattice." << G4endl;
+      G4cout << "----- In GetBoundingVolumes: Current (procUtils) Lattice is equal to post-PV lattice." << G4endl;
       
       //If the step length is below tolerance, we need to return false so we don't try to "double-count" the boundary action.
       //The small step sizes occur when the phonon "turns around" on a boundary with a volume that doesn't have a lattice.
       if( aStep.GetStepLength() <= stepLengthTolerance ){
-        G4cout << "------ In GetBoundingVolumes: Step length is below step length tolerance." << G4endl;
+        G4cout << "------ In GetBoundingVolumes: Step length, " << aStep.GetStepLength()*1.0e9 << " (mult x 1e9) is below step length tolerance." << G4endl;
         return false;
       }
       //If the step length is long. I think this can only happen if we're somehow having a long track in a non-lattice volume. For now
@@ -174,7 +177,7 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
       //that we approached from. Here we return false so that we don't try to run another boundary process action for this turnaround
       //step -- that has already been done
       if( aStep.GetStepLength() <= stepLengthTolerance ){
-        G4cout << "------ In GetBoundingVolumes: Step length is below step length tolerance." << G4endl;
+        G4cout << "------ In GetBoundingVolumes: Step length, " << aStep.GetStepLength()*1.0e9 << " (mult x 1e9), is below step length tolerance." << G4endl;
         return false;
       }
       //Otherwise, the track is actually moving through a volume before it hits this surface, and it needs to run the logic to see if

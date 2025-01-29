@@ -113,22 +113,5 @@ G4VParticleChange* G4PhononPolycrystalElasticScattering::PostStepDoIt( const G4T
 //Pass-through to G4CMPVProcess class
 G4double G4PhononPolycrystalElasticScattering::GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond)
 {
-  //Need this to come first, so that it actually attempts a superconductor update.
-  G4double mfpBase = G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
-
-  //Here, before we try to run this, check to see if all of the relevant crystal parameters are defined. If they aren't,
-  //throw an exception.
-  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  G4LatticePhysical* theLat;
-  G4VPhysicalVolume* volume = trk.GetVolume();
-  theLat = LM->GetLattice(volume);
-  G4double PolycrystalElasticScatterMFP = theLat->GetPolycrystalElasticScatterMFP();
-  if( PolycrystalElasticScatterMFP == DBL_MAX ){
-    G4ExceptionDescription msg;
-    msg << "Noticed that in the mean free path calculation step for the polycrystal elastic scattering, you have incorrectly defined or omitted the elastic scatter MFP. In other words, you don't have enough input information in your config.txt file to run the phonon polycrystalline elastic scattering physics correctly. Please add the polycryElMfp parameter with a physical value and unit to config.txt";
-    G4Exception("G4PhononPolycrystalElasticScattering::GetMeanFreePath", "PhononPolycrystalElasticScattering001",FatalException, msg);
-  }
-
-  //If we don't trigger that exception, continue.
-  return mfpBase;
+  return G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
 }

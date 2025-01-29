@@ -34,6 +34,8 @@ private:
   //This one doesn't need to be public or protected
   std::vector<std::vector<G4double> > ComputeNormalizedTauRecombinationVsEnergy();
 
+  bool CheckToSeeSCParametersSet() const;
+  
   //For testing purposes
   void SaveBogoliubovRecombinationTauVsPhononEnergyToLogFile(std::vector<std::vector<G4double> > theFunc);
   

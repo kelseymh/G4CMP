@@ -74,22 +74,5 @@ G4VParticleChange* G4CMPBogoliubovQPLocalTrappingProcess::PostStepDoIt(const G4T
 //Pass-through to G4CMPVProcess class
 G4double G4CMPBogoliubovQPLocalTrappingProcess::GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond)
 {
-  //Need this to come first, so that it actually attempts a superconductor update.
-  G4double mfpBase = G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
-
-  //Here, before we try to run this, check to see if all of the relevant crystal parameters are defined. If they aren't,
-  //throw an exception.
-  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  G4LatticePhysical* theLat;
-  G4VPhysicalVolume* volume = trk.GetVolume();
-  theLat = LM->GetLattice(volume);
-  G4double localTrappingMFP = theLat->GetSCQPLocalTrappingMFP();
-  if( localTrappingMFP == DBL_MAX ){
-    G4ExceptionDescription msg;
-    msg << "Noticed that in the mean free path calculation step for the BogoliubovQP local trapping, you have incorrectly defined or omitted the trapping MFP. In other words, you don't have enough input information in your config.txt file to run the trapping physics correctly. Please add the sc_qptrapmfp parameter with a physical value and unit to config.txt";
-    G4Exception("G4CMPBogoliubovQPLocalTrapping::GetMeanFreePath", "BogoliubovQPLocalTrapping001",FatalException, msg);
-  }
-
-  //If we don't trigger that exception, continue.
-  return mfpBase;
+  return G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
 }

@@ -93,14 +93,18 @@ G4bool G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTra
   if( (((this->theLattice) && G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())) &&
        (this->theLattice != G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()))) ||
       aTrack.GetTrackLength() == 0.0 ){
-
+    
+    G4cout << "--------> REL the step length associated with this is " << aTrack.GetStep()->GetStepLength() << G4endl;
+    
+    
+    
     //REL noting that if physical lattices are not 1:1 with volumes, something may get broken here... Should check a scenario of segmented SC...
-      
+    
     this->LoadDataForTrack(&aTrack);
     if(rateModel) rateModel->LoadDataForTrack(&aTrack);
     G4cout << "REL G4CMPVProcess: Successfully changed over to a new lattice for process " << this->GetProcessName() << G4endl;
     return true;
-      
+    
   }
   G4cout << "REL G4CMPVProcess: Did not successfully change over to a new lattice for process " << this->GetProcessName() << G4endl;
   return false;
@@ -155,18 +159,18 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
   *condition = (rateModel && rateModel->IsForced()) ? Forced : NotForced;
 
 
-  
   G4double rate = rateModel ? rateModel->Rate(aTrack) : 0.;
   G4double vtrk = IsChargeCarrier() ? GetVelocity(aTrack) : aTrack.GetVelocity();
   G4double mfp  = rate>0. ? vtrk/rate : DBL_MAX;
 
-//  G4cout << "In getMFP, rate of " << this->GetProcessName() << " is: " << rate << G4endl;
+
+  G4cout << "In getMFP, rate of " << this->GetProcessName() << " is: " << rate << G4endl;
   
-  if (verboseLevel>2) {
+  //  if (verboseLevel>2) {
     G4cout << GetProcessName() << " rate = " << rate/hertz << " Hz"
 	   << " Vtrk = " << vtrk/(m/s) << " m/s"
 	   << " MFP = " << mfp/m << " m" << G4endl;
-  }
+    // }
 
   return mfp;
 }

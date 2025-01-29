@@ -34,7 +34,7 @@ G4BogoliubovQP*  G4BogoliubovQP::Definition()
   //             stable         lifetime    decay table 
   //             shortlived      subType    anti_encoding
    anInstance = new G4ParticleDefinition(
-                 name,         100*GeV,       0.0*MeV,         0.0,
+                 name,         10000*GeV,       0.0*MeV,         0.0,
                     1,               0,             0,
                     0,               0,             0,
              "BogoliubovQP",         0,             0,         0,

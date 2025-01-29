@@ -209,7 +209,7 @@ G4double G4CMPSCUtils::BoseFactor(G4double energy, G4double temperature)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Get a Tau from a lookup table vs. energy. Note that the table has two columns: energy and tau. For now we ignore the former but we
 // may end up using this to help check ourselves. Passing by const reference
-G4double G4CMPSCUtils::GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhononEnergy, G4String particleInQuestion, G4double energy ) const
+G4double G4CMPSCUtils::GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhononEnergy, G4String particleInQuestion, G4double energy, G4bool & thisEnergyBelowUsableRange ) const
 {
   //Establish what the bounds and binning are
   G4double minE = 0;
@@ -252,9 +252,10 @@ G4double G4CMPSCUtils::GetTauAsAFunctionOfEnergy( const std::vector<std::vector<
       else{
 	G4cout << "energy: " << energy << ", minE: " << minE << G4endl;
 	G4ExceptionDescription msg;
-	msg << "During lookup table step, we're somehow looking at a QP energy below the gap? This is confusing. Investigate.";
-	G4Exception("G4CMPSCUtils::GetTauAsAFunctionOfEnergy", "G4CMPSCUtils004",FatalException, msg);
-	return 0;
+	msg << "During lookup table step, we're somehow looking at a QP energy below the gap? This is probably just a turnaround step.";
+	G4Exception("G4CMPSCUtils::GetTauAsAFunctionOfEnergy", "G4CMPSCUtils004",JustWarning, msg);
+	thisEnergyBelowUsableRange = true;
+	return DBL_MAX;
       }
     }
     else{

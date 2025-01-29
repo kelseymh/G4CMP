@@ -63,6 +63,8 @@ G4double G4CMPBogoliubovQPRandomWalkBoundary::GetMeanFreePath(const G4Track& aTr
 							      G4double /*prevStepLength*/,
 							      G4ForceCondition* condition)
 {
+  G4cout << "REL -- G4CMPQPRandomWalkBoundary::GetMeanFreePath()" << G4endl;
+  
   //Update the lattice so that this process knows about any changes
   UpdateMeanFreePathForLatticeChangeover(aTrack);
 
@@ -152,6 +154,9 @@ G4bool G4CMPBogoliubovQPRandomWalkBoundary::CheckQPVolumes(const G4Step& aStep)
 G4VParticleChange*
 G4CMPBogoliubovQPRandomWalkBoundary::PostStepDoIt(const G4Track& aTrack,
 						  const G4Step& aStep) {
+
+  G4cout << "REL -- G4CMPQPRandomWalkBoundary::PostStepDoIt()" << G4endl;
+  
   //Note that this is still just blindly copied from the phononboundary action
   // this needs to be customized for QP dynamics ...
   // NOTE:  G4VProcess::SetVerboseLevel is not virtual!  Can't overlaod it
@@ -160,20 +165,24 @@ G4CMPBogoliubovQPRandomWalkBoundary::PostStepDoIt(const G4Track& aTrack,
 
   //Do a boundary check just as for phonon dynamics
   G4bool checkBoundary = IsGoodBoundary(aStep);
+  G4cout << "REL -- After IsGoodBoundary, value " << checkBoundary << G4endl;
 
   //After a boundary check, we also want to do a QP-specific check of the volumes to make sure we understand the
-  //relationship between the pre- and post-boundary superconducting gaps. This updates those gap values. 
+  //relationship between the pre- and post-boundary superconducting gaps. This updates those gap values.
+  G4cout << "REL -- Before CheckQPVolumes, PostStepDoIt" << G4endl;
   G4bool checkQPVolumes = CheckQPVolumes(aStep);
+  G4cout << "REL -- After CheckQPVolumes (value " << checkQPVolumes << "), PostStepDoIt" << G4endl;
   if (verboseLevel>2){
     G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside PostStepDoIt Check qp volumes result :  " <<checkQPVolumes << G4endl;
     G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside PostStepDoIt Check boundary result :  " <<checkBoundary << G4endl;
   }
-
+  
   //If boundaries or QP volumes aren't satisfied, just return the default post-step do it for discrete processes.
   if (!checkBoundary || !checkQPVolumes) return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);  
   if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
   //Otherwise, apply a boundary action (reflection, absorption, transmission)
+  G4cout << "REL -- Applying boundary action, PostStepDoIt" << G4endl;
   ApplyBoundaryAction(aTrack, aStep, aParticleChange);
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
   return &aParticleChange;
@@ -237,10 +246,15 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
 						       const G4Step& aStep,
 						       G4ParticleChange& aParticleChange)
 {
+  G4cout << "REL -- G4CMPQPRandomWalkBoundary::DoReflection()" << G4endl;
+  
   //REL currently hardcoded but should fix
   bool isLambertian = false;
 
   if( isLambertian ){
+
+    G4cout << "REL -- G4CMPQPRandomWalkBoundary::Lambertian Reflection()" << G4endl;
+    
     // Check whether step has proper boundary-stopped geometry
     G4ThreeVector surfacePoint;
     if (!CheckStepBoundary(aStep, surfacePoint)) {
@@ -285,6 +299,8 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
 
   //Specular
   else{
+
+    G4cout << "REL -- G4CMPQPRandomWalkBoundary::Specular Reflection()" << G4endl;
 
     //Check to make sure we're on a volume boundary before attempting reflection.
     G4ThreeVector surfacePoint;

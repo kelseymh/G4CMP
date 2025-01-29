@@ -27,12 +27,14 @@
 // Constructor and destructor 
 G4CMPBogoliubovQPRadiatesPhononProcess::G4CMPBogoliubovQPRadiatesPhononProcess(const G4String& aName)
   : G4VBogoliubovQPProcess(aName,fQPRadiatesPhononProcess)
-{  
+{
+  G4cout << "REL -- In QPRadiatesPhononProcess::Constructor()" << G4endl;
   UseRateModel(new G4CMPBogoliubovQPRadiatesPhononRate);
 }
 
 G4CMPBogoliubovQPRadiatesPhononProcess::~G4CMPBogoliubovQPRadiatesPhononProcess()
 {
+  G4cout << "REL -- In QPRadiatesPhononProcess::Destructor()" << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -61,6 +63,8 @@ G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4
     return &aParticleChange;		
   }
 
+  
+  
   //2. Identify the current QP's energy and velocity and use it to draw an energy for a radiated phonon.
   G4double qpEnergy = GetKineticEnergy(aTrack);
   G4double velocity = aTrack.GetVelocity(); // note: need to convert to m/s
@@ -73,7 +77,9 @@ G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4
 
   //4. Now we do the artificial setting of the QP's velocity and momentum direction again. These lines are aphysical but
   //   are okay because we are going to have to do the QP diffusion modeling in a hacky way anyway...
-  aParticleChange.ProposeMomentumDirection(momDir);
+  
+  //  aParticleChange.ProposeMomentumDirection(momDir);
+  RandomizeFinalStateMomentumDirectionInXY();
   aParticleChange.ProposeVelocity(velocity); 
 
   //4. Do the clear interaction lengths thing because we do still have a particle here.
@@ -85,6 +91,7 @@ G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 G4bool G4CMPBogoliubovQPRadiatesPhononProcess::IsApplicable(const G4ParticleDefinition& aPD) {
+  G4cout << "REL -- In QPRadiatesPhononProcess::IsApplicable()" << G4endl;
   // Allow all phonon types, because type is changed during tracking
   return G4VBogoliubovQPProcess::IsApplicable(aPD);
 }
@@ -96,7 +103,8 @@ void G4CMPBogoliubovQPRadiatesPhononProcess::GenerateRadiatedPhonon(G4double pho
 								    const G4Track& aTrack,
 								    const G4Step& aStep)
 {
-
+  G4cout << "REL -- In QPRadiatesPhononProcess::GenerateRadiatedPhonon()" << G4endl;
+  
   //Now create the phonon
   G4int mode = G4CMP::ChoosePhononPolarization(theLattice->GetLDOS(), theLattice->GetSTDOS(),theLattice->GetFTDOS());    
   G4ThreeVector dir1 = G4RandomDirection();    
@@ -121,6 +129,8 @@ void G4CMPBogoliubovQPRadiatesPhononProcess::GenerateRadiatedPhonon(G4double pho
 // This is the same as the original KaplanQP
 G4double G4CMPBogoliubovQPRadiatesPhononProcess::PhononEnergyRand(G4double Energy) const
 {
+  //G4cout << "REL -- In QPRadiatesPhononProcess::PhononEnergyRand()" << G4endl;
+  
   // PDF is not integrable, so we can't do an inverse transform sampling.
   // Instead, we'll do a rejection method.
   //
@@ -149,6 +159,7 @@ G4double G4CMPBogoliubovQPRadiatesPhononProcess::PhononEnergyRand(G4double Energ
 // bring this into agreement with the Kaplan paper
 G4double G4CMPBogoliubovQPRadiatesPhononProcess::PhononEnergyPDF(G4double E, G4double x) const
 {
+  //G4cout << "REL -- In QPRadiatesPhononProcess::PhononEnergyPDF()" << G4endl;
     const G4double gapsq = fGapEnergy * fGapEnergy;
     return (x * (E - x) * (E - x) * (1 - gapsq / x / E) / sqrt(x * x - gapsq));
 }
@@ -160,23 +171,28 @@ G4double G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath(const G4Track& 
 {
   //Need this to come first, so that it actually attempts a superconductor update.
   G4double mfpBase = G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
-
+  /*
   //Here, before we try to run this, check to see if all of the relevant crystal parameters are defined. If they aren't,
-  //throw an exception.
+  //throw an exception. This only works, by the way, if there is a lattice. Since this does need to run during turnaround steps too,
+  //predicate this check on a lattice existing in the first place.  
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
   G4LatticePhysical* theLat;
   G4VPhysicalVolume* volume = trk.GetVolume();
   theLat = LM->GetLattice(volume);
-  G4double Gap0Energy = theLat->GetSCDelta0();
-  G4double Tcrit = theLat->GetSCTcrit();
-  G4double Teff = theLat->GetSCTeff();
-  G4double Tau0qp = theLat->GetSCTau0qp();  
-  if( Gap0Energy == 0.0 || Tcrit == 0.0 || Teff >= Tcrit || Teff == 0.0 || Tau0qp == DBL_MAX ){
-    G4ExceptionDescription msg;
-    msg << "Noticed that in the mean free path calculation step for the QP-radiates-phonon process, you have incorrectly defined or omitted the Gap0Energy parameter, the Tcrit parameter, the Teff parameter, or the Tau0qp parameter. In other words, you don't have enough input information in your config.txt file to run the phonon radiation physics correctly.";
-    G4Exception("G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath", "BogoliubovQPRadiatesPhonon003",FatalException, msg);
+  if(theLat){
+    G4double Gap0Energy = theLat->GetSCDelta0();
+    G4double Tcrit = theLat->GetSCTcrit();
+    G4double Teff = theLat->GetSCTeff();
+    G4double Tau0qp = theLat->GetSCTau0qp();
+    if( Gap0Energy == 0.0 || Tcrit == 0.0 || Teff >= Tcrit || Teff == 0.0 || Tau0qp == DBL_MAX ){
+      G4ExceptionDescription msg;
+      msg << "Noticed that in the mean free path calculation step for the QP-radiates-phonon process, you have incorrectly defined or omitted the Gap0Energy parameter, the Tcrit parameter, the Teff parameter, or the Tau0qp parameter. In other words, you don't have enough input information in your config.txt file to run the phonon radiation physics correctly.";
+      G4Exception("G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath", "BogoliubovQPRadiatesPhonon003",JustWarning, msg);
+    }
   }
-
+  */
+  G4cout << "REL Mean free path in QPRadiatesPhononProcess: " << mfpBase << G4endl;
+  
   //If we don't trigger that exception, continue.
   return mfpBase;
 }

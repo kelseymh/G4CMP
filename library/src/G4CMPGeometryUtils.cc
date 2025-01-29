@@ -1,4 +1,4 @@
-/***********************************************************************\
+/*********************************************************************** \
  * This software is licensed under the terms of the GNU General Public *
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
@@ -25,6 +25,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4Navigator.hh"
 #include "G4Step.hh"
+#include "G4StepPoint.hh"
 #include "G4TouchableHistory.hh"
 #include "G4Track.hh"
 #include "G4TransportationManager.hh"
@@ -73,9 +74,106 @@ void G4CMP::RotateToGlobalPosition(const G4VTouchable* touch,
   G4CMPGlobalLocalTransformStore::ToGlobal(touch).ApplyPointTransform(pos);
 }
 
+/*
+//Overloaded version of this for when we only have a single step point (i.e. during MFP calculation at the beginning of a step).
+//Since with a single step point we don't necessarily know about multiple volumes, the second argument is a guessed direction that
+//can be used to find a nearby volume.
+G4ThreeVector G4CMP::GetSurfaceNormal(const G4StepPoint* stepPoint, const G4ThreeVector& guessedDirection )
+{
+  const G4VTouchable* preTouch = stepPoint->GetTouchable();
+  G4VTouchable * guessTouch = CreateTouchableAtPoint(stepPoint->GetPosition()+0.1*nm*guessedDirection); //HARDCODED -- BEWARE  
+   
+  //For now, throw an exception if the pre-step Volume and the guess volume are the same
+  if( preTouch->GetVolume() == guessTouch->GetVolume() ){
+    G4ExceptionDescription msg;
+    msg << "G4CMP::GetSurfaceNormal()'s preStepVolume seems to be the same as the guess volume, which shouldn't be true. Volumes are: "
+	<< preTouch->GetVolume()->GetName() << " and " << guessTouch->GetVolume()->GetName() << G4endl;
+    G4Exception("G4CMP::GetSurfaceNormal(stepPoint,guessedDirection)", "Geometry001",
+		EventMustBeAborted, msg);
+  }
+
+  //Now we use these two volumes with the same logic as before to find the surface normal
+  G4VSolid* preSolid = preTouch->GetVolume()->GetLogicalVolume()->GetSolid();
+  G4VSolid* guessSolid = guessTouch->GetVolume()->GetLogicalVolume()->GetSolid();
+
+  //Check to see if the position is within spitting distance of either object's boundary. First, understand whether we're
+  //inside either of the
+  G4ThreeVector pos_prePV = stepPoint->GetPosition();
+  G4ThreeVector pos_guessPV = stepPoint->GetPosition();
+  G4cout << "pos_prePV1: " << pos_prePV << ", in volume " << preTouch->GetVolume()->GetName() << G4endl;
+  G4cout << "pos_guessPV1: " << pos_guessPV << ", in volume " << guessTouch->GetVolume()->GetName() << G4endl;
+  
+  RotateToLocalPosition(preTouch, pos_prePV);
+  RotateToLocalPosition(guessTouch,pos_guessPV);
+  EInside postStepInPrePV = preSolid->Inside(pos_prePV);
+  EInside postStepInGuessPV = guessSolid->Inside(pos_guessPV);
+  G4cout << "pos_prePV2: " << pos_prePV << G4endl;
+  G4cout << "pos_guessPV2: " << pos_guessPV << G4endl;
+
+  
+  G4cout << "PostStepInPrePV: " << postStepInPrePV << ", postStepInGuessPV: " << postStepInGuessPV << ", fabs(preSolid->DistanceToOut(pos_prePV)):" << fabs(preSolid->DistanceToOut(pos_prePV)) << ", fabs(preSolid->DistanceToIn(pos_prePV)): " << fabs(preSolid->DistanceToIn(pos_prePV)) << ", fabs(guessSolid->DistanceToOut(pos_guessPV)): " << fabs(guessSolid->DistanceToOut(pos_guessPV)) << ", fabs(guessSolid->DistanceToIn(pos_guessPV)): " << fabs(guessSolid->DistanceToIn(pos_guessPV)) << G4endl;
+
+  
+  //Now, we have some logic. We don't want as much logic as in G4CMPBoundaryUtils::CheckBoundarySurface(), especially
+  //when it comes to what happens when we don't have a point on a bonafide surface -- that code should be run
+  //first to confirm that we're indeed on a boundary surface. But we do need something to tell us which surface's normal to reflect over.
+  double tolerance = 1.0e-11 * mm; //Need to not hardcode this -- find a better way to implement. 
+  if( postStepInPrePV == kSurface ){
+    //Reflect over the pre-PV normal
+    G4ThreeVector preSolidNorm = preSolid->SurfaceNormal(pos_prePV);
+    G4cout << "REL in G4CMPGeometryUtils::GetSurfaceNormal() --- returning pre-PV surface norm: " << preSolidNorm << G4endl;
+    RotateToGlobalDirection(preTouch,preSolidNorm);
+    G4cout << "REL in G4CMPGeometryUtils::GetSurfaceNormal() --- after rotation, this surface norm is: " << preSolidNorm << G4endl;
+    delete guessTouch;
+    return preSolidNorm;
+  }
+  else if( postStepInGuessPV == kSurface ){
+    //Reflect over the guess-PV normal
+    G4ThreeVector guessSolidNorm = guessSolid->SurfaceNormal(pos_guessPV);
+    G4cout << "REL in G4CMPGeometryUtils::GetSurfaceNormal() --- returning guess-PV surface norm: " << guessSolidNorm << G4endl;
+    RotateToGlobalDirection(guessTouch,guessSolidNorm);
+    G4cout << "REL in G4CMPGeometryUtils::GetSurfaceNormal() --- after rotation, this surface norm is: " << guessSolidNorm << G4endl;
+    return guessSolidNorm;
+  }
+  //If we are very near a surface and within tolerance, still okay -- this is a pre-PV reflection
+  else if( (fabs(preSolid->DistanceToOut(pos_prePV)) > 0 && fabs(preSolid->DistanceToOut(pos_prePV)) < tolerance ) ||
+	   (fabs(preSolid->DistanceToIn(pos_prePV)) > 0 && fabs(preSolid->DistanceToIn(pos_prePV)) < tolerance ) ){
+    G4ThreeVector preSolidNorm = preSolid->SurfaceNormal(pos_prePV);
+    G4cout << "REL in G4CMPGeometryUtils::GetSurfaceNormal() --- returning pre-PV surface norm: " << preSolidNorm << G4endl;
+    RotateToGlobalDirection(preTouch,preSolidNorm);
+    G4cout << "REL in G4CMPGeometryUtils::GetSurfaceNormal() --- after rotation, this surface norm is: " << preSolidNorm << G4endl;
+    delete guessTouch;
+    return preSolidNorm;
+  }
+  //If we are very near a surface and within tolerance, still okay -- this is for guess-PV reflection
+  else if( (fabs(guessSolid->DistanceToOut(pos_guessPV)) > 0 && fabs(guessSolid->DistanceToOut(pos_guessPV)) < tolerance ) ||
+	   (fabs(guessSolid->DistanceToIn(pos_guessPV)) > 0 && fabs(guessSolid->DistanceToIn(pos_guessPV)) < tolerance ) ){
+    G4ThreeVector guessSolidNorm = guessSolid->SurfaceNormal(pos_guessPV);
+    G4cout << "REL in G4CMPGeometryUtils::GetSurfaceNormal() --- returning guess-PV surface norm: " << guessSolidNorm << G4endl;
+    RotateToGlobalDirection(guessTouch,guessSolidNorm);
+    G4cout << "REL in G4CMPGeometryUtils::GetSurfaceNormal() --- after rotation, this surface norm is: " << guessSolidNorm << G4endl;
+    delete guessTouch;
+    return guessSolidNorm;
+  }
+  //Otherwise, we're not on (or within tolerance of) a surface.
+  else{
+    
+    //Throw an error -- shouldn't ever be here since it means we're not on a surface
+    G4ExceptionDescription msg;
+    msg << "G4CMP::GetSurfaceNormal() seems to think we're not on a surface. Volumes are: "
+	<< preSolid->GetName() << " and " << guessSolid->GetName() << G4endl;
+    G4Exception("G4CMP::GetSurfaceNormal()", "Geometry00X",
+		EventMustBeAborted, msg);
+    G4ThreeVector dummy(0,0,0);
+    delete guessTouch;
+    return dummy;    
+  }
+
+  
+}
+*/
 
 // Get normal to enclosing volume at boundary point in global coordinates
-
 G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step) {
 
   //RL: when we have nested geometries and the step is impinging upon an internal/daughter volume
@@ -89,18 +187,27 @@ G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step) {
   G4VSolid* postSolid = postTouch->GetVolume()->GetLogicalVolume()->GetSolid();
 
   //Check to see if the position is within spitting distance of either object's boundary. First, understand whether we're
-  //inside either of the 
+  //inside either of the
   G4ThreeVector pos_prePV = step.GetPostStepPoint()->GetPosition();
   G4ThreeVector pos_postPV = step.GetPostStepPoint()->GetPosition();
+  G4cout << "pos_prePV1: " << pos_prePV << ", in volume " << preTouch->GetVolume()->GetName() << G4endl;
+  G4cout << "pos_postPV1: " << pos_postPV << ", in volume " << postTouch->GetVolume()->GetName() << G4endl;
+  
   RotateToLocalPosition(preTouch, pos_prePV);
   RotateToLocalPosition(postTouch,pos_postPV);
   EInside postStepInPrePV = preSolid->Inside(pos_prePV);
-  EInside postStepInPostPV = postSolid->Inside(pos_prePV);
+  EInside postStepInPostPV = postSolid->Inside(pos_postPV);
+  G4cout << "pos_prePV2: " << pos_prePV << G4endl;
+  G4cout << "pos_postPV2: " << pos_postPV << G4endl;
 
+  
+  G4cout << "PostStepInPrePV: " << postStepInPrePV << ", postStepInPostPV: " << postStepInPostPV << ", fabs(preSolid->DistanceToOut(pos_prePV)):" << fabs(preSolid->DistanceToOut(pos_prePV)) << ", fabs(preSolid->DistanceToIn(pos_prePV)): " << fabs(preSolid->DistanceToIn(pos_prePV)) << ", fabs(postSolid->DistanceToOut(pos_postPV)): " << fabs(postSolid->DistanceToOut(pos_postPV)) << ", fabs(postSolid->DistanceToIn(pos_postPV)): " << fabs(postSolid->DistanceToIn(pos_postPV)) << G4endl;
+
+  
   //Now, we have some logic. We don't want as much logic as in G4CMPBoundaryUtils::CheckBoundarySurface(), especially
   //when it comes to what happens when we don't have a point on a bonafide surface -- that code should be run
   //first to confirm that we're indeed on a boundary surface. But we do need something to tell us which surface's normal to reflect over.
-  double tolerance = 1.0e-9 * mm; //Need to not hardcode this -- find a better way to implement. 
+  double tolerance = 1.0e-11 * mm; //Need to not hardcode this -- find a better way to implement. REL
   if( postStepInPrePV == kSurface ){
     //Reflect over the pre-PV normal
     G4ThreeVector preSolidNorm = preSolid->SurfaceNormal(pos_prePV);
@@ -143,7 +250,7 @@ G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step) {
     msg << "G4CMP::GetSurfaceNormal() seems to think we're not on a surface. Volumes are: "
 	<< preSolid->GetName() << " and " << postSolid->GetName() << G4endl;
     G4Exception("G4CMP::GetSurfaceNormal()", "Geometry00X",
-		EventMustBeAborted, msg);
+		FatalException, msg);
     G4ThreeVector dummy(0,0,0);
     return dummy;    
   }

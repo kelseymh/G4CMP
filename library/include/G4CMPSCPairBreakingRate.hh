@@ -32,6 +32,9 @@ private:
   
   //This one doesn't need to be public or protected
   std::vector<std::vector<G4double> > ComputeNormalizedTauPairBreakingVsEnergy();
+
+  bool CheckToSeeSCParametersSet() const;
+  
   void SavePairBreakingRateVsPhononEnergyToLogFile(std::vector<std::vector<G4double> > theFunc);
   
 };

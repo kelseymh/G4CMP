@@ -28,6 +28,7 @@ public:
   virtual ~G4VBogoliubovQPProcess() {;}
   
   virtual G4bool IsApplicable(const G4ParticleDefinition& aPD);
+  virtual G4bool RandomizeFinalStateMomentumDirectionInXY();
   
 private:
   // hide assignment operators as private 
