@@ -202,8 +202,8 @@ void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
   G4int mode = GetPolarization(track);
 
   // Get Vg from global wavevector
-  G4ThreeVector vDir = theLattice->MapKtoVDir(mode, wavevector);
-  G4double v = theLattice->MapKtoV(mode, wavevector);
+  G4ThreeVector vDir = theLattice->MapKtoVDir(mode, GetLocalDirection(wavevector));
+  G4double v = theLattice->MapKtoV(mode, GetLocalDirection(wavevector));
 
   // Update trackInfo and particleChange
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track);
