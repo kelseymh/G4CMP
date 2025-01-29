@@ -92,4 +92,5 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double Zin,
       firstCall = false;
     }
     return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
- 
+  }
+} 
