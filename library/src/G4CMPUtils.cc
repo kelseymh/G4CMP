@@ -227,7 +227,8 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
 
   if (!touchable) {
     G4Exception("G4CMP::PhononVelocityIsInward", "G4CMPUtils001",
-		FatalException, "Current track does not have valid touchable!");
+		EventMustBeAborted, "Current track does not have valid touchable!");
+    return false;
   }
 
   // MapKtoVDir requires local direction for the wavevector
