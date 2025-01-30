@@ -23,6 +23,7 @@
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPElectrodeHit.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
@@ -206,10 +207,10 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
   // MapKtoVDir requires local direction for the wavevector
-  G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(waveVector));
+  G4ThreeVector vDir = lattice->MapKtoVDir(mode, G4CMP::GetLocalDirection(waveVector));
 
   // Compare group velocity and surface normal in global coordinates
-  RotateToGlobalDirection(vDir);
+  G4CMP::RotateToGlobalDirection(vDir);
   return vDir.dot(surfNorm) < 0.0;
 }
 
