@@ -207,10 +207,10 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
   // MapKtoVDir requires local direction for the wavevector
-  G4ThreeVector vDir = lattice->MapKtoVDir(mode, G4CMP::GetLocalDirection(waveVector));
+  G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(waveVector));
 
   // Compare group velocity and surface normal in global coordinates
-  G4CMP::RotateToGlobalDirection(vDir);
+  RotateToGlobalDirection(vDir);
   return vDir.dot(surfNorm) < 0.0;
 }
 
