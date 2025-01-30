@@ -210,13 +210,13 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      const G4ThreeVector& surfNorm) {
   // Get track and touchable for coordinate rotations
   G4Track* track = G4EventManager::GetEventManager()->GetTrackingManager()->GetTrack();
-  G4VTouchable* touchable = track->GetStep()->GetPostStepPoint()->GetTouchable();
+  const G4VTouchable* touchable = track->GetStep()->GetPostStepPoint()->GetTouchable();
 
   // MapKtoVDir requires local direction for the wavevector
-  G4ThreeVector vDir = lattice->MapKtoVDir(mode, touchable->GetLocalDirection(waveVector));
+  G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(touchable, waveVector));
 
   // Compare group velocity and surface normal in global coordinates
-  touchable->RotateToGlobalDirection(vDir);
+  RotateToGlobalDirection(touchable, vDir);
   return vDir.dot(surfNorm) < 0.0;
 }
 
