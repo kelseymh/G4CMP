@@ -25,6 +25,7 @@
 #include "G4CMPElectrodeHit.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackUtils.hh"
+#include "G4EventManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PhononPolarization.hh"
@@ -32,6 +33,7 @@
 #include "G4ProcessManager.hh"
 #include "G4ProcessVector.hh"
 #include "G4Track.hh"
+#include "G4TrackingManager.hh"
 #include "G4VProcess.hh"
 #include "Randomize.hh"
 
@@ -206,11 +208,15 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int mode,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
+  // Get track and touchable for coordinate rotations
+  G4Track* track = G4EventManager::GetEventManager()->GetTrackingManager()->GetTrack();
+  G4VTouchable* touchable = track->GetStep()->GetPostStepPoint()->GetTouchable();
+
   // MapKtoVDir requires local direction for the wavevector
-  G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(waveVector));
+  G4ThreeVector vDir = lattice->MapKtoVDir(mode, touchable->GetLocalDirection(waveVector));
 
   // Compare group velocity and surface normal in global coordinates
-  RotateToGlobalDirection(vDir);
+  touchable->RotateToGlobalDirection(vDir);
   return vDir.dot(surfNorm) < 0.0;
 }
 
