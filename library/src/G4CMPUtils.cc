@@ -166,11 +166,7 @@ G4Track* G4CMP::GetCurrentTrack() {
 
 const G4VTouchable* G4CMP::GetCurrentTouchable() {
   G4Track* track = GetCurrentTrack();
-  return GetCurrentTouchable(track);
-}
-
-const G4VTouchable* G4CMP::GetCurrentTouchable(G4Track* track) {
-  return track->GetTouchable();
+  return track ? track->GetTouchable() : 0;
 }
 
 // Copy information from current step into data block]

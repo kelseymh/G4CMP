@@ -77,7 +77,6 @@ namespace G4CMP {
 
   // Get current touchable from track
   const G4VTouchable* GetCurrentTouchable();
-  const G4VTouchable* GetCurrentTouchable(G4Track* track);
 
   // Create a Hit from a G4Step. Less error prone to use this helper.
   void FillHit(const G4Step*, G4CMPElectrodeHit*);
