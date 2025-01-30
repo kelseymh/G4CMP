@@ -16,6 +16,7 @@
 // 20190906  M. Kelsey -- Add function to look up process for track
 // 20220816  M. Kelsey -- Move RandomIndex here for more general use
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
+// 20250130  G4CMP-453 -- Apply coordinate rotations in PhononVelocityIsInward
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -199,12 +200,16 @@ G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
 
 
 // Check that phonon is properly directed from the volume surface
-
+// waveVector and surfNorm need to be in global coordinates
 G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int mode,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
-  G4ThreeVector vDir = lattice->MapKtoVDir(mode, waveVector);
+  // MapKtoVDir requires local direction for the wavevector
+  G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(waveVector));
+
+  // Compare group velocity and surface normal in global coordinates
+  RotateToGlobalDirection(vDir);
   return vDir.dot(surfNorm) < 0.0;
 }
 
