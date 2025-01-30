@@ -224,10 +224,12 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      const G4ThreeVector& surfNorm) {
   // Get touchable for coordinate rotations
   const G4VTouchable* touchable = GetCurrentTouchable();
+
   if (!touchable) {
     G4Exception("G4CMP::PhononVelocityIsInward", "G4CMPUtils001",
 		FatalException, "Current track does not have valid touchable!");
   }
+
   // MapKtoVDir requires local direction for the wavevector
   G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(touchable, waveVector));
 
