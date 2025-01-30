@@ -164,12 +164,12 @@ G4Track* G4CMP::GetCurrentTrack() {
 
 // Get touchable from current track
 
-const G4VTouchable* G4CMP::GetCurrentTouchable(){
+const G4VTouchable* G4CMP::GetCurrentTouchable() {
   G4Track* track = GetCurrentTrack();
   return GetCurrentTouchable(track);
 }
 
-const G4VTouchable* G4CMP::GetCurrentTouchable(G4Track* track){
+const G4VTouchable* G4CMP::GetCurrentTouchable(G4Track* track) {
   return track->GetTouchable();
 }
 

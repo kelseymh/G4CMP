@@ -30,6 +30,7 @@ class G4ParticleDefinition;
 class G4Step;
 class G4Track;
 class G4VProcess;
+class G4VTouchable;
 
 
 namespace G4CMP {
