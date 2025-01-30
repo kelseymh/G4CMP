@@ -16,6 +16,7 @@
 // 20190906  Add function to get process associated with particle
 // 20220816  Move RandomIndex function from SecondaryProduction
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
+// 20250130  G4CMP-453 -- Add utilities for getting current track and touchable
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -70,6 +71,13 @@ namespace G4CMP {
   G4double ChoosePhononWeight(G4double biasScale=-1.);
   G4double ChooseChargeWeight(G4double biasScale=-1.);
 
+  // Get the current track from G4EventManager
+  G4Track* G4CMP::GetCurrentTrack();
+
+  // Get current touchable from track
+  const G4VTouchable* G4CMP::GetCurrentTouchable();
+  const G4VTouchable* G4CMP::GetCurrentTouchable(G4Track* track);
+
   // Create a Hit from a G4Step. Less error prone to use this helper.
   void FillHit(const G4Step*, G4CMPElectrodeHit*);
 
@@ -77,6 +85,7 @@ namespace G4CMP {
   G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
 
   // Test that a phonon's wave vector relates to an inward velocity.
+  // waveVector and surfNorm need to be in global coordinates
   G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm);

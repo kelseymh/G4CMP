@@ -156,6 +156,22 @@ G4double G4CMP::ChooseChargeWeight(G4double prob) {
   return ((prob==1.) ? 1. : (G4UniformRand()<prob) ? 1./prob : 0.);
 }
 
+// Get current track from event and track managers
+
+G4Track* G4CMP::GetCurrentTrack() {
+  return G4EventManager::GetEventManager()->GetTrackingManager()->GetTrack();
+}
+
+// Get touchable from current track
+
+const G4VTouchable* G4CMP::GetCurrentTouchable(){
+  G4Track* track = GetCurrentTrack();
+  return GetCurrentTouchable(track);
+}
+
+const G4VTouchable* G4CMP::GetCurrentTouchable(G4Track* track){
+  return track->GetTouchable();
+}
 
 // Copy information from current step into data block]
 
@@ -204,13 +220,13 @@ G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
 
 // Check that phonon is properly directed from the volume surface
 // waveVector and surfNorm need to be in global coordinates
+
 G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int mode,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
-  // Get track and touchable for coordinate rotations
-  G4Track* track = G4EventManager::GetEventManager()->GetTrackingManager()->GetTrack();
-  const G4VTouchable* touchable = track->GetStep()->GetPostStepPoint()->GetTouchable();
+  // Get touchable for coordinate rotations
+  const G4VTouchable* touchable = GetCurrentTouchable();
 
   // MapKtoVDir requires local direction for the wavevector
   G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(touchable, waveVector));
