@@ -167,5 +167,19 @@ void G4CMPStackingAction::SetElectronEnergy(const G4Track* aTrack) const {
 // Initialize Bogoliubov QP kinematics upon creation
 void G4CMPStackingAction::SetBogoliubovQPKinematics(const G4Track* aTrack) const
 {
-  //I think I should put something here? Not exactly sure what, though.
+  // Compute direction of propagation from wave vector
+  // Geant4 thinks that momentum and velocity point in same direction,
+  // momentumDir here actually means velocity direction.
+  G4ThreeVector momentumDir = aTrack->GetMomentumDirection();
+
+  //Compute true velocity of propagation
+  G4cout << "---> REL InStackingAction, calculating a velocity: " << aTrack->CalculateVelocity() << G4endl;
+  G4double velocity = aTrack->CalculateVelocity();
+  
+  // Cast to non-const pointer so we can adjust non-standard kinematics
+  G4Track* theTrack = const_cast<G4Track*>(aTrack);
+  theTrack->SetMomentumDirection(momentumDir);
+  theTrack->SetVelocity(velocity);
+  theTrack->UseGivenVelocity(true);
+  G4cout << "---> REL InStackingAction, now we're actually setting the useGivenVelocity flag to true." << G4endl;
 }

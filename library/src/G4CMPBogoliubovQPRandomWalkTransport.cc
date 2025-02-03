@@ -45,6 +45,7 @@ G4CMPBogoliubovQPRandomWalkTransport::G4CMPBogoliubovQPRandomWalkTransport(const
   //fStepX =  0.0;
   //fStepY =  0.0;
   fPathLength =  0.0;
+  fPreDiffusionPathLength = 0.0;
   fDiffConst =  0.0;
 
   //fSafetyHelper is initialized in AlongStepGPIL
@@ -85,8 +86,8 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
   G4cout << "---> REL/EY: At beginning of ASGPIL, previousStepSize: " << previousStepSize << ", currentSafety: " << currentSafety << G4endl;
   G4cout << "---> REL/EY: At beginning of ASGPIL, momentum information: " << track.GetMomentumDirection() << G4endl;
   G4cout << "---> REL/EY: At beginning of ASGPIL, position: " << track.GetPosition() << G4endl;
-
-  G4cout << "---> REL/EY: What is fGeomBoundary?" << fGeomBoundary << G4endl;
+  G4cout << "---> REL/EY: At beginning of ASGPIL, global time: " << track.GetGlobalTime() << G4endl;
+  
   
   //To determine if in turnaround step here, do the following:
   //1. Find current volume a la touchable.
@@ -114,8 +115,11 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
   }
   *selection = NotCandidateForSelection;
   fPathLength = currentMinimalStep;
+  fPreDiffusionPathLength = currentMinimalStep;
   G4cout << "---> REL/EY: fPathLength in ASGPIL: " << currentMinimalStep << G4endl;
-
+  G4cout << "---> REL/EY: fPreDiffusionPathLength in ASGPIL: " << currentMinimalStep << G4endl;
+  G4cout << "---> REL/EY: velocity in ASGPIL: " << track.GetVelocity() << G4endl;
+  
   // Do not need to check the material table since this is loaded in via
   // the logical and physical lattice
   // If lattice is a superconductor then fDn != 0 and fGapEnergy != 0
@@ -209,9 +213,9 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
     //the AlongStepDoIt function.
     G4double sigma = sqrt(2.0*fDiffConst*fTimeStep);
     G4cout << "--->REL/EY: fTimeStep: " << fTimeStep << ", velocity: " << velocity << ", sigma: " << sigma << ", energy: " << energy << ", fDn: " << fDn << G4endl;
-    G4RandGauss* gauss_dist = new G4RandGauss(G4Random::getTheEngine(),0.0,sigma);
-    fPathLength = fabs(gauss_dist->fire());
-    G4cout << "--->REL/EY: Successfully returning AlongStepGPIL path length of " << fPathLength << G4endl;
+    G4RandGauss* gauss_dist = new G4RandGauss(G4Random::getTheEngine(),0.0,sigma);    
+    fPathLength = fabs(gauss_dist->fire());    
+    G4cout << "--->REL/EY: Successfully returning AlongStepGPIL (diffusion-folded) path length of " << fPathLength << G4endl;
     G4cout << "--->REL/EY: Momentum direction is: " << momentumDir.unit() << G4endl;    
     return fPathLength;  
   }
@@ -508,6 +512,20 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
   fNewPosition = step.GetPostStepPoint()->GetPosition();
   fNewDirection = step.GetPostStepPoint()->GetMomentumDirection();
   fParticleChange.ProposePosition(fNewPosition);
+
+  //Get the initial and final times -- since Transport runs first in the alongStepDoIt processes,
+  //we should have the "transport-limited" times
+  G4double stepStartGlobalTime = step.GetPreStepPoint()->GetGlobalTime();
+  G4double stepEndGlobalTime = step.GetPostStepPoint()->GetGlobalTime();
+  G4double stepTransportOnlyDeltaT = stepEndGlobalTime-stepStartGlobalTime; //Limited by transport, needs to be overwritten.
+  G4cout << "REL: stepStartGlobalTime: " << stepStartGlobalTime << ", stepEndGlobalTime: " << stepEndGlobalTime << ", stepTransportationOnlyDeltaT: " << stepTransportOnlyDeltaT << G4endl;
+
+  G4ThreeVector preStepPoint = step.GetPreStepPoint()->GetPosition();
+  G4ThreeVector postStepPoint = step.GetPostStepPoint()->GetPosition();
+  G4double stepTransportationOnlyDeltaR = (postStepPoint-preStepPoint).mag();
+  
+  
+  //This is the "old" velocity (i.e. that not computed using the diffusion step)
   G4double velocity = step.GetPostStepPoint()->GetVelocity();
   fParticleChange.ProposeVelocity(velocity);
   fPositionChanged = false;
@@ -515,34 +533,45 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
   G4double stepLength = step.GetStepLength();
   G4double epsilon = 1.0*nm;
   
-  // Check if the particle met conditions to do random walk from GPIL command
+  // Check if the particle met conditions to do random walk from GPIL command. Here, this occurs
+  // during a turnaround step where we want to set step lengths to zero. If we don't set the proposedTrueStepLength
+  // to zero, then we'll end up mucking up our boundary processes which expect a zero step length
+  // during turnaround steps.
   if(!isActive) {
     fPathLength = stepLength;
+    fPreDiffusionPathLength = stepLength; 
     G4cout << "Step is not active" << G4endl;
     G4cout << "Particle path length: " << fPathLength <<G4endl;
+    G4cout << "Particle pre-diffusion path length: " << fPreDiffusionPathLength <<G4endl;
     G4cout << "Particle velocity: " << velocity <<G4endl;
     G4cout << "Time Step : " << fPathLength/velocity <<G4endl;
     G4cout << "Particle direction: " << fNewDirection << G4endl;
+    fParticleChange.ProposeLocalTime(0);
+    fParticleChange.ProposeTrueStepLength(fPreDiffusionPathLength);
   }
 
   // Particle did meet conditions to undergo RW
   else {
 
     //Update the velocity
-    velocity = fPathLength / fTimeStep;
+    //velocity = fPathLength / fTimeStep;
+    G4cout << "---> REL/EY: in AlongStepDoit, velocity is set and proposed to " << velocity << G4endl;
     fParticleChange.ProposeVelocity(velocity);
 
-    //Need to check to see whether our proposed step is within the bounds of our current volume. fPathLength is passed as a const.
+    //Need to check to see whether our proposed step is within the bounds of our current volume. fPathLength is passed as a const, and here
+    //is the diffusion displacement.
     fOldPosition = step.GetPreStepPoint()->GetPosition();
     fNewDirection = step.GetPreStepPoint()->GetMomentumDirection();
     fNewPosition = fOldPosition+fPathLength*fNewDirection;
-    G4double dist = 0.0;
-    G4double safety = fSafetyHelper->ComputeSafety(fOldPosition);
+    //G4double safety = fSafetyHelper->ComputeSafety(fOldPosition);
 
+    G4cout << "---> REL/EY: In AlongStepDoIt, time of pre-step point is: " << step.GetPreStepPoint()->GetGlobalTime() << G4endl;
+    G4cout << "---> REL/EY: In AlongStepDoIt, time of post-step point is: " << step.GetPostStepPoint()->GetGlobalTime() << G4endl;
+    
     //Test. I think CheckNextStep may also be valuable here, especially when we get into scenarios where we enter daughter volumes
-    double nextStepSafety = 0;
+    double nextStepSafety = 0;    
     double nextStepLength = fSafetyHelper->CheckNextStep(fOldPosition,fNewDirection,fPathLength,nextStepSafety);
-    G4cout << "---> REL/EY: Checking next step. NextStepLength: " << nextStepLength << ", nextStepSafety: " << nextStepSafety << G4endl;
+    G4cout << "---> REL/EY: Checking next step. CheckNextStep's next step length (dist to boundary): " << nextStepLength << ", nextStepSafety: " << nextStepSafety << G4endl;
 
     //We're actually going to try using checkNextStep instead. Here, if we're not on a boundary, the returned step should be kInfinity and
     //the safety should be nonzero.
@@ -550,24 +579,46 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
       G4cout << "---> REL/EY: the proposed step does not cross a boundary. Setting position manually." << G4endl;
       fSafetyHelper->ReLocateWithinVolume(fNewPosition);
       fParticleChange.ProposeMomentumDirection(fNewDirection);
+
+      //Since we are forced to use the pre-step point's velocity for propagation of this step (and the pre-step point's velocity is
+      //the one we started with), transportation will add a time corresponding to traveling the calculated path length at that velocity.
+      //We should subtract that time off our final proposed time.
+      G4cout << "---> REL/EY: fTimeStep: " << fTimeStep << ", timeChangefromTransportationOnly: " << stepTransportOnlyDeltaT << G4endl;
+      fParticleChange.ProposeLocalTime(fTimeStep-stepTransportOnlyDeltaT);
+
+
+      //I think this needs to be set to the *old, pre-diffusion* path length, since other processes that aren't the step-limiting one will
+      //need to subtract off a distance. That distance basically needs to be velocity * deltaT. The current process that limits the step
+      //(here, not transportation) will zero out its number of interaction lengths.
+      G4cout << "---> REL/EY: Proposing a true (diffusion-UNfolded) step length of: " << fPreDiffusionPathLength << G4endl;
+      fParticleChange.ProposeTrueStepLength(fPreDiffusionPathLength);
       fPositionChanged = true;
     }
     else if( nextStepLength != kInfinity ){ //We're on a surface
       if( step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary ){
 	G4ExceptionDescription msg;
 	msg << "Somehow the CheckNextStep returned a step length that is not kInfinity but the step is indeed boundary limited. Are we actually landing on a boundary?";
-	G4Exception("G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLength", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+	G4Exception("G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
       }
       else{
 	G4cout << "---> REL/EY: CheckNextStep shows that we've hit a boundary with our fPathLength computed in G4CMPBogoliubovRandomWalkTransport class. Recalculating time-to-wall and required velocity for this, but not setting new position -- will let Transportation set this." << G4endl;
 	//Compute a representative deltaT at which we reach the wall given diffusion. Note that here, we really should be drawing from a
 	//distribution, since there's not a one-to-one for the time at which diffusion from one point to another occurs. But for now we'll
 	//make it a single time for simplicity.
-	G4double newTime = dist*dist / 2.0 / fDiffConst;
-	velocity = dist / newTime;
-	fParticleChange.ProposeVelocity(velocity);
+	G4double newDiffusionTime = nextStepLength*nextStepLength / 2.0 / fDiffConst;
+
+	//Sanity check: this step length and the step deltaT should be consistent with the velocity
+	G4cout << "---> REL/EY: newDiffusionTime: " << newDiffusionTime << ", stepTransportationOnlyDeltaR: " << stepTransportationOnlyDeltaR << G4endl;
+	fParticleChange.ProposeLocalTime(newDiffusionTime-stepTransportOnlyDeltaT);
 	fParticleChange.ProposeMomentumDirection(fNewDirection);
-	//Here, we do not propose a new position -- we let transport do its thing, given that it has ostensibly won the GPIL race.
+
+	//We now modify the true step length (which becomes the next stepLength in the step) to be whatever the new diffusion time is, divided by the
+	//velocity. This is working backwards from our above action of finding the step time from the velocity and the "true" step length, i.e. the one
+	//that's given by the physics of the post-step processes. This "abridged true step length" will remove the necessary fPathLength from the scatter
+	//despite Transportations' naive idea of what the next step length is (i.e. an "as the crow flies" length to the boundary).
+	G4double abridgedTrueStepLength = velocity * newDiffusionTime;
+	fParticleChange.ProposeTrueStepLength(abridgedTrueStepLength);
+	G4cout << "---> REL/EY: proposed abridged diffusion-UNfolded step length is " << abridgedTrueStepLength << ", which is less than the original diffusion-UNfolded step length, " << fPreDiffusionPathLength << G4endl;
       }
     }
     
@@ -630,10 +681,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
   G4cout << "---> REL/EY: At end of AlongStepDoIt, old position: " << fOldPosition << G4endl;
   G4cout << "---> REL/EY: At end of AlongStepDoIt, new position: " << fNewPosition << G4endl;
   
-  //Should this go here or in the above block?
-  fParticleChange.ProposeTrueStepLength(fPathLength);
-  G4cout << "---> REL/EY: Proposing true step length of fPathLength: " << fPathLength << " in the direction of " << fNewDirection << G4endl;
-  
+  //Should this go here or in the above block?  
   return &fParticleChange;
 }      
 

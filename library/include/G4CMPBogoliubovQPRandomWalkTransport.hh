@@ -119,7 +119,8 @@ private:
   G4double                    fStepX;
   G4double                    fStepY;
   G4double                    fPathLength;
-    
+  G4double                    fPreDiffusionPathLength;
+  
   G4double                    fGapEnergy;
   G4double                    fDn;
   G4double                    fTau0_qp;

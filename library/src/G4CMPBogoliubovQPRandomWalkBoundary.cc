@@ -156,12 +156,18 @@ G4CMPBogoliubovQPRandomWalkBoundary::PostStepDoIt(const G4Track& aTrack,
 						  const G4Step& aStep) {
 
   G4cout << "REL -- G4CMPQPRandomWalkBoundary::PostStepDoIt()" << G4endl;
+
+  G4cout << "REL -- poststeppoint velocity in RWBoundary poststepdoit is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
+  G4cout << "REL -- track velocity in RWBoundary poststepdoit is: " << aTrack.GetVelocity() << G4endl;
   
   //Note that this is still just blindly copied from the phononboundary action
   // this needs to be customized for QP dynamics ...
   // NOTE:  G4VProcess::SetVerboseLevel is not virtual!  Can't overlaod it
   G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
   aParticleChange.Initialize(aTrack);
+
+  G4cout << "REL -- poststeppoint velocity in RWBoundary poststepdoit, after initializing aParticleChange, is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
+  G4cout << "REL -- track velocity in RWBoundary poststepdoit, after initializing aParticleChange, is: " << aTrack.GetVelocity() << G4endl;
 
   //Do a boundary check just as for phonon dynamics
   G4bool checkBoundary = IsGoodBoundary(aStep);

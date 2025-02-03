@@ -48,8 +48,16 @@ G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4
 								       const G4Step& aStep)
 {
   G4cout << "REL in BogoliubovQPRadiatesPhonon process poststepdoit." << G4endl;
+
+  G4cout << "REL -- poststeppoint velocity in QPRadiates poststepdoit is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
+  G4cout << "REL -- track velocity in QPRadiates poststepdoit is: " << aTrack.GetVelocity() << G4endl;
+
   
   aParticleChange.Initialize(aTrack);
+
+  G4cout << "REL -- poststeppoint velocity in QPRadiates poststepdoit, after initializing particle change, is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
+  G4cout << "REL -- track velocity in QPRadiates poststepdoit, afteer initializing particle change, is: " << aTrack.GetVelocity() << G4endl;
+
   
   //Pseudocode
   //1. Determine if we're on a boundary surface. If we are, kill the event -- if the code is working properly, this should
@@ -67,7 +75,7 @@ G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4
   
   //2. Identify the current QP's energy and velocity and use it to draw an energy for a radiated phonon.
   G4double qpEnergy = GetKineticEnergy(aTrack);
-  G4double velocity = aTrack.GetVelocity(); // note: need to convert to m/s
+  G4double velocity = aStep.GetPostStepPoint()->GetVelocity(); 
   G4ThreeVector momDir = aTrack.GetMomentumDirection();
   
   //3. Actually generate that radiated phonon, and reduce the QP's energy.
@@ -77,10 +85,12 @@ G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4
 
   //4. Now we do the artificial setting of the QP's velocity and momentum direction again. These lines are aphysical but
   //   are okay because we are going to have to do the QP diffusion modeling in a hacky way anyway...
+  aParticleChange.ProposeVelocity(velocity); 
   
   //  aParticleChange.ProposeMomentumDirection(momDir);
   RandomizeFinalStateMomentumDirectionInXY();
-  aParticleChange.ProposeVelocity(velocity); 
+  
+  //that is inconsistent with the diffusion physics. REL
 
   //4. Do the clear interaction lengths thing because we do still have a particle here.
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
