@@ -38,7 +38,8 @@ enum G4CMPProcessSubType {
   fQPRadiatesPhononProcess = 317,
   fBogoliubovQPRandomWalkBoundary = 318,
   fBogoliubovQPRandomWalkTransport = 319,
-  fQPLocalTrappingProcess = 320
+  fQPLocalTrappingProcess = 320,
+  fQPDiffusionTimeStepper = 321
 };
 
 #endif	/* G4CMPProcessSubType_hh */

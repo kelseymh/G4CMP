@@ -237,6 +237,8 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRandomWalkTransport.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPLocalTrappingProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPLocalTrappingRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusionTimeStepperProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusionTimeStepperRate.cc
     )
  
 set(library_HEADERS
@@ -343,6 +345,8 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRandomWalkTransport.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPLocalTrappingProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPLocalTrappingRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusionTimeStepperProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusionTimeStepperRate.hh
     )
 
 set(config_FILES

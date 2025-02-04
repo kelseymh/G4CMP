@@ -66,7 +66,7 @@ G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4
   if (postStepPoint->GetStepStatus() == fGeomBoundary ||
       postStepPoint->GetStepStatus() == fWorldBoundary) {
     G4ExceptionDescription msg;
-    msg << "For some reason we're running post-step do it for the Bogoliubov RadiatesPhonon process and we find ourselves on a boundary. Since the QPs are artificially told to move attometers by design, I'm not expecting this to happen.";
+    msg << "For some reason we're running post-step do it for the Bogoliubov RadiatesPhonon process and we find ourselves on a boundary. Should this ever happen?";
     G4Exception("G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt", "BogoliubovQPRadiatesPhonon001",EventMustBeAborted,msg);
     return &aParticleChange;		
   }
