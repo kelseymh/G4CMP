@@ -13,8 +13,7 @@
 // 20181010  J. Singh -- Use new G4CMPAnharmonicDecay for boundary decays
 // 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
 // 20220906  M. Kelsey -- Encapsulate specular reflection in function.
-// 20250204  G4CMP-459 -- Add GetReflectionOnEdge() for reflecting k on edge cases.
-// 20250205  G4CMP-459 -- Add GetEdgePosition() for surface displacement edge cases.
+// 20250204  N. Tenpas -- Support reflection displacement search at hard corners.
 
 #ifndef G4CMPPhononBoundaryProcess_h
 #define G4CMPPhononBoundaryProcess_h 1
@@ -59,10 +58,10 @@ protected:
   G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm,
 				    G4int mode) const;
 
-  G4ThreeVector GetReflectionOnEdge(const G4ThreeVector& stepLocalPos,
-            const G4ThreeVector& kTan) const;
+  void AdjustSurfaceDirectionAtEdge(G4ThreeVector& kTan,
+            const G4ThreeVector& stepLocalPos) const;
 
-  G4ThreeVector GetEdgePosition(const G4ThreeVector& stepLocalPos,
+  void AdjustPositionAtEdge(G4ThreeVector& stepLocalPos,
             const G4ThreeVector& kTan, const G4double stepSize) const;
 
 private:
