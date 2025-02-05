@@ -427,12 +427,13 @@ G4ThreeVector G4CMPPhononBoundaryProcess::
 GetEdgePosition(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVector,
         const G4double stepSize) const {
   // Get normal at current position
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
 
   // Get tangential component of wavevector
   G4double kPerpMag = waveVector.dot(currNorm);
   G4ThreeVector kPerp = kPerpMag * currNorm;
-  G4ThreeVector kTan = waveVector - kPerpV;
+  G4ThreeVector kTan = waveVector - kPerp;
 
   // Step into the normal to get comfortably on the other surface
   G4ThreeVector edgePos = stepLocalPos - 1.*mm * currNorm;
@@ -454,6 +455,7 @@ GetEdgePosition(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVect
 G4ThreeVector G4CMPPhononBoundaryProcess::
 GetReflectionOnEdge(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVector) const {
   // Get normal at current position
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
 
   // Get bordering surface's normal
