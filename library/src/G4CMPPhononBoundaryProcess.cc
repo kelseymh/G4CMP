@@ -30,6 +30,7 @@
 // 20220910  G4CMP-299 -- Use fabs(k) in absorption test.
 // 20240718  G4CMP-317 -- Initial implementation of surface displacement.
 // 20250124  G4CMP-447 -- Use FillParticleChange() to update wavevector and Vg.
+// 20250204  G4CMP-459 -- Handle edge cases during surface displacement.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -327,7 +328,15 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
     // FIXME: Find point on surface nearest to stepLocalPos, and reset
     surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);	// Get distance along normal from new position back to detector surface
-    stepLocalPos -= surfAdjust * newNorm;			// Adjust position to be back on detector surface
+
+    // If surfAdjust > 1, we stepped off an edge and need to correct
+    if (surfAdjust > 1) {
+      stepLocalPos = GetEdgePosition(stepLocalPos, reflectedKDir);
+      reflectedKDir = GetReflectionOnEdge(stepLocalPos, reflectedKDir);
+    } else {
+      // Adjust position to be back on detector surface
+      stepLocalPos -= surfAdjust * newNorm;
+    }
 
     // Get rotation axis perpendicular to waveVector-normal plane
     axis = kPerpV.cross(kTan).unit();
@@ -347,7 +356,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     reflectedKDir = kTan + kPerpV;
 
     // Debugging: Can be removed?
-    G4ThreeVector vDir = theLattice->MapKtoVDir(mode, GetGlobalDirection(reflectedKDir));
+    G4ThreeVector vDir = theLattice->MapKtoVDir(mode, reflectedKDir);
 
     // FIXME: Need defined units
     if (verboseLevel>3) {
@@ -407,6 +416,49 @@ GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {
   } while (nTries++ < maxTries &&
 	   !G4CMP::PhononVelocityIsInward(theLattice, mode,
 					  reflectedKDir, surfNorm));
+
+  return reflectedKDir;
+}
+
+
+// Get the position on the edge of two surfaces
+
+G4ThreeVector G4CMPPhononBoundaryProcess::
+GetEdgePosition(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVector) const {
+  // Get normal at current position
+  G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
+
+  // Get tangential component of wavevector
+  G4double kPerpMag = waveVector.dot(currNorm);
+  G4ThreeVector kPerp = kPerpMag * currNorm;
+  G4ThreeVector kTan = waveVector - kPerpV;
+
+  // Step into the normal to get comfortably on the other surface
+  G4ThreeVector edgePos = stepLocalPos - 1.*mm * currNorm;
+
+  // Step back to surface along kTan
+  G4double surfAdjust = solid->DistanceToIn(edgePos, -kTan);
+  edgePos -= surfAdjust * kTan;
+  edgePos += 1.*mm * currNorm;
+
+  return edgePos;
+}
+
+
+// Reflect "surface mode" phonon at the edge cases
+
+G4ThreeVector G4CMPPhononBoundaryProcess::
+GetReflectionOnEdge(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVector) const {
+  // Get normal at current position
+  G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
+
+  // Get bordering surface's normal
+  G4ThreeVector edgePos = stepLocalPos - 1.*mm * currNorm;
+  G4ThreeVector newNorm = solid->SurfaceNormal(edgePos);
+
+  // Reflect vector against new normal
+  G4double kPerp = waveVector * newNorm;
+  G4ThreeVector reflectedKDir = (waveVector - 2.*kPerp*newNorm).setMag(1.);
 
   return reflectedKDir;
 }
