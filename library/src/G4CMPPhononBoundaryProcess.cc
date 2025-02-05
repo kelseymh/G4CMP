@@ -439,7 +439,7 @@ GetEdgePosition(const G4ThreeVector& stepLocalPos, const G4ThreeVector& kTan,
   edgePos += 1.*mm * currNorm;
 
   // Get new wavevector reflected on edge and get kTan
-  G4TheeVector newKTan = GetReflectionOnEdge(stepLocalPos, kTan);
+  G4ThreeVector newKTan = GetReflectionOnEdge(stepLocalPos, kTan);
 
   // Step remaining distance along surface
   edgePos += (stepSize - surfAdjust) * newKTan;
