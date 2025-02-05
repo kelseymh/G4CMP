@@ -331,7 +331,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
     // If surfAdjust > 1, we stepped off an edge and need to correct
     if (surfAdjust > 1) {
-      stepLocalPos = GetEdgePosition(stepLocalPos, reflectedKDir);
+      stepLocalPos = GetEdgePosition(stepLocalPos, reflectedKDir, stepSize);
       reflectedKDir = GetReflectionOnEdge(stepLocalPos, reflectedKDir);
     } else {
       // Adjust position to be back on detector surface
