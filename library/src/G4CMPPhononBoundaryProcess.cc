@@ -424,7 +424,8 @@ GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {
 // Get the position on the edge of two surfaces
 
 G4ThreeVector G4CMPPhononBoundaryProcess::
-GetEdgePosition(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVector) const {
+GetEdgePosition(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVector,
+        const G4double stepSize) const {
   // Get normal at current position
   G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
 
@@ -436,10 +437,13 @@ GetEdgePosition(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVect
   // Step into the normal to get comfortably on the other surface
   G4ThreeVector edgePos = stepLocalPos - 1.*mm * currNorm;
 
-  // Step back to surface along kTan
+  // Step back to surface along kTan and correct with currNorm
   G4double surfAdjust = solid->DistanceToIn(edgePos, -kTan);
   edgePos -= surfAdjust * kTan;
   edgePos += 1.*mm * currNorm;
+
+  // Step remaining distance along surface
+  edgePos += (stepSize - surfAdjust) * kTan;
 
   return edgePos;
 }

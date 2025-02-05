@@ -62,8 +62,8 @@ protected:
   G4ThreeVector GetReflectionOnEdge(const G4ThreeVector& stepLocalPos,
             const G4ThreeVector& waveVector) const;
 
-  G4ThreeVector GetEdgePosition(const G4ThreeVector& stepLocalPos, 
-            const G4ThreeVector& waveVector) const;
+  G4ThreeVector GetEdgePosition(const G4ThreeVector& stepLocalPos,
+            const G4ThreeVector& waveVector, const G4double stepSize) const;
 
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
