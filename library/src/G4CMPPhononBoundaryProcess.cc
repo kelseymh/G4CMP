@@ -332,7 +332,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // If surfAdjust > 1, we stepped off an edge and need to correct
     if (surfAdjust > 1) {
       stepLocalPos = GetEdgePosition(stepLocalPos, reflectedKDir, stepSize);
-      reflectedKDir = GetReflectionOnEdge(stepLocalPos, reflectedKDir);
+      kTan = GetReflectionOnEdge(stepLocalPos, kTan);
     } else {
       // Adjust position to be back on detector surface
       stepLocalPos -= surfAdjust * newNorm;
@@ -424,16 +424,11 @@ GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {
 // Get the position on the edge of two surfaces
 
 G4ThreeVector G4CMPPhononBoundaryProcess::
-GetEdgePosition(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVector,
+GetEdgePosition(const G4ThreeVector& stepLocalPos, const G4ThreeVector& kTan,
         const G4double stepSize) const {
   // Get normal at current position
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
-
-  // Get tangential component of wavevector
-  G4double kPerpMag = waveVector.dot(currNorm);
-  G4ThreeVector kPerp = kPerpMag * currNorm;
-  G4ThreeVector kTan = waveVector - kPerp;
 
   // Step into the normal to get comfortably on the other surface
   G4ThreeVector edgePos = stepLocalPos - 1.*mm * currNorm;
@@ -443,8 +438,11 @@ GetEdgePosition(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVect
   edgePos -= surfAdjust * kTan;
   edgePos += 1.*mm * currNorm;
 
+  // Get new wavevector reflected on edge and get kTan
+  G4TheeVector newKTan = GetReflectionOnEdge(stepLocalPos, kTan);
+
   // Step remaining distance along surface
-  edgePos += (stepSize - surfAdjust) * kTan;
+  edgePos += (stepSize - surfAdjust) * newKTan;
 
   return edgePos;
 }
@@ -453,7 +451,7 @@ GetEdgePosition(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVect
 // Reflect "surface mode" phonon at the edge cases
 
 G4ThreeVector G4CMPPhononBoundaryProcess::
-GetReflectionOnEdge(const G4ThreeVector& stepLocalPos, const G4ThreeVector& waveVector) const {
+GetReflectionOnEdge(const G4ThreeVector& stepLocalPos, const G4ThreeVector& kTan) const {
   // Get normal at current position
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
@@ -463,8 +461,8 @@ GetReflectionOnEdge(const G4ThreeVector& stepLocalPos, const G4ThreeVector& wave
   G4ThreeVector newNorm = solid->SurfaceNormal(edgePos);
 
   // Reflect vector against new normal
-  G4double kPerp = waveVector * newNorm;
-  G4ThreeVector reflectedKDir = (waveVector - 2.*kPerp*newNorm).setMag(1.);
+  G4double kPerp = kTan * newNorm;
+  G4ThreeVector newKTan = kTan - 2.*kPerp*newNorm;
 
-  return reflectedKDir;
+  return newKTan;
 }
