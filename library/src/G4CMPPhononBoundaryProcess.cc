@@ -246,7 +246,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 	   << "\n from " << surfacePoint << "\n   to " << stepPos << G4endl;
 
     G4ThreeVector stepLocal = GetLocalPosition(stepPos);
-    solid = aStep.GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();
+    G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
 
     EInside place = solid->Inside(stepLocal);
     G4cout << " After trial step, " << (place==kInside ? "inside"
@@ -281,7 +281,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   RotateToLocalDirection(newNorm);		// Rotate norm to local frame
   
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);			// Get local coor on surface
-  solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();		// Obtain detector solid object
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();		// Obtain detector solid object
   G4ThreeVector oldNorm = newNorm;						// Save previous norm for debugging
   G4double surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);		// Find the distance from point to surface along norm (- means inward)
   G4double kPerpMag = reflectedKDir.dot(newNorm);				// Must be <=0; reflectedKDir is inward and norm is outward
@@ -332,7 +332,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // Adjust position to be back on detector surface
     // If surfAdjust is large we have stepped off a hard corner and need correction
     if (surfAdjust > 1.*mm) {
-      AdjustPositionAtEdge(stepLocalPos, kTan, stepSize); // Modify position and reflects kTan at edge
+      AdjustPositionAtEdge(stepLocalPos, kTan, stepSize); // Modify position and reflect kTan at edge
     } else {
       stepLocalPos -= surfAdjust * newNorm;
     }
@@ -420,12 +420,13 @@ GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {
 }
 
 
-// Get the position on the edge of two surfaces
+// Modify the position for a full step off a hard corner
 
 void G4CMPPhononBoundaryProcess::
 AdjustPositionAtEdge(G4ThreeVector& stepLocalPos, 
         G4ThreeVector& kTan, const G4double stepSize) const {
   // Get normal at current position
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
 
   // Step into the normal to get comfortably on the other surface
@@ -436,8 +437,8 @@ AdjustPositionAtEdge(G4ThreeVector& stepLocalPos,
   stepLocalPos -= surfAdjust * kTan;
   stepLocalPos += 1.*mm * currNorm;
 
-  // Reflect kTan on edge surface
-  AdjustSurfaceDirectionAtEdge(stepLocalPos, kTan);
+  // Reflect kTan on edge surface. Pass original stepLocalPos to properly reflect kTan
+  AdjustSurfaceDirectionAtEdge(kTan, stepLocalPos + surfAdjust * kTan);
 
   // Step remaining distance along surface
   stepLocalPos += (stepSize - surfAdjust) * kTan;
@@ -450,6 +451,7 @@ void G4CMPPhononBoundaryProcess::
 AdjustSurfaceDirectionAtEdge(G4ThreeVector& kTan, 
         const G4ThreeVector& stepLocalPos) const {
   // Get normal at current position
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
 
   // Get bordering surface's normal
@@ -460,3 +462,5 @@ AdjustSurfaceDirectionAtEdge(G4ThreeVector& kTan,
   G4double kPerp = kTan * newNorm;
   kTan -= 2.*kPerp*newNorm;
 }
+
+

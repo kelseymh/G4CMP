@@ -62,7 +62,7 @@ protected:
             const G4ThreeVector& stepLocalPos) const;
 
   void AdjustPositionAtEdge(G4ThreeVector& stepLocalPos,
-            const G4ThreeVector& kTan, const G4double stepSize) const;
+            G4ThreeVector& kTan, const G4double stepSize) const;
 
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
