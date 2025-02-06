@@ -438,7 +438,7 @@ AdjustPositionAtEdge(G4ThreeVector& stepLocalPos,
   stepLocalPos += 1.*mm * currNorm;
 
   // Reflect kTan on edge surface. Pass original stepLocalPos to properly reflect kTan
-  AdjustSurfaceDirectionAtEdge(kTan, stepLocalPos + surfAdjust * kTan);
+  AdjustSurfaceDirectionAtEdge(stepLocalPos + surfAdjust * kTan, kTan);
 
   // Step remaining distance along surface
   stepLocalPos += (stepSize - surfAdjust) * kTan;
@@ -448,8 +448,8 @@ AdjustPositionAtEdge(G4ThreeVector& stepLocalPos,
 // Reflect "surface mode" phonon at the edge cases
 
 void G4CMPPhononBoundaryProcess::
-AdjustSurfaceDirectionAtEdge(G4ThreeVector& kTan, 
-        const G4ThreeVector& stepLocalPos) const {
+AdjustSurfaceDirectionAtEdge(const G4ThreeVector& stepLocalPos,
+        G4ThreeVector& kTan) const {
   // Get normal at current position
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
@@ -462,5 +462,3 @@ AdjustSurfaceDirectionAtEdge(G4ThreeVector& kTan,
   G4double kPerp = kTan * newNorm;
   kTan -= 2.*kPerp*newNorm;
 }
-
-
