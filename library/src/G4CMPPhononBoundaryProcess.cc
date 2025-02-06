@@ -459,6 +459,6 @@ AdjustSurfaceDirectionAtEdge(const G4ThreeVector& stepLocalPos,
   G4ThreeVector newNorm = solid->SurfaceNormal(edgePos);
 
   // Reflect vector against new normal
-  G4double kPerp = kTan * newNorm;
-  kTan -= 2.*kPerp*newNorm;
+  G4double kTanPerp = kTan * newNorm;
+  kTan -= 2.*kTanPerp*newNorm;
 }
