@@ -58,9 +58,12 @@ protected:
   G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm,
 				    G4int mode) const;
 
+
+  // Modify stepLocalPos in place. Calls AdjustSurfaceDirectionAtEdge.
   void AdjustPositionAtEdge(G4ThreeVector& stepLocalPos,
             G4ThreeVector& kTan, const G4double stepSize) const;
 
+  // Modifies kTan in place.
   void AdjustSurfaceDirectionAtEdge(const G4ThreeVector& stepLocalPos,
             G4ThreeVector& kTan) const;
 

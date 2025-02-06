@@ -332,7 +332,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // Adjust position to be back on detector surface
     // If surfAdjust is large we have stepped off a hard corner and need correction
     if (surfAdjust > 1.*mm) {
-      AdjustPositionAtEdge(stepLocalPos, kTan, stepSize); // Modify position and reflect kTan at edge
+      AdjustPositionAtEdge(stepLocalPos, kTan, stepSize); // Modifies stepLocalPos and kTan in place
     } else {
       stepLocalPos -= surfAdjust * newNorm;
     }
