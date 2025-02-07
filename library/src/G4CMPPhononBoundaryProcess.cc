@@ -30,6 +30,7 @@
 // 20220910  G4CMP-299 -- Use fabs(k) in absorption test.
 // 20240718  G4CMP-317 -- Initial implementation of surface displacement.
 // 20250124  G4CMP-447 -- Use FillParticleChange() to update wavevector and Vg.
+// 20250204  G4CMP-459 -- Support reflection displacement search at hard corners.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -245,7 +246,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 	   << "\n from " << surfacePoint << "\n   to " << stepPos << G4endl;
 
     G4ThreeVector stepLocal = GetLocalPosition(stepPos);
-    G4VSolid* solid = aStep.GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();
+    G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
 
     EInside place = solid->Inside(stepLocal);
     G4cout << " After trial step, " << (place==kInside ? "inside"
@@ -327,7 +328,14 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
     // FIXME: Find point on surface nearest to stepLocalPos, and reset
     surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);	// Get distance along normal from new position back to detector surface
-    stepLocalPos -= surfAdjust * newNorm;			// Adjust position to be back on detector surface
+
+    // Adjust position to be back on detector surface
+    // If surfAdjust is large we have stepped off a hard corner and need correction
+    if (surfAdjust > 1.*mm) {
+      AdjustPositionAtEdge(stepLocalPos, kTan, stepSize); // Modifies stepLocalPos and kTan in place
+    } else {
+      stepLocalPos -= surfAdjust * newNorm;
+    }
 
     // Get rotation axis perpendicular to waveVector-normal plane
     axis = kPerpV.cross(kTan).unit();
@@ -347,7 +355,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     reflectedKDir = kTan + kPerpV;
 
     // Debugging: Can be removed?
-    G4ThreeVector vDir = theLattice->MapKtoVDir(mode, GetGlobalDirection(reflectedKDir));
+    G4ThreeVector vDir = theLattice->MapKtoVDir(mode, reflectedKDir);
 
     // FIXME: Need defined units
     if (verboseLevel>3) {
@@ -409,4 +417,48 @@ GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {
 					  reflectedKDir, surfNorm));
 
   return reflectedKDir;
+}
+
+
+// Modify the position for a full step off a hard corner
+
+void G4CMPPhononBoundaryProcess::
+AdjustPositionAtEdge(G4ThreeVector& stepLocalPos, 
+        G4ThreeVector& kTan, const G4double stepSize) const {
+  // Get normal at current position
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
+  G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
+
+  // Step into the normal to get comfortably on the other surface
+  stepLocalPos -= 1.*mm * currNorm;
+
+  // Step back to surface along kTan and correct with currNorm
+  G4double surfAdjust = solid->DistanceToIn(stepLocalPos, -kTan);
+  stepLocalPos -= surfAdjust * kTan;
+  stepLocalPos += 1.*mm * currNorm;
+
+  // Reflect kTan on edge surface. Pass original stepLocalPos to properly reflect kTan
+  AdjustSurfaceDirectionAtEdge(stepLocalPos + surfAdjust * kTan, kTan);
+
+  // Step remaining distance along surface
+  stepLocalPos += (stepSize - surfAdjust) * kTan;
+}
+
+
+// Reflect "surface mode" phonon at the edge cases
+
+void G4CMPPhononBoundaryProcess::
+AdjustSurfaceDirectionAtEdge(const G4ThreeVector& stepLocalPos,
+        G4ThreeVector& kTan) const {
+  // Get normal at current position
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
+  G4ThreeVector currNorm = solid->SurfaceNormal(stepLocalPos);
+
+  // Get bordering surface's normal
+  G4ThreeVector edgePos = stepLocalPos - 1.*mm * currNorm;
+  G4ThreeVector newNorm = solid->SurfaceNormal(edgePos);
+
+  // Reflect vector against new normal
+  G4double kTanPerp = kTan * newNorm;
+  kTan -= 2.*kTanPerp*newNorm;
 }
