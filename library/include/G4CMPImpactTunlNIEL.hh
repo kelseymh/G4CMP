@@ -7,8 +7,8 @@
 /// \brief Non-ionizing energy loss calculation from IMPACT@TUNL 2023.
 ///
 /// Computation of NIEL using the empirical model extracted from the
-/// IMPACT@TUNL ionization yield measurements.  Link to the
-/// paper:https://arxiv.org/abs/2303.02196.
+/// IMPACT@TUNL ionization yield measurements--[100 eV- 10 keV] Enr.
+/// paper DOI: https://doi.org/10.1103/PhysRevLett.131.091801.
 ///
 /// This ionization model was obtained from the ionization yield
 /// measurements in Silicon ONLY and it deos not have (Z,A)
@@ -22,6 +22,7 @@
 //
 // 20230721  David Sadek - University of Florida (david.sadek@ufl.edu)
 // 20250102  M. Kelsey -- SiA should be in amu's (g/mol)
+// 20250206  D. Sadek -- Provide references 
 
 #ifndef G4CMPImpactTunlNIEL_hh
 #define G4CMPImpactTunlNIEL_hh 1
