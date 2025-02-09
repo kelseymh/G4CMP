@@ -19,6 +19,7 @@
 #include "globals.hh"
 #include "G4CMPLewinSmithNIEL.hh"
 #include "G4CMPLindhardNIEL.hh"
+#include "G4CMPEmpiricalLindhardNIEL.hh"
 #include "G4CMPImpactTunlNIEL.hh"
 #include "G4CMPSarkisNIEL.hh"
 #include "G4Material.hh"
@@ -49,14 +50,15 @@ void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
   if (!goodInput) ::exit(1);		// If anything failed, abort
 
   // Instantiate single instance of each of the named yield functions
-  const char* useNIEL[] = { "Lindhard", "LewinSmith", "Sarkis", "Impact" };
+  const char* useNIEL[] = {"Lindhard", "Empirical Lindhard", "LewinSmith", "Sarkis", "Impact" };
   const size_t nNIEL = sizeof(useNIEL)/sizeof(char*);
 
   // NOTE: Can't use G4CMPConfigManager to do this mapping, because it
   //       deletes the previous pointer when a new one is requested.
   const G4VNIELPartition* NIELfunc[nNIEL] = {
-    new G4CMPLindhardNIEL, new G4CMPLewinSmithNIEL,
-    new G4CMPSarkisNIEL, new G4CMPImpactTunlNIEL };
+    new G4CMPLindhardNIEL, new G4CMPLindhardNIEL,
+    new G4CMPLewinSmithNIEL, new G4CMPSarkisNIEL,
+    new G4CMPImpactTunlNIEL };
 
   // Output will be tab-delimited columns for all the NIEL functions
   G4cout << std::left << "Energy";

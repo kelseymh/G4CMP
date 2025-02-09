@@ -44,6 +44,8 @@
 // 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
+// 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
+
 
 #include "G4UImessenger.hh"
 
