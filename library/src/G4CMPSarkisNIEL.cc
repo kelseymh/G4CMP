@@ -22,8 +22,7 @@
 // 20240705  M. Kelsey -- Restore A, and use it in test to check vs. SiA
 // 20250102  M. Kelsey -- Fix warning messages to report correct name; move
 //	       constructor here, to load data file once per job.
-// 20250129  D. Sadek -- Fix the energy scale passed to the interpolator;
-//	       change upper limit of Sarkis model from 3 MeV to 3018 keV
+// 20250211  D. Sadek Fix the energy scale and interpolation.
 
 #include "globals.hh"
 #include "G4CMPSarkisNIEL.hh"
@@ -54,6 +53,7 @@ G4CMPSarkisNIEL::G4CMPSarkisNIEL() {
     return;
   }
 
+  lVector.ScaleVector(keV, 1.);
   lVector.SetSpline(true);		// Ensure that we can interpolate
   lVector.FillSecondDerivatives();
 }
@@ -73,14 +73,14 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double Zin,
     
   // Check if the material is silicon or similar
   if (std::abs(Z-SiZ) < 0.5 && std::abs(A/(g/mole)-SiA) < 1.) {
-    // Sarkis model below 3018 keV 
-    if (energy/keV <= 3018) {
-      return lVector.Value(energy/keV, idx);	// Interpolate to get yield
+    // Sarkis model below 3 MeV 
+    if (energy <= 3*MeV) {
+      return lVector.Value(energy, idx);	// Interpolate to get yield
     } else {
-      // Lindhard model above 3018 keV
+      // Lindhard model above 3 MeV
       if (firstCall) {
 	G4Exception("G4CMPSarkisNIEL", "G4CMP1105", JustWarning,
-		    "Sarkis model is obtained in the range of 47.8 eV to 3.018 MeV.\nAbove 3.018 MeV, Lindhard model will be used.");
+		    "Sarkis model is obtained in the range of 50 eV to 3 MeV.\nAbove 3 MeV, Lindhard model will be used.");
 	firstCall = false;
       }
       return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
@@ -93,4 +93,4 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double Zin,
     }
     return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
   }
-} 
+}
