@@ -1,0 +1,43 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/geom.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/geom.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/geom2.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/geom2.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/global.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/global.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/io.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/io.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/libqhull.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/libqhull.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/mem.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/mem.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/merge.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/merge.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/poly.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/poly.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/poly2.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/poly2.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/qset.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/qset.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/random.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/random.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/rboxlib.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/rboxlib.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/stat.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/stat.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/user.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/user.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/usermem.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/usermem.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/userprintf.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/userprintf.c.o.d"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/userprintf_rbox.c.o"
+  "CMakeFiles/qhullstatic_p.dir/qhull-2012.1/src/libqhull/userprintf_rbox.c.o.d"
+  "libqhullstatic_p.a"
+  "libqhullstatic_p.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang C)
+  include(CMakeFiles/qhullstatic_p.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

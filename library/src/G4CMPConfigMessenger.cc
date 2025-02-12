@@ -42,7 +42,7 @@
 // 20230831  G4CMP-362: Add short names for IMPACT and Sarkis ionization models.
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
-// 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
+// 20250212  G4CMP-457: Add macro command for Lindhard empirical ionization model.
 
 
 #include "G4CMPConfigMessenger.hh"
@@ -187,7 +187,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
 	       "Select calculation for non-ionizing energy loss (NIEL)");
-  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew IMPACT Impact impact ImpactTunl impacttunl Sarkis sarkis Sar sar Lindhard LindEmpirical EmpiricalLindhard EmpiricalLind");
+  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew IMPACT Impact impact ImpactTunl impacttunl Sarkis sarkis Sar sar LindEmpirical EmpiricalLindhard EmpiricalLind");
 
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
        "Produce e/h pairs in cloud surrounding energy deposit position");

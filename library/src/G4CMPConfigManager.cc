@@ -43,7 +43,7 @@
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20240823  G4CMP-422: Remove default Quadratic rate model setting.
 // 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
-// 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
+// 20250212  G4CMP-457: Add short names for Lindhard empirical ionization model.
 
 
 #include "G4CMPConfigManager.hh"
@@ -177,7 +177,7 @@ void G4CMPConfigManager::setNIEL(G4String name) {
   if (name(0,3) == "lew") setNIEL(new G4CMPLewinSmithNIEL);
   if (name(0,6) == "impact") setNIEL(new G4CMPImpactTunlNIEL);
   if (name(0,3) == "sar") setNIEL(new G4CMPSarkisNIEL);
-  if (name(0,3) == "Emp") setNIEL(new G4CMPEmpiricalLindhardNIEL);
+ if (name(0,3) == "Emp") setNIEL(new G4CMPEmpiricalLindhardNIEL);
 
 }
 
