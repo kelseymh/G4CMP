@@ -32,6 +32,7 @@
 #include "G4VParticleChange.hh"
 #include "G4VSolid.hh"
 #include "Randomize.hh"
+#include "G4RandomDirection.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Constructor
@@ -255,9 +256,73 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
   G4cout << "REL -- G4CMPQPRandomWalkBoundary::DoReflection()" << G4endl;
   
   //REL currently hardcoded but should fix
-  bool isLambertian = false;
+  //0 is "Random in XY plane"
+  //1 is "lambertian"
+  //2 is "specular"
+  int reflectionType = 0;
+  
+  //Random, into pi
+  if( reflectionType == 0 ){
 
-  if( isLambertian ){
+    G4cout << "REL Using 2D random reflection. " << G4endl;
+    
+    //Check to make sure we're on a volume boundary before attempting reflection.
+    G4ThreeVector surfacePoint;
+    if (!CheckStepBoundary(aStep, surfacePoint)) {
+      G4cout << "REL checking step boundary failed in DoReflection" << G4endl;
+      if (verboseLevel>2)
+	G4cout << " Boundary point moved to " << surfacePoint << G4endl;
+      aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
+    }
+    
+    if (verboseLevel>1) {
+      G4cout << procName << ": Track reflected "
+	     << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
+	     << " times." << G4endl;
+    }
+
+    //To determine new random direction, need to know relationship between current
+    //direction and the surface normal. If they are more parallel, then we need to ensure
+    //that the new direction dotted into the norm is negative. If they are more
+    //antiparallel, we need to make sure that the new direction dotted into the norm
+    //is positive.    
+    G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);    
+    G4ThreeVector pdir = aTrack.GetMomentumDirection();
+    G4ThreeVector newDir;
+    G4double epsilon = 0.001; //REL hardcoded, but meant to stave off some boundary issues that happen when
+                               //your new momentum is very parallel to a surface. Hopefully shouldn't change stuff
+                               //too much
+    if( pdir.dot(norm) > 0 ){
+      do{
+	newDir = G4RandomDirection();
+	newDir.setZ(0);
+	newDir = newDir.unit();
+      }
+      while( newDir.dot(norm) >= -1*epsilon );
+    }
+    else if( pdir.dot(norm) < 0 ){
+      do{
+	newDir = G4RandomDirection();
+	newDir.setZ(0);
+	newDir = newDir.unit();
+      }
+      while( newDir.dot(norm) <= epsilon );      
+    }
+    else{
+      G4Exception((GetProcessName()+"::DoReflection").c_str(), "G4CMPBogoliubovQPRandomWalkBoundary00X",
+		  FatalException, "Somehow the incoming momentum is exactly parallel to the surface norm? What?");
+    }
+      
+    
+    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection initial direction  " <<pdir << G4endl;    
+
+    //if (verboseLevel>2)
+    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection reflected direction  " <<newDir << G4endl;
+    aParticleChange.ProposeMomentumDirection(newDir);
+    
+  }
+  //Lambertian
+  else if( reflectionType == 1 ){
 
     G4cout << "REL -- G4CMPQPRandomWalkBoundary::Lambertian Reflection()" << G4endl;
     
@@ -304,7 +369,7 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
   }
 
   //Specular
-  else{
+  else if( reflectionType == 2 ){
 
     G4cout << "REL -- G4CMPQPRandomWalkBoundary::Specular Reflection()" << G4endl;
 

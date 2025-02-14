@@ -82,7 +82,7 @@ G4bool G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTra
 {
   G4cout << "REL HereA_G4CMPVProcess: loading data for track after lattice changeover, process: " << this->GetProcessName() << G4endl;
   G4cout << "Here, track length: " << aTrack.GetTrackLength() << G4endl;
-  G4cout << "Current lattice a la lattice manager: " << G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()) << G4endl;
+  G4cout << "Current lattice a la lattice manager: " << G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()) << ", while this->theLattice: " << this->theLattice << G4endl;
     
   //Always do a check to see if the current lattice stored in this process is equal to the one that represents
   //the volume that we're in. Note that we can't do this with the "GetLattice()" and "GetNextLattice()" calls

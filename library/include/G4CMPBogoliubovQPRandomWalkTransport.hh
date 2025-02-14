@@ -27,7 +27,7 @@ class G4SafetyHelper;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-class G4CMPBogoliubovQPRandomWalkTransport : public G4VContinuousDiscreteProcess, public G4CMPProcessUtils, public G4CMPBoundaryUtils
+class G4CMPBogoliubovQPRandomWalkTransport : public G4VContinuousDiscreteProcess, public G4CMPProcessUtils, public G4CMPBoundaryUtils, public G4CMPSCUtils
 {
 public:
 
@@ -57,7 +57,7 @@ public:
   // The function overloads the corresponding function of the base
   // class.
   G4double PostStepGetPhysicalInteractionLength(
-                                      const G4Track&,
+                                      const G4Track& track,
                                       G4double  previousStepSize,
                                       G4ForceCondition* condition) override;
 
@@ -109,26 +109,24 @@ private:
   // ======== Cached values - may be state dependent ================
 
 protected:
+
+  virtual G4bool UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack);
+  virtual void UpdateSCAfterLatticeChange();
+  
   //Custom particle change class where the UpdateAlongStep method handles
   //non-physical changes to particle from random walk process
   G4CMPParticleChangeForBogoliubovQPRandomWalk fParticleChange;
     
 private:
     
-  G4double                    fTimeStep;
-  G4double                    fStepX;
-  G4double                    fStepY;
-  G4double                    fPathLength;
-  G4double                    fPreDiffusionPathLength;
+  G4double                    fTimeStep;               //Time increment for the step
+  G4double                    fPathLength;             //Path length returned by the AlongStepGPIL (starts diffusion-unfolded, and then folds in diffusion)
+  G4double                    fPreDiffusionPathLength; //Initial, diffusion-unfolded path length, for persistency
+  G4double                    fDiffConst;              //Energy dependent diffusion constant
   
-  G4double                    fGapEnergy;
-  G4double                    fDn;
-  G4double                    fTau0_qp;
-  G4double                    fDiffConst;
-  
-  G4ThreeVector               fOldPosition;
-  G4ThreeVector               fNewPosition;
-  G4ThreeVector               fNewDirection;
+  G4ThreeVector               fOldPosition;            //Position at the beginning of the step
+  G4ThreeVector               fNewPosition;            //Proposed position after diffusion
+  G4ThreeVector               fNewDirection;           //Direction of proposed effective diffusion step
     
   G4bool                      fPositionChanged= false;
   G4bool                      isActive= false;
