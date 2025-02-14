@@ -19,12 +19,13 @@
 
 // 20230721  David Sadek - University of Florida (david.sadek@ufl.edu)
 // 20250102  M. Kelsey -- Move constructor implementation to .cc file.
+// 20250211  D. Sadek Fix the energy scale and interpolation.
 
 #ifndef G4CMPSarkisNIEL_hh
 #define G4CMPSarkisNIEL_hh 1
 
 #include "G4CMPLewinSmithNIEL.hh"
-#include "G4PhysicsLinearVector.hh"
+#include "G4PhysicsFreeVector.hh"
 
 
 class G4CMPSarkisNIEL : public G4CMPLewinSmithNIEL {
@@ -44,7 +45,7 @@ private:
   const G4double SiZ = 14.0;
   const G4double SiA = 28.09;
   
-  mutable G4PhysicsLinearVector lVector;
+  mutable G4PhysicsFreeVector lVector;
   mutable std::size_t idx = 0;		// Dummy argument to G4PLV::Value()
   mutable bool firstCall = true; 	// Print warning messages only once
     
