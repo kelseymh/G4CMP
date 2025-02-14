@@ -12,6 +12,7 @@ ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 2025-01-30  G4CMP-453 : Add rotations and utilities for PhononVelocityIsInward.
 2025-01-24  G4CMP-447 : Add utility method to update a phonon's trackInfo and
                         particleChange with wavevector and Vg.
+2025-02-14  G4CMP-461 : Skip over flats in specular reflections.
 *** DO NOT ADD ANY TAG MESSAGES BELOW THIS LINE ***
 
 2024-10-29  g4cmp-V09-03-00 New phonon materials: Al2O3, CaF2, CaWO4, GaAs, LiF

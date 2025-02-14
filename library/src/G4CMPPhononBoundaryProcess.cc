@@ -325,6 +325,13 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
     // debugging only DELETE
     oldstepLocalPos = stepLocalPos;			// Save old position on detector
+      
+    // Check if the phonon is on a flat
+    if (oldNorm == newNorm) {
+      // traverse the flat to within one stepSize of the edge
+      stepLocalPos = GetFlatEdgePos(solid, stepLocalPos, kTan.unit(), stepSize, oldNorm);
+      newNorm = solid->SurfaceNormal(stepLocalPos);
+    }
 
     // FIXME: Find point on surface nearest to stepLocalPos, and reset
     surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);	// Get distance along normal from new position back to detector surface
@@ -400,6 +407,87 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   }
 
   return reflectedKDir;
+}
+
+
+// On a flat, find the position within one stepSize of the edge of the flat
+
+G4ThreeVector G4CMPPhononBoundaryProcess::
+GetFlatEdgePos(const G4VSolid* solid, const G4ThreeVector pos, const G4ThreeVector kTanU, const G4double stepSize, const G4ThreeVector oldNorm) const {
+  G4double dist_to_bb = 0.0;
+  G4ThreeVector newPos = pos;
+  G4double newStepSize = stepSize;
+
+  dist_to_bb = GetDistToBB(solid, pos, kTanU);
+
+  newStepSize = GetNewStepSize(solid, pos, kTanU, stepSize, oldNorm, dist_to_bb);
+
+  return pos + newStepSize*kTanU;
+}
+
+
+// Find the boundary box position
+
+G4double G4CMPPhononBoundaryProcess::
+GetDistToBB(const G4VSolid* solid, const G4ThreeVector pos, const G4ThreeVector kTanU) const {
+  G4ThreeVector bbMin, bbMax;
+  solid->BoundingLimits(bbMin, bbMax);
+
+  G4double dist_to_bb = 0.0;
+  G4ThreeVector bbPos = pos;
+
+  if (fabs(kTanU.z()) > 1e-7) {
+    // calculate distance to zMin
+    dist_to_bb = (bbMin.z() - pos.z()) / kTanU.z();
+
+    if (dist_to_bb < 0) {
+      // calculate distance to zMax
+      dist_to_bb = (bbMax.z() - pos.z()) / kTanU.z();
+    }
+  }
+
+  if (fabs(kTanU.x()) > 1e-7) {
+    // do checks for Y-flats
+    if (bbPos.x() < bbMin.x()) {
+      // calculate distance to xMin
+      dist_to_bb = (pos.x() - bbMin.x()) / kTanU.x();
+    }
+    else if (bbPos.x() > bbMax.x()) {
+      // calculate distance to xMax
+      dist_to_bb = (bbMax.x() - pos.x()) / kTanU.x();
+    }
+  }
+
+  if (fabs(kTanU.y()) > 1e-7) {
+    // do checks for X-flats
+    if (bbPos.y() < bbMin.y()) {
+      // calculate distance to yMin
+      dist_to_bb = (pos.y() - bbMin.y()) / kTanU.y();
+    }
+    else if (bbPos.y() > bbMax.y()) {
+      // calculate distance to yMax
+      dist_to_bb = (bbMax.y() - pos.y()) / kTanU.y();
+    }
+  }
+
+  return dist_to_bb;
+}
+
+
+// Recursive binary search to find the position within one stepSize of the edge of a flat
+
+G4double G4CMPPhononBoundaryProcess::
+GetNewStepSize(const G4VSolid* solid, const G4ThreeVector pos, const G4ThreeVector kTanU, const G4double stepSize, const G4ThreeVector oldNorm, const G4double newStepSize) const {
+  G4ThreeVector newNorm = solid->SurfaceNormal(pos + newStepSize*kTanU);
+
+  if (newNorm != oldNorm) {
+    return GetNewStepSize(solid, pos, kTanU, stepSize, oldNorm, newStepSize/2);
+  }
+  else if (newNorm == oldNorm && newStepSize/2 > stepSize) {
+    return GetNewStepSize(solid, pos, kTanU, stepSize, oldNorm, newStepSize + newStepSize/2);
+  }
+
+  return newStepSize;
 }
 
 

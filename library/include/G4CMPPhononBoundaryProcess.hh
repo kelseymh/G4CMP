@@ -55,6 +55,17 @@ protected:
 				   const G4ThreeVector& surfNorm,
 				   G4int mode, const G4ThreeVector& surfacePoint) const;
 
+  G4ThreeVector GetFlatEdgePos(const G4VSolid* solid, const G4ThreeVector pos,
+                    const G4ThreeVector kTanU, const G4double stepSize,
+                    const G4ThreeVector oldNorm) const;
+
+  G4double GetDistToBB(const G4VSolid* solid, const G4ThreeVector pos,
+                    const G4ThreeVector kTanU) const;
+
+  G4double GetNewStepSize(const G4VSolid* solid, const G4ThreeVector pos,
+                    const G4ThreeVector kTanU, const G4double stepSize,
+                    const G4ThreeVector oldNorm, const G4double newStepSize) const;
+
   G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm,
 				    G4int mode) const;
 
