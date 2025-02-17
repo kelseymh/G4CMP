@@ -6,12 +6,14 @@
 /// \file library/include/G4CMPLewinSmithNIEL.hh
 /// \brief Non-ionizing energy loss calculation from Lewin & Smith 1996.
 ///
-/// Computation of NIEL according to Lewin & Smith 1996, depending only
-/// upon material properties.  Used by G4CMPEnergyPartition.
+/// Computation of NIEL according to Lewin&Smith 1996 (Lindharrd model)
+/// depending only on material properties.  Used by G4CMPEnergyPartition.
+/// paper DOI: https://doi.org/10.1016/S0927-6505(96)00047-3
 //
 // $Id$
 //
 // 20190711  Michael Kelsey
+// 20250206  D. Sadek -- Provide references  
 
 #ifndef G4CMPLewinSmithNIEL_hh
 #define G4CMPLewinSmithNIEL_hh 1

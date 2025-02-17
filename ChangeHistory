@@ -8,6 +8,7 @@ ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 2025-02-12  G4CMP-460 : Fix Lindhard-Robinson ionization yield model.
 2025-02-11  G4CMP-452 : Fix energy scaling and interpolation in Sarkis NIEL.
+2025-02-06  G4CMP-451 : Provide references for ionization yield models.
 2025-01-27  G4CMP-449 : Consolidate maxLukePhonons functionality, allow -1.
 
 2025-01-25  g4cmp-V09-04-00 Fixes to NIEL calculations, support for debug
