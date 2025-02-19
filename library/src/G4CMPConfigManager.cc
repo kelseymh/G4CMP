@@ -113,6 +113,12 @@ G4CMPConfigManager::G4CMPConfigManager()
     kaplanKeepPh(getenv("G4CMP_KAPLAN_KEEP")?atoi(getenv("G4CMP_KAPLAN_KEEP")):true),
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
     recordMinE(getenv("G4CMP_RECORD_EMIN")?atoi(getenv("G4CMP_RECORD_EMIN")):true),
+    Empiricalklow(getenv("G4CMP_EMPIRICAL_KLOW")?strtod(getenv("G4CMP_EMPIRICAL_KLOW"),0):-1.),
+    Empiricalkhigh(getenv("G4CMP_EMPIRICAL_KHigh")?strtod(getenv("G4CMP_EMPIRICAL_KHigh"),0):-1.),
+    EmpiricalkFixed(getenv("G4CMP_EMPIRICAL_KFIXED")?strtod(getenv("G4CMP_EMPIRICAL_KFIXED"),0):-1.),
+    EmpiricalELow(getenv("G4CMP_EMPIRICAL_ELOW")?strtod(getenv("G4CMP_EMPIRICAL_ELOW"),0)*keV:-1),
+    EmpiricalEHigh(getenv("G4CMP_EMPIRICAL_EHIGH")?strtod(getenv("G4CMP_EMPIRICAL_EHIGH"),0)*keV:-1),
+    EmpiricalEnergyDependentK(getenv("G4CMP_EMPIRICAL_ENERGYDEPENDENTK")?strtod(getenv("G4CMP_EMPIRICAL_ENERGYDEPENDENTK"),0):-1),
     nielPartition(0), messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 
@@ -147,8 +153,11 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
     useKVsolver(master.useKVsolver), fanoEnabled(master.fanoEnabled),
     kaplanKeepPh(master.kaplanKeepPh), chargeCloud(master.chargeCloud),
-    recordMinE(master.recordMinE), nielPartition(master.nielPartition),
-    messenger(new G4CMPConfigMessenger(this)) {;}
+    recordMinE(master.recordMinE), Empiricalklow(master.Empiricalklow),
+    Empiricalkhigh(master.Empiricalkhigh), EmpiricalkFixed(master.EmpiricalkFixed),
+    EmpiricalElow(master.EmpiricalElow), EmpiricalEhigh(master.EmpiricalEhigh),
+    EmpiricalEnergyDependentK(master.EmpiricalEnergyDependentK),
+    nielPartition(master.nielPartition), messenger(new G4CMPConfigMessenger(this)) {;}
 
 
 // Trigger rebuild of geometry if parameters change
@@ -175,9 +184,9 @@ void G4CMPConfigManager::setNIEL(G4String name) {
   name.toLower();
   if (name(0,3) == "lin") setNIEL(new G4CMPLindhardNIEL);
   if (name(0,3) == "lew") setNIEL(new G4CMPLewinSmithNIEL);
-  if (name(0,6) == "impact") setNIEL(new G4CMPImpactTunlNIEL);
+  if (name(0,3) == "imp") setNIEL(new G4CMPImpactTunlNIEL);
   if (name(0,3) == "sar") setNIEL(new G4CMPSarkisNIEL);
- if (name(0,3) == "Emp") setNIEL(new G4CMPEmpiricalLindhardNIEL);
+  if (name(0,3) == "emp") setNIEL(new G4CMPEmpiricalLindhardNIEL());
 
 }
 
@@ -223,5 +232,11 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/NIELPartition "
      << (nielPartition ? typeid(*nielPartition).name() : "---")
      << "\t# G4CMP_NIEL_FUNCTION "
+     << "\n/g4cmp/EmpiricalLindhard/klow " << Empiricalklow << " \t\t\t# G4CMP_EMPIRICAL_KLOW"
+     << "\n/g4cmpEmpiricalLindhard/khigh " << Empiricalkhigh << " \t\t\t\t# G4CMP_EMPIRICAL_KHIGH"
+     << "\n/g4cmp/EmpiricalLindhard/Elow " << EmpiricalElow/keV << " keV\t\t\t\t# G4CMP_EMPIRICAL_ELOW"
+     << "\n/g4cmp/EmpiricalLindhard/Ehigh " << EmpiricalEhigh/keV << " keV\t\t\t\t# G4CMP_EMPIRICAL_EHIGH"
+     << "\n/g4cmpEmpiricalLindhard/kFixed " << Empiricalkhigh << " \t\t\t\t# G4CMP_EMPIRICAL_KFIXED"
+     << "\n/g4cmp/EmpiricalLindhard/EnergyDependentK " << EmpiricalEnergyDependentK << "\t\t\t# G4CMP_EMPIRICAL_ENERGYDEPENDENTK "
      << std::endl;
 }

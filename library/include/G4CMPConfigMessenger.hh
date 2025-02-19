@@ -45,6 +45,8 @@
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
 // 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
+// 20250213  G4CMP-457: Add Lindhard empirical ionization yield model parameters.
+
 
 
 #include "G4UImessenger.hh"
@@ -100,6 +102,16 @@ private:
   G4UIcmdWithABool*   kaplanKeepCmd;
   G4UIcmdWithABool*   ehCloudCmd;
   G4UIcmdWithABool*   recordMinECmd;
+
+  // Empirical Lindhard Model Macro Commands
+  G4UIcmdWithABool* EmpiricalEnergyDependentKCmd;
+  G4UIcmdWithADouble* EmpiricalkFixedCmd;
+  G4UIcmdWithADouble* EmpiricalklowCmd;
+  G4UIcmdWithADouble* EmpiricalkhighCmd;
+  G4UIcmdWithADoubleAndUnit* EmpiricalElowCmd;
+  G4UIcmdWithADoubleAndUnit* EmpiricalEhighCmd;
+
+
 
 private:
   G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden

@@ -198,6 +198,32 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
        "Preserve all intermediate phonons in G4CMPKaplanQP (no killing)");
   kaplanKeepCmd->SetParameterName("enable",true,false);
   kaplanKeepCmd->SetDefaultValue(true);
+
+
+  // Commands for empirical Lindhard model
+  EmpiricalEnergyDependentKCmd = CreateCommand<G4UIcmdWithABool>("/g4cmp/EmpiricalLindhard/EnergyDependentK",
+      "Enable or disable energy-dependent k parameter for empirical Lindhard model.");
+
+  EmpiricalkFixedCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/EmpiricalLindhard/kFixed",
+      "Set fixed k parameter for empirical Lindhard model.");
+      
+  EmpiricalklowCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/EmpiricalLindhard/klow",
+      "Set klow parameter for empirical Lindhard model.");
+
+  EmpiricalkhighCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/EmpiricalLindhard/khigh",
+      "Set khigh parameter for empirical Lindhard model.");
+
+  EmpiricalElowCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("/g4cmp/EmpiricalLindhard/Elow",
+      "Set Elow parameter for empirical Lindhard model.");
+  EmpiricalElowCmd->SetUnitCategory("Energy");
+
+  EmpiricalEhighCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("/g4cmp/EmpiricalLindhard/Ehigh",
+      "Set Ehigh parameter for empirical Lindhard model.");
+  EmpiricalEhighCmd->SetUnitCategory("Energy");
+
+
+
+
 }
 
 
@@ -233,6 +259,12 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete lukeFileCmd; lukeFileCmd=0;
   delete ivRateModelCmd; ivRateModelCmd=0;
   delete nielPartitionCmd; nielPartitionCmd=0;
+  delete empiricalKlowCmd; empiricalKlowCmd = 0;
+  delete empiricalKhighCmd; empiricalKhighCmd = 0;
+  delete empiricalElowCmd; empiricalElowCmd = 0;
+  delete empiricalEhighCmd; empiricalEhighCmd = 0;
+  delete empiricalKFixedCmd; empiricalKFixedCmd = 0;
+  delete empiricalEnergyDependentKCmd; empiricalEnergyDependentKCmd = 0;
 }
 
 
@@ -302,4 +334,22 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
     G4cout << "G4CMP version: " << theManager->Version() << G4endl;
 
   if (cmd == printCmd) G4cout << *theManager << G4endl;
+    
+  if (cmd == empiricalKlowCmd)
+    theManager->SetKlow(empiricalKlowCmd->GetNewDoubleValue(value));
+
+  if (cmd == empiricalKhighCmd)
+    theManager->SetKhigh(empiricalKhighCmd->GetNewDoubleValue(value));
+
+  if (cmd == empiricalElowCmd)
+    theManager->SetElow(empiricalElowCmd->GetNewDoubleValue(value));
+
+  if (cmd == empiricalEhighCmd)
+    theManager->SetEhigh(empiricalEhighCmd->GetNewDoubleValue(value));
+
+  if (cmd == empiricalKFixedCmd)
+    theManager->SetKFixed(empiricalKFixedCmd->GetNewDoubleValue(value));
+
+  if (cmd == empiricalEnergyDependentKCmd)
+    theManager->SetEnergyDependentK(empiricalEnergyDependentKCmd->GetNewBoolValue(value));
 }

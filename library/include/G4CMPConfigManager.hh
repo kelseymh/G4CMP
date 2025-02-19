@@ -97,6 +97,11 @@ public:
   static G4double GetHDTrapIonMFP()      { return Instance()->hDTrapIonMFP; }
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
+  static G4double GetEmpiricalklow()      { return Instance()->Empiricalklow; }
+  static G4double GetEmpiricalkhigh()     { return Instance()->Empiricalkhigh; }
+  static G4double GetEmpiricalElow()      { return Instance()->EmpiricalElow; }
+  static G4double GetEmpiricalEhigh()     { return Instance()->EmpiricalEhigh; }
+  static G4double GetEmpiricalkFixed()    { return Instance()->EmpiricalkFixed; }
 
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
@@ -137,6 +142,17 @@ public:
 
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
   static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
+
+
+  // Empirical Lindhard settings 
+
+  static void SetEmpiricalklow(G4double value) { Instance()->Empiricalklow = value; }
+  static void SetEmpiricalkhigh(G4double value) { Instance()->Empiricalkhigh = value; }
+  static void SetEmpiricalElow(G4double value) { Instance()->EmpiricalElow = value; }
+  static void SetEmpiricalEhigh(G4double value) { Instance()->EmpiricalEhigh = value; }
+  static void SetEmpiricalkFixed(G4double value) { Instance()->EmpiricalkFixed = value; }
+  static void SetEmpiricalEnergyDependentK(G4bool value) { Instance()->EmpiricalEnergyDependentK = value; }
+
 
   // These settings require the geometry to be rebuilt
   static void SetLatticeDir(const G4String& dir)
@@ -196,6 +212,14 @@ private:
   G4bool chargeCloud;    // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
   G4bool recordMinE;     // Store below-minimum track energy as NIEL when killed
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
+  // Empirical Lindhard Model Parameters
+  G4double Empiricalklow;  // Empirical Lindhard klow value
+  G4double Empiricalkhigh; // Empirical Lindhard klow value
+  G4double EmpiricalElow;  // Empirical Lindhard Elow value
+  G4double EmpiricalEhigh; // Empirical Lindhard Ehigh value
+  G4double EmpiricalkFixed; // Empirical Lindhard variable k value
+  G4bool EmpiricalEnergyDependentK; // Flag to use Empirical Lindhard with energy-dependent k
+
 
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands
 };
