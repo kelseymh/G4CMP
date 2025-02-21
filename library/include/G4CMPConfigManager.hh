@@ -47,7 +47,7 @@
 // 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
-// 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
+// 20250209  G4CMP-457: Add short names for Lindhard Emp ionization model.
 
 
 #include "globals.hh"
@@ -97,11 +97,13 @@ public:
   static G4double GetHDTrapIonMFP()      { return Instance()->hDTrapIonMFP; }
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
-  static G4double GetEmpiricalklow()      { return Instance()->Empiricalklow; }
-  static G4double GetEmpiricalkhigh()     { return Instance()->Empiricalkhigh; }
-  static G4double GetEmpiricalElow()      { return Instance()->EmpiricalElow; }
-  static G4double GetEmpiricalEhigh()     { return Instance()->EmpiricalEhigh; }
-  static G4double GetEmpiricalkFixed()    { return Instance()->EmpiricalkFixed; }
+  static G4double GetEmpklow()      { return Instance()->Empklow; }
+  static G4double GetEmpkhigh()     { return Instance()->Empkhigh; }
+  static G4double GetEmpElow()      { return Instance()->EmpElow; }
+  static G4double GetEmpEhigh()     { return Instance()->EmpEhigh; }
+  static G4double GetEmpkFixed()    { return Instance()->EmpkFixed; }
+  static G4bool GetEmpEDepK()  { return Instance()->EmpEDepK; }
+
 
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
@@ -146,12 +148,12 @@ public:
 
   // Empirical Lindhard settings 
 
-  static void SetEmpiricalklow(G4double value) { Instance()->Empiricalklow = value; }
-  static void SetEmpiricalkhigh(G4double value) { Instance()->Empiricalkhigh = value; }
-  static void SetEmpiricalElow(G4double value) { Instance()->EmpiricalElow = value; }
-  static void SetEmpiricalEhigh(G4double value) { Instance()->EmpiricalEhigh = value; }
-  static void SetEmpiricalkFixed(G4double value) { Instance()->EmpiricalkFixed = value; }
-  static void SetEmpiricalEnergyDependentK(G4bool value) { Instance()->EmpiricalEnergyDependentK = value; }
+  static void SetEmpklow(G4double value) { Instance()->Empklow = value; }
+  static void SetEmpkhigh(G4double value) { Instance()->Empkhigh = value; }
+  static void SetEmpElow(G4double value) { Instance()->EmpElow = value; }
+  static void SetEmpEhigh(G4double value) { Instance()->EmpEhigh = value; }
+  static void SetEmpkFixed(G4double value) { Instance()->EmpkFixed = value; }
+  static void SetEmpEDepK(G4bool value) { Instance()->EmpEDepK = value; }
 
 
   // These settings require the geometry to be rebuilt
@@ -213,14 +215,17 @@ private:
   G4bool recordMinE;     // Store below-minimum track energy as NIEL when killed
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
   // Empirical Lindhard Model Parameters
-  G4double Empiricalklow;  // Empirical Lindhard klow value
-  G4double Empiricalkhigh; // Empirical Lindhard klow value
-  G4double EmpiricalElow;  // Empirical Lindhard Elow value
-  G4double EmpiricalEhigh; // Empirical Lindhard Ehigh value
-  G4double EmpiricalkFixed; // Empirical Lindhard variable k value
-  G4bool EmpiricalEnergyDependentK; // Flag to use Empirical Lindhard with energy-dependent k
-
-
+    // Model fit parameters
+  G4double Empklow;  
+  G4double Empkhigh; 
+    // Model validity energy range
+  G4double EmpElow;  
+  G4double EmpEhigh;
+    // Flag to use Empirical Lindhard with energy-dependent k
+  G4bool EmpEDepK; 
+    // If k is not energy dependent, provide/use kFixed
+  G4double EmpkFixed; 
+  //
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands
 };
 

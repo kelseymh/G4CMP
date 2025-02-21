@@ -43,14 +43,14 @@
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20240823  G4CMP-422: Remove default Quadratic rate model setting.
 // 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
-// 20250212  G4CMP-457: Add short names for Lindhard empirical ionization model.
+// 20250212  G4CMP-457: Add short names for Lindhard Emp ionization model.
 
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPLewinSmithNIEL.hh"
 #include "G4CMPLindhardNIEL.hh"
-#include "G4CMPEmpiricalLindhardNIEL.hh"
+#include "G4CMPEmpiricalNIEL.hh"
 #include "G4CMPImpactTunlNIEL.hh"
 #include "G4CMPSarkisNIEL.hh"
 #include "G4VNIELPartition.hh"
@@ -113,12 +113,12 @@ G4CMPConfigManager::G4CMPConfigManager()
     kaplanKeepPh(getenv("G4CMP_KAPLAN_KEEP")?atoi(getenv("G4CMP_KAPLAN_KEEP")):true),
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
     recordMinE(getenv("G4CMP_RECORD_EMIN")?atoi(getenv("G4CMP_RECORD_EMIN")):true),
-    Empiricalklow(getenv("G4CMP_EMPIRICAL_KLOW")?strtod(getenv("G4CMP_EMPIRICAL_KLOW"),0):-1.),
-    Empiricalkhigh(getenv("G4CMP_EMPIRICAL_KHigh")?strtod(getenv("G4CMP_EMPIRICAL_KHigh"),0):-1.),
-    EmpiricalkFixed(getenv("G4CMP_EMPIRICAL_KFIXED")?strtod(getenv("G4CMP_EMPIRICAL_KFIXED"),0):-1.),
-    EmpiricalELow(getenv("G4CMP_EMPIRICAL_ELOW")?strtod(getenv("G4CMP_EMPIRICAL_ELOW"),0)*keV:-1),
-    EmpiricalEHigh(getenv("G4CMP_EMPIRICAL_EHIGH")?strtod(getenv("G4CMP_EMPIRICAL_EHIGH"),0)*keV:-1),
-    EmpiricalEnergyDependentK(getenv("G4CMP_EMPIRICAL_ENERGYDEPENDENTK")?strtod(getenv("G4CMP_EMPIRICAL_ENERGYDEPENDENTK"),0):-1),
+    Empklow(getenv("G4CMP_EMPIRICAL_KLOW")?strtod(getenv("G4CMP_EMPIRICAL_KLOW"),0):DBL_MIN),
+    Empkhigh(getenv("G4CMP_EMPIRICAL_KHigh")?strtod(getenv("G4CMP_EMPIRICAL_KHigh"),0):DBL_MIN),
+    EmpkFixed(getenv("G4CMP_EMPIRICAL_KFIXED")?strtod(getenv("G4CMP_EMPIRICAL_KFIXED"),0):DBL_MIN),
+    EmpElow(getenv("G4CMP_EMPIRICAL_ELOW")?strtod(getenv("G4CMP_EMPIRICAL_ELOW"),0)*keV:DBL_MIN),
+    EmpEhigh(getenv("G4CMP_EMPIRICAL_EHIGH")?strtod(getenv("G4CMP_EMPIRICAL_EHIGH"),0)*keV:DBL_MAX),
+    EmpEDepK(getenv("G4CMP_EMPIRICAL_EDEPK")?atoi(getenv("G4CMP_EMPIRICAL_EDEPK")):-1.),
     nielPartition(0), messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 
@@ -153,10 +153,10 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
     useKVsolver(master.useKVsolver), fanoEnabled(master.fanoEnabled),
     kaplanKeepPh(master.kaplanKeepPh), chargeCloud(master.chargeCloud),
-    recordMinE(master.recordMinE), Empiricalklow(master.Empiricalklow),
-    Empiricalkhigh(master.Empiricalkhigh), EmpiricalkFixed(master.EmpiricalkFixed),
-    EmpiricalElow(master.EmpiricalElow), EmpiricalEhigh(master.EmpiricalEhigh),
-    EmpiricalEnergyDependentK(master.EmpiricalEnergyDependentK),
+    recordMinE(master.recordMinE), Empklow(master.Empklow),
+    Empkhigh(master.Empkhigh), EmpkFixed(master.EmpkFixed),
+    EmpElow(master.EmpElow), EmpEhigh(master.EmpEhigh),
+    EmpEDepK(master.EmpEDepK),
     nielPartition(master.nielPartition), messenger(new G4CMPConfigMessenger(this)) {;}
 
 
@@ -186,7 +186,7 @@ void G4CMPConfigManager::setNIEL(G4String name) {
   if (name(0,3) == "lew") setNIEL(new G4CMPLewinSmithNIEL);
   if (name(0,3) == "imp") setNIEL(new G4CMPImpactTunlNIEL);
   if (name(0,3) == "sar") setNIEL(new G4CMPSarkisNIEL);
-  if (name(0,3) == "emp") setNIEL(new G4CMPEmpiricalLindhardNIEL());
+  if (name(0,3) == "emp") setNIEL(new G4CMPEmpiricalNIEL);
 
 }
 
@@ -232,11 +232,11 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/NIELPartition "
      << (nielPartition ? typeid(*nielPartition).name() : "---")
      << "\t# G4CMP_NIEL_FUNCTION "
-     << "\n/g4cmp/EmpiricalLindhard/klow " << Empiricalklow << " \t\t\t# G4CMP_EMPIRICAL_KLOW"
-     << "\n/g4cmpEmpiricalLindhard/khigh " << Empiricalkhigh << " \t\t\t\t# G4CMP_EMPIRICAL_KHIGH"
-     << "\n/g4cmp/EmpiricalLindhard/Elow " << EmpiricalElow/keV << " keV\t\t\t\t# G4CMP_EMPIRICAL_ELOW"
-     << "\n/g4cmp/EmpiricalLindhard/Ehigh " << EmpiricalEhigh/keV << " keV\t\t\t\t# G4CMP_EMPIRICAL_EHIGH"
-     << "\n/g4cmpEmpiricalLindhard/kFixed " << Empiricalkhigh << " \t\t\t\t# G4CMP_EMPIRICAL_KFIXED"
-     << "\n/g4cmp/EmpiricalLindhard/EnergyDependentK " << EmpiricalEnergyDependentK << "\t\t\t# G4CMP_EMPIRICAL_ENERGYDEPENDENTK "
+     << "\n/g4cmp/NIELPartition/Empirical/klow " << Empklow << " \t\t\t# G4CMP_EMPIRICAL_KLOW"
+     << "\n/g4cmp/NIELPartition/Empirical/khigh " << Empkhigh << " \t\t\t\t# G4CMP_EMPIRICAL_KHIGH"
+     << "\n/g4cmp/NIELPartition/Empirical/Elow " << EmpElow/keV << " keV\t\t\t\t# G4CMP_EMPIRICAL_ELOW"
+     << "\n/g4cmp/NIELPartition/Empirical/Ehigh " << EmpEhigh/keV << " keV\t\t\t\t# G4CMP_EMPIRICAL_EHIGH"
+     << "\n/g4cmp/NIELPartition/Empirical/kFixed " << Empkhigh << " \t\t\t\t# G4CMP_EMPIRICAL_KFIXED"
+     << "\n/g4cmp/NIELPartition/Empirical/EDepK " << EmpEDepK << "\t\t\t# G4CMP_EMPIRICAL_EDEPK "
      << std::endl;
 }

@@ -22,7 +22,7 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPLewinSmithNIEL.hh"
 #include "G4CMPLindhardNIEL.hh"
-#include "G4CMPEmpiricalLindhardNIEL.hh"
+#include "G4CMPEmpiricalNIEL.hh"
 #include "G4CMPImpactTunlNIEL.hh"
 #include "G4CMPSarkisNIEL.hh"
 #include "G4Material.hh"
@@ -39,7 +39,7 @@
 void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
                  G4int nStep, const G4String& material,
                  G4double klow, G4double khigh, G4double Elow, G4double Ehigh,
-                 G4bool EnergyDependentK, G4double kFixed) {
+                 G4bool EDepK, G4double kFixed) {
   // Make sure that units and material strings are valid
   G4bool goodInput = true;
   if (!(goodInput &= G4UnitDefinition::IsUnitDefined(unit)))
@@ -55,26 +55,30 @@ void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
   if (!goodInput) ::exit(1);		// If anything failed, abort
 
   // Instantiate single instance of each of the named yield functions
-  const char* useNIEL[] = {"Lindhard", "Empirical Lindhard", "LewinSmith", "Sarkis", "Impact" };
-  // const char* useNIEL[] = {"Empirical Lindhard"};
+  const char* useNIEL[] = {"Lindhard", "Empirical", "LewinSmith", "Sarkis", "Impact" };
   const size_t nNIEL = sizeof(useNIEL)/sizeof(char*);
 
   // NOTE: Can't use G4CMPConfigManager to do this mapping, because it
   //       deletes the previous pointer when a new one is requested.
      
-
-const G4VNIELPartition* NIELfunc[nNIEL] = {
-    new G4CMPLindhardNIEL, new G4CMPEmpiricalLindhardNIEL(),
+  const G4VNIELPartition* NIELfunc[nNIEL] = {
+    new G4CMPLindhardNIEL, new G4CMPEmpiricalNIEL(),
     new G4CMPLewinSmithNIEL, new G4CMPSarkisNIEL,
     new G4CMPImpactTunlNIEL };
-
-
-
-  // const G4VNIELPartition* NIELfunc[nNIEL] = {empiricalLindhard};
+  
   // Output will be tab-delimited columns for all the NIEL functions
   G4cout << std::left << "Energy";
   for (size_t i=0; i<nNIEL; i++) G4cout << "\t" << std::setw(8) << useNIEL[i];
   G4cout << G4endl;
+
+  // Set Empirical lindhard parameters 
+  G4CMPEmpiricalNIEL* EmpNIEL = new G4CMPEmpiricalNIEL();
+  EmpNIEL->SetEmpklow(klow);
+  EmpNIEL->SetEmpkhigh(khigh);
+  EmpNIEL->SetEmpElow(Elow);
+  EmpNIEL->SetEmpEhigh(Ehigh);
+  EmpNIEL->SetEmpkFixed(kFixed);
+  EmpNIEL->SetEmpEDepK(EDepK);
 
   // From material, Get Z and A for use as projectile (internal nuclear recoil)
   G4double Zin = target->GetZ(), Ain = target->GetA();
@@ -88,7 +92,7 @@ const G4VNIELPartition* NIELfunc[nNIEL] = {
     G4cout << std::setw(5) << E;
 
     for (size_t iNIEL=0; iNIEL<nNIEL; iNIEL++) {
-      G4double Y =  NIELfunc[iNIEL]->PartitionNIEL(E*unitVal, target, Zin, Ain);
+      G4double Y = NIELfunc[iNIEL]->PartitionNIEL(E*unitVal, target, Zin, Ain);
       G4cout << "\t" << std::setw(8) << Y;
     }
     G4cout << G4endl;
@@ -109,12 +113,15 @@ int main(int argc, char* argv[]) {
 	   << "           material: Valid Geant4 NIST name; default is G4_Si\n"
        << "           klow, khigh: k parameter range\n"
        << "           Elow, Ehigh: Energy range for k dependency (keV)\n"
-       << "           useEnergyDependentK: 1 = Yes, 0 = No\n"
+       << "           useEDepK: true = Yes, false = No\n"
+       << "           kFixed: k value if useEDepK is false\n"
 	   << "\nCode generates tab-delimited table of steps in energy,\n"
 	   << "computing ionization yield Y from each of the NIEL-partition\n"
 	   << "(Lindhard model) functions available in G4CMP.  The material\n"
 	   << "is used for both target and projectile, corresponding to\n"
-	   << "internal nuclear recoils in a detector."
+	   << "internal nuclear recoils in a detector.\n"
+       << "The parameters (klow, khigh, Elow, Ehigh useEDepK, kFixed) only\n"
+       << "apply to the EmpiricalNIEL model.\n"
 	   << G4endl;
     ::exit(1);
   }
@@ -125,18 +132,16 @@ int main(int argc, char* argv[]) {
   G4int points  = (argc>4) ? atoi(argv[4]) : 100;
   G4String mat  = (argc>5) ? argv[5] : "G4_Si";
 
-  // Default values for empirical Lindhard model
-  G4double klow = (argc > 6) ? strtod(argv[6], 0) : 0.040;
-  G4double khigh = (argc > 7) ? strtod(argv[7], 0) : 0.142;
-  G4double Elow = (argc > 8) ? strtod(argv[8], 0) * keV : 0.39 * keV;
-  G4double Ehigh = (argc > 9) ? strtod(argv[9], 0) * keV : 7.0 * keV;
-  G4bool EnergyDependentK = (argc > 10) ? (std::stoi(argv[10]) != 0) : 1;
-  G4double kFixed = (argc > 11) ? strtod(argv[11], 0) : 0.158; // Default fixed k
-
-
-    
+  // Default values for Emp Lindhard model
+  G4double klow = (argc>6) ? strtod(argv[6],0) : 0.040;
+  G4double khigh = (argc>7) ? strtod(argv[7],0) : 0.142;
+  G4double Elow = (argc>8) ? strtod(argv[8],0)*keV : 0.39*keV;
+  G4double Ehigh = (argc>9) ? strtod(argv[9],0)*keV : 7.0*keV;
+  G4bool EDepK = (argc>10) ? (std::stoi(argv[10])!=0) : true;
+  G4double kFixed = (argc>11) ? strtod(argv[11],0) : 0.158;
+ 
   G4cout << "Nuclear recoils in " << mat << " " << points << " steps: "
 	 << Emin << "-" << Emax << " " << unit << G4endl;
 
-  testNRyield(Emin, Emax, unit, points, mat);
+  testNRyield(Emin, Emax, unit, points, mat, klow, khigh, Elow, Ehigh, EDepK, kFixed);
 }

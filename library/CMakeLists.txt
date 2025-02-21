@@ -160,7 +160,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEigenSolver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeHit.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPElectrodeSensitivity.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEmpiricalLindhardNIEL.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEmpiricalNIEL.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEnergyPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPEqEMField.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPFanoBinomial.cc
@@ -247,7 +247,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEigenSolver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeHit.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPElectrodeSensitivity.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEmpiricalLindhardNIEL.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEmpiricalNIEL.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEnergyPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPEqEMField.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPFanoBinomial.hh

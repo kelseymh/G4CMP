@@ -6,7 +6,7 @@
 /// \file library/include/G4CMPImpactTUNLNIEL.hh
 /// \brief Non-ionizing energy loss calculation from IMPACT@TUNL 2023.
 ///
-/// Computation of NIEL using the empirical model extracted from the
+/// Computation of NIEL using the Emp model extracted from the
 /// IMPACT@TUNL ionization yield measurements.  
 /// Link to the paper:https://arxiv.org/abs/2303.02196.
 ///
@@ -48,7 +48,7 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double Zin,
   const G4double A = GetEffectiveA(material);
 
   // Check if the material is silicon or similar
-  if (std::abs(Z-SiZ) < 0.5 || std::abs(A/(g/mole)-SiA) < 0.5)  {
+  if (std::abs(Z-SiZ) < 0.5 || std::abs(A/(g/mole)-SiA) < 0.5) {
     // IMPACT@TUNL model below 10 keV, a simple power law in energy
     G4Pow* g4pow = G4Pow::GetInstance(); 
     if (energy <= 10.*keV) {

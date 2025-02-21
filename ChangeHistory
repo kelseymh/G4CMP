@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-02-21  G4CMP-457 : Add Empirical NIEL. Ge CDMSLite measurements.
 2025-01-27  G4CMP-449 : Consolidate maxLukePhonons functionality, allow -1.
 
 2025-01-25  g4cmp-V09-04-00 Fixes to NIEL calculations, support for debug

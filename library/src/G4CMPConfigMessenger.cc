@@ -42,7 +42,7 @@
 // 20230831  G4CMP-362: Add short names for IMPACT and Sarkis ionization models.
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
-// 20250212  G4CMP-457: Add macro command for Lindhard empirical ionization model.
+// 20250212  G4CMP-457: Add macro command for Lindhard Emp ionization model.
 
 
 #include "G4CMPConfigMessenger.hh"
@@ -187,7 +187,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   nielPartitionCmd = CreateCommand<G4UIcmdWithAString>("NIELPartition",
 	       "Select calculation for non-ionizing energy loss (NIEL)");
-  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew IMPACT Impact impact ImpactTunl impacttunl Sarkis sarkis Sar sar LindEmpirical EmpiricalLindhard EmpiricalLind");
+  nielPartitionCmd->SetCandidates("Lindhard lindhard Lin lin LewinSmith lewinsmith Lewin lewin Lew Lew IMPACT Impact impact ImpactTunl impacttunl Imp imp Sarkis sarkis Sar sar Empirical empirical Emp emp");
 
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
        "Produce e/h pairs in cloud surrounding energy deposit position");
@@ -199,33 +199,27 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   kaplanKeepCmd->SetParameterName("enable",true,false);
   kaplanKeepCmd->SetDefaultValue(true);
 
+  // Commands for Emp Lindhard model
+  EmpEDepKCmd = CreateCommand<G4UIcmdWithABool>("/g4cmp/NIELPartition/Empirical/EDepK",
+      "Enable or disable energy-dependent k parameter for Emp Lindhard model.");
 
-  // Commands for empirical Lindhard model
-  EmpiricalEnergyDependentKCmd = CreateCommand<G4UIcmdWithABool>("/g4cmp/EmpiricalLindhard/EnergyDependentK",
-      "Enable or disable energy-dependent k parameter for empirical Lindhard model.");
-
-  EmpiricalkFixedCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/EmpiricalLindhard/kFixed",
-      "Set fixed k parameter for empirical Lindhard model.");
+  EmpkFixedCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/NIELPartition/Empirical/kFixed",
+      "Set fixed k parameter for Emp Lindhard model.");
       
-  EmpiricalklowCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/EmpiricalLindhard/klow",
-      "Set klow parameter for empirical Lindhard model.");
+  EmpklowCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/NIELPartition/Empirical/klow",
+      "Set klow parameter for Emp Lindhard model.");
 
-  EmpiricalkhighCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/EmpiricalLindhard/khigh",
-      "Set khigh parameter for empirical Lindhard model.");
+  EmpkhighCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/NIELPartition/Empirical/khigh",
+      "Set khigh parameter for Emp Lindhard model.");
 
-  EmpiricalElowCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("/g4cmp/EmpiricalLindhard/Elow",
-      "Set Elow parameter for empirical Lindhard model.");
-  EmpiricalElowCmd->SetUnitCategory("Energy");
+  EmpElowCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("/g4cmp/NIELPartition/Empirical/Elow",
+      "Set Elow parameter for Emp Lindhard model.");
+  EmpElowCmd->SetUnitCategory("Energy");
 
-  EmpiricalEhighCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("/g4cmp/EmpiricalLindhard/Ehigh",
-      "Set Ehigh parameter for empirical Lindhard model.");
-  EmpiricalEhighCmd->SetUnitCategory("Energy");
-
-
-
-
+  EmpEhighCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("/g4cmp/NIELPartition/Empirical/Ehigh",
+      "Set Ehigh parameter for Emp Lindhard model.");
+  EmpEhighCmd->SetUnitCategory("Energy");
 }
-
 
 G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete printCmd; printCmd=0;
@@ -259,14 +253,13 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete lukeFileCmd; lukeFileCmd=0;
   delete ivRateModelCmd; ivRateModelCmd=0;
   delete nielPartitionCmd; nielPartitionCmd=0;
-  delete empiricalKlowCmd; empiricalKlowCmd = 0;
-  delete empiricalKhighCmd; empiricalKhighCmd = 0;
-  delete empiricalElowCmd; empiricalElowCmd = 0;
-  delete empiricalEhighCmd; empiricalEhighCmd = 0;
-  delete empiricalKFixedCmd; empiricalKFixedCmd = 0;
-  delete empiricalEnergyDependentKCmd; empiricalEnergyDependentKCmd = 0;
+  delete EmpklowCmd; EmpklowCmd = 0;
+  delete EmpkhighCmd; EmpkhighCmd = 0;
+  delete EmpElowCmd; EmpElowCmd = 0;
+  delete EmpEhighCmd; EmpEhighCmd = 0;
+  delete EmpkFixedCmd; EmpkFixedCmd = 0;
+  delete EmpEDepKCmd; EmpEDepKCmd = 0;
 }
-
 
 // Parse user input and add to configuration
 
@@ -335,21 +328,21 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
 
   if (cmd == printCmd) G4cout << *theManager << G4endl;
     
-  if (cmd == empiricalKlowCmd)
-    theManager->SetKlow(empiricalKlowCmd->GetNewDoubleValue(value));
+  if (cmd == EmpklowCmd)
+    theManager->SetEmpklow(EmpklowCmd->GetNewDoubleValue(value));
 
-  if (cmd == empiricalKhighCmd)
-    theManager->SetKhigh(empiricalKhighCmd->GetNewDoubleValue(value));
+  if (cmd == EmpkhighCmd)
+    theManager->SetEmpkhigh(EmpkhighCmd->GetNewDoubleValue(value));
 
-  if (cmd == empiricalElowCmd)
-    theManager->SetElow(empiricalElowCmd->GetNewDoubleValue(value));
+  if (cmd == EmpElowCmd)
+    theManager->SetEmpElow(EmpElowCmd->GetNewDoubleValue(value));
 
-  if (cmd == empiricalEhighCmd)
-    theManager->SetEhigh(empiricalEhighCmd->GetNewDoubleValue(value));
+  if (cmd == EmpEhighCmd)
+    theManager->SetEmpEhigh(EmpEhighCmd->GetNewDoubleValue(value));
 
-  if (cmd == empiricalKFixedCmd)
-    theManager->SetKFixed(empiricalKFixedCmd->GetNewDoubleValue(value));
+  if (cmd == EmpkFixedCmd)
+    theManager->SetEmpkFixed(EmpkFixedCmd->GetNewDoubleValue(value));
 
-  if (cmd == empiricalEnergyDependentKCmd)
-    theManager->SetEnergyDependentK(empiricalEnergyDependentKCmd->GetNewBoolValue(value));
+  if (cmd == EmpEDepKCmd)
+    theManager->SetEmpEDepK(EmpEDepKCmd->GetNewBoolValue(value));
 }

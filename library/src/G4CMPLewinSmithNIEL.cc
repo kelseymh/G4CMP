@@ -53,5 +53,5 @@ PartitionNIEL(G4double energy, const G4Material *material, G4double /*Zin*/,
   G4double h = (0.7*g4pow->powA(epsilon,0.6) + 3.*g4pow->powA(epsilon,0.15)
 		+ epsilon);
 
-  return (k*h / (1.+k*h));
+  return (k*h / (1.+k*h));			// Returns EM fraction
 }

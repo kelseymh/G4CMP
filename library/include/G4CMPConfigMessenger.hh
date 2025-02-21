@@ -44,8 +44,8 @@
 // 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
-// 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
-// 20250213  G4CMP-457: Add Lindhard empirical ionization yield model parameters.
+// 20250209  G4CMP-457: Add short names for Lindhard Emp ionization model.
+// 20250213  G4CMP-457: Add Lindhard Emp ionization yield model parameters.
 
 
 
@@ -104,14 +104,12 @@ private:
   G4UIcmdWithABool*   recordMinECmd;
 
   // Empirical Lindhard Model Macro Commands
-  G4UIcmdWithABool* EmpiricalEnergyDependentKCmd;
-  G4UIcmdWithADouble* EmpiricalkFixedCmd;
-  G4UIcmdWithADouble* EmpiricalklowCmd;
-  G4UIcmdWithADouble* EmpiricalkhighCmd;
-  G4UIcmdWithADoubleAndUnit* EmpiricalElowCmd;
-  G4UIcmdWithADoubleAndUnit* EmpiricalEhighCmd;
-
-
+  G4UIcmdWithABool* EmpEDepKCmd;
+  G4UIcmdWithADouble* EmpkFixedCmd;
+  G4UIcmdWithADouble* EmpklowCmd;
+  G4UIcmdWithADouble* EmpkhighCmd;
+  G4UIcmdWithADoubleAndUnit* EmpElowCmd;
+  G4UIcmdWithADoubleAndUnit* EmpEhighCmd;
 
 private:
   G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden

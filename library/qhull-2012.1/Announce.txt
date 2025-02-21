@@ -38,7 +38,7 @@ The convex hull of a set of points is the smallest convex set that contains
 the points.  This article presents a practical convex hull algorithm that
 combines the two-dimensional Quickhull Algorithm with  the general dimension
 Beneath-Beyond Algorithm.  It is similar to the randomized, incremental
-algorithms for convex hull and Delaunay triangulation.  We provide empirical
+algorithms for convex hull and Delaunay triangulation.  We provide Emp
 evidence that the algorithm runs faster when the input contains non-extreme
 points, and that it uses less memory.
 
