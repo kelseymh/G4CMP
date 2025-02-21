@@ -95,7 +95,7 @@ hits below step length |
 | G4CMP\_HDTRAPION\_MFP | /g4cmp/hDTrapIonizationMFP [L] mm | MFP for e-trap ionization by h+ |
 | G4CMP\_HATRAPION\_MFP | /g4cmp/hATrapIonizationMFP [L] mm | MFP for h-trap ionization by h+ |
 | G4CMP\_TEMPERATURE   | /g4cmp/temperature [T] K | Device/substrate/etc. temperature |
-| G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition See below | Select NIEL partitioning function |
+| G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [model] | Select NIEL partitioning function. See below |
 | G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t\|f] | Create charges in sphere around location |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation [h] [k] [l] | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
@@ -127,7 +127,7 @@ the set of models provided in G4CMP:
     LewinSmith                      # Fixed k Lindhard NIEL
     Lindhard                        # Lindhard-Robinson NIEL
     EmpiricalLindhard               # Energy dependent k Lindhard NIEL       
-    Impact@TUNL                     # NIEL measurements in Si $100$ eV $<=E_r<= 10$ keV
+    Impact@TUNL                     # IMPACT@TUNL Si NIEL measurements
     Sarkis                          # Lindhard NIEL modified by Sarkis 2022     
 
 The environment variable `$G4CMP_MAKE_PHONONS` controls the rate (R) as a
