@@ -43,6 +43,8 @@
 //		add EventID column to debugging output.
 // 20241224  G4CMP-419 -- Drop requirement for G4CMP_DEBUG preprocessor flag.
 //		Users can enable debugging output file with verbosity.
+// 20250223  G4CMP-462 -- Restore use of G4CMP_DEBUG flag to hide changes to
+//		lattice verbosity, which causes a data race.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -157,10 +159,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
-
-  // *** TURN ON LATTICE VERBOSITY
-  G4int latVerbose = lat->GetVerboseLevel();
-  lat->SetVerboseLevel(verboseLevel);
 
   if (verboseLevel > 1) {
     G4cout << " E_track " << Etrk/eV << " eV"
@@ -306,7 +304,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     G4cerr << GetProcessName() << " ERROR: Unable to generate phonon after "
 	   << iThrow << " attempts" << G4endl;
 
-    lat->SetVerboseLevel(latVerbose);
     return &aParticleChange;	// Unable to generate phonon
   } else if (verboseLevel && iThrow>1) {
     G4cout << GetProcessName() << " " << trkName << " phonon required "
@@ -367,9 +364,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     output << aTrack.GetWeight()*weight << "," << k_recoil.mag() << ","
 	   << Erecoil/eV << "," << precoil.mag()/eV << std::endl;
   }
-
-  // *** TURN OFF LATTICE VERBOSITY
-  lat->SetVerboseLevel(latVerbose);
 
   ClearNumberOfInteractionLengthLeft();
   return &aParticleChange;
