@@ -64,7 +64,7 @@ void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
   G4cout << G4endl;
 
   // From material, Get Z and A for use as projectile (internal nuclear recoil)
-  G4double Zin = target->GetZ(), Ain = target->GetA();
+  G4double Zin = target->GetZ(), Ain = target->GetA()/(g/mole);
 
   // Loop over energy steps, get yield values at each energy
   G4double unitVal = G4UnitDefinition::GetValueOf(unit);

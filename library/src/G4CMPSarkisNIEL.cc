@@ -22,6 +22,7 @@
 // 20240705  M. Kelsey -- Restore A, and use it in test to check vs. SiA
 // 20250102  M. Kelsey -- Fix warning messages to report correct name; move
 //	       constructor here, to load data file once per job.
+// 20250211  D. Sadek Fix the energy scale and interpolation.
 
 #include "globals.hh"
 #include "G4CMPSarkisNIEL.hh"
@@ -52,6 +53,7 @@ G4CMPSarkisNIEL::G4CMPSarkisNIEL() {
     return;
   }
 
+  lVector.ScaleVector(keV, 1.);
   lVector.SetSpline(true);		// Ensure that we can interpolate
   lVector.FillSecondDerivatives();
 }

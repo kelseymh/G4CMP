@@ -9,10 +9,13 @@
 /// Computation of NIEL according to Lindhard & Robinson, depending upon
 /// both the material properties and the projectile mass and charge.
 /// May be registered by client code into G4CMPEnergyPartition.
+/// Paper DOI: https://doi.org/10.1016/0029-5493(75)90035-7
+/// Additional reference DOI: https://doi.org/10.1109/23.907581 
 //
 // $Id$
 //
 // 20190711  Michael Kelsey
+// 20250206  D. Sadek -- Provide references
 
 #ifndef G4CMPLindhardNIEL_hh
 #define G4CMPLindhardNIEL_hh 1
