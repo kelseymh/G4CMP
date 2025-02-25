@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-02-25  g4cmp-V09-04-01 More fixes to NIEL calclations, MT data races.
 2025-02-23  G4CMP-462 : Address data race warnings from GCC thread sanitizer.
 2025-02-12  G4CMP-460 : Fix Lindhard-Robinson ionization yield model.
 2025-02-11  G4CMP-452 : Fix energy scaling and interpolation in Sarkis NIEL.
