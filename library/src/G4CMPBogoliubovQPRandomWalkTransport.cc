@@ -25,6 +25,9 @@
 #include "Randomize.hh"
 #include "G4RandomDirection.hh"
 
+//Temporary REL
+#include <fstream>
+
 #include <iostream>
 #include <cmath>
 using namespace std;
@@ -48,6 +51,10 @@ G4CMPBogoliubovQPRandomWalkTransport::G4CMPBogoliubovQPRandomWalkTransport(const
   
   //fSafetyHelper is initialized in AlongStepGPIL
   fSafetyHelper=nullptr;
+
+  //Temporary REL
+  //fOutfile.open("/Users/ryanlinehan/QSC/Sims/Geant4/scRebuild-build/RandomWalkSampledDimlessTimes.txt",std::ios::trunc);
+  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -58,6 +65,8 @@ G4CMPBogoliubovQPRandomWalkTransport::~G4CMPBogoliubovQPRandomWalkTransport()
     G4cout << "G4CMPBogoliubovQPRandomWalkTransport destruct " << GetProcessName()
           << G4endl;
   }
+
+  //fOutfile.close();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -107,61 +116,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
     G4cout << "---> REL/EY ASGIPL: In a turnaround step. Killing the transport GPIL." << G4endl;
     return DBL_MAX;
   }
-  
-  
-  /*
-  //Initialize the lattice manager
-  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-
-  
-  //--------------------------------------------------------------------  
-  //1. Determine if we're in turnaround step.
-
-  //REL 0.01 nm has some odd edge cases pop up where currentVolPlusEps isn't calculated properly. Guessing it's something in that function
-  //that doesn't like the smaller tolerance because 1.0*nm works okay.
-  G4double boundTolerance = 1.0*nm;//0.01*nm; 
-  G4VPhysicalVolume * currentVolume = track.GetVolume();
-  G4ThreeVector trackPosition = track.GetPosition();
-  G4ThreeVector momentumDir = track.GetMomentumDirection();
-  G4ThreeVector trackPosition_eps = trackPosition+momentumDir*boundTolerance;
-  G4ThreeVector trackPosition_mineps = trackPosition-momentumDir*boundTolerance;
-  G4VPhysicalVolume * currentVolPlusEps = G4CMP::GetVolumeAtPoint(trackPosition_eps);
-  G4VPhysicalVolume * currentVolMinEps = G4CMP::GetVolumeAtPoint(trackPosition_mineps);
-  G4StepStatus theStatus = track.GetStep()->GetPreStepPoint()->GetStepStatus();
-  G4cout << "---> REL/EY: momentumDir in ASGPIL: " << momentumDir << G4endl;
-  G4cout << "---> REL/EY: CurrentVolume by track: " << currentVolume->GetName() << ", CurrentVolumePlusEps, by GetVolumeAtPoint: " << currentVolPlusEps->GetName() << ", currentVolumeMinusEps, by GetVolumeAtPoint: " << currentVolMinEps->GetName() << ",  step status: " << track.GetStep()->GetPreStepPoint()->GetStepStatus() << G4endl;
-  
-  //If the volume plus epsilon (in the direction of the step) and the current volume are not the same (and if we're
-  //in a boundary-limited step), then we're in a turnaround step. This assumes that the real distance to the next
-  //geometric feature is not smaller than the boundTolerance -- in that case, this may break down a bit. Return
-  //that this is inactive.
-  fTrackOnBoundary = false;
-  if( currentVolPlusEps != currentVolume && theStatus == fGeomBoundary ){    
-    G4cout << "---> REL/EY: In a turnaround step. Killing the transport GPIL." << G4endl;
-    fTrackOnBoundary = true;
-    isActive = false;
-    return DBL_MAX;
-  }
-  if( theStatus == fGeomBoundary ) fTrackOnBoundary = true;
-  
-  G4cout << "---> REL/EY: Not in a turnaround step. Continuing the transport GPIL." << G4endl;
-
-  G4cout << "---> REL/EY: theStatus: " << theStatus << G4endl;
-  //--------------------------------------------------------------------  
-  //2. Verify that, if we're on a boundary, the direction of momentum is going into a volume with a lattice. Since we've updated the
-  //   lattice at this point, we should confirm that the current procUtils lattice is not null, and that it is the
-  //   same as the lattice corresponding to what the latticeManager sees as belonging to currentVolPlusEps.
-  //   This is purely a check.
-  if( theStatus == fGeomBoundary && !LM->HasLattice(currentVolPlusEps) ){ 
-    G4ExceptionDescription msg;
-    msg << "We're on a boundary (i.e. our boundary is now behind us) and find no lattice in the region where a BogoliubovQP is intending to go during the QP random walk transport's AlongStepGPIL function.";
-    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLength", "BogoliubovQPRandomWalkTransport001",FatalException, msg);
-  }
-
-  */
-
-
-  
+    
   //3. The diffusion constant and other superconductor-specific information are accessed via the
   //   SCUtils class that this inherits from. No need to actually grab it from somewhere: it's already
   //   a data member.
@@ -225,162 +180,6 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
 }
 
 
-/*
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-// This is the "working" version
-G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLength(
-                             const G4Track& track,
-                             G4double previousStepSize,
-                             G4double currentMinimalStep,
-                             G4double& currentSafety,
-                             G4GPILSelection* selection)
-{
-  G4cout << "REL-- InRandomWalkTransport::AlongStepGPIL() A" << G4endl;
-
-  G4cout << "---> REL/EY: At beginning of ASGPIL, track volume: " << track.GetVolume()->GetName() << G4endl;
-  G4cout << "---> REL/EY: At beginning of ASGPIL, previousStepSize: " << previousStepSize << ", currentSafety: " << currentSafety << G4endl;
-  G4cout << "---> REL/EY: At beginning of ASGPIL, momentum information: " << track.GetMomentumDirection() << G4endl;
-  G4cout << "---> REL/EY: At beginning of ASGPIL, position: " << track.GetPosition() << G4endl;
-  G4cout << "---> REL/EY: At beginning of ASGPIL, global time: " << track.GetGlobalTime() << G4endl;
-  
-  
-  //To determine if in turnaround step here, do the following:
-  //1. Find current volume a la touchable.
-  //2. Find momentum. If in turnaround step, current volume will be NOT the volume into which we're reflecting.
-  //3. Find the volume that corresponds to a slight translation along the momentum direction. If it's NOT the same as the current
-  //   volume, we're in a turnaround step and we set this to DBL_MAX for this step.
-  //4. If else, we're not in a turnaround step -- we're potentially in a transmission step. Proceed as appropriate.
-  //   -- Step is still not going to run okay here... we're passing in an INCOMPLETE step into the checkSurfaceNormal calculation. I think we need
-  //      a CheckSurfaceNormal rendition for these stages where we need to calculate the 
-
-  //Overall steps
-  //0. Update the current lattice.
-  //1. Determine if in turnaround step from reflection. If we are, set to DBL_MAX and skip
-  //2. Otherwise, it's a transmission step.
-  //3. Verify that the direction of momentum is going into a material with a lattice
-  //4. Identify a stepX and step Y in that direction, making sure to draw Dn from the correct lattice
-
-  //--------------------------------------------------------------------
-  //0. Some preliminaries
-  if(!fSafetyHelper) {
-    G4TransportationManager* transportMgr ;
-    transportMgr = G4TransportationManager::GetTransportationManager() ;
-    fSafetyHelper = transportMgr->GetSafetyHelper();        
-    fSafetyHelper->InitialiseHelper();
-  }
-  *selection = NotCandidateForSelection;
-
-  //Set the path length and pre-diffusion path length to the length suggested by discrete process race winner
-  fPathLength = currentMinimalStep;
-  fPreDiffusionPathLength = currentMinimalStep;
-  G4cout << "---> REL/EY: fPathLength in ASGPIL: " << currentMinimalStep << G4endl;
-  G4cout << "---> REL/EY: fPreDiffusionPathLength in ASGPIL: " << currentMinimalStep << G4endl;
-  G4cout << "---> REL/EY: velocity in ASGPIL: " << track.GetVelocity() << G4endl;
-
-  
-  //Get energy and velocity of track
-  G4double energy = track.GetKineticEnergy();
-  G4double velocity = track.GetVelocity();
-  
-  //Initialize the lattice manager
-  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-
-  
-  //--------------------------------------------------------------------  
-  //1. Determine if we're in turnaround step.
-
-  //REL 0.01 nm has some odd edge cases pop up where currentVolPlusEps isn't calculated properly. Guessing it's something in that function
-  //that doesn't like the smaller tolerance because 1.0*nm works okay.
-  G4double boundTolerance = 1.0*nm;//0.01*nm; 
-  G4VPhysicalVolume * currentVolume = track.GetVolume();
-  G4ThreeVector trackPosition = track.GetPosition();
-  G4ThreeVector momentumDir = track.GetMomentumDirection();
-  G4ThreeVector trackPosition_eps = trackPosition+momentumDir*boundTolerance;
-  G4ThreeVector trackPosition_mineps = trackPosition-momentumDir*boundTolerance;
-  G4VPhysicalVolume * currentVolPlusEps = G4CMP::GetVolumeAtPoint(trackPosition_eps);
-  G4VPhysicalVolume * currentVolMinEps = G4CMP::GetVolumeAtPoint(trackPosition_mineps);
-  G4StepStatus theStatus = track.GetStep()->GetPreStepPoint()->GetStepStatus();
-  G4cout << "---> REL/EY: momentumDir in ASGPIL: " << momentumDir << G4endl;
-  G4cout << "---> REL/EY: CurrentVolume by track: " << currentVolume->GetName() << ", CurrentVolumePlusEps, by GetVolumeAtPoint: " << currentVolPlusEps->GetName() << ", currentVolumeMinusEps, by GetVolumeAtPoint: " << currentVolMinEps->GetName() << ",  step status: " << track.GetStep()->GetPreStepPoint()->GetStepStatus() << G4endl;
-  
-  //If the volume plus epsilon (in the direction of the step) and the current volume are not the same (and if we're
-  //in a boundary-limited step), then we're in a turnaround step. This assumes that the real distance to the next
-  //geometric feature is not smaller than the boundTolerance -- in that case, this may break down a bit. Return
-  //that this is inactive.
-  fTrackOnBoundary = false;
-  if( currentVolPlusEps != currentVolume && theStatus == fGeomBoundary ){    
-    G4cout << "---> REL/EY: In a turnaround step. Killing the transport GPIL." << G4endl;
-    fTrackOnBoundary = true;
-    isActive = false;
-    return DBL_MAX;
-  }
-  if( theStatus == fGeomBoundary ) fTrackOnBoundary = true;
-  
-  G4cout << "---> REL/EY: Not in a turnaround step. Continuing the transport GPIL." << G4endl;
-
-  G4cout << "---> REL/EY: theStatus: " << theStatus << G4endl;
-  //--------------------------------------------------------------------  
-  //2. Verify that, if we're on a boundary, the direction of momentum is going into a volume with a lattice. Since we've updated the
-  //   lattice at this point, we should confirm that the current procUtils lattice is not null, and that it is the
-  //   same as the lattice corresponding to what the latticeManager sees as belonging to currentVolPlusEps.
-  //   This is purely a check.
-  if( theStatus == fGeomBoundary && !LM->HasLattice(currentVolPlusEps) ){ 
-    G4ExceptionDescription msg;
-    msg << "We're on a boundary (i.e. our boundary is now behind us) and find no lattice in the region where a BogoliubovQP is intending to go during the QP random walk transport's AlongStepGPIL function.";
-    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLength", "BogoliubovQPRandomWalkTransport001",FatalException, msg);
-  }
-
-  //3. The diffusion constant and other superconductor-specific information are accessed via the
-  //   SCUtils class that this inherits from. No need to actually grab it from somewhere: it's already
-  //   a data member.
-  G4cout << "---> REL/EY: The gap energy, drawn from SCUtils, is: " << fGapEnergy << G4endl;
-  G4cout << "---> REL/EY: The Dn, drawn from SCUtils, is: " << fDn << G4endl;
-  G4cout << "---> REL/EY: The Teff, drawn from SCUtils, is: " << fTeff << G4endl;  
-  G4cout << "---> REL/EY: Gap energy: " << fGapEnergy << ", energy: " << energy << ", DN: " << fDn << G4endl; 
-  
-  //4. Given this, compute a step length based on the time step.
-  if ((energy>=fGapEnergy) && (fDn)>0){ 
-    isActive = true;
-    *selection = NotCandidateForSelection;
-    
-    //Calculate the energy dependent diffusion constant
-    G4double E_ratio = fGapEnergy/energy;
-    G4double E_ratio2 = pow(E_ratio,2.0);
-    fDiffConst = fDn*sqrt(1-E_ratio2);
-    fTimeStep = fPathLength/velocity;
-    G4cout << "--->REL/EY: Diffusion constant (adjusted): " << fDiffConst << G4endl;
-
-    //Now we can calculate the std of the gaussian for the RW. A few critical notes:
-    //1. Since boundary interactions are handled between this function and the AlongStepDoIt (and critically rely on
-    //   the Transportation process having its say), we don't restrict this distance here.
-    //2. Since we're randomly drawing phi with our "pre-randomization" strategy, we're only sampling a 1D distribution
-    //   in displacement. However, we can't just use a simple gaussian in r because it would over-weight low-r displacements.
-    //   Here the density of points emerging in any direction from the pre-step points must fall off as a gaussian, which
-    //   means that in radial coordinates our sampling function needs to pick up an additional factor of r. There are two
-    //   ways to do this:
-    //   a. Use a G4RandGeneral function and pass a Gauss * r function in (the "rigorous" way that is likely to be slower
-    //      because we need a fine array for sampling)
-    //   b. Sample in X and Y and use them to compute an R, ignoring the angle implied by X and Y. The resulting radial
-    //      distribution should be the same as that in a, and this will give faster performance. This is what we will use.
-    G4double sigma = sqrt(2.0*fDiffConst*fTimeStep);
-    G4cout << "--->REL/EY: fTimeStep: " << fTimeStep << ", velocity: " << velocity << ", sigma: " << sigma << ", energy: " << energy << ", fDn: " << fDn << G4endl;
-    G4RandGauss* gauss_dist = new G4RandGauss(G4Random::getTheEngine(),0.0,sigma);
-    double gauss_dist_x = fabs(gauss_dist->fire());
-    double gauss_dist_y = fabs(gauss_dist->fire());
-    fPathLength = pow(gauss_dist_x*gauss_dist_x + gauss_dist_y*gauss_dist_y,0.5);
-    G4cout << "--->REL/EY: Successfully returning AlongStepGPIL (diffusion-folded) path length of " << fPathLength << G4endl;
-    G4cout << "--->REL/EY: Momentum direction is: " << momentumDir.unit() << G4endl;    
-    return fPathLength;  
-  }
-  else{
-    G4ExceptionDescription msg;
-    msg << "QP energy is too low or we're missing a Dn. Returning DBL_MAX for alongStepDoIt.";
-    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLength", "BogoliubovQPRandomWalkTransport002",FatalException, msg);
-    isActive = false;
-    return DBL_MAX;
-  }
-}
-*/
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -548,147 +347,6 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
   return &fParticleChange;
 }      
 
-
-/*
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-//"Base" version
-G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4Track& track, const G4Step& step) {
-
-  G4cout << "REL-- InRandomWalkTransport::AlongStepDoIt() A" << G4endl;
-  G4cout << "REL: firstlook status1: " << track.GetStep()->GetPreStepPoint()->GetStepStatus() << G4endl;
-  G4cout << "REL: firstlook status2: " << step.GetPreStepPoint()->GetStepStatus() << G4endl;
-  G4cout << "REL: firstlook status3: " << step.GetPostStepPoint()->GetStepStatus() << G4endl;
-
-
-  
-  fParticleChange.ProposeMomentumDirection(
-    step.GetPostStepPoint()->GetMomentumDirection());
-  fNewPosition = step.GetPostStepPoint()->GetPosition();
-  fNewDirection = step.GetPostStepPoint()->GetMomentumDirection();
-  fParticleChange.ProposePosition(fNewPosition);
-
-  //Get the initial and final times -- since Transport runs first in the alongStepDoIt processes,
-  //we should have the "transport-limited" times
-  G4double stepStartGlobalTime = step.GetPreStepPoint()->GetGlobalTime();
-  G4double stepEndGlobalTime = step.GetPostStepPoint()->GetGlobalTime();
-  G4double stepTransportOnlyDeltaT = stepEndGlobalTime-stepStartGlobalTime; //Limited by transport, needs to be overwritten.
-  G4cout << "REL: stepStartGlobalTime: " << stepStartGlobalTime << ", stepEndGlobalTime: " << stepEndGlobalTime << ", stepTransportationOnlyDeltaT: " << stepTransportOnlyDeltaT << G4endl;
-
-  G4ThreeVector preStepPoint = step.GetPreStepPoint()->GetPosition();
-  G4ThreeVector postStepPoint = step.GetPostStepPoint()->GetPosition();
-  G4double stepTransportationOnlyDeltaR = (postStepPoint-preStepPoint).mag();
-  
-  
-  //This is the "old" velocity (i.e. that not computed using the diffusion step)
-  G4double velocity = step.GetPostStepPoint()->GetVelocity();
-  fParticleChange.ProposeVelocity(velocity);
-  fPositionChanged = false;
-
-  G4double stepLength = step.GetStepLength();
-  G4double epsilon = 1.0*nm;
-  
-  // Check if the particle met conditions to do random walk from GPIL command. Here, this occurs
-  // during a turnaround step where we want to set step lengths to zero. If we don't set the proposedTrueStepLength
-  // to zero, then we'll end up mucking up our boundary processes which expect a zero step length
-  // during turnaround steps.
-  if(!isActive) {
-    fPathLength = stepLength;
-    fPreDiffusionPathLength = stepLength; 
-    G4cout << "Step is not active" << G4endl;
-    G4cout << "Particle path length: " << fPathLength <<G4endl;
-    G4cout << "Particle pre-diffusion path length: " << fPreDiffusionPathLength <<G4endl;
-    G4cout << "Particle velocity: " << velocity <<G4endl;
-    G4cout << "Time Step : " << fPathLength/velocity <<G4endl;
-    G4cout << "Particle direction: " << fNewDirection << G4endl;
-    fParticleChange.ProposeLocalTime(0);
-    fParticleChange.ProposeTrueStepLength(fPreDiffusionPathLength);
-  }
-
-  // Particle did meet conditions to undergo RW
-  else {
-
-    //Update the velocity
-    //velocity = fPathLength / fTimeStep;
-    G4cout << "---> REL/EY: in AlongStepDoit, velocity is set and proposed to " << velocity << G4endl;
-    fParticleChange.ProposeVelocity(velocity);
-
-    //Need to check to see whether our proposed step is within the bounds of our current volume. fPathLength is passed as a const, and here
-    //is the diffusion displacement.
-    fOldPosition = step.GetPreStepPoint()->GetPosition();
-    fNewDirection = step.GetPreStepPoint()->GetMomentumDirection();
-    fNewPosition = fOldPosition+fPathLength*fNewDirection;
-    //G4double safety = fSafetyHelper->ComputeSafety(fOldPosition);
-
-    G4cout << "---> REL/EY: In AlongStepDoIt, time of pre-step point is: " << step.GetPreStepPoint()->GetGlobalTime() << G4endl;
-    G4cout << "---> REL/EY: In AlongStepDoIt, time of post-step point is: " << step.GetPostStepPoint()->GetGlobalTime() << G4endl;
-    
-    //Test. I think CheckNextStep may also be valuable here, especially when we get into scenarios where we enter daughter volumes
-    double nextStepSafety = 0;    
-    double nextStepLength = fSafetyHelper->CheckNextStep(fOldPosition,fNewDirection,fPathLength,nextStepSafety);
-    G4cout << "---> REL/EY: Checking next step. CheckNextStep's next step length (dist to boundary): " << nextStepLength << ", nextStepSafety: " << nextStepSafety << G4endl;
-
-    //We're actually going to try using checkNextStep instead. Here, if we're not on a boundary, the returned step should be kInfinity and
-    //the safety should be nonzero.
-    if( nextStepLength == kInfinity ){ //We're out in the bulk
-      G4cout << "---> REL/EY: the proposed step does not cross a boundary. Setting position manually." << G4endl;
-      fSafetyHelper->ReLocateWithinVolume(fNewPosition);
-      fParticleChange.ProposeMomentumDirection(fNewDirection);
-
-      //Since we are forced to use the pre-step point's velocity for propagation of this step (and the pre-step point's velocity is
-      //the one we started with), transportation will add a time corresponding to traveling the calculated path length at that velocity.
-      //We should subtract that time off our final proposed time.
-      G4cout << "---> REL/EY: fTimeStep: " << fTimeStep << ", timeChangefromTransportationOnly: " << stepTransportOnlyDeltaT << G4endl;
-      fParticleChange.ProposeLocalTime(fTimeStep-stepTransportOnlyDeltaT);
-
-
-      //I think this needs to be set to the *old, pre-diffusion* path length, since other processes that aren't the step-limiting one will
-      //need to subtract off a distance. That distance basically needs to be velocity * deltaT. The current process that limits the step
-      //(here, not transportation) will zero out its number of interaction lengths.
-      G4cout << "---> REL/EY: Proposing a true (diffusion-UNfolded) step length of: " << fPreDiffusionPathLength << G4endl;
-      fParticleChange.ProposeTrueStepLength(fPreDiffusionPathLength);
-      fPositionChanged = true;
-    }
-    else if( nextStepLength != kInfinity ){ //We're on a surface
-      if( step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary ){
-	G4ExceptionDescription msg;
-	msg << "Somehow the CheckNextStep returned a step length that is not kInfinity but the step is indeed boundary limited. Are we actually landing on a boundary?";
-	G4Exception("G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
-      }
-      else{
-	G4cout << "---> REL/EY: CheckNextStep shows that we've hit a boundary with our fPathLength computed in G4CMPBogoliubovRandomWalkTransport class. Recalculating time-to-wall and required velocity for this, but not setting new position -- will let Transportation set this." << G4endl;
-	//Compute a representative deltaT at which we reach the wall given diffusion. Note that here, we really should be drawing from a
-	//distribution, since there's not a one-to-one for the time at which diffusion from one point to another occurs. But for now we'll
-	//make it a single time for simplicity.
-	G4double newDiffusionTime = nextStepLength*nextStepLength / 2.0 / fDiffConst;
-
-	//Sanity check: this step length and the step deltaT should be consistent with the velocity
-	G4cout << "---> REL/EY: newDiffusionTime: " << newDiffusionTime << ", stepTransportationOnlyDeltaR: " << stepTransportationOnlyDeltaR << G4endl;
-	fParticleChange.ProposeLocalTime(newDiffusionTime-stepTransportOnlyDeltaT);
-	fParticleChange.ProposeMomentumDirection(fNewDirection);
-
-	//We now modify the true step length (which becomes the next stepLength in the step) to be whatever the new diffusion time is, divided by the
-	//velocity. This is working backwards from our above action of finding the step time from the velocity and the "true" step length, i.e. the one
-	//that's given by the physics of the post-step processes. This "abridged true step length" will remove the necessary fPathLength from the scatter
-	//despite Transportations' naive idea of what the next step length is (i.e. an "as the crow flies" length to the boundary).
-	G4double abridgedTrueStepLength = velocity * newDiffusionTime;
-	fParticleChange.ProposeTrueStepLength(abridgedTrueStepLength);
-	G4cout << "---> REL/EY: proposed abridged diffusion-UNfolded step length is " << abridgedTrueStepLength << ", which is less than the original diffusion-UNfolded step length, " << fPreDiffusionPathLength << G4endl;
-      }
-    }
-  }
-
-  //If we've manually changed the position in such a way that transportation doesn't win the GPIL race, then propose the new position here.
-  if(fPositionChanged){
-    fParticleChange.ProposePosition(fNewPosition);
-  }
-
-  G4cout << "---> REL/EY: At end of AlongStepDoIt, old position: " << fOldPosition << G4endl;
-  G4cout << "---> REL/EY: At end of AlongStepDoIt, new position: " << fNewPosition << G4endl;
-  
-  //Should this go here or in the above block?  
-  return &fParticleChange;
-}      
-*/
       
 
   
@@ -1013,7 +671,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     //established by the safety. For now we use something simple and wrong to test,
     //taking the 2D safety to be the sigma of the diffusion broadening
     //but need the true expression from Grebenkov
-    G4double timeStepToBoundary = the2DSafety*the2DSafety / 2.0 / fDiffConst;
+    G4double timeStepToBoundary = SampleTimeStepFromFirstPassageDistribution(the2DSafety);    
     fTimeStepToBoundary = timeStepToBoundary;
     G4cout << "---> REL/EY MFP: Time step to boundary = " << fTimeStepToBoundary << G4endl;
     
@@ -1111,4 +769,83 @@ void G4CMPBogoliubovQPRandomWalkTransport::UpdateSCAfterLatticeChange()
   //If it is a SC, then we should update the SC information for the SC utils class within the base of this.
   //Also, handle the checking/updating of the lookup tables to be used for each SC.
   this->LoadLatticeInfoIntoSCUtils(this->theLattice);
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+//Sample a time step for first passage through a 2D disk of radius the2DSafety. This is from the 2013 Grebenkov paper on
+//efficient monte carlo techniques for diffusion. (arXiv:1304.7807, physics.comp-ph)
+G4double G4CMPBogoliubovQPRandomWalkTransport::SampleTimeStepFromFirstPassageDistribution(G4double the2DSafety)
+{
+  //Hardcoded -- can change if we want to
+  std::string samplingTechnique = "AcceptanceRejection";
+  
+  //Use an acceptance-rejection technique with the (known) pdf
+  if( samplingTechnique == "AcceptanceRejection" ){
+    G4double dimensionlessTime = SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique();
+    return dimensionlessTime * the2DSafety*the2DSafety / fDiffConst;
+  }
+
+  //Spot for other techniques that are more efficient (Inversion/Newton, etc.)
+  else{
+    G4ExceptionDescription msg;
+    msg << "Attempting to use an unknown time sampling technique, " << samplingTechnique << " for first-passage time. Throwing an error.";
+    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::SampleTimeeStepFromFirstPassageDistribution", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+  }
+}
+
+//This samples a dimensionless time step using A/R technique. 
+G4double G4CMPBogoliubovQPRandomWalkTransport::SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique()
+{
+  G4cout << "---> REL/EY: Sampling dimensionless time step with A/R technique." << G4endl;
+  
+  //Define min and max allowable sampled dimensionless times. These are
+  //set somewhat arbitrarily but are basically meant to ensure that we
+  //aren't including in our domain regions where the pdf is vanishingly small
+  //(which increases our execution time).
+  G4double minT = 0.001;
+  G4double maxT = 3;
+  G4double maxVal = 4.06615; //Hardcoded REL, but the max value of our calculated Grebenkov disk pdf for dSc/dt
+
+  //Loop indefinitely -- when we find a point under the curve, we'll break
+  G4double sampledT = -1;
+  while(1){
+    //Sample a point in the 2D space spanned by this pdf
+    double sampleT = G4UniformRand()*(maxT-minT);    
+    double sampleY = G4UniformRand()*maxVal;
+
+    //Compute the pdf at the given sample T and compare to the sampleY
+    //These need to be made into less-hardcoded numbers.
+    double BesselJ1_evalAt_alpha00 = 0.519153; //Hardcoded REL
+    double alpha00 = 2.4048; //Hardcoded REL    
+    double derivHigh = -2.0*alpha00/BesselJ1_evalAt_alpha00*exp(-1*alpha00*alpha00*sampleT);
+    double derivLow = exp(-1.0/4.0/sampleT) * (-0.5/sampleT/sampleT + 0.5/sampleT - 16*sampleT);
+
+    //This defines the transition between the low-time approximation and the high-time approximation
+    G4cout << "--> REL/EY: Sampled T: " << sampleT << ", sampled Y: " << sampleY << ", -derivLow: " << -1*derivLow << ", -derivHigh: " << -1*derivHigh << G4endl;
+    if( sampleT <= 0.15 ){
+      if( sampleY < -1*derivLow ){
+	sampledT = sampleT;
+	break;
+      }
+    }
+    else{
+      if( sampleY < -1*derivHigh ){
+	sampledT = sampleT;
+	break;
+      }
+    }   
+  }
+
+  //Sanity check
+  if( sampledT < 0 ){
+    G4ExceptionDescription msg;
+    msg << "Somehow failed to sample an appropriate time using the acceptance/rejection technique. Throwing an error.";
+    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+  }
+
+  //fOutfile << sampledT << G4endl;  
+
+  return sampledT;
+  
 }

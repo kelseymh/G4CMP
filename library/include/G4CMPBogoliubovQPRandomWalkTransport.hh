@@ -22,6 +22,9 @@
 #include "G4CMPSCUtils.hh"
 #include "G4CMPBoundaryUtils.hh"
 
+//TEMPORARY REL
+#include <fstream> 
+
 class G4ParticleDefinition;
 class G4SafetyHelper;
 
@@ -95,7 +98,7 @@ protected:
   G4double ContinuousStepLimit(const G4Track& track,
                                G4double previousStepSize,
                                G4double currentMinimalStep,
-                               G4double& currentSafety);
+                               G4double& currentSafety);  
 
 private:
 
@@ -110,6 +113,11 @@ private:
 
   // ======== Cached values - may be state dependent ================
 
+
+  G4double SampleTimeStepFromFirstPassageDistribution(G4double the2DSafety);
+  G4double SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique();
+
+  
 protected:
 
   virtual G4bool UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack);
@@ -138,6 +146,10 @@ private:
   G4bool                      fTrackOnBoundary= false;
   G4bool                      fVerySmallStep= false;
   G4double                    fBoundaryFudgeFactor;
+
+  //std::ofstream fOutfile;
+  
+  
 };
 
 // ======== Run time inline methods ================
