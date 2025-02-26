@@ -67,6 +67,8 @@ public:
   // Post step actions
   G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&) override;
 
+  G4ThreeVector FindDirectionToNearbyBoundary(const G4Track& track, const G4double the2DSafety );
+  
 public:
  
   // Update the default fTimeStep of the random walker if currentMinimalStep is longer
@@ -81,7 +83,7 @@ protected:
 
   // This method is not used for tracking, it returns mean free path value
   G4double GetMeanFreePath(const G4Track& track,
-                           G4double,
+                           G4double previousStepSize,
                            G4ForceCondition* condition) override;
 
   // This method is not used for tracking, it returns step limit
@@ -123,6 +125,9 @@ private:
   G4double                    fPathLength;             //Path length returned by the AlongStepGPIL (starts diffusion-unfolded, and then folds in diffusion)
   G4double                    fPreDiffusionPathLength; //Initial, diffusion-unfolded path length, for persistency
   G4double                    fDiffConst;              //Energy dependent diffusion constant
+
+  G4double                    f2DSafety;               //The 2D safety computed for this step
+  G4double                    fTimeStepToBoundary;     //The time step computed given the 2D safety computed for this step
   
   G4ThreeVector               fOldPosition;            //Position at the beginning of the step
   G4ThreeVector               fNewPosition;            //Proposed position after diffusion
@@ -131,7 +136,8 @@ private:
   G4bool                      fPositionChanged= false;
   G4bool                      isActive= false;
   G4bool                      fTrackOnBoundary= false;
-    
+  G4bool                      fVerySmallStep= false;
+  G4double                    fBoundaryFudgeFactor;
 };
 
 // ======== Run time inline methods ================

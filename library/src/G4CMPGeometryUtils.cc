@@ -173,6 +173,356 @@ G4ThreeVector G4CMP::GetSurfaceNormal(const G4StepPoint* stepPoint, const G4Thre
 }
 */
 
+/*
+//Find safety in XY, if we're ON a boundary. Here, since we're on a boundary, the DistToIn and DistToOut
+//functions will be pretty useless (will return 0), but since hopefully boundary interactions won't
+//actually occur that frequently, we can just do the spamming of vectors and find the smallest nonzero
+//value. We'll also want to watch out for curvature, in a scenario where the random direction is quite
+//parallel to the boundary. Will need to debug this later.
+G4double G4CMP::Get2DSafetyFromBoundary(const G4Track& theTrack)
+{
+  G4cout << "REL in Get2DSafetyFromBoundary" << G4endl;
+  
+  //First, identify the touchable. Recall that for use in the GPIL functions, we don't have a post-step point yet, so the
+  //touchable should correspond to the pre-step point. Identify the volume name, get 
+  const G4VTouchable* volTouch = theTrack.GetStep()->GetPreStepPoint()->GetTouchable();
+  G4VPhysicalVolume* volPhys = volTouch->GetVolume();
+  G4LogicalVolume* volLog = volPhys->GetLogicalVolume();
+  G4VSolid * volSolid = volLog->GetSolid();
+  G4ThreeVector pos = theTrack.GetPosition();
+
+  //Rotate the position to the touchable's coordinates
+  RotateToLocalPosition(volTouch, pos);
+
+  //Spam a set of DistToOuts in different directions. This part slows things down substantially and should be used sparingly.
+  //This part should be sped up a bit by figuring out the normal and then only throwing vectors that are on the "good" side
+  //of that normal
+  double nearestSurfaceDistXY = DBL_MAX;
+  G4ThreeVector theDir;
+  G4int nV = 100;
+  clock_t timestampStart, timestampEnd;
+  timestampStart = clock();
+  for( G4int iV = 0; iV < nV; ++iV ){
+    G4double phi = 2*CLHEP::pi*((double)iV/(double)nV);
+    G4double x = cos(phi);
+    G4double y = sin(phi);
+    theDir.setX(x);
+    theDir.setY(y);
+    theDir.setZ(0);
+    G4double distToOut = volSolid->DistanceToOut(pos,theDir);
+    G4cout << "---> REL/EY: Running hack-y 2-D safety. For phi of " << phi*180/CLHEP::pi << " deg, DistToOut returns a dist to boundary of: " << distToOut << G4endl;
+    if( distToOut < nearestSurfaceDistXY && distToOut > 0 ) nearestSurfaceDistXY = distToOut;
+  }
+  timestampEnd = clock();
+  G4cout << "Time elapsed during 2D DistToOutLoop: " << double(timestampEnd-timestampStart)/double(CLOCKS_PER_SEC) << " seconds" << G4endl;
+  G4cout << "clocks_per_sec: " << CLOCKS_PER_SEC << G4endl;
+  
+  
+  //Loop through the daughters of this mother volume and find distances to them
+  for( int iD = 0; iD < volLog->GetNoDaughters(); ++iD ){
+    G4VPhysicalVolume * volDaughterPhys = volLog->GetDaughter(iD);
+    
+    //This stuff is ripped verbatim from G4NormalNavigation. We're going to see how well it works...
+    G4AffineTransform sampleTf(volDaughterPhys->GetRotation(),
+			       volDaughterPhys->GetTranslation());
+
+    sampleTf.Invert();
+    const G4ThreeVector samplePoint = sampleTf.TransformPoint(pos);
+    const G4VSolid * volDaughterSolid = volDaughterPhys->GetLogicalVolume()->GetSolid();
+    const G4double volDaughterSafety = volDaughterSolid->DistanceToIn(samplePoint);
+
+    //Since we're *outside* the daughter volume laterally, it means that the distToIn is in fact the distance in XY. No additional
+    //math is needed.
+    if( volDaughterSafety < nearestSurfaceDistXY ) nearestSurfaceDistXY = volDaughterSafety;
+    
+    //For debugging, cout
+    G4cout << "REL: In Get2DSafetyFromBoundary, we are looking at a daughter volume of: " << volDaughterPhys->GetName() << " which has a distToIn of " << volDaughterSafety << G4endl;
+    
+  }
+
+  G4cout << "REL: In Get2DSafetyFromBoundary, returning nearestSurfaceDistXY: " << nearestSurfaceDistXY << G4endl;
+  return nearestSurfaceDistXY; 
+}
+*/
+
+
+
+//Nicer, concise version of Get2DSafety. Arguments are:
+//1. The touchable of the mother volume that the point is currently in
+//2. The position of the point whose safety is to be computed
+//3. The momentum direction of the last point (used for identifying what directions are "in-plane")
+//4. A bool saying whether we're trying compute a safety from a boundary we're currently on. REL do we actually need this, or can we not calculate?
+G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch, G4ThreeVector pos, G4ThreeVector momDir, bool safetyFromABoundary )
+{
+  //Pseudocode
+  //0. Define output variables
+  G4double overallSafety = DBL_MAX;
+
+  //Get the mother volume information
+  G4VPhysicalVolume* motherPhys = motherTouch->GetVolume();
+  G4LogicalVolume* motherLog = motherPhys->GetLogicalVolume();
+  G4VSolid * motherSolid = motherLog->GetSolid();
+
+  //Rotate the position and the momentum direction to the touchable's coordinates.
+  RotateToLocalPosition(motherTouch, pos);
+  RotateToLocalDirection(motherTouch, momDir);
+  
+  //1. First, get the shortest distance to the mother volume that we're in. ("DistanceToOut")
+  G4double motherSafety = Compute2DSafetyInMotherVolume(motherTouch, motherPhys, motherLog, motherSolid, pos, safetyFromABoundary);
+  if( motherSafety < overallSafety ){
+    overallSafety = motherSafety;
+  }
+
+  //2. Next, loop through the daughter volumes in this mother volume and compute the distances to those.
+  for( int iD = 0; iD < motherLog->GetNoDaughters(); ++iD ){
+    G4double daughterSafety = Compute2DSafetyToDaughterVolume(pos,momDir,motherLog,safetyFromABoundary,iD);
+    if( daughterSafety < overallSafety ) overallSafety = daughterSafety;
+  }
+  
+  //Return the safety
+  return overallSafety; 
+  
+}
+
+//Looking "inward" within a mother volume to its daughter volumes to identify safeties. Generally, don't want to use this on its
+//own. Should only be called from Get2DSafety, not by separate classes.
+G4double G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const G4ThreeVector & momDir, G4LogicalVolume * motherLog, bool safetyFromABoundary, G4int daughterID ){
+
+  //Establish output variable;
+  G4double safety = DBL_MAX;
+  
+  //Get the physical volume of the daughter from the mother logical and the iD
+  G4VPhysicalVolume * volDaughterPhys = motherLog->GetDaughter(daughterID);
+  
+  //This stuff is ripped verbatim from G4NormalNavigation. Rotates the point to be in the
+  //standard reference frame of our daughter's G4solid
+  G4AffineTransform sampleTf(volDaughterPhys->GetRotation(),
+			     volDaughterPhys->GetTranslation());
+  
+  sampleTf.Invert();
+  const G4ThreeVector samplePoint = sampleTf.TransformPoint(pos);
+  const G4ThreeVector sampleAxis = sampleTf.TransformAxis(momDir);
+  const G4VSolid * volDaughterSolid = volDaughterPhys->GetLogicalVolume()->GetSolid();
+
+  //Check to make sure we're infact outside the daughter volume
+  if( volDaughterSolid->Inside(samplePoint) == kInside ){
+    G4ExceptionDescription msg;
+    msg << "G4CMP::Compute2DSafetyToDaughterVolume seems to think we're already inside the daughter volume." << G4endl;
+    G4Exception("G4CMP::Compute2DSafetyToDaughterVolume()", "Geometry00X",FatalException, msg);
+  }
+
+  //Compute the safety. Since we should be *outside* the daughter volume laterally, it means that the distToIn
+  //is in fact the distance in XY, assuming the distanceToIn is computed correctly. This is not exactly true for
+  //a few solids, which will require upgrades. (See G4Box)
+  const G4double volDaughterSafety = volDaughterSolid->DistanceToIn(samplePoint);
+
+  if( safetyFromABoundary ){
+    if( volDaughterSafety < safety && volDaughterSafety != 0 ) safety = volDaughterSafety;
+  }
+  else{
+    if( volDaughterSafety < safety ) safety = volDaughterSafety;
+  }
+
+  
+  /* //THIS WILL NEED TO GO IN SOMEHOW BUT ONCE WE CAN CONFIRM THINGS ARE WORKING WITH SIMPLER GEOMETRY FIRST
+  //Handle the logic for whether we're trying to compute from a boundary. If we're on a boundary, we'll want to check
+  //if:
+  //1. That boundary belongs to this daughter (safety = 0)
+  //   a. This daughter also possesses the next-closest boundary
+  //   b. This daughter does not possess the next closest boundary
+  //2. That boundary does not belong to this daughter (safety != 0 )
+  //It's hard to differentiate points 1a and 1b without doing a search in direction space.
+  //So we'll do that if the distToIn here is zero.
+  if( safetyFromABoundary ){
+
+    //We're ON this daughter boundary. Now do a scan.
+    if( volDaughterSafety == 0 ){
+
+      //First, get a surface normal at this point. 
+      G4ThreeVector surfaceNorm = volDaughterSolid->SurfaceNormal(samplePoint);      
+      
+      //Second, use the surface normal with the momentum direction (which should be in-plane with the film)
+      //to define a plane in which we will do a directional scan.
+      //This actually bypasses the need to hardcode which plane/dimensions the scan is in. First, check the direction
+      /
+      
+      
+      
+      
+    }
+
+    
+    //At this point, there are two scenarios we should be aware of:
+    //1. We're on a mother boundary, and all distances to daughters are nonzero.
+    //2. We're on a daughter boundary. In this case, there are two sub-cases
+    //   a. We're on a daughter boundary and the next-closest boundary in the half-circle of the surface normal
+    //      is on a different daughter 
+    //   b. We're on a daughter boundary and the next-closest boundary in the half-circle of the surface normal
+    //      is on the same daughter.
+    //It's hard to identify whether we're in scenario 2a or 2b without doing a sweep of direction vectors. So to be
+    //safe, if this daughter has a "simple" safety of 0 (i.e. we're on its surface), we're going to compute the
+    //DistanceToIn for itself over a range of directions. This range of directions cannot span a perfect 180 degrees
+    //along the surface because the space may be convex, so we'll have it span 180-2*eta, where eta is a small angle
+    //into which we'll never end up sending the particles.
+
+    //First, check to see if volDaughterSafety is less than the 
+    if( volDaughterSafety < safety )
+
+
+    //The logic for 1 and 2 are the same: compute a simple distance to all daughters, and ignore any for which
+    //that distanceToIn is zero (that's the one we're on).
+    //The logic for 3 is significantly more complicated, especially in the scenario where we have a convex space. So we'll
+    //want to do something to help with that. 
+    
+    if( volDaughterSafety < safety && volDaughterSafety > 0 ) safety = volDaughterSafety;
+  }
+  else{
+    if( volDaughterSafety < safety ) safety = volDaughterSafety;
+  }
+  */
+
+
+
+  G4cout << "REL: In Get2DSafetyToDaughterVolume, we are looking at a daughter volume of: " << volDaughterPhys->GetName() << " which has a distToIn of " << safety << G4endl;    
+  return safety;
+}
+
+//Looking "outward" from the volume we're in, compute the 2D safety in XY. We do this with a loop, but this will
+//need to be replaced with something that's a bit less geometry-agnostic in order to be efficient. This is the place
+//to start that further optimization. Generally, don't want to use this on its own. Should only be called from
+//Get2DSafety, not by separate classes.
+G4double G4CMP::Compute2DSafetyInMotherVolume(const G4VTouchable * motherTouch, //REL Looks like we only need motherSolid here...
+					      G4VPhysicalVolume * motherPhys,
+					      G4LogicalVolume * motherLog,
+					      G4VSolid * motherSolid,
+					      G4ThreeVector pos,
+					      bool safetyFromABoundary)
+{
+  //Check to make sure we're in fact inside the mother volume
+  if( motherSolid->Inside(pos) == kOutside ){
+    G4ExceptionDescription msg;
+    msg << "G4CMP::Compute2DSafetyInMotherVolume seems to think we're outside the mother volume." << G4endl;
+    G4Exception("G4CMP::Compute2DSafetyInMotherVolume()", "Geometry00X",FatalException, msg);
+  }
+  
+  //Spam a set of DistToOuts in different directions. This part slows things down substantially and should be used sparingly. This part
+  //should be replaced with geometry math
+  double motherSafety = DBL_MAX;
+  G4ThreeVector theDir;
+  G4int nV = 100;
+  clock_t timestampStart, timestampEnd;
+  timestampStart = clock();
+  for( G4int iV = 0; iV < nV; ++iV ){
+    G4double phi = 2*CLHEP::pi*((double)iV/(double)nV);
+    G4double x = cos(phi);
+    G4double y = sin(phi);
+    theDir.setX(x);
+    theDir.setY(y);
+    theDir.setZ(0);
+    G4double distToOut = motherSolid->DistanceToOut(pos,theDir);
+    G4cout << "---> REL/EY: Running hack-y 2-D safety. For phi of " << phi*180/CLHEP::pi << " deg, DistToOut returns a dist to boundary of: " << distToOut << G4endl;
+
+    //Handle the logic for whether we're trying to compute from a boundary. If we're on a boundary, we want to
+    //ignore the zeros, since that's the safety of the boundary we're on
+    if( safetyFromABoundary ){
+      if( distToOut < motherSafety && distToOut > 0 ) motherSafety = distToOut;
+    }
+    else{
+      if( distToOut < motherSafety ) motherSafety = distToOut;
+    }
+  }
+  timestampEnd = clock();
+  G4cout << "Time elapsed during 2D DistToOutLoop: " << double(timestampEnd-timestampStart)/double(CLOCKS_PER_SEC) << " seconds" << G4endl;
+  G4cout << "clocks_per_sec: " << CLOCKS_PER_SEC << G4endl;
+  G4cout << "In Compute2DSafetyInMotherVolume, looking at a mother safety of: " << motherSafety << G4endl;
+  return motherSafety;
+}
+
+/*  
+//Hacky way to try to find safety in XY
+G4double G4CMP::Get2DSafety(const G4Track& theTrack, G4ThreeVector & directionToNearestBoundary )
+{
+  G4cout << "REL in Get2DSafety" << G4endl;
+  
+  //The "final" strategy here will be a hybrid approach. For "easy" geometrical objects that are likely to be
+  //used in thin film geometries, we'll do analytical calculations which will speed up the code execution. For now
+  //we are going to do the slow thing just to get a first pass-through of the full physics. We'll come back and improve
+  //speed in a bit.
+  
+  //First, identify the touchable. Recall that for use in the GPIL functions, we don't have a post-step point yet, so the
+  //touchable should correspond to the pre-step point. Identify the volume name, get 
+  const G4VTouchable* volTouch = theTrack.GetStep()->GetPreStepPoint()->GetTouchable();
+  G4VPhysicalVolume* volPhys = volTouch->GetVolume();
+  G4LogicalVolume* volLog = volPhys->GetLogicalVolume();
+  G4VSolid * volSolid = volLog->GetSolid();
+  G4ThreeVector pos = theTrack.GetPosition();
+
+  //Rotate the position to the touchable's coordinates
+  RotateToLocalPosition(volTouch, pos);
+
+  //Spam a set of DistToOuts in different directions. This part slows things down substantially and should be used sparingly. This part
+  //should be replaced with geometry math
+  double nearestSurfaceDistXY = DBL_MAX;
+  directionToNearestBoundary.setX(DBL_MAX);
+  directionToNearestBoundary.setY(DBL_MAX);
+  directionToNearestBoundary.setZ(DBL_MAX);  
+  G4ThreeVector theDir;
+  G4int nV = 100;
+  clock_t timestampStart, timestampEnd;
+  timestampStart = clock();
+  for( G4int iV = 0; iV < nV; ++iV ){
+    G4double phi = 2*CLHEP::pi*((double)iV/(double)nV);
+    G4double x = cos(phi);
+    G4double y = sin(phi);
+    theDir.setX(x);
+    theDir.setY(y);
+    theDir.setZ(0);
+    G4double distToOut = volSolid->DistanceToOut(pos,theDir);
+    G4cout << "---> REL/EY: Running hack-y 2-D safety. For phi of " << phi*180/CLHEP::pi << " deg, DistToOut returns a dist to boundary of: " << distToOut << G4endl;
+    if( distToOut < nearestSurfaceDistXY ){
+      nearestSurfaceDistXY = distToOut;
+      directionToNearestBoundary = theDir;
+    }
+  }
+  timestampEnd = clock();
+  G4cout << "Time elapsed during 2D DistToOutLoop: " << double(timestampEnd-timestampStart)/double(CLOCKS_PER_SEC) << " seconds" << G4endl;
+  G4cout << "clocks_per_sec: " << CLOCKS_PER_SEC << G4endl;
+  
+  
+  //Loop through the daughters of this mother volume
+  int closestDaughter = -1;
+  for( int iD = 0; iD < volLog->GetNoDaughters(); ++iD ){
+    G4VPhysicalVolume * volDaughterPhys = volLog->GetDaughter(iD);
+    
+    //This stuff is ripped verbatim from G4NormalNavigation. We're going to see how well it works...
+    G4AffineTransform sampleTf(volDaughterPhys->GetRotation(),
+			       volDaughterPhys->GetTranslation());
+
+    sampleTf.Invert();
+    const G4ThreeVector samplePoint = sampleTf.TransformPoint(pos);
+    const G4VSolid * volDaughterSolid = volDaughterPhys->GetLogicalVolume()->GetSolid();
+    const G4double volDaughterSafety = volDaughterSolid->DistanceToIn(samplePoint);
+
+    //Since we're *outside* the daughter volume laterally, it means that the distToIn is in fact the distance in XY. No additional
+    //math is needed.
+    if( volDaughterSafety < nearestSurfaceDistXY ){
+      nearestSurfaceDistXY = volDaughterSafety;
+      closestDaughter = iD;
+    }
+    
+    //For debugging, cout
+    G4cout << "REL: In Get2DSafety, we are looking at a daughter volume of: " << volDaughterPhys->GetName() << " which has a distToIn of " << volDaughterSafety << G4endl;
+
+  }
+
+  
+  
+
+  G4cout << "REL: In Get2DSafety, returning nearestSurfaceDistXY: " << nearestSurfaceDistXY << G4endl;
+  return nearestSurfaceDistXY; 
+}
+*/
+
 // Get normal to enclosing volume at boundary point in global coordinates
 G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step) {
 

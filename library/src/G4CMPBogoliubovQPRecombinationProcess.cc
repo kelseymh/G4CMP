@@ -130,5 +130,7 @@ void G4CMPBogoliubovQPRecombinationProcess::GenerateRecombinationPhonon(G4double
 //Pass-through to G4CMPVProcess class
 G4double G4CMPBogoliubovQPRecombinationProcess::GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond)
 {
-  return G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
+  G4double mfpBase = G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
+  G4cout << "REL Mean free path in QPRecombinationProcess: " << mfpBase << ", with nMFPsLeft: " << GetNumberOfInteractionLengthLeft() << G4endl;
+  return mfpBase;
 }

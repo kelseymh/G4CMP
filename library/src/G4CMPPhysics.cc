@@ -113,7 +113,8 @@ void G4CMPPhysics::ConstructProcess() {
   AddG4CMPProcess(bogQPTrap,particle);
   AddG4CMPProcess(bogQPTimeStep,particle);
   //EY since QP transport is not a discrete process adding to process manager directly
-  particle->GetProcessManager()->AddProcess(bogQPTrans,ordInActive,ordDefault,ordLast);
+  //  particle->GetProcessManager()->AddProcess(bogQPTrans,ordInActive,ordDefault,ordLast);
+  particle->GetProcessManager()->AddProcess(bogQPTrans,ordInActive,ordDefault,ordDefault);
 
     
   particle = G4PhononLong::PhononDefinition();

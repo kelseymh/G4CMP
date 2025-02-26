@@ -17,7 +17,7 @@ G4double G4CMPQPDiffusionTimeStepperRate::Rate(const G4Track& aTrack) const
 {
   G4cout << "REL in QPDiffusionTimeStepper rate Rate function." << G4endl;
   //Compute tau for recombination, and invert for rate
-  double tau_nextScatter = 100000000 * CLHEP::ns; //Temporarily hardcoded
+  double tau_nextScatter = 50 * CLHEP::ns; //Temporarily hardcoded
   return (1.0/tau_nextScatter);
 }
 

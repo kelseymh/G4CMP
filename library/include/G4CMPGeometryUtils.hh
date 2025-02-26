@@ -26,8 +26,9 @@ class G4Step;
 class G4StepPoint;
 class G4Track;
 class G4VPhysicalVolume;
+class G4LogicalVolume;
 class G4VTouchable;
-
+class G4VSolid;
 
 namespace G4CMP {
   G4ThreeVector GetLocalDirection(const G4VTouchable* touch,
@@ -57,6 +58,12 @@ namespace G4CMP {
   G4ThreeVector GetSurfaceNormal(const G4Step& step);
   //G4ThreeVector GetSurfaceNormal(const G4StepPoint* stepPoint, const G4ThreeVector& guessedDirection );
 
+  G4double Get2DSafety(const G4VTouchable* motherTouch, G4ThreeVector pos, G4ThreeVector momDir, bool safetyFromABoundary );
+  G4double Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const G4ThreeVector & momDir, G4LogicalVolume * motherLog, bool safetyFromABoundary, G4int daughterID );
+  G4double Compute2DSafetyInMotherVolume(const G4VTouchable * volTouch,G4VPhysicalVolume * volPhys,G4LogicalVolume * volLog, G4VSolid * volSolid,
+					 G4ThreeVector pos,bool safetyFromABoundary);
+
+  
   G4Navigator* GetNavigator();		// Non-tracking for point finding
 
   G4VPhysicalVolume* GetVolumeAtPoint(const G4ThreeVector& pos);

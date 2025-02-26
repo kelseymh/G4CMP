@@ -201,7 +201,7 @@ G4double G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath(const G4Track& 
     }
   }
   */
-  G4cout << "REL Mean free path in QPRadiatesPhononProcess: " << mfpBase << G4endl;
+  G4cout << "REL Mean free path in QPRadiatesPhononProcess: " << mfpBase << ", with nMFPsLeft: " << GetNumberOfInteractionLengthLeft() << G4endl;
   
   //If we don't trigger that exception, continue.
   return mfpBase;
