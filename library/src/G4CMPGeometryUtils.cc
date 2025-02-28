@@ -420,7 +420,7 @@ G4double G4CMP::Compute2DSafetyInMotherVolume(const G4VTouchable * motherTouch, 
     theDir.setY(y);
     theDir.setZ(0);
     G4double distToOut = motherSolid->DistanceToOut(pos,theDir);
-    G4cout << "---> REL/EY: Running hack-y 2-D safety. For phi of " << phi*180/CLHEP::pi << " deg, DistToOut returns a dist to boundary of: " << distToOut << G4endl;
+    //G4cout << "---> REL/EY: Running hack-y 2-D safety. For phi of " << phi*180/CLHEP::pi << " deg, DistToOut returns a dist to boundary of: " << distToOut << G4endl;
 
     //Handle the logic for whether we're trying to compute from a boundary. If we're on a boundary, we want to
     //ignore the zeros, since that's the safety of the boundary we're on

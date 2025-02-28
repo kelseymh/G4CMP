@@ -76,13 +76,15 @@ G4Step* G4CMPParticleChangeForBogoliubovQPRandomWalk::UpdateStepForAlongStep(G4S
   pStep->SetStepLength(theTrueStepLength);
   theStatusChange = pStep->GetTrack()->GetTrackStatus();
 
-  G4cout << "REL In UpdateStepForAlongStep, trueStepLength is: " << theTrueStepLength << ", and statusChange is: " << theStatusChange << G4endl;
-  
-  
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "---------- G4CMPParticleChangeForBogoliubovQPRandomWalk::UpdateStepForAlongStep ----------" << G4endl;    
+    G4cout << "USFAS Function Point A | trueStepLength is: " << theTrueStepLength << G4endl;
+    G4cout << "USFAS Function Point A | statusChange is: " << theStatusChange << G4endl;
+  }
+    
   // Multiple scattering calculates the final state of the particle
   G4StepPoint* pPostStepPoint = pStep->GetPostStepPoint();
-  G4cout << "REL At the beginning of the updatestepForAlongStep process, the step status is: " << pPostStepPoint->GetStepStatus() << G4endl;
-
   
   // update  momentum direction
   pPostStepPoint->SetMomentumDirection(theMomentumDirection);
@@ -91,47 +93,73 @@ G4Step* G4CMPParticleChangeForBogoliubovQPRandomWalk::UpdateStepForAlongStep(G4S
   pPostStepPoint->SetPosition( thePosition );
   
   // update velocity
-  G4cout << "REL in UpdateStepForAlongStep, theVelocity is: " << theVelocity << G4endl;
   pPostStepPoint->SetVelocity(theVelocity);
     
-  //update the local time of the particle
-  G4cout << "REL in UpdateSTepForAlongStep, theLocalTime is set to: " << pPostStepPoint->GetLocalTime()+theTimeChange << ", with theTimeChange as: " << theTimeChange << G4endl;
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "USFAS Function Point B | theLocalTime is set to: " << pPostStepPoint->GetLocalTime()+theTimeChange << G4endl;
+    G4cout << "USFAS Function Point B | theTimeChange is set to: " << theTimeChange << G4endl;
+  }
+
+  //Set local time
   pPostStepPoint->SetLocalTime(pPostStepPoint->GetLocalTime()+theTimeChange);
-        
-  //update the Global time of the particle
-  G4cout << "REL in UpdateSTepForAlongStep, theGlobalTime is set to: " << pPostStepPoint->GetGlobalTime()+theTimeChange << ", with theTimeChange as: " << theTimeChange << G4endl;
+  
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "USFAS Function Point C | theGlobalTime is set to: " << pPostStepPoint->GetGlobalTime()+theTimeChange << G4endl;
+    G4cout << "USFAS Function Point C | theTimeChange is set to: " << theTimeChange << G4endl;
+  }
+
+  //Set global time
   pPostStepPoint->SetGlobalTime(pPostStepPoint->GetGlobalTime()+theTimeChange);
 
-  G4cout << "REL At the end of the updatestepForAlongStep process, the step status is: " << pPostStepPoint->GetStepStatus() << G4endl;
-  
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "USFAS Function Point D | the step status is: " << pPostStepPoint->GetStepStatus() << G4endl;
+    G4cout << "USFAS Function Point D | theVelocity is: " << theVelocity << G4endl;
+  }
+   
   return pStep;
 }
 
 G4Step* G4CMPParticleChangeForBogoliubovQPRandomWalk::UpdateStepForPostStep(G4Step* pStep)
-{  
+{
   // Multiple scattering calculates the final state of the particle
   G4StepPoint* pPostStepPoint = pStep->GetPostStepPoint();
 
-  G4cout << "REL At the beginning of the updatestepForPostStep process, the step status is: " << pPostStepPoint->GetStepStatus() << G4endl;
-  
   // update  momentum direction
   pPostStepPoint->SetMomentumDirection(theMomentumDirection);
 
   // update position
   pPostStepPoint->SetPosition( thePosition );
     
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "---------- G4CMPParticleChangeForBogoliubovQPRandomWalk::UpdateStepForPostStep ----------" << G4endl;    
+    G4cout << "USFPS Function Point A | the step status is: " << pPostStepPoint->GetStepStatus() << G4endl;
+    G4cout << "USFPS Function Point A | theVelocity is: " << theVelocity << G4endl;
+  }
+
   // update velocity
-  G4cout << "REL in UpdateStepForPostStep, theVelocity is: " << theVelocity << G4endl;
   pPostStepPoint->SetVelocity(theVelocity);
 
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "USFPS Function Point B | theLocalTime is set to: " << pPostStepPoint->GetLocalTime() << G4endl;
+    G4cout << "USFPS Function Point B | theTimeChange is: " << theTimeChange << G4endl;
+  }
+
   //update the local time of the particle
-  G4cout << "REL in UpdateSTepForPostStep, theLocalTime is set to: " << pPostStepPoint->GetLocalTime() << ", with theTimeChange as: " << theTimeChange << G4endl;
   pPostStepPoint->SetLocalTime(pPostStepPoint->GetLocalTime());
       
-  //update the Global time of the particle
-  G4cout << "REL in UpdateSTepForPostStep, theGlobalTime is set to: " << pPostStepPoint->GetGlobalTime() << ", with theTimeChange as: " << theTimeChange << G4endl;
-  pPostStepPoint->SetGlobalTime(pPostStepPoint->GetGlobalTime());
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "USFPS Function Point C | theGlobalTime is set to: " << pPostStepPoint->GetGlobalTime() << G4endl;
+    G4cout << "USFPS Function Point C | theTimeChange is: " << theTimeChange << G4endl;
+  }
 
+  //update the Global time of the particle
+  pPostStepPoint->SetGlobalTime(pPostStepPoint->GetGlobalTime());
   return pStep;
 }
 
