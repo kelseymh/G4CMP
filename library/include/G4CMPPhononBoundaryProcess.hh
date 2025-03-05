@@ -59,16 +59,20 @@ protected:
 				    G4int mode) const;
 
 
-  // Modify stepLocalPos in place. Calls AdjustSurfaceDirectionAtEdge.
-  void AdjustPositionAtEdge(G4ThreeVector& stepLocalPos,
-            G4ThreeVector& kTan, const G4double stepSize) const;
+  // Modifies stepLocalPos in place
+  void AdjustToClosestSurfacePoint(const G4VSolid* solid, 
+                                   G4ThreeVector& stepLocalPos) const;
+
+  void AdjustToEdgePosition(const G4VSolid* solid, const G4ThreeVector& kTan,
+                            G4ThreeVector& stepLocalPos) const;
 
   // Modifies kTan in place.
-  void AdjustSurfaceDirectionAtEdge(const G4ThreeVector& stepLocalPos,
-            G4ThreeVector& kTan) const;
+  void ReflectAgainstEdge(const G4VSolid* solid, G4ThreeVector& kTan,
+                          const G4ThreeVector& stepLocalPos) const;
 
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
+  const G4double stepSize;
 
   // hide assignment operator as private
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&);
