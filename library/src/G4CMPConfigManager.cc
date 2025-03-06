@@ -42,6 +42,7 @@
 // 20230831  G4CMP-362:  Add short names for IMPACT and Sarkis ionization models
 // 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
 // 20240823  G4CMP-422:  Remove default Quadratic rate model setting.
+// 20250305  G4CMP-463:  Add parameter for phonon surface displacement step size.
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -108,7 +109,9 @@ G4CMPConfigManager::G4CMPConfigManager()
     kaplanKeepPh(getenv("G4CMP_KAPLAN_KEEP")?atoi(getenv("G4CMP_KAPLAN_KEEP")):true),
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
     recordMinE(getenv("G4CMP_RECORD_EMIN")?atoi(getenv("G4CMP_RECORD_EMIN")):true),
-    nielPartition(0), messenger(new G4CMPConfigMessenger(this)) {
+    nielPartition(0),
+    pSurfStepSize(getenv("G4CMP_PHON_SURFSTEP")?strtod(getenv("G4CMP_PHON_SURFSTEP"),0)*um:0*um),
+    messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 
   setVersion();
@@ -142,6 +145,7 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     useKVsolver(master.useKVsolver), fanoEnabled(master.fanoEnabled),
     kaplanKeepPh(master.kaplanKeepPh), chargeCloud(master.chargeCloud),
     recordMinE(master.recordMinE), nielPartition(master.nielPartition),
+    pSurfStepSize(master.pSurfStepSize),
     messenger(new G4CMPConfigMessenger(this)) {;}
 
 
@@ -188,6 +192,7 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/verbose " << verbose << "\t\t\t\t# G4CMP_DEBUG"
      << "\n/g4cmp/chargeBounces " << ehBounces << "\t\t\t\t# G4CMP_EH_BOUNCES"
      << "\n/g4cmp/phononBounces " << pBounces << "\t\t\t# G4CMP_PHON_BOUNCES"
+     << "\n/g4cmp/phononSurfStepSize " << pSurfStepSize/um << " um\t\t# G4CMP_PHON_SURFSTEP"
      << "\n/g4cmp/IVRateModel " << IVRateModel << "\t\t\t# G4CMP_IV_RATE_MODEL"
      << "\n/g4cmp/eTrappingMFP " << eTrapMFP/mm << " mm\t\t# G4CMP_ETRAPPING_MFP"
      << "\n/g4cmp/hTrappingMFP " << hTrapMFP/mm << " mm\t\t# G4CMP_HTRAPPING_MFP"

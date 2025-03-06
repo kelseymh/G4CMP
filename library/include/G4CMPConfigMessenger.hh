@@ -43,6 +43,7 @@
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
 // 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
 // 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
+// 20250305  G4CMP-463:  Add parameter for phonon surface displacement step size.
 
 #include "G4UImessenger.hh"
 
@@ -84,6 +85,7 @@ private:
   G4UIcmdWithADoubleAndUnit* hDTrapIonMFPCmd;
   G4UIcmdWithADoubleAndUnit* hATrapIonMFPCmd;
   G4UIcmdWithADoubleAndUnit* tempCmd;
+  G4UIcmdWithADoubleAndUnit* pSurfStepSizeCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;

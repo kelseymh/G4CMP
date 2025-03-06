@@ -60,7 +60,7 @@ protected:
 
 
   // Modifies stepLocalPos in place
-  void AdjustToClosestSurfacePoint(const G4VSolid* solid, 
+  void AdjustToClosestSurfacePoint(const G4VSolid* solid,
                                    G4ThreeVector& stepLocalPos) const;
 
   void AdjustToEdgePosition(const G4VSolid* solid, const G4ThreeVector& kTan,
@@ -72,7 +72,7 @@ protected:
 
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
-  const G4double stepSize;
+  G4double stepSize;
 
   // hide assignment operator as private
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&);

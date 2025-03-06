@@ -41,6 +41,7 @@
 // 20221214  G4CMP-350:  Bug fix for new temperature setting units.
 // 20230831  G4CMP-362:  Add short names for IMPACT and Sarkis ionization models
 // 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
+// 20250305  G4CMP-463:  Add command for phonon surface displacement step size.
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -132,6 +133,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   pBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("phononBounces",
 		  "Maximum number of reflections allowed for phonons");
+
+  pSurfStepSizeCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("phononSurfStepSize",
+      "Specular reflection surface displacement step size");
+  pSurfStepSizeCmd->SetUnitCategory("Length");
 
   kvmapCmd = CreateCommand<G4UIcmdWithABool>("useKVsolver",
 			     "Use eigenvector solver for K-Vg conversion");
@@ -226,6 +231,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete ehCloudCmd; ehCloudCmd=0;
   delete ivRateModelCmd; ivRateModelCmd=0;
   delete nielPartitionCmd; nielPartitionCmd=0;
+  delete pSurfStepSizeCmd; pSurfStepSizeCmd=0;
 }
 
 
@@ -240,6 +246,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == maxLukeCmd) theManager->SetMaxLukePhonons(StoI(value));
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
+  if (cmd == pSurfStepSizeCmd) theManager->SetPhononSurfStepSize(StoD(value));
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
 
   if (cmd == clearCmd)

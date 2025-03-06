@@ -46,6 +46,7 @@
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
 // 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
 // 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
+// 20250305  G4CMP-463:  Add parameter for phonon surface displacement step size.
 
 #include "globals.hh"
 #include <iosfwd>
@@ -94,6 +95,7 @@ public:
   static G4double GetHDTrapIonMFP()      { return Instance()->hDTrapIonMFP; }
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
+  static G4double GetPhononSurfStepSize()  { return Instance()->pSurfStepSize; }
 
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
@@ -104,6 +106,7 @@ public:
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
   static void SetMaxChargeBounces(G4int value) { Instance()->ehBounces = value; }
   static void SetMaxPhononBounces(G4int value) { Instance()->pBounces = value; }
+  static void SetPhononSurfStepSize(G4double value) { Instance()->pSurfStepSize = value; }
   static void SetMaxLukePhonons(G4int value) { Instance()->maxLukePhonons = value; }
   static void SetSurfaceClearance(G4double value) { Instance()->clearance = value; }
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
@@ -189,6 +192,7 @@ private:
   G4bool chargeCloud;    // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
   G4bool recordMinE;     // Store below-minimum track energy as NIEL when killed
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
+  G4double pSurfStepSize;  // Phonon surface displacement step size ($G4CMP_PHON_SURFSTEP).
 
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands
 };
