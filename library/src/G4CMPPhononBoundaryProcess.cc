@@ -523,18 +523,26 @@ ReflectAgainstEdge(const G4VSolid* solid, G4ThreeVector& kTan,
   G4double normAdjust = 1*nm;
   G4ThreeVector norm1 = solid->SurfaceNormal(stepLocalPos);
   G4ThreeVector norm2 = solid->SurfaceNormal(stepLocalPos - normAdjust*norm1);
+  // Try to fix norm1 if we didn't get the normals for a proper reflection
+  norm1 = (norm1 * norm2 > 0) ? solid->SurfaceNormal(stepLocalPos - normAdjust*norm2) : norm1;
 
-  // Get the corner/edge vector
-  G4ThreeVector edgeVec = norm1.cross(norm2).unit();
+  G4ThreeVector edgeVec(0,0,0);
+  G4ThreeVector refNorm(0,0,0);
 
-  // Find the normal for the reflection "surface"
-  G4ThreeVector refNorm = (std::abs(norm1 * kTan) < std::abs(norm2 * kTan))
-                        ? (edgeVec.cross(norm1)).unit()
-                        : (edgeVec.cross(norm2)).unit();
-  if (refNorm * kTan < 0) refNorm *= -1;
+  // Only do reflection if at an edge
+  if (norm1 * norm2 <= 0) {
+    // Get the edge vector
+    edgeVec = norm1.cross(norm2).unit();
 
-  // Reflect kTan against edge
-  kTan -= 2*((kTan * refNorm) * refNorm);
+    // Find the normal for the reflection "surface"
+    refNorm = (std::abs(norm1 * kTan) < std::abs(norm2 * kTan))
+                          ? (edgeVec.cross(norm1)).unit()
+                          : (edgeVec.cross(norm2)).unit();
+    if (refNorm * kTan < 0) refNorm *= -1;
+
+    // Reflect kTan against reflection "surface"
+    kTan -= 2*((kTan * refNorm) * refNorm);
+  }
 
   if (verboseLevel>3) {
     G4cout << (GetProcessName()+"::ReflectAgainstEdge").c_str()
