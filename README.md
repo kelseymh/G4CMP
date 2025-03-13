@@ -96,8 +96,7 @@ developers should check the source code in
 | G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
 | G4CMP\_MAX\_LUKE [N] | /g4cmp/maxLukePhonons [N] | Soft maximum Luke phonons per event |
 | G4CMP\_SAMPLE\_ENERGY [E] | /g4cmp/samplingEnergy [E] eV  | Energy above which to downsample |
-| G4CMP\_COMBINE\_STEPLEN [L] | /g4cmp/combiningStepLength [L] mm | Combine
-hits below step length |
+| G4CMP\_COMBINE\_STEPLEN [L] | /g4cmp/combiningStepLength [L] mm | Combine hits below step length |
 | G4CMP\_EMIN\_PHONONS [E] | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
 | G4CMP\_RECORD\_EMIN | /g4cmp/recordMinETracks [t\|f]  | Put below-minimum energy to killed track Edeposit |
@@ -220,11 +219,8 @@ user code, and should be found automatically when linking an application.
 If you want debugging symbols included with the G4CMP library, you
 need to build with the G4DEBUG environment or Make variable set:
 ```
-	export G4DEBUG=1
-```
-or
-```
-	setenv G4DEBUG 1
+	export G4DEBUG=1         # sh or bash
+	setenv G4DEBUG 1         # sh or bash
 ```
 or
 ```
@@ -236,11 +232,8 @@ writing out statistics files, build with the G4CMP_DEBUG environment or Make
 variable set.  Note that this is not compatible with running multiple worker
 threads.
 ```
-	export G4CMP_DEBUG=1
-```
-or
-```
-	setenv G4CMP_DEBUG 1
+	export G4CMP_DEBUG=1     # sh or bash
+	setenv G4CMP_DEBUG 1     # csh
 ```
 or
 ```
@@ -251,11 +244,9 @@ If you want to enable "sanitizing" options with the library, to look for
 memory leaks, thread collisions etc., you may set the options
 G4CMP_USE_SANITIZER and G4CMP_SANITIZER_TYPE (default is "thread"):
 ```
-	export G4CMP_USE_SANITIZER=1
-```
-or
-```
-	setenv G4CMP_USE_SANITIZER 1
+	export G4CMP_USE_SANITIZER=1     # sh or bash
+	setenv G4CMP_USE_SANITIZER 1     # csh
+	make library
 ```
 or
 ```
@@ -338,7 +329,7 @@ linking G4CMP into your applications:
 
 | Environment variable | Meaning              |  Value in Make build | Value in CMake build |
 | ---------------------| ---------------------| ---------------------|----------------------|
-| G4CMPINSTALL | Path to g4cmp_env.* scripts  | <path-to-G4CMP> | $CMAKE_INSTALL_PREFIX/share/G4CMP |
+| G4CMPINSTALL | Path to g4cmp_env.* scripts  | [path-to-G4CMP] | $CMAKE_INSTALL_PREFIX/share/G4CMP |
 | G4CMPLIB | Directory containing libG4cmp.so | $G4WORKDIR/lib/$G4SYSTEM | $G4CMPINSTALL/lib |
 | G4CMPINCLUDE | Path to library/include      | $G4INSTALL/library/include | $CMAKE_INSTALL_PREFIX/include |
 | G4LATTICEDATA | Path(s) to CrystalMaps | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
@@ -390,10 +381,10 @@ application directly from the package top-level directory.  Use the command
 ```
 to build them all, or
 ```
-	make <name>
+	make [name]
 ```
 
-to build just one (where <name> is the directory name of interest).  The
+to build just one (where [name] is the directory name of interest).  The
 executables will be named `g4cmpPhonon` and `g4cmpCharge`, respectively, and
 will be written to `$G4WORKDIR/bin/$G4SYSTEM/`.
 
@@ -436,11 +427,9 @@ the environment variable used to search for these material configuration files,
 `$G4LATTICEDATA`, points to this directory by default. Additional paths can be 
 included in this search by appending them to the `$G4LATTICEDATA` variable:
 ```
-    export G4LATTICEDATA=${G4LATTICEDATA:+$G4LATTICEDATA:}/path/to/more/CrystalMaps
-```
-or
-```
+    export G4LATTICEDATA=${G4LATTICEDATA:+$G4LATTICEDATA:}/path/to/more/CrystalMaps    # sh or bash
     setenv G4LATTICEDATA ${G4LATTICEDATA}:/path/to/more/CrystalMaps
+       # csh
 ```
 
 Note that if a material configuration file is found in multiple locations, only 
@@ -543,7 +532,7 @@ the crystal system.
 The keywords l0_e and l0_h are optional. If they are not specified in
 config.txt, they will be computed from other physical constants: 
 ```
-l0 = pi*hbar^4*density / (2*mass^3*acDeform^2)
+  l0 = pi*hbar^4*density / (2*mass^3*acDeform^2)
 ```
 If they are specified in config.txt, the value in config.txt takes precedence
 over the computed value.
