@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-03-11  G4CMP-466 : Add download and tag instructions to README.
 2025-03-06  G4CMP-353 : Fix value and citation for Ge phonon downconversion.
 
 2025-02-25  g4cmp-V09-04-01 More fixes to NIEL calclations, MT data races.
