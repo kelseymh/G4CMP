@@ -294,9 +294,10 @@ identify the G4CMP version at runtime.  Use the `-DG4CMP_VERSION=X.Y.Z`
 option for this purpose.  If `.git/` is available, the option will be
 ignored.
 
-If you want to copy the examples directories (see below) to the installation
-area, use the option `-DINSTALL_EXAMPLES=ON` (for all examples). Each example
-has been set up as a standalone "project" for CMake and can be configured via:
+If you want to copy the examples directories ([see
+below](#application-examples)) to the installation area, use the option
+`-DINSTALL_EXAMPLES=ON` (for all examples). Each example has been set up as
+a standalone "project" for CMake and can be configured via:
 ```
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DINSTALL_EXAMPLES=ON ../G4CMP
 ```
@@ -329,10 +330,10 @@ linking G4CMP into your applications:
 
 | Environment variable | Meaning              |  Value in Make build | Value in CMake build |
 | ---------------------| ---------------------| ---------------------|----------------------|
-| G4CMPINSTALL | Path to g4cmp_env.* scripts  | [path-to-G4CMP] | $CMAKE_INSTALL_PREFIX/share/G4CMP |
+| G4CMPINSTALL | Path to g4cmp_env.* scripts  | [path-to-G4CMP] | $CMAKE\_INSTALL\_PREFIX/share/G4CMP |
 | G4CMPLIB | Directory containing libG4cmp.so | $G4WORKDIR/lib/$G4SYSTEM | $G4CMPINSTALL/lib |
-| G4CMPINCLUDE | Path to library/include      | $G4INSTALL/library/include | $CMAKE_INSTALL_PREFIX/include |
-| G4LATTICEDATA | Path(s) to CrystalMaps | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
+| G4CMPINCLUDE | Path to library/include      | $G4CMPINSTALL/library/include | $CMAKE\_INSTALL\_PREFIX/include |
+| G4LATTICEDATA | Path(s) to CrystalMaps | $G4CMPINSTALL/CrystalMaps | $G4CMPINSTALL/CrystalMaps |
 
 If you have a simple Makefile build system (GMake), the following two lines,
 or an appropriate variation on them, should be sufficient:
@@ -359,6 +360,10 @@ the library.
 
 * The `phonon` example shows phonon transport and scattering, including
 downconversion and mode mixing, in a cylindrical crystal.
+
+* The `caustics` example is similar to `phonon`, but includes an output data
+  file and ROOT macro for generating pictures of phonon caustics for the
+  chosen material.
 
 * The `charge` example shows electron and hole transport with NTL ("Luke")
 emission of phonons and intervalley scattering.
@@ -551,14 +556,14 @@ objects for phonons and charges separately; the base class constructor takes
 a long list of arguments to fill those tables with common parameters:
 ```
   G4CMPSurfaceProperty(const G4String& name,
-                       G4double qAbsProb, // Prob. to absorb charge carrier
+                       G4double qAbsProb,  // Prob. to absorb charge carrier
                        G4double qReflProb, // If not absorbed, prob to reflect
-                       G4double eMinK, //Min wave number to absorb electron
-                       G4double hMinK, //Min wave number to absorb hole
-                       G4double pAbsProb, // Prob. to absorb phonon
+                       G4double eMinK,     // Min wave number to absorb electron
+                       G4double hMinK,     // Min wave number to absorb hole
+                       G4double pAbsProb,  // Prob. to absorb phonon
                        G4double pReflProb, // If not absorbed, prob to reflect
-                       G4double pSpecProb, //Prob. of specular reflection
-                       G4double pMinK, //Min wave number to absorb phonon
+                       G4double pSpecProb, // Prob. of specular reflection
+                       G4double pMinK,     // Min wave number to absorb phonon
                        G4SurfaceType stype = dielectric_dielectric);
 ```
 
