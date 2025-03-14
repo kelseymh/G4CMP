@@ -196,6 +196,7 @@ G4CMPBogoliubovQPRandomWalkBoundary::PostStepDoIt(const G4Track& aTrack,
 }
 
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Do a reflection depending on the gap conditions between multiple lattices, and
 // also depending on the assigned reflection probability given to the boundary. Note that
@@ -254,15 +255,24 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
 						       G4ParticleChange& aParticleChange)
 {
   G4cout << "REL -- G4CMPQPRandomWalkBoundary::DoReflection()" << G4endl;
+
+  
+  ////First, check to see if the QP is stuck this round. If it is, then run a separate dedicated reflection
+  //if( fQPIsStuck ){
+  //  DoReflectionToUnStickQP();
+  //  fQPIsStuck
+  //}
+    
   
   //REL currently hardcoded but should fix
   //0 is "Random in XY plane"
   //1 is "lambertian"
   //2 is "specular"
-  int reflectionType = 0;
+  //3 is "for use with QP diffusion"
+  int reflectionType = 3;
   
   //Random, into pi
-  if( reflectionType == 0 ){
+  if( reflectionType == 0 ){ //REL THIS SHOULD BE DEPRECATED IN FAVOR OF REFLECTIONTYPE3
 
     G4cout << "REL Using 2D random reflection. " << G4endl;
     
@@ -322,7 +332,7 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
     
   }
   //Lambertian
-  else if( reflectionType == 1 ){
+  else if( reflectionType == 1 ){ //REL THIS SHOULD BE DEPRECATED IN FAVOR OF REFLECTIONTYPE3
 
     G4cout << "REL -- G4CMPQPRandomWalkBoundary::Lambertian Reflection()" << G4endl;
     
@@ -369,7 +379,7 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
   }
 
   //Specular
-  else if( reflectionType == 2 ){
+  else if( reflectionType == 2 ){ //REL THIS SHOULD BE DEPRECATED IN FAVOR OF REFLECTIONTYPE3
 
     G4cout << "REL -- G4CMPQPRandomWalkBoundary::Specular Reflection()" << G4endl;
 
@@ -402,7 +412,116 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
     
     aParticleChange.ProposeMomentumDirection(pdir);
   }
+
+  //For use with QPRandomWalkTransport
+  else if( reflectionType == 3 ){ //REL THIS SHOULD BE THE ONLY ONE HERE.
+
+    G4cout << "REL Using reflection where all returned directions are surface norms. " << G4endl;
+  
+    //Check to make sure we're on a volume boundary before attempting reflection.
+    G4ThreeVector surfacePoint;
+    if (!CheckStepBoundary(aStep, surfacePoint)) {
+      G4cout << "REL checking step boundary failed in DoReflection" << G4endl;
+      if (verboseLevel>2)
+	G4cout << " Boundary point moved to " << surfacePoint << G4endl;
+      aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
+    }
+  
+    if (verboseLevel>1) {
+      G4cout << procName << ": Track reflected "
+	     << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
+	     << " times." << G4endl;
+    }
+  
+    //To determine new random direction, need to know relationship between current
+    //direction and the surface normal. If they are more parallel, then we need to ensure
+    //that the new direction dotted into the norm is negative. If they are more
+    //antiparallel, we need to make sure that the new direction dotted into the norm
+    //is positive.    
+    G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);    
+    G4ThreeVector pdir = aTrack.GetMomentumDirection();
+    G4ThreeVector newDir;
+
+    //your new momentum is very parallel to a surface. Hopefully shouldn't change stuff
+    //too much
+    //If initial momentum is in the direction of the surface normal, the return direction should be just the negative of the surface normal
+    if( pdir.dot(norm) > 0 ){ newDir = -1*norm; }
+    else if( pdir.dot(norm) < 0 ){ newDir = norm; }
+    else{
+      G4Exception((GetProcessName()+"::DoReflection").c_str(), "G4CMPBogoliubovQPRandomWalkBoundary00X",
+		  FatalException, "Somehow the incoming momentum is exactly parallel to the surface norm? What?");
+
+    }
+
+    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection initial direction  " <<pdir << G4endl;    
+    
+    //if (verboseLevel>2)
+    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection reflected direction  " <<newDir << G4endl;
+    aParticleChange.ProposeMomentumDirection(newDir);
+  }
+
 }
+
+/*
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+//Do reflection of a QP. Here, we ONLY return the surface normal.
+void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
+						       const G4Step& aStep,
+						       G4ParticleChange& aParticleChange)
+{
+  G4cout << "REL -- G4CMPQPRandomWalkBoundary::DoReflection()" << G4endl;
+
+  //Here, ALL we do is return the surface normal in the proper direction. We leave ALL randomization up to
+  //the transport class (which, incidentally, has trouble computing surface normals, which is why passing it
+  //would be good.
+  
+  G4cout << "REL Using 2D random reflection. " << G4endl;
+  
+  //Check to make sure we're on a volume boundary before attempting reflection.
+  G4ThreeVector surfacePoint;
+  if (!CheckStepBoundary(aStep, surfacePoint)) {
+    G4cout << "REL checking step boundary failed in DoReflection" << G4endl;
+    if (verboseLevel>2)
+      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
+    aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
+  }
+  
+  if (verboseLevel>1) {
+    G4cout << procName << ": Track reflected "
+	   << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
+	   << " times." << G4endl;
+  }
+  
+  //To determine new random direction, need to know relationship between current
+  //direction and the surface normal. If they are more parallel, then we need to ensure
+  //that the new direction dotted into the norm is negative. If they are more
+  //antiparallel, we need to make sure that the new direction dotted into the norm
+  //is positive.    
+  G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);    
+  G4ThreeVector pdir = aTrack.GetMomentumDirection();
+  G4ThreeVector newDir;
+
+  //your new momentum is very parallel to a surface. Hopefully shouldn't change stuff
+  //too much
+  //If initial momentum is in the direction of the surface normal, the return direction should be just the negative of the surface normal
+  if( pdir.dot(norm) > 0 ){ newDir = -1*norm; }
+  else if( pdir.dot(norm) < 0 ){ newDir = norm; }
+  else{
+    G4Exception((GetProcessName()+"::DoReflection").c_str(), "G4CMPBogoliubovQPRandomWalkBoundary00X",
+		FatalException, "Somehow the incoming momentum is exactly parallel to the surface norm? What?");
+
+  }
+  
+  
+  G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection initial direction  " <<pdir << G4endl;    
+  
+  //if (verboseLevel>2)
+  G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection reflected direction  " <<newDir << G4endl;
+  aParticleChange.ProposeMomentumDirection(newDir);
+  
+}
+*/
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Do transmission of a quasiparticle
@@ -440,5 +559,28 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission(const G4Track& aTrack,
   UpdateSCAfterLatticeChange();
     
   G4ThreeVector vdir = aTrack.GetMomentumDirection();
-  aParticleChange.ProposeMomentumDirection(vdir);
+  G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);
+
+  //Make sure that the norm and the vdir are in the same direction so we return a norm that is in the direction of travel
+  if( vdir.dot(norm) < 0 ) norm = -1*norm;
+  
+  G4int transmissionType = 1;
+  
+  //For nice visualization/debugging
+  if( transmissionType == 0 ){ aParticleChange.ProposeMomentumDirection(vdir); } //REL THIS SHOULD BE DEPRECATED
+  
+  //For use with QP transport
+  else if( transmissionType == 1 ){ aParticleChange.ProposeMomentumDirection(norm); } //REL THIS SHOULD BE THE ONLY ONE HERE.
+
+  //Huh?
+  else{
+    G4ExceptionDescription msg;
+    msg << "Noticed that we are using an undefined transmissionType in DoTransmission for QPs. Fix.";
+    G4Exception("G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission", "BogoliubovQPRandomWalkBoundary00X",FatalException, msg);
+  }
+    
+ 
 }
+
+
+

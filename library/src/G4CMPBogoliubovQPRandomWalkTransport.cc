@@ -47,14 +47,22 @@ G4CMPBogoliubovQPRandomWalkTransport::G4CMPBogoliubovQPRandomWalkTransport(const
   fPreDiffusionPathLength = 0.0;
   fDiffConst =  0.0;
   fBoundaryFudgeFactor = 1.0001;
-  
+  fEpsilonForWalkOnSpheres = 1*CLHEP::um;
   
   //fSafetyHelper is initialized in AlongStepGPIL
   fSafetyHelper=nullptr;
   
   //Temporary REL
   //fOutfile.open("/Users/ryanlinehan/QSC/Sims/Geant4/scRebuild-build/RandomWalkSampledDimlessTimes.txt",std::ios::trunc);
-  
+
+  fBoundaryHistoryTrackID = -1;
+  fBoundaryHistory.clear();
+  fMaxBoundaryHistoryEntries = 6; //HARDCODED REL -- FIX
+  fQPIsStuck = false;
+  fOutgoingSurfaceTangent1 = G4ThreeVector(0,0,0);
+  fOutgoingSurfaceTangent2 = G4ThreeVector(0,0,0);
+  fDotProductDefiningUniqueNorms = 0.99;
+  fStuckInCornerThreshold = fEpsilonForWalkOnSpheres;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -149,12 +157,30 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
     //to actually trigger a boundary interaction in G4), and the time is just the time step to the boundary.
     double timeTolerance = 1E-10; //For floating point errors    
     if( (fabs(currentMinimalStep/velocity - fTimeStepToBoundary) < timeTolerance) || fVerySmallStep ){
-      fPathLength = f2DSafety*fBoundaryFudgeFactor; //Fudge factor so that we can trigger transportation when we are pointed at the boundary exactly
-      fTimeStep = fTimeStepToBoundary;
 
-      //Debugging
-      if( verboseLevel > 2 ){
-	G4cout << "ASGPIL Function Point F | Looks like the boundary-limited case applies here. Returning fPathLength = f2DSafety = " << fPathLength << G4endl;
+      //If we're not very close to the boundary, then we just make our diffusion-folded path length equal to juuuuuust under the
+      //distance to the boundary. That way transportation will never win this alongStepGPIL.
+      //This 
+      if( f2DSafety >= fEpsilonForWalkOnSpheres ){
+	fPathLength = f2DSafety / fBoundaryFudgeFactor; 
+	fTimeStep = fTimeStepToBoundary;
+
+	//Debugging
+	if( verboseLevel > 2 ){
+	  G4cout << "ASGPIL Function Point F_1 | Looks like the boundary-limited case applies here, with 2DSafety >= epsilon. Returning fPathLength just under f2DSafety = " << fPathLength << G4endl;
+	}
+      }
+
+      //Otherwise, if we are close to the boundary, then in this step we need to make our diffusion-folded path length equal to juuuuuuust
+      //larger than the distance to the boundary. This ensures we will always have transportation win and take us to the boundary.
+      else{
+	fPathLength = f2DSafety * fBoundaryFudgeFactor;
+	fTimeStep = fTimeStepToBoundary;
+
+	//Debugging
+	if( verboseLevel > 2 ){
+	  G4cout << "ASGPIL Function Point F_2 | Looks like the boundary-limited case applies here, with 2DSafety < epsilon. Returning fPathLength just over f2DSafety = " << fPathLength << G4endl;
+	}
       }
     }
     //If another process wins the discrete GPIL race, the above block won't trigger. Here we need to compute a radius corresponding
@@ -172,7 +198,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
 	double gauss_dist_y = fabs(gauss_dist->fire());
 	fPathLength = pow(gauss_dist_x*gauss_dist_x + gauss_dist_y*gauss_dist_y,0.5);
       }
-      while( fPathLength > f2DSafety );
+      while( fPathLength >= f2DSafety );
 
       //Debugging
       if( verboseLevel > 2 ){
@@ -295,16 +321,104 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
     }
     fParticleChange.ProposeVelocity(velocity);
 
+    /* OLD
     //Take the old position and new direction and make a new position using the fPathLength, which here is the diffusion-folded
     //"displacement" distance
     fOldPosition = step.GetPreStepPoint()->GetPosition();
     fNewDirection = step.GetPreStepPoint()->GetMomentumDirection();
     fNewPosition = fOldPosition+fPathLength*fNewDirection;
+    */ 
 
+    //Have to stratify by three cases: off-boundary, on-boundary, and on-boundary-and-stuck
+    //Case 1: off-boundary
+    // - Here we just generate a purely random vector in 2D and move it by the fPathLength
+    fOldPosition = step.GetPreStepPoint()->GetPosition();
+    if( !fTrackOnBoundary ){
+
+      //Sub case 1: farther than epsilon away from boundary? Yay -- get to randomize
+      if( f2DSafety >= fEpsilonForWalkOnSpheres ){
+	G4ThreeVector thisRandomDir = G4RandomDirection();
+	thisRandomDir.setZ(0);
+	fNewDirection = thisRandomDir.unit();
+
+	//Debugging
+	if( verboseLevel > 2 ){	
+	  G4cout << "ASDI Function Point D_1 | Since we're in the bulk and >eps from a boundary, we're randomizing new direction to be " << fNewDirection << G4endl;
+	}
+
+	
+      }
+      //Otherwise, don't interfere with the direction needed to get the step to the boundary. Just
+      //let the new direction be the old direction so we can respect the short hop to the boundary.
+      else{
+	fNewDirection = step.GetPreStepPoint()->GetMomentumDirection();
+
+	//Debugging
+	if( verboseLevel > 2 ){	
+	  G4cout << "ASDI Function Point D_2 | Since we're in the bulk and <eps from a boundary, we're keeping the new direction as " << fNewDirection << G4endl;
+	}
+      }
+    }
+    else{
+
+      //Define a tolerance for the dot product of the emerging vector and the surface norm, and then get the surface norm (here, the momentum dir
+      //if the boundary interactions are handled correctly.)
+      G4double epsilonDotProductForNorm = 0.07; //This ultimately needs to match the granularity of the 2DSafety depending on the curvature REL. In this
+      //case we're talking about things that are being checked for being 86 degrees apart
+      G4double epsilonDotProductForTangent = 0.002; //Same, but in this case we're checking for things that are three degrees apart
+      G4ThreeVector surfaceNorm = track.GetMomentumDirection();
+      
+      //Case 1: not stuck. In this case, we pull the pre-step point, whose vector should actually just be the surface normal in the
+      //direction of the particle's new momentum (this is from the QP boundary class). We can then randomly generate a vector in 2D,
+      //and accept that the distance is just that drawn from GetMFP
+      if( !fQPIsStuck ){
+	G4ThreeVector theNewDirection;
+	do{
+	  theNewDirection = G4RandomDirection();
+	  theNewDirection.setZ(0);
+	  theNewDirection = theNewDirection.unit();
+	}
+	while( theNewDirection.dot(surfaceNorm) <= epsilonDotProductForNorm );
+	fNewDirection = theNewDirection;
+	
+	//Debugging
+	if( verboseLevel > 2 ){	
+	  G4cout << "ASDI Function Point D_3 | Since we're on a surface, we're keeping the new direction as " << fNewDirection << ", which should be the surface norm in the direction of motion." << G4endl;
+	}
+      }
+
+      //Case 2: stuck. Here we have a different safety (and different distance) computed in GetMFP. We still need to modify the direction of the
+      //track here, however.
+      else{
+	
+	//With this safety, generate a new direction somewhere between the surface tangents. Probably can speed this up but for now
+	//get something that works REL)
+	G4ThreeVector theNewDir(0,0,0);
+	G4double minDot = fOutgoingSurfaceTangent1.dot(fOutgoingSurfaceTangent2);
+	do{
+	  theNewDir = G4RandomDirection();
+	  theNewDir.setZ(0);
+	  theNewDir = theNewDir.unit();
+	}
+	//First bit two are to make sure we're within the two tangent vectors. Second two are to make sure that we're not
+	//overly close to either of them.
+	while( !(theNewDir.dot(fOutgoingSurfaceTangent1) > minDot && theNewDir.dot(fOutgoingSurfaceTangent2) > minDot &&
+		 theNewDir.dot(fOutgoingSurfaceTangent1) < (1-epsilonDotProductForTangent) && theNewDir.dot(fOutgoingSurfaceTangent2) < (1-epsilonDotProductForTangent)) );
+
+	//Now set the direction
+	fNewDirection = theNewDir;
+      }
+    }
+    fNewPosition = fOldPosition + fPathLength*fNewDirection;
+
+
+    
     //Debugging
     if( verboseLevel > 2 ){
       G4cout << "ASDI Function Point E | time of pre-step point is: " << step.GetPreStepPoint()->GetGlobalTime() << G4endl;
       G4cout << "ASDI Function Point E | time of post-step point is: " << step.GetPostStepPoint()->GetGlobalTime() << G4endl;
+      G4cout << "ASDI Function Point E | fPathLength selected: " << fPathLength << G4endl;
+      G4cout << "ASDI Function Point E | fNewDirection: " << fNewDirection << G4endl;
     }
 
     //Test. I think CheckNextStep may also be valuable here, especially when we get into scenarios where we enter daughter volumes
@@ -325,7 +439,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 	G4cout << "ASDI Function Point G | the proposed step does not cross a boundary. Setting position manually." << G4endl;
       }
       fSafetyHelper->ReLocateWithinVolume(fNewPosition);
-      fParticleChange.ProposeMomentumDirection(fNewDirection);
+      fParticleChange.ProposeMomentumDirection(fNewDirection); 
 
       //Since we are forced to use the pre-step point's velocity for propagation of this step (and the pre-step point's velocity is
       //the one we started with), transportation will add a time corresponding to traveling the calculated path length at that velocity.
@@ -409,7 +523,6 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt ----------" << G4endl;
   }
   
-  G4double epsilon = 1*CLHEP::um; //REL HARDCODED, FIX
 
   //Determine if we're on a boundary. A few scenarios:
   //1. This shouldn't run if we are landing on a boundary in the step (where Transportation will be the thing
@@ -440,8 +553,8 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
   //processes can run. We will therefore not randomize the direction of the next step. Instead, we need to find the direction
   //toward the boundary in order to figure out how to angle the next vector. Note that an exception to this runs if we're *currently*
   //on a boundary (i.e. we're leaving from the boundary and the step is at a steep enough angle not to leave the epsilon region around
-  //the surface.
-  if( the2DSafety < epsilon ){
+  //the surface. //REL This may not run if another process sends us within epsilon of the boundary... do we need to do anything about this?
+  if( the2DSafety < fEpsilonForWalkOnSpheres ){
 
     //Debugging
     if( verboseLevel > 2 ){
@@ -453,15 +566,17 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
   //3. If we're not within epsilon, then just purely randomize.
   else{
 
-    //Debugging
-    if( verboseLevel > 2 ){      
-      G4cout << "PSDI Function Point B | safety is larger than epsilon, and we're just randomizing the next direction." << G4endl;      
-    }
-   
     //Randomize the final state momentum
     G4ThreeVector returnDir = G4RandomDirection();
     returnDir.setZ(0);
     fParticleChange.ProposeMomentumDirection(returnDir.unit());
+
+    //Debugging
+    if( verboseLevel > 2 ){      
+      G4cout << "PSDI Function Point B | safety is larger than epsilon, and we're just randomizing the next direction to " << returnDir.unit() << "." << G4endl;      
+    }
+
+    
   }
     
   ClearNumberOfInteractionLengthLeft();		// All processes should do this! 
@@ -646,6 +761,11 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     G4cout << "GMFP Function Point A | position: " << track.GetPosition() << G4endl;
     G4cout << "GMFP Function Point A | global time: " << track.GetGlobalTime() << G4endl;
   }
+
+  //Reset some of the quantities that should be reset each step
+  fOutgoingSurfaceTangent1 = G4ThreeVector(0,0,0);
+  fOutgoingSurfaceTangent2 = G4ThreeVector(0,0,0);
+  fQPIsStuck = false;
   
   //This needs to be done so that we can update the SCUtils information, and since GetMeanFreePath for the discrete bit of this process should (?)
   //run first, it will hopefully happen before the AlongStepGPIL runs and requests the gap.
@@ -744,10 +864,73 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     //the volume that we'll continue into
     G4double the2DSafety;
     if( fTrackOnBoundary ){
-      the2DSafety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-				       track.GetPosition(),
-				       track.GetMomentumDirection(),
-				       true);
+
+      //Here we need to split into "normal" and "QP-is-stuck" scenarios. Have to do this here, and not later, so that we can
+      //properly enable the GPIL race with other processes in either case. First, establish the surface norm. From the boundary
+      //process, this should just be the momentum direction at the pre-step point (track point). Then check to see if the QP is stuck
+      G4ThreeVector surfaceNorm = track.GetMomentumDirection();      
+      UpdateBoundaryHistory(track.GetTrackID(),track.GetPosition(),surfaceNorm);
+      std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> qpIsStuck_norm1_norm2_pos1_pos2 = CheckForStuckQPs();
+      G4bool qpIsStuck = std::get<0>(qpIsStuck_norm1_norm2_pos1_pos2);
+      
+
+      //If our QP is not stuck, then we get an easy win. Compute the 2D safety normally
+      if( !qpIsStuck ){
+
+	//Debugging
+	if( verboseLevel > 2 ){
+	  G4cout << "GMFP Function Point EB | QP Is not stuck." << G4endl;
+	}
+	
+	the2DSafety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+					 track.GetPosition(),
+					 track.GetMomentumDirection(),
+					 true);
+      }
+      //If the QP IS stuck, then we have some work to do. Use the norms and positions returned from CheckForStuckQPs to compute
+      //an angular range away from the corner over which we can compute a safety.
+      else{
+
+	G4ThreeVector norm1 = std::get<1>(qpIsStuck_norm1_norm2_pos1_pos2);
+	G4ThreeVector pos1 = std::get<3>(qpIsStuck_norm1_norm2_pos1_pos2);
+	G4ThreeVector norm2 = std::get<2>(qpIsStuck_norm1_norm2_pos1_pos2);
+	G4ThreeVector pos2 = std::get<4>(qpIsStuck_norm1_norm2_pos1_pos2);
+
+	//From these normal vectors, we should be able to find a set of directions over which to do a constrained 2D safety and 
+	//subsequent ejection of the QP out from the corner
+	G4ThreeVector cornerLocation(0,0,0);
+	std::pair<G4ThreeVector,G4ThreeVector> outgoingSurfaceTangents = FindSurfaceTangentsForStuckQPEjection(norm1,pos1,norm2,pos2,cornerLocation);
+	fOutgoingSurfaceTangent1 = outgoingSurfaceTangents.first;
+	fOutgoingSurfaceTangent2 = outgoingSurfaceTangents.second;
+	fQPIsStuck = true;
+
+	//Debugging
+	if( verboseLevel > 2 ){
+	  G4cout << "GMFP Function Point EB | QP Is stuck!" << G4endl;
+	  G4cout << "GMFP Function Point EB | norm 1: " << norm1 << G4endl;
+	  G4cout << "GMFP Function Point EB | norm 2: " << norm2 << G4endl;
+	  G4cout << "GMFP Function Point EB | pos 1: " << pos1 << G4endl;
+	  G4cout << "GMFP Function Point EB | pos 2: " << pos2 << G4endl;
+	  G4cout << "GMFP Function Point EB | fOutgoingSurfaceTangent1: " << fOutgoingSurfaceTangent1 << G4endl;
+	  G4cout << "GMFP Function Point EB | fOutgoingSurfaceTangent2: " << fOutgoingSurfaceTangent2 << G4endl;
+	  G4cout << "GMFP Function Point EB | cornerLocation: " << cornerLocation << G4endl;
+	}
+	
+	
+	//Now use the outgoing surface tangents to compute a constrained 2D safety
+	G4double constrained2DSafety = G4CMP::ComputeConstrained2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+									 track.GetPosition(),
+									 track.GetMomentumDirection(),
+									 true,
+									 outgoingSurfaceTangents.first,
+									 outgoingSurfaceTangents.second);	
+	the2DSafety = constrained2DSafety;
+
+	//Debugging
+	if( verboseLevel > 2 ){
+	  G4cout << "GMFP Function Point EC | Constrained 2D safety: " << constrained2DSafety << G4endl;
+	}
+      }
     }
     //Bulk case: simpler
     else{
@@ -766,6 +949,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     //Debugging
     if( verboseLevel > 2 ){      
       G4cout << "GMFP Function Point F | Diffusion constant (energy-adjusted): " << fDiffConst << G4endl;
+      G4cout << "GMFP Function Point F | the2DSafety: " << the2DSafety << G4endl;
     }
       
     
@@ -907,6 +1091,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::SampleTimeStepFromFirstPassageDis
     G4ExceptionDescription msg;
     msg << "Attempting to use an unknown time sampling technique, " << samplingTechnique << " for first-passage time. Throwing an error.";
     G4Exception("G4CMPBogoliubovQPRandomWalkTransport::SampleTimeeStepFromFirstPassageDistribution", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+    return 0; //Shouldn't ever get here.
   }
 }
 
@@ -972,3 +1157,299 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::SampleDimensionlessTimeStepUsingA
   return sampledT;
   
 }
+
+//This looks at the storage objects and uses them to understand if our track hasn't really moved
+//much in the last several boundary scatters. The outputs are whether a QP is stuck and then two
+//vectors that give a span over which to search for a new 2D safety.
+std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMPBogoliubovQPRandomWalkTransport::CheckForStuckQPs(){
+  
+  //For now, just check for stuck QPs in a corner geometry
+  return CheckForStuckQPsInCorner();
+}
+
+//For a specific geometry where we are explicitly dealing with a corner (doesn't have to be 90 degrees, but it has to
+//be discontinuous). General strategy:
+std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMPBogoliubovQPRandomWalkTransport::CheckForStuckQPsInCorner(){
+
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::CheckForStuckQPsInCorner() ----------" << G4endl;
+    G4cout << "CFSQIC Function Point A | Starting to check for stuck QPs in a corner." << G4endl;
+  }
+  
+  
+  //output variables
+  G4bool qpIsStuck = false;
+  G4ThreeVector outNorm0(0,0,0);
+  G4ThreeVector outNorm1(0,0,0);
+  G4ThreeVector outPos0(0,0,0);
+  G4ThreeVector outPos1(0,0,0);
+
+  //Some storage variables
+  G4double avgx = 0;
+  G4double avgx2 = 0;
+  G4double avgy = 0;
+  G4double avgy2 = 0;
+  std::vector<G4ThreeVector> uniqueNorms;
+
+  //First, if the length of the boundary history is not the max length, it means we haven't been running for long
+  //enough to be stuck. Return false
+  if( fBoundaryHistory.size() < fMaxBoundaryHistoryEntries ){
+    std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> output(qpIsStuck,outNorm0,outNorm1,outPos0,outPos1);
+    return output;
+  }
+  
+  //Find the most recent boundary history norm and position, and which volume is in the "forward" direction
+  G4double epsilonDisplacement = 1 * CLHEP::nm;
+  G4ThreeVector currentPosition = fBoundaryHistory[fBoundaryHistory.size()-1].first;
+  G4ThreeVector currentNorm = fBoundaryHistory[fBoundaryHistory.size()-1].second;
+  G4ThreeVector displacedPosition = currentPosition + currentNorm*epsilonDisplacement;  
+  G4VPhysicalVolume * volumeAtPoint = G4CMP::GetVolumeAtPoint(displacedPosition);
+
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "CFSQIC Function Point A | current position: " << currentPosition << G4endl;
+    G4cout << "CFSQIC Function Point A | current norm: " << currentNorm << G4endl;
+    G4cout << "CFSQIC Function Point A | volumeAtPoint: " << volumeAtPoint->GetName() << G4endl;
+  }
+
+
+  
+  //Loop over the other boundary history info (here we include the "current" one but a clause that will continue if it
+  //sees it.
+  std::vector<G4ThreeVector> goodOtherNorms;
+  std::vector<G4ThreeVector> goodOtherPositions;
+  for( int iB = 0; iB < fBoundaryHistory.size(); ++iB ){
+
+    //First, compute the standard deviation of the positions. This should be done regardless of the
+    //norm, since it will give us a sense of how tightly clustered the boundary hits are.
+    double x = fBoundaryHistory[iB].first.getX();
+    double y = fBoundaryHistory[iB].first.getY();
+    avgx += x;
+    avgy += y;
+    avgx2 += x*x;
+    avgy2 += y*y;
+    
+    //Now Determine if the currentNorm is collinear with this historical norm. If it is, continue: don't want
+    //things that are parallel with the currentNorm
+    G4ThreeVector thisNorm = fBoundaryHistory[iB].second;
+    if( fabs(thisNorm.dot(currentNorm)) > fDotProductDefiningUniqueNorms ){
+      continue;
+    }
+
+    //Since we now have a norm that is not collinear, compute +/- eps distances from this position along this norm,
+    //and determine if it's in the same volume as the current norm's next volume. This should leave us with
+    //a set of norms and points corresponding to the other positions that point into the same volume as the "main" one
+    G4ThreeVector plusEps = fBoundaryHistory[iB].first + epsilonDisplacement * fBoundaryHistory[iB].second;
+    G4ThreeVector minusEps = fBoundaryHistory[iB].first - epsilonDisplacement * fBoundaryHistory[iB].second;
+    G4VPhysicalVolume * volPlusEps = G4CMP::GetVolumeAtPoint(plusEps);
+    G4VPhysicalVolume * volMinusEps = G4CMP::GetVolumeAtPoint(minusEps);
+    if( volPlusEps == volumeAtPoint ){
+      goodOtherNorms.push_back(fBoundaryHistory[iB].second);
+      goodOtherPositions.push_back(fBoundaryHistory[iB].first);
+      G4cout << "PlusEps case. Goodothernorm: " << fBoundaryHistory[iB].second << ", pos: " << fBoundaryHistory[iB].first << G4endl;
+    }
+    if( volMinusEps == volumeAtPoint ){
+      goodOtherNorms.push_back(-1*fBoundaryHistory[iB].second);
+      goodOtherPositions.push_back(fBoundaryHistory[iB].first);
+      G4cout << "MinusEps case. Goodothernorm: " << fBoundaryHistory[iB].second << ", pos: " << fBoundaryHistory[iB].first << G4endl;
+    }
+  }
+  avgx /= fBoundaryHistory.size();
+  avgy /= fBoundaryHistory.size();
+  avgx2 /= fBoundaryHistory.size();
+  avgy2 /= fBoundaryHistory.size();
+  G4double sigmax = pow(avgx2 - avgx*avgx,0.5);
+  G4double sigmay = pow(avgy2 - avgy*avgy,0.5);
+
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "CFSQIC Function Point B | avgx: " << avgx << ", avgx2: " << avgx2 << G4endl;
+    G4cout << "CFSQIC Function Point B | sigmaX: " << sigmax << ", sigmaY: " << sigmay << G4endl;
+  }
+  
+
+  
+  //Next, check to see that the sigmaX and sigmaY are both below a threshold. If they're not, then return that we're not stuck.
+  if( !(sigmax < fStuckInCornerThreshold && sigmay < fStuckInCornerThreshold ) ){
+    std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> output(qpIsStuck,outNorm0,outNorm1,outPos0,outPos1);
+    return output;    
+  }
+  outPos0 = currentPosition;
+  outNorm0 = currentNorm;
+
+
+  for( int iN = 0; iN < goodOtherNorms.size(); ++iN ){
+    G4cout << "Good other norm: " << goodOtherNorms[iN] << ", pos: " << goodOtherPositions[iN] << G4endl;
+  }
+  
+  
+  //So we're boxed into a corner. Now check the good positions list to see if there are more than one unique vector that points to this next
+  //volume. In the case of curved surfaces, this may very well be true.
+  std::vector<G4ThreeVector> uniqueGoodNorms;
+  std::vector<G4ThreeVector> uniqueGoodPositions;
+  uniqueGoodNorms.push_back(goodOtherNorms[0]);
+  uniqueGoodPositions.push_back(goodOtherPositions[0]);
+
+  //Loop over all of the other good norms and remove if not unique
+  for( int iN = 0; iN < goodOtherNorms.size(); ++iN ){
+    G4bool notUnique = false;
+    for( int iG = 0; iG < uniqueGoodNorms.size(); ++iG ){
+      if( fabs(goodOtherNorms[iN].dot(uniqueGoodNorms[iG])) > fDotProductDefiningUniqueNorms ){
+	notUnique = true;
+	break;
+      }
+    }
+    if( !notUnique ){
+      uniqueGoodNorms.push_back(goodOtherNorms[iN]);
+      uniqueGoodPositions.push_back(goodOtherPositions[iN]);
+    }
+  }
+  
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "CFSQIC Function Point C | Unique Good *current* Norm: " << currentNorm << " at position: " << currentPosition << G4endl;
+    G4cout << "CFSQIC Function Point C | Number of unique good norms: " << uniqueGoodNorms.size() << ", number of corresp. positions: " << uniqueGoodPositions.size() << G4endl;
+    for( int iU = 0; iU < uniqueGoodNorms.size(); ++iU ){
+      G4cout << "CFSQIC Function Point C | Unique Good *other* Norm: " << uniqueGoodNorms[iU] << " at position: " << uniqueGoodPositions[iU] << G4endl;
+    }
+  }
+    
+  
+  //Now we should have a set of unique good norms, pointing into the volume of interest. For now, if we're really in a true
+  //discontinuous corner, the length of this unique good norms vector should never be larger than one. However, in some
+  //more general geometries it may -- we'll have to figure out what we want to do about that later. (REL PLACE FOR MORE GENERALITY)
+  if( uniqueGoodNorms.size() != 1 ){
+    G4ExceptionDescription msg;
+    msg << "The number of unique good norms at this corner is somehow not equal to 2. This is probably because we're looking at a curved geometry. We don't have logic to handle these yet. Apologies.";
+    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::CheckForStuckQPsInCorner", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+  }
+  
+  //Now package the good norms and positions into output
+  outPos1 = uniqueGoodPositions[0];
+  outNorm1 = uniqueGoodNorms[0];
+  qpIsStuck = true;
+  std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> output(qpIsStuck,outNorm0,outNorm1,outPos0,outPos1);
+  return output;
+}
+
+
+
+//This takes the track/step information and pushes it back into our storage objects that keep track
+//of the last few boundary steps
+void G4CMPBogoliubovQPRandomWalkTransport::UpdateBoundaryHistory(G4int trackID, G4ThreeVector preStepPos, G4ThreeVector preStepNorm){
+
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::UpdateBoundaryHistory() ----------" << G4endl;
+  }
+  
+  //Check the track id to make sure we're looking at the right track. If they don't match,
+  //reset our boundary history and push our vector back
+  if( trackID != fBoundaryHistoryTrackID ){
+    fBoundaryHistory.clear();
+    fBoundaryHistoryTrackID = trackID;
+    std::pair<G4ThreeVector,G4ThreeVector> posNormPair(preStepPos,preStepNorm);    
+    fBoundaryHistory.push_back(posNormPair);
+  }
+  //If we're on the same particle, then push back our boundary history vectors until they
+  //hit a max length, and then start kicking old boundary interactions out, FIFO  
+  else{
+    std::pair<G4ThreeVector,G4ThreeVector> posNormPair(preStepPos,preStepNorm);    
+    if( fBoundaryHistory.size() < fMaxBoundaryHistoryEntries ){
+      fBoundaryHistory.push_back(posNormPair);      
+    }
+    else{
+      fBoundaryHistory.erase(fBoundaryHistory.begin());
+      fBoundaryHistory.push_back(posNormPair);
+    }    
+  }
+
+  //Debugging
+  if( verboseLevel > 2 ){
+    for( int iB = 0; iB < fBoundaryHistory.size(); ++iB ){
+      G4cout << "UBH Function Point A | Boundary position: " << fBoundaryHistory[iB].first.getX() << ", " << fBoundaryHistory[iB].first.getY() << G4endl;
+    }
+  }
+
+  
+}
+
+//This takes the positions and norms from the "am I stuck" function and uses them to find the outgoing tangent vectors from a corner
+//Note that this function is not yet agnostic to the plane: it's only in XY for now. This can be plausibly made more general.
+std::pair<G4ThreeVector,G4ThreeVector> G4CMPBogoliubovQPRandomWalkTransport::FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
+														   G4ThreeVector pos1,
+														   G4ThreeVector norm2,
+														   G4ThreeVector pos2,
+														   G4ThreeVector & cornerLocation)
+{
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::FindSurfaceTangentsForStuckQPEjection() ----------" << G4endl;
+    G4cout << "FSTFSQE Function Point A | Starting to find surface tangents." << G4endl;
+  }
+
+  G4double epsilonCornerCalculation = 0.01*nm; //Should be pretty small -- this all should be exact
+  
+  //Compute an in-plane vector using the difference between the positions, and then cross with the norm to get the out-of-plane vector  
+  G4ThreeVector inPlane(pos1.getX()-pos2.getX(),pos1.getY()-pos2.getY(),pos1.getZ()-pos2.getZ());
+  G4ThreeVector outOfPlane = (inPlane.cross(norm1)).unit();
+
+  //Sanity check -- can be removed when we move toward more geometry-agnostic code
+  if( outOfPlane.getX() != 0 || outOfPlane.getY() != 0 ){
+    G4ExceptionDescription msg;
+    msg << "Currently, we are only working in XY. The out-of-plane vector is somehow not purely along z.";
+    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindSurfaceTangentsForStuckQPEjection", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+  }
+
+  
+  //Now use the outOfPlane vector with the norms to get tangent vectors (with still-to-be-defined directions relative to the corner)
+  G4ThreeVector tangVect1 = (outOfPlane.cross(norm1)).unit();
+  G4ThreeVector tangVect2 = (outOfPlane.cross(norm2)).unit();
+
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "FSTFSQE Function Point B | Input norm1: " << norm1 << G4endl;
+    G4cout << "FSTFSQE Function Point B | Input norm2: " << norm2 << G4endl;
+    G4cout << "FSTFSQE Function Point B | Additional In-plane vector: " << inPlane << G4endl;
+    G4cout << "FSTFSQE Function Point B | Out-of-plane vector: " << outOfPlane << G4endl;
+    G4cout << "FSTFSQE Function Point B | Simple TangVect1: " << tangVect1 << G4endl;
+    G4cout << "FSTFSQE Function Point B | Simple TangVect2: " << tangVect2 << G4endl;
+  }
+
+  //Now from these, compute the location of the corner. This is fully vectorial, and fully general.
+  //Here we use a prescription and notation in songho.ca/math/line/line.html where we have two lines, P1 + t * v and Q1 + s * u
+  //where we take pos1 = P1, pos2 = Q, tangVect1 = v, tangVect2 = u.
+  //We first compute the parameter t at which those two lines are equal to each other:
+  G4ThreeVector numPart1 = (pos2-pos1).cross(tangVect2);
+  G4ThreeVector numPart2 = tangVect1.cross(tangVect2);
+  G4double num = numPart1.dot(numPart2);
+  G4ThreeVector denomPart1 = tangVect1.cross(tangVect2);
+  G4double denom = denomPart1.dot(denomPart1);
+  G4double t = num/denom;
+
+  //Sanity check: can recalculate with s and find
+
+  //Calculating t and s
+  //if( verboseLevel > 2 ){
+  //  G4cout << "FSTFSQE Function Point B | t_param: " << t_param << G4endl;
+  //  G4cout << "FSTFSQE Function Point B | s_param: " << s_param << G4endl;
+  //}
+  
+  //Compute the corner location
+  G4ThreeVector corner1 = pos1 + tangVect1*t;
+  //if( (corner1-corner2).mag() > epsilonCornerCalculation ){
+  //  G4ExceptionDescription msg;
+  //  msg << "Somehow our corner calculation has failed. Corner 1: " << corner1 << ", and Corner 2: " << corner2 << ".";
+  //  G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindSurfaceTangentsForStuckQPEjection", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+  //}
+  cornerLocation = corner1;
+
+  //Now compute a vector from the corner to each position
+  G4ThreeVector finalTangVect1 = (pos1-corner1).unit();
+  G4ThreeVector finalTangVect2 = (pos2-corner1).unit();
+  std::pair<G4ThreeVector,G4ThreeVector> output(finalTangVect1,finalTangVect2);
+  return output;
+}
+
+

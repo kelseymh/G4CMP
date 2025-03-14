@@ -147,7 +147,30 @@ private:
   G4bool                      fVerySmallStep= false;
   G4double                    fBoundaryFudgeFactor;
 
+  G4double                    fEpsilonForWalkOnSpheres;
+  
   //std::ofstream fOutfile;
+
+  void UpdateBoundaryHistory(G4int trackID, G4ThreeVector preStepPos, G4ThreeVector preStepNorm);
+  std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> CheckForStuckQPs();
+  std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> CheckForStuckQPsInCorner();
+  std::pair<G4ThreeVector,G4ThreeVector> FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
+									       G4ThreeVector pos1,
+									       G4ThreeVector norm2,
+									       G4ThreeVector pos2,
+									       G4ThreeVector & cornerLocation);
+  
+  
+  G4int fBoundaryHistoryTrackID;
+  std::vector<std::pair<G4ThreeVector,G4ThreeVector> > fBoundaryHistory; //The last N boundary scatters for this 
+  G4int fMaxBoundaryHistoryEntries;
+  G4bool fQPIsStuck;
+  G4ThreeVector fStuckNorm1;
+  G4ThreeVector fStuckNorm2;
+  G4ThreeVector fOutgoingSurfaceTangent1;
+  G4ThreeVector fOutgoingSurfaceTangent2;
+  G4double fDotProductDefiningUniqueNorms;
+  G4double fStuckInCornerThreshold;
   
   
 };

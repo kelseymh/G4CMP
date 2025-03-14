@@ -286,7 +286,7 @@ G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch, G4ThreeVector pos, 
 
 //Looking "inward" within a mother volume to its daughter volumes to identify safeties. Generally, don't want to use this on its
 //own. Should only be called from Get2DSafety, not by separate classes.
-G4double G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const G4ThreeVector & momDir, G4LogicalVolume * motherLog, bool safetyFromABoundary, G4int daughterID ){
+G4double G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const G4ThreeVector & momDir, G4LogicalVolume * motherLog, bool safetyFromABoundary, G4int daughterID, G4ThreeVector tangVect1, G4ThreeVector tangVect2 ){
 
   //Establish output variable;
   G4double safety = DBL_MAX;
@@ -396,7 +396,9 @@ G4double G4CMP::Compute2DSafetyInMotherVolume(const G4VTouchable * motherTouch, 
 					      G4LogicalVolume * motherLog,
 					      G4VSolid * motherSolid,
 					      G4ThreeVector pos,
-					      bool safetyFromABoundary)
+					      bool safetyFromABoundary,
+					      G4ThreeVector tangVect1,
+					      G4ThreeVector tangVect2)
 {
   //Check to make sure we're in fact inside the mother volume
   if( motherSolid->Inside(pos) == kOutside ){
@@ -419,6 +421,16 @@ G4double G4CMP::Compute2DSafetyInMotherVolume(const G4VTouchable * motherTouch, 
     theDir.setX(x);
     theDir.setY(y);
     theDir.setZ(0);
+
+    //For the "constrained" safety, we have both of these tangent vectors set to something nontrivial. In this case,
+    //make sure that the three vector here is between the two provided tangent vectors. We can do this by
+    //making sure that the dot product of this vector with both tangent vectors is larger than the dot product of the tangent vectors
+    if( tangVect1.mag() > 0 && tangVect2.mag() > 0 ){
+      G4double minDot = tangVect1.dot(tangVect2);
+      if( theDir.dot(tangVect1) < minDot || theDir.dot(tangVect2) < minDot ) continue;
+    }
+
+    
     G4double distToOut = motherSolid->DistanceToOut(pos,theDir);
     //G4cout << "---> REL/EY: Running hack-y 2-D safety. For phi of " << phi*180/CLHEP::pi << " deg, DistToOut returns a dist to boundary of: " << distToOut << G4endl;
 
@@ -435,6 +447,20 @@ G4double G4CMP::Compute2DSafetyInMotherVolume(const G4VTouchable * motherTouch, 
   G4cout << "Time elapsed during 2D DistToOutLoop: " << double(timestampEnd-timestampStart)/double(CLOCKS_PER_SEC) << " seconds" << G4endl;
   G4cout << "clocks_per_sec: " << CLOCKS_PER_SEC << G4endl;
   G4cout << "In Compute2DSafetyInMotherVolume, looking at a mother safety of: " << motherSafety << G4endl;
+
+  /*
+  //Last, there is an edge case that may arise if we're not fine enough with our sampling, which arises if we try to
+  //take a step basically right along the tangent vectors. (We note that this "spam in several directions" strategy may
+  //break down if a surface is not "simple" in phi, but this is a scenario where even "simple" geometries break down.) For
+  //this, we should re-compute the safety along exactly the tangent vectors
+  if( tangVect1.mag() > 0 && tangVect2.mag() > 0 ){
+    G4double safetyTang1 = motherSolid->DistanceToOut(pos,tangVect1);
+    G4double safetyTang2 = motherSolid->DistanceToOut(pos,tangVect2);
+    G4cout << "Constrained Safety along Tang1: " << safetyTang1 << ", constrained safety along Tang2: " << safetyTang2 << G4endl;
+    if( safetyTang1 < motherSafety ) motherSafety = safetyTang1;
+    if( safetyTang2 < motherSafety ) motherSafety = safetyTang2;
+  }
+  */
   return motherSafety;
 }
 
@@ -744,3 +770,49 @@ G4ThreeVector G4CMP::ApplySurfaceClearance(const G4VTouchable* touch,
   RotateToGlobalPosition(touch, pos);
   return pos;
 }
+
+//1. The touchable of the mother volume that the point is currently in
+//2. The position of the point whose safety is to be computed
+//3. The momentum direction of the last point (used for identifying what directions are "in-plane")
+//4. A bool saying whether we're trying compute a safety from a boundary we're currently on. REL do we actually need this, or can we not calculate?
+//5. A tangent vector indicating one angular bound for where to look
+//6. A tangent vector indicating another angular bound for where to look
+G4double G4CMP::ComputeConstrained2DSafety(const G4VTouchable* motherTouch, G4ThreeVector pos, G4ThreeVector momDir, bool safetyFromABoundary, G4ThreeVector tangVector1, G4ThreeVector tangVector2)
+{
+  //Pseudocode
+  //0. Define output variables
+  G4double overallSafety = DBL_MAX;
+
+  //Get the mother volume information
+  G4VPhysicalVolume* motherPhys = motherTouch->GetVolume();
+  G4LogicalVolume* motherLog = motherPhys->GetLogicalVolume();
+  G4VSolid * motherSolid = motherLog->GetSolid();
+
+  //Rotate the position and the momentum direction to the touchable's coordinates.
+  RotateToLocalPosition(motherTouch, pos);
+  RotateToLocalDirection(motherTouch, momDir);
+  RotateToLocalDirection(motherTouch,tangVector1);
+  RotateToLocalDirection(motherTouch,tangVector2);
+  
+  //1. First, get the shortest distance to the mother volume that we're in. ("DistanceToOut")
+  G4double motherSafety = Compute2DSafetyInMotherVolume(motherTouch, motherPhys, motherLog, motherSolid, pos, safetyFromABoundary,tangVector1,tangVector2);
+  if( motherSafety < overallSafety ){
+    overallSafety = motherSafety;
+  }
+
+  //2. Next, loop through the daughter volumes in this mother volume and compute the distances to those.
+  // Here, we don't actually use the tangVector1 and tangVector2 in the math, because of something that I think will be a reasonable
+  //first approximation: if you're in a corner, the chances of a daughter boundary being on the same scale of how close you are to that
+  //corner should be small. Some edge cases exist, where you can form a corner from a mother and a daugher boundary, in which case you
+  //may land on the daughter, re-recognize that you're stuck, and then get re-ejected safely far from the corner. So at least in reasonably simple
+  //geometries, this plus our mother safety should be fine. Need to rejigger this code to integrate it into the Get2D safety, since there are lots
+  //of similarities/overlaps. (REL)
+  for( int iD = 0; iD < motherLog->GetNoDaughters(); ++iD ){
+    G4double daughterSafety = Compute2DSafetyToDaughterVolume(pos,momDir,motherLog,safetyFromABoundary,iD,tangVector1,tangVector2);
+    if( daughterSafety < overallSafety ) overallSafety = daughterSafety;
+  }
+  
+  //Return the safety
+  return overallSafety; 
+}
+
