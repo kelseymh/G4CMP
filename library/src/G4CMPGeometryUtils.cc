@@ -252,7 +252,16 @@ G4double G4CMP::Get2DSafetyFromBoundary(const G4Track& theTrack)
 //2. The position of the point whose safety is to be computed
 //3. The momentum direction of the last point (used for identifying what directions are "in-plane")
 //4. A bool saying whether we're trying compute a safety from a boundary we're currently on. REL do we actually need this, or can we not calculate?
-G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch, G4ThreeVector pos, G4ThreeVector momDir, bool safetyFromABoundary )
+//5. If we are calculating from a boundary, the surface norm at that point.
+//6. If we are computing a constrained safety (to get a QP unstuck from a corner), an outgoing tangent vector at the corner
+//7. If we are computing a constrained safety (to get a QP unstuck from a corner), the other outgoing tangent vector at the corner
+G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch,
+			    G4ThreeVector pos,
+			    G4ThreeVector momDir,
+			    bool safetyFromABoundary,
+			    G4ThreeVector surfaceNorm,
+			    G4ThreeVector tangVect1,
+			    G4ThreeVector tangVect2)
 {
   //Pseudocode
   //0. Define output variables
@@ -263,20 +272,33 @@ G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch, G4ThreeVector pos, 
   G4LogicalVolume* motherLog = motherPhys->GetLogicalVolume();
   G4VSolid * motherSolid = motherLog->GetSolid();
 
-  //Rotate the position and the momentum direction to the touchable's coordinates.
+  //Rotate the position and the momentum direction to the touchable's coordinates. If a surfacenorm, tangVect1, and tangVect2 are not
+  //supplied, then these just rotate from the 0 vector to the 0 vector.
   RotateToLocalPosition(motherTouch, pos);
   RotateToLocalDirection(motherTouch, momDir);
-  
+  RotateToLocalDirection(motherTouch,surfaceNorm);
+  RotateToLocalDirection(motherTouch,tangVect1);
+  RotateToLocalDirection(motherTouch,tangVect2);
+
+
   //1. First, get the shortest distance to the mother volume that we're in. ("DistanceToOut")
-  G4double motherSafety = Compute2DSafetyInMotherVolume(motherTouch, motherPhys, motherLog, motherSolid, pos, safetyFromABoundary);
+  G4double motherSafety = Compute2DSafetyInMotherVolume(motherSolid, pos, safetyFromABoundary, surfaceNorm, tangVect1, tangVect2);
   if( motherSafety < overallSafety ){
     overallSafety = motherSafety;
+    G4cout << "Overall safety during mother safety check: " << overallSafety << G4endl;
   }
 
   //2. Next, loop through the daughter volumes in this mother volume and compute the distances to those.
+  //When we're stuck, we don't actually use the tangVector1 and tangVector2 in the math, because of something that I think will be a reasonable
+  //first approximation: if you're in a corner, the chances of a daughter boundary being on the same scale of how close you are to that
+  //corner should be small. Some edge cases exist, where you can form a corner from a mother and a daugher boundary, in which case you
+  //may land on the daughter, re-recognize that you're stuck, and then get re-ejected safely far from the corner. So at least in reasonably simple
+  //geometries, this plus our mother safety should be fine. Need to rejigger this code to integrate it into the Get2D safety, since there are lots
+  //of similarities/overlaps. (REL)
   for( int iD = 0; iD < motherLog->GetNoDaughters(); ++iD ){
-    G4double daughterSafety = Compute2DSafetyToDaughterVolume(pos,momDir,motherLog,safetyFromABoundary,iD);
+    G4double daughterSafety = Compute2DSafetyToDaughterVolume(pos,momDir,motherLog,safetyFromABoundary,iD,surfaceNorm,tangVect1,tangVect2);
     if( daughterSafety < overallSafety ) overallSafety = daughterSafety;
+    G4cout << "Overall safety during daughter safety check " << iD << ": " << overallSafety << G4endl;
   }
   
   //Return the safety
@@ -286,7 +308,7 @@ G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch, G4ThreeVector pos, 
 
 //Looking "inward" within a mother volume to its daughter volumes to identify safeties. Generally, don't want to use this on its
 //own. Should only be called from Get2DSafety, not by separate classes.
-G4double G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const G4ThreeVector & momDir, G4LogicalVolume * motherLog, bool safetyFromABoundary, G4int daughterID, G4ThreeVector tangVect1, G4ThreeVector tangVect2 ){
+G4double G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const G4ThreeVector & momDir, G4LogicalVolume * motherLog, bool safetyFromABoundary, G4int daughterID, G4ThreeVector surfaceNorm, G4ThreeVector tangVect1, G4ThreeVector tangVect2 ){
 
   //Establish output variable;
   G4double safety = DBL_MAX;
@@ -302,6 +324,9 @@ G4double G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const
   sampleTf.Invert();
   const G4ThreeVector samplePoint = sampleTf.TransformPoint(pos);
   const G4ThreeVector sampleAxis = sampleTf.TransformAxis(momDir);
+  const G4ThreeVector rotatedSurfaceNorm = sampleTf.TransformAxis(surfaceNorm);
+  const G4ThreeVector rotatedTangVect1 = sampleTf.TransformAxis(tangVect1);
+  const G4ThreeVector rotatedTangVect2 = sampleTf.TransformAxis(tangVect2);
   const G4VSolid * volDaughterSolid = volDaughterPhys->GetLogicalVolume()->GetSolid();
 
   //Check to make sure we're infact outside the daughter volume
@@ -315,14 +340,49 @@ G4double G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const
   //is in fact the distance in XY, assuming the distanceToIn is computed correctly. This is not exactly true for
   //a few solids, which will require upgrades. (See G4Box)
   const G4double volDaughterSafety = volDaughterSolid->DistanceToIn(samplePoint);
+  
 
+  /* Old, simpler logic
   if( safetyFromABoundary ){
     if( volDaughterSafety < safety && volDaughterSafety != 0 ) safety = volDaughterSafety;
   }
   else{
     if( volDaughterSafety < safety ) safety = volDaughterSafety;
   }
+  */
 
+  //More complicated logic, which takes into account the effect of being on a boundary of a surface with
+  //concavities.
+  if( safetyFromABoundary ){  
+    G4cout << "SafetyFromABoundary is triggering, with volDaughterSafety: " << volDaughterSafety << G4endl;
+
+    //Determine if the current boundary belongs to this daughter
+    G4bool currentBoundaryBelongsToThisDaughter = false;
+    G4double boundaryTolerance = 1e-12; //REL HARDCODED NEED TO FIX -- maybe use kSurface here instead?
+    if( volDaughterSafety < boundaryTolerance ){
+      currentBoundaryBelongsToThisDaughter = true;
+      G4cout << "Changing currentBoundaryBelongsToThisDaughter to true." << G4endl;
+    }
+    
+    //If it doesn't, then we can just proceed as normal -- I think there aren't odd edge cases here
+    if( !currentBoundaryBelongsToThisDaughter ){
+      G4cout << "We're running the standard thing " << G4endl;
+      if( volDaughterSafety < safety ) safety = volDaughterSafety;
+    }    
+    //If it does, we have do do a sweep so we can see if there are places on this daughter volume
+    //that are closer to the given point than the safeties to other daughter volumes (and the mother)
+    else{
+      G4cout << "Somehow we think that this current boundary belongs to this daughter." << G4endl;
+      G4double safetyToThisDaughterBoundary = Compute2DSafetyToThisDaughterBoundary(volDaughterSolid,samplePoint,rotatedSurfaceNorm,rotatedTangVect1,rotatedTangVect2);
+      if( safetyToThisDaughterBoundary < safety ) safety = safetyToThisDaughterBoundary;
+    }
+  }
+  //If we're not on a boundary we get easy logic
+  else{
+    if( volDaughterSafety < safety ) safety = volDaughterSafety;
+  }
+  
+    
   
   /* //THIS WILL NEED TO GO IN SOMEHOW BUT ONCE WE CAN CONFIRM THINGS ARE WORKING WITH SIMPLER GEOMETRY FIRST
   //Handle the logic for whether we're trying to compute from a boundary. If we're on a boundary, we'll want to check
@@ -387,66 +447,116 @@ G4double G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const
   return safety;
 }
 
+//This is a specific 2D safety computation, from a daughter boundary to its own boundary. Only really useful if the surface has a concavity
+//that we're looking into. This has code overlapping with the mother version of this but for generality in the long-term, it may be more
+//organized to split into "look for 2D safety from daughters" and "look for 2D safty to mother"
+G4double G4CMP::Compute2DSafetyToThisDaughterBoundary(const G4VSolid * volDaughterSolid,
+						      G4ThreeVector samplePoint,
+						      G4ThreeVector rotatedSurfaceNorm,
+						      G4ThreeVector rotatedTangVect1,
+						      G4ThreeVector rotatedTangVect2)
+{
+  //Debugging
+  G4cout << "---------- G4CMPGeometryUtils::Compute2DSafetyToThisDaughterBoundary() ----------" << G4endl;
+  G4cout << "C2DSTTB Function Point A | Rotated surface norm: " << rotatedSurfaceNorm << G4endl;
+
+  //Spam a set of DistToOuts in different directions. This part slows things down substantially and should be used sparingly. This part
+  //should be replaced with geometry math
+  double safety = DBL_MAX;
+  G4ThreeVector theDir;
+  clock_t timestampStart, timestampEnd;
+  timestampStart = clock();
+
+  //Want to generate our points such that we start from the norm and work outwards
+  G4int nV = 70; //Parameterize this as half of the one used for the bulk -- we'll sweep both directions
+  
+  //Rotate in positive angular direction
+  for( G4int iV = 0; iV < nV; ++iV ){
+    G4double deltaPhi = 1.0*CLHEP::pi*((double)iV/(double)nV);
+    theDir = rotatedSurfaceNorm;
+    theDir.rotateZ(deltaPhi); //Needs to be plane-agnostic at some point REL
+
+    G4double epsilonDotProductForNorm = 0.0896393089; //Used to be 0.07//NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
+    if( theDir.dot(rotatedSurfaceNorm) <= epsilonDotProductForNorm ) continue;
+    
+    //In the case that the tangent vectors exist (i.e. we're in a "check for stuck QPs mode"), do a sanity check first
+    if( rotatedTangVect1.mag() > 0 && rotatedTangVect2.mag() > 0 ){
+      G4double minDot = rotatedTangVect1.dot(rotatedTangVect2); //Can move this outside loop to speed up REL?
+      if( theDir.dot(rotatedTangVect1) < minDot || theDir.dot(rotatedTangVect2) < minDot ) continue;
+    }
+
+    //Now check safety
+    G4double thisDaughterDirectionalDistToIn = volDaughterSolid->DistanceToIn(samplePoint,theDir);
+    if( thisDaughterDirectionalDistToIn < safety && thisDaughterDirectionalDistToIn > 0 ) safety = thisDaughterDirectionalDistToIn;
+
+    //Debugging
+    G4cout << "C2DSTTDB Function Point B | At angle: " << deltaPhi << ", (direction: " << theDir << "), thisDaughterDirectionalDistToIn: " << thisDaughterDirectionalDistToIn << G4endl;
+  }
+
+  //Rotate in the negative angular direction
+  for( G4int iV = 0; iV < nV; ++iV ){
+    G4double deltaPhi = -1.0*CLHEP::pi*((double)iV/(double)nV);
+    theDir = rotatedSurfaceNorm;
+    theDir.rotateZ(deltaPhi); //Needs to be plane-agnostic at some point REL
+
+    G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
+    if( theDir.dot(rotatedSurfaceNorm) <= epsilonDotProductForNorm ) continue;
+    
+    //In the case that the tangent vectors exist (i.e. we're in a "check for stuck QPs mode"), do a sanity check first
+    if( rotatedTangVect1.mag() > 0 && rotatedTangVect2.mag() > 0 ){
+      G4double minDot = rotatedTangVect1.dot(rotatedTangVect2); //Can move this outside loop to speed up REL?
+      if( theDir.dot(rotatedTangVect1) < minDot || theDir.dot(rotatedTangVect2) < minDot ) continue;
+    }
+
+    //Now check safety
+    G4double thisDaughterDirectionalDistToIn = volDaughterSolid->DistanceToIn(samplePoint,theDir);
+    if( thisDaughterDirectionalDistToIn < safety && thisDaughterDirectionalDistToIn > 0 ) safety = thisDaughterDirectionalDistToIn;
+
+    //Debugging
+    G4cout << "C2DSTTDB Function Point C | At angle: " << deltaPhi <<", (direction: " << theDir << "), thisDaughterDirectionalDistToIn: " << thisDaughterDirectionalDistToIn << G4endl;
+  }
+  timestampEnd = clock();
+  G4cout << "In Compute2DSafetyToThisDaughterBoundary, looking at a safety of: " << safety << G4endl;
+  return safety;
+
+}
+
+
+
 //Looking "outward" from the volume we're in, compute the 2D safety in XY. We do this with a loop, but this will
 //need to be replaced with something that's a bit less geometry-agnostic in order to be efficient. This is the place
 //to start that further optimization. Generally, don't want to use this on its own. Should only be called from
 //Get2DSafety, not by separate classes.
-G4double G4CMP::Compute2DSafetyInMotherVolume(const G4VTouchable * motherTouch, //REL Looks like we only need motherSolid here...
-					      G4VPhysicalVolume * motherPhys,
-					      G4LogicalVolume * motherLog,
-					      G4VSolid * motherSolid,
+G4double G4CMP::Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
 					      G4ThreeVector pos,
 					      bool safetyFromABoundary,
+					      G4ThreeVector surfaceNorm,
 					      G4ThreeVector tangVect1,
 					      G4ThreeVector tangVect2)
 {
+  G4double motherSafety = DBL_MAX;
+  
   //Check to make sure we're in fact inside the mother volume
   if( motherSolid->Inside(pos) == kOutside ){
     G4ExceptionDescription msg;
     msg << "G4CMP::Compute2DSafetyInMotherVolume seems to think we're outside the mother volume." << G4endl;
     G4Exception("G4CMP::Compute2DSafetyInMotherVolume()", "Geometry00X",FatalException, msg);
   }
-  
-  //Spam a set of DistToOuts in different directions. This part slows things down substantially and should be used sparingly. This part
-  //should be replaced with geometry math
-  double motherSafety = DBL_MAX;
-  G4ThreeVector theDir;
-  G4int nV = 100;
-  clock_t timestampStart, timestampEnd;
-  timestampStart = clock();
-  for( G4int iV = 0; iV < nV; ++iV ){
-    G4double phi = 2*CLHEP::pi*((double)iV/(double)nV);
-    G4double x = cos(phi);
-    G4double y = sin(phi);
-    theDir.setX(x);
-    theDir.setY(y);
-    theDir.setZ(0);
 
-    //For the "constrained" safety, we have both of these tangent vectors set to something nontrivial. In this case,
-    //make sure that the three vector here is between the two provided tangent vectors. We can do this by
-    //making sure that the dot product of this vector with both tangent vectors is larger than the dot product of the tangent vectors
-    if( tangVect1.mag() > 0 && tangVect2.mag() > 0 ){
-      G4double minDot = tangVect1.dot(tangVect2);
-      if( theDir.dot(tangVect1) < minDot || theDir.dot(tangVect2) < minDot ) continue;
-    }
 
-    
-    G4double distToOut = motherSolid->DistanceToOut(pos,theDir);
-    //G4cout << "---> REL/EY: Running hack-y 2-D safety. For phi of " << phi*180/CLHEP::pi << " deg, DistToOut returns a dist to boundary of: " << distToOut << G4endl;
-
-    //Handle the logic for whether we're trying to compute from a boundary. If we're on a boundary, we want to
-    //ignore the zeros, since that's the safety of the boundary we're on
-    if( safetyFromABoundary ){
-      if( distToOut < motherSafety && distToOut > 0 ) motherSafety = distToOut;
-    }
-    else{
-      if( distToOut < motherSafety ) motherSafety = distToOut;
-    }
+  //Note that we need to confirm that the "safetyFromABoundary" implies that it's the *mother's* boundary, and
+  //not a daughter boundary. As a result, we need to ensure that kSurface is true for the mother here.
+  //If we're computing from a boundary, want to standardize the spammed rays with respect to the surface norm
+  if( safetyFromABoundary && motherSolid->Inside(pos) == kSurface ){
+    G4double motherSafetyFromABoundary = Compute2DMotherSafetyFromABoundary(motherSolid,pos,surfaceNorm,tangVect1,tangVect2);
+    motherSafety = motherSafetyFromABoundary;
   }
-  timestampEnd = clock();
-  G4cout << "Time elapsed during 2D DistToOutLoop: " << double(timestampEnd-timestampStart)/double(CLOCKS_PER_SEC) << " seconds" << G4endl;
-  G4cout << "clocks_per_sec: " << CLOCKS_PER_SEC << G4endl;
-  G4cout << "In Compute2DSafetyInMotherVolume, looking at a mother safety of: " << motherSafety << G4endl;
+  //Otherwise, doesn't matter -- this is freeform
+  else{
+    G4double motherSafetyFromTheBulk = Compute2DMotherSafetyFromtheBulk(motherSolid,pos);
+    motherSafety = motherSafetyFromTheBulk;
+  }
+
 
   /*
   //Last, there is an edge case that may arise if we're not fine enough with our sampling, which arises if we try to
@@ -461,6 +571,106 @@ G4double G4CMP::Compute2DSafetyInMotherVolume(const G4VTouchable * motherTouch, 
     if( safetyTang2 < motherSafety ) motherSafety = safetyTang2;
   }
   */
+  return motherSafety;
+}
+
+//Compute the 2D safety to the mother from a point in the bulk (i.e. not on a boundary)
+G4double G4CMP::Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,G4ThreeVector pos)
+{
+  //Spam a set of DistToOuts in different directions. This part slows things down substantially and should be used sparingly. This part
+  //should be replaced with geometry math
+  double motherSafety = DBL_MAX;
+  G4ThreeVector theDir;
+  G4int nV = 140;
+  clock_t timestampStart, timestampEnd;
+  timestampStart = clock();
+  for( G4int iV = 0; iV < nV; ++iV ){
+    G4double phi = 2*CLHEP::pi*((double)iV/(double)nV);
+    G4double x = cos(phi);
+    G4double y = sin(phi);
+    theDir.setX(x);
+    theDir.setY(y);
+    theDir.setZ(0);
+    G4double distToOut = motherSolid->DistanceToOut(pos,theDir);
+    if( distToOut < motherSafety ) motherSafety = distToOut;
+  }
+  timestampEnd = clock();
+  G4cout << "Time elapsed during 2D DistToOutLoop: " << double(timestampEnd-timestampStart)/double(CLOCKS_PER_SEC) << " seconds" << G4endl;
+  G4cout << "clocks_per_sec: " << CLOCKS_PER_SEC << G4endl;
+  G4cout << "In Compute2DMotherSafetyFromTheBulk, looking at a mother safety of: " << motherSafety << G4endl;
+  return motherSafety;
+}
+
+//Compute the 2D safety to the mother from a point on the surface. The vectors here are all in the mother
+//frame, and the scan happens in both directions to cleanly define a set of absolute angles with respect to the tangents
+G4double G4CMP::Compute2DMotherSafetyFromABoundary(const G4VSolid * motherSolid,G4ThreeVector pos, G4ThreeVector surfaceNorm, G4ThreeVector tangVect1, G4ThreeVector tangVect2)
+{
+  //Spam a set of DistToOuts in different directions. This part slows things down substantially and should be used sparingly. This part
+  //should be replaced with geometry math
+  double motherSafety = DBL_MAX;
+  G4ThreeVector theDir;
+  clock_t timestampStart, timestampEnd;
+  timestampStart = clock();
+
+  //Want to generate our points such that we start from the norm and work outwards
+  G4int nV = 70; //Parameterize this as half of the one used for the bulk -- we'll sweep both directions
+  
+  //Rotate in positive angular direction
+  for( G4int iV = 0; iV < nV; ++iV ){
+    G4double deltaPhi = 1.0*CLHEP::pi*((double)iV/(double)nV);
+    theDir = surfaceNorm;
+    theDir.rotateZ(deltaPhi); //Needs to be plane-agnostic at some point REL
+
+    //Check to make sure that the scan vector is sufficiently away from the surface tangent so we don't end up with
+    //ridiculously crazy small steps'
+    
+    G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
+    if( theDir.dot(surfaceNorm) <= epsilonDotProductForNorm ) continue;
+    //case we're talking about things that are being checked for being 86 degrees apart
+
+    
+    //In the case that the tangent vectors exist (i.e. we're in a "check for stuck QPs mode"), do a sanity check first
+    if( tangVect1.mag() > 0 && tangVect2.mag() > 0 ){
+      G4double minDot = tangVect1.dot(tangVect2); //Can move this outside loop to speed up REL?
+      if( theDir.dot(tangVect1) < minDot || theDir.dot(tangVect2) < minDot ) continue;
+    }
+
+    //Now check safety
+    G4double distToOut = motherSolid->DistanceToOut(pos,theDir);
+    if( distToOut < motherSafety && distToOut > 0 ){ motherSafety = distToOut; }
+
+    //Debugging
+    G4cout << "C2DMSFAB Function Point A | At angle: " << deltaPhi <<", (direction: " << theDir << "), distToOut: " << distToOut << ", dot: " << theDir.dot(surfaceNorm) << G4endl;
+    
+  }
+
+  //Rotate in the negative angular direction
+  for( G4int iV = 0; iV < nV; ++iV ){
+    G4double deltaPhi = -1.0*CLHEP::pi*((double)iV/(double)nV);
+    theDir = surfaceNorm;
+    theDir.rotateZ(deltaPhi); //Needs to be plane-agnostic at some point REL
+
+    G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
+    if( theDir.dot(surfaceNorm) <= epsilonDotProductForNorm ) continue;
+    
+    //In the case that the tangent vectors exist (i.e. we're in a "check for stuck QPs mode"), do a sanity check first
+    if( tangVect1.mag() > 0 && tangVect2.mag() > 0 ){
+      G4double minDot = tangVect1.dot(tangVect2); //Can move this outside loop to speed up REL?
+      if( theDir.dot(tangVect1) < minDot || theDir.dot(tangVect2) < minDot ) continue;
+    }
+
+    //Now check safety
+    G4double distToOut = motherSolid->DistanceToOut(pos,theDir);
+    if( distToOut < motherSafety && distToOut > 0 ){ motherSafety = distToOut; }
+
+    //Debugging
+    G4cout << "C2DMSFAB Function Point B | At angle: " << deltaPhi <<", (direction: " << theDir << "), distToOut: " << distToOut << ", dot: " << theDir.dot(surfaceNorm) << G4endl;
+  }
+
+  timestampEnd = clock();
+  G4cout << "Time elapsed during 2D DistToOutLoop: " << double(timestampEnd-timestampStart)/double(CLOCKS_PER_SEC) << " seconds" << G4endl;
+  G4cout << "clocks_per_sec: " << CLOCKS_PER_SEC << G4endl;
+  G4cout << "In Compute2DMotherSafetyFromABoundary, looking at a mother safety of: " << motherSafety << G4endl;
   return motherSafety;
 }
 
@@ -771,6 +981,8 @@ G4ThreeVector G4CMP::ApplySurfaceClearance(const G4VTouchable* touch,
   return pos;
 }
 
+
+/*
 //1. The touchable of the mother volume that the point is currently in
 //2. The position of the point whose safety is to be computed
 //3. The momentum direction of the last point (used for identifying what directions are "in-plane")
@@ -780,7 +992,7 @@ G4ThreeVector G4CMP::ApplySurfaceClearance(const G4VTouchable* touch,
 G4double G4CMP::ComputeConstrained2DSafety(const G4VTouchable* motherTouch, G4ThreeVector pos, G4ThreeVector momDir, bool safetyFromABoundary, G4ThreeVector tangVector1, G4ThreeVector tangVector2)
 {
   //Pseudocode
-  //0. Define output variables
+  //0. Define output variables and make some copies
   G4double overallSafety = DBL_MAX;
 
   //Get the mother volume information
@@ -816,3 +1028,4 @@ G4double G4CMP::ComputeConstrained2DSafety(const G4VTouchable* motherTouch, G4Th
   return overallSafety; 
 }
 
+*/

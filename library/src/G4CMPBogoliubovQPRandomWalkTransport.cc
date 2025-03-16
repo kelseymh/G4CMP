@@ -46,7 +46,8 @@ G4CMPBogoliubovQPRandomWalkTransport::G4CMPBogoliubovQPRandomWalkTransport(const
   fPathLength =  0.0;
   fPreDiffusionPathLength = 0.0;
   fDiffConst =  0.0;
-  fBoundaryFudgeFactor = 1.0001;
+  //  fBoundaryFudgeFactor = 1.0001;
+  fBoundaryFudgeFactor = 1.001;
   fEpsilonForWalkOnSpheres = 1*CLHEP::um;
   
   //fSafetyHelper is initialized in AlongStepGPIL
@@ -363,7 +364,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 
       //Define a tolerance for the dot product of the emerging vector and the surface norm, and then get the surface norm (here, the momentum dir
       //if the boundary interactions are handled correctly.)
-      G4double epsilonDotProductForNorm = 0.07; //This ultimately needs to match the granularity of the 2DSafety depending on the curvature REL. In this
+      G4double epsilonDotProductForNorm = 0.0896393089; //This matches the granularity of the from-boundary 2D safety. //0.07; //This ultimately needs to match the granularity of the 2DSafety depending on the curvature REL. In this
       //case we're talking about things that are being checked for being 86 degrees apart
       G4double epsilonDotProductForTangent = 0.002; //Same, but in this case we're checking for things that are three degrees apart
       G4ThreeVector surfaceNorm = track.GetMomentumDirection();
@@ -539,7 +540,7 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
     G4Exception("G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
   }
   
-  //Determine if we end up close to a boundary using Get2DSafety
+  //Determine if we end up close to a boundary using Get2DSafety. Here it takes the post-step point (track.GetPosition())
   G4double the2DSafety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
 					    track.GetPosition(),
 					    track.GetMomentumDirection(),
@@ -623,6 +624,16 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   //that this angle is in XY, but later (REL) we should come back and fix this to be more plane-agnostic.
   G4double deltaDistToSurface = shiftedPoint2DSafety - the2DSafety;
 
+  //Sometimes our preliminary get2Dsafety functions don't do perfect calculation of the safeties due to the finite
+  //granularity of the search in phi. This can occassionally cause the deltaDistToSurface to be slightly larger than the deltaPath,
+  //which in principle should never happen. If this does happen, what this implies is that our momentum vector is ALREADY
+  //aimed basically directly at the surface. In this case, just return the momentum direction (with sign dependent on the sign of the deltaDistToSurface.
+  if( fabs(deltaDistToSurface) > fabs(deltaPath) ){
+    if( deltaDistToSurface > 0 ) return momDir;
+    else{ return -1*momDir; }
+  }
+
+  
   //If the deltaDistToSurface is negative, this can arise in a few ways:
   //1. Complicated geometries with corners, though this is unlikely given how small the deltaPath parameter is -- would be very unlucky
   //   to get this.
@@ -638,11 +649,12 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
     G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
   }
 
-
   G4double theta = acos(fabs(deltaDistToSurface)/deltaPath);
 
   //Debugging
   if( verboseLevel > 2 ){
+    G4cout << "FDTNB Function Point B | deltaDistToSurface: " << deltaDistToSurface << G4endl;
+    G4cout << "FDTNB Function Point B | deltaPath: " << deltaPath << G4endl;
     G4cout << "FDTNB Function Point B | theta for rotation: " << theta << G4endl;
   }
 
@@ -678,11 +690,23 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
 					      newPosOption1,
 					      track.GetMomentumDirection(),
 					      false);
+
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "FDTNB Function Point DA | option 1 safety: " << option1Safety << G4endl;
+  }
+
+  
   G4double option2Safety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
 					      newPosOption2,
 					      track.GetMomentumDirection(),
 					      false);
+  //Debugging
+  if( verboseLevel > 2 ){
+    G4cout << "FDTNB Function Point DB | option 2 safety: " << option2Safety << G4endl;
+  }
 
+  
   //Debugging
   if( verboseLevel > 2 ){    
     G4cout << "FDTNB Function Point E | new probe position option 1 safety is " << option1Safety << G4endl;
@@ -885,7 +909,8 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
 	the2DSafety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
 					 track.GetPosition(),
 					 track.GetMomentumDirection(),
-					 true);
+					 true,
+					 surfaceNorm );
       }
       //If the QP IS stuck, then we have some work to do. Use the norms and positions returned from CheckForStuckQPs to compute
       //an angular range away from the corner over which we can compute a safety.
@@ -918,12 +943,13 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
 	
 	
 	//Now use the outgoing surface tangents to compute a constrained 2D safety
-	G4double constrained2DSafety = G4CMP::ComputeConstrained2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-									 track.GetPosition(),
-									 track.GetMomentumDirection(),
-									 true,
-									 outgoingSurfaceTangents.first,
-									 outgoingSurfaceTangents.second);	
+	G4double constrained2DSafety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+							  track.GetPosition(),
+							  track.GetMomentumDirection(),
+							  true,
+							  surfaceNorm,
+							  outgoingSurfaceTangents.first,
+							  outgoingSurfaceTangents.second);	
 	the2DSafety = constrained2DSafety;
 
 	//Debugging
@@ -1195,6 +1221,11 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   //First, if the length of the boundary history is not the max length, it means we haven't been running for long
   //enough to be stuck. Return false
   if( fBoundaryHistory.size() < fMaxBoundaryHistoryEntries ){
+
+    //Debugging
+    if( verboseLevel > 2 ){
+      G4cout << "CFSQIC Function Point AB | fBoundaryHistory.size() is less than fMaxBoundaryHistoryEntries. Aborting stuck QP check." << G4endl;
+    }    
     std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> output(qpIsStuck,outNorm0,outNorm1,outPos0,outPos1);
     return output;
   }
@@ -1203,14 +1234,14 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   G4double epsilonDisplacement = 1 * CLHEP::nm;
   G4ThreeVector currentPosition = fBoundaryHistory[fBoundaryHistory.size()-1].first;
   G4ThreeVector currentNorm = fBoundaryHistory[fBoundaryHistory.size()-1].second;
-  G4ThreeVector displacedPosition = currentPosition + currentNorm*epsilonDisplacement;  
+  G4ThreeVector displacedPosition = currentPosition + currentNorm*epsilonDisplacement;
   G4VPhysicalVolume * volumeAtPoint = G4CMP::GetVolumeAtPoint(displacedPosition);
 
   //Debugging
   if( verboseLevel > 2 ){
-    G4cout << "CFSQIC Function Point A | current position: " << currentPosition << G4endl;
-    G4cout << "CFSQIC Function Point A | current norm: " << currentNorm << G4endl;
-    G4cout << "CFSQIC Function Point A | volumeAtPoint: " << volumeAtPoint->GetName() << G4endl;
+    G4cout << "CFSQIC Function Point AC | current position: " << currentPosition << G4endl;
+    G4cout << "CFSQIC Function Point AC | current norm: " << currentNorm << G4endl;
+    G4cout << "CFSQIC Function Point AC | volumeAtPoint: " << volumeAtPoint->GetName() << G4endl;
   }
 
 
@@ -1266,15 +1297,32 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   if( verboseLevel > 2 ){
     G4cout << "CFSQIC Function Point B | avgx: " << avgx << ", avgx2: " << avgx2 << G4endl;
     G4cout << "CFSQIC Function Point B | sigmaX: " << sigmax << ", sigmaY: " << sigmay << G4endl;
+    G4cout << "CFSQIC Function Point B | Length of goodOtherNorms: " << goodOtherNorms.size() << G4endl;
   }
-  
-
   
   //Next, check to see that the sigmaX and sigmaY are both below a threshold. If they're not, then return that we're not stuck.
   if( !(sigmax < fStuckInCornerThreshold && sigmay < fStuckInCornerThreshold ) ){
     std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> output(qpIsStuck,outNorm0,outNorm1,outPos0,outPos1);
+
+    //Debugging
+    if( verboseLevel > 2 ){
+      G4cout << "CFSQIC Function Point BA | Looks like we're not stuck. Either sigmax or sigmay is large enough to be not stuck." << G4endl;
+    }
     return output;    
   }
+
+  //Next, check to see if we have any remaining good other norms. If, for example, we're on a curved surface, that number may be zero. We'll
+  //start by just saying we're not stuck in that case.
+  if( goodOtherNorms.size() == 0 ){
+    std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> output(qpIsStuck,outNorm0,outNorm1,outPos0,outPos1);
+
+    //Debugging
+    if( verboseLevel > 2 ){
+      G4cout << "CFSQIC Function Point BB | Looks like we have a cluster of close points but have zero good other norms, which may occur if we're on a curved surface. For now we'll say we're not stuck." << G4endl;
+    }    
+    return output;
+  }
+  
   outPos0 = currentPosition;
   outNorm0 = currentNorm;
 
@@ -1282,7 +1330,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   for( int iN = 0; iN < goodOtherNorms.size(); ++iN ){
     G4cout << "Good other norm: " << goodOtherNorms[iN] << ", pos: " << goodOtherPositions[iN] << G4endl;
   }
-  
+    
   
   //So we're boxed into a corner. Now check the good positions list to see if there are more than one unique vector that points to this next
   //volume. In the case of curved surfaces, this may very well be true.

@@ -58,21 +58,54 @@ namespace G4CMP {
   G4ThreeVector GetSurfaceNormal(const G4Step& step);
   //G4ThreeVector GetSurfaceNormal(const G4StepPoint* stepPoint, const G4ThreeVector& guessedDirection );
 
-  G4double Get2DSafety(const G4VTouchable* motherTouch, G4ThreeVector pos, G4ThreeVector momDir, bool safetyFromABoundary );
-  G4double Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const G4ThreeVector & momDir, G4LogicalVolume * motherLog, bool safetyFromABoundary, G4int daughterID, G4ThreeVector tangVect1 = G4ThreeVector(0,0,0), G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
+  G4double Get2DSafety(const G4VTouchable* motherTouch,
+		       G4ThreeVector pos,
+		       G4ThreeVector momDir,
+		       bool safetyFromABoundary,
+		       G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
+		       G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
+		       G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
+  G4double Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos,
+					   const G4ThreeVector & momDir,
+					   G4LogicalVolume * motherLog,
+					   bool safetyFromABoundary,
+					   G4int daughterID,
+					   G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
+					   G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
+					   G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
   
-G4double Compute2DSafetyInMotherVolume(const G4VTouchable * volTouch,G4VPhysicalVolume * volPhys,G4LogicalVolume * volLog, G4VSolid * volSolid,
-				       G4ThreeVector pos,bool safetyFromABoundary,
+G4double Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
+				       G4ThreeVector pos,
+				       bool safetyFromABoundary,
+				       G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
 				       G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
 				       G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
 
+  G4double Compute2DMotherSafetyFromABoundary(const G4VSolid * motherSolid,
+					      G4ThreeVector pos,
+					      G4ThreeVector surfaceNorm,
+					      G4ThreeVector tangVect1,
+					      G4ThreeVector tangVect2);
+
+  G4double Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,G4ThreeVector pos);
+
+  G4double Compute2DSafetyToThisDaughterBoundary(const G4VSolid * volDaughterSolid,
+						 G4ThreeVector samplePoint,
+						 G4ThreeVector rotatedSurfaceNorm,
+						 G4ThreeVector rotatedTangVect1,
+						 G4ThreeVector rotatedTangVect2);
+
+
+  
+  /*
   G4double ComputeConstrained2DSafety(const G4VTouchable* motherTouch,
 				      G4ThreeVector pos,
 				      G4ThreeVector momDir,
 				      bool safetyFromABoundary,
+				      G4ThreeVector surfaceNorm,
 				      G4ThreeVector tangVector1,
 				      G4ThreeVector tangVector2);
-  
+  */  
   
   G4Navigator* GetNavigator();		// Non-tracking for point finding
   
