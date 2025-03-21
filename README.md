@@ -117,9 +117,9 @@ The environment variable `$G4CMP_NIEL_FUNCTION` allows the user to specify
 a particular model for non-ionizing energy loss ("nuclear recoil"), from 
 the set of models provided in G4CMP:
 
-    LewinSmith                      # Fixed k Lindhard NIEL
-    Lindhard                        # Lindhard-Robinson NIEL
-    Empirical                       # Energy dependent k Lindhard NIEL       
+    LewinSmith                      # Lewin & Smith's implementation of Lindhard NIE
+    Lindhard                        # Robinson's implementation of Lindhard NIEL
+    Empirical                       # Energy dependent (or variable) k Lindhard NIEL       
     Impact@TUNL                     # IMPACT@TUNL Si NIEL measurements
     Sarkis                          # Lindhard NIEL modified by Sarkis 2022     
 

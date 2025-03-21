@@ -6,7 +6,7 @@
 /// \file library/include/G4CMPImpactTUNLNIEL.hh
 /// \brief Non-ionizing energy loss calculation from IMPACT@TUNL 2023.
 ///
-/// Computation of NIEL using the Emp model extracted from the
+/// Computation of NIEL using empirical model extracted from the
 /// IMPACT@TUNL ionization yield measurements.  
 /// Link to the paper:https://arxiv.org/abs/2303.02196.
 ///

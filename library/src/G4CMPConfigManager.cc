@@ -43,7 +43,7 @@
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20240823  G4CMP-422: Remove default Quadratic rate model setting.
 // 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
-// 20250212  G4CMP-457: Add short names for Lindhard Emp ionization model.
+// 20250212  G4CMP-457: Add short names for empirical Lindhard NIEL.
 
 
 #include "G4CMPConfigManager.hh"
@@ -113,11 +113,11 @@ G4CMPConfigManager::G4CMPConfigManager()
     kaplanKeepPh(getenv("G4CMP_KAPLAN_KEEP")?atoi(getenv("G4CMP_KAPLAN_KEEP")):true),
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
     recordMinE(getenv("G4CMP_RECORD_EMIN")?atoi(getenv("G4CMP_RECORD_EMIN")):true),
-    Empklow(getenv("G4CMP_EMPIRICAL_KLOW")?strtod(getenv("G4CMP_EMPIRICAL_KLOW"),0):DBL_MIN),
-    Empkhigh(getenv("G4CMP_EMPIRICAL_KHigh")?strtod(getenv("G4CMP_EMPIRICAL_KHigh"),0):DBL_MIN),
-    EmpkFixed(getenv("G4CMP_EMPIRICAL_KFIXED")?strtod(getenv("G4CMP_EMPIRICAL_KFIXED"),0):DBL_MIN),
-    EmpElow(getenv("G4CMP_EMPIRICAL_ELOW")?strtod(getenv("G4CMP_EMPIRICAL_ELOW"),0)*keV:DBL_MIN),
-    EmpEhigh(getenv("G4CMP_EMPIRICAL_EHIGH")?strtod(getenv("G4CMP_EMPIRICAL_EHIGH"),0)*keV:DBL_MAX),
+    Empklow(getenv("G4CMP_EMPIRICAL_KLOW")?strtod(getenv("G4CMP_EMPIRICAL_KLOW"),0):0.040),
+    Empkhigh(getenv("G4CMP_EMPIRICAL_KHigh")?strtod(getenv("G4CMP_EMPIRICAL_KHigh"),0):0.142),
+    EmpkFixed(getenv("G4CMP_EMPIRICAL_KFIXED")?strtod(getenv("G4CMP_EMPIRICAL_KFIXED"),0):0.158),
+    EmpElow(getenv("G4CMP_EMPIRICAL_ELOW")?strtod(getenv("G4CMP_EMPIRICAL_ELOW"),0)*keV:0.39*keV),
+    EmpEhigh(getenv("G4CMP_EMPIRICAL_EHIGH")?strtod(getenv("G4CMP_EMPIRICAL_EHIGH"),0)*keV:7.0*keV),
     EmpEDepK(getenv("G4CMP_EMPIRICAL_EDEPK")?atoi(getenv("G4CMP_EMPIRICAL_EDEPK")):-1.),
     nielPartition(0), messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
