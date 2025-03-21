@@ -16,7 +16,7 @@
 // 20250102  Michael Kelsey
 // 20250121  Add argument for number of points
 // 20250212  D.Sadek -- Add new G4CMPEmpiricalLindard model. Set its default 
-//                      parameters in testNRyield function. Allow user input. 
+//                      parameters in testNRyield function. Allow user input.  
 
 #include "globals.hh"
 #include "G4CMPConfigManager.hh"
@@ -60,19 +60,9 @@ void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
 
   // NOTE: Can't use G4CMPConfigManager to do this mapping, because it
   //       deletes the previous pointer when a new one is requested.
-
-  // Set Empirical lindhard parameters 
-  G4CMPEmpiricalNIEL* EmpNIEL = new G4CMPEmpiricalNIEL();
-
-  EmpNIEL->SetEmpklow(klow);
-  EmpNIEL->SetEmpkhigh(khigh);
-  EmpNIEL->SetEmpElow(Elow);
-  EmpNIEL->SetEmpEhigh(Ehigh);
-  EmpNIEL->SetEmpkFixed(kFixed);
-  EmpNIEL->SetEmpEDepK(EDepK);  
-    
-  const G4VNIELPartition* NIELfunc[nNIEL] ={
-    new G4CMPLindhardNIEL, EmpNIEL,
+     
+  const G4VNIELPartition* NIELfunc[nNIEL] = {
+    new G4CMPLindhardNIEL, new G4CMPEmpiricalNIEL,
     new G4CMPLewinSmithNIEL, new G4CMPSarkisNIEL,
     new G4CMPImpactTunlNIEL };
   
@@ -80,6 +70,15 @@ void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
   G4cout << std::left << "Energy";
   for (size_t i=0; i<nNIEL; i++) G4cout << "\t" << std::setw(8) << useNIEL[i];
   G4cout << G4endl;
+
+  // Set Empirical lindhard parameters 
+  G4CMPEmpiricalNIEL* EmpNIEL = (G4CMPEmpiricalNIEL*)useNIEL[1];
+  EmpNIEL->SetEmpklow(klow);
+  EmpNIEL->SetEmpkhigh(khigh);
+  EmpNIEL->SetEmpElow(Elow);
+  EmpNIEL->SetEmpEhigh(Ehigh);
+  EmpNIEL->SetEmpkFixed(kFixed);
+  EmpNIEL->SetEmpEDepK(EDepK);
 
   // From material, Get Z and A for use as projectile (internal nuclear recoil)
   G4double Zin = target->GetZ(), Ain = target->GetA();
@@ -132,9 +131,7 @@ int main(int argc, char* argv[]) {
   G4int points  = (argc>4) ? atoi(argv[4]) : 100;
   G4String mat  = (argc>5) ? argv[5] : "G4_Si";
 
-  // Default values for empirical  Lindhard model
-  G4CMPConfigManager* config = G4CMPConfigManager::Instance();
-
+  // Default values for Emp Lindhard model
   G4double klow = (argc>6) ? strtod(argv[6],0) : config->GetEmpklow();
   G4double khigh = (argc>7) ? strtod(argv[7],0) : config->GetEmpkhigh();
   G4double Elow = (argc>8) ? strtod(argv[8],0)*keV : config->GetEmpElow();

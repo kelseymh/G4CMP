@@ -42,7 +42,8 @@
 // 20230831  G4CMP-362: Add short names for IMPACT and Sarkis ionization models.
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
-// 20250212  G4CMP-457: Add macro command for Lindhard empirical NIEL.
+// 20250212  G4CMP-457: Add macro command for Lindhard Emp ionization model.
+
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -52,6 +53,7 @@
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
 #include "G4UIcmdWithoutParameter.hh"
+
 
 // Constructor and destructor
 
@@ -197,25 +199,25 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   kaplanKeepCmd->SetParameterName("enable",true,false);
   kaplanKeepCmd->SetDefaultValue(true);
 
-  // Commands for empirical Lindhard model
+  // Commands for Emp Lindhard model
   EmpEDepKCmd = CreateCommand<G4UIcmdWithABool>("/g4cmp/NIELPartition/Empirical/EDepK",
-      "Enable or disable energy-dependent k parameter for empirical Lindhard model.");
+      "Enable or disable energy-dependent k parameter for Emp Lindhard model.");
 
   EmpkFixedCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/NIELPartition/Empirical/kFixed",
-      "Set fixed k parameter for empirical Lindhard model.");
+      "Set fixed k parameter for Emp Lindhard model.");
       
   EmpklowCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/NIELPartition/Empirical/klow",
-      "Set klow parameter for empirical Lindhard model.");
+      "Set klow parameter for Emp Lindhard model.");
 
   EmpkhighCmd = CreateCommand<G4UIcmdWithADouble>("/g4cmp/NIELPartition/Empirical/khigh",
-      "Set khigh parameter for empirical Lindhard model.");
+      "Set khigh parameter for Emp Lindhard model.");
 
   EmpElowCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("/g4cmp/NIELPartition/Empirical/Elow",
-      "Set Elow parameter for empirical Lindhard model.");
+      "Set Elow parameter for Emp Lindhard model.");
   EmpElowCmd->SetUnitCategory("Energy");
 
   EmpEhighCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("/g4cmp/NIELPartition/Empirical/Ehigh",
-      "Set Ehigh parameter for empirical Lindhard model.");
+      "Set Ehigh parameter for Emp Lindhard model.");
   EmpEhighCmd->SetUnitCategory("Energy");
 }
 

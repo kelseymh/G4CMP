@@ -118,7 +118,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     EmpkFixed(getenv("G4CMP_EMPIRICAL_KFIXED")?strtod(getenv("G4CMP_EMPIRICAL_KFIXED"),0):0.158),
     EmpElow(getenv("G4CMP_EMPIRICAL_ELOW")?strtod(getenv("G4CMP_EMPIRICAL_ELOW"),0)*keV:0.39*keV),
     EmpEhigh(getenv("G4CMP_EMPIRICAL_EHIGH")?strtod(getenv("G4CMP_EMPIRICAL_EHIGH"),0)*keV:7.0*keV),
-    EmpEDepK(getenv("G4CMP_EMPIRICAL_EDEPK")?(atoi(getenv("G4CMP_EMPIRICAL_EDEPK"))!=0):true),
+    EmpEDepK(getenv("G4CMP_EMPIRICAL_EDEPK")?atoi(getenv("G4CMP_EMPIRICAL_EDEPK")):-1.),
     nielPartition(0), messenger(new G4CMPConfigMessenger(this)) {
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 

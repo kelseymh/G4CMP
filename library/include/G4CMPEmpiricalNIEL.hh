@@ -64,17 +64,17 @@ private:
 
   // The following parameters are used to set the K vs E relation
     // Model fit parameters
-  G4double Empklow;             // Set with /g4cmp/NIELPartition/Empirical/Empklow      value
-  G4double Empkhigh;            // Set with /g4cmp/NIELPartition/Empirical/Empkhigh     value 
+  G4double Empklow;             // Set with /g4cmp/Empirical/Empklow      value
+  G4double Empkhigh;            // Set with /g4cmp/Empirical/Empkhigh     value 
     // Model validity energy range
-  G4double EmpElow;             // Set with /g4cmp/NIELPartition/Empirical/EmpElow      value units
-  G4double EmpEhigh;            // Set with /g4cmp/NIELPartition/Empirical/EmpEhigh     value units
+  G4double EmpElow;             // Set with /g4cmp/Empirical/EmpElow      value units
+  G4double EmpEhigh;            // Set with /g4cmp/Empirical/EmpEhigh     value units
     // Flag to use Empirical Lindhard with energy-dependent k
-  G4bool EmpEDepK;           // Set with /g4cmp/NIELPartition/Empirical/EmpEDepK  [true|false] 
+  G4bool EmpEDepK;           // Set with /g4cmp/Empirical/EmpEDepK  [true|false] 
     // If k is not energy dependent, provide/use kFixed
-  G4double EmpkFixed;           // Set with /g4cmp/NIELPartition/Empirical/EmpkFixed    value
+  G4double EmpkFixed;           // Set with /g4cmp/Empirical/EmpkFixed    value
 
-  mutable bool useLewinSmith = false; // if Elow=Ehigh, the empirical model blows up. 
+  mutable bool useLewinSmith = false; // if Elow=Ehigh, the Emp model blows up. 
   mutable bool firstCall_E = true; 	// Print warning messages only once
 };
 

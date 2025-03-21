@@ -56,10 +56,10 @@ PartitionNIEL(G4double energy, const G4Material *material, G4double Zin, G4doubl
         return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
     }
 
-    if (EmpEDepK && (energy > EmpEhigh)) {
+    if (EmpEDepK && ((energy < EmpElow) || (energy > EmpEhigh))) {
         if (firstCall_E) {
             G4Exception("G4CMPEmpiricalNIEL", "G4CMP1002", JustWarning,
-                "Energy is greater than Ehigh. Lewin-Smith model is used.");
+                "Energy is out of bounds. Lewin-Smith model is used.");
             firstCall_E = false;
         }
         return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
