@@ -70,8 +70,8 @@ void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
   EmpNIEL->SetEmpEhigh(Ehigh);
   EmpNIEL->SetEmpkFixed(kFixed);
   EmpNIEL->SetEmpEDepK(EDepK);  
-    
-  const G4VNIELPartition* NIELfunc[nNIEL] ={
+
+  const G4VNIELPartition* NIELfunc[nNIEL] = {
     new G4CMPLindhardNIEL, EmpNIEL,
     new G4CMPLewinSmithNIEL, new G4CMPSarkisNIEL,
     new G4CMPImpactTunlNIEL };
