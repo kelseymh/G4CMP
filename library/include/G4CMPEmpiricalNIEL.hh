@@ -31,7 +31,6 @@ public:
 
     virtual ~G4CMPEmpiricalNIEL() override {;}
 
-  
   // return the fraction of the specified energy which will be deposited as NIEL
   // if an incoming particle is stopped in the specified material,
   // energy in native G4 energy units.
@@ -46,7 +45,6 @@ public:
   void SetEmpkFixed(G4double fixedK) { EmpkFixed = fixedK; }
   void SetEmpEDepK(bool use) { EmpEDepK = use; }
 
-
   // Getters
   G4double GetEmpklow() const { return Empklow; }
   G4double GetEmpkhigh() const { return Empkhigh; }
@@ -54,7 +52,6 @@ public:
   G4double GetEmpEhigh() const { return EmpEhigh; }
   G4double GetEmpkFixed() const { return EmpkFixed; }
   bool GetEmpEDepK() const { return EmpEDepK; }
-
 
   virtual G4double 
   PartitionNIEL(G4double energy, const G4Material *material, G4double Zin=0.,

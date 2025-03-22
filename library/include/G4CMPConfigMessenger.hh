@@ -48,7 +48,6 @@
 // 20250213  G4CMP-457: Add empirical Lindhard NIEL parameters.
 
 
-
 #include "G4UImessenger.hh"
 
 class G4CMPConfigManager;

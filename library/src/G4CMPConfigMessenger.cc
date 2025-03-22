@@ -42,7 +42,7 @@
 // 20230831  G4CMP-362: Add short names for IMPACT and Sarkis ionization models.
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
-// 20250212  G4CMP-457: Add macro command for Lindhard Emp ionization model.
+// 20250212  G4CMP-457: Add macro command for Lindhard empirical ionization model.
 
 
 #include "G4CMPConfigMessenger.hh"

@@ -15,7 +15,7 @@
 //
 // 20250102  Michael Kelsey
 // 20250121  Add argument for number of points
-// 20250212  D.Sadek -- Add new G4CMPEmpiricalLindard model. Set its default 
+// 20250321  D.Sadek -- Add new G4CMPEmpiricalLindard model. Set its default 
 //                      parameters in testNRyield function. Allow user input. 
 
 #include "globals.hh"
@@ -55,7 +55,7 @@ void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
   if (!goodInput) ::exit(1);		// If anything failed, abort
 
   // Instantiate single instance of each of the named yield functions
-  const char* useNIEL[] = {"Lindhard", "Empirical", "LewinSmith", "Sarkis", "Impact" };
+  const char* useNIEL[] = { "Lindhard", "Empirical", "LewinSmith", "Sarkis", "Impact" };
   const size_t nNIEL = sizeof(useNIEL)/sizeof(char*);
 
   // NOTE: Can't use G4CMPConfigManager to do this mapping, because it
