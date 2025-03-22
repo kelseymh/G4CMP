@@ -80,7 +80,7 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double Zin,
       // Lindhard model above 3 MeV
       if (firstCall) {
 	G4Exception("G4CMPSarkisNIEL", "G4CMP1105", JustWarning,
-		    "Sarkis model is obtained in the range of 50 eV to 3 MeV.\nAbove 3 MeV, Lindhard model will be used.");
+		    "Sarkis model is obtained in the range of 50 eV to 3 MeV.\nAbove 3 MeV, LewinSmith model will be used.");
 	firstCall = false;
       }
       return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);
@@ -88,7 +88,7 @@ PartitionNIEL(G4double energy, const G4Material *material,G4double Zin,
   } else {
     if (firstCall) {
       G4Exception("G4CMPSarkisNIEL", "G4CMP1104", JustWarning,
-		  "The input material is not Silicon.\nThe Lindhard model will be used for NIEL calculation.");
+		  "The input material is not Silicon.\nThe LewinSmith model will be used for NIEL calculation.");
       firstCall = false;
     }
     return G4CMPLewinSmithNIEL::PartitionNIEL(energy, material, Zin, Ain);

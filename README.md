@@ -112,7 +112,13 @@ developers should check the source code in
 | G4CMP\_HDTRAPION\_MFP | /g4cmp/hDTrapIonizationMFP [L] mm | MFP for e-trap ionization by h+ |
 | G4CMP\_HATRAPION\_MFP | /g4cmp/hATrapIonizationMFP [L] mm | MFP for h-trap ionization by h+ |
 | G4CMP\_TEMPERATURE   | /g4cmp/temperature [T] K | Device/substrate/etc. temperature |
-| G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [LewinSmith\|Lindhard] | Select NIEL partitioning function |
+| G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [model] | Select NIEL partitioning function. See below |
+| G4CMP\_EMPIRICAL\_KLOW | /g4cmp/NIELPartition/Empirical/klow [k] | k lower bound of dk/dE for energy dependent K |
+| G4CMP\_EMPIRICAL\_KHIGH | /g4cmp/NIELPartition/Empirical/khigh [k] | k high bound of dk/dE for energy dependent K |
+| G4CMP\_EMPIRICAL\_ELOW | /g4cmp/NIELPartition/Empirical/Elow [k] | E lower bound of dk/dE for energy dependent K |
+| G4CMP\_EMPIRICAL\_EHIGH | /g4cmp/NIELPartition/Empirical/Ehigh [k] | E high bound of dk/dE for energy dependent K |
+| G4CMP\_EMPIRICAL\_KFIXED | /g4cmp/NIELPartition/Empirical/kFixed [k] | Value of k for non energy dependent K |
+| G4CMP\_EMPIRICAL\_EDEPK | /g4cmp/NIELPartition/Empirical/EDepK [t\|f] | Use energy dependent K |
 | G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t\|f] | Create charges in sphere around location |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation [h] [k] [l] | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
@@ -123,6 +129,16 @@ The default lattice orientation is to be aligned with the associated
 G4VSolid coordinate system.  A different orientation can be specified by
 setting the Miller indices (hkl) with `$G4CMP_MILLER_H`, `_K`, and
 `_L`.
+
+The environment variable `$G4CMP_NIEL_FUNCTION` allows the user to specify 
+a particular model for non-ionizing energy loss ("nuclear recoil"), from 
+the set of models provided in G4CMP:
+
+    LewinSmith                      # Lewin & Smith's implementation of Lindhard NIEL
+    Lindhard                        # Robinson's implementation of Lindhard NIEL
+    Empirical                       # Energy dependent (or variable) k Lindhard NIEL       
+    Impact@TUNL                     # IMPACT@TUNL Si NIEL measurements
+    Sarkis                          # Lindhard NIEL modified by Sarkis 2022     
 
 The environment variable `$G4CMP_MAKE_CHARGES` controls the rate (R) as a
 fraction of total interactions, at which electron-hole pairs are produced
