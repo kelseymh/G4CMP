@@ -44,7 +44,7 @@ public:
 
 private:
   // A least-square fit is applied to the results on the ring detectors with 
-  // an Emply chosen power-law function Y(Er)=Y10(Er/10000)^B
+  // an empirically determined power-law function Y(Er)=Y10(Er/10000)^B
 
   const G4double B = 0.261;	// Best fit value +0.017, -0.011
   const G4double Y10 = 0.302;	// yield at 10 keV
