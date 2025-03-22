@@ -161,8 +161,8 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
 
       //If we're not very close to the boundary, then we just make our diffusion-folded path length equal to juuuuuust under the
       //distance to the boundary. That way transportation will never win this alongStepGPIL.
-      //This 
-      if( f2DSafety >= fEpsilonForWalkOnSpheres ){
+      //This also should trigger if we're starting from the boundary
+      if( f2DSafety >= fEpsilonForWalkOnSpheres || (fTrackOnBoundary) ){
 	fPathLength = f2DSafety / fBoundaryFudgeFactor; 
 	fTimeStep = fTimeStepToBoundary;
 
@@ -360,14 +360,21 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 	}
       }
     }
-    else{
+    else{    
 
       //Define a tolerance for the dot product of the emerging vector and the surface norm, and then get the surface norm (here, the momentum dir
       //if the boundary interactions are handled correctly.)
-      G4double epsilonDotProductForNorm = 0.0896393089; //This matches the granularity of the from-boundary 2D safety. //0.07; //This ultimately needs to match the granularity of the 2DSafety depending on the curvature REL. In this
+
+      //Want to generate our points such that we start from the norm and work outwards
+      G4int nV = G4CMPConfigManager::GetSafetyNSweep2D();
+      G4double dotProductThreshold_Norm = G4CMP::ComputeDotProductThreshold_Norm(nV);
+      G4double dotProductThreshold_Tang = G4CMP::ComputeDotProductThreshold_Tang(nV);
+      
+      //G4double epsilonDotProductForNorm = 0.0896393089; //This matches the granularity of the from-boundary 2D safety. //0.07; //This ultimately needs to match the granularity of the 2DSafety depending on the curvature REL. In this
       //case we're talking about things that are being checked for being 86 degrees apart
-      G4double epsilonDotProductForTangent = 0.002; //Same, but in this case we're checking for things that are three degrees apart
+      //G4double epsilonDotProductForTangent = 0.002; //Same, but in this case we're checking for things that are three degrees apart
       G4ThreeVector surfaceNorm = track.GetMomentumDirection();
+      
       
       //Case 1: not stuck. In this case, we pull the pre-step point, whose vector should actually just be the surface normal in the
       //direction of the particle's new momentum (this is from the QP boundary class). We can then randomly generate a vector in 2D,
@@ -379,12 +386,12 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 	  theNewDirection.setZ(0);
 	  theNewDirection = theNewDirection.unit();
 	}
-	while( theNewDirection.dot(surfaceNorm) <= epsilonDotProductForNorm );
+	while( theNewDirection.dot(surfaceNorm) <= dotProductThreshold_Norm );
 	fNewDirection = theNewDirection;
 	
 	//Debugging
 	if( verboseLevel > 2 ){	
-	  G4cout << "ASDI Function Point D_3 | Since we're on a surface, we're keeping the new direction as " << fNewDirection << ", which should be the surface norm in the direction of motion." << G4endl;
+	  G4cout << "ASDI Function Point D_3 | Since we're on a surface, we're launching in the new direction " << fNewDirection << ", which is consistent with a dotProductThreshold_Norm of " << dotProductThreshold_Norm << G4endl;
 	}
       }
 
@@ -404,7 +411,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 	//First bit two are to make sure we're within the two tangent vectors. Second two are to make sure that we're not
 	//overly close to either of them.
 	while( !(theNewDir.dot(fOutgoingSurfaceTangent1) > minDot && theNewDir.dot(fOutgoingSurfaceTangent2) > minDot &&
-		 theNewDir.dot(fOutgoingSurfaceTangent1) < (1-epsilonDotProductForTangent) && theNewDir.dot(fOutgoingSurfaceTangent2) < (1-epsilonDotProductForTangent)) );
+		 theNewDir.dot(fOutgoingSurfaceTangent1) < dotProductThreshold_Tang && theNewDir.dot(fOutgoingSurfaceTangent2) < dotProductThreshold_Tang) );
 
 	//Now set the direction
 	fNewDirection = theNewDir;

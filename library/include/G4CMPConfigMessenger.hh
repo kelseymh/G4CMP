@@ -95,6 +95,7 @@ private:
   G4UIcmdWithABool*   fanoStatsCmd;
   G4UIcmdWithABool*   kaplanKeepCmd;
   G4UIcmdWithABool*   ehCloudCmd;
+  G4UIcmdWithAnInteger * safetyNSweep2DCmd;
 
 private:
   G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden

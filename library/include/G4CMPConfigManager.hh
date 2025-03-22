@@ -93,7 +93,9 @@ public:
   static G4double GetHDTrapIonMFP()      { return Instance()->hDTrapIonMFP; }
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
+  static G4double GetSafetyNSweep2D()    { return Instance()->safetyNSweep2D; }
 
+  
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
 
@@ -119,7 +121,8 @@ public:
   static void KeepKaplanPhonons(G4bool value) { Instance()->kaplanKeepPh = value; }
   static void SetIVRateModel(G4String value) { Instance()->IVRateModel = value; }
   static void CreateChargeCloud(G4bool value) { Instance()->chargeCloud = value; }
-
+  static void SetSafetyNSweep2D(G4int value) { Instance()->safetyNSweep2D = value; }
+  
   static void SetETrappingMFP(G4double value) { Instance()->eTrapMFP = value; }
   static void SetHTrappingMFP(G4double value) { Instance()->hTrapMFP = value; }
   static void SetEDTrapIonMFP(G4double value) { Instance()->eDTrapIonMFP = value; }
@@ -183,6 +186,7 @@ private:
   G4double combineSteps; // Maximum length to merge track steps ($G4CMP_COMBINE_STEPLEN)
   G4double EminPhonons;	 // Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	 // Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
+  G4double safetyNSweep2D; // Number of angular positions to sweep over when computing a 2D safety ($G4CMP_SAFETYNSWEEP2D)
   G4bool useKVsolver;	 // Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	 // Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
   G4bool kaplanKeepPh;   // Emit or iterate over all phonons in KaplanQP ($G4CMP_KAPLAN_KEEP)

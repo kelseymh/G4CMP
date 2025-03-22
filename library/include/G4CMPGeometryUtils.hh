@@ -80,21 +80,30 @@ G4double Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
 				       G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
 				       G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
 				       G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
-
+  /*
   G4double Compute2DMotherSafetyFromABoundary(const G4VSolid * motherSolid,
 					      G4ThreeVector pos,
 					      G4ThreeVector surfaceNorm,
 					      G4ThreeVector tangVect1,
 					      G4ThreeVector tangVect2);
-
+  */
+  
+  G4double Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid,
+					G4ThreeVector pos,
+					G4ThreeVector surfaceNorm,
+					G4ThreeVector tangVect1,
+					G4ThreeVector tangVect2,
+					bool volIsMother);
+  
   G4double Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,G4ThreeVector pos);
 
+  /*
   G4double Compute2DSafetyToThisDaughterBoundary(const G4VSolid * volDaughterSolid,
 						 G4ThreeVector samplePoint,
 						 G4ThreeVector rotatedSurfaceNorm,
 						 G4ThreeVector rotatedTangVect1,
 						 G4ThreeVector rotatedTangVect2);
-
+  */
 
   
   /*
@@ -116,6 +125,10 @@ G4double Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
 
   G4ThreeVector ApplySurfaceClearance(const G4VTouchable* touch,
 				      G4ThreeVector pos);
+
+  G4double ComputeDotProductThreshold_Tang(int half_circle_nV);
+  G4double ComputeDotProductThreshold_Norm(int half_circle_nV);
+  
 }
 
 #endif	/* G4CMPGeometryUtils_hh */

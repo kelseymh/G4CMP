@@ -125,7 +125,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   pBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("phononBounces",
 		  "Maximum number of reflections allowed for phonons");
-        
+  
   qpBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("bogoliubovQPBounces",
                 "Maximum number of reflections allowed for bogoliubov QPs");
 
@@ -184,6 +184,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   ehCloudCmd->SetParameterName("enable",true,false);
   ehCloudCmd->SetDefaultValue(true);
 
+  safetyNSweep2DCmd = CreateCommand<G4UIcmdWithAnInteger>("safetyNSweep2D",
+							  "Number of angles over which we sweep for 2D safety computation. Should be divisible by 4.");
+  
+  
   kaplanKeepCmd = CreateCommand<G4UIcmdWithABool>("kaplanKeepPhonons",
        "Preserve all intermediate phonons in G4CMPKaplanQP (no killing)");
   kaplanKeepCmd->SetParameterName("enable",true,false);
@@ -221,6 +225,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete kaplanKeepCmd; kaplanKeepCmd=0;
   delete ehCloudCmd; ehCloudCmd=0;
   delete ivRateModelCmd; ivRateModelCmd=0;
+  delete safetyNSweep2DCmd; safetyNSweep2DCmd=0;
   delete nielPartitionCmd; nielPartitionCmd=0;
 }
 
@@ -285,6 +290,8 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == nielPartitionCmd) theManager->SetNIELPartition(value);
   if (cmd == ehCloudCmd) theManager->CreateChargeCloud(StoB(value));
 
+  if (cmd == safetyNSweep2DCmd) theManager->SetSafetyNSweep2D(StoI(value));
+  
   if (cmd == versionCmd)
     G4cout << "G4CMP version: " << theManager->Version() << G4endl;
 

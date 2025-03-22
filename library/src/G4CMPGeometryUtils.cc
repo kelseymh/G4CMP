@@ -373,7 +373,7 @@ G4double G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const
     //that are closer to the given point than the safeties to other daughter volumes (and the mother)
     else{
       G4cout << "Somehow we think that this current boundary belongs to this daughter." << G4endl;
-      G4double safetyToThisDaughterBoundary = Compute2DSafetyToThisDaughterBoundary(volDaughterSolid,samplePoint,rotatedSurfaceNorm,rotatedTangVect1,rotatedTangVect2);
+      G4double safetyToThisDaughterBoundary = Compute2DSafetyFromABoundary(volDaughterSolid,samplePoint,rotatedSurfaceNorm,rotatedTangVect1,rotatedTangVect2,false);
       if( safetyToThisDaughterBoundary < safety ) safety = safetyToThisDaughterBoundary;
     }
   }
@@ -447,6 +447,8 @@ G4double G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos, const
   return safety;
 }
 
+
+/*
 //This is a specific 2D safety computation, from a daughter boundary to its own boundary. Only really useful if the surface has a concavity
 //that we're looking into. This has code overlapping with the mother version of this but for generality in the long-term, it may be more
 //organized to split into "look for 2D safety from daughters" and "look for 2D safty to mother"
@@ -456,6 +458,7 @@ G4double G4CMP::Compute2DSafetyToThisDaughterBoundary(const G4VSolid * volDaught
 						      G4ThreeVector rotatedTangVect1,
 						      G4ThreeVector rotatedTangVect2)
 {
+
   //Debugging
   G4cout << "---------- G4CMPGeometryUtils::Compute2DSafetyToThisDaughterBoundary() ----------" << G4endl;
   G4cout << "C2DSTTB Function Point A | Rotated surface norm: " << rotatedSurfaceNorm << G4endl;
@@ -467,17 +470,26 @@ G4double G4CMP::Compute2DSafetyToThisDaughterBoundary(const G4VSolid * volDaught
   clock_t timestampStart, timestampEnd;
   timestampStart = clock();
 
+
+
   //Want to generate our points such that we start from the norm and work outwards
-  G4int nV = 70; //Parameterize this as half of the one used for the bulk -- we'll sweep both directions
-  
+  //  G4int nV = 70; //Parameterize this as half of the one used for the bulk -- we'll sweep both directions
+
+  //Want to generate our points such that we start from the norm and work outwards
+  G4int nV = G4CMPConfigManager::GetSafetyNSweep2D()/2;
+  G4double dotProductThreshold_Norm = ComputeDotProductThreshold_Norm(nV);
+
+
   //Rotate in positive angular direction
   for( G4int iV = 0; iV < nV; ++iV ){
     G4double deltaPhi = 1.0*CLHEP::pi*((double)iV/(double)nV);
     theDir = rotatedSurfaceNorm;
     theDir.rotateZ(deltaPhi); //Needs to be plane-agnostic at some point REL
 
-    G4double epsilonDotProductForNorm = 0.0896393089; //Used to be 0.07//NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
-    if( theDir.dot(rotatedSurfaceNorm) <= epsilonDotProductForNorm ) continue;
+    //G4double epsilonDotProductForNorm = 0.0896393089; //Used to be 0.07//NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
+    //if( theDir.dot(rotatedSurfaceNorm) <= epsilonDotProductForNorm ) continue;
+    if( theDir.dot(rotatedSurfaceNorm) <= dotProductThreshold_Norm ) continue;
+    
     
     //In the case that the tangent vectors exist (i.e. we're in a "check for stuck QPs mode"), do a sanity check first
     if( rotatedTangVect1.mag() > 0 && rotatedTangVect2.mag() > 0 ){
@@ -499,8 +511,9 @@ G4double G4CMP::Compute2DSafetyToThisDaughterBoundary(const G4VSolid * volDaught
     theDir = rotatedSurfaceNorm;
     theDir.rotateZ(deltaPhi); //Needs to be plane-agnostic at some point REL
 
-    G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
-    if( theDir.dot(rotatedSurfaceNorm) <= epsilonDotProductForNorm ) continue;
+    //G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
+    //if( theDir.dot(rotatedSurfaceNorm) <= epsilonDotProductForNorm ) continue;
+    if( theDir.dot(rotatedSurfaceNorm) <= dotProductThreshold_Norm ) continue;
     
     //In the case that the tangent vectors exist (i.e. we're in a "check for stuck QPs mode"), do a sanity check first
     if( rotatedTangVect1.mag() > 0 && rotatedTangVect2.mag() > 0 ){
@@ -520,7 +533,7 @@ G4double G4CMP::Compute2DSafetyToThisDaughterBoundary(const G4VSolid * volDaught
   return safety;
 
 }
-
+*/
 
 
 //Looking "outward" from the volume we're in, compute the 2D safety in XY. We do this with a loop, but this will
@@ -548,7 +561,7 @@ G4double G4CMP::Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
   //not a daughter boundary. As a result, we need to ensure that kSurface is true for the mother here.
   //If we're computing from a boundary, want to standardize the spammed rays with respect to the surface norm
   if( safetyFromABoundary && motherSolid->Inside(pos) == kSurface ){
-    G4double motherSafetyFromABoundary = Compute2DMotherSafetyFromABoundary(motherSolid,pos,surfaceNorm,tangVect1,tangVect2);
+    G4double motherSafetyFromABoundary = Compute2DSafetyFromABoundary(motherSolid,pos,surfaceNorm,tangVect1,tangVect2,true);
     motherSafety = motherSafetyFromABoundary;
   }
   //Otherwise, doesn't matter -- this is freeform
@@ -557,20 +570,6 @@ G4double G4CMP::Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
     motherSafety = motherSafetyFromTheBulk;
   }
 
-
-  /*
-  //Last, there is an edge case that may arise if we're not fine enough with our sampling, which arises if we try to
-  //take a step basically right along the tangent vectors. (We note that this "spam in several directions" strategy may
-  //break down if a surface is not "simple" in phi, but this is a scenario where even "simple" geometries break down.) For
-  //this, we should re-compute the safety along exactly the tangent vectors
-  if( tangVect1.mag() > 0 && tangVect2.mag() > 0 ){
-    G4double safetyTang1 = motherSolid->DistanceToOut(pos,tangVect1);
-    G4double safetyTang2 = motherSolid->DistanceToOut(pos,tangVect2);
-    G4cout << "Constrained Safety along Tang1: " << safetyTang1 << ", constrained safety along Tang2: " << safetyTang2 << G4endl;
-    if( safetyTang1 < motherSafety ) motherSafety = safetyTang1;
-    if( safetyTang2 < motherSafety ) motherSafety = safetyTang2;
-  }
-  */
   return motherSafety;
 }
 
@@ -581,7 +580,8 @@ G4double G4CMP::Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,G4
   //should be replaced with geometry math
   double motherSafety = DBL_MAX;
   G4ThreeVector theDir;
-  G4int nV = 140;
+
+  G4int nV = G4CMPConfigManager::GetSafetyNSweep2D();
   clock_t timestampStart, timestampEnd;
   timestampStart = clock();
   for( G4int iV = 0; iV < nV; ++iV ){
@@ -601,10 +601,93 @@ G4double G4CMP::Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,G4
   return motherSafety;
 }
 
+
+//Spam a set of DistToOuts in different directions. This part slows things down substantially and should be used sparingly. This part
+//should be replaced with geometry math
+G4double G4CMP::Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid, G4ThreeVector pos, G4ThreeVector surfaceNorm, G4ThreeVector tangVect1, G4ThreeVector tangVect2,bool volIsMother)
+{
+  double the2DSafety = DBL_MAX;
+  G4ThreeVector theDir;
+  clock_t timestampStart, timestampEnd;
+  timestampStart = clock();
+  G4double smallTolerance = 1e-10; //Just in case we're hitting floating point errors.
+
+  //Want to generate our points such that we start from the norm and work outwards
+  G4int nV = G4CMPConfigManager::GetSafetyNSweep2D();
+  G4double dotProductThreshold_Norm = ComputeDotProductThreshold_Norm(nV);
+  G4double nVHalfCircle = nV/2;
+  
+  //Rotate in positive angular direction
+  for( G4int iV = 0; iV < nVHalfCircle; ++iV ){
+    G4double deltaPhi = 1.0*CLHEP::pi*((double)iV/(double)nVHalfCircle);
+    theDir = surfaceNorm;
+    theDir.rotateZ(deltaPhi); //Needs to be plane-agnostic at some point REL
+
+    //Check to make sure that the scan vector is sufficiently away from the surface tangent so we don't end up with
+    //ridiculously crazy small steps'
+    //G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
+    //if( theDir.dot(surfaceNorm) <= epsilonDotProductForNorm ) continue;
+    //We use the small tolerance in case there are floating point errors. It just needs to be much smaller than the deltaPhi
+    if( theDir.dot(surfaceNorm) < (dotProductThreshold_Norm - smallTolerance) ) continue;
+    //case we're talking about things that are being checked for being 86 degrees apart
+
+    
+    //In the case that the tangent vectors exist (i.e. we're in a "check for stuck QPs mode"), do a sanity check first
+    if( tangVect1.mag() > 0 && tangVect2.mag() > 0 ){
+      G4double minDot = tangVect1.dot(tangVect2); //Can move this outside loop to speed up REL?
+      if( theDir.dot(tangVect1) < minDot || theDir.dot(tangVect2) < minDot ) continue;
+    }
+
+    //Now check safety
+    G4double distToBound = 0;
+    if( volIsMother ){ distToBound = theVolSolid->DistanceToOut(pos,theDir); }
+    else{ distToBound = theVolSolid->DistanceToIn(pos,theDir); }
+    if( distToBound < the2DSafety && distToBound > 0 ){ the2DSafety = distToBound; }    
+
+    //Debugging
+    G4cout << "C2DSFAB Function Point A | At angle: " << deltaPhi <<", (direction: " << theDir << "), distToBound: " << distToBound << ", dot: " << theDir.dot(surfaceNorm) << G4endl;
+    
+  }
+
+  //Rotate in the negative angular direction
+  for( G4int iV = 0; iV < nVHalfCircle; ++iV ){
+    G4double deltaPhi = -1.0*CLHEP::pi*((double)iV/(double)nVHalfCircle);
+    theDir = surfaceNorm;
+    theDir.rotateZ(deltaPhi); //Needs to be plane-agnostic at some point REL
+
+    //G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
+    //if( theDir.dot(surfaceNorm) <= epsilonDotProductForNorm ) continue;
+    if( theDir.dot(surfaceNorm) < (dotProductThreshold_Norm - smallTolerance) ) continue;
+    
+    //In the case that the tangent vectors exist (i.e. we're in a "check for stuck QPs mode"), do a sanity check first
+    if( tangVect1.mag() > 0 && tangVect2.mag() > 0 ){
+      G4double minDot = tangVect1.dot(tangVect2); //Can move this outside loop to speed up REL?
+      if( theDir.dot(tangVect1) < minDot || theDir.dot(tangVect2) < minDot ) continue;
+    }
+
+    //Now check safety
+    G4double distToBound = 0;
+    if( volIsMother ){ distToBound = theVolSolid->DistanceToOut(pos,theDir); }
+    else{ distToBound = theVolSolid->DistanceToIn(pos,theDir); }
+    if( distToBound < the2DSafety && distToBound > 0 ){ the2DSafety = distToBound; }    
+
+    //Debugging
+    G4cout << "C2DSFAB Function Point B | At angle: " << deltaPhi <<", (direction: " << theDir << "), distToBound: " << distToBound << ", dot: " << theDir.dot(surfaceNorm) << G4endl;
+  }
+
+  timestampEnd = clock();
+  G4cout << "Time elapsed during 2D DistToOutLoop: " << double(timestampEnd-timestampStart)/double(CLOCKS_PER_SEC) << " seconds" << G4endl;
+  G4cout << "clocks_per_sec: " << CLOCKS_PER_SEC << G4endl;
+  G4cout << "In Compute2DSafetyFromABoundary, looking at a safety of: " << the2DSafety << ", and volIsMother is: " << volIsMother << G4endl;
+  return the2DSafety;
+}
+
+/*
 //Compute the 2D safety to the mother from a point on the surface. The vectors here are all in the mother
 //frame, and the scan happens in both directions to cleanly define a set of absolute angles with respect to the tangents
 G4double G4CMP::Compute2DMotherSafetyFromABoundary(const G4VSolid * motherSolid,G4ThreeVector pos, G4ThreeVector surfaceNorm, G4ThreeVector tangVect1, G4ThreeVector tangVect2)
 {
+
   //Spam a set of DistToOuts in different directions. This part slows things down substantially and should be used sparingly. This part
   //should be replaced with geometry math
   double motherSafety = DBL_MAX;
@@ -613,7 +696,9 @@ G4double G4CMP::Compute2DMotherSafetyFromABoundary(const G4VSolid * motherSolid,
   timestampStart = clock();
 
   //Want to generate our points such that we start from the norm and work outwards
-  G4int nV = 70; //Parameterize this as half of the one used for the bulk -- we'll sweep both directions
+  G4int nV = G4CMPConfigManager::GetSafetyNSweep2D()/2;
+  G4double dotProductThreshold_Norm = ComputeDotProductThreshold_Norm(nV);
+  
   
   //Rotate in positive angular direction
   for( G4int iV = 0; iV < nV; ++iV ){
@@ -623,9 +708,9 @@ G4double G4CMP::Compute2DMotherSafetyFromABoundary(const G4VSolid * motherSolid,
 
     //Check to make sure that the scan vector is sufficiently away from the surface tangent so we don't end up with
     //ridiculously crazy small steps'
-    
-    G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
-    if( theDir.dot(surfaceNorm) <= epsilonDotProductForNorm ) continue;
+    //G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
+    //if( theDir.dot(surfaceNorm) <= epsilonDotProductForNorm ) continue;
+    if( theDir.dot(surfaceNorm) <= dotProductThreshold_Norm ) continue;
     //case we're talking about things that are being checked for being 86 degrees apart
 
     
@@ -650,8 +735,9 @@ G4double G4CMP::Compute2DMotherSafetyFromABoundary(const G4VSolid * motherSolid,
     theDir = surfaceNorm;
     theDir.rotateZ(deltaPhi); //Needs to be plane-agnostic at some point REL
 
-    G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
-    if( theDir.dot(surfaceNorm) <= epsilonDotProductForNorm ) continue;
+    //G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
+    //if( theDir.dot(surfaceNorm) <= epsilonDotProductForNorm ) continue;
+    if( theDir.dot(surfaceNorm) <= dotProductThreshold_Norm ) continue;
     
     //In the case that the tangent vectors exist (i.e. we're in a "check for stuck QPs mode"), do a sanity check first
     if( tangVect1.mag() > 0 && tangVect2.mag() > 0 ){
@@ -673,7 +759,7 @@ G4double G4CMP::Compute2DMotherSafetyFromABoundary(const G4VSolid * motherSolid,
   G4cout << "In Compute2DMotherSafetyFromABoundary, looking at a mother safety of: " << motherSafety << G4endl;
   return motherSafety;
 }
-
+*/
 /*  
 //Hacky way to try to find safety in XY
 G4double G4CMP::Get2DSafety(const G4Track& theTrack, G4ThreeVector & directionToNearestBoundary )
@@ -1029,3 +1115,45 @@ G4double G4CMP::ComputeConstrained2DSafety(const G4VTouchable* motherTouch, G4Th
 }
 
 */
+
+
+
+G4double G4CMP::ComputeDotProductThreshold_Norm(int full_circle_nV)
+{
+  G4int half_circle_nV = full_circle_nV / 2;
+  if( half_circle_nV % 2 != 0 ){
+    G4ExceptionDescription msg;
+    msg << "G4CMP::ComputeDotProductThreshold_Norm seems to see that half_circle_nV is not divisible by two. Please fix." << G4endl;
+    G4Exception("G4CMP::ComputeDotProductThreshold_Norm()", "Geometry00X",FatalException, msg);
+  }
+
+  
+  //Divide the nV into 180 to understand the degrees per step
+  G4double degreesPerStep = 180.0/((double)half_circle_nV);
+
+  
+  //Since half_circle_nV should be divisible by 2, we should always have a step at exactly 90 degrees.
+  //We want to identify the angle associated with one step prior to 90 degrees
+  G4double preTangentStep_deg = 90.0-degreesPerStep;  
+  G4double dotProductThreshold_norm = cos(CLHEP::pi/180.*preTangentStep_deg);
+  return dotProductThreshold_norm;
+}
+
+
+G4double G4CMP::ComputeDotProductThreshold_Tang(int full_circle_nV)
+{
+  G4int half_circle_nV = full_circle_nV / 2;
+  if( half_circle_nV % 2 != 0 ){
+    G4ExceptionDescription msg;
+    msg << "G4CMP::ComputeDotProductThreshold_Tang seems to see that half_circle_nV is not divisible by two. Please fix." << G4endl;
+    G4Exception("G4CMP::ComputeDotProductThreshold_Tang()", "Geometry00X",FatalException, msg);
+  }
+  
+  //Divide the nV into 180 to understand the degrees per step
+  G4double degreesPerStep = 180.0/((double)half_circle_nV);
+
+  //Since half_circle_nV should be divisible by 2, we should always have a step at exactly 90 degrees.
+  //We want to identify the angle associated with one step prior to 90 degrees
+  G4double dotProductThreshold_tang = cos(CLHEP::pi/180.*degreesPerStep);
+  return dotProductThreshold_tang;
+}
