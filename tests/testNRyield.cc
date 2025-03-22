@@ -63,7 +63,6 @@ void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
 
   // Set Empirical lindhard parameters 
   G4CMPEmpiricalNIEL* EmpNIEL = new G4CMPEmpiricalNIEL();
-
   EmpNIEL->SetEmpklow(klow);
   EmpNIEL->SetEmpkhigh(khigh);
   EmpNIEL->SetEmpElow(Elow);
@@ -71,7 +70,7 @@ void testNRyield(G4double Emin, G4double Emax, const G4String& unit,
   EmpNIEL->SetEmpkFixed(kFixed);
   EmpNIEL->SetEmpEDepK(EDepK);  
     
-  const G4VNIELPartition* NIELfunc[nNIEL] ={
+  const G4VNIELPartition* NIELfunc[nNIEL] = {
     new G4CMPLindhardNIEL, EmpNIEL,
     new G4CMPLewinSmithNIEL, new G4CMPSarkisNIEL,
     new G4CMPImpactTunlNIEL };
