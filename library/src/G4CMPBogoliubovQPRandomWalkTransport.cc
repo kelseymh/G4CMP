@@ -38,9 +38,9 @@ G4CMPBogoliubovQPRandomWalkTransport::G4CMPBogoliubovQPRandomWalkTransport(const
   fNewPosition(0.,0.,0.),
   fNewDirection(1.,0.,0.)
 {
-  verboseLevel = G4CMPConfigManager::GetVerboseLevel();
+
   SetProcessSubType(fBogoliubovQPRandomWalkTransport);
-    
+  
   //This time step will be overwritten by the step-limiting length (discrete process GPIL race)
   fTimeStep = 0;
   fPathLength =  0.0;
@@ -64,6 +64,9 @@ G4CMPBogoliubovQPRandomWalkTransport::G4CMPBogoliubovQPRandomWalkTransport(const
   fOutgoingSurfaceTangent2 = G4ThreeVector(0,0,0);
   fDotProductDefiningUniqueNorms = 0.99;
   fStuckInCornerThreshold = fEpsilonForWalkOnSpheres;
+
+  //REL A GENTLE REMINDER THAT WE CANNOT INSTANTIATE CONFIG MANAGER VALUES ONLY IN PROCESS OR RATE CONSTRUCTORS BECAUSE THEY COME BEFORE
+  //THE CONFIG MANAGER IS INSTANTIATED
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -82,6 +85,10 @@ G4CMPBogoliubovQPRandomWalkTransport::~G4CMPBogoliubovQPRandomWalkTransport()
 
 void G4CMPBogoliubovQPRandomWalkTransport::StartTracking(G4Track* track)
 {
+  //Need to do this here because if we do it in the constructor, that runs before the ConfigManager instance
+  //is defined in the current structure of the examples
+  verboseLevel = G4CMPConfigManager::GetVerboseLevel();  
+  
   //Debugging
   if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::StartTracking ----------" << G4endl;
@@ -791,8 +798,15 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     G4cout << "GMFP Function Point A | momentum direction: " << track.GetMomentumDirection() << G4endl;
     G4cout << "GMFP Function Point A | position: " << track.GetPosition() << G4endl;
     G4cout << "GMFP Function Point A | global time: " << track.GetGlobalTime() << G4endl;
+    G4cout << "GMFP Function Point A | forcing condition: " << *condition << ", compared to Forced: " << Forced << " and NotForced: " << NotForced << G4endl;
   }
 
+  //I think this is needed here -- we're overriding the discrete GPIL functions in the base G4VContinuousDiscrete class,
+  //but since we haven't set the condition variable anywhere else, I think this ends up taking on a garbage value unless
+  //we set it. Here we set it to not forced, which makes this class's discrete bit compete on equal footing with the other
+  //discrete processes (as it should)
+  *condition = NotForced;
+  
   //Reset some of the quantities that should be reset each step
   fOutgoingSurfaceTangent1 = G4ThreeVector(0,0,0);
   fOutgoingSurfaceTangent2 = G4ThreeVector(0,0,0);

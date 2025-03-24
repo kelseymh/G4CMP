@@ -3,12 +3,11 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/include/G4CMPPhononScatteringRate.hh
-/// \brief Compute rate for phonon impurity scattering (mode mixing)
+/// \file library/src/G4CMPBogoliubovQPLocalTrappingRate.hh
+/// \brief Compute rate for QP local trapping 
 //
-// $Id$
 //
-// 20170815  Move G4CMPProcessUtils inheritance to base class
+
 
 #ifndef G4CMPBogoliubovQPLocalTrappingRate_hh
 #define G4CMPBogoliubovQPLocalTrappingRate_hh 1

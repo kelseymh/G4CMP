@@ -182,7 +182,7 @@ public:
   G4double GetSCTcrit() const { return fSC_Tcrit; }
   G4double GetSCTeff() const { return fSC_Teff; }
   G4double GetSCDn() const { return fSC_Dn; }
-  G4double GetSCQPLocalTrappingMFP() const { return fSC_QPLocalTrappingMFP; }
+  G4double GetSCQPLocalTrappingTau() const { return fSC_TauLocalTrap_qp; }
   
   // Parameters and structures for charge carrier transport
   void SetBandGapEnergy(G4double bg) { fBandGap = bg; }
@@ -262,7 +262,7 @@ public:
   void SetSCTcrit(G4double v)               { fSC_Tcrit = v; }
   void SetSCTeff(G4double v)                { fSC_Teff = v; }
   void SetSCDn(G4double v)                  { fSC_Dn = v; }
-  void SetSCQPLocalTrappingMFP(G4double v)  { fSC_QPLocalTrappingMFP = v; }
+  void SetSCQPLocalTrappingTau(G4double v)  { fSC_TauLocalTrap_qp = v; }
   
   const G4String& GetIVModel() const { return fIVModel; }
 
@@ -345,7 +345,7 @@ private:
   G4double fSC_Tcrit;   //Critical temperature
   G4double fSC_Teff;    //Effective temperature of the SC
   G4double fSC_Dn;    //Normal state diffusion constant of the SC material
-  G4double fSC_QPLocalTrappingMFP; //QP local trapping mean free path
+  G4double fSC_TauLocalTrap_qp; //QP local trapping time
   
   G4double fVSound;	// Speed of sound (longitudinal phonon)
   G4double fVTrans;	// Speed of sound (transverse phonon)

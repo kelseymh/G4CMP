@@ -80,7 +80,7 @@ G4CMPSCUtils::G4CMPSCUtils()
 				 { 1.0, 0.0 } }
 
 {
-  G4cout << "REL HereA_SCUtils" << G4endl;
+  // G4cout << "REL HereA_SCUtils" << G4endl;
   
   //For now, (VERY TEMPORARY), define default SC parameters
   SetCurrentSCInfoToNull();

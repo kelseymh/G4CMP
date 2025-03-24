@@ -74,6 +74,7 @@
 #include "Randomize.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4VSolid.hh"
+#include "G4CMPConfigManager.hh"
 #include <set>
 
 

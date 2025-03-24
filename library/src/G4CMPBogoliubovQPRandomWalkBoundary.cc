@@ -39,8 +39,6 @@
 G4CMPBogoliubovQPRandomWalkBoundary::G4CMPBogoliubovQPRandomWalkBoundary(const G4String& aName)
   : G4VBogoliubovQPProcess(aName, fBogoliubovQPRandomWalkBoundary),G4CMPBoundaryUtils(this),procName("G4CMPBogloliubovQPRandomWalkBoundary")
 {
-  //Seems like this may get set elsewhere, too?
-  verboseLevel = G4CMPConfigManager::GetVerboseLevel();
 }
 
 
@@ -171,6 +169,8 @@ G4VParticleChange*
 G4CMPBogoliubovQPRandomWalkBoundary::PostStepDoIt(const G4Track& aTrack,
 						  const G4Step& aStep) {
 
+  verboseLevel = G4CMPConfigManager::GetVerboseLevel();
+  
   //Debugging
   if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkBoundary::PostStepDoIt() ----------" << G4endl;

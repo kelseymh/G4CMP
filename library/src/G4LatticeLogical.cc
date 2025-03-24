@@ -75,7 +75,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fIVQuadField(0.), fIVQuadRate(0.), fIVQuadExponent(0.),
     fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.),
     fIVModel(G4CMPConfigManager::GetIVRateModel()), fSC_Delta0(0.),
-    fSC_Tau0_qp(DBL_MAX), fSC_Tau0_ph(DBL_MAX), fSC_Tcrit(0.), fSC_Teff(0.), fSC_Dn(0.), fSC_QPLocalTrappingMFP(DBL_MAX) {
+    fSC_Tau0_qp(DBL_MAX), fSC_Tau0_ph(DBL_MAX), fSC_Tcrit(0.), fSC_Teff(0.), fSC_Dn(0.), fSC_TauLocalTrap_qp(DBL_MAX) {
   for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
     for (G4int j=0; j<KVBINS; j++) {
       for (G4int k=0; k<KVBINS; k++) {
@@ -155,7 +155,7 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fSC_Tcrit = rhs.fSC_Tcrit;
   fSC_Teff = rhs.fSC_Teff;
   fSC_Dn = rhs.fSC_Dn;
-  fSC_QPLocalTrappingMFP = rhs.fSC_QPLocalTrappingMFP;
+  fSC_TauLocalTrap_qp = rhs.fSC_TauLocalTrap_qp;
   
   
   if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
@@ -783,7 +783,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nsc_tcrit " << fSC_Tcrit/kelvin << " K"
      << "\nsc_teff " << fSC_Teff/kelvin << " K"
      << "\nsc_dn " << fSC_Dn/um/um/s << " um^2/s"
-     << "\nsc_qptrapmfp " << fSC_QPLocalTrappingMFP/um << " um"
+     << "\nsc_taulocaltrap_qp " << fSC_TauLocalTrap_qp/us << " us"
      << std::endl;
 
 

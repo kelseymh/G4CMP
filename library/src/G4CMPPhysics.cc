@@ -108,10 +108,10 @@ void G4CMPPhysics::ConstructProcess() {
 
   particle = G4BogoliubovQP::BogoliubovQPDefinition();
   AddG4CMPProcess(bogQPRad,particle);
-  AddG4CMPProcess(bogQPRecomb,particle);
-  AddG4CMPProcess(bogQPRefl,particle);
   AddG4CMPProcess(bogQPTrap,particle);
   AddG4CMPProcess(bogQPTimeStep,particle);
+  AddG4CMPProcess(bogQPRefl,particle);
+  AddG4CMPProcess(bogQPRecomb,particle);
   //EY since QP transport is not a discrete process adding to process manager directly
   //  particle->GetProcessManager()->AddProcess(bogQPTrans,ordInActive,ordDefault,ordLast);
   particle->GetProcessManager()->AddProcess(bogQPTrans,ordInActive,ordDefault,ordDefault);

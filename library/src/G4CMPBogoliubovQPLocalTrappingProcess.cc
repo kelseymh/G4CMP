@@ -38,7 +38,10 @@ G4CMPBogoliubovQPLocalTrappingProcess::~G4CMPBogoliubovQPLocalTrappingProcess()
 G4VParticleChange* G4CMPBogoliubovQPLocalTrappingProcess::PostStepDoIt(const G4Track& aTrack,
 								       const G4Step& aStep)
 {
-  G4cout << "REL in BogoliubovQPLocalTrapping process poststepdoit." << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPLocalTrappingProcess::PostStepDoIt ----------" << G4endl;
+  }
   
   aParticleChange.Initialize(aTrack);
 

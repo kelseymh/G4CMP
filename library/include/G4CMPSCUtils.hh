@@ -30,7 +30,7 @@ public:
   G4CMPSCUtils& operator=(const G4CMPSCUtils&) = default;
   G4CMPSCUtils& operator=(G4CMPSCUtils&&) = default;
   
-  virtual void SetVerboseLevel(G4int vb) { scuVerboseLevel = vb; }
+  //virtual void SetVerboseLevel(G4int vb) { scuVerboseLevel = vb; }
 
 
 
@@ -56,7 +56,7 @@ private:
 
 
   
-  G4int scuVerboseLevel;			// For local use; name avoids collisions
+  //G4int scuVerboseLevel;			// For local use; name avoids collisions
 
 protected:
 

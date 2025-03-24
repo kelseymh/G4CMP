@@ -28,13 +28,11 @@
 G4CMPBogoliubovQPRadiatesPhononProcess::G4CMPBogoliubovQPRadiatesPhononProcess(const G4String& aName)
   : G4VBogoliubovQPProcess(aName,fQPRadiatesPhononProcess)
 {
-  G4cout << "REL -- In QPRadiatesPhononProcess::Constructor()" << G4endl;
   UseRateModel(new G4CMPBogoliubovQPRadiatesPhononRate);
 }
 
 G4CMPBogoliubovQPRadiatesPhononProcess::~G4CMPBogoliubovQPRadiatesPhononProcess()
 {
-  G4cout << "REL -- In QPRadiatesPhononProcess::Destructor()" << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -46,7 +44,7 @@ void G4CMPBogoliubovQPRadiatesPhononProcess::SetVerboseLevel(G4int vb) {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4Track& aTrack,
 								       const G4Step& aStep)
-{
+{ 
   //Debugging
   if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt ----------" << G4endl;
@@ -188,6 +186,8 @@ G4double G4CMPBogoliubovQPRadiatesPhononProcess::PhononEnergyPDF(G4double E, G4d
 //Pass-through to G4CMPVProcess class
 G4double G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond)
 {
+  //Set the verbose level
+  
   //Debugging
   if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath ----------" << G4endl;
