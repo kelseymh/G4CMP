@@ -3,8 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/include/G4CMPPairBreakingRate.hh
-/// \brief Compute rate for phonon breaking CPs into 2 QPs.
+/// \file library/src/G4CMPBogoliubovQPRecombinationRate.cc
+/// \brief Compute rate for QP recombining with ambient bath QP into 2Delta phonon
 //
 
 #ifndef G4CMPBogoliubovQPRecombinationRate_hh

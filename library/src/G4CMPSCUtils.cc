@@ -250,10 +250,12 @@ G4double G4CMPSCUtils::GetTauAsAFunctionOfEnergy( const std::vector<std::vector<
 	return tauVsPhononEnergy[0][1];	
       }
       else{
-	G4cout << "energy: " << energy << ", minE: " << minE << G4endl;
-	G4ExceptionDescription msg;
-	msg << "During lookup table step, we're somehow looking at a QP energy below the gap? This is probably just a turnaround step.";
-	G4Exception("G4CMPSCUtils::GetTauAsAFunctionOfEnergy", "G4CMPSCUtils004",JustWarning, msg);
+	if( G4CMPConfigManager::GetVerboseLevel() > 5 ){
+	  G4cout << "energy: " << energy << ", minE: " << minE << G4endl;
+	  G4ExceptionDescription msg;
+	  msg << "During lookup table step, we're somehow looking at a QP energy below the gap? This is probably just a turnaround step.";
+	  G4Exception("G4CMPSCUtils::GetTauAsAFunctionOfEnergy", "G4CMPSCUtils004",JustWarning, msg);
+	}
 	thisEnergyBelowUsableRange = true;
 	return DBL_MAX;
       }

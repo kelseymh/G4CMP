@@ -90,7 +90,9 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
                                              G4double /*prevStepLength*/,
                                              G4ForceCondition* condition) {
-  G4cout << "REL GetMFP_G4CMPPhononBoundaryProcess" << G4endl;
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPPhononBoundaryProcess::GetMeanFreePath ----------" << G4endl;
+  }
   UpdateMeanFreePathForLatticeChangeover(aTrack);
   
   *condition = Forced;
@@ -106,6 +108,11 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   // NOTE:  G4VProcess::SetVerboseLevel is not virtual!  Can't overlaod it
   G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
 
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPPhononBoundaryProcess::PostStepDoIt ----------" << G4endl;
+  }
+  
   aParticleChange.Initialize(aTrack);
   if (!IsGoodBoundary(aStep))
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
@@ -117,7 +124,10 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
            << "\n P direction: " << aTrack.GetMomentumDirection() << G4endl;
   }
 
-  G4cout << "REL just about to apply boundary action" << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "PSDI Function Point A | just about to apply boundary action" << G4endl;
+  }
   
   ApplyBoundaryAction(aTrack, aStep, aParticleChange);
 
@@ -145,6 +155,13 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 void G4CMPPhononBoundaryProcess::
 DoReflection(const G4Track& aTrack, const G4Step& aStep,
 	     G4ParticleChange& particleChange) {
+
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPPhononBoundaryProcess::DoReflection ----------" << G4endl;
+  }
+
+  
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
 
   if (verboseLevel>1) {
@@ -155,7 +172,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector waveVector = trackInfo->k();
   G4int mode = GetPolarization(aStep.GetTrack());
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
-
   if (verboseLevel>2) {
     G4cout << "\n Old wavevector direction " << waveVector.unit()
 	   << "\n Old momentum direction   " << aTrack.GetMomentumDirection()
@@ -165,7 +181,12 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // Check whether step has proper boundary-stopped geometry
   G4ThreeVector surfacePoint;
   if (!CheckStepBoundary(aStep, surfacePoint)) {
-    G4cout << "REL checking step boundary failed in DoReflection" << G4endl;
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "DR Function Point A | checking step boundary failed in DoReflection" << G4endl;
+    }
+ 
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
 
@@ -339,12 +360,13 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
 						const G4Step& aStep,
 						G4ParticleChange& aParticleChange) {
 
-  //Generic print
-  if (verboseLevel>1) G4cout << "REL-- Track transmission requested" << G4endl;
-
-  G4cout << "DoTransmision: aTrack getposition: " << aTrack.GetPosition() << G4endl;
-  G4cout << "aStep poststepposition: " << aStep.GetPostStepPoint()->GetPosition() << G4endl;
-  G4cout << "Lattice manager current lattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPreStepPoint()->GetPhysicalVolume()) << ", lattice manager post step point lattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()) << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPPhononBoundaryProcess::DoTransmission ----------" << G4endl;
+    G4cout << "DT Function Point A | aTrack getposition: " << aTrack.GetPosition() << G4endl;
+    G4cout << "DT Function Point A | aStep poststepposition: " << aStep.GetPostStepPoint()->GetPosition() << G4endl;
+    G4cout << "DT Function Point A | Lattice manager current lattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPreStepPoint()->GetPhysicalVolume()) << ", lattice manager post step point lattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()) << G4endl;
+  }
   
   //First, check the different materials involved. If one of them does not have a lattice, then something upstream has gone wrong. Scream.
   //Note that here, we need to use the G4LatticeManager rather than the TrackUtils version of GetLattice() because the trackUtils
@@ -366,7 +388,9 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
   // Check whether step has proper boundary-stopped geometry
   G4ThreeVector surfacePoint;
   if (!CheckStepBoundary(aStep, surfacePoint)) {
-    G4cout << "REL checking step boundary failed in DoTransmission" << G4endl;
+    if( verboseLevel > 5 ){
+      G4cout << "DT Function Point B | checking step boundary failed in DoTransmission" << G4endl;
+    }
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
 
@@ -379,7 +403,10 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
   this->SetLattice(G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()));
   UpdateSCAfterLatticeChange();
 
-  G4cout << "REL the lattice at the end of doTransmission: " << theLattice << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){    
+    G4cout << "DT Function Point C | the lattice at the end of doTransmission: " << theLattice << G4endl;
+  }
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
   G4ThreeVector vdir = theLattice->MapKtoVDir(mode, waveVector);
   G4double v = theLattice->MapKtoV(mode, waveVector);

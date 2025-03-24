@@ -84,14 +84,15 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
   G4VPhysicalVolume* prePV  = step.GetPreStepPoint()->GetPhysicalVolume();
   G4VPhysicalVolume* postPV = step.GetPostStepPoint()->GetPhysicalVolume();
 
-  //  if (verboseLevel>2) {
+  if (verboseLevel>2) {
     G4cout << " TrackLimiter prePV " << prePV->GetName()
 	   << " postPV " << (postPV?postPV->GetName():"OutOfWorld")
 	   << " status " << step.GetPostStepPoint()->GetStepStatus()
 	   << G4endl;
-    // }
-
     G4cout << "TrackLimiter GetCurrentVol: " << GetCurrentVolume()->GetName() << G4endl;
+  }
+
+  
   // Track is NOT at a boundary, is stepping outside volume, or already escaped
   return ( (step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary) &&
 	   (postPV != GetCurrentVolume() || prePV != GetCurrentVolume())

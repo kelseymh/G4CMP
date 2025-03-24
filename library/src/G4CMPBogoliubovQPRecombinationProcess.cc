@@ -43,7 +43,10 @@ void G4CMPBogoliubovQPRecombinationProcess::SetVerboseLevel(G4int vb) {
 G4VParticleChange* G4CMPBogoliubovQPRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
 								       const G4Step& aStep)
 {
-  G4cout << "REL in BogoliubovQPRecombination process poststepdoit." << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRecombinationProcess::PostStepDoIt ----------" << G4endl;
+  }
   
   aParticleChange.Initialize(aTrack);
   
@@ -69,8 +72,11 @@ G4VParticleChange* G4CMPBogoliubovQPRecombinationProcess::PostStepDoIt(const G4T
 
   //2. If the track is odd, then create recombination phonon
   if( trackID % 2 == 1 ){
-    
-    G4cout << "REL testing logic for recombination. TrackID, " << trackID << ", is odd, so a phonon is generated." << G4endl;
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "PSDI Function Point A | testing logic for recombination. TrackID, " << trackID << ", is odd, so a phonon is generated." << G4endl;
+    }
     
     //Make the energy of the new photon something simplistic for now: gap energy plus energy of this QP.
     G4double newPhonEnergy = fGapEnergy + GetKineticEnergy(aTrack);
@@ -79,7 +85,11 @@ G4VParticleChange* G4CMPBogoliubovQPRecombinationProcess::PostStepDoIt(const G4T
   
   //3. Otherwise, recombine and just kill it
   else{
-    G4cout << "REL testing logic for recombination. TrackID, " << trackID << ", is even, and so no phonons are generated." << G4endl;
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "PSDI Function Point B | testing logic for recombination. TrackID, " << trackID << ", is even, and so no phonons are generated." << G4endl;
+    }   
     aParticleChange.ProposeEnergy(0.);
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
@@ -103,14 +113,20 @@ void G4CMPBogoliubovQPRecombinationProcess::GenerateRecombinationPhonon(G4double
 									const G4Track& aTrack,
 									const G4Step& aStep)
 {
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRecombinationProcess::GenerateRecombinationPhonon ----------" << G4endl;
+  }
+  
   //Now create the phonon
   G4int mode = G4CMP::ChoosePhononPolarization(theLattice->GetLDOS(), theLattice->GetSTDOS(),theLattice->GetFTDOS());    
   G4ThreeVector dir1 = G4RandomDirection();    
   G4Track* sec1 = G4CMP::CreatePhonon(aTrack,mode,dir1,phonEnergy,aTrack.GetGlobalTime(),aTrack.GetPosition());
 
-  G4cout << "REL energy of recombination phonon: " << phonEnergy << ", whereas twice the gap is: " << 2.0*fGapEnergy << G4endl;
-
-
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "GRP Function Point A | energy of recombination phonon: " << phonEnergy << ", whereas twice the gap is: " << 2.0*fGapEnergy << G4endl;
+  }
   
   //Check to make sure the secondary was actually produced
   if (!sec1) {
@@ -130,7 +146,16 @@ void G4CMPBogoliubovQPRecombinationProcess::GenerateRecombinationPhonon(G4double
 //Pass-through to G4CMPVProcess class
 G4double G4CMPBogoliubovQPRecombinationProcess::GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond)
 {
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRecombinationProcess::GetMeanFreePath ----------" << G4endl;
+  }
+  
   G4double mfpBase = G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
-  G4cout << "REL Mean free path in QPRecombinationProcess: " << mfpBase << ", with nMFPsLeft: " << GetNumberOfInteractionLengthLeft() << G4endl;
+
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "GMFP Function Point A | mean free path in QPRecombinationProcess: " << mfpBase << ", with nMFPsLeft: " << GetNumberOfInteractionLengthLeft() << G4endl;
+  }
   return mfpBase;
 }

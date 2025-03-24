@@ -3,37 +3,49 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/src/G4CMPBogoliubovQPRecombinationRate.cc
-/// \brief Compute rate for phonon breaking CPs into 2 QPs.
+/// \file library/src/G4CMPBogoliubovQPRadiatesPhononRate.cc
+/// \brief Compute rate for QP radiating individual phonons.
 //
 #include "G4CMPBogoliubovQPRadiatesPhononRate.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4LatticePhysical.hh"
 #include "G4Track.hh"
 #include <vector>
 #include <map>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-// Recombination rate is computed using energy and the G4SCUtils class, upon which this is based
+// Phonon radiation rate is computed using energy and the G4SCUtils class, upon which this is based
 G4double G4CMPBogoliubovQPRadiatesPhononRate::Rate(const G4Track& aTrack) const
 {
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRadiatesPhononRate::Rate ----------" << G4endl;
+  } 
+  
   //Put checks to see if parameters are defined HERE -- this happens before the calls to the vector but has access to tau0_qp, etc.
   if( !CheckToSeeSCParametersSet() ) return 0;
 
   //Boolean for checking to see if we're trying to access below our minimum energy (in the case of a turnaround step)
   bool thisEnergyBelowUsableRange = false;
   
-  G4cout << "REL in BogoliubovQPRadiatesPhonon rate Rate function." << G4endl;
-  //Compute tau for recombination, and invert for rate
+  //Compute tau for phonon radiation, and invert for rate
   G4double energy = GetKineticEnergy(aTrack);
-  G4cout << "REL HereA in BogoliubovRadiatesPhonon Rate" << G4endl;  
   G4double tau_scattering = fTau0_qp*(this->GetTauAsAFunctionOfEnergy(fCurrentNormalizedTauQPRadiatesPhononVsEnergy,"BogoliubovQP",energy,thisEnergyBelowUsableRange));
   if( thisEnergyBelowUsableRange ){
-    G4cout << "--> REL: In Rate calculation for QPRadiatesPhonon, this energy " << energy << " is below the usable range. Returning a zero rate." << G4endl;
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "R Function Point A | In Rate calculation for QPRadiatesPhonon, this energy " << energy << " is below the usable range. Returning a zero rate." << G4endl;
+      
+    }
     return 0;
   }
-								     
-  G4cout << "Tau_scattering: " << tau_scattering << G4endl;
-  G4cout << "REL HereB in BogoliubovRadiatesPhonon Rate" << G4endl;
+
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "R Function Point B | tau_scattering: " << tau_scattering << G4endl;
+    G4cout << "R Function Point B | returning 1.0/tau_scattering." << G4endl;
+  }
   return (1.0/tau_scattering);
 }
 
@@ -68,12 +80,16 @@ bool G4CMPBogoliubovQPRadiatesPhononRate::CheckToSeeSCParametersSet() const
 // the lookup table using a computed rate curve that already exists in the map
 void G4CMPBogoliubovQPRadiatesPhononRate::UpdateLookupTable(const G4LatticePhysical * theLat)
 {
-  G4cout << "In the updateLookupTable function, QP radiates phonons." << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRadiatesPhononRate::UpdateLookupTable ----------" << G4endl;
+    G4cout << "ULT Function Point A | QP radiates phonons." << G4endl;
+  }
   
   //1. If the lattice doesn't exist in the lattice container associated with this process yet,
   //   add it and do the full calculation of the curves we care about, storing them in a map
   if( fMap_physicalLattice_NormalizedTauQPRadiatesPhononVsEnergy.count(theLat) == 0 ){
-    G4cout << "Computing new lookup table for phonon radiation process." << G4endl;
+    G4cout << "Computing new lookup table for phonon radiation process, lattice name: " << theLat->GetLattice()->GetName() << G4endl;
     fMap_physicalLattice_NormalizedTauQPRadiatesPhononVsEnergy.emplace(theLat,ComputeNormalizedTauQPRadiatesPhononVsEnergy());
     fCurrentNormalizedTauQPRadiatesPhononVsEnergy = fMap_physicalLattice_NormalizedTauQPRadiatesPhononVsEnergy[theLat];
   }    
@@ -86,7 +102,12 @@ void G4CMPBogoliubovQPRadiatesPhononRate::UpdateLookupTable(const G4LatticePhysi
 // at the moment
 std::vector<std::vector<G4double> > G4CMPBogoliubovQPRadiatesPhononRate::ComputeNormalizedTauQPRadiatesPhononVsEnergy()
 {
-  G4cout << "In the calculation of a normalized tauQP vs energy, QP radiates phonons." << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRadiatesPhononRate::ComputeNormalizedTauQPRadiatesPhononVsEnergy ----------" << G4endl;
+    G4cout << "CNTQPRPVE Function Point A | In the calculation of a normalized tauQP vs energy, QP radiates phonons." << G4endl;
+  }
+\
   std::vector<std::vector<G4double> > output;
   G4double deltaQPEnergyDivGap = (fMaxQPEnergyDivGap - fMinQPEnergyDivGap) / ((double)fQPEnergyBins);
 
@@ -136,7 +157,7 @@ std::vector<std::vector<G4double> > G4CMPBogoliubovQPRadiatesPhononRate::Compute
 // Construct the lookup table for normalized tau for pairbreaking vs phonon energy
 void G4CMPBogoliubovQPRadiatesPhononRate::SaveBogoliubovQPRadiatesPhononTauVsPhononEnergyToLogFile(std::vector<std::vector<G4double> > theFunc)
 {
-  G4cout << "In the BogoliubovQP Radiates Phonon log file function." << G4endl;
+  //G4cout << "In the BogoliubovQP Radiates Phonon log file function." << G4endl;
   std::ofstream outfile;
   outfile.open("/Users/ryanlinehan/QSC/Sims/Geant4/scRebuild-build/BogoliubovQPRadiatesPhononTauVsEnergy.txt");
   for( int iE = 0; iE < theFunc.size(); ++iE ){

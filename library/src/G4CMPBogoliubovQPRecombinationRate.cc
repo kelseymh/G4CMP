@@ -4,9 +4,10 @@
 \***********************************************************************/
 
 /// \file library/src/G4CMPBogoliubovQPRecombinationRate.cc
-/// \brief Compute rate for phonon breaking CPs into 2 QPs.
+/// \brief Compute rate for QP recombining with ambient bath QP into 2Delta phonon
 //
 #include "G4CMPBogoliubovQPRecombinationRate.hh"
+#include "G4LatticePhysical.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4Track.hh"
 #include <vector>
@@ -16,22 +17,35 @@
 // Recombination rate is computed using energy and the G4SCUtils class, upon which this is based
 G4double G4CMPBogoliubovQPRecombinationRate::Rate(const G4Track& aTrack) const
 {
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRecombinationRate::Rate ----------" << G4endl;
+  }
+  
   //Put checks to see if parameters are defined HERE -- this happens before the calls to the vector but has access to tau0_qp, etc.
   if( !CheckToSeeSCParametersSet() ) return 0;
 
   //Boolean for checking to see if we're trying to access below our minimum energy (in the case of a turnaround step)
   bool thisEnergyBelowUsableRange = false;
   
-  G4cout << "REL in BogoliubovQPRecombination rate Rate function." << G4endl;
   //Compute tau for recombination, and invert for rate
   G4double energy = GetKineticEnergy(aTrack);
-  G4cout << "REL HereA in BogoliubovRecombination Rate" << G4endl;  
   G4double tau_recombination = fTau0_qp*(this->GetTauAsAFunctionOfEnergy(fCurrentNormalizedTauRecombinationVsEnergy,"BogoliubovQP",energy,thisEnergyBelowUsableRange));
   if( thisEnergyBelowUsableRange ){
-    G4cout << "--> REL: In Rate calculation for QPRadiatesPhonon, this energy " << energy << " is below the usable range. Returning a zero rate." << G4endl;
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "R Function Point A | In Rate calculation for QPRecombination, this energy " << energy << " is below the usable range. Returning a zero rate." << G4endl;
+    }
+
     return 0;
   }
-  G4cout << "REL HereB in BogoliubovRecombination Rate" << G4endl;
+
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "R Function Point B | tau_recombination: " << tau_recombination << G4endl;
+    G4cout << "R Function Point B | returning 1.0/tau_recombination." << G4endl;
+  }
   return (1.0/tau_recombination);
 }
 
@@ -41,6 +55,7 @@ G4double G4CMPBogoliubovQPRecombinationRate::Rate(const G4Track& aTrack) const
 //the rate calculation.
 bool G4CMPBogoliubovQPRecombinationRate::CheckToSeeSCParametersSet() const
 {
+  
   //Check for the gap0energy, Tcrit, Teff, and Tau0qp. If all of these aren't set, return false.
   //However, if any subset of them are set, then throw a flag--means that someone may just have forgot
   //one of them.
@@ -65,10 +80,17 @@ bool G4CMPBogoliubovQPRecombinationRate::CheckToSeeSCParametersSet() const
 // the lookup table using a computed rate curve that already exists in the map
 void G4CMPBogoliubovQPRecombinationRate::UpdateLookupTable(const G4LatticePhysical * theLat)
 {
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRadiatesPhononRate::UpdateLookupTable ----------" << G4endl;
+    G4cout << "ULT Function Point A | QP recombination." << G4endl;
+  } 
+
+  
   //1. If the lattice doesn't exist in the lattice container associated with this process yet,
   //   add it and do the full calculation of the curves we care about, storing them in a map
   if( fMap_physicalLattice_NormalizedTauRecombinationVsEnergy.count(theLat) == 0 ){
-    G4cout << "Computing new lookup table for recombination process." << G4endl;
+    G4cout << "Computing new lookup table for recombination process, lattice name: " << theLat->GetLattice()->GetName() << G4endl;
     fMap_physicalLattice_NormalizedTauRecombinationVsEnergy.emplace(theLat,ComputeNormalizedTauRecombinationVsEnergy());
     fCurrentNormalizedTauRecombinationVsEnergy = fMap_physicalLattice_NormalizedTauRecombinationVsEnergy[theLat];
   }    
@@ -81,9 +103,14 @@ void G4CMPBogoliubovQPRecombinationRate::UpdateLookupTable(const G4LatticePhysic
 // Construct the lookup table for normalized tau for recombination vs phonon energy
 std::vector<std::vector<G4double> > G4CMPBogoliubovQPRecombinationRate::ComputeNormalizedTauRecombinationVsEnergy()
 {
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRadiatesPhononRate::ComputeNormalizedTauRecombinationVsEnergy ----------" << G4endl;
+    G4cout << "CNTRVE Function Point A | In the calculation of a normalized tauQP vs energyQP, recombination." << G4endl;
+  } 
+  
   std::vector<std::vector<G4double> > output;
   G4double deltaQPEnergyDivGap = (fMaxQPEnergyDivGap - fMinQPEnergyDivGap) / ((double)fQPEnergyBins);
-
   
   //Loop over all QP energy bins, and create a normalized tau for each of them
   for( int iB = 0; iB < fQPEnergyBins; ++iB ){
@@ -120,7 +147,6 @@ std::vector<std::vector<G4double> > G4CMPBogoliubovQPRecombinationRate::ComputeN
 
   //This is only for debugging, and is temporary.
   SaveBogoliubovRecombinationTauVsPhononEnergyToLogFile(output);
-
   
   return output;
 }

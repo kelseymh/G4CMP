@@ -55,6 +55,7 @@ protected:
    
   G4String procName;
   G4CMPProcessUtils* procUtils;
+  G4int verboseLevel;
    
 private:
 

@@ -47,16 +47,21 @@ void G4CMPBogoliubovQPRadiatesPhononProcess::SetVerboseLevel(G4int vb) {
 G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4Track& aTrack,
 								       const G4Step& aStep)
 {
-  G4cout << "REL in BogoliubovQPRadiatesPhonon process poststepdoit." << G4endl;
-
-  G4cout << "REL -- poststeppoint velocity in QPRadiates poststepdoit is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
-  G4cout << "REL -- track velocity in QPRadiates poststepdoit is: " << aTrack.GetVelocity() << G4endl;
-
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt ----------" << G4endl;
+    G4cout << "PSDI Function Point A | poststeppoint velocity in QPRadiates poststepdoit is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
+    G4cout << "PSDI Function Point A | track velocity in QPRadiates poststepdoit is: " << aTrack.GetVelocity() << G4endl;
+  }
   
+
   aParticleChange.Initialize(aTrack);
 
-  G4cout << "REL -- poststeppoint velocity in QPRadiates poststepdoit, after initializing particle change, is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
-  G4cout << "REL -- track velocity in QPRadiates poststepdoit, afteer initializing particle change, is: " << aTrack.GetVelocity() << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "PSDI Function Point B | poststeppoint velocity in QPRadiates poststepdoit, after initializing particle change, is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
+    G4cout << "PSDI Function Point B | track velocity in QPRadiates poststepdoit, afteer initializing particle change, is: " << aTrack.GetVelocity() << G4endl;
+  }
 
   
   //Pseudocode
@@ -101,7 +106,7 @@ G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 G4bool G4CMPBogoliubovQPRadiatesPhononProcess::IsApplicable(const G4ParticleDefinition& aPD) {
-  G4cout << "REL -- In QPRadiatesPhononProcess::IsApplicable()" << G4endl;
+
   // Allow all phonon types, because type is changed during tracking
   return G4VBogoliubovQPProcess::IsApplicable(aPD);
 }
@@ -113,14 +118,20 @@ void G4CMPBogoliubovQPRadiatesPhononProcess::GenerateRadiatedPhonon(G4double pho
 								    const G4Track& aTrack,
 								    const G4Step& aStep)
 {
-  G4cout << "REL -- In QPRadiatesPhononProcess::GenerateRadiatedPhonon()" << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRadiatesPhononProcess::GenerateRadiatedPhonon ----------" << G4endl;
+  }
   
   //Now create the phonon
   G4int mode = G4CMP::ChoosePhononPolarization(theLattice->GetLDOS(), theLattice->GetSTDOS(),theLattice->GetFTDOS());    
   G4ThreeVector dir1 = G4RandomDirection();    
   G4Track* sec1 = G4CMP::CreatePhonon(aTrack,mode,dir1,phonEnergy,aTrack.GetGlobalTime(),aTrack.GetPosition());
 
-  G4cout << "REL energy of radiated phonon: " << phonEnergy << ", whereas twice the gap is: " << 2.0*fGapEnergy << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "GRP Function Point A | energy of radiated phonon: " << phonEnergy << ", whereas twice the gap is: " << 2.0*fGapEnergy << G4endl;
+  }
   
   //Check to make sure the secondary was actually produced
   if (!sec1) {
@@ -139,7 +150,6 @@ void G4CMPBogoliubovQPRadiatesPhononProcess::GenerateRadiatedPhonon(G4double pho
 // This is the same as the original KaplanQP
 G4double G4CMPBogoliubovQPRadiatesPhononProcess::PhononEnergyRand(G4double Energy) const
 {
-  //G4cout << "REL -- In QPRadiatesPhononProcess::PhononEnergyRand()" << G4endl;
   
   // PDF is not integrable, so we can't do an inverse transform sampling.
   // Instead, we'll do a rejection method.
@@ -169,7 +179,6 @@ G4double G4CMPBogoliubovQPRadiatesPhononProcess::PhononEnergyRand(G4double Energ
 // bring this into agreement with the Kaplan paper
 G4double G4CMPBogoliubovQPRadiatesPhononProcess::PhononEnergyPDF(G4double E, G4double x) const
 {
-  //G4cout << "REL -- In QPRadiatesPhononProcess::PhononEnergyPDF()" << G4endl;
     const G4double gapsq = fGapEnergy * fGapEnergy;
     return (x * (E - x) * (E - x) * (1 - gapsq / x / E) / sqrt(x * x - gapsq));
 }
@@ -179,29 +188,18 @@ G4double G4CMPBogoliubovQPRadiatesPhononProcess::PhononEnergyPDF(G4double E, G4d
 //Pass-through to G4CMPVProcess class
 G4double G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond)
 {
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath ----------" << G4endl;
+  }
+  
   //Need this to come first, so that it actually attempts a superconductor update.
   G4double mfpBase = G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
-  /*
-  //Here, before we try to run this, check to see if all of the relevant crystal parameters are defined. If they aren't,
-  //throw an exception. This only works, by the way, if there is a lattice. Since this does need to run during turnaround steps too,
-  //predicate this check on a lattice existing in the first place.  
-  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  G4LatticePhysical* theLat;
-  G4VPhysicalVolume* volume = trk.GetVolume();
-  theLat = LM->GetLattice(volume);
-  if(theLat){
-    G4double Gap0Energy = theLat->GetSCDelta0();
-    G4double Tcrit = theLat->GetSCTcrit();
-    G4double Teff = theLat->GetSCTeff();
-    G4double Tau0qp = theLat->GetSCTau0qp();
-    if( Gap0Energy == 0.0 || Tcrit == 0.0 || Teff >= Tcrit || Teff == 0.0 || Tau0qp == DBL_MAX ){
-      G4ExceptionDescription msg;
-      msg << "Noticed that in the mean free path calculation step for the QP-radiates-phonon process, you have incorrectly defined or omitted the Gap0Energy parameter, the Tcrit parameter, the Teff parameter, or the Tau0qp parameter. In other words, you don't have enough input information in your config.txt file to run the phonon radiation physics correctly.";
-      G4Exception("G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath", "BogoliubovQPRadiatesPhonon003",JustWarning, msg);
-    }
+
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "GMFP Function Point A | Mean free path in QPRadiatesPhononProcess: " << mfpBase << ", with nMFPsLeft: " << GetNumberOfInteractionLengthLeft() << G4endl;
   }
-  */
-  G4cout << "REL Mean free path in QPRadiatesPhononProcess: " << mfpBase << ", with nMFPsLeft: " << GetNumberOfInteractionLengthLeft() << G4endl;
   
   //If we don't trigger that exception, continue.
   return mfpBase;

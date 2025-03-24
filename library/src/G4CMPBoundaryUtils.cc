@@ -88,20 +88,32 @@ G4bool G4CMPBoundaryUtils::IsGoodBoundary(const G4Step& aStep) {
 }
 
 G4bool G4CMPBoundaryUtils::IsBounaryStep(const G4Step& aStep) {
+
+  //Debugging
+  if (buVerboseLevel > 5){
+    G4cout << "---------- G4CMPBoundaryUtils::IsBounaryStep ----------" << G4endl;
+    G4cout << "IBS Function Point A | The step status is " << aStep.GetPostStepPoint()->GetStepStatus() << G4endl;
+  }
+  
   if (buVerboseLevel>1) {
     G4cout << procName << "::IsBounaryStep status "
 	   << aStep.GetPostStepPoint()->GetStepStatus()
 	   << " length " << aStep.GetStepLength() << G4endl;
   }
 
-  G4cout << "In IsBounaryStep, REL the step status is " << aStep.GetPostStepPoint()->GetStepStatus() << G4endl;
-  
   // do nothing if the current step is not limited by a volume boundary,
   // or if it is the returning "null step" after a reflection
   return aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary;
 }
 
 G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
+
+  //Debugging
+  if (buVerboseLevel > 5){
+    G4cout << "---------- G4CMPBoundaryUtils::GetBoundingVolumes ----------" << G4endl;
+  }
+
+  
   prePV = aStep.GetPreStepPoint()->GetPhysicalVolume();
   postPV = aStep.GetPostStepPoint()->GetPhysicalVolume();
 
@@ -110,46 +122,62 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
       G4cerr << procName << " ERROR: fGeomBoundary status set, but"
 	     << " pre- and post-step volumes are identical!" << G4endl;
     }
-    G4cout << "REL In GetBoundingVolumes, prePV and postPV are the same" << G4endl;
+
+    //Debugging
+    if (buVerboseLevel > 5){
+      G4cout << "GBV Function Point A | prePV and postPV are the same." << G4endl;
+    }
     return false;
   }
 
   //Note that since now the GetMFP function has called a lattice update, procUtils->GetLattice() should just be the "current" lattice we're in.
-  //  G4cout << "REL inside the GetBoundingVolumes function. aStep.GetStepLength() = " << aStep.GetStepLength() << G4endl;
-  G4cout << "---- In GetBoundingVolumes: procUtils->GetLattice(): " << procUtils->GetLattice() << ", prePVlattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(prePV) << ", volLattice (postPVLattice): " << G4LatticeManager::GetLatticeManager()->GetLattice(postPV) << G4endl;
+  //Debugging
+  if (buVerboseLevel > 5){
+    G4cout << "GBV Function Point B | procUtils->GetLattice(): " << procUtils->GetLattice() << ", prePVlattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(prePV) << ", volLattice (postPVLattice): " << G4LatticeManager::GetLatticeManager()->GetLattice(postPV) << G4endl;
+  }
   G4LatticePhysical* volLattice = G4LatticeManager::GetLatticeManager()->GetLattice(postPV);
 
-  //First scenario: we DON'T have a lattice in the pre-step point. This happens at least when we're on the boundary of a lattice and                          
-  //the world. Here the phonon "turns around" in the world volume, in a step that is of negligible length. This negligible length is                          
-  //typically around 1E-15, so to account for these safely we use a tolerance of 1E-12, which is well below the physics scales                                
+  //First scenario: we DON'T have a lattice in the pre-step point. This happens at least when we're on the boundary of a lattice and    
+  //the world. Here the phonon "turns around" in the world volume, in a step that is of negligible length. This negligible length is   
+  //typically around 1E-15, so to account for these safely we use a tolerance of 1E-12, which is well below the physics scales       
   //relevant in these kinds of sims.
   double stepLengthTolerance = 1E-12 * CLHEP::m;
   if (G4LatticeManager::GetLatticeManager()->GetLattice(prePV) == 0 ){
-    G4cout << "---- In GetBoundingVolumes: prePV lattice is zero." << G4endl;
+    if(buVerboseLevel > 5 ){
+      G4cout << "GBV Function Point C | prePV lattice is zero." << G4endl;
+    }
     
     //First: if the current (i.e. pre-step, procUtils->GetLattice()) lattice is the same as post-step volume lattice.
     //This occurs, if, for example, the current volume is World/vacuum, and a lattice changeover/update failed in the MFP step because
     //there is no lattice to update to. Hence, the "current" procUtils->GetLattice() lattice is really the prePV one from the *previous* step.
     if( volLattice == procUtils->GetLattice() ){
-      G4cout << "----- In GetBoundingVolumes: Current (procUtils) Lattice is equal to post-PV lattice." << G4endl;
+      if(buVerboseLevel > 5 ){
+	G4cout << "GBV Function Point D | Current (procUtils) Lattice is equal to post-PV lattice." << G4endl;
+      }
       
       //If the step length is below tolerance, we need to return false so we don't try to "double-count" the boundary action.
       //The small step sizes occur when the phonon "turns around" on a boundary with a volume that doesn't have a lattice.
       if( aStep.GetStepLength() <= stepLengthTolerance ){
-        G4cout << "------ In GetBoundingVolumes: Step length, " << aStep.GetStepLength()*1.0e9 << " (mult x 1e9) is below step length tolerance." << G4endl;
+	if( buVerboseLevel > 5 ){
+	  G4cout << "GBV Function Point E | Step length, " << aStep.GetStepLength()*1.0e9 << " (mult x 1e9) is below step length tolerance." << G4endl;
+	}
         return false;
       }
       //If the step length is long. I think this can only happen if we're somehow having a long track in a non-lattice volume. For now
       //we'll keep the control block here just in case (and make it return what would be returned in its absence anyway).
       else{
-        G4cout << "------ In GetBoundingVolumes: Step length is above step length tolerance." << G4endl;
+	if( buVerboseLevel > 5 ){
+	  G4cout << "GBV Function Point F | Step length is above step length tolerance." << G4endl;
+	}
         return true; //TBD, but set to be consistent with older version
       }
     }
     //If the current lattice is not equal to the post-step lattice. From a first glance at phonon dynamics I don't think this happens,
     //but we'll keep the control block here so that if we see it does happen, we can make the call then.
     else{
-      G4cout << "----- In GetBoundingVolumes: Current Lattice is not equal to post-PV lattice." << G4endl;
+      if( buVerboseLevel > 5 ){
+	G4cout << "GBV Function Point G | Current Lattice is not equal to post-PV lattice." << G4endl;
+      }
       return true; //TBD, but set to be consistent with older version
     }
   }
@@ -166,42 +194,52 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
   //   this step, we don't want to trigger any of the doTransmission/doReflection logic (as it would be "double-counting" that physics),
   //   so we return false. 
   if (G4LatticeManager::GetLatticeManager()->GetLattice(prePV) != 0 ){
-    G4cout << "---- In GetBoundingVolumes: Current lattice is not zero." << G4endl;
+    if( buVerboseLevel > 5 ){
+      G4cout << "GBV Function Point H | Current lattice is not zero." << G4endl;
+    }
     
     //If the current (i.e. pre-step, procUtils->GetLattice()) lattice is different from the post-step volume lattice, then this is where
     //some important logic must happen.
     if( volLattice != procUtils->GetLattice() ){
-      G4cout << "----- In GetBoundingVolumes: Current Lattice ("<< procUtils->GetLattice() << ") is not equal to post-PV lattice (" << volLattice << ")." << G4endl;
+      if( buVerboseLevel > 5 ){
+	G4cout << "GBV Function Point I | Current Lattice ("<< procUtils->GetLattice() << ") is not equal to post-PV lattice (" << volLattice << ")." << G4endl;
+      }
 
       //If the step length is tiny, this means that we're in a "turnaround" step characteristic of reflection back into the lattice
       //that we approached from. Here we return false so that we don't try to run another boundary process action for this turnaround
       //step -- that has already been done
       if( aStep.GetStepLength() <= stepLengthTolerance ){
-        G4cout << "------ In GetBoundingVolumes: Step length, " << aStep.GetStepLength()*1.0e9 << " (mult x 1e9), is below step length tolerance." << G4endl;
+	if( buVerboseLevel > 5 ){	  
+	  G4cout << "GBV Function Point J | Step length, " << aStep.GetStepLength()*1.0e9 << " (mult x 1e9), is below step length tolerance." << G4endl;
+	}
         return false;
       }
       //Otherwise, the track is actually moving through a volume before it hits this surface, and it needs to run the logic to see if
       //it reflects, transmits, etc. Need to return true so that logic can run.
       else{
-        G4cout << "------ In GetBoundingVolumes: Step length is above step length tolerance." << G4endl; 
+	if( buVerboseLevel > 5 ){
+	  G4cout << "GBV Function Point K | Step length is above step length tolerance." << G4endl;
+	}
         return true;
       }
     }
     //If the current lattice is NOT different from the post-step lattice, this should have already been covered at the beginning of this
     //function -- throw an error here.
     else{
-      G4cout << "\n\n\nREL Current lattice is not different from postPV lattice. This should have been covered already -- figure out why it hasn't.\n\n\n" << G4endl;
+      if( buVerboseLevel > 5 ){
+	G4cout << "GBV Function Point L | Current lattice is not different from postPV lattice. This should have been covered already -- figure out why it hasn't.\n\n\n" << G4endl;
+      }
       return false; //TBD
     }
   }
 
   if (buVerboseLevel>1) {
-    G4cout <<   "  RELPreStep volume: " << prePV->GetName() << " @ "
+    G4cout <<   "  PreStep volume: " << prePV->GetName() << " @ "
 	   << aStep.GetPreStepPoint()->GetPosition()
 	   << "\n PostStep volume: " << (postPV?postPV->GetName():"OutOfWorld")
 	   << " @ " << aStep.GetPostStepPoint()->GetPosition()
-       << "\n PreStep momentum direction"<< aStep.GetPreStepPoint()->GetMomentumDirection()
-       << "\n PostStep momentum direction"<< aStep.GetPostStepPoint()->GetMomentumDirection()
+	   << "\n PreStep momentum direction"<< aStep.GetPreStepPoint()->GetMomentumDirection()
+	   << "\n PostStep momentum direction"<< aStep.GetPostStepPoint()->GetMomentumDirection()
 	   << G4endl;
   }
   
@@ -286,69 +324,6 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
   return true;
 }
 
-/*
-// Check whether end of step is actually on surface of volume
-// "surfacePoint" returns post-step position, or computed surface point.
-// This is the older version of this function (kept temporarily for debugging -- REL)
-
-G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
-					     G4ThreeVector& surfacePoint) {
-  G4StepPoint* preP = aStep.GetPreStepPoint();
-  G4StepPoint* postP = aStep.GetPostStepPoint();
-  GetBoundingVolumes(aStep); //REL uhhhh does this... do anything?
-  surfacePoint = postP->GetPosition();		// Correct if valid boundary
-
-  // Get pre- and post-step positions in pre-step volume coordinates
-  G4VSolid* preSolid = prePV->GetLogicalVolume()->GetSolid();
-
-  G4ThreeVector prePos = preP->GetPosition();
-  G4CMP::RotateToLocalPosition(preP->GetTouchable(), prePos);
-
-  G4ThreeVector postPos = surfacePoint;
-  G4CMP::RotateToLocalPosition(preP->GetTouchable(), postPos);
-
-  if (buVerboseLevel>2) {
-    G4cout << "CheckStepBoundary: in prePV (" << prePV->GetName() << ") frame"
-	   << "\n  preStep @ " << prePos << "\n postStep @ " << postPos
-	   << G4endl;
-  }
-
-  // Verify that post-step position is on surface of volume
-  EInside postIn = preSolid->Inside(postPos);
-//  G4cout << "postIn (in CheckStepBoundary): " << postIn << G4endl;
-
-  
-  if (buVerboseLevel>2) {
-    G4cout << "\n Is postStep location on surface of preStep Volume? "
-	   << (postIn==kOutside ? "outside" :
-	       postIn==kInside  ? "inside" :
-	       postIn==kSurface ? "surface" : "INVALID") << G4endl;
-  }
-
-  // If post-step position not proper surface point, compute intersection
-  if (postIn != kSurface) {
-    G4ThreeVector along = (postPos-prePos).unit();	// Trajectory direction
-    surfacePoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
-
-    // Double check calculation -- point "must" now be on surface!
-//    G4cout << "REL preSolid->Inside(surfacePoint): " << preSolid->Inside(surfacePoint) << G4endl;
-//    G4cout << "REL kInside: " << kInside << ", kSurface: " << kSurface << ", kOutside: " << kOutside << G4endl;
-    if (preSolid->Inside(surfacePoint) != kSurface) {
-      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-		  "Boundary005", EventMustBeAborted,
-		  "Boundary-limited step cannot find boundary surface point"
-		  );
-      return false;
-    }
-
-    // Move surface point to world coordinate system
-    G4CMP::RotateToGlobalPosition(preP->GetTouchable(), surfacePoint);
-  }
-
-  return (postIn == kSurface);
-}
-*/
-
 
 // Check whether end of step is actually on surface of volume
 // "surfacePoint" returns post-step position, or computed surface point. Extra logic being added
@@ -360,6 +335,12 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 
 G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 					     G4ThreeVector& surfacePoint) {
+  //Debugging
+  if (buVerboseLevel > 5){
+    G4cout << "---------- G4CMPBoundaryUtils::CheckStepBoundary ----------" << G4endl;
+  }
+
+  
   G4StepPoint* preP = aStep.GetPreStepPoint();
   G4StepPoint* postP = aStep.GetPostStepPoint();
   GetBoundingVolumes(aStep); 
@@ -370,24 +351,35 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
   G4VSolid* preSolid = prePV->GetLogicalVolume()->GetSolid();
   G4ThreeVector prePos = preP->GetPosition();
   G4ThreeVector postPos = surfacePoint;
-  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- postPos, pre-rotation = " << postPos << G4endl;
-  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- surfacePoint, pre-rotation = " << surfacePoint << G4endl;
+
+  //Debugging
+  if( buVerboseLevel > 5 ){
+    G4cout << "CSB Function Point A | postPos, pre-rotation = " << postPos << G4endl;
+    G4cout << "CSB Function Point A | surfacePoint, pre-rotation = " << surfacePoint << G4endl;
+  }
   G4CMP::RotateToLocalPosition(preP->GetTouchable(), prePos);
   G4CMP::RotateToLocalPosition(preP->GetTouchable(), postPos);
-  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- postPos, post-rotation = " << postPos << G4endl;
-  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- surfacePoint, post-rotation = " << surfacePoint << G4endl;
+  if( buVerboseLevel > 5 ){
+    G4cout << "CSB Function Point B | postPos, post-rotation = " << postPos << G4endl;
+    G4cout << "CSB Function Point B | surfacePoint, post-rotation = " << surfacePoint << G4endl;
+  }
   
   //Get pre- and post-step positions in post-step volume coordinates (for good measure)
   G4VSolid* postSolid = postPV->GetLogicalVolume()->GetSolid();
   G4ThreeVector prePos_postPV = preP->GetPosition();
   G4ThreeVector postPos_postPV = surfacePoint;
-  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- postPos_postPV, pre-rotation = " << postPos_postPV << G4endl;
-  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- surfacePoint, pre-rotation = " << surfacePoint << G4endl;
+
+  //Debugging
+  if( buVerboseLevel > 5 ){
+    G4cout << "CSB Function Point C | postPos_postPV, pre-rotation = " << postPos_postPV << G4endl;
+    G4cout << "CSB Function Point C | surfacePoint, pre-rotation = " << surfacePoint << G4endl;
+  }
   G4CMP::RotateToLocalPosition(postP->GetTouchable(), prePos_postPV);
   G4CMP::RotateToLocalPosition(postP->GetTouchable(), postPos_postPV);
-  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- postPos_postPV, post-rotation = " << postPos_postPV << G4endl;
-  G4cout << "REL In G4CMPBoundaryUtils::CheckStepBoundary() --- surfacePoint, post-rotation = " << surfacePoint << G4endl;
-
+  if( buVerboseLevel > 5 ){
+    G4cout << "CSB Function Point D | postPos_postPV, post-rotation = " << postPos_postPV << G4endl;
+    G4cout << "CSB Function Point D | surfacePoint, post-rotation = " << surfacePoint << G4endl;
+  }
   
   if (buVerboseLevel>2) {
     G4cout << "CheckStepBoundary: in prePV (" << prePV->GetName() << ") frame"
@@ -656,6 +648,12 @@ void
 G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
 					const G4Step& aStep,
 					G4ParticleChange& aParticleChange) {
+
+  //Debugging
+  if( buVerboseLevel > 5 ){
+    G4cout << "---------- G4CMPBoundaryUtils::ApplyBoundaryAction ----------" << G4endl;
+  }
+  
   aParticleChange.Initialize(aTrack);
 
   bool trackedSCResponse = true;
@@ -663,18 +661,26 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
     DoSimpleKill(aTrack, aStep, aParticleChange);
   } else if (electrode && electrode->IsNearElectrode(aStep) && !trackedSCResponse) {
     electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
-  } else if (AbsorbTrack(aTrack, aStep)) {
-    G4cout << "DoingAbsorption in ApplyBoundaryAction" << G4endl;
+  } else if (AbsorbTrack(aTrack, aStep)) {    
+    if( buVerboseLevel > 5 ){
+      G4cout << "ABA Function Point A | DoingAbsorption in ApplyBoundaryAction" << G4endl;
+    }
     DoAbsorption(aTrack, aStep, aParticleChange);
   } else if (MaximumReflections(aTrack)) {
-    G4cout << "Maximum reflections reached in ApplyBoundaryAction" << G4endl;
+    if( buVerboseLevel > 5 ){
+      G4cout << "ABA Function Point B | Maximum Reflections reached in ApplyBoundaryAction" << G4endl;
+    }
     DoSimpleKill(aTrack, aStep, aParticleChange);
   } else if (ReflectTrack(aTrack, aStep)) {
-    G4cout << "Doing reflection in ApplyBoundaryAction" << G4endl;
+    if( buVerboseLevel > 5 ){
+      G4cout << "ABA Function Point C | Doing Reflection in ApplyBoundaryAction" << G4endl;
+    }
     IncrementReflectionCount(aTrack);
     DoReflection(aTrack, aStep, aParticleChange);
   } else {
-    G4cout << "Doing transmission in ApplyBoundaryAction" << G4endl;
+    if( buVerboseLevel > 5 ){
+      G4cout << "ABA Function Point D | Doing Transmission in ApplyBoundaryAction" << G4endl;
+    }
     DoTransmission(aTrack, aStep, aParticleChange);
   }
 }

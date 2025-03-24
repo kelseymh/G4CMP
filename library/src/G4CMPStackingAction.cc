@@ -173,7 +173,9 @@ void G4CMPStackingAction::SetBogoliubovQPKinematics(const G4Track* aTrack) const
   G4ThreeVector momentumDir = aTrack->GetMomentumDirection();
 
   //Compute true velocity of propagation
-  G4cout << "---> REL InStackingAction, calculating a velocity: " << aTrack->CalculateVelocity() << G4endl;
+  if( G4CMPConfigManager::GetVerboseLevel() > 5 ){
+    G4cout << "In G4CMPStackingAction, calculating a velocity: " << aTrack->CalculateVelocity() << G4endl;
+  }
   G4double velocity = aTrack->CalculateVelocity();
   
   // Cast to non-const pointer so we can adjust non-standard kinematics
@@ -181,5 +183,5 @@ void G4CMPStackingAction::SetBogoliubovQPKinematics(const G4Track* aTrack) const
   theTrack->SetMomentumDirection(momentumDir);
   theTrack->SetVelocity(velocity);
   theTrack->UseGivenVelocity(true);
-  G4cout << "---> REL InStackingAction, now we're actually setting the useGivenVelocity flag to true." << G4endl;
+  //G4cout << "---> InStackingAction, now we're actually setting the useGivenVelocity flag to true." << G4endl;
 }

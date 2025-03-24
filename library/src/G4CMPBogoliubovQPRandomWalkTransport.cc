@@ -38,7 +38,7 @@ G4CMPBogoliubovQPRandomWalkTransport::G4CMPBogoliubovQPRandomWalkTransport(const
   fNewPosition(0.,0.,0.),
   fNewDirection(1.,0.,0.)
 {
-  verboseLevel = 3;//G4CMPConfigManager::GetVerboseLevel();
+  verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   SetProcessSubType(fBogoliubovQPRandomWalkTransport);
     
   //This time step will be overwritten by the step-limiting length (discrete process GPIL race)
@@ -83,7 +83,7 @@ G4CMPBogoliubovQPRandomWalkTransport::~G4CMPBogoliubovQPRandomWalkTransport()
 void G4CMPBogoliubovQPRandomWalkTransport::StartTracking(G4Track* track)
 {
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::StartTracking ----------" << G4endl;
     G4cout << "ST Function Point A | StartTracking." << G4endl;
   }
@@ -103,7 +103,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
 {
 
   //Debugging
-  if(verboseLevel>2){
+  if(verboseLevel>5){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLength ----------" << G4endl;
     G4cout << "ASGPIL Function Point A | track volume: " << track.GetVolume()->GetName() << G4endl;
     G4cout << "ASGPIL Function Point A | previousStepSize: " << previousStepSize << ", currentSafety: " << currentSafety << G4endl;
@@ -116,7 +116,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
   //Set the path length and pre-diffusion path length to the length suggested by discrete process race winner
   fPathLength = currentMinimalStep;
   fPreDiffusionPathLength = currentMinimalStep;
-  if( verboseLevel>2){
+  if( verboseLevel>5){
     G4cout << "ASGPIL Function Point B | fPathLength = fPreDiffusionPathLength = currentMinimalStep: " << fPathLength << G4endl;
     G4cout << "ASGPIL Function Point B | velocity: " << track.GetVelocity() << G4endl;
   }
@@ -125,7 +125,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
   if( isActive == false ){
 
     //Some debugging
-    if( verboseLevel>2 ){
+    if( verboseLevel>5 ){
       G4cout << "ASGPIL Function Point C | In a turnaround step. Killing the transport GPIL." << G4endl;
     }
     return DBL_MAX;
@@ -136,7 +136,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
   G4double energy = track.GetKineticEnergy();
   G4double velocity = track.GetVelocity();
   G4ThreeVector momentumDir = track.GetMomentumDirection();  
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "ASGPIL Function Point D | Gap energy (drawn from SCUtils): " << fGapEnergy << ", particle energy: " << energy << G4endl;
     G4cout << "ASGPIL Function Point D | Dn (drawn from SCUtils): " << fDn << ", and fDiffConst: " << fDiffConst << G4endl;
     G4cout << "ASGPIL Function Point D | Teff (drawn from SCUtils): " << fTeff << G4endl;
@@ -148,7 +148,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
     *selection = NotCandidateForSelection;
 
     //Debugging
-    if( verboseLevel > 2 ){      
+    if( verboseLevel > 5 ){      
       G4cout << "ASGPIL Function Point E | isActive is true. currentMinimalStep/velocity: " << currentMinimalStep/velocity << ", fTimeStepToBoundary: " << fTimeStepToBoundary << G4endl;
     }
 
@@ -167,7 +167,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
 	fTimeStep = fTimeStepToBoundary;
 
 	//Debugging
-	if( verboseLevel > 2 ){
+	if( verboseLevel > 5 ){
 	  G4cout << "ASGPIL Function Point F_1 | Looks like the boundary-limited case applies here, with 2DSafety >= epsilon. Returning fPathLength just under f2DSafety = " << fPathLength << G4endl;
 	}
       }
@@ -179,7 +179,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
 	fTimeStep = fTimeStepToBoundary;
 
 	//Debugging
-	if( verboseLevel > 2 ){
+	if( verboseLevel > 5 ){
 	  G4cout << "ASGPIL Function Point F_2 | Looks like the boundary-limited case applies here, with 2DSafety < epsilon. Returning fPathLength just over f2DSafety = " << fPathLength << G4endl;
 	}
       }
@@ -202,14 +202,14 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
       while( fPathLength >= f2DSafety );
 
       //Debugging
-      if( verboseLevel > 2 ){
+      if( verboseLevel > 5 ){
 	G4cout << "ASGPIL Function Point G | Sigma1D: " << sigma1D << " from fDiffConst: " << fDiffConst << G4endl;
 	G4cout << "ASGPIL Function Point G | Looks like a different discrete process wins the GPIL race. Returning fPathLength = " << fPathLength << G4endl;
       }
     }
 
     //Debugging
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "ASGPIL Function Point H | Successfully returning AlongStepGPIL (diffusion-folded) fPathLength of " << fPathLength << G4endl;
       G4cout << "ASGPIL Function Point H | Momentum direction is: " << momentumDir.unit() << G4endl;
     }
@@ -235,7 +235,7 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepGetPhysicalInteractionLength(
               const G4Track& track, G4double previousStepSize, G4ForceCondition* condition)
 {
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::PostStepGetPhysicalInteractionLength ----------" << G4endl;
     G4cout << "PSGPIL Function Point A | In PostStepGetPhysicalInteractionLength" << G4endl;
   }
@@ -253,7 +253,7 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepGetPhysicalInteractionLength(
 G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4Track& track, const G4Step& step) {
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt ----------" << G4endl;
     G4cout << "ASDI Function Point A | Step Status from track pre-step point: " << track.GetStep()->GetPreStepPoint()->GetStepStatus() << G4endl;
     G4cout << "ASDI Function Point A | Step Status from step pre-step point: " << step.GetPreStepPoint()->GetStepStatus() << G4endl;
@@ -278,7 +278,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
   G4double stepTransportationOnlyDeltaR = (postStepPoint-preStepPoint).mag();
   
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "ASDI Function Point B | stepStartGlobalTime: " << stepStartGlobalTime << G4endl;
     G4cout << "ASDI Function Point B | stepEndGlobalTime  : " << stepEndGlobalTime << G4endl;
     G4cout << "ASDI Function Point B | stepTransportOnlyDeltaT: " << stepTransportOnlyDeltaT << G4endl;
@@ -301,7 +301,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
     fPreDiffusionPathLength = stepLength;
 
     //Debugging
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "ASDI Function Point C | Step is not active" << G4endl;
       G4cout << "ASDI Function Point C | fPathLength: " << fPathLength << G4endl;
       G4cout << "ASDI Function Point C | diffusion-unfolded (i.e. pre-diffusion) path length: " << fPreDiffusionPathLength << G4endl;
@@ -317,7 +317,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
   else {
 
     //Debugging
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "ASDI Function Point D | velocity is set and proposed to " << velocity << ", which should never change." << G4endl;
     }
     fParticleChange.ProposeVelocity(velocity);
@@ -343,7 +343,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 	fNewDirection = thisRandomDir.unit();
 
 	//Debugging
-	if( verboseLevel > 2 ){	
+	if( verboseLevel > 5 ){	
 	  G4cout << "ASDI Function Point D_1 | Since we're in the bulk and >eps from a boundary, we're randomizing new direction to be " << fNewDirection << G4endl;
 	}
 
@@ -355,7 +355,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 	fNewDirection = step.GetPreStepPoint()->GetMomentumDirection();
 
 	//Debugging
-	if( verboseLevel > 2 ){	
+	if( verboseLevel > 5 ){	
 	  G4cout << "ASDI Function Point D_2 | Since we're in the bulk and <eps from a boundary, we're keeping the new direction as " << fNewDirection << G4endl;
 	}
       }
@@ -390,7 +390,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 	fNewDirection = theNewDirection;
 	
 	//Debugging
-	if( verboseLevel > 2 ){	
+	if( verboseLevel > 5 ){	
 	  G4cout << "ASDI Function Point D_3 | Since we're on a surface, we're launching in the new direction " << fNewDirection << ", which is consistent with a dotProductThreshold_Norm of " << dotProductThreshold_Norm << G4endl;
 	}
       }
@@ -422,7 +422,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 
     
     //Debugging
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "ASDI Function Point E | time of pre-step point is: " << step.GetPreStepPoint()->GetGlobalTime() << G4endl;
       G4cout << "ASDI Function Point E | time of post-step point is: " << step.GetPostStepPoint()->GetGlobalTime() << G4endl;
       G4cout << "ASDI Function Point E | fPathLength selected: " << fPathLength << G4endl;
@@ -434,7 +434,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
     double nextStepLength = fSafetyHelper->CheckNextStep(fOldPosition,fNewDirection,fPathLength,nextStepSafety);
 
     //Debugging
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "ASDI Function Point F | Checking next step. CheckNextStep's next step length: " << nextStepLength << ", nextStepSafety: " << nextStepSafety << G4endl;
     }
 
@@ -443,7 +443,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
     if( nextStepLength == kInfinity ){ //We're out in the bulk
 
       //Debugging
-      if( verboseLevel > 2 ){
+      if( verboseLevel > 5 ){
 	G4cout << "ASDI Function Point G | the proposed step does not cross a boundary. Setting position manually." << G4endl;
       }
       fSafetyHelper->ReLocateWithinVolume(fNewPosition);
@@ -452,7 +452,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
       //Since we are forced to use the pre-step point's velocity for propagation of this step (and the pre-step point's velocity is
       //the one we started with), transportation will add a time corresponding to traveling the calculated path length at that velocity.
       //We should subtract that time off our final proposed time. First, debugging.
-      if( verboseLevel > 2 ){
+      if( verboseLevel > 5 ){
 	G4cout << "ASDI Function Point H | fTimeStep: " << fTimeStep << ", timeChangefromTransportationOnly: " << stepTransportOnlyDeltaT << G4endl;
 	G4cout << "ASDI Function Point H | timeChangeFromTransportationOnly: " << stepTransportOnlyDeltaT << G4endl;
       }
@@ -462,7 +462,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
       //I think this needs to be set to the step-limiting *old, pre-diffusion* path length, since other processes that aren't the step-limiting one will
       //need to subtract off a distance. That distance basically needs to be velocity * deltaT. The current process that limits the step
       //(here, not transportation) will zero out its number of interaction lengths. First, debugging
-      if( verboseLevel > 2 ){
+      if( verboseLevel > 5 ){
 	G4cout << "ASDI Function Point I | Proposing a true (diffusion-UNfolded) step length of: " << fPreDiffusionPathLength << G4endl;
       }
       fParticleChange.ProposeTrueStepLength(fPreDiffusionPathLength);
@@ -482,7 +482,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
       else{
 
 	//Debugging
-	if( verboseLevel > 2 ){
+	if( verboseLevel > 5 ){
 	  G4cout << "ASDI Function Point J | CheckNextStep shows that we've hit a boundary. Using timestep computed in GetMFP, letting Transportation do move of particle." << G4endl;
 	  G4cout << "ASDI Function Point J | fTimeStep: " << fTimeStep << G4endl;
 	  G4cout << "ASDI Function Point J | timeChangeFromTransportationOnly: " << stepTransportOnlyDeltaT << G4endl;
@@ -509,7 +509,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
   }
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "ASDI Function Point K | At end of ASDI, old position: " << fOldPosition << G4endl;
     G4cout << "ASDI Function Point K | At end of ASDI, new position: " << fNewPosition << G4endl;
   }
@@ -527,7 +527,7 @@ G4VParticleChange*
 G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G4Step&)
 {
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt ----------" << G4endl;
   }
   
@@ -553,7 +553,7 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
 					    track.GetMomentumDirection(),
 					    false);
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "PSDI Function Point A | 2D safety calculated to be: " << the2DSafety << G4endl;
   }
   
@@ -565,7 +565,7 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
   if( the2DSafety < fEpsilonForWalkOnSpheres ){
 
     //Debugging
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "PSDI Function Point B | safety is smaller than epsilon, and finding direction to nearby boundary." << G4endl;      
     }    
     G4ThreeVector returnDir = FindDirectionToNearbyBoundary(track,the2DSafety);
@@ -580,7 +580,7 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
     fParticleChange.ProposeMomentumDirection(returnDir.unit());
 
     //Debugging
-    if( verboseLevel > 2 ){      
+    if( verboseLevel > 5 ){      
       G4cout << "PSDI Function Point B | safety is larger than epsilon, and we're just randomizing the next direction to " << returnDir.unit() << "." << G4endl;      
     }
 
@@ -597,7 +597,7 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
 G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary(const G4Track& track, const G4double the2DSafety ){
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary ----------" << G4endl;
   }
   
@@ -622,7 +622,7 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
 						     track.GetMomentumDirection(),
 						     false);
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "FDTNB Function Point A | pos: " << track.GetPosition() << ", shiftedPoint: " << shiftedPoint << ", original safety: " << the2DSafety << ", shiftedPoint2Dsafety: " << shiftedPoint2DSafety << G4endl;
   }
 
@@ -659,7 +659,7 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   G4double theta = acos(fabs(deltaDistToSurface)/deltaPath);
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "FDTNB Function Point B | deltaDistToSurface: " << deltaDistToSurface << G4endl;
     G4cout << "FDTNB Function Point B | deltaPath: " << deltaPath << G4endl;
     G4cout << "FDTNB Function Point B | theta for rotation: " << theta << G4endl;
@@ -673,7 +673,7 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   momDir.rotateZ(theta);
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "FDTNB Function Point C | potential direction-toward-boundary 1 (option1): " << option1 << G4endl;
     G4cout << "FDTNB Function Point C | potential direction-toward-boundary 2 (option2): " << option2 << G4endl;
   }
@@ -687,7 +687,7 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   G4ThreeVector newPosOption2 = track.GetPosition() + smallerSafety*option2;
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "FDTNB Function Point D | new probe position option 1: " << newPosOption1 << G4endl;
     G4cout << "FDTNB Function Point D | new probe position option 2: " << newPosOption2 << G4endl;
   }
@@ -699,7 +699,7 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
 					      false);
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "FDTNB Function Point DA | option 1 safety: " << option1Safety << G4endl;
   }
 
@@ -709,26 +709,26 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
 					      track.GetMomentumDirection(),
 					      false);
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "FDTNB Function Point DB | option 2 safety: " << option2Safety << G4endl;
   }
 
   
   //Debugging
-  if( verboseLevel > 2 ){    
+  if( verboseLevel > 5 ){    
     G4cout << "FDTNB Function Point E | new probe position option 1 safety is " << option1Safety << G4endl;
     G4cout << "FDTNB Function Point E | new probe position option 2 safety is: " << option2Safety << G4endl;
   }
 
   //If option 1 safety is lower, it means we return option 1 as the direction to the boundary
   if( option1Safety < option2Safety ){
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "FDNB Function Point F | Direction to the boundary is option 1: " << option1 << G4endl;
     }
     return option1;
   }
   else if( option2Safety < option1Safety ){
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "FDNB Function Point G | Direction to the boundary is option 2: " << option2 << G4endl;
     }
     return option2;
@@ -754,7 +754,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetContinuousStepLimit(
                                        G4double& currentSafety)
 {
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::GetContinuousStepLimit ----------" << G4endl;  
     G4cout << "GCSL Function Point A | In GetContinuousStepLimit." << G4endl;
   }
@@ -784,7 +784,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
               const G4Track& track, G4double previousStepSize, G4ForceCondition* condition)
 {
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath ----------" << G4endl;
     G4cout << "GMFP Function Point A | track volume: " << track.GetVolume()->GetName() << G4endl;
     G4cout << "GMFP Function Point A | previousStepSize: " << previousStepSize << G4endl;
@@ -827,7 +827,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
   G4double velocity = track.GetVelocity();
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "GMFP Function Point B | CurrentVolume by track: " << currentVolume->GetName() <<G4endl;
     G4cout << "GMFP Function Point B | CurrentVolumePlusEps, by GetVolumeAtPoint: " << currentVolPlusEps->GetName() << G4endl;
     G4cout << "GMFP Function Point B | CurrentVolumeMinusEps, by GetVolumeAtPoint: " << currentVolMinEps->GetName() << G4endl;
@@ -848,7 +848,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     //pushes us across a corner back into World, we'll have an issue.
     
     //Debugging
-    if( verboseLevel > 2 ){      
+    if( verboseLevel > 5 ){      
       G4cout << "GMFP Function Point C | In a turnaround step. Killing the transport GPIL." << G4endl;
     }    
     fTrackOnBoundary = true;
@@ -860,14 +860,14 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
   if( theStatus == fGeomBoundary ){
     
     //Debugging
-    if( verboseLevel > 2 ){      
+    if( verboseLevel > 5 ){      
       G4cout << "GMFP Function Point D | On a boundary but not in a turnaround step." << G4endl;
     }
     fTrackOnBoundary = true;
   }
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "GMFP Function Point E | Not in a turnaround step. Continuing the transport GPIL." << G4endl;
     G4cout << "GMFP Function Point E | theStatus: " << theStatus << G4endl;
     G4cout << "GMFP Function Point E | Gap energy (drawn from SCUtils): " << fGapEnergy << G4endl;
@@ -909,7 +909,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
       if( !qpIsStuck ){
 
 	//Debugging
-	if( verboseLevel > 2 ){
+	if( verboseLevel > 5 ){
 	  G4cout << "GMFP Function Point EB | QP Is not stuck." << G4endl;
 	}
 	
@@ -937,7 +937,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
 	fQPIsStuck = true;
 
 	//Debugging
-	if( verboseLevel > 2 ){
+	if( verboseLevel > 5 ){
 	  G4cout << "GMFP Function Point EB | QP Is stuck!" << G4endl;
 	  G4cout << "GMFP Function Point EB | norm 1: " << norm1 << G4endl;
 	  G4cout << "GMFP Function Point EB | norm 2: " << norm2 << G4endl;
@@ -960,7 +960,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
 	the2DSafety = constrained2DSafety;
 
 	//Debugging
-	if( verboseLevel > 2 ){
+	if( verboseLevel > 5 ){
 	  G4cout << "GMFP Function Point EC | Constrained 2D safety: " << constrained2DSafety << G4endl;
 	}
       }
@@ -980,7 +980,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     fDiffConst = fDn*sqrt(1-E_ratio2);
 
     //Debugging
-    if( verboseLevel > 2 ){      
+    if( verboseLevel > 5 ){      
       G4cout << "GMFP Function Point F | Diffusion constant (energy-adjusted): " << fDiffConst << G4endl;
       G4cout << "GMFP Function Point F | the2DSafety: " << the2DSafety << G4endl;
     }
@@ -994,7 +994,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     fTimeStepToBoundary = timeStepToBoundary;
 
     //Debugging
-    if( verboseLevel > 2 ){      
+    if( verboseLevel > 5 ){      
       G4cout << "GMFP Function Point G | Time step to boundary = " << fTimeStepToBoundary << G4endl;
     }
     
@@ -1022,7 +1022,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     theNumberOfInteractionLengthLeft = 1;
 
     //Debugging
-    if( verboseLevel > 2 ){      
+    if( verboseLevel > 5 ){      
       G4cout << "GMFP Function Point H | Setting the number of interaction lengths for RWTransport's Discrete component to 1, and this MFP = " << thisMFP << G4endl;
     }
     return thisMFP;
@@ -1045,7 +1045,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
 G4bool G4CMPBogoliubovQPRandomWalkTransport::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack)
 {
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::UpdateMeanFreePathForLatticeChangeover ----------" << G4endl;
     G4cout << "UMFPFLC Function Point A | Loading data for track after lattice changeover, process: " << this->GetProcessName() << G4endl;
     G4cout << "UMFPFLC Function Point A | Track length: " << aTrack.GetTrackLength() << G4endl;
@@ -1063,7 +1063,7 @@ G4bool G4CMPBogoliubovQPRandomWalkTransport::UpdateMeanFreePathForLatticeChangeo
       aTrack.GetTrackLength() == 0.0 ){
 
     //Debugging
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "UMFPFLC Function Point B | Step length associated with this is " << aTrack.GetStep()->GetStepLength() << G4endl;
       G4cout << "UMFPFLC Function Point B | Successfully changed over to a new lattice for process " << this->GetProcessName() << G4endl;
     }
@@ -1075,7 +1075,7 @@ G4bool G4CMPBogoliubovQPRandomWalkTransport::UpdateMeanFreePathForLatticeChangeo
   }
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "UMFPFLC Function Point C | Did not successfully change over to a new lattice for process " << this->GetProcessName() << G4endl; 
   }
   return false;
@@ -1088,7 +1088,7 @@ G4bool G4CMPBogoliubovQPRandomWalkTransport::UpdateMeanFreePathForLatticeChangeo
 void G4CMPBogoliubovQPRandomWalkTransport::UpdateSCAfterLatticeChange()
 {
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::UpdateSCAfterLatticeChange ----------" << G4endl;
     G4cout << "USCALC Function Point A | Updating SC After Lattice Change" << G4endl;
   }
@@ -1131,7 +1131,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::SampleTimeStepFromFirstPassageDis
 //This samples a dimensionless time step using A/R technique. 
 G4double G4CMPBogoliubovQPRandomWalkTransport::SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique()
 {
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique ----------" << G4endl;
     G4cout << "SDTSUART Function Point A | Sampling dimensionless time step with A/R technique." << G4endl;
   }
@@ -1159,7 +1159,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::SampleDimensionlessTimeStepUsingA
     double derivLow = exp(-1.0/4.0/sampleT) * (-0.5/sampleT/sampleT + 0.5/sampleT - 16*sampleT);
 
     //Debugging
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "SDTSUART Function Point B | Sampled T: " << sampleT << ", sampled Y: " << sampleY << ", -derivLow: " << -1*derivLow << ", -derivHigh: " << -1*derivHigh << G4endl;
     }
 
@@ -1205,7 +1205,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
 std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMPBogoliubovQPRandomWalkTransport::CheckForStuckQPsInCorner(){
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::CheckForStuckQPsInCorner() ----------" << G4endl;
     G4cout << "CFSQIC Function Point A | Starting to check for stuck QPs in a corner." << G4endl;
   }
@@ -1230,7 +1230,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   if( fBoundaryHistory.size() < fMaxBoundaryHistoryEntries ){
 
     //Debugging
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "CFSQIC Function Point AB | fBoundaryHistory.size() is less than fMaxBoundaryHistoryEntries. Aborting stuck QP check." << G4endl;
     }    
     std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> output(qpIsStuck,outNorm0,outNorm1,outPos0,outPos1);
@@ -1245,7 +1245,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   G4VPhysicalVolume * volumeAtPoint = G4CMP::GetVolumeAtPoint(displacedPosition);
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "CFSQIC Function Point AC | current position: " << currentPosition << G4endl;
     G4cout << "CFSQIC Function Point AC | current norm: " << currentNorm << G4endl;
     G4cout << "CFSQIC Function Point AC | volumeAtPoint: " << volumeAtPoint->GetName() << G4endl;
@@ -1285,12 +1285,16 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
     if( volPlusEps == volumeAtPoint ){
       goodOtherNorms.push_back(fBoundaryHistory[iB].second);
       goodOtherPositions.push_back(fBoundaryHistory[iB].first);
-      G4cout << "PlusEps case. Goodothernorm: " << fBoundaryHistory[iB].second << ", pos: " << fBoundaryHistory[iB].first << G4endl;
+      if( verboseLevel > 5 ){
+	G4cout << "CFSQIC Function Point AD | PlusEps case. Goodothernorm: " << fBoundaryHistory[iB].second << ", pos: " << fBoundaryHistory[iB].first << G4endl;
+      }
     }
     if( volMinusEps == volumeAtPoint ){
       goodOtherNorms.push_back(-1*fBoundaryHistory[iB].second);
       goodOtherPositions.push_back(fBoundaryHistory[iB].first);
-      G4cout << "MinusEps case. Goodothernorm: " << fBoundaryHistory[iB].second << ", pos: " << fBoundaryHistory[iB].first << G4endl;
+      if( verboseLevel > 5 ){
+	G4cout << "CFSQIC Function Point AE | MinusEps case. Goodothernorm: " << fBoundaryHistory[iB].second << ", pos: " << fBoundaryHistory[iB].first << G4endl;
+      }
     }
   }
   avgx /= fBoundaryHistory.size();
@@ -1301,7 +1305,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   G4double sigmay = pow(avgy2 - avgy*avgy,0.5);
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "CFSQIC Function Point B | avgx: " << avgx << ", avgx2: " << avgx2 << G4endl;
     G4cout << "CFSQIC Function Point B | sigmaX: " << sigmax << ", sigmaY: " << sigmay << G4endl;
     G4cout << "CFSQIC Function Point B | Length of goodOtherNorms: " << goodOtherNorms.size() << G4endl;
@@ -1312,7 +1316,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
     std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> output(qpIsStuck,outNorm0,outNorm1,outPos0,outPos1);
 
     //Debugging
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "CFSQIC Function Point BA | Looks like we're not stuck. Either sigmax or sigmay is large enough to be not stuck." << G4endl;
     }
     return output;    
@@ -1324,7 +1328,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
     std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> output(qpIsStuck,outNorm0,outNorm1,outPos0,outPos1);
 
     //Debugging
-    if( verboseLevel > 2 ){
+    if( verboseLevel > 5 ){
       G4cout << "CFSQIC Function Point BB | Looks like we have a cluster of close points but have zero good other norms, which may occur if we're on a curved surface. For now we'll say we're not stuck." << G4endl;
     }    
     return output;
@@ -1362,7 +1366,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   }
   
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "CFSQIC Function Point C | Unique Good *current* Norm: " << currentNorm << " at position: " << currentPosition << G4endl;
     G4cout << "CFSQIC Function Point C | Number of unique good norms: " << uniqueGoodNorms.size() << ", number of corresp. positions: " << uniqueGoodPositions.size() << G4endl;
     for( int iU = 0; iU < uniqueGoodNorms.size(); ++iU ){
@@ -1395,7 +1399,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
 void G4CMPBogoliubovQPRandomWalkTransport::UpdateBoundaryHistory(G4int trackID, G4ThreeVector preStepPos, G4ThreeVector preStepNorm){
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::UpdateBoundaryHistory() ----------" << G4endl;
   }
   
@@ -1421,7 +1425,7 @@ void G4CMPBogoliubovQPRandomWalkTransport::UpdateBoundaryHistory(G4int trackID, 
   }
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     for( int iB = 0; iB < fBoundaryHistory.size(); ++iB ){
       G4cout << "UBH Function Point A | Boundary position: " << fBoundaryHistory[iB].first.getX() << ", " << fBoundaryHistory[iB].first.getY() << G4endl;
     }
@@ -1439,7 +1443,7 @@ std::pair<G4ThreeVector,G4ThreeVector> G4CMPBogoliubovQPRandomWalkTransport::Fin
 														   G4ThreeVector & cornerLocation)
 {
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::FindSurfaceTangentsForStuckQPEjection() ----------" << G4endl;
     G4cout << "FSTFSQE Function Point A | Starting to find surface tangents." << G4endl;
   }
@@ -1463,7 +1467,7 @@ std::pair<G4ThreeVector,G4ThreeVector> G4CMPBogoliubovQPRandomWalkTransport::Fin
   G4ThreeVector tangVect2 = (outOfPlane.cross(norm2)).unit();
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if( verboseLevel > 5 ){
     G4cout << "FSTFSQE Function Point B | Input norm1: " << norm1 << G4endl;
     G4cout << "FSTFSQE Function Point B | Input norm2: " << norm2 << G4endl;
     G4cout << "FSTFSQE Function Point B | Additional In-plane vector: " << inPlane << G4endl;
@@ -1486,7 +1490,7 @@ std::pair<G4ThreeVector,G4ThreeVector> G4CMPBogoliubovQPRandomWalkTransport::Fin
   //Sanity check: can recalculate with s and find
 
   //Calculating t and s
-  //if( verboseLevel > 2 ){
+  //if( verboseLevel > 5 ){
   //  G4cout << "FSTFSQE Function Point B | t_param: " << t_param << G4endl;
   //  G4cout << "FSTFSQE Function Point B | s_param: " << s_param << G4endl;
   //}

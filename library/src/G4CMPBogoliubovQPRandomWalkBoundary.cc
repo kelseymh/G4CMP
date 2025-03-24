@@ -39,6 +39,8 @@
 G4CMPBogoliubovQPRandomWalkBoundary::G4CMPBogoliubovQPRandomWalkBoundary(const G4String& aName)
   : G4VBogoliubovQPProcess(aName, fBogoliubovQPRandomWalkBoundary),G4CMPBoundaryUtils(this),procName("G4CMPBogloliubovQPRandomWalkBoundary")
 {
+  //Seems like this may get set elsewhere, too?
+  verboseLevel = G4CMPConfigManager::GetVerboseLevel();
 }
 
 
@@ -64,7 +66,10 @@ G4double G4CMPBogoliubovQPRandomWalkBoundary::GetMeanFreePath(const G4Track& aTr
 							      G4double /*prevStepLength*/,
 							      G4ForceCondition* condition)
 {
-  G4cout << "REL -- G4CMPQPRandomWalkBoundary::GetMeanFreePath()" << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkBoundary::GetMeanFreePath() ----------" << G4endl;
+  }
   
   //Update the lattice so that this process knows about any changes
   UpdateMeanFreePathForLatticeChangeover(aTrack);
@@ -97,6 +102,12 @@ G4double G4CMPBogoliubovQPRandomWalkBoundary::GetMeanFreePath(const G4Track& aTr
 //can exist in a volume? 
 G4bool G4CMPBogoliubovQPRandomWalkBoundary::IsValidQPVolume(G4VPhysicalVolume* volume, G4double qpEKin )
 {
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkBoundary::IsValidQPVolume() ----------" << G4endl;
+  }
+  
+  
   //Get the lattices from the physical volumes
   //Lattice manager
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
@@ -119,7 +130,11 @@ G4bool G4CMPBogoliubovQPRandomWalkBoundary::IsValidQPVolume(G4VPhysicalVolume* v
 
   //Calculate the nonzero-temperature gap from these using the SCUtils class.
   G4double GapEnergy = ComputeTestGapEnergyAtNonzeroT(Teff,Tcrit,Gap0Energy);
-  G4cout << "REL -- in G4CMPBogoliubovQPRandomWalkBoundary::IsValidQPVolume(): gapEnergy is " << GapEnergy / CLHEP::eV << " eV" << G4endl;
+
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "RWBoundary IVQPV Function Point A | gapEnergy is " << GapEnergy / CLHEP::eV << " eV" << G4endl;
+  }
   
   //Condition 3
   if( GapEnergy > qpEKin ){ return false; }
@@ -156,10 +171,12 @@ G4VParticleChange*
 G4CMPBogoliubovQPRandomWalkBoundary::PostStepDoIt(const G4Track& aTrack,
 						  const G4Step& aStep) {
 
-  G4cout << "REL -- G4CMPQPRandomWalkBoundary::PostStepDoIt()" << G4endl;
-
-  G4cout << "REL -- poststeppoint velocity in RWBoundary poststepdoit is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
-  G4cout << "REL -- track velocity in RWBoundary poststepdoit is: " << aTrack.GetVelocity() << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkBoundary::PostStepDoIt() ----------" << G4endl;
+    G4cout << "RWBoundary PSDI Function Point A | poststeppoint velocity in RWBoundary poststepdoit is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
+    G4cout << "RWBoundary PSDI Function Point A | track velocity in RWBoundary poststepdoit is: " << aTrack.GetVelocity() << G4endl;
+  }
   
   //Note that this is still just blindly copied from the phononboundary action
   // this needs to be customized for QP dynamics ...
@@ -167,18 +184,31 @@ G4CMPBogoliubovQPRandomWalkBoundary::PostStepDoIt(const G4Track& aTrack,
   G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
   aParticleChange.Initialize(aTrack);
 
-  G4cout << "REL -- poststeppoint velocity in RWBoundary poststepdoit, after initializing aParticleChange, is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
-  G4cout << "REL -- track velocity in RWBoundary poststepdoit, after initializing aParticleChange, is: " << aTrack.GetVelocity() << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "RWBoundary PSDI Function Point B | poststeppoint velocity in RWBoundary poststepdoit, after initializing aParticleChange, is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
+    G4cout << "RWBoundary PSDI Function Point B | track velocity in RWBoundary poststepdoit, after initializing aParticleChange, is: " << aTrack.GetVelocity() << G4endl;
+  }
 
   //Do a boundary check just as for phonon dynamics
   G4bool checkBoundary = IsGoodBoundary(aStep);
-  G4cout << "REL -- After IsGoodBoundary, value " << checkBoundary << G4endl;
+
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "RWBoundary PSDI Function Point C | After IsGoodBoundary, value " << checkBoundary << G4endl;
+  }
 
   //After a boundary check, we also want to do a QP-specific check of the volumes to make sure we understand the
-  //relationship between the pre- and post-boundary superconducting gaps. This updates those gap values.
-  G4cout << "REL -- Before CheckQPVolumes, PostStepDoIt" << G4endl;
+  //relationship between the pre- and post-boundary superconducting gaps. This updates those gap values. First, debugging
+  if( verboseLevel > 5 ){
+    G4cout << "RWBoundary PSDI Function Point D | Before CheckQPVolumes, PostStepDoIt" << G4endl;
+  }  
   G4bool checkQPVolumes = CheckQPVolumes(aStep);
-  G4cout << "REL -- After CheckQPVolumes (value " << checkQPVolumes << "), PostStepDoIt" << G4endl;
+
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "RWBoundary PSDI Function Point E | After CheckQPVolumes (value " << checkQPVolumes << "), PostStepDoIt" << G4endl;
+  }
   if (verboseLevel>2){
     G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside PostStepDoIt Check qp volumes result :  " <<checkQPVolumes << G4endl;
     G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside PostStepDoIt Check boundary result :  " <<checkBoundary << G4endl;
@@ -189,7 +219,9 @@ G4CMPBogoliubovQPRandomWalkBoundary::PostStepDoIt(const G4Track& aTrack,
   if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
   //Otherwise, apply a boundary action (reflection, absorption, transmission)
-  G4cout << "REL -- Applying boundary action, PostStepDoIt" << G4endl;
+  if( verboseLevel > 5 ){   
+    G4cout << "RWBoundary PSDI Function Poing F | Applying boundary action, PostStepDoIt" << G4endl;
+  }
   ApplyBoundaryAction(aTrack, aStep, aParticleChange);
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
   return &aParticleChange;
@@ -223,11 +255,20 @@ G4bool G4CMPBogoliubovQPRandomWalkBoundary::ReflectTrack(const G4Track& aTrack, 
 void G4CMPBogoliubovQPRandomWalkBoundary::DoAbsorption(const G4Track& aTrack,
 						       const G4Step&,
 						       G4ParticleChange& aParticleChange) {
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkBoundary::DoAbsorption() ----------" << G4endl;
+  }
+  
   //Note that this is still just blindly copied from the G4CMPBoundaryUtils
   // this needs to be customized for QP dynamics ...
   if (verboseLevel>1) G4cout << procName << ": Track absorbed" << G4endl;
   G4double ekin = procUtils->GetKineticEnergy(aTrack);
-  G4cout << "REL: in doabsorption, ekin: " << ekin << " for QP." << G4endl;
+
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "REL: in doabsorption, ekin: " << ekin << " for QP." << G4endl;
+  }
   aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
   aParticleChange.ProposeTrackStatus(fStopAndKill);
   aParticleChange.ProposeEnergy(0.);
@@ -249,238 +290,25 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkBoundary::GetLambertianVector(const G4T
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-// Do diffuse reflection of a quasiparticle
+// Do reflection of a quasiparticle
 void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
 						       const G4Step& aStep,
 						       G4ParticleChange& aParticleChange)
 {
-  G4cout << "REL -- G4CMPQPRandomWalkBoundary::DoReflection()" << G4endl;
-
-  
-  ////First, check to see if the QP is stuck this round. If it is, then run a separate dedicated reflection
-  //if( fQPIsStuck ){
-  //  DoReflectionToUnStickQP();
-  //  fQPIsStuck
-  //}
-    
-  
-  //REL currently hardcoded but should fix
-  //0 is "Random in XY plane"
-  //1 is "lambertian"
-  //2 is "specular"
-  //3 is "for use with QP diffusion"
-  int reflectionType = 3;
-  
-  //Random, into pi
-  if( reflectionType == 0 ){ //REL THIS SHOULD BE DEPRECATED IN FAVOR OF REFLECTIONTYPE3
-
-    G4cout << "REL Using 2D random reflection. " << G4endl;
-    
-    //Check to make sure we're on a volume boundary before attempting reflection.
-    G4ThreeVector surfacePoint;
-    if (!CheckStepBoundary(aStep, surfacePoint)) {
-      G4cout << "REL checking step boundary failed in DoReflection" << G4endl;
-      if (verboseLevel>2)
-	G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-      aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
-    }
-    
-    if (verboseLevel>1) {
-      G4cout << procName << ": Track reflected "
-	     << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
-	     << " times." << G4endl;
-    }
-
-    //To determine new random direction, need to know relationship between current
-    //direction and the surface normal. If they are more parallel, then we need to ensure
-    //that the new direction dotted into the norm is negative. If they are more
-    //antiparallel, we need to make sure that the new direction dotted into the norm
-    //is positive.    
-    G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);    
-    G4ThreeVector pdir = aTrack.GetMomentumDirection();
-    G4ThreeVector newDir;
-    G4double epsilon = 0.001; //REL hardcoded, but meant to stave off some boundary issues that happen when
-                               //your new momentum is very parallel to a surface. Hopefully shouldn't change stuff
-                               //too much
-    if( pdir.dot(norm) > 0 ){
-      do{
-	newDir = G4RandomDirection();
-	newDir.setZ(0);
-	newDir = newDir.unit();
-      }
-      while( newDir.dot(norm) >= -1*epsilon );
-    }
-    else if( pdir.dot(norm) < 0 ){
-      do{
-	newDir = G4RandomDirection();
-	newDir.setZ(0);
-	newDir = newDir.unit();
-      }
-      while( newDir.dot(norm) <= epsilon );      
-    }
-    else{
-      G4Exception((GetProcessName()+"::DoReflection").c_str(), "G4CMPBogoliubovQPRandomWalkBoundary00X",
-		  FatalException, "Somehow the incoming momentum is exactly parallel to the surface norm? What?");
-    }
-      
-    
-    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection initial direction  " <<pdir << G4endl;    
-
-    //if (verboseLevel>2)
-    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection reflected direction  " <<newDir << G4endl;
-    aParticleChange.ProposeMomentumDirection(newDir);
-    
-  }
-  //Lambertian
-  else if( reflectionType == 1 ){ //REL THIS SHOULD BE DEPRECATED IN FAVOR OF REFLECTIONTYPE3
-
-    G4cout << "REL -- G4CMPQPRandomWalkBoundary::Lambertian Reflection()" << G4endl;
-    
-    // Check whether step has proper boundary-stopped geometry
-    G4ThreeVector surfacePoint;
-    if (!CheckStepBoundary(aStep, surfacePoint)) {
-      G4cout << "REL checking step boundary failed in DoReflection" << G4endl;
-      if (verboseLevel>2)
-	G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-      aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
-    }
-
-    //Get a lambertian/diffuse reflection
-    G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
-    G4ThreeVector vdir = GetLambertianVector(surfNorm);
-
-    // If reflection failed, report problem and kill the track
-    if (vdir.dot(surfNorm) > 0.0 ){
-      G4Exception((GetProcessName()+"::DoReflection").c_str(), "G4CMPBogoliubovQPRandomWalkBoundary003",
-		  JustWarning, "BogoliubovQP reflection failed");
-      DoSimpleKill(aTrack, aStep, aParticleChange);
-      return;
-    }
-
-    // SANITY CHECK:  Project a 1 um step in the new direction, see if it
-    // is still in the correct (pre-step) volume.
-
-    if (verboseLevel>2) {
-      G4ThreeVector stepPos = surfacePoint + 1*um * vdir;
-
-      G4cout << " New travel direction " << vdir
-	     << "\n from " << surfacePoint << "\n   to " << stepPos << G4endl;
-
-      G4ThreeVector stepLocal = GetLocalPosition(stepPos);
-      G4VSolid* solid = aStep.GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();
-
-      EInside place = solid->Inside(stepLocal);
-      G4cout << " After trial step, " << (place==kInside ? "inside"
-					  : place==kOutside ? "OUTSIDE"
-					  : "on surface") << G4endl;
-    }
-
-    aParticleChange.ProposeMomentumDirection(vdir);
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkBoundary::DoReflection() ----------" << G4endl;
+    G4cout << "RWBoundary DR Function Point A | Using reflection where all returned directions are surface norms." << G4endl;
   }
 
-  //Specular
-  else if( reflectionType == 2 ){ //REL THIS SHOULD BE DEPRECATED IN FAVOR OF REFLECTIONTYPE3
-
-    G4cout << "REL -- G4CMPQPRandomWalkBoundary::Specular Reflection()" << G4endl;
-
-    //Check to make sure we're on a volume boundary before attempting reflection.
-    G4ThreeVector surfacePoint;
-    if (!CheckStepBoundary(aStep, surfacePoint)) {
-      G4cout << "REL checking step boundary failed in DoReflection" << G4endl;
-      if (verboseLevel>2)
-	G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-      aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
-    }
-    
-    if (verboseLevel>1) {
-      G4cout << procName << ": Track reflected "
-	     << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
-	     << " times." << G4endl;
-    }
-  
-    G4ThreeVector pdir = aTrack.GetMomentumDirection();
-    //    G4ThreeVector pdir = aStep.GetPreStepPoint()->GetMomentumDirection();
-    //    if (verboseLevel>2)
-    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection initial direction  " <<pdir << G4endl;    
-    
-    G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);    // Outward normal
-    G4cout << "REL norm is " << norm.x() << ", " << norm.y() << ", " << norm.z() << G4endl;
-    pdir -= 2.*(pdir.dot(norm))*norm;            // Reverse along normal
-
-    //if (verboseLevel>2)
-    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection reflected direction  " <<pdir << G4endl;
-    
-    aParticleChange.ProposeMomentumDirection(pdir);
-  }
-
-  //For use with QPRandomWalkTransport
-  else if( reflectionType == 3 ){ //REL THIS SHOULD BE THE ONLY ONE HERE.
-
-    G4cout << "REL Using reflection where all returned directions are surface norms. " << G4endl;
-  
-    //Check to make sure we're on a volume boundary before attempting reflection.
-    G4ThreeVector surfacePoint;
-    if (!CheckStepBoundary(aStep, surfacePoint)) {
-      G4cout << "REL checking step boundary failed in DoReflection" << G4endl;
-      if (verboseLevel>2)
-	G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-      aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
-    }
-  
-    if (verboseLevel>1) {
-      G4cout << procName << ": Track reflected "
-	     << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
-	     << " times." << G4endl;
-    }
-  
-    //To determine new random direction, need to know relationship between current
-    //direction and the surface normal. If they are more parallel, then we need to ensure
-    //that the new direction dotted into the norm is negative. If they are more
-    //antiparallel, we need to make sure that the new direction dotted into the norm
-    //is positive.    
-    G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);    
-    G4ThreeVector pdir = aTrack.GetMomentumDirection();
-    G4ThreeVector newDir;
-
-    //your new momentum is very parallel to a surface. Hopefully shouldn't change stuff
-    //too much
-    //If initial momentum is in the direction of the surface normal, the return direction should be just the negative of the surface normal
-    if( pdir.dot(norm) > 0 ){ newDir = -1*norm; }
-    else if( pdir.dot(norm) < 0 ){ newDir = norm; }
-    else{
-      G4Exception((GetProcessName()+"::DoReflection").c_str(), "G4CMPBogoliubovQPRandomWalkBoundary00X",
-		  FatalException, "Somehow the incoming momentum is exactly parallel to the surface norm? What?");
-
-    }
-
-    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection initial direction  " <<pdir << G4endl;    
-    
-    //if (verboseLevel>2)
-    G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection reflected direction  " <<newDir << G4endl;
-    aParticleChange.ProposeMomentumDirection(newDir);
-  }
-
-}
-
-/*
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-//Do reflection of a QP. Here, we ONLY return the surface normal.
-void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
-						       const G4Step& aStep,
-						       G4ParticleChange& aParticleChange)
-{
-  G4cout << "REL -- G4CMPQPRandomWalkBoundary::DoReflection()" << G4endl;
-
-  //Here, ALL we do is return the surface normal in the proper direction. We leave ALL randomization up to
-  //the transport class (which, incidentally, has trouble computing surface normals, which is why passing it
-  //would be good.
-  
-  G4cout << "REL Using 2D random reflection. " << G4endl;
-  
+  //This function is to be used with QP diffusion. It *will* return the momentum as the surface normal
+  //in the direction of motion, as that information is needed by/used by the diffusion class
   //Check to make sure we're on a volume boundary before attempting reflection.
   G4ThreeVector surfacePoint;
   if (!CheckStepBoundary(aStep, surfacePoint)) {
-    G4cout << "REL checking step boundary failed in DoReflection" << G4endl;
+    if( verboseLevel > 5 ){
+      G4cout << "RWBoundary DR Function Point B | checking step boundary failed in DoReflection" << G4endl;
+    }
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
     aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
@@ -500,7 +328,7 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
   G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);    
   G4ThreeVector pdir = aTrack.GetMomentumDirection();
   G4ThreeVector newDir;
-
+  
   //your new momentum is very parallel to a surface. Hopefully shouldn't change stuff
   //too much
   //If initial momentum is in the direction of the surface normal, the return direction should be just the negative of the surface normal
@@ -509,18 +337,16 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
   else{
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "G4CMPBogoliubovQPRandomWalkBoundary00X",
 		FatalException, "Somehow the incoming momentum is exactly parallel to the surface norm? What?");
-
   }
   
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "RWBoundary DR Function Point C | inside DoReflection initial direction  " <<pdir << G4endl;
+    G4cout << "RWBoundary DR Function Point C | inside DoReflection reflected direction  " <<newDir << G4endl;
+  }
   
-  G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection initial direction  " <<pdir << G4endl;    
-  
-  //if (verboseLevel>2)
-  G4cout << "G4CMPBogoliubovQPRandomWalkBoundary: inside DoReflection reflected direction  " <<newDir << G4endl;
   aParticleChange.ProposeMomentumDirection(newDir);
-  
 }
-*/
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -528,15 +354,22 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
 void G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission(const G4Track& aTrack,
 							 const G4Step& aStep,
 							 G4ParticleChange& aParticleChange) {
-
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission() ----------" << G4endl;
+  }
   if (verboseLevel>1){
     G4cout << procName << ": Track transmission requested" << G4endl;
   }
 
   //Double-check that you have a proper QP volume in the post-step point. This should never pass, but is a failure mode we should monitor for
   //a bit during debugging.
-  if (!postQPVolume){ 
-    G4cout << "Killing QP inside DoTransmission - postQPVolume is not valid should have been caught in ReflectTrack()!" << G4endl;
+  if (!postQPVolume){
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "RWBoundary DT Function Point A | Killing QP inside DoTransmission - postQPVolume is not valid should have been caught in ReflectTrack()!" << G4endl;
+    }
     G4ExceptionDescription msg;
     msg << "Noticed that the post-step volume isn't a good QP volume. There is a bug somewhere that needs to be fixed.";
     G4Exception("G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission", "BogoliubovQPRandomWalkBoundary004",JustWarning, msg);
@@ -546,7 +379,11 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoTransmission(const G4Track& aTrack,
   // Check whether step has proper boundary-stopped geometry
   G4ThreeVector surfacePoint;
   if (!CheckStepBoundary(aStep, surfacePoint)) {
-    G4cout << "REL checking step boundary failed in DoTransmission" << G4endl;
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "RWBoundary DT Function Point B | REL checking step boundary failed in DoTransmission" << G4endl;
+    }
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
     
