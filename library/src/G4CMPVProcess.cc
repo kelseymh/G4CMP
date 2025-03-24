@@ -31,7 +31,7 @@ G4CMPVProcess::G4CMPVProcess(const G4String& processName,
   : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils(), G4CMPSCUtils(),
     rateModel(0) {
   verboseLevel = G4CMPConfigManager::GetVerboseLevel(); 
-  G4cout << "In G4CMPVProcess, setting verbose level to: " << verboseLevel << G4endl;
+  //G4cout << "In G4CMPVProcess, setting verbose level to: " << verboseLevel << G4endl;
   SetProcessSubType(stype);
 }
 

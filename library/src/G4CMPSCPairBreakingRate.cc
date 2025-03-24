@@ -15,8 +15,11 @@
 // Pairbreaking rate is computed using energy and the G4SCUtils class, upon which this is based
 G4double G4CMPSCPairBreakingRate::Rate(const G4Track& aTrack) const
 {
-  G4cout << "REL HereA_SCPairBreakingRate" << G4endl;
-  G4cout << "REL SCDelta for this lattice: " << (this->GetLattice())->GetSCDelta0() << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPSCPairBreakingRate::Rate ----------" << G4endl;
+    G4cout << "R Function Point A | SCDelta for this lattice: " << (this->GetLattice())->GetSCDelta0() << G4endl;
+  }
   if( !CheckToSeeSCParametersSet() ){ return 0; }
   
   //Boolean for checking to see if we're trying to access below our minimum energy (in the case of a turnaround step)
@@ -29,9 +32,13 @@ G4double G4CMPSCPairBreakingRate::Rate(const G4Track& aTrack) const
 
     //Compute tau for pairbreaking, and invert for rate
     G4double energy = GetKineticEnergy(aTrack);
-    G4cout << "REL HereAB_SCPairBreakingRate" << G4endl;
+    if( verboseLevel > 5 ){
+      G4cout << "R Function Point B | HereB_SCPairBreakingRate" << G4endl;
+    }
     G4double tau_pairbreaking = fTau0_ph*GetTauAsAFunctionOfEnergy(fCurrentNormalizedTauPairBreakingVsEnergy,"Phonon",energy,thisEnergyBelowUsableRange);
-    G4cout << "REL HereB_SCPairBreakingRate" << G4endl;
+    if( verboseLevel > 5 ){
+      G4cout << "R Function Point C | HereC_SCPairBreakingRate" << G4endl;
+    }
     return (1.0/tau_pairbreaking);
   }
 }
@@ -69,7 +76,11 @@ bool G4CMPSCPairBreakingRate::CheckToSeeSCParametersSet() const
 // the lookup table using a computed rate curve that already exists in the map
 void G4CMPSCPairBreakingRate::UpdateLookupTable(const G4LatticePhysical * theLat)
 {
-  G4cout << "REL HereC_SCPairbreakingRate: updating lookup table." << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPSCPairBreakingRate::UpdateLookupTable ----------" << G4endl;
+  }
+
   //1. If the lattice doesn't exist in the lattice container associated with this process yet,
   //   add it and do the full calculation of the curves we care about, storing them in a map
   if( fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy.count(theLat) == 0 ){
@@ -86,7 +97,10 @@ void G4CMPSCPairBreakingRate::UpdateLookupTable(const G4LatticePhysical * theLat
 // Construct the lookup table for normalized tau for pairbreaking vs phonon energy
 std::vector<std::vector<G4double> > G4CMPSCPairBreakingRate::ComputeNormalizedTauPairBreakingVsEnergy()
 {
-  G4cout << "REL HereDA" << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPSCPairBreakingRate::ComputeNormalizedTauPairBreakingVsEnergy ----------" << G4endl;
+  }
   std::vector<std::vector<G4double> > output;
   G4double deltaPhononEnergyDivGap = (fMaxPhononEnergyDivGap - fMinPhononEnergyDivGap) / ((double)fPhononEnergyBins);  
   
@@ -123,7 +137,6 @@ std::vector<std::vector<G4double> > G4CMPSCPairBreakingRate::ComputeNormalizedTa
     element.push_back(normalizedTau);
     output.push_back(element);
   }
-  G4cout << "REL HereDZ" << G4endl;
 
 
   //This is only for debugging, and is temporary.

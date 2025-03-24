@@ -28,7 +28,6 @@ G4CMPSCPairBreakingProcess::G4CMPSCPairBreakingProcess(const G4String& aName)
   : G4VPhononProcess(aName,fSCPairBreakingProcess)
 {  
   UseRateModel(new G4CMPSCPairBreakingRate);
-  G4cout << "REL HereA_SCPairBreakingProcess" << G4endl;
 }
 
 G4CMPSCPairBreakingProcess::~G4CMPSCPairBreakingProcess()
@@ -47,6 +46,12 @@ G4VParticleChange* G4CMPSCPairBreakingProcess::PostStepDoIt(const G4Track& aTrac
 							    const G4Step& aStep) {
 
 
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPSCPairBreakingProcess::PostStepDoIt ----------" << G4endl;
+  }
+  
+  
   aParticleChange.Initialize(aTrack);
   
   //Pseudocode
@@ -63,7 +68,11 @@ G4VParticleChange* G4CMPSCPairBreakingProcess::PostStepDoIt(const G4Track& aTrac
   //   the effective temperature we're at.
   double phononEnergy = aTrack.GetKineticEnergy();
   std::pair<G4double,G4double> QPenergies = FetchQPEnergies(phononEnergy);
-  G4cout << "REL -- energy of QP 1: " << QPenergies.first << ", energy of QP 2: " << QPenergies.second << G4endl;
+
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "PSDI Function Point A | energy of QP 1: " << QPenergies.first << ", energy of QP 2: " << QPenergies.second << G4endl;
+  }
   
   //3. Using the two above-computed energies, generate the two secondaries (G4BogoliubovQPs) we want.
   GenerateBogoliubovQPPair(QPenergies,aTrack,aStep);
@@ -86,7 +95,11 @@ G4VParticleChange* G4CMPSCPairBreakingProcess::PostStepDoIt(const G4Track& aTrac
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
   else{
-    G4cout << "----> REL Uh oh. Bogoliubov secondaries not produced somehow?" << G4endl;
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "PSDI Function Point B | REL Uh oh. Bogoliubov secondaries not produced somehow?" << G4endl;
+    }
   }
 
   //6. Return the particle change
@@ -129,7 +142,11 @@ G4double G4CMPSCPairBreakingProcess::QPEnergyRand(G4double Energy) const
   
   // Add buffer so first/last bins don't give zero denominator in pdfSum
 
-  G4cout << "REL -- fGapEnergy is: " << fGapEnergy / CLHEP::eV << " eV." << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPSCPairBreakingProcess::QPEnergyRand ----------" << G4endl;
+    G4cout << "QPER Function Point A | fGapEnergy is: " << fGapEnergy / CLHEP::eV << " eV." << G4endl;
+  }
   
   const G4double BUFF = 100000.; //REL used to be 1000, then 10000 (12/20/24)
   G4double xmin = fGapEnergy + (Energy - 2. * fGapEnergy) / BUFF;

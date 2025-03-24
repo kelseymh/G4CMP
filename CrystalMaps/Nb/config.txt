@@ -1,0 +1,52 @@
+# Crystal parameters
+cubic 5.432 Ang		# (Lattice constant)
+stiffness 1 1 165.5 GPa	# C11, C12, C44
+stiffness 1 2  63.8 GPa
+stiffness 4 4  79.4 GPa
+# Phonon parameters
+dyn -42.9 -94.5 52.4 68.0 GPa
+scat 2.43e-42 s3
+decay 7.41e-56 s4
+decayTT 0.74
+# From S. Tamura et al., PRB44(7), 1991
+LDOS  0.01
+STDOS 0.49
+FTDOS 0.5
+Debye 15 THz		# Can also use temperature or energy
+# Charge carrier parameters
+bandgap 1.17 eV
+pairEnergy 3.81 eV
+fanoFactor 0.15
+vsound 9000 m/s		# Longitudinal sound speed
+vtrans 5400 m/s		# Transverse sound speed
+l0_e 16.9e-6 m #16.9e-5 m # 8e-6 m #16.9e-6 m
+l0_h 7.5e-5 m
+#hole and electron masses taken from Robert's thesis
+hmass 0.50		# per m(electron)
+emass 0.91 0.19 0.19	# per m(electron)
+valley   0  0  0 deg
+valley   90 90 0 deg
+valley   0 -90 -90 deg
+# Intervalley scattering (matrix elements)
+alpha 0.5 /eV
+acDeform 6.6 eV
+ivDeform 0.5e8 0.8e8 11e8 0.3e8 2e8 2e8 eV/cm		# Jacoboni & Reggiani
+ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV
+neutDens 1e11 /cm3
+epsilon 11.68
+# Intervalley scattering (Linear and Quadratic models)
+ivModel Linear
+ivLinRate0  1.5e6 Hz	# Fitted to Stanford test devices
+ivLinRate1  1.5 Hz	# Fitted to Stanford test devices
+ivLinPower  4.0		# Rate = ivLinRate0 + ivLinRate1 * E^ivLinPower
+ivQuadRate  3.5e-20 Hz	# Fitted to Stanford test devices
+ivQuadField 3395 V/m	# Fitted to Stanford test divices
+ivQuadPower 7.47	# Rate = sqrt((E^2-QuadField^2)^ivPower)
+polycryElMfp 10 nm      # Mean free path for polycrystal elastic scattering (characteristic polycrystal length scale)
+sc_delta0 0.00176 eV   # Gap Energy at T=0
+sc_tau0_qp 438 ns       # Characteristic lifetime for QPs (from Kaplan paper)
+sc_tau0_ph 0.242 ns     # Characteristic lifetime for phonons (from Kaplan paper)
+sc_Tcrit 9 K         # Critical temperature for Al
+sc_Teff 0.8 K           # Effective temperature used
+sc_Dn 10 um2/ns          # Normal state diffusion constant
+sc_tau_qptrap 100000 us     # QP Local trapping MFP
