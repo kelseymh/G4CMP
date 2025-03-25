@@ -7,8 +7,8 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 *** ADD NEW TAG MESSAGES BELOW G4CMP-317 LINE, UPDATE DATE OF G4CMP-317 ***
-2025-03-05  G4CMP-317 : Implement surface 'displacement' for phonon reflection.
-2025-03-05  G4CMP-463 : Make surface displacement step size a macro command.
+2025-03-25  G4CMP-317 : Implement surface 'displacement' for phonon reflection.
+2025-03-25  G4CMP-463 : Make surface displacement step size a macro command.
 2025-02-06  G4CMP-459 : Support reflection displacement search at hard corners.
 2025-01-30  G4CMP-453 : Add rotations and utilities for PhononVelocityIsInward.
 2025-01-24  G4CMP-447 : Add utility method to update a phonon's trackInfo and

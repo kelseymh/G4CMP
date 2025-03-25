@@ -31,7 +31,7 @@
 // 20240718  G4CMP-317 -- Initial implementation of surface displacement.
 // 20250124  G4CMP-447 -- Use FillParticleChange() to update wavevector and Vg.
 // 20250204  G4CMP-459 -- Support reflection displacement search at hard corners.
-// 20250305  G4CMP-463 -- Set surface displacement step size with macro command.
+// 20250325  G4CMP-463 -- Set surface step size & limit with macro command.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -66,10 +66,11 @@
 
 G4CMPPhononBoundaryProcess::G4CMPPhononBoundaryProcess(const G4String& aName)
   : G4VPhononProcess(aName, fPhononReflection), G4CMPBoundaryUtils(this),
-    anharmonicDecay(new G4CMPAnharmonicDecay(this)), stepSize(DBL_MIN) {
+    anharmonicDecay(new G4CMPAnharmonicDecay(this)), stepSize(0*um), nStepLimit(0) {
 
   G4CMPConfigManager* config = G4CMPConfigManager::Instance();
   stepSize = config->GetPhononSurfStepSize();
+  nStepLimit = config->GetPhononSurfStepLimit();
 }
 
 G4CMPPhononBoundaryProcess::~G4CMPPhononBoundaryProcess() {
@@ -270,12 +271,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 G4ThreeVector G4CMPPhononBoundaryProcess::
 GetReflectedVector(const G4ThreeVector& waveVector,
 		   const G4ThreeVector& surfNorm, G4int mode,
-		   const G4ThreeVector& surfacePoint) const {
+		   const G4ThreeVector& surfacePoint) {
   // Specular reflecton should reverse momentum along normal
   G4ThreeVector reflectedKDir = waveVector.unit();	// Unit vector of initial k-vector (before reflection)
   G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm. Must be >= 0 at this stage
   (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);	// Law of reflections. reflectedKDir is now inward
-   
   if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm))
     return reflectedKDir;
 
@@ -301,13 +301,20 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4double phi = 0.;
   EInside isIn = solid->Inside(stepLocalPos);
 
-  const G4int maxAttempts = 1000;
   G4int nAttempts = 0;
 
   // debugging only DELETE
   G4ThreeVector oldkTan = kTan;
   G4ThreeVector oldkPerpV = kPerpV;
   G4ThreeVector oldstepLocalPos = stepLocalPos;
+
+  // Set default stepSize based on solid bounding limits
+  if (stepSize == 0) {
+    G4ThreeVector pmin(0,0,0);
+    G4ThreeVector pmax(0,0,0);
+    solid->BoundingLimits(pmin, pmax);
+    stepSize = (pmax - pmin).mag() / nStepLimit;
+  }
 
   // FIXME: Need defined units
   if (verboseLevel>3) {
@@ -317,13 +324,15 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       << ", newNorm = " << newNorm
       << ", reflectedKDir = " << reflectedKDir
       << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
-      << ", kTan (reflectedKDir - kPerpV) = " << kTan << G4endl;
+      << ", kTan (reflectedKDir - kPerpV) = " << kTan
+      << ", surfaceStepSize = " << stepSize
+      << ", nStepLimit = " << nStepLimit << G4endl;
   }
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
   while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
    GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm))
-	 && nAttempts++ < maxAttempts) {
+	 && nAttempts++ < nStepLimit) {
     // Save previous loop values
     oldstepLocalPos = stepLocalPos;
     oldNorm = newNorm;
