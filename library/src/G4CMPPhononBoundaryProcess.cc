@@ -270,11 +270,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
 G4ThreeVector G4CMPPhononBoundaryProcess::
 GetReflectedVector(const G4ThreeVector& waveVector,
-		   const G4ThreeVector& surfNorm, G4int mode,
-		   const G4ThreeVector& surfacePoint) {
+		               G4ThreeVector& surfNorm, G4int mode,
+		               G4ThreeVector& surfacePoint) {
   // Specular reflecton should reverse momentum along normal
-  G4ThreeVector reflectedKDir = waveVector.unit();	// Unit vector of initial k-vector (before reflection)
-  G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm. Must be >= 0 at this stage
+  G4ThreeVector reflectedKDir = waveVector.unit();
+  G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm
   (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);	// Law of reflections. reflectedKDir is now inward
   if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm))
     return reflectedKDir;
