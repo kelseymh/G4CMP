@@ -1,0 +1,12 @@
+/score/create/boxMesh mesh1
+/score/mesh/boxSize 0.04 0.04 0.02 m
+/score/mesh/nBin 10 10 10
+/score/quantity/flatSurfaceCurrent myQuant1
+#/score/quantity/energyDeposit myQuant meV
+/score/close
+/run/initialize
+/run/beamOn 1000
+/score/drawProjection mesh1 myQuant1
+/vis/viewer/set/viewpointThetaPhi 50 50
+/vis/viewer/zoom 0.75
+/vis/viewer/refresh 

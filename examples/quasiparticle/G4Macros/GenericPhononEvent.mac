@@ -1,0 +1,52 @@
+#-------------------------------------
+# Now initialize the run
+/run/initialize
+
+/vis/open OGL
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointThetaPhi 90 180
+/vis/viewer/zoom 1.4
+/vis/drawVolume
+
+/process/inactivate phononScattering
+/process/inactivate phononDownconversion
+/process/inactivate phononPolycrystalElasticScattering
+/process/inactivate bogoliubovQPRecombination
+/process/inactivate bogoliubovQPRadiatesPhonon
+/process/inactivate scPairBreaking
+/process/inactivate G4CMPBogoliubovQPRandomWalkTransport
+
+/run/printProgress 1
+
+# for drawing the tracks
+# (if too many tracks cause core dump => storeTrajectory 0)
+/tracking/verbose 2
+/tracking/storeTrajectory 1
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories
+
+/g4cmp/phononBounces 20
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
+/vis/modeling/trajectories/drawByParticleID-0/set BogoliubovQP White
+
+# Generate 1 phonon per event. Place right under the Nb film
+/gps/number 1
+/gps/particle phononTF
+/gps/pos/type Volume
+/gps/pos/shape Para
+/gps/pos/centre 0.0 0.0 0.0 cm
+
+#These XY values must be just under half of the values used for the chip dimensions above Defaults
+/gps/pos/halfx 0.0001 mm
+/gps/pos/halfy 0.0001 mm
+/gps/pos/halfz 0.0001 mm
+
+/gps/ang/type iso
+/gps/direction 1.0 -1.0 1.0
+/gps/ene/type Mono
+/gps/energy 0.0040 eV
+/run/beamOn 1
