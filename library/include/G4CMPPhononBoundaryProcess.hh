@@ -50,15 +50,22 @@ protected:
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
 
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
-			    G4ParticleChange& aParticleChange);
+			                      G4ParticleChange& aParticleChange);
 
   G4ThreeVector GetReflectedVector(const G4ThreeVector& waveVector, 
 				                           G4ThreeVector& surfNorm, G4int mode,
                                    G4ThreeVector& surfacePoint);
 
   G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm,
-				    G4int mode) const;
+				                            G4int mode) const;
 
+
+  // Efficiently find direction with min distance to surface
+  void OptimizeSurfaceAdjustAngle(const G4VSolid* solid,
+                                  const G4ThreeVector& stepLocalPos,
+                                  G4double& theta0, G4double& phi0,
+                                  const G4int angOption,
+                                  const G4double minDist) const;
 
   // Modifies stepLocalPos in place
   void AdjustToClosestSurfacePoint(const G4VSolid* solid,
@@ -67,9 +74,9 @@ protected:
   void AdjustToEdgePosition(const G4VSolid* solid, const G4ThreeVector& kTan,
                             G4ThreeVector& stepLocalPos) const;
 
-  // Modifies kTan in place.
+  // Modifies kTan and newNorm in place
   void ReflectAgainstEdge(const G4VSolid* solid, G4ThreeVector& kTan,
-                          const G4ThreeVector& stepLocalPos) const;
+                          const G4ThreeVector& stepLocalPos, G4ThreeVector& newNorm) const;
 
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
