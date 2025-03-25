@@ -584,6 +584,9 @@ General other tips:
 * For now, need one G4LatticeLogical and G4LatticePhysical for every physical superconducting volume. This may incur a slight calculational cost at the beginning of a given run, since for each there is a calculation of the QP scattering/recombination taus as a function of energy relative to the gap. The more dedicated volumes you have, the longer you should expect the startup to take.
 * For now, need to define boundaries between not only substrate and thin film, but also between different volumes in the thin film. This includes boundaries between mother and daughter volumes
 * There is now a `quasiparticle` example that shows examples of a few geometries you can build with this and how to properly write down boundary relations for those. Very much a work in progress.
+* Right now, the CrystalMaps config.txt files are only effective:
+ 	* For Al, the "boilerplate" phonon parameters are equivalent to that of Si. We'll update these to accurate values for Al in the next week or so. The superconducting parameters (the last 8 parameters in the file) are the ones that contain the new physics.
+	* For Nb, the parameters are basically equivalent to Al, which is factually incorrect. For the moment, the difference is effectively just Teff, Tc, and the energy gap. Would not really recommend using Nb for now, until we flesh this out better.
   
 
 
