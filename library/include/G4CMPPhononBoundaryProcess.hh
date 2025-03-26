@@ -14,6 +14,7 @@
 // 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
 // 20220906  M. Kelsey -- Encapsulate specular reflection in function.
 // 20250204  N. Tenpas -- Support reflection displacement search at hard corners.
+// 20250325  N. Tenpas -- Add support for macro commands to set step size and limit.
 
 #ifndef G4CMPPhononBoundaryProcess_h
 #define G4CMPPhononBoundaryProcess_h 1
@@ -53,7 +54,7 @@ protected:
 
   G4ThreeVector GetReflectedVector(const G4ThreeVector& waveVector, 
 				                           G4ThreeVector& surfNorm, G4int mode,
-                                   G4ThreeVector& surfacePoint) const;
+                                   G4ThreeVector& surfacePoint);
 
   G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm,
 				                            G4int mode) const;
@@ -67,7 +68,7 @@ protected:
                                   const G4double minDist) const;
 
   // Modifies stepLocalPos in place
-  void AdjustToClosestSurfacePoint(const G4VSolid* solid, 
+  void AdjustToClosestSurfacePoint(const G4VSolid* solid,
                                    G4ThreeVector& stepLocalPos) const;
 
   void AdjustToEdgePosition(const G4VSolid* solid, const G4ThreeVector& kTan,
@@ -79,7 +80,8 @@ protected:
 
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
-  const G4double stepSize;
+  G4double stepSize;
+  G4int nStepLimit;
 
   // hide assignment operator as private
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&);
