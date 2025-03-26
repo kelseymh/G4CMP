@@ -56,6 +56,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
+#include "G4UnitsTable.hh"
 #include "G4VParticleChange.hh"
 #include "G4VSolid.hh"
 #include "Randomize.hh"
@@ -67,7 +68,7 @@
 G4CMPPhononBoundaryProcess::G4CMPPhononBoundaryProcess(const G4String& aName)
   : G4VPhononProcess(aName, fPhononReflection), G4CMPBoundaryUtils(this),
     anharmonicDecay(new G4CMPAnharmonicDecay(this)), stepSize(0*um), nStepLimit(0) {
-
+  // Initialize stepSize and max step limit from config manager
   G4CMPConfigManager* config = G4CMPConfigManager::Instance();
   stepSize = config->GetPhononSurfStepSize();
   nStepLimit = config->GetPhononSurfStepLimit();
@@ -309,6 +310,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector oldkPerpV = kPerpV;
   G4ThreeVector oldstepLocalPos = stepLocalPos;
 
+  // Initialize stepSize for _this_ solid object
+  G4CMPConfigManager* config = G4CMPConfigManager::Instance();
+  stepSize = config->GetPhononSurfStepSize();
   // Set default stepSize based on solid bounding limits
   if (stepSize == 0) {
     G4ThreeVector pmin(0,0,0);
@@ -326,7 +330,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       << ", reflectedKDir = " << reflectedKDir
       << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
       << ", kTan (reflectedKDir - kPerpV) = " << kTan
-      << ", surfaceStepSize = " << stepSize
+      << ", surfaceStepSize = " << G4BestUnit(stepSize, "Length")
       << ", nStepLimit = " << nStepLimit << G4endl;
   }
 

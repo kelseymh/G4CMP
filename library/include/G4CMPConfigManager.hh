@@ -74,6 +74,7 @@ public:
   static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
   static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
   static G4int GetMaxLukePhonons()       { return Instance()->maxLukePhonons; }
+  static G4int GetPhononSurfStepLimit()  { return Instance()->pSurfStepLimit; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
   static G4bool KeepKaplanPhonons()      { return Instance()->kaplanKeepPh; }
@@ -96,7 +97,6 @@ public:
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
   static G4double GetPhononSurfStepSize()  { return Instance()->pSurfStepSize; }
-  static G4double GetPhononSurfStepLimit()  { return Instance()->pSurfStepLimit; }
 
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
