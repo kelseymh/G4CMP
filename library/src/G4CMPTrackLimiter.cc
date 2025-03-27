@@ -19,6 +19,7 @@
 #include "G4ParticleChange.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
+#include "G4VSolid.hh"
 #include <limits.h>
 
 
@@ -86,6 +87,14 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
   G4VPhysicalVolume* prePV  = step.GetPreStepPoint()->GetPhysicalVolume();
   G4VPhysicalVolume* postPV = step.GetPostStepPoint()->GetPhysicalVolume();
 
+  // Determine if PostStep is on PreStep Boundary - for specular reflections
+  G4bool notOnBoundary = true;
+  if (step.GetPreStepPoint()->GetStepStatus() == fGeomBoundary) {
+    G4VSolid* solid = prePV->GetLogicalVolume()->GetSolid();
+    EInside isIn = solid->Inside(GetLocalPosition(step.GetPostStepPoint()->GetPosition()));
+    notOnBoundary = (isIn != kSurface);
+  }
+
   if (verboseLevel>2) {
     G4cout << " prePV " << prePV->GetName()
 	   << " postPV " << (postPV?postPV->GetName():"OutOfWorld")
@@ -95,6 +104,7 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
 
   // Track is NOT at a boundary, is stepping outside volume, or already escaped
   return ( (step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary) &&
-	   (postPV != GetCurrentVolume() || prePV != GetCurrentVolume())
+	   (postPV != GetCurrentVolume() || prePV != GetCurrentVolume()) &&
+     notOnBoundary
 	   );
 }

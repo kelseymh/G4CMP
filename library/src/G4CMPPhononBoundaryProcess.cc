@@ -222,7 +222,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     return;
   } else if (random < downconversionProb + specProb) {
     reflectedKDir = GetReflectedVector(waveVector, surfNorm, mode, surfacePoint); // Modify surfacePoint & surfNorm in place
-    //particleChange.ProposePosition(surfacePoint);
+    particleChange.ProposePosition(surfacePoint);
     refltype = "specular";
   } else {
     reflectedKDir = GetLambertianVector(surfNorm, mode);
