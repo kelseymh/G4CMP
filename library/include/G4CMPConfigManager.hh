@@ -47,6 +47,8 @@
 // 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
+// 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
+
 
 #include "globals.hh"
 #include <iosfwd>
@@ -95,6 +97,13 @@ public:
   static G4double GetHDTrapIonMFP()      { return Instance()->hDTrapIonMFP; }
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
+  static G4double GetEmpklow()      { return Instance()->Empklow; }
+  static G4double GetEmpkhigh()     { return Instance()->Empkhigh; }
+  static G4double GetEmpElow()      { return Instance()->EmpElow; }
+  static G4double GetEmpEhigh()     { return Instance()->EmpEhigh; }
+  static G4double GetEmpkFixed()    { return Instance()->EmpkFixed; }
+  static G4bool GetEmpEDepK()  { return Instance()->EmpEDepK; }
+
 
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
@@ -135,6 +144,14 @@ public:
 
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
   static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
+
+  // Empirical Lindhard settings 
+  static void SetEmpklow(G4double value) { Instance()->Empklow = value; }
+  static void SetEmpkhigh(G4double value) { Instance()->Empkhigh = value; }
+  static void SetEmpElow(G4double value) { Instance()->EmpElow = value; }
+  static void SetEmpEhigh(G4double value) { Instance()->EmpEhigh = value; }
+  static void SetEmpkFixed(G4double value) { Instance()->EmpkFixed = value; }
+  static void SetEmpEDepK(G4bool value) { Instance()->EmpEDepK = value; }
 
   // These settings require the geometry to be rebuilt
   static void SetLatticeDir(const G4String& dir)
@@ -194,7 +211,18 @@ private:
   G4bool chargeCloud;    // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
   G4bool recordMinE;     // Store below-minimum track energy as NIEL when killed
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
-
+  // Empirical Lindhard Model Parameters
+    // Model fit parameters
+  G4double Empklow;  
+  G4double Empkhigh; 
+    // Model validity energy range
+  G4double EmpElow;  
+  G4double EmpEhigh;
+    // Flag to use Empirical Lindhard with energy-dependent k
+  G4bool EmpEDepK; 
+    // If k is not energy dependent, provide/use kFixed
+  G4double EmpkFixed; 
+  //
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands
 };
 
