@@ -429,16 +429,43 @@ G4double G4CMP::Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid, G4Thr
   clock_t timestampStart, timestampEnd;
   timestampStart = clock();
   G4double smallTolerance = 1e-10; //Just in case we're hitting floating point errors.
-
-  //Want to generate our points such that we start from the norm and work outwards
+  
+  //Want to generate our points such that we start from the "center" and work "outwards." Here, for a non-corner surface, the
+  //"center" is the surface normal, and for a corner where the norm is not well defined, it means the vector that is the sum of the
+  //two tangent vectors (unit).
   G4int nV = G4CMPConfigManager::GetSafetyNSweep2D();
   G4double dotProductThreshold_Norm = ComputeDotProductThreshold_Norm(nV);
   G4double nVHalfCircle = nV/2;
+
+  //Identify whether we are using the surface norm or the sum of tangent vectors. The flag for this is that if the surfaceNorm is the
+  //zero vector, then we're going to sum the two tangent vectors. Account for floating point issues here too.
+  G4ThreeVector centerDir;
+  if( surfaceNorm.mag() < 1e-10 ){
+    centerDir = tangVect1 + tangVect2;
+    centerDir = centerDir.unit();
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "C2DSFAB Function Point A | Since the surfaceNorm is zero, looks like were making a central direction for our sweep as the sum of tangent vectors, normalized: " << centerDir << G4endl;
+    }
+  }
+  else{
+    centerDir = surfaceNorm;
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "C2DSFAB Function Point AA | Since the surfaceNorm is not zero, looks like were making a central direction for our sweep as the surfaceNorm: " << centerDir << G4endl;
+    }    
+  }
+
+
+    
+  
   
   //Rotate in positive angular direction
   for( G4int iV = 0; iV < nVHalfCircle; ++iV ){
     G4double deltaPhi = 1.0*CLHEP::pi*((double)iV/(double)nVHalfCircle);
-    theDir = surfaceNorm;
+    theDir = centerDir;
     theDir.rotateZ(deltaPhi); //Needs to be plane-agnostic at some point REL
 
     //Check to make sure that the scan vector is sufficiently away from the surface tangent so we don't end up with
@@ -446,7 +473,7 @@ G4double G4CMP::Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid, G4Thr
     //G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
     //if( theDir.dot(surfaceNorm) <= epsilonDotProductForNorm ) continue;
     //We use the small tolerance in case there are floating point errors. It just needs to be much smaller than the deltaPhi
-    if( theDir.dot(surfaceNorm) < (dotProductThreshold_Norm - smallTolerance) ) continue;
+    if( theDir.dot(centerDir) < (dotProductThreshold_Norm - smallTolerance) ) continue;
     //case we're talking about things that are being checked for being 86 degrees apart
 
     
@@ -464,7 +491,7 @@ G4double G4CMP::Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid, G4Thr
 
     //Debugging
     if( verboseLevel > 5 ){
-      G4cout << "C2DSFAB Function Point A | At angle: " << deltaPhi <<", (direction: " << theDir << "), distToBound: " << distToBound << ", dot: " << theDir.dot(surfaceNorm) << G4endl;
+      G4cout << "C2DSFAB Function Point AB | At angle: " << deltaPhi <<", (direction: " << theDir << "), distToBound: " << distToBound << ", dot: " << theDir.dot(centerDir) << G4endl;
     }
     
   }
@@ -472,12 +499,12 @@ G4double G4CMP::Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid, G4Thr
   //Rotate in the negative angular direction
   for( G4int iV = 0; iV < nVHalfCircle; ++iV ){
     G4double deltaPhi = -1.0*CLHEP::pi*((double)iV/(double)nVHalfCircle);
-    theDir = surfaceNorm;
+    theDir = centerDir;
     theDir.rotateZ(deltaPhi); //Needs to be plane-agnostic at some point REL
 
     //G4double epsilonDotProductForNorm = 0.0896393089; //0.07; //NEEDS TO BE NOT HARDCODED REL -- compare to that in the AlongStepDoIt
     //if( theDir.dot(surfaceNorm) <= epsilonDotProductForNorm ) continue;
-    if( theDir.dot(surfaceNorm) < (dotProductThreshold_Norm - smallTolerance) ) continue;
+    if( theDir.dot(centerDir) < (dotProductThreshold_Norm - smallTolerance) ) continue;
     
     //In the case that the tangent vectors exist (i.e. we're in a "check for stuck QPs mode"), do a sanity check first
     if( tangVect1.mag() > 0 && tangVect2.mag() > 0 ){
@@ -493,7 +520,7 @@ G4double G4CMP::Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid, G4Thr
 
     //Debugging
     if( verboseLevel > 5 ){
-      G4cout << "C2DSFAB Function Point B | At angle: " << deltaPhi <<", (direction: " << theDir << "), distToBound: " << distToBound << ", dot: " << theDir.dot(surfaceNorm) << G4endl;
+      G4cout << "C2DSFAB Function Point B | At angle: " << deltaPhi <<", (direction: " << theDir << "), distToBound: " << distToBound << ", dot: " << theDir.dot(centerDir) << G4endl;
     }
   }
 

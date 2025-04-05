@@ -269,8 +269,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 
   //Particle change initialization and setting
   fParticleChange.Initialize(track);  
-  fParticleChange.ProposeMomentumDirection(
-    step.GetPostStepPoint()->GetMomentumDirection());
+  fParticleChange.ProposeMomentumDirection(step.GetPostStepPoint()->GetMomentumDirection());
   fNewPosition = step.GetPostStepPoint()->GetPosition();
   fNewDirection = step.GetPostStepPoint()->GetMomentumDirection();
   fParticleChange.ProposePosition(fNewPosition);
@@ -291,13 +290,11 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
     G4cout << "ASDI Function Point B | stepTransportOnlyDeltaT: " << stepTransportOnlyDeltaT << G4endl;
   }
   
-  //This is the "old" velocity (i.e. that not computed using the diffusion step)
+  //As a reminder, the velocity for QPs is always a single number that stays constant.
   G4double velocity = step.GetPostStepPoint()->GetVelocity();
   fParticleChange.ProposeVelocity(velocity);
   fPositionChanged = false;
-
   G4double stepLength = step.GetStepLength();
-  G4double epsilon = 1.0*nm;
   
   // Check if the particle met conditions to do random walk from GPIL command. Here, this occurs
   // during a turnaround step where we want to set step lengths to zero. If we don't set the proposedTrueStepLength
@@ -328,14 +325,6 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
       G4cout << "ASDI Function Point D | velocity is set and proposed to " << velocity << ", which should never change." << G4endl;
     }
     fParticleChange.ProposeVelocity(velocity);
-
-    /* OLD
-    //Take the old position and new direction and make a new position using the fPathLength, which here is the diffusion-folded
-    //"displacement" distance
-    fOldPosition = step.GetPreStepPoint()->GetPosition();
-    fNewDirection = step.GetPreStepPoint()->GetMomentumDirection();
-    fNewPosition = fOldPosition+fPathLength*fNewDirection;
-    */ 
 
     //Have to stratify by three cases: off-boundary, on-boundary, and on-boundary-and-stuck
     //Case 1: off-boundary
@@ -483,7 +472,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
     else if( nextStepLength != kInfinity ){ //We're on a surface
       if( step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary ){
 	G4ExceptionDescription msg;
-	msg << "Somehow the CheckNextStep returned a step length that is not kInfinity but the step is indeed boundary limited. Are we actually landing on a boundary?";
+	msg << "Somehow the CheckNextStep returned a step length that is not kInfinity but the step status thinks it's not fGeomBoundary. It seems we may have misjudged the distance to our boundary.";
 	G4Exception("G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
       }
       else{
@@ -538,7 +527,6 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt ----------" << G4endl;
   }
   
-
   //Determine if we're on a boundary. A few scenarios:
   //1. This shouldn't run if we are landing on a boundary in the step (where Transportation will be the thing
   //   that runs PostStepDoIt, not this function
@@ -859,7 +847,9 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
   if( currentVolPlusEps != currentVolume && theStatus == fGeomBoundary ){
 
     //NOTE: this above logic may run into issues in internal corners, if the next direction isn't pointed back into the volume. I.e. if a nm
-    //pushes us across a corner back into World, we'll have an issue.
+    //pushes us across a corner back into World, we'll have an issue. Hopefully this only happens in very "badly-behaved" geometries (like 20-
+    //pointed stars or something with highly acute internal corners), since the momentum should in principle be the normal vector based on
+    //the boundary physics.
     
     //Debugging
     if( verboseLevel > 5 ){      
@@ -968,7 +958,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
 							  track.GetPosition(),
 							  track.GetMomentumDirection(),
 							  true,
-							  surfaceNorm,
+							  G4ThreeVector(0,0,0), //The norm should NOT be well-defined if we're stuck in a corner
 							  outgoingSurfaceTangents.first,
 							  outgoingSurfaceTangents.second);	
 	the2DSafety = constrained2DSafety;
@@ -1023,10 +1013,18 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     //used as input. This is because of the quadratic form of the calculated timeStepToBoundary. In this scenario,
     //just manually set the MFP equal to the safety. (Usually, the MFP is much larger than the 2D safety.)
     //REL want to check that this is only for small enough distances not to matter, eventually.
+    //REL 4/1/2025 Now that we have TOFP in, I'm not sure if this matters any more... Should check this. Actually, think that the
+    //important thing here is actually the relationship between diffusion constant and velocity, which is I think
+    //somewhat shaky since we keep a constant velocity but allow for energy-dependent diffusion. So actually yeah I think
+    //we have to keep this for generality.
     fVerySmallStep = false;
     if( thisMFP < the2DSafety ){
       fVerySmallStep = true;
       thisMFP = the2DSafety*fBoundaryFudgeFactor; //Fudge factor needs to go here as well because AlongStep GPIL uses PhysicalStep, which comes from PostStepGPIL
+      //G4ExceptionDescription msg;
+      //msg << "We're triggering fVerySmallStep even though we're using the time-of-first-passage formalism.";
+      //G4Exception("G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath", "BogoliubovQPRandomWalkTransport002",FatalException, msg);
+
     }
     
     //Now, as a last measure, we set the number of interaction lengths left for this process to 1
@@ -1351,9 +1349,11 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   outPos0 = currentPosition;
   outNorm0 = currentNorm;
 
-
-  for( int iN = 0; iN < goodOtherNorms.size(); ++iN ){
-    G4cout << "Good other norm: " << goodOtherNorms[iN] << ", pos: " << goodOtherPositions[iN] << G4endl;
+  //Debugging
+  if( verboseLevel > 5 ){
+    for( int iN = 0; iN < goodOtherNorms.size(); ++iN ){
+      G4cout << "CFSQIC Function Point BC | Good other norm: " << goodOtherNorms[iN] << ", pos: " << goodOtherPositions[iN] << G4endl;
+    }
   }
     
   
@@ -1468,13 +1468,18 @@ std::pair<G4ThreeVector,G4ThreeVector> G4CMPBogoliubovQPRandomWalkTransport::Fin
   G4ThreeVector inPlane(pos1.getX()-pos2.getX(),pos1.getY()-pos2.getY(),pos1.getZ()-pos2.getZ());
   G4ThreeVector outOfPlane = (inPlane.cross(norm1)).unit();
 
-  //Sanity check -- can be removed when we move toward more geometry-agnostic code
+  //Handle floating point errors that might push the norm into slight non-orthogonality. For now this is not geometry-orientation-agnostic,
+  //but is a needed sanity check.
   if( outOfPlane.getX() != 0 || outOfPlane.getY() != 0 ){
-    G4ExceptionDescription msg;
-    msg << "Currently, we are only working in XY. The out-of-plane vector is somehow not purely along z.";
-    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindSurfaceTangentsForStuckQPEjection", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+    if( fabs(outOfPlane.getX()) < 1e-10 ){ outOfPlane.setX(0); }
+    if( fabs(outOfPlane.getY()) < 1e-10 ){ outOfPlane.setY(0); }
+    if( outOfPlane.getX() != 0 || outOfPlane.getY() != 0 ){
+      G4ExceptionDescription msg;
+      msg << "Currently, we are only working in XY. After adjustment for reasonable floating point errors, the out-of-plane vector is still somehow not purely along z.";
+      G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindSurfaceTangentsForStuckQPEjection", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+    }
   }
-
+  
   
   //Now use the outOfPlane vector with the norms to get tangent vectors (with still-to-be-defined directions relative to the corner)
   G4ThreeVector tangVect1 = (outOfPlane.cross(norm1)).unit();
