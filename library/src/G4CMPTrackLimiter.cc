@@ -11,15 +11,19 @@
 //
 // 20170822  M. Kelsey -- Add checking on current vs. original volume
 // 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
+// 20250327  G4CMP-468:  Stop surface displacement reflections from "escaping."
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4ForceCondition.hh"
 #include "G4ParticleChange.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4VSolid.hh"
+#include "G4TransportationManager.hh"
+#include "G4Navigator.hh"
 #include <limits.h>
 
 
@@ -86,15 +90,22 @@ G4bool G4CMPTrackLimiter::BelowEnergyCut(const G4Track& track) const {
 G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
   G4VPhysicalVolume* prePV  = step.GetPreStepPoint()->GetPhysicalVolume();
   G4VPhysicalVolume* postPV = step.GetPostStepPoint()->GetPhysicalVolume();
+/*
+  G4cout << std::setprecision(std::numeric_limits<double>::max_digits10) << G4endl;
 
-  // Determine if PostStep is on PreStep Boundary - for specular reflections
-  G4bool notOnBoundary = true;
-  if (step.GetPreStepPoint()->GetStepStatus() == fGeomBoundary) {
-    G4VSolid* solid = prePV->GetLogicalVolume()->GetSolid();
-    EInside isIn = solid->Inside(GetLocalPosition(step.GetPostStepPoint()->GetPosition()));
-    notOnBoundary = (isIn != kSurface);
-  }
+  G4cout << "preStep Pos = " << step.GetPreStepPoint()->GetPosition() << G4endl;
+  G4cout << "preStep status = " << step.GetPreStepPoint()->GetStepStatus() << G4endl;
+  G4cout << "postStep Pos = " << step.GetPostStepPoint()->GetPosition() << G4endl;
+  G4cout << "postStep status = " << step.GetPostStepPoint()->GetStepStatus() << G4endl;
+  G4cout << "step dir = " << (step.GetPostStepPoint()->GetPosition() - step.GetPreStepPoint()->GetPosition()).unit() << G4endl;
+  G4cout << "prePV Name = " << prePV->GetName() << G4endl;
+  G4cout << "postPV Name = " << postPV->GetName() << G4endl;
+  G4cout << "currPV Name = " << GetCurrentVolume()->GetName() << G4endl;
 
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
+  EInside isIn = solid->Inside(step.GetPostStepPoint()->GetPosition());
+  G4cout << "Value for surface: " << (isIn==kInside ? "inside" : isIn==kOutside ? "outside" : "surface") << G4endl;
+*/
   if (verboseLevel>2) {
     G4cout << " prePV " << prePV->GetName()
 	   << " postPV " << (postPV?postPV->GetName():"OutOfWorld")
@@ -104,7 +115,6 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
 
   // Track is NOT at a boundary, is stepping outside volume, or already escaped
   return ( (step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary) &&
-	   (postPV != GetCurrentVolume() || prePV != GetCurrentVolume()) &&
-     notOnBoundary
+	   (postPV != GetCurrentVolume() || prePV != GetCurrentVolume())
 	   );
 }

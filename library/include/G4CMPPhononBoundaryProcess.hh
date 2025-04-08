@@ -49,6 +49,9 @@ protected:
   // Apply phonon-specific conditions, after calling through to base
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
 
+  // Determine if we are in the special displaced-reflection case
+  G4bool BoundaryToBoundaryStep(const G4Step& aStep);
+
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			                      G4ParticleChange& aParticleChange);
 

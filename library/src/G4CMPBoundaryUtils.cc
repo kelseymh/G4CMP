@@ -274,16 +274,22 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack);
 
   if (!matTable) {
+    G4cout << "!matTable" << G4endl;
     DoSimpleKill(aTrack, aStep, aParticleChange);
   } else if (electrode && electrode->IsNearElectrode(aStep)) {
+    G4cout << "absorb at electrobe" << G4endl;
     electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
   } else if (AbsorbTrack(aTrack, aStep)) {
+    G4cout << "do abs" << G4endl;
     DoAbsorption(aTrack, aStep, aParticleChange);
   } else if (MaximumReflections(aTrack)) {
+    G4cout << "maxRef" << G4endl;
     DoSimpleKill(aTrack, aStep, aParticleChange);
   } else if (ReflectTrack(aTrack, aStep)) {
+    G4cout << "Reflection" << G4endl;
     DoReflection(aTrack, aStep, aParticleChange);
   } else {
+    G4cout << "transmission" << G4endl;
     DoTransmission(aTrack, aStep, aParticleChange);
   }
 }

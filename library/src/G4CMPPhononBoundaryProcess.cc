@@ -32,6 +32,7 @@
 // 20250124  G4CMP-447 -- Use FillParticleChange() to update wavevector and Vg.
 // 20250204  G4CMP-459 -- Support reflection displacement search at hard corners.
 // 20250325  G4CMP-463 -- Set surface step size & limit with macro command.
+// 20250402  G4CMP-468 -- Support position change after surface displacement.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -45,6 +46,7 @@
 #include "G4ExceptionSeverity.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4LatticePhysical.hh"
+#include "G4Navigator.hh"
 #include "G4ParallelWorldProcess.hh"
 #include "G4ParticleChange.hh"
 #include "G4PhononPolarization.hh"
@@ -56,6 +58,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
+#include "G4TransportationManager.hh"
 #include "G4UnitsTable.hh"
 #include "G4VParticleChange.hh"
 #include "G4VSolid.hh"
@@ -113,8 +116,16 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
 
   aParticleChange.Initialize(aTrack);
-  if (!IsGoodBoundary(aStep))
+
+  // Handle Boundary -> Boundary steps that "ignore" the bulk of the detector
+  // e.g. DetectorPV -> DetectorPV instead of DetectorPV -> ZipPV -> DetectorPV
+  if (BoundaryToBoundaryStep(aStep)) {
+    GetBoundingVolumes(aStep);
+    SetPrePV(GetCurrentVolume());
+    GetSurfaceProperty(aStep);
+  } else if (!IsGoodBoundary(aStep)) {
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+  }
 
   if (verboseLevel>1) {
     G4cout << GetProcessName() << "::PostStepDoIt "
@@ -150,6 +161,11 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 	  fabs(k*G4CMP::GetSurfaceNormal(aStep)) > absMinK);
 }
 
+G4bool G4CMPPhononBoundaryProcess::BoundaryToBoundaryStep(const G4Step& aStep) {
+  return (aStep.GetPreStepPoint()->GetStepStatus() == fGeomBoundary &&
+          aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary &&
+          aStep.GetStepLength() != 0);
+}
 
 void G4CMPPhononBoundaryProcess::
 DoReflection(const G4Track& aTrack, const G4Step& aStep,
@@ -163,6 +179,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   G4ThreeVector waveVector = trackInfo->k();
   G4int mode = GetPolarization(aStep.GetTrack());
+  G4ThreeVector surfacePoint = aStep.GetPostStepPoint()->GetPosition();
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   if (verboseLevel>2) {
@@ -172,8 +189,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   // Check whether step has proper boundary-stopped geometry
-  G4ThreeVector surfacePoint;
-  if (!CheckStepBoundary(aStep, surfacePoint)) {
+  if (!BoundaryToBoundaryStep(aStep) && !CheckStepBoundary(aStep, surfacePoint)) {
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
 
@@ -222,8 +238,13 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     return;
   } else if (random < downconversionProb + specProb) {
     reflectedKDir = GetReflectedVector(waveVector, surfNorm, mode, surfacePoint); // Modify surfacePoint & surfNorm in place
-    particleChange.ProposePosition(surfacePoint);
     refltype = "specular";
+    // If displacement occured: update the surface position and navigator for volume assignment
+    if (*particleChange.GetPosition() != surfacePoint) {
+      particleChange.ProposePosition(surfacePoint);
+      G4Navigator* navigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+      navigator->LocateGlobalPointWithinVolume(surfacePoint);
+    }
   } else {
     reflectedKDir = GetLambertianVector(surfNorm, mode);
     refltype = "diffuse";
@@ -232,10 +253,10 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // Update trackInfo wavevector and particleChange's group velocity and momentum direction
   // reflectedKDir is in global coordinates here - no conversion needed
   FillParticleChange(particleChange, aTrack, reflectedKDir);
-  G4ThreeVector vdir = *particleChange.GetMomentumDirection();
+  const G4ThreeVector vdir = *particleChange.GetMomentumDirection();
 
   if (verboseLevel>2) {
-    G4cout << "\n New surface position " << surfacePoint
+    G4cout << "\n New surface position " << *particleChange.GetPosition()
      << "\n New wavevector direction " << reflectedKDir
 	   << "\n New momentum direction " << vdir << G4endl;
   }
@@ -632,8 +653,7 @@ AdjustToEdgePosition(const G4VSolid* solid, const G4ThreeVector& kTan,
                         solid->DistanceToOut(stepLocalPos))
                       ? solid->DistanceToIn(stepLocalPos)
                       : solid->DistanceToOut(stepLocalPos);
-    G4cout << std::setprecision(std::numeric_limits<double>::max_digits10)
-      << (GetProcessName()+"::AdjustToEdgePosition").c_str()
+    G4cout << (GetProcessName()+"::AdjustToEdgePosition").c_str()
       << ": initialPos = " << originalPos
       << ", kTan = " << kTan
       << ", finalPos = " << stepLocalPos
@@ -677,8 +697,7 @@ ReflectAgainstEdge(const G4VSolid* solid, G4ThreeVector& kTan,
   }
 
   if (verboseLevel>3) {
-    G4cout << std::setprecision(std::numeric_limits<double>::max_digits10)
-      << (GetProcessName()+"::ReflectAgainstEdge").c_str()
+    G4cout << (GetProcessName()+"::ReflectAgainstEdge").c_str()
       << ": stepLocalPos = " << stepLocalPos
       << ", kTan_0 = " << kTan - 2*((kTan * -refNorm) * -refNorm)
       << ", edgeVector = " << edgeVec
