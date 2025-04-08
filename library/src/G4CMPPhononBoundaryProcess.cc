@@ -142,6 +142,7 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   ApplyBoundaryAction(aTrack, aStep, aParticleChange);
 
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
+  G4cout << "---------------------------------------------------------------" << G4endl;
   return &aParticleChange;
 }
 
@@ -162,9 +163,13 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 }
 
 G4bool G4CMPPhononBoundaryProcess::BoundaryToBoundaryStep(const G4Step& aStep) {
-  return (aStep.GetPreStepPoint()->GetStepStatus() == fGeomBoundary &&
-          aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary &&
-          aStep.GetStepLength() != 0);
+  /*G4StepPoint* preStep = aStep.GetPreStepPoint();
+  G4StepPoint* postStep = aStep.GetPostStepPoint();
+  return (preStep->GetStepStatus() == fGeomBoundary &&
+          postStep->GetStepStatus() == fGeomBoundary &&
+          preStep->GetPhysicalVolume() != GetCurrentVolume() &&
+          preStep->GetPhysicalVolume() == postStep->GetPhysicalVolume());*/
+  return false;
 }
 
 void G4CMPPhononBoundaryProcess::
@@ -239,12 +244,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   } else if (random < downconversionProb + specProb) {
     reflectedKDir = GetReflectedVector(waveVector, surfNorm, mode, surfacePoint); // Modify surfacePoint & surfNorm in place
     refltype = "specular";
-    // If displacement occured: update the surface position and navigator for volume assignment
-    if (*particleChange.GetPosition() != surfacePoint) {
-      particleChange.ProposePosition(surfacePoint);
-      G4Navigator* navigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
-      navigator->LocateGlobalPointWithinVolume(surfacePoint);
-    }
   } else {
     reflectedKDir = GetLambertianVector(surfNorm, mode);
     refltype = "diffuse";
@@ -254,6 +253,14 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // reflectedKDir is in global coordinates here - no conversion needed
   FillParticleChange(particleChange, aTrack, reflectedKDir);
   const G4ThreeVector vdir = *particleChange.GetMomentumDirection();
+
+  // If displacement occured: update the surface position and navigator for volume assignment
+  if (*particleChange.GetPosition() != surfacePoint) {
+    G4cout << "CHANGING POSITION AND UPDATING NAV" << G4endl;
+    particleChange.ProposePosition(surfacePoint);
+    G4Navigator* navigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+    navigator->LocateGlobalPointAndSetup(surfacePoint, &vdir, true, false);
+  }
 
   if (verboseLevel>2) {
     G4cout << "\n New surface position " << *particleChange.GetPosition()

@@ -90,7 +90,7 @@ G4bool G4CMPTrackLimiter::BelowEnergyCut(const G4Track& track) const {
 G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
   G4VPhysicalVolume* prePV  = step.GetPreStepPoint()->GetPhysicalVolume();
   G4VPhysicalVolume* postPV = step.GetPostStepPoint()->GetPhysicalVolume();
-/*
+
   G4cout << std::setprecision(std::numeric_limits<double>::max_digits10) << G4endl;
 
   G4cout << "preStep Pos = " << step.GetPreStepPoint()->GetPosition() << G4endl;
@@ -105,7 +105,7 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   EInside isIn = solid->Inside(step.GetPostStepPoint()->GetPosition());
   G4cout << "Value for surface: " << (isIn==kInside ? "inside" : isIn==kOutside ? "outside" : "surface") << G4endl;
-*/
+
   if (verboseLevel>2) {
     G4cout << " prePV " << prePV->GetName()
 	   << " postPV " << (postPV?postPV->GetName():"OutOfWorld")
