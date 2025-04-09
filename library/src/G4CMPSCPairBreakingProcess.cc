@@ -193,12 +193,13 @@ void G4CMPSCPairBreakingProcess::GenerateBogoliubovQPPair(std::pair<G4double,G4d
   //Edit: apparently I shouldn't set these velocities explicitly -- need to amend above two lines once we merge with Eric's bit (REL)
     
   //Create direction vectors for the QPs
-  //For lack of something more physical, (i.e. just to test for now), we make random
-  //Given that the QPs propagate diffusively anyway, I'm not sure we need anything much better than this.
-  //G4ThreeVector vel1 = G4RandomDirection()*vel1Mag;
-  //G4ThreeVector vel2 = G4RandomDirection()*vel2Mag;
+  //For lack of something more physical, (i.e. just to test for now), we make random in XY.
   G4ThreeVector vel1 = G4RandomDirection();
+  vel1.setZ(0);
+  vel1 = vel1.unit();
   G4ThreeVector vel2 = G4RandomDirection();
+  vel2.setZ(0);
+  vel2= vel2.unit();
   
   // Construct the secondaries and set their attributes. Hopefully we don't have to muck with the time here.
   G4Track* sec1 = G4CMP::CreateBogoliubovQP(aTrack, energy1, vel1, aTrack.GetGlobalTime(),aTrack.GetPosition());

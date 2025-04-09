@@ -44,7 +44,7 @@ void G4CMPBogoliubovQPRadiatesPhononProcess::SetVerboseLevel(G4int vb) {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4Track& aTrack,
 								       const G4Step& aStep)
-{ 
+{
   //Debugging
   if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt ----------" << G4endl;
@@ -97,7 +97,7 @@ G4VParticleChange* G4CMPBogoliubovQPRadiatesPhononProcess::PostStepDoIt(const G4
 
   //4. Do the clear interaction lengths thing because we do still have a particle here.
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
-  
+
   //5. Return the particle change
   return &aParticleChange;
 }
@@ -200,7 +200,8 @@ G4double G4CMPBogoliubovQPRadiatesPhononProcess::GetMeanFreePath(const G4Track& 
   if( verboseLevel > 5 ){
     G4cout << "GMFP Function Point A | Mean free path in QPRadiatesPhononProcess: " << mfpBase << ", with nMFPsLeft: " << GetNumberOfInteractionLengthLeft() << G4endl;
   }
-  
+
+
   //If we don't trigger that exception, continue.
   return mfpBase;
 }

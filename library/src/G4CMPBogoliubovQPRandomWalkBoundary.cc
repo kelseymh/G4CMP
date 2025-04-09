@@ -224,6 +224,7 @@ G4CMPBogoliubovQPRandomWalkBoundary::PostStepDoIt(const G4Track& aTrack,
   }
   ApplyBoundaryAction(aTrack, aStep, aParticleChange);
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
+  
   return &aParticleChange;
 }
 
@@ -340,10 +341,10 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
   }
   
   //Debugging
-  if( verboseLevel > 5 ){
+  //if( verboseLevel > 5 ){
     G4cout << "RWBoundary DR Function Point C | inside DoReflection initial direction  " <<pdir << G4endl;
     G4cout << "RWBoundary DR Function Point C | inside DoReflection reflected direction  " <<newDir << G4endl;
-  }
+    //}
   
   aParticleChange.ProposeMomentumDirection(newDir);
 }

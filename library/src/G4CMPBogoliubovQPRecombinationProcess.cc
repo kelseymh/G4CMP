@@ -95,7 +95,8 @@ G4VParticleChange* G4CMPBogoliubovQPRecombinationProcess::PostStepDoIt(const G4T
   }
 
   //Don't have a "clear" process because the particle is dead at the end of this function
-  
+
+
   //6. Return the particle change
   return &aParticleChange;
 }
@@ -157,5 +158,6 @@ G4double G4CMPBogoliubovQPRecombinationProcess::GetMeanFreePath(const G4Track& t
   if( verboseLevel > 5 ){
     G4cout << "GMFP Function Point A | mean free path in QPRecombinationProcess: " << mfpBase << ", with nMFPsLeft: " << GetNumberOfInteractionLengthLeft() << G4endl;
   }
+
   return mfpBase;
 }

@@ -89,7 +89,7 @@ void G4CMPSCPairBreakingRate::UpdateLookupTable(const G4LatticePhysical * theLat
     fCurrentNormalizedTauPairBreakingVsEnergy = fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy[theLat];
   }    
   //2. If it does, just make the "active" functions the ones in the map
-  else{  fCurrentNormalizedTauPairBreakingVsEnergy = fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy[theLat]; }  
+  else{  fCurrentNormalizedTauPairBreakingVsEnergy = fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy[theLat]; }
 }
 
 

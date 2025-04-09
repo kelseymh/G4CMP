@@ -70,7 +70,7 @@ public:
   // Post step actions
   G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&) override;
 
-  G4ThreeVector FindDirectionToNearbyBoundary(const G4Track& track, const G4double the2DSafety );
+  G4ThreeVector FindDirectionToNearbyBoundary(const G4Track& track, const G4double the2DSafety, G4bool & needToRepeatCalculation, G4bool useSweepForDaughterSafety = false );
   
 public:
  
@@ -171,7 +171,7 @@ private:
   G4ThreeVector fOutgoingSurfaceTangent2;
   G4double fDotProductDefiningUniqueNorms;
   G4double fStuckInCornerThreshold;
-  
+  G4double fNeedSweptSafetyInGetMFP;
   
 };
 
