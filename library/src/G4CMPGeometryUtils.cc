@@ -184,9 +184,9 @@ std::pair<G4double,G4ThreeVector> G4CMP::Get2DSafetyWithDirection(const G4VTouch
 								  G4ThreeVector tangVect2)
 {
   G4int verboseLevel = G4CMPConfigManager::GetVerboseLevel();
-  //  if( verboseLevel > 5 ){
+  if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPGeometryUtils::Get2DSafetyWithDirection ----------" << G4endl;
-    //}
+  }
 
   
   //Pseudocode

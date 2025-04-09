@@ -675,7 +675,11 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
     //since if there are lots of daughters, this will compute a sweep for AAAAAALLL of them. So we only want to run this sparingly.
     //Also happens if we're near corners where the findDirection strategy math breaks down
     if( needToRepeat ){
-      G4cout << "Need to repeat tripped." << G4endl;
+
+      //Debugging
+      if( verboseLevel > 5 ){
+	G4cout << "PSDI Function Point BA | Need to repeat tripped." << G4endl;
+      }
       std::pair<G4double,G4ThreeVector> the2DSafetyAndDir = G4CMP::Get2DSafetyWithDirection(track.GetStep()->GetPreStepPoint()->GetTouchable(),
 											    track.GetPosition(),
 											    track.GetMomentumDirection(),
@@ -821,9 +825,9 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   //Sanity check
   if( deltaDistToSurface < 0 ){
     momDir = -1*momDir;
-    G4ExceptionDescription msg;
-    msg << "The DeltaDistToSurface is negative for some reason? This is probably an edge case that is actually ok, but flagging now for debugging.";
-    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
+    //G4ExceptionDescription msg;
+    //msg << "The DeltaDistToSurface is negative for some reason? This is probably an edge case that is actually ok, but flagging now for debugging.";
+    //G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
   }
 
   G4double theta = acos(fabs(deltaDistToSurface)/deltaPath);
@@ -919,15 +923,15 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   //If option 1 safety is lower, it means we return option 1 as the direction to the boundary
   G4ThreeVector outputDir;
   if( option1Safety < option2Safety ){
-    //if( verboseLevel > 5 ){
+    if( verboseLevel > 5 ){
       G4cout << "FDNB Function Point F | Direction to the boundary is option 1: " << option1 << G4endl;
-      //}
+    }
     outputDir = option1;
   }
   else if( option2Safety < option1Safety ){
-    //if( verboseLevel > 5 ){
+    if( verboseLevel > 5 ){
       G4cout << "FDNB Function Point G | Direction to the boundary is option 2: " << option2 << G4endl;
-      //}
+    }
     outputDir = option2;
   }  
   else{
@@ -956,9 +960,12 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
 					      false,
 					      useSweepForDaughterSafety);
   if( fabs((checkedSafety/the2DSafety) - 0.5) > fractionalSafetyDifferenceThreshold ){
+
+    /*
     G4ExceptionDescription msg;
     msg << "When trying to find the direction to the boundary, something seems fishy -- moving in the purported direction of the boundary by half of the safety does not give a new safety that is half of the distance to the boundary. Safety will need to be recomputed with the sweep technique. Pos: " << track.GetPosition() << ", alleged direction to boundary: " << outputDir << ", original safety: " << the2DSafety << ", the checked safety: " << checkedSafety << ", volume at thisPos: " << G4CMP::GetVolumeAtPoint(track.GetPosition()) << " (" << G4CMP::GetVolumeAtPoint(track.GetPosition())->GetName() << G4endl;
     G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
+    */
     needToRepeatCalculation = true;
   }
 
@@ -980,9 +987,12 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
 
 
     if( G4CMP::GetVolumeAtPoint(thisPos) == G4CMP::GetVolumeAtPoint(posOstensiblyOverBoundary) ){
+
+      /*
       G4ExceptionDescription msg;
       msg << "When trying to find the direction to the boundary, we seem to be calculating a direction vector that satisfies our first, fractionalSafetyDifference criterion, but not our phantom boundary condition. (This may sometimes happen near corners, where our direction-finding algorithm's math breaks down. At position: " << track.GetPosition() << ", alleged direction to boundary: " << outputDir << ", original safety: " << the2DSafety << ", volume at thisPos: " << G4CMP::GetVolumeAtPoint(thisPos) << " (" << G4CMP::GetVolumeAtPoint(thisPos)->GetName() << ", volume at the position ostensibly over the boundary: " << G4CMP::GetVolumeAtPoint(posOstensiblyOverBoundary) << G4endl;
       G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
+      */
       needToRepeatCalculation = true;
     }
   }
@@ -1261,7 +1271,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
 											      track.GetMomentumDirection(),
 											      true);
 	the2DSafety = the2DSafetyAndDir.first;
-	G4cout << "the2DSafety after doing a swept thing in GetMFP: " << the2DSafety << G4endl;
+	//G4cout << "the2DSafety after doing a swept thing in GetMFP: " << the2DSafety << G4endl;
       }
     }
     f2DSafety = the2DSafety;
