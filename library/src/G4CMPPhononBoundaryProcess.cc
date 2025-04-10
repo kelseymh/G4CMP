@@ -116,16 +116,8 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
 
   aParticleChange.Initialize(aTrack);
-
-  // Handle Boundary -> Boundary steps that "ignore" the bulk of the detector
-  // e.g. DetectorPV -> DetectorPV instead of DetectorPV -> ZipPV -> DetectorPV
-  if (BoundaryToBoundaryStep(aStep)) {
-    GetBoundingVolumes(aStep);
-    SetPrePV(GetCurrentVolume());
-    GetSurfaceProperty(aStep);
-  } else if (!IsGoodBoundary(aStep)) {
+  if (!IsGoodBoundary(aStep))
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-  }
 
   if (verboseLevel>1) {
     G4cout << GetProcessName() << "::PostStepDoIt "
@@ -162,15 +154,6 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 	  fabs(k*G4CMP::GetSurfaceNormal(aStep)) > absMinK);
 }
 
-G4bool G4CMPPhononBoundaryProcess::BoundaryToBoundaryStep(const G4Step& aStep) {
-  /*G4StepPoint* preStep = aStep.GetPreStepPoint();
-  G4StepPoint* postStep = aStep.GetPostStepPoint();
-  return (preStep->GetStepStatus() == fGeomBoundary &&
-          postStep->GetStepStatus() == fGeomBoundary &&
-          preStep->GetPhysicalVolume() != GetCurrentVolume() &&
-          preStep->GetPhysicalVolume() == postStep->GetPhysicalVolume());*/
-  return false;
-}
 
 void G4CMPPhononBoundaryProcess::
 DoReflection(const G4Track& aTrack, const G4Step& aStep,
@@ -184,7 +167,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   G4ThreeVector waveVector = trackInfo->k();
   G4int mode = GetPolarization(aStep.GetTrack());
-  G4ThreeVector surfacePoint = aStep.GetPostStepPoint()->GetPosition();
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
   if (verboseLevel>2) {
@@ -194,7 +176,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   // Check whether step has proper boundary-stopped geometry
-  if (!BoundaryToBoundaryStep(aStep) && !CheckStepBoundary(aStep, surfacePoint)) {
+  G4ThreeVector surfacePoint;
+  if (!CheckStepBoundary(aStep, surfacePoint)) {
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
 
@@ -255,11 +238,10 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   const G4ThreeVector vdir = *particleChange.GetMomentumDirection();
 
   // If displacement occured: update the surface position and navigator for volume assignment
-  if (*particleChange.GetPosition() != surfacePoint) {
-    G4cout << "CHANGING POSITION AND UPDATING NAV" << G4endl;
+  if (refltype == "specular" && *particleChange.GetPosition() != surfacePoint) {
     particleChange.ProposePosition(surfacePoint);
     G4Navigator* navigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
-    navigator->LocateGlobalPointAndSetup(surfacePoint, &vdir, true, false);
+    navigator->LocateGlobalPointAndSetup(surfacePoint, &vdir, true, true);
   }
 
   if (verboseLevel>2) {
@@ -287,7 +269,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     G4ThreeVector stepLocal = GetLocalPosition(stepPos);
     G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
-
     EInside place = solid->Inside(stepLocal);
     G4cout << " After trial step, " << (place==kInside ? "inside"
 					: place==kOutside ? "OUTSIDE"

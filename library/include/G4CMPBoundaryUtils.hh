@@ -51,9 +51,6 @@ public:
   
   virtual void SetVerboseLevel(G4int vb) { buVerboseLevel = vb; }
 
-  // Artificially set prePV for handling displaced reflections
-  void SetPrePV(const G4VPhysicalVolume* myPV) { prePV = const_cast<G4VPhysicalVolume*>(myPV); }
-
   // Check whether this step is at a good boundary for processing
   virtual G4bool IsGoodBoundary(const G4Step& aStep);
 
