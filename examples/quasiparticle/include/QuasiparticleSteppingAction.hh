@@ -3,8 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-#ifndef PhononSteppingAction_hh
-#define PhononSteppingAction_hh 1
+#ifndef QuasiparticleSteppingAction_hh
+#define QuasiparticleSteppingAction_hh 1
 
 #include "G4UserSteppingAction.hh"
 
@@ -12,12 +12,12 @@
 
 class G4Step;
 
-class PhononSteppingAction : public G4UserSteppingAction
+class QuasiparticleSteppingAction : public G4UserSteppingAction
 {
 public:
 
-  PhononSteppingAction();
-  virtual ~PhononSteppingAction();
+  QuasiparticleSteppingAction();
+  virtual ~QuasiparticleSteppingAction();
   virtual void UserSteppingAction(const G4Step* step);
   void ExportStepInformation( const G4Step * step );
   

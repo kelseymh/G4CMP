@@ -3,16 +3,11 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file phonon/g4cmpPhonon.cc
-/// \brief Main program of the G4CMP/phonon example
+/// \file quasiparticle/quasiparticle.cc
+/// \brief Main program of the G4CMP/quasiparticle example
 //
 // $Id$
 //
-// 20140509  Add conditional code for Geant4 10.0 vs. earlier
-// 20150112  Remove RM->Initialize() call to allow macro configuration
-// 20160111  Remove Geant4 version check since we now hard depend on 10.2+
-// 20170816  Add example-specific configuration manager
-// 20220718  Remove obsolete pre-processor macros G4VIS_USE and G4UI_USE
 
 #include "G4RunManager.hh"
 #include "G4UIExecutive.hh"
@@ -21,9 +16,10 @@
 
 #include "G4CMPPhysicsList.hh"
 #include "G4CMPConfigManager.hh"
-#include "PhononActionInitialization.hh"
-#include "PhononConfigManager.hh"
-#include "PhononDetectorConstruction.hh"
+#include "QuasiparticleActionInitialization.hh"
+#include "QuasiparticleConfigManager.hh"
+#include "QuasiparticleDetectorConstruction.hh"
+#include "QuasiparticleDetectorParameters.hh"
 
 int main(int argc,char** argv)
 {
@@ -33,7 +29,7 @@ int main(int argc,char** argv)
 
  // Set mandatory initialization classes
  //
- PhononDetectorConstruction* detector = new PhononDetectorConstruction();
+ QuasiparticleDetectorConstruction* detector = new QuasiparticleDetectorConstruction();
  runManager->SetUserInitialization(detector);
 
  G4VUserPhysicsList* physics = new G4CMPPhysicsList();
@@ -42,11 +38,11 @@ int main(int argc,char** argv)
 
  // Set user action classes (different for Geant4 10.0)
  //
- runManager->SetUserInitialization(new PhononActionInitialization);
+ runManager->SetUserInitialization(new QuasiparticleActionInitialization);
 
  // Create configuration managers to ensure macro commands exist
  G4CMPConfigManager::Instance();
- PhononConfigManager::Instance();
+ QuasiparticleConfigManager::Instance();
 
  // Visualization manager
  //

@@ -4,41 +4,41 @@
 \***********************************************************************/
 
 // $Id$
-// File:  PhononConfigManager.cc
+// File:  QuasiparticleConfigManager.cc
 //
 // Description:	Singleton container class for user configuration of G4CMP
-//		phonon example. Looks for environment variables	at
+//		quasiparticle example. Looks for environment variables	at
 //		initialization to set default values; active values may be
-//		changed via macro commands (see PhononConfigMessenger).
+//		changed via macro commands (see QuasiparticleConfigMessenger).
 //
 // 20170816  M. Kelsey -- Extract hit filename from G4CMPConfigManager.
 
-#include "PhononConfigManager.hh"
-#include "PhononConfigMessenger.hh"
+#include "QuasiparticleConfigManager.hh"
+#include "QuasiparticleConfigMessenger.hh"
 #include "G4RunManager.hh"
 #include <stdlib.h>
 
 
 // Constructor and Singleton Initializer
 
-PhononConfigManager* PhononConfigManager::theInstance = 0;
+QuasiparticleConfigManager* QuasiparticleConfigManager::theInstance = 0;
 
-PhononConfigManager* PhononConfigManager::Instance() {
-  if (!theInstance) theInstance = new PhononConfigManager;
+QuasiparticleConfigManager* QuasiparticleConfigManager::Instance() {
+  if (!theInstance) theInstance = new QuasiparticleConfigManager;
   return theInstance;
 }
 
-PhononConfigManager::PhononConfigManager()
+QuasiparticleConfigManager::QuasiparticleConfigManager()
   : Hit_file(getenv("G4CMP_HIT_FILE")?getenv("G4CMP_HIT_FILE"):"phonon_hits.txt"),
-    messenger(new PhononConfigMessenger(this)) {;}
+    messenger(new QuasiparticleConfigMessenger(this)) {;}
 
-PhononConfigManager::~PhononConfigManager() {
+QuasiparticleConfigManager::~QuasiparticleConfigManager() {
   delete messenger; messenger=0;
 }
 
 
 // Trigger rebuild of geometry if parameters change
 
-void PhononConfigManager::UpdateGeometry() {
+void QuasiparticleConfigManager::UpdateGeometry() {
   G4RunManager::GetRunManager()->ReinitializeGeometry(true);
 }

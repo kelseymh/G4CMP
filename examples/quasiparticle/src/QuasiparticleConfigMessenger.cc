@@ -4,21 +4,21 @@
 \***********************************************************************/
 
 // $Id$
-// File:  PhononConfigMessenger.cc
+// File:  QuasiparticleConfigMessenger.cc
 //
 // Description:	Macro command defitions to set user configuration in
-//		PhononConfigManager.
+//		QuasiparticleConfigManager.
 //
 // 20170816  Michael Kelsey
 
-#include "PhononConfigMessenger.hh"
-#include "PhononConfigManager.hh"
+#include "QuasiparticleConfigMessenger.hh"
+#include "QuasiparticleConfigManager.hh"
 #include "G4UIcmdWithAString.hh"
 
 
 // Constructor and destructor
 
-PhononConfigMessenger::PhononConfigMessenger(PhononConfigManager* mgr)
+QuasiparticleConfigMessenger::QuasiparticleConfigMessenger(QuasiparticleConfigManager* mgr)
   : G4UImessenger("/g4cmp/", "User configuration for G4CMP phonon example"),
     theManager(mgr), hitsCmd(0) {
   hitsCmd = CreateCommand<G4UIcmdWithAString>("HitsFile",
@@ -26,13 +26,13 @@ PhononConfigMessenger::PhononConfigMessenger(PhononConfigManager* mgr)
 }
 
 
-PhononConfigMessenger::~PhononConfigMessenger() {
+QuasiparticleConfigMessenger::~QuasiparticleConfigMessenger() {
   delete hitsCmd; hitsCmd=0;
 }
 
 
 // Parse user input and add to configuration
 
-void PhononConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
+void QuasiparticleConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == hitsCmd) theManager->SetHitOutput(value);
 }

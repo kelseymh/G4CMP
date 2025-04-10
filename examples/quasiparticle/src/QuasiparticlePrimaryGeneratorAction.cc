@@ -3,15 +3,15 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file exoticphysics/phonon/src/PhononPrimaryGeneratorAction.cc
-/// \brief Implementation of the PhononPrimaryGeneratorAction class
+/// \file exoticphysics/quasiparticle/src/QuasiparticlePrimaryGeneratorAction.cc
+/// \brief Implementation of the QuasiparticlePrimaryGeneratorAction class
 //
 // $Id: e75f788b103aef810361fad30f75077829192c13 $
 //
 // 20140519  Allow the user to specify phonon type by name in macro; if
 //	     "geantino" is set, use random generator to select.
 
-#include "PhononPrimaryGeneratorAction.hh"
+#include "QuasiparticlePrimaryGeneratorAction.hh"
 
 #include "G4Event.hh"
 #include "G4Geantino.hh"
@@ -25,7 +25,7 @@
 
 using namespace std;
 
-PhononPrimaryGeneratorAction::PhononPrimaryGeneratorAction() { 
+QuasiparticlePrimaryGeneratorAction::QuasiparticlePrimaryGeneratorAction() { 
   //G4int n_particle = 1;
   //fParticleGun  = new G4ParticleGun(n_particle);   
 
@@ -43,14 +43,14 @@ PhononPrimaryGeneratorAction::PhononPrimaryGeneratorAction() {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
-PhononPrimaryGeneratorAction::~PhononPrimaryGeneratorAction() {
+QuasiparticlePrimaryGeneratorAction::~QuasiparticlePrimaryGeneratorAction() {
   delete fParticleGun;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
  
-void PhononPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
+void QuasiparticlePrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
 
   /*
   if (fParticleGun->GetParticleDefinition() == G4Geantino::Definition()) {

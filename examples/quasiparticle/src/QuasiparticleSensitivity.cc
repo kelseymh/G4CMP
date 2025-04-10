@@ -3,7 +3,7 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-#include "PhononSensitivity.hh"
+#include "QuasiparticleSensitivity.hh"
 #include "G4CMPElectrodeHit.hh"
 #include "G4Event.hh"
 #include "G4HCofThisEvent.hh"
@@ -14,23 +14,23 @@
 #include "G4RunManager.hh"
 #include "G4SDManager.hh"
 #include "G4SystemOfUnits.hh"
-#include "PhononConfigManager.hh"
+#include "QuasiparticleConfigManager.hh"
 #include <fstream>
 
 
-PhononSensitivity::PhononSensitivity(G4String name) :
+QuasiparticleSensitivity::QuasiparticleSensitivity(G4String name) :
   G4CMPElectrodeSensitivity(name), fileName("") {
-  SetOutputFile(PhononConfigManager::GetHitOutput());
+  SetOutputFile(QuasiparticleConfigManager::GetHitOutput());
 }
 
 /* Move is disabled for now because old versions of GCC can't move ofstream
-PhononSensitivity::PhononSensitivity(PhononSensitivity&& in) :
+QuasiparticleSensitivity::QuasiparticleSensitivity(QuasiparticleSensitivity&& in) :
   G4CMPElectrodeSensitivity(std::move(in)),
   output(std::move(in.output)),
   fileName(std::move(in.fileName)) {
 }
 
-PhononSensitivity& PhononSensitivity::operator=(PhononSensitivity&& in) {
+QuasiparticleSensitivity& QuasiparticleSensitivity::operator=(QuasiparticleSensitivity&& in) {
   // Move all base mebers
   G4CMPElectrodeSensitivity::operator=(std::move(in));
 
@@ -43,7 +43,7 @@ PhononSensitivity& PhononSensitivity::operator=(PhononSensitivity&& in) {
 }
 */
 
-PhononSensitivity::~PhononSensitivity() {
+QuasiparticleSensitivity::~QuasiparticleSensitivity() {
   if (output.is_open()) output.close();
   if (!output.good()) {
     G4cerr << "Error closing output file, " << fileName << ".\n"
@@ -51,7 +51,7 @@ PhononSensitivity::~PhononSensitivity() {
   }
 }
 
-void PhononSensitivity::EndOfEvent(G4HCofThisEvent* HCE) {
+void QuasiparticleSensitivity::EndOfEvent(G4HCofThisEvent* HCE) {
   G4int HCID = G4SDManager::GetSDMpointer()->GetCollectionID(hitsCollection);
   auto* hitCol = static_cast<G4CMPElectrodeHitsCollection*>(HCE->GetHC(HCID));
   std::vector<G4CMPElectrodeHit*>* hitVec = hitCol->GetVector();
@@ -79,7 +79,7 @@ void PhononSensitivity::EndOfEvent(G4HCofThisEvent* HCE) {
   }
 }
 
-void PhononSensitivity::SetOutputFile(const G4String &fn) {
+void QuasiparticleSensitivity::SetOutputFile(const G4String &fn) {
   if (fileName != fn) {
     if (output.is_open()) output.close();
     fileName = fn;
@@ -87,7 +87,7 @@ void PhononSensitivity::SetOutputFile(const G4String &fn) {
     if (!output.good()) {
       G4ExceptionDescription msg;
       msg << "Error opening output file " << fileName;
-      G4Exception("PhononSensitivity::SetOutputFile", "PhonSense003",
+      G4Exception("QuasiparticleSensitivity::SetOutputFile", "PhonSense003",
                   FatalException, msg);
       output.close();
     } else {
@@ -99,7 +99,7 @@ void PhononSensitivity::SetOutputFile(const G4String &fn) {
   }
 }
 
-G4bool PhononSensitivity::IsHit(const G4Step* step,
+G4bool QuasiparticleSensitivity::IsHit(const G4Step* step,
                                 const G4TouchableHistory*) const {
   /* Phonons tracks are sometimes killed at the boundary in order to spawn new
    * phonon tracks. These tracks that are killed deposit no energy and should

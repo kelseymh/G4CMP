@@ -5,13 +5,13 @@
 
 // $Id: 539f524339ae53ad098a07cfa3bebd07784d23dd $
 
-#include "PhononActionInitialization.hh"
-#include "PhononPrimaryGeneratorAction.hh"
-#include "PhononSteppingAction.hh"
+#include "QuasiparticleActionInitialization.hh"
+#include "QuasiparticlePrimaryGeneratorAction.hh"
+#include "QuasiparticleSteppingAction.hh"
 #include "G4CMPStackingAction.hh"
 
-void PhononActionInitialization::Build() const {
-  SetUserAction(new PhononPrimaryGeneratorAction);
+void QuasiparticleActionInitialization::Build() const {
+  SetUserAction(new QuasiparticlePrimaryGeneratorAction);
   SetUserAction(new G4CMPStackingAction);
-  SetUserAction(new PhononSteppingAction);
+  SetUserAction(new QuasiparticleSteppingAction);
 } 

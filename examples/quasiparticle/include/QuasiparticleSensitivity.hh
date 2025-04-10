@@ -3,25 +3,25 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-#ifndef PhononSensitivity_h
-#define PhononSensitivity_h 1
+#ifndef QuasiparticleSensitivity_h
+#define QuasiparticleSensitivity_h 1
 
 #include "G4CMPElectrodeSensitivity.hh"
 
-class PhononSensitivity final : public G4CMPElectrodeSensitivity {
+class QuasiparticleSensitivity final : public G4CMPElectrodeSensitivity {
 public:
-  PhononSensitivity(G4String name);
-  virtual ~PhononSensitivity();
+  QuasiparticleSensitivity(G4String name);
+  virtual ~QuasiparticleSensitivity();
   // No copies
-  PhononSensitivity(const PhononSensitivity&) = delete;
-  PhononSensitivity& operator=(const PhononSensitivity&) = delete;
+  QuasiparticleSensitivity(const QuasiparticleSensitivity&) = delete;
+  QuasiparticleSensitivity& operator=(const QuasiparticleSensitivity&) = delete;
   /* Move is disabled for now because old versions of GCC can't move ofstream
   // Move OK
-  PhononSensitivity(PhononSensitivity&&);
-  PhononSensitivity& operator=(PhononSensitivity&&);
+  QuasiparticleSensitivity(QuasiparticleSensitivity&&);
+  QuasiparticleSensitivity& operator=(QuasiparticleSensitivity&&);
   */
-  PhononSensitivity(PhononSensitivity&&) = delete;
-  PhononSensitivity& operator=(PhononSensitivity&&) = delete;
+  QuasiparticleSensitivity(QuasiparticleSensitivity&&) = delete;
+  QuasiparticleSensitivity& operator=(QuasiparticleSensitivity&&) = delete;
 
   virtual void EndOfEvent(G4HCofThisEvent*);
 

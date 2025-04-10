@@ -4,9 +4,9 @@
 \***********************************************************************/
 
 
-// Basic User Stepping action for Phonon
+// Basic User Stepping action for Quasiparticle
 
-#include "PhononSteppingAction.hh"
+#include "QuasiparticleSteppingAction.hh"
 #include <iostream>
 #include <iomanip>
 #include "globals.hh"
@@ -22,7 +22,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 //Default constructor
-PhononSteppingAction::PhononSteppingAction()
+QuasiparticleSteppingAction::QuasiparticleSteppingAction()
 {
   //Upon construction of this class, create a txt file with step information 
   fOutputFile.open("StepInformationFile.txt",std::ios::trunc);
@@ -32,14 +32,14 @@ PhononSteppingAction::PhononSteppingAction()
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-PhononSteppingAction::~PhononSteppingAction()
+QuasiparticleSteppingAction::~QuasiparticleSteppingAction()
 {
   fOutputFile.close();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 //Alternative constructor
-void PhononSteppingAction::UserSteppingAction( const G4Step * step )
+void QuasiparticleSteppingAction::UserSteppingAction( const G4Step * step )
 {
   //For now, simple: look at the pre-step point volume name and the track name
   //  std::cout << "REL stepping. PreSP volume name: " << step->GetPreStepPoint()->GetPhysicalVolume()->GetName() << ", track particle type: " << step->GetTrack()->GetParticleDefinition()->GetParticleName() << std::endl;
@@ -58,7 +58,7 @@ void PhononSteppingAction::UserSteppingAction( const G4Step * step )
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Do a set of queries of information to test for anharmonic decay
-void PhononSteppingAction::ExportStepInformation( const G4Step * step )
+void QuasiparticleSteppingAction::ExportStepInformation( const G4Step * step )
 {
   //Test
   G4StepPoint * preSP = step->GetPreStepPoint();

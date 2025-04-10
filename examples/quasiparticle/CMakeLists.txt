@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(g4cmpPhonon)
+project(g4cmpQuasiparticle)
 
 #----------------------------------------------------------------------------
 # Find G4CMP package -- NOTE: Assumes user has run g4cmp_env.*sh script!
@@ -39,27 +39,30 @@ endif()
 #----------------------------------------------------------------------------
 # Build stuff
 #
-set(phonon_SOURCES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononActionInitialization.cc 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononConfigManager.cc 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononConfigMessenger.cc 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononDetectorConstruction.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononPrimaryGeneratorAction.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononSensitivity.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononSteppingAction.cc
+set(quasiparticle_SOURCES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleActionInitialization.cc 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleConfigManager.cc 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleConfigMessenger.cc 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleDetectorConstruction.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticlePrimaryGeneratorAction.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleSensitivity.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleSteppingAction.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleQubitHousing.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticlePad.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleTransmissionLine.cc	
     )
     
 if(USE_GEANT4_STATIC_LIBS)
-    add_library(phononLib STATIC ${phonon_SOURCES})
+    add_library(quasiparticleLib STATIC ${quasiparticle_SOURCES})
 else()
-    add_library(phononLib SHARED ${phonon_SOURCES})
+    add_library(quasiparticleLib SHARED ${quasiparticle_SOURCES})
 endif()
-set_target_properties(phononLib PROPERTIES OUTPUT_NAME g4cmpPhonon)
+set_target_properties(quasiparticleLib PROPERTIES OUTPUT_NAME g4cmpQuasiparticle)
 
-target_link_libraries(phononLib ${G4CMP_LIBRARIES} ${Geant4_LIBRARIES})
+target_link_libraries(quasiparticleLib ${G4CMP_LIBRARIES} ${Geant4_LIBRARIES})
 
-add_executable(g4cmpPhonon g4cmpPhonon.cc)
-target_link_libraries(g4cmpPhonon phononLib)
+add_executable(g4cmpQuasiparticle g4cmpQuasiparticle.cc)
+target_link_libraries(g4cmpQuasiparticle quasiparticleLib)
 
-install(TARGETS phononLib DESTINATION lib)
-install(TARGETS g4cmpPhonon DESTINATION bin)
+install(TARGETS quasiparticleLib DESTINATION lib)
+install(TARGETS g4cmpQuasiparticle DESTINATION bin)
