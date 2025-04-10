@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-04-10  G4CMP-469 : Add silica phonon properties in CrystalMaps.
+
 2025-03-27  g4cmp-V09-05-00 Fix anharmonic decay rate in Ge, new NIEL model.
 2025-03-21  G4CMP-457 : Add EmpiricalNIEL with user-set linear extrapolation.
 2025-03-11  G4CMP-466 : Add download and tag instructions to README.
