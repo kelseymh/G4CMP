@@ -46,9 +46,10 @@ G4CMPBogoliubovQPRandomWalkTransport::G4CMPBogoliubovQPRandomWalkTransport(const
   fPathLength =  0.0;
   fPreDiffusionPathLength = 0.0;
   fDiffConst =  0.0;
-  fBoundaryFudgeFactor = 1.0001;
+  fBoundaryFudgeFactor = 1.001;
   //fBoundaryFudgeFactor = 1.002;
   fEpsilonForWalkOnSpheres = 1*CLHEP::um;
+  fHardFloorBoundaryScale = 10*CLHEP::nm;
   
   //fSafetyHelper is initialized in AlongStepGPIL
   fSafetyHelper=nullptr;
@@ -166,41 +167,47 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
     double timeTolerance = 1E-10; //For floating point errors    
     if( (fabs(currentMinimalStep/velocity - fTimeStepToBoundary) < timeTolerance) || fVerySmallStep ){
 
-      //Let's first handle the "very small step" scenarios.
-      if( fVerySmallStep ){
+      /*
+      //Let's first handle the "very small step" scenarios. This is only true for 
+      if( fVerySmallStep ){ //This will break for small steps *from* the boundary
 	if( verboseLevel > 5 ){
 	  G4cout << "ASGPIL Function Point F_0 | Looks like we're in a very small step. We are going to launch the track a bit farther than the 2D safety, and hopefully this gets us to a boundary. (Conditions for this include nearly-stuck QPs)" << G4endl;
 	}
-	fPathLength = f2DSafety * fBoundaryFudgeFactor;
+	//fPathLength = f2DSafety * fBoundaryFudgeFactor;
+	fPathLength = fEpsilonForWalkOnSpheres;
+	fTimeStep = fTimeStepToBoundary; //REL may need to tweak this as well given the change above
+      }
+      */
+      
+      //For non-"very small step" steps (the majority, ideally)
+      //else{
+
+      //If we're not very close to the boundary, then we just make our diffusion-folded path length equal to juuuuuust under the
+      //distance to the boundary. That way transportation will never win this alongStepGPIL.
+      //This also should trigger if we're starting from the boundary
+      if( f2DSafety >= fEpsilonForWalkOnSpheres || (fTrackOnBoundary) ){
+	fPathLength = f2DSafety / fBoundaryFudgeFactor; 
 	fTimeStep = fTimeStepToBoundary;
-      }
-      else{
-       
-	//If we're not very close to the boundary, then we just make our diffusion-folded path length equal to juuuuuust under the
-	//distance to the boundary. That way transportation will never win this alongStepGPIL.
-	//This also should trigger if we're starting from the boundary
-	if( f2DSafety >= fEpsilonForWalkOnSpheres || (fTrackOnBoundary) ){
-	  fPathLength = f2DSafety / fBoundaryFudgeFactor; 
-	  fTimeStep = fTimeStepToBoundary;
-	  
-	  //Debugging
-	  if( verboseLevel > 5 ){
-	    G4cout << "ASGPIL Function Point F_1 | Looks like the boundary-limited case applies here, with 2DSafety >= epsilon. Returning fPathLength just under f2DSafety = " << fPathLength << G4endl;
-	  }
-	}
 	
-	//Otherwise, if we are close to the boundary, then in this step we need to make our diffusion-folded path length equal to juuuuuuust
-	//larger than the distance to the boundary. This ensures we will always have transportation win and take us to the boundary.
-	else{
-	  fPathLength = f2DSafety * fBoundaryFudgeFactor;
-	  fTimeStep = fTimeStepToBoundary;
-	  
-	  //Debugging
-	  if( verboseLevel > 5 ){
-	    G4cout << "ASGPIL Function Point F_2 | Looks like the boundary-limited case applies here, with 2DSafety < epsilon. Returning fPathLength just over f2DSafety = " << fPathLength << G4endl;
-	  }
+	//Debugging
+	if( verboseLevel > 5 ){
+	  G4cout << "ASGPIL Function Point F_1 | Looks like the boundary-limited case applies here, with 2DSafety >= epsilon. Returning fPathLength just under f2DSafety = " << fPathLength << G4endl;
 	}
       }
+      
+      //Otherwise, if we are close to the boundary, then in this step we need to make our diffusion-folded path length equal to juuuuuuust
+      //larger than the distance to the boundary. This ensures we will always have transportation win and take us to the boundary.
+      else{
+	//fPathLength = f2DSafety * fBoundaryFudgeFactor;
+	fPathLength = fEpsilonForWalkOnSpheres; //Just boot it into the boundary. No hemming or hawwing. It just needs to categorically beat transportation.
+	fTimeStep = fTimeStepToBoundary; //REL may need to tweak this as well given the change above
+	
+	//Debugging
+	if( verboseLevel > 5 ){
+	  G4cout << "ASGPIL Function Point F_2 | Looks like the boundary-limited case applies here, with 2DSafety < epsilon. Returning fPathLength just over f2DSafety = " << fPathLength << G4endl;
+	}
+      }
+      //}
     }
     //If another process wins the discrete GPIL race, the above block won't trigger. Here we need to compute a radius corresponding
     //to that (smaller) elapsed time. However, the radius *must* be less than the boundary-limited radius because otherwise the
@@ -590,14 +597,85 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
     msg << "In a turnaround step and postStepDoIt is running";
     G4Exception("G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
   }
+
+  //Define a temporary track position that we can use here since there's a chance we'll want to nudge it slightly
+  G4ThreeVector trackPosition = track.GetPosition();
+
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "PSDI Function Point 00A | Currently at a position " << trackPosition << " in volume " << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << G4endl;
+  }
+
   
-  //Determine if we end up close to a boundary using Get2DSafety. Here it takes the post-step point (track.GetPosition())
+  //Determine if we end up close to a boundary using Get2DSafety. Here it takes the post-step point (track.GetPosition())  
   G4double the2DSafety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-					    track.GetPosition(),
+					    trackPosition,
 					    track.GetMomentumDirection(),
 					    false);
 
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "PSDI Function Point 0A | After running the2DSafety, Currently at a position " << trackPosition << " in volume " << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << G4endl;
+  }
 
+
+  //There are infrequent but fundamentally possible cases where the 2D safety is less than the "hard floor" length scale that we use
+  //to buffer our various volume check length scales and our direction-to-boundary finding. If this is the case, then we generate a
+  //random direction and bump the particle in that direction to edge it out of the "hard floor" length scale as long as it's within
+  //our same volume and has a safety larger than the hard floor.
+  if( the2DSafety < fHardFloorBoundaryScale ){
+
+    G4ThreeVector nudgeDir(0,0,0);
+    G4ThreeVector nudgedPosition(0,0,0);
+    G4double testSafety = the2DSafety;
+    G4VPhysicalVolume * preNudgePositionVolume = G4CMP::GetVolumeAtPoint(trackPosition);
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "PSDI Function Point A | Since we're below the hardFloorBoundaryScale, we're attempting a nudge, starting at a position " << trackPosition << " in volume " << preNudgePositionVolume->GetName() << G4endl;
+    }
+
+    
+    //Loop indefinitely
+    while(1){
+
+      G4ThreeVector nudgeDir = G4RandomDirection();
+      nudgeDir.setZ(0);
+      nudgeDir = nudgeDir.unit();
+      G4ThreeVector nudgedPosition = track.GetPosition() + nudgeDir*fHardFloorBoundaryScale*2; //Factor or 2 just to help shuttle things along
+
+      //Determine if we're in the same volume. If we're not, then continue;
+      G4VPhysicalVolume * nudgedPositionVolume = G4CMP::GetVolumeAtPoint(nudgedPosition);
+
+      //Debugging
+      if( verboseLevel > 5 ){
+	G4cout << "PSDI Function Point AA | Since we're below the hardFloorBoundaryScale, we're attempting a nudge to a new position: " << nudgedPosition << " which is inside volume: " << nudgedPositionVolume->GetName() << G4endl;
+      }
+      
+      if( nudgedPositionVolume != preNudgePositionVolume ) continue;
+
+      //Determine the safety. If we're still within one hardFloorBoundaryScale then also continue/repeat
+      testSafety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+				      nudgedPosition,
+				      track.GetMomentumDirection(),
+				      false);
+      if( testSafety < fHardFloorBoundaryScale ) continue;
+
+      if( verboseLevel > 5 ){
+	G4cout << "PSDI Function Point AAA | The converged-upon safety after successful nudge is: " << testSafety << G4endl;
+      }
+      
+      //Otherwise, we've successfully nudged, and we can break and set
+      the2DSafety = testSafety;
+      trackPosition = nudgedPosition;
+      fSafetyHelper->ReLocateWithinVolume(nudgedPosition);	
+      break;
+    }
+  }
+  
+
+  
+  /*
   //There are occasional edge cases where the 2D safety is zero here, which it really shouldn't be. I believe these are probably
   //because the safety checks that transportation uses to determine if it wins the alongStepDoIt race may try to be efficient
   //and use the simple DistToIn functions (and are not limited by kCarTolerance), while my directional-based checks to mother volumes
@@ -644,11 +722,11 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
     return &fParticleChange;
 
   }  
-
+  */
   
   //Debugging
   if( verboseLevel > 5 ){
-    G4cout << "PSDI Function Point A | 2D safety calculated to be: " << the2DSafety << G4endl;
+    G4cout << "PSDI Function Point AB | 2D safety calculated to be: " << the2DSafety << G4endl;
   }
   
   //If we are within epsilon of a boundary, the next step should be made directly into the boundary so that boundary
@@ -663,7 +741,7 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
       G4cout << "PSDI Function Point B | safety is smaller than epsilon, and finding direction to nearby boundary." << G4endl;      
     }
     G4bool needToRepeat = false;
-    G4ThreeVector returnDir = FindDirectionToNearbyBoundary(track,the2DSafety,needToRepeat,false);
+    G4ThreeVector returnDir = FindDirectionToNearbyBoundary(track,trackPosition,the2DSafety,needToRepeat,false);
 
     //    G4cout << "Direction to nearby boundary: " << returnDir << G4endl;
     
@@ -681,14 +759,14 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
 	G4cout << "PSDI Function Point BA | Need to repeat tripped." << G4endl;
       }
       std::pair<G4double,G4ThreeVector> the2DSafetyAndDir = G4CMP::Get2DSafetyWithDirection(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-											    track.GetPosition(),
+											    trackPosition,
 											    track.GetMomentumDirection(),
 											    false);
       the2DSafety = the2DSafetyAndDir.first;
       G4ThreeVector safetyDir = the2DSafetyAndDir.second;
 
       //Do a second check, moving along the direction of the safety
-      G4ThreeVector shiftedPosForTest = track.GetPosition()+safetyDir*the2DSafety*0.5;
+      G4ThreeVector shiftedPosForTest = trackPosition+safetyDir*the2DSafety*0.5;
       std::pair<G4double,G4ThreeVector> the2DSafetyAndDir_Shifted = G4CMP::Get2DSafetyWithDirection(track.GetStep()->GetPreStepPoint()->GetTouchable(),
 												    shiftedPosForTest,
 												    track.GetMomentumDirection(),
@@ -759,14 +837,19 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
     }
   }
 
+  //In any case, propose the final position. If no nudging has occurred to keep this >fHardFloorBoundaryScale from the boundary, then this does nothing,
+  //but if nudging has occurred then this is important.
+  fParticleChange.ProposePosition(trackPosition);
   ClearNumberOfInteractionLengthLeft();		// All processes should do this! 
   return &fParticleChange;
 
 }
 
 //Using the information about the track and the safety computed at the track point, we can find a direction to the
-//nearby boundary.
-G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary(const G4Track& track, const G4double the2DSafety, G4bool & needToRepeatCalculation, G4bool useSweepForDaughterSafety){
+//nearby boundary. Note if there are shifts performed in the PostStepDoIt to compensate for being within the fHardFloorBoundary length scale,
+//the trackPosition used here is not going to be exactly equal to the track.GetPosition(). In this scenario, the safety we want to compute is going
+//to be that from the trackPosition and not from the track.GetPosition(), since we'll be nudging our final track position there anyway.
+G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary(const G4Track& track, const G4ThreeVector& trackPosition, const G4double the2DSafety, G4bool & needToRepeatCalculation, G4bool useSweepForDaughterSafety){
 
   //Debugging
   if( verboseLevel > 5 ){
@@ -788,7 +871,7 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   if( deltaPath > the2DSafety ) deltaPath = the2DSafety*0.999;
 
   //3. Now we shift the point by a bit and re-find the safety.
-  G4ThreeVector shiftedPoint = track.GetPosition() - deltaPath*momDir;
+  G4ThreeVector shiftedPoint = trackPosition - deltaPath*momDir;
   G4double shiftedPoint2DSafety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
 						     shiftedPoint,
 						     track.GetMomentumDirection(),
@@ -796,10 +879,10 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
 						     useSweepForDaughterSafety);
   //Debugging
   if( verboseLevel > 5 ){
-    G4cout << "FDTNB Function Point A | pos: " << track.GetPosition() << ", shiftedPoint: " << shiftedPoint << ", original safety: " << the2DSafety << ", shiftedPoint2Dsafety: " << shiftedPoint2DSafety << G4endl;
+    G4cout << "FDTNB Function Point A | pos: " << trackPosition << ", shiftedPoint: " << shiftedPoint << ", original safety: " << the2DSafety << ", shiftedPoint2Dsafety: " << shiftedPoint2DSafety << G4endl;
   }
 
-  //We now have two points: track.GetPosition() and shiftedPoint, and two safeties: the2DSafety and shiftedPoint2DSafety
+  //We now have two points: trackPosition and shiftedPoint, and two safeties: the2DSafety and shiftedPoint2DSafety
   //We can now use these points to identify an angle between the current momDir and the surface normal. For now we'll assume
   //that this angle is in XY, but later (REL) we should come back and fix this to be more plane-agnostic.
   G4double deltaDistToSurface = shiftedPoint2DSafety - the2DSafety;
@@ -857,8 +940,8 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   G4double smallerSafety = the2DSafety;
   if( shiftedPoint2DSafety < the2DSafety ) smallerSafety = shiftedPoint2DSafety;
   smallerSafety *= 0.9; 
-  G4ThreeVector newPosOption1 = track.GetPosition() + smallerSafety*option1;
-  G4ThreeVector newPosOption2 = track.GetPosition() + smallerSafety*option2;
+  G4ThreeVector newPosOption1 = trackPosition + smallerSafety*option1;
+  G4ThreeVector newPosOption2 = trackPosition + smallerSafety*option2;
 
   //Debugging
   if( verboseLevel > 5 ){
@@ -905,8 +988,8 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
     //G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
     
     smallerSafety *= 0.5; 
-    newPosOption1 = track.GetPosition() + smallerSafety*option1;
-    newPosOption2 = track.GetPosition() + smallerSafety*option2;
+    newPosOption1 = trackPosition + smallerSafety*option1;
+    newPosOption2 = trackPosition + smallerSafety*option2;
     option1Safety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
 				       newPosOption1,
 				       track.GetMomentumDirection(),
@@ -939,12 +1022,12 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
     //In the edge case where they're both zero, just 
     if( option2Safety == 0 && option1Safety == 0 ){
       G4ExceptionDescription msg;
-      msg << "both directions option1 and option2 give the same distance for some reason, and even after a recursive safety recalculation are zero? Should never get here. Option1: " << option1 << ", safety: " << option1Safety << ", Option2: " << option2 << ", safety: " << option2Safety << ", TrackPoint: " << track.GetPosition() << ", the2DSafety (input): " << the2DSafety << ". This seems to be an edge case.";
+      msg << "both directions option1 and option2 give the same distance for some reason, and even after a recursive safety recalculation are zero? Should never get here. Option1: " << option1 << ", safety: " << option1Safety << ", Option2: " << option2 << ", safety: " << option2Safety << ", TrackPoint: " << trackPosition << ", the2DSafety (input): " << the2DSafety << ". This seems to be an edge case.";
       G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
     }
     else{
       G4ExceptionDescription msg;
-      msg << "both directions option1 and option2 give the same distance for some reason and are NOT zero? Option1: " << option1 << ", safety: " << option1Safety << ", Option2: " << option2 << ", safety: " << option2Safety << ", TrackPoint: " << track.GetPosition() << ", the2DSafety (input): " << the2DSafety << ". This seems to be an edge case.";
+      msg << "both directions option1 and option2 give the same distance for some reason and are NOT zero? Option1: " << option1 << ", safety: " << option1Safety << ", Option2: " << option2 << ", safety: " << option2Safety << ", TrackPoint: " << trackPosition << ", the2DSafety (input): " << the2DSafety << ". This seems to be an edge case.";
       G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);      
     }   
   }
@@ -953,7 +1036,7 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   //resulting safety is NOT reasonably about 50% of the previous safety, then we need to redo this entire function with the
   //swept daughter safety applied.
   G4double fractionalSafetyDifferenceThreshold = 0.1;
-  G4ThreeVector checkPoint = track.GetPosition() + outputDir*the2DSafety*0.5;
+  G4ThreeVector checkPoint = trackPosition + outputDir*the2DSafety*0.5;
   G4double checkedSafety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
 					      checkPoint,
 					      track.GetMomentumDirection(), //I think momDir isn't actually used? Need to consider removing REL
@@ -961,11 +1044,13 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
 					      useSweepForDaughterSafety);
   if( fabs((checkedSafety/the2DSafety) - 0.5) > fractionalSafetyDifferenceThreshold ){
 
-    /*
+
     G4ExceptionDescription msg;
-    msg << "When trying to find the direction to the boundary, something seems fishy -- moving in the purported direction of the boundary by half of the safety does not give a new safety that is half of the distance to the boundary. Safety will need to be recomputed with the sweep technique. Pos: " << track.GetPosition() << ", alleged direction to boundary: " << outputDir << ", original safety: " << the2DSafety << ", the checked safety: " << checkedSafety << ", volume at thisPos: " << G4CMP::GetVolumeAtPoint(track.GetPosition()) << " (" << G4CMP::GetVolumeAtPoint(track.GetPosition())->GetName() << G4endl;
-    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
-    */
+
+    if( verboseLevel > 5 ){
+      msg << "When trying to find the direction to the boundary, something seems fishy -- moving in the purported direction of the boundary by half of the safety does not give a new safety that is half of the distance to the boundary. Safety will need to be recomputed with the sweep technique. Pos: " << trackPosition << ", alleged direction to boundary: " << outputDir << ", original safety: " << the2DSafety << ", the checked safety: " << checkedSafety << ", volume at thisPos: " << G4CMP::GetVolumeAtPoint(trackPosition) << " (" << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << G4endl;
+      G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
+    }
     needToRepeatCalculation = true;
   }
 
@@ -973,26 +1058,27 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   //one volume into another. Sometimes the as-computed direction is to a "phantom boundary" because G4 doesn't calculate all "quick"
   //safeties as accurately as possible.
   if( needToRepeatCalculation == false ){
-    G4ThreeVector thisPos = track.GetPosition();
+    G4ThreeVector thisPos = trackPosition;
     G4ThreeVector posOstensiblyOverBoundary(0,0,0);
 
     //Edge case: we're close enough that the two options are originally effectively zero safety. Here let's just artificially inflate our nudge by a bit
     if( originalOption1Safety == 0 && originalOption2Safety == 0 ){
-      posOstensiblyOverBoundary = track.GetPosition() + the2DSafety*outputDir*fBoundaryFudgeFactor*2;
+      posOstensiblyOverBoundary = trackPosition + the2DSafety*outputDir*fBoundaryFudgeFactor*2;
     }
     //Most common
     else{
-      posOstensiblyOverBoundary = track.GetPosition() + the2DSafety*outputDir*fBoundaryFudgeFactor;
+      posOstensiblyOverBoundary = trackPosition + the2DSafety*outputDir*fBoundaryFudgeFactor;
     }
 
 
     if( G4CMP::GetVolumeAtPoint(thisPos) == G4CMP::GetVolumeAtPoint(posOstensiblyOverBoundary) ){
 
-      /*
-      G4ExceptionDescription msg;
-      msg << "When trying to find the direction to the boundary, we seem to be calculating a direction vector that satisfies our first, fractionalSafetyDifference criterion, but not our phantom boundary condition. (This may sometimes happen near corners, where our direction-finding algorithm's math breaks down. At position: " << track.GetPosition() << ", alleged direction to boundary: " << outputDir << ", original safety: " << the2DSafety << ", volume at thisPos: " << G4CMP::GetVolumeAtPoint(thisPos) << " (" << G4CMP::GetVolumeAtPoint(thisPos)->GetName() << ", volume at the position ostensibly over the boundary: " << G4CMP::GetVolumeAtPoint(posOstensiblyOverBoundary) << G4endl;
-      G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
-      */
+      if( verboseLevel > 5 ){
+	G4ExceptionDescription msg;
+	msg << "When trying to find the direction to the boundary, we seem to be calculating a direction vector that satisfies our first, fractionalSafetyDifference criterion, but not our phantom boundary condition. (This may sometimes happen near corners, where our direction-finding algorithm's math breaks down. At position: " << trackPosition << ", alleged direction to boundary: " << outputDir << ", original safety: " << the2DSafety << ", volume at thisPos: " << G4CMP::GetVolumeAtPoint(thisPos) << " (" << G4CMP::GetVolumeAtPoint(thisPos)->GetName() << ", volume at the position ostensibly over the boundary: " << G4CMP::GetVolumeAtPoint(posOstensiblyOverBoundary) << G4endl;
+	G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
+      }
+	
       needToRepeatCalculation = true;
     }
   }
@@ -1206,6 +1292,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
 	  msg << "In GetMFP We're somehow on a boundary and also have triggered the fNeedSweptSafetyInGetMFP. What is happening? (In principle, this isn't a deathknell-- I'm just killing the code here to see where this even is triggered.";
 	  G4Exception("G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath", "BogoliubovQPRandomWalkTransport002",FatalException, msg);
 	}
+	
       }
       //If the QP IS stuck, then we have some work to do. Use the norms and positions returned from CheckForStuckQPs to compute
       //an angular range away from the corner over which we can compute a safety.
@@ -1273,9 +1360,9 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
 	the2DSafety = the2DSafetyAndDir.first;
 	//G4cout << "the2DSafety after doing a swept thing in GetMFP: " << the2DSafety << G4endl;
       }
-    }
+    }   
     f2DSafety = the2DSafety;
-    
+
     //Calculate the energy dependent diffusion constant
     G4double E_ratio = fGapEnergy/energy;
     G4double E_ratio2 = pow(E_ratio,2.0);
@@ -1318,7 +1405,17 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     fVerySmallStep = false;
     if( thisMFP < the2DSafety ){
       fVerySmallStep = true;
-      thisMFP = the2DSafety*fBoundaryFudgeFactor; //Fudge factor needs to go here as well because AlongStep GPIL uses PhysicalStep, which comes from PostStepGPIL (this is so that we can enable Transportation to trigger/win the AlongStep race)
+      //thisMFP = the2DSafety*fBoundaryFudgeFactor; //Fudge factor needs to go here as well because AlongStep GPIL uses PhysicalStep, which comes from PostStepGPIL (this is so that we can enable Transportation to trigger/win the AlongStep race)
+
+      //REL 4/13/25 Have to split this up into on-boundary case (where we cannot let transportation win because it's always going to expect to see
+      //a boundary in the direction of the pre-step point's momentum
+      if( fTrackOnBoundary ){
+	thisMFP = the2DSafety / fBoundaryFudgeFactor;
+      }
+      //If we're not on a boundary then we launch into the boundary we're (hopefully) staring down.
+      else{
+	thisMFP = fEpsilonForWalkOnSpheres; //Set this the same as our "boot" distance so that it's for sure longer than the distance needed for transport to win
+      }
       
       //G4ExceptionDescription msg;
       //msg << "We're triggering fVerySmallStep even though we're using the time-of-first-passage formalism.";
@@ -1760,10 +1857,9 @@ std::pair<G4ThreeVector,G4ThreeVector> G4CMPBogoliubovQPRandomWalkTransport::Fin
     G4cout << "FSTFSQE Function Point A | Starting to find surface tangents." << G4endl;
   }
 
-  G4double epsilonCornerCalculation = 0.01*nm; //Should be pretty small -- this all should be exact
-  
   //Compute an in-plane vector using the difference between the positions, and then cross with the norm to get the out-of-plane vector  
   G4ThreeVector inPlane(pos1.getX()-pos2.getX(),pos1.getY()-pos2.getY(),pos1.getZ()-pos2.getZ());
+  //G4ThreeVector inPlane(pos2.getX()-pos1.getX(),pos2.getY()-pos1.getY(),pos2.getZ()-pos1.getZ());
   G4ThreeVector outOfPlane = (inPlane.cross(norm1)).unit();
 
   //Handle floating point errors that might push the norm into slight non-orthogonality. For now this is not geometry-orientation-agnostic,
@@ -1785,6 +1881,8 @@ std::pair<G4ThreeVector,G4ThreeVector> G4CMPBogoliubovQPRandomWalkTransport::Fin
 
   //Debugging
   if( verboseLevel > 5 ){
+    G4cout << "FSTFSQE Function Point B | Pos1: " << pos1 << G4endl;
+    G4cout << "FSTFSQE Function Point B | Pos2: " << pos2 << G4endl;
     G4cout << "FSTFSQE Function Point B | Input norm1: " << norm1 << G4endl;
     G4cout << "FSTFSQE Function Point B | Input norm2: " << norm2 << G4endl;
     G4cout << "FSTFSQE Function Point B | Additional In-plane vector: " << inPlane << G4endl;

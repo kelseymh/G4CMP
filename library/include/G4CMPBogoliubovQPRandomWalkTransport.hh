@@ -70,7 +70,8 @@ public:
   // Post step actions
   G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&) override;
 
-  G4ThreeVector FindDirectionToNearbyBoundary(const G4Track& track, const G4double the2DSafety, G4bool & needToRepeatCalculation, G4bool useSweepForDaughterSafety = false );
+  G4ThreeVector FindDirectionToNearbyBoundary(const G4Track& track, const G4ThreeVector& trackPosition, const G4double the2DSafety, G4bool & needToRepeatCalculation, G4bool useSweepForDaughterSafety = false);
+  
   
 public:
  
@@ -147,6 +148,8 @@ private:
   G4bool                      fVerySmallStep= false;
   G4double                    fBoundaryFudgeFactor;
 
+  G4double                    fHardFloorBoundaryScale;
+  
   G4double                    fEpsilonForWalkOnSpheres;
   
   //std::ofstream fOutfile;
