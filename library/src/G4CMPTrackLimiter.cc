@@ -105,7 +105,7 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   EInside isIn = solid->Inside(step.GetPostStepPoint()->GetPosition());
   G4cout << "Value for surface: " << (isIn==kInside ? "inside" : isIn==kOutside ? "outside" : "surface") << G4endl;
-
+*/
   if (verboseLevel>2) {
     G4cout << " prePV " << prePV->GetName()
 	   << " postPV " << (postPV?postPV->GetName():"OutOfWorld")

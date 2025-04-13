@@ -21,6 +21,7 @@
 
 #include "G4VPhononProcess.hh"
 #include "G4CMPBoundaryUtils.hh"
+#include "G4CMPParticleChangeForPhonon.hh"
 
 class G4CMPAnharmonicDecay;
 
@@ -80,6 +81,7 @@ protected:
 
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
+  G4CMPParticleChangeForPhonon phParticleChange;
   G4double stepSize;
   G4int nStepLimit;
 

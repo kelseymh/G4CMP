@@ -39,6 +39,7 @@
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
+#include "G4CMPParticleChangeForPhonon.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -75,6 +76,8 @@ G4CMPPhononBoundaryProcess::G4CMPPhononBoundaryProcess(const G4String& aName)
   G4CMPConfigManager* config = G4CMPConfigManager::Instance();
   stepSize = config->GetPhononSurfStepSize();
   nStepLimit = config->GetPhononSurfStepLimit();
+
+  pParticleChange = &phParticleChange;
 }
 
 G4CMPPhononBoundaryProcess::~G4CMPPhononBoundaryProcess() {
@@ -115,7 +118,7 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   // NOTE:  G4VProcess::SetVerboseLevel is not virtual!  Can't overlaod it
   G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
 
-  aParticleChange.Initialize(aTrack);
+  phParticleChange.Initialize(aTrack);
   if (!IsGoodBoundary(aStep))
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 
@@ -131,11 +134,11 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
            << "\n P direction: " << aTrack.GetMomentumDirection() << G4endl;
   }
 
-  ApplyBoundaryAction(aTrack, aStep, aParticleChange);
+  ApplyBoundaryAction(aTrack, aStep, phParticleChange);
 
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
-  G4cout << "---------------------------------------------------------------" << G4endl;
-  return &aParticleChange;
+  //G4cout << "---------------------------------------------------------------" << G4endl;
+  return &phParticleChange;
 }
 
 
@@ -237,11 +240,12 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   FillParticleChange(particleChange, aTrack, reflectedKDir);
   const G4ThreeVector vdir = *particleChange.GetMomentumDirection();
 
-  // If displacement occured: update the surface position and navigator for volume assignment
+  // If displacement occured: update the particle change and navigator for volume assignment
   if (refltype == "specular" && *particleChange.GetPosition() != surfacePoint) {
     particleChange.ProposePosition(surfacePoint);
+    phParticleChange.ProposeTouchableHandle(aStep.GetPreStepPoint()->GetTouchableHandle());
     G4Navigator* navigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
-    navigator->LocateGlobalPointAndSetup(surfacePoint, &vdir, true, true);
+    navigator->LocateGlobalPointWithinVolume(surfacePoint);
   }
 
   if (verboseLevel>2) {
@@ -254,7 +258,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
 		JustWarning, ("Phonon "+refltype+" reflection failed"+"\nPhonon mode at time of death: "+G4PhononPolarization::Label(mode)).c_str());
-    DoSimpleKill(aTrack, aStep, aParticleChange);
+    DoSimpleKill(aTrack, aStep, particleChange);
     return;
   }
 
@@ -303,6 +307,11 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector oldNorm = newNorm;
+  G4double deltaNorm = 1 - oldNorm.dot(newNorm); // discontinuity test
+  G4double olddeltaNorm = deltaNorm;
+  G4double tolerance = 1e-9;
+  G4bool discontSurf = true;
+
   // Find the distance from point to surface along norm (- means inward)
   G4double surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
   G4double kPerpMag = reflectedKDir.dot(newNorm);
@@ -344,12 +353,13 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   }
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
-  while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
+  while ((!G4CMP::PhononVelocityIsInward(theLattice, mode,
    GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm))
-	 && nAttempts++ < nStepLimit) {
+   || discontSurf) && nAttempts++ < nStepLimit) {
     // Save previous loop values
     oldstepLocalPos = stepLocalPos;
     oldNorm = newNorm;
+    olddeltaNorm = deltaNorm;
     // debugging only - DELETE
     oldkTan = kTan;
     oldkPerpV = kPerpV;
@@ -359,7 +369,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
     // Get the local normal at the new surface point
     newNorm = solid->SurfaceNormal(stepLocalPos);
-
+    deltaNorm = 1 - oldNorm.dot(newNorm);
+    discontSurf = (abs(deltaNorm - olddeltaNorm) > tolerance);
+    G4cout << "NOLAN: " << abs(deltaNorm - olddeltaNorm) << G4endl;
     // Adjust stepLocalPos back to surface of detector
     surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
     stepLocalPos -= surfAdjust * newNorm;
