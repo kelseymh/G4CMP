@@ -120,6 +120,7 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
 
   phParticleChange.Initialize(aTrack);
+  
   if (!IsGoodBoundary(aStep))
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 
@@ -136,15 +137,12 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   }
 
   ApplyBoundaryAction(aTrack, aStep, phParticleChange);
-
-  ClearNumberOfInteractionLengthLeft();		// All processes should do this!
-
   if (verboseLevel>1) {
     G4cout << "---------------------------------------------------------------"
 	   << G4endl;
   }
   
-  return &aParticleChange;
+  return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 }
 
 

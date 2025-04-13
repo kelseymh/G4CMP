@@ -40,6 +40,9 @@ public:
     return theTouchableHandle;
   }
 
+  // Include local information in printout
+  virtual void DumpInfo() const;
+  
 protected:	// Subclasses permitted to copy themselves
   G4CMPParticleChangeForPhonon(const G4CMPParticleChangeForPhonon& right);
   G4CMPParticleChangeForPhonon& operator=(const G4CMPParticleChangeForPhonon& right);

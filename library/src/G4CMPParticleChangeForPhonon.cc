@@ -64,3 +64,17 @@ G4Step* G4CMPParticleChangeForPhonon::UpdateStepForPostStep(G4Step* pStep) {
   // Call base class function
   return G4ParticleChange::UpdateStepForPostStep(pStep);
 }
+
+
+// Include local information in printout
+
+void G4CMPParticleChangeForPhonon::DumpInfo() const {
+  G4ParticleChange::DumpInfo();
+
+  G4cout << "        updateVol : " << updateVol << G4endl;
+  if (updateVol) {
+    G4cout << "        theTouchableHandle for PV "
+	   << theTouchableHandle->GetVolume()->GetName() << G4endl;
+  }
+}
+ 
