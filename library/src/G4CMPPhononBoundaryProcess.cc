@@ -33,6 +33,7 @@
 // 20250204  G4CMP-459 -- Support reflection displacement search at hard corners.
 // 20250325  G4CMP-463 -- Set surface step size & limit with macro command.
 // 20250402  G4CMP-468 -- Support position change after surface displacement.
+// 20250413  M. Kelsey -- Protect debugging output with verbosity.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -134,7 +135,12 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   ApplyBoundaryAction(aTrack, aStep, aParticleChange);
 
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
-  G4cout << "---------------------------------------------------------------" << G4endl;
+
+  if (verboseLevel>1) {
+    G4cout << "---------------------------------------------------------------"
+	   << G4endl;
+  }
+  
   return &aParticleChange;
 }
 
