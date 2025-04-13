@@ -9,49 +9,58 @@
 // $Id$
 //
 // 20250410 Implement ParticleChange for phonons to handle displaced reflections
+// 20250413 Add Initialize() implementation to reset updateVol flag
 
 #include "G4CMPParticleChangeForPhonon.hh"
 #include "G4TouchableHandle.hh"
+#include "G4LogicalVolume.hh"
 #include "G4Track.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
+#include "G4VPhysicalVolume.hh"
 
-G4CMPParticleChangeForPhonon::G4CMPParticleChangeForPhonon() {;}
 
+// Copy operations should call back to base
+
+G4CMPParticleChangeForPhonon::
+G4CMPParticleChangeForPhonon(const G4CMPParticleChangeForPhonon& right)
+  : G4ParticleChange(right), theTouchableHandle(right.theTouchableHandle),
+    updateVol(right.updateVol) {;}
+
+G4CMPParticleChangeForPhonon&
+G4CMPParticleChangeForPhonon::operator=(const G4CMPParticleChangeForPhonon& right) {
+  G4ParticleChange::operator=(right);
+  updateVol = right.updateVol;
+  theTouchableHandle = right.theTouchableHandle;
+  return *this;
+}
+
+
+// Ensure that local flags are initialized at each step
+
+void G4CMPParticleChangeForPhonon::Initialize(const G4Track& track) {
+  updateVol = false;
+  theTouchableHandle = track.GetTouchableHandle();
+  
+  G4ParticleChange::Initialize(track);
+}
+
+
+// Populate G4Step with results of process' PostStepDoIt()
+  
 G4Step* G4CMPParticleChangeForPhonon::UpdateStepForPostStep(G4Step* pStep) {
-  G4StepPoint* pPostStepPoint = pStep->GetPostStepPoint();
-  // Update next volume if touchable has been proposed
-  if (updateVol) {
-    // Update next touchable
+  if (updateVol) {    // Update next volume if touchable has been proposed
+    G4StepPoint* pPostStepPoint = pStep->GetPostStepPoint();
+    G4LogicalVolume* LV = theTouchableHandle->GetVolume()->GetLogicalVolume();
     pPostStepPoint->SetTouchableHandle(theTouchableHandle);
-    pPostStepPoint->SetMaterial(theMaterialChange);
-    pPostStepPoint->SetMaterialCutsCouple(theMaterialCutsCoupleChange);
-    pPostStepPoint->SetSensitiveDetector(theSensitiveDetectorChange);
+    pPostStepPoint->SetMaterial(LV->GetMaterial());
+    pPostStepPoint->SetMaterialCutsCouple(LV->GetMaterialCutsCouple());
+    pPostStepPoint->SetSensitiveDetector(LV->GetSensitiveDetector());
 
-    if(this->GetFirstStepInVolume()) {
-      pStep->SetFirstStepFlag();
-    } else {
-      pStep->ClearFirstStepFlag();
-    }
-
-    if(this->GetLastStepInVolume()) {
-      pStep->SetLastStepFlag();
-    } else {
-      pStep->ClearLastStepFlag();
-    }
-    
     // Reset updateVol
     updateVol = false;
   }
 
   // Call base class function
   return G4ParticleChange::UpdateStepForPostStep(pStep);
-}
-
-void G4CMPParticleChangeForPhonon::ProposeTouchableHandle(G4TouchableHandle nextTouchableHandle) {
-  // Set the new touchable handle and corresponding values
-  theTouchableHandle = nextTouchableHandle;
-  theMaterialChange = theTouchableHandle->GetVolume()->GetLogicalVolume()->GetMaterial();
-  theSensitiveDetectorChange = theTouchableHandle->GetVolume()->GetLogicalVolume()->GetSensitiveDetector();
-  updateVol = true;
 }
