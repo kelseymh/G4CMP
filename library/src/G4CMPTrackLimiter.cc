@@ -12,6 +12,7 @@
 // 20170822  M. Kelsey -- Add checking on current vs. original volume
 // 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
 // 20250327  G4CMP-468:  Stop surface displacement reflections from "escaping."
+// 20250413  G4CMP-468:  Move diagnostic outputs inside verbosity.
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
@@ -88,33 +89,41 @@ G4bool G4CMPTrackLimiter::BelowEnergyCut(const G4Track& track) const {
 }
 
 G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
+    G4StepPoint* preS = step.GetPreStepPoint();
+    G4StepPoint* postS = step.GetPostStepPoint();
+
   G4VPhysicalVolume* prePV  = step.GetPreStepPoint()->GetPhysicalVolume();
   G4VPhysicalVolume* postPV = step.GetPostStepPoint()->GetPhysicalVolume();
 
-  G4cout << std::setprecision(std::numeric_limits<double>::max_digits10) << G4endl;
-
-  G4cout << "preStep Pos = " << step.GetPreStepPoint()->GetPosition() << G4endl;
-  G4cout << "preStep status = " << step.GetPreStepPoint()->GetStepStatus() << G4endl;
-  G4cout << "postStep Pos = " << step.GetPostStepPoint()->GetPosition() << G4endl;
-  G4cout << "postStep status = " << step.GetPostStepPoint()->GetStepStatus() << G4endl;
-  G4cout << "step dir = " << (step.GetPostStepPoint()->GetPosition() - step.GetPreStepPoint()->GetPosition()).unit() << G4endl;
-  G4cout << "prePV Name = " << prePV->GetName() << G4endl;
-  G4cout << "postPV Name = " << postPV->GetName() << G4endl;
-  G4cout << "currPV Name = " << GetCurrentVolume()->GetName() << G4endl;
-
-  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
-  EInside isIn = solid->Inside(step.GetPostStepPoint()->GetPosition());
-  G4cout << "Value for surface: " << (isIn==kInside ? "inside" : isIn==kOutside ? "outside" : "surface") << G4endl;
-*/
+  if (verboseLevel>1) {
+    const G4ThreeVector& prePt = preS->GetPosition();
+    const G4ThreeVector& postPt = postS->GetPosition();
+    
+    G4cout << GetProcessName() << "::EscapedFromVolume()" << G4endl
+	   << std::setprecision(std::numeric_limits<double>::max_digits10)
+	   << "preStep Pos = " << prePt << G4endl
+	   << "preStep status = " << preS->GetStepStatus() << G4endl
+	   << "postStep Pos = " << postPt << G4endl
+	   << "postStep status = " << postS->GetStepStatus() << G4endl
+	   << "step dir = " << (postPt - prePt).unit() << G4endl
+	   << "prePV Name = " << prePV->GetName() << G4endl
+	   << "postPV Name = " << (postPV?postPV->GetName():"---") << G4endl
+	   << "currPV Name = " << GetCurrentVolume()->GetName() << G4endl;
+  }
   if (verboseLevel>2) {
     G4cout << " prePV " << prePV->GetName()
 	   << " postPV " << (postPV?postPV->GetName():"OutOfWorld")
 	   << " status " << step.GetPostStepPoint()->GetStepStatus()
 	   << G4endl;
+    G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
+    EInside isIn = solid->Inside(GetLocalPosition(postS->GetPosition()));
+    const char* inName = (isIn==kInside ? "inside" : isIn==kOutside
+			  ? "outside" : "surface");
+    G4cout << "Value for surface: " << inName << G4endl;
   }
-
+  
   // Track is NOT at a boundary, is stepping outside volume, or already escaped
-  return ( (step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary) &&
+  return ( (postS->GetStepStatus() != fGeomBoundary) &&
 	   (postPV != GetCurrentVolume() || prePV != GetCurrentVolume())
 	   );
 }
