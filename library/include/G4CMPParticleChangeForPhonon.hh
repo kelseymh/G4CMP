@@ -34,6 +34,7 @@ public:
   // --- Methods for proposing PostStep volume ---
   void ProposeTouchableHandle(const G4TouchableHandle& nextTouchableHandle) {
     theTouchableHandle = nextTouchableHandle;
+    updateVol = true;
   }
   
   const G4TouchableHandle& GetTouchableHandle() const {
