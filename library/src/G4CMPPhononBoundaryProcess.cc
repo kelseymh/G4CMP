@@ -246,8 +246,10 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   // If displacement occured: update the particle change and navigator for volume assignment
   if (refltype == "specular" && *particleChange.GetPosition() != surfacePoint) {
-    particleChange.ProposePosition(surfacePoint);
+    phParticleChange.ProposePosition(surfacePoint);
     phParticleChange.ProposeTouchableHandle(aStep.GetPreStepPoint()->GetTouchableHandle());
+    aStep.GetPostStepPoint()->SetStepStatus(fPostStepDoItProc);
+
     G4Navigator* navigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
     navigator->LocateGlobalPointWithinVolume(surfacePoint);
   }
@@ -375,7 +377,12 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     newNorm = solid->SurfaceNormal(stepLocalPos);
     deltaNorm = 1 - oldNorm.dot(newNorm);
     discontSurf = (abs(deltaNorm - olddeltaNorm) > tolerance);
-    G4cout << "NOLAN: " << abs(deltaNorm - olddeltaNorm) << G4endl;
+
+    if (verboseLevel>3) {
+      G4cout << " deltaNorm-oldDeltaNorm " << abs(deltaNorm - olddeltaNorm)
+	     << G4endl;
+    }
+
     // Adjust stepLocalPos back to surface of detector
     surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
     stepLocalPos -= surfAdjust * newNorm;
