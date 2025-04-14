@@ -41,6 +41,9 @@
 #include "G4UnionSolid.hh"
 #include "G4Colour.hh"
 #include "G4VisAttributes.hh"
+#include "G4CMPLogicalBorderSurface.hh"
+#include "G4LatticePhysical.hh"
+#include "G4LatticeLogical.hh"
 
 //Includes (specific to this project)
 #include "QuasiparticleResonatorAssembly.hh"
@@ -124,6 +127,14 @@ void QuasiparticleResonatorAssembly::ConstructResonatorAssembly(G4RotationMatrix
   air_vis->SetVisibility(true);
   
 
+  //Confirm no issues with borders being present
+  if( borderContainer.count("AlAl") == 0 ){ std::cout << "Uh oh. Trying to access borderContainer[AlAl] but it's not there..." << std::endl; }
+  G4CMPSurfaceProperty* AlAlBoundary = borderContainer["AlAl"];
+  if( borderContainer.count("AlVac") == 0 ){ std::cout << "Uh oh. Trying to access borderContainer[AlVac] but it's not there..." << std::endl; }
+  G4CMPSurfaceProperty* AlVacBoundary = borderContainer["AlVac"];
+  if( borderContainer.count("VacVac") == 0 ){ std::cout << "Uh oh. Trying to access borderContainer[VacVac] but it's not there..." << std::endl; }
+  G4CMPSurfaceProperty* VacVacBoundary = borderContainer["VacVac"];  
+
   
 
   //------------------------------------------------------------------------------------------
@@ -156,7 +167,12 @@ void QuasiparticleResonatorAssembly::ConstructResonatorAssembly(G4RotationMatrix
   //Also need an interface definition for this base layer...
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",baseAlLayerName,phys_baseAlLayer));
 
+  //Need to create a lattice for the base Al layer...
+  G4LatticePhysical* AlPhysical_baseAlLayer = new G4LatticePhysical(AlLogical);
+  AlPhysical_baseAlLayer->SetMillerOrientation(1,0,0);
+  LM->RegisterLattice(phys_baseAlLayer,AlPhysical_baseAlLayer);
 
+  
 
   //------------------------------------------------------------------------------------------
   //Now make the various components of the resonator array: line+coupling, shunt capacitance (cross), and qubit
@@ -166,22 +182,35 @@ void QuasiparticleResonatorAssembly::ConstructResonatorAssembly(G4RotationMatrix
 		    logicalLatticeContainer,
 		    borderContainer);
 
-  //Now that we have the resonator line, we should loop through the fundamental volumes list and start making connections between the
-  //empties and the in-plane base layer of which they are children
+  
+  MakeShuntCapacitorCross(pName,
+			  log_baseAlLayer,
+			  LM,
+			  logicalLatticeContainer,
+			  borderContainer);
+
+  
+  //Now that we have the resonator line and shunt capacitor, we should loop through the fundamental volumes list and start 
+  //making connections between the empties and the in-plane base layer of which they are children
   for( int iV = 0; iV < fFundamentalVolumeList.size(); ++iV ){
-    if(std::get<0>(fFundamentalVolumeList[iV]).contains("Vacuum") ){
-      G4String name1 = std::get<1>(fFundamentalVolumeList) + "_baseAlLayer";
-      G4String name2 = "baseAlLayer_" + std::get<1>(fFundamentalVolumeList);
+    if(std::get<0>(fFundamentalVolumeList[iV]).find("Vacuum") != std::string::npos ){
+      G4String name1 = std::get<1>(fFundamentalVolumeList[iV]) + "_baseAlLayer";
+      G4String name2 = "baseAlLayer_" + std::get<1>(fFundamentalVolumeList[iV]);
       new G4CMPLogicalBorderSurface(name1, phys_baseAlLayer, std::get<2>(fFundamentalVolumeList[iV]),AlVacBoundary);
       new G4CMPLogicalBorderSurface(name2, std::get<2>(fFundamentalVolumeList[iV]),phys_baseAlLayer,AlVacBoundary);
     }
-
+    
     //There may be a few items (tlCoupler end) which mate directly to the ground plane one layer further up. 
     //In this case, we will have to deal with that in the detectorConstruction file.
     
   }
-
-
+  
+  //Remaining connections to make in the top-level
+  //1. All empties and the silicon
+  //2. All conductors and the silicon
+  //3. The TLCouplerConductor and the ground plane
+  //4. The TLCouplerEmpty and the ground plane
+  //5. All conductors and the vacuum
 
 
 
@@ -190,11 +219,7 @@ void QuasiparticleResonatorAssembly::ConstructResonatorAssembly(G4RotationMatrix
 
 
   
-  MakeShuntCapacitorCross(pName,
-			  log_baseAlLayer,
-			  LM,
-			  logicalLatticeContainer,
-			  borderContainer);
+
 
   /*  
 
@@ -327,6 +352,10 @@ void QuasiparticleResonatorAssembly::MakeShuntCapacitorCross(G4String pName, G4L
   G4Material* aluminum_mat = nist->FindOrBuildMaterial("G4_Al");
   G4Material* air_mat = nist->FindOrBuildMaterial("G4_AIR");
   bool checkOverlaps = true;
+
+  //Set up lattice information
+  if( logicalLatticeContainer.count("Aluminum") == 0 ){ std::cout << "Uh oh! Trying to access logicalLatticeContainer[Aluminum] but it's not there..." << std::endl; }
+  G4LatticeLogical* AlLogical = logicalLatticeContainer["Aluminum"];
   
   //Set up the aluminum visualization
   G4VisAttributes* aluminum_vis= new G4VisAttributes(G4Colour(0.0,1.0,1.0,0.5));
@@ -334,6 +363,14 @@ void QuasiparticleResonatorAssembly::MakeShuntCapacitorCross(G4String pName, G4L
   G4VisAttributes* air_vis= new G4VisAttributes(G4Colour(0.5,0.5,0.5,0.5));
   air_vis->SetVisibility(true);
 
+  //Confirm no issues with borders being present
+  if( borderContainer.count("AlAl") == 0 ){ std::cout << "Uh oh. Trying to access borderContainer[AlAl] but it's not there..." << std::endl; }
+  G4CMPSurfaceProperty* AlAlBoundary = borderContainer["AlAl"];
+  if( borderContainer.count("AlVac") == 0 ){ std::cout << "Uh oh. Trying to access borderContainer[AlVac] but it's not there..." << std::endl; }
+  G4CMPSurfaceProperty* AlVacBoundary = borderContainer["AlVac"];
+  if( borderContainer.count("VacVac") == 0 ){ std::cout << "Uh oh. Trying to access borderContainer[VacVac] but it's not there..." << std::endl; }
+  G4CMPSurfaceProperty* VacVacBoundary = borderContainer["VacVac"];  
+  
 
   //This will be made in two batches: one for "empty" space and one for "conductor" space (the line itself)
   //Each batch has the following elements strung together, in order:
@@ -359,6 +396,8 @@ void QuasiparticleResonatorAssembly::MakeShuntCapacitorCross(G4String pName, G4L
   log_shuntEmpty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",shuntEmptyName,shuntEmpty));
 
+  //Here, no existing intra-shunt volumes to create boundaries to yet, so don't need to do this yet
+  
 
   //------------------------------------------------------
   //Vertical block (conductor)
@@ -374,6 +413,18 @@ void QuasiparticleResonatorAssembly::MakeShuntCapacitorCross(G4String pName, G4L
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",shuntConductorName,shuntConductor));
 
 
+  //Need to construct a lattice...
+  G4LatticePhysical* AlPhysical_shuntConductor = new G4LatticePhysical(AlLogical);
+  AlPhysical_shuntConductor->SetMillerOrientation(1,0,0);
+  LM->RegisterLattice(shuntConductor,AlPhysical_shuntConductor);
+
+  //...and set boundaries with the existing shuntConductor empty. Since no other sister volumes exist yet, it's just this one needed
+  G4String shuntConductor_boundaryName1 = shuntConductorName + "_AlVac";
+  G4String shuntConductor_boundaryName2 = shuntConductorName + "_VacAl";
+  new G4CMPLogicalBorderSurface(shuntConductor_boundaryName1, shuntConductor, shuntEmpty, AlVacBoundary);
+  new G4CMPLogicalBorderSurface(shuntConductor_boundaryName2, shuntEmpty, shuntConductor, AlVacBoundary);
+
+  
 
 
 }
@@ -461,6 +512,9 @@ void QuasiparticleResonatorAssembly::MakeResonatorLine(G4String pName, G4Logical
   
   //Boundaries set here: set to other existing pieces. Need to set boundary between this and the base Nb layer. But may do that one
   //layer up using the fundamental volume list.
+
+  //Note that this and the conductor version below are exactly contacting the edge of the base layer, which means they also need to be made to contact
+  //the 2-levels-up ground plane (and not just the base layer). I think these are the only ones for which that applies.
   
   
 

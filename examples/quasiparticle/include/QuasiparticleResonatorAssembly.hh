@@ -36,6 +36,10 @@
 #include "QuasiparticleDetectorParameters.hh"
 #include "QuasiparticlePad.hh"
 #include "globals.hh"
+#include "G4LatticePhysical.hh"
+#include "G4LatticeLogical.hh"
+#include "G4CMPSurfaceProperty.hh"
+
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
@@ -79,8 +83,15 @@ class QuasiparticleResonatorAssembly
 				    G4bool pSurfChk=false);
 
   
-  void MakeResonatorLine(G4String pName, G4LogicalVolume * log_baseNbLayer);
-  void MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseNbLayer);
+  void MakeResonatorLine(G4String pName, G4LogicalVolume * log_baseAlLayer,
+			 G4LatticeManager * LM,
+			 std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+			 std::map<std::string,G4CMPSurfaceProperty*> borderContainer);
+
+  void MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
+			       G4LatticeManager * LM,
+			       std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+			       std::map<std::string,G4CMPSurfaceProperty*> borderContainer);
 
   std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > GetListOfAllFundamentalSubVolumes();
   

@@ -100,10 +100,10 @@ namespace QuasiparticleDetectorParameters
   //Resonator assembly parameters. Y extent of the mother volume goes from the transmission line cavity side to
   //the flux line cavity side.
   constexpr bool dp_useResonatorAssembly = true;
-  constexpr double dp_resonatorAssemblyBaseNbDimX = 891.618 * CLHEP::um;
-  constexpr double dp_resonatorAssemblyBaseNbDimY = 1925.311 * CLHEP::um;
-  constexpr double dp_resonatorAssemblyBaseNbDimZ = dp_groundPlaneDimZ;
-  constexpr double dp_resonatorAssemblyBaseNbEdgeBottomDimY = 5.0 * CLHEP::um; //Separation between the transmission line empty edge and the nearby resonator empty edge
+  constexpr double dp_resonatorAssemblyBaseAlDimX = 891.618 * CLHEP::um;
+  constexpr double dp_resonatorAssemblyBaseAlDimY = 1925.311 * CLHEP::um;
+  constexpr double dp_resonatorAssemblyBaseAlDimZ = dp_groundPlaneDimZ;
+  constexpr double dp_resonatorAssemblyBaseAlEdgeBottomDimY = 5.0 * CLHEP::um; //Separation between the transmission line empty edge and the nearby resonator empty edge
   
   constexpr double dp_tlCouplingEmptyDimX = 447.518 * CLHEP::um;
   constexpr double dp_tlCouplingEmptyDimY = 22 * CLHEP::um;
@@ -226,7 +226,7 @@ namespace QuasiparticleDetectorParameters
   
   //Overall resonator assembly properties
   constexpr double dp_resonatorLateralSpacing = 1800*CLHEP::um + 56*CLHEP::um; //Adding arbitrary 64 um to spacing to get things to line up.
-  constexpr double dp_centralResonatorOffsetX = -1*dp_resonatorAssemblyBaseNbDimX/2.0 + 617.5*CLHEP::um - 62*CLHEP::um; //Needs to be defined because the center of the resonator object is not the center of the square. Subtracting an additional arbitrary 68 um to the offset to get things to line up. Good enough.
+  constexpr double dp_centralResonatorOffsetX = -1*dp_resonatorAssemblyBaseAlDimX/2.0 + 617.5*CLHEP::um - 62*CLHEP::um; //Needs to be defined because the center of the resonator object is not the center of the square. Subtracting an additional arbitrary 68 um to the offset to get things to line up. Good enough.
   
   
 
