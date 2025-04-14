@@ -26,7 +26,7 @@ public:
   virtual ~G4CMPParticleChangeForPhonon() override = default;
 
   // Ensure that local flags are cleared between steps
-  virtual void Initialize(const G4Track& track);
+  virtual void Initialize(const G4Track& track) override;
   
   // --- Methods for updating G4Step ---
   G4Step* UpdateStepForPostStep(G4Step* pStep) final;
@@ -41,7 +41,7 @@ public:
   }
 
   // Include local information in printout
-  virtual void DumpInfo() const;
+  virtual void DumpInfo() const override;
   
 protected:	// Subclasses permitted to copy themselves
   G4CMPParticleChangeForPhonon(const G4CMPParticleChangeForPhonon& right);
