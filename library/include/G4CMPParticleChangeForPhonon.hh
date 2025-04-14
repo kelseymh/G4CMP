@@ -10,6 +10,8 @@
 // $Id$
 //
 // 20250410 Implement ParticleChange for phonons to handle displaced reflections
+// 20250413 Add Initialize() implementation to reset updateVol flag, add
+//		missing copy operations, may be needed
 
 #ifndef G4CMPParticleChangeForPhonon_hh
 #define G4CMPParticleChangeForPhonon_hh 1
@@ -17,26 +19,37 @@
 #include "G4TouchableHandle.hh"
 #include "G4ParticleChange.hh"
 
+
 class G4CMPParticleChangeForPhonon final : public G4ParticleChange {
 public:
-  G4CMPParticleChangeForPhonon();
-  ~G4CMPParticleChangeForPhonon() override = default;
+  G4CMPParticleChangeForPhonon() : G4ParticleChange() {;}
+  virtual ~G4CMPParticleChangeForPhonon() override = default;
 
-  G4CMPParticleChangeForPhonon(const G4CMPParticleChangeForPhonon& right) = delete;
-  G4CMPParticleChangeForPhonon& operator=(const G4CMPParticleChangeForPhonon& right) = delete;
-
+  // Ensure that local flags are cleared between steps
+  virtual void Initialize(const G4Track& track);
+  
   // --- Methods for updating G4Step ---
   G4Step* UpdateStepForPostStep(G4Step* pStep) final;
   
   // --- Methods for proposing PostStep volume ---
-  void ProposeTouchableHandle(G4TouchableHandle nextTouchableHandle);
+  void ProposeTouchableHandle(const G4TouchableHandle& nextTouchableHandle) {
+    theTouchableHandle = nextTouchableHandle;
+  }
+  
+  const G4TouchableHandle& GetTouchableHandle() const {
+    return theTouchableHandle;
+  }
+
+  // Include local information in printout
+  virtual void DumpInfo() const;
+  
+protected:	// Subclasses permitted to copy themselves
+  G4CMPParticleChangeForPhonon(const G4CMPParticleChangeForPhonon& right);
+  G4CMPParticleChangeForPhonon& operator=(const G4CMPParticleChangeForPhonon& right);
 
 private:
   G4TouchableHandle theTouchableHandle;
-  G4Material* theMaterialChange = nullptr;
-  const G4MaterialCutsCouple* theMaterialCutsCoupleChange = nullptr;
-  G4VSensitiveDetector* theSensitiveDetectorChange = nullptr;
-  G4bool updateVol = false;
+  G4bool updateVol = false;		// Only set if touchable is changed
 };
 
 #endif /* G4CMPParticleChangeForPhonon_hh */
