@@ -1,0 +1,17 @@
+# Amorphous SiO2
+# Caitlyn Stone-Whitehead, Colorado School of Mines
+# Crystal parameters
+amorphous
+# Phonon parameters
+# S. Tamura, Phys. Rev. B 31, 2574 (1985)
+dyn 54.18 -13.14 16.10 31.20 GPa
+scat 4.65e-42 s3
+decay 7.99e-55 s4
+decayTT 0.54
+# Phonon Mode DOS approximated as equivalent to Alpha-Quartz SiO2
+LDOS 0.10001
+STDOS 0.53333
+FTDOS 0.36666
+Debye 4.2 THz           
+vsound 5970 m/s    # Longitudinal sound speed
+vtrans 3760 m/s    # Transverse sound speed
