@@ -257,7 +257,7 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 	     << " NEW SURFACE POINT: " << surfacePoint << G4endl;
     }
 
-    postIn = preSolid->Inside(postPos);
+    postIn = preSolid->Inside(surfacePoint);
     if (buVerboseLevel>2) {
       G4cout << "\n Is adjusted location on surface of preStep Volume? "
 	     << (postIn==kOutside ? "outside" :
