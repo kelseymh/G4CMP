@@ -25,6 +25,7 @@
 // 20210923  Use >= in maximum reflections check.
 // 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
 // 20250413  Protect debugging messages with verbosity.
+// 20250415  Suppress error for same PV if starting at boundary.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -103,7 +104,7 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
   prePV = aStep.GetPreStepPoint()->GetPhysicalVolume();
   postPV = aStep.GetPostStepPoint()->GetPhysicalVolume();
 
-  if (prePV == postPV) {
+  if (prePV == postPV && aStep.GetPreStepPoint()->GetStepStatus() != fGeomBoundary) {
     if (buVerboseLevel) {
       G4cerr << procName << " ERROR: fGeomBoundary status set, but"
 	     << " pre- and post-step volumes are identical!" << G4endl;
@@ -266,7 +267,7 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
     }
 
     // Double check calculation -- point "must" now be on surface!
-    if (preSolid->Inside(surfacePoint) != kSurface) {
+    if (postIn != kSurface) {
       G4Exception((procName+"::CheckBoundaryPoint").c_str(),
 		  "Boundary005", EventMustBeAborted,
 		  "Boundary-limited step cannot find boundary surface point"

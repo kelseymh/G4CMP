@@ -252,6 +252,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     G4Navigator* navigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
     navigator->LocateGlobalPointWithinVolume(surfacePoint);
+    G4double safety = aStep.GetPostStepPoint()->GetSafety();
+    navigator->ComputeStep(surfacePoint, vdir, aStep.GetStepLength(), safety);
   }
 
   if (verboseLevel>2) {
@@ -313,10 +315,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector oldNorm = newNorm;
-  G4double deltaNorm = 1 - oldNorm.dot(newNorm); // discontinuity test
-  G4double olddeltaNorm = deltaNorm;
-  G4double tolerance = 1e-9;
-  G4bool discontSurf = true;
+  G4bool corner = false;
 
   // Find the distance from point to surface along norm (- means inward)
   G4double surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
@@ -361,11 +360,10 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
   while ((!G4CMP::PhononVelocityIsInward(theLattice, mode,
    GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm))
-   || discontSurf) && nAttempts++ < nStepLimit) {
+   || corner) && nAttempts++ < nStepLimit) {
     // Save previous loop values
     oldstepLocalPos = stepLocalPos;
     oldNorm = newNorm;
-    olddeltaNorm = deltaNorm;
     // debugging only - DELETE
     oldkTan = kTan;
     oldkPerpV = kPerpV;
@@ -375,13 +373,6 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
     // Get the local normal at the new surface point
     newNorm = solid->SurfaceNormal(stepLocalPos);
-    deltaNorm = 1 - oldNorm.dot(newNorm);
-    discontSurf = (abs(deltaNorm - olddeltaNorm) > tolerance);
-
-    if (verboseLevel>3) {
-      G4cout << " deltaNorm-oldDeltaNorm " << abs(deltaNorm - olddeltaNorm)
-	     << G4endl;
-    }
 
     // Adjust stepLocalPos back to surface of detector
     surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
@@ -412,6 +403,14 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
     // Debugging: Can be removed?
     G4ThreeVector vDir = theLattice->MapKtoVDir(mode, reflectedKDir);
+
+    // Test whether this step is near a surface discontinuity
+    G4ThreeVector trialStep = stepLocalPos + 1*nm * vDir.unit();
+    corner = (solid->Inside(trialStep) == kOutside);
+
+    if (verboseLevel>3) {
+      G4cout << " At a corner? " << corner << G4endl;
+    }
 
     // FIXME: Need defined units
     if (verboseLevel>3) {
