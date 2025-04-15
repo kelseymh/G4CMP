@@ -246,15 +246,24 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 
   // If post-step position not proper surface point, compute intersection
   if (postIn != kSurface) {
+    if (buVerboseLevel>2)
+      G4cout << " OLD SURFACE POINT: " << surfacePoint << G4endl;
+
     G4ThreeVector along = (postPos-prePos).unit();	// Trajectory direction
-    G4cout << "OLD SURFACE POINT: " << surfacePoint << G4endl;
     surfacePoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
-    G4cout << "NEW SURFACE POINT: " << surfacePoint << G4endl;
+    if (buVerboseLevel>2) {
+      G4cout << " moving preStep by " << preSolid->DistanceToOut(prePos,along)
+	     << " along " << along << G4endl
+	     << " NEW SURFACE POINT: " << surfacePoint << G4endl;
+    }
+
     postIn = preSolid->Inside(postPos);
-    G4cout << "\n Is adjusted postStep location on surface of preStep Volume? "
-	   << (postIn==kOutside ? "outside" :
-	       postIn==kInside  ? "inside" :
-	       postIn==kSurface ? "surface" : "INVALID") << G4endl;
+    if (buVerboseLevel>2) {
+      G4cout << "\n Is adjusted location on surface of preStep Volume? "
+	     << (postIn==kOutside ? "outside" :
+		 postIn==kInside  ? "inside" :
+		 postIn==kSurface ? "surface" : "INVALID") << G4endl;
+    }
 
     // Double check calculation -- point "must" now be on surface!
     if (preSolid->Inside(surfacePoint) != kSurface) {
