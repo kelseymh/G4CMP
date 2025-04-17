@@ -387,11 +387,6 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       newNorm = oldNorm;
       // Modify stepLocalPos in place to edge position
       AdjustToEdgePosition(solid, kTan, stepLocalPos);
-      // Break the loop if we couldn't find a valid point
-      if (solid->Inside(stepLocalPos) != kSurface) {
-        reflectedKDir = newNorm;
-        break;
-      }
       // Reflect kTan against the edge - rotates & modifies kTan; modifies newNorm
       ReflectAgainstEdge(solid, kTan, stepLocalPos, newNorm);
     }
@@ -590,10 +585,8 @@ AdjustToClosestSurfacePoint(const G4VSolid* solid,
   if (isIn == kSurface) return;
 
   // Angles to be adjusted in place by OptimizeSurfaceAdjustAngle
-  // Best initial conditions will be the surface normal
-  G4ThreeVector surfNorm = solid->SurfaceNormal(stepLocalPos);
-  G4double bestTheta = surfNorm.theta();
-  G4double bestPhi = surfNorm.phi();
+  G4double bestTheta = pi / 2;
+  G4double bestPhi = 0;
 
   G4double minDist = (isIn == kInside) ? solid->DistanceToOut(stepLocalPos)
                                        : solid->DistanceToIn(stepLocalPos);
@@ -606,28 +599,10 @@ AdjustToClosestSurfacePoint(const G4VSolid* solid,
                        minDist*sin(bestTheta)*sin(bestPhi),
                        minDist*cos(bestTheta));
 
-  // Set stepLocalPos and exit if a surface point was found
-  if (solid->Inside(stepLocalPos + optDir) == kSurface) {
-    stepLocalPos += optDir;
-    return;
-  }
-
-  // Retry but optimize theta first
-  bestTheta = surfNorm.theta();
-  bestPhi = surfNorm.phi();
-
-  OptimizeSurfaceAdjustAngle(solid, stepLocalPos, bestTheta, bestPhi, 0, minDist);
-  OptimizeSurfaceAdjustAngle(solid, stepLocalPos, bestTheta, bestPhi, 1, minDist);
-
-  optDir.set(minDist*sin(bestTheta)*cos(bestPhi),
-             minDist*sin(bestTheta)*sin(bestPhi),
-             minDist*cos(bestTheta));
-
   // Only return valid positions on surface
   if (solid->Inside(stepLocalPos + optDir) == kSurface) {
     stepLocalPos += optDir;
-  }
-  else {
+  } else {
     stepLocalPos.set(kInfinity,kInfinity,kInfinity);
   }
 }
@@ -647,12 +622,12 @@ AdjustToEdgePosition(const G4VSolid* solid, const G4ThreeVector& kTan,
   G4double tolerance = solid->GetTolerance();
 
   // Binary search to bring surface point to edge
-  while (high - low > tolerance) {
+  while (high - low > tolerance || isIn != kSurface) {
     mid = 0.5 * (low + high);
     stepLocalPos = originalPos + mid * kTan;
-    // Modify stepLocalPos in place
-    AdjustToClosestSurfacePoint(solid, stepLocalPos);
 
+    // Modify stepLocalPos in place to surface
+    AdjustToClosestSurfacePoint(solid, stepLocalPos);
     isIn = solid->Inside(stepLocalPos);
 
     if (isIn == kSurface) low = mid; // Move out
