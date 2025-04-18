@@ -387,6 +387,11 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       newNorm = oldNorm;
       // Modify stepLocalPos in place to edge position
       AdjustToEdgePosition(solid, kTan, stepLocalPos);
+      // Do a diffuse reflection if the adjustment failed
+      if (solid->Inside(stepLocalPos) != kSurface) {
+        reflectedKDir = newNorm;
+        break;
+      }
       // Reflect kTan against the edge - rotates & modifies kTan; modifies newNorm
       ReflectAgainstEdge(solid, kTan, stepLocalPos, newNorm);
     }
@@ -622,7 +627,9 @@ AdjustToEdgePosition(const G4VSolid* solid, const G4ThreeVector& kTan,
   G4double tolerance = solid->GetTolerance();
 
   // Binary search to bring surface point to edge
-  while (high - low > tolerance || isIn != kSurface) {
+  G4int maxItr = 100;
+  G4int itr = 0;
+  while ((high - low > tolerance || isIn != kSurface) && ++itr < maxItr) {
     mid = 0.5 * (low + high);
     stepLocalPos = originalPos + mid * kTan;
 
