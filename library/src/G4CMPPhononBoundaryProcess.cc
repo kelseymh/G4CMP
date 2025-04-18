@@ -406,11 +406,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // Calculate new reflectedKDir (kTan + kPerpV)
     reflectedKDir = kTan + kPerpV;
 
-    // Debugging: Can be removed?
-    G4ThreeVector vDir = theLattice->MapKtoVDir(mode, reflectedKDir);
-
     // Test whether this step is near a surface discontinuity
-    G4ThreeVector trialStep = stepLocalPos + 1*nm * vDir.unit();
+    G4ThreeVector vDir = theLattice->MapKtoVDir(mode, reflectedKDir);
+    G4ThreeVector trialStep = stepLocalPos + 10*um * vDir.unit();
     corner = (solid->Inside(trialStep) == kOutside);
 
     if (verboseLevel>3) {
