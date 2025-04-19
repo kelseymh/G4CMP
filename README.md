@@ -459,17 +459,20 @@ reset in order for conflicting configuration files to be found. G4CMP is
 distributed with seven predefined materials, under the CrystalMaps
 directory:
 
-| Material          | Directory          |
-|-------------------|--------------------|
-| Germanium         | CrystalMaps/Ge/    |
-| Silicon           | CrystalMaps/Si/    |
-| Sapphire          | CrystalMaps/Al2O3/ |
-| Calcium fluoride  | CrysalMaps/CaF2/   |
-| Calcium tungstate | CrystalMaps/CaWO4/ |
-| Gallium arsenide  | CrystalMaps/GaAs/  |
-| Lithium fluoride  | CrystalMaps/LiF/   |
+| Material                     | Directory         	  |
+|------------------------------|--------------------------|
+| Germanium                    | CrystalMaps/Ge/    	  |
+| Silicon                      | CrystalMaps/Si/    	  |
+| Sapphire                     | CrystalMaps/Al2O3/ 	  |
+| Calcium fluoride             | CrysalMaps/CaF2/  	  |
+| Calcium tungstate            | CrystalMaps/CaWO4/       |
+| Gallium arsenide             | CrystalMaps/GaAs/        |
+| Lithium fluoride             | CrystalMaps/LiF/         |
+| Alpha-Quartz Silicon dioxide | CrystalMaps/SiO2_alpha/  |
+| Amorphous Silicon dioxide    | CrystalMaps/SiO2_amorph/ |
 
-The last five currently only have phonon transport parameters defined; work
+
+The last seven currently only have phonon transport parameters defined; work
 is in progress to handle conduction band charge production where appropriate.  
 
 If you create local definitions, we recommend naming additional directories
