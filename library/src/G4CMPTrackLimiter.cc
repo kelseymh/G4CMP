@@ -26,6 +26,7 @@
 #include "G4TransportationManager.hh"
 #include "G4Navigator.hh"
 #include <limits.h>
+#include <sstream>
 
 
 // Only applies to G4CMP particles
@@ -55,6 +56,9 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
 
   if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
+  // Skip reflection zero-length steps
+  if (step.GetStepLength() == 0.) return &aParticleChange;
+
   // Apply minimum energy cut to kill tracks with optional NIEL deposit
   if (BelowEnergyCut(track)) {
     if (verboseLevel>2) G4cout << " track below minimum energy." << G4endl;
@@ -67,9 +71,26 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
 
   // Ensure that track is still in original, valid volume
   if (EscapedFromVolume(step)) {
+    std::stringstream msg;
+    msg << "Killing track escaped from volume "
+	<< GetCurrentVolume()->GetName() + ":"
+	<< GetCurrentVolume()->GetCopyNo();
     G4Exception("G4CMPTrackLimiter", "Limit001", JustWarning,
-		"Killing track escaped from original volume.");
+		msg.str().c_str());
 
+    aParticleChange.SetNumberOfSecondaries(0);	// Don't launch bad tracks!
+    aParticleChange.ProposeTrackStatus(fStopAndKill);
+  }
+
+  // Check whether track position and volume are consistent
+  if (InvalidPosition(track)) {
+    std::stringstream msg;
+    msg << "Killing track inconsistent position " << track.GetPosition()
+	<< "\n vs. detector volume " << GetCurrentVolume()->GetName() + ":"
+	<< GetCurrentVolume()->GetCopyNo();
+    G4Exception("G4CMPTrackLimiter", "Limit002", JustWarning,
+		msg.str().c_str());
+    
     aParticleChange.SetNumberOfSecondaries(0);	// Don't launch bad tracks!
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
@@ -86,6 +107,30 @@ G4bool G4CMPTrackLimiter::BelowEnergyCut(const G4Track& track) const {
      : G4CMP::IsPhonon(track) ? G4CMPConfigManager::GetMinPhononEnergy() : -1.);
 
   return (track.GetKineticEnergy() < ecut);
+}
+
+G4bool G4CMPTrackLimiter::InvalidPosition(const G4Track& track) const {
+  G4VPhysicalVolume* trkVol = track.GetVolume();
+  if (!trkVol) return false;
+
+  const G4VTouchable* trkVT = track.GetTouchable();
+  G4ThreeVector trkPos = track.GetPosition();
+  if (verboseLevel>1) {
+    G4cout << GetProcessName() << "::InvalidPosition()" << G4endl
+	   << " trkVol " << trkVol->GetName() << " @ " << trkPos << G4endl;
+  }
+
+  G4CMP::RotateToLocalPosition(trkVT, trkPos);
+  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
+  EInside isIn = solid->Inside(trkPos);
+  if (verboseLevel>1) {
+    const char* inName = (isIn==kInside ? "inside" : isIn==kOutside
+			  ? "outside" : "surface");
+
+    G4cout << " local " << trkPos << " is " << inName << " volume" << G4endl;
+  }
+
+  return (isIn == kOutside);
 }
 
 G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {

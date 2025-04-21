@@ -40,7 +40,7 @@ public:
 
 protected:
   G4bool BelowEnergyCut(const G4Track& track) const;
-
+  G4bool InvalidPosition(const G4Track& track) const;
   G4bool EscapedFromVolume(const G4Step& step) const;
 
   virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*);
