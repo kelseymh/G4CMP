@@ -34,6 +34,7 @@
 // 20250325  G4CMP-463 -- Set surface step size & limit with macro command.
 // 20250402  G4CMP-468 -- Support position change after surface displacement.
 // 20250413  M. Kelsey -- Protect debugging output with verbosity.
+// 20250422  N. Tenpas -- Add position arguments for PhononVelocityIsInward test.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -224,8 +225,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     G4Track* sec1 = particleChange.GetSecondary(0);
     G4Track* sec2 = particleChange.GetSecondary(1);
 
-    G4ThreeVector vec1 = GetLambertianVector(surfNorm, mode);
-    G4ThreeVector vec2 = GetLambertianVector(surfNorm, mode);
+    G4ThreeVector vec1 = GetLambertianVector(surfNorm, mode, surfacePoint);
+    G4ThreeVector vec2 = GetLambertianVector(surfNorm, mode, surfacePoint);
 
     sec1->SetMomentumDirection(vec1);
     sec2->SetMomentumDirection(vec2);
@@ -235,7 +236,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     reflectedKDir = GetReflectedVector(waveVector, surfNorm, mode, surfacePoint); // Modify surfacePoint & surfNorm in place
     refltype = "specular";
   } else {
-    reflectedKDir = GetLambertianVector(surfNorm, mode);
+    reflectedKDir = GetLambertianVector(surfNorm, mode, surfacePoint);
     refltype = "diffuse";
   }
 
@@ -263,31 +264,13 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   // If reflection failed, report problem and kill the track
-  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm)) {
+  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm, surfacePoint)) {
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
 		JustWarning, ("Phonon "+refltype+" reflection failed"+"\nPhonon mode at time of death: "+G4PhononPolarization::Label(mode)).c_str());
     DoSimpleKill(aTrack, aStep, particleChange);
     return;
   }
-
-  // SANITY CHECK:  Project a 1 um step in the new direction, see if it
-  // is still in the correct (pre-step) volume.
-
-  if (verboseLevel>2) {
-    G4ThreeVector stepPos = surfacePoint + 1*um * vdir;
-
-    G4cout << " New travel direction " << vdir
-	   << "\n from " << surfacePoint << "\n   to " << stepPos << G4endl;
-
-    G4ThreeVector stepLocal = GetLocalPosition(stepPos);
-    G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
-    EInside place = solid->Inside(stepLocal);
-    G4cout << " After trial step, " << (place==kInside ? "inside"
-					: place==kOutside ? "OUTSIDE"
-					: "on surface") << G4endl;
-  }
 }
-
 
 // Generate specular reflection corrected for momentum dispersion
 
@@ -300,7 +283,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm
   (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);	// Reflect against normal
 
-  if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm))
+  if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm,
+                                    surfacePoint))
     return reflectedKDir;
 
   // Reflection didn't work as expected, need to correct:
@@ -315,7 +299,6 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4ThreeVector oldNorm = newNorm;
-  G4bool corner = false;
 
   // Find the distance from point to surface along norm (- means inward)
   G4double surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
@@ -323,7 +306,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
   G4ThreeVector kPerpV = kPerpMag * newNorm;		// Negative implied in kPerpMag for inward pointing
   G4ThreeVector kTan = reflectedKDir - kPerpV;		// Get kTan: reflectedKDir = kPerpV + kTan
-  G4double kTanMag = kTan.mag();
+  G4ThreeVector axis = kPerpV.cross(kTan).unit();
+  G4double phi = 0.;
   EInside isIn = solid->Inside(stepLocalPos);
 
   G4int nAttempts = 0;
@@ -331,6 +315,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // debugging only DELETE
   G4ThreeVector oldkTan = kTan;
   G4ThreeVector oldkPerpV = kPerpV;
+
   G4ThreeVector oldstepLocalPos = stepLocalPos;
 
   // Initialize stepSize for _this_ solid object
@@ -358,9 +343,9 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   }
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
-  while ((!G4CMP::PhononVelocityIsInward(theLattice, mode,
-   GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm))
-   || corner) && nAttempts++ < nStepLimit) {
+  while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
+   GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm),
+   GetGlobalPosition(stepLocalPos)) && nAttempts++ < nStepLimit) {
     // Save previous loop values
     oldstepLocalPos = stepLocalPos;
     oldNorm = newNorm;
@@ -396,24 +381,18 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       ReflectAgainstEdge(solid, kTan, stepLocalPos, newNorm);
     }
     else {
-      // "Rotate" kTan to new position
-      (kTan -= newNorm * (kTan * newNorm)).setMag(kTanMag);
+      // Rotate kTan to new position
+      axis = newNorm.cross(kTan).unit();
+      phi = oldNorm.azimAngle(newNorm, axis);
+      kTan = kTan.rotate(axis, phi);
     }
 
     // Get perpendicular component of reflected k w/ new norm (negative implied in kPerpMag for inward pointing)
     kPerpV = kPerpMag * newNorm;
 
-    // Calculate new reflectedKDir (kTan + kPerpV)
+    // Calculate new reflectedKDir (kTan + kPerpV) and Vg
     reflectedKDir = kTan + kPerpV;
-
-    // Test whether this step is near a surface discontinuity
     G4ThreeVector vDir = theLattice->MapKtoVDir(mode, reflectedKDir);
-    G4ThreeVector trialStep = stepLocalPos + 10*um * vDir.unit();
-    corner = (solid->Inside(trialStep) == kOutside);
-
-    if (verboseLevel>3) {
-      G4cout << " At a corner? " << corner << G4endl;
-    }
 
     // FIXME: Need defined units
     if (verboseLevel>3) {
@@ -440,13 +419,14 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   RotateToGlobalDirection(reflectedKDir);
   RotateToGlobalDirection(newNorm);
 
-  if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, newNorm)) {
+  if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, newNorm,
+                                     GetGlobalPosition(stepLocalPos))) {
     G4cout << (GetProcessName()+"::GetReflectedVector").c_str()
       << ": Phonon displacement failed after " << nAttempts - 1 
       << " attempts. Doing diffuse reflection at surface point: " << surfacePoint << G4endl;
 
     // reflectedKDir and stepLocalPos will be in global coordinates
-    reflectedKDir = GetLambertianVector(surfNorm, mode);
+    reflectedKDir = GetLambertianVector(surfNorm, mode, surfacePoint);
     stepLocalPos = surfacePoint;
   }
   else{ 
@@ -473,7 +453,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 // Generate diffuse reflection according to 1/cos distribution
 
 G4ThreeVector G4CMPPhononBoundaryProcess::
-GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {
+GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode,
+                    const G4ThreeVector& surfPoint) const {
   G4ThreeVector reflectedKDir;
   const G4int maxTries = 1000;
   G4int nTries = 0;
@@ -481,7 +462,7 @@ GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {
     reflectedKDir = G4CMP::LambertReflection(surfNorm);
   } while (nTries++ < maxTries &&
 	   !G4CMP::PhononVelocityIsInward(theLattice, mode,
-					  reflectedKDir, surfNorm));
+					  reflectedKDir, surfNorm, surfPoint));
 
   return reflectedKDir;
 }
@@ -673,7 +654,7 @@ ReflectAgainstEdge(const G4VSolid* solid, G4ThreeVector& kTan,
   // Only do reflection if at an edge
   if (norm1 * norm2 <= 0) {
     newNorm = (newNorm*norm1 > newNorm*norm2) ? norm1 : norm2;
-    // Rotate kTan to be orthogonal to one normal
+    // Project kTan to be orthogonal to one normal
     (kTan -= newNorm * (kTan * newNorm)).setMag(kTanMag);
 
     // Get the edge vector

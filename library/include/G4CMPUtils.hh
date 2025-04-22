@@ -17,6 +17,7 @@
 // 20220816  Move RandomIndex function from SecondaryProduction
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 // 20250130  G4CMP-453 -- Add utilities for getting current track and touchable
+// 20250422  N. Tenpas -- Add position argument to PhononVelocityIsInward
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -85,10 +86,11 @@ namespace G4CMP {
   G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
 
   // Test that a phonon's wave vector relates to an inward velocity.
-  // waveVector and surfNorm need to be in global coordinates
+  // waveVector, surfNorm, and surfacePos need to be in global coordinates
   G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
                                 const G4ThreeVector& waveVector,
-                                const G4ThreeVector& surfNorm);
+                                const G4ThreeVector& surfNorm,
+                                const G4ThreeVector& surfacePos);
 
   // Thermal distributions, useful for handling phonon thermalization
   G4double MaxwellBoltzmannPDF(G4double temperature, G4double energy);

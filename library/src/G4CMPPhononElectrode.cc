@@ -36,6 +36,7 @@
 // 20221006  M. Kelsey -- Adapted from SuperCDMS simulation version
 // 20221006  G4CMP-330 -- Add lattice temperature to properties table
 // 20250124  G4CMP-447 -- Add FillParticleChange() to update phonon track info
+// 20250422  N. Tenpas -- Add position arguments for PhononVelocityIsInward.
 
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -145,7 +146,8 @@ ProcessAbsorption(const G4Track& track, const G4Step& step, G4double EDep,
     do {
       reflectedKDir = G4CMP::LambertReflection(surfNorm);
     } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
-                                            kmag*reflectedKDir, surfNorm));
+                                            kmag*reflectedKDir, surfNorm,
+                                            track.GetPosition()));
 
     G4Track* phonon = G4CMP::CreatePhonon(GetCurrentTouchable(),
 					  pol, kmag*reflectedKDir,
@@ -187,7 +189,7 @@ ProcessReflection(const G4Track& track, const G4Step& step,
   do {
     reflectedKDir = G4CMP::LambertReflection(surfNorm);
   } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
-					  reflectedKDir, surfNorm));
+					  reflectedKDir, surfNorm, track.GetPosition()));
 
   FillParticleChange(particleChange, track, reflectedKDir);
 
