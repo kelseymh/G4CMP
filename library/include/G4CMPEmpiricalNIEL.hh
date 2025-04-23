@@ -14,6 +14,7 @@
 /// Paper DOI: https://doi.org/10.1103/PhysRevD.105.122002
 //
 // 20250212  David Sadek
+// 20250422  G4CMP-472: Adjust order of data members to avoid compiler warnings.
 
 #ifndef G4CMPEmpiricalNIEL_hh
 #define G4CMPEmpiricalNIEL_hh 1
@@ -42,16 +43,16 @@ public:
   void SetEmpkhigh(G4double kh) { Empkhigh = kh; }
   void SetEmpElow(G4double el) { EmpElow = el; }
   void SetEmpEhigh(G4double eh) { EmpEhigh = eh; }
-  void SetEmpkFixed(G4double fixedK) { EmpkFixed = fixedK; }
   void SetEmpEDepK(bool use) { EmpEDepK = use; }
+  void SetEmpkFixed(G4double fixedK) { EmpkFixed = fixedK; }
 
   // Getters
   G4double GetEmpklow() const { return Empklow; }
   G4double GetEmpkhigh() const { return Empkhigh; }
   G4double GetEmpElow() const { return EmpElow; }
   G4double GetEmpEhigh() const { return EmpEhigh; }
-  G4double GetEmpkFixed() const { return EmpkFixed; }
   bool GetEmpEDepK() const { return EmpEDepK; }
+  G4double GetEmpkFixed() const { return EmpkFixed; }
 
   virtual G4double 
   PartitionNIEL(G4double energy, const G4Material *material, G4double Zin=0.,
