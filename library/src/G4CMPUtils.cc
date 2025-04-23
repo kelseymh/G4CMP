@@ -205,11 +205,13 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
 }
 
 
-// Generate cos(theta) law for diffuse reflection
+// Generate cos(theta) law for diffuse reflection, ensuring that computed
+// vector is directed inward with respect to the surface normal.
 
-G4ThreeVector G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
-                                         const G4ThreeVector& surfNorm, G4int mode,
-                                         const G4ThreeVector& surfPoint){
+G4ThreeVector
+G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
+			   const G4ThreeVector& surfNorm, G4int mode,
+			   const G4ThreeVector& surfPoint) {
   G4ThreeVector reflectedKDir;
   const G4int maxTries = 1000;
   G4int nTries = 0;
