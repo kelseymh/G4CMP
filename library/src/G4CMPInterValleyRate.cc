@@ -55,7 +55,7 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
   G4double totalIVRate = 0.;      // Total IV rate
   G4int N_op = theLattice->GetNIVDeform();		// # of IV transitions possible
 
-  // Going throught each phonon mode
+  // Going through each phonon mode
   for (G4int i = 0; i<N_op; i++) {
       
     G4double Emin_iv = theLattice->GetIVEnergy(i);		// IV phonon energy

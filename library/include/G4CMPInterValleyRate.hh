@@ -69,7 +69,7 @@ private:
   G4double density;		// Crystal density (from G4Material)
   G4double alpha;		// Non-parabolicity parameter
   G4double m_DOS;		// Electron "density of states" average mass
-  G4double m_DOS3half;		// m_DOS ^ (3/2)  
+  G4double m_DOS3half;		// m_DOS ^ (3/2)
 };
 
 #endif	/* G4CMPInterValleyRate_hh */
