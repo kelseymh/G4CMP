@@ -13,7 +13,8 @@
 ///
 /// Paper DOI: https://doi.org/10.1103/PhysRevD.105.122002
 //
-// 20250212  David Sade
+// 20250212  David Sadek
+// 20250422  G4CMP-472: Adjust order of data members to avoid compiler warnings.
 
 #include "globals.hh"
 #include "G4CMPEmpiricalNIEL.hh"
@@ -30,7 +31,7 @@
 G4CMPEmpiricalNIEL::G4CMPEmpiricalNIEL() 
     : Empklow(DBL_MIN), Empkhigh(DBL_MIN), 
       EmpElow(DBL_MIN), EmpEhigh(DBL_MIN), 
-      EmpkFixed(DBL_MIN), EmpEDepK(true) {
+      EmpEDepK(true), EmpkFixed(DBL_MIN) {
 
     G4CMPConfigManager* config = G4CMPConfigManager::Instance();
 
@@ -39,8 +40,8 @@ G4CMPEmpiricalNIEL::G4CMPEmpiricalNIEL()
     Empkhigh = config->GetEmpkhigh();
     EmpElow = config->GetEmpElow();
     EmpEhigh = config->GetEmpEhigh();
-    EmpkFixed = config->GetEmpkFixed();
     EmpEDepK = config->GetEmpEDepK();
+    EmpkFixed = config->GetEmpkFixed();
 }
 
 G4double G4CMPEmpiricalNIEL::
@@ -80,9 +81,8 @@ PartitionNIEL(G4double energy, const G4Material *material, G4double Zin, G4doubl
         k = Empklow + (energy - EmpElow) * dk / dE;
     }
 
-    // Compute effective Z and A
+    // Compute effective Z
     const G4double Z = GetEffectiveZ(material);
-    const G4double A = GetEffectiveA(material) / (g/mole);
 
     // Compute epsilon and h
     G4Pow* g4pow = G4Pow::GetInstance();
