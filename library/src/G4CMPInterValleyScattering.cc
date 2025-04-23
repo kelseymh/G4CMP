@@ -201,7 +201,12 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
                 
 // computed k*' method 
                 
-            costheta = G4UniformRand() * (1 - sqrt(Ephonon / Etrk)) + sqrt(Ephonon / Etrk);
+            
+            G4double ivorder = theLattice->GetIVOrder(Ephononi);		// IV f or g-type scattering
+            if (ivorder==0) costheta = MakePhononThetaIV0Order(Etrk,Ephonon);
+            if (ivorder==1) costheta = MakePhononThetaIV1Order(Etrk,Ephonon);
+            //costheta = G4UniformRand() * (1 - sqrt(Ephonon / Etrk)) + sqrt(Ephonon / Etrk);
+            
             phi_phonon = G4UniformRand() * twopi;
                 
             if (G4UniformRand() <0.5) {
@@ -242,10 +247,12 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
             Precoil = theLattice->MapEkintoP(valley, Precoil.unit(),Erecoil);
             k_recoil = theLattice->MapPtoK(valley, Precoil);
             k_recoilHV = theLattice->EllipsoidalToSphericalTranformation(valley, k_recoil);
+
                 
+               G4cout << "costheta_phonon : " << costheta << G4endl;
                 
 //             G4cout << "valley : " << valley << " : " << theLattice->GetValley(valley) << G4endl;
-//             G4cout << "theta_phonon : " << theta_phonon << " phi_phonon : " << phi_phonon << G4endl;
+//             G4cout << "costheta_phonon : " << costheta << " phi_phonon : " << phi_phonon << G4endl;
 //             G4cout << "ptrk : " << ptrk  << G4endl;
 //             G4cout << "Etrk : " << Etrk / eV << " Ephonon : " << Ephonon / eV << " Erecoil : " << Erecoil / eV << G4endl;
 //             G4cout << "ktrk : " << ktrk << " ktrk_mag : " << ktrk.mag() << G4endl;

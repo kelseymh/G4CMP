@@ -472,6 +472,38 @@ G4double G4CMPProcessUtils::MakeRecoilTheta(G4double k, G4double ks,
 	       / (k * sqrt(k*k - 4*ks*kctks)) );
 }
 
+// Generate direction angle for phonons in IV scattering
+
+G4double G4CMPProcessUtils::MakePhononThetaIV0Order(G4double E, G4double Ephonon) const {
+    G4double r = G4UniformRand();
+    G4double v = Ephonon/E;
+    if (v>=1) return 1;
+    
+    G4double cos2 = v/2+sqrt(v*v+4*(1-v)*(r*r-2*r+1))/2;
+    if (cos2<=v) return 1;
+
+    return sqrt(cos2);  
+}
+
+G4double G4CMPProcessUtils::MakePhononThetaIV1Order(G4double E, G4double Ephonon) const {
+    G4double r = G4UniformRand();
+    G4double v = Ephonon/E;
+    if (v>=1) return 1;   
+    
+    G4double a=4;
+    G4double b=-8*v;
+    G4double c=5*v*v;
+    G4double d=-v*v*v;
+    G4double e=-(r-1)*(r-1)*(2-v)*(2-v)*(1-v);
+    G4double u=(-3*b*b*b*b + 256*e*a*a*a -64*d*b*a*a + 16*c*b*b*a)/256/a/a/a/a;
+    
+    G4double y2=v*v/8+sqrt(v*v*v*v/16-4*u)/2;
+    G4double cos2=sqrt(y2)+v/2;
+    
+    if (cos2<=v) return 1;
+
+    return sqrt(cos2);  
+}
 
 // Generate random valley for charge carrier
 

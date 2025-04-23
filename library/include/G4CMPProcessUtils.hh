@@ -231,6 +231,10 @@ public:
   G4double MakePhononTheta(G4double k, G4double ks) const;
   G4double MakePhononEnergy(G4double k, G4double ks, G4double th_phonon) const;
   G4double MakePhononEnergy(G4double q) const;
+    
+  // Generate direction angle for phonon generated in IV scattering
+  G4double MakePhononThetaIV0Order(G4double E, G4double Ephonon) const;
+    G4double MakePhononThetaIV1Order(G4double E, G4double Ephonon) const;
 
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
