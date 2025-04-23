@@ -12,6 +12,7 @@
 //
 // 20170602  M. Kelsey -- Inherit from new G4CMPVProcess
 // 20170822  M. Kelsey -- Add checking on current vs. original volume
+// 20250421  M. Kelsey -- Add comparison of track position with volume.
 
 #ifndef G4CMPTrackLimiter_hh
 #define G4CMPTrackLimiter_hh 1

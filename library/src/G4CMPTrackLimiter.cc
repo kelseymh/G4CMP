@@ -13,6 +13,7 @@
 // 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
 // 20250327  G4CMP-468:  Stop surface displacement reflections from "escaping."
 // 20250413  G4CMP-468:  Move diagnostic outputs inside verbosity.
+// 20250421  Add comparison of track position with volume.
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
