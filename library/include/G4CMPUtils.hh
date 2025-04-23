@@ -17,7 +17,8 @@
 // 20220816  Move RandomIndex function from SecondaryProduction
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 // 20250130  G4CMP-453 -- Add utilities for getting current track and touchable
-// 20250422  N. Tenpas -- Add position argument to PhononVelocityIsInward
+// 20250422  G4CMP-468 -- Add position argument to PhononVelocityIsInward
+// 20250423  G4CMP-468 -- Add function to get diffuse reflection vector
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -83,6 +84,9 @@ namespace G4CMP {
   void FillHit(const G4Step*, G4CMPElectrodeHit*);
 
   // Phonons reflect difusively from surfaces.
+  G4ThreeVector GetLambertianVector(const G4LatticePhysical* theLattice,
+                                    const G4ThreeVector& surfNorm, G4int mode,
+                                    const G4ThreeVector& surfPoint);
   G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
 
   // Test that a phonon's wave vector relates to an inward velocity.

@@ -37,6 +37,7 @@
 // 20221006  G4CMP-330 -- Add lattice temperature to properties table
 // 20250124  G4CMP-447 -- Add FillParticleChange() to update phonon track info
 // 20250422  N. Tenpas -- Add position arguments for PhononVelocityIsInward.
+// 20250423  N. Tenpas -- Replace duplicated GetLambertianVector() code.
 
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -143,11 +144,8 @@ ProcessAbsorption(const G4Track& track, const G4Step& step, G4double EDep,
   for (G4double E : phononEnergies) {
     G4double kmag = k.mag()*E/Ekin;	// Scale k vector by energy
     G4int pol = ChoosePhononPolarization();
-    do {
-      reflectedKDir = G4CMP::LambertReflection(surfNorm);
-    } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
-                                            kmag*reflectedKDir, surfNorm,
-                                            track.GetPosition()));
+    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, pol,
+                                               track.GetPosition());
 
     G4Track* phonon = G4CMP::CreatePhonon(GetCurrentTouchable(),
 					  pol, kmag*reflectedKDir,
@@ -185,11 +183,8 @@ ProcessReflection(const G4Track& track, const G4Step& step,
 
   G4int pol = GetPolarization(track);
 
-  G4ThreeVector reflectedKDir;
-  do {
-    reflectedKDir = G4CMP::LambertReflection(surfNorm);
-  } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
-					  reflectedKDir, surfNorm, track.GetPosition()));
+  G4ThreeVector reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm,
+                                                           pol, track.GetPosition());
 
   FillParticleChange(particleChange, track, reflectedKDir);
 

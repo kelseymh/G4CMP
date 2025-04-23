@@ -77,4 +77,3 @@ void G4CMPParticleChangeForPhonon::DumpInfo() const {
 	   << theTouchableHandle->GetVolume()->GetName() << G4endl;
   }
 }
- 

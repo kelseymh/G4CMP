@@ -26,6 +26,7 @@
 // 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
 // 20250413  Protect debugging messages with verbosity.
 // 20250415  Suppress error for same PV if starting at boundary.
+// 20250423  Remove error suppression for starting at boundary.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -104,7 +105,7 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
   prePV = aStep.GetPreStepPoint()->GetPhysicalVolume();
   postPV = aStep.GetPostStepPoint()->GetPhysicalVolume();
 
-  if (prePV == postPV && aStep.GetPreStepPoint()->GetStepStatus() != fGeomBoundary) {
+  if (prePV == postPV) {
     if (buVerboseLevel) {
       G4cerr << procName << " ERROR: fGeomBoundary status set, but"
 	     << " pre- and post-step volumes are identical!" << G4endl;

@@ -17,7 +17,8 @@
 // 20220816  M. Kelsey -- Move RandomIndex here for more general use
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 // 20250130  G4CMP-453 -- Apply coordinate rotations in PhononVelocityIsInward
-// 20250422  N. Tenpas -- Add displaced point test to PhononVelocityIsInward.
+// 20250422  G4CMP-468 -- Add displaced point test to PhononVelocityIsInward.
+// 20250423  G4CMP-468 -- Add function to get diffuse reflection vector.
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -205,6 +206,21 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
 
 
 // Generate cos(theta) law for diffuse reflection
+
+G4ThreeVector G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
+                                         const G4ThreeVector& surfNorm, G4int mode,
+                                         const G4ThreeVector& surfPoint){
+  G4ThreeVector reflectedKDir;
+  const G4int maxTries = 1000;
+  G4int nTries = 0;
+  do {
+    reflectedKDir = LambertReflection(surfNorm);
+  } while (nTries++ < maxTries &&
+           !PhononVelocityIsInward(theLattice, mode, reflectedKDir, surfNorm,
+                                   surfPoint));
+
+  return reflectedKDir;
+}
 
 G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
   G4double phi = 2.0*pi*G4UniformRand();
