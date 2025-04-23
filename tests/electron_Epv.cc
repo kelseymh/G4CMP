@@ -57,7 +57,7 @@ int main(/*int argc, char* argv[]*/) {
 	if (phideg > 0. && thdeg==0.) break;
 
 	k_elec.setRThetaPhi(kel, thdeg*deg, phideg*deg);
-	p_elec = lattice->MapK_valleyToP(1, k_elec);
+	p_elec = lattice->MapKtoP(1, k_elec);
 	v_elec = lattice->MapPtoV_el(1, p_elec);
 
 	// Use momentum and valley to get energy, effective mass

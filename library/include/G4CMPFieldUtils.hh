@@ -12,6 +12,7 @@
 // Description: Free standing helper functions for electric field access
 //
 // 20180622  Michael Kelsey
+// 20211005  Add position-only utility (get touchable from position)
 
 #include "G4ThreeVector.hh"
 
@@ -28,13 +29,19 @@ namespace G4CMP {
   // Get field at _global_ coordinate of track/step
   G4ThreeVector GetFieldAtPosition(const G4Track& track);
   G4ThreeVector GetFieldAtPosition(const G4Step& step);
+  G4ThreeVector GetFieldAtPosition(const G4ThreeVector& pos);
   G4ThreeVector GetFieldAtPosition(const G4VTouchable* touch,
+				   const G4ThreeVector& pos);
+  G4ThreeVector GetFieldAtPosition(const G4LogicalVolume* vol,
 				   const G4ThreeVector& pos);
 
   // Get potential (uniform or mesh field) at _global_ coordinate
   G4double GetPotentialAtPosition(const G4Step& step);
   G4double GetPotentialAtPosition(const G4Track& track);
+  G4double GetPotentialAtPosition(const G4ThreeVector& pos);
   G4double GetPotentialAtPosition(const G4VTouchable* touch,
+				  const G4ThreeVector& pos);
+  G4double GetPotentialAtPosition(const G4LogicalVolume* vol,
 				  const G4ThreeVector& pos);
 
   G4double GetPotentialAtVertex(const G4Track& track);

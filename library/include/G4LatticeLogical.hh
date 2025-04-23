@@ -38,7 +38,10 @@
 //		precompute valley inverse transforms
 // 20200608  Fix -Wshadow warnings from tempvec
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
+// 20230702  I. Ataee -- Add methods for relationship between quasi-momentum
+//		(p_Q) and expectation value of momentum (p).
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
+// 20240510  E. Michhaud -- Add function to compute L0 from other parameters
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -72,6 +75,7 @@ public:
 
   // Run-time configuration
   void SetVerboseLevel(G4int vb) const { verboseLevel = vb; }
+  G4int GetVerboseLevel() const { return verboseLevel; }
 
   void SetName(const G4String& name) { fName = name; }
   const G4String& GetName() const { return fName; }
@@ -98,16 +102,16 @@ public:
   // NOTE:  Input vector must be in lattice symmetry frame (X == symmetry axis)
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
-  G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
-  G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
-  G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;
-  G4ThreeVector MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const;
+  G4ThreeVector MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const;
+  G4ThreeVector MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const;
+  G4ThreeVector MapV_elToK(G4int ivalley, const G4ThreeVector& v_el) const;
+  G4ThreeVector MapPtoK(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapKtoP(G4int ivalley, const G4ThreeVector& k) const ;
+  G4ThreeVector MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double Ekin) const;
 
   // Apply energy relationships for electron transport
   G4double MapPtoEkin(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4double MapP_QtoEkin(G4int ivalley, const G4ThreeVector& p_e) const;
   G4double MapV_elToEkin(G4int ivalley, const G4ThreeVector& v_e) const;
 
   // Configure crystal symmetry group and lattice spacing/angles
@@ -204,6 +208,14 @@ public:
 
   // Compute "effective mass" for electron to preserve E/p relationship
   G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const;
+    
+  // Compute "l0" for electron and hole
+  G4double ComputeL0(G4bool IsElec);
+
+  G4ThreeVector RotateToValley(G4int iv, const G4ThreeVector& v) const;
+  G4ThreeVector RotateFromValley(G4int iv, const G4ThreeVector& v) const;
+  G4ThreeVector EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const;
+  G4ThreeVector SphericalToEllipsoidalTranformation(G4int iv, const G4ThreeVector& v) const;
 
   // Transform for drifting-electron valleys in momentum space
   void AddValley(const G4RotationMatrix& valley);
@@ -243,7 +255,8 @@ public:
   void SetIVLinExponent(G4double v)  { fIVLinExponent = v; }
 
   void SetAlpha(G4double v)	     { fAlpha = v; }
-  void SetAcousticDeform(G4double v) { fAcDeform = v; }
+  void SetElectronAcousticDeform(G4double v) { fAcDeform_e = v; }
+  void SetHoleAcousticDeform(G4double v) { fAcDeform_h = v; }
   void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
 
@@ -258,7 +271,8 @@ public:
   G4double GetIVLinExponent() const  { return fIVLinExponent; }
 
   G4double GetAlpha() const	     { return fAlpha; }
-  G4double GetAcousticDeform() const { return fAcDeform; }
+  G4double GetElectronAcousticDeform() const { return fAcDeform_e; }
+  G4double GetHoleAcousticDeform() const { return fAcDeform_h; }
   G4int    GetNIVDeform() const { return (G4int)fIVDeform.size(); }
   const std::vector<G4double>& GetIVDeform() const { return fIVDeform; }
   const std::vector<G4double>& GetIVEnergy() const { return fIVEnergy; }
@@ -342,7 +356,8 @@ private:
   std::vector<G4ThreeVector> fValleyAxis;
 
   G4double fAlpha;			// Non-parabolicity of -ve potential
-  G4double fAcDeform;		 	// Deformation potential for acoustic IV
+  G4double fAcDeform_e;		 	// Deformation potential for electron-acoustic phonon
+  G4double fAcDeform_h;		 	// Deformation potential for hole-acoustic phonon
   std::vector<G4double> fIVDeform;	// D0, D1 potentials for optical IV
   std::vector<G4double> fIVEnergy;	// D0, D1 thresholds for optical IV
 

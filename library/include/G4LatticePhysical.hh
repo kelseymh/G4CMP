@@ -61,6 +61,8 @@ public:
     if (fLattice) fLattice->SetVerboseLevel(vb);
   }
 
+  G4int GetVerboseLevel() const { return verboseLevel; }
+
   // Specific material lattice for this physical instance
   void SetLatticeLogical(const G4LatticeLogical* Lat) { fLattice = Lat; }
 
@@ -83,16 +85,14 @@ public:
 
   // Convert between electron momentum and valley velocity or HV wavevector
   // NOTE:  p or v_el vector must be in local (G4VSolid) coordinate system
-  // NOTE:  K_HV vector must be in valley internal coordinate system
   G4ThreeVector MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const;
   G4ThreeVector MapV_elToP(G4int ivalley, const G4ThreeVector& v_el) const;
-  G4ThreeVector MapV_elToK_HV(G4int ivalley, const G4ThreeVector& v_el) const;
-  G4ThreeVector MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const;
-  G4ThreeVector MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const;
-  G4ThreeVector MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const;
-  G4ThreeVector MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const;
+  G4ThreeVector MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const;
+  G4ThreeVector MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const;
+  G4ThreeVector MapV_elToK(G4int ivalley, const G4ThreeVector& v_el) const;
+  G4ThreeVector MapPtoK(G4int ivalley, const G4ThreeVector& p_e) const;
+  G4ThreeVector MapKtoP(G4int ivalley, const G4ThreeVector& k) const ;
+  G4ThreeVector MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double Ekin) const;
 
   // Apply energy relationships for electron transport
   G4double MapPtoEkin(G4int ivalley, const G4ThreeVector& p_e) const;
@@ -144,9 +144,11 @@ public:
   G4double GetHoleMass() const { return fLattice->GetHoleMass(); }
   G4double GetElectronMass() const { return fLattice->GetElectronMass(); }
   G4double GetElectronDOSMass() const { return fLattice->GetElectronDOSMass(); }
-  G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const {
-    return fLattice->GetElectronEffectiveMass(iv, p);
-  }
+  G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const;
+  G4ThreeVector RotateToValley(G4int iv, const G4ThreeVector& v) const;
+  G4ThreeVector RotateFromValley(G4int iv, const G4ThreeVector& v) const;
+  G4ThreeVector EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const;
+  G4ThreeVector SphericalToEllipsoidalTranformation(G4int iv, const G4ThreeVector& v) const;
 
   const G4RotationMatrix& GetMassTensor() const { return fLattice->GetMassTensor(); }
   const G4RotationMatrix& GetMInvTensor() const { return fLattice->GetMInvTensor(); }
@@ -173,7 +175,8 @@ public:
   G4double GetIVLinExponent() const { return fLattice->GetIVLinExponent(); }
 
   G4double GetAlpha() const          { return fLattice->GetAlpha(); }
-  G4double GetAcousticDeform() const { return fLattice->GetAcousticDeform(); }
+  G4double GetElectronAcousticDeform() const { return fLattice->GetElectronAcousticDeform(); }
+  G4double GetHoleAcousticDeform() const { return fLattice->GetHoleAcousticDeform(); }
 
   // Optical intervalley scattering may use D0 or D1 deformation potentials
   G4int    GetNIVDeform() const { return fLattice->GetNIVDeform(); }

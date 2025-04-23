@@ -1,13 +1,19 @@
 # G4CMP -- Geant4 add-on framework for phonon and charge-carrier physics
 
-    R. Agnese, D. Brandt, M. Kelsey, P. Redl
-
+    R. Agnese, D. Brandt, M. Kelsey, P. Redl, I Ataee Langroudy
 
 This package provide a collection of particle types, physics processes, and
 supporting utilities to simulate a limited set of solid-state physics
 processes in Geant4.  Developed for the low-temperature community, the
 package support production and propagation of acoustic phonons and
 electron-hole pairs through solid crystals such as germanium.
+
+Website: https://confluence.slac.stanford.edu/browse/G4CMP/
+
+Papers:	https://doi.org/10.1016/j.nima.2023.168473
+	https://arxiv.org/abs/2302.05998
+	https://arxiv.org/abs/2408.04732
+	https://arxiv.org/abs/1403.4984
 
 ## Software Licenses
 
@@ -76,10 +82,12 @@ developers should check the source code in
 hits below step length |
 | G4CMP\_EMIN\_PHONONS [E] | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
+| G4CMP\_RECORD\_EMIN | /g4cmp/recordMinETracks [t\|f]  | Put below-minimum energy to killed track Edeposit |
 | G4CMP\_USE\_KVSOLVER    | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED    | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
 | G4CMP\_KAPLAN\_KEEP     | /g4cmp/kaplanKeepPhonons [t\|f] | Reflect or iterate all phonons in KaplanQP |
 | G4CMP\_IV\_RATE\_MODEL  | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
+| G4CMP\_LUKE\_FILE | /g4cmp/LukeDebugFile [S] | LukeScattering debug filename |
 | G4CMP\_ETRAPPING\_MFP   | /g4cmp/eTrappingMFP [L] mm        | Mean free path for electron trapping |
 | G4CMP\_HTRAPPING\_MFP   | /g4cmp/hTrappingMFP [L] mm        | Mean free path for charge hole trapping |
 | G4CMP\_EDTRAPION\_MFP | /g4cmp/eDTrapIonizationMFP [L] mm | MFP for e-trap ionization by e- |
@@ -377,6 +385,8 @@ At runtime, the version string will be available through a call to
 
 ## Defining the Crystal Dynamics
 
+See also https://confluence.slac.stanford.edu/display/G4CMP/Adding+Materials+to+G4CMP
+
 In a user's application, each active G4CMP material (e.g., germanium
 crystals or diamonds) must have a collection of dynamical parameters
 defined.  These parameters are used by the phonon and charge-carrier
@@ -397,10 +407,25 @@ or
 Note that if a material configuration file is found in multiple locations, only 
 the first file found chronologically will be chosen; `G4LATTICEDATA` must be 
 reset in order for conflicting configuration files to be found. G4CMP is
-distributed with germanium and silicon configurations, in `CrystalMaps/Ge/`
-and `CrystalMaps/Si/`, respectively.  We recommend naming additional
-directories by element or material, matching the Geant4 conventions, but
-this is not required or enforced.
+distributed with seven predefined materials, under the CrystalMaps
+directory:
+
+| Material          | Directory          |
+|-------------------|--------------------|
+| Germanium         | CrystalMaps/Ge/    |
+| Silicon           | CrystalMaps/Si/    |
+| Sapphire          | CrystalMaps/Al2O3/ |
+| Calcium fluoride  | CrysalMaps/CaF2/   |
+| Calcium tungstate | CrystalMaps/CaWO4/ |
+| Gallium arsenide  | CrystalMaps/GaAs/  |
+| Lithium fluoride  | CrystalMaps/LiF/   |
+
+The last five currently only have phonon transport parameters defined; work
+is in progress to handle conduction band charge production where appropriate.  
+
+If you create local definitions, we recommend naming additional directories
+by element or material, matching the Geant4 conventions, but this is not
+required or enforced.
 
 The parameter definition file is config.txt.  Each line starts with a
 keyword, followed by one or more values.  Any line which starts with "#" is
@@ -463,7 +488,8 @@ the crystal system.
 | epsilon | e/e0      | Relative permittivity     |                    |
 | neutDens | N        | Number density of neutron impurities | /volume |
 | alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
-| acDeform | val      | Acoustic deformation potential | energy (eV)   |
+| acDeform_e | val | electron acoustic deformation potential | energy (eV)|
+| acDeform_h | val | hole acoustic deformation potential  | energy (eV)|
 | ivDeform | val val ... | Optical deformation potentials | eV/cm      |
 | ivEnergy | val val ... | Optical phonon thresholds     | energy (eV) |
 | **InterValley scattering  (Linear and Quadratic Models) ** |
@@ -475,6 +501,13 @@ the crystal system.
 | ivQuadField | val | Minimum field for quadratic IV expression | V/m  |
 | ivQuadPower | exp | Exponent: rate = Rate*(E^2-Field^2)^(exp/2) | none |
 
+The keywords l0_e and l0_h are optional. If they are not specified in
+config.txt, they will be computed from other physical constants: 
+
+l0 = pi*hbar^4*density / (2*mass^3*acDeform^2)
+
+If they are specified in config.txt, the value in config.txt takes precedence
+over the computed value.
 
 ## Surface Interactions
 
@@ -544,6 +577,8 @@ we recommend that user applications also set `/g4cmp/minEPhonons` to 2.*absorber
 to avoid excessive CPU from tracking unmeasurable phonons. Quasiparticles
 in a sensor may be subject to a baseline absorption efficiency 'absorberEff'
 and energy-dependent efficiency modification 'absorberEffSlope'.
+
+See also https://confluence.slac.stanford.edu/display/G4CMP/G4CMPKaplanQP+Algorithm
 
 The `G4CMPKaplanQP` process also respects the global setting
 `kaplanKeepPhonons`.  If this is set true, then all internal phonons
