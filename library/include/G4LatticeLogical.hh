@@ -41,6 +41,7 @@
 // 20230702  I. Ataee -- Add methods for relationship between quasi-momentum
 //		(p_Q) and expectation value of momentum (p).
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
+// 20250423  E. Michaud -- Add IV scattering parameters.
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h

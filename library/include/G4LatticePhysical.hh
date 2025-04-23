@@ -36,6 +36,7 @@
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 //		Also, add long missing accessors for Miller orientation
+// 20250423  E. Michaud -- Add IV scattering parameters.
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1

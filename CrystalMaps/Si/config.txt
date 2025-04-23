@@ -39,7 +39,6 @@ ivPhoMode TA LA LO TA LA TO			# IV scattering phonon mode
 neutDens 1e11 /cm3
 epsilon 11.68
 # Intervalley scattering (Linear and Quadratic models)
-#ivModel Linear
 ivLinRate0  1.5e6 Hz	# Fitted to Stanford test devices
 ivLinRate1  1.5 Hz	# Fitted to Stanford test devices
 ivLinPower  4.0		# Rate = ivLinRate0 + ivLinRate1 * E^ivLinPower

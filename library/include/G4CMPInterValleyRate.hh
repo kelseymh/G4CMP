@@ -22,7 +22,7 @@ public:
     : G4CMPVScatteringRate("InterValley"),
       hbar_sq(CLHEP::hbar_Planck*CLHEP::hbar_Planck), hbar_4th(hbar_sq*hbar_sq),
       m_electron(CLHEP::electron_mass_c2/CLHEP::c_squared),
-      eTrk(0.), density(0.), uSound(0.), alpha(0.),
+      eTrk(0.), density(0.), alpha(0.),
       m_DOS(0.), m_DOS3half(0.) {;}
 
   virtual ~G4CMPInterValleyRate() {;}
@@ -34,17 +34,21 @@ public:
   // Initialize numerical parameters below
   virtual void LoadDataForTrack(const G4Track* track);
     
-  //G4CMPInterValleyRate& operator=(const G4CMPInterValleyRate& rhs2);  
+  // Store IV rates for G4CMPInterValleyScattering  
   const std::vector<G4double>& GetIVProb() const {return IVprob;} 
-  
-    
+      
 
 protected:
-  G4double opticalRate() const;		// Optical intervalley D0, D1 rate
-  G4double scatterRate() const;		// Neutral impurity scattering
+  G4double IVRate() const;		// Optical intervalley D0, D1 rate
 
-  G4double energyFunc(G4double E) const {	// Energy dependence of rates
+  // Energy dependence of 0th order IV rate
+  G4double energyFunc0th(G4double E) const {
     return sqrt(E*(1+alpha*E))*(1+2*alpha*E);
+  }
+
+  // Energy dependence of 0th order IV rate
+  G4double energyFunc1st(G4double qmax, G4double qmin) const {
+    return qmax*qmax*qmax*qmax-qmin*qmin*qmin*qmin;
   }
 
 private:
@@ -63,11 +67,9 @@ private:
   mutable std::vector<G4double> IVprob; 	// Store IV rates
 
   G4double density;		// Crystal density (from G4Material)
-  G4double uSound;		// Average sound speed for acoustic rate
   G4double alpha;		// Non-parabolicity parameter
   G4double m_DOS;		// Electron "density of states" average mass
-  G4double m_DOS3half;		// m_DOS ^ (3/2)
-  
+  G4double m_DOS3half;		// m_DOS ^ (3/2)  
 };
 
 #endif	/* G4CMPInterValleyRate_hh */

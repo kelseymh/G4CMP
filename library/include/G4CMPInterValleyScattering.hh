@@ -11,6 +11,7 @@
 // 20190704  Add selection of rate model by name, and material specific
 // 20190906  For rate model selection, pass string by value
 // 20190906  Push selected rate model back to G4CMPTimeStepper for consistency
+// 20250423  Add phonon emission as secondaries process.
 
 #ifndef G4CMPInterValleyScattering_h
 #define G4CMPInterValleyScattering_h 1
@@ -38,10 +39,6 @@ public:
   void SetTrackSecondariesFirst(const G4bool val) { secondariesFirst = val; }
   G4bool GetTrackSecondariesFirst() const { return secondariesFirst; }
     
-
-  
- 
-    
 protected:
   // Change registered scattering rate based on material, if necessary
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
@@ -51,7 +48,7 @@ private:
 
   void PushModelToTimeStepper();	// Ensure model is used for stepping
     
-  G4bool secondariesFirst;
+  G4bool secondariesFirst;     // To create phonons as secondaries
 
 private:
   //hide assignment operator as private

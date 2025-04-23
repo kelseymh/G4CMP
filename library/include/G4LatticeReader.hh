@@ -23,6 +23,10 @@
 // 20170810  Add utility function to process list of values with unit.
 // 20190704  Add utility function to process string/name argument
 // 20231102  Add ProcessValleyDirection()
+// 20250423  Add ProcessIVNValleys(), ProcessIVOrder(), 
+//       ProcessIVFGScattering() and ProcessIVPhononMode().
+
+
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
