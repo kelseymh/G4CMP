@@ -18,6 +18,7 @@
 // 20250422  N. Tenpas -- Add position argument to GetLambertianVector.
 // 20250423  G4CMP-468 -- Add wrapper function for updating navigator.
 // 20250423  G4CMP-468 -- Move GetLambertianVector to G4CMPUtils.
+// 20250424  G4CMP-465 -- Add G4CMPSolidUtils object for custom solid functions.
 
 #ifndef G4CMPPhononBoundaryProcess_h
 #define G4CMPPhononBoundaryProcess_h 1
@@ -27,6 +28,7 @@
 #include "G4CMPParticleChangeForPhonon.hh"
 
 class G4CMPAnharmonicDecay;
+class G4CMPSolidUtils;
 
 class G4CMPPhononBoundaryProcess : public G4VPhononProcess,
 				   public G4CMPBoundaryUtils {
@@ -60,31 +62,12 @@ protected:
 				                           G4ThreeVector& surfNorm, G4int mode,
                                    G4ThreeVector& surfacePoint);
 
-
-  // Efficiently find direction with min distance to surface
-  void OptimizeSurfaceAdjustAngle(const G4VSolid* solid,
-                                  const G4ThreeVector& stepLocalPos,
-                                  G4double& theta0, G4double& phi0,
-                                  const G4int angOption,
-                                  const G4double minDist) const;
-
-  // Modifies stepLocalPos in place
-  void AdjustToClosestSurfacePoint(const G4VSolid* solid,
-                                   G4ThreeVector& stepLocalPos) const;
-
-  void AdjustToEdgePosition(const G4VSolid* solid, const G4ThreeVector& kTan,
-                            G4ThreeVector& stepLocalPos) const;
-
-  // Modifies kTan and newNorm in place
-  void ReflectAgainstEdge(const G4VSolid* solid, G4ThreeVector& kTan,
-                          const G4ThreeVector& stepLocalPos, G4ThreeVector& newNorm) const;
-
-
   // Update navigator volume when position is changed
   void UpdateNavigatorVolume(const G4Step&, const G4ThreeVector& position,
                              const G4ThreeVector& vDir) const;
 
 private:
+  G4CMPSolidUtils* theSolid;
   G4CMPAnharmonicDecay* anharmonicDecay;
   G4CMPParticleChangeForPhonon phParticleChange;
   G4double stepSize;
