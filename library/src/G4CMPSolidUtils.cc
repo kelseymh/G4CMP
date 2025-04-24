@@ -65,8 +65,7 @@ OptimizeSurfaceAdjustAngle(const G4ThreeVector& stepLocalPos, G4double& theta0,
     coeffZ = minDist;
     dir1.set(coeffX*sin(x1), coeffY*sin(x1), coeffZ*cos(x1));
     dir2.set(coeffX*sin(x2), coeffY*sin(x2), coeffZ*cos(x2));
-  }
-  else {
+  } else {
     // Optimize phi
     coeffX = minDist*sin(theta0);
     coeffY = minDist*sin(theta0);

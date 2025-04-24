@@ -373,8 +373,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       }
       // Reflect kTan against the edge - rotates & modifies kTan; modifies newNorm
       theSolid->ReflectAgainstEdge(kTan, stepLocalPos, newNorm);
-    }
-    else {
+    } else {
       // Rotate kTan to new position
       axis = newNorm.cross(kTan).unit();
       phi = oldNorm.azimAngle(newNorm, axis);
