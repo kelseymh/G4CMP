@@ -226,6 +226,7 @@ void G4LatticeLogical::SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a,
   fBasis[2] = c*fCrystal.axis[2];
 }
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 /////////////////////////////////////////////////////////////
@@ -518,7 +519,7 @@ G4LatticeLogical::MapV_elToK(G4int ivalley, const G4ThreeVector &v_e) const {
 #endif
 
   tempvec() = MapV_elToP(ivalley, v_e);
-  
+
   return MapPtoK(ivalley, tempvec());
 }
 
@@ -867,10 +868,7 @@ std::vector<G4double> ivdeformtest = GetIVDeform();
 G4ThreeVector latticeconstant = GetLatConst();
 
 for (size_t i = 0; i < ivrateorder.size(); i++) {
-    G4cout << "iv deforme test : " << ivrateorder[i] << G4endl;
-    
     if (ivrateorder[i] == 1) {
-    G4cout << "test : " << ivdeformtest[i]/eV*cm << G4endl;
     ivdeformtest[i]=ivdeformtest[i]*latticeconstant.x();
     }    
 }

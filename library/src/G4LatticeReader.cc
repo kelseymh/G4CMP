@@ -278,18 +278,15 @@ G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
 
           // Check if the entire token is a valid number
           if (*eonum == '\0') {fList.push_back(fValue);} 
-          else {break;} // Skip non-numerical tokens
-          }
-              
-          }
+              else {break;} // Skip non-numerical tokens
+          }  
     }
+  }
     
   if (unitcat!="String") { 
-
-  if (unitcat=="NoUnits") {fUnits=1.;}
-  else {ProcessUnits(token, unitcat);}		// Non-numeric token is trailing unit
-    
-  for (size_t i=0; i<fList.size(); i++) fList[i] *= fUnits;
+      if (unitcat=="NoUnits") {fUnits=1.;}
+      else {ProcessUnits(token, unitcat);}		// Non-numeric token is trailing unit
+      for (size_t i=0; i<fList.size(); i++) fList[i] *= fUnits;
   }
 
   return psLatfile->good();
