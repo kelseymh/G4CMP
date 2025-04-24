@@ -47,6 +47,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4PhononPolarization.hh"
+
+
 // Construcor and destructor
 
 G4CMPInterValleyScattering::G4CMPInterValleyScattering()

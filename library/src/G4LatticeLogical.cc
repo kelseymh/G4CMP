@@ -58,6 +58,7 @@
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
 // 20240830  E. Michaud -- Fix math error in MapV_elToP
+// 20250424  Add ConverteVcmToeV to convert IV deformation potential units
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -519,7 +520,6 @@ G4LatticeLogical::MapV_elToK(G4int ivalley, const G4ThreeVector &v_e) const {
 #endif
 
   tempvec() = MapV_elToP(ivalley, v_e);
-
   return MapPtoK(ivalley, tempvec());
 }
 

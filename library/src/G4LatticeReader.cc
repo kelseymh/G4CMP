@@ -36,6 +36,8 @@
 //		 direction instead of euler angles
 // 20240131  J. Inman -- Multiple path selection on G4LATTICEDATA variable
 // 20240920  E. Michaud -- Add 'ProcessIVNVal' and 'ProcessIVOrder' 
+// 20250424  Add 'ProcessIVFGScattering' and 'ProcessIVPhononMode'
+// 20250424  ProcessList can now read lines withouth units
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"

@@ -34,11 +34,10 @@ void G4CMPInterValleyRate::LoadDataForTrack(const G4Track* track) {
   alpha = theLattice->GetAlpha();
   m_DOS = theLattice->GetElectronDOSMass();
   m_DOS3half = sqrt(m_DOS*m_DOS*m_DOS);
-
 }
 
 
-// Scattering rate from first principles
+// Scattering rate is computed from first principles
 
 G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
   const_cast<G4CMPInterValleyRate*>(this)->LoadDataForTrack(&aTrack);

@@ -34,7 +34,7 @@ public:
 
   // Only electrons have physical valleys associated with them
   virtual bool IsApplicable(const G4ParticleDefinition&);
-    
+
   // Pause current particle tracking, track secondary phonons instead
   void SetTrackSecondariesFirst(const G4bool val) { secondariesFirst = val; }
   G4bool GetTrackSecondariesFirst() const { return secondariesFirst; }

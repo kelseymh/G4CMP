@@ -53,6 +53,7 @@
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
 // 20240402  Drop FindTouchable() function.  Set currentTouchable internally
 //		not available from track, and delete it at end of track.
+// 20250424  Add MakePhononTheta0thOrder() and MakePhononTheta1stOrder()
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
