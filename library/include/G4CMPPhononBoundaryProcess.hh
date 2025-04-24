@@ -15,12 +15,16 @@
 // 20220906  M. Kelsey -- Encapsulate specular reflection in function.
 // 20250204  N. Tenpas -- Support reflection displacement search at hard corners.
 // 20250325  N. Tenpas -- Add support for macro commands to set step size and limit.
+// 20250422  N. Tenpas -- Add position argument to GetLambertianVector.
+// 20250423  G4CMP-468 -- Add wrapper function for updating navigator.
+// 20250423  G4CMP-468 -- Move GetLambertianVector to G4CMPUtils.
 
 #ifndef G4CMPPhononBoundaryProcess_h
 #define G4CMPPhononBoundaryProcess_h 1
 
 #include "G4VPhononProcess.hh"
 #include "G4CMPBoundaryUtils.hh"
+#include "G4CMPParticleChangeForPhonon.hh"
 
 class G4CMPAnharmonicDecay;
 
@@ -56,9 +60,6 @@ protected:
 				                           G4ThreeVector& surfNorm, G4int mode,
                                    G4ThreeVector& surfacePoint);
 
-  G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm,
-				                            G4int mode) const;
-
 
   // Efficiently find direction with min distance to surface
   void OptimizeSurfaceAdjustAngle(const G4VSolid* solid,
@@ -78,8 +79,14 @@ protected:
   void ReflectAgainstEdge(const G4VSolid* solid, G4ThreeVector& kTan,
                           const G4ThreeVector& stepLocalPos, G4ThreeVector& newNorm) const;
 
+
+  // Update navigator volume when position is changed
+  void UpdateNavigatorVolume(const G4Step&, const G4ThreeVector& position,
+                             const G4ThreeVector& vDir) const;
+
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
+  G4CMPParticleChangeForPhonon phParticleChange;
   G4double stepSize;
   G4int nStepLimit;
 

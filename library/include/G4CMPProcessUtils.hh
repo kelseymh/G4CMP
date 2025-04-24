@@ -41,6 +41,7 @@
 // 20211003  Add track touchable as data member, to create if needed
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
 // 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
+// 20250423  Add FillParticleChange() to update phonon position and touchable.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -52,13 +53,14 @@
 #include "G4Track.hh"
 
 class G4CMPDriftTrackInfo;
+class G4CMPParticleChangeForPhonon;
 class G4CMPPhononTrackInfo;
 class G4CMPVTrackInfo;
 class G4LatticePhysical;
+class G4ParticleChange;
 class G4ParticleDefinition;
 class G4VPhysicalVolume;
 class G4VTouchable;
-class G4ParticleChange;
 
 
 class G4CMPProcessUtils {
@@ -80,6 +82,10 @@ public:
   // Update particleChange's wavevector, group velocity, and momentum
   void FillParticleChange(G4ParticleChange& particleChange,
               const G4Track& track, const G4ThreeVector& wavevector) const;
+
+  // Update particleChange's position and touchable
+  void FillParticleChange(G4CMPParticleChangeForPhonon& particleChange,
+              const G4Step& step, const G4ThreeVector& position) const;
 
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base

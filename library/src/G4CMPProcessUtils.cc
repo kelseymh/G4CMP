@@ -55,12 +55,14 @@
 //		not available from track, and delete it at end of track.
 // 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
 // 20250129  Rotate Vg in FillParticleChange() to global coordinates.
+// 20250423  Add FillParticleChange() to update phonon position and touchable.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPGeometryUtils.hh"
+#include "G4CMPParticleChangeForPhonon.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPUtils.hh"
 #include "G4CMPTrackUtils.hh"
@@ -77,6 +79,7 @@
 #include "G4PhysicalConstants.hh"
 #include "G4RotationMatrix.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Step.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "G4RandomDirection.hh"
@@ -211,6 +214,14 @@ void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
   particleChange.ProposeVelocity(v);
   RotateToGlobalDirection(vDir);
   particleChange.ProposeMomentumDirection(vDir);
+}
+
+void G4CMPProcessUtils::FillParticleChange(G4CMPParticleChangeForPhonon& particleChange,
+  const G4Step& step, const G4ThreeVector& position) const {
+    // Update position, touchable, and step status
+    particleChange.ProposePosition(position);
+    particleChange.ProposeTouchableHandle(step.GetPreStepPoint()->GetTouchableHandle());
+    step.GetPostStepPoint()->SetStepStatus(fPostStepDoItProc);
 }
 
 
