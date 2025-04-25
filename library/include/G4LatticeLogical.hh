@@ -282,7 +282,7 @@ public:
   G4int    GetNIVDeform() const { return (G4int)fIVDeform.size(); }
   const std::vector<G4double>& GetIVDeform() const { return fIVDeform; }
   const std::vector<G4double>& GetIVEnergy() const { return fIVEnergy; }
-  const std::vector<G4double>& GetIVNValleys() const { return fIVNValleys; }
+  const std::vector<G4double>& GetIVValley() const { return fIVNValleys; }
   const std::vector<G4double>& GetIVOrder() const { return fIVOrder; }
   const std::vector<G4String>& GetIVFGScattering() const { return fIVFGScattering; }
   const std::vector<G4String>& GetIVPhononMode() const { return fIVPhononMode; }
@@ -292,7 +292,7 @@ public:
   G4double GetIVEnergy(G4int i) const {
     return (i>=0 && i<GetNIVDeform()) ? fIVEnergy[i] : 0.;
   }
-  G4double GetIVNValleys(G4int i) const {
+  G4double GetIVValley(G4int i) const {
     return (i>=0 && i<GetNIVDeform()) ? fIVNValleys[i] : 0.;
   }
   G4double GetIVOrder(G4int i) const {

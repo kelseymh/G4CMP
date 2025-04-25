@@ -185,13 +185,13 @@ public:
   G4int    GetNIVDeform() const { return fLattice->GetNIVDeform(); }
   G4double GetIVDeform(G4int i) const { return fLattice->GetIVDeform(i); }
   G4double GetIVEnergy(G4int i) const { return fLattice->GetIVEnergy(i); }
-  G4double GetIVNValleys(G4int i) const { return fLattice->GetIVNValleys(i); }
+  G4double GetIVValley(G4int i) const { return fLattice->GetIVValley(i); }
   G4double GetIVOrder(G4int i) const { return fLattice->GetIVOrder(i); }
   G4String GetIVFGScattering(G4int i) const { return fLattice->GetIVFGScattering(i); }
   G4String GetIVPhononMode(G4int i) const { return fLattice->GetIVPhononMode(i); }
   const std::vector<G4double>& GetIVDeform() const { return fLattice->GetIVDeform(); }
   const std::vector<G4double>& GetIVEnergy() const { return fLattice->GetIVEnergy(); }
-  const std::vector<G4double>& GetIVNValleys() const { return fLattice->GetIVNValleys(); }
+  const std::vector<G4double>& GetIVValley() const { return fLattice->GetIVValley(); }
   const std::vector<G4double>& GetIVOrder() const { return fLattice->GetIVOrder(); }
   const std::vector<G4String>& GetIVFGScattering() const { return fLattice->GetIVFGScattering(); }
   const std::vector<G4String>& GetIVPhononMode() const { return fLattice->GetIVPhononMode(); }

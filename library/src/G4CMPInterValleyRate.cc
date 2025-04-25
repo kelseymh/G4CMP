@@ -50,7 +50,7 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
   kHV = theLattice->EllipsoidalToSphericalTranformation(ivalley, ktrk);
   kmag = kHV.mag();  
   
-  IVprob = {};		// Store IV rates
+  IVprob.clear();		// Store IV rates
   G4double totalIVRate = 0.;      // Total IV rate
   G4int N_op = theLattice->GetNIVDeform();		// # of IV transitions possible
 
@@ -70,7 +70,7 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
     G4double ivrate = 0.;		// IV rate
       
     G4double D_iv = theLattice->GetIVDeform(i);		// IV deformation potential
-    G4double nVal = theLattice->GetIVNValleys(i);		// # final valleys
+    G4double nVal = theLattice->GetIVValley(i);		// # final valleys
     G4double ivorder = theLattice->GetIVOrder(i);		// IV rate order
       
     // 0th order IV rate
