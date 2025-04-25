@@ -552,7 +552,7 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
 
   fUnitName = unit;
   if (inverse) fUnitName = fUnitName(1,unit.length()-1);
-    
+
   // Do processing -- invalid input string will cause fatal exception
   fUnits    = G4UnitDefinition::GetValueOf(fUnitName);
   fUnitCat  = G4UnitDefinition::GetCategory(fUnitName);
