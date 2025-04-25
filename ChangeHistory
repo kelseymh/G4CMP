@@ -7,8 +7,8 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 *** ADD NEW TAG MESSAGES BELOW G4CMP-317 LINE, UPDATE DATE OF G4CMP-317 ***
-2025-04-24  G4CMP-317 : Implement surface 'displacement' for phonon reflection.
-2025-04-24  G4CMP-465 : Implement G4CMPSolidUtils for custom solid functions.
+2025-04-25  G4CMP-317 : Implement surface 'displacement' for phonon reflection.
+2025-04-25  G4CMP-465 : Implement G4CMPSolidUtils for custom solid functions.
 2025-04-23  G4CMP-468 : Create custom phonon particle change to assign correct
                         volume after a displacement reflection.
 2025-03-25  G4CMP-463 : Add surface displacement step size/limit macro commands.

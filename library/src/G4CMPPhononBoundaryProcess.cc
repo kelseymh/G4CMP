@@ -296,15 +296,14 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   
   // Initialize solid object and utilities
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
-  theSolid->Initialize(solid);
-  theSolid->SetVerboseLevel(verboseLevel);
+  theSolid->Initialize(solid, verboseLevel);
 
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4ThreeVector oldNorm = newNorm;
   G4ThreeVector oldstepLocalPos = stepLocalPos;
 
   // Find the distance from point to surface along norm (- means inward)
-  G4double surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
+  G4double surfAdjust = theSolid->GetDistanceToSolid(stepLocalPos, -newNorm);
   G4double kPerpMag = reflectedKDir.dot(newNorm);
 
   G4ThreeVector kPerpV = kPerpMag * newNorm;		// Negative implied in kPerpMag for inward pointing
@@ -354,8 +353,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     newNorm = solid->SurfaceNormal(stepLocalPos);
 
     // Adjust stepLocalPos back to surface of detector
-    surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
-    stepLocalPos -= surfAdjust * newNorm;
+    theSolid->AdjustToClosestSurfacePoint(stepLocalPos, -newNorm);
     isIn = solid->Inside(stepLocalPos);
 
     // Large normal changes and not being on surface after initial adjustment
