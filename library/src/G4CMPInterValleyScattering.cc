@@ -107,222 +107,216 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
 
 // Perform scattering action
 
-G4VParticleChange*
-G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
+  G4VParticleChange*
+  G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
                                          const G4Step& aStep) {
-    aParticleChange.Initialize(aTrack);
-    G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
+  aParticleChange.Initialize(aTrack);
+  G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
 
-    if (verboseLevel > 1) {
-        G4cout << GetProcessName() << "::PostStepDoIt: Step limited by "
-               << postStepPoint->GetProcessDefinedStep()->GetProcessName()
-               << G4endl;
-    }
+  if (verboseLevel > 1) {
+      G4cout << GetProcessName() << "::PostStepDoIt: Step limited by "
+             << postStepPoint->GetProcessDefinedStep()->GetProcessName()
+             << G4endl;
+  }
 
     // Don't do anything at a volume boundary
-    if (postStepPoint->GetStepStatus() == fGeomBoundary) {
-        return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-    }
+  if (postStepPoint->GetStepStatus() == fGeomBoundary) {
+      return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+  }
     
-    // Get track's kinematics in current valley
-    G4int valley = GetValleyIndex(aTrack);
-    G4ThreeVector ptrk = GetLocalMomentum(aTrack);
-    G4ThreeVector Precoil = ptrk;
+  // Get track's kinematics in current valley
+  G4int valley = GetValleyIndex(aTrack);
+  G4ThreeVector ptrk = GetLocalMomentum(aTrack);
+  G4ThreeVector Precoil = ptrk;
     
-    // Get IVRate class
-    G4CMPInterValleyRate* ivpro = dynamic_cast<G4CMPInterValleyRate*>(GetRateModel());
+  // Get IVRate class
+  G4CMPInterValleyRate* ivpro = dynamic_cast<G4CMPInterValleyRate*>(GetRateModel());
     
-    // Make sure it's not empty
-    if (ivpro == nullptr) { 
-        G4cout << "NO G4CMPInterValleyRate* " << G4endl;
-        return &aParticleChange;
-    }
+  // Make sure it's not empty
+  if (ivpro == nullptr) { 
+      G4cout << "NO G4CMPInterValleyRate* " << G4endl;
+      return &aParticleChange;
+  }
 
-    // Get IV rates 
-    else if (ivpro != nullptr) {
-        std::vector<G4double> probabilities = ivpro->GetIVProb();
-        std::vector<G4double> cumulatives(probabilities.size());
-        G4double totalIVRate = 0.;
+  // Get IV rates 
+  else if (ivpro != nullptr) {
+      std::vector<G4double> probabilities = ivpro->GetIVProb();
+      std::vector<G4double> cumulatives(probabilities.size());
+      G4double totalIVRate = 0.;
         
-        // Calculate total IV rate
-        for (auto& element : probabilities) { totalIVRate += element; }
+      // Calculate total IV rate
+      for (auto& element : probabilities) { totalIVRate += element; }
 
-        // Don't do anything if IV rate is 0 
-        if (totalIVRate == 0) { 
-            G4cout << "NO IV Rate " << G4endl;
-            return &aParticleChange;
-        }
+      // Don't do anything if IV rate is 0 
+      if (totalIVRate == 0) { 
+          G4cout << "NO IV Rate " << G4endl;
+          return &aParticleChange;
+      }
         
-        // Do IV scattering if IV rate is not 0 
-        else if (totalIVRate !=0) {
+      // Do IV scattering if IV rate is not 0 
+      else if (totalIVRate !=0) {
             
-            // Normalize IV rates 
-            for (auto& element : probabilities) { element /= totalIVRate; }
+          // Normalize IV rates 
+          for (auto& element : probabilities) { element /= totalIVRate; }
             
-            // Calculate weight of each rates to total rate
-            cumulatives[0] = probabilities[0];
-            for (size_t i = 1; i < probabilities.size(); i++) {
-                cumulatives[i] = cumulatives[i - 1] + probabilities[i];
-            }
+          // Calculate weight of each rates to total rate
+          cumulatives[0] = probabilities[0];
+          for (size_t i = 1; i < probabilities.size(); i++) {
+              cumulatives[i] = cumulatives[i - 1] + probabilities[i];
+          }
             
-            // Choose random rate index from weighted step distribution
-            G4double ivrandom = G4UniformRand();
-            G4int Ephononi = 0;
-            for (size_t i = 0; i < cumulatives.size(); i++) {
-                if (ivrandom < cumulatives[i]) {
-                    Ephononi = i;
-                    break;
-                }
-            }
+          // Choose random rate index from weighted step distribution
+          G4double ivrandom = G4UniformRand();
+          G4int Ephononi = 0;
+          for (size_t i = 0; i < cumulatives.size(); i++) {
+              if (ivrandom < cumulatives[i]) {
+                  Ephononi = i;
+                  break;
+              }
+          }
            
-            // Get track's kinematics in current valley
-            G4double Etrk = GetKineticEnergy(aTrack);
-            G4double Ephonon = theLattice->GetIVEnergy(Ephononi);
+          // Get track's kinematics in current valley
+          G4double Etrk = GetKineticEnergy(aTrack);
+          G4double Ephonon = theLattice->GetIVEnergy(Ephononi);
             
-            // Don't do anything if phonon energy > electron energy
-            if (Ephonon > Etrk) {Ephonon=0;
+          // Don't do anything if phonon energy > electron energy
+          if (Ephonon > Etrk) {Ephonon=0;
                 G4cout << "Ephonon = 0 " << G4endl;
                 return &aParticleChange;
-            }
-            
-            // Do IV scattering if phonon energy < electron energy
-            if (Ephonon!=0) {
-            
-            // track's kinematics before IV scattering in current valley
-            G4ThreeVector ktrk = theLattice->MapPtoK(valley, ptrk);
-            G4ThreeVector kHV = 
-                theLattice->EllipsoidalToSphericalTranformation(valley, ktrk);
-            G4double kmag = kHV.mag();
+          }
+  
+          // Do IV scattering if phonon energy < electron energy
+          if (Ephonon!=0) {
+              
+              // track's kinematics before IV scattering in current valley
+              G4ThreeVector ktrk = theLattice->MapPtoK(valley, ptrk);
+              G4ThreeVector kHV = 
+                  theLattice->EllipsoidalToSphericalTranformation(valley, ktrk);
+              G4double kmag = kHV.mag();
 
-            // Initialize some of the track's kinematics after IV scattering
-            G4double phi_phonon = 0, q = 0, Erecoil = 0, costheta = 0;
-            G4ThreeVector qvec, k_recoilHV, k_recoil; 
+              // Initialize some of the track's kinematics after IV scattering
+              G4double phi_phonon = 0, q = 0, Erecoil = 0, costheta = 0;
+              G4ThreeVector qvec, k_recoilHV, k_recoil; 
             
-            Erecoil = Etrk - Ephonon;	// electron energy after phonon emission
+              Erecoil = Etrk - Ephonon;	// electron energy after phonon emission
 
-            // Get angle of phonon emission (0th or 1st order)
-            G4double ivorder = theLattice->GetIVOrder(Ephononi);		
-            if (ivorder==0) costheta = MakePhononThetaIV0Order(Etrk,Ephonon);
-            if (ivorder==1) costheta = MakePhononThetaIV1Order(Etrk,Ephonon);
-            phi_phonon = G4UniformRand() * twopi;
+              // Get angle of phonon emission (0th or 1st order)
+              G4double ivorder = theLattice->GetIVOrder(Ephononi);		
+              if (ivorder==0) costheta = MakePhononThetaIV0Order(Etrk,Ephonon);
+              if (ivorder==1) costheta = MakePhononThetaIV1Order(Etrk,Ephonon);
+              phi_phonon = G4UniformRand() * twopi;
                 
-            // Select randomly one of the phonon momentum branch   
-            if (G4UniformRand() <0.5) {
-                q = kmag * costheta - kmag * 
-                    sqrt(costheta * costheta - Ephonon / Etrk);}
-            else {
-                q = kmag * costheta + kmag * 
-                    sqrt(costheta * costheta - Ephonon / Etrk);}
+              // Select randomly one of the phonon momentum branch   
+              if (G4UniformRand() <0.5) {
+                  q = kmag * costheta - kmag * 
+                      sqrt(costheta * costheta - Ephonon / Etrk);}
+              else {
+                  q = kmag * costheta + kmag * 
+                      sqrt(costheta * costheta - Ephonon / Etrk);}
 
-            // Compute the phonon momentum in HV frame
-            G4ThreeVector kdir = kHV.unit();
-            qvec = q * kdir;
-            qvec.rotate(kdir.orthogonal(), acos(costheta));
-            qvec.rotate(kdir, phi_phonon);
+              // Compute the phonon momentum in HV frame
+              G4ThreeVector kdir = kHV.unit();
+              qvec = q * kdir;
+              qvec.rotate(kdir.orthogonal(), acos(costheta));
+              qvec.rotate(kdir, phi_phonon);
 
-            // Compute the scattered electron in the HV frame
-            k_recoilHV = kHV - qvec;
-            // Making sure energy and momentum are conserved
-            k_recoil  = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoilHV);
-            Precoil = theLattice->MapKtoP(valley, k_recoil);
-            Precoil = theLattice->MapEkintoP(valley, Precoil.unit(),Erecoil);
-            k_recoil = theLattice->MapPtoK(valley, Precoil);
-            k_recoilHV = theLattice->EllipsoidalToSphericalTranformation(valley, k_recoil);           
+              // Compute the scattered electron in the HV frame
+              k_recoilHV = kHV - qvec;
+              // Making sure energy and momentum are conserved
+              k_recoil  = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoilHV);
+              Precoil = theLattice->MapKtoP(valley, k_recoil);
+              Precoil = theLattice->MapEkintoP(valley, Precoil.unit(),Erecoil);
+              k_recoil = theLattice->MapPtoK(valley, Precoil);
+              k_recoilHV = theLattice->EllipsoidalToSphericalTranformation(valley, k_recoil);           
 
-            // IV f or g-type scattering
-            G4String ivfgscat = theLattice->GetIVFGScattering(Ephononi);		
+              // IV f or g-type scattering
+              G4String ivfgscat = theLattice->GetIVFGScattering(Ephononi);		
             
-             // Find anti-valley
-            G4int antivalley = 0;
+              // Find anti-valley
+              G4int antivalley = 0;
                 
-            if (valley%2==0)  {
-              antivalley=valley+1;
-            }
+              if (valley%2==0) {antivalley=valley+1;}
 
-            if (valley%2!=0)  {
-              antivalley=valley-1;
-            }
+              if (valley%2!=0) {antivalley=valley-1;}
             
-             // Picking anti-valley as new valley if g-type scattering
-            if (ivfgscat=="g")  { valley=antivalley; }  
+              // Picking anti-valley as new valley if g-type scattering
+              if (ivfgscat=="g")  { valley=antivalley; }  
             
-            // Picking at random any valley other than anti-valley if f-type scattering
-            else if (ivfgscat=="f")  { 
-                G4int fvalley = valley;
-                while ( (fvalley==valley) || (fvalley==antivalley) ) { fvalley=ChangeValley(fvalley); }
-                valley=fvalley;
-            }
+              // Picking at random any valley other than anti-valley if f-type scattering
+              else if (ivfgscat=="f")  { 
+                  G4int fvalley = valley;
+                  while ( (fvalley==valley) || (fvalley==antivalley) ) { fvalley=ChangeValley(fvalley); }
+                  valley=fvalley;
+              }
             
-             // Picking a new valley at random if not f or g-type scattering
-            else { valley = ChangeValley(valley); }
+              // Picking a new valley at random if not f or g-type scattering
+              else { valley = ChangeValley(valley); }
                 
-            // Calculate track's kinematics after IV scattering in new valley
-            k_recoil = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoilHV); 
-
-            G4cout << "k recoil : " << k_recoil << G4endl;
+              // Calculate track's kinematics after IV scattering in new valley
+              k_recoil = theLattice->SphericalToEllipsoidalTranformation(valley, k_recoilHV); 
                 
-            // // Make sure electron is in valley and not anti-valley
-            G4ThreeVector k0 = theLattice->RotateFromValley(valley, G4ThreeVector(1,0,0));
-            if (k_recoil*k0/k_recoil.mag()/k0.mag() <0) { k_recoil=k_recoil*-1; }
+              // Make sure electron is in valley and not anti-valley
+              G4ThreeVector k0 = theLattice->RotateFromValley(valley, G4ThreeVector(1,0,0));
+              if (k_recoil*k0/k_recoil.mag()/k0.mag() <0) { k_recoil=k_recoil*-1; }
 
-            // Convert quasi-momentum to transport momentum
-            Precoil = theLattice->MapKtoP(valley, k_recoil);
+              // Convert quasi-momentum to transport momentum
+              Precoil = theLattice->MapKtoP(valley, k_recoil);
 
-            // phonon wavector
-            qvec = ktrk - k_recoil;
-            q = qvec.mag();
+              // phonon wavector
+              qvec = ktrk - k_recoil;
+              q = qvec.mag();
             
-            // Create real phonon to be propagated, with chosen polarization 
-            G4int phononmode=G4PhononPolarization::Long;	// LA default phonon mode
-            G4String phononbranch=
-                theLattice->GetIVPhononMode(Ephononi);	// Get phonon mode 
+              // Create real phonon to be propagated, with chosen polarization 
+              G4int phononmode=G4PhononPolarization::Long;	// LA default phonon mode
+              G4String phononbranch=
+                  theLattice->GetIVPhononMode(Ephononi);	// Get phonon mode 
             
-            // If phonon mode is TA -> FT or ST 
-            if (phononbranch="TA") { phononmode=G4CMP::ChoosePhononPolarization(
-                0,theLattice->GetSTDOS(),theLattice->GetFTDOS()); }
+              // If phonon mode is TA -> FT or ST 
+              if (phononbranch=="TA") { phononmode=G4CMP::ChoosePhononPolarization(
+                  0,theLattice->GetSTDOS(),theLattice->GetFTDOS()); }
             
-            // If phonon mode is LO or TO keep -> LA 
+              // If phonon mode is LO or TO keep -> LA 
                
-            G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
+              G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
                 
-            G4double weight =
-                G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
-            if (weight > 0.) {
-                G4Track* phonon = G4CMP::CreatePhonon(aTrack,
+              G4double weight =
+                  G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
+              if (weight > 0.) {
+                  G4Track* phonon = G4CMP::CreatePhonon(aTrack,
                                                       phononmode,
                                                       qvec, Ephonon,
                                                       aTrack.GetGlobalTime(),
                                                       aTrack.GetPosition());
-                // Secondary's weight has to be multiplicative with its parent's
-                phonon->SetWeight(aTrack.GetWeight() * weight);
-                if (verboseLevel > 1) {
-                    G4cout << "phonon wt " << phonon->GetWeight()
-                           << " : track " << aTrack.GetTrackID()
-                           << " wt " << aTrack.GetWeight()
-                           << "  thrown wt " << weight << G4endl;
-                }
+                  // Secondary's weight has to be multiplicative with its parent's
+                  phonon->SetWeight(aTrack.GetWeight() * weight);
+                  if (verboseLevel > 1) {
+                      G4cout << "phonon wt " << phonon->GetWeight()
+                             << " : track " << aTrack.GetTrackID()
+                             << " wt " << aTrack.GetWeight()
+                             << "  thrown wt " << weight << G4endl;
+                  }
 
-                aParticleChange.SetSecondaryWeightByProcess(true);
-                aParticleChange.SetNumberOfSecondaries(1);
-                aParticleChange.AddSecondary(phonon);
+                  aParticleChange.SetSecondaryWeightByProcess(true);
+                  aParticleChange.SetNumberOfSecondaries(1);
+                  aParticleChange.AddSecondary(phonon);
 
-                // If user wants to track phonons immediately, put track back on stack
-                if (secondariesFirst && aTrack.GetTrackStatus() == fAlive)
-                    aParticleChange.ProposeTrackStatus(fSuspend);
-            }
-            else {aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);}
+                  // If user wants to track phonons immediately, put track back on stack
+                  if (secondariesFirst && aTrack.GetTrackStatus() == fAlive)
+                      aParticleChange.ProposeTrackStatus(fSuspend);
+              }
+              else {aParticleChange.ProposeNonIonizingEnergyDeposit(Ephonon);}
 
-            }
-        }
-    }
+          }
+      }
+  }
 
-    // Rotate transport momentum to global frame
-    RotateToGlobalDirection(Precoil);
+  // Rotate transport momentum to global frame
+  RotateToGlobalDirection(Precoil);
 
-    // Adjust track kinematics for new valley
-    FillParticleChange(valley, Precoil);
-    ClearNumberOfInteractionLengthLeft();
-    return &aParticleChange;
+  // Adjust track kinematics for new valley
+  FillParticleChange(valley, Precoil);
+  ClearNumberOfInteractionLengthLeft();
+  return &aParticleChange;
 }
 
 

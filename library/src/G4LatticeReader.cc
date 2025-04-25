@@ -167,7 +167,7 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "ivnvalleys") return ProcessIVNValleys();  // IV # possible final valleys
   if (fToken == "ivorder") return ProcessIVOrder();  // IV process order
   if (fToken == "ivfgscat") return ProcessIVFGScattering();  // IV f or g-type scattering
-  if (fToken == "ivphomode") return ProcessIVPhononMode();  // IV scattering phonon mode
+  if (fToken == "ivphononmode") return ProcessIVPhononMode();  // IV scattering phonon mode
   if (fToken == "ivmodel")  return ProcessString(fToken);  // IV rate function
 
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
@@ -552,12 +552,6 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
 
   fUnitName = unit;
   if (inverse) fUnitName = fUnitName(1,unit.length()-1);
-    
-//   G4cout << "fUnitName : " << fUnitName << G4endl;
-
-//    if (fUnitName=="nounits") {fUnits=1; 
-//                            return fUnits;  
-//                            } 
     
   // Do processing -- invalid input string will cause fatal exception
   fUnits    = G4UnitDefinition::GetValueOf(fUnitName);

@@ -39,14 +39,14 @@ public:
       
 
 protected:
-  G4double IVRate() const;		// Optical intervalley D0, D1 rate
+  G4double IVRate() const;		// intervalley D0, D1 rate
 
   // Energy dependence of 0th order IV rate
   G4double energyFunc0th(G4double E) const {
     return sqrt(E*(1+alpha*E))*(1+2*alpha*E);
   }
 
-  // Energy dependence of 0th order IV rate
+  // Energy dependence of 1st order IV rate
   G4double energyFunc1st(G4double qmax, G4double qmin) const {
     return qmax*qmax*qmax*qmax-qmin*qmin*qmin*qmin;
   }
