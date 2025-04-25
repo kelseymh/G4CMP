@@ -302,12 +302,12 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector oldNorm = newNorm;
   G4ThreeVector oldstepLocalPos = stepLocalPos;
 
-  // Find the distance from point to surface along norm (- means inward)
-  G4double surfAdjust = theSolid->GetDistanceToSolid(stepLocalPos, -newNorm);
+  // Break up wavevector to perp and tan components
   G4double kPerpMag = reflectedKDir.dot(newNorm);
-
   G4ThreeVector kPerpV = kPerpMag * newNorm;		// Negative implied in kPerpMag for inward pointing
   G4ThreeVector kTan = reflectedKDir - kPerpV;		// Get kTan: reflectedKDir = kPerpV + kTan
+
+  // Get axis and phi for tangent rotations
   G4ThreeVector axis = kPerpV.cross(kTan).unit();
   G4double phi = 0.;
   EInside isIn = solid->Inside(stepLocalPos);
@@ -391,7 +391,6 @@ GetReflectedVector(const G4ThreeVector& waveVector,
        << "GetReflectedVector:insideLoop -> "
        << "attempts = " << nAttempts
        << ", oldstepLocalPos = " << oldstepLocalPos
-       << ", surfAdjust = " << surfAdjust
        << ", stepLocalPos = " << stepLocalPos
        << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
        << ", kPerpMag = " << kPerpMag
