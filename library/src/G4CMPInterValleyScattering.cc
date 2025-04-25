@@ -107,7 +107,7 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
 
 // Perform scattering action
 
-  G4VParticleChange*
+  G4VParticleChange* 
   G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
                                          const G4Step& aStep) {
   aParticleChange.Initialize(aTrack);
@@ -119,7 +119,7 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
              << G4endl;
   }
 
-    // Don't do anything at a volume boundary
+  // Don't do anything at a volume boundary
   if (postStepPoint->GetStepStatus() == fGeomBoundary) {
       return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
