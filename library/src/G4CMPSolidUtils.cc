@@ -52,18 +52,16 @@ void G4CMPSolidUtils::Initialize(const G4VSolid* solid, G4int verbose) {
 // Get the shortest distance to solid
 
 G4double G4CMPSolidUtils::GetDistanceToSolid(const G4ThreeVector& localPos) const {
-  if (theSolid->Inside(localPos) == kInside) { return theSolid->DistanceToOut(localPos); }
-  else if (theSolid->Inside(localPos) == kOutside) { return theSolid->DistanceToIn(localPos); }
-  else { return 0; }
+  if (theSolid->Inside(localPos) == kInside) return theSolid->DistanceToOut(localPos);
+  return theSolid->DistanceToIn(localPos);
 }
 
 // Get distance to solid along direction
 
 G4double G4CMPSolidUtils::GetDistanceToSolid(const G4ThreeVector& localPos,
                                              const G4ThreeVector& dir) const {
-  if (theSolid->Inside(localPos) == kInside) { return theSolid->DistanceToOut(localPos, dir); }
-  else if (theSolid->Inside(localPos) == kOutside) { return theSolid->DistanceToIn(localPos, dir); }
-  else { return 0; }
+  if (theSolid->Inside(localPos) == kInside) return theSolid->DistanceToOut(localPos, dir);
+  return theSolid->DistanceToIn(localPos, dir);
 }
 
 
@@ -103,10 +101,11 @@ void G4CMPSolidUtils::RotateDirectionToSolid(const G4ThreeVector& localPos,
 // Find the direction for minimum distance to surface
 // Adjust theta0 and phi0 in place with best match
 
-void G4CMPSolidUtils::
-OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos, G4double& theta0,
-                           G4double& phi0, const G4int angOption,
-                           const G4double minDist) const {
+void G4CMPSolidUtils::OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos,
+                                                 G4double& theta0,
+                                                 G4double& phi0,
+                                                 const G4int angOption,
+                                                 const G4double minDist) const {
   // Constants used for Golden Section searches
   G4double const tolerance = 1e-12*rad;
   G4double const gRatio = (std::sqrt(5) + 1) / 2;
@@ -186,9 +185,8 @@ OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos, G4double& theta0,
 
 void G4CMPSolidUtils::
 AdjustToClosestSurfacePoint(G4ThreeVector& localPos) const {
-  // Determine where you are in respect to solid
-  EInside isIn = theSolid->Inside(localPos);
-  if (isIn == kSurface) return;
+  // Do nothing if already on surface
+  if (theSolid->Inside(localPos) == kSurface) return;
 
   G4double minDist = GetDistanceToSolid(localPos);
   G4ThreeVector optDir = minDist * GetDirectionToSolid(localPos);
@@ -211,8 +209,8 @@ G4ThreeVector G4CMPSolidUtils::GetClosestSurfacePoint(const G4ThreeVector& local
 
 // Adjust to surface position closest to localPos using a provided direction
 
-void G4CMPSolidUtils::
-AdjustToClosestSurfacePoint(G4ThreeVector& localPos, const G4ThreeVector& dir) const {
+void G4CMPSolidUtils::AdjustToClosestSurfacePoint(G4ThreeVector& localPos,
+                                                  const G4ThreeVector& dir) const {
   // Do nothing if on surface
   if (theSolid->Inside(localPos) == kSurface) return;
 
@@ -265,15 +263,10 @@ AdjustToEdgePosition(const G4ThreeVector& vTan,
   }
 
   if (verboseLevel>3) {
-    G4double remDist = (theSolid->DistanceToIn(localPos) >=
-                        theSolid->DistanceToOut(localPos))
-                      ? theSolid->DistanceToIn(localPos)
-                      : theSolid->DistanceToOut(localPos);
     G4cout << "G4CMPSolidUtils::AdjustToEdgePosition"
       << ": initialPos = " << originalPos
       << ", vTan = " << vTan
-      << ", finalPos = " << localPos
-      << ", remainingDist = " << remDist << G4endl;
+      << ", finalPos = " << localPos << G4endl;
   }
 }
 
