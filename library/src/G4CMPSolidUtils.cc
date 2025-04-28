@@ -19,6 +19,7 @@
 // 20250424  G4CMP-465 -- Create G4CMPSolidUtils class.
 
 #include "G4CMPSolidUtils.hh"
+#include "G4AffineTransform.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4VSolid.hh"
@@ -26,18 +27,45 @@
 #include "G4UnitsTable.hh"
 
 
-// Copy operations
-
+// Local coordinate constructors
 G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid=0,
-                                 const G4VTouchable* touch=0,
                                  G4int verbose=0,
                                  G4String vLabel="G4CMPSolidUtils")
-  : theSolid(solid), theTouchable(touch), verboseLevel(verbose), verboseLabel(vLabel) {;}
+  : theSolid(solid),
+    theTransform_LtoG(G4AffineTransform(G4RotationMatrix::IDENTITY, G4ThreeVector(0,0,0))),
+    theTransform_GtoL(theTransform_LtoG.Inverse()), verboseLevel(verbose), verboseLabel(vLabel) {;}
 
+G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid=0,
+                                 const G4AffineTransform& trans,
+                                 G4int verbose=0,
+                                 G4String vLabel="G4CMPSolidUtils")
+  : theSolid(solid), theTransform_LtoG(trans), theTransform_GtoL(trans.Inverse()),
+    verboseLevel(verbose), verboseLabel(vLabel) {;}
+
+G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid=0,
+                                 const G4RotationMatrix& rot,
+                                 const G4ThreeVector& disp,
+                                 G4int verbose=0,
+                                 G4String vLabel="G4CMPSolidUtils")
+  : theSolid(solid), theTransform_LtoG(G4AffineTransform(rot, disp)),
+    theTransform_GtoL(theTransform_LtoG.Inverse()), verboseLevel(verbose),
+    verboseLabel(vLabel) {;}
+
+// Global coordinate constructor
+G4CMPSolidUtils::G4CMPSolidUtils(const G4VTouchable* touch, G4int verbose,
+                                 G4String vLabel)
+  : theSolid(touch->GetSolid),
+    theTransform_LtoG(G4AffineTransform(*touch->GetRotation(), *touch->GetTranslation())),
+    theTransform_GtoL(theTransform_LtoG.Inverse()),
+    verboseLevel(verbose), verboseLabel(vLabel) {;}
+
+
+// Copy operation
 G4CMPSolidUtils&
 G4CMPSolidUtils::operator=(const G4CMPSolidUtils& right) {
   theSolid = right.theSolid;
-  theTouchable = right.theTouchable;
+  theTransform_LtoG = right.theTransform_LtoG;
+  theTransform_GtoL = right.theTransform_GtoL;
   verboseLevel = right.verboseLevel;
   verboseLabel = right.verboseLabel;
   return *this;
@@ -314,5 +342,38 @@ ReflectAgainstEdge(G4ThreeVector& vTan, const G4ThreeVector& localPos,
       << ", norm1 = " << norm1
       << ", norm2 = " << norm2
       << ", vTan_f = " << vTan << G4endl;
+  }
+
+  // Coordinate transformations
+
+  // Both position and direction transforms
+  void G4CMPSolidUtils::TransformGlobalToLocal(G4ThreeVector& point,
+                                               G4ThreeVector& dir) const {
+    TransformToLocalPoint(point);
+    TransformToLocalDirection(dir);
+  }
+
+  void G4CMPSolidUtils::TransformLocalToGlobal(G4ThreeVector& point,
+                                               G4ThreeVector& dir) const {
+    TransformToGlobalPoint(point);
+    TransformToGlobalDirection(dir);
+  }
+
+  // Position transforms
+  void G4CMPSolidUtils::TransformToGlobalPoint(G4ThreeVector& point) const {
+    theTransform_LtoG.ApplyPointTransform(point);
+  }
+
+  void G4CMPSolidUtils::TransformToLocalPoint(G4ThreeVector& point) const {
+    theTransform_GtoL.ApplyPointTransform(point);
+  }
+
+  // Direction transforms
+  void G4CMPSolidUtils::TransformToGlobalDirection(G4ThreeVector& dir) const {
+    theTransform_LtoG.ApplyAxisTransform(dir);
+  }
+
+  void G4CMPSolidUtils::TransformToLocalDirection(G4ThreeVector& dir) const{
+    theTransform_GtoL.ApplyAxisTransform(dir);
   }
 }

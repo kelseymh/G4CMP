@@ -24,18 +24,26 @@
 #include "globals.hh"
 #include "G4ThreeVector.hh"
 
+class G4AffineTransform;
+class G4RotationMatrix;
 class G4VSolid;
 class G4VTouchable;
 
 class G4CMPSolidUtils {
   public:
     // Default constructor
-    G4CMPSolidUtils() : theSolid(0), theTouchable(0), verboseLevel(0),
+    G4CMPSolidUtils() : theSolid(0), theTransform(0), verboseLevel(0),
                         verboseLabel("G4CMPSolidUtils") {;}
 
-    // Direct constructor with solid, touchable, and verbose
-    G4CMPSolidUtils(const G4VSolid* solid, const G4VTouchable* touch,
+    // Direct constructor with solid & transform for client code in local frame
+    G4CMPSolidUtils(const G4VSolid* solid, G4int verbose, G4String vLabel);
+    G4CMPSolidUtils(const G4VSolid* solid, const G4AffineTransform& trans,
                     G4int verbose, G4String vLabel);
+    G4CMPSolidUtils(const G4VSolid* solid, const G4RotationMatrix& rot,
+                    const G4ThreeVector& disp, G4int verbose, G4String vLabel);
+
+    // Direct constructor with touchable for client code in global frame
+    G4CMPSolidUtils(const G4VTouchable* touch, G4int verbose, G4String vLabel);
 
     // Copy operation
     G4CMPSolidUtils& operator=(const G4CMPSolidUtils& right);
@@ -45,8 +53,14 @@ class G4CMPSolidUtils {
       theSolid = solid;
     }
 
-    void SetTouchable(const G4VTouchable* touch) {
-      theTouchable = touch;
+    void SetTransform(const G4AffineTransform& trans) {
+      theTransform = trans;
+    }
+
+    void SetTransform(const G4RotationMatrix& rot,
+                      const G4ThreeVector& disp) {
+      theTransform.SetNetRotation(rot);
+      theTransform.SetNetTranslation(disp);
     }
 
     void SetVerboseLevel(G4int verbose) {
@@ -63,7 +77,8 @@ class G4CMPSolidUtils {
     }
 
     const G4VSolid* GetSolid() const { return theSolid; }
-    const G4VTouchable* GetTouchable() const { return theTouchable; }
+    const G4AffineTransform GetTransform() const { return theTransform_LtoG; }
+    const G4AffineTransform GetInverseTransform() const { return theTransform_GtoL; }
     G4int GetVerboseLevel() const { return verboseLevel; }
     G4String GetVerboseLabel() const {return verboseLabel; }
 
@@ -116,9 +131,18 @@ class G4CMPSolidUtils {
                             const G4ThreeVector& localPos,
                             G4ThreeVector& surfNorm) const;
 
+  protected:
+      void TransformLocalToGlobal(G4ThreeVector& point, G4ThreeVector& dir) const;
+      void TransformGlobalToLocal(G4ThreeVector& point, G4ThreeVector& dir) const;
+      void TransformToGlobalPoint(G4ThreeVector& point) const;
+      void TransformToLocalPoint(G4ThreeVector& point) const;
+      void TransformToGlobalDirection(G4ThreeVector& dir) const;
+      void TransformToLocalDirection(G4ThreeVector& dir) const;
+
   private:
     const G4VSolid* theSolid;
-    const G4VTouchable* theTouchable;
+    const G4AffineTransform theTransform_LtoG;
+    const G4AffineTransform theTransform_GtoL;
     G4int verboseLevel;
     G4String verboseLabel;
 };
