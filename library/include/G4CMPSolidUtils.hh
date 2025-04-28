@@ -73,8 +73,7 @@ class G4CMPSolidUtils {
 
     void SetTransform(const G4RotationMatrix* rot,
                       const G4ThreeVector& disp) {
-      if (rot) SetTransform(*rot, disp);
-      else SetTransform(G4RotationMatrix::IDENTITY, disp);
+      SetTransform((rot?*rot:G4RotationMatrix::IDENTITY), disp);
     }
 
     void SetVerboseLevel(G4int verbose) {
