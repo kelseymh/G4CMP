@@ -22,38 +22,32 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4VSolid.hh"
+#include "G4VTouchable.hh"
 #include "G4UnitsTable.hh"
 
 
 // Copy operations
 
-G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid)
-  : theSolid(solid), verboseLevel(0) {;}
+G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid=0,
+                                 const G4VTouchable* touch=0,
+                                 G4int verbose=0,
+                                 G4String vLabel="G4CMPSolidUtils")
+  : theSolid(solid), theTouchable(touch), verboseLevel(verbose), verboseLabel(vLabel) {;}
 
 G4CMPSolidUtils&
 G4CMPSolidUtils::operator=(const G4CMPSolidUtils& right) {
   theSolid = right.theSolid;
+  theTouchable = right.theTouchable;
   verboseLevel = right.verboseLevel;
+  verboseLabel = right.verboseLabel;
   return *this;
-}
-
-// Initialize the solid / solid & verboseLevel
-
-void G4CMPSolidUtils::Initialize(const G4VSolid* solid) {
-  theSolid = solid;
-}
-
-void G4CMPSolidUtils::Initialize(const G4VSolid* solid, G4int verbose) {
-  theSolid = solid;
-  SetVerboseLevel(verbose);
 }
 
 
 // Get the shortest distance to solid
 
 G4double G4CMPSolidUtils::GetDistanceToSolid(const G4ThreeVector& localPos) const {
-  if (theSolid->Inside(localPos) == kInside) return theSolid->DistanceToOut(localPos);
-  return theSolid->DistanceToIn(localPos);
+  return theSolid->DistanceToOut(localPos) + theSolid->DistanceToIn(localPos);
 }
 
 // Get distance to solid along direction
@@ -61,7 +55,7 @@ G4double G4CMPSolidUtils::GetDistanceToSolid(const G4ThreeVector& localPos) cons
 G4double G4CMPSolidUtils::GetDistanceToSolid(const G4ThreeVector& localPos,
                                              const G4ThreeVector& dir) const {
   if (theSolid->Inside(localPos) == kInside) return theSolid->DistanceToOut(localPos, dir);
-  return theSolid->DistanceToIn(localPos, dir);
+  else return theSolid->DistanceToIn(localPos, dir);
 }
 
 
@@ -88,9 +82,7 @@ void G4CMPSolidUtils::RotateDirectionToSolid(const G4ThreeVector& localPos,
   OptimizeSurfaceAdjustAngle(localPos, bestTheta, bestPhi, 1, minDist);
   OptimizeSurfaceAdjustAngle(localPos, bestTheta, bestPhi, 0, minDist);
 
-  dir.set(minDist*sin(bestTheta)*cos(bestPhi),
-          minDist*sin(bestTheta)*sin(bestPhi),
-          minDist*cos(bestTheta));
+  dir.setRThetaPhi(minDist, bestTheta,bestPhi);
 
   // Return a null vector if no direction was found
   if (theSolid->Inside(localPos + dir) != kSurface) dir.set(0,0,0);
@@ -117,23 +109,16 @@ void G4CMPSolidUtils::OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos,
   G4double x2 = b - (b - a) / gRatio;
   G4ThreeVector dir1(0,0,0);
   G4ThreeVector dir2(0,0,0);
-  G4double coeffX = 0, coeffY = 0, coeffZ = 0;
 
   // Initial search directions
   if (angOption == 0) {
     // Optimize theta
-    coeffX = minDist*cos(phi0);
-    coeffY = minDist*sin(phi0);
-    coeffZ = minDist;
-    dir1.set(coeffX*sin(x1), coeffY*sin(x1), coeffZ*cos(x1));
-    dir2.set(coeffX*sin(x2), coeffY*sin(x2), coeffZ*cos(x2));
+    dir1.setRThetaPhi(minDist, x1, phi0);
+    dir2.setRThetaPhi(minDist, x2, phi0);
   } else {
     // Optimize phi
-    coeffX = minDist*sin(theta0);
-    coeffY = minDist*sin(theta0);
-    coeffZ = minDist*cos(theta0);
-    dir1.set(coeffX*cos(x1), coeffY*sin(x1), coeffZ);
-    dir2.set(coeffX*cos(x2), coeffY*sin(x2), coeffZ);
+    dir1.setRThetaPhi(minDist, theta0, x1);
+    dir2.setRThetaPhi(minDist, theta0, x2);
   }
 
   // Distances for each direction
@@ -151,10 +136,10 @@ void G4CMPSolidUtils::OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos,
       x1 = a + (b - a) / gRatio;
       if (angOption == 0) {
         // Optimize theta
-        dir1.set(coeffX*sin(x1), coeffY*sin(x1), coeffZ*cos(x1));
+        dir1.setRThetaPhi(minDist, x1, phi0);
       } else {
         // Optimize phi
-        dir1.set(coeffX*cos(x1), coeffY*sin(x1), coeffZ);
+        dir1.setRThetaPhi(minDist, theta0, x1);
       }
       dist1 = GetDistanceToSolid(localPos + dir1);
     } else {
@@ -165,10 +150,10 @@ void G4CMPSolidUtils::OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos,
       x2 = b - (b - a) / gRatio;
       if (angOption == 0) {
         // Optimize theta
-        dir2.set(coeffX*sin(x2), coeffY*sin(x2), coeffZ*cos(x2));
+        dir2.setRThetaPhi(minDist, x2, phi0);
       } else {
         // Optimize phi
-        dir2.set(coeffX*cos(x2), coeffY*sin(x2), coeffZ);
+        dir2.setRThetaPhi(minDist, theta0, x2);
       }
       dist2 = GetDistanceToSolid(localPos + dir2);
     }
@@ -195,6 +180,11 @@ AdjustToClosestSurfacePoint(G4ThreeVector& localPos) const {
   if (theSolid->Inside(localPos + optDir) == kSurface) {
     localPos += optDir;
   } else {
+    if (verboseLevel > 2) {
+      G4cout << verboseLabel << "::AdjustToClosestSurfacePoint"
+      << ": Surface point not found from initial position "
+      << localPos << G4endl;
+    }
     localPos.set(kInfinity,kInfinity,kInfinity);
   }
 }
@@ -219,7 +209,8 @@ void G4CMPSolidUtils::AdjustToClosestSurfacePoint(G4ThreeVector& localPos,
   localPos += surfAdjust * dir;
 
   if (theSolid->Inside(localPos) != kSurface && verboseLevel) {
-    G4cout << "WARNING: No surface found along " << dir
+    G4cout << verboseLabel << "::AdjustToClosestSurfacePoint:"
+    << " WARNING: No surface found along " << dir
     << ". Adjustment length: " << G4BestUnit(surfAdjust, "Length") << G4endl;
   }
 }
@@ -262,8 +253,8 @@ AdjustToEdgePosition(const G4ThreeVector& vTan,
     else high = mid; // Move in
   }
 
-  if (verboseLevel>3) {
-    G4cout << "G4CMPSolidUtils::AdjustToEdgePosition"
+  if (verboseLevel > 1) {
+    G4cout << verboseLabel << "::AdjustToEdgePosition"
       << ": initialPos = " << originalPos
       << ", vTan = " << vTan
       << ", finalPos = " << localPos << G4endl;
@@ -314,8 +305,8 @@ ReflectAgainstEdge(G4ThreeVector& vTan, const G4ThreeVector& localPos,
     vTan -= 2*((vTan * refNorm) * refNorm);
   }
 
-  if (verboseLevel>3) {
-    G4cout << "G4CMPSolidUtils::ReflectAgainstEdge"
+  if (verboseLevel > 1) {
+    G4cout << verboseLabel << "::ReflectAgainstEdge"
       << ": localPos = " << localPos
       << ", vTan_0 = " << vTan - 2*((vTan * -refNorm) * -refNorm)
       << ", edgeVector = " << edgeVec

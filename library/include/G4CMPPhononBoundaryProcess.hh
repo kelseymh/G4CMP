@@ -67,7 +67,6 @@ protected:
                              const G4ThreeVector& vDir) const;
 
 private:
-  G4CMPSolidUtils* theSolid;
   G4CMPAnharmonicDecay* anharmonicDecay;
   G4CMPParticleChangeForPhonon phParticleChange;
   G4double stepSize;

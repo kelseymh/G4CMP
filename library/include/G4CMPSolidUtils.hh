@@ -25,25 +25,43 @@
 #include "G4ThreeVector.hh"
 
 class G4VSolid;
+class G4VTouchable;
 
 class G4CMPSolidUtils {
   public:
     // Default constructor
-    G4CMPSolidUtils() : theSolid(0), verboseLevel(0) {;}
+    G4CMPSolidUtils() : theSolid(0), theTouchable(0), verboseLevel(0),
+                        verboseLabel("") {;}
 
-    // Direct constructor with solid object
-    G4CMPSolidUtils(const G4VSolid* solid);
+    // Direct constructor with solid, touchable, and verbose
+    G4CMPSolidUtils(const G4VSolid* solid, const G4VTouchable* touch,
+                    G4int verbose, G4String vLabel);
 
     // Copy operation
     G4CMPSolidUtils& operator=(const G4CMPSolidUtils& right);
 
     // Set and get member variables
-    void Initialize(const G4VSolid* solid);
-    void Initialize(const G4VSolid* solid, G4int verbose);
-    void SetVerboseLevel(G4int verbose=0) { verboseLevel = verbose; }
+    void SetSolid(const G4VSolid* solid) {
+      theSolid = solid;
+    }
 
-    const G4VSolid* GetSolid() { return theSolid; }
-    G4int GetVerboseLevel() { return verboseLevel; }
+    void SetTouchable(const G4VTouchable* touch) {
+      theTouchable = touch;
+    }
+
+    void SetVerboseLevel(G4int verbose) {
+      verboseLevel = verbose;
+    }
+
+    void SetVerboseLevel(G4int verbose, G4String vLabel) {
+      verboseLevel = verbose;
+      verboseLabel = vLabel;
+    }
+
+    const G4VSolid* GetSolid() const { return theSolid; }
+    const G4VTouchable* GetTouchable() const { return theTouchable; }
+    G4int GetVerboseLevel() const { return verboseLevel; }
+    G4String GetVerboseLabel() const {return verboseLabel; }
 
     // Get the distance to solid object surface with and without direction
     G4double GetDistanceToSolid(const G4ThreeVector& localPos) const;
@@ -96,7 +114,9 @@ class G4CMPSolidUtils {
 
   private:
     const G4VSolid* theSolid;
+    const G4VTouchable* theTouchable;
     G4int verboseLevel;
+    G4String verboseLabel;
 };
 
 #endif	/* G4CMPSolidUtils_hh */

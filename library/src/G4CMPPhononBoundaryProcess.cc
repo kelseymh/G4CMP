@@ -76,8 +76,7 @@
 
 G4CMPPhononBoundaryProcess::G4CMPPhononBoundaryProcess(const G4String& aName)
   : G4VPhononProcess(aName, fPhononReflection), G4CMPBoundaryUtils(this),
-    theSolid(new G4CMPSolidUtils()), anharmonicDecay(new G4CMPAnharmonicDecay(this)),
-    stepSize(0*um), nStepLimit(0) {
+    anharmonicDecay(new G4CMPAnharmonicDecay(this)), stepSize(0*um), nStepLimit(0) {
   // Initialize stepSize and max step limit from config manager
   G4CMPConfigManager* config = G4CMPConfigManager::Instance();
   stepSize = config->GetPhononSurfStepSize();
@@ -87,7 +86,6 @@ G4CMPPhononBoundaryProcess::G4CMPPhononBoundaryProcess(const G4String& aName)
 }
 
 G4CMPPhononBoundaryProcess::~G4CMPPhononBoundaryProcess() {
-  delete theSolid;
   delete anharmonicDecay;
 }
 
@@ -296,7 +294,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   
   // Initialize solid object and utilities
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
-  theSolid->Initialize(solid, verboseLevel);
+  G4CMPSolidUtils* solidUtils = new G4CMPSolidUtils(solid, GetCurrentTouchable(),
+                                                    verboseLevel, GetProcessName());
 
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4ThreeVector oldNorm = newNorm;
@@ -353,7 +352,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     newNorm = solid->SurfaceNormal(stepLocalPos);
 
     // Adjust stepLocalPos back to surface of detector
-    theSolid->AdjustToClosestSurfacePoint(stepLocalPos, -newNorm);
+    solidUtils->AdjustToClosestSurfacePoint(stepLocalPos, -newNorm);
     isIn = solid->Inside(stepLocalPos);
 
     // Large normal changes and not being on surface after initial adjustment
@@ -363,14 +362,14 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       stepLocalPos = oldstepLocalPos;
       newNorm = oldNorm;
       // Modify stepLocalPos in place to edge position
-      theSolid->AdjustToEdgePosition(kTan, stepLocalPos, stepSize, 1);
+      solidUtils->AdjustToEdgePosition(kTan, stepLocalPos, stepSize, 1);
       // Do a diffuse reflection if the adjustment failed
       if (solid->Inside(stepLocalPos) != kSurface) {
         reflectedKDir = newNorm;
         break;
       }
       // Reflect kTan against the edge - rotates & modifies kTan; modifies newNorm
-      theSolid->ReflectAgainstEdge(kTan, stepLocalPos, newNorm);
+      solidUtils->ReflectAgainstEdge(kTan, stepLocalPos, newNorm);
     } else {
       // Rotate kTan to new position
       axis = newNorm.cross(kTan).unit();
@@ -432,6 +431,8 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       << ", initialGlobalPostion = " << surfacePoint
       << ", finalGlobalPosition = " << stepLocalPos << G4endl;
   }
+
+  delete solidUtils;
 
   surfacePoint = stepLocalPos;
   return reflectedKDir;
