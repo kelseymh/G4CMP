@@ -180,7 +180,7 @@ AdjustToClosestSurfacePoint(G4ThreeVector& localPos) const {
   if (theSolid->Inside(localPos + optDir) == kSurface) {
     localPos += optDir;
   } else {
-    if (verboseLevel > 2) {
+    if (verboseLevel) {
       G4cout << verboseLabel << "::AdjustToClosestSurfacePoint"
       << ": Surface point not found from initial position "
       << localPos << G4endl;

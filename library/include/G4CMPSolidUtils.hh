@@ -31,7 +31,7 @@ class G4CMPSolidUtils {
   public:
     // Default constructor
     G4CMPSolidUtils() : theSolid(0), theTouchable(0), verboseLevel(0),
-                        verboseLabel("") {;}
+                        verboseLabel("G4CMPSolidUtils") {;}
 
     // Direct constructor with solid, touchable, and verbose
     G4CMPSolidUtils(const G4VSolid* solid, const G4VTouchable* touch,
@@ -55,6 +55,10 @@ class G4CMPSolidUtils {
 
     void SetVerboseLevel(G4int verbose, G4String vLabel) {
       verboseLevel = verbose;
+      verboseLabel = vLabel;
+    }
+
+    void SetVerboseLabel(G4String vLabel) {
       verboseLabel = vLabel;
     }
 
