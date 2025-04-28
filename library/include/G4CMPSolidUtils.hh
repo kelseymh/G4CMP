@@ -130,7 +130,7 @@ class G4CMPSolidUtils {
                             const G4ThreeVector& localPos,
                             G4ThreeVector& surfNorm) const;
 
-  protected:
+    // Internal transformations
     void TransformLocalToGlobal(G4ThreeVector& point, G4ThreeVector& dir) const;
     void TransformGlobalToLocal(G4ThreeVector& point, G4ThreeVector& dir) const;
     void TransformToGlobalPoint(G4ThreeVector& point) const;

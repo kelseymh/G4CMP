@@ -1,9 +1,12 @@
 // This script tests a full functionality of the transforms done in the
-// SolidUtils class. This script will test all 4 ways to set the different
-// transforms: null/Identity, Rotation and Translations,
-// G4AffineTransform object, and a touchable.
+// SolidUtils class. This script will test 3 ways to set the different
+// transforms: null/Identity, with rotation and translation matrices,
+// and with a G4AffineTransform object.
 //
 // Usage: testSolidUtils x y z dx dy dz verboseLevel
+//
+// Where: The position to be transformed will be (x, y, z)
+//        The direction to be transformed will be (dx, dy, dz)
 //
 // 20250220  M. Kelsey -- Create iZIP5 construction
 // 20250428  N. Tenpas -- Create test for SolidUtils class.
@@ -13,6 +16,7 @@
 #include "G4Box.hh"
 #include "G4IntersectionSolid.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4RotationMatrix.hh"
 #include "G4RunManager.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4SystemOfUnits.hh"
@@ -71,38 +75,107 @@ G4VSolid* MakeZIP() {
 
 int main(int argc, char** argv) {
   if (argc < 8) { return 1; }
-  G4double X = std::atof(argv[1]);
-  G4double Y = std::atof(argv[2]);
-  G4double Z = std::atof(argv[3]);
-  G4ThreeVector pos(X, Y, Z);
+  G4double x = std::atof(argv[1]);
+  G4double y = std::atof(argv[2]);
+  G4double z = std::atof(argv[3]);
+  G4ThreeVector pos(x, y, z);
 
   G4double dx = std::atof(argv[4]);
   G4double dy = std::atof(argv[5]);
   G4double dz = std::atof(argv[6]);
-  G4ThreeVector dir(kx, ky, kz);
+  G4ThreeVector dir(dx, dy, dz);
 
   G4int verboseLevel = std::atoi(argv[7]);
 
   G4RunManager* runManager = new G4RunManager();
   G4VSolid* solid = MakeZIP();
 
-  // Test 1: Position and direction transforms with identity
+  // Test 1: Using identity transforms
+  // -------------------------------------------------------
   G4CMPSolidUtils* solidUtils = new G4CMPSolidUtils(solid, verboseLevel,
                                                     "Test");
-  G4cout << "TEST 1:\n  Original Position: " << pos
-    << "\n  Original Direction: " << dir << G4endl;
+  G4cout << "TEST 1: Identity Transforms\n  Original Position: " << pos
+    << "\n  Original Direction: " << dir << "\n" << G4endl;
 
-  // Test 3: Position transforms with given transform
+  G4cout << "  Original Position: " << pos
+    << "\n  Original Direction: " << dir << "\n" << G4endl;
 
-  // Test 4: Direction transforms with given transform
+  // Transform to local coordinates
+  solidUtils->TransformLocalToGlobal(pos, dir);
+  G4cout << "  Local Position: " << pos
+    << "\n  Local Direction: " << dir << "\n" << G4endl;
 
-  // Test 5: Position transforms with given G4AffineTransform
+  // Transform back to global
+  solidUtils->TransformGlobalToLocal(pos, dir);
+  G4cout << "  Global Position: " << pos
+    << "\n  Global Direction: " << dir << "\n" << G4endl;
 
-  // Test 6: Direction transforms with given G4AffineTransform
+  delete solidUtils;
+  // -------------------------------------------------------
 
-  // Test 7: Position transform with touchable
 
-  // Test 8: Direction transform with touchable
+  // Test 2: Provided rotations and translations
+  // -------------------------------------------------------
+  G4double rotAng = 45.0 * deg;
+  G4ThreeVector rotAxis(0, 0, 1);
+  G4RotationMatrix rotMat;
+  rotMat.rotate(rotAng, rotAxis);
+
+  G4ThreeVector trans(1, 0, 0);
+
+  solidUtils = new G4CMPSolidUtils(solid, rotMat, trans,
+                                   verboseLevel, "Test");
+
+  G4cout << "TEST 2: Rot: " << rotAng/deg << " deg around "
+    << rotAxis << " ; Translate = " << trans
+    << "\n  Original Position: " << pos
+    << "\n  Original Direction: " << dir << "\n" << G4endl;
+
+  // Transform to local coordinates
+  solidUtils->TransformLocalToGlobal(pos, dir);
+  G4cout << "  Local Position: " << pos
+    << "\n  Local Direction: " << dir << "\n" << G4endl;
+
+  // Transform back to global
+  solidUtils->TransformGlobalToLocal(pos, dir);
+  G4cout << "  Global Position: " << pos
+    << "\n  Global Direction: " << dir << "\n" << G4endl;
+
+  delete solidUtils;
+  // -------------------------------------------------------
+
+
+  // Test 3: Provided Affine Transformation Object
+  // -------------------------------------------------------
+  rotAng = -45.0 * deg;
+  rotAxis.set(0, 0, 1);
+  G4RotationMatrix rotMat2;
+  rotMat2.rotate(rotAng, rotAxis);
+
+  trans.set(0, 1, 0);
+
+  G4AffineTransform affineTransform(rotMat, trans);
+
+  solidUtils = new G4CMPSolidUtils(solid, affineTransform,
+                                   verboseLevel, "Test");
+
+  G4cout << "TEST 3: Rot: " << rotAng/deg << " deg around "
+    << rotAxis << " ; Translate = " << trans
+    << "\n  Original Position: " << pos
+    << "\n  Original Direction: " << dir << "\n" << G4endl;
+
+  // Transform to local coordinates
+  solidUtils->TransformLocalToGlobal(pos, dir);
+  G4cout << "  Local Position: " << pos
+    << "\n  Local Direction: " << dir << "\n" << G4endl;
+
+  // Transform back to global
+  solidUtils->TransformGlobalToLocal(pos, dir);
+  G4cout << "  Global Position: " << pos
+    << "\n  Global Direction: " << dir << "\n" << G4endl;
+
+  delete solidUtils;
+  // -------------------------------------------------------
 
   delete runManager;
   return 0;
