@@ -8,11 +8,15 @@
 /// directly included in the G4VSolid class. Some example of utilites are:
 /// 1) Adjusting a position to the nearest surface point without the surface normal.
 /// 2) Adjusting a particle to the nearest edge along the surface.
+/// 3) Reflecting a tangent vector against a "hard" edge.
 ///
-/// The user will need to create this class directly with a G4VSolid and/or
-/// touchable, or can initialize these objects later on.
+/// The user will need to create this class directly with a G4VSolid (and transform) or
+/// a touchable. If the transform or touchable is not provided, an indentity transform is
+/// used.
 ///
-/// Note: All coordinates/vectors passed into functions must be in the solid's local coordinate system.
+/// Note: All coordinates/vectors passed into functions must be in the global coordinate system.
+/// If a global-to-local transform is supplied, the input coordinates and vectors, and any output
+/// results, will be in the coordinate system of that transform.
 //
 // $Id$
 //
@@ -36,14 +40,18 @@ class G4CMPSolidUtils {
                         verboseLabel("G4CMPSolidUtils") {;}
 
     // Direct constructor with solid & transform for client code in local frame
-    G4CMPSolidUtils(const G4VSolid* solid, G4int verbose, G4String vLabel);
+    G4CMPSolidUtils(const G4VSolid* solid, G4int verbose=0, const G4String& vLabel="G4CMPSolidUtils");
+
     G4CMPSolidUtils(const G4VSolid* solid, const G4AffineTransform& trans,
-                    G4int verbose, G4String vLabel);
+                    G4int verbose=0, const G4String& vLabel="G4CMPSolidUtils");
+
     G4CMPSolidUtils(const G4VSolid* solid, const G4RotationMatrix& rot,
-                    const G4ThreeVector& disp, G4int verbose, G4String vLabel);
+                    const G4ThreeVector& disp, G4int verbose=0,
+                    const G4String& vLabel="G4CMPSolidUtils");
 
     // Direct constructor with touchable for client code in global frame
-    G4CMPSolidUtils(const G4VTouchable* touch, G4int verbose, G4String vLabel);
+    G4CMPSolidUtils(const G4VTouchable* touch, G4int verbose=0,
+                    const G4String& vLabel="G4CMPSolidUtils");
 
     // Copy operation
     G4CMPSolidUtils& operator=(const G4CMPSolidUtils& right);
@@ -63,16 +71,22 @@ class G4CMPSolidUtils {
       theTransform.SetNetTranslation(disp);
     }
 
+    void SetTransform(const G4RotationMatrix* rot,
+                      const G4ThreeVector& disp) {
+      if (rot) SetTransform(*rot, disp);
+      else SetTransform(G4RotationMatrix::IDENTITY, disp);
+    }
+
     void SetVerboseLevel(G4int verbose) {
       verboseLevel = verbose;
     }
 
-    void SetVerboseLevel(G4int verbose, G4String vLabel) {
+    void SetVerboseLevel(G4int verbose, const G4String& vLabel) {
       verboseLevel = verbose;
       verboseLabel = vLabel;
     }
 
-    void SetVerboseLabel(G4String vLabel) {
+    void SetVerboseLabel(const G4String& vLabel) {
       verboseLabel = vLabel;
     }
 

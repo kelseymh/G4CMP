@@ -15,6 +15,8 @@
 /// used.
 ///
 /// Note: All coordinates/vectors passed into functions must be in the global coordinate system.
+/// If a global-to-local transform is supplied, the input coordinates and vectors, and any output
+/// results, will be in the coordinate system of that transform.
 //
 // $Id$
 //
@@ -31,30 +33,26 @@
 
 // Direct constructors
 
-G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid=0,
-                                 G4int verbose=0,
-                                 G4String vLabel="G4CMPSolidUtils")
-  : theSolid(solid),
-    theTransform(G4AffineTransform(G4RotationMatrix::IDENTITY, G4ThreeVector(0,0,0))),
-    verboseLevel(verbose), verboseLabel(vLabel) {;}
+G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid,
+                                 G4int verbose, const G4String& vLabel)
+  : theSolid(solid), theTransform(G4AffineTransform()), verboseLevel(verbose),
+    verboseLabel(vLabel) {;}
 
 G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid,
                                  const G4AffineTransform& trans,
-                                 G4int verbose=0,
-                                 G4String vLabel="G4CMPSolidUtils")
+                                 G4int verbose, const G4String& vLabel)
   : theSolid(solid), theTransform(trans), verboseLevel(verbose),
     verboseLabel(vLabel) {;}
 
 G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid,
                                  const G4RotationMatrix& rot,
                                  const G4ThreeVector& disp,
-                                 G4int verbose=0,
-                                 G4String vLabel="G4CMPSolidUtils")
+                                 G4int verbose, const G4String& vLabel)
   : theSolid(solid), theTransform(G4AffineTransform(rot, disp)),
     verboseLevel(verbose), verboseLabel(vLabel) {;}
 
 G4CMPSolidUtils::G4CMPSolidUtils(const G4VTouchable* touch, G4int verbose,
-                                 G4String vLabel)
+                                 const G4String& vLabel)
   : theSolid(touch->GetSolid()),
     theTransform(G4AffineTransform(*touch->GetRotation(), touch->GetTranslation())),
     verboseLevel(verbose), verboseLabel(vLabel) {;}
