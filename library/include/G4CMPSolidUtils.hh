@@ -22,17 +22,17 @@
 #define G4CMPSolidUtils_hh 1
 
 #include "globals.hh"
+#include "G4AffineTransform.hh"
+#include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 
-class G4AffineTransform;
-class G4RotationMatrix;
 class G4VSolid;
 class G4VTouchable;
 
 class G4CMPSolidUtils {
   public:
     // Default constructor
-    G4CMPSolidUtils() : theSolid(0), theTransform(0), verboseLevel(0),
+    G4CMPSolidUtils() : theSolid(0), theTransform(G4AffineTransform()), verboseLevel(0),
                         verboseLabel("G4CMPSolidUtils") {;}
 
     // Direct constructor with solid & transform for client code in local frame
@@ -77,8 +77,7 @@ class G4CMPSolidUtils {
     }
 
     const G4VSolid* GetSolid() const { return theSolid; }
-    const G4AffineTransform GetTransform() const { return theTransform_LtoG; }
-    const G4AffineTransform GetInverseTransform() const { return theTransform_GtoL; }
+    const G4AffineTransform GetTransform() const { return theTransform; }
     G4int GetVerboseLevel() const { return verboseLevel; }
     G4String GetVerboseLabel() const {return verboseLabel; }
 
@@ -132,17 +131,40 @@ class G4CMPSolidUtils {
                             G4ThreeVector& surfNorm) const;
 
   protected:
-      void TransformLocalToGlobal(G4ThreeVector& point, G4ThreeVector& dir) const;
-      void TransformGlobalToLocal(G4ThreeVector& point, G4ThreeVector& dir) const;
-      void TransformToGlobalPoint(G4ThreeVector& point) const;
-      void TransformToLocalPoint(G4ThreeVector& point) const;
-      void TransformToGlobalDirection(G4ThreeVector& dir) const;
-      void TransformToLocalDirection(G4ThreeVector& dir) const;
+    void TransformLocalToGlobal(G4ThreeVector& point, G4ThreeVector& dir) const;
+    void TransformGlobalToLocal(G4ThreeVector& point, G4ThreeVector& dir) const;
+    void TransformToGlobalPoint(G4ThreeVector& point) const;
+    void TransformToLocalPoint(G4ThreeVector& point) const;
+    void TransformToGlobalDirection(G4ThreeVector& dir) const;
+    void TransformToLocalDirection(G4ThreeVector& dir) const;
+
+    const G4ThreeVector GetLocalPosition(const G4ThreeVector& pos) const {
+      G4ThreeVector localPos = pos;
+      TransformToLocalPoint(localPos);
+      return localPos;
+    }
+
+    const G4ThreeVector GetGlobalPosition(const G4ThreeVector& localPos) {
+      G4ThreeVector globalPos = localPos;
+      TransformToGlobalPoint(globalPos);
+      return globalPos;
+    }
+
+    const G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const {
+      G4ThreeVector localDir = dir;
+      TransformToLocalDirection(localDir);
+      return localDir;
+    }
+
+    const G4ThreeVector GetGlobalDirection(const G4ThreeVector& localDir) const {
+      G4ThreeVector globalDir = localDir;
+      TransformToGlobalDirection(globalDir);
+      return globalDir;
+    }
 
   private:
     const G4VSolid* theSolid;
-    const G4AffineTransform theTransform_LtoG;
-    const G4AffineTransform theTransform_GtoL;
+    G4AffineTransform theTransform;
     G4int verboseLevel;
     G4String verboseLabel;
 };

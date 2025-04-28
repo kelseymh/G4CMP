@@ -8,11 +8,13 @@
 /// directly included in the G4VSolid class. Some example of utilites are:
 /// 1) Adjusting a position to the nearest surface point without the surface normal.
 /// 2) Adjusting a particle to the nearest edge along the surface.
+/// 3) Reflecting a tangent vector against a "hard" edge.
 ///
-/// The user will need to create this class directly with a G4VSolid and/or
-/// touchable, or can initialize these objects later on.
+/// The user will need to create this class directly with a G4VSolid (and transform) or
+/// a touchable. If the transform or touchable is not provided, an indentity transform is
+/// used.
 ///
-/// Note: All coordinates/vectors passed into functions must be in the solid's local coordinate system.
+/// Note: All coordinates/vectors passed into functions must be in the global coordinate system.
 //
 // $Id$
 //
@@ -27,45 +29,43 @@
 #include "G4UnitsTable.hh"
 
 
-// Local coordinate constructors
+// Direct constructors
+
 G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid=0,
                                  G4int verbose=0,
                                  G4String vLabel="G4CMPSolidUtils")
   : theSolid(solid),
-    theTransform_LtoG(G4AffineTransform(G4RotationMatrix::IDENTITY, G4ThreeVector(0,0,0))),
-    theTransform_GtoL(theTransform_LtoG.Inverse()), verboseLevel(verbose), verboseLabel(vLabel) {;}
+    theTransform(G4AffineTransform(G4RotationMatrix::IDENTITY, G4ThreeVector(0,0,0))),
+    verboseLevel(verbose), verboseLabel(vLabel) {;}
 
-G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid=0,
+G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid,
                                  const G4AffineTransform& trans,
                                  G4int verbose=0,
                                  G4String vLabel="G4CMPSolidUtils")
-  : theSolid(solid), theTransform_LtoG(trans), theTransform_GtoL(trans.Inverse()),
-    verboseLevel(verbose), verboseLabel(vLabel) {;}
+  : theSolid(solid), theTransform(trans), verboseLevel(verbose),
+    verboseLabel(vLabel) {;}
 
-G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid=0,
+G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid,
                                  const G4RotationMatrix& rot,
                                  const G4ThreeVector& disp,
                                  G4int verbose=0,
                                  G4String vLabel="G4CMPSolidUtils")
-  : theSolid(solid), theTransform_LtoG(G4AffineTransform(rot, disp)),
-    theTransform_GtoL(theTransform_LtoG.Inverse()), verboseLevel(verbose),
-    verboseLabel(vLabel) {;}
+  : theSolid(solid), theTransform(G4AffineTransform(rot, disp)),
+    verboseLevel(verbose), verboseLabel(vLabel) {;}
 
-// Global coordinate constructor
 G4CMPSolidUtils::G4CMPSolidUtils(const G4VTouchable* touch, G4int verbose,
                                  G4String vLabel)
-  : theSolid(touch->GetSolid),
-    theTransform_LtoG(G4AffineTransform(*touch->GetRotation(), *touch->GetTranslation())),
-    theTransform_GtoL(theTransform_LtoG.Inverse()),
+  : theSolid(touch->GetSolid()),
+    theTransform(G4AffineTransform(*touch->GetRotation(), touch->GetTranslation())),
     verboseLevel(verbose), verboseLabel(vLabel) {;}
 
 
 // Copy operation
+
 G4CMPSolidUtils&
 G4CMPSolidUtils::operator=(const G4CMPSolidUtils& right) {
   theSolid = right.theSolid;
-  theTransform_LtoG = right.theTransform_LtoG;
-  theTransform_GtoL = right.theTransform_GtoL;
+  theTransform = right.theTransform;
   verboseLevel = right.verboseLevel;
   verboseLabel = right.verboseLabel;
   return *this;
@@ -74,54 +74,61 @@ G4CMPSolidUtils::operator=(const G4CMPSolidUtils& right) {
 
 // Get the shortest distance to solid
 
-G4double G4CMPSolidUtils::GetDistanceToSolid(const G4ThreeVector& localPos) const {
+G4double G4CMPSolidUtils::GetDistanceToSolid(const G4ThreeVector& pos) const {
+  G4ThreeVector localPos = GetLocalPosition(pos);
   return theSolid->DistanceToOut(localPos) + theSolid->DistanceToIn(localPos);
 }
 
 // Get distance to solid along direction
 
-G4double G4CMPSolidUtils::GetDistanceToSolid(const G4ThreeVector& localPos,
+G4double G4CMPSolidUtils::GetDistanceToSolid(const G4ThreeVector& pos,
                                              const G4ThreeVector& dir) const {
-  if (theSolid->Inside(localPos) == kInside) return theSolid->DistanceToOut(localPos, dir);
-  else return theSolid->DistanceToIn(localPos, dir);
+  G4ThreeVector localPos = GetLocalPosition(pos);
+  G4ThreeVector localDir = GetLocalDirection(dir);
+
+  if (theSolid->Inside(localPos) == kInside) {
+    return theSolid->DistanceToOut(localPos, localDir);
+  } else {
+    return theSolid->DistanceToIn(localPos, localDir);
+  }
 }
 
 
 // Get the direction for the shortest distance to a solid
 
-G4ThreeVector G4CMPSolidUtils::GetDirectionToSolid(const G4ThreeVector& localPos) const {
+G4ThreeVector G4CMPSolidUtils::GetDirectionToSolid(const G4ThreeVector& pos) const {
   G4ThreeVector optDir(0,0,0);
-  RotateDirectionToSolid(localPos, optDir);
+  RotateDirectionToSolid(pos, optDir);
   return optDir;
 }
 
 // Adjust dir in place to direction with shortest distance to a solid
 
-void G4CMPSolidUtils::RotateDirectionToSolid(const G4ThreeVector& localPos,
+void G4CMPSolidUtils::RotateDirectionToSolid(const G4ThreeVector& pos,
                                              G4ThreeVector& dir) const {
   // Angles to be adjusted in place by OptimizeSurfaceAdjustAngle
   // Start at theta = pi/2 so "fit" can be determined by phi
   G4double bestTheta = pi / 2;
   G4double bestPhi = 0;
 
-  G4double minDist = GetDistanceToSolid(localPos);
+  G4double minDist = GetDistanceToSolid(pos);
 
   // Try to optimize phi first
-  OptimizeSurfaceAdjustAngle(localPos, bestTheta, bestPhi, 1, minDist);
-  OptimizeSurfaceAdjustAngle(localPos, bestTheta, bestPhi, 0, minDist);
+  OptimizeSurfaceAdjustAngle(pos, bestTheta, bestPhi, 1, minDist);
+  OptimizeSurfaceAdjustAngle(pos, bestTheta, bestPhi, 0, minDist);
 
-  dir.setRThetaPhi(minDist, bestTheta,bestPhi);
+  dir.setRThetaPhi(minDist, bestTheta, bestPhi);
 
   // Return a null vector if no direction was found
-  if (theSolid->Inside(localPos + dir) != kSurface) dir.set(0,0,0);
+  if (theSolid->Inside(GetLocalPosition(pos + dir)) != kSurface) dir.set(0,0,0);
   else dir.setMag(1.);
 }
 
 
 // Find the direction for minimum distance to surface
 // Adjust theta0 and phi0 in place with best match
-
-void G4CMPSolidUtils::OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos,
+// Everything remains in global coordinates
+void G4CMPSolidUtils::OptimizeSurfaceAdjustAngle(const G4ThreeVector& pos,
                                                  G4double& theta0,
                                                  G4double& phi0,
                                                  const G4int angOption,
@@ -150,8 +157,8 @@ void G4CMPSolidUtils::OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos,
   }
 
   // Distances for each direction
-  G4double dist1 = GetDistanceToSolid(localPos + dir1);
-  G4double dist2 = GetDistanceToSolid(localPos + dir2);
+  G4double dist1 = GetDistanceToSolid(pos + dir1);
+  G4double dist2 = GetDistanceToSolid(pos + dir2);
 
   // Golden section search for optimizing angle
   while (b - a > tolerance) {
@@ -169,7 +176,7 @@ void G4CMPSolidUtils::OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos,
         // Optimize phi
         dir1.setRThetaPhi(minDist, theta0, x1);
       }
-      dist1 = GetDistanceToSolid(localPos + dir1);
+      dist1 = GetDistanceToSolid(pos + dir1);
     } else {
       // Shift down
       b = x1;
@@ -183,7 +190,7 @@ void G4CMPSolidUtils::OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos,
         // Optimize phi
         dir2.setRThetaPhi(minDist, theta0, x2);
       }
-      dist2 = GetDistanceToSolid(localPos + dir2);
+      dist2 = GetDistanceToSolid(pos + dir2);
     }
   }
   G4double optimalAng = (x1 + x2) / 2;
@@ -194,76 +201,85 @@ void G4CMPSolidUtils::OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos,
 }
 
 
-// Adjust to surface position closest to localPos without direction
-
-void G4CMPSolidUtils::
-AdjustToClosestSurfacePoint(G4ThreeVector& localPos) const {
-  // Do nothing if already on surface
-  if (theSolid->Inside(localPos) == kSurface) return;
-
-  G4double minDist = GetDistanceToSolid(localPos);
-  G4ThreeVector optDir = minDist * GetDirectionToSolid(localPos);
-
-  // Only return valid positions on surface
-  if (theSolid->Inside(localPos + optDir) == kSurface) {
-    localPos += optDir;
-  } else {
-    if (verboseLevel) {
-      G4cout << verboseLabel << "::AdjustToClosestSurfacePoint"
-      << ": Surface point not found from initial position "
-      << localPos << G4endl;
-    }
-    localPos.set(kInfinity,kInfinity,kInfinity);
-  }
-}
-
 // Get closest position on surface of solid
 
-G4ThreeVector G4CMPSolidUtils::GetClosestSurfacePoint(const G4ThreeVector& localPos) const {
-  G4ThreeVector surfacePoint = localPos;
+G4ThreeVector G4CMPSolidUtils::GetClosestSurfacePoint(const G4ThreeVector& pos) const {
+  G4ThreeVector surfacePoint = pos;
   AdjustToClosestSurfacePoint(surfacePoint);
   return surfacePoint;
 }
 
-// Adjust to surface position closest to localPos using a provided direction
+// Adjust to surface position closest to pos without direction
 
-void G4CMPSolidUtils::AdjustToClosestSurfacePoint(G4ThreeVector& localPos,
+void G4CMPSolidUtils::
+AdjustToClosestSurfacePoint(G4ThreeVector& pos) const {
+  // Do nothing if already on surface
+  if (theSolid->Inside(GetLocalPosition(pos)) == kSurface) return;
+
+  G4double minDist = GetDistanceToSolid(pos);
+  G4ThreeVector optDir = minDist * GetDirectionToSolid(pos);
+
+  // Only return valid positions on surface
+  if (theSolid->Inside(GetLocalPosition(pos + optDir)) == kSurface) {
+    pos += optDir;
+  } else {
+    if (verboseLevel) {
+      G4cout << verboseLabel << "::AdjustToClosestSurfacePoint"
+      << ": Surface point not found from initial position "
+      << pos << G4endl;
+    }
+    pos.set(kInfinity,kInfinity,kInfinity);
+  }
+}
+
+// Get closest position on surface of solid along direction
+
+G4ThreeVector G4CMPSolidUtils::GetClosestSurfacePoint(const G4ThreeVector& pos,
+                                                      const G4ThreeVector& dir) const {
+G4ThreeVector surfacePoint = pos;
+AdjustToClosestSurfacePoint(surfacePoint, dir);
+return surfacePoint;
+}
+
+// Adjust to surface position closest to pos using a provided direction
+
+void G4CMPSolidUtils::AdjustToClosestSurfacePoint(G4ThreeVector& pos,
                                                   const G4ThreeVector& dir) const {
   // Do nothing if on surface
-  if (theSolid->Inside(localPos) == kSurface) return;
+  if (theSolid->Inside(GetLocalPosition(pos)) == kSurface) return;
 
   // Adjust position in place along provided direction
-  G4double surfAdjust = GetDistanceToSolid(localPos, dir);
-  localPos += surfAdjust * dir;
+  G4double surfAdjust = GetDistanceToSolid(pos, dir);
+  pos += surfAdjust * dir;
 
-  if (theSolid->Inside(localPos) != kSurface && verboseLevel) {
+  if (theSolid->Inside(GetLocalPosition(pos)) != kSurface && verboseLevel) {
     G4cout << verboseLabel << "::AdjustToClosestSurfacePoint:"
     << " WARNING: No surface found along " << dir
     << ". Adjustment length: " << G4BestUnit(surfAdjust, "Length") << G4endl;
   }
 }
 
-// Get closest position on surface of solid along direction
 
-G4ThreeVector G4CMPSolidUtils::GetClosestSurfacePoint(const G4ThreeVector& localPos,
-                                                      const G4ThreeVector& dir) const {
-  G4ThreeVector surfacePoint = localPos;
-  AdjustToClosestSurfacePoint(surfacePoint, dir);
-  return surfacePoint;
+// Get edge position along vTan from pos
+G4ThreeVector G4CMPSolidUtils::GetEdgePosition(const G4ThreeVector& vTan,
+                                               const G4ThreeVector& pos,
+                                               G4double high, const G4int curvedSurf) const {
+G4ThreeVector edgePosition = pos;
+AdjustToEdgePosition(vTan, edgePosition, high, curvedSurf);
+return edgePosition;
 }
 
-
 // Do a binary search to find the closest point toward the edge along vTan
-// Modifies localPos in place
+// Modifies pos in place
 
 void G4CMPSolidUtils::
 AdjustToEdgePosition(const G4ThreeVector& vTan,
-                     G4ThreeVector& localPos, G4double high,
+                     G4ThreeVector& pos, G4double high,
                      const G4int curvedSurf) const {
-  EInside isIn = theSolid->Inside(localPos);
+  EInside isIn = theSolid->Inside(GetLocalPosition(pos));
   G4double low = 0.0*um;
   G4double mid = 0;
-  G4ThreeVector originalPos = localPos;
+  G4ThreeVector originalPos = pos;
   G4double tolerance = theSolid->GetTolerance();
 
   // Binary search to bring surface point to edge
@@ -271,11 +287,11 @@ AdjustToEdgePosition(const G4ThreeVector& vTan,
   G4int itr = 0;
   while ((high - low > tolerance || isIn != kSurface) && ++itr < maxItr) {
     mid = 0.5 * (low + high);
-    localPos = originalPos + mid * vTan;
+    pos = originalPos + mid * vTan;
 
-    // Modify localPos in place to surface if adjusting on curved surfaces
-    if (curvedSurf == 1) AdjustToClosestSurfacePoint(localPos);
-    isIn = theSolid->Inside(localPos);
+    // Modify pos in place to surface if adjusting on curved surfaces
+    if (curvedSurf == 1) AdjustToClosestSurfacePoint(pos);
+    isIn = theSolid->Inside(GetLocalPosition(pos));
 
     if (isIn == kSurface) low = mid; // Move out
     else high = mid; // Move in
@@ -285,17 +301,8 @@ AdjustToEdgePosition(const G4ThreeVector& vTan,
     G4cout << verboseLabel << "::AdjustToEdgePosition"
       << ": initialPos = " << originalPos
       << ", vTan = " << vTan
-      << ", finalPos = " << localPos << G4endl;
+      << ", finalPos = " << pos << G4endl;
   }
-}
-
-// Get edge position along vTan from localPos
-G4ThreeVector G4CMPSolidUtils::GetEdgePosition(const G4ThreeVector& vTan,
-                                               const G4ThreeVector& localPos,
-                                               G4double high, const G4int curvedSurf) const {
-  G4ThreeVector edgePosition = localPos;
-  AdjustToEdgePosition(vTan, edgePosition, high, curvedSurf);
-  return edgePosition;
 }
 
 
@@ -303,15 +310,18 @@ G4ThreeVector G4CMPSolidUtils::GetEdgePosition(const G4ThreeVector& vTan,
 // Modifies vTan and surfNorm in place
 
 void G4CMPSolidUtils::
-ReflectAgainstEdge(G4ThreeVector& vTan, const G4ThreeVector& localPos,
+ReflectAgainstEdge(G4ThreeVector& vTan, const G4ThreeVector& pos,
                    G4ThreeVector& surfNorm) const {
+  G4ThreeVector localPos = GetLocalPosition(pos);
+  TransformToLocalDirection(vTan);
+
   // Get normal of both surfaces at this edge point by stepping with normAdjust
   G4double normAdjust = 1*nm;
   G4double vTanMag = vTan.mag();
-  G4ThreeVector norm1 = theSolid->SurfaceNormal(localPos);
-  G4ThreeVector norm2 = theSolid->SurfaceNormal(localPos - normAdjust*norm1);
+  G4ThreeVector norm1 = theSolid->SurfaceNormal(pos);
+  G4ThreeVector norm2 = theSolid->SurfaceNormal(pos - normAdjust*norm1);
   // Try to fix norm1 if we didn't get the normals for a proper reflection
-  norm1 = (norm1 * norm2 > 0) ? theSolid->SurfaceNormal(localPos - normAdjust*norm2) : norm1;
+  norm1 = (norm1 * norm2 > 0) ? theSolid->SurfaceNormal(pos - normAdjust*norm2) : norm1;
 
   G4ThreeVector edgeVec(0,0,0);
   G4ThreeVector refNorm(0,0,0);
@@ -335,7 +345,7 @@ ReflectAgainstEdge(G4ThreeVector& vTan, const G4ThreeVector& localPos,
 
   if (verboseLevel > 1) {
     G4cout << verboseLabel << "::ReflectAgainstEdge"
-      << ": localPos = " << localPos
+      << ": pos = " << pos
       << ", vTan_0 = " << vTan - 2*((vTan * -refNorm) * -refNorm)
       << ", edgeVector = " << edgeVec
       << ", refNorm = " << refNorm
@@ -344,36 +354,39 @@ ReflectAgainstEdge(G4ThreeVector& vTan, const G4ThreeVector& localPos,
       << ", vTan_f = " << vTan << G4endl;
   }
 
-  // Coordinate transformations
+  TransformToGlobalDirection(vTan);
+}
 
-  // Both position and direction transforms
-  void G4CMPSolidUtils::TransformGlobalToLocal(G4ThreeVector& point,
-                                               G4ThreeVector& dir) const {
-    TransformToLocalPoint(point);
-    TransformToLocalDirection(dir);
-  }
 
-  void G4CMPSolidUtils::TransformLocalToGlobal(G4ThreeVector& point,
-                                               G4ThreeVector& dir) const {
-    TransformToGlobalPoint(point);
-    TransformToGlobalDirection(dir);
-  }
+// Coordinate transformations
 
-  // Position transforms
-  void G4CMPSolidUtils::TransformToGlobalPoint(G4ThreeVector& point) const {
-    theTransform_LtoG.ApplyPointTransform(point);
-  }
+// Both position and direction transforms
+void G4CMPSolidUtils::TransformGlobalToLocal(G4ThreeVector& point,
+                                             G4ThreeVector& dir) const {
+  TransformToLocalPoint(point);
+  TransformToLocalDirection(dir);
+}
 
-  void G4CMPSolidUtils::TransformToLocalPoint(G4ThreeVector& point) const {
-    theTransform_GtoL.ApplyPointTransform(point);
-  }
+void G4CMPSolidUtils::TransformLocalToGlobal(G4ThreeVector& point,
+                                             G4ThreeVector& dir) const {
+  TransformToGlobalPoint(point);
+  TransformToGlobalDirection(dir);
+}
 
-  // Direction transforms
-  void G4CMPSolidUtils::TransformToGlobalDirection(G4ThreeVector& dir) const {
-    theTransform_LtoG.ApplyAxisTransform(dir);
-  }
+// Position transforms
+void G4CMPSolidUtils::TransformToGlobalPoint(G4ThreeVector& point) const {
+  theTransform.ApplyPointTransform(point);
+}
 
-  void G4CMPSolidUtils::TransformToLocalDirection(G4ThreeVector& dir) const{
-    theTransform_GtoL.ApplyAxisTransform(dir);
-  }
+void G4CMPSolidUtils::TransformToLocalPoint(G4ThreeVector& point) const {
+  theTransform.Inverse().ApplyPointTransform(point);
+}
+
+// Direction transforms
+void G4CMPSolidUtils::TransformToGlobalDirection(G4ThreeVector& dir) const {
+  theTransform.ApplyAxisTransform(dir);
+}
+
+void G4CMPSolidUtils::TransformToLocalDirection(G4ThreeVector& dir) const{
+  theTransform.Inverse().ApplyAxisTransform(dir);
 }
