@@ -5,10 +5,11 @@
 # 20170923  Add testChargeCloud
 # 20220921  G4CMP-319 -- Add testTemperature
 # 20221104  G4CMP-340 -- Move phononKinematics to tools/ directory
+# 20250428  G4CMP-465 -- Add testSolidUtils for validating transforms in class.
 
 TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup \
 	g4cmpEFieldTest testChargeCloud testPartition \
-	testHVtransform testFanoFactor testTemperature
+	testHVtransform testFanoFactor testTemperature testSolidUtils
 
 .PHONY : $(TESTS)
 
@@ -26,6 +27,7 @@ help :			# First target, in case user just types "make"
 	@echo "testHVtransform  : Check lattice transforms and inversions"
 	@echo "testFanoFactor   : Verify Fano fluctuations given mean, F"
 	@echo "testTemperature  : Exercise thermal distribution functions"
+	@echo "testSolidUtils   : Validate the transforms in the SolidUtils class"
 	@echo
 	@echo Please specify which one to build as your make target, or \"all\"
 

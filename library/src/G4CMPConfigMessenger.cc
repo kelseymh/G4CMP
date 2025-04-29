@@ -41,6 +41,7 @@
 // 20221214  G4CMP-350:  Bug fix for new temperature setting units.
 // 20230831  G4CMP-362:  Add short names for IMPACT and Sarkis ionization models
 // 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
+// 20250325  G4CMP-463:  Add parameter for phonon surface step size & limit.
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -58,11 +59,11 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : G4UImessenger("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library"),
     theManager(mgr), versionCmd(0), printCmd(0), verboseCmd(0), ehBounceCmd(0),
-    pBounceCmd(0), maxLukeCmd(0), clearCmd(0), minEPhononCmd(0),
-    minEChargeCmd(0), sampleECmd(0), comboStepCmd(0), trapEMFPCmd(0),
-    trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
-    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), tempCmd(0), minstepCmd(0),
-    makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
+    pBounceCmd(0), maxLukeCmd(0), pSurfStepLimitCmd(0), clearCmd(0),
+    minEPhononCmd(0), minEChargeCmd(0), sampleECmd(0), comboStepCmd(0),
+    trapEMFPCmd(0), trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
+    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), tempCmd(0), pSurfStepSizeCmd(0),
+    minstepCmd(0), makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
     ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0), fanoStatsCmd(0),
   kaplanKeepCmd(0), ehCloudCmd(0), recordMinECmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
@@ -132,6 +133,14 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   pBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("phononBounces",
 		  "Maximum number of reflections allowed for phonons");
+
+  pSurfStepSizeCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("phononSurfStepSize",
+      "Specular reflection surface displacement step size");
+  pSurfStepSizeCmd->SetUnitCategory("Length");
+  pSurfStepSizeCmd->SetUnitCandidates("mm cm um nm");
+
+  pSurfStepLimitCmd = CreateCommand<G4UIcmdWithAnInteger>("phononSurfStepLimit",
+    "Maximum number steps along surface during reflection search");
 
   kvmapCmd = CreateCommand<G4UIcmdWithABool>("useKVsolver",
 			     "Use eigenvector solver for K-Vg conversion");
@@ -226,6 +235,8 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete ehCloudCmd; ehCloudCmd=0;
   delete ivRateModelCmd; ivRateModelCmd=0;
   delete nielPartitionCmd; nielPartitionCmd=0;
+  delete pSurfStepSizeCmd; pSurfStepSizeCmd=0;
+  delete pSurfStepLimitCmd; pSurfStepLimitCmd=0;
 }
 
 
@@ -241,6 +252,11 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
+
+  if (cmd == pSurfStepSizeCmd) 
+    theManager->SetPhononSurfStepSize(pSurfStepSizeCmd->GetNewDoubleValue(value));
+
+  if (cmd == pSurfStepLimitCmd) theManager->SetPhononSurfStepLimit(StoI(value));
 
   if (cmd == clearCmd)
     theManager->SetSurfaceClearance(clearCmd->GetNewDoubleValue(value));
