@@ -294,7 +294,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   
   // Initialize solid object and utilities
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
-  G4CMPSolidUtils* solidUtils = new G4CMPSolidUtils(GetCurrentTouchable(), verboseLevel,
+  G4CMPSolidUtils* solidUtils = new G4CMPSolidUtils(solid, verboseLevel,
                                                     GetProcessName());
 
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
