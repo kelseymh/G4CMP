@@ -83,6 +83,12 @@ to directly modify files.
   git push -u
 ```
 
+Our style guide for code contributions is 
+located on this Confluence page: ["G4CMP Style Guide"](
+https://confluence.slac.stanford.edu/spaces/G4CMP/pages/567218502/G4CMP+Style+Guide)
+.
+
+
 ## ChangeHistory
 
 The [ChangeHistory](ChangeHistory) file is used to track new features, bug
