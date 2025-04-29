@@ -7,6 +7,7 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 2025-04-28  G4CMP-475 : Added .clang-format file.
+
 2025-04-23  g4cmp-V09-06-00 New silica materials, fix compiler warnings.
 2025-04-22  G4CMP-472 : Address compiler warnings seen with GCC-11.4.0.
 2025-04-10  G4CMP-469 : Add silica phonon properties in CrystalMaps.
