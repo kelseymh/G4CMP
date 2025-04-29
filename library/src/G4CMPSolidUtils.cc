@@ -54,7 +54,7 @@ G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid,
 G4CMPSolidUtils::G4CMPSolidUtils(const G4VTouchable* touch, G4int verbose,
                                  const G4String& vLabel)
   : theSolid(touch->GetSolid()),
-    theTransform(G4AffineTransform(*touch->GetRotation(), touch->GetTranslation())),
+    theTransform(G4AffineTransform(touch->GetRotation(), touch->GetTranslation())),
     verboseLevel(verbose), verboseLabel(vLabel) {;}
 
 
