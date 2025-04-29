@@ -37,6 +37,7 @@
 // 20250422  N. Tenpas -- Add position arguments for PhononVelocityIsInward test.
 // 20250423  G4CMP-468 -- Add wrapper function for updating navigator.
 // 20250423  G4CMP-468 -- Move GetLambertianVector to G4CMPUtils.
+// 20250424  G4CMP-465 -- Move custom solid functions to new G4CMPSolidUtils.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -44,10 +45,10 @@
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPParticleChangeForPhonon.hh"
+#include "G4CMPSolidUtils.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
-#include "G4CMPConfigManager.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4LatticePhysical.hh"
@@ -291,17 +292,21 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   G4ThreeVector newNorm = surfNorm;
   RotateToLocalDirection(newNorm);
   
-  G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
+  // Initialize solid object and utilities
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
+  G4CMPSolidUtils* solidUtils = new G4CMPSolidUtils(solid, verboseLevel,
+                                                    GetProcessName());
+
+  G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4ThreeVector oldNorm = newNorm;
   G4ThreeVector oldstepLocalPos = stepLocalPos;
 
-  // Find the distance from point to surface along norm (- means inward)
-  G4double surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
+  // Break up wavevector to perp and tan components
   G4double kPerpMag = reflectedKDir.dot(newNorm);
-
   G4ThreeVector kPerpV = kPerpMag * newNorm;		// Negative implied in kPerpMag for inward pointing
   G4ThreeVector kTan = reflectedKDir - kPerpV;		// Get kTan: reflectedKDir = kPerpV + kTan
+
+  // Get axis and phi for tangent rotations
   G4ThreeVector axis = kPerpV.cross(kTan).unit();
   G4double phi = 0.;
   EInside isIn = solid->Inside(stepLocalPos);
@@ -347,8 +352,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     newNorm = solid->SurfaceNormal(stepLocalPos);
 
     // Adjust stepLocalPos back to surface of detector
-    surfAdjust = solid->DistanceToIn(stepLocalPos, -newNorm);
-    stepLocalPos -= surfAdjust * newNorm;
+    solidUtils->AdjustToClosestSurfacePoint(stepLocalPos, -newNorm);
     isIn = solid->Inside(stepLocalPos);
 
     // Large normal changes and not being on surface after initial adjustment
@@ -358,16 +362,15 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       stepLocalPos = oldstepLocalPos;
       newNorm = oldNorm;
       // Modify stepLocalPos in place to edge position
-      AdjustToEdgePosition(solid, kTan, stepLocalPos);
+      solidUtils->AdjustToEdgePosition(kTan, stepLocalPos, stepSize, 1);
       // Do a diffuse reflection if the adjustment failed
       if (solid->Inside(stepLocalPos) != kSurface) {
         reflectedKDir = newNorm;
         break;
       }
       // Reflect kTan against the edge - rotates & modifies kTan; modifies newNorm
-      ReflectAgainstEdge(solid, kTan, stepLocalPos, newNorm);
-    }
-    else {
+      solidUtils->ReflectAgainstEdge(kTan, stepLocalPos, newNorm);
+    } else {
       // Rotate kTan to new position
       axis = newNorm.cross(kTan).unit();
       phi = oldNorm.azimAngle(newNorm, axis);
@@ -387,7 +390,6 @@ GetReflectedVector(const G4ThreeVector& waveVector,
        << "GetReflectedVector:insideLoop -> "
        << "attempts = " << nAttempts
        << ", oldstepLocalPos = " << oldstepLocalPos
-       << ", surfAdjust = " << surfAdjust
        << ", stepLocalPos = " << stepLocalPos
        << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
        << ", kPerpMag = " << kPerpMag
@@ -430,222 +432,10 @@ GetReflectedVector(const G4ThreeVector& waveVector,
       << ", finalGlobalPosition = " << stepLocalPos << G4endl;
   }
 
+  delete solidUtils;
+
   surfacePoint = stepLocalPos;
   return reflectedKDir;
-}
-
-
-// Find the direction for minimum distance to surface
-
-void G4CMPPhononBoundaryProcess::
-OptimizeSurfaceAdjustAngle(const G4VSolid* solid,
-                           const G4ThreeVector& stepLocalPos, G4double& theta0,
-                           G4double& phi0, const G4int angOption,
-                           const G4double minDist) const {
-  // Constants used for Golden Section searches
-  G4double const tolerance = 1e-12*rad;
-  G4double const gRatio = (std::sqrt(5) + 1) / 2;
-  EInside const isIn = solid->Inside(stepLocalPos);
-
-  // Define search quantities for finding optimal angle
-  G4double a = 0;
-  G4double b = (angOption == 0) ? pi : twopi;
-  G4double x1 = a + (b - a) / gRatio;
-  G4double x2 = b - (b - a) / gRatio;
-  G4ThreeVector dir1(0,0,0);
-  G4ThreeVector dir2(0,0,0);
-  G4double coeffX = 0, coeffY = 0, coeffZ = 0;
-
-  // Initial search directions
-  if (angOption == 0) {
-    // Optimize theta
-    coeffX = minDist*cos(phi0);
-    coeffY = minDist*sin(phi0);
-    coeffZ = minDist;
-    dir1.set(coeffX*sin(x1), coeffY*sin(x1), coeffZ*cos(x1));
-    dir2.set(coeffX*sin(x2), coeffY*sin(x2), coeffZ*cos(x2));
-  }
-  else {
-    // Optimize phi
-    coeffX = minDist*sin(theta0);
-    coeffY = minDist*sin(theta0);
-    coeffZ = minDist*cos(theta0);
-    dir1.set(coeffX*cos(x1), coeffY*sin(x1), coeffZ);
-    dir2.set(coeffX*cos(x2), coeffY*sin(x2), coeffZ);
-  }
-
-  // Distances for each direction
-  G4double dist1 = (isIn == kInside) ? solid->DistanceToOut(stepLocalPos + dir1)
-                                     : solid->DistanceToIn(stepLocalPos + dir1);
-  G4double dist2 = (isIn == kInside) ? solid->DistanceToOut(stepLocalPos + dir2)
-                                     : solid->DistanceToIn(stepLocalPos + dir2);
-
-  // Golden section search for optimizing angle
-  while (b - a > tolerance) {
-    // Adjust bounds
-    if (dist1 < dist2) {
-      // Shift up
-      a = x2;
-      x2 = x1;
-      dist2 = dist1;
-      x1 = a + (b - a) / gRatio;
-      if (angOption == 0) {
-        // Optimize theta
-        dir1.set(coeffX*sin(x1), coeffY*sin(x1), coeffZ*cos(x1));
-      }
-      else {
-        // Optimize phi
-        dir1.set(coeffX*cos(x1), coeffY*sin(x1), coeffZ);
-      }
-      dist1 = (isIn == kInside) ? solid->DistanceToOut(stepLocalPos + dir1)
-                                : solid->DistanceToIn(stepLocalPos + dir1);
-    }
-    else {
-      // Shift down
-      b = x1;
-      x1 = x2;
-      dist1 = dist2;
-      x2 = b - (b - a) / gRatio;
-      if (angOption == 0) {
-        // Optimize theta
-        dir2.set(coeffX*sin(x2), coeffY*sin(x2), coeffZ*cos(x2));
-      }
-      else {
-        // Optimize phi
-        dir2.set(coeffX*cos(x2), coeffY*sin(x2), coeffZ);
-      }
-      dist2 = (isIn == kInside) ? solid->DistanceToOut(stepLocalPos + dir2)
-                                : solid->DistanceToIn(stepLocalPos + dir2);
-    }
-  }
-  G4double optimalAng = (x1 + x2) / 2;
-
-  // Adjust angle in place
-  if (angOption == 0) { theta0 = optimalAng; }
-  else { phi0 = optimalAng; }
-}
-
-
-// Adjust to surface position closest to stepLocalPos without SurfaceNormal
-
-void G4CMPPhononBoundaryProcess::
-AdjustToClosestSurfacePoint(const G4VSolid* solid,
-                            G4ThreeVector& stepLocalPos) const {
-  // Determine where you are in respect to solid
-  EInside isIn = solid->Inside(stepLocalPos);
-  if (isIn == kSurface) return;
-
-  // Angles to be adjusted in place by OptimizeSurfaceAdjustAngle
-  // Start at theta = pi/2 so "fit" can be determined by phi
-  G4double bestTheta = pi / 2;
-  G4double bestPhi = 0;
-
-  G4double minDist = (isIn == kInside) ? solid->DistanceToOut(stepLocalPos)
-                                       : solid->DistanceToIn(stepLocalPos);
-
-  // Try to optimize phi first
-  OptimizeSurfaceAdjustAngle(solid, stepLocalPos, bestTheta, bestPhi, 1, minDist);
-  OptimizeSurfaceAdjustAngle(solid, stepLocalPos, bestTheta, bestPhi, 0, minDist);
-
-  G4ThreeVector optDir(minDist*sin(bestTheta)*cos(bestPhi),
-                       minDist*sin(bestTheta)*sin(bestPhi),
-                       minDist*cos(bestTheta));
-
-  // Only return valid positions on surface
-  if (solid->Inside(stepLocalPos + optDir) == kSurface) {
-    stepLocalPos += optDir;
-  } else {
-    stepLocalPos.set(kInfinity,kInfinity,kInfinity);
-  }
-}
-
-
-// Do a binary search to find the closest point toward the edge along kTan
-// Modifies stepLocalPos in place
-
-void G4CMPPhononBoundaryProcess::
-AdjustToEdgePosition(const G4VSolid* solid, const G4ThreeVector& kTan,
-                     G4ThreeVector& stepLocalPos) const {
-  EInside isIn = solid->Inside(stepLocalPos);
-  G4double low = 0.0*um;
-  G4double high = stepSize;
-  G4double mid = 0;
-  G4ThreeVector originalPos = stepLocalPos;
-  G4double tolerance = solid->GetTolerance();
-
-  // Binary search to bring surface point to edge
-  G4int maxItr = 100;
-  G4int itr = 0;
-  while ((high - low > tolerance || isIn != kSurface) && ++itr < maxItr) {
-    mid = 0.5 * (low + high);
-    stepLocalPos = originalPos + mid * kTan;
-
-    // Modify stepLocalPos in place to surface
-    AdjustToClosestSurfacePoint(solid, stepLocalPos);
-    isIn = solid->Inside(stepLocalPos);
-
-    if (isIn == kSurface) low = mid; // Move out
-    else high = mid; // Move in
-  }
-
-  if (verboseLevel>3) {
-    G4double remDist = (solid->DistanceToIn(stepLocalPos) >=
-                        solid->DistanceToOut(stepLocalPos))
-                      ? solid->DistanceToIn(stepLocalPos)
-                      : solid->DistanceToOut(stepLocalPos);
-    G4cout << (GetProcessName()+"::AdjustToEdgePosition").c_str()
-      << ": initialPos = " << originalPos
-      << ", kTan = " << kTan
-      << ", finalPos = " << stepLocalPos
-      << ", remainingDist = " << remDist << G4endl;
-  }
-}
-
-
-// Reflect kTan against an edge
-// Modifies kTan and newNorm in place
-
-void G4CMPPhononBoundaryProcess::
-ReflectAgainstEdge(const G4VSolid* solid, G4ThreeVector& kTan,
-                   const G4ThreeVector& stepLocalPos, G4ThreeVector& newNorm) const {
-  // Get normal of both surfaces at this edge point by stepping with normAdjust
-  G4double normAdjust = 1*nm;
-  G4double kTanMag = kTan.mag();
-  G4ThreeVector norm1 = solid->SurfaceNormal(stepLocalPos);
-  G4ThreeVector norm2 = solid->SurfaceNormal(stepLocalPos - normAdjust*norm1);
-  // Try to fix norm1 if we didn't get the normals for a proper reflection
-  norm1 = (norm1 * norm2 > 0) ? solid->SurfaceNormal(stepLocalPos - normAdjust*norm2) : norm1;
-
-  G4ThreeVector edgeVec(0,0,0);
-  G4ThreeVector refNorm(0,0,0);
-
-  // Only do reflection if at an edge
-  if (norm1 * norm2 <= 0) {
-    newNorm = (newNorm*norm1 > newNorm*norm2) ? norm1 : norm2;
-    // Project kTan to be orthogonal to one normal
-    (kTan -= newNorm * (kTan * newNorm)).setMag(kTanMag);
-
-    // Get the edge vector
-    edgeVec = norm1.cross(norm2).unit();
-
-    // Find the normal for the reflection "surface"
-    refNorm = (edgeVec.cross(newNorm)).unit();
-    if (refNorm * kTan < 0) refNorm *= -1;
-
-    // Reflect kTan against reflection "surface"
-    kTan -= 2*((kTan * refNorm) * refNorm);
-  }
-
-  if (verboseLevel>3) {
-    G4cout << (GetProcessName()+"::ReflectAgainstEdge").c_str()
-      << ": stepLocalPos = " << stepLocalPos
-      << ", kTan_0 = " << kTan - 2*((kTan * -refNorm) * -refNorm)
-      << ", edgeVector = " << edgeVec
-      << ", refNorm = " << refNorm
-      << ", norm1 = " << norm1
-      << ", norm2 = " << norm2
-      << ", kTan_f = " << kTan << G4endl;
-  }
 }
 
 void G4CMPPhononBoundaryProcess::
