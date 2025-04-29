@@ -10,6 +10,7 @@
 //
 // 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm" (-Wshadow)
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
+// 20250429  Add SetLatConst() to fill unit cell lattice parameters
 
 #include "G4CMPCrystalGroup.hh"
 #include "G4PhysicalConstants.hh"

@@ -329,7 +329,6 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
 }
 
 
-
 // Ensure the same rate model is used here and in G4CMPTimeStepper
 
 void G4CMPInterValleyScattering::PushModelToTimeStepper() {
