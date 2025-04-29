@@ -124,8 +124,8 @@ public:
     return (i>=0 && i<3 ? fBasis[i] : nullVec);
   }
     
-  // Get lattice constants
-  void SetLatConst(G4double a, G4double b, G4double c);
+  // Assign lattice constants
+  //void SetLatConst(G4double a, G4double b, G4double c);
   const G4ThreeVector& GetLatConst() const { return fLatConst; }
 
   // Physical parameters of lattice (density, elasticity)

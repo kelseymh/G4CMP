@@ -28,7 +28,7 @@ public:
 public:				// For convenient access to data members 
   Bravais group;
   G4ThreeVector axis[3];	// Basis unit vectors in direct orientation
-  G4ThreeVector LatticeConstant;    // Lattice parameters
+  G4ThreeVector unitCell;   // Dimensions of unit cell axes
 
 public:
   G4CMPCrystalGroup() : group(UNKNOWN) {;}	// Default ctor, must use Set()

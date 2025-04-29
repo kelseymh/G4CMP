@@ -221,18 +221,22 @@ void G4LatticeLogical::SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a,
 				  G4double b, G4double c, G4double alpha,
 				  G4double beta, G4double gamma) {
   fCrystal.Set(group, alpha, beta, gamma);	// Defines unit cell axes
+  fCrystal.SetLatConst(a,b,c);    // Define unit cell lattice parameters
 
   fBasis[0] = a*fCrystal.axis[0];	// Basis vectors include spacing
   fBasis[1] = b*fCrystal.axis[1];
   fBasis[2] = c*fCrystal.axis[2];
+
+  fLatConst = fCrystal.unitCell;
+
 }
 
 
-void G4LatticeLogical::SetLatConst(G4double a, G4double b, G4double c) {
-  fCrystal.SetLatConst(a,b,c);	// Define unit cell lattice parameters
+// void G4LatticeLogical::SetLatConst(G4double a, G4double b, G4double c) {
+//   fCrystal.SetLatConst(a,b,c);	// Define unit cell lattice parameters
 
-  fLatConst = fCrystal.LatticeConstant;
-}
+//   fLatConst = fCrystal.LatticeConstant;
+// }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
