@@ -61,8 +61,8 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
 
     // Is electron energy above IV Threshold?
     if (eTrk <= Emin_iv) {
-        IVprob.push_back(0.); 
-        continue;		
+        IVprob.push_back(0.);
+        continue;
     }
       
     G4double scale = 0.;		// IV rate constants

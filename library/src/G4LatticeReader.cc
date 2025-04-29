@@ -257,7 +257,7 @@ G4bool G4LatticeReader::ProcessString(const G4String& name) {
 G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
   if (verboseLevel>1) G4cout << " ProcessList " << unitcat << G4endl;
 
-//   Prepare input buffers for reading multiple values, up to unit string
+// Prepare input buffers for reading multiple values, up to unit string
   fList.clear();
   fStrList.clear();
   G4String token;
