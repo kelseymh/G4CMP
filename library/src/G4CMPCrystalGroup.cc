@@ -221,6 +221,6 @@ G4CMPCrystalGroup::Bravais G4CMPCrystalGroup::Group(const G4String& name) {
 
 // Fill unit cell lattice parameters
 
-void G4CMPCrystalGroup::SetLatConst(G4double a, G4double b, G4double c) {
+void G4CMPCrystalGroup::SetUnitCell(G4double a, G4double b, G4double c) {
   unitCell = G4ThreeVector(a,b,c);
 }

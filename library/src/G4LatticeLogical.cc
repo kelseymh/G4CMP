@@ -221,7 +221,7 @@ void G4LatticeLogical::SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a,
 				  G4double b, G4double c, G4double alpha,
 				  G4double beta, G4double gamma) {
   fCrystal.Set(group, alpha, beta, gamma);	// Defines unit cell axes
-  fCrystal.SetLatConst(a,b,c);    // Define unit cell lattice parameters
+  fCrystal.SetUnitCell(a,b,c);    // Define unit cell lattice parameters
 
   fBasis[0] = a*fCrystal.axis[0];	// Basis vectors include spacing
   fBasis[1] = b*fCrystal.axis[1];

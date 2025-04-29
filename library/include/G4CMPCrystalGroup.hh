@@ -55,7 +55,7 @@ public:
   void Set(Bravais grp, G4double a=0., G4double b=0., G4double c=0.);
 
   // Fill unit cell lattice parameters
-  void SetLatConst(G4double a=0, G4double b=0., G4double c=0.);
+  void SetUnitCell(G4double a=0, G4double b=0., G4double c=0.);
 
   // Copy appropriate elements of Cij matrix based on crystal symmetry
   // NOTE:  Non-const array passed in for modification
