@@ -370,9 +370,8 @@ G4bool G4LatticeReader::ProcessCrystalGroup(const G4String& name) {
 
   pLattice->SetCrystal(group, a*lunit, b*lunit, c*lunit,
 		        alpha*degOrRad, beta*degOrRad, gamma*degOrRad);
-    
-  G4ThreeVector LatConst(a*lunit, b*lunit, c*lunit);
-  pLattice->SetLatConst(LatConst);
+
+  pLattice->SetLatConst(a*lunit, b*lunit, c*lunit);
 
   return psLatfile->good();
 }

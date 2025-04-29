@@ -228,6 +228,12 @@ void G4LatticeLogical::SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a,
 }
 
 
+void G4LatticeLogical::SetLatConst(G4double a, G4double b, G4double c) {
+  fCrystal.SetLatConst(a,b,c);	// Define unit cell lattice parameters
+
+  fLatConst = fCrystal.LatticeConstant;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 /////////////////////////////////////////////////////////////
