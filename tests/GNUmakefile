@@ -5,9 +5,10 @@
 # 20170923  Add testChargeCloud
 # 20220921  G4CMP-319 -- Add testTemperature
 # 20221104  G4CMP-340 -- Move phononKinematics to tools/ directory
+# 20250102  G4CMP-436 -- Add testNRyield to exercise Lindhard (NIEL) functions
 
 TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup \
-	g4cmpEFieldTest testChargeCloud testPartition \
+	g4cmpEFieldTest testChargeCloud testPartition testNRyield \
 	testHVtransform testFanoFactor testTemperature
 
 .PHONY : $(TESTS)
@@ -16,16 +17,17 @@ ifndef G4CMP_NAME
 help :			# First target, in case user just types "make"
 	@echo "G4CMP/tests : This directory contains standalone unit tests"
 	@echo
-	@echo "electron_Epv  : Generate tab-delimited file of e- kinematics"
-	@echo "latticeVecs   : Apply lattice and valley rotations to vectors"
-	@echo "luke_dist     : Generate tab-delimited file of phonon kinematics"
-	@echo "testBlockData : Demonstrate use of data container"
+	@echo "luke_dist        : Generate tab-delimited file of NTL phonons"
+	@echo "electron_Epv     : Generate tab-delimited file of e- kinematics"
+	@echo "latticeVecs      : Apply lattice and valley rotations to vectors"
+	@echo "testBlockData    : Demonstrate use of data container"
 	@echo "testCrystalGroup : Validate non-orthogonal crystal axes"
 	@echo "g4cmpEFieldTest  : Validate COMSOL field file in rectangular box"
 	@echo "testChargeCloud  : Validate performance of G4CMPChargeCloud"
 	@echo "testHVtransform  : Check lattice transforms and inversions"
 	@echo "testFanoFactor   : Verify Fano fluctuations given mean, F"
 	@echo "testTemperature  : Exercise thermal distribution functions"
+	@echo "testNRyield      : Exercise Lindhard yield (NIEL) functions"
 	@echo
 	@echo Please specify which one to build as your make target, or \"all\"
 

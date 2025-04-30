@@ -44,6 +44,9 @@
 // 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
+// 20250209  G4CMP-457: Add short names for empirical Lindhard NIEL.
+// 20250213  G4CMP-457: Add empirical Lindhard NIEL parameters.
+
 
 #include "G4UImessenger.hh"
 
@@ -98,6 +101,14 @@ private:
   G4UIcmdWithABool*   kaplanKeepCmd;
   G4UIcmdWithABool*   ehCloudCmd;
   G4UIcmdWithABool*   recordMinECmd;
+
+  // Empirical Lindhard Model Macro Commands
+  G4UIcmdWithABool* EmpEDepKCmd;
+  G4UIcmdWithADouble* EmpkFixedCmd;
+  G4UIcmdWithADouble* EmpklowCmd;
+  G4UIcmdWithADouble* EmpkhighCmd;
+  G4UIcmdWithADoubleAndUnit* EmpElowCmd;
+  G4UIcmdWithADoubleAndUnit* EmpEhighCmd;
 
 private:
   G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden

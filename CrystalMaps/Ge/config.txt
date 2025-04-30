@@ -5,8 +5,8 @@ stiffness 1 2  44 GPa
 stiffness 4 4  67 GPa
 # Phonon parameters
 dyn -73.2 -70.8 37.6 56.1 GPa
-scat 3.67e-41 s3
-decay 1.6456e-54 s4
+scat 3.67e-41 s3 	# From S. Tamura, PRB31(4), 1985
+decay 6.43E-55 s4 	# From S. Tamura, PRB31(4), 1985
 decayTT 0.74
 # From S. Tamura et al., PRB44(7), 1991
 LDOS 0.097834
