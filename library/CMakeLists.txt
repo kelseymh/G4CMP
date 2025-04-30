@@ -302,6 +302,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVDriftProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVElectrodePattern.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVMeshInterpolator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVPhysicsModel.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVScatteringRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVTrackInfo.hh

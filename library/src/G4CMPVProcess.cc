@@ -4,7 +4,11 @@
 \***********************************************************************/
 
 /// \file library/src/G4CMPVProcess.cch
-/// \brief Implementation of the G4CMPVProcess base class
+/// \brief Top-level base class for all G4CMP physics processes.  Only
+///        discrete (post-step) processes are supported in G4CMP.  This
+///	   base class provides access to all of the "ProcessUtils"
+///	   functionaltiy via multiple inheritance.  Concrete processes
+///	   don't need to do anything special.
 //
 // $Id$
 //
@@ -14,9 +18,12 @@
 // 20190906  Bug fix in UseRateModel(), check for good pointer, not null;
 //		Add function to initialize rate model after LoadDataForTrack
 // 20210915  Change diagnostic output to verbose=3 or higher.
+// 20250430  Add ability to register different physics models, which will
+//	       be called by (new) base implementation of PostStepDoIt().
 
 #include "G4CMPVProcess.hh"
 #include "G4CMPConfigManager.hh"
+#include "G4CMPVPhysicsModel.hh"
 #include "G4CMPVScatteringRate.hh"
 #include "G4ForceCondition.hh"
 #include "G4SystemOfUnits.hh"
@@ -27,13 +34,14 @@
 G4CMPVProcess::G4CMPVProcess(const G4String& processName,
 			     G4CMPProcessSubType stype)
   : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils(),
-    rateModel(0) {
+    rateModel(0), physicsModel(0) {
   verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   SetProcessSubType(stype);
 }
 
 G4CMPVProcess::~G4CMPVProcess() {
   delete rateModel; rateModel=0;
+  delete physicsModel; physicsModel=0;
 }
 
 
@@ -48,6 +56,20 @@ void G4CMPVProcess::UseRateModel(G4CMPVScatteringRate* model) {
 
   // Ensure that rate model is syncronized with process state
   ConfigureRateModel();
+}
+
+
+// Register utility class for implementing particular scattering model
+// NOTE:  Takes ownership of model for deletion; deletes any previous version
+
+void G4CMPVProcess::UsePhysicsModel(G4CMPVPhysicsModel* model) {
+  if (model == physicsModel) return;		// Nothing to change
+
+  if (physicsModel) delete physicsModel;	// Avoid memory leaks!
+  physicsModel = model;
+
+  model->SetProcess(this);			// Ensure updated configuration
+  model->SetVerboseLevel(verboseLevel);
 }
 
 
@@ -72,6 +94,15 @@ void G4CMPVProcess::ConfigureRateModel() {
   if (GetCurrentTrack()) rateModel->LoadDataForTrack(GetCurrentTrack());
 }
 
+
+// Use physics model to generate final state kinematics
+// Concrete processes which don't use a model will override this
+
+G4VParticleChange* 
+G4CMPVProcess::PostStepDoIt(const G4Track& track, const G4Step& step) {
+  return (physicsModel ? physicsModel->PostStepDoIt(track,step)
+	  : G4VDiscreteProcess::PostStepDoIt(track,step));
+}
 
 // Compute MFP using track velocity and scattering rate
 
