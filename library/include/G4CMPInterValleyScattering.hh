@@ -32,6 +32,12 @@ public:
   // Do scattering action here
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
+  // Deprecated version of IV scattering
+  virtual G4VParticleChange* SwitchValleys(const G4Track&, const G4Step&);
+
+  // Up-to-date version of IV scattering
+  virtual G4VParticleChange* ValleyScattering(const G4Track&, const G4Step&);
+
   // Only electrons have physical valleys associated with them
   virtual bool IsApplicable(const G4ParticleDefinition&);
 
@@ -49,6 +55,8 @@ private:
   void PushModelToTimeStepper();	// Ensure model is used for stepping
     
   G4bool secondariesFirst;     // To create phonons as secondaries
+
+  G4bool doValleySwitch;   // Deprecated version of IV scattering or not
 
 private:
   //hide assignment operator as private

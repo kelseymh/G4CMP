@@ -79,9 +79,18 @@ void G4CMPInterValleyScattering::UseRateModel(G4String model) {
   if (model == modelName) return;	// Requested model already in use
 
   // Select from valid names; fall back to Quadratic if invalid name specified
-       if (model(0) == 'q') UseRateModel(new G4CMPIVRateQuadratic);
-  else if (model(0) == 'l') UseRateModel(new G4CMPIVRateLinear);
-  else if (model(0) == 'i') UseRateModel(new G4CMPInterValleyRate);
+       if (model(0) == 'q') {
+           UseRateModel(new G4CMPIVRateQuadratic);
+           doValleySwitch=true;    // Deprecated IV scattering PostStepDoIt
+           }
+  else if (model(0) == 'l') {
+      UseRateModel(new G4CMPIVRateLinear);
+      doValleySwitch=true;    // Deprecated IV scattering PostStepDoIt
+      }
+  else if (model(0) == 'i') {
+      UseRateModel(new G4CMPInterValleyRate);
+      doValleySwitch=false;    // Up-to-date IV scattering PostStepDoIt
+      }
   else {
     G4cerr << GetProcessName() << " ERROR: Unrecognized rate model '"
 	   << model << "'" << G4endl;
@@ -109,6 +118,56 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
 
 G4VParticleChange* 
 G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
+                                       const G4Step& aStep) {
+return (doValleySwitch ? SwitchValleys(aTrack, aStep) : ValleyScattering(aTrack, aStep));
+}
+
+
+// Deprecated IV scattering
+
+G4VParticleChange* 
+G4CMPInterValleyScattering::SwitchValleys(const G4Track& aTrack, 
+					 const G4Step& aStep) {
+  InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
+  G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
+  
+  if (verboseLevel > 1) {
+    G4cout << GetProcessName() << "::PostStepDoIt: Step limited by "
+	   << postStepPoint->GetProcessDefinedStep()->GetProcessName()
+	   << G4endl;
+  }
+  
+  // Don't do anything at a volume boundary
+  if (postStepPoint->GetStepStatus()==fGeomBoundary) {
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+  }
+  
+  // Get track's energy in current valley
+  G4ThreeVector p = GetLocalMomentum(aTrack);
+  G4int valley = GetValleyIndex(aTrack);
+  p = theLattice->MapPtoK(valley, p); // p is actually k now
+  p = theLattice->RotateToValley(valley, p);
+  
+  // picking a new valley at random if IV-scattering process was triggered
+  valley = ChangeValley(valley);
+  G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
+
+  p = theLattice->RotateFromValley(valley, p);
+  p = theLattice->MapKtoP(valley, p); // p is p again
+  RotateToGlobalDirection(p);
+  
+  // Adjust track kinematics for new valley
+  FillParticleChange(valley, p);
+  
+  ClearNumberOfInteractionLengthLeft();    
+  return &aParticleChange;
+}
+
+
+// Up-to-date IV scattering
+
+G4VParticleChange* 
+G4CMPInterValleyScattering::ValleyScattering(const G4Track& aTrack,
                                        const G4Step& aStep) {
   aParticleChange.Initialize(aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
