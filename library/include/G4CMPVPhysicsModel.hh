@@ -17,6 +17,7 @@
 #ifndef G4CMPVPhysicsModel_hh
 #define G4CMPVPhysicsModel_hh 1
 
+#include "G4CMPProcessUtils.hh"
 #include "G4ParticleChange.hh"
 #include "G4String.hh"
 #include "G4Types.hh"
@@ -26,10 +27,10 @@ class G4Step;
 class G4Track;
 
 
-class G4CMPVPhysicsModel {
+class G4CMPVPhysicsModel : public G4CMPProcessUtils {
 public:
   G4CMPVPhysicsModel(const G4String& name, G4CMPVProcess* process=0)
-    : modelName(name), theProcess(process),
+    : G4CMPProcessUtils(), modelName(name), theProcess(process),
       verboseLevel(process?process->GetVerboseLevel():0) {;}
 
   virtual ~G4CMPVPhysicsModel() {;}

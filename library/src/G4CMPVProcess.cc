@@ -77,13 +77,17 @@ void G4CMPVProcess::UsePhysicsModel(G4CMPVPhysicsModel* model) {
 
 void G4CMPVProcess::StartTracking(G4Track* track) {
   G4VProcess::StartTracking(track);	// Apply base class actions
+
   LoadDataForTrack(track);
+  if (physicsModel) physicsModel->LoadDataForTrack(track);
   ConfigureRateModel();
 }
 
 void G4CMPVProcess::EndTracking() {
   G4VProcess::EndTracking();		// Apply base class actions
+
   ReleaseTrack();
+  if (physicsModel) physicsModel->ReleaseTrack();
   if (rateModel) rateModel->ReleaseTrack();
 }
 
@@ -100,8 +104,10 @@ void G4CMPVProcess::ConfigureRateModel() {
 
 G4VParticleChange* 
 G4CMPVProcess::PostStepDoIt(const G4Track& track, const G4Step& step) {
-  return (physicsModel ? physicsModel->PostStepDoIt(track,step)
-	  : G4VDiscreteProcess::PostStepDoIt(track,step));
+  if (physicsModel) pParticleChange = physicsModel->PostStepDoIt(track,step);
+
+  // This handles resetting interaction lengths, etc.
+  return G4VDiscreteProcess::PostStepDoIt(track,step));
 }
 
 // Compute MFP using track velocity and scattering rate
