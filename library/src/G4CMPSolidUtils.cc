@@ -265,9 +265,9 @@ G4ThreeVector G4CMPSolidUtils::GetEdgePosition(const G4ThreeVector& vTan,
                                                const G4ThreeVector& pos,
                                                G4double high,
                                                const G4int curvedSurf) const {
-G4ThreeVector edgePosition = pos;
-AdjustToEdgePosition(vTan, edgePosition, high, curvedSurf);
-return edgePosition;
+  G4ThreeVector edgePosition = pos;
+  AdjustToEdgePosition(vTan, edgePosition, high, curvedSurf);
+  return edgePosition;
 }
 
 // Do a binary search to find the closest point toward the edge along vTan
