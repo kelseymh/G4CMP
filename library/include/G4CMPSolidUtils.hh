@@ -21,6 +21,8 @@
 // $Id$
 //
 // 20250424  G4CMP-465 -- Create G4CMPSolidUtils class.
+// 20250429  G4CMP-461 -- Add function for skipping detector flats.
+// 20250430  N. Tenpas -- Add function for getting distance to bounding box.
 
 #ifndef G4CMPSolidUtils_hh
 #define G4CMPSolidUtils_hh 1
@@ -95,53 +97,64 @@ class G4CMPSolidUtils {
     G4String GetVerboseLabel() const {return verboseLabel; }
 
     // Get the distance to solid object surface with and without direction
-    G4double GetDistanceToSolid(const G4ThreeVector& localPos) const;
-    G4double GetDistanceToSolid(const G4ThreeVector& localPos,
+    G4double GetDistanceToSolid(const G4ThreeVector& pos) const;
+    G4double GetDistanceToSolid(const G4ThreeVector& pos,
                                 const G4ThreeVector& dir) const;
 
     // Get the direction for minimum distance to the solid object's surface
-    // localPos and dir need to be in the solid's local coordinate system
-    G4ThreeVector GetDirectionToSolid(const G4ThreeVector& localPos) const;
+    // pos and dir need to be in the global coordinate system
+    G4ThreeVector GetDirectionToSolid(const G4ThreeVector& pos) const;
 
     // Modify dir in place to direction of minimum distance to the solid object
-    // localPos and dir need to be in the solid's local coordinate system
-    void RotateDirectionToSolid(const G4ThreeVector& localPos,
+    // pos and dir need to be in the global coordinate system
+    void RotateDirectionToSolid(const G4ThreeVector& pos,
                                 G4ThreeVector& dir) const;
 
     // Efficiently find direction with min distance to surface
-    // localPos must be in the solid's local coordinate system
-    void OptimizeSurfaceAdjustAngle(const G4ThreeVector& localPos,
+    // pos must be in the global coordinate system
+    void OptimizeSurfaceAdjustAngle(const G4ThreeVector& pos,
                                     G4double& theta0, G4double& phi0,
                                     const G4int angOption,
                                     const G4double minDist) const;
 
-    // Modifies localPos in place to closest surface position
-    // localPos and dir must be in the solid's local coordinate system
-    void AdjustToClosestSurfacePoint(G4ThreeVector& localPos) const;
-    void AdjustToClosestSurfacePoint(G4ThreeVector& localPos,
+    // Modifies pos in place to closest surface position
+    // pos and dir must be in the global coordinate system
+    void AdjustToClosestSurfacePoint(G4ThreeVector& pos) const;
+    void AdjustToClosestSurfacePoint(G4ThreeVector& pos,
                                      const G4ThreeVector& dir) const;
 
-    // localPos and dir must be in the solid's local coordinate system
-    G4ThreeVector GetClosestSurfacePoint(const G4ThreeVector& localPos) const;
-    G4ThreeVector GetClosestSurfacePoint(const G4ThreeVector& localPos,
+    // pos and dir must be in the global coordinate system
+    G4ThreeVector GetClosestSurfacePoint(const G4ThreeVector& pos) const;
+    G4ThreeVector GetClosestSurfacePoint(const G4ThreeVector& pos,
                                          const G4ThreeVector& dir) const;
 
-    // Modifies localPos in place to the nearest edge along vTan
-    // localPos and vTan must be in the solid's local coordinate system
+    // Modifies pos in place to the nearest edge along vTan
+    // pos and vTan must be in the global coordinate system
     void AdjustToEdgePosition(const G4ThreeVector& vTan,
-                              G4ThreeVector& localPos,
+                              G4ThreeVector& pos,
                               G4double high, const G4int curvedSurf) const;
 
-    // localPos and vTan must be in the solid's local coordinate system
+    // pos and vTan must be in the global coordinate system
     G4ThreeVector GetEdgePosition(const G4ThreeVector& vTan,
-                                  const G4ThreeVector& localPos,
+                                  const G4ThreeVector& pos,
                                   G4double high, const G4int curvedSurf) const;
 
     // Modifies vTan and surfNorm in place
-    // localPos, vTan, and surfNorm must be in the solid's local coordinate system
+    // pos, vTan, and surfNorm must be in the global coordinate system
     void ReflectAgainstEdge(G4ThreeVector& vTan,
-                            const G4ThreeVector& localPos,
+                            const G4ThreeVector& pos,
                             G4ThreeVector& surfNorm) const;
+
+    // Modifies pos in place
+    // pos and vTan must be in the global coordinate system
+    void AdjustOffFlats(G4ThreeVector& pos, G4ThreeVector& vTan,
+                        const G4double flatStepSize, G4ThreeVector& surfNorm,
+                        G4int count);
+
+    // Get the distance along vTan from pos to the bounding box limits
+    // pos and vTan must be in the global coordinate system
+    G4double GetDistToBB(const G4ThreeVector pos,
+                         const G4ThreeVector vTan) const;
 
     // Internal transformations
     void TransformLocalToGlobal(G4ThreeVector& point, G4ThreeVector& dir) const;
@@ -157,8 +170,8 @@ class G4CMPSolidUtils {
       return localPos;
     }
 
-    const G4ThreeVector GetGlobalPosition(const G4ThreeVector& localPos) {
-      G4ThreeVector globalPos = localPos;
+    const G4ThreeVector GetGlobalPosition(const G4ThreeVector& pos) {
+      G4ThreeVector globalPos = pos;
       TransformToGlobalPoint(globalPos);
       return globalPos;
     }

@@ -21,6 +21,8 @@
 // $Id$
 //
 // 20250424  G4CMP-465 -- Create G4CMPSolidUtils class.
+// 20250429  G4CMP-461 -- Add function for skipping detector flats.
+// 20250430  N. Tenpas -- Add function for getting distance to bounding box.
 
 #include "G4CMPSolidUtils.hh"
 #include "G4AffineTransform.hh"
@@ -261,7 +263,8 @@ void G4CMPSolidUtils::AdjustToClosestSurfacePoint(G4ThreeVector& pos,
 // Get edge position along vTan from pos
 G4ThreeVector G4CMPSolidUtils::GetEdgePosition(const G4ThreeVector& vTan,
                                                const G4ThreeVector& pos,
-                                               G4double high, const G4int curvedSurf) const {
+                                               G4double high,
+                                               const G4int curvedSurf) const {
 G4ThreeVector edgePosition = pos;
 AdjustToEdgePosition(vTan, edgePosition, high, curvedSurf);
 return edgePosition;
@@ -353,6 +356,111 @@ ReflectAgainstEdge(G4ThreeVector& vTan, const G4ThreeVector& pos,
   }
 
   TransformToGlobalDirection(vTan);
+}
+
+
+// Skip flats on surface (where the normal remains the same)
+void G4CMPSolidUtils::AdjustOffFlats(G4ThreeVector& pos, G4ThreeVector& vTan,
+                                     const G4double flatStepSize,
+                                     G4ThreeVector& surfNorm, G4int count) {
+  // Debugging variables
+  G4ThreeVector originalPos = pos;
+  G4ThreeVector originalV = vTan;
+
+  // We must be under the consecutive call limit
+  const G4int limit = 50;
+  if (count > limit) {
+    pos.set(kInfinity, kInfinity, kInfinity);
+    return;
+  }
+
+  // We must start in the surface
+  if (theSolid->Inside(GetLocalPosition(pos)) != kSurface) return;
+
+  // Project vTan to guarantee it's tangent to the surface
+  if (vTan * surfNorm != 0) {
+    G4double vTanMag = vTan.mag();
+    (vTan -= surfNorm * (vTan * surfNorm)).setMag(vTanMag);
+
+    if (verboseLevel > 2) {
+      G4cout << verboseLabel << "::AdjustOffFlats"
+        << ": Tangent vector: " << originalV
+        << " is not orthogonal to surface normal: " << surfNorm
+        << ". New Tangent vector: " << vTan << G4endl;
+    }
+  }
+
+  // Adjusts pos in place to the edge of the flat
+  AdjustToEdgePosition(vTan.unit(), pos, flatStepSize, 0);
+
+  // Test whether the next step is at an edge or on the curved wall
+  const G4double surfAdjust = GetDistanceToSolid(pos + 1*nm*vTan.unit(), -surfNorm);
+  G4ThreeVector localTrial = GetLocalPosition(pos + 1*nm*vTan.unit());
+  // Adjust to surface
+  localTrial -= surfAdjust * GetLocalDirection(surfNorm);
+
+  if (verboseLevel > 1) {
+    G4cout << verboseLabel << "::AdjustOffFlats"
+      << ": Original Position = " << originalPos
+      << ", Final Position = " << pos
+      << ", Step Direction = " << vTan
+      << ", Surface Normal = " << surfNorm
+      << ", Surface Adjustment at pos = " << surfAdjust
+      << ", Skipper Step Size = " << flatStepSize / mm << " mm"
+      << ", Consecutive iterations count: " << count << G4endl;
+  }
+
+  // At a hard edge - reflect kTan and repeat
+  if (theSolid->Inside(localTrial) != kSurface) {
+    ReflectAgainstEdge(vTan, pos, surfNorm);
+    AdjustOffFlats(pos, vTan, flatStepSize, surfNorm, ++count);
+  }
+}
+
+
+// Find the boundary box position
+
+G4double G4CMPSolidUtils::GetDistToBB(const G4ThreeVector pos,
+                                      const G4ThreeVector vTan) const {
+  G4ThreeVector bbMin, bbMax;
+  theSolid->BoundingLimits(bbMin, bbMax);
+
+  G4double dist_to_bb = 0.0;
+  G4ThreeVector bbPos = pos;
+
+  if (fabs(vTan.z()) > 1e-7) {
+    // calculate distance to zMin
+    dist_to_bb = (bbMin.z() - pos.z()) / vTan.z();
+
+    if (dist_to_bb < 0) {
+      // calculate distance to zMax
+      dist_to_bb = (bbMax.z() - pos.z()) / vTan.z();
+    }
+  }
+
+  if (fabs(vTan.x()) > 1e-7) {
+    // do checks for Y-flats
+    if (bbPos.x() < bbMin.x()) {
+      // calculate distance to xMin
+      dist_to_bb = (pos.x() - bbMin.x()) / vTan.x();
+    } else if (bbPos.x() > bbMax.x()) {
+      // calculate distance to xMax
+      dist_to_bb = (bbMax.x() - pos.x()) / vTan.x();
+    }
+  }
+
+  if (fabs(vTan.y()) > 1e-7) {
+    // do checks for X-flats
+    if (bbPos.y() < bbMin.y()) {
+      // calculate distance to yMin
+      dist_to_bb = (pos.y() - bbMin.y()) / vTan.y();
+    } else if (bbPos.y() > bbMax.y()) {
+      // calculate distance to yMax
+      dist_to_bb = (bbMax.y() - pos.y()) / vTan.y();
+    }
+  }
+
+  return dist_to_bb;
 }
 
 

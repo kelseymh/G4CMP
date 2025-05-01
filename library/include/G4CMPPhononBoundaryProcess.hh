@@ -62,17 +62,6 @@ protected:
 				                           G4ThreeVector& surfNorm, G4int mode,
                                    G4ThreeVector& surfacePoint);
 
-  G4ThreeVector GetFlatEdgePos(const G4VSolid* solid, const G4ThreeVector pos,
-                    const G4ThreeVector kTanU, const G4double stepSize,
-                    const G4ThreeVector oldNorm) const;
-
-  G4double GetDistToBB(const G4VSolid* solid, const G4ThreeVector pos,
-                    const G4ThreeVector kTanU) const;
-
-  G4double GetNewStepSize(const G4VSolid* solid, const G4ThreeVector pos,
-                    const G4ThreeVector kTanU, const G4double stepSize,
-                    const G4ThreeVector oldNorm, const G4double newStepSize) const;
-
   // Update navigator volume when position is changed
   void UpdateNavigatorVolume(const G4Step&, const G4ThreeVector& position,
                              const G4ThreeVector& vDir) const;
