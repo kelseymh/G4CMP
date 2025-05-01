@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-05-01  G4CMP-358 : Identify and stop charged tracks stuck in mesh field.
 2025-04-28  G4CMP-475 : Added .clang-format file.
 
 2025-04-23  g4cmp-V09-06-00 New silica materials, fix compiler warnings.

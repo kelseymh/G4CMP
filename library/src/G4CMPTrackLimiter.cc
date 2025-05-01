@@ -10,7 +10,8 @@
 // $Id$
 //
 // 20170822  M. Kelsey -- Add checking on current vs. original volume
-// 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
+// 20240506  G4CMP-371 -- Add flag to keep or discard below-minimum track energy
+// 20250501  G4CMP-358 -- Identify and stop charge tracks stuck in field.
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
@@ -18,6 +19,7 @@
 #include "G4ForceCondition.hh"
 #include "G4ParticleChange.hh"
 #include "G4Step.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 #include <limits.h>
 
@@ -68,6 +70,17 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
 
+  // Ensure track has not gotten stuck somewhere in mesh field
+  if (ChargeStuck(track)) {
+    std::stringstream msg;
+    msg << "Stopping charge track stuck in mesh electric field @ "
+	<< GetLocalPosition(track) << " local" << G4endl;
+    G4Exception("G4CMPTrackLimiter", "Limit003", JustWarning,
+		msg.str().c_str());
+
+    aParticleChange.ProposeTrackStatus(fStopButAlive);
+  }
+
   return &aParticleChange;
 }
 
@@ -97,4 +110,29 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
   return ( (step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary) &&
 	   (postPV != GetCurrentVolume() || prePV != GetCurrentVolume())
 	   );
+}
+
+G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) const {
+  if (!IsChargeCarrier()) return false;		// Ignore phonons (for now?)
+
+  // How long and how far has the track been travelling?
+  G4int nstep = track.GetCurrentStepNumber();
+  G4double pathLen = track.GetTrackLength();
+  G4double flightDist = (track.GetPosition()-track.GetVertexPosition()).mag();
+
+  // Scattering makes the path length longer, but only a factor of a few
+  const G4double maxScale = 5.;
+  G4double pathScale = pathLen / flightDist;
+
+  // Steps should not be much shorter than 1 pm or so
+  const G4double minStep = 1e-15*m;
+  G4double avgStep = pathLen / nstep;
+
+  if (verboseLevel>2) {
+    G4cout << " after " << nstep << " steps, flight distance " << flightDist
+	   << " vs. path length " << pathLen << " (" << avgStep
+	   << " per step)" << G4endl;
+  }
+
+  return (avgStep < minStep || pathScale > maxScale);
 }
