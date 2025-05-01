@@ -38,6 +38,7 @@
 // 20250423  G4CMP-468 -- Add wrapper function for updating navigator.
 // 20250423  G4CMP-468 -- Move GetLambertianVector to G4CMPUtils.
 // 20250424  G4CMP-465 -- Move custom solid functions to new G4CMPSolidUtils.
+// 20250429  G4CMP-461 -- Implement ability to skip flats during displacement.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -316,13 +317,15 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   // Initialize stepSize for _this_ solid object
   G4CMPConfigManager* config = G4CMPConfigManager::Instance();
   stepSize = config->GetPhononSurfStepSize();
+
+  // Get flat skip step size dependent on solid
+  G4ThreeVector pmin(0,0,0);
+  G4ThreeVector pmax(0,0,0);
+  solid->BoundingLimits(pmin, pmax);
+  G4double flatStepSize = (pmax - pmin).mag();
+
   // Set default stepSize based on solid bounding limits
-  if (stepSize == 0) {
-    G4ThreeVector pmin(0,0,0);
-    G4ThreeVector pmax(0,0,0);
-    solid->BoundingLimits(pmin, pmax);
-    stepSize = (pmax - pmin).mag() / nStepLimit;
-  }
+  if (stepSize == 0) stepSize = flatStepSize / nStepLimit;
 
   // FIXME: Need defined units
   if (verboseLevel>3) {
@@ -350,9 +353,27 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
     // Get the local normal at the new surface point
     newNorm = solid->SurfaceNormal(stepLocalPos);
+    // Check position status for flat skipper
+    isIn = solid->Inside(stepLocalPos);
+
+    // Check if the phonon is on a flat. Must be on the solid surface
+    if (oldNorm == newNorm && isIn == kSurface) {
+      // Adjust stepLocalPos to edge of the flat (still on the flat)
+      // Modifies stepLocalPos and kTan in place
+      solidUtils->AdjustOffFlats(stepLocalPos, kTan, flatStepSize, newNorm, 0);
+      // Do a diffuse reflection if stuck in regression
+      if (solid->Inside(stepLocalPos) != kSurface) {
+        reflectedKDir = newNorm;
+        break;
+      }
+      // Step off the flat and adjust newNorm
+      stepLocalPos += stepSize * kTan.unit();
+      newNorm = solid->SurfaceNormal(stepLocalPos);
+    }
 
     // Adjust stepLocalPos back to surface of detector
     solidUtils->AdjustToClosestSurfacePoint(stepLocalPos, -newNorm);
+    // Check position status for edge reflections
     isIn = solid->Inside(stepLocalPos);
 
     // Large normal changes and not being on surface after initial adjustment
@@ -437,6 +458,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   surfacePoint = stepLocalPos;
   return reflectedKDir;
 }
+
 
 void G4CMPPhononBoundaryProcess::
 UpdateNavigatorVolume(const G4Step& step, const G4ThreeVector& position,
