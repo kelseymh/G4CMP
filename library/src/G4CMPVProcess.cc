@@ -107,7 +107,7 @@ G4CMPVProcess::PostStepDoIt(const G4Track& track, const G4Step& step) {
   if (physicsModel) pParticleChange = physicsModel->PostStepDoIt(track,step);
 
   // This handles resetting interaction lengths, etc.
-  return G4VDiscreteProcess::PostStepDoIt(track,step));
+  return G4VDiscreteProcess::PostStepDoIt(track,step);
 }
 
 // Compute MFP using track velocity and scattering rate
