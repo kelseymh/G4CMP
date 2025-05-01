@@ -3,6 +3,10 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
  \***********************************************************************/
 
+/// \file library/include/G4CMPInterValleyScattering.cc
+/// \brief Process for intervalley scattering of electrons during charge
+///        transport.  Reassigns electron from one valley to another.
+//
 // $Id$
 //
 // 20140324  Drop hard-coded IV scattering parameters; get from lattice
@@ -27,6 +31,7 @@
 // 20190906  Push selected rate model back to G4CMPTimeStepper for consistency
 // 20231122  Remove 50% momentum flip (see G4CMP-375)
 // 20240823  Allow ConfigManager IVRateModel setting to override config.txt
+// 20250430  Move PostStepDoIt() implementation to G4CMPIVSwitchModel.
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -34,6 +39,7 @@
 #include "G4CMPInterValleyRate.hh"
 #include "G4CMPIVRateQuadratic.hh"
 #include "G4CMPIVRateLinear.hh"
+#include "G4CMPIVSwitchModel.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -72,10 +78,10 @@ void G4CMPInterValleyScattering::UseRateModel(G4String model) {
     model = (G4CMPConfigManager::GetIVRateModel().empty() ? "Quadratic"
 	     : G4CMPConfigManager::GetIVRateModel());
   }
-
+  
   model.toLower();
   if (model == modelName) return;	// Requested model already in use
-
+  
   // Select from valid names; fall back to Quadratic if invalid name specified
        if (model(0) == 'q') UseRateModel(new G4CMPIVRateQuadratic);
   else if (model(0) == 'l') UseRateModel(new G4CMPIVRateLinear);
@@ -85,6 +91,9 @@ void G4CMPInterValleyScattering::UseRateModel(G4String model) {
 	   << model << "'" << G4endl;
     if (!GetRateModel()) UseRateModel("Quadratic");
   }
+
+  // Register simple valley reassignment physics
+  if (!physicsModel) UsePhysicsModel(new G4CMPIVSwitchModel(this));
 
   modelName = GetRateModel()->GetName();
   modelName.toLower();
@@ -105,47 +114,6 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
   else UseRateModel(theLattice->GetIVModel());	// Use current material's rate
 
   return G4CMPVProcess::GetMeanFreePath(track, prevStep, cond);
-}
-
-
-// Perform scattering action
-
-G4VParticleChange* 
-G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
-					 const G4Step& aStep) {
-  InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
-  G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
-  
-  if (verboseLevel > 1) {
-    G4cout << GetProcessName() << "::PostStepDoIt: Step limited by "
-	   << postStepPoint->GetProcessDefinedStep()->GetProcessName()
-	   << G4endl;
-  }
-  
-  // Don't do anything at a volume boundary
-  if (postStepPoint->GetStepStatus()==fGeomBoundary) {
-    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-  }
-  
-  // Get track's energy in current valley
-  G4ThreeVector p = GetLocalMomentum(aTrack);
-  G4int valley = GetValleyIndex(aTrack);
-  p = theLattice->MapPtoK(valley, p); // p is actually k now
-  p = theLattice->RotateToValley(valley, p);
-  
-  // picking a new valley at random if IV-scattering process was triggered
-  valley = ChangeValley(valley);
-  G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
-
-  p = theLattice->RotateFromValley(valley, p);
-  p = theLattice->MapKtoP(valley, p); // p is p again
-  RotateToGlobalDirection(p);
-  
-  // Adjust track kinematics for new valley
-  FillParticleChange(valley, p);
-  
-  ClearNumberOfInteractionLengthLeft();    
-  return &aParticleChange;
 }
 
 

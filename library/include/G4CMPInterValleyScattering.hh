@@ -3,6 +3,10 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+/// \file library/include/G4CMPInterValleyScattering.hh
+/// \brief Process for intervalley scattering of electrons during charge
+///        transport.  Reassigns electron from one valley to another.
+//
 // $Id$
 //
 // 20140324  Drop hard-coded IV scattering parameters; get from lattice
@@ -11,6 +15,7 @@
 // 20190704  Add selection of rate model by name, and material specific
 // 20190906  For rate model selection, pass string by value
 // 20190906  Push selected rate model back to G4CMPTimeStepper for consistency
+// 20250430  Move implementation in PostStepDoIt to G4CMPIVSwitchModel.
 
 #ifndef G4CMPInterValleyScattering_h
 #define G4CMPInterValleyScattering_h 1
@@ -27,9 +32,6 @@ public:
   // Select different rate models by string (globally or by material)
   using G4CMPVProcess::UseRateModel;		// Avoid function hiding
   void UseRateModel(G4String model);		// Non-virtual to use in ctor
-
-  // Do scattering action here
-  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
   // Only electrons have physical valleys associated with them
   virtual bool IsApplicable(const G4ParticleDefinition&);
