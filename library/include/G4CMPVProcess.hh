@@ -37,8 +37,7 @@ public:
 
   // Register utility class for computing scattering rate for MFP
   // NOTE:  Takes ownership of model for deletion
-  // Subclasses MAY overload this to register a physics model
-  virtual void UseRateModel(G4CMPVScatteringRate* model);
+  void UseRateModel(G4CMPVScatteringRate* model);
   const G4CMPVScatteringRate* GetRateModel() const { return rateModel; }
         G4CMPVScatteringRate* GetRateModel()       { return rateModel; }
 
