@@ -7,12 +7,11 @@
 #define G4CMPConfigManager_hh 1
 
 // $Id$
-// File:  G4CMPConfigManager.hh
-//
-// Description:	Singleton container class for user configuration of G4CMP
-//		applications at runtime.  Looks for environment variables
-//		at initialization to set default values; active values may
-//		be changed via macro commands (see G4CMPConfigMessenger).
+/// \file library/include/G4CMPConfigManager.hh
+/// \brief Singleton container class for user configuration of G4CMP
+///         applications at runtime.  Looks for environment variables
+///	   at initialization to set default values; active values may
+///	   be changed via macro commands (see G4CMPConfigMessenger).
 //
 // 20140904  Michael Kelsey
 // 20141231  Add parameter to set scale (relative to l0) for minimum steps
@@ -48,7 +47,7 @@
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
 // 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
-
+// 20250502  G4CMP-358: Limit number of steps for charged tracks in E-field.
 
 #include "globals.hh"
 #include <iosfwd>
@@ -75,6 +74,7 @@ public:
   static G4int GetVerboseLevel()         { return Instance()->verbose; }
   static G4int GetMaxChargeBounces()	 { return Instance()->ehBounces; }
   static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
+  static G4int GetMaxChargeSteps()       { return Instance()->ehMaxSteps; }
   static G4int GetMaxLukePhonons()       { return Instance()->maxLukePhonons; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
@@ -115,6 +115,7 @@ public:
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
   static void SetMaxChargeBounces(G4int value) { Instance()->ehBounces = value; }
   static void SetMaxPhononBounces(G4int value) { Instance()->pBounces = value; }
+  static void SetMaxChargeSteps(G4int value) { Instance()->ehMaxSteps = value; }
   static void SetMaxLukePhonons(G4int value) { Instance()->maxLukePhonons = value; }
   static void SetSurfaceClearance(G4double value) { Instance()->clearance = value; }
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
@@ -184,6 +185,7 @@ private:
   G4int fPhysicsModelID; // ID key to get aux. track info.
   G4int ehBounces;	 // Maximum e/h reflections ($G4CMP_EH_BOUNCES)
   G4int pBounces;	 // Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
+  G4int ehMaxSteps;      // Maximum steps for charges ($G$CMP_EH_MAX_STEPS)
   G4int maxLukePhonons;  // Approx. Luke phonon limit ($G4MP_MAX_LUKE)
   G4String version;	 // Version name string extracted from .g4cmp-version
   G4String LatticeDir;	 // Lattice data directory ($G4LATTICEDATA)

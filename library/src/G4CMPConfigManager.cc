@@ -4,12 +4,11 @@
 \***********************************************************************/
 
 // $Id$
-// File:  G4CMPConfigManager.cc
-//
-// Description:	Singleton container class for user configuration of G4CMP
-//		applications at runtime.  Looks for environment variables
-//		at initialization to set default values; active values may
-//		be changed via macro commands (see G4CMPConfigMessenger).
+/// \file library/cc/G4CMPConfigManager.cc
+/// \brief Singleton container class for user configuration of G4CMP
+///         applications at runtime.  Looks for environment variables
+///	   at initialization to set default values; active values may
+///	   be changed via macro commands (see G4CMPConfigMessenger).
 //
 // 20140904  Michael Kelsey
 // 20141029  Force numerical voltage to correct units
@@ -45,7 +44,7 @@
 // 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
 // 20250212  G4CMP-457: Add short names for empirical Lindhard NIEL.
 // 20250422  G4CMP-472: Adjust order of data members to avoid compiler warnings.
-
+// 20250502  G4CMP-358: Limit number of steps for charged tracks in E-field.
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -89,6 +88,7 @@ G4CMPConfigManager::G4CMPConfigManager()
   : verbose(getenv("G4CMP_DEBUG")?atoi(getenv("G4CMP_DEBUG")):0),
     ehBounces(getenv("G4CMP_EH_BOUNCES")?atoi(getenv("G4CMP_EH_BOUNCES")):1),
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
+    ehMaxSteps(getenv("G4CMP_EH_MAX_STEPS")?atoi(getenv("G4CMP_EH_MAX_STEPS")):-1),
     maxLukePhonons(getenv("G4MP_MAX_LUKE")?atoi(getenv("G4MP_MAX_LUKE")):-1),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):""),
@@ -207,6 +207,7 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/verbose " << verbose << "\t\t\t\t# G4CMP_DEBUG"
      << "\n/g4cmp/chargeBounces " << ehBounces << "\t\t\t\t# G4CMP_EH_BOUNCES"
      << "\n/g4cmp/phononBounces " << pBounces << "\t\t\t# G4CMP_PHON_BOUNCES"
+     << "\n/g4cmp/maximumSteps " << ehMaxSteps << "\t\t\t# G4CMP_EH_MAX_STEPS"
      << "\n/g4cmp/IVRateModel " << IVRateModel << "\t\t\t# G4CMP_IV_RATE_MODEL"
      << "\n/g4cmp/LukeDebugFile " << lukeFilename << "\t\t\t# G4CMP_LUKE_FILE"
      << "\n/g4cmp/eTrappingMFP " << eTrapMFP/mm << " mm\t\t# G4CMP_ETRAPPING_MFP"
@@ -234,11 +235,11 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/NIELPartition "
      << (nielPartition ? typeid(*nielPartition).name() : "---")
      << "\t# G4CMP_NIEL_FUNCTION "
-     << "\n/g4cmp/NIELPartition/Empirical/klow " << Empklow << " \t\t\t# G4CMP_EMPIRICAL_KLOW"
-     << "\n/g4cmp/NIELPartition/Empirical/khigh " << Empkhigh << " \t\t\t\t# G4CMP_EMPIRICAL_KHIGH"
-     << "\n/g4cmp/NIELPartition/Empirical/Elow " << EmpElow/keV << " keV\t\t\t\t# G4CMP_EMPIRICAL_ELOW"
-     << "\n/g4cmp/NIELPartition/Empirical/Ehigh " << EmpEhigh/keV << " keV\t\t\t\t# G4CMP_EMPIRICAL_EHIGH"
-     << "\n/g4cmp/NIELPartition/Empirical/kFixed " << Empkhigh << " \t\t\t\t# G4CMP_EMPIRICAL_KFIXED"
-     << "\n/g4cmp/NIELPartition/Empirical/EDepK " << EmpEDepK << "\t\t\t# G4CMP_EMPIRICAL_EDEPK "
+     << "\n/g4cmp/NIELPartition/Empirical/klow " << Empklow << "\t# G4CMP_EMPIRICAL_KLOW"
+     << "\n/g4cmp/NIELPartition/Empirical/khigh " << Empkhigh << "\t# G4CMP_EMPIRICAL_KHIGH"
+     << "\n/g4cmp/NIELPartition/Empirical/Elow " << EmpElow/keV << " keV\t# G4CMP_EMPIRICAL_ELOW"
+     << "\n/g4cmp/NIELPartition/Empirical/Ehigh " << EmpEhigh/keV << " keV\t# G4CMP_EMPIRICAL_EHIGH"
+     << "\n/g4cmp/NIELPartition/Empirical/kFixed " << Empkhigh << "\t# G4CMP_EMPIRICAL_KFIXED"
+     << "\n/g4cmp/NIELPartition/Empirical/EDepK " << EmpEDepK << "\t# G4CMP_EMPIRICAL_EDEPK "
      << std::endl;
 }

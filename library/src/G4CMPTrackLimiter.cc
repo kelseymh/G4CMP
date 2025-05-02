@@ -11,7 +11,8 @@
 //
 // 20170822  M. Kelsey -- Add checking on current vs. original volume
 // 20240506  G4CMP-371 -- Add flag to keep or discard below-minimum track energy
-// 20250501  G4CMP-358 -- Identify and stop charge tracks stuck in field.
+// 20250501  G4CMP-358 -- Identify and stop charge tracks stuck in field,
+//	       using maxSteps configuration parameter.
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
@@ -116,23 +117,27 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) const {
   if (!IsChargeCarrier()) return false;		// Ignore phonons (for now?)
 
   // How long and how far has the track been travelling?
+  const G4double maxSteps = G4CMPConfigManager::GetMaxChargeSteps();
   G4int nstep = track.GetCurrentStepNumber();
+
   G4double pathLen = track.GetTrackLength();
   G4double flightDist = (track.GetPosition()-track.GetVertexPosition()).mag();
 
   // Scattering makes the path length longer, but only a factor of a few
-  const G4double maxScale = 5.;
+  const G4double maxScale = 20.;		// Not used
   G4double pathScale = pathLen / flightDist;
 
-  // Steps should not be much shorter than 1 pm or so
-  const G4double minStep = 1e-15*m;
+  // Steps should not be much shorter than 1 pm
+  const G4double minStep = 1e-12*m;		// Not used
   G4double avgStep = pathLen / nstep;
 
   if (verboseLevel>2) {
-    G4cout << " after " << nstep << " steps, flight distance " << flightDist
-	   << " vs. path length " << pathLen << " (" << avgStep
-	   << " per step)" << G4endl;
+    G4cout << " after " << nstep << " steps, path " << pathLen/mm
+	   << " ~ " << pathScale << " x flight " << flightDist/mm
+	   << " mm (" << (pathScale>maxScale?">":"<") << maxScale << ")"
+	   << " " << avgStep/nm << " nm per step ("
+	   << (avgStep>minStep?">":"<") << minStep/nm << ")" << G4endl;
   }
 
-  return (avgStep < minStep || pathScale > maxScale);
+  return (maxSteps>0 && nstep>maxSteps);
 }
