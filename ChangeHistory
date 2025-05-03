@@ -7,7 +7,10 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 [ Modifications included on branch G4CMP-404, put subtask tags below it: ]
-2024-05-07  G4CMP-404 : Improve charge carriers-phonons scattering.
+2025-05-02  G4CMP-404 : Improve charge carriers-phonons scattering.
+2025-05-02  G4CMP-120 : IV scattering process should include kinematic effects.
+2024-09-27  G4CMP-429 : Add IV order and # final valleys to config.txt.
+2024-09-20  G4CMP-427 : Fix math error in G4LatticeLogical::MapV_elToP.
 
 [ Main line "develop" ChangeHistory; when merging, put develop updates here: ]
 

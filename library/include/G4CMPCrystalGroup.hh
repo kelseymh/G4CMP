@@ -30,6 +30,7 @@ public:
 public:				// For convenient access to data members
   Bravais group;
   G4ThreeVector axis[3];	// Basis unit vectors in direct orientation
+  G4ThreeVector unitCell;   // Dimensions of unit cell axes
 
 public:
   G4CMPCrystalGroup() : group(UNKNOWN) {;}	// Default ctor, must use Set()
@@ -54,6 +55,9 @@ public:
 
   // Some parameters may be omitted depending on symmetry
   void Set(Bravais grp, G4double a=0., G4double b=0., G4double c=0.);
+
+  // Fill unit cell lattice parameters
+  void SetUnitCell(G4double a=0, G4double b=0., G4double c=0.);
 
   // Copy appropriate elements of Cij matrix based on crystal symmetry
   // NOTE:  Non-const array passed in for modification

@@ -40,6 +40,7 @@
 // 20211001  FindNearestValley(dir) can pass by reference.
 // 20211003  Add track touchable as data member, to create if needed
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
+// 20250523  Add MakePhononThetaIV for IV phonon emission angle.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -231,6 +232,10 @@ public:
   G4double MakePhononTheta(G4double k, G4double ks) const;
   G4double MakePhononEnergy(G4double k, G4double ks, G4double th_phonon) const;
   G4double MakePhononEnergy(G4double q) const;
+    
+  // Generate direction angle for phonon generated in IV scattering
+  G4double MakePhononThetaIV0Order(G4double E, G4double Ephonon) const;
+  G4double MakePhononThetaIV1Order(G4double E, G4double Ephonon) const;
 
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;

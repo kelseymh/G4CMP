@@ -12,6 +12,7 @@
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
 // 20241024  I. Hernandez -- Add an if statement to include a rhombohedral Crystal group
 // 20241024  I. Hernandez -- Fixing the function FillOrthorhombic()
+// 20250429  Add SetLatConst() to fill unit cell lattice parameters
 
 #include "G4CMPCrystalGroup.hh"
 #include "G4PhysicalConstants.hh"
@@ -256,4 +257,10 @@ G4CMPCrystalGroup::Bravais G4CMPCrystalGroup::Group(const G4String& name) {
 
 
   return UNKNOWN;	// Failure condition; calling code should test
+}
+
+// Fill unit cell lattice parameters
+
+void G4CMPCrystalGroup::SetUnitCell(G4double a, G4double b, G4double c) {
+  unitCell = G4ThreeVector(a,b,c);
 }
