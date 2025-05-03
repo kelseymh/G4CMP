@@ -27,7 +27,8 @@ valleyDir 0 1 0
 valleyDir 0 0 1
 # Intervalley scattering (matrix elements) from Jacoboni & Reggiani
 alpha 0.5 /eV
-acDeform 6.6 eV
+acDeform_e 9 eV		# Cabrera et al., arxiv(1004.1233), 2010
+acDeform_h 5 eV
 ivPhononMode TA LA LO TA LA TO			# IV scattering phonon mode
 ivDeform 0.5e8 0.8e8 11e8 0.3e8 2e8 2e8 eV/cm    # IV scattering deformation potential
 ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV    # IV phonon energy
