@@ -39,6 +39,7 @@
 // 20250423  G4CMP-468 -- Move GetLambertianVector to G4CMPUtils.
 // 20250424  G4CMP-465 -- Move custom solid functions to new G4CMPSolidUtils.
 // 20250429  G4CMP-461 -- Implement ability to skip flats during displacement.
+// 20250505  G4CMP-458 -- Rename GetReflectedVector to GetSpecularVector.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
