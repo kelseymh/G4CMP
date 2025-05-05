@@ -40,6 +40,7 @@
 // 20250424  G4CMP-465 -- Move custom solid functions to new G4CMPSolidUtils.
 // 20250429  G4CMP-461 -- Implement ability to skip flats during displacement.
 // 20250505  G4CMP-458 -- Rename GetReflectedVector to GetSpecularVector.
+// 20250505  G4CMP-471 -- Update diagnostic output for surface displacement loop.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -256,8 +257,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   if (verboseLevel>2) {
-    G4cout << "\n New surface position " << *particleChange.GetPosition()
-     << "\n New wavevector direction " << reflectedKDir
+    G4cout << "\n New surface position " << *particleChange.GetPosition() / mm 
+     << " [mm]\n New wavevector direction " << reflectedKDir
 	   << "\n New momentum direction " << vdir << G4endl;
   }
 
@@ -328,13 +329,12 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   // Set default stepSize based on solid bounding limits
   if (stepSize == 0) stepSize = flatStepSize / nStepLimit;
 
-  // FIXME: Need defined units
   if (verboseLevel>3) {
     G4cout << "GetSpecularVector:beforeLoop -> "
-      << ", stepLocalPos = " << stepLocalPos
-      << ", kPerpMag (newNorm dot reflectedKDir) = " << kPerpMag
-      << ", newNorm = " << newNorm
+      << ", stepLocalPos = " << stepLocalPos / mm << " [mm]"
       << ", reflectedKDir = " << reflectedKDir
+      << ", newNorm = " << newNorm
+      << ", kPerpMag (newNorm dot reflectedKDir) = " << kPerpMag
       << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
       << ", kTan (reflectedKDir - kPerpV) = " << kTan
       << ", surfaceStepSize = " << G4BestUnit(stepSize, "Length")
@@ -406,17 +406,16 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     reflectedKDir = kTan + kPerpV;
     G4ThreeVector vDir = theLattice->MapKtoVDir(mode, reflectedKDir);
 
-    // FIXME: Need defined units
     if (verboseLevel>3) {
       G4cout << " "
        << "GetSpecularVector:insideLoop -> "
        << "attempts = " << nAttempts
-       << ", oldstepLocalPos = " << oldstepLocalPos
-       << ", stepLocalPos = " << stepLocalPos
-       << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
-       << ", kPerpMag = " << kPerpMag
-       << ", newNorm = " << newNorm
+       << ", oldstepLocalPos = " << oldstepLocalPos / mm << " [mm]"
+       << ", stepLocalPos = " << stepLocalPos / mm << " [mm]"
        << ", oldNorm = " << oldNorm
+       << ", newNorm = " << newNorm
+       << ", kPerpMag = " << kPerpMag
+       << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
        << ", kTan = " << kTan
        << ", reflectedKDir (kTan + kPerpV) = " << reflectedKDir
        << ", Phonon mode = " << G4PhononPolarization::Label(mode)
@@ -430,9 +429,12 @@ GetSpecularVector(const G4ThreeVector& waveVector,
 
   if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, newNorm,
                                      GetGlobalPosition(stepLocalPos))) {
-    G4cout << (GetProcessName()+"::GetSpecularVector").c_str()
-      << ": Phonon displacement failed after " << nAttempts - 1 
-      << " attempts. Doing diffuse reflection at surface point: " << surfacePoint << G4endl;
+    if (verboseLevel) {
+      G4cout << (GetProcessName()+"::GetSpecularVector").c_str()
+        << ": Phonon displacement failed after " << nAttempts - 1 << " attempts. "
+        << "Doing diffuse reflection at surface point: " << surfacePoint / mm
+        << " [mm]" << G4endl;
+    }
 
     // reflectedKDir and stepLocalPos will be in global coordinates
     reflectedKDir = G4CMP::GetLambertianVector(theLattice, newNorm, mode,
@@ -450,8 +452,8 @@ GetSpecularVector(const G4ThreeVector& waveVector,
       << ": nAttempts = " << nAttempts
       << ", waveVector = " << waveVector
       << ", reflectedKDir = " << reflectedKDir
-      << ", initialGlobalPostion = " << surfacePoint
-      << ", finalGlobalPosition = " << stepLocalPos << G4endl;
+      << ", initialGlobalPostion = " << surfacePoint / mm << " [mm]"
+      << ", finalGlobalPosition = " << stepLocalPos / mm << " [mm]" << G4endl;
   }
 
   delete solidUtils;
