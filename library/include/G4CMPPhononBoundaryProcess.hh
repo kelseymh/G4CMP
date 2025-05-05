@@ -58,9 +58,9 @@ protected:
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			                      G4ParticleChange& aParticleChange);
 
-  G4ThreeVector GetReflectedVector(const G4ThreeVector& waveVector, 
-				                           G4ThreeVector& surfNorm, G4int mode,
-                                   G4ThreeVector& surfacePoint);
+  G4ThreeVector GetSpecularVector(const G4ThreeVector& waveVector,
+                                  G4ThreeVector& surfNorm, G4int mode,
+                                  G4ThreeVector& surfacePoint);
 
   // Update navigator volume when position is changed
   void UpdateNavigatorVolume(const G4Step&, const G4ThreeVector& position,

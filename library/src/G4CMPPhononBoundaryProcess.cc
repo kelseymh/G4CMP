@@ -235,7 +235,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     return;
   } else if (random < downconversionProb + specProb) {
-    reflectedKDir = GetReflectedVector(waveVector, surfNorm, mode, surfacePoint); // Modify surfacePoint & surfNorm in place
+    reflectedKDir = GetSpecularVector(waveVector, surfNorm, mode, surfacePoint); // Modify surfacePoint & surfNorm in place
     refltype = "specular";
   } else {
     reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
@@ -272,9 +272,9 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 // Generate specular reflection corrected for momentum dispersion
 
 G4ThreeVector G4CMPPhononBoundaryProcess::
-GetReflectedVector(const G4ThreeVector& waveVector,
-		               G4ThreeVector& surfNorm, G4int mode,
-		               G4ThreeVector& surfacePoint) {
+GetSpecularVector(const G4ThreeVector& waveVector,
+                  G4ThreeVector& surfNorm, G4int mode,
+                  G4ThreeVector& surfacePoint) {
   // Specular reflecton should reverse momentum along normal
   G4ThreeVector reflectedKDir = waveVector.unit();
   G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm
@@ -329,7 +329,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
   // FIXME: Need defined units
   if (verboseLevel>3) {
-    G4cout << "GetReflectedVector:beforeLoop -> "
+    G4cout << "GetSpecularVector:beforeLoop -> "
       << ", stepLocalPos = " << stepLocalPos
       << ", kPerpMag (newNorm dot reflectedKDir) = " << kPerpMag
       << ", newNorm = " << newNorm
@@ -408,7 +408,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
     // FIXME: Need defined units
     if (verboseLevel>3) {
       G4cout << " "
-       << "GetReflectedVector:insideLoop -> "
+       << "GetSpecularVector:insideLoop -> "
        << "attempts = " << nAttempts
        << ", oldstepLocalPos = " << oldstepLocalPos
        << ", stepLocalPos = " << stepLocalPos
@@ -429,7 +429,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
 
   if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, newNorm,
                                      GetGlobalPosition(stepLocalPos))) {
-    G4cout << (GetProcessName()+"::GetReflectedVector").c_str()
+    G4cout << (GetProcessName()+"::GetSpecularVector").c_str()
       << ": Phonon displacement failed after " << nAttempts - 1 
       << " attempts. Doing diffuse reflection at surface point: " << surfacePoint << G4endl;
 
@@ -445,7 +445,7 @@ GetReflectedVector(const G4ThreeVector& waveVector,
   }
 
   if (verboseLevel>2) {
-    G4cout << (GetProcessName()+"::GetReflectedVector").c_str()
+    G4cout << (GetProcessName()+"::GetSpecularVector").c_str()
       << ": nAttempts = " << nAttempts
       << ", waveVector = " << waveVector
       << ", reflectedKDir = " << reflectedKDir
