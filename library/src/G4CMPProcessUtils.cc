@@ -56,6 +56,7 @@
 // 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
 // 20250129  Rotate Vg in FillParticleChange() to global coordinates.
 // 20250423  Add FillParticleChange() to update phonon position and touchable.
+// 20250505  Update local time for phonon displacement in FillParticleChange.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -218,6 +219,11 @@ void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
 
 void G4CMPProcessUtils::FillParticleChange(G4CMPParticleChangeForPhonon& particleChange,
   const G4Step& step, const G4ThreeVector& position) const {
+    // Update the local time to account for displacement
+    G4double delta_t = (position - *particleChange.GetPosition()).mag() / particleChange.GetVelocity();
+    G4StepPoint* postStep = step.GetPostStepPoint();
+    particleChange.ProposeLocalTime(postStep->GetLocalTime() + delta_t);
+
     // Update position, touchable, and step status
     particleChange.ProposePosition(position);
     particleChange.ProposeTouchableHandle(step.GetPreStepPoint()->GetTouchableHandle());
