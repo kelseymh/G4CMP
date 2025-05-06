@@ -326,7 +326,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   G4double flatStepSize = (pmax - pmin).mag();
 
   // Set default stepSize based on solid bounding limits
-  if (stepSize == 0) stepSize = flatStepSize / nStepLimit;
+  if (stepSize == 0) stepSize = flatStepSize / 1000;
 
   // FIXME: Need defined units
   if (verboseLevel>3) {
