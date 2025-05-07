@@ -38,7 +38,7 @@ G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
 void G4CMPTrackLimiter::LoadDataForTrack(const G4Track* track) {
   G4CMPProcessUtils::LoadDataForTrack(track);
 
-  flightAvg = flightAvg2 = lastFlight10k = lastRMS10k = 0.;
+  flightAvg = flightAvg2 = lastFlight = lastRMS = 0.;
 }
 
 
@@ -140,14 +140,14 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
   flightAvg2 = flightAvg2 + (flightDist*flightDist - flightAvg2)/nstep;
 
   // Compute change in distance every 10,000 steps
-  G4double fltChange = flightDist-lastFlight10k;
-  if (nstep%10000 == 0) lastFlight10k = flightDist;
+  G4double fltChange = flightAvg-lastFlight;
+  lastFlight = flightAvg;
 
   // Compute change in RMS every 10,000 steps
   const G4double minRMS = 0.;			// Zero means never bad
   G4double RMS = sqrt(flightAvg2 - flightAvg*flightAvg);
-  G4double RMSchange = RMS-lastRMS10k;
-  if (nstep%10000 == 0) lastRMS10k = RMS;
+  G4double RMSchange = RMS-lastRMS;
+  lastRMS = RMS;
 
   // Scattering makes the path length longer, but only a factor of a few
   const G4double maxScale = 20.;		// Not used
@@ -157,7 +157,7 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
     G4cout << " after " << nstep << " steps, path " << pathLen
 	   << " ~ " << pathScale << " x flight " << flightDist
 	   << " (" << (pathScale>maxScale?">":"<") << maxScale << ")" << G4endl
-	   << " changed by " << fltChange << " RMS " << RMS
+	   << " flightAvg " << flightAvg << " RMS " << RMS
 	   << " changed by " << RMSchange << G4endl;
   }
 

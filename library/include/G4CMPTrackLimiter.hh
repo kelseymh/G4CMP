@@ -30,7 +30,7 @@ class G4CMPTrackLimiter : public G4CMPVProcess {
 public:
   G4CMPTrackLimiter(const G4String& name="TrackLimiter")
     : G4CMPVProcess(name, fTrackLimiter), flightAvg(-1.), flightAvg2(-1.),
-      lastFlight10k(-1.), lastRMS10k(-1.) {;}
+      lastFlight(-1.), lastRMS(-1.) {;}
 
   virtual ~G4CMPTrackLimiter() {;}
 
@@ -56,8 +56,8 @@ protected:
   G4double flightAvg;		// Sum of flight distance for all steps
   G4double flightAvg2;		// Sum of squared flight distances (for RMS)
 
-  G4double lastFlight10k;	// Last flight distance at nStep%10000
-  G4double lastRMS10k;		// Last flight distance RMS at nStep%10000
+  G4double lastFlight;		// Last flight distance
+  G4double lastRMS;		// Last flight distance RMS
 
 private:
   G4CMPTrackLimiter(const G4CMPTrackLimiter&);	// Copying is forbidden
