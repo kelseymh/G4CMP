@@ -257,8 +257,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   if (verboseLevel>2) {
-    G4cout << "\n New surface position " << *particleChange.GetPosition() / mm 
-     << " [mm]\n New wavevector direction " << reflectedKDir
+    G4cout << "New surface position " << *particleChange.GetPosition() / mm 
+     << " mm\n New wavevector direction " << reflectedKDir
 	   << "\n New momentum direction " << vdir << G4endl;
   }
 
@@ -331,7 +331,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
 
   if (verboseLevel>3) {
     G4cout << "GetSpecularVector:beforeLoop -> "
-      << ", stepLocalPos = " << stepLocalPos / mm << " [mm]"
+      << ", stepLocalPos = " << stepLocalPos / mm << " mm"
       << ", reflectedKDir = " << reflectedKDir
       << ", newNorm = " << newNorm
       << ", kPerpMag (newNorm dot reflectedKDir) = " << kPerpMag
@@ -410,8 +410,8 @@ GetSpecularVector(const G4ThreeVector& waveVector,
       G4cout << " "
        << "GetSpecularVector:insideLoop -> "
        << "attempts = " << nAttempts
-       << ", oldstepLocalPos = " << oldstepLocalPos / mm << " [mm]"
-       << ", stepLocalPos = " << stepLocalPos / mm << " [mm]"
+       << ", oldstepLocalPos = " << oldstepLocalPos / mm << " mm"
+       << ", stepLocalPos = " << stepLocalPos / mm << " mm"
        << ", oldNorm = " << oldNorm
        << ", newNorm = " << newNorm
        << ", kPerpMag = " << kPerpMag
@@ -431,9 +431,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
                                      GetGlobalPosition(stepLocalPos))) {
     if (verboseLevel) {
       G4cout << (GetProcessName()+"::GetSpecularVector").c_str()
-        << ": Phonon displacement failed after " << nAttempts - 1 << " attempts. "
-        << "Doing diffuse reflection at surface point: " << surfacePoint / mm
-        << " [mm]" << G4endl;
+        << ": Phonon displacement failed after " << nAttempts - 1 << " attempts. " << G4endl
     }
 
     // reflectedKDir and stepLocalPos will be in global coordinates
@@ -452,8 +450,8 @@ GetSpecularVector(const G4ThreeVector& waveVector,
       << ": nAttempts = " << nAttempts
       << ", waveVector = " << waveVector
       << ", reflectedKDir = " << reflectedKDir
-      << ", initialGlobalPostion = " << surfacePoint / mm << " [mm]"
-      << ", finalGlobalPosition = " << stepLocalPos / mm << " [mm]" << G4endl;
+      << ", initialGlobalPostion = " << surfacePoint / mm << " mm"
+      << ", finalGlobalPosition = " << stepLocalPos / mm << " mm" << G4endl;
   }
 
   delete solidUtils;
