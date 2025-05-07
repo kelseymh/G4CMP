@@ -6,23 +6,31 @@
 /// \file library/src/G4PhononReflection.cc
 /// \brief This class contains custom utilities for G4VSolids that are not
 /// directly included in the G4VSolid class. Some example of utilites are:
-/// 1) Adjusting a position to the nearest surface point without the surface normal.
+/// 1) Adjusting a position to the nearest surface point without the surface
+///    normal.
 /// 2) Adjusting a particle to the nearest edge along the surface.
 /// 3) Reflecting a tangent vector against a "hard" edge.
 ///
-/// The user will need to create this class directly with a G4VSolid (and transform) or
-/// a touchable. If the transform or touchable is not provided, an indentity transform is
-/// used.
+/// The user will need to create this class directly with a G4VSolid (and
+/// transform or a touchable). If the transform or touchable is not
+/// provided, an indentity transform is used.
 ///
-/// Note: All coordinates/vectors passed into functions must be in the global coordinate system.
-/// If a global-to-local transform is supplied, the input coordinates and vectors, and any output
-/// results, will be in the coordinate system of that transform.
+/// Note 1: All coordinates/vectors passed into functions must be in the global
+/// coordinate system. If a global-to-local transform is supplied, the input
+/// coordinates and vectors, and any output results, will be in the coordinate
+/// system of that transform.
+///
+/// Note 2: To construct the coordinate transforms, the inverse rotation matrix
+/// from the touchable must be used. G4AffineTransforms use: v' = vR NOT v' = Rv.
+/// Constructing the correct transform manually, with the rotation matrix and
+/// translation vector, is up to the user. See G4CMP-480 for details.
 //
 // $Id$
 //
 // 20250424  G4CMP-465 -- Create G4CMPSolidUtils class.
 // 20250429  G4CMP-461 -- Add function for skipping detector flats.
 // 20250430  N. Tenpas -- Add function for getting distance to bounding box.
+// 20250507  G4CMP-480 -- Change the rotation matrix used for LtoG to the inverse.
 
 #include "G4CMPSolidUtils.hh"
 #include "G4AffineTransform.hh"
@@ -56,7 +64,7 @@ G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid,
 G4CMPSolidUtils::G4CMPSolidUtils(const G4VTouchable* touch, G4int verbose,
                                  const G4String& vLabel)
   : theSolid(touch->GetSolid()),
-    theTransform(G4AffineTransform(touch->GetRotation(), touch->GetTranslation())),
+    theTransform(G4AffineTransform(touch->GetRotation()->inverse(), touch->GetTranslation())),
     verboseLevel(verbose), verboseLabel(vLabel) {;}
 
 

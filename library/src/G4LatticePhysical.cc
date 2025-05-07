@@ -103,12 +103,12 @@ G4double G4LatticePhysical::GetTemperature() const {
 
 const G4ThreeVector&
 G4LatticePhysical::RotateToLattice(G4ThreeVector& dir) const {
-  return dir.transform(fOrient);
+  return dir.transform(fInverse);
 }
 
 const G4ThreeVector& 
 G4LatticePhysical::RotateToSolid(G4ThreeVector& dir) const {
-  return dir.transform(fInverse);
+  return dir.transform(fOrient);
 }
 
 
