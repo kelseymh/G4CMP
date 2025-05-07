@@ -13,6 +13,7 @@
 // 20240506  G4CMP-371 -- Add flag to keep or discard below-minimum track energy
 // 20250501  G4CMP-358 -- Identify and stop charge tracks stuck in field,
 //	       using maxSteps configuration parameter.
+// 20250506  Add local caches to compute cumulative flight distance, RMS
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
@@ -29,6 +30,15 @@
 
 G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
   return (G4CMP::IsPhonon(pd) || G4CMP::IsChargeCarrier(pd));
+}
+
+
+// Initialize flight-distance accumulators for new track
+
+void G4CMPTrackLimiter::LoadDataForTrack(const G4Track* track) {
+  G4CMPProcessUtils::LoadDataForTrack(track);
+
+  flightAvg = flightAvg2 = lastFlight10k = lastRMS10k = 0.;
 }
 
 
@@ -74,7 +84,7 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
   // Ensure track has not gotten stuck somewhere in mesh field
   if (ChargeStuck(track)) {
     std::stringstream msg;
-    msg << "Stopping charge track stuck in mesh electric field @ "
+    msg << "Stopping charged track stuck in mesh electric field @ "
 	<< GetLocalPosition(track) << " local" << G4endl;
     G4Exception("G4CMPTrackLimiter", "Limit003", JustWarning,
 		msg.str().c_str());
@@ -113,7 +123,9 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
 	   );
 }
 
-G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) const {
+// Note: non-const here to use accumulator caches
+
+G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
   if (!IsChargeCarrier()) return false;		// Ignore phonons (for now?)
 
   // How long and how far has the track been travelling?
@@ -123,21 +135,33 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) const {
   G4double pathLen = track.GetTrackLength();
   G4double flightDist = (track.GetPosition()-track.GetVertexPosition()).mag();
 
+  // Accumulate flight distance and and sum-of-squares averages
+  flightAvg  = flightAvg + (flightDist-flightAvg)/nstep;
+  flightAvg2 = flightAvg2 + (flightDist*flightDist - flightAvg2)/nstep;
+
+  // Compute change in distance every 10,000 steps
+  G4double fltChange = flightDist-lastFlight10k;
+  if (nstep%10000 == 0) lastFlight10k = flightDist;
+
+  // Compute change in RMS every 10,000 steps
+  const G4double minRMS = 0.;			// Zero means never bad
+  G4double RMS = sqrt(flightAvg2 - flightAvg*flightAvg);
+  G4double RMSchange = RMS-lastRMS10k;
+  if (nstep%10000 == 0) lastRMS10k = RMS;
+
   // Scattering makes the path length longer, but only a factor of a few
   const G4double maxScale = 20.;		// Not used
   G4double pathScale = pathLen / flightDist;
 
-  // Steps should not be much shorter than 1 pm
-  const G4double minStep = 1e-12*m;		// Not used
-  G4double avgStep = pathLen / nstep;
-
-  if (verboseLevel>2) {
-    G4cout << " after " << nstep << " steps, path " << pathLen/mm
-	   << " ~ " << pathScale << " x flight " << flightDist/mm
-	   << " mm (" << (pathScale>maxScale?">":"<") << maxScale << ")"
-	   << " " << avgStep/nm << " nm per step ("
-	   << (avgStep>minStep?">":"<") << minStep/nm << ")" << G4endl;
+  if (verboseLevel>1) {
+    G4cout << " after " << nstep << " steps, path " << pathLen
+	   << " ~ " << pathScale << " x flight " << flightDist
+	   << " (" << (pathScale>maxScale?">":"<") << maxScale << ")" << G4endl
+	   << " changed by " << fltChange << " RMS " << RMS
+	   << " changed by " << RMSchange << G4endl;
   }
 
-  return (maxSteps>0 && nstep>maxSteps);
+  // 
+  return ((maxSteps>0 && nstep>maxSteps) ||
+	  (nstep>1000 && nstep%10000==0 && fabs(RMSchange) < minRMS));
 }
