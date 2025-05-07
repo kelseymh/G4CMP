@@ -430,8 +430,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, newNorm,
                                      GetGlobalPosition(stepLocalPos))) {
     if (verboseLevel) {
-      G4cout << (GetProcessName()+"::GetSpecularVector").c_str()
-        << ": Phonon displacement failed after " << nAttempts - 1 << " attempts. " << G4endl
+      G4cout << (GetProcessName()+"::GetSpecularVector").c_str()<< G4endl
     }
 
     // reflectedKDir and stepLocalPos will be in global coordinates
