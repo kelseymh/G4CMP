@@ -424,25 +424,22 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     }
   }
 
-  // Restore global coordinates to reflectedKDir & newNorm
+  // Restore global coordinates to new vectors
   RotateToGlobalDirection(reflectedKDir);
   RotateToGlobalDirection(newNorm);
+  RotateToGlobalPosition(stepLocalPos);
 
   if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, newNorm,
-                                     GetGlobalPosition(stepLocalPos))) {
+                                     stepLocalPos)) {
     G4cout << (GetProcessName()+"::GetSpecularVector").c_str()
       << ": Phonon displacement failed after " << nAttempts - 1 
       << " attempts. Doing diffuse reflection at surface point: " << surfacePoint << G4endl;
 
-    // reflectedKDir and stepLocalPos will be in global coordinates
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice, newNorm, mode,
-                                               surfacePoint);
+    // Get reflectedKDir from initial point and restore original values
     stepLocalPos = surfacePoint;
-  } else {
-    // Restore global coordinates to stepLocalPos
-    RotateToGlobalPosition(stepLocalPos);
-    // Update surfNorm to new point's normal
-    surfNorm = newNorm;
+    newNorm = surfNorm;
+    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+                                               surfacePoint);
   }
 
   if (verboseLevel>2) {
@@ -457,6 +454,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   delete solidUtils;
 
   surfacePoint = stepLocalPos;
+  surfNorm = newNorm;
   return reflectedKDir;
 }
 
