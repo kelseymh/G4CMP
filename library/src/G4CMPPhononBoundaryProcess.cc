@@ -40,6 +40,7 @@
 // 20250424  G4CMP-465 -- Move custom solid functions to new G4CMPSolidUtils.
 // 20250429  G4CMP-461 -- Implement ability to skip flats during displacement.
 // 20250505  G4CMP-458 -- Rename GetReflectedVector to GetSpecularVector.
+// 20250505  G4CMP-471 -- Update diagnostic output for surface displacement loop.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -131,10 +132,10 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 
   if (verboseLevel>1) {
+    G4int eID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
     G4cout << GetProcessName() << "::PostStepDoIt "
-           << "Event " << G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID()
-           << " Track " << aTrack.GetTrackID() << " Step " << aTrack.GetCurrentStepNumber()
-           << G4endl;
+           << "Event " << eID << " Track " << aTrack.GetTrackID()
+	   << " Step " << aTrack.GetCurrentStepNumber() << G4endl;
   }
 
   if (verboseLevel>2) {
@@ -256,8 +257,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   if (verboseLevel>2) {
-    G4cout << "\n New surface position " << *particleChange.GetPosition()
-     << "\n New wavevector direction " << reflectedKDir
+    G4cout << "New surface position " << *particleChange.GetPosition()/mm 
+	   << " mm\n New wavevector direction " << reflectedKDir
 	   << "\n New momentum direction " << vdir << G4endl;
   }
 
@@ -328,17 +329,16 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   // Set default stepSize based on solid bounding limits
   if (stepSize == 0) stepSize = flatStepSize / 1000;
 
-  // FIXME: Need defined units
   if (verboseLevel>3) {
     G4cout << "GetSpecularVector:beforeLoop -> "
-      << ", stepLocalPos = " << stepLocalPos
-      << ", kPerpMag (newNorm dot reflectedKDir) = " << kPerpMag
-      << ", newNorm = " << newNorm
-      << ", reflectedKDir = " << reflectedKDir
-      << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
-      << ", kTan (reflectedKDir - kPerpV) = " << kTan
-      << ", surfaceStepSize = " << G4BestUnit(stepSize, "Length")
-      << ", nStepLimit = " << nStepLimit << G4endl;
+	   << ", stepLocalPos = " << stepLocalPos/mm << " mm"
+	   << ", reflectedKDir = " << reflectedKDir
+	   << ", newNorm = " << newNorm
+	   << ", kPerpMag (newNorm dot reflectedKDir) = " << kPerpMag
+	   << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
+	   << ", kTan (reflectedKDir - kPerpV) = " << kTan
+	   << ", surfaceStepSize = " << G4BestUnit(stepSize, "Length")
+	   << ", nStepLimit = " << nStepLimit << G4endl;
   }
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
@@ -399,28 +399,27 @@ GetSpecularVector(const G4ThreeVector& waveVector,
       kTan = kTan.rotate(axis, phi);
     }
 
-    // Get perpendicular component of reflected k w/ new norm (negative implied in kPerpMag for inward pointing)
+    // Get perpendicular component of reflected k w/ new norm
+    // (negative implied in kPerpMag for inward pointing)
     kPerpV = kPerpMag * newNorm;
 
     // Calculate new reflectedKDir (kTan + kPerpV) and Vg
     reflectedKDir = kTan + kPerpV;
     G4ThreeVector vDir = theLattice->MapKtoVDir(mode, reflectedKDir);
 
-    // FIXME: Need defined units
     if (verboseLevel>3) {
-      G4cout << " "
-       << "GetSpecularVector:insideLoop -> "
-       << "attempts = " << nAttempts
-       << ", oldstepLocalPos = " << oldstepLocalPos
-       << ", stepLocalPos = " << stepLocalPos
-       << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
-       << ", kPerpMag = " << kPerpMag
-       << ", newNorm = " << newNorm
-       << ", oldNorm = " << oldNorm
-       << ", kTan = " << kTan
-       << ", reflectedKDir (kTan + kPerpV) = " << reflectedKDir
-       << ", Phonon mode = " << G4PhononPolarization::Label(mode)
-       << ", New group velocity: " << vDir << G4endl;
+      G4cout << " GetSpecularVector:insideLoop -> "
+	     << " attempts = " << nAttempts
+	     << ", oldstepLocalPos = " << oldstepLocalPos/mm << " mm"
+	     << ", stepLocalPos = " << stepLocalPos/mm << " mm"
+	     << ", oldNorm = " << oldNorm
+	     << ", newNorm = " << newNorm
+	     << ", kPerpMag = " << kPerpMag
+	     << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
+	     << ", kTan = " << kTan
+	     << ", reflectedKDir (kTan + kPerpV) = " << reflectedKDir
+	     << ", Phonon mode = " << G4PhononPolarization::Label(mode)
+	     << ", New group velocity: " << vDir << G4endl;
     }
   }
 
@@ -430,10 +429,16 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   RotateToGlobalPosition(stepLocalPos);
 
   if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, newNorm,
-                                     stepLocalPos)) {
-    G4cout << (GetProcessName()+"::GetSpecularVector").c_str()
-      << ": Phonon displacement failed after " << nAttempts - 1 
-      << " attempts. Doing diffuse reflection at surface point: " << surfacePoint << G4endl;
+                                     GetGlobalPosition(stepLocalPos))) {
+    if (verboseLevel) {
+      G4cerr << GetProcessName() << "::GetSpecularVector"
+	     << ": Phonon displacement failed after " << nAttempts - 1
+	     << " attempts." << G4endl;
+      if (verboseLevel>1) {
+	G4cout << "Doing diffuse reflection at surface point " 
+	       << surfacePoint/mm << " mm" << G4endl;
+      }
+    }
 
     // Get reflectedKDir from initial point and restore original values
     stepLocalPos = surfacePoint;
@@ -442,13 +447,14 @@ GetSpecularVector(const G4ThreeVector& waveVector,
                                                surfacePoint);
   }
 
-  if (verboseLevel>2) {
-    G4cout << (GetProcessName()+"::GetSpecularVector").c_str()
-      << ": nAttempts = " << nAttempts
-      << ", waveVector = " << waveVector
-      << ", reflectedKDir = " << reflectedKDir
-      << ", initialGlobalPostion = " << surfacePoint
-      << ", finalGlobalPosition = " << stepLocalPos << G4endl;
+  if (verboseLevel>3) {
+    G4cout << GetProcessName() << "::GetSpecularVector"
+	   << ": nAttempts = " << nAttempts
+	   << ", waveVector = " << waveVector
+	   << ", reflectedKDir = " << reflectedKDir
+	   << ", initialGlobalPostion = " << surfacePoint/mm << " mm"
+	   << ", finalGlobalPosition = " << stepLocalPos/mm << " mm"
+	   << G4endl;
   }
 
   delete solidUtils;
