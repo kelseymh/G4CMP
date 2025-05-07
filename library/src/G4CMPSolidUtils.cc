@@ -6,17 +6,19 @@
 /// \file library/src/G4PhononReflection.cc
 /// \brief This class contains custom utilities for G4VSolids that are not
 /// directly included in the G4VSolid class. Some example of utilites are:
-/// 1) Adjusting a position to the nearest surface point without the surface normal.
+/// 1) Adjusting a position to the nearest surface point without the surface
+///    normal.
 /// 2) Adjusting a particle to the nearest edge along the surface.
 /// 3) Reflecting a tangent vector against a "hard" edge.
 ///
-/// The user will need to create this class directly with a G4VSolid (and transform) or
-/// a touchable. If the transform or touchable is not provided, an indentity transform is
-/// used.
+/// The user will need to create this class directly with a G4VSolid (and
+/// transform) or a touchable. If the transform or touchable is not provided,
+/// an indentity transform is used.
 ///
-/// Note: All coordinates/vectors passed into functions must be in the global coordinate system.
-/// If a global-to-local transform is supplied, the input coordinates and vectors, and any output
-/// results, will be in the coordinate system of that transform.
+/// Note: All coordinates/vectors passed into functions must be in the global
+/// coordinate system. If a global-to-local transform is supplied, the input
+/// coordinates and vectors, and any output results, will be in the coordinate
+/// system of that transform.
 //
 // $Id$
 //
@@ -56,7 +58,8 @@ G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid,
 G4CMPSolidUtils::G4CMPSolidUtils(const G4VTouchable* touch, G4int verbose,
                                  const G4String& vLabel)
   : theSolid(touch->GetSolid()),
-    theTransform(G4AffineTransform(touch->GetRotation(), touch->GetTranslation())),
+    theTransform(G4AffineTransform(touch->GetRotation(),
+				   touch->GetTranslation())),
     verboseLevel(verbose), verboseLabel(vLabel) {;}
 
 
@@ -223,10 +226,10 @@ AdjustToClosestSurfacePoint(G4ThreeVector& pos) const {
   if (theSolid->Inside(GetLocalPosition(pos + optDir)) == kSurface) {
     pos += optDir;
   } else {
-    if (verboseLevel) {
+    if (verboseLevel>2) {
       G4cout << verboseLabel << "::AdjustToClosestSurfacePoint"
-      << ": Surface point not found from initial position "
-      << pos << G4endl;
+	     << ": Surface point not found from initial position "
+	     << pos << G4endl;
     }
     pos.set(kInfinity,kInfinity,kInfinity);
   }
@@ -252,10 +255,11 @@ void G4CMPSolidUtils::AdjustToClosestSurfacePoint(G4ThreeVector& pos,
   G4double surfAdjust = GetDistanceToSolid(pos, dir);
   pos += surfAdjust * dir;
 
-  if (theSolid->Inside(GetLocalPosition(pos)) != kSurface && verboseLevel) {
+  if (theSolid->Inside(GetLocalPosition(pos)) != kSurface && verboseLevel>2) {
     G4cout << verboseLabel << "::AdjustToClosestSurfacePoint:"
-    << " WARNING: No surface found along " << dir
-    << ". Adjustment length: " << G4BestUnit(surfAdjust, "Length") << G4endl;
+	   << " WARNING: No surface found along " << dir
+	   << ". Adjustment length: " << G4BestUnit(surfAdjust, "Length")
+	   << G4endl;
   }
 }
 
@@ -298,11 +302,11 @@ AdjustToEdgePosition(const G4ThreeVector& vTan,
     else high = mid; // Move in
   }
 
-  if (verboseLevel > 1) {
+  if (verboseLevel>2) {
     G4cout << verboseLabel << "::AdjustToEdgePosition"
-      << ": initialPos = " << originalPos
-      << ", vTan = " << vTan
-      << ", finalPos = " << pos << G4endl;
+	   << ": initialPos = " << originalPos
+	   << ", vTan = " << vTan
+	   << ", finalPos = " << pos << G4endl;
   }
 }
 
@@ -344,15 +348,15 @@ ReflectAgainstEdge(G4ThreeVector& vTan, const G4ThreeVector& pos,
     vTan -= 2*((vTan * refNorm) * refNorm);
   }
 
-  if (verboseLevel > 1) {
+  if (verboseLevel>2) {
     G4cout << verboseLabel << "::ReflectAgainstEdge"
-      << ": pos = " << pos
-      << ", vTan_0 = " << vTan - 2*((vTan * -refNorm) * -refNorm)
-      << ", edgeVector = " << edgeVec
-      << ", refNorm = " << refNorm
-      << ", norm1 = " << norm1
-      << ", norm2 = " << norm2
-      << ", vTan_f = " << vTan << G4endl;
+	   << ": pos = " << pos
+	   << ", vTan_0 = " << vTan - 2*((vTan * -refNorm) * -refNorm)
+	   << ", edgeVector = " << edgeVec
+	   << ", refNorm = " << refNorm
+	   << ", norm1 = " << norm1
+	   << ", norm2 = " << norm2
+	   << ", vTan_f = " << vTan << G4endl;
   }
 
   TransformToGlobalDirection(vTan);
@@ -382,11 +386,11 @@ void G4CMPSolidUtils::AdjustOffFlats(G4ThreeVector& pos, G4ThreeVector& vTan,
     G4double vTanMag = vTan.mag();
     (vTan -= surfNorm * (vTan * surfNorm)).setMag(vTanMag);
 
-    if (verboseLevel > 2) {
+    if (verboseLevel>2) {
       G4cout << verboseLabel << "::AdjustOffFlats"
-        << ": Tangent vector: " << originalV
-        << " is not orthogonal to surface normal: " << surfNorm
-        << ". New Tangent vector: " << vTan << G4endl;
+	     << ": Tangent vector: " << originalV
+	     << " is not orthogonal to surface normal: " << surfNorm
+	     << ". New Tangent vector: " << vTan << G4endl;
     }
   }
 
@@ -399,15 +403,15 @@ void G4CMPSolidUtils::AdjustOffFlats(G4ThreeVector& pos, G4ThreeVector& vTan,
   // Adjust to surface
   localTrial -= surfAdjust * GetLocalDirection(surfNorm);
 
-  if (verboseLevel > 1) {
+  if (verboseLevel>2) {
     G4cout << verboseLabel << "::AdjustOffFlats"
-      << ": Original Position = " << originalPos
-      << ", Final Position = " << pos
-      << ", Step Direction = " << vTan
-      << ", Surface Normal = " << surfNorm
-      << ", Surface Adjustment at pos = " << surfAdjust
-      << ", Skipper Step Size = " << flatStepSize / mm << " mm"
-      << ", Consecutive iterations count: " << count << G4endl;
+	   << ": Original Position = " << originalPos
+	   << ", Final Position = " << pos
+	   << ", Step Direction = " << vTan
+	   << ", Surface Normal = " << surfNorm
+	   << ", Surface Adjustment at pos = " << surfAdjust
+	   << ", Skipper Step Size = " << flatStepSize / mm << " mm"
+	   << ", Consecutive iterations count: " << count << G4endl;
   }
 
   // At a hard edge - reflect kTan and repeat
