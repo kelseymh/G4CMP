@@ -26,6 +26,7 @@
 //		return thread-local instance.
 // 20211021  Wrap verbose output in #ifdef G4CMP_DEBUG for performace
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
+// 20250507  G4CMP-480 -- Swap rotation matrix for local<-->lattice transforms.
 
 #include "G4LatticePhysical.hh"
 #include "G4CMPConfigManager.hh"
