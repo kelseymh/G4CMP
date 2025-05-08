@@ -18,7 +18,6 @@
 // 20200519  Convert to thread-local singleton (for use by worker threads)
 // 20240306  Construct transform from touchable instead of relying on History
 // 20240418  BUG FIX:  Transforms are inverted!  gToL was really lToG.
-// 20250507  G4CMP-480 -- Change the rotation matrix used in lToG to the inverse.
 
 #include "G4CMPGlobalLocalTransformStore.hh"
 #include "G4NavigationHistory.hh"
@@ -57,8 +56,6 @@ G4CMPGlobalLocalTransformStore::GetOrBuildTransforms(const G4VTouchable* touch) 
   uintptr_t thash = Hash(touch);
   if (Instance().cache.count(thash) == 0) {
     // NOTE: Touchable converts solid-local coordinates TO global coordinates
-    // HOWEVER: The G4AffineTransform object uses an inverse rotation 
-    // (i.e. v' = vR NOT v' = Rv)! We must construct this with R^-1 instead.
     G4AffineTransform lToG(touch->GetRotation(), touch->GetTranslation());
     Instance().cache[thash] = Transforms { lToG, lToG.Inverse() };
   }

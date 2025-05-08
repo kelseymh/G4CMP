@@ -15,22 +15,17 @@
 /// transform or a touchable). If the transform or touchable is not
 /// provided, an indentity transform is used.
 ///
-/// Note 1: All coordinates/vectors passed into functions must be in the global
+/// Note: All coordinates/vectors passed into functions must be in the global
 /// coordinate system. If a global-to-local transform is supplied, the input
 /// coordinates and vectors, and any output results, will be in the coordinate
 /// system of that transform.
 ///
-/// Note 2: To construct the coordinate transforms, the inverse rotation matrix
-/// from the touchable must be used. G4AffineTransforms use: v' = vR NOT v' = Rv.
-/// Constructing the correct transform manually, with the rotation matrix and
-/// translation vector, is up to the user. See G4CMP-480 for details.
 //
 // $Id$
 //
 // 20250424  G4CMP-465 -- Create G4CMPSolidUtils class.
 // 20250429  G4CMP-461 -- Add function for skipping detector flats.
 // 20250430  N. Tenpas -- Add function for getting distance to bounding box.
-// 20250507  G4CMP-480 -- Change the rotation matrix used for LtoG to the inverse.
 
 #include "G4CMPSolidUtils.hh"
 #include "G4AffineTransform.hh"
@@ -64,7 +59,7 @@ G4CMPSolidUtils::G4CMPSolidUtils(const G4VSolid* solid,
 G4CMPSolidUtils::G4CMPSolidUtils(const G4VTouchable* touch, G4int verbose,
                                  const G4String& vLabel)
   : theSolid(touch->GetSolid()),
-    theTransform(G4AffineTransform(touch->GetRotation()->inverse(), touch->GetTranslation())),
+    theTransform(G4AffineTransform(touch->GetRotation(), touch->GetTranslation())),
     verboseLevel(verbose), verboseLabel(vLabel) {;}
 
 
