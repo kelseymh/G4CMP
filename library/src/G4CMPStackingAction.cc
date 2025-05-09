@@ -24,6 +24,7 @@
 //		Assign electron valley nearest to momentum direction.
 // 20230702 I. Ataee -- Corrections to effective mass calculations
 //		for new charge carriers.
+// 20250508 N. Tenpas -- Add coordinate transforms in SetPhononVelocity.
 
 #include "G4CMPStackingAction.hh"
 
@@ -102,12 +103,15 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
 void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
   // Get wavevector associated with track
   G4ThreeVector k = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(*aTrack)->k();
+  // Get wavevector in local coordinates for k->Vg mapping
+  RotateToLocalDirection(k);
   G4int mode = GetPolarization(aTrack);
 
   // Compute direction of propagation from wave vector
   // Geant4 thinks that momentum and velocity point in same direction,
   // momentumDir here actually means velocity direction.
   G4ThreeVector momentumDir = theLattice->MapKtoVDir(mode, k);
+  RotateToGlobalDirection(momentumDir);
 
   if (momentumDir.mag() < 0.9) {
     G4cerr << " track mode " << mode << " k " << k << G4endl;
@@ -116,7 +120,7 @@ void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
     return;
   }
 
-  //Compute true velocity of propagation
+  // Compute true velocity of propagation
   G4double velocity = theLattice->MapKtoV(mode, k);
   
   // Cast to non-const pointer so we can adjust non-standard kinematics

@@ -12,13 +12,14 @@
 /// 3) Reflecting a tangent vector against a "hard" edge.
 ///
 /// The user will need to create this class directly with a G4VSolid (and
-/// transform) or a touchable. If the transform or touchable is not provided,
-/// an indentity transform is used.
+/// transform or a touchable). If the transform or touchable is not
+/// provided, an indentity transform is used.
 ///
 /// Note: All coordinates/vectors passed into functions must be in the global
 /// coordinate system. If a global-to-local transform is supplied, the input
 /// coordinates and vectors, and any output results, will be in the coordinate
 /// system of that transform.
+///
 //
 // $Id$
 //
