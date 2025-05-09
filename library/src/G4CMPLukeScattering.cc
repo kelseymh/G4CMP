@@ -39,6 +39,7 @@
 // 20240207  Adapting Luke Scattering with new kinematics. Reverting the
 //              use of effective mass for electrons and adding electron mass
 //              back. Adding InitializeParticleChange to get the correct Ekin
+// 20250508  G4CMP-480 -- Pass global phonon wavevector to CreatePhonon.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -334,8 +335,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
   if (weight > 0.) {
     G4Track* phonon = G4CMP::CreatePhonon(aTrack,
-					  G4PhononPolarization::UNKNOWN,
-                                          qvec, Ephonon,
+                                          G4PhononPolarization::UNKNOWN,
+                                          GetGlobalDirection(qvec), Ephonon,
                                           aTrack.GetGlobalTime(),
                                           aTrack.GetPosition());
     // Secondary's weight has to be multiplicative with its parent's

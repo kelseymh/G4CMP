@@ -57,6 +57,7 @@
 // 20250129  Rotate Vg in FillParticleChange() to global coordinates.
 // 20250423  Add FillParticleChange() to update phonon position and touchable.
 // 20250505  Update local time for phonon displacement in FillParticleChange.
+// 20250508  Fix local and global coordinate system for phonon wavevectors.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -138,8 +139,9 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
 
     const G4ParticleDefinition* pd = track->GetParticleDefinition();
     G4Track* tmp_track = const_cast<G4Track*>(track);
-    tmp_track->SetMomentumDirection(
-      theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), tempvec));
+    const G4ThreeVector localVDir = theLattice->MapKtoVDir(G4PhononPolarization::Get(pd),
+                                                           GetLocalDirection(tempvec));
+    tmp_track->SetMomentumDirection(GetGlobalDirection(localVDir));
   }
 }
 
@@ -350,7 +352,7 @@ G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const 
   if (G4CMP::IsChargeCarrier(track)) {
     return GetLocalMomentum(track) / hbarc;
   } else if (G4CMP::IsPhonon(track)) {
-    return G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track)->k();
+    return GetLocalDirection(G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track)->k());
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalWaveVector", "DriftProcess002",
                 EventMustBeAborted, "Unknown charge carrier");
