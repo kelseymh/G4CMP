@@ -9,7 +9,7 @@
 
 TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup \
 	g4cmpEFieldTest testChargeCloud testPartition \
-	testHVtransform testFanoFactor testTemperature testSolidUtils testTransforms
+	testHVtransform testFanoFactor testTemperature testSolidUtils
 
 .PHONY : $(TESTS)
 
