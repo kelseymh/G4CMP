@@ -7,7 +7,8 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 *** ADD NEW TAG MESSAGES BELOW G4CMP-317 LINE, UPDATE DATE OF G4CMP-317 ***
-2025-05-07  G4CMP-317 : Implement surface 'displacement' for phonon reflection.
+2025-05-09  G4CMP-317 : Implement surface 'displacement' for phonon reflection.
+2025-05-09  G4CMP-480 : Fix coordinate transforms for correct k->Vg mapping.
 2025-05-07  G4CMP-471 : Ensure that diagnostics are hidden with appropriate
                         verbosity levels.
 2025-05-05  G4CMP-479 : Update phonon time to account for surface displacement.
