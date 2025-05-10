@@ -6,7 +6,6 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
-*** ADD NEW TAG MESSAGES BELOW G4CMP-317 LINE, UPDATE DATE OF G4CMP-317 ***
 2025-05-09  G4CMP-317 : Implement surface 'displacement' for phonon reflection.
 2025-05-09  G4CMP-480 : Fix coordinate transforms for correct k->Vg mapping.
 2025-05-07  G4CMP-471 : Ensure that diagnostics are hidden with appropriate
@@ -21,7 +20,37 @@ ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 2025-01-30  G4CMP-453 : Add rotations and utilities for PhononVelocityIsInward.
 2025-01-24  G4CMP-447 : Add utility method to update a phonon's trackInfo and
                         particleChange with wavevector and Vg.
-*** DO NOT ADD ANY TAG MESSAGES BELOW THIS LINE ***
+2025-04-28  G4CMP-475 : Added .clang-format file.
+
+2025-04-23  g4cmp-V09-06-00 New silica materials, fix compiler warnings.
+2025-04-22  G4CMP-472 : Address compiler warnings seen with GCC-11.4.0.
+2025-04-10  G4CMP-469 : Add silica phonon properties in CrystalMaps.
+
+2025-03-27  g4cmp-V09-05-00 Fix anharmonic decay rate in Ge, new NIEL model.
+2025-03-21  G4CMP-457 : Add EmpiricalNIEL with user-set linear extrapolation.
+2025-03-11  G4CMP-466 : Add download and tag instructions to README.
+2025-03-06  G4CMP-353 : Fix value and citation for Ge phonon downconversion.
+
+2025-02-25  g4cmp-V09-04-01 More fixes to NIEL calclations, MT data races.
+2025-02-23  G4CMP-462 : Address data race warnings from GCC thread sanitizer.
+2025-02-12  G4CMP-460 : Fix Lindhard-Robinson ionization yield model.
+2025-02-11  G4CMP-452 : Fix energy scaling and interpolation in Sarkis NIEL.
+2025-02-06  G4CMP-451 : Provide references for ionization yield models.
+2025-01-27  G4CMP-449 : Consolidate maxLukePhonons functionality, allow -1.
+
+2025-01-25  g4cmp-V09-04-00 Fixes to NIEL calculations, support for debug
+			files in MT, make caustics example multithreaded.
+2025-01-25  G4CMP-434 : Improve multithreaded use of caustics example.
+2025-01-23  G4CMP-443 : Rename Phonon_Caustics directory to "caustics".
+2025-01-23  G4CMP-436 : Bug fix for LindhardNIEL to return ionization yield.
+2025-01-22  G4CMP-446 : SetPhononVelocity() needs global-to-local transform.
+2025-01-02  G4CMP-442 : Fix SarkisNIEL warning messages and text file input.
+2025-01-02  G4CMP-441 : Move ImpactTunlNIEL warning messages to correct places.
+2025-01-01  G4CMP-438 : Follow Geant4 10-Series model for Phonon_Caustics SD.
+2025-01-01  G4CMP-440 : Improve multithreaded use of AnharmonicDecay debug file.
+2025-01-01  G4CMP-439 : Improve multithreaded use of KaplanQP debug file.
+2024-12-23  G4CMP-419 : Improve multithreaded use of LukeScattering debug file.
+2024-12-21  G4CMP-437 : Update README.md file with new materials information.
 
 2024-10-29  g4cmp-V09-03-00 New phonon materials: Al2O3, CaF2, CaWO4, GaAs, LiF
 2024-10-24  G4CMP-387 : Incorporating five new materials into the CrystalMaps
@@ -470,11 +499,6 @@ and configuration of the new objects do not need to be modified.
 						CMake 3.x versions.
 
 2019-06-12  g4cmp-V06-00-02 Fix defaults in G4CMPMeshElectricField ctor to
-<<<<<<< HEAD
-                        properly handle 3D meshing.
-2019-06-12  G4CMP-159 : Fix defaults in G4CMPMeshElectricField ctor to
-=======
->>>>>>> G4CMP-276
                         properly handle 3D meshing.
 2019-06-12  G4CMP-159 : Fix defaults in G4CMPMeshElectricField ctor to
 						properly handle 3D meshing.

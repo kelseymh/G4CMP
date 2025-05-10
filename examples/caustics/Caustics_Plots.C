@@ -11,21 +11,21 @@ const double maxY = 0.002;
 
 //---------------------------------------------------------------------------------
 //Only plot transverse fast phonons
-void TransFast(){
+void TransFast(const TString& fileName) {
 
   //Get the file output from the example
   ifstream in;
-  TString B= "phonon_hits.txt";
-  in.open("phonon_hits.txt");
+  in.open(fileName);
   TH2D *Caustics= new TH2D("Caustics","Phonon Caustics",nBinsX,minX,maxX,nBinsY,minY,maxY);
   Int_t nlines = 0;
+  Int_t EventID=-1, TrackID=-1;
   TString Name_Phonon;
   Double_t X_f,Y_f,Z_f;
 
   //Read in the phonons from the file
   while (1) {
 
-     in>>Name_Phonon>>X_f>>Y_f>>Z_f;
+     in>>EventID>>TrackID>>Name_Phonon>>X_f>>Y_f>>Z_f;
      if(Name_Phonon=="phononTF"){
      Caustics->Fill(X_f,Y_f);
     }
@@ -47,20 +47,20 @@ void TransFast(){
 
 //---------------------------------------------------------------------------------
 //Only plot transverse slow phonons
-void TransSlow(){
+void TransSlow(const TString& fileName) {
 
   //Get the file output from the example
   ifstream in;
-  TString B= "phonon_hits.txt";
-  in.open("phonon_hits.txt");
+  in.open(fileName);
   TH2D *Caustics= new TH2D("Caustics","Phonon Caustics",nBinsX,minX,maxX,nBinsY,minY,maxY);
   Int_t nlines = 0;
+  Int_t EventID=-1, TrackID=-1;
   TString Name_Phonon;
   Double_t X_f,Y_f,Z_f;
   
   //Read in the phonons from the file
   while (1) {    
-    in>>Name_Phonon>>X_f>>Y_f>>Z_f;
+    in>>EventID>>TrackID>>Name_Phonon>>X_f>>Y_f>>Z_f;
     if(Name_Phonon=="phononTS"){
       Caustics->Fill(X_f,Y_f);
     }
@@ -84,21 +84,21 @@ void TransSlow(){
 
 
 //---------------------------------------------------------------------------------
-void TransFast_and_Slow(){
+void TransFast_and_Slow(const TString& fileName) {
 
   //Get the file output from the example
   ifstream in;
-  TString B= "phonon_hits.txt";
-  in.open("phonon_hits.txt");
+  in.open(fileName);
   TH2D *Caustics= new TH2D("Caustics","Phonon Caustics",nBinsX,minX,maxX,nBinsY,minY,maxY);
   Int_t nlines = 0;
+  Int_t EventID=-1, TrackID=-1;
   TString Name_Phonon;
   Double_t X_f,Y_f,Z_f;
   
   //Read in the phonons from the file
   while (1) {
 
-     in>>Name_Phonon>>X_f>>Y_f>>Z_f;
+     in>>EventID>>TrackID>>Name_Phonon>>X_f>>Y_f>>Z_f;
 
      Caustics->Fill(X_f,Y_f);
 
@@ -122,19 +122,21 @@ void TransFast_and_Slow(){
 //Main function
 #include <iostream>
 using namespace std;
-void Caustics_Plots(TString Phonon_Name){
+void Caustics_Plots(TString Phonon_Name, TString fileName="phonon_hits.txt") {
   
   TString  Phonon_Case = Phonon_Name;
-  Int_t What_pnonon1,What_pnonon2,What_pnonon3;
-  What_pnonon1=Phonon_Case.CompareTo("Fast");
-  What_pnonon2=Phonon_Case.CompareTo("Slow");
-  What_pnonon3=Phonon_Case.CompareTo("Both");
-  if (What_pnonon1==0) {
+  Int_t What_phonon1,What_phonon2,What_phonon3;
+  What_phonon1=Phonon_Case.CompareTo("Fast");
+  What_phonon2=Phonon_Case.CompareTo("Slow");
+  What_phonon3=Phonon_Case.CompareTo("Both");
+  if (What_phonon1==0) {
     cout<<"Fast";
-    TransFast();
-    
+    TransFast(fileName);
+  } else if (What_phonon2==0) {
+    cout<<"Slow";
+    TransSlow(fileName);
+  } else {
+    cout<<"Both";
+    TransFast_and_Slow(fileName);
   }
-  else if (What_pnonon2==0){cout<<"Slow";TransSlow(); }
-  else {cout<<"Both";TransFast_and_Slow();}
-  
 }

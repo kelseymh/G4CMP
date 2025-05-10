@@ -16,6 +16,7 @@
 // 20190906  Add function to get process associated with particle
 // 20220816  Move RandomIndex function from SecondaryProduction
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
+// 20241223  G4CMP-419 -- Add utility to create per-thread debugging file
 // 20250130  G4CMP-453 -- Add utilities for getting current track and touchable
 // 20250422  G4CMP-468 -- Add position argument to PhononVelocityIsInward
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector
@@ -112,6 +113,9 @@ namespace G4CMP {
 
   // Generate integer random value [0, imax), used to shuffle vectors
   size_t RandomIndex(size_t imax);
+
+  // Create debugging file with suffix or infix identifying worker thread
+  G4String DebuggingFileThread(const G4String& basefile);
 }
 
 #endif	/* G4CMPUtils_hh */

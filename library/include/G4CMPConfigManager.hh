@@ -30,22 +30,24 @@
 // 20170830  Add downsampling energy scale parameter
 // 20170830  Add flag to create e/h pairs in "cloud" surround location
 // 20180801  Change IVEdelweiss flag to string IVRateModel.
-// 20190711  G4CMP-158:  Add functions to select NIEL yield functions
-// 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
-// 20200211  G4CMP-191:  Add version identification from .g4cmp-version
-// 20200331  G4CMP-195:  Add chage trapping MFP
-// 20200331  G4CMP-196:  Add impact ionization mean free path
+// 20190711  G4CMP-158: Add functions to select NIEL yield functions
+// 20191014  G4CMP-179: Drop sampling of anharmonic decay (downconversion)
+// 20200211  G4CMP-191: Add version identification from .g4cmp-version
+// 20200331  G4CMP-195: Add chage trapping MFP
+// 20200331  G4CMP-196: Add impact ionization mean free path
 // 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
 // 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
 //		"hTrap" -> "ATrap".
-// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
-// 20200530  G4CMP-202:  Provide separate master and worker instances
-// 20200614  G4CMP-211:  Add functionality to print settings
-// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
-// 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
-// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
-// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
-// 20240506  G4CMP-371:  Add flag to keep or discard below-minimum track energy.
+// 20200504  G4CMP-195: Reduce length of charge-trapping parameter names
+// 20200530  G4CMP-202: Provide separate master and worker instances
+// 20200614  G4CMP-211: Add functionality to print settings
+// 20210303  G4CMP-243: Add parameter to set step length for merging hits
+// 20210910  G4CMP-272: Add parameter to set number of downsampled Luke phonons
+// 20220921  G4CMP-319: Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
+// 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
+// 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
+// 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
 // 20250325  G4CMP-463:  Add parameter for phonon surface step size & limit.
 
 #include "globals.hh"
@@ -97,9 +99,17 @@ public:
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
   static G4double GetPhononSurfStepSize()  { return Instance()->pSurfStepSize; }
+  static G4double GetEmpklow()      { return Instance()->Empklow; }
+  static G4double GetEmpkhigh()     { return Instance()->Empkhigh; }
+  static G4double GetEmpElow()      { return Instance()->EmpElow; }
+  static G4double GetEmpEhigh()     { return Instance()->EmpEhigh; }
+  static G4double GetEmpkFixed()    { return Instance()->EmpkFixed; }
+  static G4bool GetEmpEDepK()  { return Instance()->EmpEDepK; }
+
 
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
+  static const G4String& GetLukeDebugFile() { return Instance()->lukeFilename; }
 
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
@@ -134,8 +144,18 @@ public:
   static void SetHATrapIonMFP(G4double value) { Instance()->hATrapIonMFP = value; }
   static void SetTemperature(G4double value)  { Instance()->temperature = value; }
 
+  static void SetLukeDebugFile(const G4String& value) { Instance()->lukeFilename = value; }
+
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
   static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
+
+  // Empirical Lindhard settings 
+  static void SetEmpklow(G4double value) { Instance()->Empklow = value; }
+  static void SetEmpkhigh(G4double value) { Instance()->Empkhigh = value; }
+  static void SetEmpElow(G4double value) { Instance()->EmpElow = value; }
+  static void SetEmpEhigh(G4double value) { Instance()->EmpEhigh = value; }
+  static void SetEmpkFixed(G4double value) { Instance()->EmpkFixed = value; }
+  static void SetEmpEDepK(G4bool value) { Instance()->EmpEDepK = value; }
 
   // These settings require the geometry to be rebuilt
   static void SetLatticeDir(const G4String& dir)
@@ -170,11 +190,12 @@ private:
   G4int pBounces;	// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
   G4int maxLukePhonons; // Approx. Luke phonon limit ($G4MP_MAX_LUKE)
   G4int pSurfStepLimit;  // Phonon surface displacement step limit ($G4CMP_PHON_SURFLIMIT).
-  G4String version;	// Version name string extracted from .g4cmp-version
-  G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
-  G4String IVRateModel;	// Model for IV rate ($G4CMP_IV_RATE_MODEL)
-  G4double eTrapMFP;	// Mean free path for electron trapping
-  G4double hTrapMFP;	// Mean free path for hole trapping
+  G4String version;	 // Version name string extracted from .g4cmp-version
+  G4String LatticeDir;	 // Lattice data directory ($G4LATTICEDATA)
+  G4String IVRateModel;	 // Model for IV rate ($G4CMP_IV_RATE_MODEL)
+  G4String lukeFilename; // Filename for LukeScattering debugging output
+  G4double eTrapMFP;	 // Mean free path for electron trapping
+  G4double hTrapMFP;	 // Mean free path for hole trapping
   G4double eDTrapIonMFP; // Mean free path for e- on e-trap ionization ($G4CMP_EETRAPION_MFP)
   G4double eATrapIonMFP; // Mean free path for e- on h-trap ionization ($G4CMP_EHTRAPION_MFP)
   G4double hDTrapIonMFP; // Mean free path for h+ on e-trap ionization ($G4CMP_HETRAPION_MFP)
@@ -196,7 +217,18 @@ private:
   G4bool chargeCloud;    // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
   G4bool recordMinE;     // Store below-minimum track energy as NIEL when killed
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
-
+  // Empirical Lindhard Model Parameters
+    // Model fit parameters
+  G4double Empklow;  
+  G4double Empkhigh; 
+    // Model validity energy range
+  G4double EmpElow;  
+  G4double EmpEhigh;
+    // Flag to use Empirical Lindhard with energy-dependent k
+  G4bool EmpEDepK; 
+    // If k is not energy dependent, provide/use kFixed
+  G4double EmpkFixed; 
+  //
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands
 };
 

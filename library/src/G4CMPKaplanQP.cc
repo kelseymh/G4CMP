@@ -66,14 +66,21 @@
 // 20240502  G4CMP-378: Correct expression for phonon-QP scattering energy.
 // 20240502  G4CMP-379: Add fallback use of temperature from ConfigManager.
 //		Add Fermi-Dirac occupation statistics for QP energy spectrum.
+// 20250101  G4CMP-439: Create separate debugging file per worker thread;
+//		add EventID and TrackID columns to debugging output.
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPUtils.hh"
+#include "G4Event.hh"
+#include "G4EventManager.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4TrackingManager.hh"
+#include "G4Track.hh"
 #include "Randomize.hh"
 #include <numeric>
 
@@ -196,14 +203,16 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel && !output.is_open()) {
-    output.open("kaplanqp_stats");
+    output.open(G4CMP::DebuggingFileThread("kaplanqp_stats"));
     if (!output.good()) {
       G4Exception("G4CMPKaplanQP", "G4CMP008",
-		  FatalException, "Unable to open LukePhononEnergies");
+		  FatalException, "Unable to open kaplanqp_stats");
     }
 
-    output << "Incident Energy [eV],Absorbed Energy [eV],"
-	   << "Reflected Energy [eV],Reflected Phonons" << std::endl;
+    output << "EventID,TrackID,Incident Energy [eV],Absorbed Energy [eV],"
+	   << "Reflected Energy [eV],Reflected Phonons" << std::endl
+	   << G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() << ','
+	   << G4EventManager::GetEventManager()->GetTrackingManager()->GetTrack()->GetTrackID() << ',';
   }
 #endif
 
@@ -272,7 +281,7 @@ ReportAbsorption(G4double energy, G4double EDep,
 				   reflectedEnergies.end(), 0.);
 
 #ifdef G4CMP_DEBUG
-  if (verboseLevel >1 && output.good()) {
+  if (output.good()) {
     output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
 	   << reflectedEnergies.size() << std::endl;
   }

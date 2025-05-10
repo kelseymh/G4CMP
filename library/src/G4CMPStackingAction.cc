@@ -24,6 +24,8 @@
 //		Assign electron valley nearest to momentum direction.
 // 20230702 I. Ataee -- Corrections to effective mass calculations
 //		for new charge carriers.
+// 20240122 G4CMP-446 -- SetPhononVelocity() should use global-to-local
+//		transform for k vector and Vg.
 // 20250508 N. Tenpas -- Add coordinate transforms in SetPhononVelocity.
 
 #include "G4CMPStackingAction.hh"
@@ -103,15 +105,15 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
 void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
   // Get wavevector associated with track
   G4ThreeVector k = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(*aTrack)->k();
-  // Get wavevector in local coordinates for k->Vg mapping
-  RotateToLocalDirection(k);
   G4int mode = GetPolarization(aTrack);
 
   // Compute direction of propagation from wave vector
   // Geant4 thinks that momentum and velocity point in same direction,
   // momentumDir here actually means velocity direction.
+
+  RotateToLocalDirection(k);	// G4LatticePhysical expects local-frame vector
   G4ThreeVector momentumDir = theLattice->MapKtoVDir(mode, k);
-  RotateToGlobalDirection(momentumDir);
+  RotateToGlobalDirection(momentumDir);	      // and returns local-frame vector
 
   if (momentumDir.mag() < 0.9) {
     G4cerr << " track mode " << mode << " k " << k << G4endl;

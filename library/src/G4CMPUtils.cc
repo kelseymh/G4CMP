@@ -16,6 +16,7 @@
 // 20190906  M. Kelsey -- Add function to look up process for track
 // 20220816  M. Kelsey -- Move RandomIndex here for more general use
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
+// 20241223  G4CMP-419 -- Add utility to create per-thread debugging file
 // 20250130  G4CMP-453 -- Apply coordinate rotations in PhononVelocityIsInward
 // 20250422  G4CMP-468 -- Add displaced point test to PhononVelocityIsInward.
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector.
@@ -36,10 +37,12 @@
 #include "G4ProcessManager.hh"
 #include "G4ProcessVector.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Threading.hh"
 #include "G4Track.hh"
 #include "G4TrackingManager.hh"
 #include "G4VProcess.hh"
 #include "Randomize.hh"
+#include <string>
 
 
 // Select phonon mode using density of states in material
@@ -339,4 +342,21 @@ G4CMP::FindProcess(const G4ParticleDefinition* pd, const G4String& pname) {
 
 size_t G4CMP::RandomIndex(size_t n) {
   return (size_t)(n*G4UniformRand());
+}
+
+
+// Create debugging file with suffix or infix identifying worker thread
+
+G4String G4CMP::DebuggingFileThread(const G4String& basefile) {
+  if (!G4Threading::IsWorkerThread()) return basefile;	// No mods required
+
+  G4String tid = "_G4WT" + std::to_string(G4Threading::G4GetThreadId());
+
+  G4String tidfile = basefile;
+
+  size_t lastdot = basefile.last('.');
+  if (lastdot < basefile.length()) tidfile.insert(lastdot, tid);
+  else tidfile += tid;
+
+  return tidfile;
 }
