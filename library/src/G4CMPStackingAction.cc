@@ -26,6 +26,7 @@
 //		for new charge carriers.
 // 20240122 G4CMP-446 -- SetPhononVelocity() should use global-to-local
 //		transform for k vector and Vg.
+// 20250508 N. Tenpas -- Add coordinate transforms in SetPhononVelocity.
 
 #include "G4CMPStackingAction.hh"
 
@@ -121,7 +122,7 @@ void G4CMPStackingAction::SetPhononVelocity(const G4Track* aTrack) const {
     return;
   }
 
-  //Compute true velocity of propagation
+  // Compute true velocity of propagation
   G4double velocity = theLattice->MapKtoV(mode, k);
   
   // Cast to non-const pointer so we can adjust non-standard kinematics

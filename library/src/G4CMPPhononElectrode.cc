@@ -35,6 +35,9 @@
 // 
 // 20221006  M. Kelsey -- Adapted from SuperCDMS simulation version
 // 20221006  G4CMP-330 -- Add lattice temperature to properties table
+// 20250124  G4CMP-447 -- Add FillParticleChange() to update phonon track info
+// 20250422  N. Tenpas -- Add position arguments for PhononVelocityIsInward.
+// 20250423  N. Tenpas -- Replace duplicated GetLambertianVector() code.
 
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -141,10 +144,8 @@ ProcessAbsorption(const G4Track& track, const G4Step& step, G4double EDep,
   for (G4double E : phononEnergies) {
     G4double kmag = k.mag()*E/Ekin;	// Scale k vector by energy
     G4int pol = ChoosePhononPolarization();
-    do {
-      reflectedKDir = G4CMP::LambertReflection(surfNorm);
-    } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
-                                            kmag*reflectedKDir, surfNorm));
+    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, pol,
+                                               track.GetPosition());
 
     G4Track* phonon = G4CMP::CreatePhonon(GetCurrentTouchable(),
 					  pol, kmag*reflectedKDir,
@@ -182,16 +183,16 @@ ProcessReflection(const G4Track& track, const G4Step& step,
 
   G4int pol = GetPolarization(track);
 
-  G4ThreeVector reflectedKDir;
-  do {
-    reflectedKDir = G4CMP::LambertReflection(surfNorm);
-  } while (!G4CMP::PhononVelocityIsInward(theLattice, pol,
-					  reflectedKDir, surfNorm));
+  G4ThreeVector reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm,
+                                                           pol, track.GetPosition());
 
-  if (verboseLevel>1)
-    G4cout << " Phonon reflected from QET toward " << reflectedKDir << G4endl;
+  FillParticleChange(particleChange, track, reflectedKDir);
 
-  particleChange.ProposeMomentumDirection(reflectedKDir);
+  if (verboseLevel>1){
+    G4cout << " Phonon reflected from QET with: Wavevector " << reflectedKDir
+    << ", Momentum " << *particleChange.GetMomentumDirection()
+    << ", Velocity " << particleChange.GetVelocity() << G4endl;
+  }
 
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track);
   trackInfo->IncrementReflectionCount();

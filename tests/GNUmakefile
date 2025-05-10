@@ -6,10 +6,11 @@
 # 20220921  G4CMP-319 -- Add testTemperature
 # 20221104  G4CMP-340 -- Move phononKinematics to tools/ directory
 # 20250102  G4CMP-436 -- Add testNRyield to exercise Lindhard (NIEL) functions
+# 20250428  G4CMP-465 -- Add testSolidUtils for validating transforms in class.
 
 TESTS := electron_Epv latticeVecs luke_dist testBlockData testCrystalGroup \
 	g4cmpEFieldTest testChargeCloud testPartition testNRyield \
-	testHVtransform testFanoFactor testTemperature
+	testHVtransform testFanoFactor testTemperature testSolidUtils
 
 .PHONY : $(TESTS)
 
@@ -28,6 +29,7 @@ help :			# First target, in case user just types "make"
 	@echo "testFanoFactor   : Verify Fano fluctuations given mean, F"
 	@echo "testTemperature  : Exercise thermal distribution functions"
 	@echo "testNRyield      : Exercise Lindhard yield (NIEL) functions"
+  @echo "testSolidUtils   : Validate the transforms in the SolidUtils class"
 	@echo
 	@echo Please specify which one to build as your make target, or \"all\"
 

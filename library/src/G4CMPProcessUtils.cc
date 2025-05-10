@@ -53,12 +53,18 @@
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
 // 20240402  Drop FindTouchable() function.  Set currentTouchable internally
 //		not available from track, and delete it at end of track.
+// 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
+// 20250129  Rotate Vg in FillParticleChange() to global coordinates.
+// 20250423  Add FillParticleChange() to update phonon position and touchable.
+// 20250505  Update local time for phonon displacement in FillParticleChange.
+// 20250508  Fix local and global coordinate system for phonon wavevectors.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftTrackInfo.hh"
 #include "G4CMPGeometryUtils.hh"
+#include "G4CMPParticleChangeForPhonon.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPUtils.hh"
 #include "G4CMPTrackUtils.hh"
@@ -75,6 +81,7 @@
 #include "G4PhysicalConstants.hh"
 #include "G4RotationMatrix.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Step.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "G4RandomDirection.hh"
@@ -132,8 +139,9 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
 
     const G4ParticleDefinition* pd = track->GetParticleDefinition();
     G4Track* tmp_track = const_cast<G4Track*>(track);
-    tmp_track->SetMomentumDirection(
-      theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), tempvec));
+    const G4ThreeVector localVDir = theLattice->MapKtoVDir(G4PhononPolarization::Get(pd),
+                                                           GetLocalDirection(tempvec));
+    tmp_track->SetMomentumDirection(GetGlobalDirection(localVDir));
   }
 }
 
@@ -189,6 +197,39 @@ void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
   if (!theLattice) {
     G4cerr << "WARNING: No lattice for volume " << volume->GetName() << G4endl;
   }
+}
+
+
+// Fill ParticleChange wavevector and group velocity for a given wavevector
+// Wavevector is expected to be in the global coordinate frame
+void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
+            const G4Track& track, const G4ThreeVector& wavevector) const {
+  // Get phonon mode from track
+  G4int mode = GetPolarization(track);
+
+  // Get Vg from global wavevector
+  G4ThreeVector vDir = theLattice->MapKtoVDir(mode, GetLocalDirection(wavevector));
+  G4double v = theLattice->MapKtoV(mode, GetLocalDirection(wavevector));
+
+  // Update trackInfo and particleChange
+  auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track);
+  trackInfo->SetWaveVector(wavevector);
+  particleChange.ProposeVelocity(v);
+  RotateToGlobalDirection(vDir);
+  particleChange.ProposeMomentumDirection(vDir);
+}
+
+void G4CMPProcessUtils::FillParticleChange(G4CMPParticleChangeForPhonon& particleChange,
+  const G4Step& step, const G4ThreeVector& position) const {
+    // Update the local time to account for displacement
+    G4double delta_t = (position - *particleChange.GetPosition()).mag() / particleChange.GetVelocity();
+    G4StepPoint* postStep = step.GetPostStepPoint();
+    particleChange.ProposeLocalTime(postStep->GetLocalTime() + delta_t);
+
+    // Update position, touchable, and step status
+    particleChange.ProposePosition(position);
+    particleChange.ProposeTouchableHandle(step.GetPreStepPoint()->GetTouchableHandle());
+    step.GetPostStepPoint()->SetStepStatus(fPostStepDoItProc);
 }
 
 
@@ -311,7 +352,7 @@ G4ThreeVector G4CMPProcessUtils::GetLocalWaveVector(const G4Track& track) const 
   if (G4CMP::IsChargeCarrier(track)) {
     return GetLocalMomentum(track) / hbarc;
   } else if (G4CMP::IsPhonon(track)) {
-    return G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track)->k();
+    return GetLocalDirection(G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track)->k());
   } else {
     G4Exception("G4CMPProcessUtils::GetLocalWaveVector", "DriftProcess002",
                 EventMustBeAborted, "Unknown charge carrier");

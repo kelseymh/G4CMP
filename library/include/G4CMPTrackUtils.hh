@@ -6,6 +6,7 @@
 /// \file library/include/G4CMPTrackUtils.hh
 /// \brief Free standing functions that perform operations on G4Tracks
 ///
+/// Note: Phonon wavevectors need to be passed in the global coordinate system.
 //
 // $Id$
 //
@@ -34,6 +35,7 @@ namespace G4CMP {
   void AttachTrackInfo(const G4Track* track, G4int valley);
   void AttachTrackInfo(const G4Track& track, G4int valley);
 
+  // Phonon wavevectors need to be passed in the global coordinate system
   void AttachTrackInfo(const G4Track* track, const G4ThreeVector& kdir);
   void AttachTrackInfo(const G4Track& track, const G4ThreeVector& kdir);
 

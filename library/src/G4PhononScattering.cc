@@ -14,6 +14,7 @@
 // 20170620  Follow interface changes in G4CMPSecondaryUtils
 // 20170805  Move GetMeanFreePath() to scattering-rate model
 // 20170819  Overwrite track's particle definition instead of killing
+// 20250129  Call FillParticleChange() to update phonon track information.
 
 #include "G4PhononScattering.hh"
 #include "G4CMPPhononScatteringRate.hh"
@@ -89,20 +90,11 @@ G4VParticleChange* G4PhononScattering::PostStepDoIt( const G4Track& aTrack,
     }
   }
 
-  // Assign new wave vector direction to track (ought to happen later!)
-  auto trkInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
-  trkInfo->SetWaveVector(newK);
-
-  // Set velocity and direction according to new wave vector direction
-  G4double vgrp = theLattice->MapKtoV(mode, newK);
-  G4ThreeVector vdir = theLattice->MapKtoVDir(mode, newK);
-  RotateToGlobalDirection(vdir);
+  // Update particleChange with new wavevector and Vg
+  FillParticleChange(aParticleChange, aTrack, newK);
 
   if (verboseLevel>1)
-    G4cout << " new vgrp " << vgrp << " along " << vdir << G4endl;
-
-  aParticleChange.ProposeMomentumDirection(vdir);
-  aParticleChange.ProposeVelocity(vgrp);
+    G4cout << " new vgrp " << aParticleChange.GetVelocity() << " along " << *aParticleChange.GetMomentumDirection() << G4endl;
 
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
   return &aParticleChange;

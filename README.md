@@ -91,6 +91,8 @@ developers should check the source code in
 | G4CMP\_MIN\_STEP [S]    | /g4cmp/minimumStep [S] S>0:   | Force minimum step S\*L0                |
 | G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces [N]      | Maximum e/h reflections                 |
 | G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces [N]      | Maximum phonon reflections              |
+| G4CMP\_PHON\_SURFSTEP [L] | /g4cmp/phononSurfStepSize [L] um  | Specular reflection surface displacement step size |
+| G4CMP\_PHON\_SURFLIMIT [N]  | /g4cmp/phononSurfStepLimit [N]  | Specular reflection surface displacement step limit |
 | G4CMP\_MAKE\_PHONONS [R] | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
 | G4CMP\_MAKE\_CHARGES [R] | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
 | G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
