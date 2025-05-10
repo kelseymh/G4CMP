@@ -20,7 +20,7 @@
 // 20250130  G4CMP-453 -- Apply coordinate rotations in PhononVelocityIsInward
 // 20250422  G4CMP-468 -- Add displaced point test to PhononVelocityIsInward.
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector.
-// 20250510  G4CMP-483 -- Allow backwards compatibility for vector utilities.
+// 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"

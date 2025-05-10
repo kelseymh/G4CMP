@@ -20,7 +20,7 @@
 // 20250130  G4CMP-453 -- Add utilities for getting current track and touchable
 // 20250422  G4CMP-468 -- Add position argument to PhononVelocityIsInward
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector
-// 20250510  G4CMP-483 -- Allow backwards compatibility for vector utilities.
+// 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
