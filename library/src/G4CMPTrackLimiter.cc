@@ -142,6 +142,10 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
     lastPos = pos;
   }
 
+  // Compute shift in position every 10,000 steps
+  G4double minShift = 0.1*um;		// Minimum shift in position
+  G4double posShift = (pos-lastPos).mag();
+
   // Accumulate flight distance and and sum-of-squares averages
   flightAvg  = flightAvg + (flightDist-flightAvg)/nstep;
   flightAvg2 = flightAvg2 + (flightDist*flightDist - flightAvg2)/nstep;
@@ -165,7 +169,7 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
 
     if (nstep%stepWindow == 1) G4cout << " new stepWindow" << G4endl;
     else {
-      G4cout << " pos changed " << (pos-lastPos).mag() << " since step "
+      G4cout << " pos changed " << posShift << " since step "
 	     << 1+((nstep-1)/stepWindow)*stepWindow << G4endl;
     }
 
@@ -179,7 +183,7 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
   // Possible "stuck" conditions
   G4bool tooManySteps = (maxSteps>0 && nstep>maxSteps);
   G4bool windowFull = (nstep>=stepWindow && nstep%stepWindow == 0);
-  G4bool samePos = (windowFull && (pos-lastPos).mag() < minRMS);
+  G4bool samePos = (windowFull && posShift < minShift);
   G4bool notMoving = (windowFull && fabs(RMSchange) < minRMS);
 
   if (verboseLevel>2) {
