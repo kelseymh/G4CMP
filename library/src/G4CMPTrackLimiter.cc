@@ -129,11 +129,18 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
   if (!IsChargeCarrier()) return false;		// Ignore phonons (for now?)
 
   // How long and how far has the track been travelling?
+  const G4int stepWindow = 10000;
   const G4double maxSteps = G4CMPConfigManager::GetMaxChargeSteps();
   G4int nstep = track.GetCurrentStepNumber();
 
   G4double pathLen = track.GetTrackLength();
-  G4double flightDist = (track.GetPosition()-track.GetVertexPosition()).mag();
+  const G4ThreeVector& pos = track.GetPosition();
+  G4double flightDist = (pos-track.GetVertexPosition()).mag();
+
+  if (nstep%stepWindow == 1) {		// Start new window
+    flightAvg = flightAvg2 = 0.;
+    lastPos = pos;
+  }
 
   // Accumulate flight distance and and sum-of-squares averages
   flightAvg  = flightAvg + (flightDist-flightAvg)/nstep;
@@ -154,14 +161,33 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
   G4double pathScale = pathLen / flightDist;
 
   if (verboseLevel>1) {
-    G4cout << " after " << nstep << " steps, path " << pathLen
-	   << " ~ " << pathScale << " x flight " << flightDist
-	   << " (" << (pathScale>maxScale?">":"<") << maxScale << ")" << G4endl
+    G4cout << " after " << nstep << " steps @ " << pos << G4endl;
+
+    if (nstep%stepWindow == 1) G4cout << " new stepWindow" << G4endl;
+    else {
+      G4cout << " pos changed " << (pos-lastPos).mag() << " since step "
+	     << 1+((nstep-1)/stepWindow)*stepWindow << G4endl;
+    }
+
+    G4cout << " path " << pathLen << "  flight " << flightDist
+	   << " : ratio " << pathScale << (pathScale>maxScale?" > ":" < ")
+	   << maxScale << ")" << G4endl
 	   << " flightAvg " << flightAvg << " RMS " << RMS
 	   << " changed by " << RMSchange << G4endl;
   }
 
-  // 
-  return ((maxSteps>0 && nstep>maxSteps) ||
-	  (nstep>1000 && nstep%10000==0 && fabs(RMSchange) < minRMS));
+  // Possible "stuck" conditions
+  G4bool tooManySteps = (maxSteps>0 && nstep>maxSteps);
+  G4bool windowFull = (nstep>=stepWindow && nstep%stepWindow == 0);
+  G4bool samePos = (windowFull && (pos-lastPos).mag() < minRMS);
+  G4bool notMoving = (windowFull && fabs(RMSchange) < minRMS);
+
+  if (verboseLevel>2) {
+    G4cout << " tooManySteps " << tooManySteps;
+    if (windowFull)
+      G4cout << " samePos " << samePos << " notMoving " << notMoving;
+    G4cout << G4endl;
+  }
+
+  return (tooManySteps || samePos || notMoving);
 }

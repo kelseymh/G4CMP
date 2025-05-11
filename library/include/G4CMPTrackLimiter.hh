@@ -55,9 +55,9 @@ protected:
 protected:
   G4double flightAvg;		// Sum of flight distance for all steps
   G4double flightAvg2;		// Sum of squared flight distances (for RMS)
-
-  G4double lastFlight;		// Last flight distance
-  G4double lastRMS;		// Last flight distance RMS
+  G4double lastFlight;		// Last flight distance computed
+  G4double lastRMS;		// Last flight distance RMS computed
+  G4ThreeVector lastPos;	// Previous computed position
 
 private:
   G4CMPTrackLimiter(const G4CMPTrackLimiter&);	// Copying is forbidden
