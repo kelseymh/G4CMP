@@ -264,8 +264,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   // If reflection failed, report problem and kill the track
   if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm, surfacePoint)) {
-    G4String msg = "Phonon " + refltype + " reflection failed";
-    msg += "\nPhonon mode at time of death: " + *G4PhononPolarization::Label(mode);
+    G4String msg = G4PhononPolarization::Name(mode) + " " + refltype + " reflection failed";
 
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
 		JustWarning, msg.c_str());
