@@ -20,6 +20,7 @@
 // 20250130  G4CMP-453 -- Apply coordinate rotations in PhononVelocityIsInward
 // 20250422  G4CMP-468 -- Add displaced point test to PhononVelocityIsInward.
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector.
+// 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -213,6 +214,13 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
 
 G4ThreeVector
 G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
+			   const G4ThreeVector& surfNorm, G4int mode) {
+  const G4ThreeVector surfPoint = GetCurrentTrack()->GetPosition();
+  return GetLambertianVector(theLattice, surfNorm, mode, surfPoint);
+}
+
+G4ThreeVector
+G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
 			   const G4ThreeVector& surfNorm, G4int mode,
 			   const G4ThreeVector& surfPoint) {
   G4ThreeVector reflectedKDir;
@@ -240,6 +248,14 @@ G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
 
 // Check that phonon is properly directed from the volume surface
 // waveVector and surfNorm need to be in global coordinates
+
+G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
+                                     G4int mode,
+                                     const G4ThreeVector& waveVector,
+                                     const G4ThreeVector& surfNorm) {
+  const G4ThreeVector surfacePos = GetCurrentTrack()->GetPosition();
+  return PhononVelocityIsInward(lattice, mode, waveVector, surfNorm, surfacePos);
+}
 
 G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int mode,
