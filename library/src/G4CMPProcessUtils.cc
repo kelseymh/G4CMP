@@ -58,6 +58,7 @@
 // 20250423  Add FillParticleChange() to update phonon position and touchable.
 // 20250505  Update local time for phonon displacement in FillParticleChange.
 // 20250508  Fix local and global coordinate system for phonon wavevectors.
+// 20250512  Use tempvec2 for Vg in LoadDataForTrack to improve performance.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -80,8 +81,8 @@
 #include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RotationMatrix.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4Step.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "G4RandomDirection.hh"
@@ -136,12 +137,15 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track) {
 
     // Set momentum direction using already provided wavevector
     tempvec = trackInfo->k();
+    RotateToLocalDirection(tempvec);
 
     const G4ParticleDefinition* pd = track->GetParticleDefinition();
     G4Track* tmp_track = const_cast<G4Track*>(track);
-    const G4ThreeVector localVDir = theLattice->MapKtoVDir(G4PhononPolarization::Get(pd),
-                                                           GetLocalDirection(tempvec));
-    tmp_track->SetMomentumDirection(GetGlobalDirection(localVDir));
+
+    // Set the momentum direction with the group velocity
+    tempvec2 = theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), tempvec);
+    RotateToGlobalDirection(tempvec2);
+    tmp_track->SetMomentumDirection(tempvec2);
   }
 }
 

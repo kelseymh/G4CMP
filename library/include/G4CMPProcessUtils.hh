@@ -42,6 +42,7 @@
 // 20240303  Add local currentTouchable pointer for non-tracking situations.
 // 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
 // 20250423  Add FillParticleChange() to update phonon position and touchable.
+// 20250512  Use tempvec2 for Vg in LoadDataForTrack to improve performance.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -273,6 +274,7 @@ private:
   mutable const G4VTouchable* currentTouchable;
   mutable G4bool deleteTouchable;
   mutable G4ThreeVector tempvec;	// Not static; each instance unique
+  mutable G4ThreeVector tempvec2;
 };
 
 #endif	/* G4CMPProcessUtils_hh */

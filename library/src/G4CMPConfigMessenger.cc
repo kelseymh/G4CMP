@@ -65,10 +65,11 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     pBounceCmd(0), maxLukeCmd(0), pSurfStepLimitCmd(0), clearCmd(0),
     minEPhononCmd(0), minEChargeCmd(0), sampleECmd(0), comboStepCmd(0),
     trapEMFPCmd(0), trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
-    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), tempCmd(0), minstepCmd(0),
-    makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
-    lukeFileCmd(0), ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0),
-    fanoStatsCmd(0), kaplanKeepCmd(0), ehCloudCmd(0), recordMinECmd(0) {
+    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), tempCmd(0), pSurfStepSizeCmd(0),
+    minstepCmd(0), makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0),
+    dirCmd(0), lukeFileCmd(0), ivRateModelCmd(0), nielPartitionCmd(0),
+    kvmapCmd(0), fanoStatsCmd(0), kaplanKeepCmd(0), ehCloudCmd(0),
+    recordMinECmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
 

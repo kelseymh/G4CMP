@@ -111,7 +111,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     combineSteps(getenv("G4CMP_COMBINE_STEPLEN")?strtod(getenv("G4CMP_COMBINE_STEPLEN"),0):0.),
     EminPhonons(getenv("G4CMP_EMIN_PHONONS")?strtod(getenv("G4CMP_EMIN_PHONONS"),0)*eV:0.),
     EminCharges(getenv("G4CMP_EMIN_CHARGES")?strtod(getenv("G4CMP_EMIN_CHARGES"),0)*eV:0.),
-    pSurfStepSize(getenv("G4CMP_PHON_SURFSTEP")?strtod(getenv("G4CMP_PHON_SURFSTEP"),0)*um:0*um),
+    pSurfStepSize(getenv("G4CMP_PHON_SURFSTEP")?strtod(getenv("G4CMP_PHON_SURFSTEP"),0)*um:0.),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
     kaplanKeepPh(getenv("G4CMP_KAPLAN_KEEP")?atoi(getenv("G4CMP_KAPLAN_KEEP")):true),

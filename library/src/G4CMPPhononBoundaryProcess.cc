@@ -46,8 +46,8 @@
 #include "G4CMPAnharmonicDecay.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGeometryUtils.hh"
-#include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPParticleChangeForPhonon.hh"
+#include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPSolidUtils.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPTrackUtils.hh"
@@ -84,7 +84,7 @@ G4CMPPhononBoundaryProcess::G4CMPPhononBoundaryProcess(const G4String& aName)
   G4CMPConfigManager* config = G4CMPConfigManager::Instance();
   stepSize = config->GetPhononSurfStepSize();
   nStepLimit = config->GetPhononSurfStepLimit();
-
+  // Register custom ParticleChange with G4VProcess base class
   pParticleChange = &phParticleChange;
 }
 
@@ -264,8 +264,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   // If reflection failed, report problem and kill the track
   if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm, surfacePoint)) {
+    G4String msg = "Phonon " + refltype + " reflection failed";
+    msg += "\nPhonon mode at time of death: " + *G4PhononPolarization::Label(mode);
+
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
-		JustWarning, ("Phonon "+refltype+" reflection failed"+"\nPhonon mode at time of death: "+G4PhononPolarization::Label(mode)).c_str());
+		JustWarning, msg.c_str());
     DoSimpleKill(aTrack, aStep, particleChange);
     return;
   }
@@ -297,8 +300,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   
   // Initialize solid object and utilities
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
-  G4CMPSolidUtils* solidUtils = new G4CMPSolidUtils(solid, verboseLevel,
-                                                    GetProcessName());
+  G4CMPSolidUtils solidUtils(solid, verboseLevel, GetProcessName());
 
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4ThreeVector oldNorm = newNorm;
@@ -361,7 +363,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     if (oldNorm == newNorm && isIn == kSurface) {
       // Adjust stepLocalPos to edge of the flat (still on the flat)
       // Modifies stepLocalPos and kTan in place
-      solidUtils->AdjustOffFlats(stepLocalPos, kTan, flatStepSize, newNorm, 0);
+      solidUtils.AdjustOffFlats(stepLocalPos, kTan, flatStepSize, newNorm, 0);
       // Do a diffuse reflection if stuck in regression
       if (solid->Inside(stepLocalPos) != kSurface) {
         reflectedKDir = newNorm;
@@ -373,7 +375,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     }
 
     // Adjust stepLocalPos back to surface of detector
-    solidUtils->AdjustToClosestSurfacePoint(stepLocalPos, -newNorm);
+    solidUtils.AdjustToClosestSurfacePoint(stepLocalPos, -newNorm);
     // Check position status for edge reflections
     isIn = solid->Inside(stepLocalPos);
 
@@ -384,14 +386,14 @@ GetSpecularVector(const G4ThreeVector& waveVector,
       stepLocalPos = oldstepLocalPos;
       newNorm = oldNorm;
       // Modify stepLocalPos in place to edge position
-      solidUtils->AdjustToEdgePosition(kTan, stepLocalPos, stepSize, 1);
+      solidUtils.AdjustToEdgePosition(kTan, stepLocalPos, stepSize, 1);
       // Do a diffuse reflection if the adjustment failed
       if (solid->Inside(stepLocalPos) != kSurface) {
         reflectedKDir = newNorm;
         break;
       }
       // Reflect kTan against the edge - rotates & modifies kTan; modifies newNorm
-      solidUtils->ReflectAgainstEdge(kTan, stepLocalPos, newNorm);
+      solidUtils.ReflectAgainstEdge(kTan, stepLocalPos, newNorm);
     } else {
       // Rotate kTan to new position
       axis = newNorm.cross(kTan).unit();
@@ -456,8 +458,6 @@ GetSpecularVector(const G4ThreeVector& waveVector,
 	   << ", finalGlobalPosition = " << stepLocalPos/mm << " mm"
 	   << G4endl;
   }
-
-  delete solidUtils;
 
   surfacePoint = stepLocalPos;
   surfNorm = newNorm;
