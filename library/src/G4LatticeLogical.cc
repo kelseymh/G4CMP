@@ -1125,8 +1125,10 @@ void G4LatticeLogical::DumpList(std::ostream& os,
 				const std::vector<G4double>& vlist,
 				const G4String& unit) const {
   if (vlist.empty()) return;		// Avoid unnecessary work
-
-  G4double uval = G4UnitDefinition::GetValueOf(unit);
+    
+  G4double uval;
+  if (unit=="no units") {uval=1.;}
+  else uval = G4UnitDefinition::GetValueOf(unit);
   for (size_t i=0; i<vlist.size(); i++) {
     os << vlist[i]/uval << " ";
   }
