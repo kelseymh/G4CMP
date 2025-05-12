@@ -17,6 +17,10 @@
 // 20220816  Move RandomIndex function from SecondaryProduction
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 // 20241223  G4CMP-419 -- Add utility to create per-thread debugging file
+// 20250130  G4CMP-453 -- Add utilities for getting current track and touchable
+// 20250422  G4CMP-468 -- Add position argument to PhononVelocityIsInward
+// 20250423  G4CMP-468 -- Add function to get diffuse reflection vector
+// 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -30,6 +34,7 @@ class G4ParticleDefinition;
 class G4Step;
 class G4Track;
 class G4VProcess;
+class G4VTouchable;
 
 
 namespace G4CMP {
@@ -71,16 +76,32 @@ namespace G4CMP {
   G4double ChoosePhononWeight(G4double biasScale=-1.);
   G4double ChooseChargeWeight(G4double biasScale=-1.);
 
+  // Get the current track from G4EventManager
+  G4Track* GetCurrentTrack();
+
+  // Get current touchable from track
+  const G4VTouchable* GetCurrentTouchable();
+
   // Create a Hit from a G4Step. Less error prone to use this helper.
   void FillHit(const G4Step*, G4CMPElectrodeHit*);
 
   // Phonons reflect difusively from surfaces.
+  G4ThreeVector GetLambertianVector(const G4LatticePhysical* theLattice,
+                                    const G4ThreeVector& surfNorm, G4int mode);
+  G4ThreeVector GetLambertianVector(const G4LatticePhysical* theLattice,
+                                    const G4ThreeVector& surfNorm, G4int mode,
+                                    const G4ThreeVector& surfPoint);
   G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
 
   // Test that a phonon's wave vector relates to an inward velocity.
+  // waveVector, surfNorm, and surfacePos need to be in global coordinates
   G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm);
+  G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+                                const G4ThreeVector& waveVector,
+                                const G4ThreeVector& surfNorm,
+                                const G4ThreeVector& surfacePos);
 
   // Thermal distributions, useful for handling phonon thermalization
   G4double MaxwellBoltzmannPDF(G4double temperature, G4double energy);

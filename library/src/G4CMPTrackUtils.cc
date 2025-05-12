@@ -6,6 +6,7 @@
 /// \file library/src/G4CMPTrackUtils.cc
 /// \brief Free standing functions that perform operations on G4Tracks
 ///
+/// Note: Phonon wavevectors need to be passed in the global coordinate system.
 //
 // $Id$
 //
@@ -65,7 +66,7 @@ void G4CMP::AttachTrackInfo(const G4Track& track, G4int valley) {
 
 
 // Create and initialize kinematics container for phonon track
-
+// Phonon wavevectors need to be passed in the global coordinate system
 void G4CMP::AttachTrackInfo(const G4Track* track, const G4ThreeVector& kdir) {
   if (track) AttachTrackInfo(*track, kdir);
 }
