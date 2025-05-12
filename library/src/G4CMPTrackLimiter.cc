@@ -143,7 +143,7 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
   }
 
   // Compute shift in position every 10,000 steps
-  G4double minShift = 0.1*um;		// Minimum shift in position
+  G4double minShift = 0.01*um;		// Minimum shift in position
   G4double posShift = (pos-lastPos).mag();
 
   // Accumulate flight distance and and sum-of-squares averages
