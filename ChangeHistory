@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-05-12  g4cmp-V09-07-00 Phonon specular reflection at curved surfaces.
 2025-05-12  G4CMP-317 : Implement surface 'displacement' for phonon reflection.
 2025-05-10  G4CMP-483 : Ensure backwards compatibility for vector utilities.
 2025-05-09  G4CMP-480 : Fix coordinate transforms for correct k->Vg mapping.
