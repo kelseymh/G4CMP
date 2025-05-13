@@ -45,6 +45,7 @@
 // 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
 // 20250212  G4CMP-457: Add short names for empirical Lindhard NIEL.
 // 20250422  G4CMP-472: Adjust order of data members to avoid compiler warnings.
+// 20250325  G4CMP-463: Add parameter for phonon surface step size & limit.
 
 
 #include "G4CMPConfigManager.hh"
@@ -90,6 +91,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     ehBounces(getenv("G4CMP_EH_BOUNCES")?atoi(getenv("G4CMP_EH_BOUNCES")):1),
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     maxLukePhonons(getenv("G4MP_MAX_LUKE")?atoi(getenv("G4MP_MAX_LUKE")):-1),
+    pSurfStepLimit(getenv("G4CMP_PHON_SURFLIMIT")?strtod(getenv("G4CMP_PHON_SURFLIMIT"),0):5000),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):""),
     lukeFilename(getenv("G4CMP_LUKE_FILE")?getenv("G4CMP_LUKE_FILE"):"LukePhononEnergies"),
@@ -109,6 +111,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     combineSteps(getenv("G4CMP_COMBINE_STEPLEN")?strtod(getenv("G4CMP_COMBINE_STEPLEN"),0):0.),
     EminPhonons(getenv("G4CMP_EMIN_PHONONS")?strtod(getenv("G4CMP_EMIN_PHONONS"),0)*eV:0.),
     EminCharges(getenv("G4CMP_EMIN_CHARGES")?strtod(getenv("G4CMP_EMIN_CHARGES"),0)*eV:0.),
+    pSurfStepSize(getenv("G4CMP_PHON_SURFSTEP")?strtod(getenv("G4CMP_PHON_SURFSTEP"),0)*um:0.),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
     kaplanKeepPh(getenv("G4CMP_KAPLAN_KEEP")?atoi(getenv("G4CMP_KAPLAN_KEEP")):true),
@@ -142,9 +145,9 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
   : verbose(master.verbose), fPhysicsModelID(master.fPhysicsModelID), 
     ehBounces(master.ehBounces), pBounces(master.pBounces),
     maxLukePhonons(master.maxLukePhonons),
-    version(master.version), LatticeDir(master.LatticeDir), 
-    IVRateModel(master.IVRateModel), lukeFilename(master.lukeFilename),
-    eTrapMFP(master.eTrapMFP),
+    pSurfStepLimit(master.pSurfStepLimit), version(master.version),
+    LatticeDir(master.LatticeDir), IVRateModel(master.IVRateModel),
+    lukeFilename(master.lukeFilename), eTrapMFP(master.eTrapMFP),
     hTrapMFP(master.hTrapMFP), eDTrapIonMFP(master.eDTrapIonMFP),
     eATrapIonMFP(master.eATrapIonMFP), hDTrapIonMFP(master.hDTrapIonMFP),
     hATrapIonMFP(master.hATrapIonMFP),
@@ -153,9 +156,10 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     genPhonons(master.genPhonons), genCharges(master.genCharges), 
     lukeSample(master.lukeSample), combineSteps(master.combineSteps),
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
-    useKVsolver(master.useKVsolver), fanoEnabled(master.fanoEnabled),
-    kaplanKeepPh(master.kaplanKeepPh), chargeCloud(master.chargeCloud),
-    recordMinE(master.recordMinE), nielPartition(master.nielPartition),
+    pSurfStepSize(master.pSurfStepSize), useKVsolver(master.useKVsolver),
+    fanoEnabled(master.fanoEnabled), kaplanKeepPh(master.kaplanKeepPh),
+    chargeCloud(master.chargeCloud), recordMinE(master.recordMinE),
+    nielPartition(master.nielPartition),
     Empklow(master.Empklow), Empkhigh(master.Empkhigh),
     EmpElow(master.EmpElow), EmpEhigh(master.EmpEhigh),
     EmpEDepK(master.EmpEDepK), EmpkFixed(master.EmpkFixed),
@@ -207,6 +211,8 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/verbose " << verbose << "\t\t\t\t# G4CMP_DEBUG"
      << "\n/g4cmp/chargeBounces " << ehBounces << "\t\t\t\t# G4CMP_EH_BOUNCES"
      << "\n/g4cmp/phononBounces " << pBounces << "\t\t\t# G4CMP_PHON_BOUNCES"
+     << "\n/g4cmp/phononSurfStepSize " << pSurfStepSize/um << " um\t\t# G4CMP_PHON_SURFSTEP"
+     << "\n/g4cmp/phononSurfStepLimit " << pSurfStepLimit << "\t\t# G4CMP_PHON_SURFLIMIT"
      << "\n/g4cmp/IVRateModel " << IVRateModel << "\t\t\t# G4CMP_IV_RATE_MODEL"
      << "\n/g4cmp/LukeDebugFile " << lukeFilename << "\t\t\t# G4CMP_LUKE_FILE"
      << "\n/g4cmp/eTrappingMFP " << eTrapMFP/mm << " mm\t\t# G4CMP_ETRAPPING_MFP"

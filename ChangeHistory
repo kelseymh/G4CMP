@@ -6,6 +6,24 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-05-12  g4cmp-V09-07-00 Phonon specular reflection at curved surfaces.
+2025-05-12  G4CMP-317 : Implement surface 'displacement' for phonon reflection.
+2025-05-10  G4CMP-483 : Ensure backwards compatibility for vector utilities.
+2025-05-09  G4CMP-480 : Fix coordinate transforms for correct k->Vg mapping.
+2025-05-07  G4CMP-471 : Ensure that diagnostics are hidden with appropriate
+                        verbosity levels.
+2025-05-05  G4CMP-479 : Update phonon time to account for surface displacement.
+2025-04-30  G4CMP-461 : Add ability to skip over flats in specular reflections.
+2025-04-28  G4CMP-465 : Implement G4CMPSolidUtils for custom solid functions.
+2025-04-28  G4CMP-475 : Added .clang-format file.
+2025-04-23  G4CMP-468 : Create custom phonon particle change to assign correct
+                        volume after a displacement reflection.
+2025-03-25  G4CMP-463 : Add surface displacement step size/limit macro commands.
+2025-02-06  G4CMP-459 : Support reflection displacement search at hard corners.
+2025-01-30  G4CMP-453 : Add rotations and utilities for PhononVelocityIsInward.
+2025-01-24  G4CMP-447 : Add utility method to update a phonon's trackInfo and
+                        particleChange with wavevector and Vg.
+
 2025-04-23  g4cmp-V09-06-00 New silica materials, fix compiler warnings.
 2025-04-22  G4CMP-472 : Address compiler warnings seen with GCC-11.4.0.
 2025-04-10  G4CMP-469 : Add silica phonon properties in CrystalMaps.
@@ -483,11 +501,6 @@ and configuration of the new objects do not need to be modified.
 						CMake 3.x versions.
 
 2019-06-12  g4cmp-V06-00-02 Fix defaults in G4CMPMeshElectricField ctor to
-<<<<<<< HEAD
-                        properly handle 3D meshing.
-2019-06-12  G4CMP-159 : Fix defaults in G4CMPMeshElectricField ctor to
-=======
->>>>>>> G4CMP-276
                         properly handle 3D meshing.
 2019-06-12  G4CMP-159 : Fix defaults in G4CMPMeshElectricField ctor to
 						properly handle 3D meshing.
