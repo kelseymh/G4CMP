@@ -129,22 +129,19 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
   if (!IsChargeCarrier()) return false;		// Ignore phonons (for now?)
 
   // How long and how far has the track been travelling?
-  const G4int stepWindow = 10000;
   const G4double maxSteps = G4CMPConfigManager::GetMaxChargeSteps();
   G4int nstep = track.GetCurrentStepNumber();
 
   G4double pathLen = track.GetTrackLength();
   const G4ThreeVector& pos = track.GetPosition();
   G4double flightDist = (pos-track.GetVertexPosition()).mag();
+  G4double posShift = (nstep>1) ? (pos-lastPos).mag() : 0.;
+
 
   if (nstep%stepWindow == 1) {		// Start new window
     flightAvg = flightAvg2 = 0.;
     lastPos = pos;
   }
-
-  // Compute shift in position every 10,000 steps
-  G4double minShift = 0.01*um;		// Minimum shift in position
-  G4double posShift = (pos-lastPos).mag();
 
   // Accumulate flight distance and and sum-of-squares averages
   flightAvg  = flightAvg + (flightDist-flightAvg)/nstep;
@@ -155,13 +152,11 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
   lastFlight = flightAvg;
 
   // Compute change in RMS every 10,000 steps
-  const G4double minRMS = 0.;			// Zero means never bad
   G4double RMS = sqrt(flightAvg2 - flightAvg*flightAvg);
   G4double RMSchange = RMS-lastRMS;
   lastRMS = RMS;
 
   // Scattering makes the path length longer, but only a factor of a few
-  const G4double maxScale = 20.;		// Not used
   G4double pathScale = pathLen / flightDist;
 
   if (verboseLevel>1) {
@@ -174,17 +169,18 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
     }
 
     G4cout << " path " << pathLen << "  flight " << flightDist
-	   << " : ratio " << pathScale << (pathScale>maxScale?" > ":" < ")
-	   << maxScale << ")" << G4endl
-	   << " flightAvg " << flightAvg << " RMS " << RMS
-	   << " changed by " << RMSchange << G4endl;
+	   << " : ratio " << pathScale << (pathScale>maxPathScale?" > ":" < ")
+	   << maxPathScale << ")" << G4endl
+	   << " flightAvg " << flightAvg << " changed by " << fltChange
+	   << " RMS " << RMS << " changed by " << RMSchange << G4endl;
   }
 
   // Possible "stuck" conditions
   G4bool tooManySteps = (maxSteps>0 && nstep>maxSteps);
+  G4bool excessPath = (pathScale > maxPathScale);
   G4bool windowFull = (nstep>=stepWindow && nstep%stepWindow == 0);
-  G4bool samePos = (windowFull && posShift < minShift);
-  G4bool notMoving = (windowFull && fabs(RMSchange) < minRMS);
+  G4bool samePos = (windowFull && posShift < minPosShift);
+  G4bool notMoving = (windowFull && fabs(RMSchange) < minFlightRMS);
 
   if (verboseLevel>2) {
     G4cout << " tooManySteps " << tooManySteps;

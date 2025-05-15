@@ -14,6 +14,7 @@
 // 20170822  M. Kelsey -- Add checking on current vs. original volume
 // 20250501  G4CMP-358 -- Identify and stop charge tracks stuck in field.
 // 20250506  Add local caches to compute cumulative flight distance, RMS
+// 20250515  Add configuration settings for "stuck track" cuts
 
 #ifndef G4CMPTrackLimiter_hh
 #define G4CMPTrackLimiter_hh 1
@@ -29,7 +30,8 @@ class G4VParticleChange;
 class G4CMPTrackLimiter : public G4CMPVProcess {
 public:
   G4CMPTrackLimiter(const G4String& name="TrackLimiter")
-    : G4CMPVProcess(name, fTrackLimiter), flightAvg(-1.), flightAvg2(-1.),
+    : G4CMPVProcess(name, fTrackLimiter), stepWindow(10000), minPosShift(0.),
+      minFlightRMS(0.), maxPathScale(20.), flightAvg(-1.), flightAvg2(-1.),
       lastFlight(-1.), lastRMS(-1.) {;}
 
   virtual ~G4CMPTrackLimiter() {;}
@@ -53,6 +55,11 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*);
 
 protected:
+  G4int stepWindow;		// Number of steps to use for averaging
+  G4double minPosShift;		// Minimum allowed position shift by track
+  G4double minFlightRMS;	// Minimum allowed RMS of flight distance
+  G4double maxPathScale;	// Maximum ratio of trajectory vs. flight
+
   G4double flightAvg;		// Sum of flight distance for all steps
   G4double flightAvg2;		// Sum of squared flight distances (for RMS)
   G4double lastFlight;		// Last flight distance computed
