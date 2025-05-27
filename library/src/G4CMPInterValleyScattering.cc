@@ -201,7 +201,7 @@ G4CMPInterValleyScattering::ValleyScattering(const G4Track& aTrack,
 
   // Make sure it's not empty
   if (ivpro == nullptr) { 
-    G4cout << "NO G4CMPInterValleyRate* " << G4endl;
+    if (verboseLevel > 1) {G4cout << "NO G4CMPInterValleyRate* " << G4endl;}
     return &aParticleChange;
   }
 
@@ -216,7 +216,7 @@ G4CMPInterValleyScattering::ValleyScattering(const G4Track& aTrack,
 
     // Don't do anything if IV rate is 0 
     if (totalIVRate == 0) { 
-      G4cout << "NO IV Rate " << G4endl;
+      if (verboseLevel > 1) {G4cout << "NO IV Rate " << G4endl;}
       return &aParticleChange;
     }
 
@@ -249,7 +249,7 @@ G4CMPInterValleyScattering::ValleyScattering(const G4Track& aTrack,
       // Don't do anything if phonon energy > electron energy
       if (Ephonon > Etrk) {
         Ephonon=0;
-        G4cout << "Ephonon = 0 " << G4endl;
+        if (verboseLevel > 1) {G4cout << "Ephonon = 0 " << G4endl;}
         return &aParticleChange;
       }
 

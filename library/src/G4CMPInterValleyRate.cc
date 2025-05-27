@@ -63,6 +63,8 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
     // Is electron energy above IV Threshold?
     if (eTrk <= Emin_iv) {
         IVprob.push_back(0.);
+        if (verboseLevel>2) {G4cout << "IV scattering rate :  "
+        << 0. << " Hz" << G4endl;}
         continue;
     }
       
@@ -95,7 +97,7 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
     totalIVRate += ivrate;
   }
 
-  if (verboseLevel>2) G4cout << "IV phonons  " 
+  if (verboseLevel>2) G4cout << "IV scattering rate :  " 
       << totalIVRate/hertz << " Hz" << G4endl;
     
   return totalIVRate;
