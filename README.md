@@ -103,7 +103,7 @@ developers should check the source code in
 | G4CMP\_USE\_KVSOLVER    | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED    | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
 | G4CMP\_KAPLAN\_KEEP     | /g4cmp/kaplanKeepPhonons [t\|f] | Reflect or iterate all phonons in KaplanQP |
-| G4CMP\_IV\_RATE\_MODEL  | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
+| G4CMP\_IV\_RATE\_MODEL  | /g4cmp/IVRateModel [Matrix\|Linear\|Quadratic] | Select intervalley rate parametrization |
 | G4CMP\_LUKE\_FILE | /g4cmp/LukeDebugFile [S] | LukeScattering debug filename |
 | G4CMP\_ETRAPPING\_MFP   | /g4cmp/eTrappingMFP [L] mm        | Mean free path for electron trapping |
 | G4CMP\_HTRAPPING\_MFP   | /g4cmp/hTrappingMFP [L] mm        | Mean free path for charge hole trapping |
@@ -551,7 +551,7 @@ the crystal system.
 | ivOrder    | val val ... | order of IV process (0th or 1st) | none   |
 | ivFGScat   | str str ... | f or g-type IV scatterging.      | none   |
 | **InterValley scattering  (Linear and Quadratic Models) ** |
-| ivModel     | name | IVRate (matrix), Linear or Quadratic   | string |
+| ivModel     | name| Matrix, Linear or Quadratic             | string |
 | ivLinRate0  | val | Constant term in linear IV expression   | Hz     |
 | ivLinRate1  | val | Linear term in linear IV expression     | Hz     |
 | ivLinPower  | exp | Exponent: rate = Rate0 + Rate1* E^exp   | none   |
