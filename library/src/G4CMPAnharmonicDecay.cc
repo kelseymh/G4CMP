@@ -340,7 +340,7 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
 
   // Propagate surface phonon along detector surface
   G4ThreeVector surfPoint = aTrack.GetPosition();
-  kSurf = G4CMPPhononBoundaryProcess::PropagateOnSurface(kSurf, surfNorm, surfMode, surfPoint);
+  G4CMPPhononBoundaryProcess::PropagateOnSurface(kSurf, surfNorm, surfMode, surfPoint);
   G4double delta_t = (surfPoint - aTrack.GetPosition()).mag() / vSurf; // Time for surface propagation
 
   // Construct the daughters

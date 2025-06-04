@@ -41,6 +41,8 @@
 // 20250429  G4CMP-461 -- Implement ability to skip flats during displacement.
 // 20250505  G4CMP-458 -- Rename GetReflectedVector to GetSpecularVector.
 // 20250505  G4CMP-471 -- Update diagnostic output for surface displacement loop.
+// 20250604  G4CMP-487 -- Update specular reflection to handle downconversion.
+
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -242,7 +244,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     // Determine if phonon can be reflected against the normal "as is"
     // i.e. the reflected wavevector results in an inward Vg
-    G4ThreeVector reflectedKDir = waveVector.unit();
+    reflectedKDir = waveVector.unit();
     G4double kPerp = reflectedKDir * surfNorm;
     (reflectedKDir -= 2. * reflectedKDir * surfNorm * surfNorm).setMag(1.);
 
@@ -262,12 +264,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // reflectedKDir is in global coordinates here - no conversion needed
   FillParticleChange(particleChange, aTrack, reflectedKDir);
   const G4ThreeVector vdir = *particleChange.GetMomentumDirection();
-
-  // If displacement occured: update the particle change and navigator for volume assignment
-  if (refltype == "specular" && *particleChange.GetPosition() != surfacePoint) {
-    FillParticleChange(phParticleChange, aStep, surfacePoint);
-    UpdateNavigatorVolume(aStep, surfacePoint, vdir);
-  }
 
   if (verboseLevel>2) {
     G4cout << "New surface position " << *particleChange.GetPosition()/mm 
@@ -294,41 +290,29 @@ PropagateOnSurface(G4ThreeVector& waveVector,
                    G4ThreeVector& surfacePoint) {
   // Propagate a surface phonon along the detector walls until it reaches a
   // point where the wave vector has an inwardly directed v⃗g.
+  G4double k0Mag = waveVector.mag();
   waveVector.SetMag(1.);
-  G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm
-  (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);	// Reflect against normal
 
-  if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm,
-                                    surfacePoint))
-    return reflectedKDir;
-
-  // Reflection didn't work as expected, need to correct:
-  // If the reflected wave vector cannot propagate in the bulk
-  // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
-  // That phonon must split into a bulk mode and surface wave.
-  // The surface wave will propagate until it reaches a point
-  // where the wave vector has an inwardly directed v⃗g.
-  RotateToLocalDirection(reflectedKDir);
-  G4ThreeVector newNorm = surfNorm;
-  RotateToLocalDirection(newNorm);
+  RotateToLocalDirection(waveVector);
+  RotateToLocalDirection(surfNorm);
+  RotateToLocalPosition(surfacePoint);
   
   // Initialize solid object and utilities
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4CMPSolidUtils solidUtils(solid, verboseLevel, GetProcessName());
 
-  G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
-  G4ThreeVector oldNorm = newNorm;
-  G4ThreeVector oldstepLocalPos = stepLocalPos;
+  G4ThreeVector oldNorm = surfNorm;
+  G4ThreeVector oldstepLocalPos = surfacePoint;
 
   // Break up wavevector to perp and tan components
-  G4double kPerpMag = reflectedKDir.dot(newNorm);
-  G4ThreeVector kPerpV = kPerpMag * newNorm;		// Negative implied in kPerpMag for inward pointing
-  G4ThreeVector kTan = reflectedKDir - kPerpV;		// Get kTan: reflectedKDir = kPerpV + kTan
+  G4double kPerpMag = waveVector.dot(surfNorm);
+  G4ThreeVector kPerpV = kPerpMag * surfNorm;		  // Negative implied in kPerpMag for inward pointing
+  G4ThreeVector kTan = waveVector - kPerpV;		// Get kTan: waveVector = kPerpV + kTan
 
   // Get axis and phi for tangent rotations
   G4ThreeVector axis = kPerpV.cross(kTan).unit();
   G4double phi = 0.;
-  EInside isIn = solid->Inside(stepLocalPos);
+  EInside isIn = solid->Inside(surfacePoint);
 
   G4int nAttempts = 0;
 
@@ -347,11 +331,11 @@ PropagateOnSurface(G4ThreeVector& waveVector,
 
   if (verboseLevel>3) {
     G4cout << "GetSpecularVector:beforeLoop -> "
-	   << ", stepLocalPos = " << stepLocalPos/mm << " mm"
-	   << ", reflectedKDir = " << reflectedKDir
-	   << ", newNorm = " << newNorm
-	   << ", kPerpMag (newNorm dot reflectedKDir) = " << kPerpMag
-	   << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
+	   << ", stepLocalPos = " << surfacePoint/mm << " mm"
+	   << ", reflectedKDir = " << waveVector
+	   << ", surfNorm = " << surfNorm
+	   << ", kPerpMag (surfNorm dot reflectedKDir) = " << kPerpMag
+	   << ", kPerpV (kPerpMag * surfNorm) = " << kPerpV
 	   << ", kTan (reflectedKDir - kPerpV) = " << kTan
 	   << ", surfaceStepSize = " << G4BestUnit(stepSize, "Length")
 	   << ", nStepLimit = " << nStepLimit << G4endl;
@@ -359,123 +343,115 @@ PropagateOnSurface(G4ThreeVector& waveVector,
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
   while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
-   GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm),
-   GetGlobalPosition(stepLocalPos)) && nAttempts++ < nStepLimit) {
+         GetGlobalDirection(waveVector), GetGlobalDirection(surfNorm),
+         GetGlobalPosition(surfacePoint)) && nAttempts++ < nStepLimit) {
     // Save previous loop values
-    oldstepLocalPos = stepLocalPos;
-    oldNorm = newNorm;
+    oldstepLocalPos = surfacePoint;
+    oldNorm = surfNorm;
 
     // Step along kTan direction - this point is now outside the detector
-    stepLocalPos += stepSize * kTan.unit();
+    surfacePoint += stepSize * kTan.unit();
 
     // Get the local normal at the new surface point
-    newNorm = solid->SurfaceNormal(stepLocalPos);
+    surfNorm = solid->SurfaceNormal(surfacePoint);
     // Check position status for flat skipper
-    isIn = solid->Inside(stepLocalPos);
+    isIn = solid->Inside(surfacePoint);
 
     // Check if the phonon is on a flat. Must be on the solid surface
-    if (oldNorm == newNorm && isIn == kSurface) {
-      // Adjust stepLocalPos to edge of the flat (still on the flat)
-      // Modifies stepLocalPos and kTan in place
-      solidUtils.AdjustOffFlats(stepLocalPos, kTan, flatStepSize, newNorm, 0);
+    if (oldNorm == surfNorm && isIn == kSurface) {
+      // Adjust surfacePoint to edge of the flat (still on the flat)
+      // Modifies surfacePoint and kTan in place
+      solidUtils.AdjustOffFlats(surfacePoint, kTan, flatStepSize, surfNorm, 0);
       // Do a diffuse reflection if stuck in regression
-      if (solid->Inside(stepLocalPos) != kSurface) {
-        reflectedKDir = newNorm;
+      if (solid->Inside(surfacePoint) != kSurface) {
+        waveVector = surfNorm;
         break;
       }
-      // Step off the flat and adjust newNorm
-      stepLocalPos += stepSize * kTan.unit();
-      newNorm = solid->SurfaceNormal(stepLocalPos);
+      // Step off the flat and adjust surfNorm
+      surfacePoint += stepSize * kTan.unit();
+      surfNorm = solid->SurfaceNormal(surfacePoint);
     }
 
-    // Adjust stepLocalPos back to surface of detector
-    solidUtils.AdjustToClosestSurfacePoint(stepLocalPos, -newNorm);
+    // Adjust surfacePoint back to surface of detector
+    solidUtils.AdjustToClosestSurfacePoint(surfacePoint, -surfNorm);
     // Check position status for edge reflections
-    isIn = solid->Inside(stepLocalPos);
+    isIn = solid->Inside(surfacePoint);
 
     // Large normal changes and not being on surface after initial adjustment
     // indicates we are approaching an edge
-    if (isIn != kSurface || newNorm * oldNorm <= 0) {
-      // Reset stepLocalPos and newNorm to last valid surface point
-      stepLocalPos = oldstepLocalPos;
-      newNorm = oldNorm;
-      // Modify stepLocalPos in place to edge position
-      solidUtils.AdjustToEdgePosition(kTan, stepLocalPos, stepSize, 1);
+    if (isIn != kSurface || surfNorm * oldNorm <= 0) {
+      // Reset surfacePoint and surfNorm to last valid surface point
+      surfacePoint = oldstepLocalPos;
+      surfNorm = oldNorm;
+      // Modify surfacePoint in place to edge position
+      solidUtils.AdjustToEdgePosition(kTan, surfacePoint, stepSize, 1);
       // Do a diffuse reflection if the adjustment failed
-      if (solid->Inside(stepLocalPos) != kSurface) {
-        reflectedKDir = newNorm;
+      if (solid->Inside(surfacePoint) != kSurface) {
+        waveVector = surfNorm;
         break;
       }
-      // Reflect kTan against the edge - rotates & modifies kTan; modifies newNorm
-      solidUtils.ReflectAgainstEdge(kTan, stepLocalPos, newNorm);
+      // Reflect kTan against the edge - rotates & modifies kTan; modifies surfNorm
+      solidUtils.ReflectAgainstEdge(kTan, surfacePoint, surfNorm);
     } else {
       // Rotate kTan to new position
-      axis = newNorm.cross(kTan).unit();
-      phi = oldNorm.azimAngle(newNorm, axis);
+      axis = surfNorm.cross(kTan).unit();
+      phi = oldNorm.azimAngle(surfNorm, axis);
       kTan = kTan.rotate(axis, phi);
     }
 
     // Get perpendicular component of reflected k w/ new norm
     // (negative implied in kPerpMag for inward pointing)
-    kPerpV = kPerpMag * newNorm;
+    kPerpV = kPerpMag * surfNorm;
 
-    // Calculate new reflectedKDir (kTan + kPerpV) and Vg
-    reflectedKDir = kTan + kPerpV;
-    G4ThreeVector vDir = theLattice->MapKtoVDir(mode, reflectedKDir);
+    // Calculate new waveVector (kTan + kPerpV) and Vg
+    waveVector = kTan + kPerpV;
+    G4ThreeVector vDir = theLattice->MapKtoVDir(mode, waveVector);
 
     if (verboseLevel>3) {
       G4cout << " GetSpecularVector:insideLoop -> "
 	     << " attempts = " << nAttempts
 	     << ", oldstepLocalPos = " << oldstepLocalPos/mm << " mm"
-	     << ", stepLocalPos = " << stepLocalPos/mm << " mm"
+	     << ", stepLocalPos = " << surfacePoint/mm << " mm"
 	     << ", oldNorm = " << oldNorm
-	     << ", newNorm = " << newNorm
+	     << ", newNorm = " << surfNorm
 	     << ", kPerpMag = " << kPerpMag
-	     << ", kPerpV (kPerpMag * newNorm) = " << kPerpV
+	     << ", kPerpV (kPerpMag * surfNorm) = " << kPerpV
 	     << ", kTan = " << kTan
-	     << ", reflectedKDir (kTan + kPerpV) = " << reflectedKDir
+	     << ", reflectedKDir (kTan + kPerpV) = " << waveVector
 	     << ", Phonon mode = " << G4PhononPolarization::Label(mode)
 	     << ", New group velocity: " << vDir << G4endl;
     }
   }
 
   // Restore global coordinates to new vectors
-  RotateToGlobalDirection(reflectedKDir);
-  RotateToGlobalDirection(newNorm);
-  RotateToGlobalPosition(stepLocalPos);
+  RotateToGlobalDirection(waveVector);
+  RotateToGlobalDirection(surfNorm);
+  RotateToGlobalPosition(surfacePoint);
 
-  if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, newNorm,
-                                     stepLocalPos)) {
+  if (!G4CMP::PhononVelocityIsInward(theLattice, mode, waveVector, surfNorm,
+                                     surfacePoint)) {
     if (verboseLevel) {
       G4cerr << GetProcessName() << "::GetSpecularVector"
 	     << ": Phonon displacement failed after " << nAttempts - 1
 	     << " attempts." << G4endl;
       if (verboseLevel>1) {
-	G4cout << "Doing diffuse reflection at surface point " 
+	      G4cout << "Doing diffuse reflection at surface point " 
 	       << surfacePoint/mm << " mm" << G4endl;
       }
     }
 
-    // Get reflectedKDir from initial point and restore original values
-    stepLocalPos = surfacePoint;
-    newNorm = surfNorm;
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
-                                               surfacePoint);
+    // Get wavevector from Lambertian distribution
+    waveVector = k0Mag * G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+                                                    surfacePoint);
   }
 
   if (verboseLevel>3) {
     G4cout << GetProcessName() << "::GetSpecularVector"
 	   << ": nAttempts = " << nAttempts
-	   << ", waveVector = " << waveVector
-	   << ", reflectedKDir = " << reflectedKDir
-	   << ", initialGlobalPostion = " << surfacePoint/mm << " mm"
-	   << ", finalGlobalPosition = " << stepLocalPos/mm << " mm"
+	   << ", reflectedKDir = " << waveVector
+	   << ", finalGlobalPosition = " << surfacePoint/mm << " mm"
 	   << G4endl;
   }
-
-  surfacePoint = stepLocalPos;
-  surfNorm = newNorm;
-  return reflectedKDir;
 }
 
 

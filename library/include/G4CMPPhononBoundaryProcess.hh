@@ -20,6 +20,7 @@
 // 20250423  G4CMP-468 -- Move GetLambertianVector to G4CMPUtils.
 // 20250424  G4CMP-465 -- Add G4CMPSolidUtils object for custom solid functions.
 // 20250505  G4CMP-458 -- Rename GetReflectedVector to GetSpecularVector.
+// 20250604  G4CMP-487 -- Update specular reflection to handle downconversion.
 
 #ifndef G4CMPPhononBoundaryProcess_h
 #define G4CMPPhononBoundaryProcess_h 1
@@ -59,9 +60,10 @@ protected:
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			                      G4ParticleChange& aParticleChange);
 
-  G4ThreeVector PropagateOnSurface(const G4ThreeVector& waveVector,
-                                   G4ThreeVector& surfNorm, G4int mode,
-                                   G4ThreeVector& surfacePoint);
+  // Propagate surface modes on detector walls
+  void PropagateOnSurface(G4ThreeVector& waveVector,
+                          G4ThreeVector& surfNorm, G4int mode,
+                          G4ThreeVector& surfacePoint);
 
   // Update navigator volume when position is changed
   void UpdateNavigatorVolume(const G4Step&, const G4ThreeVector& position,
