@@ -198,7 +198,7 @@ public:
   G4double GetFanoFactor() const                { return fFanoFactor; }
   G4double GetSoundSpeed() const                { return fVSound; }
   G4double GetTransverseSoundSpeed() const      { return fVTrans; }
-  G4Double GetSurfaceSoundSpeed() const         { return fVSurf; }
+  G4double GetSurfaceSoundSpeed() const         { return fVSurf; }
   G4double GetHoleScatter() const               { return fL0_h; }
   G4double GetHoleMass() const                  { return fHoleMass; }
   G4double GetElectronScatter() const           { return fL0_e; }
@@ -216,7 +216,7 @@ public:
   G4double ComputeL0(G4bool IsElec);
 
   // Compute surface phonon speed from bulk modes
-  void ComputeSurfaceSpeed();
+  void ComputeSurfaceSoundSpeed();
 
   G4ThreeVector RotateToValley(G4int iv, const G4ThreeVector& v) const;
   G4ThreeVector RotateFromValley(G4int iv, const G4ThreeVector& v) const;

@@ -12,6 +12,7 @@
 // 20250604  G4CMP-487 -- Add downconversion process for surface modes.
 
 #include "G4CMPAnharmonicDecay.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPSecondaryUtils.hh"
@@ -323,11 +324,10 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
   // Determine daughter wavevectors
   // In Debye approx: |k| = w/v
   G4double w0 = (E0 / hbar_Planck);
-  G4double k0Mag = w0 / particleChange.GetVelocity();
+  G4double k0Mag = w0 / aParticleChange.GetVelocity();
   G4ThreeVector k0 = waveVector.unit() * k0Mag;
   G4ThreeVector k0Tan = (k0 - (k0 * surfNorm) * surfNorm);
 
-  if (!theLattice->GetSurfaceSoundSpeed()) theLattice->ComputeSurfaceSpeed();
   G4double vSurf = theLattice->GetSurfaceSoundSpeed();
   G4ThreeVector kSurf = ((surfE / hbar_Planck) / vSurf) * k0Tan.unit();
 
@@ -341,7 +341,9 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
 
   // Propagate surface phonon along detector surface
   G4ThreeVector surfPoint = aTrack.GetPosition();
-  G4CMPPhononBoundaryProcess::PropagateOnSurface(kSurf, surfNorm, surfMode, surfPoint);
+  G4CMPPhononBoundaryProcess* boundaryProcess = new G4CMPPhononBoundaryProcess();
+  boundaryProcess->PropagateOnSurface(kSurf, surfNorm, surfMode, surfPoint);
+  delete boundaryProcess;
   G4double delta_t = (surfPoint - aTrack.GetPosition()).mag() / vSurf; // Time for surface propagation
 
   // Construct the daughters
@@ -371,7 +373,7 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
 }
 
 
-void G4CMPAnharmonicDecay::GetBREnergy(G4double E0) {
+G4double G4CMPAnharmonicDecay::GetBREnergy(G4double E0) const {
   // Probability that the Bulk phonon recieves E is given by JDOS
   // DOS_Bulk ~ E^2 ; DOS_R ~ (E_0 - E) ; JDOS = E^2(E_0 - E)
   G4double maxE = 2/3 * E0;

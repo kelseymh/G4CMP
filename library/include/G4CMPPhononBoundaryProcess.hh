@@ -49,6 +49,11 @@ public:
   virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
                                           const G4Step& aStep);
 
+  // Propagate surface modes on detector walls
+  void PropagateOnSurface(G4ThreeVector& waveVector,
+                          G4ThreeVector& surfNorm, G4int mode,
+                          G4ThreeVector& surfacePoint);
+
 protected:
   virtual G4double GetMeanFreePath(const G4Track& aTrack,
                                    G4double prevStepLength,
@@ -59,11 +64,6 @@ protected:
 
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			                      G4ParticleChange& aParticleChange);
-
-  // Propagate surface modes on detector walls
-  void PropagateOnSurface(G4ThreeVector& waveVector,
-                          G4ThreeVector& surfNorm, G4int mode,
-                          G4ThreeVector& surfacePoint);
 
   // Update navigator volume when position is changed
   void UpdateNavigatorVolume(const G4Step&, const G4ThreeVector& position,

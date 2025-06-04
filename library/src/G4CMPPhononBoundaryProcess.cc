@@ -245,7 +245,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     // Determine if phonon can be reflected against the normal "as is"
     // i.e. the reflected wavevector results in an inward Vg
     reflectedKDir = waveVector.unit();
-    G4double kPerp = reflectedKDir * surfNorm;
     (reflectedKDir -= 2. * reflectedKDir * surfNorm * surfNorm).setMag(1.);
 
     // Reflection failed: Phonon downconverts to a bulk mode and surface mode
@@ -291,7 +290,7 @@ PropagateOnSurface(G4ThreeVector& waveVector,
   // Propagate a surface phonon along the detector walls until it reaches a
   // point where the wave vector has an inwardly directed v⃗g.
   G4double k0Mag = waveVector.mag();
-  waveVector.SetMag(1.);
+  waveVector.setMag(1.);
 
   RotateToLocalDirection(waveVector);
   RotateToLocalDirection(surfNorm);

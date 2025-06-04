@@ -80,7 +80,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fpPhononKin(0), fpPhononTable(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
-    fVSound(0.), fVTrans(0.), fVSurf(0.), fL0_e(0.), fL0_h(0.), 
+    fVSound(0.), fVTrans(0.), fVSurf(0.), fL0_e(0.), fL0_h(0.),
     mElectron(electron_mass_c2/c_squared),
     fHoleMass(mElectron), fElectronMass(mElectron), fElectronMDOS(mElectron),
     fBandGap(0.), fPairEnergy(0.), fFanoFactor(1.),
@@ -940,14 +940,14 @@ void G4LatticeLogical::SetDebyeTemp(G4double temp) { fDebye = temp*k_Boltzmann;}
 
 // Compute the surface sound speed from bulk phonon speeds
 
-void G4LatticeLogical::ComputeSurfaceSpeed() {
+void G4LatticeLogical::ComputeSurfaceSoundSpeed() {
   // Can't compute if bulk modes haven't been defined
   if (!fVSound || !fVTrans) return;
 
   // Compute surface speed from bulk modes
   G4double lambda = (fVTrans * fVTrans) / (fVSound * fVSound);
   G4double nuFactor = (1 - 2*lambda) / (2*(1-lambda));
-  G4double vRFactor = (0.87 + 1.12*vRFactor) / (1 + vRFactor);
+  G4double vRFactor = (0.87 + 1.12 * nuFactor) / (1 + nuFactor);
   fVSurf = vRFactor * fVTrans;
 
   if (verboseLevel)

@@ -35,6 +35,7 @@
 // 20231017  E. Michaud -- Add 'valleyDir' to set rotation matrix with valley's
 //		 direction instead of euler angles
 // 20240131  J. Inman -- Multiple path selection on G4LATTICEDATA variable
+// 20250604  N. Tenpas -- Compute surface phonon speed during lattice reading.
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -222,6 +223,9 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;
   }
+
+  // Compute surface phonon speed from bulk modes
+  pLattice->ComputeSurfaceSoundSpeed();
 
   return good;
 }
