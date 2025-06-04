@@ -317,7 +317,7 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
 
   // Get energy split for daughters
   G4double E0 = GetKineticEnergy(aTrack);
-  G4double bulkE = anharmonicDecay->GetBREnergy(E0);
+  G4double bulkE = GetBREnergy(E0);
   G4double surfE = E0 - bulkE;
 
   // Determine daughter wavevectors
