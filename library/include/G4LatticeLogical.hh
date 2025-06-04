@@ -42,6 +42,7 @@
 //		(p_Q) and expectation value of momentum (p).
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
 // 20240510  E. Michhaud -- Add function to compute L0 from other parameters
+// 20250604  N. Tenpas -- Add surface phonon speed and related functions.
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -185,6 +186,7 @@ public:
   void SetFanoFactor(G4double f) { fFanoFactor = f; }
   void SetSoundSpeed(G4double v) { fVSound = v; }
   void SetTransverseSoundSpeed(G4double v) { fVTrans = v; }
+  void SetSurfaceSoundSpeed(G4double v) { fVSurf = v; }
   void SetHoleScatter(G4double l0) { fL0_h = l0; }
   void SetHoleMass(G4double hmass) { fHoleMass = hmass; }
   void SetElectronScatter(G4double l0) { fL0_e = l0; }
@@ -196,6 +198,7 @@ public:
   G4double GetFanoFactor() const                { return fFanoFactor; }
   G4double GetSoundSpeed() const                { return fVSound; }
   G4double GetTransverseSoundSpeed() const      { return fVTrans; }
+  G4Double GetSurfaceSoundSpeed() const         { return fVSurf; }
   G4double GetHoleScatter() const               { return fL0_h; }
   G4double GetHoleMass() const                  { return fHoleMass; }
   G4double GetElectronScatter() const           { return fL0_e; }
@@ -211,6 +214,9 @@ public:
     
   // Compute "l0" for electron and hole
   G4double ComputeL0(G4bool IsElec);
+
+  // Compute surface phonon speed from bulk modes
+  void ComputeSurfaceSpeed();
 
   G4ThreeVector RotateToValley(G4int iv, const G4ThreeVector& v) const;
   G4ThreeVector RotateFromValley(G4int iv, const G4ThreeVector& v) const;
@@ -336,6 +342,7 @@ private:
 
   G4double fVSound;	// Speed of sound (longitudinal phonon)
   G4double fVTrans;	// Speed of sound (transverse phonon)
+  G4double fVSurf;  // Speed of sound (surface phonon)
   G4double fL0_e;	// Scattering length for electrons
   G4double fL0_h;	// Scattering length for holes
 

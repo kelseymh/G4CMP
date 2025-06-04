@@ -306,8 +306,8 @@ PropagateOnSurface(G4ThreeVector& waveVector,
 
   // Break up wavevector to perp and tan components
   G4double kPerpMag = waveVector.dot(surfNorm);
-  G4ThreeVector kPerpV = kPerpMag * surfNorm;		  // Negative implied in kPerpMag for inward pointing
-  G4ThreeVector kTan = waveVector - kPerpV;		// Get kTan: waveVector = kPerpV + kTan
+  G4ThreeVector kPerpV = kPerpMag * surfNorm;  // Negative implied in kPerpMag for inward pointing
+  G4ThreeVector kTan = waveVector - kPerpV;    // Get kTan: waveVector = kPerpV + kTan
 
   // Get axis and phi for tangent rotations
   G4ThreeVector axis = kPerpV.cross(kTan).unit();

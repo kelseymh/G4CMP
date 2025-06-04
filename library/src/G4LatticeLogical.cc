@@ -58,6 +58,7 @@
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
 // 20240510  E. Michhaud -- Add function to compute L0 from other parameters
+// 20250604  N. Tenpas -- Add surface phonon speed and related functions.
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -79,7 +80,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fpPhononKin(0), fpPhononTable(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
-    fVSound(0.), fVTrans(0.), fL0_e(0.), fL0_h(0.), 
+    fVSound(0.), fVTrans(0.), fVSurf(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),
     fHoleMass(mElectron), fElectronMass(mElectron), fElectronMDOS(mElectron),
     fBandGap(0.), fPairEnergy(0.), fFanoFactor(1.),
@@ -135,6 +136,7 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fDebye = rhs.fDebye;
   fVSound = rhs.fVSound;
   fVTrans = rhs.fVTrans;
+  fVSurf = rhs.fVSurf;
   fL0_e = rhs.fL0_e;
   fL0_h = rhs.fL0_h;
   fHoleMass = rhs.fHoleMass;
@@ -933,6 +935,24 @@ G4double G4LatticeLogical::ComputeL0(G4bool IsElec) {
 void G4LatticeLogical::SetDebyeFreq(G4double nu) { fDebye = nu*h_Planck; }
 
 void G4LatticeLogical::SetDebyeTemp(G4double temp) { fDebye = temp*k_Boltzmann;}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Compute the surface sound speed from bulk phonon speeds
+
+void G4LatticeLogical::ComputeSurfaceSpeed() {
+  // Can't compute if bulk modes haven't been defined
+  if (!fVSound || !fVTrans) return;
+
+  // Compute surface speed from bulk modes
+  G4double lambda = (fVTrans * fVTrans) / (fVSound * fVSound);
+  G4double nuFactor = (1 - 2*lambda) / (2*(1-lambda));
+  G4double vRFactor = (0.87 + 1.12*vRFactor) / (1 + vRFactor);
+  fVSurf = vRFactor * fVTrans;
+
+  if (verboseLevel)
+    G4cout << "Computed surface speed: " << vRFactor << " * VTrans" << G4endl;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 

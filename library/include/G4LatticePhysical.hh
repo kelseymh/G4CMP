@@ -36,6 +36,7 @@
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 //		Also, add long missing accessors for Miller orientation
+// 20250604  G4CMP-487 -- Add accessor for surface sound speed.
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -137,6 +138,7 @@ public:
   G4double GetFanoFactor() const      { return fLattice->GetFanoFactor(); }
   G4double GetSoundSpeed() const      { return fLattice->GetSoundSpeed(); }
   G4double GetTransverseSoundSpeed() const { return fLattice->GetTransverseSoundSpeed(); }
+  G4double GetSurfaceSoundSpeed() const { return fLattice->GetSurfaceSoundSpeed(); }
   G4double GetElectronScatter() const { return fLattice->GetElectronScatter(); }
   G4double GetHoleScatter() const     { return fLattice->GetHoleScatter(); }
 

@@ -327,7 +327,8 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector k0 = waveVector.unit() * k0Mag;
   G4ThreeVector k0Tan = (k0 - (k0 * surfNorm) * surfNorm);
 
-  G4double vSurf = theLattice->GetSurfaceVelocity();
+  if (!theLattice->GetSurfaceSoundSpeed()) theLattice->ComputeSurfaceSpeed();
+  G4double vSurf = theLattice->GetSurfaceSoundSpeed();
   G4ThreeVector kSurf = ((surfE / hbar_Planck) / vSurf) * k0Tan.unit();
 
   G4ThreeVector kBulkTan = k0 - k0Tan - kSurf;
