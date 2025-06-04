@@ -9,9 +9,11 @@
 // 20220914  G4CMP-322 -- Address compiler warnings for unused arguments.
 // 20250101  G4CMP-440 -- Create separate debugging file per worker thread;
 //		add EventID column to debugging output.
+// 20250604  G4CMP-487 -- Add downconversion process for surface modes.
 
 #include "G4CMPAnharmonicDecay.hh"
 #include "G4CMPPhononTrackInfo.hh"
+#include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -307,3 +309,74 @@ MakeLTSecondaries(const G4Track& aTrack, G4ParticleChange& aParticleChange) {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...
+
+void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
+				                           G4ParticleChange& aParticleChange,
+                                   G4ThreeVector& waveVector) {
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
+
+  // Get energy split for daughters
+  G4double E0 = GetKineticEnergy(aTrack);
+  G4double bulkE = anharmonicDecay->GetBREnergy(E0);
+  G4double surfE = E0 - bulkE;
+
+  // Determine daughter wavevectors
+  // In Debye approx: |k| = w/v
+  G4double w0 = (E0 / hbar_Planck);
+  G4double k0Mag = w0 / particleChange.GetVelocity();
+  G4ThreeVector k0 = waveVector.unit() * k0Mag;
+  G4ThreeVector k0Tan = (k0 - (k0 * surfNorm) * surfNorm);
+
+  G4double vSurf = theLattice->GetSurfaceVelocity();
+  G4ThreeVector kSurf = ((surfE / hbar_Planck) / vSurf) * k0Tan.unit();
+
+  G4ThreeVector kBulkTan = k0 - k0Tan - kSurf;
+  G4ThreeVector kBulkPerp = std::sqrt((k0Mag) * (k0Mag) - (kBulkTan) * (kBulkTan)) * -surfNorm;
+  G4ThreeVector kBulk = kBulkTan + kBulkPerp;
+
+  // Get modes for daughter phonons
+  G4int surfMode = G4CMP::ChoosePhononPolarization(theLattice);
+  G4int bulkMode = G4CMP::ChoosePhononPolarization(theLattice);
+
+  // Propagate surface phonon along detector surface
+  G4ThreeVector surfPoint = aTrack.GetPosition();
+  kSurf = G4CMPPhononBoundaryProcess::PropagateOnSurface(kSurf, surfNorm, surfMode, surfPoint);
+  G4double delta_t = (surfPoint - aTrack.GetPosition()).mag() / vSurf; // Time for surface propagation
+
+  // Construct the daughters
+  G4Track* bulkSec = G4CMP::CreatePhonon(aTrack, bulkMode,
+				                                 kBulk, bulkE, aTrack.GetGlobalTime(),
+                                         aTrack.GetPosition());
+  G4Track* surfSec = G4CMP::CreatePhonon(aTrack, surfMode,
+                                         kSurf, surfE,
+                                         aTrack.GetGlobalTime() + delta_t,
+                                         surfPoint);
+
+  if (!bulkSec || !surfSec) {
+    G4Exception("G4CMPAnharmonicDecay::DoDecay", "Downconv004",
+		JustWarning, "Error creating secondaries");
+    return;
+  }
+
+  aParticleChange.SetNumberOfSecondaries(2);
+  aParticleChange.AddSecondary(bulkSec);
+  aParticleChange.AddSecondary(surfSec);
+
+  // Only kill the track if downconversion actually happened
+  if (aParticleChange.GetNumberOfSecondaries() > 0) {
+    aParticleChange.ProposeEnergy(0.);
+    aParticleChange.ProposeTrackStatus(fStopAndKill);
+  }
+}
+
+
+void G4CMPAnharmonicDecay::GetBREnergy(G4double E0) {
+  // Probability that the Bulk phonon recieves E is given by JDOS
+  // DOS_Bulk ~ E^2 ; DOS_R ~ (E_0 - E) ; JDOS = E^2(E_0 - E)
+  G4double maxE = 2/3 * E0;
+  G4double E;
+  while (true) {
+    E = E0 * G4UniformRand();
+    if (maxE * G4UniformRand() < E * E * (E0 - E)) return E;
+  }
+}

@@ -237,8 +237,21 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     return;
   } else if (random < downconversionProb + specProb) {
-    reflectedKDir = GetSpecularVector(waveVector, surfNorm, mode, surfacePoint); // Modify surfacePoint & surfNorm in place
+    if (verboseLevel > 2) G4cout << " Specular Reflection at boundary." << G4endl;
     refltype = "specular";
+
+    // Determine if phonon can be reflected against the normal "as is"
+    // i.e. the reflected wavevector results in an inward Vg
+    G4ThreeVector reflectedKDir = waveVector.unit();
+    G4double kPerp = reflectedKDir * surfNorm;
+    (reflectedKDir -= 2. * reflectedKDir * surfNorm * surfNorm).setMag(1.);
+
+    // Reflection failed: Phonon downconverts to a bulk mode and surface mode
+    if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, surfNorm,
+                                       surfacePoint)) {
+      anharmonicDecay->DoDecay(aTrack, aStep, particleChange, waveVector);
+      return;
+    }
   } else {
     reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
                                                surfacePoint);
@@ -275,12 +288,13 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
 // Generate specular reflection corrected for momentum dispersion
 
-G4ThreeVector G4CMPPhononBoundaryProcess::
-GetSpecularVector(const G4ThreeVector& waveVector,
-                  G4ThreeVector& surfNorm, G4int mode,
-                  G4ThreeVector& surfacePoint) {
-  // Specular reflecton should reverse momentum along normal
-  G4ThreeVector reflectedKDir = waveVector.unit();
+void G4CMPPhononBoundaryProcess::
+PropagateOnSurface(G4ThreeVector& waveVector,
+                   G4ThreeVector& surfNorm, G4int mode,
+                   G4ThreeVector& surfacePoint) {
+  // Propagate a surface phonon along the detector walls until it reaches a
+  // point where the wave vector has an inwardly directed v⃗g.
+  waveVector.SetMag(1.);
   G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm
   (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);	// Reflect against normal
 
@@ -291,7 +305,8 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   // Reflection didn't work as expected, need to correct:
   // If the reflected wave vector cannot propagate in the bulk
   // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
-  // That surface wave will propagate until it reaches a point
+  // That phonon must split into a bulk mode and surface wave.
+  // The surface wave will propagate until it reaches a point
   // where the wave vector has an inwardly directed v⃗g.
   RotateToLocalDirection(reflectedKDir);
   G4ThreeVector newNorm = surfNorm;

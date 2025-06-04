@@ -1,6 +1,7 @@
 /* Header File for AnharmonicDecay utility class */
 
 // 20221103  Drop G4CMP_DEBUG protection here, to avoid client rebuilding
+// 20250604  G4CMP-487 -- Add downconversion process for surface modes.
 
 #ifndef G4CMPAnharmonicDecay_h
 #define G4CMPAnharmonicDecay_h
@@ -22,6 +23,7 @@ public:
   G4int GetVerboseLevel() const { return verboseLevel; }
 
   void DoDecay(const G4Track&, const G4Step&, G4ParticleChange&);
+  void DoDecay(const G4Track&, const G4Step&, G4ParticleChange&, G4ThreeVector&);
 
 private:
   G4double GetLTDecayProb(G4double, G4double) const;
