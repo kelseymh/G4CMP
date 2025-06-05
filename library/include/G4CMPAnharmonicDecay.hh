@@ -33,7 +33,7 @@ private:
   G4double MakeLDeviation(G4double, G4double) const;
   G4double MakeTTDeviation(G4double, G4double) const;
   G4double MakeTDeviation(G4double, G4double) const;
-  G4double GetBREnergy(G4double, G4ParticleChange&) const;
+  G4double GetBREnergy(G4double) const;
 
   void MakeTTSecondaries(const G4Track&, G4ParticleChange&);
   void MakeLTSecondaries(const G4Track&, G4ParticleChange&);

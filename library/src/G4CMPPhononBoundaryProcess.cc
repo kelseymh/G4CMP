@@ -250,8 +250,15 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     // Reflection failed: Phonon downconverts to a bulk mode and surface mode
     if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, surfNorm,
                                        surfacePoint)) {
-      anharmonicDecay->DoDecay(aTrack, aStep, particleChange, this);
-      return;
+      // Only downconvert phonons with enough energy
+      if (particleChange.GetEnergy() >= 1e-6 * eV) {
+        anharmonicDecay->DoDecay(aTrack, aStep, particleChange, this);
+        return;
+      } else {
+        // Do diffuse reflections for phonons with very little energy
+        reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+                                                   surfacePoint);
+      }
     }
   } else {
     reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,

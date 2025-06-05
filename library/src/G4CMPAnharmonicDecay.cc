@@ -319,7 +319,7 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
 
   // Get energy split for daughters
   G4double E0 = GetKineticEnergy(aTrack);
-  G4double bulkE = GetBREnergy(E0, aParticleChange);
+  G4double bulkE = GetBREnergy(E0);
   G4double surfE = E0 - bulkE;
   // Too low energy to split
   if (bulkE == 0) return;
@@ -336,30 +336,15 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector k0Tan = (k0 - (k0 * surfNorm) * surfNorm);
 
   G4double vSurf = theLattice->GetSurfaceSoundSpeed();
-  G4ThreeVector kSurf = ((surfE / hbar_Planck) / vSurf) * k0Tan.unit();
+  G4ThreeVector kSurfDir = k0Tan.unit();
+  G4double kSurfMag = ((surfE / hbar_Planck) / vSurf);
 
-  G4double vBulk;
-  if (bulkMode < 1) {
-    vBulk = theLattice->GetSoundSpeed();
-  } else {
-    vBulk = theLattice->GetTransverseSoundSpeed();
-  }
-  G4double kBulkMag = ((bulkE / hbar_Planck) / vBulk);
-  G4ThreeVector kBulkTan = k0Tan - kSurf;
-
-  // Avoid forbidden kinematics with random wavevector
-  G4ThreeVector kBulkPerp, kBulk;
-  if ((kBulkMag * kBulkMag) < kBulkTan.mag2()) {
-    kBulk = G4CMP::GetLambertianVector(theLattice, surfNorm, bulkMode,
-                                       aTrack.GetPosition());
-  } else {
-    kBulkPerp = std::sqrt((kBulkMag * kBulkMag) - kBulkTan.mag2()) * -surfNorm;
-    kBulk = kBulkTan + kBulkPerp;
-  }
+  // Momentum conservation for bulk mode
+  G4ThreeVector kBulk = (k0 - 2 * (k0 * surfNorm) * surfNorm) - kSurfMag * kSurfDir;
 
   // Propagate surface phonon along detector surface
   G4ThreeVector surfPoint = aTrack.GetPosition();
-  boundaryP->PropagateOnSurface(kSurf, surfNorm, surfMode, surfPoint);
+  boundaryP->PropagateOnSurface(kSurfDir, surfNorm, surfMode, surfPoint);
   G4double delta_t = (surfPoint - aTrack.GetPosition()).mag() / vSurf; // Time of surface propagation
 
   // Construct the daughters
@@ -367,7 +352,7 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
                                          kBulk.unit(), bulkE, aTrack.GetGlobalTime(),
                                          aTrack.GetPosition());
   G4Track* surfSec = G4CMP::CreatePhonon(aTrack, surfMode,
-                                         kSurf.unit(), surfE,
+                                         kSurfDir, surfE,
                                          aTrack.GetGlobalTime() + delta_t,
                                          surfPoint);
 
@@ -389,23 +374,18 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
 }
 
 
-G4double G4CMPAnharmonicDecay::GetBREnergy(G4double E0,
-                                           G4ParticleChange& aParticleChange) const {
+G4double G4CMPAnharmonicDecay::GetBREnergy(G4double E0) const {
   // Probability that the Bulk phonon recieves E is given by JDOS
   // DOS_Bulk ~ w^2 ; DOS_R ~ (w_0 - w) ; JDOS = w^2(w_0 - w)
   G4double w0 = E0 / hbar_Planck, maxW = 2/3 * w0, w;
   G4int nAttempts = 0, maxAttempts = 1000;
+
   while (nAttempts++ < maxAttempts) {
     w = w0 * G4UniformRand();
-    // FIXME!!!!
-    if (w * hbar_Planck > 1e-10 && E0 - w * hbar_Planck > 1e-10) {
-      if (maxW * G4UniformRand() <= w * w * (w0 - w))
-        return w * hbar_Planck;
-    }
+    if (maxW * G4UniformRand() <= w * w * (w0 - w))
+      return w * hbar_Planck;
   }
 
-  // Could not get an energy for daughters - kill the track
-  aParticleChange.ProposeEnergy(0.);
-  aParticleChange.ProposeTrackStatus(fStopAndKill);
-  return 0;
+  // Return most probable value
+  return maxW * hbar_Planck;
 }
