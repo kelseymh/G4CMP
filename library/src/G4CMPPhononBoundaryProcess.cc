@@ -250,7 +250,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     // Reflection failed: Phonon downconverts to a bulk mode and surface mode
     if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, surfNorm,
                                        surfacePoint)) {
-      anharmonicDecay->DoDecay(aTrack, aStep, particleChange, waveVector);
+      anharmonicDecay->DoDecay(aTrack, aStep, particleChange, this);
       return;
     }
   } else {
@@ -364,6 +364,7 @@ PropagateOnSurface(G4ThreeVector& waveVector,
       // Do a diffuse reflection if stuck in regression
       if (solid->Inside(surfacePoint) != kSurface) {
         waveVector = surfNorm;
+        surfacePoint = oldstepLocalPos;
         break;
       }
       // Step off the flat and adjust surfNorm
@@ -387,6 +388,7 @@ PropagateOnSurface(G4ThreeVector& waveVector,
       // Do a diffuse reflection if the adjustment failed
       if (solid->Inside(surfacePoint) != kSurface) {
         waveVector = surfNorm;
+        surfacePoint = oldstepLocalPos;
         break;
       }
       // Reflect kTan against the edge - rotates & modifies kTan; modifies surfNorm

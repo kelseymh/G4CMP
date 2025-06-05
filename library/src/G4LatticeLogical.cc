@@ -946,7 +946,7 @@ void G4LatticeLogical::ComputeSurfaceSoundSpeed() {
 
   // Compute surface speed from bulk modes
   G4double lambda = (fVTrans * fVTrans) / (fVSound * fVSound);
-  G4double nuFactor = (1 - 2*lambda) / (2*(1-lambda));
+  G4double nuFactor = (1 - 2 * lambda) / (2 * (1 - lambda));
   G4double vRFactor = (0.87 + 1.12 * nuFactor) / (1 + nuFactor);
   fVSurf = vRFactor * fVTrans;
 

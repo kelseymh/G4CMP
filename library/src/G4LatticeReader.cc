@@ -225,7 +225,7 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   }
 
   // Compute surface phonon speed from bulk modes
-  pLattice->ComputeSurfaceSoundSpeed();
+  if (!pLattice->GetSurfaceSoundSpeed()) pLattice->ComputeSurfaceSoundSpeed();
 
   return good;
 }

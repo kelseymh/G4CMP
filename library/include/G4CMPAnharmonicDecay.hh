@@ -9,6 +9,7 @@
 #include "G4CMPProcessUtils.hh"
 #include <iosfwd>
 
+class G4CMPPhononBoundaryProcess;
 class G4ParticleChange;
 class G4Step;
 class G4Track;
@@ -23,7 +24,8 @@ public:
   G4int GetVerboseLevel() const { return verboseLevel; }
 
   void DoDecay(const G4Track&, const G4Step&, G4ParticleChange&);
-  void DoDecay(const G4Track&, const G4Step&, G4ParticleChange&, G4ThreeVector&);
+  void DoDecay(const G4Track&, const G4Step&, G4ParticleChange&,
+               G4CMPPhononBoundaryProcess*);
 
 private:
   G4double GetLTDecayProb(G4double, G4double) const;
@@ -31,7 +33,7 @@ private:
   G4double MakeLDeviation(G4double, G4double) const;
   G4double MakeTTDeviation(G4double, G4double) const;
   G4double MakeTDeviation(G4double, G4double) const;
-  G4double GetBREnergy(G4double) const;
+  G4double GetBREnergy(G4double, G4ParticleChange&) const;
 
   void MakeTTSecondaries(const G4Track&, G4ParticleChange&);
   void MakeLTSecondaries(const G4Track&, G4ParticleChange&);
