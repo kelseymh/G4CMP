@@ -312,7 +312,7 @@ MakeLTSecondaries(const G4Track& aTrack, G4ParticleChange& aParticleChange) {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...
 
 void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
-				                           G4ParticleChange& aParticleChange,
+                                   G4ParticleChange& aParticleChange,
                                    G4CMPPhononBoundaryProcess* boundaryP) {
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
@@ -364,7 +364,7 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
 
   // Construct the daughters
   G4Track* bulkSec = G4CMP::CreatePhonon(aTrack, bulkMode,
-				                                 kBulk.unit(), bulkE, aTrack.GetGlobalTime(),
+                                         kBulk.unit(), bulkE, aTrack.GetGlobalTime(),
                                          aTrack.GetPosition());
   G4Track* surfSec = G4CMP::CreatePhonon(aTrack, surfMode,
                                          kSurf.unit(), surfE,
