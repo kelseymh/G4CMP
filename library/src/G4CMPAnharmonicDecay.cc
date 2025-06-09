@@ -342,6 +342,13 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
   // Momentum conservation for bulk mode
   G4ThreeVector kBulk = (k0 - 2 * (k0 * surfNorm) * surfNorm) - kSurfMag * kSurfDir;
 
+  // Protect against unphysical results
+  if (!G4CMP::PhononVelocityIsInward(theLattice, bulkMode, kBulk, surfNorm,
+                                     aTrack.GetPosition())) {
+    kBulk = G4CMP::GetLambertianVector(theLattice, surfNorm, bulkMode,
+                                       aTrack.GetPosition());
+  }
+
   // Propagate surface phonon along detector surface
   G4ThreeVector surfPoint = aTrack.GetPosition();
   boundaryP->PropagateOnSurface(kSurfDir, surfNorm, surfMode, surfPoint);
@@ -349,7 +356,8 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
 
   // Construct the daughters
   G4Track* bulkSec = G4CMP::CreatePhonon(aTrack, bulkMode,
-                                         kBulk.unit(), bulkE, aTrack.GetGlobalTime(),
+                                         kBulk.unit(), bulkE,
+                                         aTrack.GetGlobalTime(),
                                          aTrack.GetPosition());
   G4Track* surfSec = G4CMP::CreatePhonon(aTrack, surfMode,
                                          kSurfDir, surfE,
@@ -377,13 +385,14 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
 G4double G4CMPAnharmonicDecay::GetBREnergy(G4double E0) const {
   // Probability that the Bulk phonon recieves E is given by JDOS
   // DOS_Bulk ~ w^2 ; DOS_R ~ (w_0 - w) ; JDOS = w^2(w_0 - w)
-  G4double w0 = E0 / hbar_Planck, maxW = 2/3 * w0, w;
+  G4double w0 = E0 / hbar_Planck, maxW = (2.0 / 3.0) * w0, w;
   G4int nAttempts = 0, maxAttempts = 1000;
 
   while (nAttempts++ < maxAttempts) {
     w = w0 * G4UniformRand();
-    if (maxW * G4UniformRand() <= w * w * (w0 - w))
+    if (maxW * G4UniformRand() <= w * w * (w0 - w)) {
       return w * hbar_Planck;
+    }
   }
 
   // Return most probable value
