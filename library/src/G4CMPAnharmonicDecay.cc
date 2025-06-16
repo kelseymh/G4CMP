@@ -316,13 +316,7 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
                                    G4CMPPhononBoundaryProcess* boundaryP) {
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
-
-  // Get energy split for daughters
   G4double E0 = GetKineticEnergy(aTrack);
-  G4double bulkE = GetBREnergy(E0);
-  G4double surfE = E0 - bulkE;
-  // Too low energy to split
-  if (bulkE == 0) return;
 
   // Get modes for daughter phonons
   G4int surfMode = G4CMP::ChoosePhononPolarization(theLattice);
@@ -335,14 +329,33 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector k0 = k0Mag * waveVector.unit();
   G4ThreeVector k0Tan = (k0 - (k0 * surfNorm) * surfNorm);
 
+  // Surface mode constants
   G4double vSurf = theLattice->GetSurfaceSoundSpeed();
   G4ThreeVector kSurfDir = k0Tan.unit();
-  G4double kSurfMag = ((surfE / hbar_Planck) / vSurf);
 
-  // Momentum conservation for bulk mode
-  G4ThreeVector kBulk = (k0 - 2 * (k0 * surfNorm) * surfNorm) - kSurfMag * kSurfDir;
+  // Get lowest energy split for bulk mode
+  G4double bulkE = 0, surfE = 0, low = 0, high = E0;
+  G4double kSurfMag = (surfE / hbar_Planck) / vSurf;
+  G4ThreeVector kBulk;
+  while (high - low > 1e-12 * eV) {
+    bulkE = (low + high) / 2.;
+    surfE = E0 - bulkE;
+    kSurfMag = (surfE / hbar_Planck) / vSurf;
 
-  // Protect against unphysical results
+    // Momentum conservation for bulk mode
+    kBulk = (k0 - 2 * (k0 * surfNorm) * surfNorm) - kSurfMag * kSurfDir;
+
+    if (G4CMP::PhononVelocityIsInward(theLattice, bulkMode, kBulk, surfNorm,
+                                      aTrack.GetPosition())) {
+      // Move in
+      high = bulkE;
+    } else {
+      // Move out
+      low = bulkE;
+    }
+  }
+
+  // Protect against outward Vg
   if (!G4CMP::PhononVelocityIsInward(theLattice, bulkMode, kBulk, surfNorm,
                                      aTrack.GetPosition())) {
     kBulk = G4CMP::GetLambertianVector(theLattice, surfNorm, bulkMode,
