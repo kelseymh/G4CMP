@@ -88,7 +88,7 @@ G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
         G4double qmax = kmag*(1+sqrt(1-Emin_iv/eTrk));		// max phonon momentum
         G4double qmin = kmag*(1-sqrt(1-Emin_iv/eTrk));		// min phonon momentum
         scale = m_DOS3half*m_DOS * nVal * D_iv*D_iv
-        /(2*pi*hbar_Planck*density*m_electron*sqrt(m_electron)*Emin_iv*kmag);
+        /(2*pi*hbar_Planck*density*theLattice->GetElectronMass()*sqrt(theLattice->GetElectronMass())*Emin_iv*kmag);
         Efunc = energyFunc1st(qmax,qmin);
     }  
 
