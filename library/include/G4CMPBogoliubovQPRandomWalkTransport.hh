@@ -162,7 +162,16 @@ private:
 									       G4ThreeVector norm2,
 									       G4ThreeVector pos2,
 									       G4ThreeVector & cornerLocation);
+  void PostCheckBulkTreatment(G4double stepTransportOnlyDeltaT);
+
+  G4bool CheckForPhantomBoundaryCrossings(G4ThreeVector trackPosition,
+					  G4double the2DSafety,
+					  G4double originalOption1Safety,
+					  G4double originalOption2Safety,
+					  G4ThreeVector outputDir);
   
+  G4double HandleVerySmallSteps(G4double thisMFP, G4double the2DSafety);
+  G4double ComputePathLengthInGoldilocksZone(); //REL 6/29/25  
   
   G4int fBoundaryHistoryTrackID;
   std::vector<std::pair<G4ThreeVector,G4ThreeVector> > fBoundaryHistory; //The last N boundary scatters for this 

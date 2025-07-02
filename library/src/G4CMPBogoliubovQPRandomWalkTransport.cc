@@ -48,7 +48,7 @@ G4CMPBogoliubovQPRandomWalkTransport::G4CMPBogoliubovQPRandomWalkTransport(const
   fDiffConst =  0.0;
   fBoundaryFudgeFactor = 1.001;
   //fBoundaryFudgeFactor = 1.002;
-  fEpsilonForWalkOnSpheres = 1*CLHEP::um;
+  fEpsilonForWalkOnSpheres = 100*CLHEP::nm;
   fHardFloorBoundaryScale = 10*CLHEP::nm;
   
   //fSafetyHelper is initialized in AlongStepGPIL
@@ -167,47 +167,58 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
     double timeTolerance = 1E-10; //For floating point errors    
     if( (fabs(currentMinimalStep/velocity - fTimeStepToBoundary) < timeTolerance) || fVerySmallStep ){
 
-      /*
-      //Let's first handle the "very small step" scenarios. This is only true for 
-      if( fVerySmallStep ){ //This will break for small steps *from* the boundary
-	if( verboseLevel > 5 ){
-	  G4cout << "ASGPIL Function Point F_0 | Looks like we're in a very small step. We are going to launch the track a bit farther than the 2D safety, and hopefully this gets us to a boundary. (Conditions for this include nearly-stuck QPs)" << G4endl;
-	}
-	//fPathLength = f2DSafety * fBoundaryFudgeFactor;
-	fPathLength = fEpsilonForWalkOnSpheres;
-	fTimeStep = fTimeStepToBoundary; //REL may need to tweak this as well given the change above
+      //Let's break this into two scenarios: very small step and other, just so we explicitly know how small steps are handled.
+      if( fVerySmallStep ){
+
+	//If we're starting on a boundary, then we want to make sure to make the path length just below what's needed.
+	//Otherwise, push us over the boundary as best we can
+	if( fTrackOnBoundary ) fPathLength = f2DSafety / fBoundaryFudgeFactor; 
+	else{ fPathLength = f2DSafety * fBoundaryFudgeFactor; }
+	fTimeStep = fTimeStepToBoundary; 
       }
-      */
       
       //For non-"very small step" steps (the majority, ideally)
-      //else{
-
-      //If we're not very close to the boundary, then we just make our diffusion-folded path length equal to juuuuuust under the
-      //distance to the boundary. That way transportation will never win this alongStepGPIL.
-      //This also should trigger if we're starting from the boundary
-      if( f2DSafety >= fEpsilonForWalkOnSpheres || (fTrackOnBoundary) ){
-	fPathLength = f2DSafety / fBoundaryFudgeFactor; 
-	fTimeStep = fTimeStepToBoundary;
-	
-	//Debugging
-	if( verboseLevel > 5 ){
-	  G4cout << "ASGPIL Function Point F_1 | Looks like the boundary-limited case applies here, with 2DSafety >= epsilon. Returning fPathLength just under f2DSafety = " << fPathLength << G4endl;
-	}
-      }
-      
-      //Otherwise, if we are close to the boundary, then in this step we need to make our diffusion-folded path length equal to juuuuuuust
-      //larger than the distance to the boundary. This ensures we will always have transportation win and take us to the boundary.
       else{
-	//fPathLength = f2DSafety * fBoundaryFudgeFactor;
-	fPathLength = fEpsilonForWalkOnSpheres; //Just boot it into the boundary. No hemming or hawwing. It just needs to categorically beat transportation.
-	fTimeStep = fTimeStepToBoundary; //REL may need to tweak this as well given the change above
 	
-	//Debugging
-	if( verboseLevel > 5 ){
-	  G4cout << "ASGPIL Function Point F_2 | Looks like the boundary-limited case applies here, with 2DSafety < epsilon. Returning fPathLength just over f2DSafety = " << fPathLength << G4endl;
+	//If we're not very close to the boundary, then we just make our diffusion-folded path length equal to juuuuuust under the
+	//distance to the boundary. That way transportation will never win this alongStepGPIL. Here, we are going to try to land the
+	//particle in between the hard floor scale and the soft floor scale, which requires a bit of math to make sure we get the
+	//path length right.
+	//This also should trigger if we're starting from the boundary
+	if( f2DSafety >= fEpsilonForWalkOnSpheres || (fTrackOnBoundary) ){
+	  
+	  //Regardless of boundary condition, if we're farther than a soft floor boundary scale from the boundary, then we can
+	  //shoot for landing in a "goldilocks zone"
+	  if( f2DSafety >= fEpsilonForWalkOnSpheres ){
+	    fPathLength = ComputePathLengthInGoldilocksZone(); //REL 6/29/25
+	    fTimeStep = fTimeStepToBoundary; //This should probably be adjusted depending on how fPathLength is calculated? Now it's not necessarily a 0.1%-effect, and can be somewhat arbitrarily large for steps that are very close to the softFloorScale, depending on the choice of the hardFloorScale. REL 6/29/25
+	  }
+	  //Otherwise, we just use a fudge factor -- this is if the track is on a boundary and the 2D safety is small. Not really sure
+	  //how to get around this (if we can)
+	  else{
+	    fPathLength = f2DSafety / fBoundaryFudgeFactor; //This was what was used previously
+	    fTimeStep = fTimeStepToBoundary; //This should probably be adjusted depending on how fPathLength is calculated? Now it's not necessarily a 0.1%-effect, and can be somewhat arbitrarily large for steps that are very close to the softFloorScale, depending on the choice of the hardFloorScale. REL 6/29/25
+	  }
+	  
+	  //Debugging
+	  if( verboseLevel > 5 ){
+	    G4cout << "ASGPIL Function Point F_1 | Looks like the boundary-limited case applies here, with 2DSafety >= epsilon. Returning fPathLength just under f2DSafety = " << fPathLength << G4endl;
+	  }
+	}
+	
+	//Otherwise, if we are close to the boundary and manifestly NOT on a boundary, then in this step we need to make our diffusion-folded path length equal to juuuuuuust
+	//larger than the distance to the boundary. This ensures we will always have transportation win and take us to the boundary.
+	else{
+	  fPathLength = f2DSafety * fBoundaryFudgeFactor;
+	  //fPathLength = fEpsilonForWalkOnSpheres; //Just boot it into the boundary. No hemming or hawwing. It just needs to categorically beat transportation. REL 6/29/25 Yes, but this has a length scale, which in principle is not "clean." Changing back to original (above) and will try to debug
+	  fTimeStep = fTimeStepToBoundary; //REL may need to tweak this as well given the change above
+	  
+	  //Debugging
+	  if( verboseLevel > 5 ){
+	    G4cout << "ASGPIL Function Point F_2 | Looks like the boundary-limited case applies here, with 2DSafety < epsilon. Returning fPathLength just over f2DSafety = " << fPathLength << G4endl;
+	  }
 	}
       }
-      //}
     }
     //If another process wins the discrete GPIL race, the above block won't trigger. Here we need to compute a radius corresponding
     //to that (smaller) elapsed time. However, the radius *must* be less than the boundary-limited radius because otherwise the
@@ -252,7 +263,27 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::AlongStepGetPhysicalInteractionLe
 }
 
 
-
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+//This is run for QPs either far enough into the bulk to be farther than the softFloor limit or QPs launched from a boundary.
+//The goal is to ensure that we pick a path length that is close to the 2D safety, with some restrictions.
+//1. First, we want to ensure that if we're directing at the boundary, we don't push tracks so close that they're within a hardFloor distance of the boundary,
+//   since this may complicate boundary-finding and direction-finding.
+//2. Second, we want to make sure that we otherwise launch pretty much the full 2Dsafety.
+//The combination of these conditions defines what we call a "goldilocks zone"
+G4double G4CMPBogoliubovQPRandomWalkTransport::ComputePathLengthInGoldilocksZone() //REL 6/29/25
+{
+  //If we're pointed right at the wall (along the safety), then we should go no farther than the2DSafety - hardFloorBoundaryScale.
+  //If we're not pointed right along the safety, then the distance to wall is longer anyway, so I don't think we need to compensate for changing angles?
+  //To minimize errors in timing, let's get more-or-less as close as we can to that hard floor boundary scale.
+  G4double thePathLength = f2DSafety - (fHardFloorBoundaryScale)*fBoundaryFudgeFactor; //Adding a bit of buffer for safety
+  
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::ComputePathLengthInGoldilocksZone ----------" << G4endl;
+    G4cout << "CPLIGZ Function Point A | Path length is " << thePathLength << G4endl;
+  }
+  return thePathLength;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 G4double 
@@ -478,6 +509,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
       G4cout << "ASDI Function Point E | time of post-step point is: " << step.GetPostStepPoint()->GetGlobalTime() << G4endl;
       G4cout << "ASDI Function Point E | fPathLength selected: " << fPathLength << G4endl;
       G4cout << "ASDI Function Point E | fNewDirection: " << fNewDirection << G4endl;
+      G4cout << "ASDI Function Point E | fOldPosition: " << fOldPosition << " in volume: " << G4CMP::GetVolumeAtPoint(fOldPosition)->GetName() << G4endl;
     }
 
     //Test. I think CheckNextStep may also be valuable here, especially when we get into scenarios where we enter daughter volumes
@@ -491,44 +523,54 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 
     //We're actually going to try using checkNextStep instead. Here, if we're not on a boundary, the returned step should be kInfinity and
     //the safety should be nonzero.
-    if( nextStepLength == kInfinity ){ //We're out in the bulk
-
-      //Debugging
-      if( verboseLevel > 5 ){
-	G4cout << "ASDI Function Point G | the proposed step does not cross a boundary. Setting position manually." << G4endl;
-      }
-      fSafetyHelper->ReLocateWithinVolume(fNewPosition);
-      fParticleChange.ProposeMomentumDirection(fNewDirection); 
-
-      //Since we are forced to use the pre-step point's velocity for propagation of this step (and the pre-step point's velocity is
-      //the one we started with), transportation will add a time corresponding to traveling the calculated path length at that velocity.
-      //We should subtract that time off our final proposed time. First, debugging.
-      if( verboseLevel > 5 ){
-	G4cout << "ASDI Function Point H | fTimeStep: " << fTimeStep << ", timeChangefromTransportationOnly: " << stepTransportOnlyDeltaT << G4endl;
-	G4cout << "ASDI Function Point H | timeChangeFromTransportationOnly: " << stepTransportOnlyDeltaT << G4endl;
-      }
-      fParticleChange.ProposeLocalTime(fTimeStep-stepTransportOnlyDeltaT);
-
-
-      //I think this needs to be set to the step-limiting *old, pre-diffusion* path length, since other processes that aren't the step-limiting one will
-      //need to subtract off a distance. That distance basically needs to be velocity * deltaT. The current process that limits the step
-      //(here, not transportation) will zero out its number of interaction lengths. First, debugging
-      if( verboseLevel > 5 ){
-	G4cout << "ASDI Function Point I | Proposing a true (diffusion-UNfolded) step length of: " << fPreDiffusionPathLength << G4endl;
-      }
-      fParticleChange.ProposeTrueStepLength(fPreDiffusionPathLength);
-      fPositionChanged = true;
+    if( nextStepLength == kInfinity ){ //We're out in the bulk and aren't confused
+      PostCheckBulkTreatment(stepTransportOnlyDeltaT);
     }
     
     //If we hit the wall, we should have set things up so that:
     //1. The discrete process leading to a wall hit is the boundary-limited one set here
     //2. When we hit the wall, we set the time of impact to be consistent with diffusion,
     //   so that the above code (without the "relocate" bit) still applies.
-    else if( nextStepLength != kInfinity ){ //We're on a surface
+    else if( nextStepLength != kInfinity ){ //We're on a surface and may be confused
+
+      //If this notes that the step status is not boundary limited, then it's possible that in our current randomly-drawn direction, the distance to the wall is shorter
+      //than what it was when the safety was calculated. Because we use a "spam vectors" technique that doesn't cover a 2D geometry fully in all angles, this may happen some
+      //fraction of the time, especially with internal (convex) corners or sometimes around curves. If this is true, try nudging our path length down by percent increments,
+      //up to a max number of decrements, and try again each time. Whenever this is required, this will incur a small bias because we're not changing the time.
       if( step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary ){
 	G4ExceptionDescription msg;
-	msg << "Somehow the CheckNextStep returned a step length that is not kInfinity but the step status thinks it's not fGeomBoundary. It seems we may have misjudged the distance to our boundary.";
-	G4Exception("G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+	msg << "Somehow the CheckNextStep returned a step length that is not kInfinity but the step status thinks it's not fGeomBoundary. It seems we may have misjudged the distance to our boundary. Going to try again for a few tries.";
+	G4Exception("G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
+
+	//Retry the checknextstep
+	int maxNTries = 5; //Capped at 5 to limit bias to 5% on these steps
+	for( int iTry = 1; iTry <= maxNTries; ++iTry ){
+
+	  //REL 6/30/25: need to retry the checknextstep bit with 
+	  nextStepSafety = 0;    
+	  nextStepLength = fSafetyHelper->CheckNextStep(fOldPosition,fNewDirection,fPathLength*pow(0.99,iTry),nextStepSafety);
+
+	  //Debugging
+	  if( verboseLevel > 5 ){
+	    G4cout << "ASDI Function Point G | In loop to retry attempt at checking next step, with reduced path length. Attempt " << iTry << ". CheckNextStep's next step length: " << nextStepLength << ", nextStepSafety: " << nextStepSafety << G4endl;
+	  }
+
+	  //If we succeed, then do the post-check bulk treatment, and break.
+	  if( nextStepLength == kInfinity ){
+	    fNewPosition = fOldPosition + fPathLength*pow(0.99,iTry)*fNewDirection;
+	    PostCheckBulkTreatment(stepTransportOnlyDeltaT);	    
+	    break;
+	  }	  
+	}
+
+	//If we've made it to the end and fPositionChanged is still false, then we throw a flag.
+	if( fPositionChanged == false ){
+	  G4ExceptionDescription msg;
+	  msg << "Somehow the CheckNextStep returned a step length that is not kInfinity but the step status thinks it's not fGeomBoundary. It seems we may have misjudged the distance to our boundary. Going to try again for a few tries.";
+	  G4Exception("G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+	}
+	
+	
       }
       else{
 
@@ -561,8 +603,9 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 
   //Debugging
   if( verboseLevel > 5 ){
-    G4cout << "ASDI Function Point K | At end of ASDI, old position: " << fOldPosition << G4endl;
-    G4cout << "ASDI Function Point K | At end of ASDI, new position: " << fNewPosition << G4endl;
+    G4cout << "ASDI Function Point K | At end of ASDI, old position volume using pre-step point: " << step.GetPreStepPoint()->GetPhysicalVolume()->GetName() << G4endl;
+    G4cout << "ASDI Function Point K | At end of ASDI, old position: " << fOldPosition << " in volume: " << G4CMP::GetVolumeAtPoint(fOldPosition)->GetName() << G4endl;
+    G4cout << "ASDI Function Point K | At end of ASDI, new position: " << fNewPosition << " in volume: " << G4CMP::GetVolumeAtPoint(fNewPosition)->GetName() << G4endl;
   }
 
   
@@ -570,7 +613,39 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
   return &fParticleChange;
 }      
 
-      
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+void G4CMPBogoliubovQPRandomWalkTransport::PostCheckBulkTreatment(G4double stepTransportOnlyDeltaT)
+{
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::PostCheckBulkTreatment ----------" << G4endl;
+    G4cout << "PCBT Function Point A | the proposed step does not cross a boundary. Setting position manually." << G4endl;
+  }
+  fSafetyHelper->ReLocateWithinVolume(fNewPosition);
+  fParticleChange.ProposeMomentumDirection(fNewDirection); 
+  
+  //Since we are forced to use the pre-step point's velocity for propagation of this step (and the pre-step point's velocity is
+  //the one we started with), transportation will add a time corresponding to traveling the calculated path length at that velocity.
+  //We should subtract that time off our final proposed time. First, debugging.
+  if( verboseLevel > 5 ){
+    G4cout << "PCBT Function Point H | fTimeStep: " << fTimeStep << ", timeChangefromTransportationOnly: " << stepTransportOnlyDeltaT << G4endl;
+    G4cout << "PCBT Function Point H | timeChangeFromTransportationOnly: " << stepTransportOnlyDeltaT << G4endl;
+  }
+  fParticleChange.ProposeLocalTime(fTimeStep-stepTransportOnlyDeltaT);
+  
+  
+  //I think this needs to be set to the step-limiting *old, pre-diffusion* path length, since other processes that aren't the step-limiting one will
+  //need to subtract off a distance. That distance basically needs to be velocity * deltaT. The current process that limits the step
+  //(here, not transportation) will zero out its number of interaction lengths. First, debugging
+  if( verboseLevel > 5 ){
+    G4cout << "PCBT Function Point I | Proposing a true (diffusion-UNfolded) step length of: " << fPreDiffusionPathLength << G4endl;
+  }
+  fParticleChange.ProposeTrueStepLength(fPreDiffusionPathLength);
+  fPositionChanged = true;
+}
+
+
 
   
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -603,7 +678,8 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
 
   //Debugging
   if( verboseLevel > 5 ){
-    G4cout << "PSDI Function Point 00A | Currently at a position " << trackPosition << " in volume " << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << G4endl;
+    G4cout << "PSDI Function Point 00A | Currently at a position (getVol@point) " << trackPosition << " in volume " << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << G4endl;
+    G4cout << "PSDI Function Point 00A | Currently at a position (postStepPoint) " << trackPosition << " in volume " << track.GetStep()->GetPostStepPoint()->GetPhysicalVolume()->GetName() << ", with postStepPointPos: " << track.GetStep()->GetPostStepPoint()->GetPosition() << G4endl;
   }
 
   
@@ -628,7 +704,7 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
     G4ThreeVector nudgeDir(0,0,0);
     G4ThreeVector nudgedPosition(0,0,0);
     G4double testSafety = the2DSafety;
-    G4VPhysicalVolume * preNudgePositionVolume = G4CMP::GetVolumeAtPoint(trackPosition);
+    G4VPhysicalVolume * preNudgePositionVolume = track.GetStep()->GetPostStepPoint()->GetPhysicalVolume(); //Using this because sometimes if on/near a surface G4 struggles with the GetVolumeAt point.
 
     //Debugging
     if( verboseLevel > 5 ){
@@ -644,7 +720,8 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
       nudgeDir = nudgeDir.unit();
       G4ThreeVector nudgedPosition = track.GetPosition() + nudgeDir*fHardFloorBoundaryScale*2; //Factor or 2 just to help shuttle things along
 
-      //Determine if we're in the same volume. If we're not, then continue;
+      //Determine if we're in the same volume. If we're not, then continue. Note that we can use the getVolumeAtPoint here without much issue because we're reasonably far
+      //from a boundary (i.e. of order the hard floor boundary scale in some direction).
       G4VPhysicalVolume * nudgedPositionVolume = G4CMP::GetVolumeAtPoint(nudgedPosition);
 
       //Debugging
@@ -864,11 +941,17 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
 
   //Sanity checks:
   //1. We set a default distance for computing another step and using this to find the direction to the wall as 1 nm
-  G4double deltaPath = 1*nm;
+  G4double deltaPath = fHardFloorBoundaryScale*0.1; //1*nm;
 
-  //2. However, if the2DSafety is less than 1nm, we will reset this to be the 2D safety so that we don't have weird edge
-  //   cases where the upcoming shift sends a point across the surface.
-  if( deltaPath > the2DSafety ) deltaPath = the2DSafety*0.999;
+  //2. However, if the2DSafety is less than the deltaPath, we will reset this to be just shorter than the 2D safety so that we don't have weird edge
+  //   cases where the upcoming shift sends a point across the surface. REL 6/29: I think this should no longer happen because prior to FDTNB
+  //   if the safety is less than the hard floor boundary scale, then we jiggle it to be larger than the hard floor boundary scale
+  if( deltaPath > the2DSafety ){
+    deltaPath = the2DSafety*0.999;
+    G4ExceptionDescription msg;
+    msg << "Despite our best jiggling efforts, deltaPath is somehow larger than the2DSafety here. Probably should see what's going on." << G4endl;
+    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+  }
 
   //3. Now we shift the point by a bit and re-find the safety.
   G4ThreeVector shiftedPoint = trackPosition - deltaPath*momDir;
@@ -891,7 +974,7 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   //granularity of the search in phi. This can occassionally cause the deltaDistToSurface to be slightly larger than the deltaPath,
   //which in principle should never happen. If this does happen, what this implies is that our momentum vector is ALREADY
   //aimed basically directly at the surface. In this case, just return the momentum direction (with sign dependent on the sign of the deltaDistToSurface.
-  if( fabs(deltaDistToSurface) > fabs(deltaPath) ){
+  if( fabs(deltaDistToSurface) >= fabs(deltaPath) ){
     if( deltaDistToSurface > 0 ) return momDir;
     else{ return -1*momDir; }
   }
@@ -936,10 +1019,14 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
   }
 
   //Recheck safety. Here, we compute the smaller of the two original safeties and make sure we set our
-  //"probe" vectors' magnitudes no larger than that. (Here, the 0.9 is to keep it from being exactly one of the safeties)
+  //"probe" vectors' magnitudes no larger than that. In fact, we want our probe vectors are unlikely to enter
+  //the hard floor boundary region. Since the shifted safety is computed using a step of deltaPath (which can at most
+  //get us closer by a fraction of the hardfloor boundary scale, we want to make sure that our new positions also don't
+  //cross this boundary. So let's set our scaling to (0.5-(deltaPath/hardFloorboundaryScale)*hardfloorBoundaryScale. //REL scaling used to be 0.9
   G4double smallerSafety = the2DSafety;
   if( shiftedPoint2DSafety < the2DSafety ) smallerSafety = shiftedPoint2DSafety;
-  smallerSafety *= 0.9; 
+  G4double scalingForSmallerSafety = 0.5*fHardFloorBoundaryScale-deltaPath;
+  smallerSafety *= scalingForSmallerSafety;
   G4ThreeVector newPosOption1 = trackPosition + smallerSafety*option1;
   G4ThreeVector newPosOption2 = trackPosition + smallerSafety*option2;
 
@@ -979,13 +1066,15 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
 
   //Need to handle an edge case, which happens when the two options' safeties are small enough to be below the picometer G4 tolerance bound
   //and end up being zero. If this is true, bring down the smallerSafety value by a factor and recalculate. This is computationally
-  //inefficient but should be rare enough that it hopefully shouldn't matter too much.
+  //inefficient but should be rare enough that it hopefully shouldn't matter too much. REL 6/29/25: I think this should actually no longer
+  //happen, given the fact that we're keeping all of these ops outside of the hard boundary floor. If we don't see this crop up, then we
+  //can delete this while block in a few weeks/months
   G4double originalOption1Safety = option1Safety;
   G4double originalOption2Safety = option2Safety;
   while( !(option2Safety > 0 && option1Safety > 0) ){
-    //    G4ExceptionDescription msg;
-    //msg << "Hitting options are both zero edge case" << G4endl;
-    //G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
+    G4ExceptionDescription msg;
+    msg << "At least one of Option1Safety and Option2Safety is zero. Ideally, this should never happen given the new hardFloor boundary scale." << G4endl;
+    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
     
     smallerSafety *= 0.5; 
     newPosOption1 = trackPosition + smallerSafety*option1;
@@ -1022,20 +1111,24 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
     //In the edge case where they're both zero, just 
     if( option2Safety == 0 && option1Safety == 0 ){
       G4ExceptionDescription msg;
-      msg << "both directions option1 and option2 give the same distance for some reason, and even after a recursive safety recalculation are zero? Should never get here. Option1: " << option1 << ", safety: " << option1Safety << ", Option2: " << option2 << ", safety: " << option2Safety << ", TrackPoint: " << trackPosition << ", the2DSafety (input): " << the2DSafety << ". This seems to be an edge case.";
+      msg << "both directions option1 and option2 give the same distance for some reason, and even after a recursive safety recalculation are zero? Should never get here. Option1: " << option1 << ", safety: " << option1Safety << ", Option2: " << option2 << ", safety: " << option2Safety << ", TrackPoint: " << trackPosition << ", the2DSafety (input): " << the2DSafety << ", volume (by GVAP): " << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << ". This seems to be an edge case.";
       G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
     }
-    else{
-      G4ExceptionDescription msg;
-      msg << "both directions option1 and option2 give the same distance for some reason and are NOT zero? Option1: " << option1 << ", safety: " << option1Safety << ", Option2: " << option2 << ", safety: " << option2Safety << ", TrackPoint: " << trackPosition << ", the2DSafety (input): " << the2DSafety << ". This seems to be an edge case.";
-      G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);      
+    else{      
+      //G4ExceptionDescription msg;
+      //msg << "both directions option1 and option2 give the same distance for some reason and are NOT zero? After exploration, this looks like a result of a small safety and a track that is pointed almost perfectly normal to a surface, and I don't think there's an issue here. Option1: " << option1 << ", safety: " << option1Safety << ", Option2: " << option2 << ", safety: " << option2Safety << ", TrackPoint: " << trackPosition << ", the2DSafety (input): " << the2DSafety << " volume (by GVAP): " << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << ". DeltaDistToSurface: " << deltaDistToSurface << ", deltaPath: " << deltaPath << ". This seems to be an edge case. Setting outputDir arbitrarily to option1";
+      //G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
+
+      //Taking out the exception flagging above because I think I know what this is from, but leaving it commented in case we want to bring it back.
+      outputDir = option1;
     }   
   }
 
   //Do a penultimate check: move from the current point's location along the output dir by half of the safety and recompute. If the
   //resulting safety is NOT reasonably about 50% of the previous safety, then we need to redo this entire function with the
-  //swept daughter safety applied.
-  G4double fractionalSafetyDifferenceThreshold = 0.1;
+  //swept daughter safety applied. What is probably happening is that we're hitting a point where inaccuracies in G4 geometry DistanceToIns
+  //are problematic.
+  G4double fractionalSafetyDifferenceThreshold = 0.1; //This is a biiiiit arbitrary...
   G4ThreeVector checkPoint = trackPosition + outputDir*the2DSafety*0.5;
   G4double checkedSafety = G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
 					      checkPoint,
@@ -1054,41 +1147,72 @@ G4ThreeVector G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundar
     needToRepeatCalculation = true;
   }
 
+
   //If we pass this and don't need to repeat based on this, do a final check to make sure we're actually crossing a boundary from
   //one volume into another. Sometimes the as-computed direction is to a "phantom boundary" because G4 doesn't calculate all "quick"
-  //safeties as accurately as possible.
-  if( needToRepeatCalculation == false ){
-    G4ThreeVector thisPos = trackPosition;
-    G4ThreeVector posOstensiblyOverBoundary(0,0,0);
-
-    //Edge case: we're close enough that the two options are originally effectively zero safety. Here let's just artificially inflate our nudge by a bit
-    if( originalOption1Safety == 0 && originalOption2Safety == 0 ){
-      posOstensiblyOverBoundary = trackPosition + the2DSafety*outputDir*fBoundaryFudgeFactor*2;
-    }
-    //Most common
-    else{
-      posOstensiblyOverBoundary = trackPosition + the2DSafety*outputDir*fBoundaryFudgeFactor;
-    }
-
-
-    if( G4CMP::GetVolumeAtPoint(thisPos) == G4CMP::GetVolumeAtPoint(posOstensiblyOverBoundary) ){
-
-      if( verboseLevel > 5 ){
-	G4ExceptionDescription msg;
-	msg << "When trying to find the direction to the boundary, we seem to be calculating a direction vector that satisfies our first, fractionalSafetyDifference criterion, but not our phantom boundary condition. (This may sometimes happen near corners, where our direction-finding algorithm's math breaks down. At position: " << trackPosition << ", alleged direction to boundary: " << outputDir << ", original safety: " << the2DSafety << ", volume at thisPos: " << G4CMP::GetVolumeAtPoint(thisPos) << " (" << G4CMP::GetVolumeAtPoint(thisPos)->GetName() << ", volume at the position ostensibly over the boundary: " << G4CMP::GetVolumeAtPoint(posOstensiblyOverBoundary) << G4endl;
-	G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
-      }
-	
-      needToRepeatCalculation = true;
-    }
+  //safeties as accurately as possible.  
+  if( !needToRepeatCalculation ){
+    needToRepeatCalculation = CheckForPhantomBoundaryCrossings(trackPosition,
+							       the2DSafety,
+							       originalOption1Safety,
+							       originalOption2Safety,
+							       outputDir);
   }
+  
   
   //One ACTUALLY final check: compute the volume at the current point and the volume at a point that is one checkedSafety away
 
   
   return outputDir;
 }
-					     
+
+
+//Check to see if our safety and output direction (i.e. direction to the boundary) tells us to cross a boundary that isn't really there but which
+//only seems to be there because of the rapid, inaccurate way that G4 distance-to-inside functions are calculated for various geometrical structures.
+//Arguments:
+//1. current track position
+//2. Original 2D safety
+//3. Safety for the option 1 shifted-point position
+//4. Safety for the option 2 shifted-point position
+//5. (Ostensibly) the direction toward the boundary
+G4bool G4CMPBogoliubovQPRandomWalkTransport::CheckForPhantomBoundaryCrossings(G4ThreeVector trackPosition,
+									      G4double the2DSafety,
+									      G4double originalOption1Safety,
+									      G4double originalOption2Safety,
+									      G4ThreeVector outputDir)
+{
+  G4bool needToRepeatCalculation = false;
+  G4ThreeVector thisPos = trackPosition;
+  G4ThreeVector posOstensiblyOverBoundary(0,0,0);
+
+  //Edge case: we're close enough that the two options are originally effectively zero safety. Here let's just artificially inflate our nudge by a bit
+  if( originalOption1Safety == 0 && originalOption2Safety == 0 ){
+    posOstensiblyOverBoundary = trackPosition + the2DSafety*outputDir*fBoundaryFudgeFactor*2;
+    
+    //REL 6/29/25: Due to the new hard floor formalism, this should never run. If it does, we have an issue.
+    G4ExceptionDescription msg;
+    msg << "Both originalOption1Safety and originalOption2Safety are zero. Ideally, this should never happen given the new hardFloor boundary scale." << G4endl;
+    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);      
+  }
+  //Most common
+  else{
+    posOstensiblyOverBoundary = trackPosition + the2DSafety*outputDir*fBoundaryFudgeFactor;
+  }
+  
+
+  //Check to see if the volume at the original position is still equal to the volume when we've ostensibly shifted over the boundary.
+  //If they are still equal, that indicates that we may be working with a phantom boundary. Flag the need to repeat this calculation as true and return true.  
+  if( G4CMP::GetVolumeAtPoint(thisPos) == G4CMP::GetVolumeAtPoint(posOstensiblyOverBoundary) ){
+    
+    if( verboseLevel > 5 ){
+      G4ExceptionDescription msg;
+      msg << "When trying to find the direction to the boundary, we seem to be calculating a direction vector that satisfies our first, fractionalSafetyDifference criterion, but not our phantom boundary condition. (This may sometimes happen near corners, where our direction-finding algorithm's math breaks down. At position: " << trackPosition << ", alleged direction to boundary: " << outputDir << ", original safety: " << the2DSafety << ", volume at thisPos: " << G4CMP::GetVolumeAtPoint(thisPos) << " (" << G4CMP::GetVolumeAtPoint(thisPos)->GetName() << ", volume at the position ostensibly over the boundary: " << G4CMP::GetVolumeAtPoint(posOstensiblyOverBoundary) << G4endl;
+      G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindDirectionToNearbyBoundary", "BogoliubovQPRandomWalkTransport00X",JustWarning, msg);
+    }    
+    needToRepeatCalculation = true;
+  }
+  return needToRepeatCalculation;
+}
 
 
 
@@ -1166,10 +1290,12 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     fSafetyHelper = transportMgr->GetSafetyHelper();        
     fSafetyHelper->InitialiseHelper();
   }
+
   
-  //REL 0.01 nm has some odd edge cases pop up where currentVolPlusEps isn't calculated properly. Guessing it's something in that function
-  //that doesn't like the smaller tolerance because 1.0*nm works okay.
-  G4double boundTolerance = 1.0*nm;//0.01*nm; 
+  //Figure out some basic info, including volumes at the current position +/- epsilon. Using the epsilon as a fraction (10%) of the hard floor
+  //boundary scale. I think we need to make sure that it's just much larger than the picometer scale that G4 uses for tolerance checks. I've also
+  //noticed that 0.01 nm has issues (but 1 nm seems fine), so want to stay well above the 10 pm scale.
+  G4double boundTolerance = fHardFloorBoundaryScale*0.1; 
   G4VPhysicalVolume * currentVolume = track.GetVolume();
   G4ThreeVector trackPosition = track.GetPosition();
   G4ThreeVector momentumDir = track.GetMomentumDirection();
@@ -1196,6 +1322,7 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
   //in a boundary-limited step), then we're in a turnaround step. This assumes that the real distance to the next
   //geometric feature is not smaller than the boundTolerance -- in that case, this may break down a bit. Return
   //that this is inactive.
+  //REL 6/28: make this boundTolerance a small fraction of the hard floor scale. Maybe set to 0.1*hardFloor?
   fTrackOnBoundary = false;
   if( currentVolPlusEps != currentVolume && theStatus == fGeomBoundary ){
 
@@ -1392,36 +1519,9 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
     //multipled by a velocity that is quite high, we need to do the same.
     G4double thisMFP = timeStepToBoundary * velocity;    
 
-    //There are some edge cases, where we have very small distances to the boundary due to vectors that "almost
-    //pointed directly at the boundary." In these edge cases, (which may be resolved when we get the time of
-    //first passage calculations in), the MFP as calculated with the above line will be less than the 2D safety
-    //used as input. This is because of the quadratic form of the calculated timeStepToBoundary. In this scenario,
-    //just manually set the MFP equal to the safety. (Usually, the MFP is much larger than the 2D safety.)
-    //REL want to check that this is only for small enough distances not to matter, eventually.
-    //REL 4/1/2025 Now that we have TOFP in, I'm not sure if this matters any more... Should check this. Actually, think that the
-    //important thing here is actually the relationship between diffusion constant and velocity, which is I think
-    //somewhat shaky since we keep a constant velocity but allow for energy-dependent diffusion. So actually yeah I think
-    //we have to keep this for generality.
-    fVerySmallStep = false;
-    if( thisMFP < the2DSafety ){
-      fVerySmallStep = true;
-      //thisMFP = the2DSafety*fBoundaryFudgeFactor; //Fudge factor needs to go here as well because AlongStep GPIL uses PhysicalStep, which comes from PostStepGPIL (this is so that we can enable Transportation to trigger/win the AlongStep race)
-
-      //REL 4/13/25 Have to split this up into on-boundary case (where we cannot let transportation win because it's always going to expect to see
-      //a boundary in the direction of the pre-step point's momentum
-      if( fTrackOnBoundary ){
-	thisMFP = the2DSafety / fBoundaryFudgeFactor;
-      }
-      //If we're not on a boundary then we launch into the boundary we're (hopefully) staring down.
-      else{
-	thisMFP = fEpsilonForWalkOnSpheres; //Set this the same as our "boot" distance so that it's for sure longer than the distance needed for transport to win
-      }
-      
-      //G4ExceptionDescription msg;
-      //msg << "We're triggering fVerySmallStep even though we're using the time-of-first-passage formalism.";
-      //G4Exception("G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath", "BogoliubovQPRandomWalkTransport002",FatalException, msg);
-    }
-    
+    //Adjust for a scenario of a very very short step, which is an edge case requiring some consideration
+    thisMFP = HandleVerySmallSteps(thisMFP,the2DSafety);
+        
     //Now, as a last measure, we set the number of interaction lengths left for this process to 1
     //and return a mean free path equal to this MFP, so that the only way that another process will
     //win over this in the discrete GPIL race is if the time to that process is less than the time
@@ -1444,6 +1544,71 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
   }
 }
 
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+G4double G4CMPBogoliubovQPRandomWalkTransport::HandleVerySmallSteps(G4double thisMFP, G4double the2DSafety)
+{
+  //Debugging
+  if( verboseLevel > 5 ){
+    G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::HandleVerySmallSteps ----------" << G4endl;
+  }
+
+  
+  //Since the time of first passage is sampled given a diffusion constant and a distance (the2DSafety), and since the
+  //MFP is linearly related to that TOFP via an artificially constant velocity, there may be a scenario in which
+  //the MFP (i.e. diffusion-unfolded distance) occasionally ends up smaller than the "straight-line" 2D safety.
+  //case we need to think about how to handle
+  //REL 4/1/2025 Now that we have TOFP in, I'm not sure if this matters any more... Should check this. Actually, think that the
+  //important thing here is actually the relationship between diffusion constant and velocity, which is I think
+  //somewhat shaky since we keep a constant velocity but allow for energy-dependent diffusion. So actually yeah I think
+  //we have to keep this for generality.
+  fVerySmallStep = false;
+  if( thisMFP < the2DSafety ){
+    fVerySmallStep = true;
+    //thisMFP = the2DSafety*fBoundaryFudgeFactor; //Fudge factor needs to go here as well because AlongStep GPIL uses PhysicalStep, which comes from PostStepGPIL (this is so that we can enable Transportation to trigger/win the AlongStep race)
+
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "HVSS Function Point A | Confirming that fVerySmallStep is set to trye this round." << G4endl;
+    }
+    
+    
+    //First check some regimes, agnostic to boundary status
+    if( the2DSafety > fEpsilonForWalkOnSpheres ){
+      G4ExceptionDescription msg;
+      msg << "In HandleVerySmallStep, the2DSafety > fEpsilonWalkOnSpheres." << G4endl;
+      G4Exception("G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath", "BogoliubovQPRandomWalkTransport002",JustWarning, msg);
+    }
+    //else{
+    //  G4ExceptionDescription msg;
+    //  msg << "In HandleVerySmallStep, the2DSafety < fEpsilonWalkOnSpheres." << G4endl;
+    //  G4Exception("G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath", "BogoliubovQPRandomWalkTransport002",JustWarning, msg);
+    //}
+        
+    //Split this up into on-boundary case and not-on-boundary case. REL 4/13/25 For boundary, we cannot let transportation win because it's always going to
+    //expect to see a boundary in the direction of the pre-step point's momentum    
+    if( fTrackOnBoundary ){      
+      thisMFP = the2DSafety / fBoundaryFudgeFactor;
+    }
+    //If we're not on a boundary then we launch into the boundary we're (hopefully) staring down. This should ideally/hopefully beat transportation.
+    else{
+      thisMFP = the2DSafety * fBoundaryFudgeFactor; //REL 6/29/25 -- meant to make this decision scale-less. Hopefully it works?
+      //thisMFP = fEpsilonForWalkOnSpheres; //Set this the same as our "boot" distance so that it's for sure longer than the distance needed for transport to win
+    }
+
+    //REL I worry that here we're not general enough: are there cases where the safety is larger than the fEpsilonWalkOnSpheres? What about for different materials?
+    //I think we need logic to handle this.
+    
+    //G4ExceptionDescription msg;
+    //msg << "We're triggering fVerySmallStep even though we're using the time-of-first-passage formalism.";
+    //G4Exception("G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath", "BogoliubovQPRandomWalkTransport002",FatalException, msg);
+  }
+
+
+  return thisMFP;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 //This is an amended version of the logic block in G4CMPVProcess that allows us to update the lattice in procUtils and in SCUtils when it changes.
@@ -1645,7 +1810,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   }
   
   //Find the most recent boundary history norm and position, and which volume is in the "forward" direction
-  G4double epsilonDisplacement = 1 * CLHEP::nm;
+  G4double epsilonDisplacement = fHardFloorBoundaryScale*0.1;//Now setting to be relative to the hard floor boundary scale... 1 * CLHEP::nm;
   G4ThreeVector currentPosition = fBoundaryHistory[fBoundaryHistory.size()-1].first;
   G4ThreeVector currentNorm = fBoundaryHistory[fBoundaryHistory.size()-1].second;
   G4ThreeVector displacedPosition = currentPosition + currentNorm*epsilonDisplacement;

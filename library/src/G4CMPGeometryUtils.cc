@@ -339,6 +339,8 @@ G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch,
     }
   }
 
+
+  
   //2. Next, loop through the daughter volumes in this mother volume and compute the distances to those.
   //When we're stuck, we don't actually use the tangVector1 and tangVector2 in the math, because of something that I think will be a reasonable
   //first approximation: if you're in a corner, the chances of a daughter boundary being on the same scale of how close you are to that
@@ -647,7 +649,7 @@ G4double G4CMP::Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid, G4Thr
 
     //Debugging
     if( verboseLevel > 5 ){
-      G4cout << "C2DSFAB Function Point A | Since the surfaceNorm is zero, looks like were making a central direction for our sweep as the sum of tangent vectors, normalized: " << centerDir << G4endl;
+      G4cout << "C2DSFAB Function Point A | Since the surfaceNorm is zero, looks like were making a central direction for our sweep as the sum of (rotated-into-mother-frame) tangent vectors, normalized: " << centerDir << G4endl;
     }
   }
   else{
