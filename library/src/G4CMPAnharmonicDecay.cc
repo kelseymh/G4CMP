@@ -32,6 +32,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4VProcess.hh"
 #include "Randomize.hh"
+#include <array>
 #include <cmath>
 
 G4CMPAnharmonicDecay::G4CMPAnharmonicDecay(const G4VProcess* theProcess)
@@ -314,13 +315,18 @@ MakeLTSecondaries(const G4Track& aTrack, G4ParticleChange& aParticleChange) {
 void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
                                    G4ParticleChange& aParticleChange,
                                    G4CMPPhononBoundaryProcess* boundaryP) {
+  G4cout << "DOING SPEC DECAY" << G4endl;
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
   G4double E0 = GetKineticEnergy(aTrack);
 
-  // Get modes for daughter phonons
+  // Get DOS array for daughter phonons
+  std::array<G4double, G4PhononPolarization::NUM_MODES> dos = {theLattice->GetLDOS(),
+                                                               theLattice->GetSTDOS(),
+                                                               theLattice->GetFTDOS()};
+
+  // Get the surface daughter mode 
   G4int surfMode = G4CMP::ChoosePhononPolarization(theLattice);
-  G4int bulkMode = G4CMP::ChoosePhononPolarization(theLattice);
 
   // Determine daughter wavevectors
   // In Debye approx: |k| = w/v
@@ -333,39 +339,54 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step& aStep,
   G4double vSurf = theLattice->GetSurfaceSoundSpeed();
   G4ThreeVector kSurfDir = k0Tan.unit();
 
-  // Get lowest energy split for bulk mode
-  G4double bulkE = 0, surfE = 0, low = 0, high = E0;
-  G4double kSurfMag = (surfE / hbar_Planck) / vSurf;
+  // Get lowest energy split for a bulk mode that has inward Vg
+  G4double bulkE = 0, surfE = 0;
   G4ThreeVector kBulk;
-  while (high - low > 1e-12 * eV) {
-    bulkE = (low + high) / 2.;
-    surfE = E0 - bulkE;
-    kSurfMag = (surfE / hbar_Planck) / vSurf;
+  G4int nTries = 0, bulkMode;
+  // Cycle through bulk modes to get a working energy split
+  do {
+    // Determine bulk mode from remaining options
+    bulkMode = G4CMP::ChoosePhononPolarization(dos[0], dos[1], dos[2]);
+    // Remove option for future tries
+    dos[bulkMode] = 0;
 
-    // Momentum conservation for bulk mode
-    kBulk = (k0 - 2 * (k0 * surfNorm) * surfNorm) - kSurfMag * kSurfDir;
+    // Get energy split for daughters
+    G4double low = 0, high = E0;
+    while (high - low > 1e-9 * eV) {
+      bulkE = (low + high) / 2.;
+      surfE = E0 - bulkE;
+      G4double kSurfMag = (surfE / hbar_Planck) / vSurf;
 
-    if (G4CMP::PhononVelocityIsInward(theLattice, bulkMode, kBulk, surfNorm,
-                                      aTrack.GetPosition())) {
-      // Move in
-      high = bulkE;
-    } else {
-      // Move out
-      low = bulkE;
+      // Momentum conservation for bulk mode
+      kBulk = (k0 - 2 * (k0 * surfNorm) * surfNorm) - kSurfMag * kSurfDir;
+
+      if (G4CMP::PhononVelocityIsInward(theLattice, bulkMode, kBulk, surfNorm,
+                                        aTrack.GetPosition())) {
+        // Move out (maximize bulk E)
+        low = bulkE;
+      } else {
+        // Move in (maximize bulk E)
+        high = bulkE;
+      }
     }
-  }
+  } while (!G4CMP::PhononVelocityIsInward(theLattice, bulkMode, kBulk, surfNorm,
+                                          aTrack.GetPosition()) && nTries++ < 2);
 
-  // Protect against outward Vg
+  // Get diffuse reflection if all 3 modes failed (missing physics)
   if (!G4CMP::PhononVelocityIsInward(theLattice, bulkMode, kBulk, surfNorm,
                                      aTrack.GetPosition())) {
+    // Pick new mode from DOS
+    bulkMode = G4CMP::ChoosePhononPolarization(theLattice);
     kBulk = G4CMP::GetLambertianVector(theLattice, surfNorm, bulkMode,
                                        aTrack.GetPosition());
+
+    G4cout << "FAILED ENERGY SPLIT" << G4endl;
   }
 
   // Propagate surface phonon along detector surface
   G4ThreeVector surfPoint = aTrack.GetPosition();
   boundaryP->PropagateOnSurface(kSurfDir, surfNorm, surfMode, surfPoint);
-  G4double delta_t = (surfPoint - aTrack.GetPosition()).mag() / vSurf; // Time of surface propagation
+  G4double delta_t = (surfPoint - aTrack.GetPosition()).mag() / vSurf; // Time for surface propagation
 
   // Construct the daughters
   G4Track* bulkSec = G4CMP::CreatePhonon(aTrack, bulkMode,

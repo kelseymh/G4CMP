@@ -60,6 +60,11 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
   // Skip reflection zero-length steps
   if (step.GetStepLength() == 0.) return &aParticleChange;
 
+  // TEMP - REMOVE: Kill secondaries (NTL phonons for tracking)
+  /*if (track.GetParentID() > 0 && track.GetCurrentStepNumber() >= 1) {
+    aParticleChange.ProposeTrackStatus(fStopAndKill);
+  }*/
+
   // Apply minimum energy cut to kill tracks with optional NIEL deposit
   if (BelowEnergyCut(track)) {
     if (verboseLevel>2) G4cout << " track below minimum energy." << G4endl;
