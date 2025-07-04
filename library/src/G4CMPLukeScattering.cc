@@ -232,17 +232,29 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     
     // Get recoil wavevector (in HV frame), convert to new local momentum
     k_recoil = ktrk - qvec;
+    if (IsElectron()) {qvec = lat->SphericalToEllipsoidalTranformation(iValley, qvec);}
     qmag = qvec.mag();
     Ephonon = MakePhononEnergy(qmag);
     // Make sure energy is conserved
     Erecoil = Etrk - Ephonon;
 
+    // Sanity check for phonon production: can't exceed charge's energy
+    if (Erecoil <= 0)  {
+      if (verboseLevel) {
+	G4cerr << GetProcessName() << " TRY AGAIN: Ephonon "
+	       << Ephonon/eV << " eV exceeds " << trkName << " energy "
+	       << Etrk/eV << " eV" << G4endl;
+      }
+
+      continue;			// Try again
+    }
+
     if (IsHole()) {
       precoil = k_recoil * hbarc;
     } else {
       // Rotating phonon wavevector out of valley frame into solid frame
-      qvec = lat->SphericalToEllipsoidalTranformation(iValley, qvec);
-      qvec = qmag * qvec.unit();
+      
+      //qvec = qmag * qvec.unit();
       // First transform the recoil wavevector back to the ellipsoidal frame
       precoil = lat->SphericalToEllipsoidalTranformation(iValley, k_recoil);
       // Then transform the recoil wavevector to transport momentum
