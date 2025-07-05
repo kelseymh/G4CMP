@@ -24,6 +24,9 @@
 //	     to electrode.
 // 20210923  Use >= in maximum reflections check.
 // 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
+// 20250413  Protect debugging messages with verbosity.
+// 20250415  Suppress error for same PV if starting at boundary.
+// 20250423  Remove error suppression for starting at boundary.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -245,11 +248,27 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 
   // If post-step position not proper surface point, compute intersection
   if (postIn != kSurface) {
+    if (buVerboseLevel>2)
+      G4cout << " OLD SURFACE POINT: " << surfacePoint << G4endl;
+
     G4ThreeVector along = (postPos-prePos).unit();	// Trajectory direction
     surfacePoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
+    if (buVerboseLevel>2) {
+      G4cout << " moving preStep by " << preSolid->DistanceToOut(prePos,along)
+	     << " along " << along << G4endl
+	     << " NEW SURFACE POINT: " << surfacePoint << G4endl;
+    }
+
+    postIn = preSolid->Inside(surfacePoint);
+    if (buVerboseLevel>2) {
+      G4cout << "\n Is adjusted location on surface of preStep Volume? "
+	     << (postIn==kOutside ? "outside" :
+		 postIn==kInside  ? "inside" :
+		 postIn==kSurface ? "surface" : "INVALID") << G4endl;
+    }
 
     // Double check calculation -- point "must" now be on surface!
-    if (preSolid->Inside(surfacePoint) != kSurface) {
+    if (postIn != kSurface) {
       G4Exception((procName+"::CheckBoundaryPoint").c_str(),
 		  "Boundary005", EventMustBeAborted,
 		  "Boundary-limited step cannot find boundary surface point"
@@ -274,16 +293,22 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack);
 
   if (!matTable) {
+    if (buVerboseLevel>2) G4cout << "BU::Apply: !matTable" << G4endl;
     DoSimpleKill(aTrack, aStep, aParticleChange);
   } else if (electrode && electrode->IsNearElectrode(aStep)) {
+    if (buVerboseLevel>2) G4cout << "BU::Apply: absorb at electrode" << G4endl;
     electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
   } else if (AbsorbTrack(aTrack, aStep)) {
+    if (buVerboseLevel>2) G4cout << "BU::Apply: Absorption" << G4endl;
     DoAbsorption(aTrack, aStep, aParticleChange);
   } else if (MaximumReflections(aTrack)) {
+    if (buVerboseLevel>2) G4cout << "BU::Apply: maxRef" << G4endl;
     DoSimpleKill(aTrack, aStep, aParticleChange);
   } else if (ReflectTrack(aTrack, aStep)) {
+    if (buVerboseLevel>2) G4cout << "BU::Apply: Reflection" << G4endl;
     DoReflection(aTrack, aStep, aParticleChange);
   } else {
+    if (buVerboseLevel>2) G4cout << "BU::Apply: Transmission" << G4endl;
     DoTransmission(aTrack, aStep, aParticleChange);
   }
 }

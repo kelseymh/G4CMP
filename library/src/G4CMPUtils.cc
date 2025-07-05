@@ -17,21 +17,30 @@
 // 20220816  M. Kelsey -- Move RandomIndex here for more general use
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 // 20241223  G4CMP-419 -- Add utility to create per-thread debugging file
+// 20250130  G4CMP-453 -- Apply coordinate rotations in PhononVelocityIsInward
+// 20250422  G4CMP-468 -- Add displaced point test to PhononVelocityIsInward.
+// 20250423  G4CMP-468 -- Add function to get diffuse reflection vector.
+// 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
 #include "G4CMPElectrodeHit.hh"
+#include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackUtils.hh"
+#include "G4EventManager.hh"
+#include "G4ExceptionSeverity.hh"
 #include "G4LatticePhysical.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4ProcessManager.hh"
 #include "G4ProcessVector.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4Threading.hh"
 #include "G4Track.hh"
+#include "G4TrackingManager.hh"
 #include "G4VProcess.hh"
 #include "Randomize.hh"
 #include <string>
@@ -155,6 +164,18 @@ G4double G4CMP::ChooseChargeWeight(G4double prob) {
   return ((prob==1.) ? 1. : (G4UniformRand()<prob) ? 1./prob : 0.);
 }
 
+// Get current track from event and track managers
+
+G4Track* G4CMP::GetCurrentTrack() {
+  return G4EventManager::GetEventManager()->GetTrackingManager()->GetTrack();
+}
+
+// Get touchable from current track
+
+const G4VTouchable* G4CMP::GetCurrentTouchable() {
+  G4Track* track = GetCurrentTrack();
+  return track ? track->GetTouchable() : 0;
+}
 
 // Copy information from current step into data block]
 
@@ -188,7 +209,31 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
 }
 
 
-// Generate cos(theta) law for diffuse reflection
+// Generate cos(theta) law for diffuse reflection, ensuring that computed
+// vector is directed inward with respect to the surface normal.
+
+G4ThreeVector
+G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
+			   const G4ThreeVector& surfNorm, G4int mode) {
+  const G4ThreeVector surfPoint = GetCurrentTrack()->GetPosition();
+  return GetLambertianVector(theLattice, surfNorm, mode, surfPoint);
+}
+
+G4ThreeVector
+G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
+			   const G4ThreeVector& surfNorm, G4int mode,
+			   const G4ThreeVector& surfPoint) {
+  G4ThreeVector reflectedKDir;
+  const G4int maxTries = 1000;
+  G4int nTries = 0;
+  do {
+    reflectedKDir = LambertReflection(surfNorm);
+  } while (nTries++ < maxTries &&
+           !PhononVelocityIsInward(theLattice, mode, reflectedKDir, surfNorm,
+                                   surfPoint));
+
+  return reflectedKDir;
+}
 
 G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
   G4double phi = 2.0*pi*G4UniformRand();
@@ -202,13 +247,42 @@ G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
 
 
 // Check that phonon is properly directed from the volume surface
+// waveVector and surfNorm need to be in global coordinates
 
 G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int mode,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
-  G4ThreeVector vDir = lattice->MapKtoVDir(mode, waveVector);
-  return vDir.dot(surfNorm) < 0.0;
+  const G4ThreeVector surfacePos = GetCurrentTrack()->GetPosition();
+  return PhononVelocityIsInward(lattice, mode, waveVector, surfNorm, surfacePos);
+}
+
+G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
+                                     G4int mode,
+                                     const G4ThreeVector& waveVector,
+                                     const G4ThreeVector& surfNorm,
+                                     const G4ThreeVector& surfacePos) {
+  // Get touchable for coordinate rotations
+  const G4VTouchable* touchable = GetCurrentTouchable();
+
+  if (!touchable) {
+    G4Exception("G4CMP::PhononVelocityIsInward", "G4CMPUtils001",
+		EventMustBeAborted, "Current track does not have valid touchable!");
+    return false;
+  }
+
+  // MapKtoVDir requires local direction for the wavevector
+  G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(touchable, waveVector));
+
+  // Project a 1 nm step in the new direction, see if it
+  // is still in the correct volume.
+  G4ThreeVector localPos = GetLocalPosition(touchable, surfacePos);
+  G4VSolid* solid = touchable->GetSolid();
+  EInside trialStep = solid->Inside(localPos + 1*nm * vDir);
+
+  // Compare group velocity and surface normal in global coordinates
+  RotateToGlobalDirection(touchable, vDir);
+  return (vDir.dot(surfNorm) < 0.0 && trialStep == kInside);
 }
 
 

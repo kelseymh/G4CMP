@@ -14,6 +14,7 @@
 // 20211001 M. Kelsey -- Collapse layered CreateChargeCarrier functions
 // 20220907 G4CMP-316 -- Pass track into CreateXYZ() functions; do valley
 //		selection for electrons in CreateChargeCarrier().
+// 20250508 G4CMP-480 -- Apply correct transforms for k->Vg mapping.
 
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPDriftHole.hh"
@@ -71,7 +72,10 @@ G4Track* G4CMP::CreatePhonon(const G4Track& track, G4int mode,
     mode = ChoosePhononPolarization(lat);
   }
 
-  G4ThreeVector vgroup = lat->MapKtoVDir(mode, waveVec);
+  // Wavevector must be local when passed to lattice
+  const G4VTouchable* touch = track.GetTouchable();
+  G4ThreeVector vgroup = lat->MapKtoVDir(mode, GetLocalDirection(touch, waveVec));
+
   if (std::fabs(vgroup.mag()-1.) > 0.01) {
     G4cerr << "WARNING: vgroup not a unit vector: " << vgroup
      << " length " << vgroup.mag() << G4endl;
@@ -80,7 +84,6 @@ G4Track* G4CMP::CreatePhonon(const G4Track& track, G4int mode,
   G4ParticleDefinition* thePhonon = G4PhononPolarization::Get(mode);
 
   // Secondaries are (usually) created at the current track coordinates
-  const G4VTouchable* touch = track.GetTouchable();
   RotateToGlobalDirection(touch, vgroup);
 
   auto sec = new G4Track(new G4DynamicParticle(thePhonon, vgroup, energy),
@@ -88,9 +91,9 @@ G4Track* G4CMP::CreatePhonon(const G4Track& track, G4int mode,
   sec->SetGoodForTrackingFlag(true);	// Protect against production cuts
 
   // Store wavevector in auxiliary info for track
-  AttachTrackInfo(sec, GetGlobalDirection(touch, waveVec));
+  AttachTrackInfo(sec, waveVec);
 
-  sec->SetVelocity(lat->MapKtoV(mode, waveVec));
+  sec->SetVelocity(lat->MapKtoV(mode, GetLocalDirection(touch, waveVec)));
   sec->UseGivenVelocity(true);
 
   return sec;
@@ -114,7 +117,8 @@ G4Track* G4CMP::CreatePhonon(const G4VTouchable* touch, G4int mode,
     mode = ChoosePhononPolarization(lat);
   }
 
-  G4ThreeVector vgroup = lat->MapKtoVDir(mode, waveVec);
+  // Wavevector must be local when passed to lattice
+  G4ThreeVector vgroup = lat->MapKtoVDir(mode, GetLocalDirection(touch, waveVec));
   if (std::fabs(vgroup.mag()-1.) > 0.01) {
     G4cerr << "WARNING: vgroup not a unit vector: " << vgroup
      << " length " << vgroup.mag() << G4endl;
@@ -130,9 +134,9 @@ G4Track* G4CMP::CreatePhonon(const G4VTouchable* touch, G4int mode,
   sec->SetGoodForTrackingFlag(true);	// Protect against production cuts
 
   // Store wavevector in auxiliary info for track
-  AttachTrackInfo(sec, GetGlobalDirection(touch, waveVec));
+  AttachTrackInfo(sec, waveVec);
 
-  sec->SetVelocity(lat->MapKtoV(mode, waveVec));
+  sec->SetVelocity(lat->MapKtoV(mode, GetLocalDirection(touch, waveVec)));
   sec->UseGivenVelocity(true);
 
   return sec;
