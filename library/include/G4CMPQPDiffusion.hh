@@ -3,11 +3,11 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/include/G4CMPBogoliubovQPRandomWalkTransport.hh
-/// \brief Definition of the G4CMPBogoliubovQPRandomWalkTransport class
+/// \file library/include/G4CMPQPDiffusion.hh
+/// \brief Definition of the G4CMPQPDiffusion class
 
-#ifndef G4CMPBogoliubovQPRandomWalkTransport_h
-#define G4CMPBogoliubovQPRandomWalkTransport_h 1
+#ifndef G4CMPQPDiffusion_h
+#define G4CMPQPDiffusion_h 1
 
 #include "G4VContinuousDiscreteProcess.hh"
 #include "globals.hh"
@@ -30,13 +30,13 @@ class G4SafetyHelper;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-class G4CMPBogoliubovQPRandomWalkTransport : public G4VContinuousDiscreteProcess, public G4CMPProcessUtils, public G4CMPBoundaryUtils, public G4CMPSCUtils
+class G4CMPQPDiffusion : public G4VContinuousDiscreteProcess, public G4CMPProcessUtils, public G4CMPBoundaryUtils, public G4CMPSCUtils
 {
 public:
 
-    G4CMPBogoliubovQPRandomWalkTransport(const G4String& name = "G4CMPBogoliubovQPRandomWalkTransport", G4CMPProcessSubType stype = fBogoliubovQPRandomWalkTransport);
+  G4CMPQPDiffusion(const G4String& name = "G4CMPQPDiffusion", G4CMPProcessSubType stype = fQPDiffusion);
 
-  virtual ~G4CMPBogoliubovQPRandomWalkTransport();
+  virtual ~G4CMPQPDiffusion();
 
 public:
 
@@ -104,9 +104,9 @@ protected:
 private:
 
   // hide  assignment operator
-  G4CMPBogoliubovQPRandomWalkTransport(G4CMPBogoliubovQPRandomWalkTransport &) = delete;
-  G4CMPBogoliubovQPRandomWalkTransport &
-    operator=(const G4CMPBogoliubovQPRandomWalkTransport &right) = delete;
+  G4CMPQPDiffusion(G4CMPQPDiffusion &) = delete;
+  G4CMPQPDiffusion &
+    operator=(const G4CMPQPDiffusion &right) = delete;
     
   // ======== Parameters of the class fixed at initialisation =======
   //Safety helper to query G4Navigator and check distance to geometric boundaries
@@ -190,14 +190,14 @@ private:
 
 // ======== Run time inline methods ================
 
-inline G4double G4CMPBogoliubovQPRandomWalkTransport::TimeStep() const
+inline G4double G4CMPQPDiffusion::TimeStep() const
 {
   return fTimeStep;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-inline void G4CMPBogoliubovQPRandomWalkTransport::SetTimeStep(G4double val)
+inline void G4CMPQPDiffusion::SetTimeStep(G4double val)
 {
   fTimeStep = val;
 }
