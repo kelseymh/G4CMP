@@ -184,6 +184,7 @@ private:
   G4double fDotProductDefiningUniqueNorms;
   G4double fStuckInCornerThreshold;
   G4double fNeedSweptSafetyInGetMFP;
+  G4double fPreemptivelyKillEvent;
   
 };
 

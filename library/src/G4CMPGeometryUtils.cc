@@ -340,8 +340,12 @@ G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch,
   }
 
 
+  //2. Do a simple loop through the daughter volumes and determine if there's more than one below the hardFloorBoundaryScale. If so, then this
+  //   is likely an indication that we're on one daughter's boundary and pinging a nearby daughter. In this scenario, just turn on the forceSweepSafetyForDaughters
+  //   flag and recompute. This way the daughters 
+
   
-  //2. Next, loop through the daughter volumes in this mother volume and compute the distances to those.
+  //3. Next, loop through the daughter volumes in this mother volume and compute the distances to those.
   //When we're stuck, we don't actually use the tangVector1 and tangVector2 in the math, because of something that I think will be a reasonable
   //first approximation: if you're in a corner, the chances of a daughter boundary being on the same scale of how close you are to that
   //corner should be small. Some edge cases exist, where you can form a corner from a mother and a daugher boundary, in which case you

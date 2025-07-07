@@ -25,6 +25,7 @@
 #include "Randomize.hh"
 #include "G4RandomDirection.hh"
 
+
 //Temporary REL
 #include <fstream>
 
@@ -50,6 +51,8 @@ G4CMPBogoliubovQPRandomWalkTransport::G4CMPBogoliubovQPRandomWalkTransport(const
   //fBoundaryFudgeFactor = 1.002;
   fEpsilonForWalkOnSpheres = 100*CLHEP::nm;
   fHardFloorBoundaryScale = 10*CLHEP::nm;
+
+
   
   //fSafetyHelper is initialized in AlongStepGPIL
   fSafetyHelper=nullptr;
@@ -66,6 +69,7 @@ G4CMPBogoliubovQPRandomWalkTransport::G4CMPBogoliubovQPRandomWalkTransport(const
   fDotProductDefiningUniqueNorms = 0.99;
   fStuckInCornerThreshold = fEpsilonForWalkOnSpheres;
   fNeedSweptSafetyInGetMFP = false;
+  fPreemptivelyKillEvent = false;
   
   //REL A GENTLE REMINDER THAT WE CANNOT INSTANTIATE CONFIG MANAGER VALUES ONLY IN PROCESS OR RATE CONSTRUCTORS BECAUSE THEY COME BEFORE
   //THE CONFIG MANAGER IS INSTANTIATED
@@ -86,7 +90,7 @@ G4CMPBogoliubovQPRandomWalkTransport::~G4CMPBogoliubovQPRandomWalkTransport()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void G4CMPBogoliubovQPRandomWalkTransport::StartTracking(G4Track* track)
-{
+{ 
   //Need to do this here because if we do it in the constructor, that runs before the ConfigManager instance
   //is defined in the current structure of the examples
   verboseLevel = G4CMPConfigManager::GetVerboseLevel();  
@@ -275,7 +279,8 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::ComputePathLengthInGoldilocksZone
   //If we're pointed right at the wall (along the safety), then we should go no farther than the2DSafety - hardFloorBoundaryScale.
   //If we're not pointed right along the safety, then the distance to wall is longer anyway, so I don't think we need to compensate for changing angles?
   //To minimize errors in timing, let's get more-or-less as close as we can to that hard floor boundary scale.
-  G4double thePathLength = f2DSafety - (fHardFloorBoundaryScale)*fBoundaryFudgeFactor; //Adding a bit of buffer for safety
+  G4double thePathLength = f2DSafety - (fHardFloorBoundaryScale)*2*fBoundaryFudgeFactor; //Adding a bit of buffer (2*fBoundaryFudgeFactor) for safety. Btw,
+  //this safety factor is intimately linked to the angular granularity -- the more granular it is, the safer we are here. But if we're at -1*hardFloorBoundaryScale, we need something like 400ish points in phi.
   
   //Debugging
   if( verboseLevel > 5 ){
@@ -317,6 +322,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
     G4cout << "ASDI Function Point A | Step Status from step post-step point: " << step.GetPostStepPoint()->GetStepStatus() << G4endl;
   }
 
+
   //Particle change initialization and setting
   fParticleChange.Initialize(track);  
   fParticleChange.ProposeMomentumDirection(step.GetPostStepPoint()->GetMomentumDirection());
@@ -324,6 +330,13 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
   fNewDirection = step.GetPostStepPoint()->GetMomentumDirection();
   fParticleChange.ProposePosition(fNewPosition);
 
+  //Kill event if we have a bad outgoing surface tangent -- think this should actually go up after calling the outgoingsurfacetangent finding
+  if( fPreemptivelyKillEvent ){
+    fParticleChange.ProposeTrackStatus(fStopAndKill);
+    return &fParticleChange;
+  }
+
+  
   //Get the initial and final times -- since Transport runs first in the alongStepDoIt processes,
   //we should have the "transport-limited" times
   G4double stepStartGlobalTime = step.GetPreStepPoint()->GetGlobalTime();
@@ -453,7 +466,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 	G4double acosTang1Dot = 0;
 	G4double acosTang2Dot = 0;
 	G4double acosMinDot = 0;
-	
+
 	//Debugging
 	if( verboseLevel > 5 ){	
 	  G4cout << "ASDI Function Point D_4 | minDot is " << minDot << " between " << fOutgoingSurfaceTangent1 << " and " << fOutgoingSurfaceTangent2 << G4endl;
@@ -566,7 +579,7 @@ G4VParticleChange* G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt(const G4T
 	//If we've made it to the end and fPositionChanged is still false, then we throw a flag.
 	if( fPositionChanged == false ){
 	  G4ExceptionDescription msg;
-	  msg << "Somehow the CheckNextStep returned a step length that is not kInfinity but the step status thinks it's not fGeomBoundary. It seems we may have misjudged the distance to our boundary. Going to try again for a few tries.";
+	  msg << "Somehow the CheckNextStep returned a step length that is not kInfinity but the step status thinks it's not fGeomBoundary. It seems we may have misjudged the distance to our boundary. All tries exhausted, which suggests this is perhaps a more fundamental issue with G4CMP, or maybe your geometry is just not following the recommended rules for tracked film response.";
 	  G4Exception("G4CMPBogoliubovQPRandomWalkTransport::AlongStepDoIt", "BogoliubovQPRandomWalkTransport00X",FatalException, msg);
 	}
 	
@@ -658,6 +671,13 @@ G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt(const G4Track& track, const G
     G4cout << "---------- G4CMPBogoliubovQPRandomWalkTransport::PostStepDoIt ----------" << G4endl;
   }
 
+  //Kill event if we have a bad outgoing surface tangent -- think this should actually go up after calling the outgoingsurfacetangent finding
+  if( fPreemptivelyKillEvent ){
+    fParticleChange.ProposeTrackStatus(fStopAndKill);
+    return &fParticleChange;
+  }
+
+  
   //Determine if we're on a boundary. A few scenarios:
   //1. This shouldn't run if we are landing on a boundary in the step (where Transportation will be the thing
   //   that runs PostStepDoIt, not this function
@@ -1272,10 +1292,11 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
   //discrete processes (as it should)
   *condition = NotForced;
   
-  //Reset some of the quantities that should be reset each step
+  //Reset some of the quantities that should be reset each step. PreemptivelyKillEvent should ideally (if the event is truly aborted) kill the event, so resetting here should be fine.
   fOutgoingSurfaceTangent1 = G4ThreeVector(0,0,0);
   fOutgoingSurfaceTangent2 = G4ThreeVector(0,0,0);
   fQPIsStuck = false;
+  fPreemptivelyKillEvent = false;
   
   //This needs to be done so that we can update the SCUtils information, and since GetMeanFreePath for the discrete bit of this process should (?)
   //run first, it will hopefully happen before the AlongStepGPIL runs and requests the gap.
@@ -1364,9 +1385,9 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
   //lattice at this point, we should confirm that the current procUtils lattice is not null, and that it is the
   //same as the lattice corresponding to what the latticeManager sees as belonging to currentVolPlusEps.
   //This is purely a check.
-  if( theStatus == fGeomBoundary && !LM->HasLattice(currentVolPlusEps) ){ 
+  if( theStatus == fGeomBoundary && !LM->HasLattice(currentVolPlusEps) ){
     G4ExceptionDescription msg;
-    msg << "We're on a boundary (i.e. our boundary is now behind us) and find no lattice in the region where a BogoliubovQP is intending to go during the QP random walk transport's GetMeanFreePath function.";
+    msg << "We're on a boundary (i.e. our boundary is now behind us) and find no lattice in the region where a BogoliubovQP is intending to go during the QP random walk transport's GetMeanFreePath function. Trackposition is " << trackPosition << ", momentumDir is: " << momentumDir << ", trackPosition_eps = " << trackPosition_eps << ", trackPosition_mineps: " << trackPosition_mineps << ", currenVolPlusEps: " << currentVolPlusEps->GetName() << ", currentVolMinEps: " << currentVolMinEps->GetName();
     G4Exception("G4CMPBogoliubovQPRandomWalkTransport::GetMFP", "BogoliubovQPRandomWalkTransport001",FatalException, msg);
   }
   
@@ -1437,6 +1458,13 @@ G4double G4CMPBogoliubovQPRandomWalkTransport::GetMeanFreePath(
 	fOutgoingSurfaceTangent1 = outgoingSurfaceTangents.first;
 	fOutgoingSurfaceTangent2 = outgoingSurfaceTangents.second;
 	fQPIsStuck = true;
+	
+	//Kill event if we run into artifacts in the surface tangent finding. Here we return 0 so that this transport wins
+	//the GPIL race and then goes on to trigger the stop and kill condition in the AlongStepDoIt
+	if( fPreemptivelyKillEvent ){	  
+	  return 0;
+	}
+
 
 	//Debugging
 	if( verboseLevel > 5 ){
@@ -2088,6 +2116,26 @@ std::pair<G4ThreeVector,G4ThreeVector> G4CMPBogoliubovQPRandomWalkTransport::Fin
   G4ThreeVector finalTangVect1 = (pos1-corner1).unit();
   G4ThreeVector finalTangVect2 = (pos2-corner1).unit();
   std::pair<G4ThreeVector,G4ThreeVector> output(finalTangVect1,finalTangVect2);
+
+  //Some edge cases have arisen where one of these has ended up as the zero vector. I think this happens if the corner finding has spatial points
+  //that are too close to each other? In any case, except and abort the event. Update: I think this happens when we land too close to the corner of a
+  //volume. If we do, then G4 (for some reason) likes to make the surface normal at a 45 degree angle (for G4Box and kCarTolerance, for example)? This causes all sorts of
+  //weird issues, like our initial surface tangents being not collinear with our output surface tangents because, for example, we're using points that truly span
+  //a 90 degree bend but also assuming G4-computed tangent vectors at those points, one of which is at a 45 degree angle. If any of this nonsense hits, just
+  //nuke the event for now. We're unfortunately just going to run into this some fraction of the time...
+  //Check that finalTangVect1 is collinear with at least one initial tangVect, and that neither are zero.
+  G4bool tangVect1Okay = false;
+  G4bool tangVect2Okay = false;
+  G4double floatingPointTolerance = 1e-12; //Quasi-arbitrary
+  if( (fabs(fabs(finalTangVect1.dot(tangVect1)) - 1) < floatingPointTolerance) || (fabs(fabs(finalTangVect1.dot(tangVect2)) - 1) < floatingPointTolerance) ) tangVect1Okay = true;
+  if( (fabs(fabs(finalTangVect2.dot(tangVect1)) - 1) < floatingPointTolerance) || (fabs(fabs(finalTangVect2.dot(tangVect2)) - 1) < floatingPointTolerance) ) tangVect2Okay = true;
+  if( finalTangVect1.mag() == 0 || finalTangVect2.mag() == 0 || !tangVect1Okay || !tangVect2Okay ){
+    G4ExceptionDescription msg;
+    msg << "One of the final tangent vectors found in FindSurfaceTangentsForStuckQPEjection is zero or not collinear with one of the initial tangent vectors computed. finalTangVect1: " << finalTangVect1 << ", finalTangVect2: " << finalTangVect2 << ", tangVect1: " << tangVect1 << ", tangVect2: " << tangVect2 << ". This is suggestive of a QP being launched so deep into a corner that it's within kCarTolerance of that corner, which can potentially cause issues. Will try to write a fix to the details later but for now we will just kill the event.";
+    G4Exception("G4CMPBogoliubovQPRandomWalkTransport::FindSurfaceTangentsForStuckQPEjection", "BogoliubovQPRandomWalkTransport00X",EventMustBeAborted, msg);
+    fPreemptivelyKillEvent = true;
+  }
+  
   return output;
 }
 

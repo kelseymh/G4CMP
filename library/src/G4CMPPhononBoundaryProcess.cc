@@ -234,9 +234,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     return;
   } else if (random < downconversionProb + specProb) {
+    if (verboseLevel > 2 ) G4cout << "Specular reflection at boundary, over surface norm " << surfNorm << "." << G4endl;
     reflectedKDir = GetReflectedVector(waveVector, surfNorm, mode);
     refltype = "specular";
   } else {
+    if (verboseLevel > 2 ) G4cout << "Diffuse reflection at boundary, with surface norm " << surfNorm << "." << G4endl;
     reflectedKDir = GetLambertianVector(surfNorm, mode);
     refltype = "diffuse";
   }

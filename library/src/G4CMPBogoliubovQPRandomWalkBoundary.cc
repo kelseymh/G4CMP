@@ -332,8 +332,7 @@ void G4CMPBogoliubovQPRandomWalkBoundary::DoReflection(const G4Track& aTrack,
   G4ThreeVector pdir = aTrack.GetMomentumDirection();
   G4ThreeVector newDir;
   
-  //your new momentum is very parallel to a surface. Hopefully shouldn't change stuff
-  //too much
+  //your new momentum is very parallel to a surface. Hopefully shouldn't change stuff too much
   //If initial momentum is in the direction of the surface normal, the return direction should be just the negative of the surface normal
   if( pdir.dot(norm) > 0 ){ newDir = -1*norm; }
   else if( pdir.dot(norm) < 0 ){ newDir = norm; }

@@ -218,7 +218,7 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
       //it reflects, transmits, etc. Need to return true so that logic can run.
       else{
 	if( buVerboseLevel > 5 ){
-	  G4cout << "GBV Function Point K | Step length is above step length tolerance." << G4endl;
+	  G4cout << "GBV Function Point K | Step length, " << aStep.GetStepLength()*1.0e9 << " (mult x 1e9), is above step length tolerance." << G4endl;
 	}
         return true;
       }
