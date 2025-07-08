@@ -27,11 +27,15 @@ public:
 private:
 
   //Lookup tables for calculated quantities
-  std::map<const G4LatticePhysical*,std::vector<std::vector<G4double> > > fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy;
-  std::vector<std::vector<G4double> > fCurrentNormalizedTauPairBreakingVsEnergy;
+  std::map<const G4LatticePhysical*,std::vector<std::vector<G4double> > >
+  fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy;
+  
+  std::vector<std::vector<G4double> >
+  fCurrentNormalizedTauPairBreakingVsEnergy;
   
   //This one doesn't need to be public or protected
-  std::vector<std::vector<G4double> > ComputeNormalizedTauPairBreakingVsEnergy();
+  std::vector<std::vector<G4double> >
+  ComputeNormalizedTauPairBreakingVsEnergy();
 
   bool CheckToSeeSCParametersSet() const;
   

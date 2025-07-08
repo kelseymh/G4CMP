@@ -41,7 +41,7 @@ void G4CMP::AttachTrackInfo(const G4Track& track) {
   } else if (IsChargeCarrier(track)) {
     G4int valley = IsElectron(track) ? ChooseValley(GetLattice(track)) : -1;
     AttachTrackInfo(track, valley);
-  } else if (IsBogoliubovQP(track)){
+  } else if (IsQP(track)){
     AttachTrackInfo(track, new G4CMPVTrackInfo(GetLattice(track)));
   }
 }

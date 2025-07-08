@@ -42,14 +42,14 @@
 #include "G4PhononScattering.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
-#include "G4BogoliubovQP.hh"
+#include "G4QP.hh"
 #include "G4ProcessManager.hh"
 #include "G4CMPSCPairBreakingProcess.hh"
-#include "G4CMPBogoliubovQPRecombinationProcess.hh"
-#include "G4CMPBogoliubovQPRadiatesPhononProcess.hh"
+#include "G4CMPQPRecombinationProcess.hh"
+#include "G4CMPQPRadiatesPhononProcess.hh"
 #include "G4CMPQPBoundaryProcess.hh"
 #include "G4CMPQPDiffusion.hh"
-#include "G4CMPBogoliubovQPLocalTrappingProcess.hh"
+#include "G4CMPQPLocalTrappingProcess.hh"
 #include "G4CMPQPDiffusionTimeStepperProcess.hh"
 
 // Constructor sets global verbosity
@@ -68,7 +68,7 @@ void G4CMPPhysics::ConstructParticle() {
   G4PhononTransFast::Definition();
   G4PhononTransSlow::Definition();
   G4GenericIon::Definition();
-  G4BogoliubovQP::Definition();
+  G4QP::Definition();
 }
 
 // Add physics processes to appropriate particles
@@ -80,11 +80,11 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* phDown  = new G4PhononDownconversion;
   G4VProcess* phPolyElScat = new G4PhononPolycrystalElasticScattering;
   G4VProcess* phCPbreak = new G4CMPSCPairBreakingProcess;
-  G4VProcess* bogQPRecomb = new G4CMPBogoliubovQPRecombinationProcess;
-  G4VProcess* bogQPRad = new G4CMPBogoliubovQPRadiatesPhononProcess;
+  G4VProcess* bogQPRecomb = new G4CMPQPRecombinationProcess;
+  G4VProcess* bogQPRad = new G4CMPQPRadiatesPhononProcess;
   G4VProcess* qpBoundary = new G4CMPQPBoundaryProcess;
   G4VProcess* qpDiffusion = new G4CMPQPDiffusion;
-  G4VProcess* bogQPTrap = new G4CMPBogoliubovQPLocalTrappingProcess;
+  G4VProcess* bogQPTrap = new G4CMPQPLocalTrappingProcess;
   G4VProcess* bogQPTimeStep = new G4CMPQPDiffusionTimeStepperProcess;
   G4VProcess* tmStep  = new G4CMPTimeStepper;
   G4VProcess* driftB  = new G4CMPDriftBoundaryProcess;
@@ -106,7 +106,7 @@ void G4CMPPhysics::ConstructProcess() {
   // Add processes only to locally known particles
   G4ParticleDefinition* particle = 0;
 
-  particle = G4BogoliubovQP::BogoliubovQPDefinition();
+  particle = G4QP::QPDefinition();
   AddG4CMPProcess(bogQPRad,particle);
   AddG4CMPProcess(bogQPTrap,particle);
   AddG4CMPProcess(bogQPTimeStep,particle);

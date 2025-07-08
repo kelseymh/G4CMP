@@ -1781,7 +1781,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
   if(theStatus == fGeomBoundary && !LM->HasLattice(currentVolPlusEps)) {
     G4ExceptionDescription msg;
     msg << "We're on a boundary (i.e. our boundary is now behind us) and find "
-	<< "no lattice in the region where a BogoliubovQP is intending to go "
+	<< "no lattice in the region where a QP is intending to go "
 	<< "during the QP random walk transport's GetMeanFreePath function. "
 	<< "Trackposition is " << trackPosition << ", momentumDir is: "
 	<< momentumDir << ", trackPosition_eps = " << trackPosition_eps

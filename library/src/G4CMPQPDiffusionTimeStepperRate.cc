@@ -3,7 +3,7 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/src/G4CMPBogoliubovQPRecombinationRate.cc
+/// \file library/src/G4CMPQPRecombinationRate.cc
 /// \brief Output a rate for an artificial time step for QPs undergoing diffusion
 //
 #include "G4CMPQPDiffusionTimeStepperRate.hh"
@@ -24,6 +24,9 @@ G4double G4CMPQPDiffusionTimeStepperRate::Rate(const G4Track& aTrack) const
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 void G4CMPQPDiffusionTimeStepperRate::UpdateLookupTable(const G4LatticePhysical * theLat)
 {
-  G4cout << "In the updateLookupTable function, QPDiffusionTimeStepper. Nothing happens here because this class does not (yet) need a lookup table (but this function is generic to G4CMPVProcesses." << G4endl;
+  G4cout << "In the updateLookupTable function, QPDiffusionTimeStepper. "
+	 << "Nothing happens here because this class does not (yet) need a "
+	 << "lookup table (but this function is generic to G4CMPVProcesses."
+	 << G4endl;
   return;
 }

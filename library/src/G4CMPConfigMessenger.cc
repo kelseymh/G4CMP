@@ -126,7 +126,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   pBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("phononBounces",
 		  "Maximum number of reflections allowed for phonons");
   
-  qpBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("bogoliubovQPBounces",
+  qpBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("qpBounces",
                 "Maximum number of reflections allowed for bogoliubov QPs");
 
   kvmapCmd = CreateCommand<G4UIcmdWithABool>("useKVsolver",
@@ -241,7 +241,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == maxLukeCmd) theManager->SetMaxLukePhonons(StoI(value));
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
-  if (cmd == qpBounceCmd) theManager->SetMaxBogoliubovQPBounces(StoI(value));
+  if (cmd == qpBounceCmd) theManager->SetMaxQPBounces(StoI(value));
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
 
   if (cmd == clearCmd)

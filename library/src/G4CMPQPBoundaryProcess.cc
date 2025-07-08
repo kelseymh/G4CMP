@@ -6,7 +6,7 @@
 /// \file library/src/G4CMPQPBoundaryProcess.cc
 /// \brief Implementation of the G4CMPQPBoundaryProcess class
 //
-// This process handles the interaction of BogoliubovQPs with
+// This process handles the interaction of QPs with
 // boundaries.
 
 #include "G4CMPQPBoundaryProcess.hh"
@@ -38,7 +38,7 @@
 
 // Constructor
 G4CMPQPBoundaryProcess::G4CMPQPBoundaryProcess(const G4String& aName)
-  : G4VBogoliubovQPProcess(aName, fQPBoundaryProcess),G4CMPBoundaryUtils(this),procName("G4CMPQPBoundaryProcess") {
+  : G4VQPProcess(aName, fQPBoundaryProcess),G4CMPBoundaryUtils(this),procName("G4CMPQPBoundaryProcess") {
 }
 
 
@@ -69,7 +69,7 @@ G4double G4CMPQPBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
   //Update the lattice so that this process knows about any changes
   UpdateMeanFreePathForLatticeChangeover(aTrack);
 
-  //Use information about the lattice to determine if the BogoliubovQP has
+  //Use information about the lattice to determine if the QP has
   //been spawned in a self-consistent way. If it's not self-consistent on step
   //1, then throw a fatal exception.
   double eKin = aTrack.GetKineticEnergy();
@@ -237,7 +237,8 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 	   << "result :  " <<checkBoundary << G4endl;
   }
   
-  //If boundaries or QP volumes aren't satisfied, just return the default post-step do it for discrete processes.
+  //If boundaries or QP volumes aren't satisfied, just return the default
+  //post-step do it for discrete processes.
   if (!checkBoundary || !checkQPVolumes) {
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }

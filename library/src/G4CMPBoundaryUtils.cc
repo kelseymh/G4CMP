@@ -75,7 +75,7 @@ G4bool G4CMPBoundaryUtils::IsGoodBoundary(const G4Step& aStep) {
   maximumReflections = 
     (G4CMP::IsChargeCarrier(pd) ? G4CMPConfigManager::GetMaxChargeBounces()
      : G4CMP::IsPhonon(pd) ? G4CMPConfigManager::GetMaxPhononBounces()
-     : G4CMP::IsBogoliubovQP(pd) ? G4CMPConfigManager::GetMaxBogoliubovQPBounces() : -1);
+     : G4CMP::IsQP(pd) ? G4CMPConfigManager::GetMaxQPBounces() : -1);
 
   if (buVerboseLevel>1) {
     G4cout << procName << "::IsGoodBoundary maxRefl " << maximumReflections
@@ -301,9 +301,9 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
     matTable = surfProp->GetPhononMaterialPropertiesTablePointer();
     electrode = surfProp->GetPhononElectrode();
   }
-  if (G4CMP::IsBogoliubovQP(pd)) {
-    matTable = surfProp->GetBogoliubovQPMaterialPropertiesTablePointer();
-    electrode = surfProp->GetBogoliubovQPElectrode();
+  if (G4CMP::IsQP(pd)) {
+    matTable = surfProp->GetQPMaterialPropertiesTablePointer();
+    electrode = surfProp->GetQPElectrode();
   }
   if (!matTable) {
     G4Exception((procName+"::GetSurfaceProperty").c_str(),

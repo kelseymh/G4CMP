@@ -12,7 +12,7 @@
 #include "G4VContinuousDiscreteProcess.hh"
 #include "globals.hh"
 #include "G4Material.hh"
-#include "G4CMPParticleChangeForBogoliubovQPRandomWalk.hh"
+#include "G4CMPParticleChangeForQPDiffusion.hh"
 #include "G4ParticleChange.hh"
 #include "G4CMPProcessUtils.hh"
 #include "G4Track.hh"
@@ -126,42 +126,60 @@ protected:
   
   //Custom particle change class where the UpdateAlongStep method handles
   //non-physical changes to particle from random walk process
-  G4CMPParticleChangeForBogoliubovQPRandomWalk fParticleChange;
+  G4CMPParticleChangeForQPDiffusion fParticleChange;
     
 private:
     
-  G4double                    fTimeStep;               //Time increment for the step
-  G4double                    fPathLength;             //Path length returned by the AlongStepGPIL (starts diffusion-unfolded, and then folds in diffusion)
-  G4double                    fPreDiffusionPathLength; //Initial, diffusion-unfolded path length, for persistency
-  G4double                    fDiffConst;              //Energy dependent diffusion constant
+  G4double      fTimeStep;               //Time increment for the step
+  G4double      fPathLength;             //Path length returned by the AlongStepGPIL (starts diffusion-unfolded, and then folds in diffusion)
+  G4double      fPreDiffusionPathLength; //Initial, diffusion-unfolded path length, for persistency
+  G4double      fDiffConst;              //Energy dependent diffusion constant
+  G4double      f2DSafety;               //The 2D safety computed for this step
+  G4double      fTimeStepToBoundary;     //Timestep computed for step's 2Dsafety
+  G4ThreeVector fOldPosition;            //Position at the beginning of the step
+  G4ThreeVector fNewPosition;            //Proposed position after diffusion
+  G4ThreeVector fNewDirection;           //Direction of proposed diffusion step 
+  G4bool        fPositionChanged= false;
+  G4bool        isActive= false;
+  G4bool        fTrackOnBoundary= false;
+  G4bool        fVerySmallStep= false;
+  G4double      fBoundaryFudgeFactor;
+  G4double      fHardFloorBoundaryScale;  
+  G4double      fEpsilonForWalkOnSpheres;
 
-  G4double                    f2DSafety;               //The 2D safety computed for this step
-  G4double                    fTimeStepToBoundary;     //The time step computed given the 2D safety computed for this step
+  //The last N boundary scatters for this
+  std::vector<std::pair<G4ThreeVector,G4ThreeVector> > fBoundaryHistory;
   
-  G4ThreeVector               fOldPosition;            //Position at the beginning of the step
-  G4ThreeVector               fNewPosition;            //Proposed position after diffusion
-  G4ThreeVector               fNewDirection;           //Direction of proposed effective diffusion step
-    
-  G4bool                      fPositionChanged= false;
-  G4bool                      isActive= false;
-  G4bool                      fTrackOnBoundary= false;
-  G4bool                      fVerySmallStep= false;
-  G4double                    fBoundaryFudgeFactor;
+  G4int fBoundaryHistoryTrackID;           //Which QP to produce bdry history of
+  G4int fMaxBoundaryHistoryEntries;        //Last N QP boundary scatters
+  G4bool fQPIsStuck;                       //Is QP stuck in corner?
+  G4ThreeVector fStuckNorm1;               //For QPs stuck in corner
+  G4ThreeVector fStuckNorm2;               //For QPs stuck in corner
+  G4ThreeVector fOutgoingSurfaceTangent1;  //For QPs stuck in corner
+  G4ThreeVector fOutgoingSurfaceTangent2;  //For QPs stuck in corner
+  G4double fDotProductDefiningUniqueNorms; //Self explanatory
+  G4double fStuckInCornerThreshold;        //How spatially tight until QP stuck?
+  G4double fNeedSweptSafetyInGetMFP;       //Flag to redo safeties w/more care
+  G4double fPreemptivelyKillEvent;         //Kill event
 
-  G4double                    fHardFloorBoundaryScale;
-  
-  G4double                    fEpsilonForWalkOnSpheres;
   
   //std::ofstream fOutfile;
 
-  void UpdateBoundaryHistory(G4int trackID, G4ThreeVector preStepPos, G4ThreeVector preStepNorm);
-  std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> CheckForStuckQPs();
-  std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> CheckForStuckQPsInCorner();
-  std::pair<G4ThreeVector,G4ThreeVector> FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
-									       G4ThreeVector pos1,
-									       G4ThreeVector norm2,
-									       G4ThreeVector pos2,
-									       G4ThreeVector & cornerLocation);
+  void UpdateBoundaryHistory(G4int trackID, G4ThreeVector preStepPos,
+			     G4ThreeVector preStepNorm);
+  std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector>
+  CheckForStuckQPs();
+  
+  std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector>
+  CheckForStuckQPsInCorner();
+  
+  std::pair<G4ThreeVector,G4ThreeVector>
+  FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
+					G4ThreeVector pos1,
+					G4ThreeVector norm2,
+					G4ThreeVector pos2,
+					G4ThreeVector & cornerLocation);
+  
   void PostCheckBulkTreatment(G4double stepTransportOnlyDeltaT);
 
   G4bool CheckForPhantomBoundaryCrossings(G4ThreeVector trackPosition,
@@ -171,20 +189,8 @@ private:
 					  G4ThreeVector outputDir);
   
   G4double HandleVerySmallSteps(G4double thisMFP, G4double the2DSafety);
-  G4double ComputePathLengthInGoldilocksZone(); //REL 6/29/25  
+  G4double ComputePathLengthInGoldilocksZone(); 
   
-  G4int fBoundaryHistoryTrackID;
-  std::vector<std::pair<G4ThreeVector,G4ThreeVector> > fBoundaryHistory; //The last N boundary scatters for this 
-  G4int fMaxBoundaryHistoryEntries;
-  G4bool fQPIsStuck;
-  G4ThreeVector fStuckNorm1;
-  G4ThreeVector fStuckNorm2;
-  G4ThreeVector fOutgoingSurfaceTangent1;
-  G4ThreeVector fOutgoingSurfaceTangent2;
-  G4double fDotProductDefiningUniqueNorms;
-  G4double fStuckInCornerThreshold;
-  G4double fNeedSweptSafetyInGetMFP;
-  G4double fPreemptivelyKillEvent;
   
 };
 

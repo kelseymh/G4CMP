@@ -44,11 +44,11 @@ namespace G4CMP {
 			       const G4ThreeVector& p,
 			       const G4ThreeVector& pos);
 
-  G4Track* CreateBogoliubovQP(const G4Track& track,
-			      const G4double energy,
-			      const G4ThreeVector& velocity,
-			      const G4double time,
-			      const G4ThreeVector& pos);
+  G4Track* CreateQP(const G4Track& track,
+		    const G4double energy,
+		    const G4ThreeVector& velocity,
+		    const G4double time,
+		    const G4ThreeVector& pos);
   
   // DEPRECATED: Version used by application code with output of G4CMPKaplanQP
   G4Track* CreatePhonon(const G4VTouchable* touch, G4int mode,

@@ -11,9 +11,9 @@
 #define G4CMPQPDiffusionTimeStepperProcess_h 1
 
 #include "G4CMPSCUtils.hh"
-#include "G4VBogoliubovQPProcess.hh"
+#include "G4VQPProcess.hh"
 
-class G4CMPQPDiffusionTimeStepperProcess : public G4VBogoliubovQPProcess
+class G4CMPQPDiffusionTimeStepperProcess : public G4VQPProcess
 {
 public:
   G4CMPQPDiffusionTimeStepperProcess(const G4String& processName ="qpDiffusionTimeStepper");

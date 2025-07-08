@@ -5,7 +5,7 @@
 
 /// \file library/include/G4CMPSCUtils.hh
 /// \brief Definition of the G4CMPSCUtils class
-///   Provides useful general functions for use by KaplanSCPhonon and BogoliubovQP processes
+///   Provides useful general functions for use by Phonon and QP processes
 ///
 
 #ifndef G4CMPSCUtils_h

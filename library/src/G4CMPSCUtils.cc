@@ -220,14 +220,14 @@ G4double G4CMPSCUtils::GetTauAsAFunctionOfEnergy( const std::vector<std::vector<
     maxE = fMaxPhononEnergyDivGap * fGapEnergy;
     nE = fPhononEnergyBins;
   }
-  else if( particleInQuestion == "BogoliubovQP" ){
+  else if( particleInQuestion == "QP" ){
     minE = fMinQPEnergyDivGap * fGapEnergy;
     maxE = fMaxQPEnergyDivGap * fGapEnergy;
     nE = fQPEnergyBins;
   }
   else{
     G4ExceptionDescription msg;
-    msg << "During lookup table step, particle in question is neither a phonon nor a BogoliubovQP. This is probably a bug in the G4CMPSCUtils code somewhere.";
+    msg << "During lookup table step, particle in question is neither a phonon nor a QP. This is probably a bug in the G4CMPSCUtils code somewhere.";
     G4Exception("G4CMPSCUtils::GetTauAsAFunctionOfEnergy", "G4CMPSCUtils003",FatalException, msg);
     return 0;
   }    
@@ -240,7 +240,7 @@ G4double G4CMPSCUtils::GetTauAsAFunctionOfEnergy( const std::vector<std::vector<
     if( particleInQuestion == "Phonon" ){
       return DBL_MAX;
     }
-    else if( particleInQuestion == "BogoliubovQP" ){
+    else if( particleInQuestion == "QP" ){
 
       //Should split this again here into "less than" and "equal to" -- the latter is in principle not physically inaccurate, but it seems
       //like floating point errors may cause it to occur? In any case, I'll allow this one as a test and return the tau at the lowest energy

@@ -65,8 +65,8 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   SetCurrentTrack(aTrack);
   SetLattice(aTrack);
 
-  // If phonon, charge carrier, or BogoliubovQP is not in a lattice-enabled volume, kill it
-  if ((IsPhonon() || IsChargeCarrier() || IsBogoliubovQP()) && !theLattice) {
+  // If phonon, charge carrier, or QP is not in a lattice-enabled volume, kill it
+  if ((IsPhonon() || IsChargeCarrier() || IsQP()) && !theLattice) {
     ReleaseTrack();
     return fKill;
   }
@@ -82,8 +82,8 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
       SetChargeCarrierMass(aTrack);
       if (IsElectron()) SetElectronEnergy(aTrack);
     }
-    if (IsBogoliubovQP()) {
-      SetBogoliubovQPKinematics(aTrack);
+    if (IsQP()) {
+      SetQPKinematics(aTrack);
     }
   }
 
@@ -165,7 +165,7 @@ void G4CMPStackingAction::SetElectronEnergy(const G4Track* aTrack) const {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Initialize Bogoliubov QP kinematics upon creation
-void G4CMPStackingAction::SetBogoliubovQPKinematics(const G4Track* aTrack) const
+void G4CMPStackingAction::SetQPKinematics(const G4Track* aTrack) const
 {
   // Compute direction of propagation from wave vector
   // Geant4 thinks that momentum and velocity point in same direction,
@@ -174,7 +174,8 @@ void G4CMPStackingAction::SetBogoliubovQPKinematics(const G4Track* aTrack) const
 
   //Compute true velocity of propagation
   if( G4CMPConfigManager::GetVerboseLevel() > 5 ){
-    G4cout << "In G4CMPStackingAction, calculating a velocity: " << aTrack->CalculateVelocity() << G4endl;
+    G4cout << "In G4CMPStackingAction, calculating a velocity: "
+	   << aTrack->CalculateVelocity() << G4endl;
   }
   G4double velocity = aTrack->CalculateVelocity();
   
@@ -183,5 +184,6 @@ void G4CMPStackingAction::SetBogoliubovQPKinematics(const G4Track* aTrack) const
   theTrack->SetMomentumDirection(momentumDir);
   theTrack->SetVelocity(velocity);
   theTrack->UseGivenVelocity(true);
-  //G4cout << "---> InStackingAction, now we're actually setting the useGivenVelocity flag to true." << G4endl;
+  //G4cout << "---> InStackingAction, now we're actually setting the
+  //useGivenVelocity flag to true." << G4endl;
 }

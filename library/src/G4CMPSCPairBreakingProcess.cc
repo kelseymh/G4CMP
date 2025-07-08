@@ -12,7 +12,7 @@
 #include "G4CMPSCPairBreakingProcess.hh"
 #include "G4CMPSCPairBreakingRate.hh"
 #include "G4CMPSCUtils.hh"
-#include "G4BogoliubovQP.hh"
+#include "G4QP.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4VParticleChange.hh"
@@ -22,41 +22,35 @@
 #include "G4LatticePhysical.hh"
 #include "G4LatticeManager.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 // Constructor and destructor 
 G4CMPSCPairBreakingProcess::G4CMPSCPairBreakingProcess(const G4String& aName)
-  : G4VPhononProcess(aName,fSCPairBreakingProcess)
-{  
+  : G4VPhononProcess(aName,fSCPairBreakingProcess) {  
   UseRateModel(new G4CMPSCPairBreakingRate);
 }
 
-G4CMPSCPairBreakingProcess::~G4CMPSCPairBreakingProcess()
-{
+G4CMPSCPairBreakingProcess::~G4CMPSCPairBreakingProcess() {
 }
 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 void G4CMPSCPairBreakingProcess::SetVerboseLevel(G4int vb) {
   verboseLevel = vb;
 }
 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-G4VParticleChange* G4CMPSCPairBreakingProcess::PostStepDoIt(const G4Track& aTrack,
-							    const G4Step& aStep) {
-
+G4VParticleChange* G4CMPSCPairBreakingProcess::
+PostStepDoIt(const G4Track& aTrack,const G4Step& aStep) {
 
   //Debugging
   if( verboseLevel > 5 ){
-    G4cout << "---------- G4CMPSCPairBreakingProcess::PostStepDoIt ----------" << G4endl;
+    G4cout << "-- G4CMPSCPairBreakingProcess::PostStepDoIt --" << G4endl;
   }
-  
-  
+    
   aParticleChange.Initialize(aTrack);
   
   //Pseudocode
-  //1. Determine if we're on a boundary surface. If we are, just return the particlechange that's initialized already and don't reset
-  //   the interaction lengths (interaction lengths are subtracted deep in the G4 code)
+  //1. Determine if we're on a boundary surface. If we are, just return the
+  //   particlechange that's initialized already and don't reset the
+  //   interaction lengths (interaction lengths are subtracted deep in the
+  //   G4 code)
   G4StepPoint * postStepPoint = aStep.GetPostStepPoint();
   if (postStepPoint->GetStepStatus() == fGeomBoundary ||
       postStepPoint->GetStepStatus() == fWorldBoundary) {
@@ -64,18 +58,21 @@ G4VParticleChange* G4CMPSCPairBreakingProcess::PostStepDoIt(const G4Track& aTrac
   }
   
    
-  //2. Using the phonon energy, compute the energy of the quasiparticles that are produced from our G4CMPSCUtils class, given
-  //   the effective temperature we're at.
+  //2. Using the phonon energy, compute the energy of the quasiparticles
+  //   that are produced from our G4CMPSCUtils class, given the effective
+  //   temperature we're at.
   double phononEnergy = aTrack.GetKineticEnergy();
   std::pair<G4double,G4double> QPenergies = FetchQPEnergies(phononEnergy);
 
   //Debugging
-  if( verboseLevel > 5 ){
-    G4cout << "PSDI Function Point A | energy of QP 1: " << QPenergies.first << ", energy of QP 2: " << QPenergies.second << G4endl;
+  if (verboseLevel > 5) {
+    G4cout << "PSDI Function Point A | energy of QP 1: " << QPenergies.first
+	   << ", energy of QP 2: " << QPenergies.second << G4endl;
   }
   
-  //3. Using the two above-computed energies, generate the two secondaries (G4BogoliubovQPs) we want.
-  GenerateBogoliubovQPPair(QPenergies,aTrack,aStep);
+  //3. Using the two above-computed energies, generate the two secondaries
+  //   (G4QPs) we want.
+  GenerateQPPair(QPenergies,aTrack,aStep);
 
   //4. Print debugging info
   if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
@@ -89,35 +86,37 @@ G4VParticleChange* G4CMPSCPairBreakingProcess::PostStepDoIt(const G4Track& aTrac
 	   << G4endl;
   }
 
-  //5. Sanity check to make sure we actually generated two secondaries, and then kill the track
+  //5. Sanity check to make sure we actually generated two secondaries, and
+  //   then kill the track
   if (aParticleChange.GetNumberOfSecondaries() == 2) {
     aParticleChange.ProposeEnergy(0.);
     aParticleChange.ProposeTrackStatus(fStopAndKill);
-  }
-  else{
+  } else {
 
     //Debugging
-    if( verboseLevel > 5 ){
-      G4cout << "PSDI Function Point B | REL Uh oh. Bogoliubov secondaries not produced somehow?" << G4endl;
+    if (verboseLevel > 5) {
+      G4cout << "PSDI Function Point B | REL Uh oh. Bogoliubov secondaries "
+	     << "not produced somehow?" << G4endl;
     }
   }
-
+  
   //6. Return the particle change
   return &aParticleChange;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-G4bool G4CMPSCPairBreakingProcess::IsApplicable(const G4ParticleDefinition& aPD) {
+G4bool G4CMPSCPairBreakingProcess::
+IsApplicable(const G4ParticleDefinition& aPD) {
+
   // Allow all phonon types, because type is changed during tracking
   return G4VPhononProcess::IsApplicable(aPD);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-//For a given phonon energy, sample QP energies from the relevant distribution. The
-//distributions are stored in a G4SCUtils class so we only have to integrate once
-//and then sample as we go.
-std::pair<G4double,G4double> G4CMPSCPairBreakingProcess::FetchQPEnergies(G4double phonEnergy)
-{
+//For a given phonon energy, sample QP energies from the relevant distribution.
+//The distributions are stored in a G4SCUtils class so we only have to
+//integrate once and then sample as we go.
+std::pair<G4double,G4double>
+G4CMPSCPairBreakingProcess::FetchQPEnergies(G4double phonEnergy) {
+
   //From the G4CMPSUtils class, sample a qp energy:
   G4double qp1Energy = QPEnergyRand(phonEnergy);
   G4double qp2Energy = phonEnergy - qp1Energy;
@@ -125,7 +124,6 @@ std::pair<G4double,G4double> G4CMPSCPairBreakingProcess::FetchQPEnergies(G4doubl
   return thePair;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Compute QP energy distribution from quasiparticle in superconductor.
 // This is the same as the original KaplanQP
 G4double G4CMPSCPairBreakingProcess::QPEnergyRand(G4double Energy) const
@@ -144,54 +142,43 @@ G4double G4CMPSCPairBreakingProcess::QPEnergyRand(G4double Energy) const
 
   //Debugging
   if( verboseLevel > 5 ){
-    G4cout << "---------- G4CMPSCPairBreakingProcess::QPEnergyRand ----------" << G4endl;
-    G4cout << "QPER Function Point A | fGapEnergy is: " << fGapEnergy / CLHEP::eV << " eV." << G4endl;
+    G4cout << "-- G4CMPSCPairBreakingProcess::QPEnergyRand --" << G4endl;
+    G4cout << "QPER Function Point A | fGapEnergy is: "
+	   << fGapEnergy / CLHEP::eV << " eV." << G4endl;
   }
   
   const G4double BUFF = 100000.; //REL used to be 1000, then 10000 (12/20/24)
   G4double xmin = fGapEnergy + (Energy - 2. * fGapEnergy) / BUFF;
   G4double xmax = fGapEnergy + (Energy - 2. * fGapEnergy) * (BUFF - 1.) / BUFF;
   G4double ymax = QPEnergyPDF(Energy, xmin);
-
+  
   G4double xtest = 0., ytest = ymax;
   do {
     ytest = G4UniformRand() * ymax;
     xtest = G4UniformRand() * (xmax - xmin) + xmin;
   } while (ytest > QPEnergyPDF(Energy, xtest));
-
+  
   return xtest;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // QP energy "pdf"
 // This is the same as the original KaplanQP
-G4double G4CMPSCPairBreakingProcess::QPEnergyPDF(G4double E, G4double x) const
-{
-    const G4double gapsq = fGapEnergy * fGapEnergy;
-    return ((x * (E - x) + gapsq) / sqrt((x * x - gapsq) * ((E - x) * (E - x) - gapsq)));
+G4double G4CMPSCPairBreakingProcess::QPEnergyPDF(G4double E, G4double x) const {
+  const G4double gapsq = fGapEnergy * fGapEnergy;
+  return ((x * (E - x) + gapsq) /
+	  sqrt((x * x - gapsq) * ((E - x) * (E - x) - gapsq)));
 }
 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-//Take the two energies for the two pairs of QPs and actually generate secondaries
-//with those energies. 
-void G4CMPSCPairBreakingProcess::GenerateBogoliubovQPPair(std::pair<G4double,G4double> QPEnergies,
-							  const G4Track& aTrack,
-							  const G4Step& aStep)
+// Take the two energies for the two pairs of QPs and actually generate
+// secondaries with those energies. 
+void G4CMPSCPairBreakingProcess::
+GenerateQPPair(std::pair<G4double,G4double> QPEnergies, const G4Track& aTrack,
+	       const G4Step& aStep) {
 						
-{
-
   //Get the energies
   double energy1 = QPEnergies.first;
   double energy2 = QPEnergies.second;
 
-
-  //For QPs, velocity needs to be artificially small. This is because QPs diffuse rather than propagate ballistically in most SC media, and we need
-  //a special technique to handle that diffusion (and its competition with other QP processes).
-  //double vel1Mag = 1E-18 * CLHEP::m / CLHEP::s;
-  //double vel2Mag = 2E-18 * CLHEP::m / CLHEP::s; //Use this to clearly define QP ID for ID'ing which QP undergoes recombination, in case tracking IDs are weird REL
-  //Edit: apparently I shouldn't set these velocities explicitly -- need to amend above two lines once we merge with Eric's bit (REL)
-    
   //Create direction vectors for the QPs
   //For lack of something more physical, (i.e. just to test for now), we make random in XY.
   G4ThreeVector vel1 = G4RandomDirection();
@@ -201,13 +188,17 @@ void G4CMPSCPairBreakingProcess::GenerateBogoliubovQPPair(std::pair<G4double,G4d
   vel2.setZ(0);
   vel2= vel2.unit();
   
-  // Construct the secondaries and set their attributes. Hopefully we don't have to muck with the time here.
-  G4Track* sec1 = G4CMP::CreateBogoliubovQP(aTrack, energy1, vel1, aTrack.GetGlobalTime(),aTrack.GetPosition());
-  G4Track* sec2 = G4CMP::CreateBogoliubovQP(aTrack, energy2, vel2, aTrack.GetGlobalTime(),aTrack.GetPosition());
+  // Construct the secondaries and set their attributes. Hopefully we don't
+  // have to muck with the time here.
+  G4Track* sec1 = G4CMP::CreateQP(aTrack, energy1, vel1,
+				  aTrack.GetGlobalTime(),aTrack.GetPosition());
+  G4Track* sec2 = G4CMP::CreateQP(aTrack, energy2, vel2,
+				  aTrack.GetGlobalTime(),aTrack.GetPosition());
 
   //Sanity check
   if (!sec1 || !sec2) {
-    G4Exception("G4CMPSCPairBreakingProcess::GenerateBogoliubovQPPair", "SCPairBreaking001",JustWarning, "Error creating secondaries");
+    G4Exception("G4CMPSCPairBreakingProcess::GenerateQPPair",
+		"SCPairBreaking001",JustWarning, "Error creating secondaries");
     return;
   }
 
@@ -218,9 +209,8 @@ void G4CMPSCPairBreakingProcess::GenerateBogoliubovQPPair(std::pair<G4double,G4d
   return;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 //Pass-through to G4CMPVProcess class
-G4double G4CMPSCPairBreakingProcess::GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond)
-{
+G4double G4CMPSCPairBreakingProcess::
+GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond) {
   return G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
 }

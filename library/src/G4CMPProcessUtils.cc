@@ -199,8 +199,8 @@ G4bool G4CMPProcessUtils::IsChargeCarrier() const {
   return G4CMP::IsChargeCarrier(currentTrack);
 }
 
-G4bool G4CMPProcessUtils::IsBogoliubovQP() const {
-  return G4CMP::IsBogoliubovQP(currentTrack);
+G4bool G4CMPProcessUtils::IsQP() const {
+  return G4CMP::IsQP(currentTrack);
 }
 
 
@@ -430,7 +430,7 @@ G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
     return track.GetKineticEnergy();
   } else if (G4CMP::IsPhonon(track)) {
     return track.GetKineticEnergy();
-  } else if (G4CMP::IsBogoliubovQP(track)) {
+  } else if (G4CMP::IsQP(track)) {
     return track.GetKineticEnergy();
   } else {
     G4Exception("G4CMPProcessUtils::GetKineticEnergy", "G4CMPProcess004",

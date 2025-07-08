@@ -3,7 +3,7 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/src/G4CMPBogoliubovQPDiffusionTimeeStepperProcess.cc
+/// \file library/src/G4CMPQPDiffusionTimeeStepperProcess.cc
 /// \brief Implementation of the G4CMPQPDiffusionTimeStepperProcess class
 //
 // $Id$
@@ -13,7 +13,7 @@
 #include "G4CMPQPDiffusionTimeStepperProcess.hh"
 #include "G4CMPQPDiffusionTimeStepperRate.hh"
 #include "G4CMPSCUtils.hh"
-#include "G4BogoliubovQP.hh"
+#include "G4QP.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4VParticleChange.hh"
@@ -27,7 +27,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Constructor and destructor 
 G4CMPQPDiffusionTimeStepperProcess::G4CMPQPDiffusionTimeStepperProcess(const G4String& aName)
-  : G4VBogoliubovQPProcess(aName,fQPDiffusionTimeStepper)
+  : G4VQPProcess(aName,fQPDiffusionTimeStepper)
 {
   G4cout << "REL -- In QPDiffusionTimeStepper::Constructor()" << G4endl;
   UseRateModel(new G4CMPQPDiffusionTimeStepperRate);
@@ -82,7 +82,7 @@ G4VParticleChange* G4CMPQPDiffusionTimeStepperProcess::PostStepDoIt(const G4Trac
 G4bool G4CMPQPDiffusionTimeStepperProcess::IsApplicable(const G4ParticleDefinition& aPD) {
   G4cout << "REL -- In QPDiffusionTimeStepperProcess::IsApplicable()" << G4endl;
   // Allow all phonon types, because type is changed during tracking
-  return G4VBogoliubovQPProcess::IsApplicable(aPD);
+  return G4VQPProcess::IsApplicable(aPD);
 }
 
 

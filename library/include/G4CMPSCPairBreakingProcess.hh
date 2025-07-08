@@ -33,9 +33,8 @@ protected:
   G4double QPEnergyPDF(G4double E, G4double x) const;
 
   
-  void GenerateBogoliubovQPPair(std::pair<G4double,G4double> QPEnergies,
-				const G4Track& aTrack,
-				const G4Step& aStep);
+  void GenerateQPPair(std::pair<G4double,G4double> QPEnergies,
+		      const G4Track& aTrack,const G4Step& aStep);
 
 
 

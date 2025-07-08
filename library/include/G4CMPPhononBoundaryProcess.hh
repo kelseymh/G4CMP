@@ -28,13 +28,13 @@ public:
   G4CMPPhononBoundaryProcess(const G4String& processName="G4CMPPhononBoundary");
 
   virtual ~G4CMPPhononBoundaryProcess();
-
+  
   // Configure for current track including AnharmonicDecay utility
   virtual void LoadDataForTrack(const G4Track* track);
-
+  
   virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& track,
-                                                G4double previousStepSize,
-                                                G4ForceCondition* condition);
+						      G4double previousStepSize,
+						      G4ForceCondition* condition);
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
                                           const G4Step& aStep);
@@ -46,25 +46,25 @@ protected:
 
   // Apply phonon-specific conditions, after calling through to base
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
-
+  
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
-
+  
   virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
 			      G4ParticleChange& aParticleChange);
-
-
+  
+  
   G4ThreeVector GetReflectedVector(const G4ThreeVector& waveVector, 
 				   const G4ThreeVector& surfNorm,
 				   G4int mode) const;
-
+  
   G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm,
 				    G4int mode) const;
-
+  
   
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
-
+  
   // hide assignment operator as private
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&);
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&&);

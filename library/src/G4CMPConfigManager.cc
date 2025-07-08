@@ -182,7 +182,7 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/verbose " << verbose << "\t\t\t\t# G4CMP_DEBUG"
      << "\n/g4cmp/chargeBounces " << ehBounces << "\t\t\t\t# G4CMP_EH_BOUNCES"
      << "\n/g4cmp/phononBounces " << pBounces << "\t\t\t# G4CMP_PHON_BOUNCES"
-     << "\n/g4cmp/bogoliubovQPBounces " << qpBounces << "\t\t\t# G4CMP_QP_BOUNCES"
+     << "\n/g4cmp/qpBounces " << qpBounces << "\t\t\t# G4CMP_QP_BOUNCES"
      << "\n/g4cmp/IVRateModel " << IVRateModel << "\t\t\t# G4CMP_IV_RATE_MODEL"
      << "\n/g4cmp/eTrappingMFP " << eTrapMFP/mm << " mm\t\t# G4CMP_ETRAPPING_MFP"
      << "\n/g4cmp/hTrappingMFP " << hTrapMFP/mm << " mm\t\t# G4CMP_HTRAPPING_MFP"

@@ -41,7 +41,8 @@ public:
                        G4double pSpecProb, //Prob. of specular reflection
                        G4double pMinK, //Min wave number to absorb phonon
 		       G4double qpAbsProb = 0.0, //Prob. to absorb a bogoliubov QP
-		       G4double qpReflProb = 1.0, //Prob to reflect a bogoliubov QP (Note 1-qpAbsProb-qpReflProb is the probability for the QP to transport)
+		       G4double qpReflProb = 1.0, //Prob to reflect a bogoliubov QP
+		       //(Note 1-qpAbsProb-qpReflProb is the probability for the QP to transport)
                        G4SurfaceType stype = dielectric_dielectric);
 
   virtual ~G4CMPSurfaceProperty();
@@ -64,8 +65,8 @@ public:
     return const_cast<G4MaterialPropertiesTable*>(&thePhononMatPropTable);
   }
     
-  G4MaterialPropertiesTable* GetBogoliubovQPMaterialPropertiesTablePointer() const {
-      return const_cast<G4MaterialPropertiesTable*>(&theBogoliubovQPMatPropTable);
+  G4MaterialPropertiesTable* GetQPMaterialPropertiesTablePointer() const {
+      return const_cast<G4MaterialPropertiesTable*>(&theQPMatPropTable);
   }
 
   // NOTE:  These return by value because Tables can't be const
@@ -76,15 +77,15 @@ public:
   GetPhononMaterialPropertiesTable() const { return thePhononMatPropTable; }
     
   G4MaterialPropertiesTable
-  GetBogoliubovQPMaterialPropertiesTable() const { return theBogoliubovQPMatPropTable; }
+  GetQPMaterialPropertiesTable() const { return theQPMatPropTable; }
 
   // Accessors to fill charge-pair and phonon boundary parameters
   void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
   void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
-  void SetBogoliubovQPMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
+  void SetQPMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
   void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable& mpt);
   void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable& mpt);
-  void SetBogoliubovQPMaterialPropertiesTable(G4MaterialPropertiesTable& mpt);
+  void SetQPMaterialPropertiesTable(G4MaterialPropertiesTable& mpt);
 
   void FillChargeMaterialPropertiesTable(G4double qAbsProb, G4double qReflProb,
                                          G4double eMinK,    G4double hMinK);
@@ -92,7 +93,7 @@ public:
   void FillPhononMaterialPropertiesTable(G4double pAbsProb,  G4double pReflProb,
                                          G4double pSpecProb, G4double pMinK);
     
-  void FillBogoliubovQPMaterialPropertiesTable(G4double qpAbsProb,  G4double qpReflProb);
+  void FillQPMaterialPropertiesTable(G4double qpAbsProb,  G4double qpReflProb);
 
   // Accessors to fill phonon surface interaction parametrizations
   void AddSurfaceAnharmonicCutoff(G4double freqMax) { anharmonicMaxFreq = freqMax; }
@@ -122,12 +123,12 @@ public:
   // Complex electrode geometries
   void SetChargeElectrode(G4CMPVElectrodePattern* cel);
   void SetPhononElectrode(G4CMPVElectrodePattern* pel);
-  void SetBogoliubovQPElectrode(G4CMPVElectrodePattern* qpel);
+  void SetQPElectrode(G4CMPVElectrodePattern* qpel);
 
   // Accessors, used by worker threads
   G4CMPVElectrodePattern* GetChargeElectrode() const;
   G4CMPVElectrodePattern* GetPhononElectrode() const;
-  G4CMPVElectrodePattern* GetBogoliubovQPElectrode() const;
+  G4CMPVElectrodePattern* GetQPElectrode() const;
 
   virtual void DumpInfo() const;	// To be implemented
 
@@ -141,7 +142,7 @@ protected:
   // These args should be const, but G4MaterialPropertiesTables is silly.
   G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
   G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
-  G4bool IsValidBogoliubovQPPropTable(G4MaterialPropertiesTable& propTab) const;
+  G4bool IsValidQPPropTable(G4MaterialPropertiesTable& propTab) const;
 
   void SaveCoeffs(std::vector<G4double>& buffer,
 		  const std::vector<G4double>& coeff, G4double units);
@@ -151,11 +152,11 @@ protected:
 protected:
   G4MaterialPropertiesTable theChargeMatPropTable;
   G4MaterialPropertiesTable thePhononMatPropTable;
-  G4MaterialPropertiesTable theBogoliubovQPMatPropTable;
+  G4MaterialPropertiesTable theQPMatPropTable;
 
   G4CMPVElectrodePattern* theChargeElectrode;
   G4CMPVElectrodePattern* thePhononElectrode;
-  G4CMPVElectrodePattern* theBogoliubovQPElectrode;
+  G4CMPVElectrodePattern* theQPElectrode;
 
   // Frequency dependent phonon surface scattering parameters
   G4double anharmonicMaxFreq;		// Max frequency for anharmonic decay
@@ -169,7 +170,7 @@ protected:
   // These lists will be pre-allocated, with values entered by thread
   mutable std::map<G4int, G4CMPVElectrodePattern*> workerChargeElectrode;
   mutable std::map<G4int, G4CMPVElectrodePattern*> workerPhononElectrode;
-  mutable std::map<G4int, G4CMPVElectrodePattern*> workerBogoliubovQPElectrode;
+  mutable std::map<G4int, G4CMPVElectrodePattern*> workerQPElectrode;
 
   // These args should be const, but G4MaterialPropertiesTables is silly.
 //   G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
