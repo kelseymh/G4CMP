@@ -3,21 +3,21 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/include/G4CMPBogoliubovQPRecombinationProcess.hh
-/// \brief Definition of the G4CMPBogoliubovQPRecombinationProcess class
+/// \file library/include/G4CMPQPRecombinationProcess.hh
+/// \brief Definition of the G4CMPQPRecombinationProcess class
 //
 
-#ifndef G4CMPBogoliubovQPRecombinationProcess_h
-#define G4CMPBogoliubovQPRecombinationProcess_h 1
+#ifndef G4CMPQPRecombinationProcess_h
+#define G4CMPQPRecombinationProcess_h 1
 
 #include "G4CMPSCUtils.hh"
-#include "G4VBogoliubovQPProcess.hh"
+#include "G4VQPProcess.hh"
 
-class G4CMPBogoliubovQPRecombinationProcess : public G4VBogoliubovQPProcess
+class G4CMPQPRecombinationProcess : public G4VQPProcess
 {
 public:
-  G4CMPBogoliubovQPRecombinationProcess(const G4String& processName ="bogoliubovQPRecombination");
-  virtual ~G4CMPBogoliubovQPRecombinationProcess();
+  G4CMPQPRecombinationProcess(const G4String& processName ="QPRecombination");
+  virtual ~G4CMPQPRecombinationProcess();
 
   virtual void SetVerboseLevel(G4int vb);
   virtual G4bool IsApplicable(const G4ParticleDefinition&);
@@ -38,8 +38,8 @@ private:
   
 
   // hide assignment operator as private
-  G4CMPBogoliubovQPRecombinationProcess(G4CMPBogoliubovQPRecombinationProcess&);
-  G4CMPBogoliubovQPRecombinationProcess& operator=(const G4CMPBogoliubovQPRecombinationProcess& right);
+  G4CMPQPRecombinationProcess(G4CMPQPRecombinationProcess&);
+  G4CMPQPRecombinationProcess& operator=(const G4CMPQPRecombinationProcess& right);
 };
 
-#endif	/* G4CMPBogoliubovQPRecombinationProcess_h */
+#endif	/* G4CMPQPRecombinationProcess_h */

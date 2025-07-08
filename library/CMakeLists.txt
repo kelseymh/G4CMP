@@ -223,20 +223,20 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VNIELPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VPhononProcess.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4BogoliubovQP.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VBogoliubovQPProcess.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRecombinationProcess.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRecombinationRate.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRadiatesPhononProcess.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRadiatesPhononRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4QP.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VQPProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRecombinationProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRecombinationRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRadiatesPhononProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRadiatesPhononRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCPairBreakingProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCPairBreakingRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPBoundaryProcess.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPParticleChangeForBogoliubovQPRandomWalk.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPParticleChangeForQPDiffusion.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusion.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPLocalTrappingProcess.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPLocalTrappingRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPLocalTrappingProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPLocalTrappingRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusionTimeStepperProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusionTimeStepperRate.cc
     )
@@ -331,20 +331,20 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4BogoliubovQP.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VBogoliubovQPProcess.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRecombinationProcess.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRecombinationRate.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRadiatesPhononProcess.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRadiatesPhononRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4QP.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VQPProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRecombinationProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRecombinationRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRadiatesPhononProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRadiatesPhononRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCPairBreakingProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCPairBreakingRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPBoundaryProcess.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPParticleChangeForBogoliubovQPRandomWalk.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPParticleChangeForQPDiffusion.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusion.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPLocalTrappingProcess.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPLocalTrappingRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPLocalTrappingProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPLocalTrappingRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusionTimeStepperProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusionTimeStepperRate.hh
     )

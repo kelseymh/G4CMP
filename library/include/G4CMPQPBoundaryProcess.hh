@@ -43,13 +43,17 @@ protected:
 
   // Apply QP-specific conditions, after calling through to base
   virtual G4bool ReflectTrack(const G4Track& aTrack, const G4Step& aStep) const;
-  virtual void DoAbsorption(const G4Track& aTrack, const G4Step& aStep, G4ParticleChange& aParticleChange);
-  virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep, G4ParticleChange& aParticleChange);
-  virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep, G4ParticleChange& aParticleChange);
+  virtual void DoAbsorption(const G4Track& aTrack, const G4Step& aStep,
+			    G4ParticleChange& aParticleChange);
+  virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
+			    G4ParticleChange& aParticleChange);
+  virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
+			      G4ParticleChange& aParticleChange);
 
   G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm) const;
   
-  //Boolean to indicate whether the pre/post-step volumes have valid material properties for QP transport
+  //Boolean to indicate whether the pre/post-step volumes have valid material
+  //properties for QP transport
   G4bool preQPVolume;
   G4bool postQPVolume;
    

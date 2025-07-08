@@ -3,22 +3,22 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file particles/src/G4BogoliubovQP.cc
-/// \brief Implementation of the G4BogoliubovQP class
+/// \file particles/src/G4QP.cc
+/// \brief Implementation of the G4QP class
 // This class deals with quasiparticles in the superconducting layer
 
-#include "G4BogoliubovQP.hh"
+#include "G4QP.hh"
 #include "G4ParticleTable.hh"
 #include "G4SystemOfUnits.hh"
 
-G4BogoliubovQP* G4BogoliubovQP::theInstance = 0;
+G4QP* G4QP::theInstance = 0;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-G4BogoliubovQP*  G4BogoliubovQP::Definition() 
+
+G4QP* G4QP::Definition() 
 {
   if (theInstance !=0) return theInstance;
 
-  const G4String name = "BogoliubovQP";
+  const G4String name = "QP";
   // search in particle table
   G4ParticleTable* pTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* anInstance = pTable->FindParticle(name);
@@ -37,19 +37,17 @@ G4BogoliubovQP*  G4BogoliubovQP::Definition()
                  name,         100*eV,       0.0*MeV,         0.0,
                     1,               0,             0,
                     0,               0,             0,
-             "BogoliubovQP",         0,             0,         0,
+             "QP",         0,             0,         0,
                  true,             0.0,          NULL,
-                false,        "BogoliubovQP",           0
+                false,        "QP",           0
              );
   }
-  theInstance = reinterpret_cast<G4BogoliubovQP*>(anInstance);
+  theInstance = reinterpret_cast<G4QP*>(anInstance);
   return theInstance;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4BogoliubovQP*  G4BogoliubovQP::BogoliubovQPDefinition()
-{
+G4QP* G4QP::QPDefinition() {
   return Definition();
 }
 
