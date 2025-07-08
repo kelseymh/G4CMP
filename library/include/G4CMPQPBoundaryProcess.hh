@@ -3,11 +3,11 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/include/G4CMPBogoliubovQPRandomWalkBoundary.hh
-/// \brief Definition of the  G4CMPBogoliubovQPRandomWalkBoundary class
+/// \file library/include/G4CMPQPBoundaryProcess.hh
+/// \brief Definition of the  G4CMPQPBoundaryProcess class
 
-#ifndef G4CMPBogoliubovQPRandomWalkBoundary_h
-#define G4CMPBogoliubovQPRandomWalkBoundary_h 1
+#ifndef G4CMPQPBoundaryProcess_h
+#define G4CMPQPBoundaryProcess_h 1
 
 #include "G4VBogoliubovQPProcess.hh"
 #include "G4CMPSCUtils.hh"
@@ -15,12 +15,12 @@
 
 class G4CMPProcessUtils;
 
-class G4CMPBogoliubovQPRandomWalkBoundary : public G4VBogoliubovQPProcess,
+class G4CMPQPBoundaryProcess : public G4VBogoliubovQPProcess,
 					    public G4CMPBoundaryUtils {
 public:
-  G4CMPBogoliubovQPRandomWalkBoundary(const G4String& processName="G4CMPBogoliubovQPRandomWalkBoundary");
+  G4CMPQPBoundaryProcess(const G4String& processName="G4CMPQPBoundaryProcess");
   
-  virtual ~G4CMPBogoliubovQPRandomWalkBoundary();
+  virtual ~G4CMPQPBoundaryProcess();
 
   //  // Configure for current track including AnharmonicDecay utility
   //  virtual void LoadDataForTrack(const G4Track* track);
@@ -60,10 +60,10 @@ protected:
 private:
 
   // hide assignment operator as private
-  G4CMPBogoliubovQPRandomWalkBoundary(G4CMPBogoliubovQPRandomWalkBoundary&);
-  G4CMPBogoliubovQPRandomWalkBoundary(G4CMPBogoliubovQPRandomWalkBoundary&&);
-  G4CMPBogoliubovQPRandomWalkBoundary& operator=(const G4CMPBogoliubovQPRandomWalkBoundary&);
-  G4CMPBogoliubovQPRandomWalkBoundary& operator=(const G4CMPBogoliubovQPRandomWalkBoundary&&);
+  G4CMPQPBoundaryProcess(G4CMPQPBoundaryProcess&);
+  G4CMPQPBoundaryProcess(G4CMPQPBoundaryProcess&&);
+  G4CMPQPBoundaryProcess& operator=(const G4CMPQPBoundaryProcess&);
+  G4CMPQPBoundaryProcess& operator=(const G4CMPQPBoundaryProcess&&);
 };
 
-#endif	/* G4CMPBogoliubovQPRandomWalkBoundary_h */
+#endif	/* G4CMPQPBoundaryProcess_h */

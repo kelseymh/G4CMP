@@ -232,9 +232,9 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCPairBreakingProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCPairBreakingRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCUtils.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRandomWalkBoundary.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPBoundaryProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPParticleChangeForBogoliubovQPRandomWalk.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPRandomWalkTransport.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusion.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPLocalTrappingProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQPLocalTrappingRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusionTimeStepperProcess.cc
@@ -340,9 +340,9 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCPairBreakingProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCPairBreakingRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCUtils.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRandomWalkBoundary.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPBoundaryProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPParticleChangeForBogoliubovQPRandomWalk.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPRandomWalkTransport.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusion.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPLocalTrappingProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQPLocalTrappingRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusionTimeStepperProcess.hh

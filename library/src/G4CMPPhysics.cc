@@ -47,7 +47,7 @@
 #include "G4CMPSCPairBreakingProcess.hh"
 #include "G4CMPBogoliubovQPRecombinationProcess.hh"
 #include "G4CMPBogoliubovQPRadiatesPhononProcess.hh"
-#include "G4CMPBogoliubovQPRandomWalkBoundary.hh"
+#include "G4CMPQPBoundaryProcess.hh"
 #include "G4CMPQPDiffusion.hh"
 #include "G4CMPBogoliubovQPLocalTrappingProcess.hh"
 #include "G4CMPQPDiffusionTimeStepperProcess.hh"
@@ -82,7 +82,7 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* phCPbreak = new G4CMPSCPairBreakingProcess;
   G4VProcess* bogQPRecomb = new G4CMPBogoliubovQPRecombinationProcess;
   G4VProcess* bogQPRad = new G4CMPBogoliubovQPRadiatesPhononProcess;
-  G4VProcess* bogQPRefl = new G4CMPBogoliubovQPRandomWalkBoundary;
+  G4VProcess* qpBoundary = new G4CMPQPBoundaryProcess;
   G4VProcess* qpDiffusion = new G4CMPQPDiffusion;
   G4VProcess* bogQPTrap = new G4CMPBogoliubovQPLocalTrappingProcess;
   G4VProcess* bogQPTimeStep = new G4CMPQPDiffusionTimeStepperProcess;
@@ -110,7 +110,7 @@ void G4CMPPhysics::ConstructProcess() {
   AddG4CMPProcess(bogQPRad,particle);
   AddG4CMPProcess(bogQPTrap,particle);
   AddG4CMPProcess(bogQPTimeStep,particle);
-  AddG4CMPProcess(bogQPRefl,particle);
+  AddG4CMPProcess(qpBoundary,particle);
   AddG4CMPProcess(bogQPRecomb,particle);
   //EY since QP transport is not a discrete process adding to process manager directly
   //  particle->GetProcessManager()->AddProcess(bogQPTrans,ordInActive,ordDefault,ordLast);
