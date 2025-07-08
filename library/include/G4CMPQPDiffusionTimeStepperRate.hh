@@ -18,7 +18,7 @@
 class G4CMPQPDiffusionTimeStepperRate : public G4CMPVScatteringRate {
 					   
 public:
-  G4CMPQPDiffusionTimeStepperRate() : G4CMPVScatteringRate("QPDiffusionTimeStepper") {;}
+  G4CMPQPDiffusionTimeStepperRate() : G4CMPVScatteringRate("qpDiffusionTimeStepper") {;}
   virtual ~G4CMPQPDiffusionTimeStepperRate() {;}
   
   virtual G4double Rate(const G4Track& aTrack) const;

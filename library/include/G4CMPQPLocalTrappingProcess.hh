@@ -16,7 +16,7 @@
 
 class G4CMPQPLocalTrappingProcess : public G4VQPProcess {
 public:
-  G4CMPQPLocalTrappingProcess(const G4String& processName="QPLocalTrapping");
+  G4CMPQPLocalTrappingProcess(const G4String& processName="qpLocalTrapping");
   virtual ~G4CMPQPLocalTrappingProcess();
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);

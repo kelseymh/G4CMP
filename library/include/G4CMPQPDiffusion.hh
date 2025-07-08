@@ -34,7 +34,7 @@ class G4CMPQPDiffusion : public G4VContinuousDiscreteProcess, public G4CMPProces
 {
 public:
 
-  G4CMPQPDiffusion(const G4String& name = "G4CMPQPDiffusion", G4CMPProcessSubType stype = fQPDiffusion);
+  G4CMPQPDiffusion(const G4String& name = "qpDiffusion", G4CMPProcessSubType stype = fQPDiffusion);
 
   virtual ~G4CMPQPDiffusion();
 

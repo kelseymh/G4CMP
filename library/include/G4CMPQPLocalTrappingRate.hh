@@ -17,7 +17,7 @@
 
 class G4CMPQPLocalTrappingRate : public G4CMPVScatteringRate {
 public:
-  G4CMPQPLocalTrappingRate() : G4CMPVScatteringRate("QPLocalTrapping") {;}
+  G4CMPQPLocalTrappingRate() : G4CMPVScatteringRate("qpLocalTrapping") {;}
   virtual ~G4CMPQPLocalTrappingRate() {;}
 
   virtual G4double Rate(const G4Track& aTrack) const;

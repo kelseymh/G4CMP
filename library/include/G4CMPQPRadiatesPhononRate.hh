@@ -18,7 +18,7 @@
 class G4CMPQPRadiatesPhononRate : public G4CMPVScatteringRate {
 					   
 public:
-  G4CMPQPRadiatesPhononRate() : G4CMPVScatteringRate("QPRadiatesPhonon") {;}
+  G4CMPQPRadiatesPhononRate() : G4CMPVScatteringRate("qpRadiatesPhonon") {;}
   virtual ~G4CMPQPRadiatesPhononRate() {;}
   
   virtual G4double Rate(const G4Track& aTrack) const;

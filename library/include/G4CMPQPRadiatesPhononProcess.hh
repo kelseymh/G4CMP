@@ -16,7 +16,7 @@
 class G4CMPQPRadiatesPhononProcess : public G4VQPProcess
 {
 public:
-  G4CMPQPRadiatesPhononProcess(const G4String& processName ="QPRadiatesPhonon");
+  G4CMPQPRadiatesPhononProcess(const G4String& processName ="qpRadiatesPhonon");
   virtual ~G4CMPQPRadiatesPhononProcess();
 
   virtual void SetVerboseLevel(G4int vb);

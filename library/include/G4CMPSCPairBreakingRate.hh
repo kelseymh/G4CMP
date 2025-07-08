@@ -16,7 +16,7 @@
 class G4CMPSCPairBreakingRate : public G4CMPVScatteringRate{
   
 public:
-  G4CMPSCPairBreakingRate() : G4CMPVScatteringRate("SCPairBreaking") {;}
+  G4CMPSCPairBreakingRate() : G4CMPVScatteringRate("scPairBreaking") {;}
   virtual ~G4CMPSCPairBreakingRate() {;}
 
   virtual G4double Rate(const G4Track& aTrack) const;

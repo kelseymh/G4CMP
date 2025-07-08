@@ -18,7 +18,7 @@
 class G4CMPQPRecombinationRate : public G4CMPVScatteringRate {
 					   
 public:
-  G4CMPQPRecombinationRate() : G4CMPVScatteringRate("QPRecombination") {;}
+  G4CMPQPRecombinationRate() : G4CMPVScatteringRate("qpRecombination") {;}
   virtual ~G4CMPQPRecombinationRate() {;}
   
   virtual G4double Rate(const G4Track& aTrack) const;

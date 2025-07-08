@@ -16,7 +16,7 @@
 class G4CMPQPRecombinationProcess : public G4VQPProcess
 {
 public:
-  G4CMPQPRecombinationProcess(const G4String& processName ="QPRecombination");
+  G4CMPQPRecombinationProcess(const G4String& processName ="qpRecombination");
   virtual ~G4CMPQPRecombinationProcess();
 
   virtual void SetVerboseLevel(G4int vb);
