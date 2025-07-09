@@ -140,7 +140,7 @@ G4CMPQPRecombinationRate::ComputeNormalizedTauRecombinationVsEnergy() {
     (fMaxQPEnergyDivGap - fMinQPEnergyDivGap) / ((double)fQPEnergyBins);
   
   //Loop over all QP energy bins, and create a normalized tau for each of them
-  for( int iB = 0; iB < fQPEnergyBins; ++iB ){
+  for (int iB = 0; iB < fQPEnergyBins; ++iB) {
     
     //Define the qp energy for this bin    
     G4double qpEnergy =
@@ -159,7 +159,7 @@ G4CMPQPRecombinationRate::ComputeNormalizedTauRecombinationVsEnergy() {
     double maxOmega = fGapEnergy * fMaxQPEnergyDivGap * 10;    
     double deltaOmega = (maxOmega - minOmega) / ((double)nW);
     double integral = 0;
-    for( int iW = 0; iW < nW; ++iW ){
+    for (int iW = 0; iW < nW; ++iW) {
       double Omega = minOmega + (iW + 0.5) * deltaOmega;
       double alpha2F = Omega*Omega;
       double energyTerm1 =
@@ -199,7 +199,7 @@ void G4CMPQPRecombinationRate::SaveBogoliubovRecombinationTauVsPhononEnergyToLog
 
   std::ofstream outfile;
   outfile.open("/Users/ryanlinehan/QSC/Sims/Geant4/scRebuild-build/BogoliubovRecombinationTauVsEnergy.txt");
-  for( int iE = 0; iE < theFunc.size(); ++iE ){
+  for (int iE = 0; iE < theFunc.size(); ++iE) {
     outfile << theFunc[iE][0] << " " << theFunc[iE][1] << std::endl;
   }
   outfile.close();

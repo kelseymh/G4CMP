@@ -132,7 +132,7 @@ G4CMPQPRadiatesPhononRate::ComputeNormalizedTauQPRadiatesPhononVsEnergy() {
     = (fMaxQPEnergyDivGap - fMinQPEnergyDivGap) / ((double)fQPEnergyBins);
 
   //Loop over all QP energy bins, and create a normalized tau for each of them
-  for(int iB = 0; iB < fQPEnergyBins; ++iB) {
+  for (int iB = 0; iB < fQPEnergyBins; ++iB) {
 
     //Define the qp energy for this bin    
     G4double qpEnergy
@@ -149,7 +149,7 @@ G4CMPQPRadiatesPhononRate::ComputeNormalizedTauQPRadiatesPhononVsEnergy() {
     G4double maxOmega = qpEnergy - fGapEnergy;
     G4double deltaOmega = (maxOmega - minOmega) / ((double)nW);
     double integral = 0;
-    for( int iW = 0; iW < nW; ++iW ){
+    for (int iW = 0; iW < nW; ++iW) {
       double Omega = minOmega + (iW + 0.5) * deltaOmega;
       double alpha2F = Omega*Omega; // Omitting b since it's divided out later
       double energyTerm1
@@ -192,7 +192,7 @@ void G4CMPQPRadiatesPhononRate::SaveQPRadiatesPhononTauVsPhononEnergyToLogFile(s
   //G4cout << "In the QP Radiates Phonon log file function." << G4endl;
   std::ofstream outfile;
   outfile.open("/Users/ryanlinehan/QSC/Sims/Geant4/scRebuild-build/QPRadiatesPhononTauVsEnergy.txt");
-  for( int iE = 0; iE < theFunc.size(); ++iE ){
+  for (int iE = 0; iE < theFunc.size(); ++iE) {
     outfile << theFunc[iE][0] << " " << theFunc[iE][1] << std::endl;
   }
   outfile.close();

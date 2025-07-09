@@ -145,7 +145,7 @@ private:
   G4bool        fVerySmallStep= false;
   G4double      fBoundaryFudgeFactor;
   G4double      fHardFloorBoundaryScale;  
-  G4double      fEpsilonForWalkOnSpheres;
+  G4double      fSoftFloorBoundaryScale; //Boundary eps used in walkonspheres
 
   //The last N boundary scatters for this
   std::vector<std::pair<G4ThreeVector,G4ThreeVector> > fBoundaryHistory;

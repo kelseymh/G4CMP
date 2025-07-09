@@ -49,7 +49,7 @@ G4CMPQPDiffusion::G4CMPQPDiffusion(const G4String& name,
   fPreDiffusionPathLength = 0.0;
   fDiffConst =  0.0;
   fBoundaryFudgeFactor = 1.001;
-  fEpsilonForWalkOnSpheres = 100*CLHEP::nm;
+  fSoftFloorBoundaryScale = 100*CLHEP::nm;
   fHardFloorBoundaryScale = 10*CLHEP::nm;
   
   //fSafetyHelper is initialized in AlongStepGPIL
@@ -65,7 +65,7 @@ G4CMPQPDiffusion::G4CMPQPDiffusion(const G4String& name,
   fOutgoingSurfaceTangent1 = G4ThreeVector(0,0,0);
   fOutgoingSurfaceTangent2 = G4ThreeVector(0,0,0);
   fDotProductDefiningUniqueNorms = 0.99; //Hardcoded and somewhat arbitrary...
-  fStuckInCornerThreshold = fEpsilonForWalkOnSpheres;
+  fStuckInCornerThreshold = fSoftFloorBoundaryScale;
   fNeedSweptSafetyInGetMFP = false;
   fPreemptivelyKillEvent = false;
   
@@ -216,7 +216,7 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
 	//between the hard floor scale and the soft floor scale, which requires
 	//a bit of math to make sure we get the path length right.
 	//This also should trigger if we're starting from the boundary
-	if( f2DSafety >= fEpsilonForWalkOnSpheres || (fTrackOnBoundary) ){
+	if( f2DSafety >= fSoftFloorBoundaryScale || (fTrackOnBoundary) ){
 	  
 	  //Regardless of boundary condition, if we're farther than a soft
 	  //floor boundary scale from the boundary, then we can shoot for
@@ -226,7 +226,7 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
 	  //and can be somewhat arbitrarily large for steps that start very
 	  //close to the softFloorScale, depending on the choice of the
 	  //hardFloorScale. 
-	  if( f2DSafety >= fEpsilonForWalkOnSpheres ){
+	  if( f2DSafety >= fSoftFloorBoundaryScale ){
 	    fPathLength = ComputePathLengthInGoldilocksZone(); 
 	    fTimeStep = fTimeStepToBoundary;	    
 	  } else{
@@ -499,7 +499,7 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
     if(!fTrackOnBoundary) {
 
       //Sub case 1: farther than epsilon away from boundary? Get to randomize.
-      if(f2DSafety >= fEpsilonForWalkOnSpheres) {
+      if(f2DSafety >= fSoftFloorBoundaryScale) {
 	G4ThreeVector thisRandomDir = G4RandomDirection();
 	thisRandomDir.setZ(0);
 	fNewDirection = thisRandomDir.unit();
@@ -1056,7 +1056,7 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
   //step is at a steep enough angle not to leave the epsilon region around the
   //surface. This may not run if another process sends us within epsilon of
   //the boundary... do we need to do anything about this? REL
-  if(the2DSafety < fEpsilonForWalkOnSpheres) {
+  if(the2DSafety < fSoftFloorBoundaryScale) {
 
     //Debugging
     if(verboseLevel > 5) {
@@ -1123,12 +1123,12 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
       }
       
       //In some scenarios, the original 2D safety is below
-      //fEpsilonForWalkOnSpheres and the new, correct 2D safety is not. If
+      //fSoftFloorBoundaryScale and the new, correct 2D safety is not. If
       //this is the case, we will likely not actually hit the surface after
       //pointing ourselves toward it (since we make our step length only
       //slightly larger than the original computed safety. In this scenario,
       //just randomize the direction and move on.
-      if(the2DSafety >= fEpsilonForWalkOnSpheres) {
+      if(the2DSafety >= fSoftFloorBoundaryScale) {
 	G4ThreeVector returnDir = G4RandomDirection();
 	returnDir.setZ(0);
 	
@@ -1136,7 +1136,7 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
 	if(verboseLevel > 5) {      
 	  G4cout << "PSDI Function Point BA | after the "
 		 << "FindDirectionToNearbyBoundary returned a funky edge case, "
-		 << "the2DSafety is now larger than fEpsilonForWalkOnSpheres."
+		 << "the2DSafety is now larger than fSoftFloorBoundaryScale."
 		 << G4endl;
 	  G4cout << "Just randomizing the next direction to "
 		 << returnDir.unit() << "." << G4endl;      
@@ -1157,7 +1157,7 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
 	  G4cout << "PSDI Function Point BB | after the "
 		 << "FindDirectionToNearbyBoundary returned a funky edge case, "
 		 << "the2DSafety is still smaller than "
-		 << "fEpsilonForWalkOnSpheres." << G4endl;
+		 << "fSoftFloorBoundaryScale." << G4endl;
 	  G4cout << "Returning a new direction of " << returnDir
 		 << " in the global frame." << G4endl;
 	}
@@ -2040,7 +2040,7 @@ G4double G4CMPQPDiffusion::HandleVerySmallSteps(G4double thisMFP,
     
     
     //First check some regimes, agnostic to boundary status
-    if(the2DSafety > fEpsilonForWalkOnSpheres) {
+    if(the2DSafety > fSoftFloorBoundaryScale) {
       G4ExceptionDescription msg;
       msg << "In HandleVerySmallStep, the2DSafety > fEpsilonWalkOnSpheres."
 	  << G4endl;
