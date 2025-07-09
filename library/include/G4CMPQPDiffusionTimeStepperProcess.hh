@@ -25,8 +25,7 @@ public:
 
 protected:
   // Keep function here as call-back to avoid getting old toolkit version
-  virtual G4double GetMeanFreePath(const G4Track& trk,
-				   G4double prevstep,
+  virtual G4double GetMeanFreePath(const G4Track& trk,G4double prevstep,
 				   G4ForceCondition* cond);
 
 

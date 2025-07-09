@@ -41,12 +41,9 @@ G4CMPQPBoundaryProcess::G4CMPQPBoundaryProcess(const G4String& aName)
   : G4VQPProcess(aName, fQPBoundaryProcess),G4CMPBoundaryUtils(this),procName("G4CMPQPBoundaryProcess") {
 }
 
-
-
 // Destructor
 G4CMPQPBoundaryProcess::~G4CMPQPBoundaryProcess() {
 }
-
 
 // Compute and return step length
 G4double G4CMPQPBoundaryProcess::
@@ -55,8 +52,6 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
                                      G4ForceCondition* condition) {
   return GetMeanFreePath(aTrack, previousStepSize, condition);
 }
-
-
 
 G4double G4CMPQPBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
 						 G4double /*prevStepLength*/,
