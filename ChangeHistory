@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-07-10  g4cmp-V09-07-01 Support generating Doxygen class info Web pages.
 2025-07-10  G4CMP-492 : Add Doxyfile to support generate Doxygen class info.
 
 2025-05-12  g4cmp-V09-07-00 Phonon specular reflection at curved surfaces.
