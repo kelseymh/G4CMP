@@ -47,6 +47,7 @@
 //              flips
 // 20240712 M. Kelsey -- Protect minimum MFP calculation for zero field.
 // 20250616 M. Kelsey -- Rename MFP variables to be more descriptive.
+// 20250713 M. Kelsey -- Fix calculation of "stoppingmfp" numerator.
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
@@ -165,7 +166,8 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   if (fieldVector.mag() > 0.) {
     G4double mass = (IsElectron() ? theLattice->GetElectronMass()
 		     : theLattice->GetHoleMass());
-    G4double stopX = mass*vtrk/(2.*eplus*fieldVector.mag());
+    // FIXME: Why not use GetKineticEnergy() for numerator?
+    G4double stopX = mass*vtrk*vtrk/(2.*eplus*fieldVector.mag());
     mfpEstop = std::max(stopX/100., 1e-10*m);
 
     if (verboseLevel>1)
