@@ -51,6 +51,7 @@ G4CMPQPDiffusion::G4CMPQPDiffusion(const G4String& name,
   fBoundaryFudgeFactor = 1.001;
   fSoftFloorBoundaryScale = 100*CLHEP::nm;
   fHardFloorBoundaryScale = 10*CLHEP::nm;
+  fPicometerScale = 0.001*CLHEP::nm;
   
   //fSafetyHelper is initialized in AlongStepGPIL
   fSafetyHelper=nullptr;
@@ -67,7 +68,8 @@ G4CMPQPDiffusion::G4CMPQPDiffusion(const G4String& name,
   fDotProductDefiningUniqueNorms = 0.99; //Hardcoded and somewhat arbitrary...
   fStuckInCornerThreshold = fSoftFloorBoundaryScale;
   fNeedSweptSafetyInGetMFP = false;
-  fPreemptivelyKillEvent = false;
+  fPreemptivelyKillTrack = false;
+
   
   //REL A GENTLE REMINDER THAT WE CANNOT INSTANTIATE CONFIG MANAGER VALUES
   //ONLY IN PROCESS OR RATE CONSTRUCTORS BECAUSE THEY COME BEFORE THE CONFIG
@@ -188,13 +190,16 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
     //simple: it's just the distance to the boundary (up to the minor
     //adjustments that we use to actually trigger/not-trigger a boundary
     //interaction in G4), and the time is just the time step to the boundary.
+    //Should also be true for very small steps, since now the MFP is just the
+    //safety and the timeStepToBoundary is the straight-line travel time.
     double timeTolerance = 1E-10; //For floating point errors    
     if( (fabs(currentMinimalStep/velocity - fTimeStepToBoundary) <
-	 timeTolerance) || fVerySmallStep ){
+	 timeTolerance) || fVerySmallStep ){ 
 
-      //Let's break this into two scenarios: very small step and other,
-      //just so we explicitly know how small steps are handled.
-      if( fVerySmallStep ){
+      //Let's break this into two scenarios: very small step inside the soft
+      //floor boundary and other, just so we explicitly know how small steps
+      //are handled.
+      if( fVerySmallStepInsideSoftFloor ){
 	
 	//If we're starting on a boundary, then we want to make sure to make
 	//the path length just below what's needed. Otherwise, push us over
@@ -207,7 +212,8 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
 	fTimeStep = fTimeStepToBoundary;
 		
       } else{
-	//^For non-"very small step" steps (the majority, ideally)	
+	//^For non-"very small step" steps (the majority, ideally) or
+	//very small steps that are outside of the soft floor boundary...
 	
 	//If we're not very close to the boundary, then we just make our
 	//diffusion-folded path length equal to juuuuuust under the distance
@@ -293,7 +299,11 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
 	  G4ExceptionDescription msg;
 	  msg << "Too many unsuccessful attempts to find a diffusion "
 	      << "distance when step is governed by other (non-diffusion) "
-	      << "discrete process. Something should be fixed.";
+	      << "discrete process. Time step to boundary: "
+	      << fTimeStepToBoundary << ", fVerySmallStep: " << fVerySmallStep
+	      << ", fVerySmallStepInsideSoftFloor: " << fVerySmallStepInsideSoftFloor
+	      << ", currentMinimalStep: " << currentMinimalStep << ", velocity: "
+	      << velocity << ". most recent safety: " << f2DSafety << ". Something should be fixed.";
 	  G4Exception("G4CMPQPDiffusion::AlongStepGetPhysicalInteractionLength",
 		      "QPDiffusion001",FatalException, msg);
 	}
@@ -421,7 +431,7 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
 
   //Kill event if we have a bad outgoing surface tangent -- think this should
   //actually go up after calling the outgoingsurfacetangent finding
-  if(fPreemptivelyKillEvent){
+  if(fPreemptivelyKillTrack){
     fParticleChange.ProposeTrackStatus(fStopAndKill);
     return &fParticleChange;
   }
@@ -881,7 +891,7 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
 
   //Kill event if we have a bad outgoing surface tangent -- think this should
   //actually go up after calling the outgoingsurfacetangent finding
-  if(fPreemptivelyKillEvent) {
+  if(fPreemptivelyKillTrack) {
     fParticleChange.ProposeTrackStatus(fStopAndKill);
     return &fParticleChange;
   }
@@ -1110,7 +1120,14 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
 	//is zero, this direction is probably okay, but this check metric
 	//will return -0.5. Circumvent this.
 	if(the2DSafetyAndDir_Shifted.first == 0 && the2DSafety > 0) {
-	  //Flag REL NEEDS TO BE FINISHED
+	  G4ExceptionDescription msg;
+	  msg << "After first needToRepeat flagged, we are checking the "
+	      << "repeated safety/dir calculation and find that the safetyDir "
+	      << "gives a shifted safety of zero and original safety >0."
+	      << "This doesn't seem to be an actual problem but I'm going to "
+	      << "flag it as a fatal exception for now just because.";
+	  G4Exception("G4CMPQPDiffusion::PostStepDoIt", "QPDiffusion010",
+		      FatalException, msg);
 	  
 	} else {
 	  G4ExceptionDescription msg;
@@ -1659,16 +1676,16 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
   *condition = NotForced;
   
   //Reset some of the quantities that should be reset each step.
-  //PreemptivelyKillEvent should ideally (if the event is truly aborted) kill
+  //PreemptivelyKillTrack should ideally (if the event is truly aborted) kill
   //the event, so resetting here should be fine.
   fOutgoingSurfaceTangent1 = G4ThreeVector(0,0,0);
   fOutgoingSurfaceTangent2 = G4ThreeVector(0,0,0);
   fQPIsStuck = false;
-  fPreemptivelyKillEvent = false;
+  fPreemptivelyKillTrack = false;
   
   //This needs to be done so that we can update the SCUtils information,
-  //and since GetMeanFreePath for the discrete bit of this process should (?)
-  //run first, it will hopefully happen before the AlongStepGPIL runs and
+  //and since GetMeanFreePath for the discrete bit of this process runs
+  //first, it will hopefully happen before the AlongStepGPIL runs and
   //requests the gap.
   if (UpdateMeanFreePathForLatticeChangeover(track)) {
     UpdateSCAfterLatticeChange();
@@ -1876,7 +1893,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
 	//Kill event if we run into artifacts in the surface tangent finding.
 	//Here we return 0 so that this transport wins the GPIL race and then
 	//goes on to trigger the stop and kill condition in the AlongStepDoIt
-	if(fPreemptivelyKillEvent) {	  
+	if(fPreemptivelyKillTrack) {	  
 	  return 0;
 	}
 
@@ -1917,6 +1934,38 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
 		 << constrained2DSafety << G4endl;
 	}
       }
+
+      //"Triple point" checking
+      //Stuck or not, if we're calculating a safety that is below the picometer scale where G4
+      //likes to troll people with mathematically questionable surface normals, then
+      //run a test to see if we see more than one adjacent neighbor. Hopefully we don't have too
+      //many of these so the nTries can be large.
+      std::map<std::string,bool> map_volName_isPresent;
+      if (the2DSafety < fPicometerScale) {
+	const int nTries = 20;
+	for (int iTry = 0; iTry < nTries; ++iTry ){
+
+	  G4ThreeVector randomDir = G4RandomDirection();
+	  G4ThreeVector newRandomPos = trackPosition + randomDir*fPicometerScale;
+	  G4VPhysicalVolume * newRandomPosVol = G4CMP::GetVolumeAtPoint(newRandomPos);
+	  if (map_volName_isPresent.count(newRandomPosVol->GetName()) == 0 ) {
+	    map_volName_isPresent.emplace(newRandomPosVol->GetName(),true);
+	  }
+	}
+
+	//If we have more than two volumes in the spammed region, then throw an exception
+	if (map_volName_isPresent.size() > 2 ) {
+	  G4ExceptionDescription msg;
+	  msg << "When calculating safety from a boundary, the2DSafety is "
+	      << "below one picometer, and we find a triple junction. Safety: "
+	      << the2DSafety << ". If small enough this may cause issues "
+	      << "with surface norm finding. Killing track.";
+	  G4Exception("G4CMPQPDiffusion::GetMeanFreePath",
+		      "QPDiffusion025",JustWarning, msg);
+	  fPreemptivelyKillTrack = true;
+	  return 0;
+	}
+      }     
     } else {
       //^Bulk case: simpler
 
@@ -1978,7 +2027,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
 
     //Adjust for a scenario of a very very short step, which is an edge case
     //requiring some consideration
-    thisMFP = HandleVerySmallSteps(thisMFP,the2DSafety);
+    thisMFP = HandleVerySmallSteps(thisMFP,the2DSafety,track.GetVelocity());
         
     //Now, as a last measure, we set the number of interaction lengths left
     //for this process to 1 and return a mean free path equal to this MFP, so
@@ -2012,7 +2061,8 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
 //the diffusion-sampled distance and the "straight-line" 2D safety). See more
 //info in the comments below
 G4double G4CMPQPDiffusion::HandleVerySmallSteps(G4double thisMFP,
-						G4double the2DSafety){
+						G4double the2DSafety,
+						G4double velocity){
 
   //Debugging
   if(verboseLevel > 5) {
@@ -2029,42 +2079,75 @@ G4double G4CMPQPDiffusion::HandleVerySmallSteps(G4double thisMFP,
   //somewhat shaky since we keep a constant velocity but allow for energy-
   //dependent diffusion. So actually I think we have to keep this.
   fVerySmallStep = false;
+  fVerySmallStepInsideSoftFloor = false;
   if(thisMFP < the2DSafety) {
     fVerySmallStep = true;
-
+    
     //Debugging
     if(verboseLevel > 5) {
-      G4cout << "HVSS Function Point A | Confirming that fVerySmallStep is set "
-	     << "to true this round." << G4endl;
+      G4cout << "HVSS Function Point A | Confirming that thisMFP < the2DSafety"
+	     << " and that fVerySmallStep is true."
+	     << G4endl;
     }
-    
-    
+        
     //First check some regimes, agnostic to boundary status
-    if(the2DSafety > fSoftFloorBoundaryScale) {
-      G4ExceptionDescription msg;
-      msg << "In HandleVerySmallStep, the2DSafety > fEpsilonWalkOnSpheres."
-	  << G4endl;
-      G4Exception("G4CMPQPDiffusion::GetMeanFreePath", "QPDiffusion019",
-		  JustWarning, msg);
-    }
+    //if(the2DSafety > fSoftFloorBoundaryScale) {
+    //  G4ExceptionDescription msg;
+    //  msg << "In HandleVerySmallStep, the2DSafety > fEpsilonWalkOnSpheres."
+    //	  << G4endl;
+    //  G4Exception("G4CMPQPDiffusion::GetMeanFreePath", "QPDiffusion019",
+    //		  JustWarning, msg);
+    //}
         
     //Split this up into on-boundary case and not-on-boundary case. For
     //boundary, we cannot let transportation win because it's always going to
     //expect to see a boundary in the direction of the pre-step point's
-    //momentum    
-    if(fTrackOnBoundary) {      
+    //momentum. REL 7/8/2025 -- don't remember why I wrote this, but I think that
+    //going from boundary-->bulk-->boundary is more controlled than going
+    //from boundary-->boundary (i.e. G4 will be happier) so I want to do that.
+    if(fTrackOnBoundary) {
       thisMFP = the2DSafety / fBoundaryFudgeFactor;
-    } else {
-      //^If we're not on a boundary then we launch into the boundary we're
-      //(hopefully) staring down. This should ideally/hopefully beat
-      //transportation.
 
-      //Meant to make scale-less. Hopefully works...
-      thisMFP = the2DSafety * fBoundaryFudgeFactor; 
+      //REL should there be a similar straightline fTimeStep setting here?
+    } else {
+      //^If we're not on a boundary then one of two things can happen...
+
+      //1. We either are within a soft floor scale distance of the boundary, in
+      //   which case we are (in principle) aimed at the boundary already. Here we just
+      //   deliberately launch this into the boundary by making the MFP larger than
+      //   the safety.
+      if (the2DSafety < fSoftFloorBoundaryScale) {
+	thisMFP = the2DSafety * fBoundaryFudgeFactor;
+	fVerySmallStepInsideSoftFloor = true;
+
+	//Debugging
+	if(verboseLevel > 5) {
+	  G4cout << "HVSS Function Point B | Confirming that fVerySmallStep is set "
+		 << "to true this round." << G4endl;
+	}
+      } else {
+	//^Otherwise, we're not within the soft floor scale distance of the boundary, in which
+	//case we're not necessarily aimed at the boundary. Don't want to try to launch into
+	//the boundary since for some tracks this may cause issues where we trigger a boundary
+	//interaction (a la Transportation) without making sure that we get the correct momentum
+	//direction/norm for the next step. However, we still need to set the MFP properly.
+	//To make sure we stay roughly outside of the hardFloorBoundaryScale in case the direction
+	//is pointed directly at the wall, we set the MFP to the2DSafety - fHardFloorBoundaryScale.
+	thisMFP = the2DSafety - fHardFloorBoundaryScale;
+
+	//Debugging
+	if(verboseLevel > 5) {
+	  G4cout << "HVSS Function Point C | fVerySmallStep is true, but the"
+		 << "safety is also larger than our soft floor boundary scale. Setting the"
+		 << "MFP for this step to the2DSafety - fHardFloorBoundaryScale."
+		 << G4endl;
+	}
+      }
+
+      //In either case, put a minimum bound on the time to next step because it is aphysical
+      //for shorter steps -- can't move faster than time from straightline path.
+      fTimeStepToBoundary = thisMFP / velocity;
     }
-    //I worry that here we're not general enough: are there cases where the
-    //safety is larger than the fEpsilonWalkOnSpheres? What about for different
-    //materials?
   }
 
 
@@ -2399,13 +2482,24 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   avgy /= fBoundaryHistory.size();
   avgx2 /= fBoundaryHistory.size();
   avgy2 /= fBoundaryHistory.size();
+
   G4double sigmax = pow(avgx2 - avgx*avgx,0.5);
   G4double sigmay = pow(avgy2 - avgy*avgy,0.5);
 
+  //Sanity checks: if avgx*avgx > avgx2, then assume it's a floating point error and set the sigma to zero
+  if (avgx2 < avgx*avgx) {
+    sigmax = 0;
+  }
+  if (avgy2 < avgy*avgy) {
+    sigmay = 0;
+  }
+  
   //Debugging
   if(verboseLevel > 5) {
-    G4cout << "CFSQIC Function Point B | avgx: " << avgx << ", avgx2: "
+    G4cout << "CFSQIC Function Point B | avgx: " << avgx << ", avgx2: "      
 	   << avgx2 << G4endl;
+    G4cout << "CFSQIC Function Point B | avgy: " << avgy << ", avgy2: "      
+	   << avgy2 << G4endl;   
     G4cout << "CFSQIC Function Point B | sigmaX: " << sigmax << ", sigmaY: "
 	   << sigmay << G4endl;
     G4cout << "CFSQIC Function Point B | Length of goodOtherNorms: "
@@ -2688,10 +2782,10 @@ FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
 	<< ". This is suggestive of a QP being launched so deep into a corner "
 	<< "that it's within kCarTolerance of that corner, which can "
 	<< "potentially cause issues. Will try to write a fix to the details "
-	<< "later but for now we will just kill the event.";
+	<< "later but for now we will just kill the track.";
     G4Exception("G4CMPQPDiffusion::FindSurfaceTangentsForStuckQPEjection",
-		"QPDiffusion024",EventMustBeAborted, msg);
-    fPreemptivelyKillEvent = true;
+		"QPDiffusion024",JustWarning, msg);
+    fPreemptivelyKillTrack = true;
   }
   
   return output;

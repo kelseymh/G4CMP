@@ -282,6 +282,8 @@ void G4CMPQPBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::DoAbsorption() --" << G4endl;
   }
+
+  //  G4cout << "Doing QP Absorption." << G4endl;
   
   //Note that this is still just blindly copied from the G4CMPBoundaryUtils
   // this needs to be customized for QP dynamics ...
@@ -292,7 +294,9 @@ void G4CMPQPBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   if( verboseLevel > 5 ){
     G4cout << "REL: in doabsorption, ekin: " << ekin << " for QP." << G4endl;
   }
-  aParticleChange.ProposeNonIonizingEnergyDeposit(ekin);
+
+  //If we do this, then we get issues with the partitioner for some reason.
+  //aParticleChange.ProposeNonIonizingEnergyDeposit(ekin); 
   aParticleChange.ProposeTrackStatus(fStopAndKill);
   aParticleChange.ProposeEnergy(0.);
 }

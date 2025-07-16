@@ -143,10 +143,12 @@ private:
   G4bool        isActive= false;
   G4bool        fTrackOnBoundary= false;
   G4bool        fVerySmallStep= false;
+  G4bool        fVerySmallStepInsideSoftFloor= false;
   G4double      fBoundaryFudgeFactor;
   G4double      fHardFloorBoundaryScale;  
   G4double      fSoftFloorBoundaryScale; //Boundary eps used in walkonspheres
-
+  G4double      fPicometerScale;
+  
   //The last N boundary scatters for this
   std::vector<std::pair<G4ThreeVector,G4ThreeVector> > fBoundaryHistory;
   
@@ -160,7 +162,7 @@ private:
   G4double fDotProductDefiningUniqueNorms; //Self explanatory
   G4double fStuckInCornerThreshold;        //How spatially tight until QP stuck?
   G4double fNeedSweptSafetyInGetMFP;       //Flag to redo safeties w/more care
-  G4double fPreemptivelyKillEvent;         //Kill event
+  G4double fPreemptivelyKillTrack;         //Kill track
 
   
   //std::ofstream fOutfile;
@@ -188,7 +190,8 @@ private:
 					  G4double originalOption2Safety,
 					  G4ThreeVector outputDir);
   
-  G4double HandleVerySmallSteps(G4double thisMFP, G4double the2DSafety);
+  G4double HandleVerySmallSteps(G4double thisMFP, G4double the2DSafety,
+				G4double velocity);
   G4double ComputePathLengthInGoldilocksZone(); 
   
   
