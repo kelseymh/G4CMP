@@ -346,12 +346,13 @@ G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch,
 
   
   //3. Next, loop through the daughter volumes in this mother volume and compute the distances to those.
-  //When we're stuck, we don't actually use the tangVector1 and tangVector2 in the math, because of something that I think will be a reasonable
+  //When we're stuck, we don't actually use the tangVector1 and tangVector2 in the math for daughters, because of something that I think will be a reasonable
   //first approximation: if you're in a corner, the chances of a daughter boundary being on the same scale of how close you are to that
   //corner should be small. Some edge cases exist, where you can form a corner from a mother and a daugher boundary, in which case you
   //may land on the daughter, re-recognize that you're stuck, and then get re-ejected safely far from the corner. So at least in reasonably simple
   //geometries, this plus our mother safety should be fine. Need to rejigger this code to integrate it into the Get2D safety, since there are lots
   //of similarities/overlaps. (REL)
+  //REL 7/16/2025 -- I think that not calling swept safeties to most daughters (except oneself) is also why we get QPs slamming into triple points, FWIW
   for( int iD = 0; iD < motherLog->GetNoDaughters(); ++iD ){
     dummyDir = G4ThreeVector(0,0,0);
     G4double daughterSafety = Compute2DSafetyToDaughterVolume(pos,momDir,motherLog,safetyFromABoundary,iD,dummyDir,forceSweepSafetyForDaughters,surfaceNorm,tangVect1,tangVect2);

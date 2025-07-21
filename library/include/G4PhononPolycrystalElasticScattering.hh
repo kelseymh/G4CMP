@@ -17,21 +17,22 @@
 
 class G4PhononPolycrystalElasticScattering : public G4VPhononProcess {
 public:
-  G4PhononPolycrystalElasticScattering(const G4String& processName="phononPolycrystalElasticScattering");
+  G4PhononPolycrystalElasticScattering(const G4String& processName=
+				       "phononPolycrystalElasticScattering");
   virtual ~G4PhononPolycrystalElasticScattering();
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
 protected:
   // Keep function here as call-back to avoid getting old toolkit version
-  virtual G4double GetMeanFreePath(const G4Track& trk,
-				   G4double prevstep,
+  virtual G4double GetMeanFreePath(const G4Track& trk, G4double prevstep,
 				   G4ForceCondition* cond);
 
 private:
   // hide assignment operator as private 
   G4PhononPolycrystalElasticScattering(G4PhononPolycrystalElasticScattering&);
-  G4PhononPolycrystalElasticScattering& operator=(const G4PhononPolycrystalElasticScattering& right);
+  G4PhononPolycrystalElasticScattering& operator=
+  (const G4PhononPolycrystalElasticScattering& right);
 };
 
 #endif	/* G4PhononPolycrystalElasticScattering_h */

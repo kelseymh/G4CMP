@@ -32,16 +32,20 @@ G4PhononPolycrystalElasticScattering::G4PhononPolycrystalElasticScattering(const
   UseRateModel(new G4CMPPhononPolycrystalElasticScatteringRate);
 }
 
-G4PhononPolycrystalElasticScattering::~G4PhononPolycrystalElasticScattering() {;}
+G4PhononPolycrystalElasticScattering::~G4PhononPolycrystalElasticScattering() {
+}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-// Can basically keep the same scattering physics that is in the G4PhononPolycrystalElasticScattering for now at least.
-// May want to slightly modify this after having a discussion about how the polycrystalline shape affects
-// the orientation of the caustics, mode mixing, etc. 
-G4VParticleChange* G4PhononPolycrystalElasticScattering::PostStepDoIt( const G4Track& aTrack,
-						     const G4Step& aStep) {
 
-  G4cout << "Doing polycrystalElasticScattering process poststepdoit." << G4endl;
+// Can basically keep the same scattering physics that is in the
+// G4PhononPolycrystalElasticScattering for now at least.
+// May want to slightly modify this after having a discussion about how the
+// polycrystalline shape affects the orientation of the caustics, mode mixing,
+// etc. 
+G4VParticleChange* G4PhononPolycrystalElasticScattering::
+PostStepDoIt( const G4Track& aTrack, const G4Step& aStep) {
+
+  //G4cout << "Doing polycrystalElasticScattering process poststepdoit."
+  //	 << G4endl;
   
   // Initialize particle change
   aParticleChange.Initialize(aTrack);
@@ -53,7 +57,7 @@ G4VParticleChange* G4PhononPolycrystalElasticScattering::PostStepDoIt( const G4T
       postStepPoint->GetStepStatus()==fWorldBoundary) {
     return &aParticleChange;			// Don't want to reset IL
   }
-
+  
   if (verboseLevel) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
   if (verboseLevel>1) {
     G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
@@ -105,13 +109,13 @@ G4VParticleChange* G4PhononPolycrystalElasticScattering::PostStepDoIt( const G4T
   aParticleChange.ProposeVelocity(vgrp);
 
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
-  G4cout << "End of G4phononpolycrystalelasticscattering poststepdoit" << G4endl;
+  //G4cout << "End of G4phononpolycrystalelasticscattering poststepdoit"
+  //<< G4endl;
   return &aParticleChange;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 //Pass-through to G4CMPVProcess class
-G4double G4PhononPolycrystalElasticScattering::GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond)
-{
+G4double G4PhononPolycrystalElasticScattering::
+GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond) {
   return G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
 }
