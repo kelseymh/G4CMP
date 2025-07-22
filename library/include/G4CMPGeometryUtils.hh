@@ -67,34 +67,35 @@ namespace G4CMP {
 		       G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
 		       G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
 
-  std::pair<G4double,G4ThreeVector> Get2DSafetyWithDirection(const G4VTouchable* motherTouch,
-							     G4ThreeVector pos,
-							     G4ThreeVector momDir,
-							     bool safetyFromABoundary,
-							     G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
-							     G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
-							     G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
-
+  std::pair<G4double,G4ThreeVector>
+  Get2DSafetyWithDirection(const G4VTouchable* motherTouch, G4ThreeVector pos,
+			   G4ThreeVector momDir, bool safetyFromABoundary,
+			   G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
+			   G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
+			   G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
   
-  G4double Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos,
-					   const G4ThreeVector & momDir,
-					   G4LogicalVolume * motherLog,
-					   bool safetyFromABoundary,
-					   G4int daughterID,
-					   G4ThreeVector & returnDir,
-					   G4bool forceSweepSafetyForDaughters = false,
-					   G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
-					   G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
-					   G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
+  
+  G4double
+  Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos,
+				  const G4ThreeVector & momDir,
+				  G4LogicalVolume * motherLog,
+				  bool safetyFromABoundary,
+				  G4int daughterID,
+				  G4ThreeVector & returnDir,
+				  G4bool forceSweepSafetyForDaughters = false,
+				  G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
+				  G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
+				  G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
 					   
   
-  G4double Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
-					 G4ThreeVector pos,
-					 bool safetyFromABoundary,
-					 G4ThreeVector & returnDir,
-					 G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
-					 G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
-					 G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
+  G4double
+  Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
+				G4ThreeVector pos,
+				bool safetyFromABoundary,
+				G4ThreeVector & returnDir,
+				G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
+				G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
+				G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
   
   G4double Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid,
 					G4ThreeVector pos,
@@ -108,9 +109,13 @@ namespace G4CMP {
 			G4ThreeVector pos);
     
   
-  G4double Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,G4ThreeVector pos,G4ThreeVector & returnDir);
+  G4double Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,
+					    G4ThreeVector pos,
+					    G4ThreeVector & returnDir);
 
-  G4double Compute2DDaughterSweptSafety(const G4VSolid* volDaughterSolid, G4ThreeVector pos,G4ThreeVector & returnDir);
+  G4double Compute2DDaughterSweptSafety(const G4VSolid* volDaughterSolid,
+					G4ThreeVector pos,
+					G4ThreeVector & returnDir);
   
   
   G4Navigator* GetNavigator();		// Non-tracking for point finding
