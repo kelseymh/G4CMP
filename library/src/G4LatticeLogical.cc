@@ -81,7 +81,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fpPhononKin(0), fpPhononTable(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
-    fVSound(0.), fVTrans(0.), fL0_e(0.), fL0_h(0.), 
+    fVSound(0.), fVTrans(0.), fVSoundAverage(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),
     fHoleMass(mElectron), fElectronMass(mElectron), fElectronMDOS(mElectron),
     fBandGap(0.), fPairEnergy(0.), fFanoFactor(1.),
@@ -1002,6 +1002,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nfanoFactor " << fFanoFactor
      << "\nvsound " << fVSound/(m/s) << " m/s"
      << "\nvtrans " << fVTrans/(m/s) << " m/s"
+     << "\nvaveragevsound " << fVSoundAverage/(m/s) << " m/s"
      << "\nl0_e " << fL0_e/um << " um"
      << "\nl0_h " << fL0_h/um << " um"
      << std::endl;
