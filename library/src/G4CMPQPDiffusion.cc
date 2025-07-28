@@ -35,7 +35,7 @@ using namespace std;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4CMPQPDiffusion::G4CMPQPDiffusion(const G4String& name,
 				   G4CMPProcessSubType fQPDiffusion)
-  : G4VContinuousDiscreteProcess(name,fPhonon),G4CMPBoundaryUtils(this),
+  : G4VContinuousDiscreteProcess(name,fPhonon),
     G4CMPSCUtils(),
     fNewPosition(0.,0.,0.),
     fNewDirection(1.,0.,0.) {

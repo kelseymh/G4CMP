@@ -29,8 +29,7 @@ class G4ParticleDefinition;
 class G4SafetyHelper;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-class G4CMPQPDiffusion : public G4VContinuousDiscreteProcess, public G4CMPProcessUtils, public G4CMPBoundaryUtils, public G4CMPSCUtils
+class G4CMPQPDiffusion : public G4VContinuousDiscreteProcess, public G4CMPProcessUtils, public G4CMPSCUtils
 {
 public:
 

@@ -94,11 +94,11 @@ public:
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
   static G4double GetSafetyNSweep2D()    { return Instance()->safetyNSweep2D; }
-
+  
   
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
-
+  
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
   // Change values (e.g., via Messenger) -- pass strings by value for toLower()
@@ -186,7 +186,7 @@ private:
   G4double combineSteps; // Maximum length to merge track steps ($G4CMP_COMBINE_STEPLEN)
   G4double EminPhonons;	 // Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	 // Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
-  G4double safetyNSweep2D; // Number of angular positions to sweep over when computing a 2D safety ($G4CMP_SAFETYNSWEEP2D)
+  G4double safetyNSweep2D; // # of angular positions to sweep over when computing a 2D safety ($G4CMP_SAFETYNSWEEP2D)
   G4bool useKVsolver;	 // Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	 // Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
   G4bool kaplanKeepPh;   // Emit or iterate over all phonons in KaplanQP ($G4CMP_KAPLAN_KEEP)
@@ -194,6 +194,7 @@ private:
 
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
 
+  
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands
 };
 
