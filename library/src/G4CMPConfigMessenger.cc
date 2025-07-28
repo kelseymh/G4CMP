@@ -44,6 +44,7 @@
 // 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
 // 20250212  G4CMP-457: Add macro command for Lindhard empirical ionization model.
 // 20250325  G4CMP-463:  Add parameter for phonon surface step size & limit.
+// 20250527  G4CMP-485: Change IVRate name to Matrix.
 
 
 #include "G4CMPConfigMessenger.hh"
@@ -158,10 +159,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   ivRateModelCmd = CreateCommand<G4UIcmdWithAString>("IVRateModel",
            "Set the model for IV scattering rate.");
-  ivRateModelCmd->SetGuidance("IVRate	  : Scattering matrix calculation");
+  ivRateModelCmd->SetGuidance("Matrix	  : Scattering matrix calculation");
   ivRateModelCmd->SetGuidance("Linear	  : Gamma0 + Gamma * E^x");
   ivRateModelCmd->SetGuidance("Quadratic  : Gamma * sqrt[(E0^2 + E^2)^x]");
-  ivRateModelCmd->SetCandidates("IVRate Linear Quadratic");
+  ivRateModelCmd->SetCandidates("Matrix Linear Quadratic");
   ivRateModelCmd->SetDefaultValue("Quadratic");
 
   trapEMFPCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("eTrappingMFP",

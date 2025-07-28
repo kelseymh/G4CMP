@@ -90,7 +90,7 @@ void G4CMPInterValleyScattering::UseRateModel(G4String model) {
       UseRateModel(new G4CMPIVRateLinear);
       doValleySwitch=true;    // Deprecated IV scattering PostStepDoIt
       }
-  else if (model(0) == 'i') {
+  else if (model(0) == 'm') {
       UseRateModel(new G4CMPInterValleyRate);
       doValleySwitch=false;    // Up-to-date IV scattering PostStepDoIt
       }
