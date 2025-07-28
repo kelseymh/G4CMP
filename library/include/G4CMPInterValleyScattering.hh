@@ -11,6 +11,7 @@
 // 20190704  Add selection of rate model by name, and material specific
 // 20190906  For rate model selection, pass string by value
 // 20190906  Push selected rate model back to G4CMPTimeStepper for consistency
+// 20250423  Add phonon emission as secondaries process.
 
 #ifndef G4CMPInterValleyScattering_h
 #define G4CMPInterValleyScattering_h 1
@@ -31,9 +32,19 @@ public:
   // Do scattering action here
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
+  // Deprecated version of IV scattering
+  virtual G4VParticleChange* SwitchValleys(const G4Track&, const G4Step&);
+
+  // Up-to-date version of IV scattering
+  virtual G4VParticleChange* ValleyScattering(const G4Track&, const G4Step&);
+
   // Only electrons have physical valleys associated with them
   virtual bool IsApplicable(const G4ParticleDefinition&);
 
+  // Pause current particle tracking, track secondary phonons instead
+  void SetTrackSecondariesFirst(const G4bool val) { secondariesFirst = val; }
+  G4bool GetTrackSecondariesFirst() const { return secondariesFirst; }
+    
 protected:
   // Change registered scattering rate based on material, if necessary
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
@@ -42,6 +53,10 @@ private:
   G4String modelName;		// Last chosen rate model, to avoid memory churn
 
   void PushModelToTimeStepper();	// Ensure model is used for stepping
+    
+  G4bool secondariesFirst;     // To create phonons as secondaries
+
+  G4bool doValleySwitch;   // Deprecated version of IV scattering or not
 
 private:
   //hide assignment operator as private

@@ -43,6 +43,7 @@
 // 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
 // 20250423  Add FillParticleChange() to update phonon position and touchable.
 // 20250512  Use tempvec2 for Vg in LoadDataForTrack to improve performance.
+// 20250523  Add MakePhononThetaIV for IV phonon emission angle.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -244,6 +245,10 @@ public:
   G4double MakePhononTheta(G4double k, G4double ks) const;
   G4double MakePhononEnergy(G4double k, G4double ks, G4double th_phonon) const;
   G4double MakePhononEnergy(G4double q) const;
+    
+  // Generate direction angle for phonon generated in IV scattering
+  G4double MakePhononThetaIV0Order(G4double E, G4double Ephonon) const;
+  G4double MakePhononThetaIV1Order(G4double E, G4double Ephonon) const;
 
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
@@ -253,7 +258,7 @@ public:
 
   // Compute time between scatters/emissions for moving charge carrier
   // Parameters are "Mach number" (ratio to sound speed) and scattering length
-  G4double ChargeCarrierTimeStep(G4double mach, G4double l0) const;
+  G4double ChargeCarrierTimeStep(G4double mach, G4double l0, G4double vsound) const;
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes

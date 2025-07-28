@@ -58,6 +58,8 @@
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
 // 20240510  E. Michhaud -- Add function to compute L0 from other parameters
+// 20240830  E. Michaud -- Fix math error in MapV_elToP
+// 20250424  Add ConverteVcmToeV to convert IV deformation potential units
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -131,6 +133,7 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fBeta = rhs.fBeta;
   fGamma = rhs.fGamma;
   fLambda = rhs.fLambda;
+  fLatConst = rhs.fLatConst;
   fMu = rhs.fMu;
   fDebye = rhs.fDebye;
   fVSound = rhs.fVSound;
@@ -155,6 +158,10 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fAcDeform_h = rhs.fAcDeform_h;
   fIVDeform = rhs.fIVDeform;
   fIVEnergy = rhs.fIVEnergy;
+  fIVNValleys = rhs.fIVNValleys;
+  fIVOrder = rhs.fIVOrder;
+  fIVFGScattering = rhs.fIVFGScattering;
+  fIVPhononMode = rhs.fIVPhononMode;
   fIVQuadField = rhs.fIVQuadField;
   fIVQuadRate = rhs.fIVQuadRate;
   fIVQuadExponent = rhs.fIVQuadExponent;
@@ -216,12 +223,22 @@ void G4LatticeLogical::SetCrystal(G4CMPCrystalGroup::Bravais group, G4double a,
 				  G4double b, G4double c, G4double alpha,
 				  G4double beta, G4double gamma) {
   fCrystal.Set(group, alpha, beta, gamma);	// Defines unit cell axes
+  fCrystal.SetUnitCell(a,b,c);    // Define unit cell lattice parameters
 
   fBasis[0] = a*fCrystal.axis[0];	// Basis vectors include spacing
   fBasis[1] = b*fCrystal.axis[1];
   fBasis[2] = c*fCrystal.axis[2];
+
+  fLatConst = fCrystal.unitCell;
+
 }
 
+
+// void G4LatticeLogical::SetLatConst(G4double a, G4double b, G4double c) {
+//   fCrystal.SetLatConst(a,b,c);	// Define unit cell lattice parameters
+
+//   fLatConst = fCrystal.LatticeConstant;
+// }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -459,7 +476,7 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
   G4double bandV = (fMassTensor.xx()*tempvec().x()*tempvec().x() +
   fMassTensor.yy()*tempvec().y()*tempvec().y() +
   fMassTensor.zz()*tempvec().z()*tempvec().z());
-  G4double gamma = 1/sqrt(1-bandV/GetElectronMass()*c_squared);
+  G4double gamma = 1/sqrt(1-bandV/(GetElectronMass()*c_squared));
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
@@ -761,8 +778,9 @@ void G4LatticeLogical::SetMassTensor(const G4RotationMatrix& etens) {
 
 void G4LatticeLogical::FillMassInfo() {
   // Effective mass for conductivity calculations
-  fElectronMass = 3. / ( 1./fMassTensor.xx() + 1./fMassTensor.yy()
-			 + 1./fMassTensor.zz() );  
+  fElectronMass = 3 / ( 1./fMassTensor.xx() + 1./fMassTensor.yy()
+			 + 1./fMassTensor.zz() ); 
+  //fElectronMass = mElectron;
 
   // Density of states effective mass, used for intervalley scattering
   fElectronMDOS = cbrt(fMassTensor.xx()*fMassTensor.yy()*fMassTensor.zz());
@@ -857,6 +875,20 @@ void G4LatticeLogical::AddValley(const G4RotationMatrix& valley) {
   fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));
 }
 
+void G4LatticeLogical::ConverteVcmToeV(const std::vector<G4double>& ivrateorder) {
+
+std::vector<G4double> ivdeformtest = GetIVDeform();
+G4ThreeVector latticeconstant = GetLatConst();
+
+for (size_t i = 0; i < ivrateorder.size(); i++) {
+    if (ivrateorder[i] == 1) {
+    ivdeformtest[i]=ivdeformtest[i]*latticeconstant.x();
+    }    
+}
+SetIVDeform(ivdeformtest);
+
+}
+
 // Transform for drifting-electron valleys in momentum space
 
 const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
@@ -914,7 +946,7 @@ G4double G4LatticeLogical::ComputeL0(G4bool IsElec) {
   G4double acDeform = 0.;
       
   if (IsElec) {
-      mass = GetElectronMass();
+      mass = GetElectronDOSMass();
       acDeform = GetElectronAcousticDeform();
   }
   else    {
@@ -994,6 +1026,8 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nacDeform_h " << fAcDeform_h/eV << " eV"
      << "\nivDeform "; DumpList(os, fIVDeform, "eV/cm");
   os << "\nivEnergy "; DumpList(os, fIVEnergy, "eV");
+  os << "\nivNValleys "; DumpList(os, fIVNValleys, "no units");
+  os << "\nivOrder "; DumpList(os, fIVOrder, "no units");
   os << std::endl;
 
   os << "# Quadratic intervalley scattering parameters"
@@ -1092,8 +1126,10 @@ void G4LatticeLogical::DumpList(std::ostream& os,
 				const std::vector<G4double>& vlist,
 				const G4String& unit) const {
   if (vlist.empty()) return;		// Avoid unnecessary work
-
-  G4double uval = G4UnitDefinition::GetValueOf(unit);
+    
+  G4double uval;
+  if (unit=="no units") {uval=1.;}
+  else uval = G4UnitDefinition::GetValueOf(unit);
   for (size_t i=0; i<vlist.size(); i++) {
     os << vlist[i]/uval << " ";
   }

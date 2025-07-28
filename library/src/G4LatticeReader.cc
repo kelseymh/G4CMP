@@ -35,6 +35,9 @@
 // 20231017  E. Michaud -- Add 'valleyDir' to set rotation matrix with valley's
 //		 direction instead of euler angles
 // 20240131  J. Inman -- Multiple path selection on G4LATTICEDATA variable
+// 20240920  E. Michaud -- Add 'ProcessIVNVal' and 'ProcessIVOrder' 
+// 20250424  Add 'ProcessIVFGScattering' and 'ProcessIVPhononMode'
+// 20250424  ProcessList can now read lines withouth units
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -50,6 +53,7 @@
 #include <limits>
 #include <regex>
 #include <stdlib.h>
+#include <sstream>
 
 
 // Constructor and destructor
@@ -160,6 +164,10 @@ G4bool G4LatticeReader::ProcessToken() {
   if (fToken == "debye")    return ProcessDebyeLevel(); // Freq or temperature
   if (fToken == "ivdeform") return ProcessDeformation(); // D0, D1 potentials
   if (fToken == "ivenergy") return ProcessThresholds();  // D0, D1 Emin
+  if (fToken == "ivnvalleys") return ProcessIVNValleys();  // IV # possible final valleys
+  if (fToken == "ivorder") return ProcessIVOrder();  // IV process order
+  if (fToken == "ivfgscat") return ProcessIVFGScattering();  // IV f or g-type scattering
+  if (fToken == "ivphononmode") return ProcessIVPhononMode();  // IV scattering phonon mode
   if (fToken == "ivmodel")  return ProcessString(fToken);  // IV rate function
 
   if (G4CMPCrystalGroup::Group(fToken) >= 0)		// Crystal dimensions
@@ -250,19 +258,39 @@ G4bool G4LatticeReader::ProcessString(const G4String& name) {
 G4bool G4LatticeReader::ProcessList(const G4String& unitcat) {
   if (verboseLevel>1) G4cout << " ProcessList " << unitcat << G4endl;
 
-  // Prepare input buffers for reading multiple values, up to unit string
+// Prepare input buffers for reading multiple values, up to unit string
   fList.clear();
-
+  fStrList.clear();
   G4String token;
-  char* eonum = 0;	// Will point to end of valid number string (NUL)
-  do {
-    *psLatfile >> token;
-    fValue = strtod(token.c_str(), &eonum);
-    if (*eonum == '\0') fList.push_back(fValue);
-  } while (psLatfile->good() && *eonum == '\0');
+  G4String line;
+    
+  if(std::getline(*psLatfile, line)){ 
+      std::istringstream iss(line);  // Separate by line for lines without units
+  
+      while (iss >> token) {
+          
+          // If list of strings
+          if (unitcat=="String") { 
+             if (token == '#') {break;} 
+             fStrList.push_back(token);
+          }
+           
+          else{
+          char* eonum = nullptr;    // Will point to end of valid number string (NUL)
+          fValue = strtod(token.c_str(), &eonum);
 
-  ProcessUnits(token, unitcat);		// Non-numeric token is trailing unit
-  for (size_t i=0; i<fList.size(); i++) fList[i] *= fUnits;
+          // Check if the entire token is a valid number
+          if (*eonum == '\0') {fList.push_back(fValue);} 
+              else {break;} // Skip non-numerical tokens
+          }  
+    }
+  }
+    
+  if (unitcat!="String") { 
+      if (unitcat=="NoUnits") {fUnits=1.;}
+      else {ProcessUnits(token, unitcat);}		// Non-numeric token is trailing unit
+      for (size_t i=0; i<fList.size(); i++) fList[i] *= fUnits;
+  }
 
   return psLatfile->good();
 }
@@ -343,6 +371,8 @@ G4bool G4LatticeReader::ProcessCrystalGroup(const G4String& name) {
 
   pLattice->SetCrystal(group, a*lunit, b*lunit, c*lunit,
 		        alpha*degOrRad, beta*degOrRad, gamma*degOrRad);
+
+  //pLattice->SetLatConst(a*lunit, b*lunit, c*lunit);
 
   return psLatfile->good();
 }
@@ -429,7 +459,7 @@ G4bool G4LatticeReader::ProcessValleyDirection() {
 }
 
 
-// Read deformation potentials and thresholds for IV scattering
+// Read IV scattering deformation potentials
 
 G4bool G4LatticeReader::ProcessDeformation() {
   if (verboseLevel>1) G4cout << " ProcessDeformation " << G4endl;
@@ -440,11 +470,65 @@ G4bool G4LatticeReader::ProcessDeformation() {
   return okay;
 }
 
+
+// Read IV scattering thresholds
+
 G4bool G4LatticeReader::ProcessThresholds() {
   if (verboseLevel>1) G4cout << " ProcessThresholds " << G4endl;
 
   G4bool okay = ProcessList("Energy");
   if (okay) pLattice->SetIVEnergy(fList);
+
+  return okay;
+}
+
+
+// Read # final valleys for IV scattering
+
+G4bool G4LatticeReader::ProcessIVNValleys() {
+  if (verboseLevel>1) G4cout << " ProcessIVNValleys " << G4endl;
+
+  G4bool okay = ProcessList("NoUnits");
+  if (okay) pLattice->SetIVNValleys(fList);
+
+  return okay;
+}
+
+
+// Read IV scattering rate order
+
+G4bool G4LatticeReader::ProcessIVOrder() {
+  if (verboseLevel>1) G4cout << " ProcessIVOrder " << G4endl;
+
+  G4bool okay = ProcessList("NoUnits");
+  if (okay) { 
+      pLattice->SetIVOrder(fList);
+      pLattice->ConverteVcmToeV(fList);     
+  }
+
+  return okay;
+}
+
+
+// Read f or g-type IV scattering
+
+G4bool G4LatticeReader::ProcessIVFGScattering() {
+  if (verboseLevel>1) G4cout << " ProcessIVFGScattering " << G4endl;
+
+  G4bool okay = ProcessList("String");
+  if (okay) pLattice->SetIVFGScattering(fStrList);
+
+  return okay;
+}
+
+
+// Read phonon mode for IV scattering
+
+G4bool G4LatticeReader::ProcessIVPhononMode() {
+  if (verboseLevel>1) G4cout << " ProcessIVPhononMode " << G4endl;
+
+  G4bool okay = ProcessList("String");
+  if (okay) pLattice->SetIVPhononMode(fStrList);
 
   return okay;
 }

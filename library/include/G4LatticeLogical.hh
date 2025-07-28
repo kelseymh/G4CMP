@@ -42,6 +42,7 @@
 //		(p_Q) and expectation value of momentum (p).
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
 // 20240510  E. Michhaud -- Add function to compute L0 from other parameters
+// 20250423  E. Michaud -- Add IV scattering parameters.
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -123,6 +124,10 @@ public:
     static const G4ThreeVector nullVec(0.,0.,0.);
     return (i>=0 && i<3 ? fBasis[i] : nullVec);
   }
+    
+  // Assign lattice constants
+  //void SetLatConst(G4double a, G4double b, G4double c);
+  const G4ThreeVector& GetLatConst() const { return fLatConst; }
 
   // Physical parameters of lattice (density, elasticity)
   void SetDensity(G4double val) { fDensity = val; }
@@ -229,6 +234,9 @@ public:
   const G4RotationMatrix& GetValley(G4int iv) const;
   const G4RotationMatrix& GetValleyInv(G4int iv) const;
   const G4ThreeVector& GetValleyAxis(G4int iv) const;
+    
+  // Convert eV/cm to eV for 1st order IV deformation potentials
+  void ConverteVcmToeV(const std::vector<G4double>& ivrateorder);
 
   // Print out Euler angles of requested valley
   void DumpValley(std::ostream& os, G4int iv) const;
@@ -259,6 +267,10 @@ public:
   void SetHoleAcousticDeform(G4double v) { fAcDeform_h = v; }
   void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
+  void SetIVNValleys(const std::vector<G4double>& vlist) { fIVNValleys = vlist; }
+  void SetIVOrder(const std::vector<G4double>& vlist) { fIVOrder = vlist; }
+  void SetIVFGScattering(const std::vector<G4String>& vlist) { fIVFGScattering = vlist; }
+  void SetIVPhononMode(const std::vector<G4String>& vlist) { fIVPhononMode = vlist; }
 
   const G4String& GetIVModel() const { return fIVModel; }
 
@@ -276,11 +288,27 @@ public:
   G4int    GetNIVDeform() const { return (G4int)fIVDeform.size(); }
   const std::vector<G4double>& GetIVDeform() const { return fIVDeform; }
   const std::vector<G4double>& GetIVEnergy() const { return fIVEnergy; }
+  const std::vector<G4double>& GetIVValley() const { return fIVNValleys; }
+  const std::vector<G4double>& GetIVOrder() const { return fIVOrder; }
+  const std::vector<G4String>& GetIVFGScattering() const { return fIVFGScattering; }
+  const std::vector<G4String>& GetIVPhononMode() const { return fIVPhononMode; }
   G4double GetIVDeform(G4int i) const {
     return (i>=0 && i<GetNIVDeform()) ? fIVDeform[i] : 0.;
   }
   G4double GetIVEnergy(G4int i) const {
     return (i>=0 && i<GetNIVDeform()) ? fIVEnergy[i] : 0.;
+  }
+  G4double GetIVValley(G4int i) const {
+    return (i>=0 && i<GetNIVDeform()) ? fIVNValleys[i] : 0.;
+  }
+  G4double GetIVOrder(G4int i) const {
+    return (i>=0 && i<GetNIVDeform()) ? fIVOrder[i] : 0.;
+  }
+  G4String GetIVFGScattering(G4int i) const {
+    return (i>=0 && i<GetNIVDeform()) ? fIVFGScattering[i] : 0.;
+  }
+  G4String GetIVPhononMode(G4int i) const {
+    return (i>=0 && i<GetNIVDeform()) ? fIVPhononMode[i] : 0.;
   }
 
 private:
@@ -312,6 +340,7 @@ private:
   G4String fName;			    // Name of lattice for messages
   G4CMPCrystalGroup fCrystal;		    // Symmetry group, axis unit vectors
   G4ThreeVector fBasis[3];		    // Basis vectors for Miller indices
+  G4ThreeVector fLatConst;		    // Lattice constant
   G4double fDensity;			    // Material density (natural units)
   G4double fNImpurity;			    // Neutral impurity number density
   G4double fPermittivity;		    // Material epsilon/epsilon0 
@@ -356,10 +385,14 @@ private:
   std::vector<G4ThreeVector> fValleyAxis;
 
   G4double fAlpha;			// Non-parabolicity of -ve potential
-  G4double fAcDeform_e;		 	// Deformation potential for electron-acoustic phonon
-  G4double fAcDeform_h;		 	// Deformation potential for hole-acoustic phonon
-  std::vector<G4double> fIVDeform;	// D0, D1 potentials for optical IV
-  std::vector<G4double> fIVEnergy;	// D0, D1 thresholds for optical IV
+  G4double fAcDeform_e;		 	// Electron deformation potential
+  G4double fAcDeform_h;		 	// Hole deformation potential
+  std::vector<G4double> fIVDeform;	// D0, D1 potentials for IV
+  std::vector<G4double> fIVEnergy;	// Phonons energy for IV
+  std::vector<G4double> fIVNValleys;	// # final valleys for IV
+  std::vector<G4double> fIVOrder;	// IV order process
+  std::vector<G4String> fIVFGScattering;	// IV f or g-type scattering
+  std::vector<G4String> fIVPhononMode;	// IV scattering phonon mode
 
   G4double fIVQuadField;	 // Edelweiss field scale for IV scattering
   G4double fIVQuadRate;		 // Edelweiss rate factor for IV scattering

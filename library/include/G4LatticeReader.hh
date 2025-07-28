@@ -23,6 +23,10 @@
 // 20170810  Add utility function to process list of values with unit.
 // 20190704  Add utility function to process string/name argument
 // 20231102  Add ProcessValleyDirection()
+// 20250423  Add ProcessIVNValleys(), ProcessIVOrder(), 
+//       ProcessIVFGScattering() and ProcessIVPhononMode().
+
+
 
 #ifndef G4LatticeReader_h
 #define G4LatticeReader_h 1
@@ -71,6 +75,10 @@ protected:
   G4bool ProcessValleyDirection();		// Drift directions
   G4bool ProcessDeformation();			// IV deformation potentials
   G4bool ProcessThresholds();			// IV energy thresholds
+  G4bool ProcessIVNValleys();			// IV Number possible final Valleys
+  G4bool ProcessIVOrder();			// IV order process
+  G4bool ProcessIVFGScattering();			// IV f or g-type scattering
+  G4bool ProcessIVPhononMode();			// IV scattering phonon mode
   G4bool SkipComments();			// Everything after '#'
 
   // Read expected dimensions for value from file, return scale factor
@@ -88,6 +96,7 @@ private:
   G4String fToken;		// Reusable buffers for reading file
   G4double fValue;		// ... floating point data value
   std::vector<G4double> fList;	// ... list of floating point values
+  std::vector<G4String> fStrList;	// ... list of string values
   G4RotationMatrix fMatrix;	// ... 3x3 matrix for mass, drift valleys
   G4ThreeVector f3Vec;		// ... three-vector for mass
   G4double fUnits;		// ... dimensional unit scale factor

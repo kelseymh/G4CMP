@@ -22,7 +22,7 @@ public:
     : G4CMPVScatteringRate("InterValley"),
       hbar_sq(CLHEP::hbar_Planck*CLHEP::hbar_Planck), hbar_4th(hbar_sq*hbar_sq),
       m_electron(CLHEP::electron_mass_c2/CLHEP::c_squared),
-      eTrk(0.), density(0.), kT(0.), uSound(0.), alpha(0.), nValley(0),
+      eTrk(0.), density(0.), alpha(0.),
       m_DOS(0.), m_DOS3half(0.) {;}
 
   virtual ~G4CMPInterValleyRate() {;}
@@ -33,14 +33,22 @@ public:
 
   // Initialize numerical parameters below
   virtual void LoadDataForTrack(const G4Track* track);
+    
+  // Store IV rates for G4CMPInterValleyScattering  
+  const std::vector<G4double>& GetIVProb() const {return IVprob;} 
+      
 
 protected:
-  G4double acousticRate() const;	// Acoustic intravalley rate
-  G4double opticalRate() const;		// Optical intervalley D0, D1 rate
-  G4double scatterRate() const;		// Neutral impurity scattering
+  G4double IVRate() const;		// intervalley D0, D1 rate
 
-  G4double energyFunc(G4double E) const {	// Energy dependence of rates
+  // Energy dependence of 0th order IV rate
+  G4double energyFunc0th(G4double E) const {
     return sqrt(E*(1+alpha*E))*(1+2*alpha*E);
+  }
+
+  // Energy dependence of 1st order IV rate
+  G4double energyFunc1st(G4double qmax, G4double qmin) const {
+    return qmax*qmax*qmax*qmax-qmin*qmin*qmin*qmin;
   }
 
 private:
@@ -51,12 +59,15 @@ private:
 
   // Kinematic parameters set by Rate()
   mutable G4double eTrk;	// Track kinetic energy
+  mutable G4int ivalley;	// Valley's index
+  mutable G4ThreeVector ptrk;	// Local momentum
+  mutable G4ThreeVector ktrk;	// Local quasi-momentum
+  mutable G4ThreeVector kHV;	// quasi-momentum in HV frame
+  mutable G4double kmag;	// magnitude of kHV
+  mutable std::vector<G4double> IVprob; 	// Store IV rates
 
   G4double density;		// Crystal density (from G4Material)
-  G4double kT;			// Crystal temperature * k_B
-  G4double uSound;		// Average sound speed for acoustic rate
   G4double alpha;		// Non-parabolicity parameter
-  G4int    nValley;		// Number of final-state valleys (2N-1)
   G4double m_DOS;		// Electron "density of states" average mass
   G4double m_DOS3half;		// m_DOS ^ (3/2)
 };

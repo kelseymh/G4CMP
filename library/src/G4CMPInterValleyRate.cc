@@ -1,3 +1,4 @@
+
 /***********************************************************************\
  * This software is licensed under the terms of the GNU General Public *
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
@@ -12,6 +13,7 @@
 // 20170830  Follow Jacoboni, with unified D0/D1 expression and units; drop
 //		acoustic rate, as it is _intra_valley.
 // 20170919  Add interface for threshold identification
+// 20250423  Add parabolic ellipsoidal bands IV scattering rate.
 
 #include "G4CMPInterValleyRate.hh"
 #include "G4LatticePhysical.hh"
@@ -29,89 +31,76 @@
 void G4CMPInterValleyRate::LoadDataForTrack(const G4Track* track) {
   G4CMPProcessUtils::LoadDataForTrack(track);
 
-  // Should temperature be a lattice configuration?
-  kT = k_Boltzmann * 0.015*kelvin;
-
-  uSound = (2.*theLattice->GetTransverseSoundSpeed()
-	    + theLattice->GetSoundSpeed()) / 3.;
-
   density = theLattice->GetDensity();
   alpha = theLattice->GetAlpha();
-  nValley = 2*theLattice->NumberOfValleys()-1;		// From symmetry
-
   m_DOS = theLattice->GetElectronDOSMass();
   m_DOS3half = sqrt(m_DOS*m_DOS*m_DOS);
 }
 
 
-// Scattering rate is computed from matrix elements
+// Scattering rate is computed from first principles
 
 G4double G4CMPInterValleyRate::Rate(const G4Track& aTrack) const {
   const_cast<G4CMPInterValleyRate*>(this)->LoadDataForTrack(&aTrack);
+    
+  // Initialize Energy and momentum
+  eTrk = GetKineticEnergy(aTrack);    
+  ivalley = GetValleyIndex(aTrack);
+  ptrk = GetLocalMomentum(aTrack);
+  ktrk = theLattice->MapPtoK(ivalley, ptrk);
+  kHV = theLattice->EllipsoidalToSphericalTranformation(ivalley, ktrk);
+  kmag = kHV.mag();  
+  
+  IVprob.clear();		// Store IV rates
+  G4double totalIVRate = 0.;      // Total IV rate
+  G4int N_op = theLattice->GetNIVDeform();		// # of IV transitions possible
 
-  // Initialize numerical buffers
-  eTrk = GetKineticEnergy(aTrack);
-  if (verboseLevel>1)
-    G4cout << "G4CMPInterValleyRate eTrk " << eTrk/eV << " eV" << G4endl;
-
-  G4double orate = opticalRate();
-  if (verboseLevel>2) G4cout << "IV phonons  " << orate/hertz << " Hz" << G4endl;
- 
-  G4double nrate = scatterRate();
-  if (verboseLevel>2) G4cout << "IV neutrals " << nrate/hertz << " Hz" << G4endl;
-
-  G4double rate = nrate + orate;
-  if (verboseLevel>1) G4cout << "IV rate = " << rate/hertz << " Hz" << G4endl;
-  return rate;
-}
-
-
-// Compute components of overall intervalley rate
-
-G4double G4CMPInterValleyRate::acousticRate() const {
-  G4double D_ac  = theLattice->GetElectronAcousticDeform();
-  G4double D_ac_sq = D_ac*D_ac;
-
-  return ( sqrt(2)*kT * m_DOS3half * D_ac_sq * energyFunc(eTrk)
-	   / (pi*hbar_4th*density*uSound*uSound) );
-}
-
-G4double G4CMPInterValleyRate::opticalRate() const {
-   // FIXME:  Rate should not have 'kT', but leaving it out ruins drift curve
-  G4double scale = nValley*/*kT**/m_DOS3half / (sqrt(2)*pi*hbar_sq*density);
-
-  G4double total = 0.;
-  G4int N_op = theLattice->GetNIVDeform();
+  // Going through each phonon mode
   for (G4int i = 0; i<N_op; i++) {
-    G4double Emin_op = theLattice->GetIVEnergy(i);
-    if (eTrk <= Emin_op) continue;		// Apply threshold behaviour
+      
+    G4double Emin_iv = theLattice->GetIVEnergy(i);		// IV phonon energy
 
-    G4double D_op = theLattice->GetIVDeform(i);
-    G4double oscale = scale * D_op*D_op / Emin_op;
-
-    G4double Efunc = energyFunc(eTrk-Emin_op);	// Energy above threshold
-
-    G4double orate = oscale * Efunc;
-
-    if (verboseLevel>2) {
-      G4cout << " oscale[" << i << "] " << oscale << " Efunc " << Efunc
-	     << "\n phonon rate [" << i << "] " << orate/hertz << " Hz"
-	     << G4endl;
+    // Is electron energy above IV Threshold?
+    if (eTrk <= Emin_iv) {
+        IVprob.push_back(0.);
+        if (verboseLevel>2) {G4cout << "IV scattering rate :  "
+        << 0. << " Hz" << G4endl;}
+        continue;
     }
+      
+    G4double scale = 0.;		// IV rate constants
+    G4double Efunc = 0.;		// Energy dependence of rates
+    G4double ivrate = 0.;		// IV rate
+      
+    G4double D_iv = theLattice->GetIVDeform(i);		// IV deformation potential
+    G4double nVal = theLattice->GetIVValley(i);		// # final valleys
+    G4double ivorder = theLattice->GetIVOrder(i);		// IV rate order
+      
+    // 0th order IV rate
+    if (ivorder==0) {  
+        scale = m_DOS3half * nVal * D_iv*D_iv/ 
+            (sqrt(2)*pi*hbar_sq*density*Emin_iv);
+        Efunc = energyFunc0th(eTrk-Emin_iv);
+    }
+      
+    // 1st order IV rate
+    if (ivorder==1) {  
+        G4double qmax = kmag*(1+sqrt(1-Emin_iv/eTrk));		// max phonon momentum
+        G4double qmin = kmag*(1-sqrt(1-Emin_iv/eTrk));		// min phonon momentum
+        scale = m_DOS3half*m_DOS * nVal * D_iv*D_iv
+        /(2*pi*hbar_Planck*density*theLattice->GetElectronMass()*sqrt(theLattice->GetElectronMass())*Emin_iv*kmag);
+        Efunc = energyFunc1st(qmax,qmin);
+    }  
 
-    total += orate;
+    ivrate = scale * Efunc;
+    IVprob.push_back(ivrate);
+    totalIVRate += ivrate;
   }
 
-  return total;
-}
-
-G4double G4CMPInterValleyRate::scatterRate() const {
-  G4double n_I = theLattice->GetImpurities();		// Number density
-  G4double epsilon_r = theLattice->GetPermittivity();	// Dielectric constant
-  G4double E_T = 0.75*eV * (m_DOS/m_electron) / epsilon_r;
-  
-  return ( 4*sqrt(2)* n_I * hbar_sq * sqrt(eTrk)
-	   / (m_DOS3half * (eTrk+E_T)) );
+  if (verboseLevel>2) G4cout << "IV scattering rate :  " 
+      << totalIVRate/hertz << " Hz" << G4endl;
+    
+  return totalIVRate;
 }
 
 
