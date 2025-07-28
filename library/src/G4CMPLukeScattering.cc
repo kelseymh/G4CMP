@@ -252,9 +252,6 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     if (IsHole()) {
       precoil = k_recoil * hbarc;
     } else {
-      // Rotating phonon wavevector out of valley frame into solid frame
-      
-      //qvec = qmag * qvec.unit();
       // First transform the recoil wavevector back to the ellipsoidal frame
       precoil = lat->SphericalToEllipsoidalTranformation(iValley, k_recoil);
       // Then transform the recoil wavevector to transport momentum
