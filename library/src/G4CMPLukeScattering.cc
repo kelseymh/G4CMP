@@ -235,7 +235,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     
     // Get recoil wavevector (in HV frame), convert to new local momentum
     k_recoil = ktrk - qvec;
-    if (IsElectron()) {qvec = lat->SphericalToEllipsoidalTranformation(iValley, qvec);}
+    if (IsElectron()) qvec = lat->SphericalToEllipsoidalTranformation(iValley, qvec);
     qmag = qvec.mag();
     Ephonon = MakePhononEnergy(qmag);
     // Make sure energy is conserved
