@@ -596,10 +596,9 @@ G4int G4CMPProcessUtils::FindNearestValley(const G4ThreeVector& dir) const {
 //       = (3*l0)/velLong * mach^2 / (mach-1)^3
 
 G4double 
-G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0) const {
-  const G4double velLong = theLattice->GetSoundSpeed();
+G4CMPProcessUtils::ChargeCarrierTimeStep(G4double mach, G4double l0, G4double vsound) const {
 
-  const G4double tstep = 3.*l0/velLong;
+  const G4double tstep = 3.*l0/vsound;
   return (mach<1.) ? tstep : tstep*mach/((mach-1)*(mach-1)*(mach-1));
   // NOTE: Above numerator should be tstep*mach*mach, but causes problems
 }

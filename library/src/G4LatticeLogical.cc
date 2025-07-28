@@ -778,8 +778,9 @@ void G4LatticeLogical::SetMassTensor(const G4RotationMatrix& etens) {
 
 void G4LatticeLogical::FillMassInfo() {
   // Effective mass for conductivity calculations
-  fElectronMass = 3. / ( 1./fMassTensor.xx() + 1./fMassTensor.yy()
-			 + 1./fMassTensor.zz() );  
+  fElectronMass = 3 / ( 1./fMassTensor.xx() + 1./fMassTensor.yy()
+			 + 1./fMassTensor.zz() ); 
+  //fElectronMass = mElectron;
 
   // Density of states effective mass, used for intervalley scattering
   fElectronMDOS = cbrt(fMassTensor.xx()*fMassTensor.yy()*fMassTensor.zz());
@@ -945,7 +946,7 @@ G4double G4LatticeLogical::ComputeL0(G4bool IsElec) {
   G4double acDeform = 0.;
       
   if (IsElec) {
-      mass = GetElectronMass();
+      mass = GetElectronDOSMass();
       acDeform = GetElectronAcousticDeform();
   }
   else    {

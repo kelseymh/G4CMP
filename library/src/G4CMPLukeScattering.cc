@@ -136,17 +136,20 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
   G4double Etrk = 0.;
+  G4double vsound = 0.;
   if (IsElectron()) {
     ktrk = lat->MapPtoK(iValley, ptrk);
     // Turning wavevector to spherical frame where electrons act like holes
     // as the mass is isotropic
     ktrk = lat->EllipsoidalToSphericalTranformation(iValley, ktrk);
-    mass = lat->GetElectronMass();
+    mass = sqrt(theLattice->GetElectronMass()*theLattice->GetElectronDOSMass());
+    vsound = 0.1*theLattice->GetSoundSpeed() +0.9*theLattice->GetTransverseSoundSpeed();
     Etrk = lat->MapPtoEkin(iValley, ptrk);
   } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
     mass = lat->GetHoleMass();
     Etrk = GetKineticEnergy(aTrack);
+    vsound = theLattice->GetSoundSpeed();
   } else {
     G4Exception("G4CMPLukeScattering::PostStepDoIt", "Luke002",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -155,8 +158,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4ThreeVector kdir = ktrk.unit();
   G4double kmag = ktrk.mag();
-  G4double gammaSound = 1/sqrt(1.-lat->GetSoundSpeed()*lat->GetSoundSpeed()/c_squared);
-  G4double kSound = gammaSound * lat->GetSoundSpeed() * mass / hbar_Planck;
+  G4double gammaSound = 1/sqrt(1.-vsound*vsound/c_squared);
+  G4double kSound = gammaSound * vsound * mass / hbar_Planck;
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;

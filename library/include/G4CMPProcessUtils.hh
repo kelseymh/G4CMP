@@ -258,7 +258,7 @@ public:
 
   // Compute time between scatters/emissions for moving charge carrier
   // Parameters are "Mach number" (ratio to sound speed) and scattering length
-  G4double ChargeCarrierTimeStep(G4double mach, G4double l0) const;
+  G4double ChargeCarrierTimeStep(G4double mach, G4double l0, G4double vsound) const;
 
 protected:
   const G4LatticePhysical* theLattice;	// For convenient access by processes

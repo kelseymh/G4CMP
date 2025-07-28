@@ -34,9 +34,8 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
     return 0.;
   }
 
-  G4double kSound = 0.; G4double mass = 0.; G4double l0 = 0.;
+  G4double kSound = 0.; G4double mass = 0.; G4double l0 = 0.; G4double vsound = 0.;
   G4ThreeVector ktrk(0.);
-  G4double vsound = theLattice->GetSoundSpeed();
   G4ThreeVector ptrk = GetLocalMomentum(aTrack);
   G4int iValley = GetValleyIndex(aTrack);
   if (G4CMP::IsElectron(aTrack)) {
@@ -45,20 +44,22 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
     // Turning wavevector to spherical frame where electrons act like holes
     // as the mass is isotropic
     ktrk = theLattice->EllipsoidalToSphericalTranformation(iValley, ktrk);
-    mass = theLattice->GetElectronMass();
-    // The l0 in configuration file is calculated using the conductivity mass
+    mass = sqrt(theLattice->GetElectronMass()*theLattice->GetElectronDOSMass());
+    vsound = 0.1*theLattice->GetSoundSpeed() +0.9*theLattice->GetTransverseSoundSpeed();
+    // The l0 in configuration file is calculated using the density of states mass
     // l0 = l0*pow(theLattice->GetElectronMass(),3)/(pow(mass,3));
   } else if (G4CMP::IsHole(aTrack)) {
     l0 = theLattice->GetHoleScatter();
     ktrk = GetLocalWaveVector(aTrack);
     mass = theLattice->GetHoleMass();
+    vsound = theLattice->GetSoundSpeed();
   }
   G4double kmag = ktrk.mag();
 
   G4double gammaSound = 1/sqrt(1.-vsound*vsound/c_squared);
   kSound = gammaSound*vsound*mass/hbar_Planck;
 
-  return (kmag > kSound) ? 1./ChargeCarrierTimeStep(kmag/kSound, l0) : 0.;
+  return (kmag > kSound) ? 1./ChargeCarrierTimeStep(kmag/kSound, l0, vsound) : 0.;
 }
 
 
