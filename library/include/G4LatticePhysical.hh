@@ -141,6 +141,7 @@ public:
   G4double GetFanoFactor() const      { return fLattice->GetFanoFactor(); }
   G4double GetSoundSpeed() const      { return fLattice->GetSoundSpeed(); }
   G4double GetTransverseSoundSpeed() const { return fLattice->GetTransverseSoundSpeed(); }
+  G4double GetAverageSoundSpeed() const { return fLattice->GetAverageSoundSpeed(); }
   G4double GetElectronScatter() const { return fLattice->GetElectronScatter(); }
   G4double GetHoleScatter() const     { return fLattice->GetHoleScatter(); }
 

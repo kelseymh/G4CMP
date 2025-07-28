@@ -958,6 +958,16 @@ G4double G4LatticeLogical::ComputeL0(G4bool IsElec) {
   return l0;
 }
 
+
+// Compute average speed of sound based on phonon DOS
+
+G4double G4LatticeLogical::ComputeAverageSoundSpeed() {
+
+  G4double AverageSoundSpeed = fLDOS*fVSound + (fSTDOS+fFTDOS)*fVTrans;
+
+  return AverageSoundSpeed;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 // Set Debye energy for phonon partitioning from alternative parameters

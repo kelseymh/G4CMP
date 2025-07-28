@@ -190,6 +190,7 @@ public:
   void SetFanoFactor(G4double f) { fFanoFactor = f; }
   void SetSoundSpeed(G4double v) { fVSound = v; }
   void SetTransverseSoundSpeed(G4double v) { fVTrans = v; }
+  void SetAverageSoundSpeed(G4double v) { fVSoundAverage = v; }
   void SetHoleScatter(G4double l0) { fL0_h = l0; }
   void SetHoleMass(G4double hmass) { fHoleMass = hmass; }
   void SetElectronScatter(G4double l0) { fL0_e = l0; }
@@ -201,6 +202,7 @@ public:
   G4double GetFanoFactor() const                { return fFanoFactor; }
   G4double GetSoundSpeed() const                { return fVSound; }
   G4double GetTransverseSoundSpeed() const      { return fVTrans; }
+  G4double GetAverageSoundSpeed() const         { return fVSoundAverage; }
   G4double GetHoleScatter() const               { return fL0_h; }
   G4double GetHoleMass() const                  { return fHoleMass; }
   G4double GetElectronScatter() const           { return fL0_e; }
@@ -216,6 +218,9 @@ public:
     
   // Compute "l0" for electron and hole
   G4double ComputeL0(G4bool IsElec);
+
+  // Compute average speed of sound
+  G4double ComputeAverageSoundSpeed();
 
   G4ThreeVector RotateToValley(G4int iv, const G4ThreeVector& v) const;
   G4ThreeVector RotateFromValley(G4int iv, const G4ThreeVector& v) const;
@@ -365,6 +370,7 @@ private:
 
   G4double fVSound;	// Speed of sound (longitudinal phonon)
   G4double fVTrans;	// Speed of sound (transverse phonon)
+  G4double fVSoundAverage;	// Speed of sound (average over phonon DOS)
   G4double fL0_e;	// Scattering length for electrons
   G4double fL0_h;	// Scattering length for holes
 
