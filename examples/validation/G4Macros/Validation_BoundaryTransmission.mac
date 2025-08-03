@@ -1,0 +1,86 @@
+#-------------------------------------
+# Validation_BoundaryTransmission.mac
+# linehan3@fnal.gov
+# 07/26/2025
+#
+# Validation of phonon transport across volume boundaries
+
+#-------------------------------------
+# Geometry Customs Go First
+# Set geometry ID
+/g4cmp/GeometryID 1
+/g4cmp/StepFile Validation_BoundaryTransmission.txt
+
+#-------------------------------------
+# Initialize the run
+/run/initialize
+
+#-------------------------------------
+# Set up the viewer
+/vis/open OGL
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointThetaPhi 90 180
+/vis/viewer/zoom 1.4
+/vis/drawVolume
+
+#-------------------------------------
+# Turn off all new processes
+/process/inactivate phononScattering
+/process/inactivate phononDownconversion
+/process/inactivate phononPolycrystalElasticScattering
+/process/inactivate qpRecombination
+/process/inactivate qpRadiatesPhonon
+/process/inactivate scPairBreaking
+/process/inactivate qpDiffusion
+/process/inactivate qpLocalTrapping
+/process/inactivate qpDiffusionTimeStepper
+
+#-------------------------------------
+# For printing progress and tracks
+/run/printProgress 1
+/tracking/verbose 0
+/tracking/storeTrajectory 1
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories
+
+#-------------------------------------
+# Set number of phonon bounces
+/g4cmp/phononBounces 100
+
+#-------------------------------------
+# Generate 1 phonon per event, in a tiny parallelepiped volume
+/gps/number 1
+/gps/particle phononTF
+/gps/pos/type Volume
+/gps/pos/shape Para
+/gps/pos/halfx 0.0001 mm
+/gps/pos/halfy 0.0001 mm
+/gps/pos/halfz 0.0001 mm
+
+
+#-------------------------------------
+# Set the position.
+/gps/pos/centre 0.0 0.0 0.0 mm # Bottom of Si
+#/gps/pos/centre 0.0 0.0 -1.0 mm # Center of Ge
+#/gps/pos/centre 0.0 0.0 -1.500050 mm # Center of Al1
+#/gps/pos/center 0.0 0.0 -1.55 mm # Near-Center of Al2
+#/gps/pos/center 0.0 0.0 -1.65 mm # Near-Center of Nb for Al3
+
+#-------------------------------------
+# Set the angular distribution. 
+# For Phonon sims
+/gps/ang/type iso
+/gps/ene/type Mono
+/gps/energy 0.0040 eV
+/run/beamOn 1
+
+# For QPs, needs to always effectively be in-plane
+#/gps/ang/type iso
+#/gps/ang/mintheta 89.99999999 deg
+#/gps/ang/maxtheta 90.00000001 deg
+#/gps/ene/type Lin
+#/gps/ene/min 0.000185 eV
+#/gps/ene/max 0.0006 eV
+#/gps/ene/gradient 1
+#/gps/ene/intercept 1
+#/run/beamOn 1

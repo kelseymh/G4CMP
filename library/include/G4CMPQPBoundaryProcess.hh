@@ -57,7 +57,7 @@ protected:
   G4bool postQPVolume;
    
   G4String procName;
-  G4CMPProcessUtils* procUtils;
+  G4CMPProcessUtils* procUtils; //REL what happens to inherited procUtils?
   G4int verboseLevel;
    
 private:
