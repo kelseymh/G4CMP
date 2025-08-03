@@ -48,7 +48,7 @@ G4double G4CMPQPRecombinationRate::Rate(const G4Track& aTrack) const
     }
     return 0;
   }
-  
+
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "R Function Point B | tau_recombination: " << tau_recombination
