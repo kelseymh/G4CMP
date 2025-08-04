@@ -14,18 +14,22 @@
 // 20250327  G4CMP-468:  Stop surface displacement reflections from "escaping."
 // 20250413  G4CMP-468:  Move diagnostic outputs inside verbosity.
 // 20250421  Add comparison of track position with volume.
+// 20250801  G4CMP-326:  Kill thermal phonons if finite temperature set.
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4ForceCondition.hh"
-#include "G4ParticleChange.hh"
-#include "G4Step.hh"
-#include "G4Track.hh"
-#include "G4VSolid.hh"
-#include "G4TransportationManager.hh"
+#include "G4LatticePhysical.hh"
 #include "G4Navigator.hh"
+#include "G4ParticleChange.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4Step.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4Track.hh"
+#include "G4TransportationManager.hh"
+#include "G4VSolid.hh"
 #include <limits.h>
 #include <sstream>
 
@@ -96,6 +100,10 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
 
+  // Kill phonons consistent with thermal populations
+  if (PhononIsThermal(track))
+    aParticleChange.ProposeTrackStatus(fStopAndKill);
+   
   return &aParticleChange;
 }
 
@@ -169,11 +177,32 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
   }
 
   // Track is NOT at a boundary, is stepping outside volume, or already escaped
-  G4double escape =
+  G4bool escape =
     ((postS->GetStepStatus() != fGeomBoundary) &&
      (postPV != GetCurrentVolume() || prePV != GetCurrentVolume()));
 
   if (verboseLevel>1) G4cout << " escape? " << escape << G4endl;
   
   return escape;
+}
+
+G4bool G4CMPTrackLimiter::PhononIsThermal(const G4Track& track) const {
+  if (!IsPhonon()) return false;	// Only phonons thermalize
+
+  G4double temp = theLattice->GetTemperature();
+  if (temp <= 0.) return false;
+
+  if (verboseLevel>1)
+    G4cout << GetProcessName() << "::PhononIsThermal()" << G4endl;
+
+  if (verboseLevel>2) {
+    G4cout << " phonon " << track.GetKineticEnergy()/eV << " eV"
+	   << " vs. kT " << temp*k_Boltzmann/eV << " @ " << temp/kelvin << " K"
+	   << G4endl;
+  }
+
+  G4bool isThermal = G4CMP::IsThermalized(track);
+  if (verboseLevel>1) G4cout << " thermal? " << isThermal << G4endl;
+
+  return isThermal;
 }
