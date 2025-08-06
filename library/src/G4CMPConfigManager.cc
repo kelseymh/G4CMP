@@ -19,31 +19,43 @@
 // 20170815  Add parameter for required clearance from volume surfaces
 // 20170823  Remove geometry-specific parameters; implement in examples
 // 20170830  Add downsampling energy scale parameter
-// 20170908  G4CMP-118:  Use Edelweiss IV rate by default
-// 20180801  G4CMP-143:  Change IV rate from bool to str, Edelweiss->Quadratic
-// 20190711  G4CMP-158:  Add functions to select NIEL yield functions
-// 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
-// 20200211  G4CMP-191:  Add version identification from .g4cmp-version
-// 20200331  G4CMP-195:  Add charge trapping mean free paths
-// 20200331  G4CMP-196:  Add impact ionization mean free path
+// 20170908  G4CMP-118: Use Edelweiss IV rate by default
+// 20180801  G4CMP-143: Change IV rate from bool to str, Edelweiss->Quadratic
+// 20190711  G4CMP-158: Add functions to select NIEL yield functions
+// 20191014  G4CMP-179: Drop sampling of anharmonic decay (downconversion)
+// 20200211  G4CMP-191: Add version identification from .g4cmp-version
+// 20200331  G4CMP-195: Add charge trapping mean free paths
+// 20200331  G4CMP-196: Add impact ionization mean free path
 // 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
 // 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
 //		"hTrap" -> "ATrap".
-// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
-// 20200530  G4CMP-202:  Provide separate master and worker instances
-// 20200614  G4CMP-211:  Add functionality to print settings
-// 20200614  G4CMP-210:  Add missing initializers to copy constructor
-// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
-// 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
-// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
-// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
-// 20221014  G4CMP-334:  Add maxLukePhonons to printout; show macro commands
-// 20230622  G4CMP-325:  For G4CMP-343 above, default "keep all" flag to TRUE.
+// 20200504  G4CMP-195: Reduce length of charge-trapping parameter names
+// 20200530  G4CMP-202: Provide separate master and worker instances
+// 20200614  G4CMP-211: Add functionality to print settings
+// 20200614  G4CMP-210: Add missing initializers to copy constructor
+// 20210303  G4CMP-243: Add parameter to set step length for merging hits
+// 20210910  G4CMP-272: Add parameter to set number of downsampled Luke phonons
+// 20220921  G4CMP-319: Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
+// 20221014  G4CMP-334: Add maxLukePhonons to printout; show macro commands
+// 20230622  G4CMP-325: For G4CMP-343 above, default "keep all" flag to TRUE.
+// 20230831  G4CMP-362: Add short names for IMPACT and Sarkis ionization models
+// 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
+// 20240823  G4CMP-422: Remove default Quadratic rate model setting.
+// 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
+// 20250212  G4CMP-457: Add short names for empirical Lindhard NIEL.
+// 20250422  G4CMP-472: Adjust order of data members to avoid compiler warnings.
+// 20250325  G4CMP-463: Add parameter for phonon surface step size & limit.
+// 20250711  G4CMP-491: Turn off phonon surface displacement loop by default.
+
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPLewinSmithNIEL.hh"
 #include "G4CMPLindhardNIEL.hh"
+#include "G4CMPEmpiricalNIEL.hh"
+#include "G4CMPImpactTunlNIEL.hh"
+#include "G4CMPSarkisNIEL.hh"
 #include "G4VNIELPartition.hh"
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
@@ -81,8 +93,10 @@ G4CMPConfigManager::G4CMPConfigManager()
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     qpBounces(getenv("G4CMP_QP_BOUNCES")?atoi(getenv("G4CMP_QP_BOUNCES")):100),
     maxLukePhonons(getenv("G4MP_MAX_LUKE")?atoi(getenv("G4MP_MAX_LUKE")):-1),
+    pSurfStepLimit(getenv("G4CMP_PHON_SURFLIMIT")?strtod(getenv("G4CMP_PHON_SURFLIMIT"),0):-1),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
-    IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):"Quadratic"),
+    IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):""),
+    lukeFilename(getenv("G4CMP_LUKE_FILE")?getenv("G4CMP_LUKE_FILE"):"LukePhononEnergies"),
     eTrapMFP(getenv("G4CMP_ETRAPPING_MFP")?strtod(getenv("G4CMP_ETRAPPING_MFP"),0)*mm:DBL_MAX),
     hTrapMFP(getenv("G4CMP_HTRAPPING_MFP")?strtod(getenv("G4CMP_HTRAPPING_MFP"),0)*mm:DBL_MAX),
     eDTrapIonMFP(getenv("G4CMP_EDTRAPION_MFP")?strtod(getenv("G4CMP_EDTRAPION_MFP"),0)*mm:DBL_MAX),
@@ -99,12 +113,22 @@ G4CMPConfigManager::G4CMPConfigManager()
     combineSteps(getenv("G4CMP_COMBINE_STEPLEN")?strtod(getenv("G4CMP_COMBINE_STEPLEN"),0):0.),
     EminPhonons(getenv("G4CMP_EMIN_PHONONS")?strtod(getenv("G4CMP_EMIN_PHONONS"),0)*eV:0.),
     EminCharges(getenv("G4CMP_EMIN_CHARGES")?strtod(getenv("G4CMP_EMIN_CHARGES"),0)*eV:0.),
+    pSurfStepSize(getenv("G4CMP_PHON_SURFSTEP")?strtod(getenv("G4CMP_PHON_SURFSTEP"),0)*um:0.),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
     kaplanKeepPh(getenv("G4CMP_KAPLAN_KEEP")?atoi(getenv("G4CMP_KAPLAN_KEEP")):true),
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
     safetyNSweep2D(getenv("G4CMP_SAFETYNSWEEP2D")?atoi(getenv("G4CMP_SAFETYNSWEEP2D")):140),
-    nielPartition(0), messenger(new G4CMPConfigMessenger(this)) {
+    recordMinE(getenv("G4CMP_RECORD_EMIN")?atoi(getenv("G4CMP_RECORD_EMIN")):true),
+    nielPartition(0),
+    Empklow(getenv("G4CMP_EMPIRICAL_KLOW")?strtod(getenv("G4CMP_EMPIRICAL_KLOW"),0):0.040),
+    Empkhigh(getenv("G4CMP_EMPIRICAL_KHigh")?strtod(getenv("G4CMP_EMPIRICAL_KHigh"),0):0.142),
+    EmpElow(getenv("G4CMP_EMPIRICAL_ELOW")?strtod(getenv("G4CMP_EMPIRICAL_ELOW"),0)*keV:0.39*keV),
+    EmpEhigh(getenv("G4CMP_EMPIRICAL_EHIGH")?strtod(getenv("G4CMP_EMPIRICAL_EHIGH"),0)*keV:7.0*keV),
+    EmpEDepK(getenv("G4CMP_EMPIRICAL_EDEPK")?(atoi(getenv("G4CMP_EMPIRICAL_EDEPK"))!=0):true),
+    EmpkFixed(getenv("G4CMP_EMPIRICAL_KFIXED")?strtod(getenv("G4CMP_EMPIRICAL_KFIXED"),0):0.158),
+    messenger(new G4CMPConfigMessenger(this)) {
+
   fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 
   setVersion();
@@ -125,8 +149,9 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
   : verbose(master.verbose), fPhysicsModelID(master.fPhysicsModelID), 
     ehBounces(master.ehBounces), pBounces(master.pBounces),qpBounces(master.qpBounces),
     maxLukePhonons(master.maxLukePhonons),
-    version(master.version), LatticeDir(master.LatticeDir), 
-    IVRateModel(master.IVRateModel), eTrapMFP(master.eTrapMFP),
+    pSurfStepLimit(master.pSurfStepLimit), version(master.version),
+    LatticeDir(master.LatticeDir), IVRateModel(master.IVRateModel),
+    lukeFilename(master.lukeFilename), eTrapMFP(master.eTrapMFP),
     hTrapMFP(master.hTrapMFP), eDTrapIonMFP(master.eDTrapIonMFP),
     eATrapIonMFP(master.eATrapIonMFP), hDTrapIonMFP(master.hDTrapIonMFP),
     hATrapIonMFP(master.hATrapIonMFP),
@@ -135,10 +160,13 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     genPhonons(master.genPhonons), genCharges(master.genCharges), 
     lukeSample(master.lukeSample), combineSteps(master.combineSteps),
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
-    useKVsolver(master.useKVsolver), fanoEnabled(master.fanoEnabled),
-    kaplanKeepPh(master.kaplanKeepPh),
+    pSurfStepSize(master.pSurfStepSize), useKVsolver(master.useKVsolver),
+    fanoEnabled(master.fanoEnabled), kaplanKeepPh(master.kaplanKeepPh),
     chargeCloud(master.chargeCloud), safetyNSweep2D(master.safetyNSweep2D),
-    nielPartition(master.nielPartition),
+    recordMinE(master.recordMinE), nielPartition(master.nielPartition),
+    Empklow(master.Empklow), Empkhigh(master.Empkhigh),
+    EmpElow(master.EmpElow), EmpEhigh(master.EmpEhigh),
+    EmpEDepK(master.EmpEDepK), EmpkFixed(master.EmpkFixed),
     messenger(new G4CMPConfigMessenger(this)) {;}
 
 
@@ -166,6 +194,10 @@ void G4CMPConfigManager::setNIEL(G4String name) {
   name.toLower();
   if (name(0,3) == "lin") setNIEL(new G4CMPLindhardNIEL);
   if (name(0,3) == "lew") setNIEL(new G4CMPLewinSmithNIEL);
+  if (name(0,3) == "imp") setNIEL(new G4CMPImpactTunlNIEL);
+  if (name(0,3) == "sar") setNIEL(new G4CMPSarkisNIEL);
+  if (name(0,3) == "emp") setNIEL(new G4CMPEmpiricalNIEL);
+
 }
 
 void G4CMPConfigManager::setNIEL(G4VNIELPartition* niel) {
@@ -183,7 +215,10 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/chargeBounces " << ehBounces << "\t\t\t\t# G4CMP_EH_BOUNCES"
      << "\n/g4cmp/phononBounces " << pBounces << "\t\t\t# G4CMP_PHON_BOUNCES"
      << "\n/g4cmp/qpBounces " << qpBounces << "\t\t\t# G4CMP_QP_BOUNCES"
+     << "\n/g4cmp/phononSurfStepSize " << pSurfStepSize/um << " um\t\t# G4CMP_PHON_SURFSTEP"
+     << "\n/g4cmp/phononSurfStepLimit " << pSurfStepLimit << "\t\t# G4CMP_PHON_SURFLIMIT"
      << "\n/g4cmp/IVRateModel " << IVRateModel << "\t\t\t# G4CMP_IV_RATE_MODEL"
+     << "\n/g4cmp/LukeDebugFile " << lukeFilename << "\t\t\t# G4CMP_LUKE_FILE"
      << "\n/g4cmp/eTrappingMFP " << eTrapMFP/mm << " mm\t\t# G4CMP_ETRAPPING_MFP"
      << "\n/g4cmp/hTrappingMFP " << hTrapMFP/mm << " mm\t\t# G4CMP_HTRAPPING_MFP"
      << "\n/g4cmp/eDTrapIonizationMFP " << eDTrapIonMFP/mm << " mm\t# G4CMP_EDTRAPION_MFP"
@@ -206,8 +241,15 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/kaplanKeepPhonons " << kaplanKeepPh << "\t\t\t# G4CMP_KAPLAN_KEEP "
      << "\n/g4cmp/createChargeCloud " << chargeCloud << "\t\t\t# G4CMP_CHARGE_CLOUD"
      << "\n/g4cmp/safetyNSweep2D" << safetyNSweep2D << "\t\t\t# G4CMP_SAFETYNSWEEP2D"
+     << "\n/g4cmp/recordMinETracks " << recordMinE << "\t\t\t# G4CMP_RECORD_EMIN"
      << "\n/g4cmp/NIELPartition "
      << (nielPartition ? typeid(*nielPartition).name() : "---")
      << "\t# G4CMP_NIEL_FUNCTION "
+     << "\n/g4cmp/NIELPartition/Empirical/klow " << Empklow << " \t\t\t# G4CMP_EMPIRICAL_KLOW"
+     << "\n/g4cmp/NIELPartition/Empirical/khigh " << Empkhigh << " \t\t\t\t# G4CMP_EMPIRICAL_KHIGH"
+     << "\n/g4cmp/NIELPartition/Empirical/Elow " << EmpElow/keV << " keV\t\t\t\t# G4CMP_EMPIRICAL_ELOW"
+     << "\n/g4cmp/NIELPartition/Empirical/Ehigh " << EmpEhigh/keV << " keV\t\t\t\t# G4CMP_EMPIRICAL_EHIGH"
+     << "\n/g4cmp/NIELPartition/Empirical/kFixed " << Empkhigh << " \t\t\t\t# G4CMP_EMPIRICAL_KFIXED"
+     << "\n/g4cmp/NIELPartition/Empirical/EDepK " << EmpEDepK << "\t\t\t# G4CMP_EMPIRICAL_EDEPK "
      << std::endl;
 }

@@ -30,21 +30,25 @@
 // 20170830  Add downsampling energy scale parameter
 // 20170830  Add flag to create e/h pairs in "cloud" surround location
 // 20180801  Change IVEdelweiss flag to string IVRateModel.
-// 20190711  G4CMP-158:  Add functions to select NIEL yield functions
-// 20191014  G4CMP-179:  Drop sampling of anharmonic decay (downconversion)
-// 20200211  G4CMP-191:  Add version identification from .g4cmp-version
-// 20200331  G4CMP-195:  Add chage trapping MFP
-// 20200331  G4CMP-196:  Add impact ionization mean free path
+// 20190711  G4CMP-158: Add functions to select NIEL yield functions
+// 20191014  G4CMP-179: Drop sampling of anharmonic decay (downconversion)
+// 20200211  G4CMP-191: Add version identification from .g4cmp-version
+// 20200331  G4CMP-195: Add chage trapping MFP
+// 20200331  G4CMP-196: Add impact ionization mean free path
 // 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
 // 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
 //		"hTrap" -> "ATrap".
-// 20200504  G4CMP-195:  Reduce length of charge-trapping parameter names
-// 20200530  G4CMP-202:  Provide separate master and worker instances
-// 20200614  G4CMP-211:  Add functionality to print settings
-// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
-// 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
-// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
-// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
+// 20200504  G4CMP-195: Reduce length of charge-trapping parameter names
+// 20200530  G4CMP-202: Provide separate master and worker instances
+// 20200614  G4CMP-211: Add functionality to print settings
+// 20210303  G4CMP-243: Add parameter to set step length for merging hits
+// 20210910  G4CMP-272: Add parameter to set number of downsampled Luke phonons
+// 20220921  G4CMP-319: Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
+// 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
+// 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
+// 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
+// 20250325  G4CMP-463:  Add parameter for phonon surface step size & limit.
 
 #include "globals.hh"
 #include <iosfwd>
@@ -73,10 +77,12 @@ public:
   static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
   static G4int GetMaxQPBounces()         { return Instance()->qpBounces; }
   static G4int GetMaxLukePhonons()       { return Instance()->maxLukePhonons; }
+  static G4int GetPhononSurfStepLimit()  { return Instance()->pSurfStepLimit; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
   static G4bool KeepKaplanPhonons()      { return Instance()->kaplanKeepPh; }
   static G4bool CreateChargeCloud()      { return Instance()->chargeCloud; }
+  static G4bool RecordMinETracks()       { return Instance()->recordMinE; }
   static G4double GetSurfaceClearance()  { return Instance()->clearance; }
   static G4double GetMinStepScale()      { return Instance()->stepScale; }
   static G4double GetMinPhononEnergy()   { return Instance()->EminPhonons; }
@@ -94,11 +100,18 @@ public:
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
   static G4double GetSafetyNSweep2D()    { return Instance()->safetyNSweep2D; }
-  
-  
+  static G4double GetPhononSurfStepSize()  { return Instance()->pSurfStepSize; }
+  static G4double GetEmpklow()      { return Instance()->Empklow; }
+  static G4double GetEmpkhigh()     { return Instance()->Empkhigh; }
+  static G4double GetEmpElow()      { return Instance()->EmpElow; }
+  static G4double GetEmpEhigh()     { return Instance()->EmpEhigh; }
+  static G4double GetEmpkFixed()    { return Instance()->EmpkFixed; }
+  static G4bool GetEmpEDepK()  { return Instance()->EmpEDepK; }
+
+
   static const G4String& GetLatticeDir() { return Instance()->LatticeDir; }
   static const G4String& GetIVRateModel() { return Instance()->IVRateModel; }
-  
+  static const G4String& GetLukeDebugFile() { return Instance()->lukeFilename; }
   static const G4VNIELPartition* GetNIELPartition() { return Instance()->nielPartition; }
 
   // Change values (e.g., via Messenger) -- pass strings by value for toLower()
@@ -106,6 +119,8 @@ public:
   static void SetMaxChargeBounces(G4int value) { Instance()->ehBounces = value; }
   static void SetMaxPhononBounces(G4int value) { Instance()->pBounces = value; }
   static void SetMaxQPBounces(G4int value) { Instance()->qpBounces = value; }
+  static void SetPhononSurfStepSize(G4double value) { Instance()->pSurfStepSize = value; }
+  static void SetPhononSurfStepLimit(G4int value) { Instance()->pSurfStepLimit = value; }
   static void SetMaxLukePhonons(G4int value) { Instance()->maxLukePhonons = value; }
   static void SetSurfaceClearance(G4double value) { Instance()->clearance = value; }
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
@@ -116,6 +131,7 @@ public:
   static void SetGenCharges(G4double value) { Instance()->genCharges = value; }
   static void SetLukeSampling(G4double value) { Instance()->lukeSample = value; }
   static void SetComboStepLength(G4double value) { Instance()->combineSteps = value; }
+  static void RecordMinETracks(G4bool value) { Instance()->recordMinE = value; }
   static void UseKVSolver(G4bool value) { Instance()->useKVsolver = value; }
   static void EnableFanoStatistics(G4bool value) { Instance()->fanoEnabled = value; }
   static void KeepKaplanPhonons(G4bool value) { Instance()->kaplanKeepPh = value; }
@@ -131,8 +147,18 @@ public:
   static void SetHATrapIonMFP(G4double value) { Instance()->hATrapIonMFP = value; }
   static void SetTemperature(G4double value)  { Instance()->temperature = value; }
 
+  static void SetLukeDebugFile(const G4String& value) { Instance()->lukeFilename = value; }
+
   static void SetNIELPartition(const G4String& value) { Instance()->setNIEL(value); }
   static void SetNIELPartition(G4VNIELPartition* niel) { Instance()->setNIEL(niel); }
+
+  // Empirical Lindhard settings 
+  static void SetEmpklow(G4double value) { Instance()->Empklow = value; }
+  static void SetEmpkhigh(G4double value) { Instance()->Empkhigh = value; }
+  static void SetEmpElow(G4double value) { Instance()->EmpElow = value; }
+  static void SetEmpEhigh(G4double value) { Instance()->EmpEhigh = value; }
+  static void SetEmpkFixed(G4double value) { Instance()->EmpkFixed = value; }
+  static void SetEmpEDepK(G4bool value) { Instance()->EmpEDepK = value; }
 
   // These settings require the geometry to be rebuilt
   static void SetLatticeDir(const G4String& dir)
@@ -167,11 +193,13 @@ private:
   G4int pBounces;	// Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
   G4int qpBounces;    // Maximum QP reflections ($G4CMP_QP_BOUNCES)
   G4int maxLukePhonons; // Approx. Luke phonon limit ($G4MP_MAX_LUKE)
-  G4String version;	// Version name string extracted from .g4cmp-version
-  G4String LatticeDir;	// Lattice data directory ($G4LATTICEDATA)
-  G4String IVRateModel;	// Model for IV rate ($G4CMP_IV_RATE_MODEL)
-  G4double eTrapMFP;	// Mean free path for electron trapping
-  G4double hTrapMFP;	// Mean free path for hole trapping
+  G4int pSurfStepLimit;  // Phonon surface displacement step limit ($G4CMP_PHON_SURFLIMIT).
+  G4String version;	 // Version name string extracted from .g4cmp-version
+  G4String LatticeDir;	 // Lattice data directory ($G4LATTICEDATA)
+  G4String IVRateModel;	 // Model for IV rate ($G4CMP_IV_RATE_MODEL)
+  G4String lukeFilename; // Filename for LukeScattering debugging output
+  G4double eTrapMFP;	 // Mean free path for electron trapping
+  G4double hTrapMFP;	 // Mean free path for hole trapping
   G4double eDTrapIonMFP; // Mean free path for e- on e-trap ionization ($G4CMP_EETRAPION_MFP)
   G4double eATrapIonMFP; // Mean free path for e- on h-trap ionization ($G4CMP_EHTRAPION_MFP)
   G4double hDTrapIonMFP; // Mean free path for h+ on e-trap ionization ($G4CMP_HETRAPION_MFP)
@@ -187,14 +215,30 @@ private:
   G4double EminPhonons;	 // Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	 // Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
   G4double safetyNSweep2D; // # of angular positions to sweep over when computing a 2D safety ($G4CMP_SAFETYNSWEEP2D)
+  G4double pSurfStepSize;  // Phonon surface displacement step size ($G4CMP_PHON_SURFSTEP).
   G4bool useKVsolver;	 // Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	 // Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
   G4bool kaplanKeepPh;   // Emit or iterate over all phonons in KaplanQP ($G4CMP_KAPLAN_KEEP)
   G4bool chargeCloud;    // Produce e/h pairs around position ($G4CMP_CHARGE_CLOUD) 
-
+  G4bool recordMinE;     // Store below-minimum track energy as NIEL when killed
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
 
+
   
+
+  // Empirical Lindhard Model Parameters
+    // Model fit parameters
+  G4double Empklow;  
+  G4double Empkhigh; 
+    // Model validity energy range
+  G4double EmpElow;  
+  G4double EmpEhigh;
+    // Flag to use Empirical Lindhard with energy-dependent k
+  G4bool EmpEDepK; 
+    // If k is not energy dependent, provide/use kFixed
+  G4double EmpkFixed; 
+  //
+
   G4CMPConfigMessenger* messenger;	// User interface (UI) commands
 };
 

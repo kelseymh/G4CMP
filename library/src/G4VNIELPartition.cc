@@ -13,6 +13,7 @@
 // $Id$
 //
 // 20191211  Michael Kelsey
+// 20250102  Make effective Z,A functions public and static, for user access
 
 #include "G4VNIELPartition.hh"
 #include "G4Element.hh"
@@ -21,7 +22,7 @@
 
 // Computed weighted average of elemental constituents of material
 
-G4double G4VNIELPartition::GetEffectiveZ(const G4Material *material) const {
+G4double G4VNIELPartition::GetEffectiveZ(const G4Material *material) {
   if (!material) {
     G4Exception ("G4VNIELPartition::GetEffectiveZ()", "G4CMP1001",
 		 FatalException, "Called with null material pointer");
@@ -42,7 +43,7 @@ G4double G4VNIELPartition::GetEffectiveZ(const G4Material *material) const {
   return zEff;
 }
 
-G4double G4VNIELPartition::GetEffectiveA(const G4Material *material) const {
+G4double G4VNIELPartition::GetEffectiveA(const G4Material *material) {
   if (!material) {
     G4Exception ("G4VNIELPartition::GetEffectiveA()", "G4CMP1002",
 		 FatalException, "Called with null material pointer");

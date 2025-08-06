@@ -31,6 +31,21 @@
 //		closest to momentum direction.  Commented out now, as it leads
 //		to non-physical reduction of total Luke emission.
 // 20220907  G4CMP-316 -- Pass track into CreatePhonon instead of touchable.
+// 20221210  Fix loss of significance on Ephonon: Ephonon now is being
+// 		calculated from Erecoil instead of qvec to avoid loss of
+// 		significance.
+// 20221210  Fix to where Erecoil mass was not being multiplied by c_squared
+// 		for Holes, resulting into wrong units.
+// 20240207  Adapting Luke Scattering with new kinematics. Reverting the
+//              use of effective mass for electrons and adding electron mass
+//              back. Adding InitializeParticleChange to get the correct Ekin
+// 20241223  G4CMP-419 -- Create separate debugging file per worker thread;
+//		add EventID column to debugging output.
+// 20241224  G4CMP-419 -- Drop requirement for G4CMP_DEBUG preprocessor flag.
+//		Users can enable debugging output file with verbosity.
+// 20250223  G4CMP-462 -- Restore use of G4CMP_DEBUG flag to hide changes to
+//		lattice verbosity, which causes a data race.
+// 20250508  G4CMP-480 -- Pass global phonon wavevector to CreatePhonon.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -41,15 +56,19 @@
 #include "G4CMPSecondaryUtils.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4DynamicParticle.hh"
+#include "G4Event.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononPolarization.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
+#include "G4RunManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Track.hh"
 #include "G4VParticleChange.hh"
 #include "Randomize.hh"
 #include <iostream>
@@ -65,9 +84,7 @@ G4CMPLukeScattering::G4CMPLukeScattering(G4VProcess* stepper)
 }
 
 G4CMPLukeScattering::~G4CMPLukeScattering() {
-#ifdef G4CMP_DEBUG
   if (output.is_open()) output.close();
-#endif
 }
 
 
@@ -75,7 +92,9 @@ G4CMPLukeScattering::~G4CMPLukeScattering() {
 
 G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
                                                      const G4Step& aStep) {
-  aParticleChange.Initialize(aTrack); 
+  // Is the initializer in the correct place or should it be after the
+  // boundary check?
+  InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
   if (verboseLevel > 1) {
@@ -89,20 +108,19 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
-#ifdef G4CMP_DEBUG
   if (verboseLevel && !output.is_open()) {
-    output.open("LukePhononEnergies");
+    const G4String& debugfile = G4CMPConfigManager::GetLukeDebugFile();
+    output.open(G4CMP::DebuggingFileThread(debugfile));
     if (!output.good()) {
       G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
-		  FatalException, "Unable to open LukePhononEnergies");
+		  FatalException, ("Unable to open "+debugfile).c_str());
     }
 
-    output << "Track ID, Track Type,Track Weight,Track Energy [eV],Track Momentum [eV],WaveVector,"
+    output << "Event ID,Track ID,Track Type,Track Weight,Track Energy [eV],Track Momentum [eV],WaveVector,"
 	   << "Phonon Theta,Phonon Energy [eV],Phonon Weight,Recoil WaveVector,"
 	   << "Final Energy [eV],Final Momentum [eV]"
 	   << std::endl;
   }
-#endif
 
   // For convenience in diagnostic output below
   const G4String& trkName = aTrack.GetDefinition()->GetParticleName();
@@ -114,15 +132,21 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4int iValley = GetValleyIndex(aTrack);	// Doesn't change valley
 
   // NOTE: Track kinematics include post-step acceleration from E-field
-  G4ThreeVector ptrk = GetLocalMomentum(aTrack);
+  G4ThreeVector ptrk = GetLocalDirection(aStep.GetPostStepPoint()->GetMomentum());
   G4ThreeVector ktrk(0.);
   G4double mass = 0.;
+  G4double Etrk = 0.;
   if (IsElectron()) {
-    ktrk = lat->MapV_elToK_HV(iValley, GetLocalVelocityVector(aTrack));
+    ktrk = lat->MapPtoK(iValley, ptrk);
+    // Turning wavevector to spherical frame where electrons act like holes
+    // as the mass is isotropic
+    ktrk = lat->EllipsoidalToSphericalTranformation(iValley, ktrk);
     mass = lat->GetElectronMass();
+    Etrk = lat->MapPtoEkin(iValley, ptrk);
   } else if (IsHole()) {
     ktrk = GetLocalWaveVector(aTrack);
     mass = lat->GetHoleMass();
+    Etrk = GetKineticEnergy(aTrack);
   } else {
     G4Exception("G4CMPLukeScattering::PostStepDoIt", "Luke002",
                 EventMustBeAborted, "Unknown charge carrier");
@@ -131,25 +155,32 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   G4ThreeVector kdir = ktrk.unit();
   G4double kmag = ktrk.mag();
-  G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
+  G4double gammaSound = 1/sqrt(1.-lat->GetSoundSpeed()*lat->GetSoundSpeed()/c_squared);
+  G4double kSound = gammaSound * lat->GetSoundSpeed() * mass / hbar_Planck;
 
   // Sanity check: this should have been done in MFP already
   if (kmag <= kSound) return &aParticleChange;
 
   if (verboseLevel > 1) {
-    G4cout << "p_global = " << GetGlobalMomentum(aTrack)
-	   << " p_mag " << GetGlobalMomentum(aTrack).mag() << G4endl
-	   << " p_local = " << ptrk << " p_mag " << ptrk.mag() << G4endl;
+    G4cout << " E_track " << Etrk/eV << " eV"
+	   << " mass " << mass*c_squared/electron_mass_c2 << " m_e"
+	   << G4endl;
+
+    G4ThreeVector p_global = GetGlobalMomentum(aTrack);
+    G4cout << "p_global = " << p_global/eV << " " << p_global.mag()/eV << " eV"
+	   << G4endl
+	   << " p_local = " << ptrk/eV << " " << ptrk.mag()/eV<< " eV"
+	   << G4endl;
 
     if (IsElectron()) {
-      G4ThreeVector kvalley = theLattice->MapPtoK_valley(iValley, ptrk);
+      G4ThreeVector kvalley = theLattice->MapPtoK(iValley, ptrk);
       G4ThreeVector pvalley = kvalley * hbarc;
       G4cout << " valley " << iValley << " along "
 	     << theLattice->GetValleyAxis(iValley) << G4endl
-	     << " p_valley = " << pvalley << " p_mag " << pvalley.mag()
-	     << G4endl
-	     << " k_valley = " << kvalley << " k_mag " << kvalley.mag()
-	     << G4endl;
+	     << " p_valley = " << pvalley/eV << " " << pvalley.mag()/eV
+	     << " eV" << G4endl
+	     << " k = " << kvalley/eV << " " << kvalley.mag()/eV
+	     << " eV" << G4endl;
     }
 
     G4cout << " ktrk = " << ktrk << " kmag " << kmag << G4endl
@@ -158,7 +189,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   // Final state kinematics, generated in accept/reject loop below
-  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0, Erecoil=0;
+  G4double theta_phonon=0, phi_phonon=0, q=0, Ephonon=0, Erecoil=0, qmag=0;
   G4ThreeVector qvec, k_recoil, precoil;	// Outgoing wave vectors
   G4int newValley = iValley;			// Test for valley change
 
@@ -201,40 +232,34 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     
     // Get recoil wavevector (in HV frame), convert to new local momentum
     k_recoil = ktrk - qvec;
+    qmag = qvec.mag();
+    Ephonon = MakePhononEnergy(qmag);
+    // Make sure energy is conserved
+    Erecoil = Etrk - Ephonon;
+
     if (IsHole()) {
       precoil = k_recoil * hbarc;
-      Erecoil = precoil.mag2() / (2.*lat->GetHoleMass());
     } else {
-      precoil = lat->MapK_HVtoP(iValley, k_recoil);
-      Erecoil = lat->MapPtoEkin(iValley, precoil);
+      // Rotating phonon wavevector out of valley frame into solid frame
+      qvec = lat->SphericalToEllipsoidalTranformation(iValley, qvec);
+      qvec = qmag * qvec.unit();
+      // First transform the recoil wavevector back to the ellipsoidal frame
+      precoil = lat->SphericalToEllipsoidalTranformation(iValley, k_recoil);
+      // Then transform the recoil wavevector to transport momentum
+      precoil = lat->MapKtoP(iValley, precoil);
+      // Energy should be conserved, so we use the precoil to get the direction
+      // of the movement, while the magnitude of the momentum is given by the
+      // Erecoil and direction of the movement and the valley.
+      precoil = lat->MapEkintoP(iValley, precoil, Erecoil);
     }
 
     if (verboseLevel > 1) {
-      G4cout << "k_recoil = " << k_recoil << " k_mag " << k_recoil.mag()
-	     << G4endl;
-      
-      if (IsElectron()) {
-	G4ThreeVector kvalley = theLattice->MapK_HVtoK_valley(iValley, k_recoil);
-	G4ThreeVector pvalley = kvalley * hbarc;
-	
-	G4cout << "k_valley = " << kvalley << " k_mag " << kvalley.mag() << G4endl
-	       << "p_valley = " << pvalley << " p_mag " << pvalley.mag() << G4endl;
-      }
-      
-      G4cout << "p_recoil = " << precoil << " p_mag " << precoil.mag() << G4endl
+      G4cout << "p_recoil = " << precoil/eV << " " << precoil.mag()/eV << G4endl
 	     << "E_recoil = " << Erecoil/eV << " eV" << G4endl;
     }
     
-    // Sanity check for phonon production: can't exceed charge's energy
-    Ephonon = MakePhononEnergy(qvec.mag());
-    if (Ephonon >= GetKineticEnergy(aTrack)) {
-      if (verboseLevel) {
-	G4cerr << GetProcessName() << " TRY AGAIN: Ephonon "
-	       << Ephonon/eV << " eV exceeds " << trkName << " energy "
-	       << GetKineticEnergy(aTrack)/eV << " eV" << G4endl;
-      }
-
-      continue;			// Try again
+    if (verboseLevel > 1) {
+      G4cout << " E_phonon = " << Ephonon/eV << " eV" << G4endl;
     }
 
     // Sanity check for electrons: recoil energy must be smaller
@@ -251,35 +276,25 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 	       << ErecNew/eV << " eV" << G4endl;
 
 	Erecoil = ErecNew;
-
-	// Rescale phonon to enforce energy conservation; breaks momentum
-	G4double Escale = (GetKineticEnergy(aTrack)-Erecoil) / Ephonon;
-	qvec *= Escale;
-	Ephonon *= Escale;
       }
       *****/
 
       G4double Efinal = Erecoil + Ephonon;
       G4double DeltaE = Efinal - GetKineticEnergy(aTrack);
 
-      // If too much outgoing energy, throw again
       if (DeltaE > 1e-9) {
-	if (verboseLevel) {
-	  G4cerr << " TRY AGAIN: E(recoil+phonon) " << Efinal/eV << " eV"
+	if (verboseLevel>1) {
+	  G4cerr << " ECONS: E(recoil+phonon) " << Efinal/eV << " eV"
 		 << " too large by " << DeltaE/eV << G4endl;
 	}
-	
-	continue;
       }
 
       // If too little outgoing energy, rescale momentum to balance
       if (DeltaE < -1e-9) {
-	if (verboseLevel) {
+	if (verboseLevel>1) {
 	  G4cerr << " ECONS: E(recoil+phonon) " << Efinal/eV << " eV"
 		 << " too small by " << DeltaE/eV << G4endl;
 	}
-
-	
       }
     }
 
@@ -289,6 +304,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   if (!goodThrow) {
     G4cerr << GetProcessName() << " ERROR: Unable to generate phonon after "
 	   << iThrow << " attempts" << G4endl;
+
     return &aParticleChange;	// Unable to generate phonon
   } else if (verboseLevel && iThrow>1) {
     G4cout << GetProcessName() << " " << trkName << " phonon required "
@@ -297,22 +313,20 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
 
   // Report phonon emission results
   if (verboseLevel > 1) {
-    G4cout << "q = " << q << " |qvec| = " << qvec.mag()
-	   << " Ephonon = " << Ephonon
-           << "\nk_recoil(HV) = " << k_recoil
-           << " k_recoil(HV)-mag = " << k_recoil.mag()
+    G4cout << "q = " << q << " |qvec| " << qvec.mag() << G4endl
+	   << " Ephonon = " << Ephonon/eV << " eV" << G4endl
+           << " k_recoil(HV) = " << k_recoil << " " << k_recoil.mag()
 	   << " newValley = " << newValley
            << G4endl;
   }
 
-#ifdef G4CMP_DEBUG
   if (output.good()) {
-    output << aTrack.GetTrackID() << "," << trkName << ","
+    output << G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() << ","
+	   << aTrack.GetTrackID() << "," << trkName << ","
 	   << aTrack.GetWeight() << "," << GetKineticEnergy(aTrack)/eV << ","
 	   << GetLocalMomentum(aTrack).mag()/eV << "," << kmag << ","
 	   << theta_phonon << "," << Ephonon/eV << ",";
   }
-#endif
 
   // Create real phonon to be propagated, with random polarization
   // If phonon is not created, register the energy as deposited
@@ -320,8 +334,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
   if (weight > 0.) {
     G4Track* phonon = G4CMP::CreatePhonon(aTrack,
-					  G4PhononPolarization::UNKNOWN,
-                                          qvec, Ephonon,
+                                          G4PhononPolarization::UNKNOWN,
+                                          GetGlobalDirection(qvec), Ephonon,
                                           aTrack.GetGlobalTime(),
                                           aTrack.GetPosition());
     // Secondary's weight has to be multiplicative with its parent's
@@ -345,14 +359,12 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   }
 
   RotateToGlobalDirection(precoil);	// Update track in world coordinates
-  FillParticleChange(newValley, precoil);
+  FillParticleChange(newValley, Erecoil, precoil);
 
-#ifdef G4CMP_DEBUG
   if (output.good()) {
     output << aTrack.GetWeight()*weight << "," << k_recoil.mag() << ","
 	   << Erecoil/eV << "," << precoil.mag()/eV << std::endl;
   }
-#endif
 
   ClearNumberOfInteractionLengthLeft();
   return &aParticleChange;

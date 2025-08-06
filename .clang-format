@@ -1,0 +1,32 @@
+Language: Cpp
+BasedOnStyle: Google
+AccessModifierOffset: -2 # access modifiers same indent as class
+IncludeCategories: # set includes priority
+  - Regex: 'G4CMP*'
+    Priority: 1
+    SortPriority:    1
+    CaseSensitive:   true
+  - Regex: 'G4*'
+    Priority: 2
+    SortPriority:    2
+    CaseSensitive:   true
+  - Regex: '.*/.*\.h'
+    Priority: 3
+    SortPriority:    3
+    CaseSensitive:   true   
+  - Regex:           '^<ext/.*\.h>'
+    Priority:        4
+    SortPriority:    4
+    CaseSensitive:   false
+  - Regex:           '^<.*\.h>'
+    Priority:        5
+    SortPriority:    5
+    CaseSensitive:   false
+  - Regex:           '^<.*'
+    Priority:        6
+    SortPriority:    6
+    CaseSensitive:   false
+  - Regex:           '.*'
+    Priority:        7
+    SortPriority:    7
+    CaseSensitive:   false

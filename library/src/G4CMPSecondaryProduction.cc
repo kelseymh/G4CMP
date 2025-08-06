@@ -53,11 +53,11 @@ G4CMPSecondaryProduction::~G4CMPSecondaryProduction() {
 }
 
 
-// Applies to all charged, non-resonance particles except the drift charges
+// Applies to all charged, non-resonance particles except the drift charges and QPs
 
 G4bool G4CMPSecondaryProduction::IsApplicable(const G4ParticleDefinition& pd) {
   return (!pd.IsShortLived() && !G4CMP::IsPhonon(pd) &&
-	  !G4CMP::IsChargeCarrier(pd) );
+	  !G4CMP::IsChargeCarrier(pd) && !G4CMP::IsQP(pd) );
 }
 
 

@@ -10,6 +10,7 @@
 // $Id$
 //
 // 20170815  Move G4CMPProcessUtils inheritance to base class
+// 20240823  Change name to plain "Linear", to match UseRateModel()
 
 #ifndef G4CMPIVRateLinear_hh
 #define G4CMPIVRateLinear_hh 1
@@ -19,7 +20,7 @@
 
 class G4CMPIVRateLinear : public G4CMPVScatteringRate {
 public:
-  G4CMPIVRateLinear() : G4CMPVScatteringRate("IVLinear") {;}
+  G4CMPIVRateLinear() : G4CMPVScatteringRate("Linear") {;}
   virtual ~G4CMPIVRateLinear() {;}
 
   virtual G4double Rate(const G4Track& aTrack) const;
