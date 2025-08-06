@@ -25,6 +25,8 @@
 // 20190704  Add selection of rate model by name, and material specific
 // 20190904  C. Stanford -- Add 50% momentum flip (see G4CMP-168)
 // 20190906  Push selected rate model back to G4CMPTimeStepper for consistency
+// 20231122  Remove 50% momentum flip (see G4CMP-375)
+// 20240823  Allow ConfigManager IVRateModel setting to override config.txt
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -66,7 +68,9 @@ G4CMPInterValleyScattering::IsApplicable(const G4ParticleDefinition& aPD) {
 void G4CMPInterValleyScattering::UseRateModel(G4String model) {
   if (model.empty()) {			// No argument, initialize w/global
     if (GetRateModel()) return;		// Do not change existing model
-    model = G4CMPConfigManager::GetIVRateModel();
+
+    model = (G4CMPConfigManager::GetIVRateModel().empty() ? "Quadratic"
+	     : G4CMPConfigManager::GetIVRateModel());
   }
 
   model.toLower();
@@ -82,7 +86,8 @@ void G4CMPInterValleyScattering::UseRateModel(G4String model) {
     if (!GetRateModel()) UseRateModel("Quadratic");
   }
 
-  modelName = model;
+  modelName = GetRateModel()->GetName();
+  modelName.toLower();
 
   // Ensure that TimeStepper process is given new model
   PushModelToTimeStepper();
@@ -94,7 +99,11 @@ void G4CMPInterValleyScattering::UseRateModel(G4String model) {
 G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
 						     G4double prevStep,
 						     G4ForceCondition* cond) {
-  UseRateModel(theLattice->GetIVModel());	// Use current material's rate
+  // If user set a model in ConfigManager, use that
+  G4String userModel = G4CMPConfigManager::GetIVRateModel();
+  if (!userModel.empty()) UseRateModel(userModel);
+  else UseRateModel(theLattice->GetIVModel());	// Use current material's rate
+
   return G4CMPVProcess::GetMeanFreePath(track, prevStep, cond);
 }
 
@@ -104,7 +113,7 @@ G4double G4CMPInterValleyScattering::GetMeanFreePath(const G4Track& track,
 G4VParticleChange* 
 G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack, 
 					 const G4Step& aStep) {
-  aParticleChange.Initialize(aTrack); 
+  InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
   if (verboseLevel > 1) {
@@ -121,20 +130,17 @@ G4CMPInterValleyScattering::PostStepDoIt(const G4Track& aTrack,
   // Get track's energy in current valley
   G4ThreeVector p = GetLocalMomentum(aTrack);
   G4int valley = GetValleyIndex(aTrack);
-  p = theLattice->MapPtoK_valley(valley, p); // p is actually k now
+  p = theLattice->MapPtoK(valley, p); // p is actually k now
+  p = theLattice->RotateToValley(valley, p);
   
   // picking a new valley at random if IV-scattering process was triggered
   valley = ChangeValley(valley);
   G4CMP::GetTrackInfo<G4CMPDriftTrackInfo>(aTrack)->SetValleyIndex(valley);
 
-  p = theLattice->MapK_valleyToP(valley, p); // p is p again
+  p = theLattice->RotateFromValley(valley, p);
+  p = theLattice->MapKtoP(valley, p); // p is p again
   RotateToGlobalDirection(p);
   
-  // There's a 50% chance that the charge jumped into the antivalley rather
-  // than the primary valley. If so, its momentum needs to be reversed to 
-  // preserve symmetry.
-  if (G4UniformRand()>0.5) p = -p;
-
   // Adjust track kinematics for new valley
   FillParticleChange(valley, p);
   

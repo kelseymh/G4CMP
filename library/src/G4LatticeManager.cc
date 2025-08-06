@@ -124,6 +124,8 @@ G4LatticeLogical* G4LatticeManager::LoadLattice(const G4Material* Mat,
   G4LatticeLogical* newLat = latReader.MakeLattice(latDir+"/config.txt");
   if (newLat) {
     newLat->SetDensity(Mat->GetDensity());
+    if (newLat->GetElectronScatter()==0) {newLat->SetElectronScatter(newLat->ComputeL0(true));}
+    if (newLat->GetHoleScatter()==0) {newLat->SetHoleScatter(newLat->ComputeL0(false));}
     newLat->Initialize(latDir);
     if (verboseLevel>1)
       G4cout << " Created newLat " << newLat << "\n" << *newLat << G4endl;

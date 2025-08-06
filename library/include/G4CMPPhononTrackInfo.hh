@@ -8,6 +8,7 @@
 /// auxiliary information that a G4Track can't store, but is necessary for
 /// physics processes to know.
 ///
+/// Note: Wavevectors need to be passed in the global coordinate system.
 //
 // $Id$
 //
@@ -42,8 +43,10 @@ public:
   }
 */
 
+  // Phonon wavevectors need to be passed in the global coordinate system
   void SetK(G4ThreeVector theK)          { waveVec = theK; }
   void SetWaveVector(G4ThreeVector theK) { waveVec = theK; }
+  // Phonon wavevectors will be returned in the global coordinate system
   G4ThreeVector k() const                { return waveVec; }
   G4ThreeVector WaveVector() const       { return waveVec; }
 

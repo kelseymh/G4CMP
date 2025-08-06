@@ -14,6 +14,7 @@
 //
 // 20190711  Michael Kelsey
 // 20200128  Make units explicit in calculation, use G4Pow consistently.
+// 20241221  Long standing bug fix:  Return ionization yield, not 1-Y
 
 #include "globals.hh"
 #include "G4CMPLindhardNIEL.hh"
@@ -45,11 +46,11 @@ PartitionNIEL(G4double energy, const G4Material *material, G4double z1,
         
   const G4double* atomDensities = material->GetVecNbOfAtomsPerVolume();
   size_t maxindex = (std::max_element(atomDensities, atomDensities+nMatElements)
-		     - atomDensities);
+		     - atomDensities);  // Find the index of the element with the max density
 
-  const G4Element *element = material->GetElement(maxindex);
+  const G4Element *element = material->GetElement(maxindex); //Get the element with the max density
   G4double z2 = element->GetZ();
-  G4double a2 = element->GetA()/(g/mole);
+  G4double a2 = element->GetA()/(g/mole); // Get A and convert it to gram
         
   G4double zpow = g4pow->Z23(z1) + g4pow->Z23(z2);
   G4double asum = a1+a2;
@@ -59,8 +60,8 @@ PartitionNIEL(G4double energy, const G4Material *material, G4double z1,
 		 / g4pow->powA(zpow, 0.75));
   G4double eps = energy / el;
 
-  G4double denom = 1. + fl*(eps + 3.4008*g4pow->powA(eps, 0.16667)
-			    + 0.40244*g4pow->powA(eps, 0.75));
+  G4double numer = fl*(eps + 3.4008*g4pow->powA(eps, 0.16667)
+		       + 0.40244*g4pow->powA(eps, 0.75));
 
-  return 1.0/denom;		// CHECK: Is this returning EM fraction?
+  return numer / (1.0 + numer);		// Returns ionization yield
 }

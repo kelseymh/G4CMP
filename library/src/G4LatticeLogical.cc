@@ -33,10 +33,11 @@
 // 20170923  Do NOT force basis vectors to unit(); they encode cell spacing
 // 20170928  Replace "polarizationState" with "mode"
 // 20180829  Add to Dump to print correct IVRate variables depending on model
-// 20180830  Create variables IVRate1 IVRateQuad IVExponentQuad used in IVrate calculation 
-// 20180831  IVField, IVRate, IVRate1, IVRateQuad, IVExponentQuad, and IVExponent represent 
-//           E0(Eq.1), Gamma0 (Eq.2), Gamma1 (Eq.2), Gamma0 (Eq.1), alpha (Eq.1), alpha (Eq.2)
-//           from arXiv:1807.07986
+// 20180830  Create variables IVRate1 IVRateQuad IVExponentQuad used in IVrate
+//		calculation 
+// 20180831  IVField, IVRate, IVRate1, IVRateQuad, IVExponentQuad, and
+//		IVExponent represent E0(Eq.1), Gamma0 (Eq.2), Gamma1 (Eq.2),
+//		Gamma0 (Eq.1), alpha (Eq.1), alpha (Eq.2) from arXiv:1807.07986
 // 20190704  M. Kelsey -- Add IV rate function selector for material
 // 20190723  M. Kelsey -- Include valley axis as comment in dump
 // 20190801  M. Kelsey -- Use G4ThreeVector buffer instead of pass-by-value,
@@ -44,6 +45,19 @@
 // 20190906  M. Kelsey -- Default IV rate model to G4CMPConfigManager value.
 // 20200520  For MT thread safety, wrap G4ThreeVector buffer in function to
 //		return thread-local instance.
+// 20211021  Wrap verbose output in #ifdef G4CMP_DEBUG for performace
+// 20230210  I. Ataee -- Add post-newtonian correction to the MapPtoEkin and
+//		MapV_elToEkin
+// 20230210  I. Ataee -- Change effective mass tensor to use relativistic
+//		expressions
+// 20230702  I. Ataee -- Change velocity, momentum, energy, and wavevector
+//		relationships to correctly reflect the physics of the band
+//		structure relativistically. Also, introduced quasti-momentum
+//		p_Q and its relationship with the expectation value of momentum
+//		<p> (transport momentum).
+// 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
+// 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
+// 20240510  E. Michhaud -- Add function to compute L0 from other parameters
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -71,7 +85,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fBandGap(0.), fPairEnergy(0.), fFanoFactor(1.),
     fMassTensor(G4Rep3x3(mElectron,0.,0.,0.,mElectron,0.,0.,0.,mElectron)),
     fMassInverse(G4Rep3x3(1/mElectron,0.,0.,0.,1/mElectron,0.,0.,0.,1/mElectron)),
-    fAlpha(0.), fAcDeform(0.), 
+    fAlpha(0.), fAcDeform_e(0.), fAcDeform_h(0.),
     fIVQuadField(0.), fIVQuadRate(0.), fIVQuadExponent(0.),
     fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.),
     fIVModel(G4CMPConfigManager::GetIVRateModel()), fSC_Delta0(0.),
@@ -138,7 +152,8 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fValleyInv = rhs.fValleyInv;
   fValleyAxis = rhs.fValleyAxis;
   fAlpha = rhs.fAlpha;
-  fAcDeform = rhs.fAcDeform;
+  fAcDeform_e = rhs.fAcDeform_e;
+  fAcDeform_h = rhs.fAcDeform_h;
   fIVDeform = rhs.fIVDeform;
   fIVEnergy = rhs.fIVEnergy;
   fIVQuadField = rhs.fIVQuadField;
@@ -388,12 +403,14 @@ G4ThreeVector G4LatticeLogical::LookupKtoVg(G4int mode,
       (1.-dTheta)*dPhi*fKVMap[mode][iTheta][iPhi+1] +
       dTheta*dPhi*fKVMap[mode][iTheta+1][iPhi+1] );
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
     G4cout << "G4LatticeLogical::MapKtoVDir theta,phi="
 	   << k.theta() << " " << k.phi()
 	   << " : ith,iph " << iTheta << " " << iPhi
 	   << " : dir " << vdir << G4endl;
   }
+#endif
 
   return vdir;
 }
@@ -432,141 +449,120 @@ G4LatticeLogical::FindLookupBins(const G4ThreeVector& k,
 
 G4ThreeVector 
 G4LatticeLogical::MapPtoV_el(G4int ivalley, const G4ThreeVector& p_e) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapPtoV_el " << ivalley << " " << p_e
-	   << G4endl;
+    G4cout << "G4LatticeLogical::MapPtoV_el " << ivalley << " " << p_e << G4endl;
+#endif
 
-  const G4RotationMatrix& vToN = GetValley(ivalley);
-  const G4RotationMatrix& nToV = GetValleyInv(ivalley);
-
-  if (verboseLevel>1) {
-    G4cout << " p (valley) " << vToN*p_e << G4endl
-	   << " V_el (valley) " << GetMInvTensor()*(vToN*p_e/c_light) << G4endl
-	   << " returning " << nToV*(GetMInvTensor()*(vToN*p_e/c_light))
-	   << G4endl;
-  }
-
-  return nToV*(GetMInvTensor()*(vToN*p_e/c_light));
+  return p_e*c_light/(MapPtoEkin(ivalley,p_e) + GetElectronMass()*c_squared);
 }
 
 G4ThreeVector 
 G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapV_elToP " << ivalley << " " << v_e
+    G4cout << "G4LatticeLogical::MapV_elToP " << ivalley << " " << v_e << G4endl;
+#endif
+
+  tempvec() = v_e;
+  tempvec().transform(GetValley(ivalley));
+  G4double bandV = (fMassTensor.xx()*tempvec().x()*tempvec().x() +
+  fMassTensor.yy()*tempvec().y()*tempvec().y() +
+  fMassTensor.zz()*tempvec().z()*tempvec().z());
+  G4double gamma = 1/sqrt(1-bandV/GetElectronMass()*c_squared);
+
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) {
+    G4cout << " <v|M|v> " << bandV << G4endl << " gamma " << gamma
+	   << G4endl << " returning " << gamma*electron_mass_c2*v_e/c_light << G4endl;
+  }
+#endif
+  return gamma*GetElectronMass()*c_light*v_e;
+}
+
+G4ThreeVector 
+G4LatticeLogical::MapPToP_Q(G4int ivalley, const G4ThreeVector& P) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapPToP_Q " << ivalley << " " << P
 	   << G4endl;
+#endif
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
   const G4RotationMatrix& nToV = GetValleyInv(ivalley);
 
-  if (verboseLevel>1) {
-    G4cout << " V_el (valley) " << vToN*v_e << G4endl
-	   << " p (valley) " << GetMassTensor()*(vToN*v_e*c_light) << G4endl
-	   << " returning " << nToV*(GetMassTensor()*(vToN*v_e*c_light))
-	   << G4endl;
-  }
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) 
+    G4cout << " P_Q " << nToV*(GetMassTensor()*(vToN*P*c_squared/electron_mass_c2)) << G4endl;
+#endif
 
-  return nToV*(GetMassTensor()*(vToN*v_e*c_light));
+  return nToV*(GetMassTensor()*(vToN*P/GetElectronMass()));
 }
 
-G4ThreeVector
-G4LatticeLogical::MapV_elToK_HV(G4int ivalley, const G4ThreeVector &v_e) const {
+G4ThreeVector 
+G4LatticeLogical::MapP_QToP(G4int ivalley, const G4ThreeVector& P_Q) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapV_elToK_HV " << ivalley << " " << v_e
-     << G4endl;
+    G4cout << "G4LatticeLogical::MapP_QToP " << ivalley << " " << P_Q << G4endl;
+#endif
 
   const G4RotationMatrix& vToN = GetValley(ivalley);
+  const G4RotationMatrix& nToV = GetValleyInv(ivalley);
 
-  if (verboseLevel>1) {
-    G4cout << " V_el (valley) " << vToN*v_e << G4endl
-	   << " K=mv/hbar (valley) " << GetMassTensor()*(vToN*v_e/hbar_Planck)
-	   << G4endl << " returning "
-	   << GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck))
-	   << G4endl;
-  }
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) 
+    G4cout << " P " << nToV*(GetMInvTensor()*(vToN*P_Q*electron_mass_c2/c_squared)) << G4endl;
+#endif
 
-  return GetSqrtInvTensor()*(GetMassTensor()*(vToN*v_e/hbar_Planck));
-}
-
-G4ThreeVector 
-G4LatticeLogical::MapPtoK_valley(G4int ivalley, const G4ThreeVector& p_e) const {
-  if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapPtoK " << ivalley << " " << p_e
-	   << G4endl;
-
-  tempvec() = p_e;
-  tempvec() /= hbarc;				// Convert to wavevector
-  return tempvec().transform(GetValley(ivalley));	// Rotate into valley frame
-}
-
-G4ThreeVector 
-G4LatticeLogical::MapPtoK_HV(G4int ivalley, const G4ThreeVector& p_e) const {
-  if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapPtoK_HV " << ivalley << " " << p_e
-	   << G4endl;
-
-  tempvec() = p_e;
-  tempvec().transform(GetValley(ivalley));	// Rotate into valley frame
-
-  if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
-
-  return GetSqrtInvTensor() * tempvec()/hbarc;	// Herring-Vogt transformation
-}
-
-G4ThreeVector 
-G4LatticeLogical::MapK_HVtoK_valley(G4int ivalley, const G4ThreeVector& k_HV) const {
-  if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapK_HVtoK_valley " << ivalley << " " << k_HV
-	   << G4endl;
-
-  return GetSqrtTensor() * k_HV;
+  return nToV*(GetMInvTensor()*(vToN*P_Q*GetElectronMass()));
 }
 
 G4ThreeVector
-G4LatticeLogical::MapK_HVtoK(G4int ivalley, const G4ThreeVector& k_HV) const {
+G4LatticeLogical::MapV_elToK(G4int ivalley, const G4ThreeVector &v_e) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapK_HVtoK " << ivalley << " " << k_HV
-     << G4endl;
+    G4cout << "G4LatticeLogical::MapV_elToK " << ivalley << " " << v_e << G4endl;
+#endif
 
-  tempvec() = k_HV;
-  tempvec() *= GetSqrtTensor();			// From Herring-Vogt to valley
-  if (verboseLevel>1) G4cout << " K (valley) " << tempvec() << G4endl;
+  tempvec() = MapV_elToP(ivalley, v_e);
+  return MapPtoK(ivalley, tempvec());
+}
 
-  tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
+G4ThreeVector 
+G4LatticeLogical::MapPtoK(G4int ivalley, const G4ThreeVector& p_e) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapPtoK " << ivalley << " " << p_e << G4endl;
+#endif
 
-  if (verboseLevel>1) G4cout << " returning " << tempvec() << G4endl;
+  tempvec() = MapPToP_Q(ivalley, p_e);
+  tempvec() /= hbarc;				// Convert to wavevector
+
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) G4cout << " k " << tempvec() << G4endl;
+#endif
 
   return tempvec();
 }
 
-G4ThreeVector 
-G4LatticeLogical::MapK_HVtoP(G4int ivalley, const G4ThreeVector& k_HV) const {
+G4ThreeVector
+G4LatticeLogical::MapKtoP(G4int ivalley, const G4ThreeVector& k) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapK_HVtoP " << ivalley << " " << k_HV
-	   << G4endl;
+    G4cout << "G4LatticeLogical::MapKtoP " << ivalley << " " << k << G4endl;
+#endif
+  
+    tempvec() = k;
+    tempvec() *= hbarc;			// Convert wavevector to momentum
 
-  tempvec() = k_HV;
-  tempvec() *= GetSqrtTensor();			// From Herring-Vogt to valley 
-  if (verboseLevel>1) G4cout << " K (valley) " << tempvec() << G4endl;
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) {
+    G4cout << " P_Q " << tempvec() << G4endl
+	   << " returning P " << MapP_QToP(ivalley, tempvec()) << G4endl;
+  }
+#endif
 
-  tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
-  if (verboseLevel>1) G4cout << " K (lattice) " << tempvec() << G4endl;
-
-  tempvec() *= hbarc;			// Convert wavevector to momentum
-  return tempvec();
-}
-
-G4ThreeVector 
-G4LatticeLogical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
-  if (verboseLevel>1)
-    G4cout << "G4LatticeLogical::MapK_valleyToP " << ivalley << " " << k
-	   << G4endl;
-
-  tempvec() = k;
-  tempvec().transform(GetValleyInv(ivalley));	// Rotate out of valley
-  if (verboseLevel>1) G4cout << " K (lattice) " << tempvec() << G4endl;
-
-  tempvec() *= hbarc;			// Convert wavevector to momentum
-  return tempvec();
+    return MapP_QToP(ivalley, tempvec());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -574,33 +570,84 @@ G4LatticeLogical::MapK_valleyToP(G4int ivalley, const G4ThreeVector& k) const {
 // Apply energy-momentum relationship for electron transport
 
 G4double  
+G4LatticeLogical::MapP_QtoEkin(G4int iv, const G4ThreeVector& p) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapP_QtoEkin " << iv << " " << p << G4endl;
+#endif
+
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) {
+    G4cout << " P " << MapP_QToP(iv, p) << G4endl
+	   << " returning Ekin " << MapPtoEkin(iv, MapP_QToP(iv, p)) << G4endl;
+  }
+#endif
+
+  return MapPtoEkin(iv, MapP_QToP(iv, p));
+}
+
+G4ThreeVector
+G4LatticeLogical::MapEkintoP(G4int iv, const G4ThreeVector& pdir, const G4double Ekin) const {
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::MapEkintoP " << iv << " " << pdir << " " << Ekin << G4endl;
+#endif
+
+  tempvec() = pdir;
+  tempvec().transform(GetValley(iv));
+  G4double bandP = (fMassTensor.xx()*tempvec().x()*tempvec().x() +
+    fMassTensor.yy()*tempvec().y()*tempvec().y() +
+    fMassTensor.zz()*tempvec().z()*tempvec().z());
+  G4double PMag = sqrt(GetElectronMass()*(Ekin*Ekin+2.*Ekin*GetElectronMass()*c_squared)/(bandP));
+  
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) {
+    G4cout << " <pdir|M|pdir> " << bandP << G4endl << " PMag " << PMag << G4endl 
+    << " returning P " << pdir*PMag << G4endl;
+  }
+#endif
+
+  return pdir*PMag;
+}
+
+G4double  
 G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapPtoEkin " << iv << " " << p << G4endl;
+#endif
 
   tempvec() = p;
   tempvec().transform(GetValley(iv));		// Rotate to valley frame
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
+#endif
 
-  // Compute kinetic energy component by component, then sum
-  return (0.5/c_squared) * (tempvec().x()*tempvec().x()*fMassInverse.xx() +
-			    tempvec().y()*tempvec().y()*fMassInverse.yy() +
-			    tempvec().z()*tempvec().z()*fMassInverse.zz());
+  G4double bandP = tempvec().x()*tempvec().x()*fMassTensor.xx() +
+      tempvec().y()*tempvec().y()*fMassTensor.yy() +
+      tempvec().z()*tempvec().z()*fMassTensor.zz();
+
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1) {
+    G4cout << " <P|M/m0|P> " << bandP/mElectron << G4endl
+	   << G4endl << " returning Ekin "
+	   << sqrt(bandP/mElectron + electron_mass_c2*electron_mass_c2) - electron_mass_c2
+	   << G4endl;
+  }
+#endif
+
+  return sqrt(bandP/GetElectronMass() + GetElectronMass()*c_squared*GetElectronMass()*c_squared) - GetElectronMass()*c_squared;
+
 }
 
 G4double
 G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::MapV_elToEkin " << iv << " " << v << G4endl;
+#endif
 
-  tempvec() = v;
-  tempvec().transform(GetValley(iv));		// Rotate to valley frame
-  if (verboseLevel>1) G4cout << " V_el (valley) " << tempvec() << G4endl;
-
-  // Compute kinetic energy component by component, then sum
-  return 0.5 * (tempvec().x()*tempvec().x()*fMassTensor.xx() +
-		tempvec().y()*tempvec().y()*fMassTensor.yy() +
-		tempvec().z()*tempvec().z()*fMassTensor.zz());
+  return MapPtoEkin(iv, MapV_elToP(iv, v));
 }
 
 // Compute effective "scalar" electron mass to match energy/momentum relation
@@ -608,11 +655,76 @@ G4LatticeLogical::MapV_elToEkin(G4int iv, const G4ThreeVector& v) const {
 G4double 
 G4LatticeLogical::GetElectronEffectiveMass(G4int iv,
 					   const G4ThreeVector& p) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::GetElectronEffectiveMass " << iv
 	   << " " << p << " p2 = " << p.mag2() << G4endl;
+#endif
+  G4double Ekin = MapPtoEkin(iv, p);
+  // return p.mag2()/(2*c_squared*Ekin);		// Non-relativistic
+  return (p.mag2()-Ekin*Ekin)/(2.*Ekin*c_squared);	// Relativistic
+}
 
-  return 0.5*p.mag2()/c_squared/MapPtoEkin(iv,p);	// Non-relativistic
+// Compute vector in spherical frame from the ellipsoidal fame
+// In spherical frame, mass tensor is isotropic and we can do scatterings the same
+// way as we do for holes
+
+G4ThreeVector
+G4LatticeLogical::RotateToValley(G4int iv, const G4ThreeVector& v) const {
+  tempvec() = v;
+  // Rotate to valley frame (D)
+  tempvec().transform(GetValley(iv));
+
+  #ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::RotateToValley " << iv
+      << " " << v << " returning " << tempvec() << G4endl;
+  #endif
+  
+  return tempvec();
+  }
+
+G4ThreeVector
+G4LatticeLogical::RotateFromValley(G4int iv, const G4ThreeVector& v) const {
+  tempvec() = v;
+  // Rotate from valley frame (D^-1)
+  tempvec().transform(GetValleyInv(iv));
+
+  #ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::RotateFromValley " << iv
+      << " " << v << " returning " << tempvec() << G4endl;
+  #endif
+
+  return tempvec();
+}
+
+G4ThreeVector
+G4LatticeLogical::EllipsoidalToSphericalTranformation(G4int iv, const G4ThreeVector& v) const {
+  // Rotate to valley frame (D)
+  tempvec() = RotateToValley(iv, v);
+  // Apply Herring-Vogt transformation (TD)
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::EllipsoidalToSphericalTranformation " << iv
+      << " " << v << " returning " << GetSqrtInvTensor()*tempvec() << G4endl;
+#endif
+  return GetSqrtInvTensor()*(tempvec());
+}
+
+// Compute vector in ellipsoidal frame from the spherical frame
+
+G4ThreeVector
+G4LatticeLogical::SphericalToEllipsoidalTranformation(G4int iv, const G4ThreeVector& v) const {
+  // Apply inverse Herring-Vogt transformation (T^-1)
+  tempvec() = GetSqrtTensor()*v;
+  // Rotate to valley frame ((TD)^-1 = D^-1T^-1)
+#ifdef G4CMP_DEBUG
+  if (verboseLevel>1)
+    G4cout << "G4LatticeLogical::SphericalToEllipsoidalTranformation " << iv
+      << " " << v << " returning " << GetValleyInv(iv)*tempvec() << G4endl;
+#endif
+  return RotateFromValley(iv, tempvec());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -655,9 +767,10 @@ void G4LatticeLogical::SetMassTensor(const G4RotationMatrix& etens) {
 }
 
 // Compute derived quantities from user-input mass tensor
+// apachepersonal.miun.se/~gorthu/halvledare/Effective%20mass%20in%20semiconductors.htm
 
 void G4LatticeLogical::FillMassInfo() {
-  // Herring-Vogt scalar mass of electron, used for sound speed calcs  
+  // Effective mass for conductivity calculations
   fElectronMass = 3. / ( 1./fMassTensor.xx() + 1./fMassTensor.yy()
 			 + 1./fMassTensor.zz() );  
 
@@ -697,7 +810,50 @@ void G4LatticeLogical::AddValley(G4double phi, G4double theta, G4double psi) {
   fValleyInv.back().invert();
 
   // NOTE:  Rotation matrices take external vector along valley axis to X-hat
-  fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));
+  fValleyAxis.push_back(fValleyInv.back()*G4ThreeVector(1.,0.,0.));    
+}
+
+// Store drifting-electron valley using valley's direction
+
+void G4LatticeLogical::AddValley(const G4ThreeVector& valleyDirVec, G4bool antival) {
+      
+  // Find the rotation matrix elements
+  // ( [vx,vy,vz],
+  //     [a,b,c],
+  //     [d,e,f] )
+    
+  // We chose the following convention :
+  //  - The rotated y axis must stay in the X-Y plane (c=0)
+  //  - Valley's rotated Z axis must have positive z component (f>0) 
+  //  - Anti-valley's rotated Z axis must have positive z component (f<0) 
+  //  - The three rotated axis should stay normalized and be orthogonal
+  //  - It must be a right hand coordinate system :
+  //	(vx,vy,vz) X (a,b,c) = (d,e,f) 
+    
+  // If vx=0 and/or vy=0, we compute a and b differently
+
+  G4ThreeVector& vdir=tempvec();
+  vdir=valleyDirVec.unit();
+    
+  double vx=vdir.x();
+  double vy=vdir.y();
+  double vz=vdir.z();
+  
+  // rotated z axis points in the +z direction for valleys and -z for anti-valleys  
+  G4double f = sqrt(1. - vz*vz) * (antival?-1:1);
+    
+  G4double a = (vy==0 ? 0 : vx==0 ? -1 : -vy/f);
+  G4double b = (vy==0 ? 1 : vx==0 ? 0 : vx/f);
+     
+  G4double d=-vz*b;
+  G4double e=vz*a;
+      
+  // Store the valley's rotation matrix, its inverse and the valley's direction
+  fValley.resize(fValley.size()+1);
+  fValley.back().setRows(vdir, G4ThreeVector(a,b,0), G4ThreeVector(d,e,f));
+  fValleyInv.push_back(fValley.back());
+  fValleyInv.back().invert();
+  fValleyAxis.push_back(vdir);  
 }
 
 // Store rotation matrix and corresponding axis vector for valley
@@ -714,37 +870,70 @@ void G4LatticeLogical::AddValley(const G4RotationMatrix& valley) {
 // Transform for drifting-electron valleys in momentum space
 
 const G4RotationMatrix& G4LatticeLogical::GetValley(G4int iv) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1) G4cout << "G4LatticeLogical::GetValley " << iv << G4endl;
+#endif
 
   if (iv >=0 && iv < (G4int)NumberOfValleys()) return fValley[iv];
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel)
     G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
+#endif
+
   return G4RotationMatrix::IDENTITY;
 }
 
 const G4RotationMatrix& G4LatticeLogical::GetValleyInv(G4int iv) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::GetValleyInv " << iv << G4endl;
+#endif
 
   if (iv >=0 && iv < (G4int)NumberOfValleys()) return fValleyInv[iv];
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel)
     G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
+#endif
+
   return G4RotationMatrix::IDENTITY;
 }
 
 const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
+#ifdef G4CMP_DEBUG
   if (verboseLevel>1)
     G4cout << "G4LatticeLogical::GetValleyAxis " << iv << G4endl;
+#endif
 
   if (iv >=0 && iv < (G4int)NumberOfValleys()) return fValleyAxis[iv];
 
+#ifdef G4CMP_DEBUG
   if (verboseLevel)
     G4cerr << "G4LatticeLogical ERROR: No such valley " << iv << G4endl;
+#endif
 
   static const G4ThreeVector nullVec(0.,0.,0.);
   return nullVec;
+}
+
+// Process scattering length l0_e and l0_h
+
+G4double G4LatticeLogical::ComputeL0(G4bool IsElec) {
+  G4double mass = 0.;
+  G4double acDeform = 0.;
+      
+  if (IsElec) {
+      mass = GetElectronMass();
+      acDeform = GetElectronAcousticDeform();
+  }
+  else    {
+      mass = GetHoleMass();
+      acDeform = GetHoleAcousticDeform();
+  }
+ 
+  G4double l0 = pi*hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck*fDensity/2/mass/mass/mass/acDeform/acDeform;
+  return l0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -823,7 +1012,8 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nalpha " << fAlpha*eV << " /eV"
      << "\nepsilon " << fPermittivity
      << "\nneutDens " << fNImpurity * cm3 << " /cm3"
-     << "\nacDeform " << fAcDeform/eV << " eV"
+     << "\nacDeform_e " << fAcDeform_e/eV << " eV"
+     << "\nacDeform_h " << fAcDeform_h/eV << " eV"
      << "\nivDeform "; DumpList(os, fIVDeform, "eV/cm");
   os << "\nivEnergy "; DumpList(os, fIVEnergy, "eV");
   os << std::endl;
@@ -883,11 +1073,12 @@ void G4LatticeLogical::DumpCrystalInfo(std::ostream& os) const {
 
   switch (fCrystal.group) {		// Reduced elasticity tensor
   case G4CMPCrystalGroup::tetragonal:
-    DumpCpq(os,1,6);				// Plus all below
+    DumpCpq(os,1,6); [[fallthrough]];			// Plus all below
   case G4CMPCrystalGroup::hexagonal:
     DumpCpq(os,1,3); DumpCpq(os,3,3); DumpCpq(os,6,6);	// Plus all below
+    [[fallthrough]];
   case G4CMPCrystalGroup::cubic:
-    DumpCpq(os,4,4);				// Plus all below
+    DumpCpq(os,4,4); [[fallthrough]];			// Plus all below
   case G4CMPCrystalGroup::amorphous:
     DumpCpq(os,1,1); DumpCpq(os,1,2); break;
   case G4CMPCrystalGroup::rhombohedral:
@@ -896,7 +1087,7 @@ void G4LatticeLogical::DumpCrystalInfo(std::ostream& os) const {
     DumpCpq(os,3,3); DumpCpq(os,4,4); DumpCpq(os,6,6); break;
   case G4CMPCrystalGroup::monoclinic:
     DumpCpq(os,1,6); DumpCpq(os,2,6); DumpCpq(os,3,6);	// Plus all below
-    DumpCpq(os,4,5);
+    DumpCpq(os,4,5); [[fallthrough]];
   case G4CMPCrystalGroup::orthorhombic:
     for (int p=1; p<7; p++) {		// Upper corner and lower diagonal
       for (int q=p; q<4; q++) DumpCpq(os,p,q);

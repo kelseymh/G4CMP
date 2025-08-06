@@ -37,11 +37,17 @@
 // 20200426  G4CMP-196: Change "impact ionization" to "trap ionization"
 // 20200501  G4CMP-196: Change trap-ionization MFP names, "eTrap" -> "DTrap",
 //		"hTrap" -> "ATrap".
-// 20200614  G4CMP-211:  Add functionality to print settings
-// 20210303  G4CMP-243:  Add parameter to set step length for merging hits
-// 20210910  G4CMP-272:  Add parameter for soft maximum Luke phonons per event
-// 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
-// 20221117  G4CMP-343:  Add option flag to preserve all internal phonons.
+// 20200614  G4CMP-211: Add functionality to print settings
+// 20210303  G4CMP-243: Add parameter to set step length for merging hits
+// 20210910  G4CMP-272: Add parameter for soft maximum Luke phonons per event
+// 20220921  G4CMP-319: Add temperature setting for use with QP sensors.
+// 20221117  G4CMP-343: Add option flag to preserve all internal phonons.
+// 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
+// 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
+// 20250209  G4CMP-457: Add short names for empirical Lindhard NIEL.
+// 20250213  G4CMP-457: Add empirical Lindhard NIEL parameters.
+// 20250325  G4CMP-463:  Add parameter for phonon surface step size & limit.
+
 
 #include "G4UImessenger.hh"
 
@@ -72,6 +78,7 @@ private:
   G4UIcmdWithAnInteger* pBounceCmd;
   G4UIcmdWithAnInteger* qpBounceCmd;
   G4UIcmdWithAnInteger* maxLukeCmd;
+  G4UIcmdWithAnInteger* pSurfStepLimitCmd;
   G4UIcmdWithADoubleAndUnit* clearCmd;
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
@@ -84,11 +91,13 @@ private:
   G4UIcmdWithADoubleAndUnit* hDTrapIonMFPCmd;
   G4UIcmdWithADoubleAndUnit* hATrapIonMFPCmd;
   G4UIcmdWithADoubleAndUnit* tempCmd;
+  G4UIcmdWithADoubleAndUnit* pSurfStepSizeCmd;
   G4UIcmdWithADouble* minstepCmd;
   G4UIcmdWithADouble* makePhononCmd;
   G4UIcmdWithADouble* makeChargeCmd;
   G4UIcmdWithADouble* lukePhononCmd;
   G4UIcmdWithAString* dirCmd;
+  G4UIcmdWithAString* lukeFileCmd;
   G4UIcmdWithAString* ivRateModelCmd;
   G4UIcmdWithAString* nielPartitionCmd;
   G4UIcmdWithABool*   kvmapCmd;
@@ -96,6 +105,15 @@ private:
   G4UIcmdWithABool*   kaplanKeepCmd;
   G4UIcmdWithABool*   ehCloudCmd;
   G4UIcmdWithAnInteger * safetyNSweep2DCmd;
+  G4UIcmdWithABool*   recordMinECmd;
+
+  // Empirical Lindhard Model Macro Commands
+  G4UIcmdWithABool* EmpEDepKCmd;
+  G4UIcmdWithADouble* EmpkFixedCmd;
+  G4UIcmdWithADouble* EmpklowCmd;
+  G4UIcmdWithADouble* EmpkhighCmd;
+  G4UIcmdWithADoubleAndUnit* EmpElowCmd;
+  G4UIcmdWithADoubleAndUnit* EmpEhighCmd;
 
 private:
   G4CMPConfigMessenger(const G4CMPConfigMessenger&);	// Copying is forbidden

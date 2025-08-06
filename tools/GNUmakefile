@@ -4,6 +4,7 @@
 # 20160518  Use G4CMPINSTALL instead of ".." to find includes
 # 20160609  Support different executables by looking at target name
 # 20221104  G4CMP-340 -- Move phononKinematics and plotting utility here.
+# 20240417  Bug fix: replace "f" with "-f" as option to /bin/rm
 
 # Add additional utility programs to list below
 TOOLS := g4cmpKVtables phononKinematics
@@ -29,7 +30,7 @@ plot_phonon_kinematics.py :
 
 clean :
 	@for t in $(TOOLS) ; do $(MAKE) G4CMP_NAME=$$t clean; done
-	@/bin/rm f $(G4WORKDIR)/bin/$(G4SYSTEM)/plot_phonon_kinematics.py
+	@/bin/rm -f $(G4WORKDIR)/bin/$(G4SYSTEM)/plot_phonon_kinematics.py
 else
 include $(G4CMPINSTALL)/g4cmp.gmk
 endif

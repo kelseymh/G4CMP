@@ -1,0 +1,27 @@
+# Alpha-Quartz SiO2
+# Caitlyn Stone-Whitehead, Colorado School of Mines
+# Crystal parameters
+# (mp-7000: SiO2 (trigonal, P3_121, 152))
+rhombohedral 5.028 Ang 120 deg
+# J. Zhao, J. M. Winey, and Y. M. Gupta, Phys. Rev. B 75, 094105 (2007)
+stiffness 1 1 86.103 GPa        
+stiffness 1 2 10.43 GPa
+stiffness 1 3 12.894 GPa
+stiffness 1 4 -17.206 GPa
+stiffness 3 3 108.552 GPa
+stiffness 4 4 59.215 GPa
+stiffness 6 6 44 GPa
+# Phonon parameters
+# S. Tamura et al., PRB44(7), 1991
+dyn 51.28 -138.93 5.466 48.646 GPa
+scat 4.05e-42 s3
+decay 36.69e-55 s4
+decayTT 0.71
+# Phonon Mode DOS calculated with QE/Phonopy
+LDOS 0.10001
+STDOS 0.53333
+FTDOS 0.36666
+Debye 4.2 THz
+# Phys Chem Minerals (2007) 34:11–22           
+vsound 5780 m/s    # Longitudinal sound speed
+vtrans 3340 m/s    # Transverse sound speed

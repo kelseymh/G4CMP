@@ -15,6 +15,8 @@
 // 20220821  G4CMP-308 -- Use new G4CMPStepInfo container instead of G4Step
 // 20220826  For use with primary generator, need to pass in G4Event*
 // 20220828  Add interface to process "left over" accumulators to primaries
+// 20240420  Add ability to set voltage bias from client code
+// 20240731  G4CMP-420 -- Add flag to remember if voltage bias was preset.
 
 #ifndef G4CMPHitMerging_hh
 #define G4CMPHitMerging_hh 1
@@ -48,6 +50,9 @@ public:
 
   // Overload G4CMPProcessUtils function to fill energy parameters
   virtual void LoadDataForTrack(const G4Track* track);
+
+  // Assign voltage bias for energy partitioning from client code
+  void SetBiasVoltage(G4double vbias);
 
   // Register "in process" G4Event*, for use when called from primary generator
   void ProcessEvent(const G4Event* primaryEvent=0);
@@ -87,6 +92,7 @@ protected:
 private:
   G4int verboseLevel;			// Select diagnostic message output
   G4double combiningStepLength;		// Steps within which to accumulate
+  G4bool presetBiasVoltage;		// Flag if bias voltage was preset.
   G4bool readyForOutput;		// Flag if hit data ready for use
 
   // Collection of accumulators for individual tracks in event

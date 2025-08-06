@@ -12,6 +12,8 @@
 // in the concrete subclasses.
 //
 // 20200914  Add function call to precompute potential gradients (field)
+// 20240921  Add new Initialize() function to set tetra index cache
+// 20250223  G4CMP-462: Avoid data race with worker thread Initialize()
 
 #include "G4CMPVMeshInterpolator.hh"
 
@@ -31,4 +33,14 @@ void G4CMPVMeshInterpolator::UseValues(const std::vector<G4double>& v) {
 #ifdef G4CMPTLI_DEBUG
   SavePoints(savePrefix+"_points.dat");
 #endif
+}
+
+
+// Ensure that cached index is properly set
+
+void G4CMPVMeshInterpolator::Initialize() {
+  TetraIdx() = -1;
+  if (TetraStart<0) TetraStart = FirstInteriorTetra();
+  // FIXME: This may still cause a data race if a shared mesh instance
+  //        is not instantiated by the master thread.
 }

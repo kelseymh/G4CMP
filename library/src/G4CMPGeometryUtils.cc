@@ -14,12 +14,12 @@
 // 20170913  Add utility to get electric field at (global) position
 // 20170925  Add utility to create touchable at (global) position
 // 20190226  Use local instance of G4Navigator to avoid corrupting tracking
+// 20211001  Add utilities to get lattice from touchable, find valley close
+//		to specified direction.
 
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGlobalLocalTransformStore.hh"
-#include "G4Field.hh"
-#include "G4FieldManager.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
@@ -33,6 +33,8 @@
 #include "G4VSolid.hh"
 #include "G4VTouchable.hh"
 #include "G4SystemOfUnits.hh"
+#include "Randomize.hh"
+
 
 G4ThreeVector G4CMP::GetLocalDirection(const G4VTouchable* touch,
                                        const G4ThreeVector& dir) {
@@ -979,14 +981,11 @@ G4ThreeVector G4CMP::ApplySurfaceClearance(const G4VTouchable* touch,
   // Clearance is the minimum distance where a position is guaranteed Inside
   const G4double clearance = G4CMPConfigManager::GetSurfaceClearance();
 
-  // If the step is near a boundary, create the secondary in the initial volume
   G4VPhysicalVolume* pv = touch->GetVolume();
-  G4ThreadLocalStatic auto latMan = G4LatticeManager::GetLatticeManager();
-  G4LatticePhysical* lat = latMan->GetLattice(pv);
-
+  G4LatticePhysical* lat = GetLattice(touch);
   if (!lat) {		// No lattice in touchable's volume, try pos instead
     pv = G4CMP::GetVolumeAtPoint(pos);
-    lat = latMan->GetLattice(pv);
+    lat = G4LatticeManager::GetLatticeManager()->GetLattice(pv);
 
     if (!lat) {
       G4ExceptionDescription msg;
@@ -1003,8 +1002,18 @@ G4ThreeVector G4CMP::ApplySurfaceClearance(const G4VTouchable* touch,
   G4VSolid* solid = pv->GetLogicalVolume()->GetSolid();
   G4ThreeVector norm = solid->SurfaceNormal(pos);
 
+  if (G4CMPConfigManager::GetVerboseLevel()>1) {
+    G4cout << "G4CMP::ApplySurfaceClearance local pos " << pos << G4endl;
+  }
+
   while (solid->Inside(pos) != kInside ||
 	 solid->DistanceToOut(pos,norm) < clearance) {
+    if (G4CMPConfigManager::GetVerboseLevel()>2) {
+      G4cout << " local pos not inside or too close to surface. " << G4endl
+	     << " Shifting by " << clearance << " along " << -norm
+	     << " to " << pos-norm*clearance << G4endl;
+    }
+
     pos -= norm*clearance;
     norm = solid->SurfaceNormal(pos);	// Nearest surface may change
   }
@@ -1012,6 +1021,7 @@ G4ThreeVector G4CMP::ApplySurfaceClearance(const G4VTouchable* touch,
   RotateToGlobalPosition(touch, pos);
   return pos;
 }
+
 
 G4double G4CMP::ComputeDotProductThreshold_Norm(int full_circle_nV) {
 
@@ -1054,4 +1064,52 @@ G4double G4CMP::ComputeDotProductThreshold_Tang(int full_circle_nV) {
   //with one step prior to 90 degrees
   G4double dotProductThreshold_tang = cos(CLHEP::pi/180.*degreesPerStep);
   return dotProductThreshold_tang;
+}
+
+
+// Get lattice associated with specific location in geometry
+
+G4LatticePhysical* G4CMP::GetLattice(const G4VTouchable* touch) {
+  if (!touch) return 0;
+
+  G4VPhysicalVolume* pv = touch->GetVolume();
+  return G4LatticeManager::GetLatticeManager()->GetLattice(pv);
+}
+
+// Find valley in crystal closest to specified direction
+// NOTE:  Direction should be in GLOBAL coordinates, passed with touchable
+
+G4int G4CMP::FindNearestValley(const G4VTouchable* touch, G4ThreeVector gdir) {
+  if (!touch) return -1;
+
+  RotateToLocalDirection(touch, gdir);
+  return FindNearestValley(GetLattice(touch), gdir);
+}
+
+// Find valley in crystal closest to specified direction
+// NOTE:  Direction should be in LOCAL coordinates, for use with lattice
+
+G4int 
+G4CMP::FindNearestValley(const G4LatticePhysical* lat, G4ThreeVector ldir) {
+  if (!lat) return -1;
+
+  ldir.setR(1.);		// Force to be unit vector
+  lat->RotateToLattice(ldir);
+
+  std::set<G4int> bestValley;	// Collect all best matches for later choice
+  G4double align, bestAlign = -1.;
+  for (size_t i=0; i<lat->NumberOfValleys(); i++) {
+    align = fabs(lat->GetValleyAxis(i).dot(ldir)); // Both unit vectors
+    if (align > bestAlign) {
+      bestValley.clear();
+      bestAlign = align;
+    }
+    if (align >= bestAlign) bestValley.insert(i);
+  }
+
+  // Return best alignment, or pick from ambiguous choices
+  G4int index = ( (bestValley.size() == 1) ? 0
+		  : bestValley.size()*G4UniformRand() );
+
+  return *std::next(bestValley.begin(), index);
 }

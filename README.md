@@ -1,13 +1,19 @@
 # G4CMP -- Geant4 add-on framework for phonon and charge-carrier physics
 
-    R. Agnese, D. Brandt, M. Kelsey, P. Redl
-
+    R. Agnese, D. Brandt, M. Kelsey, P. Redl, I Ataee Langroudy
 
 This package provide a collection of particle types, physics processes, and
 supporting utilities to simulate a limited set of solid-state physics
 processes in Geant4.  Developed for the low-temperature community, the
 package support production and propagation of acoustic phonons and
 electron-hole pairs through solid crystals such as germanium.
+
+Website: https://confluence.slac.stanford.edu/browse/G4CMP/
+
+Papers:	https://doi.org/10.1016/j.nima.2023.168473
+	https://arxiv.org/abs/2302.05998
+	https://arxiv.org/abs/2408.04732
+	https://arxiv.org/abs/1403.4984
 
 ## Software Licenses
 
@@ -23,13 +29,29 @@ The original parts of the product are licensed under the GNU General Public
 License version 3 or (at your discretion) any later version. The full
 license can be found at `G4CMP/LICENSE`.
 
+## Downloading G4CMP
+
+G4CMP may be retrieved from the GitHub repository with the command
+```
+	git clone https://github.com/kelseymh/G4CMP.git
+```
+(active developers should use `git@github.com:kelseymh/G4CMP.git` so they
+have `git push` access).  This will provide the latest top-level release of
+the package.  All of the top-level "release" tags are of the form
+**g4cmp-V**_xx-yy-zz_, and are listed in the ChangeHistory file; users may
+select a different version using `git checkout g4cmp-Vaa-bb-cc`.
+
+Once the G4CMP source directory is set up, the libraries and examples can be
+built as described below under **[Building the
+package](#building-the-package)**.
+
 ## User Environment
 
 Users must have a recent (10.4 through 10.7) version of GEANT4 installed and
 configured (via GEANT4's `bin/geant4.sh` or `bin/geant4.csh`. See GEANT4's
 documentation for further instructions.).
 
-**NOTE** The relase of Geant4 Version 11 introduced substantial and breaking
+**NOTE** The release of Geant4 Version 11 introduced substantial and breaking
   changes to many Geant4 interface classes.  We are maintaining G4CMP under
   ==Geant4 Version 10== (through 10.7) to ensure compatibility with our
   major experimental users.
@@ -38,8 +60,10 @@ Add the G4CMP environment variables using the `g4cmp_env.csh` or `...sh`
 scripts found in the G4CMP installation directory (see below for build and
 installation procedures):
 
+```
 	source g4cmp_env.csh		# For CSH/TCSH users
 	. g4cmp_env.sh			# For SH/BASH users
+```
 
 This must be done before building or running executables.
 
@@ -58,7 +82,7 @@ developers should check the source code in
 
 | Environment variable    | Macro command                 | Value/action                            |
 | ------------------------| ----------------------------- | ----------------------------------------|
-| G4LATTICEDATA           | /g4cmp/LatticeData	          | Directory with lattice configs          |
+| G4LATTICEDATA [P1:P2...] | /g4cmp/LatticeData	[P1:P2:...] | Paths with lattice configs            |
 | G4CMP\_DEBUG	          | /g4cmp/verbose [L] >0:        | Enable diagnostic messages              |
 | G4CMP\_CLEARANCE [L]    | /g4cmp/clearance [L] mm       | Minimum distance of tracks from boundaries |
 | G4CMP\_VOLTAGE [V]      | /g4cmp/voltage [V]	volt !=0:  | Apply uniform +Z voltage                |
@@ -67,19 +91,22 @@ developers should check the source code in
 | G4CMP\_MIN\_STEP [S]    | /g4cmp/minimumStep [S] S>0:   | Force minimum step S\*L0                |
 | G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces [N]      | Maximum e/h reflections                 |
 | G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces [N]      | Maximum phonon reflections              |
+| G4CMP\_PHON\_SURFSTEP [L] | /g4cmp/phononSurfStepSize [L] um  | Specular reflection surface displacement step size |
+| G4CMP\_PHON\_SURFLIMIT [N]  | /g4cmp/phononSurfStepLimit [N]  | Specular reflection surface displacement step limit |
 | G4CMP\_MAKE\_PHONONS [R] | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
 | G4CMP\_MAKE\_CHARGES [R] | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
 | G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
 | G4CMP\_MAX\_LUKE [N] | /g4cmp/maxLukePhonons [N] | Soft maximum Luke phonons per event |
 | G4CMP\_SAMPLE\_ENERGY [E] | /g4cmp/samplingEnergy [E] eV  | Energy above which to downsample |
-| G4CMP\_COMBINE\_STEPLEN [L] | /g4cmp/combiningStepLength [L] mm | Combine
-hits below step length |
+| G4CMP\_COMBINE\_STEPLEN [L] | /g4cmp/combiningStepLength [L] mm | Combine hits below step length |
 | G4CMP\_EMIN\_PHONONS [E] | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
+| G4CMP\_RECORD\_EMIN | /g4cmp/recordMinETracks [t\|f]  | Put below-minimum energy to killed track Edeposit |
 | G4CMP\_USE\_KVSOLVER    | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED    | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
 | G4CMP\_KAPLAN\_KEEP     | /g4cmp/kaplanKeepPhonons [t\|f] | Reflect or iterate all phonons in KaplanQP |
 | G4CMP\_IV\_RATE\_MODEL  | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
+| G4CMP\_LUKE\_FILE | /g4cmp/LukeDebugFile [S] | LukeScattering debug filename |
 | G4CMP\_ETRAPPING\_MFP   | /g4cmp/eTrappingMFP [L] mm        | Mean free path for electron trapping |
 | G4CMP\_HTRAPPING\_MFP   | /g4cmp/hTrappingMFP [L] mm        | Mean free path for charge hole trapping |
 | G4CMP\_EDTRAPION\_MFP | /g4cmp/eDTrapIonizationMFP [L] mm | MFP for e-trap ionization by e- |
@@ -87,7 +114,13 @@ hits below step length |
 | G4CMP\_HDTRAPION\_MFP | /g4cmp/hDTrapIonizationMFP [L] mm | MFP for e-trap ionization by h+ |
 | G4CMP\_HATRAPION\_MFP | /g4cmp/hATrapIonizationMFP [L] mm | MFP for h-trap ionization by h+ |
 | G4CMP\_TEMPERATURE   | /g4cmp/temperature [T] K | Device/substrate/etc. temperature |
-| G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [LewinSmith\|Lindhard] | Select NIEL partitioning function |
+| G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [model] | Select NIEL partitioning function. See below |
+| G4CMP\_EMPIRICAL\_KLOW | /g4cmp/NIELPartition/Empirical/klow [k] | k lower bound of dk/dE for energy dependent K |
+| G4CMP\_EMPIRICAL\_KHIGH | /g4cmp/NIELPartition/Empirical/khigh [k] | k high bound of dk/dE for energy dependent K |
+| G4CMP\_EMPIRICAL\_ELOW | /g4cmp/NIELPartition/Empirical/Elow [k] | E lower bound of dk/dE for energy dependent K |
+| G4CMP\_EMPIRICAL\_EHIGH | /g4cmp/NIELPartition/Empirical/Ehigh [k] | E high bound of dk/dE for energy dependent K |
+| G4CMP\_EMPIRICAL\_KFIXED | /g4cmp/NIELPartition/Empirical/kFixed [k] | Value of k for non energy dependent K |
+| G4CMP\_EMPIRICAL\_EDEPK | /g4cmp/NIELPartition/Empirical/EDepK [t\|f] | Use energy dependent K |
 | G4CMP\_CHARGE\_CLOUD     | /g4cmp/createChargeCloud [t\|f] | Create charges in sphere around location |
 | G4CMP\_MILLER\_H          | /g4cmp/orientation [h] [k] [l] | Miller indices for lattice orientation  |
 | G4CMP\_MILLER\_K          |                               |                                         |
@@ -99,15 +132,25 @@ G4VSolid coordinate system.  A different orientation can be specified by
 setting the Miller indices (hkl) with `$G4CMP_MILLER_H`, `_K`, and
 `_L`.
 
+The environment variable `$G4CMP_NIEL_FUNCTION` allows the user to specify 
+a particular model for non-ionizing energy loss ("nuclear recoil"), from 
+the set of models provided in G4CMP:
+
+    LewinSmith                      # Lewin & Smith's implementation of Lindhard NIEL
+    Lindhard                        # Robinson's implementation of Lindhard NIEL
+    Empirical                       # Energy dependent (or variable) k Lindhard NIEL       
+    Impact@TUNL                     # IMPACT@TUNL Si NIEL measurements
+    Sarkis                          # Lindhard NIEL modified by Sarkis 2022     
+
 The environment variable `$G4CMP_MAKE_CHARGES` controls the rate (R) as a
 fraction of total interactions, at which electron-hole pairs are produced
 by energy partitioning.  Secondaries will be
 produced with a track weight set to 1/R:
-
+```
 	unsetenv G4CMP_MAKE_CHARGES     # No new charge pairs generated
 	setenv G4CMP_MAKE_CHARGES 1     # Generate e/h pair at every occurrence
 	setenv G4CMP_MAKE_CHARGES 0.001 # Generate e/h pair 1:1000 occurrences
-
+```
 When secondary phonons are not produced, the equivalent energy is recorded as
 non-ionizing energy loss (NIEL) on the track.  Generating seconary phonons
 will significantly slow down the simulation.
@@ -116,17 +159,17 @@ The environment variable `$G4CMP_MAKE_PHONONS` controls the rate (R) as a
 fraction of total interactions, at which "primary" phonons are produced (by
 energy partitioning or recombination).  Secondaries will be produced with a
 track weight set to 1/R:
-
+```
 	unsetenv G4CMP_MAKE_PHONONS     # No secondary phonons generated
 	setenv G4CMP_MAKE_PHONONS 1     # Generate phonon at every occurrence
 	setenv G4CMP_MAKE_PHONONS 0.001 # Generate phonon 1:1000 occurrences
-
+```
 When primary phonons are not produced, the equivalent energy is recorded as
 non-ionizing energy loss (NIEL) on the track.  
 
 Secondary phonons may be produced either by downconversion of higher energy
 phonons, or by emission of Luke-Neganov phonons from charge carriers.
-Generating seconary phonons can significantly slow down the simulation, so
+Generating secondary phonons can significantly slow down the simulation, so
 the `LukeScattering` process has an analogous environment variable,
 `$G4CMP_LUKE_SAMPLE`, defined with rate (R) as above.
 
@@ -172,7 +215,7 @@ additional diagnostic output files which may be of interest.
 ## Building the Package
 
 G4CMP supports building itself with either GNU Make or CMake, and separately
-supports being linked into user applicated with either GNU Make (via
+supports being linked into user applications with either GNU Make (via
 environment variable settings) or CMake.
 
 ### Building with Make
@@ -183,8 +226,9 @@ configure or G4CMP environment as described above with `g4cmp_env.csh` or
 `...sh`.
 
 After configuring your environment, build the G4CMP library with the command
-
+```
 	make library
+```
 
 The libraries (libg4cmp.so and libqhull.so) will be written to your
 `$G4WORKDIR/lib/$G4SYSTEM/` directory, just like any other Geant4 example or
@@ -192,33 +236,40 @@ user code, and should be found automatically when linking an application.
 
 If you want debugging symbols included with the G4CMP library, you
 need to build with the G4DEBUG environment or Make variable set:
-
-	export G4DEBUG=1
+```
+	export G4DEBUG=1         # sh or bash
+	setenv G4DEBUG 1         # sh or bash
+```
 or
-	setenv G4DEBUG 1
-or
+```
 	make library G4DEBUG=1
+```
 
 If you want to enable additional diagnostics in some processes, including
 writing out statistics files, build with the G4CMP_DEBUG environment or Make
 variable set.  Note that this is not compatible with running multiple worker
 threads.
-
-	export G4CMP_DEBUG=1
+```
+	export G4CMP_DEBUG=1     # sh or bash
+	setenv G4CMP_DEBUG 1     # csh
+```
 or
-	setenv G4CMP_DEBUG 1
-or
+```
 	make library G4CMP_DEBUG=1
+```
 
 If you want to enable "sanitizing" options with the library, to look for
 memory leaks, thread collisions etc., you may set the options
 G4CMP_USE_SANITIZER and G4CMP_SANITIZER_TYPE (default is "thread"):
-
-	export G4CMP_USE_SANITIZER=1
+```
+	export G4CMP_USE_SANITIZER=1     # sh or bash
+	setenv G4CMP_USE_SANITIZER 1     # csh
+	make library
+```
 or
-	setenv G4CMP_USE_SANITIZER 1
-or
+```
 	make library G4CMP_USE_SANITIZER=1
+```
 
 *NOTE*:  If your source directory was not cloned from GitHub (specifically,
 if it does not contain `.git/`) you may need to specify a version string for
@@ -229,15 +280,15 @@ will be ignored.
 ### Building with CMake
 
 Create a build directory outside of the source tree, such as
-
+```
     mkdir /path/to/G4CMP/../G4CMP-build
     cd /path/to/G4CMP-build
-
+```
 We must tell CMake where GEANT4 is installed. If you want only the library
 to be built, use the following command
-
+```
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} ../G4CMP
-
+```
 By default, CMake will install a software package under /usr/local.  If you
 want to install to a local path, rather than system-wide, use the
 `-DCMAKE_INSTALL_PREFIX=/path/to/install` option.
@@ -261,20 +312,23 @@ identify the G4CMP version at runtime.  Use the `-DG4CMP_VERSION=X.Y.Z`
 option for this purpose.  If `.git/` is available, the option will be
 ignored.
 
-If you want to copy the examples directories (see below) to the installation
-area, use the option `-DINSTALL_EXAMPLES=ON` (for all examples). Each example
-has been set up as a standalone "project" for CMake and can be configured via:
-
+If you want to copy the examples directories ([see
+below](#application-examples)) to the installation area, use the option
+`-DINSTALL_EXAMPLES=ON` (for all examples). Each example has been set up as
+a standalone "project" for CMake and can be configured via:
+```
     cmake -DGeant4_DIR=/path/to/Geant4/lib64/Geant4-${VERSION} -DINSTALL_EXAMPLES=ON ../G4CMP
+```
 
 Once you've configured the build with `cmake` and option flags, run the
 `make` command in the build directory
-
+```
     make
-
+```
 and transfer the successfully build libraries to your installation area
-
+```
     make install
+```
 
 Once the install step is completed, the /path/to/install/share/G4CMP/
 directory will contain copies of the `g4cmp_env.csh` and `...sh` scripts
@@ -294,26 +348,27 @@ linking G4CMP into your applications:
 
 | Environment variable | Meaning              |  Value in Make build | Value in CMake build |
 | ---------------------| ---------------------| ---------------------|----------------------|
-| G4CMPINSTALL | Path to g4cmp_env.* scripts  | <path-to-G4CMP> | $CMAKE_INSTALL_PREFIX/share/G4CMP |
+| G4CMPINSTALL | Path to g4cmp_env.* scripts  | [path-to-G4CMP] | $CMAKE\_INSTALL\_PREFIX/share/G4CMP |
 | G4CMPLIB | Directory containing libG4cmp.so | $G4WORKDIR/lib/$G4SYSTEM | $G4CMPINSTALL/lib |
-| G4CMPINCLUDE | Path to library/include      | $G4INSTALL/library/include | $CMAKE_INSTALL_PREFIX/include |
-| G4LATTICEDATA | Path to CrytalMaps directory | $G4INSTALL/CrystalMaps | $G4INSTALL/CrystalMaps |
+| G4CMPINCLUDE | Path to library/include      | $G4CMPINSTALL/library/include | $CMAKE\_INSTALL\_PREFIX/include |
+| G4LATTICEDATA | Path(s) to CrystalMaps | $G4CMPINSTALL/CrystalMaps | $G4CMPINSTALL/CrystalMaps |
 
 If you have a simple Makefile build system (GMake), the following two lines,
 or an appropriate variation on them, should be sufficient:
-
+```
     CXXFLAGS += -I$(G4CMPINCLUDE)
     LDFLAGS += -L$(G4CMPLIB) -lG4cmp -lqhullcpp -lqhullstatic_p
+```
 
 These actions must occur _before_ the Geant4 libraries and include directory
 are referenced (G4CMP includes modified versions of some toolkit code).
 
 If you are using CMake to build your application, it should be sufficient to
 add the following two actions, before referencing Geant4:
-
+```
     find_package(G4CMP REQUIRED)
     include(${G4CMP_USE_FILE})
-
+```
 
 ## Application Examples
 
@@ -323,6 +378,10 @@ the library.
 
 * The `phonon` example shows phonon transport and scattering, including
 downconversion and mode mixing, in a cylindrical crystal.
+
+* The `caustics` example is similar to `phonon`, but includes an output data
+  file and ROOT macro for generating pictures of phonon caustics for the
+  chosen material.
 
 * The `charge` example shows electron and hole transport with NTL ("Luke")
 emission of phonons and intervalley scattering.
@@ -340,14 +399,15 @@ more complex experimental model application.
 If the G4CMP libraries are being built with Make, any of the three
 demonstration programs (phonon, charge) may be built as a normal GEANT4 user
 application directly from the package top-level directory.  Use the command
-
+```
 	make examples
-
+```
 to build them all, or
+```
+	make [name]
+```
 
-	make <name>
-
-to build just one (where <name> is the directory name of interest).  The
+to build just one (where [name] is the directory name of interest).  The
 executables will be named `g4cmpPhonon` and `g4cmpCharge`, respectively, and
 will be written to `$G4WORKDIR/bin/$G4SYSTEM/`.
 
@@ -377,18 +437,49 @@ At runtime, the version string will be available through a call to
 
 ## Defining the Crystal Dynamics
 
+See also https://confluence.slac.stanford.edu/display/G4CMP/Adding+Materials+to+G4CMP
+
 In a user's application, each active G4CMP material (e.g., germanium
 crystals or diamonds) must have a collection of dynamical parameters
 defined.  These parameters are used by the phonon and charge-carrier
 processes to know how to create, propagate, and scatter the particles
 through the crystal.
 
-Each material's parameters are stored in a subdirectory under CrystalMaps
-(or wherever the envrionment variable `$G4LATTICEDATA` points).  G4CMP is
-distributed with germanium and silicon configurations, in `CrystalMaps/Ge/`
-and `CrystalMaps/Si/`, respectively.  We recommend naming additional
-directories by element or material, matching the Geant4 conventions, but
-this is not required or enforced.
+Each material's parameters are stored in a subdirectory under `CrystalMaps`; 
+the environment variable used to search for these material configuration files, 
+`$G4LATTICEDATA`, points to this directory by default. Additional paths can be 
+included in this search by appending them to the `$G4LATTICEDATA` variable:
+```
+    export G4LATTICEDATA=${G4LATTICEDATA:+$G4LATTICEDATA:}/path/to/more/CrystalMaps    # sh or bash
+    setenv G4LATTICEDATA ${G4LATTICEDATA}:/path/to/more/CrystalMaps
+       # csh
+```
+
+Note that if a material configuration file is found in multiple locations, only 
+the first file found chronologically will be chosen; `G4LATTICEDATA` must be 
+reset in order for conflicting configuration files to be found. G4CMP is
+distributed with seven predefined materials, under the CrystalMaps
+directory:
+
+| Material                     | Directory         	  |
+|------------------------------|--------------------------|
+| Germanium                    | CrystalMaps/Ge/    	  |
+| Silicon                      | CrystalMaps/Si/    	  |
+| Sapphire                     | CrystalMaps/Al2O3/ 	  |
+| Calcium fluoride             | CrysalMaps/CaF2/  	  |
+| Calcium tungstate            | CrystalMaps/CaWO4/       |
+| Gallium arsenide             | CrystalMaps/GaAs/        |
+| Lithium fluoride             | CrystalMaps/LiF/         |
+| Alpha-Quartz Silicon dioxide | CrystalMaps/SiO2_alpha/  |
+| Amorphous Silicon dioxide    | CrystalMaps/SiO2_amorph/ |
+
+
+The last seven currently only have phonon transport parameters defined; work
+is in progress to handle conduction band charge production where appropriate.  
+
+If you create local definitions, we recommend naming additional directories
+by element or material, matching the Geant4 conventions, but this is not
+required or enforced.
 
 The parameter definition file is config.txt.  Each line starts with a
 keyword, followed by one or more values.  Any line which starts with "#" is
@@ -399,9 +490,9 @@ for readability.
 Dimensional parameters MUST be specified with the value in each entry.  For 
 keywords taking multiple values, a single unit may be specified after the
 group of values, e.g., 
-
+```
 	triclinic 1. 2. 3. Ang 30. 50. 45. deg
-
+```
 where "Ang" and "deg" are the appropriate length and angular dimensions.
 
 The lattice symmetry is specified by one of the seven crystal systems (or
@@ -432,7 +523,7 @@ the crystal system.
 | scat    | B         | isotope scattering rate   | second^3 (s3)      |
 | decay   | A         | anharmonic decay rate     | second^4 (s4)      |
 | decayTT | frac      | Fraction of L->TT decays  |                    |
-| LDOS    | frac      | longitudnal density of states | sum to unity   |
+| LDOS    | frac      | longitudinal density of states | sum to unity   |
 | STDOS   | frac      | slow-transverse density of states |            |
 | FTDOS   | frac      | fast-transverse density of states |            |
 | Debye   | val       | Debye energy for phonon primaries | E, T, Hz   |
@@ -451,7 +542,8 @@ the crystal system.
 | epsilon | e/e0      | Relative permittivity     |                    |
 | neutDens | N        | Number density of neutron impurities | /volume |
 | alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
-| acDeform | val      | Acoustic deformation potential | energy (eV)   |
+| acDeform_e | val | electron acoustic deformation potential | energy (eV)|
+| acDeform_h | val | hole acoustic deformation potential  | energy (eV)|
 | ivDeform | val val ... | Optical deformation potentials | eV/cm      |
 | ivEnergy | val val ... | Optical phonon thresholds     | energy (eV) |
 | **InterValley scattering  (Linear and Quadratic Models) ** |
@@ -463,6 +555,13 @@ the crystal system.
 | ivQuadField | val | Minimum field for quadratic IV expression | V/m  |
 | ivQuadPower | exp | Exponent: rate = Rate*(E^2-Field^2)^(exp/2) | none |
 
+The keywords l0_e and l0_h are optional. If they are not specified in
+config.txt, they will be computed from other physical constants: 
+```
+  l0 = pi*hbar^4*density / (2*mass^3*acDeform^2)
+```
+If they are specified in config.txt, the value in config.txt takes precedence
+over the computed value.
 
 ## Surface Interactions
 
@@ -474,19 +573,20 @@ probabilities.
 
 User applications should use the `G4CMPSurfaceProperty` class, or an
 application-specific subclass.  This class has `G4MaterialPropertiesTable`
-objects for phonons and charges seaprately; the base class constructor takes
+objects for phonons and charges separately; the base class constructor takes
 a long list of arguments to fill those tables with common parameters:
-
+```
   G4CMPSurfaceProperty(const G4String& name,
-                       G4double qAbsProb, // Prob. to absorb charge carrier
+                       G4double qAbsProb,  // Prob. to absorb charge carrier
                        G4double qReflProb, // If not absorbed, prob to reflect
-                       G4double eMinK, //Min wave number to absorb electron
-                       G4double hMinK, //Min wave number to absorb hole
-                       G4double pAbsProb, // Prob. to absorb phonon
+                       G4double eMinK,     // Min wave number to absorb electron
+                       G4double hMinK,     // Min wave number to absorb hole
+                       G4double pAbsProb,  // Prob. to absorb phonon
                        G4double pReflProb, // If not absorbed, prob to reflect
-                       G4double pSpecProb, //Prob. of specular reflection
-                       G4double pMinK, //Min wave number to absorb phonon
+                       G4double pSpecProb, // Prob. of specular reflection
+                       G4double pMinK,     // Min wave number to absorb phonon
                        G4SurfaceType stype = dielectric_dielectric);
+```
 
 These parameters are sufficient to model absorption or reflection of both
 charges and phonons at the surface of a crystal.  User applications may
@@ -502,7 +602,7 @@ above.  See below for a discussion of `G4CMPPhononElectrode`.
 
 Phonon sensors typically involve a superconducting film to couple the
 substrate to a sensor (SQUID, TES, etc.).  The `G4CMPKaplanQP` class
-provides a parametric model for that coupling, implmenting Kaplan's model
+provides a parametric model for that coupling, implementing Kaplan's model
 for energy exchange between phonons and quasiparticles from broken Cooper
 pairs.  This class expects to find the following material properties defined
 for the metal film (defined using the function
@@ -532,6 +632,8 @@ we recommend that user applications also set `/g4cmp/minEPhonons` to 2.*absorber
 to avoid excessive CPU from tracking unmeasurable phonons. Quasiparticles
 in a sensor may be subject to a baseline absorption efficiency 'absorberEff'
 and energy-dependent efficiency modification 'absorberEffSlope'.
+
+See also https://confluence.slac.stanford.edu/display/G4CMP/G4CMPKaplanQP+Algorithm
 
 The `G4CMPKaplanQP` process also respects the global setting
 `kaplanKeepPhonons`.  If this is set true, then all internal phonons

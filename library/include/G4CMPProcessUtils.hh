@@ -36,6 +36,13 @@
 // 20201111  Add MakePhononEnergy() which takes wave vector directly
 // 20201124  Change argument name in MakeGlobalRecoil() to 'krecoil' (track)
 // 20201223  Add FindNearestValley() function to align electron momentum.
+// 20211001  Add reusable G4ThreeVector buffer for internal calculations.
+// 20211001  FindNearestValley(dir) can pass by reference.
+// 20211003  Add track touchable as data member, to create if needed
+// 20240303  Add local currentTouchable pointer for non-tracking situations.
+// 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
+// 20250423  Add FillParticleChange() to update phonon position and touchable.
+// 20250512  Use tempvec2 for Vg in LoadDataForTrack to improve performance.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -47,9 +54,11 @@
 #include "G4Track.hh"
 
 class G4CMPDriftTrackInfo;
+class G4CMPParticleChangeForPhonon;
 class G4CMPPhononTrackInfo;
 class G4CMPVTrackInfo;
 class G4LatticePhysical;
+class G4ParticleChange;
 class G4ParticleDefinition;
 class G4VPhysicalVolume;
 class G4VTouchable;
@@ -71,11 +80,14 @@ public:
   virtual void SetCurrentTrack(const G4Track* track);
   virtual void SetLattice(const G4Track* track);
 
-  //REL: NB: these are currently no longer used -- kept around for just a bit to make sure we don't need them
-  //virtual void ReloadDataForTrack(const G4Track* track); //REL Kill?
-  //virtual void SetCurrentTrackInNextVolume(const G4Track* track);
-  //virtual void SetNextLattice(const G4Track* track);
-  
+  // Update particleChange's wavevector, group velocity, and momentum
+  void FillParticleChange(G4ParticleChange& particleChange,
+              const G4Track& track, const G4ThreeVector& wavevector) const;
+
+  // Update particleChange's position and touchable
+  void FillParticleChange(G4CMPParticleChangeForPhonon& particleChange,
+              const G4Step& step, const G4ThreeVector& position) const;
+
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
 
@@ -87,9 +99,17 @@ public:
   G4bool IsQP() const;
   
   // Set configuration manually, without a track
-  virtual void FindLattice(const G4VPhysicalVolume* volume);
-  virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }// G4cout << "REL G4CMPProcessUtils::SetLattice calls on lattice input, to get lattice: " << theLattice << G4endl; }
-  virtual const G4LatticePhysical* GetLattice() const { return theLattice; }
+  //virtual void FindLattice(const G4VPhysicalVolume* volume);
+  //virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
+  //virtual const G4LatticePhysical* GetLattice() const { return theLattice; }
+
+  //REL: From NT
+  void FindLattice(const G4VPhysicalVolume* volume);
+  void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
+  const G4LatticePhysical* GetLattice() const { return theLattice; }
+
+  void SetTouchable(const G4VTouchable* touch);
+
 
   // Convert global to local coordinates with respect to current track
   G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const;
@@ -162,9 +182,7 @@ public:
 
   // These functions only exist to make a uniform interface for getting
   // track info in a G4CMP physics process class.
-  G4double CalculateVelocity(const G4Track& track) const {
-    return track.CalculateVelocity();
-  }
+  G4double CalculateVelocity(const G4Track& track) const;
 
   G4double CalculateVelocity(const G4Track* track) const {
     return CalculateVelocity(*track);
@@ -220,8 +238,7 @@ public:
   G4int ChangeValley(G4int valley) const;	// Excludes input valley
 
   // Find valley which aligns most closely with _local_ direction vector
-  // NOTE: Passed by value to allow for internal manipulation
-  G4int FindNearestValley(G4ThreeVector dir) const;
+  G4int FindNearestValley(const G4ThreeVector& dir) const;
   G4int FindNearestValley(const G4Track& track) const;
   G4int FindNearestValley(const G4Track* track) const {
     return (track ? FindNearestValley(*track) : -1);
@@ -238,7 +255,7 @@ public:
   // Compute direction angle for recoiling charge carrier
   G4double MakeRecoilTheta(G4double k, G4double ks, G4double th_phonon) const;
 
-  // Convert K_HV wave vector to track momentum
+  // Convert K wave vector to track momentum
   void MakeGlobalRecoil(G4ThreeVector& krecoil) const;
 
   // Compute time between scatters/emissions for moving charge carrier
@@ -258,6 +275,13 @@ protected:
 private:
   const G4Track* currentTrack;		// For use by Start/EndTracking
   const G4VPhysicalVolume* currentVolume;
+
+  // May be created by GetCurrentTouchable() for internal use with primaries
+  void ClearTouchable() const;
+  mutable const G4VTouchable* currentTouchable;
+  mutable G4bool deleteTouchable;
+  mutable G4ThreeVector tempvec;	// Not static; each instance unique
+  mutable G4ThreeVector tempvec2;
 };
 
 #endif	/* G4CMPProcessUtils_hh */

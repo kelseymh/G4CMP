@@ -19,29 +19,28 @@ pairEnergy 3.81 eV
 fanoFactor 0.15
 vsound 6420 m/s		# Longitudinal sound speed
 vtrans 3040 m/s		# Transverse sound speed
-l0_e 16.9e-6 m #16.9e-5 m # 8e-6 m #16.9e-6 m
-l0_h 7.5e-5 m
 #hole and electron masses taken from Robert's thesis
-hmass 0.50		# per m(electron)
-emass 0.91 0.19 0.19	# per m(electron)
-valley   0  0  0 deg
-valley   90 90 0 deg
-valley   0 -90 -90 deg
+hmass 0.50		#Set to Si values -- currently meaningless
+emass 0.91 0.19 0.19	#Set to Si values -- currently meaningless
+valleyDir 1 0 0 	#Set to Si values -- currently meaningless
+valleyDir 0 1 0 	#Set to Si values -- currently meaningless
+valleyDir 0 0 1 	#Set to Si values -- currently meaningless
 # Intervalley scattering (matrix elements)
-alpha 0.5 /eV
-acDeform 6.6 eV
-ivDeform 0.5e8 0.8e8 11e8 0.3e8 2e8 2e8 eV/cm		# Jacoboni & Reggiani
-ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV
-neutDens 1e11 /cm3
-epsilon 11.68
+alpha 0.5 /eV 		#Set to Si values -- currently meaningless
+acDeform_e 9 eV		#Set to Si values -- currently meaningless
+acDeform_h 5 eV		#Set to Si values -- currently meaningless
+ivDeform 0.5e8 0.8e8 11e8 0.3e8 2e8 2e8 eV/cm	#Set to Si values -- currently meaningless
+ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV #Set to Si values -- currently meaningless
+neutDens 1e11 /cm3      #Set to Si values -- currently meaningless
+epsilon 11.68 		#Set to Si values -- currently meaningless
 # Intervalley scattering (Linear and Quadratic models)
-ivModel Linear
-ivLinRate0  1.5e6 Hz	# Fitted to Stanford test devices
-ivLinRate1  1.5 Hz	# Fitted to Stanford test devices
-ivLinPower  4.0		# Rate = ivLinRate0 + ivLinRate1 * E^ivLinPower
-ivQuadRate  3.5e-20 Hz	# Fitted to Stanford test devices
-ivQuadField 3395 V/m	# Fitted to Stanford test divices
-ivQuadPower 7.47	# Rate = sqrt((E^2-QuadField^2)^ivPower)
+ivModel Linear		#Set to Si values -- currently meaningless
+ivLinRate0  1.5e6 Hz	#Set to Si values -- currently meaningless
+ivLinRate1  1.5 Hz	#Set to Si values -- currently meaningless
+ivLinPower  4.0		#Set to Si values -- currently meaningless
+ivQuadRate  3.5e-20 Hz	#Set to Si values -- currently meaningless
+ivQuadField 3395 V/m	#Set to Si values -- currently meaningless
+ivQuadPower 7.47	#Set to Si values -- currently meaningless
 polycryElMfp 10 nm      # Mean free path for polycrystal elastic scattering (characteristic polycrystal length scale)
 sc_delta0 0.000176 eV   # Gap Energy at T=0
 sc_tau0_qp 438 ns       # Characteristic lifetime for QPs (from Kaplan)

@@ -1,11 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (c) 2009-2012 C.B. Barber. All rights reserved.
-<<<<<<< HEAD
 ** $Id: //main/2011/qhull/src/libqhullcpp/QhullPoints.h#5 $$Change: 1464 $
-=======
-** $Id: 2aa6aa393a3e9583a700adf92717cf027c537b55 $$Change: 1464 $
->>>>>>> clangFixes
 ** $DateTime: 2012/01/25 22:58:41 $$Author: bbarber $
 **
 ****************************************************************************/
