@@ -974,7 +974,6 @@ void G4LatticeLogical::ComputeL0(G4bool IsElec) {
 // Compute average speed of sound based on phonon DOS
 
 void G4LatticeLogical::ComputeAverageSoundSpeed() {
-
   fVSoundAverage = fLDOS*fVSound + (fSTDOS+fFTDOS)*fVTrans;
 }
 
