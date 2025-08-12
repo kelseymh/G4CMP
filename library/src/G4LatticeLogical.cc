@@ -264,8 +264,8 @@ void G4LatticeLogical::Initialize(const G4String& newName) {
   FillMaps();
 
   // Compute l0 if not already set in config.txt
-  if (GetElectronScatter()==0) {ComputeL0(true);}
-  if (GetHoleScatter()==0) {ComputeL0(false);}
+  if (GetElectronScatter()==0.) ComputeL0(true);
+  if (GetHoleScatter()==0.) ComputeL0(false);
 
   // Compute average speed of sound
   ComputeAverageSoundSpeed();
@@ -950,30 +950,32 @@ const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
 // Process scattering length l0_e and l0_h
 
 void G4LatticeLogical::ComputeL0(G4bool IsElec) {
-
-  G4double l0 = 0;
+  G4double mass = 0.;
+  G4double acDeform = 0.;
 
   if (IsElec) {
-    l0 = pi*hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck*fDensity
-    /2/fElectronMDOS/fElectronMDOS/fElectronMDOS/fAcDeform_e/fAcDeform_e;
-    SetElectronScatter(l0);
+      mass = GetElectronDOSMass();
+      acDeform = GetElectronAcousticDeform();
+  }
+  else    {
+      mass = GetHoleMass();
+      acDeform = GetHoleAcousticDeform();
   }
 
-  else {
-    l0 = pi*hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck*fDensity
-    /2/fHoleMass/fHoleMass/fHoleMass/fAcDeform_h/fAcDeform_h;
-    SetHoleScatter(l0);
-  }
+  G4double mcubed = mass*mass*mass;
+  G4double acDeformSquared = acDeform*acDeform;
+  G4double hbarQuad = hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck;
+  G4double l0 = pi*hbarQuad*fDensity/(2*mcubed*acDeformSquared);
+
+  if (IsElec) SetElectronScatter(l0);
+  else SetHoleScatter(l0);
 }
-
 
 // Compute average speed of sound based on phonon DOS
 
 void G4LatticeLogical::ComputeAverageSoundSpeed() {
 
-  G4double AverageSoundSpeed = fLDOS*fVSound + (fSTDOS+fFTDOS)*fVTrans;
-
-  SetAverageSoundSpeed(AverageSoundSpeed);
+  fVSoundAverage = fLDOS*fVSound + (fSTDOS+fFTDOS)*fVTrans;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -1010,7 +1012,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nfanoFactor " << fFanoFactor
      << "\nvsound " << fVSound/(m/s) << " m/s"
      << "\nvtrans " << fVTrans/(m/s) << " m/s"
-     << "\nvaveragevsound " << fVSoundAverage/(m/s) << " m/s"
+     << "\n# vsoundAverage " << fVSoundAverage/(m/s) << " m/s"
      << "\nl0_e " << fL0_e/um << " um"
      << "\nl0_h " << fL0_h/um << " um"
      << std::endl;
