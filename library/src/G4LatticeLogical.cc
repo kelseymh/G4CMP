@@ -81,7 +81,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fpPhononKin(0), fpPhononTable(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0),
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
-    fVSound(0.), fVTrans(0.), fL0_e(0.), fL0_h(0.), 
+    fVSound(0.), fVTrans(0.), fVSoundAverage(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),
     fHoleMass(mElectron), fElectronMass(mElectron), fElectronMDOS(mElectron),
     fBandGap(0.), fPairEnergy(0.), fFanoFactor(1.),
@@ -262,6 +262,14 @@ void G4LatticeLogical::Initialize(const G4String& newName) {
 
   // Populate phonon lookup tables if not read from files
   FillMaps();
+
+  // Compute l0 if not already set in config.txt
+  if (GetElectronScatter()==0.) ComputeL0(true);
+  if (GetHoleScatter()==0.) ComputeL0(false);
+
+  // Compute average speed of sound
+  ComputeAverageSoundSpeed();
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -941,10 +949,10 @@ const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
 
 // Process scattering length l0_e and l0_h
 
-G4double G4LatticeLogical::ComputeL0(G4bool IsElec) {
+void G4LatticeLogical::ComputeL0(G4bool IsElec) {
   G4double mass = 0.;
   G4double acDeform = 0.;
-      
+
   if (IsElec) {
       mass = GetElectronDOSMass();
       acDeform = GetElectronAcousticDeform();
@@ -953,9 +961,20 @@ G4double G4LatticeLogical::ComputeL0(G4bool IsElec) {
       mass = GetHoleMass();
       acDeform = GetHoleAcousticDeform();
   }
- 
-  G4double l0 = pi*hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck*fDensity/2/mass/mass/mass/acDeform/acDeform;
-  return l0;
+
+  G4double mcubed = mass*mass*mass;
+  G4double acDeformSquared = acDeform*acDeform;
+  G4double hbarQuad = hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck;
+  G4double l0 = pi*hbarQuad*fDensity/(2*mcubed*acDeformSquared);
+
+  if (IsElec) SetElectronScatter(l0);
+  else SetHoleScatter(l0);
+}
+
+// Compute average speed of sound based on phonon DOS
+
+void G4LatticeLogical::ComputeAverageSoundSpeed() {
+  fVSoundAverage = fLDOS*fVSound + (fSTDOS+fFTDOS)*fVTrans;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -992,6 +1011,7 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nfanoFactor " << fFanoFactor
      << "\nvsound " << fVSound/(m/s) << " m/s"
      << "\nvtrans " << fVTrans/(m/s) << " m/s"
+     << "\n# vsoundAverage " << fVSoundAverage/(m/s) << " m/s"
      << "\nl0_e " << fL0_e/um << " um"
      << "\nl0_h " << fL0_h/um << " um"
      << std::endl;

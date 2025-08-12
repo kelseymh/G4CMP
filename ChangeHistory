@@ -7,7 +7,9 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 [ Modifications included on branch G4CMP-404, put subtask tags below it: ]
-2025-07-28  G4CMP-404 : Improve charge carriers-phonons scattering.
+
+2025-08-12  G4CMP-404 : Improve charge carriers-phonons scattering.
+2025-08-12  G4CMP-493 : Add average speed of sound.
 2025-07-28  G4CMP-490 : Ephonon in G4CMPLukeScattering should use q (phonon momentum)
                         in the lattice frame and not the HV frame.
 2025-05-27  G4CMP-485 : Rename "IVRate" model name to "Matrix".
