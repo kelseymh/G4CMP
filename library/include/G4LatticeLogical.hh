@@ -217,10 +217,10 @@ public:
   G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const;
     
   // Compute "l0" for electron and hole
-  G4double ComputeL0(G4bool IsElec);
+  void ComputeL0(G4bool IsElec);
 
   // Compute average speed of sound
-  G4double ComputeAverageSoundSpeed();
+  void ComputeAverageSoundSpeed();
 
   G4ThreeVector RotateToValley(G4int iv, const G4ThreeVector& v) const;
   G4ThreeVector RotateFromValley(G4int iv, const G4ThreeVector& v) const;

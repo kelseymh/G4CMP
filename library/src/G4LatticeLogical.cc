@@ -262,6 +262,14 @@ void G4LatticeLogical::Initialize(const G4String& newName) {
 
   // Populate phonon lookup tables if not read from files
   FillMaps();
+
+  // Compute l0 if not already set in config.txt
+  if (GetElectronScatter()==0) {ComputeL0(true);}
+  if (GetHoleScatter()==0) {ComputeL0(false);}
+
+  // Compute average speed of sound
+  ComputeAverageSoundSpeed();
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -941,31 +949,31 @@ const G4ThreeVector& G4LatticeLogical::GetValleyAxis(G4int iv) const {
 
 // Process scattering length l0_e and l0_h
 
-G4double G4LatticeLogical::ComputeL0(G4bool IsElec) {
-  G4double mass = 0.;
-  G4double acDeform = 0.;
-      
+void G4LatticeLogical::ComputeL0(G4bool IsElec) {
+
+  G4double l0 = 0;
+
   if (IsElec) {
-      mass = GetElectronDOSMass();
-      acDeform = GetElectronAcousticDeform();
+    l0 = pi*hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck*fDensity
+    /2/fElectronMDOS/fElectronMDOS/fElectronMDOS/fAcDeform_e/fAcDeform_e;
+    SetElectronScatter(l0);
   }
-  else    {
-      mass = GetHoleMass();
-      acDeform = GetHoleAcousticDeform();
+
+  else {
+    l0 = pi*hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck*fDensity
+    /2/fHoleMass/fHoleMass/fHoleMass/fAcDeform_h/fAcDeform_h;
+    SetHoleScatter(l0);
   }
- 
-  G4double l0 = pi*hbar_Planck*hbar_Planck*hbar_Planck*hbar_Planck*fDensity/2/mass/mass/mass/acDeform/acDeform;
-  return l0;
 }
 
 
 // Compute average speed of sound based on phonon DOS
 
-G4double G4LatticeLogical::ComputeAverageSoundSpeed() {
+void G4LatticeLogical::ComputeAverageSoundSpeed() {
 
   G4double AverageSoundSpeed = fLDOS*fVSound + (fSTDOS+fFTDOS)*fVTrans;
 
-  return AverageSoundSpeed;
+  SetAverageSoundSpeed(AverageSoundSpeed);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

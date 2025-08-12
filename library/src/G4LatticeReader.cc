@@ -210,10 +210,7 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "neutdens")   pLattice->SetImpurities(fValue*ProcessUnits("Volume"));
   else if (name == "epsilon")    pLattice->SetPermittivity(fValue);
   else if (name == "vsound")     pLattice->SetSoundSpeed(fValue*ProcessUnits("Velocity"));
-  else if (name == "vtrans")     {
-    pLattice->SetTransverseSoundSpeed(fValue*ProcessUnits("Velocity"));
-    pLattice->SetAverageSoundSpeed(pLattice->ComputeAverageSoundSpeed());
-  }
+  else if (name == "vtrans")     pLattice->SetTransverseSoundSpeed(fValue*ProcessUnits("Velocity"));
   else if (name == "escat")      pLattice->SetElectronScatter(fValue*ProcessUnits("Length"));
   else if (name == "l0_e")       pLattice->SetElectronScatter(fValue*ProcessUnits("Length"));
   else if (name == "hscat")      pLattice->SetHoleScatter(fValue*ProcessUnits("Length"));
