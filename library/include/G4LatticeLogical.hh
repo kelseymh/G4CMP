@@ -215,12 +215,6 @@ public:
 
   // Compute "effective mass" for electron to preserve E/p relationship
   G4double GetElectronEffectiveMass(G4int iv, const G4ThreeVector& p) const;
-    
-  // Compute "l0" for electron and hole
-  void ComputeL0(G4bool IsElec);
-
-  // Compute average speed of sound
-  void ComputeAverageSoundSpeed();
 
   G4ThreeVector RotateToValley(G4int iv, const G4ThreeVector& v) const;
   G4ThreeVector RotateFromValley(G4int iv, const G4ThreeVector& v) const;
@@ -331,6 +325,12 @@ private:
 
   // Use direct calculation to get group velocity for phonons
   G4ThreeVector ComputeKtoVg(G4int mode, const G4ThreeVector& k) const;
+
+  // Compute "l0" for electron and hole
+  void ComputeL0(G4bool IsElec);
+
+  // Compute average speed of sound
+  void ComputeAverageSoundSpeed();
 
 private:
   // Create a thread-local buffer to use with MapAtoB() functions
