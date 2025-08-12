@@ -45,7 +45,7 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
     // as the mass is isotropic
     ktrk = theLattice->EllipsoidalToSphericalTranformation(iValley, ktrk);
     mass = sqrt(theLattice->GetElectronMass()*theLattice->GetElectronDOSMass());
-    vsound = 0.1*theLattice->GetSoundSpeed() +0.9*theLattice->GetTransverseSoundSpeed();
+    vsound = theLattice->GetAverageSoundSpeed();
     // The l0 in configuration file is calculated using the density of states mass
     // l0 = l0*pow(theLattice->GetElectronMass(),3)/(pow(mass,3));
   } else if (G4CMP::IsHole(aTrack)) {
