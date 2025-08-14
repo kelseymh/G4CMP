@@ -59,6 +59,7 @@
 // 20250505  Update local time for phonon displacement in FillParticleChange.
 // 20250508  Fix local and global coordinate system for phonon wavevectors.
 // 20250512  Use tempvec2 for Vg in LoadDataForTrack to improve performance.
+// 20250814  Add UpdatePhononWavevector() to update phonon wavevector and Vg.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -240,6 +241,27 @@ void G4CMPProcessUtils::FillParticleChange(G4CMPParticleChangeForPhonon& particl
     particleChange.ProposePosition(position);
     particleChange.ProposeTouchableHandle(step.GetPreStepPoint()->GetTouchableHandle());
     step.GetPostStepPoint()->SetStepStatus(fPostStepDoItProc);
+}
+
+
+// Update wavevector and group velocity for a given phonon
+// Wavevector is expected to be in the global coordinate frame
+void G4CMPProcessUtils::UpdatePhononWavevector(G4Track& track, const G4ThreeVector& wavevector) const {
+  if (!G4CMP::IsPhonon(track)) return;
+
+  // Get phonon mode from track
+  G4int mode = GetPolarization(track);
+
+  // Get Vg from global wavevector
+  G4ThreeVector vDir = theLattice->MapKtoVDir(mode, GetLocalDirection(wavevector));
+  G4double v = theLattice->MapKtoV(mode, GetLocalDirection(wavevector));
+
+  // Update trackInfo and particleChange
+  auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track);
+  trackInfo->SetWaveVector(wavevector);
+  track.SetVelocity(v);
+  RotateToGlobalDirection(vDir);
+  track.SetMomentumDirection(vDir);
 }
 
 

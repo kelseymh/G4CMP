@@ -43,6 +43,7 @@
 // 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
 // 20250423  Add FillParticleChange() to update phonon position and touchable.
 // 20250512  Use tempvec2 for Vg in LoadDataForTrack to improve performance.
+// 20250814  Add UpdatePhononWavevector() to update phonon wavevector and Vg.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -87,6 +88,9 @@ public:
   // Update particleChange's position and touchable
   void FillParticleChange(G4CMPParticleChangeForPhonon& particleChange,
               const G4Step& step, const G4ThreeVector& position) const;
+
+  // Update phonon wavevector, group velocity, and momentum
+  void UpdatePhononWavevector(G4Track& track, const G4ThreeVector& wavevector) const;
 
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
