@@ -41,6 +41,7 @@
 // 20250429  G4CMP-461 -- Implement ability to skip flats during displacement.
 // 20250505  G4CMP-458 -- Rename GetReflectedVector to GetSpecularVector.
 // 20250505  G4CMP-471 -- Update diagnostic output for surface displacement loop.
+// 20250814  G4CMP-496 -- Fix phonon wavevector & momentum direction coming out of DoDecay.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -264,13 +265,19 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     G4Track* sec1 = particleChange.GetSecondary(0);
     G4Track* sec2 = particleChange.GetSecondary(1);
 
-    G4ThreeVector vec1 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    G4int mode1 = G4PhononPolarization::Get(sec1->GetParticleDefinition());
+    G4int mode2 = G4PhononPolarization::Get(sec2->GetParticleDefinition());
+
+    G4ThreeVector vec1 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode1,
                                                     surfacePoint);
-    G4ThreeVector vec2 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    G4ThreeVector vec2 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode2,
                                                     surfacePoint);
 
-    sec1->SetMomentumDirection(vec1);
-    sec2->SetMomentumDirection(vec2);
+    RotateToGlobalDirection(vec1);
+    RotateToGlobalDirection(vec2);
+
+    G4CMP::UpdatePhononWavevector(*sec1, vec1);
+    G4CMP::UpdatePhononWavevector(*sec2, vec2);
 
     return;
   } else if (random < downconversionProb + specProb) {

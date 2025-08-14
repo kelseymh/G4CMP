@@ -6,6 +6,11 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+Development Project for quasiparticle tracking. New Tags go below this line.
+2025-08-14  G4CMP-219 : Quasiparticle tracking in superconducting films.
+2025-08-14  G4CMP-496 : Fix phonon wavevector & momentum direction from DoDecay.
+New tags go above this line.
+
 2025-07-11  G4CMP-491 : Turn off phonon surface displacement loop by default.
 
 2025-07-10  g4cmp-V09-07-01 Support generating Doxygen class info Web pages.
