@@ -34,6 +34,8 @@
 
 G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
   return (G4CMP::IsPhonon(pd) || G4CMP::IsChargeCarrier(pd));
+
+  //REL This should probably have QPs here, but need to see impact of adding them. Maybe we can get away without adding them if QPdiffusion works well enough
 }
 
 

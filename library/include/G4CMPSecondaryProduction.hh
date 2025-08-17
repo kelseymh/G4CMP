@@ -46,7 +46,8 @@ public:
 					   const G4Step& stepData);
 
   // Overload G4CMPProcessUtils function to fill energy parameters
-  virtual void LoadDataForTrack(const G4Track* track);
+  virtual void LoadDataForTrack(const G4Track* track,
+				const G4bool overrideMomentumReset=false);
 
   // Configurable flag to suspend parent track and process secondaries
   void ProcessSecondariesFirst(G4bool val) { secondariesFirst = val; }

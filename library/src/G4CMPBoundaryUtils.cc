@@ -692,6 +692,10 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
   
   aParticleChange.Initialize(aTrack);
 
+  if (buVerboseLevel > 5) {
+    G4cout << "Track momentum direction: " << aTrack.GetMomentumDirection() << G4endl;
+  }
+
   bool trackedSCResponse = true; //REL remove this before committing to develop
   if (!matTable) {
     if (buVerboseLevel>2) G4cout << "BU::Apply: !matTable" << G4endl;

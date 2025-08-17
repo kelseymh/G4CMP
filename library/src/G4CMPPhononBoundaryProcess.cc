@@ -102,8 +102,10 @@ G4CMPPhononBoundaryProcess::~G4CMPPhononBoundaryProcess() {
 
 // Configure for current track including AnharmonicDecay utility
 
-void G4CMPPhononBoundaryProcess::LoadDataForTrack(const G4Track* track) {
+void G4CMPPhononBoundaryProcess::LoadDataForTrack(const G4Track* track, const G4bool overrideMomentumReset) {
+  //G4cout << "In G4CMPPhononBoundaryProcess::LoadDataForTrack(), running the ProcessUtils version." << G4endl;
   G4CMPProcessUtils::LoadDataForTrack(track);
+  //G4cout << "In G4CMPPhononBoundaryProcess::LoadDataForTrack(), running the Anharmonic Decay version." << G4endl;
   anharmonicDecay->LoadDataForTrack(track);
 }
 
@@ -115,6 +117,14 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
                                      G4double previousStepSize,
                                      G4ForceCondition* condition) {
   return GetMeanFreePath(aTrack, previousStepSize, condition);
+
+
+  if( verboseLevel > 5 ){
+    G4cout << "In PostStepGetPhysicalInteractionLength: Track momentum direction: " << aTrack.GetMomentumDirection() << G4endl;
+    G4cout << "In PostStepGetPhysicalInteractionLength: Track position: " << aTrack.GetPosition() << G4endl;
+  }
+
+  
 }
 
 G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
@@ -122,8 +132,16 @@ G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
                                              G4ForceCondition* condition) {
   if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPPhononBoundaryProcess::GetMeanFreePath ----------" << G4endl;
+    G4cout << "Track momentum direction: " << aTrack.GetMomentumDirection() << G4endl;
   }
   UpdateMeanFreePathForLatticeChangeover(aTrack);
+
+  //G4cout << "REL Lattice seen by anharmonic decay is " << anharmonicDecay->GetLattice()->GetLattice()->GetName() << G4endl;
+  
+  if( verboseLevel > 5 ){
+    G4cout << "Post UpdateMeanFreePathForLatticeChamgeover: Track momentum direction: " << aTrack.GetMomentumDirection() << G4endl;
+    G4cout << "Post UpdateMeanFreePathForLatticeChangeover: Track position: " << aTrack.GetPosition() << G4endl;
+  }
   
   *condition = Forced;
   return DBL_MAX;
@@ -136,12 +154,18 @@ G4VParticleChange*
 G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
                                          const G4Step& aStep) {
   // NOTE:  G4VProcess::SetVerboseLevel is not virtual!  Can't overlaod it
-  G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
-
+  G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);  
+  
   //Debugging
   if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPPhononBoundaryProcess::PostStepDoIt ----------" << G4endl;
-  }
+    G4cout << "Track momentum direction: " << aTrack.GetMomentumDirection() << G4endl;
+    G4cout << "Track position: " << aTrack.GetPosition() << G4endl;
+    G4cout << "Step pre-step point: " << aStep.GetPreStepPoint()->GetPosition() << G4endl;
+    G4cout << "Step post-step point: " << aStep.GetPostStepPoint()->GetPosition() << G4endl;
+    G4cout << "Step pre-step momentum direction: " << aStep.GetPreStepPoint()->GetMomentumDirection() << G4endl;
+    G4cout << "Step post-step momentum direction: " << aStep.GetPostStepPoint()->GetMomentumDirection() << G4endl;
+  }  
   
   phParticleChange.Initialize(aTrack);
   
@@ -197,6 +221,9 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   //Debugging
   if( verboseLevel > 5 ){
     G4cout << "---------- G4CMPPhononBoundaryProcess::DoReflection ----------" << G4endl;
+    G4cout << "DR Function Point A | aStep pre-step touchable: " << aStep.GetPreStepPoint()->GetTouchable()->GetVolume()->GetName() << G4endl;
+    G4cout << "DR Function Point A | aStep post-step touchable: " << aStep.GetPostStepPoint()->GetTouchable()->GetVolume()->GetName() << G4endl;
+    G4cout << "DR Function Point A | current touchable: " << GetCurrentTouchable()->GetVolume()->GetName() << G4endl;
   }
 
   
@@ -208,6 +235,11 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   G4ThreeVector waveVector = trackInfo->k();
+  G4ThreeVector initialVDir = aStep.GetPreStepPoint()->GetMomentumDirection(); //REL
+  if (verboseLevel > 5) {
+    G4cout << "DR Function Point B | initialVDir check: " << initialVDir << G4endl;
+  }
+  
   G4int mode = GetPolarization(aStep.GetTrack());
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
   if (verboseLevel>2) {
@@ -222,7 +254,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     //Debugging
     if( verboseLevel > 5 ){
-      G4cout << "DR Function Point A | checking step boundary failed in DoReflection" << G4endl;
+      G4cout << "DR Function Point C | checking step boundary failed in DoReflection" << G4endl;
     }
  
     if (verboseLevel>2)
@@ -234,7 +266,9 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4double freq = GetKineticEnergy(aTrack)/h_Planck;	// E = hf, f = E/h
   G4double specProb = surfProp->SpecularReflProb(freq);
   G4double diffuseProb = surfProp->DiffuseReflProb(freq);
+  //G4cout << "DiffuseProb at point: " << surfacePoint << " is " << diffuseProb << ", spec: " << specProb << G4endl;
   G4double downconversionProb = surfProp->AnharmonicReflProb(freq);
+  //G4cout << "AnharmonicProb at point: " << surfacePoint << " is " << downconversionProb << G4endl;
 
   // Empirical functions may lead to non normalised probabilities.
   // Normalise here.
@@ -264,14 +298,73 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     G4Track* sec1 = particleChange.GetSecondary(0);
     G4Track* sec2 = particleChange.GetSecondary(1);
 
-    G4ThreeVector vec1 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
-                                                    surfacePoint);
-    G4ThreeVector vec2 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
-                                                    surfacePoint);
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "DR Function Point CA | after DoDecay in surface-mediated downconversion" << G4endl;
+    }
 
-    sec1->SetMomentumDirection(vec1);
-    sec2->SetMomentumDirection(vec2);
+    
+    //Want to get access to the modes of the secondaries so that we don't input the current
+    //(to-be-split) phonon modes' polarization and then later use a different k->V mapping
+    //in the LoadDataForTrack function for the respective new particles
+    G4int mode1 = GetPolarization(sec1);
+    G4int mode2 = GetPolarization(sec2);
 
+    //Debugging
+    if( verboseLevel > 5 ){
+      G4cout << "DR Function Point CB | after GetPolarizations in surface-mediated downconversion" << G4endl;
+    }
+
+    //Keep in mind that the surfNorm here is in global frame. Here, the input vDir
+    //to be that of the incident, singular phonon because all we need it for is orientation.
+    G4ThreeVector vec1 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode1, initialVDir,
+                                                    surfacePoint);
+    G4ThreeVector vec2 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode2, initialVDir,
+                                                    surfacePoint);
+    
+    //Debugging
+    if (verboseLevel > 5) {
+      G4cout << "DR Function Point D | In anharmonic decay, wavevector 1 just post-calculate is: " << vec1 << G4endl;
+      G4cout << "DR Function Point D | In anharmonic decay, wavevector 2 just post-calculate is: " << vec2 << G4endl;
+    }
+    
+    //We've now got lambertian reflected k-vectors in the global frame. Need to do two things:
+    //1. Store this k-vector info in the track info
+    auto trackInfo1 = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(sec1);
+    auto trackInfo2 = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(sec2);
+    trackInfo1->SetWaveVector(vec1);
+    trackInfo2->SetWaveVector(vec2);
+    
+    //2. Generate a direction from this. This requires converting the global waveVector to a local
+    //   direction, converting to velocity, and then converting velocity back to global direction
+    RotateToLocalDirection(vec1);
+    RotateToLocalDirection(vec2);
+
+    //Debugging
+    if (verboseLevel > 5){
+      G4cout << "DR Function Point E | In anharmonic decay, wavevector 1 rotated to local direction is: " << vec1 << G4endl;
+      G4cout << "DR Function Point E | In anharmonic decay, wavevector 2 rotated to local direction is: " << vec2 << G4endl;
+    }
+    G4ThreeVector vDir1 = theLattice->MapKtoVDir(mode1, vec1);    
+    G4ThreeVector vDir2 = theLattice->MapKtoVDir(mode2, vec2);
+
+    //Debugging
+    if (verboseLevel > 5){
+      G4cout << "DR Function Point F | In anharmonic decay, vDir 1 in local direction is: " << vDir1 << G4endl;
+      G4cout << "DR Function Point F | In anharmonic decay, vDir 2 in local direction is: " << vDir2 << G4endl;
+    }
+    
+    RotateToGlobalDirection(vDir1);
+    RotateToGlobalDirection(vDir2);
+    sec1->SetMomentumDirection(vDir1);
+    sec2->SetMomentumDirection(vDir2);
+
+    //Debugging
+    if (verboseLevel > 5){      
+      G4cout << "DR Function Point G | In anharmonic decay, wavevector 1 just pre-return is: " << vec1 << " corresponds to global velocity direction: " << vDir1 << G4endl;      
+      G4cout << "DR Function Point G | In anharmonic decay, wavevector 2 just pre-return is: " << vec2 << " corresponds to global velocity direction: " << vDir2 << G4endl;
+    }
+    
     return;
   } else if (random < downconversionProb + specProb) {
 
@@ -279,8 +372,14 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     reflectedKDir = GetSpecularVector(waveVector, surfNorm, mode, surfacePoint); // Modify surfacePoint & surfNorm in place
     refltype = "specular";
   } else {
-    if (verboseLevel > 2 ) G4cout << "Diffuse reflection at boundary, with surface norm " << surfNorm << "." << G4endl;
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    if (verboseLevel > 2 ) G4cout << "Diffuse reflection at boundary, with surface norm " << surfNorm << ", in lattice: " << theLattice << ", at surfacePoint: " << surfacePoint << "." << G4endl;
+
+    //Debugging
+    if (verboseLevel > 5) {
+      G4cout << "DR Function Point H | Diffuse reflection at boundary, with surface norm " << surfNorm << ", in lattice: " << theLattice << ", at surfacePoint: " << surfacePoint << "." << G4endl;
+    }
+
+    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode, initialVDir,
                                                surfacePoint);
     refltype = "diffuse";
   }
@@ -296,16 +395,29 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     UpdateNavigatorVolume(aStep, surfacePoint, vdir);
   }
 
+  //Debugging
   if (verboseLevel>2) {
     G4cout << "New surface position " << *particleChange.GetPosition()/mm 
 	   << " mm\n New wavevector direction " << reflectedKDir
 	   << "\n New momentum direction " << vdir << G4endl;
   }
 
-  // If reflection failed, report problem and kill the track
+  // If reflection failed, report problem and kill the track.
+  // For this check, need to make sure that surfNorm points opposite to the direction of the
+  // incident k-Vector
+  if (verboseLevel > 5){
+    G4cout << "DR Function Point I | Phonon incident waveVector: " << waveVector << ", non-generalized surfNorm: " << surfNorm << ", and attempted reflected vector " << reflectedKDir << G4endl;
+  }
+  
+  if (surfNorm.dot(initialVDir.unit()) >= 0.0 ) { surfNorm *= -1; }
   if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm, surfacePoint)) {
     G4String msg = G4PhononPolarization::Name(mode) + " " + refltype + " reflection failed";
 
+    //Debugging
+    if (verboseLevel > 5){
+      G4cout << "DR Function Point J | In final fail: Phonon incident waveVector: " << waveVector.unit() << ", generalized surfNorm: " << surfNorm << ", and attempted reflected vector " << reflectedKDir << G4endl;
+    }
+    
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
 		JustWarning, msg.c_str());
     DoSimpleKill(aTrack, aStep, particleChange);
@@ -324,6 +436,9 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm
   (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);	// Reflect against normal
 
+  
+  //  G4cout << "REL -------------- in specular vector function" << G4endl;
+  
   if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm,
                                     surfacePoint))
     return reflectedKDir;
@@ -484,7 +599,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     // Get reflectedKDir from initial point and restore original values
     stepLocalPos = surfacePoint;
     newNorm = surfNorm;
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode, //REL keep in mind that this (among many functions here) will need to be updated to reflect new arguments
                                                surfacePoint);
   }
 
@@ -526,6 +641,9 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
     G4cout << "---------- G4CMPPhononBoundaryProcess::DoTransmission ----------" << G4endl;
     G4cout << "DT Function Point A | aTrack getposition: " << aTrack.GetPosition() << G4endl;
     G4cout << "DT Function Point A | aStep poststepposition: " << aStep.GetPostStepPoint()->GetPosition() << G4endl;
+    G4cout << "DT Function Point A | aStep pre-step touchable: " << aStep.GetPreStepPoint()->GetTouchable()->GetVolume()->GetName() << G4endl;
+    G4cout << "DT Function Point A | aStep post-step touchable: " << aStep.GetPostStepPoint()->GetTouchable()->GetVolume()->GetName() << G4endl;
+    G4cout << "DT Function Point A | current touchable: " << GetCurrentTouchable()->GetVolume()->GetName() << G4endl;
     G4cout << "DT Function Point A | Lattice manager current lattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPreStepPoint()->GetPhysicalVolume()) << ", lattice manager post step point lattice: " << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()) << G4endl;
   }
   
@@ -560,20 +678,108 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
 
   
   //Since the lattice hasn't changed yet, change it here. (This also happens at the MFP calc point at the beginning of the next step,
-  //but it's nice to have it here so we can use the new lattice info to help figure out vdir, etc.)
+  //but it's nice to have it here so we can use the new lattice info to help figure out vdir, etc.). Also need to update the
+  //lattice for anharmonic decay, since that's a data member here and isn't getting updated elsewhere.)
   this->SetLattice(G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()));
+  anharmonicDecay->SetLattice(G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()));
   UpdateSCAfterLatticeChange();
 
   //Debugging
   if( verboseLevel > 5 ){    
     G4cout << "DT Function Point C | the lattice at the end of doTransmission: " << theLattice << G4endl;
   }
-  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
+
+
+  //Need to rotate to local coordinates. Since the current touchable at this point is still the pre-transmission volume,
+  //we will need to use the post-step touchable for rotations
+  const G4VTouchable * nextVolTouchable = aStep.GetPostStepPoint()->GetTouchable();
+  trackInfo->SetWaveVector(waveVector); //Inbound and outbound wavevectors are the same (waveVector) by aphysical fiat at the moment.
+  G4CMP::RotateToLocalDirection(nextVolTouchable,waveVector);  
   G4ThreeVector vdir = theLattice->MapKtoVDir(mode, waveVector);
   G4double v = theLattice->MapKtoV(mode, waveVector);
-  trackInfo->SetWaveVector(waveVector);
+  G4CMP::RotateToGlobalDirection(nextVolTouchable,vdir);  
   aParticleChange.ProposeVelocity(v);
   aParticleChange.ProposeMomentumDirection(vdir);
 
+  //Rotate the wavevector back to global dimensions so we can have it back for further calculations
+  G4CMP::RotateToGlobalDirection(aStep.GetPostStepPoint()->GetTouchable(),waveVector);  
+
+  //Get the surface normal, compute a generalizedSurfaceNormal from it (to indicate the direction pointing against the incident phonon),
+  //and then check the direction of the outgoing phonon with respect to it
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
+  G4ThreeVector generalizedSurfNorm = surfNorm;
+  if (generalizedSurfNorm.dot(aStep.GetPreStepPoint()->GetMomentumDirection()) >= 0.0) {
+    generalizedSurfNorm *= -1;
+  }
   
+  //If the direction is not "outward" with respect to the direction from which the phonon came, then we have an issue.
+  if (G4CMP::PhononVelocityIsOutward(theLattice,mode,waveVector,generalizedSurfNorm,nextVolTouchable,surfacePoint) == false) {
+
+    //For now, let's do something unphysical and kludgey: pick new k-vectors within a small angle of the original one to be transmitted,
+    //recompute the direction, and retry the check. This will have to be fixed by some combination of Caitlyn and others
+    int nTries = 1000;
+    int currentTry = 0;
+    G4ThreeVector newAttemptWaveVector;
+    G4bool successfulTransmission = false;
+    for( int iT = 0; iT < nTries; ++iT ){
+      G4ThreeVector adjustmentVector = G4RandomDirection() * waveVector.mag() * 0.4; //Make the length approximately 40% of the wavevector. This seems egregious...
+
+      //Do some magnitude math to at least keep the length of the vector the same
+      G4double oldWaveVectorMag = waveVector.mag();
+      G4double newAttemptWaveVectorMag = (waveVector+adjustmentVector).mag();     
+      newAttemptWaveVector = (waveVector + adjustmentVector) * oldWaveVectorMag / newAttemptWaveVectorMag;
+
+      //If the phonon is now pointing outward, then we can store particle change info and overwrite vDir and v
+      if (G4CMP::PhononVelocityIsOutward(theLattice,mode,newAttemptWaveVector,generalizedSurfNorm,nextVolTouchable,surfacePoint) == true ){
+
+	//Sanity check
+	if( verboseLevel > 5 ){    
+	  G4cout << "DT Function Point D | in success trigger of phononVelIsOutward loop, newAttemptWaveVector: " << newAttemptWaveVector << G4endl;
+	}
+	
+	//Put the newAttemptWaveVector into a local direction within the new touchable's geometry, then do mappings
+	G4CMP::RotateToLocalDirection(nextVolTouchable,newAttemptWaveVector);       	
+	vdir = theLattice->MapKtoVDir(mode, newAttemptWaveVector);
+	v = theLattice->MapKtoV(mode, newAttemptWaveVector);
+
+	if( verboseLevel > 5 ){    
+	  G4cout << "DT Function Point E | in success trigger of phononVelIsOutward loop, newAttemptWaveVector rotated into local: " << newAttemptWaveVector << G4endl;
+	}
+
+	//Put the newAttemptWaveVector and the vdir back into a global direction
+	G4CMP::RotateToGlobalDirection(nextVolTouchable,newAttemptWaveVector);
+	G4CMP::RotateToGlobalDirection(nextVolTouchable,vdir);
+
+	if( verboseLevel > 5 ){    
+	  G4cout << "DT Function Point F | in success trigger of phononVelIsOutward loop, newAttemptWaveVector rotated back into global: " << newAttemptWaveVector << G4endl;
+	}
+
+	//Now fill out quantities
+	trackInfo->SetWaveVector(newAttemptWaveVector); //Inbound and outbound wavevectors are the same (waveVector) by aphysical fiat at the moment.
+	aParticleChange.ProposeVelocity(v);
+	aParticleChange.ProposeMomentumDirection(vdir);
+	successfulTransmission = true;
+	break;
+      }
+    }
+
+    if (verboseLevel > 5) {
+      G4cout << "DT Function Point G | Momentum direction proposed at end of doTransmission: " << vdir << G4endl;
+    }
+
+    //If after our loop we still run into issues, we have to break and kill the track
+    if( !successfulTransmission ){
+      G4String msg = G4PhononPolarization::Name(mode) + " transmission failed even after repeated tries to nudge direction.";
+
+      if (verboseLevel > 5 ){
+	G4cout << "DT Function Point H | Phonon incident waveVector: "
+	       << waveVector.unit() << ", generalized surfNorm: " << generalizedSurfNorm << ", attempted transmitted k-vector " << waveVector.unit()
+	       << ", and attempted transmitted vDir: " << vdir << G4endl;
+      }
+      G4Exception((GetProcessName()+"::DoTransmission").c_str(), "Boundary011",
+		  JustWarning, msg.c_str());
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+    }
+    return;
+  }    
 }

@@ -61,6 +61,8 @@ void G4CMPVProcess::StartTracking(G4Track* track) {
   LoadDataForTrack(track);
   ConfigureRateModel();
 
+  //G4cout << "REL after the startTracking function runs LoadDataForTrack" << G4endl;
+  
   //REL I'm putting this here because I don't think it successfully gets set to a non-default
   //value if we only do it in the constructor? Should probably ask Mike about this
   this->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
@@ -109,9 +111,19 @@ G4bool G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTra
     
     
     //REL noting that if physical lattices are not 1:1 with volumes, something may get broken here... Should check a scenario of segmented SC...
-    
-    this->LoadDataForTrack(&aTrack);
-    if(rateModel) rateModel->LoadDataForTrack(&aTrack);
+
+    //Noting here that since LoadDataForTrack now updates the momentum based on the current lattice (which in a reflection step is the "turnaround
+    //lattice", we need to provide an opt-out for that momentum recalculation. In some cases where the existing k-vector is shallow, that
+    //momentum recalculation can take the existing k-vector and turn it around and launch it into the new "turnaround" lattice in something that
+    //looks like a transmission, not a reflection. So the question is: how can I confirm I'm in a turnaround step here? Or maybe for phonons I just
+    //add in a conditional to the LoadDataForTrack function that ensures it doesn't attempt a recalculation of the momentum vector when loaddatafromtrack
+    //is run from this specific location (i.e. the pre-step volume differs from this->theLattice)? That feels hacky as hell
+    //We note that for actual, true transmissions, the setting of the new k-vector and momentum in the new lattice should happen *within* the
+    //doTransmission function at the end of the prior step. I think that's the only case where this override could mess things up, and it should
+    //be covered in that function already.
+    this->LoadDataForTrack(&aTrack,true);
+    //LoadDataForTrack(&aTrack,true);
+    if(rateModel) rateModel->LoadDataForTrack(&aTrack,true);
 
     //Debugging
     if( verboseLevel > 5 ){
@@ -151,8 +163,6 @@ void G4CMPVProcess::UpdateSCAfterLatticeChange()
     rateModel->UpdateLookupTable(this->theLattice);
   }
 }
-
-
 
 // Compute MFP using track velocity and scattering rate
 

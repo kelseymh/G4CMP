@@ -32,7 +32,8 @@ public:
   virtual G4double Threshold(G4double Eabove=0.) const;
 
   // Initialize numerical parameters below
-  virtual void LoadDataForTrack(const G4Track* track);
+  virtual void LoadDataForTrack(const G4Track* track,
+				const G4bool overrideMomentumReset=false);
 
 protected:
   G4double acousticRate() const;	// Acoustic intravalley rate

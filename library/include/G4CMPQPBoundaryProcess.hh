@@ -49,8 +49,6 @@ protected:
   virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
 			      G4ParticleChange& aParticleChange);
 
-  G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm) const;
-  
   //Boolean to indicate whether the pre/post-step volumes have valid material
   //properties for QP transport
   G4bool preQPVolume;
