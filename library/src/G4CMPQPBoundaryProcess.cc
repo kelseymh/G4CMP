@@ -302,21 +302,6 @@ void G4CMPQPBoundaryProcess::DoAbsorption(const G4Track& aTrack,
 }
 
 
-// Generate Lambertian/diffuse reflection off internal surfaces
-G4ThreeVector G4CMPQPBoundaryProcess::
-GetLambertianVector(const G4ThreeVector& surfNorm) const {
-  
-  G4ThreeVector vdir;
-  const G4int maxTries = 1000;
-  G4int nTries = 0;
-  do {
-    vdir = G4CMP::LambertReflection(surfNorm);
-  } while (nTries++ < maxTries &&
-	   (vdir.dot(surfNorm) > 0.0) );
-  return vdir;
-}
-
-
 
 // Do reflection of a quasiparticle
 void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,

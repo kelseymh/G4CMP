@@ -33,7 +33,8 @@ public:
   virtual G4bool IsApplicable(const G4ParticleDefinition&);
 
   // Configure for current track including AnharmonicDecay utility
-  virtual void LoadDataForTrack(const G4Track* track);
+  virtual void LoadDataForTrack(const G4Track* track,
+				const G4bool overrideMomentumReset=false);
 
   // Perform downconversion using AnharmonicDecay utility
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );

@@ -58,7 +58,8 @@ G4PhononDownconversion::~G4PhononDownconversion() {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Configure for current track including AnharmonicDecay utility
 
-void G4PhononDownconversion::LoadDataForTrack(const G4Track* track) {
+void G4PhononDownconversion::
+LoadDataForTrack(const G4Track* track, const G4bool overrideMomentumReset) {
   G4CMPProcessUtils::LoadDataForTrack(track);
   anharmonicDecay->LoadDataForTrack(track);
 }
