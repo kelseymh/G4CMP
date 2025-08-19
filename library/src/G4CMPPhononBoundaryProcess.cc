@@ -104,9 +104,9 @@ G4CMPPhononBoundaryProcess::~G4CMPPhononBoundaryProcess() {
 
 void G4CMPPhononBoundaryProcess::LoadDataForTrack(const G4Track* track, const G4bool overrideMomentumReset) {
   //G4cout << "In G4CMPPhononBoundaryProcess::LoadDataForTrack(), running the ProcessUtils version." << G4endl;
-  G4CMPProcessUtils::LoadDataForTrack(track);
+  G4CMPProcessUtils::LoadDataForTrack(track,overrideMomentumReset);
   //G4cout << "In G4CMPPhononBoundaryProcess::LoadDataForTrack(), running the Anharmonic Decay version." << G4endl;
-  anharmonicDecay->LoadDataForTrack(track);
+  anharmonicDecay->LoadDataForTrack(track,overrideMomentumReset);
 }
 
 
@@ -264,10 +264,13 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   G4double freq = GetKineticEnergy(aTrack)/h_Planck;	// E = hf, f = E/h
+  //G4double specProb = 0;//REL TEMPORARYsurfProp->SpecularReflProb(freq);
   G4double specProb = surfProp->SpecularReflProb(freq);
-  G4double diffuseProb = surfProp->DiffuseReflProb(freq);
+  G4double diffuseProb = 0;//REL TEMPORARYsurfProp->DiffuseReflProb(freq);
+  //G4double diffuseProb = surfProp->DiffuseReflProb(freq);
   //G4cout << "DiffuseProb at point: " << surfacePoint << " is " << diffuseProb << ", spec: " << specProb << G4endl;
-  G4double downconversionProb = surfProp->AnharmonicReflProb(freq);
+  G4double downconversionProb = 0;//REL TEMPORARYsurfProp->AnharmonicReflProb(freq);
+  //G4double downconversionProb = surfProp->AnharmonicReflProb(freq);
   //G4cout << "AnharmonicProb at point: " << surfacePoint << " is " << downconversionProb << G4endl;
 
   // Empirical functions may lead to non normalised probabilities.
@@ -317,10 +320,24 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     //Keep in mind that the surfNorm here is in global frame. Here, the input vDir
     //to be that of the incident, singular phonon because all we need it for is orientation.
-    G4ThreeVector vec1 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode1, initialVDir,
-                                                    surfacePoint);
-    G4ThreeVector vec2 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode2, initialVDir,
-                                                    surfacePoint);
+    G4ThreeVector vec1 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode1,
+						    initialVDir, surfacePoint);
+    G4ThreeVector vec2 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode2,
+						    initialVDir,surfacePoint);
+
+    //Catch exceptions
+    if( vec1.mag() == 0 || vec2.mag() == 0 ){
+      G4String msg = "Either vec1 or vec2 in downconversion-at-a-boundary has "
+	"zero length, implying that one of the Lambertian vector attempts has "
+	"failed. Here we're going to overdo it and kill the whole program, but "
+	"should come back later to figure out a more efficient way to kill "
+	"these tracks.";
+      G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary012",
+		  FatalException, msg.c_str());
+      return;
+    }
+
+      
     
     //Debugging
     if (verboseLevel > 5) {
@@ -369,19 +386,30 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   } else if (random < downconversionProb + specProb) {
 
     if (verboseLevel > 2 ) G4cout << "Specular reflection at boundary, over surface norm " << surfNorm << "." << G4endl;
-    reflectedKDir = GetSpecularVector(waveVector, surfNorm, mode, surfacePoint); // Modify surfacePoint & surfNorm in place
+    reflectedKDir = GetSpecularVector(waveVector, surfNorm, mode, initialVDir, surfacePoint); // Modify surfacePoint & surfNorm in place
     refltype = "specular";
+    G4cout << "Specular reflection at boundary, over surface norm " << surfNorm << "." << G4endl;
   } else {
     if (verboseLevel > 2 ) G4cout << "Diffuse reflection at boundary, with surface norm " << surfNorm << ", in lattice: " << theLattice << ", at surfacePoint: " << surfacePoint << "." << G4endl;
 
+    G4cout << "Diffuse reflection at boundary, with surface norm " << surfNorm << ", in lattice: " << theLattice << ", at surfacePoint: " << surfacePoint << "." << G4endl;
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "DR Function Point H | Diffuse reflection at boundary, with surface norm " << surfNorm << ", in lattice: " << theLattice << ", at surfacePoint: " << surfacePoint << "." << G4endl;
     }
 
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode, initialVDir,
-                                               surfacePoint);
+    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+					       initialVDir, surfacePoint);    
     refltype = "diffuse";
+  }
+
+  //Do a check to make sure that we catch exceptions
+  if( reflectedKDir.mag() == 0 ){
+    G4String msg = "ReflectedKDir has zero length, implying that a Lambertian "
+      "vector attempt has failed. Will kill this phonon.";
+    G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary013",
+		JustWarning, msg.c_str());
+    DoSimpleKill(aTrack, aStep, particleChange);
   }
 
   // Update trackInfo wavevector and particleChange's group velocity and momentum direction
@@ -430,36 +458,72 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 G4ThreeVector G4CMPPhononBoundaryProcess::
 GetSpecularVector(const G4ThreeVector& waveVector,
                   G4ThreeVector& surfNorm, G4int mode,
+		  G4ThreeVector& initialVDir,
                   G4ThreeVector& surfacePoint) {
-  // Specular reflecton should reverse momentum along normal
-  G4ThreeVector reflectedKDir = waveVector.unit();
-  G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm
-  (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);	// Reflect against normal
 
-  
-  //  G4cout << "REL -------------- in specular vector function" << G4endl;
-  
-  if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm,
+  //First, use our surface normal to find the generalized surface normal
+  G4ThreeVector generalizedSurfNorm =
+    G4CMP::GetGeneralizedSurfaceNormal(surfNorm,initialVDir);
+
+
+  //Specular reflection should reverse momentum along normal. Now
+  //kPerp should almost always be negative (where the "almost" is because
+  //the generalized surface norm is built on relationships between the
+  //surfNorm and *velocity,* not k-vector. If it is positive (because
+  //we're at a glancing enough angle that the k-vector is somehow pointing
+  //inward (which we have seen before), then the reflected vector should
+  //inherit a "toward-surface" component, which is what would have happened
+  //in the old code as well.
+  G4ThreeVector reflectedKDir = waveVector.unit();
+  G4double kPerp = reflectedKDir * generalizedSurfNorm;
+  (reflectedKDir += 2.*kPerp*generalizedSurfNorm).setMag(1.);
+
+  //Old version
+  // Specular reflecton should reverse momentum along normal
+  //G4ThreeVector reflectedKDir = waveVector.unit();
+  //G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm
+  //(reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);	// Reflect against normal
+
+    
+  if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,generalizedSurfNorm,
                                     surfacePoint))
     return reflectedKDir;
 
+  // REL: Below this line, I have not changed the algorithm except for the lambertian call
+  // and plan on leaving this for some combination of WL, NT, and MK to figure out/fix, as I'm not
+  // sure how generalized this is for arbitrary volumes.
+  
   // Reflection didn't work as expected, need to correct:
   // If the reflected wave vector cannot propagate in the bulk
-  // (i.e., the reflected k⃗ has an associated v⃗g which is not inwardly directed.)
+  // (i.e., the reflected k has an associated vg which is not inwardly directed.)
   // That surface wave will propagate until it reaches a point
-  // where the wave vector has an inwardly directed v⃗g.
+  // where the wave vector has an inwardly directed v
+
+  //New version (REL)
+  //RotateToLocalDirection(reflectedKDir);
+  //G4ThreeVector newNorm = generalizedSurfNorm;
+  //RotateToLocalDirection(newGeneralizedNorm);
+  
+  //Old version
   RotateToLocalDirection(reflectedKDir);
   G4ThreeVector newNorm = surfNorm;
   RotateToLocalDirection(newNorm);
-  
+
   // Initialize solid object and utilities
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4CMPSolidUtils solidUtils(solid, verboseLevel, GetProcessName());
-
+  
   G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
   G4ThreeVector oldNorm = newNorm;
   G4ThreeVector oldstepLocalPos = stepLocalPos;
 
+  ////New version (REL)
+  //// Break up wavevector to perp and tan components
+  //G4double kPerpMag = reflectedKDir.dot(newNorm);
+  //G4ThreeVector kPerpV = kPerpMag * newNorm;		// Positive implied in kPerpMag for inward pointing (due to generalized surfNorm)
+  //G4ThreeVector kTan = reflectedKDir - kPerpV;		// Get kTan: reflectedKDir = kPerpV + kTan. Think this is the same regardless because both kPerpMag and newNorm inherit minuses
+
+  //Old version
   // Break up wavevector to perp and tan components
   G4double kPerpMag = reflectedKDir.dot(newNorm);
   G4ThreeVector kPerpV = kPerpMag * newNorm;		// Negative implied in kPerpMag for inward pointing
@@ -508,11 +572,22 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     // Step along kTan direction - this point is now outside the detector
     stepLocalPos += stepSize * kTan.unit();
 
+    //Old version
     // Get the local normal at the new surface point
     newNorm = solid->SurfaceNormal(stepLocalPos);
     // Check position status for flat skipper
     isIn = solid->Inside(stepLocalPos);
 
+    //New version: should use a generalized surface norm -- here I'm not sure what to use as the incident momentum
+    //direction here... If the displacement is along a small angle, maybe we can just ask for the surfNorm that,
+    //when dotted into the original generalizedSurfNorm, gives a positive number? 
+    
+    // Get the local normal at the new surface point
+    newNorm = solid->SurfaceNormal(stepLocalPos);
+    // Check position status for flat skipper
+    isIn = solid->Inside(stepLocalPos);
+
+    
     // Check if the phonon is on a flat. Must be on the solid surface
     if (oldNorm == newNorm && isIn == kSurface) {
       // Adjust stepLocalPos to edge of the flat (still on the flat)
@@ -556,7 +631,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     }
 
     // Get perpendicular component of reflected k w/ new norm
-    // (negative implied in kPerpMag for inward pointing)
+    // (negative implied in kPerpMag for inward pointing) //REL now positive-implied?
     kPerpV = kPerpMag * newNorm;
 
     // Calculate new reflectedKDir (kTan + kPerpV) and Vg
@@ -599,7 +674,8 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     // Get reflectedKDir from initial point and restore original values
     stepLocalPos = surfacePoint;
     newNorm = surfNorm;
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode, //REL keep in mind that this (among many functions here) will need to be updated to reflect new arguments
+    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+					       initialVDir, //REL keep in mind that this (among many functions here) will need to be updated to reflect new arguments
                                                surfacePoint);
   }
 
@@ -706,11 +782,10 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
 
   //Get the surface normal, compute a generalizedSurfaceNormal from it (to indicate the direction pointing against the incident phonon),
   //and then check the direction of the outgoing phonon with respect to it
-  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
-  G4ThreeVector generalizedSurfNorm = surfNorm;
-  if (generalizedSurfNorm.dot(aStep.GetPreStepPoint()->GetMomentumDirection()) >= 0.0) {
-    generalizedSurfNorm *= -1;
-  }
+  G4ThreeVector incMomDir = aStep.GetPreStepPoint()->GetMomentumDirection();
+  G4ThreeVector generalizedSurfNorm =
+    G4CMP::GetGeneralizedSurfaceNormal(G4CMP::GetSurfaceNormal(aStep),
+				       incMomDir);
   
   //If the direction is not "outward" with respect to the direction from which the phonon came, then we have an issue.
   if (G4CMP::PhononVelocityIsOutward(theLattice,mode,waveVector,generalizedSurfNorm,nextVolTouchable,surfacePoint) == false) {
@@ -753,7 +828,7 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
 	if( verboseLevel > 5 ){    
 	  G4cout << "DT Function Point F | in success trigger of phononVelIsOutward loop, newAttemptWaveVector rotated back into global: " << newAttemptWaveVector << G4endl;
 	}
-
+	
 	//Now fill out quantities
 	trackInfo->SetWaveVector(newAttemptWaveVector); //Inbound and outbound wavevectors are the same (waveVector) by aphysical fiat at the moment.
 	aParticleChange.ProposeVelocity(v);
@@ -766,7 +841,7 @@ void G4CMPPhononBoundaryProcess::DoTransmission(const G4Track& aTrack,
     if (verboseLevel > 5) {
       G4cout << "DT Function Point G | Momentum direction proposed at end of doTransmission: " << vdir << G4endl;
     }
-
+    
     //If after our loop we still run into issues, we have to break and kill the track
     if( !successfulTransmission ){
       G4String msg = G4PhononPolarization::Name(mode) + " transmission failed even after repeated tries to nudge direction.";
