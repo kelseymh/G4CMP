@@ -168,26 +168,5 @@ G4CMPSCPairBreakingRate::ComputeNormalizedTauPairBreakingVsEnergy() {
     element.push_back(normalizedTau);
     output.push_back(element);
   }
-
-
-  //This is only for debugging, and is temporary.
-  //  SavePairBreakingRateVsPhononEnergyToLogFile(output);
-
   return output;
 }
-
-// Construct the lookup table for normalized tau for pairbreaking vs phonon
-// energy
-void G4CMPSCPairBreakingRate::SavePairBreakingRateVsPhononEnergyToLogFile(std::vector<std::vector<G4double> > theFunc) {
-  std::ofstream outfile;
-  outfile.open("/Users/ryanlinehan/QSC/Sims/Geant4/scRebuild-build/SCPairBreakingTauVsEnergy.txt");
-  for( int iE = 0; iE < theFunc.size(); ++iE ){
-    outfile << theFunc[iE][0] << " " << theFunc[iE][1] << std::endl;
-  }
-  outfile.close();
-  return;
-}
-
-
-
-//REL NEED TO SWAP DIRECT CALLS TO PROTECTED DATA MEMBERS WITH CONST ACCESS FUNCTIONS

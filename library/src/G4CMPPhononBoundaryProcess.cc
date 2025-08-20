@@ -547,7 +547,12 @@ GetSpecularVector(const G4ThreeVector& waveVector,
                                     surfacePoint))
     return reflectedKDir;
 
-  // REL: Below this line, I have not changed the algorithm except for the
+  
+  // REL: Since the "base" version of this assumes outward-pointing surface
+  // normals and since our initial surfNorm should in principle point
+  // outward for most SCDMS-specific volumes, we just leave the rest
+  // of the code as-is and hope all is well.   
+  //  Below this line, I have not changed the algorithm except for the
   // lambertian call far below, and plan on leaving this for some combination
   // of WL, NT, MK, and myself to figure out/fix, as I'm not sure how
   // generalized this is for arbitrary volumes.

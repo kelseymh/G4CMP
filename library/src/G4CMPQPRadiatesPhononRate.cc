@@ -174,27 +174,5 @@ G4CMPQPRadiatesPhononRate::ComputeNormalizedTauQPRadiatesPhononVsEnergy() {
     element.push_back(normalizedTau);
     output.push_back(element);
   }
-
-  //This is only for debugging, and is temporary.
-  SaveQPRadiatesPhononTauVsPhononEnergyToLogFile(output);
-
-  
   return output;
-}
-
-//REL NEED TO SWAP DIRECT CALLS TO PROTECTED DATA MEMBERS WITH CONST ACCESS
-//FUNCTIONS 7/8/25: Still relevant?
-
-// Construct the lookup table for normalized tau for pairbreaking vs phonon
-// energy
-void G4CMPQPRadiatesPhononRate::SaveQPRadiatesPhononTauVsPhononEnergyToLogFile(std::vector<std::vector<G4double> > theFunc) {
-  
-  //G4cout << "In the QP Radiates Phonon log file function." << G4endl;
-  std::ofstream outfile;
-  outfile.open("/Users/ryanlinehan/QSC/Sims/Geant4/scRebuild-build/QPRadiatesPhononTauVsEnergy.txt");
-  for (int iE = 0; iE < theFunc.size(); ++iE) {
-    outfile << theFunc[iE][0] << " " << theFunc[iE][1] << std::endl;
-  }
-  outfile.close();
-  return;
 }

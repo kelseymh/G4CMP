@@ -20,7 +20,7 @@
 #include "G4PhononTransSlow.hh"
 #include "G4RandomDirection.hh"
 
-// Only applies to the known phonon polarization states
+// Only applies to QPs
 
 G4bool G4VQPProcess::IsApplicable(const G4ParticleDefinition& aPD) {
   return G4CMP::IsQP(&aPD);

@@ -8,6 +8,7 @@
 
 #include "G4CMPQPDiffusion.hh"
 #include "G4CMPSCUtils.hh"
+#include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPVProcess.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -56,9 +57,6 @@ G4CMPQPDiffusion::G4CMPQPDiffusion(const G4String& name,
   //fSafetyHelper is initialized in AlongStepGPIL
   fSafetyHelper=nullptr;
   
-  //Temporary REL
-  //fOutfile.open("/Users/ryanlinehan/QSC/Sims/Geant4/scRebuild-build/RandomWalkSampledDimlessTimes.txt",std::ios::trunc);
-
   fBoundaryHistoryTrackID = -1;
   fBoundaryHistory.clear();
   fMaxBoundaryHistoryEntries = 6; //Hardcoded and somewhat arbitrary...
@@ -82,7 +80,13 @@ G4CMPQPDiffusion::~G4CMPQPDiffusion() {
     G4cout << "G4CMPQPDiffusion destruct " << GetProcessName() << G4endl;
   }
 
-  //fOutfile.close();
+}
+
+//Is applicable -- putting here because technically the QP diffusion
+//process is not a G4VProcess or G4VQPProcess (since it's discrete+
+//continuous)
+G4bool G4CMPQPDiffusion::IsApplicable(const G4ParticleDefinition& aPD) {
+  return G4CMP::IsQP(&aPD);
 }
 
 //Begin tracking this QP
@@ -2345,8 +2349,6 @@ SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique() {
 	<< "acceptance/rejection technique. Throwing an error.";
     G4Exception("G4CMPQPDiffusion::SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique","QPDiffusion021",FatalException, msg);
   }
-
-  //fOutfile << sampledT << G4endl;  
 
   return sampledT;
   
