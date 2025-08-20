@@ -105,7 +105,8 @@ G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
 // Initialization for current track
 
-void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track, const G4bool overrideMomentumReset) {
+void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track,
+					 const G4bool overrideMomentumReset) {
   // WARNING!  This assumes track starts and ends in one single volume!
   SetCurrentTrack(track);
   SetLattice(track);
@@ -138,20 +139,26 @@ void G4CMPProcessUtils::LoadDataForTrack(const G4Track* track, const G4bool over
 
     // Set momentum direction using already provided wavevector
     tempvec = trackInfo->k();
-    //G4cout << "In LoadDataForTrack: k-vector from tempvect: " << tempvec << G4endl;
-    //G4cout << "In LoadDataForTrack: current touchable: " << GetCurrentTouchable()->GetVolume()->GetName() << G4endl;
+    //G4cout << "In LoadDataForTrack: k-vector from tempvect: " << tempvec
+    //<< G4endl;
+    //G4cout << "In LoadDataForTrack: current touchable: "
+    //<< GetCurrentTouchable()->GetVolume()->GetName() << G4endl;
     RotateToLocalDirection(tempvec);
 
     const G4ParticleDefinition* pd = track->GetParticleDefinition();
     G4Track* tmp_track = const_cast<G4Track*>(track);
 
     // Set the momentum direction with the group velocity
-    //G4cout << "In LoadDataForTrack: tmp_track current momentum direction " << tmp_track->GetMomentumDirection() << G4endl;
-    tempvec2 = theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), tempvec);
-    //G4cout << "In LoadDataForTrack: polarization: " << pd->GetParticleName() << G4endl;
+    
+    //G4cout << "In LoadDataForTrack: tmp_track current momentum direction "
+    //<< tmp_track->GetMomentumDirection() << G4endl;    
+    tempvec2 = theLattice->MapKtoVDir(G4PhononPolarization::Get(pd), tempvec);  
+    //G4cout << "In LoadDataForTrack: polarization: " << pd->GetParticleName()
+    //<< G4endl;    
     RotateToGlobalDirection(tempvec2);
     tmp_track->SetMomentumDirection(tempvec2);
-    //G4cout << "In LoadDataForTrack: tmp_track new momentum direction: " << tempvec2 << G4endl;
+    //G4cout << "In LoadDataForTrack: tmp_track new momentum direction: "
+    //<< tempvec2 << G4endl;
   }
 }
 
@@ -197,7 +204,8 @@ void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
 
 void G4CMPProcessUtils::SetLattice(const G4Track* track) {
   theLattice = track ? G4CMP::GetLattice(*track) : nullptr;
-  //  G4cout << "REL G4CMPProcessUtils::SetLattice calls on track info, to get lattice: " << theLattice << G4endl;
+  //  G4cout << "REL G4CMPProcessUtils::SetLattice calls on track info, to get
+  // lattice: " << theLattice << G4endl;
 }
 
 

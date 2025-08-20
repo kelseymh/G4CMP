@@ -310,7 +310,8 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
   const G4ThreeVector surfacePos = GetCurrentTrack()->GetPosition();
-  return PhononVelocityIsInward(lattice, mode, waveVector, surfNorm, surfacePos);
+  return PhononVelocityIsInward(lattice, mode, waveVector, surfNorm,
+				surfacePos);
 }
 
 // See above comment about the generalized surface norm being what is passed
@@ -326,7 +327,8 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
 
   if (!touchable) {
     G4Exception("G4CMP::PhononVelocityIsInward", "G4CMPUtils001",
-		EventMustBeAborted, "Current track does not have valid touchable!");
+		EventMustBeAborted,
+		"Current track does not have valid touchable!");
     return false;
   }
 
