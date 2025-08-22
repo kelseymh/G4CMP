@@ -276,8 +276,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     RotateToGlobalDirection(vec1);
     RotateToGlobalDirection(vec2);
 
-    G4CMP::UpdatePhononWavevector(*sec1, vec1);
-    G4CMP::UpdatePhononWavevector(*sec2, vec2);
+    UpdatePhononWavevector(*sec1, vec1);
+    UpdatePhononWavevector(*sec2, vec2);
 
     return;
   } else if (random < downconversionProb + specProb) {
