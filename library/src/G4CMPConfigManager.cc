@@ -46,6 +46,7 @@
 // 20250212  G4CMP-457: Add short names for empirical Lindhard NIEL.
 // 20250422  G4CMP-472: Adjust order of data members to avoid compiler warnings.
 // 20250325  G4CMP-463: Add parameter for phonon surface step size & limit.
+// 20250711  G4CMP-491: Turn off phonon surface displacement loop by default.
 
 
 #include "G4CMPConfigManager.hh"
@@ -91,7 +92,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     ehBounces(getenv("G4CMP_EH_BOUNCES")?atoi(getenv("G4CMP_EH_BOUNCES")):1),
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     maxLukePhonons(getenv("G4MP_MAX_LUKE")?atoi(getenv("G4MP_MAX_LUKE")):-1),
-    pSurfStepLimit(getenv("G4CMP_PHON_SURFLIMIT")?strtod(getenv("G4CMP_PHON_SURFLIMIT"),0):5000),
+    pSurfStepLimit(getenv("G4CMP_PHON_SURFLIMIT")?strtod(getenv("G4CMP_PHON_SURFLIMIT"),0):-1),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):""),
     lukeFilename(getenv("G4CMP_LUKE_FILE")?getenv("G4CMP_LUKE_FILE"):"LukePhononEnergies"),
