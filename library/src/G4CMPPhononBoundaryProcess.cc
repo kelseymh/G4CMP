@@ -288,19 +288,22 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4double diffuseProb = surfProp->DiffuseReflProb(freq);
   G4double downconversionProb = surfProp->AnharmonicReflProb(freq);
   //G4cout << "AnharmonicProb at point: " << surfacePoint << " is "
-  //<< downconversionProb << G4endl;
+  //	 << downconversionProb << G4endl;
   //G4cout << "DiffuseProb at point: " << surfacePoint << " is "
-  //<< diffuseProb << ", spec: " << specProb << G4endl;
+  //	 << diffuseProb << ", spec: " << specProb << G4endl;
+  //G4cout << "SpecProb at point: " << surfacePoint << " is "
+  //	 << specProb << G4endl;
   
   // Empirical functions may lead to non normalised probabilities.
   // Normalise here.
 
   G4double norm = specProb + diffuseProb + downconversionProb;
 
+
   specProb /= norm;
   diffuseProb /= norm;
   downconversionProb /= norm;
-
+  
   G4ThreeVector reflectedKDir;
 
   G4double random = G4UniformRand();
@@ -488,8 +491,9 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 	   << waveVector << ", non-generalized surfNorm: " << surfNorm
 	   << ", and attempted reflected vector " << reflectedKDir << G4endl;
   }
-  
-  if (surfNorm.dot(initialVDir.unit()) >= 0.0 ) { surfNorm *= -1; }
+
+  //REL changed to <= 0.0 8/25/25
+  if (surfNorm.dot(initialVDir.unit()) <= 0.0 ) { surfNorm *= -1; }
   if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm,
 				     surfacePoint)) {
     G4String msg = G4PhononPolarization::Name(mode) + " " + refltype
@@ -524,16 +528,17 @@ GetSpecularVector(const G4ThreeVector& waveVector,
 
 
   //Specular reflection should reverse momentum along normal. Now
-  //kPerp should almost always be negative (where the "almost" is because
+  //kPerp should almost always be positive (where the "almost" is because
   //the generalized surface norm is built on relationships between the
-  //surfNorm and *velocity,* not k-vector. If it is positive (because
+  //surfNorm and *velocity,* not k-vector. If it is negative (because
   //we're at a glancing enough angle that the k-vector is somehow pointing
   //inward (which we have seen before), then the reflected vector should
   //inherit a "toward-surface" component, which is what would have happened
   //in the old code as well.
   G4ThreeVector reflectedKDir = waveVector.unit();
   G4double kPerp = reflectedKDir * generalizedSurfNorm;
-  (reflectedKDir += 2.*kPerp*generalizedSurfNorm).setMag(1.);
+  (reflectedKDir -= 2.*kPerp*generalizedSurfNorm).setMag(1.);
+  //REL^ changed to -= 8/25/25
 
   //Old version
   // Specular reflecton should reverse momentum along normal
@@ -877,7 +882,7 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
   G4CMP::RotateToGlobalDirection(aStep.GetPostStepPoint()->GetTouchable(),waveVector);  
 
   //Get the surface normal, compute a generalizedSurfaceNormal from it (to
-  //indicate the direction pointing against the incident phonon),
+  //indicate the direction pointing with the incident phonon),
   //and then check the direction of the outgoing phonon with respect to it
   G4ThreeVector incMomDir = aStep.GetPreStepPoint()->GetMomentumDirection();
   G4ThreeVector generalizedSurfNorm =

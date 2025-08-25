@@ -274,31 +274,24 @@ G4bool G4CMPQPBoundaryProcess::ReflectTrack(const G4Track& aTrack,
 }
 
 
-// Do absorption of a quasiparticle.
+// Do absorption of a quasiparticle. The way this is currently run is
+// to pass the buck to the BoundaryUtils class, which does a NIEL
+// calculation and passage to the partitioner. If we want QPs not to
+// go through that process, then we can switch to just the final
+// two lines of this function that are commented out.
 void G4CMPQPBoundaryProcess::DoAbsorption(const G4Track& aTrack,
-					  const G4Step&,
+					  const G4Step& aStep,
 					  G4ParticleChange& aParticleChange) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::DoAbsorption() --" << G4endl;
   }
-
-  //  G4cout << "Doing QP Absorption." << G4endl;
+  G4CMPBoundaryUtils::DoAbsorption(aTrack,aStep,aParticleChange);
   
-  //Note that this is still just blindly copied from the G4CMPBoundaryUtils
-  // this needs to be customized for QP dynamics ...
-  if (verboseLevel > 1) G4cout << procName << ": Track absorbed" << G4endl;
-  G4double ekin = procUtils->GetKineticEnergy(aTrack);
-
-  //Debugging
-  if( verboseLevel > 5 ){
-    G4cout << "REL: in doabsorption, ekin: " << ekin << " for QP." << G4endl;
-  }
-
-  //If we do this, then we get issues with the partitioner for some reason.
-  //aParticleChange.ProposeNonIonizingEnergyDeposit(ekin); 
+  /* 
   aParticleChange.ProposeTrackStatus(fStopAndKill);
   aParticleChange.ProposeEnergy(0.);
+  */
 }
 
 
