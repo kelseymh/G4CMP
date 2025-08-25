@@ -254,7 +254,7 @@ G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
   G4int nTries = 0;
 
   //Due to a need to generalize this lambertian vector finding, we need to
-  //make sure that the incident momentum and the surface norm are in opposite
+  //make sure that the incident momentum and the surface norm are in the same
   //directions. Otherwise, take surfNorm to be -1*surfNorm. If we don't
   //do this here, we can end up launching phonons in a lambertian way
   //but in the wrong direction relative to the surface, which may sometimes
@@ -281,7 +281,7 @@ G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
 }
 
 //Now modified to recognize that the surface norm is "generalized," i.e. it is
-//always pointing in the direction opposite to the incident velocity/momentum.
+//always pointing in the same direction as the incident velocity/momentum.
 //This is opposite what existed before, where we could always assume we were
 //reflecting "inward" with respect to an outward-facing surface normal.
 
@@ -289,7 +289,7 @@ G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
   G4double phi = 2.0*pi*G4UniformRand();
   G4double theta = acos(2.0*G4UniformRand() - 1.0) / 2.0;
 
-  G4ThreeVector refl = surfNorm;
+  G4ThreeVector refl = -1*surfNorm;
   refl = refl.rotate(surfNorm.orthogonal(), theta);
   refl = refl.rotate(surfNorm, phi);
   return refl;
@@ -299,10 +299,10 @@ G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
 // Check that phonon is properly directed from the volume surface
 // waveVector and surfNorm need to be in global coordinates.
 // A new assumption here is that the surfNorm that is passed in is "generalized,"
-// i.e. that it points opposite to the incoming v-dir (not the incoming k-vector)
-// It therefore is positive when dotted into the outgoing
+// i.e. that it points in the same direction as to the incoming v-dir (not
+// the incoming k-vector). It therefore is negative when dotted into the outgoing
 // v-dir (if reflection is occurring). So if you're using these, make sure that
-// the surfNorm that you pass in is pointing *into* the volume that your phonon
+// the surfNorm that you pass in is pointing *away from* the volume that your phonon
 // is coming from. Otherwise you may confuse yourself.
 
 G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
@@ -352,11 +352,11 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
   //  ", trialStepPos: " << localPos + 1*nm * vDir << G4endl;
   
   //In all discernible cases, the (generalized) surface norm passed into this
-  //function should now be pointing in the direction opposite to the incident
+  //function should now be pointing in the direction identical to the incident
   //velocity. If the new velocity dotted into this generalized surface norm
-  //is positive (and the trial step is inside the incident volume), then we've
-  //succeeded. Otherwise, return false.
-  return (vDir.dot(surfNorm) > 0.0 && trialStep == kInside);
+  //is negative (and the trial step is inside the incident volume), then we've
+  //succeeded. Otherwise, return false. REL changed to < 0.0 8/25/25
+  return (vDir.dot(surfNorm) < 0.0 && trialStep == kInside);
 }
 
 
@@ -368,8 +368,8 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
 // in the rotations from global to local and the mapping of K to vDir. You'll
 // also need to make sure that the lattice is the *new* lattice (i.e. the one
 // that the phonon is leaving into). As with PhononVelocityIsInward, this takes
-// a "generalized" surfaceNorm, which always points in the direction opposite
-// to the impinging phonon's velocity (not necessarily its k-vector). So make
+// a "generalized" surfaceNorm, which always points in the same direction as
+// the impinging phonon's velocity (not necessarily its k-vector). So make
 // sure that's true as well. All of these input vectors should be in a global
 // frame.
 
@@ -410,9 +410,9 @@ G4bool G4CMP::PhononVelocityIsOutward(const G4LatticePhysical* lattice,
   //" << vDir << G4endl;
   
   //In all discernible cases, the (generalized) surface norm passed into this
-  //function should now be pointing in the direction opposite to the incident
+  //function should now be pointing in the direction identical to the incident
   //velocity. If the new velocity dotted into this generalized surface norm is
-  //negative, then we've succeeded and the phonon is "outbound". Otherwise,
+  //positive, then we've succeeded and the phonon is "outbound". Otherwise,
   //return false. Note that we don't use a trialStep logic here because if this
   //is leaving a volume, it may either leave into a sibling volume (in which
   //case kInside == false, a mother volume (kInside == false), or a daughter
@@ -421,7 +421,7 @@ G4bool G4CMP::PhononVelocityIsOutward(const G4LatticePhysical* lattice,
   
   //G4cout << "In PhononVelocityIsOutward, Returning: " << (vDir.dot(surfNorm))
   //<< " with vDir: " << vDir << " and surfNorm: " << surfNorm << G4endl;
-  return (vDir.dot(surfNorm) < 0.0);
+  return (vDir.dot(surfNorm) > 0.0); //REL changed 8/25/2025
 }
 
 
