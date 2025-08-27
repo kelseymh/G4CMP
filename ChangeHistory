@@ -9,6 +9,7 @@ ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 Development Project for quasiparticle tracking. New Tags go below this line.
 2025-08-14  G4CMP-219 : Quasiparticle tracking in superconducting films.
 2025-08-14  G4CMP-496 : Fix phonon wavevector & momentum direction from DoDecay.
+2025-08-01  G4CMP-326 : Kill "thermal" phonons in TrackLimiter if temp>0.
 New tags go above this line.
 
 2025-07-11  G4CMP-491 : Turn off phonon surface displacement loop by default.

@@ -77,7 +77,8 @@ public:
   G4CMPProcessUtils& operator=(G4CMPProcessUtils&&) = default;
 
   // Configure for current track
-  virtual void LoadDataForTrack(const G4Track* track);
+  virtual void LoadDataForTrack(const G4Track* track,
+				const G4bool overrideMomentumReset=false);
   virtual void SetCurrentTrack(const G4Track* track);
   virtual void SetLattice(const G4Track* track);
 

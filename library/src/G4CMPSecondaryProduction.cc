@@ -63,7 +63,8 @@ G4bool G4CMPSecondaryProduction::IsApplicable(const G4ParticleDefinition& pd) {
 
 // Override G4CMPProcessUtils for normal tracks outside lattice volumes
 
-void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
+void G4CMPSecondaryProduction::
+LoadDataForTrack(const G4Track* track, const G4bool overrideMomentumReset) {
   if (verboseLevel>1)
     G4cout << "G4CMPSecondaryProduction::LoadDataForTrack" << G4endl;
 

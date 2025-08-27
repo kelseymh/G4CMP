@@ -57,9 +57,11 @@ namespace G4CMP {
   
   void RotateToGlobalPosition(const G4VTouchable* touch,
 			      G4ThreeVector& pos);
-  
+
+  G4ThreeVector GetGeneralizedSurfaceNormal(const G4ThreeVector& surfNorm,
+					    const G4ThreeVector& incMomDir );
+
   G4ThreeVector GetSurfaceNormal(const G4Step& step);
-  //G4ThreeVector GetSurfaceNormal(const G4StepPoint* stepPoint, const G4ThreeVector& guessedDirection );
 
   G4double Get2DSafety(const G4VTouchable* motherTouch,
 		       G4ThreeVector pos,

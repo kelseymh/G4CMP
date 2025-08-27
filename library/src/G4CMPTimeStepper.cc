@@ -80,9 +80,12 @@ G4CMPTimeStepper::G4CMPTimeStepper()
 G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
 
-// Get scattering rates from current track's processes
+// Get scattering rates from current track's processes. Need to override with
+// the momentum reset stuff because G4CMPVProcess had that function change,
+// and so now function overriding doesn't happen naturally (REL 8/16/25)
 
-void G4CMPTimeStepper::LoadDataForTrack(const G4Track* aTrack) {
+void G4CMPTimeStepper::
+LoadDataForTrack(const G4Track* aTrack, const G4bool overrideMomentumReset) {
   G4CMPProcessUtils::LoadDataForTrack(aTrack);	// Common configuration
 
   // Get rate model for Luke phonon emission from process

@@ -111,7 +111,8 @@ G4CMPQPRecombinationRate::UpdateLookupTable(const G4LatticePhysical * theLat) {
       == 0) {
     G4cout << "Computing new lookup table for recombination process, lattice "
 	   << "name: " << theLat->GetLattice()->GetName() << G4endl;
-    fMap_physicalLattice_NormalizedTauRecombinationVsEnergy.emplace(theLat,ComputeNormalizedTauRecombinationVsEnergy());
+    fMap_physicalLattice_NormalizedTauRecombinationVsEnergy.
+      emplace(theLat,ComputeNormalizedTauRecombinationVsEnergy());
     fCurrentNormalizedTauRecombinationVsEnergy =
       fMap_physicalLattice_NormalizedTauRecombinationVsEnergy[theLat];
   } else {
@@ -182,26 +183,7 @@ G4CMPQPRecombinationRate::ComputeNormalizedTauRecombinationVsEnergy() {
     element.push_back(normalizedTau);
     output.push_back(element);
   }
-
-  //This is only for debugging, and is temporary.
-  SaveBogoliubovRecombinationTauVsPhononEnergyToLogFile(output);
-  
   return output;
 }
 
 
-//REL NEED TO SWAP DIRECT CALLS TO PROTECTED DATA MEMBERS WITH CONST ACCESS
-//FUNCTIONS... 7/8/2025: Still applicable?
-
-// Construct the lookup table for normalized tau for pairbreaking vs phonon
-// energy
-void G4CMPQPRecombinationRate::SaveBogoliubovRecombinationTauVsPhononEnergyToLogFile(std::vector<std::vector<G4double> > theFunc) {
-
-  std::ofstream outfile;
-  outfile.open("/Users/ryanlinehan/QSC/Sims/Geant4/scRebuild-build/BogoliubovRecombinationTauVsEnergy.txt");
-  for (int iE = 0; iE < theFunc.size(); ++iE) {
-    outfile << theFunc[iE][0] << " " << theFunc[iE][1] << std::endl;
-  }
-  outfile.close();
-  return;
-}
