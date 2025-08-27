@@ -790,6 +790,23 @@ Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid, G4ThreeVector pos,
   return the2DSafety;
 }
 
+//Get the "generalized" surface normal given a calculated surface normal:
+//this generalized version is one that computes the "naive" surface normal
+//(G4CMP::GetSurfaceNormal), and then checks its direction against the
+//momentum of the step passed as an argument. The generalized surface
+//norm that is returned is always defined to be in the *same* direction
+//to the momentum of the step (i.e. the momentum of the impinging particle)
+G4ThreeVector
+G4CMP::GetGeneralizedSurfaceNormal(const G4ThreeVector& surfNorm,
+				   const G4ThreeVector& incMomDir ) {
+  G4ThreeVector generalizedSurfNorm = surfNorm;
+  if (surfNorm.dot(incMomDir)
+      <= 0.0) { //REL changed to <= 0.0 8/25/25
+    generalizedSurfNorm *= -1;
+  }
+  return generalizedSurfNorm;
+}
+
 // Get normal to enclosing volume at boundary point in global coordinates
 G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step) {
 

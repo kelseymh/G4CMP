@@ -39,7 +39,10 @@ public:
   virtual ~G4CMPPhononBoundaryProcess();
   
   // Configure for current track including AnharmonicDecay utility
-  virtual void LoadDataForTrack(const G4Track* track);
+  virtual void LoadDataForTrack(const G4Track* track,
+				const G4bool overrideMomentumReset=false);
+  
+
   
   virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& track,
 						      G4double previousStepSize,
@@ -53,6 +56,7 @@ protected:
                                    G4double prevStepLength,
                                    G4ForceCondition* condition);
 
+  
   // Apply phonon-specific conditions, after calling through to base
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
   
@@ -66,6 +70,7 @@ protected:
 
   G4ThreeVector GetSpecularVector(const G4ThreeVector& waveVector,
                                   G4ThreeVector& surfNorm, G4int mode,
+				  G4ThreeVector& initialVDir,
                                   G4ThreeVector& surfacePoint);
 
   

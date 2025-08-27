@@ -70,7 +70,8 @@ public:
   G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&) override;
 
   G4ThreeVector FindDirectionToNearbyBoundary(const G4Track& track, const G4ThreeVector& trackPosition, const G4double the2DSafety, G4bool & needToRepeatCalculation, G4bool useSweepForDaughterSafety = false);
-  
+
+  G4bool IsApplicable(const G4ParticleDefinition& aPD);
   
 public:
  
@@ -164,8 +165,6 @@ private:
   G4double fPreemptivelyKillTrack;         //Kill track
 
   
-  //std::ofstream fOutfile;
-
   void UpdateBoundaryHistory(G4int trackID, G4ThreeVector preStepPos,
 			     G4ThreeVector preStepNorm);
   std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector>

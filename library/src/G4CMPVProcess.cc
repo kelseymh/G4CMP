@@ -28,10 +28,12 @@
 
 G4CMPVProcess::G4CMPVProcess(const G4String& processName,
 			     G4CMPProcessSubType stype)
-  : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils(), G4CMPSCUtils(),
+  : G4VDiscreteProcess(processName, fPhonon), G4CMPProcessUtils(),
+    G4CMPSCUtils(),
     rateModel(0) {
   verboseLevel = G4CMPConfigManager::GetVerboseLevel(); 
-  //G4cout << "In G4CMPVProcess, setting verbose level to: " << verboseLevel << G4endl;
+  //G4cout << "In G4CMPVProcess, setting verbose level to: " << verboseLevel
+  //<< G4endl;
   SetProcessSubType(stype);
 }
 
@@ -61,8 +63,12 @@ void G4CMPVProcess::StartTracking(G4Track* track) {
   LoadDataForTrack(track);
   ConfigureRateModel();
 
-  //REL I'm putting this here because I don't think it successfully gets set to a non-default
-  //value if we only do it in the constructor? Should probably ask Mike about this
+  //G4cout << "REL after the startTracking function runs LoadDataForTrack"
+  //<< G4endl;
+  
+  //REL I'm putting this here because I don't think it successfully gets set
+  //to a non-default value if we only do it in the constructor? Should
+  //probably ask Mike about this
   this->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
 }
 
@@ -80,97 +86,124 @@ void G4CMPVProcess::ConfigureRateModel() {
 }
 
 
-//This logic block needs to be run in every process's GetMeanFreePath in order to let it know that the lattice has changed.
-//Otherwise the different processes (which inherit from individual/separate instances of the G4CMPProcessUtils class) will
-//see different lattices.
-G4bool G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack)
-{
-  if( verboseLevel > 5 ){
-    G4cout << "---------- G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover ----------" << G4endl;
-    G4cout << "UMFPFLC Function Point A | loading data for track after lattice changeover, process: " << this->GetProcessName() << G4endl;
-    G4cout << "UMFPFLC Function Point A | Here, track length: " << aTrack.GetTrackLength() << G4endl;
-    G4cout << "UMFPFLC Function Point A | Current lattice a la lattice manager: " << G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()) << ", while this->theLattice: " << this->theLattice << G4endl;
+//This logic block needs to be run in every process's GetMeanFreePath in order
+//to let it know that the lattice has changed. Otherwise the different
+//processes (which inherit from individual/separate instances of the
+//G4CMPProcessUtils class) will see different lattices.
+G4bool G4CMPVProcess::
+UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
+  if (verboseLevel > 5) {
+    G4cout << "-- G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover --"
+	   << G4endl;
+    G4cout << "UMFPFLC Function Point A | loading data for track after lattice "
+	   << "changeover, process: " << this->GetProcessName() << G4endl;
+    G4cout << "UMFPFLC Function Point A | Here, track length: "
+	   << aTrack.GetTrackLength() << G4endl;
+    G4cout << "UMFPFLC Function Point A | Current lattice a la lattice "
+	   << "manager: "
+	   << G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())
+	   << ", while this->theLattice: " << this->theLattice << G4endl;
   }
     
-  //Always do a check to see if the current lattice stored in this process is equal to the one that represents
-  //the volume that we're in. Note that we can't do this with the "GetLattice()" and "GetNextLattice()" calls
-  //here because at this point in the step, the pre- and post-step points both point to the same volume. Since
-  //GetMeanFreePath is run at the beginning, I think the point at which a boundary interaction is assessed comes
-  //later (hence why we can use that info in PostStepDoIts but not here.) Adding a statement about track length here,
-  //since it seems that when a particle spawns it doesn't necessarily trigger this block, and I think we want it to.
-  if( (((this->theLattice) && G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())) &&
+  //Always do a check to see if the current lattice stored in this process is
+  //equal to the one that represents the volume that we're in. Note that we
+  //can't do this with the "GetLattice()" and "GetNextLattice()" calls here
+  //because at this point in the step, the pre- and post-step points both
+  //point to the same volume. Since GetMeanFreePath is run at the beginning, I
+  //think the point at which a boundary interaction is assessed comes later
+  //(hence why we can use that info in PostStepDoIts but not here.) Adding a
+  //statement about track length here, since it seems that when a particle
+  //spawns it doesn't necessarily trigger this block, and I think we want it to.
+  if ((((this->theLattice) && G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())) &&
        (this->theLattice != G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()))) ||
-      aTrack.GetTrackLength() == 0.0 ){
+      aTrack.GetTrackLength() == 0.0) {
 
     //Debugging
-    if( verboseLevel > 5 ){
-      G4cout << "UMFPFLC Function Point B | the step length associated with this is " << aTrack.GetStep()->GetStepLength() << G4endl;
+    if (verboseLevel > 5) {
+      G4cout << "UMFPFLC Function Point B | the step length associated with "
+	     << "this is " << aTrack.GetStep()->GetStepLength() << G4endl;
     }
     
     
     //REL noting that if physical lattices are not 1:1 with volumes, something may get broken here... Should check a scenario of segmented SC...
-    
-    this->LoadDataForTrack(&aTrack);
-    if(rateModel) rateModel->LoadDataForTrack(&aTrack);
+
+    //Noting here that since LoadDataForTrack updates the momentum based on
+    //the current lattice (which in a reflection step is the "turnaround
+    //lattice", we need to provide an opt-out for that momentum recalculation.
+    //In some cases where the existing k-vector is shallow, that momentum
+    //recalculation can take the existing k-vector and turn it around and
+    //launch it into the new "turnaround" lattice in something that looks like
+    //a transmission, not a reflection. So for phonons I just add in a
+    //conditional to the LoadDataForTrack function that ensures it doesn't
+    //attempt a recalculation of the momentum vector when loaddatafromtrack is
+    //run from this specific location (i.e. the pre-step volume differs from
+    //this->theLattice). We note that for actual, true transmissions, the
+    //setting of the new k-vector and momentum in the new lattice should happen
+    //*within* the doTransmission function at the end of the prior step. I
+    //think that's the only case where this override could mess things up, and
+    //it should be covered in that function already.
+    this->LoadDataForTrack(&aTrack,true);
+    if(rateModel) rateModel->LoadDataForTrack(&aTrack,true);
 
     //Debugging
-    if( verboseLevel > 5 ){
-      G4cout << "UMFPFLC Function Point C | Successfully changed over to a new lattice for process " << this->GetProcessName() << G4endl;
+    if (verboseLevel > 5) {
+      G4cout << "UMFPFLC Function Point C | Successfully changed over to a new "
+	     << "lattice for process " << this->GetProcessName() << G4endl;
     }
     return true;
-    
   }
   //Debugging
-  if( verboseLevel > 5 ){    
-    G4cout << "UMFPFLC Function Point D | Did not successfully change over to a new lattice for process " << this->GetProcessName() << G4endl;
+  if (verboseLevel > 5) {    
+    G4cout << "UMFPFLC Function Point D | Did not successfully change over to "
+	   << "a new lattice for process " << this->GetProcessName() << G4endl;
   }
   return false;
 }
 
-//This is meant to update superconductor info for both the process and the rate info if we move into a new lattice
-void G4CMPVProcess::UpdateSCAfterLatticeChange()
-{
+//This is meant to update superconductor info for both the process and the rate
+//info if we move into a new lattice
+void G4CMPVProcess::UpdateSCAfterLatticeChange() {
+
   //Debugging
-  if( verboseLevel > 5 ){
-    G4cout << "---------- G4CMPVProcess::UpdateSCAfterLatticeChange ----------" << G4endl;
+  if (verboseLevel > 5) {
+    G4cout << "-- G4CMPVProcess::UpdateSCAfterLatticeChange --" << G4endl;
   }
  
-  //First, determine if the new lattice is a SC. If not, then set the SCUtils info to null for this process  
-  if( (this->theLattice)->GetSCDelta0() <= 0 ){
+  //First, determine if the new lattice is a SC. If not, then set the SCUtils
+  //info to null for this process  
+  if ((this->theLattice)->GetSCDelta0() <= 0) {
     this->SetCurrentSCInfoToNull();
     if(rateModel) rateModel->SetCurrentSCInfoToNull();
     return;
   }
 
-  //If it is a SC, then we should update the SC information for the SC utils class within the base of this
-  //and the base of the rate model. Also, handle the checking/updating of the lookup tables to be used for each
-  //SC.
+  //If it is a SC, then we should update the SC information for the SC utils
+  //class within the base of this and the base of the rate model. Also, handle
+  //the checking/updating of the lookup tables to be used for each SC.
   this->LoadLatticeInfoIntoSCUtils(this->theLattice);
-  if( rateModel ){
+  if (rateModel) {
     rateModel->LoadLatticeInfoIntoSCUtils(this->theLattice); 
     rateModel->UpdateLookupTable(this->theLattice);
   }
 }
 
-
-
 // Compute MFP using track velocity and scattering rate
-
 G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 					G4ForceCondition* condition) {
 
-  //REL I'm putting this here because I don't think it successfully gets set to a non-default
-  //value if we only do it in the constructor? Should probably ask Mike about this
+  //REL I'm putting this here because I don't think it successfully gets set
+  //to a non-default value if we only do it in the constructor? Should
+  //probably ask Mike about this
   this->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
   
   
   //Debugging
-  if( verboseLevel > 5 ){
-    G4cout << "---------- G4CMPVProcess::GetMeanFreePath ----------" << G4endl;
+  if (verboseLevel > 5) {
+    G4cout << "-- G4CMPVProcess::GetMeanFreePath --" << G4endl;
   }
 
   //Update lattice information within the process utils 
-  if(UpdateMeanFreePathForLatticeChangeover(aTrack)){
+  if (UpdateMeanFreePathForLatticeChangeover(aTrack)) {
     UpdateSCAfterLatticeChange();
   }
 
@@ -183,14 +216,14 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double mfp  = rate>0. ? vtrk/rate : DBL_MAX;
 
   //Very important debugging
-  if( verboseLevel > 5 ){    
-    G4cout << "GMFP Function Point A | In getMFP, rate of " << this->GetProcessName() << " is: " << rate << G4endl;
+  if (verboseLevel > 5) {    
+    G4cout << "GMFP Function Point A | In getMFP, rate of "
+	   << this->GetProcessName() << " is: " << rate << G4endl;
   }
   if (verboseLevel>2) {
     G4cout << GetProcessName() << " rate = " << rate/hertz << " Hz"
 	   << " Vtrk = " << vtrk/(m/s) << " m/s"
 	   << " MFP = " << mfp/m << " m" << G4endl;
   }
-
   return mfp;
 }
