@@ -48,29 +48,20 @@
 #include "G4CMPConfigManager.hh"
 #include "G4LatticeManager.hh"
 #include "G4CMPGeometryUtils.hh"
-#include "G4CMPParticleChangeForPhonon.hh"
 #include "G4CMPPhononTrackInfo.hh"
-#include "G4CMPSolidUtils.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4ExceptionSeverity.hh"
-#include "G4GeometryTolerance.hh"
 #include "G4LatticePhysical.hh"
-#include "G4Navigator.hh"
 #include "G4ParallelWorldProcess.hh"
 #include "G4ParticleChange.hh"
-#include "G4PhononPolarization.hh"
 #include "G4PhysicalConstants.hh"
-#include "G4RandomDirection.hh"
-#include "G4RunManager.hh"
 #include "G4Step.hh"
+#include "G4Track.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
-#include "G4Track.hh"
-#include "G4TransportationManager.hh"
-#include "G4UnitsTable.hh"
 #include "G4VParticleChange.hh"
 #include "G4VSolid.hh"
 #include "Randomize.hh"
@@ -81,20 +72,12 @@
 #include "G4PhononDownconversion.hh"
 #include "G4CMPPhononPolycrystalElasticScattering.hh"
 #include "G4CMPTrackLimiter.hh"
-#include <float.h>
 
 // Constructor and destructor
 
 G4CMPPhononBoundaryProcess::G4CMPPhononBoundaryProcess(const G4String& aName)
   : G4VPhononProcess(aName, fPhononReflection), G4CMPBoundaryUtils(this),
-    anharmonicDecay(new G4CMPAnharmonicDecay(this)), stepSize(0*um), nStepLimit(0) {
-  // Initialize stepSize and max step limit from config manager
-  G4CMPConfigManager* config = G4CMPConfigManager::Instance();
-  stepSize = config->GetPhononSurfStepSize();
-  nStepLimit = config->GetPhononSurfStepLimit();
-  // Register custom ParticleChange with G4VProcess base class
-  pParticleChange = &phParticleChange;
-}
+    anharmonicDecay(new G4CMPAnharmonicDecay(this)) {;}
 
 G4CMPPhononBoundaryProcess::~G4CMPPhononBoundaryProcess() {
   delete anharmonicDecay;
@@ -176,24 +159,16 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 	   << aStep.GetPostStepPoint()->GetMomentumDirection() << G4endl;
   }  
   
-  phParticleChange.Initialize(aTrack);
-  
-
+  aParticleChange.Initialize(aTrack);
   if (!IsGoodBoundary(aStep))
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 
-  if (verboseLevel>1) {
-    G4int eID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
-    G4cout << GetProcessName() << "::PostStepDoIt "
-           << "Event " << eID << " Track " << aTrack.GetTrackID()
-	   << " Step " << aTrack.GetCurrentStepNumber() << G4endl;
-  }
+  if (verboseLevel>1) G4cout << GetProcessName() << "::PostStepDoIt" << G4endl;
 
   if (verboseLevel>2) {
     G4cout << " K direction: " << GetLocalWaveVector(aTrack).unit()
            << "\n P direction: " << aTrack.GetMomentumDirection() << G4endl;
   }
-
 
   //Debugging
   if (verboseLevel > 5) {
@@ -421,6 +396,28 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     DoSimpleKill(aTrack, aStep, phParticleChange);
     return;
   }
+
+  // SANITY CHECK:  Project a 1 um step in the new direction, see if it
+  // is still in the correct (pre-step) volume.
+
+  if (verboseLevel>2) {
+    G4ThreeVector stepPos = surfacePoint + 1*um * vdir;
+
+    G4cout << " New travel direction " << vdir
+	   << "\n from " << surfacePoint << "\n   to " << stepPos << G4endl;
+
+    G4ThreeVector stepLocal = GetLocalPosition(stepPos);
+    G4VSolid* solid = aStep.GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetSolid();
+
+    EInside place = solid->Inside(stepLocal);
+    G4cout << " After trial step, " << (place==kInside ? "inside"
+					: place==kOutside ? "OUTSIDE"
+					: "on surface") << G4endl;
+  }
+
+  trackInfo->SetWaveVector(reflectedKDir);
+  particleChange.ProposeVelocity(v);
+  particleChange.ProposeMomentumDirection(vdir);
 }
 
 // Generate specular reflection corrected for momentum dispersion.
@@ -597,6 +594,15 @@ GetSpecularVector(const G4ThreeVector& waveVector,
 	     << ", Phonon mode = " << G4PhononPolarization::Label(mode)
 	     << ", New group velocity: " << vDir << G4endl;
     }
+    
+    (reflectedKDir -= kstep*surfNorm).setMag(1.);
+    olddir = newdir;
+    nstep++;
+  } 
+  
+  if (nstep>0 && verboseLevel) {
+    G4cout << " adjusted specular reflection with " << nstep << " steps"
+	   << " (" << nflip << " flips) kPerp " << kPerp << G4endl;
   }
 
   // Restore global coordinates to new vectors
@@ -638,14 +644,103 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   return reflectedKDir;
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+// Generate diffuse reflection according to 1/cos distribution
 
-void G4CMPPhononBoundaryProcess::
-UpdateNavigatorVolume(const G4Step& step, const G4ThreeVector& position,
-                      const G4ThreeVector& vDir) const {
-  G4Navigator* navigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
-  navigator->LocateGlobalPointWithinVolume(position);
-  G4double safety = step.GetPostStepPoint()->GetSafety();
-  navigator->ComputeStep(position, vDir, step.GetStepLength(), safety);
+G4ThreeVector G4CMPPhononBoundaryProcess::
+GetLambertianVector(const G4ThreeVector& surfNorm, G4int mode) const {
+  G4ThreeVector reflectedKDir;
+  const G4int maxTries = 1000;
+  G4int nTries = 0;
+  do {
+    reflectedKDir = G4CMP::LambertReflection(surfNorm);
+  } while (nTries++ < maxTries &&
+	   !G4CMP::PhononVelocityIsInward(theLattice, mode,
+					  reflectedKDir, surfNorm));
+
+  return reflectedKDir;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+// Get the refracted wavevector from Snell's law for phonon transmission
+G4ThreeVector G4CMPPhononBoundaryProcess::GetRefractedVector(const G4ThreeVector& s1_in,
+                           const G4ThreeVector& Nsurf_in,
+                           G4double n1, G4double n2)
+{
+  // Ensure unit inputs
+  G4ThreeVector s1   = s1_in.unit();
+  G4ThreeVector Nsurf= Nsurf_in.unit();
+  if( verboseLevel>5 ){
+    G4cout << "---------- G4CMPPhononBoundaryProcess::GetRefractedVector----------" << G4endl;
+    G4cout << "CSW Initial Direction:  " << s1_in << G4endl;
+    G4cout << "CSW Normal Surface:  " << Nsurf_in.unit() << G4endl;
+  }
+  if (Nsurf.dot(s1_in) > 0.0) {
+    Nsurf = -1*Nsurf;
+  }
+  G4double eta = n1 / n2;
+
+  G4ThreeVector t = Nsurf.cross(s1);
+  G4double t2 = t.dot(t);
+
+  G4double delta = 1.0 - eta*eta * t2;
+
+  G4ThreeVector v = Nsurf.cross( - Nsurf.cross(s1) );
+
+  if( verboseLevel>5 ){
+    G4cout << "CSW delta:  " << delta << G4endl;
+    G4cout << "CSW tangent vector:  " << t << G4endl;
+    G4cout << "CSW v computation step:  " << v.unit() << G4endl;
+  }
+  G4ThreeVector s2 = eta * v
+                   - Nsurf * std::sqrt(delta);
+  if( verboseLevel>5 ){
+    G4cout << "CSW Initial Direction:  " << s1_in << G4endl;
+    G4cout << "CSW Refracted Direction:  " << s2.unit() << G4endl;
+  }
+
+  return s2.unit();
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+// Total internal reflection condition for use in ApplyBoundaryAction
+
+G4bool G4CMPPhononBoundaryProcess::CheckTIR(const G4Track& aTrack,
+                                               const G4Step& aStep) const {
+
+  auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
+  G4ThreeVector waveVector = trackInfo->k();
+  G4int mode = GetPolarization(aStep.GetTrack());
+  G4ThreeVector vdir = theLattice->MapKtoVDir(mode, waveVector);
+  if (surfNorm.dot(vdir) > 0.0) {
+    surfNorm = -1*surfNorm;
+  }
+
+  G4double v1  = G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPreStepPoint()->GetPhysicalVolume())->MapKtoV(mode, waveVector);
+  G4double v2  = G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume())->MapKtoV(mode, waveVector);
+  G4double eta = v1 / v2;
+  G4ThreeVector t = surfNorm.cross(waveVector);
+  G4double t2 = t.dot(t);
+
+  G4double delta = 1.0 - eta*eta * t2;
+
+  if (delta < 0.0) {
+    if( verboseLevel > 5 ){
+      G4cout << "---------- G4CMPPhononBoundaryProcess::CheckTIR----------" << G4endl;
+      G4cout << "CSW Check TIR Returned FALSE" << G4endl;
+    }
+    return false;
+  }
+  else {
+    if( verboseLevel > 5 ){
+      G4cout << "---------- G4CMPPhononBoundaryProcess::CheckTIR----------" << G4endl;
+      G4cout << "CSW Check TIR Returned TRUE" << G4endl;
+    }
+    return true;
+  }
+
 }
 
 
@@ -692,7 +787,6 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
                 "PhononBoundary001",FatalException,msg);
   }
 
-  //SIMPLEST POSSIBLE IMPLEMENTATION -- PHYSICS IS NOT NECESSARILY RIGHT
   //Now get track info at this point: the k vector, mode, etc.
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
   G4ThreeVector waveVector = trackInfo->k();
@@ -706,6 +800,12 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
   this->SetLattice(G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()));
   anharmonicDecay->SetLattice(G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()));
   UpdateSCAfterLatticeChange();
+
+ 
+  //Since the lattice hasn't changed yet, change it here. (This also happens at the MFP calc point at the beginning of the next step,
+  //but it's nice to have it here so we can use the new lattice info to help figure out vdir, etc.)
+//  this->SetLattice(G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume()));
+//  UpdateSCAfterLatticeChange();
 
   //Debugging
   if (verboseLevel > 5) {    

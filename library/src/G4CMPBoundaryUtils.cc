@@ -833,7 +833,69 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
     DoTransmission(aTrack, aStep, aParticleChange);
   }
 }
+/*
+  G4LatticePhysical * latNear = G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPreStepPoint()->GetPhysicalVolume());
+  G4LatticePhysical * latFar = G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume());
 
+  bool trackedSCResponse = true;
+  
+  if( !latNear || !latFar ){ 
+    if (!matTable) {
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+    } else if (electrode && electrode->IsNearElectrode(aStep) && !trackedSCResponse) {
+      electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
+    } else if (AbsorbTrack(aTrack, aStep)) {    
+     if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function Point A | Doing Absorption in ApplyBoundaryAction" << G4endl;
+      }
+      DoAbsorption(aTrack, aStep, aParticleChange);
+    } else if (MaximumReflections(aTrack)) {
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function Point B | Maximum Reflections reached in ApplyBoundaryAction" << G4endl;
+      }
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+    } else if (ReflectTrack(aTrack, aStep)) {
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function Point C | Doing Reflection in ApplyBoundaryAction" << G4endl;
+      }
+      IncrementReflectionCount(aTrack);
+      DoReflection(aTrack, aStep, aParticleChange);
+    } else {
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function Point D | Doing Simple Kill in ApplyBoundaryAction" << G4endl;
+      }
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+      }
+    }
+  //If there is a lattice assigned to the near and far material, consider transmission instead
+  //of absorption
+  else {
+    G4bool ok = CheckTIR(aTrack, aStep);
+    if (!matTable) {
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+    } else if (AbsorbTrack(aTrack, aStep) && ok) {
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function 2 Point A | DoingTransmission in ApplyBoundaryAction" << G4endl;
+      }
+      DoTransmission(aTrack, aStep, aParticleChange);
+    } else if (MaximumReflections(aTrack)) {
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function 2 Point B | Maximum Reflections reached in ApplyBoundaryAction" << G4endl;
+      }
+    } else if (ReflectTrack(aTrack, aStep)) {
+      DoReflection(aTrack, aStep, aParticleChange);
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function 2 Point C | Doing Reflection in ApplyBoundaryAction" << G4endl;
+      }
+    } else {
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function 2 Point D | Doing Transmission in ApplyBoundaryAction" << G4endl;
+      }
+      DoReflection(aTrack, aStep, aParticleChange);
+    }   }
+
+}*/
 
 //Dedicated function for doing this. I don't think this should exist in the
 //"check" functions, since it will run even if there is no reflection at a
@@ -948,4 +1010,11 @@ G4double G4CMPBoundaryUtils::GetMaterialProperty(const G4String& key) const {
   return const_cast<G4MaterialPropertiesTable*>(matTable)->GetConstProperty(key);
 }
 
+G4bool G4CMPBoundaryUtils::CheckTIR(const G4Track& aTrack,
+                                    const G4Step&  aStep) const
+{
+  G4cout << procName << " WARNING!  G4CMPBoundaryUtils::CheckTIR invoked."
+         << "\n Process should have overridden this version" << G4endl;
 
+  return true;
+}
