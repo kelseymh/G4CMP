@@ -65,6 +65,7 @@ public:
 
   // Decide and apply different surface actions; subclasses may override
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
+  virtual G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const;
   virtual void DoAbsorption(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
@@ -79,21 +80,27 @@ public:
   // NOTE:  Transmission is called only if absorption, reflection both fail
   virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
 			      G4ParticleChange& aParticleChange);
+//  virtual G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const;
+
+
 
 protected:
   G4bool IsBounaryStep(const G4Step& aStep);
   G4bool GetBoundingVolumes(const G4Step& aStep);
   G4bool GetSurfaceProperty(const G4Step& aStep);
+//  G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const override;
 
   // Does const-casting of matTable for access
   G4double GetMaterialProperty(const G4String& key) const;
   
   void IncrementReflectionCount(const G4Track& aTrack);
-  
+//  virtual G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const;
+    
 private:
   G4int buVerboseLevel;			// For local use; name avoids collisions
   G4String procName;
   G4CMPProcessUtils* procUtils;		// For access to lattice, track info
+  
 
 protected:
   G4double kCarTolerance;		// Allowed nearness to surface

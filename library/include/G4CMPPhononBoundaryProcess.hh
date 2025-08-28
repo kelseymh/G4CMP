@@ -13,23 +13,14 @@
 // 20181010  J. Singh -- Use new G4CMPAnharmonicDecay for boundary decays
 // 20181011  M. Kelsey -- Add LoadDataForTrack() to initialize decay utility.
 // 20220906  M. Kelsey -- Encapsulate specular reflection in function.
-// 20250204  N. Tenpas -- Support reflection displacement search at hard corners.
-// 20250325  N. Tenpas -- Add support for macro commands to set step size and limit.
-// 20250422  N. Tenpas -- Add position argument to GetLambertianVector.
-// 20250423  G4CMP-468 -- Add wrapper function for updating navigator.
-// 20250423  G4CMP-468 -- Move GetLambertianVector to G4CMPUtils.
-// 20250424  G4CMP-465 -- Add G4CMPSolidUtils object for custom solid functions.
-// 20250505  G4CMP-458 -- Rename GetReflectedVector to GetSpecularVector.
 
 #ifndef G4CMPPhononBoundaryProcess_h
 #define G4CMPPhononBoundaryProcess_h 1
 
 #include "G4VPhononProcess.hh"
 #include "G4CMPBoundaryUtils.hh"
-#include "G4CMPParticleChangeForPhonon.hh"
 
 class G4CMPAnharmonicDecay;
-class G4CMPSolidUtils;
 
 class G4CMPPhononBoundaryProcess : public G4VPhononProcess,
 				   public G4CMPBoundaryUtils {
@@ -47,6 +38,7 @@ public:
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
                                           const G4Step& aStep);
+//  virtual G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const;
 
 protected:
   virtual G4double GetMeanFreePath(const G4Track& aTrack,
@@ -55,30 +47,28 @@ protected:
 
   // Apply phonon-specific conditions, after calling through to base
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
+
+  G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const override;  
   
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
-
-
-  // Update navigator volume when position is changed
-  void UpdateNavigatorVolume(const G4Step&, const G4ThreeVector& position,
-                             const G4ThreeVector& vDir) const;
-
-  G4ThreeVector GetSpecularVector(const G4ThreeVector& waveVector,
-                                  G4ThreeVector& surfNorm, G4int mode,
-                                  G4ThreeVector& surfacePoint);
-
   
   virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
 			      G4ParticleChange& aParticleChange);
-
+  
+  
+  G4ThreeVector GetReflectedVector(const G4ThreeVector& waveVector, 
+				   const G4ThreeVector& surfNorm,
+				   G4int mode) const;
+  
+  G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm,
+				    G4int mode) const;
+ 
+  G4ThreeVector GetRefractedVector(const G4ThreeVector& s1_in, const G4ThreeVector& Nsurf_in, G4double n1, G4double n2);  
   
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
-  G4CMPParticleChangeForPhonon phParticleChange;
-  G4double stepSize;
-  G4int nStepLimit;
-
+  
   // hide assignment operator as private
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&);
   G4CMPPhononBoundaryProcess(G4CMPPhononBoundaryProcess&&);

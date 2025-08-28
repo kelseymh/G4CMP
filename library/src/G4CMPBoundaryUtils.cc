@@ -24,9 +24,6 @@
 //	     to electrode.
 // 20210923  Use >= in maximum reflections check.
 // 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
-// 20250413  Protect debugging messages with verbosity.
-// 20250415  Suppress error for same PV if starting at boundary.
-// 20250423  Remove error suppression for starting at boundary.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -426,49 +423,16 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
   
   //---------------------------------------------------------------------------------------------------------------------
   //If we're outside the pre-step volume, check whether we're inside or outside the post-step volume
-  if (postIn == kOutside) {
+  if( postIn == kOutside ){
 
     //-------------------------------
     //If we're also outside the post-step volume, uhhhhh... where are we?
-    if (postIn_postPV == kOutside) {
+    if( postIn_postPV == kOutside ){
       G4Exception((procName+"::CheckStepBoundary").c_str(),"Boundary00X",JustWarning,
 		  ("Post-step point is somehow outside both the pre-step volume, " +
 		   prePV->GetName() +
 		   " and the post-step volume, " +
 		   postPV->GetName()).c_str());
-
-	/////
-      /*  REL this stuff is from NT I think. Chat with NT/MK about whether this is 100% necessary given TFR's upgrade
-	  But otherwise I think I will keep mine because it makes more general assumptions about phonons impinging on
-	  the interface between two crystals
-  // If post-step position not proper surface point, compute intersection
-  if (postIn != kSurface) {
-    if (buVerboseLevel>2)
-      G4cout << " OLD SURFACE POINT: " << surfacePoint << G4endl;
-
-    G4ThreeVector along = (postPos-prePos).unit();	// Trajectory direction
-    surfacePoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
-    if (buVerboseLevel>2) {
-      G4cout << " moving preStep by " << preSolid->DistanceToOut(prePos,along)
-	     << " along " << along << G4endl
-	     << " NEW SURFACE POINT: " << surfacePoint << G4endl;
-    }
-
-    postIn = preSolid->Inside(surfacePoint);
-    if (buVerboseLevel>2) {
-      G4cout << "\n Is adjusted location on surface of preStep Volume? "
-	     << (postIn==kOutside ? "outside" :
-		 postIn==kInside  ? "inside" :
-		 postIn==kSurface ? "surface" : "INVALID") << G4endl;
-    }
-
-    // Double check calculation -- point "must" now be on surface!
-    if (postIn != kSurface) {
-      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-		  "Boundary005", EventMustBeAborted,
-		  "Boundary-limited step cannot find boundary surface point"
-		  );
-      */
       return false;
     }
 
@@ -692,29 +656,68 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
   
   aParticleChange.Initialize(aTrack);
 
-  bool trackedSCResponse = true; //REL remove this before committing to develop
-  if (!matTable) {
-    if (buVerboseLevel>2) G4cout << "BU::Apply: !matTable" << G4endl;
-    DoSimpleKill(aTrack, aStep, aParticleChange);
-  } else if (electrode && electrode->IsNearElectrode(aStep) && !trackedSCResponse) {
-    if (buVerboseLevel>2) G4cout << "BU::Apply: absorb at electrode" << G4endl;
-    electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
-  } else if (AbsorbTrack(aTrack, aStep)) {    
-    if (buVerboseLevel>2) G4cout << "BU::Apply: Absorption" << G4endl;
-    DoAbsorption(aTrack, aStep, aParticleChange);
-  } else if (MaximumReflections(aTrack)) {
-    if (buVerboseLevel>2) G4cout << "BU::Apply: maxRef" << G4endl;
-    DoSimpleKill(aTrack, aStep, aParticleChange);
-  } else if (ReflectTrack(aTrack, aStep)) {
-    if (buVerboseLevel>2) G4cout << "BU::Apply: Reflection" << G4endl;
-    IncrementReflectionCount(aTrack);
-    DoReflection(aTrack, aStep, aParticleChange);
-  } else {
-    if (buVerboseLevel>2) G4cout << "BU::Apply: Transmission" << G4endl;
-    DoTransmission(aTrack, aStep, aParticleChange);
-  }
-}
+  G4LatticePhysical * latNear = G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPreStepPoint()->GetPhysicalVolume());
+  G4LatticePhysical * latFar = G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume());
 
+  bool trackedSCResponse = true;
+  
+  if( !latNear || !latFar ){ 
+    if (!matTable) {
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+    } else if (electrode && electrode->IsNearElectrode(aStep) && !trackedSCResponse) {
+      electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
+    } else if (AbsorbTrack(aTrack, aStep)) {    
+     if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function Point A | Doing Absorption in ApplyBoundaryAction" << G4endl;
+      }
+      DoAbsorption(aTrack, aStep, aParticleChange);
+    } else if (MaximumReflections(aTrack)) {
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function Point B | Maximum Reflections reached in ApplyBoundaryAction" << G4endl;
+      }
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+    } else if (ReflectTrack(aTrack, aStep)) {
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function Point C | Doing Reflection in ApplyBoundaryAction" << G4endl;
+      }
+      IncrementReflectionCount(aTrack);
+      DoReflection(aTrack, aStep, aParticleChange);
+    } else {
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function Point D | Doing Simple Kill in ApplyBoundaryAction" << G4endl;
+      }
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+      }
+    }
+  //If there is a lattice assigned to the near and far material, consider transmission instead
+  //of absorption
+  else {
+    G4bool ok = CheckTIR(aTrack, aStep);
+    if (!matTable) {
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+    } else if (AbsorbTrack(aTrack, aStep) && ok) {
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function 2 Point A | DoingTransmission in ApplyBoundaryAction" << G4endl;
+      }
+      DoTransmission(aTrack, aStep, aParticleChange);
+    } else if (MaximumReflections(aTrack)) {
+      DoSimpleKill(aTrack, aStep, aParticleChange);
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function 2 Point B | Maximum Reflections reached in ApplyBoundaryAction" << G4endl;
+      }
+    } else if (ReflectTrack(aTrack, aStep)) {
+      DoReflection(aTrack, aStep, aParticleChange);
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function 2 Point C | Doing Reflection in ApplyBoundaryAction" << G4endl;
+      }
+    } else {
+      if( buVerboseLevel > 5 ){
+        G4cout << "ABA Function 2 Point D | Doing Transmission in ApplyBoundaryAction" << G4endl;
+      }
+      DoReflection(aTrack, aStep, aParticleChange);
+    }   }
+
+}
 
 //Dedicated function for doing this. I don't think this should exist in the "check" functions, since
 //it will run even if there is no reflection at a surface (i.e. if there is transmission). Putting
@@ -811,4 +814,11 @@ G4double G4CMPBoundaryUtils::GetMaterialProperty(const G4String& key) const {
   return const_cast<G4MaterialPropertiesTable*>(matTable)->GetConstProperty(key);
 }
 
+G4bool G4CMPBoundaryUtils::CheckTIR(const G4Track& aTrack,
+                                    const G4Step&  aStep) const
+{
+  G4cout << procName << " WARNING!  G4CMPBoundaryUtils::CheckTIR invoked."
+         << "\n Process should have overridden this version" << G4endl;
 
+  return true;
+}
