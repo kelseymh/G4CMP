@@ -60,6 +60,7 @@
 // 20250508  Fix local and global coordinate system for phonon wavevectors.
 // 20250512  Use tempvec2 for Vg in LoadDataForTrack to improve performance.
 // 20250814  Add UpdatePhononWavevector() to update phonon wavevector and Vg.
+// 20250829  Protect FillParticleChange with Phonon Check.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -228,6 +229,8 @@ void G4CMPProcessUtils::FindLattice(const G4VPhysicalVolume* volume) {
 // Wavevector is expected to be in the global coordinate frame
 void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
             const G4Track& track, const G4ThreeVector& wavevector) const {
+  if (!G4CMP::IsPhonon(track)) return;
+
   // Get phonon mode from track
   G4int mode = GetPolarization(track);
 
@@ -245,6 +248,8 @@ void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
 
 void G4CMPProcessUtils::FillParticleChange(G4CMPParticleChangeForPhonon& particleChange,
   const G4Step& step, const G4ThreeVector& position) const {
+    if (!G4CMP::IsPhonon(track)) return;
+
     // Update the local time to account for displacement
     G4double delta_t = (position - *particleChange.GetPosition()).mag() / particleChange.GetVelocity();
     G4StepPoint* postStep = step.GetPostStepPoint();
