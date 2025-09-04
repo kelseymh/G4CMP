@@ -42,6 +42,7 @@
 //		(p_Q) and expectation value of momentum (p).
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
 // 20240510  E. Michhaud -- Add function to compute L0 from other parameters
+// 20250904  R. Linehan -- Linked Tcrit to Delta0 for superconductors
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -271,10 +272,9 @@ public:
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
 
   //Set functions for superconductor properties
-  void SetSCDelta0(G4double v)              { fSC_Delta0 = v; }
+  void SetSCDelta0(G4double v);
   void SetSCTau0qp(G4double v)              { fSC_Tau0_qp = v; }
   void SetSCTau0ph(G4double v)              { fSC_Tau0_ph = v; }  
-  void SetSCTcrit(G4double v)               { fSC_Tcrit = v; }
   void SetSCTeff(G4double v)                { fSC_Teff = v; }
   void SetSCDn(G4double v)                  { fSC_Dn = v; }
   void SetSCQPLocalTrappingTau(G4double v)  { fSC_TauLocalTrap_qp = v; }

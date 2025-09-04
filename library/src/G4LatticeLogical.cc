@@ -58,6 +58,7 @@
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
 // 20240510  E. Michhaud -- Add function to compute L0 from other parameters
+// 20250904  R. Linehan -- Linking Tcrit to Delta0 for superconductors
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -1121,4 +1122,12 @@ void G4LatticeLogical::DumpList(std::ostream& os,
   }
 
   os << unit;
+}
+
+// Set the zero-temperature gap and corresponding Tcrit, assuming
+// that the superconductor is BCS
+
+void G4LatticeLogical::SetSCDelta0(G4double v) {
+  fSC_Delta0 = v;
+  fSC_Tcrit = fSC_Delta0 / CLHEP::k_Boltzmann / 1.764;
 }
