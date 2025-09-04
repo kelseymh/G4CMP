@@ -35,6 +35,7 @@
 // 20231017  E. Michaud -- Add 'valleyDir' to set rotation matrix with valley's
 //		 direction instead of euler angles
 // 20240131  J. Inman -- Multiple path selection on G4LATTICEDATA variable
+// 20250904  R. Linehan -- Removed direct read of Tcrit from CrystalMap file
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -234,7 +235,6 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "sc_delta0" )    pLattice->SetSCDelta0(fValue*ProcessUnits("Energy"));
   else if (name == "sc_tau0_qp" )   pLattice->SetSCTau0qp(fValue*ProcessUnits("Time"));
   else if (name == "sc_tau0_ph" )   pLattice->SetSCTau0ph(fValue*ProcessUnits("Time"));
-  else if (name == "sc_tcrit" )     pLattice->SetSCTcrit(fValue*ProcessUnits("Temperature"));
   else if (name == "sc_teff" )      pLattice->SetSCTeff(fValue*ProcessUnits("Temperature"));
   else if (name == "sc_dn" )        pLattice->SetSCDn(fValue*ProcessUnits("Diffusion constant"));
   else if (name == "sc_tau_qptrap" ) pLattice->SetSCQPLocalTrappingTau(fValue*ProcessUnits("Time"));    
