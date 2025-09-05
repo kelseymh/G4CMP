@@ -43,6 +43,8 @@
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
 // 20240510  E. Michhaud -- Add function to compute L0 from other parameters
 // 20250904  R. Linehan -- Linked Tcrit to Delta0 for superconductors
+// 20250905  G4CMP-500  -- Removed non-fundamental superconductor params from
+//              lattice info
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -158,7 +160,6 @@ public:
   void SetLambda(G4double Lambda) { fLambda = Lambda; }
   void SetMu(G4double Mu) { fMu = Mu; }
   void SetScatteringConstant(G4double b) { fB=b; }
-  void SetPolycrystalElasticScatterMFP( G4double mfp ){ fElScatMFP = mfp; }
   void SetAnhDecConstant(G4double a) { fA=a; }
   void SetAnhTTFrac(G4double f) { fTTFrac=f; }
   void SetLDOS(G4double LDOS) { fLDOS=LDOS; }
@@ -175,20 +176,14 @@ public:
   G4double GetMu() const { return fMu; }
   G4double GetScatteringConstant() const { return fB; }
   G4double GetAnhDecConstant() const { return fA; }
-  G4double GetPolycrystalElasticScatterMFP() const { return fElScatMFP; }
   G4double GetAnhTTFrac() const { return fTTFrac; }
   G4double GetLDOS() const { return fLDOS; }
   G4double GetSTDOS() const { return fSTDOS; }
   G4double GetFTDOS() const { return fFTDOS; }
   G4double GetDebyeEnergy() const { return fDebye; }
 
-  G4double GetSCDelta0() const { return fSC_Delta0; }
   G4double GetSCTau0qp() const { return fSC_Tau0_qp; }
   G4double GetSCTau0ph() const { return fSC_Tau0_ph; }
-  G4double GetSCTcrit() const { return fSC_Tcrit; }
-  G4double GetSCTeff() const { return fSC_Teff; }
-  G4double GetSCDn() const { return fSC_Dn; }
-  G4double GetSCQPLocalTrappingTau() const { return fSC_TauLocalTrap_qp; }
   
   // Parameters and structures for charge carrier transport
   void SetBandGapEnergy(G4double bg) { fBandGap = bg; }
@@ -272,12 +267,8 @@ public:
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
 
   //Set functions for superconductor properties
-  void SetSCDelta0(G4double v);
   void SetSCTau0qp(G4double v)              { fSC_Tau0_qp = v; }
   void SetSCTau0ph(G4double v)              { fSC_Tau0_ph = v; }  
-  void SetSCTeff(G4double v)                { fSC_Teff = v; }
-  void SetSCDn(G4double v)                  { fSC_Dn = v; }
-  void SetSCQPLocalTrappingTau(G4double v)  { fSC_TauLocalTrap_qp = v; }
   
   const G4String& GetIVModel() const { return fIVModel; }
 
@@ -352,16 +343,10 @@ private:
   G4double fTTFrac;  // Fraction of anharmonic decays L -> TT
   G4double fBeta, fGamma, fLambda, fMu; // dynamical constants for material
   G4double fDebye;   // Debye energy, for partitioning primary phonons
-  G4double fElScatMFP; // Characteristic Mean free path for elastic scatters against polycrystalline grain boundaries
 
   //Superconducting properties a la Kaplan
-  G4double fSC_Delta0; //SC gap at T=0K
   G4double fSC_Tau0_qp; //Characteristic lifetime for QPs
   G4double fSC_Tau0_ph; //Characteristic lifetime for phonons
-  G4double fSC_Tcrit;   //Critical temperature
-  G4double fSC_Teff;    //Effective temperature of the SC
-  G4double fSC_Dn;    //Normal state diffusion constant of the SC material
-  G4double fSC_TauLocalTrap_qp; //QP local trapping time
   
   G4double fVSound;	// Speed of sound (longitudinal phonon)
   G4double fVTrans;	// Speed of sound (transverse phonon)

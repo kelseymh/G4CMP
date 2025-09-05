@@ -36,6 +36,8 @@
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 //		Also, add long missing accessors for Miller orientation
+// 20250905  G4CMP-500 -- Removing non-fundamental superconductor parameters
+//              from logical lattice and making them physical lattice members
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -56,6 +58,18 @@ public:
   G4LatticePhysical(const G4LatticeLogical* Lat,
 		    G4int h=0, G4int k=0, G4int l=0, G4double rot=0.);
 
+
+  // Miller orientation aligns lattice normal (hkl) with geometry +Z
+  // Also includes setting of SC parameters. No longer ambiguous with
+  // the previous one
+  G4LatticePhysical(const G4LatticeLogical* Lat,
+		    G4double polycrystalElasticScatteringMFP,
+		    G4double scDelta0, G4double scTeff,
+		    G4double scDn,
+		    G4double scQPLocalTrappingTau,		    
+		    G4int h=0, G4int k=0, G4int l=0, G4double rot=0.);
+
+  
   void SetVerboseLevel(G4int vb) const {
     verboseLevel = vb;
     if (fLattice) fLattice->SetVerboseLevel(vb);
@@ -120,7 +134,7 @@ public:
 
   // Phonon propagation parameters
   G4double GetScatteringConstant() const { return fLattice->GetScatteringConstant(); }
-  G4double GetPolycrystalElasticScatterMFP() const { return fLattice->GetPolycrystalElasticScatterMFP(); }
+  G4double GetPolycrystalElasticScatterMFP() const { return fPolycrystalElasticScatteringMFP; }
   G4double GetAnhDecConstant() const { return fLattice->GetAnhDecConstant(); }
   G4double GetAnhTTFrac() const      { return fLattice->GetAnhTTFrac(); }
   G4double GetLDOS() const           { return fLattice->GetLDOS(); }
@@ -142,13 +156,13 @@ public:
   G4double GetHoleScatter() const     { return fLattice->GetHoleScatter(); }
 
   // Superconducting properties
-  G4double GetSCDelta0() const { return fLattice->GetSCDelta0(); }
+  G4double GetSCDelta0() const { return fSCDelta0; }
   G4double GetSCTau0qp() const { return fLattice->GetSCTau0qp(); }
   G4double GetSCTau0ph() const { return fLattice->GetSCTau0ph(); }
-  G4double GetSCTcrit() const { return fLattice->GetSCTcrit(); }
-  G4double GetSCTeff() const { return fLattice->GetSCTeff(); }
-  G4double GetSCDn() const { return fLattice->GetSCDn(); }
-  G4double GetSCQPLocalTrappingTau() const { return fLattice->GetSCQPLocalTrappingTau(); }
+  G4double GetSCTcrit() const { return fSCTcrit; }
+  G4double GetSCTeff() const { return fSCTeff; }
+  G4double GetSCDn() const { return fSCDn; }
+  G4double GetSCQPLocalTrappingTau() const { return fSCQPLocalTrappingTau; }
   
   // Charge carriers have effective mass
   G4double GetHoleMass() const { return fLattice->GetHoleMass(); }
@@ -215,6 +229,14 @@ private:
   G4int hMiller, kMiller, lMiller;	// Save Miller indices for dumps
   G4double fRot;
   G4double fTemperature;		// Temperature assigned to volume
+
+  G4double fPolycrystalElasticScatteringMFP; //Polycrystal scattering length
+  G4double fSCDelta0;                        //Zero-temp SC gap energy
+  G4double fSCTcrit;                         //Critical temp, linked to SCDelta0
+  G4double fSCTeff;                          //Effective *QP* temperature
+  G4double fSCDn;                            //Normal-state diffusion constant
+  G4double fSCQPLocalTrappingTau;            //Local trapping tau
+  
 };
 
 // Write lattice structure to output stream

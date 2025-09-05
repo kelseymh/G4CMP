@@ -36,6 +36,7 @@
 //		 direction instead of euler angles
 // 20240131  J. Inman -- Multiple path selection on G4LATTICEDATA variable
 // 20250904  R. Linehan -- Removed direct read of Tcrit from CrystalMap file
+// 20250905  G4CMP-500 -- Removed non-fundamental superconductor parameters
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -110,8 +111,6 @@ G4LatticeLogical* G4LatticeReader::MakeLattice(const G4String& filename) {
     G4cout << "G4LatticeReader produced\n" << *pLattice << G4endl;
 
   CheckLatticeForCompleteness();
-  
-  G4cout << "REL in MakeLattice at end, get for scat mfp: " << pLattice->GetPolycrystalElasticScatterMFP() << G4endl;
   
   return pLattice;	// Lattice complete; return pointer with ownership
 }
@@ -202,7 +201,6 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "lambda")        pLattice->SetLambda(fValue*ProcessUnits("Pressure"));
   else if (name == "mu")            pLattice->SetMu(fValue*ProcessUnits("Pressure"));
   else if (name == "scat")          pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
-  else if (name == "polycryelmfp") pLattice->SetPolycrystalElasticScatterMFP(fValue*ProcessUnits("Length"));
   else if (name == "b")             pLattice->SetScatteringConstant(fValue*ProcessUnits("Time cubed"));
   else if (name == "decay")         pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
   else if (name == "a")             pLattice->SetAnhDecConstant(fValue*ProcessUnits("Time fourth"));
@@ -232,12 +230,8 @@ G4bool G4LatticeReader::ProcessValue(const G4String& name) {
   else if (name == "ivlinrate1")    pLattice->SetIVLinRate1(fValue*ProcessUnits("Frequency"));
   else if (name == "ivlinpower")    pLattice->SetIVLinExponent(fValue);
   else if (name == "ivlinexponent") pLattice->SetIVLinExponent(fValue);
-  else if (name == "sc_delta0" )    pLattice->SetSCDelta0(fValue*ProcessUnits("Energy"));
   else if (name == "sc_tau0_qp" )   pLattice->SetSCTau0qp(fValue*ProcessUnits("Time"));
   else if (name == "sc_tau0_ph" )   pLattice->SetSCTau0ph(fValue*ProcessUnits("Time"));
-  else if (name == "sc_teff" )      pLattice->SetSCTeff(fValue*ProcessUnits("Temperature"));
-  else if (name == "sc_dn" )        pLattice->SetSCDn(fValue*ProcessUnits("Diffusion constant"));
-  else if (name == "sc_tau_qptrap" ) pLattice->SetSCQPLocalTrappingTau(fValue*ProcessUnits("Time"));    
   else {
     G4cerr << "G4LatticeReader: Unrecognized token " << name << G4endl;
     good = false;
@@ -517,23 +511,11 @@ void G4LatticeReader::CheckLatticeForCompleteness()
   
   //Check to see if any of the SC parameters are not at their default values, i.e. if they have been set.
   if( pLattice->GetSCTau0qp() != DBL_MAX ||
-      pLattice->GetSCTau0ph() != DBL_MAX ||
-      pLattice->GetSCTcrit() != 0. ||
-      pLattice->GetSCTeff() != 0. ||
-      pLattice->GetSCDn() != 0. ||
-      pLattice->GetSCDelta0() != 0. ||
-      pLattice->GetPolycrystalElasticScatterMFP() != DBL_MAX ||
-      pLattice->GetSCQPLocalTrappingTau() != DBL_MAX ){
+      pLattice->GetSCTau0ph() != DBL_MAX) {
     
     //If one of these is set, check to see if any of them are NOT set.
     if( pLattice->GetSCTau0qp() == DBL_MAX ||
-	pLattice->GetSCTau0ph() == DBL_MAX ||
-	pLattice->GetSCTcrit() == 0. ||
-	pLattice->GetSCTeff() == 0. ||
-	pLattice->GetSCDn() == 0. ||
-	pLattice->GetSCDelta0() == 0. ||
-	pLattice->GetPolycrystalElasticScatterMFP() == DBL_MAX ||
-	pLattice->GetSCQPLocalTrappingTau() == DBL_MAX ){
+	pLattice->GetSCTau0ph() == DBL_MAX) {
 
       //Throw a warning that there are outstanding SC parameters that are not set.
       G4ExceptionDescription msg;
