@@ -16,6 +16,7 @@
 // 20190226  Use local instance of G4Navigator to avoid corrupting tracking
 // 20211001  Add utilities to get lattice from touchable, find valley close
 //		to specified direction.
+// 20250905  G4CMP-500 -- Added a function to make nicer robust 2D vectors
 
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -34,7 +35,7 @@
 #include "G4VTouchable.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
-
+#include "G4RandomDirection.hh"
 
 G4ThreeVector G4CMP::GetLocalDirection(const G4VTouchable* touch,
                                        const G4ThreeVector& dir) {
@@ -1129,4 +1130,23 @@ G4CMP::FindNearestValley(const G4LatticePhysical* lat, G4ThreeVector ldir) {
 		  : bestValley.size()*G4UniformRand() );
 
   return *std::next(bestValley.begin(), index);
+}
+
+// Sometimes we try to generate a random direction in 2D using the 3D random
+// vector generation and "squashing" the out-of-plane dimension down to zero.
+// This can yield very occasional weird results if the random vector is
+// generated exactly along the out-of-plane direction (i.e. the resulting
+// vector, even when normalized, is the zero vector.) This function makes sure
+// that our 2D random vector is actually not the zero vector.
+// Note that right now, if you pass in an outOfPlane vector that is not
+// (0,0,1), this function will not work right -- generalization is needed as
+// an add-on.
+
+G4ThreeVector G4CMP::RobustifyRandomDirIn2D(G4ThreeVector returnDir) {
+  G4ThreeVector outOfPlane(0.,0.,1.);
+  while (1.0-fabs(returnDir.dot(outOfPlane)) < 1.0e-3) {
+    returnDir = G4RandomDirection();
+  }	
+  returnDir.setZ(0);
+  return returnDir;
 }

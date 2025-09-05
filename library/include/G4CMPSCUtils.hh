@@ -53,7 +53,7 @@ private:
 
   //These run fully internally -- can be private
   G4double ComputeCurrentGapEnergyAtNonzeroT();
-
+  void CheckLatticeInfoForCompleteness();
 
   
   //G4int scuVerboseLevel;			// For local use; name avoids collisions

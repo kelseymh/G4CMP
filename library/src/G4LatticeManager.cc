@@ -19,6 +19,8 @@
 // 20170527  Drop unnecessary <fstream>
 // 20170817  Increase verbosity cut on informational messages
 // 20170928  Replace "polarizationState" with "mode"
+// 20250905  G4CMP-500 -- Added warning comment about RegisterLattice
+//                 use with tracked film response
 
 #include "G4LatticeManager.hh"
 #include "G4CMPConfigManager.hh"
@@ -193,6 +195,12 @@ G4bool G4LatticeManager::RegisterLattice(const G4VPhysicalVolume* Vol,
 
   return true; 
 }
+
+// Now with tracked film response in, if you are using *this* RegisterLattice
+// function, then you are accepting that the physical lattice is going to
+// be created with mostly default (i.e. nonsensical) superconductivity
+// parameters. The other RegisterLattice option, where a physical lattice
+// is passed in, will be more complete.
 
 G4bool G4LatticeManager::RegisterLattice(const G4VPhysicalVolume* Vol,
 					 G4LatticeLogical* LLat) {

@@ -14,6 +14,8 @@
 // 20190906  Bug fix in UseRateModel(), check for good pointer, not null;
 //		Add function to initialize rate model after LoadDataForTrack
 // 20210915  Change diagnostic output to verbose=3 or higher.
+// 20250905  G4CMP-500 -- Now using a fundamental SC parameter (i.e. not
+//              the gap0) to determine if we're in a superconducting volume
 
 #include "G4CMPVProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -169,9 +171,10 @@ void G4CMPVProcess::UpdateSCAfterLatticeChange() {
     G4cout << "-- G4CMPVProcess::UpdateSCAfterLatticeChange --" << G4endl;
   }
  
-  //First, determine if the new lattice is a SC. If not, then set the SCUtils
-  //info to null for this process  
-  if ((this->theLattice)->GetSCDelta0() <= 0) {
+  //First, determine if the new lattice is a SC. We do this via the QP relax-
+  //ation time since the gap0 is not a fundamental/intrinsic property of the
+  //material (since it's height-dependent).
+  if ((this->theLattice)->GetSCTau0qp() == DBL_MAX) {
     this->SetCurrentSCInfoToNull();
     if(rateModel) rateModel->SetCurrentSCInfoToNull();
     return;

@@ -515,7 +515,7 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
       //Sub case 1: farther than epsilon away from boundary? Get to randomize.
       if(f2DSafety >= fSoftFloorBoundaryScale) {
 	G4ThreeVector thisRandomDir = G4RandomDirection();
-	thisRandomDir.setZ(0);
+	thisRandomDir = G4CMP::RobustifyRandomDirIn2D(thisRandomDir);
 	fNewDirection = thisRandomDir.unit();
 
 	//Debugging
@@ -564,10 +564,7 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
 	G4int killCounterVectSweep = 0;
 	do {
 	  theNewDirection = G4RandomDirection();
-
-	  //Sometimes there may be issues here if our particle is errantly on
-	  //a top/bottom boundary
-	  theNewDirection.setZ(0);
+	  theNewDirection = G4CMP::RobustifyRandomDirIn2D(theNewDirection);	  	
 	  theNewDirection = theNewDirection.unit();
 
 	  //Put in a kill condition so this doesn't accidentally run forever.
@@ -622,7 +619,7 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
 	G4int killCounterVectSweepStuck = 0;
 	do{
 	  theNewDir = G4RandomDirection();
-	  theNewDir.setZ(0);
+	  theNewDir = G4CMP::RobustifyRandomDirIn2D(theNewDir);
 	  theNewDir = theNewDir.unit();
 
 	  //Calculate some angles
@@ -963,8 +960,6 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
   //hard floor.
   if(the2DSafety < fHardFloorBoundaryScale) {
 
-    G4ThreeVector nudgeDir(0,0,0);
-    G4ThreeVector nudgedPosition(0,0,0);
     G4double testSafety = the2DSafety;
 
     //Using this because sometimes if on/near a surface G4 struggles with the
@@ -997,7 +992,7 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
       }
             
       G4ThreeVector nudgeDir = G4RandomDirection();
-      nudgeDir.setZ(0);
+      nudgeDir = G4CMP::RobustifyRandomDirIn2D(nudgeDir);
       nudgeDir = nudgeDir.unit();
 
       //Factor or 2 just to help shuttle things along
@@ -1150,8 +1145,17 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
       //slightly larger than the original computed safety. In this scenario,
       //just randomize the direction and move on.
       if(the2DSafety >= fSoftFloorBoundaryScale) {
-	G4ThreeVector returnDir = G4RandomDirection();
-	returnDir.setZ(0);
+	
+	//G4ThreeVector returnDir = G4RandomDirection(); //REL things were
+	//working with this but it was shadowing the original returndir
+	returnDir = G4RandomDirection();
+
+	//Every once in a while this may return perfectly vertical, i.e. in
+	//the z direction. If this is the case, then taking unit will just
+	//give you the zero vector. Ensure that this edge case never happens
+	//by redoing this generation if the vectors are too nicely aligned.
+	//This will need to be generalized to an axis through the plane.
+	returnDir = G4CMP::RobustifyRandomDirIn2D(returnDir);
 	
 	//Debugging
 	if(verboseLevel > 5) {      
@@ -1190,9 +1194,12 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
 
     //Randomize the final state momentum
     G4ThreeVector returnDir = G4RandomDirection();
-    returnDir.setZ(0);
-    fParticleChange.ProposeMomentumDirection(returnDir.unit());
 
+    //Needs to be generalized to arbitrary dimensions -- only works in XY
+    //at the moment. If you pass in outOfPlane != (0,0,1), then things will
+    returnDir = G4CMP::RobustifyRandomDirIn2D(returnDir);
+    fParticleChange.ProposeMomentumDirection(returnDir.unit());
+    
     //Debugging
     if(verboseLevel > 5) {      
       G4cout << "PSDI Function Point BB | safety is larger than epsilon, "

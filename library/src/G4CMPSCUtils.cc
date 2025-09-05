@@ -119,10 +119,44 @@ void G4CMPSCUtils::LoadLatticeInfoIntoSCUtils(const G4LatticePhysical * theLat)
   //useful for more than one class. This one seems a bit like the polycrystal elastic scattering mfp, which doesn't need to
   //be updated here because it's handled in the lattice itself and isn't part of any intensive calculations that need doing.
   fDn = theLat->GetSCDn();    
+
+  //Do a check that we have everything we need, lattice-info-wise.
+  CheckLatticeInfoForCompleteness();
+
   
   fGapEnergy = ComputeCurrentGapEnergyAtNonzeroT();
+
+
 }
 
+
+// Check to understand if we have everything we need to do these calculations.
+void G4CMPSCUtils::CheckLatticeInfoForCompleteness() {
+
+  //Check to see if any of the SC parameters are not at their default values, i.e. if they have been set.
+  if( fGap0Energy != 0 ||
+      fTau0_qp != DBL_MAX ||
+      fTau0_ph != DBL_MAX ||
+      fTcrit != 0 ||
+      fTeff != 0 ||
+      fDn != 0) {     
+    
+    //If one of these is set, check to see if any of them are NOT set.
+    if( fGap0Energy == 0 ||
+	fTau0_qp == DBL_MAX ||
+	fTau0_ph == DBL_MAX ||
+	fTcrit == 0 ||
+	fTeff == 0 ||
+	fDn == 0) {     
+      
+      //Throw a warning that there are outstanding SC parameters that are not set.
+      G4ExceptionDescription msg;
+      msg << "Noticed that one or more superconducting film lattice parameters are set in a config file, but that one or more are also missing. This will be problematic.";
+      G4Exception("G4CMPSCUtils::CheckLatticeInfoForCompleteness", "G4CMPSCUtils006",
+		  FatalException, msg);
+    }
+  }
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Make parameters null so that we don't accidentally run any processes in silicon
