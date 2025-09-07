@@ -1147,7 +1147,8 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
       if(the2DSafety >= fSoftFloorBoundaryScale) {
 	
 	//G4ThreeVector returnDir = G4RandomDirection(); //REL things were
-	//working with this but it was shadowing the original returndir
+	//working with this but it was shadowing the original returndir.
+	//Check to see if okay.
 	returnDir = G4RandomDirection();
 
 	//Every once in a while this may return perfectly vertical, i.e. in

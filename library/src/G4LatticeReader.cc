@@ -504,7 +504,8 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
 //have been added. We can put whatever we want here, but for now I want to say that if
 //any of the superconductor lattice parameters have been added, we want to make sure that
 //all of them have, and alert users that if that isn't true, then functions downstream
-//may behave in weird ways. Is there a better place for this function or is it okay here?
+//may behave in weird ways. This occurs here for the "fundamental" parameters and in
+//SCUtils for the 
 void G4LatticeReader::CheckLatticeForCompleteness()
 {
   bool anySCParameterPresent = false;
@@ -521,7 +522,7 @@ void G4LatticeReader::CheckLatticeForCompleteness()
       G4ExceptionDescription msg;
       msg << "Noticed that one or more superconducting film lattice parameters are set in a config file, but that one or more are also missing.";
       G4Exception("G4LatticeReader::CheckLatticeForCompleteness", "Lattice004",
-		  JustWarning, msg);
+		  FatalException, msg);
     }
   }  
 }
