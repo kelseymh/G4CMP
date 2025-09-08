@@ -227,7 +227,9 @@ void ValidationPad::ConstructPad(G4RotationMatrix * pRot,
 							   false,
 							   0,
 							   true);
-  G4LatticePhysical* AlPhysical_padConductor = new G4LatticePhysical(AlLogical);
+  G4LatticePhysical* AlPhysical_padConductor
+    = new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,dp_scDelta0_Al,
+			    dp_scTeff_Al,dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_padConductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(phys_padConductor,AlPhysical_padConductor);  
 

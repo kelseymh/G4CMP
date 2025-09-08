@@ -157,9 +157,9 @@ void ValidationAnalysis_BoundaryTransmission()
 
   //Histogram definitions
   double diskRadius_mm = 10.0;
-  double z_SiGeInterface_mm = -5.0;
-  double maxZ_mm = 11;
-  double minZ_mm = -21;
+  double z_SiGeInterface_mm = -0.5;
+  double maxZ_mm = 1.1;
+  double minZ_mm = -2.1;
   TH1F * h_boundaryTransmission = new TH1F("h_boundaryTransmission","h_boundaryTransmission; All/Reflected/Transmitted; Surface-Incident Steps",3,0,3);
   TH2F * h_postStepPointXY = new TH2F("h_postStepPointXY","h_postStepPointXY; Step X [mm]; Step Y [mm]",
 				      1000,-diskRadius_mm*1.1,diskRadius_mm*1.1,
@@ -350,6 +350,7 @@ void ValidationAnalysis_PolycrystalElasticScattering()
   //Primary goal of this analysis function: compute transmission at the Si-Ge interface
   TFile * outFile = new TFile("Validation_PolycrystalElasticScattering.root","RECREATE");
 
+  
   //Histogram definitions
   double diskRadius_mm = 1e-3;
   double minZ_mm = -1.500110;
@@ -374,9 +375,9 @@ void ValidationAnalysis_PolycrystalElasticScattering()
       Track theTrack = theEvent.trackVect[iT];
       
       //Loop over steps within tracks
-      for( int iS = 0; iS < theTrack.stepVect.size()-2; ++iS ){
+      for( int iS = 0; iS < theTrack.stepVect.size(); ++iS ){
 	Step theStep1 = theTrack.stepVect[iS];
-       	
+	
 	//Compute quantities
 	double x0 = theStep1.preStepX_mm;
 	double y0 = theStep1.preStepY_mm;
@@ -396,7 +397,7 @@ void ValidationAnalysis_PolycrystalElasticScattering()
 	h_postStepPointXY->Fill(x1,y1);
 	h_postStepPointXZ->Fill(x1,z1);
 	h_postStepPointYZ->Fill(y1,z1);
-
+	
 	//Step length
 	h_stepLength->Fill(stepLength1_mm);
       }
@@ -991,8 +992,8 @@ TGraph * CalculateTOFPOnTheInterval()
     
     //Match limits
     double t_scaling_ns = 2.0*2.0/18.0*1e9; //Scaling to get us to real time (instead of dimensionless time).
-    // 2 cm is used as it is the length of the bar.
-    // 18 cm2/s is used as it is the diffusion constant expected for near-gap QPs, given energy dependence.
+    // Above, 2 cm is used as it is the length of the bar.
+    // Above, 18 cm2/s is used as it is the diffusion constant expected for near-gap QPs, given energy dependence.
     if(t < 0.033){      
       g_out->SetPoint(iP,t*t_scaling_ns,lowEVal);
       sumForNormalization += (lowEVal * delta_t * t_scaling_ns);
@@ -1545,4 +1546,5 @@ void RunCompleteValidationAnalysis()
   ValidationAnalysis_QPDiffusionTOFP();
   ValidationAnalysis_QPDiffusionPlusRecombination();
   ValidationAnalysis_QPDiffusionPlusTrapping();
+  ValidationAnalysis_QPDiffusionMultiGap();
 }
