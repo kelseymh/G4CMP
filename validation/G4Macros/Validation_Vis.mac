@@ -1,11 +1,11 @@
 #-------------------------------------
-# Initialize the run
-/run/initialize
-
-#-------------------------------------
 # Geometry Customs Go First
 # Set geometry ID
 /g4cmp/GeometryID 1
+
+#-------------------------------------
+# Initialize the run
+/run/initialize
 
 #-------------------------------------
 # Set up the viewer

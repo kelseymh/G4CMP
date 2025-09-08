@@ -52,14 +52,14 @@
 
 /vis/filtering/trajectories/create/particleFilter
 /vis/filtering/trajectories/particleFilter-0/add QP
-#/vis/filtering/trajectories/particleFilter-0/add phononTS
-#/vis/filtering/trajectories/particleFilter-0/add phononTF
-#/vis/filtering/trajectories/particleFilter-0/add phononL
+/vis/filtering/trajectories/particleFilter-0/add phononTS
+/vis/filtering/trajectories/particleFilter-0/add phononTF
+/vis/filtering/trajectories/particleFilter-0/add phononL
 
 
 #-------------------------------------
 # Set number of phonon bounces
-/g4cmp/phononBounces 1000
+/g4cmp/phononBounces 100
 /g4cmp/qpBounces 1000000
 
 #-------------------------------------
@@ -68,9 +68,13 @@
 /gps/particle phononTF
 /gps/pos/type Volume
 /gps/pos/shape Para
-/gps/pos/halfx 0.0001 mm
-/gps/pos/halfy 0.0001 mm
-/gps/pos/halfz 0.0001 mm
+/gps/pos/halfx 0.000001 mm
+/gps/pos/halfy 0.000001 mm
+/gps/pos/halfz 0.000001 mm
+
+
+
+
 
 #-------------------------------------
 # Set the position.
@@ -79,8 +83,8 @@
 #/gps/pos/centre 0.0 0.0 -1.500050 mm # Center of Al1
 #/gps/pos/centre 0.0 0.0 -2.0 mm # Near-Center of Al2
 #/gps/pos/centre 0.0 0.0 -3.0 mm # Near-Center of Nb for Al3
-/gps/pos/centre -1.0 -1.0 4.8095 mm #For more complex geometry 2
-
+#/gps/pos/centre -1.0 -1.0 4.8095 mm #For more complex geometry 2
+/gps/pos/centre -1.0 -1.0 5.000107849467659 mm # For launching phonons within our film
 
 #-------------------------------------
 # Set the angular distribution. 
@@ -88,12 +92,6 @@
 /gps/direction 0.0 0.0 1.0
 /gps/ene/type Mono
 /gps/energy 0.004 eV
-/run/beamOn 100
-
-# For QPs, needs to always effectively be in-plane
-#/gps/ang/type iso
-#/gps/ang/mintheta 89.99999999 deg
-#/gps/ang/maxtheta 90.00000001 deg
-#/gps/ene/type Mono
-#/gps/energy 0.000185 eV
-#/run/beamOn 100
+#/g4cmp/verbose 6
+#/tracking/verbose 2
+/run/beamOn 1000

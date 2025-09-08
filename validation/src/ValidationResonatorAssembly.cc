@@ -137,7 +137,8 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   G4CMPSurfaceProperty* VacVacBoundary = borderContainer["VacVac"];  
 
   
-  //Start with a base layer of aluminum into which our objects will fit. We'll return this in the end.
+  //Start with a base layer of aluminum into which our objects will fit. We'll
+  //return this in the end.
   G4String baseAlLayerName = pName;
   G4String baseAlLayerNameSolid = pName + "_solid";
   G4String baseAlLayerNameLog = pName + "_log";
@@ -162,12 +163,16 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",baseAlLayerName,phys_baseAlLayer));
 
   //Need to create a lattice for the base Al layer...
-  G4LatticePhysical* AlPhysical_baseAlLayer = new G4LatticePhysical(AlLogical);
+  G4LatticePhysical* AlPhysical_baseAlLayer
+    = new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			    dp_scDelta0_Al, dp_scTeff_Al,
+			    dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_baseAlLayer->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(phys_baseAlLayer,AlPhysical_baseAlLayer);
 
   
-  //Now make the various components of the resonator array: line+coupling, shunt capacitance (cross), and qubit
+  //Now make the various components of the resonator array: line+coupling,
+  //shunt capacitance (cross), and qubit
   MakeResonatorLine(pName,log_baseAlLayer,LM,logicalLatticeContainer,
 		    borderContainer);
   
@@ -179,7 +184,8 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //through the fundamental volumes list and start making connections between
   //the empties and the in-plane base layer of which they are children
   for( int iV = 0; iV < fFundamentalVolumeList.size(); ++iV ){
-    if (std::get<0>(fFundamentalVolumeList[iV]).find("Vacuum") != std::string::npos) {
+    if (std::get<0>(fFundamentalVolumeList[iV]).find("Vacuum") !=
+	std::string::npos) {
       G4String name1 = std::get<1>(fFundamentalVolumeList[iV]) + "_baseAlLayer";
       G4String name2 = "baseAlLayer_" + std::get<1>(fFundamentalVolumeList[iV]);
       new G4CMPLogicalBorderSurface(name1, phys_baseAlLayer,
@@ -202,11 +208,6 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
 
   fLog_output = log_baseAlLayer;
   fPhys_output = phys_baseAlLayer;
-
-
-
-  
-
 }
 
 // Make the resonator line
@@ -259,7 +260,8 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   //Each batch has the following elements strung together, in order:
   //1. A vertical block
   //2. A horizontal block  
-  //Some useful translations relative to the center of the plane in which all of this is embedded
+  //Some useful translations relative to the center of the plane in which all
+  //of this is embedded
   G4ThreeVector brCornerOfBaseAlLayer(0.5*dp_resonatorAssemblyBaseAlDimX,
 				      -0.5*dp_resonatorAssemblyBaseAlDimY,0);
   //Bottom right corner relative to center of the plane
@@ -293,7 +295,8 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   log_shuntEmpty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",shuntEmptyName,shuntEmpty));
 
-  //Here, no existing intra-shunt volumes to create boundaries to yet, so don't need to do this yet
+  //Here, no existing intra-shunt volumes to create boundaries to yet, so don't
+  //need to do this yet
 
   //Vertical block (conductor)
   G4String shuntConductorName = pName + "_shuntConductor";
@@ -325,7 +328,9 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
 
   //Need to construct a lattice...
   G4LatticePhysical* AlPhysical_shuntConductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shuntConductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shuntConductor,AlPhysical_shuntConductor);
 
@@ -387,7 +392,8 @@ MakeResonatorLine(G4String pName,
 
   
   
-  //This will be made in two batches: one for "empty" space and one for "conductor" space (the line itself)
+  //This will be made in two batches: one for "empty" space and one for
+  //"conductor" space (the line itself)
   //Each batch has the following elements strung together, in order:
   //1. Coupling to the transmission line - DONE
   //2. Curve 1 - DONE
@@ -472,7 +478,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct a lattice...
   G4LatticePhysical* AlPhysical_tlCouplingConductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_tlCouplingConductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(tlCouplingConductor,AlPhysical_tlCouplingConductor);
 
@@ -549,7 +557,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_curve1Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_curve1Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(curve1Conductor,AlPhysical_curve1Conductor);
 
@@ -626,7 +636,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_curve2Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_curve2Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(curve2Conductor,AlPhysical_curve2Conductor);
   
@@ -696,7 +708,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl1Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl1Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl1Conductor,AlPhysical_shl1Conductor);
 
@@ -774,7 +788,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle1Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle1Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle1Conductor,AlPhysical_halfCircle1Conductor);
 
@@ -852,7 +868,9 @@ MakeResonatorLine(G4String pName,
   
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl2Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl2Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl2Conductor,AlPhysical_shl2Conductor);
 
@@ -932,7 +950,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle2Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle2Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle2Conductor,AlPhysical_halfCircle2Conductor);
 
@@ -1029,7 +1049,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl3Conductor
-    = new G4LatticePhysical(AlLogical);
+    = new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			    dp_scDelta0_Al, dp_scTeff_Al,
+			    dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl3Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl3Conductor,AlPhysical_shl3Conductor);
   
@@ -1116,7 +1138,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle3Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle3Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle3Conductor,AlPhysical_halfCircle3Conductor);
   
@@ -1208,7 +1232,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl4Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl4Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl4Conductor,AlPhysical_shl4Conductor);
   
@@ -1302,7 +1328,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle4Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle4Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle4Conductor,AlPhysical_halfCircle4Conductor);
   
@@ -1398,7 +1426,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl5Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl5Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl5Conductor,AlPhysical_shl5Conductor);
   
@@ -1494,7 +1524,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle5Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle5Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle5Conductor,AlPhysical_halfCircle5Conductor);
   
@@ -1585,7 +1617,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl6Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl6Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl6Conductor,AlPhysical_shl6Conductor);
   
@@ -1675,7 +1709,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle6Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle6Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle6Conductor,AlPhysical_halfCircle6Conductor);
   
@@ -1770,7 +1806,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl7Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl7Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl7Conductor,AlPhysical_shl7Conductor);
   
@@ -1855,7 +1893,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_curve3Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_curve3Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(curve3Conductor,AlPhysical_curve3Conductor);
   
@@ -1940,7 +1980,9 @@ MakeResonatorLine(G4String pName,
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_svl1Conductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_svl1Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(svl1Conductor,AlPhysical_svl1Conductor);
   
@@ -2093,7 +2135,9 @@ MakeResonatorLine(G4String pName,
  
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shuntCouplerConductor =
-    new G4LatticePhysical(AlLogical);
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			  dp_scDelta0_Al, dp_scTeff_Al,
+			  dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shuntCouplerConductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shuntCouplerConductor,AlPhysical_shuntCouplerConductor);
   

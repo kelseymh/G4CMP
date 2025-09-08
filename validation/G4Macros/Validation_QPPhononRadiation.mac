@@ -82,15 +82,6 @@
 
 #-------------------------------------
 # Set the angular distribution. 
-# For Phonon sims
-#/gps/ang/type iso
-#/gps/ene/type Lin
-#/gps/ene/min 0.0001 eV
-#/gps/ene/max 0.01 eV
-#/gps/ene/gradient 1
-#/gps/ene/intercept 1
-#/run/beamOn 100000
-
 # For QPs, needs to always effectively be in-plane
 /gps/ang/type iso
 /gps/ang/mintheta 89.99999999 deg
