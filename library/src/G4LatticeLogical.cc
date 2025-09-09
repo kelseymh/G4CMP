@@ -59,6 +59,7 @@
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
 // 20240510  E. Michhaud -- Add function to compute L0 from other parameters
 // 20250904  R. Linehan -- Linking Tcrit to Delta0 for superconductors
+// 20250905  G4CMP-500 -- Removing non-fundamental superconductor parameters
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -78,7 +79,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
   : verboseLevel(0), fName(name), fDensity(0.), fNImpurity(0.),
     fPermittivity(1.), fElasticity{}, fElReduced{}, fHasElasticity(false),
     fpPhononKin(0), fpPhononTable(0),
-    fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0), fElScatMFP(DBL_MAX),
+    fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0), 
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
     fVSound(0.), fVTrans(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),
@@ -89,8 +90,8 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fAlpha(0.), fAcDeform_e(0.), fAcDeform_h(0.),
     fIVQuadField(0.), fIVQuadRate(0.), fIVQuadExponent(0.),
     fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.),
-    fIVModel(G4CMPConfigManager::GetIVRateModel()), fSC_Delta0(0.),
-    fSC_Tau0_qp(DBL_MAX), fSC_Tau0_ph(DBL_MAX), fSC_Tcrit(0.), fSC_Teff(0.), fSC_Dn(0.), fSC_TauLocalTrap_qp(DBL_MAX) {
+    fIVModel(G4CMPConfigManager::GetIVRateModel()), 
+    fSC_Tau0_qp(DBL_MAX), fSC_Tau0_ph(DBL_MAX) {
   for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
     for (G4int j=0; j<KVBINS; j++) {
       for (G4int k=0; k<KVBINS; k++) {
@@ -164,15 +165,8 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fIVLinRate0 = rhs.fIVLinRate0;
   fIVLinRate1 = rhs.fIVLinRate1;
   fIVModel = rhs.fIVModel;
-  fElScatMFP = rhs.fElScatMFP;
-  fSC_Delta0 = rhs.fSC_Delta0;
   fSC_Tau0_qp = rhs.fSC_Tau0_qp;
   fSC_Tau0_ph = rhs.fSC_Tau0_ph;
-  fSC_Tcrit = rhs.fSC_Tcrit;
-  fSC_Teff = rhs.fSC_Teff;
-  fSC_Dn = rhs.fSC_Dn;
-  fSC_TauLocalTrap_qp = rhs.fSC_TauLocalTrap_qp;
-  
   
   if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
   if (!rhs.fpPhononTable) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
@@ -963,17 +957,11 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\ndecayTT " << fTTFrac
      << "\nLDOS " << fLDOS << " STDOS " << fSTDOS << " FTDOS " << fFTDOS
      << "\nDebye " << fDebye/eV << " eV"
-     << "\nElScatMFP " << fElScatMFP/mm << " mm"
      << std::endl;
 
   os << "# Quasiparticle and superconductor parameters"
-     << "\nsc_delta0 " << fSC_Delta0/eV << " eV"
      << "\nsc_tau0_qp " << fSC_Tau0_qp/ns << " ns"
      << "\nsc_tau0_ph " << fSC_Tau0_ph/ns << " ns"
-     << "\nsc_tcrit " << fSC_Tcrit/kelvin << " K"
-     << "\nsc_teff " << fSC_Teff/kelvin << " K"
-     << "\nsc_dn " << fSC_Dn/um/um/s << " um^2/s"
-     << "\nsc_taulocaltrap_qp " << fSC_TauLocalTrap_qp/us << " us"
      << std::endl;
 
 
@@ -1122,12 +1110,4 @@ void G4LatticeLogical::DumpList(std::ostream& os,
   }
 
   os << unit;
-}
-
-// Set the zero-temperature gap and corresponding Tcrit, assuming
-// that the superconductor is BCS
-
-void G4LatticeLogical::SetSCDelta0(G4double v) {
-  fSC_Delta0 = v;
-  fSC_Tcrit = fSC_Delta0 / CLHEP::k_Boltzmann / 1.764;
 }

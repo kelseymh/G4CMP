@@ -20,6 +20,8 @@
 // 20190226  Use local instance of G4Navigator to avoid corrupting tracking
 // 20211001  Add utilities to get lattice from touchable, find valley close
 //		to specified direction.
+// 20250905  R. Linehan -- Add a function to robustify the random 2d vector
+//           generation from 3D random vector
 
 #include "G4ThreeVector.hh"
 
@@ -143,6 +145,8 @@ namespace G4CMP {
 
   // NOTE:  Direction should be in LOCAL coordinates, for use with lattice
   G4int FindNearestValley(const G4LatticePhysical* lat, G4ThreeVector ldir);
+
+  G4ThreeVector RobustifyRandomDirIn2D(G4ThreeVector returnDir);
 }
 
 #endif	/* G4CMPGeometryUtils_hh */

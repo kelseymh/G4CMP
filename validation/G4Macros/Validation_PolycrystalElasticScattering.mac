@@ -45,17 +45,13 @@
 
 #-------------------------------------
 # Set number of phonon bounces
-/g4cmp/phononBounces 0
+/g4cmp/phononBounces 10
 
 #-------------------------------------
 # Generate 1 phonon per event, in a tiny parallelepiped volume
 /gps/number 1
 /gps/particle phononTF
 /gps/pos/type Point
-#/gps/pos/shape Para
-#/gps/pos/halfx 0.0000001 mm
-#/gps/pos/halfy 0.0000001 mm
-#/gps/pos/halfz 0.0000001 mm
 
 
 #-------------------------------------
@@ -72,15 +68,4 @@
 /gps/ang/type iso
 /gps/ene/type Mono
 /gps/energy 0.0040 eV
-/run/beamOn 10
-
-# For QPs, needs to always effectively be in-plane
-#/gps/ang/type iso
-#/gps/ang/mintheta 89.99999999 deg
-#/gps/ang/maxtheta 90.00000001 deg
-#/gps/ene/type Lin
-#/gps/ene/min 0.000185 eV
-#/gps/ene/max 0.0006 eV
-#/gps/ene/gradient 1
-#/gps/ene/intercept 1
-#/run/beamOn 10
+/run/beamOn 1000
