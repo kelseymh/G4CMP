@@ -1,0 +1,19 @@
+#!/bin/bash
+./g4cmpValidation ../validation/G4Macros/Validation_BoundaryTransmission.mac
+sleep 5
+./g4cmpValidation ../validation/G4Macros/Validation_PolycrystalElasticScattering.mac
+sleep 5
+./g4cmpValidation ../validation/G4Macros/Validation_SCPairbreaking.mac
+sleep 5
+./g4cmpValidation ../validation/G4Macros/Validation_QPPhononRadiation.mac
+sleep 5
+./g4cmpValidation ../validation/G4Macros/Validation_QPRecombination.mac
+sleep 5
+./g4cmpValidation ../validation/G4Macros/Validation_QPDiffusionTOFP.mac
+sleep 5
+./g4cmpValidation ../validation/G4Macros/Validation_QPDiffusionPlusRecombination.mac
+sleep 5
+./g4cmpValidation ../validation/G4Macros/Validation_QPDiffusionPlusTrapping.mac
+sleep 5
+./g4cmpValidation ../validation/G4Macros/Validation_QPDiffusionMultiGap.mac
+sleep 5

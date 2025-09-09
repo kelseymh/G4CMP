@@ -27,6 +27,7 @@
 // 20211021  Wrap verbose output in #ifdef G4CMP_DEBUG for performace
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 // 20250507  G4CMP-480 -- Swap rotation matrix for local<-->lattice transforms.
+// 20250905  G4CMP-500 -- Remove non-fundamental superconductor parameters
 
 #include "G4LatticePhysical.hh"
 #include "G4CMPConfigManager.hh"
@@ -49,15 +50,44 @@ namespace {
 
 G4LatticePhysical::G4LatticePhysical()
   : verboseLevel(0), fLattice(0), hMiller(0), kMiller(0), lMiller(0),
-    fRot(0.), fTemperature(-1.) {;}
+    fRot(0.), fTemperature(-1.), fPolycrystalElasticScatteringMFP(DBL_MAX),
+    fSCDelta0(0.), fSCTcrit(0.), fSCTeff(0.), fSCDn(0.),
+    fSCQPLocalTrappingTau(DBL_MAX) {;}
 
 // Set lattice orientation (relative to G4VSolid) with Miller indices
 
 G4LatticePhysical::G4LatticePhysical(const G4LatticeLogical* Lat,
 				     G4int h, G4int k, G4int l, G4double rot)
-  : verboseLevel(0), fLattice(Lat), fTemperature(-1.) {
+  : verboseLevel(0), fLattice(Lat), fTemperature(-1.),
+    fPolycrystalElasticScatteringMFP(DBL_MAX), fSCDelta0(0.), fSCTcrit(0.),
+    fSCTeff(0.), fSCDn(0.), fSCQPLocalTrappingTau(DBL_MAX) {
+
+  //Use the set delta0 to set a Tcrit via BCS
+  
   SetMillerOrientation(h, k, l, rot);
 }
+
+
+// Another overloaded version of this so that we can set the SC properties
+// of the lattice without requiring the h, k, l, and rot parameters
+
+G4LatticePhysical::G4LatticePhysical(const G4LatticeLogical* Lat,
+				     G4double polycrystalElasticScatteringMFP,
+				     G4double scDelta0, G4double scTeff,
+				     G4double scDn,
+				     G4double scQPLocalTrappingTau,
+				     G4int h, G4int k, G4int l, G4double rot)
+  : verboseLevel(0), fLattice(Lat), fTemperature(-1.),
+    fPolycrystalElasticScatteringMFP(polycrystalElasticScatteringMFP),
+    fSCDelta0(scDelta0), fSCTcrit(scDelta0 / CLHEP::k_Boltzmann / 1.764),    
+    fSCTeff(scTeff), fSCDn(scDn), fSCQPLocalTrappingTau(scQPLocalTrappingTau) {
+
+  //Use the set delta0 to set a Tcrit via BCS
+  
+  SetMillerOrientation(h, k, l, rot);
+}
+
+
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

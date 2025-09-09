@@ -36,6 +36,20 @@ namespace ValidationDetectorParameters
   constexpr double dp_aluminum3Thickness = 1 * CLHEP::mm;
   
 
+  //----------------------------------------------------------------
+  //Superconductor "default" parameters
+  constexpr double dp_polycryElScatMFP_Al = 10 * CLHEP::nm;
+  constexpr double dp_scDelta0_Al = 0.000176 * CLHEP::eV;
+  constexpr double dp_scTeff_Al = 0.2 * CLHEP::kelvin;
+  constexpr double dp_scDn_Al = 6 * CLHEP::um*CLHEP::um / CLHEP::ns;
+  constexpr double dp_scTauQPTrap_Al = 1 * CLHEP::ms;
+
+  constexpr double dp_polycryElScatMFP_Nb = 10 * CLHEP::nm;
+  constexpr double dp_scDelta0_Nb = 0.00162 * CLHEP::eV;
+  constexpr double dp_scTeff_Nb = 0.8 * CLHEP::kelvin;
+  constexpr double dp_scDn_Nb = 1.4 * CLHEP::um*CLHEP::um / CLHEP::ns;
+  constexpr double dp_scTauQPTrap_Nb = 1 * CLHEP::ms;
+
 
 
   //----------------------------------------------------------------

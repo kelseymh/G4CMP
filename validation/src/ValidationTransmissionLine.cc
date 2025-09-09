@@ -235,7 +235,9 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
   
   //Create dedicated lattice info for this TL piece
   G4LatticePhysical* AlPhysical_transmissionLineConductor
-    = new G4LatticePhysical(AlLogical);
+    = new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			    dp_scDelta0_Al, dp_scTeff_Al,
+			    dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_transmissionLineConductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(phys_transmissionLineConductor,AlPhysical_transmissionLineConductor);  
 

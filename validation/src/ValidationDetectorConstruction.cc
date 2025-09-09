@@ -158,7 +158,7 @@ void ValidationDetectorConstruction::SetupGeometry()
       = new G4LogicalVolume(germaniumSolid,fGermanium,"germaniumLogical");
     G4VPhysicalVolume* germaniumPhysical
       = new G4PVPlacement(0,
-			  G4ThreeVector(0.0,0.0,(dp_siThickness/2.0-dp_geThickness/2.0)),
+			  G4ThreeVector(0.0,0.0,(-dp_siThickness/2.0-dp_geThickness/2.0)),
 			  germaniumLogical,"germaniumPhysical", worldLogical,
 			  false,0);
 
@@ -248,13 +248,31 @@ void ValidationDetectorConstruction::SetupGeometry()
     //For Ge, making Si for now because Ge has some reflection issues that
     //I'll wait on NT's push to fix
     G4LatticePhysical* SiPhysical = new G4LatticePhysical(SiLogical);
-    G4LatticePhysical* GePhysical = new G4LatticePhysical(SiLogical);
-    G4LatticePhysical* Al1Physical = new G4LatticePhysical(AlLogical);
-    G4LatticePhysical* Al2Physical = new G4LatticePhysical(AlLogical);
-    G4LatticePhysical* Al3Physical = new G4LatticePhysical(AlLogical);
-    G4LatticePhysical* NbAForAl2Physical = new G4LatticePhysical(NbLogical);
-    G4LatticePhysical* NbBForAl2Physical = new G4LatticePhysical(NbLogical);
-    G4LatticePhysical* NbForAl3Physical = new G4LatticePhysical(NbLogical);
+    G4LatticePhysical* GePhysical = new G4LatticePhysical(GeLogical);
+    G4LatticePhysical* Al1Physical =
+      new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			    dp_scDelta0_Al, dp_scTeff_Al,
+			    dp_scDn_Al, dp_scTauQPTrap_Al);
+    G4LatticePhysical* Al2Physical =
+      new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			    dp_scDelta0_Al, dp_scTeff_Al,
+			    dp_scDn_Al, dp_scTauQPTrap_Al);
+    G4LatticePhysical* Al3Physical =
+      new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
+			    dp_scDelta0_Al, dp_scTeff_Al,
+			    dp_scDn_Al, dp_scTauQPTrap_Al);
+    G4LatticePhysical* NbAForAl2Physical =
+      new G4LatticePhysical(NbLogical,dp_polycryElScatMFP_Nb,
+			    dp_scDelta0_Nb, dp_scTeff_Nb,
+			    dp_scDn_Nb, dp_scTauQPTrap_Nb);
+    G4LatticePhysical* NbBForAl2Physical =
+      new G4LatticePhysical(NbLogical,dp_polycryElScatMFP_Nb,
+			    dp_scDelta0_Nb, dp_scTeff_Nb,
+			    dp_scDn_Nb, dp_scTauQPTrap_Nb);
+    G4LatticePhysical* NbForAl3Physical =
+      new G4LatticePhysical(NbLogical,dp_polycryElScatMFP_Nb,
+			    dp_scDelta0_Nb, dp_scTeff_Nb,
+			    dp_scDn_Nb, dp_scTauQPTrap_Nb);
     SiPhysical->SetMillerOrientation(1,0,0);
     GePhysical->SetMillerOrientation(1,0,0);
     Al1Physical->SetMillerOrientation(1,0,0);
@@ -556,7 +574,7 @@ void ValidationDetectorConstruction::SetupGeometry()
       //For the the interface of the Al and Al
       fAlAlInterface = new G4CMPSurfaceProperty("AlAlSurf",
 						0.0, 1.0, 0.0, 0.0,
-						0.0, 1.0, 0.0, 0.0,
+						0.0, 0.0, 0.0, 0.0,
 						0.0, 0.0);
       fAlAlInterface->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
 					      diffCoeffs, specCoeffs, GHz, GHz,
@@ -684,7 +702,9 @@ void ValidationDetectorConstruction::SetupGeometry()
       log_groundPlane->SetVisAttributes(groundPlaneVisAtt);
 
       G4LatticePhysical* phys_groundPlaneLattice
-	= new G4LatticePhysical(log_aluminumLattice);
+	= new G4LatticePhysical(log_aluminumLattice,dp_polycryElScatMFP_Al,
+				dp_scDelta0_Al, dp_scTeff_Al,
+				dp_scDn_Al, dp_scTauQPTrap_Al);
       phys_groundPlaneLattice->SetMillerOrientation(1,0,0);
       LM->RegisterLattice(phys_groundPlane,phys_groundPlaneLattice);
 
@@ -911,6 +931,7 @@ void ValidationDetectorConstruction::SetupGeometry()
 						std::get<2>(theResTuple),
 						phys_siliconChip,
 						fSiVacInterface);
+	      G4cout << "Setting interface for " << tempName1 << " to fSiVacInterface" << G4endl;
 	      
 	      G4CMPLogicalBorderSurface *
 		border_resonatorAssemblyEmpty_siliconChip
@@ -918,6 +939,7 @@ void ValidationDetectorConstruction::SetupGeometry()
 						phys_siliconChip,
 						std::get<2>(theResTuple),
 						fSiVacInterface);
+	      G4cout << "Setting interface for " << tempName2 << " to fSiVacInterface" << G4endl;
 	    }
 
 	    //Set the chip/aluminum interfaces
@@ -931,6 +953,7 @@ void ValidationDetectorConstruction::SetupGeometry()
 		= new G4CMPLogicalBorderSurface(tempName1, phys_siliconChip,
 						std::get<2>(theResTuple),
 						fSiAlInterface);
+	      G4cout << "Setting interface for " << tempName1 << " to fSiAlInterface" << G4endl;
 	      
 	      G4CMPLogicalBorderSurface *
 		border_resonatorAssemblyConductor_siliconChip
@@ -938,6 +961,7 @@ void ValidationDetectorConstruction::SetupGeometry()
 						std::get<2>(theResTuple),
 						phys_siliconChip,
 						fSiAlInterface);
+	      G4cout << "Setting interface for " << tempName2 << " to fSiAlInterface" << G4endl;
 	    }
 	    
 	    //Set the world/vacuum interfaces (probably not necessary but whatever, better to have everything well-defined
@@ -951,12 +975,14 @@ void ValidationDetectorConstruction::SetupGeometry()
 		= new G4CMPLogicalBorderSurface(tempName1, fWorldPhys,
 						std::get<2>(theResTuple),
 						fVacVacInterface);
+	      G4cout << "Setting interface for " << tempName1 << " to fVacVacInterface" << G4endl;
 	      
 	      G4CMPLogicalBorderSurface *
 		border_resonatorAssemblyEmpty_world
 		= new G4CMPLogicalBorderSurface(tempName2,
 						std::get<2>(theResTuple),
 						fWorldPhys, fVacVacInterface);
+	      G4cout << "Setting interface for " << tempName2 << " to fVacVacInterface" << G4endl;
 	    }
 
 	    //Set the world/aluminum interfaces
@@ -970,12 +996,14 @@ void ValidationDetectorConstruction::SetupGeometry()
 		= new G4CMPLogicalBorderSurface(tempName1, fWorldPhys,
 						std::get<2>(theResTuple),
 						fAlVacInterface);
+	      G4cout << "Setting interface for " << tempName1 << " to fAlVacInterface" << G4endl;
 	      
 	      G4CMPLogicalBorderSurface *
 		border_resonatorAssemblyConductor_world
 		= new G4CMPLogicalBorderSurface(tempName2,
 						std::get<2>(theResTuple),
 						fWorldPhys, fAlVacInterface);
+	      G4cout << "Setting interface for " << tempName2 << " to fAlVacInterface" << G4endl;
 	    }
 
 	    //Set the TLcouplerConductor interface with the ground plane
@@ -989,12 +1017,14 @@ void ValidationDetectorConstruction::SetupGeometry()
 		= new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
 						std::get<2>(theResTuple),
 						fAlAlInterface);
+	      G4cout << "Setting interface for " << tempName1 << " to fAlAlInterface" << G4endl;
 	      G4CMPLogicalBorderSurface *
 		border_tlCouplingConductor_groundPlane
 		= new G4CMPLogicalBorderSurface(tempName2,
 						std::get<2>(theResTuple),
 						phys_groundPlane,
 						fAlAlInterface);
+	      G4cout << "Setting interface for " << tempName2 << " to fAlAlInterface" << G4endl;
 	    }
 	    
 	    
@@ -1009,12 +1039,16 @@ void ValidationDetectorConstruction::SetupGeometry()
 		= new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
 						std::get<2>(theResTuple),
 						fAlVacInterface);
+	      G4cout << "Setting interface for " << tempName1 << " to fAlVacInterface" << G4endl;
+	      
 	      G4CMPLogicalBorderSurface *
 		border_tlCouplingEmpty_groundPlane
 		= new G4CMPLogicalBorderSurface(tempName2,
 						std::get<2>(theResTuple),
 						phys_groundPlane,
 						fAlVacInterface);
+	      G4cout << "Setting interface for " << tempName2 << " to fAlVacInterface" << G4endl;
+	      
 	    }
 
 	    //Set the baseLayer/groundplane interface
@@ -1027,12 +1061,14 @@ void ValidationDetectorConstruction::SetupGeometry()
 		= new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
 						std::get<2>(theResTuple),
 						fAlAlInterface);
+	      G4cout << "---Test Setting interface for " << tempName1 << " to fAlAlInterface" << G4endl;
 	      
 	      G4CMPLogicalBorderSurface * border_baselayer_groundPlane
 		= new G4CMPLogicalBorderSurface(tempName2,
 						std::get<2>(theResTuple),
 						phys_groundPlane,
-						fAlAlInterface);	      
+						fAlAlInterface);
+	      G4cout << "---Test Setting interface for " << tempName2 << " to fAlAlInterface" << G4endl;
 	    }
 	  }
 	}

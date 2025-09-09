@@ -59,7 +59,7 @@
 #-------------------------------------
 # Set number of phonon bounces
 /g4cmp/phononBounces 0
-/g4cmp/qpBounces 1000000
+/g4cmp/qpBounces 10000
 
 #-------------------------------------
 # Generate 1 phonon per event, in a tiny parallelepiped volume
@@ -81,15 +81,6 @@
 
 #-------------------------------------
 # Set the angular distribution. 
-# For Phonon sims
-#/gps/ang/type iso
-#/gps/ene/type Lin
-#/gps/ene/min 0.0001 eV
-#/gps/ene/max 0.01 eV
-#/gps/ene/gradient 1
-#/gps/ene/intercept 1
-#/run/beamOn 100000
-
 # For QPs, needs to always effectively be in-plane
 /gps/ang/type iso
 /gps/ang/mintheta 89.99999999 deg
@@ -99,4 +90,4 @@
 /gps/ene/max 0.010 eV
 /gps/ene/gradient 1
 /gps/ene/intercept 1
-/run/beamOn 1 #100000
+/run/beamOn 100000
