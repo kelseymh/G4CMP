@@ -8,6 +8,9 @@ ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 Development Project for quasiparticle tracking. New Tags go below this line.
 2025-08-14  G4CMP-219 : Quasiparticle tracking in superconducting films.
+2025-09-08  G4CMP-500 : Changed non-fundamental SC inputs to go through
+                        G4LatticePhysical instantiation
+2025-09-04  G4CMP-499 : Set Tcrit to Gap0 via BCS relation to remove parameter
 2025-08-14  G4CMP-496 : Fix phonon wavevector & momentum direction from DoDecay.
 2025-08-01  G4CMP-326 : Kill "thermal" phonons in TrackLimiter if temp>0.
 New tags go above this line.
