@@ -5,6 +5,29 @@
 
 /// \file library/src/G4CMPQPDiffusion.hh
 /// \brief Implementation of the G4CMPQPDiffusion class
+///
+/// This is the class that handles QP diffusion within G4CMP. A few
+/// very important notes:
+/// 1. Diffusion is done only in 2D, and for now, specifically in XY.
+///    This will be generalized in the future, but the film must sit
+///    globally in the XY plane for these features to work. (Sorry!)
+/// 2. The algorithm uses a "walk on spheres" technique to do the
+///    diffusion in XY, which optimizes computational efficiency while
+///    still capturing physics and accounting for possible disparities
+///    in length scales encountered in a geometry. There are several
+///    modifications made on top of this WoS algorithm that are meant
+///    to unstick the QPs from corners, handle edge cases, etc.
+/// 3. This class relies heavily on new functions doing 2D safety
+///    finding in G4CMPGeometryUtils. See those for some insight as
+///    well.
+/// 4. One does NOT need the G4CMPQPDiffusionTimeStepper for this
+///    function to work. See notes in that class for further info.
+/// 5. If *any* other QP functions are active (say, pairbreaking or
+///    phonon radiation), this class MUST be called for reliable/
+///    faithful simulation results.
+//
+// 20250922  G4CMP-219 -- First addition to this history (done at time
+//                        of merge to develop)
 
 #include "G4CMPQPDiffusion.hh"
 #include "G4CMPSCUtils.hh"
@@ -26,8 +49,6 @@
 #include "Randomize.hh"
 #include "G4RandomDirection.hh"
 
-
-//Temporary REL
 #include <fstream>
 #include <iostream>
 #include <cmath>

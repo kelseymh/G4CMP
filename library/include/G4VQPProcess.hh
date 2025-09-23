@@ -31,6 +31,8 @@ public:
   virtual ~G4VQPProcess() {;}
   
   virtual G4bool IsApplicable(const G4ParticleDefinition& aPD);
+
+protected:
   virtual G4bool RandomizeFinalStateMomentumDirectionInXY();
   
 private:

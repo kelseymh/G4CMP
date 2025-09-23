@@ -4,10 +4,13 @@
 \***********************************************************************/
 
 /// \file library/src/G4CMPQPLocalTrappingRate.hh
-/// \brief Compute rate for QP local trapping 
+/// \brief Compute rate for QP local trapping
+///
+/// This is the rate class for the QP local trapping process. The
+/// rate is drawn from lattice information rather than hardcoded.
 //
-//
-
+// 20250922  G4CMP-219 -- First addition to this history (done at time
+//                        of merge to develop)
 
 #ifndef G4CMPQPLocalTrappingRate_hh
 #define G4CMPQPLocalTrappingRate_hh 1

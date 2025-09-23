@@ -31,14 +31,12 @@
 ///    given that the main QP diffusion function should be perfectly
 ///    fine without this process helping.
 //
-// 20250922  G4CMP-219 : First addition to this history (done at time of
-//           merge to develop)
-
+// 20250922  G4CMP-219 -- First addition to this history (done at time
+//                        of merge to develop)
 
 #ifndef G4CMPQPDiffusionTimeStepperProcess_h
 #define G4CMPQPDiffusionTimeStepperProcess_h 1
 
-#include "G4CMPSCUtils.hh"
 #include "G4VQPProcess.hh"
 
 class G4CMPQPDiffusionTimeStepperProcess : public G4VQPProcess {
@@ -48,15 +46,13 @@ public:
 
   virtual void SetVerboseLevel(G4int vb);
   virtual G4bool IsApplicable(const G4ParticleDefinition&);
-  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step& );
+  virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
 protected:
   // Keep function here as call-back to avoid getting old toolkit version
   virtual G4double GetMeanFreePath(const G4Track& trk,G4double prevstep,
 				   G4ForceCondition* cond);
-
-
-
+  
 private:
 
   // hide assignment operator as private

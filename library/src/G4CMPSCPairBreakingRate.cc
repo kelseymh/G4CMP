@@ -10,8 +10,10 @@
 #include "G4PhysicalConstants.hh"
 #include "G4Track.hh"
 #include "G4LatticePhysical.hh"
+#include "G4CMPSCUtils.hh"
 
-// Pairbreaking rate is computed using energy and the G4SCUtils class, upon which this is based
+// Pairbreaking rate is computed using energy and the G4SCUtils class, upon
+// which this is based
 G4double G4CMPSCPairBreakingRate::Rate(const G4Track& aTrack) const {
 
   //Debugging  

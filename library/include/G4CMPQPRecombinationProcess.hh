@@ -17,7 +17,6 @@
 #ifndef G4CMPQPRecombinationProcess_h
 #define G4CMPQPRecombinationProcess_h 1
 
-#include "G4CMPSCUtils.hh"
 #include "G4VQPProcess.hh"
 
 class G4CMPQPRecombinationProcess : public G4VQPProcess {

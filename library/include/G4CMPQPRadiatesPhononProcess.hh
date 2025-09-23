@@ -17,7 +17,6 @@
 #ifndef G4CMPQPRadiatesPhononProcess_h
 #define G4CMPQPRadiatesPhononProcess_h 1
 
-#include "G4CMPSCUtils.hh"
 #include "G4VQPProcess.hh"
 
 class G4CMPQPRadiatesPhononProcess : public G4VQPProcess {

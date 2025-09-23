@@ -17,7 +17,6 @@
 #ifndef G4CMPSCPairBreakingProcess_h
 #define G4CMPSCPairBreakingProcess_h 1
 
-#include "G4CMPSCUtils.hh"
 #include "G4VPhononProcess.hh"
 
 class G4CMPSCPairBreakingProcess : public G4VPhononProcess {

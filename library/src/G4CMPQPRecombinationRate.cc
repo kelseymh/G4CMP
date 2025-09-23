@@ -11,6 +11,7 @@
 #include "G4LatticePhysical.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4Track.hh"
+#include "G4CMPSCUtils.hh"
 #include <vector>
 #include <map>
 
