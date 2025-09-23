@@ -11,7 +11,6 @@
 #define G4CMPQPRecombinationRate_hh 1
 
 #include "G4CMPVScatteringRate.hh"
-#include "G4CMPSCUtils.hh"
 #include <vector>
 #include <map>
 

@@ -22,9 +22,6 @@
 #include "G4LatticePhysical.hh"
 #include "G4CMPSecondaryUtils.hh"
 
-
-
-
 // Constructor and destructor 
 G4CMPQPRadiatesPhononProcess::
 G4CMPQPRadiatesPhononProcess(const G4String& aName)

@@ -17,7 +17,6 @@
 #define G4CMPSCPairBreakingRate_hh 1
 
 #include "G4CMPVScatteringRate.hh"
-#include "G4CMPSCUtils.hh"
 
 class G4CMPSCPairBreakingRate : public G4CMPVScatteringRate {  
 public:
