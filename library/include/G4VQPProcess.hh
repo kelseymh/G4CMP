@@ -5,12 +5,15 @@
 
 /// \file library/include/G4VQPProcess.hh
 /// \brief Definition of the G4VQPProcess base class
+/// 
+/// This class is a base QP class for all of the QP processes that
+/// inherit from the G4VDiscreteProcess. We note that the main
+/// QP diffusion process does NOT inherit from this.
 //
 // $Id$
 //
-// 20140312  Move utility functions to separate class, multiple inheritance
-// 20140331  Add required subtype code to constructor
-// 20170601  Inherit from new G4CMPVProcess, only need IsApplicable
+// 20250922  G4CMP-219 -- First addition to this history (done at time
+//                        of merge to develop)
 
 #ifndef G4VQPProcess_h
 #define G4VQPProcess_h 1

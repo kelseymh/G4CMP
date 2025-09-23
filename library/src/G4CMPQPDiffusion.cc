@@ -964,7 +964,7 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
 
     //Using this because sometimes if on/near a surface G4 struggles with the
     //GetVolumeAt point.
-    G4VPhysicalVolume * preNudgePositionVolume =
+    G4VPhysicalVolume* preNudgePositionVolume =
       track.GetStep()->GetPostStepPoint()->GetPhysicalVolume(); 
 
     //Debugging
@@ -1003,7 +1003,7 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
       //Note that we can use the getVolumeAtPoint here without much issue
       //because we're reasonably far from a boundary (i.e. of order the hard
       //floor boundary scale in some direction).
-      G4VPhysicalVolume * nudgedPositionVolume =
+      G4VPhysicalVolume* nudgedPositionVolume =
 	G4CMP::GetVolumeAtPoint(nudgedPosition);
 
       //Debugging
@@ -1719,14 +1719,14 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
   //0.01 nm has issues (but 1 nm seems fine), so want to stay well above the
   //10 pm scale.
   G4double boundTolerance = fHardFloorBoundaryScale*0.1; 
-  G4VPhysicalVolume * currentVolume = track.GetVolume();
+  G4VPhysicalVolume* currentVolume = track.GetVolume();
   G4ThreeVector trackPosition = track.GetPosition();
   G4ThreeVector momentumDir = track.GetMomentumDirection();
   G4ThreeVector trackPosition_eps = trackPosition+momentumDir*boundTolerance;
   G4ThreeVector trackPosition_mineps = trackPosition-momentumDir*boundTolerance;
-  G4VPhysicalVolume * currentVolPlusEps
+  G4VPhysicalVolume* currentVolPlusEps
     = G4CMP::GetVolumeAtPoint(trackPosition_eps);
-  G4VPhysicalVolume * currentVolMinEps
+  G4VPhysicalVolume* currentVolMinEps
     = G4CMP::GetVolumeAtPoint(trackPosition_mineps);
   G4StepStatus theStatus = track.GetStep()->GetPreStepPoint()->GetStepStatus();
   G4double energy = track.GetKineticEnergy();
@@ -1959,7 +1959,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
 
 	  G4ThreeVector randomDir = G4RandomDirection();
 	  G4ThreeVector newRandomPos = trackPosition + randomDir*fPicometerScale;
-	  G4VPhysicalVolume * newRandomPosVol = G4CMP::GetVolumeAtPoint(newRandomPos);
+	  G4VPhysicalVolume* newRandomPosVol = G4CMP::GetVolumeAtPoint(newRandomPos);
 	  if (map_volName_isPresent.count(newRandomPosVol->GetName()) == 0 ) {
 	    map_volName_isPresent.emplace(newRandomPosVol->GetName(),true);
 	  }
@@ -2421,7 +2421,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
     fBoundaryHistory[fBoundaryHistory.size()-1].second;
   G4ThreeVector displacedPosition =
     currentPosition + currentNorm*epsilonDisplacement;
-  G4VPhysicalVolume * volumeAtPoint =
+  G4VPhysicalVolume* volumeAtPoint =
     G4CMP::GetVolumeAtPoint(displacedPosition);
 
   //Debugging
@@ -2467,8 +2467,8 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
       epsilonDisplacement * fBoundaryHistory[iB].second;
     G4ThreeVector minusEps = fBoundaryHistory[iB].first -
       epsilonDisplacement * fBoundaryHistory[iB].second;
-    G4VPhysicalVolume * volPlusEps = G4CMP::GetVolumeAtPoint(plusEps);
-    G4VPhysicalVolume * volMinusEps = G4CMP::GetVolumeAtPoint(minusEps);
+    G4VPhysicalVolume* volPlusEps = G4CMP::GetVolumeAtPoint(plusEps);
+    G4VPhysicalVolume* volMinusEps = G4CMP::GetVolumeAtPoint(minusEps);
     if(volPlusEps == volumeAtPoint) {
       goodOtherNorms.push_back(fBoundaryHistory[iB].second);
       goodOtherPositions.push_back(fBoundaryHistory[iB].first);

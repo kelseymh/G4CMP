@@ -91,9 +91,9 @@ namespace G4CMP {
 
   // Phonons reflect difusively from surfaces.
   G4ThreeVector GetLambertianVector(const G4LatticePhysical* theLattice,
-                                    const G4ThreeVector& surfNorm, G4int mode,const G4ThreeVector& incidentVDir);
+                                    const G4ThreeVector& surfNorm, G4int mode, const G4ThreeVector& incidentVDir);
   G4ThreeVector GetLambertianVector(const G4LatticePhysical* theLattice,
-                                    const G4ThreeVector& surfNorm, G4int mode,const G4ThreeVector& incidentVDir,
+                                    const G4ThreeVector& surfNorm, G4int mode, const G4ThreeVector& incidentVDir,
                                     const G4ThreeVector& surfPoint);
   G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
 
@@ -118,7 +118,6 @@ namespace G4CMP {
 				 const G4ThreeVector& surfNorm,
 				 const G4VTouchable * nextVolTouchable,
 				 const G4ThreeVector& surfacePos);
-
   
   // Thermal distributions, useful for handling phonon thermalization
   G4double MaxwellBoltzmannPDF(G4double temperature, G4double energy);
