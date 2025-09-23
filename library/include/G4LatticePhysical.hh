@@ -144,8 +144,8 @@ public:
   G4double GetGamma() const          { return fLattice->GetGamma(); }
   G4double GetLambda() const         { return fLattice->GetLambda(); }
   G4double GetMu() const             { return fLattice->GetMu(); }
-  G4double GetDebyeEnergy() const    { return fLattice->GetDebyeEnergy(); }  
-  
+  G4double GetDebyeEnergy() const    { return fLattice->GetDebyeEnergy(); }
+
   // Charge carrier propagation parameters
   G4double GetBandGapEnergy() const   { return fLattice->GetBandGapEnergy(); }
   G4double GetPairProductionEnergy() const { return fLattice->GetPairProductionEnergy(); }
@@ -211,7 +211,6 @@ public:
 
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;
-
   
 private:
   // Create a thread-local buffer to use with MapAtoB() functions
@@ -235,8 +234,7 @@ private:
   G4double fSCTcrit;                         //Critical temp, linked to SCDelta0
   G4double fSCTeff;                          //Effective *QP* temperature
   G4double fSCDn;                            //Normal-state diffusion constant
-  G4double fSCQPLocalTrappingTau;            //Local trapping tau
-  
+  G4double fSCQPLocalTrappingTau;            //Local trapping tau  
 };
 
 // Write lattice structure to output stream

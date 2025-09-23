@@ -5,8 +5,13 @@
 
 /// \file library/include/G4CMPSCUtils.hh
 /// \brief Definition of the G4CMPSCUtils class
-///   Provides useful general functions for use by Phonon and QP processes
 ///
+/// Provides useful general functions for use by Phonon and QP processes
+/// within superconducting materials.
+//
+// 20250922  G4CMP-219 -- First addition to this history (done at time
+//                        of merge to develop)
+
 
 #ifndef G4CMPSCUtils_h
 #define G4CMPSCUtils_h 1
@@ -32,39 +37,36 @@ public:
   
   //virtual void SetVerboseLevel(G4int vb) { scuVerboseLevel = vb; }
 
-
-
-
-
-
 protected:
 
-  //Processing: called by process and rate classes, so should be at least protected
+  //Processing: called by process and rate classes, so should be at least
+  //protected
   void SetCurrentSCInfoToNull();  
-  void LoadLatticeInfoIntoSCUtils(const G4LatticePhysical * theLat);
+  void LoadLatticeInfoIntoSCUtils(const G4LatticePhysical* theLat);
   
-  //Since now rate classes and processes are actually the ones doing the calculation, we need to make these protected instead of private
+  //Since now rate classes and processes are actually the ones doing the
+  //calculation, we need to make these protected instead of private
   G4double FermiFactor(G4double energy, G4double temperature);
   G4double BoseFactor(G4double energy, G4double temperature);
-  G4double GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhononEnergy, G4String particleInQuestion, G4double energy, G4bool & thisEnergyBelowUsableRange ) const;
-  G4double ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit, double gap0Energy) const;
+  G4double GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhononEnergy,
+				      G4String particleInQuestion,
+				      G4double energy,
+				      G4bool & thisEnergyBelowUsableRange ) const;
+  G4double ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit,
+					  double gap0Energy) const;
   
 private:
 
   //These run fully internally -- can be private
   G4double ComputeCurrentGapEnergyAtNonzeroT();
   void CheckLatticeInfoForCompleteness();
-
-  
-  //G4int scuVerboseLevel;			// For local use; name avoids collisions
-
+ 
 protected:
 
-  //Want all of the SC info to be accessible to the rate classes, which inherit from the G4CMPSCUtils,
-  //so this should be protected. Actually, should migrate away from this eventually and do get functions
-  //so that rate classes can't modify these... REL. That's the right way to do this.
-  
-  //-------------------------------------------
+  //Want all of the SC info to be accessible to the rate classes, which inherit
+  //from the G4CMPSCUtils, so this should be protected. Actually, should
+  //migrate away from this eventually and do get functions so that rate
+  //classes can't modify these... That's the right way to do this.  
   //SC parameters needed for computations
   //Stored/input parameters
   G4double fGap0Energy;                       //Gap energy at T=0
@@ -74,23 +76,20 @@ protected:
   G4double fTcrit;
   G4double fTeff;
   G4double fDn;
-    
+  
   //Computed parameters
   G4double fGapEnergy;
-
-  //-------------------------------------------
+  
   //Parameters for defining the various lookup tables needed by this class. 
-  enum{ fPhononEnergyBins=2000, fQPEnergyBins=2000, fGapEnergyTempDependenceBins=53 }; //Originally 1000,1000,53
+  enum { fPhononEnergyBins=2000, fQPEnergyBins=2000,
+	 fGapEnergyTempDependenceBins=53 }; //Originally 1000,1000,53
   G4double fMinPhononEnergyDivGap;
   G4double fMaxPhononEnergyDivGap;
   G4double fMinQPEnergyDivGap;
-  G4double fMaxQPEnergyDivGap;
-  
-  //-------------------------------------------
+  G4double fMaxQPEnergyDivGap;  
+
   //Maps and lookup tables
   G4double fGapEnergyTempDependence[fGapEnergyTempDependenceBins][2];
-  
-
 };
 
 #endif	/* G4CMPSCUtils_hh */

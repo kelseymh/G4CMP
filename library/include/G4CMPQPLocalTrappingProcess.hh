@@ -5,9 +5,13 @@
 
 /// \file library/include/G4CMPQPLocalTrappingProcess.hh
 /// \brief Definition of the G4CMPQPLocalTrappingProcess class
+///
+/// This process captures QPs' ability to trap on local trapping sites
+/// due to (non-engineered) local fluctuations in the superconducting
+/// gap or impurities. It is described by a simple trapping time.
 //
-//
-// 20170805  Move GetMeanFreePath() to scattering-rate model
+// 20250922  G4CMP-219 -- First addition to this history (done at time
+//                        of merge to develop)
 
 #ifndef G4CMPQPLocalTrappingProcess_h
 #define G4CMPQPLocalTrappingProcess_h 1

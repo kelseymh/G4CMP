@@ -55,18 +55,17 @@ public:
 
   const G4String& GetName() const { return name; }
 
-  //Lookup table (for SC and NM rates being calculated in-subclass). Hooopefully this is actually implemented correctly
-  //because I basically want this to only run for specific processes
-  virtual void UpdateLookupTable(const G4LatticePhysical * theLat) { return; }
+  //Lookup table (for SC rates being calculated in-subclass).
+  //I basically want this to only run for specific processes
+  virtual void UpdateLookupTable(const G4LatticePhysical* theLat) { return; }
 
-  //Passthroughs to enable calling these functions from a G4CMPVProcess function, so that the process and the rate model update
-  //with the same cadence.
+  //Passthroughs to enable calling these functions from a G4CMPVProcess
+  //function, so that the process and the rate model update with the same
+  //cadence.
   void SetCurrentSCInfoToNull() { G4CMPSCUtils::SetCurrentSCInfoToNull(); }
   void LoadLatticeInfoIntoSCUtils(const G4LatticePhysical * theLat) { G4CMPSCUtils::LoadLatticeInfoIntoSCUtils(theLat); }
-  
-  
+    
 protected:
-
   G4int verboseLevel;		// Accessible for use by subclasses
   G4String name;		// For diagnostic output if desired
   G4bool isForced;		// Flag 'true' if process should be forced
