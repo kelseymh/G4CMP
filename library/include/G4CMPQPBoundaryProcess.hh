@@ -21,19 +21,16 @@ public:
   
   virtual ~G4CMPQPBoundaryProcess();
 
-  //  // Configure for current track including AnharmonicDecay utility
-  //  virtual void LoadDataForTrack(const G4Track* track);
   virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& track,
 							G4double previousStepSize,
 							G4ForceCondition* condition);
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
                                           const G4Step& aStep);
-                    
                        
   G4bool CheckQPVolumes(const G4Step& aStep);
   G4bool IsValidQPVolume(G4VPhysicalVolume* volume,
-			 G4double qpEKin );
+			 G4double qpEKin);
 
 protected:
   virtual G4double GetMeanFreePath(const G4Track& aTrack,
@@ -59,7 +56,6 @@ protected:
   G4int verboseLevel;
    
 private:
-
   // hide assignment operator as private
   G4CMPQPBoundaryProcess(G4CMPQPBoundaryProcess&);
   G4CMPQPBoundaryProcess(G4CMPQPBoundaryProcess&&);
