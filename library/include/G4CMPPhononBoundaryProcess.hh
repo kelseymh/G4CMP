@@ -55,29 +55,25 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track& aTrack,
                                    G4double prevStepLength,
                                    G4ForceCondition* condition);
-
   
   // Apply phonon-specific conditions, after calling through to base
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
-  
+
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
-
-
-  // Update navigator volume when position is changed
-  void UpdateNavigatorVolume(const G4Step&, const G4ThreeVector& position,
-                             const G4ThreeVector& vDir) const;
 
   G4ThreeVector GetSpecularVector(const G4ThreeVector& waveVector,
                                   G4ThreeVector& surfNorm, G4int mode,
 				  G4ThreeVector& initialVDir,
                                   G4ThreeVector& surfacePoint);
 
+  // Update navigator volume when position is changed
+  void UpdateNavigatorVolume(const G4Step&, const G4ThreeVector& position,
+                             const G4ThreeVector& vDir) const;
   
   virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
 			      G4ParticleChange& aParticleChange);
 
-  
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
   G4CMPParticleChangeForPhonon phParticleChange;

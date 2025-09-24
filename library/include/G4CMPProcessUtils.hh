@@ -104,11 +104,6 @@ public:
   G4bool IsQP() const;
   
   // Set configuration manually, without a track
-  //virtual void FindLattice(const G4VPhysicalVolume* volume);
-  //virtual void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
-  //virtual const G4LatticePhysical* GetLattice() const { return theLattice; }
-
-  //REL: From NT
   void FindLattice(const G4VPhysicalVolume* volume);
   void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
   const G4LatticePhysical* GetLattice() const { return theLattice; }
