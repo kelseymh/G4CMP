@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-09-25  G4CMP-505 : Fix Confluence link in README.md.
 2025-09-12  G4CMP-504 : Add tutorial for computing phonon DOS in new materials.
 
 2025-08-23  g4cmp-V09-08-00 Thermal phonon killing, suppress surface phonons.
