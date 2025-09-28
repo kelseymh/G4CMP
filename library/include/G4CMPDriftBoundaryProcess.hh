@@ -3,8 +3,9 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/include/G4CMPVBoundaryProcess.hh
-/// \brief Definition of the G4CMPVBoundaryProcess base class
+/// \file library/include/G4CMPDriftBoundaryProcess.hh
+/// \brief Subclass of G4CMPVBoundaryProcess to implement interaction of
+///        charges (electrons and holes) with crystal surfaces.
 //
 // $Id$
 //
@@ -24,6 +25,8 @@
 // 20160906  Follow constness of G4CMPBoundaryUtils
 // 20170731  Split electron, hole reflection into utility functions
 // 20170802  Add EnergyPartition to handle phonon production
+// 20250927  Add override version of new DoFinalReflection(), to support
+//           proper recombination.
 
 #ifndef G4CMPDriftBoundaryProcess_h
 #define G4CMPDriftBoundaryProcess_h 1
@@ -63,6 +66,10 @@ protected:
 
   virtual void DoReflectionHole(const G4Track& aTrack,const G4Step& aStep,
 				G4ParticleChange& aParticleChange);
+
+  // Called when maximum bounces have been recorded; does recombination
+  virtual void DoFinalReflection(const G4Track& aTrack,const G4Step& aStep,
+				 G4ParticleChange& aParticleChange);
 
 private:
   G4CMPEnergyPartition* partitioner;

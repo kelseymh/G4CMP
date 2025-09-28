@@ -16,6 +16,7 @@
 // 20171215  Replace boundary-point check with CheckStepBoundary()
 // 20180827  M. Kelsey -- Prevent partitioner from recomputing sampling factors
 // 20210328  Modify above; compute direct-phonon sampling factor here
+// 20250927  AbsorbTrack() should use '&&' to require that both conditions pass
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -123,11 +124,12 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 	   <<" >? absMinK " << absMinK << G4endl;
   }
 
-  return (kvec*surfNorm > absMinK) || G4CMPBoundaryUtils::AbsorbTrack(aTrack, aStep);
+  return ( (kvec*surfNorm > absMinK) &&
+	   G4CMPBoundaryUtils::AbsorbTrack(aTrack, aStep) );
 }
 
 
-// May convert recombination into phonon
+// Recombination (bandgap energy) is handled in separate AtRest process
 
 void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
                                              const G4Step&, G4ParticleChange&) {
@@ -242,4 +244,12 @@ DoReflectionHole(const G4Track& /*aTrack*/, const G4Step& aStep,
     G4cout << " New momentum direction " << momDir << G4endl;
   
   aParticleChange.ProposeMomentumDirection(momDir);
+}
+
+// Called when maximum bounces have been recorded; does recombination
+
+void G4CMPDriftBoundaryProcess::
+DoFinalReflection(const G4Track& aTrack,const G4Step& aStep,
+		  G4ParticleChange& aParticleChange) {
+  DoAbsorption(aTrack, aStep, aParticleChange);
 }
