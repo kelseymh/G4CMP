@@ -8,7 +8,7 @@ processes in Geant4.  Developed for the low-temperature community, the
 package support production and propagation of acoustic phonons and
 electron-hole pairs through solid crystals such as germanium.
 
-Website: https://confluence.slac.stanford.edu/browse/G4CMP/
+Website: https://confluence.slac.stanford.edu/spaces/G4CMP/overview
 
 Papers:	https://doi.org/10.1016/j.nima.2023.168473
 	https://arxiv.org/abs/2302.05998
