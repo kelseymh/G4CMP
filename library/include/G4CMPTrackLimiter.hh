@@ -12,9 +12,11 @@
 //
 // 20170602  M. Kelsey -- Inherit from new G4CMPVProcess
 // 20170822  M. Kelsey -- Add checking on current vs. original volume
+// 20250421  M. Kelsey -- Add comparison of track position with volume.
 // 20250501  G4CMP-358 -- Identify and stop charge tracks stuck in field.
 // 20250506  Add local caches to compute cumulative flight distance, RMS
 // 20250515  Add configuration settings for "stuck track" cuts
+// 20250801  G4CMP-326:  Kill thermal phonons if finite temperature set.
 
 #ifndef G4CMPTrackLimiter_hh
 #define G4CMPTrackLimiter_hh 1
@@ -49,8 +51,10 @@ public:
 
 protected:
   G4bool BelowEnergyCut(const G4Track& track) const;
+  G4bool InvalidPosition(const G4Track& track) const;
   G4bool EscapedFromVolume(const G4Step& step) const;
   G4bool ChargeStuck(const G4Track& track);	// Non-const to use caches
+  G4bool PhononIsThermal(const G4Track& track) const;
 
   virtual G4double GetMeanFreePath(const G4Track&,G4double,G4ForceCondition*);
 

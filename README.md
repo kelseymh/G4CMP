@@ -8,7 +8,7 @@ processes in Geant4.  Developed for the low-temperature community, the
 package support production and propagation of acoustic phonons and
 electron-hole pairs through solid crystals such as germanium.
 
-Website: https://confluence.slac.stanford.edu/browse/G4CMP/
+Website: https://confluence.slac.stanford.edu/spaces/G4CMP/overview
 
 Papers:	https://doi.org/10.1016/j.nima.2023.168473
 	https://arxiv.org/abs/2302.05998
@@ -89,18 +89,20 @@ developers should check the source code in
 | G4CMP\_EPOT\_FILE [F]   | /g4cmp/EPotFile [F] V=0:      | Read mesh field file "F"                |
 | G4CMP\_EPOT\_SCALE [F]  | /g4cmp/scaleEPot [M] V=0:     | Scale the potentials in EPotFile by factor m|
 | G4CMP\_MIN\_STEP [S]    | /g4cmp/minimumStep [S] S>0:   | Force minimum step S\*L0                |
-| G4CMP\_EH\_BOUNCES [N]  | /g4cmp/chargeBounces [N]      | Maximum e/h reflections                 |
-| G4CMP\_PHON\_BOUNCES [N] | /g4cmp/phononBounces [N]     | Maximum phonon reflections              |
+| G4CMP\_EH\_BOUNCES [N]    | /g4cmp/chargeBounces [N]      | Maximum e/h reflections                 |
+| G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces [N]      | Maximum phonon reflections              |
+| G4CMP\_PHON\_SURFSTEP [L] | /g4cmp/phononSurfStepSize [L] um  | Specular reflection surface displacement step size |
+| G4CMP\_PHON\_SURFLIMIT [N]  | /g4cmp/phononSurfStepLimit [N]  | Specular reflection surface displacement step limit |
 | G4CMP\_EH\_MAX\_STEPS [N] | /g4mp/maximumSteps [N]      | Maximum allowed charged track steps     |
-| G4CMP\_MAKE\_PHONONS [R] | /g4cmp/producePhonons [R]    | Fraction of phonons from energy deposit |
-| G4CMP\_MAKE\_CHARGES [R] | /g4cmp/produceCharges [R]    | Fraction of charge pairs from energy deposit |
-| G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons      |
-| G4CMP\_MAX\_LUKE [N]    | /g4cmp/maxLukePhonons [N]     | Soft maximum Luke phonons per event     |
-| G4CMP\_SAMPLE\_ENERGY [E] | /g4cmp/samplingEnergy [E] eV | Energy above which to downsample       |
-| G4CMP\_COMBINE\_STEPLEN [L] | /g4cmp/combiningStepLength [L] mm | Combine hits below step length  |
-| G4CMP\_EMIN\_PHONONS [E] | /g4cmp/minEPhonons [E] eV    | Minimum energy to track phonons         |
-| G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV    | Minimum energy to track charges         |
-| G4CMP\_RECORD\_EMIN | /g4cmp/recordMinETracks [t\|f] | Put below-minimum energy to killed track Edeposit |
+| G4CMP\_MAKE\_PHONONS [R] | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
+| G4CMP\_MAKE\_CHARGES [R] | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
+| G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
+| G4CMP\_MAX\_LUKE [N] | /g4cmp/maxLukePhonons [N] | Soft maximum Luke phonons per event |
+| G4CMP\_SAMPLE\_ENERGY [E] | /g4cmp/samplingEnergy [E] eV  | Energy above which to downsample |
+| G4CMP\_COMBINE\_STEPLEN [L] | /g4cmp/combiningStepLength [L] mm | Combine hits below step length |
+| G4CMP\_EMIN\_PHONONS [E] | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
+| G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
+| G4CMP\_RECORD\_EMIN | /g4cmp/recordMinETracks [t\|f]  | Put below-minimum energy to killed track Edeposit |
 | G4CMP\_USE\_KVSOLVER    | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED    | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
 | G4CMP\_KAPLAN\_KEEP     | /g4cmp/kaplanKeepPhonons [t\|f] | Reflect or iterate all phonons in KaplanQP |

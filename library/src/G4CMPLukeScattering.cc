@@ -45,6 +45,7 @@
 //		Users can enable debugging output file with verbosity.
 // 20250223  G4CMP-462 -- Restore use of G4CMP_DEBUG flag to hide changes to
 //		lattice verbosity, which causes a data race.
+// 20250508  G4CMP-480 -- Pass global phonon wavevector to CreatePhonon.
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -333,8 +334,8 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     G4CMP::ChoosePhononWeight(G4CMPConfigManager::GetLukeSampling());
   if (weight > 0.) {
     G4Track* phonon = G4CMP::CreatePhonon(aTrack,
-					  G4PhononPolarization::UNKNOWN,
-                                          qvec, Ephonon,
+                                          G4PhononPolarization::UNKNOWN,
+                                          GetGlobalDirection(qvec), Ephonon,
                                           aTrack.GetGlobalTime(),
                                           aTrack.GetPosition());
     // Secondary's weight has to be multiplicative with its parent's

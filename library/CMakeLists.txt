@@ -184,6 +184,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeEmissionRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPLukeScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPMeshElectricField.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPParticleChangeForPhonon.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPartitionData.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPartitionSummary.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononBoundaryProcess.cc
@@ -198,6 +199,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSarkisNIEL.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSecondaryProduction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSecondaryUtils.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSolidUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPStackingAction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPStepAccumulator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSurfaceProperty.cc
@@ -274,6 +276,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMatrix.icc
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPMeshElectricField.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPParticleChangeForPhonon.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPartitionData.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPartitionSummary.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononBoundaryProcess.hh
@@ -289,6 +292,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSarkisNIEL.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSecondaryProduction.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSecondaryUtils.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSolidUtils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPStackingAction.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPStepAccumulator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSurfaceProperty.hh

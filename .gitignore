@@ -1,6 +1,9 @@
 # Ignore temporary files produced by qhull build
 library/qhull-2012.1/bin/
 library/qhull-2012.1/lib/
+# Ignore in situ Doxygen generated output
+doxygen/
+# Ignore backup and temp files
 .DS_Store
 *.ipynb_checkpoints*
 *~
@@ -15,5 +18,6 @@ library/qhull-2012.1/lib/
 CMakeLists.txt.user*
 epositions.txt
 *.png
+# Ignore IDE stuff
 *__pycache__*
 .vscode

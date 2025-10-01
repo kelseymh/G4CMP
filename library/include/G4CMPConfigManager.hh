@@ -47,6 +47,7 @@
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
 // 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
+// 20250325  G4CMP-463:  Add parameter for phonon surface step size & limit.
 // 20250502  G4CMP-358: Limit number of steps for charged tracks in E-field.
 
 #include "globals.hh"
@@ -76,6 +77,7 @@ public:
   static G4int GetMaxPhononBounces()	 { return Instance()->pBounces; }
   static G4int GetMaxChargeSteps()       { return Instance()->ehMaxSteps; }
   static G4int GetMaxLukePhonons()       { return Instance()->maxLukePhonons; }
+  static G4int GetPhononSurfStepLimit()  { return Instance()->pSurfStepLimit; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
   static G4bool KeepKaplanPhonons()      { return Instance()->kaplanKeepPh; }
@@ -97,6 +99,7 @@ public:
   static G4double GetHDTrapIonMFP()      { return Instance()->hDTrapIonMFP; }
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
+  static G4double GetPhononSurfStepSize()  { return Instance()->pSurfStepSize; }
   static G4double GetEmpklow()      { return Instance()->Empklow; }
   static G4double GetEmpkhigh()     { return Instance()->Empkhigh; }
   static G4double GetEmpElow()      { return Instance()->EmpElow; }
@@ -115,6 +118,8 @@ public:
   static void SetVerboseLevel(G4int value) { Instance()->verbose = value; }
   static void SetMaxChargeBounces(G4int value) { Instance()->ehBounces = value; }
   static void SetMaxPhononBounces(G4int value) { Instance()->pBounces = value; }
+  static void SetPhononSurfStepSize(G4double value) { Instance()->pSurfStepSize = value; }
+  static void SetPhononSurfStepLimit(G4int value) { Instance()->pSurfStepLimit = value; }
   static void SetMaxChargeSteps(G4int value) { Instance()->ehMaxSteps = value; }
   static void SetMaxLukePhonons(G4int value) { Instance()->maxLukePhonons = value; }
   static void SetSurfaceClearance(G4double value) { Instance()->clearance = value; }
@@ -187,6 +192,7 @@ private:
   G4int pBounces;	 // Maximum phonon reflections ($G4CMP_PHON_BOUNCES)
   G4int ehMaxSteps;      // Maximum steps for charges ($G$CMP_EH_MAX_STEPS)
   G4int maxLukePhonons;  // Approx. Luke phonon limit ($G4MP_MAX_LUKE)
+  G4int pSurfStepLimit;  // Phonon surface displacement step limit ($G4CMP_PHON_SURFLIMIT).
   G4String version;	 // Version name string extracted from .g4cmp-version
   G4String LatticeDir;	 // Lattice data directory ($G4LATTICEDATA)
   G4String IVRateModel;	 // Model for IV rate ($G4CMP_IV_RATE_MODEL)
@@ -207,6 +213,7 @@ private:
   G4double combineSteps; // Maximum length to merge track steps ($G4CMP_COMBINE_STEPLEN)
   G4double EminPhonons;	 // Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	 // Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
+  G4double pSurfStepSize;  // Phonon surface displacement step size ($G4CMP_PHON_SURFSTEP).
   G4bool useKVsolver;	 // Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	 // Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
   G4bool kaplanKeepPh;   // Emit or iterate over all phonons in KaplanQP ($G4CMP_KAPLAN_KEEP)
