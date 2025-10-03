@@ -13,7 +13,9 @@
 // 20181001  Use systematic names for IV rate parameters
 // 20210908  Use global track position to query field; configure field.
 // 20211003  Use encapsulated G4CMPFieldUtils to get field.
-// 20230829  Rotated E-field to local frame first and changed Mass Multiplication in HV transformation
+// 20230829  Rotated E-field to local frame first and changed Mass
+//	       Multiplication in HV transformation
+// 20250515  Apply IV energy thresholds to reduce zero-voltage scatters
 
 #include "G4CMPIVRateQuadratic.hh"
 #include "G4CMPFieldUtils.hh"
@@ -26,11 +28,17 @@
 #include "G4VPhysicalVolume.hh"
 #include "G4PhysicalConstants.hh"
 #include <math.h>
+#include <algorithm>
 #include <iostream>
+#include <vector>
+
 
 // Scattering rate is computed from electric field
 
 G4double G4CMPIVRateQuadratic::Rate(const G4Track& aTrack) const {
+  // No scattering if track is below threshold
+  if (Threshold(GetKineticEnergy(aTrack)) > 0.) return 0.;
+
   G4ThreeVector fieldVector = G4CMP::GetFieldAtPosition(aTrack);
 
   if (verboseLevel > 1) {
@@ -59,4 +67,14 @@ G4double G4CMPIVRateQuadratic::Rate(const G4Track& aTrack) const {
 
   if (verboseLevel > 1) G4cout << "IV rate = " << rate/hertz << " Hz" << G4endl;
   return rate;
+}
+
+
+// Threshold is minimum energy of any scattering channel
+
+G4double G4CMPIVRateQuadratic::Threshold(G4double Eabove) const {
+  // NOTE: min_element returns iterator, dereference returns value
+  G4double Emin = *std::min_element(theLattice->GetIVEnergy().begin(),
+				    theLattice->GetIVEnergy().end());
+  return (Eabove<Emin) ? Emin : 0.;
 }

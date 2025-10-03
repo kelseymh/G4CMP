@@ -14,6 +14,9 @@
 // 20250327  G4CMP-468:  Stop surface displacement reflections from "escaping."
 // 20250413  G4CMP-468:  Move diagnostic outputs inside verbosity.
 // 20250421  Add comparison of track position with volume.
+// 20250501  G4CMP-358:  Identify and stop charge tracks stuck in field,
+//	       using maxSteps configuration parameter.
+// 20250506  Add local caches to compute cumulative flight distance, RMS
 // 20250801  G4CMP-326:  Kill thermal phonons if finite temperature set.
 
 #include "G4CMPTrackLimiter.hh"
@@ -38,6 +41,15 @@
 
 G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
   return (G4CMP::IsPhonon(pd) || G4CMP::IsChargeCarrier(pd));
+}
+
+
+// Initialize flight-distance accumulators for new track
+
+void G4CMPTrackLimiter::LoadDataForTrack(const G4Track* track) {
+  G4CMPProcessUtils::LoadDataForTrack(track);
+
+  flightAvg = flightAvg2 = lastFlight = lastRMS = 0.;
 }
 
 
@@ -85,6 +97,17 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
 
     aParticleChange.SetNumberOfSecondaries(0);	// Don't launch bad tracks!
     aParticleChange.ProposeTrackStatus(fStopAndKill);
+  }
+
+  // Ensure track has not gotten stuck somewhere in mesh field
+  if (ChargeStuck(track)) {
+    std::stringstream msg;
+    msg << "Stopping charged track stuck in mesh electric field @ "
+	<< GetLocalPosition(track) << " local" << G4endl;
+    G4Exception("G4CMPTrackLimiter", "Limit003", JustWarning,
+		msg.str().c_str());
+
+    aParticleChange.ProposeTrackStatus(fStopButAlive);
   }
 
   // Check whether track position and volume are consistent
@@ -205,4 +228,73 @@ G4bool G4CMPTrackLimiter::PhononIsThermal(const G4Track& track) const {
   if (verboseLevel>1) G4cout << " thermal? " << isThermal << G4endl;
 
   return isThermal;
+}
+
+// Note: non-const here to use accumulator caches
+
+G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
+  if (!IsChargeCarrier()) return false;		// Ignore phonons (for now?)
+
+  // How long and how far has the track been travelling?
+  const G4double maxSteps = G4CMPConfigManager::GetMaxChargeSteps();
+  G4int nstep = track.GetCurrentStepNumber();
+
+  G4double pathLen = track.GetTrackLength();
+  const G4ThreeVector& pos = track.GetPosition();
+  G4double flightDist = (pos-track.GetVertexPosition()).mag();
+  G4double posShift = (nstep>1) ? (pos-lastPos).mag() : 0.;
+
+
+  if (nstep%stepWindow == 1) {		// Start new window
+    flightAvg = flightAvg2 = 0.;
+    lastPos = pos;
+  }
+
+  // Accumulate flight distance and and sum-of-squares averages
+  flightAvg  = flightAvg + (flightDist-flightAvg)/nstep;
+  flightAvg2 = flightAvg2 + (flightDist*flightDist - flightAvg2)/nstep;
+
+  // Compute change in distance every 10,000 steps
+  G4double fltChange = flightAvg-lastFlight;
+  lastFlight = flightAvg;
+
+  // Compute change in RMS every 10,000 steps
+  G4double RMS = sqrt(flightAvg2 - flightAvg*flightAvg);
+  G4double RMSchange = RMS-lastRMS;
+  lastRMS = RMS;
+
+  // Scattering makes the path length longer, but only a factor of a few
+  G4double pathScale = pathLen / flightDist;
+
+  if (verboseLevel>1) {
+    G4cout << " after " << nstep << " steps @ " << pos << G4endl;
+
+    if (nstep%stepWindow == 1) G4cout << " new stepWindow" << G4endl;
+    else {
+      G4cout << " pos changed " << posShift << " since step "
+	     << 1+((nstep-1)/stepWindow)*stepWindow << G4endl;
+    }
+
+    G4cout << " path " << pathLen << "  flight " << flightDist
+	   << " : ratio " << pathScale << (pathScale>maxPathScale?" > ":" < ")
+	   << maxPathScale << ")" << G4endl
+	   << " flightAvg " << flightAvg << " changed by " << fltChange
+	   << " RMS " << RMS << " changed by " << RMSchange << G4endl;
+  }
+
+  // Possible "stuck" conditions
+  G4bool tooManySteps = (maxSteps>0 && nstep>maxSteps);
+  G4bool excessPath = (pathScale > maxPathScale);
+  G4bool windowFull = (nstep>=stepWindow && nstep%stepWindow == 0);
+  G4bool samePos = (windowFull && posShift < minPosShift);
+  G4bool notMoving = (windowFull && fabs(RMSchange) < minFlightRMS);
+
+  if (verboseLevel>2) {
+    G4cout << " tooManySteps " << tooManySteps;
+    if (windowFull)
+      G4cout << " samePos " << samePos << " notMoving " << notMoving;
+    G4cout << G4endl;
+  }
+
+  return (tooManySteps || samePos || notMoving);
 }

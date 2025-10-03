@@ -7,10 +7,9 @@
 #define G4CMPConfigMessenger_hh 1
 
 // $Id$
-// File:  G4CMPConfigMessenger.hh
-//
-// Description:	Macro command defitions to set user configuration in
-//		G4CMPConfigManager.
+/// \file library/include/G4CMPConfigMessenger.hh
+/// \brief Macro command defitions to set user configuration in
+///        G4CMPConfigManager.
 //
 // 20140904  Michael Kelsey
 // 20141029  Add command to set output e/h positions file
@@ -47,6 +46,7 @@
 // 20250209  G4CMP-457: Add short names for empirical Lindhard NIEL.
 // 20250213  G4CMP-457: Add empirical Lindhard NIEL parameters.
 // 20250325  G4CMP-463:  Add parameter for phonon surface step size & limit.
+// 20250502  G4CMP-358: Add macro command for maximum steps (stuck tracks).
 
 
 #include "G4UImessenger.hh"
@@ -76,6 +76,7 @@ private:
   G4UIcmdWithAnInteger* verboseCmd;
   G4UIcmdWithAnInteger* ehBounceCmd;
   G4UIcmdWithAnInteger* pBounceCmd;
+  G4UIcmdWithAnInteger* maxStepsCmd;
   G4UIcmdWithAnInteger* maxLukeCmd;
   G4UIcmdWithAnInteger* pSurfStepLimitCmd;
   G4UIcmdWithADoubleAndUnit* clearCmd;

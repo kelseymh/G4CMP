@@ -6,6 +6,9 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-09-29  G4CMP-358 : Identify and stop charged tracks stuck in mesh field.
+2025-09-29  G4CMP-510 : Include residual kinetic energy in charge recombination.
+
 2025-09-25  G4CMP-505 : Fix Confluence link in README.md.
 2025-09-12  G4CMP-504 : Add tutorial for computing phonon DOS in new materials.
 
