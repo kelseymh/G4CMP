@@ -193,6 +193,7 @@ DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
     particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
   }
 
+  /***
   G4ThreeVector vel = GetGlobalVelocityVector(aTrack);
 
   if (verboseLevel>2) {
@@ -221,8 +222,13 @@ DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
     RotateToGlobalDirection(vnew);
     G4cout << " Cross-check new v dir  " << vnew.unit() << G4endl;
   }
+  ***/
+
+  // Charge scatters randomly off of surface
+  G4ThreeVector p = G4CMP::LambertReflection(surfNorm);
+  G4double Ekin = aTrack.GetKineticEnergy();
   
-  FillParticleChange(GetCurrentValley(), p);	// Handle effective mass, vel
+  FillParticleChange(GetCurrentValley(), Ekin, p);
 }
 
 void G4CMPDriftBoundaryProcess::
@@ -233,6 +239,7 @@ DoReflectionHole(const G4Track& /*aTrack*/, const G4Step& aStep,
 
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
+  // TODO: If we do the electrons Lambertian, we should do the holes also
   G4ThreeVector momDir = aStep.GetPostStepPoint()->GetMomentumDirection();
   if (verboseLevel>2)
     G4cout << " Old momentum direction " << momDir << G4endl;
