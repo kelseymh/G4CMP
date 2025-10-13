@@ -30,6 +30,9 @@
 // Scattering rate is computed from electric field
 
 G4double G4CMPIVRateLinear::Rate(const G4Track& aTrack) const {
+  // No scattering if track is below threshold
+  if (Threshold(GetKineticEnergy(aTrack)) > 0.) return 0.;
+
   G4ThreeVector fieldVector = G4CMP::GetFieldAtPosition(aTrack);
 
   if (verboseLevel > 1) {
@@ -57,4 +60,14 @@ G4double G4CMPIVRateLinear::Rate(const G4Track& aTrack) const {
 
   if (verboseLevel > 1) G4cout << "IV rate = " << rate/hertz << " Hz" << G4endl;
   return rate;
+}
+
+
+// Threshold is minimum energy of any scattering channel
+
+G4double G4CMPIVRateLinear::Threshold(G4double Eabove) const {
+  // NOTE: min_element returns iterator, dereference returns value
+  G4double Emin = *std::min_element(theLattice->GetIVEnergy().begin(),
+				    theLattice->GetIVEnergy().end());
+  return (Eabove<Emin) ? Emin : 0.;
 }

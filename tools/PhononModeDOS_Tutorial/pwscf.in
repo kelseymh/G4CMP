@@ -1,0 +1,41 @@
+&CONTROL
+  calculation = 'scf'
+  etot_conv_thr =   4.0000000000d-05
+  forc_conv_thr =   1.0000000000d-04
+  outdir = './out/'
+  prefix = 'Sn'
+  pseudo_dir = './pseudo/'
+  tprnfor = .true.
+  tstress = .true.
+  verbosity = 'high'
+/
+&SYSTEM
+  degauss =   1.4699723600d-02
+  ecutrho =   4.8000000000d+02
+  ecutwfc =   6.0000000000d+01
+  ibrav = 0
+  nat = 4
+  nosym = .false.
+  ntyp = 1
+  occupations = 'smearing'
+  smearing = 'cold'
+/
+&ELECTRONS
+  conv_thr =   8.0000000000d-10
+  mixing_beta =   4.0000000000d-01
+/
+
+CELL_PARAMETERS {angstrom}
+5.9080080000 0.0000000000 0.0000000000
+0.0000000000 5.9080080000 0.0000000000
+0.0000000000 0.0000000000 3.2456220000
+
+ATOMIC_SPECIES
+Sn 118.71 sn_pbesol_v1.4.uspp.F.UPF
+
+ATOMIC_POSITIONS {crystal}
+Sn 0.0000000000 0.0000000000 0.0000000000 
+Sn 0.5000000000 0.0000000000 0.2500000000 
+Sn 0.5000000000 0.5000000000 0.5000000000 
+Sn 0.0000000000 0.5000000000 0.7500000000 
+
