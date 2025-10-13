@@ -193,24 +193,40 @@ DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
     particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
   }
 
-  /***
-  G4ThreeVector vel = GetGlobalVelocityVector(aTrack);
+  // FUTURE: Get specular vs. diffuse probability from parameters
+  G4bool specular = false;
+
+  G4ThreeVector reflDir;
+  if (specular) {
+    G4ThreeVector vel = GetGlobalVelocityVector(aTrack);
+    reflDir = DoSpecularElectron(vel, surfNorm, surfacePoint);
+  } else {
+    reflDir = DoDiffuseElectron(surfNorm, surfacePoint);
+  }
+
+  FillParticleChange(GetCurrentValley(), aTrack.GetKineticEnergy(), reflDir);
+}
+
+G4ThreeVector G4CMPDriftBoundaryProcess::
+DoSpecularElectron(const G4ThreeVector& inDir,
+		   const G4ThreeVector& surfNorm,
+		   const G4ThreeVector& /*surfPos*/) const {
+  if (verboseLevel>2) G4cout << " DoSpecularElectron " << surfNorm << G4endl;
 
   if (verboseLevel>2) {
-    G4cout << " Old momentum direction " << GetGlobalMomentum(aTrack).unit()
-	   << "\n Old velocity direction " << vel.unit() << G4endl;
+    G4cout << " Old velocity direction " << inDir.unit() << G4endl;
   }
 
   // Specular reflection reverses velocity along normal
-  G4double velNorm = vel * surfNorm;
-  vel -= 2.*velNorm*surfNorm;
+  G4double dirNorm = inDir * surfNorm;
+  G4ThreeVector outDir = inDir - 2.*dirNorm*surfNorm;
   
   if (verboseLevel>2)
-    G4cout << " New velocity direction " << vel.unit() << G4endl;
+    G4cout << " New velocity direction " << outDir.unit() << G4endl;
   
   // Convert velocity back to momentum and update direction
-  RotateToLocalDirection(vel);
-  G4ThreeVector p = theLattice->MapV_elToP(GetCurrentValley(), vel);
+  RotateToLocalDirection(outDir);
+  G4ThreeVector p = theLattice->MapV_elToP(GetCurrentValley(), outDir);
   RotateToGlobalDirection(p);
   
   if (verboseLevel>2) {
@@ -222,14 +238,20 @@ DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
     RotateToGlobalDirection(vnew);
     G4cout << " Cross-check new v dir  " << vnew.unit() << G4endl;
   }
-  ***/
+
+  return outDir;
+}
+
+G4ThreeVector G4CMPDriftBoundaryProcess::
+DoDiffuseElectron(const G4ThreeVector& surfNorm,
+		  const G4ThreeVector& /*surfPos*/) const {
+  if (verboseLevel>2) G4cout << " DoDiffuseElectron " << surfNorm << G4endl;
 
   // Charge scatters randomly off of surface
   G4ThreeVector p = G4CMP::LambertReflection(surfNorm);
-  G4double Ekin = aTrack.GetKineticEnergy();
-  
-  FillParticleChange(GetCurrentValley(), Ekin, p);
+  return p;
 }
+
 
 void G4CMPDriftBoundaryProcess::
 DoReflectionHole(const G4Track& /*aTrack*/, const G4Step& aStep,

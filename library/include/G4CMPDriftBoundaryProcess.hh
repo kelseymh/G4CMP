@@ -27,6 +27,7 @@
 // 20170802  Add EnergyPartition to handle phonon production
 // 20250927  Add override version of new DoFinalReflection(), to support
 //           proper recombination.
+// 20251013  Add functions for specular and diffuse electron reflection.
 
 #ifndef G4CMPDriftBoundaryProcess_h
 #define G4CMPDriftBoundaryProcess_h 1
@@ -63,6 +64,13 @@ protected:
 
   virtual void DoReflectionElectron(const G4Track& aTrack,const G4Step& aStep,
 				    G4ParticleChange& aParticleChange);
+
+  virtual G4ThreeVector DoSpecularElectron(const G4ThreeVector& inDir,
+					   const G4ThreeVector& surfNorm,
+					   const G4ThreeVector& surfPos) const;
+
+  virtual G4ThreeVector DoDiffuseElectron(const G4ThreeVector& surfNorm,
+					  const G4ThreeVector& surfPos) const;
 
   virtual void DoReflectionHole(const G4Track& aTrack,const G4Step& aStep,
 				G4ParticleChange& aParticleChange);
