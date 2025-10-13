@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-10-13  G4CMP-503 : Enable charge reflections; diffuse only for electrons.
 2025-10-07  G4CMP-478 : Lowered G4CMPDriftTrapIonization minimum energy.
 2025-09-29  G4CMP-358 : Identify and stop charged tracks stuck in mesh field.
 2025-09-29  G4CMP-510 : Include residual kinetic energy in charge recombination.

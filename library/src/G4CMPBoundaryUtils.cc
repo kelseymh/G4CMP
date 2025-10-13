@@ -27,6 +27,8 @@
 // 20250413  Protect debugging messages with verbosity.
 // 20250415  Suppress error for same PV if starting at boundary.
 // 20250423  Remove error suppression for starting at boundary.
+// 20250927  Increase verbosity for IsGoodBoundary() related messages; add
+//	       overloadable function to kill track when max-reflections.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -79,7 +81,7 @@ G4bool G4CMPBoundaryUtils::IsGoodBoundary(const G4Step& aStep) {
     (G4CMP::IsChargeCarrier(pd) ? G4CMPConfigManager::GetMaxChargeBounces()
      : G4CMP::IsPhonon(pd) ? G4CMPConfigManager::GetMaxPhononBounces() : -1);
 
-  if (buVerboseLevel>1) {
+  if (buVerboseLevel>3) {
     G4cout << procName << "::IsGoodBoundary maxRefl " << maximumReflections
 	   << G4endl;
   }
@@ -90,7 +92,7 @@ G4bool G4CMPBoundaryUtils::IsGoodBoundary(const G4Step& aStep) {
 }
 
 G4bool G4CMPBoundaryUtils::IsBounaryStep(const G4Step& aStep) {
-  if (buVerboseLevel>1) {
+  if (buVerboseLevel>3) {
     G4cout << procName << "::IsBounaryStep status "
 	   << aStep.GetPostStepPoint()->GetStepStatus()
 	   << " length " << aStep.GetStepLength() << G4endl;
@@ -303,7 +305,7 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
     DoAbsorption(aTrack, aStep, aParticleChange);
   } else if (MaximumReflections(aTrack)) {
     if (buVerboseLevel>2) G4cout << "BU::Apply: maxRef" << G4endl;
-    DoSimpleKill(aTrack, aStep, aParticleChange);
+    DoFinalReflection(aTrack, aStep, aParticleChange);
   } else if (ReflectTrack(aTrack, aStep)) {
     if (buVerboseLevel>2) G4cout << "BU::Apply: Reflection" << G4endl;
     DoReflection(aTrack, aStep, aParticleChange);
@@ -318,23 +320,34 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
 
 G4bool G4CMPBoundaryUtils::AbsorbTrack(const G4Track&, const G4Step&) const {
   G4double absProb = GetMaterialProperty("absProb");
-  if (buVerboseLevel>2)
-    G4cout << " AbsorbTrack: absProb " << absProb << G4endl;
+  G4double rand = G4UniformRand();
+  if (buVerboseLevel>2) {
+    G4cout << " AbsorbTrack: absProb " << absProb << " rand " << rand
+	   << (rand<=absProb?" (pass)":" (fail)") << G4endl;
+  }
 
-  return (G4UniformRand() <= absProb);
+  return (rand <= absProb);
 }
 
 G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track&, const G4Step&) const {
   G4double reflProb = GetMaterialProperty("reflProb");
-  if (buVerboseLevel>2)
-    G4cout << " ReflectTrack: reflProb " << reflProb << G4endl;
+  G4double rand = G4UniformRand();
+  if (buVerboseLevel>2) {
+    G4cout << " ReflectTrack: reflProb " << reflProb << " rand " << rand
+	   << (rand<=reflProb?" (pass)":" (fail)") << G4endl;
+  }
 
-  return (G4UniformRand() <= reflProb);
+  return (rand <= reflProb);
 }
 
 G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) const {
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack);
   trackInfo->IncrementReflectionCount();
+
+  if (buVerboseLevel>2) {
+    G4cout << " MaximumReflections: max " << maximumReflections
+	   << " vs. " << trackInfo->ReflectionCount() << G4endl;
+  }
 
   return (maximumReflections >= 0 &&
     trackInfo->ReflectionCount() >= static_cast<size_t>(maximumReflections));
@@ -372,6 +385,13 @@ void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
   pdir -= 2.*(pdir.dot(norm))*norm;			// Reverse along normal
 
   aParticleChange.ProposeMomentumDirection(pdir);
+}
+
+// Subclass may/should override this to take alternative action
+void G4CMPBoundaryUtils::DoFinalReflection(const G4Track& aTrack,
+					   const G4Step& aStep,
+					   G4ParticleChange& aParticleChange) {
+  DoSimpleKill(aTrack, aStep, aParticleChange);
 }
 
 void G4CMPBoundaryUtils::DoSimpleKill(const G4Track& /*aTrack*/,
