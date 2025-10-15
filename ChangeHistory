@@ -6,6 +6,10 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+Development Project for G4CMP-515
+2025-10-15  G4CMP-515 : Expand charge reflection for both specular and diffuse.
+Development Project for G4CMP-515: Add new tags above.
+
 2025-10-13  g4cmp-V09-09-00 Several fixes for charge tracking; phonon tutorial
 2025-10-13  G4CMP-503 : Enable charge reflections; diffuse only for electrons.
 2025-10-07  G4CMP-478 : Lowered G4CMPDriftTrapIonization minimum energy.
