@@ -18,6 +18,7 @@
 //	       using maxSteps configuration parameter.
 // 20250506  Add local caches to compute cumulative flight distance, RMS
 // 20250801  G4CMP-326:  Kill thermal phonons if finite temperature set.
+// 20251015  G4CMP-516:  Add excessPath to ChargeStuck() boolean return.
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
@@ -296,5 +297,5 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
     G4cout << G4endl;
   }
 
-  return (tooManySteps || samePos || notMoving);
+  return (tooManySteps || excessPath || samePos || notMoving);
 }
