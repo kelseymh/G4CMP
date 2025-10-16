@@ -17,6 +17,7 @@
 // 20180827  M. Kelsey -- Prevent partitioner from recomputing sampling factors
 // 20210328  Modify above; compute direct-phonon sampling factor here
 // 20250927  AbsorbTrack() should use '&&' to require that both conditions pass
+// 20251015  Resolve shadowed declaration in DoFinalReflection()
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -279,6 +280,6 @@ DoReflectionHole(const G4Track& /*aTrack*/, const G4Step& aStep,
 
 void G4CMPDriftBoundaryProcess::
 DoFinalReflection(const G4Track& aTrack,const G4Step& aStep,
-		  G4ParticleChange& aParticleChange) {
-  DoAbsorption(aTrack, aStep, aParticleChange);
+		  G4ParticleChange& particleChange) {
+  DoAbsorption(aTrack, aStep, particleChange);
 }
