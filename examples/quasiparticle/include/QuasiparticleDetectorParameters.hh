@@ -26,13 +26,22 @@ namespace QuasiparticleDetectorParameters
   //----------------------------------------------------------------
   constexpr double dp_eps = 0.0001*CLHEP::mm;
   constexpr double pi = 3.141592654;
+
+  //----------------------------------------------------------------
+  //Superconductor info
+  constexpr double dp_polycryElScatMFP_Al = 10 * CLHEP::nm;
+  constexpr double dp_scDelta0_Al = 0.000176 * CLHEP::eV;
+  constexpr double dp_scTeff_Al = 0.2 * CLHEP::kelvin;
+  constexpr double dp_scDn_Al = 6 * CLHEP::um*CLHEP::um / CLHEP::ns;
+  constexpr double dp_scTauQPTrap_Al = 1 * CLHEP::ms;
+
   
   //----------------------------------------------------------------
   //Silicon chip dimensions
   constexpr double dp_siliconChipDimX = 8.0 * CLHEP::mm;
   constexpr double dp_siliconChipDimY = 8.0 * CLHEP::mm;
   constexpr double dp_siliconChipDimZ = 0.381 * CLHEP::mm;
-
+ 
 
   //----------------------------------------------------------------
   //Parameters of the qubit housing (currently copper)

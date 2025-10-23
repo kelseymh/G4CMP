@@ -4,17 +4,20 @@
 
 /vis/open OGL
 /vis/viewer/set/upVector 0 1 0
-/vis/viewer/set/viewpointThetaPhi 90 180
-/vis/viewer/zoom 1.4
+/vis/viewer/set/viewpointThetaPhi 30 150
+/vis/viewer/zoom 40
+/vis/viewer/pan 1.0 -1.0 mm
 /vis/drawVolume
 
-/process/inactivate phononScattering
-/process/inactivate phononDownconversion
+#/process/inactivate phononScattering
+#/process/inactivate phononDownconversion
 /process/inactivate phononPolycrystalElasticScattering
-/process/inactivate bogoliubovQPRecombination
-/process/inactivate bogoliubovQPRadiatesPhonon
-/process/inactivate scPairBreaking
-/process/inactivate G4CMPBogoliubovQPRandomWalkTransport
+#/process/inactivate qpRecombination
+#/process/inactivate qpRadiatesPhonon
+#/process/inactivate scPairBreaking
+#/process/inactivate qpDiffusion #If QPs can exist, diffusion needs to be active
+#/process/inactivate qpLocalTrapping
+/process/inactivate qpDiffusionTimeStepper
 
 /run/printProgress 1
 
@@ -28,22 +31,23 @@
 /g4cmp/phononBounces 20
 
 /vis/modeling/trajectories/create/drawByParticleID
-/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Green 
 /vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
-/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
-/vis/modeling/trajectories/drawByParticleID-0/set BogoliubovQP White
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Green
+/vis/modeling/trajectories/drawByParticleID-0/set QP White
 
 # Generate 1 phonon per event. Place right under the Nb film
 /gps/number 1
 /gps/particle phononTF
 /gps/pos/type Volume
 /gps/pos/shape Para
-/gps/pos/centre 0.0 0.0 0.0 cm
+/gps/pos/centre -2.09302 -1.0 4.900 mm
+
 
 #These XY values must be just under half of the values used for the chip dimensions above Defaults
-/gps/pos/halfx 0.0001 mm
-/gps/pos/halfy 0.0001 mm
-/gps/pos/halfz 0.0001 mm
+/gps/pos/halfx 0.00001 mm
+/gps/pos/halfy 0.00001 mm
+/gps/pos/halfz 0.00001 mm
 
 /gps/ang/type iso
 /gps/direction 1.0 -1.0 1.0
