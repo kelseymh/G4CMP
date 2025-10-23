@@ -61,6 +61,7 @@
 // 20250512  Use tempvec2 for Vg in LoadDataForTrack to improve performance.
 // 20250814  Add UpdatePhononWavevector() to update phonon wavevector and Vg.
 // 20250829  Protect FillParticleChange with Phonon Check.
+// 20251007  Bug fix for G4CMP-497 fix just above.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -248,7 +249,7 @@ void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
 
 void G4CMPProcessUtils::FillParticleChange(G4CMPParticleChangeForPhonon& particleChange,
   const G4Step& step, const G4ThreeVector& position) const {
-  if (!G4CMP::IsPhonon(step.GetTrack())) return;
+    if (!G4CMP::IsPhonon(step.GetTrack())) return;
 
     // Update the local time to account for displacement
     G4double delta_t = (position - *particleChange.GetPosition()).mag() / particleChange.GetVelocity();
