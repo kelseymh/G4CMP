@@ -696,11 +696,10 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
     G4cout << "Track momentum direction: " << aTrack.GetMomentumDirection() << G4endl;
   }
 
-  bool trackedSCResponse = true; //REL remove this before committing to develop
   if (!matTable) {
     if (buVerboseLevel>2) G4cout << "BU::Apply: !matTable" << G4endl;
     DoSimpleKill(aTrack, aStep, aParticleChange);
-  } else if (electrode && electrode->IsNearElectrode(aStep) && !trackedSCResponse) {
+  } else if (electrode && electrode->IsNearElectrode(aStep) ) {
     if (buVerboseLevel>2) G4cout << "BU::Apply: absorb at electrode" << G4endl;
     electrode->AbsorbAtElectrode(aTrack, aStep, aParticleChange);
   } else if (AbsorbTrack(aTrack, aStep)) {    

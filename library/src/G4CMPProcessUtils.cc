@@ -248,7 +248,7 @@ void G4CMPProcessUtils::FillParticleChange(G4ParticleChange& particleChange,
 
 void G4CMPProcessUtils::FillParticleChange(G4CMPParticleChangeForPhonon& particleChange,
   const G4Step& step, const G4ThreeVector& position) const {
-    if (!G4CMP::IsPhonon(track)) return;
+  if (!G4CMP::IsPhonon(step.GetTrack())) return;
 
     // Update the local time to account for displacement
     G4double delta_t = (position - *particleChange.GetPosition()).mag() / particleChange.GetVelocity();

@@ -207,6 +207,7 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   ApplyBoundaryAction(aTrack, aStep, phParticleChange);
   //ClearNumberOfInteractionLengthLeft(); // All processes should do this!
   //REL This^ was removed by NT or WL, I think? Why?
+
   
   return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 }
@@ -399,7 +400,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   //Debugging
   if (verboseLevel>2) {
-    G4cout << "New surface position " << *particleChange.GetPosition()/mm 
+    G4cout << "New surface position " << *particleChange.GetPosition()/mm
 	   << " mm\n New wavevector direction " << reflectedKDir
 	   << "\n New momentum direction " << vdir << G4endl;
   }
@@ -410,7 +411,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   if (verboseLevel > 5){
     G4cout << "DR Function Point I | Phonon incident waveVector: "
 	   << waveVector << ", non-generalized surfNorm: " << surfNorm
-	   << ", and attempted reflected vector " << reflectedKDir << G4endl;
+	   << ", and attempted reflected k-vector " << reflectedKDir << G4endl;
   }
 
   //REL changed to <= 0.0 8/25/25

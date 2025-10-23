@@ -50,16 +50,13 @@ class QuasiparticlePad
     QuasiparticlePad();
     ~QuasiparticlePad();
 
-    //This is the constructor that should be used in general. It does not have the current logical
-    //volume included because that will be defined IN the Qubit housing implementation. All we need is
-    //a set of info that is external to this, which should be self-contained.
-    QuasiparticlePad(G4RotationMatrix * pRot,
-		     const G4ThreeVector & tLate,
-		     const G4String & pName,
-		     G4LogicalVolume * pMotherLogical,
-		     G4bool pMany,
-		     G4int pCopyNo,
-		     G4LatticeManager * LM,
+    //This is the constructor that should be used in general. It does not have
+    //the current logical volume included because that will be defined IN the
+    //Qubit housing implementation. All we need is a set of info that is
+    //external to this, which should be self-contained.
+    QuasiparticlePad(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
+		     const G4String & pName,G4LogicalVolume * pMotherLogical,
+		     G4bool pMany,G4int pCopyNo,G4LatticeManager * LM,
 		     std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
 		     std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
 		     G4bool pSurfChk=false);
@@ -70,31 +67,26 @@ class QuasiparticlePad
     G4LogicalVolume * GetLogicalVolume(){ return fLog_output; }
   
     //Misc
-    void ConstructPad(G4RotationMatrix * pRot,
-		      const G4ThreeVector & tLate,
-		      const G4String & pName,
-		      G4LogicalVolume * pMotherLogical,
-		      G4bool pMany,
-		      G4int pCopyNo,
-		      G4LatticeManager * LM,
+    void ConstructPad(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
+		      const G4String & pName,G4LogicalVolume * pMotherLogical,
+		      G4bool pMany,G4int pCopyNo,G4LatticeManager * LM,
 		      std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
 		      std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
 		      G4bool pSurfChk=false);
   
-    std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > GetListOfAllFundamentalSubVolumes();
+    std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> >
+    GetListOfAllFundamentalSubVolumes();
   
   protected:
 
   private:
 
     //The final G4PVPlacement
-  G4LogicalVolume * fLog_output;
-  G4VPhysicalVolume * fPhys_output;
-  std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > fFundamentalVolumeList; //List of all fundamental sub-volumes in the pad
-  
-  
-};
+    G4LogicalVolume * fLog_output;
+    G4VPhysicalVolume * fPhys_output;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+    //List of all fundamental sub-volumes in the pad
+    std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > fFundamentalVolumeList; 
+};
 
 #endif

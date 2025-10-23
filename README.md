@@ -658,38 +658,12 @@ include geometric coverage.
 
 ## Tracked Film Response (Experimental -- Temporary Documentation)
 This branch in particular attempts to handle the dynamics of phonons and quasiparticles in thin films. This feature attempts to add the following set of physics:
-* Phonon transmission through interfaces: (distributed across classes)
-	* Now, `G4CMPSurfaceProperties` must be defined with an additional two parameters: `qpAbsProb` (QP Absorption probability) and `qpReflProb`, but once these are defined, you can enable passage of phonons through a surface by setting `pAbsProb` and `pReflProb` to values less than 1.
-  	* Boundary surfaces must be applied in both directions for a given interface!
-	* Currently, no "physics" is done at these interfaces -- phonons pass straight through if they pass through. Specular vs. diffuse reflection is handled as it was in the previous version.
+* Phonon transmission through interfaces
 * Cooper-pair breaking by phonons: `G4CMPSCPairBreakingProcess.cc`
-  	* The rate of this is given by a dedicated rate function, but is ultimately dictated by parameters set in the `CrystalMaps/Al/config.txt` file. Only a few of them should be tweaked by a user at the moment: one is an effective temperature `sc_Teff`, which should be less than Tc for a given crystal.
-  	* This will produce two BogoliubovQP particles from a phonon above 2*delta
 * Phonon radiation by QPs: `G4CMPBogoliubovQPRadiatesPhononProcess.cc`
- 	* This will radiate phonons from QPs above delta. The rate is again dictated by that effective temperature in `CrystalMaps/Al/config.txt`.
 * QP Recombination: `G4CMPBogoliubovQPRecombinationProcess.cc`
-	* This will take a QP and "recombine" it with an ambient quasiparticle that is implicitly in the environment due to some ambient density. A phonon will emerge half of the time, to conserve energy.
- 	* This does *not* do n^2 recombination. This recombination is linear in the density of quasiparticles and is a good approximation in the limit of low density of QPs. We'll put back-of-the-envelope numbers to this regime soon. Again, this does *not* do n^2 recombination.
- 	* This rate is *strongly* dependent on the Teff you use in `CrystalMaps/Al/config.txt`. If you set this to below about 10% of Tc for a given superconductor, you be waiting *forever* for these QPs to recombine. 
 * QP Local Trapping: `G4CMPBogoliubovQPLocalTrappingProcess.cc`
- 	* This is a generic linear loss term that kills QPs after they exist for some characteristic lifetime. Notionally this is from trapping on shallow trapping sites
-   	* This is another crystal parameter, `sc_tau_qptrap` at the moment, located in `CrystalMaps/Al/config.txt`.
 * QP Diffusion: `G4CMPBogoliubovRandomWalkTransport.cc`
- 	* This is a doozy of a function. It uses an efficient MC approach to diffusion in a generalized geometry called Walk-on-Spheres to do diffusion steps of QPs in thin films. Currently only implemented in 2D, and moreover only currently implemented in XY specifically. Will expand to direction agnostic form in a future release.
-  	* For fine geometries (like coplanar waveguides), this will take some time to run. The execution time is dependent on the relationship between typical length scales traveled before hitting a boundary and the overall lifetime of the QP (either via recombination, absorption, or local trapping).
-  	* If you intend to have QPs in your simulation, this must be turned on for anything to be accurate.
 * Gap Engineering: `G4CMPBogoliubovQPRandomWalkBoundary.cc`
- 	* QPs can also move between superconducting volumes that are all in-plane, but are prevented from entering a superconductor whose gap is higher than the QP's energy.
 
-
-General other tips: 
-* For now, need one G4LatticeLogical and G4LatticePhysical for every physical superconducting volume. This may incur a slight calculational cost at the beginning of a given run, since for each there is a calculation of the QP scattering/recombination taus as a function of energy relative to the gap. The more dedicated volumes you have, the longer you should expect the startup to take.
-* For now, need to define boundaries between not only substrate and thin film, but also between different volumes in the thin film. This includes boundaries between mother and daughter volumes
-* There is now a `quasiparticle` example that shows examples of a few geometries you can build with this and how to properly write down boundary relations for those. Very much a work in progress.
-* Right now, the CrystalMaps config.txt files are only effective:
- 	* For Al, the "boilerplate" phonon parameters are equivalent to that of Si. We'll update these to accurate values for Al in the next week or so. The superconducting parameters (the last 8 parameters in the file) are the ones that contain the new physics.
-	* For Nb, the parameters are basically equivalent to Al, which is factually incorrect. For the moment, the difference is effectively just Teff, Tc, and the energy gap. Would not really recommend using Nb for now, until we flesh this out better.
-  
-
-
-
+More description, including parameters to use for these, can be found in the quasiparticle example.  

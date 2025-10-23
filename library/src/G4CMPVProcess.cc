@@ -127,7 +127,8 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
     }
     
     
-    //REL noting that if physical lattices are not 1:1 with volumes, something may get broken here... Should check a scenario of segmented SC...
+    //REL noting that if physical lattices are not 1:1 with volumes,
+    //something may get broken here... Should check a scenario of segmented SC...
 
     //Noting here that since LoadDataForTrack updates the momentum based on
     //the current lattice (which in a reflection step is the "turnaround

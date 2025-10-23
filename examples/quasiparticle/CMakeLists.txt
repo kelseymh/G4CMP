@@ -49,7 +49,8 @@ set(quasiparticle_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleSteppingAction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleQubitHousing.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticlePad.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleTransmissionLine.cc	
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleTransmissionLine.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/QuasiparticleResonatorAssembly.cc
     )
     
 if(USE_GEANT4_STATIC_LIBS)
