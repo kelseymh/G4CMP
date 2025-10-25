@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-10-24  G4CMP-523 : Remove undesirable checks from G4CMPTrackLimiter.
 2025-10-15  G4CMP-516 : Address compiler warnings seen with GCC-11.4.0.
 
 2025-10-13  g4cmp-V09-09-00 Several fixes for charge tracking; phonon tutorial
