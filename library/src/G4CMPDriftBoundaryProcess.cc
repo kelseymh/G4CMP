@@ -18,6 +18,7 @@
 // 20210328  Modify above; compute direct-phonon sampling factor here
 // 20250927  AbsorbTrack() should use '&&' to require that both conditions pass
 // 20251015  Resolve shadowed declaration in DoFinalReflection()
+// 20251024  G4CMP-519: Protect against possible zero energy in DoAbsorption()
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -144,14 +145,15 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   partitioner->UseVolume(aTrack.GetVolume());
 
   G4double eAbs = GetKineticEnergy(aTrack);
-
-  // Compute direct-phonon downsampling here
-  partitioner->ComputePhononSampling(eAbs);
-  partitioner->DoPartition(0., eAbs);
-  partitioner->GetSecondaries(&aParticleChange);
-
-  if (aParticleChange.GetNumberOfSecondaries() == 0) {	// Record energy release
-    aParticleChange.ProposeNonIonizingEnergyDeposit(eAbs);
+  if (eAbs > 0.) {
+    // Compute direct-phonon downsampling here
+    partitioner->ComputePhononSampling(eAbs);
+    partitioner->DoPartition(0., eAbs);
+    partitioner->GetSecondaries(&aParticleChange);
+    
+    if (aParticleChange.GetNumberOfSecondaries() == 0) {
+      aParticleChange.ProposeNonIonizingEnergyDeposit(eAbs);
+    }
   }
 
   aParticleChange.ProposeEnergy(0.);
