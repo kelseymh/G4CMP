@@ -20,6 +20,7 @@
 // 20250801  G4CMP-326:  Kill thermal phonons if finite temperature set.
 // 20251015  G4CMP-516:  Add excessPath to ChargeStuck() boolean return.
 // 20251024  G4CMP-523:  Remove alternative "stuck tracks" testing code.
+// 20251025  G4CMP-520:  Remove redundant (and incorrect) InvalidPosition().
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
@@ -112,19 +113,6 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
     aParticleChange.ProposeTrackStatus(fStopButAlive);
   }
 
-  // Check whether track position and volume are consistent
-  if (InvalidPosition(track)) {
-    std::stringstream msg;
-    msg << "Killing track inconsistent position " << track.GetPosition()
-	<< "\n vs. detector volume " << GetCurrentVolume()->GetName() + ":"
-	<< GetCurrentVolume()->GetCopyNo();
-    G4Exception("G4CMPTrackLimiter", "Limit002", JustWarning,
-		msg.str().c_str());
-    
-    aParticleChange.SetNumberOfSecondaries(0);	// Don't launch bad tracks!
-    aParticleChange.ProposeTrackStatus(fStopAndKill);
-  }
-
   // Kill phonons consistent with thermal populations
   if (PhononIsThermal(track))
     aParticleChange.ProposeTrackStatus(fStopAndKill);
@@ -141,30 +129,6 @@ G4bool G4CMPTrackLimiter::BelowEnergyCut(const G4Track& track) const {
      : G4CMP::IsPhonon(track) ? G4CMPConfigManager::GetMinPhononEnergy() : -1.);
 
   return (track.GetKineticEnergy() < ecut);
-}
-
-G4bool G4CMPTrackLimiter::InvalidPosition(const G4Track& track) const {
-  G4VPhysicalVolume* trkVol = track.GetVolume();
-  if (!trkVol) return false;
-
-  const G4VTouchable* trkVT = track.GetTouchable();
-  G4ThreeVector trkPos = track.GetPosition();
-  if (verboseLevel>1) {
-    G4cout << GetProcessName() << "::InvalidPosition()" << G4endl
-	   << " trkVol " << trkVol->GetName() << " @ " << trkPos << G4endl;
-  }
-
-  G4CMP::RotateToLocalPosition(trkVT, trkPos);
-  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
-  EInside isIn = solid->Inside(trkPos);
-  if (verboseLevel>1) {
-    const char* inName = (isIn==kInside ? "inside" : isIn==kOutside
-			  ? "outside" : "surface");
-
-    G4cout << " local " << trkPos << " is " << inName << " volume" << G4endl;
-  }
-
-  return (isIn == kOutside);
 }
 
 G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
