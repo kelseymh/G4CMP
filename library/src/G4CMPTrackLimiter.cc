@@ -19,6 +19,7 @@
 // 20250506  Add local caches to compute cumulative flight distance, RMS
 // 20250801  G4CMP-326:  Kill thermal phonons if finite temperature set.
 // 20251015  G4CMP-516:  Add excessPath to ChargeStuck() boolean return.
+// 20251024  G4CMP-523:  Remove alternative "stuck tracks" testing code.
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
@@ -240,62 +241,10 @@ G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
   const G4double maxSteps = G4CMPConfigManager::GetMaxChargeSteps();
   G4int nstep = track.GetCurrentStepNumber();
 
-  G4double pathLen = track.GetTrackLength();
-  const G4ThreeVector& pos = track.GetPosition();
-  G4double flightDist = (pos-track.GetVertexPosition()).mag();
-  G4double posShift = (nstep>1) ? (pos-lastPos).mag() : 0.;
-
-
-  if (nstep%stepWindow == 1) {		// Start new window
-    flightAvg = flightAvg2 = 0.;
-    lastPos = pos;
-  }
-
-  // Accumulate flight distance and and sum-of-squares averages
-  flightAvg  = flightAvg + (flightDist-flightAvg)/nstep;
-  flightAvg2 = flightAvg2 + (flightDist*flightDist - flightAvg2)/nstep;
-
-  // Compute change in distance every 10,000 steps
-  G4double fltChange = flightAvg-lastFlight;
-  lastFlight = flightAvg;
-
-  // Compute change in RMS every 10,000 steps
-  G4double RMS = sqrt(flightAvg2 - flightAvg*flightAvg);
-  G4double RMSchange = RMS-lastRMS;
-  lastRMS = RMS;
-
-  // Scattering makes the path length longer, but only a factor of a few
-  G4double pathScale = pathLen / flightDist;
-
-  if (verboseLevel>1) {
-    G4cout << " after " << nstep << " steps @ " << pos << G4endl;
-
-    if (nstep%stepWindow == 1) G4cout << " new stepWindow" << G4endl;
-    else {
-      G4cout << " pos changed " << posShift << " since step "
-	     << 1+((nstep-1)/stepWindow)*stepWindow << G4endl;
-    }
-
-    G4cout << " path " << pathLen << "  flight " << flightDist
-	   << " : ratio " << pathScale << (pathScale>maxPathScale?" > ":" < ")
-	   << maxPathScale << ")" << G4endl
-	   << " flightAvg " << flightAvg << " changed by " << fltChange
-	   << " RMS " << RMS << " changed by " << RMSchange << G4endl;
-  }
-
-  // Possible "stuck" conditions
   G4bool tooManySteps = (maxSteps>0 && nstep>maxSteps);
-  G4bool excessPath = (pathScale > maxPathScale);
-  G4bool windowFull = (nstep>=stepWindow && nstep%stepWindow == 0);
-  G4bool samePos = (windowFull && posShift < minPosShift);
-  G4bool notMoving = (windowFull && fabs(RMSchange) < minFlightRMS);
 
-  if (verboseLevel>2) {
-    G4cout << " tooManySteps " << tooManySteps;
-    if (windowFull)
-      G4cout << " samePos " << samePos << " notMoving " << notMoving;
-    G4cout << G4endl;
-  }
+  if (verboseLevel>2)
+    G4cout << " nstep " << nstep << ": tooManySteps " << tooManySteps << G4endl;
 
-  return (tooManySteps || excessPath || samePos || notMoving);
+  return tooManySteps;
 }
