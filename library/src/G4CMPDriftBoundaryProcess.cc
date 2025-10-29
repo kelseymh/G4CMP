@@ -19,6 +19,7 @@
 // 20250927  AbsorbTrack() should use '&&' to require that both conditions pass
 // 20251015  Resolve shadowed declaration in DoFinalReflection()
 // 20251024  G4CMP-519: Protect against possible zero energy in DoAbsorption()
+// 20251028  G4CMP-527: Move CheckStepBoundary() to ApplyBoundaryAction()
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"

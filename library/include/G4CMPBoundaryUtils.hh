@@ -20,7 +20,7 @@
 // 20171215  Change 'CheckStepStatus()' to 'IsBoundaryStep()', add function
 //	     to validate step trajectory to boundary.
 // 20250927  Add overloadable function to kill track when max-reflections.
-
+// 20251028  G4CMP-527: Move CheckStepBoundary() here from DriftBoundaryProcess
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
 

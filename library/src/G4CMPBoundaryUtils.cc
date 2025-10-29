@@ -29,6 +29,8 @@
 // 20250423  Remove error suppression for starting at boundary.
 // 20250927  Increase verbosity for IsGoodBoundary() related messages; add
 //	       overloadable function to kill track when max-reflections.
+// 20251028  G4CMP-527:  Use CheckStepBoundary() in ApplyBoundaryAction(),
+//	       add warning (G4cerr) message for points that need adjustment.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -37,10 +39,10 @@
 #include "G4CMPLogicalSkinSurface.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPProcessUtils.hh"
-#include "G4CMPVTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4CMPVElectrodePattern.hh"
+#include "G4CMPVTrackInfo.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
@@ -50,6 +52,7 @@
 #include "G4ParticleDefinition.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VProcess.hh"
@@ -255,6 +258,13 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 
     G4ThreeVector along = (postPos-prePos).unit();	// Trajectory direction
     surfPoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
+
+    G4double moveDist = (postPos-surfPoint).mag();	// For diagnostics
+    if (moveDist > 1.*um) {
+      G4cerr << " Post-step point " << postPos << " away from surface "
+	     << prePV->GetName() << " by " << moveDist/um << " um" << G4endl;
+    }
+
     if (buVerboseLevel>2) {
       G4cout << " moving preStep by " << preSolid->DistanceToOut(prePos,along)
 	     << " along " << along << G4endl
@@ -273,7 +283,7 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
     if (postIn != kSurface) {
       G4Exception((procName+"::CheckBoundaryPoint").c_str(),
 		  "Boundary005", EventMustBeAborted,
-		  "Boundary-limited step cannot find boundary surface point"
+		  "Boundary-limited step could not be adjusted to surface"
 		  );
       return false;
     }
