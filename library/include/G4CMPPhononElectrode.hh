@@ -34,11 +34,13 @@
 /// directly absorb phonons below 2*bandgap.
 // 
 // 20221006  M. Kelsey -- Adapted from SuperCDMS simulation version
+// 20251021  G4CMP-511 -- Move Lambertian reflection code to G4CMPBoundaryUtils.
 
 #ifndef G4CMPPhononElectrode_hh
 #define G4CMPPhononElectrode_hh 1
 
 #include "G4CMPVElectrodePattern.hh"
+#include "G4CMPBoundaryUtils.hh"
 
 class G4CMPKaplanQP;
 class G4ParticleChange;
@@ -46,7 +48,7 @@ class G4Step;
 class G4Track;
 
 
-class G4CMPPhononElectrode : public G4CMPVElectrodePattern {
+class G4CMPPhononElectrode : public G4CMPVElectrodePattern, public G4CMPBoundaryUtils {
 public:
   G4CMPPhononElectrode();
   virtual ~G4CMPPhononElectrode();

@@ -20,6 +20,7 @@
 // 20171215  Change 'CheckStepStatus()' to 'IsBoundaryStep()', add function
 //	     to validate step trajectory to boundary.
 // 20250927  Add overloadable function to kill track when max-reflections.
+// 20251021  G4CMP-511 -- Move Lambertian reflection code to G4CMPBoundaryUtils.
 
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
@@ -32,6 +33,7 @@
 class G4CMPProcessUtils;
 class G4CMPSurfaceProperty;
 class G4CMPVElectrodePattern;
+class G4LatticePhysical;
 class G4MaterialPropertiesTable;
 class G4ParticleChange;
 class G4Step;
@@ -50,7 +52,7 @@ public:
   G4CMPBoundaryUtils& operator=(const G4CMPBoundaryUtils&) = default;
   G4CMPBoundaryUtils& operator=(G4CMPBoundaryUtils&&) = default;
   
-  virtual void SetVerboseLevel(G4int vb) { buVerboseLevel = vb; }
+  virtual void SetVerboseLevel(G4int vb) const { buVerboseLevel = vb; }
 
   // Check whether this step is at a good boundary for processing
   virtual G4bool IsGoodBoundary(const G4Step& aStep);
@@ -86,6 +88,24 @@ public:
   virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
 			      G4ParticleChange& aParticleChange);
 
+  // Phonons reflect difusively from surfaces.
+  virtual G4ThreeVector LambertianReflection(const G4LatticePhysical* lattice,
+                                    const G4ThreeVector& surfNorm, G4int mode) const;
+  virtual G4ThreeVector LambertianReflection(const G4LatticePhysical* lattice,
+                                    const G4ThreeVector& surfNorm, G4int mode,
+                                    const G4ThreeVector& surfPoint) const;
+  G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm) const;
+
+  // Test that a phonon's wave vector relates to an inward velocity.
+  // waveVector, surfNorm, and surfacePos need to be in global coordinates
+  virtual G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+                                const G4ThreeVector& waveVector,
+                                const G4ThreeVector& surfNorm) const;
+  virtual G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+                                const G4ThreeVector& waveVector,
+                                const G4ThreeVector& surfNorm,
+                                const G4ThreeVector& surfacePos) const;
+
 protected:
   G4bool IsBounaryStep(const G4Step& aStep);
   G4bool GetBoundingVolumes(const G4Step& aStep);
@@ -95,7 +115,7 @@ protected:
   G4double GetMaterialProperty(const G4String& key) const;
 
 private:
-  G4int buVerboseLevel;			// For local use; name avoids collisions
+  mutable G4int buVerboseLevel;			// For local use; name avoids collisions
   G4String procName;
   G4CMPProcessUtils* procUtils;		// For access to lattice, track info
 

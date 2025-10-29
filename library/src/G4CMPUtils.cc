@@ -21,6 +21,7 @@
 // 20250422  G4CMP-468 -- Add displaced point test to PhononVelocityIsInward.
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector.
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
+// 20251021  G4CMP-511 -- Move Lambertian reflection code to G4CMPBoundaryUtils.
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -206,83 +207,6 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
   hit->SetFinalPosition(finalPosition);
   hit->SetTrackID(trackID);
   hit->SetParticleName(name);
-}
-
-
-// Generate cos(theta) law for diffuse reflection, ensuring that computed
-// vector is directed inward with respect to the surface normal.
-
-G4ThreeVector
-G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
-			   const G4ThreeVector& surfNorm, G4int mode) {
-  const G4ThreeVector surfPoint = GetCurrentTrack()->GetPosition();
-  return GetLambertianVector(theLattice, surfNorm, mode, surfPoint);
-}
-
-G4ThreeVector
-G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
-			   const G4ThreeVector& surfNorm, G4int mode,
-			   const G4ThreeVector& surfPoint) {
-  G4ThreeVector reflectedKDir;
-  const G4int maxTries = 1000;
-  G4int nTries = 0;
-  do {
-    reflectedKDir = LambertReflection(surfNorm);
-  } while (nTries++ < maxTries &&
-           !PhononVelocityIsInward(theLattice, mode, reflectedKDir, surfNorm,
-                                   surfPoint));
-
-  return reflectedKDir;
-}
-
-G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
-  G4double phi = 2.0*pi*G4UniformRand();
-  G4double theta = acos(2.0*G4UniformRand() - 1.0) / 2.0;
-
-  G4ThreeVector refl = -surfNorm;
-  refl = refl.rotate(surfNorm.orthogonal(), theta);
-  refl = refl.rotate(surfNorm, phi);
-  return refl;
-}
-
-
-// Check that phonon is properly directed from the volume surface
-// waveVector and surfNorm need to be in global coordinates
-
-G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
-                                     G4int mode,
-                                     const G4ThreeVector& waveVector,
-                                     const G4ThreeVector& surfNorm) {
-  const G4ThreeVector surfacePos = GetCurrentTrack()->GetPosition();
-  return PhononVelocityIsInward(lattice, mode, waveVector, surfNorm, surfacePos);
-}
-
-G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
-                                     G4int mode,
-                                     const G4ThreeVector& waveVector,
-                                     const G4ThreeVector& surfNorm,
-                                     const G4ThreeVector& surfacePos) {
-  // Get touchable for coordinate rotations
-  const G4VTouchable* touchable = GetCurrentTouchable();
-
-  if (!touchable) {
-    G4Exception("G4CMP::PhononVelocityIsInward", "G4CMPUtils001",
-		EventMustBeAborted, "Current track does not have valid touchable!");
-    return false;
-  }
-
-  // MapKtoVDir requires local direction for the wavevector
-  G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(touchable, waveVector));
-
-  // Project a 1 nm step in the new direction, see if it
-  // is still in the correct volume.
-  G4ThreeVector localPos = GetLocalPosition(touchable, surfacePos);
-  G4VSolid* solid = touchable->GetSolid();
-  EInside trialStep = solid->Inside(localPos + 1*nm * vDir);
-
-  // Compare group velocity and surface normal in global coordinates
-  RotateToGlobalDirection(touchable, vDir);
-  return (vDir.dot(surfNorm) < 0.0 && trialStep == kInside);
 }
 
 

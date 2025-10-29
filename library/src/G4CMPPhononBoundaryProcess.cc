@@ -41,6 +41,7 @@
 // 20250429  G4CMP-461 -- Implement ability to skip flats during displacement.
 // 20250505  G4CMP-458 -- Rename GetReflectedVector to GetSpecularVector.
 // 20250505  G4CMP-471 -- Update diagnostic output for surface displacement loop.
+// 20251021  G4CMP-511 -- Move Lambertian reflection code to G4CMPBoundaryUtils.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -227,9 +228,9 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     G4Track* sec1 = particleChange.GetSecondary(0);
     G4Track* sec2 = particleChange.GetSecondary(1);
 
-    G4ThreeVector vec1 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    G4ThreeVector vec1 = G4CMPBoundaryUtils::LambertianReflection(theLattice, surfNorm, mode,
                                                     surfacePoint);
-    G4ThreeVector vec2 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    G4ThreeVector vec2 = G4CMPBoundaryUtils::LambertianReflection(theLattice, surfNorm, mode,
                                                     surfacePoint);
 
     sec1->SetMomentumDirection(vec1);
@@ -240,7 +241,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     reflectedKDir = GetSpecularVector(waveVector, surfNorm, mode, surfacePoint); // Modify surfacePoint & surfNorm in place
     refltype = "specular";
   } else {
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    reflectedKDir = G4CMPBoundaryUtils::LambertianReflection(theLattice, surfNorm, mode,
                                                surfacePoint);
     refltype = "diffuse";
   }
@@ -263,7 +264,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   // If reflection failed, report problem and kill the track
-  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm, surfacePoint)) {
+  if (!G4CMPBoundaryUtils::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm, surfacePoint)) {
     G4String msg = G4PhononPolarization::Name(mode) + " " + refltype + " reflection failed";
 
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
@@ -284,7 +285,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm
   (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);	// Reflect against normal
 
-  if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm,
+  if (G4CMPBoundaryUtils::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm,
                                     surfacePoint))
     return reflectedKDir;
 
@@ -343,7 +344,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   }
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
-  while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
+  while (!G4CMPBoundaryUtils::PhononVelocityIsInward(theLattice, mode,
    GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm),
    GetGlobalPosition(stepLocalPos)) && nAttempts++ < nStepLimit) {
     // Save previous loop values
@@ -429,7 +430,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   RotateToGlobalDirection(newNorm);
   RotateToGlobalPosition(stepLocalPos);
 
-  if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, newNorm,
+  if (!G4CMPBoundaryUtils::PhononVelocityIsInward(theLattice, mode, reflectedKDir, newNorm,
                                      stepLocalPos)) {
     if (verboseLevel) {
       G4cerr << GetProcessName() << "::GetSpecularVector"
@@ -444,7 +445,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     // Get reflectedKDir from initial point and restore original values
     stepLocalPos = surfacePoint;
     newNorm = surfNorm;
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    reflectedKDir = G4CMPBoundaryUtils::LambertianReflection(theLattice, surfNorm, mode,
                                                surfacePoint);
   }
 

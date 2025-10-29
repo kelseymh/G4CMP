@@ -28,6 +28,7 @@
 // 20250927  Add override version of new DoFinalReflection(), to support
 //           proper recombination.
 // 20251013  Add functions for specular and diffuse electron reflection.
+// 20251021  G4CMP-511 -- Move Lambertian reflection code to G4CMPBoundaryUtils.
 
 #ifndef G4CMPDriftBoundaryProcess_h
 #define G4CMPDriftBoundaryProcess_h 1
@@ -49,6 +50,23 @@ public:
                                                    G4ForceCondition* condition);
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
+
+  // Phonons reflect difusively from surfaces.
+  G4ThreeVector LambertianReflection(const G4LatticePhysical* lattice,
+                                    const G4ThreeVector& surfNorm, G4int valley) const;
+  G4ThreeVector LambertianReflection(const G4LatticePhysical* lattice,
+                                    const G4ThreeVector& surfNorm, G4int valley,
+                                    const G4ThreeVector& surfPoint) const;
+
+  // Test that a charge's wave vector relates to an inward velocity.
+  // waveVector, surfNorm, and surfacePos need to be in global coordinates
+  virtual G4bool ChargeVelocityIsInward(const G4LatticePhysical* lattice, G4int valley,
+                                const G4ThreeVector& waveVector,
+                                const G4ThreeVector& surfNorm) const;
+  virtual G4bool ChargeVelocityIsInward(const G4LatticePhysical* lattice, G4int valley,
+                                const G4ThreeVector& waveVector,
+                                const G4ThreeVector& surfNorm,
+                                const G4ThreeVector& surfacePos) const;
 
 protected:
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);

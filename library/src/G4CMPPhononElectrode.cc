@@ -38,6 +38,7 @@
 // 20250124  G4CMP-447 -- Add FillParticleChange() to update phonon track info
 // 20250422  N. Tenpas -- Add position arguments for PhononVelocityIsInward.
 // 20250423  N. Tenpas -- Replace duplicated GetLambertianVector() code.
+// 20251021  G4CMP-511 -- Move Lambertian reflection code to G4CMPBoundaryUtils.
 
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -60,7 +61,7 @@
 // Constructor and destructor
 
 G4CMPPhononElectrode::G4CMPPhononElectrode()
-  : G4CMPVElectrodePattern(), kaplanQP(0) {;}
+  : G4CMPVElectrodePattern(), G4CMPBoundaryUtils(nullptr), kaplanQP(0) {;}
 
 G4CMPPhononElectrode::~G4CMPPhononElectrode() {
   delete kaplanQP; kaplanQP=0;
@@ -69,7 +70,8 @@ G4CMPPhononElectrode::~G4CMPPhononElectrode() {
 // Assumes that user has configured a border surface only at sensor pads
 
 G4bool G4CMPPhononElectrode::IsNearElectrode(const G4Step& /*step*/) const {
-  return G4UniformRand() < GetMaterialProperty("filmAbsorption");
+  G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
+  return G4UniformRand() < G4CMPVElectrodePattern::GetMaterialProperty("filmAbsorption");
 }
 
 
@@ -79,6 +81,8 @@ G4bool G4CMPPhononElectrode::IsNearElectrode(const G4Step& /*step*/) const {
 void G4CMPPhononElectrode::
 AbsorbAtElectrode(const G4Track& track, const G4Step& step,
 		  G4ParticleChange& particleChange) const {
+  G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);
+  
   if (verboseLevel>1) {
     G4cout << "G4CMPPhononElectrode::AbsorbAtElectrode: Track "
 	   << track.GetTrackID() << " absorbed at step "
@@ -144,7 +148,7 @@ ProcessAbsorption(const G4Track& track, const G4Step& step, G4double EDep,
   for (G4double E : phononEnergies) {
     G4double kmag = k.mag()*E/Ekin;	// Scale k vector by energy
     G4int pol = ChoosePhononPolarization();
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, pol,
+    reflectedKDir = G4CMPBoundaryUtils::LambertianReflection(theLattice, surfNorm, pol,
                                                track.GetPosition());
 
     G4Track* phonon = G4CMP::CreatePhonon(GetCurrentTouchable(),
@@ -183,7 +187,7 @@ ProcessReflection(const G4Track& track, const G4Step& step,
 
   G4int pol = GetPolarization(track);
 
-  G4ThreeVector reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm,
+  G4ThreeVector reflectedKDir = G4CMPBoundaryUtils::LambertianReflection(theLattice, surfNorm,
                                                            pol, track.GetPosition());
 
   FillParticleChange(particleChange, track, reflectedKDir);

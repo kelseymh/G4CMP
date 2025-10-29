@@ -20,6 +20,7 @@
 // 20250423  G4CMP-468 -- Move GetLambertianVector to G4CMPUtils.
 // 20250424  G4CMP-465 -- Add G4CMPSolidUtils object for custom solid functions.
 // 20250505  G4CMP-458 -- Rename GetReflectedVector to GetSpecularVector.
+// 20251021  G4CMP-511 -- Move Lambertian reflection code to G4CMPBoundaryUtils.
 
 #ifndef G4CMPPhononBoundaryProcess_h
 #define G4CMPPhononBoundaryProcess_h 1
