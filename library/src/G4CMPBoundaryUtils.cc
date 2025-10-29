@@ -217,11 +217,11 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
 // "surfacePoint" returns post-step position, or computed surface point
 
 G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
-					     G4ThreeVector& surfacePoint) {
+					     G4ThreeVector& surfPoint) {
   G4StepPoint* preP = aStep.GetPreStepPoint();
   G4StepPoint* postP = aStep.GetPostStepPoint();
   GetBoundingVolumes(aStep);
-  surfacePoint = postP->GetPosition();		// Correct if valid boundary
+  surfPoint = postP->GetPosition();		// Correct if valid boundary
 
   // Get pre- and post-step positions in pre-step volume coordinates
   G4VSolid* preSolid = prePV->GetLogicalVolume()->GetSolid();
@@ -229,7 +229,7 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
   G4ThreeVector prePos = preP->GetPosition();
   G4CMP::RotateToLocalPosition(preP->GetTouchable(), prePos);
 
-  G4ThreeVector postPos = surfacePoint;
+  G4ThreeVector postPos = surfPoint;
   G4CMP::RotateToLocalPosition(preP->GetTouchable(), postPos);
 
   if (buVerboseLevel>2) {
@@ -251,17 +251,17 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
   // If post-step position not proper surface point, compute intersection
   if (postIn != kSurface) {
     if (buVerboseLevel>2)
-      G4cout << " OLD SURFACE POINT: " << surfacePoint << G4endl;
+      G4cout << " OLD SURFACE POINT: " << surfPoint << G4endl;
 
     G4ThreeVector along = (postPos-prePos).unit();	// Trajectory direction
-    surfacePoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
+    surfPoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
     if (buVerboseLevel>2) {
       G4cout << " moving preStep by " << preSolid->DistanceToOut(prePos,along)
 	     << " along " << along << G4endl
-	     << " NEW SURFACE POINT: " << surfacePoint << G4endl;
+	     << " NEW SURFACE POINT: " << surfPoint << G4endl;
     }
 
-    postIn = preSolid->Inside(surfacePoint);
+    postIn = preSolid->Inside(surfPoint);
     if (buVerboseLevel>2) {
       G4cout << "\n Is adjusted location on surface of preStep Volume? "
 	     << (postIn==kOutside ? "outside" :
@@ -279,7 +279,7 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
     }
 
     // Move surface point to world coordinate system
-    G4CMP::RotateToGlobalPosition(preP->GetTouchable(), surfacePoint);
+    G4CMP::RotateToGlobalPosition(preP->GetTouchable(), surfPoint);
   }
 
   return (postIn == kSurface);
@@ -295,12 +295,12 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack);
 
   // Check whether step has proper boundary-stopped geometry
-  surfacePoint = aStep->GetPostStepPoint()->GetPosition();
+  surfacePoint = aStep.GetPostStepPoint()->GetPosition();
   if (!CheckStepBoundary(aStep, surfacePoint)) {
-    if (verboseLevel>2)
+    if (buVerboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
 
-    particleChange.ProposePosition(surfacePoint);
+    aParticleChange.ProposePosition(surfacePoint);
   }
 
   if (!matTable) {
