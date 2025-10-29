@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-10-29  G4CMP-527 : Adjust post-step "surface" point for all boundary actions.
 2025-10-25  G4CMP-520 : Fix incorrect local transform in TrackLimiter.
 2025-10-24  G4CMP-519 : Protect against zero energy in charge DoAbsorption().
 2025-10-24  G4CMP-523 : Remove undesirable checks from G4CMPTrackLimiter.

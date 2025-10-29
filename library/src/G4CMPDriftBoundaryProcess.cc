@@ -187,15 +187,6 @@ DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
   // Get outward normal from current volume
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
 
-  // Check whether step has proper boundary-stopped geometry
-  G4ThreeVector surfacePoint;
-  if (!CheckStepBoundary(aStep, surfacePoint)) {
-    if (verboseLevel>2)
-      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-
-    particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
-  }
-
   // FUTURE: Get specular vs. diffuse probability from parameters
   G4bool specular = false;
 

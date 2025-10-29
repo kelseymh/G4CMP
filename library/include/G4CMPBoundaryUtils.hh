@@ -111,6 +111,8 @@ protected:
   // Flag whether a given PV pair has a defined surface property or not
   typedef std::pair<G4VPhysicalVolume*,G4VPhysicalVolume*> BoundaryPV;
   std::map<BoundaryPV, G4bool> hasSurface;
+
+  G4ThreeVector surfacePoint;		// "Adjusted" impact point at surface
 };
 
 #endif	/* G4CMPBoundaryUtils_hh */

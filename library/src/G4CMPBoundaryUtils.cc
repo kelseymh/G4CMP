@@ -294,6 +294,15 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
 					G4ParticleChange& aParticleChange) {
   aParticleChange.Initialize(aTrack);
 
+  // Check whether step has proper boundary-stopped geometry
+  surfacePoint = aStep->GetPostStepPoint()->GetPosition();
+  if (!CheckStepBoundary(aStep, surfacePoint)) {
+    if (verboseLevel>2)
+      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
+
+    particleChange.ProposePosition(surfacePoint);
+  }
+
   if (!matTable) {
     if (buVerboseLevel>2) G4cout << "BU::Apply: !matTable" << G4endl;
     DoSimpleKill(aTrack, aStep, aParticleChange);
