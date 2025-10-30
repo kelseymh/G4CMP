@@ -281,10 +281,11 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 
     // Double check calculation -- point "must" now be on surface!
     if (postIn != kSurface) {
-      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-		  "Boundary005", EventMustBeAborted,
-		  "Boundary-limited step could not be adjusted to surface"
-		  );
+      std::stringstream msg;
+      msg << "Boundary-limited step @ " << postPos << " for "
+	  << prePV->GetName() << " could not be adjusted to surface";
+      G4Exception((procName+"::CheckStepBoundary").c_str(),
+		  "Boundary005", EventMustBeAborted, msg.str().c_str());
       return false;
     }
 
