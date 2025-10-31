@@ -6,6 +6,12 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2025-10-30  g4cmp-V09-09-01 Bug fixes following V09-09-00 release.
+2025-10-25  G4CMP-520 : Fix incorrect local transform in TrackLimiter.
+2025-10-24  G4CMP-519 : Protect against zero energy in charge DoAbsorption().
+2025-10-24  G4CMP-523 : Remove undesirable checks from G4CMPTrackLimiter.
+2025-10-15  G4CMP-516 : Address compiler warnings seen with GCC-11.4.0.
+
 2025-10-13  g4cmp-V09-09-00 Several fixes for charge tracking; phonon tutorial
 2025-10-13  G4CMP-503 : Enable charge reflections; diffuse only for electrons.
 2025-10-07  G4CMP-478 : Lowered G4CMPDriftTrapIonization minimum energy.
