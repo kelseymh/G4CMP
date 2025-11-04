@@ -63,12 +63,13 @@
 
 G4CMPBoundaryUtils::G4CMPBoundaryUtils(G4VProcess* process)
   : buVerboseLevel(G4CMPConfigManager::GetVerboseLevel()),
-    procName(process->GetProcessName()), procUtils(0),
+    procName(""), procUtils(0),
     kCarTolerance(G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()),
     maximumReflections(-1), prePV(0), postPV(0), surfProp(0), matTable(0),
     electrode(0) {
+  if (process) procName = process->GetProcessName();
   procUtils = dynamic_cast<G4CMPProcessUtils*>(process);
-  if (!procUtils) {
+  if (process && !procUtils) {
     G4Exception("G4CMPBoundaryUtils::G4CMPBoundaryUtils", "Boundary000",
 		FatalException, "Must be passed a G4CMP process!");
   }
