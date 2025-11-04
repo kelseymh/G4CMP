@@ -223,7 +223,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononLong.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononPolarization.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononScattering.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononPolycrystalElasticScattering.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononPolycrystalElasticScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransFast.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VNIELPartition.cc
@@ -336,7 +336,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononLong.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononPolarization.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononScattering.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononPolycrystalElasticScattering.hh	
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononPolycrystalElasticScattering.hh	
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransFast.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh

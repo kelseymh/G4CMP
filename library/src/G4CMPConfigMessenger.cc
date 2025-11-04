@@ -62,15 +62,14 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : G4UImessenger("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library"),
     theManager(mgr), versionCmd(0), printCmd(0), verboseCmd(0), ehBounceCmd(0),
-  
-    pBounceCmd(0), maxLukeCmd(0),qpBounceCmd(0),pSurfStepLimitCmd(0), clearCmd(0),
-    minEPhononCmd(0), minEChargeCmd(0), sampleECmd(0), comboStepCmd(0),
-    trapEMFPCmd(0), trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
-    hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), tempCmd(0), pSurfStepSizeCmd(0),
-    minstepCmd(0), makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0),
-    dirCmd(0), lukeFileCmd(0), ivRateModelCmd(0), nielPartitionCmd(0),
-    kvmapCmd(0), fanoStatsCmd(0), kaplanKeepCmd(0), ehCloudCmd(0),
-    recordMinECmd(0) {
+    pBounceCmd(0), qpBounceCmd(0), maxLukeCmd(0), pSurfStepLimitCmd(0),
+    safetyNSweep2DCmd(0), clearCmd(0), minEPhononCmd(0), minEChargeCmd(0),
+    sampleECmd(0), comboStepCmd(0), trapEMFPCmd(0), trapHMFPCmd(0),
+    eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0), hDTrapIonMFPCmd(0),
+    hATrapIonMFPCmd(0), tempCmd(0), pSurfStepSizeCmd(0), minstepCmd(0),
+    makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
+    lukeFileCmd(0), ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0),
+    fanoStatsCmd(0), kaplanKeepCmd(0), ehCloudCmd(0), recordMinECmd(0) {
 
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
@@ -151,6 +150,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   pSurfStepLimitCmd = CreateCommand<G4UIcmdWithAnInteger>("phononSurfStepLimit",
     "Maximum number steps along surface during reflection search");
 
+  safetyNSweep2DCmd = CreateCommand<G4UIcmdWithAnInteger>("safetyNSweep2D",
+							  "Number of angles over which we sweep for 2D safety computation. Should be divisible by 4.");
+
+  
   kvmapCmd = CreateCommand<G4UIcmdWithABool>("useKVsolver",
 			     "Use eigenvector solver for K-Vg conversion");
   kvmapCmd->SetParameterName("lookup",true,false);
@@ -207,11 +210,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
        "Produce e/h pairs in cloud surrounding energy deposit position");
   ehCloudCmd->SetParameterName("enable",true,false);
-  ehCloudCmd->SetDefaultValue(true);
-
-  safetyNSweep2DCmd = CreateCommand<G4UIcmdWithAnInteger>("safetyNSweep2D",
-							  "Number of angles over which we sweep for 2D safety computation. Should be divisible by 4.");
-  
+  ehCloudCmd->SetDefaultValue(true);  
   
   kaplanKeepCmd = CreateCommand<G4UIcmdWithABool>("kaplanKeepPhonons",
        "Preserve all intermediate phonons in G4CMPKaplanQP (no killing)");
@@ -272,10 +271,10 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete ehCloudCmd; ehCloudCmd=0;
   delete lukeFileCmd; lukeFileCmd=0;
   delete ivRateModelCmd; ivRateModelCmd=0;
-  delete safetyNSweep2DCmd; safetyNSweep2DCmd=0;
   delete nielPartitionCmd; nielPartitionCmd=0;
   delete pSurfStepSizeCmd; pSurfStepSizeCmd=0;
   delete pSurfStepLimitCmd; pSurfStepLimitCmd=0;
+  delete safetyNSweep2DCmd; safetyNSweep2DCmd=0;
   delete EmpklowCmd; EmpklowCmd = 0;
   delete EmpkhighCmd; EmpkhighCmd = 0;
   delete EmpElowCmd; EmpElowCmd = 0;
@@ -303,7 +302,9 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
     theManager->SetPhononSurfStepSize(pSurfStepSizeCmd->GetNewDoubleValue(value));
 
   if (cmd == pSurfStepLimitCmd) theManager->SetPhononSurfStepLimit(StoI(value));
-
+  
+  if (cmd == safetyNSweep2DCmd) theManager->SetSafetyNSweep2D(StoI(value));
+  
   if (cmd == clearCmd)
     theManager->SetSurfaceClearance(clearCmd->GetNewDoubleValue(value));
 
@@ -351,8 +352,6 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == ivRateModelCmd) theManager->SetIVRateModel(value);
   if (cmd == nielPartitionCmd) theManager->SetNIELPartition(value);
   if (cmd == ehCloudCmd) theManager->CreateChargeCloud(StoB(value));
-
-  if (cmd == safetyNSweep2DCmd) theManager->SetSafetyNSweep2D(StoI(value));
   
   if (cmd == versionCmd)
     G4cout << "G4CMP version: " << theManager->Version() << G4endl;

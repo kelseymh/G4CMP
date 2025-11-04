@@ -3,11 +3,11 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/src/G4PhononScattering.cc
-/// \brief Implementation of the G4PhononPolycrystalElasticScattering class
+/// \file library/src/G4CMPPhononPolycrystalElasticScattering.cc
+/// \brief Implementation of the G4CMPPhononPolycrystalElasticScattering class
 //
 
-#include "G4PhononPolycrystalElasticScattering.hh"
+#include "G4CMPPhononPolycrystalElasticScattering.hh"
 #include "G4CMPPhononPolycrystalElasticScatteringRate.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPSecondaryUtils.hh"
@@ -27,30 +27,25 @@
 #include "Randomize.hh"
 
 
-G4PhononPolycrystalElasticScattering::G4PhononPolycrystalElasticScattering(const G4String& aName)
+G4CMPPhononPolycrystalElasticScattering::G4CMPPhononPolycrystalElasticScattering(const G4String& aName)
   : G4VPhononProcess(aName, fPhononPolycrystalElasticScattering) {
   UseRateModel(new G4CMPPhononPolycrystalElasticScatteringRate);
 }
 
-G4PhononPolycrystalElasticScattering::~G4PhononPolycrystalElasticScattering() {
+G4CMPPhononPolycrystalElasticScattering::~G4CMPPhononPolycrystalElasticScattering() {
 }
 
 
 // Can basically keep the same scattering physics that is in the
-// G4PhononPolycrystalElasticScattering for now at least.
+// G4CMPPhononPolycrystalElasticScattering for now at least.
 // May want to slightly modify this after having a discussion about how the
 // polycrystalline shape affects the orientation of the caustics, mode mixing,
 // etc. 
-G4VParticleChange* G4PhononPolycrystalElasticScattering::
+G4VParticleChange* G4CMPPhononPolycrystalElasticScattering::
 PostStepDoIt( const G4Track& aTrack, const G4Step& aStep) {
-
-  //G4cout << "Doing polycrystalElasticScattering process poststepdoit."
-  //	 << G4endl;
   
   // Initialize particle change
   aParticleChange.Initialize(aTrack);
-  
-  
   
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   if (postStepPoint->GetStepStatus()==fGeomBoundary ||
@@ -109,13 +104,11 @@ PostStepDoIt( const G4Track& aTrack, const G4Step& aStep) {
   aParticleChange.ProposeVelocity(vgrp);
 
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
-  //G4cout << "End of G4phononpolycrystalelasticscattering poststepdoit"
-  //<< G4endl;
   return &aParticleChange;
 }
 
 //Pass-through to G4CMPVProcess class
-G4double G4PhononPolycrystalElasticScattering::
+G4double G4CMPPhononPolycrystalElasticScattering::
 GetMeanFreePath(const G4Track& trk, G4double prevstep, G4ForceCondition* cond) {
   return G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
 }

@@ -78,8 +78,8 @@
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
 #include "G4PhononScattering.hh"
-#include "G4PhononPolycrystalElasticScattering.hh"
 #include "G4PhononDownconversion.hh"
+#include "G4CMPPhononPolycrystalElasticScattering.hh"
 #include "G4CMPTrackLimiter.hh"
 #include <float.h>
 

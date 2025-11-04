@@ -79,6 +79,7 @@ private:
   G4UIcmdWithAnInteger* qpBounceCmd;
   G4UIcmdWithAnInteger* maxLukeCmd;
   G4UIcmdWithAnInteger* pSurfStepLimitCmd;
+  G4UIcmdWithAnInteger* safetyNSweep2DCmd;
   G4UIcmdWithADoubleAndUnit* clearCmd;
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;
@@ -104,7 +105,6 @@ private:
   G4UIcmdWithABool*   fanoStatsCmd;
   G4UIcmdWithABool*   kaplanKeepCmd;
   G4UIcmdWithABool*   ehCloudCmd;
-  G4UIcmdWithAnInteger * safetyNSweep2DCmd;
   G4UIcmdWithABool*   recordMinECmd;
 
   // Empirical Lindhard Model Macro Commands

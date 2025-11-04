@@ -78,6 +78,7 @@ public:
   static G4int GetMaxQPBounces()         { return Instance()->qpBounces; }
   static G4int GetMaxLukePhonons()       { return Instance()->maxLukePhonons; }
   static G4int GetPhononSurfStepLimit()  { return Instance()->pSurfStepLimit; }
+  static G4int GetSafetyNSweep2D()       { return Instance()->safetyNSweep2D; }
   static G4bool UseKVSolver()            { return Instance()->useKVsolver; }
   static G4bool FanoStatisticsEnabled()  { return Instance()->fanoEnabled; }
   static G4bool KeepKaplanPhonons()      { return Instance()->kaplanKeepPh; }
@@ -99,7 +100,6 @@ public:
   static G4double GetHDTrapIonMFP()      { return Instance()->hDTrapIonMFP; }
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
-  static G4double GetSafetyNSweep2D()    { return Instance()->safetyNSweep2D; }
   static G4double GetPhononSurfStepSize()  { return Instance()->pSurfStepSize; }
   static G4double GetEmpklow()      { return Instance()->Empklow; }
   static G4double GetEmpkhigh()     { return Instance()->Empkhigh; }
@@ -194,6 +194,7 @@ private:
   G4int qpBounces;    // Maximum QP reflections ($G4CMP_QP_BOUNCES)
   G4int maxLukePhonons; // Approx. Luke phonon limit ($G4MP_MAX_LUKE)
   G4int pSurfStepLimit;  // Phonon surface displacement step limit ($G4CMP_PHON_SURFLIMIT).
+  G4int safetyNSweep2D;  // # of angular positions to sweep over when computing a 2D safety ($G4CMP_SAFETYNSWEEP2D)
   G4String version;	 // Version name string extracted from .g4cmp-version
   G4String LatticeDir;	 // Lattice data directory ($G4LATTICEDATA)
   G4String IVRateModel;	 // Model for IV rate ($G4CMP_IV_RATE_MODEL)
@@ -214,7 +215,6 @@ private:
   G4double combineSteps; // Maximum length to merge track steps ($G4CMP_COMBINE_STEPLEN)
   G4double EminPhonons;	 // Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	 // Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
-  G4double safetyNSweep2D; // # of angular positions to sweep over when computing a 2D safety ($G4CMP_SAFETYNSWEEP2D)
   G4double pSurfStepSize;  // Phonon surface displacement step size ($G4CMP_PHON_SURFSTEP).
   G4bool useKVsolver;	 // Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	 // Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)

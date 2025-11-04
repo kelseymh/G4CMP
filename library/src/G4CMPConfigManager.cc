@@ -94,6 +94,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     qpBounces(getenv("G4CMP_QP_BOUNCES")?atoi(getenv("G4CMP_QP_BOUNCES")):100),
     maxLukePhonons(getenv("G4MP_MAX_LUKE")?atoi(getenv("G4MP_MAX_LUKE")):-1),
     pSurfStepLimit(getenv("G4CMP_PHON_SURFLIMIT")?strtod(getenv("G4CMP_PHON_SURFLIMIT"),0):-1),
+    safetyNSweep2D(getenv("G4CMP_SAFETYNSWEEP2D")?atoi(getenv("G4CMP_SAFETYNSWEEP2D")):140),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):""),
     lukeFilename(getenv("G4CMP_LUKE_FILE")?getenv("G4CMP_LUKE_FILE"):"LukePhononEnergies"),
@@ -118,7 +119,6 @@ G4CMPConfigManager::G4CMPConfigManager()
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
     kaplanKeepPh(getenv("G4CMP_KAPLAN_KEEP")?atoi(getenv("G4CMP_KAPLAN_KEEP")):true),
     chargeCloud(getenv("G4CMP_CHARGE_CLOUD")?atoi(getenv("G4CMP_CHARGE_CLOUD")):0),
-    safetyNSweep2D(getenv("G4CMP_SAFETYNSWEEP2D")?atoi(getenv("G4CMP_SAFETYNSWEEP2D")):140),
     recordMinE(getenv("G4CMP_RECORD_EMIN")?atoi(getenv("G4CMP_RECORD_EMIN")):true),
     nielPartition(0),
     Empklow(getenv("G4CMP_EMPIRICAL_KLOW")?strtod(getenv("G4CMP_EMPIRICAL_KLOW"),0):0.040),
@@ -147,14 +147,15 @@ G4CMPConfigManager::~G4CMPConfigManager() {
 
 G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
   : verbose(master.verbose), fPhysicsModelID(master.fPhysicsModelID), 
-    ehBounces(master.ehBounces), pBounces(master.pBounces),qpBounces(master.qpBounces),
-    maxLukePhonons(master.maxLukePhonons),
-    pSurfStepLimit(master.pSurfStepLimit), version(master.version),
+    ehBounces(master.ehBounces), pBounces(master.pBounces),
+    qpBounces(master.qpBounces), maxLukePhonons(master.maxLukePhonons),
+    pSurfStepLimit(master.pSurfStepLimit),
+    safetyNSweep2D(master.safetyNSweep2D), version(master.version),
     LatticeDir(master.LatticeDir), IVRateModel(master.IVRateModel),
-    lukeFilename(master.lukeFilename), eTrapMFP(master.eTrapMFP),
-    hTrapMFP(master.hTrapMFP), eDTrapIonMFP(master.eDTrapIonMFP),
-    eATrapIonMFP(master.eATrapIonMFP), hDTrapIonMFP(master.hDTrapIonMFP),
-    hATrapIonMFP(master.hATrapIonMFP),
+    lukeFilename(master.lukeFilename),
+    eTrapMFP(master.eTrapMFP), hTrapMFP(master.hTrapMFP),
+    eDTrapIonMFP(master.eDTrapIonMFP), eATrapIonMFP(master.eATrapIonMFP),
+    hDTrapIonMFP(master.hDTrapIonMFP), hATrapIonMFP(master.hATrapIonMFP),
     temperature(master.temperature), clearance(master.clearance), 
     stepScale(master.stepScale), sampleEnergy(master.sampleEnergy), 
     genPhonons(master.genPhonons), genCharges(master.genCharges), 
@@ -162,7 +163,7 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
     pSurfStepSize(master.pSurfStepSize), useKVsolver(master.useKVsolver),
     fanoEnabled(master.fanoEnabled), kaplanKeepPh(master.kaplanKeepPh),
-    chargeCloud(master.chargeCloud), safetyNSweep2D(master.safetyNSweep2D),
+    chargeCloud(master.chargeCloud), 
     recordMinE(master.recordMinE), nielPartition(master.nielPartition),
     Empklow(master.Empklow), Empkhigh(master.Empkhigh),
     EmpElow(master.EmpElow), EmpEhigh(master.EmpEhigh),
@@ -217,6 +218,7 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/qpBounces " << qpBounces << "\t\t\t# G4CMP_QP_BOUNCES"
      << "\n/g4cmp/phononSurfStepSize " << pSurfStepSize/um << " um\t\t# G4CMP_PHON_SURFSTEP"
      << "\n/g4cmp/phononSurfStepLimit " << pSurfStepLimit << "\t\t# G4CMP_PHON_SURFLIMIT"
+     << "\n/g4cmp/safetyNSweep2D" << safetyNSweep2D << "\t\t\t# G4CMP_SAFETYNSWEEP2D"
      << "\n/g4cmp/IVRateModel " << IVRateModel << "\t\t\t# G4CMP_IV_RATE_MODEL"
      << "\n/g4cmp/LukeDebugFile " << lukeFilename << "\t\t\t# G4CMP_LUKE_FILE"
      << "\n/g4cmp/eTrappingMFP " << eTrapMFP/mm << " mm\t\t# G4CMP_ETRAPPING_MFP"
@@ -240,7 +242,6 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/enableFanoStatistics " << fanoEnabled << "\t\t\t# G4CMP_FANO_ENABLED"
      << "\n/g4cmp/kaplanKeepPhonons " << kaplanKeepPh << "\t\t\t# G4CMP_KAPLAN_KEEP "
      << "\n/g4cmp/createChargeCloud " << chargeCloud << "\t\t\t# G4CMP_CHARGE_CLOUD"
-     << "\n/g4cmp/safetyNSweep2D" << safetyNSweep2D << "\t\t\t# G4CMP_SAFETYNSWEEP2D"
      << "\n/g4cmp/recordMinETracks " << recordMinE << "\t\t\t# G4CMP_RECORD_EMIN"
      << "\n/g4cmp/NIELPartition "
      << (nielPartition ? typeid(*nielPartition).name() : "---")

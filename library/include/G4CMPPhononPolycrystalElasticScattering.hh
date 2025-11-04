@@ -3,8 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/include/G4PhononPolycrystalElasticScattering.hh
-/// \brief Definition of the G4PhononPolycrystalElasticScattering class
+/// \file library/include/G4CMPPhononPolycrystalElasticScattering.hh
+/// \brief Definition of the G4CMPPhononPolycrystalElasticScattering class
 ///
 /// This class defines the process for phonon elastic scattering on
 /// effective grain boundaries in a polycrystalline substrate. A scale
@@ -16,16 +16,16 @@
 // 20250922  G4CMP-219 -- First addition to this history (done at time
 //                        of merge to develop)
 
-#ifndef G4PhononPolycrystalElasticScattering_h
-#define G4PhononPolycrystalElasticScattering_h 1
+#ifndef G4CMPPhononPolycrystalElasticScattering_h
+#define G4CMPPhononPolycrystalElasticScattering_h 1
 
 #include "G4VPhononProcess.hh"
 
-class G4PhononPolycrystalElasticScattering : public G4VPhononProcess {
+class G4CMPPhononPolycrystalElasticScattering : public G4VPhononProcess {
 public:
-  G4PhononPolycrystalElasticScattering(const G4String& processName=
+  G4CMPPhononPolycrystalElasticScattering(const G4String& processName=
 				       "phononPolycrystalElasticScattering");
-  virtual ~G4PhononPolycrystalElasticScattering();
+  virtual ~G4CMPPhononPolycrystalElasticScattering();
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
@@ -36,9 +36,9 @@ protected:
 
 private:
   // hide assignment operator as private 
-  G4PhononPolycrystalElasticScattering(G4PhononPolycrystalElasticScattering&);
-  G4PhononPolycrystalElasticScattering& operator=
-  (const G4PhononPolycrystalElasticScattering& right);
+  G4CMPPhononPolycrystalElasticScattering(G4CMPPhononPolycrystalElasticScattering&);
+  G4CMPPhononPolycrystalElasticScattering& operator=
+  (const G4CMPPhononPolycrystalElasticScattering& right);
 };
 
-#endif	/* G4PhononPolycrystalElasticScattering_h */
+#endif	/* G4CMPPhononPolycrystalElasticScattering_h */

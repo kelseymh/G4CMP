@@ -29,9 +29,16 @@
 #include "G4CMPDriftTrappingProcess.hh"
 #include "G4CMPDriftTrapIonization.hh"
 #include "G4CMPInterValleyScattering.hh"
-#include "G4PhononPolycrystalElasticScattering.hh"
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPPhononBoundaryProcess.hh"
+#include "G4CMPPhononPolycrystalElasticScattering.hh"
+#include "G4CMPQPBoundaryProcess.hh"
+#include "G4CMPQPDiffusion.hh"
+#include "G4CMPQPDiffusionTimeStepperProcess.hh"
+#include "G4CMPQPLocalTrappingProcess.hh"
+#include "G4CMPQPRadiatesPhononProcess.hh"
+#include "G4CMPQPRecombinationProcess.hh"
+#include "G4CMPSCPairBreakingProcess.hh"
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPTrackLimiter.hh"
@@ -44,13 +51,6 @@
 #include "G4PhononTransSlow.hh"
 #include "G4QP.hh"
 #include "G4ProcessManager.hh"
-#include "G4CMPSCPairBreakingProcess.hh"
-#include "G4CMPQPRecombinationProcess.hh"
-#include "G4CMPQPRadiatesPhononProcess.hh"
-#include "G4CMPQPBoundaryProcess.hh"
-#include "G4CMPQPDiffusion.hh"
-#include "G4CMPQPLocalTrappingProcess.hh"
-#include "G4CMPQPDiffusionTimeStepperProcess.hh"
 
 // Constructor sets global verbosity
 
@@ -78,7 +78,7 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* phScat  = new G4PhononScattering;
   G4VProcess* phRefl  = new G4CMPPhononBoundaryProcess;
   G4VProcess* phDown  = new G4PhononDownconversion;
-  G4VProcess* phPolyElScat = new G4PhononPolycrystalElasticScattering;
+  G4VProcess* phPolyElScat = new G4CMPPhononPolycrystalElasticScattering;
   G4VProcess* phCPbreak = new G4CMPSCPairBreakingProcess;
   G4VProcess* bogQPRecomb = new G4CMPQPRecombinationProcess;
   G4VProcess* bogQPRad = new G4CMPQPRadiatesPhononProcess;

@@ -81,6 +81,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fpPhononKin(0), fpPhononTable(0),
     fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0), 
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
+    fSC_Tau0_qp(DBL_MAX), fSC_Tau0_ph(DBL_MAX),
     fVSound(0.), fVTrans(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),
     fHoleMass(mElectron), fElectronMass(mElectron), fElectronMDOS(mElectron),
@@ -90,8 +91,7 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
     fAlpha(0.), fAcDeform_e(0.), fAcDeform_h(0.),
     fIVQuadField(0.), fIVQuadRate(0.), fIVQuadExponent(0.),
     fIVLinExponent(0.), fIVLinRate0(0.), fIVLinRate1(0.),
-    fIVModel(G4CMPConfigManager::GetIVRateModel()), 
-    fSC_Tau0_qp(DBL_MAX), fSC_Tau0_ph(DBL_MAX) {
+    fIVModel(G4CMPConfigManager::GetIVRateModel()) {
   for (G4int i=0; i<G4PhononPolarization::NUM_MODES; i++) {
     for (G4int j=0; j<KVBINS; j++) {
       for (G4int k=0; k<KVBINS; k++) {
@@ -136,6 +136,8 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fLambda = rhs.fLambda;
   fMu = rhs.fMu;
   fDebye = rhs.fDebye;
+  fSC_Tau0_qp = rhs.fSC_Tau0_qp;
+  fSC_Tau0_ph = rhs.fSC_Tau0_ph;
   fVSound = rhs.fVSound;
   fVTrans = rhs.fVTrans;
   fL0_e = rhs.fL0_e;
@@ -165,8 +167,6 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fIVLinRate0 = rhs.fIVLinRate0;
   fIVLinRate1 = rhs.fIVLinRate1;
   fIVModel = rhs.fIVModel;
-  fSC_Tau0_qp = rhs.fSC_Tau0_qp;
-  fSC_Tau0_ph = rhs.fSC_Tau0_ph;
   
   if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
   if (!rhs.fpPhononTable) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
