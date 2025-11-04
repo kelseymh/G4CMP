@@ -173,7 +173,7 @@ G4double G4CMPSCPairBreakingProcess::QPEnergyPDF(G4double E, G4double x) const {
 // secondaries with those energies. 
 void G4CMPSCPairBreakingProcess::
 GenerateQPPair(std::pair<G4double,G4double> QPEnergies, const G4Track& aTrack,
-	       const G4Step& aStep) {
+	       const G4Step& /*aStep*/) {
 						
   //Get the energies
   double energy1 = QPEnergies.first;

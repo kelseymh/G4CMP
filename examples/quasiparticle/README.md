@@ -19,20 +19,20 @@ The physics involved in this example is an extension of the basic physics in G4C
 * Cooper-pair breaking by phonons: `G4CMPSCPairBreakingProcess.cc`
   	* The rate of this is given by a dedicated rate function, but is ultimately dictated by parameters set in the `CrystalMaps/Al/config.txt` file. Only a few of them should be tweaked by a user at the moment: one is an effective temperature `sc_Teff`, which should be less than Tc for a given crystal.
   	* This will produce two BogoliubovQP particles from a phonon above 2*delta
-* Phonon radiation by QPs: `G4CMPBogoliubovQPRadiatesPhononProcess.cc`
+* Phonon radiation by QPs: `G4CMPQPRadiatesPhononProcess.cc`
  	* This will radiate phonons from QPs above delta. The rate is again dictated by that effective temperature in `CrystalMaps/Al/config.txt`.
-* QP Recombination: `G4CMPBogoliubovQPRecombinationProcess.cc`
+* QP Recombination: `G4CMPQPRecombinationProcess.cc`
 	* This will take a QP and "recombine" it with an ambient quasiparticle that is implicitly in the environment due to some ambient density. A phonon will emerge half of the time, to conserve energy.
  	* This does *not* do n^2 recombination. This recombination is linear in the density of quasiparticles and is a good approximation in the limit of low density of QPs. We'll put back-of-the-envelope numbers to this regime soon. Again, this does *not* do n^2 recombination.
  	* This rate is *strongly* dependent on the Teff you use in `CrystalMaps/Al/config.txt`. If you set this to below about 10% of Tc for a given superconductor, you be waiting *forever* for these QPs to recombine. 
-* QP Local Trapping: `G4CMPBogoliubovQPLocalTrappingProcess.cc`
+* QP Local Trapping: `G4CMPQPLocalTrappingProcess.cc`
  	* This is a generic linear loss term that kills QPs after they exist for some characteristic lifetime. Notionally this is from trapping on shallow trapping sites
    	* This is another crystal parameter, `sc_tau_qptrap` at the moment, located in `CrystalMaps/Al/config.txt`.
-* QP Diffusion: `G4CMPBogoliubovRandomWalkTransport.cc`
+* QP Diffusion: `G4CMPQPDiffusion.cc`
  	* This is a doozy of a function. It uses an efficient MC approach to diffusion in a generalized geometry called Walk-on-Spheres to do diffusion steps of QPs in thin films. Currently only implemented in 2D, and moreover only currently implemented in XY specifically. Will expand to direction agnostic form in a future release.
   	* For fine geometries (like coplanar waveguides), this will take some time to run. The execution time is dependent on the relationship between typical length scales traveled before hitting a boundary and the overall lifetime of the QP (either via recombination, absorption, or local trapping).
   	* If you intend to have QPs in your simulation, this must be turned on for anything to be accurate.
-* Gap Engineering: `G4CMPBogoliubovQPRandomWalkBoundary.cc`
+* Gap Engineering: `G4CMPQPBoundaryProcess.cc`
  	* QPs can also move between superconducting volumes that are all in-plane, but are prevented from entering a superconductor whose gap is higher than the QP's energy.
 
 This example will simulate an application in which all of these physics processes are playing an active role in the evolution of the system.

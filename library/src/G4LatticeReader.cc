@@ -62,14 +62,7 @@ G4LatticeReader::G4LatticeReader(G4int vb)
     fDataDir(G4CMPConfigManager::GetLatticeDir()),
     mElectron(electron_mass_c2/c_squared) {
 
-  G4CMPUnitsTable::Init();	// Ensures thread-by-thread initialization
-  
-  //EY: Defining a new unit defintion to the Units table to handle the units of
-  // the diffusion constant length*length/time
-  //REL: Is there a better place to put this?
-  new G4UnitDefinition("km2/s","km2/s","Diffusion constant",km2/s);
-  new G4UnitDefinition("m2/s","m2/s","Diffusion constant",m2/s);
-  new G4UnitDefinition("um2/ns","um2/ns","Diffusion constant",um*um/ns);
+  G4CMPUnitsTable::Init();	// Ensures thread-by-thread initialization  
 }
 
 G4LatticeReader::~G4LatticeReader() {
@@ -500,27 +493,30 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
   return inverse ? 1./fUnits : fUnits;	// Return value for convenient inlining
 }
 
-//This checks the results of the created lattice to understand if all relevant parameters
-//have been added. We can put whatever we want here, but for now I want to say that if
-//any of the superconductor lattice parameters have been added, we want to make sure that
-//all of them have, and alert users that if that isn't true, then functions downstream
-//may behave in weird ways. This occurs here for the "fundamental" parameters and in
-//SCUtils for the 
-void G4LatticeReader::CheckLatticeForCompleteness()
-{
-  bool anySCParameterPresent = false;
-  
-  //Check to see if any of the SC parameters are not at their default values, i.e. if they have been set.
-  if( pLattice->GetSCTau0qp() != DBL_MAX ||
+//This checks the results of the created lattice to understand if all relevant
+//parameters have been added. We can put whatever we want here, but for now I
+//want to say that if any of the superconductor lattice parameters have been
+//added, we want to make sure that all of them have, and alert users that if
+//that isn't true, then they should make it true. This forced execution stop
+//occurs here for the "fundamental" parameters and in SCUtils for the "physical-
+//lattice-dependent" ones
+void G4LatticeReader::CheckLatticeForCompleteness() {
+  //Check to see if any of the SC parameters are not at their default values,
+  //i.e. if they have been set.
+  if (pLattice->GetSCTau0qp() != DBL_MAX ||
       pLattice->GetSCTau0ph() != DBL_MAX) {
     
     //If one of these is set, check to see if any of them are NOT set.
-    if( pLattice->GetSCTau0qp() == DBL_MAX ||
+    if (pLattice->GetSCTau0qp() == DBL_MAX ||
 	pLattice->GetSCTau0ph() == DBL_MAX) {
-
-      //Throw a warning that there are outstanding SC parameters that are not set.
+      
+      //Throw a warning that there are outstanding SC parameters that are not
+      //set.
       G4ExceptionDescription msg;
-      msg << "Noticed that one or more superconducting film lattice parameters are set in a config file, but that one or more are also missing.";
+      msg << "Noticed that one or more superconducting film lattice parameters "
+	  << "are set in a config file, but that one or more are also missing. "
+	  << "Please fill in Tau0_qp and Tau0_ph for all superconductors you "
+	  << "want to use before continuing.";
       G4Exception("G4LatticeReader::CheckLatticeForCompleteness", "Lattice004",
 		  FatalException, msg);
     }

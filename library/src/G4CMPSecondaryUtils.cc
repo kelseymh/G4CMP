@@ -195,7 +195,7 @@ G4Track* G4CMP::CreateChargeCarrier(const G4Track& track, G4int charge,
 //and position. We attach track info to this at this point, which should
 //create new track info for this QP since this is the first time it's seeing
 //that function run.
-G4Track* G4CMP::CreateQP(const G4Track& track,
+G4Track* G4CMP::CreateQP(const G4Track& /*track*/,
 			 const G4double energy,
 			 const G4ThreeVector& velocity,
 			 const G4double time,

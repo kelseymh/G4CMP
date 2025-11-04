@@ -1,43 +1,13 @@
 # Crystal parameters
-cubic 5.432 Ang		# (Lattice constant)
-stiffness 1 1 165.5 GPa	# C11, C12, C44
-stiffness 1 2  63.8 GPa
-stiffness 4 4  79.4 GPa
+amorphous 
 # Phonon parameters
-dyn -42.9 -94.5 52.4 68.0 GPa
-scat 2.43e-42 s3
-decay 7.41e-56 s4
-decayTT 0.74
-# From S. Tamura et al., PRB44(7), 1991
-LDOS  0.001
-STDOS 0.499
-FTDOS 0.5
-Debye 15 THz		# Can also use temperature or energy
-# Charge carrier parameters
-bandgap 1.17 eV
-pairEnergy 3.81 eV
-fanoFactor 0.15
-vsound 9000 m/s		# Longitudinal sound speed
-vtrans 5400 m/s		# Transverse sound speed
-#hole and electron masses taken from Robert's thesis
-hmass 0.50		#Set to Si values -- currently meaningless
-emass 0.91 0.19 0.19	#Set to Si values -- currently meaningless
-valleyDir 1 0 0 	#Set to Si values -- currently meaningless
-valleyDir 0 1 0 	#Set to Si values -- currently meaningless
-valleyDir 0 0 1 	#Set to Si values -- currently meaningless
-# Intervalley scattering (matrix elements)
-alpha 0.5 /eV 		#Set to Si values -- currently meaningless
-acDeform_e 9 eV		#Set to Si values -- currently meaningless
-acDeform_h 5 eV		#Set to Si values -- currently meaningless
-ivDeform 0.5e8 0.8e8 11e8 0.3e8 2e8 2e8 eV/cm	#Set to Si values -- currently meaningless
-ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV #Set to Si values -- currently meaningless
-neutDens 1e11 /cm3      #Set to Si values -- currently meaningless
-epsilon 11.68 		#Set to Si values -- currently meaningless
-# Intervalley scattering (Linear and Quadratic models)
-ivModel Linear		#Set to Si values -- currently meaningless
-ivLinRate0  1.5e6 Hz	#Set to Si values -- currently meaningless
-ivLinRate1  1.5 Hz	#Set to Si values -- currently meaningless
-ivLinPower  4.0		#Set to Si values -- currently meaningless
-ivQuadRate  3.5e-20 Hz	#Set to Si values -- currently meaningless
-ivQuadField 3395 V/m	#Set to Si values -- currently meaningless
-ivQuadPower 7.47	#Set to Si values -- currently meaningless
+# S. Tamura, Phys. Rev. B 31, 2574 (1985)
+dyn 54.18 -13.14 16.10 31.20 GPa # Dummy values (~SiO2), need real ones.
+scat 4.65e-42 s3 # Dummy values (~SiO2), need real one.
+decay 7.99e-55 s4 # Dummy values (~SiO2), need real one.
+decayTT 0.54 # Dummy values (~SiO2), need real one.
+# Phonon Mode DOS 
+LDOS 0.10001 # Dummy value (~SiO2), need real one.
+STDOS 0.53333 # Dummy value (~SiO2), need real one.
+FTDOS 0.36666 # Dummy value (~SiO2), need real one.
+Debye 4.2 THz # Dummy value (~SiO2), need real one.

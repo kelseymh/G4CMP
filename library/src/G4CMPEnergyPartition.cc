@@ -153,9 +153,11 @@ void G4CMPEnergyPartition::UseVolume(const G4VPhysicalVolume* volume) {
 
 void G4CMPEnergyPartition::UsePosition(const G4ThreeVector& pos) {
   G4VPhysicalVolume* volume = G4CMP::GetVolumeAtPoint(pos);
-  if (verboseLevel) 
+  if (verboseLevel) {
     G4cout << "G4CMPEnergyPartition: " << pos << " at volume "
 	   << volume->GetName() << G4endl;
+  }
+  
   UseVolume(volume);
   SetBiasVoltage(pos);
 }

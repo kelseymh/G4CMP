@@ -340,7 +340,7 @@ GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhon
 
     //If our bin guess is the final bin, then just use that bin value. We'll
     //accept a single edge case here.
-    if (binGuess == tauVsPhononEnergy.size()-1) {
+    if (binGuess == ((int)tauVsPhononEnergy.size())-1) {
       return tauVsPhononEnergy[binGuess][1];
     } else {
       //^Otherwise, try to interpolate.

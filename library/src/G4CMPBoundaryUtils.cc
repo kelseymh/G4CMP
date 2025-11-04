@@ -738,7 +738,7 @@ G4bool G4CMPBoundaryUtils::AbsorbTrack(const G4Track&, const G4Step&) const {
   return (G4UniformRand() <= absProb);
 }
 
-G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track& aTrack, const G4Step&) const {
+G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track& /*aTrack*/, const G4Step&) const {
   G4double reflProb = GetMaterialProperty("reflProb");
     
   if (buVerboseLevel>2) G4cout << " ReflectTrack: reflProb " << reflProb << G4endl;

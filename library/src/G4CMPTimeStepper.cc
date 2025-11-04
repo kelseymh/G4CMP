@@ -83,9 +83,12 @@ G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 // Get scattering rates from current track's processes. Need to override with
 // the momentum reset stuff because G4CMPVProcess had that function change,
 // and so now function overriding doesn't happen naturally (REL 8/16/25)
+// REL 10/28/25: Since I don't actually use time stepper for phonons, I'm
+// actually not sure if we *need* need to override here. Keeping it in as an
+// option/reminder.
 
 void G4CMPTimeStepper::
-LoadDataForTrack(const G4Track* aTrack, const G4bool overrideMomentumReset) {
+LoadDataForTrack(const G4Track* aTrack, const G4bool /*overrideMomentumReset*/) {
   G4CMPProcessUtils::LoadDataForTrack(aTrack);	// Common configuration
 
   // Get rate model for Luke phonon emission from process
@@ -123,9 +126,8 @@ LoadDataForTrack(const G4Track* aTrack, const G4bool overrideMomentumReset) {
 // Compute fixed "minimum distance" to avoid accelerating past Luke or IV
 
 G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
-					   G4ForceCondition* cond) {
-  
-  G4bool changedLattice = UpdateMeanFreePathForLatticeChangeover(aTrack);
+					   G4ForceCondition* cond) {  
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
   if (verboseLevel == -1) ReportRates(aTrack);	// SPECIAL FLAG TO REPORT
 
   *cond = NotForced;

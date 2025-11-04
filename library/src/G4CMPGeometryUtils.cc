@@ -87,8 +87,7 @@ G4CMP::Get2DSafetyWithDirection(const G4VTouchable* motherTouch,
 				bool safetyFromABoundary,
 				G4ThreeVector surfaceNorm,
 				G4ThreeVector tangVect1,
-				G4ThreeVector tangVect2) {
-  
+				G4ThreeVector tangVect2) {  
   G4int verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPGeometryUtils::Get2DSafetyWithDirection --" << G4endl;
@@ -112,7 +111,6 @@ G4CMP::Get2DSafetyWithDirection(const G4VTouchable* motherTouch,
   RotateToLocalDirection(motherTouch,tangVect1);
   RotateToLocalDirection(motherTouch,tangVect2);
 
-
   //First, get the shortest distance to the mother volume that we're in.
   //("DistanceToOut")
   G4ThreeVector localDir(0,0,0);
@@ -134,7 +132,7 @@ G4CMP::Get2DSafetyWithDirection(const G4VTouchable* motherTouch,
   //the distances to those. Here, we're forcing the 2D safety to run a "sweep
   //vectors" version for daughters so we can actually get back a vector. This
   //is the hardcoded "true" bool in this function.
-  for (int iD = 0; iD < motherLog->GetNoDaughters(); ++iD) {
+  for (int iD = 0; iD < ((int)motherLog->GetNoDaughters()); ++iD) {
     localDir = G4ThreeVector(0,0,0);
     G4double daughterSafety
       = Compute2DSafetyToDaughterVolume(pos,momDir,motherLog,
@@ -186,9 +184,6 @@ G4double G4CMP::GetSafetyInZ(const G4VTouchable* motherTouch,
     G4cout << "-- G4CMPGeometryUtils::GetSafetyInZ() --" << G4endl;
   }
   
-
-  //Define output variables
-  G4double overallSafety = DBL_MAX;
 
   //Get the mother volume information
   G4VPhysicalVolume* motherPhys = motherTouch->GetVolume();
@@ -284,7 +279,7 @@ G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch,
   //   mother safety should be fine. I also think that not calling swept
   //   safeties to most daughters from a boundary (except oneself) is also why
   //   we get QPs slamming into triple points, FWIW
-  for (int iD = 0; iD < motherLog->GetNoDaughters(); ++iD) {
+  for (int iD = 0; iD < ((int)motherLog->GetNoDaughters()); ++iD) {
     dummyDir = G4ThreeVector(0,0,0);
     G4double daughterSafety =
       Compute2DSafetyToDaughterVolume(pos,momDir,motherLog,safetyFromABoundary,
@@ -474,7 +469,8 @@ G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos,
 //to start that further optimization. Generally, don't want to use this on its
 //own. Should only be called from Get2DSafety, not by separate classes.
 G4double G4CMP::
-Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,G4ThreeVector pos,
+Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
+			      const G4ThreeVector & pos,
 			      bool safetyFromABoundary,
 			      G4ThreeVector & returnDir,
 			      G4ThreeVector surfaceNorm,G4ThreeVector tangVect1,
@@ -579,7 +575,8 @@ Compute2DDaughterSweptSafety(const G4VSolid* volDaughterSolid,
 //Compute the 2D safety to the mother from a point in the bulk (i.e. not on a
 //boundary)
 G4double G4CMP::
-Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,G4ThreeVector pos,
+Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,
+				 const G4ThreeVector & pos,
 				 G4ThreeVector & returnDir) {
 
   G4int verboseLevel = G4CMPConfigManager::GetVerboseLevel();
@@ -631,7 +628,8 @@ Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,G4ThreeVector pos,
 //down substantially and should be used sparingly. This part should be replaced
 //with geometry math eventually
 G4double G4CMP::
-Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid, G4ThreeVector pos,
+Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid,
+			     const G4ThreeVector & pos,
 			     G4ThreeVector & returnDir,
 			     G4ThreeVector surfaceNorm, G4ThreeVector tangVect1,
 			     G4ThreeVector tangVect2,bool volIsMother) {

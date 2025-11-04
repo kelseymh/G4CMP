@@ -25,9 +25,9 @@
 #include "G4PhysicalConstants.hh"
 #include "G4LatticeManager.hh"
 #include "G4Step.hh"
-#include "G4Track.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Track.hh"
 #include "G4ThreeVector.hh"
 #include "G4VParticleChange.hh"
 #include "G4VSolid.hh"
@@ -87,9 +87,6 @@ G4double G4CMPQPBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
   return DBL_MAX;
 }
 
-
-
-
 //Checks to see if the current volume is a valid one in which a QP with a given
 //energy may live. This has three criteria:
 //1. Lattice need to exist
@@ -98,7 +95,6 @@ G4double G4CMPQPBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
 //the gap.
 G4bool G4CMPQPBoundaryProcess::IsValidQPVolume(G4VPhysicalVolume* volume,
 					       G4double qpEKin ) {
-
   //Debugging
   if(verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::IsValidQPVolume() --" << G4endl;
@@ -110,7 +106,7 @@ G4bool G4CMPQPBoundaryProcess::IsValidQPVolume(G4VPhysicalVolume* volume,
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
   
   //first lets just check if the volume has a lattice (condition 1)
-  if (!LM->HasLattice(volume)){ return false; }
+  if (!LM->HasLattice(volume)) return false;
   
   //Now we need to check to understand if this lattice has existent gap and
   //Tcrit parameters. Philosophically, I think that since we're in the
@@ -143,8 +139,6 @@ G4bool G4CMPQPBoundaryProcess::IsValidQPVolume(G4VPhysicalVolume* volume,
   return true;
 }
 
-
-
 // Check the pre- and post-step volumes, determine if they have lattices, and
 //if they do, set the gaps before and after. If at least one is a valid QP
 //volume, then return true. Here, whether the volume is valid also depends on
@@ -155,8 +149,7 @@ G4bool G4CMPQPBoundaryProcess::CheckQPVolumes(const G4Step& aStep)
 {
   //Check if pre/post step volumes have valid QP volumes
   //Get the lattices from the physical volumes
-  //Lattice manager
-  G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
+  //Lattice manager  
   G4double qpEKin = aStep.GetTrack()->GetKineticEnergy();
   preQPVolume =
     IsValidQPVolume(aStep.GetPreStepPoint()->GetPhysicalVolume(),qpEKin);  
@@ -167,8 +160,6 @@ G4bool G4CMPQPBoundaryProcess::CheckQPVolumes(const G4Step& aStep)
   //and the postQPVolume should be true
   return (preQPVolume || postQPVolume);
 }
-
-
 
 // Process action
 G4VParticleChange*
@@ -260,7 +251,7 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 //boundary. Note that here the "gap contition" is now bundled into the
 //"postQPVolume" variable. Any volume without a postQPVolume (no lattice,
 //default gap, or gap>qpEnergy) will induce reflection.
-G4bool G4CMPQPBoundaryProcess::ReflectTrack(const G4Track& aTrack,
+G4bool G4CMPQPBoundaryProcess::ReflectTrack(const G4Track& /*aTrack*/,
 					    const G4Step&) const {
   
   //Note that this is still just blindly copied from the phononboundary action

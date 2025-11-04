@@ -115,9 +115,9 @@ G4CMPQPRadiatesPhononProcess::IsApplicable(const G4ParticleDefinition& aPD) {
 }
 
 // Take the phonon energy and produce a recombination phonon from this.
-void G4CMPQPRadiatesPhononProcess::GenerateRadiatedPhonon(G4double phonEnergy,
-							  const G4Track& aTrack,
-							  const G4Step& aStep) {
+void G4CMPQPRadiatesPhononProcess::
+GenerateRadiatedPhonon(G4double phonEnergy,const G4Track& aTrack,
+		       const G4Step& /*aStep*/) {
 
   //Debugging
   if(verboseLevel > 5) {

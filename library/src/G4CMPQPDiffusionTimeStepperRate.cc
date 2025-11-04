@@ -13,7 +13,7 @@
 #include <vector>
 #include <map>
 
-G4double G4CMPQPDiffusionTimeStepperRate::Rate(const G4Track& aTrack) const {
+G4double G4CMPQPDiffusionTimeStepperRate::Rate(const G4Track& /*aTrack*/) const {
 
   //Compute tau for time stepper, and invert for rate
   double tau_nextScatter = 100000 * CLHEP::ns; //Temporarily hardcoded
@@ -21,7 +21,7 @@ G4double G4CMPQPDiffusionTimeStepperRate::Rate(const G4Track& aTrack) const {
 }
 
 void G4CMPQPDiffusionTimeStepperRate::
-UpdateLookupTable(const G4LatticePhysical * theLat) {
+UpdateLookupTable(const G4LatticePhysical * /*theLat*/) {
   G4cout << "In the updateLookupTable function, QPDiffusionTimeStepper. "
 	 << "Nothing happens here because this class does not (yet) need a "
 	 << "lookup table (but this function is generic to G4CMPVProcesses."

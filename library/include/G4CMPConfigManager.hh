@@ -223,9 +223,6 @@ private:
   G4bool recordMinE;     // Store below-minimum track energy as NIEL when killed
   G4VNIELPartition* nielPartition; // Function class to compute non-ionizing ($G4CMP_NIEL_FUNCTION)
 
-
-  
-
   // Empirical Lindhard Model Parameters
     // Model fit parameters
   G4double Empklow;  

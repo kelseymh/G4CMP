@@ -820,7 +820,6 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
     //direction, and retry the check. This will have to be fixed by some
     //combination of Caitlyn and others
     int nTries = 1000;
-    int currentTry = 0;
     G4ThreeVector newAttemptWaveVector;
     G4bool successfulTransmission = false;
     for( int iT = 0; iT < nTries; ++iT ){

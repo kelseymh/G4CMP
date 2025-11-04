@@ -389,7 +389,7 @@ G4bool G4CMP::PhononVelocityIsOutward(const G4LatticePhysical* lattice,
 				      const G4ThreeVector& waveVector,
 				      const G4ThreeVector& surfNorm, 
 				      const G4VTouchable * nextVolTouchable,
-				      const G4ThreeVector& surfacePos) {
+				      const G4ThreeVector& /*surfacePos*/) {
   // Get touchable for coordinate rotations
   const G4VTouchable* touchable = nextVolTouchable;
   

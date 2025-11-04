@@ -24,10 +24,12 @@
 #include <math.h>
 
 
-// Initialize lattice parameters used in matrix element calculations
+// Initialize lattice parameters used in matrix element calculations.
+// Probably don't need to use the override momentum reset flag
+// unless we need to move charges across boundaries, so will leave commented.
 
 void G4CMPInterValleyRate::
-LoadDataForTrack(const G4Track* track, const G4bool overrideMomentumReset) {
+LoadDataForTrack(const G4Track* track, const G4bool /*overrideMomentumReset*/) {
   G4CMPProcessUtils::LoadDataForTrack(track);
 
   // Should temperature be a lattice configuration?

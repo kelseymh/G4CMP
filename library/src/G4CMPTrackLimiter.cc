@@ -47,7 +47,7 @@ G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
 
 G4double G4CMPTrackLimiter::GetMeanFreePath(const G4Track& aTrack, G4double,
 					    G4ForceCondition* condition) {
-  G4bool changedLattice = UpdateMeanFreePathForLatticeChangeover(aTrack);
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
   *condition = StronglyForced;	// Ensures execution even with other Forced
   return DBL_MAX;
 }

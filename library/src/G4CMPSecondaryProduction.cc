@@ -62,9 +62,15 @@ G4bool G4CMPSecondaryProduction::IsApplicable(const G4ParticleDefinition& pd) {
 
 
 // Override G4CMPProcessUtils for normal tracks outside lattice volumes
+// REL 10/28/25 -- currently commenting out overrideMomentumReset because
+// I don't think it's catastrophic here. Buuuuut I suspect that if we run
+// into scenarios where we are trying to produce secondary phonons that want
+// to go into different crystals from a single surface downconversion or
+// something, we may need to run the overrideMomentumReset. Food for future
+// thought.
 
 void G4CMPSecondaryProduction::
-LoadDataForTrack(const G4Track* track, const G4bool overrideMomentumReset) {
+LoadDataForTrack(const G4Track* track, const G4bool /*overrideMomentumReset*/) {
   if (verboseLevel>1)
     G4cout << "G4CMPSecondaryProduction::LoadDataForTrack" << G4endl;
 
@@ -119,8 +125,7 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
 G4double 
 G4CMPSecondaryProduction::GetMeanFreePath(const G4Track& aTrack, G4double,
 					  G4ForceCondition* condition) {
-
-  G4bool changedLattice = UpdateMeanFreePathForLatticeChangeover(aTrack);
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
   *condition = StronglyForced;
   return DBL_MAX;
 }

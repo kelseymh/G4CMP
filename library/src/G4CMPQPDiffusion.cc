@@ -471,7 +471,6 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
   G4double stepTransportOnlyDeltaT = stepEndGlobalTime-stepStartGlobalTime;  
   G4ThreeVector preStepPoint = step.GetPreStepPoint()->GetPosition();
   G4ThreeVector postStepPoint = step.GetPostStepPoint()->GetPosition();
-  G4double stepTransportationOnlyDeltaR = (postStepPoint-preStepPoint).mag();
   
   //Debugging
   if (verboseLevel > 5) {
@@ -625,7 +624,6 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
 	  fOutgoingSurfaceTangent1.dot(fOutgoingSurfaceTangent2);
 	G4double acosTang1Dot = 0;
 	G4double acosTang2Dot = 0;
-	G4double acosMinDot = 0;
 
 	//Debugging
 	if (verboseLevel > 5) {	
@@ -649,7 +647,6 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
 	  //Calculate some angles
 	  acosTang1Dot = acos(theNewDir.dot(fOutgoingSurfaceTangent1));
 	  acosTang2Dot = acos(theNewDir.dot(fOutgoingSurfaceTangent2));
-	  acosMinDot = acos(minDot);
 
 	  //If we've tried more than 1000 shots at this, then flag.
 	  killCounterVectSweepStuck++;
@@ -794,8 +791,8 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
 	//If we've made it to the end and fPositionChanged is still false, then
 	//we throw a flag.
 	if (fPositionChanged == false) {
-	  G4ExceptionDescription msg;
-	  msg << "Somehow the CheckNextStep returned a step length that is not "
+	  G4ExceptionDescription amg;
+	  amg << "Somehow the CheckNextStep returned a step length that is not "
 	      << "kInfinity but the step status thinks it's not fGeomBoundary."
 	      << " It seems we may have misjudged the distance to our boundary."
 	      << " All tries exhausted, which suggests this is perhaps a more "
@@ -803,7 +800,7 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
 	      << "not following the recommended rules for tracked film "
 	      << "response.";
 	  G4Exception("G4CMPQPDiffusion::AlongStepDoIt", "QPDiffusion006",
-		      FatalException, msg);
+		      FatalException, amg);
 	}		
       } else {
 
@@ -2428,7 +2425,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
 
   //First, if the length of the boundary history is not the max length, it
   //means we haven't been running for long enough to be stuck. Return false
-  if (fBoundaryHistory.size() < fMaxBoundaryHistoryEntries) {
+  if (((int)fBoundaryHistory.size()) < fMaxBoundaryHistoryEntries) {
 
     //Debugging
     if (verboseLevel > 5) {
@@ -2466,7 +2463,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   //one but a clause that will continue if it sees it.
   std::vector<G4ThreeVector> goodOtherNorms;
   std::vector<G4ThreeVector> goodOtherPositions;
-  for(int iB = 0; iB < fBoundaryHistory.size(); ++iB) {
+  for(int iB = 0; iB < ((int)fBoundaryHistory.size()); ++iB) {
 
     //First, compute the standard deviation of the positions. This should be
     //done regardless of the norm, since it will give us a sense of how
@@ -2578,7 +2575,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
 
   //Debugging
   if (verboseLevel > 5) {
-    for(int iN = 0; iN < goodOtherNorms.size(); ++iN) {
+    for(int iN = 0; iN < ((int)goodOtherNorms.size()); ++iN) {
       G4cout << "CFSQIC Function Point BC | Good other norm: "
 	     << goodOtherNorms[iN] << ", pos: " << goodOtherPositions[iN]
 	     << G4endl;
@@ -2595,9 +2592,9 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   uniqueGoodPositions.push_back(goodOtherPositions[0]);
 
   //Loop over all of the other good norms and remove if not unique
-  for(int iN = 0; iN < goodOtherNorms.size(); ++iN) {
+  for(int iN = 0; iN < ((int)goodOtherNorms.size()); ++iN) {
     G4bool notUnique = false;
-    for(int iG = 0; iG < uniqueGoodNorms.size(); ++iG) {
+    for(int iG = 0; iG < ((int)uniqueGoodNorms.size()); ++iG) {
       if (fabs(goodOtherNorms[iN].dot(uniqueGoodNorms[iG])) >
 	 fDotProductDefiningUniqueNorms) {
 	notUnique = true;
@@ -2617,7 +2614,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
     G4cout << "CFSQIC Function Point C | Number of unique good norms: "
 	   << uniqueGoodNorms.size() << ", number of corresp. positions: "
 	   << uniqueGoodPositions.size() << G4endl;
-    for(int iU = 0; iU < uniqueGoodNorms.size(); ++iU) {
+    for(int iU = 0; iU < ((int)uniqueGoodNorms.size()); ++iU) {
       G4cout << "CFSQIC Function Point C | Unique Good *other* Norm: "
 	     << uniqueGoodNorms[iU] << " at position: "
 	     << uniqueGoodPositions[iU] << G4endl;
@@ -2673,7 +2670,7 @@ void G4CMPQPDiffusion::UpdateBoundaryHistory(G4int trackID,
     //interactions out, FIFO  
 
     std::pair<G4ThreeVector,G4ThreeVector> posNormPair(preStepPos,preStepNorm);    
-    if (fBoundaryHistory.size() < fMaxBoundaryHistoryEntries) {
+    if (((int)fBoundaryHistory.size()) < fMaxBoundaryHistoryEntries) {
       fBoundaryHistory.push_back(posNormPair);      
     } else {
       fBoundaryHistory.erase(fBoundaryHistory.begin());
@@ -2683,7 +2680,7 @@ void G4CMPQPDiffusion::UpdateBoundaryHistory(G4int trackID,
 
   //Debugging
   if (verboseLevel > 5) {
-    for(int iB = 0; iB < fBoundaryHistory.size(); ++iB) {
+    for(int iB = 0; iB < ((int)fBoundaryHistory.size()); ++iB) {
       G4cout << "UBH Function Point A | Boundary position: "
 	     << fBoundaryHistory[iB].first.getX() << ", "
 	     << fBoundaryHistory[iB].first.getY() << G4endl;

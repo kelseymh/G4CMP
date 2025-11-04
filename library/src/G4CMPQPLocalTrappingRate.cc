@@ -11,7 +11,7 @@
 #include "G4LatticePhysical.hh"
 #include "G4PhysicalConstants.hh"
 
-G4double G4CMPQPLocalTrappingRate::Rate(const G4Track& aTrack) const {
+G4double G4CMPQPLocalTrappingRate::Rate(const G4Track& /*aTrack*/) const {
 
   //Debugging
   if (verboseLevel > 5) {

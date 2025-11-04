@@ -57,7 +57,7 @@ public:
 
   //Lookup table (for SC rates being calculated in-subclass).
   //I basically want this to only run for specific processes
-  virtual void UpdateLookupTable(const G4LatticePhysical* theLat) { return; }
+  virtual void UpdateLookupTable(const G4LatticePhysical* /*theLat*/) { return; }
 
   //Passthroughs to enable calling these functions from a G4CMPVProcess
   //function, so that the process and the rate model update with the same

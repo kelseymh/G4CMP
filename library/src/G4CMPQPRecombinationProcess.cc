@@ -121,7 +121,7 @@ G4CMPQPRecombinationProcess::IsApplicable(const G4ParticleDefinition& aPD) {
 // Take the phonon energy and produce a recombination phonon from this.
 void G4CMPQPRecombinationProcess::
 GenerateRecombinationPhonon(G4double phonEnergy,const G4Track& aTrack,
-			    const G4Step& aStep) {
+			    const G4Step& /*aStep*/) {
 
   //Debugging
   if (verboseLevel > 5) {

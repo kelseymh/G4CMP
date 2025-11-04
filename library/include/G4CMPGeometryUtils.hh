@@ -36,6 +36,7 @@ class G4VTouchable;
 class G4VSolid;
 
 namespace G4CMP {
+
   G4ThreeVector GetLocalDirection(const G4VTouchable* touch,
 				  const G4ThreeVector& dir);
   
@@ -97,7 +98,7 @@ namespace G4CMP {
   
   G4double
   Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
-				G4ThreeVector pos,
+				const G4ThreeVector & pos,
 				bool safetyFromABoundary,
 				G4ThreeVector & returnDir,
 				G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
@@ -105,7 +106,7 @@ namespace G4CMP {
 				G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
   
   G4double Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid,
-					G4ThreeVector pos,
+					const G4ThreeVector & pos,
 					G4ThreeVector & returnDir,
 					G4ThreeVector surfaceNorm,
 					G4ThreeVector tangVect1,
@@ -117,7 +118,7 @@ namespace G4CMP {
     
   
   G4double Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,
-					    G4ThreeVector pos,
+					    const G4ThreeVector & pos,
 					    G4ThreeVector & returnDir);
 
   G4double Compute2DDaughterSweptSafety(const G4VSolid* volDaughterSolid,
