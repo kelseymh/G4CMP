@@ -10,7 +10,6 @@
 #define G4CMPQPBoundaryProcess_h 1
 
 #include "G4VQPProcess.hh"
-#include "G4CMPSCUtils.hh"
 #include "G4CMPBoundaryUtils.hh"
 
 class G4CMPProcessUtils;

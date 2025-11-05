@@ -79,7 +79,7 @@ public:
 				G4bool & needToRepeatCalculation,
 				G4bool useSweepForDaughterSafety=false);
 
-  G4bool IsApplicable(const G4ParticleDefinition& aPD);
+  G4bool IsApplicable(const G4ParticleDefinition& aPD) override;
   
 public:
   // Update the default fTimeStep of the random walker if currentMinimalStep is longer

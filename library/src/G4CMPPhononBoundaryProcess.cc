@@ -462,12 +462,6 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   (reflectedKDir -= 2.*kPerp*generalizedSurfNorm).setMag(1.);
   //REL^ changed to -= 8/25/25
 
-  //Old version
-  // Specular reflecton should reverse momentum along normal
-  //G4ThreeVector reflectedKDir = waveVector.unit();
-  //G4double kPerp = reflectedKDir * surfNorm; // Dot product between k and norm
-  //(reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.); // Reflect against normal
-
     
   if (G4CMP::PhononVelocityIsInward(theLattice,mode,
 				    reflectedKDir,generalizedSurfNorm,
@@ -491,13 +485,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   
   // That surface wave will propagate until it reaches a point
   // where the wave vector has an inwardly directed v
-
-  //New version (REL)
-  //RotateToLocalDirection(reflectedKDir);
-  //G4ThreeVector newNorm = generalizedSurfNorm;
-  //RotateToLocalDirection(newGeneralizedNorm);
   
-  //Old version
   RotateToLocalDirection(reflectedKDir);
   G4ThreeVector newNorm = surfNorm;
   RotateToLocalDirection(newNorm);
@@ -510,13 +498,6 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   G4ThreeVector oldNorm = newNorm;
   G4ThreeVector oldstepLocalPos = stepLocalPos;
 
-  ////New version (REL)
-  //// Break up wavevector to perp and tan components
-  //G4double kPerpMag = reflectedKDir.dot(newNorm);
-  //G4ThreeVector kPerpV = kPerpMag * newNorm;		// Positive implied in kPerpMag for inward pointing (due to generalized surfNorm)
-  //G4ThreeVector kTan = reflectedKDir - kPerpV;		// Get kTan: reflectedKDir = kPerpV + kTan. Think this is the same regardless because both kPerpMag and newNorm inherit minuses
-
-  //Old version
   // Break up wavevector to perp and tan components
   G4double kPerpMag = reflectedKDir.dot(newNorm);
   G4ThreeVector kPerpV = kPerpMag * newNorm;		// Negative implied in kPerpMag for inward pointing
@@ -577,11 +558,6 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     //surfNorm that, when dotted into the original generalizedSurfNorm,
     //gives a positive number? 
     
-    // Get the local normal at the new surface point
-    newNorm = solid->SurfaceNormal(stepLocalPos);
-    // Check position status for flat skipper
-    isIn = solid->Inside(stepLocalPos);
-
     
     // Check if the phonon is on a flat. Must be on the solid surface
     if (oldNorm == newNorm && isIn == kSurface) {

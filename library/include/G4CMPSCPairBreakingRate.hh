@@ -40,7 +40,6 @@ private:
   ComputeNormalizedTauPairBreakingVsEnergy();
 
   bool CheckToSeeSCParametersSet() const;  
-  void SavePairBreakingRateVsPhononEnergyToLogFile(std::vector<std::vector<G4double> > theFunc);
 };
 
 #endif	/* G4CMPSCPairBreakingRate_hh */

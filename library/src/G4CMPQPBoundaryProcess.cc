@@ -10,7 +10,6 @@
 // boundaries.
 
 #include "G4CMPQPBoundaryProcess.hh"
-#include "G4CMPSCUtils.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
