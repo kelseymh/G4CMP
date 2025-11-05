@@ -250,6 +250,9 @@ void G4LatticeLogical::Initialize(const G4String& newName) {
 
   // Populate phonon lookup tables if not read from files
   FillMaps();
+
+  //Check for completeness of superconducting parameters
+  CheckLatticeForSCCompleteness();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -1110,4 +1113,35 @@ void G4LatticeLogical::DumpList(std::ostream& os,
   }
 
   os << unit;
+}
+
+
+//This checks the results of the created lattice to understand if all relevant
+//parameters have been added. We can put whatever we want here, but for now I
+//want to say that if any of the superconductor lattice parameters have been
+//added, we want to make sure that all of them have, and alert users that if
+//that isn't true, then they should make it true. This forced execution stop
+//occurs here for the "fundamental" parameters and in SCUtils for the "physical-
+//lattice-dependent" ones
+void G4LatticeLogical::CheckLatticeForSCCompleteness() {
+  //Check to see if any of the SC parameters are not at their default values,
+  //i.e. if they have been set.
+  if (fSC_Tau0_qp != DBL_MAX ||
+      fSC_Tau0_ph != DBL_MAX) {
+    
+    //If one of these is set, check to see if any of them are NOT set.
+    if (fSC_Tau0_qp == DBL_MAX ||
+	fSC_Tau0_ph == DBL_MAX) {
+      
+      //Throw a warning that there are outstanding SC parameters that are not
+      //set.
+      G4ExceptionDescription msg;
+      msg << "Noticed that one or more superconducting film lattice parameters "
+	  << "are set in a config file, but that one or more are also missing. "
+	  << "Please fill in Tau0_qp and Tau0_ph for all superconductors you "
+	  << "want to use before continuing.";
+      G4Exception("G4LatticeLogical::CheckLatticeForSCCompleteness", "Lattice007",
+		  FatalException, msg);
+    }
+  }  
 }

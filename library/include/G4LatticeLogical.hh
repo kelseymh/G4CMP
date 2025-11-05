@@ -309,6 +309,9 @@ private:
   // Use direct calculation to get group velocity for phonons
   G4ThreeVector ComputeKtoVg(G4int mode, const G4ThreeVector& k) const;
 
+  //Do an internal check to make sure that we have all SC parameters
+  void CheckLatticeForSCCompleteness();
+  
 private:
   // Create a thread-local buffer to use with MapAtoB() functions
   inline G4ThreeVector& tempvec() const {

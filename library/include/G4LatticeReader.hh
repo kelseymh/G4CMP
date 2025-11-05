@@ -72,7 +72,6 @@ protected:
   G4bool ProcessDeformation();			// IV deformation potentials
   G4bool ProcessThresholds();			// IV energy thresholds
   G4bool SkipComments();			// Everything after '#'
-  void CheckLatticeForCompleteness();
   
   // Read expected dimensions for value from file, return scale factor
   // NOTE: String from file may have leading "/" for inverse units
