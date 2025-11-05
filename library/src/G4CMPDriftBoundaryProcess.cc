@@ -181,7 +181,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
 void G4CMPDriftBoundaryProcess::
 DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
-		     G4ParticleChange& particleChange) {
+		     G4ParticleChange& /*particleChange*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Electron reflected" << G4endl;
 
