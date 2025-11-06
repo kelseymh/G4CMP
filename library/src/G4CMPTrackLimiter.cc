@@ -37,9 +37,7 @@
 // Only applies to G4CMP particles
 
 G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
-  return (G4CMP::IsPhonon(pd) || G4CMP::IsChargeCarrier(pd));
-
-  //REL This should probably have QPs here, but need to see impact of adding them. Maybe we can get away without adding them if QPdiffusion works well enough
+  return (G4CMP::IsPhonon(pd) || G4CMP::IsChargeCarrier(pd) || G4CMP::IsQP(pd));
 }
 
 
@@ -93,7 +91,8 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
   // Check whether track position and volume are consistent
   if (InvalidPosition(track)) {
     std::stringstream msg;
-    msg << "Killing track inconsistent position " << track.GetPosition()
+    msg << "Killing track " << track.GetParticleDefinition()->GetParticleName()
+	<< " inconsistent position " << track.GetPosition()
 	<< "\n vs. detector volume " << GetCurrentVolume()->GetName() + ":"
 	<< GetCurrentVolume()->GetCopyNo();
     G4Exception("G4CMPTrackLimiter", "Limit002", JustWarning,
