@@ -10,9 +10,9 @@
 //
 
 #include "G4CMPQPRecombinationProcess.hh"
+#include "G4CMPBogoliubovQP.hh"
 #include "G4CMPQPRecombinationRate.hh"
 #include "G4CMPSCUtils.hh"
-#include "G4QP.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4VParticleChange.hh"

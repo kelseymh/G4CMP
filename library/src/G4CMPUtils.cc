@@ -23,10 +23,10 @@
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 
 #include "G4CMPUtils.hh"
+#include "G4CMPBogoliubovQP.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
-#include "G4QP.hh"
 #include "G4CMPElectrodeHit.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPTrackUtils.hh"
@@ -121,7 +121,7 @@ G4bool G4CMP::IsQP(const G4ParticleDefinition& pd) {
 }
 
 G4bool G4CMP::IsQP(const G4ParticleDefinition* pd) {
-  return (pd == G4QP::Definition());
+  return (pd == G4CMPBogoliubovQP::Definition());
 }
 
 G4bool G4CMP::IsHole(const G4Track& track) {

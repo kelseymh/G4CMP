@@ -20,7 +20,7 @@
 #include "G4CMPDriftHole.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftTrackInfo.hh"
-#include "G4QP.hh"
+#include "G4CMPBogoliubovQP.hh"
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
@@ -202,7 +202,7 @@ G4Track* G4CMP::CreateQP(const G4Track& /*track*/,
 			 const G4ThreeVector& pos) {
   
   //Get the particle definition
-  G4ParticleDefinition* theQP = G4QP::Definition();
+  G4ParticleDefinition* theQP = G4CMPBogoliubovQP::Definition();
 
   //May need to do a bit of wiggling to avoid the surface, but we'll test first.
   auto sec = new G4Track(new G4DynamicParticle(theQP,velocity.unit(),energy),

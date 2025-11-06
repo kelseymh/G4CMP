@@ -10,9 +10,9 @@
 //
 
 #include "G4CMPSCPairBreakingProcess.hh"
+#include "G4CMPBogoliubovQP.hh"
 #include "G4CMPSCPairBreakingRate.hh"
 #include "G4CMPSCUtils.hh"
-#include "G4QP.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4VParticleChange.hh"
@@ -71,7 +71,7 @@ PostStepDoIt(const G4Track& aTrack,const G4Step& aStep) {
   }
   
   //3. Using the two above-computed energies, generate the two secondaries
-  //   (G4QPs) we want.
+  //   (G4CMPBogoliubovQPs) we want.
   GenerateQPPair(QPenergies,aTrack,aStep);
 
   //4. Print debugging info

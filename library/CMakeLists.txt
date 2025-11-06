@@ -228,7 +228,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VNIELPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VPhononProcess.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4QP.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQP.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VQPProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRecombinationProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRecombinationRate.cc
@@ -341,7 +341,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4QP.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQP.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VQPProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRecombinationProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRecombinationRate.hh

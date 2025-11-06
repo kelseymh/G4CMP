@@ -21,6 +21,7 @@
 // 20220331  G4CMP-293: Replace RegisterProcess() with local AddG4CMPProcess().
 
 #include "G4CMPPhysics.hh"
+#include "G4CMPBogoliubovQP.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
@@ -49,7 +50,6 @@
 #include "G4PhononScattering.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
-#include "G4QP.hh"
 #include "G4ProcessManager.hh"
 
 // Constructor sets global verbosity
@@ -68,7 +68,7 @@ void G4CMPPhysics::ConstructParticle() {
   G4PhononTransFast::Definition();
   G4PhononTransSlow::Definition();
   G4GenericIon::Definition();
-  G4QP::Definition();
+  G4CMPBogoliubovQP::Definition();
 }
 
 // Add physics processes to appropriate particles
@@ -106,7 +106,7 @@ void G4CMPPhysics::ConstructProcess() {
   // Add processes only to locally known particles
   G4ParticleDefinition* particle = 0;
 
-  particle = G4QP::QPDefinition();
+  particle = G4CMPBogoliubovQP::BogoliubovQPDefinition();
   AddG4CMPProcess(bogQPRad,particle);
   AddG4CMPProcess(bogQPTrap,particle);
   AddG4CMPProcess(bogQPTimeStep,particle);
