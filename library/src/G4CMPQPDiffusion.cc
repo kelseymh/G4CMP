@@ -104,7 +104,7 @@ G4CMPQPDiffusion::~G4CMPQPDiffusion() {
 }
 
 //Is applicable -- putting here because technically the QP diffusion
-//process is not a G4VProcess or G4VQPProcess (since it's discrete+
+//process is not a G4VProcess or G4CMPVQPProcess (since it's discrete+
 //continuous)
 G4bool G4CMPQPDiffusion::IsApplicable(const G4ParticleDefinition& aPD) {
   return G4CMP::IsQP(&aPD);

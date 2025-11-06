@@ -17,9 +17,9 @@
 #ifndef G4CMPQPRecombinationProcess_h
 #define G4CMPQPRecombinationProcess_h 1
 
-#include "G4VQPProcess.hh"
+#include "G4CMPVQPProcess.hh"
 
-class G4CMPQPRecombinationProcess : public G4VQPProcess {
+class G4CMPQPRecombinationProcess : public G4CMPVQPProcess {
 public:
   G4CMPQPRecombinationProcess(const G4String& processName ="qpRecombination");
   virtual ~G4CMPQPRecombinationProcess();

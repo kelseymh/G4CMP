@@ -16,9 +16,9 @@
 #ifndef G4CMPQPLocalTrappingProcess_h
 #define G4CMPQPLocalTrappingProcess_h 1
 
-#include "G4VQPProcess.hh"
+#include "G4CMPVQPProcess.hh"
 
-class G4CMPQPLocalTrappingProcess : public G4VQPProcess {
+class G4CMPQPLocalTrappingProcess : public G4CMPVQPProcess {
 public:
   G4CMPQPLocalTrappingProcess(const G4String& processName="qpLocalTrapping");
   virtual ~G4CMPQPLocalTrappingProcess();

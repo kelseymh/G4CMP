@@ -37,9 +37,9 @@
 #ifndef G4CMPQPDiffusionTimeStepperProcess_h
 #define G4CMPQPDiffusionTimeStepperProcess_h 1
 
-#include "G4VQPProcess.hh"
+#include "G4CMPVQPProcess.hh"
 
-class G4CMPQPDiffusionTimeStepperProcess : public G4VQPProcess {
+class G4CMPQPDiffusionTimeStepperProcess : public G4CMPVQPProcess {
 public:
   G4CMPQPDiffusionTimeStepperProcess(const G4String& processName ="qpDiffusionTimeStepper");
   virtual ~G4CMPQPDiffusionTimeStepperProcess();

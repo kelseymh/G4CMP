@@ -3,8 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/src/G4VQPProcess.cc
-/// \brief Implementation of the G4VQPProcess base class
+/// \file library/src/G4CMPVQPProcess.cc
+/// \brief Implementation of the G4CMPVQPProcess base class
 //
 // $Id$
 //
@@ -13,7 +13,7 @@
 // 20140331  Add required process subtype code
 // 20170601  Inherit from new G4CMPVProcess, only need IsApplicable
 
-#include "G4VQPProcess.hh"
+#include "G4CMPVQPProcess.hh"
 #include "G4CMPUtils.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononTransFast.hh"
@@ -22,7 +22,7 @@
 
 // Only applies to QPs
 
-G4bool G4VQPProcess::IsApplicable(const G4ParticleDefinition& aPD) {
+G4bool G4CMPVQPProcess::IsApplicable(const G4ParticleDefinition& aPD) {
   return G4CMP::IsQP(&aPD);
 }
 
@@ -30,7 +30,7 @@ G4bool G4VQPProcess::IsApplicable(const G4ParticleDefinition& aPD) {
 //particles, assuming an XY-oriented film. This should be run at the end
 //of all postStepDoIts for all purely discrete QP processes where the QPs
 //still exist
-G4bool G4VQPProcess::RandomizeFinalStateMomentumDirectionInXY() {
+G4bool G4CMPVQPProcess::RandomizeFinalStateMomentumDirectionInXY() {
   G4ThreeVector returnDir = G4RandomDirection();
   returnDir.setZ(0);
   aParticleChange.ProposeMomentumDirection(returnDir.unit());

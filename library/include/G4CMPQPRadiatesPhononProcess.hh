@@ -17,9 +17,9 @@
 #ifndef G4CMPQPRadiatesPhononProcess_h
 #define G4CMPQPRadiatesPhononProcess_h 1
 
-#include "G4VQPProcess.hh"
+#include "G4CMPVQPProcess.hh"
 
-class G4CMPQPRadiatesPhononProcess : public G4VQPProcess {
+class G4CMPQPRadiatesPhononProcess : public G4CMPVQPProcess {
 public:
   G4CMPQPRadiatesPhononProcess(const G4String& processName ="qpRadiatesPhonon");
   virtual ~G4CMPQPRadiatesPhononProcess();

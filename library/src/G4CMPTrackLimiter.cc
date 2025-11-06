@@ -35,7 +35,9 @@
 
 
 // Only applies to G4CMP particles
-
+// Note that for QPs, this has been tested and seems to not cause problems,
+// but that if there is weirdness later on, this may not be a bad place to
+// start digging.
 G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
   return (G4CMP::IsPhonon(pd) || G4CMP::IsChargeCarrier(pd) || G4CMP::IsQP(pd));
 }

@@ -229,7 +229,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VNIELPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VPhononProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQP.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VQPProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVQPProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRecombinationProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRecombinationRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRadiatesPhononProcess.cc
@@ -342,7 +342,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQP.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VQPProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVQPProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRecombinationProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRecombinationRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRadiatesPhononProcess.hh

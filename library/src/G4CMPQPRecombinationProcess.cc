@@ -25,7 +25,7 @@
 
 // Constructor and destructor 
 G4CMPQPRecombinationProcess::G4CMPQPRecombinationProcess(const G4String& aName)
-  : G4VQPProcess(aName,fQPRecombinationProcess) {
+  : G4CMPVQPProcess(aName,fQPRecombinationProcess) {
   UseRateModel(new G4CMPQPRecombinationRate);
 }
 
@@ -114,7 +114,7 @@ G4bool
 G4CMPQPRecombinationProcess::IsApplicable(const G4ParticleDefinition& aPD) {
   
   // Allow all phonon types, because type is changed during tracking
-  return G4VQPProcess::IsApplicable(aPD);
+  return G4CMPVQPProcess::IsApplicable(aPD);
 }
 
 

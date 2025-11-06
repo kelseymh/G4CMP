@@ -25,7 +25,7 @@
 
 // Constructor and destructor 
 G4CMPQPLocalTrappingProcess::G4CMPQPLocalTrappingProcess(const G4String& aName)
-  : G4VQPProcess(aName,fQPLocalTrappingProcess) {  
+  : G4CMPVQPProcess(aName,fQPLocalTrappingProcess) {  
   UseRateModel(new G4CMPQPLocalTrappingRate);
 }
 

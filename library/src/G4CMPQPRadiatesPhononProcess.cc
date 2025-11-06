@@ -25,7 +25,7 @@
 // Constructor and destructor 
 G4CMPQPRadiatesPhononProcess::
 G4CMPQPRadiatesPhononProcess(const G4String& aName)
-  : G4VQPProcess(aName,fQPRadiatesPhononProcess) {
+  : G4CMPVQPProcess(aName,fQPRadiatesPhononProcess) {
   UseRateModel(new G4CMPQPRadiatesPhononRate);
 }
 
@@ -111,7 +111,7 @@ G4bool
 G4CMPQPRadiatesPhononProcess::IsApplicable(const G4ParticleDefinition& aPD) {
 
   // Allow all phonon types, because type is changed during tracking
-  return G4VQPProcess::IsApplicable(aPD);
+  return G4CMPVQPProcess::IsApplicable(aPD);
 }
 
 // Take the phonon energy and produce a recombination phonon from this.

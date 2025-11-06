@@ -3,8 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file library/include/G4VQPProcess.hh
-/// \brief Definition of the G4VQPProcess base class
+/// \file library/include/G4CMPVQPProcess.hh
+/// \brief Definition of the G4CMPVQPProcess base class
 /// 
 /// This class is a base QP class for all of the QP processes that
 /// inherit from the G4VDiscreteProcess. We note that the main
@@ -15,8 +15,8 @@
 // 20250922  G4CMP-219 -- First addition to this history (done at time
 //                        of merge to develop)
 
-#ifndef G4VQPProcess_h
-#define G4VQPProcess_h 1
+#ifndef G4CMPVQPProcess_h
+#define G4CMPVQPProcess_h 1
 
 #include "G4CMPVProcess.hh"
 #include "G4CMPProcessSubType.hh"
@@ -24,11 +24,11 @@
 class G4ParticleDefinition;
 
 
-class G4VQPProcess : public G4CMPVProcess {
+class G4CMPVQPProcess : public G4CMPVProcess {
 public:
-  G4VQPProcess(const G4String& processName, G4CMPProcessSubType stype)
+  G4CMPVQPProcess(const G4String& processName, G4CMPProcessSubType stype)
     : G4CMPVProcess(processName, stype) {;}
-  virtual ~G4VQPProcess() {;}
+  virtual ~G4CMPVQPProcess() {;}
   
   virtual G4bool IsApplicable(const G4ParticleDefinition& aPD);
 
@@ -37,8 +37,8 @@ protected:
   
 private:
   // hide assignment operators as private 
-  G4VQPProcess(G4VQPProcess&);
-  G4VQPProcess& operator=(const G4VQPProcess& right);
+  G4CMPVQPProcess(G4CMPVQPProcess&);
+  G4CMPVQPProcess& operator=(const G4CMPVQPProcess& right);
 };
 
-#endif	/* G4VQPProcess_h */
+#endif	/* G4CMPVQPProcess_h */

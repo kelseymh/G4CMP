@@ -9,12 +9,12 @@
 #ifndef G4CMPQPBoundaryProcess_h
 #define G4CMPQPBoundaryProcess_h 1
 
-#include "G4VQPProcess.hh"
+#include "G4CMPVQPProcess.hh"
 #include "G4CMPBoundaryUtils.hh"
 
 class G4CMPProcessUtils;
 
-class G4CMPQPBoundaryProcess : public G4VQPProcess, public G4CMPBoundaryUtils {
+class G4CMPQPBoundaryProcess : public G4CMPVQPProcess, public G4CMPBoundaryUtils {
 public:
   G4CMPQPBoundaryProcess(const G4String& processName="G4CMPQPBoundaryProcess");
   

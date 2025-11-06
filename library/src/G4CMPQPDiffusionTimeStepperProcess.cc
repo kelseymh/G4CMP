@@ -25,7 +25,7 @@
 // Constructor and destructor 
 G4CMPQPDiffusionTimeStepperProcess::
 G4CMPQPDiffusionTimeStepperProcess(const G4String& aName)
-  : G4VQPProcess(aName,fQPDiffusionTimeStepper) {
+  : G4CMPVQPProcess(aName,fQPDiffusionTimeStepper) {
   UseRateModel(new G4CMPQPDiffusionTimeStepperRate);
 }
 
@@ -77,7 +77,7 @@ PostStepDoIt(const G4Track& aTrack,const G4Step& aStep) {
 
 G4bool G4CMPQPDiffusionTimeStepperProcess::
 IsApplicable(const G4ParticleDefinition& aPD) {   
-  return G4VQPProcess::IsApplicable(aPD);
+  return G4CMPVQPProcess::IsApplicable(aPD);
 }
 
 //Pass-through to G4CMPVProcess class
