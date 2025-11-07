@@ -106,7 +106,7 @@ void G4CMPPhysics::ConstructProcess() {
   // Add processes only to locally known particles
   G4ParticleDefinition* particle = 0;
 
-  particle = G4CMPBogoliubovQP::BogoliubovQPDefinition();
+  particle = G4CMPBogoliubovQP::Definition();
   AddG4CMPProcess(bogQPRad,particle);
   AddG4CMPProcess(bogQPTrap,particle);
   AddG4CMPProcess(bogQPTimeStep,particle);

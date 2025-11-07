@@ -87,6 +87,13 @@ public:
   // Set temperature of volume/lattice for use with thermalization processes
   void SetTemperature(G4double temp) { fTemperature = temp; }
 
+  // Set Superconducting properties
+  void SetSCDelta0(G4double val) { fSCDelta0 = val; }
+  void SetSCTcrit(G4double val) { fSCTcrit = val; }
+  void SetSCTeff(G4double val) { fSCTeff = val; }
+  void SetSCDn(G4double val) { fSCDn = val; }
+  void SetSCQPLocalTrappingTau(G4double val) { fSCQPLocalTrappingTau = val; }
+
   // Rotate input vector between lattice and solid orientations
   // Returns new vector value for convenience
   const G4ThreeVector& RotateToLattice(G4ThreeVector& dir) const;

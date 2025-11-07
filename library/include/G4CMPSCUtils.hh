@@ -41,8 +41,8 @@ protected:
 
   //Processing: called by process and rate classes, so should be at least
   //protected
-  void SetCurrentSCInfoToNull();  
-  void LoadLatticeInfoIntoSCUtils(const G4LatticePhysical* theLat);
+  virtual void SetCurrentSCInfoToNull();
+  virtual void LoadLatticeInfoIntoSCUtils(const G4LatticePhysical* theLat);
   
   //Since now rate classes and processes are actually the ones doing the
   //calculation, we need to make these protected instead of private

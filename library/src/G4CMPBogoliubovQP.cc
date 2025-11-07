@@ -37,9 +37,9 @@ G4CMPBogoliubovQP* G4CMPBogoliubovQP::Definition()
                  name,         100*eV,       0.0*MeV,         0.0,
                     1,               0,             0,
                     0,               0,             0,
-             "BogoliubovQP",         0,             0,         0,
+		 name,         0,             0,         0,
                  true,             0.0,          NULL,
-                false,        "BogoliubovQP",           0
+		 false,        name,           0
              );
   }
   theInstance = reinterpret_cast<G4CMPBogoliubovQP*>(anInstance);

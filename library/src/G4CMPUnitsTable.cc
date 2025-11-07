@@ -7,6 +7,8 @@
 /// \file library/include/G4CMPUnitsTable.hh
 /// \brief Define additional units with symbols for crystal applications
 //
+// 20251106  G4CMP-219 -- Add QP diffusion coefficient units
+
 
 #include "G4CMPUnitsTable.hh"
 
@@ -42,8 +44,7 @@ G4CMPUnitsTable::G4CMPUnitsTable() {
   new G4UnitDefinition("millimeters/second", "mm/s", "Velocity", mm/s);
   new G4UnitDefinition("centimeters/second", "cm/s", "Velocity", cm/s);
 
-  //EY: Defining a new unit defintion to the Units table to handle the units of
-  // the diffusion constant length*length/time
+  //Diffusion constant (length*length/time)
   new G4UnitDefinition("km2/s" , "km2/s" , "Diffusion constant", km2/s);
   new G4UnitDefinition("m2/s"  , "m2/s"  , "Diffusion constant", m2/s);
   new G4UnitDefinition("um2/ns", "um2/ns", "Diffusion constant", um*um/ns);
