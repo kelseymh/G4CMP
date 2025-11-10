@@ -20,7 +20,7 @@
 // 20171215  Change 'CheckStepStatus()' to 'IsBoundaryStep()', add function
 //	     to validate step trajectory to boundary.
 // 20250927  Add overloadable function to kill track when max-reflections.
-
+// 20251028  G4CMP-527: Move CheckStepBoundary() here from DriftBoundaryProcess
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
 
@@ -111,6 +111,8 @@ protected:
   // Flag whether a given PV pair has a defined surface property or not
   typedef std::pair<G4VPhysicalVolume*,G4VPhysicalVolume*> BoundaryPV;
   std::map<BoundaryPV, G4bool> hasSurface;
+
+  G4ThreeVector surfacePoint;		// "Adjusted" impact point at surface
 };
 
 #endif	/* G4CMPBoundaryUtils_hh */

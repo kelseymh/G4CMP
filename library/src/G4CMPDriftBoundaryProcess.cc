@@ -19,6 +19,7 @@
 // 20250927  AbsorbTrack() should use '&&' to require that both conditions pass
 // 20251015  Resolve shadowed declaration in DoFinalReflection()
 // 20251024  G4CMP-519: Protect against possible zero energy in DoAbsorption()
+// 20251028  G4CMP-527: Move CheckStepBoundary() to ApplyBoundaryAction()
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -180,21 +181,12 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
 void G4CMPDriftBoundaryProcess::
 DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
-		     G4ParticleChange& particleChange) {
+		     G4ParticleChange& /*particleChange*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Electron reflected" << G4endl;
 
   // Get outward normal from current volume
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
-
-  // Check whether step has proper boundary-stopped geometry
-  G4ThreeVector surfacePoint;
-  if (!CheckStepBoundary(aStep, surfacePoint)) {
-    if (verboseLevel>2)
-      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-
-    particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
-  }
 
   // FUTURE: Get specular vs. diffuse probability from parameters
   G4bool specular = false;

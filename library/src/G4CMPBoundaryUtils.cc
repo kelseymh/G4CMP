@@ -29,6 +29,8 @@
 // 20250423  Remove error suppression for starting at boundary.
 // 20250927  Increase verbosity for IsGoodBoundary() related messages; add
 //	       overloadable function to kill track when max-reflections.
+// 20251028  G4CMP-527:  Use CheckStepBoundary() in ApplyBoundaryAction(),
+//	       add warning (G4cerr) message for points that need adjustment.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -37,10 +39,10 @@
 #include "G4CMPLogicalSkinSurface.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPProcessUtils.hh"
-#include "G4CMPVTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
 #include "G4CMPVElectrodePattern.hh"
+#include "G4CMPVTrackInfo.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4LatticeManager.hh"
@@ -50,6 +52,7 @@
 #include "G4ParticleDefinition.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VProcess.hh"
@@ -217,11 +220,11 @@ G4bool G4CMPBoundaryUtils::GetSurfaceProperty(const G4Step& aStep) {
 // "surfacePoint" returns post-step position, or computed surface point
 
 G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
-					     G4ThreeVector& surfacePoint) {
+					     G4ThreeVector& surfPoint) {
   G4StepPoint* preP = aStep.GetPreStepPoint();
   G4StepPoint* postP = aStep.GetPostStepPoint();
   GetBoundingVolumes(aStep);
-  surfacePoint = postP->GetPosition();		// Correct if valid boundary
+  surfPoint = postP->GetPosition();		// Correct if valid boundary
 
   // Get pre- and post-step positions in pre-step volume coordinates
   G4VSolid* preSolid = prePV->GetLogicalVolume()->GetSolid();
@@ -229,7 +232,7 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
   G4ThreeVector prePos = preP->GetPosition();
   G4CMP::RotateToLocalPosition(preP->GetTouchable(), prePos);
 
-  G4ThreeVector postPos = surfacePoint;
+  G4ThreeVector postPos = surfPoint;
   G4CMP::RotateToLocalPosition(preP->GetTouchable(), postPos);
 
   if (buVerboseLevel>2) {
@@ -251,17 +254,24 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
   // If post-step position not proper surface point, compute intersection
   if (postIn != kSurface) {
     if (buVerboseLevel>2)
-      G4cout << " OLD SURFACE POINT: " << surfacePoint << G4endl;
+      G4cout << " OLD SURFACE POINT: " << surfPoint << G4endl;
 
     G4ThreeVector along = (postPos-prePos).unit();	// Trajectory direction
-    surfacePoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
+    surfPoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
+
+    G4double moveDist = (postPos-surfPoint).mag();	// For diagnostics
+    if (moveDist > 1.*um) {
+      G4cerr << " Post-step point " << postPos << " away from surface "
+	     << prePV->GetName() << " by " << moveDist/um << " um" << G4endl;
+    }
+
     if (buVerboseLevel>2) {
       G4cout << " moving preStep by " << preSolid->DistanceToOut(prePos,along)
 	     << " along " << along << G4endl
-	     << " NEW SURFACE POINT: " << surfacePoint << G4endl;
+	     << " NEW SURFACE POINT: " << surfPoint << G4endl;
     }
 
-    postIn = preSolid->Inside(surfacePoint);
+    postIn = preSolid->Inside(surfPoint);
     if (buVerboseLevel>2) {
       G4cout << "\n Is adjusted location on surface of preStep Volume? "
 	     << (postIn==kOutside ? "outside" :
@@ -271,15 +281,16 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 
     // Double check calculation -- point "must" now be on surface!
     if (postIn != kSurface) {
-      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-		  "Boundary005", EventMustBeAborted,
-		  "Boundary-limited step cannot find boundary surface point"
-		  );
+      std::stringstream msg;
+      msg << "Boundary-limited step @ " << postPos << " for "
+	  << prePV->GetName() << " could not be adjusted to surface";
+      G4Exception((procName+"::CheckStepBoundary").c_str(),
+		  "Boundary005", EventMustBeAborted, msg.str().c_str());
       return false;
     }
 
     // Move surface point to world coordinate system
-    G4CMP::RotateToGlobalPosition(preP->GetTouchable(), surfacePoint);
+    G4CMP::RotateToGlobalPosition(preP->GetTouchable(), surfPoint);
   }
 
   return (postIn == kSurface);
@@ -293,6 +304,15 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
 					const G4Step& aStep,
 					G4ParticleChange& aParticleChange) {
   aParticleChange.Initialize(aTrack);
+
+  // Check whether step has proper boundary-stopped geometry
+  surfacePoint = aStep.GetPostStepPoint()->GetPosition();
+  if (!CheckStepBoundary(aStep, surfacePoint)) {
+    if (buVerboseLevel>2)
+      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
+
+    aParticleChange.ProposePosition(surfacePoint);
+  }
 
   if (!matTable) {
     if (buVerboseLevel>2) G4cout << "BU::Apply: !matTable" << G4endl;

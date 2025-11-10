@@ -199,7 +199,7 @@ G4bool G4CMPTrackLimiter::PhononIsThermal(const G4Track& track) const {
 // Note: non-const here to use accumulator caches
 
 G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
-  if (!IsChargeCarrier()) return false;		// Ignore phonons (for now?)
+  if (!G4CMP::IsChargeCarrier(track)) return false;	// Ignore phonons
 
   // How long and how far has the track been travelling?
   const G4double maxSteps = G4CMPConfigManager::GetMaxChargeSteps();

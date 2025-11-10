@@ -185,15 +185,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 	   << G4endl;
   }
 
-  // Check whether step has proper boundary-stopped geometry
-  G4ThreeVector surfacePoint;
-  if (!CheckStepBoundary(aStep, surfacePoint)) {
-    if (verboseLevel>2)
-      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-
-    particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
-  }
-
   G4double freq = GetKineticEnergy(aTrack)/h_Planck;	// E = hf, f = E/h
   G4double specProb = surfProp->SpecularReflProb(freq);
   G4double diffuseProb = surfProp->DiffuseReflProb(freq);
@@ -278,7 +269,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 G4ThreeVector G4CMPPhononBoundaryProcess::
 GetSpecularVector(const G4ThreeVector& waveVector,
                   G4ThreeVector& surfNorm, G4int mode,
-                  G4ThreeVector& surfacePoint) {
+                  G4ThreeVector& /*surfacePoint*/) {
   // Specular reflecton should reverse momentum along normal
   G4ThreeVector reflectedKDir = waveVector.unit();
   G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm
