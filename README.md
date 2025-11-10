@@ -541,7 +541,7 @@ the crystal system.
 | valley  | theta phi psi unit | Euler angles     | angle (deg/rad)    |
 | **InterValley scattering with matrix elements** |
 | epsilon | e/e0      | Relative permittivity     |                    |
-| neutDens | N        | Number density of neutron impurities | /volume |
+| neutDens | N        | Number density of neutral impurities | /volume |
 | alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
 | acDeform_e | val | electron acoustic deformation potential | energy (eV)|
 | acDeform_h | val | hole acoustic deformation potential  | energy (eV)|
