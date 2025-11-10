@@ -97,7 +97,7 @@
 
 G4CMPProcessUtils::G4CMPProcessUtils()
   : theLattice(nullptr), currentTrack(nullptr), currentVolume(nullptr),
-    currentTouchable(nullptr) {;}
+    currentTouchable(nullptr), deleteTouchable(false) {;}
 
 G4CMPProcessUtils::~G4CMPProcessUtils() {;}
 
@@ -175,6 +175,7 @@ void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
   currentTrack = track;
   currentTouchable = nullptr;
   currentVolume = track ? track->GetVolume() : nullptr;
+  deleteTouchable = false;
 
   if (!track) return;		// Avoid unnecessry work
 
