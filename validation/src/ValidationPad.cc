@@ -50,50 +50,46 @@
 using namespace ValidationDetectorParameters;
 
 // Primary Constructor
-ValidationPad::ValidationPad(G4RotationMatrix * pRot,
-			     const G4ThreeVector & tLate,
-			     const G4String & pName,
-			     G4LogicalVolume * pMotherLogical,
-			     G4bool pMany,
-			     G4int pCopyNo,
-			     G4LatticeManager * LM,
-			     std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-			     std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-			     G4bool pSurfChk)
-  
-{
+ValidationPad::
+ValidationPad(G4RotationMatrix * pRot,
+	      const G4ThreeVector & tLate,
+	      const G4String & pName,
+	      G4LogicalVolume * pMotherLogical,
+	      G4bool pMany,
+	      G4int pCopyNo,
+	      G4LatticeManager * LM,
+	      std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+	      std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+	      G4bool pSurfChk) {
+
   //Here, use the inputs to this to set up the geometry and fill out the
   //PVPlacement data member, which is the real output from this class (and
   //which we'll access in our main detector construction file.)
 
   ConstructPad(pRot,tLate,pName,pMotherLogical,pMany,pCopyNo,LM,
 	       logicalLatticeContainer,borderContainer,pSurfChk);
-
-  
 }
 
 // Default Constructor
-ValidationPad::ValidationPad()
-{  
+ValidationPad::ValidationPad() {  
 }
 
 // Destructor
-ValidationPad::~ValidationPad()
-{
+ValidationPad::~ValidationPad() {
 }
 
 //Moving implementation down here so it's not in the constructor
-void ValidationPad::ConstructPad(G4RotationMatrix * pRot,
-				 const G4ThreeVector & tLate,
-				 const G4String & pName,
-				 G4LogicalVolume * pMotherLogical,
-				 G4bool pMany,
-				 G4int pCopyNo,
-				 G4LatticeManager * LM,
-				 std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-				 std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-				 G4bool pSurfChk)
-{
+void ValidationPad::
+ConstructPad(G4RotationMatrix * pRot,
+	     const G4ThreeVector & tLate,
+	     const G4String & pName,
+	     G4LogicalVolume * pMotherLogical,
+	     G4bool pMany,
+	     G4int pCopyNo,
+	     G4LatticeManager * LM,
+	     std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+	     std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+	     G4bool pSurfChk) {
 
   //Start with some preliminaries - NIST manager
   G4NistManager* nist = G4NistManager::Instance();
@@ -152,8 +148,8 @@ void ValidationPad::ConstructPad(G4RotationMatrix * pRot,
 
 
 
-  //Now we make a smaller pad that is internal to the larger one. This is actually aluminum
-  //and is where the electrical contact is actually made
+  //Now we make a smaller pad that is internal to the larger one. This is
+  //actually aluminum and is where the electrical contact is actually made
   G4String padConductorPart1Name = pName + "_PadConductorPart1";
   G4String padConductorPart1NameLog = pName + "_PadConductorPart1_log";
   G4String padConductorPart1NameSolid = pName + "_PadConductorPart1_solid";
@@ -194,55 +190,39 @@ void ValidationPad::ConstructPad(G4RotationMatrix * pRot,
   //We now create a shift the non-empty pad and place it inside:
   G4ThreeVector transPadWrtEmptyPad(dp_padPart2InternalShiftX,0,0);
 
-  
-
- 
+   
   ///////////////////////////////////////////
   // Logical and Physical Volume Creation
   //-----------------------------------------
   // Done after one solid object subsuming all of the geometry has been made.
-
   
   //Now attribute a physical material to the housing
-  G4LogicalVolume * log_padEmpty = new G4LogicalVolume(solid_padEmpty,
-						       air_mat,
-						       padEmptyNameLog);
+  G4LogicalVolume * log_padEmpty =
+    new G4LogicalVolume(solid_padEmpty,air_mat,padEmptyNameLog);
   log_padEmpty->SetVisAttributes(air_vis);
   
 
-  G4LogicalVolume * log_padConductor = new G4LogicalVolume(solid_padConductor,
-							   aluminum_mat,
-							   padConductorNameLog);
+  G4LogicalVolume * log_padConductor =
+    new G4LogicalVolume(solid_padConductor,aluminum_mat,padConductorNameLog);
   log_padConductor->SetVisAttributes(aluminum_vis);
-
-
   
   //Now, create a physical volume and G4PVPlacement for storing as the final
   //output. Also, create a dedicated lattice for this.
-  G4VPhysicalVolume* phys_padConductor = new G4PVPlacement(0,
-							   transPadWrtEmptyPad,
-							   log_padConductor,
-							   padConductorName,
-							   log_padEmpty,
-							   false,
-							   0,
-							   true);
-  G4LatticePhysical* AlPhysical_padConductor
-    = new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,dp_scDelta0_Al,
-			    dp_scTeff_Al,dp_scDn_Al, dp_scTauQPTrap_Al);
+  G4VPhysicalVolume* phys_padConductor =
+    new G4PVPlacement(0,transPadWrtEmptyPad,log_padConductor,
+		      padConductorName,log_padEmpty,false,0,true);
+  
+  G4LatticePhysical* AlPhysical_padConductor =
+    new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,dp_scDelta0_Al,
+			  dp_scTeff_Al,dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_padConductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(phys_padConductor,AlPhysical_padConductor);  
-
   
-  G4VPhysicalVolume* phys_padEmpty = new G4PVPlacement(pRot,
-						       tLate,
-						       log_padEmpty,
-						       padEmptyName, 
-						       pMotherLogical,
-						       pMany,
-						       pCopyNo,
-						       pSurfChk);
-
+  
+  G4VPhysicalVolume* phys_padEmpty =
+    new G4PVPlacement(pRot,tLate,log_padEmpty,padEmptyName,pMotherLogical,
+		      pMany,pCopyNo,pSurfChk);
+  
 
   //Establish intra-pad boundaries
   if (borderContainer.count("AlVac") == 0) {
@@ -256,29 +236,19 @@ void ValidationPad::ConstructPad(G4RotationMatrix * pRot,
 				AlVacBoundary);
   new G4CMPLogicalBorderSurface(boundaryName2, phys_padEmpty, phys_padConductor,
 				AlVacBoundary);
-
   
   //Push these back into the fundamental volume list. These will also serve as
   //the things we need to establish boundaries for
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",padEmptyName,phys_padEmpty));
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",padConductorName,phys_padConductor));
-
-
   
   // Lastly, make the logical volume and physical volume of the top/mother
   //object accessible data members
   fLog_output = log_padEmpty;
   fPhys_output = phys_padEmpty;
-
-
-  
-
 }
 
-
-
 std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> >
-ValidationPad::GetListOfAllFundamentalSubVolumes()
-{
+ValidationPad::GetListOfAllFundamentalSubVolumes() {
   return fFundamentalVolumeList;
 }

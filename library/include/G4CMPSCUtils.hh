@@ -37,12 +37,13 @@ public:
   
   //virtual void SetVerboseLevel(G4int vb) { scuVerboseLevel = vb; }
 
-protected:
-
-  //Processing: called by process and rate classes, so should be at least
-  //protected
+  //Processing: called by process and rate classes, but also called
+  //by G4CMPVProcess *for* its rate class, so needs to be public
   virtual void SetCurrentSCInfoToNull();
   virtual void LoadLatticeInfoIntoSCUtils(const G4LatticePhysical* theLat);
+
+  
+protected:
   
   //Since now rate classes and processes are actually the ones doing the
   //calculation, we need to make these protected instead of private

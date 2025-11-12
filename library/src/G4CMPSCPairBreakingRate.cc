@@ -33,7 +33,7 @@ G4double G4CMPSCPairBreakingRate::Rate(const G4Track& aTrack) const {
   //Need to check to see if the current lattice has a gap (i.e. IS a
   //superconductor). If not, then we need return infinite for this process,
   //since it can in principle/code it can still run in the non-SC crystals.
-  if ((this->GetLattice())->GetSCDelta0() <= 0.0){
+  if ((this->GetLattice())->GetSCDelta0() <= 0.0) {
     return 0.0;
   } else {
 
@@ -64,7 +64,7 @@ bool G4CMPSCPairBreakingRate::CheckToSeeSCParametersSet() const {
   if (fGap0Energy==0 || fTau0_ph == DBL_MAX || fTcrit == 0 || fTeff == 0) {
     //Means the whole material likely not set -- this is sometimes expected
     //during normal operation, so don't worry too much here.
-    if(fGap0Energy==0 && fTau0_ph == DBL_MAX && fTcrit == 0 && fTeff == 0) {
+    if (fGap0Energy==0 && fTau0_ph == DBL_MAX && fTcrit == 0 && fTeff == 0) {
       return false;
     } else {
       //^Means that the material is partially set -- this is probably a mistake
@@ -97,7 +97,7 @@ G4CMPSCPairBreakingRate::UpdateLookupTable(const G4LatticePhysical * theLat) {
   //1. If the lattice doesn't exist in the lattice container associated with
   //   this process yet, add it and do the full calculation of the curves we
   //   care about, storing them in a map
-  if(fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy.count(theLat)
+  if (fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy.count(theLat)
       == 0) {
     G4cout << "Computing new lookup table for SC pairbreaking process."
 	   << G4endl;

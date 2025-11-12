@@ -183,7 +183,7 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //Now that we have the resonator line and shunt capacitor, we should loop
   //through the fundamental volumes list and start making connections between
   //the empties and the in-plane base layer of which they are children
-  for( int iV = 0; iV < fFundamentalVolumeList.size(); ++iV ){
+  for (int iV = 0; iV < fFundamentalVolumeList.size(); ++iV) {
     if (std::get<0>(fFundamentalVolumeList[iV]).find("Vacuum") !=
 	std::string::npos) {
       G4String name1 = std::get<1>(fFundamentalVolumeList[iV]) + "_baseAlLayer";
@@ -225,7 +225,7 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   bool checkOverlaps = true;
 
   //Set up lattice information
-  if( logicalLatticeContainer.count("Aluminum") == 0 ){
+  if (logicalLatticeContainer.count("Aluminum") == 0) {
     std::cout << "Uh oh! Trying to access logicalLatticeContainer[Aluminum] but"
 	      << " it's not there..." << std::endl;
   }

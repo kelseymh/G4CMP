@@ -43,7 +43,7 @@ G4CMPQPRadiatesPhononProcess::PostStepDoIt(const G4Track& aTrack,
 					   const G4Step& aStep) {
   
   //Debugging
-  if (verboseLevel > 5){
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPRadiatesPhononProcess::PostStepDoIt --" << G4endl;
     G4cout << "PSDI Function Point A | poststeppoint velocity in QPRadiates "
 	   << "poststepdoit is: " << aStep.GetPostStepPoint()->GetVelocity()
@@ -120,7 +120,7 @@ GenerateRadiatedPhonon(G4double phonEnergy,const G4Track& aTrack,
 		       const G4Step& /*aStep*/) {
 
   //Debugging
-  if(verboseLevel > 5) {
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPRadiatesPhononProcess::GenerateRadiatedPhonon --"
 	   << G4endl;
   }
@@ -196,7 +196,7 @@ G4double G4CMPQPRadiatesPhononProcess::GetMeanFreePath(const G4Track& trk,
 						       G4ForceCondition* cond) {
 
   //Debugging
-  if(verboseLevel > 5) {
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPRadiatesPhononProcess::GetMeanFreePath --" << G4endl;
   }
   

@@ -40,7 +40,7 @@ G4VParticleChange* G4CMPSCPairBreakingProcess::
 PostStepDoIt(const G4Track& aTrack,const G4Step& aStep) {
 
   //Debugging
-  if( verboseLevel > 5 ){
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPSCPairBreakingProcess::PostStepDoIt --" << G4endl;
   }
     
@@ -141,7 +141,7 @@ G4double G4CMPSCPairBreakingProcess::QPEnergyRand(G4double Energy) const
   // Add buffer so first/last bins don't give zero denominator in pdfSum
 
   //Debugging
-  if( verboseLevel > 5 ){
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPSCPairBreakingProcess::QPEnergyRand --" << G4endl;
     G4cout << "QPER Function Point A | fGapEnergy is: "
 	   << fGapEnergy / CLHEP::eV << " eV." << G4endl;

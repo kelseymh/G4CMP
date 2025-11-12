@@ -34,7 +34,7 @@ void ValidationSteppingAction::UserSteppingAction( const G4Step * step ) {
   //Initialize/open a file here if it has not yet been defined. If I try doing
   //this in the constructor it doesn't seem to inherit the correct name from
   //the config manager...
-  if(!fOutputFile.is_open()){
+  if (!fOutputFile.is_open()) {
     G4String stepFileName = ValidationConfigManager::GetStepFileName();
     G4cout << "StepFileName: " << stepFileName << G4endl;
     
@@ -60,7 +60,7 @@ void ValidationSteppingAction::ExportStepInformation( const G4Step * step ) {
   int runNo = G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID();
   int eventNo = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
   
-  if( eventNo > 1000000 ){ return; }
+  if (eventNo > 1000000) { return; }
   int trackNo = step->GetTrack()->GetTrackID();
   std::string particleName 
     = step->GetTrack()->GetParticleDefinition()->GetParticleName();

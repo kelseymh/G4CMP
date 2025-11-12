@@ -28,7 +28,7 @@ G4double G4CMPQPRecombinationRate::Rate(const G4Track& aTrack) const
   
   //Put checks to see if parameters are defined HERE -- this happens before
   //the calls to the vector but has access to tau0_qp, etc.
-  if( !CheckToSeeSCParametersSet() ) return 0;
+  if (!CheckToSeeSCParametersSet()) return 0;
 
   //Boolean for checking to see if we're trying to access below our minimum
   //energy (in the case of a turnaround step)
@@ -130,7 +130,7 @@ std::vector<std::vector<G4double> >
 G4CMPQPRecombinationRate::ComputeNormalizedTauRecombinationVsEnergy() {
   
   //Debugging
-  if(verboseLevel > 5) {
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPRadiatesPhononRate::"
 	   << "ComputeNormalizedTauRecombinationVsEnergy --" << G4endl;
     G4cout << "CNTRVE Function Point A | In the calculation of a normalized "

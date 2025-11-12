@@ -146,7 +146,7 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
     //think that's the only case where this override could mess things up, and
     //it should be covered in that function already.
     this->LoadDataForTrack(&aTrack,true);
-    if(rateModel) rateModel->LoadDataForTrack(&aTrack,true);
+    if (rateModel) rateModel->LoadDataForTrack(&aTrack,true);
 
     //Debugging
     if (verboseLevel > 5) {
@@ -177,7 +177,7 @@ void G4CMPVProcess::UpdateSCAfterLatticeChange() {
   //material (since it's height-dependent).
   if ((this->theLattice)->GetSCTau0qp() == DBL_MAX) {
     this->SetCurrentSCInfoToNull();
-    if(rateModel) rateModel->SetCurrentSCInfoToNull();
+    if (rateModel) rateModel->SetCurrentSCInfoToNull();
     return;
   }
 

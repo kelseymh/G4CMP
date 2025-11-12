@@ -119,7 +119,7 @@ void G4CMPQPDiffusion::StartTracking(G4Track* track) {
   verboseLevel = G4CMPConfigManager::GetVerboseLevel();  
   
   //Debugging
-  if ( verboseLevel > 5 ){
+  if (verboseLevel > 5 ) {
     G4cout << "---------- G4CMPQPDiffusion::StartTracking ----------" << G4endl;
     G4cout << "ST Function Point A | StartTracking." << G4endl;
   }
@@ -169,7 +169,7 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
   }
   
   //If we're in a turnaround step, then kill
-  if (isActive == false){
+  if (isActive == false) {
 
     //Debugging
     if (verboseLevel > 5) {
@@ -197,7 +197,7 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
     
   //If our energy is appropriate and we can see diffusion info, trigger the
   //"meat" of this function
-  if ((energy >= fGapEnergy) && (fDn > 0)){ 
+  if ((energy >= fGapEnergy) && (fDn > 0)) { 
     isActive = true;
     *selection = NotCandidateForSelection;
     
@@ -218,13 +218,13 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
     //Should also be true for very small steps, since now the MFP is just the
     //safety and the timeStepToBoundary is the straight-line travel time.
     double timeTolerance = 1E-10; //For floating point errors    
-    if ( (fabs(currentMinimalStep/velocity - fTimeStepToBoundary) <
-	 timeTolerance) || fVerySmallStep ) { 
+    if ((fabs(currentMinimalStep/velocity - fTimeStepToBoundary) <
+	 timeTolerance) || fVerySmallStep) { 
 
       //Let's break this into two scenarios: very small step inside the soft
       //floor boundary and other, just so we explicitly know how small steps
       //are handled.
-      if ( fVerySmallStepInsideSoftFloor ) {
+      if (fVerySmallStepInsideSoftFloor) {
 	
 	//If we're starting on a boundary, then we want to make sure to make
 	//the path length just below what's needed. Otherwise, push us over
@@ -334,7 +334,7 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
 	}
 	
       }
-      while( fPathLength >= f2DSafety );
+      while (fPathLength >= f2DSafety);
 
       //Debugging
       if (verboseLevel > 5) {
@@ -601,7 +601,7 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
 			"QPDiffusion003",FatalException, msg);
 	  }
 	}
-	while( theNewDirection.dot(surfaceNorm) <= dotProductThreshold_Norm );
+	while (theNewDirection.dot(surfaceNorm) <= dotProductThreshold_Norm);
 	fNewDirection = theNewDirection;
 	
 	//Debugging
@@ -674,7 +674,7 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
 	//3. Lastly, also need to make sure that we're not overly close to
 	//   either of the tangent vectors (don't want to launch off parallel
 	//   to a surface for computational efficiency's sake).
-	while(!(theNewDir.dot(fOutgoingSurfaceTangent1) > minDot
+	while (!(theNewDir.dot(fOutgoingSurfaceTangent1) > minDot
 		&& theNewDir.dot(fOutgoingSurfaceTangent2) > minDot
 		&& (acosTang1Dot + acosTang2Dot < CLHEP::pi)
 		&& theNewDir.dot(fOutgoingSurfaceTangent1)
@@ -759,7 +759,7 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
 
 	//Retry the checknextstep
 	int maxNTries = 15; //Capped at 10 to limit bias to 10% on these steps
-	for(int iTry = 1; iTry <= maxNTries; ++iTry) {
+	for (int iTry = 1; iTry <= maxNTries; ++iTry) {
 	  nextStepSafety = 0;    
 	  nextStepLength = fSafetyHelper->CheckNextStep(fOldPosition,
 							fNewDirection,
@@ -1003,7 +1003,7 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
     
     //Loop indefinitely, up to a kill counter
     G4int killCounterNudgePos = 0;
-    while(1) {
+    while (1) {
 
       //If we've done this too many times, throw a flag
       killCounterNudgePos++;
@@ -1447,7 +1447,7 @@ FindDirectionToNearbyBoundary(const G4Track& track,
   //see this crop up, then we can delete this while block in a few weeks/months.
   G4double originalOption1Safety = option1Safety;
   G4double originalOption2Safety = option2Safety;
-  while(!(option2Safety > 0 && option1Safety > 0)) {
+  while (!(option2Safety > 0 && option1Safety > 0)) {
     G4ExceptionDescription msg;
     msg << "At least one of Option1Safety and Option2Safety is zero. Ideally, "
 	<< "this should never happen given the new hardFloor boundary scale."
@@ -1586,7 +1586,7 @@ CheckForPhantomBoundaryCrossings(G4ThreeVector trackPosition,
 				 G4double the2DSafety,
 				 G4double originalOption1Safety,
 				 G4double originalOption2Safety,
-				 G4ThreeVector outputDir){
+				 G4ThreeVector outputDir) {
   
   G4bool needToRepeatCalculation = false;
   G4ThreeVector thisPos = trackPosition;
@@ -1980,7 +1980,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
       std::map<std::string,bool> map_volName_isPresent;
       if (the2DSafety < fPicometerScale) {
 	const int nTries = 20;
-	for (int iTry = 0; iTry < nTries; ++iTry ){
+	for (int iTry = 0; iTry < nTries; ++iTry ) {
 
 	  G4ThreeVector randomDir = G4RandomDirection();
 	  G4ThreeVector newRandomPos = trackPosition + randomDir*fPicometerScale;
@@ -2099,7 +2099,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
 //info in the comments below
 G4double G4CMPQPDiffusion::HandleVerySmallSteps(G4double thisMFP,
 						G4double the2DSafety,
-						G4double velocity){
+						G4double velocity) {
 
   //Debugging
   if (verboseLevel > 5) {
@@ -2126,15 +2126,6 @@ G4double G4CMPQPDiffusion::HandleVerySmallSteps(G4double thisMFP,
 	     << " and that fVerySmallStep is true."
 	     << G4endl;
     }
-        
-    //First check some regimes, agnostic to boundary status
-    //if(the2DSafety > fSoftFloorBoundaryScale) {
-    //  G4ExceptionDescription msg;
-    //  msg << "In HandleVerySmallStep, the2DSafety > fEpsilonWalkOnSpheres."
-    //	  << G4endl;
-    //  G4Exception("G4CMPQPDiffusion::GetMeanFreePath", "QPDiffusion019",
-    //		  JustWarning, msg);
-    //}
         
     //Split this up into on-boundary case and not-on-boundary case. For
     //boundary, we cannot let transportation win because it's always going to
@@ -2257,7 +2248,7 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
 //This is meant to update superconductor info for the process if we move into
 //a new lattice. Custom to this process, which does not have an associated
 //rate model.
-void G4CMPQPDiffusion::UpdateSCAfterLatticeChange(){
+void G4CMPQPDiffusion::UpdateSCAfterLatticeChange() {
 
   //Debugging
   if (verboseLevel > 5) {
@@ -2328,7 +2319,7 @@ SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique() {
   //Loop indefinitely -- when we find a point under the curve, we'll break
   G4double sampledT = -1;
   G4int killCounter = 0;
-  while(1){
+  while (1) {
 
     //Check to make sure we're not exceeding large sample numbers
     killCounter++;
@@ -2463,7 +2454,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   //one but a clause that will continue if it sees it.
   std::vector<G4ThreeVector> goodOtherNorms;
   std::vector<G4ThreeVector> goodOtherPositions;
-  for(int iB = 0; iB < ((int)fBoundaryHistory.size()); ++iB) {
+  for (int iB = 0; iB < ((int)fBoundaryHistory.size()); ++iB) {
 
     //First, compute the standard deviation of the positions. This should be
     //done regardless of the norm, since it will give us a sense of how
@@ -2575,7 +2566,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
 
   //Debugging
   if (verboseLevel > 5) {
-    for(int iN = 0; iN < ((int)goodOtherNorms.size()); ++iN) {
+    for (int iN = 0; iN < ((int)goodOtherNorms.size()); ++iN) {
       G4cout << "CFSQIC Function Point BC | Good other norm: "
 	     << goodOtherNorms[iN] << ", pos: " << goodOtherPositions[iN]
 	     << G4endl;
@@ -2592,9 +2583,9 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   uniqueGoodPositions.push_back(goodOtherPositions[0]);
 
   //Loop over all of the other good norms and remove if not unique
-  for(int iN = 0; iN < ((int)goodOtherNorms.size()); ++iN) {
+  for (int iN = 0; iN < ((int)goodOtherNorms.size()); ++iN) {
     G4bool notUnique = false;
-    for(int iG = 0; iG < ((int)uniqueGoodNorms.size()); ++iG) {
+    for (int iG = 0; iG < ((int)uniqueGoodNorms.size()); ++iG) {
       if (fabs(goodOtherNorms[iN].dot(uniqueGoodNorms[iG])) >
 	 fDotProductDefiningUniqueNorms) {
 	notUnique = true;
@@ -2614,7 +2605,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
     G4cout << "CFSQIC Function Point C | Number of unique good norms: "
 	   << uniqueGoodNorms.size() << ", number of corresp. positions: "
 	   << uniqueGoodPositions.size() << G4endl;
-    for(int iU = 0; iU < ((int)uniqueGoodNorms.size()); ++iU) {
+    for (int iU = 0; iU < ((int)uniqueGoodNorms.size()); ++iU) {
       G4cout << "CFSQIC Function Point C | Unique Good *other* Norm: "
 	     << uniqueGoodNorms[iU] << " at position: "
 	     << uniqueGoodPositions[iU] << G4endl;
@@ -2627,7 +2618,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   //length of this unique good norms vector should never be larger than one.
   //However, in some more general geometries it may -- we'll have to figure
   //out what we want to do about that later. (REL PLACE FOR MORE GENERALITY)
-  if (uniqueGoodNorms.size() != 1){
+  if (uniqueGoodNorms.size() != 1) {
     G4ExceptionDescription msg;
     msg << "The number of unique good norms at this corner is somehow not equal"
 	<< " to 2. This is probably because we're looking at a curved geometry."
@@ -2680,7 +2671,7 @@ void G4CMPQPDiffusion::UpdateBoundaryHistory(G4int trackID,
 
   //Debugging
   if (verboseLevel > 5) {
-    for(int iB = 0; iB < ((int)fBoundaryHistory.size()); ++iB) {
+    for (int iB = 0; iB < ((int)fBoundaryHistory.size()); ++iB) {
       G4cout << "UBH Function Point A | Boundary position: "
 	     << fBoundaryHistory[iB].first.getX() << ", "
 	     << fBoundaryHistory[iB].first.getY() << G4endl;

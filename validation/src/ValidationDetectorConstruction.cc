@@ -68,8 +68,7 @@ ValidationDetectorConstruction::~ValidationDetectorConstruction() {
   delete fAl3NbSurfProp;
 }
 
-G4VPhysicalVolume* ValidationDetectorConstruction::Construct()
-{
+G4VPhysicalVolume* ValidationDetectorConstruction::Construct() {
   G4cout << "fConstructed first status: " << fConstructed << G4endl;
   
   if (fConstructed) {
@@ -86,7 +85,6 @@ G4VPhysicalVolume* ValidationDetectorConstruction::Construct()
     // NOTE: No need to redefine the G4CMPSurfaceProperties
     G4CMPLogicalBorderSurface::CleanSurfaceTable();
   }
-
   
   DefineMaterials();
   SetupGeometry();
@@ -95,8 +93,7 @@ G4VPhysicalVolume* ValidationDetectorConstruction::Construct()
   return fWorldPhys;
 }
 
-void ValidationDetectorConstruction::DefineMaterials()
-{ 
+void ValidationDetectorConstruction::DefineMaterials() { 
   G4NistManager* nistManager = G4NistManager::Instance();
 
   fLiquidHelium = nistManager->FindOrBuildMaterial("G4_AIR"); // to be corrected
@@ -109,8 +106,7 @@ void ValidationDetectorConstruction::DefineMaterials()
 }
 
 
-void ValidationDetectorConstruction::SetupGeometry()
-{
+void ValidationDetectorConstruction::SetupGeometry() {
   //Define the config manager
   int geometryID = ValidationConfigManager::Instance()->GetGeometryID();
   G4cout << "Starting with validation geometryID: " << geometryID << G4endl;
@@ -161,7 +157,7 @@ void ValidationDetectorConstruction::SetupGeometry()
 			  G4ThreeVector(0.0,0.0,(-dp_siThickness/2.0-dp_geThickness/2.0)),
 			  germaniumLogical,"germaniumPhysical", worldLogical,
 			  false,0);
-
+    
     //Next, we define a superconductor cylinder: Al1. Place it just below the
     //Ge and in contact. Needs to be thin enough so that quasielastic
     //scattering tests don't take forever, with one of the top/bottom
@@ -176,7 +172,7 @@ void ValidationDetectorConstruction::SetupGeometry()
 			  G4ThreeVector(0.0,0.0,(-dp_siThickness/2.0 - dp_geThickness - dp_aluminum1Thickness/2.0)),
 			  aluminum1Logical,"aluminum1Physical", worldLogical,
 			  false,0);
-
+    
     //Next, we define another superconductor, but make it a long G4Box: Al2.
     //This long strip tests diffusion physics. Place it just below Al1 and in
     //contact. Making it the same thickness as Al1 arbitrarily.
@@ -644,7 +640,7 @@ void ValidationDetectorConstruction::SetupGeometry()
 
     
     //If desired, set up the copper qubit housing
-    if( dp_useQubitHousing ){           
+    if (dp_useQubitHousing) {           
       ValidationQubitHousing * qubitHousing
 	= new ValidationQubitHousing(0,G4ThreeVector(0,0,0),"QubitHousing",
 				     worldLogical,false,0,checkOverlaps);
@@ -731,7 +727,7 @@ void ValidationDetectorConstruction::SetupGeometry()
     
     
       //Now set up the transmission line
-      if( dp_useTransmissionLine ){
+      if (dp_useTransmissionLine) {
 	
 	//Since it's within the ground plane exactly;
 	//0.5*(dp_housingDimZ) + dp_eps + dp_groundPlaneDimZ*0.5 ); 
@@ -821,7 +817,7 @@ void ValidationDetectorConstruction::SetupGeometry()
 					      std::get<2>(theTLTuple),
 					      fWorldPhys,fVacVacInterface);
 	  }
-	  if( std::get<0>(theTLTuple).find("Aluminum") != std::string::npos ){
+	  if (std::get<0>(theTLTuple).find("Aluminum") != std::string::npos) {
 	    
 	    G4CMPLogicalBorderSurface *
 	      border1_world_transmissionLineConductor
@@ -861,15 +857,15 @@ void ValidationDetectorConstruction::SetupGeometry()
     
   
       //Now set up a set of 6 resonator assemblies
-      if( dp_useResonatorAssembly ){
+      if (dp_useResonatorAssembly) {
 	int nR = 6;
-	for( int iR = 0; iR < nR; ++iR ){
+	for (int iR = 0; iR < nR; ++iR) {
       
 	  //First, get the translation vector for the resonator assembly
 	  //For the top three, don't do a rotation. For the bottom three, do
 	  G4ThreeVector resonatorAssemblyTranslate(0,0,0);
 	  G4RotationMatrix * rotAssembly = 0;
-	  if( iR <= 2 ){
+	  if (iR <= 2) {
 	    resonatorAssemblyTranslate
 	      = G4ThreeVector(dp_resonatorLateralSpacing*(iR-1)
 			      +dp_centralResonatorOffsetX,
@@ -877,8 +873,7 @@ void ValidationDetectorConstruction::SetupGeometry()
 			      + 0.5 * dp_transmissionLineCavityFullWidth,
 			      0.0);
 	    rotAssembly = 0;
-	  }
-	  else{
+	  } else {
 
 	    //Negative offset because qubit is mirrored on underside
 	    resonatorAssemblyTranslate
@@ -908,7 +903,7 @@ void ValidationDetectorConstruction::SetupGeometry()
 	    = resonatorAssembly->GetPhysicalVolume();
 
 	  //Do the logical border creation now
-	  for( int iSubVol = 0; iSubVol < resonatorAssembly->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol){
+	  for (int iSubVol = 0; iSubVol < resonatorAssembly->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
 
 	    std::tuple<std::string,G4String,G4VPhysicalVolume*> theResTuple
 	      = resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol];
@@ -920,7 +915,7 @@ void ValidationDetectorConstruction::SetupGeometry()
 
 	    
 	    //Set the chip/vacuum interfaces
-	    if( std::get<0>(theResTuple).find("Vacuum") != std::string::npos ){
+	    if (std::get<0>(theResTuple).find("Vacuum") != std::string::npos) {
 	      std::string tempName1 = "border_siliconChip_"
 		+ std::get<1>(theResTuple);
 	      std::string tempName2 = "border_"

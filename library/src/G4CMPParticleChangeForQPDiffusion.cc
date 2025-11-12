@@ -147,7 +147,7 @@ UpdateStepForPostStep(G4Step* pStep) {
   pPostStepPoint->SetPosition( thePosition );
     
   //Debugging
-  if( verboseLevel > 2 ){
+  if (verboseLevel > 2) {
     G4cout << "-- G4CMPParticleChangeForQPDiffusion::"
 	   << "UpdateStepForPostStep --" << G4endl;    
     G4cout << "USFPS Function Point A | the step status is: "
@@ -160,7 +160,7 @@ UpdateStepForPostStep(G4Step* pStep) {
   pPostStepPoint->SetVelocity(theVelocity);
 
   //Debugging
-  if( verboseLevel > 2 ){
+  if (verboseLevel > 2) {
     G4cout << "USFPS Function Point B | theLocalTime is set to: "
 	   << pPostStepPoint->GetLocalTime() << G4endl;
     G4cout << "USFPS Function Point B | theTimeChange is: " << theTimeChange
@@ -171,7 +171,7 @@ UpdateStepForPostStep(G4Step* pStep) {
   pPostStepPoint->SetLocalTime(pPostStepPoint->GetLocalTime());
       
   //Debugging
-  if( verboseLevel > 2 ){
+  if (verboseLevel > 2) {
     G4cout << "USFPS Function Point C | theGlobalTime is set to: "
 	   << pPostStepPoint->GetGlobalTime() << G4endl;
     G4cout << "USFPS Function Point C | theTimeChange is: " << theTimeChange

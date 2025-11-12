@@ -37,6 +37,8 @@ class G4VSolid;
 
 namespace G4CMP {
 
+  const G4ThreeVector nullVec(0,0,0); //For use in default initialization
+  
   G4ThreeVector GetLocalDirection(const G4VTouchable* touch,
 				  const G4ThreeVector& dir);
   
@@ -67,64 +69,63 @@ namespace G4CMP {
   G4ThreeVector GetSurfaceNormal(const G4Step& step);
 
   G4double Get2DSafety(const G4VTouchable* motherTouch,
-		       G4ThreeVector pos,
-		       G4ThreeVector momDir,
+		       const G4ThreeVector& pos_in,
+		       const G4ThreeVector& momDir_in,
 		       bool safetyFromABoundary,
 		       bool forceSweepSafetyForDaughters = false,
-		       G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
-		       G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
-		       G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
-
+		       const G4ThreeVector& surfaceNorm_in = nullVec,
+		       const G4ThreeVector& tangVect1_in = nullVec,
+		       const G4ThreeVector& tangVect2_in = nullVec);
+ 
   std::pair<G4double,G4ThreeVector>
-  Get2DSafetyWithDirection(const G4VTouchable* motherTouch, G4ThreeVector pos,
-			   G4ThreeVector momDir, bool safetyFromABoundary,
-			   G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
-			   G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
-			   G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
-  
+  Get2DSafetyWithDirection(const G4VTouchable* motherTouch,
+			   const G4ThreeVector& pos_in,
+			   const G4ThreeVector& momDir_in,
+			   bool safetyFromABoundary,
+			   const G4ThreeVector& surfaceNorm_in = nullVec,
+			   const G4ThreeVector& tangVect1_in = nullVec,
+			   const G4ThreeVector& tangVect2_in = nullVec);  
   
   G4double
-  Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos,
-				  const G4ThreeVector & momDir,
+  Compute2DSafetyToDaughterVolume(const G4ThreeVector& pos,
+				  const G4ThreeVector& momDir,
 				  G4LogicalVolume * motherLog,
 				  bool safetyFromABoundary,
 				  G4int daughterID,
 				  G4ThreeVector & returnDir,
 				  G4bool forceSweepSafetyForDaughters = false,
-				  G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
-				  G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
-				  G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
-					   
-  
+				  const G4ThreeVector& surfaceNorm_in = nullVec,
+				  const G4ThreeVector& tangVect1_in = nullVec,
+				  const G4ThreeVector& tangVect2_in = nullVec );					   
+
   G4double
   Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
 				const G4ThreeVector & pos,
 				bool safetyFromABoundary,
 				G4ThreeVector & returnDir,
-				G4ThreeVector surfaceNorm = G4ThreeVector(0,0,0),
-				G4ThreeVector tangVect1 = G4ThreeVector(0,0,0),
-				G4ThreeVector tangVect2 = G4ThreeVector(0,0,0));
-  
-  G4double Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid,
-					const G4ThreeVector & pos,
-					G4ThreeVector & returnDir,
-					G4ThreeVector surfaceNorm,
-					G4ThreeVector tangVect1,
-					G4ThreeVector tangVect2,
-					bool volIsMother);
+				const G4ThreeVector& surfaceNorm_in = nullVec,
+				const G4ThreeVector& tangVect1_in = nullVec,
+				const G4ThreeVector& tangVect2_in = nullVec );
+
+  G4double 
+  Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid,
+			       const G4ThreeVector & pos,
+			       G4ThreeVector & returnDir,
+			       const G4ThreeVector& surfaceNorm_in,
+			       const G4ThreeVector& tangVect1_in,
+			       const G4ThreeVector& tangVect2_in,
+			       bool volIsMother);
   
   G4double GetSafetyInZ(const G4VTouchable* motherTouch,
-			G4ThreeVector pos);
-    
+			const G4ThreeVector& pos_in);
   
   G4double Compute2DMotherSafetyFromtheBulk(const G4VSolid * motherSolid,
 					    const G4ThreeVector & pos,
 					    G4ThreeVector & returnDir);
 
   G4double Compute2DDaughterSweptSafety(const G4VSolid* volDaughterSolid,
-					G4ThreeVector pos,
+					const G4ThreeVector& pos_in,
 					G4ThreeVector & returnDir);
-  
   
   G4Navigator* GetNavigator();		// Non-tracking for point finding
   
@@ -148,6 +149,7 @@ namespace G4CMP {
   G4int FindNearestValley(const G4LatticePhysical* lat, G4ThreeVector ldir);
 
   G4ThreeVector RobustifyRandomDirIn2D(G4ThreeVector returnDir);
+  
 }
 
 #endif	/* G4CMPGeometryUtils_hh */

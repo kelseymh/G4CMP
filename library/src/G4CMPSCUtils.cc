@@ -131,7 +131,7 @@ void G4CMPSCUtils::CheckLatticeInfoForCompleteness() {
 
   //Check to see if any of the SC parameters are not at their default values,
   //i.e. if they have been set.
-  if( fGap0Energy != 0 ||
+  if (fGap0Energy != 0 ||
       fTau0_qp != DBL_MAX ||
       fTau0_ph != DBL_MAX ||
       fTcrit != 0 ||
@@ -139,7 +139,7 @@ void G4CMPSCUtils::CheckLatticeInfoForCompleteness() {
       fDn != 0) {     
     
     //If one of these is set, check to see if any of them are NOT set.
-    if( fGap0Energy == 0 ||
+    if (fGap0Energy == 0 ||
 	fTau0_qp == DBL_MAX ||
 	fTau0_ph == DBL_MAX ||
 	fTcrit == 0 ||
@@ -194,7 +194,7 @@ G4double G4CMPSCUtils::ComputeCurrentGapEnergyAtNonzeroT() {
     //where we can refine for speed, REL)
     double gapFactor = 0;
     for (int iT = 0; iT < fGapEnergyTempDependenceBins-1; ++iT) {
-      if( (fTeff/fTcrit) >= fGapEnergyTempDependence[iT][0] &&
+      if ((fTeff/fTcrit) >= fGapEnergyTempDependence[iT][0] &&
 	  (fTeff/fTcrit) < fGapEnergyTempDependence[iT+1][0]) {
 	gapFactor = fGapEnergyTempDependence[iT][1];
       }
@@ -234,7 +234,7 @@ G4double G4CMPSCUtils::ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit,
     //the same regardless of what the fTeff and fTcrit are
     double gapFactor = 0;
     for (int iT = 0; iT < fGapEnergyTempDependenceBins-1; ++iT) {
-      if( (Teff/Tcrit) >= fGapEnergyTempDependence[iT][0] &&
+      if ((Teff/Tcrit) >= fGapEnergyTempDependence[iT][0] &&
 	  (Teff/Tcrit) < fGapEnergyTempDependence[iT+1][0]) {
 	gapFactor = fGapEnergyTempDependence[iT][1];
       }

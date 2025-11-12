@@ -56,7 +56,7 @@ G4double G4CMPQPBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
 						 G4double /*prevStepLength*/,
 						 G4ForceCondition* condition) {
   //Debugging
-  if(verboseLevel > 5) {
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::GetMeanFreePath() --" << G4endl;
   }
   
@@ -69,8 +69,8 @@ G4double G4CMPQPBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
   double eKin = aTrack.GetKineticEnergy();
   G4VPhysicalVolume * currentVol = aTrack.GetVolume();
   G4double stepNumber = aTrack.GetCurrentStepNumber();
-  if(stepNumber == 1) {
-    if(!IsValidQPVolume(currentVol,eKin)) {
+  if (stepNumber == 1) {
+    if (!IsValidQPVolume(currentVol,eKin)) {
       G4ExceptionDescription msg;
       msg << "Noticed that for the first step, our QP is either not in a "
 	  << "superconductor or that the QP energy, " << eKin / eV
@@ -95,7 +95,7 @@ G4double G4CMPQPBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
 G4bool G4CMPQPBoundaryProcess::IsValidQPVolume(G4VPhysicalVolume* volume,
 					       G4double qpEKin ) {
   //Debugging
-  if(verboseLevel > 5) {
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::IsValidQPVolume() --" << G4endl;
   }
   
@@ -120,19 +120,19 @@ G4bool G4CMPQPBoundaryProcess::IsValidQPVolume(G4VPhysicalVolume* volume,
   G4double Gap0Energy = theLat->GetSCDelta0();
   G4double Tcrit = theLat->GetSCTcrit();
   G4double Teff = theLat->GetSCTeff();
-  if(Gap0Energy == 0.0 || Tcrit == 0.0) return false;
+  if (Gap0Energy == 0.0 || Tcrit == 0.0) return false;
 
   //Calculate the nonzero-temperature gap from these using the SCUtils class.
   G4double GapEnergy = ComputeTestGapEnergyAtNonzeroT(Teff,Tcrit,Gap0Energy);
 
   //Debugging
-  if(verboseLevel > 5) {
+  if (verboseLevel > 5) {
     G4cout << "RWBoundary IVQPV Function Point A | gapEnergy is "
 	   << GapEnergy / CLHEP::eV << " eV" << G4endl;
   }
   
   //Condition 3
-  if(GapEnergy > qpEKin){ return false; }
+  if (GapEnergy > qpEKin) { return false; }
   
   //If we pass all of these, return true
   return true;
@@ -168,7 +168,7 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   verboseLevel = G4CMPConfigManager::GetVerboseLevel();
 
   //Debugging
-  if(verboseLevel > 5) {
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::PostStepDoIt() --" << G4endl;
     G4cout << "RWBoundary PSDI Function Point A | poststeppoint velocity in "
 	   << "RWBoundary poststepdoit is: "
@@ -182,7 +182,7 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   aParticleChange.Initialize(aTrack);
 
   //Debugging
-  if(verboseLevel > 5) {
+  if (verboseLevel > 5) {
     G4cout << "RWBoundary PSDI Function Point B | poststeppoint velocity in "
 	   << "RWBoundary poststepdoit, after initializing aParticleChange, "
 	   << "is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
@@ -195,7 +195,7 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   G4bool checkBoundary = IsGoodBoundary(aStep);
   
   //Debugging
-  if(verboseLevel > 5) {
+  if (verboseLevel > 5) {
     G4cout << "RWBoundary PSDI Function Point C | After IsGoodBoundary, value "
 	   << checkBoundary << G4endl;
   }
@@ -204,7 +204,7 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   //volumes to make sure we understand the relationship between the pre- and
   //post-boundary superconducting gaps. This updates those gap values. First,
   //debugging
-  if(verboseLevel > 5) {
+  if (verboseLevel > 5) {
     G4cout << "RWBoundary PSDI Function Point D | Before CheckQPVolumes, "
 	   << "PostStepDoIt" << G4endl;
   }  
@@ -304,7 +304,7 @@ void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
   //we're on a volume boundary before attempting reflection.
   G4ThreeVector surfacePoint;
   if (!CheckStepBoundary(aStep, surfacePoint)) {
-    if(verboseLevel > 5) {
+    if (verboseLevel > 5) {
       G4cout << "RWBoundary DR Function Point B | checking step boundary failed"
 	     << " in DoReflection" << G4endl;
     }
@@ -416,14 +416,14 @@ void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
 
   //Make sure that the norm and the vdir are in the same direction so we return
   //a norm that is in the direction of travel
-  if( vdir.dot(norm) < 0 ) norm = -1*norm;
+  if (vdir.dot(norm) < 0) norm = -1*norm;
   
   G4int transmissionType = 1;
   
   //For nice visualization/debugging
-  if(transmissionType == 0) { //REL THIS SHOULD BE DEPRECATED  
+  if (transmissionType == 0) { //REL THIS SHOULD BE DEPRECATED  
     aParticleChange.ProposeMomentumDirection(vdir);
-  } else if(transmissionType == 1) { //REL THIS SHOULD BE THE ONLY ONE HERE.
+  } else if (transmissionType == 1) { //REL THIS SHOULD BE THE ONLY ONE HERE.
     //^For use with QP transport
     aParticleChange.ProposeMomentumDirection(norm);
   } else { //Huh?

@@ -23,7 +23,7 @@ G4CMPPhononPolycrystalElasticScatteringRate::Rate(const G4Track& aTrack) const {
   G4double vel = aTrack.GetVelocity();
   //G4cout << "vel: " << vel << G4endl;
   G4double rate = 0;
-  if( scatMeanFreePath <= 0.0 ){ rate = 0; }
+  if (scatMeanFreePath <= 0.0) { rate = 0; }
   else{ rate = vel / scatMeanFreePath; }
 
   //G4cout << "ultimate rate: " << rate << G4endl;

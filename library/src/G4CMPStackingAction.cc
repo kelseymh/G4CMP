@@ -182,7 +182,7 @@ void G4CMPStackingAction::SetQPKinematics(const G4Track* aTrack) const
   G4ThreeVector momentumDir = aTrack->GetMomentumDirection();
 
   //Compute true velocity of propagation
-  if( G4CMPConfigManager::GetVerboseLevel() > 5 ){
+  if (G4CMPConfigManager::GetVerboseLevel() > 5) {
     G4cout << "In G4CMPStackingAction, calculating a velocity: "
 	   << aTrack->CalculateVelocity() << G4endl;
   }

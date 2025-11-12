@@ -122,7 +122,7 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
                                      G4ForceCondition* condition) {
   return GetMeanFreePath(aTrack, previousStepSize, condition);
 
-  if( verboseLevel > 5 ){
+  if (verboseLevel > 5) {
     G4cout << "In PostStepGetPhysicalInteractionLength: Track momentum"
 	   << "direction: " << aTrack.GetMomentumDirection() << G4endl;
     G4cout << "In PostStepGetPhysicalInteractionLength: Track position: "
@@ -164,7 +164,7 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   G4CMPBoundaryUtils::SetVerboseLevel(verboseLevel);  
   
   //Debugging
-  if( verboseLevel > 5 ){
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPPhononBoundaryProcess::PostStepDoIt --" << G4endl;
     G4cout << "Track momentum direction: " << aTrack.GetMomentumDirection()
 	   << G4endl;
@@ -199,7 +199,7 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 
 
   //Debugging
-  if( verboseLevel > 5 ){
+  if (verboseLevel > 5) {
     G4cout << "PSDI Function Point A | just about to apply boundary action"
 	   << G4endl;
   }
@@ -234,7 +234,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 	     G4ParticleChange& particleChange) {
 
   //Debugging
-  if( verboseLevel > 5 ){
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPPhononBoundaryProcess::DoReflection --" << G4endl;
     G4cout << "DR Function Point A | aStep pre-step touchable: "
 	   << aStep.GetPreStepPoint()->GetTouchable()->GetVolume()->GetName()
@@ -326,7 +326,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     G4Track* sec2 = particleChange.GetSecondary(1);
 
     //Debugging
-    if( verboseLevel > 5 ){
+    if (verboseLevel > 5) {
       G4cout << "DR Function Point CA | after DoDecay in surface-mediated "
 	     << "downconversion" << G4endl;
     }
@@ -356,7 +356,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     
     refltype = "specular";
   } else {
-    if (verboseLevel > 2 ){
+    if (verboseLevel > 2 ) {
       G4cout << "Diffuse reflection at boundary, with surface norm "
 	     << surfNorm << ", in lattice: " << theLattice
 	     << ", at surfacePoint: " << surfacePoint << "." << G4endl;
@@ -377,7 +377,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
   //Do a check to make sure that we catch exceptions (here not exactly zero
   //to catch floating point exceptions)
-  if( reflectedKDir.mag() < 1e-10 ){
+  if (reflectedKDir.mag() < 1e-10) {
     G4String msg = "ReflectedKDir has zero length, implying that a Lambertian "
       "vector attempt has failed. Will kill this phonon.";
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary013",
@@ -408,7 +408,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   // If reflection failed, report problem and kill the track.
   // For this check, need to make sure that surfNorm points opposite to the
   // direction of the incident k-Vector
-  if (verboseLevel > 5){
+  if (verboseLevel > 5) {
     G4cout << "DR Function Point I | Phonon incident waveVector: "
 	   << waveVector << ", non-generalized surfNorm: " << surfNorm
 	   << ", and attempted reflected k-vector " << reflectedKDir << G4endl;
@@ -753,7 +753,7 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
   UpdateSCAfterLatticeChange();
 
   //Debugging
-  if( verboseLevel > 5 ){    
+  if (verboseLevel > 5) {    
     G4cout << "DT Function Point C | the lattice at the end of doTransmission: "
 	   << theLattice << G4endl;
   }
@@ -798,7 +798,7 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
     int nTries = 1000;
     G4ThreeVector newAttemptWaveVector;
     G4bool successfulTransmission = false;
-    for( int iT = 0; iT < nTries; ++iT ){
+    for (int iT = 0; iT < nTries; ++iT) {
 
       //Make the length approximately 40% of the wavevector.
       //This seems egregious...

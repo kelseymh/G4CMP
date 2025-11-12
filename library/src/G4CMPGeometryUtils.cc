@@ -83,15 +83,25 @@ void G4CMP::RotateToGlobalPosition(const G4VTouchable* touch,
 //the sweep strategy.
 std::pair<G4double,G4ThreeVector>
 G4CMP::Get2DSafetyWithDirection(const G4VTouchable* motherTouch,
-				G4ThreeVector pos, G4ThreeVector momDir,
+				const G4ThreeVector& pos_in,
+				const G4ThreeVector& momDir_in,
 				bool safetyFromABoundary,
-				G4ThreeVector surfaceNorm,
-				G4ThreeVector tangVect1,
-				G4ThreeVector tangVect2) {  
+				const G4ThreeVector& surfaceNorm_in,
+				const G4ThreeVector& tangVect1_in,
+				const G4ThreeVector& tangVect2_in) {  
   G4int verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPGeometryUtils::Get2DSafetyWithDirection --" << G4endl;
   }
+
+  //Make copies of pos, momDir, surfaceNorm, and tangVect1/2 that can be
+  //modified as we go through the rest of the calculations
+  G4ThreeVector pos(pos_in);
+  G4ThreeVector momDir(momDir_in);
+  G4ThreeVector surfaceNorm(surfaceNorm_in);
+  G4ThreeVector tangVect1(tangVect1_in);
+  G4ThreeVector tangVect2(tangVect2_in);
+  
   
   //Define output variables
   G4double overallSafety = DBL_MAX;
@@ -144,7 +154,7 @@ G4CMP::Get2DSafetyWithDirection(const G4VTouchable* motherTouch,
       safetyDir = localDir;
       
       //Debugging
-      if(verboseLevel > 5) {
+      if (verboseLevel > 5) {
 	G4cout << "G2DSWD Function Point B | Overall safety during daughter"
 	       << "safety check " << iD << ": " << overallSafety << G4endl;
       }
@@ -177,12 +187,16 @@ G4CMP::Get2DSafetyWithDirection(const G4VTouchable* motherTouch,
 
 //Get safety in z direction. 
 G4double G4CMP::GetSafetyInZ(const G4VTouchable* motherTouch,
-			     G4ThreeVector pos)
+			     const G4ThreeVector& pos_in)
 {
   G4int verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPGeometryUtils::GetSafetyInZ() --" << G4endl;
   }
+
+  //Taking const ref pos_in to a copy that can be changed
+  G4ThreeVector pos(pos_in);
+
   
 
   //Get the mother volume information
@@ -194,7 +208,7 @@ G4double G4CMP::GetSafetyInZ(const G4VTouchable* motherTouch,
     motherSolid->DistanceToOut(pos,G4ThreeVector(0,0,1));
   G4double negativeZSafety =
     motherSolid->DistanceToOut(pos,G4ThreeVector(0,0,-1));
-  if (positiveZSafety < negativeZSafety){
+  if (positiveZSafety < negativeZSafety) {
     return positiveZSafety;
   }
   return negativeZSafety;
@@ -217,18 +231,28 @@ G4double G4CMP::GetSafetyInZ(const G4VTouchable* motherTouch,
 //7. If we are computing a constrained safety (to get a QP unstuck from a
 //   corner), the other outgoing tangent vector at the corner
 G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch,
-			    G4ThreeVector pos,
-			    G4ThreeVector momDir,
+			    const G4ThreeVector& pos_in,
+			    const G4ThreeVector& momDir_in,
 			    bool safetyFromABoundary,
 			    bool forceSweepSafetyForDaughters,
-			    G4ThreeVector surfaceNorm,
-			    G4ThreeVector tangVect1,
-			    G4ThreeVector tangVect2)
+			    const G4ThreeVector& surfaceNorm_in,
+			    const G4ThreeVector& tangVect1_in,
+			    const G4ThreeVector& tangVect2_in)
 {
   G4int verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPGeometryUtils::Get2DSafety --" << G4endl;
   }
+
+  //Make copies of pos, momDir, surfaceNorm, and tangVect1/2 that can be
+  //modified as we go through the rest of the calculations
+  G4ThreeVector pos(pos_in);
+  G4ThreeVector momDir(momDir_in);
+  G4ThreeVector surfaceNorm(surfaceNorm_in);
+  G4ThreeVector tangVect1(tangVect1_in);
+  G4ThreeVector tangVect2(tangVect2_in);
+
+  
   
   //Pseudocode
   //Define output variables
@@ -304,17 +328,24 @@ G4double G4CMP::Get2DSafety(const G4VTouchable* motherTouch,
 //safeties. Generally, don't want to use this on its own. Should only be
 //called from Get2DSafety, not by separate classes.
 G4double
-G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos,
-				       const G4ThreeVector & momDir,
+G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector& pos,
+				       const G4ThreeVector& momDir,
 				       G4LogicalVolume * motherLog,
 				       bool safetyFromABoundary,
 				       G4int daughterID,
 				       G4ThreeVector & returnDir,
 				       G4bool forceSweepSafetyForDaughters,
-				       G4ThreeVector surfaceNorm,
-				       G4ThreeVector tangVect1,
-				       G4ThreeVector tangVect2 ) {
+				       const G4ThreeVector& surfaceNorm_in,
+				       const G4ThreeVector& tangVect1_in,
+				       const G4ThreeVector& tangVect2_in ) {
 
+  //Make copies of pos, momDir, surfaceNorm, and tangVect1/2 that can be
+  //modified as we go through the rest of the calculations
+  G4ThreeVector surfaceNorm(surfaceNorm_in);
+  G4ThreeVector tangVect1(tangVect1_in);
+  G4ThreeVector tangVect2(tangVect2_in);
+
+  
   G4int verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPGeometryUtils::Compute2DSafetyToDaughterVolume --"
@@ -434,7 +465,7 @@ G4CMP::Compute2DSafetyToDaughterVolume(const G4ThreeVector & pos,
   } else {
     //^If we're not on a boundary we get easy logic
     
-    if (volDaughterSafety < safety){
+    if (volDaughterSafety < safety) {
       safety = volDaughterSafety;
     }
   }  
@@ -473,13 +504,21 @@ Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
 			      const G4ThreeVector & pos,
 			      bool safetyFromABoundary,
 			      G4ThreeVector & returnDir,
-			      G4ThreeVector surfaceNorm,G4ThreeVector tangVect1,
-			      G4ThreeVector tangVect2) {
+			      const G4ThreeVector& surfaceNorm_in,
+			      const G4ThreeVector& tangVect1_in,
+			      const G4ThreeVector& tangVect2_in) {
+
+  //Make copies of surfaceNorm and tangVect1/2 that can be
+  //modified as we go through the rest of the calculations
+  G4ThreeVector surfaceNorm(surfaceNorm_in);
+  G4ThreeVector tangVect1(tangVect1_in);
+  G4ThreeVector tangVect2(tangVect2_in);
+
   
   G4double motherSafety = DBL_MAX;
   
   //Check to make sure we're in fact inside the mother volume
-  if( motherSolid->Inside(pos) == kOutside ){
+  if (motherSolid->Inside(pos) == kOutside) {
     G4ExceptionDescription msg;
     msg << "G4CMP::Compute2DSafetyInMotherVolume seems to think we're outside "
 	<< "the mother volume." << G4endl;
@@ -526,13 +565,17 @@ Compute2DSafetyInMotherVolume(G4VSolid * motherSolid,
 //code duplication, but keeping separate for now.
 G4double G4CMP::
 Compute2DDaughterSweptSafety(const G4VSolid* volDaughterSolid,
-			     G4ThreeVector pos,G4ThreeVector & returnDir) {
+			     const G4ThreeVector& pos_in,
+			     G4ThreeVector & returnDir) {
 
   G4int verboseLevel = G4CMPConfigManager::GetVerboseLevel();
-  if(verboseLevel > 5) {
+  if (verboseLevel > 5) {
     G4cout << "-- G4CMPGeometryUtils::Compute2DDaughterSweptSafety() --"
 	   << G4endl;
   }
+
+  //Copy pos into changeable variable
+  G4ThreeVector pos(pos_in);
   
   //Spam a set of DistToOuts in different directions. This part slows things
   //down substantially and should be used sparingly. This part should be
@@ -551,7 +594,7 @@ Compute2DDaughterSweptSafety(const G4VSolid* volDaughterSolid,
     theDir.setY(y);
     theDir.setZ(0);
     G4double distToIn = volDaughterSolid->DistanceToIn(pos,theDir);
-    if(distToIn < daughterSafety) {
+    if (distToIn < daughterSafety) {
       daughterSafety = distToIn;
       returnDir = theDir;
     }
@@ -631,8 +674,16 @@ G4double G4CMP::
 Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid,
 			     const G4ThreeVector & pos,
 			     G4ThreeVector & returnDir,
-			     G4ThreeVector surfaceNorm, G4ThreeVector tangVect1,
-			     G4ThreeVector tangVect2,bool volIsMother) {
+			     const G4ThreeVector& surfaceNorm_in,
+			     const G4ThreeVector& tangVect1_in,
+			     const G4ThreeVector& tangVect2_in,
+			     bool volIsMother) {
+
+  //Make copies of surfaceNorm and tangVect1/2 that can be
+  //modified as we go through the rest of the calculations
+  G4ThreeVector surfaceNorm(surfaceNorm_in);
+  G4ThreeVector tangVect1(tangVect1_in);
+  G4ThreeVector tangVect2(tangVect2_in);
 
   G4int verboseLevel = G4CMPConfigManager::GetVerboseLevel();
   if (verboseLevel > 5) {
@@ -695,7 +746,7 @@ Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid,
     //effectively kills safeties computed in the "wrong direction" for very
     //large, near-pi angles, which we recognize can circumvent the following
     //logic block.
-    if (theDir.dot(centerDir) < (dotProductThreshold_Norm - smallTolerance)){
+    if (theDir.dot(centerDir) < (dotProductThreshold_Norm - smallTolerance)) {
       continue;
     }
     
@@ -704,7 +755,7 @@ Compute2DSafetyFromABoundary(const G4VSolid * theVolSolid,
     if (tangVect1.mag() > 0 && tangVect2.mag() > 0) {
       G4double minDot = tangVect1.dot(tangVect2); 
       if (theDir.dot(tangVect1) < minDot ||
-	  theDir.dot(tangVect2) < minDot){
+	  theDir.dot(tangVect2) < minDot) {
 	continue;
       }
     }
@@ -1064,7 +1115,7 @@ G4double G4CMP::ComputeDotProductThreshold_Norm(int full_circle_nV) {
 G4double G4CMP::ComputeDotProductThreshold_Tang(int full_circle_nV) {
 
   G4int half_circle_nV = full_circle_nV / 2;
-  if( half_circle_nV % 2 != 0 ){
+  if (half_circle_nV % 2 != 0) {
     G4ExceptionDescription msg;
     msg << "G4CMP::ComputeDotProductThreshold_Tang seems to see that "
 	<< "half_circle_nV is not divisible by two. Please fix." << G4endl;

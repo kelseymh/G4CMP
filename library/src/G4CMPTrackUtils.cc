@@ -42,7 +42,7 @@ void G4CMP::AttachTrackInfo(const G4Track& track) {
   } else if (IsChargeCarrier(track)) {
     G4int valley = IsElectron(track) ? ChooseValley(GetLattice(track)) : -1;
     AttachTrackInfo(track, valley);
-  } else if (IsQP(track)){
+  } else if (IsQP(track)) {
     AttachTrackInfo(track, new G4CMPVTrackInfo(GetLattice(track)));
   }
 }
@@ -119,22 +119,22 @@ G4bool G4CMP::HasTrackInfo(const G4Track& track) {
 G4LatticePhysical* G4CMP::GetLattice(const G4Track& track) {
 
   G4int verboseLevel = G4CMPConfigManager::GetVerboseLevel();
-  if( verboseLevel > 5 ){
+  if (verboseLevel > 5) {
     G4cout << "---------- G4CMPTrackUtils::GetLattice ----------" << G4endl;
   }  
 
   G4VPhysicalVolume* trkvol = track.GetVolume();
-  if (!trkvol){
+  if (!trkvol) {
     trkvol = G4CMP::GetVolumeAtPoint(track.GetPosition());
 
     //Debugging
-    if( verboseLevel > 5 ){
+    if (verboseLevel > 5) {
       G4cout << "GL Function Point A | Have to use builtin G4CMP utils call to get volume at point: " << trkvol->GetName() << G4endl;
     }       
   }
 
   //Debugging
-  if( verboseLevel > 5 ){
+  if (verboseLevel > 5) {
     G4cout << "GL Function Point B | Physical volume at track point: " << trkvol->GetName() << G4endl;
   }
   
@@ -143,7 +143,7 @@ G4LatticePhysical* G4CMP::GetLattice(const G4Track& track) {
     trkvol = track.GetStep()->GetPreStepPoint()->GetPhysicalVolume();
 
     //Debugging
-    if( verboseLevel > 5 ){
+    if (verboseLevel > 5) {
       G4cout << "GL Function Point C | There is no latticemanager-bonafide lattice for trkVol. Using the track pre-step volume physical volume, " << trkvol->GetName() << " to set the lattice." << G4endl;
     }      
   }
