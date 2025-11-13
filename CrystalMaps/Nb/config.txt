@@ -13,5 +13,7 @@ LDOS  0.055 # Approximate, but needs to be updated
 STDOS 0.6204
 FTDOS 0.33
 Debye 15 THz		# Can also use temperature or energy
+vsound 4920 m/s		# Longitudinal sound speed
+vtrans 2100 m/s		# Transverse sound speed
 sc_tau0_qp 0.149 ns     # Characteristic lifetime for QPs (from Kaplan)
 sc_tau0_ph 0.00417 ns   # Characteristic lifetime for phonons (from Kaplan)

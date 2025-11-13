@@ -206,7 +206,6 @@ G4CMPPhononBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   
   ApplyBoundaryAction(aTrack, aStep, phParticleChange);
   //ClearNumberOfInteractionLengthLeft(); // All processes should do this!
-  //REL This^ was removed by NT or WL, I think? Why?
 
   
   return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
@@ -328,7 +327,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     anharmonicDecay->DoDecay(aTrack, aStep, particleChange);
     G4Track* sec1 = particleChange.GetSecondary(0);
     G4Track* sec2 = particleChange.GetSecondary(1);
-
+        
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "DR Function Point CA | after DoDecay in surface-mediated "
@@ -347,17 +346,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
     UpdatePhononWavevector(*sec1, vec1);
     UpdatePhononWavevector(*sec2, vec2);
-
-    //Check for nans -- these have been causing issues
-    if( sec1->GetKineticEnergy() != sec1->GetKineticEnergy() ||
-	sec2->GetKineticEnergy() != sec2->GetKineticEnergy() ){
-      G4String msg = "In surface downconversion, secondary 1 or 2 has "
-	"energy=nan, which should be fixed. We will kill this phonon.";
-      G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary014",
-		  JustWarning, msg.c_str());
-      DoSimpleKill(aTrack, aStep, particleChange);
-    }
-    
+        
     return;
   } else if (random < downconversionProb + specProb) {
 
@@ -480,8 +469,6 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   G4ThreeVector reflectedKDir = waveVector.unit();
   G4double kPerp = reflectedKDir * generalizedSurfNorm;
   (reflectedKDir -= 2.*kPerp*generalizedSurfNorm).setMag(1.);
-  //REL^ changed to -= 8/25/25
-
     
   if (G4CMP::PhononVelocityIsInward(theLattice,mode,
 				    reflectedKDir,generalizedSurfNorm,
