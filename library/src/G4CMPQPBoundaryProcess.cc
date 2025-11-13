@@ -322,11 +322,16 @@ void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
   //To determine new random direction, need to know relationship between current
   //direction and the surface normal. If they are more parallel, then we need
   //to ensure that the new direction dotted into the norm is negative. If they
-  //are more antiparallel, we need to make sure that the new direction dotted into the norm is positive.    
-  G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);    
+  //are more antiparallel, we need to make sure that the new direction dotted into the norm is positive.
   G4ThreeVector pdir = aTrack.GetMomentumDirection();
-  G4ThreeVector newDir;
-  
+  G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep,pdir);
+
+  //WIth the norm now a generalized surface norm, the return direction should
+  //be in the opposite direction of that norm. The logic is handled
+  //within GetSurfaceNormal.
+  G4ThreeVector newDir = -1*norm; 
+
+  /*
   //your new momentum is very parallel to a surface. Hopefully shouldn't change
   //stuff too much. If initial momentum is in the direction of the surface
   //normal, the return direction should be just the negative of the surface
@@ -344,6 +349,7 @@ void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
 		FatalException,
 		msg);
   }
+  */
   
   //Debugging
   if (verboseLevel > 5) {
@@ -412,11 +418,7 @@ void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
   UpdateSCAfterLatticeChange();
     
   G4ThreeVector vdir = aTrack.GetMomentumDirection();
-  G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);
-
-  //Make sure that the norm and the vdir are in the same direction so we return
-  //a norm that is in the direction of travel
-  if (vdir.dot(norm) < 0) norm = -1*norm;
+  G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep,vdir);
   
   G4int transmissionType = 1;
   

@@ -113,11 +113,12 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
   }
 
   G4ThreeVector kvec = GetLocalWaveVector(aTrack);
+  G4ThreeVector vDir = aStep.GetPreStepPoint()->GetMomentumDirection();
 
   // NOTE:  K vector above is in local coords, must use local normal
   // Must use PreStepPoint volume for transform.
   G4ThreeVector surfNorm = G4CMP::GetLocalDirection(aTrack.GetTouchable(),
-                                                    G4CMP::GetSurfaceNormal(aStep));
+                                                    G4CMP::GetSurfaceNormal(aStep,vDir));
 
   if (verboseLevel>2) {
     G4cout << " AbsorbTrack: local k-perp " << kvec*surfNorm
@@ -181,7 +182,8 @@ DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
     G4cout << GetProcessName() << ": Electron reflected" << G4endl;
 
   // Get outward normal from current volume
-  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
+  G4ThreeVector vDir = aStep.GetPreStepPoint()->GetMomentumDirection();
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep,vDir);
 
   // Check whether step has proper boundary-stopped geometry
   G4ThreeVector surfacePoint;
@@ -230,7 +232,8 @@ DoReflectionHole(const G4Track& /*aTrack*/, const G4Step& aStep,
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Hole reflected" << G4endl;
 
-  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
+  G4ThreeVector vDir = aStep.GetPreStepPoint()->GetMomentumDirection();
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep,vDir);
 
   G4ThreeVector momDir = aStep.GetPostStepPoint()->GetMomentumDirection();
   if (verboseLevel>2)

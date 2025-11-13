@@ -64,7 +64,6 @@ protected:
 
   G4ThreeVector GetSpecularVector(const G4ThreeVector& waveVector,
                                   G4ThreeVector& surfNorm, G4int mode,
-				  G4ThreeVector& initialVDir,
                                   G4ThreeVector& surfacePoint);
 
   // Update navigator volume when position is changed

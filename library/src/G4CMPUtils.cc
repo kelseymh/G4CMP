@@ -228,40 +228,30 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
 
 // Generate cos(theta) law for diffuse reflection, ensuring that computed
 // vector is directed inward with respect to the surface normal.
-
+// IMPORTANT: We note here that this function assumes a "generalized"
+// surface norm, i.e. a norm that is opposite the incoming vel/mom
+// direction. If this is not true, things will break!
 G4ThreeVector
 G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
-			   const G4ThreeVector& surfNorm, G4int mode,
-			   const G4ThreeVector& incidentVDir) {
+			   const G4ThreeVector& surfNorm, G4int mode) {
   const G4ThreeVector surfPoint = GetCurrentTrack()->GetPosition();
-  return GetLambertianVector(theLattice, surfNorm, mode, incidentVDir,
+  return GetLambertianVector(theLattice, surfNorm, mode,
 			     surfPoint);
 }
 
-// Note here that the surfNorm here can be a "naive" surface norm calculated
-// from just considering the surface plane. The degeneracy between "inward"
-// and "outward" is broken with the call to the generalizedsurfacenormal,
-// which, when dotted into the incoming momentum, is always negative.
 
+// IMPORTANT: We note here that this function assumes a "generalized"
+// surface norm calculated as being opposite the incoming vel/mom direction.
+// If this not true, things will break/be undefined!
 G4ThreeVector
 G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
 			   const G4ThreeVector& surfNorm, G4int mode,
-			   const G4ThreeVector& incidentVDir,
 			   const G4ThreeVector& surfPoint) {
 
   G4ThreeVector reflectedKDir;
   const G4int maxTries = 10000;
   G4int nTries = 0;
-
-  //Due to a need to generalize this lambertian vector finding, we need to
-  //make sure that the incident momentum and the surface norm are in the same
-  //directions. Otherwise, take surfNorm to be -1*surfNorm. If we don't
-  //do this here, we can end up launching phonons in a lambertian way
-  //but in the wrong direction relative to the surface, which may sometimes
-  //be into vaccum.
-  G4ThreeVector generalizedSurfaceNorm =
-    G4CMP::GetGeneralizedSurfaceNormal(surfNorm,incidentVDir);
-
+  G4ThreeVector generalizedSurfaceNorm = surfNorm;
   
   do {
     reflectedKDir = LambertReflection(generalizedSurfaceNorm);

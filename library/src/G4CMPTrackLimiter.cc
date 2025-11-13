@@ -94,6 +94,7 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
   if (InvalidPosition(track)) {
     std::stringstream msg;
     msg << "Killing track " << track.GetParticleDefinition()->GetParticleName()
+	<< ", energy: " << track.GetKineticEnergy()
 	<< " inconsistent position " << track.GetPosition()
 	<< "\n vs. detector volume " << GetCurrentVolume()->GetName() + ":"
 	<< GetCurrentVolume()->GetCopyNo();

@@ -217,15 +217,18 @@ G4bool G4CMPPhononBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
                                                const G4Step& aStep) const {
   G4double absMinK = GetMaterialProperty("absMinK");
   G4ThreeVector k = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack)->k();
+  G4ThreeVector initialVDir = aStep.GetPreStepPoint()->GetMomentumDirection();
 
+  
   if (verboseLevel>1) {
     G4cout << GetProcessName() << "::AbsorbTrack() k " << k
-	   << "\n |k_perp| " << fabs(k*G4CMP::GetSurfaceNormal(aStep))
+	   << "\n |k_perp| "
+	   << fabs(k*G4CMP::GetSurfaceNormal(aStep,initialVDir))
 	   << " vs. absMinK " << absMinK << G4endl;
   }
 
   return (G4CMPBoundaryUtils::AbsorbTrack(aTrack,aStep) &&
-	  fabs(k*G4CMP::GetSurfaceNormal(aStep)) > absMinK);
+	  fabs(k*G4CMP::GetSurfaceNormal(aStep,initialVDir)) > absMinK);
 }
 
 
@@ -262,7 +265,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
   
   G4int mode = GetPolarization(aStep.GetTrack());
-  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep);
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep,initialVDir);
   if (verboseLevel>2) {
     G4cout << "\n Old wavevector direction " << waveVector.unit()
 	   << "\n Old momentum direction   " << aTrack.GetMomentumDirection()
@@ -289,6 +292,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   G4double specProb = surfProp->SpecularReflProb(freq);
   G4double diffuseProb = surfProp->DiffuseReflProb(freq);
   G4double downconversionProb = surfProp->AnharmonicReflProb(freq);
+
   //G4cout << "AnharmonicProb at point: " << surfacePoint << " is "
   //	 << downconversionProb << G4endl;
   //G4cout << "DiffuseProb at point: " << surfacePoint << " is "
@@ -334,6 +338,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     G4int mode1 = G4PhononPolarization::Get(sec1->GetParticleDefinition());
     G4int mode2 = G4PhononPolarization::Get(sec2->GetParticleDefinition());
 
+    //Now that surfNorm demands a vDir to initialize it, these lines are fine
+    //again
     G4ThreeVector vec1 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode1,
                                                     surfacePoint);
     G4ThreeVector vec2 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode2,
@@ -342,6 +348,16 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     UpdatePhononWavevector(*sec1, vec1);
     UpdatePhononWavevector(*sec2, vec2);
 
+    //Check for nans -- these have been causing issues
+    if( sec1->GetKineticEnergy() != sec1->GetKineticEnergy() ||
+	sec2->GetKineticEnergy() != sec2->GetKineticEnergy() ){
+      G4String msg = "In surface downconversion, secondary 1 or 2 has "
+	"energy=nan, which should be fixed. We will kill this phonon.";
+      G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary014",
+		  JustWarning, msg.c_str());
+      DoSimpleKill(aTrack, aStep, particleChange);
+    }
+    
     return;
   } else if (random < downconversionProb + specProb) {
 
@@ -351,7 +367,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     }
     
     // Modify surfacePoint & surfNorm in place
-    reflectedKDir = GetSpecularVector(waveVector, surfNorm, mode, initialVDir,
+    reflectedKDir = GetSpecularVector(waveVector, surfNorm, mode, 
 				      surfacePoint);
     
     refltype = "specular";
@@ -371,7 +387,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     }
 
     reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
-					       initialVDir, surfacePoint);    
+					       surfacePoint);    
     refltype = "diffuse";
   }
 
@@ -412,6 +428,8 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     G4cout << "DR Function Point I | Phonon incident waveVector: "
 	   << waveVector << ", non-generalized surfNorm: " << surfNorm
 	   << ", and attempted reflected k-vector " << reflectedKDir << G4endl;
+    G4cout << "Note: after mods, above surfnorm should in fact be generalized."
+	   << G4endl;
   }
 
   //REL changed to <= 0.0 8/25/25
@@ -436,18 +454,20 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 }
 
-// Generate specular reflection corrected for momentum dispersion
+// Generate specular reflection corrected for momentum dispersion.
+// IMPORTANT: We note that the surfnorm that is passed into this must
+// now be the generalized surfNorm. For SCDMS geometries, this should
+// align with the norm that you get naively, so no changes should
+// occur. For non-SCDMS geometries, this generalized surface norm means
+// we don't have to call a generalization in this function.
 
 G4ThreeVector G4CMPPhononBoundaryProcess::
 GetSpecularVector(const G4ThreeVector& waveVector,
                   G4ThreeVector& surfNorm, G4int mode,
-		  G4ThreeVector& initialVDir,
                   G4ThreeVector& surfacePoint) {
 
   //First, use our surface normal to find the generalized surface normal
-  G4ThreeVector generalizedSurfNorm =
-    G4CMP::GetGeneralizedSurfaceNormal(surfNorm,initialVDir);
-
+  G4ThreeVector generalizedSurfNorm = surfNorm;
 
   //Specular reflection should reverse momentum along normal. Now
   //kPerp should almost always be positive (where the "almost" is because
@@ -648,7 +668,6 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     stepLocalPos = surfacePoint;
     newNorm = surfNorm;
     reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
-					       initialVDir, 
                                                surfacePoint);
   }
 
@@ -783,9 +802,7 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
   //indicate the direction pointing with the incident phonon),
   //and then check the direction of the outgoing phonon with respect to it
   G4ThreeVector incMomDir = aStep.GetPreStepPoint()->GetMomentumDirection();
-  G4ThreeVector generalizedSurfNorm =
-    G4CMP::GetGeneralizedSurfaceNormal(G4CMP::GetSurfaceNormal(aStep),
-				       incMomDir);
+  G4ThreeVector generalizedSurfNorm = G4CMP::GetSurfaceNormal(aStep,incMomDir);
   
   //If the direction is not "outward" with respect to the direction from which
   //the phonon came, then we have an issue.

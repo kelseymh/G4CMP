@@ -132,12 +132,11 @@ ProcessAbsorption(const G4Track& track, const G4Step& step, G4double EDep,
   particleChange.ProposeNonIonizingEnergyDeposit(EDep);
 
   // Secondaries are emitted with cos(theta) distribution inward
-  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(step);
-
   //We'll need to eventually calculate the generalized surface norm
   //based on the above surface norm and the track's velocity, so
   //give track velocity
   G4ThreeVector vDir = track.GetMomentumDirection();
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(step,vDir);
   
   // Create secondaries for all of the generated phonon energies
   particleChange.SetNumberOfSecondaries(phononEnergies.size());
@@ -151,7 +150,7 @@ ProcessAbsorption(const G4Track& track, const G4Step& step, G4double EDep,
     G4int pol = ChoosePhononPolarization();
     reflectedKDir = G4CMP::GetLambertianVector(theLattice,
 					       surfNorm, pol,
-					       vDir, track.GetPosition());
+					       track.GetPosition());
 
     G4Track* phonon = G4CMP::CreatePhonon(GetCurrentTouchable(),
 					  pol, kmag*reflectedKDir,
@@ -184,18 +183,18 @@ ProcessAbsorption(const G4Track& track, const G4Step& step, G4double EDep,
 void G4CMPPhononElectrode::
 ProcessReflection(const G4Track& track, const G4Step& step,
 		  G4ParticleChange& particleChange) const {
-  // Reflection is relative to inward surface normal
-  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(step);
 
+  // Reflection is relative to inward surface normal
   //We'll need to eventually calculate the generalized surface norm
   //based on the above surface norm and the track's velocity, so
   //give track velocity
   G4ThreeVector vDir = track.GetMomentumDirection();
+  G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(step,vDir);
   
   G4int pol = GetPolarization(track);
 
   G4ThreeVector reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm,
-                                                           pol, vDir,
+                                                           pol,
 							   track.GetPosition());
 
   FillParticleChange(particleChange, track, reflectedKDir);

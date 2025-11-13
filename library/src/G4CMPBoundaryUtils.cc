@@ -779,7 +779,7 @@ void G4CMPBoundaryUtils::DoReflection(const G4Track& aTrack,
   }
 
   G4ThreeVector pdir = aTrack.GetMomentumDirection();
-  G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep);	// Outward normal
+  G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep,pdir); // Outward normal
   pdir -= 2.*(pdir.dot(norm))*norm;			// Reverse along normal
 
   aParticleChange.ProposeMomentumDirection(pdir);
