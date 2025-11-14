@@ -67,7 +67,7 @@ std::vector<Event> ReadInG4CMPStepTextFile(std::string filename) {
   int counter = 0;
   while (1) {
     if (!infile.good()) break;
-    if (infile.is_open()){
+    if (infile.is_open()) {
       std::getline(infile,wholeLine);
       
       //Tokenize the string (split between commas)
@@ -77,7 +77,7 @@ std::vector<Event> ReadInG4CMPStepTextFile(std::string filename) {
       while (getline(check1,token,' ')) {
 	tokens.push_back(token);
       }
-      if( tokens.size() == 0 ) break;
+      if (tokens.size() == 0) break;
 
 
       //If our event or run number changes, then start a new event and push it
@@ -397,15 +397,15 @@ void ValidationAnalysis_PolycrystalElasticScattering()
   TH1F * h_stepLength = new TH1F("h_stepLength","h_stepLength; Step Length [mm]; Steps",1000,0,0.001);
   
   //Loop over events
-  for( int iE = 0; iE < eventVect.size(); ++iE ){
+  for (int iE = 0; iE < eventVect.size(); ++iE) {
     Event theEvent = eventVect[iE];
     
     //Loop over tracks within events (treating all as basically equal)
-    for( int iT = 0; iT < theEvent.trackVect.size(); ++iT ){
+    for (int iT = 0; iT < theEvent.trackVect.size(); ++iT) {
       Track theTrack = theEvent.trackVect[iT];
       
       //Loop over steps within tracks
-      for( int iS = 0; iS < theTrack.stepVect.size(); ++iS ){
+      for (int iS = 0; iS < theTrack.stepVect.size(); ++iS) {
 	Step theStep1 = theTrack.stepVect[iS];
 	
 	//Compute quantities
@@ -1036,7 +1036,7 @@ void ValidationAnalysis_QPRecombination() {
 	      << h_stepDurationVsQPPreStepEnergy->GetXaxis()->GetBinCenter(iBX)
 	      << std::endl;
     if (h_stepDurationVsQPPreStepEnergy->GetXaxis()->GetBinCenter(iBX) <
-	1*gap_meV ){
+	1*gap_meV) {
       std::cout << "skipping this round." << std::endl;
       offset += 1;
       continue;
@@ -1091,8 +1091,8 @@ void ValidationAnalysis_QPRecombination() {
 
 //-----------------------------------------------------------------------------
 // Calculates the time of first passage density function for the interval.
-// This is bidirectional (assumes QP-killing BC on both ends). This function is used
-// in the validation function below
+// This is bidirectional (assumes QP-killing BC on both ends). This function
+// is used  in the validation function below
 TGraph * CalculateTOFPOnTheInterval() {
   int nPts = 10000;
   TGraph * g_lowTLimit = new TGraph(nPts);
@@ -1103,11 +1103,15 @@ TGraph * CalculateTOFPOnTheInterval() {
   double max_t = 2;
   double delta_t = (max_t - min_t) / ((double)nPts);
   double sumForNormalization = 0;
-  for( int iP = 0; iP < nPts; ++iP ){
+  for (int iP = 0; iP < nPts; ++iP) {
     double t = delta_t*iP + min_t;
-    double lowEVal = 8/TMath::Sqrt(
-				   TMath::Pi()) * (TMath::Exp(-1.0/16.0/t) / 16 / t / t * ( TMath::Sqrt(t) - 8*TMath::Power(t,1.5) + 192*TMath::Power(t,2.5) ) +
-						   TMath::Exp(-1.0/16.0/t)*(0.5*TMath::Power(t,-0.5) - 12*TMath::Power(t,0.5) + 480*TMath::Power(t,1.5)));
+    double lowEVal
+      = 8/TMath::Sqrt(TMath::Pi()) *
+      (TMath::Exp(-1.0/16.0/t) / 16 / t / t *
+       (TMath::Sqrt(t) - 8*TMath::Power(t,1.5) + 192*TMath::Power(t,2.5) ) +
+       TMath::Exp(-1.0/16.0/t)*
+       (0.5*TMath::Power(t,-0.5) - 12*TMath::Power(t,0.5)
+	+ 480*TMath::Power(t,1.5)));
     
     double highEVal = 4*TMath::Pi()*TMath::Exp(-TMath::Pi()*TMath::Pi()*t);
     g_lowTLimit->SetPoint(iP,t,lowEVal);
@@ -1115,14 +1119,15 @@ TGraph * CalculateTOFPOnTheInterval() {
     
     
     //Match limits
-    double t_scaling_ns = 2.0*2.0/18.0*1e9; //Scaling to get us to real time (instead of dimensionless time).
+    //Scaling to get us to real time (instead of dimensionless time).
+    double t_scaling_ns = 2.0*2.0/18.0*1e9; 
     // Above, 2 cm is used as it is the length of the bar.
-    // Above, 18 cm2/s is used as it is the diffusion constant expected for near-gap QPs, given energy dependence.
-    if(t < 0.033){      
+    // Above, 18 cm2/s is used as it is the diffusion constant expected for
+    //near-gap QPs, given energy dependence.
+    if (t < 0.033) {      
       g_out->SetPoint(iP,t*t_scaling_ns,lowEVal);
       sumForNormalization += (lowEVal * delta_t * t_scaling_ns);
-    }
-    else{
+    } else {
       g_out->SetPoint(iP,t*t_scaling_ns,highEVal);
       sumForNormalization += (highEVal * delta_t * t_scaling_ns);
     }
@@ -1151,16 +1156,17 @@ TGraph * CalculateTOFPOnTheInterval() {
 }
 
 
-//---------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // Analysis of QP Diffusion (Time-of-first-passage checks)
 // (input = Validation_QPDiffusionTOFP)
-void ValidationAnalysis_QPDiffusionTOFP()
-{
+void ValidationAnalysis_QPDiffusionTOFP() {
   //Read in the events from the textfile
-  std::vector<Event> eventVect = ReadInG4CMPStepTextFile("Validation_QPDiffusionTOFP.txt");
+  std::vector<Event> eventVect
+    = ReadInG4CMPStepTextFile("Validation_QPDiffusionTOFP.txt");
   std::cout << "Done filling events." << std::endl;
 
-  //Primary goal of this analysis function: compute transmission at the Si-Ge interface
+  //Primary goal of this analysis function: compute transmission at the
+  //Si-Ge interface
   TFile * outFile = new TFile("Validation_QPDiffusionTOFP.root","RECREATE");
   
   //Histogram definitions. 
@@ -1174,41 +1180,58 @@ void ValidationAnalysis_QPDiffusionTOFP()
   double minTime_ns = 0;
   double maxTime_ns = 3e8;
   
-  TH2F * h_postStepPointXY_qpAll = new TH2F("h_postStepPointXY_qpAll","h_postStepPointXY, All QP Steps; Step X [mm]; Step Y [mm]",
-					    1000,-barWidth_mm*1.1,barWidth_mm*1.1,
-					    1000,-barLength_mm*1.1,barLength_mm*1.1);
-  TH2F * h_postStepPointXZ_qpAll = new TH2F("h_postStepPointXZ_qpAll","h_postStepPointXZ, All QP Steps; Step X [mm]; Step Z [mm]",
-					    1000,-barWidth_mm*1.1,barWidth_mm*1.1,
-					    1000,minZ_mm,maxZ_mm);
-  TH2F * h_postStepPointYZ_qpAll = new TH2F("h_postStepPointYZ_qpAll","h_postStepPointYZ, All QP Steps; Step Y [mm]; Step Z [mm]",
-					    1000,-barLength_mm*1.1,barLength_mm*1.1,
-					    1000,minZ_mm,maxZ_mm);
+  TH2F * h_postStepPointXY_qpAll =
+    new TH2F("h_postStepPointXY_qpAll",
+	     "h_postStepPointXY, All QP Steps; Step X [mm]; Step Y [mm]",
+	     1000,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,-barLength_mm*1.1,barLength_mm*1.1);
+  
+  TH2F * h_postStepPointXZ_qpAll =
+    new TH2F("h_postStepPointXZ_qpAll",
+	     "h_postStepPointXZ, All QP Steps; Step X [mm]; Step Z [mm]",
+	     1000,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+  
+  TH2F * h_postStepPointYZ_qpAll =
+    new TH2F("h_postStepPointYZ_qpAll",
+	     "h_postStepPointYZ, All QP Steps; Step Y [mm]; Step Z [mm]",
+	     1000,-barLength_mm*1.1,barLength_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+  
+  TH2F * h_postStepPointXY_qpLast =
+    new TH2F("h_postStepPointXY_qpLast",
+	     "h_postStepPointXY, Last QP Steps; Step X [mm]; Step Y [mm]",
+	     1000,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,-barLength_mm*1.1,barLength_mm*1.1);
+  
+  TH2F * h_postStepPointXZ_qpLast =
+    new TH2F("h_postStepPointXZ_qpLast",
+	     "h_postStepPointXZ, Last QP Steps; Step X [mm]; Step Z [mm]",
+	     1000,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+  
+  TH2F * h_postStepPointYZ_qpLast =
+    new TH2F("h_postStepPointYZ_qpLast",
+	     "h_postStepPointYZ, Last QP Steps; Step Y [mm]; Step Z [mm]",
+	     1000,-barLength_mm*1.1,barLength_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
 
-  TH2F * h_postStepPointXY_qpLast = new TH2F("h_postStepPointXY_qpLast","h_postStepPointXY, Last QP Steps; Step X [mm]; Step Y [mm]",
-					     1000,-barWidth_mm*1.1,barWidth_mm*1.1,
-					     1000,-barLength_mm*1.1,barLength_mm*1.1);
-  TH2F * h_postStepPointXZ_qpLast = new TH2F("h_postStepPointXZ_qpLast","h_postStepPointXZ, Last QP Steps; Step X [mm]; Step Z [mm]",
-					     1000,-barWidth_mm*1.1,barWidth_mm*1.1,
-					     1000,minZ_mm,maxZ_mm);
-  TH2F * h_postStepPointYZ_qpLast = new TH2F("h_postStepPointYZ_qpLast","h_postStepPointYZ, Last QP Steps; Step Y [mm]; Step Z [mm]",
-					     1000,-barLength_mm*1.1,barLength_mm*1.1,
-					     1000,minZ_mm,maxZ_mm);
-
-  TH1F * h_timeOfLastStep = new TH1F("h_timeOfLastStep","h_timeOfLastStep; Time [ns]; QPs;",
-				     10000,minTime_ns,maxTime_ns);
+  TH1F * h_timeOfLastStep =
+    new TH1F("h_timeOfLastStep","h_timeOfLastStep; Time [ns]; QPs;",
+	     10000,minTime_ns,maxTime_ns);
 
   
   //Loop over events
-  for( int iE = 0; iE < eventVect.size(); ++iE ){
+  for (int iE = 0; iE < eventVect.size(); ++iE) {
     Event theEvent = eventVect[iE];
     
     //Loop over tracks within events (treating all as basically equal)
-    for( int iT = 0; iT < theEvent.trackVect.size(); ++iT ){
+    for (int iT = 0; iT < theEvent.trackVect.size(); ++iT) {
       Track theTrack = theEvent.trackVect[iT];
       
       //Loop over steps within tracks
       double lastRadStepTime_ns = 0;
-      for( int iS = 0; iS < theTrack.stepVect.size(); ++iS ){
+      for (int iS = 0; iS < theTrack.stepVect.size(); ++iS) {
 	Step theStep1 = theTrack.stepVect[iS];
        	
 	//Compute quantities
@@ -1234,17 +1257,18 @@ void ValidationAnalysis_QPDiffusionTOFP()
 	double t1 = theStep1.postStepT_ns;
 	       	
 	//Select only QPs
-	if( particleName.find("QP") != std::string::npos ){
+	if (particleName.find("QP") != std::string::npos) {
 
-	  //Fill all-QP-step histograms. Note these are not physically meaningful because
-	  //of the walk-on-spheres algorithm -- only steps with other physics processes (boundary hits,
+	  //Fill all-QP-step histograms. Note these are not physically
+	  //meaningful because of the walk-on-spheres algorithm -- only steps
+	  //with other physics processes (boundary hits,
 	  //radiation, etc.) have physically meaningful positions.
 	  h_postStepPointXY_qpAll->Fill(x1,y1);
 	  h_postStepPointXZ_qpAll->Fill(x1,z1);
 	  h_postStepPointYZ_qpAll->Fill(y1,z1);
 
 	  //Only fill this if the step is the last one
-	  if( iS == theTrack.stepVect.size()-1 ){
+	  if (iS == theTrack.stepVect.size()-1) {
 	    h_postStepPointXY_qpLast->Fill(x1,y1);
 	    h_postStepPointXZ_qpLast->Fill(x1,z1);
 	    h_postStepPointYZ_qpLast->Fill(y1,z1);
@@ -1270,7 +1294,9 @@ void ValidationAnalysis_QPDiffusionTOFP()
   g_TOFP_expected->Draw("Lsame");
   TLegend * l2 = new TLegend();
   l2->AddEntry(h_timeOfLastStep,"TOFP, Either Nb End");
-  l2->AddEntry(g_TOFP_expected,"TOFP, Theoretically Expected for Sim. Geometry");
+  l2->AddEntry(g_TOFP_expected,
+	       "TOFP, Theoretically Expected for Sim. Geometry");
+  
   l2->Draw("same");
   c10->SaveAs("TOFPComparison.png");
   
@@ -1278,18 +1304,20 @@ void ValidationAnalysis_QPDiffusionTOFP()
 }
 
 
-//---------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 // Analysis of QP Diffusion (Recombination death locations)
 // (input = Validation_QPDiffusionPlusRecombination)
 // This is literally the same analysis as the previous one, minus the TOFP bit.
-void ValidationAnalysis_QPDiffusionPlusRecombination()
-{
+void ValidationAnalysis_QPDiffusionPlusRecombination() {
   //Read in the events from the textfile
-  std::vector<Event> eventVect = ReadInG4CMPStepTextFile("Validation_QPDiffusionPlusRecombination.txt");
+  std::vector<Event> eventVect =
+    ReadInG4CMPStepTextFile("Validation_QPDiffusionPlusRecombination.txt");
   std::cout << "Done filling events." << std::endl;
 
-  //Primary goal of this analysis function: compute transmission at the Si-Ge interface
-  TFile * outFile = new TFile("Validation_QPDiffusionPlusRecombination.root","RECREATE");
+  //Primary goal of this analysis function: compute transmission at the Si-Ge
+  //interface
+  TFile * outFile =
+    new TFile("Validation_QPDiffusionPlusRecombination.root","RECREATE");
   
   //Histogram definitions. 
   double barWidth_mm = 2.0;
@@ -1302,41 +1330,58 @@ void ValidationAnalysis_QPDiffusionPlusRecombination()
   double minTime_ns = 0;
   double maxTime_ns = 3e8;
   
-  TH2F * h_postStepPointXY_qpAll = new TH2F("h_postStepPointXY_qpAll","h_postStepPointXY, All QP Steps; Step X [mm]; Step Y [mm]",
-					    100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					    1000,-barLength_mm*1.1,barLength_mm*1.1);
-  TH2F * h_postStepPointXZ_qpAll = new TH2F("h_postStepPointXZ_qpAll","h_postStepPointXZ, All QP Steps; Step X [mm]; Step Z [mm]",
-					    100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					    1000,minZ_mm,maxZ_mm);
-  TH2F * h_postStepPointYZ_qpAll = new TH2F("h_postStepPointYZ_qpAll","h_postStepPointYZ, All QP Steps; Step Y [mm]; Step Z [mm]",
-					    100,-barLength_mm*1.1,barLength_mm*1.1,
-					    1000,minZ_mm,maxZ_mm);
+  TH2F * h_postStepPointXY_qpAll =
+    new TH2F("h_postStepPointXY_qpAll",
+	     "h_postStepPointXY, All QP Steps; Step X [mm]; Step Y [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,-barLength_mm*1.1,barLength_mm*1.1);
+  
+  TH2F * h_postStepPointXZ_qpAll =
+    new TH2F("h_postStepPointXZ_qpAll",
+	     "h_postStepPointXZ, All QP Steps; Step X [mm]; Step Z [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+  
+  TH2F * h_postStepPointYZ_qpAll =
+    new TH2F("h_postStepPointYZ_qpAll",
+	     "h_postStepPointYZ, All QP Steps; Step Y [mm]; Step Z [mm]",
+	     100,-barLength_mm*1.1,barLength_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
 
-  TH2F * h_postStepPointXY_qpLast = new TH2F("h_postStepPointXY_qpLast","h_postStepPointXY, Last QP Steps; Step X [mm]; Step Y [mm]",
-					     100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					     1000,-barLength_mm*1.1,barLength_mm*1.1);
-  TH2F * h_postStepPointXZ_qpLast = new TH2F("h_postStepPointXZ_qpLast","h_postStepPointXZ, Last QP Steps; Step X [mm]; Step Z [mm]",
-					     100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					     1000,minZ_mm,maxZ_mm);
-  TH2F * h_postStepPointYZ_qpLast = new TH2F("h_postStepPointYZ_qpLast","h_postStepPointYZ, Last QP Steps; Step Y [mm]; Step Z [mm]",
-					     100,-barLength_mm*1.1,barLength_mm*1.1,
-					     1000,minZ_mm,maxZ_mm);
+  TH2F * h_postStepPointXY_qpLast =
+    new TH2F("h_postStepPointXY_qpLast",
+	     "h_postStepPointXY, Last QP Steps; Step X [mm]; Step Y [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,-barLength_mm*1.1,barLength_mm*1.1);
+  
+  TH2F * h_postStepPointXZ_qpLast =
+    new TH2F("h_postStepPointXZ_qpLast",
+	     "h_postStepPointXZ, Last QP Steps; Step X [mm]; Step Z [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+  
+  TH2F * h_postStepPointYZ_qpLast =
+    new TH2F("h_postStepPointYZ_qpLast",
+	     "h_postStepPointYZ, Last QP Steps; Step Y [mm]; Step Z [mm]",
+	     100,-barLength_mm*1.1,barLength_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
 
-  TH1F * h_timeOfLastStep = new TH1F("h_timeOfLastStep","h_timeOfLastStep; Time [ns]; QPs;",
+  TH1F * h_timeOfLastStep = new TH1F("h_timeOfLastStep",
+				     "h_timeOfLastStep; Time [ns]; QPs;",
 				     10000,minTime_ns,maxTime_ns);
   
   
   //Loop over events
-  for( int iE = 0; iE < eventVect.size(); ++iE ){
+  for (int iE = 0; iE < eventVect.size(); ++iE) {
     Event theEvent = eventVect[iE];
     
     //Loop over tracks within events (treating all as basically equal)
-    for( int iT = 0; iT < theEvent.trackVect.size(); ++iT ){
+    for (int iT = 0; iT < theEvent.trackVect.size(); ++iT) {
       Track theTrack = theEvent.trackVect[iT];
       
       //Loop over steps within tracks
       double lastRadStepTime_ns = 0;
-      for( int iS = 0; iS < theTrack.stepVect.size(); ++iS ){
+      for (int iS = 0; iS < theTrack.stepVect.size(); ++iS) {
 	Step theStep1 = theTrack.stepVect[iS];
        	
 	//Compute quantities
@@ -1362,17 +1407,18 @@ void ValidationAnalysis_QPDiffusionPlusRecombination()
 	double t1 = theStep1.postStepT_ns;
 	       	
 	//Select only QPs
-	if( particleName.find("QP") != std::string::npos ){
+	if (particleName.find("QP") != std::string::npos) {
 
-	  //Fill all-QP-step histograms. Note these are not physically meaningful because
-	  //of the walk-on-spheres algorithm -- only steps with other physics processes (boundary hits,
+	  //Fill all-QP-step histograms. Note these are not physically
+	  //meaningful because of the walk-on-spheres algorithm -- only steps
+	  //with other physics processes (boundary hits,
 	  //radiation, etc.) have physically meaningful positions.
 	  h_postStepPointXY_qpAll->Fill(x1,y1);
 	  h_postStepPointXZ_qpAll->Fill(x1,z1);
 	  h_postStepPointYZ_qpAll->Fill(y1,z1);
 
 	  //Only fill this if the step is the last one
-	  if( iS == theTrack.stepVect.size()-1 ){
+	  if (iS == theTrack.stepVect.size()-1) {
 	    h_postStepPointXY_qpLast->Fill(x1,y1);
 	    h_postStepPointXZ_qpLast->Fill(x1,z1);
 	    h_postStepPointYZ_qpLast->Fill(y1,z1);
@@ -1382,26 +1428,27 @@ void ValidationAnalysis_QPDiffusionPlusRecombination()
 	}
       }
     }
-  }
-  
+  }  
   outFile->Write();
 }
 
 
 
 
-//---------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 // Analysis of QP Diffusion (Traping locations)
 // (input = Validation_QPDiffusionPlusTrapping)
 // This is literally the same analysis as the previous one, but for trapping
-void ValidationAnalysis_QPDiffusionPlusTrapping()
-{
+void ValidationAnalysis_QPDiffusionPlusTrapping() {
   //Read in the events from the textfile
-  std::vector<Event> eventVect = ReadInG4CMPStepTextFile("Validation_QPDiffusionPlusTrapping.txt");
+  std::vector<Event> eventVect =
+    ReadInG4CMPStepTextFile("Validation_QPDiffusionPlusTrapping.txt");
   std::cout << "Done filling events." << std::endl;
 
-  //Primary goal of this analysis function: compute transmission at the Si-Ge interface
-  TFile * outFile = new TFile("Validation_QPDiffusionPlusTrapping.root","RECREATE");
+  //Primary goal of this analysis function: compute transmission at the Si-Ge
+  //interface
+  TFile * outFile =
+    new TFile("Validation_QPDiffusionPlusTrapping.root","RECREATE");
   
   //Histogram definitions. 
   double barWidth_mm = 2.0;
@@ -1414,45 +1461,64 @@ void ValidationAnalysis_QPDiffusionPlusTrapping()
   double minTime_ns = 0;
   double maxTime_ns = 3e8;
   
-  TH2F * h_postStepPointXY_qpAll = new TH2F("h_postStepPointXY_qpAll","h_postStepPointXY, All QP Steps; Step X [mm]; Step Y [mm]",
-					    100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					    1000,-barLength_mm*1.1,barLength_mm*1.1);
-  TH2F * h_postStepPointXZ_qpAll = new TH2F("h_postStepPointXZ_qpAll","h_postStepPointXZ, All QP Steps; Step X [mm]; Step Z [mm]",
-					    100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					    1000,minZ_mm,maxZ_mm);
-  TH2F * h_postStepPointYZ_qpAll = new TH2F("h_postStepPointYZ_qpAll","h_postStepPointYZ, All QP Steps; Step Y [mm]; Step Z [mm]",
-					    100,-barLength_mm*1.1,barLength_mm*1.1,
-					    1000,minZ_mm,maxZ_mm);
-
-  TH2F * h_postStepPointXY_qpLast = new TH2F("h_postStepPointXY_qpLast","h_postStepPointXY, Last QP Steps; Step X [mm]; Step Y [mm]",
-					     100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					     1000,-barLength_mm*1.1,barLength_mm*1.1);
-  TH2F * h_postStepPointXZ_qpLast = new TH2F("h_postStepPointXZ_qpLast","h_postStepPointXZ, Last QP Steps; Step X [mm]; Step Z [mm]",
-					     100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					     1000,minZ_mm,maxZ_mm);
-  TH2F * h_postStepPointYZ_qpLast = new TH2F("h_postStepPointYZ_qpLast","h_postStepPointYZ, Last QP Steps; Step Y [mm]; Step Z [mm]",
-					     100,-barLength_mm*1.1,barLength_mm*1.1,
-					     1000,minZ_mm,maxZ_mm);
-
-  TH2F * h_qpLastYVsQPEnergy = new TH2F("h_qpLastYVsQPEnergy","h_qpLastZVsQPEnergy, Last QP Step Y vs. energy; QP Energy [meV]; Last QP Step Y",
-					nStepsE,minE_meV,maxE_meV,
-					1000,-(barLength_mm*1.1)/2.0,(barLength_mm*1.1)/2.0);
+  TH2F * h_postStepPointXY_qpAll =
+    new TH2F("h_postStepPointXY_qpAll",
+	     "h_postStepPointXY, All QP Steps; Step X [mm]; Step Y [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,-barLength_mm*1.1,barLength_mm*1.1);
   
-  TH1F * h_timeOfLastStep = new TH1F("h_timeOfLastStep","h_timeOfLastStep; Time [ns]; QPs;",
-				     10000,minTime_ns,maxTime_ns);
+  TH2F * h_postStepPointXZ_qpAll =
+    new TH2F("h_postStepPointXZ_qpAll",
+	     "h_postStepPointXZ, All QP Steps; Step X [mm]; Step Z [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+  
+  TH2F * h_postStepPointYZ_qpAll =
+    new TH2F("h_postStepPointYZ_qpAll",
+	     "h_postStepPointYZ, All QP Steps; Step Y [mm]; Step Z [mm]",
+	     100,-barLength_mm*1.1,barLength_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+
+  TH2F * h_postStepPointXY_qpLast =
+    new TH2F("h_postStepPointXY_qpLast",
+	     "h_postStepPointXY, Last QP Steps; Step X [mm]; Step Y [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,-barLength_mm*1.1,barLength_mm*1.1);
+  
+  TH2F * h_postStepPointXZ_qpLast =
+    new TH2F("h_postStepPointXZ_qpLast",
+	     "h_postStepPointXZ, Last QP Steps; Step X [mm]; Step Z [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+  
+  TH2F * h_postStepPointYZ_qpLast =
+    new TH2F("h_postStepPointYZ_qpLast",
+	     "h_postStepPointYZ, Last QP Steps; Step Y [mm]; Step Z [mm]",
+	     100,-barLength_mm*1.1,barLength_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+
+  TH2F * h_qpLastYVsQPEnergy =
+    new TH2F("h_qpLastYVsQPEnergy",
+	     "h_qpLastZVsQPEnergy, Last QP Step Y vs. energy; QP Energy [meV]; Last QP Step Y",
+	     nStepsE,minE_meV,maxE_meV,
+	     1000,-(barLength_mm*1.1)/2.0,(barLength_mm*1.1)/2.0);
+  
+  TH1F * h_timeOfLastStep =
+    new TH1F("h_timeOfLastStep","h_timeOfLastStep; Time [ns]; QPs;",
+	     10000,minTime_ns,maxTime_ns);
   
   
   //Loop over events
-  for( int iE = 0; iE < eventVect.size(); ++iE ){
+  for (int iE = 0; iE < eventVect.size(); ++iE) {
     Event theEvent = eventVect[iE];
     
     //Loop over tracks within events (treating all as basically equal)
-    for( int iT = 0; iT < theEvent.trackVect.size(); ++iT ){
+    for (int iT = 0; iT < theEvent.trackVect.size(); ++iT) {
       Track theTrack = theEvent.trackVect[iT];
       
       //Loop over steps within tracks
       double lastRadStepTime_ns = 0;
-      for( int iS = 0; iS < theTrack.stepVect.size(); ++iS ){
+      for (int iS = 0; iS < theTrack.stepVect.size(); ++iS) {
 	Step theStep1 = theTrack.stepVect[iS];
        	
 	//Compute quantities
@@ -1478,17 +1544,18 @@ void ValidationAnalysis_QPDiffusionPlusTrapping()
 	double t1 = theStep1.postStepT_ns;
 	       	
 	//Select only QPs
-	if( particleName.find("QP") != std::string::npos ){
+	if (particleName.find("QP") != std::string::npos) {
 
-	  //Fill all-QP-step histograms. Note these are not physically meaningful because
-	  //of the walk-on-spheres algorithm -- only steps with other physics processes (boundary hits,
+	  //Fill all-QP-step histograms. Note these are not physically
+	  //meaningful because of the walk-on-spheres algorithm -- only steps
+	  //with other physics processes (boundary hits,
 	  //radiation, etc.) have physically meaningful positions.
 	  h_postStepPointXY_qpAll->Fill(x1,y1);
 	  h_postStepPointXZ_qpAll->Fill(x1,z1);
 	  h_postStepPointYZ_qpAll->Fill(y1,z1);
 
 	  //Only fill this if the step is the last one
-	  if( iS == theTrack.stepVect.size()-1 ){
+	  if (iS == theTrack.stepVect.size()-1) {
 	    h_postStepPointXY_qpLast->Fill(x1,y1);
 	    h_postStepPointXZ_qpLast->Fill(x1,z1);
 	    h_postStepPointYZ_qpLast->Fill(y1,z1);
@@ -1502,18 +1569,17 @@ void ValidationAnalysis_QPDiffusionPlusTrapping()
   outFile->Write();
 }
 
-
-
-//---------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 // Analysis of QP Diffusion With Multiple Gaps
 // (input = Validation_QPDiffusionMultiGap)
-void ValidationAnalysis_QPDiffusionMultiGap()
-{
+void ValidationAnalysis_QPDiffusionMultiGap() {
   //Read in the events from the textfile
-  std::vector<Event> eventVect = ReadInG4CMPStepTextFile("Validation_QPDiffusionMultiGap.txt");
+  std::vector<Event> eventVect =
+    ReadInG4CMPStepTextFile("Validation_QPDiffusionMultiGap.txt");
   std::cout << "Done filling events." << std::endl;
 
-  //Primary goal of this analysis function: compute transmission at the Si-Ge interface
+  //Primary goal of this analysis function: compute transmission at the Si-Ge
+  //interface
   TFile * outFile = new TFile("Validation_QPDiffusionMultiGap.root","RECREATE");
   
   //Histogram definitions. 
@@ -1527,69 +1593,97 @@ void ValidationAnalysis_QPDiffusionMultiGap()
   double minTime_ns = 0;
   double maxTime_ns = 3e8;
   
-  TH2F * h_postStepPointXY_qpAll = new TH2F("h_postStepPointXY_qpAll","h_postStepPointXY, All QP Steps; Step X [mm]; Step Y [mm]",
-					    100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					    1000,-barLength_mm*1.1,barLength_mm*1.1);
-  TH2F * h_postStepPointXZ_qpAll = new TH2F("h_postStepPointXZ_qpAll","h_postStepPointXZ, All QP Steps; Step X [mm]; Step Z [mm]",
-					    100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					    1000,minZ_mm,maxZ_mm);
-  TH2F * h_postStepPointYZ_qpAll = new TH2F("h_postStepPointYZ_qpAll","h_postStepPointYZ, All QP Steps; Step Y [mm]; Step Z [mm]",
-					    100,-barLength_mm*1.1,barLength_mm*1.1,
-					    1000,minZ_mm,maxZ_mm);
-
-  TH2F * h_postStepPointXY_qpLast = new TH2F("h_postStepPointXY_qpLast","h_postStepPointXY, Last QP Steps; Step X [mm]; Step Y [mm]",
-					     100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					     1000,-barLength_mm*1.1,barLength_mm*1.1);
-  TH2F * h_postStepPointXZ_qpLast = new TH2F("h_postStepPointXZ_qpLast","h_postStepPointXZ, Last QP Steps; Step X [mm]; Step Z [mm]",
-					     100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					     1000,minZ_mm,maxZ_mm);
-  TH2F * h_postStepPointYZ_qpLast = new TH2F("h_postStepPointYZ_qpLast","h_postStepPointYZ, Last QP Steps; Step Y [mm]; Step Z [mm]",
-					     100,-barLength_mm*1.1,barLength_mm*1.1,
-					     1000,minZ_mm,maxZ_mm);
-
-  TH2F * h_postStepPointXY_phonons = new TH2F("h_postStepPointXY_phonons","h_postStepPointXY_phonons; Step X [mm]; Step Y [mm]",
-					      100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					      1000,-barLength_mm*1.1,barLength_mm*1.1);					      
-
-  TH2F * h_postStepPointXZ_phonons = new TH2F("h_postStepPointXZ_phonons","h_postStepPointXZ_phonons; Step X [mm]; Step Z [mm]",
-					      100,-barWidth_mm*1.1,barWidth_mm*1.1,
-					      1000,minZ_mm,maxZ_mm);
-
-  TH2F * h_postStepPointYZ_phonons = new TH2F("h_postStepPointYZ_phonons","h_postStepPointYZ_phonons; Step Y [mm]; Step Z [mm]",
-					      100,-barLength_mm*1.1,barLength_mm*1.1,
-					      1000,minZ_mm,maxZ_mm);
-
-  TH2F * h_postStepPointXY_phononsLast = new TH2F("h_postStepPointXY_phononsLast","h_postStepPointXY_phononsLast; Step X [mm]; Step Y [mm]",
-						  100,-barWidth_mm*1.1,barWidth_mm*1.1,
-						  1000,-barLength_mm*1.1,barLength_mm*1.1);					      
-
-  TH2F * h_postStepPointXZ_phononsLast = new TH2F("h_postStepPointXZ_phononsLast","h_postStepPointXZ_phononsLast; Step X [mm]; Step Z [mm]",
-						  100,-barWidth_mm*1.1,barWidth_mm*1.1,
-						  1000,minZ_mm,maxZ_mm);
+  TH2F * h_postStepPointXY_qpAll =
+    new TH2F("h_postStepPointXY_qpAll",
+	     "h_postStepPointXY, All QP Steps; Step X [mm]; Step Y [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,-barLength_mm*1.1,barLength_mm*1.1);
   
-  TH2F * h_postStepPointYZ_phononsLast = new TH2F("h_postStepPointYZ_phononsLast","h_postStepPointYZ_phononsLast; Step Y [mm]; Step Z [mm]",
-						  100,-barLength_mm*1.1,barLength_mm*1.1,
-						  1000,minZ_mm,maxZ_mm);
+  TH2F * h_postStepPointXZ_qpAll =
+    new TH2F("h_postStepPointXZ_qpAll",
+	     "h_postStepPointXZ, All QP Steps; Step X [mm]; Step Z [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
   
+  TH2F * h_postStepPointYZ_qpAll =
+    new TH2F("h_postStepPointYZ_qpAll",
+	     "h_postStepPointYZ, All QP Steps; Step Y [mm]; Step Z [mm]",
+	     100,-barLength_mm*1.1,barLength_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+
+  TH2F * h_postStepPointXY_qpLast =
+    new TH2F("h_postStepPointXY_qpLast",
+	     "h_postStepPointXY, Last QP Steps; Step X [mm]; Step Y [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,-barLength_mm*1.1,barLength_mm*1.1);
   
+  TH2F * h_postStepPointXZ_qpLast =
+    new TH2F("h_postStepPointXZ_qpLast",
+	     "h_postStepPointXZ, Last QP Steps; Step X [mm]; Step Z [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
   
-  TH1F * h_timeOfLastStep_qp = new TH1F("h_timeOfLastStep_qp","h_timeOfLastStep_qp; Time [ns]; QPs;",
-					10000,minTime_ns,maxTime_ns);
-  TH1F * h_energyOfLastStep_qp = new TH1F("h_energyOfLastStep_qp","h_energyOfLastStep_qp; Time [ns]; QPs;",
-					  1000,minE_meV,maxE_meV);
+  TH2F * h_postStepPointYZ_qpLast =
+    new TH2F("h_postStepPointYZ_qpLast",
+	     "h_postStepPointYZ, Last QP Steps; Step Y [mm]; Step Z [mm]",
+	     100,-barLength_mm*1.1,barLength_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+
+  TH2F * h_postStepPointXY_phonons =
+    new TH2F("h_postStepPointXY_phonons",
+	     "h_postStepPointXY_phonons; Step X [mm]; Step Y [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,-barLength_mm*1.1,barLength_mm*1.1);
   
+  TH2F * h_postStepPointXZ_phonons =
+    new TH2F("h_postStepPointXZ_phonons",
+	     "h_postStepPointXZ_phonons; Step X [mm]; Step Z [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+
+  TH2F * h_postStepPointYZ_phonons =
+    new TH2F("h_postStepPointYZ_phonons",
+	     "h_postStepPointYZ_phonons; Step Y [mm]; Step Z [mm]",
+	     100,-barLength_mm*1.1,barLength_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+
+  TH2F * h_postStepPointXY_phononsLast =
+    new TH2F("h_postStepPointXY_phononsLast",
+	     "h_postStepPointXY_phononsLast; Step X [mm]; Step Y [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,-barLength_mm*1.1,barLength_mm*1.1);
+  
+  TH2F * h_postStepPointXZ_phononsLast =
+    new TH2F("h_postStepPointXZ_phononsLast",
+	     "h_postStepPointXZ_phononsLast; Step X [mm]; Step Z [mm]",
+	     100,-barWidth_mm*1.1,barWidth_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+  
+  TH2F * h_postStepPointYZ_phononsLast =
+    new TH2F("h_postStepPointYZ_phononsLast",
+	     "h_postStepPointYZ_phononsLast; Step Y [mm]; Step Z [mm]",
+	     100,-barLength_mm*1.1,barLength_mm*1.1,
+	     1000,minZ_mm,maxZ_mm);
+    
+  TH1F * h_timeOfLastStep_qp =
+    new TH1F("h_timeOfLastStep_qp","h_timeOfLastStep_qp; Time [ns]; QPs;",
+	     10000,minTime_ns,maxTime_ns);
+  
+  TH1F * h_energyOfLastStep_qp =
+    new TH1F("h_energyOfLastStep_qp","h_energyOfLastStep_qp; Time [ns]; QPs;",
+	     1000,minE_meV,maxE_meV);
   
   //Loop over events
-  for( int iE = 0; iE < eventVect.size(); ++iE ){
+  for (int iE = 0; iE < eventVect.size(); ++iE) {
     Event theEvent = eventVect[iE];
     
     //Loop over tracks within events (treating all as basically equal)
-    for( int iT = 0; iT < theEvent.trackVect.size(); ++iT ){
+    for (int iT = 0; iT < theEvent.trackVect.size(); ++iT) {
       Track theTrack = theEvent.trackVect[iT];
       
       //Loop over steps within tracks
       double lastRadStepTime_ns = 0;
-      for( int iS = 0; iS < theTrack.stepVect.size(); ++iS ){
+      for (int iS = 0; iS < theTrack.stepVect.size(); ++iS) {
 	Step theStep1 = theTrack.stepVect[iS];
        	
 	//Compute quantities
@@ -1615,17 +1709,18 @@ void ValidationAnalysis_QPDiffusionMultiGap()
 	double t1 = theStep1.postStepT_ns;
 	       	
 	//Select only QPs
-	if( particleName.find("QP") != std::string::npos ){
+	if (particleName.find("QP") != std::string::npos) {
 
-	  //Fill all-QP-step histograms. Note these are not physically meaningful because
-	  //of the walk-on-spheres algorithm -- only steps with other physics processes (boundary hits,
+	  //Fill all-QP-step histograms. Note these are not physically
+	  //meaningful because of the walk-on-spheres algorithm -- only steps
+	  //with other physics processes (boundary hits,
 	  //radiation, etc.) have physically meaningful positions.
 	  h_postStepPointXY_qpAll->Fill(x1,y1);
 	  h_postStepPointXZ_qpAll->Fill(x1,z1);
 	  h_postStepPointYZ_qpAll->Fill(y1,z1);
 
 	  //Only fill this if the step is the last one
-	  if( iS == theTrack.stepVect.size()-1 ){
+	  if (iS == theTrack.stepVect.size()-1) {
 	    h_postStepPointXY_qpLast->Fill(x1,y1);
 	    h_postStepPointXZ_qpLast->Fill(x1,z1);
 	    h_postStepPointYZ_qpLast->Fill(y1,z1);
@@ -1634,7 +1729,7 @@ void ValidationAnalysis_QPDiffusionMultiGap()
 	  }	  
 	}
 	//Select only phonons
-	if( particleName.find("phonon") != std::string::npos ){
+	if (particleName.find("phonon") != std::string::npos) {
 
 	  //Fill all-phonon-step histograms.
 	  h_postStepPointXY_phonons->Fill(x1,y1);
@@ -1642,7 +1737,7 @@ void ValidationAnalysis_QPDiffusionMultiGap()
 	  h_postStepPointYZ_phonons->Fill(y1,z1);
 
 	  //Only fill this if the step is the last one
-	  if( iS == theTrack.stepVect.size()-1 ){
+	  if (iS == theTrack.stepVect.size()-1) {
 	    h_postStepPointXY_phononsLast->Fill(x1,y1);
 	    h_postStepPointXZ_phononsLast->Fill(x1,z1);
 	    h_postStepPointYZ_phononsLast->Fill(y1,z1);
@@ -1654,14 +1749,9 @@ void ValidationAnalysis_QPDiffusionMultiGap()
   outFile->Write();
 }
 
-
-
-
-
-//---------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // Main function
-void RunCompleteValidationAnalysis()
-{
+void RunCompleteValidationAnalysis() {
   ValidationAnalysis_BoundaryTransmission();
   ValidationAnalysis_PolycrystalElasticScattering();
   ValidationAnalysis_SCPairbreaking();

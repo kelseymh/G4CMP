@@ -34,10 +34,6 @@ QuasiparticleSteppingAction::~QuasiparticleSteppingAction() {
 //Alternative constructor
 void QuasiparticleSteppingAction::UserSteppingAction( const G4Step * step ) {
   //For now, simple: look at the pre-step point volume name and the track name
-  //  std::cout << "REL stepping. PreSP volume name: " <<
-  // step->GetPreStepPoint()->GetPhysicalVolume()->GetName() <<
-  //", track particle type: " <<
-  //step->GetTrack()->GetParticleDefinition()->GetParticleName() << std::endl;
 
   //First up: do generic exporting of step information (no cuts made here)
   ExportStepInformation(step);

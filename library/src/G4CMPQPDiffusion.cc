@@ -89,10 +89,9 @@ G4CMPQPDiffusion::G4CMPQPDiffusion(const G4String& name,
   fNeedSweptSafetyInGetMFP = false;
   fPreemptivelyKillTrack = false;
 
-  
-  //REL A GENTLE REMINDER THAT WE CANNOT INSTANTIATE CONFIG MANAGER VALUES
-  //ONLY IN PROCESS OR RATE CONSTRUCTORS BECAUSE THEY COME BEFORE THE CONFIG
-  //MANAGER IS INSTANTIATED
+  //A gentle reminder from REL that we cannot instantiate config manager
+  //values only in the process or rate constructors because they come
+  //before the config manager is instantiated.
 }
 
 //Destructor
@@ -1065,6 +1064,9 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
   }
   
   //REL 7/7/25: May be deprecated info
+  //REL 11/13/25: Let this be a lesson to whoever is reading this that "may be
+  //              "deprecated info" is VERY unhelpful in determining whether
+  //              this block of text should be cleaned up. >auto wrist slap<
   //There are occasional edge cases where the 2D safety is zero here, which it
   //really shouldn't be. I believe these are probably because the safety checks
   //that transportation uses to determine if it wins the alongStepDoIt race may
@@ -1089,7 +1091,7 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
   //*currently* on a boundary (i.e. we're leaving from the boundary and the
   //step is at a steep enough angle not to leave the epsilon region around the
   //surface. This may not run if another process sends us within epsilon of
-  //the boundary... do we need to do anything about this? REL
+  //the boundary... do we need to do anything about this?
   if (the2DSafety < fSoftFloorBoundaryScale) {
 
     //Debugging
@@ -1171,9 +1173,6 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
       //just randomize the direction and move on.
       if (the2DSafety >= fSoftFloorBoundaryScale) {
 	
-	//G4ThreeVector returnDir = G4RandomDirection(); //REL things were
-	//working with this but it was shadowing the original returndir.
-	//Check to see if okay.
 	returnDir = G4RandomDirection();
 
 	//Every once in a while this may return perfectly vertical, i.e. in
@@ -1279,7 +1278,7 @@ FindDirectionToNearbyBoundary(const G4Track& track,
   //2. However, if the2DSafety is less than the deltaPath, we will reset this
   //   to be just shorter than the 2D safety so that we don't have weird edge
   //   cases where the upcoming shift sends a point across the surface.
-  //   REL 6/29: I think this should no longer happen because prior to FDTNB
+  //   6/29/25: I think this should no longer happen because prior to FDTNB
   //   if the safety is less than the hard floor boundary scale, then we jiggle
   //   it to be larger than the hard floor boundary scale
   if (deltaPath > the2DSafety) {
@@ -1441,10 +1440,9 @@ FindDirectionToNearbyBoundary(const G4Track& track,
   //are small enough to be below the picometer G4 tolerance bound
   //and end up being zero. If this is true, bring down the smallerSafety value
   //by a factor and recalculate. This is computationally inefficient but should
-  //be rare enough that it hopefully shouldn't matter too much. REL 6/29/25: I
+  //be rare enough that it hopefully shouldn't matter too much. 6/29/25: I
   //think this should actually no longer happen, given the fact that we're
-  //keeping all of these ops outside of the hard boundary floor. If we don't
-  //see this crop up, then we can delete this while block in a few weeks/months.
+  //keeping all of these ops outside of the hard boundary floor. 
   G4double originalOption1Safety = option1Safety;
   G4double originalOption2Safety = option2Safety;
   while (!(option2Safety > 0 && option1Safety > 0)) {
@@ -1530,7 +1528,6 @@ FindDirectionToNearbyBoundary(const G4Track& track,
 		       track.GetMomentumDirection(), 
 		       false,
 		       useSweepForDaughterSafety);
-  //I think momDir isn't actually used? Need to consider removing REL
   
   if (fabs((checkedSafety/the2DSafety) - 0.5) >
       fractionalSafetyDifferenceThreshold) {
@@ -1776,7 +1773,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
   //we're in a turnaround step. This assumes that the real distance to the next
   //geometric feature is not smaller than the boundTolerance -- in that case,
   //this may break down a bit. Return that this is inactive.
-  //REL 6/28: make this boundTolerance a small fraction of the hard floor
+  //6/28/25: make this boundTolerance a small fraction of the hard floor
   //scale. Maybe set to 0.1*hardFloor?
   fTrackOnBoundary = false;
   if (currentVolPlusEps != currentVolume && theStatus == fGeomBoundary) {
@@ -2130,7 +2127,7 @@ G4double G4CMPQPDiffusion::HandleVerySmallSteps(G4double thisMFP,
     //Split this up into on-boundary case and not-on-boundary case. For
     //boundary, we cannot let transportation win because it's always going to
     //expect to see a boundary in the direction of the pre-step point's
-    //momentum. REL 7/8/2025 -- don't remember why I wrote this, but I think that
+    //momentum. 7/8/2025 -- don't remember why I wrote this, but I think that
     //going from boundary-->bulk-->boundary is more controlled than going
     //from boundary-->boundary (i.e. G4 will be happier) so I want to do that.
     if (fTrackOnBoundary) {
@@ -2206,7 +2203,7 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
     
   //Always do a check to see if the current lattice stored in this process is
   //equal to the one that represents the volume that we're in. Note that we
-  //can't do this with the "GetLattice()" and "GetNextLattice()" calls
+  //can't do this with the "GetLattice()" and a hypothetical "GetNextLattice()"
   //here because at this point in the step, the pre- and post-step points both
   //point to the same volume. Since GetMeanFreePath is run at the beginning, I
   //think the point at which a boundary interaction is assessed comes later
@@ -2229,7 +2226,7 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
 	     << "lattice for process " << this->GetProcessName() << G4endl;
     }
     
-    //REL noting that if physical lattices are not 1:1 with volumes, something
+    //Noting that if physical lattices are not 1:1 with volumes, something
     //may get broken here... Should check a scenario of segmented SC...    
     this->LoadDataForTrack(&aTrack);
     return true;    
@@ -2617,7 +2614,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   //interest. For now, if we're really in a true discontinuous corner, the
   //length of this unique good norms vector should never be larger than one.
   //However, in some more general geometries it may -- we'll have to figure
-  //out what we want to do about that later. (REL PLACE FOR MORE GENERALITY)
+  //out what we want to do about that later. 
   if (uniqueGoodNorms.size() != 1) {
     G4ExceptionDescription msg;
     msg << "The number of unique good norms at this corner is somehow not equal"
@@ -2721,7 +2718,8 @@ FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
   }
   
   
-  //Now use the outOfPlane vector with the norms to get tangent vectors (with still-to-be-defined directions relative to the corner)
+  //Now use the outOfPlane vector with the norms to get tangent vectors
+  //(with still-to-be-defined directions relative to the corner)
   G4ThreeVector tangVect1 = (outOfPlane.cross(norm1)).unit();
   G4ThreeVector tangVect2 = (outOfPlane.cross(norm2)).unit();
 

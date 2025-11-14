@@ -59,8 +59,8 @@ class ValidationQubitHousing
 				     G4bool pSurfChk=false);
   
     //Access functions
-    G4VPhysicalVolume * GetPhysicalVolume(){ return fPhys_output; }
-    G4LogicalVolume * GetLogicalVolume(){ return fLog_output; }
+    G4VPhysicalVolume * GetPhysicalVolume() { return fPhys_output; }
+    G4LogicalVolume * GetLogicalVolume() { return fLog_output; }
   
     //Misc
     void ConstructQubitHousing(G4RotationMatrix * pRot,

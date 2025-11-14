@@ -139,9 +139,6 @@ G4double G4CMPPhononBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
 	   << G4endl;
   }
   UpdateMeanFreePathForLatticeChangeover(aTrack);
-
-  //G4cout << "REL Lattice seen by anharmonic decay is "
-  //<< anharmonicDecay->GetLattice()->GetLattice()->GetName() << G4endl;
   
   if (verboseLevel > 5) {
     G4cout << "Post UpdateMeanFreePathForLatticeChamgeover: Track momentum "
@@ -421,7 +418,6 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 	   << G4endl;
   }
 
-  //REL changed to <= 0.0 8/25/25
   if (surfNorm.dot(initialVDir.unit()) <= 0.0 ) { surfNorm *= -1; }
   if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm,
 				     surfacePoint)) {
@@ -476,11 +472,11 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     return reflectedKDir;
 
   
-  // REL: Since the "base" version of this assumes outward-pointing surface
+  // Since the "base" version of this assumes outward-pointing surface
   // normals and since our initial surfNorm should in principle point
   // outward for most SCDMS-specific volumes, we just leave the rest
   // of the code as-is and hope all is well.   
-  //  Below this line, I have not changed the algorithm except for the
+  // Below this line, I have not changed the algorithm except for the
   // lambertian call far below, and plan on leaving this for some combination
   // of WL, NT, MK, and myself to figure out/fix, as I'm not sure how
   // generalized this is for arbitrary volumes.
@@ -553,18 +549,10 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     // Step along kTan direction - this point is now outside the detector
     stepLocalPos += stepSize * kTan.unit();
 
-    //Old version
     // Get the local normal at the new surface point
     newNorm = solid->SurfaceNormal(stepLocalPos);
     // Check position status for flat skipper
-    isIn = solid->Inside(stepLocalPos);
-
-    //New version: should use a generalized surface norm -- here I'm not sure
-    //what to use as the incident momentum direction here... If the
-    //displacement is along a small angle, maybe we can just ask for the
-    //surfNorm that, when dotted into the original generalizedSurfNorm,
-    //gives a positive number? 
-    
+    isIn = solid->Inside(stepLocalPos);    
     
     // Check if the phonon is on a flat. Must be on the solid surface
     if (oldNorm == newNorm && isIn == kSurface) {
@@ -611,7 +599,6 @@ GetSpecularVector(const G4ThreeVector& waveVector,
 
     // Get perpendicular component of reflected k w/ new norm
     // (negative implied in kPerpMag for inward pointing)
-    //REL now positive-implied?
     kPerpV = kPerpMag * newNorm;
 
     // Calculate new reflectedKDir (kTan + kPerpV) and Vg

@@ -416,7 +416,7 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
   }
   
   //Otherwise, we need a bit of logic to handle the adjustment, since it's not obvious which boundary it should be targeting.
-  //REL: This is really nasty. Can we do the following logicking in a way that's more transparent? Basically, need to:
+  //This is really nasty. Can we do the following logicking in a way that's more transparent? Basically, need to:
   //1. Identify which volume (pre/post-PV) is internal to the other
   //2. Identify where the post-step point is relative to the volumes
   //3. Identify which volume (pre/post-PV) is closer to the post-step point
@@ -437,38 +437,6 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
 		   " and the post-step volume, " +
 		   postPV->GetName()).c_str());
 
-	/////
-      /*  REL this stuff is from NT I think. Chat with NT/MK about whether this is 100% necessary given TFR's upgrade
-	  But otherwise I think I will keep mine because it makes more general assumptions about phonons impinging on
-	  the interface between two crystals
-  // If post-step position not proper surface point, compute intersection
-  if (postIn != kSurface) {
-    if (buVerboseLevel>2)
-      G4cout << " OLD SURFACE POINT: " << surfacePoint << G4endl;
-
-    G4ThreeVector along = (postPos-prePos).unit();	// Trajectory direction
-    surfacePoint = prePos + preSolid->DistanceToOut(prePos,along)*along;
-    if (buVerboseLevel>2) {
-      G4cout << " moving preStep by " << preSolid->DistanceToOut(prePos,along)
-	     << " along " << along << G4endl
-	     << " NEW SURFACE POINT: " << surfacePoint << G4endl;
-    }
-
-    postIn = preSolid->Inside(surfacePoint);
-    if (buVerboseLevel>2) {
-      G4cout << "\n Is adjusted location on surface of preStep Volume? "
-	     << (postIn==kOutside ? "outside" :
-		 postIn==kInside  ? "inside" :
-		 postIn==kSurface ? "surface" : "INVALID") << G4endl;
-    }
-
-    // Double check calculation -- point "must" now be on surface!
-    if (postIn != kSurface) {
-      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-		  "Boundary005", EventMustBeAborted,
-		  "Boundary-limited step cannot find boundary surface point"
-		  );
-      */
       return false;
     }
 

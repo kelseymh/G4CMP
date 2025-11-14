@@ -345,7 +345,7 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
   //function should now be pointing in the direction identical to the incident
   //velocity. If the new velocity dotted into this generalized surface norm
   //is negative (and the trial step is inside the incident volume), then we've
-  //succeeded. Otherwise, return false. REL changed to < 0.0 8/25/25
+  //succeeded. Otherwise, return false. 
   return (vDir.dot(surfNorm) < 0.0 && trialStep == kInside);
 }
 
@@ -395,9 +395,6 @@ G4bool G4CMP::PhononVelocityIsOutward(const G4LatticePhysical* lattice,
   
   // Compare group velocity and surface normal in global coordinates
   RotateToGlobalDirection(touchable, vDir);
-
-  //G4cout << "In PhononVelocityIsOutward, vDir rotated to global direction is:
-  //" << vDir << G4endl;
   
   //In all discernible cases, the (generalized) surface norm passed into this
   //function should now be pointing in the direction identical to the incident
@@ -409,9 +406,7 @@ G4bool G4CMP::PhononVelocityIsOutward(const G4LatticePhysical* lattice,
   //volume (kInside == true), so there's not a "hard and fast" logic to this
   //as there is in the "directed inward/reflection" case
   
-  //G4cout << "In PhononVelocityIsOutward, Returning: " << (vDir.dot(surfNorm))
-  //<< " with vDir: " << vDir << " and surfNorm: " << surfNorm << G4endl;
-  return (vDir.dot(surfNorm) > 0.0); //REL changed 8/25/2025
+  return (vDir.dot(surfNorm) > 0.0);
 }
 
 

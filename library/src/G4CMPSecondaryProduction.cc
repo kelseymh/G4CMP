@@ -62,7 +62,7 @@ G4bool G4CMPSecondaryProduction::IsApplicable(const G4ParticleDefinition& pd) {
 
 
 // Override G4CMPProcessUtils for normal tracks outside lattice volumes
-// REL 10/28/25 -- currently commenting out overrideMomentumReset because
+// 10/28/25 -- currently commenting out overrideMomentumReset because
 // I don't think it's catastrophic here. Buuuuut I suspect that if we run
 // into scenarios where we are trying to produce secondary phonons that want
 // to go into different crystals from a single surface downconversion or

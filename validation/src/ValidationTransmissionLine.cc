@@ -412,7 +412,7 @@ ValidationTransmissionLine::GetListOfAllFundamentalSubVolumes() {
 
 void ValidationTransmissionLine::
 AddComplexGeometryPadSubVolumesToThisList(ValidationPad * pad) {
-  for( int iSubVol = 0; iSubVol < pad->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol){
+  for (int iSubVol = 0; iSubVol < pad->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
     std::tuple<std::string,G4String,G4VPhysicalVolume*>
       theTuple(std::get<0>(pad->GetListOfAllFundamentalSubVolumes()[iSubVol]),
 	       std::get<1>(pad->GetListOfAllFundamentalSubVolumes()[iSubVol]),

@@ -401,7 +401,7 @@ void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
 
     //Debugging
     if (verboseLevel > 5) {
-      G4cout << "RWBoundary DT Function Point B | REL checking step boundary "
+      G4cout << "RWBoundary DT Function Point B | Checking step boundary "
 	     << "failed in DoTransmission" << G4endl;
     }
     if (verboseLevel>2)
@@ -419,22 +419,7 @@ void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
     
   G4ThreeVector vdir = aTrack.GetMomentumDirection();
   G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep,vdir);
-  
-  G4int transmissionType = 1;
-  
-  //For nice visualization/debugging
-  if (transmissionType == 0) { //REL THIS SHOULD BE DEPRECATED  
-    aParticleChange.ProposeMomentumDirection(vdir);
-  } else if (transmissionType == 1) { //REL THIS SHOULD BE THE ONLY ONE HERE.
-    //^For use with QP transport
-    aParticleChange.ProposeMomentumDirection(norm);
-  } else { //Huh?
-    G4ExceptionDescription msg;
-    msg << "Noticed that we are using an undefined transmissionType in "
-	<< "DoTransmission for QPs. Fix.";
-    G4Exception("G4CMPQPBoundaryProcess::DoTransmission",
-		"QPBoundaryProcess004",FatalException, msg);
-  }
+  aParticleChange.ProposeMomentumDirection(norm); 
 }
 
 

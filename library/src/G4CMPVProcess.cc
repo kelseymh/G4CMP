@@ -64,11 +64,8 @@ void G4CMPVProcess::StartTracking(G4Track* track) {
   G4VProcess::StartTracking(track);	// Apply base class actions
   LoadDataForTrack(track);
   ConfigureRateModel();
-
-  //G4cout << "REL after the startTracking function runs LoadDataForTrack"
-  //<< G4endl;
   
-  //REL I'm putting this here because I don't think it successfully gets set
+  //I'm putting this here because I don't think it successfully gets set
   //to a non-default value if we only do it in the constructor? Should
   //probably ask Mike about this
   this->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
@@ -109,7 +106,7 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
     
   //Always do a check to see if the current lattice stored in this process is
   //equal to the one that represents the volume that we're in. Note that we
-  //can't do this with the "GetLattice()" and "GetNextLattice()" calls here
+  //can't do this with the "GetLattice()" and a hypothetical "GetNextLattice()" 
   //because at this point in the step, the pre- and post-step points both
   //point to the same volume. Since GetMeanFreePath is run at the beginning, I
   //think the point at which a boundary interaction is assessed comes later
@@ -127,7 +124,7 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
     }
     
     
-    //REL noting that if physical lattices are not 1:1 with volumes,
+    //Noting that if physical lattices are not 1:1 with volumes,
     //something may get broken here... Should check a scenario of segmented SC...
 
     //Noting here that since LoadDataForTrack updates the momentum based on
@@ -195,7 +192,7 @@ void G4CMPVProcess::UpdateSCAfterLatticeChange() {
 G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 					G4ForceCondition* condition) {
 
-  //REL I'm putting this here because I don't think it successfully gets set
+  //I'm putting this here because I don't think it successfully gets set
   //to a non-default value if we only do it in the constructor? Should
   //probably ask Mike about this
   this->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());

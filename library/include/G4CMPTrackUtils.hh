@@ -54,9 +54,6 @@ namespace G4CMP {
   // Get physical lattice associated with track
   G4LatticePhysical* GetLattice(const G4Track& track);
 
-  //REL: NB: this is currently not used -- just keeping it around in case I need it but should delete eventuallly
-  G4LatticePhysical* GetNextLattice(const G4Track & track);
-  
   // Look up process by name associated with track
   G4VProcess* FindProcess(const G4Track* track, const G4String& pname);
   G4VProcess* FindProcess(const G4Track& track, const G4String& pname);

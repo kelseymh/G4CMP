@@ -207,8 +207,6 @@ void G4CMPProcessUtils::SetCurrentTrack(const G4Track* track) {
 
 void G4CMPProcessUtils::SetLattice(const G4Track* track) {
   theLattice = track ? G4CMP::GetLattice(*track) : nullptr;
-  //  G4cout << "REL G4CMPProcessUtils::SetLattice calls on track info, to get
-  // lattice: " << theLattice << G4endl;
 }
 
 

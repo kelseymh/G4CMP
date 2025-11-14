@@ -95,7 +95,7 @@ PostStepDoIt(const G4Track& aTrack,const G4Step& aStep) {
 
     //Debugging
     if (verboseLevel > 5) {
-      G4cout << "PSDI Function Point B | REL Uh oh. Bogoliubov secondaries "
+      G4cout << "PSDI Function Point B | Uh oh. Bogoliubov secondaries "
 	     << "not produced somehow?" << G4endl;
     }
   }
@@ -147,7 +147,7 @@ G4double G4CMPSCPairBreakingProcess::QPEnergyRand(G4double Energy) const
 	   << fGapEnergy / CLHEP::eV << " eV." << G4endl;
   }
   
-  const G4double BUFF = 100000.; //REL used to be 1000, then 10000 (12/20/24)
+  const G4double BUFF = 100000.; //Used to be 1000, then 10000 (12/20/24)
   G4double xmin = fGapEnergy + (Energy - 2. * fGapEnergy) / BUFF;
   G4double xmax = fGapEnergy + (Energy - 2. * fGapEnergy) * (BUFF - 1.) / BUFF;
   G4double ymax = QPEnergyPDF(Energy, xmin);

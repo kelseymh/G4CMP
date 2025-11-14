@@ -68,7 +68,7 @@ G4CMPQPRadiatesPhononProcess::PostStepDoIt(const G4Track& aTrack,
   //Pseudocode
   //1. Determine if we're on a boundary surface. If we are, kill the event --
   //   if the code is working properly, this should basically never happen...
-  //   REL May need to revisit this. I think it's still true but will have to
+  //   May need to revisit this. I think it's still true but will have to
   //   check against the QP transport stuff.
   G4StepPoint * postStepPoint = aStep.GetPostStepPoint();
   if (postStepPoint->GetStepStatus() == fGeomBoundary ||

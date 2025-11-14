@@ -65,8 +65,8 @@ class ValidationTransmissionLine
 
   
     //Access functions
-    G4VPhysicalVolume * GetPhysicalVolume(){ return fPhys_output; }
-    G4LogicalVolume * GetLogicalVolume(){ return fLog_output; }
+    G4VPhysicalVolume * GetPhysicalVolume() { return fPhys_output; }
+    G4LogicalVolume * GetLogicalVolume() { return fLog_output; }
   
     //Misc
     void ConstructTransmissionLine(G4RotationMatrix * pRot,

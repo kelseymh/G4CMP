@@ -82,8 +82,8 @@ G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
 // Get scattering rates from current track's processes. Need to override with
 // the momentum reset stuff because G4CMPVProcess had that function change,
-// and so now function overriding doesn't happen naturally (REL 8/16/25)
-// REL 10/28/25: Since I don't actually use time stepper for phonons, I'm
+// and so now function overriding doesn't happen naturally (8/16/25)
+// 10/28/25: Since I don't actually use time stepper for phonons, I'm
 // actually not sure if we *need* need to override here. Keeping it in as an
 // option/reminder.
 

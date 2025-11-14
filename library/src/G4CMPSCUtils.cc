@@ -111,7 +111,7 @@ LoadLatticeInfoIntoSCUtils(const G4LatticePhysical * theLat) {
   fTcrit = theLat->GetSCTcrit();
   fTeff = theLat->GetSCTeff();
 
-  //REL. I think (?) we may want to move this one out to be in a dedicated
+  //I think (?) we may want to move this one out to be in a dedicated
   //rate process attached to the transport class. It seems like it's somewhat
   //specific to a single process. Ask Eric. I think what I want in here are
   //parameters that are useful for more than one class. This one seems a bit
@@ -191,7 +191,7 @@ G4double G4CMPSCUtils::ComputeCurrentGapEnergyAtNonzeroT() {
     //Now actually do the lookup. Assuming we're only establishing a
     //temperature once per instantiation of a new SC, we only have to do this
     //once. To make it straightforward, we can do a loop (but this is a place
-    //where we can refine for speed, REL)
+    //where we can refine for speed)
     double gapFactor = 0;
     for (int iT = 0; iT < fGapEnergyTempDependenceBins-1; ++iT) {
       if ((fTeff/fTcrit) >= fGapEnergyTempDependence[iT][0] &&
@@ -229,7 +229,7 @@ G4double G4CMPSCUtils::ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit,
     //Now actually do the lookup. Assuming we're only establishing a
     //temperature once per instantiation of a new SC, we only have to do this
     //once. To make it straightforward, we can do a loop (but this is a place
-    //where we can refine for speed, REL). We also can use the internal
+    //where we can refine for speed). We also can use the internal
     //fGapEnergyTempDependence because it's normalized, and is instantiated
     //the same regardless of what the fTeff and fTcrit are
     double gapFactor = 0;
@@ -297,7 +297,7 @@ GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhon
       //latter is in principle not physically inaccurate, but it seems
       //like floating point errors may cause it to occur? In any case, I'll
       //allow this one as a test and return the tau at the lowest energy
-      //bin. (REL take a look at this later -- it seems like this happens but
+      //bin. (Take a look at this later -- it seems like this happens but
       //the chance of a floating-point error to below the gap is
       //also seemingly negligible. Weird.)
       if (energy == minE) {
@@ -321,13 +321,13 @@ GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhon
   } else if (energy >= maxE) {
     //^If we're above the maximum energy considered, for now let's just set to
     //the max bin value (which should basically be zero if the bounds are set
-    //correctly). We should probably refine this a bit (REL) but that refinement
+    //correctly). We should probably refine this a bit but that refinement
     //may depend on which kind of particle AND which kind of process we're
     //looking at
     return tauVsPhononEnergy[nE-1][1];
   } else {
     //Now we do the guess. Note that this currently doesn't interpolate -- it
-    //just selects a single bin. REL Using the additional info provided by the
+    //just selects a single bin. Using the additional info provided by the
     //energy column, we should interpolate for best results. As a good reminder,
     //the min & max are taken to be the "bookends" to the energy range, but the
     //actual bin/array values are associated with energies that are offset by
