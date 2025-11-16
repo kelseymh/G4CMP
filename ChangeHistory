@@ -6,6 +6,10 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+Project branch for Geant4 v11 migration -- subtask tags go below!
+2025-11-16  G4CMP-494 : Migrate code to be compatible with G4 v11 and v10.
+Project branch for Geant4 v11 migration -- subtask tags go above!
+
 2025-10-30  g4cmp-V09-09-02 Final bug fix for chargeBounces errors.
 2025-11-08  G4CMP-533 : Fix long-standing typo in README: neutron -> neutral.
 2025-11-08  G4CMP-527 : Adjust post-step "surface" point for all boundary actions.
