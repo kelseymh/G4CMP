@@ -21,14 +21,17 @@
 // 20250422  G4CMP-468 -- Add position argument to PhononVelocityIsInward
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
-// 20251116  For G4 11, use #include "G4VTouchable.hh"
+// 20251116  G4CMP-522 -- For G4 11, use #include "G4VTouchable.hh"
+// 20251116  G4CMP-524 -- Remove G4CMP::RandomIndex function; use functor class.
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
 
 #include "G4ThreeVector.hh"
+#include "G4String.hh"
+#include "G4Types.hh"
 #include "G4VTouchable.hh"
-#include "globals.hh"
+#include <limits.h>
 
 class G4CMPElectrodeHit;
 class G4LatticePhysical;
@@ -118,11 +121,17 @@ namespace G4CMP {
   // Search particle's processes for specified name
   G4VProcess* FindProcess(const G4ParticleDefinition* pd, const G4String& pname);
 
-  // Generate integer random value [0, imax), used to shuffle vectors
-  size_t RandomIndex(size_t imax);
-
   // Create debugging file with suffix or infix identifying worker thread
   G4String DebuggingFileThread(const G4String& basefile);
+
+  // Functor class for use with std::shuffle; wraps Geant4 random engine
+  class RandomIndex {
+  public:
+    typedef unsigned int result_type;
+    result_type operator()();	// Uses G4UniformRand(); defined in .cc file
+    static constexpr result_type min() { return 0; }
+    static constexpr result_type max() { return UINT_MAX; }
+  };
 }
 
 #endif	/* G4CMPUtils_hh */

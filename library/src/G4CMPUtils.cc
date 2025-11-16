@@ -21,6 +21,7 @@
 // 20250422  G4CMP-468 -- Add displaced point test to PhononVelocityIsInward.
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector.
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
+// 20251116  G4CMP-524 -- Remove G4CMP::RandomIndex function; use functor class.
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -356,8 +357,8 @@ G4CMP::FindProcess(const G4ParticleDefinition* pd, const G4String& pname) {
 
 // Generate random index for shuffling secondaries
 
-size_t G4CMP::RandomIndex(size_t n) {
-  return (size_t)(n*G4UniformRand());
+G4CMP::RandomIndex::result_type G4CMP::RandomIndex::operator()() {
+  return UINT_MAX*G4UniformRand();
 }
 
 
