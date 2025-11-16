@@ -13,8 +13,10 @@
 //
 // 20180622  Michael Kelsey
 // 20211005  Add position-only utility (get touchable from position)
+// 20251116  For G4 11, use #include "G4VTouchable.hh"
 
 #include "G4ThreeVector.hh"
+#include "G4VTouchable.hh"
 
 class G4CMPMeshElectricField;
 class G4CMPLocalElectroMagField;
@@ -22,7 +24,6 @@ class G4LogicalVolume;
 class G4Step;
 class G4Track;
 class G4UniformElectricField;
-class G4VTouchable;
 
 
 namespace G4CMP {

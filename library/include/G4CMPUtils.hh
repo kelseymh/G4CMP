@@ -21,11 +21,13 @@
 // 20250422  G4CMP-468 -- Add position argument to PhononVelocityIsInward
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
+// 20251116  For G4 11, use #include "G4VTouchable.hh"
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
 
 #include "G4ThreeVector.hh"
+#include "G4VTouchable.hh"
 #include "globals.hh"
 
 class G4CMPElectrodeHit;
@@ -34,7 +36,6 @@ class G4ParticleDefinition;
 class G4Step;
 class G4Track;
 class G4VProcess;
-class G4VTouchable;
 
 
 namespace G4CMP {
