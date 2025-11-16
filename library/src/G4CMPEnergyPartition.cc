@@ -65,6 +65,7 @@
 // 20240731  G4CMP-416 -- eIon below bandgap should be converted to phonons
 // 20250127  G4CMP-449 -- Conslidate LukeSampling() function, allow -1.
 // 20251001  G4CMP-503 -- Avoid reporting 'NaN' in phonon energy summary.
+// 20251116  G4CMP-524 -- Replace std::random_shuffle with std::shuffle.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -102,6 +103,7 @@
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
 #include "CLHEP/Random/RandBinomial.h"
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
@@ -359,7 +361,7 @@ void G4CMPEnergyPartition::DoPartition(G4double eIon, G4double eNIEL) {
   particles.shrink_to_fit();	// Reduce size to match generated particles
 
   // Shuffle particles so they can be distributed along trajectories
-  std::random_shuffle(particles.begin(), particles.end(), G4CMP::RandomIndex);
+  std::shuffle(particles.begin(), particles.end(), G4CMP::RandomIndex());
 
   if (verboseLevel && summary) summary->Print();
 }
