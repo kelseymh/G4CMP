@@ -18,19 +18,20 @@
 //
 // 20170925  Add direct access to individual positions in cloud, binning
 // 20180831  Fix compiler warning on GetPositionBin()
+// 20251116  For G4 11, use #include "G4VTouchable.hh"
 
 #ifndef G4CMPChargeCloud_hh
 #define G4CMPChargeCloud_hh 1
 
 #include "globals.hh"
 #include "G4ThreeVector.hh"
+#include "G4VTouchable.hh"
 #include <vector>
 
 class G4LatticeLogical;
 class G4LatticePhysical;
 class G4VPhysicalVolume;
 class G4VSolid;
-class G4VTouchable;
 
 
 class G4CMPChargeCloud {

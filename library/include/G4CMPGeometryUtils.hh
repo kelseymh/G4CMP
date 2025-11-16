@@ -20,15 +20,16 @@
 // 20190226  Use local instance of G4Navigator to avoid corrupting tracking
 // 20211001  Add utilities to get lattice from touchable, find valley close
 //		to specified direction.
+// 20251116  For G4 11, use #include "G4VTouchable.hh"
 
 #include "G4ThreeVector.hh"
+#include "G4VTouchable.hh"
 
 class G4LatticePhysical;
 class G4Navigator;
 class G4Step;
 class G4Track;
 class G4VPhysicalVolume;
-class G4VTouchable;
 
 
 namespace G4CMP {
