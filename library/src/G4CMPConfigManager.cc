@@ -47,7 +47,7 @@
 // 20250502  G4CMP-358: Limit number of steps for charged tracks in E-field.
 // 20250325  G4CMP-463: Add parameter for phonon surface step size & limit.
 // 20250711  G4CMP-491: Turn off phonon surface displacement loop by default.
-
+// 20251104  G4CMP-527: Add missing ehMaxSteps initializer in copy constructor.
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -146,7 +146,7 @@ G4CMPConfigManager::~G4CMPConfigManager() {
 G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
   : verbose(master.verbose), fPhysicsModelID(master.fPhysicsModelID), 
     ehBounces(master.ehBounces), pBounces(master.pBounces),
-    maxLukePhonons(master.maxLukePhonons),
+    ehMaxSteps(master.ehMaxSteps), maxLukePhonons(master.maxLukePhonons),
     pSurfStepLimit(master.pSurfStepLimit), version(master.version),
     LatticeDir(master.LatticeDir), IVRateModel(master.IVRateModel),
     lukeFilename(master.lukeFilename), eTrapMFP(master.eTrapMFP),
