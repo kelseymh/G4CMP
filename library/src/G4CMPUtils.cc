@@ -23,6 +23,7 @@
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 // 20251116  G4CMP-524 -- Remove G4CMP::RandomIndex function; use functor class.
 // 20251116  G4CMP-539 -- Add wrapper function for G4 11 AddConstProperty change
+// 20251116  G4CMP-525 -- For G4 11, replace G4String.last() w/find_last_of().
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -386,7 +387,7 @@ G4String G4CMP::DebuggingFileThread(const G4String& basefile) {
 
   G4String tidfile = basefile;
 
-  size_t lastdot = basefile.last('.');
+  size_t lastdot = basefile.find_last_of('.');
   if (lastdot < basefile.length()) tidfile.insert(lastdot, tid);
   else tidfile += tid;
 

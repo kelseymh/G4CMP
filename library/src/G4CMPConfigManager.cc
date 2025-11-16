@@ -48,6 +48,7 @@
 // 20250325  G4CMP-463: Add parameter for phonon surface step size & limit.
 // 20250711  G4CMP-491: Turn off phonon surface displacement loop by default.
 // 20251104  G4CMP-527: Add missing ehMaxSteps initializer in copy constructor.
+// 20251116  M. Kelsey -- Replace G4String functions with G4StrUtil, for G4 v11
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -58,6 +59,7 @@
 #include "G4CMPSarkisNIEL.hh"
 #include "G4VNIELPartition.hh"
 #include "G4RunManager.hh"
+#include "G4StrUtil.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Threading.hh"
 #include <fstream>
@@ -189,7 +191,7 @@ void G4CMPConfigManager::setVersion() {
 // Convert input name string to NIEL partitioning function
 
 void G4CMPConfigManager::setNIEL(G4String name) {
-  name.toLower();
+  G4StrUtil::to_lower(name);
   if (name(0,3) == "lin") setNIEL(new G4CMPLindhardNIEL);
   if (name(0,3) == "lew") setNIEL(new G4CMPLewinSmithNIEL);
   if (name(0,3) == "imp") setNIEL(new G4CMPImpactTunlNIEL);

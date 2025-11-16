@@ -27,6 +27,7 @@
 // 20190906  Push selected rate model back to G4CMPTimeStepper for consistency
 // 20231122  Remove 50% momentum flip (see G4CMP-375)
 // 20240823  Allow ConfigManager IVRateModel setting to override config.txt
+// 20251116  M. Kelsey -- Replace G4String functions with G4StrUtil, for G4 v11
 
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -34,6 +35,7 @@
 #include "G4CMPInterValleyRate.hh"
 #include "G4CMPIVRateQuadratic.hh"
 #include "G4CMPIVRateLinear.hh"
+#include "G4StrUtil.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
@@ -73,7 +75,7 @@ void G4CMPInterValleyScattering::UseRateModel(G4String model) {
 	     : G4CMPConfigManager::GetIVRateModel());
   }
 
-  model.toLower();
+  G4StrUtil::to_lower(model);
   if (model == modelName) return;	// Requested model already in use
 
   // Select from valid names; fall back to Quadratic if invalid name specified
@@ -87,7 +89,7 @@ void G4CMPInterValleyScattering::UseRateModel(G4String model) {
   }
 
   modelName = GetRateModel()->GetName();
-  modelName.toLower();
+  G4StrUtil::to_lower(modelName);
 
   // Ensure that TimeStepper process is given new model
   PushModelToTimeStepper();
