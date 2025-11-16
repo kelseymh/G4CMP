@@ -22,6 +22,7 @@
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector.
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 // 20251116  G4CMP-524 -- Remove G4CMP::RandomIndex function; use functor class.
+// 20251116  G4CMP-539 -- Add wrapper function for G4 11 AddConstProperty change
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -352,6 +353,20 @@ G4CMP::FindProcess(const G4ParticleDefinition* pd, const G4String& pname) {
   }
 
   return 0;			// No match found
+}
+
+
+// Update MaterialPropertiesTable for either Geant4 v10 or v11
+
+void G4CMP::UpdateMPT(G4MaterialPropertiesTable* mpt, const G4String& name,
+		      G4double value) {
+  if (!mpt) return;                             // No table, nothing to do
+
+#if G4VERSION_NUMBER < 1100
+  mpt->AddConstProperty(name, value);
+#else
+  mpt->AddConstProperty(name, value, true);     // To add new names to table
+#endif
 }
 
 

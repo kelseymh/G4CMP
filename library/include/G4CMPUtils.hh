@@ -23,6 +23,7 @@
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 // 20251116  G4CMP-522 -- For G4 11, use #include "G4VTouchable.hh"
 // 20251116  G4CMP-524 -- Remove G4CMP::RandomIndex function; use functor class.
+// 20251116  G4CMP-539 -- Add wrapper function for G4 11 AddConstProperty change
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -35,6 +36,7 @@
 
 class G4CMPElectrodeHit;
 class G4LatticePhysical;
+class G4MaterialPropertiesTable;
 class G4ParticleDefinition;
 class G4Step;
 class G4Track;
@@ -120,6 +122,10 @@ namespace G4CMP {
 
   // Search particle's processes for specified name
   G4VProcess* FindProcess(const G4ParticleDefinition* pd, const G4String& pname);
+
+  // Update MaterialPropertiesTable for either Geant4 v10 or v11
+  void UpdateMPT(G4MaterialPropertiesTable* mpt, const G4String& name,
+		 G4double value);
 
   // Create debugging file with suffix or infix identifying worker thread
   G4String DebuggingFileThread(const G4String& basefile);
