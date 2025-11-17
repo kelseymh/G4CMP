@@ -23,12 +23,15 @@
 // 20250102  M. Kelsey -- Fix warning messages to report correct name; move
 //	       constructor here, to load data file once per job.
 // 20250211  D. Sadek Fix the energy scale and interpolation.
+// 20251116  M. Kelsey -- For G4 11, need special constructor for lVector,
+//	       as SetSpline() mutator has been eliminated.
 
 #include "globals.hh"
 #include "G4CMPSarkisNIEL.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Version.hh"
 #include <fstream>
 #include <algorithm>
 #include <cmath>
@@ -36,7 +39,15 @@
 
 // Constructor loads vector of data points for interpolation
 
-G4CMPSarkisNIEL::G4CMPSarkisNIEL() {
+G4CMPSarkisNIEL::G4CMPSarkisNIEL()
+#if G4VERSION_NUMBER >= 1100
+  : lVector(true)		# Replaces G4 v10 use of SetSpline(true)
+#endif
+{
+#if G4VERSION_NUMBER < 1100
+  lVector.SetSpline(true);		// Ensure that we can interpolate
+#endif
+
   G4String fPath =
     G4CMPConfigManager::GetLatticeDir()+"/NIEL/SarkisSiIonYield.txt";
   std::ifstream inputFile(fPath);       // open the data file
@@ -54,7 +65,6 @@ G4CMPSarkisNIEL::G4CMPSarkisNIEL() {
   }
 
   lVector.ScaleVector(keV, 1.);
-  lVector.SetSpline(true);		// Ensure that we can interpolate
   lVector.FillSecondDerivatives();
 }
 
