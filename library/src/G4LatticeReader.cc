@@ -35,6 +35,7 @@
 // 20231017  E. Michaud -- Add 'valleyDir' to set rotation matrix with valley's
 //		 direction instead of euler angles
 // 20240131  J. Inman -- Multiple path selection on G4LATTICEDATA variable
+// 20251116  M. Kelsey -- Replace G4String functions with G4StrUtil, for G4 v11
 
 #include "G4LatticeReader.hh"
 #include "G4CMPConfigManager.hh"
@@ -43,6 +44,7 @@
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeLogical.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4StrUtil.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Tokenizer.hh"
 #include "G4UnitsTable.hh"
@@ -115,7 +117,7 @@ G4bool G4LatticeReader::OpenFile(const G4String& filename) {
   if (!psLatfile->good()) { 		// Local file not found
     G4Tokenizer nextpath(fDataDir);
     G4String sec = nextpath(":");
-    while (!sec.isNull()) {
+    while (!sec.empty()) {
       filepath = sec + "/" + filename;
       psLatfile->open(filepath);      // Try data directory
       if (psLatfile->good()) {
@@ -149,8 +151,8 @@ G4bool G4LatticeReader::ProcessToken() {
 
   if (verboseLevel>1) G4cout << " ProcessToken " << fToken << G4endl;
 
-  fToken.toLower();
-  if (fToken.contains('#')) return SkipComments();	// Ignore rest of line
+  G4StrUtil::to_lower(fToken);
+  if (G4StrUtil::contains(fToken,'#')) return SkipComments();	// Ignore line
   if (fToken == "dyn")      return ProcessConstants();	// Dynamical parameters
   if (fToken == "stiffness" ||
       fToken == "cij")      return ProcessStiffness();  // Elasticity element
@@ -464,17 +466,17 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
     G4cout << " ProcessUnits " << unit << " " << unitcat << G4endl;
 
   // Look for leading "/" for inverse units (density, per eV, etc.)
-  G4bool inverse = (unit(0)=='/');
+  G4bool inverse = (unit.front()=='/');
 
   fUnitName = unit;
-  if (inverse) fUnitName = fUnitName(1,unit.length()-1);
+  if (inverse) fUnitName = fUnitName.substr(1,unit.length()-1);
 
   // Do processing -- invalid input string will cause fatal exception
   fUnits    = G4UnitDefinition::GetValueOf(fUnitName);
   fUnitCat  = G4UnitDefinition::GetCategory(fUnitName);
 
   // Ensure that units properly match user-requested categories
-  if (fUnitCat.empty() || !unitcat.contains(fUnitCat)) {
+  if (fUnitCat.empty() || !G4StrUtil::contains(unitcat,fUnitCat)) {
     G4ExceptionDescription msg;
     msg << "Expected " << unitcat << " units, got " << fUnitName << " ("
 	<< fUnitCat << ")";
