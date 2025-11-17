@@ -14,6 +14,7 @@
 // 20221006  Remove unused features; add phonon sensor pad with use of
 //		G4CMPPhononElectrode to demonstrate KaplanQP.
 // 20251116  G4CMP-539 -- Use UpdateMPT wrapper function to set properties.
+// 20251117  G4CMP-541 -- For G4 v11, replace ::Invisible w/::GetInvisible()
 
 #include "PhononDetectorConstruction.hh"
 #include "PhononSensitivity.hh"
@@ -210,7 +211,7 @@ void PhononDetectorConstruction::SetupGeometry()
   //                                        
   // Visualization attributes
   //
-  worldLogical->SetVisAttributes(G4VisAttributes::Invisible);
+  worldLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
   G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
   simpleBoxVisAtt->SetVisibility(true);
   fGermaniumLogical->SetVisAttributes(simpleBoxVisAtt);
