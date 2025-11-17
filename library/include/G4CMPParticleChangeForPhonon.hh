@@ -12,6 +12,7 @@
 // 20250410 Implement ParticleChange for phonons to handle displaced reflections
 // 20250413 Add Initialize() implementation to reset updateVol flag, add
 //		missing copy operations, may be needed
+// 20251116 For G4 11, explicitly remove the copy operators to match base.
 
 #ifndef G4CMPParticleChangeForPhonon_hh
 #define G4CMPParticleChangeForPhonon_hh 1
@@ -24,6 +25,10 @@ class G4CMPParticleChangeForPhonon final : public G4ParticleChange {
 public:
   G4CMPParticleChangeForPhonon() : G4ParticleChange() {;}
   virtual ~G4CMPParticleChangeForPhonon() override = default;
+
+  // ParticleChange cannot be copied
+  G4CMPParticleChangeForPhonon(const G4CMPParticleChangeForPhonon& right) = delete;
+  G4CMPParticleChangeForPhonon& operator=(const G4CMPParticleChangeForPhonon& right) = delete;
 
   // Ensure that local flags are cleared between steps
   virtual void Initialize(const G4Track& track) override;
@@ -44,10 +49,6 @@ public:
   // Include local information in printout
   virtual void DumpInfo() const override;
   
-protected:	// Subclasses permitted to copy themselves
-  G4CMPParticleChangeForPhonon(const G4CMPParticleChangeForPhonon& right);
-  G4CMPParticleChangeForPhonon& operator=(const G4CMPParticleChangeForPhonon& right);
-
 private:
   G4TouchableHandle theTouchableHandle;
   G4bool updateVol = false;		// Only set if touchable is changed
