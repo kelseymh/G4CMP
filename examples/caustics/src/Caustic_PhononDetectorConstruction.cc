@@ -6,7 +6,7 @@
 // 20241024 Israel Hernandez -- IIT, QSC and Fermilab
 // 20250101 Michael Kelsey -- Instantiate SD in ConstructSDandField();
 //	      remove many unnecessary blank lines.
-
+// 20251117 G4CMP-541 -- For G4 v11, replace ::Invisible w/::GetInvisible()
 
 #include "Caustic_PhononDetectorConstruction.hh"
 #include "Caustic_PhononSensitivity.hh"
@@ -163,7 +163,7 @@ void Caustic_PhononDetectorConstruction::Caustic_SetupGeometry()
 				wallSurfProp);
 
   // Visualization attributes
-  worldLogical->SetVisAttributes(G4VisAttributes::Invisible);
+  worldLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
   G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
   G4VisAttributes* simpleDetectorAtt= new G4VisAttributes(G4Colour(0.0,0.0,1.0));
   simpleBoxVisAtt->SetVisibility(true);
