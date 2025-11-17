@@ -12,6 +12,8 @@
 #include "G4Version.hh"
 
 #if G4VERSION_NUMBER >= 1100
+#include "G4PhysicsModelCatalog.hh"
+
 void G4PhysicsModelCatalog::Initialize() {
   if(isInitialized)
   {
