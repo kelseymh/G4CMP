@@ -79,9 +79,9 @@ void G4CMPInterValleyScattering::UseRateModel(G4String model) {
   if (model == modelName) return;	// Requested model already in use
 
   // Select from valid names; fall back to Quadratic if invalid name specified
-       if (model(0) == 'q') UseRateModel(new G4CMPIVRateQuadratic);
-  else if (model(0) == 'l') UseRateModel(new G4CMPIVRateLinear);
-  else if (model(0) == 'i') UseRateModel(new G4CMPInterValleyRate);
+       if (model.front() == 'q') UseRateModel(new G4CMPIVRateQuadratic);
+  else if (model.front() == 'l') UseRateModel(new G4CMPIVRateLinear);
+  else if (model.front() == 'i') UseRateModel(new G4CMPInterValleyRate);
   else {
     G4cerr << GetProcessName() << " ERROR: Unrecognized rate model '"
 	   << model << "'" << G4endl;

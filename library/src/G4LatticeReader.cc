@@ -466,10 +466,10 @@ G4double G4LatticeReader::ProcessUnits(const G4String& unit,
     G4cout << " ProcessUnits " << unit << " " << unitcat << G4endl;
 
   // Look for leading "/" for inverse units (density, per eV, etc.)
-  G4bool inverse = (unit(0)=='/');
+  G4bool inverse = (unit.front()=='/');
 
   fUnitName = unit;
-  if (inverse) fUnitName = fUnitName(1,unit.length()-1);
+  if (inverse) fUnitName = fUnitName.substr(1,unit.length()-1);
 
   // Do processing -- invalid input string will cause fatal exception
   fUnits    = G4UnitDefinition::GetValueOf(fUnitName);

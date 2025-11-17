@@ -192,12 +192,11 @@ void G4CMPConfigManager::setVersion() {
 
 void G4CMPConfigManager::setNIEL(G4String name) {
   G4StrUtil::to_lower(name);
-  if (name(0,3) == "lin") setNIEL(new G4CMPLindhardNIEL);
-  if (name(0,3) == "lew") setNIEL(new G4CMPLewinSmithNIEL);
-  if (name(0,3) == "imp") setNIEL(new G4CMPImpactTunlNIEL);
-  if (name(0,3) == "sar") setNIEL(new G4CMPSarkisNIEL);
-  if (name(0,3) == "emp") setNIEL(new G4CMPEmpiricalNIEL);
-
+  if (name.find("lin") == 0) setNIEL(new G4CMPLindhardNIEL);
+  if (name.find("lew") == 0) setNIEL(new G4CMPLewinSmithNIEL);
+  if (name.find("imp") == 0) setNIEL(new G4CMPImpactTunlNIEL);
+  if (name.find("sar") == 0) setNIEL(new G4CMPSarkisNIEL);
+  if (name.find("emp") == 0) setNIEL(new G4CMPEmpiricalNIEL);
 }
 
 void G4CMPConfigManager::setNIEL(G4VNIELPartition* niel) {
