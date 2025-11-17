@@ -41,7 +41,7 @@
 
 G4CMPSarkisNIEL::G4CMPSarkisNIEL()
 #if G4VERSION_NUMBER >= 1100
-  : lVector(true)		# Replaces G4 v10 use of SetSpline(true)
+  : lVector(true)		// Replaces G4 v10 use of SetSpline(true)
 #endif
 {
 #if G4VERSION_NUMBER < 1100
