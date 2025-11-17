@@ -47,8 +47,9 @@
 // 20240506  G4CMP-371: Add flag to keep or discard below-minimum track energy.
 // 20241224  G4CMP-419: Add parameter to set LukeScattering debug file
 // 20250209  G4CMP-457: Add short names for Lindhard empirical ionization model.
-// 20250325  G4CMP-463:  Add parameter for phonon surface step size & limit.
+// 20250325  G4CMP-463: Add parameter for phonon surface step size & limit.
 // 20250502  G4CMP-358: Limit number of steps for charged tracks in E-field.
+// 20251116  G4CMP-526: Add function to encapsulate physics ID extraction.
 
 #include "globals.hh"
 #include <iosfwd>
@@ -184,6 +185,9 @@ private:
   // Constructor will call by-string function to map name to class
   void setNIEL(G4String value);
   void setNIEL(G4VNIELPartition* niel);
+
+  // Extract physics ID code from G4PhysicsModelCatalog
+  G4int setPhysicsModelID() const;
 
 private:
   G4int verbose;	 // Global verbosity (all processes, lattices)

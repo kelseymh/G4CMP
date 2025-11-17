@@ -218,6 +218,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeManager.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticePhysical.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeReader.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhysicsModelCatalog.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononDownconversion.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononLong.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononPolarization.cc

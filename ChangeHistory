@@ -8,10 +8,11 @@ ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 Project branch for Geant4 v11 migration -- subtask tags go below!
 2025-11-16  G4CMP-494 : Migrate code to be compatible with G4 v11 and v10.
+2025-11-16  G4CMP-526 : Use local G4PhysicsModelCatalog.cc as workaround.
 2025-11-16  G4CMP-525 : Provide G4StrUtil namespace for use with G4 v10.
 2025-11-16  G4CMP-539 : Use wrapper function for MPT::AddConstProperty().
-2025-11-16  G4CMP-522 : Replace G4VTouchable forward decl with #include.
 2025-11-16  G4CMP-524 : Replace std::random_shuffle with std::shuffle.
+2025-11-16  G4CMP-522 : Replace G4VTouchable forward decl with #include.
 Project branch for Geant4 v11 migration -- subtask tags go above!
 
 2025-10-30  g4cmp-V09-09-02 Final bug fix for chargeBounces errors.
