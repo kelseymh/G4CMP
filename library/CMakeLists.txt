@@ -319,6 +319,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransFast.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/inlcude/G4StrUtil.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
     )
