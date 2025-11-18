@@ -49,6 +49,7 @@
 // 20250711  G4CMP-491: Turn off phonon surface displacement loop by default.
 // 20251104  G4CMP-527: Add missing ehMaxSteps initializer in copy constructor.
 // 20251116  M. Kelsey -- Replace G4String functions with G4StrUtil, for G4 v11
+// 20251116  G4CMP-526: Add function to encapsulate physics ID extraction.
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -62,6 +63,7 @@
 #include "G4StrUtil.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Threading.hh"
+#include "G4Version.hh"
 #include <fstream>
 #include <iostream>
 #include <typeinfo>
@@ -129,7 +131,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     EmpEDepK(getenv("G4CMP_EMPIRICAL_EDEPK")?(atoi(getenv("G4CMP_EMPIRICAL_EDEPK"))!=0):true),
     EmpkFixed(getenv("G4CMP_EMPIRICAL_KFIXED")?strtod(getenv("G4CMP_EMPIRICAL_KFIXED"),0):0.158),
     messenger(new G4CMPConfigMessenger(this)) {
-  fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
+  fPhysicsModelID = setPhysicsModelID();
 
   setVersion();
 
@@ -185,6 +187,17 @@ void G4CMPConfigManager::setVersion() {
   std::ifstream ver(dir+"/.g4cmp-version");
   if (ver.good()) ver >> version;
   else version = "";
+}
+
+
+// Extract physics ID code from G4PhysicsModelCatalog
+
+G4int G4CMPConfigManager::setPhysicsModelID() const {
+#if G4VERSION_NUMBER < 1100
+  return G4PhysicsModelCatalog::Register("G4CMP process");
+#else
+  return G4PhysicsModelCatalog::GetModelIndex("G4CMP process");
+#endif
 }
 
 
