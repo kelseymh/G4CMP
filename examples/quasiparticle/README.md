@@ -96,9 +96,12 @@ Coming Soon: Geometry tips/alerts and the way to circumvent the issues
 
 ## Execution and Output
 
+* For now, the step output accessed using the commands in QuasiparticleSteppingAction is only meaningful while executing with a single worker thread -- multithreading is not implemented at the moment.
+
 ## General Tips/Notes
 
 * For now, need one G4LatticeLogical and G4LatticePhysical for every physical superconducting volume. This may incur a slight calculational cost at the beginning of a given run, since for each there is a calculation of the QP scattering/recombination taus as a function of energy relative to the gap. The more dedicated volumes you have, the longer you should expect the startup to take.
+
 
 ## Tutorial Walkthrough (Coming soon!)
 
