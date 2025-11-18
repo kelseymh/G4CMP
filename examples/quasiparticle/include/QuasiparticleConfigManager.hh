@@ -31,7 +31,7 @@ public:
 
   // Change values (e.g., via Messenger)
   static void SetHitOutput(const G4String& name)
-    { Instance()->Hit_file=name; UpdateGeometry(); }
+  { Instance()->Hit_file=name; UpdateGeometry(); }
 
   static void UpdateGeometry();
 

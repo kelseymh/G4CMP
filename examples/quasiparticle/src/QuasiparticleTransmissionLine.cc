@@ -52,21 +52,20 @@ using namespace QuasiparticleDetectorParameters;
 
 // Primary Constructor
 QuasiparticleTransmissionLine::
-QuasiparticleTransmissionLine(G4RotationMatrix * pRot,
-			      const G4ThreeVector & tLate,
-			      const G4String & pName,
-			      G4LogicalVolume * pMotherLogical,G4bool pMany,
-			      G4int pCopyNo,G4LatticeManager * LM,
-			      std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-			      std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-			      G4bool pSurfChk) {
+QuasiparticleTransmissionLine(G4RotationMatrix* pRot,
+                              const G4ThreeVector & tLate,
+                              const G4String& pName,
+                              G4LogicalVolume* pMotherLogical, G4bool pMany,
+                              G4int pCopyNo,G4LatticeManager* LM,
+                              std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                              std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+                              G4bool pSurfChk) {
   //Here, use the inputs to this to set up the geometry and fill out the
   //PVPlacement data member, which is the real output from this class (and
   //which we'll access in our detector construction file
   //file.)
-
   ConstructTransmissionLine(pRot,tLate,pName,pMotherLogical,pMany,pCopyNo,LM,
-			    logicalLatticeContainer,borderContainer,pSurfChk);
+                            logicalLatticeContainer,borderContainer,pSurfChk);
 
 }
 
@@ -80,16 +79,16 @@ QuasiparticleTransmissionLine::~QuasiparticleTransmissionLine() {
 
 //Moving implementation down here so it's not in the constructor
 void QuasiparticleTransmissionLine::
-ConstructTransmissionLine(G4RotationMatrix * pRot,
-			  const G4ThreeVector & tLate,
-			  const G4String & pName,
-			  G4LogicalVolume * pMotherLogical,
-			  G4bool pMany,
-			  G4int pCopyNo,
-			  G4LatticeManager * LM,
-			  std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-			  std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-			  G4bool pSurfChk) {
+ConstructTransmissionLine(G4RotationMatrix* pRot,
+                          const G4ThreeVector& tLate,
+                          const G4String& pName,
+                          G4LogicalVolume* pMotherLogical,
+                          G4bool pMany,
+                          G4int pCopyNo,
+                          G4LatticeManager* LM,
+                          std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                          std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+                          G4bool pSurfChk) {
 
   //Start with some preliminaries - NIST manager
   G4NistManager* nist = G4NistManager::Instance();
@@ -99,7 +98,7 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,
   //Set up lattice information
   if (logicalLatticeContainer.count("Aluminum") == 0) {
     std::cout << "Uh oh! Trying to access logicalLatticeContainer[Aluminum] "
-	      << "but it's not there..." << std::endl;
+              << "but it's not there..." << std::endl;
   }
   G4LatticeLogical* AlLogical = logicalLatticeContainer["Aluminum"];
   
@@ -134,7 +133,7 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,
   //output. This is the top volume.
   G4VPhysicalVolume* phys_baseAlLayer
     = new G4PVPlacement(pRot,tLate,log_baseAlLayer,baseAlLayerName,
-			pMotherLogical,pMany,pCopyNo,pSurfChk);
+                        pMotherLogical,pMany,pCopyNo,pSurfChk);
 
   //NOT SURE WHAT TO DO WITH THIS YET GIVEN THE COMPLETE OCCUPATION BY THE
   //EMPTY LAYER. This base layer must be given an external interface with the
@@ -163,8 +162,8 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,
   G4String pad1Name = pName + "_TransmissionLinePad1";
   QuasiparticlePad * pad1 =
     new QuasiparticlePad(0,G4ThreeVector(dp_transmissionLinePad1Offset,0,0),
-			 pad1Name,log_baseAlLayer,false,0,LM,
-			 logicalLatticeContainer,borderContainer,pSurfChk);
+                         pad1Name,log_baseAlLayer,false,0,LM,
+                         logicalLatticeContainer,borderContainer,pSurfChk);
   G4LogicalVolume * log_pad1 = pad1->GetLogicalVolume();
   G4VPhysicalVolume * phys_pad1 = pad1->GetPhysicalVolume();
   
@@ -179,9 +178,9 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,
   pad2Rot->rotateZ(180*deg);
   QuasiparticlePad * pad2 =
     new QuasiparticlePad(pad2Rot,
-			 G4ThreeVector(dp_transmissionLinePad2Offset,0,0),
-			 pad2Name,log_baseAlLayer,false,0,LM,
-			 logicalLatticeContainer,borderContainer,pSurfChk);
+                         G4ThreeVector(dp_transmissionLinePad2Offset,0,0),
+                         pad2Name,log_baseAlLayer,false,0,LM,
+                         logicalLatticeContainer,borderContainer,pSurfChk);
   G4LogicalVolume * log_pad2 = pad1->GetLogicalVolume();
   G4VPhysicalVolume * phys_pad2 = pad1->GetPhysicalVolume();
   
@@ -200,12 +199,12 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,
   G4String tlNameEmptyLog = tlNameEmpty + "_log";
   G4Box * solid_transmissionLineEmpty =
     new G4Box(tlNameEmptySolid,
-	      0.5 * (dp_transmissionLinePad2Offset
-		     - dp_transmissionLinePad1Offset
-		     - 2 * dp_padEmptyPart2TrdZ
-		     - 2 * 0.5 * dp_padEmptyPart1DimX),
-	      0.5 * dp_transmissionLineCavityFullWidth,
-	      0.5 * dp_transmissionLineBaseLayerDimZ);
+              0.5 * (dp_transmissionLinePad2Offset
+                     - dp_transmissionLinePad1Offset
+                     - 2 * dp_padEmptyPart2TrdZ
+                     - 2 * 0.5 * dp_padEmptyPart1DimX),
+              0.5 * dp_transmissionLineCavityFullWidth,
+              0.5 * dp_transmissionLineBaseLayerDimZ);
   
   G4LogicalVolume * log_transmissionLineEmpty =
     new G4LogicalVolume(solid_transmissionLineEmpty,air_mat,tlNameEmptyLog);
@@ -213,7 +212,7 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,
   
   G4VPhysicalVolume * phys_transmissionLineEmpty =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_transmissionLineEmpty,
-		      tlNameEmpty,log_baseAlLayer,false,0,true);
+                      tlNameEmpty,log_baseAlLayer,false,0,true);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",tlNameEmpty,phys_transmissionLineEmpty));
 
 
@@ -224,31 +223,31 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,
   G4String tlNameConductorLog = tlNameConductor + "_log";
   G4Box * solid_transmissionLineConductor =
     new G4Box(tlNameConductorSolid,
-	      0.5 * (dp_transmissionLinePad2Offset
-		     - dp_transmissionLinePad1Offset
-		     - 2 * dp_padEmptyPart2TrdZ
-		     - 2 * 0.5 * dp_padEmptyPart1DimX),
-	      0.5 * dp_transmissionLineConductorWidth,
-	      0.5 * dp_transmissionLineBaseLayerDimZ);
+              0.5 * (dp_transmissionLinePad2Offset
+                     - dp_transmissionLinePad1Offset
+                     - 2 * dp_padEmptyPart2TrdZ
+                     - 2 * 0.5 * dp_padEmptyPart1DimX),
+              0.5 * dp_transmissionLineConductorWidth,
+              0.5 * dp_transmissionLineBaseLayerDimZ);
   
   G4LogicalVolume * log_transmissionLineConductor =
     new G4LogicalVolume(solid_transmissionLineConductor,aluminum_mat,
-			tlNameConductorLog);
+                        tlNameConductorLog);
   log_transmissionLineConductor->SetVisAttributes(aluminum_vis);
   
   G4VPhysicalVolume * phys_transmissionLineConductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_transmissionLineConductor,
-		      tlNameConductor,log_transmissionLineEmpty,false,0,true);
+                      tlNameConductor,log_transmissionLineEmpty,false,0,true);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",tlNameConductor,phys_transmissionLineConductor));
 
   //Create dedicated lattice info for this TL piece
   G4LatticePhysical* AlPhysical_transmissionLineConductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al,dp_scTeff_Al,dp_scDn_Al,
-			  dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al,dp_scTeff_Al,dp_scDn_Al,
+                          dp_scTauQPTrap_Al);
   AlPhysical_transmissionLineConductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(phys_transmissionLineConductor,
-		      AlPhysical_transmissionLineConductor);  
+                      AlPhysical_transmissionLineConductor);  
 
   //----------------------------------------------------------------------------
   //Handle the intra-TL boundary setting:
@@ -260,17 +259,17 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,
   //6. TL empty to TL conductor
   if (borderContainer.count("AlAl") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlAl] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlAlBoundary = borderContainer["AlAl"];
   if (borderContainer.count("VacVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[VacVac] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* VacVacBoundary = borderContainer["VacVac"];  
   if (borderContainer.count("AlVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlVac] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlVacBoundary = borderContainer["AlVac"];
   G4String pad1TL_conductor_name = pName + "_Pad1TL_AlAl";
@@ -289,58 +288,58 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,
   for( int iV = 0; iV < fFundamentalVolumeList.size(); ++iV ){
     if(std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad1_PadConductor") ){
       tempContainer.emplace("Pad1Conductor",
-			    std::get<2>(fFundamentalVolumeList[iV]));
+                            std::get<2>(fFundamentalVolumeList[iV]));
     }
     if(std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad1_PadEmpty") ){
       tempContainer.emplace("Pad1Empty",
-			    std::get<2>(fFundamentalVolumeList[iV]));
+                            std::get<2>(fFundamentalVolumeList[iV]));
     }    
     if(std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad2_PadConductor") ){
       tempContainer.emplace("Pad2Conductor",
-			    std::get<2>(fFundamentalVolumeList[iV]));
+                            std::get<2>(fFundamentalVolumeList[iV]));
     }
     if(std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad2_PadEmpty") ){
       tempContainer.emplace("Pad2Empty",
-			    std::get<2>(fFundamentalVolumeList[iV]));
+                            std::get<2>(fFundamentalVolumeList[iV]));
     }
   }
     
 
   
   new G4CMPLogicalBorderSurface(pad1TL_conductor_name,
-				phys_transmissionLineConductor,
-				tempContainer["Pad1Conductor"],AlAlBoundary);
+                                phys_transmissionLineConductor,
+                                tempContainer["Pad1Conductor"],AlAlBoundary);
   new G4CMPLogicalBorderSurface(TLpad1_conductor_name,
-				tempContainer["Pad1Conductor"],
-				phys_transmissionLineConductor,AlAlBoundary);
+                                tempContainer["Pad1Conductor"],
+                                phys_transmissionLineConductor,AlAlBoundary);
   
   new G4CMPLogicalBorderSurface(pad1TL_empty_name,
-				phys_transmissionLineEmpty,
-				tempContainer["Pad1Empty"],VacVacBoundary);
+                                phys_transmissionLineEmpty,
+                                tempContainer["Pad1Empty"],VacVacBoundary);
   new G4CMPLogicalBorderSurface(TLpad1_empty_name,
-				tempContainer["Pad1Empty"],
-				phys_transmissionLineEmpty,VacVacBoundary);
+                                tempContainer["Pad1Empty"],
+                                phys_transmissionLineEmpty,VacVacBoundary);
 
   new G4CMPLogicalBorderSurface(pad2TL_conductor_name,
-				phys_transmissionLineConductor,
-				tempContainer["Pad2Conductor"],AlAlBoundary);
+                                phys_transmissionLineConductor,
+                                tempContainer["Pad2Conductor"],AlAlBoundary);
   new G4CMPLogicalBorderSurface(TLpad2_conductor_name,
-				tempContainer["Pad2Conductor"],
-				phys_transmissionLineConductor,AlAlBoundary);
+                                tempContainer["Pad2Conductor"],
+                                phys_transmissionLineConductor,AlAlBoundary);
   
   new G4CMPLogicalBorderSurface(pad2TL_empty_name,
-				phys_transmissionLineEmpty,
-				tempContainer["Pad2Empty"],VacVacBoundary);
+                                phys_transmissionLineEmpty,
+                                tempContainer["Pad2Empty"],VacVacBoundary);
   new G4CMPLogicalBorderSurface(TLpad2_empty_name,
-				tempContainer["Pad2Empty"],
-				phys_transmissionLineEmpty,VacVacBoundary);
+                                tempContainer["Pad2Empty"],
+                                phys_transmissionLineEmpty,VacVacBoundary);
 
   new G4CMPLogicalBorderSurface(TLemptyTLconductor_name1,
-				phys_transmissionLineConductor,
-				phys_transmissionLineEmpty,AlVacBoundary);
+                                phys_transmissionLineConductor,
+                                phys_transmissionLineEmpty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(TLemptyTLconductor_name2,
-				phys_transmissionLineEmpty,
-				phys_transmissionLineConductor,AlVacBoundary);
+                                phys_transmissionLineEmpty,
+                                phys_transmissionLineConductor,AlVacBoundary);
   
   
   
@@ -364,18 +363,18 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,
 //have... Ripping some of this from the code in the pad file and the
 //transmission line code, so be careful if you end up having to change the
 //dimensions of things...
-G4UnionSolid * QuasiparticleTransmissionLine::
+G4UnionSolid* QuasiparticleTransmissionLine::
 CreatePieceBasedAlLayer(G4String nameSolid) {
 
   //For the pad, we start with a volume of air with the same dimensions as the
   //aluminum substrate. Then we add the aluminum pad within.
   G4Box * solid_padEmptyPart1 =
     new G4Box("baseAlLayerEmptyPadPart1Solid",0.5 * dp_padEmptyPart1DimX,
-	      0.5 * dp_padEmptyPart1DimY,0.5 * dp_padEmptyPart1DimZ);
+              0.5 * dp_padEmptyPart1DimY,0.5 * dp_padEmptyPart1DimZ);
   G4Trd * solid_padEmptyPart2 =
     new G4Trd("baseAlLayerEmptyPadPart2Solid",0.5 * dp_padEmptyPart2TrdX1,
-	      0.5 * dp_padEmptyPart2TrdX2,0.5 * dp_padEmptyPart2TrdY1,
-	      0.5 * dp_padEmptyPart2TrdY2,0.5 * dp_padEmptyPart2TrdZ);
+              0.5 * dp_padEmptyPart2TrdX2,0.5 * dp_padEmptyPart2TrdY1,
+              0.5 * dp_padEmptyPart2TrdY2,0.5 * dp_padEmptyPart2TrdZ);
 
   //We need to rotate the part 2 so that it can be aligned and placed next to
   //part 1
@@ -384,30 +383,30 @@ CreatePieceBasedAlLayer(G4String nameSolid) {
   rotEmptyPart2->rotateY(-90.*deg);
 
   G4ThreeVector transPart2EmptyWrtPart1Empty(dp_padEmptyPart1DimX/2.0
-					     + dp_padEmptyPart2TrdZ/2.0,0,0);
+                                             + dp_padEmptyPart2TrdZ/2.0,0,0);
   G4UnionSolid * solid_padEmpty =
     new G4UnionSolid("BaseAlLayerEmptyPadSolid",solid_padEmptyPart1,
-		     solid_padEmptyPart2,rotEmptyPart2,
-		     transPart2EmptyWrtPart1Empty);
+                     solid_padEmptyPart2,rotEmptyPart2,
+                     transPart2EmptyWrtPart1Empty);
   
   G4Box * solid_transmissionLineEmpty =
     new G4Box("BaseAlLayerTransmissionLineSolid",
-	      0.5 * (dp_transmissionLinePad2Offset
-		     - dp_transmissionLinePad1Offset
-		     - 2 * dp_padEmptyPart2TrdZ
-		     - 2 * 0.5 * dp_padEmptyPart1DimX),
-	      0.5 * dp_transmissionLineCavityFullWidth,
-	      0.5 * dp_transmissionLineBaseLayerDimZ);
+              0.5 * (dp_transmissionLinePad2Offset
+                     - dp_transmissionLinePad1Offset
+                     - 2 * dp_padEmptyPart2TrdZ
+                     - 2 * 0.5 * dp_padEmptyPart1DimX),
+              0.5 * dp_transmissionLineCavityFullWidth,
+              0.5 * dp_transmissionLineBaseLayerDimZ);
   
   G4UnionSolid * solid_merger1 =
     new G4UnionSolid("Merger1",solid_transmissionLineEmpty,solid_padEmpty,
-		     0,G4ThreeVector(dp_transmissionLinePad1Offset,0,0));
+                     0,G4ThreeVector(dp_transmissionLinePad1Offset,0,0));
 
   G4RotationMatrix * pad2Rot = new G4RotationMatrix();
   pad2Rot->rotateZ(180*deg);
   G4UnionSolid * solid_baseAlLayer =
     new G4UnionSolid(nameSolid,solid_merger1,solid_padEmpty,pad2Rot,
-		     G4ThreeVector(dp_transmissionLinePad2Offset,0,0));
+                     G4ThreeVector(dp_transmissionLinePad2Offset,0,0));
   
   return solid_baseAlLayer;
   
@@ -419,12 +418,12 @@ QuasiparticleTransmissionLine::GetListOfAllFundamentalSubVolumes() {
 }
 
 void QuasiparticleTransmissionLine::
-AddComplexGeometryPadSubVolumesToThisList(QuasiparticlePad * pad) {
+AddComplexGeometryPadSubVolumesToThisList(QuasiparticlePad* pad) {
   for( int iSubVol = 0; iSubVol < pad->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol){
     std::tuple<std::string,G4String,G4VPhysicalVolume*>
       theTuple(std::get<0>(pad->GetListOfAllFundamentalSubVolumes()[iSubVol]),
-	       std::get<1>(pad->GetListOfAllFundamentalSubVolumes()[iSubVol]),
-	       std::get<2>(pad->GetListOfAllFundamentalSubVolumes()[iSubVol]));
+               std::get<1>(pad->GetListOfAllFundamentalSubVolumes()[iSubVol]),
+               std::get<2>(pad->GetListOfAllFundamentalSubVolumes()[iSubVol]));
     fFundamentalVolumeList.push_back(theTuple);
   }
 }

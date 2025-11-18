@@ -293,13 +293,13 @@ namespace QuasiparticleDetectorParameters
 
 
   /*
-  constexpr double dp_fluxLineEmptyDimX = 22 * CLHEP::um;
-  constexpr double dp_fluxLineEmptyDimY = 1140.498 * CLHEP::um;
-  constexpr double dp_fluxLineEmptyDimZ = dp_groundPlaneDimZ;
-  constexpr double dp_fluxLineLineOffsetY = 0.5*dp_fluxLineBaseNbLayerDimY - dp_padEmptyPart1DimX - dp_padEmptyPart2TrdZ - 0.5*dp_fluxLineEmptyDimY;
-  constexpr double dp_fluxLineConductorDimX = 10.15* CLHEP::um;
-  constexpr double dp_fluxLineConductorDimY = dp_fluxLineEmptyDimY;
-  constexpr double dp_fluxLineConductorDimZ = dp_groundPlaneDimZ;
+    constexpr double dp_fluxLineEmptyDimX = 22 * CLHEP::um;
+    constexpr double dp_fluxLineEmptyDimY = 1140.498 * CLHEP::um;
+    constexpr double dp_fluxLineEmptyDimZ = dp_groundPlaneDimZ;
+    constexpr double dp_fluxLineLineOffsetY = 0.5*dp_fluxLineBaseNbLayerDimY - dp_padEmptyPart1DimX - dp_padEmptyPart2TrdZ - 0.5*dp_fluxLineEmptyDimY;
+    constexpr double dp_fluxLineConductorDimX = 10.15* CLHEP::um;
+    constexpr double dp_fluxLineConductorDimY = dp_fluxLineEmptyDimY;
+    constexpr double dp_fluxLineConductorDimZ = dp_groundPlaneDimZ;
   */
 
 

@@ -1,4 +1,4 @@
-//
+ //
 // ********************************************************************
 // * License and Disclaimer                                           *
 // *                                                                  *
@@ -47,29 +47,30 @@ class QuasiparticleQubitHousing
     QuasiparticleQubitHousing();
     ~QuasiparticleQubitHousing();
 
-    //This is the constructor that should be used in general. It does not have the current logical
-    //volume included because that will be defined IN the Qubit housing implementation. All we need is
-    //a set of info that is external to this, which should be self-contained.
-    QuasiparticleQubitHousing(G4RotationMatrix * pRot,
-				     const G4ThreeVector & tLate,
-				     const G4String & pName,
-				     G4LogicalVolume * pMotherLogical,
-				     G4bool pMany,
-				     G4int pCopyNo,
-				     G4bool pSurfChk=false);
+    //This is the constructor that should be used in general. It does not have
+    //the current logical volume included because that will be defined IN the
+    //Qubit housing implementation. All we need is a set of info that is
+    //external to this, which should be self-contained.
+    QuasiparticleQubitHousing(G4RotationMatrix* pRot,
+                              const G4ThreeVector& tLate,
+                              const G4String& pName,
+                              G4LogicalVolume* pMotherLogical,
+                              G4bool pMany,
+                              G4int pCopyNo,
+                              G4bool pSurfChk=false);
   
     //Access functions
     G4VPhysicalVolume * GetPhysicalVolume(){ return fPhys_output; }
     G4LogicalVolume * GetLogicalVolume(){ return fLog_output; }
   
     //Misc
-    void ConstructQubitHousing(G4RotationMatrix * pRot,
-			       const G4ThreeVector & tLate,
-			       const G4String & pName,
-			       G4LogicalVolume * pMotherLogical,
-			       G4bool pMany,
-			       G4int pCopyNo,
-			       G4bool pSurfChk=false);
+    void ConstructQubitHousing(G4RotationMatrix* pRot,
+                               const G4ThreeVector& tLate,
+                               const G4String& pName,
+                               G4LogicalVolume* pMotherLogical,
+                               G4bool pMany,
+                               G4int pCopyNo,
+                               G4bool pSurfChk=false);
   
   
   protected:
@@ -77,10 +78,8 @@ class QuasiparticleQubitHousing
   private:
 
     //The final G4PVPlacement
-    G4LogicalVolume * fLog_output;
-    G4VPhysicalVolume * fPhys_output;
-  
-  
+    G4LogicalVolume* fLog_output;
+    G4VPhysicalVolume* fPhys_output;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

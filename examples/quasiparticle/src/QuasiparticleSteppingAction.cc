@@ -32,7 +32,7 @@ QuasiparticleSteppingAction::~QuasiparticleSteppingAction() {
 }
 
 //Alternative constructor
-void QuasiparticleSteppingAction::UserSteppingAction( const G4Step * step ) {
+void QuasiparticleSteppingAction::UserSteppingAction(const G4Step* step) {
   //For now, simple: look at the pre-step point volume name and the track name
 
   //First up: do generic exporting of step information (no cuts made here)
@@ -44,7 +44,7 @@ void QuasiparticleSteppingAction::UserSteppingAction( const G4Step * step ) {
 }
 
 // Do a set of queries of information to test for anharmonic decay
-void QuasiparticleSteppingAction::ExportStepInformation( const G4Step * step ) {
+void QuasiparticleSteppingAction::ExportStepInformation(const G4Step* step) {
   //Test
   G4StepPoint * preSP = step->GetPreStepPoint();
   G4StepPoint * postSP = step->GetPostStepPoint();
@@ -73,18 +73,18 @@ void QuasiparticleSteppingAction::ExportStepInformation( const G4Step * step ) {
   //Get reflection count
   size_t nReflections =
     G4CMP::GetTrackInfo<G4CMPVTrackInfo>(step->GetTrack())->ReflectionCount();
-    
+  
   std::string stepProcess = postSP->GetProcessDefinedStep()->GetProcessName();
-
-
+  
+  
   //Fill the output file with the step info  
   fOutputFile << runNo << " " << eventNo << " " << trackNo
-	      << " " << particleName << " "
-	      << std::setprecision(14) << preStepX_mm << " " << preStepY_mm
-	      << " " << preStepZ_mm << " " << preStepT_ns << " "
-	      << preStepEnergy_eV << " "
-	      << preStepKinEnergy_eV << " " << postStepX_mm << " "
-	      << postStepY_mm << " " << postStepZ_mm << " " << postStepT_ns
-	      << " " << postStepEnergy_eV << " " << postStepKinEnergy_eV
-	      << " " << nReflections << " " << stepProcess << std::endl;
+              << " " << particleName << " "
+              << std::setprecision(14) << preStepX_mm << " " << preStepY_mm
+              << " " << preStepZ_mm << " " << preStepT_ns << " "
+              << preStepEnergy_eV << " "
+              << preStepKinEnergy_eV << " " << postStepX_mm << " "
+              << postStepY_mm << " " << postStepZ_mm << " " << postStepT_ns
+              << " " << postStepEnergy_eV << " " << postStepKinEnergy_eV
+              << " " << nReflections << " " << stepProcess << std::endl;
 }

@@ -52,48 +52,51 @@ class QuasiparticleResonatorAssembly
     QuasiparticleResonatorAssembly();
     ~QuasiparticleResonatorAssembly();
 
-    //This is the constructor that should be used in general. It does not have the current logical
-    //volume included because that will be defined IN the Qubit housing implementation. All we need is
-    //a set of info that is external to this, which should be self-contained.
-    QuasiparticleResonatorAssembly(G4RotationMatrix * pRot,
-				   const G4ThreeVector & tLate,
-				   const G4String & pName,
-				   G4LogicalVolume * pMotherLogical,
-				   G4bool pMany,
-				   G4int pCopyNo,
-				   G4LatticeManager * LM,
-				   std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-				   std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-				   G4bool pSurfChk=false);
+    //This is the constructor that should be used in general. It does not have\
+    //the current logical volume included because that will be defined IN the
+    //Qubit housing implementation. All we need is a set of info that is
+    //external to this, which should be self-contained.
+    QuasiparticleResonatorAssembly(G4RotationMatrix* pRot,
+                                   const G4ThreeVector& tLate,
+                                   const G4String& pName,
+                                   G4LogicalVolume* pMotherLogical,
+                                   G4bool pMany,
+                                   G4int pCopyNo,
+                                   G4LatticeManager* LM,
+                                   std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                                   std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+                                   G4bool pSurfChk=false);
   
     //Access functions
-    G4VPhysicalVolume * GetPhysicalVolume(){ return fPhys_output; }
-    G4LogicalVolume * GetLogicalVolume(){ return fLog_output; }
+    G4VPhysicalVolume* GetPhysicalVolume(){ return fPhys_output; }
+    G4LogicalVolume* GetLogicalVolume(){ return fLog_output; }
   
     //Misc
-    void ConstructResonatorAssembly(G4RotationMatrix * pRot,
-				    const G4ThreeVector & tLate,
-				    const G4String & pName,
-				    G4LogicalVolume * pMotherLogical,
-				    G4bool pMany,
-				    G4int pCopyNo,
-				    G4LatticeManager * LM,
-				    std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-				    std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-				    G4bool pSurfChk=false);
+    void ConstructResonatorAssembly(G4RotationMatrix* pRot,
+                                    const G4ThreeVector& tLate,
+                                    const G4String& pName,
+                                    G4LogicalVolume* pMotherLogical,
+                                    G4bool pMany,
+                                    G4int pCopyNo,
+                                    G4LatticeManager* LM,
+                                    std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                                    std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+                                    G4bool pSurfChk=false);
 
   
-  void MakeResonatorLine(G4String pName, G4LogicalVolume * log_baseAlLayer,
-			 G4LatticeManager * LM,
-			 std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-			 std::map<std::string,G4CMPSurfaceProperty*> borderContainer);
+    void MakeResonatorLine(G4String pName, G4LogicalVolume* log_baseAlLayer,
+                           G4LatticeManager* LM,
+                           std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                           std::map<std::string,G4CMPSurfaceProperty*> borderContainer);
 
-  void MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
-			       G4LatticeManager * LM,
-			       std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-			       std::map<std::string,G4CMPSurfaceProperty*> borderContainer);
+    void MakeShuntCapacitorCross(G4String pName,
+                                 G4LogicalVolume* log_baseAlLayer,
+                                 G4LatticeManager * LM,
+                                 std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                                 std::map<std::string,G4CMPSurfaceProperty*> borderContainer);
 
-  std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > GetListOfAllFundamentalSubVolumes();
+    std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> >
+    GetListOfAllFundamentalSubVolumes();
   
   protected:
 
@@ -102,7 +105,10 @@ class QuasiparticleResonatorAssembly
     //The final G4PVPlacement
     G4LogicalVolume * fLog_output;
     G4VPhysicalVolume * fPhys_output;
-    std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > fFundamentalVolumeList; //List of all fundamental sub-volumes in the transmission line. String 1 is "material_description", String 2 should be unique identifier (name of the sub-physical volume)
+    std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > fFundamentalVolumeList;
+    //List of all fundamental sub-volumes in the transmission line. String 1
+    //is "material_description", String 2 should be unique identifier (name of
+    //the sub-physical volume)
   
 };
 

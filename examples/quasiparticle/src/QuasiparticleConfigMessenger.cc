@@ -18,11 +18,13 @@
 
 // Constructor and destructor
 
-QuasiparticleConfigMessenger::QuasiparticleConfigMessenger(QuasiparticleConfigManager* mgr)
+QuasiparticleConfigMessenger::
+QuasiparticleConfigMessenger(QuasiparticleConfigManager* mgr)
   : G4UImessenger("/g4cmp/", "User configuration for G4CMP phonon example"),
     theManager(mgr), hitsCmd(0) {
-  hitsCmd = CreateCommand<G4UIcmdWithAString>("HitsFile",
-			      "Set filename for output of phonon hit locations");
+  hitsCmd =
+    CreateCommand<G4UIcmdWithAString>("HitsFile",
+                                      "Set filename for output of phonon hit locations");
 }
 
 
