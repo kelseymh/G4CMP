@@ -107,13 +107,6 @@ G4CMPQPRadiatesPhononProcess::PostStepDoIt(const G4Track& aTrack,
   return &aParticleChange;
 }
 
-G4bool
-G4CMPQPRadiatesPhononProcess::IsApplicable(const G4ParticleDefinition& aPD) {
-
-  // Allow all phonon types, because type is changed during tracking
-  return G4CMPVQPProcess::IsApplicable(aPD);
-}
-
 // Take the phonon energy and produce a recombination phonon from this.
 void G4CMPQPRadiatesPhononProcess::
 GenerateRadiatedPhonon(G4double phonEnergy,const G4Track& aTrack,

@@ -230,7 +230,7 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
 // vector is directed inward with respect to the surface normal.
 // IMPORTANT: We note here that this function assumes a "generalized"
 // surface norm, i.e. a norm that is opposite the incoming vel/mom
-// direction. If this is not true, things will break!
+// direction, is passed in. If this is not true, things will break!
 G4ThreeVector
 G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
 			   const G4ThreeVector& surfNorm, G4int mode) {
@@ -257,7 +257,7 @@ G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
     reflectedKDir = LambertReflection(generalizedSurfaceNorm);
   } while (nTries++ < maxTries &&
            !PhononVelocityIsInward(theLattice, mode, reflectedKDir,
-				   generalizedSurfaceNorm,
+                                   generalizedSurfaceNorm,
                                    surfPoint));
 
   //If we exceed our max tries, then set things to 0 so we know to kill the

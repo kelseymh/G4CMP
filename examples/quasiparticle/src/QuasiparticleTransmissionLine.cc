@@ -285,20 +285,20 @@ ConstructTransmissionLine(G4RotationMatrix* pRot,
   
   //Find the volumes of interest
   std::map<std::string,G4VPhysicalVolume*> tempContainer;
-  for( int iV = 0; iV < fFundamentalVolumeList.size(); ++iV ){
-    if(std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad1_PadConductor") ){
+  for (int iV = 0; iV < fFundamentalVolumeList.size(); ++iV) {
+    if (std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad1_PadConductor")) {
       tempContainer.emplace("Pad1Conductor",
                             std::get<2>(fFundamentalVolumeList[iV]));
     }
-    if(std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad1_PadEmpty") ){
+    if (std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad1_PadEmpty")) {
       tempContainer.emplace("Pad1Empty",
                             std::get<2>(fFundamentalVolumeList[iV]));
     }    
-    if(std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad2_PadConductor") ){
+    if (std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad2_PadConductor")) {
       tempContainer.emplace("Pad2Conductor",
                             std::get<2>(fFundamentalVolumeList[iV]));
     }
-    if(std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad2_PadEmpty") ){
+    if (std::get<1>(fFundamentalVolumeList[iV]).contains("TransmissionLinePad2_PadEmpty")) {
       tempContainer.emplace("Pad2Empty",
                             std::get<2>(fFundamentalVolumeList[iV]));
     }
@@ -419,7 +419,7 @@ QuasiparticleTransmissionLine::GetListOfAllFundamentalSubVolumes() {
 
 void QuasiparticleTransmissionLine::
 AddComplexGeometryPadSubVolumesToThisList(QuasiparticlePad* pad) {
-  for( int iSubVol = 0; iSubVol < pad->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol){
+  for (int iSubVol = 0; iSubVol < pad->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
     std::tuple<std::string,G4String,G4VPhysicalVolume*>
       theTuple(std::get<0>(pad->GetListOfAllFundamentalSubVolumes()[iSubVol]),
                std::get<1>(pad->GetListOfAllFundamentalSubVolumes()[iSubVol]),

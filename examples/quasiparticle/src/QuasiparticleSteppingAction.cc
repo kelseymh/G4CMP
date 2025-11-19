@@ -46,8 +46,8 @@ void QuasiparticleSteppingAction::UserSteppingAction(const G4Step* step) {
 // Do a set of queries of information to test for anharmonic decay
 void QuasiparticleSteppingAction::ExportStepInformation(const G4Step* step) {
   //Test
-  G4StepPoint * preSP = step->GetPreStepPoint();
-  G4StepPoint * postSP = step->GetPostStepPoint();
+  G4StepPoint* preSP = step->GetPreStepPoint();
+  G4StepPoint* postSP = step->GetPostStepPoint();
 
   int runNo = G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID();
   int eventNo = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();

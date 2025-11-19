@@ -45,7 +45,6 @@ public:
   virtual ~G4CMPQPDiffusionTimeStepperProcess();
 
   virtual void SetVerboseLevel(G4int vb);
-  virtual G4bool IsApplicable(const G4ParticleDefinition&);
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
 protected:

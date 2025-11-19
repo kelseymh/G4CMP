@@ -122,11 +122,7 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
       G4cout << "UMFPFLC Function Point B | the step length associated with "
 	     << "this is " << aTrack.GetStep()->GetStepLength() << G4endl;
     }
-    
-    
-    //Noting that if physical lattices are not 1:1 with volumes,
-    //something may get broken here... Should check a scenario of segmented SC...
-
+        
     //Noting here that since LoadDataForTrack updates the momentum based on
     //the current lattice (which in a reflection step is the "turnaround
     //lattice", we need to provide an opt-out for that momentum recalculation.

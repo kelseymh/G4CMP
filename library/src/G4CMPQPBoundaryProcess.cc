@@ -53,8 +53,8 @@ PostStepGetPhysicalInteractionLength(const G4Track& aTrack,
 }
 
 G4double G4CMPQPBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
-						 G4double /*prevStepLength*/,
-						 G4ForceCondition* condition) {
+                                                 G4double /*prevStepLength*/,
+                                                 G4ForceCondition* condition) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::GetMeanFreePath() --" << G4endl;
@@ -73,12 +73,12 @@ G4double G4CMPQPBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
     if (!IsValidQPVolume(currentVol,eKin)) {
       G4ExceptionDescription msg;
       msg << "Noticed that for the first step, our QP is either not in a "
-	  << "superconductor or that the QP energy, " << eKin / eV
-	  << " eV, is less than the current volume's gap. You're spawning a "
-	  << "quasiparticle either with too low an energy or in the wrong spot "
-	  << "for physical accuracy.";
+          << "superconductor or that the QP energy, " << eKin / eV
+          << " eV, is less than the current volume's gap. You're spawning a "
+          << "quasiparticle either with too low an energy or in the wrong spot "
+          << "for physical accuracy.";
       G4Exception("G4CMPQPBoundaryProcess::GetMeanFreePath",
-		  "QPBoundaryProcess001",FatalException, msg);
+                  "QPBoundaryProcess001",FatalException, msg);
     }
   }
   
@@ -93,7 +93,7 @@ G4double G4CMPQPBoundaryProcess::GetMeanFreePath(const G4Track& aTrack,
 //3. The kinetic energy of the QP considered (argument 2) must be larger than
 //the gap.
 G4bool G4CMPQPBoundaryProcess::IsValidQPVolume(G4VPhysicalVolume* volume,
-					       G4double qpEKin ) {
+                                               G4double qpEKin ) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::IsValidQPVolume() --" << G4endl;
@@ -128,7 +128,7 @@ G4bool G4CMPQPBoundaryProcess::IsValidQPVolume(G4VPhysicalVolume* volume,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "RWBoundary IVQPV Function Point A | gapEnergy is "
-	   << GapEnergy / CLHEP::eV << " eV" << G4endl;
+           << GapEnergy / CLHEP::eV << " eV" << G4endl;
   }
   
   //Condition 3
@@ -163,7 +163,7 @@ G4bool G4CMPQPBoundaryProcess::CheckQPVolumes(const G4Step& aStep)
 // Process action
 G4VParticleChange*
 G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
-				     const G4Step& aStep) {
+                                     const G4Step& aStep) {
 
   verboseLevel = G4CMPConfigManager::GetVerboseLevel();
 
@@ -171,10 +171,10 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::PostStepDoIt() --" << G4endl;
     G4cout << "RWBoundary PSDI Function Point A | poststeppoint velocity in "
-	   << "RWBoundary poststepdoit is: "
-	   << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
+           << "RWBoundary poststepdoit is: "
+           << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
     G4cout << "RWBoundary PSDI Function Point A | track velocity in RWBoundary "
-	   << " poststepdoit is: " << aTrack.GetVelocity() << G4endl;
+           << " poststepdoit is: " << aTrack.GetVelocity() << G4endl;
   }
   
   // NOTE:  G4VProcess::SetVerboseLevel is not virtual!  Can't overlaod it
@@ -184,11 +184,11 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "RWBoundary PSDI Function Point B | poststeppoint velocity in "
-	   << "RWBoundary poststepdoit, after initializing aParticleChange, "
-	   << "is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
+           << "RWBoundary poststepdoit, after initializing aParticleChange, "
+           << "is: " << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
     G4cout << "RWBoundary PSDI Function Point B | track velocity in RWBoundary "
-	   << "poststepdoit, after initializing aParticleChange, is: "
-	   << aTrack.GetVelocity() << G4endl;
+           << "poststepdoit, after initializing aParticleChange, is: "
+           << aTrack.GetVelocity() << G4endl;
   }
 
   //Do a boundary check just as for phonon dynamics
@@ -197,7 +197,7 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "RWBoundary PSDI Function Point C | After IsGoodBoundary, value "
-	   << checkBoundary << G4endl;
+           << checkBoundary << G4endl;
   }
   
   //After a boundary check, we also want to do a QP-specific check of the
@@ -206,20 +206,20 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   //debugging
   if (verboseLevel > 5) {
     G4cout << "RWBoundary PSDI Function Point D | Before CheckQPVolumes, "
-	   << "PostStepDoIt" << G4endl;
+           << "PostStepDoIt" << G4endl;
   }  
   G4bool checkQPVolumes = CheckQPVolumes(aStep);
 
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "RWBoundary PSDI Function Point E | After CheckQPVolumes (value "
-	   << checkQPVolumes << "), PostStepDoIt" << G4endl;
+           << checkQPVolumes << "), PostStepDoIt" << G4endl;
   }
   if (verboseLevel > 2) {
     G4cout << "G4CMPQPBoundaryProcess: inside PostStepDoIt Check qp volumes "
-	   << "result :  " <<checkQPVolumes << G4endl;
+           << "result :  " <<checkQPVolumes << G4endl;
     G4cout << "G4CMPQPBoundaryProcess: inside PostStepDoIt Check boundary "
-	   << "result :  " <<checkBoundary << G4endl;
+           << "result :  " <<checkBoundary << G4endl;
   }
   
   //If boundaries or QP volumes aren't satisfied, just return the default
@@ -234,7 +234,7 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
   //Otherwise, apply a boundary action (reflection, absorption, transmission)
   if (verboseLevel > 5) {   
     G4cout << "RWBoundary PSDI Function Poing F | Applying boundary action, "
-	   << "PostStepDoIt" << G4endl;
+           << "PostStepDoIt" << G4endl;
   }  
   ApplyBoundaryAction(aTrack, aStep, aParticleChange);
   ClearNumberOfInteractionLengthLeft();	// All processes should do this!
@@ -251,7 +251,7 @@ G4CMPQPBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
 //"postQPVolume" variable. Any volume without a postQPVolume (no lattice,
 //default gap, or gap>qpEnergy) will induce reflection.
 G4bool G4CMPQPBoundaryProcess::ReflectTrack(const G4Track& /*aTrack*/,
-					    const G4Step&) const {
+                                            const G4Step&) const {
   
   //Note that this is still just blindly copied from the phononboundary action
   // this needs to be customized for QP dynamics ...
@@ -270,8 +270,8 @@ G4bool G4CMPQPBoundaryProcess::ReflectTrack(const G4Track& /*aTrack*/,
 // go through that process, then we can switch to just the final
 // two lines of this function that are commented out.
 void G4CMPQPBoundaryProcess::DoAbsorption(const G4Track& aTrack,
-					  const G4Step& aStep,
-					  G4ParticleChange& aParticleChange) {
+                                          const G4Step& aStep,
+                                          G4ParticleChange& aParticleChange) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::DoAbsorption() --" << G4endl;
@@ -279,8 +279,8 @@ void G4CMPQPBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   G4CMPBoundaryUtils::DoAbsorption(aTrack,aStep,aParticleChange);
   
   /* 
-  aParticleChange.ProposeTrackStatus(fStopAndKill);
-  aParticleChange.ProposeEnergy(0.);
+     aParticleChange.ProposeTrackStatus(fStopAndKill);
+     aParticleChange.ProposeEnergy(0.);
   */
 }
 
@@ -288,14 +288,14 @@ void G4CMPQPBoundaryProcess::DoAbsorption(const G4Track& aTrack,
 
 // Do reflection of a quasiparticle
 void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
-					  const G4Step& aStep,
-					  G4ParticleChange& aParticleChange) {
+                                          const G4Step& aStep,
+                                          G4ParticleChange& aParticleChange) {
 
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::DoReflection() --" << G4endl;
     G4cout << "RWBoundary DR Function Point A | Using reflection where all "
-	   << "returned directions are surface norms." << G4endl;
+           << "returned directions are surface norms." << G4endl;
   }
   
   //This function is to be used with QP diffusion. It *will* return the
@@ -306,7 +306,7 @@ void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
   if (!CheckStepBoundary(aStep, surfacePoint)) {
     if (verboseLevel > 5) {
       G4cout << "RWBoundary DR Function Point B | checking step boundary failed"
-	     << " in DoReflection" << G4endl;
+             << " in DoReflection" << G4endl;
     }
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
@@ -315,8 +315,8 @@ void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
   
   if (verboseLevel>1) {
     G4cout << procName << ": Track reflected "
-	   << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
-	   << " times." << G4endl;
+           << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
+           << " times." << G4endl;
   }
   
   //To determine new random direction, need to know relationship between current
@@ -330,33 +330,13 @@ void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
   //be in the opposite direction of that norm. The logic is handled
   //within GetSurfaceNormal.
   G4ThreeVector newDir = -1*norm; 
-
-  /*
-  //your new momentum is very parallel to a surface. Hopefully shouldn't change
-  //stuff too much. If initial momentum is in the direction of the surface
-  //normal, the return direction should be just the negative of the surface
-  //normal
-  if (pdir.dot(norm) > 0) {
-    newDir = -1*norm;
-  } else if (pdir.dot(norm) < 0) {
-    newDir = norm;
-  } else{
-    G4ExceptionDescription msg;
-    msg << "Somehow the incoming momentum is exactly parallel to the surface "
-	<< "norm? What?";
-    G4Exception((GetProcessName()+"::DoReflection").c_str(),
-		"G4CMPQPBoundaryProcess002",
-		FatalException,
-		msg);
-  }
-  */
   
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "RWBoundary DR Function Point C | inside DoReflection initial "
-	   << "direction  " << pdir << G4endl;
+           << "direction  " << pdir << G4endl;
     G4cout << "RWBoundary DR Function Point C | inside DoReflection reflected "
-	   << "direction  " << newDir << G4endl;
+           << "direction  " << newDir << G4endl;
   }
   
   aParticleChange.ProposeMomentumDirection(newDir);
@@ -366,8 +346,8 @@ void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
 
 // Do transmission of a quasiparticle
 void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
-					    const G4Step& aStep,
-					    G4ParticleChange& aParticleChange) {
+                                            const G4Step& aStep,
+                                            G4ParticleChange& aParticleChange) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::DoTransmission() --" << G4endl;
@@ -384,14 +364,14 @@ void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "RWBoundary DT Function Point A | Killing QP inside "
-	     << "DoTransmission - postQPVolume is not valid should have been "
-	     << "caught in ReflectTrack()!" << G4endl;
+             << "DoTransmission - postQPVolume is not valid should have been "
+             << "caught in ReflectTrack()!" << G4endl;
     }
     G4ExceptionDescription msg;
     msg << "Noticed that the post-step volume isn't a good QP volume. There is "
-	<< "a bug somewhere that needs to be fixed.";
+        << "a bug somewhere that needs to be fixed.";
     G4Exception("G4CMPQPBoundaryProcess::DoTransmission",
-		"QPBoundaryProcess003",JustWarning, msg);
+                "QPBoundaryProcess003",JustWarning, msg);
     DoSimpleKill(aTrack, aStep, aParticleChange);
   }
     
@@ -402,7 +382,7 @@ void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "RWBoundary DT Function Point B | Checking step boundary "
-	     << "failed in DoTransmission" << G4endl;
+             << "failed in DoTransmission" << G4endl;
     }
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
@@ -421,6 +401,3 @@ void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
   G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep,vdir);
   aParticleChange.ProposeMomentumDirection(norm); 
 }
-
-
-

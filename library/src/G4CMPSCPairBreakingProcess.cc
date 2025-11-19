@@ -67,7 +67,7 @@ PostStepDoIt(const G4Track& aTrack,const G4Step& aStep) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "PSDI Function Point A | energy of QP 1: " << QPenergies.first
-	   << ", energy of QP 2: " << QPenergies.second << G4endl;
+           << ", energy of QP 2: " << QPenergies.second << G4endl;
   }
   
   //3. Using the two above-computed energies, generate the two secondaries
@@ -79,36 +79,29 @@ PostStepDoIt(const G4Track& aTrack,const G4Step& aStep) {
   if (verboseLevel>1) {
     G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
     G4cout << " Track " << aTrack.GetDefinition()->GetParticleName()
-	   << " vol " << aTrack.GetTouchable()->GetVolume()->GetName()
-	   << " prePV " << preStepPoint->GetPhysicalVolume()->GetName()
-	   << " postPV " << postStepPoint->GetPhysicalVolume()->GetName()
-	   << " step-length " << aStep.GetStepLength()
-	   << G4endl;
+           << " vol " << aTrack.GetTouchable()->GetVolume()->GetName()
+           << " prePV " << preStepPoint->GetPhysicalVolume()->GetName()
+           << " postPV " << postStepPoint->GetPhysicalVolume()->GetName()
+           << " step-length " << aStep.GetStepLength()
+           << G4endl;
   }
-
+  
   //5. Sanity check to make sure we actually generated two secondaries, and
   //   then kill the track
   if (aParticleChange.GetNumberOfSecondaries() == 2) {
     aParticleChange.ProposeEnergy(0.);
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   } else {
-
+    
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "PSDI Function Point B | Uh oh. Bogoliubov secondaries "
-	     << "not produced somehow?" << G4endl;
+             << "not produced somehow?" << G4endl;
     }
   }
   
   //6. Return the particle change
   return &aParticleChange;
-}
-
-G4bool G4CMPSCPairBreakingProcess::
-IsApplicable(const G4ParticleDefinition& aPD) {
-
-  // Allow all phonon types, because type is changed during tracking
-  return G4VPhononProcess::IsApplicable(aPD);
 }
 
 //For a given phonon energy, sample QP energies from the relevant distribution.
@@ -144,7 +137,7 @@ G4double G4CMPSCPairBreakingProcess::QPEnergyRand(G4double Energy) const
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPSCPairBreakingProcess::QPEnergyRand --" << G4endl;
     G4cout << "QPER Function Point A | fGapEnergy is: "
-	   << fGapEnergy / CLHEP::eV << " eV." << G4endl;
+           << fGapEnergy / CLHEP::eV << " eV." << G4endl;
   }
   
   const G4double BUFF = 100000.; //Used to be 1000, then 10000 (12/20/24)
@@ -166,14 +159,14 @@ G4double G4CMPSCPairBreakingProcess::QPEnergyRand(G4double Energy) const
 G4double G4CMPSCPairBreakingProcess::QPEnergyPDF(G4double E, G4double x) const {
   const G4double gapsq = fGapEnergy * fGapEnergy;
   return ((x * (E - x) + gapsq) /
-	  sqrt((x * x - gapsq) * ((E - x) * (E - x) - gapsq)));
+          sqrt((x * x - gapsq) * ((E - x) * (E - x) - gapsq)));
 }
 
 // Take the two energies for the two pairs of QPs and actually generate
 // secondaries with those energies. 
 void G4CMPSCPairBreakingProcess::
 GenerateQPPair(std::pair<G4double,G4double> QPEnergies, const G4Track& aTrack,
-	       const G4Step& /*aStep*/) {
+               const G4Step& /*aStep*/) {
 						
   //Get the energies
   double energy1 = QPEnergies.first;
@@ -191,14 +184,14 @@ GenerateQPPair(std::pair<G4double,G4double> QPEnergies, const G4Track& aTrack,
   // Construct the secondaries and set their attributes. Hopefully we don't
   // have to muck with the time here.
   G4Track* sec1 = G4CMP::CreateQP(aTrack, energy1, vel1,
-				  aTrack.GetGlobalTime(),aTrack.GetPosition());
+                                  aTrack.GetGlobalTime(),aTrack.GetPosition());
   G4Track* sec2 = G4CMP::CreateQP(aTrack, energy2, vel2,
-				  aTrack.GetGlobalTime(),aTrack.GetPosition());
+                                  aTrack.GetGlobalTime(),aTrack.GetPosition());
 
   //Sanity check
   if (!sec1 || !sec2) {
     G4Exception("G4CMPSCPairBreakingProcess::GenerateQPPair",
-		"SCPairBreaking001",JustWarning, "Error creating secondaries");
+                "SCPairBreaking001",JustWarning, "Error creating secondaries");
     return;
   }
 

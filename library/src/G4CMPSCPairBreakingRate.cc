@@ -20,7 +20,7 @@ G4double G4CMPSCPairBreakingRate::Rate(const G4Track& aTrack) const {
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPSCPairBreakingRate::Rate --" << G4endl;
     G4cout << "R Function Point A | SCDelta for this lattice: "
-	   << (this->GetLattice())->GetSCDelta0() << G4endl;
+           << (this->GetLattice())->GetSCDelta0() << G4endl;
   }
   if (!CheckToSeeSCParametersSet()) {
     return 0;
@@ -45,7 +45,7 @@ G4double G4CMPSCPairBreakingRate::Rate(const G4Track& aTrack) const {
     
     G4double tau_pairbreaking = fTau0_ph*
       GetTauAsAFunctionOfEnergy(fCurrentNormalizedTauPairBreakingVsEnergy,
-				"Phonon",energy,thisEnergyBelowUsableRange);
+                                "Phonon",energy,thisEnergyBelowUsableRange);
     
     if (verboseLevel > 5) {
       G4cout << "R Function Point C | HereC_SCPairBreakingRate" << G4endl;
@@ -70,13 +70,13 @@ bool G4CMPSCPairBreakingRate::CheckToSeeSCParametersSet() const {
       //^Means that the material is partially set -- this is probably a mistake
       G4ExceptionDescription msg;
       msg << "Noticed that in the rate calculation step for the SC Pairbreaking"
-	  << "process, you have incorrectly defined or omitted the Gap0Energy "
-	  << "parameter, the Tcrit parameter, the Teff parameter, or the Tau0ph"
-	  << " parameter. In other words, you don't have enough input "
-	  << "information in your config.txt file to run the pairbreaking "
-	  << "physics correctly.";
+          << "process, you have incorrectly defined or omitted the Gap0Energy "
+          << "parameter, the Tcrit parameter, the Teff parameter, or the Tau0ph"
+          << " parameter. In other words, you don't have enough input "
+          << "information in your config.txt file to run the pairbreaking "
+          << "physics correctly.";
       G4Exception("G4CMPSCPairbreakingRate::CheckToSeeSCParametersSet",
-		  "SCPairbreakingRate001",JustWarning, msg);
+                  "SCPairbreakingRate001",JustWarning, msg);
       return false;
     }
   }
@@ -100,7 +100,7 @@ G4CMPSCPairBreakingRate::UpdateLookupTable(const G4LatticePhysical * theLat) {
   if (fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy.count(theLat)
       == 0) {
     G4cout << "Computing new lookup table for SC pairbreaking process."
-	   << G4endl;
+           << G4endl;
     fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy.emplace(theLat,ComputeNormalizedTauPairBreakingVsEnergy());
     fCurrentNormalizedTauPairBreakingVsEnergy =
       fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy[theLat];
@@ -119,7 +119,7 @@ G4CMPSCPairBreakingRate::ComputeNormalizedTauPairBreakingVsEnergy() {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPSCPairBreakingRate::"
-	   << "ComputeNormalizedTauPairBreakingVsEnergy --" << G4endl;
+           << "ComputeNormalizedTauPairBreakingVsEnergy --" << G4endl;
   }
   std::vector<std::vector<G4double> > output;
   G4double deltaPhononEnergyDivGap =
@@ -152,9 +152,9 @@ G4CMPSCPairBreakingRate::ComputeNormalizedTauPairBreakingVsEnergy() {
       double omega = minomega + (iW+0.5)*deltaomega;
       double energyTerm1 = 1.0 / pow(omega*omega - fGapEnergy*fGapEnergy,0.5);
       double energyTerm2 = (omega*(phononEnergy-omega) + fGapEnergy*fGapEnergy)
-	/ pow( pow(phononEnergy-omega,2) - fGapEnergy*fGapEnergy, 0.5 );
+        / pow( pow(phononEnergy-omega,2) - fGapEnergy*fGapEnergy, 0.5 );
       double integrand = energyTerm1 * energyTerm2 *
-	(1-FermiFactor(phononEnergy-omega,fTeff) - FermiFactor(omega,fTeff));
+        (1-FermiFactor(phononEnergy-omega,fTeff) - FermiFactor(omega,fTeff));
       integral += integrand * deltaomega;
     }
     double inverseTau = prefactor * integral;

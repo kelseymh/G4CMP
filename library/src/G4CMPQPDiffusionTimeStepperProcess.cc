@@ -75,11 +75,6 @@ PostStepDoIt(const G4Track& aTrack,const G4Step& aStep) {
   return &aParticleChange;
 }
 
-G4bool G4CMPQPDiffusionTimeStepperProcess::
-IsApplicable(const G4ParticleDefinition& aPD) {   
-  return G4CMPVQPProcess::IsApplicable(aPD);
-}
-
 //Pass-through to G4CMPVProcess class
 G4double G4CMPQPDiffusionTimeStepperProcess::
 GetMeanFreePath(const G4Track& trk,G4double prevstep,G4ForceCondition* cond) {
