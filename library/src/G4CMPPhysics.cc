@@ -113,7 +113,6 @@ void G4CMPPhysics::ConstructProcess() {
   AddG4CMPProcess(qpBoundary,particle);
   AddG4CMPProcess(bogQPRecomb,particle);
   //EY since QP transport is not a discrete process adding to process manager directly
-  //  particle->GetProcessManager()->AddProcess(bogQPTrans,ordInActive,ordDefault,ordLast);
   particle->GetProcessManager()->AddProcess(qpDiffusion,ordInActive,ordDefault,ordDefault);
 
     

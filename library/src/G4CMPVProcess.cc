@@ -88,15 +88,15 @@ G4bool G4CMPVProcess::
 UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPVProcess::UpdateMeanFreePathForLatticeChangeover --"
-	   << G4endl;
+           << G4endl;
     G4cout << "UMFPFLC Function Point A | loading data for track after lattice "
-	   << "changeover, process: " << this->GetProcessName() << G4endl;
+           << "changeover, process: " << this->GetProcessName() << G4endl;
     G4cout << "UMFPFLC Function Point A | Here, track length: "
-	   << aTrack.GetTrackLength() << G4endl;
+           << aTrack.GetTrackLength() << G4endl;
     G4cout << "UMFPFLC Function Point A | Current lattice a la lattice "
-	   << "manager: "
-	   << G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())
-	   << ", while this->theLattice: " << this->theLattice << G4endl;
+           << "manager: "
+           << G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())
+           << ", while this->theLattice: " << this->theLattice << G4endl;
   }
     
   //Always do a check to see if the current lattice stored in this process is
@@ -115,7 +115,7 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "UMFPFLC Function Point B | the step length associated with "
-	     << "this is " << aTrack.GetStep()->GetStepLength() << G4endl;
+             << "this is " << aTrack.GetStep()->GetStepLength() << G4endl;
     }
         
     //Noting here that since LoadDataForTrack updates the momentum based on
@@ -139,14 +139,14 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "UMFPFLC Function Point C | Successfully changed over to a new "
-	     << "lattice for process " << this->GetProcessName() << G4endl;
+             << "lattice for process " << this->GetProcessName() << G4endl;
     }
     return true;
   }
   //Debugging
   if (verboseLevel > 5) {    
     G4cout << "UMFPFLC Function Point D | Did not successfully change over to "
-	   << "a new lattice for process " << this->GetProcessName() << G4endl;
+           << "a new lattice for process " << this->GetProcessName() << G4endl;
   }
   return false;
 }
