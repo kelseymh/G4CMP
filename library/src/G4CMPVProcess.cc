@@ -64,11 +64,6 @@ void G4CMPVProcess::StartTracking(G4Track* track) {
   G4VProcess::StartTracking(track);	// Apply base class actions
   LoadDataForTrack(track);
   ConfigureRateModel();
-  
-  //I'm putting this here because I don't think it successfully gets set
-  //to a non-default value if we only do it in the constructor? Should
-  //probably ask Mike about this
-  this->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
 }
 
 void G4CMPVProcess::EndTracking() {
@@ -187,13 +182,7 @@ void G4CMPVProcess::UpdateSCAfterLatticeChange() {
 // Compute MFP using track velocity and scattering rate
 G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 					G4ForceCondition* condition) {
-
-  //I'm putting this here because I don't think it successfully gets set
-  //to a non-default value if we only do it in the constructor? Should
-  //probably ask Mike about this
-  this->SetVerboseLevel(G4CMPConfigManager::GetVerboseLevel());
-  
-  
+    
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPVProcess::GetMeanFreePath --" << G4endl;

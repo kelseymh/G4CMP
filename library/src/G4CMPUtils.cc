@@ -229,24 +229,26 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
 // Generate cos(theta) law for diffuse reflection, ensuring that computed
 // vector is directed inward with respect to the surface normal.
 // IMPORTANT: We note here that this function assumes a "generalized"
-// surface norm, i.e. a norm that is opposite the incoming vel/mom
-// direction, is passed in. If this is not true, things will break!
+// surface norm, i.e. a norm which has a positive dot product with the
+// incoming vel/mom direction, is passed in. If this is not true, things
+// will break!
 G4ThreeVector
 G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
-			   const G4ThreeVector& surfNorm, G4int mode) {
+                           const G4ThreeVector& surfNorm, G4int mode) {
   const G4ThreeVector surfPoint = GetCurrentTrack()->GetPosition();
   return GetLambertianVector(theLattice, surfNorm, mode,
-			     surfPoint);
+                             surfPoint);
 }
 
 
 // IMPORTANT: We note here that this function assumes a "generalized"
-// surface norm calculated as being opposite the incoming vel/mom direction.
+// surface norm calculated as a norm which has a positive dot product
+// with the incoming vel/mom direction.
 // If this not true, things will break/be undefined!
 G4ThreeVector
 G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
-			   const G4ThreeVector& surfNorm, G4int mode,
-			   const G4ThreeVector& surfPoint) {
+                           const G4ThreeVector& surfNorm, G4int mode,
+                           const G4ThreeVector& surfPoint) {
 
   G4ThreeVector reflectedKDir;
   const G4int maxTries = 10000;
@@ -270,8 +272,8 @@ G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
   return reflectedKDir;
 }
 
-//Now modified to recognize that the surface norm is "generalized," i.e. it is
-//always pointing in the same direction as the incident velocity/momentum.
+//Now modified to recognize that the surface norm is "generalized," i.e. it
+//has a positive dot product with the incident momentum/velocity
 //This is opposite what existed before, where we could always assume we were
 //reflecting "inward" with respect to an outward-facing surface normal.
 
@@ -289,7 +291,7 @@ G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
 // Check that phonon is properly directed from the volume surface
 // waveVector and surfNorm need to be in global coordinates.
 // A new assumption here is that the surfNorm that is passed in is "generalized,"
-// i.e. that it points in the same direction as to the incoming v-dir (not
+// i.e. that it has a positive dot product with the incoming v-dir (not
 // the incoming k-vector). It therefore is negative when dotted into the outgoing
 // v-dir (if reflection is occurring). So if you're using these, make sure that
 // the surfNorm that you pass in is pointing *away from* the volume that your phonon
@@ -343,9 +345,9 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
   
   //In all discernible cases, the (generalized) surface norm passed into this
   //function should now be pointing in the direction identical to the incident
-  //velocity. If the new velocity dotted into this generalized surface norm
-  //is negative (and the trial step is inside the incident volume), then we've
-  //succeeded. Otherwise, return false. 
+  //velocity. (i.e. positive dot product). If the new velocity dotted into this
+  //generalized surface norm is negative (and the trial step is inside the
+  //incident volume), then we've succeeded. Otherwise, return false. 
   return (vDir.dot(surfNorm) < 0.0 && trialStep == kInside);
 }
 
@@ -358,7 +360,7 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
 // in the rotations from global to local and the mapping of K to vDir. You'll
 // also need to make sure that the lattice is the *new* lattice (i.e. the one
 // that the phonon is leaving into). As with PhononVelocityIsInward, this takes
-// a "generalized" surfaceNorm, which always points in the same direction as
+// a "generalized" surfaceNorm, which has a positive dot product with 
 // the impinging phonon's velocity (not necessarily its k-vector). So make
 // sure that's true as well. All of these input vectors should be in a global
 // frame.

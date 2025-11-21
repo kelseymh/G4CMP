@@ -60,7 +60,7 @@ protected:
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
 
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
-			    G4ParticleChange& aParticleChange);
+                            G4ParticleChange& aParticleChange);
 
   G4ThreeVector GetSpecularVector(const G4ThreeVector& waveVector,
                                   G4ThreeVector& surfNorm, G4int mode,
@@ -71,7 +71,7 @@ protected:
                              const G4ThreeVector& vDir) const;
   
   virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
-			      G4ParticleChange& aParticleChange);
+                              G4ParticleChange& particleChange);
 
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;

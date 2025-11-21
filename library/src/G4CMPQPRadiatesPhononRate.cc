@@ -102,8 +102,10 @@ G4CMPQPRadiatesPhononRate::UpdateLookupTable(const G4LatticePhysical * theLat) {
   //   care about, storing them in a map
   if (fMap_physicalLattice_NormalizedTauQPRadiatesPhononVsEnergy.count(theLat)
       == 0) {
-    G4cout << "Computing new lookup table for phonon radiation process, lattice"
-	   << " name: " << theLat->GetLattice()->GetName() << G4endl;
+    if (verboseLevel > 5) {
+      G4cout << "Computing new lookup table for phonon radiation process, lattice"
+             << " name: " << theLat->GetLattice()->GetName() << G4endl;
+    }
     fMap_physicalLattice_NormalizedTauQPRadiatesPhononVsEnergy.emplace(theLat,ComputeNormalizedTauQPRadiatesPhononVsEnergy());
     fCurrentNormalizedTauQPRadiatesPhononVsEnergy =
       fMap_physicalLattice_NormalizedTauQPRadiatesPhononVsEnergy[theLat];

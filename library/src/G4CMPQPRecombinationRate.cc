@@ -110,8 +110,10 @@ G4CMPQPRecombinationRate::UpdateLookupTable(const G4LatticePhysical * theLat) {
   //   care about, storing them in a map
   if (fMap_physicalLattice_NormalizedTauRecombinationVsEnergy.count(theLat)
       == 0) {
-    G4cout << "Computing new lookup table for recombination process, lattice "
-	   << "name: " << theLat->GetLattice()->GetName() << G4endl;
+    if (verboseLevel > 5) {
+      G4cout << "Computing new lookup table for recombination process, lattice "
+             << "name: " << theLat->GetLattice()->GetName() << G4endl;
+    }
     fMap_physicalLattice_NormalizedTauRecombinationVsEnergy.
       emplace(theLat,ComputeNormalizedTauRecombinationVsEnergy());
     fCurrentNormalizedTauRecombinationVsEnergy =

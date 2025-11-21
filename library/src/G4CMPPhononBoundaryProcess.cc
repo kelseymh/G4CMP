@@ -677,7 +677,7 @@ UpdateNavigatorVolume(const G4Step& step, const G4ThreeVector& position,
 //function
 void G4CMPPhononBoundaryProcess::
 DoTransmission(const G4Track& aTrack,const G4Step& aStep,
-	       G4ParticleChange& aParticleChange) {
+               G4ParticleChange& particleChange) {
 
   //Debugging
   if (verboseLevel > 5) {
@@ -732,7 +732,7 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
 
-    aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
+    particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
   }
 
   
@@ -765,8 +765,8 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
   G4ThreeVector vdir = theLattice->MapKtoVDir(mode, waveVector);
   G4double v = theLattice->MapKtoV(mode, waveVector);
   G4CMP::RotateToGlobalDirection(nextVolTouchable,vdir);  
-  aParticleChange.ProposeVelocity(v);
-  aParticleChange.ProposeMomentumDirection(vdir);
+  particleChange.ProposeVelocity(v);
+  particleChange.ProposeMomentumDirection(vdir);
 
   //Rotate the wavevector back to global dimensions so we can have it back for
   //further calculations
@@ -841,8 +841,8 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
 	//Inbound and outbound wavevectors are the same (waveVector) by
 	//aphysical fiat at the moment.
 	trackInfo->SetWaveVector(newAttemptWaveVector); 
-	aParticleChange.ProposeVelocity(v);
-	aParticleChange.ProposeMomentumDirection(vdir);
+	particleChange.ProposeVelocity(v);
+	particleChange.ProposeMomentumDirection(vdir);
 	successfulTransmission = true;
 	break;
       }
@@ -868,7 +868,7 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
       }
       G4Exception((GetProcessName()+"::DoTransmission").c_str(), "Boundary011",
 		  JustWarning, msg.c_str());
-      DoSimpleKill(aTrack, aStep, aParticleChange);
+      DoSimpleKill(aTrack, aStep, particleChange);
     }
     return;
   }    

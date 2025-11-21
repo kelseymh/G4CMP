@@ -748,13 +748,15 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
       //Whenever this is required, this will incur a small bias because we're
       //not changing the time duration for the step
       if (step.GetPostStepPoint()->GetStepStatus() != fGeomBoundary) {
-	G4ExceptionDescription msg;
-	msg << "Somehow the CheckNextStep returned a step length that is not "
-	    << "kInfinity but the step status thinks it's not fGeomBoundary. "
-	    << "It seems we may have misjudged the distance to our boundary. "
-	    << "Going to try again for a few tries.";
-	G4Exception("G4CMPQPDiffusion::AlongStepDoIt", "QPDiffusion005",
-		    JustWarning, msg);
+        if (verboseLevel > 5){
+          G4ExceptionDescription msg;
+          msg << "Somehow the CheckNextStep returned a step length that is not "
+              << "kInfinity but the step status thinks it's not fGeomBoundary. "
+              << "It seems we may have misjudged the distance to our boundary. "
+              << "Going to try again for a few tries.";
+          G4Exception("G4CMPQPDiffusion::AlongStepDoIt", "QPDiffusion005",
+                      JustWarning, msg);
+        }
 
 	//Retry the checknextstep
 	int maxNTries = 15; //Capped at 10 to limit bias to 10% on these steps
@@ -1741,7 +1743,6 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
   //0.01 nm has issues (but 1 nm seems fine), so want to stay well above the
   //10 pm scale.
   G4double boundTolerance = fHardFloorBoundaryScale*0.1; 
-  G4VPhysicalVolume* currentVolume = track.GetVolume();
   G4ThreeVector trackPosition = track.GetPosition();
   G4ThreeVector momentumDir = track.GetMomentumDirection();
   G4ThreeVector trackPosition_eps = trackPosition+momentumDir*boundTolerance;
@@ -1757,7 +1758,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "GMFP Function Point B | CurrentVolume by track: "
-	   << currentVolume->GetName() <<G4endl;
+           << track.GetVolume()->GetName() <<G4endl;
     G4cout << "GMFP Function Point B | CurrentVolumePlusEps, by "
 	   << "GetVolumeAtPoint: " << currentVolPlusEps->GetName() << G4endl;
     G4cout << "GMFP Function Point B | CurrentVolumeMinusEps, by "
@@ -1776,7 +1777,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
   //6/28/25: make this boundTolerance a small fraction of the hard floor
   //scale. Maybe set to 0.1*hardFloor?
   fTrackOnBoundary = false;
-  if (currentVolPlusEps != currentVolume && theStatus == fGeomBoundary) {
+  if (currentVolPlusEps != track.GetVolume() && theStatus == fGeomBoundary) {
 
     //NOTE: this above logic may run into issues in internal corners, if the
     //next direction isn't pointed back into the volume. I.e. if a nm

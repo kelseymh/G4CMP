@@ -99,8 +99,10 @@ G4CMPSCPairBreakingRate::UpdateLookupTable(const G4LatticePhysical * theLat) {
   //   care about, storing them in a map
   if (fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy.count(theLat)
       == 0) {
-    G4cout << "Computing new lookup table for SC pairbreaking process."
-           << G4endl;
+    if (verboseLevel > 5) {
+      G4cout << "Computing new lookup table for SC pairbreaking process."
+             << G4endl;
+    }
     fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy.emplace(theLat,ComputeNormalizedTauPairBreakingVsEnergy());
     fCurrentNormalizedTauPairBreakingVsEnergy =
       fMap_physicalLattice_NormalizedTauPairBreakingVsEnergy[theLat];
