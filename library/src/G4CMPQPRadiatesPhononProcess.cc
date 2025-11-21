@@ -40,16 +40,16 @@ void G4CMPQPRadiatesPhononProcess::SetVerboseLevel(G4int vb) {
 
 G4VParticleChange*
 G4CMPQPRadiatesPhononProcess::PostStepDoIt(const G4Track& aTrack,
-					   const G4Step& aStep) {
+                                           const G4Step& aStep) {
   
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPRadiatesPhononProcess::PostStepDoIt --" << G4endl;
     G4cout << "PSDI Function Point A | poststeppoint velocity in QPRadiates "
-	   << "poststepdoit is: " << aStep.GetPostStepPoint()->GetVelocity()
-	   << G4endl;
+           << "poststepdoit is: " << aStep.GetPostStepPoint()->GetVelocity()
+           << G4endl;
     G4cout << "PSDI Function Point A | track velocity in QPRadiates "
-	   << "poststepdoit is: " << aTrack.GetVelocity() << G4endl;
+           << "poststepdoit is: " << aTrack.GetVelocity() << G4endl;
   }
   
   aParticleChange.Initialize(aTrack);
@@ -57,11 +57,11 @@ G4CMPQPRadiatesPhononProcess::PostStepDoIt(const G4Track& aTrack,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "PSDI Function Point B | poststeppoint velocity in QPRadiates "
-	   << "poststepdoit, after initializing particle change, is: "
-	   << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
+           << "poststepdoit, after initializing particle change, is: "
+           << aStep.GetPostStepPoint()->GetVelocity() << G4endl;
     G4cout << "PSDI Function Point B | track velocity in QPRadiates "
-	   << "poststepdoit, afteer initializing particle change, is: "
-	   << aTrack.GetVelocity() << G4endl;
+           << "poststepdoit, afteer initializing particle change, is: "
+           << aTrack.GetVelocity() << G4endl;
   }
   
   
@@ -75,10 +75,10 @@ G4CMPQPRadiatesPhononProcess::PostStepDoIt(const G4Track& aTrack,
       postStepPoint->GetStepStatus() == fWorldBoundary) {
     G4ExceptionDescription msg;
     msg << "For some reason we're running post-step do it for the Bogoliubov "
-	<< "RadiatesPhonon process and we find ourselves on a boundary. Should "
-	<< "this ever happen?";
+        << "RadiatesPhonon process and we find ourselves on a boundary. Should "
+        << "this ever happen?";
     G4Exception("G4CMPQPRadiatesPhononProcess::PostStepDoIt",
-		"QPRadiatesPhonon001",EventMustBeAborted,msg);
+                "QPRadiatesPhonon001",EventMustBeAborted,msg);
     return &aParticleChange;		
   }
   
@@ -110,35 +110,35 @@ G4CMPQPRadiatesPhononProcess::PostStepDoIt(const G4Track& aTrack,
 // Take the phonon energy and produce a recombination phonon from this.
 void G4CMPQPRadiatesPhononProcess::
 GenerateRadiatedPhonon(G4double phonEnergy,const G4Track& aTrack,
-		       const G4Step& /*aStep*/) {
+                       const G4Step& /*aStep*/) {
 
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPRadiatesPhononProcess::GenerateRadiatedPhonon --"
-	   << G4endl;
+           << G4endl;
   }
   
   //Now create the phonon
   G4int mode = G4CMP::ChoosePhononPolarization(theLattice->GetLDOS(),
-					       theLattice->GetSTDOS(),
-					       theLattice->GetFTDOS());    
+                                               theLattice->GetSTDOS(),
+                                               theLattice->GetFTDOS());    
   G4ThreeVector dir1 = G4RandomDirection();    
   G4Track* sec1 = G4CMP::CreatePhonon(aTrack,mode,dir1,phonEnergy,
-				      aTrack.GetGlobalTime(),
-				      aTrack.GetPosition());
+                                      aTrack.GetGlobalTime(),
+                                      aTrack.GetPosition());
 
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "GRP Function Point A | energy of radiated phonon: "
-	   << phonEnergy << ", whereas twice the gap is: " << 2.0*fGapEnergy
-	   << G4endl;
+           << phonEnergy << ", whereas twice the gap is: " << 2.0*fGapEnergy
+           << G4endl;
   }
   
   //Check to make sure the secondary was actually produced
   if (!sec1) {
     G4Exception("G4CMPQPRadiatesPhononProcess::GenerateRadiatedPhonon",
-		"QPRadiatesPhonon002", JustWarning,
-		"Error creating secondaries");
+                "QPRadiatesPhonon002", JustWarning,
+                "Error creating secondaries");
     return;
   }
   
@@ -178,15 +178,15 @@ G4double G4CMPQPRadiatesPhononProcess::PhononEnergyRand(G4double Energy) const {
 // typo and bring this into agreement with the Kaplan paper
 G4double
 G4CMPQPRadiatesPhononProcess::PhononEnergyPDF(G4double E, G4double x) const {
-    const G4double gapsq = fGapEnergy * fGapEnergy;
-    return (x * (E - x) * (E - x) * (1 - gapsq / x / E) / sqrt(x * x - gapsq));
+  const G4double gapsq = fGapEnergy * fGapEnergy;
+  return (x * (E - x) * (E - x) * (1 - gapsq / x / E) / sqrt(x * x - gapsq));
 }
 
 
 //Pass-through to G4CMPVProcess class
 G4double G4CMPQPRadiatesPhononProcess::GetMeanFreePath(const G4Track& trk,
-						       G4double prevstep,
-						       G4ForceCondition* cond) {
+                                                       G4double prevstep,
+                                                       G4ForceCondition* cond) {
 
   //Debugging
   if (verboseLevel > 5) {
@@ -200,8 +200,8 @@ G4double G4CMPQPRadiatesPhononProcess::GetMeanFreePath(const G4Track& trk,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "GMFP Function Point A | Mean free path in "
-	   << "QPRadiatesPhononProcess: " << mfpBase << ", with nMFPsLeft: "
-	   << GetNumberOfInteractionLengthLeft() << G4endl;
+           << "QPRadiatesPhononProcess: " << mfpBase << ", with nMFPsLeft: "
+           << GetNumberOfInteractionLengthLeft() << G4endl;
   }
 
 

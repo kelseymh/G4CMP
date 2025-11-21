@@ -12,7 +12,6 @@
 // 20250922  G4CMP-219 -- First addition to this history (done at time
 //                        of merge to develop)
 
-
 #ifndef G4CMPSCUtils_h
 #define G4CMPSCUtils_h 1
 
@@ -50,11 +49,11 @@ protected:
   G4double FermiFactor(G4double energy, G4double temperature);
   G4double BoseFactor(G4double energy, G4double temperature);
   G4double GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhononEnergy,
-				      G4String particleInQuestion,
-				      G4double energy,
-				      G4bool & thisEnergyBelowUsableRange ) const;
+                                      G4String particleInQuestion,
+                                      G4double energy,
+                                      G4bool & thisEnergyBelowUsableRange ) const;
   G4double ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit,
-					  double gap0Energy) const;
+                                          double gap0Energy) const;
   
 private:
 
@@ -83,7 +82,7 @@ protected:
   
   //Parameters for defining the various lookup tables needed by this class. 
   enum { fPhononEnergyBins=2000, fQPEnergyBins=2000,
-	 fGapEnergyTempDependenceBins=53 }; //Originally 1000,1000,53
+         fGapEnergyTempDependenceBins=53 }; //Originally 1000,1000,53
   G4double fMinPhononEnergyDivGap;
   G4double fMaxPhononEnergyDivGap;
   G4double fMinQPEnergyDivGap;

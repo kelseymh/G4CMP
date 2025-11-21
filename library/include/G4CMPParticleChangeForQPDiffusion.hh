@@ -20,7 +20,7 @@ class G4DynamicParticle;
 
 class G4CMPParticleChangeForQPDiffusion: public G4VParticleChange
 { 
-  public:
+public:
   // default constructor
   G4CMPParticleChangeForQPDiffusion();
   

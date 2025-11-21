@@ -30,7 +30,7 @@ public:
 protected:
   // Keep function here as call-back to avoid getting old toolkit version
   virtual G4double GetMeanFreePath(const G4Track& trk, G4double prevstep,
-				   G4ForceCondition* cond);
+                                   G4ForceCondition* cond);
   
   std::pair<G4double,G4double> FetchQPEnergies(G4double phonEnergy);
   G4double QPEnergyRand(G4double Energy) const;
@@ -38,7 +38,7 @@ protected:
 
   
   void GenerateQPPair(std::pair<G4double,G4double> QPEnergies,
-		      const G4Track& aTrack,const G4Step& aStep);
+                      const G4Track& aTrack,const G4Step& aStep);
 
 private:
 

@@ -23,7 +23,7 @@ G4double G4CMPQPLocalTrappingRate::Rate(const G4Track& /*aTrack*/) const {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "R Function Point A | qp local trapping tau: " << localTrapTau
-	   << G4endl;
+           << G4endl;
   }
   
   //Some safeguards
@@ -37,7 +37,7 @@ G4double G4CMPQPLocalTrappingRate::Rate(const G4Track& /*aTrack*/) const {
   //More debugging
   if (verboseLevel > 5) {
     G4cout << "R Function Point B | qp local trapping ultimate rate: "
-	   << rate << G4endl;
+           << rate << G4endl;
   }
   return rate;
 }

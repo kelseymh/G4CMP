@@ -51,10 +51,10 @@ PostStepDoIt(const G4Track& aTrack,const G4Step& aStep) {
       postStepPoint->GetStepStatus() == fWorldBoundary) {
     G4ExceptionDescription msg;
     msg << "For some reason we're running post-step do it for the "
-	<< "QPDiffusionTimeStepper process and we find ourselves on a boundary."
-	<< "Should this ever happen?";
+        << "QPDiffusionTimeStepper process and we find ourselves on a boundary."
+        << "Should this ever happen?";
     G4Exception("G4CMPQPDiffusionTimeStepperProcess::PostStepDoIt",
-		"QPDiffusionTimeStepper001",EventMustBeAborted,msg);
+                "QPDiffusionTimeStepper001",EventMustBeAborted,msg);
     return &aParticleChange;		
   }
    

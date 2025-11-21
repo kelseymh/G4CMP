@@ -53,11 +53,11 @@ PostStepDoIt(const G4Track& aTrack,const G4Step& aStep) {
   if (verboseLevel>1) {
     G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
     G4cout << " Track " << aTrack.GetDefinition()->GetParticleName()
-	   << " vol " << aTrack.GetTouchable()->GetVolume()->GetName()
-	   << " prePV " << preStepPoint->GetPhysicalVolume()->GetName()
-	   << " postPV " << postStepPoint->GetPhysicalVolume()->GetName()
-	   << " step-length " << aStep.GetStepLength()
-	   << G4endl;
+           << " vol " << aTrack.GetTouchable()->GetVolume()->GetName()
+           << " prePV " << preStepPoint->GetPhysicalVolume()->GetName()
+           << " postPV " << postStepPoint->GetPhysicalVolume()->GetName()
+           << " step-length " << aStep.GetStepLength()
+           << G4endl;
   }
 
   //Since this local trapping, this is very simple -- we just kill the track.

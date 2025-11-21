@@ -1,4 +1,4 @@
-/***********************************************************************\
+ /***********************************************************************\
  * This software is licensed under the terms of the GNU General Public *
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
@@ -132,26 +132,26 @@ void G4CMPQPDiffusion::StartTracking(G4Track* track) {
 // processes.
 G4double G4CMPQPDiffusion::
 AlongStepGetPhysicalInteractionLength(const G4Track& track,
-				      G4double previousStepSize,
-				      G4double currentMinimalStep,
-				      G4double& currentSafety,
-				      G4GPILSelection* selection) {
+                                      G4double previousStepSize,
+                                      G4double currentMinimalStep,
+                                      G4double& currentSafety,
+                                      G4GPILSelection* selection) {
   //Debugging
   if (verboseLevel>5) {
     G4cout << "-- G4CMPQPDiffusion::AlongStepGetPhysicalInteractionLength --"
-	   << G4endl;
+           << G4endl;
     G4cout << "ASGPIL Function Point A | track volume: "
-	   << track.GetVolume()->GetName() << G4endl;
+           << track.GetVolume()->GetName() << G4endl;
     G4cout << "ASGPIL Function Point A | previousStepSize: "
-	   << previousStepSize << ", currentSafety: " << currentSafety
-	   << G4endl;
+           << previousStepSize << ", currentSafety: " << currentSafety
+           << G4endl;
     G4cout << "ASGPIL Function Point A | momentum direction: "
-	   << track.GetMomentumDirection()
-	   << G4endl;
+           << track.GetMomentumDirection()
+           << G4endl;
     G4cout << "ASGPIL Function Point A | position: " << track.GetPosition()
-	   << G4endl;
+           << G4endl;
     G4cout << "ASGPIL Function Point A | global time: "
-	   << track.GetGlobalTime() << G4endl;
+           << track.GetGlobalTime() << G4endl;
   }
     
   //At this point, the currentMinimalStep is the one that has won the discrete
@@ -161,10 +161,10 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
   fPreDiffusionPathLength = currentMinimalStep;
   if (verboseLevel > 5) {
     G4cout << "ASGPIL Function Point B | fPathLength = "
-	   << "fPreDiffusionPathLength = currentMinimalStep: "
-	   << fPathLength << G4endl;
+           << "fPreDiffusionPathLength = currentMinimalStep: "
+           << fPathLength << G4endl;
     G4cout << "ASGPIL Function Point B | velocity: "
-	   << track.GetVelocity() << G4endl;
+           << track.GetVelocity() << G4endl;
   }
   
   //If we're in a turnaround step, then kill
@@ -173,7 +173,7 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "ASGPIL Function Point C | In a turnaround step. "
-	     << "Killing the transport GPIL." << G4endl;
+             << "Killing the transport GPIL." << G4endl;
     }
     return DBL_MAX;
   }
@@ -187,11 +187,11 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
   G4ThreeVector momentumDir = track.GetMomentumDirection();  
   if (verboseLevel > 5) {
     G4cout << "ASGPIL Function Point D | Gap energy (drawn from SCUtils): "
-	   << fGapEnergy << ", particle energy: " << energy << G4endl;
+           << fGapEnergy << ", particle energy: " << energy << G4endl;
     G4cout << "ASGPIL Function Point D | Dn (drawn from SCUtils): " << fDn
-	   << ", and fDiffConst: " << fDiffConst << G4endl;
+           << ", and fDiffConst: " << fDiffConst << G4endl;
     G4cout << "ASGPIL Function Point D | Teff (drawn from SCUtils): " << fTeff
-	   << G4endl;
+           << G4endl;
   }
     
   //If our energy is appropriate and we can see diffusion info, trigger the
@@ -203,8 +203,8 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
     //Debugging
     if (verboseLevel > 5) {      
       G4cout << "ASGPIL Function Point E | isActive is true. "
-	     << "currentMinimalStep/velocity: " << currentMinimalStep/velocity
-	     << ", fTimeStepToBoundary: " << fTimeStepToBoundary << G4endl;
+             << "currentMinimalStep/velocity: " << currentMinimalStep/velocity
+             << ", fTimeStepToBoundary: " << fTimeStepToBoundary << G4endl;
     }
     
     //Here, we need to return a diffusion-displacement ("diffusion-folded")
@@ -218,81 +218,81 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
     //safety and the timeStepToBoundary is the straight-line travel time.
     double timeTolerance = 1E-10; //For floating point errors    
     if ((fabs(currentMinimalStep/velocity - fTimeStepToBoundary) <
-	 timeTolerance) || fVerySmallStep) { 
+         timeTolerance) || fVerySmallStep) { 
 
       //Let's break this into two scenarios: very small step inside the soft
       //floor boundary and other, just so we explicitly know how small steps
       //are handled.
       if (fVerySmallStepInsideSoftFloor) {
 	
-	//If we're starting on a boundary, then we want to make sure to make
-	//the path length just below what's needed. Otherwise, push us over
-	//the boundary as best we can
-	if (fTrackOnBoundary) {
-	  fPathLength = f2DSafety / fBoundaryFudgeFactor;
-	} else {
-	  fPathLength = f2DSafety * fBoundaryFudgeFactor;
-	}
-	fTimeStep = fTimeStepToBoundary;
+        //If we're starting on a boundary, then we want to make sure to make
+        //the path length just below what's needed. Otherwise, push us over
+        //the boundary as best we can
+        if (fTrackOnBoundary) {
+          fPathLength = f2DSafety / fBoundaryFudgeFactor;
+        } else {
+          fPathLength = f2DSafety * fBoundaryFudgeFactor;
+        }
+        fTimeStep = fTimeStepToBoundary;
 		
-      } else{
-	//^For non-"very small step" steps (the majority, ideally) or
-	//very small steps that are outside of the soft floor boundary...
+      } else {
+        //^For non-"very small step" steps (the majority, ideally) or
+        //very small steps that are outside of the soft floor boundary...
 	
-	//If we're not very close to the boundary, then we just make our
-	//diffusion-folded path length equal to juuuuuust under the distance
-	//to the boundary. That way transportation will never win this
-	//alongStepGPIL. Here, we are going to try to land the particle in
-	//between the hard floor scale and the soft floor scale, which requires
-	//a bit of math to make sure we get the path length right.
-	//This also should trigger if we're starting from the boundary
-	if (f2DSafety >= fSoftFloorBoundaryScale || (fTrackOnBoundary)) {
+        //If we're not very close to the boundary, then we just make our
+        //diffusion-folded path length equal to juuuuuust under the distance
+        //to the boundary. That way transportation will never win this
+        //alongStepGPIL. Here, we are going to try to land the particle in
+        //between the hard floor scale and the soft floor scale, which requires
+        //a bit of math to make sure we get the path length right.
+        //This also should trigger if we're starting from the boundary
+        if (f2DSafety >= fSoftFloorBoundaryScale || (fTrackOnBoundary)) {
 	  
-	  //Regardless of boundary condition, if we're farther than a soft
-	  //floor boundary scale from the boundary, then we can shoot for
-	  //landing in a "goldilocks zone".
-	  //For future: time step should probably be adjusted depending on how
-	  //fPathLength is calculated? Now it's not necessarily a 0.1%-effect,
-	  //and can be somewhat arbitrarily large for steps that start very
-	  //close to the softFloorScale, depending on the choice of the
-	  //hardFloorScale. 
-	  if (f2DSafety >= fSoftFloorBoundaryScale) {
-	    fPathLength = ComputePathLengthInGoldilocksZone(); 
-	    fTimeStep = fTimeStepToBoundary;	    
-	  } else{
-	    //^Otherwise, we just use a fudge factor -- this is if the track is
-	    //on a boundary and the 2D safety is small. Not really sure how to
-	    //get around this (if we can)
+          //Regardless of boundary condition, if we're farther than a soft
+          //floor boundary scale from the boundary, then we can shoot for
+          //landing in a "goldilocks zone".
+          //For future: time step should probably be adjusted depending on how
+          //fPathLength is calculated? Now it's not necessarily a 0.1%-effect,
+          //and can be somewhat arbitrarily large for steps that start very
+          //close to the softFloorScale, depending on the choice of the
+          //hardFloorScale. 
+          if (f2DSafety >= fSoftFloorBoundaryScale) {
+            fPathLength = ComputePathLengthInGoldilocksZone(); 
+            fTimeStep = fTimeStepToBoundary;	    
+          } else {
+            //^Otherwise, we just use a fudge factor -- this is if the track is
+            //on a boundary and the 2D safety is small. Not really sure how to
+            //get around this (if we can)
 	    
-	    fPathLength = f2DSafety / fBoundaryFudgeFactor; 
-	    fTimeStep = fTimeStepToBoundary; 
-	  }
+            fPathLength = f2DSafety / fBoundaryFudgeFactor; 
+            fTimeStep = fTimeStepToBoundary; 
+          }
 	  
-	  //Debugging
-	  if (verboseLevel > 5) {
-	    G4cout << "ASGPIL Function Point F_1 | Looks like the "
-		   << "boundary-limited case applies here, with "
-		   << "2DSafety >= epsilon. Returning fPathLength just under "
-		   << "f2DSafety = " << fPathLength << G4endl;
-	  }
-	} else{
-	  //^Otherwise, if we are close to the boundary and manifestly NOT on a
-	  //boundary, then in this step we need to make our diffusion-folded
-	  //path length equal to juuuuuuust larger than the distance to the
-	  //boundary. This ensures we will always have transportation win and
-	  //take us to the boundary.
+          //Debugging
+          if (verboseLevel > 5) {
+            G4cout << "ASGPIL Function Point F_1 | Looks like the "
+                   << "boundary-limited case applies here, with "
+                   << "2DSafety >= epsilon. Returning fPathLength just under "
+                   << "f2DSafety = " << fPathLength << G4endl;
+          }
+        } else {
+          //^Otherwise, if we are close to the boundary and manifestly NOT on a
+          //boundary, then in this step we need to make our diffusion-folded
+          //path length equal to juuuuuuust larger than the distance to the
+          //boundary. This ensures we will always have transportation win and
+          //take us to the boundary.
 
-	  fPathLength = f2DSafety * fBoundaryFudgeFactor;
-	  fTimeStep = fTimeStepToBoundary; 
+          fPathLength = f2DSafety * fBoundaryFudgeFactor;
+          fTimeStep = fTimeStepToBoundary; 
 	  
-	  //Debugging
-	  if (verboseLevel > 5) {
-	    G4cout << "ASGPIL Function Point F_2 | Looks like the "
-		   << "boundary-limited case applies here, with "
-		   << "2DSafety < epsilon. Returning fPathLength just over "
-		   << "f2DSafety = " << fPathLength << G4endl;
-	  }
-	}
+          //Debugging
+          if (verboseLevel > 5) {
+            G4cout << "ASGPIL Function Point F_2 | Looks like the "
+                   << "boundary-limited case applies here, with "
+                   << "2DSafety < epsilon. Returning fPathLength just over "
+                   << "f2DSafety = " << fPathLength << G4endl;
+          }
+        }
       }
     } else {      
       //If another process wins the discrete GPIL race, the above block won't
@@ -310,63 +310,60 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
       fTimeStep = currentMinimalStep / velocity;
       G4double sigma1D = pow(2*fDiffConst*fTimeStep,0.5);
       G4RandGauss* gaussDist =
-	new G4RandGauss(G4Random::getTheEngine(),0.0,sigma1D);
+        new G4RandGauss(G4Random::getTheEngine(),0.0,sigma1D);
       G4int killCounter = 0;      
       do{
-	double gaussDistX = fabs(gaussDist->fire());
-	double gaussDistY = fabs(gaussDist->fire());
-	fPathLength = pow(gaussDistX*gaussDistX + gaussDistY*gaussDistY,0.5);
+        double gaussDistX = fabs(gaussDist->fire());
+        double gaussDistY = fabs(gaussDist->fire());
+        fPathLength = pow(gaussDistX*gaussDistX + gaussDistY*gaussDistY,0.5);
 
-	//If we try too many times, throw an exception.
-	killCounter++;
-	if (killCounter > 1000) {
-	  G4ExceptionDescription msg;
-	  msg << "Too many unsuccessful attempts to find a diffusion "
-	      << "distance when step is governed by other (non-diffusion) "
-	      << "discrete process. Time step to boundary: "
-	      << fTimeStepToBoundary << ", fVerySmallStep: " << fVerySmallStep
-	      << ", fVerySmallStepInsideSoftFloor: " << fVerySmallStepInsideSoftFloor
-	      << ", currentMinimalStep: " << currentMinimalStep << ", velocity: "
-	      << velocity << ". most recent safety: " << f2DSafety << ". Something should be fixed.";
-	  G4Exception("G4CMPQPDiffusion::AlongStepGetPhysicalInteractionLength",
-		      "QPDiffusion001",FatalException, msg);
-	}
-	
+        //If we try too many times, throw an exception.
+        killCounter++;
+        if (killCounter > 1000) {
+          G4ExceptionDescription msg;
+          msg << "Too many unsuccessful attempts to find a diffusion "
+              << "distance when step is governed by other (non-diffusion) "
+              << "discrete process. Time step to boundary: "
+              << fTimeStepToBoundary << ", fVerySmallStep: " << fVerySmallStep
+              << ", fVerySmallStepInsideSoftFloor: " << fVerySmallStepInsideSoftFloor
+              << ", currentMinimalStep: " << currentMinimalStep << ", velocity: "
+              << velocity << ". most recent safety: " << f2DSafety << ". Something should be fixed.";
+          G4Exception("G4CMPQPDiffusion::AlongStepGetPhysicalInteractionLength",
+                      "QPDiffusion001",FatalException, msg);
+        }	
       }
       while (fPathLength >= f2DSafety);
 
       //Debugging
       if (verboseLevel > 5) {
-	G4cout << "ASGPIL Function Point G | Sigma1D: " << sigma1D
-	       << " from fDiffConst: " << fDiffConst << G4endl;
-	G4cout << "ASGPIL Function Point G | Looks like a different "
-	       << "discrete process wins the GPIL race. Returning "
-	       << "fPathLength = " << fPathLength << G4endl;
+        G4cout << "ASGPIL Function Point G | Sigma1D: " << sigma1D
+               << " from fDiffConst: " << fDiffConst << G4endl;
+        G4cout << "ASGPIL Function Point G | Looks like a different "
+               << "discrete process wins the GPIL race. Returning "
+               << "fPathLength = " << fPathLength << G4endl;
       }
     }
 
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "ASGPIL Function Point H | Successfully returning AlongStepGPIL"
-	     << " (diffusion-folded) fPathLength of " << fPathLength << G4endl;
+             << " (diffusion-folded) fPathLength of " << fPathLength << G4endl;
       G4cout << "ASGPIL Function Point H | Momentum direction is: "
-	     << momentumDir.unit() << G4endl;
+             << momentumDir.unit() << G4endl;
     }
     return fPathLength;
-  } else{
+  } else {
     //If we don't have a reasonable energy given the gap,
-    //or if we're missing Dn.
-    
+    //or if we're missing Dn.    
     G4ExceptionDescription msg;
     msg << "QP energy is too low or we're missing a Dn. Returning DBL_MAX "
-	<< "for AlongStepDoIt.";
+        << "for AlongStepDoIt.";
     G4Exception("G4CMPQPDiffusion::AlongStepGetPhysicalInteractionLength",
-		"QPDiffusion002",FatalException, msg);
+                "QPDiffusion002",FatalException, msg);
     isActive = false;
     return DBL_MAX;
   }
 }
-
 
 //This is run for QPs either far enough into the bulk to be farther than the
 //softFloor limit or QPs launched from a boundary. The goal is to ensure
@@ -398,9 +395,9 @@ G4double G4CMPQPDiffusion::ComputePathLengthInGoldilocksZone() {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPDiffusion::ComputePathLengthInGoldilocksZone --"
-	   << G4endl;
+           << G4endl;
     G4cout << "CPLIGZ Function Point A | Path length is " << thePathLength
-	   << G4endl;
+           << G4endl;
   }
   return thePathLength;
 }
@@ -408,12 +405,12 @@ G4double G4CMPQPDiffusion::ComputePathLengthInGoldilocksZone() {
 //Boilerplate PostStep GPIL -- the actual meat is in GetMeanFreePath
 G4double G4CMPQPDiffusion::
 PostStepGetPhysicalInteractionLength( const G4Track& track,
-				      G4double previousStepSize,
-				      G4ForceCondition* condition) {
+                                      G4double previousStepSize,
+                                      G4ForceCondition* condition) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPDiffusion::PostStepGetPhysicalInteractionLength --"
-	   << G4endl;
+           << G4endl;
   }
 
   //Since we're overriding this function as well, we'll have to call the MFP
@@ -432,18 +429,18 @@ PostStepGetPhysicalInteractionLength( const G4Track& track,
 //Move the particle a la a diffusive walk in a way that is consistent with
 //nearby boundaries, and give it a new direction.
 G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
-						   const G4Step& step) {
+                                                   const G4Step& step) {
   
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPDiffusion::AlongStepDoIt --" << G4endl;
     G4cout << "ASDI Function Point A | Step Status from track pre-step "
-	   << "point: " << track.GetStep()->GetPreStepPoint()->GetStepStatus()
-	   << G4endl;
+           << "point: " << track.GetStep()->GetPreStepPoint()->GetStepStatus()
+           << G4endl;
     G4cout << "ASDI Function Point A | Step Status from step pre-step "
-	   << "point: " << step.GetPreStepPoint()->GetStepStatus() << G4endl;
+           << "point: " << step.GetPreStepPoint()->GetStepStatus() << G4endl;
     G4cout << "ASDI Function Point A | Step Status from step post-step "
-	   << "point: " << step.GetPostStepPoint()->GetStepStatus() << G4endl;
+           << "point: " << step.GetPostStepPoint()->GetStepStatus() << G4endl;
   }
 
   //Particle change initialization and setting
@@ -474,11 +471,11 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "ASDI Function Point B | stepStartGlobalTime: "
-	   << stepStartGlobalTime << G4endl;
+           << stepStartGlobalTime << G4endl;
     G4cout << "ASDI Function Point B | stepEndGlobalTime  : "
-	   << stepEndGlobalTime << G4endl;
+           << stepEndGlobalTime << G4endl;
     G4cout << "ASDI Function Point B | stepTransportOnlyDeltaT: "
-	   << stepTransportOnlyDeltaT << G4endl;
+           << stepTransportOnlyDeltaT << G4endl;
   }
   
   //As a reminder, the velocity for QPs is always a single number that stays
@@ -501,15 +498,15 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
     if (verboseLevel > 5) {
       G4cout << "ASDI Function Point C | Step is not active" << G4endl;
       G4cout << "ASDI Function Point C | fPathLength: " << fPathLength
-	     << G4endl;
+             << G4endl;
       G4cout << "ASDI Function Point C | diffusion-unfolded "
-	     << "(i.e. pre-diffusion) path length: "
-	     << fPreDiffusionPathLength << G4endl;
+             << "(i.e. pre-diffusion) path length: "
+             << fPreDiffusionPathLength << G4endl;
       G4cout << "ASDI Function Point C | velocity: " << velocity << G4endl;
       G4cout << "ASDI Function Point C | fPathLength/Velocity: "
-	     << fPathLength/velocity << G4endl;
+             << fPathLength/velocity << G4endl;
       G4cout << "ASDI Function Point C | fNewDirection: " << fNewDirection
-	     << G4endl;
+             << G4endl;
     }
     fParticleChange.ProposeLocalTime(0);
     fParticleChange.ProposeTrueStepLength(fPreDiffusionPathLength);
@@ -519,7 +516,7 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "ASDI Function Point D | velocity is set and proposed to "
-	     << velocity << ", which should never change." << G4endl;
+             << velocity << ", which should never change." << G4endl;
     }
     fParticleChange.ProposeVelocity(velocity);
 
@@ -533,29 +530,29 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
 
       //Sub case 1: farther than epsilon away from boundary? Get to randomize.
       if (f2DSafety >= fSoftFloorBoundaryScale) {
-	G4ThreeVector thisRandomDir = G4RandomDirection();
-	thisRandomDir = G4CMP::RobustifyRandomDirIn2D(thisRandomDir);
-	fNewDirection = thisRandomDir.unit();
+        G4ThreeVector thisRandomDir = G4RandomDirection();
+        thisRandomDir = G4CMP::RobustifyRandomDirIn2D(thisRandomDir);
+        fNewDirection = thisRandomDir.unit();
 
-	//Debugging
-	if (verboseLevel > 5) {	
-	  G4cout << "ASDI Function Point D_1 | Since we're in the bulk and "
-		 << ">eps from a boundary, we're randomizing new direction "
-		 << "to be " << fNewDirection << G4endl;
-	}
+        //Debugging
+        if (verboseLevel > 5) {	
+          G4cout << "ASDI Function Point D_1 | Since we're in the bulk and "
+                 << ">eps from a boundary, we're randomizing new direction "
+                 << "to be " << fNewDirection << G4endl;
+        }
       } else {
-	//^Otherwise, don't interfere with the direction needed to get the
-	//step to the boundary. Just let the new direction be the old
-	//direction so we can respect the short hop to the boundary.
+        //^Otherwise, don't interfere with the direction needed to get the
+        //step to the boundary. Just let the new direction be the old
+        //direction so we can respect the short hop to the boundary.
+        
+        fNewDirection = step.GetPreStepPoint()->GetMomentumDirection();
 
-	fNewDirection = step.GetPreStepPoint()->GetMomentumDirection();
-
-	//Debugging
-	if (verboseLevel > 5) {	
-	  G4cout << "ASDI Function Point D_2 | Since we're in the bulk and "
-		 << "<eps from a boundary, we're keeping the new direction as "
-		 << fNewDirection << G4endl;
-	}
+        //Debugging
+        if (verboseLevel > 5) {	
+          G4cout << "ASDI Function Point D_2 | Since we're in the bulk and "
+                 << "<eps from a boundary, we're keeping the new direction as "
+                 << fNewDirection << G4endl;
+        }
       }
     } else {    
       //^If track is on boundary
@@ -568,9 +565,9 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
       //work outwards
       G4int nV = G4CMPConfigManager::GetSafetyNSweep2D();
       G4double dotProductThreshold_Norm =
-	G4CMP::ComputeDotProductThreshold_Norm(nV);
+        G4CMP::ComputeDotProductThreshold_Norm(nV);
       G4double dotProductThreshold_Tang =
-	G4CMP::ComputeDotProductThreshold_Tang(nV);
+        G4CMP::ComputeDotProductThreshold_Tang(nV);
       G4ThreeVector surfaceNorm = track.GetMomentumDirection();
 
       //Case 1: not stuck. In this case, we pull the pre-step point, whose
@@ -579,110 +576,110 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
       //can then randomly generate a vector in 2D, and accept that the distance
       //is just that drawn from GetMFP
       if (!fQPIsStuck) {
-	G4ThreeVector theNewDirection;
-	G4int killCounterVectSweep = 0;
-	do {
-	  theNewDirection = G4RandomDirection();
-	  theNewDirection = G4CMP::RobustifyRandomDirIn2D(theNewDirection);	  	
-	  theNewDirection = theNewDirection.unit();	  
+        G4ThreeVector theNewDirection;
+        G4int killCounterVectSweep = 0;
+        do {
+          theNewDirection = G4RandomDirection();
+          theNewDirection = G4CMP::RobustifyRandomDirIn2D(theNewDirection);	  	
+          theNewDirection = theNewDirection.unit();	  
 	  
-	  //Put in a kill condition so this doesn't accidentally run forever.
-	  killCounterVectSweep++;
-	  if (killCounterVectSweep > 1000) {
-	    G4ExceptionDescription msg;
-	    msg << "While choosing a random direction for our QP, ran into "
-		<< "convergence issues. Perhaps you're using an overly funky "
-		<< "geometry?\n last theNewDirection generated: "
-		<< theNewDirection << "\n surfaceNorm is: " 
-		<< surfaceNorm << "\n fOldPosition: " << fOldPosition
-		<< G4endl;
-	    G4Exception("G4CMPQPDiffusion::AlongStepDoIt",
-			"QPDiffusion003",FatalException, msg);
-	  }
-	}
-	while (theNewDirection.dot(surfaceNorm) <= dotProductThreshold_Norm);
-	fNewDirection = theNewDirection;
+          //Put in a kill condition so this doesn't accidentally run forever.
+          killCounterVectSweep++;
+          if (killCounterVectSweep > 1000) {
+            G4ExceptionDescription msg;
+            msg << "While choosing a random direction for our QP, ran into "
+                << "convergence issues. Perhaps you're using an overly funky "
+                << "geometry?\n last theNewDirection generated: "
+                << theNewDirection << "\n surfaceNorm is: " 
+                << surfaceNorm << "\n fOldPosition: " << fOldPosition
+                << G4endl;
+            G4Exception("G4CMPQPDiffusion::AlongStepDoIt",
+                        "QPDiffusion003",FatalException, msg);
+          }
+        }
+        while (theNewDirection.dot(surfaceNorm) <= dotProductThreshold_Norm);
+        fNewDirection = theNewDirection;
 	
-	//Debugging
-	if (verboseLevel > 5) {	
-	  G4cout << "ASDI Function Point D_3 | Since we're on a surface, "
-		 << "we're launching in the new direction " << fNewDirection
-		 << ", which is consistent with a dotProductThreshold_Norm of "
-		 << dotProductThreshold_Norm << G4endl;
-	}
+        //Debugging
+        if (verboseLevel > 5) {	
+          G4cout << "ASDI Function Point D_3 | Since we're on a surface, "
+                 << "we're launching in the new direction " << fNewDirection
+                 << ", which is consistent with a dotProductThreshold_Norm of "
+                 << dotProductThreshold_Norm << G4endl;
+        }
       } else {
-	//^Case 2: stuck. Here we have a different safety (and different
-	//distance) computed in GetMFP. We still need to modify the direction
-	//of the track here, however.
+        //^Case 2: stuck. Here we have a different safety (and different
+        //distance) computed in GetMFP. We still need to modify the direction
+        //of the track here, however.
 	
-	//With this safety, generate a new direction somewhere between the
-	//surface tangents. Probably can speed this up but for now get
-	//something that works.
-	G4ThreeVector theNewDir(0,0,0);
-	G4double minDot =
-	  fOutgoingSurfaceTangent1.dot(fOutgoingSurfaceTangent2);
-	G4double acosTang1Dot = 0;
-	G4double acosTang2Dot = 0;
+        //With this safety, generate a new direction somewhere between the
+        //surface tangents. Probably can speed this up but for now get
+        //something that works.
+        G4ThreeVector theNewDir(0,0,0);
+        G4double minDot =
+          fOutgoingSurfaceTangent1.dot(fOutgoingSurfaceTangent2);
+        G4double acosTang1Dot = 0;
+        G4double acosTang2Dot = 0;
 
-	//Debugging
-	if (verboseLevel > 5) {	
-	  G4cout << "ASDI Function Point D_4 | minDot is " << minDot
-		 << " between " << fOutgoingSurfaceTangent1 << " and "
-		 << fOutgoingSurfaceTangent2 << G4endl;
-	  G4cout << "ASDI Function Point D_4 | "
-		 << "theNewDir.dot(fOutgoingSurfaceTangent1): "
-		 << theNewDir.dot(fOutgoingSurfaceTangent1)
-		 << ", theNewDir.dot(fOutgoingSurfaceTangent2): "
-		 << theNewDir.dot(fOutgoingSurfaceTangent2) << G4endl;
-	}
+        //Debugging
+        if (verboseLevel > 5) {	
+          G4cout << "ASDI Function Point D_4 | minDot is " << minDot
+                 << " between " << fOutgoingSurfaceTangent1 << " and "
+                 << fOutgoingSurfaceTangent2 << G4endl;
+          G4cout << "ASDI Function Point D_4 | "
+                 << "theNewDir.dot(fOutgoingSurfaceTangent1): "
+                 << theNewDir.dot(fOutgoingSurfaceTangent1)
+                 << ", theNewDir.dot(fOutgoingSurfaceTangent2): "
+                 << theNewDir.dot(fOutgoingSurfaceTangent2) << G4endl;
+        }
 
-	//Generate a new direction vector given the outgoing surface tangents.
-	G4int killCounterVectSweepStuck = 0;
-	do{
-	  theNewDir = G4RandomDirection();
-	  theNewDir = G4CMP::RobustifyRandomDirIn2D(theNewDir);
-	  theNewDir = theNewDir.unit();
+        //Generate a new direction vector given the outgoing surface tangents.
+        G4int killCounterVectSweepStuck = 0;
+        do{
+          theNewDir = G4RandomDirection();
+          theNewDir = G4CMP::RobustifyRandomDirIn2D(theNewDir);
+          theNewDir = theNewDir.unit();
 
-	  //Calculate some angles
-	  acosTang1Dot = acos(theNewDir.dot(fOutgoingSurfaceTangent1));
-	  acosTang2Dot = acos(theNewDir.dot(fOutgoingSurfaceTangent2));
+          //Calculate some angles
+          acosTang1Dot = acos(theNewDir.dot(fOutgoingSurfaceTangent1));
+          acosTang2Dot = acos(theNewDir.dot(fOutgoingSurfaceTangent2));
 
-	  //If we've tried more than 1000 shots at this, then flag.
-	  killCounterVectSweepStuck++;
-	  if (killCounterVectSweepStuck > 1000) {
-	    G4ExceptionDescription msg;
-	    msg << "While choosing a random direction for our stuck QP, ran " 
-		<< "into convergence issues. Perhaps you're using an overly "
-		<< "funky geometry?" << G4endl;
-	    G4Exception("G4CMPQPDiffusion::AlongStepDoIt",
-			"QPDiffusion004",FatalException, msg);
-	  }
-	}
+          //If we've tried more than 1000 shots at this, then flag.
+          killCounterVectSweepStuck++;
+          if (killCounterVectSweepStuck > 1000) {
+            G4ExceptionDescription msg;
+            msg << "While choosing a random direction for our stuck QP, ran " 
+                << "into convergence issues. Perhaps you're using an overly "
+                << "funky geometry?" << G4endl;
+            G4Exception("G4CMPQPDiffusion::AlongStepDoIt",
+                        "QPDiffusion004",FatalException, msg);
+          }
+        }
 
-	//The logic here is a bit mucky, but basically all of the following
-	//conditions must be met:
-	//1. The new dir should have a larger dot product with both of the
-	//   tangent vectors than the two tangent vectors have with each other.
-	//2. Since in the case of angles >120 degrees, area opens up on the
-	//   "wrong" side of the corner that satisfies condition 1, we also
-	//   need to satisfy the criterion that the sum of the angles between
-	//   the new dir and each dir must be less than 180 degrees. This 180
-	//   degree absolute angular scale assumes that only at concave
-	//   corners will we potentially get stuck, and for convex corners
-	//   we won't ever arrive here. I can't imagine this is violated?
-	//3. Lastly, also need to make sure that we're not overly close to
-	//   either of the tangent vectors (don't want to launch off parallel
-	//   to a surface for computational efficiency's sake).
-	while (!(theNewDir.dot(fOutgoingSurfaceTangent1) > minDot
-		&& theNewDir.dot(fOutgoingSurfaceTangent2) > minDot
-		&& (acosTang1Dot + acosTang2Dot < CLHEP::pi)
-		&& theNewDir.dot(fOutgoingSurfaceTangent1)
-		< dotProductThreshold_Tang
-		&& theNewDir.dot(fOutgoingSurfaceTangent2)
-		< dotProductThreshold_Tang));
+        //The logic here is a bit mucky, but basically all of the following
+        //conditions must be met:
+        //1. The new dir should have a larger dot product with both of the
+        //   tangent vectors than the two tangent vectors have with each other.
+        //2. Since in the case of angles >120 degrees, area opens up on the
+        //   "wrong" side of the corner that satisfies condition 1, we also
+        //   need to satisfy the criterion that the sum of the angles between
+        //   the new dir and each dir must be less than 180 degrees. This 180
+        //   degree absolute angular scale assumes that only at concave
+        //   corners will we potentially get stuck, and for convex corners
+        //   we won't ever arrive here. I can't imagine this is violated?
+        //3. Lastly, also need to make sure that we're not overly close to
+        //   either of the tangent vectors (don't want to launch off parallel
+        //   to a surface for computational efficiency's sake).
+        while (!(theNewDir.dot(fOutgoingSurfaceTangent1) > minDot
+                 && theNewDir.dot(fOutgoingSurfaceTangent2) > minDot
+                 && (acosTang1Dot + acosTang2Dot < CLHEP::pi)
+                 && theNewDir.dot(fOutgoingSurfaceTangent1)
+                 < dotProductThreshold_Tang
+                 && theNewDir.dot(fOutgoingSurfaceTangent2)
+                 < dotProductThreshold_Tang));
 
-	//Now set the direction
-	fNewDirection = theNewDir;
+        //Now set the direction
+        fNewDirection = theNewDir;
       }
     }
     fNewPosition = fOldPosition + fPathLength*fNewDirection;
@@ -690,35 +687,35 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "ASDI Function Point E | fOutgoingSurfaceTangent1: "
-	     << fOutgoingSurfaceTangent1 << G4endl;
+             << fOutgoingSurfaceTangent1 << G4endl;
       G4cout << "ASDI Function Point E | fOutgoingSurfaceTangent2: "
-	     << fOutgoingSurfaceTangent2 << G4endl;
+             << fOutgoingSurfaceTangent2 << G4endl;
       G4cout << "ASDI Function Point E | time of pre-step point is: "
-	     << step.GetPreStepPoint()->GetGlobalTime() << G4endl;
+             << step.GetPreStepPoint()->GetGlobalTime() << G4endl;
       G4cout << "ASDI Function Point E | time of post-step point is: "
-	     << step.GetPostStepPoint()->GetGlobalTime() << G4endl;
+             << step.GetPostStepPoint()->GetGlobalTime() << G4endl;
       G4cout << "ASDI Function Point E | fPathLength selected: "
-	     << fPathLength << G4endl;
+             << fPathLength << G4endl;
       G4cout << "ASDI Function Point E | fNewDirection: " << fNewDirection
-	     << G4endl;
+             << G4endl;
       G4cout << "ASDI Function Point E | fOldPosition: " << fOldPosition
-	     << " in volume: "
-	     << G4CMP::GetVolumeAtPoint(fOldPosition)->GetName() << G4endl;
+             << " in volume: "
+             << G4CMP::GetVolumeAtPoint(fOldPosition)->GetName() << G4endl;
     }
 
     //Test. I think CheckNextStep may also be valuable here, especially when
     //we get into scenarios where we enter daughter volumes
     double nextStepSafety = 0;    
     double nextStepLength = fSafetyHelper->CheckNextStep(fOldPosition,
-							 fNewDirection,
-							 fPathLength,
-							 nextStepSafety);
+                                                         fNewDirection,
+                                                         fPathLength,
+                                                         nextStepSafety);
 
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "ASDI Function Point F | Checking next step. CheckNextStep's "
-	     << "next step length: " << nextStepLength << ", nextStepSafety: "
-	     << nextStepSafety << G4endl;
+             << "next step length: " << nextStepLength << ", nextStepSafety: "
+             << nextStepSafety << G4endl;
     }
 
     //We're actually going to try using checkNextStep instead. Here, if we're
@@ -758,82 +755,82 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
                       JustWarning, msg);
         }
 
-	//Retry the checknextstep
-	int maxNTries = 15; //Capped at 10 to limit bias to 10% on these steps
-	for (int iTry = 1; iTry <= maxNTries; ++iTry) {
-	  nextStepSafety = 0;    
-	  nextStepLength = fSafetyHelper->CheckNextStep(fOldPosition,
-							fNewDirection,
-							fPathLength*pow(0.99,iTry),
-							nextStepSafety);
-	  //Temporary
-	  if (iTry > 5) {
-	    G4cout << "next iTry's fPathLength: " << fPathLength*pow(0.99,iTry) << G4endl;
-	  }
+        //Retry the checknextstep
+        int maxNTries = 15; //Capped at 10 to limit bias to 10% on these steps
+        for (int iTry = 1; iTry <= maxNTries; ++iTry) {
+          nextStepSafety = 0;    
+          nextStepLength = fSafetyHelper->CheckNextStep(fOldPosition,
+                                                        fNewDirection,
+                                                        fPathLength*pow(0.99,iTry),
+                                                        nextStepSafety);
+          //Temporary
+          if (iTry > 5) {
+            G4cout << "next iTry's fPathLength: " << fPathLength*pow(0.99,iTry) << G4endl;
+          }
 	  
-	  //Debugging
-	  if (verboseLevel > 5) {
-	    G4cout << "ASDI Function Point G | In loop to retry attempt at "
-		   << "checking next step, with reduced path length. Attempt "
-		   << iTry << ". CheckNextStep's next step length: "
-		   << nextStepLength << ", nextStepSafety: " << nextStepSafety
-		   << G4endl;
-	  }
+          //Debugging
+          if (verboseLevel > 5) {
+            G4cout << "ASDI Function Point G | In loop to retry attempt at "
+                   << "checking next step, with reduced path length. Attempt "
+                   << iTry << ". CheckNextStep's next step length: "
+                   << nextStepLength << ", nextStepSafety: " << nextStepSafety
+                   << G4endl;
+          }
 
-	  //If we succeed, then do the post-check bulk treatment, and break.
-	  if (nextStepLength == kInfinity) {
-	    fNewPosition =
-	      fOldPosition + fPathLength*pow(0.99,iTry)*fNewDirection;
-	    PostCheckBulkTreatment(stepTransportOnlyDeltaT);	    
-	    break;
-	  }	  
-	}
+          //If we succeed, then do the post-check bulk treatment, and break.
+          if (nextStepLength == kInfinity) {
+            fNewPosition =
+              fOldPosition + fPathLength*pow(0.99,iTry)*fNewDirection;
+            PostCheckBulkTreatment(stepTransportOnlyDeltaT);	    
+            break;
+          }	  
+        }
 
-	//If we've made it to the end and fPositionChanged is still false, then
-	//we throw a flag.
-	if (fPositionChanged == false) {
-	  G4ExceptionDescription amg;
-	  amg << "Somehow the CheckNextStep returned a step length that is not "
-	      << "kInfinity but the step status thinks it's not fGeomBoundary."
-	      << " It seems we may have misjudged the distance to our boundary."
-	      << " All tries exhausted, which suggests this is perhaps a more "
-	      << "fundamental issue with G4CMP, or maybe your geometry is just "
-	      << "not following the recommended rules for tracked film "
-	      << "response.";
-	  G4Exception("G4CMPQPDiffusion::AlongStepDoIt", "QPDiffusion006",
-		      FatalException, amg);
-	}		
+        //If we've made it to the end and fPositionChanged is still false, then
+        //we throw a flag.
+        if (fPositionChanged == false) {
+          G4ExceptionDescription amg;
+          amg << "Somehow the CheckNextStep returned a step length that is not "
+              << "kInfinity but the step status thinks it's not fGeomBoundary."
+              << " It seems we may have misjudged the distance to our boundary."
+              << " All tries exhausted, which suggests this is perhaps a more "
+              << "fundamental issue with G4CMP, or maybe your geometry is just "
+              << "not following the recommended rules for tracked film "
+              << "response.";
+          G4Exception("G4CMPQPDiffusion::AlongStepDoIt", "QPDiffusion006",
+                      FatalException, amg);
+        }		
       } else {
 
-	//Debugging
-	if (verboseLevel > 5) {
-	  G4cout << "ASDI Function Point J | CheckNextStep shows that we've "
-		 << "hit a boundary. Using timestep computed in GetMFP, letting"
-		 << " Transportation do move of particle." << G4endl;
-	  G4cout << "ASDI Function Point J | fTimeStep: "
-		 << fTimeStep << G4endl;
-	  G4cout << "ASDI Function Point J | timeChangeFromTransportationOnly: "
-		 << stepTransportOnlyDeltaT << G4endl;
-	  G4cout << "ASDI Function Point J | Proposing true "
-		 << "(diffusion-UNfolded) step length of: "
-		 << fPreDiffusionPathLength << G4endl;
-	}
+        //Debugging
+        if (verboseLevel > 5) {
+          G4cout << "ASDI Function Point J | CheckNextStep shows that we've "
+                 << "hit a boundary. Using timestep computed in GetMFP, letting"
+                 << " Transportation do move of particle." << G4endl;
+          G4cout << "ASDI Function Point J | fTimeStep: "
+                 << fTimeStep << G4endl;
+          G4cout << "ASDI Function Point J | timeChangeFromTransportationOnly: "
+                 << stepTransportOnlyDeltaT << G4endl;
+          G4cout << "ASDI Function Point J | Proposing true "
+                 << "(diffusion-UNfolded) step length of: "
+                 << fPreDiffusionPathLength << G4endl;
+        }
 	  
-	//Since we are forced to use the pre-step point's velocity for
-	//propagation of this step (and the pre-step point's velocity is
-	//the one we started with), transportation will add a time
-	//corresponding to traveling the calculated path length at that
-	//velocity. We should subtract that time off our final proposed time.
-	fParticleChange.ProposeLocalTime(fTimeStep-stepTransportOnlyDeltaT);
+        //Since we are forced to use the pre-step point's velocity for
+        //propagation of this step (and the pre-step point's velocity is
+        //the one we started with), transportation will add a time
+        //corresponding to traveling the calculated path length at that
+        //velocity. We should subtract that time off our final proposed time.
+        fParticleChange.ProposeLocalTime(fTimeStep-stepTransportOnlyDeltaT);
 
-	//I think this needs to be set to the *old, pre-diffusion* path length,
-	//since other processes that aren't the step-limiting one will
-	//need to subtract off a distance. That distance basically needs to be
-	//velocity * deltaT. The current process that limits the step
-	//(here, not transportation) will zero out its number of interaction
-	//lengths.
-	fParticleChange.ProposeTrueStepLength(fPreDiffusionPathLength);
-	fParticleChange.ProposeMomentumDirection(fNewDirection);      
+        //I think this needs to be set to the *old, pre-diffusion* path length,
+        //since other processes that aren't the step-limiting one will
+        //need to subtract off a distance. That distance basically needs to be
+        //velocity * deltaT. The current process that limits the step
+        //(here, not transportation) will zero out its number of interaction
+        //lengths.
+        fParticleChange.ProposeTrueStepLength(fPreDiffusionPathLength);
+        fParticleChange.ProposeMomentumDirection(fNewDirection);      
       }
     }
   }
@@ -847,14 +844,14 @@ G4VParticleChange* G4CMPQPDiffusion::AlongStepDoIt(const G4Track& track,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "ASDI Function Point K | At end of ASDI, old position volume "
-	   << "using pre-step point: "
-	   << step.GetPreStepPoint()->GetPhysicalVolume()->GetName() << G4endl;
+           << "using pre-step point: "
+           << step.GetPreStepPoint()->GetPhysicalVolume()->GetName() << G4endl;
     G4cout << "ASDI Function Point K | At end of ASDI, old position: "
-	   << fOldPosition << " in volume: "
-	   << G4CMP::GetVolumeAtPoint(fOldPosition)->GetName() << G4endl;
+           << fOldPosition << " in volume: "
+           << G4CMP::GetVolumeAtPoint(fOldPosition)->GetName() << G4endl;
     G4cout << "ASDI Function Point K | At end of ASDI, new position: "
-	   << fNewPosition << " in volume: "
-	   << G4CMP::GetVolumeAtPoint(fNewPosition)->GetName() << G4endl;
+           << fNewPosition << " in volume: "
+           << G4CMP::GetVolumeAtPoint(fNewPosition)->GetName() << G4endl;
   }
   
   //Should this go here or in the above block? Here, it seems.
@@ -873,7 +870,7 @@ PostCheckBulkTreatment(G4double stepTransportOnlyDeltaT) {
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPDiffusion::PostCheckBulkTreatment --" << G4endl;
     G4cout << "PCBT Function Point A | the proposed step does not cross "
-	   << "a boundary. Setting position manually." << G4endl;
+           << "a boundary. Setting position manually." << G4endl;
   }
   fSafetyHelper->ReLocateWithinVolume(fNewPosition);
   fParticleChange.ProposeMomentumDirection(fNewDirection); 
@@ -885,10 +882,10 @@ PostCheckBulkTreatment(G4double stepTransportOnlyDeltaT) {
   //proposed time. First, debugging.
   if (verboseLevel > 5) {
     G4cout << "PCBT Function Point H | fTimeStep: " << fTimeStep
-	   << ", timeChangefromTransportationOnly: "
-	   << stepTransportOnlyDeltaT << G4endl;
+           << ", timeChangefromTransportationOnly: "
+           << stepTransportOnlyDeltaT << G4endl;
     G4cout << "PCBT Function Point H | timeChangeFromTransportationOnly: "
-	   << stepTransportOnlyDeltaT << G4endl;
+           << stepTransportOnlyDeltaT << G4endl;
   }
   fParticleChange.ProposeLocalTime(fTimeStep-stepTransportOnlyDeltaT);
   
@@ -901,7 +898,7 @@ PostCheckBulkTreatment(G4double stepTransportOnlyDeltaT) {
   //debugging
   if (verboseLevel > 5) {
     G4cout << "PCBT Function Point I | Proposing a true (diffusion-UNfolded) "
-	   << "step length of: " << fPreDiffusionPathLength << G4endl;
+           << "step length of: " << fPreDiffusionPathLength << G4endl;
   }
   fParticleChange.ProposeTrueStepLength(fPreDiffusionPathLength);
   fPositionChanged = true;
@@ -938,9 +935,9 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
   if (fTrackOnBoundary && !isActive) {
     G4ExceptionDescription msg;
     msg << "In a turnaround step and postStepDoIt is running. Something is "
-	<< "broken and in need of fixing.";
+        << "broken and in need of fixing.";
     G4Exception("G4CMPQPDiffusion::PostStepDoIt", "QPDiffusion007",
-		FatalException, msg);
+                FatalException, msg);
   }
 
   //Define a temporary track position that we can use here since there's a
@@ -950,14 +947,14 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "PSDI Function Point 00A | Currently at a position (getVol@point)"
-	   << trackPosition << " in volume "
-	   << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << G4endl;
+           << trackPosition << " in volume "
+           << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << G4endl;
     G4cout << "PSDI Function Point 00A | Currently at a position "
-	   << "(postStepPoint) " << trackPosition
-	   << " in volume "
-	   << track.GetStep()->GetPostStepPoint()->GetPhysicalVolume()->GetName()
-	   << ", with postStepPointPos: "
-	   << track.GetStep()->GetPostStepPoint()->GetPosition() << G4endl;
+           << "(postStepPoint) " << trackPosition
+           << " in volume "
+           << track.GetStep()->GetPostStepPoint()->GetPhysicalVolume()->GetName()
+           << ", with postStepPointPos: "
+           << track.GetStep()->GetPostStepPoint()->GetPosition() << G4endl;
   }
 
   
@@ -965,15 +962,15 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
   //the post-step point (track.GetPosition())  
   G4double the2DSafety =
     G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-		       trackPosition,
-		       track.GetMomentumDirection(),
-		       false);
+                       trackPosition,
+                       track.GetMomentumDirection(),
+                       false);
   
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "PSDI Function Point 0A | After running the2DSafety, Currently "
-	   << "at a position " << trackPosition << " in volume "
-	   << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << G4endl;
+           << "at a position " << trackPosition << " in volume "
+           << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << G4endl;
   }
 
 
@@ -996,9 +993,9 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "PSDI Function Point A | Since we're below the "
-	     << "hardFloorBoundaryScale, we're attempting a nudge, starting at "
-	     << "a position " << trackPosition << " in volume "
-	     << preNudgePositionVolume->GetName() << G4endl;
+             << "hardFloorBoundaryScale, we're attempting a nudge, starting at "
+             << "a position " << trackPosition << " in volume "
+             << preNudgePositionVolume->GetName() << G4endl;
     }
 
     
@@ -1009,12 +1006,12 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
       //If we've done this too many times, throw a flag
       killCounterNudgePos++;
       if (killCounterNudgePos > 1000) {
-	G4ExceptionDescription msg;
-	msg << "When nudging position to be farther from the boundary than "
-	    << "the hardFloorBoundaryScale, exceeded max attempts (1000)."
-	    << G4endl;
-	G4Exception("G4CMPQPDiffusion::PostStepDoIt", "QPDiffusion009",
-		    FatalException, msg);
+        G4ExceptionDescription msg;
+        msg << "When nudging position to be farther from the boundary than "
+            << "the hardFloorBoundaryScale, exceeded max attempts (1000)."
+            << G4endl;
+        G4Exception("G4CMPQPDiffusion::PostStepDoIt", "QPDiffusion009",
+                    FatalException, msg);
       }
             
       G4ThreeVector nudgeDir = G4RandomDirection();
@@ -1023,21 +1020,21 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
 
       //Factor or 2 just to help shuttle things along
       G4ThreeVector nudgedPosition =
-	track.GetPosition() + nudgeDir*fHardFloorBoundaryScale*2; 
+        track.GetPosition() + nudgeDir*fHardFloorBoundaryScale*2; 
 
       //Determine if we're in the same volume. If we're not, then continue.
       //Note that we can use the getVolumeAtPoint here without much issue
       //because we're reasonably far from a boundary (i.e. of order the hard
       //floor boundary scale in some direction).
       G4VPhysicalVolume* nudgedPositionVolume =
-	G4CMP::GetVolumeAtPoint(nudgedPosition);
+        G4CMP::GetVolumeAtPoint(nudgedPosition);
 
       //Debugging
       if (verboseLevel > 5) {
-	G4cout << "PSDI Function Point AA | Since we're below the "
-	       << "hardFloorBoundaryScale, we're attempting a nudge to a new "
-	       << "position: " << nudgedPosition << " which is inside volume: "
-	       << nudgedPositionVolume->GetName() << G4endl;
+        G4cout << "PSDI Function Point AA | Since we're below the "
+               << "hardFloorBoundaryScale, we're attempting a nudge to a new "
+               << "position: " << nudgedPosition << " which is inside volume: "
+               << nudgedPositionVolume->GetName() << G4endl;
       }
       
       if (nudgedPositionVolume != preNudgePositionVolume) continue;
@@ -1045,16 +1042,16 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
       //Determine the safety. If we're still within one hardFloorBoundaryScale
       //then also continue/repeat
       testSafety =
-	G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-			   nudgedPosition,
-			   track.GetMomentumDirection(),
-			   false);
+        G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+                           nudgedPosition,
+                           track.GetMomentumDirection(),
+                           false);
       if (testSafety < fHardFloorBoundaryScale) continue;
 
       //Debugging
       if (verboseLevel > 5) {
-	G4cout << "PSDI Function Point AAA | The converged-upon safety after "
-	       << "successful nudge is: " << testSafety << G4endl;
+        G4cout << "PSDI Function Point AAA | The converged-upon safety after "
+               << "successful nudge is: " << testSafety << G4endl;
       }
       
       //Otherwise, we've successfully nudged, and we can break and set
@@ -1082,7 +1079,7 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "PSDI Function Point AB | 2D safety calculated to be: "
-	   << the2DSafety << G4endl;
+           << the2DSafety << G4endl;
   }
   
   //If we are within epsilon of a boundary, the next step should be made
@@ -1099,12 +1096,12 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "PSDI Function Point B | safety is smaller than epsilon, and "
-	     << "finding direction to nearby boundary." << G4endl;      
+             << "finding direction to nearby boundary." << G4endl;      
     }
     G4bool needToRepeat = false;
     G4ThreeVector returnDir =
       FindDirectionToNearbyBoundary(track,trackPosition,the2DSafety,
-				    needToRepeat,false);
+                                    needToRepeat,false);
 
     //Sometimes the basic G4 DistToIn functions for calculating safety to
     //daughters don't return a mathematically correct distance to the
@@ -1123,48 +1120,48 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
 
       //Debugging
       if (verboseLevel > 5) {
-	G4cout << "PSDI Function Point BA | Need to repeat tripped." << G4endl;
+        G4cout << "PSDI Function Point BA | Need to repeat tripped." << G4endl;
       }
       std::pair<G4double,G4ThreeVector> the2DSafetyAndDir =
-	G4CMP::Get2DSafetyWithDirection(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-					trackPosition,
-					track.GetMomentumDirection(),false);
+        G4CMP::Get2DSafetyWithDirection(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+                                        trackPosition,
+                                        track.GetMomentumDirection(),false);
       the2DSafety = the2DSafetyAndDir.first;
       G4ThreeVector safetyDir = the2DSafetyAndDir.second;
 
       //Do a second check, moving along the direction of the safety
       G4ThreeVector shiftedPosForTest = trackPosition+safetyDir*the2DSafety*0.5;
       std::pair<G4double,G4ThreeVector> the2DSafetyAndDir_Shifted =
-	G4CMP::Get2DSafetyWithDirection(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-					shiftedPosForTest,
-					track.GetMomentumDirection(),false);
+        G4CMP::Get2DSafetyWithDirection(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+                                        shiftedPosForTest,
+                                        track.GetMomentumDirection(),false);
 
       //Another sanity check -- if we've repeated and STILL fail to pick a
       //direction that gives an expected change in the safety when we
       //shift along the nominal safety direction, then something is wrong.
       if (fabs((the2DSafetyAndDir_Shifted.first / the2DSafety) - 0.5) > 0.1) {
 
-	//Edge case: if the original safety is not zero and the checked safety
-	//is zero, this direction is probably okay, but this check metric
-	//will return -0.5. Circumvent this.
-	if (the2DSafetyAndDir_Shifted.first == 0 && the2DSafety > 0) {
-	  G4ExceptionDescription msg;
-	  msg << "After first needToRepeat flagged, we are checking the "
-	      << "repeated safety/dir calculation and find that the safetyDir "
-	      << "gives a shifted safety of zero and original safety >0."
-	      << "This doesn't seem to be an actual problem but I'm going to "
-	      << "flag it as a fatal exception for now just because.";
-	  G4Exception("G4CMPQPDiffusion::PostStepDoIt", "QPDiffusion010",
-		      FatalException, msg);
+        //Edge case: if the original safety is not zero and the checked safety
+        //is zero, this direction is probably okay, but this check metric
+        //will return -0.5. Circumvent this.
+        if (the2DSafetyAndDir_Shifted.first == 0 && the2DSafety > 0) {
+          G4ExceptionDescription msg;
+          msg << "After first needToRepeat flagged, we are checking the "
+              << "repeated safety/dir calculation and find that the safetyDir "
+              << "gives a shifted safety of zero and original safety >0."
+              << "This doesn't seem to be an actual problem but I'm going to "
+              << "flag it as a fatal exception for now just because.";
+          G4Exception("G4CMPQPDiffusion::PostStepDoIt", "QPDiffusion010",
+                      FatalException, msg);
 	  
-	} else {
-	  G4ExceptionDescription msg;
-	  msg << "After first needToRepeat flagged, we are checking the "
-	      << "repeated safety/dir calculation and find that the safetyDir "
-	      << "is not plausibly in the direction of the nearest boundary.";
-	  G4Exception("G4CMPQPDiffusion::PostStepDoIt", "QPDiffusion010",
-		      FatalException, msg);
-	}
+        } else {
+          G4ExceptionDescription msg;
+          msg << "After first needToRepeat flagged, we are checking the "
+              << "repeated safety/dir calculation and find that the safetyDir "
+              << "is not plausibly in the direction of the nearest boundary.";
+          G4Exception("G4CMPQPDiffusion::PostStepDoIt", "QPDiffusion010",
+                      FatalException, msg);
+        }
       }
       
       //In some scenarios, the original 2D safety is below
@@ -1175,44 +1172,44 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
       //just randomize the direction and move on.
       if (the2DSafety >= fSoftFloorBoundaryScale) {
 	
-	returnDir = G4RandomDirection();
+        returnDir = G4RandomDirection();
 
-	//Every once in a while this may return perfectly vertical, i.e. in
-	//the z direction. If this is the case, then taking unit will just
-	//give you the zero vector. Ensure that this edge case never happens
-	//by redoing this generation if the vectors are too nicely aligned.
-	//This will need to be generalized to an axis through the plane.
-	returnDir = G4CMP::RobustifyRandomDirIn2D(returnDir);
+        //Every once in a while this may return perfectly vertical, i.e. in
+        //the z direction. If this is the case, then taking unit will just
+        //give you the zero vector. Ensure that this edge case never happens
+        //by redoing this generation if the vectors are too nicely aligned.
+        //This will need to be generalized to an axis through the plane.
+        returnDir = G4CMP::RobustifyRandomDirIn2D(returnDir);
 	
-	//Debugging
-	if (verboseLevel > 5) {      
-	  G4cout << "PSDI Function Point BA | after the "
-		 << "FindDirectionToNearbyBoundary returned a funky edge case, "
-		 << "the2DSafety is now larger than fSoftFloorBoundaryScale."
-		 << G4endl;
-	  G4cout << "Just randomizing the next direction to "
-		 << returnDir.unit() << "." << G4endl;      
-	}
+        //Debugging
+        if (verboseLevel > 5) {      
+          G4cout << "PSDI Function Point BA | after the "
+                 << "FindDirectionToNearbyBoundary returned a funky edge case, "
+                 << "the2DSafety is now larger than fSoftFloorBoundaryScale."
+                 << G4endl;
+          G4cout << "Just randomizing the next direction to "
+                 << returnDir.unit() << "." << G4endl;      
+        }
       } else {
-	//^Otherwise, launch in the direction identified by the safety
+        //^Otherwise, launch in the direction identified by the safety
 	
-	returnDir = safetyDir;
+        returnDir = safetyDir;
 
-	//We note that in the *next* step, running a naive Check2DSafety will
-	//yield a distance smaller than that found with this guy. So we need
-	//to make a flag that tells the next step about the need to run a
-	//special 2D safety based on this edge case being true.
-	fNeedSweptSafetyInGetMFP = true;
+        //We note that in the *next* step, running a naive Check2DSafety will
+        //yield a distance smaller than that found with this guy. So we need
+        //to make a flag that tells the next step about the need to run a
+        //special 2D safety based on this edge case being true.
+        fNeedSweptSafetyInGetMFP = true;
 
-	//Debugging
-	if (verboseLevel > 5) {      
-	  G4cout << "PSDI Function Point BB | after the "
-		 << "FindDirectionToNearbyBoundary returned a funky edge case, "
-		 << "the2DSafety is still smaller than "
-		 << "fSoftFloorBoundaryScale." << G4endl;
-	  G4cout << "Returning a new direction of " << returnDir
-		 << " in the global frame." << G4endl;
-	}
+        //Debugging
+        if (verboseLevel > 5) {      
+          G4cout << "PSDI Function Point BB | after the "
+                 << "FindDirectionToNearbyBoundary returned a funky edge case, "
+                 << "the2DSafety is still smaller than "
+                 << "fSoftFloorBoundaryScale." << G4endl;
+          G4cout << "Returning a new direction of " << returnDir
+                 << " in the global frame." << G4endl;
+        }
       }      
     }
     fParticleChange.ProposeMomentumDirection(returnDir.unit());
@@ -1230,8 +1227,8 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
     //Debugging
     if (verboseLevel > 5) {      
       G4cout << "PSDI Function Point BB | safety is larger than epsilon, "
-	     << "and we're just randomizing the next direction to "
-	     << returnDir.unit() << "." << G4endl;      
+             << "and we're just randomizing the next direction to "
+             << returnDir.unit() << "." << G4endl;      
     }
   }
 
@@ -1253,10 +1250,10 @@ G4CMPQPDiffusion::PostStepDoIt(const G4Track& track, const G4Step&) {
 //there anyway.
 G4ThreeVector G4CMPQPDiffusion::
 FindDirectionToNearbyBoundary(const G4Track& track,
-			      const G4ThreeVector& trackPosition,
-			      const G4double the2DSafety,
-			      G4bool & needToRepeatCalculation,
-			      G4bool useSweepForDaughterSafety) {
+                              const G4ThreeVector& trackPosition,
+                              const G4double the2DSafety,
+                              G4bool & needToRepeatCalculation,
+                              G4bool useSweepForDaughterSafety) {
 
   //Debugging
   if (verboseLevel > 5) {
@@ -1287,27 +1284,27 @@ FindDirectionToNearbyBoundary(const G4Track& track,
     deltaPath = the2DSafety*0.999;
     G4ExceptionDescription msg;
     msg << "Despite our best jiggling efforts, deltaPath is somehow larger " 
-	<< "than the2DSafety here. Probably should see what's going on."
-	<< G4endl;
+        << "than the2DSafety here. Probably should see what's going on."
+        << G4endl;
     G4Exception("G4CMPQPDiffusion::FindDirectionToNearbyBoundary",
-		"QPDiffuion011",FatalException, msg);
+                "QPDiffuion011",FatalException, msg);
   }
 
   //3. Now we shift the point by a bit and re-find the safety.
   G4ThreeVector shiftedPoint = trackPosition - deltaPath*momDir;
   G4double shiftedPoint2DSafety =
     G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-		       shiftedPoint,
-		       track.GetMomentumDirection(),
-		       false,
-		       useSweepForDaughterSafety);
+                       shiftedPoint,
+                       track.GetMomentumDirection(),
+                       false,
+                       useSweepForDaughterSafety);
   
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "FDTNB Function Point A | pos: " << trackPosition
-	   << ", shiftedPoint: " << shiftedPoint << ", original safety: "
-	   << the2DSafety << ", shiftedPoint2Dsafety: "
-	   << shiftedPoint2DSafety << G4endl;
+           << ", shiftedPoint: " << shiftedPoint << ", original safety: "
+           << the2DSafety << ", shiftedPoint2Dsafety: "
+           << shiftedPoint2DSafety << G4endl;
   }
 
   //We now have two points: trackPosition and shiftedPoint, and two safeties:
@@ -1353,10 +1350,10 @@ FindDirectionToNearbyBoundary(const G4Track& track,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "FDTNB Function Point B | deltaDistToSurface: "
-	   << deltaDistToSurface << G4endl;
+           << deltaDistToSurface << G4endl;
     G4cout << "FDTNB Function Point B | deltaPath: " << deltaPath << G4endl;
     G4cout << "FDTNB Function Point B | theta for rotation: " << theta
-	   << G4endl;
+           << G4endl;
   }
 
   //Now, we have the theta, but this theta could be in either direction
@@ -1371,9 +1368,9 @@ FindDirectionToNearbyBoundary(const G4Track& track,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "FDTNB Function Point C | potential direction-toward-boundary 1"
-	   << " (option1): " << option1 << G4endl;
+           << " (option1): " << option1 << G4endl;
     G4cout << "FDTNB Function Point C | potential direction-toward-boundary 2"
-	   << " (option2): " << option2 << G4endl;
+           << " (option2): " << option2 << G4endl;
   }
 
   //Recheck safety. Here, we compute the smaller of the two original safeties
@@ -1396,45 +1393,45 @@ FindDirectionToNearbyBoundary(const G4Track& track,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "FDTNB Function Point D | new probe position option 1: "
-	   << newPosOption1 << G4endl;
+           << newPosOption1 << G4endl;
     G4cout << "FDTNB Function Point D | new probe position option 2: "
-	   << newPosOption2 << G4endl;
+           << newPosOption2 << G4endl;
   }
 
   //Now compute the safeties of our two probe vectors' endpoints to see which
   //is closer.
   G4double option1Safety =
     G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-		       newPosOption1,
-		       track.GetMomentumDirection(),
-		       false,
-		       useSweepForDaughterSafety);
+                       newPosOption1,
+                       track.GetMomentumDirection(),
+                       false,
+                       useSweepForDaughterSafety);
 
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "FDTNB Function Point DA | option 1 safety: " << option1Safety
-	   << G4endl;
+           << G4endl;
   }
   
   G4double option2Safety =
     G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-		       newPosOption2,
-		       track.GetMomentumDirection(),
-		       false,
-		       useSweepForDaughterSafety);
+                       newPosOption2,
+                       track.GetMomentumDirection(),
+                       false,
+                       useSweepForDaughterSafety);
   
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "FDTNB Function Point DB | option 2 safety: "
-	   << option2Safety << G4endl;
+           << option2Safety << G4endl;
     G4cout << "FDTNB Function Point E | new probe position option 1 safety is "
-	   << option1Safety << G4endl;
+           << option1Safety << G4endl;
     G4cout << "FDTNB Function Point E | new probe position option 1 safety "
-	   << " x 1e9 is " << option1Safety*1.0e9 << G4endl;
+           << " x 1e9 is " << option1Safety*1.0e9 << G4endl;
     G4cout << "FDTNB Function Point E | new probe position option 2 safety is: "
-	   << option2Safety << G4endl;
+           << option2Safety << G4endl;
     G4cout << "FDTNB Function Point E | new probe position option 2 safety "
-	   << " x 1e9 is " << option2Safety*1.0e9 << G4endl;
+           << " x 1e9 is " << option2Safety*1.0e9 << G4endl;
   }
 
 
@@ -1450,28 +1447,28 @@ FindDirectionToNearbyBoundary(const G4Track& track,
   while (!(option2Safety > 0 && option1Safety > 0)) {
     G4ExceptionDescription msg;
     msg << "At least one of Option1Safety and Option2Safety is zero. Ideally, "
-	<< "this should never happen given the new hardFloor boundary scale."
-	<< G4endl;
+        << "this should never happen given the new hardFloor boundary scale."
+        << G4endl;
     G4Exception("G4CMPQPDiffusion::FindDirectionToNearbyBoundary",
-		"QPDiffusion011",
-		FatalException,
-		msg);
+                "QPDiffusion011",
+                FatalException,
+                msg);
     
     smallerSafety *= 0.5; 
     newPosOption1 = trackPosition + smallerSafety*option1;
     newPosOption2 = trackPosition + smallerSafety*option2;
     option1Safety =
       G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-			 newPosOption1,
-			 track.GetMomentumDirection(),
-			 false,
-			 useSweepForDaughterSafety);
+                         newPosOption1,
+                         track.GetMomentumDirection(),
+                         false,
+                         useSweepForDaughterSafety);
     option2Safety =
       G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-			 newPosOption2,
-			 track.GetMomentumDirection(),
-			 false,
-			 useSweepForDaughterSafety);
+                         newPosOption2,
+                         track.GetMomentumDirection(),
+                         false,
+                         useSweepForDaughterSafety);
   }
 
   
@@ -1481,13 +1478,13 @@ FindDirectionToNearbyBoundary(const G4Track& track,
   if (option1Safety < option2Safety) {
     if (verboseLevel > 5) {
       G4cout << "FDNB Function Point F | Direction to the boundary is option "
-	     << "1: " << option1 << G4endl;
+             << "1: " << option1 << G4endl;
     }
     outputDir = option1;
   } else if (option2Safety < option1Safety) {
     if (verboseLevel > 5) {
       G4cout << "FDNB Function Point G | Direction to the boundary is option "
-	     << "2: " << option2 << G4endl;
+             << "2: " << option2 << G4endl;
     }
     outputDir = option2;
   } else {
@@ -1496,16 +1493,16 @@ FindDirectionToNearbyBoundary(const G4Track& track,
     if (option2Safety == 0 && option1Safety == 0) {
       G4ExceptionDescription msg;
       msg << "both directions option1 and option2 give the same distance for "
-	  << "some reason, and even after a recursive safety recalculation are "
-	  << "zero? Should never get here. Option1: " << option1
-	  << ", safety: " << option1Safety << ", Option2: " << option2
-	  << ", safety: " << option2Safety << ", TrackPoint: "
-	  << trackPosition << ", the2DSafety (input): " << the2DSafety
-	  << ", volume (by GVAP): "
-	  << G4CMP::GetVolumeAtPoint(trackPosition)->GetName()
-	  << ". This seems to be an edge case.";
+          << "some reason, and even after a recursive safety recalculation are "
+          << "zero? Should never get here. Option1: " << option1
+          << ", safety: " << option1Safety << ", Option2: " << option2
+          << ", safety: " << option2Safety << ", TrackPoint: "
+          << trackPosition << ", the2DSafety (input): " << the2DSafety
+          << ", volume (by GVAP): "
+          << G4CMP::GetVolumeAtPoint(trackPosition)->GetName()
+          << ". This seems to be an edge case.";
       G4Exception("G4CMPQPDiffusion::FindDirectionToNearbyBoundary",
-		  "QPDiffusion012",FatalException, msg);
+                  "QPDiffusion012",FatalException, msg);
     } else {      
 
       //Both directions option1 and option2 give the same distance for some
@@ -1526,10 +1523,10 @@ FindDirectionToNearbyBoundary(const G4Track& track,
   G4ThreeVector checkPoint = trackPosition + outputDir*the2DSafety*0.5;
   G4double checkedSafety =
     G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-		       checkPoint,
-		       track.GetMomentumDirection(), 
-		       false,
-		       useSweepForDaughterSafety);
+                       checkPoint,
+                       track.GetMomentumDirection(), 
+                       false,
+                       useSweepForDaughterSafety);
   
   if (fabs((checkedSafety/the2DSafety) - 0.5) >
       fractionalSafetyDifferenceThreshold) {
@@ -1537,17 +1534,17 @@ FindDirectionToNearbyBoundary(const G4Track& track,
 
     if (verboseLevel > 5) {
       msg << "When trying to find the direction to the boundary, something "
-	  << "seems fishy -- moving in the purported direction of the boundary "
-	  << "by half of the safety does not give a new safety that is half of "
-	  << "the distance to the boundary. Safety will need to be recomputed "
-	  << "with the sweep technique. Pos: " << trackPosition
-	  << ", alleged direction to boundary: " << outputDir
-	  << ", original safety: " << the2DSafety << ", the checked safety: "
-	  << checkedSafety << ", volume at thisPos: "
-	  << G4CMP::GetVolumeAtPoint(trackPosition) << " ("
-	  << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << G4endl;
+          << "seems fishy -- moving in the purported direction of the boundary "
+          << "by half of the safety does not give a new safety that is half of "
+          << "the distance to the boundary. Safety will need to be recomputed "
+          << "with the sweep technique. Pos: " << trackPosition
+          << ", alleged direction to boundary: " << outputDir
+          << ", original safety: " << the2DSafety << ", the checked safety: "
+          << checkedSafety << ", volume at thisPos: "
+          << G4CMP::GetVolumeAtPoint(trackPosition) << " ("
+          << G4CMP::GetVolumeAtPoint(trackPosition)->GetName() << G4endl;
       G4Exception("G4CMPQPDiffusion::FindDirectionToNearbyBoundary",
-		  "QPDiffusion013",JustWarning, msg);
+                  "QPDiffusion013",JustWarning, msg);
     }
     needToRepeatCalculation = true;
   }
@@ -1561,10 +1558,10 @@ FindDirectionToNearbyBoundary(const G4Track& track,
   if (!needToRepeatCalculation) {
     needToRepeatCalculation =
       CheckForPhantomBoundaryCrossings(trackPosition,
-				       the2DSafety,
-				       originalOption1Safety,
-				       originalOption2Safety,
-				       outputDir);
+                                       the2DSafety,
+                                       originalOption1Safety,
+                                       originalOption2Safety,
+                                       outputDir);
   }
   return outputDir;
 }
@@ -1582,10 +1579,10 @@ FindDirectionToNearbyBoundary(const G4Track& track,
 //5. (Ostensibly) the direction toward the boundary
 G4bool G4CMPQPDiffusion::
 CheckForPhantomBoundaryCrossings(G4ThreeVector trackPosition,
-				 G4double the2DSafety,
-				 G4double originalOption1Safety,
-				 G4double originalOption2Safety,
-				 G4ThreeVector outputDir) {
+                                 G4double the2DSafety,
+                                 G4double originalOption1Safety,
+                                 G4double originalOption2Safety,
+                                 G4ThreeVector outputDir) {
   
   G4bool needToRepeatCalculation = false;
   G4ThreeVector thisPos = trackPosition;
@@ -1602,10 +1599,10 @@ CheckForPhantomBoundaryCrossings(G4ThreeVector trackPosition,
     //If it does, we have an issue.
     G4ExceptionDescription msg;
     msg << "Both originalOption1Safety and originalOption2Safety are zero. "
-	<< "Ideally, this should never happen given the hardFloor boundary "
-	<< "scale." << G4endl;
+        << "Ideally, this should never happen given the hardFloor boundary "
+        << "scale." << G4endl;
     G4Exception("G4CMPQPDiffusion::FindDirectionToNearbyBoundary",
-		"QPDiffusion014",FatalException, msg);      
+                "QPDiffusion014",FatalException, msg);      
   } else {
     //^Most common
     
@@ -1623,19 +1620,19 @@ CheckForPhantomBoundaryCrossings(G4ThreeVector trackPosition,
     if (verboseLevel > 5) {
       G4ExceptionDescription msg;
       msg << "When trying to find the direction to the boundary, we seem to be "
-	  << "calculating a direction vector that satisfies our first, "
-	  << "fractionalSafetyDifference criterion, but not our phantom "
-	  << "boundary condition. (This may sometimes happen near corners, "
-	  << "where our direction-finding algorithm's math breaks down. At "
-	  << "position: " << trackPosition
-	  << ", alleged direction to boundary: " << outputDir
-	  << ", original safety: " << the2DSafety << ", volume at thisPos: "
-	  << G4CMP::GetVolumeAtPoint(thisPos) << " ("
-	  << G4CMP::GetVolumeAtPoint(thisPos)->GetName()
-	  << ", volume at the position ostensibly over the boundary: "
-	  << G4CMP::GetVolumeAtPoint(posOstensiblyOverBoundary) << G4endl;
+          << "calculating a direction vector that satisfies our first, "
+          << "fractionalSafetyDifference criterion, but not our phantom "
+          << "boundary condition. (This may sometimes happen near corners, "
+          << "where our direction-finding algorithm's math breaks down. At "
+          << "position: " << trackPosition
+          << ", alleged direction to boundary: " << outputDir
+          << ", original safety: " << the2DSafety << ", volume at thisPos: "
+          << G4CMP::GetVolumeAtPoint(thisPos) << " ("
+          << G4CMP::GetVolumeAtPoint(thisPos)->GetName()
+          << ", volume at the position ostensibly over the boundary: "
+          << G4CMP::GetVolumeAtPoint(posOstensiblyOverBoundary) << G4endl;
       G4Exception("G4CMPQPDiffusion::FindDirectionToNearbyBoundary",
-		  "QPDiffusion015",JustWarning, msg);
+                  "QPDiffusion015",JustWarning, msg);
     }    
     needToRepeatCalculation = true;
   }
@@ -1647,10 +1644,10 @@ CheckForPhantomBoundaryCrossings(G4ThreeVector trackPosition,
 //I don't think this gets used much? I haven't done anything super explicit
 //with this...
 G4double G4CMPQPDiffusion::GetContinuousStepLimit(
-                                       const G4Track& track,
-                                       G4double previousStepSize,
-                                       G4double currentMinimalStep,
-                                       G4double& currentSafety)
+                                                  const G4Track& track,
+                                                  G4double previousStepSize,
+                                                  G4double currentMinimalStep,
+                                                  G4double& currentSafety)
 {
   //Debugging
   if (verboseLevel > 5) {
@@ -1669,10 +1666,10 @@ G4double G4CMPQPDiffusion::GetContinuousStepLimit(
 //I don't think this gets used much? I haven't done anything super explicit
 //with this...
 G4double G4CMPQPDiffusion::ContinuousStepLimit(
-                                       const G4Track& track,
-                                       G4double previousStepSize,
-                                       G4double currentMinimalStep,
-                                       G4double& currentSafety)
+                                               const G4Track& track,
+                                               G4double previousStepSize,
+                                               G4double currentMinimalStep,
+                                               G4double& currentSafety)
 {
   return GetContinuousStepLimit(track,previousStepSize,currentMinimalStep,
                                 currentSafety);
@@ -1682,25 +1679,25 @@ G4double G4CMPQPDiffusion::ContinuousStepLimit(
 //The interaction length here should for most cases just approximately the
 //distance to the nearest wall in 2D (for now, XY)
 G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
-					   G4double previousStepSize,
-					   G4ForceCondition* condition) {
+                                           G4double previousStepSize,
+                                           G4ForceCondition* condition) {
   
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPDiffusion::GetMeanFreePath --" << G4endl;
     G4cout << "GMFP Function Point A | track volume: "
-	   << track.GetVolume()->GetName() << G4endl;
+           << track.GetVolume()->GetName() << G4endl;
     G4cout << "GMFP Function Point A | previousStepSize: "
-	   << previousStepSize << G4endl;
+           << previousStepSize << G4endl;
     G4cout << "GMFP Function Point A | momentum direction: "
-	   << track.GetMomentumDirection() << G4endl;
+           << track.GetMomentumDirection() << G4endl;
     G4cout << "GMFP Function Point A | position: " << track.GetPosition()
-	   << G4endl;
+           << G4endl;
     G4cout << "GMFP Function Point A | global time: " << track.GetGlobalTime()
-	   << G4endl;
+           << G4endl;
     G4cout << "GMFP Function Point A | forcing condition: " << *condition
-	   << ", compared to Forced: " << Forced << " and NotForced: "
-	   << NotForced << G4endl;
+           << ", compared to Forced: " << Forced << " and NotForced: "
+           << NotForced << G4endl;
   }
 
   //I think this is needed here -- we're overriding the discrete GPIL functions
@@ -1760,9 +1757,9 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
     G4cout << "GMFP Function Point B | CurrentVolume by track: "
            << track.GetVolume()->GetName() <<G4endl;
     G4cout << "GMFP Function Point B | CurrentVolumePlusEps, by "
-	   << "GetVolumeAtPoint: " << currentVolPlusEps->GetName() << G4endl;
+           << "GetVolumeAtPoint: " << currentVolPlusEps->GetName() << G4endl;
     G4cout << "GMFP Function Point B | CurrentVolumeMinusEps, by "
-	   << "GetVolumeAtPoint: " << currentVolMinEps->GetName() << G4endl;
+           << "GetVolumeAtPoint: " << currentVolMinEps->GetName() << G4endl;
     G4cout << "GMFP Function Point B | StepStatus: " << theStatus << G4endl;
   }
 
@@ -1790,7 +1787,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
     //Debugging
     if (verboseLevel > 5) {      
       G4cout << "GMFP Function Point C | In a turnaround step. Killing the "
-	     << "transport GPIL." << G4endl;
+             << "transport GPIL." << G4endl;
     }    
     fTrackOnBoundary = true;
     isActive = false;
@@ -1804,7 +1801,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
     //Debugging
     if (verboseLevel > 5) {      
       G4cout << "GMFP Function Point D | On a boundary but not in a turnaround "
-	     << "step." << G4endl;
+             << "step." << G4endl;
     }
     fTrackOnBoundary = true;
   }
@@ -1812,16 +1809,16 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "GMFP Function Point E | Not in a turnaround step. Continuing "
-	   << "the transport GPIL." << G4endl;
+           << "the transport GPIL." << G4endl;
     G4cout << "GMFP Function Point E | theStatus: " << theStatus << G4endl;
     G4cout << "GMFP Function Point E | Gap energy (drawn from SCUtils): "
-	   << fGapEnergy << G4endl;
+           << fGapEnergy << G4endl;
     G4cout << "GMFP Function Point E | Energy (drawn from SCUtils): "
-	   << energy << G4endl;
+           << energy << G4endl;
     G4cout << "GMFP Function Point E | Dn (drawn from SCUtils): " << fDn
-	   << G4endl;
+           << G4endl;
     G4cout << "GMFP Function Point E | Teff (drawn from SCUtils): " << fTeff
-	   << G4endl;
+           << G4endl;
   }
   
   //Verify that, if we're on a boundary, the direction of momentum is going
@@ -1833,15 +1830,15 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
   if (theStatus == fGeomBoundary && !LM->HasLattice(currentVolPlusEps)) {
     G4ExceptionDescription msg;
     msg << "We're on a boundary (i.e. our boundary is now behind us) and find "
-	<< "no lattice in the region where a QP is intending to go "
-	<< "during the QP random walk transport's GetMeanFreePath function. "
-	<< "Trackposition is " << trackPosition << ", momentumDir is: "
-	<< momentumDir << ", trackPosition_eps = " << trackPosition_eps
-	<< ", trackPosition_mineps: " << trackPosition_mineps
-	<< ", currenVolPlusEps: " << currentVolPlusEps->GetName()
-	<< ", currentVolMinEps: " << currentVolMinEps->GetName();
+        << "no lattice in the region where a QP is intending to go "
+        << "during the QP random walk transport's GetMeanFreePath function. "
+        << "Trackposition is " << trackPosition << ", momentumDir is: "
+        << momentumDir << ", trackPosition_eps = " << trackPosition_eps
+        << ", trackPosition_mineps: " << trackPosition_mineps
+        << ", currenVolPlusEps: " << currentVolPlusEps->GetName()
+        << ", currentVolMinEps: " << currentVolMinEps->GetName();
     G4Exception("G4CMPQPDiffusion::GetMeanFreePath", "QPDiffusion016",
-		FatalException, msg);
+                FatalException, msg);
   }
 
   //Compute a step length corresponding to the nearest surface in 2D
@@ -1871,103 +1868,103 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
       //normally
       if (!qpIsStuck) {
 
-	//Debugging
-	if (verboseLevel > 5) {
-	  G4cout << "GMFP Function Point EB | QP Is not stuck." << G4endl;
-	}
+        //Debugging
+        if (verboseLevel > 5) {
+          G4cout << "GMFP Function Point EB | QP Is not stuck." << G4endl;
+        }
 
-	//If the post-step do it of last step suggests that we need a swept
-	//safety to compensate for G4's incorrectness, then run a swept
-	//2D safety from the boundary. I think this usually shouldn't run.
-	if (!fNeedSweptSafetyInGetMFP) {
-	  the2DSafety =
-	    G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-			       track.GetPosition(),
-			       track.GetMomentumDirection(),
-			       true,
-			       false,
-			       surfaceNorm );
-	} else {	 
-	  std::pair<G4double,G4ThreeVector> the2DSafetyAndDir =
-	    G4CMP::Get2DSafetyWithDirection(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-					    track.GetPosition(),
-					    track.GetMomentumDirection(),
-					    true,
-					    surfaceNorm);
-	  the2DSafety = the2DSafetyAndDir.first;
+        //If the post-step do it of last step suggests that we need a swept
+        //safety to compensate for G4's incorrectness, then run a swept
+        //2D safety from the boundary. I think this usually shouldn't run.
+        if (!fNeedSweptSafetyInGetMFP) {
+          the2DSafety =
+            G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+                               track.GetPosition(),
+                               track.GetMomentumDirection(),
+                               true,
+                               false,
+                               surfaceNorm );
+        } else {	 
+          std::pair<G4double,G4ThreeVector> the2DSafetyAndDir =
+            G4CMP::Get2DSafetyWithDirection(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+                                            track.GetPosition(),
+                                            track.GetMomentumDirection(),
+                                            true,
+                                            surfaceNorm);
+          the2DSafety = the2DSafetyAndDir.first;
 	  
-	  G4ExceptionDescription msg;
-	  msg << "In GetMFP We're somehow on a boundary and also have triggered"
-	      << " the fNeedSweptSafetyInGetMFP. What is happening? (In "
-	      << "principle, this isn't a deathknell-- I'm just killing the "
-	      << "code here to see where this even is triggered.";
-	  G4Exception("G4CMPQPDiffusion::GetMeanFreePath", "QPDiffusion017",
-		      FatalException, msg);
-	}
+          G4ExceptionDescription msg;
+          msg << "In GetMFP We're somehow on a boundary and also have triggered"
+              << " the fNeedSweptSafetyInGetMFP. What is happening? (In "
+              << "principle, this isn't a deathknell-- I'm just killing the "
+              << "code here to see where this even is triggered.";
+          G4Exception("G4CMPQPDiffusion::GetMeanFreePath", "QPDiffusion017",
+                      FatalException, msg);
+        }
       } else {
-	//^If the QP IS stuck, then we have some work to do. Use the norms and
-	//positions returned from CheckForStuckQPs to compute an angular range
-	//away from the corner over which we can compute a safety.
+        //^If the QP IS stuck, then we have some work to do. Use the norms and
+        //positions returned from CheckForStuckQPs to compute an angular range
+        //away from the corner over which we can compute a safety.
 
-	G4ThreeVector norm1 = std::get<1>(qpIsStuck_norm1_norm2_pos1_pos2);
-	G4ThreeVector pos1 = std::get<3>(qpIsStuck_norm1_norm2_pos1_pos2);
-	G4ThreeVector norm2 = std::get<2>(qpIsStuck_norm1_norm2_pos1_pos2);
-	G4ThreeVector pos2 = std::get<4>(qpIsStuck_norm1_norm2_pos1_pos2);
+        G4ThreeVector norm1 = std::get<1>(qpIsStuck_norm1_norm2_pos1_pos2);
+        G4ThreeVector pos1 = std::get<3>(qpIsStuck_norm1_norm2_pos1_pos2);
+        G4ThreeVector norm2 = std::get<2>(qpIsStuck_norm1_norm2_pos1_pos2);
+        G4ThreeVector pos2 = std::get<4>(qpIsStuck_norm1_norm2_pos1_pos2);
 
-	//From these normal vectors, we should be able to find a set of
-	//directions over which to do a constrained 2D safety and subsequent
-	//ejection of the QP out from the corner
-	G4ThreeVector cornerLocation(0,0,0);
-	std::pair<G4ThreeVector,G4ThreeVector> outgoingSurfaceTangents =
-	  FindSurfaceTangentsForStuckQPEjection(norm1,pos1,norm2,pos2,
-						cornerLocation);
-	fOutgoingSurfaceTangent1 = outgoingSurfaceTangents.first;
-	fOutgoingSurfaceTangent2 = outgoingSurfaceTangents.second;
-	fQPIsStuck = true;
+        //From these normal vectors, we should be able to find a set of
+        //directions over which to do a constrained 2D safety and subsequent
+        //ejection of the QP out from the corner
+        G4ThreeVector cornerLocation(0,0,0);
+        std::pair<G4ThreeVector,G4ThreeVector> outgoingSurfaceTangents =
+          FindSurfaceTangentsForStuckQPEjection(norm1,pos1,norm2,pos2,
+                                                cornerLocation);
+        fOutgoingSurfaceTangent1 = outgoingSurfaceTangents.first;
+        fOutgoingSurfaceTangent2 = outgoingSurfaceTangents.second;
+        fQPIsStuck = true;
 	
-	//Kill event if we run into artifacts in the surface tangent finding.
-	//Here we return 0 so that this transport wins the GPIL race and then
-	//goes on to trigger the stop and kill condition in the AlongStepDoIt
-	if (fPreemptivelyKillTrack) {	  
-	  return 0;
-	}
+        //Kill event if we run into artifacts in the surface tangent finding.
+        //Here we return 0 so that this transport wins the GPIL race and then
+        //goes on to trigger the stop and kill condition in the AlongStepDoIt
+        if (fPreemptivelyKillTrack) {	  
+          return 0;
+        }
 
 
-	//Debugging
-	if (verboseLevel > 5) {
-	  G4cout << "GMFP Function Point EB | QP Is stuck!" << G4endl;
-	  G4cout << "GMFP Function Point EB | norm 1: " << norm1 << G4endl;
-	  G4cout << "GMFP Function Point EB | norm 2: " << norm2 << G4endl;
-	  G4cout << "GMFP Function Point EB | pos 1: " << pos1 << G4endl;
-	  G4cout << "GMFP Function Point EB | pos 2: " << pos2 << G4endl;
-	  G4cout << "GMFP Function Point EB | fOutgoingSurfaceTangent1: "
-		 << fOutgoingSurfaceTangent1 << G4endl;
-	  G4cout << "GMFP Function Point EB | fOutgoingSurfaceTangent2: "
-		 << fOutgoingSurfaceTangent2 << G4endl;
-	  G4cout << "GMFP Function Point EB | cornerLocation: "
-		 << cornerLocation << G4endl;
-	}
+        //Debugging
+        if (verboseLevel > 5) {
+          G4cout << "GMFP Function Point EB | QP Is stuck!" << G4endl;
+          G4cout << "GMFP Function Point EB | norm 1: " << norm1 << G4endl;
+          G4cout << "GMFP Function Point EB | norm 2: " << norm2 << G4endl;
+          G4cout << "GMFP Function Point EB | pos 1: " << pos1 << G4endl;
+          G4cout << "GMFP Function Point EB | pos 2: " << pos2 << G4endl;
+          G4cout << "GMFP Function Point EB | fOutgoingSurfaceTangent1: "
+                 << fOutgoingSurfaceTangent1 << G4endl;
+          G4cout << "GMFP Function Point EB | fOutgoingSurfaceTangent2: "
+                 << fOutgoingSurfaceTangent2 << G4endl;
+          G4cout << "GMFP Function Point EB | cornerLocation: "
+                 << cornerLocation << G4endl;
+        }
 	
 	
-	//Now use the outgoing surface tangents to compute a constrained 2D
-	//safety. Note that the norm should NOT be well-defined if we're
-	//stuck in a corner
-	G4double constrained2DSafety =
-	  G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-			     track.GetPosition(),
-			     track.GetMomentumDirection(),
-			     true,
-			     false,
-			     G4ThreeVector(0,0,0),
-			     outgoingSurfaceTangents.first,
-			     outgoingSurfaceTangents.second);	
-	the2DSafety = constrained2DSafety;
+        //Now use the outgoing surface tangents to compute a constrained 2D
+        //safety. Note that the norm should NOT be well-defined if we're
+        //stuck in a corner
+        G4double constrained2DSafety =
+          G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+                             track.GetPosition(),
+                             track.GetMomentumDirection(),
+                             true,
+                             false,
+                             G4ThreeVector(0,0,0),
+                             outgoingSurfaceTangents.first,
+                             outgoingSurfaceTangents.second);	
+        the2DSafety = constrained2DSafety;
 
-	//Debugging
-	if (verboseLevel > 5) {
-	  G4cout << "GMFP Function Point EC | Constrained 2D safety: "
-		 << constrained2DSafety << G4endl;
-	}
+        //Debugging
+        if (verboseLevel > 5) {
+          G4cout << "GMFP Function Point EC | Constrained 2D safety: "
+                 << constrained2DSafety << G4endl;
+        }
       }
 
       //"Triple point" checking
@@ -1977,29 +1974,29 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
       //many of these so the nTries can be large.
       std::map<std::string,bool> map_volName_isPresent;
       if (the2DSafety < fPicometerScale) {
-	const int nTries = 20;
-	for (int iTry = 0; iTry < nTries; ++iTry ) {
+        const int nTries = 20;
+        for (int iTry = 0; iTry < nTries; ++iTry ) {
 
-	  G4ThreeVector randomDir = G4RandomDirection();
-	  G4ThreeVector newRandomPos = trackPosition + randomDir*fPicometerScale;
-	  G4VPhysicalVolume* newRandomPosVol = G4CMP::GetVolumeAtPoint(newRandomPos);
-	  if (map_volName_isPresent.count(newRandomPosVol->GetName()) == 0 ) {
-	    map_volName_isPresent.emplace(newRandomPosVol->GetName(),true);
-	  }
-	}
+          G4ThreeVector randomDir = G4RandomDirection();
+          G4ThreeVector newRandomPos = trackPosition + randomDir*fPicometerScale;
+          G4VPhysicalVolume* newRandomPosVol = G4CMP::GetVolumeAtPoint(newRandomPos);
+          if (map_volName_isPresent.count(newRandomPosVol->GetName()) == 0 ) {
+            map_volName_isPresent.emplace(newRandomPosVol->GetName(),true);
+          }
+        }
 
-	//If we have more than two volumes in the spammed region, then throw an exception
-	if (map_volName_isPresent.size() > 2 ) {
-	  G4ExceptionDescription msg;
-	  msg << "When calculating safety from a boundary, the2DSafety is "
-	      << "below one picometer, and we find a triple junction. Safety: "
-	      << the2DSafety << ". If small enough this may cause issues "
-	      << "with surface norm finding. Killing track.";
-	  G4Exception("G4CMPQPDiffusion::GetMeanFreePath",
-		      "QPDiffusion025",JustWarning, msg);
-	  fPreemptivelyKillTrack = true;
-	  return 0;
-	}
+        //If we have more than two volumes in the spammed region, then throw an exception
+        if (map_volName_isPresent.size() > 2 ) {
+          G4ExceptionDescription msg;
+          msg << "When calculating safety from a boundary, the2DSafety is "
+              << "below one picometer, and we find a triple junction. Safety: "
+              << the2DSafety << ". If small enough this may cause issues "
+              << "with surface norm finding. Killing track.";
+          G4Exception("G4CMPQPDiffusion::GetMeanFreePath",
+                      "QPDiffusion025",JustWarning, msg);
+          fPreemptivelyKillTrack = true;
+          return 0;
+        }
       }     
     } else {
       //^Bulk case: simpler
@@ -2007,21 +2004,21 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
       //If we don't need a swept safety as determined by the last step, then
       //run the normal (faster) one
       if (!fNeedSweptSafetyInGetMFP) {      
-	the2DSafety =
-	  G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-			     track.GetPosition(),
-			     track.GetMomentumDirection(),
-			     false);
+        the2DSafety =
+          G4CMP::Get2DSafety(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+                             track.GetPosition(),
+                             track.GetMomentumDirection(),
+                             false);
       } else {
-	//^If we need the swept safety to compensate for G4 handling a daughter
-	//safety wrong, then run the swept safety.
+        //^If we need the swept safety to compensate for G4 handling a daughter
+        //safety wrong, then run the swept safety.
 
-	std::pair<G4double,G4ThreeVector> the2DSafetyAndDir =
-	  G4CMP::Get2DSafetyWithDirection(track.GetStep()->GetPreStepPoint()->GetTouchable(),
-					  track.GetPosition(),
-					  track.GetMomentumDirection(),
-					  true);
-	the2DSafety = the2DSafetyAndDir.first;
+        std::pair<G4double,G4ThreeVector> the2DSafetyAndDir =
+          G4CMP::Get2DSafetyWithDirection(track.GetStep()->GetPreStepPoint()->GetTouchable(),
+                                          track.GetPosition(),
+                                          track.GetMomentumDirection(),
+                                          true);
+        the2DSafety = the2DSafetyAndDir.first;
       }
     }   
     f2DSafety = the2DSafety;
@@ -2034,9 +2031,9 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
     //Debugging
     if (verboseLevel > 5) {      
       G4cout << "GMFP Function Point F | Diffusion constant (energy-adjusted): "
-	     << fDiffConst << G4endl;
+             << fDiffConst << G4endl;
       G4cout << "GMFP Function Point F | the2DSafety: " << the2DSafety
-	     << G4endl;
+             << G4endl;
     }
       
     
@@ -2051,7 +2048,7 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
     //Debugging
     if (verboseLevel > 5) {      
       G4cout << "GMFP Function Point G | Time step to boundary = "
-	     << fTimeStepToBoundary << G4endl;
+             << fTimeStepToBoundary << G4endl;
     }
     
     //With the time step to the boundary, we need to compute a "real," i.e.
@@ -2074,17 +2071,17 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
     //Debugging
     if (verboseLevel > 5) {      
       G4cout << "GMFP Function Point H | Setting the number of interaction "
-	     << "lengths for RWTransport's Discrete component to 1, and this "
-	     << "MFP = " << thisMFP << G4endl;
+             << "lengths for RWTransport's Discrete component to 1, and this "
+             << "MFP = " << thisMFP << G4endl;
     }    
     return thisMFP;
   } else {
     //^This indicates something aphysical.
     G4ExceptionDescription msg;
     msg << "QP energy is too low or we're missing a Dn. Returning DBL_MAX "
-	<< "for GetMFP.";
+        << "for GetMFP.";
     G4Exception("G4CMPQPDiffusion::GetMeanFreePath", "QPDiffusion018",
-		FatalException, msg);
+                FatalException, msg);
     isActive = false;
     return DBL_MAX;
   }
@@ -2096,8 +2093,8 @@ G4double G4CMPQPDiffusion::GetMeanFreePath(const G4Track& track,
 //the diffusion-sampled distance and the "straight-line" 2D safety). See more
 //info in the comments below
 G4double G4CMPQPDiffusion::HandleVerySmallSteps(G4double thisMFP,
-						G4double the2DSafety,
-						G4double velocity) {
+                                                G4double the2DSafety,
+                                                G4double velocity) {
 
   //Debugging
   if (verboseLevel > 5) {
@@ -2121,8 +2118,8 @@ G4double G4CMPQPDiffusion::HandleVerySmallSteps(G4double thisMFP,
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "HVSS Function Point A | Confirming that thisMFP < the2DSafety"
-	     << " and that fVerySmallStep is true."
-	     << G4endl;
+             << " and that fVerySmallStep is true."
+             << G4endl;
     }
         
     //Split this up into on-boundary case and not-on-boundary case. For
@@ -2143,31 +2140,31 @@ G4double G4CMPQPDiffusion::HandleVerySmallSteps(G4double thisMFP,
       //   deliberately launch this into the boundary by making the MFP larger than
       //   the safety.
       if (the2DSafety < fSoftFloorBoundaryScale) {
-	thisMFP = the2DSafety * fBoundaryFudgeFactor;
-	fVerySmallStepInsideSoftFloor = true;
+        thisMFP = the2DSafety * fBoundaryFudgeFactor;
+        fVerySmallStepInsideSoftFloor = true;
 
-	//Debugging
-	if (verboseLevel > 5) {
-	  G4cout << "HVSS Function Point B | Confirming that fVerySmallStep is set "
-		 << "to true this round." << G4endl;
-	}
+        //Debugging
+        if (verboseLevel > 5) {
+          G4cout << "HVSS Function Point B | Confirming that fVerySmallStep is set "
+                 << "to true this round." << G4endl;
+        }
       } else {
-	//^Otherwise, we're not within the soft floor scale distance of the boundary, in which
-	//case we're not necessarily aimed at the boundary. Don't want to try to launch into
-	//the boundary since for some tracks this may cause issues where we trigger a boundary
-	//interaction (a la Transportation) without making sure that we get the correct momentum
-	//direction/norm for the next step. However, we still need to set the MFP properly.
-	//To make sure we stay roughly outside of the hardFloorBoundaryScale in case the direction
-	//is pointed directly at the wall, we set the MFP to the2DSafety - fHardFloorBoundaryScale.
-	thisMFP = the2DSafety - fHardFloorBoundaryScale;
+        //^Otherwise, we're not within the soft floor scale distance of the boundary, in which
+        //case we're not necessarily aimed at the boundary. Don't want to try to launch into
+        //the boundary since for some tracks this may cause issues where we trigger a boundary
+        //interaction (a la Transportation) without making sure that we get the correct momentum
+        //direction/norm for the next step. However, we still need to set the MFP properly.
+        //To make sure we stay roughly outside of the hardFloorBoundaryScale in case the direction
+        //is pointed directly at the wall, we set the MFP to the2DSafety - fHardFloorBoundaryScale.
+        thisMFP = the2DSafety - fHardFloorBoundaryScale;
 
-	//Debugging
-	if (verboseLevel > 5) {
-	  G4cout << "HVSS Function Point C | fVerySmallStep is true, but the"
-		 << "safety is also larger than our soft floor boundary scale. Setting the"
-		 << "MFP for this step to the2DSafety - fHardFloorBoundaryScale."
-		 << G4endl;
-	}
+        //Debugging
+        if (verboseLevel > 5) {
+          G4cout << "HVSS Function Point C | fVerySmallStep is true, but the"
+                 << "safety is also larger than our soft floor boundary scale. Setting the"
+                 << "MFP for this step to the2DSafety - fHardFloorBoundaryScale."
+                 << G4endl;
+        }
       }
 
       //In either case, put a minimum bound on the time to next step because it is aphysical
@@ -2192,14 +2189,14 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPDiffusion::UpdateMeanFreePathForLatticeChangeover --"
-	   << G4endl;
+           << G4endl;
     G4cout << "UMFPFLC Function Point A | Loading data for track after lattice "
-	   << "changeover, process: " << this->GetProcessName() << G4endl;
+           << "changeover, process: " << this->GetProcessName() << G4endl;
     G4cout << "UMFPFLC Function Point A | Track length: "
-	   << aTrack.GetTrackLength() << G4endl;
+           << aTrack.GetTrackLength() << G4endl;
     G4cout << "UMFPFLC Function Point A | Current lattice a la lattice manager:"
-	   << G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())
-	   << G4endl;
+           << G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())
+           << G4endl;
   }
     
   //Always do a check to see if the current lattice stored in this process is
@@ -2212,19 +2209,19 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
   //statement about track length here, since it seems that when a particle
   //spawns it doesn't necessarily trigger this block, and I think we want it to.
   if ((((this->theLattice) &&
-	G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()))
+        G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume()))
        &&
        (this->theLattice !=
-	G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())))
+        G4LatticeManager::GetLatticeManager()->GetLattice(aTrack.GetVolume())))
       ||
       aTrack.GetTrackLength() == 0.0 ) {
     
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "UMFPFLC Function Point B | Step length associated with this is"
-	     << " " << aTrack.GetStep()->GetStepLength() << G4endl;
+             << " " << aTrack.GetStep()->GetStepLength() << G4endl;
       G4cout << "UMFPFLC Function Point B | Successfully changed over to a new "
-	     << "lattice for process " << this->GetProcessName() << G4endl;
+             << "lattice for process " << this->GetProcessName() << G4endl;
     }
     
     //Noting that if physical lattices are not 1:1 with volumes, something
@@ -2236,7 +2233,7 @@ UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "UMFPFLC Function Point C | Did not successfully change over to "
-	   << "a new lattice for process " << this->GetProcessName() << G4endl; 
+           << "a new lattice for process " << this->GetProcessName() << G4endl; 
   }
   return false;
 }
@@ -2252,7 +2249,7 @@ void G4CMPQPDiffusion::UpdateSCAfterLatticeChange() {
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPDiffusion::UpdateSCAfterLatticeChange --" << G4endl;
     G4cout << "USCALC Function Point A | Updating SC After Lattice Change"
-	   << G4endl;
+           << G4endl;
   }
   
   //First, determine if the new lattice is a SC. If not, then set the SCUtils
@@ -2287,9 +2284,9 @@ SampleTimeStepFromFirstPassageDistribution(G4double the2DSafety) {
     //Spot for other techniques that are more efficient (Inversion/Newton, etc.)
     G4ExceptionDescription msg;
     msg << "Attempting to use an unknown time sampling technique, "
-	<< samplingTechnique << " for first-passage time. Throwing an error.";
+        << samplingTechnique << " for first-passage time. Throwing an error.";
     G4Exception("G4CMPQPDiffusion::SampleTimeeStepFromFirstPassageDistribution",
-		"QPDiffusion020",FatalException, msg);
+                "QPDiffusion020",FatalException, msg);
     return 0; 
   }
 }
@@ -2302,7 +2299,7 @@ SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique() {
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPDiffusion::SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique --" << G4endl;
     G4cout << "SDTSUART Function Point A | Sampling dimensionless time step "
-	   << " with A/R technique." << G4endl;
+           << " with A/R technique." << G4endl;
   }
   
   //Define min and max allowable sampled dimensionless times. These are
@@ -2324,7 +2321,7 @@ SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique() {
     if (killCounter > 1000) {
       G4ExceptionDescription msg;
       msg << "While doing our A/R testing, ran >1000 points without finding "
-	  << "a point under the curve." << G4endl;
+          << "a point under the curve." << G4endl;
       G4Exception("G4CMPQPDiffusion::SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique","QPDiffusion025",FatalException, msg);
     }
     
@@ -2344,22 +2341,21 @@ SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique() {
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "SDTSUART Function Point B | Sampled T: " << sampleT
-	     << ", sampled Y: " << sampleY << ", -derivLow: "
-	     << -1*derivLow << ", -derivHigh: " << -1*derivHigh << G4endl;
+             << ", sampled Y: " << sampleY << ", -derivLow: "
+             << -1*derivLow << ", -derivHigh: " << -1*derivHigh << G4endl;
     }
     
     //This defines the transition between the low-time approximation and
     //the high-time approximation
     if (sampleT <= 0.15) {
       if (sampleY < -1*derivLow) {
-	sampledT = sampleT;
-	break;
+        sampledT = sampleT;
+        break;
       }
-    }
-    else{
+    } else {
       if (sampleY < -1*derivHigh) {
-	sampledT = sampleT;
-	break;
+        sampledT = sampleT;
+        break;
       }
     }   
   }
@@ -2368,7 +2364,7 @@ SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique() {
   if (sampledT < 0) {
     G4ExceptionDescription msg;
     msg << "Somehow failed to sample an appropriate time using the "
-	<< "acceptance/rejection technique. Throwing an error.";
+        << "acceptance/rejection technique. Throwing an error.";
     G4Exception("G4CMPQPDiffusion::SampleDimensionlessTimeStepUsingAcceptanceRejectionTechnique","QPDiffusion021",FatalException, msg);
   }
 
@@ -2394,7 +2390,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPDiffusion::CheckForStuckQPsInCorner() --" << G4endl;
     G4cout << "CFSQIC Function Point A | Starting to check for stuck QPs in "
-	   << "a corner." << G4endl;
+           << "a corner." << G4endl;
   }
   
   
@@ -2419,8 +2415,8 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "CFSQIC Function Point AB | fBoundaryHistory.size() is less "
-	     << "than fMaxBoundaryHistoryEntries. Aborting stuck QP check."
-	     << G4endl;
+             << "than fMaxBoundaryHistoryEntries. Aborting stuck QP check."
+             << G4endl;
     }    
     std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> output(qpIsStuck,outNorm0,outNorm1,outPos0,outPos1);
     return output;
@@ -2441,11 +2437,11 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "CFSQIC Function Point AC | current position: "
-	   << currentPosition << G4endl;
+           << currentPosition << G4endl;
     G4cout << "CFSQIC Function Point AC | current norm: "
-	   << currentNorm << G4endl;
+           << currentNorm << G4endl;
     G4cout << "CFSQIC Function Point AC | volumeAtPoint: "
-	   << volumeAtPoint->GetName() << G4endl;
+           << volumeAtPoint->GetName() << G4endl;
   }
   
   //Loop over the other boundary history info (here we include the "current"
@@ -2487,18 +2483,18 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
       goodOtherNorms.push_back(fBoundaryHistory[iB].second);
       goodOtherPositions.push_back(fBoundaryHistory[iB].first);
       if (verboseLevel > 5) {
-	G4cout << "CFSQIC Function Point AD | PlusEps case. Goodothernorm: "
-	       << fBoundaryHistory[iB].second << ", pos: "
-	       << fBoundaryHistory[iB].first << G4endl;
+        G4cout << "CFSQIC Function Point AD | PlusEps case. Goodothernorm: "
+               << fBoundaryHistory[iB].second << ", pos: "
+               << fBoundaryHistory[iB].first << G4endl;
       }
     }
     if (volMinusEps == volumeAtPoint) {
       goodOtherNorms.push_back(-1*fBoundaryHistory[iB].second);
       goodOtherPositions.push_back(fBoundaryHistory[iB].first);
       if (verboseLevel > 5) {
-	G4cout << "CFSQIC Function Point AE | MinusEps case. Goodothernorm: "
-	       << fBoundaryHistory[iB].second << ", pos: "
-	       << fBoundaryHistory[iB].first << G4endl;
+        G4cout << "CFSQIC Function Point AE | MinusEps case. Goodothernorm: "
+               << fBoundaryHistory[iB].second << ", pos: "
+               << fBoundaryHistory[iB].first << G4endl;
       }
     }
   }
@@ -2521,13 +2517,13 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "CFSQIC Function Point B | avgx: " << avgx << ", avgx2: "      
-	   << avgx2 << G4endl;
+           << avgx2 << G4endl;
     G4cout << "CFSQIC Function Point B | avgy: " << avgy << ", avgy2: "      
-	   << avgy2 << G4endl;   
+           << avgy2 << G4endl;   
     G4cout << "CFSQIC Function Point B | sigmaX: " << sigmax << ", sigmaY: "
-	   << sigmay << G4endl;
+           << sigmay << G4endl;
     G4cout << "CFSQIC Function Point B | Length of goodOtherNorms: "
-	   << goodOtherNorms.size() << G4endl;
+           << goodOtherNorms.size() << G4endl;
   }
   
   //Next, check to see that the sigmaX and sigmaY are both below a threshold.
@@ -2538,7 +2534,7 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "CFSQIC Function Point BA | Looks like we're not stuck. Either "
-	     << "sigmax or sigmay is large enough to be not stuck." << G4endl;
+             << "sigmax or sigmay is large enough to be not stuck." << G4endl;
     }
     return output;    
   }
@@ -2552,9 +2548,9 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "CFSQIC Function Point BB | Looks like we have a cluster of "
-	     << "close points but have zero good other norms, which may occur "
-	     << "if we're on a curved surface. For now we'll say we're not "
-	     << "stuck." << G4endl;
+             << "close points but have zero good other norms, which may occur "
+             << "if we're on a curved surface. For now we'll say we're not "
+             << "stuck." << G4endl;
     }    
     return output;
   }
@@ -2566,8 +2562,8 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   if (verboseLevel > 5) {
     for (int iN = 0; iN < ((int)goodOtherNorms.size()); ++iN) {
       G4cout << "CFSQIC Function Point BC | Good other norm: "
-	     << goodOtherNorms[iN] << ", pos: " << goodOtherPositions[iN]
-	     << G4endl;
+             << goodOtherNorms[iN] << ", pos: " << goodOtherPositions[iN]
+             << G4endl;
     }
   }
     
@@ -2585,9 +2581,9 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
     G4bool notUnique = false;
     for (int iG = 0; iG < ((int)uniqueGoodNorms.size()); ++iG) {
       if (fabs(goodOtherNorms[iN].dot(uniqueGoodNorms[iG])) >
-	 fDotProductDefiningUniqueNorms) {
-	notUnique = true;
-	break;
+          fDotProductDefiningUniqueNorms) {
+        notUnique = true;
+        break;
       }
     }
     if (!notUnique) {
@@ -2599,14 +2595,14 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "CFSQIC Function Point C | Unique Good *current* Norm: "
-	   << currentNorm << " at position: " << currentPosition << G4endl;
+           << currentNorm << " at position: " << currentPosition << G4endl;
     G4cout << "CFSQIC Function Point C | Number of unique good norms: "
-	   << uniqueGoodNorms.size() << ", number of corresp. positions: "
-	   << uniqueGoodPositions.size() << G4endl;
+           << uniqueGoodNorms.size() << ", number of corresp. positions: "
+           << uniqueGoodPositions.size() << G4endl;
     for (int iU = 0; iU < ((int)uniqueGoodNorms.size()); ++iU) {
       G4cout << "CFSQIC Function Point C | Unique Good *other* Norm: "
-	     << uniqueGoodNorms[iU] << " at position: "
-	     << uniqueGoodPositions[iU] << G4endl;
+             << uniqueGoodNorms[iU] << " at position: "
+             << uniqueGoodPositions[iU] << G4endl;
     }
   }
     
@@ -2619,10 +2615,10 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
   if (uniqueGoodNorms.size() != 1) {
     G4ExceptionDescription msg;
     msg << "The number of unique good norms at this corner is somehow not equal"
-	<< " to 2. This is probably because we're looking at a curved geometry."
-	<< " We don't have logic to handle these yet. Apologies.";
+        << " to 2. This is probably because we're looking at a curved geometry."
+        << " We don't have logic to handle these yet. Apologies.";
     G4Exception("G4CMPQPDiffusion::CheckForStuckQPsInCorner", "QPDiffusion022",
-		FatalException, msg);
+                FatalException, msg);
   }
   
   //Now package the good norms and positions into output
@@ -2638,8 +2634,8 @@ std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector> G4CMP
 //This takes the track/step information and pushes it back into our storage objects that keep track
 //of the last few boundary steps
 void G4CMPQPDiffusion::UpdateBoundaryHistory(G4int trackID,
-					     G4ThreeVector preStepPos,
-					     G4ThreeVector preStepNorm) {
+                                             G4ThreeVector preStepPos,
+                                             G4ThreeVector preStepNorm) {
 
   //Debugging
   if (verboseLevel > 5) {
@@ -2671,8 +2667,8 @@ void G4CMPQPDiffusion::UpdateBoundaryHistory(G4int trackID,
   if (verboseLevel > 5) {
     for (int iB = 0; iB < ((int)fBoundaryHistory.size()); ++iB) {
       G4cout << "UBH Function Point A | Boundary position: "
-	     << fBoundaryHistory[iB].first.getX() << ", "
-	     << fBoundaryHistory[iB].first.getY() << G4endl;
+             << fBoundaryHistory[iB].first.getX() << ", "
+             << fBoundaryHistory[iB].first.getY() << G4endl;
     }
   }
 }
@@ -2683,23 +2679,23 @@ void G4CMPQPDiffusion::UpdateBoundaryHistory(G4int trackID,
 //can be plausibly made more general.
 std::pair<G4ThreeVector,G4ThreeVector> G4CMPQPDiffusion::
 FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
-				      G4ThreeVector pos1,
-				      G4ThreeVector norm2,
-				      G4ThreeVector pos2,
-				      G4ThreeVector & cornerLocation) {
+                                      G4ThreeVector pos1,
+                                      G4ThreeVector norm2,
+                                      G4ThreeVector pos2,
+                                      G4ThreeVector & cornerLocation) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPDiffusion::FindSurfaceTangentsForStuckQPEjection() --"
-	   << G4endl;
+           << G4endl;
     G4cout << "FSTFSQE Function Point A | Starting to find surface tangents."
-	   << G4endl;
+           << G4endl;
   }
   
   //Compute an in-plane vector using the difference between the positions, and
   //then cross with the norm to get the out-of-plane vector  
   G4ThreeVector inPlane(pos1.getX()-pos2.getX(),
-			pos1.getY()-pos2.getY(),
-			pos1.getZ()-pos2.getZ());
+                        pos1.getY()-pos2.getY(),
+                        pos1.getZ()-pos2.getZ());
   G4ThreeVector outOfPlane = (inPlane.cross(norm1)).unit();
 
   //Handle floating point errors that might push the norm into slight
@@ -2711,10 +2707,10 @@ FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
     if (outOfPlane.getX() != 0 || outOfPlane.getY() != 0 ) {
       G4ExceptionDescription msg;
       msg << "Currently, we are only working in XY. After adjustment for "
-	  << "reasonable floating point errors, the out-of-plane vector is "
-	  << "still somehow not purely along z.";
+          << "reasonable floating point errors, the out-of-plane vector is "
+          << "still somehow not purely along z.";
       G4Exception("G4CMPQPDiffusion::FindSurfaceTangentsForStuckQPEjection",
-		  "QPDiffusion023",FatalException, msg);
+                  "QPDiffusion023",FatalException, msg);
     }
   }
   
@@ -2731,13 +2727,13 @@ FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
     G4cout << "FSTFSQE Function Point B | Input norm1: " << norm1 << G4endl;
     G4cout << "FSTFSQE Function Point B | Input norm2: " << norm2 << G4endl;
     G4cout << "FSTFSQE Function Point B | Additional In-plane vector: "
-	   << inPlane << G4endl;
+           << inPlane << G4endl;
     G4cout << "FSTFSQE Function Point B | Out-of-plane vector: " << outOfPlane
-	   << G4endl;
+           << G4endl;
     G4cout << "FSTFSQE Function Point B | Simple TangVect1: " << tangVect1
-	   << G4endl;
+           << G4endl;
     G4cout << "FSTFSQE Function Point B | Simple TangVect2: " << tangVect2
-	   << G4endl;
+           << G4endl;
   }
 
   //Now from these, compute the location of the corner. This is fully
@@ -2781,17 +2777,17 @@ FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
   G4bool tangVect2Okay = false;
   G4double floatingPointTolerance = 1e-12; //Quasi-arbitrary
   if ((fabs(fabs(finalTangVect1.dot(tangVect1)) - 1) <
-      floatingPointTolerance)
-     ||
-     (fabs(fabs(finalTangVect1.dot(tangVect2)) - 1) <
-      floatingPointTolerance)) {
+       floatingPointTolerance)
+      ||
+      (fabs(fabs(finalTangVect1.dot(tangVect2)) - 1) <
+       floatingPointTolerance)) {
     tangVect1Okay = true;
   }  
   if ((fabs(fabs(finalTangVect2.dot(tangVect1)) - 1) <
-      floatingPointTolerance)
-     ||
-     (fabs(fabs(finalTangVect2.dot(tangVect2)) - 1) <
-      floatingPointTolerance)) {
+       floatingPointTolerance)
+      ||
+      (fabs(fabs(finalTangVect2.dot(tangVect2)) - 1) <
+       floatingPointTolerance)) {
     tangVect2Okay = true;
   }  
   if (finalTangVect1.mag() == 0
@@ -2800,16 +2796,16 @@ FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
       || !tangVect2Okay) {
     G4ExceptionDescription msg;
     msg << "One of the final tangent vectors found in "
-	<< "FindSurfaceTangentsForStuckQPEjection is zero or not collinear "
-	<< "with one of the initial tangent vectors computed. finalTangVect1: "
-	<< finalTangVect1 << ", finalTangVect2: " << finalTangVect2
-	<< ", tangVect1: " << tangVect1 << ", tangVect2: " << tangVect2
-	<< ". This is suggestive of a QP being launched so deep into a corner "
-	<< "that it's within kCarTolerance of that corner, which can "
-	<< "potentially cause issues. Will try to write a fix to the details "
-	<< "later but for now we will just kill the track.";
+        << "FindSurfaceTangentsForStuckQPEjection is zero or not collinear "
+        << "with one of the initial tangent vectors computed. finalTangVect1: "
+        << finalTangVect1 << ", finalTangVect2: " << finalTangVect2
+        << ", tangVect1: " << tangVect1 << ", tangVect2: " << tangVect2
+        << ". This is suggestive of a QP being launched so deep into a corner "
+        << "that it's within kCarTolerance of that corner, which can "
+        << "potentially cause issues. Will try to write a fix to the details "
+        << "later but for now we will just kill the track.";
     G4Exception("G4CMPQPDiffusion::FindSurfaceTangentsForStuckQPEjection",
-		"QPDiffusion024",JustWarning, msg);
+                "QPDiffusion024",JustWarning, msg);
     fPreemptivelyKillTrack = true;
   }
   

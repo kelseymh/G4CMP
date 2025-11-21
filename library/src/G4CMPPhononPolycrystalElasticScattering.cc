@@ -57,23 +57,23 @@ PostStepDoIt( const G4Track& aTrack, const G4Step& aStep) {
   if (verboseLevel>1) {
     G4StepPoint* preStepPoint = aStep.GetPreStepPoint();
     G4cout << " Track " << aTrack.GetDefinition()->GetParticleName()
-	   << " vol " << aTrack.GetTouchable()->GetVolume()->GetName()
-	   << " prePV " << preStepPoint->GetPhysicalVolume()->GetName()
-	   << " postPV " << postStepPoint->GetPhysicalVolume()->GetName()
-	   << " step-length " << aStep.GetStepLength()
-	   << G4endl;
+           << " vol " << aTrack.GetTouchable()->GetVolume()->GetName()
+           << " prePV " << preStepPoint->GetPhysicalVolume()->GetName()
+           << " postPV " << postStepPoint->GetPhysicalVolume()->GetName()
+           << " step-length " << aStep.GetStepLength()
+           << G4endl;
   }
 
   // Randomly generate a new direction and polarization state
   G4ThreeVector newK = G4RandomDirection();
   G4int mode = G4CMP::ChoosePhononPolarization(theLattice->GetLDOS(),
-					       theLattice->GetSTDOS(),
-					       theLattice->GetFTDOS());
+                                               theLattice->GetSTDOS(),
+                                               theLattice->GetFTDOS());
 
   if (verboseLevel>1) {
     G4cout << " Changing to "
-	   << G4PhononPolarization::Get(mode)->GetParticleName() << " "
-	   << " toward " << newK << G4endl;
+           << G4PhononPolarization::Get(mode)->GetParticleName() << " "
+           << " toward " << newK << G4endl;
   }
 
   // Replace track's particle type according to new polarization
@@ -84,7 +84,7 @@ PostStepDoIt( const G4Track& aTrack, const G4Step& aStep) {
 
     if (verboseLevel>1) {		// Sanity check, report back PD
       G4cout << " track now " << aTrack.GetDefinition()->GetParticleName()
-	     << G4endl;
+             << G4endl;
     }
   }
 

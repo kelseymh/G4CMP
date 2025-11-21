@@ -30,13 +30,13 @@ public:
 protected:
   // Keep function here as call-back to avoid getting old toolkit version
   virtual G4double GetMeanFreePath(const G4Track& trk, G4double prevstep,
-				   G4ForceCondition* cond);
+                                   G4ForceCondition* cond);
 
 private:
 
   void GenerateRecombinationPhonon(G4double phonEnergy,
-				   const G4Track& aTrack,
-				   const G4Step& aStep);
+                                   const G4Track& aTrack,
+                                   const G4Step& aStep);
 
   // hide assignment operator as private
   G4CMPQPRecombinationProcess(G4CMPQPRecombinationProcess&);

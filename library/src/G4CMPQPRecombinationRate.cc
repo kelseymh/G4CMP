@@ -38,14 +38,14 @@ G4double G4CMPQPRecombinationRate::Rate(const G4Track& aTrack) const
   G4double energy = GetKineticEnergy(aTrack);
   G4double tau_recombination = fTau0_qp*
     (this->GetTauAsAFunctionOfEnergy(fCurrentNormalizedTauRecombinationVsEnergy,
-				     "QP",energy,thisEnergyBelowUsableRange));
+                                     "QP",energy,thisEnergyBelowUsableRange));
   if (thisEnergyBelowUsableRange) {
 
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "R Function Point A | In Rate calculation for QPRecombination,"
-	     << "this energy " << energy << " is below the usable range. "
-	     << "Returning a zero rate." << G4endl;
+             << "this energy " << energy << " is below the usable range. "
+             << "Returning a zero rate." << G4endl;
     }
     return 0;
   }
@@ -53,9 +53,9 @@ G4double G4CMPQPRecombinationRate::Rate(const G4Track& aTrack) const
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "R Function Point B | tau_recombination: " << tau_recombination
-	   << G4endl;
+           << G4endl;
     G4cout << "R Function Point B | returning 1.0/tau_recombination."
-	   << G4endl;
+           << G4endl;
   }
   return (1.0/tau_recombination);
 }
@@ -79,13 +79,13 @@ bool G4CMPQPRecombinationRate::CheckToSeeSCParametersSet() const {
       //^Means that the material is partially set -- this is probably a mistake
       G4ExceptionDescription msg;
       msg << "Noticed that in the rate calculation step for the QP "
-	  << "recombination process, you have incorrectly defined or omitted "
-	  << "the Gap0Energy parameter, the Tcrit parameter, the Teff "
-	  << "parameter, or the Tau0qp parameter. In other words, you don't "
-	  << "have enough input information in your config.txt file to run the "
-	  << "recombination physics correctly.";
+          << "recombination process, you have incorrectly defined or omitted "
+          << "the Gap0Energy parameter, the Tcrit parameter, the Teff "
+          << "parameter, or the Tau0qp parameter. In other words, you don't "
+          << "have enough input information in your config.txt file to run the "
+          << "recombination physics correctly.";
       G4Exception("G4CMPQPRecombinationRate::CheckToSeeSCParametersSet",
-		  "QPRecombinationRate001",JustWarning, msg);
+                  "QPRecombinationRate001",JustWarning, msg);
       return false;
     }
   }
@@ -134,9 +134,9 @@ G4CMPQPRecombinationRate::ComputeNormalizedTauRecombinationVsEnergy() {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPRadiatesPhononRate::"
-	   << "ComputeNormalizedTauRecombinationVsEnergy --" << G4endl;
+           << "ComputeNormalizedTauRecombinationVsEnergy --" << G4endl;
     G4cout << "CNTRVE Function Point A | In the calculation of a normalized "
-	   << "tauQP vs energyQP, recombination." << G4endl;
+           << "tauQP vs energyQP, recombination." << G4endl;
   } 
   
   std::vector<std::vector<G4double> > output;
@@ -167,12 +167,12 @@ G4CMPQPRecombinationRate::ComputeNormalizedTauRecombinationVsEnergy() {
       double Omega = minOmega + (iW + 0.5) * deltaOmega;
       double alpha2F = Omega*Omega;
       double energyTerm1 =
-	(Omega-qpEnergy)/pow(pow(Omega-qpEnergy,2)-fGapEnergy*fGapEnergy,0.5);
+        (Omega-qpEnergy)/pow(pow(Omega-qpEnergy,2)-fGapEnergy*fGapEnergy,0.5);
       double energyTerm2 =
-	(1 + fGapEnergy*fGapEnergy / qpEnergy / (Omega-qpEnergy));
+        (1 + fGapEnergy*fGapEnergy / qpEnergy / (Omega-qpEnergy));
       double integrand =
-	alpha2F * energyTerm1 * energyTerm2 * (BoseFactor(Omega,fTeff)+1) *
-	(FermiFactor(Omega-qpEnergy,fTeff));
+        alpha2F * energyTerm1 * energyTerm2 * (BoseFactor(Omega,fTeff)+1) *
+        (FermiFactor(Omega-qpEnergy,fTeff));
       integral += integrand * deltaOmega;
     }
     double inverseTau = prefactor * integral;

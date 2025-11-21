@@ -23,8 +23,8 @@ G4double G4CMPQPDiffusionTimeStepperRate::Rate(const G4Track& /*aTrack*/) const 
 void G4CMPQPDiffusionTimeStepperRate::
 UpdateLookupTable(const G4LatticePhysical * /*theLat*/) {
   G4cout << "In the updateLookupTable function, QPDiffusionTimeStepper. "
-	 << "Nothing happens here because this class does not (yet) need a "
-	 << "lookup table (but this function is generic to G4CMPVProcesses."
-	 << G4endl;
+         << "Nothing happens here because this class does not (yet) need a "
+         << "lookup table (but this function is generic to G4CMPVProcesses."
+         << G4endl;
   return;
 }

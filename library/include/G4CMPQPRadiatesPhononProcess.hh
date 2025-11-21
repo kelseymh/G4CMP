@@ -30,14 +30,14 @@ public:
 protected:
   // Keep function here as call-back to avoid getting old toolkit version
   virtual G4double GetMeanFreePath(const G4Track& trk,
-				   G4double prevstep,
-				   G4ForceCondition* cond);
+                                   G4double prevstep,
+                                   G4ForceCondition* cond);
 
 private:
 
   void GenerateRadiatedPhonon(G4double phonEnergy,
-			      const G4Track& aTrack,
-			      const G4Step& aStep);
+                              const G4Track& aTrack,
+                              const G4Step& aStep);
   
   G4double PhononEnergyRand(G4double Energy) const;
   G4double PhononEnergyPDF(G4double E, G4double x) const;

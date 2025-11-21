@@ -20,7 +20,7 @@ G4CMPParticleChangeForQPDiffusion()
 #ifdef G4VERBOSE
   if (verboseLevel>2) {
     G4cout << "G4CMPParticleChangeForQPDiffusion::"
-	   << "G4CMPParticleChangeForQPDiffusion() " << G4endl;
+           << "G4CMPParticleChangeForQPDiffusion() " << G4endl;
   }
 #endif
 }
@@ -30,7 +30,7 @@ G4CMPParticleChangeForQPDiffusion::
 #ifdef G4VERBOSE
   if (verboseLevel>2) {
     G4cout << "G4CMPParticleChangeForQPDiffusion::"
-	   << "~G4CMPParticleChangeForQPDiffusion() " << G4endl;
+           << "~G4CMPParticleChangeForQPDiffusion() " << G4endl;
   }
 #endif
 }
@@ -38,13 +38,13 @@ G4CMPParticleChangeForQPDiffusion::
 G4CMPParticleChangeForQPDiffusion::
 G4CMPParticleChangeForQPDiffusion(const G4CMPParticleChangeForQPDiffusion &right)
   : G4VParticleChange(right) {
-   if (verboseLevel>1) {
+  if (verboseLevel>1) {
     G4cout << "G4CMPParticleChangeForQPDiffusion::  "
-	   << "copy constructor is called " << G4endl;
-   }
-   theMomentumDirection = right.theMomentumDirection;
-   thePosition = right.thePosition;
-   theVelocity = right.theVelocity;
+           << "copy constructor is called " << G4endl;
+  }
+  theMomentumDirection = right.theMomentumDirection;
+  thePosition = right.thePosition;
+  theVelocity = right.theVelocity;
 }
 
 // assignment operator
@@ -53,7 +53,7 @@ G4CMPParticleChangeForQPDiffusion::operator=(const G4CMPParticleChangeForQPDiffu
 
   if (verboseLevel>1) {
     G4cout << "G4CMPParticleChangeForQPDiffusion:: assignment "
-	   << "operator is called " << G4endl;
+           << "operator is called " << G4endl;
   }
   if (this != &right) {
     theListOfSecondaries = right.theListOfSecondaries;
@@ -82,11 +82,11 @@ UpdateStepForAlongStep(G4Step* pStep) {
   //Debugging
   if (verboseLevel > 2) {
     G4cout << "-- G4CMPParticleChangeForQPDiffusion::"
-	   << "UpdateStepForAlongStep --" << G4endl;    
+           << "UpdateStepForAlongStep --" << G4endl;    
     G4cout << "USFAS Function Point A | trueStepLength is: "
-	   << theTrueStepLength << G4endl;
+           << theTrueStepLength << G4endl;
     G4cout << "USFAS Function Point A | statusChange is: " << theStatusChange
-	   << G4endl;
+           << G4endl;
   }
   
   // Multiple scattering calculates the final state of the particle
@@ -104,9 +104,9 @@ UpdateStepForAlongStep(G4Step* pStep) {
   //Debugging
   if (verboseLevel > 2) {
     G4cout << "USFAS Function Point B | theLocalTime is set to: "
-	   << pPostStepPoint->GetLocalTime()+theTimeChange << G4endl;
+           << pPostStepPoint->GetLocalTime()+theTimeChange << G4endl;
     G4cout << "USFAS Function Point B | theTimeChange is set to: "
-	   << theTimeChange << G4endl;
+           << theTimeChange << G4endl;
   }
 
   //Set local time
@@ -115,9 +115,9 @@ UpdateStepForAlongStep(G4Step* pStep) {
   //Debugging
   if (verboseLevel > 2) {
     G4cout << "USFAS Function Point C | theGlobalTime is set to: "
-	   << pPostStepPoint->GetGlobalTime()+theTimeChange << G4endl;
+           << pPostStepPoint->GetGlobalTime()+theTimeChange << G4endl;
     G4cout << "USFAS Function Point C | theTimeChange is set to: "
-	   << theTimeChange << G4endl;
+           << theTimeChange << G4endl;
   }
 
   //Set global time
@@ -126,9 +126,9 @@ UpdateStepForAlongStep(G4Step* pStep) {
   //Debugging
   if (verboseLevel > 2) {
     G4cout << "USFAS Function Point D | the step status is: "
-	   << pPostStepPoint->GetStepStatus() << G4endl;
+           << pPostStepPoint->GetStepStatus() << G4endl;
     G4cout << "USFAS Function Point D | theVelocity is: " << theVelocity
-	   << G4endl;
+           << G4endl;
   }
    
   return pStep;
@@ -149,11 +149,11 @@ UpdateStepForPostStep(G4Step* pStep) {
   //Debugging
   if (verboseLevel > 2) {
     G4cout << "-- G4CMPParticleChangeForQPDiffusion::"
-	   << "UpdateStepForPostStep --" << G4endl;    
+           << "UpdateStepForPostStep --" << G4endl;    
     G4cout << "USFPS Function Point A | the step status is: "
-	   << pPostStepPoint->GetStepStatus() << G4endl;
+           << pPostStepPoint->GetStepStatus() << G4endl;
     G4cout << "USFPS Function Point A | theVelocity is: "
-	   << theVelocity << G4endl;
+           << theVelocity << G4endl;
   }
 
   // update velocity
@@ -162,9 +162,9 @@ UpdateStepForPostStep(G4Step* pStep) {
   //Debugging
   if (verboseLevel > 2) {
     G4cout << "USFPS Function Point B | theLocalTime is set to: "
-	   << pPostStepPoint->GetLocalTime() << G4endl;
+           << pPostStepPoint->GetLocalTime() << G4endl;
     G4cout << "USFPS Function Point B | theTimeChange is: " << theTimeChange
-	   << G4endl;
+           << G4endl;
   }
 
   //update the local time of the particle
@@ -173,9 +173,9 @@ UpdateStepForPostStep(G4Step* pStep) {
   //Debugging
   if (verboseLevel > 2) {
     G4cout << "USFPS Function Point C | theGlobalTime is set to: "
-	   << pPostStepPoint->GetGlobalTime() << G4endl;
+           << pPostStepPoint->GetGlobalTime() << G4endl;
     G4cout << "USFPS Function Point C | theTimeChange is: " << theTimeChange
-	   << G4endl;
+           << G4endl;
   }
 
   //update the Global time of the particle
@@ -192,23 +192,23 @@ void G4CMPParticleChangeForQPDiffusion::DumpInfo() const {
   
   G4int oldprc = G4cout.precision(3);
   G4cout << "        Position - x (mm)   : "
-	 << std::setw(20) << thePosition.x()/mm
-	 << G4endl;
+         << std::setw(20) << thePosition.x()/mm
+         << G4endl;
   G4cout << "        Position - y (mm)   : "
-	 << std::setw(20) << thePosition.y()/mm
-	 << G4endl;
+         << std::setw(20) << thePosition.y()/mm
+         << G4endl;
   G4cout << "        Position - z (mm)   : "
-	 << std::setw(20) << thePosition.z()/mm
-	 << G4endl;
+         << std::setw(20) << thePosition.z()/mm
+         << G4endl;
   G4cout << "        Momentum Direct - x : "
-	 << std::setw(20) << theMomentumDirection.x()
-	 << G4endl;
+         << std::setw(20) << theMomentumDirection.x()
+         << G4endl;
   G4cout << "        Momentum Direct - y : "
-	 << std::setw(20) << theMomentumDirection.y()
-	 << G4endl;
+         << std::setw(20) << theMomentumDirection.y()
+         << G4endl;
   G4cout << "        Momentum Direct - z : "
-	 << std::setw(20) << theMomentumDirection.z()
-	 << G4endl;
+         << std::setw(20) << theMomentumDirection.z()
+         << G4endl;
   G4cout << "        Velocity : "
          << std::setw(20) << theVelocity
          << G4endl;
@@ -230,13 +230,13 @@ G4CMPParticleChangeForQPDiffusion::CheckIt(const G4Track& aTrack){
 #ifdef G4VERBOSE
     G4cout << "  G4ParticleChangeForMSC::CheckIt  : ";
     G4cout << "the Momentum Change is not unit vector !!"
-	   << "  Difference:  " << accuracy << G4endl;
+           << "  Difference:  " << accuracy << G4endl;
     G4cout << aTrack.GetDefinition()->GetParticleName()
-	   << " E=" << aTrack.GetKineticEnergy()/MeV
-	   << " pos=" << aTrack.GetPosition().x()/m
-	   << ", " << aTrack.GetPosition().y()/m
-	   << ", " << aTrack.GetPosition().z()/m
-	   <<G4endl;
+           << " E=" << aTrack.GetKineticEnergy()/MeV
+           << " pos=" << aTrack.GetPosition().x()/m
+           << ", " << aTrack.GetPosition().y()/m
+           << ", " << aTrack.GetPosition().z()/m
+           <<G4endl;
 #endif
   }
   
@@ -248,9 +248,9 @@ G4CMPParticleChangeForQPDiffusion::CheckIt(const G4Track& aTrack){
   // Exit with error
   if (exitWithError) {
     G4Exception("G4CMPParticleChangeForQPDiffusion::CheckIt",
-		"300",
-		EventMustBeAborted,
-		"momentum direction was illegal");
+                "300",
+                EventMustBeAborted,
+                "momentum direction was illegal");
   }
   //correction
   if (!itsOK) {

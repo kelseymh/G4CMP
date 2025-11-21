@@ -29,57 +29,57 @@
 // this in the constructor
 G4CMPSCUtils::G4CMPSCUtils()
   :   fGapEnergyTempDependence { { 0.0, 1.0 },    
-				 { 0.0015700754863653965, 0.9999846572428044 },
-				 { 0.03768181167276968, 0.9996317738273021 },
-				 { 0.07536362334553937, 0.999263547654604 },
-				 { 0.12251191620808871, 0.9955454861608332 },
-				 { 0.15705357690812766, 0.9952079455025266 },
-				 { 0.1947814168524845, 0.9915819405519303 },
-				 { 0.22618292657979266, 0.9912750854080152 },
-				 { 0.257630464578688, 0.9877104514862018 },
-				 { 0.2812276251457563, 0.9842225313503673 },
-				 { 0.30796493668555547, 0.9807039257001413 },
-				 { 0.32842194627989296, 0.9772466910786983 },
-				 { 0.347308880387865, 0.973804799214451 },
-				 { 0.3677658899822026, 0.970347564593008 },
-				 { 0.4024456354970032, 0.9602366876010066 },
-				 { 0.4324151545527076, 0.9501718388805924 },
-				 { 0.4529181924186324, 0.9434568254812512 },
-				 { 0.4813176359879714, 0.933407319518033 },
-				 { 0.5034367776118489, 0.9234191845835977 },
-				 { 0.5239858437493609, 0.913446392406358 },
-				 { 0.5461049853732381, 0.9034582574719229 },
-				 { 0.5714103062414339, 0.8901816582451978 },
-				 { 0.5935294478653113, 0.8801935233107625 },
-				 { 0.6236370517357775, 0.8603553382566538 },
-				 { 0.6410919951721461, 0.8471554528159074 },
-				 { 0.6633031933391978, 0.8306517603256757 },
-				 { 0.679188061289201, 0.8174672176421252 },
-				 { 0.6983051367551094, 0.7977364318883867 },
-				 { 0.7158061084630651, 0.7812787676697421 },
-				 { 0.7381093631732916, 0.7582595176237138 },
-				 { 0.7557023914244219, 0.735286295849273 },
-				 { 0.7716332876460119, 0.7188439743878241 },
-				 { 0.7924124951414604, 0.6925822883210934 },
-				 { 0.8100055233925907, 0.6696090665466523 },
-				 { 0.8276906081868955, 0.6401202872164148 },
-				 { 0.8469457684675656, 0.6106161651289815 },
-				 { 0.8646768815334578, 0.5778696070208458 },
-				 { 0.8808379191129843, 0.5451383916699057 },
-				 { 0.8905345416607002,  0.5254996624593418 },
-				 { 0.8986610887220507,  0.5058762760059735 },
-				 { 0.913252050815212,  0.473160403412229 },
-				 { 0.926272937422008, 0.4404598735756807 },
-				 { 0.9394319088435656, 0.3979860074054375 },
-				 { 0.9509747765071703, 0.3587852627702883 },
-				 { 0.9642718327434898, 0.30653806026635033 },
-				 { 0.9744747662786657, 0.25106376449890555 },
-				 { 0.9813074074831742, 0.21190904813534361 },
-				 { 0.9866620297444924, 0.16625411697318082 },
-				 { 0.9920626802773973, 0.11734140703312002 },
-				 { 0.9940930384796354, 0.08474827649694183 },
-				 { 0.997739500439826, 0.04888202442566958 },
-				 { 1.0, 0.0 } }
+                                 { 0.0015700754863653965, 0.9999846572428044 },
+                                 { 0.03768181167276968, 0.9996317738273021 },
+                                 { 0.07536362334553937, 0.999263547654604 },
+                                 { 0.12251191620808871, 0.9955454861608332 },
+                                 { 0.15705357690812766, 0.9952079455025266 },
+                                 { 0.1947814168524845, 0.9915819405519303 },
+                                 { 0.22618292657979266, 0.9912750854080152 },
+                                 { 0.257630464578688, 0.9877104514862018 },
+                                 { 0.2812276251457563, 0.9842225313503673 },
+                                 { 0.30796493668555547, 0.9807039257001413 },
+                                 { 0.32842194627989296, 0.9772466910786983 },
+                                 { 0.347308880387865, 0.973804799214451 },
+                                 { 0.3677658899822026, 0.970347564593008 },
+                                 { 0.4024456354970032, 0.9602366876010066 },
+                                 { 0.4324151545527076, 0.9501718388805924 },
+                                 { 0.4529181924186324, 0.9434568254812512 },
+                                 { 0.4813176359879714, 0.933407319518033 },
+                                 { 0.5034367776118489, 0.9234191845835977 },
+                                 { 0.5239858437493609, 0.913446392406358 },
+                                 { 0.5461049853732381, 0.9034582574719229 },
+                                 { 0.5714103062414339, 0.8901816582451978 },
+                                 { 0.5935294478653113, 0.8801935233107625 },
+                                 { 0.6236370517357775, 0.8603553382566538 },
+                                 { 0.6410919951721461, 0.8471554528159074 },
+                                 { 0.6633031933391978, 0.8306517603256757 },
+                                 { 0.679188061289201, 0.8174672176421252 },
+                                 { 0.6983051367551094, 0.7977364318883867 },
+                                 { 0.7158061084630651, 0.7812787676697421 },
+                                 { 0.7381093631732916, 0.7582595176237138 },
+                                 { 0.7557023914244219, 0.735286295849273 },
+                                 { 0.7716332876460119, 0.7188439743878241 },
+                                 { 0.7924124951414604, 0.6925822883210934 },
+                                 { 0.8100055233925907, 0.6696090665466523 },
+                                 { 0.8276906081868955, 0.6401202872164148 },
+                                 { 0.8469457684675656, 0.6106161651289815 },
+                                 { 0.8646768815334578, 0.5778696070208458 },
+                                 { 0.8808379191129843, 0.5451383916699057 },
+                                 { 0.8905345416607002,  0.5254996624593418 },
+                                 { 0.8986610887220507,  0.5058762760059735 },
+                                 { 0.913252050815212,  0.473160403412229 },
+                                 { 0.926272937422008, 0.4404598735756807 },
+                                 { 0.9394319088435656, 0.3979860074054375 },
+                                 { 0.9509747765071703, 0.3587852627702883 },
+                                 { 0.9642718327434898, 0.30653806026635033 },
+                                 { 0.9744747662786657, 0.25106376449890555 },
+                                 { 0.9813074074831742, 0.21190904813534361 },
+                                 { 0.9866620297444924, 0.16625411697318082 },
+                                 { 0.9920626802773973, 0.11734140703312002 },
+                                 { 0.9940930384796354, 0.08474827649694183 },
+                                 { 0.997739500439826, 0.04888202442566958 },
+                                 { 1.0, 0.0 } }
 
 {
   //For now, define default SC parameters
@@ -140,21 +140,21 @@ void G4CMPSCUtils::CheckLatticeInfoForCompleteness() {
     
     //If one of these is set, check to see if any of them are NOT set.
     if (fGap0Energy == 0 ||
-	fTau0_qp == DBL_MAX ||
-	fTau0_ph == DBL_MAX ||
-	fTcrit == 0 ||
-	fTeff == 0 ||
-	fDn == 0) {     
+        fTau0_qp == DBL_MAX ||
+        fTau0_ph == DBL_MAX ||
+        fTcrit == 0 ||
+        fTeff == 0 ||
+        fDn == 0) {     
       
       //Throw a warning that there are outstanding SC parameters that are not
       //set.
       G4ExceptionDescription msg;
       msg << "Noticed that one or more superconducting film lattice "
-	  << "parameters are set in a config file, but that one or more are "
-	  << "also missing. This will be problematic.";
+          << "parameters are set in a config file, but that one or more are "
+          << "also missing. This will be problematic.";
       G4Exception("G4CMPSCUtils::CheckLatticeInfoForCompleteness",
-		  "G4CMPSCUtils006",
-		  FatalException, msg);
+                  "G4CMPSCUtils006",
+                  FatalException, msg);
     }
   }
 }
@@ -181,11 +181,11 @@ G4double G4CMPSCUtils::ComputeCurrentGapEnergyAtNonzeroT() {
   if (TeffDivTcrit >=1) {
     G4ExceptionDescription msg;
     msg << "Attempting to compute gap energy at Teff=" << fTeff
-	<< " while Tcrit=" << fTcrit << ". Whatever you think is "
-	<< "superconducting is now not superconducting... Something might be "
-	<< "wrong!";
+        << " while Tcrit=" << fTcrit << ". Whatever you think is "
+        << "superconducting is now not superconducting... Something might be "
+        << "wrong!";
     G4Exception("G4CMPSCUtils::ComputeCurrentGapEnergyAtNonzeroT",
-		"G4CMPSCUtils001",JustWarning, msg);
+                "G4CMPSCUtils001",JustWarning, msg);
     return 0;
   } else {
     //Now actually do the lookup. Assuming we're only establishing a
@@ -195,8 +195,8 @@ G4double G4CMPSCUtils::ComputeCurrentGapEnergyAtNonzeroT() {
     double gapFactor = 0;
     for (int iT = 0; iT < fGapEnergyTempDependenceBins-1; ++iT) {
       if ((fTeff/fTcrit) >= fGapEnergyTempDependence[iT][0] &&
-	  (fTeff/fTcrit) < fGapEnergyTempDependence[iT+1][0]) {
-	gapFactor = fGapEnergyTempDependence[iT][1];
+          (fTeff/fTcrit) < fGapEnergyTempDependence[iT+1][0]) {
+        gapFactor = fGapEnergyTempDependence[iT][1];
       }
     }
     return (fGap0Energy*gapFactor);
@@ -212,18 +212,18 @@ G4double G4CMPSCUtils::ComputeCurrentGapEnergyAtNonzeroT() {
 //the above function that can be callable externally given an "external" gap,
 //Teff, and Tcrit
 G4double G4CMPSCUtils::ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit,
-						      double gap0Energy) const {
+                                                      double gap0Energy) const {
   //Here, we use a simplified assumption, which is that the gap is that
   //corresponding to T=Teff.
   double TeffDivTcrit = Teff/Tcrit;
   if (TeffDivTcrit >=1) {
     G4ExceptionDescription msg;
     msg << "Attempting to compute test gap energy at Teff=" << Teff
-	<< " while Tcrit=" << Tcrit << ". Whatever you think is "
-	<< "superconducting is now not superconducting... Something might be "
-	<< "wrong!";
+        << " while Tcrit=" << Tcrit << ". Whatever you think is "
+        << "superconducting is now not superconducting... Something might be "
+        << "wrong!";
     G4Exception("G4CMPSCUtils::ComputeTestGapEnergyAtNonzeroT",
-		"G4CMPSCUtils002",JustWarning, msg);
+                "G4CMPSCUtils002",JustWarning, msg);
     return 0;
   } else {
     //Now actually do the lookup. Assuming we're only establishing a
@@ -235,8 +235,8 @@ G4double G4CMPSCUtils::ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit,
     double gapFactor = 0;
     for (int iT = 0; iT < fGapEnergyTempDependenceBins-1; ++iT) {
       if ((Teff/Tcrit) >= fGapEnergyTempDependence[iT][0] &&
-	  (Teff/Tcrit) < fGapEnergyTempDependence[iT+1][0]) {
-	gapFactor = fGapEnergyTempDependence[iT][1];
+          (Teff/Tcrit) < fGapEnergyTempDependence[iT+1][0]) {
+        gapFactor = fGapEnergyTempDependence[iT][1];
       }
     }
     return (gap0Energy*gapFactor);
@@ -258,8 +258,8 @@ G4double G4CMPSCUtils::BoseFactor(G4double energy, G4double temperature) {
 //using this to help check ourselves. Passing by const reference
 G4double G4CMPSCUtils::
 GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhononEnergy,
-			   G4String particleInQuestion, G4double energy,
-			   G4bool & thisEnergyBelowUsableRange ) const {
+                           G4String particleInQuestion, G4double energy,
+                           G4bool & thisEnergyBelowUsableRange ) const {
   //Establish what the bounds and binning are
   G4double minE = 0;
   G4double maxE = 0;
@@ -275,10 +275,10 @@ GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhon
   } else {
     G4ExceptionDescription msg;
     msg << "During lookup table step, particle in question is neither a phonon "
-	<< "nor a QP. This is probably a bug in the G4CMPSCUtils code "
-	<< " somewhere.";
+        << "nor a QP. This is probably a bug in the G4CMPSCUtils code "
+        << " somewhere.";
     G4Exception("G4CMPSCUtils::GetTauAsAFunctionOfEnergy",
-		"G4CMPSCUtils003",FatalException, msg);
+                "G4CMPSCUtils003",FatalException, msg);
     return 0;
   }    
 
@@ -301,19 +301,19 @@ GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhon
       //the chance of a floating-point error to below the gap is
       //also seemingly negligible. Weird.)
       if (energy == minE) {
-	return tauVsPhononEnergy[0][1];	
+        return tauVsPhononEnergy[0][1];	
       } else {
-	if (G4CMPConfigManager::GetVerboseLevel() > 5) {
-	  G4cout << "energy: " << energy << ", minE: " << minE << G4endl;
-	  G4ExceptionDescription msg;
-	  msg << "During lookup table step, we're somehow looking at a QP "
-	      << "energy below the gap? This is probably just a turnaround "
-	      << "step.";
-	  G4Exception("G4CMPSCUtils::GetTauAsAFunctionOfEnergy",
-		      "G4CMPSCUtils004",JustWarning, msg);
-	}
-	thisEnergyBelowUsableRange = true;
-	return DBL_MAX;
+        if (G4CMPConfigManager::GetVerboseLevel() > 5) {
+          G4cout << "energy: " << energy << ", minE: " << minE << G4endl;
+          G4ExceptionDescription msg;
+          msg << "During lookup table step, we're somehow looking at a QP "
+              << "energy below the gap? This is probably just a turnaround "
+              << "step.";
+          G4Exception("G4CMPSCUtils::GetTauAsAFunctionOfEnergy",
+                      "G4CMPSCUtils004",JustWarning, msg);
+        }
+        thisEnergyBelowUsableRange = true;
+        return DBL_MAX;
       }
     } else {
       return 0; //Shouldn't get here.
@@ -358,13 +358,13 @@ GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhon
       //uses a floor mechanism considering the whole range and deltaE, we have
       //to shift down in energy by 0.5 deltaE for this
       if (energy >= upperE-0.5*deltaE || energy < lowerE-0.5*deltaE) {
-	G4ExceptionDescription msg;
-	msg << "During interpolation in lookup table step, we're somehow "
-	    << "off-by-one in our energy bin... A calculation is being done "
-	    << "wrong. Investigate. Energy: " << energy << ", UpperE: "
-	    << upperE << ", lowerE: " << lowerE;
-	G4Exception("G4CMPSCUtils::GetTauAsAFunctionOfEnergy",
-		    "G4CMPSCUtils005",FatalException, msg);
+        G4ExceptionDescription msg;
+        msg << "During interpolation in lookup table step, we're somehow "
+            << "off-by-one in our energy bin... A calculation is being done "
+            << "wrong. Investigate. Energy: " << energy << ", UpperE: "
+            << upperE << ", lowerE: " << lowerE;
+        G4Exception("G4CMPSCUtils::GetTauAsAFunctionOfEnergy",
+                    "G4CMPSCUtils005",FatalException, msg);
       }
       
       double slope = (upperTau-lowerTau)/(upperE-lowerE);

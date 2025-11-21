@@ -38,8 +38,8 @@ G4double G4CMPQPRadiatesPhononRate::Rate(const G4Track& aTrack) const
     //Debugging
     if (verboseLevel > 5) {
       G4cout << "R Function Point A | In Rate calculation for QPRadiatesPhonon,"
-	     << "this energy " << energy << " is below the usable range. "
-	     << "Returning a zero rate." << G4endl;     
+             << "this energy " << energy << " is below the usable range. "
+             << "Returning a zero rate." << G4endl;     
     }
     return 0;
   }
@@ -47,9 +47,9 @@ G4double G4CMPQPRadiatesPhononRate::Rate(const G4Track& aTrack) const
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "R Function Point B | tau_scattering: " << tau_scattering
-	   << G4endl;
+           << G4endl;
     G4cout << "R Function Point B | returning 1.0/tau_scattering."
-	   << G4endl;
+           << G4endl;
   }
   return (1.0/tau_scattering);
 }
@@ -71,13 +71,13 @@ bool G4CMPQPRadiatesPhononRate::CheckToSeeSCParametersSet() const {
       //^Means that the material is partially set -- this is probably a mistake
       G4ExceptionDescription msg;
       msg << "Noticed that in the rate calculation step for the QP phonon "
-	  << "radiation process, you have incorrectly defined or omitted the "
-	  << "Gap0Energy parameter, the Tcrit parameter, the Teff parameter, "
-	  << "or the Tau0qp parameter. In other words, you don't have enough "
-	  << "input information in your config.txt file to run the phonon "
-	  << "radiation physics correctly.";
+          << "radiation process, you have incorrectly defined or omitted the "
+          << "Gap0Energy parameter, the Tcrit parameter, the Teff parameter, "
+          << "or the Tau0qp parameter. In other words, you don't have enough "
+          << "input information in your config.txt file to run the phonon "
+          << "radiation physics correctly.";
       G4Exception("G4CMPQPRadiatesPhononRate::CheckToSeeSCParametersSet",
-		  "QPRadiatesPhononRate001",JustWarning, msg);
+                  "QPRadiatesPhononRate001",JustWarning, msg);
       return false;
     }
   }
@@ -124,9 +124,9 @@ G4CMPQPRadiatesPhononRate::ComputeNormalizedTauQPRadiatesPhononVsEnergy() {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPRadiatesPhononRate::"
-	   << "ComputeNormalizedTauQPRadiatesPhononVsEnergy --" << G4endl;
+           << "ComputeNormalizedTauQPRadiatesPhononVsEnergy --" << G4endl;
     G4cout << "CNTQPRPVE Function Point A | In the calculation of a normalized "
-	   << "tauQP vs energy, QP radiates phonons." << G4endl;
+           << "tauQP vs energy, QP radiates phonons." << G4endl;
   }
   
   std::vector<std::vector<G4double> > output;
@@ -155,12 +155,12 @@ G4CMPQPRadiatesPhononRate::ComputeNormalizedTauQPRadiatesPhononVsEnergy() {
       double Omega = minOmega + (iW + 0.5) * deltaOmega;
       double alpha2F = Omega*Omega; // Omitting b since it's divided out later
       double energyTerm1
-	= (qpEnergy-Omega)/pow(pow(qpEnergy-Omega,2)-fGapEnergy*fGapEnergy,0.5);
+        = (qpEnergy-Omega)/pow(pow(qpEnergy-Omega,2)-fGapEnergy*fGapEnergy,0.5);
       double energyTerm2
-	= (1 - fGapEnergy*fGapEnergy / qpEnergy / ( qpEnergy - Omega ));
+        = (1 - fGapEnergy*fGapEnergy / qpEnergy / ( qpEnergy - Omega ));
       double integrand
-	= alpha2F * energyTerm1 * energyTerm2 * (BoseFactor(Omega,fTeff) + 1) *
-	(1 - FermiFactor(qpEnergy-Omega,fTeff));
+        = alpha2F * energyTerm1 * energyTerm2 * (BoseFactor(Omega,fTeff) + 1) *
+        (1 - FermiFactor(qpEnergy-Omega,fTeff));
       integral += integrand * deltaOmega;
     }
     double inverseTau = prefactor * integral;

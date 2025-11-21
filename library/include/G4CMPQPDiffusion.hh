@@ -34,10 +34,10 @@ class G4SafetyHelper;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 class G4CMPQPDiffusion : public G4VContinuousDiscreteProcess,
-			 public G4CMPProcessUtils, public G4CMPSCUtils {
+                         public G4CMPProcessUtils, public G4CMPSCUtils {
 public:
   G4CMPQPDiffusion(const G4String& name="qpDiffusion",
-		   G4CMPProcessSubType stype=fQPDiffusion);
+                   G4CMPProcessSubType stype=fQPDiffusion);
 
   virtual ~G4CMPQPDiffusion();
 
@@ -52,7 +52,8 @@ public:
   // The function overloads the corresponding function of the base
   // class.It limits the step near to boundaries only
   // and invokes the method GetMscContinuousStepLimit at every step.
-  G4double AlongStepGetPhysicalInteractionLength(
+  G4double
+  AlongStepGetPhysicalInteractionLength(
                                         const G4Track&,
                                         G4double  previousStepSize,
                                         G4double  currentMinimalStep,
@@ -61,11 +62,12 @@ public:
 
   // The function overloads the corresponding function of the base
   // class.
-  G4double PostStepGetPhysicalInteractionLength(
-                                      const G4Track& track,
-                                      G4double  previousStepSize,
-                                      G4ForceCondition* condition) override;
-
+  G4double
+  PostStepGetPhysicalInteractionLength(
+                                       const G4Track& track,
+                                       G4double  previousStepSize,
+                                       G4ForceCondition* condition) override;
+  
   // Along step actions
   G4VParticleChange* AlongStepDoIt(const G4Track&, const G4Step&) override;
 
@@ -74,15 +76,16 @@ public:
 
   G4ThreeVector
   FindDirectionToNearbyBoundary(const G4Track& track,
-				const G4ThreeVector& trackPosition,
-				const G4double the2DSafety,
-				G4bool & needToRepeatCalculation,
-				G4bool useSweepForDaughterSafety=false);
+                                const G4ThreeVector& trackPosition,
+                                const G4double the2DSafety,
+                                G4bool & needToRepeatCalculation,
+                                G4bool useSweepForDaughterSafety=false);
 
   G4bool IsApplicable(const G4ParticleDefinition& aPD) override;
   
 public:
-  // Update the default fTimeStep of the random walker if currentMinimalStep is longer
+  // Update the default fTimeStep of the random walker if currentMinimalStep
+  //is longer
   inline G4double TimeStep() const;
   inline void SetTimeStep(G4double val);
 
@@ -111,7 +114,7 @@ private:
   // hide  assignment operator
   G4CMPQPDiffusion(G4CMPQPDiffusion &) = delete;
   G4CMPQPDiffusion &
-    operator=(const G4CMPQPDiffusion &right) = delete;
+  operator=(const G4CMPQPDiffusion &right) = delete;
     
   // ======== Parameters of the class fixed at initialisation =======
   //Safety helper to query G4Navigator and check distance to geometric
@@ -165,7 +168,7 @@ private:
   G4double fPreemptivelyKillTrack;         //Kill track
   
   void UpdateBoundaryHistory(G4int trackID, G4ThreeVector preStepPos,
-			     G4ThreeVector preStepNorm);
+                             G4ThreeVector preStepNorm);
   std::tuple<G4bool,G4ThreeVector,G4ThreeVector,G4ThreeVector,G4ThreeVector>
   CheckForStuckQPs();
   
@@ -174,21 +177,21 @@ private:
   
   std::pair<G4ThreeVector,G4ThreeVector>
   FindSurfaceTangentsForStuckQPEjection(G4ThreeVector norm1,
-					G4ThreeVector pos1,
-					G4ThreeVector norm2,
-					G4ThreeVector pos2,
-					G4ThreeVector & cornerLocation);
+                                        G4ThreeVector pos1,
+                                        G4ThreeVector norm2,
+                                        G4ThreeVector pos2,
+                                        G4ThreeVector & cornerLocation);
   
   void PostCheckBulkTreatment(G4double stepTransportOnlyDeltaT);
 
   G4bool CheckForPhantomBoundaryCrossings(G4ThreeVector trackPosition,
-					  G4double the2DSafety,
-					  G4double originalOption1Safety,
-					  G4double originalOption2Safety,
-					  G4ThreeVector outputDir);
+                                          G4double the2DSafety,
+                                          G4double originalOption1Safety,
+                                          G4double originalOption2Safety,
+                                          G4ThreeVector outputDir);
   
   G4double HandleVerySmallSteps(G4double thisMFP, G4double the2DSafety,
-				G4double velocity);
+                                G4double velocity);
   G4double ComputePathLengthInGoldilocksZone(); 
 };
 
