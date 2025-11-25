@@ -3,6 +3,10 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+/// \file ValidationSteppingAction.hh
+/// \brief Definition of the class governing what we do at each step in the
+///  validation example
+
 #ifndef ValidationSteppingAction_hh
 #define ValidationSteppingAction_hh 1
 

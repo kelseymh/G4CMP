@@ -24,18 +24,17 @@
 // ********************************************************************
 //
 //
-/// \file ValidationPad.hh
-/// \brief Definition of the class defining how a transmission line is constructed on a qubit chip
+/// \file ValidationTransmissionLine.hh
+/// \brief Definition of the class defining how a transmission line is
+///  constructed on a qubit chip
 ///        
 
 #ifndef ValidationTransmissionLine_h
 #define ValidationTransmissionLine_h 1
 
-
 #include "G4UnionSolid.hh"
 #include "ValidationDetectorParameters.hh"
 #include "ValidationPad.hh"
-#include "globals.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;

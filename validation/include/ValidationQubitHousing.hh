@@ -25,16 +25,13 @@
 //
 //
 /// \file ValidationQubitHousing.hh
-/// \brief Definition of the class defining shield type A for the
-///        QUIET fridge
+/// \brief Definition of the class defining qubit housing/mounts
+///
 
 #ifndef ValidationQubitHousing_h
 #define ValidationQubitHousing_h 1
 
-
-//#include "G4PVPlacement.hh"
 #include "ValidationDetectorParameters.hh"
-#include "globals.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
@@ -47,9 +44,10 @@ public:
   ValidationQubitHousing();
   ~ValidationQubitHousing();
 
-  //This is the constructor that should be used in general. It does not have the current logical
-  //volume included because that will be defined IN the Qubit housing implementation. All we need is
-  //a set of info that is external to this, which should be self-contained.
+  //This is the constructor that should be used in general. It does not have
+  //the current logical volume included because that will be defined IN the
+  //Qubit housing implementation. All we need is a set of info that is external
+  //to this, which should be self-contained.
   ValidationQubitHousing(G4RotationMatrix * pRot,
                          const G4ThreeVector & tLate,
                          const G4String & pName,
@@ -73,9 +71,9 @@ public:
   
   
 protected:
-
+  
 private:
-
+  
   //The final G4PVPlacement
   G4LogicalVolume * fLog_output;
   G4VPhysicalVolume * fPhys_output;

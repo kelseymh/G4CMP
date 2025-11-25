@@ -9,6 +9,11 @@
 //
 ////////////////////////////////////////////////////////
 
+/// \file ValidationDetectorParameters.hh
+/// \brief Library of detector parameters with constexpr values for geometry
+///  definitions
+///        
+
 #ifndef ValidationDetectorParameters_h
 #define ValidationDetectorParameters_h 1
 

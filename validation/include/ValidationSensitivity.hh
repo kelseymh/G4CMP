@@ -3,6 +3,10 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+
+/// \file ValidationSensitivity.hh
+/// \brief Definition of the validation example's sensitivity class
+
 #ifndef ValidationSensitivity_h
 #define ValidationSensitivity_h 1
 

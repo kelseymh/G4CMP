@@ -3,20 +3,14 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+/// \file:  ValidationConfigManager.hh
+/// \brief Description:	Singleton container class for user configuration of
+///     G4CMP validation example. Looks for environment variables at
+///		initialization to set default values; active values may be
+///		changed via macro commands (see ValidationConfigMessenger).
+
 #ifndef ValidationConfigManager_hh
 #define ValidationConfigManager_hh 1
-
-// $Id$
-// File:  ValidationConfigManager.hh
-//
-// Description:	Singleton container class for user configuration of G4CMP
-//		validation example. Looks for environment variables	at
-//		initialization to set default values; active values may be
-//		changed via macro commands (see ValidationConfigMessenger).
-//
-// 20170816  M. Kelsey -- Extract hit filename from G4CMPConfigManager.
-
-#include "globals.hh"
 
 class ValidationConfigMessenger;
 

@@ -3,13 +3,9 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-// $Id$
-// File:  ValidationConfigMessenger.cc
-//
-// Description:	Macro command defitions to set user configuration in
-//		ValidationConfigManager.
-//
-// 20170816  Michael Kelsey
+/// \file ValidationConfigMessenger.cc
+/// \brief	Macro command defitions to set user configuration in
+///		ValidationConfigManager.
 
 #include "ValidationConfigMessenger.hh"
 #include "ValidationConfigManager.hh"

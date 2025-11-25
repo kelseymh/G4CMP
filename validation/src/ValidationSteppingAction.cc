@@ -3,23 +3,21 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-
-// Basic User Stepping action for Validation
+/// \file ValidationSteppingAction.cc
+/// \brief Implementation of the stepping action for the validation example
 
 #include "ValidationSteppingAction.hh"
-#include "ValidationConfigManager.hh"
-#include <iostream>
-#include <iomanip>
-#include "globals.hh"
-#include "G4Run.hh"
-#include "G4Track.hh"
-#include "G4Step.hh"
-#include "G4Threading.hh"
-
-#include "G4RunManager.hh"
-#include "G4StepPoint.hh"
 #include "G4CMPVTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
+#include "ValidationConfigManager.hh"
+#include "G4Run.hh"
+#include "G4RunManager.hh"
+#include "G4Step.hh"
+#include "G4StepPoint.hh"
+#include "G4Threading.hh"
+#include "G4Track.hh"
+#include <iostream>
+#include <iomanip>
 
 //Default constructor
 ValidationSteppingAction::ValidationSteppingAction() {

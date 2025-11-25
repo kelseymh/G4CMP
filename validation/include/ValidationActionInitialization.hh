@@ -3,7 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-// $Id: e58a61fedbb99b167e16dafebc9c8664ae0c7b94 $
+/// \file ValidationActionInitialization.hh
+/// \brief Definition of the class governing action initialization
 
 #ifndef ValidationActionInitialization_hh
 #define ValidationActionInitialization_hh 1

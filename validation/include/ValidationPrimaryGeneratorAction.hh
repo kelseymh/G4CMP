@@ -3,11 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file exoticphysics/validation/include/ValidationPrimaryGeneratorAction.hh
+/// \file ValidationPrimaryGeneratorAction.hh
 /// \brief Definition of the ValidationPrimaryGeneratorAction class
-//
-// $Id: ecbf57649dfaeb88e0fac25491bf8fb68c9308ec $
-//
 
 #ifndef ValidationPrimaryGeneratorAction_h
 #define ValidationPrimaryGeneratorAction_h 1

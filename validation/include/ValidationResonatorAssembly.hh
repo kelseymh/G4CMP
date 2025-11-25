@@ -24,22 +24,19 @@
 // ********************************************************************
 //
 //
-/// \file ValidationPad.hh
-/// \brief Definition of the class defining how a transmission line is constructed on a qubit chip
+/// \file ValidationResonatorAssembly.hh
+/// \brief Definition of the class defining how a resonator assembly is
+///  constructed on a chip
 ///        
 
 #ifndef ValidationResonatorAssembly_h
 #define ValidationResonatorAssembly_h 1
 
-
-//#include "G4PVPlacement.hh"
-#include "ValidationDetectorParameters.hh"
-#include "ValidationPad.hh"
-#include "globals.hh"
+#include "G4CMPSurfaceProperty.hh"
 #include "G4LatticePhysical.hh"
 #include "G4LatticeLogical.hh"
-#include "G4CMPSurfaceProperty.hh"
-
+#include "ValidationDetectorParameters.hh"
+#include "ValidationPad.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
@@ -52,8 +49,9 @@ public:
   ValidationResonatorAssembly();
   ~ValidationResonatorAssembly();
 
-  //This is the constructor that should be used in general. It does not have the current logical
-  //volume included because that will be defined IN the Qubit housing implementation. All we need is
+  //This is the constructor that should be used in general. It does not have
+  //the current logical volume included because that will be defined IN the
+  //resonator assembly implementation. All we need is
   //a set of info that is external to this, which should be self-contained.
   ValidationResonatorAssembly(G4RotationMatrix * pRot,
                               const G4ThreeVector & tLate,
@@ -87,13 +85,14 @@ public:
                          G4LatticeManager * LM,
                          std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
                          std::map<std::string,G4CMPSurfaceProperty*> borderContainer);
-
+  
   void MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
                                G4LatticeManager * LM,
                                std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
                                std::map<std::string,G4CMPSurfaceProperty*> borderContainer);
 
-  std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > GetListOfAllFundamentalSubVolumes();
+  std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> >
+  GetListOfAllFundamentalSubVolumes();
   
 protected:
 
@@ -102,7 +101,10 @@ private:
   //The final G4PVPlacement
   G4LogicalVolume * fLog_output;
   G4VPhysicalVolume * fPhys_output;
-  std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > fFundamentalVolumeList; //List of all fundamental sub-volumes in the transmission line. String 1 is "material_description", String 2 should be unique identifier (name of the sub-physical volume)
+  std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > fFundamentalVolumeList;
+  //List of all fundamental sub-volumes in the transmission line. String 1 is
+  //"material_description", String 2 should be unique identifier (name of the
+  //sub-physical volume)
   
 };
 

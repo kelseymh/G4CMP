@@ -47,10 +47,10 @@
 /vis/modeling/trajectories/drawByParticleID-0/set phononTS Green 
 /vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
 /vis/modeling/trajectories/drawByParticleID-0/set phononL Green
-/vis/modeling/trajectories/drawByParticleID-0/set QP White
+/vis/modeling/trajectories/drawByParticleID-0/set BogoliubovQP White
 
 /vis/filtering/trajectories/create/particleFilter
-/vis/filtering/trajectories/particleFilter-0/add QP
+/vis/filtering/trajectories/particleFilter-0/add BogoliubovQP
 /vis/filtering/trajectories/particleFilter-0/add phononTS
 /vis/filtering/trajectories/particleFilter-0/add phononTF
 /vis/filtering/trajectories/particleFilter-0/add phononL
@@ -64,7 +64,7 @@
 #-------------------------------------
 # Generate 1 phonon per event, in a tiny parallelepiped volume
 /gps/number 1
-/gps/particle QP
+/gps/particle BogoliubovQP
 /gps/pos/type Volume
 /gps/pos/shape Para
 /gps/pos/halfx 0.0001 mm

@@ -25,7 +25,8 @@
 //
 //
 /// \file ValidationPad.hh
-/// \brief Definition of the class defining how a transmission line pad is constructed on a qubit chip
+/// \brief Definition of the class defining how a pad is constructed on a qubit
+///  chip
 ///        
 
 #ifndef ValidationPad_h
@@ -33,11 +34,10 @@
 
 
 //#include "G4PVPlacement.hh"
-#include "ValidationDetectorParameters.hh"
+#include "G4CMPSurfaceProperty.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticeLogical.hh"
-#include "G4CMPSurfaceProperty.hh"
-#include "globals.hh"
+#include "ValidationDetectorParameters.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;

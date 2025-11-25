@@ -3,8 +3,13 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+/// \file ValidationSensitivity.cc
+/// \brief Class implementation for the detector sensitivity in the validation
+///		example.
+
 #include "ValidationSensitivity.hh"
 #include "G4CMPElectrodeHit.hh"
+#include "ValidationConfigManager.hh"
 #include "G4Event.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4PhononLong.hh"
@@ -14,9 +19,7 @@
 #include "G4RunManager.hh"
 #include "G4SDManager.hh"
 #include "G4SystemOfUnits.hh"
-#include "ValidationConfigManager.hh"
 #include <fstream>
-
 
 ValidationSensitivity::ValidationSensitivity(G4String name) :
   G4CMPElectrodeSensitivity(name), fileName("") {

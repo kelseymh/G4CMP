@@ -48,10 +48,10 @@
 /vis/modeling/trajectories/drawByParticleID-0/set phononTS Green 
 /vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
 /vis/modeling/trajectories/drawByParticleID-0/set phononL Green
-/vis/modeling/trajectories/drawByParticleID-0/set QP White
+/vis/modeling/trajectories/drawByParticleID-0/set BogoliubovQP White
 
 /vis/filtering/trajectories/create/particleFilter
-/vis/filtering/trajectories/particleFilter-0/add QP
+/vis/filtering/trajectories/particleFilter-0/add BogoliubovQP
 /vis/filtering/trajectories/particleFilter-0/add phononTS
 /vis/filtering/trajectories/particleFilter-0/add phononTF
 /vis/filtering/trajectories/particleFilter-0/add phononL

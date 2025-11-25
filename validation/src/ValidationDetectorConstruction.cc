@@ -3,26 +3,19 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file exoticphysics/phonon/src/ValidationDetectorConstruction.cc \brief
-/// Implementation of the ValidationDetectorConstruction class
-//
-// $Id: a2016d29cc7d1e75482bfc623a533d20b60390da $
-//
-// 20140321  Drop passing placement transform to G4LatticePhysical
-// 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
-// 20220809  [ For M. Hui ] -- Add frequency dependent surface properties.
-// 20221006  Remove unused features; add phonon sensor pad with use of
-//		G4CMPPhononElectrode to demonstrate KaplanQP.
+/// \file ValidationDetectorConstruction.cc
+///\brief Implementation of the ValidationDetectorConstruction class
 
 #include "ValidationDetectorConstruction.hh"
-#include "ValidationDetectorParameters.hh"
-#include "ValidationSensitivity.hh"
-#include "ValidationQubitHousing.hh"
-#include "ValidationTransmissionLine.hh"
-#include "ValidationResonatorAssembly.hh"
 #include "G4CMPLogicalBorderSurface.hh"
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPSurfaceProperty.hh"
+#include "ValidationConfigManager.hh"
+#include "ValidationDetectorParameters.hh"
+#include "ValidationResonatorAssembly.hh"
+#include "ValidationSensitivity.hh"
+#include "ValidationQubitHousing.hh"
+#include "ValidationTransmissionLine.hh"
 #include "G4Box.hh"
 #include "G4Colour.hh"
 #include "G4GeometryManager.hh"
@@ -44,10 +37,8 @@
 #include "G4Tubs.hh"
 #include "G4UserLimits.hh"
 #include "G4VisAttributes.hh"
-#include "ValidationConfigManager.hh"
 
 using namespace ValidationDetectorParameters;
-
 
 ValidationDetectorConstruction::ValidationDetectorConstruction()
   : fLiquidHelium(0), fSilicon(0), fAluminum(0), fTungsten(0), fCopper(0),

@@ -3,7 +3,9 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-// $Id: 539f524339ae53ad098a07cfa3bebd07784d23dd $
+/// \file ValidationActionInitialization.cc
+/// \brief Class implementing the action initialization for the validation
+///  example
 
 #include "ValidationActionInitialization.hh"
 #include "ValidationPrimaryGeneratorAction.hh"
