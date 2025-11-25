@@ -51,8 +51,8 @@ using namespace ValidationDetectorParameters;
 // Primary Constructor
 ValidationQubitHousing::
 ValidationQubitHousing(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
-		       const G4String & pName,G4LogicalVolume * pMotherLogical,
-		       G4bool pMany,G4int pCopyNo,G4bool pSurfChk) {
+                       const G4String & pName,G4LogicalVolume * pMotherLogical,
+                       G4bool pMany,G4int pCopyNo,G4bool pSurfChk) {
 
   //Here, use the inputs to this to set up the geometry and fill out the
   //PVPlacement data member, which is the real output from this class
@@ -75,8 +75,8 @@ ValidationQubitHousing::~ValidationQubitHousing()
 //Moving implementation down here so it's not in the constructor
 void ValidationQubitHousing::
 ConstructQubitHousing(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
-		      const G4String & pName,G4LogicalVolume * pMotherLogical,
-		      G4bool pMany,G4int pCopyNo,G4bool pSurfChk)
+                      const G4String & pName,G4LogicalVolume * pMotherLogical,
+                      G4bool pMany,G4int pCopyNo,G4bool pSurfChk)
 {
 
   //Start with some preliminaries - NIST manager
@@ -91,19 +91,19 @@ ConstructQubitHousing(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
   //empty space in the housing. The radial cutouts we are treating as
   //rectangular prisms for now (close enough to reality)
   G4Box * solid_qubitHousingBlock = new G4Box("QubitHousingBlock_solid",
-					      0.5*dp_housingDimX,
-					      0.5*dp_housingDimY,
-					      0.5*dp_housingDimZ);
+                                              0.5*dp_housingDimX,
+                                              0.5*dp_housingDimY,
+                                              0.5*dp_housingDimZ);
   
   G4Box * solid_centralCutout = new G4Box("CentralCutout_solid",
-					  0.5*dp_housingCentralCutoutDimX,
-					  0.5*dp_housingCentralCutoutDimY,
-					  0.5*dp_housingCentralCutoutDimZ);
+                                          0.5*dp_housingCentralCutoutDimX,
+                                          0.5*dp_housingCentralCutoutDimY,
+                                          0.5*dp_housingCentralCutoutDimZ);
   
   G4Box * solid_radialCutout = new G4Box("RadialCutout_solid",
-					 0.5 * dp_housingRadialCutoutDimX,
-					 0.5 * dp_housingRadialCutoutDimY,
-					 0.5 * dp_housingRadialCutoutDimZ);
+                                         0.5 * dp_housingRadialCutoutDimX,
+                                         0.5 * dp_housingRadialCutoutDimY,
+                                         0.5 * dp_housingRadialCutoutDimZ);
 
 
 
@@ -115,107 +115,107 @@ ConstructQubitHousing(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
   G4RotationMatrix * rot1 = new G4RotationMatrix();
   rot1->rotateZ(45.*deg);
   G4ThreeVector trans1(0.5*dp_housingCentralCutoutDimX, //Top right corner
-		       0.5*dp_housingCentralCutoutDimY, //Top right corner
-		       0.5*(dp_housingCentralCutoutDimZ
-			    - dp_housingRadialCutoutDimZ));//Top of chip  
+                       0.5*dp_housingCentralCutoutDimY, //Top right corner
+                       0.5*(dp_housingCentralCutoutDimZ
+                            - dp_housingRadialCutoutDimZ));//Top of chip  
   G4UnionSolid * solid_partialCutout1 = new G4UnionSolid("PartialCutout1_solid",
-							 solid_centralCutout,
-							 solid_radialCutout,
-							 rot1,
-							 trans1);
+                                                         solid_centralCutout,
+                                                         solid_radialCutout,
+                                                         rot1,
+                                                         trans1);
   
   //Second of eight
   G4RotationMatrix * rot2 = new G4RotationMatrix();
   rot2->rotateZ(-45.*deg);
   G4ThreeVector trans2(0.5*dp_housingCentralCutoutDimX, //Bottom right corner
-		       -0.5*dp_housingCentralCutoutDimY, //Bottom right corner
-		       0.5*(dp_housingCentralCutoutDimZ
-			    - dp_housingRadialCutoutDimZ));//Move to top of chip  
+                       -0.5*dp_housingCentralCutoutDimY, //Bottom right corner
+                       0.5*(dp_housingCentralCutoutDimZ
+                            - dp_housingRadialCutoutDimZ));//Move to top of chip  
   G4UnionSolid * solid_partialCutout2 = new G4UnionSolid("PartialCutout2_solid",
-							 solid_partialCutout1,
-							 solid_radialCutout,
-							 rot2,
-							 trans2);
+                                                         solid_partialCutout1,
+                                                         solid_radialCutout,
+                                                         rot2,
+                                                         trans2);
 
   //Third of eight
   G4RotationMatrix * rot3 = new G4RotationMatrix();
   rot3->rotateZ(-45.*deg);
   G4ThreeVector trans3(-0.5*dp_housingCentralCutoutDimX, //Top left corner
-		       0.5*dp_housingCentralCutoutDimY, //Top left corner
-		       0.5*(dp_housingCentralCutoutDimZ
-			    - dp_housingRadialCutoutDimZ));//Move to top of chip
+                       0.5*dp_housingCentralCutoutDimY, //Top left corner
+                       0.5*(dp_housingCentralCutoutDimZ
+                            - dp_housingRadialCutoutDimZ));//Move to top of chip
   
   G4UnionSolid * solid_partialCutout3 = new G4UnionSolid("PartialCutout3_solid",
-							 solid_partialCutout2,
-							 solid_radialCutout,
-							 rot3,
-							 trans3);
+                                                         solid_partialCutout2,
+                                                         solid_radialCutout,
+                                                         rot3,
+                                                         trans3);
 
   //Fourth of eight
   G4RotationMatrix * rot4 = new G4RotationMatrix();
   rot4->rotateZ(45.*deg);
   G4ThreeVector trans4(-0.5*dp_housingCentralCutoutDimX, //Bottom left corner
-		       -0.5*dp_housingCentralCutoutDimY, //Bottom left corner
-		       0.5*(dp_housingCentralCutoutDimZ
-			    - dp_housingRadialCutoutDimZ));//Top of chip
+                       -0.5*dp_housingCentralCutoutDimY, //Bottom left corner
+                       0.5*(dp_housingCentralCutoutDimZ
+                            - dp_housingRadialCutoutDimZ));//Top of chip
   
   G4UnionSolid * solid_partialCutout4 = new G4UnionSolid("PartialCutout4_solid",
-							 solid_partialCutout3,
-							 solid_radialCutout,
-							 rot4,
-							 trans4);
+                                                         solid_partialCutout3,
+                                                         solid_radialCutout,
+                                                         rot4,
+                                                         trans4);
 
 
   //Fifth of eight
   G4RotationMatrix * rot5 = new G4RotationMatrix();
   rot5->rotateZ(90.*deg);
   G4ThreeVector trans5(0.5*dp_housingCentralCutoutDimX, //Move to top in X
-		       0,
-		       0.5*(dp_housingCentralCutoutDimZ
-			    - dp_housingRadialCutoutDimZ)); //Top of chip  
+                       0,
+                       0.5*(dp_housingCentralCutoutDimZ
+                            - dp_housingRadialCutoutDimZ)); //Top of chip  
   G4UnionSolid * solid_partialCutout5 = new G4UnionSolid("PartialCutout5_solid",
-							 solid_partialCutout4,
-							 solid_radialCutout,
-							 rot5,
-							 trans5);
+                                                         solid_partialCutout4,
+                                                         solid_radialCutout,
+                                                         rot5,
+                                                         trans5);
   
   //Sixth of eight
   G4RotationMatrix * rot6 = new G4RotationMatrix();
   rot6->rotateZ(90.*deg);
   G4ThreeVector trans6(-0.5*dp_housingCentralCutoutDimX, //Move to bottom in X
-		       0,
-		       0.5*(dp_housingCentralCutoutDimZ
-			    - dp_housingRadialCutoutDimZ)); //Top of chip  
+                       0,
+                       0.5*(dp_housingCentralCutoutDimZ
+                            - dp_housingRadialCutoutDimZ)); //Top of chip  
   G4UnionSolid * solid_partialCutout6 = new G4UnionSolid("PartialCutout6_solid",
-							 solid_partialCutout5,
-							 solid_radialCutout,
-							 rot6,
-							 trans6);
+                                                         solid_partialCutout5,
+                                                         solid_radialCutout,
+                                                         rot6,
+                                                         trans6);
  
   //Seventh of eight
   G4RotationMatrix * rot7 = new G4RotationMatrix();
   rot7->rotateZ(0.*deg);
   G4ThreeVector trans7(0,0.5*dp_housingCentralCutoutDimY, //Move to bottom (Y)
-		       0.5*(dp_housingCentralCutoutDimZ
-			    - dp_housingRadialCutoutDimZ)); //Top of chip  
+                       0.5*(dp_housingCentralCutoutDimZ
+                            - dp_housingRadialCutoutDimZ)); //Top of chip  
   G4UnionSolid * solid_partialCutout7 = new G4UnionSolid("PartialCutout7_solid",
-							 solid_partialCutout6,
-							 solid_radialCutout,
-							 rot7,
-							 trans7);
+                                                         solid_partialCutout6,
+                                                         solid_radialCutout,
+                                                         rot7,
+                                                         trans7);
   
 
   //Eigth of eight
   G4RotationMatrix * rot8 = new G4RotationMatrix();
   rot8->rotateZ(0.*deg);
   G4ThreeVector trans8(0,-0.5*dp_housingCentralCutoutDimY, //Move to top (Y)
-		       0.5*(dp_housingCentralCutoutDimZ
-			    - dp_housingRadialCutoutDimZ));//Top of chip  
+                       0.5*(dp_housingCentralCutoutDimZ
+                            - dp_housingRadialCutoutDimZ));//Top of chip  
   G4UnionSolid * solid_totalCutout = new G4UnionSolid("TotalCutout_solid",
-						      solid_partialCutout7,
-						      solid_radialCutout,
-						      rot8,
-						      trans8);
+                                                      solid_partialCutout7,
+                                                      solid_radialCutout,
+                                                      rot8,
+                                                      trans8);
 
 
 
@@ -224,13 +224,13 @@ ConstructQubitHousing(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
   //Modifying by one micron so that we're unambiguously removing the top
   //surface of housing
   G4ThreeVector cutoutTranslation(0.0,0.0,
-				  (dp_housingDimZ-
-				   dp_housingCentralCutoutDimZ)/2.0+dp_eps);
+                                  (dp_housingDimZ-
+                                   dp_housingCentralCutoutDimZ)/2.0+dp_eps);
   
   G4SubtractionSolid * solid_qubitHousingNoAddIn
     = new G4SubtractionSolid("QubitHousingNoAddIn_solid",
-			     solid_qubitHousingBlock,solid_totalCutout,0,
-			     cutoutTranslation);
+                             solid_qubitHousingBlock,solid_totalCutout,0,
+                             cutoutTranslation);
   
 
   //...
@@ -242,50 +242,50 @@ ConstructQubitHousing(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
   //to get this right...
   G4Box * solid_radialCornerAddIn =
     new G4Box("RadialCornerAddIn_solid",
-	      0.5 * dp_housingRadialCutoutDimX,
-	      0.5 * dp_housingRadialCutoutDimX,
-	      (0.5*(dp_housingCentralCutoutDimZ
-		    - dp_housingRadialCutoutDimZ)));
+              0.5 * dp_housingRadialCutoutDimX,
+              0.5 * dp_housingRadialCutoutDimX,
+              (0.5*(dp_housingCentralCutoutDimZ
+                    - dp_housingRadialCutoutDimZ)));
 
   //First corner
   G4RotationMatrix * rot9 = new G4RotationMatrix();
   rot9->rotateZ(45.*deg);  
   G4ThreeVector addInTranslation1(0.5*dp_housingCentralCutoutDimX,
-				  0.5*dp_housingCentralCutoutDimY,
-  				  -(dp_housingRadialCutoutDimZ)/2.0);
+                                  0.5*dp_housingCentralCutoutDimY,
+                                  -(dp_housingRadialCutoutDimZ)/2.0);
   G4UnionSolid * solid_qubitHousingAddIn1 =
     new G4UnionSolid("QubitHousingAddIn1_solid",solid_qubitHousingNoAddIn,
-		     solid_radialCornerAddIn,rot9,addInTranslation1 +
-		     cutoutTranslation);
+                     solid_radialCornerAddIn,rot9,addInTranslation1 +
+                     cutoutTranslation);
 
   //Second corner
   G4ThreeVector addInTranslation2(0.5*dp_housingCentralCutoutDimX,
-				  -0.5*dp_housingCentralCutoutDimY,
-				  -(dp_housingRadialCutoutDimZ/2.0));
+                                  -0.5*dp_housingCentralCutoutDimY,
+                                  -(dp_housingRadialCutoutDimZ/2.0));
   G4UnionSolid * solid_qubitHousingAddIn2 =
     new G4UnionSolid("QubitHousingAddIn2_solid",solid_qubitHousingAddIn1,
-		     solid_radialCornerAddIn,rot9,addInTranslation2 +
-		     cutoutTranslation);
+                     solid_radialCornerAddIn,rot9,addInTranslation2 +
+                     cutoutTranslation);
 
 
   //Third corner
   G4ThreeVector addInTranslation3(-0.5*dp_housingCentralCutoutDimX,
-				  -0.5*dp_housingCentralCutoutDimY,
-				  -(dp_housingRadialCutoutDimZ/2.0));
+                                  -0.5*dp_housingCentralCutoutDimY,
+                                  -(dp_housingRadialCutoutDimZ/2.0));
   G4UnionSolid * solid_qubitHousingAddIn3 =
     new G4UnionSolid("QubitHousingAddIn3_solid",solid_qubitHousingAddIn2,
-		     solid_radialCornerAddIn,rot9,addInTranslation3 +
-		     cutoutTranslation);
+                     solid_radialCornerAddIn,rot9,addInTranslation3 +
+                     cutoutTranslation);
 
   
   //Fourth corner
   G4ThreeVector addInTranslation4(-0.5*dp_housingCentralCutoutDimX,
-				  0.5*dp_housingCentralCutoutDimY,
-				  -(dp_housingRadialCutoutDimZ/2.0));
+                                  0.5*dp_housingCentralCutoutDimY,
+                                  -(dp_housingRadialCutoutDimZ/2.0));
   G4UnionSolid * solid_qubitHousing
     = new G4UnionSolid("QubitHousing_solid",solid_qubitHousingAddIn3,
-		       solid_radialCornerAddIn,rot9,addInTranslation4 +
-		       cutoutTranslation);
+                       solid_radialCornerAddIn,rot9,addInTranslation4 +
+                       cutoutTranslation);
   
    
   ///////////////////////////////////////////
@@ -302,7 +302,7 @@ ConstructQubitHousing(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
   //output
   G4VPhysicalVolume* phys_QubitHousing
     = new G4PVPlacement(pRot,tLate,log_QubitHousing,pName,pMotherLogical,pMany,
-			pCopyNo,pSurfChk);
+                        pCopyNo,pSurfChk);
 
 
 

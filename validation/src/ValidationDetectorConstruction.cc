@@ -111,7 +111,7 @@ void ValidationDetectorConstruction::SetupGeometry() {
   int geometryID = ValidationConfigManager::Instance()->GetGeometryID();
   G4cout << "Starting with validation geometryID: " << geometryID << G4endl;
   G4cout << "Testing config manager call 2: "
-	 << ValidationConfigManager::GetGeometryID() << G4endl;
+         << ValidationConfigManager::GetGeometryID() << G4endl;
   
   //     
   // World
@@ -139,24 +139,24 @@ void ValidationDetectorConstruction::SetupGeometry() {
     
     //First, we define a non-superconductor cylinder: Si
     G4VSolid* siliconSolid = new G4Tubs("siliconSolid",0.*cm,1.0*cm,
-					dp_siThickness/2.0, 0.*deg, 360.*deg);
+                                        dp_siThickness/2.0, 0.*deg, 360.*deg);
     G4LogicalVolume* siliconLogical = new G4LogicalVolume(siliconSolid,fSilicon,
-							  "siliconLogical");
+                                                          "siliconLogical");
     G4VPhysicalVolume* siliconPhysical
       = new G4PVPlacement(0,G4ThreeVector(),siliconLogical,"siliconPhysical",
-			  worldLogical,false,0);
+                          worldLogical,false,0);
     
     //Next, we define another non-superconductor cylinder: Ge. Place it just
     //below the Si and in contact
     G4VSolid* germaniumSolid = new G4Tubs("germaniumSolid",0.*cm,1.0*cm,
-					  dp_geThickness/2.0, 0.*deg, 360.*deg);
+                                          dp_geThickness/2.0, 0.*deg, 360.*deg);
     G4LogicalVolume* germaniumLogical
       = new G4LogicalVolume(germaniumSolid,fGermanium,"germaniumLogical");
     G4VPhysicalVolume* germaniumPhysical
       = new G4PVPlacement(0,
-			  G4ThreeVector(0.0,0.0,(-dp_siThickness/2.0-dp_geThickness/2.0)),
-			  germaniumLogical,"germaniumPhysical", worldLogical,
-			  false,0);
+                          G4ThreeVector(0.0,0.0,(-dp_siThickness/2.0-dp_geThickness/2.0)),
+                          germaniumLogical,"germaniumPhysical", worldLogical,
+                          false,0);
     
     //Next, we define a superconductor cylinder: Al1. Place it just below the
     //Ge and in contact. Needs to be thin enough so that quasielastic
@@ -164,14 +164,14 @@ void ValidationDetectorConstruction::SetupGeometry() {
     //boundaries being fully absorptive
     G4VSolid* aluminum1Solid
       = new G4Tubs("aluminum1Solid",0.*cm,1.0*cm,dp_aluminum1Thickness/2.0,
-		   0.*deg,360.*deg);
+                   0.*deg,360.*deg);
     G4LogicalVolume* aluminum1Logical
       = new G4LogicalVolume(aluminum1Solid,fAluminum,"aluminum1Logical");
     G4VPhysicalVolume* aluminum1Physical
       = new G4PVPlacement(0,
-			  G4ThreeVector(0.0,0.0,(-dp_siThickness/2.0 - dp_geThickness - dp_aluminum1Thickness/2.0)),
-			  aluminum1Logical,"aluminum1Physical", worldLogical,
-			  false,0);
+                          G4ThreeVector(0.0,0.0,(-dp_siThickness/2.0 - dp_geThickness - dp_aluminum1Thickness/2.0)),
+                          aluminum1Logical,"aluminum1Physical", worldLogical,
+                          false,0);
     
     //Next, we define another superconductor, but make it a long G4Box: Al2.
     //This long strip tests diffusion physics. Place it just below Al1 and in
@@ -182,31 +182,31 @@ void ValidationDetectorConstruction::SetupGeometry() {
       = new G4LogicalVolume(aluminum2Solid,fAluminum,"aluminum2Logical");
     G4VPhysicalVolume* aluminum2Physical
       = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,(-dp_siThickness/2.0 - dp_geThickness - dp_aluminum1Thickness - dp_aluminum2Thickness/2.0)),
-			  aluminum2Logical,"aluminum2Physical", worldLogical,
-			  false,0);
+                          aluminum2Logical,"aluminum2Physical", worldLogical,
+                          false,0);
 
     //We define two Nb blocks to flank aluminum2
     G4VSolid* niobiumAForAluminum2Solid
       = new G4Box("niobiumAForAluminum2Solid",0.1*cm,0.1*cm,
-		  dp_aluminum2Thickness/2.0);
+                  dp_aluminum2Thickness/2.0);
     G4LogicalVolume* niobiumAForAluminum2Logical
       = new G4LogicalVolume(niobiumAForAluminum2Solid,fNiobium,
-			    "niobiumAForAluminum2Logical");
+                            "niobiumAForAluminum2Logical");
     G4VPhysicalVolume* niobiumAForAluminum2Physical
       = new G4PVPlacement(0,G4ThreeVector(0.0,-1.1*cm,(-dp_siThickness/2.0 - dp_geThickness - dp_aluminum1Thickness - dp_aluminum2Thickness/2.0)),
-			  niobiumAForAluminum2Logical,
-			  "niobiumAForAluminum2Physical", worldLogical,false,0);
+                          niobiumAForAluminum2Logical,
+                          "niobiumAForAluminum2Physical", worldLogical,false,0);
 
     G4VSolid* niobiumBForAluminum2Solid
       = new G4Box("niobiumBForAluminum2Solid",0.1*cm,0.1*cm,
-		  dp_aluminum2Thickness/2.0);
+                  dp_aluminum2Thickness/2.0);
     G4LogicalVolume* niobiumBForAluminum2Logical
       = new G4LogicalVolume(niobiumBForAluminum2Solid,fNiobium,
-			    "niobiumBForAluminum2Logical");
+                            "niobiumBForAluminum2Logical");
     G4VPhysicalVolume* niobiumBForAluminum2Physical
       = new G4PVPlacement(0,G4ThreeVector(0.0,1.1*cm,(-dp_siThickness/2.0 - dp_geThickness - dp_aluminum1Thickness - dp_aluminum2Thickness/2.0)),
-			  niobiumBForAluminum2Logical,
-			  "niobiumBForAluminum2Physical",worldLogical,false,0);
+                          niobiumBForAluminum2Logical,
+                          "niobiumBForAluminum2Physical",worldLogical,false,0);
 
     //Now our final layer below aluminum2: aluminum3 (with daughter Nb)
     G4VSolid* aluminum3Solid
@@ -215,19 +215,19 @@ void ValidationDetectorConstruction::SetupGeometry() {
       = new G4LogicalVolume(aluminum3Solid,fAluminum,"aluminum3Logical");
     G4VPhysicalVolume* aluminum3Physical
       = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,(-dp_siThickness/2.0 - dp_geThickness - dp_aluminum1Thickness - dp_aluminum2Thickness - dp_aluminum3Thickness/2.0)),
-			  aluminum3Logical,"aluminum3Physical", worldLogical,
-			  false,0);
+                          aluminum3Logical,"aluminum3Physical", worldLogical,
+                          false,0);
 
     G4VSolid* niobiumForAluminum3Solid
       = new G4Box("niobiumForAluminum3Solid",0.1*cm,0.001*cm,
-		  dp_aluminum3Thickness/2.0);
+                  dp_aluminum3Thickness/2.0);
     G4LogicalVolume* niobiumForAluminum3Logical
       = new G4LogicalVolume(niobiumForAluminum3Solid,fNiobium,
-			    "niobiumForAluminum3Logical");
+                            "niobiumForAluminum3Logical");
     G4VPhysicalVolume* niobiumForAluminum3Physical
       = new G4PVPlacement(0,G4ThreeVector(),niobiumForAluminum3Logical,
-			  "niobiumForAluminum3Physical",aluminum3Logical,false,
-			  0);
+                          "niobiumForAluminum3Physical",aluminum3Logical,false,
+                          0);
 
 
 
@@ -247,28 +247,28 @@ void ValidationDetectorConstruction::SetupGeometry() {
     G4LatticePhysical* GePhysical = new G4LatticePhysical(GeLogical);
     G4LatticePhysical* Al1Physical =
       new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			    dp_scDelta0_Al, dp_scTeff_Al,
-			    dp_scDn_Al, dp_scTauQPTrap_Al);
+                            dp_scDelta0_Al, dp_scTeff_Al,
+                            dp_scDn_Al, dp_scTauQPTrap_Al);
     G4LatticePhysical* Al2Physical =
       new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			    dp_scDelta0_Al, dp_scTeff_Al,
-			    dp_scDn_Al, dp_scTauQPTrap_Al);
+                            dp_scDelta0_Al, dp_scTeff_Al,
+                            dp_scDn_Al, dp_scTauQPTrap_Al);
     G4LatticePhysical* Al3Physical =
       new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			    dp_scDelta0_Al, dp_scTeff_Al,
-			    dp_scDn_Al, dp_scTauQPTrap_Al);
+                            dp_scDelta0_Al, dp_scTeff_Al,
+                            dp_scDn_Al, dp_scTauQPTrap_Al);
     G4LatticePhysical* NbAForAl2Physical =
       new G4LatticePhysical(NbLogical,dp_polycryElScatMFP_Nb,
-			    dp_scDelta0_Nb, dp_scTeff_Nb,
-			    dp_scDn_Nb, dp_scTauQPTrap_Nb);
+                            dp_scDelta0_Nb, dp_scTeff_Nb,
+                            dp_scDn_Nb, dp_scTauQPTrap_Nb);
     G4LatticePhysical* NbBForAl2Physical =
       new G4LatticePhysical(NbLogical,dp_polycryElScatMFP_Nb,
-			    dp_scDelta0_Nb, dp_scTeff_Nb,
-			    dp_scDn_Nb, dp_scTauQPTrap_Nb);
+                            dp_scDelta0_Nb, dp_scTeff_Nb,
+                            dp_scDn_Nb, dp_scTauQPTrap_Nb);
     G4LatticePhysical* NbForAl3Physical =
       new G4LatticePhysical(NbLogical,dp_polycryElScatMFP_Nb,
-			    dp_scDelta0_Nb, dp_scTeff_Nb,
-			    dp_scDn_Nb, dp_scTauQPTrap_Nb);
+                            dp_scDelta0_Nb, dp_scTeff_Nb,
+                            dp_scDn_Nb, dp_scTauQPTrap_Nb);
     SiPhysical->SetMillerOrientation(1,0,0);
     GePhysical->SetMillerOrientation(1,0,0);
     Al1Physical->SetMillerOrientation(1,0,0);
@@ -302,83 +302,83 @@ void ValidationDetectorConstruction::SetupGeometry() {
 
       //Boundary between any surface and vacuum: fully reflective
       fVacSurfProp = new G4CMPSurfaceProperty("VacSurf",
-					      0.0, 1.0, 0.0, 0.0,
-					      0.0, 1.0, 0.0, 0.0,
-					      0.0, 1.0);
+                                              0.0, 1.0, 0.0, 0.0,
+                                              0.0, 1.0, 0.0, 0.0,
+                                              0.0, 1.0);
       fVacSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					    diffCoeffs, specCoeffs, GHz, GHz,
-					    GHz);
+                                            diffCoeffs, specCoeffs, GHz, GHz,
+                                            GHz);
 
       //Silicon-germanium boundary: 50% reflection for phonons, absorbant for
       //QPs (bc they aren't realizable here)
       fSiGeSurfProp = new G4CMPSurfaceProperty("SiGeSurf",
-					       0.0, 1.0, 0.0, 0.0,
-					       0.0, 0.5, 0.0, 0.0,
-					       1.0, 0.0);
+                                               0.0, 1.0, 0.0, 0.0,
+                                               0.0, 0.5, 0.0, 0.0,
+                                               1.0, 0.0);
       fSiGeSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					     diffCoeffs, specCoeffs, GHz, GHz,
-					     GHz);
+                                             diffCoeffs, specCoeffs, GHz, GHz,
+                                             GHz);
       
       //Germanium-Aluminum1 boundary, 100% reflection, to isolate SC from non-SC
       fGeAl1SurfProp = new G4CMPSurfaceProperty("GeAl1Surf",
-						0.0, 1.0, 0.0, 0.0,
-						0.0, 1.0, 0.0, 0.0,
-						0.0, 1.0);
+                                                0.0, 1.0, 0.0, 0.0,
+                                                0.0, 1.0, 0.0, 0.0,
+                                                0.0, 1.0);
       fGeAl1SurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					      diffCoeffs, specCoeffs, GHz, GHz,
-					      GHz);
+                                              diffCoeffs, specCoeffs, GHz, GHz,
+                                              GHz);
 
       //Aluminum1-Aluminum2 boundary, from above: 100% absorption, to kill
       //phonons in quasielastic scattering
       fAl1Al2FromAboveSurfProp = new G4CMPSurfaceProperty("Al1Al2FromAboveSurf",
-							  0.0, 1.0, 0.0, 0.0,
-							  1.0, 0.0, 0.0, 0.0,
-							  0.0, 1.0);
+                                                          0.0, 1.0, 0.0, 0.0,
+                                                          1.0, 0.0, 0.0, 0.0,
+                                                          0.0, 1.0);
       fAl1Al2FromAboveSurfProp->AddScatteringProperties(anhCutoff, reflCutoff,
-							anhCoeffs,diffCoeffs,
-							specCoeffs, GHz, GHz,
-							GHz);
+                                                        anhCoeffs,diffCoeffs,
+                                                        specCoeffs, GHz, GHz,
+                                                        GHz);
       
       //Aluminum1-Aluminum2 boundary, from below: 100% reflection, to isolate
       //Aluminum 2 region
       fAl1Al2FromBelowSurfProp = new G4CMPSurfaceProperty("Al1Al2FromBelowSurf",
-							  0.0, 1.0, 0.0, 0.0,
-							  0.0, 1.0, 0.0, 0.0,
-							  0.0, 1.0);
+                                                          0.0, 1.0, 0.0, 0.0,
+                                                          0.0, 1.0, 0.0, 0.0,
+                                                          0.0, 1.0);
       fAl1Al2FromBelowSurfProp->AddScatteringProperties(anhCutoff, reflCutoff,
-							anhCoeffs,diffCoeffs,
-							specCoeffs, GHz, GHz,
-							GHz);
+                                                        anhCoeffs,diffCoeffs,
+                                                        specCoeffs, GHz, GHz,
+                                                        GHz);
       
       //Aluminum2-Niobium boundary: 100% QP absorption, 100% phonon reflection,
       //to do TOFP plots
       fAl2NbSurfProp = new G4CMPSurfaceProperty("Al2NbSurf",
-						0.0, 1.0, 0.0, 0.0,
-						0.0, 1.0, 0.0, 0.0,
-						1.0, 0.0);
+                                                0.0, 1.0, 0.0, 0.0,
+                                                0.0, 1.0, 0.0, 0.0,
+                                                1.0, 0.0);
       fAl2NbSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					      diffCoeffs, specCoeffs, GHz, GHz,
-					      GHz);
+                                              diffCoeffs, specCoeffs, GHz, GHz,
+                                              GHz);
 
       //Aluminum2-Aluminum3 boundary: 100% reflection, to isolate Aluminum 1
       //region
       fAl2Al3SurfProp = new G4CMPSurfaceProperty("Al2Al3Surf",
-						 0.0, 1.0, 0.0, 0.0,
-						 0.0, 1.0, 0.0, 0.0,
-						 0.0, 1.0);
+                                                 0.0, 1.0, 0.0, 0.0,
+                                                 0.0, 1.0, 0.0, 0.0,
+                                                 0.0, 1.0);
       fAl2Al3SurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					       diffCoeffs, specCoeffs, GHz, GHz,
-					       GHz);
+                                               diffCoeffs, specCoeffs, GHz, GHz,
+                                               GHz);
 
       //Aluminum3-Niobium boundary: 100% QP and phonon transmission, to enable
       //proper gap studies
       fAl3NbSurfProp = new G4CMPSurfaceProperty("Al3NbSurf",
-						0.0, 1.0, 0.0, 0.0,
-						0.0, 0.0, 0.0, 0.0,
-						0.0, 0.0);
+                                                0.0, 1.0, 0.0, 0.0,
+                                                0.0, 0.0, 0.0, 0.0,
+                                                0.0, 0.0);
       fAl3NbSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					      diffCoeffs, specCoeffs, GHz, GHz,
-					      GHz);
+                                              diffCoeffs, specCoeffs, GHz, GHz,
+                                              GHz);
 
       
     }
@@ -387,82 +387,82 @@ void ValidationDetectorConstruction::SetupGeometry() {
     //Now we do the actual logical border surface creation
     //Silicon
     new G4CMPLogicalBorderSurface("SiVac",siliconPhysical,fWorldPhys,
-				  fVacSurfProp);
+                                  fVacSurfProp);
     new G4CMPLogicalBorderSurface("VacSi",fWorldPhys,siliconPhysical,
-				  fVacSurfProp);    
+                                  fVacSurfProp);    
     new G4CMPLogicalBorderSurface("SiGe",siliconPhysical,germaniumPhysical,
-				  fSiGeSurfProp);
+                                  fSiGeSurfProp);
     new G4CMPLogicalBorderSurface("GeSi",germaniumPhysical,siliconPhysical,
-				  fSiGeSurfProp);
+                                  fSiGeSurfProp);
 
     //Germanium
     new G4CMPLogicalBorderSurface("GeVac",germaniumPhysical,fWorldPhys,
-				  fVacSurfProp);
+                                  fVacSurfProp);
     new G4CMPLogicalBorderSurface("VacGe",fWorldPhys,germaniumPhysical,
-				  fVacSurfProp);    
+                                  fVacSurfProp);    
     new G4CMPLogicalBorderSurface("GeAl1",germaniumPhysical,aluminum1Physical,
-				  fGeAl1SurfProp);
+                                  fGeAl1SurfProp);
     new G4CMPLogicalBorderSurface("Al1Ge",aluminum1Physical,germaniumPhysical,
-				  fGeAl1SurfProp);
+                                  fGeAl1SurfProp);
 
     //Aluminum1
     new G4CMPLogicalBorderSurface("Al1Vac",aluminum1Physical,fWorldPhys,
-				  fVacSurfProp);
+                                  fVacSurfProp);
     new G4CMPLogicalBorderSurface("VacAl1",fWorldPhys,aluminum1Physical,
-				  fVacSurfProp);
+                                  fVacSurfProp);
     new G4CMPLogicalBorderSurface("Al1Al2FromAbove",aluminum1Physical,
-				  aluminum2Physical,fAl1Al2FromAboveSurfProp);
+                                  aluminum2Physical,fAl1Al2FromAboveSurfProp);
     new G4CMPLogicalBorderSurface("Al2Al1FromBelow",aluminum2Physical,
-				  aluminum1Physical,fAl1Al2FromBelowSurfProp);
+                                  aluminum1Physical,fAl1Al2FromBelowSurfProp);
 
     //Aluminum2
     new G4CMPLogicalBorderSurface("Al2Vac",aluminum2Physical,fWorldPhys,
-				  fVacSurfProp);
+                                  fVacSurfProp);
     new G4CMPLogicalBorderSurface("VacAl2",fWorldPhys,aluminum2Physical,
-				  fVacSurfProp);
+                                  fVacSurfProp);
     new G4CMPLogicalBorderSurface("Al2NbA",aluminum2Physical,
-				  niobiumAForAluminum2Physical,fAl2NbSurfProp);
+                                  niobiumAForAluminum2Physical,fAl2NbSurfProp);
     new G4CMPLogicalBorderSurface("NbAAl2",niobiumAForAluminum2Physical,
-				  aluminum2Physical,fAl2NbSurfProp);
+                                  aluminum2Physical,fAl2NbSurfProp);
     new G4CMPLogicalBorderSurface("Al2NbB",aluminum2Physical,
-				  niobiumBForAluminum2Physical,fAl2NbSurfProp);
+                                  niobiumBForAluminum2Physical,fAl2NbSurfProp);
     new G4CMPLogicalBorderSurface("NbBAl2",niobiumBForAluminum2Physical,
-				  aluminum2Physical,fAl2NbSurfProp);
+                                  aluminum2Physical,fAl2NbSurfProp);
     new G4CMPLogicalBorderSurface("Al2Al3",aluminum2Physical,aluminum3Physical,
-				  fAl2Al3SurfProp);
+                                  fAl2Al3SurfProp);
     new G4CMPLogicalBorderSurface("Al3Al2",aluminum3Physical,aluminum2Physical,
-				  fAl2Al3SurfProp);    
+                                  fAl2Al3SurfProp);    
     new G4CMPLogicalBorderSurface("Al2NbLower",aluminum2Physical,
-				  niobiumForAluminum3Physical,fAl2Al3SurfProp);
+                                  niobiumForAluminum3Physical,fAl2Al3SurfProp);
     new G4CMPLogicalBorderSurface("NbLowerAl2",niobiumForAluminum3Physical,
-				  aluminum2Physical,fAl2Al3SurfProp);
+                                  aluminum2Physical,fAl2Al3SurfProp);
 
     
     //Aluminum2's niobium ends
     new G4CMPLogicalBorderSurface("NbAVac",niobiumAForAluminum2Physical,
-				  fWorldPhys,fVacSurfProp);
+                                  fWorldPhys,fVacSurfProp);
     new G4CMPLogicalBorderSurface("VacNbA",fWorldPhys,
-				  niobiumAForAluminum2Physical,fVacSurfProp);
+                                  niobiumAForAluminum2Physical,fVacSurfProp);
     new G4CMPLogicalBorderSurface("NbBVac",niobiumBForAluminum2Physical,
-				  fWorldPhys,fVacSurfProp);
+                                  fWorldPhys,fVacSurfProp);
     new G4CMPLogicalBorderSurface("VacNbB",fWorldPhys,
-				  niobiumBForAluminum2Physical,fVacSurfProp);
+                                  niobiumBForAluminum2Physical,fVacSurfProp);
     
     //Aluminum3
     new G4CMPLogicalBorderSurface("Al3Vac",aluminum3Physical,fWorldPhys,
-				  fVacSurfProp);
+                                  fVacSurfProp);
     new G4CMPLogicalBorderSurface("VacAl3",fWorldPhys,aluminum3Physical,
-				  fVacSurfProp);
+                                  fVacSurfProp);
     new G4CMPLogicalBorderSurface("NbAl3",niobiumForAluminum3Physical,
-				  aluminum3Physical,fAl3NbSurfProp);
+                                  aluminum3Physical,fAl3NbSurfProp);
     new G4CMPLogicalBorderSurface("Al3Nb",aluminum3Physical,
-				  niobiumForAluminum3Physical,fAl3NbSurfProp);
+                                  niobiumForAluminum3Physical,fAl3NbSurfProp);
 
     //Aluminum3's niobium center
     new G4CMPLogicalBorderSurface("NbVac",niobiumForAluminum3Physical,
-				  fWorldPhys,fVacSurfProp);
+                                  fWorldPhys,fVacSurfProp);
     new G4CMPLogicalBorderSurface("VacNb",fWorldPhys,
-				  niobiumForAluminum3Physical,fVacSurfProp);
+                                  niobiumForAluminum3Physical,fVacSurfProp);
 
 
 
@@ -518,73 +518,73 @@ void ValidationDetectorConstruction::SetupGeometry() {
       
       //For the the interface of the Si and Aluminum
       fSiAlInterface = new G4CMPSurfaceProperty("SiAlSurf",
-						0.0, 1.0, 0.0, 0.0,
-						0.0, 0.0, 0.0, 0.0,
-						0.0, 1.0);
+                                                0.0, 1.0, 0.0, 0.0,
+                                                0.0, 0.0, 0.0, 0.0,
+                                                0.0, 1.0);
       fSiAlInterface->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					      diffCoeffs, specCoeffs, GHz, GHz,
-					      GHz);
+                                              diffCoeffs, specCoeffs, GHz, GHz,
+                                              GHz);
       fBorderContainer.emplace("SiAl",fSiAlInterface);
 
       //For the the interface of the Si and the world
       fSiVacInterface = new G4CMPSurfaceProperty("SiVacSurf",
-						 0.0, 1.0, 0.0, 0.0,
-						 0.0, 1.0, 0.0, 0.0,
-						 0.0, 1.0);
+                                                 0.0, 1.0, 0.0, 0.0,
+                                                 0.0, 1.0, 0.0, 0.0,
+                                                 0.0, 1.0);
       fSiVacInterface->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					       diffCoeffs, specCoeffs, GHz, GHz,
-					       GHz);
+                                               diffCoeffs, specCoeffs, GHz, GHz,
+                                               GHz);
       fBorderContainer.emplace("SiVac",fSiVacInterface);
 
       //For the the interface of the Si and the Cu
       fSiCuInterface = new G4CMPSurfaceProperty("SiCuSurf",
-						0.0, 1.0, 0.0, 0.0,
-						0.0, 0.0, 0.0, 0.0,
-						0.0, 1.0);
+                                                0.0, 1.0, 0.0, 0.0,
+                                                0.0, 0.0, 0.0, 0.0,
+                                                0.0, 1.0);
       fSiCuInterface->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					      diffCoeffs, specCoeffs, GHz, GHz,
-					      GHz);
+                                              diffCoeffs, specCoeffs, GHz, GHz,
+                                              GHz);
       fBorderContainer.emplace("SiCu",fSiCuInterface);      
 
       //For the the interface of the Cu and the Vac
       fCuVacInterface = new G4CMPSurfaceProperty("CuVacSurf",
-						 0.0, 1.0, 0.0, 0.0,
-						 1.0, 1.0, 0.0, 0.0,
-						 0.0, 1.0);
+                                                 0.0, 1.0, 0.0, 0.0,
+                                                 1.0, 1.0, 0.0, 0.0,
+                                                 0.0, 1.0);
       fCuVacInterface->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					       diffCoeffs, specCoeffs, GHz, GHz,
-					       GHz);
+                                               diffCoeffs, specCoeffs, GHz, GHz,
+                                               GHz);
       fBorderContainer.emplace("CuVac",fCuVacInterface);      
 
       
       //For the the interface of the Al and world
       fAlVacInterface = new G4CMPSurfaceProperty("AlVacSurf",
-						 0.0, 1.0, 0.0, 0.0,
-						 0.0, 1.0, 0.0, 0.0,
-						 0.0, 1.0);
+                                                 0.0, 1.0, 0.0, 0.0,
+                                                 0.0, 1.0, 0.0, 0.0,
+                                                 0.0, 1.0);
       fAlVacInterface->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					       diffCoeffs, specCoeffs, GHz, GHz,
-					       GHz);
+                                               diffCoeffs, specCoeffs, GHz, GHz,
+                                               GHz);
       fBorderContainer.emplace("AlVac",fAlVacInterface);      
 
       //For the the interface of the Al and Al
       fAlAlInterface = new G4CMPSurfaceProperty("AlAlSurf",
-						0.0, 1.0, 0.0, 0.0,
-						0.0, 0.0, 0.0, 0.0,
-						0.0, 0.0);
+                                                0.0, 1.0, 0.0, 0.0,
+                                                0.0, 0.0, 0.0, 0.0,
+                                                0.0, 0.0);
       fAlAlInterface->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					      diffCoeffs, specCoeffs, GHz, GHz,
-					      GHz);
+                                              diffCoeffs, specCoeffs, GHz, GHz,
+                                              GHz);
       fBorderContainer.emplace("AlAl",fAlAlInterface);
 
       //For the the interface of the Vac and Vac
       fVacVacInterface = new G4CMPSurfaceProperty("VacVacSurf",
-						  0.0, 1.0, 0.0, 0.0,
-						  0.0, 1.0, 0.0, 0.0,
-						  0.0, 1.0);
+                                                  0.0, 1.0, 0.0, 0.0,
+                                                  0.0, 1.0, 0.0, 0.0,
+                                                  0.0, 1.0);
       fVacVacInterface->AddScatteringProperties(anhCutoff, reflCutoff,
-						anhCoeffs,diffCoeffs,
-						specCoeffs,GHz,GHz,GHz);
+                                                anhCoeffs,diffCoeffs,
+                                                specCoeffs,GHz,GHz,GHz);
       fBorderContainer.emplace("VacVac",fVacVacInterface);      
     }
 
@@ -603,21 +603,21 @@ void ValidationDetectorConstruction::SetupGeometry() {
 
     //First, set up the qubit chip substrate. 
     G4Box * solid_siliconChip = new G4Box("QubitChip_solid",
-					  0.5*dp_siliconChipDimX,
-					  0.5*dp_siliconChipDimY,
-					  0.5*dp_siliconChipDimZ);
+                                          0.5*dp_siliconChipDimX,
+                                          0.5*dp_siliconChipDimY,
+                                          0.5*dp_siliconChipDimZ);
   
     //Now attribute a physical material to the chip
     G4LogicalVolume * log_siliconChip = new G4LogicalVolume(solid_siliconChip,
-							    fSilicon,
-							    "SiliconChip_log");
+                                                            fSilicon,
+                                                            "SiliconChip_log");
     
     //Now, create a physical volume and G4PVPlacement for storing as the
     //final output
     G4ThreeVector siliconChipTranslate(0,0,0.5*(dp_housingDimZ - dp_siliconChipDimZ) + dp_eps); 
     G4VPhysicalVolume * phys_siliconChip
       = new G4PVPlacement(0,siliconChipTranslate,log_siliconChip,"SiliconChip",
-			  worldLogical,false,0,checkOverlaps);
+                          worldLogical,false,0,checkOverlaps);
     
     G4VisAttributes* siliconChipVisAtt
       = new G4VisAttributes(G4Colour(0.5,0.5,0.5));
@@ -635,21 +635,21 @@ void ValidationDetectorConstruction::SetupGeometry() {
     //Set up border surfaces
     G4CMPLogicalBorderSurface * border_siliconChip_world
       = new G4CMPLogicalBorderSurface("border_siliconChip_world",
-				      phys_siliconChip, fWorldPhys,
-				      fSiVacInterface);
+                                      phys_siliconChip, fWorldPhys,
+                                      fSiVacInterface);
 
     
     //If desired, set up the copper qubit housing
     if (dp_useQubitHousing) {           
       ValidationQubitHousing * qubitHousing
-	= new ValidationQubitHousing(0,G4ThreeVector(0,0,0),"QubitHousing",
-				     worldLogical,false,0,checkOverlaps);
+        = new ValidationQubitHousing(0,G4ThreeVector(0,0,0),"QubitHousing",
+                                     worldLogical,false,0,checkOverlaps);
       G4LogicalVolume * log_qubitHousing = qubitHousing->GetLogicalVolume();
       G4VPhysicalVolume * phys_qubitHousing = qubitHousing->GetPhysicalVolume();
 
       //Set up lattice properties for copper housing
       G4LatticePhysical* phys_copperLattice
-	= new G4LatticePhysical(log_copperLattice);
+        = new G4LatticePhysical(log_copperLattice);
       phys_copperLattice->SetMillerOrientation(1,0,0); 
       LM->RegisterLattice(phys_qubitHousing,phys_copperLattice);
 
@@ -657,17 +657,17 @@ void ValidationDetectorConstruction::SetupGeometry() {
       
       //Set up the logical border surface
       G4CMPLogicalBorderSurface * border_siliconChip_qubitHousing
-	= new G4CMPLogicalBorderSurface("border_siliconChip_qubitHousing",
-					phys_siliconChip, phys_qubitHousing,
-					fSiCuInterface);
+        = new G4CMPLogicalBorderSurface("border_siliconChip_qubitHousing",
+                                        phys_siliconChip, phys_qubitHousing,
+                                        fSiCuInterface);
       G4CMPLogicalBorderSurface * border_qubitHousing_siliconChip
-	= new G4CMPLogicalBorderSurface("border_qubitHousing_siliconChip",
-					phys_qubitHousing, phys_siliconChip,
-					fSiCuInterface);
+        = new G4CMPLogicalBorderSurface("border_qubitHousing_siliconChip",
+                                        phys_qubitHousing, phys_siliconChip,
+                                        fSiCuInterface);
       G4CMPLogicalBorderSurface * border_qubitHousing_world
-	= new G4CMPLogicalBorderSurface("border_qubitHousing_world",
-					phys_qubitHousing, fWorldPhys,
-					fCuVacInterface);
+        = new G4CMPLogicalBorderSurface("border_qubitHousing_world",
+                                        phys_qubitHousing, fWorldPhys,
+                                        fCuVacInterface);
 
     }
 
@@ -676,31 +676,31 @@ void ValidationDetectorConstruction::SetupGeometry() {
     if (dp_useGroundPlane) {    
     
       G4Box * solid_groundPlane
-	= new G4Box("GroundPlane_solid",0.5*dp_groundPlaneDimX,
-		    0.5*dp_groundPlaneDimY,0.5*dp_groundPlaneDimZ);
+        = new G4Box("GroundPlane_solid",0.5*dp_groundPlaneDimX,
+                    0.5*dp_groundPlaneDimY,0.5*dp_groundPlaneDimZ);
     
     
       //Now attribute a physical material to the chip
       G4LogicalVolume * log_groundPlane
-	= new G4LogicalVolume(solid_groundPlane,fAluminum,"GroundPlane_log");
+        = new G4LogicalVolume(solid_groundPlane,fAluminum,"GroundPlane_log");
     
     
       //Now, create a physical volume and G4PVPlacement for storing as the
       //final output
       G4ThreeVector groundPlaneTranslate(0,0,0.5*(dp_housingDimZ) + dp_eps + dp_groundPlaneDimZ*0.5);
       G4VPhysicalVolume * phys_groundPlane
-	= new G4PVPlacement(0,groundPlaneTranslate,log_groundPlane,
-			    "GroundPlane",worldLogical,false,0,checkOverlaps);
+        = new G4PVPlacement(0,groundPlaneTranslate,log_groundPlane,
+                            "GroundPlane",worldLogical,false,0,checkOverlaps);
       
       G4VisAttributes* groundPlaneVisAtt
-	= new G4VisAttributes(G4Colour(0.0,1.0,1.0,0.5));
+        = new G4VisAttributes(G4Colour(0.0,1.0,1.0,0.5));
       groundPlaneVisAtt->SetVisibility(true);
       log_groundPlane->SetVisAttributes(groundPlaneVisAtt);
 
       G4LatticePhysical* phys_groundPlaneLattice
-	= new G4LatticePhysical(log_aluminumLattice,dp_polycryElScatMFP_Al,
-				dp_scDelta0_Al, dp_scTeff_Al,
-				dp_scDn_Al, dp_scTauQPTrap_Al);
+        = new G4LatticePhysical(log_aluminumLattice,dp_polycryElScatMFP_Al,
+                                dp_scDelta0_Al, dp_scTeff_Al,
+                                dp_scDn_Al, dp_scTauQPTrap_Al);
       phys_groundPlaneLattice->SetMillerOrientation(1,0,0);
       LM->RegisterLattice(phys_groundPlane,phys_groundPlaneLattice);
 
@@ -708,20 +708,20 @@ void ValidationDetectorConstruction::SetupGeometry() {
       
       //Set up the logical border surface
       G4CMPLogicalBorderSurface * border_siliconChip_groundPlane
-	= new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
-					phys_siliconChip, phys_groundPlane,
-					fSiAlInterface);
+        = new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
+                                        phys_siliconChip, phys_groundPlane,
+                                        fSiAlInterface);
       G4CMPLogicalBorderSurface * border_groundPlane_siliconChip
-	= new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
-					phys_groundPlane, phys_siliconChip,
-					fSiAlInterface);
+        = new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
+                                        phys_groundPlane, phys_siliconChip,
+                                        fSiAlInterface);
       G4CMPLogicalBorderSurface * border_world_groundPlane
-	= new G4CMPLogicalBorderSurface("border_world_groundPlane", fWorldPhys,
-					phys_groundPlane, fAlVacInterface);
+        = new G4CMPLogicalBorderSurface("border_world_groundPlane", fWorldPhys,
+                                        phys_groundPlane, fAlVacInterface);
       G4CMPLogicalBorderSurface * border_groundPlane_world
-	= new G4CMPLogicalBorderSurface("border_groundPlane_world",
-					phys_groundPlane, fWorldPhys,
-					fAlVacInterface);
+        = new G4CMPLogicalBorderSurface("border_groundPlane_world",
+                                        phys_groundPlane, fWorldPhys,
+                                        fAlVacInterface);
 
 
     
@@ -729,344 +729,344 @@ void ValidationDetectorConstruction::SetupGeometry() {
       //Now set up the transmission line
       if (dp_useTransmissionLine) {
 	
-	//Since it's within the ground plane exactly;
-	//0.5*(dp_housingDimZ) + dp_eps + dp_groundPlaneDimZ*0.5 ); 
-	G4ThreeVector transmissionLineTranslate(0,0,0.0);
-	ValidationTransmissionLine * tLine
-	  = new ValidationTransmissionLine(0,transmissionLineTranslate,
-					   "TransmissionLine",log_groundPlane,
-					   false,0,LM,fLogicalLatticeContainer,
-					   fBorderContainer,checkOverlaps);
-	G4LogicalVolume * log_tLine = tLine->GetLogicalVolume();
-	G4VPhysicalVolume * phys_tLine = tLine->GetPhysicalVolume();
+        //Since it's within the ground plane exactly;
+        //0.5*(dp_housingDimZ) + dp_eps + dp_groundPlaneDimZ*0.5 ); 
+        G4ThreeVector transmissionLineTranslate(0,0,0.0);
+        ValidationTransmissionLine * tLine
+          = new ValidationTransmissionLine(0,transmissionLineTranslate,
+                                           "TransmissionLine",log_groundPlane,
+                                           false,0,LM,fLogicalLatticeContainer,
+                                           fBorderContainer,checkOverlaps);
+        G4LogicalVolume * log_tLine = tLine->GetLogicalVolume();
+        G4VPhysicalVolume * phys_tLine = tLine->GetPhysicalVolume();
 
 
 
-	//Now, if we're using the chip and ground plane AND the transmission
-	//line. This gets a bit hairy, since the transmission line is
-	//composite of both Nb and vacuum. So we'll access the list of
-	//physical objects present in it and link those one-by-one to the
-	//silicon chip and to the world
-	for (int iSubVol = 0; iSubVol < tLine->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
+        //Now, if we're using the chip and ground plane AND the transmission
+        //line. This gets a bit hairy, since the transmission line is
+        //composite of both Nb and vacuum. So we'll access the list of
+        //physical objects present in it and link those one-by-one to the
+        //silicon chip and to the world
+        for (int iSubVol = 0; iSubVol < tLine->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
 
-	  std::tuple<std::string,G4String,G4VPhysicalVolume*> theTLTuple
-	    = tLine->GetListOfAllFundamentalSubVolumes()[iSubVol];
+          std::tuple<std::string,G4String,G4VPhysicalVolume*> theTLTuple
+            = tLine->GetListOfAllFundamentalSubVolumes()[iSubVol];
 
-	  std::cout << "TLine sub volume names (to be used for boundaries): "
-		    << std::get<1>(theTLTuple)
-		    << " with material "
-		    << std::get<0>(theTLTuple)
-		    << std::endl;
+          std::cout << "TLine sub volume names (to be used for boundaries): "
+                    << std::get<1>(theTLTuple)
+                    << " with material "
+                    << std::get<0>(theTLTuple)
+                    << std::endl;
 
-	  //Set the si/vac and si/Al interfaces to be symmetric in both
-	  //dimensions
-	  std::string tempName1a = "border_siliconChip_"
-	    + std::get<1>(theTLTuple);
-	  std::string tempName1b = "border_" + std::get<1>(theTLTuple)
-	    + "_siliconChip";
+          //Set the si/vac and si/Al interfaces to be symmetric in both
+          //dimensions
+          std::string tempName1a = "border_siliconChip_"
+            + std::get<1>(theTLTuple);
+          std::string tempName1b = "border_" + std::get<1>(theTLTuple)
+            + "_siliconChip";
 	  
-	  if (std::get<0>(theTLTuple).find("Vacuum") != std::string::npos) {
+          if (std::get<0>(theTLTuple).find("Vacuum") != std::string::npos) {
 
-	    G4CMPLogicalBorderSurface *
-	      border1_siliconChip_transmissionLineEmpty
-	      = new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip,
-					      std::get<2>(theTLTuple),
-					      fSiVacInterface);
+            G4CMPLogicalBorderSurface *
+              border1_siliconChip_transmissionLineEmpty
+              = new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip,
+                                              std::get<2>(theTLTuple),
+                                              fSiVacInterface);
 	    
-	    G4CMPLogicalBorderSurface *
-	      border2_siliconChip_transmissionLineEmpty
-	      = new G4CMPLogicalBorderSurface(tempName1b,
-					      std::get<2>(theTLTuple),
-					      phys_siliconChip,
-					      fSiVacInterface);
-	  }
+            G4CMPLogicalBorderSurface *
+              border2_siliconChip_transmissionLineEmpty
+              = new G4CMPLogicalBorderSurface(tempName1b,
+                                              std::get<2>(theTLTuple),
+                                              phys_siliconChip,
+                                              fSiVacInterface);
+          }
 	  
-	  if (std::get<0>(theTLTuple).find("Aluminum") != std::string::npos) {
+          if (std::get<0>(theTLTuple).find("Aluminum") != std::string::npos) {
 	    
-	    G4CMPLogicalBorderSurface *
-	      border1_siliconChip_transmissionLineConductor
-	      = new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip,
-					      std::get<2>(theTLTuple),
-					      fSiAlInterface);
+            G4CMPLogicalBorderSurface *
+              border1_siliconChip_transmissionLineConductor
+              = new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip,
+                                              std::get<2>(theTLTuple),
+                                              fSiAlInterface);
 
-	    G4CMPLogicalBorderSurface *
-	      border2_siliconChip_transmissionLineConductor
-	      = new G4CMPLogicalBorderSurface(tempName1b,
-					      std::get<2>(theTLTuple),
-					      phys_siliconChip,
-					      fSiAlInterface);
-	  }
+            G4CMPLogicalBorderSurface *
+              border2_siliconChip_transmissionLineConductor
+              = new G4CMPLogicalBorderSurface(tempName1b,
+                                              std::get<2>(theTLTuple),
+                                              phys_siliconChip,
+                                              fSiAlInterface);
+          }
 
 
-	  //Set the world/vac and world/Al interfaces to be symmetric in both
-	  //dimensions
-	  std::string tempName2a = "border_world_" + std::get<1>(theTLTuple);
-	  std::string tempName2b = "border_" + std::get<1>(theTLTuple) +
-	    "_world";
+          //Set the world/vac and world/Al interfaces to be symmetric in both
+          //dimensions
+          std::string tempName2a = "border_world_" + std::get<1>(theTLTuple);
+          std::string tempName2b = "border_" + std::get<1>(theTLTuple) +
+            "_world";
 	  
-	  if (std::get<0>(theTLTuple).find("Vacuum") != std::string::npos) {
+          if (std::get<0>(theTLTuple).find("Vacuum") != std::string::npos) {
 
-	    G4CMPLogicalBorderSurface *
-	      border1_world_transmissionLineEmpty
-	      = new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys,
-					      std::get<2>(theTLTuple),
-					      fVacVacInterface);
-	    G4CMPLogicalBorderSurface *
-	      border2_world_transmissionLineEmpty
-	      = new G4CMPLogicalBorderSurface(tempName2b,
-					      std::get<2>(theTLTuple),
-					      fWorldPhys,fVacVacInterface);
-	  }
-	  if (std::get<0>(theTLTuple).find("Aluminum") != std::string::npos) {
+            G4CMPLogicalBorderSurface *
+              border1_world_transmissionLineEmpty
+              = new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys,
+                                              std::get<2>(theTLTuple),
+                                              fVacVacInterface);
+            G4CMPLogicalBorderSurface *
+              border2_world_transmissionLineEmpty
+              = new G4CMPLogicalBorderSurface(tempName2b,
+                                              std::get<2>(theTLTuple),
+                                              fWorldPhys,fVacVacInterface);
+          }
+          if (std::get<0>(theTLTuple).find("Aluminum") != std::string::npos) {
 	    
-	    G4CMPLogicalBorderSurface *
-	      border1_world_transmissionLineConductor
-	      = new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys,
-					      std::get<2>(theTLTuple),
-					      fAlVacInterface);
-	    G4CMPLogicalBorderSurface *
-	      border2_world_transmissionLineConductor
-	      = new G4CMPLogicalBorderSurface(tempName2b,
-					      std::get<2>(theTLTuple),
-					      fWorldPhys,fAlVacInterface);
-	  }
+            G4CMPLogicalBorderSurface *
+              border1_world_transmissionLineConductor
+              = new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys,
+                                              std::get<2>(theTLTuple),
+                                              fAlVacInterface);
+            G4CMPLogicalBorderSurface *
+              border2_world_transmissionLineConductor
+              = new G4CMPLogicalBorderSurface(tempName2b,
+                                              std::get<2>(theTLTuple),
+                                              fWorldPhys,fAlVacInterface);
+          }
 	  
 	  
-	  //Space here for linking to GROUND PLANE. Only need to link vacuum
-	  //ones since they're fully enclosing TL
-	  std::string tempName3a = "border_groundPlane_" +
-	    std::get<1>(theTLTuple);
-	  std::string tempName3b = "border_" + std::get<1>(theTLTuple) +
-	    "_groundPlane";	  
-	  if (std::get<0>(theTLTuple).find("Vacuum") != std::string::npos) {
-	    G4CMPLogicalBorderSurface *
-	      border1_groundPlane_transmissionLineEmpty
-	      = new G4CMPLogicalBorderSurface(tempName3a, phys_groundPlane,
-					      std::get<2>(theTLTuple),
-					      fAlVacInterface);
+          //Space here for linking to GROUND PLANE. Only need to link vacuum
+          //ones since they're fully enclosing TL
+          std::string tempName3a = "border_groundPlane_" +
+            std::get<1>(theTLTuple);
+          std::string tempName3b = "border_" + std::get<1>(theTLTuple) +
+            "_groundPlane";	  
+          if (std::get<0>(theTLTuple).find("Vacuum") != std::string::npos) {
+            G4CMPLogicalBorderSurface *
+              border1_groundPlane_transmissionLineEmpty
+              = new G4CMPLogicalBorderSurface(tempName3a, phys_groundPlane,
+                                              std::get<2>(theTLTuple),
+                                              fAlVacInterface);
 	    
-	    G4CMPLogicalBorderSurface *
-	      border2_groundPlane_transmissionLineEmpty
-	      = new G4CMPLogicalBorderSurface(tempName3b,
-					      std::get<2>(theTLTuple),
-					      phys_groundPlane,
-					      fAlVacInterface);
-	  }
-	}
+            G4CMPLogicalBorderSurface *
+              border2_groundPlane_transmissionLineEmpty
+              = new G4CMPLogicalBorderSurface(tempName3b,
+                                              std::get<2>(theTLTuple),
+                                              phys_groundPlane,
+                                              fAlVacInterface);
+          }
+        }
       }
     
   
       //Now set up a set of 6 resonator assemblies
       if (dp_useResonatorAssembly) {
-	int nR = 6;
-	for (int iR = 0; iR < nR; ++iR) {
+        int nR = 6;
+        for (int iR = 0; iR < nR; ++iR) {
       
-	  //First, get the translation vector for the resonator assembly
-	  //For the top three, don't do a rotation. For the bottom three, do
-	  G4ThreeVector resonatorAssemblyTranslate(0,0,0);
-	  G4RotationMatrix * rotAssembly = 0;
-	  if (iR <= 2) {
-	    resonatorAssemblyTranslate
-	      = G4ThreeVector(dp_resonatorLateralSpacing*(iR-1)
-			      +dp_centralResonatorOffsetX,
-			      0.5 * dp_resonatorAssemblyBaseAlDimY
-			      + 0.5 * dp_transmissionLineCavityFullWidth,
-			      0.0);
-	    rotAssembly = 0;
-	  } else {
+          //First, get the translation vector for the resonator assembly
+          //For the top three, don't do a rotation. For the bottom three, do
+          G4ThreeVector resonatorAssemblyTranslate(0,0,0);
+          G4RotationMatrix * rotAssembly = 0;
+          if (iR <= 2) {
+            resonatorAssemblyTranslate
+              = G4ThreeVector(dp_resonatorLateralSpacing*(iR-1)
+                              +dp_centralResonatorOffsetX,
+                              0.5 * dp_resonatorAssemblyBaseAlDimY
+                              + 0.5 * dp_transmissionLineCavityFullWidth,
+                              0.0);
+            rotAssembly = 0;
+          } else {
 
-	    //Negative offset because qubit is mirrored on underside
-	    resonatorAssemblyTranslate
-	      = G4ThreeVector(dp_resonatorLateralSpacing*(iR-4)-
-			      dp_centralResonatorOffsetX, 
-			      -1*(0.5 * dp_resonatorAssemblyBaseAlDimY +
-				  0.5 * dp_transmissionLineCavityFullWidth),
-			      0.0);
-	    rotAssembly = new G4RotationMatrix();
-	    rotAssembly->rotateZ(180*deg);
-	  }
+            //Negative offset because qubit is mirrored on underside
+            resonatorAssemblyTranslate
+              = G4ThreeVector(dp_resonatorLateralSpacing*(iR-4)-
+                              dp_centralResonatorOffsetX, 
+                              -1*(0.5 * dp_resonatorAssemblyBaseAlDimY +
+                                  0.5 * dp_transmissionLineCavityFullWidth),
+                              0.0);
+            rotAssembly = new G4RotationMatrix();
+            rotAssembly->rotateZ(180*deg);
+          }
 	
-	  char name[400];
-	  sprintf(name,"ResonatorAssembly_%d",iR);
-	  G4String resonatorAssemblyName(name);
-	  ValidationResonatorAssembly * resonatorAssembly
-	    = new ValidationResonatorAssembly(rotAssembly,
-					      resonatorAssemblyTranslate,
-					      resonatorAssemblyName,
-					      log_groundPlane,false,
-					      0,LM,fLogicalLatticeContainer,
-					      fBorderContainer,checkOverlaps);
+          char name[400];
+          sprintf(name,"ResonatorAssembly_%d",iR);
+          G4String resonatorAssemblyName(name);
+          ValidationResonatorAssembly * resonatorAssembly
+            = new ValidationResonatorAssembly(rotAssembly,
+                                              resonatorAssemblyTranslate,
+                                              resonatorAssemblyName,
+                                              log_groundPlane,false,
+                                              0,LM,fLogicalLatticeContainer,
+                                              fBorderContainer,checkOverlaps);
 
-	  G4LogicalVolume * log_resonatorAssembly
-	    = resonatorAssembly->GetLogicalVolume();
-	  G4VPhysicalVolume * phys_resonatorAssembly
-	    = resonatorAssembly->GetPhysicalVolume();
+          G4LogicalVolume * log_resonatorAssembly
+            = resonatorAssembly->GetLogicalVolume();
+          G4VPhysicalVolume * phys_resonatorAssembly
+            = resonatorAssembly->GetPhysicalVolume();
 
-	  //Do the logical border creation now
-	  for (int iSubVol = 0; iSubVol < resonatorAssembly->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
+          //Do the logical border creation now
+          for (int iSubVol = 0; iSubVol < resonatorAssembly->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
 
-	    std::tuple<std::string,G4String,G4VPhysicalVolume*> theResTuple
-	      = resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol];
+            std::tuple<std::string,G4String,G4VPhysicalVolume*> theResTuple
+              = resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol];
 	    
-	    std::cout << "Resonator assuembly sub volume names (to be used for "
-		      << "boundaries): "
-		      << std::get<1>(theResTuple) << " with material "
-		      << std::get<0>(theResTuple) << std::endl;
+            std::cout << "Resonator assuembly sub volume names (to be used for "
+                      << "boundaries): "
+                      << std::get<1>(theResTuple) << " with material "
+                      << std::get<0>(theResTuple) << std::endl;
 
 	    
-	    //Set the chip/vacuum interfaces
-	    if (std::get<0>(theResTuple).find("Vacuum") != std::string::npos) {
-	      std::string tempName1 = "border_siliconChip_"
-		+ std::get<1>(theResTuple);
-	      std::string tempName2 = "border_"
-		+ std::get<1>(theResTuple) + "_siliconChip";
-	      G4CMPLogicalBorderSurface *
-		border_siliconChip_resonatorAssemblyEmpty
-		= new G4CMPLogicalBorderSurface(tempName1,
-						std::get<2>(theResTuple),
-						phys_siliconChip,
-						fSiVacInterface);
-	      G4cout << "Setting interface for " << tempName1 << " to fSiVacInterface" << G4endl;
+            //Set the chip/vacuum interfaces
+            if (std::get<0>(theResTuple).find("Vacuum") != std::string::npos) {
+              std::string tempName1 = "border_siliconChip_"
+                + std::get<1>(theResTuple);
+              std::string tempName2 = "border_"
+                + std::get<1>(theResTuple) + "_siliconChip";
+              G4CMPLogicalBorderSurface *
+                border_siliconChip_resonatorAssemblyEmpty
+                = new G4CMPLogicalBorderSurface(tempName1,
+                                                std::get<2>(theResTuple),
+                                                phys_siliconChip,
+                                                fSiVacInterface);
+              G4cout << "Setting interface for " << tempName1 << " to fSiVacInterface" << G4endl;
 	      
-	      G4CMPLogicalBorderSurface *
-		border_resonatorAssemblyEmpty_siliconChip
-		= new G4CMPLogicalBorderSurface(tempName2,
-						phys_siliconChip,
-						std::get<2>(theResTuple),
-						fSiVacInterface);
-	      G4cout << "Setting interface for " << tempName2 << " to fSiVacInterface" << G4endl;
-	    }
+              G4CMPLogicalBorderSurface *
+                border_resonatorAssemblyEmpty_siliconChip
+                = new G4CMPLogicalBorderSurface(tempName2,
+                                                phys_siliconChip,
+                                                std::get<2>(theResTuple),
+                                                fSiVacInterface);
+              G4cout << "Setting interface for " << tempName2 << " to fSiVacInterface" << G4endl;
+            }
 
-	    //Set the chip/aluminum interfaces
-	    if (std::get<0>(theResTuple).find("Aluminum") !=std::string::npos) {
-	      std::string tempName1 = "border_siliconChip_" +
-		std::get<1>(theResTuple);
-	      std::string tempName2 = "border_" + std::get<1>(theResTuple) +
-		"_siliconChip";
-	      G4CMPLogicalBorderSurface *
-		border_siliconChip_resonatorAssemblyConductor
-		= new G4CMPLogicalBorderSurface(tempName1, phys_siliconChip,
-						std::get<2>(theResTuple),
-						fSiAlInterface);
-	      G4cout << "Setting interface for " << tempName1 << " to fSiAlInterface" << G4endl;
+            //Set the chip/aluminum interfaces
+            if (std::get<0>(theResTuple).find("Aluminum") !=std::string::npos) {
+              std::string tempName1 = "border_siliconChip_" +
+                std::get<1>(theResTuple);
+              std::string tempName2 = "border_" + std::get<1>(theResTuple) +
+                "_siliconChip";
+              G4CMPLogicalBorderSurface *
+                border_siliconChip_resonatorAssemblyConductor
+                = new G4CMPLogicalBorderSurface(tempName1, phys_siliconChip,
+                                                std::get<2>(theResTuple),
+                                                fSiAlInterface);
+              G4cout << "Setting interface for " << tempName1 << " to fSiAlInterface" << G4endl;
 	      
-	      G4CMPLogicalBorderSurface *
-		border_resonatorAssemblyConductor_siliconChip
-		= new G4CMPLogicalBorderSurface(tempName2,
-						std::get<2>(theResTuple),
-						phys_siliconChip,
-						fSiAlInterface);
-	      G4cout << "Setting interface for " << tempName2 << " to fSiAlInterface" << G4endl;
-	    }
+              G4CMPLogicalBorderSurface *
+                border_resonatorAssemblyConductor_siliconChip
+                = new G4CMPLogicalBorderSurface(tempName2,
+                                                std::get<2>(theResTuple),
+                                                phys_siliconChip,
+                                                fSiAlInterface);
+              G4cout << "Setting interface for " << tempName2 << " to fSiAlInterface" << G4endl;
+            }
 	    
-	    //Set the world/vacuum interfaces (probably not necessary but whatever, better to have everything well-defined
-	    if (std::get<0>(theResTuple).find("Vacuum") != std::string::npos) {
-	      std::string tempName1 = "border_world_" +
-		std::get<1>(theResTuple);
-	      std::string tempName2 = "border_" + std::get<1>(theResTuple) +
-		"_world";
-	      G4CMPLogicalBorderSurface *
-		border_world_resonatorAssemblyEmpty
-		= new G4CMPLogicalBorderSurface(tempName1, fWorldPhys,
-						std::get<2>(theResTuple),
-						fVacVacInterface);
-	      G4cout << "Setting interface for " << tempName1 << " to fVacVacInterface" << G4endl;
+            //Set the world/vacuum interfaces (probably not necessary but whatever, better to have everything well-defined
+            if (std::get<0>(theResTuple).find("Vacuum") != std::string::npos) {
+              std::string tempName1 = "border_world_" +
+                std::get<1>(theResTuple);
+              std::string tempName2 = "border_" + std::get<1>(theResTuple) +
+                "_world";
+              G4CMPLogicalBorderSurface *
+                border_world_resonatorAssemblyEmpty
+                = new G4CMPLogicalBorderSurface(tempName1, fWorldPhys,
+                                                std::get<2>(theResTuple),
+                                                fVacVacInterface);
+              G4cout << "Setting interface for " << tempName1 << " to fVacVacInterface" << G4endl;
 	      
-	      G4CMPLogicalBorderSurface *
-		border_resonatorAssemblyEmpty_world
-		= new G4CMPLogicalBorderSurface(tempName2,
-						std::get<2>(theResTuple),
-						fWorldPhys, fVacVacInterface);
-	      G4cout << "Setting interface for " << tempName2 << " to fVacVacInterface" << G4endl;
-	    }
+              G4CMPLogicalBorderSurface *
+                border_resonatorAssemblyEmpty_world
+                = new G4CMPLogicalBorderSurface(tempName2,
+                                                std::get<2>(theResTuple),
+                                                fWorldPhys, fVacVacInterface);
+              G4cout << "Setting interface for " << tempName2 << " to fVacVacInterface" << G4endl;
+            }
 
-	    //Set the world/aluminum interfaces
-	    if (std::get<0>(theResTuple).find("Aluminum") !=std::string::npos) {
-	      std::string tempName1 = "border_world_" +
-		std::get<1>(theResTuple);
-	      std::string tempName2 = "border_" + std::get<1>(theResTuple) +
-		"_world";
-	      G4CMPLogicalBorderSurface *
-		border_world_resonatorAssemblyConductor
-		= new G4CMPLogicalBorderSurface(tempName1, fWorldPhys,
-						std::get<2>(theResTuple),
-						fAlVacInterface);
-	      G4cout << "Setting interface for " << tempName1 << " to fAlVacInterface" << G4endl;
+            //Set the world/aluminum interfaces
+            if (std::get<0>(theResTuple).find("Aluminum") !=std::string::npos) {
+              std::string tempName1 = "border_world_" +
+                std::get<1>(theResTuple);
+              std::string tempName2 = "border_" + std::get<1>(theResTuple) +
+                "_world";
+              G4CMPLogicalBorderSurface *
+                border_world_resonatorAssemblyConductor
+                = new G4CMPLogicalBorderSurface(tempName1, fWorldPhys,
+                                                std::get<2>(theResTuple),
+                                                fAlVacInterface);
+              G4cout << "Setting interface for " << tempName1 << " to fAlVacInterface" << G4endl;
 	      
-	      G4CMPLogicalBorderSurface *
-		border_resonatorAssemblyConductor_world
-		= new G4CMPLogicalBorderSurface(tempName2,
-						std::get<2>(theResTuple),
-						fWorldPhys, fAlVacInterface);
-	      G4cout << "Setting interface for " << tempName2 << " to fAlVacInterface" << G4endl;
-	    }
+              G4CMPLogicalBorderSurface *
+                border_resonatorAssemblyConductor_world
+                = new G4CMPLogicalBorderSurface(tempName2,
+                                                std::get<2>(theResTuple),
+                                                fWorldPhys, fAlVacInterface);
+              G4cout << "Setting interface for " << tempName2 << " to fAlVacInterface" << G4endl;
+            }
 
-	    //Set the TLcouplerConductor interface with the ground plane
-	    if (std::get<1>(theResTuple).find("tlCouplingConductor") != std::string::npos) {
-	      std::string tempName1 = "border_groundPlane_" +
-		std::get<1>(theResTuple);
-	      std::string tempName2 = "border_" + std::get<1>(theResTuple) +
-		"_groundPlane";
-	      G4CMPLogicalBorderSurface *
-		border_groundPlane_tlCouplingConductor
-		= new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
-						std::get<2>(theResTuple),
-						fAlAlInterface);
-	      G4cout << "Setting interface for " << tempName1 << " to fAlAlInterface" << G4endl;
-	      G4CMPLogicalBorderSurface *
-		border_tlCouplingConductor_groundPlane
-		= new G4CMPLogicalBorderSurface(tempName2,
-						std::get<2>(theResTuple),
-						phys_groundPlane,
-						fAlAlInterface);
-	      G4cout << "Setting interface for " << tempName2 << " to fAlAlInterface" << G4endl;
-	    }
+            //Set the TLcouplerConductor interface with the ground plane
+            if (std::get<1>(theResTuple).find("tlCouplingConductor") != std::string::npos) {
+              std::string tempName1 = "border_groundPlane_" +
+                std::get<1>(theResTuple);
+              std::string tempName2 = "border_" + std::get<1>(theResTuple) +
+                "_groundPlane";
+              G4CMPLogicalBorderSurface *
+                border_groundPlane_tlCouplingConductor
+                = new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
+                                                std::get<2>(theResTuple),
+                                                fAlAlInterface);
+              G4cout << "Setting interface for " << tempName1 << " to fAlAlInterface" << G4endl;
+              G4CMPLogicalBorderSurface *
+                border_tlCouplingConductor_groundPlane
+                = new G4CMPLogicalBorderSurface(tempName2,
+                                                std::get<2>(theResTuple),
+                                                phys_groundPlane,
+                                                fAlAlInterface);
+              G4cout << "Setting interface for " << tempName2 << " to fAlAlInterface" << G4endl;
+            }
 	    
 	    
-	    //Set the TLCouplerEmpty interface with the ground plane
-	    if (std::get<1>(theResTuple).find("tlCouplingEmpty") != std::string::npos) {
-	      std::string tempName1 = "border_groundPlane_" +
-		std::get<1>(theResTuple);
-	      std::string tempName2 = "border_" + std::get<1>(theResTuple) +
-		"_groundPlane";
-	      G4CMPLogicalBorderSurface *
-		border_groundPlane_tlCouplingEmpty
-		= new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
-						std::get<2>(theResTuple),
-						fAlVacInterface);
-	      G4cout << "Setting interface for " << tempName1 << " to fAlVacInterface" << G4endl;
+            //Set the TLCouplerEmpty interface with the ground plane
+            if (std::get<1>(theResTuple).find("tlCouplingEmpty") != std::string::npos) {
+              std::string tempName1 = "border_groundPlane_" +
+                std::get<1>(theResTuple);
+              std::string tempName2 = "border_" + std::get<1>(theResTuple) +
+                "_groundPlane";
+              G4CMPLogicalBorderSurface *
+                border_groundPlane_tlCouplingEmpty
+                = new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
+                                                std::get<2>(theResTuple),
+                                                fAlVacInterface);
+              G4cout << "Setting interface for " << tempName1 << " to fAlVacInterface" << G4endl;
 	      
-	      G4CMPLogicalBorderSurface *
-		border_tlCouplingEmpty_groundPlane
-		= new G4CMPLogicalBorderSurface(tempName2,
-						std::get<2>(theResTuple),
-						phys_groundPlane,
-						fAlVacInterface);
-	      G4cout << "Setting interface for " << tempName2 << " to fAlVacInterface" << G4endl;
+              G4CMPLogicalBorderSurface *
+                border_tlCouplingEmpty_groundPlane
+                = new G4CMPLogicalBorderSurface(tempName2,
+                                                std::get<2>(theResTuple),
+                                                phys_groundPlane,
+                                                fAlVacInterface);
+              G4cout << "Setting interface for " << tempName2 << " to fAlVacInterface" << G4endl;
 	      
-	    }
+            }
 
-	    //Set the baseLayer/groundplane interface
-	    if (std::get<1>(theResTuple) == resonatorAssemblyName) {
-	      std::string tempName1 = "border_groundPlane_" +
-		std::get<1>(theResTuple);
-	      std::string tempName2 = "border_" + std::get<1>(theResTuple) +
-		"_groundPlane";
-	      G4CMPLogicalBorderSurface * border_groundPlane_baselayer
-		= new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
-						std::get<2>(theResTuple),
-						fAlAlInterface);
-	      G4cout << "---Test Setting interface for " << tempName1 << " to fAlAlInterface" << G4endl;
+            //Set the baseLayer/groundplane interface
+            if (std::get<1>(theResTuple) == resonatorAssemblyName) {
+              std::string tempName1 = "border_groundPlane_" +
+                std::get<1>(theResTuple);
+              std::string tempName2 = "border_" + std::get<1>(theResTuple) +
+                "_groundPlane";
+              G4CMPLogicalBorderSurface * border_groundPlane_baselayer
+                = new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
+                                                std::get<2>(theResTuple),
+                                                fAlAlInterface);
+              G4cout << "---Test Setting interface for " << tempName1 << " to fAlAlInterface" << G4endl;
 	      
-	      G4CMPLogicalBorderSurface * border_baselayer_groundPlane
-		= new G4CMPLogicalBorderSurface(tempName2,
-						std::get<2>(theResTuple),
-						phys_groundPlane,
-						fAlAlInterface);
-	      G4cout << "---Test Setting interface for " << tempName2 << " to fAlAlInterface" << G4endl;
-	    }
-	  }
-	}
+              G4CMPLogicalBorderSurface * border_baselayer_groundPlane
+                = new G4CMPLogicalBorderSurface(tempName2,
+                                                std::get<2>(theResTuple),
+                                                phys_groundPlane,
+                                                fAlAlInterface);
+              G4cout << "---Test Setting interface for " << tempName2 << " to fAlAlInterface" << G4endl;
+            }
+          }
+        }
       }
     }
   } else {

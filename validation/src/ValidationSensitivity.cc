@@ -80,7 +80,7 @@ void ValidationSensitivity::SetOutputFile(const G4String &fn) {
 }
 
 G4bool ValidationSensitivity::IsHit(const G4Step* step,
-                                const G4TouchableHistory*) const {
+                                    const G4TouchableHistory*) const {
   /* Phonons tracks are sometimes killed at the boundary in order to spawn new
    * phonon tracks. These tracks that are killed deposit no energy and should
    * not be picked up as hits.
@@ -90,12 +90,12 @@ G4bool ValidationSensitivity::IsHit(const G4Step* step,
   const G4ParticleDefinition* particle = track->GetDefinition();
 
   G4bool correctParticle = particle == G4PhononLong::Definition() ||
-                           particle == G4PhononTransFast::Definition() ||
-                           particle == G4PhononTransSlow::Definition();
+    particle == G4PhononTransFast::Definition() ||
+    particle == G4PhononTransSlow::Definition();
 
   G4bool correctStatus = step->GetTrack()->GetTrackStatus() == fStopAndKill &&
-                         postStepPoint->GetStepStatus() == fGeomBoundary &&
-                         step->GetNonIonizingEnergyDeposit() > 0.;
+    postStepPoint->GetStepStatus() == fGeomBoundary &&
+    step->GetNonIonizingEnergyDeposit() > 0.;
 
   return correctParticle && correctStatus;
 }

@@ -43,42 +43,42 @@ class G4PVPlacement;
 /// Detector construction class to define materials and geometry.
 class ValidationQubitHousing
 {
-  public:
-    ValidationQubitHousing();
-    ~ValidationQubitHousing();
+public:
+  ValidationQubitHousing();
+  ~ValidationQubitHousing();
 
-    //This is the constructor that should be used in general. It does not have the current logical
-    //volume included because that will be defined IN the Qubit housing implementation. All we need is
-    //a set of info that is external to this, which should be self-contained.
-    ValidationQubitHousing(G4RotationMatrix * pRot,
-				     const G4ThreeVector & tLate,
-				     const G4String & pName,
-				     G4LogicalVolume * pMotherLogical,
-				     G4bool pMany,
-				     G4int pCopyNo,
-				     G4bool pSurfChk=false);
+  //This is the constructor that should be used in general. It does not have the current logical
+  //volume included because that will be defined IN the Qubit housing implementation. All we need is
+  //a set of info that is external to this, which should be self-contained.
+  ValidationQubitHousing(G4RotationMatrix * pRot,
+                         const G4ThreeVector & tLate,
+                         const G4String & pName,
+                         G4LogicalVolume * pMotherLogical,
+                         G4bool pMany,
+                         G4int pCopyNo,
+                         G4bool pSurfChk=false);
   
-    //Access functions
-    G4VPhysicalVolume * GetPhysicalVolume() { return fPhys_output; }
-    G4LogicalVolume * GetLogicalVolume() { return fLog_output; }
+  //Access functions
+  G4VPhysicalVolume * GetPhysicalVolume() { return fPhys_output; }
+  G4LogicalVolume * GetLogicalVolume() { return fLog_output; }
   
-    //Misc
-    void ConstructQubitHousing(G4RotationMatrix * pRot,
-			       const G4ThreeVector & tLate,
-			       const G4String & pName,
-			       G4LogicalVolume * pMotherLogical,
-			       G4bool pMany,
-			       G4int pCopyNo,
-			       G4bool pSurfChk=false);
+  //Misc
+  void ConstructQubitHousing(G4RotationMatrix * pRot,
+                             const G4ThreeVector & tLate,
+                             const G4String & pName,
+                             G4LogicalVolume * pMotherLogical,
+                             G4bool pMany,
+                             G4int pCopyNo,
+                             G4bool pSurfChk=false);
   
   
-  protected:
+protected:
 
-  private:
+private:
 
-    //The final G4PVPlacement
-    G4LogicalVolume * fLog_output;
-    G4VPhysicalVolume * fPhys_output;
+  //The final G4PVPlacement
+  G4LogicalVolume * fLog_output;
+  G4VPhysicalVolume * fPhys_output;
   
   
 };

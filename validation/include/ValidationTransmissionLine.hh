@@ -32,7 +32,6 @@
 #define ValidationTransmissionLine_h 1
 
 
-//#include "G4PVPlacement.hh"
 #include "G4UnionSolid.hh"
 #include "ValidationDetectorParameters.hh"
 #include "ValidationPad.hh"
@@ -45,53 +44,58 @@ class G4PVPlacement;
 /// Detector construction class to define materials and geometry.
 class ValidationTransmissionLine
 {
-  public:
-    ValidationTransmissionLine();
-    ~ValidationTransmissionLine();
+public:
+  ValidationTransmissionLine();
+  ~ValidationTransmissionLine();
 
-    //This is the constructor that should be used in general. It does not have the current logical
-    //volume included because that will be defined IN the Qubit housing implementation. All we need is
-    //a set of info that is external to this, which should be self-contained.
-    ValidationTransmissionLine(G4RotationMatrix * pRot,
-				  const G4ThreeVector & tLate,
-				  const G4String & pName,
-				  G4LogicalVolume * pMotherLogical,
-				  G4bool pMany,
-				  G4int pCopyNo,
-				  G4LatticeManager * LM,
-				  std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-				  std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-				  G4bool pSurfChk=false);
+  //This is the constructor that should be used in general. It does not have
+  //the current logical volume included because that will be defined in the
+  //transmission line implementation. All we need is
+  //a set of info that is external to this, which should be self-contained.
+  ValidationTransmissionLine(G4RotationMatrix * pRot,
+                             const G4ThreeVector & tLate,
+                             const G4String & pName,
+                             G4LogicalVolume * pMotherLogical,
+                             G4bool pMany,
+                             G4int pCopyNo,
+                             G4LatticeManager * LM,
+                             std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                             std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+                             G4bool pSurfChk=false);
 
   
-    //Access functions
-    G4VPhysicalVolume * GetPhysicalVolume() { return fPhys_output; }
-    G4LogicalVolume * GetLogicalVolume() { return fLog_output; }
+  //Access functions
+  G4VPhysicalVolume * GetPhysicalVolume() { return fPhys_output; }
+  G4LogicalVolume * GetLogicalVolume() { return fLog_output; }
   
-    //Misc
-    void ConstructTransmissionLine(G4RotationMatrix * pRot,
-				   const G4ThreeVector & tLate,
-				   const G4String & pName,
-				   G4LogicalVolume * pMotherLogical,
-				   G4bool pMany,
-				   G4int pCopyNo,
-				   G4LatticeManager * LM,
-				   std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-				   std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-				   G4bool pSurfChk=false);  
+  //Misc
+  void ConstructTransmissionLine(G4RotationMatrix * pRot,
+                                 const G4ThreeVector & tLate,
+                                 const G4String & pName,
+                                 G4LogicalVolume * pMotherLogical,
+                                 G4bool pMany,
+                                 G4int pCopyNo,
+                                 G4LatticeManager * LM,
+                                 std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                                 std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+                                 G4bool pSurfChk=false);  
   G4UnionSolid * CreatePieceBasedAlLayer(G4String nameSolid);
   
-  std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > GetListOfAllFundamentalSubVolumes();
+  std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> >
+  GetListOfAllFundamentalSubVolumes();
   void AddComplexGeometryPadSubVolumesToThisList(ValidationPad * pad);
   
-  protected:
+protected:
 
-  private:
+private:
 
-    //The final G4PVPlacement
-    G4LogicalVolume * fLog_output;
-    G4VPhysicalVolume * fPhys_output;
-    std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > fFundamentalVolumeList; //List of all fundamental sub-volumes in the transmission line. String 1 is "material_description", String 2 should be unique identifier (name of the sub-physical volume)
+  //The final G4PVPlacement
+  G4LogicalVolume * fLog_output;
+  G4VPhysicalVolume * fPhys_output;
+  std::vector<std::tuple<std::string,G4String,G4VPhysicalVolume*> > fFundamentalVolumeList;
+  //List of all fundamental sub-volumes in the transmission line. String 1 is
+  //"material_description", String 2 should be unique identifier (name of the
+  //sub-physical volume)
   
   
   

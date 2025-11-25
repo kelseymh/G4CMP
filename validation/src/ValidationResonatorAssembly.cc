@@ -55,22 +55,22 @@ using namespace ValidationDetectorParameters;
 // Primary Constructor
 ValidationResonatorAssembly::
 ValidationResonatorAssembly(G4RotationMatrix * pRot,
-			    const G4ThreeVector & tLate,
-			    const G4String & pName,
-			    G4LogicalVolume * pMotherLogical,
-			    G4bool pMany,
-			    G4int pCopyNo,
-			    G4LatticeManager * LM,
-			    std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-			    std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-			    G4bool pSurfChk) {
+                            const G4ThreeVector & tLate,
+                            const G4String & pName,
+                            G4LogicalVolume * pMotherLogical,
+                            G4bool pMany,
+                            G4int pCopyNo,
+                            G4LatticeManager * LM,
+                            std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                            std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+                            G4bool pSurfChk) {
   //Here, use the inputs to this to set up the geometry and fill out the
   //PVPlacement data member, which is the real output from this class (and
   //which we'll access in our detector construction file)
 
   ConstructResonatorAssembly(pRot,tLate,pName,pMotherLogical,pMany,pCopyNo,
-			     LM,logicalLatticeContainer,borderContainer,
-			     pSurfChk);
+                             LM,logicalLatticeContainer,borderContainer,
+                             pSurfChk);
   
 }
 
@@ -88,15 +88,15 @@ ValidationResonatorAssembly::~ValidationResonatorAssembly() {
 //Moving implementation down here so it's not in the constructor
 void ValidationResonatorAssembly::
 ConstructResonatorAssembly(G4RotationMatrix * pRot,
-			   const G4ThreeVector & tLate,
-			   const G4String & pName,
-			   G4LogicalVolume * pMotherLogical,
-			   G4bool pMany,
-			   G4int pCopyNo,
-			   G4LatticeManager * LM,
-			   std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-			   std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-			   G4bool pSurfChk)
+                           const G4ThreeVector & tLate,
+                           const G4String & pName,
+                           G4LogicalVolume * pMotherLogical,
+                           G4bool pMany,
+                           G4int pCopyNo,
+                           G4LatticeManager * LM,
+                           std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                           std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+                           G4bool pSurfChk)
 {
 
   //Start with some preliminaries - NIST manager
@@ -108,7 +108,7 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //Set up the logical lattices for the aluminum
   if (logicalLatticeContainer.count("Aluminum") == 0) {
     std::cout << "Uh oh! Trying to access logicalLatticeContainer[Aluminum] "
-	      << "but it's not there..." << std::endl;
+              << "but it's not there..." << std::endl;
   }
   G4LatticeLogical* AlLogical = logicalLatticeContainer["Aluminum"];
 
@@ -123,17 +123,17 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //Confirm no issues with borders being present
   if (borderContainer.count("AlAl") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlAl] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlAlBoundary = borderContainer["AlAl"];
   if (borderContainer.count("AlVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlVac] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlVacBoundary = borderContainer["AlVac"];
   if (borderContainer.count("VacVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[VacVac] but it's not "
-	      << "there..." << std::endl; }
+              << "there..." << std::endl; }
   G4CMPSurfaceProperty* VacVacBoundary = borderContainer["VacVac"];  
 
   
@@ -143,21 +143,21 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   G4String baseAlLayerNameSolid = pName + "_solid";
   G4String baseAlLayerNameLog = pName + "_log";
   G4Box * solid_baseAlLayer = new G4Box(baseAlLayerNameSolid,
-					0.5 * dp_resonatorAssemblyBaseAlDimX,
-					0.5 * dp_resonatorAssemblyBaseAlDimY,
-					0.5 * dp_resonatorAssemblyBaseAlDimZ);
+                                        0.5 * dp_resonatorAssemblyBaseAlDimX,
+                                        0.5 * dp_resonatorAssemblyBaseAlDimY,
+                                        0.5 * dp_resonatorAssemblyBaseAlDimZ);
 
   //Now attribute a physical material to the housing
   G4LogicalVolume * log_baseAlLayer = new G4LogicalVolume(solid_baseAlLayer,
-							  aluminum_mat,
-							  baseAlLayerNameLog);
+                                                          aluminum_mat,
+                                                          baseAlLayerNameLog);
   log_baseAlLayer->SetVisAttributes(G4VisAttributes::Invisible);
 
   //Now, create a physical volume and G4PVPlacement for storing as the final
   //output. This is the top volume.
   G4VPhysicalVolume* phys_baseAlLayer =
     new G4PVPlacement(pRot,tLate,log_baseAlLayer,baseAlLayerName,pMotherLogical,
-		      pMany,pCopyNo,pSurfChk);
+                      pMany,pCopyNo,pSurfChk);
 
   //Also need an interface definition for this base layer...
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",baseAlLayerName,phys_baseAlLayer));
@@ -165,8 +165,8 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //Need to create a lattice for the base Al layer...
   G4LatticePhysical* AlPhysical_baseAlLayer
     = new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			    dp_scDelta0_Al, dp_scTeff_Al,
-			    dp_scDn_Al, dp_scTauQPTrap_Al);
+                            dp_scDelta0_Al, dp_scTeff_Al,
+                            dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_baseAlLayer->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(phys_baseAlLayer,AlPhysical_baseAlLayer);
 
@@ -174,10 +174,10 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //Now make the various components of the resonator array: line+coupling,
   //shunt capacitance (cross), and qubit
   MakeResonatorLine(pName,log_baseAlLayer,LM,logicalLatticeContainer,
-		    borderContainer);
+                    borderContainer);
   
   MakeShuntCapacitorCross(pName,log_baseAlLayer,LM,logicalLatticeContainer,
-			  borderContainer);
+                          borderContainer);
 
   
   //Now that we have the resonator line and shunt capacitor, we should loop
@@ -185,16 +185,16 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //the empties and the in-plane base layer of which they are children
   for (int iV = 0; iV < fFundamentalVolumeList.size(); ++iV) {
     if (std::get<0>(fFundamentalVolumeList[iV]).find("Vacuum") !=
-	std::string::npos) {
+        std::string::npos) {
       G4String name1 = std::get<1>(fFundamentalVolumeList[iV]) + "_baseAlLayer";
       G4String name2 = "baseAlLayer_" + std::get<1>(fFundamentalVolumeList[iV]);
       new G4CMPLogicalBorderSurface(name1, phys_baseAlLayer,
-				    std::get<2>(fFundamentalVolumeList[iV]),
-				    AlVacBoundary);
+                                    std::get<2>(fFundamentalVolumeList[iV]),
+                                    AlVacBoundary);
       new G4CMPLogicalBorderSurface(name2,
-				    std::get<2>(fFundamentalVolumeList[iV]),
-				    phys_baseAlLayer,
-				    AlVacBoundary);
+                                    std::get<2>(fFundamentalVolumeList[iV]),
+                                    phys_baseAlLayer,
+                                    AlVacBoundary);
     }
     
     //There may be a few items (tlCoupler end) which mate directly to the
@@ -213,9 +213,9 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
 // Make the resonator line
 void ValidationResonatorAssembly::
 MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
-			G4LatticeManager * LM,
-			std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-			std::map<std::string,G4CMPSurfaceProperty*> borderContainer) {
+                        G4LatticeManager * LM,
+                        std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                        std::map<std::string,G4CMPSurfaceProperty*> borderContainer) {
 
   //Materials and NIST
   //Start with some preliminaries - NIST manager
@@ -227,7 +227,7 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   //Set up lattice information
   if (logicalLatticeContainer.count("Aluminum") == 0) {
     std::cout << "Uh oh! Trying to access logicalLatticeContainer[Aluminum] but"
-	      << " it's not there..." << std::endl;
+              << " it's not there..." << std::endl;
   }
   G4LatticeLogical* AlLogical = logicalLatticeContainer["Aluminum"];
   
@@ -240,17 +240,17 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   //Confirm no issues with borders being present
   if (borderContainer.count("AlAl") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlAl] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlAlBoundary = borderContainer["AlAl"];
   if (borderContainer.count("AlVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlVac] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlVacBoundary = borderContainer["AlVac"];
   if (borderContainer.count("VacVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[VacVac] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* VacVacBoundary = borderContainer["VacVac"];  
   
@@ -263,7 +263,7 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   //Some useful translations relative to the center of the plane in which all
   //of this is embedded
   G4ThreeVector brCornerOfBaseAlLayer(0.5*dp_resonatorAssemblyBaseAlDimX,
-				      -0.5*dp_resonatorAssemblyBaseAlDimY,0);
+                                      -0.5*dp_resonatorAssemblyBaseAlDimY,0);
   //Bottom right corner relative to center of the plane
   
 
@@ -273,17 +273,17 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   G4String shuntEmptyNameLog = shuntEmptyName + "_log";
   G4Box * solid_shuntVertBlockEmpty =
     new G4Box("shuntVertBlockEmpty",
-	      0.5 * dp_shuntVertBlockEmptyDimX,0.5 * dp_shuntVertBlockEmptyDimY,
-	      0.5 * dp_shuntVertBlockEmptyDimZ);
+              0.5 * dp_shuntVertBlockEmptyDimX,0.5 * dp_shuntVertBlockEmptyDimY,
+              0.5 * dp_shuntVertBlockEmptyDimZ);
   G4Box * solid_shuntHorizontalBlockEmpty =
     new G4Box("ShuntHorizontalBlockEmpty",
-	      0.5 * dp_shuntHorizontalBlockEmptyDimX,
-	      0.5 * dp_shuntHorizontalBlockEmptyDimY,
-	      0.5 * dp_shuntHorizontalBlockEmptyDimZ);
+              0.5 * dp_shuntHorizontalBlockEmptyDimX,
+              0.5 * dp_shuntHorizontalBlockEmptyDimY,
+              0.5 * dp_shuntHorizontalBlockEmptyDimZ);
   G4UnionSolid * solid_shuntEmpty =
     new G4UnionSolid(shuntEmptyNameSolid,
-		     solid_shuntVertBlockEmpty,
-		     solid_shuntHorizontalBlockEmpty,0,G4ThreeVector(0,0,0));
+                     solid_shuntVertBlockEmpty,
+                     solid_shuntHorizontalBlockEmpty,0,G4ThreeVector(0,0,0));
 
   
   G4LogicalVolume * log_shuntEmpty =
@@ -291,7 +291,7 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   G4ThreeVector shuntWrtBRCorner(-1*dp_shuntCenterToBottomRightCornerOfBaseLayerDimX,dp_shuntCenterToBottomRightCornerOfBaseLayerDimY,0);
   G4VPhysicalVolume * shuntEmpty =
     new G4PVPlacement(0,shuntWrtBRCorner+brCornerOfBaseAlLayer,log_shuntEmpty,
-		      shuntEmptyName,log_baseAlLayer,false,0,true);
+                      shuntEmptyName,log_baseAlLayer,false,0,true);
   log_shuntEmpty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",shuntEmptyName,shuntEmpty));
 
@@ -304,24 +304,24 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   G4String shuntConductorNameLog = shuntConductorName + "_log";
   G4Box * solid_shuntVertBlockConductor =
     new G4Box("shuntVertBlockConductor",
-	      0.5 * dp_shuntVertBlockConductorDimX,
-	      0.5 * dp_shuntVertBlockConductorDimY,
-	      0.5 * dp_shuntVertBlockConductorDimZ);
+              0.5 * dp_shuntVertBlockConductorDimX,
+              0.5 * dp_shuntVertBlockConductorDimY,
+              0.5 * dp_shuntVertBlockConductorDimZ);
   G4Box * solid_shuntHorizontalBlockConductor =
     new G4Box("ShuntHorizontalBlockConductor",
-	      0.5 * dp_shuntHorizontalBlockConductorDimX,
-	      0.5 * dp_shuntHorizontalBlockConductorDimY,
-	      0.5 * dp_shuntHorizontalBlockConductorDimZ);
+              0.5 * dp_shuntHorizontalBlockConductorDimX,
+              0.5 * dp_shuntHorizontalBlockConductorDimY,
+              0.5 * dp_shuntHorizontalBlockConductorDimZ);
   G4UnionSolid * solid_shuntConductor =
     new G4UnionSolid(shuntConductorNameSolid,solid_shuntVertBlockConductor,
-		     solid_shuntHorizontalBlockConductor,0,
-		     G4ThreeVector(0,0,0));  
+                     solid_shuntHorizontalBlockConductor,0,
+                     G4ThreeVector(0,0,0));  
   G4LogicalVolume * log_shuntConductor =
     new G4LogicalVolume(solid_shuntConductor,aluminum_mat,
-			shuntConductorNameLog);
+                        shuntConductorNameLog);
   G4VPhysicalVolume * shuntConductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_shuntConductor,
-		      shuntConductorName,log_shuntEmpty,false,0,true);
+                      shuntConductorName,log_shuntEmpty,false,0,true);
   log_shuntConductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",shuntConductorName,shuntConductor));
 
@@ -329,8 +329,8 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   //Need to construct a lattice...
   G4LatticePhysical* AlPhysical_shuntConductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shuntConductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shuntConductor,AlPhysical_shuntConductor);
 
@@ -339,19 +339,19 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   G4String shuntConductor_boundaryName1 = shuntConductorName + "_AlVac";
   G4String shuntConductor_boundaryName2 = shuntConductorName + "_VacAl";
   new G4CMPLogicalBorderSurface(shuntConductor_boundaryName1, shuntConductor,
-				shuntEmpty, AlVacBoundary);
+                                shuntEmpty, AlVacBoundary);
   new G4CMPLogicalBorderSurface(shuntConductor_boundaryName2, shuntEmpty,
-				shuntConductor, AlVacBoundary);
+                                shuntConductor, AlVacBoundary);
   
 }
   
 // Make the resonator line
 void ValidationResonatorAssembly::
 MakeResonatorLine(G4String pName,
-		  G4LogicalVolume * log_baseAlLayer,
-		  G4LatticeManager * LM,
-		  std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-		  std::map<std::string,G4CMPSurfaceProperty*> borderContainer) {
+                  G4LogicalVolume * log_baseAlLayer,
+                  G4LatticeManager * LM,
+                  std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+                  std::map<std::string,G4CMPSurfaceProperty*> borderContainer) {
     
   //Materials and NIST
   //Start with some preliminaries - NIST manager
@@ -363,7 +363,7 @@ MakeResonatorLine(G4String pName,
   //Set up lattice information
   if (logicalLatticeContainer.count("Aluminum") == 0) {
     std::cout << "Uh oh! Trying to access logicalLatticeContainer[Aluminum] "
-	      << "but it's not there..." << std::endl;
+              << "but it's not there..." << std::endl;
   }
   G4LatticeLogical* AlLogical = logicalLatticeContainer["Aluminum"];
   
@@ -376,17 +376,17 @@ MakeResonatorLine(G4String pName,
   //Confirm no issues with borders being present
   if (borderContainer.count("AlAl") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlAl] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlAlBoundary = borderContainer["AlAl"];
   if (borderContainer.count("AlVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlVac] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlVacBoundary = borderContainer["AlVac"];
   if (borderContainer.count("VacVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[VacVac] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* VacVacBoundary = borderContainer["VacVac"];  
 
@@ -421,7 +421,7 @@ MakeResonatorLine(G4String pName,
   //Some useful translations relative to the center of the plane in which all
   //of this is embedded
   G4ThreeVector brCornerOfBaseAlLayer(0.5*dp_resonatorAssemblyBaseAlDimX,
-				      -0.5*dp_resonatorAssemblyBaseAlDimY,0);
+                                      -0.5*dp_resonatorAssemblyBaseAlDimY,0);
   //Bottom right corner relative to center of the plane
   
 
@@ -431,20 +431,20 @@ MakeResonatorLine(G4String pName,
   G4String tlCouplingEmptyNameLog = tlCouplingEmptyName + "_log";
   G4Box * solid_tlCouplingEmpty =
     new G4Box(tlCouplingEmptyNameSolid,
-	      0.5 * dp_tlCouplingEmptyDimX,
-	      0.5 * dp_tlCouplingEmptyDimY,
-	      0.5 * dp_tlCouplingEmptyDimZ);
+              0.5 * dp_tlCouplingEmptyDimX,
+              0.5 * dp_tlCouplingEmptyDimY,
+              0.5 * dp_tlCouplingEmptyDimZ);
   G4LogicalVolume * log_tlCouplingEmpty =
     new G4LogicalVolume(solid_tlCouplingEmpty,
-			air_mat,tlCouplingEmptyNameLog);
+                        air_mat,tlCouplingEmptyNameLog);
   G4ThreeVector tlCouplingWrtBRCorner(-0.5*dp_tlCouplingEmptyDimX,
-				      0.5*dp_tlCouplingEmptyDimY +
-				      dp_resonatorAssemblyBaseAlEdgeBottomDimY,
-				      0.0); //Good for empty or conductor
+                                      0.5*dp_tlCouplingEmptyDimY +
+                                      dp_resonatorAssemblyBaseAlEdgeBottomDimY,
+                                      0.0); //Good for empty or conductor
   G4VPhysicalVolume * tlCouplingEmpty =
     new G4PVPlacement(0,tlCouplingWrtBRCorner+brCornerOfBaseAlLayer,
-		      log_tlCouplingEmpty,tlCouplingEmptyName,log_baseAlLayer,
-		      false,0,true);
+                      log_tlCouplingEmpty,tlCouplingEmptyName,log_baseAlLayer,
+                      false,0,true);
   log_tlCouplingEmpty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",tlCouplingEmptyName,tlCouplingEmpty));
   
@@ -464,23 +464,23 @@ MakeResonatorLine(G4String pName,
   G4String tlCouplingConductorNameLog = tlCouplingConductorName + "_log";
   G4Box * solid_tlCouplingConductor =
     new G4Box(tlCouplingConductorNameSolid,
-	      0.5 * dp_tlCouplingConductorDimX,
-	      0.5 * dp_tlCouplingConductorDimY,
-	      0.5 * dp_tlCouplingConductorDimZ);
+              0.5 * dp_tlCouplingConductorDimX,
+              0.5 * dp_tlCouplingConductorDimY,
+              0.5 * dp_tlCouplingConductorDimZ);
   G4LogicalVolume * log_tlCouplingConductor =
     new G4LogicalVolume(solid_tlCouplingConductor,aluminum_mat,
-			tlCouplingConductorNameLog);
+                        tlCouplingConductorNameLog);
   G4VPhysicalVolume * tlCouplingConductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_tlCouplingConductor,
-		      tlCouplingConductorName,log_tlCouplingEmpty,false,0,true);
+                      tlCouplingConductorName,log_tlCouplingEmpty,false,0,true);
   log_tlCouplingConductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",tlCouplingConductorName,tlCouplingConductor));
 
   //Need to construct a lattice...
   G4LatticePhysical* AlPhysical_tlCouplingConductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_tlCouplingConductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(tlCouplingConductor,AlPhysical_tlCouplingConductor);
 
@@ -491,11 +491,11 @@ MakeResonatorLine(G4String pName,
   G4String tlCouplingConductor_boundaryName2 = tlCouplingConductorName +
     "_VacAl";
   new G4CMPLogicalBorderSurface(tlCouplingConductor_boundaryName1,
-				tlCouplingConductor, tlCouplingEmpty,
-				AlVacBoundary);
+                                tlCouplingConductor, tlCouplingEmpty,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(tlCouplingConductor_boundaryName2,
-				tlCouplingEmpty, tlCouplingConductor,
-				AlVacBoundary);
+                                tlCouplingEmpty, tlCouplingConductor,
+                                AlVacBoundary);
  
   
 
@@ -506,20 +506,20 @@ MakeResonatorLine(G4String pName,
   G4String curve1EmptyNameLog = curve1EmptyName + "_log";
   G4Tubs * solid_curve1Empty =
     new G4Tubs(curve1EmptyNameSolid,dp_resonatorAssemblyCurveSmallestRadius,
-	       dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
-	       dp_curveEmptyDimZ/2.0,180.*deg,90.*deg);
+               dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
+               dp_curveEmptyDimZ/2.0,180.*deg,90.*deg);
   G4LogicalVolume * log_curve1Empty =
     new G4LogicalVolume(solid_curve1Empty,air_mat,curve1EmptyNameLog);  
   G4ThreeVector curve1WrtBRCorner(-1*dp_tlCouplingEmptyDimX,
-				  0.5*dp_tlCouplingEmptyDimY +
-				  dp_resonatorAssemblyBaseAlEdgeBottomDimY +
-				  dp_resonatorAssemblyCurveCentralRadius,0.0);
+                                  0.5*dp_tlCouplingEmptyDimY +
+                                  dp_resonatorAssemblyBaseAlEdgeBottomDimY +
+                                  dp_resonatorAssemblyCurveCentralRadius,0.0);
   //Good for empty or conductor
   
   G4VPhysicalVolume * curve1Empty =
     new G4PVPlacement(0,curve1WrtBRCorner+brCornerOfBaseAlLayer,
-		      log_curve1Empty,curve1EmptyName,log_baseAlLayer,false,0,
-		      true);
+                      log_curve1Empty,curve1EmptyName,log_baseAlLayer,false,0,
+                      true);
   log_curve1Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",curve1EmptyName,curve1Empty));
 
@@ -530,9 +530,9 @@ MakeResonatorLine(G4String pName,
   G4String curve1Empty_boundaryName1 = curve1EmptyName + "_VacVac1";
   G4String curve1Empty_boundaryName2 = curve1EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(curve1Empty_boundaryName1, curve1Empty,
-				tlCouplingEmpty,VacVacBoundary);
+                                tlCouplingEmpty,VacVacBoundary);
   new G4CMPLogicalBorderSurface(curve1Empty_boundaryName2, tlCouplingEmpty,
-				curve1Empty,VacVacBoundary);
+                                curve1Empty,VacVacBoundary);
   
 
   
@@ -542,24 +542,24 @@ MakeResonatorLine(G4String pName,
   G4String curve1ConductorNameLog = curve1ConductorName + "_log";
   G4Tubs * solid_curve1Conductor =
     new G4Tubs(curve1ConductorNameSolid,dp_resonatorAssemblyCurveCentralRadius -
-	       dp_tlCouplingConductorDimY/2.0,
-	       dp_resonatorAssemblyCurveCentralRadius +
-	       dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
-	       180.*deg,90.*deg);
+               dp_tlCouplingConductorDimY/2.0,
+               dp_resonatorAssemblyCurveCentralRadius +
+               dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
+               180.*deg,90.*deg);
   G4LogicalVolume * log_curve1Conductor =
     new G4LogicalVolume(solid_curve1Conductor,aluminum_mat,
-			curve1ConductorNameLog);  
+                        curve1ConductorNameLog);  
   G4VPhysicalVolume * curve1Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_curve1Conductor,
-		      curve1ConductorName,log_curve1Empty,false,0,true);
+                      curve1ConductorName,log_curve1Empty,false,0,true);
   log_curve1Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",curve1ConductorName,curve1Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_curve1Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_curve1Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(curve1Conductor,AlPhysical_curve1Conductor);
 
@@ -570,14 +570,14 @@ MakeResonatorLine(G4String pName,
   G4String curve1Conductor_boundaryName3 = curve1ConductorName + "_AlAl1";
   G4String curve1Conductor_boundaryName4 = curve1ConductorName + "_AlAl2";
   new G4CMPLogicalBorderSurface(curve1Conductor_boundaryName1, curve1Conductor,
-				curve1Empty,AlVacBoundary);
+                                curve1Empty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(curve1Conductor_boundaryName2, curve1Empty,
-				curve1Conductor,AlVacBoundary);
+                                curve1Conductor,AlVacBoundary);
   new G4CMPLogicalBorderSurface(curve1Conductor_boundaryName3, curve1Conductor,
-				tlCouplingConductor,AlAlBoundary);
+                                tlCouplingConductor,AlAlBoundary);
   new G4CMPLogicalBorderSurface(curve1Conductor_boundaryName4,
-				tlCouplingConductor, curve1Conductor,
-				AlAlBoundary);
+                                tlCouplingConductor, curve1Conductor,
+                                AlAlBoundary);
   
 
   //Curve 2 (empty/cavity)
@@ -586,20 +586,20 @@ MakeResonatorLine(G4String pName,
   G4String curve2EmptyNameLog = curve2EmptyName + "_log";
   G4Tubs * solid_curve2Empty =
     new G4Tubs(curve2EmptyNameSolid,dp_resonatorAssemblyCurveSmallestRadius,
-	       dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
-	       dp_curveEmptyDimZ/2.0,0.*deg,90.*deg);
+               dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
+               dp_curveEmptyDimZ/2.0,0.*deg,90.*deg);
   G4LogicalVolume * log_curve2Empty =
     new G4LogicalVolume(solid_curve2Empty,air_mat,curve2EmptyNameLog);  
   G4ThreeVector curve2WrtBRCorner(-1*dp_tlCouplingEmptyDimX -
-				  2*dp_resonatorAssemblyCurveCentralRadius,
-				  0.5*dp_tlCouplingEmptyDimY +
-				  dp_resonatorAssemblyBaseAlEdgeBottomDimY +
-				  dp_resonatorAssemblyCurveCentralRadius,0.0);
+                                  2*dp_resonatorAssemblyCurveCentralRadius,
+                                  0.5*dp_tlCouplingEmptyDimY +
+                                  dp_resonatorAssemblyBaseAlEdgeBottomDimY +
+                                  dp_resonatorAssemblyCurveCentralRadius,0.0);
   //^Good for empty or conductor
 
   G4VPhysicalVolume * curve2Empty =
     new G4PVPlacement(0,curve2WrtBRCorner+brCornerOfBaseAlLayer,log_curve2Empty,
-		      curve2EmptyName,log_baseAlLayer,false,0,true);
+                      curve2EmptyName,log_baseAlLayer,false,0,true);
   log_curve2Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",curve2EmptyName,curve2Empty));
 
@@ -610,9 +610,9 @@ MakeResonatorLine(G4String pName,
   G4String curve2Empty_boundaryName1 = curve2EmptyName + "_VacVac1";
   G4String curve2Empty_boundaryName2 = curve2EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(curve2Empty_boundaryName1, curve2Empty,
-				curve1Empty,VacVacBoundary);
+                                curve1Empty,VacVacBoundary);
   new G4CMPLogicalBorderSurface(curve2Empty_boundaryName2, curve1Empty,
-				curve2Empty,VacVacBoundary);
+                                curve2Empty,VacVacBoundary);
 
   
   //Curve 2 (conductor)
@@ -621,24 +621,24 @@ MakeResonatorLine(G4String pName,
   G4String curve2ConductorNameLog = curve2ConductorName + "_log";
   G4Tubs * solid_curve2Conductor =
     new G4Tubs(curve2ConductorNameSolid,dp_resonatorAssemblyCurveCentralRadius -
-	       dp_tlCouplingConductorDimY/2.0,
-	       dp_resonatorAssemblyCurveCentralRadius +
-	       dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,0.*deg,
-	       90.*deg);
+               dp_tlCouplingConductorDimY/2.0,
+               dp_resonatorAssemblyCurveCentralRadius +
+               dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,0.*deg,
+               90.*deg);
   G4LogicalVolume * log_curve2Conductor =
     new G4LogicalVolume(solid_curve2Conductor,aluminum_mat,
-			curve2ConductorNameLog);  
+                        curve2ConductorNameLog);  
   G4VPhysicalVolume * curve2Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_curve2Conductor,
-		      curve2ConductorName,log_curve2Empty,false,0,true);
+                      curve2ConductorName,log_curve2Empty,false,0,true);
   log_curve2Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",curve2ConductorName,curve2Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_curve2Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_curve2Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(curve2Conductor,AlPhysical_curve2Conductor);
   
@@ -649,13 +649,13 @@ MakeResonatorLine(G4String pName,
   G4String curve2Conductor_boundaryName3 = curve2ConductorName + "_AlAl1";
   G4String curve2Conductor_boundaryName4 = curve2ConductorName + "_AlAl2";
   new G4CMPLogicalBorderSurface(curve2Conductor_boundaryName1, curve2Conductor,
-				curve2Empty,AlVacBoundary);
+                                curve2Empty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(curve2Conductor_boundaryName2, curve2Empty,
-				curve2Conductor,AlVacBoundary);
+                                curve2Conductor,AlVacBoundary);
   new G4CMPLogicalBorderSurface(curve2Conductor_boundaryName3, curve2Conductor,
-				curve1Conductor,AlAlBoundary);
+                                curve1Conductor,AlAlBoundary);
   new G4CMPLogicalBorderSurface(curve2Conductor_boundaryName4, curve1Conductor,
-				curve2Conductor,AlAlBoundary);
+                                curve2Conductor,AlAlBoundary);
 
 
   //Straight horizontal line (SHL) 1, (empty/cavity)
@@ -664,15 +664,15 @@ MakeResonatorLine(G4String pName,
   G4String shl1EmptyNameLog = shl1EmptyName + "_log";
   G4Box * solid_shl1Empty =
     new G4Box(shl1EmptyNameSolid,0.5 * dp_shl1EmptyDimX,0.5 * dp_shl1EmptyDimY,
-	      0.5 * dp_shl1EmptyDimZ);
+              0.5 * dp_shl1EmptyDimZ);
   G4LogicalVolume * log_shl1Empty =
     new G4LogicalVolume(solid_shl1Empty,air_mat,shl1EmptyNameLog);
   G4ThreeVector shl1WrtBRCorner = curve2WrtBRCorner +
     G4ThreeVector(-0.5*dp_shl1EmptyDimX,
-		  dp_resonatorAssemblyCurveCentralRadius,0);  
+                  dp_resonatorAssemblyCurveCentralRadius,0);  
   G4VPhysicalVolume * shl1Empty =
     new G4PVPlacement(0,shl1WrtBRCorner+brCornerOfBaseAlLayer,log_shl1Empty,
-		      shl1EmptyName,log_baseAlLayer,false,0,true);
+                      shl1EmptyName,log_baseAlLayer,false,0,true);
   log_shl1Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",shl1EmptyName,shl1Empty));
 
@@ -683,9 +683,9 @@ MakeResonatorLine(G4String pName,
   G4String shl1Empty_boundaryName1 = shl1EmptyName + "_VacVac1";
   G4String shl1Empty_boundaryName2 = shl1EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(shl1Empty_boundaryName1, shl1Empty, curve2Empty,
-				VacVacBoundary);
+                                VacVacBoundary);
   new G4CMPLogicalBorderSurface(shl1Empty_boundaryName2, curve2Empty, shl1Empty,
-				VacVacBoundary);
+                                VacVacBoundary);
 
 
   
@@ -695,22 +695,22 @@ MakeResonatorLine(G4String pName,
   G4String shl1ConductorNameLog = shl1ConductorName + "_log";
   G4Box * solid_shl1Conductor =
     new G4Box(shl1ConductorNameSolid,
-	      0.5 * dp_shl1ConductorDimX,
-	      0.5 * dp_shl1ConductorDimY,
-	      0.5 * dp_shl1ConductorDimZ);
+              0.5 * dp_shl1ConductorDimX,
+              0.5 * dp_shl1ConductorDimY,
+              0.5 * dp_shl1ConductorDimZ);
   G4LogicalVolume * log_shl1Conductor =
     new G4LogicalVolume(solid_shl1Conductor,aluminum_mat,shl1ConductorNameLog);
   G4VPhysicalVolume * shl1Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_shl1Conductor,
-		      shl1ConductorName,log_shl1Empty,false,0,true);
+                      shl1ConductorName,log_shl1Empty,false,0,true);
   log_shl1Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",shl1ConductorName,shl1Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl1Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl1Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl1Conductor,AlPhysical_shl1Conductor);
 
@@ -721,13 +721,13 @@ MakeResonatorLine(G4String pName,
   G4String shl1Conductor_boundaryName3 = shl1ConductorName + "_AlAl1";
   G4String shl1Conductor_boundaryName4 = shl1ConductorName + "_AlAl2";
   new G4CMPLogicalBorderSurface(shl1Conductor_boundaryName1, shl1Conductor,
-				shl1Empty,AlVacBoundary);
+                                shl1Empty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl1Conductor_boundaryName2, shl1Empty,
-				shl1Conductor,AlVacBoundary);
+                                shl1Conductor,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl1Conductor_boundaryName3, shl1Conductor,
-				curve2Conductor,AlAlBoundary);
+                                curve2Conductor,AlAlBoundary);
   new G4CMPLogicalBorderSurface(shl1Conductor_boundaryName4, curve2Conductor,
-				shl1Conductor,AlAlBoundary);
+                                shl1Conductor,AlAlBoundary);
 
 
   //HalfCircle 1 (empty/cavity)
@@ -736,18 +736,18 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle1EmptyNameLog = halfCircle1EmptyName + "_log";
   G4Tubs * solid_halfCircle1Empty =
     new G4Tubs(halfCircle1EmptyNameSolid,
-	       dp_resonatorAssemblyCurveSmallestRadius,
-	       dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
-	       dp_curveEmptyDimZ/2.0,90.*deg,180.*deg);
+               dp_resonatorAssemblyCurveSmallestRadius,
+               dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
+               dp_curveEmptyDimZ/2.0,90.*deg,180.*deg);
   G4LogicalVolume * log_halfCircle1Empty =
     new G4LogicalVolume(solid_halfCircle1Empty,air_mat,halfCircle1EmptyNameLog);
   G4ThreeVector halfCircle1WrtBRCorner = shl1WrtBRCorner +
     G4ThreeVector(-0.5*dp_shl1EmptyDimX,dp_resonatorAssemblyCurveCentralRadius,
-		  0.0);
+                  0.0);
   G4VPhysicalVolume * halfCircle1Empty =
     new G4PVPlacement(0,halfCircle1WrtBRCorner+brCornerOfBaseAlLayer,
-		      log_halfCircle1Empty,halfCircle1EmptyName,log_baseAlLayer,
-		      false,0,true);
+                      log_halfCircle1Empty,halfCircle1EmptyName,log_baseAlLayer,
+                      false,0,true);
   log_halfCircle1Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",halfCircle1EmptyName,halfCircle1Empty));
 
@@ -758,9 +758,9 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle1Empty_boundaryName1 = halfCircle1EmptyName + "_VacVac1";
   G4String halfCircle1Empty_boundaryName2 = halfCircle1EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(halfCircle1Empty_boundaryName1,
-				halfCircle1Empty, shl1Empty, VacVacBoundary);
+                                halfCircle1Empty, shl1Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle1Empty_boundaryName2, shl1Empty,
-				halfCircle1Empty, VacVacBoundary);
+                                halfCircle1Empty, VacVacBoundary);
 
 
   
@@ -771,26 +771,26 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle1ConductorNameLog = halfCircle1ConductorName + "_log";
   G4Tubs * solid_halfCircle1Conductor =
     new G4Tubs(halfCircle1ConductorNameSolid,
-	       dp_resonatorAssemblyCurveCentralRadius -
-	       dp_tlCouplingConductorDimY/2.0,
-	       dp_resonatorAssemblyCurveCentralRadius +
-	       dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
-	       90.*deg,180.*deg);
+               dp_resonatorAssemblyCurveCentralRadius -
+               dp_tlCouplingConductorDimY/2.0,
+               dp_resonatorAssemblyCurveCentralRadius +
+               dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
+               90.*deg,180.*deg);
   G4LogicalVolume * log_halfCircle1Conductor =
     new G4LogicalVolume(solid_halfCircle1Conductor,aluminum_mat,
-			halfCircle1ConductorNameLog);  
+                        halfCircle1ConductorNameLog);  
   G4VPhysicalVolume * halfCircle1Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_halfCircle1Conductor,
-		      halfCircle1ConductorName,log_halfCircle1Empty,false,0,
-		      true);
+                      halfCircle1ConductorName,log_halfCircle1Empty,false,0,
+                      true);
   log_halfCircle1Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",halfCircle1ConductorName,halfCircle1Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle1Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle1Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle1Conductor,AlPhysical_halfCircle1Conductor);
 
@@ -805,17 +805,17 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle1Conductor_boundaryName4 = halfCircle1ConductorName +
     "_AlAl2";
   new G4CMPLogicalBorderSurface(halfCircle1Conductor_boundaryName1,
-				halfCircle1Conductor, halfCircle1Empty,
-				AlVacBoundary);
+                                halfCircle1Conductor, halfCircle1Empty,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle1Conductor_boundaryName2,
-				halfCircle1Empty, halfCircle1Conductor,
-				AlVacBoundary);
+                                halfCircle1Empty, halfCircle1Conductor,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle1Conductor_boundaryName3,
-				halfCircle1Conductor, shl1Conductor,
-				AlAlBoundary);
+                                halfCircle1Conductor, shl1Conductor,
+                                AlAlBoundary);
   new G4CMPLogicalBorderSurface(halfCircle1Conductor_boundaryName4,
-				shl1Conductor, halfCircle1Conductor,
-				AlAlBoundary);
+                                shl1Conductor, halfCircle1Conductor,
+                                AlAlBoundary);
 
 
   //Straight horizontal line (SHL) 2, (empty/cavity)
@@ -824,15 +824,15 @@ MakeResonatorLine(G4String pName,
   G4String shl2EmptyNameLog = shl2EmptyName + "_log";
   G4Box * solid_shl2Empty =
     new G4Box(shl2EmptyNameSolid,0.5 * dp_shl2EmptyDimX,0.5 * dp_shl2EmptyDimY,
-	      0.5 * dp_shl2EmptyDimZ);
+              0.5 * dp_shl2EmptyDimZ);
   G4LogicalVolume * log_shl2Empty =
     new G4LogicalVolume(solid_shl2Empty,air_mat,shl2EmptyNameLog);
   G4ThreeVector shl2WrtBRCorner = halfCircle1WrtBRCorner +
     G4ThreeVector(0.5*dp_shl2EmptyDimX,
-		  dp_resonatorAssemblyCurveCentralRadius,0);
+                  dp_resonatorAssemblyCurveCentralRadius,0);
   G4VPhysicalVolume * shl2Empty =
     new G4PVPlacement(0,shl2WrtBRCorner+brCornerOfBaseAlLayer,log_shl2Empty,
-		      shl2EmptyName,log_baseAlLayer,false,0,true);
+                      shl2EmptyName,log_baseAlLayer,false,0,true);
   log_shl2Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",shl2EmptyName,shl2Empty));
 
@@ -843,9 +843,9 @@ MakeResonatorLine(G4String pName,
   G4String shl2Empty_boundaryName1 = shl2EmptyName + "_VacVac1";
   G4String shl2Empty_boundaryName2 = shl2EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(shl2Empty_boundaryName1, shl2Empty,
-				halfCircle1Empty, VacVacBoundary);
+                                halfCircle1Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(shl2Empty_boundaryName2, halfCircle1Empty,
-				shl2Empty, VacVacBoundary);
+                                shl2Empty, VacVacBoundary);
 
 
   
@@ -855,22 +855,22 @@ MakeResonatorLine(G4String pName,
   G4String shl2ConductorNameLog = shl2ConductorName + "_log";
   G4Box * solid_shl2Conductor =
     new G4Box(shl2ConductorNameSolid,
-	      0.5 * dp_shl2ConductorDimX,
-	      0.5 * dp_shl2ConductorDimY,
-	      0.5 * dp_shl2ConductorDimZ);
+              0.5 * dp_shl2ConductorDimX,
+              0.5 * dp_shl2ConductorDimY,
+              0.5 * dp_shl2ConductorDimZ);
   G4LogicalVolume * log_shl2Conductor =
     new G4LogicalVolume(solid_shl2Conductor,aluminum_mat,shl2ConductorNameLog);
   G4VPhysicalVolume * shl2Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_shl2Conductor,
-		      shl2ConductorName,log_shl2Empty,false,0,true);
+                      shl2ConductorName,log_shl2Empty,false,0,true);
   log_shl2Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",shl2ConductorName,shl2Conductor));
   
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl2Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl2Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl2Conductor,AlPhysical_shl2Conductor);
 
@@ -881,14 +881,14 @@ MakeResonatorLine(G4String pName,
   G4String shl2Conductor_boundaryName3 = shl2ConductorName + "_AlAl1";
   G4String shl2Conductor_boundaryName4 = shl2ConductorName + "_AlAl2";
   new G4CMPLogicalBorderSurface(shl2Conductor_boundaryName1, shl2Conductor,
-				shl2Empty,AlVacBoundary);
+                                shl2Empty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl2Conductor_boundaryName2, shl2Empty,
-				shl2Conductor,AlVacBoundary);
+                                shl2Conductor,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl2Conductor_boundaryName3, shl2Conductor,
-				halfCircle1Conductor,AlAlBoundary);
+                                halfCircle1Conductor,AlAlBoundary);
   new G4CMPLogicalBorderSurface(shl2Conductor_boundaryName4,
-				halfCircle1Conductor, shl2Conductor,
-				AlAlBoundary);
+                                halfCircle1Conductor, shl2Conductor,
+                                AlAlBoundary);
 
   
   //HalfCircle 2 (empty/cavity)
@@ -897,17 +897,17 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle2EmptyNameLog = halfCircle2EmptyName + "_log";
   G4Tubs * solid_halfCircle2Empty =
     new G4Tubs(halfCircle2EmptyNameSolid,dp_resonatorAssemblyCurveSmallestRadius,dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
-	       dp_curveEmptyDimZ/2.0,270.*deg,180.*deg);
+               dp_curveEmptyDimZ/2.0,270.*deg,180.*deg);
   
   G4LogicalVolume * log_halfCircle2Empty =
     new G4LogicalVolume(solid_halfCircle2Empty,air_mat,halfCircle2EmptyNameLog);
   G4ThreeVector halfCircle2WrtBRCorner = shl2WrtBRCorner +
     G4ThreeVector(0.5*dp_shl2EmptyDimX,
-		  dp_resonatorAssemblyCurveCentralRadius,0.0);
+                  dp_resonatorAssemblyCurveCentralRadius,0.0);
   G4VPhysicalVolume * halfCircle2Empty =
     new G4PVPlacement(0,halfCircle2WrtBRCorner+brCornerOfBaseAlLayer,
-		      log_halfCircle2Empty,halfCircle2EmptyName,
-		      log_baseAlLayer,false,0,true);
+                      log_halfCircle2Empty,halfCircle2EmptyName,
+                      log_baseAlLayer,false,0,true);
   log_halfCircle2Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",halfCircle2EmptyName,halfCircle2Empty));
 
@@ -918,9 +918,9 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle2Empty_boundaryName1 = halfCircle2EmptyName + "_VacVac1";
   G4String halfCircle2Empty_boundaryName2 = halfCircle2EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(halfCircle2Empty_boundaryName1,
-				halfCircle2Empty, shl2Empty, VacVacBoundary);
+                                halfCircle2Empty, shl2Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle2Empty_boundaryName2, shl2Empty,
-				halfCircle2Empty, VacVacBoundary);
+                                halfCircle2Empty, VacVacBoundary);
 
   
 
@@ -933,26 +933,26 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle2ConductorNameLog = halfCircle2ConductorName + "_log";
   G4Tubs * solid_halfCircle2Conductor =
     new G4Tubs(halfCircle2ConductorNameSolid,
-	       dp_resonatorAssemblyCurveCentralRadius -
-	       dp_tlCouplingConductorDimY/2.0,
-	       dp_resonatorAssemblyCurveCentralRadius +
-	       dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
-	       270.*deg,180.*deg);
+               dp_resonatorAssemblyCurveCentralRadius -
+               dp_tlCouplingConductorDimY/2.0,
+               dp_resonatorAssemblyCurveCentralRadius +
+               dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
+               270.*deg,180.*deg);
   G4LogicalVolume * log_halfCircle2Conductor =
     new G4LogicalVolume(solid_halfCircle2Conductor,aluminum_mat,
-			halfCircle2ConductorNameLog);  
+                        halfCircle2ConductorNameLog);  
   G4VPhysicalVolume * halfCircle2Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_halfCircle2Conductor,
-		      halfCircle2ConductorName,log_halfCircle2Empty,
-		      false,0,true);
+                      halfCircle2ConductorName,log_halfCircle2Empty,
+                      false,0,true);
   log_halfCircle2Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",halfCircle2ConductorName,halfCircle2Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle2Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle2Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle2Conductor,AlPhysical_halfCircle2Conductor);
 
@@ -966,17 +966,17 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle2Conductor_boundaryName4 = halfCircle2ConductorName +
     "_AlAl2";
   new G4CMPLogicalBorderSurface(halfCircle2Conductor_boundaryName1,
-				halfCircle2Conductor, halfCircle2Empty,
-				AlVacBoundary);
+                                halfCircle2Conductor, halfCircle2Empty,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle2Conductor_boundaryName2,
-				halfCircle2Empty, halfCircle2Conductor,
-				AlVacBoundary);
+                                halfCircle2Empty, halfCircle2Conductor,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle2Conductor_boundaryName3,
-				halfCircle2Conductor, shl2Conductor,
-				AlAlBoundary);
+                                halfCircle2Conductor, shl2Conductor,
+                                AlAlBoundary);
   new G4CMPLogicalBorderSurface(halfCircle2Conductor_boundaryName4,
-				shl2Conductor, halfCircle2Conductor,
-				AlAlBoundary);
+                                shl2Conductor, halfCircle2Conductor,
+                                AlAlBoundary);
 
 
 
@@ -991,20 +991,20 @@ MakeResonatorLine(G4String pName,
   G4String shl3EmptyNameLog = shl3EmptyName + "_log";
   G4Box * solid_shl3Empty =
     new G4Box(shl3EmptyNameSolid,
-	      0.5 * dp_shl3EmptyDimX,
-	      0.5 * dp_shl3EmptyDimY,
-	      0.5 * dp_shl3EmptyDimZ);
+              0.5 * dp_shl3EmptyDimX,
+              0.5 * dp_shl3EmptyDimY,
+              0.5 * dp_shl3EmptyDimZ);
   
   G4LogicalVolume * log_shl3Empty =
     new G4LogicalVolume(solid_shl3Empty,air_mat,shl3EmptyNameLog);
   
   G4ThreeVector shl3WrtBRCorner = halfCircle2WrtBRCorner +
     G4ThreeVector(-0.5*dp_shl3EmptyDimX,
-		  dp_resonatorAssemblyCurveCentralRadius,0);
+                  dp_resonatorAssemblyCurveCentralRadius,0);
   
   G4VPhysicalVolume * shl3Empty =
     new G4PVPlacement(0,shl3WrtBRCorner+brCornerOfBaseAlLayer,log_shl3Empty,
-		      shl3EmptyName,log_baseAlLayer,false,0,true);
+                      shl3EmptyName,log_baseAlLayer,false,0,true);
   log_shl3Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",shl3EmptyName,shl3Empty));
 
@@ -1015,9 +1015,9 @@ MakeResonatorLine(G4String pName,
   G4String shl3Empty_boundaryName1 = shl3EmptyName + "_VacVac1";
   G4String shl3Empty_boundaryName2 = shl3EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(shl3Empty_boundaryName1, shl3Empty,
-				halfCircle2Empty, VacVacBoundary);
+                                halfCircle2Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(shl3Empty_boundaryName2, halfCircle2Empty,
-				shl3Empty, VacVacBoundary);
+                                shl3Empty, VacVacBoundary);
 
 
 
@@ -1034,24 +1034,24 @@ MakeResonatorLine(G4String pName,
   
   G4Box * solid_shl3Conductor =
     new G4Box(shl3ConductorNameSolid,
-	      0.5 * dp_shl3ConductorDimX,
-	      0.5 * dp_shl3ConductorDimY,
-	      0.5 * dp_shl3ConductorDimZ);
+              0.5 * dp_shl3ConductorDimX,
+              0.5 * dp_shl3ConductorDimY,
+              0.5 * dp_shl3ConductorDimZ);
   
   G4LogicalVolume * log_shl3Conductor =
     new G4LogicalVolume(solid_shl3Conductor,aluminum_mat,shl3ConductorNameLog);
   
   G4VPhysicalVolume * shl3Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_shl3Conductor,
-		      shl3ConductorName,log_shl3Empty,false,0,true);
+                      shl3ConductorName,log_shl3Empty,false,0,true);
   log_shl3Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",shl3ConductorName,shl3Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl3Conductor
     = new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			    dp_scDelta0_Al, dp_scTeff_Al,
-			    dp_scDn_Al, dp_scTauQPTrap_Al);
+                            dp_scDelta0_Al, dp_scTeff_Al,
+                            dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl3Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl3Conductor,AlPhysical_shl3Conductor);
   
@@ -1061,14 +1061,14 @@ MakeResonatorLine(G4String pName,
   G4String shl3Conductor_boundaryName3 = shl3ConductorName + "_AlAl1";
   G4String shl3Conductor_boundaryName4 = shl3ConductorName + "_AlAl2";
   new G4CMPLogicalBorderSurface(shl3Conductor_boundaryName1, shl3Conductor,
-				shl3Empty,AlVacBoundary);
+                                shl3Empty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl3Conductor_boundaryName2, shl3Empty,
-				shl3Conductor,AlVacBoundary);
+                                shl3Conductor,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl3Conductor_boundaryName3, shl3Conductor,
-				halfCircle2Conductor,AlAlBoundary);
+                                halfCircle2Conductor,AlAlBoundary);
   new G4CMPLogicalBorderSurface(shl3Conductor_boundaryName4,
-				halfCircle2Conductor, shl3Conductor,
-				AlAlBoundary);
+                                halfCircle2Conductor, shl3Conductor,
+                                AlAlBoundary);
 
 
 
@@ -1083,18 +1083,18 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle3EmptyNameLog = halfCircle3EmptyName + "_log";
   G4Tubs * solid_halfCircle3Empty =
     new G4Tubs(halfCircle3EmptyNameSolid,
-	       dp_resonatorAssemblyCurveSmallestRadius,
-	       dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
-	       dp_curveEmptyDimZ/2.0,90.*deg,180.*deg);
+               dp_resonatorAssemblyCurveSmallestRadius,
+               dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
+               dp_curveEmptyDimZ/2.0,90.*deg,180.*deg);
   G4LogicalVolume * log_halfCircle3Empty =
     new G4LogicalVolume(solid_halfCircle3Empty,air_mat,halfCircle3EmptyNameLog);
   G4ThreeVector halfCircle3WrtBRCorner = shl3WrtBRCorner +
     G4ThreeVector(-0.5*dp_shl3EmptyDimX,dp_resonatorAssemblyCurveCentralRadius,
-		  0.0);
+                  0.0);
   G4VPhysicalVolume * halfCircle3Empty =
     new G4PVPlacement(0,halfCircle3WrtBRCorner+brCornerOfBaseAlLayer,
-		      log_halfCircle3Empty,halfCircle3EmptyName,log_baseAlLayer,
-		      false,0,true);
+                      log_halfCircle3Empty,halfCircle3EmptyName,log_baseAlLayer,
+                      false,0,true);
   log_halfCircle3Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",halfCircle3EmptyName,halfCircle3Empty));
 
@@ -1105,9 +1105,9 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle3Empty_boundaryName1 = halfCircle3EmptyName + "_VacVac1";
   G4String halfCircle3Empty_boundaryName2 = halfCircle3EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(halfCircle3Empty_boundaryName1,halfCircle3Empty,
-				shl3Empty, VacVacBoundary);
+                                shl3Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle3Empty_boundaryName2, shl3Empty,
-				halfCircle3Empty, VacVacBoundary);
+                                halfCircle3Empty, VacVacBoundary);
 
 
 
@@ -1121,26 +1121,26 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle3ConductorNameLog = halfCircle3ConductorName + "_log";
   G4Tubs * solid_halfCircle3Conductor =
     new G4Tubs(halfCircle3ConductorNameSolid,
-	       dp_resonatorAssemblyCurveCentralRadius -
-	       dp_tlCouplingConductorDimY/2.0,
-	       dp_resonatorAssemblyCurveCentralRadius +
-	       dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
-	       90.*deg,180.*deg);
+               dp_resonatorAssemblyCurveCentralRadius -
+               dp_tlCouplingConductorDimY/2.0,
+               dp_resonatorAssemblyCurveCentralRadius +
+               dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
+               90.*deg,180.*deg);
   G4LogicalVolume * log_halfCircle3Conductor =
     new G4LogicalVolume(solid_halfCircle3Conductor,aluminum_mat,
-			halfCircle3ConductorNameLog);  
+                        halfCircle3ConductorNameLog);  
   G4VPhysicalVolume * halfCircle3Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_halfCircle3Conductor,
-		      halfCircle3ConductorName,log_halfCircle3Empty,false,0,
-		      true);
+                      halfCircle3ConductorName,log_halfCircle3Empty,false,0,
+                      true);
   log_halfCircle3Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",halfCircle3ConductorName,halfCircle3Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle3Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle3Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle3Conductor,AlPhysical_halfCircle3Conductor);
   
@@ -1155,17 +1155,17 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle3Conductor_boundaryName4 = halfCircle3ConductorName +
     "_AlAl2";
   new G4CMPLogicalBorderSurface(halfCircle3Conductor_boundaryName1,
-				halfCircle3Conductor, halfCircle3Empty,
-				AlVacBoundary);
+                                halfCircle3Conductor, halfCircle3Empty,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle3Conductor_boundaryName2,
-				halfCircle3Empty, halfCircle3Conductor,
-				AlVacBoundary);
+                                halfCircle3Empty, halfCircle3Conductor,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle3Conductor_boundaryName3,
-				halfCircle3Conductor, shl3Conductor,
-				AlAlBoundary);
+                                halfCircle3Conductor, shl3Conductor,
+                                AlAlBoundary);
   new G4CMPLogicalBorderSurface(halfCircle3Conductor_boundaryName4,
-				shl3Conductor, halfCircle3Conductor,
-				AlAlBoundary);
+                                shl3Conductor, halfCircle3Conductor,
+                                AlAlBoundary);
 
 
 
@@ -1181,17 +1181,17 @@ MakeResonatorLine(G4String pName,
   G4String shl4EmptyNameLog = shl4EmptyName + "_log";
   G4Box * solid_shl4Empty =
     new G4Box(shl4EmptyNameSolid,
-	      0.5 * dp_shl4EmptyDimX,
-	      0.5 * dp_shl4EmptyDimY,
-	      0.5 * dp_shl4EmptyDimZ);
+              0.5 * dp_shl4EmptyDimX,
+              0.5 * dp_shl4EmptyDimY,
+              0.5 * dp_shl4EmptyDimZ);
   G4LogicalVolume * log_shl4Empty =
     new G4LogicalVolume(solid_shl4Empty,air_mat,shl4EmptyNameLog);
   G4ThreeVector shl4WrtBRCorner = halfCircle3WrtBRCorner +
     G4ThreeVector(0.5*dp_shl4EmptyDimX,
-		  dp_resonatorAssemblyCurveCentralRadius,0);
+                  dp_resonatorAssemblyCurveCentralRadius,0);
   G4VPhysicalVolume * shl4Empty =
     new G4PVPlacement(0,shl4WrtBRCorner+brCornerOfBaseAlLayer,log_shl4Empty,
-		      shl4EmptyName,log_baseAlLayer,false,0,true);
+                      shl4EmptyName,log_baseAlLayer,false,0,true);
   log_shl4Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",shl4EmptyName,shl4Empty));
 
@@ -1202,9 +1202,9 @@ MakeResonatorLine(G4String pName,
   G4String shl4Empty_boundaryName1 = shl4EmptyName + "_VacVac1";
   G4String shl4Empty_boundaryName2 = shl4EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(shl4Empty_boundaryName1, shl4Empty,
-				halfCircle3Empty, VacVacBoundary);
+                                halfCircle3Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(shl4Empty_boundaryName2, halfCircle3Empty,
-				shl4Empty, VacVacBoundary);
+                                shl4Empty, VacVacBoundary);
 
 
 
@@ -1219,22 +1219,22 @@ MakeResonatorLine(G4String pName,
   G4String shl4ConductorNameLog = shl4ConductorName + "_log";
   G4Box * solid_shl4Conductor =
     new G4Box(shl4ConductorNameSolid,
-	      0.5 * dp_shl4ConductorDimX,
-	      0.5 * dp_shl4ConductorDimY,
-	      0.5 * dp_shl4ConductorDimZ);
+              0.5 * dp_shl4ConductorDimX,
+              0.5 * dp_shl4ConductorDimY,
+              0.5 * dp_shl4ConductorDimZ);
   G4LogicalVolume * log_shl4Conductor =
     new G4LogicalVolume(solid_shl4Conductor,aluminum_mat,shl4ConductorNameLog);
   G4VPhysicalVolume * shl4Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_shl4Conductor,
-		      shl4ConductorName,log_shl4Empty,false,0,true);
+                      shl4ConductorName,log_shl4Empty,false,0,true);
   log_shl4Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",shl4ConductorName,shl4Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl4Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl4Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl4Conductor,AlPhysical_shl4Conductor);
   
@@ -1245,14 +1245,14 @@ MakeResonatorLine(G4String pName,
   G4String shl4Conductor_boundaryName3 = shl4ConductorName + "_AlAl1";
   G4String shl4Conductor_boundaryName4 = shl4ConductorName + "_AlAl2";
   new G4CMPLogicalBorderSurface(shl4Conductor_boundaryName1, shl4Conductor,
-				shl4Empty,AlVacBoundary);
+                                shl4Empty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl4Conductor_boundaryName2, shl4Empty,
-				shl4Conductor,AlVacBoundary);
+                                shl4Conductor,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl4Conductor_boundaryName3, shl4Conductor,
-				halfCircle3Conductor,AlAlBoundary);
+                                halfCircle3Conductor,AlAlBoundary);
   new G4CMPLogicalBorderSurface(shl4Conductor_boundaryName4,
-				halfCircle3Conductor, shl4Conductor,
-				AlAlBoundary);
+                                halfCircle3Conductor, shl4Conductor,
+                                AlAlBoundary);
 
 
 
@@ -1267,18 +1267,18 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle4EmptyNameLog = halfCircle4EmptyName + "_log";
   G4Tubs * solid_halfCircle4Empty =
     new G4Tubs(halfCircle4EmptyNameSolid,
-	       dp_resonatorAssemblyCurveSmallestRadius,
-	       dp_resonatorAssemblyCurveSmallestRadius +
-	       dp_tlCouplingEmptyDimY,dp_curveEmptyDimZ/2.0,270.*deg,180.*deg);
+               dp_resonatorAssemblyCurveSmallestRadius,
+               dp_resonatorAssemblyCurveSmallestRadius +
+               dp_tlCouplingEmptyDimY,dp_curveEmptyDimZ/2.0,270.*deg,180.*deg);
   G4LogicalVolume * log_halfCircle4Empty =
     new G4LogicalVolume(solid_halfCircle4Empty,air_mat,halfCircle4EmptyNameLog);
   G4ThreeVector halfCircle4WrtBRCorner = shl4WrtBRCorner +
     G4ThreeVector(+0.5*dp_shl4EmptyDimX,
-		  dp_resonatorAssemblyCurveCentralRadius,0.0);
+                  dp_resonatorAssemblyCurveCentralRadius,0.0);
   G4VPhysicalVolume * halfCircle4Empty =
     new G4PVPlacement(0,halfCircle4WrtBRCorner+brCornerOfBaseAlLayer,
-		      log_halfCircle4Empty,halfCircle4EmptyName,log_baseAlLayer,
-		      false,0,true);
+                      log_halfCircle4Empty,halfCircle4EmptyName,log_baseAlLayer,
+                      false,0,true);
   log_halfCircle4Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",halfCircle4EmptyName,halfCircle4Empty));
 
@@ -1289,9 +1289,9 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle4Empty_boundaryName1 = halfCircle4EmptyName + "_VacVac1";
   G4String halfCircle4Empty_boundaryName2 = halfCircle4EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(halfCircle4Empty_boundaryName1,
-				halfCircle4Empty, shl4Empty, VacVacBoundary);
+                                halfCircle4Empty, shl4Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle4Empty_boundaryName2, shl4Empty,
-				halfCircle4Empty, VacVacBoundary);
+                                halfCircle4Empty, VacVacBoundary);
 
 
 
@@ -1311,26 +1311,26 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle4ConductorNameLog = halfCircle4ConductorName + "_log";
   G4Tubs * solid_halfCircle4Conductor =
     new G4Tubs(halfCircle4ConductorNameSolid,
-	       dp_resonatorAssemblyCurveCentralRadius -
-	       dp_tlCouplingConductorDimY/2.0,
-	       dp_resonatorAssemblyCurveCentralRadius +
-	       dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
-	       270.*deg,180.*deg);
+               dp_resonatorAssemblyCurveCentralRadius -
+               dp_tlCouplingConductorDimY/2.0,
+               dp_resonatorAssemblyCurveCentralRadius +
+               dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
+               270.*deg,180.*deg);
   G4LogicalVolume * log_halfCircle4Conductor =
     new G4LogicalVolume(solid_halfCircle4Conductor,aluminum_mat,
-			halfCircle4ConductorNameLog);  
+                        halfCircle4ConductorNameLog);  
   G4VPhysicalVolume * halfCircle4Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_halfCircle4Conductor,
-		      halfCircle4ConductorName,log_halfCircle4Empty,
-		      false,0,true);
+                      halfCircle4ConductorName,log_halfCircle4Empty,
+                      false,0,true);
   log_halfCircle4Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",halfCircle4ConductorName,halfCircle4Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle4Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle4Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle4Conductor,AlPhysical_halfCircle4Conductor);
   
@@ -1345,17 +1345,17 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle4Conductor_boundaryName4 = halfCircle4ConductorName +
     "_AlAl2";
   new G4CMPLogicalBorderSurface(halfCircle4Conductor_boundaryName1,
-				halfCircle4Conductor, halfCircle4Empty,
-				AlVacBoundary);
+                                halfCircle4Conductor, halfCircle4Empty,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle4Conductor_boundaryName2,
-				halfCircle4Empty, halfCircle4Conductor,
-				AlVacBoundary);
+                                halfCircle4Empty, halfCircle4Conductor,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle4Conductor_boundaryName3,
-				halfCircle4Conductor, shl4Conductor,
-				AlAlBoundary);
+                                halfCircle4Conductor, shl4Conductor,
+                                AlAlBoundary);
   new G4CMPLogicalBorderSurface(halfCircle4Conductor_boundaryName4,
-				shl4Conductor, halfCircle4Conductor,
-				AlAlBoundary);
+                                shl4Conductor, halfCircle4Conductor,
+                                AlAlBoundary);
 
 
 
@@ -1374,15 +1374,15 @@ MakeResonatorLine(G4String pName,
   G4String shl5EmptyNameLog = shl5EmptyName + "_log";
   G4Box * solid_shl5Empty =
     new G4Box(shl5EmptyNameSolid,0.5 * dp_shl5EmptyDimX,0.5 * dp_shl5EmptyDimY,
-	      0.5 * dp_shl5EmptyDimZ);
+              0.5 * dp_shl5EmptyDimZ);
   G4LogicalVolume * log_shl5Empty =
     new G4LogicalVolume(solid_shl5Empty,air_mat,shl5EmptyNameLog);
   G4ThreeVector shl5WrtBRCorner = halfCircle4WrtBRCorner +
     G4ThreeVector(-0.5*dp_shl5EmptyDimX,dp_resonatorAssemblyCurveCentralRadius,
-		  0);
+                  0);
   G4VPhysicalVolume * shl5Empty =
     new G4PVPlacement(0,shl5WrtBRCorner+brCornerOfBaseAlLayer,log_shl5Empty,
-		      shl5EmptyName,log_baseAlLayer,false,0,true);
+                      shl5EmptyName,log_baseAlLayer,false,0,true);
   log_shl5Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",shl5EmptyName,shl5Empty));
 
@@ -1393,9 +1393,9 @@ MakeResonatorLine(G4String pName,
   G4String shl5Empty_boundaryName1 = shl5EmptyName + "_VacVac1";
   G4String shl5Empty_boundaryName2 = shl5EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(shl5Empty_boundaryName1, shl5Empty,
-				halfCircle4Empty, VacVacBoundary);
+                                halfCircle4Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(shl5Empty_boundaryName2, halfCircle4Empty,
-				shl5Empty, VacVacBoundary);
+                                shl5Empty, VacVacBoundary);
 
 
 
@@ -1413,22 +1413,22 @@ MakeResonatorLine(G4String pName,
   G4String shl5ConductorNameLog = shl5ConductorName + "_log";
   G4Box * solid_shl5Conductor =
     new G4Box(shl5ConductorNameSolid,
-	      0.5 * dp_shl5ConductorDimX,
-	      0.5 * dp_shl5ConductorDimY,
-	      0.5 * dp_shl5ConductorDimZ);
+              0.5 * dp_shl5ConductorDimX,
+              0.5 * dp_shl5ConductorDimY,
+              0.5 * dp_shl5ConductorDimZ);
   G4LogicalVolume * log_shl5Conductor =
     new G4LogicalVolume(solid_shl5Conductor,aluminum_mat,shl5ConductorNameLog);
   G4VPhysicalVolume * shl5Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_shl5Conductor,
-		      shl5ConductorName,log_shl5Empty,false,0,true);
+                      shl5ConductorName,log_shl5Empty,false,0,true);
   log_shl5Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",shl5ConductorName,shl5Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl5Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl5Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl5Conductor,AlPhysical_shl5Conductor);
   
@@ -1439,14 +1439,14 @@ MakeResonatorLine(G4String pName,
   G4String shl5Conductor_boundaryName3 = shl5ConductorName + "_AlAl1";
   G4String shl5Conductor_boundaryName4 = shl5ConductorName + "_AlAl2";
   new G4CMPLogicalBorderSurface(shl5Conductor_boundaryName1, shl5Conductor,
-				shl5Empty,AlVacBoundary);
+                                shl5Empty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl5Conductor_boundaryName2, shl5Empty,
-				shl5Conductor,AlVacBoundary);
+                                shl5Conductor,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl5Conductor_boundaryName3, shl5Conductor,
-				halfCircle4Conductor,AlAlBoundary);
+                                halfCircle4Conductor,AlAlBoundary);
   new G4CMPLogicalBorderSurface(shl5Conductor_boundaryName4,
-				halfCircle4Conductor, shl5Conductor,
-				AlAlBoundary);
+                                halfCircle4Conductor, shl5Conductor,
+                                AlAlBoundary);
 
 
 
@@ -1463,19 +1463,19 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle5EmptyNameLog = halfCircle5EmptyName + "_log";
   G4Tubs * solid_halfCircle5Empty =
     new G4Tubs(halfCircle5EmptyNameSolid,
-	       dp_resonatorAssemblyCurveSmallestRadius,
-	       dp_resonatorAssemblyCurveSmallestRadius +
-	       dp_tlCouplingEmptyDimY,dp_curveEmptyDimZ/2.0,
-	       90.*deg,180.*deg);
+               dp_resonatorAssemblyCurveSmallestRadius,
+               dp_resonatorAssemblyCurveSmallestRadius +
+               dp_tlCouplingEmptyDimY,dp_curveEmptyDimZ/2.0,
+               90.*deg,180.*deg);
   G4LogicalVolume * log_halfCircle5Empty =
     new G4LogicalVolume(solid_halfCircle5Empty,air_mat,halfCircle5EmptyNameLog);
   G4ThreeVector halfCircle5WrtBRCorner = shl5WrtBRCorner +
     G4ThreeVector(-0.5*dp_shl5EmptyDimX,dp_resonatorAssemblyCurveCentralRadius,
-		  0.0);
+                  0.0);
   G4VPhysicalVolume * halfCircle5Empty =
     new G4PVPlacement(0,halfCircle5WrtBRCorner+brCornerOfBaseAlLayer,
-		      log_halfCircle5Empty,halfCircle5EmptyName,log_baseAlLayer,
-		      false,0,true);
+                      log_halfCircle5Empty,halfCircle5EmptyName,log_baseAlLayer,
+                      false,0,true);
   log_halfCircle5Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",halfCircle5EmptyName,halfCircle5Empty));
 
@@ -1486,9 +1486,9 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle5Empty_boundaryName1 = halfCircle5EmptyName + "_VacVac1";
   G4String halfCircle5Empty_boundaryName2 = halfCircle5EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(halfCircle5Empty_boundaryName1,
-				halfCircle5Empty, shl5Empty, VacVacBoundary);
+                                halfCircle5Empty, shl5Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle5Empty_boundaryName2, shl5Empty,
-				halfCircle5Empty, VacVacBoundary);
+                                halfCircle5Empty, VacVacBoundary);
 
 
 
@@ -1507,26 +1507,26 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle5ConductorNameLog = halfCircle5ConductorName + "_log";
   G4Tubs * solid_halfCircle5Conductor =
     new G4Tubs(halfCircle5ConductorNameSolid,
-	       dp_resonatorAssemblyCurveCentralRadius -
-	       dp_tlCouplingConductorDimY/2.0,
-	       dp_resonatorAssemblyCurveCentralRadius +
-	       dp_tlCouplingConductorDimY/2.0,
-	       dp_curveEmptyDimZ/2.0,90.*deg,180.*deg);
+               dp_resonatorAssemblyCurveCentralRadius -
+               dp_tlCouplingConductorDimY/2.0,
+               dp_resonatorAssemblyCurveCentralRadius +
+               dp_tlCouplingConductorDimY/2.0,
+               dp_curveEmptyDimZ/2.0,90.*deg,180.*deg);
   G4LogicalVolume * log_halfCircle5Conductor =
     new G4LogicalVolume(solid_halfCircle5Conductor,aluminum_mat,
-			halfCircle5ConductorNameLog);  
+                        halfCircle5ConductorNameLog);  
   G4VPhysicalVolume * halfCircle5Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_halfCircle5Conductor,
-		      halfCircle5ConductorName,log_halfCircle5Empty,
-		      false,0,true);
+                      halfCircle5ConductorName,log_halfCircle5Empty,
+                      false,0,true);
   log_halfCircle5Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",halfCircle5ConductorName,halfCircle5Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle5Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle5Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle5Conductor,AlPhysical_halfCircle5Conductor);
   
@@ -1541,17 +1541,17 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle5Conductor_boundaryName4 = halfCircle5ConductorName +
     "_AlAl2";
   new G4CMPLogicalBorderSurface(halfCircle5Conductor_boundaryName1,
-				halfCircle5Conductor, halfCircle5Empty,
-				AlVacBoundary);
+                                halfCircle5Conductor, halfCircle5Empty,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle5Conductor_boundaryName2,
-				halfCircle5Empty, halfCircle5Conductor,
-				AlVacBoundary);
+                                halfCircle5Empty, halfCircle5Conductor,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle5Conductor_boundaryName3,
-				halfCircle5Conductor, shl5Conductor,
-				AlAlBoundary);
+                                halfCircle5Conductor, shl5Conductor,
+                                AlAlBoundary);
   new G4CMPLogicalBorderSurface(halfCircle5Conductor_boundaryName4,
-				shl5Conductor, halfCircle5Conductor,
-				AlAlBoundary);
+                                shl5Conductor, halfCircle5Conductor,
+                                AlAlBoundary);
 
 
 
@@ -1564,17 +1564,17 @@ MakeResonatorLine(G4String pName,
   G4String shl6EmptyNameLog = shl6EmptyName + "_log";
   G4Box * solid_shl6Empty =
     new G4Box(shl6EmptyNameSolid,
-	      0.5 * dp_shl6EmptyDimX,
-	      0.5 * dp_shl6EmptyDimY,
-	      0.5 * dp_shl6EmptyDimZ);
+              0.5 * dp_shl6EmptyDimX,
+              0.5 * dp_shl6EmptyDimY,
+              0.5 * dp_shl6EmptyDimZ);
   G4LogicalVolume * log_shl6Empty =
     new G4LogicalVolume(solid_shl6Empty,air_mat,shl6EmptyNameLog);
   G4ThreeVector shl6WrtBRCorner = halfCircle5WrtBRCorner +
     G4ThreeVector(0.5*dp_shl6EmptyDimX,
-		  dp_resonatorAssemblyCurveCentralRadius,0);
+                  dp_resonatorAssemblyCurveCentralRadius,0);
   G4VPhysicalVolume * shl6Empty =
     new G4PVPlacement(0,shl6WrtBRCorner+brCornerOfBaseAlLayer,log_shl6Empty,
-		      shl6EmptyName,log_baseAlLayer,false,0,true);
+                      shl6EmptyName,log_baseAlLayer,false,0,true);
   log_shl6Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",shl6EmptyName,shl6Empty));
 
@@ -1585,9 +1585,9 @@ MakeResonatorLine(G4String pName,
   G4String shl6Empty_boundaryName1 = shl6EmptyName + "_VacVac1";
   G4String shl6Empty_boundaryName2 = shl6EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(shl6Empty_boundaryName1, shl6Empty,
-				halfCircle5Empty, VacVacBoundary);
+                                halfCircle5Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(shl6Empty_boundaryName2, halfCircle5Empty,
-				shl6Empty, VacVacBoundary);
+                                shl6Empty, VacVacBoundary);
 
 
 
@@ -1604,22 +1604,22 @@ MakeResonatorLine(G4String pName,
   G4String shl6ConductorNameLog = shl6ConductorName + "_log";
   G4Box * solid_shl6Conductor =
     new G4Box(shl6ConductorNameSolid,
-	      0.5 * dp_shl6ConductorDimX,
-	      0.5 * dp_shl6ConductorDimY,
-	      0.5 * dp_shl6ConductorDimZ);
+              0.5 * dp_shl6ConductorDimX,
+              0.5 * dp_shl6ConductorDimY,
+              0.5 * dp_shl6ConductorDimZ);
   G4LogicalVolume * log_shl6Conductor =
     new G4LogicalVolume(solid_shl6Conductor,aluminum_mat,shl6ConductorNameLog);
   G4VPhysicalVolume * shl6Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_shl6Conductor,
-		      shl6ConductorName,log_shl6Empty,false,0,true);
+                      shl6ConductorName,log_shl6Empty,false,0,true);
   log_shl6Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",shl6ConductorName,shl6Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl6Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl6Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl6Conductor,AlPhysical_shl6Conductor);
   
@@ -1630,14 +1630,14 @@ MakeResonatorLine(G4String pName,
   G4String shl6Conductor_boundaryName3 = shl6ConductorName + "_AlAl1";
   G4String shl6Conductor_boundaryName4 = shl6ConductorName + "_AlAl2";
   new G4CMPLogicalBorderSurface(shl6Conductor_boundaryName1, shl6Conductor,
-				shl6Empty,AlVacBoundary);
+                                shl6Empty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl6Conductor_boundaryName2, shl6Empty,
-				shl6Conductor,AlVacBoundary);
+                                shl6Conductor,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl6Conductor_boundaryName3, shl6Conductor,
-				halfCircle5Conductor,AlAlBoundary);
+                                halfCircle5Conductor,AlAlBoundary);
   new G4CMPLogicalBorderSurface(shl6Conductor_boundaryName4,
-				halfCircle5Conductor, shl6Conductor,
-				AlAlBoundary);
+                                halfCircle5Conductor, shl6Conductor,
+                                AlAlBoundary);
 
 
 
@@ -1655,18 +1655,18 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle6EmptyNameLog = halfCircle6EmptyName + "_log";
   G4Tubs * solid_halfCircle6Empty =
     new G4Tubs(halfCircle6EmptyNameSolid,
-	       dp_resonatorAssemblyCurveSmallestRadius,
-	       dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
-	       dp_curveEmptyDimZ/2.0,270.*deg,180.*deg);
+               dp_resonatorAssemblyCurveSmallestRadius,
+               dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
+               dp_curveEmptyDimZ/2.0,270.*deg,180.*deg);
   G4LogicalVolume * log_halfCircle6Empty =
     new G4LogicalVolume(solid_halfCircle6Empty,air_mat,halfCircle6EmptyNameLog);
   G4ThreeVector halfCircle6WrtBRCorner = shl6WrtBRCorner +
     G4ThreeVector(0.5*dp_shl6EmptyDimX,
-		  dp_resonatorAssemblyCurveCentralRadius,0.0);
+                  dp_resonatorAssemblyCurveCentralRadius,0.0);
   G4VPhysicalVolume * halfCircle6Empty =
     new G4PVPlacement(0,halfCircle6WrtBRCorner+brCornerOfBaseAlLayer,
-		      log_halfCircle6Empty,halfCircle6EmptyName,log_baseAlLayer,
-		      false,0,true);
+                      log_halfCircle6Empty,halfCircle6EmptyName,log_baseAlLayer,
+                      false,0,true);
   log_halfCircle6Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",halfCircle6EmptyName,halfCircle6Empty));
 
@@ -1677,9 +1677,9 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle6Empty_boundaryName1 = halfCircle6EmptyName + "_VacVac1";
   G4String halfCircle6Empty_boundaryName2 = halfCircle6EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(halfCircle6Empty_boundaryName1,
-				halfCircle6Empty, shl6Empty, VacVacBoundary);
+                                halfCircle6Empty, shl6Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle6Empty_boundaryName2, shl6Empty,
-				halfCircle6Empty, VacVacBoundary);
+                                halfCircle6Empty, VacVacBoundary);
 
 
 
@@ -1692,26 +1692,26 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle6ConductorNameLog = halfCircle6ConductorName + "_log";
   G4Tubs * solid_halfCircle6Conductor =
     new G4Tubs(halfCircle6ConductorNameSolid,
-	       dp_resonatorAssemblyCurveCentralRadius -
-	       dp_tlCouplingConductorDimY/2.0,
-	       dp_resonatorAssemblyCurveCentralRadius +
-	       dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
-	       270.*deg,180.*deg);
+               dp_resonatorAssemblyCurveCentralRadius -
+               dp_tlCouplingConductorDimY/2.0,
+               dp_resonatorAssemblyCurveCentralRadius +
+               dp_tlCouplingConductorDimY/2.0,dp_curveEmptyDimZ/2.0,
+               270.*deg,180.*deg);
   G4LogicalVolume * log_halfCircle6Conductor =
     new G4LogicalVolume(solid_halfCircle6Conductor,aluminum_mat,
-			halfCircle6ConductorNameLog);  
+                        halfCircle6ConductorNameLog);  
   G4VPhysicalVolume * halfCircle6Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_halfCircle6Conductor,
-		      halfCircle6ConductorName,log_halfCircle6Empty,false,0,
-		      true);
+                      halfCircle6ConductorName,log_halfCircle6Empty,false,0,
+                      true);
   log_halfCircle6Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",halfCircle6ConductorName,halfCircle6Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_halfCircle6Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_halfCircle6Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(halfCircle6Conductor,AlPhysical_halfCircle6Conductor);
   
@@ -1726,17 +1726,17 @@ MakeResonatorLine(G4String pName,
   G4String halfCircle6Conductor_boundaryName4 = halfCircle6ConductorName +
     "_AlAl2";
   new G4CMPLogicalBorderSurface(halfCircle6Conductor_boundaryName1,
-				halfCircle6Conductor, halfCircle6Empty,
-				AlVacBoundary);
+                                halfCircle6Conductor, halfCircle6Empty,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle6Conductor_boundaryName2,
-				halfCircle6Empty, halfCircle6Conductor,
-				AlVacBoundary);
+                                halfCircle6Empty, halfCircle6Conductor,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(halfCircle6Conductor_boundaryName3,
-				halfCircle6Conductor, shl6Conductor,
-				AlAlBoundary);
+                                halfCircle6Conductor, shl6Conductor,
+                                AlAlBoundary);
   new G4CMPLogicalBorderSurface(halfCircle6Conductor_boundaryName4,
-				shl6Conductor, halfCircle6Conductor,
-				AlAlBoundary);
+                                shl6Conductor, halfCircle6Conductor,
+                                AlAlBoundary);
 
   
 
@@ -1753,18 +1753,18 @@ MakeResonatorLine(G4String pName,
   G4String shl7EmptyNameLog = shl7EmptyName + "_log";
   G4Box * solid_shl7Empty =
     new G4Box(shl7EmptyNameSolid,
-	      0.5 * dp_shl7EmptyDimX,
-	      0.5 * dp_shl7EmptyDimY,
-	      0.5 * dp_shl7EmptyDimZ);
+              0.5 * dp_shl7EmptyDimX,
+              0.5 * dp_shl7EmptyDimY,
+              0.5 * dp_shl7EmptyDimZ);
   G4LogicalVolume * log_shl7Empty = new G4LogicalVolume(solid_shl7Empty,air_mat,
-							shl7EmptyNameLog);
+                                                        shl7EmptyNameLog);
   G4ThreeVector shl7WrtBRCorner = halfCircle6WrtBRCorner +
     G4ThreeVector(-0.5*dp_shl7EmptyDimX,
-		  dp_resonatorAssemblyCurveCentralRadius,
-		  0);
+                  dp_resonatorAssemblyCurveCentralRadius,
+                  0);
   G4VPhysicalVolume * shl7Empty =
     new G4PVPlacement(0,shl7WrtBRCorner+brCornerOfBaseAlLayer,log_shl7Empty,
-		      shl7EmptyName,log_baseAlLayer,false,0,true);
+                      shl7EmptyName,log_baseAlLayer,false,0,true);
   log_shl7Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",shl7EmptyName,shl7Empty));
 
@@ -1775,9 +1775,9 @@ MakeResonatorLine(G4String pName,
   G4String shl7Empty_boundaryName1 = shl7EmptyName + "_VacVac1";
   G4String shl7Empty_boundaryName2 = shl7EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(shl7Empty_boundaryName1, shl7Empty,
-				halfCircle6Empty, VacVacBoundary);
+                                halfCircle6Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(shl7Empty_boundaryName2, halfCircle6Empty,
-				shl7Empty, VacVacBoundary);
+                                shl7Empty, VacVacBoundary);
 
 
   
@@ -1795,20 +1795,20 @@ MakeResonatorLine(G4String pName,
   G4String shl7ConductorNameLog = shl7ConductorName + "_log";
   G4Box * solid_shl7Conductor =
     new G4Box(shl7ConductorNameSolid,0.5 * dp_shl7ConductorDimX,
-	      0.5 * dp_shl7ConductorDimY,0.5 * dp_shl7ConductorDimZ);
+              0.5 * dp_shl7ConductorDimY,0.5 * dp_shl7ConductorDimZ);
   G4LogicalVolume * log_shl7Conductor =
     new G4LogicalVolume(solid_shl7Conductor,aluminum_mat,shl7ConductorNameLog);
   G4VPhysicalVolume * shl7Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_shl7Conductor,
-		      shl7ConductorName,log_shl7Empty,false,0,true);
+                      shl7ConductorName,log_shl7Empty,false,0,true);
   log_shl7Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",shl7ConductorName,shl7Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shl7Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shl7Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shl7Conductor,AlPhysical_shl7Conductor);
   
@@ -1819,14 +1819,14 @@ MakeResonatorLine(G4String pName,
   G4String shl7Conductor_boundaryName3 = shl7ConductorName + "_AlAl1";
   G4String shl7Conductor_boundaryName4 = shl7ConductorName + "_AlAl2";
   new G4CMPLogicalBorderSurface(shl7Conductor_boundaryName1, shl7Conductor,
-				shl7Empty,AlVacBoundary);
+                                shl7Empty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl7Conductor_boundaryName2, shl7Empty,
-				shl7Conductor,AlVacBoundary);
+                                shl7Conductor,AlVacBoundary);
   new G4CMPLogicalBorderSurface(shl7Conductor_boundaryName3, shl7Conductor,
-				halfCircle6Conductor, AlAlBoundary);
+                                halfCircle6Conductor, AlAlBoundary);
   new G4CMPLogicalBorderSurface(shl7Conductor_boundaryName4,
-				halfCircle6Conductor, shl7Conductor,
-				AlAlBoundary);
+                                halfCircle6Conductor, shl7Conductor,
+                                AlAlBoundary);
 
 
 
@@ -1840,16 +1840,16 @@ MakeResonatorLine(G4String pName,
   G4String curve3EmptyNameLog = curve3EmptyName + "_log";
   G4Tubs * solid_curve3Empty =
     new G4Tubs(curve3EmptyNameSolid,dp_resonatorAssemblyCurveSmallestRadius,
-	       dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
-	       dp_curveEmptyDimZ/2.0,180.*deg,90.*deg);
+               dp_resonatorAssemblyCurveSmallestRadius + dp_tlCouplingEmptyDimY,
+               dp_curveEmptyDimZ/2.0,180.*deg,90.*deg);
   G4LogicalVolume * log_curve3Empty =
     new G4LogicalVolume(solid_curve3Empty,air_mat,curve3EmptyNameLog);  
   G4ThreeVector curve3WrtBRCorner = shl7WrtBRCorner +
     G4ThreeVector(-0.5*dp_shl7EmptyDimX,
-		  dp_resonatorAssemblyCurveCentralRadius,0.0);
+                  dp_resonatorAssemblyCurveCentralRadius,0.0);
   G4VPhysicalVolume * curve3Empty =
     new G4PVPlacement(0,curve3WrtBRCorner+brCornerOfBaseAlLayer,log_curve3Empty,
-		      curve3EmptyName,log_baseAlLayer,false,0,true);
+                      curve3EmptyName,log_baseAlLayer,false,0,true);
   log_curve3Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",curve3EmptyName,curve3Empty));
 
@@ -1860,9 +1860,9 @@ MakeResonatorLine(G4String pName,
   G4String curve3Empty_boundaryName1 = curve3EmptyName + "_VacVac1";
   G4String curve3Empty_boundaryName2 = curve3EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(curve3Empty_boundaryName1, curve3Empty,
-				shl7Empty, VacVacBoundary);
+                                shl7Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(curve3Empty_boundaryName2, shl7Empty,
-				curve3Empty, VacVacBoundary);
+                                curve3Empty, VacVacBoundary);
 
   
 
@@ -1877,25 +1877,25 @@ MakeResonatorLine(G4String pName,
   G4String curve3ConductorNameLog = curve3ConductorName + "_log";
   G4Tubs * solid_curve3Conductor =
     new G4Tubs(curve3ConductorNameSolid,
-	       dp_resonatorAssemblyCurveCentralRadius -
-	       dp_tlCouplingConductorDimY/2.0,
-	       dp_resonatorAssemblyCurveCentralRadius +
-	       dp_tlCouplingConductorDimY/2.0,
-	       dp_curveEmptyDimZ/2.0,180.*deg,90.*deg);
+               dp_resonatorAssemblyCurveCentralRadius -
+               dp_tlCouplingConductorDimY/2.0,
+               dp_resonatorAssemblyCurveCentralRadius +
+               dp_tlCouplingConductorDimY/2.0,
+               dp_curveEmptyDimZ/2.0,180.*deg,90.*deg);
   G4LogicalVolume * log_curve3Conductor =
     new G4LogicalVolume(solid_curve3Conductor,aluminum_mat,
-			curve3ConductorNameLog);  
+                        curve3ConductorNameLog);  
   G4VPhysicalVolume * curve3Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_curve3Conductor,
-		      curve3ConductorName,log_curve3Empty,false,0,true);
+                      curve3ConductorName,log_curve3Empty,false,0,true);
   log_curve3Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",curve3ConductorName,curve3Conductor));
 
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_curve3Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_curve3Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(curve3Conductor,AlPhysical_curve3Conductor);
   
@@ -1906,13 +1906,13 @@ MakeResonatorLine(G4String pName,
   G4String curve3Conductor_boundaryName3 = curve3ConductorName + "_AlAl1";
   G4String curve3Conductor_boundaryName4 = curve3ConductorName + "_AlAl2";
   new G4CMPLogicalBorderSurface(curve3Conductor_boundaryName1, curve3Conductor,
-				curve3Empty,AlVacBoundary);
+                                curve3Empty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(curve3Conductor_boundaryName2, curve3Empty,
-				curve3Conductor,AlVacBoundary);
+                                curve3Conductor,AlVacBoundary);
   new G4CMPLogicalBorderSurface(curve3Conductor_boundaryName3, curve3Conductor,
-				shl7Conductor, AlAlBoundary);
+                                shl7Conductor, AlAlBoundary);
   new G4CMPLogicalBorderSurface(curve3Conductor_boundaryName4, shl7Conductor,
-				curve3Conductor, AlAlBoundary);
+                                curve3Conductor, AlAlBoundary);
 
 
 
@@ -1929,15 +1929,15 @@ MakeResonatorLine(G4String pName,
   G4String svl1EmptyNameLog = svl1EmptyName + "_log";
   G4Box * solid_svl1Empty =
     new G4Box(svl1EmptyNameSolid,0.5 * dp_svl1EmptyDimX,0.5 * dp_svl1EmptyDimY,
-	      0.5 * dp_svl1EmptyDimZ);
+              0.5 * dp_svl1EmptyDimZ);
   G4LogicalVolume * log_svl1Empty =
     new G4LogicalVolume(solid_svl1Empty,air_mat,svl1EmptyNameLog);
   G4ThreeVector svl1WrtBRCorner = curve3WrtBRCorner +
     G4ThreeVector(-1*dp_resonatorAssemblyCurveCentralRadius,
-		  0.5*dp_svl1EmptyDimY,0);
+                  0.5*dp_svl1EmptyDimY,0);
   G4VPhysicalVolume * svl1Empty =
     new G4PVPlacement(0,svl1WrtBRCorner+brCornerOfBaseAlLayer,log_svl1Empty,
-		      svl1EmptyName,log_baseAlLayer,false,0,true);
+                      svl1EmptyName,log_baseAlLayer,false,0,true);
   log_svl1Empty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",svl1EmptyName,svl1Empty));
 
@@ -1948,9 +1948,9 @@ MakeResonatorLine(G4String pName,
   G4String svl1Empty_boundaryName1 = svl1EmptyName + "_VacVac1";
   G4String svl1Empty_boundaryName2 = svl1EmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(svl1Empty_boundaryName1, svl1Empty, curve3Empty,
-				VacVacBoundary);
+                                VacVacBoundary);
   new G4CMPLogicalBorderSurface(svl1Empty_boundaryName2, curve3Empty, svl1Empty,
-				VacVacBoundary);
+                                VacVacBoundary);
   
 
   
@@ -1968,12 +1968,12 @@ MakeResonatorLine(G4String pName,
   G4String svl1ConductorNameLog = svl1ConductorName + "_log";
   G4Box * solid_svl1Conductor =
     new G4Box(svl1ConductorNameSolid,0.5 * dp_svl1ConductorDimX,
-	      0.5 * dp_svl1ConductorDimY,0.5 * dp_svl1ConductorDimZ);
+              0.5 * dp_svl1ConductorDimY,0.5 * dp_svl1ConductorDimZ);
   G4LogicalVolume * log_svl1Conductor =
     new G4LogicalVolume(solid_svl1Conductor,aluminum_mat,svl1ConductorNameLog);
   G4VPhysicalVolume * svl1Conductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_svl1Conductor,
-		      svl1ConductorName,log_svl1Empty,false,0,true);
+                      svl1ConductorName,log_svl1Empty,false,0,true);
   log_svl1Conductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",svl1ConductorName,svl1Conductor));
 
@@ -1981,8 +1981,8 @@ MakeResonatorLine(G4String pName,
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_svl1Conductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_svl1Conductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(svl1Conductor,AlPhysical_svl1Conductor);
   
@@ -1993,13 +1993,13 @@ MakeResonatorLine(G4String pName,
   G4String svl1Conductor_boundaryName3 = svl1ConductorName + "_AlAl1";
   G4String svl1Conductor_boundaryName4 = svl1ConductorName + "_AlAl2";
   new G4CMPLogicalBorderSurface(svl1Conductor_boundaryName1, svl1Conductor,
-				svl1Empty,AlVacBoundary);
+                                svl1Empty,AlVacBoundary);
   new G4CMPLogicalBorderSurface(svl1Conductor_boundaryName2, svl1Empty,
-				svl1Conductor,AlVacBoundary);
+                                svl1Conductor,AlVacBoundary);
   new G4CMPLogicalBorderSurface(svl1Conductor_boundaryName3, svl1Conductor,
-				curve3Conductor, AlAlBoundary);
+                                curve3Conductor, AlAlBoundary);
   new G4CMPLogicalBorderSurface(svl1Conductor_boundaryName4, curve3Conductor,
-				svl1Conductor, AlAlBoundary);
+                                svl1Conductor, AlAlBoundary);
 
 
 
@@ -2017,42 +2017,42 @@ MakeResonatorLine(G4String pName,
   G4String shuntCouplerEmptyNameLog = shuntCouplerEmptyName + "_log";
   G4Box * solid_shuntCouplerHorizontalEmpty =
     new G4Box("shuntCouplerHorizontalEmptySolid",
-	      0.5 * dp_shuntCouplerHorizontalEmptyDimX,
-	      0.5 * dp_shuntCouplerHorizontalEmptyDimY,
-	      0.5 * dp_shuntCouplerHorizontalEmptyDimZ);
+              0.5 * dp_shuntCouplerHorizontalEmptyDimX,
+              0.5 * dp_shuntCouplerHorizontalEmptyDimY,
+              0.5 * dp_shuntCouplerHorizontalEmptyDimZ);
   G4Box * solid_shuntCouplerLeftLobeEmpty =
     new G4Box("shuntCouplerLeftLobeEmpty",0.5 * dp_shuntCouplerLobeEmptyDimX,
-	      0.5* dp_shuntCouplerLobeEmptyDimY,
-	      0.5* dp_shuntCouplerLobeEmptyDimZ);
+              0.5* dp_shuntCouplerLobeEmptyDimY,
+              0.5* dp_shuntCouplerLobeEmptyDimZ);
   G4Box * solid_shuntCouplerRightLobeEmpty =
     new G4Box("shuntCouplerRightLobeEmpty",0.5 * dp_shuntCouplerLobeEmptyDimX,
-	      0.5* dp_shuntCouplerLobeEmptyDimY,
-	      0.5* dp_shuntCouplerLobeEmptyDimZ);
+              0.5* dp_shuntCouplerLobeEmptyDimY,
+              0.5* dp_shuntCouplerLobeEmptyDimZ);
   G4UnionSolid * solid_shuntCouplerMerge1Empty =
     new G4UnionSolid("shuntCouplerHorizontalPlusLeft",
-		     solid_shuntCouplerHorizontalEmpty,
-		     solid_shuntCouplerLeftLobeEmpty,0,
-		     G4ThreeVector(-0.5*dp_shuntCouplerHorizontalEmptyDimX +
-				   0.5*dp_shuntCouplerLobeEmptyDimX,
-				   0.5*(dp_shuntCouplerHorizontalEmptyDimY+
-					dp_shuntCouplerLobeEmptyDimY),0));
+                     solid_shuntCouplerHorizontalEmpty,
+                     solid_shuntCouplerLeftLobeEmpty,0,
+                     G4ThreeVector(-0.5*dp_shuntCouplerHorizontalEmptyDimX +
+                                   0.5*dp_shuntCouplerLobeEmptyDimX,
+                                   0.5*(dp_shuntCouplerHorizontalEmptyDimY+
+                                        dp_shuntCouplerLobeEmptyDimY),0));
   G4UnionSolid * solid_shuntCouplerEmpty =
     new G4UnionSolid(shuntCouplerEmptyNameSolid,solid_shuntCouplerMerge1Empty,
-		     solid_shuntCouplerRightLobeEmpty,0,
-		     G4ThreeVector(0.5*dp_shuntCouplerHorizontalEmptyDimX -
-				   0.5*dp_shuntCouplerLobeEmptyDimX,
-				   0.5*(dp_shuntCouplerHorizontalEmptyDimY+
-					dp_shuntCouplerLobeEmptyDimY),0));    
+                     solid_shuntCouplerRightLobeEmpty,0,
+                     G4ThreeVector(0.5*dp_shuntCouplerHorizontalEmptyDimX -
+                                   0.5*dp_shuntCouplerLobeEmptyDimX,
+                                   0.5*(dp_shuntCouplerHorizontalEmptyDimY+
+                                        dp_shuntCouplerLobeEmptyDimY),0));    
   G4LogicalVolume * log_shuntCouplerEmpty =
     new G4LogicalVolume(solid_shuntCouplerEmpty,air_mat,
-			shuntCouplerEmptyNameLog);  
+                        shuntCouplerEmptyNameLog);  
   G4ThreeVector shuntCouplerEmptyWrtBRCorner = svl1WrtBRCorner +
     G4ThreeVector(0,0.5*(dp_shuntCouplerHorizontalEmptyDimY+dp_svl1EmptyDimY),
-		  0);
+                  0);
   G4VPhysicalVolume * shuntCouplerEmpty =
     new G4PVPlacement(0,shuntCouplerEmptyWrtBRCorner+brCornerOfBaseAlLayer,
-		      log_shuntCouplerEmpty,shuntCouplerEmptyName,
-		      log_baseAlLayer,false,0,true);
+                      log_shuntCouplerEmpty,shuntCouplerEmptyName,
+                      log_baseAlLayer,false,0,true);
   log_shuntCouplerEmpty->SetVisAttributes(air_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Vacuum",shuntCouplerEmptyName,shuntCouplerEmpty));
 
@@ -2063,9 +2063,9 @@ MakeResonatorLine(G4String pName,
   G4String shuntCouplerEmpty_boundaryName1 = shuntCouplerEmptyName + "_VacVac1";
   G4String shuntCouplerEmpty_boundaryName2 = shuntCouplerEmptyName + "_VacVac2";
   new G4CMPLogicalBorderSurface(shuntCouplerEmpty_boundaryName1,
-				shuntCouplerEmpty, svl1Empty, VacVacBoundary);
+                                shuntCouplerEmpty, svl1Empty, VacVacBoundary);
   new G4CMPLogicalBorderSurface(shuntCouplerEmpty_boundaryName2, svl1Empty,
-				shuntCouplerEmpty, VacVacBoundary);
+                                shuntCouplerEmpty, VacVacBoundary);
 
 
 
@@ -2084,60 +2084,60 @@ MakeResonatorLine(G4String pName,
   G4String shuntCouplerConductorNameLog = shuntCouplerConductorName + "_log";
   G4Box * solid_shuntCouplerHorizontalConductorSansNub =
     new G4Box("ShuntCouplerHorizontalConductorSansNub",
-	      0.5 * dp_shuntCouplerHorizontalConductorDimX,
-	      0.5 * dp_shuntCouplerHorizontalConductorDimY,
-	      0.5 * dp_shuntCouplerHorizontalConductorDimZ);
+              0.5 * dp_shuntCouplerHorizontalConductorDimX,
+              0.5 * dp_shuntCouplerHorizontalConductorDimY,
+              0.5 * dp_shuntCouplerHorizontalConductorDimZ);
   G4Box * solid_shuntCouplerHorizontalConductorNub =
     new G4Box("ShuntCouplerHorizontalConductorNub",
-	      0.5 * dp_shuntCouplerHorizontalConductorNubDimX,
-	      0.5 * dp_shuntCouplerHorizontalConductorNubDimY,
-	      0.5 * dp_shuntCouplerHorizontalConductorNubDimZ);
+              0.5 * dp_shuntCouplerHorizontalConductorNubDimX,
+              0.5 * dp_shuntCouplerHorizontalConductorNubDimY,
+              0.5 * dp_shuntCouplerHorizontalConductorNubDimZ);
   G4UnionSolid * solid_shuntCouplerHorizontalConductor =
     new G4UnionSolid("shuntCouplerHorizontalConductor",
-		     solid_shuntCouplerHorizontalConductorSansNub,
-		     solid_shuntCouplerHorizontalConductorNub,0,
-		     G4ThreeVector(0,-0.5*(dp_shuntCouplerHorizontalConductorDimY+dp_shuntCouplerHorizontalConductorNubDimY)));
+                     solid_shuntCouplerHorizontalConductorSansNub,
+                     solid_shuntCouplerHorizontalConductorNub,0,
+                     G4ThreeVector(0,-0.5*(dp_shuntCouplerHorizontalConductorDimY+dp_shuntCouplerHorizontalConductorNubDimY)));
   G4Box * solid_shuntCouplerLeftLobeConductor =
     new G4Box("shuntCouplerLeftLobeConductor",
-	      0.5 * dp_shuntCouplerLobeConductorDimX,
-	      0.5* dp_shuntCouplerLobeConductorDimY,
-	      0.5* dp_shuntCouplerLobeConductorDimZ);
+              0.5 * dp_shuntCouplerLobeConductorDimX,
+              0.5* dp_shuntCouplerLobeConductorDimY,
+              0.5* dp_shuntCouplerLobeConductorDimZ);
   G4Box * solid_shuntCouplerRightLobeConductor =
     new G4Box("shuntCouplerRightLobeConductor",
-	      0.5 * dp_shuntCouplerLobeConductorDimX,
-	      0.5* dp_shuntCouplerLobeConductorDimY,
-	      0.5* dp_shuntCouplerLobeConductorDimZ);
+              0.5 * dp_shuntCouplerLobeConductorDimX,
+              0.5* dp_shuntCouplerLobeConductorDimY,
+              0.5* dp_shuntCouplerLobeConductorDimZ);
   G4UnionSolid * solid_shuntCouplerMerge2Conductor =
     new G4UnionSolid("shuntCouplerHorizontalPlusNubPlusLeft",
-		     solid_shuntCouplerHorizontalConductor,
-		     solid_shuntCouplerLeftLobeConductor,0,
-		     G4ThreeVector(-0.5*dp_shuntCouplerHorizontalConductorDimX +
-				   0.5*dp_shuntCouplerLobeConductorDimX,
-				   0.5*(dp_shuntCouplerHorizontalConductorDimY+
-					dp_shuntCouplerLobeConductorDimY),0));
+                     solid_shuntCouplerHorizontalConductor,
+                     solid_shuntCouplerLeftLobeConductor,0,
+                     G4ThreeVector(-0.5*dp_shuntCouplerHorizontalConductorDimX +
+                                   0.5*dp_shuntCouplerLobeConductorDimX,
+                                   0.5*(dp_shuntCouplerHorizontalConductorDimY+
+                                        dp_shuntCouplerLobeConductorDimY),0));
   G4UnionSolid * solid_shuntCouplerConductor =
     new G4UnionSolid(shuntCouplerConductorNameSolid,
-		     solid_shuntCouplerMerge2Conductor,
-		     solid_shuntCouplerRightLobeConductor,0,
-		     G4ThreeVector(0.5*dp_shuntCouplerHorizontalConductorDimX -
-				   0.5*dp_shuntCouplerLobeConductorDimX,
-				   0.5*(dp_shuntCouplerHorizontalConductorDimY+
-					dp_shuntCouplerLobeConductorDimY),0));      
+                     solid_shuntCouplerMerge2Conductor,
+                     solid_shuntCouplerRightLobeConductor,0,
+                     G4ThreeVector(0.5*dp_shuntCouplerHorizontalConductorDimX -
+                                   0.5*dp_shuntCouplerLobeConductorDimX,
+                                   0.5*(dp_shuntCouplerHorizontalConductorDimY+
+                                        dp_shuntCouplerLobeConductorDimY),0));      
   G4LogicalVolume * log_shuntCouplerConductor =
     new G4LogicalVolume(solid_shuntCouplerConductor,aluminum_mat,
-			shuntCouplerConductorNameLog);
+                        shuntCouplerConductorNameLog);
   G4VPhysicalVolume * shuntCouplerConductor =
     new G4PVPlacement(0,G4ThreeVector(0,0,0),log_shuntCouplerConductor,
-		      shuntCouplerConductorName,log_shuntCouplerEmpty,false,0,
-		      true);
+                      shuntCouplerConductorName,log_shuntCouplerEmpty,false,0,
+                      true);
   log_shuntCouplerConductor->SetVisAttributes(aluminum_vis);
   fFundamentalVolumeList.push_back(std::tuple<std::string,G4String,G4VPhysicalVolume*>("Aluminum",shuntCouplerConductorName,shuntCouplerConductor));
  
   //Need to construct lattice...
   G4LatticePhysical* AlPhysical_shuntCouplerConductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,
-			  dp_scDelta0_Al, dp_scTeff_Al,
-			  dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scDelta0_Al, dp_scTeff_Al,
+                          dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_shuntCouplerConductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(shuntCouplerConductor,AlPhysical_shuntCouplerConductor);
   
@@ -2151,17 +2151,17 @@ MakeResonatorLine(G4String pName,
   G4String shuntCouplerConductor_boundaryName4 = shuntCouplerConductorName +
     "_AlAl2";
   new G4CMPLogicalBorderSurface(shuntCouplerConductor_boundaryName1,
-				shuntCouplerConductor, shuntCouplerEmpty,
-				AlVacBoundary);
+                                shuntCouplerConductor, shuntCouplerEmpty,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(shuntCouplerConductor_boundaryName2,
-				shuntCouplerEmpty, shuntCouplerConductor,
-				AlVacBoundary);
+                                shuntCouplerEmpty, shuntCouplerConductor,
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(shuntCouplerConductor_boundaryName3,
-				shuntCouplerConductor, svl1Conductor,
-				AlAlBoundary);
+                                shuntCouplerConductor, svl1Conductor,
+                                AlAlBoundary);
   new G4CMPLogicalBorderSurface(shuntCouplerConductor_boundaryName4,
-				svl1Conductor, shuntCouplerConductor,
-				AlAlBoundary);
+                                svl1Conductor, shuntCouplerConductor,
+                                AlAlBoundary);
 
 
   //At this point I should have boundaries between all things internal to the

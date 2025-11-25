@@ -22,11 +22,11 @@ ValidationConfigMessenger::ValidationConfigMessenger(ValidationConfigManager* mg
   : G4UImessenger("/g4cmp/", "User configuration for G4CMP phonon example"),
     theManager(mgr), hitsCmd(0) {
   hitsCmd = CreateCommand<G4UIcmdWithAString>("HitsFile",
-					      "Set filename for output of phonon hit locations");
+                                              "Set filename for output of phonon hit locations");
   geometryCmd = CreateCommand<G4UIcmdWithAnInteger>("GeometryID",
-						    "Set the validation geometry ID for use");
+                                                    "Set the validation geometry ID for use");
   stepFileCmd = CreateCommand<G4UIcmdWithAString>("StepFile",
-						  "Set filename for step output file (validations).");
+                                                  "Set filename for step output file (validations).");
 }
 
 

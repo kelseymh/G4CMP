@@ -87,11 +87,11 @@ void ValidationSteppingAction::ExportStepInformation( const G4Step * step ) {
 
   //Fill the output file with the step info  
   fOutputFile << runNo << " " << eventNo << " " << trackNo << " "
-	      << particleName << " " << std::setprecision(14) << preStepX_mm
-	      << " " << preStepY_mm << " " << preStepZ_mm << " "
-	      << preStepT_ns << " " << preStepEnergy_eV << " "
-	      << preStepKinEnergy_eV << " " << postStepX_mm << " "
-	      << postStepY_mm << " " << postStepZ_mm << " " << postStepT_ns
-	      << " " << postStepEnergy_eV << " " << postStepKinEnergy_eV
-	      << " " << nReflections << " " << stepProcess << std::endl;
+              << particleName << " " << std::setprecision(14) << preStepX_mm
+              << " " << preStepY_mm << " " << preStepZ_mm << " "
+              << preStepT_ns << " " << preStepEnergy_eV << " "
+              << preStepKinEnergy_eV << " " << postStepX_mm << " "
+              << postStepY_mm << " " << postStepZ_mm << " " << postStepT_ns
+              << " " << postStepEnergy_eV << " " << postStepKinEnergy_eV
+              << " " << nReflections << " " << stepProcess << std::endl;
 }

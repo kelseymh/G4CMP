@@ -52,22 +52,22 @@ using namespace ValidationDetectorParameters;
 // Primary Constructor
 ValidationPad::
 ValidationPad(G4RotationMatrix * pRot,
-	      const G4ThreeVector & tLate,
-	      const G4String & pName,
-	      G4LogicalVolume * pMotherLogical,
-	      G4bool pMany,
-	      G4int pCopyNo,
-	      G4LatticeManager * LM,
-	      std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-	      std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-	      G4bool pSurfChk) {
+              const G4ThreeVector & tLate,
+              const G4String & pName,
+              G4LogicalVolume * pMotherLogical,
+              G4bool pMany,
+              G4int pCopyNo,
+              G4LatticeManager * LM,
+              std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+              std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+              G4bool pSurfChk) {
 
   //Here, use the inputs to this to set up the geometry and fill out the
   //PVPlacement data member, which is the real output from this class (and
   //which we'll access in our main detector construction file.)
 
   ConstructPad(pRot,tLate,pName,pMotherLogical,pMany,pCopyNo,LM,
-	       logicalLatticeContainer,borderContainer,pSurfChk);
+               logicalLatticeContainer,borderContainer,pSurfChk);
 }
 
 // Default Constructor
@@ -81,15 +81,15 @@ ValidationPad::~ValidationPad() {
 //Moving implementation down here so it's not in the constructor
 void ValidationPad::
 ConstructPad(G4RotationMatrix * pRot,
-	     const G4ThreeVector & tLate,
-	     const G4String & pName,
-	     G4LogicalVolume * pMotherLogical,
-	     G4bool pMany,
-	     G4int pCopyNo,
-	     G4LatticeManager * LM,
-	     std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
-	     std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
-	     G4bool pSurfChk) {
+             const G4ThreeVector & tLate,
+             const G4String & pName,
+             G4LogicalVolume * pMotherLogical,
+             G4bool pMany,
+             G4int pCopyNo,
+             G4LatticeManager * LM,
+             std::map<std::string,G4LatticeLogical*> logicalLatticeContainer,
+             std::map<std::string,G4CMPSurfaceProperty*> borderContainer,
+             G4bool pSurfChk) {
 
   //Start with some preliminaries - NIST manager
   G4NistManager* nist = G4NistManager::Instance();
@@ -115,15 +115,15 @@ ConstructPad(G4RotationMatrix * pRot,
   G4String padEmptyPart2NameLog = pName + "_PadEmptyPart2_log";
   G4String padEmptyPart2NameSolid = pName + "_PadEmptyPart2_solid";
   G4Box * solid_padEmptyPart1 = new G4Box(padEmptyPart1NameSolid,
-					  0.5 * dp_padEmptyPart1DimX,
-					  0.5 * dp_padEmptyPart1DimY,
-					  0.5 * dp_padEmptyPart1DimZ);
+                                          0.5 * dp_padEmptyPart1DimX,
+                                          0.5 * dp_padEmptyPart1DimY,
+                                          0.5 * dp_padEmptyPart1DimZ);
   G4Trd * solid_padEmptyPart2 = new G4Trd(padEmptyPart2NameSolid,
-					  0.5 * dp_padEmptyPart2TrdX1,
-					  0.5 * dp_padEmptyPart2TrdX2,
-					  0.5 * dp_padEmptyPart2TrdY1,
-					  0.5 * dp_padEmptyPart2TrdY2,
-					  0.5 * dp_padEmptyPart2TrdZ);
+                                          0.5 * dp_padEmptyPart2TrdX1,
+                                          0.5 * dp_padEmptyPart2TrdX2,
+                                          0.5 * dp_padEmptyPart2TrdY1,
+                                          0.5 * dp_padEmptyPart2TrdY2,
+                                          0.5 * dp_padEmptyPart2TrdZ);
 
   //We need to rotate the part 2 so that it can be aligned and placed next to
   //part 1
@@ -132,15 +132,15 @@ ConstructPad(G4RotationMatrix * pRot,
   rotEmptyPart2->rotateY(-90.*deg);
 
   G4ThreeVector transPart2EmptyWrtPart1Empty(dp_padEmptyPart1DimX/2.0 +
-					     dp_padEmptyPart2TrdZ/2.0,0,0);
+                                             dp_padEmptyPart2TrdZ/2.0,0,0);
 
   G4String padEmptyName = pName + "_PadEmpty";
   G4String padEmptyNameLog = pName + "_PadEmpty_log";
   G4String padEmptyNameSolid = pName + "_PadEmpty_solid";
   G4UnionSolid * solid_padEmpty
     = new G4UnionSolid(padEmptyNameSolid,solid_padEmptyPart1,
-		       solid_padEmptyPart2,rotEmptyPart2,
-		       transPart2EmptyWrtPart1Empty);
+                       solid_padEmptyPart2,rotEmptyPart2,
+                       transPart2EmptyWrtPart1Empty);
   
 
 
@@ -157,15 +157,15 @@ ConstructPad(G4RotationMatrix * pRot,
   G4String padConductorPart2NameLog = pName + "_PadConductorPart2_log";
   G4String padConductorPart2NameSolid = pName + "_PadConductorPart2_solid";
   G4Box * solid_padConductorPart1 = new G4Box(padConductorPart1NameSolid,
-					      0.5 * dp_padPart1DimX,
-					      0.5 * dp_padPart1DimY,
-					      0.5 * dp_padPart1DimZ);
+                                              0.5 * dp_padPart1DimX,
+                                              0.5 * dp_padPart1DimY,
+                                              0.5 * dp_padPart1DimZ);
   G4Trd * solid_padConductorPart2 = new G4Trd(padConductorPart2NameSolid,
-					      0.5 * dp_padPart2TrdX1,
-					      0.5 * dp_padPart2TrdX2,
-					      0.5 * dp_padPart2TrdY1,
-					      0.5 * dp_padPart2TrdY2,
-					      0.5 * dp_padPart2TrdZ);
+                                              0.5 * dp_padPart2TrdX1,
+                                              0.5 * dp_padPart2TrdX2,
+                                              0.5 * dp_padPart2TrdY1,
+                                              0.5 * dp_padPart2TrdY2,
+                                              0.5 * dp_padPart2TrdZ);
 
   
   //We need to rotate the part 2 so that it can be aligned and placed next to
@@ -175,16 +175,16 @@ ConstructPad(G4RotationMatrix * pRot,
   rotPart2->rotateY(-90.*deg);
 
   G4ThreeVector transPart2WrtPart1(dp_padPart1DimX/2.0 +
-				   dp_padPart2TrdZ/2.0,0,0);
+                                   dp_padPart2TrdZ/2.0,0,0);
 
   G4String padConductorName = pName + "_PadConductor";
   G4String padConductorNameLog = pName + "_PadConductor_log";
   G4String padConductorNameSolid = pName + "_PadConductor_solid";
   G4UnionSolid * solid_padConductor = new G4UnionSolid(padConductorNameSolid,
-						       solid_padConductorPart1,
-						       solid_padConductorPart2,
-						       rotPart2,
-						       transPart2WrtPart1);
+                                                       solid_padConductorPart1,
+                                                       solid_padConductorPart2,
+                                                       rotPart2,
+                                                       transPart2WrtPart1);
 
 
   //We now create a shift the non-empty pad and place it inside:
@@ -210,32 +210,32 @@ ConstructPad(G4RotationMatrix * pRot,
   //output. Also, create a dedicated lattice for this.
   G4VPhysicalVolume* phys_padConductor =
     new G4PVPlacement(0,transPadWrtEmptyPad,log_padConductor,
-		      padConductorName,log_padEmpty,false,0,true);
+                      padConductorName,log_padEmpty,false,0,true);
   
   G4LatticePhysical* AlPhysical_padConductor =
     new G4LatticePhysical(AlLogical,dp_polycryElScatMFP_Al,dp_scDelta0_Al,
-			  dp_scTeff_Al,dp_scDn_Al, dp_scTauQPTrap_Al);
+                          dp_scTeff_Al,dp_scDn_Al, dp_scTauQPTrap_Al);
   AlPhysical_padConductor->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(phys_padConductor,AlPhysical_padConductor);  
   
   
   G4VPhysicalVolume* phys_padEmpty =
     new G4PVPlacement(pRot,tLate,log_padEmpty,padEmptyName,pMotherLogical,
-		      pMany,pCopyNo,pSurfChk);
+                      pMany,pCopyNo,pSurfChk);
   
 
   //Establish intra-pad boundaries
   if (borderContainer.count("AlVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlVac] but it's not "
-	      << "there..." << std::endl;
+              << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlVacBoundary = borderContainer["AlVac"];
   G4String boundaryName1 = pName + "_AlVac";
   G4String boundaryName2 = pName + "_VacAl";
   new G4CMPLogicalBorderSurface(boundaryName1, phys_padConductor, phys_padEmpty,
-				AlVacBoundary);
+                                AlVacBoundary);
   new G4CMPLogicalBorderSurface(boundaryName2, phys_padEmpty, phys_padConductor,
-				AlVacBoundary);
+                                AlVacBoundary);
   
   //Push these back into the fundamental volume list. These will also serve as
   //the things we need to establish boundaries for
