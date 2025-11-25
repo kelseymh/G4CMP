@@ -366,7 +366,7 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
       //This gets a bit hairy, since the transmission line is composite of both
       //Nb and vacuum. So we'll access the list of physical objects present in
       //it and link those one-by-one to the silicon chip and to the world
-      for(int iSubVol = 0; iSubVol < tLine->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
+      for (int iSubVol = 0; iSubVol < tLine->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
         std::cout << "TLine sub volume names (to be used for boundaries): "
                   << std::get<1>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol])
                   << " with material "

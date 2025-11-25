@@ -181,8 +181,7 @@ void G4CMPVProcess::UpdateSCAfterLatticeChange() {
 
 // Compute MFP using track velocity and scattering rate
 G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
-					G4ForceCondition* condition) {
-    
+					G4ForceCondition* condition) {    
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPVProcess::GetMeanFreePath --" << G4endl;

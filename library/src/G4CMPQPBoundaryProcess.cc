@@ -271,16 +271,16 @@ G4bool G4CMPQPBoundaryProcess::ReflectTrack(const G4Track& /*aTrack*/,
 // two lines of this function that are commented out.
 void G4CMPQPBoundaryProcess::DoAbsorption(const G4Track& aTrack,
                                           const G4Step& aStep,
-                                          G4ParticleChange& particleChange) {
+                                          G4ParticleChange& /*particleChange*/) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::DoAbsorption() --" << G4endl;
   }
-  G4CMPBoundaryUtils::DoAbsorption(aTrack,aStep,particleChange);
+  G4CMPBoundaryUtils::DoAbsorption(aTrack,aStep,aParticleChange);
   
   /* 
-     particleChange.ProposeTrackStatus(fStopAndKill);
-     particleChange.ProposeEnergy(0.);
+     aParticleChange.ProposeTrackStatus(fStopAndKill);
+     aParticleChange.ProposeEnergy(0.);
   */
 }
 
@@ -289,7 +289,7 @@ void G4CMPQPBoundaryProcess::DoAbsorption(const G4Track& aTrack,
 // Do reflection of a quasiparticle
 void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
                                           const G4Step& aStep,
-                                          G4ParticleChange& particleChange) {
+                                          G4ParticleChange& /*particleChange*/) {
 
   //Debugging
   if (verboseLevel > 5) {
@@ -310,7 +310,7 @@ void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
     }
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-    particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
+    aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
   }
   
   if (verboseLevel>1) {
@@ -339,7 +339,7 @@ void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
            << "direction  " << newDir << G4endl;
   }
   
-  particleChange.ProposeMomentumDirection(newDir);
+  aParticleChange.ProposeMomentumDirection(newDir);
 }
 
 
@@ -347,7 +347,7 @@ void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
 // Do transmission of a quasiparticle
 void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
                                             const G4Step& aStep,
-                                            G4ParticleChange& particleChange) {
+                                            G4ParticleChange& /*particleChange*/) {
   //Debugging
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPQPBoundaryProcess::DoTransmission() --" << G4endl;
@@ -372,7 +372,7 @@ void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
         << "a bug somewhere that needs to be fixed.";
     G4Exception("G4CMPQPBoundaryProcess::DoTransmission",
                 "QPBoundaryProcess003",JustWarning, msg);
-    DoSimpleKill(aTrack, aStep, particleChange);
+    DoSimpleKill(aTrack, aStep, aParticleChange);
   }
     
   // Check whether step has proper boundary-stopped geometry
@@ -387,7 +387,7 @@ void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
     if (verboseLevel>2)
       G4cout << " Boundary point moved to " << surfacePoint << G4endl;
     
-    particleChange.ProposePosition(surfacePoint);    // IS THIS CORRECT?!?
+    aParticleChange.ProposePosition(surfacePoint);    // IS THIS CORRECT?!?
   }
   
   //Since the lattice hasn't changed yet, change it here. (This also happens
@@ -399,5 +399,5 @@ void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
     
   G4ThreeVector vdir = aTrack.GetMomentumDirection();
   G4ThreeVector norm = G4CMP::GetSurfaceNormal(aStep,vdir);
-  particleChange.ProposeMomentumDirection(norm); 
+  aParticleChange.ProposeMomentumDirection(norm); 
 }
