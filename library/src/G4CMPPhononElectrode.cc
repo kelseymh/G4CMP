@@ -38,6 +38,7 @@
 // 20250124  G4CMP-447 -- Add FillParticleChange() to update phonon track info
 // 20250422  N. Tenpas -- Add position arguments for PhononVelocityIsInward.
 // 20250423  N. Tenpas -- Replace duplicated GetLambertianVector() code.
+// 20251115  G4CMP-539 -- Replace AddConstProperty() with UpdateMPT().
 
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -90,8 +91,8 @@ AbsorbAtElectrode(const G4Track& track, const G4Step& step,
   if (!kaplanQP) {
     // Pass temperture through to KaplanQP if no already included
     if (!theSurfaceTable->ConstPropertyExists("temperature"))
-      theSurfaceTable->AddConstProperty("temperature",
-					theLattice->GetTemperature());
+      G4CMP::UpdateMPT(theSurfaceTable, "temperature",
+		       theLattice->GetTemperature());
 
     kaplanQP = new G4CMPKaplanQP(theSurfaceTable, verboseLevel);
   }
