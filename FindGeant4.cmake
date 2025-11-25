@@ -21,11 +21,4 @@ endif()
 # G4CMP Requires G4 version 10.4 or greater.
 find_package(Geant4 10.4 REQUIRED ${COMPONENTS})
 
-# Geant4 version 10+, I think, requires C++11, but we'll check just in case.
-if(Geant4_CXXSTD STREQUAL "c++98")
-    message(FATAL_ERROR "Geant4 was compiled with C++98 standard, \
-    which is too old for G4CMP. Try rebuilding Geant4 with the option \
-    DGEANT4_BUILD_CXXSTD=11.")
-endif()
-
-set(Geant4_FOUND TRUE)
+set(Geant4_FOUND TRUE CACHE BOOL "FindGeant4.cmake was successful")
