@@ -27,7 +27,7 @@ include(FindGeant4.cmake)
 
 # Set default build type as "Release"
 if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Set build type to Release")
 endif()
 
 # Use same C++ version as was used for Geant4 (v10 or v11)
