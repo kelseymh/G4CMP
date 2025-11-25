@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 #
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 project(G4CMP)
 
 # User can provide version string in case build is not from Git source
@@ -24,13 +24,24 @@ include(FindGeant4.cmake)
 #----------------------------------------------------------------------------
 # Set up compiler flags for various build types
 #
-# Always need to build against C++11
-set(CMAKE_CXX_STANDARD 11)
 
 # Set default build type as "Release"
 if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING)
 endif()
+
+# Use same C++ version as was used for Geant4 (v10 or v11)
+if (NOT DEFINED CMAKE_CXX_STANDARD)	# Only if user did not specify
+    if (DEFINED Geant4_CXXSTD)			# For G4 v10, value is "c++NN"
+        string(REPLACE "c++" "" CMAKE_CXX_STANDARD ${Geant4_CXXSTD})
+    elseif (DEFINED Geant4_CXX_STANDARD)	# For G4 v11, value is "NN"
+	set(CMAKE_CXX_STANDARD ${Geant4_CXX_STANDARD})
+    endif()
+endif()
+
+# Store actual value of c++NN derived from above or set by user
+set(G4CMP_CXX_STANDARD ${CMAKE_CXX_STANDARD} CACHE STRING
+   "C++ version used for building G4CMP")
 
 #----------------------------------------------------------------------------
 # Utility function to define simple executables in subdirectories
