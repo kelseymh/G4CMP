@@ -197,7 +197,7 @@ G4int G4CMPConfigManager::setPhysicsModelID() const {
   return G4PhysicsModelCatalog::Register("G4CMP process");
 #else
   G4PhysicsModelCatalog::Initialize();
-  return G4PhysicsModelCatalog::GetModelIndex("G4CMP process");
+  return G4PhysicsModelCatalog::GetModelID("G4CMP process");
 #endif
 }
 
