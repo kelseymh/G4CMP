@@ -44,6 +44,7 @@
 #include "G4Threading.hh"
 #include "G4Track.hh"
 #include "G4TrackingManager.hh"
+#include "G4Version.hh"
 #include "G4VProcess.hh"
 #include "Randomize.hh"
 #include <string>
