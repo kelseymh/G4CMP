@@ -8,6 +8,7 @@
 ///        For G4 v11, adds G4CMP to predefined set of physics models.
 //
 //  20251116  Michael Kelsey, G4CMP-526
+//  20251125  Change model ID for G4CMP to 39000 to avoid runtime error
 
 #include "G4Version.hh"
 
@@ -597,7 +598,7 @@ void G4PhysicsModelCatalog::Initialize() {
     // ======================================================================
     // ================== CUSTOMIZATION FOR G4CMP ==================   
     // ======================================================================
-    InsertModel( 41000, "G4CMP process" );
+    InsertModel( 39000, "G4CMP process" );
     // NOTE: G4CMP only uses a single model ID/index for all processes
 
     SanityCheck();
