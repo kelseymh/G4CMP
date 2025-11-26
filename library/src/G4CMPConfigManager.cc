@@ -196,6 +196,7 @@ G4int G4CMPConfigManager::setPhysicsModelID() const {
 #if G4VERSION_NUMBER < 1100
   return G4PhysicsModelCatalog::Register("G4CMP process");
 #else
+  G4PhysicsModelCatalog::Initialize();
   return G4PhysicsModelCatalog::GetModelIndex("G4CMP process");
 #endif
 }
