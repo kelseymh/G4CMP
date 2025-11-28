@@ -7,7 +7,8 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 Project branch for Geant4 v11 migration -- subtask tags go below!
-2025-11-26  G4CMP-494 : Migrate code to be compatible with G4 v11 and v10.
+2025-11-28  G4CMP-494 : Migrate code to be compatible with G4 v11 and v10.
+2025-11-28  G4CMP-547 : Ensure that ParticleChange touchable is always cleared.
 2025-11-26  G4CMP-546 : Include C++ version matching in examples CMake files.
 2025-11-25  G4CMP-545 : Improve CMake to match C++ version with Geant4 build.
 2025-11-18  G4CMP-526 : Use local G4PhysicsModelCatalog.cc as workaround.
