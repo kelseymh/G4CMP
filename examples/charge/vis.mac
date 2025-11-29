@@ -14,7 +14,7 @@
 /vis/scene/add/trajectories
 # /vis/scene/add/hits
 /run/beamOn 1
-/vis/ogl/set/printFilename g4cmpCharge
+/vis/ogl/set/printFilename g4cmpCharge.eps
 /vis/ogl/set/printMode pixmap
-/vis/ogl/printEPS
+/vis/ogl/export
 /vis/viewer/clear
