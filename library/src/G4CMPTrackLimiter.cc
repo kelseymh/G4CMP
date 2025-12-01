@@ -14,7 +14,13 @@
 // 20250327  G4CMP-468:  Stop surface displacement reflections from "escaping."
 // 20250413  G4CMP-468:  Move diagnostic outputs inside verbosity.
 // 20250421  Add comparison of track position with volume.
+// 20250501  G4CMP-358:  Identify and stop charge tracks stuck in field,
+//	       using maxSteps configuration parameter.
+// 20250506  Add local caches to compute cumulative flight distance, RMS
 // 20250801  G4CMP-326:  Kill thermal phonons if finite temperature set.
+// 20251015  G4CMP-516:  Add excessPath to ChargeStuck() boolean return.
+// 20251024  G4CMP-523:  Remove alternative "stuck tracks" testing code.
+// 20251025  G4CMP-520:  Remove redundant (and incorrect) InvalidPosition().
 
 #include "G4CMPTrackLimiter.hh"
 #include "G4CMPConfigManager.hh"
@@ -40,6 +46,16 @@
 // start digging.
 G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
   return (G4CMP::IsPhonon(pd) || G4CMP::IsChargeCarrier(pd) || G4CMP::IsQP(pd));
+}
+
+
+// Initialize flight-distance accumulators for new track
+
+void G4CMPTrackLimiter::LoadDataForTrack(const G4Track* track,
+					 const G4bool overrideMomentumReset) {
+  G4CMPProcessUtils::LoadDataForTrack(track, overrideMomentumReset);
+
+  flightAvg = flightAvg2 = lastFlight = lastRMS = 0.;
 }
 
 
@@ -90,19 +106,15 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
     aParticleChange.ProposeTrackStatus(fStopAndKill);
   }
 
-  // Check whether track position and volume are consistent
-  if (InvalidPosition(track)) {
+  // Ensure track has not gotten stuck somewhere in mesh field
+  if (ChargeStuck(track)) {
     std::stringstream msg;
-    msg << "Killing track " << track.GetParticleDefinition()->GetParticleName()
-	<< ", energy: " << track.GetKineticEnergy()
-	<< " inconsistent position " << track.GetPosition()
-	<< "\n vs. detector volume " << GetCurrentVolume()->GetName() + ":"
-	<< GetCurrentVolume()->GetCopyNo();
-    G4Exception("G4CMPTrackLimiter", "Limit002", JustWarning,
+    msg << "Stopping charged track stuck in mesh electric field @ "
+	<< GetLocalPosition(track) << " local" << G4endl;
+    G4Exception("G4CMPTrackLimiter", "Limit003", JustWarning,
 		msg.str().c_str());
-    
-    aParticleChange.SetNumberOfSecondaries(0);	// Don't launch bad tracks!
-    aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+    aParticleChange.ProposeTrackStatus(fStopButAlive);
   }
 
   // Kill phonons consistent with thermal populations
@@ -121,30 +133,6 @@ G4bool G4CMPTrackLimiter::BelowEnergyCut(const G4Track& track) const {
      : G4CMP::IsPhonon(track) ? G4CMPConfigManager::GetMinPhononEnergy() : -1.);
 
   return (track.GetKineticEnergy() < ecut);
-}
-
-G4bool G4CMPTrackLimiter::InvalidPosition(const G4Track& track) const {
-  G4VPhysicalVolume* trkVol = track.GetVolume();
-  if (!trkVol) return false;
-
-  const G4VTouchable* trkVT = track.GetTouchable();
-  G4ThreeVector trkPos = track.GetPosition();
-  if (verboseLevel>1) {
-    G4cout << GetProcessName() << "::InvalidPosition()" << G4endl
-	   << " trkVol " << trkVol->GetName() << " @ " << trkPos << G4endl;
-  }
-
-  G4CMP::RotateToLocalPosition(trkVT, trkPos);
-  G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
-  EInside isIn = solid->Inside(trkPos);
-  if (verboseLevel>1) {
-    const char* inName = (isIn==kInside ? "inside" : isIn==kOutside
-			  ? "outside" : "surface");
-
-    G4cout << " local " << trkPos << " is " << inName << " volume" << G4endl;
-  }
-
-  return (isIn == kOutside);
 }
 
 G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
@@ -211,4 +199,21 @@ G4bool G4CMPTrackLimiter::PhononIsThermal(const G4Track& track) const {
   if (verboseLevel>1) G4cout << " thermal? " << isThermal << G4endl;
 
   return isThermal;
+}
+
+// Note: non-const here to use accumulator caches
+
+G4bool G4CMPTrackLimiter::ChargeStuck(const G4Track& track) {
+  if (!G4CMP::IsChargeCarrier(track)) return false;	// Ignore phonons
+
+  // How long and how far has the track been travelling?
+  const G4double maxSteps = G4CMPConfigManager::GetMaxChargeSteps();
+  G4int nstep = track.GetCurrentStepNumber();
+
+  G4bool tooManySteps = (maxSteps>0 && nstep>maxSteps);
+
+  if (verboseLevel>2)
+    G4cout << " nstep " << nstep << ": tooManySteps " << tooManySteps << G4endl;
+
+  return tooManySteps;
 }

@@ -16,6 +16,10 @@
 // 20171215  Replace boundary-point check with CheckStepBoundary()
 // 20180827  M. Kelsey -- Prevent partitioner from recomputing sampling factors
 // 20210328  Modify above; compute direct-phonon sampling factor here
+// 20250927  AbsorbTrack() should use '&&' to require that both conditions pass
+// 20251015  Resolve shadowed declaration in DoFinalReflection()
+// 20251024  G4CMP-519: Protect against possible zero energy in DoAbsorption()
+// 20251028  G4CMP-527: Move CheckStepBoundary() to ApplyBoundaryAction()
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -125,11 +129,12 @@ G4bool G4CMPDriftBoundaryProcess::AbsorbTrack(const G4Track& aTrack,
 	   <<" >? absMinK " << absMinK << G4endl;
   }
 
-  return (kvec*surfNorm > absMinK) || G4CMPBoundaryUtils::AbsorbTrack(aTrack, aStep);
+  return ( (kvec*surfNorm > absMinK) &&
+	   G4CMPBoundaryUtils::AbsorbTrack(aTrack, aStep) );
 }
 
 
-// May convert recombination into phonon
+// Recombination (bandgap energy) is handled in separate AtRest process
 
 void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
                                              const G4Step&, G4ParticleChange&) {
@@ -143,14 +148,15 @@ void G4CMPDriftBoundaryProcess::DoAbsorption(const G4Track& aTrack,
   partitioner->UseVolume(aTrack.GetVolume());
 
   G4double eAbs = GetKineticEnergy(aTrack);
-
-  // Compute direct-phonon downsampling here
-  partitioner->ComputePhononSampling(eAbs);
-  partitioner->DoPartition(0., eAbs);
-  partitioner->GetSecondaries(&aParticleChange);
-
-  if (aParticleChange.GetNumberOfSecondaries() == 0) {	// Record energy release
-    aParticleChange.ProposeNonIonizingEnergyDeposit(eAbs);
+  if (eAbs > 0.) {
+    // Compute direct-phonon downsampling here
+    partitioner->ComputePhononSampling(eAbs);
+    partitioner->DoPartition(0., eAbs);
+    partitioner->GetSecondaries(&aParticleChange);
+    
+    if (aParticleChange.GetNumberOfSecondaries() == 0) {
+      aParticleChange.ProposeNonIonizingEnergyDeposit(eAbs);
+    }
   }
 
   aParticleChange.ProposeEnergy(0.);
@@ -177,7 +183,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 
 void G4CMPDriftBoundaryProcess::
 DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
-		     G4ParticleChange& particleChange) {
+		     G4ParticleChange& /*particleChange*/) {
   if (verboseLevel>1)
     G4cout << GetProcessName() << ": Electron reflected" << G4endl;
 
@@ -185,32 +191,40 @@ DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
   G4ThreeVector vDir = aStep.GetPreStepPoint()->GetMomentumDirection();
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep,vDir);
 
-  // Check whether step has proper boundary-stopped geometry
-  G4ThreeVector surfacePoint;
-  if (!CheckStepBoundary(aStep, surfacePoint)) {
-    if (verboseLevel>2)
-      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
+  // FUTURE: Get specular vs. diffuse probability from parameters
+  G4bool specular = false;
 
-    particleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
+  G4ThreeVector reflDir;
+  if (specular) {
+    G4ThreeVector vel = GetGlobalVelocityVector(aTrack);
+    reflDir = DoSpecularElectron(vel, surfNorm, surfacePoint);
+  } else {
+    reflDir = DoDiffuseElectron(surfNorm, surfacePoint);
   }
 
-  G4ThreeVector vel = GetGlobalVelocityVector(aTrack);
+  FillParticleChange(GetCurrentValley(), aTrack.GetKineticEnergy(), reflDir);
+}
+
+G4ThreeVector G4CMPDriftBoundaryProcess::
+DoSpecularElectron(const G4ThreeVector& inDir,
+		   const G4ThreeVector& surfNorm,
+		   const G4ThreeVector& /*surfPos*/) const {
+  if (verboseLevel>2) G4cout << " DoSpecularElectron " << surfNorm << G4endl;
 
   if (verboseLevel>2) {
-    G4cout << " Old momentum direction " << GetGlobalMomentum(aTrack).unit()
-	   << "\n Old velocity direction " << vel.unit() << G4endl;
+    G4cout << " Old velocity direction " << inDir.unit() << G4endl;
   }
 
   // Specular reflection reverses velocity along normal
-  G4double velNorm = vel * surfNorm;
-  vel -= 2.*velNorm*surfNorm;
+  G4double dirNorm = inDir * surfNorm;
+  G4ThreeVector outDir = inDir - 2.*dirNorm*surfNorm;
   
   if (verboseLevel>2)
-    G4cout << " New velocity direction " << vel.unit() << G4endl;
+    G4cout << " New velocity direction " << outDir.unit() << G4endl;
   
   // Convert velocity back to momentum and update direction
-  RotateToLocalDirection(vel);
-  G4ThreeVector p = theLattice->MapV_elToP(GetCurrentValley(), vel);
+  RotateToLocalDirection(outDir);
+  G4ThreeVector p = theLattice->MapV_elToP(GetCurrentValley(), outDir);
   RotateToGlobalDirection(p);
   
   if (verboseLevel>2) {
@@ -222,9 +236,20 @@ DoReflectionElectron(const G4Track& aTrack, const G4Step& aStep,
     RotateToGlobalDirection(vnew);
     G4cout << " Cross-check new v dir  " << vnew.unit() << G4endl;
   }
-  
-  FillParticleChange(GetCurrentValley(), p);	// Handle effective mass, vel
+
+  return outDir;
 }
+
+G4ThreeVector G4CMPDriftBoundaryProcess::
+DoDiffuseElectron(const G4ThreeVector& surfNorm,
+		  const G4ThreeVector& /*surfPos*/) const {
+  if (verboseLevel>2) G4cout << " DoDiffuseElectron " << surfNorm << G4endl;
+
+  // Charge scatters randomly off of surface
+  G4ThreeVector p = G4CMP::LambertReflection(surfNorm);
+  return p;
+}
+
 
 void G4CMPDriftBoundaryProcess::
 DoReflectionHole(const G4Track& /*aTrack*/, const G4Step& aStep,
@@ -235,6 +260,7 @@ DoReflectionHole(const G4Track& /*aTrack*/, const G4Step& aStep,
   G4ThreeVector vDir = aStep.GetPreStepPoint()->GetMomentumDirection();
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(aStep,vDir);
 
+  // TODO: If we do the electrons Lambertian, we should do the holes also
   G4ThreeVector momDir = aStep.GetPostStepPoint()->GetMomentumDirection();
   if (verboseLevel>2)
     G4cout << " Old momentum direction " << momDir << G4endl;
@@ -246,4 +272,12 @@ DoReflectionHole(const G4Track& /*aTrack*/, const G4Step& aStep,
     G4cout << " New momentum direction " << momDir << G4endl;
   
   aParticleChange.ProposeMomentumDirection(momDir);
+}
+
+// Called when maximum bounces have been recorded; does recombination
+
+void G4CMPDriftBoundaryProcess::
+DoFinalReflection(const G4Track& aTrack,const G4Step& aStep,
+		  G4ParticleChange& particleChange) {
+  DoAbsorption(aTrack, aStep, particleChange);
 }

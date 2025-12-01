@@ -46,6 +46,7 @@
 //              for current charge momentum to have smaller steps at direction
 //              flips
 // 20240712 M. Kelsey -- Protect minimum MFP calculation for zero field.
+// 20250616 M. Kelsey -- Rename MFP variables to be more descriptive.
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
@@ -146,10 +147,12 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double mfpFast = rate>0. ? vtrk/rate : DBL_MAX;
 
   if (verboseLevel>1) {
-    G4cout << "TS Vtrk " << vtrk/(m/s) << " m/s mfp0 " << mfpFast/m << " m"
+    G4cout << "TS Vtrk " << vtrk/(m/s) << " m/s mfpFast " << mfpFast/m << " m"
 	   << G4endl;
   }
 
+  // Set maximum step length under any conditions
+  G4double mfpLong = 1e-6*m;
 
   // Find distance to Luke threshold
   G4double mfpLuke = DistanceToThreshold(lukeRate, ekin);
@@ -163,18 +166,21 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 
   // Take smaller steps when charge velocity is low to avoid direction
   // flip errors in electric field
-  G4double genericmfp = DBL_MAX;
+  G4double mfpEstop = DBL_MAX;
 
   G4ThreeVector fieldVector = G4CMP::GetFieldAtPosition(aTrack);
   if (fieldVector.mag() > 0.) {
     G4double mass = (IsElectron() ? theLattice->GetElectronMass()
 		     : theLattice->GetHoleMass());
     G4double stopX = mass*vtrk/(2.*eplus*fieldVector.mag());
-    genericmfp = std::max(stopX/100., 1e-10*m);
+    mfpEstop = std::max(stopX/100., 1e-10*m);
+
+    if (verboseLevel>1)
+      G4cout << "TS field stopping mfpEstop " << mfpEstop/m << " m" << G4endl;
   }
 
   // Take shortest distance from above options
-  G4double mfp = std::min({genericmfp, 1e-6*m, mfpFast, mfpLuke, mfpIV});
+  G4double mfp = std::min({mfpEstop, mfpLong, mfpFast, mfpLuke, mfpIV});
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")

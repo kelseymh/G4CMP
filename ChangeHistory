@@ -17,6 +17,25 @@ ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 2025-08-14  G4CMP-496 : Fix phonon wavevector & momentum direction from DoDecay.
 ** Development Project for quasiparticle tracking. New tags go above.
 
+2025-10-30  g4cmp-V09-09-02 Final bug fix for chargeBounces errors.
+2025-11-08  G4CMP-533 : Fix long-standing typo in README: neutron -> neutral.
+2025-11-08  G4CMP-527 : Adjust post-step "surface" point for all boundary actions.
+
+2025-10-30  g4cmp-V09-09-01 Bug fixes following V09-09-00 release.
+2025-10-25  G4CMP-520 : Fix incorrect local transform in TrackLimiter.
+2025-10-24  G4CMP-519 : Protect against zero energy in charge DoAbsorption().
+2025-10-24  G4CMP-523 : Remove undesirable checks from G4CMPTrackLimiter.
+2025-10-15  G4CMP-516 : Address compiler warnings seen with GCC-11.4.0.
+
+2025-10-13  g4cmp-V09-09-00 Several fixes for charge tracking; phonon tutorial
+2025-10-13  G4CMP-503 : Enable charge reflections; diffuse only for electrons.
+2025-10-07  G4CMP-478 : Lowered G4CMPDriftTrapIonization minimum energy.
+2025-09-29  G4CMP-358 : Identify and stop charged tracks stuck in mesh field.
+2025-09-29  G4CMP-510 : Include residual kinetic energy in charge recombination.
+2025-09-25  G4CMP-505 : Fix Confluence link in README.md.
+2025-09-12  G4CMP-504 : Add tutorial for computing phonon DOS in new materials.
+
+2025-08-23  g4cmp-V09-08-00 Thermal phonon killing, suppress surface phonons.
 2025-08-01  G4CMP-326 : Kill "thermal" phonons in TrackLimiter if temp>0.
 2025-07-11  G4CMP-491 : Turn off phonon surface displacement loop by default.
 

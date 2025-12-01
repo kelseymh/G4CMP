@@ -8,7 +8,7 @@ processes in Geant4.  Developed for the low-temperature community, the
 package support production and propagation of acoustic phonons and
 electron-hole pairs through solid crystals such as germanium.
 
-Website: https://confluence.slac.stanford.edu/browse/G4CMP/
+Website: https://confluence.slac.stanford.edu/spaces/G4CMP/overview
 
 Papers:	https://doi.org/10.1016/j.nima.2023.168473
 	https://arxiv.org/abs/2302.05998
@@ -85,7 +85,7 @@ developers should check the source code in
 | G4LATTICEDATA [P1:P2...] | /g4cmp/LatticeData	[P1:P2:...] | Paths with lattice configs            |
 | G4CMP\_DEBUG	          | /g4cmp/verbose [L] >0:        | Enable diagnostic messages              |
 | G4CMP\_CLEARANCE [L]    | /g4cmp/clearance [L] mm       | Minimum distance of tracks from boundaries |
-| G4CMP\_VOLTAGE [V]      | /g4cmp/voltage [V]	volt !=0:  | Apply uniform +Z voltage                |
+| G4CMP\_VOLTAGE [V]      | /g4cmp/voltage [V]	volt !=0: | Apply uniform +Z voltage                |
 | G4CMP\_EPOT\_FILE [F]   | /g4cmp/EPotFile [F] V=0:      | Read mesh field file "F"                |
 | G4CMP\_EPOT\_SCALE [F]  | /g4cmp/scaleEPot [M] V=0:     | Scale the potentials in EPotFile by factor m|
 | G4CMP\_MIN\_STEP [S]    | /g4cmp/minimumStep [S] S>0:   | Force minimum step S\*L0                |
@@ -93,6 +93,7 @@ developers should check the source code in
 | G4CMP\_PHON\_BOUNCES [N]  | /g4cmp/phononBounces [N]      | Maximum phonon reflections              |
 | G4CMP\_PHON\_SURFSTEP [L] | /g4cmp/phononSurfStepSize [L] um  | Specular reflection surface displacement step size |
 | G4CMP\_PHON\_SURFLIMIT [N]  | /g4cmp/phononSurfStepLimit [N]  | Specular reflection surface displacement step limit |
+| G4CMP\_EH\_MAX\_STEPS [N] | /g4mp/maximumSteps [N]      | Maximum allowed charged track steps     |
 | G4CMP\_MAKE\_PHONONS [R] | /g4cmp/producePhonons [R]     | Fraction of phonons from energy deposit   |
 | G4CMP\_MAKE\_CHARGES [R] | /g4cmp/produceCharges [R]     | Fraction of charge pairs from energy deposit |
 | G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
@@ -105,15 +106,15 @@ developers should check the source code in
 | G4CMP\_USE\_KVSOLVER    | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED    | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |
 | G4CMP\_KAPLAN\_KEEP     | /g4cmp/kaplanKeepPhonons [t\|f] | Reflect or iterate all phonons in KaplanQP |
-| G4CMP\_IV\_RATE\_MODEL  | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
-| G4CMP\_LUKE\_FILE | /g4cmp/LukeDebugFile [S] | LukeScattering debug filename |
-| G4CMP\_ETRAPPING\_MFP   | /g4cmp/eTrappingMFP [L] mm        | Mean free path for electron trapping |
-| G4CMP\_HTRAPPING\_MFP   | /g4cmp/hTrappingMFP [L] mm        | Mean free path for charge hole trapping |
-| G4CMP\_EDTRAPION\_MFP | /g4cmp/eDTrapIonizationMFP [L] mm | MFP for e-trap ionization by e- |
-| G4CMP\_EATRAPION\_MFP | /g4cmp/eATrapIonizationMFP [L] mm | MFP for h-trap ionization by e- |
-| G4CMP\_HDTRAPION\_MFP | /g4cmp/hDTrapIonizationMFP [L] mm | MFP for e-trap ionization by h+ |
-| G4CMP\_HATRAPION\_MFP | /g4cmp/hATrapIonizationMFP [L] mm | MFP for h-trap ionization by h+ |
-| G4CMP\_TEMPERATURE   | /g4cmp/temperature [T] K | Device/substrate/etc. temperature |
+| G4CMP\_IV\_RATE\_MODEL | /g4cmp/IVRateModel [IVRate\|Linear\|Quadratic] | Select intervalley rate parametrization |
+| G4CMP\_LUKE\_FILE       | /g4cmp/LukeDebugFile [S]      | LukeScattering debug filename           |
+| G4CMP\_ETRAPPING\_MFP   | /g4cmp/eTrappingMFP [L] mm    | Mean free path for electron trapping    |
+| G4CMP\_HTRAPPING\_MFP   | /g4cmp/hTrappingMFP [L] mm    | Mean free path for charge hole trapping |
+| G4CMP\_EDTRAPION\_MFP | /g4cmp/eDTrapIonizationMFP [L] mm | MFP for e-trap ionization by e-       |
+| G4CMP\_EATRAPION\_MFP | /g4cmp/eATrapIonizationMFP [L] mm | MFP for h-trap ionization by e-       |
+| G4CMP\_HDTRAPION\_MFP | /g4cmp/hDTrapIonizationMFP [L] mm | MFP for e-trap ionization by h+       |
+| G4CMP\_HATRAPION\_MFP | /g4cmp/hATrapIonizationMFP [L] mm | MFP for h-trap ionization by h+       |
+| G4CMP\_TEMPERATURE    | /g4cmp/temperature [T] K        | Device/substrate/etc. temperature       |
 | G4CMP\_NIEL\_FUNCTION | /g4cmp/NIELPartition [model] | Select NIEL partitioning function. See below |
 | G4CMP\_EMPIRICAL\_KLOW | /g4cmp/NIELPartition/Empirical/klow [k] | k lower bound of dk/dE for energy dependent K |
 | G4CMP\_EMPIRICAL\_KHIGH | /g4cmp/NIELPartition/Empirical/khigh [k] | k high bound of dk/dE for energy dependent K |
@@ -136,20 +137,20 @@ The environment variable `$G4CMP_NIEL_FUNCTION` allows the user to specify
 a particular model for non-ionizing energy loss ("nuclear recoil"), from 
 the set of models provided in G4CMP:
 
-    LewinSmith                      # Lewin & Smith's implementation of Lindhard NIEL
-    Lindhard                        # Robinson's implementation of Lindhard NIEL
-    Empirical                       # Energy dependent (or variable) k Lindhard NIEL       
-    Impact@TUNL                     # IMPACT@TUNL Si NIEL measurements
-    Sarkis                          # Lindhard NIEL modified by Sarkis 2022     
+    LewinSmith       # Lewin & Smith's implementation of Lindhard NIEL
+    Lindhard         # Robinson's implementation of Lindhard NIEL
+    Empirical        # Energy dependent (or variable) k Lindhard NIEL       
+    Impact@TUNL      # IMPACT@TUNL Si NIEL measurements
+    Sarkis           # Lindhard NIEL modified by Sarkis 2022     
 
 The environment variable `$G4CMP_MAKE_CHARGES` controls the rate (R) as a
 fraction of total interactions, at which electron-hole pairs are produced
 by energy partitioning.  Secondaries will be
 produced with a track weight set to 1/R:
 ```
-	unsetenv G4CMP_MAKE_CHARGES     # No new charge pairs generated
-	setenv G4CMP_MAKE_CHARGES 1     # Generate e/h pair at every occurrence
-	setenv G4CMP_MAKE_CHARGES 0.001 # Generate e/h pair 1:1000 occurrences
+  unsetenv G4CMP_MAKE_CHARGES     # No new charge pairs generated
+  setenv G4CMP_MAKE_CHARGES 1     # Generate e/h pair at every occurrence
+  setenv G4CMP_MAKE_CHARGES 0.001 # Generate e/h pair 1:1000 occurrences
 ```
 When secondary phonons are not produced, the equivalent energy is recorded as
 non-ionizing energy loss (NIEL) on the track.  Generating seconary phonons
@@ -160,9 +161,9 @@ fraction of total interactions, at which "primary" phonons are produced (by
 energy partitioning or recombination).  Secondaries will be produced with a
 track weight set to 1/R:
 ```
-	unsetenv G4CMP_MAKE_PHONONS     # No secondary phonons generated
-	setenv G4CMP_MAKE_PHONONS 1     # Generate phonon at every occurrence
-	setenv G4CMP_MAKE_PHONONS 0.001 # Generate phonon 1:1000 occurrences
+  unsetenv G4CMP_MAKE_PHONONS     # No secondary phonons generated
+  setenv G4CMP_MAKE_PHONONS 1     # Generate phonon at every occurrence
+  setenv G4CMP_MAKE_PHONONS 0.001 # Generate phonon 1:1000 occurrences
 ```
 When primary phonons are not produced, the equivalent energy is recorded as
 non-ionizing energy loss (NIEL) on the track.  
@@ -540,7 +541,7 @@ the crystal system.
 | valley  | theta phi psi unit | Euler angles     | angle (deg/rad)    |
 | **InterValley scattering with matrix elements** |
 | epsilon | e/e0      | Relative permittivity     |                    |
-| neutDens | N        | Number density of neutron impurities | /volume |
+| neutDens | N        | Number density of neutral impurities | /volume |
 | alpha   |  val      | Non-parabolicity of valleys | energy^-1 (/eV)  |
 | acDeform_e | val | electron acoustic deformation potential | energy (eV)|
 | acDeform_h | val | hole acoustic deformation potential  | energy (eV)|

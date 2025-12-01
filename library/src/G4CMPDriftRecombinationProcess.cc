@@ -7,6 +7,7 @@
 // 20170802  M. Kelsey -- Replace phonon production with G4CMPEnergyPartition
 // 20180827  M. Kelsey -- Prevent partitioner from recomputing sampling factors
 // 20210328  Modify above; compute direct-phonon sampling factor here
+// 20250929  M. Kelsey -- Include residual kinetic energy in phonon release
 
 #include "G4CMPDriftRecombinationProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -65,19 +66,22 @@ G4CMPDriftRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
   partitioner->SetVerboseLevel(verboseLevel);
   partitioner->UseVolume(aTrack.GetVolume());
 
-  // FIXME: Each charge carrier is independent, so it only gives back 0.5 times
-  // the band gap. Really electrons and holes should recombine, killing both
-  // tracks and giving back the band gap. Maybe there is a better way?
-  G4double ePot = 0.5 * theLattice->GetBandGapEnergy();
+  // Each charge carrier is independent, so it only gives back 0.5 times
+  // the band gap. When the charge recombines, it may be in a different
+  // location than its partner hole (due to a bias voltage), so combining
+  // the two tracks is neither reasonable, nor The Geant4 Way.
+  G4double Erecomb = (0.5*theLattice->GetBandGapEnergy()
+		      + aTrack.GetKineticEnergy());
 
-  partitioner->ComputePhononSampling(ePot);
-  partitioner->DoPartition(0., ePot);
+  partitioner->ComputePhononSampling(Erecomb);
+  partitioner->DoPartition(0., Erecomb);
   partitioner->GetSecondaries(&aParticleChange);
 
   if (aParticleChange.GetNumberOfSecondaries() == 0) {	// Record energy release
-    aParticleChange.ProposeNonIonizingEnergyDeposit(ePot);
+    aParticleChange.ProposeNonIonizingEnergyDeposit(Erecomb);
   }
 
+  aParticleChange.ProposeEnergy(0.);
   aParticleChange.ProposeTrackStatus(fStopAndKill);
 
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!
