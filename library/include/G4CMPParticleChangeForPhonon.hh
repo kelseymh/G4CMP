@@ -13,6 +13,7 @@
 // 20250413 Add Initialize() implementation to reset updateVol flag, add
 //		missing copy operations, may be needed
 // 20251116 For G4 11, explicitly remove the copy operators to match base.
+// 20251128 Implement empty destructor to avoid deleting G4TouchableHandle.
 
 #ifndef G4CMPParticleChangeForPhonon_hh
 #define G4CMPParticleChangeForPhonon_hh 1
@@ -50,7 +51,7 @@ public:
   virtual void DumpInfo() const override;
   
 private:
-  G4TouchableHandle theTouchableHandle;
+  G4TouchableHandle theTouchableHandle = 0;
   G4bool updateVol = false;		// Only set if touchable is changed
 };
 
