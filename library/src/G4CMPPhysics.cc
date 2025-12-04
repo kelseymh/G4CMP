@@ -19,6 +19,7 @@
 //		process instances for each beam/trap type.
 // 20210203  G4CMP-241: SecondaryProduction must be last PostStep process.
 // 20220331  G4CMP-293: Replace RegisterProcess() with local AddG4CMPProcess().
+// 20251203  G4CMP-552: For G4 11, add hypernuclei daughters.
 
 #include "G4CMPPhysics.hh"
 #include "G4CMPConfigManager.hh"
@@ -34,14 +35,26 @@
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPTrackLimiter.hh"
+#include "G4AntiNeutron.hh"
+#include "G4AntiProton.hh"
+#include "G4Electron.hh"
+#include "G4Gamma.hh"
 #include "G4GenericIon.hh"
+#include "G4MuonMinus.hh"
+#include "G4MuonPlus.hh"
+#include "G4Neutron.hh"
 #include "G4ParticleTable.hh"
 #include "G4PhononDownconversion.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononScattering.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
+#include "G4Positron.hh"
+#include "G4PionMinus.hh"
+#include "G4PionPlus.hh"
+#include "G4PionZero.hh"
 #include "G4ProcessManager.hh"
+#include "G4Proton.hh"
 
 
 // Constructor sets global verbosity
@@ -60,6 +73,20 @@ void G4CMPPhysics::ConstructParticle() {
   G4PhononTransFast::Definition();
   G4PhononTransSlow::Definition();
   G4GenericIon::Definition();
+
+  // For Geant4 11, define daughters of hypernuclei, created by GenericIon
+  G4AntiNeutron::Definition();
+  G4AntiProton::Definition();
+  G4Electron::Definition();
+  G4Gamma::Definition();
+  G4MuonMinus::Definition();
+  G4MuonPlus::Definition();
+  G4Neutron::Definition();
+  G4PionMinus::Definition();
+  G4PionPlus::Definition();
+  G4PionZero::Definition();
+  G4Positron::Definition();
+  G4Proton::Definition();
 }
 
 // Add physics processes to appropriate particles
