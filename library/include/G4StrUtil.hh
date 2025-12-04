@@ -9,6 +9,7 @@
 ///	migrated to Geant4 v11, and remain compatible with Geant4 v10.
 //
 //  20251116  G4CMP-525 -- Adapted from SuperCDMS version.
+//  20251203  G4CMP-551 -- Modify implementations of *strip() to match G4String
 
 #ifndef G4StrUtil_hh
 #define G4StrUtil_hh 1
@@ -27,28 +28,28 @@ namespace G4StrUtil {
 
   inline G4String to_upper_copy(G4String str) { str.toUpper(); return str; }
 
-  inline void lstrip(G4String& str, char ch=' ') {
-    str.strip(G4String::leading, ch);
-  }
-
-  inline void rstrip(G4String& str, char ch=' ') {
-    str.strip(G4String::trailing, ch);
-  }
-
-  inline void strip(G4String& str, char ch=' ') {
-    str.strip(G4String::both, ch);
-  }
-
   inline G4String lstrip_copy(G4String str, char ch=' ') {
-    lstrip(str, ch); return str;
+    return str.strip(G4String::leading, ch);
   }
 
   inline G4String rstrip_copy(G4String str, char ch=' ') {
-    rstrip(str, ch); return str;
+    return str.strip(G4String::trailing, ch);
   }
 
   inline G4String strip_copy(G4String str, char ch=' ') {
-    strip(str, ch); return str;
+    return str.strip(G4String::both, ch);
+  }
+
+  inline void lstrip(G4String& str, char ch=' ') {
+    str = lstrip_copy(str, ch);
+  }
+
+  inline void rstrip(G4String& str, char ch=' ') {
+    str = rstrip_copy(str, ch);
+  }
+
+  inline void strip(G4String& str, char ch=' ') {
+    str = strip_copy(str, ch);
   }
 
   inline G4bool contains(const G4String& str, const G4String& ss) {
