@@ -35,11 +35,13 @@
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPTrackLimiter.hh"
+#include "G4AntiLambda.hh"
 #include "G4AntiNeutron.hh"
 #include "G4AntiProton.hh"
 #include "G4Electron.hh"
 #include "G4Gamma.hh"
 #include "G4GenericIon.hh"
+#include "G4Lambda.hh"
 #include "G4MuonMinus.hh"
 #include "G4MuonPlus.hh"
 #include "G4Neutron.hh"
@@ -75,10 +77,12 @@ void G4CMPPhysics::ConstructParticle() {
   G4GenericIon::Definition();
 
   // For Geant4 11, define daughters of hypernuclei, created by GenericIon
+  G4AntiLambda::Definition();
   G4AntiNeutron::Definition();
   G4AntiProton::Definition();
   G4Electron::Definition();
   G4Gamma::Definition();
+  G4Lambda::Definition();
   G4MuonMinus::Definition();
   G4MuonPlus::Definition();
   G4Neutron::Definition();
