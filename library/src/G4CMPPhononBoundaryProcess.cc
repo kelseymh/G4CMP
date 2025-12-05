@@ -41,6 +41,7 @@
 // 20250429  G4CMP-461 -- Implement ability to skip flats during displacement.
 // 20250505  G4CMP-458 -- Rename GetReflectedVector to GetSpecularVector.
 // 20250505  G4CMP-471 -- Update diagnostic output for surface displacement loop.
+// 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -227,9 +228,9 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     G4Track* sec1 = particleChange.GetSecondary(0);
     G4Track* sec2 = particleChange.GetSecondary(1);
 
-    G4ThreeVector vec1 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    G4ThreeVector vec1 = G4CMP::LambertianReflection(theLattice, surfNorm, mode,
                                                     surfacePoint);
-    G4ThreeVector vec2 = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    G4ThreeVector vec2 = G4CMP::LambertianReflection(theLattice, surfNorm, mode,
                                                     surfacePoint);
 
     sec1->SetMomentumDirection(vec1);
@@ -240,7 +241,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
     reflectedKDir = GetSpecularVector(waveVector, surfNorm, mode, surfacePoint); // Modify surfacePoint & surfNorm in place
     refltype = "specular";
   } else {
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    reflectedKDir = G4CMP::LambertianReflection(theLattice, surfNorm, mode,
                                                surfacePoint);
     refltype = "diffuse";
   }
@@ -444,7 +445,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
     // Get reflectedKDir from initial point and restore original values
     stepLocalPos = surfacePoint;
     newNorm = surfNorm;
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
+    reflectedKDir = G4CMP::LambertianReflection(theLattice, surfNorm, mode,
                                                surfacePoint);
   }
 

@@ -21,6 +21,7 @@
 // 20250422  G4CMP-468 -- Add displaced point test to PhononVelocityIsInward.
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector.
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
+// 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -213,21 +214,21 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
 // vector is directed inward with respect to the surface normal.
 
 G4ThreeVector
-G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
+G4CMP::LambertianReflection(const G4LatticePhysical* theLattice,
 			   const G4ThreeVector& surfNorm, G4int mode) {
   const G4ThreeVector surfPoint = GetCurrentTrack()->GetPosition();
-  return GetLambertianVector(theLattice, surfNorm, mode, surfPoint);
+  return LambertianReflection(theLattice, surfNorm, mode, surfPoint);
 }
 
 G4ThreeVector
-G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
+G4CMP::LambertianReflection(const G4LatticePhysical* theLattice,
 			   const G4ThreeVector& surfNorm, G4int mode,
 			   const G4ThreeVector& surfPoint) {
   G4ThreeVector reflectedKDir;
   const G4int maxTries = 1000;
   G4int nTries = 0;
   do {
-    reflectedKDir = LambertReflection(surfNorm);
+    reflectedKDir = GetLambertianVector(surfNorm);
   } while (nTries++ < maxTries &&
            !PhononVelocityIsInward(theLattice, mode, reflectedKDir, surfNorm,
                                    surfPoint));
@@ -235,7 +236,7 @@ G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
   return reflectedKDir;
 }
 
-G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
+G4ThreeVector G4CMP::GetLambertianVector(const G4ThreeVector& surfNorm) {
   G4double phi = 2.0*pi*G4UniformRand();
   G4double theta = acos(2.0*G4UniformRand() - 1.0) / 2.0;
 

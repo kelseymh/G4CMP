@@ -17,6 +17,7 @@
 // 20180827  M. Kelsey -- Prevent partitioner from recomputing sampling factors
 // 20210328  Modify above; compute direct-phonon sampling factor here
 // 20250927  AbsorbTrack() should use '&&' to require that both conditions pass
+// 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -35,6 +36,7 @@
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4StepStatus.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 #include "G4VParticleChange.hh"
 #include "G4VPhysicalVolume.hh"
@@ -248,7 +250,7 @@ DoDiffuseElectron(const G4ThreeVector& surfNorm,
   if (verboseLevel>2) G4cout << " DoDiffuseElectron " << surfNorm << G4endl;
 
   // Charge scatters randomly off of surface
-  G4ThreeVector p = G4CMP::LambertReflection(surfNorm);
+  G4ThreeVector p = G4CMP::GetLambertianVector(surfNorm);
   return p;
 }
 
@@ -281,4 +283,74 @@ void G4CMPDriftBoundaryProcess::
 DoFinalReflection(const G4Track& aTrack,const G4Step& aStep,
 		  G4ParticleChange& aParticleChange) {
   DoAbsorption(aTrack, aStep, aParticleChange);
+}
+
+// Generate cos(theta) law for diffuse reflection, ensuring that computed
+// vector is directed inward with respect to the surface normal.
+
+G4ThreeVector
+G4CMPDriftBoundaryProcess::LambertianReflection(const G4LatticePhysical* theLattice,
+			   const G4ThreeVector& surfNorm, G4int valley) {
+  const G4ThreeVector surfPoint = GetCurrentTrack()->GetPosition();
+  return LambertianReflection(theLattice, surfNorm, valley, surfPoint);
+}
+
+G4ThreeVector
+G4CMPDriftBoundaryProcess::LambertianReflection(const G4LatticePhysical* theLattice,
+			   const G4ThreeVector& surfNorm, G4int valley,
+			   const G4ThreeVector& surfPoint) {
+  G4ThreeVector reflectedDir;
+  const G4int maxTries = 1000;
+  G4int nTries = 0;
+  do {
+    reflectedDir = G4CMP::GetLambertianVector(surfNorm);
+  } while (nTries++ < maxTries &&
+           !ChargeVelocityIsInward(theLattice, valley, reflectedDir, surfNorm,
+                                   surfPoint));
+
+  return reflectedDir;
+}
+
+
+// Check that charge is properly directed from the volume surface
+// waveVector and surfNorm need to be in global coordinates
+
+G4bool G4CMPDriftBoundaryProcess::ChargeVelocityIsInward(const G4LatticePhysical* lattice,
+                                     G4int valley,
+                                     const G4ThreeVector& waveVector,
+                                     const G4ThreeVector& surfNorm) {
+  const G4ThreeVector surfacePos = GetCurrentTrack()->GetPosition();
+  return ChargeVelocityIsInward(lattice, valley, waveVector, surfNorm, surfacePos);
+}
+
+G4bool G4CMPDriftBoundaryProcess::ChargeVelocityIsInward(const G4LatticePhysical* lattice,
+                                     G4int valley,
+                                     const G4ThreeVector& waveVector,
+                                     const G4ThreeVector& surfNorm,
+                                     const G4ThreeVector& surfacePos) {
+  // Get touchable for coordinate rotations
+  const G4VTouchable* touchable = GetCurrentTouchable();
+
+  if (!touchable) {
+    G4Exception("ChargeVelocityIsInward", "G4CMPUtils001",
+		EventMustBeAborted, "Current track does not have valid touchable!");
+    return false;
+  }
+
+  // MapKtoVDir requires local direction for the wavevector
+  G4ThreeVector vDir = (lattice->MapV_elToP(valley, G4CMP::GetLocalDirection(touchable, waveVector))).unit();
+  // MapKToVDir is specific to phonons to vconvert wavevector to group velocity.
+  // The function MapVelToP converts electron velocity vector to the momentum direction.
+  // (Might need to add a .unit at the end of vDir to turn it into a unit vector)
+  // The only thing here that is particle type dependent is MapKToVDir and MapVelToP.
+
+  // Project a 1 nm step in the new direction, see if it
+  // is still in the correct volume.
+  G4ThreeVector localPos = G4CMP::GetLocalPosition(touchable, surfacePos);
+  G4VSolid* solid = touchable->GetSolid();
+  EInside trialStep = solid->Inside(localPos + 1*nm * vDir); // Is 1nm big enough? Check with Nolan.
+
+  // Compare group velocity and surface normal in global coordinates
+  G4CMP::RotateToGlobalDirection(touchable, vDir);
+  return (vDir.dot(surfNorm) < 0.0 && trialStep == kInside);
 }
