@@ -224,16 +224,16 @@ G4ThreeVector
 G4CMP::LambertianReflection(const G4LatticePhysical* theLattice,
 			   const G4ThreeVector& surfNorm, G4int mode,
 			   const G4ThreeVector& surfPoint) {
-  G4ThreeVector reflectedKDir;
+  G4ThreeVector reflectedDir;
   const G4int maxTries = 1000;
   G4int nTries = 0;
   do {
-    reflectedKDir = GetLambertianVector(surfNorm);
+    reflectedDir = GetLambertianVector(surfNorm);
   } while (nTries++ < maxTries &&
-           !PhononVelocityIsInward(theLattice, mode, reflectedKDir, surfNorm,
+           !PhononVelocityIsInward(theLattice, mode, reflectedDir, surfNorm,
                                    surfPoint));
 
-  return reflectedKDir;
+  return reflectedDir;
 }
 
 G4ThreeVector G4CMP::GetLambertianVector(const G4ThreeVector& surfNorm) {
