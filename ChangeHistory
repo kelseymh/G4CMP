@@ -7,8 +7,9 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 Development Project for G4CMP-515
-2025-11-20  G4CMP-515 : Expand charge reflection for both specular and diffuse.
-2025-11-20  G4CMP-511 : Create parallel Lambertian reflection code for charges.
+2025-12-09  G4CMP-515 : Expand charge reflection for both specular and diffuse.
+2025-12-09  G4CMP-511 : Create parallel Lambertian reflection code for charges.
+2025-12-09  G4CMP-518 : Make PhononVelocityIsInward() generic.
 Development Project for G4CMP-515: Add new tags above.
 
 2025-10-13  g4cmp-V09-09-00 Several fixes for charge tracking; phonon tutorial
