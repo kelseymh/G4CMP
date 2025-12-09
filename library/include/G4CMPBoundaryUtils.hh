@@ -20,6 +20,7 @@
 // 20171215  Change 'CheckStepStatus()' to 'IsBoundaryStep()', add function
 //	     to validate step trajectory to boundary.
 // 20250927  Add overloadable function to kill track when max-reflections.
+// 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
 
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
@@ -32,6 +33,7 @@
 class G4CMPProcessUtils;
 class G4CMPSurfaceProperty;
 class G4CMPVElectrodePattern;
+class G4LatticePhysical;
 class G4MaterialPropertiesTable;
 class G4ParticleChange;
 class G4Step;
@@ -85,6 +87,24 @@ public:
   // NOTE:  Transmission is called only if absorption, reflection both fail
   virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
 			      G4ParticleChange& aParticleChange);
+
+  // Phonons reflect difusively from surfaces.
+  virtual G4ThreeVector LambertianReflection(const G4LatticePhysical* theLattice,
+                                    const G4ThreeVector& surfNorm, G4int mode);
+  virtual G4ThreeVector LambertianReflection(const G4LatticePhysical* theLattice,
+                                    const G4ThreeVector& surfNorm, G4int mode,
+                                    const G4ThreeVector& surfPoint);
+  virtual G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm);
+
+  // Test that a phonon's wave vector relates to an inward velocity.
+  // waveVector, surfNorm, and surfacePos need to be in global coordinates
+  virtual G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+                                const G4ThreeVector& waveVector,
+                                const G4ThreeVector& surfNorm);
+  virtual G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+                                const G4ThreeVector& waveVector,
+                                const G4ThreeVector& surfNorm,
+                                const G4ThreeVector& surfacePos);
 
 protected:
   G4bool IsBounaryStep(const G4Step& aStep);

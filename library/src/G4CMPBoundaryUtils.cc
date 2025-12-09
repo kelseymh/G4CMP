@@ -29,6 +29,7 @@
 // 20250423  Remove error suppression for starting at boundary.
 // 20250927  Increase verbosity for IsGoodBoundary() related messages; add
 //	       overloadable function to kill track when max-reflections.
+// 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -414,6 +415,42 @@ G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
     G4cout << procName << ": Track transmission requested" << G4endl;
 
   DoSimpleKill(aTrack, aStep, aParticleChange);
+}
+
+G4ThreeVector
+G4CMPBoundaryUtils::LambertianReflection(const G4LatticePhysical* theLattice,
+			   const G4ThreeVector& surfNorm, G4int mode) {
+  return G4CMP::LambertianReflection(theLattice, surfNorm, mode);
+}
+
+G4ThreeVector
+G4CMPBoundaryUtils::LambertianReflection(const G4LatticePhysical* theLattice,
+			   const G4ThreeVector& surfNorm, G4int mode,
+			   const G4ThreeVector& surfPoint) {
+  return G4CMP::LambertianReflection(theLattice, surfNorm, mode, surfPoint);
+}
+
+G4ThreeVector G4CMPBoundaryUtils::GetLambertianVector(const G4ThreeVector& surfNorm) {
+  return G4CMP::GetLambertianVector(surfNorm);
+}
+
+
+// Check that phonon is properly directed from the volume surface
+// waveVector and surfNorm need to be in global coordinates
+
+G4bool G4CMPBoundaryUtils::PhononVelocityIsInward(const G4LatticePhysical* lattice,
+                                     G4int mode,
+                                     const G4ThreeVector& waveVector,
+                                     const G4ThreeVector& surfNorm) {
+  return G4CMP::PhononVelocityIsInward(lattice, mode, waveVector, surfNorm);
+}
+
+G4bool G4CMPBoundaryUtils::PhononVelocityIsInward(const G4LatticePhysical* lattice,
+                                     G4int mode,
+                                     const G4ThreeVector& waveVector,
+                                     const G4ThreeVector& surfNorm,
+                                     const G4ThreeVector& surfacePos) {
+  return G4CMP::PhononVelocityIsInward(lattice, mode, waveVector, surfNorm, surfacePos);
 }
 
 
