@@ -21,7 +21,7 @@
 // 20250422  G4CMP-468 -- Add position argument to PhononVelocityIsInward
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
-// 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
+// 20251204  G4CMP-511 -- Swap the names of Lambertian reflection functions.
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1

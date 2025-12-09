@@ -250,7 +250,7 @@ DoDiffuseElectron(const G4ThreeVector& surfNorm,
   if (verboseLevel>2) G4cout << " DoDiffuseElectron " << surfNorm << G4endl;
 
   // Charge scatters randomly off of surface
-  G4ThreeVector p = G4CMP::GetLambertianVector(surfNorm);
+  G4ThreeVector p = GetLambertianVector(surfNorm);
   return p;
 }
 
@@ -303,7 +303,7 @@ G4CMPDriftBoundaryProcess::LambertianReflection(const G4LatticePhysical* theLatt
   const G4int maxTries = 1000;
   G4int nTries = 0;
   do {
-    reflectedDir = G4CMP::GetLambertianVector(surfNorm);
+    reflectedDir = GetLambertianVector(surfNorm);
   } while (nTries++ < maxTries &&
            !ChargeVelocityIsInward(theLattice, valley, reflectedDir, surfNorm,
                                    surfPoint));
