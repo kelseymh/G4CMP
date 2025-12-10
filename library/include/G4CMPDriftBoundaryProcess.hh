@@ -29,6 +29,7 @@
 //           proper recombination.
 // 20251013  Add functions for specular and diffuse electron reflection.
 // 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
+// 20251210  G4CMP-518 -- Make PhononVelocityIsInward() generic.
 
 #ifndef G4CMPDriftBoundaryProcess_h
 #define G4CMPDriftBoundaryProcess_h 1
@@ -79,23 +80,6 @@ protected:
   // Called when maximum bounces have been recorded; does recombination
   virtual void DoFinalReflection(const G4Track& aTrack,const G4Step& aStep,
 				 G4ParticleChange& aParticleChange);
-
-  // Phonons reflect difusively from surfaces.
-  G4ThreeVector LambertianReflection(const G4LatticePhysical* theLattice,
-                                    const G4ThreeVector& surfNorm, G4int valley) override;
-  G4ThreeVector LambertianReflection(const G4LatticePhysical* theLattice,
-                                    const G4ThreeVector& surfNorm, G4int valley,
-                                    const G4ThreeVector& surfPoint) override;
-
-  // Test that a charge's wave vector relates to an inward velocity.
-  // waveVector, surfNorm, and surfacePos need to be in global coordinates
-  virtual G4bool ChargeVelocityIsInward(const G4LatticePhysical* lattice, G4int valley,
-                                const G4ThreeVector& waveVector,
-                                const G4ThreeVector& surfNorm);
-  virtual G4bool ChargeVelocityIsInward(const G4LatticePhysical* lattice, G4int valley,
-                                const G4ThreeVector& waveVector,
-                                const G4ThreeVector& surfNorm,
-                                const G4ThreeVector& surfacePos);
 
 private:
   G4CMPEnergyPartition* partitioner;

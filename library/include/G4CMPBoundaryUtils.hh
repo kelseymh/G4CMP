@@ -21,6 +21,7 @@
 //	     to validate step trajectory to boundary.
 // 20250927  Add overloadable function to kill track when max-reflections.
 // 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
+// 20251210  G4CMP-518 -- Make PhononVelocityIsInward() generic.
 
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
@@ -98,10 +99,10 @@ public:
 
   // Test that a phonon's wave vector relates to an inward velocity.
   // waveVector, surfNorm, and surfacePos need to be in global coordinates
-  virtual G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+  virtual G4bool VelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm);
-  virtual G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+  virtual G4bool VelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm,
                                 const G4ThreeVector& surfacePos);

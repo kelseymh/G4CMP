@@ -17,11 +17,12 @@
 // 20220816  M. Kelsey -- Move RandomIndex here for more general use
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 // 20241223  G4CMP-419 -- Add utility to create per-thread debugging file
-// 20250130  G4CMP-453 -- Apply coordinate rotations in PhononVelocityIsInward
-// 20250422  G4CMP-468 -- Add displaced point test to PhononVelocityIsInward.
+// 20250130  G4CMP-453 -- Apply coordinate rotations in VelocityIsInward
+// 20250422  G4CMP-468 -- Add displaced point test to VelocityIsInward.
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector.
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 // 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
+// 20251210  G4CMP-518 -- Make VelocityIsInward() generic.
 
 #include "G4CMPUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -230,7 +231,7 @@ G4CMP::LambertianReflection(const G4LatticePhysical* theLattice,
   do {
     reflectedDir = GetLambertianVector(surfNorm);
   } while (nTries++ < maxTries &&
-           !PhononVelocityIsInward(theLattice, mode, reflectedDir, surfNorm,
+           !VelocityIsInward(theLattice, mode, reflectedDir, surfNorm,
                                    surfPoint));
 
   return reflectedDir;
@@ -250,15 +251,15 @@ G4ThreeVector G4CMP::GetLambertianVector(const G4ThreeVector& surfNorm) {
 // Check that phonon is properly directed from the volume surface
 // waveVector and surfNorm need to be in global coordinates
 
-G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
+G4bool G4CMP::VelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int mode,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
   const G4ThreeVector surfacePos = GetCurrentTrack()->GetPosition();
-  return PhononVelocityIsInward(lattice, mode, waveVector, surfNorm, surfacePos);
+  return VelocityIsInward(lattice, mode, waveVector, surfNorm, surfacePos);
 }
 
-G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
+G4bool G4CMP::VelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int mode,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm,
@@ -267,13 +268,22 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
   const G4VTouchable* touchable = GetCurrentTouchable();
 
   if (!touchable) {
-    G4Exception("G4CMP::PhononVelocityIsInward", "G4CMPUtils001",
+    G4Exception("G4CMP::VelocityIsInward", "G4CMPUtils001",
 		EventMustBeAborted, "Current track does not have valid touchable!");
     return false;
   }
 
   // MapKtoVDir requires local direction for the wavevector
-  G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(touchable, waveVector));
+  if(IsPhonon()) {
+    G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(touchable, waveVector));
+  }
+  else if(IsElectron()) {
+    G4ThreeVector vDir = (lattice->MapV_elToP(valley, G4CMP::GetLocalDirection(touchable, waveVector))).unit();
+    // MapKToVDir is specific to phonons to vconvert wavevector to group velocity.
+    // The function MapVelToP converts electron velocity vector to the momentum direction.
+    // (Might need to add a .unit at the end of vDir to turn it into a unit vector)
+    // The only thing here that is particle type dependent is MapKToVDir and MapVelToP.
+  }
 
   // Project a 1 nm step in the new direction, see if it
   // is still in the correct volume.

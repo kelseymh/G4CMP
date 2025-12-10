@@ -36,9 +36,10 @@
 // 20221006  M. Kelsey -- Adapted from SuperCDMS simulation version
 // 20221006  G4CMP-330 -- Add lattice temperature to properties table
 // 20250124  G4CMP-447 -- Add FillParticleChange() to update phonon track info
-// 20250422  N. Tenpas -- Add position arguments for PhononVelocityIsInward.
+// 20250422  N. Tenpas -- Add position arguments for VelocityIsInward.
 // 20250423  N. Tenpas -- Replace duplicated GetLambertianVector() code.
 // 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
+// 20251210  G4CMP-518 -- Make PhononVelocityIsInward() generic.
 
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPGeometryUtils.hh"

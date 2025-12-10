@@ -30,6 +30,7 @@
 // 20250927  Increase verbosity for IsGoodBoundary() related messages; add
 //	       overloadable function to kill track when max-reflections.
 // 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
+// 20251210  G4CMP-518 -- Make PhononVelocityIsInward() generic.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -438,19 +439,19 @@ G4ThreeVector G4CMPBoundaryUtils::GetLambertianVector(const G4ThreeVector& surfN
 // Check that phonon is properly directed from the volume surface
 // waveVector and surfNorm need to be in global coordinates
 
-G4bool G4CMPBoundaryUtils::PhononVelocityIsInward(const G4LatticePhysical* lattice,
+G4bool G4CMPBoundaryUtils::VelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int mode,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
-  return G4CMP::PhononVelocityIsInward(lattice, mode, waveVector, surfNorm);
+  return G4CMP::VelocityIsInward(lattice, mode, waveVector, surfNorm);
 }
 
-G4bool G4CMPBoundaryUtils::PhononVelocityIsInward(const G4LatticePhysical* lattice,
+G4bool G4CMPBoundaryUtils::VelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int mode,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm,
                                      const G4ThreeVector& surfacePos) {
-  return G4CMP::PhononVelocityIsInward(lattice, mode, waveVector, surfNorm, surfacePos);
+  return G4CMP::VelocityIsInward(lattice, mode, waveVector, surfNorm, surfacePos);
 }
 
 

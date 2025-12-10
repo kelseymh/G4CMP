@@ -18,10 +18,11 @@
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 // 20241223  G4CMP-419 -- Add utility to create per-thread debugging file
 // 20250130  G4CMP-453 -- Add utilities for getting current track and touchable
-// 20250422  G4CMP-468 -- Add position argument to PhononVelocityIsInward
+// 20250422  G4CMP-468 -- Add position argument to VelocityIsInward
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 // 20251204  G4CMP-511 -- Swap the names of Lambertian reflection functions.
+// 20251210  G4CMP-518 -- Make VelocityIsInward() generic.
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -96,10 +97,10 @@ namespace G4CMP {
 
   // Test that a phonon's wave vector relates to an inward velocity.
   // waveVector, surfNorm, and surfacePos need to be in global coordinates
-  G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+  G4bool VelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm);
-  G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+  G4bool VelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm,
                                 const G4ThreeVector& surfacePos);
