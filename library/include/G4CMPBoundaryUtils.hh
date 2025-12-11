@@ -95,7 +95,7 @@ public:
   virtual G4ThreeVector LambertianReflection(const G4LatticePhysical* theLattice,
                                     const G4ThreeVector& surfNorm, G4int mode,
                                     const G4ThreeVector& surfPoint);
-  virtual G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm);
+  virtual G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm) const;
 
   // Test that a phonon's wave vector relates to an inward velocity.
   // waveVector, surfNorm, and surfacePos need to be in global coordinates

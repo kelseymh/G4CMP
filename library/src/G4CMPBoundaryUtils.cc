@@ -431,7 +431,7 @@ G4CMPBoundaryUtils::LambertianReflection(const G4LatticePhysical* theLattice,
   return G4CMP::LambertianReflection(theLattice, surfNorm, mode, surfPoint);
 }
 
-G4ThreeVector G4CMPBoundaryUtils::GetLambertianVector(const G4ThreeVector& surfNorm) {
+G4ThreeVector G4CMPBoundaryUtils::GetLambertianVector(const G4ThreeVector& surfNorm) const {
   return G4CMP::GetLambertianVector(surfNorm);
 }
 

@@ -273,16 +273,19 @@ G4bool G4CMP::VelocityIsInward(const G4LatticePhysical* lattice,
     return false;
   }
 
-  // MapKtoVDir requires local direction for the wavevector
-  if(IsPhonon()) {
-    G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(touchable, waveVector));
+  const G4Track* track = GetCurrentTrack();
+  G4ThreeVector vDir;
+
+  if(IsPhonon(track)) {
+    // MapKtoVDir requires local direction for the wavevector
+    vDir = lattice->MapKtoVDir(mode, GetLocalDirection(touchable, waveVector));
   }
-  else if(IsElectron()) {
-    G4ThreeVector vDir = (lattice->MapV_elToP(valley, G4CMP::GetLocalDirection(touchable, waveVector))).unit();
+  else if(IsElectron(track)) {
     // MapKToVDir is specific to phonons to vconvert wavevector to group velocity.
     // The function MapVelToP converts electron velocity vector to the momentum direction.
     // (Might need to add a .unit at the end of vDir to turn it into a unit vector)
     // The only thing here that is particle type dependent is MapKToVDir and MapVelToP.
+    vDir = (lattice->MapV_elToP(mode, G4CMP::GetLocalDirection(touchable, waveVector))).unit();
   }
 
   // Project a 1 nm step in the new direction, see if it
