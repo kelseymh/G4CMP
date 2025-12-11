@@ -20,6 +20,7 @@
 // 20210203  G4CMP-241: SecondaryProduction must be last PostStep process.
 // 20220331  G4CMP-293: Replace RegisterProcess() with local AddG4CMPProcess().
 // 20251203  G4CMP-552: For G4 11, add hypernuclei daughters.
+// 20251211  G4CMP-553: Add missing hypernuclei daughters (neutrinos).
 
 #include "G4CMPPhysics.hh"
 #include "G4CMPConfigManager.hh"
@@ -36,6 +37,8 @@
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPTrackLimiter.hh"
 #include "G4AntiLambda.hh"
+#include "G4AntiNeutrinoE.hh"
+#include "G4AntiNeutrinoMu.hh"
 #include "G4AntiNeutron.hh"
 #include "G4AntiProton.hh"
 #include "G4Electron.hh"
@@ -44,6 +47,8 @@
 #include "G4Lambda.hh"
 #include "G4MuonMinus.hh"
 #include "G4MuonPlus.hh"
+#include "G4NeutrinoE.hh"
+#include "G4NeutrinoMu.hh"
 #include "G4Neutron.hh"
 #include "G4ParticleTable.hh"
 #include "G4PhononDownconversion.hh"
@@ -78,6 +83,8 @@ void G4CMPPhysics::ConstructParticle() {
 
   // For Geant4 11, define daughters of hypernuclei, created by GenericIon
   G4AntiLambda::Definition();
+  G4AntiNeutrinoE::Definition();
+  G4AntiNeutrinoMu::Definition();
   G4AntiNeutron::Definition();
   G4AntiProton::Definition();
   G4Electron::Definition();
@@ -85,6 +92,8 @@ void G4CMPPhysics::ConstructParticle() {
   G4Lambda::Definition();
   G4MuonMinus::Definition();
   G4MuonPlus::Definition();
+  G4NeutrinoE::Definition();
+  G4NeutrinoMu::Definition();
   G4Neutron::Definition();
   G4PionMinus::Definition();
   G4PionPlus::Definition();
