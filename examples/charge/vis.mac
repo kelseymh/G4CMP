@@ -6,7 +6,7 @@
 /g4cmp/sampleLuke 0.
 
 /run/initialize
-/vis/open OGL
+/vis/open OGLIX
 /vis/viewer/set/upVector 1 0 0
 /vis/viewer/set/viewpointVector 1 0 1
 /vis/viewer/zoomTo 2
