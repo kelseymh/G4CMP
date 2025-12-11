@@ -7,7 +7,8 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 Project branch for Geant4 v11 migration -- subtask tags go below!
-2025-12-03  G4CMP-494 : Migrate code to be compatible with G4 v11 and v10.
+2025-12-11  G4CMP-494 : Migrate code to be compatible with G4 v11 and v10.
+2025-12-11  G4CMP-553 : Update vis export in examples, complete hyperN daughters.
 2025-12-03  G4CMP-552 : To silence DecayChannel warnings, add hyperN daughters.
 2025-12-03  G4CMP-551 : Fix compatibility implementation of G4StrUtil::*strip()
 2025-11-28  G4CMP-547 : Ensure that ParticleChange touchable is always cleared.

@@ -6,7 +6,7 @@
 /g4cmp/sampleLuke 0.
 
 /run/initialize
-/vis/open OGL
+/vis/open OGLIX
 /vis/viewer/set/upVector 1 0 0
 /vis/viewer/set/viewpointVector 1 0 1
 /vis/viewer/zoomTo 2
@@ -15,7 +15,7 @@
 # /vis/scene/add/hits
 /process/inactivate G4CMPInterValleyScattering
 /run/beamOn 1
-/vis/ogl/set/printFilename g4cmpCharge_noIV
+/vis/ogl/set/printFilename g4cmpCharge_noIV.eps
 /vis/ogl/set/printMode pixmap
-/vis/ogl/printEPS
+/vis/ogl/export
 /vis/viewer/clear

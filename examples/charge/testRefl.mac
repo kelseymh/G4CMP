@@ -7,9 +7,8 @@
 /vis/viewer/zoomTo 1.2
 /vis/drawVolume
 /vis/scene/add/trajectories
-/vis/ogl/set/printFilename testRefl
+/vis/ogl/set/printFilename testRefl.eps
 /vis/ogl/set/printMode pixmap
 
 /run/beamOn 1
-
-/vis/ogl/printEPS
+/vis/ogl/export
