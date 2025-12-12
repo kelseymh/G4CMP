@@ -300,19 +300,7 @@ void G4CMPQPBoundaryProcess::DoReflection(const G4Track& aTrack,
   
   //This function is to be used with QP diffusion. It *will* return the
   //momentum as the surface normal in the direction of motion, as that
-  //information is needed by/used by the diffusion class. Check to make sure
-  //we're on a volume boundary before attempting reflection.
-  G4ThreeVector surfacePoint;
-  if (!CheckStepBoundary(aStep, surfacePoint)) {
-    if (verboseLevel > 5) {
-      G4cout << "RWBoundary DR Function Point B | checking step boundary failed"
-             << " in DoReflection" << G4endl;
-    }
-    if (verboseLevel>2)
-      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-    aParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
-  }
-  
+  //information is needed by/used by the diffusion class.
   if (verboseLevel>1) {
     G4cout << procName << ": Track reflected "
            << G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack)->ReflectionCount()
@@ -375,21 +363,6 @@ void G4CMPQPBoundaryProcess::DoTransmission(const G4Track& aTrack,
     DoSimpleKill(aTrack, aStep, aParticleChange);
   }
     
-  // Check whether step has proper boundary-stopped geometry
-  G4ThreeVector surfacePoint;
-  if (!CheckStepBoundary(aStep, surfacePoint)) {
-
-    //Debugging
-    if (verboseLevel > 5) {
-      G4cout << "RWBoundary DT Function Point B | Checking step boundary "
-             << "failed in DoTransmission" << G4endl;
-    }
-    if (verboseLevel>2)
-      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-    
-    aParticleChange.ProposePosition(surfacePoint);    // IS THIS CORRECT?!?
-  }
-  
   //Since the lattice hasn't changed yet, change it here. (This also happens
   //at the MFP calc point at the beginning of the next step, but it's nice to
   //have it here so we can use the new lattice info to help figure out vdir,

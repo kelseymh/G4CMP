@@ -433,7 +433,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
 G4ThreeVector G4CMPPhononBoundaryProcess::
 GetSpecularVector(const G4ThreeVector& waveVector,
                   G4ThreeVector& surfNorm, G4int mode,
-                  G4ThreeVector& surfacePoint) {
+                  G4ThreeVector& surfPoint) {
   //Specular reflection should reverse momentum along normal. Now
   //kPerp should almost always be positive (where the "almost" is because
   //the generalized surface norm is built on relationships between the
@@ -447,7 +447,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);
     
   if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm,
-                                    surfacePoint))
+                                    surfPoint))
     return reflectedKDir;
   
   // Since the "base" version of this assumes outward-pointing surface
@@ -475,7 +475,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   G4VSolid* solid = GetCurrentVolume()->GetLogicalVolume()->GetSolid();
   G4CMPSolidUtils solidUtils(solid, verboseLevel, GetProcessName());
   
-  G4ThreeVector stepLocalPos = GetLocalPosition(surfacePoint);
+  G4ThreeVector stepLocalPos = GetLocalPosition(surfPoint);
   G4ThreeVector oldNorm = newNorm;
   G4ThreeVector oldstepLocalPos = stepLocalPos;
 
@@ -612,15 +612,15 @@ GetSpecularVector(const G4ThreeVector& waveVector,
 	     << " attempts." << G4endl;
       if (verboseLevel>1) {
 	G4cout << "Doing diffuse reflection at surface point " 
-	       << surfacePoint/mm << " mm" << G4endl;
+	       << surfPoint/mm << " mm" << G4endl;
       }
     }
 
     // Get reflectedKDir from initial point and restore original values
-    stepLocalPos = surfacePoint;
+    stepLocalPos = surfPoint;
     newNorm = surfNorm;
     reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm, mode,
-                                               surfacePoint);
+                                               surfPoint);
   }
 
   if (verboseLevel>3) {
@@ -633,7 +633,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
 	   << G4endl;
   }
 
-  surfacePoint = stepLocalPos;
+  surfPoint = stepLocalPos;
   surfNorm = newNorm;
   return reflectedKDir;
 }
@@ -697,20 +697,6 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(aTrack);
   G4ThreeVector waveVector = trackInfo->k();
   G4int mode = GetPolarization(aStep.GetTrack());
-  
-  // Check whether step has proper boundary-stopped geometry
-  G4ThreeVector surfacePoint;
-  if (!CheckStepBoundary(aStep, surfacePoint)) {
-    if (verboseLevel > 5) {
-      G4cout << "DT Function Point B | checking step boundary failed in "
-	     << "DoTransmission" << G4endl;
-    }
-    if (verboseLevel>2)
-      G4cout << " Boundary point moved to " << surfacePoint << G4endl;
-
-    phParticleChange.ProposePosition(surfacePoint);	// IS THIS CORRECT?!?
-  }
-
   
   //Since the lattice hasn't changed yet, change it here. (This also happens
   //at the MFP calc point at the beginning of the next step, but it's nice to
