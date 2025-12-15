@@ -12,7 +12,7 @@
 //
 // 20170602  Provide call-by-reference versions of track identity functions
 // 20170802  Provide scale factor argument to ChooseWeight functions
-// 20170928  Replace "polarization" with "index"
+// 20170928  Replace "polarization" with "mode"
 // 20190906  M. Kelsey -- Add function to look up process for track
 // 20220816  M. Kelsey -- Move RandomIndex here for more general use
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
@@ -48,7 +48,7 @@
 #include <string>
 
 
-// Select phonon index using density of states in material
+// Select phonon mode using density of states in material
 
 G4int G4CMP::ChoosePhononPolarization(const G4LatticePhysical* lattice) {
   return ChoosePhononPolarization(lattice->GetLDOS(),
