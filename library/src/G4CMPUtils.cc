@@ -12,7 +12,7 @@
 //
 // 20170602  Provide call-by-reference versions of track identity functions
 // 20170802  Provide scale factor argument to ChooseWeight functions
-// 20170928  Replace "polarization" with "mode"
+// 20170928  Replace "polarization" with "index"
 // 20190906  M. Kelsey -- Add function to look up process for track
 // 20220816  M. Kelsey -- Move RandomIndex here for more general use
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
@@ -48,7 +48,7 @@
 #include <string>
 
 
-// Select phonon mode using density of states in material
+// Select phonon index using density of states in material
 
 G4int G4CMP::ChoosePhononPolarization(const G4LatticePhysical* lattice) {
   return ChoosePhononPolarization(lattice->GetLDOS(),
@@ -213,17 +213,18 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
 
 // Generate cos(theta) law for diffuse reflection, ensuring that computed
 // vector is directed inward with respect to the surface normal.
+// index is either the phonon mode or the electron valley, depending on the track type
 
 G4ThreeVector
 G4CMP::LambertianReflection(const G4LatticePhysical* theLattice,
-			   const G4ThreeVector& surfNorm, G4int mode) {
+			   const G4ThreeVector& surfNorm, G4int index) {
   const G4ThreeVector surfPoint = GetCurrentTrack()->GetPosition();
-  return LambertianReflection(theLattice, surfNorm, mode, surfPoint);
+  return LambertianReflection(theLattice, surfNorm, index, surfPoint);
 }
 
 G4ThreeVector
 G4CMP::LambertianReflection(const G4LatticePhysical* theLattice,
-			   const G4ThreeVector& surfNorm, G4int mode,
+			   const G4ThreeVector& surfNorm, G4int index,
 			   const G4ThreeVector& surfPoint) {
   G4ThreeVector reflectedDir;
   const G4int maxTries = 1000;
@@ -231,7 +232,7 @@ G4CMP::LambertianReflection(const G4LatticePhysical* theLattice,
   do {
     reflectedDir = GetLambertianVector(surfNorm);
   } while (nTries++ < maxTries &&
-           !VelocityIsInward(theLattice, mode, reflectedDir, surfNorm,
+           !VelocityIsInward(theLattice, index, reflectedDir, surfNorm,
                                    surfPoint));
 
   return reflectedDir;
@@ -250,17 +251,18 @@ G4ThreeVector G4CMP::GetLambertianVector(const G4ThreeVector& surfNorm) {
 
 // Check that phonon is properly directed from the volume surface
 // waveVector and surfNorm need to be in global coordinates
+// index is either the phonon mode or the electron valley, depending on the track type
 
 G4bool G4CMP::VelocityIsInward(const G4LatticePhysical* lattice,
-                                     G4int mode,
+                                     G4int index,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
   const G4ThreeVector surfacePos = GetCurrentTrack()->GetPosition();
-  return VelocityIsInward(lattice, mode, waveVector, surfNorm, surfacePos);
+  return VelocityIsInward(lattice, index, waveVector, surfNorm, surfacePos);
 }
 
 G4bool G4CMP::VelocityIsInward(const G4LatticePhysical* lattice,
-                                     G4int mode,
+                                     G4int index,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm,
                                      const G4ThreeVector& surfacePos) {
@@ -278,14 +280,18 @@ G4bool G4CMP::VelocityIsInward(const G4LatticePhysical* lattice,
 
   if(IsPhonon(track)) {
     // MapKtoVDir requires local direction for the wavevector
-    vDir = lattice->MapKtoVDir(mode, GetLocalDirection(touchable, waveVector));
+    vDir = lattice->MapKtoVDir(index, GetLocalDirection(touchable, waveVector));
   }
   else if(IsElectron(track)) {
-    // MapKToVDir is specific to phonons to vconvert wavevector to group velocity.
+    // MapKToVDir is specific to phonons to convert wavevector to group velocity.
     // The function MapVelToP converts electron velocity vector to the momentum direction.
     // (Might need to add a .unit at the end of vDir to turn it into a unit vector)
     // The only thing here that is particle type dependent is MapKToVDir and MapVelToP.
-    vDir = (lattice->MapV_elToP(mode, G4CMP::GetLocalDirection(touchable, waveVector))).unit();
+    vDir = (lattice->MapV_elToP(index, GetLocalDirection(touchable, waveVector))).unit();
+  }
+  else {
+    // For holes there is no difference between k and V
+    vDir = GetLocalDirection(touchable, waveVector).unit();
   }
 
   // Project a 1 nm step in the new direction, see if it

@@ -12,7 +12,7 @@
 //
 // 20170602  Provide call-by-reference versions of track identity functions
 // 20170802  Provide scale factor argument to ChooseWeight functions
-// 20170928  Replace "polarization" with "mode"
+// 20170928  Replace "polarization" with "index"
 // 20190906  Add function to get process associated with particle
 // 20220816  Move RandomIndex function from SecondaryProduction
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
@@ -65,7 +65,7 @@ namespace G4CMP {
   G4bool IsHole(const G4ParticleDefinition& pd);
   G4bool IsChargeCarrier(const G4ParticleDefinition& pd);
 
-  // Select phonon mode randomly from density of states
+  // Select phonon index randomly from density of states
   G4int ChoosePhononPolarization(const G4LatticePhysical* lattice);
   G4int ChoosePhononPolarization(G4double Ldos, G4double STdos, G4double FTdos);
 
@@ -88,19 +88,21 @@ namespace G4CMP {
   void FillHit(const G4Step*, G4CMPElectrodeHit*);
 
   // Phonons reflect difusively from surfaces.
+  // index is either the phonon mode or the electron valley, depending on the track type
   G4ThreeVector LambertianReflection(const G4LatticePhysical* theLattice,
-                                    const G4ThreeVector& surfNorm, G4int mode);
+                                    const G4ThreeVector& surfNorm, G4int index);
   G4ThreeVector LambertianReflection(const G4LatticePhysical* theLattice,
-                                    const G4ThreeVector& surfNorm, G4int mode,
+                                    const G4ThreeVector& surfNorm, G4int index,
                                     const G4ThreeVector& surfPoint);
   G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm);
 
   // Test that a phonon's wave vector relates to an inward velocity.
   // waveVector, surfNorm, and surfacePos need to be in global coordinates
-  G4bool VelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+  // index is either the phonon mode or the electron valley, depending on the track type
+  G4bool VelocityIsInward(const G4LatticePhysical* lattice, G4int index,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm);
-  G4bool VelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+  G4bool VelocityIsInward(const G4LatticePhysical* lattice, G4int index,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm,
                                 const G4ThreeVector& surfacePos);
