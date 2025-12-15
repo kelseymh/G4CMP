@@ -96,7 +96,7 @@ namespace G4CMP {
                                     const G4ThreeVector& surfPoint);
   G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm);
 
-  // Test that a phonon's wave vector relates to an inward velocity.
+  // Test that a particle's wave vector relates to an inward velocity.
   // waveVector, surfNorm, and surfacePos need to be in global coordinates
   // index is either the phonon mode or the electron valley, depending on the track type
   G4bool VelocityIsInward(const G4LatticePhysical* lattice, G4int index,
