@@ -34,7 +34,7 @@
 // 20250325  G4CMP-463 -- Set surface step size & limit with macro command.
 // 20250402  G4CMP-468 -- Support position change after surface displacement.
 // 20250413  M. Kelsey -- Protect debugging output with verbosity.
-// 20250422  N. Tenpas -- Add position arguments for PhononVelocityIsInward test.
+// 20250422  N. Tenpas -- Add position arguments for VelocityIsInward test.
 // 20250423  G4CMP-468 -- Add wrapper function for updating navigator.
 // 20250423  G4CMP-468 -- Move GetLambertianVector to G4CMPUtils.
 // 20250424  G4CMP-465 -- Move custom solid functions to new G4CMPSolidUtils.
@@ -42,6 +42,7 @@
 // 20250505  G4CMP-458 -- Rename GetReflectedVector to GetSpecularVector.
 // 20250505  G4CMP-471 -- Update diagnostic output for surface displacement loop.
 // 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
+// 20251210  G4CMP-518 -- Make PhononVelocityIsInward() generic.
 
 #include "G4CMPPhononBoundaryProcess.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -264,7 +265,7 @@ DoReflection(const G4Track& aTrack, const G4Step& aStep,
   }
 
   // If reflection failed, report problem and kill the track
-  if (!G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm, surfacePoint)) {
+  if (!G4CMP::VelocityIsInward(theLattice,mode,reflectedKDir,surfNorm, surfacePoint)) {
     G4String msg = G4PhononPolarization::Name(mode) + " " + refltype + " reflection failed";
 
     G4Exception((GetProcessName()+"::DoReflection").c_str(), "Boundary010",
@@ -285,7 +286,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   G4double kPerp = reflectedKDir * surfNorm;		// Dot product between k and norm
   (reflectedKDir -= 2.*kPerp*surfNorm).setMag(1.);	// Reflect against normal
 
-  if (G4CMP::PhononVelocityIsInward(theLattice,mode,reflectedKDir,surfNorm,
+  if (G4CMP::VelocityIsInward(theLattice,mode,reflectedKDir,surfNorm,
                                     surfacePoint))
     return reflectedKDir;
 
@@ -344,7 +345,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   }
 
   // Assumes everything is in Global. Just add the GetGlobal in the loop conditions.
-  while (!G4CMP::PhononVelocityIsInward(theLattice, mode,
+  while (!G4CMP::VelocityIsInward(theLattice, mode,
    GetGlobalDirection(reflectedKDir), GetGlobalDirection(newNorm),
    GetGlobalPosition(stepLocalPos)) && nAttempts++ < nStepLimit) {
     // Save previous loop values
@@ -430,7 +431,7 @@ GetSpecularVector(const G4ThreeVector& waveVector,
   RotateToGlobalDirection(newNorm);
   RotateToGlobalPosition(stepLocalPos);
 
-  if (!G4CMP::PhononVelocityIsInward(theLattice, mode, reflectedKDir, newNorm,
+  if (!G4CMP::VelocityIsInward(theLattice, mode, reflectedKDir, newNorm,
                                      stepLocalPos)) {
     if (verboseLevel) {
       G4cerr << GetProcessName() << "::GetSpecularVector"
