@@ -64,6 +64,7 @@
 // 20240417  In ComputePhononSampling(), use same energy scale as for charges.
 // 20240731  G4CMP-416 -- eIon below bandgap should be converted to phonons
 // 20250127  G4CMP-449 -- Conslidate LukeSampling() function, allow -1.
+// 20251001  G4CMP-503 -- Avoid reporting 'NaN' in phonon energy summary.
 
 #include "G4CMPEnergyPartition.hh"
 #include "G4CMPChargeCloud.hh"
@@ -557,6 +558,7 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
 
   // Only apply downsampling to sufficiently large statistics
   G4double scale = G4CMPConfigManager::GetGenPhonons();
+
   if (scale>0. && (G4int)nPhononsTrue <= nParticlesMinimum) scale = 1.;
 
   if (verboseLevel>1) {
@@ -582,7 +584,7 @@ void G4CMPEnergyPartition::GeneratePhonons(G4double energy) {
   // Store generated information in summary block
   if (summary) {
     summary->phononEnergy = energy;
-    summary->phononGenerated = ePhon*nPhononsGen/scale;
+    summary->phononGenerated = (scale>0.?ePhon*nPhononsGen/scale:0.);
     summary->truePhonons = nPhononsTrue;
     summary->numberOfPhonons = nPhononsGen;
     summary->samplingPhonons = scale;		// Store actual sampling used

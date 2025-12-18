@@ -7,6 +7,7 @@
 // 20200426  G4CMP-196: Change name to TrapIonization, specify beam and trap
 //		particle types
 // 20200604  G4CMP-208: Comment out unused function arguments
+// 20250929  G4CMP-478: Change secondary minimal energy from 1e-3 to 1e-6
 
 #include "G4CMPDriftTrapIonization.hh"
 #include "G4CMPConfigManager.hh"
@@ -96,7 +97,7 @@ G4CMPDriftTrapIonization::PostStepDoIt(const G4Track& aTrack,
 
   // Create secondary with minimal energy, assuming no momentum transfer
   G4Track* knockon = G4CMP::CreateSecondary(aTrack, trapType,
-					    G4RandomDirection(), 1e-3*eV);
+					    G4RandomDirection(), 1e-6*eV);
   aParticleChange.AddSecondary(knockon);
 
   ClearNumberOfInteractionLengthLeft();		// All processes should do this!

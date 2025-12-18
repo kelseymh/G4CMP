@@ -19,7 +19,8 @@
 // 20170713  Add registry to keep track of missing-surface warnings
 // 20171215  Change 'CheckStepStatus()' to 'IsBoundaryStep()', add function
 //	     to validate step trajectory to boundary.
-
+// 20250927  Add overloadable function to kill track when max-reflections.
+// 20251028  G4CMP-527: Move CheckStepBoundary() here from DriftBoundaryProcess
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
 
@@ -73,6 +74,11 @@ public:
 			    G4ParticleChange& aParticleChange);
 
   virtual G4bool MaximumReflections(const G4Track& aTrack) const;
+  virtual void DoFinalReflection(const G4Track& aTrack, const G4Step& aStep,
+				 G4ParticleChange& aParticleChange);
+  // DriftBoundaryProcess should override above to handle recombination
+
+  // Minimal action to simply remove track; no energy transfer, no secondaries.
   virtual void DoSimpleKill(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
@@ -107,6 +113,8 @@ protected:
   // Flag whether a given PV pair has a defined surface property or not
   typedef std::pair<G4VPhysicalVolume*,G4VPhysicalVolume*> BoundaryPV;
   std::map<BoundaryPV, G4bool> hasSurface;
+
+  G4ThreeVector surfacePoint;		// "Adjusted" impact point at surface
 };
 
 #endif	/* G4CMPBoundaryUtils_hh */

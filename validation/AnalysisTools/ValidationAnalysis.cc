@@ -610,7 +610,7 @@ void ValidationAnalysis_SCPairbreaking() {
     } else if (iBX == 20) {      
       expFit->SetParameter(0,200); //Hardcoded start point (based on # entries)
       expFit->SetParameter(1,0.15); //Hardcoded start point for high-energy
-    } else{
+    } else {
       expFit->SetParameter(0,2000); //Hardcoded start point (based on # entries)
       expFit->SetParameter(1,0.11); //Hardcoded start point for high-energy
     }
