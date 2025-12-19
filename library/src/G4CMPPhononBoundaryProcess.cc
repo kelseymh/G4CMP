@@ -659,22 +659,22 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
   if (verboseLevel > 5) {
     G4cout << "-- G4CMPPhononBoundaryProcess::DoTransmission --" << G4endl;
     G4cout << "DT Function Point A | aTrack getposition: "
-	   << aTrack.GetPosition() << G4endl;
+           << aTrack.GetPosition() << G4endl;
     G4cout << "DT Function Point A | aStep poststepposition: "
-	   << aStep.GetPostStepPoint()->GetPosition() << G4endl;
+           << aStep.GetPostStepPoint()->GetPosition() << G4endl;
     G4cout << "DT Function Point A | aStep pre-step touchable: "
-	   << aStep.GetPreStepPoint()->GetTouchable()->GetVolume()->GetName()
-	   << G4endl;
+           << aStep.GetPreStepPoint()->GetTouchable()->GetVolume()->GetName()
+           << G4endl;
     G4cout << "DT Function Point A | aStep post-step touchable: "
-	   << aStep.GetPostStepPoint()->GetTouchable()->GetVolume()->GetName()
-	   << G4endl;
+           << aStep.GetPostStepPoint()->GetTouchable()->GetVolume()->GetName()
+           << G4endl;
     G4cout << "DT Function Point A | current touchable: "
-	   << GetCurrentTouchable()->GetVolume()->GetName() << G4endl;
+           << GetCurrentTouchable()->GetVolume()->GetName() << G4endl;
     G4cout << "DT Function Point A | Lattice manager current lattice: "
-	   << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPreStepPoint()->GetPhysicalVolume())
-	   << ", lattice manager post step point lattice: "
-	   << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume())
-	   << G4endl;
+           << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPreStepPoint()->GetPhysicalVolume())
+           << ", lattice manager post step point lattice: "
+           << G4LatticeManager::GetLatticeManager()->GetLattice(aStep.GetPostStepPoint()->GetPhysicalVolume())
+           << G4endl;
   }
   
   //First, check the different materials involved. If one of them does not have
@@ -687,9 +687,9 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
   if (!latNear || !latFar) {
     G4ExceptionDescription msg;
     msg << "Expecting to do phonon transmission at interface but one or more "
-	<< "lattices splitting the boundary cannot be found.";
+        << "lattices splitting the boundary cannot be found.";
     G4Exception("G4CMPPhononBoundaryProcess::DoTransmission",
-		"PhononBoundary001",FatalException,msg);
+                "PhononBoundary001",FatalException,msg);
   }
 
   //SIMPLEST POSSIBLE IMPLEMENTATION -- PHYSICS IS NOT NECESSARILY RIGHT
@@ -710,7 +710,7 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
   //Debugging
   if (verboseLevel > 5) {    
     G4cout << "DT Function Point C | the lattice at the end of doTransmission: "
-	   << theLattice << G4endl;
+           << theLattice << G4endl;
   }
 
 
@@ -743,8 +743,8 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
   //If the direction is not "outward" with respect to the direction from which
   //the phonon came, then we have an issue.
   if (!G4CMP::PhononVelocityIsOutward(theLattice,mode,waveVector,
-				     generalizedSurfNorm,nextVolTouchable,
-				     surfacePoint)) {
+                                      generalizedSurfNorm,nextVolTouchable,
+                                      surfacePoint)) {
 
     //For now, let's do something unphysical and kludgey: pick new k-vectors
     //within a small angle of the original one to be transmitted, recompute the
@@ -758,80 +758,80 @@ DoTransmission(const G4Track& aTrack,const G4Step& aStep,
       //Make the length approximately 40% of the wavevector.
       //This seems egregious...
       G4ThreeVector adjustmentVector =
-	G4RandomDirection() * waveVector.mag() * 0.4; 
+        G4RandomDirection() * waveVector.mag() * 0.4; 
 
       //Do some math to at least keep the length of the vector the same
       G4double oldWaveVectorMag = waveVector.mag();
       G4double newAttemptWaveVectorMag = (waveVector+adjustmentVector).mag();     
       newAttemptWaveVector = (waveVector + adjustmentVector) *
-	oldWaveVectorMag / newAttemptWaveVectorMag;
+        oldWaveVectorMag / newAttemptWaveVectorMag;
 
       //If the phonon is now pointing outward, then we can store particle
       //change info and overwrite vDir and v
       if (G4CMP::PhononVelocityIsOutward(theLattice,mode,newAttemptWaveVector,
-					 generalizedSurfNorm,nextVolTouchable,
-					 surfacePoint)) {
+                                         generalizedSurfNorm,nextVolTouchable,
+                                         surfacePoint)) {
 
-	//Sanity check
-	if (verboseLevel > 5) {    
-	  G4cout << "DT Function Point D | in success trigger of "
-		 << "phononVelIsOutward loop, newAttemptWaveVector: "
-		 << newAttemptWaveVector << G4endl;
-	}
+        //Sanity check
+        if (verboseLevel > 5) {    
+          G4cout << "DT Function Point D | in success trigger of "
+                 << "phononVelIsOutward loop, newAttemptWaveVector: "
+                 << newAttemptWaveVector << G4endl;
+        }
 	
-	//Put the newAttemptWaveVector into a local direction within the new
-	//touchable's geometry, then do mappings
-	G4CMP::RotateToLocalDirection(nextVolTouchable,newAttemptWaveVector); 	
-	vdir = theLattice->MapKtoVDir(mode, newAttemptWaveVector);
-	v = theLattice->MapKtoV(mode, newAttemptWaveVector);
+        //Put the newAttemptWaveVector into a local direction within the new
+        //touchable's geometry, then do mappings
+        G4CMP::RotateToLocalDirection(nextVolTouchable,newAttemptWaveVector); 	
+        vdir = theLattice->MapKtoVDir(mode, newAttemptWaveVector);
+        v = theLattice->MapKtoV(mode, newAttemptWaveVector);
 
-	if (verboseLevel > 5) {    
-	  G4cout << "DT Function Point E | in success trigger of "
-		 << "phononVelIsOutward loop, newAttemptWaveVector rotated "
-		 << "into local: " << newAttemptWaveVector << G4endl;
-	}
+        if (verboseLevel > 5) {    
+          G4cout << "DT Function Point E | in success trigger of "
+                 << "phononVelIsOutward loop, newAttemptWaveVector rotated "
+                 << "into local: " << newAttemptWaveVector << G4endl;
+        }
 
-	//Put the newAttemptWaveVector and the vdir back into a global direction
-	G4CMP::RotateToGlobalDirection(nextVolTouchable,newAttemptWaveVector);
-	G4CMP::RotateToGlobalDirection(nextVolTouchable,vdir);
+        //Put the newAttemptWaveVector and the vdir back into a global direction
+        G4CMP::RotateToGlobalDirection(nextVolTouchable,newAttemptWaveVector);
+        G4CMP::RotateToGlobalDirection(nextVolTouchable,vdir);
 
-	if (verboseLevel > 5) {    
-	  G4cout << "DT Function Point F | in success trigger of "
-		 << "phononVelIsOutward loop, newAttemptWaveVector rotated "
-		 << "back into global: " << newAttemptWaveVector << G4endl;
-	}
+        if (verboseLevel > 5) {    
+          G4cout << "DT Function Point F | in success trigger of "
+                 << "phononVelIsOutward loop, newAttemptWaveVector rotated "
+                 << "back into global: " << newAttemptWaveVector << G4endl;
+        }
 	
-	//Now fill out quantities
-	//Inbound and outbound wavevectors are the same (waveVector) by
-	//aphysical fiat at the moment.
-	trackInfo->SetWaveVector(newAttemptWaveVector); 
-	phParticleChange.ProposeVelocity(v);
-	phParticleChange.ProposeMomentumDirection(vdir);
-	successfulTransmission = true;
-	break;
+        //Now fill out quantities
+        //Inbound and outbound wavevectors are the same (waveVector) by
+        //aphysical fiat at the moment.
+        trackInfo->SetWaveVector(newAttemptWaveVector); 
+        phParticleChange.ProposeVelocity(v);
+        phParticleChange.ProposeMomentumDirection(vdir);
+        successfulTransmission = true;
+        break;
       }
     }
 
     if (verboseLevel > 5) {
       G4cout << "DT Function Point G | Momentum direction proposed at end of "
-	     << "doTransmission: " << vdir << G4endl;
+             << "doTransmission: " << vdir << G4endl;
     }
     
     //If after our loop we still run into issues, we have to break and kill
     //the track
     if (!successfulTransmission) {
       G4String msg = G4PhononPolarization::Name(mode) +
-	" transmission failed even after repeated tries to nudge direction.";
-
+        " transmission failed even after repeated tries to nudge direction.";
+      
       if (verboseLevel > 5) {
-	G4cout << "DT Function Point H | Phonon incident waveVector: "
-	       << waveVector.unit() << ", generalized surfNorm: "
-	       << generalizedSurfNorm << ", attempted transmitted k-vector "
-	       << waveVector.unit() << ", and attempted transmitted vDir: "
-	       << vdir << G4endl;
+        G4cout << "DT Function Point H | Phonon incident waveVector: "
+               << waveVector.unit() << ", generalized surfNorm: "
+               << generalizedSurfNorm << ", attempted transmitted k-vector "
+               << waveVector.unit() << ", and attempted transmitted vDir: "
+               << vdir << G4endl;
       }
       G4Exception((GetProcessName()+"::DoTransmission").c_str(), "Boundary011",
-		  JustWarning, msg.c_str());
+                  JustWarning, msg.c_str());
       DoSimpleKill(aTrack, aStep, phParticleChange);
     }
     return;

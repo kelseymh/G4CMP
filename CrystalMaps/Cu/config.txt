@@ -1,5 +1,6 @@
 # Crystal parameters
-amorphous 
+amorphous
+stiffness 1 1 168.3 GPa	# C11
 # Phonon parameters
 # S. Tamura, Phys. Rev. B 31, 2574 (1985)
 dyn 54.18 -13.14 16.10 31.20 GPa # Dummy values (~SiO2), need real ones.
@@ -11,3 +12,5 @@ LDOS 0.10001 # Dummy value (~SiO2), need real one.
 STDOS 0.53333 # Dummy value (~SiO2), need real one.
 FTDOS 0.36666 # Dummy value (~SiO2), need real one.
 Debye 4.2 THz # Dummy value (~SiO2), need real one.
+vsound 4760 m/s
+vtrans 2325 m/s

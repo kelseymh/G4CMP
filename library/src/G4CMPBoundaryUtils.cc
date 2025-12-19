@@ -404,10 +404,7 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
   // Get pre- and post-step positions in pre-step volume coordinates
   G4VSolid* preSolid = prePV->GetLogicalVolume()->GetSolid();
   G4ThreeVector prePos = preP->GetPosition();
-  G4CMP::RotateToLocalPosition(preP->GetTouchable(), prePos);
-
   G4ThreeVector postPos = surfPoint;
-  G4CMP::RotateToLocalPosition(preP->GetTouchable(), postPos);
 
   //Debugging
   if (buVerboseLevel > 5) {
