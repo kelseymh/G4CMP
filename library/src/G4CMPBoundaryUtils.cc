@@ -31,6 +31,10 @@
 //	       overloadable function to kill track when max-reflections.
 // 20251028  G4CMP-527:  Use CheckStepBoundary() in ApplyBoundaryAction(),
 //	       add warning (G4cerr) message for points that need adjustment.
+// 20251220  G4CMP-219:  IncrementReflectionCount() added to if-ReflectTrack
+//	       block, should be removed from MaximumReflections().  This will
+//	       change random number sequence (due to additional step(s) after
+//	       final reflection).
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -832,8 +836,6 @@ G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track& /*aTrack*/, const G4Step&
 
 G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) const {
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPVTrackInfo>(aTrack);
-  trackInfo->IncrementReflectionCount();
-
   if (buVerboseLevel>2) {
     G4cout << " MaximumReflections: max " << maximumReflections
 	   << " vs. " << trackInfo->ReflectionCount() << G4endl;
