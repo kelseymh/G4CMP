@@ -11,6 +11,7 @@
 // 20190806  M. Kelsey -- Add local data for frequency-dependent scattering
 //		probabilities, and computation functions.
 // 20200601  G4CMP-206: Need thread-local copies of electrode pointers
+// 20260105  G4CMP-514: Modify G4CMPSurfaceProperty for specular reflection.
 
 #ifndef G4CMPSurfaceProperty_h
 #define G4CMPSurfaceProperty_h 1
@@ -32,10 +33,23 @@ public:
   G4CMPSurfaceProperty(const G4String& name,
                        G4SurfaceType stype = dielectric_dielectric);
 
-  //Full constructor
+  // Full constructor
   G4CMPSurfaceProperty(const G4String& name,
                        G4double qAbsProb, // Prob. to absorb charge carrier
                        G4double qReflProb, // If not absorbed, prob to reflect
+                       G4double eMinK, //Min wave number to absorb electron
+                       G4double hMinK, //Min wave number to absorb hole
+                       G4double pAbsProb, // Prob. to absorb phonon
+                       G4double pReflProb, // If not absorbed, prob to reflect
+                       G4double pSpecProb, //Prob. of specular reflection
+                       G4double pMinK, //Min wave number to absorb phonon
+                       G4SurfaceType stype = dielectric_dielectric);
+
+  // Second constructor with an extra parameter called qSpecProb
+  G4CMPSurfaceProperty(const G4String& name,
+                       G4double qAbsProb, // Prob. to absorb charge carrier
+                       G4double qReflProb, // If not absorbed, prob to reflect
+                       G4double qSpecProb, // 
                        G4double eMinK, //Min wave number to absorb electron
                        G4double hMinK, //Min wave number to absorb hole
                        G4double pAbsProb, // Prob. to absorb phonon
@@ -78,7 +92,8 @@ public:
   void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable& mpt);
 
   void FillChargeMaterialPropertiesTable(G4double qAbsProb, G4double qReflProb,
-                                         G4double eMinK,    G4double hMinK);
+                                         G4double qSpecProb, G4double eMinK,
+                                         G4double hMinK);
 
   void FillPhononMaterialPropertiesTable(G4double pAbsProb,  G4double pReflProb,
                                          G4double pSpecProb, G4double pMinK);

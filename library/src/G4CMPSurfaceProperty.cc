@@ -13,6 +13,7 @@
 // 20200601  G4CMP-206: Need thread-local copies of electrode pointers
 // 20220824  R. Cormier -- Default to scalar probs if no polynomials
 // 20230429  G4CMP-357: Move mutex in GetXyzElectrode() to avoid data race.
+// 20260105  G4CMP-514: Modify G4CMPSurfaceProperty for specular reflection.
 
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPVElectrodePattern.hh"
@@ -39,6 +40,23 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
 G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4double qAbsProb,
                                            G4double qReflProb,
+                                           G4double eMinK,
+                                           G4double hMinK,
+                                           G4double pAbsProb,
+                                           G4double pReflProb,
+                                           G4double pSpecProb,
+                                           G4double pMinK,
+                                           G4SurfaceType stype)
+: G4CMPSurfaceProperty(name, stype) {
+  qReflProb = 0.0;
+  FillChargeMaterialPropertiesTable(qAbsProb, qReflProb, eMinK, hMinK);
+  FillPhononMaterialPropertiesTable(pAbsProb, pReflProb, pSpecProb, pMinK);
+}
+
+G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
+                                           G4double qAbsProb,
+                                           G4double qReflProb,
+                                           G4double qSpecProb,
                                            G4double eMinK,
                                            G4double hMinK,
                                            G4double pAbsProb,
@@ -136,10 +154,12 @@ void G4CMPSurfaceProperty::SetPhononMaterialPropertiesTable(
 
 void G4CMPSurfaceProperty::FillChargeMaterialPropertiesTable(G4double qAbsProb,
                                                              G4double qReflProb,
+                                                             G4double qSpecProb,
                                                              G4double eMinK,
                                                              G4double hMinK) {
   theChargeMatPropTable.AddConstProperty("absProb", qAbsProb);
   theChargeMatPropTable.AddConstProperty("reflProb", qReflProb);
+  theChargeMatPropTable.AddConstProperty("specProb", qSpecProb);
   theChargeMatPropTable.AddConstProperty("minKElec", eMinK);
   theChargeMatPropTable.AddConstProperty("minKHole", hMinK);
 }
