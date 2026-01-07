@@ -5,6 +5,8 @@
 
 /// \file library/include/G4CMPParticleChangeForQPDiffusion.hh
 /// \brief Definition of the G4CMPParticleChangeForQPDiffusion class
+//
+//  20260107  G4CMP-563: Delete copy operations for G4 v11 compatibility.
 
 #ifndef G4CMPParticleChangeForQPDiffusion_h
 #define G4CMPParticleChangeForQPDiffusion_h 1
@@ -29,8 +31,8 @@ public:
   
 protected:
   // hide copy constructor and assignment operaor as protected
-  G4CMPParticleChangeForQPDiffusion(const G4CMPParticleChangeForQPDiffusion &right);
-  G4CMPParticleChangeForQPDiffusion & operator=(const G4CMPParticleChangeForQPDiffusion &right);
+  G4CMPParticleChangeForQPDiffusion(const G4CMPParticleChangeForQPDiffusion &) = delete;
+  G4CMPParticleChangeForQPDiffusion& operator=(const G4CMPParticleChangeForQPDiffusion &) = delete;
 
 
 public: // with description

@@ -6,6 +6,8 @@
 /// \file library/src/G4CMPParticleChangeForQPDiffusion.cc
 /// \brief Implementation of the G4CMPParticleChangeForQPDiffusion
 /// class
+//
+//  20260107  G4CMP-563: Delete copy operations for G4 v11 compatibility.
 
 #include "G4CMPParticleChangeForQPDiffusion.hh"
 #include "G4SystemOfUnits.hh"
@@ -33,41 +35,6 @@ G4CMPParticleChangeForQPDiffusion::
            << "~G4CMPParticleChangeForQPDiffusion() " << G4endl;
   }
 #endif
-}
-
-G4CMPParticleChangeForQPDiffusion::
-G4CMPParticleChangeForQPDiffusion(const G4CMPParticleChangeForQPDiffusion &right)
-  : G4VParticleChange(right) {
-  if (verboseLevel>1) {
-    G4cout << "G4CMPParticleChangeForQPDiffusion::  "
-           << "copy constructor is called " << G4endl;
-  }
-  theMomentumDirection = right.theMomentumDirection;
-  thePosition = right.thePosition;
-  theVelocity = right.theVelocity;
-}
-
-// assignment operator
-G4CMPParticleChangeForQPDiffusion &
-G4CMPParticleChangeForQPDiffusion::operator=(const G4CMPParticleChangeForQPDiffusion &right) {
-
-  if (verboseLevel>1) {
-    G4cout << "G4CMPParticleChangeForQPDiffusion:: assignment "
-           << "operator is called " << G4endl;
-  }
-  if (this != &right) {
-    theListOfSecondaries = right.theListOfSecondaries;
-    theSizeOftheListOfSecondaries = right.theSizeOftheListOfSecondaries;
-    theNumberOfSecondaries = right.theNumberOfSecondaries;
-    theStatusChange = right.theStatusChange;
-    theLocalEnergyDeposit = right.theLocalEnergyDeposit;
-    theSteppingControlFlag = right.theSteppingControlFlag;
-    theTrueStepLength = right.theTrueStepLength;
-    theMomentumDirection = right.theMomentumDirection;
-    thePosition = right.thePosition;
-    theTimeChange = right.theTimeChange;
-  }
-  return *this;
 }
 
 
