@@ -1,0 +1,19 @@
+# Crystal parameters
+cubic 3.30 Ang		# (Lattice constant)
+stiffness 1 1 246.5 GPa	# C11, C12, C44
+stiffness 1 2  134.8 GPa
+stiffness 4 4  28.7 GPa
+# Phonon parameters
+dyn -379.0 78.4 145.0 39.7 GPa
+scat 0.0e-42 s3
+decay 5.77e-54 s4
+decayTT 0.9
+# From S. Tamura et al., PRB44(7), 1991
+LDOS  0.055 # Approximate, but needs to be updated
+STDOS 0.6204
+FTDOS 0.33
+Debye 15 THz		# Can also use temperature or energy
+vsound 4920 m/s		# Longitudinal sound speed
+vtrans 2100 m/s		# Transverse sound speed
+sc_tau0_qp 0.149 ns     # Characteristic lifetime for QPs (from Kaplan)
+sc_tau0_ph 0.00417 ns   # Characteristic lifetime for phonons (from Kaplan)

@@ -1,0 +1,75 @@
+#-------------------------------------
+# Now initialize the run
+/run/initialize
+
+/vis/open OGL
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointThetaPhi 90 180
+/vis/viewer/zoom 1.4
+/vis/drawVolume
+
+/process/inactivate phononScattering
+/process/inactivate phononDownconversion
+/process/inactivate phononPolycrystalElasticScattering
+#/process/inactivate qpRecombination
+/process/inactivate qpRadiatesPhonon
+/process/inactivate scPairBreaking
+#/process/inactivate qpDiffusion
+/process/inactivate qpLocalTrapping
+/process/inactivate qpDiffusionTimeStepper
+
+
+
+/run/printProgress 1
+
+# for drawing the tracks
+# (if too many tracks cause core dump => storeTrajectory 0)
+/tracking/verbose 0
+/tracking/storeTrajectory 1
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories
+
+/g4cmp/phononBounces 0
+/g4cmp/qpBounces 100000
+/g4cmp/verbose 0
+/g4cmp/safetyNSweep2D 220
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Green 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Green
+/vis/modeling/trajectories/drawByParticleID-0/set QP White
+
+# Generate 1 QP per event. Place in the aluminum block
+/gps/number 1
+/gps/particle QP
+/gps/pos/type Volume
+/gps/pos/shape Para
+/gps/pos/centre 0.0 0.0 16.7 mm
+#/gps/pos/centre -25 0.0 16.7 mm
+#/gps/pos/centre 30.1 0 16.7 mm
+#/gps/pos/centre 15.0 0.0 16.7 mm
+
+
+#These XY values must be just under half of the values used for the chip dimensions above Defaults
+/gps/pos/halfx 0.0001 mm
+/gps/pos/halfy 0.0001 mm
+/gps/pos/halfz 0.0001 mm
+
+
+#Monoenergetic
+/gps/ene/type Mono
+/gps/energy 0.000185 eV
+
+
+#High-stats, varied energies
+/gps/ang/type iso
+/gps/ang/mintheta 89.99999999 deg
+/gps/ang/maxtheta 90.00000001 deg
+#/gps/ene/type Lin
+#/gps/ene/min 0.000185 eV
+#/gps/ene/max 0.0006 eV
+#/gps/ene/gradient 1
+#/gps/ene/intercept 1
+
+/run/beamOn 100000

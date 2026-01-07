@@ -58,6 +58,8 @@
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)'
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
 // 20240510  E. Michhaud -- Add function to compute L0 from other parameters
+// 20250904  R. Linehan -- Linking Tcrit to Delta0 for superconductors
+// 20250905  G4CMP-500 -- Removing non-fundamental superconductor parameters
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -77,8 +79,9 @@ G4LatticeLogical::G4LatticeLogical(const G4String& name)
   : verboseLevel(0), fName(name), fDensity(0.), fNImpurity(0.),
     fPermittivity(1.), fElasticity{}, fElReduced{}, fHasElasticity(false),
     fpPhononKin(0), fpPhononTable(0),
-    fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0),
+    fA(0), fB(0), fLDOS(0), fSTDOS(0), fFTDOS(0), fTTFrac(0), 
     fBeta(0), fGamma(0), fLambda(0), fMu(0),
+    fSC_Tau0_qp(DBL_MAX), fSC_Tau0_ph(DBL_MAX),
     fVSound(0.), fVTrans(0.), fL0_e(0.), fL0_h(0.), 
     mElectron(electron_mass_c2/c_squared),
     fHoleMass(mElectron), fElectronMass(mElectron), fElectronMDOS(mElectron),
@@ -133,6 +136,8 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fLambda = rhs.fLambda;
   fMu = rhs.fMu;
   fDebye = rhs.fDebye;
+  fSC_Tau0_qp = rhs.fSC_Tau0_qp;
+  fSC_Tau0_ph = rhs.fSC_Tau0_ph;
   fVSound = rhs.fVSound;
   fVTrans = rhs.fVTrans;
   fL0_e = rhs.fL0_e;
@@ -162,7 +167,7 @@ G4LatticeLogical& G4LatticeLogical::operator=(const G4LatticeLogical& rhs) {
   fIVLinRate0 = rhs.fIVLinRate0;
   fIVLinRate1 = rhs.fIVLinRate1;
   fIVModel = rhs.fIVModel;
-
+  
   if (!rhs.fpPhononKin)   fpPhononKin = new G4CMPPhononKinematics(this);
   if (!rhs.fpPhononTable) fpPhononTable = new G4CMPPhononKinTable(fpPhononKin);
 
@@ -245,6 +250,9 @@ void G4LatticeLogical::Initialize(const G4String& newName) {
 
   // Populate phonon lookup tables if not read from files
   FillMaps();
+
+  //Check for completeness of superconducting parameters
+  CheckLatticeForSCCompleteness();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -954,6 +962,12 @@ void G4LatticeLogical::Dump(std::ostream& os) const {
      << "\nDebye " << fDebye/eV << " eV"
      << std::endl;
 
+  os << "# Quasiparticle and superconductor parameters"
+     << "\nsc_tau0_qp " << fSC_Tau0_qp/ns << " ns"
+     << "\nsc_tau0_ph " << fSC_Tau0_ph/ns << " ns"
+     << std::endl;
+
+
   os << "# Charge carrier propagation parameters"
      << "\nbandgap " << fBandGap/eV << " eV"
      << "\npairEnergy " << fPairEnergy/eV << " eV"
@@ -1099,4 +1113,35 @@ void G4LatticeLogical::DumpList(std::ostream& os,
   }
 
   os << unit;
+}
+
+
+//This checks the results of the created lattice to understand if all relevant
+//parameters have been added. We can put whatever we want here, but for now I
+//want to say that if any of the superconductor lattice parameters have been
+//added, we want to make sure that all of them have, and alert users that if
+//that isn't true, then they should make it true. This forced execution stop
+//occurs here for the "fundamental" parameters and in SCUtils for the "physical-
+//lattice-dependent" ones
+void G4LatticeLogical::CheckLatticeForSCCompleteness() {
+  //Check to see if any of the SC parameters are not at their default values,
+  //i.e. if they have been set.
+  if (fSC_Tau0_qp != DBL_MAX ||
+      fSC_Tau0_ph != DBL_MAX) {
+    
+    //If one of these is set, check to see if any of them are NOT set.
+    if (fSC_Tau0_qp == DBL_MAX ||
+	fSC_Tau0_ph == DBL_MAX) {
+      
+      //Throw a warning that there are outstanding SC parameters that are not
+      //set.
+      G4ExceptionDescription msg;
+      msg << "Noticed that one or more superconducting film lattice parameters "
+	  << "are set in a config file, but that one or more are also missing. "
+	  << "Please fill in Tau0_qp and Tau0_ph for all superconductors you "
+	  << "want to use before continuing.";
+      G4Exception("G4LatticeLogical::CheckLatticeForSCCompleteness", "Lattice007",
+		  FatalException, msg);
+    }
+  }  
 }

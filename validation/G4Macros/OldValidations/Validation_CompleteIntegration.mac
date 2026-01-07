@@ -1,0 +1,86 @@
+#-------------------------------------
+# Now initialize the run
+/run/initialize
+
+/vis/open OGL
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointThetaPhi 0 180
+/vis/viewer/zoom 60
+/vis/drawVolume
+
+#/process/inactivate phononScattering
+#/process/inactivate phononDownconversion
+#/process/inactivate phononPolycrystalElasticScattering
+#/process/inactivate qpRecombination
+#/process/inactivate qpRadiatesPhonon
+#/process/inactivate scPairBreaking
+#/process/inactivate qpDiffusion
+#/process/inactivate qpLocalTrapping
+/process/inactivate qpDiffusionTimeStepper
+
+
+/run/printProgress 1
+
+# for drawing the tracks
+# (if too many tracks cause core dump => storeTrajectory 0)
+/tracking/verbose 0
+/tracking/storeTrajectory 1
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories
+
+/g4cmp/phononBounces 100
+/g4cmp/qpBounces 5000
+/g4cmp/verbose 0
+/g4cmp/safetyNSweep2D 220
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Green 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Green
+/vis/modeling/trajectories/drawByParticleID-0/set QP White
+
+/vis/filtering/trajectories/create/particleFilter
+/vis/filtering/trajectories/particleFilter-0/add QP
+#/vis/filtering/trajectories/particleFilter-0/add phononTS
+#/vis/filtering/trajectories/particleFilter-0/add phononTF
+#/vis/filtering/trajectories/particleFilter-0/add phononL
+
+
+
+# Generate 1 QP per event. Place in the aluminum block
+/gps/number 1
+/gps/particle phononL
+/gps/pos/type Volume
+/gps/pos/shape Para
+#/gps/pos/centre 37.0 0 12.6 mm
+#/gps/pos/centre 1.0 3.0 4.8095 mm #For complex geometry
+#/gps/pos/centre 1.0 1.5 4.8095 mm #For complex geometry -- this has quick issue with corners -- yay! -- issue with corners is at "flat" boundary at evt 44
+#/gps/pos/centre 1.0 1.55 4.8095 mm #For complex geometry -- this has quick issue with all tries exhausted -- yay!
+#/gps/pos/centre 1.0 1.45 4.8095 mm #For complex geometry -- this has issue with corners at evt 102 -- issue with corners is at "flat" boundary at evt 102
+#/gps/pos/centre 1.0 1.35 4.8095 mm #For complex geometry -- this has issue with corners at evt 630 -- issue with corners is at "flat" boundary at evt 630
+#/gps/pos/centre 1.0 1.3 4.8095 mm #For complex geometry -- this has phonon surface normal issue at event 6
+#/gps/pos/centre 1.0 1.25 4.8095 mm #For complex geometry -- this has issue with corners at evt 630 -- issue with corners is at "flat" boundary at evt 6
+#/gps/pos/centre -2.0 2.0 4.8095 mm #For complex geometry -- this has issue with corners at evt 630 -- issue with corners is at "flat" boundary at evt 29
+/gps/pos/centre -1.0 -1.0 4.8095 mm #For complex geometry -- this has issue with corners at evt 630 -- issue with corners is at "flat" boundary at evt 29
+
+
+#/gps/pos/centre 1.7633 -1.576 4.8095 mm # Under the shunt conductor coupler
+#/gps/pos/centre 1.845 -1.845 4.8095 mm #Under cross
+#/gps/pos/centre -3.6 0 4.8095 mm # Under pad
+
+
+#These XY values must be just under half of the values used for the chip dimensions above Defaults
+/gps/pos/halfx 0.0001 mm
+/gps/pos/halfy 0.0001 mm
+/gps/pos/halfz 0.0001 mm
+
+#Monoenergetic stuff for visualization
+#/gps/ang/type iso
+/gps/direction 0.0 0.0 1.0
+/gps/ene/type Mono
+/gps/energy 0.004 eV
+/run/beamOn 1
+#/g4cmp/verbose 6
+#/run/beamOn 1
+#/g4cmp/verbose 0
+#/run/beamOn 5

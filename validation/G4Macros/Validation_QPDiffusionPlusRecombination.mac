@@ -1,0 +1,90 @@
+#-------------------------------------
+# Validation_QPDiffusionPlusRecombination.mac
+# linehan3@fnal.gov
+# 07/31/2025
+#
+# Validation of QPs' diffusion with recombination also active
+
+#-------------------------------------
+# Geometry Customs Go First
+# Set geometry ID
+/g4cmp/GeometryID 1
+/g4cmp/StepFile Validation_QPDiffusionPlusRecombination.txt
+
+#-------------------------------------
+# Initialize the run
+/run/initialize
+
+#-------------------------------------
+# Set up the viewer
+/vis/open OGL
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointThetaPhi 90 180
+/vis/viewer/zoom 1.4
+/vis/drawVolume
+
+#-------------------------------------
+# Turn off all new processes
+/process/inactivate phononScattering
+/process/inactivate phononDownconversion
+/process/inactivate phononPolycrystalElasticScattering
+#/process/inactivate qpRecombination
+/process/inactivate qpRadiatesPhonon
+/process/inactivate scPairBreaking
+#/process/inactivate qpDiffusion #If QPs can exist, diffusion needs to be active
+/process/inactivate qpLocalTrapping
+/process/inactivate qpDiffusionTimeStepper
+
+#-------------------------------------
+# For printing progress and tracks
+/run/printProgress 1
+/tracking/verbose 0
+/tracking/storeTrajectory 1
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Green 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Green
+/vis/modeling/trajectories/drawByParticleID-0/set BogoliubovQP White
+
+/vis/filtering/trajectories/create/particleFilter
+/vis/filtering/trajectories/particleFilter-0/add BogoliubovQP
+/vis/filtering/trajectories/particleFilter-0/add phononTS
+/vis/filtering/trajectories/particleFilter-0/add phononTF
+/vis/filtering/trajectories/particleFilter-0/add phononL
+
+
+#-------------------------------------
+# Set number of phonon bounces
+/g4cmp/phononBounces 0
+/g4cmp/qpBounces 10000
+
+#-------------------------------------
+# Generate 1 phonon per event, in a tiny parallelepiped volume
+/gps/number 1
+/gps/particle BogoliubovQP
+/gps/pos/type Volume
+/gps/pos/shape Para
+/gps/pos/halfx 0.0001 mm
+/gps/pos/halfy 0.0001 mm
+/gps/pos/halfz 0.0001 mm
+
+#-------------------------------------
+# Set the position.
+#/gps/pos/centre 0.0 0.0 0.0 mm # Bottom of Si
+#/gps/pos/centre 0.0 0.0 -1.0 mm # Center of Ge
+#/gps/pos/centre 0.0 0.0 -1.500050 mm # Center of Al1
+/gps/pos/centre 0.0 0.0 -2.0 mm # Near-Center of Al2
+#/gps/pos/centre 0.0 0.0 -3.0 mm # Near-Center of Nb for Al3
+
+#-------------------------------------
+# Set the angular distribution. 
+# For QPs, needs to always effectively be in-plane
+/gps/ang/type iso
+/gps/ang/mintheta 89.99999999 deg
+/gps/ang/maxtheta 90.00000001 deg
+/gps/ene/type Mono
+/gps/energy 0.000185 eV
+/run/beamOn 100000

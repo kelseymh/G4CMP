@@ -33,7 +33,8 @@ public:
   virtual ~G4CMPTimeStepper();
 
   // Initialize local pointers to Luke and IV scattering rate models
-  virtual void LoadDataForTrack(const G4Track* aTrack);
+  virtual void LoadDataForTrack(const G4Track* aTrack,
+				const G4bool overrideMomentumReset=false);
 
   // No random throw here: MFP and GPIL are fixed lengths
   virtual G4double 

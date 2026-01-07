@@ -38,6 +38,8 @@ G4CMPAnharmonicDecay::G4CMPAnharmonicDecay(const G4VProcess* theProcess)
 
 void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step&,
 				   G4ParticleChange& aParticleChange) {
+
+  
 #ifdef G4CMP_DEBUG
   if (verboseLevel && !output.is_open()) {
     output.open(G4CMP::DebuggingFileThread("phonon_downconv_stats"));
@@ -53,6 +55,7 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step&,
     }
   }
 #endif
+
   // Obtain dynamical constants from this volume's lattice
   fBeta   = theLattice->GetBeta() / (1e11*pascal);	// Make dimensionless
   fGamma  = theLattice->GetGamma() / (1e11*pascal);
@@ -61,6 +64,8 @@ void G4CMPAnharmonicDecay::DoDecay(const G4Track& aTrack, const G4Step&,
 
   fvLvT = theLattice->GetSoundSpeed() / theLattice->GetTransverseSoundSpeed();
 
+
+  
   //Destroy the parent phonon and create the daughter phonons.
   //74% chance that daughter phonons are both transverse
   //26% Transverse and Longitudinal

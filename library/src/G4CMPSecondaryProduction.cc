@@ -53,17 +53,24 @@ G4CMPSecondaryProduction::~G4CMPSecondaryProduction() {
 }
 
 
-// Applies to all charged, non-resonance particles except the drift charges
+// Applies to all charged, non-resonance particles except the drift charges and QPs
 
 G4bool G4CMPSecondaryProduction::IsApplicable(const G4ParticleDefinition& pd) {
   return (!pd.IsShortLived() && !G4CMP::IsPhonon(pd) &&
-	  !G4CMP::IsChargeCarrier(pd) );
+	  !G4CMP::IsChargeCarrier(pd) && !G4CMP::IsQP(pd) );
 }
 
 
 // Override G4CMPProcessUtils for normal tracks outside lattice volumes
+// 10/28/25 -- currently commenting out overrideMomentumReset because
+// I don't think it's catastrophic here. Buuuuut I suspect that if we run
+// into scenarios where we are trying to produce secondary phonons that want
+// to go into different crystals from a single surface downconversion or
+// something, we may need to run the overrideMomentumReset. Food for future
+// thought.
 
-void G4CMPSecondaryProduction::LoadDataForTrack(const G4Track* track) {
+void G4CMPSecondaryProduction::
+LoadDataForTrack(const G4Track* track, const G4bool /*overrideMomentumReset*/) {
   if (verboseLevel>1)
     G4cout << "G4CMPSecondaryProduction::LoadDataForTrack" << G4endl;
 
@@ -116,8 +123,9 @@ G4CMPSecondaryProduction::PostStepDoIt(const G4Track& track,
 // Process must be applied to all tracks at the end of their step
 
 G4double 
-G4CMPSecondaryProduction::GetMeanFreePath(const G4Track&, G4double,
+G4CMPSecondaryProduction::GetMeanFreePath(const G4Track& aTrack, G4double,
 					  G4ForceCondition* condition) {
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
   *condition = StronglyForced;
   return DBL_MAX;
 }

@@ -27,7 +27,6 @@
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
 
-
 // Use assigned particle type in track to set up initial TrackInfo
 
 void G4CMP::AttachTrackInfo(const G4Track* track) {
@@ -43,6 +42,8 @@ void G4CMP::AttachTrackInfo(const G4Track& track) {
   } else if (IsChargeCarrier(track)) {
     G4int valley = IsElectron(track) ? ChooseValley(GetLattice(track)) : -1;
     AttachTrackInfo(track, valley);
+  } else if (IsQP(track)) {
+    AttachTrackInfo(track, new G4CMPVTrackInfo(GetLattice(track)));
   }
 }
 
@@ -83,6 +84,8 @@ void G4CMP::AttachTrackInfo(const G4Track& track, const G4ThreeVector& kdir) {
 }
 
 
+
+
 // Attach already created container to track, must be of G4CMP type
 
 void G4CMP::AttachTrackInfo(const G4Track* track, G4CMPVTrackInfo* trackInfo) {
@@ -114,17 +117,39 @@ G4bool G4CMP::HasTrackInfo(const G4Track& track) {
 // Get physical lattice associated with track
 
 G4LatticePhysical* G4CMP::GetLattice(const G4Track& track) {
-  G4VPhysicalVolume* trkvol = track.GetVolume();
-  if (!trkvol) trkvol = G4CMP::GetVolumeAtPoint(track.GetPosition());
 
+  G4int verboseLevel = G4CMPConfigManager::GetVerboseLevel();
+  if (verboseLevel > 5) {
+    G4cout << "---------- G4CMPTrackUtils::GetLattice ----------" << G4endl;
+  }  
+
+  G4VPhysicalVolume* trkvol = track.GetVolume();
+  if (!trkvol) {
+    trkvol = G4CMP::GetVolumeAtPoint(track.GetPosition());
+
+    //Debugging
+    if (verboseLevel > 5) {
+      G4cout << "GL Function Point A | Have to use builtin G4CMP utils call to get volume at point: " << trkvol->GetName() << G4endl;
+    }       
+  }
+
+  //Debugging
+  if (verboseLevel > 5) {
+    G4cout << "GL Function Point B | Physical volume at track point: " << trkvol->GetName() << G4endl;
+  }
+  
   if (!G4LatticeManager::GetLatticeManager()->HasLattice(trkvol)
       && track.GetStep()) {
     trkvol = track.GetStep()->GetPreStepPoint()->GetPhysicalVolume();
+
+    //Debugging
+    if (verboseLevel > 5) {
+      G4cout << "GL Function Point C | There is no latticemanager-bonafide lattice for trkVol. Using the track pre-step volume physical volume, " << trkvol->GetName() << " to set the lattice." << G4endl;
+    }      
   }
 
   return G4LatticeManager::GetLatticeManager()->GetLattice(trkvol);
 }
-
 
 // Look up process by name associated with track
 

@@ -6,6 +6,17 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2026-01-07  g4cmp-V10-00-00 Quasiparticle tracking in superconducting films.
+2026-01-07  G4CMP-219 : Quasiparticle tracking in superconducting films.
+2025-12-31  G4CMP-559 : Fix longstanding bug with loop in "examples.%" target
+2025-10-23  G4CMP-521 : Fix phonon reflection bug from PhononDownconversion.
+2025-10-07  G4CMP-512 : Fix compilation error introduced with G4CMP-497.
+2025-08-29  G4CMP-497 : Protect FillParticleChange with Phonon Check.
+2025-09-08  G4CMP-500 : Changed non-fundamental SC inputs to go through
+                        G4LatticePhysical instantiation
+2025-09-04  G4CMP-499 : Set Tcrit to Gap0 via BCS relation to remove parameter
+2025-08-14  G4CMP-496 : Fix phonon wavevector & momentum direction from DoDecay.
+
 2025-10-30  g4cmp-V09-09-02 Final bug fix for chargeBounces errors.
 2025-11-08  G4CMP-533 : Fix long-standing typo in README: neutron -> neutral.
 2025-11-08  G4CMP-527 : Adjust post-step "surface" point for all boundary actions.

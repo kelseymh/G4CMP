@@ -1,0 +1,65 @@
+#-------------------------------------
+# Now initialize the run
+/run/initialize
+
+#/vis/open OGL
+#/vis/viewer/set/upVector 0 1 0
+#/vis/viewer/set/viewpointThetaPhi 90 180
+#/vis/viewer/zoom 1.4
+#/vis/drawVolume
+
+/process/inactivate phononScattering
+/process/inactivate phononDownconversion
+/process/inactivate phononPolycrystalElasticScattering
+#/process/inactivate bogoliubovQPRecombination
+/process/inactivate bogoliubovQPRadiatesPhonon
+/process/inactivate scPairBreaking
+/process/inactivate G4CMPBogoliubovQPRandomWalkTransport
+/process/inactivate bogoliubovQPLocalTrapping
+
+/run/printProgress 1
+
+# for drawing the tracks
+# (if too many tracks cause core dump => storeTrajectory 0)
+#/tracking/verbose 2
+#/tracking/storeTrajectory 1
+#/vis/scene/endOfEventAction accumulate
+#/vis/scene/add/trajectories
+
+/g4cmp/phononBounces 0
+/g4cmp/bogoliubovQPBounces 0
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
+/vis/modeling/trajectories/drawByParticleID-0/set BogoliubovQP White
+
+# Generate 1 QP per event. Place in the aluminum block
+/gps/number 1
+/gps/particle BogoliubovQP
+/gps/pos/type Volume
+/gps/pos/shape Para
+/gps/pos/centre 0 0.0 16.7 mm
+
+
+#These XY values must be just under half of the values used for the chip dimensions above Defaults
+/gps/pos/halfx 0.0001 mm
+/gps/pos/halfy 0.0001 mm
+/gps/pos/halfz 0.0001 mm
+
+#Monoenergetic stuff for visualization
+#/gps/ang/type iso
+#/gps/direction 1.0 0.0 0.0
+#/gps/ene/type Mono
+#/gps/energy 0.000176 eV
+#/run/beamOn 100
+
+#High-stats, varied energies
+/gps/ang/type iso
+/gps/ene/type Lin
+/gps/ene/min 0.000176 eV
+/gps/ene/max 0.01 eV
+/gps/ene/gradient 1
+/gps/ene/intercept 1
+/run/beamOn 100000

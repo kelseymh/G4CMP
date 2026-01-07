@@ -656,3 +656,15 @@ incident on the registered sensor.  This assumes that the sensor is
 implemented as a dedicated volume with an associated border surface.  If
 individual sensor shapes are not implemented, this parameter may also
 include geometric coverage.
+
+## Tracked Film Response (Experimental -- Temporary Documentation)
+Recently-added physics processes attempt to handle the dynamics of phonons and quasiparticles in thin films. The following set of physics is included:
+* Phonon transmission through interfaces
+* Cooper-pair breaking by phonons: `G4CMPSCPairBreakingProcess.cc`
+* Phonon radiation by QPs: `G4CMPQPRadiatesPhononProcess.cc`
+* QP Recombination: `G4CMPQPRecombinationProcess.cc`
+* QP Local Trapping: `G4CMPQPLocalTrappingProcess.cc`
+* QP Diffusion: `G4CMPQPDiffusion.cc`
+* Gap Engineering: `G4CMPQPBoundaryProcess.cc`
+
+More description, including parameters to use for these, can be found in the quasiparticle example.  

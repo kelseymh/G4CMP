@@ -30,6 +30,7 @@
 // 20201109  Move debugging output creation to PostStepDoIt to allows settting
 //		process verbosity via macro commands.
 // 20220712  M. Kelsey -- Pass process pointer to G4CMPAnharmonicDecay
+// 20250822  G4CMP-521: Include momentum reset override in LoadDataForTrack
 
 #include "G4PhononDownconversion.hh"
 #include "G4CMPAnharmonicDecay.hh"
@@ -58,9 +59,10 @@ G4PhononDownconversion::~G4PhononDownconversion() {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 // Configure for current track including AnharmonicDecay utility
 
-void G4PhononDownconversion::LoadDataForTrack(const G4Track* track) {
-  G4CMPProcessUtils::LoadDataForTrack(track);
-  anharmonicDecay->LoadDataForTrack(track);
+void G4PhononDownconversion::
+LoadDataForTrack(const G4Track* track, const G4bool overrideMomentumReset) {
+  G4CMPProcessUtils::LoadDataForTrack(track,overrideMomentumReset);
+  anharmonicDecay->LoadDataForTrack(track,overrideMomentumReset);
 }
 
 

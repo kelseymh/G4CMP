@@ -15,6 +15,7 @@
 # Add pass-through of thread-safety "code sanitizer" flags
 # Split XXX.% targets to ensure everything gets built properly
 # Add new caustics example
+# Fix longstanding bug with loop in "examples.%" target
 
 # G4CMP requires Geant4 10.4 or later
 g4min := 10.4
@@ -106,8 +107,9 @@ caustics.% :
 
 # FIXME: These should work with dependencies, but don't
 examples.% :
-	for ex in $(EXAMPLES); do
-	  -$(MAKE) $${ex}.$(subst .,,$(suffix $@))
+	@for ex in $(EXAMPLES); do \
+	  $(MAKE) $${ex}$(suffix $@); \
+	done
 
 tests : tests.all
 tools : tools.all

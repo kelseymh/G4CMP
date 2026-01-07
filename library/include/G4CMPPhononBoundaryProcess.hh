@@ -37,13 +37,16 @@ public:
   G4CMPPhononBoundaryProcess(const G4String& processName="G4CMPPhononBoundary");
 
   virtual ~G4CMPPhononBoundaryProcess();
-
+  
   // Configure for current track including AnharmonicDecay utility
-  virtual void LoadDataForTrack(const G4Track* track);
+  virtual void LoadDataForTrack(const G4Track* track,
+				const G4bool overrideMomentumReset=false);
+  
 
+  
   virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& track,
-                                                G4double previousStepSize,
-                                                G4ForceCondition* condition);
+						      G4double previousStepSize,
+						      G4ForceCondition* condition);
 
   virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
                                           const G4Step& aStep);
@@ -52,12 +55,12 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track& aTrack,
                                    G4double prevStepLength,
                                    G4ForceCondition* condition);
-
+  
   // Apply phonon-specific conditions, after calling through to base
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
 
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
-			                      G4ParticleChange& aParticleChange);
+                            G4ParticleChange& aParticleChange);
 
   G4ThreeVector GetSpecularVector(const G4ThreeVector& waveVector,
                                   G4ThreeVector& surfNorm, G4int mode,
@@ -66,6 +69,9 @@ protected:
   // Update navigator volume when position is changed
   void UpdateNavigatorVolume(const G4Step&, const G4ThreeVector& position,
                              const G4ThreeVector& vDir) const;
+  
+  virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
+                              G4ParticleChange& particleChange);
 
 private:
   G4CMPAnharmonicDecay* anharmonicDecay;
