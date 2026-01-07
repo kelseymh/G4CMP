@@ -133,8 +133,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     EmpEDepK(getenv("G4CMP_EMPIRICAL_EDEPK")?(atoi(getenv("G4CMP_EMPIRICAL_EDEPK"))!=0):true),
     EmpkFixed(getenv("G4CMP_EMPIRICAL_KFIXED")?strtod(getenv("G4CMP_EMPIRICAL_KFIXED"),0):0.158),
     messenger(new G4CMPConfigMessenger(this)) {
-  fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
-
+  fPhysicsModelID = setPhysicsModelID();
   setVersion();
 
   if (getenv("G4CMP_NIEL_FUNCTION")) 
