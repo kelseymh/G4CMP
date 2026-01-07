@@ -192,6 +192,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinTable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononKinematics.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononScatteringRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononPolycrystalElasticScatteringRate.cc	
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononTrackInfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysics.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhysicsList.cc
@@ -223,10 +224,27 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononLong.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononPolarization.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononScattering.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPPhononPolycrystalElasticScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransFast.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononTransSlow.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VNIELPartition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4VPhononProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBogoliubovQP.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVQPProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRecombinationProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRecombinationRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRadiatesPhononProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPRadiatesPhononRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCPairBreakingProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCPairBreakingRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPSCUtils.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPBoundaryProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPParticleChangeForQPDiffusion.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusion.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPLocalTrappingProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPLocalTrappingRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusionTimeStepperProcess.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusionTimeStepperRate.cc
     )
  
 set(library_HEADERS
@@ -285,6 +303,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinTable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononKinematics.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononScatteringRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononPolycrystalElasticScatteringRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononTrackInfo.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysics.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhysicsList.hh
@@ -318,11 +337,28 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononLong.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononPolarization.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononScattering.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononPolycrystalElasticScattering.hh	
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransFast.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4StrUtil.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQP.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVQPProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRecombinationProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRecombinationRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRadiatesPhononProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPRadiatesPhononRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCPairBreakingProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCPairBreakingRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPSCUtils.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPBoundaryProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPParticleChangeForQPDiffusion.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusion.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPLocalTrappingProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPLocalTrappingRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusionTimeStepperProcess.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusionTimeStepperRate.hh
     )
 
 set(config_FILES

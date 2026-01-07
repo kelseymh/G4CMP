@@ -1,0 +1,66 @@
+#-------------------------------------
+# Now initialize the run
+/run/initialize
+
+/vis/open OGL
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointThetaPhi 90 180
+/vis/viewer/zoom 1.4
+/vis/drawVolume
+
+#/process/inactivate phononScattering
+#/process/inactivate phononDownconversion
+/process/inactivate phononPolycrystalElasticScattering
+#/process/inactivate bogoliubovQPRecombination
+#/process/inactivate bogoliubovQPRadiatesPhonon
+#/process/inactivate scPairBreaking
+#/process/inactivate G4CMPBogoliubovQPRandomWalkTransport
+#/process/inactivate bogoliubovQPLocalTrapping
+/process/inactivate qpDiffusionTimeStepper
+
+
+/run/printProgress 1
+
+# for drawing the tracks
+# (if too many tracks cause core dump => storeTrajectory 0)
+/tracking/verbose 0
+/tracking/storeTrajectory 1
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories
+
+/g4cmp/phononBounces 100
+/g4cmp/bogoliubovQPBounces 5000
+/g4cmp/verbose 0
+/g4cmp/safetyNSweep2D 160
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Green 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Green
+/vis/modeling/trajectories/drawByParticleID-0/set BogoliubovQP White
+
+/vis/filtering/trajectories/create/particleFilter
+/vis/filtering/trajectories/particleFilter-0/add BogoliubovQP
+
+
+
+# Generate 1 QP per event. Place in the aluminum block
+/gps/number 1
+/gps/particle phononL
+/gps/pos/type Volume
+/gps/pos/shape Para
+#/gps/pos/centre 37.0 0 12.6 mm
+/gps/pos/centre 0 3.0 4.8095 mm #For complex geometry
+
+
+#These XY values must be just under half of the values used for the chip dimensions above Defaults
+/gps/pos/halfx 0.0001 mm
+/gps/pos/halfy 0.0001 mm
+/gps/pos/halfz 0.0001 mm
+
+#Monoenergetic stuff for visualization
+#/gps/ang/type iso
+/gps/direction 0.0 0.0 1.0
+/gps/ene/type Mono
+/gps/energy 0.004 eV
+/run/beamOn 50

@@ -48,7 +48,8 @@ public:
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
   // Initialize flight distance caches for stuck-track evaluation
-  virtual void LoadDataForTrack(const G4Track* track);
+  virtual void LoadDataForTrack(const G4Track* track,
+				const G4bool overrideMomentumReset=false);
 
 protected:
   G4bool BelowEnergyCut(const G4Track& track) const;

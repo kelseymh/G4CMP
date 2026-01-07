@@ -36,6 +36,8 @@
 // 20210919  M. Kelsey -- Allow SetVerboseLevel() from const instances.
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 //		Also, add long missing accessors for Miller orientation
+// 20250905  G4CMP-500 -- Removing non-fundamental superconductor parameters
+//              from logical lattice and making them physical lattice members
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -56,6 +58,18 @@ public:
   G4LatticePhysical(const G4LatticeLogical* Lat,
 		    G4int h=0, G4int k=0, G4int l=0, G4double rot=0.);
 
+
+  // Miller orientation aligns lattice normal (hkl) with geometry +Z
+  // Also includes setting of SC parameters. No longer ambiguous with
+  // the previous one
+  G4LatticePhysical(const G4LatticeLogical* Lat,
+		    G4double polycrystalElasticScatteringMFP,
+		    G4double scDelta0, G4double scTeff,
+		    G4double scDn,
+		    G4double scQPLocalTrappingTau,		    
+		    G4int h=0, G4int k=0, G4int l=0, G4double rot=0.);
+
+  
   void SetVerboseLevel(G4int vb) const {
     verboseLevel = vb;
     if (fLattice) fLattice->SetVerboseLevel(vb);
@@ -72,6 +86,13 @@ public:
 
   // Set temperature of volume/lattice for use with thermalization processes
   void SetTemperature(G4double temp) { fTemperature = temp; }
+
+  // Set Superconducting properties
+  void SetSCDelta0(G4double val) { fSCDelta0 = val; }
+  void SetSCTcrit(G4double val) { fSCTcrit = val; }
+  void SetSCTeff(G4double val) { fSCTeff = val; }
+  void SetSCDn(G4double val) { fSCDn = val; }
+  void SetSCQPLocalTrappingTau(G4double val) { fSCQPLocalTrappingTau = val; }
 
   // Rotate input vector between lattice and solid orientations
   // Returns new vector value for convenience
@@ -120,6 +141,7 @@ public:
 
   // Phonon propagation parameters
   G4double GetScatteringConstant() const { return fLattice->GetScatteringConstant(); }
+  G4double GetPolycrystalElasticScatterMFP() const { return fPolycrystalElasticScatteringMFP; }
   G4double GetAnhDecConstant() const { return fLattice->GetAnhDecConstant(); }
   G4double GetAnhTTFrac() const      { return fLattice->GetAnhTTFrac(); }
   G4double GetLDOS() const           { return fLattice->GetLDOS(); }
@@ -140,6 +162,15 @@ public:
   G4double GetElectronScatter() const { return fLattice->GetElectronScatter(); }
   G4double GetHoleScatter() const     { return fLattice->GetHoleScatter(); }
 
+  // Superconducting properties
+  G4double GetSCDelta0() const { return fSCDelta0; }
+  G4double GetSCTau0qp() const { return fLattice->GetSCTau0qp(); }
+  G4double GetSCTau0ph() const { return fLattice->GetSCTau0ph(); }
+  G4double GetSCTcrit() const { return fSCTcrit; }
+  G4double GetSCTeff() const { return fSCTeff; }
+  G4double GetSCDn() const { return fSCDn; }
+  G4double GetSCQPLocalTrappingTau() const { return fSCQPLocalTrappingTau; }
+  
   // Charge carriers have effective mass
   G4double GetHoleMass() const { return fLattice->GetHoleMass(); }
   G4double GetElectronMass() const { return fLattice->GetElectronMass(); }
@@ -187,7 +218,7 @@ public:
 
   // Dump logical lattice, with additional info about physical
   void Dump(std::ostream& os) const;
-
+  
 private:
   // Create a thread-local buffer to use with MapAtoB() functions
   inline G4ThreeVector& tempvec() const {
@@ -204,6 +235,13 @@ private:
   G4int hMiller, kMiller, lMiller;	// Save Miller indices for dumps
   G4double fRot;
   G4double fTemperature;		// Temperature assigned to volume
+
+  G4double fPolycrystalElasticScatteringMFP; //Polycrystal scattering length
+  G4double fSCDelta0;                        //Zero-temp SC gap energy
+  G4double fSCTcrit;                         //Critical temp, linked to SCDelta0
+  G4double fSCTeff;                          //Effective *QP* temperature
+  G4double fSCDn;                            //Normal-state diffusion constant
+  G4double fSCQPLocalTrappingTau;            //Local trapping tau  
 };
 
 // Write lattice structure to output stream

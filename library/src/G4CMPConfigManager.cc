@@ -95,9 +95,11 @@ G4CMPConfigManager::G4CMPConfigManager()
   : verbose(getenv("G4CMP_DEBUG")?atoi(getenv("G4CMP_DEBUG")):0),
     ehBounces(getenv("G4CMP_EH_BOUNCES")?atoi(getenv("G4CMP_EH_BOUNCES")):1),
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
+    qpBounces(getenv("G4CMP_QP_BOUNCES")?atoi(getenv("G4CMP_QP_BOUNCES")):100),
     ehMaxSteps(getenv("G4CMP_EH_MAX_STEPS")?atoi(getenv("G4CMP_EH_MAX_STEPS")):-1),
     maxLukePhonons(getenv("G4MP_MAX_LUKE")?atoi(getenv("G4MP_MAX_LUKE")):-1),
     pSurfStepLimit(getenv("G4CMP_PHON_SURFLIMIT")?strtod(getenv("G4CMP_PHON_SURFLIMIT"),0):-1),
+    safetyNSweep2D(getenv("G4CMP_SAFETYNSWEEP2D")?atoi(getenv("G4CMP_SAFETYNSWEEP2D")):140),
     LatticeDir(getenv("G4LATTICEDATA")?getenv("G4LATTICEDATA"):"./CrystalMaps"),
     IVRateModel(getenv("G4CMP_IV_RATE_MODEL")?getenv("G4CMP_IV_RATE_MODEL"):""),
     lukeFilename(getenv("G4CMP_LUKE_FILE")?getenv("G4CMP_LUKE_FILE"):"LukePhononEnergies"),
@@ -131,7 +133,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     EmpEDepK(getenv("G4CMP_EMPIRICAL_EDEPK")?(atoi(getenv("G4CMP_EMPIRICAL_EDEPK"))!=0):true),
     EmpkFixed(getenv("G4CMP_EMPIRICAL_KFIXED")?strtod(getenv("G4CMP_EMPIRICAL_KFIXED"),0):0.158),
     messenger(new G4CMPConfigMessenger(this)) {
-  fPhysicsModelID = setPhysicsModelID();
+  fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
 
   setVersion();
 
@@ -150,13 +152,15 @@ G4CMPConfigManager::~G4CMPConfigManager() {
 G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
   : verbose(master.verbose), fPhysicsModelID(master.fPhysicsModelID), 
     ehBounces(master.ehBounces), pBounces(master.pBounces),
-    ehMaxSteps(master.ehMaxSteps), maxLukePhonons(master.maxLukePhonons),
-    pSurfStepLimit(master.pSurfStepLimit), version(master.version),
+    qpBounces(master.qpBounces), ehMaxSteps(master.ehMaxSteps),
+    maxLukePhonons(master.maxLukePhonons),
+    pSurfStepLimit(master.pSurfStepLimit),
+    safetyNSweep2D(master.safetyNSweep2D), version(master.version),
     LatticeDir(master.LatticeDir), IVRateModel(master.IVRateModel),
-    lukeFilename(master.lukeFilename), eTrapMFP(master.eTrapMFP),
-    hTrapMFP(master.hTrapMFP), eDTrapIonMFP(master.eDTrapIonMFP),
-    eATrapIonMFP(master.eATrapIonMFP), hDTrapIonMFP(master.hDTrapIonMFP),
-    hATrapIonMFP(master.hATrapIonMFP),
+    lukeFilename(master.lukeFilename),
+    eTrapMFP(master.eTrapMFP), hTrapMFP(master.hTrapMFP),
+    eDTrapIonMFP(master.eDTrapIonMFP), eATrapIonMFP(master.eATrapIonMFP),
+    hDTrapIonMFP(master.hDTrapIonMFP), hATrapIonMFP(master.hATrapIonMFP),
     temperature(master.temperature), clearance(master.clearance), 
     stepScale(master.stepScale), sampleEnergy(master.sampleEnergy), 
     genPhonons(master.genPhonons), genCharges(master.genCharges), 
@@ -164,8 +168,8 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
     pSurfStepSize(master.pSurfStepSize), useKVsolver(master.useKVsolver),
     fanoEnabled(master.fanoEnabled), kaplanKeepPh(master.kaplanKeepPh),
-    chargeCloud(master.chargeCloud), recordMinE(master.recordMinE),
-    nielPartition(master.nielPartition),
+    chargeCloud(master.chargeCloud), 
+    recordMinE(master.recordMinE), nielPartition(master.nielPartition),
     Empklow(master.Empklow), Empkhigh(master.Empkhigh),
     EmpElow(master.EmpElow), EmpEhigh(master.EmpEhigh),
     EmpEDepK(master.EmpEDepK), EmpkFixed(master.EmpkFixed),
@@ -218,7 +222,6 @@ void G4CMPConfigManager::setNIEL(G4VNIELPartition* niel) {
   nielPartition = niel;
 }
 
-
 // Report configuration setting for diagnostics
 
 void G4CMPConfigManager::printConfig(std::ostream& os) const {
@@ -228,8 +231,10 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/verbose " << verbose << "\t\t\t\t# G4CMP_DEBUG"
      << "\n/g4cmp/chargeBounces " << ehBounces << "\t\t\t\t# G4CMP_EH_BOUNCES"
      << "\n/g4cmp/phononBounces " << pBounces << "\t\t\t# G4CMP_PHON_BOUNCES"
+     << "\n/g4cmp/qpBounces " << qpBounces << "\t\t\t# G4CMP_QP_BOUNCES"
      << "\n/g4cmp/phononSurfStepSize " << pSurfStepSize/um << " um\t\t# G4CMP_PHON_SURFSTEP"
      << "\n/g4cmp/phononSurfStepLimit " << pSurfStepLimit << "\t\t# G4CMP_PHON_SURFLIMIT"
+     << "\n/g4cmp/safetyNSweep2D" << safetyNSweep2D << "\t\t\t# G4CMP_SAFETYNSWEEP2D"
      << "\n/g4cmp/maximumSteps " << ehMaxSteps << "\t\t\t# G4CMP_EH_MAX_STEPS"
      << "\n/g4cmp/IVRateModel " << IVRateModel << "\t\t\t# G4CMP_IV_RATE_MODEL"
      << "\n/g4cmp/LukeDebugFile " << lukeFilename << "\t\t\t# G4CMP_LUKE_FILE"

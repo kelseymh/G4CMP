@@ -69,15 +69,16 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   G4ClassificationOfNewTrack classification = fUrgent;
 
   // Don't do anything to ordinary G4 tracks
-  if (!G4CMP::IsPhonon(aTrack) && !G4CMP::IsChargeCarrier(aTrack))
+  if (!G4CMP::IsPhonon(aTrack) && !G4CMP::IsChargeCarrier(aTrack) &&
+      !G4CMP::IsQP(aTrack))
     return classification;
 
   // Configure utility functions for current track (do NOT use LoadDataForTrack)
   SetCurrentTrack(aTrack);
   SetLattice(aTrack);
 
-  // If phonon or charge carrier is not in a lattice-enabled volume, kill track immediately
-  if ((IsPhonon() || IsChargeCarrier()) && !theLattice) {
+  // If phonon, charge carrier, or QP is not in a lattice-enabled volume, kill it
+  if ((IsPhonon() || IsChargeCarrier() || IsQP()) && !theLattice) {
     ReleaseTrack();
     return fKill;
   }
@@ -92,6 +93,9 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
     if (IsChargeCarrier()) {
       AssignNearestValley(aTrack);
       SetChargeCarrierMass(aTrack);
+    }
+    if (IsQP()) {
+      SetQPKinematics(aTrack);
     }
   }
 
@@ -166,4 +170,29 @@ void G4CMPStackingAction::SetChargeCarrierMass(const G4Track* aTrack) const {
     const_cast<G4DynamicParticle*>(aTrack->GetDynamicParticle());
 
   dynp->SetMass(mass*c_squared);	// Converts to Geant4 [M]=[E] units
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+// Initialize Bogoliubov QP kinematics upon creation
+void G4CMPStackingAction::SetQPKinematics(const G4Track* aTrack) const
+{
+  // Compute direction of propagation from wave vector
+  // Geant4 thinks that momentum and velocity point in same direction,
+  // momentumDir here actually means velocity direction.
+  G4ThreeVector momentumDir = aTrack->GetMomentumDirection();
+
+  //Compute true velocity of propagation
+  if (G4CMPConfigManager::GetVerboseLevel() > 5) {
+    G4cout << "In G4CMPStackingAction, calculating a velocity: "
+	   << aTrack->CalculateVelocity() << G4endl;
+  }
+  G4double velocity = aTrack->CalculateVelocity();
+  
+  // Cast to non-const pointer so we can adjust non-standard kinematics
+  G4Track* theTrack = const_cast<G4Track*>(aTrack);
+  theTrack->SetMomentumDirection(momentumDir);
+  theTrack->SetVelocity(velocity);
+  theTrack->UseGivenVelocity(true);
+  //G4cout << "---> InStackingAction, now we're actually setting the
+  //useGivenVelocity flag to true." << G4endl;
 }

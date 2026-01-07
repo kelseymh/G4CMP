@@ -44,7 +44,7 @@ void Caustic_PhononPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
   fParticleGun->SetParticleDefinition(G4PhononTransFast::Definition());
 
 }
-  else{
+  else {
   fParticleGun->SetParticleDefinition(G4PhononTransSlow::Definition());
   // fParticleGun->SetParticleDefinition(G4PhononLong::Definition());
   // If you are interested in Longitudinal phonons.

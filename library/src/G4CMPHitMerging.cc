@@ -66,7 +66,8 @@ G4CMPHitMerging::~G4CMPHitMerging() {
 
 // Overload G4CMPProcessUtils function to initialize energy partitioner
 
-void G4CMPHitMerging::LoadDataForTrack(const G4Track* track) {
+void G4CMPHitMerging::
+LoadDataForTrack(const G4Track* track, const G4bool /*overrideMomentumReset*/) {
   if (verboseLevel>1)
     G4cout << "G4CMPHitMerging::LoadDataForTrack" << G4endl;
 

@@ -23,6 +23,7 @@
 // 20251211  G4CMP-553: Add missing hypernuclei daughters (neutrinos).
 
 #include "G4CMPPhysics.hh"
+#include "G4CMPBogoliubovQP.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPDriftElectron.hh"
@@ -33,6 +34,14 @@
 #include "G4CMPInterValleyScattering.hh"
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPPhononBoundaryProcess.hh"
+#include "G4CMPPhononPolycrystalElasticScattering.hh"
+#include "G4CMPQPBoundaryProcess.hh"
+#include "G4CMPQPDiffusion.hh"
+#include "G4CMPQPDiffusionTimeStepperProcess.hh"
+#include "G4CMPQPLocalTrappingProcess.hh"
+#include "G4CMPQPRadiatesPhononProcess.hh"
+#include "G4CMPQPRecombinationProcess.hh"
+#include "G4CMPSCPairBreakingProcess.hh"
 #include "G4CMPSecondaryProduction.hh"
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPTrackLimiter.hh"
@@ -63,7 +72,6 @@
 #include "G4ProcessManager.hh"
 #include "G4Proton.hh"
 
-
 // Constructor sets global verbosity
 
 G4CMPPhysics::G4CMPPhysics(const G4String& name)
@@ -79,6 +87,7 @@ void G4CMPPhysics::ConstructParticle() {
   G4PhononLong::Definition();
   G4PhononTransFast::Definition();
   G4PhononTransSlow::Definition();
+  G4CMPBogoliubovQP::Definition();
   G4GenericIon::Definition();
 
   // For Geant4 11, define daughters of hypernuclei, created by GenericIon
@@ -109,6 +118,14 @@ void G4CMPPhysics::ConstructProcess() {
   G4VProcess* phScat  = new G4PhononScattering;
   G4VProcess* phRefl  = new G4CMPPhononBoundaryProcess;
   G4VProcess* phDown  = new G4PhononDownconversion;
+  G4VProcess* phPolyElScat = new G4CMPPhononPolycrystalElasticScattering;
+  G4VProcess* phCPbreak = new G4CMPSCPairBreakingProcess;
+  G4VProcess* bogQPRecomb = new G4CMPQPRecombinationProcess;
+  G4VProcess* bogQPRad = new G4CMPQPRadiatesPhononProcess;
+  G4VProcess* qpBoundary = new G4CMPQPBoundaryProcess;
+  G4VProcess* qpDiffusion = new G4CMPQPDiffusion;
+  G4VProcess* bogQPTrap = new G4CMPQPLocalTrappingProcess;
+  G4VProcess* bogQPTimeStep = new G4CMPQPDiffusionTimeStepperProcess;
   G4VProcess* tmStep  = new G4CMPTimeStepper;
   G4VProcess* driftB  = new G4CMPDriftBoundaryProcess;
   G4VProcess* ivScat  = new G4CMPInterValleyScattering;
@@ -129,24 +146,39 @@ void G4CMPPhysics::ConstructProcess() {
   // Add processes only to locally known particles
   G4ParticleDefinition* particle = 0;
 
+  particle = G4CMPBogoliubovQP::Definition();
+  AddG4CMPProcess(bogQPRad,particle);
+  AddG4CMPProcess(bogQPTrap,particle);
+  AddG4CMPProcess(bogQPTimeStep,particle);
+  AddG4CMPProcess(qpBoundary,particle);
+  AddG4CMPProcess(bogQPRecomb,particle);
+  //EY since QP transport is not a discrete process adding to process manager directly
+  particle->GetProcessManager()->AddProcess(qpDiffusion,ordInActive,ordDefault,ordDefault);
+    
   particle = G4PhononLong::PhononDefinition();
   AddG4CMPProcess(phScat, particle);
   AddG4CMPProcess(phDown, particle);
   AddG4CMPProcess(phRefl, particle);
   AddG4CMPProcess(eLimit, particle);
-
+  AddG4CMPProcess(phPolyElScat, particle);
+  AddG4CMPProcess(phCPbreak,particle);
+  
   particle = G4PhononTransSlow::PhononDefinition();
   AddG4CMPProcess(phScat, particle);
   AddG4CMPProcess(phDown, particle);
   AddG4CMPProcess(phRefl, particle);
   AddG4CMPProcess(eLimit, particle);
-
+  AddG4CMPProcess(phPolyElScat, particle);
+  AddG4CMPProcess(phCPbreak,particle);
+  
   particle = G4PhononTransFast::PhononDefinition();
   AddG4CMPProcess(phScat, particle);
   AddG4CMPProcess(phDown, particle);
   AddG4CMPProcess(phRefl, particle);
   AddG4CMPProcess(eLimit, particle);
-
+  AddG4CMPProcess(phPolyElScat, particle);
+  AddG4CMPProcess(phCPbreak,particle);
+  
   particle = edrift;
   AddG4CMPProcess(tmStep, particle);
   AddG4CMPProcess(luke, particle);

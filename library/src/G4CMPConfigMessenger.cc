@@ -61,14 +61,14 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   : G4UImessenger("/g4cmp/",
 		  "User configuration for G4CMP phonon/charge carrier library"),
     theManager(mgr), versionCmd(0), printCmd(0), verboseCmd(0), ehBounceCmd(0),
-    pBounceCmd(0), maxStepsCmd(0), maxLukeCmd(0), pSurfStepLimitCmd(0),
-    clearCmd(0), minEPhononCmd(0), minEChargeCmd(0), sampleECmd(0),
-    comboStepCmd(0), trapEMFPCmd(0), trapHMFPCmd(0), eDTrapIonMFPCmd(0),
-    eATrapIonMFPCmd(0), hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0), tempCmd(0),
-    pSurfStepSizeCmd(0), minstepCmd(0), makePhononCmd(0), makeChargeCmd(0),
-    lukePhononCmd(0), dirCmd(0), lukeFileCmd(0), ivRateModelCmd(0),
-    nielPartitionCmd(0),kvmapCmd(0), fanoStatsCmd(0), kaplanKeepCmd(0),
-    ehCloudCmd(0), recordMinECmd(0) {
+    pBounceCmd(0), qpBounceCmd(0), maxStepsCmd(0), maxLukeCmd(0),
+    pSurfStepLimitCmd(0), safetyNSweep2DCmd(0), clearCmd(0), minEPhononCmd(0),
+    minEChargeCmd(0), sampleECmd(0), comboStepCmd(0), trapEMFPCmd(0),
+    trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0), hDTrapIonMFPCmd(0),
+    hATrapIonMFPCmd(0), tempCmd(0), pSurfStepSizeCmd(0), minstepCmd(0),
+    makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
+    lukeFileCmd(0), ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0),
+    fanoStatsCmd(0), kaplanKeepCmd(0), ehCloudCmd(0), recordMinECmd(0) {
   verboseCmd = CreateCommand<G4UIcmdWithAnInteger>("verbose",
 					   "Enable diagnostic messages");
 
@@ -136,6 +136,9 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
 
   pBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("phononBounces",
 		  "Maximum number of reflections allowed for phonons");
+  
+  qpBounceCmd = CreateCommand<G4UIcmdWithAnInteger>("qpBounces",
+                "Maximum number of reflections allowed for bogoliubov QPs");
 
   pSurfStepSizeCmd = CreateCommand<G4UIcmdWithADoubleAndUnit>("phononSurfStepSize",
       "Specular reflection surface displacement step size");
@@ -145,6 +148,10 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   pSurfStepLimitCmd = CreateCommand<G4UIcmdWithAnInteger>("phononSurfStepLimit",
     "Maximum number steps along surface during reflection search");
 
+  safetyNSweep2DCmd = CreateCommand<G4UIcmdWithAnInteger>("safetyNSweep2D",
+	  "Number of angles over which we sweep for 2D safety computation.");
+  safetyNSweep2DCmd->SetGuidance("Should be divisible by 4.");
+  
   maxStepsCmd = CreateCommand<G4UIcmdWithAnInteger>("maximumSteps",
     "Maximum steps for charged tracks, to avoid getting stuck in E-field");
 
@@ -204,8 +211,8 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   ehCloudCmd = CreateCommand<G4UIcmdWithABool>("createChargeCloud",
        "Produce e/h pairs in cloud surrounding energy deposit position");
   ehCloudCmd->SetParameterName("enable",true,false);
-  ehCloudCmd->SetDefaultValue(true);
-
+  ehCloudCmd->SetDefaultValue(true);  
+  
   kaplanKeepCmd = CreateCommand<G4UIcmdWithABool>("kaplanKeepPhonons",
        "Preserve all intermediate phonons in G4CMPKaplanQP (no killing)");
   kaplanKeepCmd->SetParameterName("enable",true,false);
@@ -239,6 +246,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete versionCmd; versionCmd=0;
   delete ehBounceCmd; ehBounceCmd=0;
   delete pBounceCmd; pBounceCmd=0;
+  delete qpBounceCmd; qpBounceCmd=0;
   delete maxStepsCmd; maxStepsCmd=0;
   delete maxLukeCmd; maxLukeCmd=0;
   delete clearCmd; clearCmd=0;
@@ -268,6 +276,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete nielPartitionCmd; nielPartitionCmd=0;
   delete pSurfStepSizeCmd; pSurfStepSizeCmd=0;
   delete pSurfStepLimitCmd; pSurfStepLimitCmd=0;
+  delete safetyNSweep2DCmd; safetyNSweep2DCmd=0;
   delete EmpklowCmd; EmpklowCmd = 0;
   delete EmpkhighCmd; EmpkhighCmd = 0;
   delete EmpElowCmd; EmpElowCmd = 0;
@@ -287,6 +296,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == maxLukeCmd) theManager->SetMaxLukePhonons(StoI(value));
   if (cmd == ehBounceCmd) theManager->SetMaxChargeBounces(StoI(value));
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
+  if (cmd == qpBounceCmd) theManager->SetMaxQPBounces(StoI(value));
   if (cmd == maxStepsCmd) theManager->SetMaxChargeSteps(StoI(value));
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
   if (cmd == lukeFileCmd) theManager->SetLukeDebugFile(value);
@@ -295,7 +305,9 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
     theManager->SetPhononSurfStepSize(pSurfStepSizeCmd->GetNewDoubleValue(value));
 
   if (cmd == pSurfStepLimitCmd) theManager->SetPhononSurfStepLimit(StoI(value));
-
+  
+  if (cmd == safetyNSweep2DCmd) theManager->SetSafetyNSweep2D(StoI(value));
+  
   if (cmd == clearCmd)
     theManager->SetSurfaceClearance(clearCmd->GetNewDoubleValue(value));
 
@@ -343,7 +355,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == ivRateModelCmd) theManager->SetIVRateModel(value);
   if (cmd == nielPartitionCmd) theManager->SetNIELPartition(value);
   if (cmd == ehCloudCmd) theManager->CreateChargeCloud(StoB(value));
-
+  
   if (cmd == versionCmd)
     G4cout << "G4CMP version: " << theManager->Version() << G4endl;
 
