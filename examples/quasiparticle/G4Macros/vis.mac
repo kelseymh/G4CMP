@@ -2,7 +2,7 @@
 # Now initialize the run
 /run/initialize
 
-/vis/open OGL
+/vis/open OGLIX
 /vis/viewer/set/upVector 0 1 0
 /vis/viewer/set/viewpointThetaPhi 90 180
 /vis/viewer/zoom 1.4
