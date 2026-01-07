@@ -48,8 +48,8 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4double pMinK,
                                            G4SurfaceType stype)
 : G4CMPSurfaceProperty(name, stype) {
-  qReflProb = 0.0;
-  FillChargeMaterialPropertiesTable(qAbsProb, qReflProb, eMinK, hMinK);
+  qSpecProb = 0.0;
+  FillChargeMaterialPropertiesTable(qAbsProb, qReflProb, qSpecProb, eMinK, hMinK);
   FillPhononMaterialPropertiesTable(pAbsProb, pReflProb, pSpecProb, pMinK);
 }
 
@@ -65,7 +65,7 @@ G4CMPSurfaceProperty::G4CMPSurfaceProperty(const G4String& name,
                                            G4double pMinK,
                                            G4SurfaceType stype)
 : G4CMPSurfaceProperty(name, stype) {
-  FillChargeMaterialPropertiesTable(qAbsProb, qReflProb, eMinK, hMinK);
+  FillChargeMaterialPropertiesTable(qAbsProb, qReflProb, qSpecProb, eMinK, hMinK);
   FillPhononMaterialPropertiesTable(pAbsProb, pReflProb, pSpecProb, pMinK);
 }
 
