@@ -72,13 +72,14 @@ protected:
   G4bool ProcessDeformation();			// IV deformation potentials
   G4bool ProcessThresholds();			// IV energy thresholds
   G4bool SkipComments();			// Everything after '#'
-
+  
   // Read expected dimensions for value from file, return scale factor
   // NOTE: String from file may have leading "/" for inverse units
   // Input argument "unitcat" may be comma-delimited list of categories
   G4double ProcessUnits(const G4String& unitcat);
   G4double ProcessUnits(const G4String& unit, const G4String& unitcat);
 
+  
 private:
   G4int verboseLevel;		// For reporting progress, also use G4VERBOSE
 

@@ -42,6 +42,9 @@
 //		(p_Q) and expectation value of momentum (p).
 // 20231017  E. Michaud -- Add 'AddValley(const G4ThreeVector&)' 
 // 20240510  E. Michhaud -- Add function to compute L0 from other parameters
+// 20250904  R. Linehan -- Linked Tcrit to Delta0 for superconductors
+// 20250905  G4CMP-500  -- Removed non-fundamental superconductor params from
+//              lattice info
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -162,7 +165,7 @@ public:
   void SetLDOS(G4double LDOS) { fLDOS=LDOS; }
   void SetSTDOS(G4double STDOS) { fSTDOS=STDOS; }
   void SetFTDOS(G4double FTDOS) { fFTDOS=FTDOS; }
-
+  
   void SetDebyeEnergy(G4double energy) { fDebye = energy; }
   void SetDebyeFreq(G4double nu);
   void SetDebyeTemp(G4double temp);
@@ -179,6 +182,9 @@ public:
   G4double GetFTDOS() const { return fFTDOS; }
   G4double GetDebyeEnergy() const { return fDebye; }
 
+  G4double GetSCTau0qp() const { return fSC_Tau0_qp; }
+  G4double GetSCTau0ph() const { return fSC_Tau0_ph; }
+  
   // Parameters and structures for charge carrier transport
   void SetBandGapEnergy(G4double bg) { fBandGap = bg; }
   void SetPairProductionEnergy(G4double pp) { fPairEnergy = pp; }
@@ -260,6 +266,10 @@ public:
   void SetIVDeform(const std::vector<G4double>& vlist) { fIVDeform = vlist; }
   void SetIVEnergy(const std::vector<G4double>& vlist) { fIVEnergy = vlist; }
 
+  //Set functions for superconductor properties
+  void SetSCTau0qp(G4double v)              { fSC_Tau0_qp = v; }
+  void SetSCTau0ph(G4double v)              { fSC_Tau0_ph = v; }  
+  
   const G4String& GetIVModel() const { return fIVModel; }
 
   G4double GetIVQuadField() const    { return fIVQuadField; }
@@ -299,6 +309,9 @@ private:
   // Use direct calculation to get group velocity for phonons
   G4ThreeVector ComputeKtoVg(G4int mode, const G4ThreeVector& k) const;
 
+  //Do an internal check to make sure that we have all SC parameters
+  void CheckLatticeForSCCompleteness();
+  
 private:
   // Create a thread-local buffer to use with MapAtoB() functions
   inline G4ThreeVector& tempvec() const {
@@ -334,6 +347,10 @@ private:
   G4double fBeta, fGamma, fLambda, fMu; // dynamical constants for material
   G4double fDebye;   // Debye energy, for partitioning primary phonons
 
+  //Superconducting properties a la Kaplan
+  G4double fSC_Tau0_qp; //Characteristic lifetime for QPs
+  G4double fSC_Tau0_ph; //Characteristic lifetime for phonons
+  
   G4double fVSound;	// Speed of sound (longitudinal phonon)
   G4double fVTrans;	// Speed of sound (transverse phonon)
   G4double fL0_e;	// Scattering length for electrons

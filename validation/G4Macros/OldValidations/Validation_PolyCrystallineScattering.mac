@@ -1,0 +1,52 @@
+#-------------------------------------
+# Now initialize the run
+/run/initialize
+
+/vis/open OGL
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointThetaPhi 90 180
+/vis/viewer/pan 8.6 0 mm
+/vis/viewer/zoom 102400
+/vis/drawVolume
+
+/process/inactivate phononScattering
+/process/inactivate phononDownconversion
+#/process/inactivate phononPolycrystalElasticScattering
+/process/inactivate bogoliubovQPRecombination
+/process/inactivate bogoliubovQPRadiatesPhonon
+/process/inactivate scPairBreaking
+
+/run/printProgress 1
+
+# for drawing the tracks
+# (if too many tracks cause core dump => storeTrajectory 0)
+/tracking/verbose 2
+/tracking/storeTrajectory 1
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories
+
+/g4cmp/phononBounces 6
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
+/vis/modeling/trajectories/drawByParticleID-0/set BogoliubovQP White
+
+# Generate 1 phonon per event. Put it 200 nm above the Al/Si interface
+/gps/number 1
+/gps/particle phononTF
+/gps/pos/type Volume
+/gps/pos/shape Para
+/gps/pos/centre 0.0 0.0 12.7002 mm
+
+#These XY values are small enough to make things pointlike
+/gps/pos/halfx 0.000001 mm
+/gps/pos/halfy 0.000001 mm
+/gps/pos/halfz 0.000001 mm
+
+/gps/ang/type iso
+#/gps/direction 0 0 1.00
+/gps/ene/type Mono
+/gps/energy 0.0040 eV
+/run/beamOn 1

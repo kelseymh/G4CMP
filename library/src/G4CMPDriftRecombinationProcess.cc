@@ -38,8 +38,9 @@ G4CMPDriftRecombinationProcess::~G4CMPDriftRecombinationProcess() {
 // Process actions
 
 G4double 
-G4CMPDriftRecombinationProcess::GetMeanFreePath(const G4Track&, G4double,
+G4CMPDriftRecombinationProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 						G4ForceCondition* cond) {
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
   *cond = Forced;
   return DBL_MAX;
 }

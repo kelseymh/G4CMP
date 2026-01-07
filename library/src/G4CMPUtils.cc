@@ -23,6 +23,7 @@
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 
 #include "G4CMPUtils.hh"
+#include "G4CMPBogoliubovQP.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPDriftElectron.hh"
 #include "G4CMPDriftHole.hh"
@@ -105,6 +106,22 @@ G4bool G4CMP::IsElectron(const G4ParticleDefinition& pd) {
 
 G4bool G4CMP::IsElectron(const G4ParticleDefinition* pd) {
   return (pd == G4CMPDriftElectron::Definition());
+}
+
+G4bool G4CMP::IsQP(const G4Track& track) {
+  return IsQP(track.GetParticleDefinition());
+}
+
+G4bool G4CMP::IsQP(const G4Track* track) {
+  return (track!=0 && IsQP(*track));
+}
+
+G4bool G4CMP::IsQP(const G4ParticleDefinition& pd) {
+  return IsQP(&pd);
+}
+
+G4bool G4CMP::IsQP(const G4ParticleDefinition* pd) {
+  return (pd == G4CMPBogoliubovQP::Definition());
 }
 
 G4bool G4CMP::IsHole(const G4Track& track) {
@@ -211,35 +228,60 @@ void G4CMP::FillHit(const G4Step* step, G4CMPElectrodeHit* hit) {
 
 // Generate cos(theta) law for diffuse reflection, ensuring that computed
 // vector is directed inward with respect to the surface normal.
-
+// IMPORTANT: We note here that this function assumes a "generalized"
+// surface norm, i.e. a norm which has a positive dot product with the
+// incoming vel/mom direction, is passed in. If this is not true, things
+// will break!
 G4ThreeVector
 G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
-			   const G4ThreeVector& surfNorm, G4int mode) {
+                           const G4ThreeVector& surfNorm, G4int mode) {
   const G4ThreeVector surfPoint = GetCurrentTrack()->GetPosition();
-  return GetLambertianVector(theLattice, surfNorm, mode, surfPoint);
+  return GetLambertianVector(theLattice, surfNorm, mode,
+                             surfPoint);
 }
 
+
+// IMPORTANT: We note here that this function assumes a "generalized"
+// surface norm calculated as a norm which has a positive dot product
+// with the incoming vel/mom direction.
+// If this not true, things will break/be undefined!
 G4ThreeVector
 G4CMP::GetLambertianVector(const G4LatticePhysical* theLattice,
-			   const G4ThreeVector& surfNorm, G4int mode,
-			   const G4ThreeVector& surfPoint) {
+                           const G4ThreeVector& surfNorm, G4int mode,
+                           const G4ThreeVector& surfPoint) {
+
   G4ThreeVector reflectedKDir;
-  const G4int maxTries = 1000;
+  const G4int maxTries = 10000;
   G4int nTries = 0;
+  G4ThreeVector generalizedSurfaceNorm = surfNorm;
+  
   do {
-    reflectedKDir = LambertReflection(surfNorm);
+    reflectedKDir = LambertReflection(generalizedSurfaceNorm);
   } while (nTries++ < maxTries &&
-           !PhononVelocityIsInward(theLattice, mode, reflectedKDir, surfNorm,
+           !PhononVelocityIsInward(theLattice, mode, reflectedKDir,
+                                   generalizedSurfaceNorm,
                                    surfPoint));
 
+  //If we exceed our max tries, then set things to 0 so we know to kill the
+  //track
+  if (nTries >= maxTries) {
+    //G4cout << "nTries >= maxTries in GetLambertianVector." << G4endl;
+    reflectedKDir = G4ThreeVector(0,0,0);
+  }
+  
   return reflectedKDir;
 }
+
+//Now modified to recognize that the surface norm is "generalized," i.e. it
+//has a positive dot product with the incident momentum/velocity
+//This is opposite what existed before, where we could always assume we were
+//reflecting "inward" with respect to an outward-facing surface normal.
 
 G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
   G4double phi = 2.0*pi*G4UniformRand();
   G4double theta = acos(2.0*G4UniformRand() - 1.0) / 2.0;
 
-  G4ThreeVector refl = -surfNorm;
+  G4ThreeVector refl = -1*surfNorm;
   refl = refl.rotate(surfNorm.orthogonal(), theta);
   refl = refl.rotate(surfNorm, phi);
   return refl;
@@ -247,15 +289,25 @@ G4ThreeVector G4CMP::LambertReflection(const G4ThreeVector& surfNorm) {
 
 
 // Check that phonon is properly directed from the volume surface
-// waveVector and surfNorm need to be in global coordinates
+// waveVector and surfNorm need to be in global coordinates.
+// A new assumption here is that the surfNorm that is passed in is "generalized,"
+// i.e. that it has a positive dot product with the incoming v-dir (not
+// the incoming k-vector). It therefore is negative when dotted into the outgoing
+// v-dir (if reflection is occurring). So if you're using these, make sure that
+// the surfNorm that you pass in is pointing *away from* the volume that your phonon
+// is coming from. Otherwise you may confuse yourself.
 
 G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int mode,
                                      const G4ThreeVector& waveVector,
                                      const G4ThreeVector& surfNorm) {
   const G4ThreeVector surfacePos = GetCurrentTrack()->GetPosition();
-  return PhononVelocityIsInward(lattice, mode, waveVector, surfNorm, surfacePos);
+  return PhononVelocityIsInward(lattice, mode, waveVector, surfNorm,
+				surfacePos);
 }
+
+// See above comment about the generalized surface norm being what is passed
+// in here.
 
 G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
                                      G4int mode,
@@ -267,7 +319,8 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
 
   if (!touchable) {
     G4Exception("G4CMP::PhononVelocityIsInward", "G4CMPUtils001",
-		EventMustBeAborted, "Current track does not have valid touchable!");
+		EventMustBeAborted,
+		"Current track does not have valid touchable!");
     return false;
   }
 
@@ -282,7 +335,80 @@ G4bool G4CMP::PhononVelocityIsInward(const G4LatticePhysical* lattice,
 
   // Compare group velocity and surface normal in global coordinates
   RotateToGlobalDirection(touchable, vDir);
+
+  //G4cout << "In PVII: refl. wavevect: " << waveVector << ", vDir: " <<
+  //  vDir << ", surfNorm: " << surfNorm << ", trialStep: " << trialStep <<
+  //  ", kIn: " << kInside << G4endl;
+  //G4cout << "In PVII: cur. touchable vol: " <<
+  //  touchable->GetVolume()->GetName() << ", localPos: " << localPos <<
+  //  ", trialStepPos: " << localPos + 1*nm * vDir << G4endl;
+  
+  //In all discernible cases, the (generalized) surface norm passed into this
+  //function should now be pointing in the direction identical to the incident
+  //velocity. (i.e. positive dot product). If the new velocity dotted into this
+  //generalized surface norm is negative (and the trial step is inside the
+  //incident volume), then we've succeeded. Otherwise, return false. 
   return (vDir.dot(surfNorm) < 0.0 && trialStep == kInside);
+}
+
+
+// Check that the phonon is properly directed outward from the surface it is
+// impinging on. This is a bit distinct from the PhononVelocityIsInward
+// function because in that one we get to assume that the transformations can
+// all be done in the same touchable volume. In this, we cannot -- we must
+// pass the next-volume's touchable to this function so that we can use it
+// in the rotations from global to local and the mapping of K to vDir. You'll
+// also need to make sure that the lattice is the *new* lattice (i.e. the one
+// that the phonon is leaving into). As with PhononVelocityIsInward, this takes
+// a "generalized" surfaceNorm, which has a positive dot product with 
+// the impinging phonon's velocity (not necessarily its k-vector). So make
+// sure that's true as well. All of these input vectors should be in a global
+// frame.
+
+G4bool G4CMP::PhononVelocityIsOutward(const G4LatticePhysical* lattice,
+				      G4int mode,
+				      const G4ThreeVector& waveVector,
+				      const G4ThreeVector& surfNorm,
+				      const G4VTouchable * nextVolTouchable ){
+  const G4ThreeVector surfacePos = GetCurrentTrack()->GetPosition();
+  return PhononVelocityIsOutward(lattice, mode, waveVector, surfNorm,
+				 nextVolTouchable, surfacePos);
+}
+
+// See above comments on details for surfNorm and lattice requirements.
+G4bool G4CMP::PhononVelocityIsOutward(const G4LatticePhysical* lattice,
+				      G4int mode,
+				      const G4ThreeVector& waveVector,
+				      const G4ThreeVector& surfNorm, 
+				      const G4VTouchable * nextVolTouchable,
+				      const G4ThreeVector& /*surfacePos*/) {
+  // Get touchable for coordinate rotations
+  const G4VTouchable* touchable = nextVolTouchable;
+  
+  if (!touchable) {
+    G4Exception("G4CMP::PhononVelocityIsOutward", "G4CMPUtils000",
+		EventMustBeAborted,
+		"Current track does not have valid touchable!");
+    return false;
+  }
+
+  // MapKtoVDir requires local direction for the wavevector
+  G4ThreeVector vDir = lattice->MapKtoVDir(mode, GetLocalDirection(touchable, waveVector));
+  
+  // Compare group velocity and surface normal in global coordinates
+  RotateToGlobalDirection(touchable, vDir);
+  
+  //In all discernible cases, the (generalized) surface norm passed into this
+  //function should now be pointing in the direction identical to the incident
+  //velocity. If the new velocity dotted into this generalized surface norm is
+  //positive, then we've succeeded and the phonon is "outbound". Otherwise,
+  //return false. Note that we don't use a trialStep logic here because if this
+  //is leaving a volume, it may either leave into a sibling volume (in which
+  //case kInside == false, a mother volume (kInside == false), or a daughter
+  //volume (kInside == true), so there's not a "hard and fast" logic to this
+  //as there is in the "directed inward/reflection" case
+  
+  return (vDir.dot(surfNorm) > 0.0);
 }
 
 

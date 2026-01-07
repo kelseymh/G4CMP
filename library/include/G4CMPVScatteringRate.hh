@@ -21,14 +21,16 @@
 #include "globals.hh"
 #include "G4CMPConfigManager.hh"
 #include "G4CMPProcessUtils.hh"
+#include "G4CMPSCUtils.hh"
 
 class G4Track;
 
 
-class G4CMPVScatteringRate : public G4CMPProcessUtils {
+class G4CMPVScatteringRate : public G4CMPProcessUtils,
+			     public G4CMPSCUtils {
 public:
   G4CMPVScatteringRate(const G4String& theName, G4bool force=false)
-    : G4CMPProcessUtils(),
+    : G4CMPProcessUtils(), G4CMPSCUtils(),
       verboseLevel(G4CMPConfigManager::GetVerboseLevel()),
       name(theName), isForced(force) {;}
 
@@ -53,6 +55,10 @@ public:
 
   const G4String& GetName() const { return name; }
 
+  //Lookup table (for SC rates being calculated in-subclass).
+  //I basically want this to only run for specific processes
+  virtual void UpdateLookupTable(const G4LatticePhysical* /*theLat*/) { return; }
+    
 protected:
   G4int verboseLevel;		// Accessible for use by subclasses
   G4String name;		// For diagnostic output if desired

@@ -41,16 +41,19 @@
 
 
 // Only applies to G4CMP particles
-
+// Note that for QPs, this has been tested and seems to not cause problems,
+// but that if there is weirdness later on, this may not be a bad place to
+// start digging.
 G4bool G4CMPTrackLimiter::IsApplicable(const G4ParticleDefinition& pd) {
-  return (G4CMP::IsPhonon(pd) || G4CMP::IsChargeCarrier(pd));
+  return (G4CMP::IsPhonon(pd) || G4CMP::IsChargeCarrier(pd) || G4CMP::IsQP(pd));
 }
 
 
 // Initialize flight-distance accumulators for new track
 
-void G4CMPTrackLimiter::LoadDataForTrack(const G4Track* track) {
-  G4CMPProcessUtils::LoadDataForTrack(track);
+void G4CMPTrackLimiter::LoadDataForTrack(const G4Track* track,
+					 const G4bool overrideMomentumReset) {
+  G4CMPProcessUtils::LoadDataForTrack(track, overrideMomentumReset);
 
   flightAvg = flightAvg2 = lastFlight = lastRMS = 0.;
 }
@@ -58,8 +61,9 @@ void G4CMPTrackLimiter::LoadDataForTrack(const G4Track* track) {
 
 // Force killing if below cut
 
-G4double G4CMPTrackLimiter::GetMeanFreePath(const G4Track&, G4double,
+G4double G4CMPTrackLimiter::GetMeanFreePath(const G4Track& aTrack, G4double,
 					    G4ForceCondition* condition) {
+  UpdateMeanFreePathForLatticeChangeover(aTrack);
   *condition = StronglyForced;	// Ensures execution even with other Forced
   return DBL_MAX;
 }
@@ -121,7 +125,7 @@ G4VParticleChange* G4CMPTrackLimiter::PostStepDoIt(const G4Track& track,
 }
 
 
-// Evaluate current track
+// Evaluate current trackx
 
 G4bool G4CMPTrackLimiter::BelowEnergyCut(const G4Track& track) const {
   G4double ecut =
@@ -165,6 +169,7 @@ G4bool G4CMPTrackLimiter::EscapedFromVolume(const G4Step& step) const {
     }
   }
 
+  
   // Track is NOT at a boundary, is stepping outside volume, or already escaped
   G4bool escape =
     ((postS->GetStepStatus() != fGeomBoundary) &&

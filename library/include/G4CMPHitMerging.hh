@@ -49,7 +49,8 @@ public:
   G4bool GetCombiningStepLength() const { return combiningStepLength; }
 
   // Overload G4CMPProcessUtils function to fill energy parameters
-  virtual void LoadDataForTrack(const G4Track* track);
+  virtual void LoadDataForTrack(const G4Track* track,
+				const G4bool overrideMomentumReset=false);
 
   // Assign voltage bias for energy partitioning from client code
   void SetBiasVoltage(G4double vbias);

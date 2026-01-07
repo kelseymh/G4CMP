@@ -12,6 +12,8 @@
 // 20131115  Drop lattice counters, not used anywhere
 // 20140412  Use const volumes and materials for registration
 // 20141008  Change to global singleton; must be shared across worker threads
+// 20250905  R. Linehan -- useful comments for people using RegisterLattice
+//              with tracked film response
 
 #ifndef G4LatticeManager_h
 #define G4LatticeManager_h 1
@@ -39,7 +41,9 @@ public:
 
   void Reset();		// Remove and delete all registered lattices
 
-  // Users may register physical or logical lattices with volumes
+  // Users may register physical or logical lattices with volumes.
+  // If you want to include superconducting parameters, you will need
+  // to use the version that uses G4LatticePhysical.
   G4bool RegisterLattice(const G4VPhysicalVolume*, G4LatticePhysical*);
   G4bool RegisterLattice(const G4VPhysicalVolume*, G4LatticeLogical*);
 

@@ -45,7 +45,7 @@
 // 20241224  G4CMP-419: Add macro command to set LukeScattering debug file.
 // 20250209  G4CMP-457: Add short names for empirical Lindhard NIEL.
 // 20250213  G4CMP-457: Add empirical Lindhard NIEL parameters.
-// 20250325  G4CMP-463:  Add parameter for phonon surface step size & limit.
+// 20250325  G4CMP-463: Add parameter for phonon surface step size & limit.
 // 20250502  G4CMP-358: Add macro command for maximum steps (stuck tracks).
 
 
@@ -76,9 +76,11 @@ private:
   G4UIcmdWithAnInteger* verboseCmd;
   G4UIcmdWithAnInteger* ehBounceCmd;
   G4UIcmdWithAnInteger* pBounceCmd;
+  G4UIcmdWithAnInteger* qpBounceCmd;
   G4UIcmdWithAnInteger* maxStepsCmd;
   G4UIcmdWithAnInteger* maxLukeCmd;
   G4UIcmdWithAnInteger* pSurfStepLimitCmd;
+  G4UIcmdWithAnInteger* safetyNSweep2DCmd;
   G4UIcmdWithADoubleAndUnit* clearCmd;
   G4UIcmdWithADoubleAndUnit* minEPhononCmd;
   G4UIcmdWithADoubleAndUnit* minEChargeCmd;

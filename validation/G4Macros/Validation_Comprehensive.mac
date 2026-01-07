@@ -1,0 +1,97 @@
+#-------------------------------------
+# Validation_Comprehensive.mac
+# linehan3@fnal.gov
+# 07/31/2025
+#
+# Comprehensive simulation with all processes turned on
+
+#-------------------------------------
+# Geometry Customs Go First
+# Set geometry ID
+/g4cmp/GeometryID 2
+/g4cmp/StepFile Validation_Comprehensive.txt
+
+#-------------------------------------
+# Initialize the run
+/run/initialize
+
+#-------------------------------------
+# Set up the viewer
+/vis/open OGL
+/vis/viewer/set/upVector 0 1 0
+/vis/viewer/set/viewpointThetaPhi 30 150
+/vis/viewer/zoom 40
+/vis/viewer/pan 1.5 -1.0 mm
+/vis/drawVolume
+
+#-------------------------------------
+# Turn off all new processes
+/process/inactivate phononScattering
+/process/inactivate phononDownconversion
+#/process/inactivate phononPolycrystalElasticScattering
+#/process/inactivate qpRecombination
+#/process/inactivate qpRadiatesPhonon
+#/process/inactivate scPairBreaking
+#/process/inactivate qpDiffusion #If QPs can exist, diffusion needs to be active
+#/process/inactivate qpLocalTrapping
+/process/inactivate qpDiffusionTimeStepper
+
+#-------------------------------------
+# For printing progress and tracks
+/run/printProgress 1
+/tracking/verbose 0
+/tracking/storeTrajectory 1
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Green 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Green
+/vis/modeling/trajectories/drawByParticleID-0/set BogoliubovQP White
+
+/vis/filtering/trajectories/create/particleFilter
+/vis/filtering/trajectories/particleFilter-0/add BogoliubovQP
+/vis/filtering/trajectories/particleFilter-0/add phononTS
+/vis/filtering/trajectories/particleFilter-0/add phononTF
+/vis/filtering/trajectories/particleFilter-0/add phononL
+
+
+#-------------------------------------
+# Set number of phonon bounces
+/g4cmp/phononBounces 100
+/g4cmp/qpBounces 1000000
+
+#-------------------------------------
+# Generate 1 phonon per event, in a tiny parallelepiped volume
+/gps/number 1
+/gps/particle phononTF
+/gps/pos/type Volume
+/gps/pos/shape Para
+/gps/pos/halfx 0.000001 mm
+/gps/pos/halfy 0.000001 mm
+/gps/pos/halfz 0.000001 mm
+
+
+
+
+
+#-------------------------------------
+# Set the position.
+#/gps/pos/centre 0.0 0.0 0.0 mm # Bottom of Si
+#/gps/pos/centre 0.0 0.0 -1.0 mm # Center of Ge
+#/gps/pos/centre 0.0 0.0 -1.500050 mm # Center of Al1
+#/gps/pos/centre 0.0 0.0 -2.0 mm # Near-Center of Al2
+#/gps/pos/centre 0.0 0.0 -3.0 mm # Near-Center of Nb for Al3
+#/gps/pos/centre -1.0 -1.0 4.8095 mm #For more complex geometry 2
+/gps/pos/centre -1.0 -1.0 5.000107849467659 mm # For launching phonons within our film
+
+#-------------------------------------
+# Set the angular distribution. 
+# For Phonon sims
+/gps/direction 0.0 0.0 1.0
+/gps/ene/type Mono
+/gps/energy 0.004 eV
+#/g4cmp/verbose 6
+#/tracking/verbose 2
+/run/beamOn 1000

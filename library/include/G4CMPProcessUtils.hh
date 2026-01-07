@@ -43,6 +43,7 @@
 // 20250124  Add FillParticleChange() to update phonon wavevector and Vg.
 // 20250423  Add FillParticleChange() to update phonon position and touchable.
 // 20250512  Use tempvec2 for Vg in LoadDataForTrack to improve performance.
+// 20250814  Add UpdatePhononWavevector() to update phonon wavevector and Vg.
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -76,7 +77,8 @@ public:
   G4CMPProcessUtils& operator=(G4CMPProcessUtils&&) = default;
 
   // Configure for current track
-  virtual void LoadDataForTrack(const G4Track* track);
+  virtual void LoadDataForTrack(const G4Track* track,
+				const G4bool overrideMomentumReset=false);
   virtual void SetCurrentTrack(const G4Track* track);
   virtual void SetLattice(const G4Track* track);
 
@@ -88,6 +90,9 @@ public:
   void FillParticleChange(G4CMPParticleChangeForPhonon& particleChange,
               const G4Step& step, const G4ThreeVector& position) const;
 
+  // Update phonon wavevector, group velocity, and momentum
+  void UpdatePhononWavevector(G4Track& track, const G4ThreeVector& wavevector) const;
+
   virtual void ReleaseTrack();
   // NOTE:  Subclasses may overload these, but be sure to callback to base
 
@@ -96,13 +101,15 @@ public:
   G4bool IsElectron() const;
   G4bool IsHole() const;
   G4bool IsChargeCarrier() const;
-
+  G4bool IsQP() const;
+  
   // Set configuration manually, without a track
   void FindLattice(const G4VPhysicalVolume* volume);
   void SetLattice(const G4LatticePhysical* lat) { theLattice = lat; }
   const G4LatticePhysical* GetLattice() const { return theLattice; }
 
   void SetTouchable(const G4VTouchable* touch);
+
 
   // Convert global to local coordinates with respect to current track
   G4ThreeVector GetLocalDirection(const G4ThreeVector& dir) const;

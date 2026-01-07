@@ -34,6 +34,7 @@ protected:
   void SetPhononVelocity(const G4Track* theTrack) const;
   void AssignNearestValley(const G4Track* aTrack) const;
   void SetChargeCarrierMass(const G4Track* theTrack) const;
+  void SetQPKinematics(const G4Track* aTrack) const;
 
 public:
   G4CMPStackingAction(const G4CMPStackingAction&) = default;
