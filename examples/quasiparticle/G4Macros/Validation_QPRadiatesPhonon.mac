@@ -11,11 +11,12 @@
 /process/inactivate phononScattering
 /process/inactivate phononDownconversion
 /process/inactivate phononPolycrystalElasticScattering
-/process/inactivate bogoliubovQPRecombination
-#/process/inactivate bogoliubovQPRadiatesPhonon
+/process/inactivate qpRecombination
+#/process/inactivate qpRadiatesPhonon
 /process/inactivate scPairBreaking
-/process/inactivate G4CMPBogoliubovQPRandomWalkTransport
-/process/inactivate bogoliubovQPLocalTrapping
+/process/inactivate qpDiffusion
+/process/inactivate qpLocalTrapping
+/process/inactivate qpDiffusionTimeStepper
 
 /run/printProgress 1
 
