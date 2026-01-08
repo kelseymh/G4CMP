@@ -143,7 +143,7 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //Now attribute a physical material to the housing
   G4LogicalVolume * log_baseAlLayer =
     new G4LogicalVolume(solid_baseAlLayer,aluminum_mat,baseAlLayerNameLog);
-  log_baseAlLayer->SetVisAttributes(G4VisAttributes::Invisible);
+  log_baseAlLayer->SetVisAttributes(G4VisAttributes::GetInvisible());
   
   //Now, create a physical volume and G4PVPlacement for storing as the final
   //output. This is the top volume.
