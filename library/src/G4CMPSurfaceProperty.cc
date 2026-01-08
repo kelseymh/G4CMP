@@ -186,9 +186,9 @@ void G4CMPSurfaceProperty::FillPhononMaterialPropertiesTable(G4double pAbsProb,
 }
 
 void G4CMPSurfaceProperty::FillQPMaterialPropertiesTable(G4double qpAbsProb,
-                                                             G4double qpReflProb) {
-  theQPMatPropTable.AddConstProperty("absProb", qpAbsProb);
-  theQPMatPropTable.AddConstProperty("reflProb", qpReflProb);
+							 G4double qpReflProb) {
+  G4CMP::UpdateMPT(&theQPMatPropTable, "absProb", qpAbsProb);
+  G4CMP::UpdateMPT(&theQPMatPropTable, "reflProb", qpReflProb);
 }
 
 

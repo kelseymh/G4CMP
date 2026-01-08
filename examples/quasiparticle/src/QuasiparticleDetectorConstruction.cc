@@ -13,6 +13,8 @@
 // 20220809  [ For M. Hui ] -- Add frequency dependent surface properties.
 // 20221006  Remove unused features; add phonon sensor pad with use of
 //		G4CMPPhononElectrode to demonstrate KaplanQP.
+// 20260107  Remove commented out code blocks, which were false positives
+//		for needing G4 v11 migrations.
 
 #include "QuasiparticleDetectorConstruction.hh"
 #include "QuasiparticleDetectorParameters.hh"
@@ -557,21 +559,5 @@ AttachPhononSensor(G4CMPSurfaceProperty* surfProp) {
 
   // Specify properties of aluminum sensor, same on both detector faces
   // See G4CMPPhononElectrode.hh or README.md for property keys
-
-  /*
-  // Properties must be added to existing surface-property table
-  auto sensorProp = surfProp->GetPhononMaterialPropertiesTablePointer();
-  sensorProp->AddConstProperty("filmAbsorption", 0.20);    // True sensor area
-  sensorProp->AddConstProperty("filmThickness", 600.*nm);
-  sensorProp->AddConstProperty("gapEnergy", 173.715e-6*eV);
-  sensorProp->AddConstProperty("lowQPLimit", 3.);
-  sensorProp->AddConstProperty("phononLifetime", 242.*ps);
-  sensorProp->AddConstProperty("phononLifetimeSlope", 0.29);
-  sensorProp->AddConstProperty("vSound", 3.26*km/s);
-  sensorProp->AddConstProperty("subgapAbsorption", 0.1);
-
-  // Attach electrode object to handle KaplanQP interface
-  surfProp->SetPhononElectrode(new G4CMPPhononElectrode);
-  */
 }
 
