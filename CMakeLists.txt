@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 #
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 project(G4CMP)
 
 # User can provide version string in case build is not from Git source
@@ -48,6 +48,7 @@ endfunction()
 #
 option(BUILD_G4CMP_TOOLS "Build utility and support programs.  Default: ON" ON)
 option(BUILD_G4CMP_TESTS "Build unit tests for classes.  Default: OFF" OFF)
+option(BUILD_G4CMP_VALIDATION "Build and install validation code.  Default: OFF" OFF)
 option(INSTALL_EXAMPLES "Copy examples directories to installation area. Default: OFF" OFF)
 
 #-----------------------------------------------------------------------------
@@ -61,6 +62,10 @@ endif()
 
 if (BUILD_G4CMP_TESTS)
     add_subdirectory(tests)
+endif()
+
+if (BUILD_G4CMP_VALIDATION)
+    add_subdirectory(validation)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -94,4 +99,9 @@ install(FILES ${PROJECT_SOURCE_DIR}/cmake/UseG4CMP.cmake
 if(INSTALL_EXAMPLES)
     install(DIRECTORY examples DESTINATION . COMPONENT examples
 	    PATTERN ".git" EXCLUDE)
+endif()
+
+if(BUILD_G4CMP_VALIDATION)
+    install(DIRECTORY validation DESTINATION . COMPONENT validation
+            PATTERN ".git" EXCLUDE)
 endif()
