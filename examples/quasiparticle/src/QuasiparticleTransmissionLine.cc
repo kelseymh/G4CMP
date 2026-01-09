@@ -23,7 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
+// 202060109  M. Kelsey -- G4CMP-569: Removed unused local variables
+
 
 //Includes (basic)
 #include "G4RunManager.hh"
@@ -164,8 +165,6 @@ ConstructTransmissionLine(G4RotationMatrix* pRot,
     new QuasiparticlePad(0,G4ThreeVector(dp_transmissionLinePad1Offset,0,0),
                          pad1Name,log_baseAlLayer,false,0,LM,
                          logicalLatticeContainer,borderContainer,pSurfChk);
-  G4LogicalVolume * log_pad1 = pad1->GetLogicalVolume();
-  G4VPhysicalVolume * phys_pad1 = pad1->GetPhysicalVolume();
   
   //Loop through the fundamental sub-volumes and push them back into the
   //fundamental subvolume list for the transmission line. We have to do this
@@ -181,8 +180,6 @@ ConstructTransmissionLine(G4RotationMatrix* pRot,
                          G4ThreeVector(dp_transmissionLinePad2Offset,0,0),
                          pad2Name,log_baseAlLayer,false,0,LM,
                          logicalLatticeContainer,borderContainer,pSurfChk);
-  G4LogicalVolume * log_pad2 = pad1->GetLogicalVolume();
-  G4VPhysicalVolume * phys_pad2 = pad1->GetPhysicalVolume();
   
   //Loop through the fundamental sub-volumes and push them back into the
   //fundamental subvolume list for the transmission line. We have to do this
