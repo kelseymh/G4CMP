@@ -3,6 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+// 202060109  M. Kelsey -- G4CMP-569: Removed unused local variables
+
 
 // Basic User Stepping action for Quasiparticle
 
@@ -38,8 +40,6 @@ void QuasiparticleSteppingAction::UserSteppingAction(const G4Step* step) {
   //First up: do generic exporting of step information (no cuts made here)
   ExportStepInformation(step);
 
-  clock_t timestamp;
-  timestamp = clock();
   return;
 }
 
@@ -75,7 +75,6 @@ void QuasiparticleSteppingAction::ExportStepInformation(const G4Step* step) {
     G4CMP::GetTrackInfo<G4CMPVTrackInfo>(step->GetTrack())->ReflectionCount();
   
   std::string stepProcess = postSP->GetProcessDefinedStep()->GetProcessName();
-  
   
   //Fill the output file with the step info  
   fOutputFile << runNo << " " << eventNo << " " << trackNo
