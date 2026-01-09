@@ -23,7 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
+// 20260109  M. Kelsey -- G4CMP-569: Add missing type declarations
+
 /// \file ValidationQubitHousing.hh
 /// \brief Definition of the class defining qubit housing/mounts
 ///
@@ -32,14 +33,18 @@
 #define ValidationQubitHousing_h 1
 
 #include "ValidationDetectorParameters.hh"
+#include "G4RotationMatrix.hh"
+#include "G4ThreeVector.hh"
+#include "G4String.hh"
+#include "G4Types.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
 class G4PVPlacement;
 
+
 /// Detector construction class to define materials and geometry.
-class ValidationQubitHousing
-{
+class ValidationQubitHousing {
 public:
   ValidationQubitHousing();
   ~ValidationQubitHousing();
