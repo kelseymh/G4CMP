@@ -2,23 +2,13 @@ cmake_minimum_required(VERSION 3.12)
 project(g4cmpValidation)
 
 #----------------------------------------------------------------------------
-# Find G4CMP package -- NOTE: Assumes user has run g4cmp_env.*sh script!
-#
+# Configure include directories and compiler flags for G4CMP and Geant4
+# NOTE:  User must source g4cmp_env.sh first, to get envvars
+
 set(CMAKE_PREFIX_PATH $ENV{G4CMPINSTALL}/../..)
 find_package(G4CMP)
+include(FindGeant4.cmake)
 
-#----------------------------------------------------------------------------
-# Find Geant4 package
-# NOTE: WITH_GEANT4_UIVIS and USE_GEANT4_STATIC_LIBS are defined here
-#
-include($ENV{G4CMPINSTALL}/FindGeant4.cmake)
-
-#----------------------------------------------------------------------------
-# Setup include directories and compile definitions
-# NOTE: Need to include G4CMP directories before G4.
-#
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-include_directories(${G4CMP_INCLUDE_DIRS})
 include(${G4CMP_USE_FILE})
 include(${Geant4_USE_FILE})
 
