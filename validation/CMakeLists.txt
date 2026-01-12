@@ -7,8 +7,10 @@ project(g4cmpValidation)
 
 set(CMAKE_PREFIX_PATH $ENV{G4CMPINSTALL}/../..)
 find_package(G4CMP)
-include(FindGeant4.cmake)
+include($ENV{G4CMPINSTALL}/FindGeant4.cmake)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${G4CMP_INCLUDE_DIRS})
 include(${G4CMP_USE_FILE})
 include(${Geant4_USE_FILE})
 
