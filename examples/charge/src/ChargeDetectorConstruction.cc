@@ -9,6 +9,7 @@
 // 20170721  Surface property owns electrode pattern, deletes at end
 // 20170816  Field configuration parameters moved to local configuration
 // 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
+// 20260112  G4CMP-514: Modify G4CMPSurfaceProperty for specular reflection.
 
 #include "ChargeDetectorConstruction.hh"
 #include "ChargeConfigManager.hh"
@@ -183,17 +184,17 @@ void ChargeDetectorConstruction::SetupGeometry()
   // Define surface properties. Only should be done once
   if (!constructed) {
     topSurfProp = new G4CMPSurfaceProperty("topSurfProp",
-                                           1., 1., 0., 0.,
+                                           1., 1., 0., 0., 0.,
                                            0.22, 1., 0., 0.);
     topSurfProp->SetChargeElectrode(new ChargeElectrodePattern);
 
     botSurfProp = new G4CMPSurfaceProperty("botSurfProp",
-                                           1., 1., 0., 0.,
+                                           1., 1., 0., 0., 0.,
                                            0.22, 1., 0., 0.);
     botSurfProp->SetChargeElectrode(new ChargeElectrodePattern);
 
     wallSurfProp = new G4CMPSurfaceProperty("wallSurfProp",
-                                            1., 1., 0., 0.,
+                                            1., 1., 0., 0., 0.,
                                             0., 1., 0., 0.);
   }
 

@@ -49,7 +49,7 @@ public:
   G4CMPSurfaceProperty(const G4String& name,
                        G4double qAbsProb, // Prob. to absorb charge carrier
                        G4double qReflProb, // If not absorbed, prob to reflect
-                       G4double qSpecProb, // 
+                       G4double qSpecProb, // Prob of specular reflection
                        G4double eMinK, //Min wave number to absorb electron
                        G4double hMinK, //Min wave number to absorb hole
                        G4double pAbsProb, // Prob. to absorb phonon
