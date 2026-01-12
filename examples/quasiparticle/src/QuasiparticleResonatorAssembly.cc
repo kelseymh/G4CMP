@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// 202060109  M. Kelsey -- G4CMP-569: Removed unused local variables
+// 20260109  M. Kelsey -- G4CMP-569: Removed unused local variables
 
 //Includes (basic)
 #include "G4RunManager.hh"

@@ -3,7 +3,7 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-// 202060109  M. Kelsey -- G4CMP-569: Removed unused local variables
+// 20260109  M. Kelsey -- G4CMP-569: Removed unused local variables
 
 
 // Basic User Stepping action for Quasiparticle
