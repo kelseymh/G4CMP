@@ -164,7 +164,7 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
   //length. This negligible length is typically around 1E-15, so to account for
   //these safely we use a tolerance of 1E-13, which is well below the physics
   //scales relevant in these kinds of sims.
-  double stepLengthTolerance = 1E-13 * CLHEP::m;
+  G4double stepLengthTolerance = 1E-13 * CLHEP::m;
   if (G4LatticeManager::GetLatticeManager()->GetLattice(prePV) == 0 ) {
     if (buVerboseLevel > 5) {
       G4cout << "GBV Function Point C | prePV lattice is zero." << G4endl;
