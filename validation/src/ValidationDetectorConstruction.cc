@@ -723,7 +723,7 @@ void ValidationDetectorConstruction::SetupGeometry() {
         //composite of both Nb and vacuum. So we'll access the list of
         //physical objects present in it and link those one-by-one to the
         //silicon chip and to the world
-        for (int iSubVol = 0; iSubVol < tLine->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
+        for (unsigned int iSubVol = 0; iSubVol < tLine->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
 
           std::tuple<std::string,G4String,G4VPhysicalVolume*> theTLTuple
             = tLine->GetListOfAllFundamentalSubVolumes()[iSubVol];
@@ -849,7 +849,7 @@ void ValidationDetectorConstruction::SetupGeometry() {
                                               fBorderContainer,checkOverlaps);
 
           //Do the logical border creation now
-          for (int iSubVol = 0; iSubVol < resonatorAssembly->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
+          for (unsigned int iSubVol = 0; iSubVol < resonatorAssembly->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
 
             std::tuple<std::string,G4String,G4VPhysicalVolume*> theResTuple
               = resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol];
