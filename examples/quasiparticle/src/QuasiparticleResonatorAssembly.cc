@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
+// 20260109  M. Kelsey -- G4CMP-569: Removed unused local variables
 
 //Includes (basic)
 #include "G4RunManager.hh"
@@ -94,8 +94,6 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //Start with some preliminaries - NIST manager
   G4NistManager* nist = G4NistManager::Instance();
   G4Material* aluminum_mat = nist->FindOrBuildMaterial("G4_Al");
-  G4Material* air_mat = nist->FindOrBuildMaterial("G4_AIR");
-  bool checkOverlaps = true;
   
   //Set up the logical lattices for the aluminum
   if (logicalLatticeContainer.count("Aluminum") == 0) {
@@ -107,28 +105,14 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //Set up the aluminum visualization
   G4VisAttributes* aluminum_vis= new G4VisAttributes(G4Colour(0.0,1.0,1.0,0.5));
   aluminum_vis->SetVisibility(true);
-  G4VisAttributes* air_vis= new G4VisAttributes(G4Colour(0.5,0.5,0.5,0.5));
-  air_vis->SetVisibility(true);  
   
   //Confirm no issues with borders being present
-  if (borderContainer.count("AlAl") == 0) {
-    std::cout << "Uh oh. Trying to access borderContainer[AlAl] but it's not "
-              << "there..." << std::endl;
-  }
-  G4CMPSurfaceProperty* AlAlBoundary = borderContainer["AlAl"];
   if (borderContainer.count("AlVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlVac] but it's not "
               << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlVacBoundary = borderContainer["AlVac"];
-  if (borderContainer.count("VacVac") == 0) {
-    std::cout << "Uh oh. Trying to access borderContainer[VacVac] but it's not "
-              << "there..." << std::endl;
-  }
-  G4CMPSurfaceProperty* VacVacBoundary = borderContainer["VacVac"];  
-  
-  
-  
+
   //------------------------------------------------------------------------
   //Start with a base layer of aluminum into which our objects will fit. We'll
   //return this in the end.
@@ -161,8 +145,6 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
                           dp_scTauQPTrap_Al);
   AlPhysical_baseAlLayer->SetMillerOrientation(1,0,0);
   LM->RegisterLattice(phys_baseAlLayer,AlPhysical_baseAlLayer);
-  
-  
   
   //-------------------------------------------------------------------------
   //Now make the various components of the resonator array: line+coupling,
@@ -210,7 +192,6 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   G4NistManager* nist = G4NistManager::Instance();
   G4Material* aluminum_mat = nist->FindOrBuildMaterial("G4_Al");
   G4Material* air_mat = nist->FindOrBuildMaterial("G4_AIR");
-  bool checkOverlaps = true;
 
   //Set up lattice information
   if (logicalLatticeContainer.count("Aluminum") == 0) {
@@ -226,22 +207,11 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   air_vis->SetVisibility(true);
 
   //Confirm no issues with borders being present
-  if (borderContainer.count("AlAl") == 0) {
-    std::cout << "Uh oh. Trying to access borderContainer[AlAl] but it's not "
-              << "there..." << std::endl;
-  }
-  G4CMPSurfaceProperty* AlAlBoundary = borderContainer["AlAl"];
   if (borderContainer.count("AlVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlVac] but it's not "
               << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlVacBoundary = borderContainer["AlVac"];
-  if (borderContainer.count("VacVac") == 0) {
-    std::cout << "Uh oh. Trying to access borderContainer[VacVac] but it's not "
-              << "there..." << std::endl;
-  }
-  G4CMPSurfaceProperty* VacVacBoundary = borderContainer["VacVac"];  
-  
 
   //This will be made in two batches: one for "empty" space and one for
   //"conductor" space (the line itself)
@@ -341,7 +311,6 @@ MakeResonatorLine(G4String pName, G4LogicalVolume * log_baseAlLayer,
   G4NistManager* nist = G4NistManager::Instance();
   G4Material* aluminum_mat = nist->FindOrBuildMaterial("G4_Al");
   G4Material* air_mat = nist->FindOrBuildMaterial("G4_AIR");
-  bool checkOverlaps = true;
 
   //Set up lattice information
   if (logicalLatticeContainer.count("Aluminum") == 0) {

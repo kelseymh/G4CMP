@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
+// 20260109  M. Kelsey -- G4CMP-569: Remove unused local variables.
 
 /// \file ValidationTransmissionLine.cc
 /// \brief Class implementation for the transmission line in the validation
@@ -165,8 +165,6 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
     new ValidationPad(0,G4ThreeVector(dp_transmissionLinePad1Offset,0,0),
                       pad1Name,log_baseAlLayer,false,0,LM,
                       logicalLatticeContainer,borderContainer,pSurfChk);
-  G4LogicalVolume * log_pad1 = pad1->GetLogicalVolume();
-  G4VPhysicalVolume * phys_pad1 = pad1->GetPhysicalVolume();
   
   //Loop through the fundamental sub-volumes and push them back into the
   //fundamental subvolume list for the transmission line. We have to do this
@@ -182,8 +180,6 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
                       G4ThreeVector(dp_transmissionLinePad2Offset,0,0),
                       pad2Name,log_baseAlLayer,false,0,LM,
                       logicalLatticeContainer,borderContainer,pSurfChk);
-  G4LogicalVolume * log_pad2 = pad1->GetLogicalVolume();
-  G4VPhysicalVolume * phys_pad2 = pad1->GetPhysicalVolume();
   
   //Loop through the fundamental sub-volumes and push them back into the
   //fundamental subvolume list for the transmission line. We have to do this
@@ -278,7 +274,7 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
   
   //Find the volumes of interest
   std::map<std::string,G4VPhysicalVolume*> tempContainer;
-  for (int iV = 0; iV < fFundamentalVolumeList.size(); ++iV) {
+  for (unsigned int iV = 0; iV < fFundamentalVolumeList.size(); ++iV) {
     if (std::get<1>(fFundamentalVolumeList[iV]).
         contains("TransmissionLinePad1_PadConductor")) {
       tempContainer.emplace("Pad1Conductor",
@@ -414,7 +410,7 @@ ValidationTransmissionLine::GetListOfAllFundamentalSubVolumes() {
 
 void ValidationTransmissionLine::
 AddComplexGeometryPadSubVolumesToThisList(ValidationPad * pad) {
-  for (int iSubVol = 0; iSubVol < pad->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
+  for (unsigned int iSubVol = 0; iSubVol < pad->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
     std::tuple<std::string,G4String,G4VPhysicalVolume*>
       theTuple(std::get<0>(pad->GetListOfAllFundamentalSubVolumes()[iSubVol]),
                std::get<1>(pad->GetListOfAllFundamentalSubVolumes()[iSubVol]),

@@ -5,6 +5,9 @@
 
 /// \file ValidationSteppingAction.cc
 /// \brief Implementation of the stepping action for the validation example
+//
+//  20260109  M. Kelsey -- G4CMP-569: Remove unused local variables.
+
 
 #include "ValidationSteppingAction.hh"
 #include "G4CMPVTrackInfo.hh"
@@ -43,9 +46,6 @@ void ValidationSteppingAction::UserSteppingAction( const G4Step * step ) {
   //First up: do generic exporting of step information (no cuts made here)
   ExportStepInformation(step);
 
-  clock_t timestamp;
-  timestamp = clock();
-  
   return;
 }
 
