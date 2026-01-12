@@ -35,6 +35,8 @@
 //	       block, should be removed from MaximumReflections().  This will
 //	       change random number sequence (due to additional step(s) after
 //	       final reflection).
+// 20260111  G4CMP-567 -- Use geometric tolerance prescribed by G4VSolid
+// 20260112  G4CMP-567 -- Fix G4Exception numbering and function names.
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -497,7 +499,7 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
     //-------------------------------
     //If we're also outside the post-step volume, uhhhhh... where are we?
     if (postIn_postPV == kOutside) {
-      G4Exception((procName+"::CheckStepBoundary").c_str(),"Boundary00X",JustWarning,
+      G4Exception((procName+"::CheckStepBoundary").c_str(),"Boundary005",JustWarning,
                   ("Post-step point is somehow outside both the pre-step volume, " +
                    prePV->GetName() +
                    " and the post-step volume, " +
@@ -537,8 +539,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (preSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary006", EventMustBeAborted,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -563,8 +565,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (postSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary007", EventMustBeAborted,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -579,8 +581,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
     //If neither of these get flagged, then we should have something invalid,
     //since boundary cases should have been caught higher up.
     else {
-      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                  "Boundary00X", EventMustBeAborted,
+      G4Exception((procName+"::CheckStepBoundary").c_str(),
+                  "Boundary008", EventMustBeAborted,
                   "Somehow the post-step point for this step is neither inside, outside, or on the surface of the post-step volume."
                   );
       return false;
@@ -622,8 +624,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (preSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary009", EventMustBeAborted,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -649,8 +651,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (postSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary010", EventMustBeAborted,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -687,8 +689,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (postSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary011", EventMustBeAborted,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -712,8 +714,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (preSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary012", EventMustBeAborted,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -727,8 +729,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
     //If neither of these get flagged, then we should have something invalid,
     //since boundary cases should have been caught higher up.
     else {
-      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                  "Boundary00X", EventMustBeAborted,
+      G4Exception((procName+"::CheckStepBoundary").c_str(),
+                  "Boundary013", EventMustBeAborted,
                   "Somehow the post-step point for this step is neither inside,"
                   "outside, or on the surface of the post-step volume."
                   );
@@ -739,8 +741,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
   //---------------------------------------------------------------------------
   //Otherwise, we have an invalid thing?
   else {    
-    G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                "Boundary00X", EventMustBeAborted,
+    G4Exception((procName+"::CheckStepBoundary").c_str(),
+                "Boundary014", EventMustBeAborted,
                 "Somehow the post-step point for this step is neither inside,"
                 "outside, or on the boundary of the pre-step volume."
                 );
