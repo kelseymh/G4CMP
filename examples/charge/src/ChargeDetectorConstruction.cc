@@ -184,17 +184,17 @@ void ChargeDetectorConstruction::SetupGeometry()
   // Define surface properties. Only should be done once
   if (!constructed) {
     topSurfProp = new G4CMPSurfaceProperty("topSurfProp",
-                                           0.5, 1., 0., 0., 0.,
+                                           0.5, 1., 0.5, 0., 0.,
                                            0.22, 1., 0., 0.);
     topSurfProp->SetChargeElectrode(new ChargeElectrodePattern);
 
     botSurfProp = new G4CMPSurfaceProperty("botSurfProp",
-                                           0.5, 1., 0., 0., 0.,
+                                           0.5, 1., 0.5, 0., 0.,
                                            0.22, 1., 0., 0.);
     botSurfProp->SetChargeElectrode(new ChargeElectrodePattern);
 
     wallSurfProp = new G4CMPSurfaceProperty("wallSurfProp",
-                                            0.5, 1., 0., 0., 0.,
+                                            0.5, 1., 0.5, 0., 0.,
                                             0., 1., 0., 0.);
   }
 
