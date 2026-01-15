@@ -523,6 +523,13 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
       G4double pre_distToIn = preSolid->DistanceToIn(postPos);
       G4double post_distToOut = postSolid->DistanceToOut(postPos_postPV);
 
+      if (buVerboseLevel>5) {
+	G4cout << "CSB Function Point E |  pre_distToIn " << pre_distToIn/nm
+	       << " nm" << G4endl
+	       << "CSB Function Point E | post_distToOut " << post_distToOut/nm
+	       << " nm" << G4endl;
+      }
+
       //------------
       //We're closer to the pre-step volume's surface than the post-step
       //volume's surface.
@@ -534,13 +541,23 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Need to subtract off outward vector (hence minus sign)
         G4ThreeVector along = (postPos-prePos).unit(); // Trajectory direction	
         surfacePoint = postPos
-          - fabs(preSolid->DistanceToIn(postPos,along)) * along; 
+          - fabs(preSolid->DistanceToIn(postPos,-along)) * along; 
+
+	if (buVerboseLevel>5) {
+	  G4double distAlong = preSolid->DistanceToIn(postPos,along);
+	  G4double antiAlong = preSolid->DistanceToIn(postPos,-along);
+
+	  G4cout << "CSB Function Point E' | postPos distAlong "
+		 << distAlong/nm << " nm" << G4endl
+		 << "CSB Function Point E' | postPos antiAlong "
+		 << antiAlong/nm << " nm" << G4endl;
+	}
 
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (preSolid->Inside(surfacePoint) != kSurface) {
           G4Exception((procName+"::CheckStepBoundary").c_str(),
-                      "Boundary006", EventMustBeAborted,
+                      "Boundary006", FatalException /*EventMustBeAborted*/,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -606,6 +623,13 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
       //outside the pre-step volume we are.
       G4double pre_distToOut = preSolid->DistanceToOut(postPos);
       G4double post_distToIn = postSolid->DistanceToIn(postPos_postPV);
+
+      if (buVerboseLevel>5) {
+	G4cout << "CSB Function Point F |  pre_distToOut " << pre_distToOut/nm
+	       << " nm" << G4endl
+	       << "CSB Function Point F | post_distToIn " << post_distToIn/nm
+	       << " nm" << G4endl;
+      }
 
       //------------
       //If we're closer to the pre-step volume, then put the point on that
@@ -673,6 +697,13 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
       //a conditional. See which one has a closer boundary (in any direction)
       G4double pre_distToOut = preSolid->DistanceToOut(postPos);
       G4double post_distToOut = postSolid->DistanceToOut(postPos_postPV);
+
+      if (buVerboseLevel>5) {
+	G4cout << "CSB Function Point G |  pre_distToOut " << pre_distToOut/nm
+	       << " nm" << G4endl
+	       << "CSB Function Point G | post_distToOut " << post_distToOut/nm
+	       << " nm" << G4endl;
+      }
 
       //Here, the post-PV is internal to the pre-PV
       if (fabs(pre_distToOut) > fabs(post_distToOut)) {
