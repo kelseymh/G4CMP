@@ -35,27 +35,27 @@ public:
 
   // Full constructor
   G4CMPSurfaceProperty(const G4String& name,
-                       G4double qAbsProb, // Prob. to absorb charge carrier
-                       G4double qReflProb, // If not absorbed, prob to reflect
-                       G4double eMinK, //Min wave number to absorb electron
-                       G4double hMinK, //Min wave number to absorb hole
-                       G4double pAbsProb, // Prob. to absorb phonon
-                       G4double pReflProb, // If not absorbed, prob to reflect
-                       G4double pSpecProb, //Prob. of specular reflection
-                       G4double pMinK, //Min wave number to absorb phonon
+                       G4double qAbsProb,   // Prob. to absorb charge
+                       G4double qReflProb,  // If not absorbed, prob to reflect charge
+                       G4double eMinK,      // Min wave number to absorb electron
+                       G4double hMinK,      // Min wave number to absorb hole
+                       G4double pAbsProb,   // Prob. to absorb phonon
+                       G4double pReflProb,  // If not absorbed, prob to reflect phonon
+                       G4double pSpecProb,  // Prob. of phonon specular reflection
+                       G4double pMinK,      // Min wave number to absorb phonon
                        G4SurfaceType stype = dielectric_dielectric);
 
   // Second constructor with an extra parameter called qSpecProb
   G4CMPSurfaceProperty(const G4String& name,
-                       G4double qAbsProb, // Prob. to absorb charge carrier
-                       G4double qReflProb, // If not absorbed, prob to reflect
-                       G4double qSpecProb, // Prob of specular reflection
-                       G4double eMinK, //Min wave number to absorb electron
-                       G4double hMinK, //Min wave number to absorb hole
-                       G4double pAbsProb, // Prob. to absorb phonon
-                       G4double pReflProb, // If not absorbed, prob to reflect
-                       G4double pSpecProb, //Prob. of specular reflection
-                       G4double pMinK, //Min wave number to absorb phonon
+                       G4double qAbsProb,   // Prob. to absorb charge
+                       G4double qReflProb,  // If not absorbed, prob to reflect charge
+                       G4double qSpecProb,  // Prob of charge specular reflection
+                       G4double eMinK,      // Min wave number to absorb electron
+                       G4double hMinK,      // Min wave number to absorb hole
+                       G4double pAbsProb,   // Prob. to absorb phonon
+                       G4double pReflProb,  // If not absorbed, prob to reflect phonon
+                       G4double pSpecProb,  // Prob. of phonon specular reflection
+                       G4double pMinK,      // Min wave number to absorb phonon
                        G4SurfaceType stype = dielectric_dielectric);
 
   virtual ~G4CMPSurfaceProperty();
