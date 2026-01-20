@@ -62,6 +62,7 @@
 // 20250814  Add UpdatePhononWavevector() to update phonon wavevector and Vg.
 // 20250829  Protect FillParticleChange with Phonon Check.
 // 20251007  Bug fix for G4CMP-497 fix just above.
+// 20260120  G4CMP-558: Add array dimension in Get*VelocityVector().
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -391,7 +392,7 @@ G4CMPProcessUtils::GetLocalVelocityVector(const G4Track& track) const {
 }
 
 void G4CMPProcessUtils::GetLocalVelocityVector(const G4Track &track,
-                                               G4double vel[]) const {
+                                               G4double vel[3]) const {
   tempvec = GetLocalVelocityVector(track);
   vel[0] = tempvec.x();
   vel[1] = tempvec.y();
@@ -444,7 +445,7 @@ G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track& track) const {
   return tempvec;
 }
 
-void G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track &track, G4double vel[]) const {
+void G4CMPProcessUtils::GetGlobalVelocityVector(const G4Track &track, G4double vel[3]) const {
   tempvec = GetGlobalVelocityVector(track);
   vel[0] = tempvec.x();
   vel[1] = tempvec.y();
