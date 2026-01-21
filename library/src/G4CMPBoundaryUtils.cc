@@ -37,6 +37,7 @@
 //	       final reflection).
 // 20260111  G4CMP-567 -- Use geometric tolerance prescribed by G4VSolid
 // 20260112  G4CMP-567 -- Fix G4Exception numbering and function names.
+// 20260121  G4CMP-567 -- Ensure that MaxReflections() handles max<=0 case
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -874,7 +875,7 @@ G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) const {
 	   << " vs. " << trackInfo->ReflectionCount() << G4endl;
   }
 
-  return (maximumReflections >= 0 &&
+  return (maximumReflections <= 0 ||
     trackInfo->ReflectionCount() >= static_cast<size_t>(maximumReflections));
 }
 

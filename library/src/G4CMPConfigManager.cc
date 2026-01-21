@@ -48,6 +48,7 @@
 // 20250325  G4CMP-463: Add parameter for phonon surface step size & limit.
 // 20250711  G4CMP-491: Turn off phonon surface displacement loop by default.
 // 20251104  G4CMP-527: Add missing ehMaxSteps initializer in copy constructor.
+// 20260121  G4CMP-567: Change charge bounces default to zero.
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -89,7 +90,7 @@ G4CMPConfigManager* G4CMPConfigManager::Instance() {
 
 G4CMPConfigManager::G4CMPConfigManager()
   : verbose(getenv("G4CMP_DEBUG")?atoi(getenv("G4CMP_DEBUG")):0),
-    ehBounces(getenv("G4CMP_EH_BOUNCES")?atoi(getenv("G4CMP_EH_BOUNCES")):1),
+    ehBounces(getenv("G4CMP_EH_BOUNCES")?atoi(getenv("G4CMP_EH_BOUNCES")):0),
     pBounces(getenv("G4CMP_PHON_BOUNCES")?atoi(getenv("G4CMP_PHON_BOUNCES")):100),
     qpBounces(getenv("G4CMP_QP_BOUNCES")?atoi(getenv("G4CMP_QP_BOUNCES")):100),
     ehMaxSteps(getenv("G4CMP_EH_MAX_STEPS")?atoi(getenv("G4CMP_EH_MAX_STEPS")):-1),
