@@ -6,7 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
-2026-01-19  G4CMP-567 : Fix charge boundary boundary exceptions arising from TFR.
+2026-01-21  G4CMP-567 : Restore MaxReflections behaviour for zero-bounces case.
 2026-01-19  G4CMP-574 : Fix segfault from errant charge transport queries in
                         superconducting volumes during charge turnaround steps
 2026-01-07  G4CMP-556 : Replace Geant4_LICENSE with plain text version.
