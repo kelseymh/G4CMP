@@ -8,6 +8,7 @@
 //
 // $Id: 4c06153e9ea08f2a90b22c53e5c39bde4b847c07 $
 //
+// 20260109  M. Kelsey -- G4CMP-569:  Remove unused electrodeSensitivity.
 
 #ifndef QuasiparticleDetectorConstruction_h
 #define QuasiparticleDetectorConstruction_h 1
@@ -19,7 +20,6 @@
 class G4Material;
 class G4VPhysicalVolume;
 class G4CMPSurfaceProperty;
-class G4CMPElectrodeSensitivity;
 
 
 class QuasiparticleDetectorConstruction : public G4VUserDetectorConstruction {
@@ -52,7 +52,6 @@ private:
   G4CMPSurfaceProperty* copTopSurfProp; //Al/Cu
   G4CMPSurfaceProperty* copTopSurfProp2; //Nb/Cu
   G4CMPSurfaceProperty* alNbSurfProp; //Al/Nb
-  G4CMPElectrodeSensitivity* electrodeSensitivity;
 
   G4bool fConstructed;		// Flag to not re-recreate surface properties
 
@@ -66,7 +65,6 @@ private:
   G4CMPSurfaceProperty* fSiCuInterface;
   G4CMPSurfaceProperty* fSiVacInterface;
   G4CMPSurfaceProperty* fCuVacInterface;
-  
 };
 
 #endif

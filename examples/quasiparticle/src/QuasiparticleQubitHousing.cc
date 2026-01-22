@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
+// 20260109  M. Kelsey -- G4CMP-569: Removed unused local variables
 
 //Includes (basic)
 #include "G4RunManager.hh"
@@ -85,8 +85,6 @@ ConstructQubitHousing(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
   //Start with some preliminaries - NIST manager
   G4NistManager* nist = G4NistManager::Instance();
   G4Material* copper_mat = nist->FindOrBuildMaterial("G4_Cu");
-  G4Material* air_mat = nist->FindOrBuildMaterial("G4_AIR");
-  
   
   //First, start with the geometrical objects / solid volumes of relevance
 

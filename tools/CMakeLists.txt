@@ -19,5 +19,5 @@ include(${Geant4_USE_FILE})
 #
 make_binaries("g4cmpKVtables" "phononKinematics")
 
-install(FILES "plot_phonon_kinematics.py" DESTINATION ${PROJECT_BINARY_DIR}
+install(FILES "plot_phonon_kinematics.py" DESTINATION bin
 	COMPONENT binaries)

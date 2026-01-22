@@ -6,6 +6,12 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2026-01-22  G4CMP-567 : Restore MaxReflections behaviour for zero-bounces case.
+2026-01-19  G4CMP-574 : Fix segfault from errant charge transport queries in
+                        superconducting volumes during charge turnaround steps
+2026-01-09  G4CMP-568 : Fix GNUmakefile and CMakeLists.txt for QP examples.
+2026-01-07  G4CMP-556 : Replace Geant4_LICENSE with plain text version.
+
 2026-01-07  g4cmp-V10-00-00 Quasiparticle tracking in superconducting films.
 2026-01-07  G4CMP-219 : Quasiparticle tracking in superconducting films.
 2025-12-31  G4CMP-559 : Fix longstanding bug with loop in "examples.%" target
