@@ -62,6 +62,7 @@
 // 20250814  Add UpdatePhononWavevector() to update phonon wavevector and Vg.
 // 20250829  Protect FillParticleChange with Phonon Check.
 // 20251007  Bug fix for G4CMP-497 fix just above.
+// 20260110  G4CMP-567:  Add missing else-IsHole() block in GetKineticEnergy.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -461,9 +462,11 @@ G4double G4CMPProcessUtils::CalculateVelocity(const G4Track& track) const {
 }
 
 G4double G4CMPProcessUtils::GetKineticEnergy(const G4Track &track) const {
-  if (IsElectron()) {
+  if (G4CMP::IsElectron(track)) {
     G4ThreeVector ptrk = GetLocalMomentum(track);
     return GetLattice()->MapPtoEkin(GetValleyIndex(track), ptrk);
+  } else if (G4CMP::IsHole(track)) {
+    return track.GetKineticEnergy();
   } else if (G4CMP::IsPhonon(track)) {
     return track.GetKineticEnergy();
   } else if (G4CMP::IsQP(track)) {
