@@ -24,6 +24,7 @@
 // ********************************************************************
 //
 // 20260109  M. Kelsey -- G4CMP-569: Remove unused local variables.
+// 20260128  M. Kelsey -- G4CMP-494: Replace .contains() w/G4StrUtil.
 
 /// \file ValidationTransmissionLine.cc
 /// \brief Class implementation for the transmission line in the validation
@@ -31,19 +32,20 @@
 
 //Includes (basic)
 #include "ValidationTransmissionLine.hh"
-#include "G4LatticePhysical.hh"
-#include "G4CMPLogicalBorderSurface.hh"
 #include "ValidationDetectorParameters.hh"
 #include "ValidationPad.hh"
+#include "G4CMPLogicalBorderSurface.hh"
 #include "G4Box.hh"
 #include "G4Colour.hh"
 #include "G4Cons.hh"
+#include "G4LatticePhysical.hh"
 #include "G4LogicalVolume.hh"
 #include "G4NistManager.hh"
 #include "G4Orb.hh"
 #include "G4PVPlacement.hh"
 #include "G4RunManager.hh"
 #include "G4Sphere.hh"
+#include "G4StrUtil.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Trd.hh"
@@ -134,7 +136,7 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
   //Now attribute a physical material to the housing
   G4LogicalVolume * log_baseAlLayer
     = new G4LogicalVolume(solid_baseAlLayer,aluminum_mat,baseAlLayerNameLog);
-  log_baseAlLayer->SetVisAttributes(G4VisAttributes::Invisible);
+  log_baseAlLayer->SetVisAttributes(G4VisAttributes::GetInvisible());
 
   //Now, create a physical volume and G4PVPlacement for storing as the final
   //output. This is the top volume.
@@ -275,23 +277,23 @@ ConstructTransmissionLine(G4RotationMatrix * pRot,const G4ThreeVector & tLate,
   //Find the volumes of interest
   std::map<std::string,G4VPhysicalVolume*> tempContainer;
   for (unsigned int iV = 0; iV < fFundamentalVolumeList.size(); ++iV) {
-    if (std::get<1>(fFundamentalVolumeList[iV]).
-        contains("TransmissionLinePad1_PadConductor")) {
+    if (G4StrUtil::contains(std::get<1>(fFundamentalVolumeList[iV]),
+			    "TransmissionLinePad1_PadConductor")) {
       tempContainer.emplace("Pad1Conductor",
                             std::get<2>(fFundamentalVolumeList[iV]));
     }
-    if (std::get<1>(fFundamentalVolumeList[iV]).
-        contains("TransmissionLinePad1_PadEmpty")) {
+    if (G4StrUtil::contains(std::get<1>(fFundamentalVolumeList[iV]),
+			    "TransmissionLinePad1_PadEmpty")) {
       tempContainer.emplace("Pad1Empty",
                             std::get<2>(fFundamentalVolumeList[iV]));
     }    
-    if (std::get<1>(fFundamentalVolumeList[iV]).
-        contains("TransmissionLinePad2_PadConductor")) {
+    if (G4StrUtil::contains(std::get<1>(fFundamentalVolumeList[iV]),
+			    "TransmissionLinePad2_PadConductor")) {
       tempContainer.emplace("Pad2Conductor",
                             std::get<2>(fFundamentalVolumeList[iV]));
     }
-    if (std::get<1>(fFundamentalVolumeList[iV]).
-        contains("TransmissionLinePad2_PadEmpty")) {
+    if (G4StrUtil::contains(std::get<1>(fFundamentalVolumeList[iV]),
+			    "TransmissionLinePad2_PadEmpty")) {
       tempContainer.emplace("Pad2Empty",
                             std::get<2>(fFundamentalVolumeList[iV]));
     }

@@ -24,6 +24,7 @@
 // ********************************************************************
 //
 // 20260109  M. Kelsey -- G4CMP-569: Remove unused local variables.
+// 20260128  M. Kelsey -- G4CMP-494: Use G4VisAtt::GetInvisible().
 
 /// \file ValidationResonatorAssembly.cc
 /// \brief Class implementing the resonator assembly geometry from a bunch
@@ -140,7 +141,7 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   G4LogicalVolume * log_baseAlLayer = new G4LogicalVolume(solid_baseAlLayer,
                                                           aluminum_mat,
                                                           baseAlLayerNameLog);
-  log_baseAlLayer->SetVisAttributes(G4VisAttributes::Invisible);
+  log_baseAlLayer->SetVisAttributes(G4VisAttributes::GetInvisible());
 
   //Now, create a physical volume and G4PVPlacement for storing as the final
   //output. This is the top volume.
