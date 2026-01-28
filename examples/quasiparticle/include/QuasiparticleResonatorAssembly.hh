@@ -52,7 +52,7 @@ class QuasiparticleResonatorAssembly
     QuasiparticleResonatorAssembly();
     ~QuasiparticleResonatorAssembly();
 
-    //This is the constructor that should be used in general. It does not have\
+    //This is the constructor that should be used in general. It does not have
     //the current logical volume included because that will be defined IN the
     //Qubit housing implementation. All we need is a set of info that is
     //external to this, which should be self-contained.

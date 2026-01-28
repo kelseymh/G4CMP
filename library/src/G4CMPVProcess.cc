@@ -197,7 +197,7 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 
   //Protect against scenarios where we have a charge impinging on a lattice
   //which doesn't have charge valley info in the config file. (Temporary)
-  if( !IsLatticeChangeSafeForRateQuery(aTrack) ) return DBL_MAX;
+  if( !IsLatticeChangeSafeForRateQuery() ) return DBL_MAX;
   
   *condition = (rateModel && rateModel->IsForced()) ? Forced : NotForced;
 
@@ -222,7 +222,7 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 //Do a cross check to see if the track's particle type is conducive to
 //attempting a rate query that draws on a specific kind of material
 //property from the config.txt filer
-bool G4CMPVProcess::IsLatticeChangeSafeForRateQuery(const G4Track& aTrack) {
+bool G4CMPVProcess::IsLatticeChangeSafeForRateQuery() {
 
   //First scenario: if we have a charge. If we're in a superconductor,
   //we don't want to try to query rates of IV scattering, etc.
