@@ -35,6 +35,9 @@
 //	       block, should be removed from MaximumReflections().  This will
 //	       change random number sequence (due to additional step(s) after
 //	       final reflection).
+// 20260111  G4CMP-567 -- Use geometric tolerance prescribed by G4VSolid
+// 20260112  G4CMP-567 -- Fix G4Exception numbering and function names.
+// 20260121  G4CMP-567 -- Ensure that MaxReflections() handles max<=0 case
 
 #include "G4CMPBoundaryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -164,7 +167,7 @@ G4bool G4CMPBoundaryUtils::GetBoundingVolumes(const G4Step& aStep) {
   //length. This negligible length is typically around 1E-15, so to account for
   //these safely we use a tolerance of 1E-13, which is well below the physics
   //scales relevant in these kinds of sims.
-  double stepLengthTolerance = 1E-13 * CLHEP::m;
+  G4double stepLengthTolerance = 1E-13 * CLHEP::m;
   if (G4LatticeManager::GetLatticeManager()->GetLattice(prePV) == 0 ) {
     if (buVerboseLevel > 5) {
       G4cout << "GBV Function Point C | prePV lattice is zero." << G4endl;
@@ -497,7 +500,7 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
     //-------------------------------
     //If we're also outside the post-step volume, uhhhhh... where are we?
     if (postIn_postPV == kOutside) {
-      G4Exception((procName+"::CheckStepBoundary").c_str(),"Boundary00X",JustWarning,
+      G4Exception((procName+"::CheckStepBoundary").c_str(),"Boundary005",JustWarning,
                   ("Post-step point is somehow outside both the pre-step volume, " +
                    prePV->GetName() +
                    " and the post-step volume, " +
@@ -521,6 +524,13 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
       G4double pre_distToIn = preSolid->DistanceToIn(postPos);
       G4double post_distToOut = postSolid->DistanceToOut(postPos_postPV);
 
+      if (buVerboseLevel>5) {
+	G4cout << "CSB Function Point E |  pre_distToIn " << pre_distToIn/nm
+	       << " nm" << G4endl
+	       << "CSB Function Point E | post_distToOut " << post_distToOut/nm
+	       << " nm" << G4endl;
+      }
+
       //------------
       //We're closer to the pre-step volume's surface than the post-step
       //volume's surface.
@@ -532,13 +542,23 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Need to subtract off outward vector (hence minus sign)
         G4ThreeVector along = (postPos-prePos).unit(); // Trajectory direction	
         surfacePoint = postPos
-          - fabs(preSolid->DistanceToIn(postPos,along)) * along; 
+          - fabs(preSolid->DistanceToIn(postPos,-along)) * along; 
+
+	if (buVerboseLevel>5) {
+	  G4double distAlong = preSolid->DistanceToIn(postPos,along);
+	  G4double antiAlong = preSolid->DistanceToIn(postPos,-along);
+
+	  G4cout << "CSB Function Point E' | postPos distAlong "
+		 << distAlong/nm << " nm" << G4endl
+		 << "CSB Function Point E' | postPos antiAlong "
+		 << antiAlong/nm << " nm" << G4endl;
+	}
 
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (preSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary006", FatalException /*EventMustBeAborted*/,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -563,8 +583,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (postSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary007", EventMustBeAborted,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -579,8 +599,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
     //If neither of these get flagged, then we should have something invalid,
     //since boundary cases should have been caught higher up.
     else {
-      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                  "Boundary00X", EventMustBeAborted,
+      G4Exception((procName+"::CheckStepBoundary").c_str(),
+                  "Boundary008", EventMustBeAborted,
                   "Somehow the post-step point for this step is neither inside, outside, or on the surface of the post-step volume."
                   );
       return false;
@@ -605,6 +625,13 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
       G4double pre_distToOut = preSolid->DistanceToOut(postPos);
       G4double post_distToIn = postSolid->DistanceToIn(postPos_postPV);
 
+      if (buVerboseLevel>5) {
+	G4cout << "CSB Function Point F |  pre_distToOut " << pre_distToOut/nm
+	       << " nm" << G4endl
+	       << "CSB Function Point F | post_distToIn " << post_distToIn/nm
+	       << " nm" << G4endl;
+      }
+
       //------------
       //If we're closer to the pre-step volume, then put the point on that
       //surface      
@@ -622,8 +649,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (preSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary009", EventMustBeAborted,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -649,8 +676,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (postSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary010", EventMustBeAborted,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -672,6 +699,13 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
       G4double pre_distToOut = preSolid->DistanceToOut(postPos);
       G4double post_distToOut = postSolid->DistanceToOut(postPos_postPV);
 
+      if (buVerboseLevel>5) {
+	G4cout << "CSB Function Point G |  pre_distToOut " << pre_distToOut/nm
+	       << " nm" << G4endl
+	       << "CSB Function Point G | post_distToOut " << post_distToOut/nm
+	       << " nm" << G4endl;
+      }
+
       //Here, the post-PV is internal to the pre-PV
       if (fabs(pre_distToOut) > fabs(post_distToOut)) {
 
@@ -687,8 +721,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (postSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary011", EventMustBeAborted,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -712,8 +746,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
         //Check that the surface point is good (now that we've modified it,
         //it's in the local coordinate system)
         if (preSolid->Inside(surfacePoint) != kSurface) {
-          G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                      "Boundary00X", EventMustBeAborted,
+          G4Exception((procName+"::CheckStepBoundary").c_str(),
+                      "Boundary012", EventMustBeAborted,
                       "Boundary-limited step cannot find boundary surface point"
                       );
           return false;
@@ -727,8 +761,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
     //If neither of these get flagged, then we should have something invalid,
     //since boundary cases should have been caught higher up.
     else {
-      G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                  "Boundary00X", EventMustBeAborted,
+      G4Exception((procName+"::CheckStepBoundary").c_str(),
+                  "Boundary013", EventMustBeAborted,
                   "Somehow the post-step point for this step is neither inside,"
                   "outside, or on the surface of the post-step volume."
                   );
@@ -739,8 +773,8 @@ G4bool G4CMPBoundaryUtils::CheckStepBoundary(const G4Step& aStep,
   //---------------------------------------------------------------------------
   //Otherwise, we have an invalid thing?
   else {    
-    G4Exception((procName+"::CheckBoundaryPoint").c_str(),
-                "Boundary00X", EventMustBeAborted,
+    G4Exception((procName+"::CheckStepBoundary").c_str(),
+                "Boundary014", EventMustBeAborted,
                 "Somehow the post-step point for this step is neither inside,"
                 "outside, or on the boundary of the pre-step volume."
                 );
@@ -841,7 +875,7 @@ G4bool G4CMPBoundaryUtils::MaximumReflections(const G4Track& aTrack) const {
 	   << " vs. " << trackInfo->ReflectionCount() << G4endl;
   }
 
-  return (maximumReflections >= 0 &&
+  return (maximumReflections <= 0 ||
     trackInfo->ReflectionCount() >= static_cast<size_t>(maximumReflections));
 }
 

@@ -8,6 +8,7 @@
 //
 // $Id: 4c06153e9ea08f2a90b22c53e5c39bde4b847c07 $
 //
+// 20260109  M. Kelsey -- G4CMP-569:  Remove unused electrodeSensitivity.
 
 #ifndef ValidationDetectorConstruction_h
 #define ValidationDetectorConstruction_h 1
@@ -55,10 +56,7 @@ private:
   G4CMPSurfaceProperty* fAl2Al3SurfProp;
   G4CMPSurfaceProperty* fAl3NbSurfProp;
 
-  G4CMPElectrodeSensitivity* electrodeSensitivity;
-
   G4bool fConstructed;		// Flag to not re-recreate surface properties
-
 
   //Interfaces for more complicated Example 7
   std::map<std::string,G4CMPSurfaceProperty*> fBorderContainer;
@@ -70,8 +68,6 @@ private:
   G4CMPSurfaceProperty* fSiCuInterface;
   G4CMPSurfaceProperty* fSiVacInterface;
   G4CMPSurfaceProperty* fCuVacInterface;
-
-  
 };
 
 #endif

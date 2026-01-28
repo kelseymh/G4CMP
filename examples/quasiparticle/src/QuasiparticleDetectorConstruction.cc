@@ -8,13 +8,7 @@
 //
 // $Id: a2016d29cc7d1e75482bfc623a533d20b60390da $
 //
-// 20140321  Drop passing placement transform to G4LatticePhysical
-// 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
-// 20220809  [ For M. Hui ] -- Add frequency dependent surface properties.
-// 20221006  Remove unused features; add phonon sensor pad with use of
-//		G4CMPPhononElectrode to demonstrate KaplanQP.
-// 20260107  Remove commented out code blocks, which were false positives
-//		for needing G4 v11 migrations.
+// 20260109  M. Kelsey -- G4CMP-569:  Address compiler warnings
 
 #include "QuasiparticleDetectorConstruction.hh"
 #include "QuasiparticleDetectorParameters.hh"
@@ -53,10 +47,10 @@ using namespace QuasiparticleDetectorParameters;
 
 QuasiparticleDetectorConstruction::QuasiparticleDetectorConstruction()
   : fLiquidHelium(0), fSilicon(0), fAluminum(0), fTungsten(0), fCopper(0),
-    fNiobium(0),
-    fWorldPhys(0), topSurfProp(0), vacSurfProp(0), wallSurfProp(0),
-    copTopSurfProp(0), copTopSurfProp2(0), topSurfProp2(0), alNbSurfProp(0),
-    electrodeSensitivity(0), fConstructed(false) {;}
+    fNiobium(0), fWorldPhys(0), topSurfProp(0), topSurfProp2(0), vacSurfProp(0),
+    wallSurfProp(0), copTopSurfProp(0), copTopSurfProp2(0), alNbSurfProp(0),
+    fConstructed(false), fVacVacInterface(0), fAlVacInterface(0), fAlAlInterface(0),
+    fSiAlInterface(0), fSiCuInterface(0), fSiVacInterface(0), fCuVacInterface(0) {;}
 
 
 QuasiparticleDetectorConstruction::~QuasiparticleDetectorConstruction() {
@@ -213,14 +207,9 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
   fLogicalLatticeContainer.emplace("Aluminum",log_aluminumLattice);
   fLogicalLatticeContainer.emplace("Copper",log_copperLattice);
 
-    
-
-    
-  //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Now we start constructing the various components and their interfaces  
   bool checkOverlaps = true;
-
 
   //--------------------------------------------------------------------------
   //First, set up the qubit chip substrate. 
@@ -256,9 +245,8 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
   LM->RegisterLattice(phys_siliconChip,phys_siliconLattice);
 
   //Set up border surfaces
-  G4CMPLogicalBorderSurface * border_siliconChip_world =
-    new G4CMPLogicalBorderSurface("border_siliconChip_world",phys_siliconChip,
-                                  fWorldPhys, fSiVacInterface);
+  new G4CMPLogicalBorderSurface("border_siliconChip_world",phys_siliconChip,
+				fWorldPhys, fSiVacInterface);
 
     
 
@@ -267,11 +255,9 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
   //--------------------------------------------------------------------------
   //If desired, set up the copper qubit housing
   if (dp_useQubitHousing) {
-
     QuasiparticleQubitHousing * qubitHousing =
       new QuasiparticleQubitHousing(0,G4ThreeVector(0,0,0),"QubitHousing",
                                     worldLogical,false,0,checkOverlaps);
-    G4LogicalVolume * log_qubitHousing = qubitHousing->GetLogicalVolume();
     G4VPhysicalVolume * phys_qubitHousing = qubitHousing->GetPhysicalVolume();
 
     //Set up lattice properties for copper housing. The miller orientation is
@@ -283,18 +269,17 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
     LM->RegisterLattice(phys_qubitHousing,phys_copperLattice);
       
     //Set up the logical border surfaces
-    G4CMPLogicalBorderSurface * border_siliconChip_qubitHousing =
-      new G4CMPLogicalBorderSurface("border_siliconChip_qubitHousing",
-                                    phys_siliconChip, phys_qubitHousing,
-                                    fSiCuInterface);
-    G4CMPLogicalBorderSurface * border_qubitHousing_siliconChip =
-      new G4CMPLogicalBorderSurface("border_qubitHousing_siliconChip",
-                                    phys_qubitHousing, phys_siliconChip,
-                                    fSiCuInterface);
-    G4CMPLogicalBorderSurface * border_qubitHousing_world =
-      new G4CMPLogicalBorderSurface("border_qubitHousing_world",
-                                    phys_qubitHousing, fWorldPhys,
-                                    fCuVacInterface);
+    new G4CMPLogicalBorderSurface("border_siliconChip_qubitHousing",
+				  phys_siliconChip, phys_qubitHousing,
+				  fSiCuInterface);
+
+    new G4CMPLogicalBorderSurface("border_qubitHousing_siliconChip",
+				  phys_qubitHousing, phys_siliconChip,
+				  fSiCuInterface);
+
+    new G4CMPLogicalBorderSurface("border_qubitHousing_world",
+				  phys_qubitHousing, fWorldPhys,
+				  fCuVacInterface);
   }
     
   //-----------------------------------------------------------------
@@ -332,43 +317,37 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
 
             
     //Set up the logical border surface
-    G4CMPLogicalBorderSurface * border_siliconChip_groundPlane =
-      new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
-                                    phys_siliconChip, phys_groundPlane,
-                                    fSiAlInterface);
-    G4CMPLogicalBorderSurface * border_groundPlane_siliconChip =
-      new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
-                                    phys_groundPlane, phys_siliconChip,
-                                    fSiAlInterface);
-    G4CMPLogicalBorderSurface * border_world_groundPlane =
-      new G4CMPLogicalBorderSurface("border_world_groundPlane", fWorldPhys,
-                                    phys_groundPlane, fAlVacInterface);
-    G4CMPLogicalBorderSurface * border_groundPlane_world =
-      new G4CMPLogicalBorderSurface("border_groundPlane_world",
-                                    phys_groundPlane, fWorldPhys,
-                                    fAlVacInterface);
+    new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
+				  phys_siliconChip, phys_groundPlane,
+				  fSiAlInterface);
+
+    new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
+				  phys_groundPlane, phys_siliconChip,
+				  fSiAlInterface);
+
+    new G4CMPLogicalBorderSurface("border_world_groundPlane", fWorldPhys,
+				  phys_groundPlane, fAlVacInterface);
+
+    new G4CMPLogicalBorderSurface("border_groundPlane_world",
+				  phys_groundPlane, fWorldPhys,
+				  fAlVacInterface);
 
     //----------------------------------------------------------------------
     //Now set up the transmission line
     if (dp_useTransmissionLine) {
-
       //Since it's within the ground plane exactly:
       G4ThreeVector transmissionLineTranslate(0,0,0.0);
-      QuasiparticleTransmissionLine * tLine =
+      QuasiparticleTransmissionLine* tLine =
         new QuasiparticleTransmissionLine(0,transmissionLineTranslate,
                                           "TransmissionLine",log_groundPlane,
                                           false,0,LM,fLogicalLatticeContainer,
                                           fBorderContainer,checkOverlaps);
-      G4LogicalVolume * log_tLine = tLine->GetLogicalVolume();
-      G4VPhysicalVolume * phys_tLine = tLine->GetPhysicalVolume();
-
-
 
       //Now, if we're using the chip and ground plane AND the transmission line
       //This gets a bit hairy, since the transmission line is composite of both
       //Nb and vacuum. So we'll access the list of physical objects present in
       //it and link those one-by-one to the silicon chip and to the world
-      for (int iSubVol = 0; iSubVol < tLine->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
+      for (size_t iSubVol = 0; iSubVol < tLine->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
         std::cout << "TLine sub volume names (to be used for boundaries): "
                   << std::get<1>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol])
                   << " with material "
@@ -383,15 +362,13 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
           + "_siliconChip";	  
 
         if (std::get<0>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]).find("Vacuum") != std::string::npos) {	  
-          G4CMPLogicalBorderSurface * border1_siliconChip_transmissionLineEmpty=
-            new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip,std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fSiVacInterface);  
-          G4CMPLogicalBorderSurface * border2_siliconChip_transmissionLineEmpty=
-            new G4CMPLogicalBorderSurface(tempName1b,std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_siliconChip, fSiVacInterface);
+	  new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip,std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fSiVacInterface);  
+	  new G4CMPLogicalBorderSurface(tempName1b,std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_siliconChip, fSiVacInterface);
         }
 	
         if (std::get<0>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]).find("Aluminum") != std::string::npos) {
-          G4CMPLogicalBorderSurface * border1_siliconChip_transmissionLineConductor = new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fSiAlInterface);
-          G4CMPLogicalBorderSurface * border2_siliconChip_transmissionLineConductor = new G4CMPLogicalBorderSurface(tempName1b, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_siliconChip, fSiAlInterface);
+          new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fSiAlInterface);
+          new G4CMPLogicalBorderSurface(tempName1b, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_siliconChip, fSiAlInterface);
         }
 
 
@@ -404,13 +381,13 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
           + "_world";	  
 
         if (std::get<0>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]).find("Vacuum") != std::string::npos) {
-          G4CMPLogicalBorderSurface * border1_world_transmissionLineEmpty = new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fVacVacInterface);
-          G4CMPLogicalBorderSurface * border2_world_transmissionLineEmpty = new G4CMPLogicalBorderSurface(tempName2b, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fWorldPhys, fVacVacInterface);
+          new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fVacVacInterface);
+          new G4CMPLogicalBorderSurface(tempName2b, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fWorldPhys, fVacVacInterface);
         }
 	
         if (std::get<0>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]).find("Aluminum") != std::string::npos) {
-          G4CMPLogicalBorderSurface * border1_world_transmissionLineConductor = new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlVacInterface);
-          G4CMPLogicalBorderSurface * border2_world_transmissionLineConductor = new G4CMPLogicalBorderSurface(tempName2b, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fWorldPhys, fAlVacInterface);
+          new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlVacInterface);
+          new G4CMPLogicalBorderSurface(tempName2b, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fWorldPhys, fAlVacInterface);
         }
 
 
@@ -423,8 +400,8 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
           + "_groundPlane";
 	
         if (std::get<0>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]).find("Vacuum") != std::string::npos) {
-          G4CMPLogicalBorderSurface * border1_groundPlane_transmissionLineEmpty = new G4CMPLogicalBorderSurface(tempName3a, phys_groundPlane, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlVacInterface);
-          G4CMPLogicalBorderSurface * border2_groundPlane_transmissionLineEmpty = new G4CMPLogicalBorderSurface(tempName3b, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_groundPlane, fAlVacInterface);
+          new G4CMPLogicalBorderSurface(tempName3a, phys_groundPlane, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlVacInterface);
+          new G4CMPLogicalBorderSurface(tempName3b, std::get<2>(tLine->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_groundPlane, fAlVacInterface);
         }	  
       }
     }
@@ -462,7 +439,7 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
         }
 	
         char name[400];
-        sprintf(name,"ResonatorAssembly_%d",iR);
+        snprintf(name,sizeof(name),"ResonatorAssembly_%d",iR);
         G4String resonatorAssemblyName(name);
         QuasiparticleResonatorAssembly * resonatorAssembly =
           new QuasiparticleResonatorAssembly(rotAssembly,
@@ -472,30 +449,31 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
                                              fLogicalLatticeContainer,
                                              fBorderContainer,
                                              checkOverlaps);
-        G4LogicalVolume * log_resonatorAssembly =
-          resonatorAssembly->GetLogicalVolume();
-        G4VPhysicalVolume * phys_resonatorAssembly =
-          resonatorAssembly->GetPhysicalVolume();
 	
         //Do the logical border creation now
-        for (int iSubVol = 0; iSubVol < resonatorAssembly->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
-          std::cout << "TLine sub volume names (to be used for boundaries): " << std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]) << " with material " << std::get<0>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]) << std::endl;
-	  
+        for (size_t iSubVol = 0; iSubVol < resonatorAssembly->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
+          std::cout << "TLine sub volume names (to be used for boundaries): "
+		    << std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol])
+		    << " with material "
+		    << std::get<0>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol])
+		    << std::endl;
 	  
           //Set the chip/vacuum interfaces
           if (std::get<0>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]).find("Vacuum") != std::string::npos) {
             std::string tempName1 = "border_siliconChip_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]);
             std::string tempName2 = "border_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]) + "_siliconChip";
-            G4CMPLogicalBorderSurface * border_siliconChip_resonatorAssemblyEmpty = new G4CMPLogicalBorderSurface(tempName1, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_siliconChip, fSiVacInterface);
-            G4CMPLogicalBorderSurface * border_resonatorAssemblyEmpty_siliconChip = new G4CMPLogicalBorderSurface(tempName2, phys_siliconChip, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fSiVacInterface);
+
+            new G4CMPLogicalBorderSurface(tempName1, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_siliconChip, fSiVacInterface);
+            new G4CMPLogicalBorderSurface(tempName2, phys_siliconChip, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fSiVacInterface);
           }
 
           //Set the chip/aluminum interfaces
           if (std::get<0>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]).find("Aluminum") != std::string::npos) {
             std::string tempName1 = "border_siliconChip_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]);
             std::string tempName2 = "border_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]) + "_siliconChip";
-            G4CMPLogicalBorderSurface * border_siliconChip_resonatorAssemblyConductor = new G4CMPLogicalBorderSurface(tempName1, phys_siliconChip, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fSiAlInterface);
-            G4CMPLogicalBorderSurface * border_resonatorAssemblyConductor_siliconChip = new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_siliconChip, fSiAlInterface);
+
+            new G4CMPLogicalBorderSurface(tempName1, phys_siliconChip, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fSiAlInterface);
+            new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_siliconChip, fSiAlInterface);
           }
 
           //Set the world/vacuum interfaces (probably not necessary but
@@ -503,24 +481,27 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
           if (std::get<0>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]).find("Vacuum") != std::string::npos) {
             std::string tempName1 = "border_world_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]);
             std::string tempName2 = "border_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]) + "_world";
-            G4CMPLogicalBorderSurface * border_world_resonatorAssemblyEmpty = new G4CMPLogicalBorderSurface(tempName1, fWorldPhys, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fVacVacInterface);
-            G4CMPLogicalBorderSurface * border_resonatorAssemblyEmpty_world = new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fWorldPhys, fVacVacInterface);
+
+            new G4CMPLogicalBorderSurface(tempName1, fWorldPhys, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fVacVacInterface);
+            new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fWorldPhys, fVacVacInterface);
           }
 
           //Set the world/aluminum interfaces
           if (std::get<0>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]).find("Aluminum") != std::string::npos) {
             std::string tempName1 = "border_world_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]);
             std::string tempName2 = "border_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]) + "_world";
-            G4CMPLogicalBorderSurface * border_world_resonatorAssemblyConductor = new G4CMPLogicalBorderSurface(tempName1, fWorldPhys, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlVacInterface);
-            G4CMPLogicalBorderSurface * border_resonatorAssemblyConductor_world = new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fWorldPhys, fAlVacInterface);
+
+            new G4CMPLogicalBorderSurface(tempName1, fWorldPhys, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlVacInterface);
+            new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fWorldPhys, fAlVacInterface);
           }
 
           //Set the TLcouplerConductor interface with the ground plane
           if (std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]).find("tlCouplingConductor") != std::string::npos) {
             std::string tempName1 = "border_groundPlane_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]);
             std::string tempName2 = "border_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]) + "_groundPlane";
-            G4CMPLogicalBorderSurface * border_groundPlane_tlCouplingConductor = new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlAlInterface);
-            G4CMPLogicalBorderSurface * border_tlCouplingConductor_groundPlane = new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_groundPlane, fAlAlInterface);
+
+            new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlAlInterface);
+            new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_groundPlane, fAlAlInterface);
           }
 
 
@@ -528,16 +509,18 @@ void QuasiparticleDetectorConstruction::SetupGeometry() {
           if (std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]).find("tlCouplingEmpty") != std::string::npos) {
             std::string tempName1 = "border_groundPlane_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]);
             std::string tempName2 = "border_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]) + "_groundPlane";
-            G4CMPLogicalBorderSurface * border_groundPlane_tlCouplingEmpty = new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlVacInterface);
-            G4CMPLogicalBorderSurface * border_tlCouplingEmpty_groundPlane = new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_groundPlane, fAlVacInterface);
+
+            new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlVacInterface);
+            new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_groundPlane, fAlVacInterface);
           }
 
           //Set the baseLayer/groundplane interface
           if (std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]) == resonatorAssemblyName) {
             std::string tempName1 = "border_groundPlane_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]);
             std::string tempName2 = "border_" + std::get<1>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]) + "_groundPlane";
-            G4CMPLogicalBorderSurface * border_groundPlane_baselayer = new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlAlInterface);
-            G4CMPLogicalBorderSurface * border_baselayer_groundPlane = new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_groundPlane, fAlAlInterface);	      
+
+            new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), fAlAlInterface);
+            new G4CMPLogicalBorderSurface(tempName2, std::get<2>(resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol]), phys_groundPlane, fAlAlInterface);	      
           }
         }
       }

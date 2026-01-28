@@ -5,6 +5,8 @@
 
 /// \file ValidationDetectorConstruction.cc
 ///\brief Implementation of the ValidationDetectorConstruction class
+//
+//  20260109  M. Kelsey -- G4CMP-569: Remove unused local variables.
 
 #include "ValidationDetectorConstruction.hh"
 #include "G4CMPLogicalBorderSurface.hh"
@@ -45,8 +47,9 @@ ValidationDetectorConstruction::ValidationDetectorConstruction()
     fNiobium(0), fWorldPhys(0), fVacSurfProp(0), fSiGeSurfProp(0),
     fGeAl1SurfProp(0), fAl1Al2FromAboveSurfProp(0),fAl1Al2FromBelowSurfProp(0),
     fAl2NbSurfProp(0), fAl2Al3SurfProp(0), fAl3NbSurfProp(0),
-    electrodeSensitivity(0), fConstructed(false) {;}
-
+    fConstructed(false), fVacVacInterface(0), fAlVacInterface(0),
+    fAlAlInterface(0), fSiAlInterface(0), fSiCuInterface(0),
+    fSiVacInterface(0), fCuVacInterface(0) {;}
 
 ValidationDetectorConstruction::~ValidationDetectorConstruction() {
   delete fVacSurfProp;
@@ -624,18 +627,15 @@ void ValidationDetectorConstruction::SetupGeometry() {
     LM->RegisterLattice(phys_siliconChip,phys_siliconLattice);
 
     //Set up border surfaces
-    G4CMPLogicalBorderSurface * border_siliconChip_world
-      = new G4CMPLogicalBorderSurface("border_siliconChip_world",
-                                      phys_siliconChip, fWorldPhys,
-                                      fSiVacInterface);
-
+    new G4CMPLogicalBorderSurface("border_siliconChip_world",
+				  phys_siliconChip, fWorldPhys,
+				  fSiVacInterface);
     
     //If desired, set up the copper qubit housing
     if (dp_useQubitHousing) {           
       ValidationQubitHousing * qubitHousing
         = new ValidationQubitHousing(0,G4ThreeVector(0,0,0),"QubitHousing",
                                      worldLogical,false,0,checkOverlaps);
-      G4LogicalVolume * log_qubitHousing = qubitHousing->GetLogicalVolume();
       G4VPhysicalVolume * phys_qubitHousing = qubitHousing->GetPhysicalVolume();
 
       //Set up lattice properties for copper housing
@@ -647,34 +647,30 @@ void ValidationDetectorConstruction::SetupGeometry() {
 
       
       //Set up the logical border surface
-      G4CMPLogicalBorderSurface * border_siliconChip_qubitHousing
-        = new G4CMPLogicalBorderSurface("border_siliconChip_qubitHousing",
-                                        phys_siliconChip, phys_qubitHousing,
-                                        fSiCuInterface);
-      G4CMPLogicalBorderSurface * border_qubitHousing_siliconChip
-        = new G4CMPLogicalBorderSurface("border_qubitHousing_siliconChip",
-                                        phys_qubitHousing, phys_siliconChip,
-                                        fSiCuInterface);
-      G4CMPLogicalBorderSurface * border_qubitHousing_world
-        = new G4CMPLogicalBorderSurface("border_qubitHousing_world",
-                                        phys_qubitHousing, fWorldPhys,
-                                        fCuVacInterface);
+      new G4CMPLogicalBorderSurface("border_siliconChip_qubitHousing",
+				    phys_siliconChip, phys_qubitHousing,
+				    fSiCuInterface);
 
+      new G4CMPLogicalBorderSurface("border_qubitHousing_siliconChip",
+				    phys_qubitHousing, phys_siliconChip,
+				    fSiCuInterface);
+
+      new G4CMPLogicalBorderSurface("border_qubitHousing_world",
+				    phys_qubitHousing, fWorldPhys,
+				    fCuVacInterface);
     }
 
     
-    //Now set up the ground plane, in which the transmission line, resonators, and qubits will be located.
+    //Now set up the ground plane, in which the transmission line, resonators,
+    //and qubits will be located.
     if (dp_useGroundPlane) {    
-    
       G4Box * solid_groundPlane
         = new G4Box("GroundPlane_solid",0.5*dp_groundPlaneDimX,
                     0.5*dp_groundPlaneDimY,0.5*dp_groundPlaneDimZ);
     
-    
       //Now attribute a physical material to the chip
       G4LogicalVolume * log_groundPlane
         = new G4LogicalVolume(solid_groundPlane,fAluminum,"GroundPlane_log");
-    
     
       //Now, create a physical volume and G4PVPlacement for storing as the
       //final output
@@ -695,31 +691,24 @@ void ValidationDetectorConstruction::SetupGeometry() {
       phys_groundPlaneLattice->SetMillerOrientation(1,0,0);
       LM->RegisterLattice(phys_groundPlane,phys_groundPlaneLattice);
 
-      
-      
       //Set up the logical border surface
-      G4CMPLogicalBorderSurface * border_siliconChip_groundPlane
-        = new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
-                                        phys_siliconChip, phys_groundPlane,
-                                        fSiAlInterface);
-      G4CMPLogicalBorderSurface * border_groundPlane_siliconChip
-        = new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
-                                        phys_groundPlane, phys_siliconChip,
-                                        fSiAlInterface);
-      G4CMPLogicalBorderSurface * border_world_groundPlane
-        = new G4CMPLogicalBorderSurface("border_world_groundPlane", fWorldPhys,
-                                        phys_groundPlane, fAlVacInterface);
-      G4CMPLogicalBorderSurface * border_groundPlane_world
-        = new G4CMPLogicalBorderSurface("border_groundPlane_world",
-                                        phys_groundPlane, fWorldPhys,
-                                        fAlVacInterface);
+      new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
+				    phys_siliconChip, phys_groundPlane,
+				    fSiAlInterface);
 
+      new G4CMPLogicalBorderSurface("border_siliconChip_groundPlane",
+				    phys_groundPlane, phys_siliconChip,
+				    fSiAlInterface);
 
-    
+      new G4CMPLogicalBorderSurface("border_world_groundPlane", fWorldPhys,
+				    phys_groundPlane, fAlVacInterface);
+
+      new G4CMPLogicalBorderSurface("border_groundPlane_world",
+				    phys_groundPlane, fWorldPhys,
+				    fAlVacInterface);
     
       //Now set up the transmission line
       if (dp_useTransmissionLine) {
-	
         //Since it's within the ground plane exactly;
         //0.5*(dp_housingDimZ) + dp_eps + dp_groundPlaneDimZ*0.5 ); 
         G4ThreeVector transmissionLineTranslate(0,0,0.0);
@@ -728,17 +717,13 @@ void ValidationDetectorConstruction::SetupGeometry() {
                                            "TransmissionLine",log_groundPlane,
                                            false,0,LM,fLogicalLatticeContainer,
                                            fBorderContainer,checkOverlaps);
-        G4LogicalVolume * log_tLine = tLine->GetLogicalVolume();
-        G4VPhysicalVolume * phys_tLine = tLine->GetPhysicalVolume();
-
-
 
         //Now, if we're using the chip and ground plane AND the transmission
         //line. This gets a bit hairy, since the transmission line is
         //composite of both Nb and vacuum. So we'll access the list of
         //physical objects present in it and link those one-by-one to the
         //silicon chip and to the world
-        for (int iSubVol = 0; iSubVol < tLine->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
+        for (unsigned int iSubVol = 0; iSubVol < tLine->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
 
           std::tuple<std::string,G4String,G4VPhysicalVolume*> theTLTuple
             = tLine->GetListOfAllFundamentalSubVolumes()[iSubVol];
@@ -757,37 +742,26 @@ void ValidationDetectorConstruction::SetupGeometry() {
             + "_siliconChip";
 	  
           if (std::get<0>(theTLTuple).find("Vacuum") != std::string::npos) {
-
-            G4CMPLogicalBorderSurface *
-              border1_siliconChip_transmissionLineEmpty
-              = new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip,
-                                              std::get<2>(theTLTuple),
-                                              fSiVacInterface);
+            new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip,
+					  std::get<2>(theTLTuple),
+					  fSiVacInterface);
 	    
-            G4CMPLogicalBorderSurface *
-              border2_siliconChip_transmissionLineEmpty
-              = new G4CMPLogicalBorderSurface(tempName1b,
-                                              std::get<2>(theTLTuple),
-                                              phys_siliconChip,
-                                              fSiVacInterface);
+            new G4CMPLogicalBorderSurface(tempName1b,
+					  std::get<2>(theTLTuple),
+					  phys_siliconChip,
+					  fSiVacInterface);
           }
 	  
           if (std::get<0>(theTLTuple).find("Aluminum") != std::string::npos) {
-	    
-            G4CMPLogicalBorderSurface *
-              border1_siliconChip_transmissionLineConductor
-              = new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip,
-                                              std::get<2>(theTLTuple),
-                                              fSiAlInterface);
+	    new G4CMPLogicalBorderSurface(tempName1a, phys_siliconChip,
+					  std::get<2>(theTLTuple),
+					  fSiAlInterface);
 
-            G4CMPLogicalBorderSurface *
-              border2_siliconChip_transmissionLineConductor
-              = new G4CMPLogicalBorderSurface(tempName1b,
-                                              std::get<2>(theTLTuple),
-                                              phys_siliconChip,
-                                              fSiAlInterface);
+            new G4CMPLogicalBorderSurface(tempName1b,
+					  std::get<2>(theTLTuple),
+					  phys_siliconChip,
+					  fSiAlInterface);
           }
-
 
           //Set the world/vac and world/Al interfaces to be symmetric in both
           //dimensions
@@ -796,32 +770,24 @@ void ValidationDetectorConstruction::SetupGeometry() {
             "_world";
 	  
           if (std::get<0>(theTLTuple).find("Vacuum") != std::string::npos) {
+	    new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys,
+					  std::get<2>(theTLTuple),
+					  fVacVacInterface);
 
-            G4CMPLogicalBorderSurface *
-              border1_world_transmissionLineEmpty
-              = new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys,
-                                              std::get<2>(theTLTuple),
-                                              fVacVacInterface);
-            G4CMPLogicalBorderSurface *
-              border2_world_transmissionLineEmpty
-              = new G4CMPLogicalBorderSurface(tempName2b,
-                                              std::get<2>(theTLTuple),
-                                              fWorldPhys,fVacVacInterface);
+            new G4CMPLogicalBorderSurface(tempName2b,
+					  std::get<2>(theTLTuple),
+					  fWorldPhys,fVacVacInterface);
           }
+
           if (std::get<0>(theTLTuple).find("Aluminum") != std::string::npos) {
-	    
-            G4CMPLogicalBorderSurface *
-              border1_world_transmissionLineConductor
-              = new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys,
-                                              std::get<2>(theTLTuple),
-                                              fAlVacInterface);
-            G4CMPLogicalBorderSurface *
-              border2_world_transmissionLineConductor
-              = new G4CMPLogicalBorderSurface(tempName2b,
-                                              std::get<2>(theTLTuple),
-                                              fWorldPhys,fAlVacInterface);
+	    new G4CMPLogicalBorderSurface(tempName2a, fWorldPhys,
+					  std::get<2>(theTLTuple),
+					  fAlVacInterface);
+
+            new G4CMPLogicalBorderSurface(tempName2b,
+					  std::get<2>(theTLTuple),
+					  fWorldPhys,fAlVacInterface);
           }
-	  
 	  
           //Space here for linking to GROUND PLANE. Only need to link vacuum
           //ones since they're fully enclosing TL
@@ -830,28 +796,22 @@ void ValidationDetectorConstruction::SetupGeometry() {
           std::string tempName3b = "border_" + std::get<1>(theTLTuple) +
             "_groundPlane";	  
           if (std::get<0>(theTLTuple).find("Vacuum") != std::string::npos) {
-            G4CMPLogicalBorderSurface *
-              border1_groundPlane_transmissionLineEmpty
-              = new G4CMPLogicalBorderSurface(tempName3a, phys_groundPlane,
-                                              std::get<2>(theTLTuple),
-                                              fAlVacInterface);
+            new G4CMPLogicalBorderSurface(tempName3a, phys_groundPlane,
+					  std::get<2>(theTLTuple),
+					  fAlVacInterface);
 	    
-            G4CMPLogicalBorderSurface *
-              border2_groundPlane_transmissionLineEmpty
-              = new G4CMPLogicalBorderSurface(tempName3b,
-                                              std::get<2>(theTLTuple),
-                                              phys_groundPlane,
-                                              fAlVacInterface);
+            new G4CMPLogicalBorderSurface(tempName3b,
+					  std::get<2>(theTLTuple),
+					  phys_groundPlane,
+					  fAlVacInterface);
           }
         }
       }
-    
   
       //Now set up a set of 6 resonator assemblies
       if (dp_useResonatorAssembly) {
         int nR = 6;
         for (int iR = 0; iR < nR; ++iR) {
-      
           //First, get the translation vector for the resonator assembly
           //For the top three, don't do a rotation. For the bottom three, do
           G4ThreeVector resonatorAssemblyTranslate(0,0,0);
@@ -878,7 +838,7 @@ void ValidationDetectorConstruction::SetupGeometry() {
           }
 	
           char name[400];
-          sprintf(name,"ResonatorAssembly_%d",iR);
+          snprintf(name,sizeof(name),"ResonatorAssembly_%d",iR);
           G4String resonatorAssemblyName(name);
           ValidationResonatorAssembly * resonatorAssembly
             = new ValidationResonatorAssembly(rotAssembly,
@@ -888,13 +848,8 @@ void ValidationDetectorConstruction::SetupGeometry() {
                                               0,LM,fLogicalLatticeContainer,
                                               fBorderContainer,checkOverlaps);
 
-          G4LogicalVolume * log_resonatorAssembly
-            = resonatorAssembly->GetLogicalVolume();
-          G4VPhysicalVolume * phys_resonatorAssembly
-            = resonatorAssembly->GetPhysicalVolume();
-
           //Do the logical border creation now
-          for (int iSubVol = 0; iSubVol < resonatorAssembly->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
+          for (unsigned int iSubVol = 0; iSubVol < resonatorAssembly->GetListOfAllFundamentalSubVolumes().size(); ++iSubVol) {
 
             std::tuple<std::string,G4String,G4VPhysicalVolume*> theResTuple
               = resonatorAssembly->GetListOfAllFundamentalSubVolumes()[iSubVol];
@@ -911,20 +866,17 @@ void ValidationDetectorConstruction::SetupGeometry() {
                 + std::get<1>(theResTuple);
               std::string tempName2 = "border_"
                 + std::get<1>(theResTuple) + "_siliconChip";
-              G4CMPLogicalBorderSurface *
-                border_siliconChip_resonatorAssemblyEmpty
-                = new G4CMPLogicalBorderSurface(tempName1,
-                                                std::get<2>(theResTuple),
-                                                phys_siliconChip,
-                                                fSiVacInterface);
+
+              new G4CMPLogicalBorderSurface(tempName1,
+					    std::get<2>(theResTuple),
+					    phys_siliconChip,
+					    fSiVacInterface);
               G4cout << "Setting interface for " << tempName1 << " to fSiVacInterface" << G4endl;
 	      
-              G4CMPLogicalBorderSurface *
-                border_resonatorAssemblyEmpty_siliconChip
-                = new G4CMPLogicalBorderSurface(tempName2,
-                                                phys_siliconChip,
-                                                std::get<2>(theResTuple),
-                                                fSiVacInterface);
+              new G4CMPLogicalBorderSurface(tempName2,
+					    phys_siliconChip,
+					    std::get<2>(theResTuple),
+					    fSiVacInterface);
               G4cout << "Setting interface for " << tempName2 << " to fSiVacInterface" << G4endl;
             }
 
@@ -934,19 +886,16 @@ void ValidationDetectorConstruction::SetupGeometry() {
                 std::get<1>(theResTuple);
               std::string tempName2 = "border_" + std::get<1>(theResTuple) +
                 "_siliconChip";
-              G4CMPLogicalBorderSurface *
-                border_siliconChip_resonatorAssemblyConductor
-                = new G4CMPLogicalBorderSurface(tempName1, phys_siliconChip,
-                                                std::get<2>(theResTuple),
-                                                fSiAlInterface);
+
+              new G4CMPLogicalBorderSurface(tempName1, phys_siliconChip,
+					    std::get<2>(theResTuple),
+					    fSiAlInterface);
               G4cout << "Setting interface for " << tempName1 << " to fSiAlInterface" << G4endl;
 	      
-              G4CMPLogicalBorderSurface *
-                border_resonatorAssemblyConductor_siliconChip
-                = new G4CMPLogicalBorderSurface(tempName2,
-                                                std::get<2>(theResTuple),
-                                                phys_siliconChip,
-                                                fSiAlInterface);
+              new G4CMPLogicalBorderSurface(tempName2,
+					    std::get<2>(theResTuple),
+					    phys_siliconChip,
+					    fSiAlInterface);
               G4cout << "Setting interface for " << tempName2 << " to fSiAlInterface" << G4endl;
             }
 	    
@@ -956,18 +905,15 @@ void ValidationDetectorConstruction::SetupGeometry() {
                 std::get<1>(theResTuple);
               std::string tempName2 = "border_" + std::get<1>(theResTuple) +
                 "_world";
-              G4CMPLogicalBorderSurface *
-                border_world_resonatorAssemblyEmpty
-                = new G4CMPLogicalBorderSurface(tempName1, fWorldPhys,
-                                                std::get<2>(theResTuple),
-                                                fVacVacInterface);
+
+              new G4CMPLogicalBorderSurface(tempName1, fWorldPhys,
+					    std::get<2>(theResTuple),
+					    fVacVacInterface);
               G4cout << "Setting interface for " << tempName1 << " to fVacVacInterface" << G4endl;
 	      
-              G4CMPLogicalBorderSurface *
-                border_resonatorAssemblyEmpty_world
-                = new G4CMPLogicalBorderSurface(tempName2,
-                                                std::get<2>(theResTuple),
-                                                fWorldPhys, fVacVacInterface);
+              new G4CMPLogicalBorderSurface(tempName2,
+					    std::get<2>(theResTuple),
+					    fWorldPhys, fVacVacInterface);
               G4cout << "Setting interface for " << tempName2 << " to fVacVacInterface" << G4endl;
             }
 
@@ -977,18 +923,15 @@ void ValidationDetectorConstruction::SetupGeometry() {
                 std::get<1>(theResTuple);
               std::string tempName2 = "border_" + std::get<1>(theResTuple) +
                 "_world";
-              G4CMPLogicalBorderSurface *
-                border_world_resonatorAssemblyConductor
-                = new G4CMPLogicalBorderSurface(tempName1, fWorldPhys,
-                                                std::get<2>(theResTuple),
-                                                fAlVacInterface);
+
+              new G4CMPLogicalBorderSurface(tempName1, fWorldPhys,
+					    std::get<2>(theResTuple),
+					    fAlVacInterface);
               G4cout << "Setting interface for " << tempName1 << " to fAlVacInterface" << G4endl;
 	      
-              G4CMPLogicalBorderSurface *
-                border_resonatorAssemblyConductor_world
-                = new G4CMPLogicalBorderSurface(tempName2,
-                                                std::get<2>(theResTuple),
-                                                fWorldPhys, fAlVacInterface);
+              new G4CMPLogicalBorderSurface(tempName2,
+					    std::get<2>(theResTuple),
+					    fWorldPhys, fAlVacInterface);
               G4cout << "Setting interface for " << tempName2 << " to fAlVacInterface" << G4endl;
             }
 
@@ -998,18 +941,15 @@ void ValidationDetectorConstruction::SetupGeometry() {
                 std::get<1>(theResTuple);
               std::string tempName2 = "border_" + std::get<1>(theResTuple) +
                 "_groundPlane";
-              G4CMPLogicalBorderSurface *
-                border_groundPlane_tlCouplingConductor
-                = new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
-                                                std::get<2>(theResTuple),
-                                                fAlAlInterface);
+
+              new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
+					    std::get<2>(theResTuple),
+					    fAlAlInterface);
               G4cout << "Setting interface for " << tempName1 << " to fAlAlInterface" << G4endl;
-              G4CMPLogicalBorderSurface *
-                border_tlCouplingConductor_groundPlane
-                = new G4CMPLogicalBorderSurface(tempName2,
-                                                std::get<2>(theResTuple),
-                                                phys_groundPlane,
-                                                fAlAlInterface);
+              new G4CMPLogicalBorderSurface(tempName2,
+					    std::get<2>(theResTuple),
+					    phys_groundPlane,
+					    fAlAlInterface);
               G4cout << "Setting interface for " << tempName2 << " to fAlAlInterface" << G4endl;
             }
 	    
@@ -1020,19 +960,16 @@ void ValidationDetectorConstruction::SetupGeometry() {
                 std::get<1>(theResTuple);
               std::string tempName2 = "border_" + std::get<1>(theResTuple) +
                 "_groundPlane";
-              G4CMPLogicalBorderSurface *
-                border_groundPlane_tlCouplingEmpty
-                = new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
-                                                std::get<2>(theResTuple),
-                                                fAlVacInterface);
+
+              new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
+					    std::get<2>(theResTuple),
+					    fAlVacInterface);
               G4cout << "Setting interface for " << tempName1 << " to fAlVacInterface" << G4endl;
 	      
-              G4CMPLogicalBorderSurface *
-                border_tlCouplingEmpty_groundPlane
-                = new G4CMPLogicalBorderSurface(tempName2,
-                                                std::get<2>(theResTuple),
-                                                phys_groundPlane,
-                                                fAlVacInterface);
+              new G4CMPLogicalBorderSurface(tempName2,
+					    std::get<2>(theResTuple),
+					    phys_groundPlane,
+					    fAlVacInterface);
               G4cout << "Setting interface for " << tempName2 << " to fAlVacInterface" << G4endl;
 	      
             }
@@ -1043,25 +980,22 @@ void ValidationDetectorConstruction::SetupGeometry() {
                 std::get<1>(theResTuple);
               std::string tempName2 = "border_" + std::get<1>(theResTuple) +
                 "_groundPlane";
-              G4CMPLogicalBorderSurface * border_groundPlane_baselayer
-                = new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
-                                                std::get<2>(theResTuple),
-                                                fAlAlInterface);
+
+              new G4CMPLogicalBorderSurface(tempName1, phys_groundPlane,
+					    std::get<2>(theResTuple),
+					    fAlAlInterface);
               G4cout << "---Test Setting interface for " << tempName1 << " to fAlAlInterface" << G4endl;
 	      
-              G4CMPLogicalBorderSurface * border_baselayer_groundPlane
-                = new G4CMPLogicalBorderSurface(tempName2,
-                                                std::get<2>(theResTuple),
-                                                phys_groundPlane,
-                                                fAlAlInterface);
+              new G4CMPLogicalBorderSurface(tempName2,
+					    std::get<2>(theResTuple),
+					    phys_groundPlane,
+					    fAlAlInterface);
               G4cout << "---Test Setting interface for " << tempName2 << " to fAlAlInterface" << G4endl;
             }
           }
         }
       }
     }
-  } else {
-    
   }
 }
 

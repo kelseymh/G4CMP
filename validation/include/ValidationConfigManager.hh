@@ -8,9 +8,14 @@
 ///     G4CMP validation example. Looks for environment variables at
 ///		initialization to set default values; active values may be
 ///		changed via macro commands (see ValidationConfigMessenger).
+//
+//  20260109  M. Kelsey -- Missing Geant4 type declarations
 
 #ifndef ValidationConfigManager_hh
 #define ValidationConfigManager_hh 1
+
+#include "G4Types.hh"
+#include "G4String.hh"
 
 class ValidationConfigMessenger;
 

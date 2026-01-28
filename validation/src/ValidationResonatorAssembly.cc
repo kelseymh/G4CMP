@@ -23,6 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+// 20260109  M. Kelsey -- G4CMP-569: Remove unused local variables.
+
 /// \file ValidationResonatorAssembly.cc
 /// \brief Class implementing the resonator assembly geometry from a bunch
 ///  of little pieces
@@ -101,8 +103,6 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //Start with some preliminaries - NIST manager
   G4NistManager* nist = G4NistManager::Instance();
   G4Material* aluminum_mat = nist->FindOrBuildMaterial("G4_Al");
-  G4Material* air_mat = nist->FindOrBuildMaterial("G4_AIR");
-  bool checkOverlaps = true;
 
   //Set up the logical lattices for the aluminum
   if (logicalLatticeContainer.count("Aluminum") == 0) {
@@ -120,21 +120,11 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   
 
   //Confirm no issues with borders being present
-  if (borderContainer.count("AlAl") == 0) {
-    std::cout << "Uh oh. Trying to access borderContainer[AlAl] but it's not "
-              << "there..." << std::endl;
-  }
-  G4CMPSurfaceProperty* AlAlBoundary = borderContainer["AlAl"];
   if (borderContainer.count("AlVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlVac] but it's not "
               << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlVacBoundary = borderContainer["AlVac"];
-  if (borderContainer.count("VacVac") == 0) {
-    std::cout << "Uh oh. Trying to access borderContainer[VacVac] but it's not "
-              << "there..." << std::endl; }
-  G4CMPSurfaceProperty* VacVacBoundary = borderContainer["VacVac"];  
-
   
   //Start with a base layer of aluminum into which our objects will fit. We'll
   //return this in the end.
@@ -182,7 +172,7 @@ ConstructResonatorAssembly(G4RotationMatrix * pRot,
   //Now that we have the resonator line and shunt capacitor, we should loop
   //through the fundamental volumes list and start making connections between
   //the empties and the in-plane base layer of which they are children
-  for (int iV = 0; iV < fFundamentalVolumeList.size(); ++iV) {
+  for (unsigned int iV = 0; iV < fFundamentalVolumeList.size(); ++iV) {
     if (std::get<0>(fFundamentalVolumeList[iV]).find("Vacuum") !=
         std::string::npos) {
       G4String name1 = std::get<1>(fFundamentalVolumeList[iV]) + "_baseAlLayer";
@@ -221,7 +211,6 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   G4NistManager* nist = G4NistManager::Instance();
   G4Material* aluminum_mat = nist->FindOrBuildMaterial("G4_Al");
   G4Material* air_mat = nist->FindOrBuildMaterial("G4_AIR");
-  bool checkOverlaps = true;
 
   //Set up lattice information
   if (logicalLatticeContainer.count("Aluminum") == 0) {
@@ -237,22 +226,11 @@ MakeShuntCapacitorCross(G4String pName, G4LogicalVolume * log_baseAlLayer,
   air_vis->SetVisibility(true);
 
   //Confirm no issues with borders being present
-  if (borderContainer.count("AlAl") == 0) {
-    std::cout << "Uh oh. Trying to access borderContainer[AlAl] but it's not "
-              << "there..." << std::endl;
-  }
-  G4CMPSurfaceProperty* AlAlBoundary = borderContainer["AlAl"];
   if (borderContainer.count("AlVac") == 0) {
     std::cout << "Uh oh. Trying to access borderContainer[AlVac] but it's not "
               << "there..." << std::endl;
   }
   G4CMPSurfaceProperty* AlVacBoundary = borderContainer["AlVac"];
-  if (borderContainer.count("VacVac") == 0) {
-    std::cout << "Uh oh. Trying to access borderContainer[VacVac] but it's not "
-              << "there..." << std::endl;
-  }
-  G4CMPSurfaceProperty* VacVacBoundary = borderContainer["VacVac"];  
-  
 
   //This will be made in two batches: one for "empty" space and one for
   //"conductor" space (the line itself)
@@ -357,7 +335,6 @@ MakeResonatorLine(G4String pName,
   G4NistManager* nist = G4NistManager::Instance();
   G4Material* aluminum_mat = nist->FindOrBuildMaterial("G4_Al");
   G4Material* air_mat = nist->FindOrBuildMaterial("G4_AIR");
-  bool checkOverlaps = true;
 
   //Set up lattice information
   if (logicalLatticeContainer.count("Aluminum") == 0) {

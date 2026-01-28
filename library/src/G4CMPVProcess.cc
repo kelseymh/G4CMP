@@ -16,6 +16,9 @@
 // 20210915  Change diagnostic output to verbose=3 or higher.
 // 20250905  G4CMP-500 -- Now using a fundamental SC parameter (i.e. not
 //              the gap0) to determine if we're in a superconducting volume
+// 20260119  G4CMP-574 -- Adding a catch in to prevent querying of normal
+//              charge transport parameters in superconducting volumes
+//              during charge turnaround steps
 
 #include "G4CMPVProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -192,6 +195,9 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
     UpdateSCAfterLatticeChange();
   }
 
+  //Protect against scenarios where we have a charge impinging on a lattice
+  //which doesn't have charge valley info in the config file. (Temporary)
+  if( !IsLatticeChangeSafeForRateQuery() ) return DBL_MAX;
   
   *condition = (rateModel && rateModel->IsForced()) ? Forced : NotForced;
 
@@ -211,4 +217,26 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 	   << " MFP = " << mfp/m << " m" << G4endl;
   }
   return mfp;
+}
+
+//Do a cross check to see if the track's particle type is conducive to
+//attempting a rate query that draws on a specific kind of material
+//property from the config.txt filer
+bool G4CMPVProcess::IsLatticeChangeSafeForRateQuery() {
+
+  //First scenario: if we have a charge. If we're in a superconductor,
+  //we don't want to try to query rates of IV scattering, etc.
+  if (IsChargeCarrier()) {
+
+    //Use the presence or absence of a band gap as an indicator that
+    //we do or do not have the full set of charge transport parameters.
+    if ((this->theLattice)->GetBandGapEnergy() == 0) {      
+      return false;
+    }
+    return true;
+  }
+
+  //Can/should also put phonon and QP conditions here, but going to keep
+  //additions minimal for now.
+  return true;
 }

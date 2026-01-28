@@ -7,10 +7,9 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 Project branch for Geant4 v11 migration -- subtask tags go below!
-2026-01-07  G4CMP-494 : Migrate code to be compatible with G4 v11 and v10.
+2026-01-28  G4CMP-494 : Migrate code to be compatible with G4 v11 and v10.
 2026-01-07  G4CMP-565 : Apply G4 v11 migrations to new quasiparticle code.
 2026-01-07  G4CMP-563 : Remove copy operators from G4CMPParticleChangeForQP.
-2026-01-07  G4CMP-556 : Replace Geant4_LICENSE with plain text version.
 2025-12-11  G4CMP-553 : Update vis export in examples, complete hyperN daughters.
 2025-12-03  G4CMP-552 : To silence DecayChannel warnings, add hyperN daughters.
 2025-12-03  G4CMP-551 : Fix compatibility implementation of G4StrUtil::*strip()
@@ -24,6 +23,16 @@ Project branch for Geant4 v11 migration -- subtask tags go below!
 2025-11-16  G4CMP-524 : Replace std::random_shuffle with std::shuffle.
 2025-11-16  G4CMP-522 : Replace G4VTouchable forward decl with #include.
 Project branch for Geant4 v11 migration -- subtask tags go above!
+
+2026-01-28  g4cmp-V10-00-02 Fixes to compiler warnings in new QP tracking.
+2026-01-27  G4CMP-579 : Address compiler warnings in g4cmp-V10-00-01.
+
+2026-01-22  g4cmp-V10-00-01 Fixes to new QP tracking to restore good behavior.
+2026-01-22  G4CMP-567 : Restore MaxReflections behaviour for zero-bounces case.
+2026-01-19  G4CMP-574 : Fix segfault from errant charge transport queries in
+                        superconducting volumes during charge turnaround steps
+2026-01-09  G4CMP-568 : Fix GNUmakefile and CMakeLists.txt for QP examples.
+2026-01-07  G4CMP-556 : Replace Geant4_LICENSE with plain text version.
 
 2026-01-07  g4cmp-V10-00-00 Quasiparticle tracking in superconducting films.
 2026-01-07  G4CMP-219 : Quasiparticle tracking in superconducting films.

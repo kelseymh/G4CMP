@@ -17,6 +17,7 @@
 // 20211001  Add utilities to get lattice from touchable, find valley close
 //		to specified direction.
 // 20250905  G4CMP-500 -- Added a function to make nicer robust 2D vectors
+// 20260111  G4CMP-567 -- Use geometric tolerance prescribed by G4VSolid
 
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -903,7 +904,7 @@ G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step, const G4ThreeVector& i
   //what happens when we don't have a point on a bonafide surface -- that code
   //should be run first to confirm that we're indeed on a boundary surface.
   //But we do need something to tell us which surface's normal to reflect over.
-  double tolerance = 1.0e-11 * mm; //Hardcoded -- not great...
+  G4double tolerance = preSolid->GetTolerance();
   if (postStepInPrePV == kSurface) {
 
     //Reflect over the pre-PV normal

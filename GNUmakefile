@@ -16,12 +16,13 @@
 # Split XXX.% targets to ensure everything gets built properly
 # Add new caustics example
 # Fix longstanding bug with loop in "examples.%" target
+# Add new validation directory and quasiparticle example to lists
 
 # G4CMP requires Geant4 10.4 or later
 g4min := 10.4
 
-.PHONY : library examples tests tools	# Targets named for directory
-.PHONY : phonon charge sensors caustics
+.PHONY : library examples tests tools validation	# Directory targets
+.PHONY : phonon charge sensors caustics quasiparticle
 .PHONY : all lib dist clean qhull
 
 # Initial target provides guidance if user tries bare |make|
@@ -38,8 +39,10 @@ help :
 	 echo "charge        Builds charge-carrier (e-/h) example" ;\
 	 echo "sensors       Builds FET digitization sensor example" ;\
 	 echo "caustics      Builds example to show phonon caustics picture" ;\
+	 echo "quasiparticle Builds example to show superconductor model" ;\
 	 echo "tools         Builds support utilities (lookup table maker)" ;\
 	 echo "tests         Builds small test programs for classes" ;\
+	 echo "validation    Builds validation directory (QP only)" ;\
 	 echo "clean         Remove libraries and examples" ;\
 	 echo ;\
 	 echo "Users may pass targets through to directories as well:" ;\
@@ -53,14 +56,15 @@ help :
 
 # User targets
 
-EXAMPLES := phonon charge sensors caustics
-all : lib examples tests tools
+EXAMPLES := phonon charge sensors caustics quasiparticle
+all : lib examples tests tools validation
 lib : library
 examples : $(EXAMPLES)
 
 clean :		# FIXME: This doesn't work as dependencies
 	-$(MAKE) tests.clean
 	-$(MAKE) tools.clean
+	-$(MAKE) validation.clean
 	-$(MAKE) examples.clean
 	-$(MAKE) library.clean 
 
@@ -94,6 +98,9 @@ tests.% :
 tools.% :
 	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
 
+validation.% :
+	-$(MAKE) -C $(basename $@) $(subst .,,$(suffix $@))
+
 $(EXAMPLES) : library
 	@echo Building examples/$@
 	-@$(MAKE) -C examples/$@
@@ -102,7 +109,8 @@ $(EXAMPLES) : library
 phonon.% \
 charge.% \
 sensors.% \
-caustics.% :
+caustics.% \
+quasiparticle.% :
 	-$(MAKE) -C examples/$(basename $@) $(subst .,,$(suffix $@))
 
 # FIXME: These should work with dependencies, but don't
@@ -113,6 +121,8 @@ examples.% :
 
 tests : tests.all
 tools : tools.all
+validation :
+	-$(MAKE) -C $@
 
 # Make source code distribution (construct using symlinks and tar -h)
 
