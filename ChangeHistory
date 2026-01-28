@@ -6,7 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
-2026-01-27  G4CMP-579 : Address compiler warning in g4cmp-V10-00-01.
+2026-01-27  G4CMP-579 : Address compiler warnings in g4cmp-V10-00-01.
 
 2026-01-22  g4cmp-V10-00-01 Fixes to new QP tracking to restore good behavior.
 2026-01-22  G4CMP-567 : Restore MaxReflections behaviour for zero-bounces case.
