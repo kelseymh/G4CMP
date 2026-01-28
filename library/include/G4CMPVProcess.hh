@@ -56,7 +56,7 @@ protected:
 private:
   G4CMPVScatteringRate* rateModel;	// Returns scattering rate in hertz
   
-  bool IsLatticeChangeSafeForRateQuery(const G4Track& aTrack);
+  bool IsLatticeChangeSafeForRateQuery();
   
   // hide assignment operators as private 
   G4CMPVProcess(G4CMPVProcess&);
