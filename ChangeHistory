@@ -6,7 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
-Project branch for Geant4 v11 migration -- subtask tags go below!
+2026-01-28  g4cmp-V10-01-00 Compilation and link compatibility with G4 v11.
 2026-01-28  G4CMP-494 : Migrate code to be compatible with G4 v11 and v10.
 2026-01-07  G4CMP-565 : Apply G4 v11 migrations to new quasiparticle code.
 2026-01-07  G4CMP-563 : Remove copy operators from G4CMPParticleChangeForQP.
@@ -22,7 +22,6 @@ Project branch for Geant4 v11 migration -- subtask tags go below!
 2025-11-16  G4CMP-539 : Use wrapper function for MPT::AddConstProperty().
 2025-11-16  G4CMP-524 : Replace std::random_shuffle with std::shuffle.
 2025-11-16  G4CMP-522 : Replace G4VTouchable forward decl with #include.
-Project branch for Geant4 v11 migration -- subtask tags go above!
 
 2026-01-28  g4cmp-V10-00-02 Fixes to compiler warnings in new QP tracking.
 2026-01-27  G4CMP-579 : Address compiler warnings in g4cmp-V10-00-01.
