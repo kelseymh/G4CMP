@@ -10,30 +10,16 @@
 //
 // 20250410 Implement ParticleChange for phonons to handle displaced reflections
 // 20250413 Add Initialize() implementation to reset updateVol flag
+// 20251116 For G4 11, explicitly remove the copy operators to match base.
+// 20251128 Discard touchable contents after updating.
 
 #include "G4CMPParticleChangeForPhonon.hh"
-#include "G4TouchableHandle.hh"
+#include "G4VTouchable.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Track.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4VPhysicalVolume.hh"
-
-
-// Copy operations should call back to base
-
-G4CMPParticleChangeForPhonon::
-G4CMPParticleChangeForPhonon(const G4CMPParticleChangeForPhonon& right)
-  : G4ParticleChange(right), theTouchableHandle(right.theTouchableHandle),
-    updateVol(right.updateVol) {;}
-
-G4CMPParticleChangeForPhonon&
-G4CMPParticleChangeForPhonon::operator=(const G4CMPParticleChangeForPhonon& right) {
-  G4ParticleChange::operator=(right);
-  updateVol = right.updateVol;
-  theTouchableHandle = right.theTouchableHandle;
-  return *this;
-}
 
 
 // Ensure that local flags are initialized at each step
@@ -56,10 +42,11 @@ G4Step* G4CMPParticleChangeForPhonon::UpdateStepForPostStep(G4Step* pStep) {
     pPostStepPoint->SetMaterial(LV->GetMaterial());
     pPostStepPoint->SetMaterialCutsCouple(LV->GetMaterialCutsCouple());
     pPostStepPoint->SetSensitiveDetector(LV->GetSensitiveDetector());
-
-    // Reset updateVol
-    updateVol = false;
   }
+
+  // Discard used touchable and reset updateVol
+  theTouchableHandle=0;
+  updateVol = false;
 
   // Call base class function
   return G4ParticleChange::UpdateStepForPostStep(pStep);

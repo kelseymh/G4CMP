@@ -9,6 +9,7 @@
 // 20170721  Surface property owns electrode pattern, deletes at end
 // 20170816  Field configuration parameters moved to local configuration
 // 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
+// 20251117 G4CMP-541 -- For G4 v11, replace ::Invisible w/::GetInvisible()
 
 #include "ChargeDetectorConstruction.hh"
 #include "ChargeConfigManager.hh"
@@ -211,7 +212,7 @@ void ChargeDetectorConstruction::SetupGeometry()
   AttachSensitivity(germaniumLogical);
 
   // Visualization attributes
-  worldLogical->SetVisAttributes(G4VisAttributes::Invisible);
+  worldLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
   G4VisAttributes* simpleBoxVisAtt = new G4VisAttributes(G4Colour(1.0,1.0,1.0));
   simpleBoxVisAtt->SetVisibility(true);
   germaniumLogical->SetVisAttributes(simpleBoxVisAtt);

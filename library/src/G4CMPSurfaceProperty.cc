@@ -13,8 +13,10 @@
 // 20200601  G4CMP-206: Need thread-local copies of electrode pointers
 // 20220824  R. Cormier -- Default to scalar probs if no polynomials
 // 20230429  G4CMP-357: Move mutex in GetXyzElectrode() to avoid data race.
+// 20251116  G4CMP-539 -- Use UpdateMPT wrapper function to set properties.
 
 #include "G4CMPSurfaceProperty.hh"
+#include "G4CMPUtils.hh"
 #include "G4CMPVElectrodePattern.hh"
 #include "G4AutoLock.hh"
 #include "G4Threading.hh"
@@ -167,26 +169,26 @@ void G4CMPSurfaceProperty::FillChargeMaterialPropertiesTable(G4double qAbsProb,
                                                              G4double qReflProb,
                                                              G4double eMinK,
                                                              G4double hMinK) {
-  theChargeMatPropTable.AddConstProperty("absProb", qAbsProb);
-  theChargeMatPropTable.AddConstProperty("reflProb", qReflProb);
-  theChargeMatPropTable.AddConstProperty("minKElec", eMinK);
-  theChargeMatPropTable.AddConstProperty("minKHole", hMinK);
+  G4CMP::UpdateMPT(&theChargeMatPropTable, "absProb", qAbsProb);
+  G4CMP::UpdateMPT(&theChargeMatPropTable, "reflProb", qReflProb);
+  G4CMP::UpdateMPT(&theChargeMatPropTable, "minKElec", eMinK);
+  G4CMP::UpdateMPT(&theChargeMatPropTable, "minKHole", hMinK);
 }
 
 void G4CMPSurfaceProperty::FillPhononMaterialPropertiesTable(G4double pAbsProb,
                                                              G4double pReflProb,
                                                              G4double pSpecProb,
                                                              G4double pMinK) {
-  thePhononMatPropTable.AddConstProperty("absProb", pAbsProb);
-  thePhononMatPropTable.AddConstProperty("reflProb", pReflProb);
-  thePhononMatPropTable.AddConstProperty("specProb", pSpecProb);
-  thePhononMatPropTable.AddConstProperty("absMinK", pMinK);
+  G4CMP::UpdateMPT(&thePhononMatPropTable, "absProb", pAbsProb);
+  G4CMP::UpdateMPT(&thePhononMatPropTable, "reflProb", pReflProb);
+  G4CMP::UpdateMPT(&thePhononMatPropTable, "specProb", pSpecProb);
+  G4CMP::UpdateMPT(&thePhononMatPropTable, "absMinK", pMinK);
 }
 
 void G4CMPSurfaceProperty::FillQPMaterialPropertiesTable(G4double qpAbsProb,
-                                                             G4double qpReflProb) {
-  theQPMatPropTable.AddConstProperty("absProb", qpAbsProb);
-  theQPMatPropTable.AddConstProperty("reflProb", qpReflProb);
+							 G4double qpReflProb) {
+  G4CMP::UpdateMPT(&theQPMatPropTable, "absProb", qpAbsProb);
+  G4CMP::UpdateMPT(&theQPMatPropTable, "reflProb", qpReflProb);
 }
 
 

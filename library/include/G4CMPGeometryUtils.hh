@@ -22,18 +22,20 @@
 //		to specified direction.
 // 20250905  R. Linehan -- Add a function to robustify the random 2d vector
 //           generation from 3D random vector
+// 20251116  For G4 11, use #include "G4VTouchable.hh"
 
 #include "G4ThreeVector.hh"
+#include "G4VTouchable.hh"
 
 class G4LatticePhysical;
+class G4LogicalVolume;
 class G4Navigator;
 class G4Step;
 class G4StepPoint;
 class G4Track;
 class G4VPhysicalVolume;
-class G4LogicalVolume;
-class G4VTouchable;
 class G4VSolid;
+
 
 namespace G4CMP {
 
