@@ -25,6 +25,7 @@
 //		gradient (field) precalc in UseMesh functions.
 // 20201002  Report tetrahedra errors during FillTInverse() initialization.
 // 20240920  G4CMP-244: Replace TetraIdx with function to access G4Cache.
+// 20260120  G4CMP-558: Remove array dimension in GetValue(), GetGrad().
 
 #include "G4CMPTriLinearInterp.hh"
 #include "G4CMPConfigManager.hh"
@@ -455,7 +456,7 @@ void G4CMPTriLinearInterp::FillGradients() {
 // Evaluate mesh at arbitrary location, returning potential or gradient
 
 G4double 
-G4CMPTriLinearInterp::GetValue(const G4double pos[3], G4bool quiet) const {
+G4CMPTriLinearInterp::GetValue(const G4double pos[], G4bool quiet) const {
   G4double bary[4] = { 0. };
   FindTetrahedron(&pos[0], bary, quiet);
     
@@ -468,7 +469,7 @@ G4CMPTriLinearInterp::GetValue(const G4double pos[3], G4bool quiet) const {
 }
 
 G4ThreeVector 
-G4CMPTriLinearInterp::GetGrad(const G4double pos[3], G4bool quiet) const {
+G4CMPTriLinearInterp::GetGrad(const G4double pos[], G4bool quiet) const {
   static const G4ThreeVector zero(0.,0.,0.);	// For failure returns
 
   G4double bary[4] = { 0. };

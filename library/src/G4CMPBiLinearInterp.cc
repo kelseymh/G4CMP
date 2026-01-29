@@ -17,6 +17,7 @@
 // 20200914  Include TExtend precalculation in FillTInverse action.
 // 20201002  Report tetrahedra errors during FillTInverse() initialization.
 // 20240920  G4CMP-244: Replace TetraIdx with function to access G4Cache.
+// 20260120  G4CMP-558: Remove array dimension in GetValue(), GetGrad().
 
 #include "G4CMPBiLinearInterp.hh"
 #include "G4CMPConfigManager.hh"
@@ -327,7 +328,7 @@ void G4CMPBiLinearInterp::FillGradients() {
 // Evaluate mesh at arbitrary location, returning potential or gradient
 
 G4double 
-G4CMPBiLinearInterp::GetValue(const G4double pos[2], G4bool quiet) const {
+G4CMPBiLinearInterp::GetValue(const G4double pos[], G4bool quiet) const {
   G4double bary[3] = { 0. };
   FindTetrahedron(&pos[0], bary, quiet);
     
@@ -339,7 +340,7 @@ G4CMPBiLinearInterp::GetValue(const G4double pos[2], G4bool quiet) const {
 }
 
 G4ThreeVector 
-G4CMPBiLinearInterp::GetGrad(const G4double pos[2], G4bool quiet) const {
+G4CMPBiLinearInterp::GetGrad(const G4double pos[], G4bool quiet) const {
   static const G4ThreeVector zero(0.,0.,0.);	// For failure returns
 
   G4double bary[3] = { 0. };
