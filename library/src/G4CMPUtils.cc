@@ -21,6 +21,9 @@
 // 20250422  G4CMP-468 -- Add displaced point test to PhononVelocityIsInward.
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector.
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
+// 20251116  G4CMP-524 -- Remove G4CMP::RandomIndex function; use functor class.
+// 20251116  G4CMP-539 -- Add wrapper function for G4 11 AddConstProperty change
+// 20251116  G4CMP-525 -- For G4 11, replace G4String.last() w/find_last_of().
 
 #include "G4CMPUtils.hh"
 #include "G4CMPBogoliubovQP.hh"
@@ -42,6 +45,7 @@
 #include "G4Threading.hh"
 #include "G4Track.hh"
 #include "G4TrackingManager.hh"
+#include "G4Version.hh"
 #include "G4VProcess.hh"
 #include "Randomize.hh"
 #include <string>
@@ -480,10 +484,24 @@ G4CMP::FindProcess(const G4ParticleDefinition* pd, const G4String& pname) {
 }
 
 
+// Update MaterialPropertiesTable for either Geant4 v10 or v11
+
+void G4CMP::UpdateMPT(G4MaterialPropertiesTable* mpt, const G4String& name,
+		      G4double value) {
+  if (!mpt) return;                             // No table, nothing to do
+
+#if G4VERSION_NUMBER < 1100
+  mpt->AddConstProperty(name, value);
+#else
+  mpt->AddConstProperty(name, value, true);     // To add new names to table
+#endif
+}
+
+
 // Generate random index for shuffling secondaries
 
-size_t G4CMP::RandomIndex(size_t n) {
-  return (size_t)(n*G4UniformRand());
+G4CMP::RandomIndex::result_type G4CMP::RandomIndex::operator()() {
+  return UINT_MAX*G4UniformRand();
 }
 
 
@@ -496,7 +514,7 @@ G4String G4CMP::DebuggingFileThread(const G4String& basefile) {
 
   G4String tidfile = basefile;
 
-  size_t lastdot = basefile.last('.');
+  size_t lastdot = basefile.find_last_of('.');
   if (lastdot < basefile.length()) tidfile.insert(lastdot, tid);
   else tidfile += tid;
 

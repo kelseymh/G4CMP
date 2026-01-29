@@ -7,6 +7,7 @@
 ///\brief Implementation of the ValidationDetectorConstruction class
 //
 //  20260109  M. Kelsey -- G4CMP-569: Remove unused local variables.
+//  20260128  M. Kelsey -- G4CMP-494: Use G4VisAtt::GetInvisible().
 
 #include "ValidationDetectorConstruction.hh"
 #include "G4CMPLogicalBorderSurface.hh"
@@ -457,13 +458,9 @@ void ValidationDetectorConstruction::SetupGeometry() {
                                   fWorldPhys,fVacSurfProp);
     new G4CMPLogicalBorderSurface("VacNb",fWorldPhys,
                                   niobiumForAluminum3Physical,fVacSurfProp);
-
-
-
-
     
     //Set visualization attributes
-    worldLogical->SetVisAttributes(G4VisAttributes::Invisible);
+    worldLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
     G4VisAttributes* vacuumBoxVisAtt
       = new G4VisAttributes(G4Colour(1.0,1.0,1.0));
     

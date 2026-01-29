@@ -14,6 +14,21 @@ include_directories(${G4CMP_INCLUDE_DIRS})
 include(${G4CMP_USE_FILE})
 include(${Geant4_USE_FILE})
 
+# Use same C++ version as was used for Geant4 (v10 or v11)
+if (NOT DEFINED CMAKE_CXX_STANDARD)     # Only if user did not specify
+    if (DEFINED Geant4_CXXSTD)                  # For G4 v10, value is "c++NN"
+        string(REPLACE "c++" "" CMAKE_CXX_STANDARD ${Geant4_CXXSTD})
+    elseif (DEFINED Geant4_CXX_STANDARD)        # For G4 v11, value is "NN"
+        set(CMAKE_CXX_STANDARD ${Geant4_CXX_STANDARD})
+    endif()
+endif()
+
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Store actual value of c++NN derived from above or set by user
+set(G4CMP_CXX_STANDARD ${CMAKE_CXX_STANDARD} CACHE STRING
+   "C++ version used for building G4CMP")
+
 #----------------------------------------------------------------------------
 # RPATH stuff
 #

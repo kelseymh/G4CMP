@@ -15,16 +15,17 @@
 // 20170928 M. Kelsey -- Replace "polarization" with "mode"
 // 20211001 M. Kelsey -- Collapse layered CreateChargeCarrier functions
 // 20220907 G4CMP-316 -- Pass track into CreateXYZ() functions.
+// 20251116  For G4 11, use #include "G4VTouchable.hh"
 
 #ifndef G4CMPSecondaryUtils_hh
 #define G4CMPSecondaryUtils_hh 1
 
 #include "globals.hh"
 #include "G4ThreeVector.hh"
+#include "G4VTouchable.hh"
 
 class G4ParticleDefinition;
 class G4Track;
-class G4VTouchable;
 
 
 namespace G4CMP {

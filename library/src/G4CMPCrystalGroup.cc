@@ -12,6 +12,7 @@
 // 20240426  S. Zatschler -- Add explicit fallthrough statements to switch cases
 // 20241024  I. Hernandez -- Add an if statement to include a rhombohedral Crystal group
 // 20241024  I. Hernandez -- Fixing the function FillOrthorhombic()
+// 20251116  M. Kelsey -- Replace G4String.index() with string.find().
 
 #include "G4CMPCrystalGroup.hh"
 #include "G4PhysicalConstants.hh"
@@ -245,14 +246,14 @@ const char* G4CMPCrystalGroup::Name(Bravais grp) {
 }
 
 G4CMPCrystalGroup::Bravais G4CMPCrystalGroup::Group(const G4String& name) {
-  if (name.index("amo")==0) return amorphous;
-  if (name.index("cub")==0) return cubic;
-  if (name.index("tet")==0) return tetragonal;
-  if (name.index("ort")==0) return orthorhombic;
-  if (name.index("hex")==0) return hexagonal;
-  if (name.index("mon")==0) return monoclinic;
-  if (name.index("tri")==0) return triclinic;
-  if (name.index("rho")==0) return rhombohedral;
+  if (name.find("amo")==0) return amorphous;
+  if (name.find("cub")==0) return cubic;
+  if (name.find("tet")==0) return tetragonal;
+  if (name.find("ort")==0) return orthorhombic;
+  if (name.find("hex")==0) return hexagonal;
+  if (name.find("mon")==0) return monoclinic;
+  if (name.find("tri")==0) return triclinic;
+  if (name.find("rho")==0) return rhombohedral;
 
 
   return UNKNOWN;	// Failure condition; calling code should test

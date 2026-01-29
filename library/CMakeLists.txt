@@ -219,6 +219,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeManager.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticePhysical.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4LatticeReader.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhysicsModelCatalog.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononDownconversion.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononLong.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4PhononPolarization.cc
@@ -339,6 +340,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPPhononPolycrystalElasticScattering.hh	
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransFast.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4PhononTransSlow.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4StrUtil.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VNIELPartition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4VPhononProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBogoliubovQP.hh

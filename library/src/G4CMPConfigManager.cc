@@ -48,6 +48,8 @@
 // 20250325  G4CMP-463: Add parameter for phonon surface step size & limit.
 // 20250711  G4CMP-491: Turn off phonon surface displacement loop by default.
 // 20251104  G4CMP-527: Add missing ehMaxSteps initializer in copy constructor.
+// 20251116  M. Kelsey -- Replace G4String functions with G4StrUtil, for G4 v11
+// 20251116  G4CMP-526: Add function to encapsulate physics ID extraction.
 // 20260121  G4CMP-567: Change charge bounces default to zero.
 
 #include "G4CMPConfigManager.hh"
@@ -59,8 +61,10 @@
 #include "G4CMPSarkisNIEL.hh"
 #include "G4VNIELPartition.hh"
 #include "G4RunManager.hh"
+#include "G4StrUtil.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Threading.hh"
+#include "G4Version.hh"
 #include <fstream>
 #include <iostream>
 #include <typeinfo>
@@ -130,9 +134,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     EmpEDepK(getenv("G4CMP_EMPIRICAL_EDEPK")?(atoi(getenv("G4CMP_EMPIRICAL_EDEPK"))!=0):true),
     EmpkFixed(getenv("G4CMP_EMPIRICAL_KFIXED")?strtod(getenv("G4CMP_EMPIRICAL_KFIXED"),0):0.158),
     messenger(new G4CMPConfigMessenger(this)) {
-
-  fPhysicsModelID = G4PhysicsModelCatalog::Register("G4CMP process");
-
+  fPhysicsModelID = setPhysicsModelID();
   setVersion();
 
   if (getenv("G4CMP_NIEL_FUNCTION")) 
@@ -192,16 +194,27 @@ void G4CMPConfigManager::setVersion() {
 }
 
 
+// Extract physics ID code from G4PhysicsModelCatalog
+
+G4int G4CMPConfigManager::setPhysicsModelID() const {
+#if G4VERSION_NUMBER < 1100
+  return G4PhysicsModelCatalog::Register("G4CMP process");
+#else
+  G4PhysicsModelCatalog::Initialize();
+  return G4PhysicsModelCatalog::GetModelID("G4CMP process");
+#endif
+}
+
+
 // Convert input name string to NIEL partitioning function
 
 void G4CMPConfigManager::setNIEL(G4String name) {
-  name.toLower();
-  if (name(0,3) == "lin") setNIEL(new G4CMPLindhardNIEL);
-  if (name(0,3) == "lew") setNIEL(new G4CMPLewinSmithNIEL);
-  if (name(0,3) == "imp") setNIEL(new G4CMPImpactTunlNIEL);
-  if (name(0,3) == "sar") setNIEL(new G4CMPSarkisNIEL);
-  if (name(0,3) == "emp") setNIEL(new G4CMPEmpiricalNIEL);
-
+  G4StrUtil::to_lower(name);
+  if (name.find("lin") == 0) setNIEL(new G4CMPLindhardNIEL);
+  if (name.find("lew") == 0) setNIEL(new G4CMPLewinSmithNIEL);
+  if (name.find("imp") == 0) setNIEL(new G4CMPImpactTunlNIEL);
+  if (name.find("sar") == 0) setNIEL(new G4CMPSarkisNIEL);
+  if (name.find("emp") == 0) setNIEL(new G4CMPEmpiricalNIEL);
 }
 
 void G4CMPConfigManager::setNIEL(G4VNIELPartition* niel) {

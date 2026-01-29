@@ -187,7 +187,7 @@ void readMesh(const G4String& type, vector<array<G4double,3> >& xyz,
 
   while (points.good()) {
     getline(points, line);
-    if (line.empty() || line(0) == '#' || !isNumbers(line, 7)) continue;
+    if (line.empty() || line.front() == '#' || !isNumbers(line, 7)) continue;
 
     G4Tokenizer values(line);
     pos[0] = strtod(values().c_str(), NULL);
@@ -207,7 +207,7 @@ void readMesh(const G4String& type, vector<array<G4double,3> >& xyz,
 
   while (tetras.good()) {
     getline(tetras, line);
-    if (line.empty() || line(0) == '#' || !isNumbers(line, 1)) continue;
+    if (line.empty() || line.front() == '#' || !isNumbers(line, 1)) continue;
 
     G4Tokenizer values(line);
     simplex[0] = atoi(values().c_str());

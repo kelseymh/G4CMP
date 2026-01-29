@@ -7,7 +7,7 @@
 /vis/viewer/zoomTo 1.5
 /vis/drawVolume
 /vis/scene/add/trajectories
-/vis/ogl/set/printFilename shortQOS1
+/vis/ogl/set/printFilename shortQOS1.eps
 /vis/ogl/set/printMode pixmap
 
 # Set colors to match MATLAB-based CDMS DMC simulation
@@ -20,54 +20,54 @@
 /gun/position 0 0 0 m
 
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /vis/viewer/zoomTo 1.5
 
 /gun/position 0.025 0 0.0023 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /gun/position 0 0.025 0.0023 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /gun/position 0.025 0 0.0083 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /gun/position 0 0.025 0.0083 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /gun/position -0.036 0 -0.0107 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /gun/position 0 0.036 -0.0107 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /gun/position 0.025 0 -0.0023 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /gun/position 0 0.025 -0.0023 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /gun/position 0.025 0 -0.0083 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /gun/position 0 0.025 -0.0083 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /gun/position -0.036 0 0.0107 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export
 
 /gun/position 0 0.036 0.0107 m
 /run/beamOn 1
-/vis/ogl/printEPS
+/vis/ogl/export

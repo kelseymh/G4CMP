@@ -44,6 +44,7 @@
 // 20250423  Add FillParticleChange() to update phonon position and touchable.
 // 20250512  Use tempvec2 for Vg in LoadDataForTrack to improve performance.
 // 20250814  Add UpdatePhononWavevector() to update phonon wavevector and Vg.
+// 20251116  For G4 11, use #include "G4VTouchable.hh"
 
 #ifndef G4CMPProcessUtils_hh
 #define G4CMPProcessUtils_hh 1
@@ -53,6 +54,7 @@
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
+#include "G4VTouchable.hh"
 
 class G4CMPDriftTrackInfo;
 class G4CMPParticleChangeForPhonon;
@@ -62,7 +64,6 @@ class G4LatticePhysical;
 class G4ParticleChange;
 class G4ParticleDefinition;
 class G4VPhysicalVolume;
-class G4VTouchable;
 
 
 class G4CMPProcessUtils {
