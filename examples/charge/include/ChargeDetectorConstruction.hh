@@ -7,6 +7,7 @@
 //
 // 20160904  Add electrode pattern to surface configuration
 // 20170721  Surface property owns electrode pattern, deletes at end
+// 20260513  G4CMP-604 -- Add surface property UI commands to charge example.
 
 #ifndef ChargeDetectorConstruction_h
 #define ChargeDetectorConstruction_h 1
@@ -51,6 +52,8 @@ private:
   G4double zipThickness; // Useful for geom. and field
   G4double epotScale;
   G4double voltage;
+  G4double chargeAbsorbProb;
+  G4double specularReflectProb;
   G4bool constructed;
   G4String epotFileName;
   G4String outputFileName;

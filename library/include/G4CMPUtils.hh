@@ -18,12 +18,14 @@
 // 20220921  G4CMP-319 -- Add utilities for thermal (Maxwellian) distributions
 // 20241223  G4CMP-419 -- Add utility to create per-thread debugging file
 // 20250130  G4CMP-453 -- Add utilities for getting current track and touchable
-// 20250422  G4CMP-468 -- Add position argument to PhononVelocityIsInward
+// 20250422  G4CMP-468 -- Add position argument to VelocityIsInward
 // 20250423  G4CMP-468 -- Add function to get diffuse reflection vector
 // 20250510  G4CMP-483 -- Ensure backwards compatibility for vector utilities.
 // 20251116  G4CMP-522 -- For G4 11, use #include "G4VTouchable.hh"
 // 20251116  G4CMP-524 -- Remove G4CMP::RandomIndex function; use functor class.
 // 20251116  G4CMP-539 -- Add wrapper function for G4 11 AddConstProperty change
+// 20251204  G4CMP-511 -- Swap the names of Lambertian reflection functions.
+// 20251210  G4CMP-518 -- Make VelocityIsInward() generic.
 
 #ifndef G4CMPUtils_hh
 #define G4CMPUtils_hh 1
@@ -95,20 +97,22 @@ namespace G4CMP {
   // Create a Hit from a G4Step. Less error prone to use this helper.
   void FillHit(const G4Step*, G4CMPElectrodeHit*);
 
-  // Phonons reflect difusively from surfaces.
-  G4ThreeVector GetLambertianVector(const G4LatticePhysical* theLattice,
-                                    const G4ThreeVector& surfNorm, G4int mode);
-  G4ThreeVector GetLambertianVector(const G4LatticePhysical* theLattice,
-                                    const G4ThreeVector& surfNorm, G4int mode,
+  // Phonons and charges may reflect difusively from surfaces.
+  // index is either the phonon mode or the electron valley, depending on the track type
+  G4ThreeVector LambertianReflection(const G4LatticePhysical* theLattice,
+                                    const G4ThreeVector& surfNorm, G4int index);
+  G4ThreeVector LambertianReflection(const G4LatticePhysical* theLattice,
+                                    const G4ThreeVector& surfNorm, G4int index,
                                     const G4ThreeVector& surfPoint);
-  G4ThreeVector LambertReflection(const G4ThreeVector& surfNorm);
+  G4ThreeVector GetLambertianVector(const G4ThreeVector& surfNorm);
 
-  // Test that a phonon's wave vector relates to an inward velocity.
+  // Test that a particle's wave vector relates to an inward velocity.
   // waveVector, surfNorm, and surfacePos need to be in global coordinates
-  G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+  // index is either the phonon mode or the electron valley, depending on the track type
+  G4bool VelocityIsInward(const G4LatticePhysical* lattice, G4int index,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm);
-  G4bool PhononVelocityIsInward(const G4LatticePhysical* lattice, G4int mode,
+  G4bool VelocityIsInward(const G4LatticePhysical* lattice, G4int index,
                                 const G4ThreeVector& waveVector,
                                 const G4ThreeVector& surfNorm,
                                 const G4ThreeVector& surfacePos);

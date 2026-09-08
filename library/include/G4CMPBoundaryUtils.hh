@@ -21,6 +21,9 @@
 //	     to validate step trajectory to boundary.
 // 20250927  Add overloadable function to kill track when max-reflections.
 // 20251028  G4CMP-527: Move CheckStepBoundary() here from DriftBoundaryProcess
+// 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
+// 20251210  G4CMP-518 -- Make PhononVelocityIsInward() generic.
+
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
 
@@ -32,6 +35,7 @@
 class G4CMPProcessUtils;
 class G4CMPSurfaceProperty;
 class G4CMPVElectrodePattern;
+class G4LatticePhysical;
 class G4MaterialPropertiesTable;
 class G4ParticleChange;
 class G4Step;
@@ -87,7 +91,7 @@ public:
 			      G4ParticleChange& aParticleChange);
 
 protected:
-  G4bool IsBounaryStep(const G4Step& aStep);
+  G4bool IsBoundaryStep(const G4Step& aStep);
   G4bool GetBoundingVolumes(const G4Step& aStep);
   G4bool GetSurfaceProperty(const G4Step& aStep);
 

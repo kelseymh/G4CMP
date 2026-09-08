@@ -13,6 +13,7 @@
 //		ChargeConfigManager.
 //
 // 20170816  Michael Kelsey
+// 20260513  G4CMP-604 -- Add surface property UI commands to charge example.
 
 #include "G4UImessenger.hh"
 
@@ -36,7 +37,9 @@ private:
   G4UIcmdWithADouble* escaleCmd;
   G4UIcmdWithAString* fileCmd;
   G4UIcmdWithAString* hitsCmd;
-  G4UIcmdWithAString* millerCmd;	// Will parse out three integers
+  G4UIcmdWithAString* millerCmd;    // Will parse out three integers
+  G4UIcmdWithADouble* absorbCmd;    // /g4cmp/chargeAbsorb
+  G4UIcmdWithADouble* specularCmd;  // /g4cmp/specularReflect
 
 private:
   ChargeConfigMessenger(const ChargeConfigMessenger&);	// Copying is forbidden

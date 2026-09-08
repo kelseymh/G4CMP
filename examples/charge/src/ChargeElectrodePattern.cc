@@ -9,6 +9,7 @@
 /// \brief Simple class demonstrating circumferential electrodes
 //
 // 20160904  M. Kelsey
+// 20260430  W. Lamberson -- Update debugging printouts.
 
 #include "ChargeElectrodePattern.hh"
 #include "G4AffineTransform.hh"
@@ -45,10 +46,10 @@ G4bool ChargeElectrodePattern::IsNearElectrode(const G4Step& aStep) const {
 
   G4bool isnear = ((r - std::floor(r)) < 0.05);
 
-#ifdef G4CMP_DEBUG
-  G4cout << " " << aStep.GetTrack()->GetParticleDefinition()->GetParticleName()
-	 << " electrode r " << r << " " << (isnear?"yes":"no") << G4endl;
-#endif
+  if (verboseLevel > 1) {
+    G4cout << " " << aStep.GetTrack()->GetParticleDefinition()->GetParticleName()
+    << " electrode r " << r << " " << (isnear?"yes":"no") << G4endl;
+  }
 
   return isnear;
 }

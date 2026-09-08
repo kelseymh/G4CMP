@@ -1,0 +1,23 @@
+# Production example:  Single at-rest e/h pair per event, verbose output
+/gun/number 1
+
+/g4cmp/voltage -4 V
+
+/g4cmp/producePhonons 0.
+/g4cmp/sampleLuke 0.
+
+/g4cmp/chargeBounces 100  # This command allows you to set the max charge bounces
+
+###/tracking/verbose 1
+
+/run/printProgress 1
+
+/run/initialize
+/process/setVerbose 0 G4CMPTimeStepper
+/process/setVerbose 0 G4CMPLukeScattering
+/process/setVerbose 0 G4CMPInterValleyScattering
+/process/setVerbose 3 G4CMPChargeBoundary
+/process/setVerbose 0 G4CMPChargeRecombine
+/process/setVerbose 0 TrackLimiter
+
+/run/beamOn 100

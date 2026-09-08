@@ -11,6 +11,10 @@
 // 20190806  M. Kelsey -- Add local data for frequency-dependent scattering
 //		probabilities, and computation functions.
 // 20200601  G4CMP-206: Need thread-local copies of electrode pointers
+// 20260105  G4CMP-514: Modify G4CMPSurfaceProperty for specular reflection.
+// 20260205  G4CMP-582: Make the frequency parameter of RefProb functions
+//    in G4CMPSurfaceProperty optional.
+// 20260327  G4CMP-595: Add preprocessor flag for new charge reflection ctor.
 
 #ifndef G4CMPSurfaceProperty_h
 #define G4CMPSurfaceProperty_h 1
@@ -22,6 +26,10 @@
 
 class G4CMPVElectrodePattern;
 
+
+// Flag existence of new constructor, for application backward compatibility
+#define G4CMP_HAS_QSPECPROB 1
+
 class G4CMPSurfaceProperty : public G4SurfaceProperty {
 public:
   // Empty constructor. Users must call at least one of the FillPropertiesTable
@@ -29,20 +37,60 @@ public:
   // I don't know why I put it here at all.
   G4CMPSurfaceProperty(const G4String& name,
                        G4SurfaceType stype = dielectric_dielectric);
-    
-  //Full constructor
+
+  // Full constructor
   G4CMPSurfaceProperty(const G4String& name,
-                       G4double qAbsProb, // Prob. to absorb charge carrier
-                       G4double qReflProb, // If not absorbed, prob to reflect
-                       G4double eMinK, //Min wave number to absorb electron
-                       G4double hMinK, //Min wave number to absorb hole
-                       G4double pAbsProb, // Prob. to absorb phonon
-                       G4double pReflProb, // If not absorbed, prob to reflect
-                       G4double pSpecProb, //Prob. of specular reflection
-                       G4double pMinK, //Min wave number to absorb phonon
-		       G4double qpAbsProb = 0.0, //Prob. to absorb a bogoliubov QP
-		       G4double qpReflProb = 1.0, //Prob to reflect a bogoliubov QP
-		       //(Note 1-qpAbsProb-qpReflProb is the probability for the QP to transport)
+                       G4double qAbsProb,           // Prob. to absorb charge
+                       G4double qReflProb,          // If not absorbed, prob to reflect charge
+                       G4double eMinK,              // Min wave number to absorb electron
+                       G4double hMinK,              // Min wave number to absorb hole
+                       G4double pAbsProb,           // Prob. to absorb phonon
+                       G4double pReflProb,          // If not absorbed, prob to reflect phonon
+                       G4double pSpecProb,          // Prob. of phonon specular reflection
+                       G4double pMinK,              // Min wave number to absorb phonon
+                       G4SurfaceType stype = dielectric_dielectric);
+
+  // Second constructor with an extra parameter called qSpecProb
+  G4CMPSurfaceProperty(const G4String& name,
+                       G4double qAbsProb,           // Prob. to absorb charge
+                       G4double qReflProb,          // If not absorbed, prob to reflect charge
+                       G4double qSpecProb,          // Prob of charge specular reflection
+                       G4double eMinK,              // Min wave number to absorb electron
+                       G4double hMinK,              // Min wave number to absorb hole
+                       G4double pAbsProb,           // Prob. to absorb phonon
+                       G4double pReflProb,          // If not absorbed, prob to reflect phonon
+                       G4double pSpecProb,          // Prob. of phonon specular reflection
+                       G4double pMinK,              // Min wave number to absorb phonon
+                       G4SurfaceType stype = dielectric_dielectric);
+
+    // Second set of constructors with extra parameters for Bogoliubov QP absorption and reflection
+  G4CMPSurfaceProperty(const G4String& name,
+                       G4double qAbsProb,           // Prob. to absorb charge
+                       G4double qReflProb,          // If not absorbed, prob to reflect charge
+                       G4double eMinK,              // Min wave number to absorb electron
+                       G4double hMinK,              // Min wave number to absorb hole
+                       G4double pAbsProb,           // Prob. to absorb phonon
+                       G4double pReflProb,          // If not absorbed, prob to reflect phonon
+                       G4double pSpecProb,          // Prob. of phonon specular reflection
+                       G4double pMinK,              // Min wave number to absorb phonon
+		                   G4double qpAbsProb,          // Prob. to absorb a bogoliubov QP
+		                   G4double qpReflProb,         // Prob to reflect a bogoliubov QP
+		                   // (Note 1-qpAbsProb-qpReflProb is the probability for the QP to transport)
+                       G4SurfaceType stype = dielectric_dielectric);
+
+  G4CMPSurfaceProperty(const G4String& name,
+                       G4double qAbsProb,           // Prob. to absorb charge
+                       G4double qReflProb,          // If not absorbed, prob to reflect charge
+                       G4double qSpecProb,          // Prob of charge specular reflection
+                       G4double eMinK,              // Min wave number to absorb electron
+                       G4double hMinK,              // Min wave number to absorb hole
+                       G4double pAbsProb,           // Prob. to absorb phonon
+                       G4double pReflProb,          // If not absorbed, prob to reflect phonon
+                       G4double pSpecProb,          // Prob. of phonon specular reflection
+                       G4double pMinK,              // Min wave number to absorb phonon
+                       G4double qpAbsProb,          // Prob. to absorb a bogoliubov QP
+		                   G4double qpReflProb,         // Prob to reflect a bogoliubov QP
+		                   // (Note 1-qpAbsProb-qpReflProb is the probability for the QP to transport)
                        G4SurfaceType stype = dielectric_dielectric);
 
   virtual ~G4CMPSurfaceProperty();
@@ -88,7 +136,8 @@ public:
   void SetQPMaterialPropertiesTable(G4MaterialPropertiesTable& mpt);
 
   void FillChargeMaterialPropertiesTable(G4double qAbsProb, G4double qReflProb,
-                                         G4double eMinK,    G4double hMinK);
+                                         G4double qSpecProb, G4double eMinK,
+                                         G4double hMinK);
 
   void FillPhononMaterialPropertiesTable(G4double pAbsProb,  G4double pReflProb,
                                          G4double pSpecProb, G4double pMinK);
@@ -116,9 +165,9 @@ public:
   }
 
   // Functions to compute reflection probabilities vs. frequency
-  G4double AnharmonicReflProb(G4double freq) const;
-  G4double DiffuseReflProb(G4double freq) const;
-  G4double SpecularReflProb(G4double freq) const;
+  G4double AnharmonicReflProb(G4double freq = -1.) const;
+  G4double DiffuseReflProb(G4double freq = -1.) const;
+  G4double SpecularReflProb(G4double freq = -1.) const;
 
   // Complex electrode geometries
   void SetChargeElectrode(G4CMPVElectrodePattern* cel);

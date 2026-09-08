@@ -31,6 +31,8 @@
 //	       overloadable function to kill track when max-reflections.
 // 20251028  G4CMP-527:  Use CheckStepBoundary() in ApplyBoundaryAction(),
 //	       add warning (G4cerr) message for points that need adjustment.
+// 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
+// 20251210  G4CMP-518 -- Make PhononVelocityIsInward() generic.
 // 20251220  G4CMP-219:  IncrementReflectionCount() added to if-ReflectTrack
 //	       block, should be removed from MaximumReflections().  This will
 //	       change random number sequence (due to additional step(s) after
@@ -97,22 +99,22 @@ G4bool G4CMPBoundaryUtils::IsGoodBoundary(const G4Step& aStep) {
 	   << G4endl;
   }
 
-  return (IsBounaryStep(aStep) &&
+  return (IsBoundaryStep(aStep) &&
 	  GetBoundingVolumes(aStep) &&
 	  GetSurfaceProperty(aStep));
 }
 
-G4bool G4CMPBoundaryUtils::IsBounaryStep(const G4Step& aStep) {
+G4bool G4CMPBoundaryUtils::IsBoundaryStep(const G4Step& aStep) {
   //Debugging
   if (buVerboseLevel > 5) {
-    G4cout << "---------- G4CMPBoundaryUtils::IsBounaryStep ----------"
+    G4cout << "---------- G4CMPBoundaryUtils::IsBoundaryStep ----------"
            << G4endl;
     G4cout << "IBS Function Point A | The step status is "
            << aStep.GetPostStepPoint()->GetStepStatus() << G4endl;
   }
   
   if (buVerboseLevel>3) {
-    G4cout << procName << "::IsBounaryStep status "
+    G4cout << procName << "::IsBoundaryStep status "
 	   << aStep.GetPostStepPoint()->GetStepStatus()
 	   << " length " << aStep.GetStepLength() << G4endl;
   }
@@ -941,6 +943,7 @@ G4CMPBoundaryUtils::DoTransmission(const G4Track& aTrack,
 
   DoSimpleKill(aTrack, aStep, aParticleChange);
 }
+
 
 // Access information from materials table even when const
 

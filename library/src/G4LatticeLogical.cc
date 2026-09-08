@@ -478,7 +478,7 @@ G4LatticeLogical::MapV_elToP(G4int ivalley, const G4ThreeVector& v_e) const {
   G4double bandV = (fMassTensor.xx()*tempvec().x()*tempvec().x() +
   fMassTensor.yy()*tempvec().y()*tempvec().y() +
   fMassTensor.zz()*tempvec().z()*tempvec().z());
-  G4double gamma = 1/sqrt(1-bandV/GetElectronMass()*c_squared);
+  G4double gamma = 1/sqrt(1-bandV/(GetElectronMass()*c_squared));
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
@@ -632,21 +632,20 @@ G4LatticeLogical::MapPtoEkin(G4int iv, const G4ThreeVector& p) const {
   if (verboseLevel>1) G4cout << " p (valley) " << tempvec() << G4endl;
 #endif
 
-  G4double bandP = tempvec().x()*tempvec().x()*fMassTensor.xx() +
-      tempvec().y()*tempvec().y()*fMassTensor.yy() +
-      tempvec().z()*tempvec().z()*fMassTensor.zz();
+  G4double bandP2 = ((tempvec().x()*tempvec().x()*fMassTensor.xx() +
+		      tempvec().y()*tempvec().y()*fMassTensor.yy() +
+		      tempvec().z()*tempvec().z()*fMassTensor.zz())
+		     / GetElectronMass());
+  G4double mc2 = GetElectronMass()*c_squared;
 
 #ifdef G4CMP_DEBUG
   if (verboseLevel>1) {
-    G4cout << " <P|M/m0|P> " << bandP/mElectron << G4endl
-	   << G4endl << " returning Ekin "
-	   << sqrt(bandP/mElectron + electron_mass_c2*electron_mass_c2) - electron_mass_c2
-	   << G4endl;
+    G4cout << " <P|M/m0|P> " << bandP2 << G4endl
+	   << " returning Ekin " << sqrt(bandP2 + mc2*mc2) - mc2 << G4endl;
   }
 #endif
 
-  return sqrt(bandP/GetElectronMass() + GetElectronMass()*c_squared*GetElectronMass()*c_squared) - GetElectronMass()*c_squared;
-
+  return sqrt(bandP2 + mc2*mc2) - mc2;
 }
 
 G4double

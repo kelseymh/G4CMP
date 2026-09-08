@@ -9,7 +9,9 @@
 // 20170721  Surface property owns electrode pattern, deletes at end
 // 20170816  Field configuration parameters moved to local configuration
 // 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
-// 20251117 G4CMP-541 -- For G4 v11, replace ::Invisible w/::GetInvisible()
+// 20251117  G4CMP-541 -- For G4 v11, replace ::Invisible w/::GetInvisible()
+// 20260112  G4CMP-514 -- Modify G4CMPSurfaceProperty for specular reflection.
+// 20260513  G4CMP-604 -- Add surface property UI commands to charge example.
 
 #include "ChargeDetectorConstruction.hh"
 #include "ChargeConfigManager.hh"
@@ -47,8 +49,9 @@ ChargeDetectorConstruction::ChargeDetectorConstruction() :
   latManager(G4LatticeManager::GetLatticeManager()),
   fEMField(nullptr), liquidHelium(nullptr), germanium(nullptr),
   aluminum(nullptr), tungsten(nullptr), worldPhys(nullptr),
-  zipThickness(2.54*cm), epotScale(0.), voltage(0.), constructed(false),
-  epotFileName(""), outputFileName("")
+  zipThickness(2.54*cm), epotScale(0.), voltage(0.),
+  chargeAbsorbProb(0.), specularReflectProb(0.),
+  constructed(false), epotFileName(""), outputFileName("")
 {
   /* Default initialization does not leave object in usable state.
    * Doesn't matter because run initialization will call Construct() and all
@@ -88,6 +91,17 @@ G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
       if (sensitivity) sensitivity->SetOutputFile(outputFileName);
     }
 
+    // Update surface properties in place if they already exist
+    if (topSurfProp) {
+        G4double absProb   = ChargeConfigManager::GetChargeAbsorbProb();
+        G4double specProb  = ChargeConfigManager::GetSpecularReflectProb();
+
+        // Update all three surfaces (they share the same charge parameters)
+        topSurfProp->FillChargeMaterialPropertiesTable(absProb, 1., specProb, 0., 0.);
+        botSurfProp->FillChargeMaterialPropertiesTable(absProb, 1., specProb, 0., 0.);
+        wallSurfProp->FillChargeMaterialPropertiesTable(absProb, 1., specProb, 0., 0.);
+    }
+
     // Have to completely remove all lattices to avoid warning on reconstruction
     latManager->Reset();
     // Clear all LogicalSurfaces; no need to redfine SurfaceProperty
@@ -100,6 +114,8 @@ G4VPhysicalVolume* ChargeDetectorConstruction::Construct()
   epotScale = ChargeConfigManager::GetEPotScale();
   epotFileName = ChargeConfigManager::GetEPotFile();
   outputFileName = ChargeConfigManager::GetHitOutput();
+  chargeAbsorbProb = ChargeConfigManager::GetChargeAbsorbProb();
+  specularReflectProb = ChargeConfigManager::GetSpecularReflectProb();
 
   DefineMaterials();
   SetupGeometry();
@@ -182,20 +198,41 @@ void ChargeDetectorConstruction::SetupGeometry()
                                                1);
 
   // Define surface properties. Only should be done once
-  if (!constructed) {
+  if (!topSurfProp) {
     topSurfProp = new G4CMPSurfaceProperty("topSurfProp",
-                                           1., 1., 0., 0.,
-                                           0.22, 1., 0., 0.);
+                                           chargeAbsorbProb,      // Prob. to absorb charge
+                                           1.,                    // If not absorbed, prob to reflect charge
+                                           specularReflectProb,   // Prob of charge specular reflection (optional)
+                                           0.,                    // Min wave number to absorb electron
+                                           0.,                    // Min wave number to absorb hole
+                                           0.22,                  // Prob. to absorb phonon
+                                           1.,                    // If not absorbed, prob to reflect phonon
+                                           0.,                    // Prob. of phonon specular reflection
+                                           0.);                   // Min wave number to absorb phonon
     topSurfProp->SetChargeElectrode(new ChargeElectrodePattern);
 
     botSurfProp = new G4CMPSurfaceProperty("botSurfProp",
-                                           1., 1., 0., 0.,
-                                           0.22, 1., 0., 0.);
+                                           chargeAbsorbProb,      // Prob. to absorb charge
+                                           1.,                    // If not absorbed, prob to reflect charge
+                                           specularReflectProb,   // Prob of charge specular reflection (optional)
+                                           0.,                    // Min wave number to absorb electron
+                                           0.,                    // Min wave number to absorb hole
+                                           0.22,                  // Prob. to absorb phonon
+                                           1.,                    // If not absorbed, prob to reflect phonon
+                                           0.,                    // Prob. of phonon specular reflection
+                                           0.);                   // Min wave number to absorb phonon
     botSurfProp->SetChargeElectrode(new ChargeElectrodePattern);
 
     wallSurfProp = new G4CMPSurfaceProperty("wallSurfProp",
-                                            1., 1., 0., 0.,
-                                            0., 1., 0., 0.);
+                                           chargeAbsorbProb,      // Prob. to absorb charge
+                                           1.,                    // If not absorbed, prob to reflect charge
+                                           specularReflectProb,   // Prob of charge specular reflection (optional)
+                                           0.,                    // Min wave number to absorb electron
+                                           0.,                    // Min wave number to absorb hole
+                                           0.,                    // Prob. to absorb phonon
+                                           1.,                    // If not absorbed, prob to reflect phonon
+                                           0.,                    // Prob. of phonon specular reflection
+                                           0.);                   // Min wave number to absorb phonon
   }
 
   // Add surfaces between Ge-Al, and Ge-World
