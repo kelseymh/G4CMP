@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2026-09-08  G4CMP-517 : Support charge recombination below NTL threshold.
+
 2026-08-17  g4cmp-V10-05-00  Variety of fixes to builds, examples, tracking.
 2026-08-17  G4CMP-642 : Derive c++ version dynamically in G4CMP examples.
 2026-08-16  G4CMP-657 : Fix typo in specCoeffs vector in phonon example.
@@ -39,6 +41,11 @@ ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 2026-05-20  G4CMP-576 : First step of G4CMPEqEMField uses base EqOfMotion for 
                         non G4CMP carrier and holes.
 2026-05-18  G4CMP-598 : Make G4CMPEnergyPartition respect nParticlesMinimum
+<<<<<<< HEAD
+=======
+>>>>>>> develop
+
+>>>>>>> G4CMP-517
 2026-05-06  G4CMP-592 : Replace FatalExceptions in QPDiffusion with warnings
 2026-04-28  G4CMP-496 : Test for zero energy before generating charge pairs.
 2026-04-28  G4CMP-599 : Add track ID and name to G4CMPTrackLimiter output.

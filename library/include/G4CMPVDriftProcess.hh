@@ -16,6 +16,7 @@
 // 20150112  Rename SetNewKinematics to FillParticleChange for clarity
 // 20150601  Inherit from new G4CMPVProcess
 // 20170806  Move ChargeCarrierTimeStep() to G4CMPProcessUtils
+// 20260514  Add InitializeParticleChange() without separate valley argument
 
 #ifndef G4CMPVDriftProcess_h
 #define G4CMPVDriftProcess_h 1
@@ -49,6 +50,7 @@ protected:
   // Initializing ParticleChange and setting up the correct energy and
   // effective for the charge carrier
   void InitializeParticleChange(G4int ivalley, const G4Track& track);
+  void InitializeParticleChange(const G4Track& track);	// Keeps old valley
 
   G4double currentEkin;	// Caching the current track kinetic energy
 

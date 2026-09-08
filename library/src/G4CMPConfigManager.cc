@@ -54,6 +54,7 @@
 // 20260429  G4CMP-598: Add minGenParticles parameter.
 // 20260606  G4CMP-578: Add primaryPhononEnergy parameter for partitioning.
 // 20260707  G4CMP-641: Use new RegisterCustomModel() for Physics in G4 11.4.2+
+// 20260903  G4CMP-517: Add scale factor for recombination MFP limit
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -126,6 +127,7 @@ G4CMPConfigManager::G4CMPConfigManager()
     EminPhonons(getenv("G4CMP_EMIN_PHONONS")?strtod(getenv("G4CMP_EMIN_PHONONS"),0)*eV:0.),
     EminCharges(getenv("G4CMP_EMIN_CHARGES")?strtod(getenv("G4CMP_EMIN_CHARGES"),0)*eV:0.),
     pSurfStepSize(getenv("G4CMP_PHON_SURFSTEP")?strtod(getenv("G4CMP_PHON_SURFSTEP"),0)*um:0.),
+    recombScale(getenv("G4CMP_RECOMB_SCALE")?strtod(getenv("G4CMP_RECOMB_SCALE"),0):DBL_MAX),
     useKVsolver(getenv("G4CMP_USE_KVSOLVER")?atoi(getenv("G4CMP_USE_KVSOLVER")):0),
     fanoEnabled(getenv("G4CMP_FANO_ENABLED")?atoi(getenv("G4CMP_FANO_ENABLED")):1),
     kaplanKeepPh(getenv("G4CMP_KAPLAN_KEEP")?atoi(getenv("G4CMP_KAPLAN_KEEP")):true),
@@ -173,7 +175,8 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     lukeSample(master.lukeSample), EprimPhonons(master.EprimPhonons),
     combineSteps(master.combineSteps),
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
-    pSurfStepSize(master.pSurfStepSize), useKVsolver(master.useKVsolver),
+    pSurfStepSize(master.pSurfStepSize), recombScale(master.recombScale),
+    useKVsolver(master.useKVsolver),
     fanoEnabled(master.fanoEnabled), kaplanKeepPh(master.kaplanKeepPh),
     chargeCloud(master.chargeCloud), 
     recordMinE(master.recordMinE), nielPartition(master.nielPartition),
@@ -248,6 +251,7 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/phononSurfStepLimit " << pSurfStepLimit << "\t\t# G4CMP_PHON_SURFLIMIT"
      << "\n/g4cmp/safetyNSweep2D" << safetyNSweep2D << "\t\t\t# G4CMP_SAFETYNSWEEP2D"
      << "\n/g4cmp/maximumSteps " << ehMaxSteps << "\t\t\t# G4CMP_EH_MAX_STEPS"
+     << "\n/g4cmp/recombinationScale " << recombScale << "\t\t# G4CMP_RECOMB_SCALE"
      << "\n/g4cmp/IVRateModel " << IVRateModel << "\t\t\t# G4CMP_IV_RATE_MODEL"
      << "\n/g4cmp/LukeDebugFile " << lukeFilename << "\t\t\t# G4CMP_LUKE_FILE"
      << "\n/g4cmp/eTrappingMFP " << eTrapMFP/mm << " mm\t\t# G4CMP_ETRAPPING_MFP"
