@@ -6,7 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
-2026-07-23  G4CMP-517 : Support charge recombination below NTL threshold.
+2026-09-08  G4CMP-517 : Support charge recombination below NTL threshold.
+
 2026-07-21  G4CMP-649 : Protect against missing touchable in SurfaceClearance.
 2026-07-07  G4CMP-641 : Update PhysicsModelCatalog usage for G4 11.4.2.
 
