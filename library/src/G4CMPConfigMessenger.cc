@@ -46,6 +46,7 @@
 // 20250502  G4CMP-358: Add macro command for maximum steps (stuck tracks).
 // 20260429  G4CMP-598: Add macro command for minimum particle generation.
 // 20260606  G4CMP-578: Add macro command for pprimary phonon energy.
+// 20260903  G4CMP-517: Add macro command for recombination MFP scaling.
 
 #include "G4CMPConfigMessenger.hh"
 #include "G4CMPConfigManager.hh"
@@ -68,7 +69,7 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
     minEChargeCmd(0), sampleECmd(0), phonEprimCmd(0), comboStepCmd(0),
     trapEMFPCmd(0), trapHMFPCmd(0), eDTrapIonMFPCmd(0), eATrapIonMFPCmd(0),
     hDTrapIonMFPCmd(0), hATrapIonMFPCmd(0),
-    tempCmd(0), pSurfStepSizeCmd(0), minstepCmd(0),
+    tempCmd(0), pSurfStepSizeCmd(0), recombScaleCmd(0), minstepCmd(0),
     makePhononCmd(0), makeChargeCmd(0), lukePhononCmd(0), dirCmd(0),
     lukeFileCmd(0), ivRateModelCmd(0), nielPartitionCmd(0), kvmapCmd(0),
     fanoStatsCmd(0), kaplanKeepCmd(0), ehCloudCmd(0), recordMinECmd(0), minParCmd(0) {
@@ -166,6 +167,9 @@ G4CMPConfigMessenger::G4CMPConfigMessenger(G4CMPConfigManager* mgr)
   
   maxStepsCmd = CreateCommand<G4UIcmdWithAnInteger>("maximumSteps",
     "Maximum steps for charged tracks, to avoid getting stuck in E-field");
+
+  recombScaleCmd = CreateCommand<G4UIcmdWithADouble>("recombinationScale",
+    "Scale factor to compare recombination flight distance with Luke MFP");
 
   kvmapCmd = CreateCommand<G4UIcmdWithABool>("useKVsolver",
 			     "Use eigenvector solver for K-Vg conversion");
@@ -277,6 +281,7 @@ G4CMPConfigMessenger::~G4CMPConfigMessenger() {
   delete hDTrapIonMFPCmd; hDTrapIonMFPCmd=0;
   delete hATrapIonMFPCmd; hATrapIonMFPCmd=0;
   delete tempCmd; tempCmd=0;
+  delete recombScaleCmd; recombScaleCmd=0;
   delete minstepCmd; minstepCmd=0;
   delete makePhononCmd; makePhononCmd=0;
   delete makeChargeCmd; makeChargeCmd=0;
@@ -314,6 +319,7 @@ void G4CMPConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == pBounceCmd) theManager->SetMaxPhononBounces(StoI(value));
   if (cmd == qpBounceCmd) theManager->SetMaxQPBounces(StoI(value));
   if (cmd == maxStepsCmd) theManager->SetMaxChargeSteps(StoI(value));
+  if (cmd == recombScaleCmd) theManager->SetRecombinationScale(StoD(value));
   if (cmd == dirCmd) theManager->SetLatticeDir(value);
   if (cmd == lukeFileCmd) theManager->SetLukeDebugFile(value);
 

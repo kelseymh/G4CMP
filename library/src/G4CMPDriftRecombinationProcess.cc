@@ -13,6 +13,8 @@
 // 20250929  M. Kelsey -- Include residual kinetic energy in phonon release
 // 20260514  G4CMP-517 -- Register NTL (Luke) rate model to use in computing
 //	       threshold and energy-gain estimation for killing in flight.
+// 20260903  G4CMP-517 -- Use new "recombinationScale" to modulate setting
+//	       limits for "free flight" -- DBL_MAX restores old behaviour.
 
 #include "G4CMPDriftRecombinationProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -52,9 +54,8 @@ G4CMPDriftRecombinationProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 						G4ForceCondition* cond) {
   UpdateMeanFreePathForLatticeChangeover(aTrack);
 
-  G4bool doRecomb = ReadyToRecombine(aTrack);
-  *cond = (doRecomb ? Forced : NotForced);
-  return (doRecomb ? 0. : DBL_MAX);
+  *cond = Forced;
+  return DBL_MAX;
 }
 
 G4VParticleChange* 
@@ -62,11 +63,15 @@ G4CMPDriftRecombinationProcess::PostStepDoIt(const G4Track& aTrack,
 					     const G4Step& aStep) {
   InitializeParticleChange(aTrack);
 
+  if (!ReadyToRecombine(aTrack)) {	// Evaluate _after_ Transportation
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+  }
+
   if (verboseLevel) {
     G4cout << GetProcessName() << "::PostStepDoIt: " << G4endl
            << aTrack.GetDefinition()->GetParticleName() << " "
 	   << aTrack.GetKineticEnergy()/eV << " eV "
-	   << "reabsorbed by lattice @ " << aTrack.GetPosition()<< G4endl;
+	   << "reabsorbed by lattice @ " << aTrack.GetPosition() << G4endl;
   }
   
 
@@ -104,14 +109,21 @@ ReadyToRecombine(const G4Track& aTrack) const {
   // SPECIAL: We use fStopAndKill to destroy tracks without recombining
   if (aTrack.GetTrackStatus() == fStopAndKill) return false;
     
+  if (aTrack.GetTrackStatus() == fStopButAlive) {
+    if (verboseLevel>1) G4cout << " track stopped." << G4endl;
+    return true;
+  }
+
   if (aTrack.GetStepLength() <= 0.) return false;	// Avoid reflections
 
   if (verboseLevel>1)
     G4cout << GetProcessName() << "::ReadyToRecombine?" << G4endl;
 
-  if (aTrack.GetTrackStatus() == fStopButAlive) {
-    if (verboseLevel>1) G4cout << " track stopped." << G4endl;
-    return true;
+  // Non-physical recombination scale means no bulk recombination
+  G4double mfpScale = G4CMPConfigManager::GetRecombinationScale();
+  if (mfpScale <= 0. || mfpScale == DBL_MAX) {
+    if (verboseLevel>1) G4cout << " bulk recombination suppressed." << G4endl;
+    return false;
   }
 
   // Recombine now if no NTL emission expected before hitting surface
@@ -194,7 +206,10 @@ G4bool G4CMPDriftRecombinationProcess::
 LukeBeforeSurface(const G4Track& aTrack) const {
   G4double lukeMFP = GetMFPfromRate(aTrack);	  // Registered NTL RateModel
   G4ThreeVector vSurf = VectorToSurface(aTrack);  // Distance to track end
-  G4bool couldNTL = (lukeMFP < vSurf.mag());	  // Rough guess at another NTL
+
+  // Rough guess at when next NTL emission might occur, with scale factor
+  G4double mfpScale = G4CMPConfigManager::GetRecombinationScale();
+  G4bool couldNTL = (mfpScale*lukeMFP < vSurf.mag());
 
   if (verboseLevel>2) {
     G4cout << " LukeBeforeSurface dist " << vSurf.mag()/mm << " mm"
@@ -212,7 +227,7 @@ LukeBeforeSurface(const G4Track& aTrack) const {
 
 G4ThreeVector G4CMPDriftRecombinationProcess::
 GetAcceleration(const G4ThreeVector& Efield) const {
-  if (verboseLevel>3)
+  if (verboseLevel>2)
     G4cout << GetProcessName() << "::GetAcceleration" << G4endl;
 
   G4ThreeVector accel = Efield;
