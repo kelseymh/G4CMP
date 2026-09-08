@@ -6,7 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
-2026-06-01  G4CMP-515 : Expand charge reflection for both specular and diffuse.
+2026-09-08  G4CMP-515 : Expand charge reflection for both specular and diffuse.
+
 2026-05-08  G4CMP-604 : Add surface property UI commands to charge example.
 2026-05-07  G4CMP-603 : Use correct probability for charge specular reflection.
 2026-05-02  G4CMP-602 : Fix parentheses in MapV_elToP, to avoid NaNs.
