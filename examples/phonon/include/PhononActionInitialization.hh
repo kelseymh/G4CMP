@@ -3,7 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-// $Id: e58a61fedbb99b167e16dafebc9c8664ae0c7b94 $
+/// \file PhononActionInitialization.hh
+/// \brief Definition of the PhononActionInitialization class.
 
 #ifndef PhononActionInitialization_hh
 #define PhononActionInitialization_hh 1

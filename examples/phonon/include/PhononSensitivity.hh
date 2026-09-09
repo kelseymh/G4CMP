@@ -3,6 +3,9 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+/// \file PhononSensitivity.hh
+/// \brief Definition of the PhononPrimaryGeneratorAction class
+
 #ifndef PhononSensitivity_h
 #define PhononSensitivity_h 1
 
@@ -15,11 +18,6 @@ public:
   // No copies
   PhononSensitivity(const PhononSensitivity&) = delete;
   PhononSensitivity& operator=(const PhononSensitivity&) = delete;
-  /* Move is disabled for now because old versions of GCC can't move ofstream
-  // Move OK
-  PhononSensitivity(PhononSensitivity&&);
-  PhononSensitivity& operator=(PhononSensitivity&&);
-  */
   PhononSensitivity(PhononSensitivity&&) = delete;
   PhononSensitivity& operator=(PhononSensitivity&&) = delete;
 
@@ -35,4 +33,4 @@ private:
   G4String fileName;
 };
 
-#endif
+#endif  /* PhononSensitivity_h */

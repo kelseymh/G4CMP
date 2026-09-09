@@ -3,13 +3,13 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-// $Id$
-// File:  PhononConfigManager.cc
-//
-// Description:	Singleton container class for user configuration of G4CMP
-//		phonon example. Looks for environment variables	at
-//		initialization to set default values; active values may be
-//		changed via macro commands (see PhononConfigMessenger).
+/// \file  PhononConfigManager.cc
+/// \brief Implementation of the PhononConfigManager class.
+///
+/// Singleton container class for user configuration of G4CMP
+/// phonon example. Looks for environment variables	at
+/// initialization to set default values; active values may be
+/// changed via macro commands (see PhononConfigMessenger).
 //
 // 20170816  M. Kelsey -- Extract hit filename from G4CMPConfigManager.
 
@@ -29,7 +29,7 @@ PhononConfigManager* PhononConfigManager::Instance() {
 }
 
 PhononConfigManager::PhononConfigManager()
-  : Hit_file(getenv("G4CMP_HIT_FILE")?getenv("G4CMP_HIT_FILE"):"phonon_hits.txt"),
+  : Hit_file(getenv("G4CMP_HIT_FILE")?getenv("G4CMP_HIT_FILE"):"phonon_hits.csv"),
     messenger(new PhononConfigMessenger(this)) {;}
 
 PhononConfigManager::~PhononConfigManager() {

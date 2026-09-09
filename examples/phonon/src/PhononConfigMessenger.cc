@@ -3,11 +3,10 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-// $Id$
-// File:  PhononConfigMessenger.cc
-//
-// Description:	Macro command defitions to set user configuration in
-//		PhononConfigManager.
+/// \file PhononConfigMessenger.cc
+/// \brief Implementation of the PhononConfigMessenger class.
+///
+/// Macro command definitions to set user configuration in PhononConfigManager.
 //
 // 20170816  Michael Kelsey
 

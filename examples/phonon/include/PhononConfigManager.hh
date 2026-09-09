@@ -6,13 +6,13 @@
 #ifndef PhononConfigManager_hh
 #define PhononConfigManager_hh 1
 
-// $Id$
-// File:  PhononConfigManager.hh
-//
-// Description:	Singleton container class for user configuration of G4CMP
-//		phonon example. Looks for environment variables	at
-//		initialization to set default values; active values may be
-//		changed via macro commands (see PhononConfigMessenger).
+/// \file PhononConfigManager.hh
+/// \brief Definition of the PhononConfigManager class.
+///
+/// Singleton container class for user configuration of G4CMP
+/// phonon example. Looks for environment variables	at
+/// initialization to set default values; active values may be
+/// changed via macro commands (see PhononConfigMessenger).
 //
 // 20170816  M. Kelsey -- Extract hit filename from G4CMPConfigManager.
 

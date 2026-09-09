@@ -3,10 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file exoticphysics/phonon/src/PhononDetectorConstruction.cc \brief
-/// Implementation of the PhononDetectorConstruction class
-//
-// $Id: a2016d29cc7d1e75482bfc623a533d20b60390da $
+/// \file PhononDetectorConstruction.cc
+/// \brief Implementation of the PhononDetectorConstruction class
 //
 // 20140321  Drop passing placement transform to G4LatticePhysical
 // 20211207  Replace G4Logical*Surface with G4CMP-specific versions.
@@ -16,6 +14,9 @@
 // 20251116  G4CMP-539 -- Use UpdateMPT wrapper function to set properties.
 // 20251117  G4CMP-541 -- For G4 v11, replace ::Invisible w/::GetInvisible()
 // 20260816  G4CMP-657 -- Fix typo in specCoeffs vector.
+// 20260827  B. Zatschler -- Add new function ConstructSDandField().
+//              Move sensitive detector attachment code in there.
+//              Remove data member electrodeSensitivity.
 
 #include "PhononDetectorConstruction.hh"
 #include "PhononSensitivity.hh"
@@ -51,7 +52,7 @@
 PhononDetectorConstruction::PhononDetectorConstruction()
   : fLiquidHelium(0), fGermanium(0), fAluminum(0), fTungsten(0),
     fWorldPhys(0), topSurfProp(0), botSurfProp(0), wallSurfProp(0),
-    electrodeSensitivity(0), fConstructed(false) {;}
+    fConstructed(false) {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -63,8 +64,7 @@ PhononDetectorConstruction::~PhononDetectorConstruction() {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-G4VPhysicalVolume* PhononDetectorConstruction::Construct()
-{
+G4VPhysicalVolume* PhononDetectorConstruction::Construct() {
   if (fConstructed) {
     if (!G4RunManager::IfGeometryHasBeenDestroyed()) {
       // Run manager hasn't cleaned volume stores. This code shouldn't execute
@@ -89,8 +89,24 @@ G4VPhysicalVolume* PhononDetectorConstruction::Construct()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void PhononDetectorConstruction::DefineMaterials()
-{ 
+void PhononDetectorConstruction::ConstructSDandField() {
+  G4SDManager* sdman = G4SDManager::GetSDMpointer();
+
+  // Find sensitive detector, if it doesn't exist then create it.
+  G4VSensitiveDetector* electrodeSensitivity =
+    sdman->FindSensitiveDetector("PhononElectrode", false);
+
+  if (!electrodeSensitivity){
+    electrodeSensitivity = new PhononSensitivity("PhononElectrode");
+    sdman->AddNewDetector(electrodeSensitivity);
+  }
+  // Note that "sensitive detector" is attached to Germanium crystal
+  SetSensitiveDetector("fGermaniumLogical",electrodeSensitivity);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void PhononDetectorConstruction::DefineMaterials() {
   G4NistManager* nistManager = G4NistManager::Instance();
 
   fLiquidHelium = nistManager->FindOrBuildMaterial("G4_AIR"); // to be corrected
@@ -101,8 +117,7 @@ void PhononDetectorConstruction::DefineMaterials()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-void PhononDetectorConstruction::SetupGeometry()
-{
+void PhononDetectorConstruction::SetupGeometry() {
   //     
   // World
   //
@@ -154,15 +169,6 @@ void PhononDetectorConstruction::SetupGeometry()
   G4VPhysicalVolume* aluminumBotPhysical = new G4PVPlacement(0,
     G4ThreeVector(0.,0.,-1.28*cm), fAluminumLogical, "fAluminumPhysical",
     worldLogical,false,1);
-
-  //
-  // detector -- Note : "sensitive detector" is attached to Germanium crystal
-  //
-  G4SDManager* SDman = G4SDManager::GetSDMpointer();
-  if (!electrodeSensitivity)
-    electrodeSensitivity = new PhononSensitivity("PhononElectrode");
-  SDman->AddNewDetector(electrodeSensitivity);
-  fGermaniumLogical->SetSensitiveDetector(electrodeSensitivity);
 
   //
   // surface between Al and Ge determines phonon reflection/absorption
@@ -244,4 +250,3 @@ AttachPhononSensor(G4CMPSurfaceProperty *surfProp) {
   // Attach electrode object to handle KaplanQP interface
   surfProp->SetPhononElectrode(new G4CMPPhononElectrode);
 }
-

@@ -3,10 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file exoticphysics/phonon/src/PhononPrimaryGeneratorAction.cc
+/// \file PhononPrimaryGeneratorAction.cc
 /// \brief Implementation of the PhononPrimaryGeneratorAction class
-//
-// $Id: e75f788b103aef810361fad30f75077829192c13 $
 //
 // 20140519  Allow the user to specify phonon type by name in macro; if
 //	     "geantino" is set, use random generator to select.
@@ -21,8 +19,6 @@
 #include "G4PhononTransSlow.hh"
 #include "G4PhononLong.hh"
 #include "G4SystemOfUnits.hh"
-
-using namespace std;
 
 PhononPrimaryGeneratorAction::PhononPrimaryGeneratorAction() { 
   G4int n_particle = 1;
