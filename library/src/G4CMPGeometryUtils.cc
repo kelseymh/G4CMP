@@ -19,6 +19,8 @@
 // 20250905  G4CMP-500 -- Added a function to make nicer robust 2D vectors
 // 20260111  G4CMP-567 -- Use geometric tolerance prescribed by G4VSolid
 // 20260721  G4CMP-649 -- Protect against missing touchable in SurfaceClearance.
+// 20260910  G4CMP-667 -- Implemented additional logic to GetSurfaceNormal
+// to solve multi-volume surface ambiguities
 
 #include "G4CMPGeometryUtils.hh"
 #include "G4CMPConfigManager.hh"
@@ -911,7 +913,50 @@ G4ThreeVector G4CMP::GetSurfaceNormal(const G4Step& step, const G4ThreeVector& i
   //should be run first to confirm that we're indeed on a boundary surface.
   //But we do need something to tell us which surface's normal to reflect over.
   G4double tolerance = preSolid->GetTolerance();
-  if (postStepInPrePV == kSurface) {
+  if (postStepInPrePV == kSurface && postStepInPostPV == kSurface) {
+
+      // Get pre- and post-PV norms
+      G4ThreeVector preSolidNorm = preSolid->SurfaceNormal(pos_prePV);
+      G4ThreeVector postSolidNorm = postSolid->SurfaceNormal(pos_postPV);
+      if (verboseLevel > 5) {
+        G4cout << "GSN Function Point D | returning pre-PV surface norm: "
+               << preSolidNorm << " and post-PV surface norm: "
+               << postSolidNorm << G4endl;
+      }
+      RotateToGlobalDirection(preTouch, preSolidNorm);
+      RotateToGlobalDirection(postTouch, postSolidNorm);
+      if (verboseLevel > 5 ) {
+        G4cout << "GSN Function Point D | after rotation, pre-PV surface norm is: "
+               << preSolidNorm << " and post-PV surface norm is: "
+               << postSolidNorm << G4endl;
+      }
+      if (incMomDir == nullVec) {
+        output = preSolidNorm;
+      }
+      else {
+        G4int norm_idx = -1;
+        G4double max_norm = 0.;
+        for (G4int i = 0; i < 3; ++i) {
+          const G4double val = std::abs(preSolidNorm[i]);
+          if (norm_idx >= 0 && val <= max_norm) continue;
+          max_norm = val;
+          norm_idx = i;
+        }
+        const G4bool pos_mom = incMomDir[norm_idx] > 0.;
+        const G4bool pos_pre = preSolidNorm[norm_idx] > 0.;
+        const G4bool pos_post = postSolidNorm[norm_idx] > 0.;
+        if (pos_mom) {
+          if (pos_pre) output = preSolidNorm;
+          else if (pos_post) output = postSolidNorm;
+          else output = preSolidNorm;
+        }
+        else {
+          if (!pos_pre) output = preSolidNorm;
+          else if (!pos_post) output = postSolidNorm;
+          else output = preSolidNorm;
+        }
+      }
+    } else if (postStepInPrePV == kSurface) {
 
     //Reflect over the pre-PV normal
     G4ThreeVector preSolidNorm = preSolid->SurfaceNormal(pos_prePV);
