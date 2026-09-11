@@ -24,10 +24,12 @@
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
 
-#include "globals.hh"
 #include "G4ThreeVector.hh"
+
 #include <map>
 #include <utility>
+
+#include "globals.hh"
 
 class G4CMPProcessUtils;
 class G4CMPSurfaceProperty;
@@ -39,7 +41,6 @@ class G4Track;
 class G4VPhysicalVolume;
 class G4VProcess;
 
-
 class G4CMPBoundaryUtils {
 public:
   G4CMPBoundaryUtils(G4VProcess* process);
@@ -49,7 +50,7 @@ public:
   G4CMPBoundaryUtils(G4CMPBoundaryUtils&&) = default;
   G4CMPBoundaryUtils& operator=(const G4CMPBoundaryUtils&) = default;
   G4CMPBoundaryUtils& operator=(G4CMPBoundaryUtils&&) = default;
-  
+
   virtual void SetVerboseLevel(G4int vb) { buVerboseLevel = vb; }
 
   // Check whether this step is at a good boundary for processing
@@ -58,70 +59,81 @@ public:
   // Check whether end of step is actually on surface of volume
   // "surfacePoint" returns post-step position, or computed surface point
   virtual G4bool CheckStepBoundary(const G4Step& aStep,
-				   G4ThreeVector& surfacePoint);
+                                   G4ThreeVector& surfacePoint);
 
   // Implements PostStepDoIt() in a common way; processes should call through
   virtual void ApplyBoundaryAction(const G4Track& aTrack, const G4Step& aStep,
-				   G4ParticleChange& aParticleChange);
+                                   G4ParticleChange& aParticleChange);
 
   // Decide and apply different surface actions; subclasses may override
+  virtual G4bool DoLatticeInterface(const G4Track&, const G4Step&,
+                                    G4ParticleChange&) {
+    return false;
+  }
   virtual G4bool AbsorbTrack(const G4Track& aTrack, const G4Step& aStep) const;
   virtual G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const;
   virtual void DoAbsorption(const G4Track& aTrack, const G4Step& aStep,
-			    G4ParticleChange& aParticleChange);
+                            G4ParticleChange& aParticleChange);
 
   virtual G4bool ReflectTrack(const G4Track& aTrack, const G4Step& aStep) const;
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
-			    G4ParticleChange& aParticleChange);
+                            G4ParticleChange& aParticleChange);
 
   virtual G4bool MaximumReflections(const G4Track& aTrack) const;
   virtual void DoFinalReflection(const G4Track& aTrack, const G4Step& aStep,
-				 G4ParticleChange& aParticleChange);
+                                 G4ParticleChange& aParticleChange);
   // DriftBoundaryProcess should override above to handle recombination
 
   // Minimal action to simply remove track; no energy transfer, no secondaries.
   virtual void DoSimpleKill(const G4Track& aTrack, const G4Step& aStep,
-			    G4ParticleChange& aParticleChange);
+                            G4ParticleChange& aParticleChange);
 
   // NOTE:  Transmission is called only if absorption, reflection both fail
   virtual void DoTransmission(const G4Track& aTrack, const G4Step& aStep,
-			      G4ParticleChange& aParticleChange);
-//  virtual G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const;
+                              G4ParticleChange& aParticleChange);
+  virtual void DoDiffuseTransmission(const G4Track& aTrack, const G4Step& aStep,
+                                     G4ParticleChange& aParticleChange) {
+    DoTransmission(aTrack, aStep, aParticleChange);
+  }
 
-
+  virtual void DoDiffuseReflection(const G4Track& aTrack, const G4Step& aStep,
+                                   G4ParticleChange& aParticleChange) {
+    DoReflection(aTrack, aStep, aParticleChange);
+  }
+  //  virtual G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const;
 
 protected:
   G4bool IsBounaryStep(const G4Step& aStep);
   G4bool GetBoundingVolumes(const G4Step& aStep);
   G4bool GetSurfaceProperty(const G4Step& aStep);
-//  G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const override;
+  //  G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const
+  //  override;
 
   // Does const-casting of matTable for access
   G4double GetMaterialProperty(const G4String& key) const;
-  
+
   void IncrementReflectionCount(const G4Track& aTrack);
-//  virtual G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const;
-    
+  //  virtual G4bool CheckTIR(const G4Track& aTrack, const G4Step& aStep) const;
+
 private:
-  G4int buVerboseLevel;			// For local use; name avoids collisions
+  G4int buVerboseLevel;  // For local use; name avoids collisions
   G4String procName;
-  G4CMPProcessUtils* procUtils;		// For access to lattice, track info
-  
+  G4CMPProcessUtils* procUtils;  // For access to lattice, track info
 
 protected:
-  G4double kCarTolerance;		// Allowed nearness to surface
-  G4int maximumReflections;		// Limit on track reflections
-  G4VPhysicalVolume* prePV;		// Volumes on each side of boundary
+  G4double kCarTolerance;    // Allowed nearness to surface
+  G4int maximumReflections;  // Limit on track reflections
+  G4VPhysicalVolume* prePV;  // Volumes on each side of boundary
   G4VPhysicalVolume* postPV;
-  G4CMPSurfaceProperty* surfProp;	// Surface property with G4CMP data
-  G4MaterialPropertiesTable* matTable;	// Phonon- or charge-specific parameters
-  G4CMPVElectrodePattern* electrode;	// Patterned electrode for absorption
+  G4CMPSurfaceProperty* surfProp;       // Surface property with G4CMP data
+  G4MaterialPropertiesTable* matTable;  // Phonon- or charge-specific parameters
+  G4CMPVElectrodePattern* electrode;    // Patterned electrode for absorption
 
   // Flag whether a given PV pair has a defined surface property or not
-  typedef std::pair<G4VPhysicalVolume*,G4VPhysicalVolume*> BoundaryPV;
+  typedef std::pair<G4VPhysicalVolume*, G4VPhysicalVolume*> BoundaryPV;
   std::map<BoundaryPV, G4bool> hasSurface;
 
-  G4ThreeVector surfacePoint;		// "Adjusted" impact point at surface
+  G4ThreeVector surfacePoint;  // "Adjusted" impact point at surface
 };
 
-#endif	/* G4CMPBoundaryUtils_hh */
+#endif /* G4CMPBoundaryUtils_hh */

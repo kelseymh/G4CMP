@@ -143,6 +143,7 @@ add_definitions(-DG4DIGI_ALLOC_EXPORT)		## Needed for hits collection
 
 set(library_SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPAnharmonicDecay.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPAnisotropicInterfaceSolver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBiLinearInterp.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPBoundaryUtils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPChargeCloud.cc
@@ -172,6 +173,8 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateLinear.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPIVRateQuadratic.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPImpactTunlNIEL.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterfaceTable.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterfaceTableGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterValleyScattering.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPInterpolator.cc
@@ -249,6 +252,7 @@ set(library_SOURCES
  
 set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPAnharmonicDecay.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPAnisotropicInterfaceSolver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBiLinearInterp.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPBlockData.icc
@@ -281,6 +285,8 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateLinear.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPIVRateQuadratic.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPImpactTunlNIEL.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterfaceTable.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterfaceTableGenerator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterValleyScattering.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPInterpolator.hh

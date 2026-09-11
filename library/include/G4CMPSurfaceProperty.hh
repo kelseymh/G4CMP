@@ -15,12 +15,16 @@
 #ifndef G4CMPSurfaceProperty_h
 #define G4CMPSurfaceProperty_h 1
 
-#include "G4SurfaceProperty.hh"
 #include "G4MaterialPropertiesTable.hh"
-#include <vector>
+#include "G4RotationMatrix.hh"
+#include "G4SurfaceProperty.hh"
+
 #include <map>
+#include <memory>
+#include <vector>
 
 class G4CMPVElectrodePattern;
+class G4CMPInterfaceTable;
 
 class G4CMPSurfaceProperty : public G4SurfaceProperty {
 public:
@@ -29,21 +33,72 @@ public:
   // I don't know why I put it here at all.
   G4CMPSurfaceProperty(const G4String& name,
                        G4SurfaceType stype = dielectric_dielectric);
-    
-  //Full constructor
-  G4CMPSurfaceProperty(const G4String& name,
-                       G4double qAbsProb, // Prob. to absorb charge carrier
-                       G4double qReflProb, // If not absorbed, prob to reflect
-                       G4double eMinK, //Min wave number to absorb electron
-                       G4double hMinK, //Min wave number to absorb hole
-                       G4double pAbsProb, // Prob. to absorb phonon
-                       G4double pReflProb, // If not absorbed, prob to reflect
-                       G4double pSpecProb, //Prob. of specular reflection
-                       G4double pMinK, //Min wave number to absorb phonon
-		       G4double qpAbsProb = 0.0, //Prob. to absorb a bogoliubov QP
-		       G4double qpReflProb = 1.0, //Prob to reflect a bogoliubov QP
-		       //(Note 1-qpAbsProb-qpReflProb is the probability for the QP to transport)
-                       G4SurfaceType stype = dielectric_dielectric);
+
+  // Full constructor
+  G4CMPSurfaceProperty(
+      const G4String& name,
+      G4double qAbsProb,          // Prob. to absorb charge carrier
+      G4double qReflProb,         // If not absorbed, prob to reflect
+      G4double eMinK,             // Min wave number to absorb electron
+      G4double hMinK,             // Min wave number to absorb hole
+      G4double pAbsProb,          // Prob. to absorb phonon
+      G4double pReflProb,         // If not absorbed, prob to reflect
+      G4double pSpecProb,         // Prob. of specular reflection
+      G4double pMinK,             // Min wave number to absorb phonon
+      G4double qpAbsProb = 0.0,   // Prob. to absorb a bogoliubov QP
+      G4double qpReflProb = 1.0,  // Prob to reflect a bogoliubov QP
+      //(Note 1-qpAbsProb-qpReflProb is the probability for the QP to transport)
+      G4SurfaceType stype = dielectric_dielectric);
+
+  // Optional anisotropic elastic phonon-interface table.
+  //
+  // If this is non-null, G4CMPPhononBoundaryProcess may use the table
+  // to perform the complete reflected/transmitted mode-selection step.
+  void SetPhononInterfaceTable(
+      const std::shared_ptr<const G4CMPInterfaceTable>& table) {
+    thePhononInterfaceTable = table;
+  }
+
+  const std::shared_ptr<const G4CMPInterfaceTable>& GetPhononInterfaceTable()
+      const {
+    return thePhononInterfaceTable;
+  }
+
+  G4bool HasPhononInterfaceTable() const {
+    return static_cast<G4bool>(thePhononInterfaceTable);
+  }
+
+  void SetPhononInterfaceFrame(const G4RotationMatrix& solidAToInterface,
+                               const G4RotationMatrix& solidBToInterface) {
+    phononSolidAToInterface = solidAToInterface;
+
+    phononSolidBToInterface = solidBToInterface;
+
+    hasPhononInterfaceFrame = true;
+  }
+
+  G4bool HasPhononInterfaceFrame() const { return hasPhononInterfaceFrame; }
+
+  const G4RotationMatrix& GetPhononSolidAToInterface() const {
+    return phononSolidAToInterface;
+  }
+
+  const G4RotationMatrix& GetPhononSolidBToInterface() const {
+    return phononSolidBToInterface;
+  }
+
+  void SetPhononInterfaceTable(
+      const std::shared_ptr<const G4CMPInterfaceTable>& table,
+      const G4RotationMatrix& solidAToInterface,
+      const G4RotationMatrix& solidBToInterface) {
+    thePhononInterfaceTable = table;
+
+    phononSolidAToInterface = solidAToInterface;
+
+    phononSolidBToInterface = solidBToInterface;
+
+    hasPhononInterfaceFrame = true;
+  }
 
   virtual ~G4CMPSurfaceProperty();
 
@@ -52,8 +107,8 @@ public:
   G4CMPSurfaceProperty& operator=(const G4CMPSurfaceProperty&) = default;
   G4CMPSurfaceProperty& operator=(G4CMPSurfaceProperty&&) = default;
 
-  G4bool operator==(const G4SurfaceProperty &right) const;
-  G4bool operator!=(const G4SurfaceProperty &right) const;
+  G4bool operator==(const G4SurfaceProperty& right) const;
+  G4bool operator!=(const G4SurfaceProperty& right) const;
 
   // Accessors for charge-pair and phonon boundary parameters
   // NOTE:  Must return non-const pointer as Tables can't be const
@@ -64,54 +119,59 @@ public:
   G4MaterialPropertiesTable* GetPhononMaterialPropertiesTablePointer() const {
     return const_cast<G4MaterialPropertiesTable*>(&thePhononMatPropTable);
   }
-    
+
   G4MaterialPropertiesTable* GetQPMaterialPropertiesTablePointer() const {
-      return const_cast<G4MaterialPropertiesTable*>(&theQPMatPropTable);
+    return const_cast<G4MaterialPropertiesTable*>(&theQPMatPropTable);
   }
 
   // NOTE:  These return by value because Tables can't be const
-  G4MaterialPropertiesTable
-  GetChargeMaterialPropertiesTable() const { return theChargeMatPropTable; }
+  G4MaterialPropertiesTable GetChargeMaterialPropertiesTable() const {
+    return theChargeMatPropTable;
+  }
 
-  G4MaterialPropertiesTable
-  GetPhononMaterialPropertiesTable() const { return thePhononMatPropTable; }
-    
-  G4MaterialPropertiesTable
-  GetQPMaterialPropertiesTable() const { return theQPMatPropTable; }
+  G4MaterialPropertiesTable GetPhononMaterialPropertiesTable() const {
+    return thePhononMatPropTable;
+  }
+
+  G4MaterialPropertiesTable GetQPMaterialPropertiesTable() const {
+    return theQPMatPropTable;
+  }
 
   // Accessors to fill charge-pair and phonon boundary parameters
-  void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
-  void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
-  void SetQPMaterialPropertiesTable(G4MaterialPropertiesTable *mpt);
+  void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable* mpt);
+  void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable* mpt);
+  void SetQPMaterialPropertiesTable(G4MaterialPropertiesTable* mpt);
   void SetChargeMaterialPropertiesTable(G4MaterialPropertiesTable& mpt);
   void SetPhononMaterialPropertiesTable(G4MaterialPropertiesTable& mpt);
   void SetQPMaterialPropertiesTable(G4MaterialPropertiesTable& mpt);
 
   void FillChargeMaterialPropertiesTable(G4double qAbsProb, G4double qReflProb,
-                                         G4double eMinK,    G4double hMinK);
+                                         G4double eMinK, G4double hMinK);
 
-  void FillPhononMaterialPropertiesTable(G4double pAbsProb,  G4double pReflProb,
+  void FillPhononMaterialPropertiesTable(G4double pAbsProb, G4double pReflProb,
                                          G4double pSpecProb, G4double pMinK);
-    
-  void FillQPMaterialPropertiesTable(G4double qpAbsProb,  G4double qpReflProb);
+
+  void FillQPMaterialPropertiesTable(G4double qpAbsProb, G4double qpReflProb);
 
   // Accessors to fill phonon surface interaction parametrizations
-  void AddSurfaceAnharmonicCutoff(G4double freqMax) { anharmonicMaxFreq = freqMax; }
+  void AddSurfaceAnharmonicCutoff(G4double freqMax) {
+    anharmonicMaxFreq = freqMax;
+  }
   void AddSurfaceDiffuseCutoff(G4double freqDiff) { diffuseMaxFreq = freqDiff; }
 
   // For polynomial coeffients, units can be factored out and passed separately
   void AddSurfaceAnharmonicCoeffs(const std::vector<G4double>& coeff,
-				  G4double freqUnits=0.) {
+                                  G4double freqUnits = 0.) {
     SaveCoeffs(anharmonicCoeffs, coeff, freqUnits);
   }
 
   void AddDiffuseReflectionCoeffs(const std::vector<G4double>& coeff,
-				  G4double freqUnits=0.) {
+                                  G4double freqUnits = 0.) {
     SaveCoeffs(diffuseCoeffs, coeff, freqUnits);
   }
 
   void AddSpecularReflectionCoeffs(const std::vector<G4double>& coeff,
-				   G4double freqUnits=0.) {
+                                   G4double freqUnits = 0.) {
     SaveCoeffs(specularCoeffs, coeff, freqUnits);
   }
 
@@ -130,24 +190,27 @@ public:
   G4CMPVElectrodePattern* GetPhononElectrode() const;
   G4CMPVElectrodePattern* GetQPElectrode() const;
 
-  virtual void DumpInfo() const;	// To be implemented
+  virtual void DumpInfo() const;  // To be implemented
 
-  void AddScatteringProperties(G4double AnhCutoff, G4double DiffCutoff, 
-	const std::vector<G4double>& AnhCoeffs, const std::vector<G4double>& DiffCoeffs,
-	const std::vector<G4double>& SpecCoeffs, G4double AnhFreqUnits, G4double DiffFreqUnits,
-  G4double SpecFreqUnits); 
-  //Sets anharmonic, diffuse, and specular reflection properties
+  void AddScatteringProperties(G4double AnhCutoff, G4double DiffCutoff,
+                               const std::vector<G4double>& AnhCoeffs,
+                               const std::vector<G4double>& DiffCoeffs,
+                               const std::vector<G4double>& SpecCoeffs,
+                               G4double AnhFreqUnits, G4double DiffFreqUnits,
+                               G4double SpecFreqUnits);
+  // Sets anharmonic, diffuse, and specular reflection properties
 
 protected:
   // These args should be const, but G4MaterialPropertiesTables is silly.
   G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
   G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
   G4bool IsValidQPPropTable(G4MaterialPropertiesTable& propTab) const;
-
+  std::shared_ptr<const G4CMPInterfaceTable> thePhononInterfaceTable;
   void SaveCoeffs(std::vector<G4double>& buffer,
-		  const std::vector<G4double>& coeff, G4double units);
+                  const std::vector<G4double>& coeff, G4double units);
 
-  G4double ExpandCoeffsPoly(G4double freq, const std::vector<G4double>& coeff) const;
+  G4double ExpandCoeffsPoly(G4double freq,
+                            const std::vector<G4double>& coeff) const;
 
 protected:
   G4MaterialPropertiesTable theChargeMatPropTable;
@@ -158,9 +221,13 @@ protected:
   G4CMPVElectrodePattern* thePhononElectrode;
   G4CMPVElectrodePattern* theQPElectrode;
 
+  G4RotationMatrix phononSolidAToInterface;
+  G4RotationMatrix phononSolidBToInterface;
+  G4bool hasPhononInterfaceFrame = false;
+
   // Frequency dependent phonon surface scattering parameters
-  G4double anharmonicMaxFreq;		// Max frequency for anharmonic decay
-  G4double diffuseMaxFreq;		// Limit frqeuency for diffuse scatter
+  G4double anharmonicMaxFreq;  // Max frequency for anharmonic decay
+  G4double diffuseMaxFreq;     // Limit frqeuency for diffuse scatter
 
   // Polynomial coefficients in frequency for each kind of scattering
   std::vector<G4double> anharmonicCoeffs;
@@ -173,8 +240,8 @@ protected:
   mutable std::map<G4int, G4CMPVElectrodePattern*> workerQPElectrode;
 
   // These args should be const, but G4MaterialPropertiesTables is silly.
-//   G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
-//   G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
+  //   G4bool IsValidChargePropTable(G4MaterialPropertiesTable& propTab) const;
+  //   G4bool IsValidPhononPropTable(G4MaterialPropertiesTable& propTab) const;
 };
 
 #endif
