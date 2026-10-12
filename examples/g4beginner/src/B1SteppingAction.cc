@@ -96,7 +96,9 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
   G4VPhysicalVolume* postPV = postPoint->GetPhysicalVolume();
 
   G4LogicalVolume* preLV  = prePV  ? prePV->GetLogicalVolume()  : nullptr;
+  /*** Avoid compiler warning about "unused variable"
   G4LogicalVolume* postLV = postPV ? postPV->GetLogicalVolume() : nullptr;
+  ***/
 
   G4String preName  = prePV  ? prePV->GetName()  : "";
   G4String postName = postPV ? postPV->GetName() : "";
