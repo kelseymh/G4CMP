@@ -35,6 +35,7 @@
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "G4LogicalVolume.hh"
+#include "G4Version.hh"
 
 // Start new for application
 #if G4VERSION_NUMBER >= 1100

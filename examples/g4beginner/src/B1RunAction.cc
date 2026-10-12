@@ -33,13 +33,14 @@
 #include "B1AnalysisConfig.hh"
 // #include "B1Run.hh"
 
-#include "G4RunManager.hh"
-#include "G4Run.hh"
 #include "G4AccumulableManager.hh"
-#include "G4LogicalVolumeStore.hh"
 #include "G4LogicalVolume.hh"
-#include "G4UnitsTable.hh"
+#include "G4LogicalVolumeStore.hh"
+#include "G4Run.hh"
+#include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4UnitsTable.hh"
+#include "G4Version.hh"
 
 #if G4VERSION_NUMBER >= 1100
 #include "G4AnalysisManager.hh"
