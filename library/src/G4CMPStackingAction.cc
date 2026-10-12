@@ -80,7 +80,6 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   //    their ActionInitialization, that classification will be used
   //  - if the user has not defined a default classification for the track's
   //    particle type, fUrgent is used
-  // using autos to stay within 80 columns
   G4StackManager* stackManager =
     G4EventManager::GetEventManager()->GetStackManager();
   classification = stackManager->GetDefaultClassification();
