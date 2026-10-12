@@ -6,6 +6,8 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2026-10-09  G4CMP-645 : Add version checks to g4beginner analysis manager use.
+
 2026-10-09  g4cmp-V10-06-00  Improve charge reflection/recombination; bug fixes.
 2026-10-09  G4CMP-600 : Check geometry dimensions against surface clearance.
 2026-10-08  G4CMP-682 : Swap uniform-field GetPotential so E=−grad V.
