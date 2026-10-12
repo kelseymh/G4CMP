@@ -71,6 +71,7 @@ G4CMPStackingAction::~G4CMPStackingAction() {;}
 
 G4ClassificationOfNewTrack 
 G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
+  G4ClassificationOfNewTrack classification = fUrgent;
   // Default track classification was added in G4 11.2
 #if G4VERSION_NUMBER >= 1120
   // stack manager default classification depends on track particle type and
@@ -80,12 +81,10 @@ G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   //  - if the user has not defined a default classification for the track's
   //    particle type, fUrgent is used
   // using autos to stay within 80 columns
-  auto* stackManager = G4EventManager::GetEventManager()->GetStackManager();
-  auto classification = stackManager->GetDefaultClassification();
-#else // G4VERSION_NUMBER >= 1120
-  // fall back to using fUrgent if G4 version <= 11.1
-  G4ClassificationOfNewTrack classification = fUrgent;
-#endif
+  G4StackManager* stackManager =
+    G4EventManager::GetEventManager()->GetStackManager();
+  classification = stackManager->GetDefaultClassification();
+#endif // G4VERSION_NUMBER >= 1120
 
   // Don't do anything to ordinary G4 tracks
   if (!G4CMP::IsPhonon(aTrack) && !G4CMP::IsChargeCarrier(aTrack) &&
