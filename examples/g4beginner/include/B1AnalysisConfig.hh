@@ -10,9 +10,12 @@ class B1AnalysisConfig
 {
   public:
     static B1AnalysisConfig* Instance();
+    ~B1AnalysisConfig();
 
     void SetSpecies(const G4String& species);
     const G4String& GetSpecies() const;
+
+    G4GenericMessenger* GetMessenger() const { return Instance()->fMessenger; }
 
     G4bool IsElectronMode() const;
     G4bool IsPhononMode() const;
@@ -20,9 +23,7 @@ class B1AnalysisConfig
     G4String GetOutputFileName() const;
   private:
     B1AnalysisConfig();
-    ~B1AnalysisConfig();
-
-    static B1AnalysisConfig* fInstance;
+    B1AnalysisConfig(const B1AnalysisConfig&);  // To clone from master
 
     G4String fSpecies;
     G4GenericMessenger* fMessenger;
