@@ -7,6 +7,7 @@ Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 [ Modifications included on branch 606, put subtask tags below it: ]
+2026-10-08  G4CMP-612 : Add Fermi energy calculation to G4LatticePhysical.
 2026-08-18  G4CMP-606 : Charge transmission across boundaries.
 2026-08-18  G4CMP-613 : Heterostructure example toy geometry.
 
