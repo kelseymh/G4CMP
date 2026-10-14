@@ -10,6 +10,8 @@
 //
 // 20180622  Michael Kelsey
 // 20211005  Add position-only utility (get touchable from position)
+// 20260923  G4CMP-674 -- Short-circuit GetBiasThroughPosition if electric
+// field magnitude is zero
 
 #include "G4CMPFieldUtils.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -148,6 +150,7 @@ G4double G4CMP::GetBiasThroughPosition(const G4VTouchable* touch,
   // Thickness of volume through point along local field direction
   // NOTE: This is only valid for uniform or near-uniform fields
   G4ThreeVector field = GetFieldAtPosition(vol, pos);
+  if (field.mag() == 0.) return 0.;
   G4ThreeVector e0 = field.unit();
 
   G4bool deleteTouch=false;

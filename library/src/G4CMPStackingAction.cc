@@ -27,6 +27,8 @@
 // 20240122 G4CMP-446 -- SetPhononVelocity() should use global-to-local
 //		transform for k vector and Vg.
 // 20250508 N. Tenpas -- Add coordinate transforms in SetPhononVelocity.
+// 20261009 G4CMP-618 -- Support sub-event parallelism by getting default
+// track classification from stack manager
 
 #include "G4CMPStackingAction.hh"
 
@@ -36,6 +38,7 @@
 #include "G4CMPPhononTrackInfo.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4EventManager.hh"
 #include "G4LatticeManager.hh"
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
@@ -45,10 +48,12 @@
 #include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RandomDirection.hh"
+#include "G4StackManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4Track.hh"
 #include "G4TrackStatus.hh"
+#include "G4Version.hh"
 #include "G4VPhysicalVolume.hh"
 #include "Randomize.hh"
 
@@ -67,6 +72,18 @@ G4CMPStackingAction::~G4CMPStackingAction() {;}
 G4ClassificationOfNewTrack 
 G4CMPStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
   G4ClassificationOfNewTrack classification = fUrgent;
+  // Default track classification was added in G4 11.2
+#if G4VERSION_NUMBER >= 1120
+  // stack manager default classification depends on track particle type and
+  // the user's configuration:
+  //  - if particle type is assigned a default classification in
+  //    their ActionInitialization, that classification will be used
+  //  - if the user has not defined a default classification for the track's
+  //    particle type, fUrgent is used
+  G4StackManager* stackManager =
+    G4EventManager::GetEventManager()->GetStackManager();
+  classification = stackManager->GetDefaultClassification();
+#endif // G4VERSION_NUMBER >= 1120
 
   // Don't do anything to ordinary G4 tracks
   if (!G4CMP::IsPhonon(aTrack) && !G4CMP::IsChargeCarrier(aTrack) &&

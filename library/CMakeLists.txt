@@ -245,6 +245,7 @@ set(library_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPLocalTrappingRate.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusionTimeStepperProcess.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPQPDiffusionTimeStepperRate.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/G4CMPVKaplanQP.cc
     )
  
 set(library_HEADERS
@@ -359,6 +360,7 @@ set(library_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPLocalTrappingRate.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusionTimeStepperProcess.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPQPDiffusionTimeStepperRate.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPVKaplanQP.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/G4CMPParticleChangeForQPDiffusion.icc
     )
 

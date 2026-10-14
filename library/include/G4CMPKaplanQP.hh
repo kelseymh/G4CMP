@@ -53,16 +53,17 @@
 //		new DoDirectAbsorption() boolean test.
 // 20240502  G4CMP-344: Reusable vector buffers to avoid memory churn.
 // 20240502  G4CMP-379: Add Fermi-Dirac thermal probability for QP energies.
+// 20250101  G4CMP-439: Create separate debugging file per worker thread;
+//    add EventID and TrackID columns to debugging output.
+// 20260710  G4CMP-647 -- Derive from new base class G4CMPVKaplanQP
 
 #ifndef G4CMPKaplanQP_hh
 #define G4CMPKaplanQP_hh 1
 
+#include "G4CMPVKaplanQP.hh"
 #include "G4Types.hh"
 #include <fstream>
 #include <vector>
-
-class G4MaterialPropertiesTable;
-
 
 // This is the main function for the Kaplan quasiparticle downconversion
 // process. Based on the energy of the incoming phonon and the properties
@@ -76,124 +77,49 @@ namespace G4CMP {
 			  std::vector<G4double>& reflectedEnergies);
 }
 
-class G4CMPKaplanQP {
+class G4CMPKaplanQP : public G4CMPVKaplanQP {
 public:
   G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb=0);
-  virtual ~G4CMPKaplanQP();
-
-  // Turn on diagnostic messages
-  void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
-  G4int GetVerboseLevel() const { return verboseLevel; }
+  virtual ~G4CMPKaplanQP() {;}
 
   // Do absorption on sensor/metalization film
   // Returns absorbed energy, fills list of re-emitted phonons
-  G4double AbsorbPhonon(G4double energy,
-			std::vector<G4double>& reflectedEnergies) const;
-
-  // Set temperature for use by thermalization functions
-  void SetTemperature(G4double temp) { temperature = temp; }
-
-  // Configure thin film (QET, metalization, etc.) for phonon absorption
-  void SetFilmProperties(G4MaterialPropertiesTable* prop);
-
-  // Alternative configuration without properties table
-  void SetFilmThickness(G4double value)       { filmThickness = value; }
-  void SetGapEnergy(G4double value)           { gapEnergy = value; }
-  void SetLowQPLimit(G4double value)          { lowQPLimit = value; }
-  void SetHighQPLimit(G4double value)         { highQPLimit = value; }
-  void SetSubgapAbsorption(G4double value)    { directAbsorption = value; }
-  void SetDirectAbsorption(G4double value)    { directAbsorption = value; }
-  void SetAbsorberGap(G4double value)         { absorberGap = value; }
-  void SetAbsorberEff(G4double value)         { absorberEff = value; }
-  void SetAbsorberEffSlope(G4double value)    { absorberEffSlope = value; }
-  void SetPhononLifetime(G4double value)      { phononLifetime = value; }
-  void SetPhononLifetimeSlope(G4double value) { phononLifetimeSlope = value; }
-  void SetVSound(G4double value)              { vSound = value; }
+  virtual G4double AbsorbPhonon(G4double energy,
+			std::vector<G4double>& reflectedEnergies) const override;
 
 protected:
-  // Check that the five required parameters are set to meaningful values
-  G4bool ParamsReady() const {
-    return (filmThickness > 0. && gapEnergy >= 0. && vSound > 0. &&
-	    phononLifetime > 0. && phononLifetimeSlope >= 0.);
-  }
-
   // Compute the probability of a phonon reentering the crystal without breaking
   // any Cooper pairs.
-  G4double CalcEscapeProbability(G4double energy,
-				 G4double thicknessFrac) const;
+  virtual G4double CalcEscapeProbability(G4double energy,
+				 G4double thicknessFrac) const override;
 
   // Model the phonons (phonEnergies) breaking Cooper pairs into quasiparticles
   // (qpEnergies).
-  G4double CalcQPEnergies(std::vector<G4double>& phonEnergies,
-			  std::vector<G4double>& qpEnergies) const;
+  virtual G4double CalcQPEnergies(std::vector<G4double>& phonEnergies,
+			  std::vector<G4double>& qpEnergies) const override;
   
   // Model the quasiparticles (qpEnergies) emitting phonons (phonEnergies) in
   // the superconductor.
-  G4double CalcPhononEnergies(std::vector<G4double>& phonEnergies,
-			      std::vector<G4double>& qpEnergies) const;
+  virtual G4double CalcPhononEnergies(std::vector<G4double>& phonEnergies,
+			      std::vector<G4double>& qpEnergies) const override;
   
   // Calculate energies of phonon tracks that have reentered the crystal.
-  void CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
-				   std::vector<G4double>& reflectedEnergies) const;
+  virtual void CalcReflectedPhononEnergies(std::vector<G4double>& phonEnergies,
+				   std::vector<G4double>& reflectedEnergies) const override;
 
   // Compute probability of phonon collection directly on absorber (TES)
-  G4bool DoDirectAbsorption(G4double energy) const;
-  G4double CalcDirectAbsorption(G4double energy,
-				std::vector<G4double>& keepEnergies) const;
+  virtual G4bool DoDirectAbsorption(G4double energy) const override;
+  virtual G4double CalcDirectAbsorption(G4double energy,
+				std::vector<G4double>& keepEnergies) const override;
 
   // Handle absorption of quasiparticle energies below Cooper-pair breaking
   // If qpEnergy < 3*Delta, radiate a phonon, absorb bandgap minimum
-  G4double CalcQPAbsorption(G4double energy,
+  virtual G4double CalcQPAbsorption(G4double energy,
 			    std::vector<G4double>& phonEnergies,
-			    std::vector<G4double>& qpEnergies) const;
+			    std::vector<G4double>& qpEnergies) const override;
 			    
   // Handle quasiparticle energy-dependent absorption efficiency
-  G4double CalcQPEfficiency(G4double qpE) const;
-
-  // Compute quasiparticle energy distribution from broken Cooper pair.
-  G4double QPEnergyRand(G4double Energy) const;
-  G4double QPEnergyPDF(G4double E, G4double x) const;
-  G4double ThermalPDF(G4double E) const;
-
-  // Compute phonon energy distribution from quasiparticle in superconductor.
-  G4double PhononEnergyRand(G4double Energy) const;
-  G4double PhononEnergyPDF(G4double E, G4double x) const;
-
-  // Encapsulate below-bandgap logic
-  G4bool IsSubgap(G4double energy) const { return (energy < 2.*gapEnergy); }
-  G4bool DirectAbsorb(G4double energy) const {
-    return (IsSubgap(energy) && energy > 2.*absorberGap);
-  }
-
-  // Write summary of interaction to output "kaplanqp_stats" file
-  void ReportAbsorption(G4double energy, G4double EDep,
-			const std::vector<G4double>& reflectedEnergies) const;
-
-private:
-  G4int verboseLevel;			// For diagnostic messages
-  mutable G4bool keepAllPhonons;	// Copy of flag KeepKaplanPhonons()
-
-  G4MaterialPropertiesTable* filmProperties;
-  G4double filmThickness;	// Quantities extracted from properties table
-  G4double gapEnergy;		// Bandgap energy (delta)
-  G4double lowQPLimit;		// Minimum X*delta to keep as a quasiparticle
-  G4double highQPLimit;		// Maximum X*delta to create QP from phonon
-  G4double directAbsorption;	// Probability to collect energy directly (TES)
-  G4double absorberGap;		// Bandgap of secondary absorber material
-  G4double absorberEff;         // Quasiparticle absorption efficiency
-  G4double absorberEffSlope;    // Energy dependence of qp absorption efficiency
-  G4double phononLifetime;	// Lifetime of phonons in film at 2*delta
-  G4double phononLifetimeSlope;	// Energy dependence of phonon lifetime
-  G4double vSound;		// Speed of sound in film
-  G4double temperature;		// Ambient temperature of film (from lattice)
-
-  // Temporary buffers for use within processing functions
-  mutable std::vector<G4double> qpEnergyList;	// Active ("final") population
-  mutable std::vector<G4double> phononEnergyList;
-  mutable std::vector<G4double> newQPEnergies;	// Intermediate processing
-  mutable std::vector<G4double> newPhonEnergies;
-
-  mutable std::ofstream output;		// Diagnostic output under G4CMP_DEBUG
-};
+  virtual G4double CalcQPEfficiency(G4double qpE) const override;
+}; // class G4CMPKaplanQP
 
 #endif	/* G4CMPKaplanQP_hh */

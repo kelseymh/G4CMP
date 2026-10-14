@@ -43,6 +43,8 @@
 // 20251210  G4CMP-518 -- Make PhononVelocityIsInward() generic.
 // 20260212  G4CMP-581 -- Skip invalid phonons (null pointers), report skips.
 // 20260218  G4CMP-588 -- Fix change above by presenting secondary buffer.
+// 20260710  G4CMP-647 -- Replace G4CMPKaplanQP member with G4CMPVKaplanQP
+// 20261006  G4CMP-681 -- Remove kaplanqp initialization in ctor
 
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -52,6 +54,7 @@
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4CMPVKaplanQP.hh"
 #include "G4Exception.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
@@ -68,7 +71,9 @@
 // Constructor and destructor
 
 G4CMPPhononElectrode::G4CMPPhononElectrode()
-  : G4CMPVElectrodePattern(), kaplanQP(0) {;}
+  : G4CMPVElectrodePattern(),
+    kaplanQP(0)
+{}
 
 G4CMPPhononElectrode::~G4CMPPhononElectrode() {
   delete kaplanQP; kaplanQP=0;
@@ -96,12 +101,17 @@ AbsorbAtElectrode(const G4Track& track, const G4Step& step,
 
   // Create KaplanQP simulator if not already available
   if (!kaplanQP) {
-    // Pass temperture through to KaplanQP if no already included
+    // Pass temperature through to KaplanQP if not already included
     if (!theSurfaceTable->ConstPropertyExists("temperature"))
       G4CMP::UpdateMPT(theSurfaceTable, "temperature",
 		       theLattice->GetTemperature());
 
-    kaplanQP = new G4CMPKaplanQP(theSurfaceTable, verboseLevel);
+    // not specifying identity of phonon-qp interaction model here
+    // if other interaction models are added, we will want to make a config
+    // parameter that will get passed in here so the user can specify
+    // the model to be used from a macro command
+    G4String interaction_model;
+    RegisterAbsorber(interaction_model);
   }
 
   // Transfer phonon energy into superconducting film
@@ -140,9 +150,9 @@ ProcessAbsorption(const G4Track& track, const G4Step& step, G4double EDep,
   particleChange.ProposeNonIonizingEnergyDeposit(EDep);
 
   // Secondaries are emitted with cos(theta) distribution inward
-  //We'll need to eventually calculate the generalized surface norm
-  //based on the above surface norm and the track's velocity, so
-  //give track velocity
+  // We'll need to eventually calculate the generalized surface norm
+  // based on the above surface norm and the track's velocity, so
+  // give track velocity
   G4ThreeVector vDir = track.GetMomentumDirection();
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(step,vDir);
   
@@ -225,4 +235,32 @@ ProcessReflection(const G4Track& track, const G4Step& step,
 
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track);
   trackInfo->IncrementReflectionCount();
+}
+
+
+// allow surface table to be registered with kaplanqp object as well
+void G4CMPPhononElectrode::UseSurfaceTable(
+   G4MaterialPropertiesTable* surfProp) {
+  G4CMPVElectrodePattern::UseSurfaceTable(surfProp);
+  if (kaplanQP) kaplanQP->SetFilmProperties(surfProp);
+}
+
+
+void G4CMPPhononElectrode::setKaplanQP(G4CMPVKaplanQP* val) const {
+  kaplanQP = val;
+  if (theSurfaceTable && kaplanQP) {
+    kaplanQP->SetFilmProperties(theSurfaceTable);
+  }
+}
+
+
+// define phonon-qp interaction mechanism via string identifier;
+// G4CMPKaplanQP default
+G4CMPVKaplanQP*
+G4CMPPhononElectrode::getKaplanQP(const G4String& identifier) const {
+  G4CMPVKaplanQP* val = nullptr;
+  if (identifier.empty() || identifier.find("aplan") != G4String::npos) {
+    val = new G4CMPKaplanQP(theSurfaceTable, verboseLevel);
+  }
+  return val;
 }

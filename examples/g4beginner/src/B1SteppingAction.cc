@@ -35,9 +35,15 @@
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "G4LogicalVolume.hh"
+#include "G4Version.hh"
 
 // Start new for application
+#if G4VERSION_NUMBER >= 1100
 #include "G4AnalysisManager.hh"
+#else // G4VERSION_NUMBER >= 1100
+#include "g4root.hh"
+// #include "g4csv.hh"
+#endif // G4VERSION_NUMBER >= 1100
 #include "G4Track.hh"
 #include "G4StepPoint.hh"
 #include "G4ParticleDefinition.hh"
@@ -90,7 +96,9 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
   G4VPhysicalVolume* postPV = postPoint->GetPhysicalVolume();
 
   G4LogicalVolume* preLV  = prePV  ? prePV->GetLogicalVolume()  : nullptr;
+  /*** Avoid compiler warning about "unused variable"
   G4LogicalVolume* postLV = postPV ? postPV->GetLogicalVolume() : nullptr;
+  ***/
 
   G4String preName  = prePV  ? prePV->GetName()  : "";
   G4String postName = postPV ? postPV->GetName() : "";

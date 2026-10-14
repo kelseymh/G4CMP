@@ -14,6 +14,8 @@
 // 20170525  M. Kelsey -- Add "rule of five" default copy/move operators
 // 20170627  M. Kelsey -- Inherit from G4CMPProcessUtils
 // 20200601  G4CMP-207: Require Clone() functions from sublcasses for copying
+// 20260814  G4CMP-647: Make UseSurfaceTable virtual for
+// compatibility with G4CMPVKaplanQP
 
 #ifndef G4CMPVElectrodePattern_h
 #define G4CMPVElectrodePattern_h 1
@@ -49,7 +51,7 @@ public:
   void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
 
   // Local copy of properties stored automatically by G4CMPSurfaceProperty
-  void UseSurfaceTable(G4MaterialPropertiesTable* surfProp);
+  virtual void UseSurfaceTable(G4MaterialPropertiesTable* surfProp);
 
   // Subclass MUST implement this to return true/false depending on position
   virtual G4bool IsNearElectrode(const G4Step& aStep) const = 0;

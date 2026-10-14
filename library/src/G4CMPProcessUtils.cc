@@ -64,6 +64,8 @@
 // 20251007  Bug fix for G4CMP-497 fix just above.
 // 20260110  G4CMP-567:  Add missing else-IsHole() block in GetKineticEnergy.
 // 20260120  G4CMP-558: Add array dimension in Get*VelocityVector().
+// 20260929  G4CMP-665: Change ProposeNewTouchableHandle to take no argument and
+//           rename to UpdateTouchableHandle.
 
 #include "G4CMPProcessUtils.hh"
 #include "G4CMPDriftElectron.hh"
@@ -259,7 +261,7 @@ void G4CMPProcessUtils::FillParticleChange(G4CMPParticleChangeForPhonon& particl
 
     // Update position, touchable, and step status
     particleChange.ProposePosition(position);
-    particleChange.ProposeTouchableHandle(step.GetPreStepPoint()->GetTouchableHandle());
+    particleChange.UpdateTouchableHandle();
     step.GetPostStepPoint()->SetStepStatus(fPostStepDoItProc);
 }
 

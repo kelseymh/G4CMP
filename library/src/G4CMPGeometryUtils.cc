@@ -1086,16 +1086,25 @@ G4ThreeVector G4CMP::ApplySurfaceClearance(const G4VTouchable* touch,
     G4cout << "G4CMP::ApplySurfaceClearance local pos " << pos << G4endl;
   }
 
-  while (solid->Inside(pos) != kInside ||
-	 solid->DistanceToOut(pos,norm) < clearance) {
+  G4double near_surf_dist = solid->DistanceToOut(pos, norm);
+  G4double vol_thickness = near_surf_dist + solid->DistanceToOut(pos, -norm);
+  if (vol_thickness < clearance * 4.) {
+    pos -= norm*vol_thickness/2.;
+    RotateToGlobalPosition(touch, pos);
+    return pos;
+  }
+  while (solid->Inside(pos) != kInside || near_surf_dist < clearance) {
     if (G4CMPConfigManager::GetVerboseLevel()>2) {
-      G4cout << " local pos not inside or too close to surface. " << G4endl
+      G4String position[3] = { "outside", "surface", "inside" };
+      G4cout << " local pos not inside or too close to surface ("
+       << position[solid->Inside(pos)] << ")" << G4endl
 	     << " Shifting by " << clearance << " along " << -norm
 	     << " to " << pos-norm*clearance << G4endl;
     }
 
     pos -= norm*clearance;
     norm = solid->SurfaceNormal(pos);	// Nearest surface may change
+    near_surf_dist = solid->DistanceToOut(pos, norm);
   }
 
   RotateToGlobalPosition(touch, pos);

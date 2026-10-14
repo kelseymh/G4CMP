@@ -68,6 +68,7 @@
 //		Add Fermi-Dirac occupation statistics for QP energy spectrum.
 // 20250101  G4CMP-439: Create separate debugging file per worker thread;
 //		add EventID and TrackID columns to debugging output.
+// 20260710  G4CMP-647 -- Derive from new base class G4CMPVKaplanQP
 
 #include "globals.hh"
 #include "G4CMPKaplanQP.hh"
@@ -75,14 +76,12 @@
 #include "G4CMPUtils.hh"
 #include "G4Event.hh"
 #include "G4EventManager.hh"
-#include "G4MaterialPropertiesTable.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4TrackingManager.hh"
 #include "G4Track.hh"
 #include "Randomize.hh"
-#include <numeric>
 
 
 // Global function for Kaplan quasiparticle downconversion.  Retained here
@@ -105,78 +104,9 @@ G4double G4CMP::KaplanPhononQP(G4double energy,
 // Class constructor and destructor
 
 G4CMPKaplanQP::G4CMPKaplanQP(G4MaterialPropertiesTable* prop, G4int vb)
-  : verboseLevel(vb), keepAllPhonons(true),
-    filmProperties(0), filmThickness(0.), gapEnergy(0.),
-    lowQPLimit(3.), highQPLimit(0.), directAbsorption(0.), absorberGap(0.),
-    absorberEff(1.), absorberEffSlope(0.), phononLifetime(0.), 
-    phononLifetimeSlope(0.), vSound(0.), temperature(0.) {
+  : G4CMPVKaplanQP(prop, vb) {
   if (prop) SetFilmProperties(prop);
 }
-
-G4CMPKaplanQP::~G4CMPKaplanQP() {
-#ifdef G4CMP_DEBUG
-  if (output.is_open()) output.close();
-#endif
-}
-
-// Configure thin film (QET, metalization, etc.) for phonon absorption
-
-void G4CMPKaplanQP::SetFilmProperties(G4MaterialPropertiesTable* prop) {
-  if (!prop) {
-    G4Exception("G4CMPKaplanQP::SetFilmProperties()", "G4CMP001",
-                RunMustBeAborted, "Null MaterialPropertiesTable vector.");
-  }
-
-  // Check that the MaterialPropertiesTable has everything we need. If it came
-  // from a G4CMPSurfaceProperty, then it will be fine.
-  if (!(prop->ConstPropertyExists("gapEnergy") &&
-        prop->ConstPropertyExists("phononLifetime") &&
-        prop->ConstPropertyExists("phononLifetimeSlope") &&
-        prop->ConstPropertyExists("vSound") &&
-        prop->ConstPropertyExists("filmThickness"))) {
-    G4Exception("G4CMPKaplanQP::SetFilmProperties()", "G4CMP002",
-		RunMustBeAborted,
-                "Insufficient info in MaterialPropertiesTable.");
-  }
-
-  // Extract values from table here for convenience in functions
-  if (filmProperties != prop) {
-    filmThickness =       prop->GetConstProperty("filmThickness");
-    gapEnergy =           prop->GetConstProperty("gapEnergy");
-    phononLifetime =      prop->GetConstProperty("phononLifetime");
-    phononLifetimeSlope = prop->GetConstProperty("phononLifetimeSlope");
-    vSound =              prop->GetConstProperty("vSound");
-
-    absorberEff =      (prop->ConstPropertyExists("absorberEff")
-			  ? prop->GetConstProperty("absorberEff") : 1.);
-
-    absorberEffSlope = (prop->ConstPropertyExists("absorberEffSlope")
-			  ? prop->GetConstProperty("absorberEffSlope"): 0.);
-
-    lowQPLimit =       (prop->ConstPropertyExists("lowQPLimit")
-			? prop->GetConstProperty("lowQPLimit") : 3.);
-
-    highQPLimit =      (prop->ConstPropertyExists("highQPLimit")
-			? prop->GetConstProperty("highQPLimit") : 0.);
-
-    // Backward compatible -- support both old "subgap" and new "direct" names
-    directAbsorption = (prop->ConstPropertyExists("directAbsorption")
-			? prop->GetConstProperty("directAbsorption")
-			: (prop->ConstPropertyExists("subgapAbsorption")
-			   ? prop->GetConstProperty("subgapAbsorption") : 0.)
-			);
-
-    absorberGap =      (prop->ConstPropertyExists("absorberGap")
-			? prop->GetConstProperty("absorberGap") : 0.);
-
-    temperature =      (prop->ConstPropertyExists("temperature")
-			? prop->GetConstProperty("temperature")
-			: G4CMPConfigManager::GetTemperature() );
-
-    filmProperties = prop;
-  }
-}
-
 
 // This is the main function for the Kaplan quasiparticle downconversion
 // process. Based on the energy of the incoming phonon and the properties
@@ -240,7 +170,7 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
 
   // Divide incident phonon according to maximum QP energy (or no split)
   G4int nQPpairs =
-    (highQPLimit>0. ? std::ceil(energy/(2.*highQPLimit*gapEnergy)) : 1);
+    (highQPLimit>0. && gapEnergy > 0. ? std::ceil(energy/(2.*highQPLimit*gapEnergy)) : 1);
 
   // Initialize event buffers for new processing
   qpEnergyList.clear();
@@ -272,35 +202,6 @@ AbsorbPhonon(G4double energy, std::vector<G4double>& reflectedEnergies) const {
   ReportAbsorption(energy, EDep, reflectedEnergies);
 
   return EDep;
-}
-
-void G4CMPKaplanQP::
-ReportAbsorption(G4double energy, G4double EDep,
-		 const std::vector<G4double>& reflectedEnergies) const {
-  G4double ERefl = std::accumulate(reflectedEnergies.begin(),
-				   reflectedEnergies.end(), 0.);
-
-#ifdef G4CMP_DEBUG
-  if (output.good()) {
-    output << energy/eV << "," << EDep/eV << "," << ERefl/eV << ","
-	   << reflectedEnergies.size() << std::endl;
-  }
-#endif
-
-  G4double delta = energy-ERefl-EDep;
-  if (fabs(delta) < 1e-20) delta = 0.;	// Suppress floating-point fluctuation
-
-  if (verboseLevel>1) {
-    G4cout << " Phonon " << energy/eV << " deposited " << EDep/eV
-	   << " reflected " << ERefl/eV << " as " << reflectedEnergies.size()
-	   << " new phonons " << delta/eV << " eV lost"
-	   << G4endl;
-  }
-
-  if (delta < 0.) {		// Actual energy excess
-    G4cerr << "WARNING G4CMPKaplanQP has excess " << delta/eV << " eV"
-	   << " above incident phonon." << G4endl;
-  }
 }
 
 // Compute the probability of phonon reentering the crystal without breaking
@@ -508,7 +409,7 @@ G4CMPKaplanQP::CalcQPAbsorption(G4double qpE,
 // Handle quasiparticle energy-dependent absorption efficiency
 
 G4double G4CMPKaplanQP::CalcQPEfficiency(G4double qpE) const {
-  G4double eff = absorberEff + absorberEffSlope * qpE/gapEnergy;
+  G4double eff = absorberEff + absorberEffSlope * gapEnergy > 0. ? qpE/gapEnergy : 1.;
   eff = std::max(0., std::min(eff, 1.));
 
   if (verboseLevel>2) {
@@ -516,78 +417,4 @@ G4double G4CMPKaplanQP::CalcQPEfficiency(G4double qpE) const {
   }
 
   return eff;
-}
-
-
-// Compute quasiparticle energy distribution from broken Cooper pair.
-
-G4double G4CMPKaplanQP::QPEnergyRand(G4double Energy) const {
-  // PDF is not integrable, so we can't do an inverse transform sampling.
-  // Instead, we'll do a rejection method.
-  //
-  // PDF(E') = (E'*(Energy - E') + gapEnergy*gapEnergy)
-  //           /
-  //           sqrt((E'*E' - gapEnergy*gapEnergy) *
-  //                ((Energy - E')*(Energy - E') - gapEnergy*gapEnergy));
-  // The shape of the PDF is like a U, so the max values are at the endpoints:
-  // E' = gapEnergy and E' = Energy - gapEnergy
-
-  // Add buffer so first/last bins don't give zero denominator in pdfSum
-  const G4double BUFF = 1000.;
-  G4double xmin = gapEnergy + (Energy-2.*gapEnergy)/BUFF;
-  G4double xmax = gapEnergy + (Energy-2.*gapEnergy)*(BUFF-1.)/BUFF;
-  G4double ymax = QPEnergyPDF(Energy, xmin);
-
-  G4double xtest=0., ytest=ymax;
-  do {
-    ytest = G4UniformRand()*ymax;
-    xtest = G4UniformRand()*(xmax-xmin) + xmin;
-  } while (ytest > QPEnergyPDF(Energy, xtest));
-
-  return xtest;
-}
-
-G4double G4CMPKaplanQP::QPEnergyPDF(G4double E, G4double x) const {
-  const G4double gapsq = gapEnergy*gapEnergy;
-  const G4double occupy = 1. - ThermalPDF(E) - ThermalPDF(E-x);
-
-  return ( occupy * (x*(E-x)+gapsq) / sqrt((x*x-gapsq) * ((E-x)*(E-x)-gapsq)) );
-}
-
-G4double G4CMPKaplanQP::ThermalPDF(G4double E) const {
-  const G4double kT = k_Boltzmann*temperature;
-  return ( (temperature > 0.) ? 1./(exp(E/kT)+1.) : 0. );
-}
-
-
-// Compute phonon energy distribution from quasiparticle in superconductor.
-// NOTE:  Technically, this is the energy of the QP after emission; the
-//        phonon's own energy is Ephonon = Energy - E', below
-
-G4double G4CMPKaplanQP::PhononEnergyRand(G4double Energy) const {
-  // PDF is not integrable, so we can't do an inverse transform sampling.
-  // Instead, we'll do a rejection method.
-  //
-  // PDF(E') = ((Energy-E')*(Energy-E') * (E'-gapEnergy*gapEnergy/Energy))
-  //           /
-  //           sqrt((E'*E' - gapEnergy*gapEnergy);
-
-  // Add buffer so first bin doesn't give zero denominator in pdfSum
-  const G4double BUFF = 1000.;
-  G4double xmin = gapEnergy + gapEnergy/BUFF;
-  G4double xmax = Energy;
-  G4double ymax = PhononEnergyPDF(Energy, xmin);
-
-  G4double xtest=0., ytest=ymax;
-  do {
-    ytest = G4UniformRand()*ymax;
-    xtest = G4UniformRand()*(xmax-xmin) + xmin;
-  } while (ytest > PhononEnergyPDF(Energy, xtest));
-
-  return Energy-xtest;
-}
-
-G4double G4CMPKaplanQP::PhononEnergyPDF(G4double E, G4double x) const {
-  const G4double gapsq = gapEnergy*gapEnergy;
-  return ( (E-x)*(E-x) * (x-gapsq/E) / sqrt(x*x - gapsq) );
 }

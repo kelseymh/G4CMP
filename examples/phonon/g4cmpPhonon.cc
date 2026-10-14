@@ -6,8 +6,6 @@
 /// \file phonon/g4cmpPhonon.cc
 /// \brief Main program of the G4CMP/phonon example
 //
-// $Id$
-//
 // 20140509  Add conditional code for Geant4 10.0 vs. earlier
 // 20150112  Remove RM->Initialize() call to allow macro configuration
 // 20160111  Remove Geant4 version check since we now hard depend on 10.2+
@@ -25,11 +23,10 @@
 #include "PhononConfigManager.hh"
 #include "PhononDetectorConstruction.hh"
 
-int main(int argc,char** argv)
-{
+int main(int argc,char** argv) {
  // Construct the run manager
  //
- G4RunManager * runManager = new G4RunManager;
+ G4RunManager* runManager = new G4RunManager;
 
  // Set mandatory initialization classes
  //
@@ -57,14 +54,12 @@ int main(int argc,char** argv)
  //
  G4UImanager* UImanager = G4UImanager::GetUIpointer();  
 
- if (argc==1)   // Define UI session for interactive mode
- {
+ if (argc==1) { // Define UI session for interactive mode
       G4UIExecutive * ui = new G4UIExecutive(argc,argv);
       ui->SessionStart();
       delete ui;
  }
- else           // Batch mode
- {
+ else {        // Batch mode
    G4String command = "/control/execute ";
    G4String fileName = argv[1];
    UImanager->ApplyCommand(command+fileName);
@@ -75,5 +70,3 @@ int main(int argc,char** argv)
 
  return 0;
 }
-
-

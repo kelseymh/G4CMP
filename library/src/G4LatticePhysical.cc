@@ -29,6 +29,7 @@
 // 20250507  G4CMP-480 -- Swap rotation matrix for local<-->lattice transforms.
 // 20250905  G4CMP-500 -- Remove non-fundamental superconductor parameters
 // 20260131  G4CMP-572 -- Restore behaviour from G4CMP-480, lost by G4CMP-500.
+// 20260825  G4CMP-612 -- implemented DOS and fermi energy calculations
 
 #include "G4LatticePhysical.hh"
 #include "G4CMPConfigManager.hh"
@@ -468,6 +469,40 @@ SphericalToEllipsoidalTranformation(G4int iv, const G4ThreeVector& v) const {
 
   tempvec() = fLattice->SphericalToEllipsoidalTranformation(iv, v);
   return RotateToSolid(tempvec());
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Fermi energy calculations
+G4double G4LatticePhysical::GetElectronDOS() const {
+  G4double edos = 0.;
+  const G4double meff = GetElectronDOSMass() / CLHEP::c_squared;
+  const G4double num = 2. * pi * meff * k_Boltzmann * GetTemperature();
+  const G4double paren = num / (CLHEP::h_Planck * CLHEP::h_Planck);
+  edos = 2. * std::sqrt(paren * paren * paren);
+  return edos;
+}
+
+G4double G4LatticePhysical::GetHoleDOS() const {
+  G4double hdos = 0.;
+  const G4double meff = GetElectronDOSMass() / CLHEP::c_squared;
+  const G4double num = 2. * pi * meff * k_Boltzmann * GetTemperature();
+  const G4double paren = num / (CLHEP::h_Planck * CLHEP::h_Planck);
+  hdos = 2. * std::sqrt(paren * paren * paren);
+  return hdos;
+}
+
+// https://lampz.tugraz.at/~hadley/psd/weblectures/Ef_intrinsic/index.php
+G4double G4LatticePhysical::GetFermiEnergy() const {
+  G4double ef = 0.;
+  const G4double edos = GetElectronDOS();
+  const G4double hdos = GetHoleDOS();
+  if (edos <= 0. || hdos <= 0.) return ef;
+  const G4double kT = k_Boltzmann * GetTemperature();
+  const G4double term1 = GetBandGapEnergy() / 2.;
+  const G4double term2 = kT * std::log(hdos / edos) / 2.;
+  ef = term1 + term2;
+  return ef;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

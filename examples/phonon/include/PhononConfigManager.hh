@@ -6,13 +6,13 @@
 #ifndef PhononConfigManager_hh
 #define PhononConfigManager_hh 1
 
-// $Id$
-// File:  PhononConfigManager.hh
-//
-// Description:	Singleton container class for user configuration of G4CMP
-//		phonon example. Looks for environment variables	at
-//		initialization to set default values; active values may be
-//		changed via macro commands (see PhononConfigMessenger).
+/// \file PhononConfigManager.hh
+/// \brief Definition of the PhononConfigManager class.
+///
+/// Singleton container class for user configuration of G4CMP
+/// phonon example. Looks for environment variables at
+/// initialization to set default values; active values may be
+/// changed via macro commands (see PhononConfigMessenger).
 //
 // 20170816  M. Kelsey -- Extract hit filename from G4CMPConfigManager.
 
@@ -23,7 +23,7 @@ class PhononConfigMessenger;
 
 class PhononConfigManager {
 public:
-  ~PhononConfigManager();	// Must be public for end-of-job cleanup
+  ~PhononConfigManager();       // Must be public for end-of-job cleanup
   static PhononConfigManager* Instance();   // Only needed by static accessors
 
   // Access current values
@@ -36,7 +36,7 @@ public:
   static void UpdateGeometry();
 
 private:
-  PhononConfigManager();		// Singleton: only constructed on request
+  PhononConfigManager();        // Singleton: only constructed on request
   PhononConfigManager(const PhononConfigManager&) = delete;
   PhononConfigManager(PhononConfigManager&&) = delete;
   PhononConfigManager& operator=(const PhononConfigManager&) = delete;
@@ -45,9 +45,9 @@ private:
   static PhononConfigManager* theInstance;
 
 private:
-  G4String Hit_file;	// Output file of e/h hits ($G4CMP_HIT_FILE)
+  G4String Hit_file;    // Output file of e/h hits ($G4CMP_HIT_FILE)
 
   PhononConfigMessenger* messenger;
 };
 
-#endif	/* PhononConfigManager_hh */
+#endif  /* PhononConfigManager_hh */

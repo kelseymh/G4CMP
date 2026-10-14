@@ -3,11 +3,10 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-// $Id$
-// File:  PhononConfigMessenger.cc
-//
-// Description:	Macro command defitions to set user configuration in
-//		PhononConfigManager.
+/// \file PhononConfigMessenger.cc
+/// \brief Implementation of the PhononConfigMessenger class.
+///
+/// Macro command definitions to set user configuration in PhononConfigManager.
 //
 // 20170816  Michael Kelsey
 
@@ -22,7 +21,7 @@ PhononConfigMessenger::PhononConfigMessenger(PhononConfigManager* mgr)
   : G4UImessenger("/g4cmp/", "User configuration for G4CMP phonon example"),
     theManager(mgr), hitsCmd(0) {
   hitsCmd = CreateCommand<G4UIcmdWithAString>("HitsFile",
-			      "Set filename for output of phonon hit locations");
+            "Set filename for output of phonon hit locations");
 }
 
 

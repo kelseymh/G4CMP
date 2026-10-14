@@ -13,6 +13,8 @@
 // 20251116 For G4 11, explicitly remove the copy operators to match base.
 // 20251128 Discard touchable contents after updating.
 // 20260212 G4CMP-585 Only discard touchable if it was modified (fix mem leak)
+// 20260929 G4CMP-665: Remove G4TouchableHandle to avoid memory leak and seg
+//          faults and rename function to UpdateTouchableHandle.
 
 #include "G4CMPParticleChangeForPhonon.hh"
 #include "G4VTouchable.hh"
@@ -22,14 +24,12 @@
 #include "G4StepPoint.hh"
 #include "G4VPhysicalVolume.hh"
 
-
 // Ensure that local flags are initialized at each step
 
 void G4CMPParticleChangeForPhonon::Initialize(const G4Track& track) {
-  updateVol = false;
-  theTouchableHandle = track.GetTouchableHandle();
-  
+  // Use base class's method first.
   G4ParticleChange::Initialize(track);
+  updateVol = false;
 }
 
 
@@ -37,18 +37,18 @@ void G4CMPParticleChangeForPhonon::Initialize(const G4Track& track) {
   
 G4Step* G4CMPParticleChangeForPhonon::UpdateStepForPostStep(G4Step* pStep) {
   if (updateVol) {    // Update next volume if touchable has been proposed
+    G4LogicalVolume* LV = pStep->GetPreStepPoint()->GetTouchableHandle()
+                               ->GetVolume()->GetLogicalVolume();
+
     G4StepPoint* pPostStepPoint = pStep->GetPostStepPoint();
-    G4LogicalVolume* LV = theTouchableHandle->GetVolume()->GetLogicalVolume();
-    pPostStepPoint->SetTouchableHandle(theTouchableHandle);
+    pPostStepPoint->SetTouchableHandle(pStep->GetPreStepPoint()->GetTouchableHandle());
     pPostStepPoint->SetMaterial(LV->GetMaterial());
     pPostStepPoint->SetMaterialCutsCouple(LV->GetMaterialCutsCouple());
     pPostStepPoint->SetSensitiveDetector(LV->GetSensitiveDetector());
 
     // Reset updateVol
-    theTouchableHandle = 0;
     updateVol = false;
   }
-  else theTouchableHandle = 0;
 
   // Call base class function
   return G4ParticleChange::UpdateStepForPostStep(pStep);
@@ -61,8 +61,4 @@ void G4CMPParticleChangeForPhonon::DumpInfo() const {
   G4ParticleChange::DumpInfo();
 
   G4cout << "        updateVol : " << updateVol << G4endl;
-  if (updateVol) {
-    G4cout << "        theTouchableHandle for PV "
-	   << theTouchableHandle->GetVolume()->GetName() << G4endl;
-  }
 }
