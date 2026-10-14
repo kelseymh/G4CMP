@@ -15,6 +15,7 @@
 //		changed via macro commands (see ChargeConfigMessenger).
 //
 // 20170816  M. Kelsey -- Extract hit filename from G4CMPConfigManager.
+// 20260513  G4CMP-604 -- Add surface property UI commands to charge example.
 
 #include "globals.hh"
 
@@ -34,6 +35,8 @@ public:
   static G4int GetMillerH()		 { return Instance()->millerH; }
   static G4int GetMillerK()		 { return Instance()->millerK; }
   static G4int GetMillerL()		 { return Instance()->millerL; }
+  static G4double GetChargeAbsorbProb()    { return Instance()->chargeAbsorbProb; }
+  static G4double GetSpecularReflectProb() { return Instance()->specularReflectProb; }
 
   static void GetMillerOrientation(G4int& h, G4int& k, G4int& l) {
     h = Instance()->millerH; k = Instance()->millerK; l = Instance()->millerL;
@@ -52,6 +55,10 @@ public:
     { Instance()->millerH=h; Instance()->millerK=k, Instance()->millerL=l;
       UpdateGeometry();
     }
+  static void SetChargeAbsorbProb(G4double value)
+    { Instance()->chargeAbsorbProb = value; UpdateGeometry(); }
+  static void SetSpecularReflectProb(G4double value)
+    { Instance()->specularReflectProb = value; UpdateGeometry(); }
 
   static void UpdateGeometry();
 
@@ -72,6 +79,8 @@ private:
   G4int millerH;	// Lattice orientation ($G4CMP_MILLER_H,_K,_L)
   G4int millerK;
   G4int millerL;
+  G4double chargeAbsorbProb;	// Charge absorption probability at surfaces
+  G4double specularReflectProb;	// Specular reflection probability at surfaces
 
   ChargeConfigMessenger* messenger;
 };

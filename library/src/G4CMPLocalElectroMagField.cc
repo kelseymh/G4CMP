@@ -10,6 +10,7 @@
 //
 // 20180711  Provide interpolator to return potential at point in volume,
 //	       assuming "mid-plane" is at ground.
+// 20261008  Swap the uniform-field GetPotential subtraction so E = −grad V.
 
 #include "G4CMPLocalElectroMagField.hh"
 #include "G4CMPMeshElectricField.hh"
@@ -126,16 +127,17 @@ GetPotential(const G4double Point[4]) const {
     G4ThreeVector e0 = evec.unit();
     G4double toVpos = theSolid->DistanceToOut(pos, -e0);
     G4double toVneg = theSolid->DistanceToOut(pos, e0);
+    G4double voltage = 0.5*(toVneg-toVpos)*evec.mag();	// [-V/2,V/2]
 
     if (verboseLevel>2) {
       G4cout << "LocalEMField::GetPotential pos " << pos << " e0 " << e0
 	     << " toVpos " << toVpos << " toVneg " << toVneg
 	     << " emag " << evec.mag()
-	     << " : V = " << 0.5*(toVpos-toVneg)*evec.mag()
+	     << " : V = " << voltage
 	     << G4endl;
     }
 
-    return 0.5*(toVpos-toVneg)*evec.mag();	// [-V/2,V/2] interpolation
+    return voltage;	// [-V/2,V/2] interpolation
   }
 
   // Arbitrary field configurations must be integrated

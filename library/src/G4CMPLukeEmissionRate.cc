@@ -82,8 +82,8 @@ G4double G4CMPLukeEmissionRate::Threshold(G4double Eabove) const {
 
   if (verboseLevel>1) {
     G4cout << "G4CMPLukeEmissionRate::Threshold vtrk " << vtrk.mag()/(m/s)
-	   << " vsound " << vsound/(m/s) << " m/s Esound " << Esound/eV
-	   << " eV" << G4endl;
+	   << " vsound " << vsound/(m/s) << " m/s" << G4endl
+	   << " Esound " << Esound/eV << " eV" << G4endl;
   }
 
   // Thresholds or pseudothresholds at multiples of Esound

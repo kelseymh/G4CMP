@@ -36,11 +36,15 @@
 // 20221006  M. Kelsey -- Adapted from SuperCDMS simulation version
 // 20221006  G4CMP-330 -- Add lattice temperature to properties table
 // 20250124  G4CMP-447 -- Add FillParticleChange() to update phonon track info
-// 20250422  N. Tenpas -- Add position arguments for PhononVelocityIsInward.
+// 20250422  N. Tenpas -- Add position arguments for VelocityIsInward.
 // 20250423  N. Tenpas -- Replace duplicated GetLambertianVector() code.
 // 20251115  G4CMP-539 -- Replace AddConstProperty() with UpdateMPT().
+// 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
+// 20251210  G4CMP-518 -- Make PhononVelocityIsInward() generic.
 // 20260212  G4CMP-581 -- Skip invalid phonons (null pointers), report skips.
 // 20260218  G4CMP-588 -- Fix change above by presenting secondary buffer.
+// 20260710  G4CMP-647 -- Replace G4CMPKaplanQP member with G4CMPVKaplanQP
+// 20261006  G4CMP-681 -- Remove kaplanqp initialization in ctor
 
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -50,6 +54,7 @@
 #include "G4CMPSurfaceProperty.hh"
 #include "G4CMPTrackUtils.hh"
 #include "G4CMPUtils.hh"
+#include "G4CMPVKaplanQP.hh"
 #include "G4Exception.hh"
 #include "G4ExceptionSeverity.hh"
 #include "G4LatticeManager.hh"
@@ -66,7 +71,9 @@
 // Constructor and destructor
 
 G4CMPPhononElectrode::G4CMPPhononElectrode()
-  : G4CMPVElectrodePattern(), kaplanQP(0) {;}
+  : G4CMPVElectrodePattern(),
+    kaplanQP(0)
+{}
 
 G4CMPPhononElectrode::~G4CMPPhononElectrode() {
   delete kaplanQP; kaplanQP=0;
@@ -94,12 +101,17 @@ AbsorbAtElectrode(const G4Track& track, const G4Step& step,
 
   // Create KaplanQP simulator if not already available
   if (!kaplanQP) {
-    // Pass temperture through to KaplanQP if no already included
+    // Pass temperature through to KaplanQP if not already included
     if (!theSurfaceTable->ConstPropertyExists("temperature"))
       G4CMP::UpdateMPT(theSurfaceTable, "temperature",
 		       theLattice->GetTemperature());
 
-    kaplanQP = new G4CMPKaplanQP(theSurfaceTable, verboseLevel);
+    // not specifying identity of phonon-qp interaction model here
+    // if other interaction models are added, we will want to make a config
+    // parameter that will get passed in here so the user can specify
+    // the model to be used from a macro command
+    G4String interaction_model;
+    RegisterAbsorber(interaction_model);
   }
 
   // Transfer phonon energy into superconducting film
@@ -138,9 +150,9 @@ ProcessAbsorption(const G4Track& track, const G4Step& step, G4double EDep,
   particleChange.ProposeNonIonizingEnergyDeposit(EDep);
 
   // Secondaries are emitted with cos(theta) distribution inward
-  //We'll need to eventually calculate the generalized surface norm
-  //based on the above surface norm and the track's velocity, so
-  //give track velocity
+  // We'll need to eventually calculate the generalized surface norm
+  // based on the above surface norm and the track's velocity, so
+  // give track velocity
   G4ThreeVector vDir = track.GetMomentumDirection();
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(step,vDir);
   
@@ -155,9 +167,8 @@ ProcessAbsorption(const G4Track& track, const G4Step& step, G4double EDep,
   for (G4double E : phononEnergies) {
     G4double kmag = k.mag()*E/Ekin;	// Scale k vector by energy
     G4int pol = ChoosePhononPolarization();
-    reflectedKDir = G4CMP::GetLambertianVector(theLattice,
-					       surfNorm, pol,
-					       track.GetPosition());
+    reflectedKDir = G4CMP::LambertianReflection(theLattice, surfNorm, pol,
+                                               track.GetPosition());
 
     G4Track* phonon = G4CMP::CreatePhonon(GetCurrentTouchable(),
 					  pol, kmag*reflectedKDir,
@@ -211,9 +222,8 @@ ProcessReflection(const G4Track& track, const G4Step& step,
   
   G4int pol = GetPolarization(track);
 
-  G4ThreeVector reflectedKDir = G4CMP::GetLambertianVector(theLattice, surfNorm,
-                                                           pol,
-							   track.GetPosition());
+  G4ThreeVector reflectedKDir = G4CMP::LambertianReflection(theLattice, surfNorm,
+                                                           pol, track.GetPosition());
 
   FillParticleChange(particleChange, track, reflectedKDir);
 
@@ -225,4 +235,32 @@ ProcessReflection(const G4Track& track, const G4Step& step,
 
   auto trackInfo = G4CMP::GetTrackInfo<G4CMPPhononTrackInfo>(track);
   trackInfo->IncrementReflectionCount();
+}
+
+
+// allow surface table to be registered with kaplanqp object as well
+void G4CMPPhononElectrode::UseSurfaceTable(
+   G4MaterialPropertiesTable* surfProp) {
+  G4CMPVElectrodePattern::UseSurfaceTable(surfProp);
+  if (kaplanQP) kaplanQP->SetFilmProperties(surfProp);
+}
+
+
+void G4CMPPhononElectrode::setKaplanQP(G4CMPVKaplanQP* val) const {
+  kaplanQP = val;
+  if (theSurfaceTable && kaplanQP) {
+    kaplanQP->SetFilmProperties(theSurfaceTable);
+  }
+}
+
+
+// define phonon-qp interaction mechanism via string identifier;
+// G4CMPKaplanQP default
+G4CMPVKaplanQP*
+G4CMPPhononElectrode::getKaplanQP(const G4String& identifier) const {
+  G4CMPVKaplanQP* val = nullptr;
+  if (identifier.empty() || identifier.find("aplan") != G4String::npos) {
+    val = new G4CMPKaplanQP(theSurfaceTable, verboseLevel);
+  }
+  return val;
 }

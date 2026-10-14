@@ -104,6 +104,7 @@ developers should check the source code in
 | G4CMP\_COMBINE\_STEPLEN [L] | /g4cmp/combiningStepLength [L] mm | Combine hits below step length |
 | G4CMP\_EMIN\_PHONONS [E] | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
+| G4CMP\_RECOMB\_SCALE [S] | /g4cmp/recombinationScale [S] | Apply in-flight recombination for D > S*LukeMFP |
 | G4CMP\_RECORD\_EMIN | /g4cmp/recordMinETracks [t\|f]  | Put below-minimum energy to killed track Edeposit |
 | G4CMP\_USE\_KVSOLVER    | /g4mcp/useKVsolver [t\|f]     | Use eigensolver for K-Vg mapping        |
 | G4CMP\_FANO\_ENABLED    | /g4cmp/enableFanoStatistics [t\|f] | Apply Fano statistics to input ionization |

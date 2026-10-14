@@ -3,11 +3,8 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
-/// \file exoticphysics/phonon/include/PhononPrimaryGeneratorAction.hh
+/// \file PhononPrimaryGeneratorAction.hh
 /// \brief Definition of the PhononPrimaryGeneratorAction class
-//
-// $Id: ecbf57649dfaeb88e0fac25491bf8fb68c9308ec $
-//
 
 #ifndef PhononPrimaryGeneratorAction_h
 #define PhononPrimaryGeneratorAction_h 1
@@ -33,7 +30,4 @@ public:
 
 };
 
-
-#endif
-
-
+#endif  /* PhononPrimaryGeneratorAction_h */

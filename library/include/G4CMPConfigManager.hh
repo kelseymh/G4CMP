@@ -53,6 +53,7 @@
 // 20260121  G4CMP-567: Change charge bounces default to zero.
 // 20260429  G4CMP-598: Add minGenParticles parameter.
 // 20260606  G4CMP-578: Add primaryPhononEnergy parameter for partitioning.
+// 20260903  G4CMP-517: Add new recombinationScale parameter for bulk recomb.
 
 #include "globals.hh"
 #include <iosfwd>
@@ -100,6 +101,7 @@ public:
   static G4double GetLukeSampling()      { return Instance()->lukeSample; }
   static G4double GetPrimaryPhononEnergy() { return Instance()->EprimPhonons; }
   static G4double GetComboStepLength()   { return Instance()->combineSteps; }
+  static G4double GetRecombinationScale() { return Instance()->recombScale; }
   static G4double GetETrappingMFP()      { return Instance()->eTrapMFP; }
   static G4double GetHTrappingMFP()      { return Instance()->hTrapMFP; }
   static G4double GetEDTrapIonMFP()      { return Instance()->eDTrapIonMFP; }
@@ -107,7 +109,7 @@ public:
   static G4double GetHDTrapIonMFP()      { return Instance()->hDTrapIonMFP; }
   static G4double GetHATrapIonMFP()      { return Instance()->hATrapIonMFP; }
   static G4double GetTemperature()       { return Instance()->temperature; }
-  static G4double GetPhononSurfStepSize()  { return Instance()->pSurfStepSize; }
+  static G4double GetPhononSurfStepSize() { return Instance()->pSurfStepSize; }
   static G4double GetEmpklow()      { return Instance()->Empklow; }
   static G4double GetEmpkhigh()     { return Instance()->Empkhigh; }
   static G4double GetEmpElow()      { return Instance()->EmpElow; }
@@ -130,6 +132,7 @@ public:
   static void SetPhononSurfStepLimit(G4int value) { Instance()->pSurfStepLimit = value; }
   static void SetMaxChargeSteps(G4int value) { Instance()->ehMaxSteps = value; }
   static void SetMaxLukePhonons(G4int value) { Instance()->maxLukePhonons = value; }
+  static void SetRecombinationScale(G4double value) { Instance()->recombScale = value; }
   static void SetSurfaceClearance(G4double value) { Instance()->clearance = value; }
   static void SetMinStepScale(G4double value) { Instance()->stepScale = value; }
   static void SetMinPhononEnergy(G4double value) { Instance()->EminPhonons = value; }
@@ -231,7 +234,8 @@ private:
   G4double combineSteps; // Maximum length to merge track steps ($G4CMP_COMBINE_STEPLEN)
   G4double EminPhonons;	 // Minimum energy to track phonons ($G4CMP_EMIN_PHONONS)
   G4double EminCharges;	 // Minimum energy to track e/h ($G4CMP_EMIN_CHARGES)
-  G4double pSurfStepSize;  // Phonon surface displacement step size ($G4CMP_PHON_SURFSTEP).
+  G4double pSurfStepSize;  // Phonon surface displacement step size ($G4CMP_PHON_SURFSTEP)
+  G4double recombScale;	 // Scale factor to limit recombination via Luke MFP ($G4CMP_RECOMB_SCALE)
   G4bool useKVsolver;	 // Use K-Vg eigensolver ($G4CMP_USE_KVSOLVER)
   G4bool fanoEnabled;	 // Apply Fano statistics to ionization energy deposits ($G4CMP_FANO_ENABLED)
   G4bool kaplanKeepPh;   // Emit or iterate over all phonons in KaplanQP ($G4CMP_KAPLAN_KEEP)

@@ -45,8 +45,7 @@
 
 B1PrimaryGeneratorAction::B1PrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
-  fParticleGun(0)//,
-  //fEnvelopeBox(0)
+  fParticleGun(0), fEnvelopeBox(0)
 {
   G4int n_particle = 1;
   fParticleGun  = new G4ParticleGun(n_particle);
@@ -64,6 +63,11 @@ B1PrimaryGeneratorAction::B1PrimaryGeneratorAction()
   if (fParticleGun->GetParticlePosition() == G4ThreeVector(0, 0, 0))
   {
     fParticleGun->SetParticlePosition(G4ThreeVector(0., 0., -3.74*mm));
+  }
+
+  if (fEnvelopeBox) {
+    G4cout << "PrimaryGeneratorAction: fEnvelopeBox is solid "
+	   << fEnvelopeBox->GetName() << G4endl;
   }
  }
 

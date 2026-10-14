@@ -47,6 +47,7 @@
 //		lattice verbosity, which causes a data race.
 // 20250508  G4CMP-480 -- Pass global phonon wavevector to CreatePhonon.
 // 20260212  G4CMP-581 -- Check for valid secondary, use Edep if null.
+// 20260608  Fix debug-file FatalException message copied from LatticeReader
 
 #include "G4CMPLukeScattering.hh"
 #include "G4CMPConfigManager.hh"
@@ -98,7 +99,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   InitializeParticleChange(GetValleyIndex(aTrack), aTrack);
   G4StepPoint* postStepPoint = aStep.GetPostStepPoint();
   
-  if (verboseLevel > 1) {
+  if (verboseLevel) {
     G4cout << GetProcessName() << "::PostStepDoIt: Step limited by process "
            << postStepPoint->GetProcessDefinedStep()->GetProcessName()
            << G4endl;
@@ -113,7 +114,7 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
     const G4String& debugfile = G4CMPConfigManager::GetLukeDebugFile();
     output.open(G4CMP::DebuggingFileThread(debugfile));
     if (!output.good()) {
-      G4Exception("G4LatticeReader::MakeLattice", "Lattice001",
+      G4Exception("G4CMPLukeScattering", "Luke001",
 		  FatalException, ("Unable to open "+debugfile).c_str());
     }
 

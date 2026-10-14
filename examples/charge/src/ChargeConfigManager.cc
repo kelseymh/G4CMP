@@ -12,6 +12,7 @@
 //		changed via macro commands (see ChargeConfigMessenger).
 //
 // 20170816  M. Kelsey -- Extract hit filename from G4CMPConfigManager.
+// 20260513  G4CMP-604 -- Add surface property UI commands to charge example.
 
 #include "ChargeConfigManager.hh"
 #include "ChargeConfigMessenger.hh"
@@ -35,6 +36,8 @@ ChargeConfigManager::ChargeConfigManager()
     EPot_file(getenv("G4CMP_EPOT_FILE")?getenv("G4CMP_EPOT_FILE"):""),
     Hit_file(getenv("G4CMP_HIT_FILE")?getenv("G4CMP_HIT_FILE"):"charge_hits.txt"),
     millerH(0), millerK(0), millerL(0),
+    chargeAbsorbProb(getenv("G4CMP_CHARGE_ABSORB")?strtod(getenv("G4CMP_CHARGE_ABSORB"),0):1e-5),
+    specularReflectProb(getenv("G4CMP_SPECULAR_REFLECT")?strtod(getenv("G4CMP_SPECULAR_REFLECT"),0):0.5),
     messenger(new ChargeConfigMessenger(this)) {;}
 
 ChargeConfigManager::~ChargeConfigManager() {

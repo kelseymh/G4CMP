@@ -120,9 +120,17 @@ void G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
 }
 
 // Initializing ParticleChange and setting up the correct energy and
-// effective for the charge carrier
+// effective for the charge carrier; used after G4Transportation.
 
-void G4CMPVDriftProcess::InitializeParticleChange(G4int ivalley, const G4Track& track) {
+void G4CMPVDriftProcess::InitializeParticleChange(G4int ivalley,
+						  const G4Track& track) {
   aParticleChange.Initialize(track);
+
+  // NOTE: This passes momentum vector, effective mass gets recomputed
   FillParticleChange(ivalley, track.GetMomentum());
 }
+
+void G4CMPVDriftProcess::InitializeParticleChange(const G4Track& track) {
+  InitializeParticleChange(GetValleyIndex(track), track);
+}
+

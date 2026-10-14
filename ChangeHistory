@@ -8,9 +8,33 @@ ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
 [ Modifications included on branch 606, put subtask tags below it: ]
 2026-08-18  G4CMP-606 : Charge transmission across boundaries.
-2026-08-18  G4CMP-613 : Heterostructure example toy geometry.  
+2026-08-18  G4CMP-613 : Heterostructure example toy geometry.
 
 [ Main line "develop" ChangeHistory; when merging, put develop updates here: ]
+2026-10-09  G4CMP-618 : Pull default track class. from stack mgr for G4 11.2+.
+2026-10-09  G4CMP-645 : Add version checks to g4beginner analysis manager use.
+2026-10-09  G4CMP-630 : Making g4beginner analysis config thread-local.
+
+2026-10-09  g4cmp-V10-06-00  Improve charge reflection/recombination; bug fixes.
+2026-10-09  G4CMP-600 : Check geometry dimensions against surface clearance.
+2026-10-08  G4CMP-682 : Swap uniform-field GetPotential so E=−grad V.
+2026-10-06  G4CMP-681 : Remove KaplanQP initialization in PhononElectrode ctor
+2026-10-01  G4CMP-647 : Institute base class for phonon-qp interactions.
+2026-09-29  G4CMP-674 : GetBiasThroughPosition short-circuit for zero field.
+2026-09-29  G4CMP-665 : Fix memory leak in G4CMPParticleChangeForPhonon.
+2026-09-22  G4CMP-663 : Phonon example clean-up.
+2026-09-08  G4CMP-517 : Support charge recombination below NTL threshold.
+2026-09-08  G4CMP-515 : Expand charge reflection for both specular and diffuse.
+2026-05-08  G4CMP-604 : Add surface property UI commands to charge example.
+2026-05-07  G4CMP-603 : Use correct probability for charge specular reflection.
+2026-05-02  G4CMP-602 : Fix parentheses in MapV_elToP, to avoid NaNs.
+2026-03-27  G4CMP-595 : Add preprocessor flag for use of charge reflection.
+2026-03-25  G4CMP-513 : Provide specular and diffuse reflection for charges.
+2026-02-05  G4CMP-582 : Make the frequency param of RefProb functions optional.
+2026-01-19  G4CMP-514 : Modify G4CMPSurfaceProperty for specular reflection.
+2025-12-15  G4CMP-518 : Make PhononVelocityIsInward() generic.
+2025-12-09  G4CMP-511 : Create parallel Lambertian reflection code for charges.
+
 2026-08-17  g4cmp-V10-05-00  Variety of fixes to builds, examples, tracking.
 2026-08-17  G4CMP-642 : Derive c++ version dynamically in G4CMP examples.
 2026-08-16  G4CMP-657 : Fix typo in specCoeffs vector in phonon example.
@@ -45,7 +69,7 @@ ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
                         non G4CMP carrier and holes.
 2026-05-18  G4CMP-598 : Make G4CMPEnergyPartition respect nParticlesMinimum
 2026-05-06  G4CMP-592 : Replace FatalExceptions in QPDiffusion with warnings
-2026-04-28  G4CMP-496 : Test for zero energy before generating charge pairs.
+2026-04-28  G4CMP-596 : Test for zero energy before generating charge pairs.
 2026-04-28  G4CMP-599 : Add track ID and name to G4CMPTrackLimiter output.
 2026-04-22  G4CMP-597 : Make fileCmd optional and provide default value.
 

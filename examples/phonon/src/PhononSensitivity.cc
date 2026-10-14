@@ -3,6 +3,11 @@
  * License version 3 or later. See G4CMP/LICENSE for the full license. *
 \***********************************************************************/
 
+/// \file PhononSensitivity.cc
+/// \brief Implementation of the PhononSensitivity class
+///
+/// Definition of hits, hits collection, output scheme
+
 #include "PhononSensitivity.hh"
 #include "G4CMPElectrodeHit.hh"
 #include "G4Event.hh"
@@ -22,26 +27,6 @@ PhononSensitivity::PhononSensitivity(G4String name) :
   G4CMPElectrodeSensitivity(name), fileName("") {
   SetOutputFile(PhononConfigManager::GetHitOutput());
 }
-
-/* Move is disabled for now because old versions of GCC can't move ofstream
-PhononSensitivity::PhononSensitivity(PhononSensitivity&& in) :
-  G4CMPElectrodeSensitivity(std::move(in)),
-  output(std::move(in.output)),
-  fileName(std::move(in.fileName)) {
-}
-
-PhononSensitivity& PhononSensitivity::operator=(PhononSensitivity&& in) {
-  // Move all base mebers
-  G4CMPElectrodeSensitivity::operator=(std::move(in));
-
-  // Our members
-  output.close();
-  output = std::move(in.output);
-  fileName = in.fileName;
-
-  return *this;
-}
-*/
 
 PhononSensitivity::~PhononSensitivity() {
   if (output.is_open()) output.close();
@@ -91,10 +76,10 @@ void PhononSensitivity::SetOutputFile(const G4String &fn) {
                   FatalException, msg);
       output.close();
     } else {
-      output << "Run ID,Event ID,Track ID,Particle Name,Start Energy [eV],"
-             << "Start X [m],Start Y [m],Start Z [m],Start Time [ns],"
-             << "Energy Deposited [eV],Track Weight,End X [m],End Y [m],End Z [m],"
-             << "Final Time [ns]\n";
+      output << "Run_ID,Event_ID,Track_ID,Particle_Name,Start_Energy_[eV],"
+             << "Start_X_[m],Start_Y_[m],Start_Z_[m],Start_Time_[ns],"
+             << "Energy_Deposited_[eV],Track_Weight,End_X_[m],End_Y_[m],End_Z_[m],"
+             << "Final_Time_[ns]\n";
     }
   }
 }

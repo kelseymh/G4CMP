@@ -4,6 +4,8 @@
 /g4cmp/producePhonons 0.
 /g4cmp/sampleLuke 0.
 
+/g4cmp/chargeBounces 0 # this command allows you to set the max charge bounces
+
 /run/initialize
 
 /process/setVerbose 1 G4CMPInterValleyScattering

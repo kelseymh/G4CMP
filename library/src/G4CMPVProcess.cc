@@ -19,6 +19,7 @@
 // 20260119  G4CMP-574 -- Adding a catch in to prevent querying of normal
 //              charge transport parameters in superconducting volumes
 //              during charge turnaround steps
+// 20260609  G4CMP-517 -- Give subclasses const access to MFP calculation.
 
 #include "G4CMPVProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -201,7 +202,12 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
   
   *condition = (rateModel && rateModel->IsForced()) ? Forced : NotForced;
 
+  return GetMFPfromRate(aTrack);
+}
 
+// Encapsulate computation of MFP from rate, for general const access
+
+G4double G4CMPVProcess::GetMFPfromRate(const G4Track& aTrack) const {
   G4double rate = rateModel ? rateModel->Rate(aTrack) : 0.;
   G4double vtrk = IsChargeCarrier() ? GetVelocity(aTrack) : aTrack.GetVelocity();
   G4double mfp  = rate>0. ? vtrk/rate : DBL_MAX;
@@ -216,8 +222,10 @@ G4double G4CMPVProcess::GetMeanFreePath(const G4Track& aTrack, G4double,
 	   << " Vtrk = " << vtrk/(m/s) << " m/s"
 	   << " MFP = " << mfp/m << " m" << G4endl;
   }
+
   return mfp;
 }
+
 
 //Do a cross check to see if the track's particle type is conducive to
 //attempting a rate query that draws on a specific kind of material

@@ -15,7 +15,7 @@
 // 20260119  G4CMP-574 -- Adding a catch in to prevent querying of normal
 //              charge transport parameters in superconducting volumes
 //              during charge turnaround steps
-
+// 20260609  G4CMP-517 -- Give subclasses const access to MFP calculation.
 
 #ifndef G4CMPVProcess_h
 #define G4CMPVProcess_h 1
@@ -45,6 +45,10 @@ public:
   virtual void StartTracking(G4Track* track);
   virtual void EndTracking();
 
+  // Compute MFP using scattering rate, without other arguments
+  // NOTE: Subclasses cannot override this; override GetMeanFreePath() below
+  G4double GetMFPfromRate(const G4Track&) const;
+  
 protected:
   void ConfigureRateModel();		// Subclasses can call this directly
 
@@ -52,7 +56,7 @@ protected:
   virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
   virtual G4bool UpdateMeanFreePathForLatticeChangeover(const G4Track& aTrack);
   virtual void UpdateSCAfterLatticeChange();
-  
+
 private:
   G4CMPVScatteringRate* rateModel;	// Returns scattering rate in hertz
   

@@ -26,6 +26,7 @@
 // 20250424  G4CMP-465 -- Create G4CMPSolidUtils class.
 // 20250429  G4CMP-461 -- Add function for skipping detector flats.
 // 20250430  N. Tenpas -- Add function for getting distance to bounding box.
+// 20260723  M. Kelsey -- For DistToSolid, add kSurface check, returns 0.
 
 #include "G4CMPSolidUtils.hh"
 #include "G4AffineTransform.hh"
@@ -90,7 +91,9 @@ G4double G4CMPSolidUtils::GetDistanceToSolid(const G4ThreeVector& pos,
   G4ThreeVector localPos = GetLocalPosition(pos);
   G4ThreeVector localDir = GetLocalDirection(dir);
 
-  if (theSolid->Inside(localPos) == kInside) {
+  if (theSolid->Inside(localPos) == kSurface) {
+    return 0.;
+  } else if (theSolid->Inside(localPos) == kInside) {
     return theSolid->DistanceToOut(localPos, localDir);
   } else {
     return theSolid->DistanceToIn(localPos, localDir);

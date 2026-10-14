@@ -5,6 +5,8 @@
 /g4cmp/producePhonons 0.
 /g4cmp/sampleLuke 0.
 
+/g4cmp/chargeBounces 0 # this command allows you to set the max charge bounces
+
 /run/initialize
 /vis/open OGLIX
 /vis/viewer/set/upVector 1 0 0
