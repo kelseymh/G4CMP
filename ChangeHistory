@@ -6,6 +6,7 @@ Releases are tagged on the 'master' branch as "g4cmp-Vxx-yy-zz".
 Features and bug fixes are tagged on the 'develop' branch using the JIRA
 ticket identifier, "G4CMP-nnn", or using the GitHub pull request, "PR-nn".
 
+2026-10-14  G4CMP-685 : Eliminate some unused local variables in QP example.
 2026-10-14  G4CMP-684 : Remove obsolete G4PhononTrackMap.hh before G4 11.5.
 2026-10-09  G4CMP-618 : Pull default track class. from stack mgr for G4 11.2+.
 2026-10-09  G4CMP-645 : Add version checks to g4beginner analysis manager use.
