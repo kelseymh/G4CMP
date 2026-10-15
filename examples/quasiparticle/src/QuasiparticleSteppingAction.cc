@@ -4,7 +4,7 @@
 \***********************************************************************/
 
 // 20260109  M. Kelsey -- G4CMP-569: Removed unused local variables
-
+// 20261014  M. Kelsey -- G4CMP-685: Resolve more unused local variables
 
 // Basic User Stepping action for Quasiparticle
 
@@ -47,7 +47,6 @@ void QuasiparticleSteppingAction::ExportStepInformation(const G4Step* step) {
   G4StepPoint* preSP = step->GetPreStepPoint();
   G4StepPoint* postSP = step->GetPostStepPoint();
 
-  int thisStepNumber = step->GetTrack()->GetCurrentStepNumber();  
   int runNo = G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID();
   int eventNo = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
   
@@ -69,10 +68,6 @@ void QuasiparticleSteppingAction::ExportStepInformation(const G4Step* step) {
   double postStepEnergy_eV = postSP->GetTotalEnergy() / CLHEP::eV;
   double postStepKinEnergy_eV = postSP->GetKineticEnergy() / CLHEP::eV;
 
-  double deltaX = (postStepX_mm-preStepX_mm);
-  double deltaY = (postStepY_mm-preStepY_mm);
-  double deltaXY_mm = pow(deltaX*deltaX+deltaY*deltaY,0.5);    
-  
   //Get reflection count
   size_t nReflections =
     G4CMP::GetTrackInfo<G4CMPVTrackInfo>(step->GetTrack())->ReflectionCount();
@@ -82,7 +77,7 @@ void QuasiparticleSteppingAction::ExportStepInformation(const G4Step* step) {
   std::string postStepVolume = postSP->GetPhysicalVolume()->GetName();  
 
   //Only fill stepping output with QP information
-  if( particleName.find("BogoliubovQP") != std::string::npos ){
+  if (particleName.find("BogoliubovQP") != std::string::npos) {
 
     //Fill the output file with the step info  
     fOutputFile << runNo << " " << eventNo << " " << trackNo << " "
