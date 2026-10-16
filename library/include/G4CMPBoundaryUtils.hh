@@ -23,6 +23,8 @@
 // 20251028  G4CMP-527: Move CheckStepBoundary() here from DriftBoundaryProcess
 // 20251204  G4CMP-511 -- Create parallel Lambertian reflection code for charges.
 // 20251210  G4CMP-518 -- Make PhononVelocityIsInward() generic.
+// 20260826  G4CMP-662 -- Make ReflectTrack() non-const so that QPs
+//           can update their lattice while determining reflection probability
 
 #ifndef G4CMPBoundaryUtils_hh
 #define G4CMPBoundaryUtils_hh 1
@@ -73,9 +75,9 @@ public:
   virtual void DoAbsorption(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
 
-  virtual G4bool ReflectTrack(const G4Track& aTrack, const G4Step& aStep) const;
+  virtual G4bool ReflectTrack(const G4Track& aTrack, const G4Step& aStep);
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,
-			    G4ParticleChange& aParticleChange);
+                            G4ParticleChange& aParticleChange);
 
   virtual G4bool MaximumReflections(const G4Track& aTrack) const;
   virtual void DoFinalReflection(const G4Track& aTrack, const G4Step& aStep,

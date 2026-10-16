@@ -6,6 +6,9 @@
 /// \file library/include/G4CMPQPBoundaryProcess.hh
 /// \brief Definition of the  G4CMPQPBoundaryProcess class
 
+// 20260826  G4CMP-662 -- Change ReflectTrack() to non-const form so that we can
+//           update our lattice while determining reflection probability
+
 #ifndef G4CMPQPBoundaryProcess_h
 #define G4CMPQPBoundaryProcess_h 1
 
@@ -37,7 +40,7 @@ protected:
                                    G4ForceCondition* condition);
 
   // Apply QP-specific conditions, after calling through to base
-  virtual G4bool ReflectTrack(const G4Track& aTrack, const G4Step& aStep) const;
+  virtual G4bool ReflectTrack(const G4Track& aTrack, const G4Step& aStep);
   virtual void DoAbsorption(const G4Track& aTrack, const G4Step& aStep,
 			    G4ParticleChange& aParticleChange);
   virtual void DoReflection(const G4Track& aTrack, const G4Step& aStep,

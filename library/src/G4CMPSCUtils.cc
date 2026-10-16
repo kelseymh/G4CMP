@@ -188,21 +188,14 @@ G4double G4CMPSCUtils::ComputeCurrentGapEnergyAtNonzeroT() {
                 "G4CMPSCUtils001",JustWarning, msg);
     return 0;
   } else {
-    //Now actually do the lookup. Assuming we're only establishing a
-    //temperature once per instantiation of a new SC, we only have to do this
-    //once. To make it straightforward, we can do a loop (but this is a place
-    //where we can refine for speed)
-    double gapFactor = 0;
-    for (int iT = 0; iT < fGapEnergyTempDependenceBins-1; ++iT) {
-      if ((fTeff/fTcrit) >= fGapEnergyTempDependence[iT][0] &&
-          (fTeff/fTcrit) < fGapEnergyTempDependence[iT+1][0]) {
-        gapFactor = fGapEnergyTempDependence[iT][1];
-      }
-    }
+
+    //Do the lookup using an effective parameterization rather than
+    //a lookup table -- this is for speed. This approximation should
+    //be good to O(1%) with Tinkham's curve
+    double gapFactor = std::tanh(1.74*std::sqrt(1.0/TeffDivTcrit - 1.0));
     return (fGap0Energy*gapFactor);
   }
 }
-
 
 //In some cases, we actually want to be able to compute the gap at a nonzero T
 //for volumes that the particle undergoing a process (which derives from this
@@ -226,19 +219,11 @@ G4double G4CMPSCUtils::ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit,
                 "G4CMPSCUtils002",JustWarning, msg);
     return 0;
   } else {
-    //Now actually do the lookup. Assuming we're only establishing a
-    //temperature once per instantiation of a new SC, we only have to do this
-    //once. To make it straightforward, we can do a loop (but this is a place
-    //where we can refine for speed). We also can use the internal
-    //fGapEnergyTempDependence because it's normalized, and is instantiated
-    //the same regardless of what the fTeff and fTcrit are
-    double gapFactor = 0;
-    for (int iT = 0; iT < fGapEnergyTempDependenceBins-1; ++iT) {
-      if ((Teff/Tcrit) >= fGapEnergyTempDependence[iT][0] &&
-          (Teff/Tcrit) < fGapEnergyTempDependence[iT+1][0]) {
-        gapFactor = fGapEnergyTempDependence[iT][1];
-      }
-    }
+
+    //Do the lookup using an effective parameterization rather than
+    //a lookup table -- this is for speed. This approximation should
+    //be good to O(1%) with Tinkham's curve
+    double gapFactor = std::tanh(1.74*std::sqrt(1.0/TeffDivTcrit - 1.0));
     return (gap0Energy*gapFactor);
   }
 }
@@ -259,18 +244,32 @@ G4double G4CMPSCUtils::BoseFactor(G4double energy, G4double temperature) {
 G4double G4CMPSCUtils::
 GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhononEnergy,
                            G4String particleInQuestion, G4double energy,
-                           G4bool & thisEnergyBelowUsableRange ) const {
+                           G4bool & thisEnergyBelowUsableRange,
+                           const G4LatticePhysical * inLat ) const {
+
+  
+  //Most of the time, a dedicated lattice is not passed in. However, we may do
+  //this if we're trying to do a post-boundary calculation of, say, a phonon
+  //radiation rate in the boundary process class. So we provide an ability to
+  //pass in an input lattice, and if we do, we use that lattice's SC info for
+  //the calculation rather than the info in this G4CMPSCUtils object, which
+  //may not have been updated yet.
+  G4double gapEnergy_local = fGapEnergy;
+  if( inLat != 0 ){
+    gapEnergy_local = ComputeTestGapEnergyAtNonzeroT(inLat->GetSCTeff(),inLat->GetSCTcrit(),inLat->GetSCDelta0());
+  }
+  
   //Establish what the bounds and binning are
   G4double minE = 0;
   G4double maxE = 0;
   G4int nE = 0;
   if (particleInQuestion == "Phonon") {
-    minE = fMinPhononEnergyDivGap * fGapEnergy;
-    maxE = fMaxPhononEnergyDivGap * fGapEnergy;
+    minE = fMinPhononEnergyDivGap * gapEnergy_local;
+    maxE = fMaxPhononEnergyDivGap * gapEnergy_local;
     nE = fPhononEnergyBins;
   } else if (particleInQuestion == "QP") {
-    minE = fMinQPEnergyDivGap * fGapEnergy;
-    maxE = fMaxQPEnergyDivGap * fGapEnergy;
+    minE = fMinQPEnergyDivGap * gapEnergy_local;
+    maxE = fMaxQPEnergyDivGap * gapEnergy_local;
     nE = fQPEnergyBins;
   } else {
     G4ExceptionDescription msg;

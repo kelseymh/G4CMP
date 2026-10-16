@@ -814,6 +814,7 @@ G4CMPBoundaryUtils::ApplyBoundaryAction(const G4Track& aTrack,
     aParticleChange.ProposePosition(surfacePoint);
   }
 
+
   if (!matTable) {
     if (buVerboseLevel>2) G4cout << "BU::Apply: !matTable" << G4endl;
     DoSimpleKill(aTrack, aStep, aParticleChange);
@@ -859,7 +860,7 @@ G4bool G4CMPBoundaryUtils::AbsorbTrack(const G4Track&, const G4Step&) const {
   return (rand <= absProb);
 }
 
-G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track& /*aTrack*/, const G4Step&) const {
+G4bool G4CMPBoundaryUtils::ReflectTrack(const G4Track& /*aTrack*/, const G4Step&) {
   G4double reflProb = GetMaterialProperty("reflProb");
   G4double rand = G4UniformRand();
   if (buVerboseLevel>2) {

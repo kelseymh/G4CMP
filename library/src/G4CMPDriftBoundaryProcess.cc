@@ -78,7 +78,6 @@ GetMeanFreePath(const G4Track& aTrack, G4double, G4ForceCondition* condition) {
   return DBL_MAX;
 }
 
-
 G4VParticleChange* 
 G4CMPDriftBoundaryProcess::PostStepDoIt(const G4Track& aTrack,
                                          const G4Step& aStep) {

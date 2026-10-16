@@ -11,6 +11,9 @@
 //
 // 20250922  G4CMP-219 -- First addition to this history (done at time
 //                        of merge to develop)
+// 20260826  G4CMP-662 -- Splitting off functionality to check rate lookup table
+//                        for a given input lattice
+
 
 #ifndef G4CMPQPRadiatesPhononRate_hh
 #define G4CMPQPRadiatesPhononRate_hh 1
@@ -25,9 +28,11 @@ public:
   virtual ~G4CMPQPRadiatesPhononRate() {;}
   
   virtual G4double Rate(const G4Track& aTrack) const;
+  virtual G4double Rate(const G4Track& aTrack,
+                        const G4LatticePhysical * theLat) const;
   virtual void UpdateLookupTable(const G4LatticePhysical * theLat);
+  virtual bool CheckLookupTableForLat(const G4LatticePhysical * theLat) const;
   
-
 private:
   
   //Lookup tables for calculated quantities
@@ -40,7 +45,7 @@ private:
   std::vector<std::vector<G4double> >
   ComputeNormalizedTauQPRadiatesPhononVsEnergy();
   
-  bool CheckToSeeSCParametersSet() const;
+  bool CheckToSeeSCParametersSet(const G4LatticePhysical * theLat = 0) const;
   
   //For testing purposes
   void SaveQPRadiatesPhononTauVsPhononEnergyToLogFile(std::vector<std::vector<G4double> > theFunc);

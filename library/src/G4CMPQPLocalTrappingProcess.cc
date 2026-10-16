@@ -74,6 +74,5 @@ PostStepDoIt(const G4Track& aTrack,const G4Step& aStep) {
 //Pass-through to G4CMPVProcess class
 G4double G4CMPQPLocalTrappingProcess::
 GetMeanFreePath(const G4Track& trk,G4double prevstep,G4ForceCondition* cond) {
-  
   return G4CMPVProcess::GetMeanFreePath(trk,prevstep,cond);
 }

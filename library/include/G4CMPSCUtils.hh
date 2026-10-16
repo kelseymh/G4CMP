@@ -51,7 +51,8 @@ protected:
   G4double GetTauAsAFunctionOfEnergy( const std::vector<std::vector<G4double> > & tauVsPhononEnergy,
                                       G4String particleInQuestion,
                                       G4double energy,
-                                      G4bool & thisEnergyBelowUsableRange ) const;
+                                      G4bool & thisEnergyBelowUsableRange,
+                                      const G4LatticePhysical * inLat = 0 ) const;
   G4double ComputeTestGapEnergyAtNonzeroT(double Teff, double Tcrit,
                                           double gap0Energy) const;
   
