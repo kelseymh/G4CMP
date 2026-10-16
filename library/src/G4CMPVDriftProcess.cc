@@ -21,6 +21,8 @@
 // 20170620  Follow interface changes in G4CMPProcessUtils
 // 20201231  FillParticleChange() should also reset valley index if requested
 // 20230210  I. Ataee -- Change energy-momentum relation to relativistic in FillParticleChange
+// 20261016  G4CMP-686 -- First implementation of new FillParticleChange
+//         signature
 
 #include "G4CMPVDriftProcess.hh"
 #include "G4CMPConfigManager.hh"
@@ -113,8 +115,9 @@ void G4CMPVDriftProcess::FillParticleChange(G4LatticePhysical* lattice,
     energy = post_fermi + post_bandgap + pre_energy_above_gap;
   }
   else {
-    G4String msg = "Track kinetic energy did not exceed the material's " +
-    "bandgap + Fermi energy! Setting track kinetic energy to zero.";
+    G4ExceptionDescription msg;
+    msg << "Track kinetic energy did not exceed the material's ";
+    msg << "bandgap + Fermi energy! Setting track kinetic energy to zero.";
     G4Exception("G4CMPVDriftProcess::FillParticleChange", "DriftProcess000",
     EventMustBeAborted, msg);
   }

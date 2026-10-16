@@ -28,6 +28,8 @@
 // 20260209  G4CMP-580: Multiply refl in DoElectronReflection() by ptrk.mag()
 // 20260825  G4CMP-611 -- Implementing electron boundary crossing valley
 // reassignment
+// 20261016  G4CMP-686 -- Implement new G4VDriftProcess::FillParticleChange
+//         signature in DoTransmission
 
 #include "G4CMPDriftBoundaryProcess.hh"
 #include "G4CMPConfigManager.hh"

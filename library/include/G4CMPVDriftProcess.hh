@@ -17,6 +17,8 @@
 // 20150601  Inherit from new G4CMPVProcess
 // 20170806  Move ChargeCarrierTimeStep() to G4CMPProcessUtils
 // 20260514  Add InitializeParticleChange() without separate valley argument
+// 20261016  G4CMP-686 -- First implementation of new FillParticleChange
+//         signature
 
 #ifndef G4CMPVDriftProcess_h
 #define G4CMPVDriftProcess_h 1
