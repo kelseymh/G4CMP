@@ -331,6 +331,7 @@ void G4CMPDriftBoundaryProcess::DoTransmission(
     G4ParticleChange& /*particleChange*/) {
   auto* LM = G4LatticeManager::GetLatticeManager();
   auto* post_vol = aStep.GetPostStepPoint()->GetPhysicalVolume();
+  const G4int current_valley = G4CMPProcessUtils::GetCurrentValley();
   // drift track info has no wavevector member... keep transport direction
   // constant instead
   G4ThreeVector p = G4CMPProcessUtils::GetLocalMomentum(aTrack);
@@ -344,13 +345,15 @@ void G4CMPDriftBoundaryProcess::DoTransmission(
   // from momentum to energy before we can pass to the base
   // FillParticleChange signature. We can just copy the G4CMPVDriftProcess
   // signature but using the updated lattice.
-  G4double energy = 0.;
-  if (IsElectron()){
-    energy = lattice->MapPtoEkin(new_valley, GetLocalDirection(p));
-  } else {
-    // Geant4 returns the mass in energy units, with the c_squared already included
-    G4double massc2 = GetCurrentTrack()->GetDynamicParticle()->GetMass();
-    energy = sqrt(p.mag2() + massc2*massc2) - massc2;
-  }
-  G4CMPVDriftProcess::FillParticleChange(new_valley, energy, p);
+  // G4double energy = 0.;
+  // if (IsElectron()){
+  //   energy = lattice->MapPtoEkin(new_valley, GetLocalDirection(p));
+  // } else {
+  //   // Geant4 returns the mass in energy units, with the c_squared already included
+  //   G4double massc2 = GetCurrentTrack()->GetDynamicParticle()->GetMass();
+  //   energy = sqrt(p.mag2() + massc2*massc2) - massc2;
+  // }
+  // Let's try the new FillParticleChange signature created for this scenario.
+  // G4CMPVDriftProcess::FillParticleChange(new_valley, energy, p);
+  G4CMPVDriftProcess::FillParticleChange(lattice, new_valley, p);
 }

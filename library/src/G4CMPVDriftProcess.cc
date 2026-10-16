@@ -88,6 +88,41 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
 
 
 // Fill ParticleChange energy and mass for electron charge carrier momentum
+// moving into a new lattice
+
+void G4CMPVDriftProcess::FillParticleChange(G4LatticePhysical* lattice,
+              G4int ivalley, const G4ThreeVector& p) {
+  // Compute kinetic energy from momentum for electrons or holes
+  G4double energy = 0., pre_energy = 0.;
+  // get the valley in the current lattice
+  const G4int lvalley = G4CMPProcessUtils::GetCurrentValley();
+  // pull energy info from lattices
+  const G4double pre_fermi = theLattice->GetFermiEnergy();
+  const G4double pre_bandgap = theLattice->GetBandGapEnergy();
+  const G4double post_fermi = lattice->GetFermiEnergy();
+  const G4double post_bandgap = lattice->GetBandGapEnergy();
+  if (IsElectron()){
+    pre_energy = theLattice->MapPtoEkin(lvalley, GetLocalDirection(p));
+  } else {
+    // Geant4 returns the mass in energy units, with the c_squared already included
+    G4double massc2 = GetCurrentTrack()->GetDynamicParticle()->GetMass();
+    pre_energy = sqrt(p.mag2() + massc2*massc2) - massc2;
+  }
+  const G4double pre_energy_above_gap = pre_energy - pre_bandgap - pre_fermi;
+  if (pre_energy_above_gap > 0.) {
+    energy = post_fermi + post_bandgap + pre_energy_above_gap;
+  }
+  else {
+    G4String msg = "Track kinetic energy did not exceed the material's " +
+    "bandgap + Fermi energy! Setting track kinetic energy to zero.";
+    G4Exception("G4CMPVDriftProcess::FillParticleChange", "DriftProcess000",
+    EventMustBeAborted, msg);
+  }
+  FillParticleChange(ivalley, energy, p);
+}
+
+
+// Fill ParticleChange energy and mass for electron charge carrier momentum
 
 void 
 G4CMPVDriftProcess::FillParticleChange(G4int ivalley, const G4ThreeVector& p) {

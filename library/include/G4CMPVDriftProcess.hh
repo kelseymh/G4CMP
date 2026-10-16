@@ -41,6 +41,11 @@ public:
 
 protected:
   // Fill ParticleChange energy and mass for charge carrier of given momentum
+  // moving into a new lattice
+  void FillParticleChange(G4LatticePhysical* lattice, G4int ivalley,
+               const G4ThreeVector& p);
+
+  // Fill ParticleChange energy and mass for charge carrier of given momentum
   void FillParticleChange(G4int ivalley, const G4ThreeVector& p);
 
   // Fill ParticleChange energy and mass for charge carrier of given energy
