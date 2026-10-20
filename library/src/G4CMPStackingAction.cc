@@ -28,7 +28,8 @@
 //		transform for k vector and Vg.
 // 20250508 N. Tenpas -- Add coordinate transforms in SetPhononVelocity.
 // 20261009 G4CMP-618 -- Support sub-event parallelism by getting default
-// track classification from stack manager
+//              track classification from stack manager
+// 20261014 G4CMP-684 -- Remove obsolete G4PhononTrackMap.hh before G4 11.5.
 
 #include "G4CMPStackingAction.hh"
 
@@ -43,7 +44,6 @@
 #include "G4LatticePhysical.hh"
 #include "G4PhononLong.hh"
 #include "G4PhononPolarization.hh"
-#include "G4PhononTrackMap.hh"
 #include "G4PhononTransFast.hh"
 #include "G4PhononTransSlow.hh"
 #include "G4PhysicalConstants.hh"
