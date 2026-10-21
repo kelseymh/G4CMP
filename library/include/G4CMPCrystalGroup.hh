@@ -11,10 +11,11 @@
 //
 // 20160729  M. Kelsey -- Add accessors for unit cell angles
 // 20170525  M. Kelsey -- Add default "rule of five" copy/move operators
-// 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm" (-Wshadow)
+// 20170728  Change function args "alpha, beta, gamma" to "al, bt, gm"
+//		(-Wshadow)
 // 20240416  S. Zatschler -- Change function arg "g" to "c" (-Wshadow)
-// 20241024  I. Hernandez -- Add functionality to support hexagonal crystal structure.
-
+// 20241024  I. Hernandez -- Add support for hexagonal crystal structure.
+// 20261021  G4CMP-675 -- Add check/report on duplicate/prefilled values.
 
 #include "globals.hh"
 #include "G4ThreeVector.hh"
@@ -60,6 +61,8 @@ public:
   G4bool FillElReduced(G4double Cij[6][6]) const;
 
 private:
+  void CheckDuplicate(G4double Cij[6][6], G4int i, G4int j) const;
+
   void SetCartesian();
   void SetHexagonal();
   void SetRhombohedral(G4double angle);

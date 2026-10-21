@@ -13,6 +13,7 @@
 // 20241024  I. Hernandez -- Add an if statement to include a rhombohedral Crystal group
 // 20241024  I. Hernandez -- Fixing the function FillOrthorhombic()
 // 20251116  M. Kelsey -- Replace G4String.index() with string.find().
+// 20261010  G4CMP-675 (M. Kelsey) -- Hexagonal should not have Cij[4][5] filled
 
 #include "G4CMPCrystalGroup.hh"
 #include "G4PhysicalConstants.hh"
@@ -81,12 +82,14 @@ void G4CMPCrystalGroup::SetTriclinic(G4double al, G4double bt,
 
 G4bool G4CMPCrystalGroup::FillElReduced(G4double Cij[6][6]) const {
   switch (group) {
-  case amorphous:    Cij[3][3] = 0.5*(Cij[0][0]-Cij[0][1]); // Cubic, C44 set
-										 [[fallthrough]];
+  case amorphous:    CheckDuplicate(Cij,3,3);
+		     Cij[3][3] = 0.5*(Cij[0][0]-Cij[0][1]); // Cubic, C44 set
+							[[fallthrough]];
   case cubic:        return FillCubic(Cij); break;
   case hexagonal:    Cij[0][5] = 0.;			// Tetragonal, C16=0
-                     Cij[4][5] = 0.5*(Cij[0][0] - Cij[0][1]);
-										 [[fallthrough]];
+		     CheckDuplicate(Cij,5,5);
+                     Cij[5][5] = 0.5*(Cij[0][0] - Cij[0][1]);	// C66
+							[[fallthrough]];
   case tetragonal:   return FillTetragonal(Cij); break;
   case orthorhombic: return FillOrthorhombic(Cij); break;
   case rhombohedral: return FillRhombohedral(Cij); break;
@@ -257,4 +260,16 @@ G4CMPCrystalGroup::Bravais G4CMPCrystalGroup::Group(const G4String& name) {
 
 
   return UNKNOWN;	// Failure condition; calling code should test
+}
+
+
+// Report if specified element of Cij is already non-zero
+
+void
+G4CMPCrystalGroup::CheckDuplicate(G4double Cij[6][6], G4int i, G4int j) const {
+  if (Cij[i][j] != 0.) {
+    G4cerr << "NOTE: " << Name(group) << " crystal requested, but computed"
+	   << " element C" << i+1 << j+1 << " already filled." << G4endl
+	   << "      Previous value will be overwritten." << G4endl;
+  }
 }
