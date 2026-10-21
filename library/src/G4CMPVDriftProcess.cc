@@ -110,16 +110,17 @@ void G4CMPVDriftProcess::FillParticleChange(G4LatticePhysical* lattice,
     G4double massc2 = GetCurrentTrack()->GetDynamicParticle()->GetMass();
     pre_energy = sqrt(p.mag2() + massc2*massc2) - massc2;
   }
-  const G4double pre_energy_above_gap = pre_energy - pre_bandgap - pre_fermi;
-  if (pre_energy_above_gap > 0.) {
-    energy = post_fermi + post_bandgap + pre_energy_above_gap;
-  }
-  else {
+  const G4double pre_energy_above_gap = pre_energy + pre_bandgap/2. + pre_fermi;
+  energy = pre_energy_above_gap - (post_fermi + post_bandgap/2.);
+
+  // G4cout << __LINE__ << ": " << "pre_energy_above_gap = " << pre_energy_above_gap/eV << " eV" << ", pre_energy = " << pre_energy/eV << " eV" << ", pre_bandgap = " << pre_bandgap/eV << " eV" << ", pre_fermi = " << pre_fermi/eV << " eV" << ", post_fermi = " << post_fermi/eV << " eV" << ", post_bandgap = " << post_bandgap/eV << " eV" << ", energy = " << energy/eV << " eV"<< G4endl;
+  if (energy < 0.) {
     G4ExceptionDescription msg;
-    msg << "Track kinetic energy did not exceed the material's ";
+    msg << "Track energy in prior lattice did not exceed the new lattice's ";
     msg << "bandgap + Fermi energy! Setting track kinetic energy to zero.";
     G4Exception("G4CMPVDriftProcess::FillParticleChange", "DriftProcess000",
     EventMustBeAborted, msg);
+    energy = 0.;
   }
   FillParticleChange(ivalley, energy, p);
 }

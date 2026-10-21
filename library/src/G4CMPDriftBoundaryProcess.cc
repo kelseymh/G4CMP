@@ -355,7 +355,7 @@ void G4CMPDriftBoundaryProcess::DoTransmission(
   //   G4double massc2 = GetCurrentTrack()->GetDynamicParticle()->GetMass();
   //   energy = sqrt(p.mag2() + massc2*massc2) - massc2;
   // }
-  // Let's try the new FillParticleChange signature created for this scenario.
   // G4CMPVDriftProcess::FillParticleChange(new_valley, energy, p);
+  // Let's try the new FillParticleChange signature created for this scenario.
   G4CMPVDriftProcess::FillParticleChange(lattice, new_valley, p);
 }

@@ -100,7 +100,7 @@ developers should check the source code in
 | G4CMP\_LUKE\_SAMPLE [R] | /g4cmp/sampleLuke [R]         | Fraction of generated Luke phonons |
 | G4CMP\_MAX\_LUKE [N] | /g4cmp/maxLukePhonons [N] | Soft maximum Luke phonons per event |
 | G4CMP\_SAMPLE\_ENERGY [E] | /g4cmp/samplingEnergy [E] eV  | Energy above which to downsample |
-| G4CMP\_EPRIM\_PHOBNONS [E] | /g4cmp/primaryPhononEnergy [E] eV | Energy to assign to primary phonons |
+| G4CMP\_EPRIM\_PHONONS [E] | /g4cmp/primaryPhononEnergy [E] eV | Energy to assign to primary phonons |
 | G4CMP\_COMBINE\_STEPLEN [L] | /g4cmp/combiningStepLength [L] mm | Combine hits below step length |
 | G4CMP\_EMIN\_PHONONS [E] | /g4cmp/minEPhonons [E] eV     | Minimum energy to track phonons         |
 | G4CMP\_EMIN\_CHARGES [E] | /g4cmp/minECharges [E] eV     | Minimum energy to track charges         |
