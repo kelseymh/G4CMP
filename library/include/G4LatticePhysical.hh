@@ -39,6 +39,7 @@
 // 20250905  G4CMP-500 -- Removing non-fundamental superconductor parameters
 //              from logical lattice and making them physical lattice members
 // 20260825  G4CMP-612 -- implemented DOS and fermi energy calculations
+// 20261021  G4CMP-686 -- implemented PolycrystalElasticScatterMFP setter
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -88,6 +89,8 @@ public:
 
   // Set temperature of volume/lattice for use with thermalization processes
   void SetTemperature(G4double temp) { fTemperature = temp; }
+
+  void SetPolycrystalElasticScatterMFP(G4double val) { fPolycrystalElasticScatteringMFP = val; }
 
   // Set Superconducting properties
   void SetSCDelta0(G4double val) { fSCDelta0 = val; }
