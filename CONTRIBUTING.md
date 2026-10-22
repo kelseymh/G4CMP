@@ -1,25 +1,25 @@
 # Contributing to the G4CMP Package
 
-Last updated 25 September 2024, Michael Kelsey
+Last updated 23 September 2026, Jared Yamaoka
 
 
 The "Geant4 Condensed Matter Physics" (G4CMP) package is open source (see
 [LICENSE](LICENSE)), but we are limiting code contributions to registered
-developers from particle physics or related experimental collaborations.  If
+developers.  If
 you'd like to contribute, please send an e-mail to the package owner,
-currently Michael Kelsey (Texas A&M) <kelsey AT slac.stanford.edu>, to be
-added to the Contributors list for G4CMP.
+currently Michael Kelsey (Texas A&M) <kelsey AT slac.stanford.edu>, or join the [G4CMP Consortium](https://confluence.slac.stanford.edu/spaces/G4CMP/pages/479599878/Joining+the+G4CMP+Consortium).
 
 
 ## Developer Consortium
 
 The [G4CMP Developers
-Consortium](https://confluence.slac.stanford.edu/display/G4CMP/G4CMP+Developer%27s+Consortium)
+Consortium](https://confluence.slac.stanford.edu/spaces/G4CMP/pages/479599870/G4CMP+Consortium)
 provides coordination and communication among G4CMP developers and users.
 Joining the Consortium also provides developer access to the G4CMP
 repository to create feature branches, issues, and pull requests, as
 described below.
 
+Please see [G4CMP Code Management](https://confluence.slac.stanford.edu/spaces/G4CMP/pages/532889793/G4CMP+Code+Management) for extended details about our development workflow.
 
 ## Reporting Problems
 
@@ -64,12 +64,13 @@ process with our normal workflow.
 
 ## New Features
 
-Contributors should make a named feature branch in this repository (rather
+After creating a JIRA tickets, contributors should make a named feature branch 
+(with the name corresponding to the ticket number) in this repository (rather
 than a fork), branching from the HEAD of **develop** branch:
 ```
   git checkout develop
   git pull
-  git checkout -b <branch-name>
+  git checkout -b G4CMP-NNN
 ```
 
 Contributors should push their code changes directly back to the repository,
@@ -131,8 +132,8 @@ and update the ChangeHistory file to support tracking the whole project.
 At the top of the ChangeHistory file, create a block of text as follows:
 
 ```
-[ Modifications included on branch XYZ, put subtask tags below it: ]
-2024-13-35  XYZ       : Create a big new feature in G4CMP.         
+[ Modifications included on branch G4CMP-NNN, put subtask tags below it: ]
+2024-13-35  G4CMP-990 : Create a big new feature in G4CMP.         
 
 [ Main line "develop" ChangeHistory; when merging, put develop updates here: ]
 ```
@@ -150,7 +151,7 @@ datestamp on the top-level line to match the merge, for example:
 
 ```
 [ Modifications included on branch XYZ, put subtask tags below it: ]
-2025-02-01  XYZ       : Create a big new feature in G4CMP.
+2025-02-01  G4CMP-990 : Create a big new feature in G4CMP.
 2025-01-01  G4CMP-997 : Generate a New Year's energy deposit in diamond.
 2024-13-35  G4CMP-995 : Add function to compute phonon mass in diamond.
 
@@ -164,12 +165,15 @@ very easy to simply remove the bracketed instructions above, leaving what
 looks like a normal development sequence:
 
 ```
-2025-02-01  XYZ       : Create a big new feature in G4CMP.
+2025-02-01  G4CMP-990 : Create a big new feature in G4CMP.
 2025-01-01  G4CMP-997 : Generate a New Year's energy deposit in diamond.
 2024-13-35  G4CMP-995 : Add function to compute phonon mass in diamond.
 2024-08-22  G4CMP-423 : Avoid wrong volume assignment in G4CMPHitMerging.
 ```
 
+## Pull Requests and Code Review
+
+When the developer thinks their work is ready to be merged onto develop, they should submit a Pull Request on the GitHub Web interface, specifying develop as the target branch.  The G4CMP software manager may approve the merge immediately, but more generally will review the code changes, making comments or requesting changes.  The merge will be approved once all comments have been satisfactorily addressed.
 
 ## Merging Onto Develop
 
@@ -177,16 +181,17 @@ When a feature branch is merged onto **develop** branch, the package owner
 will tag the merge commit with the name of the feature branch, and (first)
 delete the feature branch from the repository.
 ```
-  git checkout <branch-name>
+  git checkout G4CMP-NNN
   git pull
   git checkout develop
   git pull
-  git merge --no-ff -m "Explanatory message" <branch-name>
+  git merge --no-ff -m "Explanatory message" G4CMP-NNN
   [ resolve conflicts, git merge --continue, etc. ]
-  git branch -d <branch-name>
-  git push origin :<branch-name>
-  git tag -a -m "Explanatory message" <branch-name>
-  git push ; git push --tag
+  git push
+  git tag -a -m "Describe the overall issue." G4CMP-NNN
+  git push --tag
+  git branch -d G4CMP-NNN
+  git push origin :heads/G4CMP-NNN  
 ```
 
 
