@@ -64,6 +64,7 @@
 // 20260618  G4CMP-637 -- Move calculation of L0 from acDeform out of Manager.
 // 20260618  E. Michaud -- If ValleyDir 0 0 0, then AddValley Identity Matrix
 // 20260810  G4CMP-654 -- Avoid FatalException error if no charge transport.
+// 20261022  G4CMP-612 -- moved DOS/fermi energy calcs from G4LatticePhysical
 
 #include "G4LatticeLogical.hh"
 #include "G4CMPPhononKinematics.hh"	// **** THIS BREAKS G4 PORTING ****
@@ -1209,4 +1210,44 @@ void G4LatticeLogical::CheckLatticeForSCCompleteness() const {
 	<< " for superconductors.";
     G4Exception("G4LatticeLogical", "Lattice007", FatalException, msg);
   }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Fermi energy calculations
+G4double G4LatticeLogical::GetElectronDOS(const G4double& temperature) const {
+  G4double edos = 0.;
+  G4double temp = temperature;
+  if (temperature <= 0.) temp = G4CMPConfigManager::GetTemperature();
+  const G4double meff = GetElectronDOSMass() / CLHEP::c_squared;
+  const G4double num = 2. * pi * meff * k_Boltzmann * temp;
+  const G4double paren = num / (CLHEP::h_Planck * CLHEP::h_Planck);
+  edos = 2. * std::sqrt(paren * paren * paren);
+  return edos;
+}
+
+G4double G4LatticeLogical::GetHoleDOS(const G4double& temperature) const {
+  G4double hdos = 0.;
+  G4double temp = temperature;
+  if (temperature <= 0.) temp = G4CMPConfigManager::GetTemperature();
+  const G4double meff = GetElectronDOSMass() / CLHEP::c_squared;
+  const G4double num = 2. * pi * meff * k_Boltzmann * temp;
+  const G4double paren = num / (CLHEP::h_Planck * CLHEP::h_Planck);
+  hdos = 2. * std::sqrt(paren * paren * paren);
+  return hdos;
+}
+
+// https://lampz.tugraz.at/~hadley/psd/weblectures/Ef_intrinsic/index.php
+G4double G4LatticeLogical::GetFermiEnergy(const G4double& temperature) const {
+  G4double ef = 0.;
+  G4double temp = temperature;
+  if (temperature <= 0.) temp = G4CMPConfigManager::GetTemperature();
+  const G4double edos = GetElectronDOS(temp);
+  const G4double hdos = GetHoleDOS(temp);
+  if (edos <= 0. || hdos <= 0.) return ef;
+  const G4double kT = k_Boltzmann * temp;
+  const G4double term1 = GetBandGapEnergy() / 2.;
+  const G4double term2 = kT * std::log(hdos / edos) / 2.;
+  ef = term1 + term2;
+  return ef;
 }

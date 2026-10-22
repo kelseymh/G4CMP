@@ -47,6 +47,7 @@
 //              lattice info
 // 20260617  G4CMP-633 -- Cross-check that sufficient charge parameters are set
 // 20260618  G4CMP-637 -- Move calculation of L0 from acDeform out of Manager.
+// 20261022  G4CMP-612 -- moved DOS/fermi energy calcs from G4LatticePhysical
 
 #ifndef G4LatticeLogical_h
 #define G4LatticeLogical_h
@@ -291,6 +292,13 @@ public:
   G4double GetIVEnergy(G4int i) const {
     return (i>=0 && i<GetNIVDeform()) ? fIVEnergy[i] : 0.;
   }
+
+  // Fermi energy calculations
+  G4double GetElectronDOS(const G4double& temperature) const;
+  G4double GetHoleDOS(const G4double& temperature) const;
+
+  // https://lampz.tugraz.at/~hadley/psd/weblectures/Ef_intrinsic/index.php
+  G4double GetFermiEnergy(const G4double& temperature) const;
 
 private:
   void CheckBasis();	// Initialize or complete (via cross) basis vectors

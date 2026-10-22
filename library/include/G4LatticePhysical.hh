@@ -39,6 +39,7 @@
 // 20250905  G4CMP-500 -- Removing non-fundamental superconductor parameters
 //              from logical lattice and making them physical lattice members
 // 20260825  G4CMP-612 -- implemented DOS and fermi energy calculations
+// 20261022  G4CMP-612 -- moved DOS/fermi energy calcs to G4LatticeLogical
 
 #ifndef G4LatticePhysical_h
 #define G4LatticePhysical_h 1
@@ -223,8 +224,6 @@ public:
   // Fermi energy calculations
   G4double GetElectronDOS() const;
   G4double GetHoleDOS() const;
-
-  // https://lampz.tugraz.at/~hadley/psd/weblectures/Ef_intrinsic/index.php
   G4double GetFermiEnergy() const;
 
   // Dump logical lattice, with additional info about physical
